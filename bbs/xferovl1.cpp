@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <cmath>
 #include <memory>
 #include <string>
 #include <vector>
@@ -844,7 +845,7 @@ void download() {
       if (!returning && b.sending) {
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
           i + 1, b.filename,
-          b.len, ctim(b.time), 
+          b.len, ctim(std::lround(b.time)), 
           session()->directories[b.dir].name);
       }
     } else {
@@ -938,7 +939,7 @@ void download() {
   }
   bout.nl();
   bout << "|#1Files in Batch Queue   : |#2" << session()->batch.size() << wwiv::endl;
-  bout << "|#1Estimated Download Time: |#2" << ctim2(batchtime) << wwiv::endl;
+  bout << "|#1Estimated Download Time: |#2" << ctim2(std::lround(batchtime)) << wwiv::endl;
   bout.nl();
   rtn = batchdl(3);
   if (rtn) {

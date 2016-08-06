@@ -221,7 +221,7 @@ void normalupload(int dn) {
         receive_file(szReceiveFileName, &ok, u.filename, dn);
         ti = timer() - ti;
         if (ti < 0) {
-          ti += SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;
+          ti += SECONDS_PER_DAY;
         }
         session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>(ti));
       }

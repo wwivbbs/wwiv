@@ -146,9 +146,9 @@ const string stuff_in(const string& commandline, const string& arg1,
 }
 
 const unsigned int GetTimeLeft() {
-  double d = nsl();
+  auto d = nsl();
   if (d < 0) {
-    d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+    d += SECONDS_PER_DAY;
   }
-  return static_cast<int>(d) / MINUTES_PER_HOUR;
+  return static_cast<unsigned int>(d / MINUTES_PER_HOUR);
 }

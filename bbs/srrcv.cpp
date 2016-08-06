@@ -47,7 +47,7 @@ char modemkey(int *tout) {
   if (*tout) {
     return 0;
   }
-  double d1 = timer();
+  auto d1 = timer();
   while (std::abs(timer() - d1) < 0.5 && !bkbhitraw() && !hangup) {
     CheckForHangup();
   }
@@ -202,7 +202,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
       rputch(CU);
     }
 
-    double d1 = timer();
+    auto d1 = timer();
     while (std::abs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup) {
       CheckForHangup();
       if (session()->localIO()->LocalKeyPressed()) {
@@ -224,7 +224,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
     session()->localIO()->LocalXYPrintf(69, 5, "%d", nTotalErrors);
     session()->localIO()->LocalXYPrintf(65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
     if (reallen) {
-      session()->localIO()->LocalXYPuts(65, 1, ctim((static_cast<double>(reallen - pos)) * tpb));
+      session()->localIO()->LocalXYPuts(65, 1, ctim(std::lround((reallen - pos) * tpb)));
     }
     i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {

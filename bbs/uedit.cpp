@@ -360,7 +360,7 @@ int matchuser(User *pUser) {
             }
           } else if (IsEquals(fcn, "LASTON")) {
             time(&l);
-            tmp2 = static_cast<unsigned int>((l - pUser->GetLastOnDateNumber()) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
+            tmp2 = static_cast<unsigned int>((l - pUser->GetLastOnDateNumber()) / SECONDS_PER_DAY);
             if (less) {
               tmp = tmp2 < tmp1;
             } else {

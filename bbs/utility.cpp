@@ -135,7 +135,7 @@ void frequent_init() {
   mailcheck = false;
   smwcheck = false;
   use_workspace = false;
-  extratimecall = 0.0;
+  extratimecall = 0;
   session()->using_modem = 0;
   File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
   File::Remove(g_szDSZLogFileName);
@@ -171,30 +171,30 @@ double post_ratio() {
   return (r > 99.998) ? 99.998 : r;
 }
 
-double nsl() {
-  double rtn = 1.00;
+long nsl() {
+  long rtn = 1;
 
-  double dd = timer();
+  auto dd = timer();
   if (session()->IsUserOnline()) {
-    if (timeon > (dd + SECONDS_PER_MINUTE_FLOAT)) {
-      timeon -= SECONDS_PER_HOUR_FLOAT * HOURS_PER_DAY_FLOAT;
+    if (timeon > (dd + SECONDS_PER_MINUTE)) {
+      timeon -= SECONDS_PER_DAY;
     }
-    double tot = dd - timeon;
-    double tpl = static_cast<double>(getslrec(session()->GetEffectiveSl()).time_per_logon) * MINUTES_PER_HOUR_FLOAT;
-    double tpd = static_cast<double>(getslrec(session()->GetEffectiveSl()).time_per_day) * MINUTES_PER_HOUR_FLOAT;
-    double tlc = tpl - tot + session()->user()->GetExtraTime() + extratimecall;
-    double tlt = tpd - tot - static_cast<double>(session()->user()->GetTimeOnToday()) +
-                 session()->user()->GetExtraTime();
+    auto tot = dd - timeon;
+    auto tpl = static_cast<long>(getslrec(session()->GetEffectiveSl()).time_per_logon) * MINUTES_PER_HOUR;
+    auto tpd = static_cast<long>(getslrec(session()->GetEffectiveSl()).time_per_day) * MINUTES_PER_HOUR;
+    auto tlc = tpl - tot + std::lround(session()->user()->GetExtraTime()) + extratimecall;
+    auto tlt = tpd - tot - std::lround(
+        session()->user()->GetTimeOnToday()) + std::lround(session()->user()->GetExtraTime());
 
-    tlt = std::min<double>(tlc, tlt);
-    rtn = in_range<double>(0.0, 32767.0, tlt);
+    tlt = std::min<long>(tlc, tlt);
+    rtn = in_range<long>(0, 32767, tlt);
   }
 
   session()->SetTimeOnlineLimited(false);
   if (syscfg.executetime) {
-    double tlt = time_event - dd;
-    if (tlt < 0.0) {
-      tlt += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+    auto tlt = time_event - dd;
+    if (tlt < 0) {
+      tlt += SECONDS_PER_DAY;
     }
     if (rtn > tlt) {
       rtn = tlt;
@@ -202,15 +202,10 @@ double nsl() {
     }
     check_event();
     if (do_event) {
-      rtn = 0.0;
+      rtn = 0;
     }
   }
-  return in_range<double>(0.0, 32767.0, rtn);
-}
-
-void Wait(double d) {
-  int ms = d * 1000;
-  wwiv::os::sleep_for(milliseconds(ms));
+  return in_range<long>(0, 32767, rtn);
 }
 
 /**

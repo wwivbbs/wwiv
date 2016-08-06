@@ -72,16 +72,11 @@ constexpr int LIST_USERS_MESSAGE_AREA = 0;
 constexpr int LIST_USERS_FILE_AREA = 1;
 
 // Time
-constexpr int SECONDS_PER_HOUR = 3600L;
-constexpr float SECONDS_PER_HOUR_FLOAT = 3600.0;
-constexpr int SECONDS_PER_DAY = 86400L;
-constexpr float SECONDS_PER_DAY_FLOAT = 86400.0;
-constexpr int HOURS_PER_DAY = 24L;
-constexpr float HOURS_PER_DAY_FLOAT = 24.0;
-constexpr int MINUTES_PER_HOUR = 60L;
-constexpr float MINUTES_PER_HOUR_FLOAT = 60.0;
-constexpr int SECONDS_PER_MINUTE = 60L;
-constexpr float SECONDS_PER_MINUTE_FLOAT = 60.0;
+constexpr long SECONDS_PER_HOUR = 3600L;
+constexpr long SECONDS_PER_DAY = 86400L;
+constexpr long HOURS_PER_DAY = 24L;
+constexpr long MINUTES_PER_HOUR = 60L;
+constexpr long SECONDS_PER_MINUTE = 60L;
 
 
 #endif // __INCLUDED_WCONSTANTS_H__

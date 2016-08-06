@@ -483,11 +483,11 @@ const string create_chain_file() {
   create_drop_files();
   long l = static_cast<long>(timeon);
   if (l < 0) {
-    l += SECONDS_PER_HOUR * HOURS_PER_DAY;
+    l += SECONDS_PER_DAY;
   }
   long l1 = static_cast<long>(timer() - timeon);
   if (l1 < 0) {
-    l1 += SECONDS_PER_HOUR * HOURS_PER_DAY;
+    l1 += SECONDS_PER_DAY;
   }
 
   string fileName = create_filename(CHAINFILE_CHAIN);

@@ -158,7 +158,7 @@ const char *interpret(char chKey) {
   case 'o':                               // Time on today
     snprintf(s, sizeof(s), "%ld", static_cast<long>((session()->user()->GetTimeOn() +
              timer() - timeon) /
-             SECONDS_PER_MINUTE_FLOAT));
+             SECONDS_PER_MINUTE));
     break;
   case 'P':                               // BBS phone
     strcpy(s, reinterpret_cast<char*>(syscfg.systemphone));

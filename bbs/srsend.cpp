@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <chrono>
 #include <cmath>
 
 #include "bbs/crc.h"
@@ -25,8 +26,11 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "core/os.h"
 #include "core/strings.h"
 
+using std::chrono::seconds;
+using namespace wwiv::os;
 using namespace wwiv::strings;
 
 bool NewZModemSendFile(const char *file_name);
@@ -152,9 +156,9 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
 
 
 bool okstart(bool *use_crc, bool *abort) {
-  double d    = timer();
-  bool   ok   = false;
-  bool   done = false;
+  auto d = timer();
+  bool ok = false;
+  bool done = false;
 
   while (std::abs(timer() - d) < 90.0 && !done && !hangup && !*abort) {
     char ch = gettimeout(91.0 - d, abort);
@@ -204,7 +208,8 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
   if (!lFileSize) {
     lFileSize = 1;
   }
-  double tpb = (12.656) / ((double) modem_speed);
+
+  double tpb = (12.656f / static_cast<double>(modem_speed));
 
   if (!use_ymodemBatch) {
     bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
@@ -242,14 +247,14 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
       bUse1kBlocks = false;
     }
     session()->localIO()->LocalXYPrintf(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
-    session()->localIO()->LocalXYPuts(65, 1, ctim(((double)(lFileSize - cp)) * tpb));
+    session()->localIO()->LocalXYPuts(65, 1, ctim(std::lround((lFileSize - cp) * tpb)));
     session()->localIO()->LocalXYPuts(69, 4, "0");
 
     ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &use_crc, pszWorkingFileName, &terr, &abort);
     if (ch == CX) {
       abort = true;
     } else if (ch == CU) {
-      Wait(1);
+      sleep_for(seconds(1));
       dump();
       send_b(file, 0L, 3, 0, &use_crc, pszWorkingFileName, &terr, &abort);
       abort = true;

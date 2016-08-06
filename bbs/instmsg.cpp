@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/instmsg.h"
 
+#include <chrono>
 #include <cstdarg>
 #include <string>
 
@@ -27,13 +28,16 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "core/os.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "sdk/filenames.h"
 
+using std::chrono::seconds;
 using std::string;
+using namespace wwiv::os;
 
 static bool chat_avail;
 static bool chat_invis;
@@ -277,7 +281,7 @@ void process_inst_msgs() {
         session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
-        Wait(1);
+        sleep_for(seconds(1));
         session()->QuitBBS();
       }
     }
@@ -427,7 +431,7 @@ void instance_edit() {
         session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
-        Wait(1);
+        sleep_for(seconds(1));
         session()->QuitBBS();
         break;
       }
@@ -460,7 +464,7 @@ void instance_edit() {
         session()->localIO()->LocalCls();
         hangup = true;
         hang_it_up();
-        Wait(1);
+        sleep_for(seconds(1));
         session()->QuitBBS();
       }
       break;

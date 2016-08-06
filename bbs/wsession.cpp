@@ -196,7 +196,7 @@ bool WSession::WriteCurrentUser(int user_number) {
 }
 
 void WSession::tleft(bool check_for_timeout) {
-  double nsln = nsl();
+  long nsln = nsl();
   bool temp_sysop = session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255;
   bool sysop_available = sysop1();
 
@@ -222,16 +222,20 @@ void WSession::tleft(bool check_for_timeout) {
       localIO()->LocalXYPuts(64, nLineNumber, "Available");
     }
   }
+
+  auto min_left = nsln / SECONDS_PER_MINUTE;
+  auto secs_left = nsln % SECONDS_PER_MINUTE;
+  string tleft_display = wwiv::strings::StringPrintf("T-%4ldm %2lds", min_left, secs_left);
   switch (topdata) {
   case LocalIO::topdataSystem:
     if (IsUserOnline()) {
-      localIO()->LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
+      localIO()->LocalXYPuts(18, 3, tleft_display);
     }
     break;
   case LocalIO::topdataUser:
   {
     if (IsUserOnline()) {
-      localIO()->LocalXYPrintf(18, 3, "T-%6.2f", nsln / SECONDS_PER_MINUTE_FLOAT);
+      localIO()->LocalXYPuts(18, 3, tleft_display);
     } else {
       localIO()->LocalXYPrintf(18, 3, user()->GetPassword());
     }
@@ -309,12 +313,12 @@ void WSession::handle_sysop_key(uint8_t key) {
         break;
       case F7:                          /* F7 */
         user()->SetExtraTime(user()->GetExtraTime() -
-          static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+          static_cast<float>(5 * SECONDS_PER_MINUTE));
         tleft(false);
         break;
       case F8:                          /* F8 */
         user()->SetExtraTime(user()->GetExtraTime() +
-          static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+          static_cast<float>(5 * SECONDS_PER_MINUTE));
         tleft(false);
         break;
       case F9:                          /* F9 */
@@ -520,7 +524,7 @@ void WSession::UpdateTopScreen() {
       user()->GetFilesDownloaded(),
       user()->GetDownloadK(),
       user()->GetDsl(),
-      static_cast<long>((user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE_FLOAT),
+      static_cast<long>((user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE),
       user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
 
     localIO()->LocalXYPrintf(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
@@ -948,9 +952,9 @@ int WSession::doWFCEvents() {
 int WSession::LocalLogon() {
   localIO()->LocalGotoXY(2, 23);
   bout << "|#9Log on to the BBS?";
-  double d = timer();
+  auto d = timer();
   int lokb = 0;
-  while (!localIO()->LocalKeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE_FLOAT))
+  while (!localIO()->LocalKeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE))
     ;
 
   if (localIO()->LocalKeyPressed()) {
@@ -1429,10 +1433,10 @@ int WSession::Run(int argc, char *argv[]) {
     if (syscfg.executetime > 1440) {
       syscfg.executetime -= 1440;
     }
-    time_event = static_cast<double>(syscfg.executetime) * MINUTES_PER_HOUR_FLOAT;
+    time_event = static_cast<long>(syscfg.executetime) * MINUTES_PER_HOUR;
     last_time = time_event - timer();
     if (last_time < 0.0) {
-      last_time += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+      last_time += SECONDS_PER_DAY;
     }
   }
 

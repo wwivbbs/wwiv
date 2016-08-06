@@ -287,12 +287,12 @@ void post() {
   if (session()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
     time_t lEndTime = time(nullptr);
     if (lStartTime > lEndTime) {
-      lEndTime += HOURS_PER_DAY * SECONDS_PER_DAY;
+      lEndTime += SECONDS_PER_DAY;
     }
     lStartTime = static_cast<long>(lEndTime - lStartTime);
-    if ((lStartTime / MINUTES_PER_HOUR_FLOAT) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
+    if ((lStartTime / MINUTES_PER_HOUR) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
       lStartTime = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
-                                      MINUTES_PER_HOUR_FLOAT));
+                                      MINUTES_PER_HOUR));
     }
     session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
         (lStartTime));

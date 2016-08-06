@@ -27,12 +27,14 @@ char *fulldate();
 char *times();
 time_t date_to_daten(const char *datet);
 void filedate(const char *fpath, char *rtn);
-double timer();
+long timer();
 long timer1();
 bool isleap(int nYear);
 int dow();
-char *ctim(double d);
-std::string ctim2(double d);
+char *ctim(float f);
+char *ctim(double f);
+char *ctim(long d);
+std::string ctim2(long d);
 int years_old(int nMonth, int nDay, int nYear);
 
 
