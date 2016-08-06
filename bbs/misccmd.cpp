@@ -107,7 +107,7 @@ void kill_old_email() {
         }
         bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", session()->GetMessageColor(), m.title);
         time_t lCurrentTime = time(nullptr);
-        int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
+        int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / SECONDS_PER_DAY);
         bout << "|#1Sent|#9: |#" << session()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           File fileAttach(session()->config()->datadir(), ATTACH_DAT);
@@ -422,7 +422,7 @@ void list_users(int mode) {
 void time_bank() {
   char s[81], bc[81];
   int i;
-  double nsln;
+  long nsln;
 
   bout.nl();
   if (session()->user()->GetSl() <= syscfg.newusersl) {
@@ -466,13 +466,13 @@ void time_bank() {
               session()->GetEffectiveSl()).time_per_logon) {
           i = getslrec(session()->GetEffectiveSl()).time_per_logon - session()->user()->GetTimeBankMinutes();
         }
-        if (i > (nsln / SECONDS_PER_MINUTE_FLOAT)) {
-          i = static_cast<int>(nsln / SECONDS_PER_MINUTE_FLOAT);
+        if (i > (nsln / SECONDS_PER_MINUTE)) {
+          i = static_cast<int>(nsln / SECONDS_PER_MINUTE);
         }
         session()->user()->SetTimeBankMinutes(session()->user()->GetTimeBankMinutes() +
             static_cast<uint16_t>(i));
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() - static_cast<float>
-            (i * SECONDS_PER_MINUTE_FLOAT));
+        session()->user()->SetExtraTime(session()->user()->GetExtraTime() - 
+            static_cast<float>(i * SECONDS_PER_MINUTE));
         session()->tleft(false);
       }
       break;
@@ -492,7 +492,7 @@ void time_bank() {
         session()->user()->SetTimeBankMinutes(session()->user()->GetTimeBankMinutes() -
             static_cast<uint16_t>(i));
         session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
-            (i * SECONDS_PER_MINUTE_FLOAT));
+            (i * SECONDS_PER_MINUTE));
         session()->tleft(false);
       }
       break;

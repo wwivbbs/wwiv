@@ -15,32 +15,56 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORK2_SUBS_H__
-#define __INCLUDED_NETWORK2_SUBS_H__
+#ifndef __INCLUDED_NETWORKB_PACKETS_H__
+#define __INCLUDED_NETWORKB_PACKETS_H__
 
 #include <set>
-#include "networkb/packets.h"
-#include "network2/context.h"
+#include <string>
+#include <vector>
+
+#include "core/command_line.h"
+#include "core/file.h"
+#include "sdk/config.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
-#include "sdk/subxtr.h"
-#include "sdk/usermanager.h"
-#include "sdk/vardec.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 
 namespace wwiv {
 namespace net {
-namespace network2 {
 
-bool handle_sub_add_req(Context& context, Packet& p);
-bool handle_sub_drop_req(Context& context, Packet& p);
-bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop);
-bool handle_sub_list_info_request(Context& context, Packet& p);
-bool handle_sub_list_info_response(Context& context, Packet& p);
 
-}  // namespace network2
+class Packet {
+public:
+  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t)
+    : nh(h), list(l), text(t) {}
+
+  Packet() {}
+  virtual ~Packet() {}
+
+  net_header_rec nh{};
+  std::vector<uint16_t> list;
+  std::string text;
+};
+
+
+enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
+ReadPacketResponse read_packet(File& file, Packet& packet);
+
+bool write_packet(
+  const std::string& filename,
+  const net_networks_rec& net, Packet& packet);
+
+bool send_local_email(
+  const net_networks_rec& network, net_header_rec& nh,
+  const std::string& text, const std::string& byname, const std::string& title);
+
+bool send_network_email(
+  const std::string& filename,
+  const net_networks_rec& network, net_header_rec& nh,
+  std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
+
+
+
 }  // namespace net
 }  // namespace wwiv
 
-#endif  // __INCLUDED_NETWORK2_SUBS_H__
+#endif  // __INCLUDED_NETWORKB_PACKETS_H__

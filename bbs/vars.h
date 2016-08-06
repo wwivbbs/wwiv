@@ -125,10 +125,9 @@ __EXTRN__ uint32_t
 
 __EXTRN__ float batchtime;
 
-__EXTRN__ double
-extratimecall,
-timeon,
-time_event;
+__EXTRN__ long extratimecall;
+__EXTRN__ long time_event;
+__EXTRN__ long timeon;
 
 __EXTRN__ small_configrec syscfg;
 

@@ -565,7 +565,7 @@ void chat1(const char *chat_line, bool two_way) {
     write_inst(INST_LOC_CHAT, 0, INST_FLAGS_NONE);
     chatting = 1;
   }
-  double tc_start = timer();
+  auto tc_start = timer();
   File chatFile(session()->config()->gfilesdir(), "chat.txt");
 
   session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
@@ -663,7 +663,7 @@ void chat1(const char *chat_line, bool two_way) {
   chatting = 0;
   tc_start = timer() - tc_start;
   if (tc_start < 0) {
-    tc_start += SECONDS_PER_DAY_FLOAT;
+    tc_start += SECONDS_PER_DAY;
   }
   extratimecall += tc_start;
   session()->topdata = nSaveTopData;

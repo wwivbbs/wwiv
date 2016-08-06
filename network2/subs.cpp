@@ -44,6 +44,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
+#include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 #include "networkb/subscribers.h"
 #include "network2/context.h"
@@ -152,7 +153,7 @@ static string SubTypeFromText(const std::string& text) {
   return subtype;
 }
 
-static bool send_sub_add_drop_resp(Context& context,
+static bool send_sub_add_drop_resp(Context& context, 
   net_header_rec orig,
   uint8_t main_type, uint8_t code,
   const std::string& subtype) {
@@ -170,7 +171,8 @@ static bool send_sub_add_drop_resp(Context& context,
   text.push_back(code);
   nh.length = text.size();  // should be subtype.size() + 2
   const string pendfile = create_pend(context.net.dir, false, 2);
-  return write_packet(pendfile, context.net, nh, std::set<uint16_t>{}, text);
+  Packet packet(nh, {}, std::move(text));
+  return write_packet(pendfile, context.net, packet);
 }
 
 static bool IsHostedHere(Context& context, const std::string& subtype) {
@@ -184,9 +186,9 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
   return false;
 }
 
-bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::string& text) {
-  const string subtype = SubTypeFromText(text);
-  auto resp = [&subtype, &context, &nh](int code) -> bool { return send_sub_add_drop_resp(context, nh, main_type_sub_add_resp, code, subtype); };
+bool handle_sub_add_req(Context& context, Packet& p) {
+  const string subtype = SubTypeFromText(p.text);
+  auto resp = [&subtype, &context, &p](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_add_resp, code, subtype); };
   if (subtype.empty()) {
     return resp(sub_adddrop_error);
   }
@@ -199,7 +201,7 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
-  auto result = subscribers.insert(nh.fromsys);
+  auto result = subscribers.insert(p.nh.fromsys);
   if (result.second == false) {
     return resp(sub_adddrop_already_there);
   }
@@ -209,13 +211,13 @@ bool handle_sub_add_req(Context& context, const net_header_rec& nh, const std::s
   }
 
   // success!
-  LOG(INFO) << "Added system @" << nh.fromsys << " to subtype: " << subtype;
+  LOG(INFO) << "Added system @" << p.nh.fromsys << " to subtype: " << subtype;
   return resp(sub_adddrop_ok);
 }
 
-bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::string& text) {
-  const string subtype = SubTypeFromText(text);
-  auto resp = [&subtype, &context, &nh](int code) -> bool { return send_sub_add_drop_resp(context, nh, main_type_sub_drop_resp, code, subtype); };
+bool handle_sub_drop_req(Context& context, Packet& p) {
+  const string subtype = SubTypeFromText(p.text);
+  auto resp = [&subtype, &context, &p](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype); };
   if (subtype.empty()) {
     return resp(sub_adddrop_error);
   }
@@ -228,7 +230,7 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
     LOG(INFO) << "Unable to read subscribers file.";
     return resp(sub_adddrop_error);
   }
-  set<uint16_t>::size_type num_removed = subscribers.erase(nh.fromsys);
+  set<uint16_t>::size_type num_removed = subscribers.erase(p.nh.fromsys);
   if (num_removed == 0) {
     return resp(sub_adddrop_not_there);
   }
@@ -238,7 +240,7 @@ bool handle_sub_drop_req(Context& context, const net_header_rec& nh, const std::
   }
 
   // success!
-  LOG(INFO) << "Dropped system @" << nh.fromsys << " to subtype: " << subtype;
+  LOG(INFO) << "Dropped system @" << p.nh.fromsys << " to subtype: " << subtype;
   return resp(sub_adddrop_ok);
 }
 
@@ -256,62 +258,64 @@ static string SubAddDropResponseMessage(uint8_t code) {
 
 }
 
-bool handle_sub_add_drop_resp(Context& context, const net_header_rec& nhorig, const std::string& add_or_drop, const std::string& text) {
-  string subname = text.c_str();
+bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop) {
+  // We want to stop at the 1st \0
+  string subname = p.text.c_str();
   StringTrimEnd(&subname);
 
-  auto b = text.begin();
-  while (b != text.end() && *b != '\0') { b++; }
-  if (b == text.end()) {
+  auto b = p.text.begin();
+  while (b != p.text.end() && *b != '\0') { b++; }
+  if (b == p.text.end()) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   } // NULL
   b++;
-  if (b == text.end()) {
+  if (b == p.text.end()) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   }
 
-  LOG(INFO) << "Processed " << add_or_drop << " response from system @" << nhorig.fromsys << " to subtype: " << subname;
+  LOG(INFO) << "Processed " << add_or_drop << " response from system @" << p.nh.fromsys << " to subtype: " << subname;
 
   char code = *b++;
   string code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
-  string message_text = string(b, text.end());
+  string message_text = string(b, p.text.end());
   net_header_rec nh = {};
 
-  string now_human = wwiv::sdk::daten_to_date(nhorig.daten);
+  string now_human = wwiv::sdk::daten_to_date(p.nh.daten);
   string title = StringPrintf("WWIV AreaFix (%s) Response for subtype '%s'", context.net.name, now_human.c_str());
-  string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net.name, nhorig.fromsys);
-  string body = StringPrintf("SubType '%s', (%s) Response: '%s'", subname.c_str(), add_or_drop.c_str(), code_string.c_str());
+  string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net.name, p.nh.fromsys);
+  string body = StringPrintf("SubType '%s', (%s) Response: '%s'\r\n%s\r\n", 
+    subname.c_str(), add_or_drop.c_str(), code_string.c_str(), message_text.c_str());
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  string filename = create_pend(context.net.dir, true, context.network_number);
-  return send_network(filename, context.net, nh, {}, body, byname, title);
+  const string filename = create_pend(context.net.dir, true, context.network_number);
+  return send_network_email(filename, context.net, nh, {}, body, byname, title);
 }
 
-bool handle_sub_list_info_response(Context& context, const net_header_rec& nh_orig, const std::string& text) {
+bool handle_sub_list_info_response(Context& context, Packet& p) {
   TextFile subs_inf(context.net.dir, "subs.inf", "at");
   LOG(INFO) << "Received subs line for subs.inf:";
-  LOG(INFO) << text;
-  return subs_inf.Write(text) > 0;
+  LOG(INFO) << p.text;
+  return subs_inf.Write(p.text) > 0;
 }
 
-bool handle_sub_list_info_request(Context& context, const net_header_rec& nh_orig) {
+bool handle_sub_list_info_request(Context& context, Packet& p) {
 
   net_header_rec nh{};
-  nh.fromsys = nh_orig.tosys;
-  nh.fromuser = nh_orig.touser;
-  nh.tosys = nh_orig.fromsys;
-  nh.touser = nh_orig.fromuser;
+  nh.fromsys = p.nh.tosys;
+  nh.fromuser = p.nh.touser;
+  nh.tosys = p.nh.fromsys;
+  nh.touser = p.nh.fromuser;
   nh.main_type = main_type_sub_list_info;
   nh.minor_type = 1;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  vector<string> lines = create_sub_info(context);
+  auto lines = create_sub_info(context);
   string text = JoinStrings(lines, "\r\n");
   nh.length = text.size();
 
@@ -319,7 +323,7 @@ bool handle_sub_list_info_request(Context& context, const net_header_rec& nh_ori
   LOG(INFO) << text;
 
   const string pendfile = create_pend(context.net.dir, false, 2);
-  return write_packet(pendfile, context.net, nh, std::set<uint16_t>{}, text);
+  return write_packet(pendfile, context.net, Packet(nh, {}, text));
 }
 
 

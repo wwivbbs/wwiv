@@ -964,7 +964,7 @@ void WSession::InitializeBBS() {
   init_events();
   last_time = time_event - timer();
   if (last_time < 0.0) {
-    last_time += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+    last_time += SECONDS_PER_DAY;
   }
 
   XINIT_PRINTF("Allocating Memory for Message/File Areas.");

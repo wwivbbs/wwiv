@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/netsup.h"
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -33,6 +34,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "core/inifile.h"
+#include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
@@ -42,11 +44,12 @@
 static int netw;
 time_t last_time_c;
 
+using std::chrono::seconds;
 using std::string;
 using std::to_string;
 using std::unique_ptr;
-using wwiv::core::IniFile;
-using wwiv::core::FilePath;
+using namespace wwiv::core;
+using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -1265,7 +1268,7 @@ void force_callout(int dw) {
             session()->SetUserOnline(false);
           }
           hang_it_up();
-          Wait(5);
+          sleep_for(seconds(5));
         }
         if (!dw || total_attempts < 1) {
           total_attempts = 1;

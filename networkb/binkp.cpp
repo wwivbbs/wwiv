@@ -539,30 +539,27 @@ BinkState BinkP::AuthRemote() {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
           StrCat("Error (NETWORKB-0003): Unable to find callout.net for: ", network_name));
-      // TODO(rushfan): Do we need a real error state (same TODO as below)
-      return BinkState::UNKNOWN;
+      return BinkState::FATAL_ERROR;
     }
     const net_call_out_rec* callout_record = callouts_.at(network_name).node_config_for(caller_node);
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
           StrCat("Error (NETWORKB-0002): Unexpected Address: ", address_list_));
-      // TODO(rushfan): Do we need a real error state (same TODO as below)
-      return BinkState::UNKNOWN;
+      return BinkState::FATAL_ERROR;
     }
     return BinkState::WAIT_PWD;
   }
 
   const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, network_name.c_str());
-  //VLOG(1) << "       expected_ftn: " << expected_ftn;
+  VLOG(1) << "       expected_ftn: " << expected_ftn;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(BinkpCommands::M_ERR, 
       StrCat("Error (NETWORKB-0001): Unexpected Address: ", address_list_));
-    // TODO(rushfan): add error state?
-    return BinkState::UNKNOWN;
+    return BinkState::FATAL_ERROR;
   }
 }
 
@@ -601,6 +598,14 @@ BinkState BinkP::TransferFiles() {
 
 BinkState BinkP::Unknown() {
   VLOG(1) << "STATE: Unknown";
+  int count = 0;
+  auto predicate = [&]() -> bool { return count++ > 4; };
+  process_frames(predicate, seconds(3));
+  return BinkState::DONE;
+}
+
+BinkState BinkP::FatalError() {
+  LOG(ERROR) << "STATE: FatalError";
   int count = 0;
   auto predicate = [&]() -> bool { return count++ > 4; };
   process_frames(predicate, seconds(3));
@@ -824,6 +829,9 @@ void BinkP::Run() {
         break;
       case BinkState::UNKNOWN:
         state = Unknown();
+        break;
+      case BinkState::FATAL_ERROR:
+        state = FatalError();
         break;
       case BinkState::DONE:
         VLOG(1) << "STATE: Done.";

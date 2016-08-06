@@ -96,7 +96,7 @@ void YourInfo() {
                      session()->user()->GetNumFeedbackSent() + session()->user()->GetNumNetEmailSent()) <<
                      wwiv::endl;
   bout << "|#9Time spent on  : |#2" << static_cast<long>((session()->user()->GetTimeOn() +
-                     timer() - timeon) / SECONDS_PER_MINUTE_FLOAT) << " |#9Minutes" << wwiv::endl;
+                     timer() - timeon) / SECONDS_PER_MINUTE) << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
   bout << "|#9Uploads        : |#2" << session()->user()->GetUploadK() << "|#9k in|#2 " <<

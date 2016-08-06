@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/email.h"
 
+#include <chrono>
 #include <memory>
 #include <string>
 
@@ -35,12 +36,12 @@
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "sdk/status.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 
-using namespace wwiv::sdk;
 
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9
@@ -52,6 +53,9 @@ using namespace wwiv::sdk;
 using std::string;
 using std::stringstream;
 using std::unique_ptr;
+using std::chrono::seconds;
+using namespace wwiv::os;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // returns true on success (i.e. the message gets forwarded)
@@ -163,7 +167,7 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
     if (file->IsOpen()) {
       break;
     }
-    Wait(DELAY_BETWEEN_EMAIL_ATTEMPTS);
+    sleep_for(seconds(DELAY_BETWEEN_EMAIL_ATTEMPTS));
   }
   return unique_ptr<File>(file);
 }

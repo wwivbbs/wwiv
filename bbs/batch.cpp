@@ -103,7 +103,7 @@ void listbatch() {
     ++current_num;
     if (b.sending) {
       buffer = StringPrintf("%d. %s %s   %s  %s", current_num, "(D)",
-          b.filename, ctim(b.time),
+          b.filename, ctim(std::lround(b.time)),
           session()->directories[b.dir].name);
     } else {
       buffer = StringPrintf("%d. %s %s             %s", current_num, "(U)",
@@ -716,11 +716,11 @@ void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
   write_inst(INST_LOC_UPLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
   string list_filename = make_ul_batch_list();
 
-  double ti = timer();
+  auto ti = timer();
   run_cmd(command_line, "", list_filename, download_log_entry, bHangupAfterDl);
   ti = timer() - ti;
   if (ti < 0) {
-    ti += static_cast<double>(SECONDS_PER_DAY);
+    ti += SECONDS_PER_DAY;
   }
   session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast< float >(ti));
 }

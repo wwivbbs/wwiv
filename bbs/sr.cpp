@@ -62,7 +62,7 @@ char gettimeout(double d, bool *abort) {
     return bgetchraw();
   }
 
-  double d1 = timer();
+  auto d1 = timer();
   while (std::abs(timer() - d1) < d && !bkbhitraw() && !hangup && !*abort) {
     if (session()->localIO()->LocalKeyPressed()) {
       char ch = session()->localIO()->LocalGetChar();

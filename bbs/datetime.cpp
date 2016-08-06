@@ -77,21 +77,21 @@ void filedate(const char *file_name, char *out) {
   if (!file.Exists() && !file.Open(File::modeReadOnly)) {
     return;
   }
-  time_t tFileDate = file.last_write_time();
-  struct tm *pTm = localtime(&tFileDate);
+  time_t file_time = file.last_write_time();
+  struct tm *pTm = localtime(&file_time);
 
   // We use 9 here since that is the size of the date format MM/DD/YY + nullptr
   snprintf(out, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
 }
 
 /* This function returns the time, in seconds since midnight. */
-double timer() {
+long timer() {
   time_t ti       = time(nullptr);
   struct tm *t    = localtime(&ti);
 
-  return static_cast<double>(t->tm_hour * SECONDS_PER_HOUR_FLOAT) +
-         static_cast<double>(t->tm_min * SECONDS_PER_MINUTE_FLOAT) +
-         static_cast<double>(t->tm_sec);
+  return static_cast<long>(t->tm_hour * SECONDS_PER_HOUR) +
+         static_cast<long>(t->tm_min * SECONDS_PER_MINUTE) +
+         static_cast<long>(t->tm_sec);
 }
 
 /* This function returns the time, in ticks since midnight. */
@@ -133,21 +133,24 @@ int dow() {
   return newtime->tm_wday;
 }
 
+char *ctim(float f) { return ctim(std::lround(f)); }
+char *ctim(double f) { return ctim(std::lround(f)); }
+
 /*
  * Returns current time as string formatted like HH:MM:SS (01:13:00).
  */
-char *ctim(double d) {
+char *ctim(long d) {
   static char szCurrentTime[10];
 
   if (d < 0) {
-    d += HOURS_PER_DAY_FLOAT * SECONDS_PER_HOUR_FLOAT;
+    d += SECONDS_PER_DAY;
   }
-  long lHour = static_cast<long>(d / SECONDS_PER_HOUR_FLOAT);
-  d -= static_cast<double>(lHour * SECONDS_PER_HOUR_FLOAT);
-  long lMinute = static_cast<long>(d / MINUTES_PER_HOUR_FLOAT);
-  d -= static_cast<double>(lMinute * MINUTES_PER_HOUR);
-  long lSecond = static_cast<long>(d);
-  snprintf(szCurrentTime, sizeof(szCurrentTime), "%2.2ld:%2.2ld:%2.2ld", lHour, lMinute, lSecond);
+  auto hour = (d / SECONDS_PER_HOUR);
+  d -= (hour * SECONDS_PER_HOUR);
+  auto minute = static_cast<long>(d / MINUTES_PER_HOUR);
+  d -= (minute * MINUTES_PER_HOUR);
+  auto second = static_cast<long>(d);
+  snprintf(szCurrentTime, sizeof(szCurrentTime), "%2.2ld:%2.2ld:%2.2ld", hour, minute, second);
 
   return szCurrentTime;
 }
@@ -155,14 +158,14 @@ char *ctim(double d) {
 /*
 * Returns current time as string formatted as HH hours, MM minutes, SS seconds
 */
-std::string ctim2(double d) {
+std::string ctim2(long d) {
   char szHours[20], szMinutes[20], szSeconds[20];
 
-  long h = static_cast<long>(d / SECONDS_PER_HOUR_FLOAT);
-  d -= static_cast<double>(h * SECONDS_PER_HOUR);
-  long m = static_cast<long>(d / SECONDS_PER_MINUTE_FLOAT);
-  d -= static_cast<double>(m * SECONDS_PER_MINUTE);
-  long s = static_cast<long>(d);
+  auto h = static_cast<long>(d / SECONDS_PER_HOUR);
+  d -= (h * SECONDS_PER_HOUR);
+  auto m = static_cast<long>(d / SECONDS_PER_MINUTE);
+  d -= (m * SECONDS_PER_MINUTE);
+  auto s = d;
 
   if (h == 0) {
     strcpy(szHours, "");

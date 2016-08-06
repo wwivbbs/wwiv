@@ -19,6 +19,7 @@
 #include "bbs/newuser.h"
 
 #include <algorithm>
+#include <chrono>
 #include <string>
 
 #include "bbs/asv.h"
@@ -46,14 +47,17 @@
 #include "bbs/workspace.h"
 #include "sdk/status.h"
 #include "core/inifile.h"
+#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
+using std::chrono::milliseconds;
 using std::string;
 using wwiv::bbs::InputMode;
 using namespace wwiv::core;
+using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -153,7 +157,7 @@ void input_language() {
   }
 }
 
-static bool check_name(const string userName) {
+static bool check_name(const string& userName) {
   // Since finduser is called with userName, it can not be const.  A better idea may be
   // to change this behaviour in the future.
   char s[255], s1[255], s2[MAX_PATH];
@@ -599,7 +603,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   File userFile(session()->config()->datadir(), USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
-      Wait(0.1);
+      sleep_for(milliseconds(100));
     }
   }
   if (!userFile.IsOpen()) {
@@ -618,7 +622,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
         userFile.Close();
         for (int n = 0; !userFile.IsOpen() && (n < 20); n++) {
           if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
-            Wait(0.1);
+            sleep_for(milliseconds(100));
           }
         }
         if (!userFile.IsOpen()) {

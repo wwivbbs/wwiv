@@ -102,7 +102,7 @@ void attach_file(int mode) {
         }
         bout << "|#1Subj|#7: |#2" << m.title << wwiv::endl;
         time_t tTimeNow = time(nullptr);
-        int nDaysAgo = static_cast<int>((tTimeNow - m.daten) / HOURS_PER_DAY_FLOAT / SECONDS_PER_HOUR_FLOAT);
+        int nDaysAgo = static_cast<int>((tTimeNow - m.daten) / SECONDS_PER_DAY);
         bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           File fileAttach(session()->config()->datadir(), ATTACH_DAT);

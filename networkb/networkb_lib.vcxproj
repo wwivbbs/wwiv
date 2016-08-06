@@ -103,6 +103,7 @@
     <ClInclude Include="cram.h" />
     <ClInclude Include="net_log.h" />
     <ClInclude Include="net_util.h" />
+    <ClInclude Include="packets.h" />
     <ClInclude Include="ppp_config.h" />
     <ClInclude Include="receive_file.h" />
     <ClInclude Include="socket_connection.h" />
@@ -119,6 +120,7 @@
     <ClCompile Include="cram.cpp" />
     <ClCompile Include="net_log.cpp" />
     <ClCompile Include="net_util.cpp" />
+    <ClCompile Include="packets.cpp" />
     <ClCompile Include="ppp_config.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />

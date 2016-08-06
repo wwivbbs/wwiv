@@ -404,12 +404,12 @@ bool sysop2() {
   }
   if (syscfg.sysoplowtime != syscfg.sysophightime) {
     if (syscfg.sysophightime > syscfg.sysoplowtime) {
-      if (timer() <= (syscfg.sysoplowtime * SECONDS_PER_MINUTE_FLOAT) ||
-          timer() >= (syscfg.sysophightime * SECONDS_PER_MINUTE_FLOAT)) {
+      if (timer() <= (syscfg.sysoplowtime * SECONDS_PER_MINUTE) ||
+          timer() >= (syscfg.sysophightime * SECONDS_PER_MINUTE)) {
         ok = false;
       }
-    } else if (timer() <= (syscfg.sysoplowtime * SECONDS_PER_MINUTE_FLOAT) &&
-               timer() >= (syscfg.sysophightime * SECONDS_PER_MINUTE_FLOAT)) {
+    } else if (timer() <= (syscfg.sysoplowtime * SECONDS_PER_MINUTE) &&
+               timer() >= (syscfg.sysophightime * SECONDS_PER_MINUTE)) {
       ok = false;
     }
   }

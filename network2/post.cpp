@@ -44,6 +44,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
+#include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 #include "network2/context.h"
 
@@ -106,11 +107,11 @@ static bool find_basename(Context& context, const string& netname, string& basen
 // subtype appears as the first part of the message text, followed by a NUL.Thus, the message
 // header info at the beginning of the message text is in the format 
 // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-bool handle_post(Context& context, const net_header_rec& nh,
-  std::vector<uint16_t>& list, const string& raw_text) {
+bool handle_post(Context& context, Packet& p) {
 
   ScopeExit at_exit;
   
+  string raw_text = p.text;
   auto iter = raw_text.begin();
   string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
@@ -131,7 +132,7 @@ bool handle_post(Context& context, const net_header_rec& nh,
   string basename;
   if (!find_basename(context, subtype, basename)) {
     LOG(INFO) << "    ! ERROR: Unable to find subtype of subtype: " << subtype << "; writing to dead.net.";
-    return write_packet(DEAD_NET, context.net, nh, list, text);
+    return write_packet(DEAD_NET, context.net, p);
   }
 
   if (!context.api.Exist(basename)) {
@@ -142,22 +143,22 @@ bool handle_post(Context& context, const net_header_rec& nh,
     unique_ptr<MessageArea> creator(context.api.Create(basename));
     if (!creator) {
       LOG(INFO) << "    ! ERROR: Failed to create message area: " << basename << "; writing to dead.net.";
-      return write_packet(DEAD_NET, context.net, nh, list, text);
+      return write_packet(DEAD_NET, context.net, p);
     }
   }
 
   unique_ptr<MessageArea> area(context.api.Open(basename));
   if (!area) {
     LOG(INFO) << "    ! ERROR Unable to open message area: " << basename << "; writing to dead.net.";
-    return write_packet(DEAD_NET, context.net, nh, list, text);
+    return write_packet(DEAD_NET, context.net, p);
   }
 
   unique_ptr<Message> msg(area->CreateMessage());
-  msg->header()->set_from_system(nh.fromsys);
-  msg->header()->set_from_usernum(nh.fromuser);
+  msg->header()->set_from_system(p.nh.fromsys);
+  msg->header()->set_from_usernum(p.nh.fromuser);
   msg->header()->set_title(title);
   msg->header()->set_from(sender_name);
-  msg->header()->set_daten(nh.daten);
+  msg->header()->set_daten(p.nh.daten);
   msg->text()->set_text(text);
 
   const int num_messages = area->number_of_messages();
@@ -173,10 +174,10 @@ bool handle_post(Context& context, const net_header_rec& nh,
 
     // Since we don't have a global message id, use the combination of
     // date + title + from system + from user.
-    if (header->daten() == nh.daten
+    if (header->daten() == p.nh.daten
       && header->title() == title
-      && header->from_system() == nh.fromsys
-      && header->from_usernum() == nh.fromuser) {
+      && header->from_system() == p.nh.fromsys
+      && header->from_usernum() == p.nh.fromuser) {
       LOG(INFO) << "    - Discarding Duplicate Message.";
       // Returning true since we properly handled this by discarding it.
       return true;
@@ -185,7 +186,7 @@ bool handle_post(Context& context, const net_header_rec& nh,
 
   if (!area->AddMessage(*msg)) {
     LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";
-    return write_packet(DEAD_NET, context.net, nh, list, text);
+    return write_packet(DEAD_NET, context.net, p);
   }
   LOG(INFO) << "    + Posted  '" << title << "'";
   return true;

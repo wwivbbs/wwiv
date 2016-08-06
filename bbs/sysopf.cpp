@@ -823,7 +823,7 @@ void auto_purge() {
     User user;
     session()->users()->ReadUser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
-      unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY_FLOAT);
+      unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
       if (!user.IsUserDeleted() && user.GetSl() < skipsl && d > days) {

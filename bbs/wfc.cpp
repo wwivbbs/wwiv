@@ -113,7 +113,7 @@ void wfc_update() {
 void wfc_screen() {
   instancerec ir;
   User u;
-  static double wfc_time = 0, poll_time = 0;
+  static long wfc_time = 0, poll_time = 0;
 
   if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;

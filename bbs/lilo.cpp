@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <chrono>
 #include <limits>
 #include <memory>
 #include <string>
@@ -53,12 +54,13 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
+using std::chrono::milliseconds;
+using std::chrono::seconds;
 using std::string;
 using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
-using wwiv::core::FilePath;
-using wwiv::os::random_number;
+using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -281,9 +283,9 @@ static void ExecuteWWIVNetworkRequest() {
   hangup = true;
   session()->remoteIO()->dtr(false);
   global_xx = false;
-  Wait(1.0);
+  sleep_for(seconds(1));
   session()->remoteIO()->dtr(true);
-  Wait(0.1);
+  sleep_for(milliseconds(100));
   cleanup_net();
   hangup = true;
 }
@@ -744,7 +746,7 @@ static void DisplayUserLoginInformation() {
   } else {
     bout << "None.\r\n";
   }
-  bout << "|#9Time allowed on|#0... |#2" << static_cast<int>((nsl() + 30) / SECONDS_PER_MINUTE_FLOAT)
+  bout << "|#9Time allowed on|#0... |#2" << (nsl() + 30) / SECONDS_PER_MINUTE
        << wwiv::endl;
   if (session()->user()->GetNumIllegalLogons() > 0) {
     bout << "|#9Illegal logons|#0.... |#2" << session()->user()->GetNumIllegalLogons()
@@ -1004,17 +1006,17 @@ void logoff() {
   session()->user()->SetLastOn(g_szLastLoginDate);
 
   session()->user()->SetNumIllegalLogons(0);
-  if ((timer() - timeon) < -30.0) {
-    timeon -= HOURS_PER_DAY_FLOAT * SECONDS_PER_DAY_FLOAT;
+  if ((timer() - timeon) < -30) {
+    timeon -= SECONDS_PER_DAY;
   }
-  double dTimeOnNow = timer() - timeon;
+  auto dTimeOnNow = timer() - timeon;
   session()->user()->SetTimeOn(session()->user()->GetTimeOn() + static_cast<float>(dTimeOnNow));
   session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() +
     static_cast<float>(dTimeOnNow - extratimecall));
   {
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
     int nActiveToday = pStatus->GetMinutesActiveToday();
-    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR_FLOAT));
+    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR));
     session()->status_manager()->CommitTransaction(pStatus);
   }
   if (g_flags & g_flag_scanned_files) {
@@ -1022,8 +1024,8 @@ void logoff() {
   }
   time_t lTime = time(nullptr);
   session()->user()->SetLastOnDateNumber(lTime);
-  sysoplogfi(false, "Read: %lu   Time on: %u", session()->GetNumMessagesReadThisLogon(),
-             static_cast<int>((timer() - timeon) / MINUTES_PER_HOUR_FLOAT));
+  sysoplogfi(false, "Read: %lu   Time on: %lu", session()->GetNumMessagesReadThisLogon(),
+             static_cast<long>((timer() - timeon) / MINUTES_PER_HOUR));
   if (mailcheck) {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {

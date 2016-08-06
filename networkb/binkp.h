@@ -51,6 +51,7 @@ enum class BinkState {
   TRANSFER_FILES,
   WAIT_EOB,
   UNKNOWN,
+  FATAL_ERROR,
   DONE
 };
 
@@ -70,8 +71,6 @@ public:
   typedef std::function<TransferFile*(
       const std::string& network_name, const std::string& filename)>
       received_transfer_file_factory_t;
-  // TODO(rushfan): should we use a unique_ptr for Connection and own the
-  // connection?
   BinkP(Connection* conn,
         BinkConfig* config,
         std::map<const std::string, wwiv::sdk::Callout>& callouts,
@@ -112,6 +111,7 @@ private:
   BinkState TransferFiles();
   BinkState WaitEob();
   BinkState Unknown();
+  BinkState FatalError();
   bool SendFilePacket(TransferFile* file);
   bool SendFileData(TransferFile* file);
   bool HandleFileGetRequest(const std::string& request_line);
