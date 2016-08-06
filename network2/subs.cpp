@@ -323,7 +323,8 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   LOG(INFO) << text;
 
   const string pendfile = create_pend(context.net.dir, false, 2);
-  return write_packet(pendfile, context.net, Packet(nh, {}, text));
+  Packet np(nh, {}, text);
+  return write_packet(pendfile, context.net, np);
 }
 
 

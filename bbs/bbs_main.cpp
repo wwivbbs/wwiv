@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/log.h"
+
 int bbsmain(int argc, char *argv[]);
 
 int main(int argc, char *argv[]) {

@@ -67,6 +67,7 @@
 #include <string>
 #include <sstream>
 
+#define WWIV_INIT_LOGGER() SHARE_EASYLOGGINGPP(wwiv::core::Logger::getLoggerStorage())
 
 namespace wwiv {
 namespace core {
@@ -95,6 +96,8 @@ public:
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
   static void Init(int argc, char** argv);
   static void ExitLogger();
+  static el::base::type::StoragePointer getLoggerStorage();
+
 };
 
 }

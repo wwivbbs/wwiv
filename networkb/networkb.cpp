@@ -75,7 +75,7 @@ static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp() << endl;
 }
 
-INITIALIZE_EASYLOGGINGPP
+//WWIV_INIT_LOGGER()
 int main(int argc, char** argv) {
   try {
     auto start_time = system_clock::now();

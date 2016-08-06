@@ -260,7 +260,6 @@ static bool handle_file(Context& context, const string& name) {
   return true;
 }
 
-INITIALIZE_EASYLOGGINGPP
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {

@@ -19,8 +19,6 @@
 #include "core/log.h"
 #include "gtest/gtest.h"
 
-INITIALIZE_EASYLOGGINGPP
-
 int main(int argc, char* argv[]) {
   testing::InitGoogleTest(&argc, argv);
   wwiv::core::Logger::Init(argc, argv);

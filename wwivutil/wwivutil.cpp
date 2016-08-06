@@ -103,7 +103,6 @@ private:
 }  // namespace wwivutil
 }  // namespace wwiv
 
-INITIALIZE_EASYLOGGINGPP
 int main(int argc, char *argv[]) {
   wwiv::wwivutil::WWIVUtil wwivutil(argc, argv);
   return wwivutil.Main();

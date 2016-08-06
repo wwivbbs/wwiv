@@ -40,6 +40,8 @@ using el::Level;
 using el::Loggers;
 using namespace wwiv::strings;
 
+INITIALIZE_EASYLOGGINGPP
+
 namespace wwiv {
 namespace core {
 
@@ -99,6 +101,10 @@ void Logger::Init(int argc, char** argv) {
   }
 
   exit_filename = filename;
+}
+
+el::base::type::StoragePointer Logger::getLoggerStorage() {
+        return el::Helpers::storage();
 }
 
 }

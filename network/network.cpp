@@ -78,7 +78,6 @@ static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv
   return system(command_line.c_str());
 }
 
-INITIALIZE_EASYLOGGINGPP
 
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);

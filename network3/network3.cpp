@@ -360,7 +360,6 @@ static void ensure_contact_net_entries(const Callout& callout, const string& dir
   }
 }
 
-INITIALIZE_EASYLOGGINGPP
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {

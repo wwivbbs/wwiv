@@ -26,4 +26,4 @@ endif()
 
 
 add_executable(bbs_tests ${test_sources})
-target_link_libraries(bbs_tests bbs_lib core_fixtures gtest_main)
+target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest_main)

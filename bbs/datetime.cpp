@@ -19,6 +19,8 @@
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "bbs/wwiv_windows.h"
 
+#include <cmath>
+
 #include "bbs/datetime.h"
 #include "bbs/wconstants.h"
 #include "core/file.h"
