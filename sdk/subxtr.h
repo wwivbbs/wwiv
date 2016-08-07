@@ -55,7 +55,7 @@ struct xtrasubsnetrec {
  *  nets - vector of network info for sub
  */
 struct xtrasubsrec {
-  long flags;
+  long unused_xtra_flags;
   char desc[61];
   std::vector<xtrasubsnetrec> nets;
 };

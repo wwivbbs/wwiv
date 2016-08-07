@@ -81,8 +81,6 @@ static bool equal(const xtrasubsnetrec& x1, const xtrasubsnetrec& x2) {
 static bool equal(const xtrasubsrec& x1, const xtrasubsrec& x2) {
   if (!IsEquals(x1.desc, x2.desc)) {
     return false;
-  } else if (x1.flags != x2.flags) {
-    return false;
   } else if (x1.nets.size() != x2.nets.size()) {
     return false;
   } else {

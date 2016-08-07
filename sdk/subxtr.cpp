@@ -109,11 +109,6 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
         strncpy(xsubs[curn].desc, line.c_str(), 60);
       }
       break;
-    case '#':                         /* flags */
-      if (curn >= 0) {
-        xsubs[curn].flags = atol(line.c_str());
-      }
-      break;
     case '$':                         /* net info */
       if (curn >= 0) {
         ParseXSubsLine(net_networks, line, xsubs[curn]);
@@ -137,7 +132,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
     int i = 0;
     for (const auto& x : xsubs) {
       if (!x.nets.empty()) {
-        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%lu\n", i, x.desc, x.flags);
+        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%0\n", i, x.desc);
         for (const auto& n : x.nets) {
           fileSubsXtr.WriteFormatted("$%s %s %lu %u %u\n",
             net_networks[n.net_num].name,
