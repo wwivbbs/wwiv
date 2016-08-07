@@ -933,20 +933,17 @@ static bool need_network3(const string& dir) {
 
 
 string BinkP::create_cmdline(int num, int network_number) const {
-  const string net_arg = StrCat(".", network_number);
-  bool need_suffix = config_->network_version() >= 51;
   std::ostringstream ss;
   ss << "network" << num;
   if (config_->network_version() >= 51) {
     // add new flags
     ss << " --v=" << config_->verbose();
   }
-  ss << " ." << network_number;
 
+  ss << " ." << network_number;
   if (num == 3) {
     ss << " Y";
   }
-
   return ss.str();
 }
 
