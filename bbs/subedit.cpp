@@ -43,38 +43,18 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void save_subs() {
-  int nSavedNetNum = session()->net_num();
-
   for (auto& s : session()->subboards) {
+    // In wwiv 5.1 and later, all sub types are alphanumeric.
     s.type = 0;
   }
 
-  {
-    DataFile<subboardrec> subsFile(session()->config()->datadir(), SUBS_DAT,
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
-    if (!subsFile) {
-      bout << "Error writing subs.dat file." << wwiv::endl;
-      pausescr();
-    } else {
-      if (!subsFile.WriteVector(session()->subboards)) {
-        bout << "Error writing subs.dat file ( 2 )." << wwiv::endl;
-        pausescr();
-      }
-    }
+  if (!write_subs(session()->config()->datadir(), session()->subboards)) {
+    bout << "Error writing subs.dat file." << wwiv::endl;
+    pausescr();
   }
 
   // Write out SUBS.XTR since it may have changed in boardedit.
   write_subs_xtr(session()->config()->datadir(), session()->net_networks, session()->xsubs);
-
-  for (int nDelNetNum = 0; nDelNetNum < session()->max_net_num(); nDelNetNum++) {
-    set_net_num(nDelNetNum);
-
-    File::Remove(session()->network_directory(), ALLOW_NET);
-    File::Remove(session()->network_directory(), SUBS_PUB);
-    File::Remove(session()->network_directory(), NNALL_NET);
-  }
-
-  set_net_num(nSavedNetNum);
 }
 
 static string GetAr(subboardrec r, const string& default_value) {

@@ -237,9 +237,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
     namesfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile);
   }
   {
-    subboardrec s1;
-    memset(&s1, 0, sizeof(subboardrec));
-
+    subboardrec s1 = {};
     strcpy(s1.name, "General");
     strcpy(s1.filename, "GENERAL");
     s1.readsl = 10;

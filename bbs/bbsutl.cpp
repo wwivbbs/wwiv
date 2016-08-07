@@ -416,8 +416,8 @@ bool sysop2() {
   return ok;
 }
 
-// Returns 1 if computer type string in *s matches the current user's
-// defined computer type, else returns 0.
+// Returns true if computer type string in *s matches the current user's
+// defined computer type..
 bool checkcomp(const char *computer_type) {
   WWIV_ASSERT(computer_type);
   const string ctype = ctypes(session()->user()->GetComputerType());
