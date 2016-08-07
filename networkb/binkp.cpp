@@ -931,6 +931,25 @@ static bool need_network3(const string& dir) {
     || checkup2(bbsdata_time, dir, CALLOUT_NET);
 }
 
+
+string BinkP::create_cmdline(int num, int network_number) const {
+  const string net_arg = StrCat(".", network_number);
+  bool need_suffix = config_->network_version() >= 51;
+  std::ostringstream ss;
+  ss << "network" << num;
+  if (config_->network_version() >= 51) {
+    // add new flags
+    ss << " --v=" << config_->verbose();
+  }
+  ss << " ." << network_number;
+
+  if (num == 3) {
+    ss << " Y";
+  }
+
+  return ss.str();
+}
+
 void BinkP::process_network_files() const {
   const string network_name = remote_network_name();
   VLOG(1) << "STATE: process_network_files for network: " << network_name;
@@ -940,13 +959,13 @@ void BinkP::process_network_files() const {
   }
   const auto dir = config_->networks()[remote_network_name()].dir;
   if (File::ExistsWildcard(StrCat(dir, "p*.net"))) {
-    System(StrCat("network1 .", network_number));
+    System(create_cmdline(1, network_number));
     if (File::Exists(StrCat(dir, LOCAL_NET))) {
-      System(StrCat("network2 .", network_number));
+      System(create_cmdline(2, network_number));
     }
   }
   if (need_network3(dir)) {
-    System(StrCat("network3 .", network_number, " Y"));
+    System(create_cmdline(3, network_number));
   }
 }
 

@@ -55,18 +55,24 @@ class BinkConfig {
 
   void set_skip_net(bool skip_net) { skip_net_ = skip_net; }
   bool skip_net() const { return skip_net_; }
+  void set_verbose(int verbose) { verbose_ = verbose; }
+  int verbose() const { return verbose_; }
+  void set_network_version(int network_version) { network_version_ = network_version; }
+  int network_version() const { return network_version_; }
 
  private:
   std::map<uint16_t, BinkNodeConfig> node_config_;
   std::string home_dir_;
 
-  uint16_t callout_node_;
+  uint16_t callout_node_ = 0;
   std::string system_name_;
   std::string callout_network_name_;
   std::string sysop_name_;
   std::string gfiles_directory_;
   const wwiv::sdk::Networks networks_;
-  bool skip_net_;
+  bool skip_net_ = false;
+  int verbose_ = 0;
+  int network_version_ = 38;
 };
 
 bool ParseBinkConfigLine(const std::string& line,

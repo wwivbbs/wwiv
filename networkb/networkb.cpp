@@ -47,6 +47,7 @@
 #include "sdk/config.h"
 #include "sdk/contact.h"
 #include "sdk/networks.h"
+#include "sdk/status.h"
 
 using std::cout;
 using std::endl;
@@ -100,12 +101,17 @@ int main(int argc, char** argv) {
     bool skip_net = cmdline.arg("skip_net").as_bool();
     NetworkCommandLine net_cmdline(cmdline);
 
+    StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
+    std::unique_ptr<WStatus> status(sm.GetStatus());
+
     const auto& net = net_cmdline.network();
     const auto& network_name = net_cmdline.network_name();
 
     int expected_remote_node = cmdline.arg("node").as_int();
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
     bink_config.set_skip_net(skip_net);
+    bink_config.set_verbose(cmdline.iarg("v"));
+    bink_config.set_network_version(status->GetNetworkVersion());
     unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
 
