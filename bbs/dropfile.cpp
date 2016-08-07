@@ -509,7 +509,7 @@ const string create_chain_file() {
                         session()->user()->GetSl());
     char szTemporaryLogFileName[MAX_PATH];
     GetTemporaryInstanceLogFileName(szTemporaryLogFileName);
-    file.WriteFormatted("%d\n%d\n%d\n%u\n%10.2f\n%s\n%s\n%s\n",
+    file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n",
                         cs(), so(), okansi(), incom, nsl(), syscfg.gfilesdir, syscfg.datadir, szTemporaryLogFileName);
     if (session()->using_modem) {
       file.WriteFormatted("%d\n", modem_speed);
