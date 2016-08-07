@@ -18,7 +18,6 @@
 #ifndef __INCLUDED_CORE_LOG_H__
 #define __INCLUDED_CORE_LOG_H__
 
-#define ELPP_WINSOCK2
 #ifdef _WIN32
 
 #ifdef MOUSE_MOVED
@@ -59,6 +58,8 @@
 
 #define ELPP_NO_DEFAULT_LOG_FILE
 #define ELPP_CUSTOM_COUT std::cerr
+#define ELPP_WINSOCK2
+#define ELPP_DISABLE_DEFAULT_CRASH_HANDLING
 
 #include "deps/easylogging/easylogging++.h"
 
