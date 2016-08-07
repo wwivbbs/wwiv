@@ -639,16 +639,7 @@ void WSession::read_nintern() {
 
 bool WSession::read_subs() {
   subboards.clear();
-
-  DataFile<subboardrec> file(config()->datadir(), SUBS_DAT);
-  if (!file) {
-    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
-    return false;
-  }
-  if (!file.ReadVector(subboards, syscfg.max_subs)) {
-    return false;
-  }
-
+  subboards = wwiv::sdk::read_subs(config()->datadir());
   // If we already read subs.dat that's sufficient to return true.
   // since subs.xtr is created as-needed once as sub is created.
   read_subs_xtr(config()->datadir(), net_networks, subboards, xsubs);

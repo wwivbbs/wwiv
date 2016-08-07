@@ -164,5 +164,14 @@ vector<subboardrec> read_subs(const string &datadir) {
   return subboards;
 }
 
+bool write_subs(const string &datadir, const vector<subboardrec>& subboards) {
+  DataFile<subboardrec> subsfile(datadir, SUBS_DAT,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+  if (!subsfile) {
+    return false;
+  }
+  return subsfile.WriteVector(subboards);
+}
+
 }
 }

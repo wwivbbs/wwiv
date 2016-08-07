@@ -45,6 +45,7 @@
 #include "init/wwivinit.h"
 #include "init/subacc.h"
 #include "sdk/filenames.h"
+#include "sdk/subxtr.h"
 
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
@@ -79,24 +80,6 @@ static bool load_networks_dat(vector<net_networks_rec>& net_networks) {
   return true;
 }
 
-static bool read_subs(CursesWindow* window, vector<subboardrec>& subboards) {
-  subboards.clear();
-  DataFile<subboardrec> subsfile(syscfg.datadir, SUBS_DAT);
-  if (subsfile) {
-    return subsfile.ReadVector(subboards);
-  }
-  messagebox(window, StrCat(subsfile.file().full_pathname(), " NOT FOUND."));
-  return false;
-}
-
-static void write_subs(const vector<subboardrec>& subboards) {
-  DataFile<subboardrec> subsfile(syscfg.datadir, SUBS_DAT,
-    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
-  if (subsfile) {
-    subsfile.WriteVector(subboards);
-  }
-}
-
 static bool save_networks_dat(const vector<net_networks_rec>& net_networks) {
   vector<net_networks_rec_disk> disk;
 
@@ -121,7 +104,8 @@ static bool del_net(
     CursesWindow* window, vector<subboardrec>& subboards, 
     vector<net_networks_rec>& net_networks, int nn) {
 
-  if (!read_subs(window, subboards)) {
+  subboards = wwiv::sdk::read_subs(syscfg.datadir);
+  if (subboards.empty()) {
     return false;
   }
 
@@ -151,12 +135,12 @@ static bool del_net(
     }
   }
 
-  write_subs(subboards);
+  wwiv::sdk::write_subs(syscfg.datadir, subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
-      mailrec m;
+      mailrec m = {};
       emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
       emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
@@ -286,7 +270,8 @@ static bool insert_net(
     CursesWindow* window, vector<subboardrec>& subboards, 
     vector<net_networks_rec>& net_networks,
     int nn) {
-  if (!read_subs(window, subboards)) {
+  subboards = wwiv::sdk::read_subs(syscfg.datadir);
+  if (subboards.empty()) {
     return false;
   }
 
@@ -313,7 +298,7 @@ static bool insert_net(
     }
   }
 
-  write_subs(subboards);
+  wwiv::sdk::write_subs(syscfg.datadir, subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
