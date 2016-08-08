@@ -120,7 +120,6 @@ string net_info_minor_type_name(int typ) {
 }
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory) {
-  cmdline.add_argument({"network_number", "Network number to use. (Deprecated, use --net).", "0"});
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
   cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
   cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
@@ -137,12 +136,7 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
     LOG(ERROR) << "Unable to load networks.";
     initialized_ = false;
   }
-  network_number_ = cmdline.arg("network_number").as_int();
-  auto net_num = cmdline.arg("net").as_int();
-  if (network_number_ == 0 && net_num > 0) {
-    // Temporarily allow --net as an alias for network_number
-    network_number_ = net_num;
-  }
+  network_number_ = cmdline.arg("net").as_int();
   network_name_ = networks_[network_number_].name;
   StringLowerCase(&network_name_);
 

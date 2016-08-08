@@ -48,7 +48,7 @@ namespace wwivutil {
 
 class WWIVUtil {
 public:
-  WWIVUtil(int argc, char *argv[]) : cmdline_(argc, argv, "network_number") {
+  WWIVUtil(int argc, char *argv[]) : cmdline_(argc, argv, "net") {
     Logger::Init(argc, argv);
     cmdline_.AddStandardArgs();
   }

@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
     Logger::Init(argc, argv);
     wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
-    CommandLine cmdline(argc, argv, "network_number");
+    CommandLine cmdline(argc, argv, "net");
     cmdline.AddStandardArgs();
     AddStandardNetworkArgs(cmdline, File::current_directory());
     RegisterHelpCommands(cmdline);

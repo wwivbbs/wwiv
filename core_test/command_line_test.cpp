@@ -82,25 +82,25 @@ TEST_F(CommandLineTest, Several_Commands) {
 }
 
 TEST_F(CommandLineTest, SlashArg) {
-  CommandLine cmdline({"foo.exe", "/n500", ".1"}, "network_number");
+  CommandLine cmdline({"foo.exe", "/n500", ".1"}, "net");
   cmdline.add_argument({"node", 'n', "node to dial", "0"});
-  cmdline.add_argument({"network_number", "network number to use.", "0"});
+  cmdline.add_argument({"net", "network number to use.", "0"});
 
   ASSERT_TRUE(cmdline.Parse());
   EXPECT_EQ(500, cmdline.arg("node").as_int());
 }
 
 TEST_F(CommandLineTest, DotArg) {
-  CommandLine cmdline({"foo.exe", "/n500", ".123"}, "network_number");
+  CommandLine cmdline({"foo.exe", "/n500", ".123"}, "net");
   cmdline.add_argument({"node", 'n', "node to dial", "0"});
-  cmdline.add_argument({"network_number", "network number to use.", "0"});
+  cmdline.add_argument({"net", "network number to use.", "0"});
 
   ASSERT_TRUE(cmdline.Parse());
-  EXPECT_EQ(123, cmdline.arg("network_number").as_int());
+  EXPECT_EQ(123, cmdline.arg("net").as_int());
 }
 
 TEST_F(CommandLineTest, Help) {
-  CommandLine cmdline({"foo.exe", "/?"}, "network_number");
+  CommandLine cmdline({"foo.exe", "/?"}, "net");
   cmdline.add_argument(BooleanCommandLineArgument("help", '?', "display help", false));
 
   ASSERT_TRUE(cmdline.Parse());
