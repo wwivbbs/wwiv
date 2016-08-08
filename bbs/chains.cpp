@@ -149,10 +149,9 @@ void run_chain(int nChainum) {
       regFile.WriteVector(session()->chains_reg);
     }
   }
-  const string com_speed_str = StringPrintf("%d", (com_speed == 1) ? 115200 : com_speed);
-  const string com_port_num_str = StringPrintf("%d", syscfgovr.primaryport);
-  const string modem_speed_str = StringPrintf("%d", modem_speed);
-  const string chainCmdLine = stuff_in(session()->chains[nChainum].filename, create_chain_file(), com_speed_str, com_port_num_str, modem_speed_str, "");
+  const string chainCmdLine = stuff_in(
+    session()->chains[nChainum].filename, create_chain_file(), 
+    std::to_string(com_speed), std::to_string(syscfgovr.primaryport), std::to_string(modem_speed), "");
 
   sysoplogf("!Ran \"%s\"", session()->chains[nChainum].description);
   session()->user()->SetNumChainsRun(session()->user()->GetNumChainsRun() + 1);

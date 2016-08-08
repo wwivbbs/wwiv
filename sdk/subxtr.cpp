@@ -127,37 +127,37 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
   File subs_xtr_old(datadir, subs_xtr_old_name);
   File::Move(subs_xtr.full_pathname(), subs_xtr_old.full_pathname());
 
-  TextFile fileSubsXtr(datadir, SUBS_XTR, "w");
-  if (fileSubsXtr.IsOpen()) {
-    int i = 0;
-    for (const auto& x : xsubs) {
-      if (!x.nets.empty()) {
-        fileSubsXtr.WriteFormatted("!%u\n@%s\n#%0\n", i, x.desc);
-        for (const auto& n : x.nets) {
-          fileSubsXtr.WriteFormatted("$%s %s %lu %u %u\n",
-            net_networks[n.net_num].name,
-            n.stype,
-            n.flags,
-            n.host,
-            n.category);
-        }
+  TextFile f(datadir, SUBS_XTR, "w");
+  if (!f.IsOpen()) {
+    return false;
+  }
+
+  int i = 0;
+  for (const auto& x : xsubs) {
+    if (!x.nets.empty()) {
+      f.WriteFormatted("!%u\n@%s\n#%0\n", i, x.desc);
+      for (const auto& n : x.nets) {
+        f.WriteFormatted("$%s %s %lu %u %u\n",
+          net_networks[n.net_num].name,
+          n.stype,
+          n.flags,
+          n.host,
+          n.category);
       }
-      i++;
     }
-    fileSubsXtr.Close();
+    i++;
   }
   return true;
 }
 
 vector<subboardrec> read_subs(const string &datadir) {
-  std::vector<subboardrec> subboards;
-
   DataFile<subboardrec> file(datadir, SUBS_DAT);
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
     //LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return{};
   }
+  std::vector<subboardrec> subboards;
   if (!file.ReadVector(subboards)) {
     return{};
   }

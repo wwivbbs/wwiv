@@ -51,7 +51,7 @@ const unsigned int GetTimeLeft();
 //  %E       door32.sys full pathname          "C:\wwiv\temp\door32.sys"
 //  %H       Socket Handle                     "1234"
 //  %K       gfiles comment file for archives  "c:\wwiv\gfiles\comment.txt"
-//  %M       Modem baud rate                   "14400"
+//  %M       Modem baud rate                   "38400"
 //  %N       Instance number                   "1"
 //  %O       pcboard full pathname             "c:\wwiv\temp\pcboard.sys"
 //  %P       Com port number                   "1"
@@ -128,7 +128,7 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << create_filename(CHAINFILE_DOOR);
         break;
       case 'S':
-        os << ((com_speed == 1) ? 115200 : com_speed);
+        os << com_speed;
         break;
       case 'T':
         os << GetTimeLeft();

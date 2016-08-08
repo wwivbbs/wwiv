@@ -638,7 +638,6 @@ void WSession::read_nintern() {
 }
 
 bool WSession::read_subs() {
-  subboards.clear();
   subboards = wwiv::sdk::read_subs(config()->datadir());
   // If we already read subs.dat that's sufficient to return true.
   // since subs.xtr is created as-needed once as sub is created.

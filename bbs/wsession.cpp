@@ -598,7 +598,7 @@ void WSession::GetCaller() {
   int lokb = doWFCEvents();
 
   if (lokb) {
-    modem_speed = 14400;
+    modem_speed = 38400;
   }
 
   using_modem = incom;

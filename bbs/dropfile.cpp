@@ -74,65 +74,56 @@ struct pcboard_sys_rec {
   // end PCB 14.5 additions
 };
 
-// Local functions
-int GetDoor32Emulation();
-int GetDoor32CommType();
-void GetNamePartForDropFile(bool lastName, char *name);
-void create_drop_files();
-string GetComSpeedInDropfileFormat(unsigned long lComSpeed);
+static constexpr int NULL_HANDLE = 0;
+
+static int GetDoor32CommType() {
+  if (!session()->using_modem) {
+    return 0;
+  }
+#ifdef _WIN32
+  return (session()->remoteIO()->GetHandle() == NULL_HANDLE) ? 1 : 2;
+#else
+  return 0;
+#endif
+}
+
+static int GetDoor32Emulation() {
+  return (okansi()) ? 1 : 0;
+}
 
 const string create_filename(int nDropFileType) {
-  std::ostringstream os;
-  os << syscfgovr.tempdir;
   switch (nDropFileType) {
   case CHAINFILE_CHAIN:
-    os << "chain.txt";
-    break;
+    return "chain.txt";
   case CHAINFILE_DORINFO:
-    os << "dorinfo1.def";
-    break;
+    return "dorinfo1.def";
   case CHAINFILE_PCBOARD:
-    os << "pcboard.sys";
-    break;
+    return "pcboard.sys";
   case CHAINFILE_CALLINFO:
-    os << "callinfo.bbs";
-    break;
+    return "callinfo.bbs";
   case CHAINFILE_DOOR:
-    os << "door.sys";
-    break;
+    return "door.sys";
   case CHAINFILE_DOOR32:
-    os << "door32.sys";
-    break;
+    return "door32.sys";
   default:
     // Default to CHAIN.TXT since this is the native WWIV dormat
-    os << "chain.txt";
-    break;
+    return "chain.txt";
   }
-  return string(os.str());
 }
 
 /**
  * Returns first or last name from string (s) back into s
  */
-void GetNamePartForDropFile(bool lastName, char *name) {
+static void GetNamePartForDropFile(bool lastName, char *name) {
   if (!lastName) {
     char *ss = strchr(name, ' ');
     if (ss) {
-      name[ strlen(name) - strlen(ss) ] = '\0';
+      name[strlen(name) - strlen(ss)] = '\0';
     }
   } else {
     char *ss = strrchr(name, ' ');
     sprintf(name, "%s", (ss) ? ++ss : "");
   }
-}
-
-string GetComSpeedInDropfileFormat(unsigned long lComSpeed) {
-  if (lComSpeed == 1 || lComSpeed == 49664) {
-    lComSpeed = 115200;
-  }
-  std::ostringstream os;
-  os << lComSpeed;
-  return string(os.str());
 }
 
 long GetMinutesRemainingForDropFile() {
@@ -201,7 +192,7 @@ void CreatePCBoardSysDropFile() {
       pcb.ansi = '0';
     }
     pcb.nodechat = 32;
-    string com_speed_str = GetComSpeedInDropfileFormat(com_speed);
+    string com_speed_str = std::to_string(com_speed);
     sprintf(pcb.openbps, "%-5.5s", com_speed_str.c_str());
     if (!incom) {
       memcpy(pcb.connectbps, "Local", 5);
@@ -304,8 +295,8 @@ void CreateCallInfoBbsDropFile() {
     szTemp[2] = '\0';
     memmove(&(szDate[ 8 - strlen(szTemp) ]), &(szTemp[0]), strlen(szTemp));
     file.WriteFormatted("%s\n", szDate);
-    string cspeed = GetComSpeedInDropfileFormat(com_speed);
-    file.WriteFormatted("%s\n", (incom) ? cspeed.c_str() : "14400");
+    string cspeed = std::to_string(com_speed);
+    file.WriteFormatted("%s\n", (incom) ? cspeed.c_str() : "38400");
     file.Close();
   }
 }
@@ -352,7 +343,7 @@ void CreateDoor32SysDropFile() {
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n", GetDoor32CommType());
     file.WriteFormatted("%u\n", GetDoorHandle());
-    string cspeed = GetComSpeedInDropfileFormat(com_speed);
+    string cspeed = std::to_string(com_speed);
     file.WriteFormatted("%s\n", cspeed.c_str());
     file.WriteFormatted("WWIV %s\n", wwiv_version);
     file.WriteFormatted("%d\n", session()->usernum);
@@ -374,13 +365,13 @@ void CreateDoorSysDropFile() {
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     char szLine[255];
-    string cspeed = GetComSpeedInDropfileFormat(com_speed);
+    string cspeed = std::to_string(com_speed);
     sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (session()->using_modem) ? syscfgovr.primaryport : 0,
             cspeed.c_str(),
             '8',
             session()->instance_number(),                       // node
-            (session()->using_modem) ? modem_speed : 14400,
+            (session()->using_modem) ? modem_speed : 38400,
             'Y',                            // screen display
             'N',              // log to printer
             'N',                            // page bell
@@ -455,7 +446,7 @@ void CreateDoorSysDropFile() {
   }
 }
 
-void create_drop_files() {
+static void create_drop_files() {
   CreateDoorInfoDropFile();
   CreatePCBoardSysDropFile();
   CreateCallInfoBbsDropFile();
@@ -474,11 +465,7 @@ const string create_chain_file() {
     syscfgovr.primaryport = 1;
   }
 
-  if (com_speed == 1 || com_speed == 49664) {
-    cspeed = "115200";
-  } else {
-    cspeed = std::to_string(com_speed);
-  }
+  cspeed = std::to_string(com_speed);
 
   create_drop_files();
   long l = static_cast<long>(timeon);
@@ -535,22 +522,6 @@ const string create_chain_file() {
   }
   syscfgovr.primaryport = nSaveComPortNum;
 
-  return string(fileName);
+  return fileName;
 }
 
-static const int NULL_HANDLE = 0;
-
-int GetDoor32CommType() {
-  if (!session()->using_modem) {
-    return 0;
-  }
-#ifdef _WIN32
-  return (session()->remoteIO()->GetHandle() == NULL_HANDLE) ? 1 : 2;
-#else
-  return 0;
-#endif
-}
-
-int GetDoor32Emulation() {
-  return (okansi()) ? 1 : 0;
-}

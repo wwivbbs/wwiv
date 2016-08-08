@@ -103,9 +103,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   //stripfn_inplace(szFileName);
   int nEffectiveXferSpeed = std::min<int>(com_speed, 57600);
   sprintf(sx1, "%d", nEffectiveXferSpeed);
-  if (com_speed == 1) {
-    strcpy(sx1, "115200");
-  }
+  strcpy(sx1, "115200");
   // Use this since fdsz doesn't like 115200
   nEffectiveXferSpeed = std::min<int>(modem_speed, 57600);
   sprintf(sx3, "%d", nEffectiveXferSpeed);
