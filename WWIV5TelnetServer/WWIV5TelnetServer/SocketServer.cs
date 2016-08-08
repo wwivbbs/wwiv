@@ -82,7 +82,7 @@ namespace WWIV5TelnetServer
 
             while (true)
             {
-                OnStatusMessageUpdated("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
+                Console.WriteLine("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
                 try
                 {
                     Socket socket = server.Accept();
