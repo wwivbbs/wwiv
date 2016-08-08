@@ -47,6 +47,7 @@ constexpr int INI_STR_NET_CLEANUP_CMD1 = 25;
 constexpr int INI_STR_NET_CLEANUP_CMD2 = 26;
 constexpr int INI_STR_NET_CALLOUT = 27;
 constexpr int INI_STR_FIDO_PROCESS = 28;
+constexpr int INI_STR_NET_PROCESS = 29;
 
 //---SYSTEM SETTINGS--
 constexpr int INI_STR_FORCE_FBACK = 33;
@@ -164,7 +165,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "NET_CLEANUP_CMD2",
   "NET_CALLOUT",
   "FIDO_PROCESS",
-  "",
+  "NET_PROCESS",
   "",                         // 30
   "",
   "//---SYSTEM SETTINGS---*",

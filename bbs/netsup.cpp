@@ -154,7 +154,8 @@ static int cleanup_net1() {
           bFound = fnd.next();
         }
 
-        if (session()->instance_number() == 1) {
+        bool supports_process_net = session()->HasConfigFlag(OP_FLAGS_NET_PROCESS);
+        if (supports_process_net) {
           if (!ok) {
             WFindFile fnd_net;
             ok = fnd_net.open(StrCat(session()->network_directory(), "p*.net"), 0);

@@ -159,6 +159,8 @@ MSG_COLOR              = 2                  ; for color msgs
 ;NET_CLEANUP_CMD2   =                       ; cleanup event 2
 NET_CALLOUT        = Y                      ; allow net callouts this instance
 FIDO_PROCESS       = N                      ; process fido packets this instance
+NET_PROCESS        = Y                      ; allow processing of network packets
+                                            ; on this instance
 ;
 ;=============================================================================
 ;                              SYSTEM FLAGS

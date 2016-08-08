@@ -237,6 +237,7 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_NET_CALLOUT, false, OP_FLAGS_NET_CALLOUT},
   {INI_STR_WFC_SCREEN, false, OP_FLAGS_WFC_SCREEN},
   {INI_STR_FIDO_PROCESS, false, OP_FLAGS_FIDO_PROCESS},
+  {INI_STR_NET_PROCESS, false, OP_FLAGS_NET_PROCESS},
   {INI_STR_USER_REGISTRATION, false, OP_FLAGS_USER_REGISTRATION},
   {INI_STR_MSG_TAG, false, OP_FLAGS_MSG_TAG},
   {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
@@ -291,6 +292,10 @@ void WSession::ReadINIFile(IniFile& ini) {
 
   // put in default WSession::flags
   SetConfigFlags(OP_FLAGS_FIDO_PROCESS);
+  if (instance_number() == 1) {
+    // By default allow node1 to process wwivnet packets.
+    SetConfigFlags(OP_FLAGS_NET_PROCESS);
+  }
 
   if (ok_modem_stuff) {
     SetConfigFlag(OP_FLAGS_NET_CALLOUT);

@@ -1001,8 +1001,8 @@ struct filestatusrec {
 #define OP_FLAGS_EXTRA_COLOR              0x02000000
 #define OP_FLAGS_USE_FORCESCAN            0x04000000
 #define OP_FLAGS_NEWUSER_MIN              0x08000000
-#define OP_FLAGS_UNUSED_2                 0x10000000
-#define OP_FLAGS_UNUSED_3                 0x20000000
+#define OP_FLAGS_NET_PROCESS              0x10000000
+#define OP_FLAGS_UNUSED_2                 0x20000000
 #define OP_FLAGS_UNUSED_4                 0x40000000
 #define OP_FLAGS_ADV_ASV                  0x80000000
 
