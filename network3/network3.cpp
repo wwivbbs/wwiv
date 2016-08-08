@@ -37,6 +37,7 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
+#include "core/version.h"
 #include "core/wfndfile.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
@@ -69,8 +70,6 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::os;
-
-static const int NETWORK_VERSION = 51;
 
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
@@ -317,12 +316,12 @@ static void update_net_ver_status_dat(const string& datadir) {
   if (!file.Read(0, &status)) {
     return;
   }
-  if (status.net_version == NETWORK_VERSION) {
+  if (status.net_version == wwiv_net_version) {
     return;
   }
   status.net_bias = 0;
   status.net_req_free = 0;
-  status.net_version = NETWORK_VERSION;
+  status.net_version = wwiv_net_version;
   file.Write(0, &status);
 }
 

@@ -859,6 +859,7 @@ void BinkP::Run() {
     process_network_files();
   }
 
+
   // Log to net.log
   auto diff = end_time - start_time;
   auto sec = duration_cast<seconds>(diff);
@@ -908,7 +909,7 @@ static bool checkup2(const time_t tFileTime, string dir, string filename) {
   return true;
 }
 
-static bool need_network3(const string& dir) {
+static bool need_network3(const string& dir, int network_version) {
   if (!File::Exists(dir, BBSLIST_NET)) {
     return false;
   }
@@ -917,6 +918,11 @@ static bool need_network3(const string& dir) {
   }
   if (!File::Exists(dir, CALLOUT_NET)) {
     return false;
+  }
+
+  if (network_version != wwiv_net_version) {
+    // always need network3 if the versions do not match.
+    return true;
   }
   File bbsdataNet(dir, BBSDATA_NET);
   if (!bbsdataNet.Open(File::modeReadOnly)) {
@@ -961,7 +967,7 @@ void BinkP::process_network_files() const {
       System(create_cmdline(2, network_number));
     }
   }
-  if (need_network3(dir)) {
+  if (need_network3(dir, config_->network_version())) {
     System(create_cmdline(3, network_number));
   }
 }
