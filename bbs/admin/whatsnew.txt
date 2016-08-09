@@ -39,7 +39,7 @@ What's New in WWIV 5.1 (2016)
   way (using a string version for numeric types).  Otherwise just don't
   use numeric named subs anymore.
   https://github.com/wwivbbs/wwiv/pull/784/files
-*
+*   
 
 What's New in WWIV 5.1 (2015)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

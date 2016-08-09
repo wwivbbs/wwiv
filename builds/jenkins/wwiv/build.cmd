@@ -102,6 +102,9 @@ copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\Release\WWIVServer
 copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %STAGE_DIR%\wwiv-update.exe || exit /b
 copy /v/y %WORKSPACE%\Release\init.exe %STAGE_DIR%\init.exe || exit /b
 copy /v/y %WORKSPACE%\Release\network.exe %STAGE_DIR%\network.exe || exit /b
+copy /v/y %WORKSPACE%\Release\network1.exe %STAGE_DIR%\network1.exe || exit /b
+copy /v/y %WORKSPACE%\Release\network2.exe %STAGE_DIR%\network2.exe || exit /b
+copy /v/y %WORKSPACE%\Release\network3.exe %STAGE_DIR%\network3.exe || exit /b
 copy /v/y %WORKSPACE%\Release\networkb.exe %STAGE_DIR%\networkb.exe || exit /b
 copy /v/y %WORKSPACE%\Release\wwivutil.exe %STAGE_DIR%\wwivutil.exe || exit /b
 copy /v/y %WORKSPACE%\bbs\admin\* %STAGE_DIR%\
