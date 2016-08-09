@@ -135,7 +135,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
   int i = 0;
   for (const auto& x : xsubs) {
     if (!x.nets.empty()) {
-      f.WriteFormatted("!%u\n@%s\n#%0\n", i, x.desc);
+      f.WriteFormatted("!%u\n@%s\n#0\n", i, x.desc);
       for (const auto& n : x.nets) {
         f.WriteFormatted("$%s %s %lu %u %u\n",
           net_networks[n.net_num].name,
