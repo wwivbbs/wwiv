@@ -192,7 +192,7 @@ static bool ParseBbsListNetFile(
           node_config.forsys = node_config.sysnum;
         }
       } else {
-        LOG(INFO) << "no path to " << node_config.sysnum;
+        VLOG(1) << "no path to " << node_config.sysnum;
         node_config.numhops = 10000;
         node_config.xx.cost = 10000;
         node_config.forsys = std::numeric_limits<uint16_t>::max();
