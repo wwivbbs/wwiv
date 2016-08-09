@@ -44,6 +44,9 @@ cp  ${WORKSPACE}/networkb/networkb \
     ${WORKSPACE}/init/init \
     ${WORKSPACE}/nodemgr/nodemgr \
     ${WORKSPACE}/network/network \
+    ${WORKSPACE}/network1/network1 \
+    ${WORKSPACE}/network2/network2 \
+    ${WORKSPACE}/network3/network3 \
     ${WORKSPACE}/wwivutil/wwivutil \
     ${WORKSPACE}/release
 
