@@ -173,11 +173,12 @@ static bool ParseBbsListNetFile(
       float cost = graph.cost_to(node_config.sysnum);
       if (!std::isfinite(cost)) {
         if(VLOG_IS_ON(2)) {
-          VLOG(1) << "high cost " << cost << " to " << node_config.sysnum;
-          std::clog << "Path to " << node_config.sysnum << ": ";
-          std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(std::clog, " "));
-          std::clog << std::endl;
-          graph.DumpCosts();
+          std::ostringstream ss; 
+          VLOG(2) << "high cost " << cost << " to " << node_config.sysnum;
+          ss << "Path to " << node_config.sysnum << ": ";
+          std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(ss, " "));
+          VLOG(2) << ss.str();
+          VLOG(2) << graph.DumpCosts();
         }
       }
       if (graph.has_node(node_config.sysnum) && path.front() == net_node_number) {
@@ -192,7 +193,7 @@ static bool ParseBbsListNetFile(
           node_config.forsys = node_config.sysnum;
         }
       } else {
-        VLOG(1) << "no path to " << node_config.sysnum;
+        VLOG(2) << "no path to " << node_config.sysnum;
         node_config.numhops = 10000;
         node_config.xx.cost = 10000;
         node_config.forsys = std::numeric_limits<uint16_t>::max();
