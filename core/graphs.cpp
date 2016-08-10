@@ -93,7 +93,6 @@ std::string Graph::DumpCosts() const {
       ss << i << "[" << cost_[i] << "] ";
     }
   }
-  ss << std::endl;
   return ss.str();
 }
 

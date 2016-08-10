@@ -177,7 +177,6 @@ static bool ParseBbsListNetFile(
           VLOG(2) << "high cost " << cost << " to " << node_config.sysnum;
           ss << "Path to " << node_config.sysnum << ": ";
           std::copy(path.begin(), path.end(), std::ostream_iterator<uint16_t>(ss, " "));
-          ss << std::endl;
           VLOG(2) << ss.str();
           VLOG(2) << graph.DumpCosts();
         }
