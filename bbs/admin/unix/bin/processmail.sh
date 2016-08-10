@@ -16,6 +16,6 @@ cd ${WWIV_DIR}
 # I'd like to eventually be able to loop over the list of 
 # nets from init data.  Currently it has to be done manually
 
-# Calls out to @1 of WWIVnet
-./network --network=wwivnet --node=1 --bbsdir=${WWIV_DIR}
+# Calls out to @1 of WWIVnet (assuming your first network is 0)
+./network --net=0 --node=1 --bbsdir=${WWIV_DIR}
 
