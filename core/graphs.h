@@ -57,7 +57,7 @@ public:
   bool has_node(uint16_t source);
   std::list<uint16_t> shortest_path_to(uint16_t destination);
   float cost_to(uint16_t destination);
-  void DumpCosts() const;
+  std::string DumpCosts() const;
   int num_hops_to(uint16_t destination) { 
     std::list<uint16_t> path = shortest_path_to(destination);
     if (path.empty()) {

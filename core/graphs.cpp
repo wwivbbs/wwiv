@@ -83,15 +83,17 @@ float Graph::cost_to(uint16_t destination) {
 }
 
 
-void Graph::DumpCosts() const {
-  std::clog << "costs_: ";
+std::string Graph::DumpCosts() const {
+  std::ostringstream ss;
+  ss << "costs_: ";
   for (int i = 0; i < std::numeric_limits<uint16_t>::max(); i++) {
     float cost = cost_[i];
     if (std::isfinite(cost)) {
-      std::clog << i << "[" << cost_[i] << "] ";
+      ss << i << "[" << cost_[i] << "] ";
     }
   }
-  std::clog << std::endl;
+  ss << std::endl;
+  return ss.str();
 }
 
 
