@@ -23,6 +23,7 @@
 #include <cstdint>
 #include <list>
 #include <string>
+#include <sstream>
 #include <vector>
 
 namespace wwiv {

@@ -12,6 +12,7 @@
 #include <utility>
 #include <algorithm> 
 #include <iterator>
+#include <sstream>
 
 namespace wwiv {
 namespace graphs {
