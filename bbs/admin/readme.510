@@ -20,14 +20,14 @@ The command line parameters have changed quite a bit, I suggest running
 So far, WWIV 5.1 is still fully compatable with your existing WWIV 4.30
 and 5.0 installations (Just drop it in and go).
 
-Run WWIV5TelnetServer.exe and then select the menu Edit > Preferences and setup
+Run WWIVServer.exe and then select the menu Edit > Preferences and setup
 the information for your configuration (paths, and the starting and ending
 node numbers to use for inbound telnet). Then choose File > Start Server.
-Now the WWIV5TelnetServer (WTS) is listening on a socket and ready to spawn 
+Now the WWIV5Server is listening on a socket and ready to spawn 
 instances of WWIV.  You do not need to keep multiple copies of WWIV running
 at all times, as the WTS will spawn them as required.
 
-Full documentation is avalable online: https://wwivbbs.readthedocs.org
+Full documentation is avalable online: http://docs.wwivbbs.org
 
 *** Be sure to read WHATSNEW.TXT for a list of all the new major features and
 other changes that have happened since 5.0. ***
@@ -40,7 +40,7 @@ DEVELOPMENT INFORMATION
 
     WWIV is compiled with the following compilers:
         MS Visual C++ 2015 Community Edition.
-        GCC 4.9 on Linux
+        GCC 4.9 on Debian8 Linux
 
     I recommend using MSVC 2015 Community Edition on Windows.
     It is available for free.
