@@ -1,7 +1,7 @@
 @echo off
 cls
 ECHO.
-ECHO                     WWIV v5.00 Installation Batch
+ECHO                     WWIV v5.1 Installation Batch
 ECHO.
 ECHO    IT IS HIGHLY RECOMMENDED THAT YOU MAKE A COMPLETE BACKUP OF YOUR
 ECHO          DATA PRIOR TO INSTALLING AND RUNNNING THIS SOFTWARE.
@@ -17,7 +17,7 @@ rem ******************************* run INIT to convert data files to
 rem ******************************* v5.00 format
 ECHO Press Control-C to abort
 pause
-init.exe ,1
+init.exe
 goto CLOSE
 
 rem Exit Batch file
