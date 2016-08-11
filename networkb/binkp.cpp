@@ -922,6 +922,8 @@ static bool need_network3(const string& dir, int network_version) {
 
   if (network_version != wwiv_net_version) {
     // always need network3 if the versions do not match.
+    LOG(INFO) << "Need to run network3 since current network_version: "
+      << network_version << " != our network_version: " << wwiv_net_version;
     return true;
   }
   File bbsdataNet(dir, BBSDATA_NET);

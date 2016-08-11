@@ -403,6 +403,7 @@ int main(int argc, char** argv) {
 
     auto nc = get_network_cordinator(b);
     bool is_nc = (net.sysnum == nc);
+    LOG(INFO) << "I am the nc, my node # is @" << net.sysnum;
 
     vector<net_system_list_rec> bbsdata_data;
     for (const auto& entry : b.node_config()) {
