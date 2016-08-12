@@ -53,6 +53,7 @@ public:
 class WWIVEmail: private Type2Text {
 public:
   WWIVEmail(
+      const std::string& root_directory,
       const std::string& data_filename, const std::string& text_filename,
       int max_net_num);
   virtual ~WWIVEmail();
@@ -63,6 +64,7 @@ public:
 
 private:
   bool add_email(const mailrec& m);
+  const std::string root_directory_;
   const std::string data_filename_;
   bool open_ = false;
   const int max_net_num_;
