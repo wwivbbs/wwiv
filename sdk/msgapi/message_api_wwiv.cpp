@@ -149,7 +149,7 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
     return nullptr;
   }
 
-  return new WWIVEmail(datafile.full_pathname(), textfile.full_pathname(), net_networks_.size());
+  return new WWIVEmail(root_directory_, datafile.full_pathname(), textfile.full_pathname(), net_networks_.size());
 }
 
 }  // namespace msgapi

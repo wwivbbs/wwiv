@@ -24,6 +24,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "bbs/subacc.h"
@@ -50,8 +51,9 @@ constexpr char CD = 4;
 constexpr char CZ = 26;
 
 WWIVEmail::WWIVEmail(
+  const std::string& root_directory,
   const std::string& data_filename, const std::string& text_filename, int max_net_num)
-  : Type2Text(text_filename), data_filename_(data_filename),
+  : Type2Text(text_filename), root_directory_(root_directory), data_filename_(data_filename),
     max_net_num_(max_net_num) {
   DataFile<mailrec> data(data_filename_, File::modeBinary | File::modeReadOnly);
   open_ = data.file().Exists();
@@ -66,6 +68,32 @@ bool WWIVEmail::Close() {
   return true;
 }
 
+static bool increment_email_counters(const string& root_directory, uint16_t email_usernum) {
+  statusrec status{};
+  uint32_t next_qscan = 0;
+  Config config(root_directory);
+  if (!config.IsInitialized()) {
+    LOG(ERROR) << "Unable to load CONFIG.DAT.";
+    return false;
+  }
+  DataFile<statusrec> file(config.datadir(), STATUS_DAT,
+    File::modeBinary | File::modeReadWrite);
+  if (!file) {
+    return false;
+  }
+  if (!file.Read(0, &status)) {
+    return false;
+  }
+  if (email_usernum == 1) {
+    ++status.fbacktoday;
+  } else {
+    ++status.emailtoday;
+  }
+  if (!file.Write(0, &status)) {
+    return false;
+  }
+  return true;
+}
 
 bool WWIVEmail::AddMessage(const EmailData& data) {
   mailrec m = {};
@@ -87,6 +115,7 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
   }
 
   savefile(data.text, &m.msg);
+  increment_email_counters(root_directory_, m.touser);
   return add_email(m);
 }
 

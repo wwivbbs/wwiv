@@ -264,12 +264,12 @@ WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
   return msg->release_text();
 }
 
-static uint32_t next_qscan_value(const string& bbsdir) {
+static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
   statusrec status{};
   uint32_t next_qscan = 0;
   Config config(bbsdir);
   if (!config.IsInitialized()) {
-    // LOG(ERROR) << "Unable to load CONFIG.DAT.";
+    LOG(ERROR) << "Unable to load CONFIG.DAT.";
     return 1;
   }
   DataFile<statusrec> file(config.datadir(), STATUS_DAT,
@@ -281,6 +281,7 @@ static uint32_t next_qscan_value(const string& bbsdir) {
     return 0;
   }
   next_qscan = status.qscanptr++;
+  ++status.msgposttoday;
   if (!file.Write(0, &status)) {
     return 0;
   }
@@ -296,7 +297,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   p.msg = m;
   p.ownersys = header.from_system();
   p.owneruser = header.from_usernum();
-  p.qscan = next_qscan_value(api_->root_directory());
+  p.qscan = next_qscan_value_and_increment_post(api_->root_directory());
   if (p.qscan == 0) {
     // TODO(rushfan): Fail here?
   }
