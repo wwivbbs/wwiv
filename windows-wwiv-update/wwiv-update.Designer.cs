@@ -65,7 +65,7 @@
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(118, 13);
             this.label2.TabIndex = 1;
-            this.label2.Text = "Latest WWIV 5.1 Build:";
+            this.label2.Text = "Latest WWIV 5.2 Build:";
             // 
             // label3
             // 
@@ -74,7 +74,7 @@
             this.label3.Name = "label3";
             this.label3.Size = new System.Drawing.Size(118, 13);
             this.label3.TabIndex = 2;
-            this.label3.Text = "Latest WWIV 5.0 Build:";
+            this.label3.Text = "Latest WWIV 5.1 Build:";
             // 
             // version51
             // 
@@ -99,20 +99,20 @@
             // update51
             // 
             this.update51.Location = new System.Drawing.Point(188, 140);
-            this.update51.Name = "update51";
+            this.update51.Name = "update52";
             this.update51.Size = new System.Drawing.Size(75, 23);
             this.update51.TabIndex = 5;
-            this.update51.Text = "Update 5.1";
+            this.update51.Text = "Update 5.2";
             this.update51.UseVisualStyleBackColor = true;
             this.update51.Click += new System.EventHandler(this.update51_Click);
             // 
             // update50
             // 
             this.update50.Location = new System.Drawing.Point(188, 171);
-            this.update50.Name = "update50";
+            this.update50.Name = "update51";
             this.update50.Size = new System.Drawing.Size(75, 23);
             this.update50.TabIndex = 6;
-            this.update50.Text = "Update 5.0";
+            this.update50.Text = "Update 5.1";
             this.update50.UseVisualStyleBackColor = true;
             this.update50.Click += new System.EventHandler(this.update50_Click);
             // 
