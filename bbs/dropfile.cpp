@@ -35,6 +35,7 @@
 
 using std::string;
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 struct pcboard_sys_rec {
   char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,
@@ -94,20 +95,20 @@ static int GetDoor32Emulation() {
 const string create_filename(int nDropFileType) {
   switch (nDropFileType) {
   case CHAINFILE_CHAIN:
-    return "chain.txt";
+    return StrCat(syscfgovr.tempdir, "chain.txt");
   case CHAINFILE_DORINFO:
-    return "dorinfo1.def";
+    return  StrCat(syscfgovr.tempdir, "dorinfo1.def");
   case CHAINFILE_PCBOARD:
-    return "pcboard.sys";
+    return  StrCat(syscfgovr.tempdir, "pcboard.sys");
   case CHAINFILE_CALLINFO:
-    return "callinfo.bbs";
+    return  StrCat(syscfgovr.tempdir, "callinfo.bbs");
   case CHAINFILE_DOOR:
-    return "door.sys";
+    return  StrCat(syscfgovr.tempdir, "door.sys");
   case CHAINFILE_DOOR32:
-    return "door32.sys";
+    return  StrCat(syscfgovr.tempdir, "door32.sys");
   default:
     // Default to CHAIN.TXT since this is the native WWIV dormat
-    return "chain.txt";
+    return  StrCat(syscfgovr.tempdir, "chain.txt");
   }
 }
 
