@@ -18,9 +18,14 @@
 /**************************************************************************/
 #include "sdk/subxtr.h"
 
+#include <fstream>
 #include <string>
 #include <vector>
 #include <sstream>
+
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/json.hpp>
 
 #include "bbs/vars.h"
 #include "core/datafile.h"
@@ -40,6 +45,59 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
+struct subboard_network_data_t {
+  string stype;
+  int32_t flags;
+  int16_t net_num;
+  int16_t host;
+  int16_t category;
+
+  template <class Archive>
+  void serialize(Archive & ar) {
+    ar(CEREAL_NVP(stype), CEREAL_NVP(flags), CEREAL_NVP(net_num), CEREAL_NVP(host), CEREAL_NVP(category));
+  }
+
+};
+
+
+struct subboard_t {
+  // board name
+  string name;
+  // long description - for subs.lst
+  string desc;
+
+  // board database filename
+  string filename;
+  // special key
+  char key;
+
+  // sl required to read
+  uint8_t readsl;
+  // sl required to post
+  uint8_t postsl;
+  // anonymous board?
+  uint8_t anony;
+  // minimum age for sub
+  uint8_t age;
+
+  // max # of msgs
+  uint16_t maxmsgs;
+  // AR for sub-board
+  uint16_t ar;
+  // how messages are stored
+  uint16_t storage_type;
+  // 4 digit board type
+  uint16_t type;
+
+  vector<subboard_network_data_t> nets;
+
+  template <class Archive>
+  void serialize(Archive & archive) {
+    archive(CEREAL_NVP(name), CEREAL_NVP(desc), CEREAL_NVP(filename), CEREAL_NVP(key), 
+      CEREAL_NVP(readsl), CEREAL_NVP(postsl), CEREAL_NVP(anony), CEREAL_NVP(age), CEREAL_NVP(maxmsgs), 
+      CEREAL_NVP(ar), CEREAL_NVP(storage_type), CEREAL_NVP(type), CEREAL_NVP(nets));
+  }
+};
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (size_t i = 0; i < net_networks.size(); i++) {
@@ -115,6 +173,20 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
       }
     }
   }
+
+  vector<subboard_t> new_subs;
+  subboard_t t1 = {};
+  t1.desc = "test1"; t1.name = "name, test1"; t1.filename = "TEST1";
+  t1.readsl = 20; t1.postsl = 50;
+  subboard_network_data_t tn1 = {};
+  tn1.category = 99; tn1.host = 1; tn1.net_num = 1; tn1.stype = "TEST1";
+  t1.nets.emplace_back(tn1);
+  new_subs.emplace_back(t1);
+
+  std::ostringstream os;
+  cereal::JSONOutputArchive archive(os);
+  archive(CEREAL_NVP(new_subs));
+  std::cerr << os.str();
 
   return true;
 }
