@@ -127,7 +127,7 @@ constexpr int UNUSED_INI_STR_USE_VOICE_VAL = 109;
 constexpr int INI_STR_AUTO_USER_PURGE = 110;
 constexpr int INI_STR_NO_PURGE_SL = 111;
 
-// --- New WWIV 5.0 Settings ---
+// --- New WWIV 5 Settings ---
 constexpr int INI_STR_BEGINDAYNODENUMBER = 126;
 constexpr int INI_STR_INTERNALZMODEM  = 127;
 constexpr int INI_STR_EXEC_LOG_SYNCFOSS = 128;
@@ -261,7 +261,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "",
   "",
   "",
-  "//--- New WWIV 5.0 Settings ---", // 125
+  "//--- New WWIV 5 Settings ---", // 125
   "BEGINDAYNODENUMBER",       // 126
   "INTERNALZMODEM",     // 127
   "EXEC_LOGSYNCFOSS",     // 128

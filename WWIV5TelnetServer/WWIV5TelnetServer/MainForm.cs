@@ -166,7 +166,7 @@ namespace WWIV5TelnetServer
         private String FetchBbsVersion(out String version, out String build)
         {
             string currentFullVersion = "WWIV Server";
-            version = "5.1.0.unknown";
+            version = "5.2.0.unknown";
             build = "0";
             // Fetch Current WWIV Version And Build Number.
             // It's ok if it fails.

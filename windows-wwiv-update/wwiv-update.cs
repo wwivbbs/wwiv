@@ -43,15 +43,15 @@ namespace windows_wwiv_update
             string wwivBuild5_1 = "0";
             string wwivBuild5_0 = "0";
 
-            // Fetch Latest Build Number For WWIV 5.1
+            // Fetch Latest Build Number For WWIV 5.2
             // http://build.wwivbbs.org/jenkins/job/wwiv/label=windows/lastSuccessfulBuild/buildNumber
-            // http://build.wwivbbs.org/jenkins/job/wwiv_5.0.0/label=windows/lastSuccessfulBuild/buildNumber
+            // http://build.wwivbbs.org/jenkins/job/wwiv_5.1/label=windows/lastSuccessfulBuild/buildNumber
             WebClient wc = new WebClient();
             string htmlString1 = wc.DownloadString("http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows/");
             Match mTitle1 = Regex.Match(htmlString1, "(?:number.*?>)(?<buildNumber1>.*?)(?:<)");
 
-            // Fetch Latest Build Number For WWIV 5.0
-            string htmlString2 = wc.DownloadString("https://build.wwivbbs.org/jenkins/job/wwiv_5.0.0/lastSuccessfulBuild/label=windows/");
+            // Fetch Latest Build Number For WWIV 5.1
+            string htmlString2 = wc.DownloadString("https://build.wwivbbs.org/jenkins/job/wwiv_5.1/lastSuccessfulBuild/label=windows/");
             Match mTitle2 = Regex.Match(htmlString2, "(?:number.*?>)(?<buildNumber2>.*?)(?:<)");
             {
                 wwivBuild5_1 = mTitle1.Groups[1].Value;
@@ -94,7 +94,7 @@ namespace windows_wwiv_update
             versionNumber.Text = updateVersionLabel;
         }
         
-        // Update To Newest WWIV 5.1
+        // Update To Newest WWIV 5.2
         private void update51_Click(object sender, EventArgs e)
         {
             string updateToNew51;

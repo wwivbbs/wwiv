@@ -112,7 +112,7 @@ static bool check_bbsdata() {
 
 static int cleanup_net1() {
   int ok, ok2, nl = 0, anynew = 0, i = 0;
-  bool abort;
+  bool abort;     
 
   session()->SetCleanNetNeeded(false);
 
