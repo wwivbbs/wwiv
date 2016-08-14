@@ -246,7 +246,7 @@ void SubList() {
           if (isdigit(ss[0])) {
             for (size_t i2 = 0; i2 < session()->subboards.size(); i2++) {
               if (IsEquals(session()->usub[i2].keys, ss)) {
-                session()->SetCurrentMessageArea(i2);
+                session()->set_current_user_sub_num(i2);
                 oldSub = session()->current_user_sub().subnum;
                 done = true;
                 abort = true;
@@ -311,7 +311,7 @@ void SubList() {
         if (isdigit(ss[0])) {
           for (size_t i2 = 0; i2 < session()->subboards.size(); i2++) {
             if (IsEquals(session()->usub[i2].keys, ss)) {
-              session()->SetCurrentMessageArea(i2);
+              session()->set_current_user_sub_num(i2);
               oldSub = session()->current_user_sub().subnum;
               done = true;
               abort = true;

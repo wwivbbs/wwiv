@@ -310,10 +310,10 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
 
   switch (type) {
   case ConferenceType::CONF_SUBS:
-    session()->SetCurrentMessageArea(i1);
+    session()->set_current_user_sub_num(i1);
     break;
   case ConferenceType::CONF_DIRS:
-    session()->SetCurrentFileArea(i1);
+    session()->set_current_user_dir_num(i1);
     break;
   }
   return true;

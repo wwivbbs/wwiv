@@ -650,8 +650,8 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
 
-  if (!(session()->directories[ session()->udir[ session()->GetCurrentFileArea() ].subnum ].mask & mask_cdrom)) {
-    strcpy(s2, session()->directories[ session()->udir[ session()->GetCurrentFileArea() ].subnum ].path);
+  if (!(session()->directories[ session()->udir[ session()->current_user_dir_num() ].subnum ].mask & mask_cdrom)) {
+    strcpy(s2, session()->directories[ session()->udir[ session()->current_user_dir_num() ].subnum ].path);
     strcat(s2, u->filename);
     if (!File::Exists(s2)) {
       strcpy(s1, "N/A");
@@ -828,13 +828,13 @@ void listfiles() {
 }
 
 void nscandir(int nDirNum, bool *abort) {
-  int nOldCurDir = session()->GetCurrentFileArea();
-  session()->SetCurrentFileArea(nDirNum);
+  int nOldCurDir = session()->current_user_dir_num();
+  session()->set_current_user_dir_num(nDirNum);
   dliscan();
   if (this_date >= nscandate) {
     if (okansi()) {
       *abort = listfiles_plus(LP_NSCAN_DIR) ? 1 : 0;
-      session()->SetCurrentFileArea(nOldCurDir);
+      session()->set_current_user_dir_num(nOldCurDir);
       return;
     }
     File fileDownload(g_szDownloadFileName);
@@ -854,7 +854,7 @@ void nscandir(int nDirNum, bool *abort) {
     }
     fileDownload.Close();
   }
-  session()->SetCurrentFileArea(nOldCurDir);
+  session()->set_current_user_dir_num(nOldCurDir);
 }
 
 void nscanall() {
@@ -871,12 +871,12 @@ void nscanall() {
     }
   }
   if (okansi()) {
-    int save_dir = session()->GetCurrentFileArea();
+    int save_dir = session()->current_user_dir_num();
     listfiles_plus(LP_NSCAN_NSCAN);
     if (bScanAllConfs) {
       tmp_disable_conf(false);
     }
-    session()->SetCurrentFileArea(save_dir);
+    session()->set_current_user_dir_num(save_dir);
     return;
   }
   bool abort      = false;
@@ -930,7 +930,7 @@ void searchall() {
     }
   }
   bool abort = false;
-  int nOldCurDir = session()->GetCurrentFileArea();
+  int nOldCurDir = session()->current_user_dir_num();
   bout.nl(2);
   bout << "Search all session()->directories.\r\n";
   file_mask(szFileMask);
@@ -963,7 +963,7 @@ void searchall() {
           color = 0;
         }
       }
-      session()->SetCurrentFileArea(i);
+      session()->set_current_user_dir_num(i);
       dliscan();
       session()->titled = 1;
       File fileDownload(g_szDownloadFileName);
@@ -983,7 +983,7 @@ void searchall() {
       fileDownload.Close();
     }
   }
-  session()->SetCurrentFileArea(nOldCurDir);
+  session()->set_current_user_dir_num(nOldCurDir);
   endlist(1);
   if (bScanAllConfs) {
     tmp_disable_conf(false);

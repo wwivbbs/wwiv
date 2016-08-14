@@ -131,22 +131,22 @@ void DownSubConf() {
 }
 
 void DownSub() {
-  if (session()->GetCurrentMessageArea() > 0) {
-    session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() - 1);
+  if (session()->current_user_sub_num() > 0) {
+    session()->set_current_user_sub_num(session()->current_user_sub_num() - 1);
   } else {
-    while (session()->usub[session()->GetCurrentMessageArea() + 1].subnum >= 0 &&
-           session()->GetCurrentMessageArea() < session()->subboards.size() - 1) {
-      session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
+    while (session()->usub[session()->current_user_sub_num() + 1].subnum >= 0 &&
+           session()->current_user_sub_num() < session()->subboards.size() - 1) {
+      session()->set_current_user_sub_num(session()->current_user_sub_num() + 1);
     }
   }
 }
 
 void UpSub() {
-  if (session()->GetCurrentMessageArea() < session()->subboards.size() - 1 &&
-      session()->usub[session()->GetCurrentMessageArea() + 1].subnum >= 0) {
-    session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
+  if (session()->current_user_sub_num() < session()->subboards.size() - 1 &&
+      session()->usub[session()->current_user_sub_num() + 1].subnum >= 0) {
+    session()->set_current_user_sub_num(session()->current_user_sub_num() + 1);
   } else {
-    session()->SetCurrentMessageArea(0);
+    session()->set_current_user_sub_num(0);
   }
 }
 
@@ -311,8 +311,8 @@ void GoodBye() {
           TempDisablePause disable_pause;
           printfile(LOGOFF_NOEXT);
         }
-        session()->user()->SetLastSubNum(session()->GetCurrentMessageArea());
-        session()->user()->SetLastDirNum(session()->GetCurrentFileArea());
+        session()->user()->SetLastSubNum(session()->current_user_sub_num());
+        session()->user()->SetLastDirNum(session()->current_user_dir_num());
         if (okconf(session()->user())) {
           session()->user()->SetLastSubConf(session()->GetCurrentConferenceMessageArea());
           session()->user()->SetLastDirConf(session()->GetCurrentConferenceFileArea());
@@ -332,8 +332,8 @@ void GoodBye() {
         TempDisablePause disable_pause;
         printfile(LOGOFF_NOEXT);
       }
-      session()->user()->SetLastSubNum(session()->GetCurrentMessageArea());
-      session()->user()->SetLastDirNum(session()->GetCurrentFileArea());
+      session()->user()->SetLastSubNum(session()->current_user_sub_num());
+      session()->user()->SetLastDirNum(session()->current_user_dir_num());
       if (okconf(session()->user())) {
         session()->user()->SetLastSubConf(session()->GetCurrentConferenceMessageArea());
         session()->user()->SetLastDirConf(session()->GetCurrentConferenceFileArea());
@@ -357,7 +357,7 @@ void ScanSub() {
     write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
     int i = 0;
     express = expressabort = false;
-    qscan(session()->GetCurrentMessageArea(), &i);
+    qscan(session()->current_user_sub_num(), &i);
   }
 }
 
@@ -692,7 +692,7 @@ void InternetEmail() {
 
 void NewMsgScanFromHere() {
   newline = false;
-  nscan(session()->GetCurrentMessageArea());
+  nscan(session()->current_user_sub_num());
   newline = true;
 }
 
@@ -746,8 +746,8 @@ void FastGoodBye() {
   } else {
     hangup = true;
   }
-  session()->user()->SetLastSubNum(session()->GetCurrentMessageArea());
-  session()->user()->SetLastDirNum(session()->GetCurrentFileArea());
+  session()->user()->SetLastSubNum(session()->current_user_sub_num());
+  session()->user()->SetLastDirNum(session()->current_user_dir_num());
   if (okconf(session()->user())) {
     session()->user()->SetLastSubConf(session()->GetCurrentConferenceMessageArea());
     session()->user()->SetLastDirConf(session()->GetCurrentConferenceFileArea());
@@ -777,7 +777,7 @@ void ReadIDZ() {
   if (yesno()) {
     read_idz_all();
   } else {
-    read_idz(1, session()->GetCurrentFileArea());
+    read_idz(1, session()->current_user_dir_num());
   }
 }
 
@@ -796,7 +796,7 @@ void UploadAllDirs() {
 
 
 void UploadCurDir() {
-  uploadall(session()->GetCurrentFileArea());
+  uploadall(session()->current_user_dir_num());
 }
 
 void RenameFiles() {
@@ -870,7 +870,7 @@ void UploadFilesBBS() {
       nType = 0;
       break;
     }
-    upload_files(s2, session()->GetCurrentFileArea(), nType);
+    upload_files(s2, session()->current_user_dir_num(), nType);
   }
 }
 
@@ -887,11 +887,11 @@ void UpDirConf() {
 }
 
 void UpDir() {
-  if (session()->GetCurrentFileArea() < size_int(session()->directories) - 1
-      && session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0) {
-    session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+  if (session()->current_user_dir_num() < size_int(session()->directories) - 1
+      && session()->udir[session()->current_user_dir_num() + 1].subnum >= 0) {
+    session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
   } else {
-    session()->SetCurrentFileArea(0);
+    session()->set_current_user_dir_num(0);
   }
 }
 
@@ -910,12 +910,12 @@ void DownDirConf() {
 }
 
 void DownDir() {
-  if (session()->GetCurrentFileArea() > 0) {
-    session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
+  if (session()->current_user_dir_num() > 0) {
+    session()->set_current_user_dir_num(session()->current_user_dir_num() - 1);
   } else {
-    while (session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0 &&
-           session()->GetCurrentFileArea() < size_int(session()->directories) - 1) {
-      session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+    while (session()->udir[session()->current_user_dir_num() + 1].subnum >= 0 &&
+           session()->current_user_dir_num() < size_int(session()->directories) - 1) {
+      session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
     }
   }
 }
@@ -994,7 +994,7 @@ void NewFileScan() {
     nscanall();
   } else {
     bout.nl();
-    nscandir(session()->GetCurrentFileArea(), &abort);
+    nscandir(session()->current_user_dir_num(), &abort);
     if (g_num_listed) {
       endlist(2);
     } else {
@@ -1076,7 +1076,7 @@ bool GuestCheck() {
 void SetSubNumber(const char *pszSubKeys) {
   for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(session()->usub[i].keys, pszSubKeys)) {
-      session()->SetCurrentMessageArea(i);
+      session()->set_current_user_sub_num(i);
     }
   }
 }
@@ -1084,7 +1084,7 @@ void SetSubNumber(const char *pszSubKeys) {
 void SetDirNumber(const char *pszDirectoryKeys) {
   for (size_t i = 0; i < session()->directories.size(); i++) {
     if (IsEquals(session()->udir[i].keys, pszDirectoryKeys)) {
-      session()->SetCurrentFileArea(i);
+      session()->set_current_user_dir_num(i);
     }
   }
 }

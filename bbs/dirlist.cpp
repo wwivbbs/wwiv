@@ -111,7 +111,7 @@ void dirlist(int mode) {
           if (isdigit(ss[0])) {
             for (size_t i3 = 0; i3 < session()->directories.size(); i3++) {
               if (wwiv::strings::IsEquals(session()->udir[i3].keys, ss)) {
-                session()->SetCurrentFileArea(i3);
+                session()->set_current_user_dir_num(i3);
                 os      = session()->current_user_dir().subnum;
                 done    = true;
                 abort   = true;
@@ -179,7 +179,7 @@ void dirlist(int mode) {
       if (isdigit(ss[0])) {
         for (size_t i3 = 0; i3 < session()->directories.size(); i3++) {
           if (wwiv::strings::IsEquals(session()->udir[i3].keys, ss)) {
-            session()->SetCurrentFileArea(i3);
+            session()->set_current_user_dir_num(i3);
             os = session()->current_user_dir().subnum;
             done = true;
           }

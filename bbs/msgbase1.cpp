@@ -156,7 +156,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
 }
 
 void post() {
-  if (!iscan(session()->GetCurrentMessageArea())) {
+  if (!iscan(session()->current_user_sub_num())) {
     bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n";
     return;
   }
@@ -351,10 +351,10 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   uint32_t on_disk_last_post = WWIVReadLastRead(sub_number);
   if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
     int nNextSubNumber = *pnNextSubNumber;
-    int nOldSubNumber = session()->GetCurrentMessageArea();
-    session()->SetCurrentMessageArea(nBeginSubNumber);
+    int nOldSubNumber = session()->current_user_sub_num();
+    session()->set_current_user_sub_num(nBeginSubNumber);
 
-    if (!iscan(session()->GetCurrentMessageArea())) {
+    if (!iscan(session()->current_user_sub_num())) {
       bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
       return;
     }
@@ -379,7 +379,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 
-    session()->SetCurrentMessageArea(nOldSubNumber);
+    session()->set_current_user_sub_num(nOldSubNumber);
     *pnNextSubNumber = nNextSubNumber;
     bout.bprintf("|#1< %s Q-Scan Done >", session()->current_sub().name);
     bout.clreol();
@@ -440,7 +440,7 @@ void nscan(int nStartingSubNum) {
 }
 
 void ScanMessageTitles() {
-  if (!iscan(session()->GetCurrentMessageArea())) {
+  if (!iscan(session()->current_user_sub_num())) {
     bout << "\r\n|#7A file required is in use by another instance. Try again later.\r\n";
     return;
   }
@@ -476,7 +476,7 @@ void ScanMessageTitles() {
 }
 
 void remove_post() {
-  if (!iscan(session()->GetCurrentMessageArea())) {
+  if (!iscan(session()->current_user_sub_num())) {
     bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n\n";
     return;
   }

@@ -340,7 +340,7 @@ void upload_reply_packet() {
   write_qwk_cfg(&qwk_cfg);
   close_qwk_cfg(&qwk_cfg);
 
-  save_sub = session()->GetCurrentMessageArea();
+  save_sub = session()->current_user_sub_num();
   if ((uconfsub[1].confnum != -1) && (okconf(session()->user()))) {
     save_conf = 1;
     tmp_disable_conf(true);
@@ -380,7 +380,7 @@ void upload_reply_packet() {
     tmp_disable_conf(false);
   }
 
-  session()->SetCurrentMessageArea(save_sub);
+  session()->set_current_user_sub_num(save_sub);
 }
 
 void ready_reply_packet(const char *packet_name, const char *msg_name) {
@@ -753,11 +753,11 @@ void qwk_post_text(char *text, char *title, int sub) {
       ++pass;
       continue;
     }
-    session()->SetCurrentMessageArea(sub);
+    session()->set_current_user_sub_num(sub);
 
     // Busy files... allow to retry
     while (!hangup) {
-      if (!qwk_iscan_literal(session()->GetCurrentMessageArea())) {
+      if (!qwk_iscan_literal(session()->current_user_sub_num())) {
         bout.nl();
         bout.bprintf("MSG file is busy on another instance, try again?");
         if (!noyes()) {

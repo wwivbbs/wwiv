@@ -262,7 +262,7 @@ void ChangeSubNumber() {
   char* s = mmkey(0);
   for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(session()->usub[i].keys, s)) {
-      session()->SetCurrentMessageArea(i);
+      session()->set_current_user_sub_num(i);
     }
   }
 }
@@ -282,7 +282,7 @@ void ChangeDirNumber() {
     }
     for (size_t i = 0; i < session()->directories.size(); i++) {
       if (wwiv::strings::IsEquals(session()->udir[i].keys, s)) {
-        session()->SetCurrentFileArea(i);
+        session()->set_current_user_dir_num(i);
         done = true;
       }
     }

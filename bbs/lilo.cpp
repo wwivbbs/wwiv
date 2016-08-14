@@ -82,10 +82,10 @@ static void CleanUserInfo() {
     session()->user()->SetLastDirNum(0);
   }
   if (session()->usub[session()->user()->GetLastSubNum()].subnum != -1) {
-    session()->SetCurrentMessageArea(session()->user()->GetLastSubNum());
+    session()->set_current_user_sub_num(session()->user()->GetLastSubNum());
   }
   if (session()->udir[session()->user()->GetLastDirNum()].subnum != -1) {
-    session()->SetCurrentFileArea(session()->user()->GetLastDirNum());
+    session()->set_current_user_dir_num(session()->user()->GetLastDirNum());
   }
 
 }
@@ -449,12 +449,12 @@ static void UpdateUserStatsForLogin() {
     session()->user()->SetNumFeedbackSentToday(0);
   }
   session()->user()->SetNumLogons(session()->user()->GetNumLogons() + 1);
-  session()->SetCurrentMessageArea(0);
+  session()->set_current_user_sub_num(0);
   session()->SetNumMessagesReadThisLogon(0);
   if (session()->udir[0].subnum == 0 && session()->udir[1].subnum > 0) {
-    session()->SetCurrentFileArea(1);
+    session()->set_current_user_dir_num(1);
   } else {
-    session()->SetCurrentFileArea(0);
+    session()->set_current_user_dir_num(0);
   }
   if (session()->GetEffectiveSl() != 255 && !guest_user) {
     WStatus* pStatus = session()->status_manager()->BeginTransaction();

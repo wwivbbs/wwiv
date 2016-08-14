@@ -778,7 +778,7 @@ void readmail(int mode) {
         }
         if (so()) {
           if (!session()->IsUserOnline()) {
-            session()->SetCurrentMessageArea(0);
+            session()->set_current_user_sub_num(0);
             session()->SetCurrentReadMessageArea(0);
             session()->SetCurrentConferenceMessageArea(0);
           }
@@ -856,7 +856,7 @@ void readmail(int mode) {
             session()->status_manager()->CommitTransaction(pStatus);
             close_sub();
             tmp_disable_conf(false);
-            iscan(session()->GetCurrentMessageArea());
+            iscan(session()->current_user_sub_num());
             bout << "\r\n\n|#9Message moved.\r\n\n";
             int nTempNumMsgs = session()->GetNumMessagesInCurrentMessageArea();
             resynch(&nTempNumMsgs, &p);

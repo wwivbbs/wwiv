@@ -228,7 +228,7 @@ static void catch_divide_by_zero(int signum) {
 
 int listfiles_plus(int type) {
   int save_topdata = session()->topdata;
-  int save_dir = session()->GetCurrentFileArea();
+  int save_dir = session()->current_user_dir_num();
   long save_status = session()->user()->GetStatus();
 
   session()->tagging = 0;
@@ -254,7 +254,7 @@ int listfiles_plus(int type) {
   session()->user()->SetStatus(save_status);
 
   if (type == LP_NSCAN_DIR || type == LP_SEARCH_ALL) {    // change Build3
-    session()->SetCurrentFileArea(save_dir);
+    session()->set_current_user_dir_num(save_dir);
   }
   dliscan();
 
@@ -1736,7 +1736,7 @@ static int move_filename(const char *file_name, int dn) {
 }
 
 void do_batch_sysop_command(int mode, const char *file_name) {
-  int save_curdir = session()->GetCurrentFileArea();
+  int save_curdir = session()->current_user_dir_num();
   bout.cls();
 
   if (session()->numbatchdl) {
@@ -1783,7 +1783,7 @@ void do_batch_sysop_command(int mode, const char *file_name) {
       break;
     }
   }
-  session()->SetCurrentFileArea(save_curdir);
+  session()->set_current_user_dir_num(save_curdir);
   dliscan();
 }
 

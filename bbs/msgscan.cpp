@@ -74,7 +74,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
 
   int val = 0;
   bool realexpress = express;
-  iscan(session()->GetCurrentMessageArea());
+  iscan(session()->current_user_sub_num());
   if (session()->GetCurrentReadMessageArea() < 0) {
     bout.nl();
     bout << "No subs available.\r\n\n";
@@ -860,7 +860,7 @@ void HandleMessageMove(int &nMessageNumber) {
       add_post(&p2);
       close_sub();
       tmp_disable_conf(false);
-      iscan(session()->GetCurrentMessageArea());
+      iscan(session()->current_user_sub_num());
       bout.nl();
       bout << "|#9Message moved.\r\n\n";
       resynch(&nMessageNumber, &p1);

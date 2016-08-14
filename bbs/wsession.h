@@ -168,22 +168,22 @@ public:
 
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (session()->udir[b], not directories[b]).
-  int  GetCurrentFileArea() const { return m_nCurrentFileArea; }
-  void SetCurrentFileArea(int n) { m_nCurrentFileArea = n; }
+  int  current_user_dir_num() const { return m_nCurrentFileArea; }
+  void set_current_user_dir_num(int n) { m_nCurrentFileArea = n; }
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
-  size_t GetCurrentMessageArea() const { return m_nCurrentMessageArea; }
-  void SetCurrentMessageArea(size_t n) { m_nCurrentMessageArea = n; }
+  size_t current_user_sub_num() const { return current_sub_num_; }
+  void set_current_user_sub_num(size_t n) { current_sub_num_ = n; }
 
-  const usersubrec& current_user_sub() const { return usub[GetCurrentMessageArea()]; }
-  const usersubrec& current_user_dir() const { return udir[GetCurrentFileArea()]; }
+  const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
+  const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
 
   // This is set by iscan1 (for the most part) and is the sub number the user is
   // currently scanning/reading.  Note. this is the subnumber from subboards
   // not usub.
   // The most common usage pattern is:
-  // iscan(session()->GetCurrentMessageArea());
+  // iscan(session()->current_user_sub_num());
   // if (session()->GetCurrentReadMessageArea() < 0) { ... }
 
   // Note: This may be set to -1 to mean no area.
@@ -392,7 +392,7 @@ private:
   int         m_nNumMessagesReadThisLogon = 0,
               m_nCurrentLanguageNumber = 0,
               m_nCurrentFileArea = 0,
-              m_nCurrentMessageArea = 0,
+              current_sub_num_ = 0,
               m_nCurrentReadMessageArea = 0,
               m_nCurrentConferenceMessageArea = 0,
               m_nCurrentConferenceFileArea = 0,

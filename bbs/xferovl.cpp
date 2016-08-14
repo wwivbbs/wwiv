@@ -559,10 +559,10 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    int ocd = session()->GetCurrentFileArea();
-    session()->SetCurrentFileArea(directory_num);
+    int ocd = session()->current_user_dir_num();
+    session()->set_current_user_dir_num(directory_num);
     printinfo(&u, &abort);
-    session()->SetCurrentFileArea(ocd);
+    session()->set_current_user_dir_num(ocd);
     if (abort) {
       ok = false;
     }
@@ -1264,7 +1264,7 @@ void finddescription() {
     tmp_disable_conf(false);
     return;
   }
-  int ocd = session()->GetCurrentFileArea();
+  int ocd = session()->current_user_dir_num();
   bool abort = false;
   g_num_listed = 0;
   count = 0;
@@ -1295,7 +1295,7 @@ void finddescription() {
           color = 0;
         }
       }
-      session()->SetCurrentFileArea(i);
+      session()->set_current_user_dir_num(i);
       dliscan();
       File fileDownload(g_szDownloadFileName);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
@@ -1321,7 +1321,7 @@ void finddescription() {
   if (ac) {
     tmp_disable_conf(false);
   }
-  session()->SetCurrentFileArea(ocd);
+  session()->set_current_user_dir_num(ocd);
   endlist(1);
 }
 

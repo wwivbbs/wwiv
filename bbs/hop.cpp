@@ -76,7 +76,7 @@ void HopSub() {
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          session()->SetCurrentMessageArea(i);
+          session()->set_current_user_sub_num(i);
           break;
         } else if (ch == 'Q') {
           abort = true;
@@ -150,7 +150,7 @@ void HopDir() {
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          session()->SetCurrentFileArea(i);
+          session()->set_current_user_dir_num(i);
           break;
         } else if (ch == 'Q') {
           abort = true;

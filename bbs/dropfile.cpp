@@ -397,7 +397,7 @@ void CreateDoorSysDropFile() {
             session()->user()->GetScreenLines(),
             session()->user()->IsExpert() ? 'Y' : 'N',
             "1,2,3",                        // conferences
-            session()->GetCurrentMessageArea(),  // current 'conference'
+            session()->current_user_sub_num(),  // current 'conference'
             "12/31/99",                     // expiration date
             session()->usernum,
             'Y',                            // default protocol

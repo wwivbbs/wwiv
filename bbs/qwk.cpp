@@ -235,12 +235,12 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   uint32_t sd = WWIVReadLastRead(sn);
 
   if (qwk_percent || (!sd || sd > qscnptrx)) {
-    os = session()->GetCurrentMessageArea();
-    session()->SetCurrentMessageArea(bn);
+    os = session()->current_user_sub_num();
+    session()->set_current_user_sub_num(bn);
     i = 1;
 
     // Get total amount of messages in base
-    if (!qwk_iscan(session()->GetCurrentMessageArea())) {
+    if (!qwk_iscan(session()->current_user_sub_num())) {
       return;
     }
 
@@ -278,13 +278,13 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
-    session()->SetCurrentMessageArea(os);
+    session()->set_current_user_sub_num(os);
   } else {
-    os = session()->GetCurrentMessageArea();
-    session()->SetCurrentMessageArea(bn);
+    os = session()->current_user_sub_num();
+    session()->set_current_user_sub_num(bn);
     i = 1;
 
-    qwk_iscan(session()->GetCurrentMessageArea());
+    qwk_iscan(session()->current_user_sub_num());
 
     strncpy(thissub, session()->current_sub().name, 65);
     thissub[60] = 0;
@@ -293,7 +293,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     bout.bputs(subinfo);
     bout.nl();
 
-    session()->SetCurrentMessageArea(os);
+    session()->set_current_user_sub_num(os);
 
     checka(&qwk_info->abort);
   }
@@ -491,8 +491,8 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   if (!qwk_info->in_email) { // Only if currently doing messages...
     // Create new index if it hasnt been already
-    if (session()->GetCurrentMessageArea() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
-      qwk_info->cursub = session()->GetCurrentMessageArea();
+    if (session()->current_user_sub_num() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
+      qwk_info->cursub = session()->current_user_sub_num();
       sprintf(filename, "%s%03d.NDX", QWK_DIRECTORY, session()->current_user_sub().subnum + 1);
       if (qwk_info->index > 0) {
         qwk_info->index = close(qwk_info->index);
@@ -1137,8 +1137,8 @@ void qwk_nscan() {
         continue;
       }
 
-      od = session()->GetCurrentFileArea();
-      session()->SetCurrentFileArea(i);
+      od = session()->current_user_dir_num();
+      session()->set_current_user_dir_num(i);
       dliscan();
       if (this_date >= nscandate) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
@@ -1198,7 +1198,7 @@ void qwk_nscan() {
         }
         f = close(f);
       }
-      session()->SetCurrentFileArea(od);
+      session()->set_current_user_dir_num(od);
 
     }
   }

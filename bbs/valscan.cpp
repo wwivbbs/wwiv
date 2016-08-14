@@ -40,7 +40,7 @@ void valscan() {
   }
 
   int ac = 0;
-  int os = session()->GetCurrentMessageArea();
+  int os = session()->current_user_sub_num();
 
   if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
     ac = 1;
@@ -165,6 +165,6 @@ void valscan() {
     tmp_disable_conf(false);
   }
 
-  session()->SetCurrentMessageArea(os);
+  session()->set_current_user_sub_num(os);
   bout.nl(2);
 }

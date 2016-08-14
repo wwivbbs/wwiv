@@ -1173,12 +1173,12 @@ void config_scan_plus(int type) {
             expressabort = false;
             qscan(top + pos, &i);
           } else {
-            i = session()->GetCurrentFileArea();
-            session()->SetCurrentFileArea(top + pos);
+            i = session()->current_user_dir_num();
+            session()->set_current_user_dir_num(top + pos);
             session()->tagging = 1;
             listfiles();
             session()->tagging = 0;
-            session()->SetCurrentFileArea(i);
+            session()->set_current_user_dir_num(i);
           }
           menu_done = true;
           amount = 0;

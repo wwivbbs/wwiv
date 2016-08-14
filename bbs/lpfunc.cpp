@@ -94,7 +94,7 @@ int listfiles_plus_function(int type) {
   int file_handle[51];
   char vert_pos[51];
   int file_pos = 0, save_file_pos = 0, menu_pos = 0;
-  size_t save_dir = session()->GetCurrentFileArea();
+  size_t save_dir = session()->current_user_dir_num();
   bool sysop_mode = false;
   struct side_menu_colors smc;
   struct search_record search_rec;
@@ -146,7 +146,7 @@ int listfiles_plus_function(int type) {
 
     int save_first_file = 0;
     if (scan_dir) {
-      session()->SetCurrentFileArea(this_dir);
+      session()->set_current_user_dir_num(this_dir);
       dliscan();
       g_num_listed = 0;
       int first_file = save_first_file = 1;
@@ -418,16 +418,16 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = 1;
-                    if ((session()->GetCurrentFileArea() < size_int(session()->directories) - 1)
-                        && (session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0)) {
-                      session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+                    if ((session()->current_user_dir_num() < size_int(session()->directories) - 1)
+                        && (session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)) {
+                      session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
                       ++this_dir;
                     } else {
-                      session()->SetCurrentFileArea(0);
+                      session()->set_current_user_dir_num(0);
                       this_dir = 0;
                     }
                     if (!type) {
-                      save_dir = session()->GetCurrentFileArea();
+                      save_dir = session()->current_user_dir_num();
                     }
                     dliscan();
                     menu_pos = 0;
@@ -437,18 +437,18 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = -1;
-                    if (session()->GetCurrentFileArea() > 0) {
-                      session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
+                    if (session()->current_user_dir_num() > 0) {
+                      session()->set_current_user_dir_num(session()->current_user_dir_num() - 1);
                       --this_dir;
                     } else {
-                      while ((session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0)
-                             && (session()->GetCurrentFileArea() < size_int(session()->directories) - 1)) {
-                        session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+                      while ((session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)
+                             && (session()->current_user_dir_num() < size_int(session()->directories) - 1)) {
+                        session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
                       }
-                      this_dir = session()->GetCurrentFileArea();
+                      this_dir = session()->current_user_dir_num();
                     }
                     if (!type) {
-                      save_dir = session()->GetCurrentFileArea();
+                      save_dir = session()->current_user_dir_num();
                     }
                     dliscan();
                     menu_pos = 0;
@@ -508,20 +508,20 @@ TOGGLE_EXTENDED:
               if (!changedir) {
                 done = true;
               } else if (changedir == 1) {
-                if ((session()->GetCurrentFileArea() < size_int(session()->directories) - 1)
-                    && (session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0)) {
-                  session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+                if ((session()->current_user_dir_num() < size_int(session()->directories) - 1)
+                    && (session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)) {
+                  session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
                 } else {
-                  session()->SetCurrentFileArea(0);
+                  session()->set_current_user_dir_num(0);
                 }
                 dliscan();
               } else {
-                if (session()->GetCurrentFileArea() > 0) {
-                  session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
+                if (session()->current_user_dir_num() > 0) {
+                  session()->set_current_user_dir_num(session()->current_user_dir_num() - 1);
                 } else {
-                  while ((session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0)
-                         && (session()->GetCurrentFileArea() < size_int(session()->directories) - 1)) {
-                    session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+                  while ((session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)
+                         && (session()->current_user_dir_num() < size_int(session()->directories) - 1)) {
+                    session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
                   }
                 }
                 dliscan();
@@ -533,20 +533,20 @@ TOGGLE_EXTENDED:
           if (!changedir) {
             done = true;
           } else if (changedir == 1) {
-            if ((session()->GetCurrentFileArea() < size_int(session()->directories) - 1)
-                && (session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0)) {
-              session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+            if ((session()->current_user_dir_num() < size_int(session()->directories) - 1)
+                && (session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)) {
+              session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
             } else {
-              session()->SetCurrentFileArea(0);
+              session()->set_current_user_dir_num(0);
             }
             dliscan();
           } else {
-            if (session()->GetCurrentFileArea() > 0) {
-              session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
+            if (session()->current_user_dir_num() > 0) {
+              session()->set_current_user_dir_num(session()->current_user_dir_num() - 1);
             } else {
-              while ((session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0)
-                     && (session()->GetCurrentFileArea() < size_int(session()->directories) - 1)) {
-                session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
+              while ((session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)
+                     && (session()->current_user_dir_num() < size_int(session()->directories) - 1)) {
+                session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
               }
             }
             dliscan();
