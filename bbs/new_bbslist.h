@@ -24,10 +24,16 @@
 #include <string>
 #include <vector>
 
+#include <cereal/cereal.hpp>
+
+
 namespace wwiv {
 namespace bbslist {
 
-enum class ConnectionType { TELNET, SSH, MODEM };
+struct BbsListAddress {
+  std::string type;
+  std::string address;
+};
 
 struct BbsListEntry {
   int id;
@@ -35,18 +41,54 @@ struct BbsListEntry {
   std::string software;
   std::string sysop_name;
   std::string location;
-  std::map<ConnectionType, std::string> addresses;
+  std::vector<BbsListAddress> addresses;
 };
 
 bool LoadFromJSON(const std::string& dir, const std::string& filename,
-                  std::vector<std::unique_ptr<BbsListEntry>>* entries);
+                  std::vector<BbsListEntry>& entries);
 
 bool SaveToJSON(const std::string& dir, const std::string& filename, 
-                const std::vector<std::unique_ptr<BbsListEntry>>& entries);
+                const std::vector<BbsListEntry>& entries);
 
 void NewBBSList();
 
 }  // bbslist
 }  // wwiv
+
+
+   // TODO - move this into it's own header somewhere.
+namespace cereal {
+//! Saving for std::map<std::string, std::string> for text based archives
+// Note that this shows off some internal cereal traits such as EnableIf,
+// which will only allow this template to be instantiated if its predicates
+// are true
+template <class Archive, class C, class A,
+  traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
+  void save(Archive & ar, std::map<std::string, std::string, C, A> const & map) {
+  for (const auto & i : map)
+    ar(cereal::make_nvp(i.first, i.second));
+}
+
+//! Loading for std::map<std::string, std::string> for text based archives
+template <class Archive, class C, class A,
+  traits::EnableIf<traits::is_text_archive<Archive>::value> = traits::sfinae> inline
+  void load(Archive & ar, std::map<std::string, std::string, C, A> & map) {
+  map.clear();
+
+  auto hint = map.begin();
+  while (true) {
+    const auto namePtr = ar.getNodeName();
+
+    if (!namePtr)
+      break;
+
+    std::string key = namePtr;
+    std::string value; ar(value);
+    hint = map.emplace_hint(hint, std::move(key), std::move(value));
+  }
+}
+} // namespace cereal
+
+
 
 #endif  // __INCLUDED_NEW_BBSLIST_H__

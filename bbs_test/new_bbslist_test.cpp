@@ -36,6 +36,15 @@ using std::vector;
 
 using namespace wwiv::bbslist;
 
+static string FindAddressByType(const BbsListEntry& entry, const std::string& type) {
+  for (const auto& a : entry.addresses) {
+    if (type == a.type) {
+      return a.address;
+    }
+  }
+  return{};
+}
+
 class NewBbsListTest : public testing::Test {
 protected:
     virtual void SetUp() { helper.SetUp(); }
@@ -47,20 +56,20 @@ protected:
 };
 
 TEST_F(NewBbsListTest, NoFile) {
-  vector<unique_ptr<BbsListEntry>> entries;
-  ASSERT_FALSE(LoadFromJSON(dir(), "bbslist.json", &entries));
+  vector<BbsListEntry> entries;
+  ASSERT_FALSE(LoadFromJSON(dir(), "bbslist.json", entries));
 }
 
 TEST_F(NewBbsListTest, SingleItem_NoAddress) {
   const string json = "{ \"bbslist\": [ { \"name\": \"n1\", \"software\": \"s1\" } ] }";
   this->CreateTempFile("bbslist.json", json);
-
-  vector<unique_ptr<BbsListEntry>> entries;
-  ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &entries));
+   
+  vector<BbsListEntry> entries;
+  ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", entries));
 
   ASSERT_EQ(1, entries.size());
-  EXPECT_EQ("n1", entries[0]->name);
-  EXPECT_EQ("s1", entries[0]->software);
+  EXPECT_EQ("n1", entries[0].name);
+  EXPECT_EQ("s1", entries[0].software);
 }
 
 TEST_F(NewBbsListTest, SingleItem_Address) {
@@ -74,15 +83,15 @@ TEST_F(NewBbsListTest, SingleItem_Address) {
     "}";
   this->CreateTempFile("bbslist.json", json);
 
-  vector<unique_ptr<BbsListEntry>> entries;
-  ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &entries));
+  vector<BbsListEntry> entries;
+  EXPECT_TRUE(LoadFromJSON(dir(), "bbslist.json", entries));
 
   EXPECT_EQ(1, entries.size());
-  BbsListEntry* e = entries[0].get();
-  EXPECT_EQ("n1", e->name);
-  EXPECT_EQ("s1", e->software);
-  EXPECT_EQ(1, e->addresses.size());
-  EXPECT_EQ("example.com", e->addresses.find(ConnectionType::TELNET)->second);
+  const auto& e = entries[0];
+  EXPECT_EQ("n1", e.name);
+  EXPECT_EQ("s1", e.software);
+  EXPECT_EQ(1, e.addresses.size());
+  EXPECT_EQ("example.com", FindAddressByType(e, "telnet"));
 }
 
 TEST_F(NewBbsListTest, MultipleEntries) {
@@ -95,41 +104,41 @@ TEST_F(NewBbsListTest, MultipleEntries) {
     "}";
   this->CreateTempFile("bbslist.json", json);
 
-  vector<unique_ptr<BbsListEntry>> entries;
-  ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &entries));
+  vector<BbsListEntry> entries;
+  ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", entries));
   
   EXPECT_EQ(3, entries.size());
-  EXPECT_EQ("n1", entries[0]->name);
-  EXPECT_EQ("n2", entries[1]->name);
-  EXPECT_EQ("n3", entries[2]->name);
-  EXPECT_EQ("s", entries[0]->software);
-  EXPECT_EQ("s", entries[1]->software);
-  EXPECT_EQ("s", entries[2]->software);
-  EXPECT_EQ(1, entries[0]->addresses.size());
-  EXPECT_EQ("example.com", entries[0]->addresses.find(ConnectionType::TELNET)->second);
-  EXPECT_EQ("foobar.com", entries[1]->addresses.find(ConnectionType::SSH)->second);
-  EXPECT_EQ("415-000-0000", entries[2]->addresses.find(ConnectionType::MODEM)->second);
+  EXPECT_EQ("n1", entries[0].name);
+  EXPECT_EQ("n2", entries[1].name);
+  EXPECT_EQ("n3", entries[2].name);
+  EXPECT_EQ("s", entries[0].software);
+  EXPECT_EQ("s", entries[1].software);
+  EXPECT_EQ("s", entries[2].software);
+  EXPECT_EQ(1, entries[0].addresses.size());
+  EXPECT_EQ("example.com", FindAddressByType(entries[0], "telnet"));
+  EXPECT_EQ("foobar.com", FindAddressByType(entries[1], "ssh"));
+  EXPECT_EQ("415-000-0000", FindAddressByType(entries[2], "modem"));
 }
 
 TEST_F(NewBbsListTest, WriteSingleEntry) {
-  vector<unique_ptr<BbsListEntry>> entries;
+  vector<BbsListEntry> entries;
   {
-    BbsListEntry* e = new BbsListEntry();
-    e->name = "n1";
-    e->software = "SOFT";
-    e->addresses[ConnectionType::SSH] = "example.com";
+    BbsListEntry e{};
+    e.name = "n1";
+    e.software = "SOFT";
+    e.addresses.push_back({"ssh", "example.com"});
     entries.emplace_back(e);
   }
 
   ASSERT_TRUE(SaveToJSON(dir(), "bbslist.json", entries));
-  vector<unique_ptr<BbsListEntry>> new_entries;
-  ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", &new_entries));
+  vector<BbsListEntry> new_entries;
+  ASSERT_TRUE(LoadFromJSON(dir(), "bbslist.json", new_entries));
   EXPECT_EQ(1, new_entries.size());
-  const auto e = new_entries.at(0).get();
-  EXPECT_EQ("n1", e->name);
-  EXPECT_EQ("SOFT", e->software);
-  EXPECT_EQ(1, new_entries.at(0)->addresses.size());
-  const auto a = new_entries.at(0)->addresses.cbegin();
-  EXPECT_EQ(ConnectionType::SSH, a->first);
-  EXPECT_EQ("example.com", a->second);
+  const auto& e = new_entries.at(0);
+  EXPECT_EQ("n1", e.name);
+  EXPECT_EQ("SOFT", e.software);
+  EXPECT_EQ(1, new_entries.at(0).addresses.size());
+  const auto a = new_entries.at(0).addresses.cbegin();
+  EXPECT_EQ("ssh", a->type);
+  EXPECT_EQ("example.com", a->address);
 }

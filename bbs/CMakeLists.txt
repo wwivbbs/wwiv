@@ -4,6 +4,7 @@ project (BBS)
 include_directories(..)
 include_directories(../deps/rapidjson-master/include)
 include_directories(../deps/cl342)
+include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES 
  archivers.cpp

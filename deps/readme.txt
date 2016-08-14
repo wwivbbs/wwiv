@@ -33,3 +33,8 @@ dir easylogging
 url: https://github.com/easylogging/easyloggingpp
 license: MIT
 
+Cereal
+dir cereal
+url: https://github.com/USCiLab/cereal/ (BSD License)
+license: New BSD
+

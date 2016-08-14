@@ -18,9 +18,14 @@
 /**************************************************************************/
 #include "sdk/subxtr.h"
 
+#include <fstream>
 #include <string>
 #include <vector>
 #include <sstream>
+
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/json.hpp>
 
 #include "bbs/vars.h"
 #include "core/datafile.h"
@@ -40,6 +45,67 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
+struct subboard_network_data_t {
+  string stype;
+  int32_t flags;
+  int16_t net_num;
+  int16_t host;
+  int16_t category;
+
+  template <class Archive>
+  void serialize(Archive & ar) {
+    ar(CEREAL_NVP(stype), CEREAL_NVP(flags), CEREAL_NVP(net_num), CEREAL_NVP(host), CEREAL_NVP(category));
+  }
+};
+
+// New (5.2+) style subboard.
+struct subboard_t {
+  // board name
+  string name;
+  // long description - for subs.lst
+  string desc;
+
+  // board database filename
+  string filename;
+  // special key
+  char key;
+
+  // sl required to read
+  uint8_t readsl;
+  // sl required to post
+  uint8_t postsl;
+  // anonymous board?
+  uint8_t anony;
+  // minimum age for sub
+  uint8_t age;
+
+  // max # of msgs
+  uint16_t maxmsgs;
+  // AR for sub-board
+  uint16_t ar;
+  // how messages are stored
+  uint16_t storage_type;
+  // 4 digit board type
+  uint16_t type;
+
+  vector<subboard_network_data_t> nets;
+
+  template <class Archive>
+  void serialize(Archive & archive) {
+    archive(CEREAL_NVP(name), CEREAL_NVP(desc), CEREAL_NVP(filename), CEREAL_NVP(key), 
+      CEREAL_NVP(readsl), CEREAL_NVP(postsl), CEREAL_NVP(anony), CEREAL_NVP(age), CEREAL_NVP(maxmsgs), 
+      CEREAL_NVP(ar), CEREAL_NVP(storage_type), CEREAL_NVP(type), CEREAL_NVP(nets));
+  }
+};
+
+
+struct subs_t {
+  vector<subboard_t> subs;
+  template <class Archive>
+  void serialize(Archive & archive) {
+    archive(CEREAL_NVP(subs));
+  }
+};
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (size_t i = 0; i < net_networks.size(); i++) {

@@ -44,22 +44,11 @@
 // for the template variable.
 #undef CT
 
-#include <rapidjson/document.h>
-#include <rapidjson/rapidjson.h>
-#include <rapidjson/filereadstream.h>
-#include <rapidjson/filewritestream.h>
-#include "rapidjson/prettywriter.h"
-#include <rapidjson/reader.h>
-#include <rapidjson/stringbuffer.h>
-#include <rapidjson/writer.h>
+#include <cereal/archives/json.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/map.hpp>
 
-using rapidjson::Document;
-using rapidjson::FileReadStream;
-using rapidjson::FileWriteStream;
-using rapidjson::PrettyWriter;
-using rapidjson::StringRef;
-using rapidjson::Value;
-using rapidjson::Writer;
 using std::left;
 using std::map;
 using std::setw;
@@ -74,128 +63,64 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace bbslist {
 
-static ConnectionType ConnectionTypeFromString(const string& s) {
-  if (s == "telnet") {
-    return ConnectionType::TELNET;
-  } else if (s == "ssh") {
-    return ConnectionType::SSH;
-  } else if (s == "modem") {
-    return ConnectionType::MODEM;
+template <class Archive>
+void serialize(Archive & ar, wwiv::bbslist::BbsListEntry &b) {
+  ar(cereal::make_nvp("name", b.name));
+  try {
+    ar(cereal::make_nvp("software", b.software));
+  } catch (...) {
   }
-  return ConnectionType::TELNET;
-}
-
-static string ConnectionTypeString(const ConnectionType t) {
-  switch (t) {
-  case ConnectionType::MODEM: return "modem";
-  case ConnectionType::SSH: return "ssh";
-  case ConnectionType::TELNET:
-  default: return "telnet";
+  try {
+    ar(cereal::make_nvp("sysop_name", b.sysop_name));
+  } catch (...) {
   }
-}
-
-static void ParseAddresses(BbsListEntry* entry, const Value& addresses) {
-  if (!addresses.IsArray()) {
-    return;
+  try {
+    ar(cereal::make_nvp("location", b.location));
+  } catch (...) {
   }
-  for (size_t j=0; j < addresses.Size(); j++) {
-    const Value& address = addresses[j];
-    if (!address.IsObject()) {
-      continue;
-    }
-    ConnectionType type = ConnectionTypeFromString(address["type"].GetString());
-    entry->addresses[type] = address["address"].GetString();
+  try {
+    ar(cereal::make_nvp("addresses", b.addresses));
+  } catch (const std::exception&e) {
+    std::cerr << e.what() << std::endl;
   }
 }
 
-static BbsListEntry* JsonValueToBbsListEntry(const Value& json_entry, int id) {
-  if (!json_entry.IsObject()) {
-    return nullptr;
-  }
-  BbsListEntry* bbs_entry = new BbsListEntry();
-  bbs_entry->id = id;
-  bbs_entry->name = json_entry["name"].GetString();
-  if (json_entry.HasMember("software")) {
-    bbs_entry->software = json_entry["software"].GetString();
-  }
-  if (json_entry.HasMember("location")) {
-    bbs_entry->location = json_entry["location"].GetString();
-  }
-  if (json_entry.HasMember("sysop_name")) {
-    bbs_entry->sysop_name = json_entry["sysop_name"].GetString();
-  }
-  if (json_entry.HasMember("addresses")) {
-    const Value& addresses = json_entry["addresses"];
-    ParseAddresses(bbs_entry, addresses);
-  }
-  return bbs_entry;
+template <class Archive>
+void serialize(Archive & ar, wwiv::bbslist::BbsListAddress &a) {
+  ar(cereal::make_nvp("type", a.type));
+  ar(cereal::make_nvp("address", a.address));
 }
 
 bool LoadFromJSON(const string& dir, const string& filename, 
-                  std::vector<std::unique_ptr<BbsListEntry>>* entries) {
-  int id = 1;
-  Document document;
+                  std::vector<BbsListEntry>& entries) {
+  entries.clear();
+
   TextFile file(dir, filename, "r");
   if (!file.IsOpen()) {
-    // rapidjson will assert if the file does not exist, so we need to 
-    // verify that the file exists first.
     return false;
   }
-  
-  char buf[8192];
-  FileReadStream stream(file.GetFILE(), buf, sizeof(buf));
-  document.ParseStream<rapidjson::kParseDefaultFlags>(stream);
+  string text = file.ReadFileIntoString();
+  std::stringstream ss;
+  ss << text;
+  cereal::JSONInputArchive load(ss);
+  load(cereal::make_nvp("bbslist", entries));
 
-  if (document.HasParseError()) {
-    return false;
-  }
-  if (document.HasMember("bbslist")) {
-    const Value& bbslist = document["bbslist"];
-    if (!bbslist.IsArray()) {
-      return false;
-    }
-    for (size_t i=0; i<bbslist.Size(); i++) {
-      BbsListEntry* entry = JsonValueToBbsListEntry(bbslist[i], id++);
-      if (entry != nullptr) {
-        entries->emplace_back(entry);
-      }
-    }
+  // Assign id numbers.
+  int id = 1;
+  for (auto& e : entries) {
+    e.id = id++;
   }
   return true;
 }
 
-static Value BbsListEntryToJsonValue(const BbsListEntry& entry, Document::AllocatorType& allocator) {
-  Value json_entry(rapidjson::kObjectType);
-  json_entry.AddMember("name", StringRef(entry.name.c_str()), allocator);
-  json_entry.AddMember("software", StringRef(entry.software.c_str()), allocator);
-  json_entry.AddMember("location", StringRef(entry.location.c_str()), allocator);
-  json_entry.AddMember("sysop_name", StringRef(entry.sysop_name.c_str()), allocator);
-  if (!entry.addresses.empty()) {
-    Value addresses_json_entry(rapidjson::kArrayType);
-    for (const auto& a : entry.addresses) {
-      Value address_json_entry(rapidjson::kObjectType);
-      const string type = ConnectionTypeString(a.first);
-
-      Value type_value(rapidjson::kStringType);
-      type_value.SetString(type.c_str(), allocator);
-      address_json_entry.AddMember("type", type_value.Move(), allocator);
-
-      Value address_value(rapidjson::kStringType);
-      address_value.SetString(a.second.c_str(), allocator);
-      address_json_entry.AddMember(StringRef("address"), address_value, allocator);
-      
-      addresses_json_entry.PushBack(address_json_entry.Move(), allocator);
-    }
-    json_entry.AddMember(StringRef("addresses"), addresses_json_entry, allocator);
-  }
-
-  // rapidjson supports C++11 move semantics.
-  return json_entry;
-}
-
 bool SaveToJSON(const string& dir, const string& filename, 
-                const std::vector<std::unique_ptr<BbsListEntry>>& entries) {
-  Document document;
+                const std::vector<BbsListEntry>& entries) {
+  std::ostringstream ss;
+  {
+    cereal::JSONOutputArchive save(ss);
+    save(cereal::make_nvp("bbslist", entries));
+  }
+  
   TextFile file(dir, filename, "w");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
@@ -203,26 +128,13 @@ bool SaveToJSON(const string& dir, const string& filename,
     return false;
   }
 
-  Document::AllocatorType& allocator = document.GetAllocator();
-  document.SetObject();
-  Value bbs_list(rapidjson::kArrayType);
-  for (const auto& e : entries) {
-    Value json_entry = BbsListEntryToJsonValue(*e, allocator);
-    bbs_list.PushBack(json_entry, allocator);
-  }
-  document.AddMember("bbslist", bbs_list, allocator);
-  
-  char buf[8192];
-  FileWriteStream stream(file.GetFILE(), buf, sizeof(buf));
-  PrettyWriter<FileWriteStream> writer(stream);
-  bool result = document.Accept(writer);
-  stream.Flush();
-  return result;
+  file.Write(ss.str());
+  return true;
 }
 
 static bool ConvertLegacyList(
     const string& dir, const string& legacy_filename, 
-    std::vector<std::unique_ptr<BbsListEntry>>* entries) {
+    std::vector<BbsListEntry>& entries) {
 
   TextFile legacy_file(dir, legacy_filename, "r");
   if (!legacy_file.IsOpen()) {
@@ -239,54 +151,35 @@ static bool ConvertLegacyList(
       // check for ddd-ddd-dddd
       continue;
     }
-    unique_ptr<BbsListEntry> e(new BbsListEntry());
+    BbsListEntry e = {};
     string name = line.substr(14, 42);
     StringTrimEnd(&name);
-    e->name = name;
-    e->addresses.insert(std::make_pair(ConnectionType::MODEM, line.substr(0, 12)));
-    e->software = line.substr(74, 4);
-    entries->emplace_back(e.release());
+    e.name = name;
+    e.addresses.push_back({"modem", line.substr(0, 12)});
+    e.software = line.substr(74, 4);
+    entries.emplace_back(e);
   }
   return true;
 }
 
-static string GetConnectionType(const BbsListEntry* entry, ConnectionType type) {
-  const auto& addresses = entry->addresses;
-  if (addresses.empty()) {
-    return "";
-  }
-  if (!contains(entry->addresses, type)) {
-    return "";
-  }
-  return entry->addresses.find(type)->second;
-}
-
-static void ReadBBSList(const vector<unique_ptr<BbsListEntry>>& entries) {
+static void ReadBBSList(const vector<BbsListEntry>& entries) {
   int cnt = 0;
   bout.cls();
   bout.litebar("%s BBS List", session()->config()->config()->systemname);
   for (const auto& entry : entries) {
     bout.Color((++cnt % 2) == 0 ? 1 : 9);
-    bout << left << setw(3) << entry->id << " : " << setw(60) << entry->name << " (" << entry->software << ")" << wwiv::endl;
-    if (contains(entry->addresses, ConnectionType::MODEM)) {
+    bout << left << setw(3) << entry.id << " : " << setw(60) << entry.name << " (" << entry.software << ")" << wwiv::endl;
+    for (const auto& a : entry.addresses) {
       bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << "      Modem : " << GetConnectionType(entry.get(), ConnectionType::MODEM) << wwiv::endl;
-    }
-    if (contains(entry->addresses, ConnectionType::TELNET)) {
-      bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << "      Telnet: " << GetConnectionType(entry.get(), ConnectionType::TELNET) << wwiv::endl;
-    }
-    if (contains(entry->addresses, ConnectionType::SSH)) {
-      bout.Color((cnt % 2) == 0 ? 1 : 9);
-      bout << "      SSH   : " << GetConnectionType(entry.get(), ConnectionType::SSH) << wwiv::endl;
+      bout << std::setw(11) << a.type << " : " << a.address << wwiv::endl;
     }
   }
   bout.nl();
 }
 
 static void DeleteBbsListEntry() {
-  vector<unique_ptr<BbsListEntry>> entries;
-  LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, &entries);
+  vector<BbsListEntry> entries;
+  LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
 
   if (entries.empty()) {
     bout << "|#6You can not delete an entry when the list is empty." << wwiv::endl;
@@ -304,7 +197,7 @@ static void DeleteBbsListEntry() {
   }
 
   for (auto b = std::begin(entries); b != std::end(entries); b++) {
-    if (b->get()->id == entry_num) {
+    if (b->id == entry_num) {
       entries.erase(b);
       bout << "|10Entry deleted." << wwiv::endl;
       SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
@@ -330,20 +223,21 @@ static bool IsBBSPhoneNumberValid(const std::string& phoneNumber) {
 
 static bool IsBBSPhoneNumberUnique(
     const string& phoneNumber,
-    const vector<unique_ptr<BbsListEntry>>& entries) {
+    const vector<BbsListEntry>& entries) {
   for (const auto& e : entries) {
-    const auto& a = e->addresses.find(ConnectionType::MODEM);
-    if (a == e->addresses.end()) {
-      continue;
-    }
-    if (phoneNumber == a->second) {
-      return false;
+    for (const auto& a : e.addresses) {
+      if (a.type != "modem") {
+        continue;
+      }
+      if (a.address == phoneNumber) {
+        return false;
+      }
     }
   }
   return true;
 }
 
-static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
+static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   bout.nl();
   bout << "|#9Does this BBS have a modem line? (y/N) : ";
   bool has_pots = noyes();
@@ -357,8 +251,8 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
     return false;
   }
 
-    bout.nl();
-  unique_ptr<BbsListEntry> entry(new BbsListEntry());
+  bout.nl();
+  BbsListEntry entry = {};
   if (has_pots) {
     bout << "|#9Enter the Modem Number   : ";
     string phone_number = Input1("", 12, true, InputMode::PHONE);
@@ -367,11 +261,11 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
       bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
       return false;
     }
-    if (!IsBBSPhoneNumberUnique(phone_number, *entries)) {
+    if (!IsBBSPhoneNumberUnique(phone_number, entries)) {
       bout << "|#6Sorry, It's already in the BBS list.\r\n\n\n";
       return false;
     }
-    entry->addresses.insert(std::make_pair(ConnectionType::MODEM, phone_number));
+    entry.addresses.push_back({"modem", phone_number});
   }
 
   if (has_telnet) {
@@ -379,25 +273,25 @@ static bool AddBBSListEntry(vector<unique_ptr<BbsListEntry>>* entries) {
     string telnet_address = Input1("", 50, true, InputMode::MIXED);
     bout.nl();
     if (!telnet_address.empty()) {
-      entry->addresses.insert(std::make_pair(ConnectionType::TELNET, telnet_address));
+      entry.addresses.push_back({"telnet", telnet_address});
     }
   }
 
   bout << "|#9Enter the BBS Name       : ";
-  entry->name = Input1("", 50, true, InputMode::MIXED);
+  entry.name = Input1("", 50, true, InputMode::MIXED);
   bout.nl();
   bout << "|#9Enter BBS Type (ex. WWIV): ";
-  entry->software = Input1("WWIV", 12, true, InputMode::UPPER);
+  entry.software = Input1("WWIV", 12, true, InputMode::UPPER);
   bout.nl();
   bout << "|#9Enter the BBS Location   : ";
-  entry->location = Input1("", 50, true, InputMode::MIXED);
+  entry.location = Input1("", 50, true, InputMode::MIXED);
   bout.nl();
   bout << "|#9Enter the Sysop Name     : ";
-  entry->sysop_name = Input1("", 50, true, InputMode::MIXED);
+  entry.sysop_name = Input1("", 50, true, InputMode::MIXED);
   bout.nl(2);
   bout << "|#5Is this information correct? ";
   if (yesno()) {
-    entries->emplace_back(entry.release());
+    entries.emplace_back(entry);
     bout << "\r\n|#3This entry will be added to BBS list.\r\n";
     return true;
   }
@@ -421,8 +315,8 @@ void NewBBSList() {
     char ch = ShowBBSListMenuAndGetChoice();
     switch (ch) {
     case 'A': {
-      vector<unique_ptr<BbsListEntry>> entries;
-      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, &entries);
+      vector<BbsListEntry> entries;
+      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       if (session()->GetEffectiveSl() <= 10) {
         bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
@@ -430,7 +324,7 @@ void NewBBSList() {
         bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
         break;
       }
-      if (AddBBSListEntry(&entries)) {
+      if (AddBBSListEntry(entries)) {
         SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       }
     } break;
@@ -441,10 +335,10 @@ void NewBBSList() {
       print_net_listing(false);
       break;
     case 'R': {
-      vector<unique_ptr<BbsListEntry>> entries;
-      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, &entries);
+      vector<BbsListEntry> entries;
+      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       if (entries.empty()) {
-        ConvertLegacyList(session()->config()->gfilesdir(), BBSLIST_MSG, &entries);
+        ConvertLegacyList(session()->config()->gfilesdir(), BBSLIST_MSG, entries);
         SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
       }
       ReadBBSList(entries);
