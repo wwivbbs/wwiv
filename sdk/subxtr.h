@@ -28,6 +28,53 @@
 namespace wwiv {
 namespace sdk {
 
+// per-network message data or subboards.
+struct subboard_network_data_t {
+  std::string stype;
+  int32_t flags;
+  int16_t net_num;
+  int16_t host;
+  int16_t category;
+};
+
+// New (5.2+) style subboard. 
+// This data is persisted in JSON, not on disk.
+struct subboard_t {
+  // board name
+  std::string name;
+  // long description - for subs.lst
+  std::string desc;
+
+  // board database filename
+  std::string filename;
+  // special key
+  char key;
+
+  // sl required to read
+  uint8_t readsl;
+  // sl required to post
+  uint8_t postsl;
+  // anonymous board?
+  uint8_t anony;
+  // minimum age for sub
+  uint8_t age;
+
+  // max # of msgs
+  uint16_t maxmsgs;
+  // AR for sub-board
+  uint16_t ar;
+  // how messages are stored
+  uint16_t storage_type;
+  // 4 digit board type
+  uint16_t type;
+  // per-network data type for networked subs.
+  vector<subboard_network_data_t> nets;
+};
+
+// Wrapper for new 5.2+ style subboards
+struct subs_t {
+  vector<subboard_t> subs;
+};
 
 /*
  * Info for each network the sub is on.

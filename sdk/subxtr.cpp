@@ -36,6 +36,7 @@
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
+using cereal::make_nvp;
 using std::string;
 using std::vector;
 using namespace wwiv::core;
@@ -45,67 +46,31 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
-struct subboard_network_data_t {
-  string stype;
-  int32_t flags;
-  int16_t net_num;
-  int16_t host;
-  int16_t category;
+template <class Archive>
+void serialize(Archive & ar, subboard_network_data_t& s) {
+  ar(make_nvp("stype", s.stype),
+    make_nvp("flags", s.flags),
+    make_nvp("net_num", s.net_num),
+    make_nvp("host", s.host),
+    make_nvp("category", s.category));
+}
 
-  template <class Archive>
-  void serialize(Archive & ar) {
-    ar(CEREAL_NVP(stype), CEREAL_NVP(flags), CEREAL_NVP(net_num), CEREAL_NVP(host), CEREAL_NVP(category));
-  }
-};
+template <class Archive>
+void serialize(Archive & archive, subboard_t& s) {
+  archive(make_nvp("name", s.name), make_nvp("desc", s.desc), 
+    make_nvp("filename", s.filename), make_nvp("key", s.key),
+    make_nvp("readsl", s.readsl), make_nvp("postsl", s.postsl), 
+    make_nvp("anony", s.anony), make_nvp("age", s.age), 
+    make_nvp("maxmsgs", s.maxmsgs), make_nvp("ar", s.ar), 
+    make_nvp("storage_type", s.storage_type), make_nvp("stype", s.type), 
+    make_nvp("nets", s.nets));
+}
 
-// New (5.2+) style subboard.
-struct subboard_t {
-  // board name
-  string name;
-  // long description - for subs.lst
-  string desc;
+template <class Archive>
+void serialize(Archive & archive, subs_t& s) {
+  archive(cereal::make_nvp("subs", s.subs));
+}
 
-  // board database filename
-  string filename;
-  // special key
-  char key;
-
-  // sl required to read
-  uint8_t readsl;
-  // sl required to post
-  uint8_t postsl;
-  // anonymous board?
-  uint8_t anony;
-  // minimum age for sub
-  uint8_t age;
-
-  // max # of msgs
-  uint16_t maxmsgs;
-  // AR for sub-board
-  uint16_t ar;
-  // how messages are stored
-  uint16_t storage_type;
-  // 4 digit board type
-  uint16_t type;
-
-  vector<subboard_network_data_t> nets;
-
-  template <class Archive>
-  void serialize(Archive & archive) {
-    archive(CEREAL_NVP(name), CEREAL_NVP(desc), CEREAL_NVP(filename), CEREAL_NVP(key), 
-      CEREAL_NVP(readsl), CEREAL_NVP(postsl), CEREAL_NVP(anony), CEREAL_NVP(age), CEREAL_NVP(maxmsgs), 
-      CEREAL_NVP(ar), CEREAL_NVP(storage_type), CEREAL_NVP(type), CEREAL_NVP(nets));
-  }
-};
-
-
-struct subs_t {
-  vector<subboard_t> subs;
-  template <class Archive>
-  void serialize(Archive & archive) {
-    archive(CEREAL_NVP(subs));
-  }
-};
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (size_t i = 0; i < net_networks.size(); i++) {

@@ -64,7 +64,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
     nNetNumber = -1;
   }
 
-  net_header_rec netHeaderOrig;
+  net_header_rec netHeaderOrig = {};
   netHeaderOrig.tosys   = 0;
   netHeaderOrig.touser  = 0;
   netHeaderOrig.fromsys = pPostRecord->ownersys;
@@ -104,8 +104,7 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
     if (xnp.host) {
       nh.tosys = xnp.host;
     } else {
-      const string filename = StringPrintf("%sn%s.net", session()->network_directory().c_str(), xnp.stype);
-      File file(filename);
+      File file(StringPrintf("%sn%s.net", session()->network_directory().c_str(), xnp.stype));
       if (file.Open(File::modeBinary | File::modeReadOnly)) {
         int len1 = file.GetLength();
         pList = static_cast<unsigned short int *>(BbsAllocA(len1 * 2 + 1));
