@@ -56,10 +56,9 @@ struct subboard_network_data_t {
   void serialize(Archive & ar) {
     ar(CEREAL_NVP(stype), CEREAL_NVP(flags), CEREAL_NVP(net_num), CEREAL_NVP(host), CEREAL_NVP(category));
   }
-
 };
 
-
+// New (5.2+) style subboard.
 struct subboard_t {
   // board name
   string name;
@@ -96,6 +95,15 @@ struct subboard_t {
     archive(CEREAL_NVP(name), CEREAL_NVP(desc), CEREAL_NVP(filename), CEREAL_NVP(key), 
       CEREAL_NVP(readsl), CEREAL_NVP(postsl), CEREAL_NVP(anony), CEREAL_NVP(age), CEREAL_NVP(maxmsgs), 
       CEREAL_NVP(ar), CEREAL_NVP(storage_type), CEREAL_NVP(type), CEREAL_NVP(nets));
+  }
+};
+
+
+struct subs_t {
+  vector<subboard_t> subs;
+  template <class Archive>
+  void serialize(Archive & archive) {
+    archive(CEREAL_NVP(subs));
   }
 };
 
@@ -173,20 +181,6 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
       }
     }
   }
-
-  vector<subboard_t> new_subs;
-  subboard_t t1 = {};
-  t1.desc = "test1"; t1.name = "name, test1"; t1.filename = "TEST1";
-  t1.readsl = 20; t1.postsl = 50;
-  subboard_network_data_t tn1 = {};
-  tn1.category = 99; tn1.host = 1; tn1.net_num = 1; tn1.stype = "TEST1";
-  t1.nets.emplace_back(tn1);
-  new_subs.emplace_back(t1);
-
-  std::ostringstream os;
-  cereal::JSONOutputArchive archive(os);
-  archive(CEREAL_NVP(new_subs));
-  std::cerr << os.str();
 
   return true;
 }
