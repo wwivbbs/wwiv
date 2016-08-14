@@ -3,6 +3,7 @@ project (WWIV5)
 
 include_directories(../deps/googletest-master/googletest/include)
 include_directories(..)
+include_directories(../deps/cereal/include)
 
 set(test_sources
   bbs_helper.cpp
