@@ -68,12 +68,12 @@ struct subboard_t {
   // 4 digit board type
   uint16_t type;
   // per-network data type for networked subs.
-  vector<subboard_network_data_t> nets;
+  std::vector<subboard_network_data_t> nets;
 };
 
 // Wrapper for new 5.2+ style subboards
 struct subs_t {
-  vector<subboard_t> subs;
+  std::vector<subboard_t> subs;
 };
 
 /*

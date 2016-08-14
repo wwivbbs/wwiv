@@ -165,8 +165,8 @@ static void build_header() {
 static void printtitle_plus_old() {
   bout << "|16|15" << string(79, '\xDC') << wwiv::endl;
 
-  const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(udir[session()->GetCurrentFileArea()].keys),
-          session()->directories[udir[session()->GetCurrentFileArea()].subnum].name, session()->numf);
+  const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(session()->current_user_dir().keys),
+          session()->directories[session()->current_user_dir().subnum].name, session()->numf);
   bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
 
   if (config_listing.lp_options & cfl_header) {
@@ -185,8 +185,8 @@ void printtitle_plus() {
   if (config_listing.lp_options & cfl_header) {
     printtitle_plus_old();
   } else {
-    const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(udir[session()->GetCurrentFileArea()].keys),
-            session()->directories[udir[session()->GetCurrentFileArea()].subnum].name, session()->numf);
+    const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(session()->current_user_dir().keys),
+            session()->directories[session()->current_user_dir().subnum].name, session()->numf);
     bout.litebar("%-54s Space=Tag/?=Help", buf.c_str());
     bout.Color(0);
   }
@@ -217,7 +217,7 @@ void print_searching(struct search_record * search_rec) {
   bout << "|#9<Space> aborts  : ";
   bout.cls();
   bout.bprintf(" |B1|15%-40.40s|B0|#0\r",
-                                    session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
+                                    session()->directories[session()->current_user_dir().subnum].name);
 }
 
 static void catch_divide_by_zero(int signum) {
@@ -371,10 +371,10 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
   if (config_listing.lp_options & cfl_kbytes) {
     buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
     buffer.resize(5);
-    if (!(session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom)) {
+    if (!(session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom)) {
       char szTempFile[MAX_PATH];
 
-      strcpy(szTempFile, session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+      strcpy(szTempFile, session()->directories[session()->current_user_dir().subnum].path);
       strcat(szTempFile, u->filename);
       unalign(szTempFile);
       if (lp_config.check_exist) {
@@ -1605,8 +1605,8 @@ static int move_filename(const char *file_name, int dn) {
 
         nDestDirNum = -1;
         if (ss[0]) {
-          for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
-            if (IsEquals(udir[i1].keys, ss)) {
+          for (size_t i1 = 0; (i1 < session()->directories.size()) && (session()->udir[i1].subnum != -1); i1++) {
+            if (IsEquals(session()->udir[i1].keys, ss)) {
               nDestDirNum = i1;
             }
           }
@@ -1625,7 +1625,7 @@ static int move_filename(const char *file_name, int dn) {
 
       if (nDestDirNum != -1) {
         ok = true;
-        nDestDirNum = udir[nDestDirNum].subnum;
+        nDestDirNum = session()->udir[nDestDirNum].subnum;
         dliscan1(nDestDirNum);
         if (recno(u.filename) > 0) {
           ok = false;
@@ -1773,13 +1773,13 @@ void do_batch_sysop_command(int mode, const char *file_name) {
     // Just act on the single file
     switch (mode) {
     case SYSOP_DELETE:
-      remove_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
+      remove_filename(file_name, session()->current_user_dir().subnum);
       break;
     case SYSOP_RENAME:
-      rename_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
+      rename_filename(file_name, session()->current_user_dir().subnum);
       break;
     case SYSOP_MOVE:
-      move_filename(file_name, udir[session()->GetCurrentFileArea()].subnum);
+      move_filename(file_name, session()->current_user_dir().subnum);
       break;
     }
   }
@@ -1813,9 +1813,9 @@ LP_SEARCH_HELP:
     bout << "|#9A)|#2 Filename (wildcards) :|#2 " << sr->filemask << wwiv::endl;
     bout << "|#9B)|#2 Text (no wildcards)  :|#2 " << sr->search << wwiv::endl;
     if (okconf(session()->user())) {
-      sprintf(s1, "%s", stripcolors(session()->directories[udir[session()->GetCurrentFileArea()].subnum].name));
+      sprintf(s1, "%s", stripcolors(session()->directories[session()->current_user_dir().subnum].name));
     } else {
-      sprintf(s1, "%s", stripcolors(session()->directories[udir[session()->GetCurrentFileArea()].subnum].name));
+      sprintf(s1, "%s", stripcolors(session()->directories[session()->current_user_dir().subnum].name));
     }
     bout << "|#9C)|#2 Which Directories    :|#2 " << (sr->alldirs == THIS_DIR ? s1 : sr->alldirs == ALL_DIRS ?
                        "All dirs" : "Dirs in NSCAN") << wwiv::endl;
@@ -1939,7 +1939,7 @@ void view_file(const char *file_name) {
         fileDownload.Read(&u, sizeof(uploadsrec));
         fileDownload.Close();
       }
-      i1 = list_arc_out(stripfn(u.filename), session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+      i1 = list_arc_out(stripfn(u.filename), session()->directories[session()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }
@@ -1986,7 +1986,7 @@ int lp_try_to_download(const char *file_mask, int dn) {
       }
     }
 
-    write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
+    write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_ONLINE);
     sprintf(s1, "%s%s", session()->directories[dn].path, u.filename);
     sprintf(s3, "%-40.40s", u.description);
     abort = 0;
@@ -2029,14 +2029,14 @@ void download_plus(const char *file_name) {
     strcat(szFileName, ".*");
   }
   align(szFileName);
-  if (lp_try_to_download(szFileName, udir[session()->GetCurrentFileArea()].subnum) == 0) {
+  if (lp_try_to_download(szFileName, session()->current_user_dir().subnum) == 0) {
     bout << "\r\nSearching all session()->directories.\r\n\n";
     size_t dn = 0;
     int count = 0;
     int color = 3;
     foundany = 0;
     bout << "\r|#2Searching ";
-    while ((dn < session()->directories.size()) && (udir[dn].subnum != -1)) {
+    while ((dn < session()->directories.size()) && (session()->udir[dn].subnum != -1)) {
       count++;
       bout << "|#" << color << ".";
       if (count == NUM_DOTS) {
@@ -2051,7 +2051,7 @@ void download_plus(const char *file_name) {
           color = 0;
         }
       }
-      if (lp_try_to_download(szFileName, udir[dn].subnum) < 0) {
+      if (lp_try_to_download(szFileName, session()->udir[dn].subnum) < 0) {
         break;
       } else {
         dn++;

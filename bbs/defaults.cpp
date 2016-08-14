@@ -378,11 +378,11 @@ static void change_colors() {
 void l_config_qscan() {
   bool abort = false;
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
-  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1) && !abort; i++) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1) && !abort; i++) {
     pla(StringPrintf("%c %s. %s",
-            (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) ? '*' : ' ',
-            usub[i].keys,
-            session()->subboards[usub[i].subnum].name), &abort);
+            (qsc_q[session()->usub[i].subnum / 32] & (1L << (session()->usub[i].subnum % 32))) ? '*' : ' ',
+            session()->usub[i].keys,
+            session()->subboards[session()->usub[i].subnum].name), &abort);
   }
   bout.nl(2);
 }
@@ -394,7 +394,7 @@ void config_qscan() {
   }
 
   int oc = session()->GetCurrentConferenceMessageArea();
-  int os = usub[session()->GetCurrentMessageArea()].subnum;
+  int os = session()->current_user_sub().subnum;
 
   bool done = false;
   bool done1 = false;
@@ -443,15 +443,15 @@ void config_qscan() {
         bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
         char* s = mmkey(0);
         if (s[0]) {
-          for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
-            if (IsEquals(usub[i].keys, s)) {
-              qsc_q[usub[i].subnum / 32] ^= (1L << (usub[i].subnum % 32));
+          for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1); i++) {
+            if (IsEquals(session()->usub[i].keys, s)) {
+              qsc_q[session()->usub[i].subnum / 32] ^= (1L << (session()->usub[i].subnum % 32));
             }
             if (IsEquals(s, "S")) {
-              qsc_q[usub[i].subnum / 32] |= (1L << (usub[i].subnum % 32));
+              qsc_q[session()->usub[i].subnum / 32] |= (1L << (session()->usub[i].subnum % 32));
             }
             if (IsEquals(s, "C")) {
-              qsc_q[usub[i].subnum / 32] &= ~(1L << (usub[i].subnum % 32));
+              qsc_q[session()->usub[i].subnum / 32] &= ~(1L << (session()->usub[i].subnum % 32));
             }
           }
           if (IsEquals(s, "Q")) {
@@ -883,12 +883,12 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
   int max_lines = GetMaxLinesToShowForScanPlus();
 
   if (type == 0) {
-    for (size_t this_sub = first; (this_sub < session()->subboards.size()) && (usub[this_sub].subnum != -1) &&
+    for (size_t this_sub = first; (this_sub < session()->subboards.size()) && (session()->usub[this_sub].subnum != -1) &&
          *amount < max_lines * 2; this_sub++) {
       lines_listed = 0;
       sprintf(s, "|#7[|#1%c|#7] |#9%s",
-              (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
-              session()->subboards[usub[this_sub].subnum].name);
+              (qsc_q[session()->usub[this_sub].subnum / 32] & (1L << (session()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
+              session()->subboards[session()->usub[this_sub].subnum].name);
       s[44] = '\0';
       if (*amount >= max_lines) {
         bout.GotoXY(40, 3 + *amount - max_lines);
@@ -900,10 +900,10 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
       ++*amount;
     }
   } else {
-    for (size_t this_dir = first; (this_dir < session()->directories.size()) && (udir[this_dir].subnum != -1) &&
+    for (size_t this_dir = first; (this_dir < session()->directories.size()) && (session()->udir[this_dir].subnum != -1) &&
          *amount < max_lines * 2; this_dir++) {
       lines_listed = 0;
-      int alias_dir = udir[this_dir].subnum;
+      int alias_dir = session()->udir[this_dir].subnum;
       sprintf(s, "|#7[|#1%c|#7] |#2%s", qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE' : ' ',
         session()->directories[alias_dir].name);
       s[44] = 0;
@@ -953,14 +953,14 @@ static void undrawscan(int filepos, long tagged) {
 
 static long is_inscan(int dir) {
   bool sysdir = false;
-  if (IsEquals(udir[0].keys, "0")) {
+  if (IsEquals(session()->udir[0].keys, "0")) {
     sysdir = true;
   }
 
   for (size_t this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
     const string key = StringPrintf("%d", (sysdir ? dir : (dir + 1)));
-    if (key == udir[this_dir].keys) {
-      int16_t ad = udir[this_dir].subnum;
+    if (key == session()->udir[this_dir].keys) {
+      int16_t ad = session()->udir[this_dir].subnum;
       return (qsc_n[ad / 32] & (1L << ad % 32));
     }
   }
@@ -1012,7 +1012,7 @@ void config_scan_plus(int type) {
     }
     if (!done) {
       drawscan(pos, type ? is_inscan(top + pos) :
-               qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+               qsc_q[session()->usub[top + pos].subnum / 32] & (1L << (session()->usub[top + pos].subnum % 32)));
     }
     bool redraw = true;
     bool menu_done = false;
@@ -1039,49 +1039,49 @@ void config_scan_plus(int type) {
         break;
       case COMMAND_DOWN:
         undrawscan(pos, type ? is_inscan(top + pos) :
-                   qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+                   qsc_q[session()->usub[top + pos].subnum / 32] & (1L << (session()->usub[top + pos].subnum % 32)));
         ++pos;
         if (pos >= amount) {
           pos = 0;
         }
         drawscan(pos, type ? is_inscan(top + pos) :
-                 qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+                 qsc_q[session()->usub[top + pos].subnum / 32] & (1L << (session()->usub[top + pos].subnum % 32)));
         redraw = false;
         break;
       case COMMAND_UP:
         undrawscan(pos, type ? is_inscan(top + pos) :
-                   qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+                   qsc_q[session()->usub[top + pos].subnum / 32] & (1L << (session()->usub[top + pos].subnum % 32)));
         if (!pos) {
           pos = amount - 1;
         } else {
           --pos;
         }
         drawscan(pos, type ? is_inscan(top + pos) :
-                 qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+                 qsc_q[session()->usub[top + pos].subnum / 32] & (1L << (session()->usub[top + pos].subnum % 32)));
         redraw = false;
         break;
       case SPACE: {
         if (type == 0) {
 #ifdef NOTOGGLESYSOP
-          if (usub[top + pos].subnum == 0) {
-            qsc_q[usub[top + pos].subnum / 32] |= (1L << (usub[top + pos].subnum % 32));
+          if (session()->usub[top + pos].subnum == 0) {
+            qsc_q[session()->usub[top + pos].subnum / 32] |= (1L << (session()->usub[top + pos].subnum % 32));
           }
           else
 #endif
-            qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
+            qsc_q[session()->usub[top + pos].subnum / 32] ^= (1L << (session()->usub[top + pos].subnum % 32));
         }
         else {
-          bool sysdir = IsEquals(udir[0].keys, "0");
+          bool sysdir = IsEquals(session()->udir[0].keys, "0");
           for (size_t this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
             const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
-            if (s == udir[this_dir].keys) {
-              int ad = udir[this_dir].subnum;
+            if (s == session()->udir[this_dir].keys) {
+              int ad = session()->udir[this_dir].subnum;
               qsc_n[ad / 32] ^= (1L << (ad % 32));
             }
           }
         }
         drawscan(pos, type ? is_inscan(top + pos) :
-          qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+          qsc_q[session()->usub[top + pos].subnum / 32] & (1L << (session()->usub[top + pos].subnum % 32)));
         redraw = false;
       } break;
       case EXECUTE:
@@ -1116,32 +1116,32 @@ void config_scan_plus(int type) {
           break;
         case 2:
           if (type == 0) {
-            qsc_q[usub[top + pos].subnum / 32] ^= (1L << (usub[top + pos].subnum % 32));
+            qsc_q[session()->usub[top + pos].subnum / 32] ^= (1L << (session()->usub[top + pos].subnum % 32));
           } else {
-            bool sysdir = IsEquals(udir[0].keys, "0");
+            bool sysdir = IsEquals(session()->udir[0].keys, "0");
             for (size_t this_dir = 0; (this_dir < session()->directories.size()); this_dir++) {
               const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
-              if (s == udir[this_dir].keys) {
-                int ad = udir[this_dir].subnum;
+              if (s == session()->udir[this_dir].keys) {
+                int ad = session()->udir[this_dir].subnum;
                 qsc_n[ad / 32] ^= (1L << (ad % 32));
               }
             }
           }
           drawscan(pos, type ? is_inscan(top + pos) :
-                   qsc_q[usub[top + pos].subnum / 32] & (1L << (usub[top + pos].subnum % 32)));
+                   qsc_q[session()->usub[top + pos].subnum / 32] & (1L << (session()->usub[top + pos].subnum % 32)));
           redraw = false;
           break;
         case 3:
           if (type == 0) {
             for (size_t this_sub = 0; this_sub < session()->subboards.size(); this_sub++) {
-              if (qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32))) {
-                qsc_q[usub[this_sub].subnum / 32] ^= (1L << (usub[this_sub].subnum % 32));
+              if (qsc_q[session()->usub[this_sub].subnum / 32] & (1L << (session()->usub[this_sub].subnum % 32))) {
+                qsc_q[session()->usub[this_sub].subnum / 32] ^= (1L << (session()->usub[this_sub].subnum % 32));
               }
             }
           } else {
             for (size_t this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
-              if (qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32))) {
-                qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
+              if (qsc_n[session()->udir[this_dir].subnum / 32] & (1L << (session()->udir[this_dir].subnum % 32))) {
+                qsc_n[session()->udir[this_dir].subnum / 32] ^= 1L << (session()->udir[this_dir].subnum % 32);
               }
             }
           }
@@ -1152,14 +1152,14 @@ void config_scan_plus(int type) {
         case 4:
           if (type == 0) {
             for (size_t this_sub = 0; this_sub < session()->subboards.size(); this_sub++) {
-              if (!(qsc_q[usub[this_sub].subnum / 32] & (1L << (usub[this_sub].subnum % 32)))) {
-                qsc_q[usub[this_sub].subnum / 32] ^= (1L << (usub[this_sub].subnum % 32));
+              if (!(qsc_q[session()->usub[this_sub].subnum / 32] & (1L << (session()->usub[this_sub].subnum % 32)))) {
+                qsc_q[session()->usub[this_sub].subnum / 32] ^= (1L << (session()->usub[this_sub].subnum % 32));
               }
             }
           } else {
             for (size_t this_dir = 0; this_dir < session()->directories.size(); this_dir++) {
-              if (!(qsc_n[udir[this_dir].subnum / 32] & (1L << (udir[this_dir].subnum % 32)))) {
-                qsc_n[udir[this_dir].subnum / 32] ^= 1L << (udir[this_dir].subnum % 32);
+              if (!(qsc_n[session()->udir[this_dir].subnum / 32] & (1L << (session()->udir[this_dir].subnum % 32)))) {
+                qsc_n[session()->udir[this_dir].subnum / 32] ^= 1L << (session()->udir[this_dir].subnum % 32);
               }
             }
           }

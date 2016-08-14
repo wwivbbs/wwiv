@@ -337,7 +337,7 @@ void grab_user_name(messagerec* pMessageRecord, const char* file_name) {
 }
 
 void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
-  int sub_number = usub[nBeginSubNumber].subnum;
+  int sub_number = session()->usub[nBeginSubNumber].subnum;
   g_flags &= ~g_flag_made_find_str;
 
   if (hangup || sub_number < 0) {
@@ -362,7 +362,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
                  session()->current_sub().name,
-                 usub[session()->GetCurrentMessageArea()].keys,
+                 session()->current_user_sub().keys,
                  session()->GetNumMessagesInCurrentMessageArea());
 
     int i;
@@ -392,7 +392,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   } else {
     bout.bprintf("|#1< Nothing new on %s %s >",
       session()->subboards[sub_number].name,
-        usub[nBeginSubNumber].keys);
+        session()->usub[nBeginSubNumber].keys);
     bout.clreol();
     bout.nl();
     lines_listed = 0;
@@ -413,9 +413,9 @@ void nscan(int nStartingSubNum) {
   }
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
   for (size_t i = nStartingSubNum; 
-       usub[i].subnum != -1 && i < session()->subboards.size() && nNextSubNumber && !hangup;
+       session()->usub[i].subnum != -1 && i < session()->subboards.size() && nNextSubNumber && !hangup;
        i++) {
-    if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
+    if (qsc_q[session()->usub[i].subnum / 32] & (1L << (session()->usub[i].subnum % 32))) {
       qscan(i, &nNextSubNumber);
     }
     bool abort = false;

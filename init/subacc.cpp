@@ -85,7 +85,7 @@ bool open_sub(bool wr) {
 }
 
 bool iscan1(int si, const vector<subboardrec>& subboards) {
-  // Initializes use of a sub value (subboards[], not usub[]).  If quick, then
+  // Initializes use of a sub value (subboards[], not session()->usub[]).  If quick, then
   // don't worry about anything detailed, just grab qscan info.
   postrec p{};
 

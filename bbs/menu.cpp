@@ -113,7 +113,7 @@ void MenuInstanceData::Menus(const string& menuDirectory, const string& menuName
   menu_ = menuName;
 
   if (Open()) {
-    if (header.nums == MENU_NUMFLAG_DIRNUMBER && udir[0].subnum == -1) {
+    if (header.nums == MENU_NUMFLAG_DIRNUMBER && session()->udir[0].subnum == -1) {
       bout << "\r\nYou cannot currently access the file section.\r\n\n";
       Close();
       return;
@@ -523,10 +523,10 @@ void UnloadMenuSetup() {
 const string GetCommand(const MenuInstanceData* menu_data) {
   if (pSecondUserRec->cHotKeys == HOTKEYS_ON) {
     if (menu_data->header.nums == MENU_NUMFLAG_DIRNUMBER) {
-      write_inst(INST_LOC_XFER, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+      write_inst(INST_LOC_XFER, session()->current_user_dir().subnum, INST_FLAGS_NONE);
       return string(mmkey(1, WSession::mmkeyFileAreas));
     } else if (menu_data->header.nums == MENU_NUMFLAG_SUBNUMBER) {
-      write_inst(INST_LOC_MAIN, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+      write_inst(INST_LOC_MAIN, session()->current_user_sub().subnum, INST_FLAGS_NONE);
       return string(mmkey(0, WSession::mmkeyMessageAreas));
     } else {
       odc[0] = '/';

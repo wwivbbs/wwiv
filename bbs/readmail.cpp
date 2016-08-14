@@ -799,13 +799,13 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; (i1 < size_int(session()->subboards)) && (usub[i1].subnum != -1); i1++) {
-            if (IsEquals(usub[i1].keys, ss1)) {
+          for (i1 = 0; (i1 < size_int(session()->subboards)) && (session()->usub[i1].subnum != -1); i1++) {
+            if (IsEquals(session()->usub[i1].keys, ss1)) {
               i = i1;
             }
           }
           if (i != -1) {
-            if (session()->GetEffectiveSl() < session()->subboards[usub[i].subnum].postsl) {
+            if (session()->GetEffectiveSl() < session()->subboards[session()->usub[i].subnum].postsl) {
               bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
               i = -1;
             }

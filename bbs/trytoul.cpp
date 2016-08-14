@@ -131,14 +131,14 @@ int try_to_ul_wh(char *file_name) {
           done = true;
         } else {
           int x = atoi(temp);
-          if (udir[x].subnum >= 0) {
-            dliscan1(udir[x].subnum);
+          if (session()->udir[x].subnum >= 0) {
+            dliscan1(session()->udir[x].subnum);
             d = session()->directories[dn];
             if ((d.mask & mask_no_uploads) && (!dcs())) {
               bout << "Can't upload there...\r\n";
               pausescr();
             } else {
-              dn = udir[x].subnum;
+              dn = session()->udir[x].subnum;
               done = true;
             }
           }
@@ -229,9 +229,9 @@ int try_to_ul_wh(char *file_name) {
     bout << "Checking for same file in other session()->directories...\r\n\n";
     i2 = 0;
 
-    for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1); i++) {
+    for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1); i++) {
       strcpy(s1, "Scanning ");
-      strcat(s1, session()->directories[udir[i].subnum].name);
+      strcat(s1, session()->directories[session()->udir[i].subnum].name);
 
       for (i3 = i4 = strlen(s1); i3 < i2; i3++) {
         s1[i3] = ' ';
@@ -242,11 +242,11 @@ int try_to_ul_wh(char *file_name) {
       bout << s1;
       bputch('\r');
 
-      dliscan1(udir[i].subnum);
+      dliscan1(session()->udir[i].subnum);
       i1 = recno(u.filename);
       if (i1 >= 0) {
         bout.nl();
-        bout << "Same file found on " << session()->directories[udir[i].subnum].name << wwiv::endl;
+        bout << "Same file found on " << session()->directories[session()->udir[i].subnum].name << wwiv::endl;
 
         if (dcs()) {
           bout.nl();
@@ -329,7 +329,7 @@ int try_to_ul_wh(char *file_name) {
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
-            modify_extended_description(&ss, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
+            modify_extended_description(&ss, session()->directories[session()->current_user_dir().subnum].name);
             if (ss) {
               delete_extended_description(u.filename);
               add_extended_description(u.filename, ss);
@@ -337,7 +337,7 @@ int try_to_ul_wh(char *file_name) {
             }
           }
         } else {
-          modify_extended_description(&ss, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
+          modify_extended_description(&ss, session()->directories[session()->current_user_dir().subnum].name);
           if (ss) {
             add_extended_description(u.filename, ss);
             free(ss);

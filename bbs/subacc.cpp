@@ -116,7 +116,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
   return p.qscan;
 }
 
-// Initializes use of a sub value (session()->subboards[], not usub[]).  If quick, then
+// Initializes use of a sub value (session()->subboards[], not session()->usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
 bool iscan1(int sub_index) {
   postrec p{};
@@ -167,9 +167,9 @@ bool iscan1(int sub_index) {
   return true;
 }
 
-// Initializes use of a sub (usub[] value, not session()->subboards[] value).
+// Initializes use of a sub (session()->usub[] value, not session()->subboards[] value).
 int iscan(int b) {
-  return iscan1(usub[b].subnum);
+  return iscan1(session()->usub[b].subnum);
 }
 
 // Returns info for a post.

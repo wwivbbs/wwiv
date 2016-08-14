@@ -81,10 +81,10 @@ static void CleanUserInfo() {
   if (session()->user()->GetLastDirNum() > syscfg.max_dirs) {
     session()->user()->SetLastDirNum(0);
   }
-  if (usub[session()->user()->GetLastSubNum()].subnum != -1) {
+  if (session()->usub[session()->user()->GetLastSubNum()].subnum != -1) {
     session()->SetCurrentMessageArea(session()->user()->GetLastSubNum());
   }
-  if (udir[session()->user()->GetLastDirNum()].subnum != -1) {
+  if (session()->udir[session()->user()->GetLastDirNum()].subnum != -1) {
     session()->SetCurrentFileArea(session()->user()->GetLastDirNum());
   }
 
@@ -451,7 +451,7 @@ static void UpdateUserStatsForLogin() {
   session()->user()->SetNumLogons(session()->user()->GetNumLogons() + 1);
   session()->SetCurrentMessageArea(0);
   session()->SetNumMessagesReadThisLogon(0);
-  if (udir[0].subnum == 0 && udir[1].subnum > 0) {
+  if (session()->udir[0].subnum == 0 && session()->udir[1].subnum > 0) {
     session()->SetCurrentFileArea(1);
   } else {
     session()->SetCurrentFileArea(0);
@@ -946,17 +946,17 @@ void logon() {
   }
 
   // Handle case of first conf with no subs avail
-  if (usub[0].subnum == -1 && okconf(session()->user())) {
+  if (session()->usub[0].subnum == -1 && okconf(session()->user())) {
     for (session()->SetCurrentConferenceMessageArea(0); 
          (session()->GetCurrentConferenceMessageArea() < static_cast<unsigned int>(subconfnum))
          && (uconfsub[session()->GetCurrentConferenceMessageArea()].confnum != -1);
          session()->SetCurrentConferenceMessageArea(session()->GetCurrentConferenceMessageArea() + 1)) {
       setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
-      if (usub[0].subnum != -1) {
+      if (session()->usub[0].subnum != -1) {
         break;
       }
     }
-    if (usub[0].subnum == -1) {
+    if (session()->usub[0].subnum == -1) {
       session()->SetCurrentConferenceMessageArea(0);
       setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
     }

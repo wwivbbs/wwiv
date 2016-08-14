@@ -56,7 +56,7 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
-#define qwk_iscan(x)         (iscan1(usub[x].subnum))
+#define qwk_iscan(x)         (iscan1(session()->usub[x].subnum))
 
 using std::unique_ptr;
 using namespace wwiv::strings;
@@ -110,7 +110,7 @@ void build_qwk_packet() {
   write_qwk_cfg(&qwk_cfg);
   close_qwk_cfg(&qwk_cfg);
 
-  write_inst(INST_LOC_QWK, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_ONLINE);
+  write_inst(INST_LOC_QWK, session()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
   const string filename = StrCat(QWK_DIRECTORY, MESSAGES_DAT);
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
@@ -166,9 +166,9 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (size_t i = 0; (usub[i].subnum != -1) && (i < session()->subboards.size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
+  for (size_t i = 0; (session()->usub[i].subnum != -1) && (i < session()->subboards.size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
-    if (qsc_q[usub[i].subnum / 32] & (1L << (usub[i].subnum % 32))) {
+    if (qsc_q[session()->usub[i].subnum / 32] & (1L << (session()->usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
     }
   }
@@ -225,7 +225,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   char subinfo[201], thissub[81];
 
   float temp_percent;
-  int sn = usub[bn].subnum;
+  int sn = session()->usub[bn].subnum;
 
   if (hangup || (sn < 0)) {
     return;
@@ -473,7 +473,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
 
   qwk_remove_null((char *) &qwk_info->qwk_rec, 123);
-  qwk_info->qwk_rec.conf_num = usub[session()->GetCurrentMessageArea()].subnum + 1;
+  qwk_info->qwk_rec.conf_num = session()->current_user_sub().subnum + 1;
   qwk_info->qwk_rec.logical_num = qwk_info->qwk_rec_num;
 
   if (append_block(qwk_info->file, &qwk_info->qwk_rec, sizeof(qwk_info->qwk_rec)) != sizeof(qwk_info->qwk_rec)) {
@@ -493,7 +493,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
     // Create new index if it hasnt been already
     if (session()->GetCurrentMessageArea() != static_cast<unsigned int>(qwk_info->cursub) || qwk_info->index < 0) {
       qwk_info->cursub = session()->GetCurrentMessageArea();
-      sprintf(filename, "%s%03d.NDX", QWK_DIRECTORY, usub[session()->GetCurrentMessageArea()].subnum + 1);
+      sprintf(filename, "%s%03d.NDX", QWK_DIRECTORY, session()->current_user_sub().subnum + 1);
       if (qwk_info->index > 0) {
         qwk_info->index = close(qwk_info->index);
       }
@@ -650,8 +650,8 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
   
   int amount = 0;
-  for (size_t cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
-    if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
+  for (size_t cur = 0; (session()->usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
+    if (qsc_q[session()->usub[cur].subnum / 32] & (1L << (session()->usub[cur].subnum % 32))) {
       ++amount;
     }
   }
@@ -660,15 +660,15 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "0\r\n");
   fprintf(fp, "E-Mail\r\n");
 
-  for (size_t cur = 0; (usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
-    if (qsc_q[usub[cur].subnum / 32] & (1L << (usub[cur].subnum % 32))) {
+  for (size_t cur = 0; (session()->usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
+    if (qsc_q[session()->usub[cur].subnum / 32] & (1L << (session()->usub[cur].subnum % 32))) {
       // QWK support says this should be truncated to 10 or 13 characters
       // however QWKE allows for 255 characters. This works fine in multimail which
       // is the only still maintained QWK reader I'm aware of at this time, so we'll
       // allow it to be the full length.
-      string sub_name = stripcolors(session()->subboards[usub[cur].subnum].name);
+      string sub_name = stripcolors(session()->subboards[session()->usub[cur].subnum].name);
 
-      fprintf(fp, "%d\r\n", usub[cur].subnum + 1);
+      fprintf(fp, "%d\r\n", session()->usub[cur].subnum + 1);
       fprintf(fp, "%s\r\n", sub_name.c_str());
     }
   }
@@ -1113,7 +1113,7 @@ void qwk_nscan() {
     return;
   }
 
-  for (i = 0; (i < num_dirs) && (!abort) && (udir[i].subnum != -1); i++) {
+  for (i = 0; (i < num_dirs) && (!abort) && (session()->udir[i].subnum != -1); i++) {
     checka(&abort);
     count++;
 
@@ -1131,9 +1131,9 @@ void qwk_nscan() {
       }
     }
 
-    i1 = udir[i].subnum;
+    i1 = session()->udir[i].subnum;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
-      if ((dir_dates[udir[i].subnum]) && (dir_dates[udir[i].subnum] < nscandate)) {
+      if ((dir_dates[session()->udir[i].subnum]) && (dir_dates[session()->udir[i].subnum] < nscandate)) {
         continue;
       }
 
@@ -1142,8 +1142,8 @@ void qwk_nscan() {
       dliscan();
       if (this_date >= nscandate) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
-                session()->directories[udir[session()->GetCurrentFileArea()].subnum].name,
-                udir[session()->GetCurrentFileArea()].keys, numf, "files");
+                session()->directories[session()->current_user_dir().subnum].name,
+                session()->current_user_dir().keys, numf, "files");
         write(newfile,  s, strlen(s));
 
         f = open(dlfn, O_RDONLY | O_BINARY);

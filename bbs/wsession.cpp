@@ -1508,7 +1508,7 @@ int WSession::Run(int argc, char *argv[]) {
           filelist = nullptr;
         }
         zap_ed_info();
-        write_inst(INST_LOC_MAIN, usub[GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+        write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
         wwiv::menus::mainmenu();
       }
       logoff();

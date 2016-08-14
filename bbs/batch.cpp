@@ -371,7 +371,7 @@ void zmbatchdl(bool bHangupAfterDl) {
             copyfile(szOrigFileName, szSendFileName, true);
           }
         }
-        write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+        write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
         StringRemoveWhitespace(szSendFileName);
         double percent;
         zmodem_send(szSendFileName, &ok, &percent);
@@ -449,7 +449,7 @@ void ymbatchdl(bool bHangupAfterDl) {
             copyfile(szOrigFileName, szSendFileName, true);
           }
         }
-        write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+        write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
         double percent;
         xymodem_send(szSendFileName, &ok, &percent, true, true, true);
         if (ok) {
@@ -697,7 +697,7 @@ void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   bout << download_log_entry;
   bout.nl(2);
 
-  write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+  write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
   const string list_filename = make_dl_batch_list();
   run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
 }
@@ -713,7 +713,7 @@ void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
   bout << download_log_entry;
   bout.nl(2);
 
-  write_inst(INST_LOC_UPLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+  write_inst(INST_LOC_UPLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
   string list_filename = make_ul_batch_list();
 
   auto ti = timer();

@@ -29,17 +29,13 @@ using namespace wwiv::sdk;
 
 // Local functions
 bool setconf(ConferenceType type, int which, int old_subnum);
-bool access_conf(User * u, int sl, confrec * c);
-bool access_sub(User * u, int sl, subboardrec * s);
-bool access_dir(User * u, int sl, directoryrec * d);
-void addusub(usersubrec * ss1, int ns, int sub, char key);
 
 
 /**
  * Does user u have access to the conference
  * @return bool
  */
-bool access_conf(User * u, int sl, confrec * c) {
+static bool access_conf(User * u, int sl, confrec * c) {
   WWIV_ASSERT(u);
   WWIV_ASSERT(c);
 
@@ -89,45 +85,37 @@ bool access_conf(User * u, int sl, confrec * c) {
   return true;
 }
 
-
-bool access_sub(User * u, int sl, subboardrec * s) {
-  WWIV_ASSERT(u);
-  WWIV_ASSERT(s);
-
-  if (sl < s->readsl) {
+static bool access_sub(User& u, int sl, subboardrec& s) {
+  if (sl < s.readsl) {
     return false;
   }
-  if (u->GetAge() < s->age) {
+  if (u.GetAge() < s.age) {
     return false;
   }
-  if (s->ar != 0 && !u->HasArFlag(s->ar)) {
+  if (s.ar != 0 && !u.HasArFlag(s.ar)) {
     return false;
   }
-  if ((s->anony & anony_ansi_only) && !u->HasAnsi()) {
+  if ((s.anony & anony_ansi_only) && !u.HasAnsi()) {
     return false;
   }
 
   return true;
 }
 
-
-bool access_dir(User * u, int sl, directoryrec * d) {
-  WWIV_ASSERT(u);
-  WWIV_ASSERT(d);
-
-  if (u->GetDsl() < d->dsl) {
+static bool access_dir(User& u, int sl, directoryrec& d) {
+  if (u.GetDsl() < d.dsl) {
     return false;
   }
-  if (u->GetAge() < d->age) {
+  if (u.GetAge() < d.age) {
     return false;
   }
-  if (d->dar && !u->HasDarFlag(d->dar)) {
+  if (d.dar && !u.HasDarFlag(d.dar)) {
     return false;
   }
-  if ((d->mask & mask_offline) && u->GetDsl() < 100) {
+  if ((d.mask & mask_offline) && u.GetDsl() < 100) {
     return false;
   }
-  if ((d->mask & mask_wwivreg) && !u->GetWWIVRegNumber()) {
+  if ((d.mask & mask_wwivreg) && !u.GetWWIVRegNumber()) {
     return false;
   }
   if (sl == 0) {
@@ -137,10 +125,7 @@ bool access_dir(User * u, int sl, directoryrec * d) {
   return true;
 }
 
-
-void addusub(usersubrec * ss1, int ns, int sub, char key) {
-  WWIV_ASSERT(ss1);
-
+static void addusub(std::vector<usersubrec>& ss1, int ns, int sub, char key) {
   int last_num = 0, last;
   for (last = 0; last < ns; last++) {
     if (ss1[last].subnum == -1) {
@@ -175,7 +160,8 @@ void addusub(usersubrec * ss1, int ns, int sub, char key) {
 bool setconf(ConferenceType type, int which, int old_subnum) {
   int ns, osub;
   confrec *c;
-  usersubrec *ss1, s1;
+  // default it to usub, but it may change
+  std::vector<usersubrec>& ss1 = session()->usub;
   char *xdc, *xtc;
 
   int dp = 1;
@@ -183,10 +169,10 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
 
   switch (type) {
   case ConferenceType::CONF_SUBS:
-    ss1 = usub;
+    ss1 = session()->usub;
     ns = session()->subboards.size();
     if (old_subnum == -1) {
-      osub = usub[session()->GetCurrentMessageArea()].subnum;
+      osub = session()->current_user_sub().subnum;
     } else {
       osub = old_subnum;
     }
@@ -206,10 +192,10 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
     }
     break;
   case ConferenceType::CONF_DIRS:
-    ss1 = udir;
+    ss1 = session()->udir;
     ns = session()->directories.size();
     if (old_subnum == -1) {
-      osub = udir[session()->GetCurrentFileArea()].subnum;
+      osub = session()->current_user_dir().subnum;
     } else {
       osub = old_subnum;
     }
@@ -232,7 +218,7 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
     return false;
   }
 
-  memset(&s1, 0, sizeof(s1));
+  usersubrec s1 = {};
   s1.subnum = -1;
 
   for (int i = 0; i < ns; i++) {
@@ -243,14 +229,14 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
     for (size_t i = 0; i < c->num; i++) {
       switch (type) {
       case ConferenceType::CONF_SUBS:
-        if (access_sub(session()->user(), session()->GetEffectiveSl(),
-                       (subboardrec *) & session()->subboards[c->subs[i]])) {
+        if (access_sub(*session()->user(), session()->GetEffectiveSl(),
+                       session()->subboards[c->subs[i]])) {
           addusub(ss1, ns, c->subs[i], session()->subboards[c->subs[i]].key);
         }
         break;
       case ConferenceType::CONF_DIRS:
-        if (access_dir(session()->user(), session()->GetEffectiveSl(),
-                       (directoryrec *) & session()->directories[c->subs[i]])) {
+        if (access_dir(*session()->user(), session()->GetEffectiveSl(),
+                       session()->directories[c->subs[i]])) {
           addusub(ss1, ns, c->subs[i], 0);
         }
         break;
@@ -266,8 +252,8 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
       for (size_t i = 0; i < subconfnum; i++) {
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(subconfs[i]))) {
           for (size_t i1 = 0; i1 < subconfs[i].num; i1++) {
-            if (access_sub(session()->user(), session()->GetEffectiveSl(),
-                           (subboardrec *) & session()->subboards[subconfs[i].subs[i1]])) {
+            if (access_sub(*session()->user(), session()->GetEffectiveSl(),
+                           session()->subboards[subconfs[i].subs[i1]])) {
               addusub(ss1, ns, subconfs[i].subs[i1], session()->subboards[subconfs[i].subs[i1]].key);
             }
           }
@@ -278,8 +264,8 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
       for (size_t i = 0; i < dirconfnum; i++) {
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(dirconfs[i]))) {
           for (size_t i1 = 0; i1 < static_cast<int>(dirconfs[i].num); i1++) {
-            if (access_dir(session()->user(), session()->GetEffectiveSl(),
-                           (directoryrec *) & session()->directories[dirconfs[i].subs[i1]])) {
+            if (access_dir(*session()->user(), session()->GetEffectiveSl(),
+                           session()->directories[dirconfs[i].subs[i1]])) {
               addusub(ss1, ns, dirconfs[i].subs[i1], 0);
             }
           }

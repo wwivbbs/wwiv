@@ -635,7 +635,7 @@ void toggle_avail() {
 
   bout << "\n\rYou are now ";
   bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
-  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  write_inst(ir.loc, session()->current_user_sub().subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }
 
@@ -651,6 +651,6 @@ void toggle_invis() {
 
   bout << "\r\n|#1You are now ";
   bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
-  write_inst(ir.loc, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  write_inst(ir.loc, session()->current_user_sub().subnum, INST_FLAGS_NONE);
   RestoreCurrentLine(cl, atr, xl, &cc);
 }

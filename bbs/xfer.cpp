@@ -252,7 +252,7 @@ int list_arc_out(const char *file_name, const char *pszDirectory) {
 
   char szFullPathName[MAX_PATH];
   sprintf(szFullPathName, "%s%s", pszDirectory, file_name);
-  if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
+  if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
     sprintf(szFullPathName, "%s%s", syscfgovr.tempdir, file_name);
     if (!File::Exists(szFullPathName)) {
       char szFullPathNameInDir[MAX_PATH];
@@ -356,7 +356,7 @@ void dliscan1(int directory_num) {
 }
 
 void dliscan() {
-  dliscan1(udir[session()->GetCurrentFileArea()].subnum);
+  dliscan1(session()->current_user_dir().subnum);
 }
 
 void add_extended_description(const char *file_name, const char *description) {
@@ -626,8 +626,8 @@ void printinfo(uploadsrec * u, bool *abort) {
       session()->tagptr = 0;
     } else {
       filelist[session()->tagptr].u = *u;
-      filelist[session()->tagptr].directory = udir[session()->GetCurrentFileArea()].subnum;
-      filelist[session()->tagptr].dir_mask = session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask;
+      filelist[session()->tagptr].directory = session()->current_user_dir().subnum;
+      filelist[session()->tagptr].dir_mask = session()->directories[session()->current_user_dir().subnum].mask;
       session()->tagptr++;
       sprintf(s, "\r|#%d%2d|#%d%c",
               (check_batch_queue(filelist[session()->tagptr - 1].u.filename)) ? 6 : 0,
@@ -650,8 +650,8 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
 
-  if (!(session()->directories[ udir[ session()->GetCurrentFileArea() ].subnum ].mask & mask_cdrom)) {
-    strcpy(s2, session()->directories[ udir[ session()->GetCurrentFileArea() ].subnum ].path);
+  if (!(session()->directories[ session()->udir[ session()->GetCurrentFileArea() ].subnum ].mask & mask_cdrom)) {
+    strcpy(s2, session()->directories[ session()->udir[ session()->GetCurrentFileArea() ].subnum ].path);
     strcat(s2, u->filename);
     if (!File::Exists(s2)) {
       strcpy(s1, "N/A");
@@ -706,8 +706,8 @@ void printtitle(bool *abort) {
       return;
     }
   }
-  sprintf(buffer, "%s%s - #%s, %d files.", "\r", session()->directories[udir[session()->GetCurrentFileArea()].subnum].name,
-          udir[session()->GetCurrentFileArea()].keys, session()->numf);
+  sprintf(buffer, "%s%s - #%s, %d files.", "\r", session()->directories[session()->current_user_dir().subnum].name,
+          session()->current_user_dir().keys, session()->numf);
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
   if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 || g_num_listed == 0) {
     if (okansi()) {
@@ -884,7 +884,7 @@ void nscanall() {
   int count       = 0;
   int color       = 3;
   bout << "\r" << "|#2Searching ";
-  for (size_t i = 0; i < session()->directories.size() && !abort && udir[i].subnum != -1 &&
+  for (size_t i = 0; i < session()->directories.size() && !abort && session()->udir[i].subnum != -1 &&
        session()->tagging != 0; i++) {
     count++;
     bout << "|#" << color << ".";
@@ -899,7 +899,7 @@ void nscanall() {
         color = 0;
       }
     }
-    int nSubNum = udir[i].subnum;
+    int nSubNum = session()->udir[i].subnum;
     if (qsc_n[nSubNum / 32] & (1L << (nSubNum % 32))) {
       session()->titled = 1;
       nscandir(i, &abort);
@@ -941,8 +941,8 @@ void searchall() {
   int count = 0;
   int color = 3;
   for (size_t i = 0; i < session()->directories.size() && !abort && !hangup && session()->tagging
-       && udir[i].subnum != -1; i++) {
-    int nDirNum = udir[i].subnum;
+       && session()->udir[i].subnum != -1; i++) {
+    int nDirNum = session()->udir[i].subnum;
     bool bIsDirMarked = false;
     if (qsc_n[nDirNum / 32] & (1L << (nDirNum % 32))) {
       bIsDirMarked = true;

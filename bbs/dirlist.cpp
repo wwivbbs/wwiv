@@ -38,7 +38,7 @@
 void dirlist(int mode) {
   bool next   = false;
   int oc      = session()->GetCurrentConferenceFileArea();
-  int os      = udir[session()->GetCurrentFileArea()].subnum;
+  int os      = session()->current_user_dir().subnum;
   int tally   = 0;
   int nd      = 0;
   int sn      = session()->GetCurrentConferenceFileArea();
@@ -54,7 +54,7 @@ void dirlist(int mode) {
 
     while (i <= en && uconfdir[i].confnum != -1 && !abort) {
       size_t i1 = 0;
-      while (i1 < session()->directories.size() && udir[i1].subnum != -1 && !abort) {
+      while (i1 < session()->directories.size() && session()->udir[i1].subnum != -1 && !abort) {
         char s[255];
         size_t firstp = 0;
         if (p && mode == 0) {
@@ -74,7 +74,7 @@ void dirlist(int mode) {
           DisplayHorizontalBar(78, 7);
         }
         ++nd;
-        int directory_number = udir[i1].subnum;
+        int directory_number = session()->udir[i1].subnum;
         if (directory_number == 0) {
           is = true;
         }
@@ -83,14 +83,14 @@ void dirlist(int mode) {
           scanme = "|#5Yes";
         }
         dliscan1(directory_number);
-        if (udir[session()->GetCurrentFileArea()].subnum == udir[i1].subnum) {
+        if (session()->current_user_dir().subnum == session()->udir[i1].subnum) {
           sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|B1|15 %-40.40s |#9\xB3 |#9%4d|B0",
-                  udir[i1].keys, scanme.c_str(), session()->directories[directory_number].name,
+                  session()->udir[i1].keys, scanme.c_str(), session()->directories[directory_number].name,
                   session()->numf);
         } else {
           sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3 %s%-40.40s |#9\xB3 |#9%4d",
-                  udir[i1].keys, scanme.c_str(),
-                  (((mode == 1) && (session()->directories[udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
+                  session()->udir[i1].keys, scanme.c_str(),
+                  (((mode == 1) && (session()->directories[session()->udir[i1].subnum].mask & mask_cdrom)) ? "|#9" : "|#1"),
                   session()->directories[ directory_number ].name, session()->numf);
         }
         if (okansi()) {
@@ -110,9 +110,9 @@ void dirlist(int mode) {
           ss = mmkey(1, WSession::mmkeyFileAreas, true);
           if (isdigit(ss[0])) {
             for (size_t i3 = 0; i3 < session()->directories.size(); i3++) {
-              if (wwiv::strings::IsEquals(udir[i3].keys, ss)) {
+              if (wwiv::strings::IsEquals(session()->udir[i3].keys, ss)) {
                 session()->SetCurrentFileArea(i3);
-                os      = udir[session()->GetCurrentFileArea()].subnum;
+                os      = session()->current_user_dir().subnum;
                 done    = true;
                 abort   = true;
               }
@@ -178,9 +178,9 @@ void dirlist(int mode) {
       }
       if (isdigit(ss[0])) {
         for (size_t i3 = 0; i3 < session()->directories.size(); i3++) {
-          if (wwiv::strings::IsEquals(udir[i3].keys, ss)) {
+          if (wwiv::strings::IsEquals(session()->udir[i3].keys, ss)) {
             session()->SetCurrentFileArea(i3);
-            os = udir[session()->GetCurrentFileArea()].subnum;
+            os = session()->current_user_dir().subnum;
             done = true;
           }
         }

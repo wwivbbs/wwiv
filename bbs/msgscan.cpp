@@ -91,7 +91,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     if (nScanOptionType != SCAN_OPTION_READ_PROMPT) {
       resynch(&nMessageNumber, nullptr);
     }
-    write_inst(INST_LOC_SUBS, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+    write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
 
     switch (nScanOptionType) {
     case SCAN_OPTION_READ_PROMPT: { // Read Prompt
@@ -267,16 +267,16 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
         bout.nl();
         bout << "|#5Remove this sub from your Q-Scan? ";
         if (yesno()) {
-          qsc_q[usub[session()->GetCurrentMessageArea()].subnum / 32] ^= (1L <<
-              (usub[session()->GetCurrentMessageArea()].subnum % 32));
+          qsc_q[session()->current_user_sub().subnum / 32] ^= (1L <<
+              (session()->current_user_sub().subnum % 32));
         } else {
           bout.nl();
           bout << "|#9Mark messages in " 
-               << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+               << session()->subboards[session()->current_user_sub().subnum].name
                << " as read? ";
           if (yesno()) {
             unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
-            qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
+            qsc_p[session()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
           }
         }
 
@@ -293,7 +293,7 @@ void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsu
       nScanOptionType = SCAN_OPTION_READ_MESSAGE;
       break;
     case '@':
-      strcpy(irt_sub, session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name);
+      strcpy(irt_sub, session()->subboards[session()->current_user_sub().subnum].name);
     case 'O':
     case 'A': {
       HandleScanReadAutoReply(nMessageNumber, szUserInput, nScanOptionType);
@@ -794,16 +794,16 @@ void HandleMessageMove(int &nMessageNumber) {
       return;
     }
     bool ok = false;
-    for (size_t i1 = 0; (i1 < session()->subboards.size() && usub[i1].subnum != -1 && !ok); i1++) {
-      if (IsEquals(usub[i1].keys, ss1)) {
+    for (size_t i1 = 0; (i1 < session()->subboards.size() && session()->usub[i1].subnum != -1 && !ok); i1++) {
+      if (IsEquals(session()->usub[i1].keys, ss1)) {
         nTempSubNum = i1;
         bout.nl();
-        bout << "|#9Copying to " << session()->subboards[usub[nTempSubNum].subnum].name << endl;
+        bout << "|#9Copying to " << session()->subboards[session()->usub[nTempSubNum].subnum].name << endl;
         ok = true;
       }
     }
     if (nTempSubNum != -1) {
-      if (session()->GetEffectiveSl() < session()->subboards[usub[nTempSubNum].subnum].postsl) {
+      if (session()->GetEffectiveSl() < session()->subboards[session()->usub[nTempSubNum].subnum].postsl) {
         bout.nl();
         bout << "Sorry, you don't have post access on that sub.\r\n\n";
         nTempSubNum = -1;

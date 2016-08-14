@@ -62,11 +62,11 @@ static bool upload_mod(int directory_number, const char *file_name, const char *
 
   WWIV_ASSERT(file_name);
 
-  dliscan1(udir[directory_number].subnum);
+  dliscan1(session()->udir[directory_number].subnum);
   bout.nl(2);
   strcpy(s, file_name);
-  strcpy(s1, session()->directories[udir[directory_number].subnum].path);
-  int maxf = session()->directories[udir[directory_number].subnum].maxfiles;
+  strcpy(s1, session()->directories[session()->udir[directory_number].subnum].path);
+  int maxf = session()->directories[session()->udir[directory_number].subnum].maxfiles;
   strcat(s1, s);
   WFindFile fnd;
   bool bDone = fnd.open(s1, 0);
@@ -124,8 +124,8 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
   } while (!hangup && ss1[0] == '?');
 
   mod_dir = -1;
-  for (size_t i1 = 0; i1 < session()->directories.size() && udir[i1].subnum != -1; i1++) {
-    if (wwiv::strings::IsEquals(udir[i1].keys, ss1)) {
+  for (size_t i1 = 0; i1 < session()->directories.size() && session()->udir[i1].subnum != -1; i1++) {
+    if (wwiv::strings::IsEquals(session()->udir[i1].keys, ss1)) {
       mod_dir = i1;
     }
   }
@@ -137,7 +137,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
     goto go_away;
   }
 
-  strcpy(s1, session()->directories[udir[mod_dir].subnum].path);
+  strcpy(s1, session()->directories[session()->udir[mod_dir].subnum].path);
   do {
     if (*irt) {
       bout << "|#2Press |#7[|#9Enter|#7]|#2 for |#1" << StringRemoveChar(irt, '.') << ".mod.\r\n";
@@ -270,7 +270,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
       bout << "|#9Add a |#1FILE_ID.DIZ|#9 to archive? ";
       if (noyes()) {
         sprintf(idz_fn, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
-        sprintf(dir_path, "%s%s", session()->directories[udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
+        sprintf(dir_path, "%s%s", session()->directories[session()->udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
         TextFile file(idz_fn, "w");
         file.WriteFormatted("%.58s\n", szDescription);
         const string datetime = W_DateString(tDateTime, "Y", "");

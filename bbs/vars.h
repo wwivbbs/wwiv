@@ -133,7 +133,6 @@ __EXTRN__ small_configrec syscfg;
 
 __EXTRN__ configoverrec syscfgovr;
 __EXTRN__ colorrec rescolor;
-__EXTRN__ usersubrec *usub, *udir;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ tagrec *filelist;
 __EXTRN__ net_system_list_rec *csn;

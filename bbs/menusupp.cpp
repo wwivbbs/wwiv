@@ -91,9 +91,9 @@ void UnQScan() {
   break;
   case 'C': {
     bout.nl();
-    qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = 0;
+    qsc_p[session()->current_user_sub().subnum] = 0;
     bout << "Messages on " 
-         << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name
+         << session()->subboards[session()->current_user_sub().subnum].name
          << " marked as unread.\r\n";
   }
   break;
@@ -134,7 +134,7 @@ void DownSub() {
   if (session()->GetCurrentMessageArea() > 0) {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() - 1);
   } else {
-    while (usub[session()->GetCurrentMessageArea() + 1].subnum >= 0 &&
+    while (session()->usub[session()->GetCurrentMessageArea() + 1].subnum >= 0 &&
            session()->GetCurrentMessageArea() < session()->subboards.size() - 1) {
       session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
     }
@@ -143,7 +143,7 @@ void DownSub() {
 
 void UpSub() {
   if (session()->GetCurrentMessageArea() < session()->subboards.size() - 1 &&
-      usub[session()->GetCurrentMessageArea() + 1].subnum >= 0) {
+      session()->usub[session()->GetCurrentMessageArea() + 1].subnum >= 0) {
     session()->SetCurrentMessageArea(session()->GetCurrentMessageArea() + 1);
   } else {
     session()->SetCurrentMessageArea(0);
@@ -347,14 +347,14 @@ void WWIV_PostMessage() {
   irt[0] = 0;
   irt_name[0] = 0;
   grab_quotes(nullptr, nullptr);
-  if (usub[0].subnum != -1) {
+  if (session()->usub[0].subnum != -1) {
     post();
   }
 }
 
 void ScanSub() {
-  if (usub[0].subnum != -1) {
-    write_inst(INST_LOC_SUBS, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  if (session()->usub[0].subnum != -1) {
+    write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
     int i = 0;
     express = expressabort = false;
     qscan(session()->GetCurrentMessageArea(), &i);
@@ -362,15 +362,15 @@ void ScanSub() {
 }
 
 void RemovePost() {
-  if (usub[0].subnum != -1) {
-    write_inst(INST_LOC_SUBS, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  if (session()->usub[0].subnum != -1) {
+    write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
     remove_post();
   }
 }
 
 void TitleScan() {
-  if (usub[0].subnum != -1) {
-    write_inst(INST_LOC_SUBS, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  if (session()->usub[0].subnum != -1) {
+    write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
     express = false;
     expressabort = false;
     ScanMessageTitles();
@@ -573,7 +573,7 @@ void PackMessages() {
       bout << "|#6Aborted.\r\n";
     }
   } else {
-    pack_sub(usub[session()->GetCurrentMessageArea()].subnum);
+    pack_sub(session()->current_user_sub().subnum);
   }
 }
 
@@ -667,7 +667,7 @@ void WhoIsOnline() {
 void NewMsgsAllConfs() {
   bool ac = false;
 
-  write_inst(INST_LOC_SUBS, usub[session()->GetCurrentMessageArea()].subnum, INST_FLAGS_NONE);
+  write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
   express = false;
   expressabort = false;
   newline = false;
@@ -727,8 +727,8 @@ void ClearQScan() {
   case 'C':
     std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     bout.nl();
-    qsc_p[usub[session()->GetCurrentMessageArea()].subnum] = pStatus->GetQScanPointer() - 1L;
-    bout << "Messages on " << session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name 
+    qsc_p[session()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
+    bout << "Messages on " << session()->subboards[session()->current_user_sub().subnum].name 
          << " marked as read.\r\n";
     break;
   }
@@ -788,8 +788,8 @@ void RemoveNotThere() {
 void UploadAllDirs() {
   bout.nl(2);
   bool ok = true;
-  for (size_t nDirNum = 0; nDirNum < session()->directories.size() && udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
-    bout << "|#9Now uploading files for: |#2" << session()->directories[udir[nDirNum].subnum].name << wwiv::endl;
+  for (size_t nDirNum = 0; nDirNum < session()->directories.size() && session()->udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
+    bout << "|#9Now uploading files for: |#2" << session()->directories[session()->udir[nDirNum].subnum].name << wwiv::endl;
     ok = uploadall(nDirNum);
   }
 }
@@ -823,7 +823,7 @@ void SortDirs() {
   if (bSortAll) {
     sort_all(nType);
   } else {
-    sortdir(udir[session()->GetCurrentFileArea()].subnum, nType);
+    sortdir(session()->current_user_dir().subnum, nType);
   }
 }
 
@@ -836,7 +836,7 @@ void ReverseSort() {
   if (bSortAll) {
     sort_all(1);
   } else {
-    sortdir(udir[session()->GetCurrentFileArea()].subnum, 1);
+    sortdir(session()->current_user_dir().subnum, 1);
   }
 }
 
@@ -888,7 +888,7 @@ void UpDirConf() {
 
 void UpDir() {
   if (session()->GetCurrentFileArea() < size_int(session()->directories) - 1
-      && udir[session()->GetCurrentFileArea() + 1].subnum >= 0) {
+      && session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0) {
     session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
   } else {
     session()->SetCurrentFileArea(0);
@@ -913,7 +913,7 @@ void DownDir() {
   if (session()->GetCurrentFileArea() > 0) {
     session()->SetCurrentFileArea(session()->GetCurrentFileArea() - 1);
   } else {
-    while (udir[session()->GetCurrentFileArea() + 1].subnum >= 0 &&
+    while (session()->udir[session()->GetCurrentFileArea() + 1].subnum >= 0 &&
            session()->GetCurrentFileArea() < size_int(session()->directories) - 1) {
       session()->SetCurrentFileArea(session()->GetCurrentFileArea() + 1);
     }
@@ -1034,7 +1034,7 @@ void Upload() {
       upload(0);
     }
   } else {
-    upload(udir[session()->GetCurrentFileArea()].subnum);
+    upload(session()->current_user_dir().subnum);
   }
 }
 
@@ -1074,8 +1074,8 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const char *pszSubKeys) {
-  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
-    if (wwiv::strings::IsEquals(usub[i].keys, pszSubKeys)) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1); i++) {
+    if (wwiv::strings::IsEquals(session()->usub[i].keys, pszSubKeys)) {
       session()->SetCurrentMessageArea(i);
     }
   }
@@ -1083,7 +1083,7 @@ void SetSubNumber(const char *pszSubKeys) {
 
 void SetDirNumber(const char *pszDirectoryKeys) {
   for (size_t i = 0; i < session()->directories.size(); i++) {
-    if (IsEquals(udir[i].keys, pszDirectoryKeys)) {
+    if (IsEquals(session()->udir[i].keys, pszDirectoryKeys)) {
       session()->SetCurrentFileArea(i);
     }
   }

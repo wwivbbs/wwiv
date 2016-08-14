@@ -290,7 +290,7 @@ bool lcs() {
     if (*qsc == 999) {
       return true;
     }
-    return (*qsc == static_cast<uint32_t>(usub[session()->GetCurrentMessageArea()].subnum)) ? true : false;
+    return (*qsc == static_cast<uint32_t>(session()->current_user_sub().subnum)) ? true : false;
   }
   return false;
 }
@@ -594,8 +594,8 @@ char *mmkey(int dl, int area, bool bListOption) {
               if (!newline) {
                 if (isdigit(cmd2[0])) {
                   if (area == WSession::mmkeyMessageAreas && dl == 0) {
-                    for (i = 0; i < size_int(session()->subboards) && usub[i].subnum != -1; i++) {
-                      if (IsEquals(usub[i].keys, cmd2)) {
+                    for (i = 0; i < size_int(session()->subboards) && session()->usub[i].subnum != -1; i++) {
+                      if (IsEquals(session()->usub[i].keys, cmd2)) {
                         bout.nl();
                         break;
                       }
@@ -603,7 +603,7 @@ char *mmkey(int dl, int area, bool bListOption) {
                   }
                   if (area == WSession::mmkeyFileAreas && dl == 1) {
                     for (i = 0; i < size_int(session()->directories); i++) {
-                      if (IsEquals(udir[i].keys, cmd2)) {
+                      if (IsEquals(session()->udir[i].keys, cmd2)) {
                         bout.nl();
                         break;
                       }

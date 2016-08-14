@@ -72,9 +72,9 @@ void tmp_disable_conf(bool disable) {
     if (okconf(session()->user())) {
       g_flags |= g_flag_disable_conf;
       ocs = session()->GetCurrentConferenceMessageArea();
-      oss = usub[session()->GetCurrentMessageArea()].subnum;
+      oss = session()->current_user_sub().subnum;
       ocd = session()->GetCurrentConferenceFileArea();
-      osd = udir[session()->GetCurrentFileArea()].subnum;
+      osd = session()->current_user_dir().subnum;
       setuconf(ConferenceType::CONF_SUBS, -1, oss);
       setuconf(ConferenceType::CONF_DIRS, -1, osd);
     }

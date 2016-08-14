@@ -733,7 +733,7 @@ void qwk_post_text(char *text, char *title, int sub) {
         input(substr, 3);
 
         StringTrim(substr);
-        sub = usub[atoi(substr) - 1].subnum;
+        sub = session()->usub[atoi(substr) - 1].subnum;
 
         if (substr[0] == 'Q') {
           return;

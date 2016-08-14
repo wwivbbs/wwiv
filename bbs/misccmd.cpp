@@ -218,11 +218,11 @@ void list_users(int mode) {
   User user;
   char szFindText[21];
 
-  if (usub[session()->GetCurrentMessageArea()].subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
+  if (session()->current_user_sub().subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
     bout << "\r\n|#6No Message Area Available!\r\n\n";
     return;
   }
-  if (udir[session()->GetCurrentFileArea()].subnum == -1 && mode == LIST_USERS_FILE_AREA) {
+  if (session()->current_user_dir().subnum == -1 && mode == LIST_USERS_FILE_AREA) {
     bout << "\r\n|#6 No Dirs Available.\r\n\n";
     return;
   }
@@ -243,9 +243,9 @@ void list_users(int mode) {
   }
 
   if (mode == LIST_USERS_MESSAGE_AREA) {
-    s = session()->subboards[usub[session()->GetCurrentMessageArea()].subnum];
+    s = session()->subboards[session()->current_user_sub().subnum];
   } else {
-    d = session()->directories[udir[session()->GetCurrentFileArea()].subnum];
+    d = session()->directories[session()->current_user_dir().subnum];
   }
 
   bool abort  = false;
@@ -311,8 +311,8 @@ void list_users(int mode) {
     session()->users()->ReadUser(&user, user_number);
     read_qscn(user_number, qsc, false);
     changedsl();
-    bool in_qscan = (qsc_q[usub[session()->GetCurrentMessageArea()].subnum / 32] & (1L <<
-                     (usub[session()->GetCurrentMessageArea()].subnum % 32))) ? true : false;
+    bool in_qscan = (qsc_q[session()->current_user_sub().subnum / 32] & (1L <<
+                     (session()->current_user_sub().subnum % 32))) ? true : false;
     bool ok = true;
     if (user.IsUserDeleted()) {
       ok = false;

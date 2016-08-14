@@ -107,7 +107,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
       }
     }
     if (bOkToDL || bFreeDL) {
-      write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_NONE);
+      write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
       sprintf(s1, "%s%s", session()->directories[dn].path, u.filename);
       if (session()->directories[dn].mask & mask_cdrom) {
         sprintf(s2, "%s%s", session()->directories[dn].path, u.filename);
@@ -260,8 +260,8 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   char* s = mmkey(0);
-  for (size_t i = 0; (i < session()->subboards.size()) && (usub[i].subnum != -1); i++) {
-    if (wwiv::strings::IsEquals(usub[i].keys, s)) {
+  for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1); i++) {
+    if (wwiv::strings::IsEquals(session()->usub[i].keys, s)) {
       session()->SetCurrentMessageArea(i);
     }
   }
@@ -281,7 +281,7 @@ void ChangeDirNumber() {
       continue;
     }
     for (size_t i = 0; i < session()->directories.size(); i++) {
-      if (wwiv::strings::IsEquals(udir[i].keys, s)) {
+      if (wwiv::strings::IsEquals(session()->udir[i].keys, s)) {
         session()->SetCurrentFileArea(i);
         done = true;
       }

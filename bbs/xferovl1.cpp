@@ -311,7 +311,7 @@ int read_idz_all() {
   tmp_disable_conf(true);
   TempDisablePause disable_pause;
   session()->ClearTopScreenProtection();
-  for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
+  for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
        (!session()->localIO()->LocalKeyPressed()); i++) {
     count += read_idz(0, i);
   }
@@ -336,11 +336,11 @@ int read_idz(int mode, int tempdir) {
   } else {
     sprintf(s, "*.*");
     align(s);
-    dliscan1(udir[tempdir].subnum);
+    dliscan1(session()->udir[tempdir].subnum);
   }
   bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
-                                    session()->directories[udir[tempdir].subnum].name,
-                                    udir[tempdir].keys);
+                                    session()->directories[session()->udir[tempdir].subnum].name,
+                                    session()->udir[tempdir].keys);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   for (i = 1; (i <= session()->numf) && (!hangup) && !abort; i++) {
@@ -349,11 +349,11 @@ int read_idz(int mode, int tempdir) {
     if ((compare(s, u.filename)) &&
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
-      File::set_current_directory(session()->directories[udir[tempdir].subnum].path);
+      File::set_current_directory(session()->directories[session()->udir[tempdir].subnum].path);
       File file(File::current_directory(), stripfn(u.filename));
       session()->CdHome();
       if (file.Exists()) {
-        if (get_file_idz(&u, udir[tempdir].subnum)) {
+        if (get_file_idz(&u, session()->udir[tempdir].subnum)) {
           count++;
         }
         FileAreaSetRecord(fileDownload, i);
@@ -547,12 +547,12 @@ void tag_files() {
         bout.nl();
         size_t i2;
         for (i2 = 0; i2 < session()->directories.size(); i2++) {
-          if (udir[i2].subnum == filelist[i].directory) {
+          if (session()->udir[i2].subnum == filelist[i].directory) {
             break;
           }
         }
         if (i2 < session()->directories.size()) {
-          bout << "|#1Directory  : |#2#" << udir[i2].keys << ", " << session()->directories[filelist[i].directory].name <<
+          bout << "|#1Directory  : |#2#" << session()->udir[i2].keys << ", " << session()->directories[filelist[i].directory].name <<
                              wwiv::endl;
         } else {
           bout << "|#1Directory  : |#2#" << "??" << ", " << session()->directories[filelist[i].directory].name << wwiv::endl;
@@ -794,7 +794,7 @@ int try_to_download(const char *file_mask, int dn) {
       return -2;
     }
 
-    write_inst(INST_LOC_DOWNLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
+    write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_ONLINE);
     sprintf(s1, "%s%s", session()->directories[dn].path, u.filename);
     sprintf(s3, "%-40.40s", u.description);
     abort = false;
@@ -864,7 +864,7 @@ void download() {
             strcat(s, ".*");
           }
           align(s);
-          rtn = try_to_download(s, udir[session()->GetCurrentFileArea()].subnum);
+          rtn = try_to_download(s, session()->current_user_dir().subnum);
           if (rtn == 0) {
             if (uconfdir[1].confnum != -10 && okconf(session()->user())) {
               bout.backline();
@@ -881,7 +881,7 @@ void download() {
             bout << s1;
             foundany = 0;
             size_t dn = 0;
-            while ((dn < session()->directories.size()) && (udir[dn].subnum != -1)) {
+            while ((dn < session()->directories.size()) && (session()->udir[dn].subnum != -1)) {
               count++;
               bout << "|#" << color;
               if (count == NUM_DOTS) {
@@ -897,7 +897,7 @@ void download() {
                   color = 0;
                 }
               }
-              rtn = try_to_download(s, udir[dn].subnum);
+              rtn = try_to_download(s, session()->udir[dn].subnum);
               if (rtn < 0) {
                 break;
               } else {
@@ -1235,18 +1235,18 @@ void removenotthere() {
   bout.nl();
   bout << "|#5Remove N/A files in all session()->directories? ";
   if (yesno()) {
-    for (size_t i = 0; ((i < session()->directories.size()) && (udir[i].subnum != -1) &&
+    for (size_t i = 0; ((i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
                      (!session()->localIO()->LocalKeyPressed())); i++) {
       bout.nl();
-      bout << "|#1Removing N/A|#0 in " << session()->directories[udir[i].subnum].name;
+      bout << "|#1Removing N/A|#0 in " << session()->directories[session()->udir[i].subnum].name;
       bout.nl(2);
-      removefilesnotthere(udir[i].subnum, &autodel);
+      removefilesnotthere(session()->udir[i].subnum, &autodel);
     }
   } else {
     bout.nl();
-    bout << "Removing N/A|#0 in " << session()->directories[udir[session()->GetCurrentFileArea()].subnum].name;
+    bout << "Removing N/A|#0 in " << session()->directories[session()->current_user_dir().subnum].name;
     bout.nl(2);
-    removefilesnotthere(udir[session()->GetCurrentFileArea()].subnum, &autodel);
+    removefilesnotthere(session()->current_user_dir().subnum, &autodel);
   }
   tmp_disable_conf(false);
   session()->UpdateTopScreen();

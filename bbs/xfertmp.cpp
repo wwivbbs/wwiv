@@ -567,10 +567,10 @@ void temp_extract() {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    sprintf(s2, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+    sprintf(s2, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
     StringRemoveWhitespace(s2);
-    if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
-      sprintf(s1, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+    if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
+      sprintf(s1, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
       sprintf(s2, "%s%s", syscfgovr.tempdir, u.filename);
       StringRemoveWhitespace(s1);
       if (!File::Exists(s2)) {
@@ -586,10 +586,10 @@ void temp_extract() {
       printinfo(&u, &abort);
       session()->tagging = ot;
       bout.nl();
-      if (session()->directories[udir[session()->GetCurrentFileArea()].subnum].mask & mask_cdrom) {
+      if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
         File::set_current_directory(syscfgovr.tempdir);
       } else {
-        File::set_current_directory(session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+        File::set_current_directory(session()->directories[session()->current_user_dir().subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
       session()->CdHome();
@@ -603,7 +603,7 @@ void temp_extract() {
             ok1 = false;
           }
           if (IsEquals(s1, "?")) {
-            list_arc_out(stripfn(u.filename), session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+            list_arc_out(stripfn(u.filename), session()->directories[session()->current_user_dir().subnum].path);
             s1[0] = '\0';
           }
           if (IsEquals(s1, "Q")) {
@@ -797,15 +797,15 @@ void move_file_t() {
         } while (!hangup && (pszDirectoryNum[0] == '?'));
         d1 = -1;
         if (pszDirectoryNum[0]) {
-          for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
-            if (IsEquals(udir[i1].keys, pszDirectoryNum)) {
+          for (size_t i1 = 0; (i1 < session()->directories.size()) && (session()->udir[i1].subnum != -1); i1++) {
+            if (IsEquals(session()->udir[i1].keys, pszDirectoryNum)) {
               d1 = i1;
             }
           }
         }
         if (d1 != -1) {
           ok = true;
-          d1 = udir[d1].subnum;
+          d1 = session()->udir[d1].subnum;
           dliscan1(d1);
           if (recno(u.filename) > 0) {
             ok = false;
@@ -941,7 +941,7 @@ void removefile() {
       if (check_batch_queue(u.filename)) {
         bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
       } else {
-        printfileinfo(&u, udir[session()->GetCurrentFileArea()].subnum);
+        printfileinfo(&u, session()->current_user_dir().subnum);
         bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
         char ch = ynq();
         if (ch == 'Q') {
@@ -969,7 +969,7 @@ void removefile() {
           }
           if (bDeleteFileToo) {
             char szFileNameToDelete[MAX_PATH];
-            sprintf(szFileNameToDelete, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+            sprintf(szFileNameToDelete, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
@@ -986,7 +986,7 @@ void removefile() {
           if (u.mask & mask_extended) {
             delete_extended_description(u.filename);
           }
-          sysoplogf("- \"%s\" removed off of %s", u.filename, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
+          sysoplogf("- \"%s\" removed off of %s", u.filename, session()->directories[session()->current_user_dir().subnum].name);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int i1 = i; i1 < session()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);

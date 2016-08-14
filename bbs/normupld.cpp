@@ -167,20 +167,20 @@ void normalupload(int dn) {
       bout.nl();
       bout << "Checking for same file in other session()->directories...\r\n\n";
       int nLastLineLength = 0;
-      for (size_t i = 0; i < session()->directories.size() && udir[i].subnum != -1; i++) {
+      for (size_t i = 0; i < session()->directories.size() && session()->udir[i].subnum != -1; i++) {
         string buffer = "Scanning ";
-        buffer += session()->directories[udir[i].subnum].name;
+        buffer += session()->directories[session()->udir[i].subnum].name;
         int nBufferLen = buffer.length();
         for (int i3 = nBufferLen; i3 < nLastLineLength; i3++) {
           buffer += " ";
         }
         nLastLineLength = nBufferLen;
         bout << buffer << "\r";
-        dliscan1(udir[i].subnum);
+        dliscan1(session()->udir[i].subnum);
         int i1 = recno(u.filename);
         if (i1 >= 0) {
           bout.nl();
-          bout << "Same file found on " << session()->directories[udir[i].subnum].name << wwiv::endl;
+          bout << "Same file found on " << session()->directories[session()->udir[i].subnum].name << wwiv::endl;
           if (dcs()) {
             bout.nl();
             bout << "|#5Upload anyway? ";
@@ -216,7 +216,7 @@ void normalupload(int dn) {
       }
       bout.nl();
       if (xfer) {
-        write_inst(INST_LOC_UPLOAD, udir[session()->GetCurrentFileArea()].subnum, INST_FLAGS_ONLINE);
+        write_inst(INST_LOC_UPLOAD, session()->current_user_dir().subnum, INST_FLAGS_ONLINE);
         auto ti = timer();
         receive_file(szReceiveFileName, &ok, u.filename, dn);
         ti = timer() - ti;

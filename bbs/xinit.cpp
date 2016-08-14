@@ -964,8 +964,8 @@ void WSession::InitializeBBS() {
 
   XINIT_PRINTF("Allocating Memory for Message/File Areas.");
   do_event = 0;
-  usub = static_cast<usersubrec *>(BbsAllocA(syscfg.max_subs * sizeof(usersubrec)));
-  udir = static_cast<usersubrec *>(BbsAllocA(syscfg.max_dirs * sizeof(usersubrec)));
+  usub.resize(syscfg.max_subs);
+  udir.resize(syscfg.max_dirs);
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));

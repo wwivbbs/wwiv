@@ -87,14 +87,14 @@ void move_file() {
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
     bout.nl();
-    printfileinfo(&u, udir[session()->GetCurrentFileArea()].subnum);
+    printfileinfo(&u, session()->current_user_dir().subnum);
     bout.nl();
     bout << "|#5Move this (Y/N/Q)? ";
     char ch = ynq();
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      sprintf(s1, "%s%s", session()->directories[udir[session()->GetCurrentFileArea()].subnum].path, u.filename);
+      sprintf(s1, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
       char *ss = nullptr;
       do {
         bout.nl(2);
@@ -107,15 +107,15 @@ void move_file() {
       } while ((!hangup) && (ss[0] == '?'));
       d1 = -1;
       if (ss[0]) {
-        for (size_t i1 = 0; (i1 < session()->directories.size()) && (udir[i1].subnum != -1); i1++) {
-          if (IsEquals(udir[i1].keys, ss)) {
+        for (size_t i1 = 0; (i1 < session()->directories.size()) && (session()->udir[i1].subnum != -1); i1++) {
+          if (IsEquals(session()->udir[i1].keys, ss)) {
             d1 = i1;
           }
         }
       }
       if (d1 != -1) {
         ok = true;
-        d1 = udir[d1].subnum;
+        d1 = session()->udir[d1].subnum;
         dliscan1(d1);
         if (recno(u.filename) > 0) {
           ok = false;
@@ -292,9 +292,9 @@ void sortdir(int directory_num, int type) {
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) &&
+  for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
        (!session()->localIO()->LocalKeyPressed()); i++) {
-    bout << "\r\n|#1Sorting " << session()->directories[udir[i].subnum].name << wwiv::endl;
+    bout << "\r\n|#1Sorting " << session()->directories[session()->udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }
   tmp_disable_conf(false);
@@ -327,7 +327,7 @@ void rename_file() {
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
     bout.nl();
-    printfileinfo(&u, udir[session()->GetCurrentFileArea()].subnum);
+    printfileinfo(&u, session()->current_user_dir().subnum);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
     char ch = ynq();
@@ -346,7 +346,7 @@ void rename_file() {
     if (s[0]) {
       align(s);
       if (!IsEquals(s, "        .   ")) {
-        strcpy(s1, session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+        strcpy(s1, session()->directories[session()->current_user_dir().subnum].path);
         strcpy(s2, s1);
         strcat(s1, s);
         StringRemoveWhitespace(s1);
@@ -389,7 +389,7 @@ void rename_file() {
         } else {
           u.mask |= mask_extended;
           modify_extended_description(&ss,
-              session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
+              session()->directories[session()->current_user_dir().subnum].name);
           if (ss) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
@@ -398,7 +398,7 @@ void rename_file() {
         }
       } else {
         modify_extended_description(&ss,
-            session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
+            session()->directories[session()->current_user_dir().subnum].name);
         if (ss) {
           add_extended_description(u.filename, ss);
           free(ss);
@@ -550,7 +550,7 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
         }
       }
     }
-    if (!upload_file(s, udir[directory_num].subnum, description)) {
+    if (!upload_file(s, session()->udir[directory_num].subnum, description)) {
       ok = false;
     }
   } else {
@@ -587,12 +587,12 @@ void upload_files(const char *file_name, int directory_num, int type) {
   uploadsrec u;
 
   last_fn[0] = 0;
-  dliscan1(udir[directory_num].subnum);
+  dliscan1(session()->udir[directory_num].subnum);
 
   TextFile file(file_name, "r");
   if (!file.IsOpen()) {
     char szDefaultFileName[MAX_PATH];
-    sprintf(szDefaultFileName, "%s%s", session()->directories[udir[directory_num].subnum].path, file_name);
+    sprintf(szDefaultFileName, "%s%s", session()->directories[session()->udir[directory_num].subnum].path, file_name);
     file.Open(szDefaultFileName, "r");
   }
   if (!file.IsOpen()) {
@@ -695,14 +695,14 @@ void upload_files(const char *file_name, int directory_num, int type) {
 
 // returns false on abort
 bool uploadall(int directory_num) {
-  dliscan1(udir[directory_num].subnum);
+  dliscan1(session()->udir[directory_num].subnum);
 
   char szDefaultFileSpec[MAX_PATH];
   strcpy(szDefaultFileSpec, "*.*");
 
   char szPathName[MAX_PATH];
-  sprintf(szPathName, "%s%s", session()->directories[udir[directory_num].subnum].path, szDefaultFileSpec);
-  int maxf = session()->directories[udir[directory_num].subnum].maxfiles;
+  sprintf(szPathName, "%s%s", session()->directories[session()->udir[directory_num].subnum].path, szDefaultFileSpec);
+  int maxf = session()->directories[session()->udir[directory_num].subnum].maxfiles;
 
   WFindFile fnd;
   bool bFound = fnd.open(szPathName, 0);
@@ -769,7 +769,7 @@ void relist() {
         tcd = filelist[i].directory;
         tcdi = -1;
         for (size_t i1 = 0; i1 < session()->directories.size(); i1++) {
-          if (udir[i1].subnum == tcd) {
+          if (session()->udir[i1].subnum == tcd) {
             tcdi = i1;
             break;
           }
@@ -780,7 +780,7 @@ void relist() {
         if (tcdi == -1) {
           bout << session()->directories[tcd].name << "." << wwiv::endl;
         } else {
-          bout << session()->directories[tcd].name << " - #" << udir[tcdi].keys << ".\r\n";
+          bout << session()->directories[tcd].name << " - #" << session()->udir[tcdi].keys << ".\r\n";
         }
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
         if (okansi()) {
@@ -1079,14 +1079,14 @@ void l_config_nscan() {
   bool abort = false;
   bout.nl();
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
-  for (size_t i = 0; (i < session()->directories.size()) && (udir[i].subnum != -1) && (!abort); i++) {
-    size_t i1 = udir[i].subnum;
+  for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) && (!abort); i++) {
+    size_t i1 = session()->udir[i].subnum;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       strcpy(s, "* ");
     } else {
       strcpy(s, "  ");
     }
-    sprintf(s2, "%s%s. %s", s, udir[i].keys, session()->directories[i1].name);
+    sprintf(s2, "%s%s. %s", s, session()->udir[i].keys, session()->directories[i1].name);
     pla(s2, &abort);
   }
   bout.nl(2);
@@ -1106,7 +1106,7 @@ void config_nscan() {
 
   done = done1 = false;
   oc = session()->GetCurrentConferenceFileArea();
-  os = udir[session()->GetCurrentFileArea()].subnum;
+  os = session()->current_user_dir().subnum;
 
   do {
     if (okconf(session()->user()) && uconfdir[1].confnum != -1) {
@@ -1153,8 +1153,8 @@ void config_nscan() {
         s = mmkey(1);
         if (s[0]) {
           for (size_t i = 0; i < session()->directories.size(); i++) {
-            i1 = udir[i].subnum;
-            if (IsEquals(udir[i].keys, s)) {
+            i1 = session()->udir[i].subnum;
+            if (IsEquals(session()->udir[i].keys, s)) {
               qsc_n[i1 / 32] ^= 1L << (i1 % 32);
             }
             if (IsEquals(s, "S")) {
@@ -1272,8 +1272,8 @@ void finddescription() {
   bout << "\r|#2Searching ";
   lines_listed = 0;
   for (size_t i = 0; (i < session()->directories.size()) && (!abort) && (!hangup) && (session()->tagging != 0)
-       && (udir[i].subnum != -1); i++) {
-    size_t i1 = udir[i].subnum;
+       && (session()->udir[i].subnum != -1); i++) {
+    size_t i1 = session()->udir[i].subnum;
     pts = 0;
     session()->titled = 1;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
@@ -1350,7 +1350,7 @@ void arc_l() {
       FileAreaSetRecord(fileDownload, nRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
-      int i1 = list_arc_out(stripfn(u.filename), session()->directories[udir[session()->GetCurrentFileArea()].subnum].path);
+      int i1 = list_arc_out(stripfn(u.filename), session()->directories[session()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }

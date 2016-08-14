@@ -166,6 +166,8 @@ public:
   bool IsNewScanAtLogin() const {return m_bNewScanAtLogin; } 
   void SetNewScanAtLogin(bool b) { m_bNewScanAtLogin =  b; }
 
+  // This is the current user's dir number they are sitting on.
+  // This is a user dir number (session()->udir[b], not directories[b]).
   int  GetCurrentFileArea() const { return m_nCurrentFileArea; }
   void SetCurrentFileArea(int n) { m_nCurrentFileArea = n; }
 
@@ -173,6 +175,9 @@ public:
   // This is a user sub number (usub[b], not subboards[b]).
   size_t GetCurrentMessageArea() const { return m_nCurrentMessageArea; }
   void SetCurrentMessageArea(size_t n) { m_nCurrentMessageArea = n; }
+
+  const usersubrec& current_user_sub() const { return usub[GetCurrentMessageArea()]; }
+  const usersubrec& current_user_dir() const { return udir[GetCurrentFileArea()]; }
 
   // This is set by iscan1 (for the most part) and is the sub number the user is
   // currently scanning/reading.  Note. this is the subnumber from subboards
@@ -455,6 +460,8 @@ public:
   std::vector<arcrec> arcs;
   std::vector<directoryrec> directories;
   std::vector<batchrec> batch;
+  std::vector<usersubrec> usub;
+  std::vector<usersubrec> udir;
 
 };
 

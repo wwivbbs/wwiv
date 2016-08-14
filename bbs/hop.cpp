@@ -54,15 +54,15 @@ void HopSub() {
 
   int c = 0;
   int oc = session()->GetCurrentConferenceMessageArea();
-  int os = usub[session()->GetCurrentMessageArea()].subnum;
+  int os = session()->current_user_sub().subnum;
 
   while ((c < nc) && !abort) {
     if (okconf(session()->user())) {
       setuconf(ConferenceType::CONF_SUBS, c, -1);
     }
     size_t i = 0;
-    while ((i < session()->subboards.size()) && (usub[i].subnum != -1) && !abort) {
-      strcpy(s2, session()->subboards[usub[i].subnum].name);
+    while ((i < session()->subboards.size()) && (session()->usub[i].subnum != -1) && !abort) {
+      strcpy(s2, session()->subboards[session()->usub[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
       if (strstr(s2, s1) != nullptr) {
@@ -72,7 +72,7 @@ void HopSub() {
         if (!okansi()) {
           bout.nl();
         }
-        bout << "|#5Do you mean \"" << session()->subboards[usub[i].subnum].name << "\" (Y/N/Q)? ";
+        bout << "|#5Do you mean \"" << session()->subboards[session()->usub[i].subnum].name << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
@@ -127,15 +127,15 @@ void HopDir() {
 
   int c = 0;
   int oc = session()->GetCurrentConferenceFileArea();
-  int os = udir[session()->GetCurrentFileArea()].subnum;
+  int os = session()->current_user_dir().subnum;
 
   while (c < nc && !abort) {
     if (okconf(session()->user())) {
       setuconf(ConferenceType::CONF_DIRS, c, -1);
     }
     size_t i = 0;
-    while ((i < session()->directories.size()) && (udir[i].subnum != -1) && (!abort)) {
-      strcpy(s2, session()->directories[udir[i].subnum].name);
+    while ((i < session()->directories.size()) && (session()->udir[i].subnum != -1) && (!abort)) {
+      strcpy(s2, session()->directories[session()->udir[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
       if (strstr(s2, s1) != nullptr) {
@@ -145,7 +145,7 @@ void HopDir() {
           bout.nl();
         }
         bout << "|#5Do you mean \""
-             << session()->directories[udir[i].subnum].name
+             << session()->directories[session()->udir[i].subnum].name
              << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {

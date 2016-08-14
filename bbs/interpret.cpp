@@ -36,7 +36,7 @@ const char *interpret(char chKey) {
 
   switch (chKey) {
   case '@':                               // Dir name
-    strcpy(s, session()->directories[udir[session()->GetCurrentFileArea()].subnum].name);
+    strcpy(s, session()->directories[session()->current_user_dir().subnum].name);
     break;
   case '~':                               // Total mails/feedbacks sent
     snprintf(s, sizeof(s), "%u", session()->user()->GetNumEmailSent() +
@@ -61,10 +61,10 @@ const char *interpret(char chKey) {
     snprintf(s, sizeof(s), "%u", session()->user()->GetAssPoints());
     break;
   case ':':                               // Sub number
-    strcpy(s, usub[session()->GetCurrentMessageArea()].keys);
+    strcpy(s, session()->current_user_sub().keys);
     break;
   case ';':                               // Directory number
-    strcpy(s, udir[session()->GetCurrentFileArea()].keys);
+    strcpy(s, session()->current_user_dir().keys);
     break;
   case '!':                               // Built-in pause
     pausescr();
@@ -188,7 +188,7 @@ const char *interpret(char chKey) {
     snprintf(s, sizeof(s), "%u", session()->user()->GetFilesUploaded());
     break;
   case 'u':                               // Current sub
-    strcpy(s, session()->subboards[usub[session()->GetCurrentMessageArea()].subnum].name);
+    strcpy(s, session()->subboards[session()->current_user_sub().subnum].name);
     break;
   case 'W':                               // Total # of messages in sub
     snprintf(s, sizeof(s), "%d", session()->GetNumMessagesInCurrentMessageArea());
