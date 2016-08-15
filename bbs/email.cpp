@@ -267,7 +267,7 @@ void sendout_email(EmailData& data) {
       nh.length = 32760;
     }
     if (data.from_network_number != session()->net_num()) {
-      gate_msg(&nh, b1.get(), session()->net_num(), net_email_name, nullptr, data.from_network_number);
+      gate_msg(&nh, b1.get(), session()->net_num(), net_email_name, {}, data.from_network_number);
     } else {
       string net_filename;
       if (data.forwarded_code) {

@@ -43,9 +43,9 @@ using std::unique_ptr;
 using namespace wwiv::sdk;
 using wwiv::strings::StringPrintf;
 
-void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
+void send_net_post(postrec* pPostRecord, const subboardrec& sub, const wwiv::sdk::xtrasubsrec& xsub) {
   string text;
-  if (!readfile(&(pPostRecord->msg), extra, &text)){
+  if (!readfile(&(pPostRecord->msg), sub.filename, &text)){
     return;
   }
 
@@ -53,8 +53,8 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
   int nOrigNetNumber = session()->net_num();
   if (pPostRecord->status & status_post_new_net) {
     nNetNumber = pPostRecord->network.network_msg.net_number;
-  } else if (!session()->xsubs[sub_number].nets.empty()) {
-    nNetNumber = session()->xsubs[sub_number].nets[0].net_num;
+  } else if (!xsub.nets.empty()) {
+    nNetNumber = xsub.nets[0].net_num;
   } else {
     nNetNumber = session()->net_num();
   }
@@ -64,38 +64,38 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
     nNetNumber = -1;
   }
 
-  net_header_rec netHeaderOrig = {};
-  netHeaderOrig.tosys   = 0;
-  netHeaderOrig.touser  = 0;
-  netHeaderOrig.fromsys = pPostRecord->ownersys;
-  netHeaderOrig.fromuser  = pPostRecord->owneruser;
-  netHeaderOrig.list_len  = 0;
-  netHeaderOrig.daten   = pPostRecord->daten;
-  netHeaderOrig.length  = text.size() + 1 + strlen(pPostRecord->title);
-  netHeaderOrig.method  = 0;
+  net_header_rec nhorig = {};
+  nhorig.tosys   = 0;
+  nhorig.touser  = 0;
+  nhorig.fromsys = pPostRecord->ownersys;
+  nhorig.fromuser  = pPostRecord->owneruser;
+  nhorig.list_len  = 0;
+  nhorig.daten   = pPostRecord->daten;
+  nhorig.length  = text.size() + 1 + strlen(pPostRecord->title);
+  nhorig.method  = 0;
 
-  uint32_t lMessageLength = text.size();
-  if (netHeaderOrig.length > 32755) {
-    bout.bprintf("Message truncated by %lu bytes for the network.", netHeaderOrig.length - 32755L);
-    netHeaderOrig.length = 32755;
-    lMessageLength = netHeaderOrig.length - strlen(pPostRecord->title) - 1;
+  uint32_t message_length = text.size();
+  if (nhorig.length > 32755) {
+    bout.bprintf("Message truncated by %lu bytes for the network.", nhorig.length - 32755L);
+    nhorig.length = 32755;
+    message_length = nhorig.length - strlen(pPostRecord->title) - 1;
   }
-  unique_ptr<char[]> b1(new char[netHeaderOrig.length + 100]);
+  unique_ptr<char[]> b1(new char[nhorig.length + 100]);
   if (!b1) {
     set_net_num(nOrigNetNumber);
     return;
   }
   strcpy(b1.get(), pPostRecord->title);
-  memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), lMessageLength);
+  memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), message_length);
 
-  for (size_t n = 0; n < session()->xsubs[sub_number].nets.size(); n++) {
-    xtrasubsnetrec& xnp = session()->xsubs[sub_number].nets[n];
+  for (size_t n = 0; n < xsub.nets.size(); n++) {
+    const auto& xnp = xsub.nets[n];
     if (xnp.net_num == nNetNumber && xnp.host) {
       continue;
     }
     set_net_num(xnp.net_num);
-    net_header_rec nh = netHeaderOrig;
-    unsigned short int *pList = nullptr;
+    net_header_rec nh = nhorig;
+    std::vector<uint16_t> list;
     nh.minor_type = 0;
     if (!nh.fromsys) {
       nh.fromsys = net_sysnum;
@@ -107,10 +107,6 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
       File file(StringPrintf("%sn%s.net", session()->network_directory().c_str(), xnp.stype));
       if (file.Open(File::modeBinary | File::modeReadOnly)) {
         int len1 = file.GetLength();
-        pList = static_cast<unsigned short int *>(BbsAllocA(len1 * 2 + 1));
-        if (!pList) {
-          continue;
-        }
         // looks like this leaks
         text.clear();
         text.resize(len1);
@@ -123,10 +119,11 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
             ++len2;
           }
           if ((text[len2] >= '0') && (text[len2] <= '9') && (len2 < len1)) {
-            int i = atoi(&(text[len2]));
+            uint16_t i = wwiv::strings::StringToUnsignedShort(&(text[len2]));
             if (((session()->net_num() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
               if (valid_system(i)) {
-                pList[(nh.list_len)++] = static_cast<uint16_t>(i);
+                nh.list_len++;
+                list.push_back(i);
               }
             }
             while ((len2 < len1) && (text[len2] >= '0') && (text[len2] <= '9')) {
@@ -135,20 +132,11 @@ void send_net_post(postrec* pPostRecord, const char* extra, int sub_number) {
           }
         }
       }
-      if (!nh.list_len) {
-        if (pList) {
-          free(pList);
-        }
-        continue;
-      }
     }
     if (nn1 == session()->net_num()) {
-      send_net(&nh, pList, b1.get(), xnp.stype);
+      send_net(&nh, list, b1.get(), xnp.stype);
     } else {
-      gate_msg(&nh, b1.get(), xnp.net_num, xnp.stype, pList, nNetNumber);
-    }
-    if (pList) {
-      free(pList);
+      gate_msg(&nh, b1.get(), xnp.net_num, xnp.stype, list, nNetNumber);
     }
   }
 
@@ -305,8 +293,7 @@ void post() {
   if (!session()->current_xsub().nets.empty()) {
     session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
     if (!(p.status & status_pending_net)) {
-      send_net_post(&p, session()->current_sub().filename,
-                    session()->GetCurrentReadMessageArea());
+      send_net_post(&p, session()->current_sub(), session()->current_xsub());
     }
   }
 }

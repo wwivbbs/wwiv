@@ -19,8 +19,9 @@
 #define __INCLUDED_BBS_MSGBASE1_H__
 
 #include "sdk/vardec.h"
+#include "sdk/subxtr.h"
 
-void send_net_post(postrec* pPostRecord, const char *extra, int sub_number);
+void send_net_post(postrec* pPostRecord, const subboardrec& sub, const wwiv::sdk::xtrasubsrec& xsub);
 void post();
 void grab_user_name(messagerec* pMessageRecord, const char *file_name);
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);

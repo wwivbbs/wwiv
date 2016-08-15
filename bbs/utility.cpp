@@ -218,39 +218,41 @@ long freek1(const char *pszPathName) {
   return File::GetFreeSpaceForPath(pszPathName);
 }
 
-void send_net(net_header_rec * nh, unsigned short int *list, const char *text, const char *byname) {
+void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname) {
   WWIV_ASSERT(nh);
 
-  const string filename = StringPrintf("%sp1%s",
+  const string filename = StrCat(
     session()->network_directory().c_str(),
+    "p1",
     session()->network_extension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
   file.Seek(0L, File::seekEnd);
-  if (!list) {
+  if (list.empty()) {
     nh->list_len = 0;
   }
-  if (!text) {
+  if (text.empty()) {
     nh->length = 0;
   }
   if (nh->list_len) {
     nh->tosys = 0;
   }
-  long lNetHeaderSize = nh->length;
-  if (byname && *byname) {
-    nh->length += strlen(byname) + 1;
+  if (!byname.empty()) {
+    nh->length += byname.size() + 1;
   }
   file.Write(nh, sizeof(net_header_rec));
   if (nh->list_len) {
-    file.Write(list, 2 * (nh->list_len));
+    file.Write(&list[0], sizeof(uint16_t) * (nh->list_len));
   }
-  if (byname && *byname) {
-    file.Write(byname, strlen(byname) + 1);
+  if (!byname.empty()) {
+    file.Write(byname);
+    char nul[1] = {0};
+    file.Write(nul, 1);
   }
   if (nh->length) {
-    file.Write(text, lNetHeaderSize);
+    file.Write(text);
   }
   file.Close();
 }

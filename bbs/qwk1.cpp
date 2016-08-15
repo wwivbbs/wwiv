@@ -962,8 +962,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     if (!session()->current_xsub().nets.empty()) {
       ++session()->user()->data.postnet;
       if (!(p.status & status_pending_net)) {
-        send_net_post(&p, session()->current_sub().filename,
-                      session()->GetCurrentReadMessageArea());
+        send_net_post(&p, session()->current_sub(), session()->current_xsub());
       }
     }
   }

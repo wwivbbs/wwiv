@@ -98,8 +98,7 @@ void valscan() {
             p1->status &= ~status_pending_net;
             write_post(i, p1);
             close_sub();
-            send_net_post(p1, session()->current_sub().filename,
-                          session()->GetCurrentReadMessageArea());
+            send_net_post(p1, session()->current_sub(), session()->current_xsub());
             bout.nl();
             bout << "|#7Message sent.\r\n\n";
           }

@@ -175,7 +175,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
         }
       }
       for (auto p : to_validate) {
-        send_net_post(&p, session()->current_sub().filename, session()->GetCurrentReadMessageArea());
+        send_net_post(&p, session()->current_sub(), session()->current_xsub());
         nNumMsgsSent++;
       }
 
@@ -854,8 +854,7 @@ void HandleMessageMove(int &nMessageNumber) {
       if (!session()->current_xsub().nets.empty()) {
         p2.status |= status_pending_net;
         session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
-        send_net_post(&p2, session()->current_sub().filename,
-                      session()->GetCurrentReadMessageArea());
+        send_net_post(&p2, session()->current_sub(), session()->current_xsub());
       }
       add_post(&p2);
       close_sub();

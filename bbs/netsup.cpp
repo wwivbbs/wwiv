@@ -691,7 +691,7 @@ void print_pending_list() {
 }
 
 void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char *pszAuthorName,
-              unsigned short int *pList, int nFromNetworkNumber) {
+  std::vector<uint16_t> list, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
@@ -797,26 +797,26 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
     }
     const string packet_filename = StringPrintf("%sp1%s",
       session()->net_networks[nNetNumber].dir, session()->network_extension().c_str());
-    File packetFile(packet_filename);
-    if (packetFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      packetFile.Seek(0L, File::seekEnd);
-      if (!pList) {
+    File file(packet_filename);
+    if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+      file.Seek(0L, File::seekEnd);
+      if (list.empty()) {
         nh->list_len = 0;
       }
       if (nh->list_len) {
         nh->tosys = 0;
       }
-      packetFile.Write(nh, sizeof(net_header_rec));
+      file.Write(nh, sizeof(net_header_rec));
       if (nh->list_len) {
-        packetFile.Write(pList, 2 * (nh->list_len));
+        file.Write(&list[0], sizeof(uint16_t) * (nh->list_len));
       }
       if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
-        packetFile.Write(pszAuthorName, strlen(pszAuthorName) + 1);
+        file.Write(pszAuthorName, strlen(pszAuthorName) + 1);
       }
-      packetFile.Write(pszOriginalText, strlen(pszOriginalText) + 1);
-      packetFile.Write(newname, strlen(newname));
-      packetFile.Write(messageText, ntl);
-      packetFile.Close();
+      file.Write(pszOriginalText, strlen(pszOriginalText) + 1);
+      file.Write(newname, strlen(newname));
+      file.Write(messageText, ntl);
+      file.Close();
     }
   }
 }
