@@ -33,6 +33,7 @@
 #include "bbs/read_message.h"
 #include "sdk/subxtr.h"
 #include "bbs/printfile.h"
+#include "bbs/pause.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -44,373 +45,15 @@
 #include "sdk/filenames.h"
 
 using std::string;
-
-void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
-                          bool &quit, int &val);
-string GetScanReadPrompts(int nMessageNumber);
-void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int &nScanOptionType);
-void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType);
-void HandleListTitles(int &nMessageNumber, int &nScanOptionType);
-void HandleMessageDownload(int nMessageNumber);
-void HandleMessageMove(int &nMessageNumber);
-void HandleMessageLoad();
-void HandleMessageReply(int &nMessageNumber);
-void HandleMessageDelete(int &nMessageNumber);
-void HandleMessageExtract(int &nMessageNumber);
-void HandleMessageHelp();
-
-static char s_szFindString[21];
-
-using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::endl;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
-  irt[0] = '\0';
-  irt_name[0] = '\0';
+static char s_szFindString[21];
 
-  int val = 0;
-  bool realexpress = express;
-  iscan(session()->current_user_sub_num());
-  if (session()->GetCurrentReadMessageArea() < 0) {
-    bout.nl();
-    bout << "No subs available.\r\n\n";
-    return;
-  }
-  
-  bool done = false;
-  bool quit = false;
-  do {
-    session()->tleft(true);
-    CheckForHangup();
-    set_net_num((session()->current_xsub().nets.empty()) ? 0 :
-                session()->current_xsub().nets[0].net_num);
-    if (nScanOptionType != SCAN_OPTION_READ_PROMPT) {
-      resynch(&nMessageNumber, nullptr);
-    }
-    write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
-
-    switch (nScanOptionType) {
-    case SCAN_OPTION_READ_PROMPT: { // Read Prompt
-      HandleScanReadPrompt(nMessageNumber, nScanOptionType, nextsub, bTitleScan, done, quit, val);
-    }
-    break;
-    case SCAN_OPTION_LIST_TITLES: { // List Titles
-      HandleListTitles(nMessageNumber, nScanOptionType);
-    }
-    break;
-    case SCAN_OPTION_READ_MESSAGE: { // Read Message
-      bool next = false;
-      if (nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
-        if (forcescansub) {
-          incom = false;
-        }
-        read_post(nMessageNumber, &next, &val);
-        if (forcescansub) {
-          incom = true;
-        }
-      }
-      bout.Color(0);
-      bout.nl();
-      if (next) {
-        ++nMessageNumber;
-        if (nMessageNumber > session()->GetNumMessagesInCurrentMessageArea()) {
-          done = true;
-        }
-        nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-      } else {
-        nScanOptionType = SCAN_OPTION_READ_PROMPT;
-      }
-      if (expressabort) {
-        if (realexpress) {
-          done = true;
-          quit = true;
-          *nextsub = 0;
-        } else {
-          expressabort = false;
-          express = false;
-          nScanOptionType = SCAN_OPTION_READ_PROMPT;
-        }
-      }
-    }
-    break;
-    }
-  } while (!done && !hangup);
-  if (!realexpress) {
-    express = false;
-    expressabort = false;
-  }
-  if ((val & 1) && lcs() && !express) {
-    bout.nl();
-    bout << "|#5Validate messages here? ";
-    if (noyes()) {
-      wwiv::bbs::OpenSub opened_sub(true);
-      for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-        postrec* p3 = get_post(i);
-        if (p3->status & (status_unvalidated | status_delete)) {
-          p3->status &= (~(status_unvalidated | status_delete));
-        }
-        write_post(i, p3);
-      }
-    }
-  }
-  if ((val & 2) && lcs() && !express) {
-    bout.nl();
-    bout << "|#5Network validate here? ";
-    if (yesno()) {
-      int nNumMsgsSent = 0;
-      vector<postrec> to_validate;
-      {
-        wwiv::bbs::OpenSub opened_sub(true);
-        for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-          postrec *p4 = get_post(i);
-          if (p4->status & status_pending_net) {
-            to_validate.push_back(*p4);
-            p4->status &= ~status_pending_net;
-            write_post(i, p4);
-          }
-        }
-      }
-      for (auto p : to_validate) {
-        send_net_post(&p, session()->current_sub(), session()->current_xsub());
-        nNumMsgsSent++;
-      }
-
-      bout.nl();
-      bout << nNumMsgsSent << " messages sent.";
-      bout.nl(2);
-    }
-  }
-  bout.nl();
-  if (quit || express) {
-    return;
-  }
-  if (!session()->user()->IsRestrictionPost() &&
-      (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
-      (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
-    bout << "|#5Post on " << session()->current_sub().name << "? ";
-    irt[0] = '\0';
-    irt_name[0] = '\0';
-    grab_quotes(nullptr, nullptr);
-    if (yesno()) {
-      post();
-    }
-  }
-  bout.nl();
-}
-
-void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
-                          bool &quit, int &val) {
-  resetnsp();
-  string read_prompt = GetScanReadPrompts(nMessageNumber);
-  bout.nl();
-  char szUserInput[ 81 ];
-  if (express) {
-    szUserInput[0] = '\0';
-    read_prompt.clear();
-    bout.nl(2);
-  } else {
-    bout << read_prompt;
-    input(szUserInput, 5, true);
-    resynch(&nMessageNumber, nullptr);
-    while (szUserInput[0] == 32) {
-      char szTempBuffer[255];
-      strcpy(szTempBuffer, &(szUserInput[1]));
-      strcpy(szUserInput, szTempBuffer);
-    }
-  }
-  if (bTitleScan && szUserInput[0] == 0 && nMessageNumber < session()->GetNumMessagesInCurrentMessageArea()) {
-    nScanOptionType = SCAN_OPTION_LIST_TITLES;
-    szUserInput[0] = 'T';
-    szUserInput[1] = '\0';
-  } else {
-    bTitleScan = false;
-    nScanOptionType = SCAN_OPTION_READ_PROMPT;
-  }
-  int nUserInput = atoi(szUserInput);
-  if (szUserInput[0] == '\0') {
-    nUserInput = nMessageNumber + 1;
-    if (nUserInput >= session()->GetNumMessagesInCurrentMessageArea() + 1) {
-      done = true;
-    }
-  }
-
-  if (nUserInput != 0 && nUserInput <= session()->GetNumMessagesInCurrentMessageArea() && nUserInput >= 1) {
-    nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-    nMessageNumber = nUserInput;
-  } else if (szUserInput[1] == '\0') {
-    if (forcescansub) {
-      return;
-    }
-    switch (szUserInput[0]) {
-    case '$': { // Last message in area.
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-      nMessageNumber = session()->GetNumMessagesInCurrentMessageArea();
-    }
-    break;
-    case 'F': { // Find addition
-      HandleScanReadFind(nMessageNumber, nScanOptionType);
-    }
-    break;
-    // End of find addition
-
-    case 'Q':
-      quit = true;
-      done = true;
-      *nextsub = 0;
-      break;
-    case 'B':
-      if (*nextsub != 0) {
-        bout.nl();
-        bout << "|#5Remove this sub from your Q-Scan? ";
-        if (yesno()) {
-          qsc_q[session()->current_user_sub().subnum / 32] ^= (1L <<
-              (session()->current_user_sub().subnum % 32));
-        } else {
-          bout.nl();
-          bout << "|#9Mark messages in " 
-               << session()->subboards[session()->current_user_sub().subnum].name
-               << " as read? ";
-          if (yesno()) {
-            unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
-            qsc_p[session()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
-          }
-        }
-
-        *nextsub = 1;
-        done = true;
-        quit = true;
-      }
-      break;
-    case 'T':
-      bTitleScan = true;
-      nScanOptionType = SCAN_OPTION_LIST_TITLES;
-      break;
-    case 'R':
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-      break;
-    case '@':
-      strcpy(irt_sub, session()->subboards[session()->current_user_sub().subnum].name);
-    case 'O':
-    case 'A': {
-      HandleScanReadAutoReply(nMessageNumber, szUserInput, nScanOptionType);
-    }
-    break;
-    case 'P':
-      irt[0]          = '\0';
-      irt_name[0]     = '\0';
-      post();
-      break;
-    case 'W':
-      HandleMessageReply(nMessageNumber);
-      break;
-    case 'Y':
-      HandleMessageDownload(nMessageNumber);
-      break;
-    case '?':
-      HandleMessageHelp();
-      break;
-    case '-':
-      if (nMessageNumber > 1 && (nMessageNumber - 1 < session()->GetNumMessagesInCurrentMessageArea())) {
-        --nMessageNumber;
-        nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-      }
-      break;
-    case 'C':
-      express = true;
-      break;
-    case '*':
-      // This used to be threaded code.
-      break;
-    case '[':
-      // This used to be threaded code.
-      break;
-    case ']':
-      // This used to be threaded code.
-      break;
-    case '>':
-      // This used to be threaded code.
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
-      break;
-
-    case 'V':
-      if (cs() && (get_post(nMessageNumber)->ownersys == 0) && (nMessageNumber > 0)
-          && (nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea())) {
-        valuser(get_post(nMessageNumber)->owneruser);
-      } else if (cs() && (nMessageNumber > 0) && (nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea())) {
-        bout.nl();
-        bout << "|#6Post from another system.\r\n\n";
-      }
-      break;
-    case 'N':
-      if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea())) {
-        wwiv::bbs::OpenSub opened_sub(true);
-        resynch(&nMessageNumber, nullptr);
-        postrec *p3 = get_post(nMessageNumber);
-        p3->status ^= status_no_delete;
-        write_post(nMessageNumber, p3);
-        bout.nl();
-        if (p3->status & status_no_delete) {
-          bout << "|#9Message will |#6NOT|#9 be auto-purged.\r\n";
-        } else {
-          bout << "|#9Message |#2CAN|#9 now be auto-purged.\r\n";
-        }
-        bout.nl();
-      }
-      break;
-    case 'X':
-      if (lcs() && nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea() &&
-          session()->current_sub().anony & anony_val_net &&
-          !session()->current_xsub().nets.empty()) {
-        wwiv::bbs::OpenSub opened_sub(true);
-        resynch(&nMessageNumber, nullptr);
-        postrec *p3 = get_post(nMessageNumber);
-        p3->status ^= status_pending_net;
-        write_post(nMessageNumber, p3);
-        close_sub();
-        bout.nl();
-        if (p3->status & status_pending_net) {
-          val |= 2;
-          bout << "|#9Will be sent out on net now.\r\n";
-        } else {
-          bout << "|#9Not set for net pending now.\r\n";
-        }
-        bout.nl();
-      }
-      break;
-    case 'U':
-      if (lcs() && nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
-        wwiv::bbs::OpenSub opened_sub(true);
-        resynch(&nMessageNumber, nullptr);
-        postrec *p3 = get_post(nMessageNumber);
-        p3->anony = 0;
-        write_post(nMessageNumber, p3);
-        bout.nl();
-        bout << "|#9Message is not anonymous now.\r\n";
-      }
-      break;
-    case 'D':
-      HandleMessageDelete(nMessageNumber);
-      break;
-    case 'E':
-      HandleMessageExtract(nMessageNumber);
-      break;
-    case 'M':
-      HandleMessageMove(nMessageNumber);
-      break;
-    case 'L':
-      HandleMessageLoad();
-      break;
-    }
-  } else if (IsEquals(szUserInput, "cls")) {
-    bputch('\x0c');
-  }
-}
-
-string GetScanReadPrompts(int nMessageNumber) {
+static string GetScanReadPrompts(int nMessageNumber) {
   if (forcescansub) {
     if (nMessageNumber < session()->GetNumMessagesInCurrentMessageArea()) {
       return "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...";
@@ -432,7 +75,7 @@ string GetScanReadPrompts(int nMessageNumber) {
         session()->GetNumMessagesInCurrentMessageArea());
 }
 
-void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int &nScanOptionType) {
+static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int &nScanOptionType) {
   if (!lcs() && get_post(nMessageNumber)->status & (status_unvalidated | status_delete)) {
     return;
   }
@@ -571,7 +214,7 @@ void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int 
   }
 }
 
-void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
+static void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
   bool abort = false;
   char *pszTempFindString = nullptr;
   if (!(g_flags & g_flag_made_find_str)) {
@@ -662,7 +305,7 @@ void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
   }
 }
 
-void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
+static void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
   int i = 0;
   bool abort = false;
   if (nMessageNumber >= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -749,7 +392,7 @@ void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
   nScanOptionType = SCAN_OPTION_READ_PROMPT;
 }
 
-void HandleMessageDownload(int nMessageNumber) {
+static void HandleMessageDownload(int nMessageNumber) {
   if (nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
     string b;
     readfile(&(get_post(nMessageNumber)->msg), (session()->current_sub().filename), &b);
@@ -869,7 +512,7 @@ void HandleMessageMove(int &nMessageNumber) {
   }
 }
 
-void HandleMessageLoad() {
+static void HandleMessageLoad() {
   if (!so()) {
     return;
   }
@@ -912,7 +555,7 @@ void HandleMessageReply(int &nMessageNumber) {
   grab_quotes(nullptr, nullptr);
 }
 
-void HandleMessageDelete(int &nMessageNumber) {
+static void HandleMessageDelete(int &nMessageNumber) {
   if (lcs()) {
     if (nMessageNumber) {
       open_sub(true);
@@ -950,7 +593,7 @@ void HandleMessageDelete(int &nMessageNumber) {
   }
 }
 
-void HandleMessageExtract(int &nMessageNumber) {
+static void HandleMessageExtract(int &nMessageNumber) {
   if (!so()) {
     return;
   }
@@ -962,7 +605,7 @@ void HandleMessageExtract(int &nMessageNumber) {
   }
 }
 
-void HandleMessageHelp() {
+static void HandleMessageHelp() {
   if (forcescansub) {
     printfile(MUSTREAD_NOEXT);
   } else {
@@ -972,4 +615,352 @@ void HandleMessageHelp() {
       printfile(MBMAIN_NOEXT);
     }
   }
+}
+
+static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
+  bool &quit, int &val) {
+  resetnsp();
+  string read_prompt = GetScanReadPrompts(nMessageNumber);
+  bout.nl();
+  char szUserInput[81];
+  if (express) {
+    szUserInput[0] = '\0';
+    read_prompt.clear();
+    bout.nl(2);
+  } else {
+    bout << read_prompt;
+    input(szUserInput, 5, true);
+    resynch(&nMessageNumber, nullptr);
+    while (szUserInput[0] == 32) {
+      char szTempBuffer[255];
+      strcpy(szTempBuffer, &(szUserInput[1]));
+      strcpy(szUserInput, szTempBuffer);
+    }
+  }
+  if (bTitleScan && szUserInput[0] == 0 && nMessageNumber < session()->GetNumMessagesInCurrentMessageArea()) {
+    nScanOptionType = SCAN_OPTION_LIST_TITLES;
+    szUserInput[0] = 'T';
+    szUserInput[1] = '\0';
+  } else {
+    bTitleScan = false;
+    nScanOptionType = SCAN_OPTION_READ_PROMPT;
+  }
+  int nUserInput = atoi(szUserInput);
+  if (szUserInput[0] == '\0') {
+    nUserInput = nMessageNumber + 1;
+    if (nUserInput >= session()->GetNumMessagesInCurrentMessageArea() + 1) {
+      done = true;
+    }
+  }
+
+  if (nUserInput != 0 && nUserInput <= session()->GetNumMessagesInCurrentMessageArea() && nUserInput >= 1) {
+    nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+    nMessageNumber = nUserInput;
+  } else if (szUserInput[1] == '\0') {
+    if (forcescansub) {
+      return;
+    }
+    switch (szUserInput[0]) {
+    case '$':
+    { // Last message in area.
+      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      nMessageNumber = session()->GetNumMessagesInCurrentMessageArea();
+    }
+    break;
+    case 'F':
+    { // Find addition
+      HandleScanReadFind(nMessageNumber, nScanOptionType);
+    }
+    break;
+    // End of find addition
+
+    case 'Q':
+      quit = true;
+      done = true;
+      *nextsub = 0;
+      break;
+    case 'B':
+      if (*nextsub != 0) {
+        bout.nl();
+        bout << "|#5Remove this sub from your Q-Scan? ";
+        if (yesno()) {
+          qsc_q[session()->current_user_sub().subnum / 32] ^= (1L <<
+            (session()->current_user_sub().subnum % 32));
+        } else {
+          bout.nl();
+          bout << "|#9Mark messages in "
+            << session()->subboards[session()->current_user_sub().subnum].name
+            << " as read? ";
+          if (yesno()) {
+            unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
+            qsc_p[session()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
+          }
+        }
+
+        *nextsub = 1;
+        done = true;
+        quit = true;
+      }
+      break;
+    case 'T':
+      bTitleScan = true;
+      nScanOptionType = SCAN_OPTION_LIST_TITLES;
+      break;
+    case 'R':
+      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      break;
+    case '@':
+      strcpy(irt_sub, session()->subboards[session()->current_user_sub().subnum].name);
+    case 'O':
+    case 'A':
+    {
+      HandleScanReadAutoReply(nMessageNumber, szUserInput, nScanOptionType);
+    }
+    break;
+    case 'P':
+      irt[0] = '\0';
+      irt_name[0] = '\0';
+      post();
+      break;
+    case 'W':
+      HandleMessageReply(nMessageNumber);
+      break;
+    case 'Y':
+      HandleMessageDownload(nMessageNumber);
+      break;
+    case '?':
+      HandleMessageHelp();
+      break;
+    case '-':
+      if (nMessageNumber > 1 && (nMessageNumber - 1 < session()->GetNumMessagesInCurrentMessageArea())) {
+        --nMessageNumber;
+        nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      }
+      break;
+    case 'C':
+      express = true;
+      break;
+    case '*':
+      // This used to be threaded code.
+      break;
+    case '[':
+      // This used to be threaded code.
+      break;
+    case ']':
+      // This used to be threaded code.
+      break;
+    case '>':
+      // This used to be threaded code.
+      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      break;
+
+    case 'V':
+      if (cs() && (get_post(nMessageNumber)->ownersys == 0) && (nMessageNumber > 0)
+        && (nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea())) {
+        valuser(get_post(nMessageNumber)->owneruser);
+      } else if (cs() && (nMessageNumber > 0) && (nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea())) {
+        bout.nl();
+        bout << "|#6Post from another system.\r\n\n";
+      }
+      break;
+    case 'N':
+      if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea())) {
+        wwiv::bbs::OpenSub opened_sub(true);
+        resynch(&nMessageNumber, nullptr);
+        postrec *p3 = get_post(nMessageNumber);
+        p3->status ^= status_no_delete;
+        write_post(nMessageNumber, p3);
+        bout.nl();
+        if (p3->status & status_no_delete) {
+          bout << "|#9Message will |#6NOT|#9 be auto-purged.\r\n";
+        } else {
+          bout << "|#9Message |#2CAN|#9 now be auto-purged.\r\n";
+        }
+        bout.nl();
+      }
+      break;
+    case 'X':
+      if (lcs() && nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea() &&
+        session()->current_sub().anony & anony_val_net &&
+        !session()->current_xsub().nets.empty()) {
+        wwiv::bbs::OpenSub opened_sub(true);
+        resynch(&nMessageNumber, nullptr);
+        postrec *p3 = get_post(nMessageNumber);
+        p3->status ^= status_pending_net;
+        write_post(nMessageNumber, p3);
+        close_sub();
+        bout.nl();
+        if (p3->status & status_pending_net) {
+          val |= 2;
+          bout << "|#9Will be sent out on net now.\r\n";
+        } else {
+          bout << "|#9Not set for net pending now.\r\n";
+        }
+        bout.nl();
+      }
+      break;
+    case 'U':
+      if (lcs() && nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
+        wwiv::bbs::OpenSub opened_sub(true);
+        resynch(&nMessageNumber, nullptr);
+        postrec *p3 = get_post(nMessageNumber);
+        p3->anony = 0;
+        write_post(nMessageNumber, p3);
+        bout.nl();
+        bout << "|#9Message is not anonymous now.\r\n";
+      }
+      break;
+    case 'D':
+      HandleMessageDelete(nMessageNumber);
+      break;
+    case 'E':
+      HandleMessageExtract(nMessageNumber);
+      break;
+    case 'M':
+      HandleMessageMove(nMessageNumber);
+      break;
+    case 'L':
+      HandleMessageLoad();
+      break;
+    }
+  } else if (IsEquals(szUserInput, "cls")) {
+    bputch('\x0c');
+  }
+}
+
+void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
+  irt[0] = '\0';
+  irt_name[0] = '\0';
+
+  int val = 0;
+  bool realexpress = express;
+  iscan(session()->current_user_sub_num());
+  if (session()->GetCurrentReadMessageArea() < 0) {
+    bout.nl();
+    bout << "No subs available.\r\n\n";
+    return;
+  }
+
+  bool done = false;
+  bool quit = false;
+  do {
+    session()->tleft(true);
+    CheckForHangup();
+    set_net_num((session()->current_xsub().nets.empty()) ? 0 :
+      session()->current_xsub().nets[0].net_num);
+    if (nScanOptionType != SCAN_OPTION_READ_PROMPT) {
+      resynch(&nMessageNumber, nullptr);
+    }
+    write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
+
+    switch (nScanOptionType) {
+    case SCAN_OPTION_READ_PROMPT:
+    { // Read Prompt
+      HandleScanReadPrompt(nMessageNumber, nScanOptionType, nextsub, bTitleScan, done, quit, val);
+    }
+    break;
+    case SCAN_OPTION_LIST_TITLES:
+    { // List Titles
+      HandleListTitles(nMessageNumber, nScanOptionType);
+    }
+    break;
+    case SCAN_OPTION_READ_MESSAGE:
+    { // Read Message
+      bool next = false;
+      if (nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
+        if (forcescansub) {
+          incom = false;
+        }
+        read_post(nMessageNumber, &next, &val);
+        if (forcescansub) {
+          incom = true;
+        }
+      }
+      bout.Color(0);
+      bout.nl();
+      if (next) {
+        ++nMessageNumber;
+        if (nMessageNumber > session()->GetNumMessagesInCurrentMessageArea()) {
+          done = true;
+        }
+        nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      } else {
+        nScanOptionType = SCAN_OPTION_READ_PROMPT;
+      }
+      if (expressabort) {
+        if (realexpress) {
+          done = true;
+          quit = true;
+          *nextsub = 0;
+        } else {
+          expressabort = false;
+          express = false;
+          nScanOptionType = SCAN_OPTION_READ_PROMPT;
+        }
+      }
+    }
+    break;
+    }
+  } while (!done && !hangup);
+  if (!realexpress) {
+    express = false;
+    expressabort = false;
+  }
+  if ((val & 1) && lcs() && !express) {
+    bout.nl();
+    bout << "|#5Validate messages here? ";
+    if (noyes()) {
+      wwiv::bbs::OpenSub opened_sub(true);
+      for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
+        postrec* p3 = get_post(i);
+        if (p3->status & (status_unvalidated | status_delete)) {
+          p3->status &= (~(status_unvalidated | status_delete));
+        }
+        write_post(i, p3);
+      }
+    }
+  }
+  if ((val & 2) && lcs() && !express) {
+    bout.nl();
+    bout << "|#5Network validate here? ";
+    if (yesno()) {
+      int nNumMsgsSent = 0;
+      vector<postrec> to_validate;
+      {
+        wwiv::bbs::OpenSub opened_sub(true);
+        for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
+          postrec *p4 = get_post(i);
+          if (p4->status & status_pending_net) {
+            to_validate.push_back(*p4);
+            p4->status &= ~status_pending_net;
+            write_post(i, p4);
+          }
+        }
+      }
+      for (auto p : to_validate) {
+        send_net_post(&p, session()->current_sub(), session()->current_xsub());
+        nNumMsgsSent++;
+      }
+
+      bout.nl();
+      bout << nNumMsgsSent << " messages sent.";
+      bout.nl(2);
+    }
+  }
+  bout.nl();
+  if (quit || express) {
+    return;
+  }
+  if (!session()->user()->IsRestrictionPost() &&
+    (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
+    (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
+    bout << "|#5Post on " << session()->current_sub().name << "? ";
+    irt[0] = '\0';
+    irt_name[0] = '\0';
+    grab_quotes(nullptr, nullptr);
+    if (yesno()) {
+      post();
+    }
+  }
+  bout.nl();
 }
