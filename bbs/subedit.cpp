@@ -69,7 +69,7 @@ static string GetAr(subboardrec r, const string& default_value) {
 }
 
 static string boarddata(size_t n) {
-  subboardrec r = session()->subboards[n];
+  const auto& r = session()->subboards[n];
   string stype;
   if (n < session()->xsubs.size()) {
     const xtrasubsrec& xsnr = session()->xsubs[n];
@@ -84,18 +84,17 @@ static string boarddata(size_t n) {
 }
 
 static void showsubs() {
-  char szSubString[ 41 ];
   bout.cls();
   bool abort = false;
   bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
-  input(szSubString, 20, true);
+  string substring = input(20, true);
   pla("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE", &abort);
   pla("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
   for (size_t i = 0; i < session()->subboards.size() && !abort; i++) {
     const string subdata = StringPrintf("%s %s", session()->subboards[i].name, session()->subboards[i].filename);
-    if (strcasestr(subdata.c_str(), szSubString)) {
+    if (strcasestr(subdata.c_str(), substring.c_str())) {
       session()->subboards[i].anony &= ~anony_require_sv;
-      string line = boarddata(i);
+      const string line = boarddata(i);
       pla(line, &abort);
     }
   }
