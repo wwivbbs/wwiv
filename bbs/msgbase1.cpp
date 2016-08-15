@@ -31,11 +31,12 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
-#include "sdk/subxtr.h"
 #include "bbs/wconstants.h"
-#include "sdk/status.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/datetime.h"
+#include "sdk/status.h"
+#include "sdk/subxtr.h"
 
 using std::string;
 using std::unique_ptr;
@@ -177,7 +178,7 @@ void post() {
   if (data.anonymous_flag == anony_enable_anony && session()->user()->IsRestrictionAnonymous()) {
     data.anonymous_flag = 0;
   }
-  if (!session()->xsubs[ session()->GetCurrentReadMessageArea() ].nets.empty()) {
+  if (!session()->current_xsub().nets.empty()) {
     data.anonymous_flag &= (anony_real_name);
     if (session()->user()->IsRestrictionNet()) {
       bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
@@ -185,7 +186,7 @@ void post() {
     }
     if (net_sysnum) {
       bout << "\r\nThis post will go out on ";
-      for (size_t i = 0; i < session()->xsubs[ session()->GetCurrentReadMessageArea() ].nets.size(); i++) {
+      for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
         if (i) {
           bout << ", ";
         }
@@ -194,7 +195,7 @@ void post() {
       bout << ".\r\n\n";
     }
   }
-  time_t lStartTime = time(nullptr);
+  time_t start_time = time(nullptr);
 
   write_inst(INST_LOC_POST, session()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
@@ -220,7 +221,7 @@ void post() {
   WStatus* pStatus = session()->status_manager()->BeginTransaction();
   p.qscan = pStatus->IncrementQScanPointer();
   session()->status_manager()->CommitTransaction(pStatus);
-  p.daten = static_cast<uint32_t>(time(nullptr));
+  p.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
   p.status = 0;
   if (session()->user()->IsRestrictionValidate()) {
     p.status |= status_unvalidated;
@@ -273,16 +274,16 @@ void post() {
 
   if (session()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
     time_t lEndTime = time(nullptr);
-    if (lStartTime > lEndTime) {
+    if (start_time > lEndTime) {
       lEndTime += SECONDS_PER_DAY;
     }
-    lStartTime = static_cast<long>(lEndTime - lStartTime);
-    if ((lStartTime / MINUTES_PER_HOUR) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
-      lStartTime = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
+    start_time = static_cast<long>(lEndTime - start_time);
+    if ((start_time / MINUTES_PER_HOUR) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
+      start_time = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
                                       MINUTES_PER_HOUR));
     }
     session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
-        (lStartTime));
+        (start_time));
   }
   session()->status_manager()->CommitTransaction(pStatus);
   close_sub();

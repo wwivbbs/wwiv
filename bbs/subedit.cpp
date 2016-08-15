@@ -352,9 +352,7 @@ static void modify_sub(int n) {
       session()->subboards[n] = r;
       char ch2 = 'A';
       while (size_int(session()->xsubs) <= n) {
-        xtrasubsrec x;
-        memset(&x, 0, sizeof(xtrasubsrec));
-        session()->xsubs.push_back(x);
+        session()->xsubs.push_back({});
       }
       if (!session()->xsubs[n].nets.empty()) {
         bout.nl();
