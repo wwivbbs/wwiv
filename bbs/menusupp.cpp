@@ -477,12 +477,6 @@ void CallOut() {
   force_callout(2);
 }
 
-void Debug() {
-  int new_level = (File::GetDebugLevel() + 1) % 5;
-  File::SetDebugLevel(new_level);
-  bout << "|#5New Debug Level: " << new_level << wwiv::endl;
-}
-
 void DirEdit() {
   write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
   sysoplog("@ Ran Directory Edit");

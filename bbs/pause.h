@@ -22,6 +22,8 @@
 #include "core/transaction.h"
 
 void pausescr();
+void clearnsp();
+void resetnsp();
 
 namespace wwiv {
 namespace bbs {

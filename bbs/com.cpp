@@ -22,6 +22,7 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
+#include "bbs/pause.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
@@ -109,13 +110,6 @@ void makeansi(int attr, char *out_buffer, bool forceit) {
   if (!okansi() && !forceit) {
     out_buffer[0] = '\0';
   }
-}
-
-void resetnsp() {
-  if (nsp == 1 && !(session()->user()->HasPause())) {
-    session()->user()->ToggleStatusFlag(User::pauseOnPage);
-  }
-  nsp = 0;
 }
 
 /* This function returns one character from either the local keyboard or
@@ -238,5 +232,20 @@ char onek(const char *allowable_chars, bool auto_mpl) {
   }
   char ch = onek_ncr(allowable_chars);
   bout.nl();
+  return ch;
+}
+
+// Like onek but does not put cursor down a line
+// One key, no carriage return
+char onek_ncr(const char *allowable_chars) {
+  WWIV_ASSERT(allowable_chars);
+
+  char ch = '\0';
+  while (!strchr(allowable_chars, ch = wwiv::UpperCase<char>(getkey())) && !hangup)
+    ;
+  if (hangup) {
+    ch = allowable_chars[0];
+  }
+  bputch(ch);
   return ch;
 }

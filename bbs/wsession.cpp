@@ -948,7 +948,6 @@ int WSession::doWFCEvents() {
   return lokb;
 }
 
-
 int WSession::LocalLogon() {
   localIO()->LocalGotoXY(2, 23);
   bout << "|#9Log on to the BBS?";
@@ -1157,7 +1156,6 @@ void WSession::ToggleShutDown() {
   }
 }
 
-
 void WSession::ShowUsage() {
   cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" <<
     "Usage:\r\n\n" <<
@@ -1235,9 +1233,6 @@ int WSession::Run(int argc, char *argv[]) {
       }
       break;
       case 'C':
-        break;
-      case 'D':
-        File::SetDebugLevel(stoi(argument));
         break;
       case 'E':
         event_only = true;

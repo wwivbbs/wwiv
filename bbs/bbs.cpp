@@ -78,8 +78,6 @@ int WApplication::BBSMainLoop(int argc, char *argv[]) {
   out = nullptr;
 
   CreateSession(app_, new StdioLocalIO());
-
-  // We are not running in the telnet server, so proceed as planned.
   int return_code = session()->Run(argc, argv);
   session()->ExitBBSImpl(return_code, false);
   return return_code;
@@ -91,17 +89,6 @@ WApplication::WApplication() {
     syscfg.userreclen = sizeof(userrec);
   }
   tzset();
-}
-
-bool WApplication::LogMessage(const char* format, ...) {
-  va_list ap;
-  char szBuffer[2048];
-
-  va_start(ap, format);
-  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
-  va_end(ap);
-  sysoplog(szBuffer);
-  return true;
 }
 
 WApplication::~WApplication() {
@@ -119,7 +106,6 @@ WSession* CreateSession(WApplication* app, LocalIO* localIO) {
 int bbsmain(int argc, char *argv[]) {
   try {
     app_ = new WApplication();
-    File::SetLogger(app_);
     return app_->BBSMainLoop(argc, argv);
   } catch (exception& e) {
     // TODO(rushfan): Log this to sysop log or where else?

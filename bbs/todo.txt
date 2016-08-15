@@ -24,6 +24,5 @@
 * Improve StringTrim(string)'s whitespace code and just have 1 copy of the whitespace string.
 * TopScreen doesn't work with CursesIO
 * move resetnsp to pause.
-* move onek and onek_ncr into the same file.
 * make a common ACS system (like TG, vs. having separate SL DSL AR fields everywhere for menus)
 * cleanup menu system.

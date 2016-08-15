@@ -3,6 +3,10 @@
                  Copyright 1999-2016 WWIV Software Services
 ==============================================================================
 
+What's New in WWIV 5.2 (2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* removed "debug_level" and Debug menu command. use VLOG(2) now.
+
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Removed F6 (toggle sysop alert), to page you after a session ends, since

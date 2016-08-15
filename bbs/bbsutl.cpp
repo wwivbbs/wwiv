@@ -25,6 +25,7 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/keycodes.h"
+#include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/stl.h"
@@ -39,6 +40,8 @@ static char str_yes[81],
 char  str_pause[81],
       str_quit[81];
 
+// in pause.cpp
+extern int nsp; 
 
 bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool bAddCRLF,
           bool bAllowPrevious, bool bTwoColorChatMode, bool clear_previous_line) {
@@ -325,7 +328,7 @@ bool checka(bool *abort) {
 bool checka(bool *abort, bool *next) {
   if (nsp == -1) {
     *abort = true;
-    nsp = 0;
+    clearnsp();
   }
   while (bkbhit() && !*abort && !hangup) {
     CheckForHangup();
@@ -687,3 +690,4 @@ char *mmkey(int dl, int area, bool bListOption) {
 const char *YesNoString(bool bYesNo) {
   return (bYesNo) ? str_yes : str_no;
 }
+

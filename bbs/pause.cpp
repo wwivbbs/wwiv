@@ -34,6 +34,9 @@ using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 
+int nsp;
+
+
 namespace wwiv {
 namespace bbs {
 
@@ -177,3 +180,11 @@ void pausescr() {
 }
 
 
+void resetnsp() {
+  if (nsp == 1 && !(session()->user()->HasPause())) {
+    session()->user()->ToggleStatusFlag(User::pauseOnPage);
+  }
+  nsp = 0;
+}
+
+void clearnsp() { nsp = 0; }

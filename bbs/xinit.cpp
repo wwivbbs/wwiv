@@ -819,7 +819,7 @@ void WSession::InitializeBBS() {
   SetCurrentReadMessageArea(-1);
   use_workspace = false;
   chat_file = false;
-  nsp = 0;
+  clearnsp();
   bquote = 0;
   equote = 0;
   SetQuoting(false);

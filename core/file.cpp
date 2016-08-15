@@ -40,6 +40,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "core/log.h"
 #include "core/wfndfile.h"
 
 #ifndef _WIN32
@@ -102,9 +103,6 @@ const int File::seekEnd            = SEEK_END;
 
 const int File::invalid_handle     = -1;
 
-WLogger*  File::logger_;
-int File::debug_level_;
-
 static constexpr int WAIT_TIME_MILLIS = 10;
 static constexpr int TRIES = 100;
 
@@ -142,9 +140,7 @@ bool File::Open(int nFileMode, int nShareMode) {
   WWIV_ASSERT(nShareMode != File::shareUnknown);
   WWIV_ASSERT(nFileMode != File::modeUnknown);
 
-  if (debug_level_ > 2) {
-    logger_->LogMessage("\rSH_OPEN %s, access=%u\r\n", full_path_name_.c_str(), nFileMode);
-  }
+  VLOG(2) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode;
 
   handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
@@ -154,22 +150,18 @@ bool File::Open(int nFileMode, int nShareMode) {
       handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
         sleep_for(milliseconds((count % 2) ? WAIT_TIME_MILLIS : 0));
-        if (debug_level_ > 0) {
-          logger_->LogMessage("\rWaiting to access %s %d.  \r", full_path_name_.c_str(), TRIES - count);
-        }
+        VLOG(2) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
         count++;
         handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
       }
 
-      if ((handle_ < 0) && (debug_level_ > 0)) {
-        logger_->LogMessage("\rThe file %s is busy.  Try again later.\r\n", full_path_name_.c_str());
+      if (handle_ < 0) {
+        VLOG(2) << "The file " << full_path_name_ << " is busy.  Try again later.";
       }
     }
   }
 
-  if (debug_level_ > 1) {
-    logger_->LogMessage("\rSH_OPEN %s, access=%u, handle=%d.\r\n", full_path_name_.c_str(), nFileMode, handle_);
-  }
+  VLOG(2) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode << ", handle=" << handle_;
 
   if (File::IsFileHandleValid(handle_)) {
     flock(handle_, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);

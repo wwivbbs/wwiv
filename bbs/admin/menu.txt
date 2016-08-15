@@ -315,10 +315,6 @@ CLOUT
 
   Who knows, sopposed to do a callout
 
-Debug
-
-  Who knows, some debug mode
-
 DirEdit
 
   Sysop command to edit the directory records

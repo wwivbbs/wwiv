@@ -37,7 +37,7 @@
 /*!
  * @class WApplication  Main Application object for WWIV.
  */
-class WApplication : public WLogger {
+class WApplication {
  public:
   WApplication();
   WApplication(const WApplication& copy) = delete;
@@ -48,10 +48,6 @@ class WApplication : public WLogger {
    * @function BBSMainLoop - Main BBS loop.. (old main functon)
    */
   int BBSMainLoop(int argc, char *argv[]);
-  // From WLogger
-  virtual bool LogMessage(const char* format, ...);
-
-
 };
 
 // Function Prototypes

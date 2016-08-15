@@ -58,16 +58,15 @@ __EXTRN__ char  ansistr[81],
 __EXTRN__ unsigned char  checksum;
 
 __EXTRN__ int ansiptr,
-          bquote,
-          change_color,
-          charbufferpointer,
-          chatting,
-          defscreenbottom,
-          do_event,
-          equote,
-          fsenttoday,
-          fwaiting,
-          nsp;
+bquote,
+change_color,
+charbufferpointer,
+chatting,
+defscreenbottom,
+do_event,
+equote,
+fsenttoday,
+fwaiting;
 
 __EXTRN__ unsigned int
 lines_listed;

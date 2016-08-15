@@ -214,21 +214,6 @@ int get_kb_event(int nNumLockMode) {
   return 0;                                 // must have hung up
 }
 
-// Like onek but does not put cursor down a line
-// One key, no carriage return
-char onek_ncr(const char *allowable_chars) {
-  WWIV_ASSERT(allowable_chars);
-
-  char ch = '\0';
-  while (!strchr(allowable_chars, ch = wwiv::UpperCase<char>(getkey())) && !hangup)
-    ;
-  if (hangup) {
-    ch = allowable_chars[0];
-  }
-  bputch(ch);
-  return ch;
-}
-
 bool do_sysop_command(int nCommandID) {
   unsigned int nKeyStroke = 0;
   bool bNeedToRedraw = false;

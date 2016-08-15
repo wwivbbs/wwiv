@@ -36,14 +36,6 @@
 #define O_TEXT    0
 #endif  // __unix__
 
-class WLogger {
- public:
-  // Member functions
-   WLogger() {}
-  virtual ~WLogger() {}
-  virtual bool LogMessage(const char* format, ...) = 0;
-};
-
 /**
  * File - File I/O Class.
  */
@@ -84,8 +76,6 @@ class File {
   int handle_;
   std::string full_path_name_;
   std::string error_text_;
-  static  WLogger* logger_;
-  static int debug_level_;
 
  public:
   // Constructor/Destructor
@@ -169,9 +159,6 @@ class File {
   static bool SetFilePermissions(const std::string& fileName, int nPermissions);
   static bool IsFileHandleValid(int hFile);
 
-  static void SetLogger(WLogger* logger) { logger_ = logger; }
-  static void SetDebugLevel(int nDebugLevel) { debug_level_ = nDebugLevel; }
-  static int GetDebugLevel() { return debug_level_; }
   static void EnsureTrailingSlash(std::string* path);
   static std::string current_directory();
   static bool set_current_directory(const std::string& dir);

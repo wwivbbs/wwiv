@@ -22,11 +22,11 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
 void dump();
 bool CheckForHangup();
 void makeansi(int attr, char *out_buffer, bool forceit);
-void resetnsp();
 char getkey();
 bool yesno();
 bool noyes();
 char ynq();
 char onek(const char *allowable_chars, bool auto_mpl = false);
+char onek_ncr(const char *allowable_chars);
 
 #endif  // __INCLUDED_BBS_COM_H__
