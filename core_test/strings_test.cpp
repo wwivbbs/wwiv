@@ -348,11 +348,17 @@ TEST(StringsTest, CharStr) {
   EXPECT_STREQ("bbbbb", charstr(5, 'b'));
 }
 
-TEST(StringsTest, StringRemoveWhitespace) {
+TEST(StringsTest, StringRemoveWhitespace_charstar) {
   char s[81];
   strcpy(s, " h e l l o ");
   EXPECT_STREQ("hello", StringRemoveWhitespace(s));
   EXPECT_STREQ("hello", s);
+}
+
+TEST(StringsTest, StringRemoveWhitespace_str) {
+  string s = " h e l l o ";
+  StringRemoveWhitespace(&s);
+  EXPECT_STREQ("hello", s.c_str());
 }
 
 TEST(StringsTest, StringRemoveChar) {
