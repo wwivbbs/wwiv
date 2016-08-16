@@ -21,6 +21,7 @@
 #include <chrono>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
@@ -33,6 +34,8 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
+#include "core/datafile.h"
+#include "core/file.h"
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
@@ -48,6 +51,7 @@ using std::chrono::seconds;
 using std::string;
 using std::to_string;
 using std::unique_ptr;
+using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
@@ -454,7 +458,7 @@ bool attempt_callout() {
   // Set the last connect time to now since we are attempting to connect.
   last_time_c = tCurrentTime;
   wwiv::core::ScopeExit set_net_num_zero([&]() { set_net_num(0); });
-  std::vector<NodeAndWeight> to_call(session()->max_net_num());
+  vector<NodeAndWeight> to_call(session()->max_net_num());
 
   for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
@@ -691,7 +695,7 @@ void print_pending_list() {
 }
 
 void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char *pszAuthorName,
-  std::vector<uint16_t> list, int nFromNetworkNumber) {
+  vector<uint16_t> list, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
@@ -1308,40 +1312,26 @@ void force_callout(int dw) {
 
 // end callout additions
 
-long *next_system_reg(int ts) {
-  static long reg_num;
+long next_system_reg(int ts) {
 
   if (session()->net_num() != -1) {
     read_bbs_list_index();
   }
 
-  if (csn) {
-    for (int i = 0; i < session()->num_sys_list; i++) {
-      if (i == ts) {
-        if (i == (session()->num_sys_list - 1)) {
-          return nullptr;
-        } else {
-          return (long*)(&(csn[i]));
-        }
-      }
-    }
-  } else {
-    for (int i = 0; i < session()->num_sys_list; i++) {
-      if (csn_index[i] == ts) {
-        File bbsdataReg(session()->network_directory(), BBSDATA_REG);
-        bbsdataReg.Open(File::modeBinary | File::modeReadOnly);
-        bbsdataReg.Seek(i * sizeof(long), File::seekBegin);
-        bbsdataReg.Read(&reg_num, sizeof(long));
-        bbsdataReg.Close();
-        if (i == session()->num_sys_list - 1) {
-          return nullptr;
-        } else {
-          return &reg_num;
-        }
+  DataFile<int32_t> file(session()->network_directory(), BBSDATA_REG);
+  if (!file) { 
+    return 0;
+  }
+
+  for (size_t i = 0; i < session()->csn_index.size(); i++) {
+    if (session()->csn_index[i] == ts) {
+      int32_t reg_num = 0;
+      if (file.Read(i, &reg_num)) {
+        return reg_num;
       }
     }
   }
-  return nullptr;
+  return 0;
 }
 
 #ifndef _UNUX

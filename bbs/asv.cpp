@@ -59,7 +59,7 @@ void asv() {
   int inode = 0;
   char ch, s[41], s1[81], ph1[13], ph[13], sysname[35], snode[6];
   net_system_list_rec *csne;
-  long *reg_num, reg_num1;
+  long reg_num, reg_num1;
   int i2 = 0, reg = 0, valfile = 0;
   bool ok = false;
 
@@ -170,7 +170,7 @@ void asv() {
       }
       if (compare(ph, ph1)) {
         reg_num = next_system_reg(inode);
-        if (*reg_num == 0) {
+        if (reg_num == 0) {
           strcpy(s, sysname);
           strcpy(s1, (strstr(strupr(s), "SERVER")));
           if (IsEquals(s1, "SERVER")) {
@@ -182,7 +182,7 @@ void asv() {
               valfile = 6;
             }
           }
-        } else if ((*reg_num > 0) && (*reg_num <= 99999)) {
+        } else if (reg_num > 0 && reg_num <= 99999) {
           bout.nl();
           bout << "|#5Have you registered WWIV? ";
           if (noyes()) {
@@ -192,7 +192,7 @@ void asv() {
               bout << "|#5Enter your registration number: ";
               input(s, 5, true);
               reg_num1 = atol(s);
-              if (*reg_num == reg_num1) {
+              if (reg_num == reg_num1) {
                 reg = 1;
               } else {
                 reg = 0;
@@ -228,7 +228,7 @@ void asv() {
         if (reg != 2) {
           if (reg) {
             set_autoval(session()->advasv.reg_wwiv);
-            session()->user()->SetWWIVRegNumber(*reg_num);
+            session()->user()->SetWWIVRegNumber(reg_num);
             valfile = 7;
           } else {
             set_autoval(session()->advasv.nonreg_wwiv);

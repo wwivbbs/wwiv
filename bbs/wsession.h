@@ -402,7 +402,6 @@ private:
               m_nNetworkNumber = 0,
               m_nMaxNetworkNumber = 0,
               numf = 0,
-              num_sys_list = 0,
               subchg = 0,
               tagging = 0,
               tagptr = 0,
@@ -460,7 +459,8 @@ public:
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
   std::vector<eventsrec> events;
-
+  std::vector<net_system_list_rec> csn;
+  std::vector<uint16_t> csn_index;
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

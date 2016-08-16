@@ -17,17 +17,23 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "core/file.h"
+#include "core/datafile.h"
+#include "core/log.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "bbs/vars.h"
 
-void read_bbs_list();
 int system_index(int ts);
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
+
+static int bbs_list_net_no = -1;
+
 
 void zap_call_out_list() {
   if (session()->current_net().con) {
@@ -36,7 +42,6 @@ void zap_call_out_list() {
     session()->current_net().num_con = 0;
   }
 }
-
 
 void read_call_out_list() {
   net_call_out_rec *con;
@@ -191,44 +196,27 @@ void read_call_out_list() {
   }
 }
 
-
-
-int bbs_list_net_no = -1;
-
-
 void zap_bbs_list() {
-  if (csn) {
-    free(csn);
-    csn = nullptr;
-  }
-  if (csn_index) {
-    free(csn_index);
-    csn_index = nullptr;
-  }
-  session()->num_sys_list  = 0;
+  session()->csn.clear();
+  session()->csn_index.clear();
   bbs_list_net_no     = -1;
 }
 
-
-void read_bbs_list() {
+static void read_bbs_list() {
   zap_bbs_list();
 
   if (net_sysnum == 0) {
     return;
   }
-  File fileBbsData(session()->network_directory(), BBSDATA_NET);
-  if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
-    long lFileLength = fileBbsData.GetLength();
-    session()->num_sys_list = static_cast<int>(lFileLength / sizeof(net_system_list_rec));
-    csn = static_cast<net_system_list_rec *>(BbsAllocA(lFileLength + 512L));
-    for (int i = 0; i < session()->num_sys_list; i += 256) {
-      fileBbsData.Read(&(csn[i]), 256 * sizeof(net_system_list_rec));
-    }
-    fileBbsData.Close();
+
+  DataFile<net_system_list_rec> file(session()->network_directory(), BBSDATA_NET);
+  if (!file) {
+    return;
   }
+
+  file.ReadVector(session()->csn);
   bbs_list_net_no = session()->net_num();
 }
-
 
 void read_bbs_list_index() {
   zap_bbs_list();
@@ -236,16 +224,12 @@ void read_bbs_list_index() {
   if (net_sysnum == 0) {
     return;
   }
-  File fileBbsData(session()->network_directory(), BBSDATA_IND);
-  if (fileBbsData.Open(File::modeBinary | File::modeReadOnly)) {
-    long lFileLength = fileBbsData.GetLength();
-    session()->num_sys_list = static_cast<int>(lFileLength / 2);
-    csn_index = static_cast<unsigned short *>(BbsAllocA(lFileLength));
-    fileBbsData.Read(csn_index, lFileLength);
-    fileBbsData.Close();
-  } else {
-    read_bbs_list();
+
+  DataFile<uint16_t> file(session()->network_directory(), BBSDATA_IND);
+  if (file) {
+    file.ReadVector(session()->csn_index);
   }
+  read_bbs_list();
   bbs_list_net_no = session()->net_num();
 }
 
@@ -254,15 +238,15 @@ int system_index(int ts) {
     read_bbs_list_index();
   }
 
-  if (csn) {
-    for (int i = 0; i < session()->num_sys_list; i++) {
-      if (csn[i].sysnum == ts && csn[i].forsys != 65535) {
+  if (!session()->csn.empty()) {
+    for (size_t i = 0; i < session()->csn.size(); i++) {
+      if (session()->csn[i].sysnum == ts && session()->csn[i].forsys != 65535) {
         return i;
       }
     }
   } else {
-    for (int i = 0; i < session()->num_sys_list; i++) {
-      if (csn_index[i] == ts) {
+    for (size_t i = 0; i < session()->csn.size(); i++) {
+      if (session()->csn_index[i] == ts) {
         return i;
       }
     }
@@ -270,11 +254,9 @@ int system_index(int ts) {
   return -1;
 }
 
-
 bool valid_system(int ts) {
   return (system_index(ts) == -1) ? false : true;
 }
-
 
 net_system_list_rec *next_system(int ts) {
   static net_system_list_rec csne;
@@ -282,15 +264,11 @@ net_system_list_rec *next_system(int ts) {
 
   if (nIndex == -1) {
     return nullptr;
-  } else if (csn) {
-    return ((net_system_list_rec *) & (csn[nIndex]));
+  } else if (!session()->csn.empty()) {
+    return ((net_system_list_rec *) & (session()->csn[nIndex]));
   } else {
-    File fileBbsData(session()->network_directory(), BBSDATA_NET);
-    fileBbsData.Open(File::modeBinary | File::modeReadOnly);
-    fileBbsData.Seek(sizeof(net_system_list_rec) * static_cast<long>(nIndex), File::seekBegin);
-    fileBbsData.Read(&csne, sizeof(net_system_list_rec));
-    fileBbsData.Close();
-    return (csne.forsys == 65535) ? nullptr : (&csne);
+    LOG(ERROR) << "WTF - csn is not loaded!";
+    return nullptr;
   }
 }
 

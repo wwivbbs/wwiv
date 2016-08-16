@@ -27,7 +27,7 @@ void print_pending_list();
 void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char *pszAuthorName,
   std::vector<uint16_t> list, int nFromNetworkNumber);
 void force_callout(int dw);
-long *next_system_reg(int ts);
+long next_system_reg(int ts);
 void run_exp();
 
 

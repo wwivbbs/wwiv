@@ -94,9 +94,7 @@ __EXTRN__ bool  bChatLine,
 
 // Chatroom additions
 __EXTRN__ bool  in_chatroom;
-__EXTRN__ unsigned short
-*csn_index,
-net_sysnum;
+__EXTRN__ uint16_t net_sysnum;
 
 __EXTRN__ int modem_speed;
 
@@ -133,7 +131,6 @@ __EXTRN__ configoverrec syscfgovr;
 __EXTRN__ colorrec rescolor;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ tagrec *filelist;
-__EXTRN__ net_system_list_rec *csn;
 __EXTRN__ confrec *subconfs, *dirconfs;
 __EXTRN__ int iia;
 

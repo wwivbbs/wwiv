@@ -39,6 +39,7 @@
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
 #include "core/inifile.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
@@ -50,6 +51,7 @@ using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
@@ -477,7 +479,7 @@ void print_net_listing(bool bForcePause) {
       strcpy(s, "000-000-0000");
       bout.nl(2);
 
-      for (i = 0; (i < session()->num_sys_list) && (!abort); i++) {
+      for (i = 0; i < size_int(session()->csn) && !abort; i++) {
         bool matched = false;
         bbsListFile.Read(&csne, sizeof(net_system_list_rec));
         if ((csne.forsys == 65535) && (cmdbit != NET_SEARCH_NOCONNECT)) {
