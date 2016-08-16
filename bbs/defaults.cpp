@@ -108,9 +108,9 @@ static string GetMailBoxStatus() {
               session()->user()->GetForwardSystemNumber(),
               session()->net_networks[ session()->user()->GetForwardNetNumber() ].name);
     } else {
-      char szForwardUserName[80];
-      read_inet_addr(szForwardUserName, session()->usernum);
-      return StringPrintf("Forwarded to Internet %s", szForwardUserName);
+      string fwd_username;
+      read_inet_addr(fwd_username, session()->usernum);
+      return StrCat("Forwarded to Internet ", fwd_username);
     }
   }
 

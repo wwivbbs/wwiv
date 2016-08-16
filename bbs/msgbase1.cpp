@@ -301,7 +301,7 @@ void post() {
 
 void grab_user_name(messagerec* pMessageRecord, const char* file_name) {
   string text;
-  net_email_name[0] = '\0';
+  session()->net_email_name.clear();
   if (!readfile(pMessageRecord, file_name, &text)) {
     return;
   }
@@ -320,7 +320,7 @@ void grab_user_name(messagerec* pMessageRecord, const char* file_name) {
     while (*ss2 == ' ') {
       ++ss2;
     }
-    strcpy(net_email_name, ss2);
+    session()->net_email_name = ss2;
   }
 }
 

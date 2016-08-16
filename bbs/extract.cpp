@@ -195,7 +195,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
       sprintf(compressed_fn, "%s.%s", StringRemoveChar(s2, '.'), session()->arcs[0].extension);
       bout << "|#2Now //UPLOAD'ing the file...";
       strcpy(szDescription, stripcolors(irt));
-      strcpy(author, stripcolors(StringRemoveChar(net_email_name, '#')));
+      strcpy(author, stripcolors(StringRemoveChar(session()->net_email_name.c_str(), '#')));
 
       if (author[0] == '`') {
         i3 = 0;

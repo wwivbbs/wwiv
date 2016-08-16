@@ -82,8 +82,8 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
         return false;
       }
       if (!userRecord.GetForwardUserNumber()) {
-        read_inet_addr(net_email_name, *pUserNumber);
-        if (!check_inet_addr(net_email_name)) {
+        read_inet_addr(session()->net_email_name, *pUserNumber);
+        if (!check_inet_addr(session()->net_email_name.c_str())) {
           return false;
         }
       }
@@ -91,7 +91,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       *pSystemNumber = userRecord.GetForwardSystemNumber();
       return true;
     } else {
-      read_inet_addr(net_email_name, *pUserNumber);
+      read_inet_addr(session()->net_email_name, *pUserNumber);
       *pUserNumber = 0;
       *pSystemNumber = 0;
       return false;
@@ -255,8 +255,8 @@ void sendout_email(EmailData& data) {
     i = 0;
     if (data.user_number == 0 && data.from_network_number == session()->net_num()) {
       nh.main_type = main_type_email_name;
-      strcpy(&(b1[i]), net_email_name);
-      i += strlen(net_email_name) + 1;
+      strcpy(&(b1[i]), session()->net_email_name.c_str());
+      i += session()->net_email_name.size() + 1;
     }
     strcpy(&(b1[i]), m.title);
     i += strlen(m.title) + 1;
@@ -267,7 +267,9 @@ void sendout_email(EmailData& data) {
       nh.length = 32760;
     }
     if (data.from_network_number != session()->net_num()) {
-      gate_msg(&nh, b1.get(), session()->net_num(), net_email_name, {}, data.from_network_number);
+      gate_msg(&nh, b1.get(), 
+        session()->net_num(), session()->net_email_name.c_str(), 
+      {}, data.from_network_number);
     } else {
       string net_filename;
       if (data.forwarded_code) {
@@ -320,18 +322,18 @@ void sendout_email(EmailData& data) {
     string logMessagePart;
     if ((data.system_number == 1 && IsEqualsIgnoreCase(session()->network_name(), "Internet")) ||
       data.system_number == 32767) {
-      logMessagePart = net_email_name;
+      logMessagePart = session()->net_email_name;
     } else {
       if (session()->max_net_num() > 1) {
         if (data.user_number == 0) {
-          logMessagePart = StringPrintf("%s @%u.%s", net_email_name, data.system_number,
+          logMessagePart = StringPrintf("%s @%u.%s", session()->net_email_name.c_str(), data.system_number,
                            session()->network_name());
         } else {
           logMessagePart = StringPrintf("#%u @%u.%s", data.user_number, data.system_number, session()->network_name());
         }
       } else {
         if (data.user_number == 0) {
-          logMessagePart = StringPrintf("%s @%u", net_email_name, data.system_number);
+          logMessagePart = StringPrintf("%s @%u", session()->net_email_name.c_str(), data.system_number);
         } else {
           logMessagePart = StringPrintf("#%u @%u", data.user_number, data.system_number);
         }
@@ -417,7 +419,7 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
 void email(const string& title, int user_number, int system_number, bool forceit, int anony, bool bAllowFSED) {
   int nNumUsers = 0;
   messagerec messageRecord;
-  char szDestination[81];
+  string destination;
   net_system_list_rec *csne = nullptr;
   struct {
     int user_number, system_number, net_num;
@@ -433,7 +435,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   bout.nl();
   if (ForwardMessage(&user_number, &system_number)) {
     if (system_number == 32767) {
-      read_inet_addr(szDestination, user_number);
+      read_inet_addr(destination, user_number);
     }
     bout << "\r\nMail Forwarded.\r\n\n";
     if (user_number == 0 && system_number == 0) {
@@ -461,34 +463,32 @@ void email(const string& title, int user_number, int system_number, bool forceit
   if (system_number == 0) {
     set_net_num(0);
     if (an) {
-      const string user_name_number = session()->names()->UserName(user_number);
-      strcpy(szDestination, user_name_number.c_str());
+      destination = session()->names()->UserName(user_number);
     } else {
-      strcpy(szDestination, ">UNKNOWN<");
+      destination = ">UNKNOWN<";
     }
   } else {
     if ((system_number == 1 && user_number == 0 &&
          IsEqualsIgnoreCase(session()->network_name(), "Internet")) ||
         system_number == 32767) {
-      strcpy(szDestination, net_email_name);
+      destination = session()->net_email_name;
     } else {
       if (session()->max_net_num() > 1) {
         if (user_number == 0) {
-          sprintf(szDestination, "%s @%u.%s", net_email_name, system_number, session()->network_name());
+          destination = StringPrintf("%s @%u.%s", session()->net_email_name.c_str(), system_number, session()->network_name());
         } else {
-          sprintf(szDestination, "#%u @%u.%s", user_number, system_number, session()->network_name());
+          destination = StringPrintf("#%u @%u.%s", user_number, system_number, session()->network_name());
         }
       } else {
         if (user_number == 0) {
-          sprintf(szDestination, "%s @%u", net_email_name, system_number);
+          destination = StringPrintf("%s @%u", session()->net_email_name.c_str(), system_number);
         } else {
-          sprintf(szDestination, "#%u @%u", user_number, system_number);
+          destination = StringPrintf("#%u @%u", user_number, system_number);
         }
       }
     }
   }
-  bout << "|#9E-mailing |#2";
-  bout << szDestination;
+  bout << "|#9E-mailing |#2" << destination;
   bout.nl();
   int i = (getslrec(session()->GetEffectiveSl()).ability & ability_email_anony) ? anony_enable_anony : anony_none;
 
@@ -521,7 +521,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   data.fsed_flags = (bAllowFSED) ? INMSG_FSED : INMSG_NOFSED;
   data.anonymous_flag = i;
   data.aux = "email";
-  data.to_name = szDestination;
+  data.to_name = destination;
   data.msged_flags = MSGED_FLAG_NONE;
   if (!inmsg(data)) {
     return;
@@ -547,7 +547,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
       carbon_copy[nNumUsers].user_number = user_number;
       carbon_copy[nNumUsers].system_number = system_number;
       strcpy(carbon_copy[nNumUsers].net_name, session()->network_name());
-      strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
+      strcpy(carbon_copy[nNumUsers].net_email_name, session()->net_email_name.c_str());
       carbon_copy[nNumUsers].net_num = session()->net_num();
       nNumUsers++;
       do {
@@ -563,7 +563,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
           carbon_copy[nNumUsers].user_number = tu;
           carbon_copy[nNumUsers].system_number = ts;
           strcpy(carbon_copy[nNumUsers].net_name, session()->network_name());
-          strcpy(carbon_copy[nNumUsers].net_email_name, net_email_name);
+          strcpy(carbon_copy[nNumUsers].net_email_name, session()->net_email_name.c_str());
           carbon_copy[nNumUsers].net_num = session()->net_num();
           nNumUsers++;
           cc = true;
@@ -587,38 +587,37 @@ void email(const string& title, int user_number, int system_number, bool forceit
     for (int j = 0; j < nNumUsers; j++) {
       if (carbon_copy[j].system_number == 0) {
         set_net_num(0);
-        const std::string dest_name = session()->names()->UserName(carbon_copy[j].user_number);
-        strcpy(szDestination, dest_name.c_str());
+        destination = session()->names()->UserName(carbon_copy[j].user_number);
       } else {
         if (carbon_copy[j].system_number == 1 &&
             carbon_copy[j].user_number == 0 &&
             IsEqualsIgnoreCase(carbon_copy[j].net_name, "Internet")) {
-          strcpy(szDestination, carbon_copy[j].net_email_name);
+          destination = carbon_copy[j].net_email_name;
         } else {
           set_net_num(carbon_copy[j].net_num);
           if (session()->max_net_num() > 1) {
             if (carbon_copy[j].user_number == 0) {
-              sprintf(szDestination, "%s@%u.%s", carbon_copy[j].net_email_name, carbon_copy[j].system_number,
+              destination = StringPrintf("%s@%u.%s", carbon_copy[j].net_email_name, carbon_copy[j].system_number,
                       carbon_copy[j].net_name);
             } else {
-              sprintf(szDestination, "#%u@%u.%s", carbon_copy[j].user_number, carbon_copy[j].system_number, carbon_copy[j].net_name);
+              destination = StringPrintf("#%u@%u.%s", carbon_copy[j].user_number, carbon_copy[j].system_number, carbon_copy[j].net_name);
             }
           } else {
             if (carbon_copy[j].user_number == 0) {
-              sprintf(szDestination, "%s@%u", carbon_copy[j].net_email_name, carbon_copy[j].system_number);
+              destination = StringPrintf("%s@%u", carbon_copy[j].net_email_name, carbon_copy[j].system_number);
             } else {
-              sprintf(szDestination, "#%u@%u", carbon_copy[j].user_number, carbon_copy[j].system_number);
+              destination = StringPrintf("#%u@%u", carbon_copy[j].user_number, carbon_copy[j].system_number);
             }
           }
         }
       }
       if (j == 0) {
-        s1 = StringPrintf("\003""6Original To: \003""1%s", szDestination);
+        s1 = StrCat("\003""6Original To: \003""1", destination);
         lineadd(&messageRecord, s1, "email");
         s1 = "\003""6Carbon Copy: \003""1";
       } else {
-        if (s1.length() + strlen(szDestination) < 77) {
-          s1 += szDestination;
+        if (s1.length() + destination.length() < 77) {
+          s1 += destination;
           if (j + 1 < nNumUsers) {
             s1 += ", ";
           } else {
@@ -663,8 +662,6 @@ void email(const string& title, int user_number, int system_number, bool forceit
 }
 
 void imail(int user_number, int system_number) {
-  char szInternetAddr[255];
-
   int fwdu = user_number;
   bool fwdm = false;
 
@@ -677,8 +674,9 @@ void imail(int user_number, int system_number) {
     return;
   }
 
+  string internet_email_address;
   if (fwdm) {
-    read_inet_addr(szInternetAddr, fwdu);
+    read_inet_addr(internet_email_address, fwdu);
   }
 
   int i = 1;
@@ -695,7 +693,7 @@ void imail(int user_number, int system_number) {
     }
   } else {
     if (fwdm) {
-      bout << "|#5E-mail " << szInternetAddr << "? ";
+      bout << "|#5E-mail " << internet_email_address << "? ";
     } else {
       bout << "|#5E-mail User " << user_number << " @" << system_number << " ? ";
     }

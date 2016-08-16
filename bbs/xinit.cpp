@@ -575,39 +575,6 @@ bool WSession::ReadConfig() {
   return true;
 }
 
-bool WSession::SaveConfig() {
-  File configFile(CONFIG_DAT);
-  if (configFile.Open(File::modeBinary | File::modeReadWrite)) {
-    configrec full_syscfg;
-    configFile.Read(&full_syscfg, sizeof(configrec));
-    // These are set by WWIV.INI, set them back so that changes
-    // will be propagated to config.dat
-    full_syscfg.sysconfig       = syscfg.sysconfig;
-    full_syscfg.qscn_len        = syscfg.qscn_len;
-    full_syscfg.userreclen      = syscfg.userreclen;
-
-    full_syscfg.req_ratio       = syscfg.req_ratio;
-
-    full_syscfg.autoval[0]      = syscfg.autoval[0];
-    full_syscfg.autoval[1]      = syscfg.autoval[1];
-    full_syscfg.autoval[2]      = syscfg.autoval[2];
-    full_syscfg.autoval[3]      = syscfg.autoval[3];
-    full_syscfg.autoval[4]      = syscfg.autoval[4];
-    full_syscfg.autoval[5]      = syscfg.autoval[5];
-    full_syscfg.autoval[6]      = syscfg.autoval[6];
-    full_syscfg.autoval[7]      = syscfg.autoval[7];
-    full_syscfg.autoval[8]      = syscfg.autoval[8];
-    full_syscfg.autoval[9]      = syscfg.autoval[9];
-
-    full_syscfg.unused_rrd = 0;
-    memset(full_syscfg.unused_regcode, '\0', 83);
-
-    configFile.Seek(0, File::seekBegin);
-    configFile.Write(&full_syscfg, sizeof(configrec));
-    return false;
-  }
-  return true;
-}
 
 void WSession::read_nextern() {
   externs.clear();
@@ -802,6 +769,40 @@ void WSession::make_abs_path(char *pszDirectory) {
   string dir(pszDirectory);
   File::MakeAbsolutePath(base, &dir);
   strcpy(pszDirectory, dir.c_str());
+}
+
+static bool SaveConfig() {
+  File file(CONFIG_DAT);
+  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
+    return false;
+  }
+  configrec full_syscfg;
+  file.Read(&full_syscfg, sizeof(configrec));
+  // These are set by WWIV.INI, set them back so that changes
+  // will be propagated to config.dat
+  full_syscfg.sysconfig = syscfg.sysconfig;
+  full_syscfg.qscn_len = syscfg.qscn_len;
+  full_syscfg.userreclen = syscfg.userreclen;
+
+  full_syscfg.req_ratio = syscfg.req_ratio;
+
+  full_syscfg.autoval[0] = syscfg.autoval[0];
+  full_syscfg.autoval[1] = syscfg.autoval[1];
+  full_syscfg.autoval[2] = syscfg.autoval[2];
+  full_syscfg.autoval[3] = syscfg.autoval[3];
+  full_syscfg.autoval[4] = syscfg.autoval[4];
+  full_syscfg.autoval[5] = syscfg.autoval[5];
+  full_syscfg.autoval[6] = syscfg.autoval[6];
+  full_syscfg.autoval[7] = syscfg.autoval[7];
+  full_syscfg.autoval[8] = syscfg.autoval[8];
+  full_syscfg.autoval[9] = syscfg.autoval[9];
+
+  full_syscfg.unused_rrd = 0;
+  memset(full_syscfg.unused_regcode, '\0', 83);
+
+  file.Seek(0, File::seekBegin);
+  file.Write(&full_syscfg, sizeof(configrec));
+  return true;
 }
 
 void WSession::InitializeBBS() {

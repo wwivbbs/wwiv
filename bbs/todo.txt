@@ -23,6 +23,6 @@
 * investigate making WTextFile always trim whitespace
 * Improve StringTrim(string)'s whitespace code and just have 1 copy of the whitespace string.
 * TopScreen doesn't work with CursesIO
-* move resetnsp to pause.
 * make a common ACS system (like TG, vs. having separate SL DSL AR fields everywhere for menus)
 * cleanup menu system.
+* internet email assumes "FILEnet" as a network, this needs to be fixes. (search for getnetnum("FILEnet"))

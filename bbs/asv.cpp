@@ -245,7 +245,7 @@ void asv() {
           LoadFileIntoWorkspace(s1, true, true);
           messagerec msg;
           msg.storage_type = 2;
-          sprintf(net_email_name, "%s #1@%u", syscfg.sysopname, net_sysnum);
+          session()->net_email_name = StringPrintf("%s #1@%u", syscfg.sysopname, net_sysnum);
           
           MessageEditorData data;
           data.title = irt;

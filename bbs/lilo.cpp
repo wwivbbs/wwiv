@@ -821,9 +821,9 @@ static void DisplayUserLoginInformation() {
       }
     }
   } else if (session()->user()->GetForwardSystemNumber() != 0) {
-    char szInternetEmailAddress[255];
-    read_inet_addr(szInternetEmailAddress, session()->usernum);
-    bout << "Mail forwarded to Internet " << szInternetEmailAddress << ".\r\n";
+    string internet_addr;
+    read_inet_addr(internet_addr, session()->usernum);
+    bout << "Mail forwarded to Internet " << internet_addr << ".\r\n";
   }
   if (session()->IsTimeOnlineLimited()) {
     bout << "\r\n|#3Your on-line time is limited by an external event.\r\n\n";

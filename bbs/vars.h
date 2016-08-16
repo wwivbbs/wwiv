@@ -50,7 +50,6 @@ __EXTRN__ char  ansistr[81],
           irt[81],
           irt_name[205],
           irt_sub[81],
-          net_email_name[205],
           odc[81],
           *quotes_ind,
           tc[81];

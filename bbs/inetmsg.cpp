@@ -109,8 +109,8 @@ void send_inet_email() {
        << " <" << session()->internetFullEmailAddress << ">";
   bout.nl(2);
   bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
-  inputl(net_email_name, 75, true);
-  if (check_inet_addr(net_email_name)) {
+  session()->net_email_name = inputl(75, true);
+  if (check_inet_addr(session()->net_email_name.c_str())) {
     unsigned short user_number = 0;
     unsigned short system_number = 32767;
     irt[0] = 0;
@@ -121,7 +121,7 @@ void send_inet_email() {
     }
   } else {
     bout.nl();
-    if (net_email_name[0]) {
+    if (!session()->net_email_name.empty()) {
       bout << "|#6Invalid address format!\r\n";
     } else {
       bout << "|#6Aborted.\r\n";
@@ -144,42 +144,38 @@ bool check_inet_addr(const char *inetaddr) {
   return true;
 }
 
-char *read_inet_addr(char *internet_address, int user_number) {
+void read_inet_addr(std::string& internet_address, int user_number) {
+  internet_address.clear();
   if (!user_number) {
-    return nullptr;
+    return ;
   }
 
   if (user_number == session()->usernum && check_inet_addr(session()->user()->GetEmailAddress())) {
-    strcpy(internet_address, session()->user()->GetEmailAddress());
+    internet_address = session()->user()->GetEmailAddress();
   } else {
-    *internet_address = 0;
-    File inetAddrFile(session()->config()->datadir(), INETADDR_DAT);
-    if (!inetAddrFile.Exists()) {
-      inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-      for (int i = 0; i <= syscfg.maxusers; i++) {
-        long lCurPos = 80L * static_cast<long>(i);
-        inetAddrFile.Seek(lCurPos, File::seekBegin);
-        inetAddrFile.Write(internet_address, 80L);
-      }
+    File file(session()->config()->datadir(), INETADDR_DAT);
+    if (!file.Exists()) {
+      file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+      auto size = syscfg.maxusers * 80;
+      auto zero = std::make_unique<char[]>(size);
+      file.Write(zero.get(), size);
     } else {
       char szUserName[255];
-      inetAddrFile.Open(File::modeReadOnly | File::modeBinary);
-      long lCurPos = 80L * static_cast<long>(user_number);
-      inetAddrFile.Seek(lCurPos, File::seekBegin);
-      inetAddrFile.Read(szUserName, 80L);
+      file.Open(File::modeReadOnly | File::modeBinary);
+      file.Seek(80 * user_number, File::seekBegin);
+      file.Read(szUserName, 80L);
       if (check_inet_addr(szUserName)) {
-        strcpy(internet_address, szUserName);
+        internet_address = szUserName;
       } else {
-        sprintf(internet_address, "User #%d", user_number);
+        internet_address = StrCat("User #", user_number);
         User user;
         session()->users()->ReadUser(&user, user_number);
         user.SetEmailAddress("");
         session()->users()->WriteUser(&user, user_number);
       }
     }
-    inetAddrFile.Close();
+    file.Close();
   }
-  return internet_address;
 }
 
 void write_inet_addr(const char *internet_address, int user_number) {

@@ -244,9 +244,6 @@ public:
   /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
   void QuitBBS();
 
-
-  bool SaveConfig();
-
   void SetConfigFlag(int nFlag) { flags |= nFlag; }
   void ToggleConfigFlag(int nFlag) { flags ^= nFlag; }
   void ClearConfigFlag(int nFlag) { flags &= ~nFlag; }
@@ -425,6 +422,7 @@ private:
   std::string language_dir;
   std::string cur_lang_name;
   std::string chat_reason_;
+  std::string net_email_name;
 
   int wfc_status;
   int usernum;

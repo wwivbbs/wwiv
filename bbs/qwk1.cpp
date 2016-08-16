@@ -218,7 +218,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     if ((m.fromsys) && (!m.fromuser)) {
       grab_user_name(&(m.msg), "email");
     } else {
-      net_email_name[0] = 0;
+      session()->net_email_name.clear();
     }
     set_net_num(network_number_from(&m));
 
@@ -492,13 +492,13 @@ void qwk_email_text(char *text, char *title, char *to) {
     } else {
       if (session()->max_net_num() > 1) {
         if (un == 0) {
-          sprintf(s2, "%s @%u.%s", net_email_name, sy, session()->network_name());
+          sprintf(s2, "%s @%u.%s", session()->net_email_name.c_str(), sy, session()->network_name());
         } else {
           sprintf(s2, "%u @%u.%s", un, sy, session()->network_name());
         }
       } else {
         if (un == 0) {
-          sprintf(s2, "%s @%u", net_email_name, sy);
+          sprintf(s2, "%s @%u", session()->net_email_name.c_str(), sy);
         } else {
           sprintf(s2, "%u @%u", un, sy);
         }

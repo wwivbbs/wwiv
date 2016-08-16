@@ -536,7 +536,7 @@ void readmail(int mode) {
       if (m.fromsys && !m.fromuser) {
         grab_user_name(&(m.msg), "email");
       } else {
-        net_email_name[0] = '\0';
+        session()->net_email_name.clear();
       }
       if (m.status & status_source_verified) {
         int sv_type = source_verfied_type(&m);
@@ -953,18 +953,18 @@ void readmail(int mode) {
             if (system_number) {
               if (system_number == 1 && user_number == 0 &&
                   IsEqualsIgnoreCase(session()->network_name(), "Internet")) {
-                strcpy(s1, net_email_name);
+                strcpy(s1, session()->net_email_name.c_str());
               } else if (session()->max_net_num() > 1) {
                 if (user_number) {
                   sprintf(s1, "#%d @%d.%s", user_number, system_number, session()->network_name());
                 } else {
-                  sprintf(s1, "%s @%d.%s", net_email_name, system_number, session()->network_name());
+                  sprintf(s1, "%s @%d.%s", session()->net_email_name.c_str(), system_number, session()->network_name());
                 }
               } else {
                 if (user_number) {
                   sprintf(s1, "#%d @%d", user_number, system_number);
                 } else {
-                  sprintf(s1, "%s @%d", net_email_name, system_number);
+                  sprintf(s1, "%s @%d", session()->net_email_name.c_str(), system_number);
                 }
               }
             } else {
