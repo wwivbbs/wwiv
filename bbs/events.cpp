@@ -33,16 +33,22 @@
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
+#include "core/file.h"
+#include "core/datafile.h"
+#include "core/stl.h"
+#include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 using wwiv::bbs::InputMode;
+using namespace wwiv::core;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 // Local Functions
 
-char *ttc(int d);
-char *ttclastrun(int d);
 void sort_events();
 void show_events();
 void select_event_days(int evnt);
@@ -50,71 +56,75 @@ void modify_event(int evnt);
 void insert_event();
 void delete_event(int n);
 
-static eventsrec *events;
-
-
 static int16_t t_now() {
   time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
+  struct tm* pTm = localtime(&t);
   return static_cast<int16_t>((pTm->tm_hour * 60) + pTm->tm_min);
 }
 
-
-char *ttc(int d) {
+static char *ttc(int d) {
   static char ch[7];
 
-  int h = d / 60;
-  int m = d - (h * 60);
-  sprintf(ch, "%02d:%02d", h, m);
+  sprintf(ch, "%02d:%02d", d / 60, d % 60);
   return ch;
 }
 
-// TODO: remove this and ttc in favor of building in place.
-char *ttclastrun(int d) {
-  static char ch[7];
+static void write_events() {
+  if (session()->events.empty()) {
+    File eventsFile(session()->config()->datadir(), EVENTS_DAT);
+    eventsFile.Delete();
+    return;
+  }
+  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+  file.WriteVector(session()->events);
+}
 
-  int h = d / 60;
-  int m = d - (h * 60);
-  sprintf(ch, "%02d:%02d", h, m);
-  return ch;
+static void write_event(int n) {
+  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+  file.Write(n, &session()->events[n]);
+}
+
+static void read_events() {
+  session()->events.clear();
+
+  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT);
+  if (!file) {
+    return;
+  }
+  file.ReadVector(session()->events);
+  if (!session()->events.empty()) {
+    get_next_forced_event();
+  }
+}
+
+static void read_event(int n) {
+  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT);
+  if (!file) {
+    return;
+  }
+  file.Read(n, &session()->events[n]);
 }
 
 void sort_events() {
   // keeping events sorted in time order makes things easier.
-  for (int i = 0; i < (session()->num_events - 1); i++) {
-    int z = i;
-    for (int j = (i + 1); j < session()->num_events; j++) {
-      if (events[j].time < events[z].time) {
+  for (size_t i = 0; i < (session()->events.size() - 1); i++) {
+    size_t z = i;
+    for (size_t j = (i + 1); j < session()->events.size(); j++) {
+      if (session()->events[j].time < session()->events[z].time) {
         z = j;
       }
     }
     if (z != i) {
-      eventsrec e;
-      e = events[i];
-      events[i] = events[z];
-      events[z] = e;
+      std::swap(session()->events[i], session()->events[z]);
     }
   }
 }
 
 void init_events() {
-  if (events) {
-    free(events);
-    events = nullptr;
-  }
-  events = static_cast<eventsrec *>(BbsAllocA(MAX_EVENT * sizeof(eventsrec)));
-  WWIV_ASSERT(events != nullptr);
-
-  File eventsFile(session()->config()->datadir(), EVENTS_DAT);
-  if (eventsFile.Open(File::modeBinary | File::modeReadOnly)) {
-    session()->num_events = eventsFile.GetLength() / sizeof(eventsrec);
-    eventsFile.Read(events, session()->num_events * sizeof(eventsrec));
-    get_next_forced_event();
-  } else {
-    session()->num_events = 0;
-  }
+  read_events();
 }
-
 
 void get_next_forced_event() {
   syscfg.executetime = 0;
@@ -125,15 +135,14 @@ void get_next_forced_event() {
   if (day == 7) {
     day = 0;
   }
-  for (int i = 0; i < session()->num_events; i++) {
-    if ((events[i].instance == session()->instance_number() || events[i].instance == 0) &&
-        events[i].status & EVENT_FORCED) {
-      if (first < 0 && events[i].time < tl && ((events[i].days & (1 << day)) > 0)) {
-        first = events[i].time;
+  for (const auto& e : session()->events) {
+    if ((e.instance == session()->instance_number() || e.instance == 0) && e.status & EVENT_FORCED) {
+      if (first < 0 && e.time < tl && ((e.days & (1 << day)) > 0)) {
+        first = e.time;
       }
-      if ((events[i].status & EVENT_RUNTODAY) == 0 && (events[i].days & (1 << dow())) > 0 && !syscfg.executetime) {
-        time_event = static_cast<long>(events[i].time) * SECONDS_PER_MINUTE;
-        syscfg.executetime = events[i].time;
+      if ((e.status & EVENT_RUNTODAY) == 0 && (e.days & (1 << dow())) > 0 && !syscfg.executetime) {
+        time_event = static_cast<long>(e.time) * SECONDS_PER_MINUTE;
+        syscfg.executetime = e.time;
         if (!syscfg.executetime) {
           ++syscfg.executetime;
         }
@@ -151,7 +160,7 @@ void get_next_forced_event() {
 }
 
 void cleanup_events() {
-  if (session()->num_events == 0) {
+  if (session()->events.empty()) {
     return;
   }
 
@@ -163,95 +172,75 @@ void cleanup_events() {
     day = 6;
   }
 
-  int i;
-  for (i = 0; i < session()->num_events; i++) {
-    if (((events[i].status & EVENT_RUNTODAY) == 0) &&
-        ((events[i].days & (1 << day)) > 0)) {
+  for (size_t i = 0; i < session()->events.size(); i++) {
+    if (((session()->events[i].status & EVENT_RUNTODAY) == 0) &&
+        ((session()->events[i].days & (1 << day)) > 0)) {
       run_event(i);
     }
   }
-  for (i = 0; i < session()->num_events; i++) {
-    events[i].status &= ~EVENT_RUNTODAY;
+  for (auto& e : session()->events) {
+    e.status &= ~EVENT_RUNTODAY;
     // zero out last run in case this is a periodic event
-    events[i].lastrun = 0;
+    e.lastrun = 0;
   }
 
-  File eventsFile(session()->config()->datadir(), EVENTS_DAT);
-  eventsFile.Open(File::modeReadWrite | File::modeBinary);
-  eventsFile.Write(events, session()->num_events * sizeof(eventsrec));
-  eventsFile.Close();
+  write_events();
 }
 
-
 void check_event() {
-  int i;
-
   int16_t tl = t_now();
-  for (i = 0; i < session()->num_events && !do_event; i++) {
-    if (((events[i].status & EVENT_RUNTODAY) == 0) && (events[i].time <= tl) &&
-        ((events[i].days & (1 << dow())) > 0) &&
-        ((events[i].instance == session()->instance_number()) ||
-         (events[i].instance == 0))) {
+  for (size_t i = 0; i < session()->events.size() && !do_event; i++) {
+    if (((session()->events[i].status & EVENT_RUNTODAY) == 0) && (session()->events[i].time <= tl) &&
+        ((session()->events[i].days & (1 << dow())) > 0) &&
+        ((session()->events[i].instance == session()->instance_number()) ||
+         (session()->events[i].instance == 0))) {
       // make sure the event hasn't already been executed on another node,then mark it as run
-      File eventsFile(session()->config()->datadir(), EVENTS_DAT);
-      eventsFile.Open(File::modeReadWrite | File::modeBinary);
-      eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
-      eventsFile.Read(&events[i], sizeof(eventsrec));
+      read_event(i);
 
-      if ((events[i].status & EVENT_RUNTODAY) == 0) {
-        events[i].status |= EVENT_RUNTODAY;
-        eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
-        eventsFile.Write(&events[i], sizeof(eventsrec));
+      if ((session()->events[i].status & EVENT_RUNTODAY) == 0) {
+        session()->events[i].status |= EVENT_RUNTODAY;
+        write_event(i);
         do_event = i + 1;
       }
-      eventsFile.Close();
-    } else if ((events[i].status & EVENT_PERIODIC) &&
-               ((events[i].days & (1 << dow())) > 0) &&
-               ((events[i].instance == session()->instance_number()) ||
-                (events[i].instance == 0))) {
+    } else if ((session()->events[i].status & EVENT_PERIODIC) &&
+               ((session()->events[i].days & (1 << dow())) > 0) &&
+               ((session()->events[i].instance == session()->instance_number()) ||
+                (session()->events[i].instance == 0))) {
       // periodic events run after N minutes from last execution.
-      int16_t nextrun = ((events[i].lastrun == 0) ? events[i].time : events[i].lastrun) + events[i].period;
+      int16_t nextrun = ((session()->events[i].lastrun == 0) ? session()->events[i].time : session()->events[i].lastrun) + session()->events[i].period;
       // The next run time should be the later of "now", or the next scheduled time.
       // This should keep events from executing numerous times to "catch up".
       nextrun = std::max(tl, nextrun);
       // if the next runtime is before now trigger it to run
       if (nextrun <= tl) {
         // flag the event to run
-        File eventsFile(session()->config()->datadir(), EVENTS_DAT);
-        eventsFile.Open(File::modeReadWrite | File::modeBinary);
-        eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
-        eventsFile.Read(&events[i], sizeof(eventsrec));
+        read_event(i);
 
         // make sure other nodes didn't run it already
-        if ((((events[i].lastrun == 0) ? events[i].time : events[i].lastrun) + events[i].period) <= tl) {
-          events[i].status |= EVENT_RUNTODAY;
+        if ((((session()->events[i].lastrun == 0) ? session()->events[i].time : session()->events[i].lastrun) + session()->events[i].period) <= tl) {
+          session()->events[i].status |= EVENT_RUNTODAY;
           // record that we ran it now.
-          events[i].lastrun = nextrun;
-          eventsFile.Seek(i * sizeof(eventsrec), File::seekBegin);
-          eventsFile.Write(&events[i], sizeof(eventsrec));
+          write_event(i);
           do_event = i + 1;
         }
-        eventsFile.Close();
       }
     }
   }
 }
 
 void run_event(int evnt) {
-  int exitlevel;
-
   write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
   session()->localIO()->SetCursor(LocalIO::cursorNormal);
   bout.cls();
   bout << "\r\nNow running external event.\r\n\n";
-  if (events[evnt].status & EVENT_EXIT) {
-    exitlevel = static_cast<int>(events[evnt].cmd[0]);
+  if (session()->events[evnt].status & EVENT_EXIT) {
+    int exitlevel = static_cast<int>(session()->events[evnt].cmd[0]);
     if (ok_modem_stuff && session()->remoteIO() != nullptr) {
       session()->remoteIO()->close(false);
     }
     session()->ExitBBSImpl(exitlevel, true);
   }
-  ExecuteExternalProgram(events[evnt].cmd, EFLAG_NONE);
+  ExecuteExternalProgram(session()->events[evnt].cmd, EFLAG_NONE);
   do_event = 0;
   get_next_forced_event();
   cleanup_net();
@@ -259,7 +248,7 @@ void run_event(int evnt) {
 }
 
 void show_events() {
-  char s[121] = { 0 }, s1[81] = { 0 }, daystr[8] = { 0 };
+  char s[121] = {}, s1[81] = {}, daystr[8] = {};
 
   bout.cls();
   bool abort = false;
@@ -268,42 +257,42 @@ void show_events() {
   pla("|#1                                         Hold   Force   Run            Run", &abort);
   pla("|#1Evnt Time  Command                 Node  Phone  Event  Today   Freq    Days", &abort);
   pla("|#7=============================================================================", &abort);
-  for (int i = 0; (i < session()->num_events) && !abort; i++) {
-    if (events[i].status & EVENT_EXIT) {
-      sprintf(s1, "Exit Level = %d", events[i].cmd[0]);
+  for (size_t i = 0; (i < session()->events.size()) && !abort; i++) {
+    if (session()->events[i].status & EVENT_EXIT) {
+      sprintf(s1, "Exit Level = %d", session()->events[i].cmd[0]);
     } else {
-      strncpy(s1, events[i].cmd, sizeof(s1));
+      strncpy(s1, session()->events[i].cmd, sizeof(s1));
     }
     strcpy(daystr, "SMTWTFS");
     for (int j = 0; j <= 6; j++) {
-      if ((events[i].days & (1 << j)) == 0) {
+      if ((session()->events[i].days & (1 << j)) == 0) {
         daystr[j] = ' ';
       }
     }
-    if (events[i].status & EVENT_PERIODIC) {
-      if (events[i].status & EVENT_RUNTODAY) {
+    if (session()->events[i].status & EVENT_PERIODIC) {
+      if (session()->events[i].status & EVENT_RUNTODAY) {
         sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c    %-5.5s    %2dm   %s",
-                i, ttc(events[i].time), s1, events[i].instance,
+                i, ttc(session()->events[i].time), s1, session()->events[i].instance,
                 ' ',
-                events[i].status & EVENT_FORCED ? y : n,
-                ttclastrun(events[i].lastrun),
-                events[i].period,
+                session()->events[i].status & EVENT_FORCED ? y : n,
+                ttc(session()->events[i].lastrun),
+                session()->events[i].period,
                 daystr);
       } else {
         sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c      %1c      %2dm   %s",
-                i, ttc(events[i].time), s1, events[i].instance,
+                i, ttc(session()->events[i].time), s1, session()->events[i].instance,
                 ' ',
-                events[i].status & EVENT_FORCED ? y : n,
+                session()->events[i].status & EVENT_FORCED ? y : n,
                 n,
-                events[i].period,
+                session()->events[i].period,
                 daystr);
       }
     } else {
       sprintf(s, " %2d  %-5.5s %-23.23s  %2d     %1c      %1c      %1c            %s",
-              i, ttc(events[i].time), s1, events[i].instance,
+              i, ttc(session()->events[i].time), s1, session()->events[i].instance,
               ' ',
-              events[i].status & EVENT_FORCED ? y : n,
-              events[i].status & EVENT_RUNTODAY ? y : n,
+              session()->events[i].status & EVENT_FORCED ? y : n,
+              session()->events[i].status & EVENT_RUNTODAY ? y : n,
               daystr);
     }
     pla(s, &abort);
@@ -311,13 +300,12 @@ void show_events() {
 }
 
 void select_event_days(int evnt) {
-  int i;
   char ch, daystr[9], days[8];
 
   bout.nl();
   strcpy(days, "SMTWTFS");
-  for (i = 0; i <= 6; i++) {
-    if (events[evnt].days & (1 << i)) {
+  for (int i = 0; i <= 6; i++) {
+    if (session()->events[evnt].days & (1 << i)) {
       daystr[i] = days[i];
     } else {
       daystr[i] = ' ';
@@ -331,9 +319,9 @@ void select_event_days(int evnt) {
     bout << daystr;
     ch = onek_ncr("1234567Q");
     if ((ch >= '1') && (ch <= '7')) {
-      i = ch - '1';
-      events[evnt].days ^= (1 << i);
-      if (events[evnt].days & (1 << i)) {
+      int i = ch - '1';
+      session()->events[evnt].days ^= (1 << i);
+      if (session()->events[evnt].days & (1 << i)) {
         daystr[i] = days[i];
       } else {
         daystr[i] = ' ';
@@ -342,7 +330,6 @@ void select_event_days(int evnt) {
     }
   } while (ch != 'Q' && !hangup);
 }
-
 
 void modify_event(int evnt) {
   char s[81], s1[81], ch;
@@ -353,27 +340,27 @@ void modify_event(int evnt) {
   int i       = evnt;
   do {
     bout.cls();
-    bout << "A) Event Time......: " << ttc(events[i].time) << wwiv::endl;
-    if (events[i].status & EVENT_EXIT) {
-      sprintf(s1, "Exit BBS with DOS Errorlevel %d", events[i].cmd[0]);
+    bout << "A) Event Time......: " << ttc(session()->events[i].time) << wwiv::endl;
+    if (session()->events[i].status & EVENT_EXIT) {
+      sprintf(s1, "Exit BBS with DOS Errorlevel %d", session()->events[i].cmd[0]);
     } else {
-      strcpy(s1, events[i].cmd);
+      strcpy(s1, session()->events[i].cmd);
     }
     bout << "B) Event Command...: " << s1 << wwiv::endl;
-    bout << "D) Already Run?....: " << ((events[i].status & EVENT_RUNTODAY) ? "Yes" : "No") << wwiv::endl;
-    bout << "E) Shrink?.........: " << ((events[i].status & EVENT_SHRINK) ? "Yes" : "No") << wwiv::endl;
-    bout << "F) Force User Off?.: " << ((events[i].status & EVENT_FORCED) ? "Yes" : "No") << wwiv::endl;
+    bout << "D) Already Run?....: " << ((session()->events[i].status & EVENT_RUNTODAY) ? "Yes" : "No") << wwiv::endl;
+    bout << "E) Shrink?.........: " << ((session()->events[i].status & EVENT_SHRINK) ? "Yes" : "No") << wwiv::endl;
+    bout << "F) Force User Off?.: " << ((session()->events[i].status & EVENT_FORCED) ? "Yes" : "No") << wwiv::endl;
     strcpy(s1, "SMTWTFS");
     for (j = 0; j <= 6; j++) {
-      if ((events[i].days & (1 << j)) == 0) {
+      if ((session()->events[i].days & (1 << j)) == 0) {
         s1[j] = ' ';
       }
     }
     bout << "G) Days to Execute.: " << s1 << wwiv::endl;
-    bout << "H) Node (0=Any)....: " << events[i].instance << wwiv::endl;
-    bout << "I) Periodic........: " << ((events[i].status & EVENT_PERIODIC) ? "Yes" : "No");
-    if (events[i].status & EVENT_PERIODIC) {
-      bout << " (every " << std::to_string(events[i].period) << " minutes)";
+    bout << "H) Node (0=Any)....: " << session()->events[i].instance << wwiv::endl;
+    bout << "I) Periodic........: " << ((session()->events[i].status & EVENT_PERIODIC) ? "Yes" : "No");
+    if (session()->events[i].status & EVENT_PERIODIC) {
+      bout << " (every " << std::to_string(session()->events[i].period) << " minutes)";
     }
     bout << wwiv::endl;
     bout.nl();
@@ -385,14 +372,14 @@ void modify_event(int evnt) {
       break;
     case ']':
       i++;
-      if (i >= session()->num_events) {
+      if (i >= size_int(session()->events)) {
         i = 0;
       }
       break;
     case '[':
       i--;
       if (i < 0) {
-        i = session()->num_events - 1;
+        i = session()->events.size() - 1;
       }
       break;
     case 'A':
@@ -459,45 +446,45 @@ void modify_event(int evnt) {
         }
       } while (ch != '\r' && !hangup);
       if (ok) {
-        events[i].time = static_cast<int16_t>((60 * atoi(s)) + atoi(&(s[3])));
+        session()->events[i].time = static_cast<int16_t>((60 * atoi(s)) + atoi(&(s[3])));
       }
       break;
     case 'B':
       bout.nl();
       bout << "|#2Exit BBS for event? ";
       if (yesno()) {
-        events[i].status |= EVENT_EXIT;
+        session()->events[i].status |= EVENT_EXIT;
         bout << "|#2DOS ERRORLEVEL on exit? ";
         input(s, 3);
         j = atoi(s);
         if (s[0] != 0 && j >= 0 && j < 256) {
-          events[i].cmd[0] = static_cast<char>(j);
+          session()->events[i].cmd[0] = static_cast<char>(j);
         }
       } else {
-        events[i].status &= ~EVENT_EXIT;
+        session()->events[i].status &= ~EVENT_EXIT;
         bout << "|#2Commandline to run? ";
         input(s, 80);
         if (s[0] != '\0') {
-          strcpy(events[i].cmd, s);
+          strcpy(session()->events[i].cmd, s);
         }
       }
       break;
     case 'D':
-      events[i].status ^= EVENT_RUNTODAY;
+      session()->events[i].status ^= EVENT_RUNTODAY;
       // reset it in case it is periodic
-      events[i].lastrun = 0;
+      session()->events[i].lastrun = 0;
       break;
     case 'E':
-      events[i].status ^= EVENT_SHRINK;
+      session()->events[i].status ^= EVENT_SHRINK;
       break;
     case 'F':
-      events[i].status ^= EVENT_FORCED;
+      session()->events[i].status ^= EVENT_FORCED;
       break;
     case 'G':
       bout.nl();
       bout << "|#2Run event every day? ";
       if (noyes()) {
-        events[i].days = 127;
+        session()->events[i].days = 127;
       } else {
         select_event_days(i);
       }
@@ -508,22 +495,22 @@ void modify_event(int evnt) {
       input(s, 3);
       j = atoi(s);
       if (s[0] != '\0' && j >= 0 && j < 1000) {
-        events[i].instance = static_cast<int16_t>(j);
+        session()->events[i].instance = static_cast<int16_t>(j);
       }
       break;
     case 'I':
-      events[i].status ^= EVENT_PERIODIC;
-      if (events[i].status & EVENT_PERIODIC) {
+      session()->events[i].status ^= EVENT_PERIODIC;
+      if (session()->events[i].status & EVENT_PERIODIC) {
         bout.nl();
         bout << "|#2Run again after how many minutes (0=never, max=240)? ";
         input(s, 4);
         j = atoi(s);
         if (s[0] != '\0' && j >= 1 && j <= 240) {
-          events[i].period = static_cast<int16_t>(j);
+          session()->events[i].period = static_cast<int16_t>(j);
         } else {
           // user entered invalid time period, disable periodic
-          events[i].status &= ~EVENT_PERIODIC;
-          events[i].period = 0;
+          session()->events[i].status &= ~EVENT_PERIODIC;
+          session()->events[i].period = 0;
         }
       }
       break;
@@ -531,25 +518,22 @@ void modify_event(int evnt) {
   } while (!done && !hangup);
 }
 
-
 void insert_event() {
-  strcpy(events[session()->num_events].cmd, "**New Event**");
-  events[session()->num_events].time = 0;
-  events[session()->num_events].status = 0;
-  events[session()->num_events].instance = 0;
-  events[session()->num_events].days = 127;                // Default to all 7 days
-  modify_event(session()->num_events);
-  session()->num_events = session()->num_events + 1;
+  eventsrec e = {};
+  strcpy(e.cmd, "**New Event**");
+  e.time = 0;
+  e.status = 0;
+  e.instance = 0;
+  e.days = 127;                // Default to all 7 days
+  session()->events.emplace_back(e);
+  modify_event(session()->events.size() - 1);
 }
-
 
 void delete_event(int n) {
-  for (int i = n; i < session()->num_events; i++) {
-    events[i] = events[i + 1];
-  }
-  session()->num_events = session()->num_events - 1;
+  auto it = session()->events.begin();
+  std::advance(it, n);
+  session()->events.erase(it);
 }
-
 
 void eventedit() {
   char s[81];
@@ -580,8 +564,8 @@ void eventedit() {
       bout.nl();
       bout << "|#2Run which Event? ";
       input(s, 2);
-      int nEventNum = atoi(s);
-      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->num_events) {
+      unsigned int nEventNum = StringToUnsignedInt(s);
+      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->events.size()) {
         run_event(nEventNum);
       }
     }
@@ -590,14 +574,14 @@ void eventedit() {
       bout.nl();
       bout << "|#2Modify which Event? ";
       input(s, 2);
-      int nEventNum = atoi(s);
-      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->num_events) {
+      unsigned int nEventNum = StringToUnsignedInt(s);
+      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->events.size()) {
         modify_event(nEventNum);
       }
     }
     break;
     case 'I':
-      if (session()->num_events < MAX_EVENT) {
+      if (session()->events.size() < MAX_EVENT) {
         insert_event();
       } else {
         bout << "\r\n|#6Can't add any more events!\r\n\n";
@@ -605,17 +589,17 @@ void eventedit() {
       }
       break;
     case 'D':
-      if (session()->num_events) {
+      if (!session()->events.empty()) {
         bout.nl();
         bout << "|#2Delete which Event? ";
         input(s, 2);
-        int nEventNum = atoi(s);
-        if (s[0] && nEventNum >= 0 && nEventNum < session()->num_events) {
+        unsigned int nEventNum = StringToUnsignedInt(s);
+        if (s[0] && nEventNum >= 0 && nEventNum < session()->events.size()) {
           bout.nl();
-          if (events[nEventNum].status & EVENT_EXIT) {
-            sprintf(s, "Exit Level = %d", events[nEventNum].cmd[0]);
+          if (session()->events[nEventNum].status & EVENT_EXIT) {
+            sprintf(s, "Exit Level = %d", session()->events[nEventNum].cmd[0]);
           } else {
-            strcpy(s, events[nEventNum].cmd);
+            strcpy(s, session()->events[nEventNum].cmd);
           }
           bout << "|#5Delete " << s << "?";
           if (yesno()) {
@@ -630,13 +614,5 @@ void eventedit() {
     }
   } while (!done && !hangup);
   sort_events();
-
-  File eventsFile(session()->config()->datadir(), EVENTS_DAT);
-  if (session()->num_events) {
-    eventsFile.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
-    eventsFile.Write(events, session()->num_events * sizeof(eventsrec));
-    eventsFile.Close();
-  } else {
-    eventsFile.Delete();
-  }
+  write_events();
 }

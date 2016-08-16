@@ -402,7 +402,6 @@ private:
               m_nNetworkNumber = 0,
               m_nMaxNetworkNumber = 0,
               numf = 0,
-              num_events = 0,
               num_sys_list = 0,
               subchg = 0,
               tagging = 0,
@@ -460,6 +459,7 @@ public:
   std::vector<batchrec> batch;
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
+  std::vector<eventsrec> events;
 
 };
 

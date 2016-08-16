@@ -9,8 +9,6 @@
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
 * change record 0 of .sub files to be a message header. Right now only owneruser
   is used and the rest is loaded/saved as-is by the bbs code.
-* remove support for registration numbers in the wwivnet data binary files.
-* delete num_events
 * add tests for usermanager and user (in SDK)
 * mmkey is a mess.  mostly just odc is used. confutil.cpp sets the others.
 * cleanup session()->tagging and session()->titled
