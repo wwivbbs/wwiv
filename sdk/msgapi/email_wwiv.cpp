@@ -70,7 +70,6 @@ bool WWIVEmail::Close() {
 
 static bool increment_email_counters(const string& root_directory, uint16_t email_usernum) {
   statusrec status{};
-  uint32_t next_qscan = 0;
   Config config(root_directory);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";

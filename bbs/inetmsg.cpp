@@ -205,7 +205,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
           out.WriteFormatted(szSavedLine);
         }
       }
-      out.WriteFormatted("\nUSER%d = %s", user_number, internet_address);
+      out.WriteFormatted("\nUSER%d = %s", user_number, internet_address.c_str());
       in.Close();
       out.Close();
     }
