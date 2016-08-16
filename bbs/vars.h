@@ -119,8 +119,6 @@ __EXTRN__ uint32_t
 *qsc_q,
 *qsc_p;
 
-__EXTRN__ float batchtime;
-
 __EXTRN__ long extratimecall;
 __EXTRN__ long time_event;
 __EXTRN__ long timeon;

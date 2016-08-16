@@ -464,7 +464,6 @@ void tag_it() {
         b.time = (float) t;
         b.sending = 1;
         b.len = fs;
-        ++session()->numbatchdl;
         session()->batch.emplace_back(b);
         bout << "|#1" << filelist[i].u.filename << " added to batch queue.\r\n";
       }
@@ -742,7 +741,6 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
                      ctim(b.time),
                      session()->directories[b.dir].name);
         session()->batch.emplace_back(b);
-        ++session()->numbatchdl;
         bout << "\r";
         bout << "|#5    Continue search? ";
         ch = onek_ncr("YN\r");
@@ -946,7 +944,7 @@ void download() {
     return;
   }
   bout.nl();
-  if (!session()->numbatchdl) {
+  if (session()->batch.empty()) {
     return;
   }
   bout << "|#5Hang up after transfer? ";

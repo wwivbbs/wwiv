@@ -115,9 +115,6 @@ void listbatch() {
 }
 
 std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it) {
-  const auto& current = *it;
-  batchtime -= current.time;
-  --session()->numbatchdl;
   return session()->batch.erase(it);
 }
 
@@ -129,8 +126,6 @@ void delbatch(int num) {
   auto it = begin(session()->batch);
   std::advance(it, num);
   const auto& current = *it;
-  batchtime -= current.time;
-  --session()->numbatchdl;
   session()->batch.erase(it);
 }
 
@@ -324,7 +319,7 @@ void zmbatchdl(bool bHangupAfterDl) {
     return;
   }
 
-  string message = StringPrintf("ZModem Download: Files - %d Time - %s", session()->numbatchdl, ctim(batchtime));
+  string message = StringPrintf("ZModem Download: Files - %d Time - %s", session()->batch.size(), ctim(batchtime));
   if (bHangupAfterDl) {
     message += ", HAD";
   }
@@ -355,7 +350,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         delbatch(cur);
       } else {
         session()->localIO()->LocalPuts(
-            StringPrintf("Files left - %d, Time left - %s\r\n", session()->numbatchdl, ctim(batchtime)));
+            StringPrintf("Files left - %d, Time left - %s\r\n", session()->batch.size(), ctim(batchtime)));
         File file(g_szDownloadFileName);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
@@ -402,7 +397,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   if (!incom) {
     return;
   }
-  string message = StringPrintf("Ymodem Download: Files - %d, Time - %s", session()->numbatchdl, ctim(batchtime));
+  string message = StringPrintf("Ymodem Download: Files - %d, Time - %s", session()->batch.size(), ctim(batchtime));
   if (bHangupAfterDl) {
     message += ", HAD";
   }
@@ -433,7 +428,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         delbatch(cur);
       } else {
         session()->localIO()->LocalPuts(
-			      StringPrintf("Files left - %d, Time left - %s\r\n", session()->numbatchdl, ctim(batchtime)));
+			      StringPrintf("Files left - %d, Time left - %s\r\n", session()->batch.size(), ctim(batchtime)));
         File file(g_szDownloadFileName);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
@@ -688,7 +683,7 @@ void ProcessDSZLogFile() {
 
 void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   string download_log_entry = StringPrintf(
-      "%s BATCH Download: Files - %d, Time - %s", description, session()->numbatchdl, ctim(batchtime));
+      "%s BATCH Download: Files - %d, Time - %s", description, session()->batch.size(), ctim(batchtime));
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -704,7 +699,7 @@ void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
 
 void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
   string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", description,
-          session()->batch.size() - session()->numbatchdl);
+          session()->batch.size());
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
@@ -785,8 +780,6 @@ int batchdl(int mode) {
       if (yesno()) {
         for (const auto& b : session()->batch) { didnt_upload(b); }
         session()->batch.clear();
-        session()->numbatchdl = 0;
-        batchtime = 0.0;
         done = true;
         bout << "Queue cleared.\r\n";
         if (mode == 3) {
