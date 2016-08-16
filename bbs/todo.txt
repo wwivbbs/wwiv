@@ -17,7 +17,6 @@
 * add IncrementXXXXX methods to User where it makes sense.
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
 * investigate making WTextFile always trim whitespace
-* Improve StringTrim(string)'s whitespace code and just have 1 copy of the whitespace string.
 * TopScreen doesn't work with CursesIO
 * make a common ACS system (like TG, vs. having separate SL DSL AR fields everywhere for menus)
 * cleanup menu system.

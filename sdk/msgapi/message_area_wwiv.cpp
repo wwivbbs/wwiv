@@ -171,27 +171,32 @@ bool WWIVMessageArea::ParseMessageText(
     return true; 
   }
 
-  from_username = StringTrim(*it++);
+  from_username = *it++;
+  StringTrim(&from_username);
   if (it == std::end(lines)) {
     LOG(ERROR) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
-  date = StringTrim(*it++);
+  date = *it++;
+  StringTrim(&date);
   if (it == std::end(lines)) {
     LOG(ERROR) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
   for (; it != std::end(lines); it++) {
-    auto line = StringTrim(*it);
+    auto line = *it++;
+    StringTrim(&line);
     if (!line.empty() && line.front() == CD) {
       text += line;
       text += "\r\n";
     } else if (starts_with(line, "RE:")) {
-      in_reply_to = StringTrim(line.substr(3));
+      in_reply_to = line.substr(3);
+      StringTrim(&in_reply_to);
     } else if (starts_with(line, "BY:")) {
-      to = StringTrim(line.substr(3));
+      to = line.substr(3);
+      StringTrim(&to);
     } else {
       // No more special lines, the rest is just text.
       for (; it != std::end(lines); it++) {

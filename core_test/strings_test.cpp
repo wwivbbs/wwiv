@@ -319,14 +319,6 @@ TEST(StringsTest, StringTrim) {
   EXPECT_EQ("b", b);
 }
 
-TEST(StringsTest, StringTrim2) {
-  string a = " a ";
-  EXPECT_EQ("a", StringTrim(a));
-
-  string b = "b";
-  EXPECT_EQ("b", StringTrim(b));
-}
-
 TEST(StringsTest, StringTrimBegin) {
   string a = " a ";
   StringTrimBegin(&a);
