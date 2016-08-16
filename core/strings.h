@@ -78,6 +78,7 @@ void StringTrimEnd(char *str);
 void StringTrimBegin(std::string* s);
 void StringUpperCase(std::string* s);
 void StringLowerCase(std::string* s);
+void StringRemoveWhitespace(std::string* s);
 
 
 const char *charstr(std::string::size_type length, char fill);

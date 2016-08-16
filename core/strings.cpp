@@ -19,6 +19,7 @@
 #include "core/strings.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdarg>
 #include <cstdio>
 #include <cstring>
@@ -335,6 +336,10 @@ const char *charstr(string::size_type length, char fill) {
   return result.c_str();
 }
 
+
+void StringRemoveWhitespace(string* str) {
+  str->erase(std::remove_if(str->begin(), str->end(), std::isspace), str->end());
+}
 
 char *StringRemoveWhitespace(char *str) {
   WWIV_ASSERT(str);
