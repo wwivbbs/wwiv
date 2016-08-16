@@ -123,7 +123,7 @@ namespace windows_wwiv_update
             }
         }
 
-        // Update To Newest WWIV 5.0
+        // Update To Newest WWIV
         private void update50_Click(object sender, EventArgs e)
         {
             string updateToNew50;

@@ -1218,8 +1218,7 @@ static confrec *read_conferences(const char *file_name, unsigned int *nc, int ma
     return nullptr;
   }
   memset(conferences, 0, l);
-  char * ls = static_cast<char*>(BbsAllocA(MAX_CONF_LINE));
-  WWIV_ASSERT(ls != nullptr);
+  char* ls = static_cast<char*>(BbsAllocA(MAX_CONF_LINE));
   if (!ls) {
     f.Close();
     return nullptr;
@@ -1344,11 +1343,11 @@ static confrec *read_conferences(const char *file_name, unsigned int *nc, int ma
  * necessary. If conferences cannot be read, then BBS aborts.
  */
 void read_in_conferences(ConferenceType conftype) {
-  int max;
   unsigned *np = nullptr;
   char s[81];
   confrec **cpp = nullptr;
 
+  int max;
   if (get_conf_info(conftype, nullptr, nullptr, s, &max, nullptr)) {
     return;
   }
