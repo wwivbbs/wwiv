@@ -749,18 +749,18 @@ void move_file_t() {
   tmp_disable_conf(true);
 
   bout.nl();
-  if (session()->batch.empty()) {
+  if (session()->batch().entry.empty()) {
     bout.nl();
     bout << "|#6No files have been tagged for movement.\r\n";
     pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
-  for (int nCurBatchPos = session()->batch.size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
+  for (int nCurBatchPos = session()->batch().entry.size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
     bool ok = false;
     char szCurBatchFileName[MAX_PATH];
-    strcpy(szCurBatchFileName, session()->batch[nCurBatchPos].filename);
+    strcpy(szCurBatchFileName, session()->batch().entry[nCurBatchPos].filename);
     align(szCurBatchFileName);
-    dliscan1(session()->batch[nCurBatchPos].dir);
+    dliscan1(session()->batch().entry[nCurBatchPos].dir);
     int nTempRecordNum = recno(szCurBatchFileName);
     if (nTempRecordNum < 0) {
       bout << "File not found.\r\n";
@@ -775,7 +775,7 @@ void move_file_t() {
       FileAreaSetRecord(fileDownload, nTempRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
-      printfileinfo(&u, session()->batch[nCurBatchPos].dir);
+      printfileinfo(&u, session()->batch().entry[nCurBatchPos].dir);
       bout << "|#5Move this (Y/N/Q)? ";
       char ch = ynq();
       if (ch == 'Q') {
@@ -784,7 +784,7 @@ void move_file_t() {
         dliscan();
         return;
       } else if (ch == 'Y') {
-        sprintf(s1, "%s%s", session()->directories[session()->batch[nCurBatchPos].dir].path, u.filename);
+        sprintf(s1, "%s%s", session()->directories[session()->batch().entry[nCurBatchPos].dir].path, u.filename);
         StringRemoveWhitespace(s1);
         char *pszDirectoryNum = nullptr;
         do {
@@ -792,7 +792,7 @@ void move_file_t() {
           pszDirectoryNum = mmkey(1);
           if (pszDirectoryNum[0] == '?') {
             dirlist(1);
-            dliscan1(session()->batch[nCurBatchPos].dir);
+            dliscan1(session()->batch().entry[nCurBatchPos].dir);
           }
         } while (!hangup && (pszDirectoryNum[0] == '?'));
         d1 = -1;
@@ -899,8 +899,8 @@ void move_file_t() {
             copyfile(s1, s2, false);
             File::Remove(s1);
           }
-          remlist(session()->batch[nCurBatchPos].filename);
-          didnt_upload(session()->batch[nCurBatchPos]);
+          remlist(session()->batch().entry[nCurBatchPos].filename);
+          didnt_upload(session()->batch().entry[nCurBatchPos]);
           delbatch(nCurBatchPos);
         }
         bout << "File moved.\r\n";

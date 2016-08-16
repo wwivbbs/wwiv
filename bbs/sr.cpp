@@ -516,14 +516,14 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
       break;
     case WWIV_INTERNAL_PROT_BATCH:
       ok = true;
-      if (session()->batch.size() >= session()->max_batch) {
+      if (session()->batch().entry.size() >= session()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *sent = false;
         *abort = false;
       } else {
         double t = (modem_speed) ? (12.656) / ((double)(modem_speed)) * ((double)(fs)) : 0;
-        if (nsl() <= (batchtime + t)) {
+        if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
           bout.nl();
           bout << "Not enough time left in queue.\r\n\n";
           *sent = false;
@@ -535,19 +535,17 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
             *sent = false;
             *abort = false;
           } else {
-            batchtime += static_cast<float>(t);
             batchrec b{};
             strcpy(b.filename, sfn);
             b.dir = static_cast<int16_t>(dn);
             b.time = static_cast<float>(t);
-            b.sending = 1;
+            b.sending = true;
             b.len = fs;
-            session()->batch.emplace_back(b);
-            ++session()->numbatchdl;
+            session()->batch().entry.emplace_back(b);
             bout.nl(2);
             bout << "File added to batch queue.\r\n";
-            bout << "Batch: Files - " << session()->batch.size()
-                 << "  Time - " << ctim(batchtime) << "\r\n\n";
+            bout << "Batch: Files - " << session()->batch().entry.size()
+                 << "  Time - " << ctim(session()->batch().dl_time_in_secs()) << "\r\n\n";
             *sent = false;
             *abort = false;
           }
@@ -595,7 +593,7 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
   break;
   case WWIV_INTERNAL_PROT_BATCH:
     if (dn != -1) {
-      if (session()->batch.size() >= session()->max_batch) {
+      if (session()->batch().entry.size() >= session()->max_batch) {
         bout.nl();
         bout << "No room left in batch queue.\r\n\n";
         *received = 0;
@@ -605,12 +603,12 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
         strcpy(b.filename, sfn);
         b.dir = static_cast<int16_t>(dn);
         b.time = 0;
-        b.sending = 0;
+        b.sending = false;
         b.len = 0;
-        session()->batch.emplace_back(b);
+        session()->batch().entry.emplace_back(b);
         bout.nl();
         bout << "File added to batch queue.\r\n\n";
-        bout << "Batch upload: files - " << (session()->batch.size() - session()->numbatchdl) << "\r\n\n";
+        bout << "Batch upload: files - " << session()->batch().numbatchul() << "\r\n\n";
       }
     } else {
       bout.nl();

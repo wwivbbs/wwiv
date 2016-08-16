@@ -273,7 +273,7 @@ void GoodBye() {
   int cycle;
   int ch;
 
-  if (session()->numbatchdl != 0) {
+  if (session()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
     if (noyes()) {
@@ -730,7 +730,7 @@ void ClearQScan() {
 }
 
 void FastGoodBye() {
-  if (session()->numbatchdl != 0) {
+  if (session()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
     if (noyes()) {

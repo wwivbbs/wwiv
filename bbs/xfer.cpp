@@ -108,7 +108,7 @@ unsigned long bytes_to_k(unsigned long lBytes) {
 }
 
 int check_batch_queue(const char *file_name) {
-  for (const auto& b : session()->batch) {
+  for (const auto& b : session()->batch().entry) {
     if (IsEquals(file_name, b.filename)) {
       return b.sending ? 1 : -1;
     }

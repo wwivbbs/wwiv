@@ -271,7 +271,7 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
     return 0;
   }
 
-  if (session()->batch.size() >= session()->max_batch) {
+  if (session()->batch().entry.size() >= session()->max_batch) {
     bout.GotoXY(1, session()->user()->GetScreenLines() - 1);
     bout << "No room left in batch queue.\r\n";
     pausescr();
@@ -283,7 +283,7 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
     } else {
       t = 0.0;
     }
-    if ((nsl() <= (batchtime + t)) && (!so())) {
+    if ((nsl() <= (session()->batch().dl_time_in_secs() + t)) && (!so())) {
       bout.GotoXY(1, session()->user()->GetScreenLines() - 1);
       bout << "Not enough time left in queue.\r\n";
       pausescr();
@@ -293,15 +293,13 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
         bout << "Can't add temporary file to batch queue.\r\n";
         pausescr();
       } else {
-        batchtime += static_cast<float>(t);
-        batchrec b;
+        batchrec b{};
         strcpy(b.filename, file_name);
         b.dir = static_cast<int16_t>(dn);
         b.time = static_cast<float>(t);
-        b.sending = 1;
+        b.sending = true;
         b.len = fs;
-        session()->batch.emplace_back(b);
-        ++session()->numbatchdl;
+        session()->batch().entry.emplace_back(b);
         return 1;
       }
     }
@@ -1612,7 +1610,7 @@ static int move_filename(const char *file_name, int dn) {
           }
         }
 
-        if (session()->batch.size() > 1) {
+        if (session()->batch().entry.size() > 1) {
           bout << "|#5Move all tagged files? ";
           if (yesno()) {
             bulk_move = 1;
@@ -1739,9 +1737,9 @@ void do_batch_sysop_command(int mode, const char *file_name) {
   int save_curdir = session()->current_user_dir_num();
   bout.cls();
 
-  if (session()->numbatchdl) {
+  if (session()->batch().numbatchdl() > 0) {
     bool done = false;
-    for (auto it = begin(session()->batch); it != end(session()->batch) && !done; it++) {
+    for (auto it = begin(session()->batch().entry); it != end(session()->batch().entry) && !done; it++) {
       const auto& b = *it;
       if (b.sending) {
         switch (mode) {
@@ -2013,7 +2011,7 @@ int lp_try_to_download(const char *file_mask, int dn) {
 void download_plus(const char *file_name) {
   char szFileName[MAX_PATH];
 
-  if (session()->numbatchdl != 0) {
+  if (session()->batch().numbatchdl() != 0) {
     bout.nl();
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
     if (noyes()) {

@@ -928,7 +928,7 @@ void WSession::InitializeBBS() {
   CdHome();
 
   check_phonenum(); // dupphone addition
-  batch.clear();
+  batch().clear();
 
   XINIT_PRINTF("Reading User Information.");
   ReadCurrentUser(1);

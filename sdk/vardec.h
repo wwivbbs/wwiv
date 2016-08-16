@@ -709,7 +709,7 @@ struct userconfrec {
 
 
 struct batchrec {
-  char sending;
+  bool sending;
 
   char filename[13];
 

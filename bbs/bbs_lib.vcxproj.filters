@@ -663,6 +663,9 @@
     <ClInclude Include="inetmsg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="srsend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

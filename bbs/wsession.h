@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/batch.h"
 #include "bbs/runnable.h"
 #include "bbs/remote_io.h"
 #include "sdk/status.h"
@@ -407,8 +408,7 @@ private:
               tagptr = 0,
               titled = 0,
               topdata = 0,
-              using_modem = 0,
-              numbatchdl = 0;
+              using_modem = 0;
   unsigned int screenlinest = 0;
 
   std::string internetPopDomain;
@@ -441,6 +441,10 @@ private:
   newuser_bwcolors[10];       // skip for now
 
 public:
+  // Public subsystems
+  Batch batch_;
+  Batch& batch() { return batch_; }
+
   // public data structures
   std::vector<editorrec> editors;
   std::vector<chainfilerec> chains;
@@ -455,7 +459,6 @@ public:
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;
   std::vector<directoryrec> directories;
-  std::vector<batchrec> batch;
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
   std::vector<eventsrec> events;

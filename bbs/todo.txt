@@ -22,6 +22,3 @@
 * cleanup menu system.
 * internet email assumes "FILEnet" as a network, this needs to be fixes. (search for getnetnum("FILEnet"))
 
-current
-* delete numbatchdl
-* delete batchtime

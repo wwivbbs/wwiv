@@ -22,6 +22,17 @@
 #include <vector>
 #include "sdk/vardec.h"
 
+class Batch {
+public:
+  bool clear() { entry.clear(); return true; }
+  // deletes an entry by position;
+  bool delbatch(size_t pos);
+  long dl_time_in_secs() const;
+  size_t numbatchdl() const { size_t r = 0;  for (const auto& e : entry) { if (e.sending) r++; } return r; }
+  size_t numbatchul() const { size_t r = 0;  for (const auto& e : entry) { if (!e.sending) r++; } return r; }
+  std::vector<batchrec> entry;
+};
+
 void upload(int dn);
 std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it);
 void delbatch(int nBatchEntryNum);

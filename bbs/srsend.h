@@ -26,6 +26,6 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
 bool okstart(bool *use_crc, bool *abort);
 void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_crc, bool use_ymodem,
                   bool use_ymodemBatch);
-void zmodem_send(const char *file_name, bool *sent, double *percent);
+void zmodem_send(const std::string& file_name, bool *sent, double *percent);
 
 #endif  // __INCLUDED_BBS_SRSEND_H__

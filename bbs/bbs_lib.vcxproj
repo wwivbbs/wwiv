@@ -164,6 +164,7 @@
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
     <ClInclude Include="sr.h" />
+    <ClInclude Include="srsend.h" />
     <ClInclude Include="ssh.h" />
     <ClInclude Include="stdio_local_io.h" />
     <ClInclude Include="stuffin.h" />

@@ -377,7 +377,7 @@ void tag_it() {
   char s[255], s1[255], s2[81], s3[400];
   long fs = 0;
 
-  if (session()->batch.size() >= session()->max_batch) {
+  if (session()->batch().entry.size() >= session()->max_batch) {
     bout << "|#6No room left in batch queue.";
     getkey();
     return;
@@ -419,7 +419,7 @@ void tag_it() {
         bout << "|#6" << filelist[i].u.filename << " is already in the batch queue.\r\n";
         bad = true;
       }
-      if (session()->batch.size() >= session()->max_batch) {
+      if (session()->batch().entry.size() >= session()->max_batch) {
         bout << "|#6Batch file limit of " << session()->max_batch << " has been reached.\r\n";
         bad = true;
       }
@@ -451,20 +451,19 @@ void tag_it() {
       }
       if (!bad) {
         t = 12.656 / static_cast<double>(modem_speed) * static_cast<double>(fs);
-        if (nsl() <= (batchtime + t)) {
+        if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
           bout << "|#6Not enough time left in queue for " << filelist[i].u.filename << ".\r\n";
           bad = true;
         }
       }
       if (!bad) {
-        batchtime += static_cast<float>(t);
         batchrec b{};
         strcpy(b.filename, filelist[i].u.filename);
         b.dir = filelist[i].directory;
         b.time = (float) t;
-        b.sending = 1;
+        b.sending = true;
         b.len = fs;
-        session()->batch.emplace_back(b);
+        session()->batch().entry.emplace_back(b);
         bout << "|#1" << filelist[i].u.filename << " added to batch queue.\r\n";
       }
     } else {
@@ -686,7 +685,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
     t = (12.656) / ((double)(modem_speed)) * ((double)(fs));
   }
 
-  if (nsl() <= (batchtime + t)) {
+  if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
     bout << "|#6 Insufficient time remaining... press any key.";
     getkey();
   } else {
@@ -728,19 +727,18 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
             return 0;
           }
         }
-        batchtime += static_cast<float>(t);
         batchrec b{};
         strcpy(b.filename, file_name);
         b.dir = static_cast<int16_t>(dn);
         b.time = static_cast<float>(t);
-        b.sending = 1;
+        b.sending = true;
         b.len = fs;
         bout << "\r";
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
-                     session()->batch.size() + 1, b.filename, b.len,
+                     session()->batch().entry.size() + 1, b.filename, b.len,
                      ctim(b.time),
                      session()->directories[b.dir].name);
-        session()->batch.emplace_back(b);
+        session()->batch().entry.emplace_back(b);
         bout << "\r";
         bout << "|#5    Continue search? ";
         ch = onek_ncr("YN\r");
@@ -838,8 +836,8 @@ void download() {
       bout <<
                          "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
     }
-    if (i < size_int(session()->batch)) {
-      const auto& b = session()->batch[i];
+    if (i < size_int(session()->batch().entry)) {
+      const auto& b = session()->batch().entry[i];
       if (!returning && b.sending) {
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
           i + 1, b.filename,
@@ -851,7 +849,7 @@ void download() {
         count = 0;
         ok = true;
         bout.backline();
-        bout.bprintf("|#2%3d ", session()->batch.size() + 1);
+        bout.bprintf("|#2%3d ", session()->batch().entry.size() + 1);
         bout.Color(1);
         bool onl = newline;
         newline = false;
@@ -874,7 +872,7 @@ void download() {
               }
             }
             bout.backline();
-            sprintf(s1, "%3d %s", session()->batch.size() + 1, s);
+            sprintf(s1, "%3d %s", session()->batch().entry.size() + 1, s);
             bout.Color(1);
             bout << s1;
             foundany = 0;
@@ -923,9 +921,9 @@ void download() {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !hangup && (i <= size_int(session()->batch)));
+  } while (!done && !hangup && (i <= size_int(session()->batch().entry)));
 
-  if (!session()->numbatchdl) {
+  if (!session()->batch().numbatchdl()) {
     return;
   }
 
@@ -936,15 +934,15 @@ void download() {
     return;
   }
   bout.nl();
-  bout << "|#1Files in Batch Queue   : |#2" << session()->batch.size() << wwiv::endl;
-  bout << "|#1Estimated Download Time: |#2" << ctim2(std::lround(batchtime)) << wwiv::endl;
+  bout << "|#1Files in Batch Queue   : |#2" << session()->batch().entry.size() << wwiv::endl;
+  bout << "|#1Estimated Download Time: |#2" << ctim2(session()->batch().dl_time_in_secs()) << wwiv::endl;
   bout.nl();
   rtn = batchdl(3);
   if (rtn) {
     return;
   }
   bout.nl();
-  if (session()->batch.empty()) {
+  if (session()->batch().entry.empty()) {
     return;
   }
   bout << "|#5Hang up after transfer? ";
@@ -1251,8 +1249,8 @@ void removenotthere() {
 }
 
 int find_batch_queue(const char *file_name) {
-  for (size_t i = 0; i < session()->batch.size(); i++) {
-    if (IsEquals(file_name, session()->batch[i].filename)) {
+  for (size_t i = 0; i < session()->batch().entry.size(); i++) {
+    if (IsEquals(file_name, session()->batch().entry[i].filename)) {
       return i;
     }
   }

@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <chrono>
 #include <cmath>
+#include <string>
 
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
@@ -29,6 +30,7 @@
 #include "core/os.h"
 #include "core/strings.h"
 
+using std::string;
 using std::chrono::seconds;
 using namespace wwiv::os;
 using namespace wwiv::strings;
@@ -288,22 +290,21 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
 }
 
 
-void zmodem_send(const char *file_name, bool *sent, double *percent) {
+void zmodem_send(const string& file_name, bool *sent, double *percent) {
   *sent = false;
   *percent = 0.0;
 
-  char *pszWorkingFileName = strdup(file_name);
-  StringRemoveWhitespace(pszWorkingFileName);
+  string s = file_name;
+  StringRemoveWhitespace(&s);
 
   bool bOldBinaryMode = session()->remoteIO()->binary_mode();
   session()->remoteIO()->set_binary_mode(true);
-  bool bResult = NewZModemSendFile(pszWorkingFileName);
+  bool bResult = NewZModemSendFile(s.c_str());
   session()->remoteIO()->set_binary_mode(bOldBinaryMode);
 
   if (bResult) {
     *sent = true;
     *percent = 100.0;
   }
-  free(pszWorkingFileName);
 }
 

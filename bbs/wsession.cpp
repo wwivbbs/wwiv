@@ -107,7 +107,8 @@ WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app),
     local_io_(localIO),
     m_nOkLevel(exitLevelOK),
     m_nErrorLevel(exitLevelNotOK),
-    m_nBbsShutdownStatus(shutdownNone) {
+    m_nBbsShutdownStatus(shutdownNone),
+    batch_() {
   ::bout.SetLocalIO(localIO);
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));

@@ -926,9 +926,7 @@ void logon() {
   } else {
     nscandate = session()->user()->GetLastOnDateNumber();
   }
-  batchtime = 0.0;
-  session()->numbatchdl = 0;
-  session()->batch.clear();
+  session()->batch().clear();
 
   CheckUserForVotingBooth();
 
@@ -1114,13 +1112,12 @@ void logoff() {
   write_qscn(session()->usernum, qsc, false);
   remove_from_temp("*.*", syscfgovr.tempdir, false);
   remove_from_temp("*.*", syscfgovr.batchdir, false);
-  if (!session()->batch.empty() && (size_int(session()->batch) != session()->numbatchdl)) {
-    for (const auto& b : session()->batch) {
+  if (!session()->batch().entry.empty() && (session()->batch().entry.size() != session()->batch().numbatchdl())) {
+    for (const auto& b : session()->batch().entry) {
       if (!b.sending) { didnt_upload(b); }
     }
   }
-  session()->batch.clear();
-  session()->numbatchdl = 0;
+  session()->batch().clear();
 }
 
 void logon_guest() {
