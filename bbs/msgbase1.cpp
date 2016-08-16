@@ -241,7 +241,7 @@ void post() {
       }
     }
     if (dm) {
-      ssm(1, 0, "Unvalidated net posts on %s.", session()->current_sub().name);
+      ssm(1, 0) << "Unvalidated net posts on " << session()->current_sub().name << ".";
     }
   }
   if (session()->GetNumMessagesInCurrentMessageArea() >=

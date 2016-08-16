@@ -668,7 +668,7 @@ static void modify_mailbox() {
         string entered_address = Input1(session()->user()->GetEmailAddress(), 75, true, InputMode::MIXED);
         if (check_inet_addr(entered_address)) {
           session()->user()->SetEmailAddress(entered_address.c_str());
-          write_inet_addr(entered_address.c_str(), session()->usernum);
+          write_inet_addr(entered_address, session()->usernum);
           session()->user()->SetForwardNetNumber(session()->net_num());
           session()->user()->SetForwardToInternet();
           bout << "\r\nSaved.\r\n\n";
@@ -800,7 +800,7 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       if (!internetAddress.empty()) {
         if (check_inet_addr(internetAddress)) {
           session()->user()->SetEmailAddress(internetAddress.c_str());
-          write_inet_addr(internetAddress.c_str(), session()->usernum);
+          write_inet_addr(internetAddress, session()->usernum);
         } else {
           bout << "\r\n|#6Invalid address format.\r\n\n";
           pausescr();

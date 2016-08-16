@@ -324,7 +324,7 @@ static void LeaveBadPasswordFeedback(int ans) {
       email(irt, 1, 0, true, 0, true);
       session()->SetCarbonCopyEnabled(bSaveAllowCC);
       if (session()->user()->GetNumEmailSent() > 0) {
-        ssm(1, 0, "Check your mailbox.  Someone forgot their password again!");
+        ssm(1, 0) << "Check your mailbox.  Someone forgot their password again!";
       }
     }
   }
@@ -719,8 +719,7 @@ static void CheckAndUpdateUserInfo() {
         session()->user()->SetDsl(syscfg.newuserdsl);
         session()->user()->SetExempt(0);
         const string username_num = session()->names()->UserName(session()->usernum);
-        ssm(1, 0, "%s%s", username_num.c_str(),
-            "'s registration has expired.");
+        ssm(1, 0) << username_num << "'s registration has expired.";
         session()->WriteCurrentUser();
         session()->ResetEffectiveSl();
         changedsl();
@@ -1147,11 +1146,10 @@ void logon_guest() {
 
   if (count >= 3) {
     printfile(REJECT_NOEXT);
-    ssm(1, 0, "Guest Account failed to enter name and purpose");
+    ssm(1, 0) << "Guest Account failed to enter name and purpose";
     hangup = true;
   } else {
-    ssm(1, 0, "Guest Account accessed by %s on %s for", userName.c_str(), times());
-    ssm(1, 0, reason.c_str());
+    ssm(1, 0) << "Guest Account accessed by " << userName << " on " << times() << " for" << reason;
   }
 }
 

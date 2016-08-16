@@ -11,14 +11,16 @@
 /*                                                                        */
 /*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
 /*    software  distributed  under  the  License  is  distributed on an   */
-/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    "AS IS"  BASIS, WITHOUT  WAxRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/shortmsg.h"
+
 #include <cstdarg>
 #include <string>
-#include "core//strings.h"
+#include "core/strings.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -27,10 +29,6 @@
 using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
-
-// Local function prototypes
-void SendLocalShortMessage(unsigned int nUserNum, char *messageText);
-void SendRemoteShortMessage(unsigned int nUserNum, unsigned int nSystemNum, char *messageText);
 
 /*
  * Handles reading short messages. This is also where PackScan file requests
@@ -90,7 +88,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   }
 }
 
-void SendLocalShortMessage(unsigned int nUserNum, char *messageText) {
+static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText) {
   User user;
   session()->users()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
@@ -127,7 +125,7 @@ void SendLocalShortMessage(unsigned int nUserNum, char *messageText) {
   }
 }
 
-void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *messageText) {
+static void SendRemoteShortMessage(int nUserNum, int nSystemNum, const char *messageText) {
   net_header_rec nh;
   nh.tosys = static_cast<uint16_t>(nSystemNum);
   nh.touser = static_cast<uint16_t>(nUserNum);
@@ -137,10 +135,11 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *messageText) {
   nh.minor_type = 0;
   nh.list_len = 0;
   nh.daten = static_cast<uint32_t>(time(nullptr));
-  if (strlen(messageText) > 80) {
-    messageText[80] = '\0';
+  string msg = messageText;
+  if (msg.size() > 79) {
+    msg.resize(79);
   }
-  nh.length = strlen(messageText);
+  nh.length = msg.size();
   nh.method = 0;
   const string packet_filename = StringPrintf("%sp0%s", 
     session()->network_directory().c_str(),
@@ -149,30 +148,21 @@ void SendRemoteShortMessage(int nUserNum, int nSystemNum, char *messageText) {
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::seekEnd);
   file.Write(&nh, sizeof(net_header_rec));
-  file.Write(messageText, nh.length);
+  file.Write(msg.c_str(), nh.length);
   file.Close();
 }
 
-/*
- * Sends a short message to a user. Takes user number and system number
- * and short message as params. Network number should be set before calling
- * this function.
- */
-void ssm(int nUserNum, int nSystemNum, const char *format, ...) {
-  if (nUserNum == 65535 || nUserNum == 0 || nSystemNum == 32767) {
+ssm::~ssm() {
+  if (un_ == 65535 || un_== 0 || sn_== 32767) {
     return;
   }
 
-  va_list ap;
-  char szMessageText[2048];
+  const auto& s = stream_.str();
 
-  va_start(ap, format);
-  vsnprintf(szMessageText, sizeof(szMessageText), format, ap);
-  va_end(ap);
-
-  if (nSystemNum == 0) {
-    SendLocalShortMessage(nUserNum, szMessageText);
-  } else if (net_sysnum && valid_system(nSystemNum)) {
-    SendRemoteShortMessage(nUserNum, nSystemNum, szMessageText);
+  if (sn_ == 0) {
+    SendLocalShortMessage(un_, s.c_str());
+  } else {
+    SendRemoteShortMessage(un_, sn_, s.c_str());
   }
 }
+

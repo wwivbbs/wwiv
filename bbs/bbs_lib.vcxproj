@@ -127,6 +127,7 @@
     <ClInclude Include="extract.h" />
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
+    <ClInclude Include="inetmsg.h" />
     <ClInclude Include="inmsg.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="instmsg.h" />

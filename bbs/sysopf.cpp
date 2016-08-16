@@ -916,10 +916,10 @@ void beginday(bool displayStatus) {
   long fk = freek1(syscfg.datadir);
 
   if (fk < 512) {
-    ssm(1, 0, "Only %dk free in data directory.", fk);
+    ssm(1, 0) << "Only " << fk << "k free in data directory.";
   }
   if (!syscfg.closedsystem && nus < 15) {
-    ssm(1, 0, "Only %d new user slots left.", nus);
+    ssm(1, 0) << "Only " << nus << " new user slots left.";
   }
   if (!syscfg.beginday_cmd.empty()) {
     const std::string commandLine = stuff_in(syscfg.beginday_cmd, create_chain_file(), "", "", "", "");

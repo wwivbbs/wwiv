@@ -18,9 +18,27 @@
 #ifndef __INCLUDED_BBS_SHORTMSG_H__
 #define __INCLUDED_BBS_SHORTMSG_H__
 
+#include <sstream>
+
 #include "sdk/user.h"
 
+class ssm {
+public:
+  ssm(int un, int sn): un_(un), sn_(sn) {}
+  ~ssm();
+
+  template <typename T>
+  ssm& operator<<(T const & value) {
+    stream_ << value;
+    return *this;
+  }
+
+private:
+  std::ostringstream stream_;
+  int un_;
+  int sn_;
+};
+
 void rsm(int nUserNum, wwiv::sdk::User* pUser, bool bAskToSaveMsgs);
-void ssm(int nUserNum, int nSystemNum, const char *format, ...);
 
 #endif  // __INCLUDED_BBS_SHORTMSG_H__

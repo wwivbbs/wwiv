@@ -142,9 +142,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               const string username_num = session()->names()->UserName(session()->usernum);
-              ssm(u.ownerusr, 0, "%s downloaded '%s' on %s",
-                  username_num.c_str(),
-                  u.filename, date());
+              ssm(u.ownerusr, 0) << username_num << " downloaded '" << u.filename << "' on " << date();
             }
           }
         }

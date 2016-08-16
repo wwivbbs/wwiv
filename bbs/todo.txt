@@ -11,7 +11,6 @@
   is used and the rest is loaded/saved as-is by the bbs code.
 * remove support for registration numbers in the wwivnet data binary files.
 * delete num_events
-* make ssm take a string (use StringPrintf as needed)
 * add tests for usermanager and user (in SDK)
 * mmkey is a mess.  mostly just odc is used. confutil.cpp sets the others.
 * cleanup session()->tagging and session()->titled

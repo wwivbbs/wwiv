@@ -1143,7 +1143,7 @@ void newuser() {
   } else if (session()->usernum == 1) {
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
-    ssm(1, 0, "Thank you for installing WWIV! - The WWIV Development Team.");
+    ssm(1, 0) << "Thank you for installing WWIV! - The WWIV Development Team.";
     User* user = session()->user();
     user->SetSl(255);
     user->SetDsl(255);
@@ -1151,7 +1151,7 @@ void newuser() {
   }
 
   WriteNewUserInfoToSysopLog();
-  ssm(1, 0, "You have a new user:  %s #%ld", session()->user()->GetName(), session()->usernum);
+  ssm(1, 0) << "You have a new user: " << session()->user()->GetName() << " #%" << session()->usernum;
   session()->UpdateTopScreen();
   VerifyNewUserPassword();
   SendNewUserFeedbackIfRequired();
@@ -1265,16 +1265,15 @@ bool check_zip(const char *pszZipCode, int mode) {
 bool check_dupes(const char *pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);
   if (user_number && user_number != session()->usernum) {
-    char szBuffer[255];
-    sprintf(szBuffer, "    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
-    sysoplog(szBuffer, false);
-    ssm(1, 0, szBuffer);
+    string s = StringPrintf("    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
+    sysoplog(s, false);
+    ssm(1, 0) << s;
 
     User user;
     session()->users()->ReadUser(&user, user_number);
-    sprintf(szBuffer, "      also entered by %s", user.GetName());
-    sysoplog(szBuffer, false);
-    ssm(1, 0, szBuffer);
+    s = StringPrintf("      also entered by %s", user.GetName());
+    sysoplog(s, false);
+    ssm(1, 0) << s;
 
     return true;
   }

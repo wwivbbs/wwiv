@@ -211,7 +211,8 @@ void asv() {
         session()->user()->SetNote(s);
         session()->user()->SetName(s);
         properize(s);
-        ssm(1, 0, "%s validated as %s 1@%d on %s.", s, session()->network_name(), inode, fulldate());
+        ssm(1, 0) << s << " validated as " << session()->network_name()
+          << " 1@" << inode << " on " << fulldate() << ".";
         sprintf(s1, "* Validated as %s 1@%d", session()->network_name(), inode);
         sysoplog(s1);
         sysoplog(s);
@@ -290,7 +291,7 @@ void asv() {
       session()->user()->SetNote(s1);
       strcpy(s, session()->user()->GetName());
       properize(s);
-      ssm(1, 0, "%s validated as a WWIV SysOp on %s.", s, fulldate());
+      ssm(1, 0) << s << " validated as a WWIV SysOp on " << fulldate() << ".";
       sysoplog("* Validated as a WWIV SysOp");
       session()->user()->SetStatusFlag(User::expert);
       set_autoval(session()->advasv.nonreg_wwiv);
@@ -308,7 +309,7 @@ void asv() {
       session()->user()->SetNote(s1);
       strcpy(s, session()->user()->GetName());
       properize(s);
-      ssm(1, 0, "%s validated as a Non-WWIV SysOp on %s.", s, fulldate());
+      ssm(1, 0) << s << " validated as a Non-WWIV SysOp on " << fulldate() << ".";
       sysoplog("* Validation of a Non-WWIV SysOp");
       session()->user()->SetExempt(0);
       set_autoval(session()->advasv.non_wwiv);
@@ -474,7 +475,7 @@ int printasv(const string& filename, int num, bool abort) {
   }
   if (!found) {
     bout << "\r\n%s\r\nPlease report this to the SysOp in Feedback.\r\n";
-    ssm(1, 0, "Subfile #%d not found in %s.\r\n", num, szFileName);
+    ssm(1, 0) << "Subfile #" << num << " not found in " << szFileName << ".";
     return -1;
   }
   return 0;

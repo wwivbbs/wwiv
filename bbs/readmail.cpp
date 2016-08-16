@@ -726,7 +726,7 @@ void readmail(int mode) {
               strcat(s, " read your mail on ");
               strcat(s, fulldate());
               if (!(m.status & status_source_verified)) {
-                ssm(m.fromuser, m.fromsys, s);
+                ssm(m.fromuser, m.fromsys) << s;
               }
               read_same_email(mloc, mw, curmail, &m, 1, 0);
               ++curmail;
@@ -888,7 +888,7 @@ void readmail(int mode) {
         message += " read your mail on ";
         message += fulldate();
         if (!(m.status & status_source_verified) && nn != 255) {
-          ssm(m.fromuser, m.fromsys, message.c_str());
+          ssm(m.fromuser, m.fromsys) << message;
         }
       }
       case 'Z':
@@ -1017,7 +1017,7 @@ void readmail(int mode) {
                 sprintf(s, "%s %s %s", fwd_name.c_str(),
                         "forwarded your mail to", s1);
                 if (!(m.status & status_source_verified)) {
-                  ssm(m.fromuser, m.fromsys, s);
+                  ssm(m.fromuser, m.fromsys) << s;
                 }
                 set_net_num(i);
                 sprintf(s, "Forwarded mail to %s", s1);
@@ -1124,7 +1124,7 @@ void readmail(int mode) {
             message += " read your mail on ";
             message += fulldate();
             if (!(m.status & status_source_verified)) {
-              ssm(m.fromuser, m.fromsys, message.c_str());
+              ssm(m.fromuser, m.fromsys) << message;
             }
             read_same_email(mloc, mw, curmail, &m, 1, 0);
             ++curmail;

@@ -660,6 +660,9 @@
     <ClInclude Include="stdio_local_io.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inetmsg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

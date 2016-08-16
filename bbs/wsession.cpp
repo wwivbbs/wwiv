@@ -45,6 +45,7 @@
 #include "bbs/external_edit.h"
 #include "bbs/fcns.h"
 #include "bbs/input.h"
+#include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"

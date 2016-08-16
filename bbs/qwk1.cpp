@@ -921,8 +921,7 @@ void qwk_post_text(char *text, char *title, int sub) {
         }
       }
       if (dm) {
-        sprintf(s, "Unvalidated net posts on %s.", session()->current_sub().name);
-        ssm(1, 0, s);
+        ssm(1, 0) << "Unvalidated net posts on " << session()->current_sub().name << ".";
       }
     }
 

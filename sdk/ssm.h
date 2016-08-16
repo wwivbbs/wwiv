@@ -29,7 +29,6 @@
 namespace wwiv {
 namespace sdk {
 
-
 class SSM {
 public:
   SSM(const wwiv::sdk::Config& config, wwiv::sdk::UserManager& user_manager);

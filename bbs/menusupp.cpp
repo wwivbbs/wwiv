@@ -38,6 +38,7 @@
 #include "bbs/events.h"
 #include "bbs/external_edit.h"
 #include "bbs/input.h"
+#include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
 #include "bbs/listplus.h"
