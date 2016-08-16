@@ -29,6 +29,7 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"
+#include "bbs/inetmsg.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
 #include "bbs/msgbase1.h"
@@ -665,7 +666,7 @@ static void modify_mailbox() {
       if (yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
         string entered_address = Input1(session()->user()->GetEmailAddress(), 75, true, InputMode::MIXED);
-        if (check_inet_addr(entered_address.c_str())) {
+        if (check_inet_addr(entered_address)) {
           session()->user()->SetEmailAddress(entered_address.c_str());
           write_inet_addr(entered_address.c_str(), session()->usernum);
           session()->user()->SetForwardNetNumber(session()->net_num());
@@ -797,7 +798,7 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       bout << "|#9Enter your Internet mailing address.\r\n|#7:";
       string internetAddress = inputl(65, true);
       if (!internetAddress.empty()) {
-        if (check_inet_addr(internetAddress.c_str())) {
+        if (check_inet_addr(internetAddress)) {
           session()->user()->SetEmailAddress(internetAddress.c_str());
           write_inet_addr(internetAddress.c_str(), session()->usernum);
         } else {

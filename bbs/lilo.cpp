@@ -29,6 +29,7 @@
 #include "bbs/events.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
+#include "bbs/inetmsg.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/defaults.h"

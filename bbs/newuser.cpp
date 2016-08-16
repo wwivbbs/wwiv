@@ -38,6 +38,7 @@
 #include "bbs/dropfile.h"
 #include "bbs/message_file.h"
 #include "bbs/inmsg.h"
+#include "bbs/inetmsg.h"
 #include "bbs/input.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"

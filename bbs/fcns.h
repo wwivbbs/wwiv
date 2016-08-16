@@ -79,14 +79,6 @@ bool fill_sec(int sn);
 void HopSub();
 void HopDir();
 
-// File: inetmsg.cpp
-void get_user_ppp_addr();
-void send_inet_email();
-bool check_inet_addr(const char *inetaddr);
-void read_inet_addr(std::string& internet_address, int user_number);
-void write_inet_addr(const char *internet_address, int user_number);
-void send_inst_sysstr(int whichinst, const char *send_string);
-
 // File: lilo.cpp
 bool IsPhoneNumberUSAFormat(wwiv::sdk::User* pUser);
 void getuser();

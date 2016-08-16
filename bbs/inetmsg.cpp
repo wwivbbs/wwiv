@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/inetmsg.h"
 
 #include "bbs/bbsovl3.h"
 #include "bbs/bbs.h"
@@ -24,11 +25,13 @@
 #include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 
@@ -110,7 +113,7 @@ void send_inet_email() {
   bout.nl(2);
   bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
   session()->net_email_name = inputl(75, true);
-  if (check_inet_addr(session()->net_email_name.c_str())) {
+  if (check_inet_addr(session()->net_email_name)) {
     unsigned short user_number = 0;
     unsigned short system_number = 32767;
     irt[0] = 0;
@@ -129,19 +132,8 @@ void send_inet_email() {
   }
 }
 
-bool check_inet_addr(const char *inetaddr) {
-  if (!inetaddr || !*inetaddr) {
-    return false;
-  }
-
-  char szBuffer[80];
-
-  strcpy(szBuffer, inetaddr);
-  char *p = strchr(szBuffer, '@');
-  if (p == nullptr || strchr(p, '.') == nullptr) {
-    return false;
-  }
-  return true;
+bool check_inet_addr(const std::string& a) {
+  return !a.empty() && (contains(a, '@') && contains(a, '.'));
 }
 
 void read_inet_addr(std::string& internet_address, int user_number) {
@@ -178,7 +170,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
   }
 }
 
-void write_inet_addr(const char *internet_address, int user_number) {
+void write_inet_addr(const std::string& internet_address, int user_number) {
   if (!user_number) {
     return; /*nullptr;*/
   }
@@ -187,7 +179,7 @@ void write_inet_addr(const char *internet_address, int user_number) {
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(user_number);
   inetAddrFile.Seek(lCurPos, File::seekBegin);
-  inetAddrFile.Write(internet_address, 80L);
+  inetAddrFile.Write(internet_address.c_str(), 80L);
   inetAddrFile.Close();
   char szDefaultUserAddr[255];
   sprintf(szDefaultUserAddr, "USER%d", user_number);

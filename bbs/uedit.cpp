@@ -25,6 +25,7 @@
 #include "bbs/input.h"
 #include "bbs/newuser.h"
 #include "bbs/bbs.h"
+#include "bbs/inetmsg.h"
 #include "bbs/email.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"

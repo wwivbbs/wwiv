@@ -25,6 +25,7 @@
 #include "bbs/attach.h"
 #include "bbs/instmsg.h"
 #include "bbs/inmsg.h"
+#include "bbs/inetmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/message_file.h"
@@ -83,7 +84,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       }
       if (!userRecord.GetForwardUserNumber()) {
         read_inet_addr(session()->net_email_name, *pUserNumber);
-        if (!check_inet_addr(session()->net_email_name.c_str())) {
+        if (!check_inet_addr(session()->net_email_name)) {
           return false;
         }
       }
