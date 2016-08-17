@@ -336,9 +336,9 @@ const char *charstr(string::size_type length, char fill) {
   return result.c_str();
 }
 
-
+// TODO(rushfan): Delete RemoveWhitespace, and keep this one
 void StringRemoveWhitespace(string* str) {
-  str->erase(std::remove_if(str->begin(), str->end(), std::isspace), str->end());
+  str->erase(std::remove_if(str->begin(), str->end(), isspace), str->end());
 }
 
 char *StringRemoveWhitespace(char *str) {
