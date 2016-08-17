@@ -31,12 +31,8 @@
 
 using std::string;
 
+// From zmwwiv.cpp
 bool NewZModemReceiveFile(const char *file_name);
-
-#if (_MSC_VER >= 1900)
-#define timezone _timezone
-#endif  // MSV_VER && !timezone
-
 
 char modemkey(int *tout) {
   if (bkbhitraw()) {

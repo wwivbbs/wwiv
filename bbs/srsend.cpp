@@ -41,7 +41,6 @@ bool NewZModemSendFile(const char *file_name);
 #define timezone _timezone
 #endif  // MSV_VER && !timezone
 
-
 void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   int nBlockSize = 0;
 
@@ -93,7 +92,6 @@ void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   dump();
 }
 
-
 char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
             int *terr, bool *abort) {
   char b[1025], szTempBuffer[20];
@@ -117,8 +115,8 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
     nb = 128;
     strcpy(b, stripfn(file_name));
     sprintf(szTempBuffer, "%ld ", pos);
-    // We neede dthis cast to (long) to compile with XCode 1.5 on OS X
-    sprintf(szFileDate, "%ld", (long)file.last_write_time() - (long)timezone);
+    // We needed this cast to (long) to compile with XCode 1.5 on OS X
+    sprintf(szFileDate, "%ld", static_cast<long>(file.last_write_time() - timezone));
 
     strcat(szTempBuffer, szFileDate);
     strcpy(&(b[strlen(b) + 1]), szTempBuffer);
@@ -156,7 +154,6 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
   return CU;
 }
 
-
 bool okstart(bool *use_crc, bool *abort) {
   auto d = timer();
   bool ok = false;
@@ -182,11 +179,9 @@ bool okstart(bool *use_crc, bool *abort) {
   return ok;
 }
 
-
-int GetXYModemBlockSize(bool bBlockSize1K) {
+static int GetXYModemBlockSize(bool bBlockSize1K) {
   return (bBlockSize1K) ? 1024 : 128;
 }
-
 
 void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_crc, bool use_ymodem,
                   bool use_ymodemBatch) {
@@ -288,7 +283,6 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
   }
   free(pszWorkingFileName);
 }
-
 
 void zmodem_send(const string& file_name, bool *sent, double *percent) {
   *sent = false;
