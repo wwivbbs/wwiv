@@ -37,6 +37,7 @@
 
 #ifndef HAVE_OPENSSL
 
+#include <cstdint>
 #include <cstring>
 
 #include "md5.h"
@@ -258,33 +259,33 @@ void MD5_Final(unsigned char *result, MD5_CTX *ctx) {
   memset(&ctx->buffer[used], 0, available - 8);
 
   ctx->lo <<= 3;
-  ctx->buffer[56] = ctx->lo;
-  ctx->buffer[57] = ctx->lo >> 8;
-  ctx->buffer[58] = ctx->lo >> 16;
-  ctx->buffer[59] = ctx->lo >> 24;
-  ctx->buffer[60] = ctx->hi;
-  ctx->buffer[61] = ctx->hi >> 8;
-  ctx->buffer[62] = ctx->hi >> 16;
-  ctx->buffer[63] = ctx->hi >> 24;
+  ctx->buffer[56] = static_cast<uint8_t>(ctx->lo);
+  ctx->buffer[57] = static_cast<uint8_t>(ctx->lo >> 8);
+  ctx->buffer[58] = static_cast<uint8_t>(ctx->lo >> 16);
+  ctx->buffer[59] = static_cast<uint8_t>(ctx->lo >> 24);
+  ctx->buffer[60] = static_cast<uint8_t>(ctx->hi);
+  ctx->buffer[61] = static_cast<uint8_t>(ctx->hi >> 8);
+  ctx->buffer[62] = static_cast<uint8_t>(ctx->hi >> 16);
+  ctx->buffer[63] = static_cast<uint8_t>(ctx->hi >> 24);
 
   body(ctx, ctx->buffer, 64);
 
-  result[0] = ctx->a;
-  result[1] = ctx->a >> 8;
-  result[2] = ctx->a >> 16;
-  result[3] = ctx->a >> 24;
-  result[4] = ctx->b;
-  result[5] = ctx->b >> 8;
-  result[6] = ctx->b >> 16;
-  result[7] = ctx->b >> 24;
-  result[8] = ctx->c;
-  result[9] = ctx->c >> 8;
-  result[10] = ctx->c >> 16;
-  result[11] = ctx->c >> 24;
-  result[12] = ctx->d;
-  result[13] = ctx->d >> 8;
-  result[14] = ctx->d >> 16;
-  result[15] = ctx->d >> 24;
+  result[0] = static_cast<uint8_t>(ctx->a);
+  result[1] = static_cast<uint8_t>(ctx->a >> 8);
+  result[2] = static_cast<uint8_t>(ctx->a >> 16);
+  result[3] = static_cast<uint8_t>(ctx->a >> 24);
+  result[4] = static_cast<uint8_t>(ctx->b);
+  result[5] = static_cast<uint8_t>(ctx->b >> 8);
+  result[6] = static_cast<uint8_t>(ctx->b >> 16);
+  result[7] = static_cast<uint8_t>(ctx->b >> 24);
+  result[8] = static_cast<uint8_t>(ctx->c);
+  result[9] = static_cast<uint8_t>(ctx->c >> 8);
+  result[10] = static_cast<uint8_t>(ctx->c >> 16);
+  result[11] = static_cast<uint8_t>(ctx->c >> 24);
+  result[12] = static_cast<uint8_t>(ctx->d);
+  result[13] = static_cast<uint8_t>(ctx->d >> 8);
+  result[14] = static_cast<uint8_t>(ctx->d >> 16);
+  result[15] = static_cast<uint8_t>(ctx->d >> 24);
 
   memset(ctx, 0, sizeof(*ctx));
 }

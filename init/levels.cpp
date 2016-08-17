@@ -54,7 +54,7 @@ static vector<HelpItem> create_extra_help_items() {
   return help_items;
 }
 
-static const int JumpToSl(CursesIO* io, CursesWindow* window) {
+static const uint8_t JumpToSl(CursesIO* io, CursesWindow* window) {
  vector<ListBoxItem> items;
   for (int i = MIN_SL; i < MAX_SL; i++) {
     items.emplace_back(StringPrintf("SL #%d", i), 0, i);
@@ -64,9 +64,9 @@ static const int JumpToSl(CursesIO* io, CursesWindow* window) {
     static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
   ListBoxResult result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
-    return items[result.selected].data();
+    return static_cast<uint8_t>(items[result.selected].data());
   }
-  return -1;
+  return 0;
 }
 
 void sec_levs() {
@@ -116,7 +116,7 @@ void sec_levs() {
       window->Refresh();
     } break;
     case 'J': {
-      int sl_number = JumpToSl(out, window.get());
+      uint8_t sl_number = JumpToSl(out, window.get());
       if (sl_number >= MIN_SL) {
         cursl = sl_number;
       }
@@ -149,6 +149,6 @@ void sec_levs() {
     }
     sl = syscfg.sl[cursl];
     items.Display();
+    save_config();
   }
-  save_config();
 }

@@ -48,7 +48,7 @@ static string create_autoval_line(int n) {
   char s3[81], ar[20], dar[20], r[20];
   valrec v = syscfg.autoval[n];
   strcpy(s3, restrict_string);
-  for (int i = 0; i <= 15; i++) {
+  for (int8_t i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {
       ar[i] = 'A' + i;
     } else {

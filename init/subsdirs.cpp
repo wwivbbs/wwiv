@@ -43,7 +43,8 @@ using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
 
-static int input_number(CursesWindow* window, int max_digits) {
+template<typename T>
+static T input_number(CursesWindow* window, int max_digits) {
   string s;
   int return_code = 0;
   editline(window, &s, max_digits, NUM_ONLY, &return_code, "");
@@ -51,14 +52,15 @@ static int input_number(CursesWindow* window, int max_digits) {
     return 0;
   }
   try {
-    return std::stoi(s);
+    auto num = std::stoi(s);
+    return static_cast<T>(num);
   } catch (std::invalid_argument) { 
     // No conversion possible.
     return 0;
   }
 }
 
-static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
+static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dirs) {
   int l1, l2, l3;
 
   if (num_subs % 32) {
@@ -82,7 +84,7 @@ static void convert_to(CursesWindow* window, int num_subs, int num_dirs) {
     num_dirs = MAX_SUBS_DIRS;
   }
 
-  uint16_t nqscn_len = 4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32));
+  uint16_t nqscn_len = static_cast<uint16_t>(4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32)));
   uint32_t* nqsc = (uint32_t *)malloc(nqscn_len);
   wwiv::core::ScopeExit free_nqsc([&]() { free(nqsc); nqsc = nullptr; });
   if (!nqsc) {
@@ -178,13 +180,13 @@ void up_subs_dirs() {
     y++;
     window->SetColor(SchemeId::PROMPT);
     window->PutsXY(2, y++, "New max subs: ");
-    int num_subs = input_number(window.get(), 4);
+    uint16_t num_subs = input_number<uint16_t>(window.get(), 4);
     if (!num_subs) {
       num_subs = syscfg.max_subs;
     }
     window->SetColor(SchemeId::PROMPT);
     window->PutsXY(2, y++, "New max dirs: ");
-    int num_dirs = input_number(window.get(), 4);
+    uint16_t num_dirs = input_number<uint16_t>(window.get(), 4);
     if (!num_dirs) {
       num_dirs = syscfg.max_dirs;
     }

@@ -124,8 +124,8 @@ public:
   int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
-    int status = uppercase_ ? UPPER_ONLY : ALL;
-    editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, status, &return_code, "");
+    int st = uppercase_ ? UPPER_ONLY : ALL;
+    editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, st, &return_code, "");
     return return_code;
   }
 
@@ -182,7 +182,7 @@ public:
       // Data is out of bounds, reset it to a senible value.
       *this->data_ = 0;
     }
-    *this->data_ = toggleitem(window, *this->data_, items_, &return_code);
+    *this->data_ = (T)toggleitem(window, *this->data_, items_, &return_code);
     return return_code;
   }
 

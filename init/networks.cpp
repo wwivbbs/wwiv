@@ -101,7 +101,7 @@ static bool save_networks_dat(const vector<net_networks_rec>& net_networks) {
 }
 
 static bool del_net(
-    CursesWindow* window, vector<subboardrec>& subboards, 
+    vector<subboardrec>& subboards, 
     vector<net_networks_rec>& net_networks, int nn) {
 
   subboards = wwiv::sdk::read_subs(syscfg.datadir);
@@ -123,7 +123,7 @@ static bool del_net(
         postrec* p = get_post(i1);
         if (p->status & status_post_new_net) {
           if (p->network.network_msg.net_number == nn) {
-            p->network.network_msg.net_number = -1;
+            p->network.network_msg.net_number = static_cast<uint8_t>('\xff');
             write_post(i1, p);
           } else if (p->network.network_msg.net_number > nn) {
             p->network.network_msg.net_number--;
@@ -151,13 +151,13 @@ static bool del_net(
         m.status |= status_new_net;
         if (m.status & status_source_verified) {
           if (m.network.src_verified_msg.net_number == nn) {
-            m.network.src_verified_msg.net_number = -1;
+            m.network.src_verified_msg.net_number = static_cast<uint8_t>('\xff');
           } else if (m.network.src_verified_msg.net_number > nn) {
             m.network.src_verified_msg.net_number--;
           }
         } else {
           if (m.network.network_msg.net_number == nn) {
-            m.network.network_msg.net_number = -1;
+            m.network.network_msg.net_number = static_cast<uint8_t>('\xff');
           } else if (m.network.network_msg.net_number > nn) {
             m.network.network_msg.net_number--;
           }
@@ -200,8 +200,6 @@ static void edit_net(vector<net_networks_rec>& net_networks, int nn) {
 
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
-  bool done = false;
-  int cp = 1;
   net_networks_rec& n = net_networks[nn];
   char szOldNetworkName[20];
   strcpy(szOldNetworkName, n.name);
@@ -267,7 +265,7 @@ static void edit_net(vector<net_networks_rec>& net_networks, int nn) {
 }
 
 static bool insert_net(
-    CursesWindow* window, vector<subboardrec>& subboards, 
+    vector<subboardrec>& subboards, 
     vector<net_networks_rec>& net_networks,
     int nn) {
   subboards = wwiv::sdk::read_subs(syscfg.datadir);
@@ -394,7 +392,7 @@ void networks() {
           if (yn) {
             yn = dialog_yn(window, "Are you REALLY sure? ");
             if (yn) {
-              del_net(window, subboards, net_networks, result.selected);
+              del_net(subboards, net_networks, result.selected);
             }
           }
         } else {
@@ -415,7 +413,7 @@ void networks() {
         const size_t net_num = dialog_input_number(window, prompt, 1, net_networks.size() + 1  );
         if (net_num > 0 && net_num <= net_networks.size() + 1) {
           if (dialog_yn(window, "Are you sure? ")) {
-            insert_net(window, subboards, net_networks, net_num - 1);
+            insert_net(subboards, net_networks, net_num - 1);
           }
         }
         break;

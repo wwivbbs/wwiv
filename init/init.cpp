@@ -81,8 +81,8 @@ statusrec status;
 void convcfg(CursesWindow* window, const string& config_filename);
 
 static void ValidateConfigOverlayExists(const string& bbsdir) {
-  IniFile ini(WWIV_INI, "WWIV");
-  int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+  IniFile oini(WWIV_INI, "WWIV");
+  int num_instances = oini.GetNumericValue("NUM_INSTANCES", 4);
 
   File config_overlay(CONFIG_OVR);
   if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
@@ -141,7 +141,7 @@ int main(int argc, char* argv[]) {
   }
 }
 
-int WInitApp::main(int argc, char *argv[]) {
+int WInitApp::main(int, char **) {
   setlocale (LC_ALL,"");
 
   const string wwiv_dir = wwiv::os::environment_variable("WWIV_DIR");

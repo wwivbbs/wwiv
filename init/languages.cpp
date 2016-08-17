@@ -74,7 +74,7 @@ static void edit_lang(languagerec& n) {
 }
 
 static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
-  int max_num = 1;
+  uint8_t max_num = 1;
   std::set<uint8_t> nums;
   for (std::size_t i = 0; i < languages.size(); i++) {
     const languagerec& l = languages[i];
@@ -86,7 +86,7 @@ static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
   }
 
   // Getting close to uint8_t::max() so let's reuse.
-  for (int i=1; i<255; i++) {
+  for (uint8_t i=1; i<255; i++) {
     if (nums.find(i) == nums.end()) {
       return i;
     }

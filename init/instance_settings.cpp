@@ -98,23 +98,6 @@ bool write_instance(int num, const string batch_dir, const string temp_dir) {
   return write_instance(num, &instance);
 }
 
-static void tweak_dir(char *s, int inst) {
-  if (inst == 1) {
-    return;
-  }
-
-  int i = strlen(s);
-  if (i == 0) {
-    sprintf(s, "temp%d", inst);
-  } else {
-    char *lcp = s + i - 1;
-    while ((((*lcp >= '0') && (*lcp <= '9')) || (*lcp == File::pathSeparatorChar)) && (lcp >= s)) {
-      lcp--;
-    }
-    sprintf(lcp + 1, "%d%c", inst, File::pathSeparatorChar);
-  }
-}
-
 void instance_editor() {
   IniFile ini("wwiv.ini", "WWIV");
   if (ini.IsOpen() && ini.GetValue("TEMP_DIRECTORY") == nullptr) {

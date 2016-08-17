@@ -168,16 +168,16 @@ void user_editor() {
         time_t t = time(nullptr);
         struct tm * pTm = localtime(&t);
         int current_year = pTm->tm_year+1900;
-        int month = std::stoi(s.substr(0, 2));
+        uint8_t month = StringToUnsignedChar(s.substr(0, 2));
         if (month < 1 || month > 12) { return; }
-        int day = std::stoi(s.substr(3, 2));
+        uint8_t day = StringToUnsignedChar(s.substr(3, 2));
         if (day < 1 || day > 31) { return; }
-        int year = std::stoi(s.substr(6, 4));
+        int year = StringToInt(s.substr(6, 4));
         if (year < 1900 || year > current_year) { return ; }
 
         user.month = month;
         user.day = day;
-        user.year = year - 1900;
+        user.year = static_cast<uint8_t>(year - 1900);
       });
 
   EditItems items{

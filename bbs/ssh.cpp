@@ -47,6 +47,7 @@ constexpr int SOCKET_ERROR = -1;
 
 #include "cryptlib.h"
 
+#include "core/log.h"
 #include "core/os.h"
 
 using std::clog;
@@ -211,7 +212,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
 int SSHSession::PushData(const char* data, size_t size) {
   int bytes_copied = 0;
-  // clog << "SSHSession::PushData: " << string(data, size) << endl;
+  VLOG(2) << "SSHSession::PushData: " << string(data, size) << endl;
   std::lock_guard<std::mutex> lock(mu_);
   int status = cryptPushData(session_, data, size, &bytes_copied);
   if (!OK(status)) return 0;
@@ -285,7 +286,7 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
         break;
       }
       int num_sent = send(socket, data.get(), num_read, 0);
-      // clog << "reader_thread: sent " << num_sent << endl;
+      VLOG(1) << "reader_thread: sent " << num_sent << endl;
     }
   } catch (const socket_error& e) {
     clog << e.what() << endl;
@@ -309,7 +310,7 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
       int num_read = recv(socket, data.get(), size, 0);
       if (num_read > 0) {
         int num_sent = session.PushData(data.get(), num_read);
-        // clog << "writer_thread: pushed_data: " << num_sent << endl;
+        VLOG(1) << "writer_thread: pushed_data: " << num_sent << endl;
       }
     }
   } catch (const socket_error& e) {

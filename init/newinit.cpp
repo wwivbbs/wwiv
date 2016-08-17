@@ -139,9 +139,9 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   }
   for (int i = 0; i < 256; i++) {
     slrec sl;
-    sl.time_per_logon = (i / 10) * 10;
+    sl.time_per_logon = static_cast<uint16_t>((i / 10) * 10);
     sl.time_per_day = static_cast<uint16_t>(((float)sl.time_per_logon) * 2.5);
-    sl.messages_read = (i / 10) * 100;
+    sl.messages_read = static_cast<uint16_t>((i / 10) * 100);
     if (i < 10) {
       sl.emails = 0;
     } else if (i <= 19) {
