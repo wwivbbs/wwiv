@@ -29,8 +29,6 @@ struct side_menu_colors {
   int current_menu_item;
 };
 
-
-
 struct search_record {
   char filemask[13];
 
@@ -42,13 +40,8 @@ struct search_record {
   int search_extended;
 };
 
-
-constexpr int MENUTYPE_REGULAR = 0;
-constexpr int MENUTYPE_PULLDOWN = 1;
-
 constexpr int HOTKEYS_ON = 0;
 constexpr int HOTKEYS_OFF = 1;
-
 
 struct user_config {
   char name[31];          // verify against a user
