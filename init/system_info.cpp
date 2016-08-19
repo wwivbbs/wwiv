@@ -119,9 +119,9 @@ protected:
 void sysinfo1() {
   read_status();
 
-  if (status.callernum != 65535) {
-    status.callernum1 = static_cast<long>(status.callernum);
-    status.callernum = 65535;
+  if (statusrec.callernum != 65535) {
+    statusrec.callernum1 = static_cast<long>(statusrec.callernum);
+    statusrec.callernum = 65535;
     save_status();
   }
 
@@ -170,8 +170,8 @@ void sysinfo1() {
 
     new NumberEditItem<uint8_t>(COL1_POSITION, 13, &syscfg.maxwaiting),
     new NumberEditItem<uint16_t>(COL1_POSITION, 14, &syscfg.maxusers),
-    new NumberEditItem<uint32_t>(COL1_POSITION, 15, &status.callernum1),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 16, &status.days),
+    new NumberEditItem<uint32_t>(COL1_POSITION, 15, &statusrec.callernum1),
+    new NumberEditItem<uint16_t>(COL1_POSITION, 16, &statusrec.days),
   };
 
   items.set_curses_io(out, window.get());

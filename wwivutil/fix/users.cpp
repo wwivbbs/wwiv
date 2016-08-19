@@ -35,7 +35,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-statusrec_t status;
+statusrec_t statusrec;
 
 namespace wwiv {
 namespace wwivutil {
@@ -80,7 +80,7 @@ static void saveStatus(const std::string& datadir) {
   File statusDat(datadir, STATUS_DAT);
 
   statusDat.Open(File::modeReadWrite | File::modeBinary);
-  statusDat.Write(&status, sizeof(statusrec_t));
+  statusDat.Write(&statusrec, sizeof(statusrec_t));
   statusDat.Close();
 }
 
@@ -91,15 +91,15 @@ static bool initStatusDat(const std::string& datadir) {
   if (!statusDat.Exists()) {
     LOG(INFO) << statusDat.full_pathname() << " NOT FOUND!";
     LOG(INFO) << "Recreating " << statusDat.full_pathname() ;
-    memset(&status, 0, sizeof(statusrec_t));
-    strcpy(status.date1, "00/00/00");
-    strcpy(status.date2, status.date1);
-    strcpy(status.date3, status.date1);
-    strcpy(status.log1, "000000.log");
-    strcpy(status.log2, "000000.log");
-    strcpy(status.gfiledate, "00/00/00");
-    status.callernum = 65535;
-    status.wwiv_version = wwiv_num_version;
+    memset(&statusrec, 0, sizeof(statusrec_t));
+    strcpy(statusrec.date1, "00/00/00");
+    strcpy(statusrec.date2, statusrec.date1);
+    strcpy(statusrec.date3, statusrec.date1);
+    strcpy(statusrec.log1, "000000.log");
+    strcpy(statusrec.log2, "000000.log");
+    strcpy(statusrec.gfiledate, "00/00/00");
+    statusrec.callernum = 65535;
+    statusrec.wwiv_version = wwiv_num_version;
     update = true;
   } else {
     checkFileSize(statusDat, sizeof(statusrec_t));
@@ -108,50 +108,50 @@ static bool initStatusDat(const std::string& datadir) {
       LOG(INFO) << statusDat.full_pathname() << " NOT FOUND.";
       return false;
     }
-    statusDat.Read(&status, sizeof(statusrec_t));
+    statusDat.Read(&statusrec, sizeof(statusrec_t));
     statusDat.Close();
 
     // version check
-    if (status.wwiv_version > wwiv_num_version) {
+    if (statusrec.wwiv_version > wwiv_num_version) {
       LOG(INFO) << "Incorrect version of fix (this is for "
-           << wwiv_num_version << ", you need " << status.wwiv_version << ")";
+           << wwiv_num_version << ", you need " << statusrec.wwiv_version << ")";
     }
 
     time_t val = time(nullptr);
     char *curDate = dateFromTimeT(val);
-    if (strcmp(status.date1, curDate)) {
-      strcpy(status.date1, curDate);
+    if (strcmp(statusrec.date1, curDate)) {
+      strcpy(statusrec.date1, curDate);
       update = true;
-      LOG(INFO) << "Date error in STATUS.DAT (status.date1) corrected";
+      LOG(INFO) << "Date error in STATUS.DAT (statusrec.date1) corrected";
     }
 
     val -= 86400L;
     curDate = dateFromTimeT(val);
-    if (strcmp(status.date2, curDate)) {
-      strcpy(status.date2, curDate);
+    if (strcmp(statusrec.date2, curDate)) {
+      strcpy(statusrec.date2, curDate);
       update = true;
-      LOG(INFO) << "Date error in STATUS.DAT (status.date2) corrected";
+      LOG(INFO) << "Date error in STATUS.DAT (statusrec.date2) corrected";
     }
     char logFile[512];
     snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-    if (strcmp(status.log1, logFile)) {
-      strcpy(status.log1, logFile);
+    if (strcmp(statusrec.log1, logFile)) {
+      strcpy(statusrec.log1, logFile);
       update = true;
-      LOG(INFO) << "Log filename error in STATUS.DAT (status.log1) corrected";
+      LOG(INFO) << "Log filename error in STATUS.DAT (statusrec.log1) corrected";
     }
 
     val -= 86400L;
     curDate = dateFromTimeT(val);
-    if (strcmp(status.date3, curDate)) {
-      strcpy(status.date3, curDate);
+    if (strcmp(statusrec.date3, curDate)) {
+      strcpy(statusrec.date3, curDate);
       update = true;
-      LOG(INFO) << "Date error in STATUS.DAT (status.date3) corrected";
+      LOG(INFO) << "Date error in STATUS.DAT (statusrec.date3) corrected";
     }
     snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-    if (strcmp(status.log2, logFile)) {
-      strcpy(status.log2, logFile);
+    if (strcmp(statusrec.log2, logFile)) {
+      strcpy(statusrec.log2, logFile);
       update = true;
-      LOG(INFO) << "Log filename error in STATUS.DAT (status.log2) corrected";
+      LOG(INFO) << "Log filename error in STATUS.DAT (statusrec.log2) corrected";
     }
   }
   if (update) {
@@ -249,11 +249,11 @@ int FixUsersCommand::Execute() {
 		if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
 			long size = nameFile.GetLength();
       uint16_t recs = static_cast<uint16_t>(size / sizeof(smalrec));
-			if (recs != status.users) {
-				status.users = recs;
+			if (recs != statusrec.users) {
+				statusrec.users = recs;
         LOG(INFO) << "STATUS.DAT contained an incorrect user count.";
 			} else {
-        LOG(INFO) << "STATUS.DAT matches expected user count of " << status.users << " users.";
+        LOG(INFO) << "STATUS.DAT matches expected user count of " << statusrec.users << " users.";
 			}
 		}
 		nameFile.Close();

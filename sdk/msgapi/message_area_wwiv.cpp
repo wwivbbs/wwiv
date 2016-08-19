@@ -270,7 +270,7 @@ WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
 }
 
 static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
-  statusrec_t status{};
+  statusrec_t statusrec{};
   uint32_t next_qscan = 0;
   Config config(bbsdir);
   if (!config.IsInitialized()) {
@@ -282,12 +282,12 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
   if (!file) {
     return 0;
   }
-  if (!file.Read(0, &status)) {
+  if (!file.Read(0, &statusrec)) {
     return 0;
   }
-  next_qscan = status.qscanptr++;
-  ++status.msgposttoday;
-  if (!file.Write(0, &status)) {
+  next_qscan = statusrec.qscanptr++;
+  ++statusrec.msgposttoday;
+  if (!file.Write(0, &statusrec)) {
     return 0;
   }
   return next_qscan;

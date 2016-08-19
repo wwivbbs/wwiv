@@ -207,18 +207,18 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   save_config();
 
   create_arcs(out->window());
-  memset(&status, 0, sizeof(statusrec_t));
+  memset(&statusrec, 0, sizeof(statusrec_t));
   string now(date());
-  strcpy(status.date1, now.c_str());
-  strcpy(status.date2, "00/00/00");
-  strcpy(status.date3, "00/00/00");
-  strcpy(status.log1, "000000.LOG");
-  strcpy(status.log2, "000000.LOG");
-  strcpy(status.gfiledate, now.c_str());
-  status.callernum = 65535;
-  status.qscanptr = 2;
-  status.net_bias = 0.001f;
-  status.net_req_free = 3.0;
+  strcpy(statusrec.date1, now.c_str());
+  strcpy(statusrec.date2, "00/00/00");
+  strcpy(statusrec.date3, "00/00/00");
+  strcpy(statusrec.log1, "000000.LOG");
+  strcpy(statusrec.log2, "000000.LOG");
+  strcpy(statusrec.gfiledate, now.c_str());
+  statusrec.callernum = 65535;
+  statusrec.qscanptr = 2;
+  statusrec.net_bias = 0.001f;
+  statusrec.net_req_free = 3.0;
 
   qsc = (uint32_t *)malloc(syscfg.qscn_len);
   memset(qsc, 0, syscfg.qscn_len);

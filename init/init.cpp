@@ -75,7 +75,7 @@ using wwiv::core::IniFile;
 using namespace wwiv::strings;
 
 configrec syscfg;
-statusrec_t status;
+statusrec_t statusrec;
 
 // from convert.cpp
 void convcfg(CursesWindow* window, const string& config_filename);

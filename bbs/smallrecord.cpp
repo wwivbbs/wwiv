@@ -56,7 +56,7 @@ void DeleteSmallRecord(const char *name) {
     return;
   }
   session()->names()->Remove(found_user);
-  --status.users;
+  --statusrec.users;
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
   session()->names()->Save();
   session()->status_manager()->CommitTransaction(pStatus);

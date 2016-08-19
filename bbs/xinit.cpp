@@ -871,7 +871,7 @@ void WSession::InitializeBBS() {
   XINIT_PRINTF("Reading status information.");
   WStatus* pStatus = statusMgr->BeginTransaction();
   if (!pStatus) {
-    std::clog << "Unable to return status.dat." << std::endl;
+    std::clog << "Unable to return statusrec.dat." << std::endl;
     AbortBBS();
   }
 

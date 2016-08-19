@@ -52,7 +52,7 @@ __EXTRN__ char  ansistr[81],
           irt_sub[81],
           odc[81],
           *quotes_ind,
-          tc[81];
+          mmkey_tc[81];
 
 __EXTRN__ unsigned char  checksum;
 

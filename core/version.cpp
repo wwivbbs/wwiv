@@ -25,9 +25,9 @@ const char *wwiv_version = "5.2.0";
 // Build Information
 const char *beta_version = ".development";
 
-// this is used to set the status.wwiv_version
+// this is used to set the statusrec.wwiv_version
 uint16_t wwiv_num_version = 510;
-// sets status.network_version
+// sets statusrec.network_version
 int wwiv_net_version = 51;
 
 // Data/time of this build

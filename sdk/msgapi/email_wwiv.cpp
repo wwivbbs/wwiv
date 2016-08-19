@@ -69,7 +69,7 @@ bool WWIVEmail::Close() {
 }
 
 static bool increment_email_counters(const string& root_directory, uint16_t email_usernum) {
-  statusrec_t status{};
+  statusrec_t statusrec{};
   Config config(root_directory);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
@@ -80,15 +80,15 @@ static bool increment_email_counters(const string& root_directory, uint16_t emai
   if (!file) {
     return false;
   }
-  if (!file.Read(0, &status)) {
+  if (!file.Read(0, &statusrec)) {
     return false;
   }
   if (email_usernum == 1) {
-    ++status.fbacktoday;
+    ++statusrec.fbacktoday;
   } else {
-    ++status.emailtoday;
+    ++statusrec.emailtoday;
   }
-  if (!file.Write(0, &status)) {
+  if (!file.Write(0, &statusrec)) {
     return false;
   }
   return true;

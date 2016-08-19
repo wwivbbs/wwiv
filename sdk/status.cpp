@@ -28,7 +28,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
-statusrec_t status;
+statusrec_t statusrec;
 
 using std::string;
 using std::unique_ptr;
@@ -49,7 +49,7 @@ WStatus::WStatus(const std::string& datadir, statusrec_t* pStatusRecord) : datad
 }
 
 WStatus::WStatus(const std::string& datadir) {
-  m_pStatusRecord = &status;
+  m_pStatusRecord = &statusrec;
 }
 
 WStatus::~WStatus() {};
@@ -163,16 +163,16 @@ bool StatusMgr::Get(bool bLockFile) {
   } else {
     char oldFileChangeFlags[7];
     for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
-      oldFileChangeFlags[nFcIndex] = status.filechange[nFcIndex];
+      oldFileChangeFlags[nFcIndex] = statusrec.filechange[nFcIndex];
     }
-    m_statusFile.Read(&status, sizeof(statusrec_t));
+    m_statusFile.Read(&statusrec, sizeof(statusrec_t));
 
     if (!bLockFile) {
       m_statusFile.Close();
     }
 
     for (int i = 0; i < 7; i++) {
-      if (oldFileChangeFlags[i] != status.filechange[i]) {
+      if (oldFileChangeFlags[i] != statusrec.filechange[i]) {
         // Invoke callback on changes.
         callback_(i);
       }
@@ -187,7 +187,7 @@ bool StatusMgr::RefreshStatusCache() {
 
 WStatus* StatusMgr::GetStatus() {
   this->Get(false);
-  return new WStatus(datadir_, &status);
+  return new WStatus(datadir_, &statusrec);
 }
 
 void StatusMgr::AbortTransaction(WStatus* pStatus) {
@@ -199,7 +199,7 @@ void StatusMgr::AbortTransaction(WStatus* pStatus) {
 
 WStatus* StatusMgr::BeginTransaction() {
   this->Get(true);
-  return new WStatus(datadir_, &status);
+  return new WStatus(datadir_, &statusrec);
 }
 
 bool StatusMgr::CommitTransaction(WStatus* pStatus) {

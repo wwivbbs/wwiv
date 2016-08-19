@@ -115,15 +115,15 @@ void write_user(unsigned int un, userrec *u) {
 void save_status() {
   DataFile<statusrec_t> file(syscfg.datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite|File::modeCreateFile);
   if (file) {
-    file.Write(&status);
+    file.Write(&statusrec);
   }
 }
 
-/** returns true if status.dat is read correctly */
+/** returns true if statusrec.dat is read correctly */
 bool read_status() {
   DataFile<statusrec_t> file(syscfg.datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite);
   if (file) {
-    return file.Read(&status);
+    return file.Read(&statusrec);
   }
   return false;
 }

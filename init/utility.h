@@ -21,7 +21,7 @@
 
 #include "sdk/vardec.h"
 
-extern statusrec_t status;
+extern statusrec_t statusrec;
 
 int number_userrecs();
 void save_status();

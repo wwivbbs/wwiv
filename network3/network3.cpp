@@ -308,30 +308,30 @@ void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>&
 }
 
 static void update_net_ver_status_dat(const string& datadir) {
-  statusrec_t status{};
+  statusrec_t statusrec{};
   DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
   if (!file) {
     return;
   }
-  if (!file.Read(0, &status)) {
+  if (!file.Read(0, &statusrec)) {
     return;
   }
-  if (status.net_version == wwiv_net_version) {
+  if (statusrec.net_version == wwiv_net_version) {
     return;
   }
-  status.net_bias = 0;
-  status.net_req_free = 0;
-  status.net_version = wwiv_net_version;
-  file.Write(0, &status);
+  statusrec.net_bias = 0;
+  statusrec.net_req_free = 0;
+  statusrec.net_version = wwiv_net_version;
+  file.Write(0, &statusrec);
 }
 
 static void update_filechange_status_dat(const string& datadir) {
-  statusrec_t status{};
+  statusrec_t statusrec{};
   DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
   if (file) {
-    if (file.Read(0, &status)) {
-      status.filechange[filechange_net]++;
-      file.Write(0, &status);
+    if (file.Read(0, &statusrec)) {
+      statusrec.filechange[filechange_net]++;
+      file.Write(0, &statusrec);
     }
   }
 }

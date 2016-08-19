@@ -561,7 +561,7 @@ char *mmkey(int dl, int area, bool bListOption) {
       }
       break;
     case 0:
-      if (strchr(tc, ch) != nullptr) {
+      if (strchr(mmkey_tc, ch) != nullptr) {
         p = 2;
       } else if (strchr(dc, ch) != nullptr) {
         p = 1;

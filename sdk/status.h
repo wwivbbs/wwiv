@@ -25,7 +25,7 @@
 #include "sdk/vardec.h"
 #include "core/file.h"
 
-extern statusrec_t status;
+extern statusrec_t statusrec;
 
 namespace wwiv {
 namespace sdk {
