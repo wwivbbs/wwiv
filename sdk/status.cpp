@@ -54,10 +54,10 @@ WStatus::WStatus(const std::string& datadir) {
 
 WStatus::~WStatus() {};
 
-const char* WStatus::GetLastDate(int nDaysAgo) const {
-  DCHECK_GE(nDaysAgo, 0);
-  DCHECK_GE(nDaysAgo, 2);
-  switch (nDaysAgo) {
+const char* WStatus::GetLastDate(int days_ago) const {
+  DCHECK_GE(days_ago, 0);
+  DCHECK_LE(days_ago, 2);
+  switch (days_ago) {
   case 0:
     return m_pStatusRecord->date1;
   case 1:

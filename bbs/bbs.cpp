@@ -46,6 +46,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/remote_io.h"
 #include "bbs/wsession.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/os.h"
 #include "localui/curses_io.h"
@@ -105,6 +106,7 @@ WSession* CreateSession(WApplication* app, LocalIO* localIO) {
 
 int bbsmain(int argc, char *argv[]) {
   try {
+    wwiv::core::Logger::Init(argc, argv);
     app_ = new WApplication();
     return app_->BBSMainLoop(argc, argv);
   } catch (exception& e) {

@@ -126,7 +126,7 @@ File::~File() {
 }
 
 bool File::Open(int nFileMode, int nShareMode) {
-  CHECK_NE(this->IsOpen(), false);
+  DCHECK_EQ(this->IsOpen(), false) << "File " << full_path_name_ << " is already open.";
 
   // Set default share mode
   if (nShareMode == File::shareUnknown) {
