@@ -161,7 +161,7 @@ bool File::RealPath(const std::string& path, std::string* resolved) {
 long File::GetFreeSpaceForPath(const string& path) {
   struct statfs fs;
   if (statfs(path.c_str(), &fs)) {
-    perror("freek1()");
+    perror("statfs()");
     return 0;
   }
   return ((long) fs.f_bsize * (double) fs.f_bavail) / 1024;

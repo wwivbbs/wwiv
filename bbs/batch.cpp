@@ -58,17 +58,11 @@
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-// module private functions
-void listbatch();
-void downloaded(char *file_name, long lCharsPerSecond);
-void uploaded(char *file_name, long lCharsPerSecond);
-void handle_dszline(char *l);
-double ratio1(long a);
-void ProcessDSZLogFile();
-void dszbatchul(bool bHangupAfterDl, char *command_line, char *description);
-void bihangup(int up);
+// trytoul.cpp
 int try_to_ul(char *file_name);
 int try_to_ul_wh(char *file_name);
+
+// normupld.cpp
 void normalupload(int dn);
 
 using std::begin;
@@ -83,7 +77,7 @@ using namespace wwiv::strings;
 
 // Shows listing of files currently in batch queue(s), both upload and
 // download. Shows estimated time, by item, for files in the d/l queue.
-void listbatch() {
+static void listbatch() {
   bout.nl();
   if (session()->batch().entry.empty()) {
     return;
@@ -128,7 +122,7 @@ void delbatch(int num) {
   session()->batch().entry.erase(it);
 }
 
-void downloaded(char *file_name, long lCharsPerSecond) {
+static void downloaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (auto it = begin(session()->batch().entry); it != end(session()->batch().entry); it++) {
@@ -217,7 +211,7 @@ void didnt_upload(const batchrec& b) {
   sysoplogf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
 }
 
-void uploaded(char *file_name, long lCharsPerSecond) {
+static void uploaded(char *file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (auto it = begin(session()->batch().entry); it != end(session()->batch().entry); it++) {
@@ -308,6 +302,62 @@ void uploaded(char *file_name, long lCharsPerSecond) {
 
     File::Remove(syscfgovr.batchdir, file_name);
   }
+}
+
+// This function returns one character from either the local keyboard or
+// remote com port (if applicable).  Every second of inactivity, a
+// beep is sounded.  After 10 seconds of inactivity, the user is hung up.
+static void bihangup(int up) {
+  int color = 5;
+
+  dump();
+  // Maybe we could use a local instead of timelastchar1
+  timelastchar1 = timer1();
+  long nextbeep = 18L;
+  bout << "\r\n|#2Automatic disconnect in progress.\r\n";
+  bout << "|#2Press 'H' to hangup, or any other key to return to system.\r\n";
+  bout << "|#" << color << static_cast<int>(182L / nextbeep) << "  " << static_cast<char>(7);
+
+  unsigned char ch = 0;
+  do {
+    while (!bkbhit() && !hangup) {
+      long dd = timer1();
+      if (std::abs(dd - timelastchar1) > 65536L) {
+        nextbeep -= 1572480L;
+        timelastchar1 -= 1572480L;
+      }
+      if ((dd - timelastchar1) > nextbeep) {
+        bout << "\r|#" << color << (static_cast<int>(182L - nextbeep) / 18L) <<
+          "  " << static_cast<char>(7);
+        nextbeep += 18L;
+        if ((182L - nextbeep) / 18L <= 6) {
+          color = 2;
+        }
+        if ((182L - nextbeep) / 18L <= 3) {
+          color = 6;
+        }
+      }
+      if (std::abs(dd - timelastchar1) > 182L) {
+        bout.nl();
+        bout << "Thank you for calling.";
+        bout.nl();
+        session()->remoteIO()->dtr(false);
+        hangup = true;
+        if (up) {
+          wwiv::os::sleep_for(std::chrono::milliseconds(100));
+          if (!session()->remoteIO()->carrier()) {
+            session()->remoteIO()->dtr(true);
+          }
+        }
+      }
+      giveup_timeslice();
+      CheckForHangup();
+    }
+    ch = bgetch();
+    if (ch == 'h' || ch == 'H') {
+      hangup = true;
+    }
+  } while (!ch && !hangup);
 }
 
 void zmbatchdl(bool bHangupAfterDl) {
@@ -469,7 +519,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   }
 }
 
-void handle_dszline(char *l) {
+static void handle_dszline(char *l) {
   long lCharsPerSecond = 0;
 
   // find the filename
@@ -518,7 +568,7 @@ void handle_dszline(char *l) {
   }
 }
 
-double ratio1(long a) {
+static double ratio1(unsigned long a) {
   if (session()->user()->GetDownloadK() == 0 && a == 0) {
     return 99.999;
   }
@@ -563,7 +613,7 @@ static string make_dl_batch_list() {
   }
 
   double at = 0.0;
-  long addk = 0;
+  unsigned long addk = 0;
   for (const auto& b : session()->batch().entry) {
     if (b.sending) {
       string filename_to_send;
@@ -588,7 +638,7 @@ static string make_dl_batch_list() {
         ok = false;
         bout << "Cannot download " << b.filename << ": Not enough time" << wwiv::endl;
       }
-      long thisk = bytes_to_k(b.len);
+      unsigned long thisk = bytes_to_k(b.len);
       if ((syscfg.req_ratio > 0.0001) &&
           (ratio1(addk + thisk) < syscfg.req_ratio) &&
           !session()->user()->IsExemptRatio()) {
@@ -604,6 +654,39 @@ static string make_dl_batch_list() {
   }
   fileList.Close();
   return list_filename;
+}
+
+void ProcessDSZLogFile() {
+  char **lines = static_cast<char **>(calloc((session()->max_batch * sizeof(char *) * 2) + 1, 1));
+  WWIV_ASSERT(lines != nullptr);
+
+  if (!lines) {
+    return;
+  }
+
+  File fileDszLog(g_szDSZLogFileName);
+  if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
+    int nFileSize = static_cast<int>(fileDszLog.GetLength());
+    char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
+    WWIV_ASSERT(ss != nullptr);
+    if (ss) {
+      int nBytesRead = fileDszLog.Read(ss, nFileSize);
+      if (nBytesRead > 0) {
+        ss[nBytesRead] = 0;
+        lines[0] = strtok(ss, "\r\n");
+        for (int i = 1; (i < session()->max_batch * 2 - 2) && (lines[i - 1]); i++) {
+          lines[i] = strtok(nullptr, "\n");
+        }
+        lines[session()->max_batch * 2 - 2] = nullptr;
+        for (int i1 = 0; lines[i1]; i1++) {
+          handle_dszline(lines[i1]);
+        }
+      }
+      free(ss);
+    }
+    fileDszLog.Close();
+  }
+  free(lines);
 }
 
 static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist, const string& dl, bool bHangupAfterDl) {
@@ -650,38 +733,6 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
   }
 }
 
-void ProcessDSZLogFile() {
-  char **lines = static_cast<char **>(calloc((session()->max_batch * sizeof(char *) * 2) + 1, 1));
-  WWIV_ASSERT(lines != nullptr);
-
-  if (!lines) {
-    return;
-  }
-
-  File fileDszLog(g_szDSZLogFileName);
-  if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
-    int nFileSize = static_cast<int>(fileDszLog.GetLength());
-    char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
-    WWIV_ASSERT(ss != nullptr);
-    if (ss) {
-      int nBytesRead = fileDszLog.Read(ss, nFileSize);
-      if (nBytesRead > 0) {
-        ss[ nBytesRead ] = 0;
-        lines[0] = strtok(ss, "\r\n");
-        for (int i = 1; (i < session()->max_batch * 2 - 2) && (lines[i - 1]); i++) {
-          lines[i] = strtok(nullptr, "\n");
-        }
-        lines[session()->max_batch * 2 - 2] = nullptr;
-        for (int i1 = 0; lines[i1]; i1++) {
-          handle_dszline(lines[i1]);
-        }
-      }
-      free(ss);
-    }
-    fileDszLog.Close();
-  }
-  free(lines);
-}
 
 void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   string download_log_entry = StringPrintf(
@@ -700,7 +751,7 @@ void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   run_cmd(command_line, list_filename, "", download_log_entry, bHangupAfterDl);
 }
 
-void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
+static void dszbatchul(bool bHangupAfterDl, char *command_line, char *description) {
   string download_log_entry = StringPrintf("%s BATCH Upload: Files - %d", description,
           session()->batch().entry.size());
   if (bHangupAfterDl) {
@@ -853,62 +904,6 @@ int batchdl(int mode) {
   } while (!done && !hangup);
   session()->tagging = otag;
   return 0;
-}
-
-// This function returns one character from either the local keyboard or
-// remote com port (if applicable).  Every second of inactivity, a
-// beep is sounded.  After 10 seconds of inactivity, the user is hung up.
-void bihangup(int up) {
-  int color = 5;
-
-  dump();
-  // Maybe we could use a local instead of timelastchar1
-  timelastchar1 = timer1();
-  long nextbeep = 18L;
-  bout << "\r\n|#2Automatic disconnect in progress.\r\n";
-  bout << "|#2Press 'H' to hangup, or any other key to return to system.\r\n";
-  bout << "|#" << color << static_cast<int>(182L / nextbeep) << "  " << static_cast<char>(7);
-
-  unsigned char ch = 0;
-  do {
-    while (!bkbhit() && !hangup) {
-      long dd = timer1();
-      if (std::abs(dd - timelastchar1) > 65536L) {
-        nextbeep -= 1572480L;
-        timelastchar1 -= 1572480L;
-      }
-      if ((dd - timelastchar1) > nextbeep) {
-        bout << "\r|#" << color << (static_cast<int>(182L - nextbeep) / 18L) <<
-                           "  " << static_cast<char>(7);
-        nextbeep += 18L;
-        if ((182L - nextbeep) / 18L <= 6) {
-          color = 2;
-        }
-        if ((182L - nextbeep) / 18L <= 3) {
-          color = 6;
-        }
-      }
-      if (std::abs(dd - timelastchar1) > 182L) {
-        bout.nl();
-        bout << "Thank you for calling.";
-        bout.nl();
-        session()->remoteIO()->dtr(false);
-        hangup = true;
-        if (up) {
-          wwiv::os::sleep_for(std::chrono::milliseconds(100));
-          if (!session()->remoteIO()->carrier()) {
-            session()->remoteIO()->dtr(true);
-          }
-        }
-      }
-      giveup_timeslice();
-      CheckForHangup();
-    }
-    ch = bgetch();
-    if (ch == 'h' || ch == 'H') {
-      hangup = true;
-    }
-  } while (!ch && !hangup);
 }
 
 void upload(int dn) {

@@ -79,27 +79,27 @@ extern int foundany;
 #pragma pack( push,  1)
 
 struct listplus_config {
-  long fi, lssm, sent;
+  uint8_t unused_at_head[12];  // was: long fi, lssm, sent;
 
   // Side menu colors  (fore+(back<<4))
-  short int normal_highlight, normal_menu_item, current_highlight, current_menu_item;
+  int16_t normal_highlight, normal_menu_item, current_highlight, current_menu_item;
 
   // Foreground only
-  short int tagged_color, file_num_color;
+  int16_t tagged_color, file_num_color;
 
   // Color for 'found' text when searching
-  short int found_fore_color, found_back_color;
+  int16_t found_fore_color, found_back_color;
 
   // What file you are on, its color (fore+(back<<4))
-  short int current_file_color;
+  int16_t current_file_color;
 
   // if set to 0, will use the users info, otherwise it will show up to
   // this variable, no more
-  short int max_screen_lines_to_show;
+  int16_t max_screen_lines_to_show;
 
   // If users extended description setting is lower than this, it will force
   // this amount to show (good for people who leave it at 0)
-  short int show_at_least_extended;
+  int16_t show_at_least_extended;
 
   // Toggles
   unsigned int edit_enable         : 1;
@@ -112,17 +112,16 @@ struct listplus_config {
   unsigned int check_exist         : 1;
   unsigned int xxxxxxxxxxxxxxxxx   : 9;
 
-  short int forced_config;
+  int16_t forced_config;
 };
 
 #pragma pack(pop)
 
-extern struct listplus_config lp_config;
-extern user_config        list_config;
+extern listplus_config lp_config;
+extern user_config list_config;
 
-extern int            list_loaded;  // 1 through ? or -1 through ? for sysop defined choices
-extern int            lp_config_loaded;
-
+extern int list_loaded;  // 1 through ? or -1 through ? for sysop defined choices
+extern int lp_config_loaded;
 
 #define STR_AND         '&'
 #define STR_SPC         ' '

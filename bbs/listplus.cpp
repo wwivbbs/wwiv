@@ -59,7 +59,7 @@ int bulk_dir = -1;
 int extended_desc_used, lc_lines_used;
 bool ext_is_on;
 
-struct listplus_config lp_config;
+listplus_config lp_config;
 
 static char _on_[] = "ON!";
 static char _off_[] = "OFF";
@@ -345,8 +345,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
     if (search_rec) {
       colorize_foundtext(&buffer, search_rec, config_listing.lp_colors[0]);
     }
-    sprintf(element, "|%02d%s", config_listing.lp_colors[0], buffer.c_str());
-    file_information += element;
+    file_information += StringPrintf("|%02d%s", config_listing.lp_colors[0], buffer.c_str());
     width += 8;
   }
   if (config_listing.lp_options & cfl_extension) {
@@ -360,15 +359,11 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
     width += 4;
   }
   if (config_listing.lp_options & cfl_dloads) {
-    buffer = StringPrintf("%3d", u->numdloads);
-    buffer.resize(3);
-    sprintf(element, " |%02d%s", config_listing.lp_colors[2], buffer.c_str());
-    file_information += element;
+    file_information += StringPrintf(" |%02d%3d", config_listing.lp_colors[2], u->numdloads);
     width += 4;
   }
   if (config_listing.lp_options & cfl_kbytes) {
     buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
-    buffer.resize(5);
     if (!(session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom)) {
       char szTempFile[MAX_PATH];
 
@@ -387,26 +382,20 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
   }
 
   if (config_listing.lp_options & cfl_days_old) {
-    buffer = StringPrintf("%3d", nDaysOld);
-    buffer.resize(3);
-    sprintf(element, " |%02d%s", config_listing.lp_colors[6], buffer.c_str());
+    sprintf(element, " |%02d%3d", config_listing.lp_colors[6], nDaysOld);
     file_information += element;
     width += 4;
   }
   if (config_listing.lp_options & cfl_times_a_day_dloaded) {
-    float t;
-
-    t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
+    float t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
     buffer = StringPrintf("%2.2f", t);
     buffer.resize(5);
-    sprintf(element, " |%02d%s", config_listing.lp_colors[8], buffer.c_str());
+    sprintf(element, " |%02d%-5s", config_listing.lp_colors[8], buffer.c_str());
     file_information += element;
     width += 6;
   }
   if (config_listing.lp_options & cfl_days_between_dloads) {
-    float t;
-
-    t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
+    float t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
     t = t ? (float) 1 / (float) t : (float) 0.0;
     buffer = StringPrintf("%3.1f", t);
     buffer.resize(5);
@@ -510,10 +499,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struc
       bout.nl();
       ++numl;
     }
-    string tmp = u->upby;
-    tmp = properize(tmp).substr(0, 15);
-    sprintf(element, "|%02dUpby: %s", config_listing.lp_colors[7], tmp.c_str());
-    file_information = element;
+    string tmp = properize(string(u->upby));
+    file_information = StringPrintf("|%02dUpby: %-15s", config_listing.lp_colors[7], tmp.c_str());
   }
 
   if (!buffer.empty()) {
@@ -800,8 +787,7 @@ void load_lp_config() {
   if (!lp_config_loaded) {
     File fileConfig(session()->config()->datadir(), LISTPLUS_CFG);
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
-      memset(&lp_config, 0, sizeof(struct listplus_config));
-      lp_config.fi = lp_config.lssm = static_cast<long>(time(nullptr));
+      memset(&lp_config, 0, sizeof(listplus_config));
 
       lp_config.normal_highlight  = (YELLOW + (BLACK << 4));
       lp_config.normal_menu_item  = (CYAN + (BLACK << 4));
@@ -822,8 +808,7 @@ void load_lp_config() {
       lp_config.edit_enable = 1;            // Do or don't let users edit their config
       lp_config.request_file = 1;           // Do or don't use file request
       lp_config.colorize_found_text = 1;    // Do or don't colorize found text
-      lp_config.search_extended_on =
-        0;     // Defaults to either on or off in adv search, or is either on or off in simple search
+      lp_config.search_extended_on = 0;     // Defaults to either on or off in adv search, or is either on or off in simple search
       lp_config.simple_search = 1;          // Which one is entered when searching, can switch to other still
       lp_config.no_configuration = 0;       // Toggles configurable menus on and off
       lp_config.check_exist = 1;            // Will check to see if the file exists on hardrive and put N/A if not
@@ -832,7 +817,7 @@ void load_lp_config() {
 
       save_lp_config();
     } else {
-      fileConfig.Read(&lp_config, sizeof(struct listplus_config));
+      fileConfig.Read(&lp_config, sizeof(listplus_config));
       lp_config_loaded = 1;
       fileConfig.Close();
     }

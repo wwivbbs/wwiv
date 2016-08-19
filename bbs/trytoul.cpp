@@ -39,8 +39,18 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 int try_to_ul_wh(char *file_name);
-void t2u_error(const char *file_name, const char *msg);
 
+static void t2u_error(const string& file_name, const string& msg) {
+  bout.nl(2);
+  string s1 = StringPrintf("**  %s failed T2U qualifications", file_name);
+  bout << s1 << wwiv::endl;
+  sysoplog(s1);
+
+  string s2 = StrCat("** Reason : ", msg);
+  bout << s2 << wwiv::endl;
+  bout.nl();
+  sysoplog(s2);
+}
 
 int try_to_ul(char *file_name) {
   bool ac = false;
@@ -85,7 +95,7 @@ int try_to_ul(char *file_name) {
 }
 
 int try_to_ul_wh(char *file_name) {
-  directoryrec d;
+  directoryrec d = {};
   char s[101], s1[MAX_PATH], s2[MAX_PATH], *ss;
   int i1, i2, i3, i4, key, ok = 0, dn = 0;
   uploadsrec u, u1;
@@ -263,7 +273,6 @@ int try_to_ul_wh(char *file_name) {
       }
     }
 
-
     for (i1 = 0; i1 < i2; i1++) {
       s1[i1] = ' ';
     }
@@ -424,19 +433,4 @@ int try_to_ul_wh(char *file_name) {
   return 0;                                 // This means success
 }
 
-
-void t2u_error(const char *file_name, const char *msg) {
-  char szBuffer[255];
-
-  bout.nl(2);
-  sprintf(szBuffer, "**  %s failed T2U qualifications", file_name);
-  bout << szBuffer;
-  bout.nl();
-  sysoplog(szBuffer);
-
-  sprintf(szBuffer, "** Reason : %s", msg);
-  bout << szBuffer;
-  bout.nl();
-  sysoplog(szBuffer);
-}
 
