@@ -1125,8 +1125,7 @@ void WSession::ShutDownBBS(int nShutDownStatus) {
     SetShutDownStatus(WSession::shutdownNone);
     break;
   default:
-    clog << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus << endl;
-    WWIV_ASSERT(false);
+    LOG(FATAL) << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus;
   }
   RestoreCurrentLine(cl, atr, xl, &cc);
 }

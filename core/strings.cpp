@@ -31,6 +31,7 @@
 #include <string>
 #include <vector>
 
+#include "core/log.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
@@ -88,7 +89,7 @@ string StringPrintf(const char *formatted_text, ...) {
  * @return The length as an integer
  */
 int GetStringLength(const char* str) {
-  WWIV_ASSERT(str);
+  CHECK(str != nullptr) << "called GetStringLength on a nullptr";
   return static_cast<int>(strlen(str));
 }
 
@@ -99,8 +100,8 @@ int GetStringLength(const char* str) {
  * @return true of the strings contain the same contents
  */
 bool IsEquals(const char* str1, const char* str2) {
-  WWIV_ASSERT(str1);
-  WWIV_ASSERT(str2);
+  CHECK(str1 != nullptr);
+  CHECK(str2 != nullptr);
 
   return (strcmp(str1, str2) == 0) ? true : false;
 }
@@ -112,22 +113,22 @@ bool IsEquals(const char* str1, const char* str2) {
  * @return true of the strings contain the same contents ignoring case
  */
 bool IsEqualsIgnoreCase(const char *str1, const char *str2) {
-  WWIV_ASSERT(str1);
-  WWIV_ASSERT(str2);
+  CHECK(str1 != nullptr);
+  CHECK(str2 != nullptr);
 
   return (StringCompareIgnoreCase(str1, str2) == 0) ? true : false;
 }
 
 int StringCompareIgnoreCase(const char *str1, const char *str2) {
-  WWIV_ASSERT(str1);
-  WWIV_ASSERT(str2);
+  CHECK(str1 != nullptr);
+  CHECK(str2 != nullptr);
 
   return strcasecmp(str1, str2);
 }
 
 int StringCompare(const char *str1, const char *str2) {
-  WWIV_ASSERT(str1);
-  WWIV_ASSERT(str2);
+  CHECK(str1 != nullptr);
+  CHECK(str2 != nullptr);
 
   return strcmp(str1, str2);
 }
@@ -342,7 +343,7 @@ void StringRemoveWhitespace(string* str) {
 }
 
 char *StringRemoveWhitespace(char *str) {
-  WWIV_ASSERT(str);
+  CHECK(str != nullptr);
 
   if (str) {
     char *obuf, *nbuf;
@@ -359,7 +360,7 @@ char *StringRemoveWhitespace(char *str) {
 char *StringRemoveChar(const char *str, char ch) {
   static char s_strip_string[255];
 
-  WWIV_ASSERT(str);
+  CHECK(str != nullptr);
   strcpy(s_strip_string, "");
 
   int i1 = 0;
@@ -405,10 +406,10 @@ bool IsColorCode(char c) {
   return (c == '#' || c == 'B' || isdigit(c));
 }
 
-char *stripcolors(const char *pszOrig) {
-  WWIV_ASSERT(pszOrig);
+char *stripcolors(const char *str) {
+  CHECK(str != nullptr);
   static char s[255];
-  const string result = stripcolors(string(pszOrig));
+  const string result = stripcolors(string(str));
   strcpy(s, result.c_str());
   return s;
 }
@@ -523,11 +524,11 @@ char *strlwr(char *s) {
 }
 
 // Reverses a string
-char *strrev(char *pszBufer) {
-  WWIV_ASSERT(pszBufer);
+char *strrev(char *str) {
+  CHECK(pszBufer != nullptr);
   char szTempBuffer[255];
   int str = strlen(pszBufer);
-  WWIV_ASSERT(str <= 255);
+  CHECK_LE(str, 255);
 
   for (int i = str; i > - 1; i--) {
     pszBufer[i] = szTempBuffer[str - i];

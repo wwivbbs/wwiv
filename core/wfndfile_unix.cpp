@@ -24,6 +24,7 @@
 #include <dirent.h>
 #include <limits.h>
 #include <iostream>
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
@@ -129,21 +130,21 @@ static int fname_ok(const struct dirent *ent) {
   return ok;
 }
 
-static char *strip_filename(const char *pszFileName) {
-  WWIV_ASSERT(pszFileName);
+static char *strip_filename(const char *str) {
+  CHECK(str != nullptr);
   static char szStaticFileName[15];
   char szTempFileName[PATH_MAX];
 
   int nSepIndex = -1;
-  for (size_t i = 0; i < strlen(pszFileName); i++) {
-    if (pszFileName[i] == '\\' || pszFileName[i] == ':' || pszFileName[i] == '/') {
+  for (size_t i = 0; i < strlen(str); i++) {
+    if (str[i] == '\\' || str[i] == ':' || str[i] == '/') {
       nSepIndex = i;
     }
   }
   if (nSepIndex != -1) {
-    strcpy(szTempFileName, &(pszFileName[nSepIndex + 1]));
+    strcpy(szTempFileName, &(str[nSepIndex + 1]));
   } else {
-    strcpy(szTempFileName, pszFileName);
+    strcpy(szTempFileName, str);
   }
   for (size_t i1 = 0; i1 < strlen(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {

@@ -22,6 +22,7 @@
 #include "bbs/conf.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
@@ -32,8 +33,8 @@ using namespace wwiv::sdk;
  * @return bool
  */
 static bool access_conf(User * u, int sl, confrec * c) {
-  WWIV_ASSERT(u);
-  WWIV_ASSERT(c);
+  CHECK(u != nullptr) << "access_conf called with null user";
+  CHECK(c != nullptr) << "access_conf called with null confrec";
 
   if (c->num < 1) {
     return false;
@@ -274,9 +275,9 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     }
   }
 
-  int i1 = (type == ConferenceType::CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
+  size_t i1 = (type == ConferenceType::CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
 
-  for (int i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
+  for (size_t i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
     if (i1 < 100) {
       if (((i1 % 10) == 0) && i1) {
         xdc[dp++] = static_cast<char>('0' + (i1 / 10));

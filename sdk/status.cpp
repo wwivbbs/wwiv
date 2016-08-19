@@ -22,6 +22,7 @@
 #include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/datetime.h"
@@ -54,8 +55,8 @@ WStatus::WStatus(const std::string& datadir) {
 WStatus::~WStatus() {};
 
 const char* WStatus::GetLastDate(int nDaysAgo) const {
-  WWIV_ASSERT(nDaysAgo >= 0);
-  WWIV_ASSERT(nDaysAgo <= 2);
+  DCHECK_GE(nDaysAgo, 0);
+  DCHECK_GE(nDaysAgo, 2);
   switch (nDaysAgo) {
   case 0:
     return m_pStatusRecord->date1;
@@ -69,7 +70,7 @@ const char* WStatus::GetLastDate(int nDaysAgo) const {
 }
 
 const char* WStatus::GetLogFileName(int nDaysAgo) const {
-  WWIV_ASSERT(nDaysAgo >= 0);
+  DCHECK_GE(nDaysAgo, 0);
   switch (nDaysAgo) {
   case 0:
   {

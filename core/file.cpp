@@ -126,7 +126,7 @@ File::~File() {
 }
 
 bool File::Open(int nFileMode, int nShareMode) {
-  WWIV_ASSERT(this->IsOpen() == false);
+  CHECK_NE(this->IsOpen(), false);
 
   // Set default share mode
   if (nShareMode == File::shareUnknown) {
@@ -137,8 +137,8 @@ bool File::Open(int nFileMode, int nShareMode) {
     }
   }
 
-  WWIV_ASSERT(nShareMode != File::shareUnknown);
-  WWIV_ASSERT(nFileMode != File::modeUnknown);
+  CHECK_NE(nShareMode, File::shareUnknown);
+  CHECK_NE(nFileMode, File::modeUnknown);
 
   VLOG(2) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode;
 
@@ -204,30 +204,30 @@ bool File::SetName(const string& dirName, const string& fileName) {
 int File::Read(void* pBuffer, size_t nCount) {
   int ret = read(handle_, pBuffer, nCount);
   if (ret == -1) {
-    std::cout << "[DEBUG: Read errno: " << errno
-              << " filename: " << full_path_name_ << std::endl;
-    std::cout << " -- Please screen capture this and attach to a bug here: " << std::endl;
-    std::cout << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
+    LOG(ERROR) << "[DEBUG: Read errno: " << errno
+      << " filename: " << full_path_name_;
+    LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
+    LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
-  // TODO: Make this an WWIV_ASSERT once we get rid of these issues
+  // TODO: Make this an CHECK once we get rid of these issues
   return ret;
 }
 
 int File::Write(const void* pBuffer, size_t nCount) {
   int nRet = write(handle_, pBuffer, nCount);
   if (nRet == -1) {
-    std::cout << "[DEBUG: Write errno: " << errno
-      << " filename: " << full_path_name_ << std::endl;
-    std::cout << " -- Please screen capture this and attach to a bug here: " << std::endl;
-    std::cout << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
+    LOG(ERROR) << "[DEBUG: Write errno: " << errno
+      << " filename: " << full_path_name_;
+    LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
+    LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
   // TODO: Make this an WWIV_ASSERT once we get rid of these issues
   return nRet;
 }
 
 long File::Seek(long lOffset, int nFrom) {
-  WWIV_ASSERT(nFrom == File::seekBegin || nFrom == File::seekCurrent || nFrom == File::seekEnd);
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
+  CHECK(nFrom == File::seekBegin || nFrom == File::seekCurrent || nFrom == File::seekEnd);
+  CHECK(File::IsFileHandleValid(handle_));
 
   return lseek(handle_, lOffset, nFrom);
 }
@@ -305,7 +305,7 @@ bool File::ExistsWildcard(const string& wildCard) {
 }
 
 bool File::SetFilePermissions(const string& fileName, int nPermissions) {
-  WWIV_ASSERT(!fileName.empty());
+  CHECK(!fileName.empty());
   return chmod(fileName.c_str(), nPermissions) == 0;
 }
 
