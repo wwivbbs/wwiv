@@ -308,8 +308,8 @@ void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>&
 }
 
 static void update_net_ver_status_dat(const string& datadir) {
-  statusrec status{};
-  DataFile<statusrec> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  statusrec_t status{};
+  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
   if (!file) {
     return;
   }
@@ -326,8 +326,8 @@ static void update_net_ver_status_dat(const string& datadir) {
 }
 
 static void update_filechange_status_dat(const string& datadir) {
-  statusrec status{};
-  DataFile<statusrec> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  statusrec_t status{};
+  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &status)) {
       status.filechange[filechange_net]++;

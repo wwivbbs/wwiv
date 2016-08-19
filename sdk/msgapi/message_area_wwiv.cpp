@@ -270,14 +270,14 @@ WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
 }
 
 static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
-  statusrec status{};
+  statusrec_t status{};
   uint32_t next_qscan = 0;
   Config config(bbsdir);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
     return 1;
   }
-  DataFile<statusrec> file(config.datadir(), STATUS_DAT,
+  DataFile<statusrec_t> file(config.datadir(), STATUS_DAT,
     File::modeBinary | File::modeReadWrite);
   if (!file) {
     return 0;

@@ -25,7 +25,7 @@
 #include "sdk/vardec.h"
 #include "core/file.h"
 
-extern statusrec status;
+extern statusrec_t status;
 
 namespace wwiv {
 namespace sdk {
@@ -41,10 +41,10 @@ public:
   static constexpr int fileChangeNet = 4;
 
 private:
-  statusrec* m_pStatusRecord;
+  statusrec_t* m_pStatusRecord;
 
 public:
-  WStatus(const std::string& datadir, statusrec* pStatusRecord);
+  WStatus(const std::string& datadir, statusrec_t* pStatusRecord);
   WStatus(const std::string& datadir);
   ~WStatus();
 
@@ -256,7 +256,7 @@ private:
   File m_statusFile;
   const std::string datadir_;
   status_callabck_fn callback_;
-  bool Write(statusrec *pStatus);
+  bool Write(statusrec_t *pStatus);
   /*!
   * @function Get Loads the contents of STATUS.DAT with
   *           control on failure and lock mode

@@ -28,7 +28,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
-statusrec status;
+statusrec_t status;
 
 using std::string;
 using std::unique_ptr;
@@ -44,7 +44,7 @@ static string GetSysopLogFileName(const string& d) {
   return StringPrintf("%c%c%c%c%c%c.log", d[6], d[7], d[0], d[1], d[3], d[4]);
 }
 
-WStatus::WStatus(const std::string& datadir, statusrec* pStatusRecord) : datadir_(datadir) {
+WStatus::WStatus(const std::string& datadir, statusrec_t* pStatusRecord) : datadir_(datadir) {
   m_pStatusRecord = pStatusRecord;
 }
 
@@ -165,7 +165,7 @@ bool StatusMgr::Get(bool bLockFile) {
     for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
       oldFileChangeFlags[nFcIndex] = status.filechange[nFcIndex];
     }
-    m_statusFile.Read(&status, sizeof(statusrec));
+    m_statusFile.Read(&status, sizeof(statusrec_t));
 
     if (!bLockFile) {
       m_statusFile.Close();
@@ -207,7 +207,7 @@ bool StatusMgr::CommitTransaction(WStatus* pStatus) {
   return this->Write(pStatus->m_pStatusRecord);
 }
 
-bool StatusMgr::Write(statusrec *pStatus) {
+bool StatusMgr::Write(statusrec_t *pStatus) {
   if (!m_statusFile.IsOpen()) {
     m_statusFile.SetName(datadir_, STATUS_DAT);
     m_statusFile.Open(File::modeReadWrite | File::modeBinary);
@@ -218,7 +218,7 @@ bool StatusMgr::Write(statusrec *pStatus) {
   if (!m_statusFile.IsOpen()) {
     return false;
   }
-  m_statusFile.Write(pStatus, sizeof(statusrec));
+  m_statusFile.Write(pStatus, sizeof(statusrec_t));
   m_statusFile.Close();
   return true;
 }

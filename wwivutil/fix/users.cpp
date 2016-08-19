@@ -35,7 +35,7 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-statusrec status;
+statusrec_t status;
 
 namespace wwiv {
 namespace wwivutil {
@@ -80,7 +80,7 @@ static void saveStatus(const std::string& datadir) {
   File statusDat(datadir, STATUS_DAT);
 
   statusDat.Open(File::modeReadWrite | File::modeBinary);
-  statusDat.Write(&status, sizeof(statusrec));
+  statusDat.Write(&status, sizeof(statusrec_t));
   statusDat.Close();
 }
 
@@ -91,7 +91,7 @@ static bool initStatusDat(const std::string& datadir) {
   if (!statusDat.Exists()) {
     LOG(INFO) << statusDat.full_pathname() << " NOT FOUND!";
     LOG(INFO) << "Recreating " << statusDat.full_pathname() ;
-    memset(&status, 0, sizeof(statusrec));
+    memset(&status, 0, sizeof(statusrec_t));
     strcpy(status.date1, "00/00/00");
     strcpy(status.date2, status.date1);
     strcpy(status.date3, status.date1);
@@ -102,13 +102,13 @@ static bool initStatusDat(const std::string& datadir) {
     status.wwiv_version = wwiv_num_version;
     update = true;
   } else {
-    checkFileSize(statusDat, sizeof(statusrec));
+    checkFileSize(statusDat, sizeof(statusrec_t));
     LOG(INFO) << "Reading " << statusDat.full_pathname() << "...";
     if (!statusDat.Open(nFileMode)) {
       LOG(INFO) << statusDat.full_pathname() << " NOT FOUND.";
       return false;
     }
-    statusDat.Read(&status, sizeof(statusrec));
+    statusDat.Read(&status, sizeof(statusrec_t));
     statusDat.Close();
 
     // version check

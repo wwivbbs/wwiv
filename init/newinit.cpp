@@ -207,7 +207,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   save_config();
 
   create_arcs(out->window());
-  memset(&status, 0, sizeof(statusrec));
+  memset(&status, 0, sizeof(statusrec_t));
   string now(date());
   strcpy(status.date1, now.c_str());
   strcpy(status.date2, "00/00/00");

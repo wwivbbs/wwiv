@@ -42,7 +42,7 @@ int try_to_ul_wh(char *file_name);
 
 static void t2u_error(const string& file_name, const string& msg) {
   bout.nl(2);
-  string s1 = StringPrintf("**  %s failed T2U qualifications", file_name);
+  string s1 = StrCat("**  ", file_name, " failed T2U qualifications");
   bout << s1 << wwiv::endl;
   sysoplog(s1);
 

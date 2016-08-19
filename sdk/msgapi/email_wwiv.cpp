@@ -69,13 +69,13 @@ bool WWIVEmail::Close() {
 }
 
 static bool increment_email_counters(const string& root_directory, uint16_t email_usernum) {
-  statusrec status{};
+  statusrec_t status{};
   Config config(root_directory);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
     return false;
   }
-  DataFile<statusrec> file(config.datadir(), STATUS_DAT,
+  DataFile<statusrec_t> file(config.datadir(), STATUS_DAT,
     File::modeBinary | File::modeReadWrite);
   if (!file) {
     return false;

@@ -388,7 +388,7 @@ struct configoverrec {
 
 
 // DYNAMIC SYSTEM STATUS
-struct statusrec {
+struct statusrec_t {
   char date1[9],                               // last date active
        date2[9],                               // date before now
        date3[9],                               // two days ago
@@ -1077,7 +1077,7 @@ static_assert(sizeof(valrec) == 8, "valrec == 8");
 static_assert(sizeof(arcrec) == 336, "arcrec == 336");
 static_assert(sizeof(configrec) == 6228, "configrec == 6228");
 static_assert(sizeof(configoverrec) == 512, "configoverrec == 512");
-static_assert(sizeof(statusrec) == 151, "statusrec == 151");
+static_assert(sizeof(statusrec_t) == 151, "statusrec == 151");
 static_assert(sizeof(colorrec) == 240, "colorrec == 240");
 static_assert(sizeof(subboardrec) == 63, "subboardrec == 63");
 static_assert(sizeof(directoryrec) == 141, "directoryrec == 141");
