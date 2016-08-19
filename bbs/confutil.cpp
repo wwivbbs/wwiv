@@ -27,10 +27,6 @@
 
 using namespace wwiv::sdk;
 
-// Local functions
-bool setconf(ConferenceType type, int which, int old_subnum);
-
-
 /**
  * Does user u have access to the conference
  * @return bool
@@ -157,19 +153,18 @@ static void addusub(std::vector<usersubrec>& ss1, int ns, int sub, char key) {
 
 // returns true on success, false on failure
 // used to return 0 on success, 1 on failure
-bool setconf(ConferenceType type, int which, int old_subnum) {
-  int ns, osub;
+static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which, int old_subnum) {
+  int osub;
   confrec *c;
   // default it to usub, but it may change
-  std::vector<usersubrec>& ss1 = session()->usub;
   char *xdc, *xtc;
 
   int dp = 1;
   int tp = 0;
 
+  size_t ns = 0;
   switch (type) {
   case ConferenceType::CONF_SUBS:
-    ss1 = session()->usub;
     ns = session()->subboards.size();
     if (old_subnum == -1) {
       osub = session()->current_user_sub().subnum;
@@ -192,7 +187,6 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
     }
     break;
   case ConferenceType::CONF_DIRS:
-    ss1 = session()->udir;
     ns = session()->directories.size();
     if (old_subnum == -1) {
       osub = session()->current_user_dir().subnum;
@@ -221,7 +215,7 @@ bool setconf(ConferenceType type, int which, int old_subnum) {
   usersubrec s1 = {};
   s1.subnum = -1;
 
-  for (int i = 0; i < ns; i++) {
+  for (size_t i = 0; i < ns; i++) {
     ss1[i] = s1;
   }
 
@@ -324,23 +318,22 @@ void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
   case ConferenceType::CONF_SUBS:
     if (num >= 0 && num < MAX_CONFERENCES && uconfsub[num].confnum != -1) {
       session()->SetCurrentConferenceMessageArea(num);
-      setconf(nConferenceType, uconfsub[session()->GetCurrentConferenceMessageArea()].confnum, nOldSubNumber);
+      setconf(nConferenceType, session()->usub, uconfsub[session()->GetCurrentConferenceMessageArea()].confnum, nOldSubNumber);
       return;
     }
     break;
   case ConferenceType::CONF_DIRS:
     if (num >= 0 && num < MAX_CONFERENCES && uconfdir[num].confnum != -1) {
       session()->SetCurrentConferenceFileArea(num);
-      setconf(nConferenceType, uconfdir[session()->GetCurrentConferenceFileArea()].confnum, nOldSubNumber);
+      setconf(nConferenceType, session()->udir, uconfdir[session()->GetCurrentConferenceFileArea()].confnum, nOldSubNumber);
       return;
     }
     break;
   default:
     std::clog << "[utility.cpp] setuconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
-    WWIV_ASSERT(true);
     break;
   }
-  setconf(nConferenceType, -1, nOldSubNumber);
+  WWIV_ASSERT(true);
 }
 
 void changedsl() {
@@ -403,7 +396,7 @@ void changedsl() {
     setuconf(ConferenceType::CONF_SUBS, session()->GetCurrentConferenceMessageArea(), -1);
     setuconf(ConferenceType::CONF_DIRS, session()->GetCurrentConferenceFileArea(), -1);
   } else {
-    setconf(ConferenceType::CONF_SUBS, -1, -1);
-    setconf(ConferenceType::CONF_DIRS, -1, -1);
+    setconf(ConferenceType::CONF_SUBS, session()->usub, -1, -1);
+    setconf(ConferenceType::CONF_DIRS, session()->udir, -1, -1);
   }
 }
