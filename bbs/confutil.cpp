@@ -172,7 +172,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     } else {
       osub = old_subnum;
     }
-    xdc = dc;
+    xdc = mmkey_dc;
     xtc = mmkey_tc;
     xdc[0] = '/';
     if (which == -1) {
@@ -194,8 +194,8 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     } else {
       osub = old_subnum;
     }
-    xdc = dcd;
-    xtc = dtc;
+    xdc = mmkey_dcd;
+    xtc = mmkey_dtc;
     xdc[0] = '/';
     if (which == -1) {
       c = nullptr;

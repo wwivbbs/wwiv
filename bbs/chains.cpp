@@ -24,6 +24,7 @@
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/multinst.h"
+#include "bbs/mmkey.h"
 #include "bbs/bbs.h"
 #include "bbs/execexternal.h"
 #include "bbs/fcns.h"

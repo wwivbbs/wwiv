@@ -37,6 +37,7 @@
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/message_file.h"
+#include "bbs/mmkey.h"
 #include "bbs/inmsg.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"

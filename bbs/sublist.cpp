@@ -24,6 +24,7 @@
 #include "bbs/conf.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "bbs/confutil.h"
 #include "sdk/subxtr.h"

@@ -15,28 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_BBSUTL_H__
-#define __INCLUDED_BBS_BBSUTL_H__
+#ifndef __INCLUDED_BBS_MMKEY_H__
+#define __INCLUDED_BBS_MMKEY_H__
 
 
-bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
-  bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
-bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
-  bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
-bool so();
-bool cs();
-bool lcs();
-bool checka();
-bool checka(bool *abort);
-bool checka(bool *abort, bool *next);
-void pla(const std::string& text, bool *abort);
-void plal(const std::string& text, std::string::size_type limit, bool *abort);
-bool sysop2();
-bool checkcomp(const char *computer_type);
-int  check_ansi();
-bool set_language_1(int n);
-bool set_language(int n);
-const char *YesNoString(bool bYesNo);
+// todo(rush): make this a C++11 enum
+char *mmkey(int dl, int area = 0 /* mmkeyNoArea */, bool bListOption = false);
 
 
-#endif  // __INCLUDED_BBS_BBSUTL_H__
+#endif  // __INCLUDED_BBS_MMKEY_H__

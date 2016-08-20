@@ -23,6 +23,7 @@
 #include "bbs/conf.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/remote_io.h"

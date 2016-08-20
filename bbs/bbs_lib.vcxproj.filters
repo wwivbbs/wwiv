@@ -367,6 +367,9 @@
     <ClCompile Include="stdio_local_io.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="mmkey.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -664,6 +667,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="srsend.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="mmkey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

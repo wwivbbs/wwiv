@@ -145,6 +145,7 @@
     <ClInclude Include="menu_parser.h" />
     <ClInclude Include="message_file.h" />
     <ClInclude Include="email.h" />
+    <ClInclude Include="mmkey.h" />
     <ClInclude Include="msgbase1.h" />
     <ClInclude Include="multinst.h" />
     <ClInclude Include="netsup.h" />
@@ -255,6 +256,7 @@
     <ClCompile Include="message_file.cpp" />
     <ClCompile Include="misccmd.cpp" />
     <ClCompile Include="email.cpp" />
+    <ClCompile Include="mmkey.cpp" />
     <ClCompile Include="msgbase1.cpp" />
     <ClCompile Include="msgscan.cpp" />
     <ClCompile Include="multinst.cpp" />

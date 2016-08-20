@@ -30,6 +30,7 @@
 #include "bbs/bbs.h"
 #include "bbs/defaults.h"
 #include "bbs/fcns.h"
+#include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h" 

@@ -65,6 +65,7 @@ set(COMMON_SOURCES
  menusupp.cpp
  message_file.cpp
  misccmd.cpp
+ mmkey.cpp
  msgbase1.cpp
  msgscan.cpp
  multinst.cpp

@@ -40,18 +40,18 @@
 static constexpr int MAX_FILENAME_LENGTH = 260;
 __EXTRN__ char  ansistr[81],
           charbuffer[255],
-          dc[81],
-          dcd[81],
           g_szDownloadFileName[MAX_FILENAME_LENGTH],
           g_szDSZLogFileName[MAX_FILENAME_LENGTH],
-          dtc[81],
           g_szExtDescrFileName[MAX_FILENAME_LENGTH],
           endofline[81],
           irt[81],
           irt_name[205],
           irt_sub[81],
-          odc[81],
           *quotes_ind,
+          odc[81],
+          mmkey_dc[81],
+          mmkey_dcd[81],
+          mmkey_dtc[81],
           mmkey_tc[81];
 
 __EXTRN__ unsigned char  checksum;

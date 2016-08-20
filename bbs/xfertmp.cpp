@@ -28,6 +28,7 @@
 #include "bbs/input.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"

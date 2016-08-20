@@ -29,6 +29,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
+#include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
 #include "sdk/subxtr.h"

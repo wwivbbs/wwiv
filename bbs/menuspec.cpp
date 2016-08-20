@@ -32,6 +32,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
+#include "bbs/mmkey.h"
 #include "bbs/multinst.h"
 #include "bbs/vars.h"
 #include "core/stl.h"

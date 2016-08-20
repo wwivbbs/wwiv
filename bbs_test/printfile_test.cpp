@@ -36,7 +36,7 @@ using wwiv::sdk::User;
 
 class PrintFileTest : public ::testing::Test {
 protected:
-    virtual void SetUp() {
+  void SetUp() override {
         helper.SetUp();
     }
 

@@ -31,6 +31,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/listplus.h"
 #include "bbs/lpfunc.h"
+#include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"

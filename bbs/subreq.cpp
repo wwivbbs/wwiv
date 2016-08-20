@@ -21,6 +21,7 @@
 #include "sdk/subxtr.h"
 #include "bbs/bbs.h"
 #include "bbs/email.h"
+#include "bbs/mmkey.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "core/stl.h"

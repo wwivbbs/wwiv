@@ -31,6 +31,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
+#include "bbs/mmkey.h"
 #include "bbs/multinst.h"
 #include "bbs/printfile.h"
 #include "bbs/read_message.h"

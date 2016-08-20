@@ -32,6 +32,7 @@
 #include "bbs/inetmsg.h"
 #include "bbs/common.h"
 #include "bbs/menu.h"
+#include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
 #include "bbs/input.h"
 #include "bbs/newuser.h"
