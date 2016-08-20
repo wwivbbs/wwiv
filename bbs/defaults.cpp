@@ -76,23 +76,22 @@ void select_editor() {
     }
     return;
   }
-  for (size_t i1 = 0; i1 <= 5; i1++) {
-    odc[i1] = '\0';
-  }
   bout << "0. Normal non-full screen editor\r\n";
+  std::set<char> odc;
   for (size_t i = 0; i < session()->editors.size(); i++) {
     bout << i + 1 << ". " << session()->editors[i].description  << wwiv::endl;
     if (((i + 1) % 10) == 0) {
-      odc[(i + 1) / 10 - 1 ] = static_cast<char>((i + 1) / 10);
+      odc.insert(static_cast<char>((i + 1) / 10));
     }
   }
   bout.nl();
   bout << "|#9Which editor (|#31-" << session()->editors.size() << ", <Q>=leave as is|#9) ? ";
-  char *ss = mmkey(2);
-  int nEditor = atoi(ss);
+  string ss = mmkey(odc);
+
+  int nEditor = StringToInt(ss);
   if (nEditor >= 1 && nEditor <= size_int(session()->editors)) {
     session()->user()->SetDefaultEditor(nEditor);
-  } else if (IsEquals(ss, "0")) {
+  } else if (ss == "0") {
     session()->user()->SetDefaultEditor(0);
     session()->user()->ClearStatusFlag(User::autoQuote);
   }

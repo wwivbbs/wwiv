@@ -295,7 +295,7 @@ void print_net_listing(bool bForcePause) {
   while (!done && !hangup) {
     bout.cls();
     if (session()->max_net_num() > 1) {
-      odc[0] = 0;
+      mmkey_odc[0] = 0;
       int odci = 0;
       onx[0] = 'Q';
       onx[1] = 0;
@@ -307,8 +307,8 @@ void print_net_listing(bool bForcePause) {
           onx[onxi] = 0;
         } else {
           odci = (i + 1) / 10;
-          odc[odci - 1] = static_cast<char>(odci + '0');
-          odc[odci] = 0;
+          mmkey_odc[odci - 1] = static_cast<char>(odci + '0');
+          mmkey_odc[odci] = 0;
         }
         bout << "|#2" << i + 1 << "|#9)|#1 " << session()->net_networks[i].name << wwiv::endl;
       }

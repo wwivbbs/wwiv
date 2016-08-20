@@ -740,8 +740,6 @@ void temporary_stuff() {
   } while (!hangup);
 }
 
-
-
 void move_file_t() {
   char s1[81], s2[81];
   int d1 = -1;

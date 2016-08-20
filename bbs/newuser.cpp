@@ -144,9 +144,9 @@ void input_language() {
       } else {
         size_t i;
         for (i = 1; i <= session()->languages.size() / 10; i++) {
-          odc[i - 1] = static_cast<char>('0' + i);
+          mmkey_odc[i - 1] = static_cast<char>('0' + i);
         }
-        odc[i - 1] = 0;
+        mmkey_odc[i - 1] = 0;
         char* ss = mmkey(2);
         ch = *((ss) - 1);
       }

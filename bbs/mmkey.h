@@ -18,9 +18,22 @@
 #ifndef __INCLUDED_BBS_MMKEY_H__
 #define __INCLUDED_BBS_MMKEY_H__
 
+#include <string>
+#include <set>
+
+extern char
+    mmkey_odc[81],
+    mmkey_dc[81],
+    mmkey_dcd[81],
+    mmkey_dtc[81],
+    mmkey_tc[81];
+
 
 // todo(rush): make this a C++11 enum
-char *mmkey(int dl, int area = 0 /* mmkeyNoArea */, bool bListOption = false);
+std::string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption);
+std::string mmkey(std::set<char>& x);
+
+char *mmkey(int dl, bool bListOption = false);
 
 
 #endif  // __INCLUDED_BBS_MMKEY_H__

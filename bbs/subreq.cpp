@@ -239,7 +239,7 @@ void sub_xtr_add(int n, int nn) {
   memset(&xnp, 0, sizeof(xtrasubsnetrec));
 
   if (session()->max_net_num() > 1) {
-    odc[0] = 0;
+    mmkey_odc[0] = 0;
     odci = 0;
     onx[0] = 'Q';
     onx[1] = 0;
@@ -251,8 +251,8 @@ void sub_xtr_add(int n, int nn) {
         onx[onxi] = 0;
       } else {
         odci = (ii + 1) / 10;
-        odc[odci - 1] = static_cast<char>(odci + '0');
-        odc[odci] = 0;
+        mmkey_odc[odci - 1] = static_cast<char>(odci + '0');
+        mmkey_odc[odci] = 0;
       }
       bout << "(" << ii + 1 << ") " << session()->net_networks[ii].name << wwiv::endl;
     }

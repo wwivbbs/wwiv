@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <algorithm>
 #include <map>
+#include <set>
 #include <string>
 
 #include "bbs/input.h"
@@ -180,7 +181,7 @@ void do_chains() {
 
   session()->tleft(true);
   int mapp = 0;
-  memset(odc, 0, sizeof(odc));
+  std::set<char> odc;
   for (size_t i = 0; i < session()->chains.size(); i++) {
     bool ok = true;
     chainfilerec c = session()->chains[i];
@@ -210,7 +211,7 @@ void do_chains() {
       map[mapp++] = i;
       if (mapp < 100) {
         if ((mapp % 10) == 0) {
-          odc[mapp / 10-1] = static_cast<char>('0' + (mapp / 10));
+          odc.insert(static_cast<char>('0' + (mapp / 10)));
         }
       }
     }
@@ -222,35 +223,32 @@ void do_chains() {
 
   bool done  = false;
   int start  = 0;
-  char* ss = nullptr;
-
+  string ss;
   do {
     show_chains(&mapp, map);
     session()->tleft(true);
     bout.nl();
     bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 
-    int nChainum = -1;
     if (mapp < 100) {
-      ss = mmkey(2);
-      nChainum = atoi(ss);
+      ss = mmkey(odc);
     } else {
-      string chain_number = input(3);
-      nChainum = atoi(chain_number.c_str());
+      ss = input(3);
     }
-    if (nChainum > 0 && nChainum <= mapp) {
+    int chain_num = StringToInt(ss);
+    if (chain_num > 0 && chain_num <= mapp) {
       bout << "\r\n|#6Please wait...\r\n";
-      run_chain(map[ nChainum - 1 ]);
-    } else if (IsEquals(ss, "Q")) {
+      run_chain(map[chain_num - 1]);
+    } else if (ss == "Q") {
       done = true;
-    } else if (IsEquals(ss, "?")) {
+    } else if (ss == "?") {
       show_chains(&mapp, map);
-    } else if (IsEquals(ss, "P")) {
+    } else if (ss == "P") {
       if (start > 0) {
         start -= 14;
       }
       start = std::max<int>(start, 0);
-    } else if (IsEquals(ss, "N")) {
+    } else if (ss == "N") {
       if (start + 14 < mapp) {
         start += 14;
       }

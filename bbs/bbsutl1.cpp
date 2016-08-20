@@ -48,10 +48,11 @@ using namespace wwiv::strings;
  * @param pSystemmNumber OUT The System Number
  */
 void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystemNumber) {
-  char *ss1, onx[20], ch, *mmk;
+  char *ss1, onx[20], ch;
   unsigned user_number, system_number;
   int nv, on, xx, onxi, odci;
   net_system_list_rec *csne;
+  std::set<char> odc;
 
   char szEmailAddress[255];
   strcpy(szEmailAddress, emailAddress.c_str());
@@ -146,7 +147,6 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
         *pSystemNumber = *pUserNumber = 0;
       }
     } else if (*pSystemNumber && session()->max_net_num() > 1) {
-      odc[0] = '\0';
       odci = 0;
       onx[0] = 'Q';
       onx[1] = '\0';
@@ -193,9 +193,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
               onx[onxi++] = static_cast<char>(i + '1');
               onx[onxi] = 0;
             } else {
-              odci = static_cast<char>((i + 1) / 10);
-              odc[odci - 1] = static_cast<char>(odci + '0');
-              odc[odci] = 0;
+              odc.insert(static_cast<char>((i + 1) / 10));
             }
             bout << i + 1 << ". " << session()->network_name() << " (" << csne->name << ")\r\n";
           }
@@ -211,11 +209,11 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
             i = ch - '1';
           }
         } else {
-          mmk = mmkey(2);
-          if (*mmk == 'Q') {
+          string mmk = mmkey(odc);
+          if (mmk == "Q") {
             i = -1;
           } else {
-            i = atoi(mmk) - 1;
+            i = StringToInt(mmk) - 1;
           }
         }
         if (i >= 0 && i < nv) {

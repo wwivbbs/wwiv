@@ -88,11 +88,6 @@ public:
   WSession(WApplication* app, LocalIO* localIO);
   virtual ~WSession();
 
- public:
-  static const int mmkeyNoArea = 0;
-  static const int mmkeyMessageAreas = 1;
-  static const int mmkeyFileAreas = 2;
-
   wwiv::sdk::User* user() { return &thisuser_; }
 
   void handle_sysop_key(uint8_t key);

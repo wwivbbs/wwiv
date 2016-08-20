@@ -341,19 +341,16 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
 
 void gfile_sec(int sn) {
   int i, i1, i2, nf;
-  char xdc[81], *ss, *ss1, file_name[MAX_PATH];
+  char *ss1, file_name[MAX_PATH];
   bool abort;
 
   gfilerec* g = read_sec(sn, &nf);
   if (g == nullptr) {
     return;
   }
-  strcpy(xdc, odc);
-  for (i = 0; i < 20; i++) {
-    odc[i] = 0;
-  }
+  std::set<char> odc;
   for (i = 1; i <= nf / 10; i++) {
-    odc[i - 1] = static_cast<char>(i + '0');
+    odc.insert(static_cast<char>(i + '0'));
   }
   list_gfiles(g, nf, sn);
   bool done = false;
@@ -362,28 +359,26 @@ void gfile_sec(int sn) {
     bout << "|#9Current G|#1-|#9File Section |#1: |#5" << session()->gfilesec[sn].name << "|#0\r\n";
     bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
-    ss = mmkey(2);
-    i = atoi(ss);
-    if (IsEquals(ss, "Q")) {
+    string ss = mmkey(odc);
+    i = StringToInt(ss);
+    if (ss == "Q") {
       done = true;
-    } else if (IsEquals(ss, "E") && so()) {
+    } else if (ss == "E" && so()) {
       done = true;
       gfiles3(sn);
     }
-    if (IsEquals(ss, "A") && so()) {
+    if (ss == "A" && so()) {
       free(g);
       fill_sec(sn);
       g = read_sec(sn, &nf);
       if (g == nullptr) {
         return;
       }
-      for (i = 0; i < 20; i++) {
-        odc[i] = 0;
-      }
+      odc.clear();
       for (i = 1; i <= nf / 10; i++) {
-        odc[i - 1] = static_cast<char>(i + '0');
+        odc.insert(static_cast<char>(i + '0'));
       }
-    } else if (IsEquals(ss, "R") && so()) {
+    } else if (ss == "R" && so()) {
       bout.nl();
       bout << "|#2G-file number to delete? ";
       ss1 = mmkey(2);
@@ -409,9 +404,9 @@ void gfile_sec(int sn) {
           bout << "\r\nDeleted.\r\n\n";
         }
       }
-    } else if (IsEquals(ss, "?")) {
+    } else if (ss == "?") {
       list_gfiles(g, nf, sn);
-    } else if (IsEquals(ss, "Q")) {
+    } else if (ss == "Q") {
       done = true;
     } else if (i > 0 && i <= nf) {
       sprintf(file_name, "%s%c%s", session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
@@ -420,17 +415,17 @@ void gfile_sec(int sn) {
       if (i1 == 0) {
         sysoplogf("Read G-file '%s'", g[i - 1].filename);
       }
-    } else if (IsEquals(ss, "D")) {
+    } else if (ss == "D") {
       bool done1 = false;
       while (!done1 && !hangup) {
         bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
-        ss = mmkey(2);
-        i2 = atoi(ss);
+        ss = mmkey(odc);
+        i2 = StringToInt(ss);
         abort = false;
-        if (IsEquals(ss, "?")) {
+        if (ss == "?") {
           list_gfiles(g, nf, sn);
           bout << "|#9Current G|#1-|#9File Section |#1: |#5" << session()->gfilesec[sn].name << wwiv::endl;
-        } else if (IsEquals(ss, "Q")) {
+        } else if (ss == "Q") {
           list_gfiles(g, nf, sn);
           done1 = true;
         } else if (!abort) {
@@ -466,7 +461,6 @@ void gfile_sec(int sn) {
     }
   }
   free(g);
-  strcpy(odc, xdc);
 }
 
 void gfiles2() {
@@ -485,14 +479,11 @@ void gfiles3(int n) {
 
 void gfiles() {
   int* map = static_cast<int *>(BbsAllocA(session()->max_gfilesec * sizeof(int)));
-  WWIV_ASSERT(map);
 
   bool done = false;
   int nmap = 0;
-  for (int i = 0; i < 20; i++) {
-    odc[i] = 0;
-  }
   int current_section = 0;
+  std::set<char> odc;
   for (const auto& r : session()->gfilesec) {
     bool ok = true;
     if (session()->user()->GetAge() < r.age) {
@@ -507,7 +498,7 @@ void gfiles() {
     if (ok) {
       map[nmap++] = current_section;
       if ((nmap % 10) == 0) {
-        odc[nmap / 10 - 1] = static_cast<char>('0' + (nmap / 10));
+        odc.insert(static_cast<char>('0' + (nmap / 10)));
       }
     }
     current_section++;

@@ -17,7 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/mmkey.h"
+#include <set>
 #include <string>
+
 
 #include "bbs/input.h"
 #include "bbs/bbs.h"
@@ -32,165 +34,106 @@ using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-char *mmkey(int dl, int area, bool bListOption) {
-  static char cmd1[10], cmd2[81], ch;
-  int i, p, cp;
+char mmkey_odc[81],
+     mmkey_dc[81],
+     mmkey_dcd[81],
+     mmkey_dtc[81],
+     mmkey_tc[81];
+
+string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
+  char ch;
+  string cmd1;
 
   do {
     do {
       ch = getkey();
       if (bListOption && (ch == RETURN || ch == SPACE)) {
         ch = upcase(ch);
-        cmd1[0] = ch;
-        return cmd1;
+        return string(1, ch);
       }
     } while ((ch <= ' ' || ch == RETURN || ch > 126) && !hangup);
     ch = upcase(ch);
     bputch(ch);
     if (ch == RETURN) {
-      cmd1[0] = '\0';
+      cmd1.clear();
     } else {
-      cmd1[0] = ch;
+      cmd1 = ch;
     }
-    cmd1[1] = '\0';
-    p = 0;
-    switch (dl) {
-
-    case 1:
-      if (strchr(mmkey_dtc, ch) != nullptr) {
-        p = 2;
-      } else if (strchr(mmkey_dcd, ch) != nullptr) {
-        p = 1;
-      }
-      break;
-    case 2:
-      if (strchr(odc, ch) != nullptr) {
-        p = 1;
-      }
-      break;
-    case 0:
-      if (strchr(mmkey_tc, ch) != nullptr) {
-        p = 2;
-      } else if (strchr(mmkey_dc, ch) != nullptr) {
-        p = 1;
-      }
-      break;
-    }
-    if (p) {
-      cp = 1;
-      do {
-        do {
-          ch = getkey();
-        } while ((((ch < ' ') && (ch != RETURN) && (ch != BACKSPACE)) || (ch > 126)) && !hangup);
-        ch = upcase(ch);
-        if (ch == RETURN) {
-          bout.nl();
-          if (dl == 2) {
-            bout.nl();
-          }
-          if (!session()->user()->IsExpert() && !okansi()) {
-            newline = true;
-          }
-          return cmd1;
-        } else {
-          if (ch == BACKSPACE) {
-            bout.bs();
-            cmd1[ --cp ] = '\0';
-          } else {
-            cmd1[ cp++ ]  = ch;
-            cmd1[ cp ]    = '\0';
-            bputch(ch);
-            if (ch == '/' && cmd1[0] == '/') {
-              input(cmd2, 50);
-              if (!newline) {
-                if (isdigit(cmd2[0])) {
-                  if (area == WSession::mmkeyMessageAreas && dl == 0) {
-                    for (i = 0; i < size_int(session()->subboards) && session()->usub[i].subnum != -1; i++) {
-                      if (IsEquals(session()->usub[i].keys, cmd2)) {
-                        bout.nl();
-                        break;
-                      }
-                    }
-                  }
-                  if (area == WSession::mmkeyFileAreas && dl == 1) {
-                    for (i = 0; i < size_int(session()->directories); i++) {
-                      if (IsEquals(session()->udir[i].keys, cmd2)) {
-                        bout.nl();
-                        break;
-                      }
-                    }
-                  }
-                  if (dl == 2) {
-                    bout.nl();
-                  }
-                } else {
-                  bout.nl();
-                }
-                newline = true;
-              }
-              return cmd2;
-            } else if (cp == p + 1) {
-              if (!newline) {
-                if (isdigit(cmd1[ 0 ])) {
-                  if (dl == 2 || !okansi()) {
-                    bout.nl();
-                  }
-                  if (!session()->user()->IsExpert() && !okansi()) {
-                    newline = true;
-                  }
-                } else {
-                  bout.nl();
-                  newline = true;
-                }
-              } else {
-                bout.nl();
-                newline = true;
-              }
-              return cmd1;
-            }
-          }
-        }
-      } while (cp > 0);
+    int p = 0;
+    if (contains(xx, ch)) {
+      p = 2;
+    } else if (contains(x, ch)) {
+      p = 1;
     } else {
-      if (!newline) {
-        switch (cmd1[0]) {
-        case '>':
-        case '+':
-        case ']':
-        case '}':
-        case '<':
-        case '-':
-        case '[':
-        case '{':
-        case 'H':
-          if (dl == 2 || !okansi()) {
-            bout.nl();
-          }
-          if (!session()->user()->IsExpert() && !okansi()) {
-            newline = true;
-          }
-          break;
-        default:
-          if (isdigit(cmd1[0])) {
-            if (dl == 2 || !okansi()) {
-              bout.nl();
-            }
-            if (!session()->user()->IsExpert() && !okansi()) {
-              newline = true;
-            }
-          } else {
-            bout.nl();
-            newline = true;
-          }
-          break;
-        }
-      } else {
-        bout.nl();
-        newline = true;
-      }
+      bout.nl();
+      newline = true;
       return cmd1;
     }
+    
+    int cp = 1;
+    do {
+      do {
+        ch = getkey();
+      } while ((((ch < ' ') && (ch != RETURN) && (ch != BACKSPACE)) || (ch > 126)) && !hangup);
+      ch = upcase(ch);
+      if (ch == RETURN) {
+        bout.nl();
+        newline = true;
+        return cmd1;
+      } else {
+        if (ch == BACKSPACE) {
+          bout.bs();
+          cmd1.pop_back();
+          cp--;
+        } else {
+          cmd1.push_back(ch);
+          bputch(ch);
+          cp++;
+          if (ch == '/' && cmd1[0] == '/') {
+            newline = true;
+            return input(50);
+          } else if (cp == p + 1) {
+            bout.nl();
+            newline = true;
+            return cmd1;
+          }
+        }
+      }
+    } while (cp > 0);
   } while (!hangup);
-  cmd1[0] = '\0';
-  return cmd1;
+  return{};
+}
+
+static void insert_all(std::set<char>& t, const char* s) {
+  while (*s) {
+    t.insert(*s++);
+  }
+}
+
+string mmkey(std::set<char>& x) {
+  std::set<char> xx;
+  return mmkey(x, xx, false);
+}
+
+char *mmkey(int dl, bool bListOption) {
+  std::set<char> x;
+  std::set<char> xx;
+  switch (dl) {
+  case 0: {
+    insert_all(x, mmkey_dc);
+    insert_all(xx, mmkey_tc);
+  } break;
+  case 1: {
+    insert_all(x, mmkey_dcd);
+    insert_all(xx, mmkey_dtc);
+  } break;
+  case 2: {
+    insert_all(x, mmkey_odc);
+  } break;
+  }
+
+  static char s[81];
+  string s1 = mmkey(x, xx, bListOption);
+  strcpy(s, s1.c_str());
+  return s;
 }

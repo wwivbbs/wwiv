@@ -525,13 +525,13 @@ const string GetCommand(const MenuInstanceData* menu_data) {
   if (pSecondUserRec->cHotKeys == HOTKEYS_ON) {
     if (menu_data->header.nums == MENU_NUMFLAG_DIRNUMBER) {
       write_inst(INST_LOC_XFER, session()->current_user_dir().subnum, INST_FLAGS_NONE);
-      return string(mmkey(1, WSession::mmkeyFileAreas));
+      return string(mmkey(1));
     } else if (menu_data->header.nums == MENU_NUMFLAG_SUBNUMBER) {
       write_inst(INST_LOC_MAIN, session()->current_user_sub().subnum, INST_FLAGS_NONE);
-      return string(mmkey(0, WSession::mmkeyMessageAreas));
+      return string(mmkey(0));
     } else {
-      odc[0] = '/';
-      odc[1] = '\0';
+      mmkey_odc[0] = '/';
+      mmkey_odc[1] = '\0';
       return string(mmkey(2));
     }
   } else {

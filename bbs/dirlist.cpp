@@ -108,7 +108,7 @@ void dirlist(int mode) {
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
-          ss = mmkey(1, WSession::mmkeyFileAreas, true);
+          ss = mmkey(1, true);
           if (isdigit(ss[0])) {
             for (size_t i3 = 0; i3 < session()->directories.size(); i3++) {
               if (wwiv::strings::IsEquals(session()->udir[i3].keys, ss)) {

@@ -94,12 +94,12 @@ static bool print_question(int i, int ii) {
   int t1 = (t) ? t : 1;
   pla(" |#20|#9) |#9No Comment", &abort);
   for (int i2 = 0; i2 < 5; i2++) {
-    odc[i2] = '\0';
+    mmkey_odc[i2] = '\0';
   }
   for (int i3 = 0; i3 < v.numanswers && !abort; i3++) {
     vr = v.responses[ i3 ];
     if (((i3 + 1) % 10) == 0) {
-      odc[((i3 + 1) / 10) - 1 ] = '0' + static_cast<char>((i3 + 1) / 10);
+      mmkey_odc[((i3 + 1) / 10) - 1 ] = '0' + static_cast<char>((i3 + 1) / 10);
     }
     sprintf(szBuffer, "|#2%2d|#9) |#9%-60s   |#3%4d  |#1%5.1f%%",
             i3 + 1, vr.response, vr.numresponses,
@@ -199,7 +199,7 @@ void vote() {
   }
 
   for (int i = 0; i < 5; i++) {
-    odc[i] = 0;
+    mmkey_odc[i] = 0;
   }
 
   int map[21], mapp = 0;
@@ -209,14 +209,14 @@ void vote() {
     if (v.numanswers) {
       map[++mapp] = i1;
       if ((mapp % 10) == 0) {
-        odc[(mapp / 10) - 1] = '0' + static_cast<char>(mapp / 10);
+        mmkey_odc[(mapp / 10) - 1] = '0' + static_cast<char>(mapp / 10);
       }
     }
   }
   voteFile.Close();
 
   char sodc[ 10 ];
-  strcpy(sodc, odc);
+  strcpy(sodc, mmkey_odc);
   if (mapp == 0) {
     bout << "\r\n\n|#6No voting questions currently.\r\n\n";
     return;
@@ -226,7 +226,7 @@ void vote() {
     print_quest(mapp, &map[0]);
     bout.nl();
     bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
-    strcpy(odc, sodc);
+    strcpy(mmkey_odc, sodc);
     bout.mpl(2);
     char* pszAnswer = mmkey(2);
     int nQuestionNum = atoi(pszAnswer);
