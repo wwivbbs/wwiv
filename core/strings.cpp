@@ -49,8 +49,8 @@ using std::string;
 using std::out_of_range;
 
 unsigned char *translate_letters[] = {
-  (unsigned char *)"abcdefghijklmnopqrstuvwxyz‡„†‚”¤",
-  (unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ€Žš™¥",
+  (unsigned char *)"abcdefghijklmnopqrstuvwxyzï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
+  (unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½",
   0L,
 };
 const char *DELIMS_WHITE = " \t\r\n";
@@ -524,17 +524,17 @@ char *strlwr(char *s) {
 }
 
 // Reverses a string
-char *strrev(char *str) {
-  CHECK(pszBufer != nullptr);
+char *strrev(char *s) {
+  CHECK(s != nullptr);
   char szTempBuffer[255];
-  int str = strlen(pszBufer);
+  int str = strlen(s);
   CHECK_LE(str, 255);
 
   for (int i = str; i > - 1; i--) {
-    pszBufer[i] = szTempBuffer[str - i];
+    s[i] = szTempBuffer[str - i];
   }
-  strcpy(pszBufer, szTempBuffer);
-  return pszBufer;
+  strcpy(s, szTempBuffer);
+  return s;
 }
 
 #endif  // _WIN32
