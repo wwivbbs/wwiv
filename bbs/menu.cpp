@@ -530,9 +530,8 @@ const string GetCommand(const MenuInstanceData* menu_data) {
       write_inst(INST_LOC_MAIN, session()->current_user_sub().subnum, INST_FLAGS_NONE);
       return string(mmkey(0));
     } else {
-      mmkey_odc[0] = '/';
-      mmkey_odc[1] = '\0';
-      return string(mmkey(2));
+      std::set<char> odc = {'/'};
+      return string(mmkey(odc));
     }
   } else {
     return input(50);

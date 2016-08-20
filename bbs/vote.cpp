@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/vote.h"
 
+#include <string>
+
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/mmkey.h"
@@ -25,6 +27,9 @@
 #include "sdk/status.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+
+using std::string;
+using namespace wwiv::strings;
 
 static void print_quest(int mapp, int map[21]) {
   votingrec v;
@@ -93,13 +98,11 @@ static bool print_question(int i, int ii) {
   pla(szBuffer, &abort);
   int t1 = (t) ? t : 1;
   pla(" |#20|#9) |#9No Comment", &abort);
-  for (int i2 = 0; i2 < 5; i2++) {
-    mmkey_odc[i2] = '\0';
-  }
+  std::set<char> odc;
   for (int i3 = 0; i3 < v.numanswers && !abort; i3++) {
     vr = v.responses[ i3 ];
     if (((i3 + 1) % 10) == 0) {
-      mmkey_odc[((i3 + 1) / 10) - 1 ] = '0' + static_cast<char>((i3 + 1) / 10);
+      odc.insert('0' + static_cast<char>((i3 + 1) / 10));
     }
     sprintf(szBuffer, "|#2%2d|#9) |#9%-60s   |#3%4d  |#1%5.1f%%",
             i3 + 1, vr.response, vr.numresponses,
@@ -149,12 +152,12 @@ static void vote_question(int i, int ii) {
 
   bout << "|#5Which (0-" << static_cast<int>(v.numanswers) << ")? ";
   bout.mpl(2);
-  char* pszAnswer = mmkey(2);
-  int i1 = atoi(pszAnswer);
+  string a = mmkey({});
+  int i1 = StringToInt(a);
   if (i1 > v.numanswers) {
     i1 = 0;
   }
-  if (i1 == 0 && !wwiv::strings::IsEquals(pszAnswer, "0")) {
+  if (i1 == 0 && a != "0") {
     return;
   }
 
@@ -198,9 +201,7 @@ void vote() {
     }
   }
 
-  for (int i = 0; i < 5; i++) {
-    mmkey_odc[i] = 0;
-  }
+  std::set<char> odc;
 
   int map[21], mapp = 0;
   for (int i1 = 0; i1 < 20; i1++) {
@@ -209,14 +210,12 @@ void vote() {
     if (v.numanswers) {
       map[++mapp] = i1;
       if ((mapp % 10) == 0) {
-        mmkey_odc[(mapp / 10) - 1] = '0' + static_cast<char>(mapp / 10);
+        odc.insert('0' + static_cast<char>(mapp / 10));
       }
     }
   }
   voteFile.Close();
 
-  char sodc[ 10 ];
-  strcpy(sodc, mmkey_odc);
   if (mapp == 0) {
     bout << "\r\n\n|#6No voting questions currently.\r\n\n";
     return;
@@ -226,15 +225,14 @@ void vote() {
     print_quest(mapp, &map[0]);
     bout.nl();
     bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
-    strcpy(mmkey_odc, sodc);
     bout.mpl(2);
-    char* pszAnswer = mmkey(2);
-    int nQuestionNum = atoi(pszAnswer);
+    string answer= mmkey(odc);
+    int nQuestionNum = StringToInt(answer);
     if (nQuestionNum > 0 && nQuestionNum <= mapp) {
       vote_question(nQuestionNum, map[ nQuestionNum ]);
-    } else if (wwiv::strings::IsEquals(pszAnswer, "Q")) {
+    } else if (answer == "Q") {
       done = true;
-    } else if (wwiv::strings::IsEquals(pszAnswer, "?")) {
+    } else if (answer == "?") {
       print_quest(mapp, &map[0]);
     }
   } while (!done && !hangup);

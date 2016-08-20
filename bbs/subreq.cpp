@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "bbs/input.h"
 #include "sdk/subxtr.h"
@@ -29,6 +30,7 @@
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
+using std::string;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -226,8 +228,8 @@ void sub_xtr_del(int n, int nn, int f) {
 void sub_xtr_add(int n, int nn) {
   unsigned short i;
   short opt;
-  char szDescription[100], s[100], onx[20], *mmk, ch;
-  int onxi, odci, ii, gc;
+  char szDescription[100], s[100], onx[20], ch;
+  int onxi, ii, gc;
 
   // nn may be -1
   while (nn >= size_int(session()->xsubs[n].nets)) {
@@ -239,8 +241,7 @@ void sub_xtr_add(int n, int nn) {
   memset(&xnp, 0, sizeof(xtrasubsnetrec));
 
   if (session()->max_net_num() > 1) {
-    mmkey_odc[0] = 0;
-    odci = 0;
+    std::set<char> odc;
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
@@ -250,9 +251,8 @@ void sub_xtr_add(int n, int nn) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
       } else {
-        odci = (ii + 1) / 10;
-        mmkey_odc[odci - 1] = static_cast<char>(odci + '0');
-        mmkey_odc[odci] = 0;
+        int odci = (ii + 1) / 10;
+        odc.insert(static_cast<char>(odci + '0'));
       }
       bout << "(" << ii + 1 << ") " << session()->net_networks[ii].name << wwiv::endl;
     }
@@ -266,11 +266,11 @@ void sub_xtr_add(int n, int nn) {
         ii = ch - '1';
       }
     } else {
-      mmk = mmkey(2);
-      if (*mmk == 'Q') {
+      string mmk = mmkey(odc);
+      if (mmk == "Q") {
         ii = -1;
       } else {
-        ii = atoi(mmk) - 1;
+        ii = StringToInt(mmk) - 1;
       }
     }
     if (ii >= 0 && ii < session()->max_net_num()) {

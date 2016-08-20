@@ -273,7 +273,7 @@ void print_net_listing(bool bForcePause) {
   char town[5];
   net_system_list_rec csne;
   unsigned short slist, cmdbit = 0;
-  char substr[81], onx[20], acstr[4], phstr[13], *mmk;
+  char substr[81], onx[20], acstr[4], phstr[13];
   char s[255], s1[101], s2[101], bbstype;
   bool bHadPause = false;
 
@@ -295,8 +295,7 @@ void print_net_listing(bool bForcePause) {
   while (!done && !hangup) {
     bout.cls();
     if (session()->max_net_num() > 1) {
-      mmkey_odc[0] = 0;
-      int odci = 0;
+      std::set<char> odc;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
@@ -306,9 +305,8 @@ void print_net_listing(bool bForcePause) {
           onx[onxi++] = static_cast<char>(i + '1');
           onx[onxi] = 0;
         } else {
-          odci = (i + 1) / 10;
-          mmkey_odc[odci - 1] = static_cast<char>(odci + '0');
-          mmkey_odc[odci] = 0;
+          int odci = (i + 1) / 10;
+          odc.insert(static_cast<char>(odci + '0'));
         }
         bout << "|#2" << i + 1 << "|#9)|#1 " << session()->net_networks[i].name << wwiv::endl;
       }
@@ -322,11 +320,11 @@ void print_net_listing(bool bForcePause) {
           i = ch - '1';
         }
       } else {
-        mmk = mmkey(2);
-        if (*mmk == 'Q') {
+        string mmk = mmkey(odc);
+        if (mmk == "Q") {
           done = true;
         } else {
-          i = atoi(mmk) - 1;
+          i = StringToInt(mmk) - 1;
         }
       }
 

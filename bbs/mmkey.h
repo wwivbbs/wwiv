@@ -20,9 +20,7 @@
 
 #include <string>
 #include <set>
-
 extern char
-    mmkey_odc[81],
     mmkey_dc[81],
     mmkey_dcd[81],
     mmkey_dtc[81],

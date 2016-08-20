@@ -142,13 +142,12 @@ void input_language() {
         ch = onek(onx);
         ch -= '1';
       } else {
-        size_t i;
-        for (i = 1; i <= session()->languages.size() / 10; i++) {
-          mmkey_odc[i - 1] = static_cast<char>('0' + i);
+        std::set<char> odc;
+        for (size_t i = 1; i <= session()->languages.size() / 10; i++) {
+          odc.insert(static_cast<char>('0' + i));
         }
-        mmkey_odc[i - 1] = 0;
-        char* ss = mmkey(2);
-        ch = *((ss) - 1);
+        string ss = mmkey(odc);
+        ch = ss.front() - 1;
       }
       if (ch >= 0 && ch < size_int(session()->languages)) {
         session()->user()->SetLanguage(session()->languages[ch].num);

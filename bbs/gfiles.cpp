@@ -341,7 +341,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
 
 void gfile_sec(int sn) {
   int i, i1, i2, nf;
-  char *ss1, file_name[MAX_PATH];
+  char file_name[MAX_PATH];
   bool abort;
 
   gfilerec* g = read_sec(sn, &nf);
@@ -381,8 +381,8 @@ void gfile_sec(int sn) {
     } else if (ss == "R" && so()) {
       bout.nl();
       bout << "|#2G-file number to delete? ";
-      ss1 = mmkey(2);
-      i = atoi(ss1);
+      string ss1 = mmkey(odc);
+      i = StringToInt(ss1);
       if (i > 0 && i <= nf) {
         bout << "|#9Remove " << g[i - 1].description << "|#1? |#5";
         if (yesno()) {
@@ -514,13 +514,13 @@ void gfiles() {
     bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
     bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
-    char * ss = mmkey(2);
-    if (IsEquals(ss, "Q")) {
+    string ss = mmkey(odc);
+    if (ss == "Q") {
       done = true;
-    } else if (IsEquals(ss, "G") && so()) {
+    } else if (ss == "G" && so()) {
       done = true;
       gfiles2();
-    } else if (IsEquals(ss, "A") && cs()) {
+    } else if (ss == "A" && cs()) {
       bool bIsSectionFull = false;
       for (int i = 0; i < nmap && !bIsSectionFull; i++) {
         bout.nl();
@@ -528,7 +528,7 @@ void gfiles() {
         bIsSectionFull = fill_sec(map[i]);
       }
     } else {
-      int i = atoi(ss);
+      int i = StringToInt(ss);
       if (i > 0 && i <= nmap) {
         gfile_sec(map[i-1]);
       }

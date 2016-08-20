@@ -22,6 +22,7 @@
 
 
 #include "bbs/input.h"
+#include "core/log.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/keycodes.h"
@@ -34,8 +35,7 @@ using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-char mmkey_odc[81],
-     mmkey_dc[81],
+char mmkey_dc[81],
      mmkey_dcd[81],
      mmkey_dtc[81],
      mmkey_tc[81];
@@ -127,9 +127,9 @@ char *mmkey(int dl, bool bListOption) {
     insert_all(x, mmkey_dcd);
     insert_all(xx, mmkey_dtc);
   } break;
-  case 2: {
-    insert_all(x, mmkey_odc);
-  } break;
+  default: {
+    DLOG(FATAL) << "invalid mmkey dl: " << dl;
+  }
   }
 
   static char s[81];
