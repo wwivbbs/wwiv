@@ -362,10 +362,12 @@ void pla(const string& text, bool *abort) {
   if (CheckForHangup()) {
     *abort = true;
   }
-  checka(abort);
-  for (auto iter = std::begin(text); iter != std::end(text) && !*abort; ++iter) {
-    bputch(*iter, true);
-    checka(abort);
+
+  for (const auto& c : text) {
+    if (checka(abort)) {
+      break;
+    }
+    bputch(c, true);
   }
   FlushOutComChBuffer();
   if (!*abort) {
@@ -418,15 +420,6 @@ bool sysop2() {
   }
   return ok;
 }
-
-// Returns true if computer type string in *s matches the current user's
-// defined computer type..
-bool checkcomp(const char *computer_type) {
-  WWIV_ASSERT(computer_type);
-  const string ctype = ctypes(session()->user()->GetComputerType());
-  return strstr(ctype.c_str(), computer_type) ? true : false;
-}
-
 
 // Returns 1 if ANSI detected, or if local user, else returns 0. Uses the
 // cursor position interrogation ANSI sequence for remote detection.
