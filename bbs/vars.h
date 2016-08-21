@@ -80,8 +80,7 @@ __EXTRN__ bool  bChatLine,
           outcom,
           okskey,
           okmacro,
-          ok_modem_stuff,
-          returning;
+          ok_modem_stuff;
 
 // Chatroom additions
 __EXTRN__ bool  in_chatroom;

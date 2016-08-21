@@ -1983,7 +1983,6 @@ int lp_try_to_download(const char *file_mask, int dn) {
       i = nrecno(file_mask, i);
     }
   } while ((i > 0) && ok && !hangup);
-  returning = true;
   if (rtn == -2) {
     return -2;
   }

@@ -803,7 +803,6 @@ int try_to_download(const char *file_mask, int dn) {
       i = nrecno(file_mask, i);
     }
   } while (i > 0 && ok && !hangup);
-  returning = true;
   if (rtn == -2) {
     return -2;
   }
@@ -814,7 +813,6 @@ int try_to_download(const char *file_mask, int dn) {
   }
 }
 
-
 void download() {
   char ch, s[81], s1[81];
   int i = 0, color = 0, count;
@@ -822,7 +820,6 @@ void download() {
   int ip, rtn = 0, useconf;
   bool done = false;
 
-  returning = false;
   useconf = 0;
 
   bout.cls();
@@ -838,7 +835,7 @@ void download() {
     }
     if (i < size_int(session()->batch().entry)) {
       const auto& b = session()->batch().entry[i];
-      if (!returning && b.sending) {
+      if (b.sending) {
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
           i + 1, b.filename,
           b.len, ctim(std::lround(b.time)), 
@@ -962,7 +959,7 @@ void download() {
     break;
     case WWIV_INTERNAL_PROT_ZMODEM: {
       zmbatchdl(had);
-    }
+    } break;
     default: {
       dszbatchdl(had, session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
         session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].description);
