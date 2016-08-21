@@ -296,9 +296,6 @@ void sendout_email(EmailData& data) {
     session()->users()->ReadUser(&userRecord, data.user_number);
     userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
     session()->users()->WriteUser(&userRecord, data.user_number);
-    if (data.user_number == 1) {
-      ++fwaiting;
-    }
     if (user_online(data.user_number, &i)) {
       send_inst_sysstr(i, "You just received email.");
     }
@@ -349,7 +346,6 @@ void sendout_email(EmailData& data) {
     pStatus->IncrementNumFeedbackSentToday();
     session()->user()->SetNumFeedbackSent(session()->user()->GetNumFeedbackSent() + 1);
     session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
-    ++fsenttoday;
   } else {
     pStatus->IncrementNumEmailSentToday();
     session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
@@ -402,7 +398,7 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
   }
   if (!bForceit) {
     if (((user_number == 1 && system_number == 0 &&
-          (fsenttoday >= 5 || session()->user()->GetNumFeedbackSentToday() >= 10)) ||
+          (session()->user()->GetNumFeedbackSentToday() >= 10)) ||
          ((user_number != 1 || system_number != 0) &&
           (session()->user()->GetNumEmailSentToday() >= getslrec(session()->GetEffectiveSl()).emails)))
         && !cs()) {
@@ -745,9 +741,6 @@ void delmail(File *pFile, int loc) {
     if (user.GetNumMailWaiting()) {
       user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
       session()->users()->WriteUser(&user, m.touser);
-    }
-    if (m.touser == 1) {
-      --fwaiting;
     }
   }
   pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);

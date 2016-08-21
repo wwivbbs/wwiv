@@ -268,9 +268,6 @@ void process_inst_msgs() {
           bout.nl(2);
           printfile(OFFLINE_NOEXT);
           if (session()->IsUserOnline()) {
-            if (session()->usernum == 1) {
-              fwaiting = session()->user()->GetNumMailWaiting();
-            }
             session()->WriteCurrentUser();
             write_qscn(session()->usernum, qsc, false);
           }

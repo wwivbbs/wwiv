@@ -466,10 +466,15 @@ void WSession::UpdateTopScreen() {
       static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
       pStatus->GetNumEmailSentToday());
 
+    User sysop{};
+    int feedback_waiting = 0;
+    if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+      feedback_waiting = sysop.GetNumMailWaiting();
+    }
     localIO()->LocalXYPrintf(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
       user()->GetSl(),
       user()->GetDsl(),
-      fwaiting,
+      feedback_waiting,
       pStatus->GetNumUploadsToday(),
       pStatus->GetNumFeedbackSentToday());
   }
@@ -533,11 +538,16 @@ void WSession::UpdateTopScreen() {
       ar, dar, restrict, user()->GetExempt(),
       lo, user()->GetNumFeedbackSent());
 
+    User sysop{};
+    int feedback_waiting = 0;
+    if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+      feedback_waiting = sysop.GetNumMailWaiting();
+    }
     localIO()->LocalXYPrintf(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
       user()->GetNote(),
       user()->GetGender(),
       user()->GetAge(),
-      ctypes(user()->GetComputerType()).c_str(), fwaiting);
+      ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
 
     if (chatcall) {
       localIO()->LocalXYPuts(0, 4, chat_reason_);
@@ -590,7 +600,6 @@ void WSession::GetCaller() {
   read_qscn(1, qsc, false);
   usernum = 1;
   ResetEffectiveSl();
-  fwaiting = user()->GetNumMailWaiting();
   if (user()->IsUserDeleted()) {
     user()->SetScreenChars(80);
     user()->SetScreenLines(25);
@@ -663,7 +672,6 @@ int WSession::doWFCEvents() {
       SetWfcStatus(0);
       ReadCurrentUser(1);
       read_qscn(1, qsc, false);
-      fwaiting = user()->GetNumMailWaiting();
       SetWfcStatus(1);
       ch = wwiv::UpperCase<char>(io->LocalGetChar());
       if (ch == 0) {
@@ -930,7 +938,6 @@ int WSession::doWFCEvents() {
         frequent_init();
         ReadCurrentUser(1);
         read_qscn(1, qsc, false);
-        fwaiting = user()->GetNumMailWaiting();
         ResetEffectiveSl();
         usernum = 1;
       }
@@ -1307,7 +1314,6 @@ int WSession::Run(int argc, char *argv[]) {
           hangup = false;
           incom = true;
           outcom = false;
-          global_xx = false;
           if (argument2Char == 'T') {
             type = CommunicationType::TELNET;
           } else if (argument2Char == 'S') {

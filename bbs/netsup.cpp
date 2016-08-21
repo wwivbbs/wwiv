@@ -202,7 +202,6 @@ static int cleanup_net1() {
             session()->status_manager()->RefreshStatusCache();
             session()->SetCurrentReadMessageArea(-1);
             session()->ReadCurrentUser(1);
-            fwaiting = session()->user()->GetNumMailWaiting();
           }
           if (check_bbsdata()) {
             ok2 = 1;
@@ -312,7 +311,6 @@ void do_callout(int sn) {
     zap_contacts();
     session()->status_manager()->RefreshStatusCache();
     last_time_c = static_cast<int>(tCurrentTime);
-    global_xx = false;
     cleanup_net();
     run_exp();
     send_inst_cleannet();

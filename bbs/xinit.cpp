@@ -933,7 +933,6 @@ void WSession::InitializeBBS() {
 
   XINIT_PRINTF("Reading User Information.");
   ReadCurrentUser(1);
-  fwaiting = (user()->IsUserDeleted()) ? 0 : user()->GetNumMailWaiting();
   statusMgr->RefreshStatusCache();
   topdata = LocalIO::topdataUser;
 

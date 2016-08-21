@@ -105,9 +105,6 @@ void multimail(int *pnUserNumber, int numu) {
     strcpy(s, "  ");
     user.SetNumMailWaiting(user.GetNumMailWaiting() + 1);
     session()->users()->WriteUser(&user, pnUserNumber[cv]);
-    if (pnUserNumber[cv] == 1) {
-      ++fwaiting;
-    }
     const string pnunn = session()->names()->UserName(pnUserNumber[cv]);
     strcat(s, pnunn.c_str());
     WStatus* pStatus = session()->status_manager()->BeginTransaction();
@@ -115,7 +112,6 @@ void multimail(int *pnUserNumber, int numu) {
       pStatus->IncrementNumFeedbackSentToday();
       session()->user()->SetNumFeedbackSentToday(session()->user()->GetNumFeedbackSentToday() + 1);
       session()->user()->SetNumFeedbackSent(session()->user()->GetNumFeedbackSent() + 1);
-      ++fsenttoday;
     } else {
       pStatus->IncrementNumEmailSentToday();
       session()->user()->SetNumEmailSent(session()->user()->GetNumEmailSent() + 1);
@@ -305,7 +301,7 @@ void slash_e() {
     bout << "Sorry, not enough disk space left.\r\n\n";
     return;
   }
-  if (((fsenttoday >= 5) || (session()->user()->GetNumFeedbackSentToday() >= 10) ||
+  if (((session()->user()->GetNumFeedbackSentToday() >= 10) ||
        (session()->user()->GetNumEmailSentToday() >= getslrec(session()->GetEffectiveSl()).emails))
       && (!cs())) {
     bout << "Too much mail sent today.\r\n\n";

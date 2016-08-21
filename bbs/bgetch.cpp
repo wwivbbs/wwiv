@@ -221,7 +221,7 @@ void RedrawCurrentLine() {
 }
 
 char bgetchraw() {
-  if (ok_modem_stuff && !global_xx && nullptr != session()->remoteIO()) {
+  if (ok_modem_stuff && nullptr != session()->remoteIO()) {
     if (session()->remoteIO()->incoming()) {
       return (session()->remoteIO()->getW());
     }
@@ -233,7 +233,7 @@ char bgetchraw() {
 }
 
 bool bkbhitraw() {
-  if (ok_modem_stuff && !global_xx) {
+  if (ok_modem_stuff) {
     return (session()->remoteIO()->incoming() || session()->localIO()->LocalKeyPressed());
   } else if (session()->localIO()->LocalKeyPressed()) {
     return true;

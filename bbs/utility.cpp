@@ -129,7 +129,6 @@ void frequent_init() {
   lines_listed = 0;
   session()->ReadCurrentUser(1);
   read_qscn(1, qsc, false);
-  fwaiting = (session()->user()->IsUserDeleted()) ? 0 : session()->user()->GetNumMailWaiting();
   okmacro = true;
   okskey = true;
   mailcheck = false;

@@ -77,7 +77,13 @@ void prstatus() {
   bout << "|#9E Sent Today    : |#2" << pStatus->GetNumEmailSentToday() << wwiv::endl;
   bout << "|#9F Sent Today    : |#2" << pStatus->GetNumFeedbackSentToday() << wwiv::endl;
   bout << "|#9Uploads Today   : |#2" << pStatus->GetNumUploadsToday() << wwiv::endl;
-  bout << "|#9Feedback Waiting: |#2" << fwaiting << wwiv::endl;
+
+  User sysop{};
+  int feedback_waiting = 0;
+  if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+    feedback_waiting = sysop.GetNumMailWaiting();
+  }
+  bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;
   bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
   bout << "|#9Q-Scan Pointer  : |#2" << pStatus->GetQScanPointer() << wwiv::endl;
 

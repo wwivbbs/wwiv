@@ -143,7 +143,12 @@ void wfc_screen() {
     session()->localIO()->LocalXYAPrintf(40, 1, 3, "OS: ");
     session()->localIO()->LocalXYAPrintf(44, 1, 14, osVersion.c_str());
     session()->localIO()->LocalXYAPrintf(21, 6, 14, "%d", pStatus->GetNumCallsToday());
-    session()->localIO()->LocalXYAPrintf(21, 7, 14, "%d", fwaiting);
+    User sysop{};
+    int feedback_waiting = 0;
+    if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+      feedback_waiting = sysop.GetNumMailWaiting();
+    }
+    session()->localIO()->LocalXYAPrintf(21, 7, 14, "%d", feedback_waiting);
     if (nNumNewMessages) {
       session()->localIO()->LocalXYAPrintf(29, 7 , 3, "New:");
       session()->localIO()->LocalXYAPrintf(34, 7 , 12, "%d", nNumNewMessages);

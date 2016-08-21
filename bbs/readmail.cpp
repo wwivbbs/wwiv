@@ -370,9 +370,6 @@ void readmail(int mode) {
     pFileEmail->Close();
   }
   session()->user()->SetNumMailWaiting(mw);
-  if (session()->usernum == 1) {
-    fwaiting = mw;
-  }
   if (mw == 0) {
     bout << "\r\n\n|#3You have no mail.\r\n\n";
     free(mloc);
@@ -1023,9 +1020,6 @@ void readmail(int mode) {
                 sprintf(s, "Forwarded mail to %s", s1);
                 if (delme) {
                   session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() - 1);
-                  if (session()->usernum == 1) {
-                    --fwaiting;
-                  }
                 }
                 bout << "Forwarding: ";
                 EmailData email;

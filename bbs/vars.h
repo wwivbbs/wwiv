@@ -58,16 +58,13 @@ charbufferpointer,
 chatting,
 defscreenbottom,
 do_event,
-equote,
-fsenttoday,
-fwaiting;
+equote;
 
 __EXTRN__ unsigned int
 lines_listed;
 
 __EXTRN__ bool  bChatLine,
           newline,
-          global_xx,
           forcescansub,
           local_echo,
           mailcheck,

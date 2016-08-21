@@ -283,7 +283,6 @@ static void ExecuteWWIVNetworkRequest() {
   session()->status_manager()->RefreshStatusCache();
   hangup = true;
   session()->remoteIO()->dtr(false);
-  global_xx = false;
   sleep_for(seconds(1));
   session()->remoteIO()->dtr(true);
   sleep_for(milliseconds(100));
@@ -637,7 +636,6 @@ static void UpdateLastOnFileAndUserLog() {
 }
 
 static void CheckAndUpdateUserInfo() {
-  fsenttoday = 0;
   if (session()->user()->GetBirthdayYear() == 0) {
     bout << "\r\nPlease enter the following information:\r\n";
     do {
@@ -1024,7 +1022,7 @@ void logoff() {
   session()->user()->SetLastOnDateNumber(lTime);
   sysoplogfi(false, "Read: %lu   Time on: %lu", session()->GetNumMessagesReadThisLogon(),
              static_cast<long>((timer() - timeon) / MINUTES_PER_HOUR));
-  if (mailcheck) {
+  if (mailcheck || true) {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       session()->user()->SetNumMailWaiting(0);
@@ -1104,9 +1102,6 @@ void logoff() {
       smwFile.SetLength(w * sizeof(shortmsgrec));
       smwFile.Close();
     }
-  }
-  if (session()->usernum == 1) {
-    fwaiting = session()->user()->GetNumMailWaiting();
   }
   session()->WriteCurrentUser();
   write_qscn(session()->usernum, qsc, false);

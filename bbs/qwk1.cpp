@@ -114,10 +114,6 @@ void qwk_remove_email() {
   }
   session()->user()->data.waiting = mw;
 
-  if (session()->usernum == 1) {
-    fwaiting = mw;
-  }
-  
   if (mw == 0) {
     free(mloc);
     return;
@@ -176,10 +172,6 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   f->Close();
   session()->user()->data.waiting = mw;
 
-  if (session()->usernum == 1) {
-    fwaiting = mw;
-  }
-  
   if (mw == 0) {
     bout.nl();
     bout.bputs("You have no mail.");
