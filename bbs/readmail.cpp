@@ -1047,7 +1047,6 @@ void readmail(int mode) {
                 if (curmail >= mw) {
                   done = true;
                 }
-                mailcheck = true;
               }
             }
           }

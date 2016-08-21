@@ -99,7 +99,6 @@ void StatusManagerCallback(int i) {
     break;
   case WStatus::fileChangeEmail:
     emchg = true;
-    mailcheck = false;
     break;
   case WStatus::fileChangeNet:
   {

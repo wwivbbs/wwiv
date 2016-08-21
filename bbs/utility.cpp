@@ -131,7 +131,6 @@ void frequent_init() {
   read_qscn(1, qsc, false);
   okmacro = true;
   okskey = true;
-  mailcheck = false;
   smwcheck = false;
   use_workspace = false;
   extratimecall = 0;

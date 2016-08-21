@@ -1022,7 +1022,7 @@ void logoff() {
   session()->user()->SetLastOnDateNumber(lTime);
   sysoplogfi(false, "Read: %lu   Time on: %lu", session()->GetNumMessagesReadThisLogon(),
              static_cast<long>((timer() - timeon) / MINUTES_PER_HOUR));
-  if (mailcheck || true) {
+  {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       session()->user()->SetNumMailWaiting(0);
@@ -1058,22 +1058,6 @@ void logoff() {
       WStatus *pStatus = session()->status_manager()->BeginTransaction();
       pStatus->IncrementFileChangedFlag(WStatus::fileChangeEmail);
       session()->status_manager()->CommitTransaction(pStatus);
-      pFileEmail->Close();
-    }
-  } else {
-    // re-calculate mail waiting'
-    unique_ptr<File> pFileEmail(OpenEmailFile(false));
-    if (pFileEmail->IsOpen()) {
-      int nTotalEmailMessages = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
-      session()->user()->SetNumMailWaiting(0);
-      for (int i = 0; i < nTotalEmailMessages; i++) {
-        pFileEmail->Read(&m, sizeof(mailrec));
-        if (m.tosys == 0 && m.touser == session()->usernum) {
-          if (session()->user()->GetNumMailWaiting() != 255) {
-            session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() + 1);
-          }
-        }
-      }
       pFileEmail->Close();
     }
   }

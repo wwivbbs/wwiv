@@ -750,5 +750,4 @@ void delmail(File *pFile, int loc) {
   m.msg.storage_type = 0;
   m.msg.stored_as = 0xffffffff;
   pFile->Write(&m, sizeof(mailrec));
-  mailcheck = true;
 }
