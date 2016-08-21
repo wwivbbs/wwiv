@@ -87,8 +87,8 @@ static bool email_changed = false;
 static bool posts_changed = false;
 
 static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
-  statusrec status{};
-  DataFile<statusrec> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  statusrec_t status{};
+  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &status)) {
       if (email) {
