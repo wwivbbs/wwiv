@@ -54,7 +54,7 @@ static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
   }
 }
 
-static void sub_req(uint16_t main_type, int tosys, char *stype) {
+static void sub_req(uint16_t main_type, int tosys, const string& stype) {
   net_header_rec nh;
 
   nh.tosys = static_cast<uint16_t>(tosys);
@@ -68,7 +68,7 @@ static void sub_req(uint16_t main_type, int tosys, char *stype) {
   nh.daten = static_cast<uint32_t>(time(nullptr));
   nh.method = 0;
   // This is an alphanumeric sub type.
-  nh.length = strlen(stype) + 1;
+  nh.length = stype.size() + 1;
   send_net(&nh, {}, stype, nullptr);
 
   bout.nl();

@@ -135,7 +135,8 @@ void send_net_post(postrec* pPostRecord, const subboardrec& sub, const wwiv::sdk
       }
     }
     if (nn1 == session()->net_num()) {
-      send_net(&nh, list, b1.get(), xnp.stype);
+      const string body(b1.get(), nh.length);
+      send_net(&nh, list, body, xnp.stype);
     } else {
       gate_msg(&nh, b1.get(), xnp.net_num, xnp.stype, list, nNetNumber);
     }
