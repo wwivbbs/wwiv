@@ -35,11 +35,6 @@ using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
-char mmkey_dc[81],
-     mmkey_dcd[81],
-     mmkey_dtc[81],
-     mmkey_tc[81];
-
 string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
   char ch;
   string cmd1;
@@ -104,28 +99,44 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
   return{};
 }
 
-static void insert_all(std::set<char>& t, const char* s) {
-  while (*s) {
-    t.insert(*s++);
-  }
-}
-
 string mmkey(std::set<char>& x) {
   std::set<char> xx;
   return mmkey(x, xx, false);
 }
 
+static int max_sub_key(std::vector<usersubrec>& container) {
+  int key = 0;
+  for (const auto& r : container) {
+    int current_key = StringToInt(r.keys);
+    if (current_key == 0) {
+      return key;
+    }
+    key = current_key;
+  }
+  return key;
+}
+ 
 char *mmkey(int dl, bool bListOption) {
-  std::set<char> x;
-  std::set<char> xx;
+  std::set<char> x = {'/'};
+  std::set<char> xx{};
   switch (dl) {
   case 0: {
-    insert_all(x, mmkey_dc);
-    insert_all(xx, mmkey_tc);
+    int max_key = max_sub_key(session()->usub);
+    for (char i = 1; i <= max_key / 10; i++) {
+      x.insert(i + '0');
+    }
+    for (char i = 1; i <= max_key / 100; i++) {
+      xx.insert(i + '0');
+    }
   } break;
   case 1: {
-    insert_all(x, mmkey_dcd);
-    insert_all(xx, mmkey_dtc);
+    int max_key = max_sub_key(session()->udir);
+    for (char i = 1; i <= max_key / 10; i++) {
+      x.insert(i);
+    }
+    for (char i = 1; i <= max_key / 100; i++) {
+      xx.insert(i);
+    }
   } break;
   default: {
     DLOG(FATAL) << "invalid mmkey dl: " << dl;

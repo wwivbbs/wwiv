@@ -20,14 +20,7 @@
 
 #include <string>
 #include <set>
-extern char
-    mmkey_dc[81],
-    mmkey_dcd[81],
-    mmkey_dtc[81],
-    mmkey_tc[81];
 
-
-// todo(rush): make this a C++11 enum
 std::string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption);
 std::string mmkey(std::set<char>& x);
 

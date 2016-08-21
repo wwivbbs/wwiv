@@ -158,11 +158,6 @@ static void addusub(std::vector<usersubrec>& ss1, int ns, int sub, char key) {
 static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which, int old_subnum) {
   int osub;
   confrec *c;
-  // default it to usub, but it may change
-  char *xdc, *xtc;
-
-  int dp = 1;
-  int tp = 0;
 
   size_t ns = 0;
   switch (type) {
@@ -173,9 +168,6 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     } else {
       osub = old_subnum;
     }
-    xdc = mmkey_dc;
-    xtc = mmkey_tc;
-    xdc[0] = '/';
     if (which == -1) {
       c = nullptr;
     } else {
@@ -195,9 +187,6 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     } else {
       osub = old_subnum;
     }
-    xdc = mmkey_dcd;
-    xtc = mmkey_dtc;
-    xdc[0] = '/';
     if (which == -1) {
       c = nullptr;
     } else {
@@ -237,8 +226,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
         }
         break;
       default:
-        std::clog << "[utility.cpp] setconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
-        WWIV_ASSERT(true);
+        LOG(FATAL) << "[utility.cpp] setconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
         break;
       }
     }
@@ -269,8 +257,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
       }
       break;
     default:
-      std::clog << "[utility.cpp] setconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
-      WWIV_ASSERT(true);
+      LOG(FATAL) << "[utility.cpp] setconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
       break;
 
     }
@@ -279,21 +266,8 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
   size_t i1 = (type == ConferenceType::CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
 
   for (size_t i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
-    if (i1 < 100) {
-      if (((i1 % 10) == 0) && i1) {
-        xdc[dp++] = static_cast<char>('0' + (i1 / 10));
-      }
-    } else {
-      if ((i1 % 100) == 0) {
-        xtc[tp++] = static_cast<char>('0' + (i1 / 100));
-      }
-    }
     snprintf(ss1[i].keys, sizeof(ss1[i].keys), "%d", i1++);
   }
-
-
-  xdc[dp] = '\0';
-  xtc[tp] = '\0';
 
   for (i1 = 0; (i1 < ns) && (ss1[i1].subnum != -1); i1++) {
     if (ss1[i1].subnum == osub) {
@@ -332,10 +306,9 @@ void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
     }
     break;
   default:
-    std::clog << "[utility.cpp] setuconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
+    LOG(FATAL) << "[utility.cpp] setuconf called with nConferenceType != (ConferenceType::CONF_SUBS || ConferenceType::CONF_DIRS)\r\n";
     break;
   }
-  WWIV_ASSERT(true);
 }
 
 void changedsl() {
