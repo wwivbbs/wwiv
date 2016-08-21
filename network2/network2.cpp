@@ -83,6 +83,25 @@ using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+static bool email_changed = false;
+static bool posts_changed = false;
+
+static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
+  statusrec status{};
+  DataFile<statusrec> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  if (file) {
+    if (file.Read(0, &status)) {
+      if (email) {
+        status.filechange[filechange_email]++;
+      }
+      if (posts) {
+        status.filechange[filechange_posts]++;
+      }
+      file.Write(0, &status);
+    }
+  }
+}
+
 
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
@@ -165,6 +184,7 @@ static bool handle_packet(
     if (p.nh.minor_type == 0) {
       // Feedback to sysop from the NC.  
       // This is sent to the #1 account as source verified email.
+      email_changed = true;
       return handle_email(context, 1, p);
     } else {
       return handle_net_info_file(context.net, p);
@@ -173,6 +193,7 @@ static bool handle_packet(
   case main_type_email:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
+    email_changed = true;
     return handle_email(context, p.nh.touser, p);
     break;
   // The other email type.  The touser field is zero, and the name is found at
@@ -181,10 +202,12 @@ static bool handle_packet(
   case main_type_email_name:
     // This is regular email sent to a user number at this system.
     // Email has no minor type, so minor_type will always be zero.
+    email_changed = true;
     return handle_email_byname(context, p);
     break;
   case main_type_new_post:
   {
+    posts_changed = true;
     return handle_post(context, p);
   } break;
   case main_type_ssm:
@@ -307,6 +330,7 @@ int main(int argc, char** argv) {
       if (!File::Remove(net.dir, LOCAL_NET)) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
       }
+      update_filechange_status_dat(context.config.datadir(), email_changed, posts_changed);
       return 0;
     } else {
       LOG(ERROR) << "ERROR: handle_file returned false";
