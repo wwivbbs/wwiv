@@ -28,6 +28,7 @@
 #include "bbs/fcns.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
@@ -1214,7 +1215,7 @@ static confrec *read_conferences(const char *file_name, unsigned int *nc, int ma
   confrec *conferences = static_cast<confrec *>(BbsAllocA(l));
   WWIV_ASSERT(conferences != nullptr);
   if (!conferences) {
-    std::clog << "Out of memory reading file [" << file_name << "]." << std::endl;
+    LOG(ERROR) << "Out of memory reading file [" << file_name << "].";
     f.Close();
     return nullptr;
   }
@@ -1301,8 +1302,8 @@ static confrec *read_conferences(const char *file_name, unsigned int *nc, int ma
           if (ok) {
             memset(conferences[cc].subs, 0, l);
           } else {
-            std::clog << "Out of memory on conference file #" << cc + 1 << ", " <<
-                      syscfg.datadir << file_name << "." << std::endl;
+            LOG(ERROR) << "Out of memory on conference file #" << cc + 1 << ", " <<
+                          syscfg.datadir << file_name << ".";
             for (i2 = 0; i2 < cc; i2++) {
               free(conferences[i2].subs);
             }
@@ -1376,13 +1377,13 @@ void read_in_conferences(ConferenceType conftype) {
   }
   if (!File::Exists(s)) {
     if (!create_conf_file(conftype)) {
-      std::clog << "Problem creating conferences." << std::endl;
+      LOG(FATAL) << "Problem creating conferences.";
       session()->AbortBBS();
     }
   }
   *cpp = read_conferences(s, np, max);
   if (!(*cpp)) {
-    std::clog << "Problem reading conferences." << std::endl;
+    LOG(FATAL) << "Problem reading conferences.";
     session()->AbortBBS();
   }
 }

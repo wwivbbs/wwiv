@@ -80,8 +80,8 @@ void serialize(Archive & ar, wwiv::bbslist::BbsListEntry &b) {
   }
   try {
     ar(cereal::make_nvp("addresses", b.addresses));
-  } catch (const std::exception&e) {
-    std::cerr << e.what() << std::endl;
+  } catch (const std::exception& e) {
+    LOG(ERROR) << e.what();
   }
 }
 

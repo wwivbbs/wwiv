@@ -23,16 +23,12 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
-#include <map>
 #include <string>
 
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/version.h"
 
-using std::clog;
-using std::endl;
-using std::map;
 using std::ofstream;
 using std::string;
 using el::ConfigurationType;
@@ -57,7 +53,6 @@ void Logger::ExitLogger() {
   time_t t = time(nullptr);
   LOG(INFO) << exit_filename << " exiting at " << asctime(localtime(&t));
 }
-
 
 // static
 void Logger::Init(int argc, char** argv) {

@@ -40,7 +40,7 @@ bool Graph::add_edge(uint16_t source, uint16_t dest, float cost) {
     return false;
   }
 
-  //std::clog << "adding edge: " << source << " " << dest << " " << cost << " " << std::boolalpha << computed_ << std::endl;
+  //VLOG(3) << "adding edge: " << source << " " << dest << " " << cost << " " << std::boolalpha << computed_ << std::endl;
   adjacency_list_[source].emplace_back(dest, cost);
   return true;
 }

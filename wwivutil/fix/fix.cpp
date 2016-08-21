@@ -32,9 +32,6 @@
 #include "wwivutil/fix/dirs.h"
 #include "wwivutil/fix/users.h"
 
-using std::cerr;
-using std::clog;
-using std::cout;
 using std::endl;
 using std::make_unique;
 using std::setw;

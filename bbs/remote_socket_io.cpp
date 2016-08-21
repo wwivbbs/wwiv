@@ -47,6 +47,7 @@ constexpr int SOCKET_ERROR = -1;
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/wwivport.h"
@@ -54,8 +55,6 @@ constexpr int SOCKET_ERROR = -1;
 
 
 using std::chrono::milliseconds;
-using std::clog;
-using std::endl;
 using std::lock_guard;
 using std::make_unique;
 using std::mutex;
@@ -278,7 +277,7 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
 bool RemoteSocketIO::carrier() {
   bool carrier = valid_socket();
   if (!carrier) {
-    std::cerr << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_;
+    LOG(ERROR) << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_;
   }
   return valid_socket();
 }
@@ -337,22 +336,22 @@ bool RemoteSocketIO::Initialize() {
   if (err != 0) {
     switch (err) {
     case WSASYSNOTREADY:
-      clog << "Error from WSAStartup: WSASYSNOTREADY";
+      LOG(ERROR) << "Error from WSAStartup: WSASYSNOTREADY";
       break;
     case WSAVERNOTSUPPORTED:
-      clog << "Error from WSAStartup: WSAVERNOTSUPPORTED";
+      LOG(ERROR) << "Error from WSAStartup: WSAVERNOTSUPPORTED";
       break;
     case WSAEINPROGRESS:
-      clog << "Error from WSAStartup: WSAEINPROGRESS";
+      LOG(ERROR) << "Error from WSAStartup: WSAEINPROGRESS";
       break;
     case WSAEPROCLIM:
-      clog << "Error from WSAStartup: WSAEPROCLIM";
+      LOG(ERROR) << "Error from WSAStartup: WSAEPROCLIM";
       break;
     case WSAEFAULT:
-      clog << "Error from WSAStartup: WSAEFAULT";
+      LOG(ERROR) << "Error from WSAStartup: WSAEFAULT";
       break;
     default:
-      clog << "Error from WSAStartup: ** unknown error code **";
+      LOG(ERROR) << "Error from WSAStartup: ** unknown error code **";
       break;
     }
   }
@@ -388,7 +387,7 @@ void RemoteSocketIO::InboundTelnetProc() {
       AddStringToInputBuffer(0, num_read, data.get());
     }
   } catch (const socket_error& e) {
-    std::clog << "InboundTelnetProc exiting. Caught socket_error: " << e.what() << std::endl;
+    LOG(ERROR) << "InboundTelnetProc exiting. Caught socket_error: " << e.what();
     closesocket(socket_);
     socket_ = INVALID_SOCKET;
   }

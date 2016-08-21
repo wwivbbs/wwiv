@@ -37,6 +37,7 @@
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/os.h"
 #include "core/version.cpp"
 #include "core/wfndfile.h"
@@ -133,11 +134,12 @@ WInitApp::~WInitApp() {
 
 int main(int argc, char* argv[]) {
   try {
+    wwiv::core::Logger::Init(argc, argv);
     std::unique_ptr<WInitApp> app(new WInitApp());
     return app->main(argc, argv);
   } catch (std::exception& e) {
-    std::clog << "Fatal exception launching init: " << std::endl 
-              << e.what() << std::endl;
+    LOG(INFO) << "Fatal exception launching init: " 
+              << e.what();
   }
 }
 

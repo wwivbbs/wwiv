@@ -29,7 +29,6 @@
 #include "sdk/net.h"
 #include "sdk/vardec.h"
 
-using std::clog;
 using std::endl;
 using std::string;
 using namespace wwiv::core;

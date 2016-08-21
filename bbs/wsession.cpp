@@ -157,7 +157,7 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
     wwiv::bbs::Key key(key_file.full_pathname(), system_password);
     if (!key.Open()) {
       if (!key.Create()) {
-        clog << "Unable to create or open key file!.  SSH will be disabled!" << endl;
+        LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
         type = CommunicationType::TELNET;
       }
     }
@@ -1204,7 +1204,7 @@ int WSession::Run(int argc, char *argv[]) {
   const std::string bbs_env = environment_variable("BBS");
   if (!bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
-      std::cerr << "You are already in the BBS, type 'EXIT' instead.\n\n";
+      LOG(ERROR) << "You are already in the BBS, type 'EXIT' instead.\n\n";
       session()->ExitBBSImpl(255, false);
     }
   }

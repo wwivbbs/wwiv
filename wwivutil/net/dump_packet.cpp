@@ -28,8 +28,6 @@
 #include "networkb/packets.h"
 #include "sdk/net.h"
 
-
-using std::cerr;
 using std::cout;
 using std::endl;
 using std::string;
@@ -50,7 +48,7 @@ static string daten_to_humantime(uint32_t daten) {
 int dump_file(const std::string& filename) {
   File f(filename);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    cerr << "Unable to open file: " << filename << endl;
+    LOG(ERROR) << "Unable to open file: " << filename;
     return 1;
   }
 

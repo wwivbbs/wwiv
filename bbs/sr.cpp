@@ -586,7 +586,6 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
   case WWIV_INTERNAL_PROT_XMODEMCRC:
   case WWIV_INTERNAL_PROT_YMODEM:
   case WWIV_INTERNAL_PROT_ZMODEM: {
-    std::clog << "maybe_internal, filename=" << file_name;
     maybe_internal(file_name, &bReceived, nullptr, false, nProtocol);
     *received = (bReceived) ? 1 : 0;
   }

@@ -36,9 +36,6 @@
 #include "wwivutil/net/dump_contact.h"
 #include "wwivutil/net/dump_packet.h"
 
-using std::cerr;
-using std::clog;
-using std::cout;
 using std::endl;
 using std::make_unique;
 using std::setw;

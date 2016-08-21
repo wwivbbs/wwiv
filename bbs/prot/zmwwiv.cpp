@@ -145,8 +145,6 @@ bool NewZModemReceiveFile( const char *file_name ) {
 
 		sprintf(szOldFileName, "%s%s", syscfgovr.tempdir, stripfn(file_name));
 		StringRemoveWhitespace(szOldFileName);
-        std::clog << "szOldFileName=" << szOldFileName
-                  << "szNewFileName=" << szNewFileName;
 		movefile( szOldFileName, szNewFileName, false );
 	}
 	return ret;

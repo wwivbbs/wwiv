@@ -23,12 +23,12 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
-using std::clog;
 using std::endl;
 using std::string;
 using namespace wwiv::core;
@@ -115,7 +115,7 @@ bool Names::Save() {
   DataFile<smalrec> file(data_directory_, NAMES_LST,
     File::modeReadWrite | File::modeBinary | File::modeTruncate);
   if (!file) {
-    clog << "Error saving NAMES.LST" << endl;
+    LOG(ERROR) << "Error saving NAMES.LST";
     return false;
   }
   return file.WriteVector(names_);

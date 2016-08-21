@@ -63,7 +63,6 @@
 static WApplication *app_;
 static WSession* sess_;
 
-using std::clog;
 using std::cout;
 using std::endl;
 using std::exception;
@@ -110,8 +109,7 @@ int bbsmain(int argc, char *argv[]) {
     app_ = new WApplication();
     return app_->BBSMainLoop(argc, argv);
   } catch (exception& e) {
-    // TODO(rushfan): Log this to sysop log or where else?
-    clog << "BBS Terminated by exception: " << e.what();
+    LOG(FATAL) << "BBS Terminated by exception: " << e.what();
     return 1;
   }
 }

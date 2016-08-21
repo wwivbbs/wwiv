@@ -209,7 +209,7 @@ static bool ParseBbsListNetFile(
 BbsListNet BbsListNet::ParseBbsListNet(uint16_t net_node_number, const std::string& network_dir) {
   BbsListNet b;
 
-  //std::clog << "Processing " << network_dir << std::endl;
+  VLOG(3) << "Processing " << network_dir;
   // We now need to add in cost and routing information.
   Connect connect(network_dir);
 

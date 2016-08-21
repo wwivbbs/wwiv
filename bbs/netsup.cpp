@@ -1160,7 +1160,6 @@ static int ansicallout() {
   }
 
   session()->localIO()->SetCursor(LocalIO::cursorNormal);
-  std::cerr << "System: " << sn << std::endl;
   return sn;
 }
 
@@ -1253,7 +1252,6 @@ void force_callout(int dw) {
       }
     }
     if (ok) {
-      std::clog << "Current Network Number : " << session()->net_num() << std::endl;
       if (session()->current_net().ncn[ss2[nitu]].bytes_waiting == 0L) {
         if (!(session()->current_net().con[ss1[nitu]].options & options_sendback)) {
           ok = false;

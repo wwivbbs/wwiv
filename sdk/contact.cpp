@@ -27,6 +27,7 @@
 #include "core/datafile.h"
 #include "core/inifile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
@@ -59,8 +60,8 @@ Contact::Contact(const string& network_dir, bool save_on_destructor)
   }
 
   if (!initialized_) {
-    std::clog << "failed to read the expected number of bytes: "
-        << contacts_.size() * sizeof(net_contact_rec) << std::endl;
+    LOG(ERROR) << "failed to read the expected number of bytes: "
+      << contacts_.size() * sizeof(net_contact_rec);
   }
   initialized_ = true;
 }

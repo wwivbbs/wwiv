@@ -45,6 +45,7 @@
 #include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
@@ -428,7 +429,7 @@ void WSession::ReadINIFile(IniFile& ini) {
 bool WSession::ReadConfigOverlayFile(int instance_number, IniFile& ini) {
   const char* temp_directory_char = ini.GetValue("TEMP_DIRECTORY");
   if (temp_directory_char == nullptr) {
-    std::clog << "TEMP_DIRECTORY must be set in WWIV.INI." << std::endl;
+    LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
     return false;
   }
   string temp_directory(temp_directory_char);
@@ -453,7 +454,7 @@ bool WSession::ReadConfigOverlayFile(int instance_number, IniFile& ini) {
 
   int max_num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
-    std::clog << "Not enough instances configured (" << max_num_instances << ")." << std::endl;
+    LOG(ERROR) << "Not enough instances configured (" << max_num_instances << ").";
     return false;
   }
   return true;
@@ -468,7 +469,7 @@ static char* DuplicatePath(const char* path) {
 bool WSession::ReadConfig() {
   config_.reset(new Config());
   if (!config_->IsInitialized()) {
-    std::clog << CONFIG_DAT << " NOT FOUND." << std::endl;
+    LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;
   }
 
@@ -479,7 +480,7 @@ bool WSession::ReadConfig() {
   const string instance_name = StringPrintf("WWIV-%u", instance_number());
   std::unique_ptr<IniFile> ini = std::make_unique<IniFile>(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG);
   if (!ini->IsOpen()) {
-    std::clog << "Unable to read WWIV.INI." << std::endl;
+    LOG(ERROR) << "Unable to read WWIV.INI.";
     AbortBBS();
   }
   ReadINIFile(*ini);
@@ -691,7 +692,7 @@ bool WSession::read_dirs() {
   directories.clear();
   DataFile<directoryrec> file(config()->datadir(), DIRS_DAT);
   if (!file) {
-    std::clog << file.file().GetName() << " NOT FOUND." << std::endl;
+    LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return false;
   }
   file.ReadVector(directories, syscfg.max_dirs);
@@ -747,7 +748,7 @@ bool WSession::read_language() {
 
   set_language_number(-1);
   if (!set_language(0)) {
-    std::clog << "You need the default language installed to run the BBS." << std::endl;
+    LOG(ERROR) << "You need the default language installed to run the BBS.";
     return false;
   }
   return true;
@@ -829,16 +830,16 @@ void WSession::InitializeBBS() {
   XINIT_PRINTF("Processing configuration file: WWIV.INI.");
   if (!File::Exists(syscfgovr.tempdir)) {
     if (!File::mkdirs(syscfgovr.tempdir)) {
-      std::clog << std::endl << "Your temp dir isn't valid." << std::endl;
-      std::clog << "It is now set to: '" << syscfgovr.tempdir << "'" << std::endl;
+      LOG(ERROR) << "Your temp dir isn't valid.";
+      LOG(ERROR) << "It is now set to: '" << syscfgovr.tempdir << "'";
       AbortBBS();
     }
   }
 
   if (!File::Exists(syscfgovr.batchdir)) {
     if (!File::mkdirs(syscfgovr.batchdir)) {
-      std::clog << std::endl << "Your batch dir isn't valid." << std::endl;
-      std::clog << "It is now set to: '" << syscfgovr.batchdir << "'" << std::endl;
+      LOG(ERROR) << "Your batch dir isn't valid.";
+      LOG(ERROR) << "It is now set to: '" << syscfgovr.batchdir << "'";
       AbortBBS();
     }
   }
@@ -849,8 +850,8 @@ void WSession::InitializeBBS() {
   XINIT_PRINTF("Reading user scan pointers.");
   File fileQScan(config()->datadir(), USER_QSC);
   if (!fileQScan.Exists()) {
-    std::clog << "Could not open file '" << fileQScan.full_pathname() << "'" << std::endl;
-    std::clog << "You must go into INIT and convert your userlist before running the BBS." << std::endl;
+    LOG(ERROR) << "Could not open file '" << fileQScan.full_pathname() << "'";
+    LOG(ERROR) << "You must go into INIT and convert your userlist before running the BBS.";
     AbortBBS();
   }
 
@@ -871,7 +872,7 @@ void WSession::InitializeBBS() {
   XINIT_PRINTF("Reading status information.");
   WStatus* pStatus = statusMgr->BeginTransaction();
   if (!pStatus) {
-    std::clog << "Unable to return statusrec.dat." << std::endl;
+    LOG(ERROR) << "Unable to return statusrec.dat.";
     AbortBBS();
   }
 
@@ -921,8 +922,8 @@ void WSession::InitializeBBS() {
   read_editors();
 
   if (!File::mkdirs(m_attachmentDirectory)) {
-    std::clog << std::endl << "Your file attachment directory is invalid." << std::endl;
-    std::clog << "It is now set to: " << m_attachmentDirectory << "' << std::endl";
+    LOG(ERROR) << "Your file attachment directory is invalid.";
+    LOG(ERROR) << "It is now set to: " << m_attachmentDirectory << "'";
     AbortBBS();
   }
   CdHome();

@@ -23,6 +23,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
@@ -59,7 +60,7 @@ Networks::Networks(const Config& config) {
     networks_[i].sysnum = networks_disk[i].sysnum;
   }
   if (!initialized_) {
-    std::clog << "failed to read the expected number of bytes: " << num_records * sizeof(net_networks_rec_disk) << std::endl;
+    LOG(ERROR) << "failed to read the expected number of bytes: " << num_records * sizeof(net_networks_rec_disk);
   }
   initialized_ = true;
 }

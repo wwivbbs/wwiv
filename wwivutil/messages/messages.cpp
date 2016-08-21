@@ -37,7 +37,6 @@
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 
-using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;

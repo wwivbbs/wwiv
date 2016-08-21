@@ -39,6 +39,7 @@
 #include "bbs/voteedit.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
+#include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
@@ -129,7 +130,7 @@ void wfc_screen() {
       File wfcFile(session()->config()->datadir(), WFC_DAT);
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         wfc_cls();
-        std::clog << wfcFile.full_pathname() << " NOT FOUND." << std::endl;
+        LOG(FATAL) << wfcFile.full_pathname() << " NOT FOUND.";
         session()->AbortBBS();
       }
       wfcFile.Read(pszScreenBuffer, 4000);

@@ -19,6 +19,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
@@ -34,7 +35,7 @@ namespace sdk {
 Config::Config(const std::string& root_directory)  : initialized_(false), config_(new configrec{}), root_directory_(root_directory) {
   DataFile<configrec> configFile(root_directory, CONFIG_DAT, File::modeReadOnly | File::modeBinary);
   if (!configFile) {
-    std::clog << CONFIG_DAT << " NOT FOUND.\r\n";
+    LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
   } else {
     initialized_ = configFile.Read(config_.get());
     // Handle 4.24 datafile
@@ -42,7 +43,7 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
       configFile.Seek(0);
       int size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
       initialized_ = (size_read == CONFIG_DAT_SIZE_424);
-      std::clog << "                 WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".\r\n";
+      LOG(INFO) << "WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".";
     }
   }
 }

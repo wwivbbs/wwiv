@@ -50,8 +50,6 @@ constexpr int SOCKET_ERROR = -1;
 #include "core/log.h"
 #include "core/os.h"
 
-using std::clog;
-using std::endl;
 using std::string;
 using std::thread;
 using std::unique_ptr;
@@ -151,68 +149,68 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
   status = cryptCreateSession(&session_, CRYPT_UNUSED, CRYPT_SESSION_SSH_SERVER);
   if (!OK(status)) {
-    clog << "ERROR: Unable to create SSH session." << endl;
+    LOG(ERROR) << "ERROR: Unable to create SSH session.";
     return;
   }
   
-  clog << "setting private key." << endl;
+  LOG(ERROR) << "setting private key.";
   status = cryptSetAttribute(session_, CRYPT_SESSINFO_PRIVATEKEY, key.context());
   if (!OK(status)) {
-    clog << "ERROR: Failed to set private key" << endl;
+    LOG(ERROR) << "ERROR: Failed to set private key";
     return;
   }
 
-  clog << "setting socket handle." << endl;
+  LOG(ERROR) << "setting socket handle.";
   status = cryptSetAttribute(session_, CRYPT_SESSINFO_NETWORKSOCKET, socket_handle_);
   if (!OK(status)) {
-    clog << "ERROR adding socket handle!" << endl;
+    LOG(ERROR) << "ERROR adding socket handle!";
     return;
   }
 
   bool success = false;
   for (int i = 0; i < 10; i++) {
-    clog << "Looping to activate SSH Sessoin" << status << std::endl;
+    LOG(ERROR) << "Looping to activate SSH Sessoin" << status;
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_AUTHRESPONSE, 1);
     if (!OK(status)) {
-      clog << "Error setting CRYPT_SESSINFO_AUTHRESPONSE " << status << std::endl;
+      LOG(ERROR) << "Error setting CRYPT_SESSINFO_AUTHRESPONSE " << status;
       continue;
     }
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
     if (OK(status)) {
-      clog << "Success setting CRYPT_SESSINFO_ACTIVE " << status << std::endl;
+      LOG(ERROR) << "Success setting CRYPT_SESSINFO_ACTIVE " << status;
       success = true;
       break;
     } else {
-      clog << "Error setting CRYPT_SESSINFO_ACTIVE " << status << std::endl;
+      LOG(ERROR) << "Error setting CRYPT_SESSINFO_ACTIVE " << status;
     }
   }
 
 #ifdef PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
-  clog << "Waiting for debugger..." << std::endl;
+  LOG(ERROR) << "Waiting for debugger..." <<;
   getchar();
 #endif  // PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
 
   if (!success) {
-    clog << "We don't have a valid SSH connection here!" << endl;
+    LOG(ERROR) << "We don't have a valid SSH connection here!";
   } else {
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
     status = cryptPopData(session_, buffer, 4096, &bytes_received);
     if (!OK(status)) {
-    	clog << "error clearing buffer (but that is ok). status: "
-    	     << status << std::endl;
+    	LOG(ERROR) << "error clearing buffer (but that is ok). status: "
+    	     << status;
     }
 
     GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
-    clog << "Got Username and Password!" << endl;
+    LOG(ERROR) << "Got Username and Password!";
   }
   initialized_ = success;
 }
 
 int SSHSession::PushData(const char* data, size_t size) {
   int bytes_copied = 0;
-  VLOG(2) << "SSHSession::PushData: " << string(data, size) << endl;
+  VLOG(2) << "SSHSession::PushData: " << string(data, size);
   std::lock_guard<std::mutex> lock(mu_);
   int status = cryptPushData(session_, data, size, &bytes_copied);
   if (!OK(status)) return 0;
@@ -286,10 +284,10 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
         break;
       }
       int num_sent = send(socket, data.get(), num_read, 0);
-      VLOG(1) << "reader_thread: sent " << num_sent << endl;
+      VLOG(1) << "reader_thread: sent " << num_sent;
     }
   } catch (const socket_error& e) {
-    clog << e.what() << endl;
+    LOG(ERROR) << e.what();
   }
   closesocket(socket);
 }
@@ -310,11 +308,11 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
       int num_read = recv(socket, data.get(), size, 0);
       if (num_read > 0) {
         int num_sent = session.PushData(data.get(), num_read);
-        VLOG(1) << "writer_thread: pushed_data: " << num_sent << endl;
+        VLOG(1) << "writer_thread: pushed_data: " << num_sent;
       }
     }
   } catch (const socket_error& e) {
-    clog << e.what() << endl;
+    LOG(ERROR) << e.what();
   }
   closesocket(socket);
 }
@@ -323,13 +321,13 @@ IOSSH::IOSSH(SOCKET ssh_socket, Key& key)
   : ssh_socket_(ssh_socket), session_(ssh_socket, key) {
   static bool initialized = RemoteSocketIO::Initialize();
   if (!ssh_initalize()) {
-    clog << "ERROR INITIALIZING SSH (ssh_initalize)" << endl;
+    LOG(ERROR) << "ERROR INITIALIZING SSH (ssh_initalize)";
     closesocket(ssh_socket_);
     ssh_socket_ = INVALID_SOCKET;
     return;
   }
   if (!session_.initialized()) {
-    clog << "ERROR INITIALIZING SSH (SSHSession::initialized)" << endl;
+    LOG(ERROR) << "ERROR INITIALIZING SSH (SSHSession::initialized)";
     closesocket(ssh_socket_);
     ssh_socket_ = INVALID_SOCKET;
     return;
@@ -357,7 +355,7 @@ bool IOSSH::ssh_initalize() {
 #else
     int last_error = errno;
 #endif
-    clog << "WSAGetLastError: " << last_error << endl;
+    LOG(ERROR) << "WSAGetLastError: " << last_error;
     return false;
   }
 
