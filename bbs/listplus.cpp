@@ -232,7 +232,7 @@ int listfiles_plus(int type) {
   int save_dir = session()->current_user_dir_num();
   long save_status = session()->user()->GetStatus();
 
-  session()->tagging = 0;
+  session()->tagging = false;
 
   ext_is_on = session()->user()->GetFullFileDescriptions();
   signal(SIGFPE, catch_divide_by_zero);

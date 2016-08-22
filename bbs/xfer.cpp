@@ -614,9 +614,9 @@ void printinfo(uploadsrec * u, bool *abort) {
   if (session()->titled != 0) {
     printtitle(abort);
   }
-  if (session()->tagging == 0) {
+  if (!session()->tagging) {
     return;
-  } else if (session()->tagging == 1) {
+  } else if (session()->tagging) {
     tagrec_t t;
     t.u = *u;
     auto subnum = session()->current_user_dir().subnum;
@@ -658,7 +658,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(2);
   osan(s, abort, &next);
 
-  if (session()->tagging == 1) {
+  if (session()->tagging) {
     bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : " "), abort, &next); // was |
     sprintf(s1, "%d", u->numdloads);
@@ -684,7 +684,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   }
   if (*abort) {
     session()->filelist.clear();
-    session()->tagging = 0;
+    session()->tagging = false;
   }
 }
 
@@ -694,27 +694,22 @@ void printtitle(bool *abort) {
   if (lines_listed >= session()->screenlinest - 7 
     && !session()->filelist.empty()) {
     tag_files();
-    if (session()->tagging == 0) {
+    if (!session()->tagging) {
       return;
     }
   }
   sprintf(buffer, "%s%s - #%s, %d files.", "\r", session()->directories[session()->current_user_dir().subnum].name,
           session()->current_user_dir().keys, session()->numf);
   bout.Color(FRAME_COLOR);
-  if (session()->filelist.empty() || session()->tagging == 0) {
+  if (session()->filelist.empty() || !session()->tagging) {
     bout << "\r" << string(78, '-') << wwiv::endl;
   } else if (lines_listed) {
     bout << "\r" << string(78, '-') << wwiv::endl;
   }
   bout.Color(2);
   pla(buffer, abort);
-  if (session()->tagging == 1) {
-    bout.Color(FRAME_COLOR);
-    bout << "\r" << string(78, '-') << wwiv::endl;
-  } else {
-    bout.Color(FRAME_COLOR);
-    bout << "\r" << string(78, '-') << wwiv::endl;
-  }
+  bout.Color(FRAME_COLOR);
+  bout << "\r" << string(78, '-') << wwiv::endl;
   session()->titled = 0;
 }
 
@@ -784,7 +779,7 @@ void nscandir(int nDirNum, bool *abort) {
     }
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
-    for (int i = 1; i <= session()->numf && !(*abort) && !hangup && session()->tagging != 0; i++) {
+    for (int i = 1; i <= session()->numf && !(*abort) && !hangup && session()->tagging; i++) {
       CheckForHangup();
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
@@ -829,7 +824,7 @@ void nscanall() {
   int color       = 3;
   bout << "\r" << "|#2Searching ";
   for (size_t i = 0; i < session()->directories.size() && !abort && session()->udir[i].subnum != -1 &&
-       session()->tagging != 0; i++) {
+       session()->tagging; i++) {
     count++;
     bout << "|#" << color << ".";
     if (count >= NUM_DOTS) {

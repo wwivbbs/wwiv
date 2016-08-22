@@ -554,8 +554,8 @@ void chat1(const char *chat_line, bool two_way) {
     return;
   }
 
-  int otag = session()->tagging;
-  session()->tagging = 0;
+  bool otag = session()->tagging;
+  session()->tagging = false;
 
   chatcall = false;
   if (two_way) {

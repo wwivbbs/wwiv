@@ -503,19 +503,15 @@ static char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
 }
 
 void tag_files() {
-  int i, i1;
+  int i;
   char s[255], s1[255], s2[81], ch;
   bool had = false;
   double d;
 
-  if (lines_listed == 0 || session()->tagging == 0) {
+  if (lines_listed == 0 || !session()->tagging) {
     return;
   }
   bool abort = false;
-  if (session()->tagging == 2) {
-    session()->filelist.clear();
-    return;
-  }
   session()->tleft(true);
   if (hangup) {
     return;
@@ -527,17 +523,18 @@ void tag_files() {
   bool done = false;
   while (!done && !hangup) {
     lines_listed = 0;
-    ch = fancy_prompt("File Tagging", "CDEMNQRTV?");
+    ch = fancy_prompt("File Tagging", "CDEMQRTV?");
     lines_listed = 0;
     switch (ch) {
     case '?':
-      i = session()->tagging;
-      session()->tagging = 0;
+    {
+      bool saved_tagging = session()->tagging;
+      session()->tagging = false;
       printfile(TTAGGING_NOEXT);
       pausescr();
-      session()->tagging = i;
+      session()->tagging = saved_tagging;
       relist();
-      break;
+    } break;
     case 'C':
     case SPACE:
     case RETURN:
@@ -549,7 +546,7 @@ void tag_files() {
       break;
     case 'D':
       batchdl(1);
-      session()->tagging = 0;
+      session()->tagging = false;
       if (!had) {
         bout.nl();
         pausescr();
@@ -558,9 +555,10 @@ void tag_files() {
       done = true;
       break;
     case 'E':
+    {
       lines_listed = 0;
-      i1 = session()->tagging;
-      session()->tagging = 0;
+      bool saved_tagging = session()->tagging;
+      session()->tagging = false;
       bout << "|#9Which file (1-" << session()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
@@ -576,7 +574,7 @@ void tag_files() {
         }
         if (i2 < session()->directories.size()) {
           bout << "|#1Directory  : |#2#" << session()->udir[i2].keys << ", " << session()->directories[f.directory].name <<
-                             wwiv::endl;
+            wwiv::endl;
         } else {
           bout << "|#1Directory  : |#2#" << "??" << ", " << session()->directories[f.directory].name << wwiv::endl;
         }
@@ -611,18 +609,14 @@ void tag_files() {
         relist();
 
       }
-      session()->tagging = i1;
-      break;
-    case 'N':
-      session()->tagging = 2;
-      done = true;
-      break;
+      session()->tagging = saved_tagging;
+    } break;
     case 'M':
       if (dcs()) {
-        i = session()->tagging;
-        session()->tagging = 0;
+        bool saved_tagging = session()->tagging;
+        session()->tagging = false;
         move_file_t();
-        session()->tagging = i;
+        session()->tagging = saved_tagging;
         if (session()->filelist.empty()) {
           done = true;
           return;
@@ -631,10 +625,10 @@ void tag_files() {
       }
       break;
     case 'Q':
-      session()->tagging   = 0;
-      session()->titled    = 0;
+      session()->tagging = false;
+      session()->titled = 0;
       session()->filelist.clear();
-      lines_listed    = 0;
+      lines_listed = 0;
       done = true;
       return;
     case 'R':
@@ -671,11 +665,11 @@ void tag_files() {
         }
         if (s[0] != 0) {
           bout.nl();
-          session()->tagging = 0;
+          session()->tagging = false;
           ExecuteExternalProgram(s, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
-          session()->tagging = 1;
+          session()->tagging = true;
           session()->UpdateTopScreen();
           bout.cls();
           relist();
@@ -1002,14 +996,14 @@ void download() {
 void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
-  if (session()->tagging == 0) {
+  if (!session()->tagging) {
     return;
   }
   if (session()->filelist.empty()) {
     bout << ((mode == 1) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n");
     return;
   }
-  if (session()->tagging == 1 && !session()->filelist.empty()) {
+  if (session()->tagging && !session()->filelist.empty()) {
     tag_files();
     return;
   }

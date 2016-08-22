@@ -1,7 +1,7 @@
 
 |#9ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ|#2Tag File Menu|#9ÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜÜ|#0
 |#9Û                          ßßßßßßßÛßßßßßßßßß                                 Û|#0
-|#9İ   |#2C|#1>|#8 Continue|#9                   Û       |#2N|#1>|#8 No More Tags|#9                    Ş|#0
+|#9İ   |#2C|#1>|#8 Continue|#9                   Û                                          Ş|#0
 |#9İ   |#2D|#1>|#8 Download Tagged Files|#9      Û       |#2Q|#1>|#8 Quit|#9                            Ş|#0
 |#9İ   |#2E|#1>|#8 Extended Information|#9       Û       |#2R|#1>|#8 Relist Files|#9                    Ş|#0
 |#9İ   |#2M|#1>|#8 Move File (Sysop Only)|#9     Û       |#2T|#1>|#8 Tag Files|#9                       Ş|#0

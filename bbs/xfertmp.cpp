@@ -544,7 +544,7 @@ void list_temp_dir() {
 
 
 void temp_extract() {
-  int i, i1, i2, ot;
+  int i, i1, i2;
   char s[255], s1[255], s2[81], s3[255];
   uploadsrec u;
 
@@ -582,8 +582,8 @@ void temp_extract() {
     if (s1[0] && File::Exists(s2)) {
       bout.nl(2);
       bool abort = false;
-      ot = session()->tagging;
-      session()->tagging = 1; // was 2;
+      bool ot = session()->tagging;
+      session()->tagging = true;
       printinfo(&u, &abort);
       session()->tagging = ot;
       bout.nl();

@@ -420,11 +420,11 @@ void nscan(int nStartingSubNum) {
       (syscfg.sysconfig & sysconfig_no_xfer) == 0 &&
       (!(g_flags & g_flag_scanned_files))) {
     lines_listed = 0;
-    session()->tagging = 1;
+    session()->tagging = true;
     tmp_disable_conf(true);
     nscanall();
     tmp_disable_conf(false);
-    session()->tagging = 0;
+    session()->tagging = false;
   }
 }
 

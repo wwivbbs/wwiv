@@ -735,15 +735,14 @@ void relist() {
   char s[85], s1[40], s2[81];
   bool next, abort = 0;
   int16_t tcd = -1;
-  int otag, tcdi;
 
   if (session()->filelist.empty()) {
     return;
   }
   bout.cls();
   lines_listed = 0;
-  otag = session()->tagging;
-  session()->tagging = 0;
+  bool otag = session()->tagging;
+  session()->tagging = false;
   if (session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
     bout.Color(FRAME_COLOR);
     bout << string(78, '-') << wwiv::endl;
@@ -757,7 +756,7 @@ void relist() {
           bout << "\r" << string(78, '-') << wwiv::endl;
         }
         tcd = f.directory;
-        tcdi = -1;
+        int tcdi = -1;
         for (size_t i1 = 0; i1 < session()->directories.size(); i1++) {
           if (session()->udir[i1].subnum == tcd) {
             tcdi = i1;
@@ -1240,7 +1239,7 @@ void finddescription() {
   color = 3;
   bout << "\r|#2Searching ";
   lines_listed = 0;
-  for (size_t i = 0; (i < session()->directories.size()) && (!abort) && (!hangup) && (session()->tagging != 0)
+  for (size_t i = 0; (i < session()->directories.size()) && !abort && !hangup && session()->tagging
        && (session()->udir[i].subnum != -1); i++) {
     size_t i1 = session()->udir[i].subnum;
     pts = 0;
@@ -1250,7 +1249,7 @@ void finddescription() {
     }
     pts = 1;
     // remove pts=1 to search only marked session()->directories
-    if ((pts) && (!abort) && (session()->tagging != 0)) {
+    if (pts && !abort && session()->tagging) {
       count++;
       bout << static_cast<char>(3) << color << ".";
       if (count == NUM_DOTS) {
@@ -1269,7 +1268,7 @@ void finddescription() {
       File fileDownload(g_szDownloadFileName);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
       for (i1 = 1; i1 <= static_cast<size_t>(session()->numf) 
-           && !abort && !hangup && session()->tagging != 0; i1++) {
+           && !abort && !hangup && session()->tagging; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
         strcpy(s, u.description);

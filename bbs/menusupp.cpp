@@ -756,10 +756,10 @@ void NewFilesAllConfs() {
     ac = 1;
     tmp_disable_conf(true);
   }
-  session()->tagging = 1;
+  session()->tagging = true;
   session()->titled = 1;
   nscanall();
-  session()->tagging = 0;
+  session()->tagging = false;
   if (ac) {
     tmp_disable_conf(false);
   }
@@ -947,9 +947,9 @@ void TempExtract() {
 }
 
 void FindDescription() {
-  session()->tagging = 1;
+  session()->tagging = true;
   finddescription();
-  session()->tagging = 0;
+  session()->tagging = false;
 }
 
 void TemporaryStuff() {
@@ -969,9 +969,9 @@ void ConfigFileList() {
 }
 
 void ListFiles() {
-  session()->tagging = 1;
+  session()->tagging = true;
   listfiles();
-  session()->tagging = 0;
+  session()->tagging = false;
 }
 
 void NewFileScan() {
@@ -979,7 +979,7 @@ void NewFileScan() {
     SetNewFileScanDate();
   }
   bool abort = false;
-  session()->tagging = 1;
+  session()->tagging = true;
   session()->titled = 1;
   bout.nl();
   bout << "|#5Search all directories? ";
@@ -995,7 +995,7 @@ void NewFileScan() {
       bout << "|#2No new files found.\r\n";
     }
   }
-  session()->tagging = 0;
+  session()->tagging = false;
 }
 
 void RemoveFiles() {
@@ -1005,9 +1005,9 @@ void RemoveFiles() {
 }
 
 void SearchAllFiles() {
-  session()->tagging = 1;
+  session()->tagging = true;
   searchall();
-  session()->tagging = 0;
+  session()->tagging = false;
 }
 
 void XferDefaults() {
