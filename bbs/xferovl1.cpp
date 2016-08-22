@@ -386,8 +386,8 @@ void tag_it() {
   input(s3, 30, true);
   if (s3[0] == '*') {
     s3[0] = '\0';
-    for (int i2 = 0; i2 < session()->filelist.size() && i2 < 78; i2++) {
-      sprintf(s2, "%d ", i2 + 1);
+    for (size_t i2 = 0; i2 < session()->filelist.size() && i2 < 78; i2++) {
+      sprintf(s2, "%u ", i2 + 1);
       strcat(s3, s2);
       if (strlen(s3) > sizeof(s3) - 10) {
         break;
