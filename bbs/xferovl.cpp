@@ -733,7 +733,6 @@ bool uploadall(int directory_num) {
 
 void relist() {
   char s[85], s1[40], s2[81];
-  int i;
   bool next, abort = 0;
   int16_t tcd = -1;
   int otag, tcdi;
@@ -749,14 +748,15 @@ void relist() {
     bout.Color(FRAME_COLOR);
     bout << string(78, '-') << wwiv::endl;
   }
-  for (i = 0; i < session()->filelist.size(); i++) {
+  for (size_t i = 0; i < session()->filelist.size(); i++) {
+    auto& f = session()->filelist[i];
     if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-      if (tcd != session()->filelist[i].directory) {
+      if (tcd != f.directory) {
         bout.Color(FRAME_COLOR);
         if (tcd != -1) {
           bout << "\r" << string(78, '-') << wwiv::endl;
         }
-        tcd = session()->filelist[i].directory;
+        tcd = f.directory;
         tcdi = -1;
         for (size_t i1 = 0; i1 < session()->directories.size(); i1++) {
           if (session()->udir[i1].subnum == tcd) {
@@ -776,27 +776,27 @@ void relist() {
     }
     sprintf(s, "%c%d%2d%c%d%c",
             0x03,
-            check_batch_queue(session()->filelist[i].u.filename) ? 6 : 0,
+            check_batch_queue(f.u.filename) ? 6 : 0,
             i + 1,
             0x03,
             FRAME_COLOR,
             okansi() ? '\xBA' : ' '); // was |
     osan(s, &abort, &next);
     bout.Color(1);
-    strncpy(s, session()->filelist[i].u.filename, 8);
+    strncpy(s, f.u.filename, 8);
     s[8] = 0;
     osan(s, &abort, &next);
-    strncpy(s, &((session()->filelist[i].u.filename)[8]), 4);
+    strncpy(s, &((f.u.filename)[8]), 4);
     s[4] = 0;
     bout.Color(1);
     osan(s, &abort, &next);
     bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : ":"), &abort, &next);
 
-    sprintf(s1, "%ld""k", bytes_to_k(session()->filelist[i].u.numbytes));
+    sprintf(s1, "%ld""k", bytes_to_k(f.u.numbytes));
     if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (!(session()->directories[tcd].mask & mask_cdrom)) {
-        sprintf(s2, "%s%s", session()->directories[tcd].path, session()->filelist[i].u.filename);
+        sprintf(s2, "%s%s", session()->directories[tcd].path, f.u.filename);
         StringRemoveWhitespace(s2);
         if (!File::Exists(s2)) {
           strcpy(s1, "N/A");
@@ -816,7 +816,7 @@ void relist() {
 
     bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
-    sprintf(s1, "%d", session()->filelist[i].u.numdloads);
+    sprintf(s1, "%d", f.u.numdloads);
     
     size_t i1 = 0;
     for (; i1 < 4 - strlen(s1); i1++) {
@@ -831,8 +831,8 @@ void relist() {
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s, "%c%d%s",
             0x03,
-            (session()->filelist[i].u.mask & mask_extended) ? 1 : 2,
-      session()->filelist[i].u.description);
+            (f.u.mask & mask_extended) ? 1 : 2,
+      f.u.description);
     plal(s, session()->user()->GetScreenChars() - 28, &abort);
   }
   bout.Color(FRAME_COLOR);

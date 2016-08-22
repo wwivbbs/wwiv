@@ -415,8 +415,9 @@ void tag_it() {
     }
     i--;
     if ((s1[0]) && (i >= 0) && (i < session()->filelist.size())) {
-      if (check_batch_queue(session()->filelist[i].u.filename)) {
-        bout << "|#6" << session()->filelist[i].u.filename << " is already in the batch queue.\r\n";
+    auto& f = session()->filelist[i];
+      if (check_batch_queue(f.u.filename)) {
+        bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
         bad = true;
       }
       if (session()->batch().entry.size() >= session()->max_batch) {
@@ -430,19 +431,19 @@ void tag_it() {
         bad = true;
       }
       if (!bad) {
-        sprintf(s, "%s%s", session()->directories[session()->filelist[i].directory].path,
-                stripfn(session()->filelist[i].u.filename));
-        if (session()->filelist[i].dir_mask & mask_cdrom) {
-          sprintf(s2, "%s%s", session()->directories[session()->filelist[i].directory].path,
-                  stripfn(session()->filelist[i].u.filename));
-          sprintf(s, "%s%s", syscfgovr.tempdir, stripfn(session()->filelist[i].u.filename));
+        sprintf(s, "%s%s", session()->directories[f.directory].path,
+                stripfn(f.u.filename));
+        if (f.dir_mask & mask_cdrom) {
+          sprintf(s2, "%s%s", session()->directories[f.directory].path,
+                  stripfn(f.u.filename));
+          sprintf(s, "%s%s", syscfgovr.tempdir, stripfn(f.u.filename));
           if (!File::Exists(s)) {
             copyfile(s2, s, true);
           }
         }
         File fp(s);
         if (!fp.Open(File::modeBinary | File::modeReadOnly)) {
-          bout << "|#6The file " << stripfn(session()->filelist[i].u.filename) << " is not there.\r\n";
+          bout << "|#6The file " << stripfn(f.u.filename) << " is not there.\r\n";
           bad = true;
         } else {
           fs = fp.GetLength();
@@ -452,19 +453,19 @@ void tag_it() {
       if (!bad) {
         t = 12.656 / static_cast<double>(modem_speed) * static_cast<double>(fs);
         if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
-          bout << "|#6Not enough time left in queue for " << session()->filelist[i].u.filename << ".\r\n";
+          bout << "|#6Not enough time left in queue for " << f.u.filename << ".\r\n";
           bad = true;
         }
       }
       if (!bad) {
         batchrec b{};
-        strcpy(b.filename, session()->filelist[i].u.filename);
-        b.dir = session()->filelist[i].directory;
+        strcpy(b.filename, f.u.filename);
+        b.dir = f.directory;
         b.time = (float) t;
         b.sending = true;
         b.len = fs;
         session()->batch().entry.emplace_back(b);
-        bout << "|#1" << session()->filelist[i].u.filename << " added to batch queue.\r\n";
+        bout << "|#1" << f.u.filename << " added to batch queue.\r\n";
       }
     } else {
       bout << "|#6Bad file number " << i + 1 << wwiv::endl;
@@ -564,41 +565,42 @@ void tag_files() {
       input(s, 2, true);
       i = atoi(s) - 1;
       if (s[0] && i >= 0 && i < session()->filelist.size()) {
-        d = XFER_TIME(session()->filelist[i].u.numbytes);
+        auto& f = session()->filelist[i];
+        d = XFER_TIME(f.u.numbytes);
         bout.nl();
         size_t i2;
         for (i2 = 0; i2 < session()->directories.size(); i2++) {
-          if (session()->udir[i2].subnum == session()->filelist[i].directory) {
+          if (session()->udir[i2].subnum == f.directory) {
             break;
           }
         }
         if (i2 < session()->directories.size()) {
-          bout << "|#1Directory  : |#2#" << session()->udir[i2].keys << ", " << session()->directories[session()->filelist[i].directory].name <<
+          bout << "|#1Directory  : |#2#" << session()->udir[i2].keys << ", " << session()->directories[f.directory].name <<
                              wwiv::endl;
         } else {
-          bout << "|#1Directory  : |#2#" << "??" << ", " << session()->directories[session()->filelist[i].directory].name << wwiv::endl;
+          bout << "|#1Directory  : |#2#" << "??" << ", " << session()->directories[f.directory].name << wwiv::endl;
         }
-        bout << "|#1Filename   : |#2" << session()->filelist[i].u.filename << wwiv::endl;
-        bout << "|#1Description: |#2" << session()->filelist[i].u.description << wwiv::endl;
-        if (session()->filelist[i].u.mask & mask_extended) {
+        bout << "|#1Filename   : |#2" << f.u.filename << wwiv::endl;
+        bout << "|#1Description: |#2" << f.u.description << wwiv::endl;
+        if (f.u.mask & mask_extended) {
           strcpy(s1, g_szExtDescrFileName);
-          sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, session()->directories[session()->filelist[i].directory].filename);
+          sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, session()->directories[f.directory].filename);
           zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
-          print_extended(session()->filelist[i].u.filename, &abort, session()->max_extend_lines, 2);
+          print_extended(f.u.filename, &abort, session()->max_extend_lines, 2);
           zap_ed_info();
           strcpy(g_szExtDescrFileName, s1);
         }
-        bout << "|#1File size  : |#2" << bytes_to_k(session()->filelist[i].u.numbytes) << wwiv::endl;
+        bout << "|#1File size  : |#2" << bytes_to_k(f.u.numbytes) << wwiv::endl;
         bout << "|#1Apprx. time: |#2" << ctim(d) << wwiv::endl;
-        bout << "|#1Uploaded on: |#2" << session()->filelist[i].u.date << wwiv::endl;
-        bout << "|#1Uploaded by: |#2" << session()->filelist[i].u.upby << wwiv::endl;
-        bout << "|#1Times D/L'd: |#2" << session()->filelist[i].u.numdloads << wwiv::endl;
-        if (session()->directories[session()->filelist[i].directory].mask & mask_cdrom) {
+        bout << "|#1Uploaded on: |#2" << f.u.date << wwiv::endl;
+        bout << "|#1Uploaded by: |#2" << f.u.upby << wwiv::endl;
+        bout << "|#1Times D/L'd: |#2" << f.u.numdloads << wwiv::endl;
+        if (session()->directories[f.directory].mask & mask_cdrom) {
           bout.nl();
           bout << "|#3CD ROM DRIVE\r\n";
         } else {
-          sprintf(s, "|#7%s%s", session()->directories[session()->filelist[i].directory].path, session()->filelist[i].u.filename);
+          sprintf(s, "|#7%s%s", session()->directories[f.directory].path, f.u.filename);
           if (!File::Exists(s)) {
             bout.nl();
             bout << "|#6-=>FILE NOT THERE<=-\r\n";
@@ -646,13 +648,14 @@ void tag_files() {
       input(s, 2, true);
       i = atoi(s) - 1;
       if ((s[0]) && (i >= 0) && (i < session()->filelist.size())) {
-        sprintf(s1, "%s%s", session()->directories[session()->filelist[i].directory].path,
-                stripfn(session()->filelist[i].u.filename));
-        if (session()->directories[session()->filelist[i].directory].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", session()->directories[session()->filelist[i].directory].path,
-                  stripfn(session()->filelist[i].u.filename));
+        auto& f = session()->filelist[i];
+        sprintf(s1, "%s%s", session()->directories[f.directory].path,
+                stripfn(f.u.filename));
+        if (session()->directories[f.directory].mask & mask_cdrom) {
+          sprintf(s2, "%s%s", session()->directories[f.directory].path,
+                  stripfn(f.u.filename));
           sprintf(s1, "%s%s", syscfgovr.tempdir,
-                  stripfn(session()->filelist[i].u.filename));
+                  stripfn(f.u.filename));
           if (!File::Exists(s1)) {
             copyfile(s2, s1, true);
           }
@@ -663,7 +666,7 @@ void tag_files() {
           break;
         }
         get_arc_cmd(s, s1, 0, "");
-        if (!okfn(stripfn(session()->filelist[i].u.filename))) {
+        if (!okfn(stripfn(f.u.filename))) {
           s[0] = 0;
         }
         if (s[0] != 0) {
