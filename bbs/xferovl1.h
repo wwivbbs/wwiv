@@ -28,7 +28,6 @@ void tag_files();
 int  add_batch(char *description, const char *file_name, int dn, long fs);
 int  try_to_download(const char *file_mask, int dn);
 void download();
-char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars);
 void endlist(int mode);
 void SetNewFileScanDate();
 void removefilesnotthere(int dn, int *autodel);

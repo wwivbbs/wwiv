@@ -682,9 +682,7 @@ void printinfo(uploadsrec * u, bool *abort) {
       print_extended(u->filename, abort, session()->user()->GetNumExtended(), 1);
     }
   }
-  if (!(*abort)) {
-    ++g_num_listed;
-  } else {
+  if (*abort) {
     session()->filelist.clear();
     session()->tagging = 0;
   }
@@ -694,7 +692,7 @@ void printtitle(bool *abort) {
   char buffer[255];
 
   if (lines_listed >= session()->screenlinest - 7 
-    && !session()->filelist.empty() && g_num_listed) {
+    && !session()->filelist.empty()) {
     tag_files();
     if (session()->tagging == 0) {
       return;
@@ -703,7 +701,7 @@ void printtitle(bool *abort) {
   sprintf(buffer, "%s%s - #%s, %d files.", "\r", session()->directories[session()->current_user_dir().subnum].name,
           session()->current_user_dir().keys, session()->numf);
   bout.Color(FRAME_COLOR);
-  if (session()->filelist.empty() || session()->tagging == 0 || g_num_listed == 0) {
+  if (session()->filelist.empty() || session()->tagging == 0) {
     bout << "\r" << string(78, '-') << wwiv::endl;
   } else if (lines_listed) {
     bout << "\r" << string(78, '-') << wwiv::endl;
@@ -743,7 +741,6 @@ void listfiles() {
   dliscan();
   char szFileMask[81];
   file_mask(szFileMask);
-  g_num_listed = 0;
   session()->titled = 1;
   lines_listed = 0;
 
@@ -761,9 +758,7 @@ void listfiles() {
       // Moved to here from bputch.cpp
       if (lines_listed >= session()->screenlinest - 3) {
         if (session()->tagging && !session()->filelist.empty()) {
-          if (g_num_listed != 0) {
-            tag_files();
-          }
+          tag_files();
           lines_listed = 0;
         }
       }
@@ -830,7 +825,6 @@ void nscanall() {
     return;
   }
   bool abort      = false;
-  g_num_listed    = 0;
   int count       = 0;
   int color       = 3;
   bout << "\r" << "|#2Searching ";
@@ -886,7 +880,6 @@ void searchall() {
   file_mask(szFileMask);
   bout.nl();
   bout << "|#2Searching ";
-  g_num_listed = 0;
   lines_listed = 0;
   int count = 0;
   int color = 3;
@@ -1004,7 +997,6 @@ void remlist(const char *file_name) {
       align(szListFileName);
       if (IsEquals(szFileName, szListFileName)) {
         b = session()->filelist.erase(b);
-        g_num_listed--;
         break;
       }
     }

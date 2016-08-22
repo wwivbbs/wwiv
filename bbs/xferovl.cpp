@@ -1236,7 +1236,6 @@ void finddescription() {
   }
   int ocd = session()->current_user_dir_num();
   bool abort = false;
-  g_num_listed = 0;
   count = 0;
   color = 3;
   bout << "\r|#2Searching ";

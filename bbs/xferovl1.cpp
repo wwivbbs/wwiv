@@ -371,8 +371,7 @@ int read_idz(int mode, int tempdir) {
 
 
 void tag_it() {
-  int i, i2, i3, i4;
-  bool bad;
+  int i, i3, i4;
   double t = 0.0;
   char s[255], s1[255], s2[81], s3[400];
   long fs = 0;
@@ -387,7 +386,7 @@ void tag_it() {
   input(s3, 30, true);
   if (s3[0] == '*') {
     s3[0] = '\0';
-    for (i2 = 0; i2 < session()->filelist.size() && i2 < 78; i2++) {
+    for (int i2 = 0; i2 < session()->filelist.size() && i2 < 78; i2++) {
       sprintf(s2, "%d ", i2 + 1);
       strcat(s3, s2);
       if (strlen(s3) > sizeof(s3) - 10) {
@@ -396,10 +395,10 @@ void tag_it() {
     }
     bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
   }
-  for (i2 = 0; i2 < GetStringLength(s3); i2++) {
+  for (int i2 = 0; i2 < GetStringLength(s3); i2++) {
     sprintf(s1, "%s", s3 + i2);
     i4 = 0;
-    bad = false;
+    bool bad = false;
     for (i3 = 0; i3 < GetStringLength(s1); i3++) {
       if ((s1[i3] == ' ') || (s1[i3] == ',') || (s1[i3] == ';')) {
         s1[i3] = 0;
@@ -474,13 +473,41 @@ void tag_it() {
   }
 }
 
+static char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
+  char s1[81], s2[81], s3[81];
+  char ch = 0;
+
+  session()->tleft(true);
+  sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars);
+  sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars);
+  int i1 = strlen(s2);
+  sprintf(s3, "%s%s", pszAcceptChars, " \r");
+  session()->tleft(true);
+  if (okansi()) {
+    bout << s1;
+    ch = onek_ncr(s3);
+    bout << "\x1b[" << i1 << "D";
+    for (int i = 0; i < i1; i++) {
+      bputch(' ');
+    }
+    bout << "\x1b[" << i1 << "D";
+  } else {
+    bout << s2;
+    ch = onek_ncr(s3);
+    for (int i = 0; i < i1; i++) {
+      bout.bs();
+    }
+  }
+  return ch;
+}
+
 void tag_files() {
   int i, i1;
   char s[255], s1[255], s2[81], ch;
   bool had = false;
   double d;
 
-  if ((lines_listed == 0) || (session()->tagging == 0) || (g_num_listed == 0)) {
+  if (lines_listed == 0 || session()->tagging == 0) {
     return;
   }
   bool abort = false;
@@ -594,7 +621,7 @@ void tag_files() {
         session()->tagging = 0;
         move_file_t();
         session()->tagging = i;
-        if (g_num_listed == 0) {
+        if (session()->filelist.empty()) {
           done = true;
           return;
         }
@@ -969,52 +996,23 @@ void download() {
 }
 
 
-char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
-  char s1[81], s2[81], s3[81];
-  char ch = 0;
-
-  session()->tleft(true);
-  sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars);
-  sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars);
-  int i1 = strlen(s2);
-  sprintf(s3, "%s%s", pszAcceptChars, " \r");
-  session()->tleft(true);
-  if (okansi()) {
-    bout << s1;
-    ch = onek_ncr(s3);
-    bout << "\x1b[" << i1 << "D";
-    for (int i = 0; i < i1; i++) {
-      bputch(' ');
-    }
-    bout << "\x1b[" << i1 << "D";
-  } else {
-    bout << s2;
-    ch = onek_ncr(s3);
-    for (int i = 0; i < i1; i++) {
-      bout.bs();
-    }
-  }
-  return ch;
-}
-
-
 void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
-  if (session()->tagging != 0) {
-    if (g_num_listed) {
-      if (session()->tagging == 1 && !session()->filelist.empty()) {
-        tag_files();
-        return;
-      } else {
-        bout.Color(FRAME_COLOR);
-        bout << "\r" << std::string(78, '-') << wwiv::endl;
-      }
-      bout << "\r|#9Files listed: |#2 " << g_num_listed;
-    } else {
-      bout << ((mode == 1) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n");
-    }
+  if (session()->tagging == 0) {
+    return;
   }
+  if (session()->filelist.empty()) {
+    bout << ((mode == 1) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n");
+    return;
+  }
+  if (session()->tagging == 1 && !session()->filelist.empty()) {
+    tag_files();
+    return;
+  }
+  bout.Color(FRAME_COLOR);
+  bout << "\r" << std::string(78, '-') << wwiv::endl;
+  bout << "\r|#9Files listed: |#2 " << session()->filelist.size();
 }
 
 
@@ -1197,7 +1195,6 @@ void removefilesnotthere(int dn, int *autodel) {
     }
   }
 }
-
 
 void removenotthere() {
   if (!so()) {

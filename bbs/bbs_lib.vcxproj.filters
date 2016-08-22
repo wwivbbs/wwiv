@@ -672,6 +672,9 @@
     <ClInclude Include="mmkey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="xferovl1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

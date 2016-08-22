@@ -122,7 +122,6 @@ int listfiles_plus_function(int type) {
   }
   int max_lines = calc_max_lines();
 
-  g_num_listed = 0;
   bool all_done = false;
   for (size_t this_dir = 0; (this_dir < session()->directories.size()) && (!hangup) && (session()->udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
@@ -148,7 +147,6 @@ int listfiles_plus_function(int type) {
     if (scan_dir) {
       session()->set_current_user_dir_num(this_dir);
       dliscan();
-      g_num_listed = 0;
       int first_file = save_first_file = 1;
       int amount = 0;
       bool done = false;

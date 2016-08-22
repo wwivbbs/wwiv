@@ -756,7 +756,6 @@ void NewFilesAllConfs() {
     ac = 1;
     tmp_disable_conf(true);
   }
-  g_num_listed = 0;
   session()->tagging = 1;
   session()->titled = 1;
   nscanall();
@@ -980,7 +979,6 @@ void NewFileScan() {
     SetNewFileScanDate();
   }
   bool abort = false;
-  g_num_listed = 0;
   session()->tagging = 1;
   session()->titled = 1;
   bout.nl();
@@ -990,7 +988,7 @@ void NewFileScan() {
   } else {
     bout.nl();
     nscandir(session()->current_user_dir_num(), &abort);
-    if (g_num_listed) {
+    if (!session()->filelist.empty()) {
       endlist(2);
     } else {
       bout.nl();
