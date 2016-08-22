@@ -487,11 +487,9 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
             }
           }
           s[INDENTION] = '\0';
-          bout.Color(session()->user()->IsUseExtraColor() && !(*abort) ? FRAME_COLOR : 0);
+          bout.Color(FRAME_COLOR);
           osan(s, abort, &next);
-          if (session()->user()->IsUseExtraColor() && !(*abort)) {
-            bout.Color(1);
-          }
+          bout.Color(1);
         } else {
           if (indent == 2) {
             for (i = 0; i < 13; i++) {
@@ -499,9 +497,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
             }
             s[13] = '\0';
             osan(s, abort, &next);
-            if (session()->user()->IsUseExtraColor() && !(*abort)) {
-              bout.Color(2);
-            }
+            bout.Color(2);
           }
         }
       }
@@ -623,12 +619,13 @@ void printinfo(uploadsrec * u, bool *abort) {
   } else if (session()->tagging == 1) {
     tagrec_t t;
     t.u = *u;
-    t.directory = session()->current_user_dir().subnum;
-    t.dir_mask = session()->directories[session()->current_user_dir().subnum].mask;
+    auto subnum = session()->current_user_dir().subnum;
+    t.directory = subnum;
+    t.dir_mask = session()->directories[subnum].mask;
     session()->filelist.emplace_back(std::move(t));
     sprintf(s, "\r|#%d%2d|#%d%c",
             (check_batch_queue(session()->filelist.back().u.filename)) ? 6 : 0,
-            session()->filelist.size(), session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0, okansi() ? '\xBA' : ' '); // was |
+            session()->filelist.size(), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
     osan(s, abort, &next);
   } else {
     bout << "\r";
@@ -641,7 +638,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   s[4] = '\0';
   bout.Color(1);
   osan(s, abort, &next);
-  bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+  bout.Color(FRAME_COLOR);
   osan((okansi() ? "\xBA" : " "), abort, &next); // was |
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
@@ -662,7 +659,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   osan(s, abort, &next);
 
   if (session()->tagging == 1) {
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : " "), abort, &next); // was |
     sprintf(s1, "%d", u->numdloads);
 
@@ -674,7 +671,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     bout.Color(2);
     osan(s, abort, &next);
   }
-  bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+  bout.Color(FRAME_COLOR);
   osan((okansi() ? "\xBA" : " "), abort, &next); // was |
   sprintf(s, "|#%d%s", (u->mask & mask_extended) ? 1 : 2, u->description);
   if (session()->tagging) {
@@ -705,21 +702,19 @@ void printtitle(bool *abort) {
   }
   sprintf(buffer, "%s%s - #%s, %d files.", "\r", session()->directories[session()->current_user_dir().subnum].name,
           session()->current_user_dir().keys, session()->numf);
-  bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-  if ((g_num_listed == 0 && session()->filelist.empty()) || session()->tagging == 0 || g_num_listed == 0) {
+  bout.Color(FRAME_COLOR);
+  if (session()->filelist.empty() || session()->tagging == 0 || g_num_listed == 0) {
     bout << "\r" << string(78, '-') << wwiv::endl;
   } else if (lines_listed) {
     bout << "\r" << string(78, '-') << wwiv::endl;
   }
-  if (session()->user()->IsUseExtraColor()) {
-    bout.Color(2);
-  }
+  bout.Color(2);
   pla(buffer, abort);
   if (session()->tagging == 1) {
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(FRAME_COLOR);
     bout << "\r" << string(78, '-') << wwiv::endl;
   } else {
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(FRAME_COLOR);
     bout << "\r" << string(78, '-') << wwiv::endl;
   }
   session()->titled = 0;

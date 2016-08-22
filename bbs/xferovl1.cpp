@@ -493,7 +493,7 @@ void tag_files() {
     return;
   }
   lines_listed = 0;
-  bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+  bout.Color(FRAME_COLOR);
   bout << "\r" << std::string(78, '-') << wwiv::endl;
 
   bool done = false;
@@ -1007,7 +1007,7 @@ void endlist(int mode) {
         tag_files();
         return;
       } else {
-        bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+        bout.Color(FRAME_COLOR);
         bout << "\r" << std::string(78, '-') << wwiv::endl;
       }
       bout << "\r|#9Files listed: |#2 " << g_num_listed;

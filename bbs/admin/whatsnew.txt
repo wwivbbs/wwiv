@@ -6,6 +6,9 @@
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * removed "debug_level" and Debug menu command. use VLOG(2) now.
+* "extra color" was only used in transfer section w/o listplus 
+  (which means it's not ever used). removed the checks for it.  This
+  will come back in the future somewhere else to be useful.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

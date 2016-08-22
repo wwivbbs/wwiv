@@ -746,13 +746,13 @@ void relist() {
   otag = session()->tagging;
   session()->tagging = 0;
   if (session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(FRAME_COLOR);
     bout << string(78, '-') << wwiv::endl;
   }
   for (i = 0; i < session()->filelist.size(); i++) {
     if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (tcd != session()->filelist[i].directory) {
-        bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+        bout.Color(FRAME_COLOR);
         if (tcd != -1) {
           bout << "\r" << string(78, '-') << wwiv::endl;
         }
@@ -764,15 +764,13 @@ void relist() {
             break;
           }
         }
-        if (session()->user()->IsUseExtraColor()) {
-          bout.Color(2);
-        }
+        bout.Color(2);
         if (tcdi == -1) {
           bout << session()->directories[tcd].name << "." << wwiv::endl;
         } else {
           bout << session()->directories[tcd].name << " - #" << session()->udir[tcdi].keys << ".\r\n";
         }
-        bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+        bout.Color(FRAME_COLOR);
         bout << string(78, '-') << wwiv::endl;
       }
     }
@@ -781,22 +779,18 @@ void relist() {
             check_batch_queue(session()->filelist[i].u.filename) ? 6 : 0,
             i + 1,
             0x03,
-            session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0,
+            FRAME_COLOR,
             okansi() ? '\xBA' : ' '); // was |
     osan(s, &abort, &next);
-    if (session()->user()->IsUseExtraColor()) {
-      bout.Color(1);
-    }
+    bout.Color(1);
     strncpy(s, session()->filelist[i].u.filename, 8);
     s[8] = 0;
     osan(s, &abort, &next);
     strncpy(s, &((session()->filelist[i].u.filename)[8]), 4);
     s[4] = 0;
-    if (session()->user()->IsUseExtraColor()) {
-      bout.Color(1);
-    }
+    bout.Color(1);
     osan(s, &abort, &next);
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : ":"), &abort, &next);
 
     sprintf(s1, "%ld""k", bytes_to_k(session()->filelist[i].u.numbytes));
@@ -817,12 +811,10 @@ void relist() {
       s[i1] = 0;
     }
     strcat(s, s1);
-    if (session()->user()->IsUseExtraColor()) {
-      bout.Color(2);
-    }
+    bout.Color(2);
     osan(s, &abort, &next);
 
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s1, "%d", session()->filelist[i].u.numdloads);
     
@@ -832,12 +824,10 @@ void relist() {
     }
     s[i1] = 0;
     strcat(s, s1);
-    if (session()->user()->IsUseExtraColor()) {
-      bout.Color(2);
-    }
+    bout.Color(2);
     osan(s, &abort, &next);
 
-    bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+    bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s, "%c%d%s",
             0x03,
@@ -845,7 +835,7 @@ void relist() {
       session()->filelist[i].u.description);
     plal(s, session()->user()->GetScreenChars() - 28, &abort);
   }
-  bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
+  bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
   session()->tagging = otag;
   lines_listed = 0;

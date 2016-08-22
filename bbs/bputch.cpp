@@ -178,7 +178,6 @@ int bputch(char c, bool bUseInternalBuffer) {
 
       if (c == SOFTRETURN) {
         ++lines_listed;
-        // Note: The call to end_tag has moved to listfiles() where it belongs.
         // change Build3 + 5.0 to fix message read.
         if (lines_listed >= (session()->screenlinest - 1)) {
           if (session()->user()->HasPause()) {
