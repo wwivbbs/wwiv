@@ -293,8 +293,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     if (!text) {
       continue;
     }
-    cout << "------------------------------------------------------------------------"
-	       << endl;
+    cout << string(72, '-') << endl;
     std::vector<string> lines = wwiv::strings::SplitString(text->text(), "\n");
     for (const auto& line : lines) {
       if (line.empty()) {

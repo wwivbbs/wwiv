@@ -481,7 +481,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
         if (indent == 1) {
           for (i = 0; i < INDENTION; i++) {
             if (i == 12 || i == 18) {
-              s[i] = (okansi() ? '\xBA' : '|');
+              s[i] = (okansi() ? '\xBA' : ' '); // was |
             } else {
               s[i] = SPACE;
             }
@@ -621,19 +621,15 @@ void printinfo(uploadsrec * u, bool *abort) {
   if (session()->tagging == 0) {
     return;
   } else if (session()->tagging == 1) {
-    if (!filelist) {
-      filelist = static_cast<tagrec *>(BbsAllocA(50 * sizeof(tagrec)));
-      session()->tagptr = 0;
-    } else {
-      filelist[session()->tagptr].u = *u;
-      filelist[session()->tagptr].directory = session()->current_user_dir().subnum;
-      filelist[session()->tagptr].dir_mask = session()->directories[session()->current_user_dir().subnum].mask;
-      session()->tagptr++;
-      sprintf(s, "\r|#%d%2d|#%d%c",
-              (check_batch_queue(filelist[session()->tagptr - 1].u.filename)) ? 6 : 0,
-              session()->tagptr, session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0, okansi() ? '\xBA' : '|');
-      osan(s, abort, &next);
-    }
+    tagrec_t t;
+    t.u = *u;
+    t.directory = session()->current_user_dir().subnum;
+    t.dir_mask = session()->directories[session()->current_user_dir().subnum].mask;
+    session()->filelist.emplace_back(std::move(t));
+    sprintf(s, "\r|#%d%2d|#%d%c",
+            (check_batch_queue(session()->filelist.back().u.filename)) ? 6 : 0,
+            session()->filelist.size(), session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0, okansi() ? '\xBA' : ' '); // was |
+    osan(s, abort, &next);
   } else {
     bout << "\r";
   }
@@ -646,7 +642,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(1);
   osan(s, abort, &next);
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-  osan((okansi() ? "\xBA" : "|"), abort, &next);
+  osan((okansi() ? "\xBA" : " "), abort, &next); // was |
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
 
@@ -667,7 +663,7 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   if (session()->tagging == 1) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-    osan((okansi() ? "\xBA" : "|"), abort, &next);
+    osan((okansi() ? "\xBA" : " "), abort, &next); // was |
     sprintf(s1, "%d", u->numdloads);
 
     for (i = 0; i < 4 - GetStringLength(s1); i++) {
@@ -679,7 +675,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     osan(s, abort, &next);
   }
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-  osan((okansi() ? "\xBA" : "|"), abort, &next);
+  osan((okansi() ? "\xBA" : " "), abort, &next); // was |
   sprintf(s, "|#%d%s", (u->mask & mask_extended) ? 1 : 2, u->description);
   if (session()->tagging) {
     plal(s, session()->user()->GetScreenChars() - 28, abort);
@@ -692,7 +688,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   if (!(*abort)) {
     ++g_num_listed;
   } else {
-    session()->tagptr = 0;
+    session()->filelist.clear();
     session()->tagging = 0;
   }
 }
@@ -700,7 +696,8 @@ void printinfo(uploadsrec * u, bool *abort) {
 void printtitle(bool *abort) {
   char buffer[255];
 
-  if (lines_listed >= session()->screenlinest - 7 && filelist && g_num_listed) {
+  if (lines_listed >= session()->screenlinest - 7 
+    && !session()->filelist.empty() && g_num_listed) {
     tag_files();
     if (session()->tagging == 0) {
       return;
@@ -709,36 +706,10 @@ void printtitle(bool *abort) {
   sprintf(buffer, "%s%s - #%s, %d files.", "\r", session()->directories[session()->current_user_dir().subnum].name,
           session()->current_user_dir().keys, session()->numf);
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-  if ((g_num_listed == 0 && session()->tagptr == 0) || session()->tagging == 0 || g_num_listed == 0) {
-    if (okansi()) {
-      bout << "\r" << string(78, '\xCD')  << wwiv::endl;
-    } else {
-      bout << "\r" << string(78, '-') << wwiv::endl;
-    }
+  if ((g_num_listed == 0 && session()->filelist.empty()) || session()->tagging == 0 || g_num_listed == 0) {
+    bout << "\r" << string(78, '-') << wwiv::endl;
   } else if (lines_listed) {
-    if (session()-> titled != 2 && session()->tagging == 1) {
-      if (okansi()) {
-        bout << "\r" 
-             << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-             << wwiv::endl;
-      } else {
-        bout << "\r" << "--+------------+-----+----+---------------------------------------------------"
-             << wwiv::endl;
-      }
-    } else {
-      if (session()->tagging == 2 && g_num_listed != 0) {
-        bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-        if (okansi()) {
-          bout << "\r" 
-               << "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-               << wwiv::endl;
-        } else {
-          bout << "\r" 
-               << "------------+-----+-----------------------------------------------------------"
-               << wwiv::endl;
-        }
-      }
-    }
+    bout << "\r" << string(78, '-') << wwiv::endl;
   }
   if (session()->user()->IsUseExtraColor()) {
     bout.Color(2);
@@ -746,26 +717,10 @@ void printtitle(bool *abort) {
   pla(buffer, abort);
   if (session()->tagging == 1) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-    if (okansi()) {
-      bout << "\r" 
-           << "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xcA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-           << wwiv::endl;
-    } else {
-      bout << "\r"
-           << "--+------------+-----+----+---------------------------------------------------"
-           << wwiv::endl;
-    }
+    bout << "\r" << string(78, '-') << wwiv::endl;
   } else {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-    if (okansi()) {
-      bout << "\r" 
-           << "\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-           << wwiv::endl;
-    } else {
-      bout << "\r"
-           << "------------+-----+-----------------------------------------------------------"
-           << wwiv::endl;
-    }
+    bout << "\r" << string(78, '-') << wwiv::endl;
   }
   session()->titled = 0;
 }
@@ -810,7 +765,7 @@ void listfiles() {
 
       // Moved to here from bputch.cpp
       if (lines_listed >= session()->screenlinest - 3) {
-        if (session()->tagging && filelist && !chatting) {
+        if (session()->tagging && !session()->filelist.empty()) {
           if (g_num_listed != 0) {
             tag_files();
           }
@@ -1048,16 +1003,14 @@ void remlist(const char *file_name) {
   sprintf(szFileName, "%s", file_name);
   align(szFileName);
 
-  if (filelist) {
-    for (int i = 0; i < session()->tagptr; i++) {
-      strcpy(szListFileName, filelist[i].u.filename);
+  if (!session()->filelist.empty()) {
+    for (auto b = session()->filelist.begin(); b != session()->filelist.end(); b++) {
+      strcpy(szListFileName, b->u.filename);
       align(szListFileName);
       if (IsEquals(szFileName, szListFileName)) {
-        for (int i2 = i; i2 < session()->tagptr - 1; i2++) {
-          filelist[ i2 ] = filelist[ i2 + 1 ];
-        }
-        session()->tagptr--;
+        b = session()->filelist.erase(b);
         g_num_listed--;
+        break;
       }
     }
   }

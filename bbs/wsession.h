@@ -66,6 +66,16 @@ struct adv_asv_rec {
   uint8_t reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
 };
 
+// Holds information about tagged files.
+struct tagrec_t {
+  // file information
+  uploadsrec u;
+  // directory number
+  int16_t directory;
+  // directory mask
+  uint16_t dir_mask;
+};
+
 extern WOutStream bout;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -400,7 +410,6 @@ private:
               numf = 0,
               subchg = 0,
               tagging = 0,
-              tagptr = 0,
               titled = 0,
               topdata = 0,
               using_modem = 0;
@@ -459,6 +468,7 @@ public:
   std::vector<eventsrec> events;
   std::vector<net_system_list_rec> csn;
   std::vector<uint16_t> csn_index;
+  std::vector<tagrec_t> filelist;
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

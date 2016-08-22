@@ -1505,10 +1505,7 @@ int WSession::Run(int argc, char *argv[]) {
       setiia(90);
       set_net_num(0);
       while (!hangup) {
-        if (filelist) {
-          free(filelist);
-          filelist = nullptr;
-        }
+        filelist.clear();
         zap_ed_info();
         write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
         wwiv::menus::mainmenu();

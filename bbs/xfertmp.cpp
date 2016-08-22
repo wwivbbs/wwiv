@@ -583,7 +583,7 @@ void temp_extract() {
       bout.nl(2);
       bool abort = false;
       ot = session()->tagging;
-      session()->tagging = 2;
+      session()->tagging = 1; // was 2;
       printinfo(&u, &abort);
       session()->tagging = ot;
       bout.nl();

@@ -824,7 +824,6 @@ void WSession::InitializeBBS() {
   bquote = 0;
   equote = 0;
   SetQuoting(false);
-  tagptr = 0;
 
   XINIT_PRINTF("Processing configuration file: WWIV.INI.");
   if (!File::Exists(syscfgovr.tempdir)) {

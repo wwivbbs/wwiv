@@ -735,9 +735,10 @@ void relist() {
   char s[85], s1[40], s2[81];
   int i;
   bool next, abort = 0;
-  int tcd = -1, otag, tcdi;
+  int16_t tcd = -1;
+  int otag, tcdi;
 
-  if (!filelist) {
+  if (session()->filelist.empty()) {
     return;
   }
   bout.cls();
@@ -746,28 +747,16 @@ void relist() {
   session()->tagging = 0;
   if (session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-    if (okansi()) {
-      bout <<
-                         "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
-    } else {
-      bout << "--+------------+-----+----+----------------------------------------------------\r\n";
-    }
+    bout << string(78, '-') << wwiv::endl;
   }
-  for (i = 0; i < session()->tagptr; i++) {
+  for (i = 0; i < session()->filelist.size(); i++) {
     if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-      if (tcd != filelist[i].directory) {
+      if (tcd != session()->filelist[i].directory) {
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
         if (tcd != -1) {
-          if (okansi()) {
-            bout << "\r" <<
-                               "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-                               << wwiv::endl;
-          } else {
-            bout << "\r" << "--+------------+-----+----+---------------------------------------------------" <<
-                               wwiv::endl;
-          }
+          bout << "\r" << string(78, '-') << wwiv::endl;
         }
-        tcd = filelist[i].directory;
+        tcd = session()->filelist[i].directory;
         tcdi = -1;
         for (size_t i1 = 0; i1 < session()->directories.size(); i1++) {
           if (session()->udir[i1].subnum == tcd) {
@@ -784,30 +773,24 @@ void relist() {
           bout << session()->directories[tcd].name << " - #" << session()->udir[tcdi].keys << ".\r\n";
         }
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-        if (okansi()) {
-          bout <<
-                             "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-                             << wwiv::endl;
-        } else {
-          bout << "--+------------+-----+----+---------------------------------------------------" << wwiv::endl;
-        }
+        bout << string(78, '-') << wwiv::endl;
       }
     }
     sprintf(s, "%c%d%2d%c%d%c",
             0x03,
-            check_batch_queue(filelist[i].u.filename) ? 6 : 0,
+            check_batch_queue(session()->filelist[i].u.filename) ? 6 : 0,
             i + 1,
             0x03,
             session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0,
-            okansi() ? '\xBA' : '|');
+            okansi() ? '\xBA' : ' '); // was |
     osan(s, &abort, &next);
     if (session()->user()->IsUseExtraColor()) {
       bout.Color(1);
     }
-    strncpy(s, filelist[i].u.filename, 8);
+    strncpy(s, session()->filelist[i].u.filename, 8);
     s[8] = 0;
     osan(s, &abort, &next);
-    strncpy(s, &((filelist[i].u.filename)[8]), 4);
+    strncpy(s, &((session()->filelist[i].u.filename)[8]), 4);
     s[4] = 0;
     if (session()->user()->IsUseExtraColor()) {
       bout.Color(1);
@@ -816,21 +799,23 @@ void relist() {
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     osan((okansi() ? "\xBA" : ":"), &abort, &next);
 
-    sprintf(s1, "%ld""k", bytes_to_k(filelist[i].u.numbytes));
+    sprintf(s1, "%ld""k", bytes_to_k(session()->filelist[i].u.numbytes));
     if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (!(session()->directories[tcd].mask & mask_cdrom)) {
-        sprintf(s2, "%s%s", session()->directories[tcd].path, filelist[i].u.filename);
+        sprintf(s2, "%s%s", session()->directories[tcd].path, session()->filelist[i].u.filename);
         StringRemoveWhitespace(s2);
         if (!File::Exists(s2)) {
           strcpy(s1, "N/A");
         }
       }
     }
-    size_t i1 = 0;
-    for (; i1 < 5 - strlen(s1); i1++) {
-      s[i1] = SPACE;
+    if (strlen(s1) < 5) {
+      size_t i1 = 0;
+      for (; i1 < 5 - GetStringLength(s1); i1++) {
+        s[i1] = SPACE;
+      }
+      s[i1] = 0;
     }
-    s[i1] = 0;
     strcat(s, s1);
     if (session()->user()->IsUseExtraColor()) {
       bout.Color(2);
@@ -839,9 +824,10 @@ void relist() {
 
     bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
-    sprintf(s1, "%d", filelist[i].u.numdloads);
-
-    for (i1 = 0; i1 < 4 - strlen(s1); i1++) {
+    sprintf(s1, "%d", session()->filelist[i].u.numdloads);
+    
+    size_t i1 = 0;
+    for (; i1 < 4 - strlen(s1); i1++) {
       s[i1] = SPACE;
     }
     s[i1] = 0;
@@ -855,19 +841,12 @@ void relist() {
     osan((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s, "%c%d%s",
             0x03,
-            (filelist[i].u.mask & mask_extended) ? 1 : 2,
-            filelist[i].u.description);
+            (session()->filelist[i].u.mask & mask_extended) ? 1 : 2,
+      session()->filelist[i].u.description);
     plal(s, session()->user()->GetScreenChars() - 28, &abort);
   }
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-  if (okansi()) {
-    bout << "\r" <<
-                       "\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD"
-                       << wwiv::endl;
-  } else {
-    bout << "\r" << "--+------------+-----+----+---------------------------------------------------" <<
-                       wwiv::endl;
-  }
+  bout << "\r" << string(78, '-') << wwiv::endl;
   session()->tagging = otag;
   lines_listed = 0;
 }

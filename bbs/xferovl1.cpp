@@ -382,11 +382,12 @@ void tag_it() {
     getkey();
     return;
   }
-  bout << "|#2Which file(s) (1-" << session()->tagptr << ", *=All, 0=Quit)? ";
+  bout << "|#2Which file(s) (1-" << session()->filelist.size() 
+       << ", *=All, 0=Quit)? ";
   input(s3, 30, true);
   if (s3[0] == '*') {
     s3[0] = '\0';
-    for (i2 = 0; i2 < session()->tagptr && i2 < 78; i2++) {
+    for (i2 = 0; i2 < session()->filelist.size() && i2 < 78; i2++) {
       sprintf(s2, "%d ", i2 + 1);
       strcat(s3, s2);
       if (strlen(s3) > sizeof(s3) - 10) {
@@ -414,9 +415,9 @@ void tag_it() {
       break;
     }
     i--;
-    if ((s1[0]) && (i >= 0) && (i < session()->tagptr)) {
-      if (check_batch_queue(filelist[i].u.filename)) {
-        bout << "|#6" << filelist[i].u.filename << " is already in the batch queue.\r\n";
+    if ((s1[0]) && (i >= 0) && (i < session()->filelist.size())) {
+      if (check_batch_queue(session()->filelist[i].u.filename)) {
+        bout << "|#6" << session()->filelist[i].u.filename << " is already in the batch queue.\r\n";
         bad = true;
       }
       if (session()->batch().entry.size() >= session()->max_batch) {
@@ -430,19 +431,19 @@ void tag_it() {
         bad = true;
       }
       if (!bad) {
-        sprintf(s, "%s%s", session()->directories[filelist[i].directory].path,
-                stripfn(filelist[i].u.filename));
-        if (filelist[i].dir_mask & mask_cdrom) {
-          sprintf(s2, "%s%s", session()->directories[filelist[i].directory].path,
-                  stripfn(filelist[i].u.filename));
-          sprintf(s, "%s%s", syscfgovr.tempdir, stripfn(filelist[i].u.filename));
+        sprintf(s, "%s%s", session()->directories[session()->filelist[i].directory].path,
+                stripfn(session()->filelist[i].u.filename));
+        if (session()->filelist[i].dir_mask & mask_cdrom) {
+          sprintf(s2, "%s%s", session()->directories[session()->filelist[i].directory].path,
+                  stripfn(session()->filelist[i].u.filename));
+          sprintf(s, "%s%s", syscfgovr.tempdir, stripfn(session()->filelist[i].u.filename));
           if (!File::Exists(s)) {
             copyfile(s2, s, true);
           }
         }
         File fp(s);
         if (!fp.Open(File::modeBinary | File::modeReadOnly)) {
-          bout << "|#6The file " << stripfn(filelist[i].u.filename) << " is not there.\r\n";
+          bout << "|#6The file " << stripfn(session()->filelist[i].u.filename) << " is not there.\r\n";
           bad = true;
         } else {
           fs = fp.GetLength();
@@ -452,19 +453,19 @@ void tag_it() {
       if (!bad) {
         t = 12.656 / static_cast<double>(modem_speed) * static_cast<double>(fs);
         if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
-          bout << "|#6Not enough time left in queue for " << filelist[i].u.filename << ".\r\n";
+          bout << "|#6Not enough time left in queue for " << session()->filelist[i].u.filename << ".\r\n";
           bad = true;
         }
       }
       if (!bad) {
         batchrec b{};
-        strcpy(b.filename, filelist[i].u.filename);
-        b.dir = filelist[i].directory;
+        strcpy(b.filename, session()->filelist[i].u.filename);
+        b.dir = session()->filelist[i].directory;
         b.time = (float) t;
         b.sending = true;
         b.len = fs;
         session()->batch().entry.emplace_back(b);
-        bout << "|#1" << filelist[i].u.filename << " added to batch queue.\r\n";
+        bout << "|#1" << session()->filelist[i].u.filename << " added to batch queue.\r\n";
       }
     } else {
       bout << "|#6Bad file number " << i + 1 << wwiv::endl;
@@ -484,7 +485,7 @@ void tag_files() {
   }
   bool abort = false;
   if (session()->tagging == 2) {
-    session()->tagptr = 0;
+    session()->filelist.clear();
     return;
   }
   session()->tleft(true);
@@ -493,12 +494,7 @@ void tag_files() {
   }
   lines_listed = 0;
   bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-  if (okansi()) {
-    bout <<
-                       "\r\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
-  } else {
-    bout << "\r--+------------+-----+----+---------------------------------------------------\r\n";
-  }
+  bout << "\r" << std::string(78, '-') << wwiv::endl;
 
   bool done = false;
   while (!done && !hangup) {
@@ -518,7 +514,7 @@ void tag_files() {
     case SPACE:
     case RETURN:
       lines_listed = 0;
-      session()->tagptr = 0;
+      session()->filelist.clear();
       session()->titled = 2;
       bout.cls();
       done = true;
@@ -537,45 +533,45 @@ void tag_files() {
       lines_listed = 0;
       i1 = session()->tagging;
       session()->tagging = 0;
-      bout << "|#9Which file (1-" << session()->tagptr << ")? ";
+      bout << "|#9Which file (1-" << session()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if (s[0] && i >= 0 && i < session()->tagptr) {
-        d = XFER_TIME(filelist[i].u.numbytes);
+      if (s[0] && i >= 0 && i < session()->filelist.size()) {
+        d = XFER_TIME(session()->filelist[i].u.numbytes);
         bout.nl();
         size_t i2;
         for (i2 = 0; i2 < session()->directories.size(); i2++) {
-          if (session()->udir[i2].subnum == filelist[i].directory) {
+          if (session()->udir[i2].subnum == session()->filelist[i].directory) {
             break;
           }
         }
         if (i2 < session()->directories.size()) {
-          bout << "|#1Directory  : |#2#" << session()->udir[i2].keys << ", " << session()->directories[filelist[i].directory].name <<
+          bout << "|#1Directory  : |#2#" << session()->udir[i2].keys << ", " << session()->directories[session()->filelist[i].directory].name <<
                              wwiv::endl;
         } else {
-          bout << "|#1Directory  : |#2#" << "??" << ", " << session()->directories[filelist[i].directory].name << wwiv::endl;
+          bout << "|#1Directory  : |#2#" << "??" << ", " << session()->directories[session()->filelist[i].directory].name << wwiv::endl;
         }
-        bout << "|#1Filename   : |#2" << filelist[i].u.filename << wwiv::endl;
-        bout << "|#1Description: |#2" << filelist[i].u.description << wwiv::endl;
-        if (filelist[i].u.mask & mask_extended) {
+        bout << "|#1Filename   : |#2" << session()->filelist[i].u.filename << wwiv::endl;
+        bout << "|#1Description: |#2" << session()->filelist[i].u.description << wwiv::endl;
+        if (session()->filelist[i].u.mask & mask_extended) {
           strcpy(s1, g_szExtDescrFileName);
-          sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, session()->directories[filelist[i].directory].filename);
+          sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, session()->directories[session()->filelist[i].directory].filename);
           zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
-          print_extended(filelist[i].u.filename, &abort, session()->max_extend_lines, 2);
+          print_extended(session()->filelist[i].u.filename, &abort, session()->max_extend_lines, 2);
           zap_ed_info();
           strcpy(g_szExtDescrFileName, s1);
         }
-        bout << "|#1File size  : |#2" << bytes_to_k(filelist[i].u.numbytes) << wwiv::endl;
+        bout << "|#1File size  : |#2" << bytes_to_k(session()->filelist[i].u.numbytes) << wwiv::endl;
         bout << "|#1Apprx. time: |#2" << ctim(d) << wwiv::endl;
-        bout << "|#1Uploaded on: |#2" << filelist[i].u.date << wwiv::endl;
-        bout << "|#1Uploaded by: |#2" << filelist[i].u.upby << wwiv::endl;
-        bout << "|#1Times D/L'd: |#2" << filelist[i].u.numdloads << wwiv::endl;
-        if (session()->directories[filelist[i].directory].mask & mask_cdrom) {
+        bout << "|#1Uploaded on: |#2" << session()->filelist[i].u.date << wwiv::endl;
+        bout << "|#1Uploaded by: |#2" << session()->filelist[i].u.upby << wwiv::endl;
+        bout << "|#1Times D/L'd: |#2" << session()->filelist[i].u.numdloads << wwiv::endl;
+        if (session()->directories[session()->filelist[i].directory].mask & mask_cdrom) {
           bout.nl();
           bout << "|#3CD ROM DRIVE\r\n";
         } else {
-          sprintf(s, "|#7%s%s", session()->directories[filelist[i].directory].path, filelist[i].u.filename);
+          sprintf(s, "|#7%s%s", session()->directories[session()->filelist[i].directory].path, session()->filelist[i].u.filename);
           if (!File::Exists(s)) {
             bout.nl();
             bout << "|#6-=>FILE NOT THERE<=-\r\n";
@@ -608,7 +604,7 @@ void tag_files() {
     case 'Q':
       session()->tagging   = 0;
       session()->titled    = 0;
-      session()->tagptr    = 0;
+      session()->filelist.clear();
       lines_listed    = 0;
       done = true;
       return;
@@ -619,17 +615,17 @@ void tag_files() {
       tag_it();
       break;
     case 'V':
-      bout << "|#2Which file (1-|#2" << session()->tagptr << ")? ";
+      bout << "|#2Which file (1-|#2" << session()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if ((s[0]) && (i >= 0) && (i < session()->tagptr)) {
-        sprintf(s1, "%s%s", session()->directories[filelist[i].directory].path,
-                stripfn(filelist[i].u.filename));
-        if (session()->directories[filelist[i].directory].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", session()->directories[filelist[i].directory].path,
-                  stripfn(filelist[i].u.filename));
+      if ((s[0]) && (i >= 0) && (i < session()->filelist.size())) {
+        sprintf(s1, "%s%s", session()->directories[session()->filelist[i].directory].path,
+                stripfn(session()->filelist[i].u.filename));
+        if (session()->directories[session()->filelist[i].directory].mask & mask_cdrom) {
+          sprintf(s2, "%s%s", session()->directories[session()->filelist[i].directory].path,
+                  stripfn(session()->filelist[i].u.filename));
           sprintf(s1, "%s%s", syscfgovr.tempdir,
-                  stripfn(filelist[i].u.filename));
+                  stripfn(session()->filelist[i].u.filename));
           if (!File::Exists(s1)) {
             copyfile(s2, s1, true);
           }
@@ -640,7 +636,7 @@ void tag_files() {
           break;
         }
         get_arc_cmd(s, s1, 0, "");
-        if (!okfn(stripfn(filelist[i].u.filename))) {
+        if (!okfn(stripfn(session()->filelist[i].u.filename))) {
           s[0] = 0;
         }
         if (s[0] != 0) {
@@ -666,7 +662,7 @@ void tag_files() {
       break;
     }
   }
-  session()->tagptr = 0;
+  session()->filelist.clear();
   lines_listed = 0;
 }
 
@@ -1007,26 +1003,12 @@ void endlist(int mode) {
   // if mode == 2, new files
   if (session()->tagging != 0) {
     if (g_num_listed) {
-      if (session()->tagging == 1 && filelist) {
+      if (session()->tagging == 1 && !session()->filelist.empty()) {
         tag_files();
         return;
       } else {
         bout.Color(session()->user()->IsUseExtraColor() ? FRAME_COLOR : 0);
-        if (session()->titled != 2 && session()->tagging == 1) {
-          if (okansi()) {
-            bout <<
-                               "\r\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
-          } else {
-            bout << "\r--+------------+-----+----+---------------------------------------------------\r\n";
-          }
-        } else {
-          if (okansi()) {
-            bout <<
-                               "\r\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCA\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\r\n";
-          } else {
-            bout << "\r------------+-----+-----------------------------------------------------------\r\n";
-          }
-        }
+        bout << "\r" << std::string(78, '-') << wwiv::endl;
       }
       bout << "\r|#9Files listed: |#2 " << g_num_listed;
     } else {

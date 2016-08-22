@@ -615,16 +615,6 @@ struct uploadsrec {
            numbytes;                               // number bytes long file is
 };
 
-
-struct tagrec {
-  uploadsrec u;                               // file information
-
-  int16_t directory;                            // directory number
-
-  uint16_t dir_mask;                    // directory mask
-};
-
-
 // ZLOG INFORMATION FOR PAST SYSTEM USAGE
 struct zlogrec {
   char date[9];                               // zlog for what date
@@ -1092,7 +1082,6 @@ static_assert(sizeof(tmpmailrec) == 15, "tmpmailrec == 15");
 static_assert(sizeof(shortmsgrec) == 85, "shortmsgrec == 85");
 static_assert(sizeof(voting_response) == 83, "voting_response == 83");
 static_assert(sizeof(uploadsrec) == 144, "uploadsrec == 144");
-static_assert(sizeof(tagrec) == 148, "tagrec == 148");
 static_assert(sizeof(zlogrec) == 21, "zlogrec == 21");
 static_assert(sizeof(chainfilerec) == 166, "chainfilerec == 166");
 static_assert(sizeof(chainregrec) == 64, "chainregrec == 64");
