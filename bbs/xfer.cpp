@@ -611,12 +611,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   int i;
   bool next;
 
-  if (session()->titled != 0) {
-    printtitle(abort);
-  }
-  if (!session()->tagging) {
-    return;
-  } else if (session()->tagging) {
+  {
     tagrec_t t;
     t.u = *u;
     auto subnum = session()->current_user_dir().subnum;
@@ -624,11 +619,9 @@ void printinfo(uploadsrec * u, bool *abort) {
     t.dir_mask = session()->directories[subnum].mask;
     session()->filelist.emplace_back(std::move(t));
     sprintf(s, "\r|#%d%2d|#%d%c",
-            (check_batch_queue(session()->filelist.back().u.filename)) ? 6 : 0,
+            (check_batch_queue(u->filename)) ? 6 : 0,
             session()->filelist.size(), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
     osan(s, abort, &next);
-  } else {
-    bout << "\r";
   }
   bout.Color(1);
   strncpy(s, u->filename, 8);
@@ -658,7 +651,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(2);
   osan(s, abort, &next);
 
-  if (session()->tagging) {
+  {
     bout.Color(FRAME_COLOR);
     osan((okansi() ? "\xBA" : " "), abort, &next); // was |
     sprintf(s1, "%d", u->numdloads);
@@ -674,14 +667,8 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(FRAME_COLOR);
   osan((okansi() ? "\xBA" : " "), abort, &next); // was |
   sprintf(s, "|#%d%s", (u->mask & mask_extended) ? 1 : 2, u->description);
-  if (session()->tagging) {
-    plal(s, session()->user()->GetScreenChars() - 28, abort);
-  } else {
-    plal(s, strlen(s), abort);
-    if (!*abort && session()->user()->GetNumExtended() && (u->mask & mask_extended)) {
-      print_extended(u->filename, abort, session()->user()->GetNumExtended(), 1);
-    }
-  }
+  plal(s, session()->user()->GetScreenChars() - 28, abort);
+
   if (*abort) {
     session()->filelist.clear();
     session()->tagging = false;
@@ -689,28 +676,19 @@ void printinfo(uploadsrec * u, bool *abort) {
 }
 
 void printtitle(bool *abort) {
-  char buffer[255];
-
-  if (lines_listed >= session()->screenlinest - 7 
-    && !session()->filelist.empty()) {
-    tag_files();
-    if (!session()->tagging) {
-      return;
-    }
-  }
-  sprintf(buffer, "%s%s - #%s, %d files.", "\r", session()->directories[session()->current_user_dir().subnum].name,
-          session()->current_user_dir().keys, session()->numf);
-  bout.Color(FRAME_COLOR);
-  if (session()->filelist.empty() || !session()->tagging) {
-    bout << "\r" << string(78, '-') << wwiv::endl;
-  } else if (lines_listed) {
-    bout << "\r" << string(78, '-') << wwiv::endl;
-  }
-  bout.Color(2);
-  pla(buffer, abort);
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
-  session()->titled = 0;
+
+  checka(abort);
+  bout.Color(2);
+  bout << "\r"
+    << session()->directories[session()->current_user_dir().subnum].name
+    << " - #" << session()->current_user_dir().keys << ", "
+    << session()->numf << " files." << wwiv::endl;
+
+  bout.Color(FRAME_COLOR);
+  bout << "\r" << string(78, '-') << wwiv::endl;
+  session()->titled = false;
 }
 
 void file_mask(char *file_mask) {
@@ -736,7 +714,7 @@ void listfiles() {
   dliscan();
   char szFileMask[81];
   file_mask(szFileMask);
-  session()->titled = 1;
+  session()->titled = true;
   lines_listed = 0;
 
   File fileDownload(g_szDownloadFileName);
@@ -748,6 +726,11 @@ void listfiles() {
     fileDownload.Read(&u, sizeof(uploadsrec));
     if (compare(szFileMask, u.filename)) {
       fileDownload.Close();
+
+      if (session()->titled) {
+        printtitle(&abort);
+      }
+
       printinfo(&u, &abort);
 
       // Moved to here from bputch.cpp
@@ -786,6 +769,14 @@ void nscandir(int nDirNum, bool *abort) {
       fileDownload.Read(&u, sizeof(uploadsrec));
       if (u.daten >= static_cast<uint32_t>(nscandate)) {
         fileDownload.Close();
+
+        if (session()->titled) {
+          if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
+            tag_files();
+          }
+          printtitle(abort);
+        }
+
         printinfo(&u, abort);
         fileDownload.Open(File::modeBinary | File::modeReadOnly);
       } else if (bkbhit()) {
@@ -840,7 +831,7 @@ void nscanall() {
     }
     int nSubNum = session()->udir[i].subnum;
     if (qsc_n[nSubNum / 32] & (1L << (nSubNum % 32))) {
-      session()->titled = 1;
+      session()->titled = true;
       nscandir(i, &abort);
     }
   }
@@ -903,7 +894,7 @@ void searchall() {
       }
       session()->set_current_user_dir_num(i);
       dliscan();
-      session()->titled = 1;
+      session()->titled = true;
       File fileDownload(g_szDownloadFileName);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
       for (int i1 = 1; i1 <= session()->numf && !abort && !hangup && session()->tagging; i1++) {
@@ -912,6 +903,12 @@ void searchall() {
         fileDownload.Read(&u, sizeof(uploadsrec));
         if (compare(szFileMask, u.filename)) {
           fileDownload.Close();
+          if (session()->titled) {
+            if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
+              tag_files();
+            }
+            printtitle(&abort);
+          }
           printinfo(&u, &abort);
           fileDownload.Open(File::modeBinary | File::modeReadOnly);
         } else if (bkbhit()) {

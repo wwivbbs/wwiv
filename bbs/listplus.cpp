@@ -51,14 +51,21 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-user_config config_listing;
-int list_loaded;
+// How far from the bottom that the side menu will be on the screen
+// This is used because of people who don't set there screenlines up correctly
+// It defines how far up from the users screenlines to put the menu
+static constexpr int STOP_LIST = 0;
+static constexpr int MAX_EXTENDED_SIZE = 1000;
+
+static user_config config_listing;
+static int list_loaded;
 
 int bulk_move = 0;
 int bulk_dir = -1;
-
-int extended_desc_used, lc_lines_used;
 bool ext_is_on;
+
+static int extended_desc_used;
+static int lc_lines_used;
 
 listplus_config lp_config;
 
@@ -527,8 +534,6 @@ static void unload_config_listing() {
 }
 
 static int load_config_listing(int config) {
-  int len;
-
   unload_config_listing();
   memset(&config_listing, 0, sizeof(user_config));
 
@@ -549,7 +554,7 @@ static int load_config_listing(int config) {
     session()->users()->ReadUser(&user, config);
     if (fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       fileConfig.Seek(config * sizeof(user_config), File::seekBegin);
-      len = fileConfig.Read(&config_listing, sizeof(user_config));
+      int len = fileConfig.Read(&config_listing, sizeof(user_config));
       fileConfig.Close();
       if (len != sizeof(user_config) ||
           !IsEqualsIgnoreCase(config_listing.name, user.GetName())) {

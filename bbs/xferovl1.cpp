@@ -304,7 +304,6 @@ bool get_file_idz(uploadsrec * u, int dn) {
   return true;
 }
 
-
 int read_idz_all() {
   int count = 0;
 
@@ -319,7 +318,6 @@ int read_idz_all() {
   session()->UpdateTopScreen();
   return count;
 }
-
 
 int read_idz(int mode, int tempdir) {
   char s[81];
@@ -368,7 +366,6 @@ int read_idz(int mode, int tempdir) {
   }
   return count;
 }
-
 
 void tag_it() {
   int i, i3, i4;
@@ -626,7 +623,7 @@ void tag_files() {
       break;
     case 'Q':
       session()->tagging = false;
-      session()->titled = 0;
+      session()->titled = false;
       session()->filelist.clear();
       lines_listed = 0;
       done = true;

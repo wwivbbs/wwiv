@@ -392,6 +392,7 @@ private:
               m_bInternalZmodem = true,
               m_bExecLogSyncFoss = true;
   bool tagging = false;
+  bool titled = false;
 
   int         m_nNumMessagesReadThisLogon = 0,
               m_nCurrentLanguageNumber = 0,
@@ -410,7 +411,6 @@ private:
               m_nMaxNetworkNumber = 0,
               numf = 0,
               subchg = 0,
-              titled = 0,
               topdata = 0,
               using_modem = 0;
   unsigned int screenlinest = 0;

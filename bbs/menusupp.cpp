@@ -757,7 +757,7 @@ void NewFilesAllConfs() {
     tmp_disable_conf(true);
   }
   session()->tagging = true;
-  session()->titled = 1;
+  session()->titled = true;
   nscanall();
   session()->tagging = false;
   if (ac) {
@@ -980,7 +980,7 @@ void NewFileScan() {
   }
   bool abort = false;
   session()->tagging = true;
-  session()->titled = 1;
+  session()->titled = true;
   bout.nl();
   bout << "|#5Search all directories? ";
   if (yesno()) {

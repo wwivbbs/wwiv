@@ -1243,7 +1243,7 @@ void finddescription() {
        && (session()->udir[i].subnum != -1); i++) {
     size_t i1 = session()->udir[i].subnum;
     pts = 0;
-    session()->titled = 1;
+    session()->titled = true;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       pts = 1;
     }
@@ -1277,6 +1277,14 @@ void finddescription() {
         }
         if (strstr(s, s1) != nullptr) {
           fileDownload.Close();
+
+          if (session()->titled) {
+            if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
+              tag_files();
+            }
+            printtitle(&abort);
+          }
+
           printinfo(&u, &abort);
           fileDownload.Open(File::modeBinary | File::modeReadOnly);
         } else if (bkbhit()) {

@@ -31,12 +31,6 @@ extern int foundany;
 // depending on where the file will need to start after your modification
 #define FIRST_FILE_POS 3
 
-// How far from the bottom that the side menu will be on the screen
-// This is used because of people who don't set there screenlines up correctly
-// It defines how far up from the users screenlines to put the menu
-#define STOP_LIST 0
-#define MAX_EXTENDED_SIZE (1000)
-
 
 // Defines for searching
 #define SR_MATCH      0
