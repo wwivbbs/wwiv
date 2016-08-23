@@ -58,11 +58,11 @@ static constexpr int STOP_LIST = 0;
 static constexpr int MAX_EXTENDED_SIZE = 1000;
 
 static user_config config_listing;
-static int list_loaded;
+static int list_loaded = 0;
 
 int bulk_move = 0;
 int bulk_dir = -1;
-bool ext_is_on;
+bool ext_is_on = false;
 
 static int extended_desc_used;
 static int lc_lines_used;
@@ -72,7 +72,7 @@ listplus_config lp_config;
 static char _on_[] = "ON!";
 static char _off_[] = "OFF";
 
-int lp_config_loaded;
+static bool lp_config_loaded = false;
 
 // TODO remove this hack and fix the real problem of fake spaces in filenames everywhere
 static bool ListPlusExist(const char *file_name) {
@@ -818,13 +818,13 @@ void load_lp_config() {
       lp_config.simple_search = 1;          // Which one is entered when searching, can switch to other still
       lp_config.no_configuration = 0;       // Toggles configurable menus on and off
       lp_config.check_exist = 1;            // Will check to see if the file exists on hardrive and put N/A if not
-      lp_config_loaded = 1;
+      lp_config_loaded = true;
       lp_config.forced_config = 0;
 
       save_lp_config();
     } else {
       fileConfig.Read(&lp_config, sizeof(listplus_config));
-      lp_config_loaded = 1;
+      lp_config_loaded = true;
       fileConfig.Close();
     }
   }

@@ -114,9 +114,6 @@ struct listplus_config {
 extern listplus_config lp_config;
 extern user_config list_config;
 
-extern int list_loaded;  // 1 through ? or -1 through ? for sysop defined choices
-extern int lp_config_loaded;
-
 #define STR_AND         '&'
 #define STR_SPC         ' '
 #define STR_OR          '|'
