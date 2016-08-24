@@ -396,10 +396,10 @@ int try_to_ul(const string& file_name) {
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
-  sysoplogf("Failed to upload %s, moving to TRY2UL dir", file_name);
+  sysoplogf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
 
-  const string src = StringPrintf("%s%s", syscfgovr.batchdir, file_name);
-  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, file_name);
+  const string src = StringPrintf("%s%s", syscfgovr.batchdir, file_name.c_str());
+  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, file_name.c_str());
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep

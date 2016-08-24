@@ -283,14 +283,14 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
       }
       it = delbatch(it);
       if (try_to_ul(file_name)) {
-        sysoplogf("!!! Couldn't find file \"%s\" in directory.", file_name);
+        sysoplogf("!!! Couldn't find file \"%s\" in directory.", file_name.c_str());
         bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
       }
       return;
     }
   }
   if (try_to_ul(file_name)) {
-    sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", file_name);
+    sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
     File::Remove(syscfgovr.batchdir, file_name);
