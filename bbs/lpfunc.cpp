@@ -576,46 +576,34 @@ int compare_criteria(search_record * sr, uploadsrec * ur) {
 
   // the above test was passed if it got here
   if (sr->search[0]) {
-    char *buff = nullptr;
     int desc_len = 0, fname_len = 0, ext_len = 0;
 
     // we want to seach the filename, description and ext description
     // as one unit, that way, if you specify something like 'one & two
     // and one is located in the description and two is in the
     // extended description, then it will properly find the search
+    string buff;
     if (sr->search_extended && ur->mask & mask_extended) {
       buff = read_extended_description(ur->filename);
     }
 
     desc_len = strlen(ur->description);
 
-    if (buff) {
-      ext_len = strlen(buff);
+    if (!buff.empty()) {
+      ext_len = buff.size();
     } else {
       // Something had something.
       return 0;
     }
     fname_len = strlen(ur->filename);
 
-    buff = reinterpret_cast<char*>(realloc(buff, desc_len + ext_len + fname_len + 10));
-    if (!buff) {
-      return 0;
-    }
-
-    buff[ext_len] = '\0';
-
     // tag the file name and description on to the end of the extended
     // description (if there is one)
-    strcat(buff, " ");
-    strcat(buff, ur->filename);
-    strcat(buff, " ");
-    strcat(buff, ur->description);
+    buff += StrCat(" ", ur->filename, " ", ur->description);
 
-    if (lp_compare_strings(buff, sr->search.c_str())) {
-      free(buff);
+    if (lp_compare_strings(buff.c_str(), sr->search.c_str())) {
       return 1;
     }
-    free(buff);
 
     return 0;                               // if we get here, we failed search test, so exit with 0 */
 
@@ -625,13 +613,11 @@ int compare_criteria(search_record * sr, uploadsrec * ur) {
   // have passed the test
 }
 
-
 bool lp_compare_strings(const char *raw, const char *formula) {
   unsigned i = 0;
 
   return lp_compare_strings_wh(raw, formula, &i, strlen(formula));
 }
-
 
 bool lp_compare_strings_wh(const char *raw, const  char *formula, unsigned *pos, int size) {
   bool rvalue;

@@ -207,12 +207,11 @@ void normalupload(int dn) {
       bout << "Please enter a one line description.\r\n:";
       inputl(u.description, 58);
       bout.nl();
-      char *pszExtendedDescription = nullptr;
-      modify_extended_description(&pszExtendedDescription, session()->directories[dn].name);
-      if (pszExtendedDescription) {
-        add_extended_description(u.filename, pszExtendedDescription);
+      string ext_desc;
+      modify_extended_description(&ext_desc, session()->directories[dn].name);
+      if (!ext_desc.empty()) {
+        add_extended_description(u.filename, ext_desc);
         u.mask |= mask_extended;
-        free(pszExtendedDescription);
       }
       bout.nl();
       if (xfer) {
@@ -251,8 +250,7 @@ void normalupload(int dn) {
         }
         if (ok) {
           if (ok == 1) {
-            long lFileLength = file.GetLength();
-            u.numbytes = lFileLength;
+            u.numbytes = file.GetLength();
             file.Close();
             session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
             modify_database(u.filename, true);

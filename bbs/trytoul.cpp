@@ -54,7 +54,6 @@ static void t2u_error(const string& file_name, const string& msg) {
 
 static int try_to_ul_wh(const string& orig_file_name) {
   directoryrec d = {};
-  char *ss;
   int i1, i2, i4, key, ok = 0, dn = 0;
   uploadsrec u, u1;
 
@@ -273,43 +272,40 @@ static int try_to_ul_wh(const string& orig_file_name) {
       break;
 
     case 'B':
+    {
       bout.nl();
-      ss = read_extended_description(u.filename);
+      string ss = read_extended_description(u.filename);
       bout << "|#5Modify extended description? ";
       if (yesno()) {
         bout.nl();
-        if (ss) {
+        if (!ss.empty()) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            free(ss);
             delete_extended_description(u.filename);
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
             modify_extended_description(&ss, session()->directories[session()->current_user_dir().subnum].name);
-            if (ss) {
+            if (!ss.empty()) {
               delete_extended_description(u.filename);
               add_extended_description(u.filename, ss);
-              free(ss);
             }
           }
         } else {
           modify_extended_description(&ss, session()->directories[session()->current_user_dir().subnum].name);
-          if (ss) {
+          if (!ss.empty()) {
             add_extended_description(u.filename, ss);
-            free(ss);
             u.mask |= mask_extended;
           } else {
             u.mask &= ~mask_extended;
           }
         }
-      } else if (ss) {
-        free(ss);
+      } else if (!ss.empty()) {
         u.mask |= mask_extended;
       } else {
         u.mask &= ~mask_extended;
       }
-      break;
+    } break;
 
     case '\r':
       bout.nl();

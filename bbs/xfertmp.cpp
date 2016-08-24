@@ -845,8 +845,8 @@ void move_file_t() {
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
         fileDownload.Close();
-        char *pszExtendedDesc = read_extended_description(u.filename);
-        if (pszExtendedDesc) {
+        string ext_desc = read_extended_description(u.filename);
+        if (!ext_desc.empty()) {
           delete_extended_description(u.filename);
         }
 
@@ -872,9 +872,8 @@ void move_file_t() {
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
         fileDownload.Close();
-        if (pszExtendedDesc) {
-          add_extended_description(u.filename, pszExtendedDesc);
-          free(pszExtendedDesc);
+        if (!ext_desc.empty()) {
+          add_extended_description(u.filename, ext_desc);
         }
         StringRemoveWhitespace(s1);
         StringRemoveWhitespace(s2);

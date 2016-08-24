@@ -1101,7 +1101,7 @@ void qwk_nscan() {
   uploadsrec u;
   bool abort = false;
   int od, newfile, i, i1, i5, f, count, color = 3;
-  char s[201], *ext;
+  char s[201];;
 
   bout.Color(3);
   bout.bputs("Building NEWFILES.DAT");
@@ -1158,9 +1158,9 @@ void qwk_nscan() {
 #ifndef HUGE_TRAN
             if (u.mask & mask_extended) {
               int pos = 0;
-              ext = read_extended_description(u.filename);
+              string ext = read_extended_description(u.filename);
 
-              if (ext) {
+              if (!ext.empty(0)) {
                 int spos = 21, x;
 
                 strcpy(s, "                     ");
@@ -1186,7 +1186,6 @@ void qwk_nscan() {
 
                   ++pos;
                 }
-                free(ext);
               }
             }
 #endif

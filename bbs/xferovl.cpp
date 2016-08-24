@@ -157,8 +157,8 @@ void move_file() {
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Write(&u1, sizeof(uploadsrec));
       fileDownload.Close();
-      char* ss = read_extended_description(u.filename);
-      if (ss) {
+      string ss = read_extended_description(u.filename);
+      if (!ss.empty()) {
         delete_extended_description(u.filename);
       }
 
@@ -183,9 +183,8 @@ void move_file() {
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Write(&u1, sizeof(uploadsrec));
       fileDownload.Close();
-      if (ss) {
+      if (!ss.empty()) {
         add_extended_description(u.filename, ss);
-        free(ss);
       }
       StringRemoveWhitespace(s1);
       StringRemoveWhitespace(s2);
@@ -303,7 +302,7 @@ void sort_all(int type) {
 
 
 void rename_file() {
-  char s[81], s1[81], s2[81], *ss, s3[81];
+  char s[81], s1[81], s2[81], s3[81];
   uploadsrec u;
 
   bout.nl(2);
@@ -358,11 +357,10 @@ void rename_file() {
           StringRemoveWhitespace(s2);
           File::Rename(s2, s1);
           if (File::Exists(s1)) {
-            ss = read_extended_description(u.filename);
-            if (ss) {
+            string ss = read_extended_description(u.filename);
+            if (!ss.empty()) {
               delete_extended_description(u.filename);
               add_extended_description(s, ss);
-              free(ss);
             }
             strcpy(u.filename, s);
           } else {
@@ -376,40 +374,36 @@ void rename_file() {
     if (s[0]) {
       strcpy(u.description, s);
     }
-    ss = read_extended_description(u.filename);
+    string ss = read_extended_description(u.filename);
     bout.nl(2);
     bout << "|#5Modify extended description? ";
     if (yesno()) {
       bout.nl();
-      if (ss) {
+      if (!ss.empty()) {
         bout << "|#5Delete it? ";
         if (yesno()) {
-          free(ss);
           delete_extended_description(u.filename);
           u.mask &= ~mask_extended;
         } else {
           u.mask |= mask_extended;
           modify_extended_description(&ss,
               session()->directories[session()->current_user_dir().subnum].name);
-          if (ss) {
+          if (!ss.empty()) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
-            free(ss);
           }
         }
       } else {
         modify_extended_description(&ss,
             session()->directories[session()->current_user_dir().subnum].name);
-        if (ss) {
+        if (!ss.empty()) {
           add_extended_description(u.filename, ss);
-          free(ss);
           u.mask |= mask_extended;
         } else {
           u.mask &= ~mask_extended;
         }
       }
-    } else if (ss) {
-      free(ss);
+    } else if (!ss.empty()) {
       u.mask |= mask_extended;
     } else {
       u.mask &= ~mask_extended;

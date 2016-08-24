@@ -605,61 +605,54 @@ int print_extended_plus(const char *file_name, int numlist, int indent, int colo
 
   int will_fit = 80 - std::abs(indent) - 2;
 
-  char * ss = read_extended_description(file_name);
+  string ss = read_extended_description(file_name);
 
-  if (!ss) {
+  if (ss.empty()) {
     return 0;
   }
-  StringTrimEnd(ss);
-  if (ss) {
-    int nBufferSize = strlen(ss);
-    if (nBufferSize > MAX_EXTENDED_SIZE) {
-      nBufferSize = MAX_EXTENDED_SIZE;
-      ss[nBufferSize] = '\0';
+  StringTrimEnd(&ss);
+  int nBufferSize = ss.size();
+  if (nBufferSize > MAX_EXTENDED_SIZE) {
+    nBufferSize = MAX_EXTENDED_SIZE;
+    ss.resize(MAX_EXTENDED_SIZE);
+  }
+  auto new_ss = std::make_unique<char[]>((nBufferSize * 4) + 30);
+  strcpy(new_ss.get(), ss.c_str());
+  if (search_rec) {
+    colorize_foundtext(new_ss.get(), search_rec, color);
+  }
+  if (indent > -1 && indent != 16) {
+    bout << "  |#9Extended Description:\n\r";
+  }
+  char ch = SOFTRETURN;
+
+  while (new_ss[cpos] && numl < numlist && !hangup) {
+    if (ch == SOFTRETURN && indent) {
+      bout.SystemColor(color);
+      bputch('\r');
+      bout << "\x1b[" << std::abs(indent) << "C";
     }
-    char* new_ss = static_cast<char *>(BbsAllocA((nBufferSize * 4) + 30));
-    WWIV_ASSERT(new_ss);
-    if (new_ss) {
-      strcpy(new_ss, ss);
-      if (search_rec) {
-        colorize_foundtext(new_ss, search_rec, color);
-      }
-      if (indent > -1 && indent != 16) {
-        bout << "  |#9Extended Description:\n\r";
-      }
-      char ch = SOFTRETURN;
+    do {
+      ch = new_ss[cpos++];
+    } while (ch == '\r' && !hangup);
 
-      while (new_ss[cpos] && numl < numlist && !hangup) {
-        if (ch == SOFTRETURN && indent) {
-          bout.SystemColor(color);
-          bputch('\r');
-          bout << "\x1b[" << std::abs(indent) << "C";
-        }
-        do {
-          ch = new_ss[cpos++];
-        } while (ch == '\r' && !hangup);
-
-        if (ch == SOFTRETURN) {
-          bout.nl();
-          chars_this_line = 0;
-          ++numl;
-        } else if (chars_this_line > will_fit) {
-          do {
-            ch = new_ss[cpos++];
-          } while (ch != '\n' && ch != 0);
-          --cpos;
-        } else {
-          chars_this_line += bputch(ch);
-        }
-      }
-
-      if (session()->localIO()->WhereX()) {
-        bout.nl();
-        ++numl;
-      }
-      free(new_ss);
-      free(ss);   // frank's gpf is here.
+    if (ch == SOFTRETURN) {
+      bout.nl();
+      chars_this_line = 0;
+      ++numl;
+    } else if (chars_this_line > will_fit) {
+      do {
+        ch = new_ss[cpos++];
+      } while (ch != '\n' && ch != 0);
+      --cpos;
+    } else {
+      chars_this_line += bputch(ch);
     }
+  }
+
+  if (session()->localIO()->WhereX()) {
+    bout.nl();
+    ++numl;
   }
   bout.Color(0);
   return numl;
@@ -686,7 +679,6 @@ void show_fileinfo(uploadsrec * u) {
 }
 
 int check_lines_needed(uploadsrec * u) {
-  char *tmp;
   int elines = 0;
   int max_extended;
 
@@ -709,18 +701,17 @@ int check_lines_needed(uploadsrec * u) {
       max_extended = lp_config.show_at_least_extended;
     }
 
-    char* ss = nullptr;
+    string ss;
     if (ext_is_on && mask_extended & u->mask) {
       ss = read_extended_description(u->filename);
     }
 
-    if (ss) {
-      tmp = ss;
+    if (!ss.empty()) {
+      const char* tmp = ss.c_str();
       while ((elines < max_extended) && ((tmp = strchr(tmp, '\r')) != nullptr)) {
         ++elines;
         ++tmp;
       }
-      free(ss);
     }
   }
   if (lc_lines_used + elines > max_lines) {
@@ -1373,11 +1364,10 @@ static int rename_filename(const char *file_name, int dn) {
           strcat(s2, u.filename);
           File::Rename(s2, s1);
           if (ListPlusExist(s1)) {
-            char* ss = read_extended_description(u.filename);
-            if (ss) {
+            string ss = read_extended_description(u.filename);
+            if (!ss.empty()) {
               delete_extended_description(u.filename);
               add_extended_description(new_filename.c_str(), ss);
-              free(ss);
             }
             strcpy(u.filename, new_filename.c_str());
           } else {
@@ -1392,38 +1382,34 @@ static int rename_filename(const char *file_name, int dn) {
     if (!desc.empty()) {
       strcpy(u.description, desc.c_str());
     }
-    char* ss = read_extended_description(u.filename);
+    string ss = read_extended_description(u.filename);
     bout.nl(2);
     bout << "|#5Modify extended description? ";
     if (yesno()) {
       bout.nl();
-      if (ss) {
+      if (!ss.empty()) {
         bout << "|#5Delete it? ";
         if (yesno()) {
-          free(ss);
           delete_extended_description(u.filename);
           u.mask &= ~mask_extended;
         } else {
           u.mask |= mask_extended;
           modify_extended_description(&ss, session()->directories[dn].name);
-          if (ss) {
+          if (!ss.empty()) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
-            free(ss);
           }
         }
       } else {
         modify_extended_description(&ss, session()->directories[dn].name);
-        if (ss) {
+        if (!ss.empty()) {
           add_extended_description(u.filename, ss);
-          free(ss);
           u.mask |= mask_extended;
         } else {
           u.mask &= ~mask_extended;
         }
       }
-    } else if (ss) {
-      free(ss);
+    } else if (!ss.empty()) {
       u.mask |= mask_extended;
     } else {
       u.mask &= ~mask_extended;
@@ -1535,7 +1521,7 @@ static int remove_filename(const char *file_name, int dn) {
 }
 
 static int move_filename(const char *file_name, int dn) {
-  char szTempMoveFileName[81], szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH], *ss;
+  char szTempMoveFileName[81], szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
   int nDestDirNum = -1, ret = 1;
   uploadsrec u, u1;
 
@@ -1581,6 +1567,7 @@ static int move_filename(const char *file_name, int dn) {
     } else if (ch == 'Y') {
       sprintf(szSourceFileName, "%s%s", session()->directories[dn].path, u.filename);
       if (!bulk_move) {
+        char* ss = nullptr;
         do {
           bout.nl(2);
           bout << "|#2To which directory? ";
@@ -1660,8 +1647,8 @@ static int move_filename(const char *file_name, int dn) {
         fileDownload.Write(&u1, sizeof(uploadsrec));
         fileDownload.Close();
       }
-      ss = read_extended_description(u.filename);
-      if (ss) {
+      string ss = read_extended_description(u.filename);
+      if (!ss.empty()) {
         delete_extended_description(u.filename);
       }
       sprintf(szDestFileName, "%s%s", session()->directories[nDestDirNum].path, u.filename);
@@ -1686,9 +1673,8 @@ static int move_filename(const char *file_name, int dn) {
         fileDownload.Write(&u1, sizeof(uploadsrec));
         fileDownload.Close();
       }
-      if (ss) {
+      if (!ss.empty()) {
         add_extended_description(u.filename, ss);
-        free(ss);
       }
       if (!IsEquals(szSourceFileName, szDestFileName) &&
           ListPlusExist(szSourceFileName)) {

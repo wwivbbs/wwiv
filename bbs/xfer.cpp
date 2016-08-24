@@ -361,29 +361,24 @@ void dliscan() {
   dliscan1(session()->current_user_dir().subnum);
 }
 
-void add_extended_description(const char *file_name, const char *description) {
+void add_extended_description(const string& file_name, const string& description) {
   ext_desc_type ed;
 
-  strcpy(ed.name, file_name);
-  ed.len = static_cast<int16_t>(GetStringLength(description));
+  strcpy(ed.name, file_name.c_str());
+  ed.len = static_cast<int16_t>(description.size());
 
   File file(g_szExtDescrFileName);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::seekEnd);
   file.Write(&ed, sizeof(ext_desc_type));
-  file.Write(description, ed.len);
+  file.Write(description.c_str(), ed.len);
   file.Close();
 
   zap_ed_info();
 }
 
-void delete_extended_description(const char *file_name) {
+void delete_extended_description(const string& file_name) {
   ext_desc_type ed;
-
-  char* ss = static_cast<char *>(BbsAllocA(10240L));
-  if (ss == nullptr) {
-    return;
-  }
 
   File fileExtDescr(g_szExtDescrFileName);
   fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -393,12 +388,13 @@ void delete_extended_description(const char *file_name) {
     fileExtDescr.Seek(r, File::seekBegin);
     fileExtDescr.Read(&ed, sizeof(ext_desc_type));
     if (ed.len < 10000) {
-      fileExtDescr.Read(ss, ed.len);
-      if (!IsEquals(file_name, ed.name)) {
+      auto ss = std::make_unique<char[]>(ed.len);
+      fileExtDescr.Read(ss.get(), ed.len);
+      if (file_name != ed.name) {
         if (r != w) {
           fileExtDescr.Seek(w, File::seekBegin);
           fileExtDescr.Write(&ed, sizeof(ext_desc_type));
-          fileExtDescr.Write(ss, ed.len);
+          fileExtDescr.Write(ss.get(), ed.len);
         }
         w += sizeof(ext_desc_type) + ed.len;
       }
@@ -407,16 +403,15 @@ void delete_extended_description(const char *file_name) {
   }
   fileExtDescr.SetLength(w);
   fileExtDescr.Close();
-  free(ss);
   zap_ed_info();
 }
 
-char *read_extended_description(const char *file_name) {
+string read_extended_description(const string& file_name) {
   get_ed_info();
 
   if (ed_got && ed_info) {
     for (int i = 0; i < ed_num; i++) {
-      if (IsEquals(file_name, ed_info[i].name)) {
+      if (file_name == ed_info[i].name) {
         File fileExtDescr(g_szExtDescrFileName);
         if (!fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
           return nullptr;
@@ -424,13 +419,10 @@ char *read_extended_description(const char *file_name) {
         fileExtDescr.Seek(ed_info[i].offset, File::seekBegin);
         ext_desc_type ed;
         int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
-        if (nNumRead == sizeof(ext_desc_type) &&
-            IsEquals(file_name, ed.name)) {
-          char* ss = static_cast<char *>(BbsAllocA(ed.len + 10));
-          if (ss) {
-            fileExtDescr.Read(ss, ed.len);
-            ss[ed.len] = 0;
-          }
+        if (nNumRead == sizeof(ext_desc_type) && file_name == ed.name) {
+          string ss;
+          ss.resize(ed.len);
+          fileExtDescr.Read(&ss[0], ed.len);
           fileExtDescr.Close();
           return ss;
         } else {
@@ -450,12 +442,10 @@ char *read_extended_description(const char *file_name) {
         fileExtDescr.Seek(lCurPos, File::seekBegin);
         ext_desc_type ed;
         lCurPos += static_cast<long>(fileExtDescr.Read(&ed, sizeof(ext_desc_type)));
-        if (IsEquals(file_name, ed.name)) {
-          char* ss = static_cast<char *>(BbsAllocA(ed.len + 10));
-          if (ss) {
-            fileExtDescr.Read(ss, ed.len);
-            ss[ed.len] = 0;
-          }
+        if (file_name == ed.name) {
+          string ss;
+          ss.resize(ed.len);
+          fileExtDescr.Read(&ss[0], ed.len);
           fileExtDescr.Close();
           return ss;
         } else {
@@ -475,8 +465,8 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
   char ch, s[81];
   int i;
 
-  char* ss = read_extended_description(file_name);
-  if (ss) {
+  string ss = read_extended_description(file_name);
+  if (!ss.empty()) {
     ch = (indent != 2) ? 10 : 0;
     while (ss[cpos] && !(*abort) && numl < numlist) {
       if (ch == SOFTRETURN) {
@@ -515,7 +505,6 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
     if (session()->localIO()->WhereX()) {
       bout.nl();
     }
-    free(ss);
   } else if (session()->localIO()->WhereX()) {
     bout.nl();
   }

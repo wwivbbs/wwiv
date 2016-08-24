@@ -18,8 +18,10 @@
 #ifndef __INCLUDED_BBS_XFEROVL1_H__
 #define __INCLUDED_BBS_XFEROVL1_H__
 
-void modify_extended_description(char **sss, const char *dest);
-bool valid_desc(const char *description);
+#include <string>
+
+void modify_extended_description(std::string* sss, const std::string& dest);
+bool valid_desc(const std::string& description);
 bool get_file_idz(uploadsrec * upload_record, int dn);
 int  read_idz_all();
 int  read_idz(int mode, int tempdir);

@@ -40,6 +40,8 @@
 #include "bbs/xfer_common.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/file.h"
+#include "core/textfile.h"
 #include "sdk/filenames.h"
 
 // How far to indent extended descriptions
@@ -52,15 +54,16 @@ extern int foundany;
 static const unsigned char *invalid_chars =
   (unsigned char *)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ÐÒÅÎØ×°±²ÛßÜÝÞ";
 
+using std::string;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-void modify_extended_description(char **sss, const char *dest) {
+void modify_extended_description(std::string* sss, const std::string& dest) {
   char s[255], s1[255];
   int i, i2;
 
-  bool ii = (*sss) ? true : false;
+  bool ii = !sss->empty();
   int i4  = 0;
   do {
     if (ii) {
@@ -81,16 +84,12 @@ void modify_extended_description(char **sss, const char *dest) {
       }
     }
     if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
-      sprintf(s, "%sEXTENDED.DSC", syscfgovr.tempdir);
-      if (*sss) {
-        File fileExtDesc(s);
-        fileExtDesc.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        fileExtDesc.Write(*sss, strlen(*sss));
-        fileExtDesc.Close();
-        free(*sss);
-        *sss = nullptr;
+      if (!sss->empty()) {
+        TextFile file(syscfgovr.tempdir, "extended.dsc", "w");
+        file.Write(*sss);
       } else {
-        File::Remove(s);
+        sprintf(s, "%sextended.dsc", syscfgovr.tempdir);
+        File::Remove(StrCat(syscfgovr.tempdir, "extended.dsc"));
       }
 
       const int saved_screen_chars = session()->user()->GetScreenChars();
@@ -102,33 +101,21 @@ void modify_extended_description(char **sss, const char *dest) {
           session()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
       session()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        if ((*sss = static_cast<char *>(BbsAllocA(10240))) == nullptr) {
-          return;
-        }
-        File fileExtDesc(s);
-        fileExtDesc.Open(File::modeBinary | File::modeReadWrite);
-        fileExtDesc.Read(*sss, fileExtDesc.GetLength());
-        (*sss)[ fileExtDesc.GetLength() ] = 0;
-        fileExtDesc.Close();
+        TextFile file(syscfgovr.tempdir, "extended.dsc", "r");
+        *sss = file.ReadFileIntoString();
 
-        for (int i3 = strlen(*sss) - 1; i3 >= 0; i3--) {
+        for (int i3 = sss->size() - 1; i3 >= 0; i3--) {
           if ((*sss)[i3] == 1) {
             (*sss)[i3] = ' ';
           }
         }
       }
     } else {
-      if (*sss) {
-        free(*sss);
-      }
-      if ((*sss = static_cast<char *>(BbsAllocA(10240))) == nullptr) {
-        return;
-      }
-      *sss[0] = 0;
+      sss->clear();
       i = 1;
       bout.nl();
       bout << "Enter up to  " << session()->max_extend_lines << " lines, "
-                         << 78 - INDENTION << " chars each.\r\n";
+           << 78 - INDENTION << " chars each.\r\n";
       bout.nl();
       s[0] = '\0';
       int nSavedScreenSize = session()->user()->GetScreenChars();
@@ -148,14 +135,14 @@ void modify_extended_description(char **sss, const char *dest) {
           i2 = 0;
           i4 -= 2;
           do {
-            s[i2] = *(sss[0] + i4 - 1);
+            s[i2] = sss->at(i4 - 1);
             ++i2;
             --i4;
-          } while ((*(sss[0] + i4) != 10) && (i4 != 0));
+          } while (sss->at(i4) != 10 && i4 != 0);
           if (i4) {
             ++i4;
           }
-          *(sss[0] + i4) = 0;
+          sss->resize(i4);
           s[i2] = 0;
           strrev(s);
           if (strlen(s) > static_cast<unsigned int>(session()->user()->GetScreenChars() - 1)) {
@@ -168,43 +155,34 @@ void modify_extended_description(char **sss, const char *dest) {
         }
         if (s1[0]) {
           strcat(s1, "\r\n");
-          strcat(*sss, s1);
+          *sss += s1;
           i4 += strlen(s1);
         }
       } while ((i++ < session()->max_extend_lines) && (s1[0]));
       session()->user()->SetScreenChars(nSavedScreenSize);
-      if (*sss[0] == '\0') {
-        free(*sss);
-        *sss = nullptr;
-      }
     }
     bout << "|#5Is this what you want? ";
     i = !yesno();
     if (i) {
-      free(*sss);
-      *sss = nullptr;
+      sss->clear();
     }
   } while (i);
 }
 
-
-bool valid_desc(const char *description) {
+bool valid_desc(const string& description) {
   // I don't think this function is really doing what it should
   // be doing, but am not sure what it should be doing instead.
-  size_t i = 0;
-
-  do {
-    if (description[i] > '@' && description[i] < '{') {
+  for (const auto& c : description) {
+    if (c > '@' && c < '{') {
       return true;
     }
-    i++;
-  } while (i < strlen(description));
+  }
   return false;
 }
 
-
+// TODO(rushfan): This is probably completely broken
 bool get_file_idz(uploadsrec * u, int dn) {
-  char *b, *ss, cmd[MAX_PATH], s[81];
+  char *b, cmd[MAX_PATH], s[81];
   int i;
   bool ok = false;
 
@@ -213,18 +191,20 @@ bool get_file_idz(uploadsrec * u, int dn) {
   }
   sprintf(s, "%s%s", session()->directories[dn].path, stripfn(u->filename));
   filedate(s, u->actualdate);
-  ss = strchr(stripfn(u->filename), '.');
-  if (ss == nullptr) {
-    return false;
-  }
-  ++ss;
-  for (i = 0; i < MAX_ARCS; i++) {
-    if (!ok) {
-      ok = IsEqualsIgnoreCase(ss, session()->arcs[i].extension);
+  {
+    char* ss = strchr(stripfn(u->filename), '.');
+    if (ss == nullptr) {
+      return false;
     }
-  }
-  if (!ok) {
-    return false;
+    ++ss;
+    for (i = 0; i < MAX_ARCS; i++) {
+      if (!ok) {
+        ok = IsEqualsIgnoreCase(ss, session()->arcs[i].extension);
+      }
+    }
+    if (!ok) {
+      return false;
+    }
   }
 
   File::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
@@ -246,9 +226,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
   if (File::Exists(s)) {
     bout.nl();
     bout << "|#9Reading in |#2" << stripfn(s) << "|#9 as extended description...";
-    ss = read_extended_description(u->filename);
-    if (ss) {
-      free(ss);
+    string ss = read_extended_description(u->filename);
+    if (!ss.empty()) {
       delete_extended_description(u->filename);
     }
     if ((b = static_cast<char *>(BbsAllocA(session()->max_extend_lines * 256 + 1))) == nullptr) {
@@ -267,8 +246,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     file.Close();
     if (session()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
-      if (ss) {
-        for (i = 0; i < GetStringLength(ss); i++) {
+      if (!ss.empty()) {
+        for (i = 0; i < ss.size(); i++) {
           if ((strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), ss[i]) != nullptr) && (ss[i] != CZ)) {
             ss[i] = '\x20';
           }
@@ -279,16 +258,14 @@ bool get_file_idz(uploadsrec * u, int dn) {
           } while (!valid_desc(ss));
         }
       }
-      if (ss[strlen(ss) - 1] == '\r') {
-        ss[strlen(ss) - 1] = '\0';
-      }
-      sprintf(u->description, "%.55s", ss);
+      if (ss.back() == '\r') ss.pop_back();
+      sprintf(u->description, "%.55s", ss.c_str());
       ss = strtok(nullptr, "");
     } else {
       ss = b;
     }
-    if (ss) {
-      for (i = strlen(ss) - 1; i > 0; i--) {
+    if (!ss.empty()) {
+      for (i = ss.size() - 1; i > 0; i--) {
         if (ss[i] == CZ || ss[i] == 12) {
           ss[i] = '\x20';
         }
