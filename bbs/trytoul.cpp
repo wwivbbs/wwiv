@@ -29,6 +29,7 @@
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 
 using std::chrono::milliseconds;
@@ -36,9 +37,8 @@ using std::string;
 
 using namespace wwiv::os;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
-
-int try_to_ul_wh(char *file_name);
 
 static void t2u_error(const string& file_name, const string& msg) {
   bout.nl(2);
@@ -52,58 +52,15 @@ static void t2u_error(const string& file_name, const string& msg) {
   sysoplog(s2);
 }
 
-int try_to_ul(char *file_name) {
-  bool ac = false;
-
-  if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
-    ac = true;
-    tmp_disable_conf(true);
-  }
-  if (!try_to_ul_wh(file_name)) {
-    if (ac) {
-      tmp_disable_conf(false);
-    }
-    return 0;  // success
-  }
-
-  const string dest_dir = StringPrintf("%sTRY2UL", syscfg.dloadsdir);
-  File::mkdirs(dest_dir);
-  session()->CdHome();   // ensure we are in the correct directory
-
-  bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
-
-  sysoplogf("Failed to upload %s, moving to TRY2UL dir", file_name);
-
-  const string src = StringPrintf("%s%s", syscfgovr.batchdir, file_name);
-  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, file_name);
-
-  if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
-    File::Remove(dest);                           // remove duplicates in try2ul dir, so keep
-  }
-  // it clean and up to date
-  copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
-
-  if (session()->IsUserOnline()) {
-    session()->UpdateTopScreen();
-  }
-
-  if (ac) {
-    tmp_disable_conf(false);
-  }
-
-  return 1;                                 // return failure, removes ul k credits etc...
-}
-
-int try_to_ul_wh(char *file_name) {
+static int try_to_ul_wh(const string& orig_file_name) {
   directoryrec d = {};
-  char s[101], s1[MAX_PATH], s2[MAX_PATH], *ss;
-  int i1, i2, i3, i4, key, ok = 0, dn = 0;
+  char *ss;
+  int i1, i2, i4, key, ok = 0, dn = 0;
   uploadsrec u, u1;
 
-  unalign(file_name);
-  StringTrim(file_name);
+  string file_name = orig_file_name;
+  StringRemoveWhitespace(&file_name);
 
-  strcpy(s, file_name);
   if (!okfn(file_name)) {
     t2u_error(file_name, "Bad filename");          // bad filename
     return 1;
@@ -167,7 +124,7 @@ int try_to_ul_wh(char *file_name) {
     t2u_error(file_name, "Uploads are not allowed to this directory.");
     return 1;
   }
-  if (!is_uploadable(s)) {
+  if (!is_uploadable(file_name.c_str())) {
     if (so()) {
       bout.nl();
       bout << "|#5In filename database - add anyway? ";
@@ -180,21 +137,20 @@ int try_to_ul_wh(char *file_name) {
       return 1;
     }
   }
-  align(s);
-  if (strchr(s, '?')) {
+  string s = file_name;
+  align(&s);
+  if (contains(s, '?')) {
     t2u_error(file_name, "Contains wildcards");
     return 1;
   }
   if (d.mask & mask_archive) {
     ok = 0;
-    s1[0] = '\0';
+    string s1;
     for (size_t i = 0; i < MAX_ARCS; i++) {
       if (session()->arcs[i].extension[0] && session()->arcs[i].extension[0] != ' ') {
-        if (s1[0]) {
-          strcat(s1, ", ");
-        }
-        strcat(s1, session()->arcs[i].extension);
-        if (wwiv::strings::IsEquals(s + 9, session()->arcs[i].extension)) {
+        if (!s1.empty()) s1 += ", ";
+        s1 += session()->arcs[i].extension;
+        if (wwiv::strings::IsEquals(s.c_str() + 9, session()->arcs[i].extension)) {
           ok = 1;
         }
       }
@@ -209,7 +165,7 @@ int try_to_ul_wh(char *file_name) {
       return 1;
     }
   }
-  strcpy(u.filename, s);
+  strcpy(u.filename, s.c_str());
   u.ownerusr = static_cast<uint16_t>(session()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
@@ -220,8 +176,7 @@ int try_to_ul_wh(char *file_name) {
   u.upby[36]  = '\0';
   strcpy(u.date, date());
 
-  sprintf(s1, "%s%s", d.path, s);
-  if (File::Exists(s1)) {
+  if (File::Exists(StrCat(d.path, s))) {
     if (dcs()) {
       bout.nl(2);
       bout << "File already exists.\r\n|#5Add to database anyway? ";
@@ -240,13 +195,10 @@ int try_to_ul_wh(char *file_name) {
     i2 = 0;
 
     for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1); i++) {
-      strcpy(s1, "Scanning ");
-      strcat(s1, session()->directories[session()->udir[i].subnum].name);
+      string s1 = StrCat("Scanning ", session()->directories[session()->udir[i].subnum].name);
 
-      for (i3 = i4 = strlen(s1); i3 < i2; i3++) {
-        s1[i3] = ' ';
-        s1[i3 + 1] = 0;
-      }
+      i4 = s1.size();
+      //s1 += string(i3 - i2, ' ');
 
       i2 = i4;
       bout << s1;
@@ -273,24 +225,20 @@ int try_to_ul_wh(char *file_name) {
       }
     }
 
-    for (i1 = 0; i1 < i2; i1++) {
-      s1[i1] = ' ';
-    }
-    s1[i1] = '\0';
-    bout << s1 << "\r";
+    bout << string(i2, ' ') << "\r";
 
     dliscan1(dn);
     bout.nl();
   }
-  sprintf(s1, "%s%s", syscfgovr.batchdir, file_name);
-  sprintf(s2, "%s%s", d.path, file_name);
+  const string src = StrCat(syscfgovr.batchdir, file_name);
+  const string dest = StrCat(d.path, file_name);
 
-  if (File::Exists(s2)) {
-    File::Remove(s2);
+  if (File::Exists(dest)) {
+    File::Remove(dest);
   }
 
   // s1 and s2 should remain set,they are used below
-  movefile(s1, s2, true);
+  movefile(src, dest, true);
   strcpy(u.description, "NO DESCRIPTION GIVEN");
   bool file_id_avail = get_file_idz(&u, dn);
   done = false;
@@ -313,7 +261,7 @@ int try_to_ul_wh(char *file_name) {
       if (yesno()) {
         t2u_error(file_name, "Changed mind");
         // move file back to batch dir
-        movefile(s2, s1, true);
+        movefile(dest, src, true);
         return 1;
       }
       break;
@@ -398,8 +346,7 @@ int try_to_ul_wh(char *file_name) {
   file.Close();
   session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
 
-  time_t tCurrentDate;
-  time(&tCurrentDate);
+  time_t tCurrentDate = time(nullptr);
   u.daten = static_cast<uint32_t>(tCurrentDate);
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -433,4 +380,44 @@ int try_to_ul_wh(char *file_name) {
   return 0;                                 // This means success
 }
 
+int try_to_ul(const string& file_name) {
+  bool ac = false;
 
+  if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
+    ac = true;
+    tmp_disable_conf(true);
+  }
+  if (!try_to_ul_wh(file_name)) {
+    if (ac) {
+      tmp_disable_conf(false);
+    }
+    return 0;  // success
+  }
+
+  const string dest_dir = StringPrintf("%sTRY2UL", syscfg.dloadsdir);
+  File::mkdirs(dest_dir);
+  session()->CdHome();   // ensure we are in the correct directory
+
+  bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
+
+  sysoplogf("Failed to upload %s, moving to TRY2UL dir", file_name);
+
+  const string src = StringPrintf("%s%s", syscfgovr.batchdir, file_name);
+  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, file_name);
+
+  if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
+    File::Remove(dest);                           // remove duplicates in try2ul dir, so keep
+  }
+  // it clean and up to date
+  copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
+
+  if (session()->IsUserOnline()) {
+    session()->UpdateTopScreen();
+  }
+
+  if (ac) {
+    tmp_disable_conf(false);
+  }
+
+  return 1;                                 // return failure, removes ul k credits etc...
+}

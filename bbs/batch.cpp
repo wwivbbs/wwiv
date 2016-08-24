@@ -55,22 +55,18 @@
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 
-using namespace wwiv::stl;
-using namespace wwiv::strings;
-
-// trytoul.cpp
-int try_to_ul(char *file_name);
-int try_to_ul_wh(char *file_name);
-
-// normupld.cpp
-void normalupload(int dn);
-
 using std::begin;
 using std::end;
 using std::string;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+// trytoul.cpp
+int try_to_ul(const string& file_name);
+
+// normupld.cpp
+void normalupload(int dn);
 
 //////////////////////////////////////////////////////////////////////////////
 // Implementation
@@ -122,12 +118,12 @@ void delbatch(int num) {
   session()->batch().entry.erase(it);
 }
 
-static void downloaded(char *file_name, long lCharsPerSecond) {
+static void downloaded(const string& file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (auto it = begin(session()->batch().entry); it != end(session()->batch().entry); it++) {
     const auto& b = *it;
-    if (IsEquals(file_name, b.filename) && b.sending) {
+    if (file_name == b.filename && b.sending) {
       dliscan1(b.dir);
       int nRecNum = recno(b.filename);
       if (nRecNum > 0) {
@@ -163,7 +159,7 @@ static void downloaded(char *file_name, long lCharsPerSecond) {
       return;
     }
   }
-  sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", file_name);
+  sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", file_name.c_str());
 }
 
 void didnt_upload(const batchrec& b) {
@@ -211,12 +207,12 @@ void didnt_upload(const batchrec& b) {
   sysoplogf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
 }
 
-static void uploaded(char *file_name, long lCharsPerSecond) {
+static void uploaded(const string& file_name, long lCharsPerSecond) {
   uploadsrec u;
 
   for (auto it = begin(session()->batch().entry); it != end(session()->batch().entry); it++) {
     const auto& b = *it;
-    if (IsEquals(file_name, b.filename) && !b.sending) {
+    if (file_name == b.filename && !b.sending) {
       dliscan1(b.dir);
       int nRecNum = recno(b.filename);
       if (nRecNum > 0) {
@@ -231,27 +227,25 @@ static void uploaded(char *file_name, long lCharsPerSecond) {
         } while (nRecNum != -1 && u.numbytes != 0);
         downFile.Close();
         if (nRecNum != -1 && u.numbytes == 0) {
-          char szSourceFileName[MAX_PATH], szDestFileName[MAX_PATH];
-          sprintf(szSourceFileName, "%s%s", syscfgovr.batchdir, file_name);
-          sprintf(szDestFileName, "%s%s", session()->directories[b.dir].path, file_name);
-          if (!IsEquals(szSourceFileName, szDestFileName) &&
-              File::Exists(szSourceFileName)) {
+          string source_filename = StrCat(syscfgovr.batchdir, file_name);
+          string dest_filename = StrCat(session()->directories[b.dir].path, file_name);
+          if (source_filename != dest_filename && File::Exists(source_filename)) {
             bool found = false;
-            if (szSourceFileName[1] != ':' && szDestFileName[1] != ':') {
+            if (source_filename[1] != ':' && dest_filename[1] != ':') {
               found = true;
             }
-            if (szSourceFileName[1] == ':' && szDestFileName[1] == ':' && szSourceFileName[0] == szDestFileName[0]) {
+            if (source_filename[1] == ':' && dest_filename[1] == ':' && source_filename[0] == dest_filename[0]) {
               found = true;
             }
             if (found) {
-              File::Rename(szSourceFileName, szDestFileName);
-              File::Remove(szSourceFileName);
+              File::Rename(source_filename, dest_filename);
+              File::Remove(source_filename);
             } else {
-              copyfile(szSourceFileName, szDestFileName, false);
-              File::Remove(szSourceFileName);
+              copyfile(source_filename, dest_filename, false);
+              File::Remove(source_filename);
             }
           }
-          File file(szDestFileName);
+          File file(dest_filename);
           if (file.Open(File::modeBinary | File::modeReadOnly)) {
             if (!syscfg.upload_cmd.empty()) {
               file.Close();
@@ -279,9 +273,8 @@ static void uploaded(char *file_name, long lCharsPerSecond) {
               fileDn.Write(&u, sizeof(uploadsrec));
               fileDn.Close();
               sysoplogf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, session()->directories[b.dir].name, lCharsPerSecond);
-              bout << "Uploaded '" << u.filename <<
-                                 "' to " << session()->directories[b.dir].name << " (" <<
-                                 lCharsPerSecond << " cps)" << wwiv::endl;
+              bout << "Uploaded '" << u.filename << "' to "  << session()->directories[b.dir].name 
+                   << " (" << lCharsPerSecond << " cps)" << wwiv::endl;
             }
           }
           it = delbatch(it);
@@ -534,9 +527,8 @@ static void handle_dszline(char *l) {
   }
 
   if (ss) {
-    char szFileName[MAX_PATH];
-    strcpy(szFileName, stripfn(ss));
-    align(szFileName);
+    string filename = stripfn(ss);
+    align(&filename);
 
     switch (*l) {
     case 'Z':
@@ -545,7 +537,7 @@ static void handle_dszline(char *l) {
     case 'B':
     case 'H':
       // received a file
-      uploaded(szFileName, lCharsPerSecond);
+      uploaded(filename, lCharsPerSecond);
       break;
     case 'z':
     case 's':
@@ -554,7 +546,7 @@ static void handle_dszline(char *l) {
     case 'h':
     case 'Q':
       // sent a file
-      downloaded(szFileName, lCharsPerSecond);
+      downloaded(filename, lCharsPerSecond);
       break;
     case 'E':
     case 'e':
