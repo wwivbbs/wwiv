@@ -47,9 +47,9 @@ void listfiles();
 void nscandir(int nDirNum, bool *abort);
 void nscanall();
 void searchall();
-int  recno(const char *file_mask);
-int  nrecno(const char *file_mask, int nStartingRec);
-int  printfileinfo(uploadsrec * upload_record, int directory_num);
+int  recno(const std::string& file_mask);
+int  nrecno(const std::string& file_mask, int nStartingRec);
+int  printfileinfo(uploadsrec* upload_record, int directory_num);
 void remlist(const char *file_name);
 int  FileAreaSetRecord(File &file, int nRecordNumber);
 

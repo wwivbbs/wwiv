@@ -1317,24 +1317,23 @@ void update_user_config_screen(uploadsrec * u, int which) {
 }
 
 static int rename_filename(const char *file_name, int dn) {
-  char s[81], s1[81], s2[81], *ss, s3[81], ch;
-  int i, cp, ret = 1;
+  char s1[81], s2[81], ch;
+  int cp, ret = 1;
   uploadsrec u;
 
   dliscan1(dn);
-  strcpy(s, file_name);
-
-  if (s[0] == '\0') {
-    return ret;
+  string orig_aligned_filename;
+  {
+    string s = file_name;
+    if (s.empty()) {
+      return 1;
+    }
+    if (!contains(s, '.')) s += ".*";
+    align(&s);
+    orig_aligned_filename = s;
   }
 
-  if (strchr(s, '.') == nullptr) {
-    strcat(s, ".*");
-  }
-  align(s);
-
-  strcpy(s3, s);
-  i = recno(s);
+  int i = recno(orig_aligned_filename);
   while (i > 0) {
     File fileDownload(g_szDownloadFileName);
     if (!fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
@@ -1353,34 +1352,34 @@ static int rename_filename(const char *file_name, int dn) {
       ret = 0;
       break;
     } else if (ch == 'N') {
-      i = nrecno(s3, cp);
+      i = nrecno(orig_aligned_filename, cp);
       continue;
     }
     bout.nl();
     bout << "|#2New filename? ";
-    input(s, 12);
-    if (!okfn(s)) {
-      s[0] = '\0';
+    string new_filename = input(12);
+    if (!okfn(new_filename)) {
+      new_filename.clear();
     }
-    if (s[0]) {
-      align(s);
-      if (!IsEquals(s, "        .   ")) {
+    if (!new_filename.empty()) {
+      align(&new_filename);
+      if (new_filename != "        .   ") {
         strcpy(s1, session()->directories[dn].path);
         strcpy(s2, s1);
-        strcat(s1, s);
+        strcat(s1, new_filename.c_str());
         if (ListPlusExist(s1)) {
           bout << "Filename already in use; not changed.\r\n";
         } else {
           strcat(s2, u.filename);
           File::Rename(s2, s1);
           if (ListPlusExist(s1)) {
-            ss = read_extended_description(u.filename);
+            char* ss = read_extended_description(u.filename);
             if (ss) {
               delete_extended_description(u.filename);
-              add_extended_description(s, ss);
+              add_extended_description(new_filename.c_str(), ss);
               free(ss);
             }
-            strcpy(u.filename, s);
+            strcpy(u.filename, new_filename.c_str());
           } else {
             bout << "Bad filename.\r\n";
           }
@@ -1389,11 +1388,11 @@ static int rename_filename(const char *file_name, int dn) {
     }
     bout.nl();
     bout << "New description:\r\n|#2: ";
-    Input1(s, u.description, 58, false, wwiv::bbs::InputMode::MIXED);
-    if (s[0]) {
-      strcpy(u.description, s);
+    string desc = Input1(u.description, 58, false, wwiv::bbs::InputMode::MIXED);
+    if (!desc.empty()) {
+      strcpy(u.description, desc.c_str());
     }
-    ss = read_extended_description(u.filename);
+    char* ss = read_extended_description(u.filename);
     bout.nl(2);
     bout << "|#5Modify extended description? ";
     if (yesno()) {
@@ -1434,7 +1433,7 @@ static int rename_filename(const char *file_name, int dn) {
       fileDownload.Write(&u, sizeof(uploadsrec));
       fileDownload.Close();
     }
-    i = nrecno(s3, cp);
+    i = nrecno(orig_aligned_filename, cp);
   }
   return ret;
 }

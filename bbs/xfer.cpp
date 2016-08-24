@@ -932,11 +932,11 @@ void searchall() {
   }
 }
 
-int recno(const char *file_mask) {
+int recno(const std::string& file_mask) {
   return nrecno(file_mask, 0);
 }
 
-int nrecno(const char *file_mask, int nStartingRec) {
+int nrecno(const std::string& file_mask, int nStartingRec) {
   int nRecNum = nStartingRec + 1;
   if (session()->numf < 1 || nStartingRec >= session()->numf) {
     return -1;
@@ -947,13 +947,13 @@ int nrecno(const char *file_mask, int nStartingRec) {
   FileAreaSetRecord(fileDownload, nRecNum);
   uploadsrec u;
   fileDownload.Read(&u, sizeof(uploadsrec));
-  while ((nRecNum < session()->numf) && (compare(file_mask, u.filename) == 0)) {
+  while ((nRecNum < session()->numf) && (compare(file_mask.c_str(), u.filename) == 0)) {
     ++nRecNum;
     FileAreaSetRecord(fileDownload, nRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
   }
   fileDownload.Close();
-  return (compare(file_mask, u.filename)) ? nRecNum : -1;
+  return (compare(file_mask.c_str(), u.filename)) ? nRecNum : -1;
 }
 
 int printfileinfo(uploadsrec * u, int directory_num) {
