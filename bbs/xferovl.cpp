@@ -804,7 +804,7 @@ void relist() {
     }
     if (strlen(s1) < 5) {
       size_t i1 = 0;
-      for (; i1 < 5 - GetStringLength(s1); i1++) {
+      for (; i1 < 5 - strlen(s1); i1++) {
         s[i1] = SPACE;
       }
       s[i1] = 0;

@@ -320,20 +320,19 @@ int read_idz_all() {
 }
 
 int read_idz(int mode, int tempdir) {
-  char s[81];
   int i, count = 0;
   bool abort = false;
   uploadsrec u;
 
   std::unique_ptr<TempDisablePause> disable_pause;
+  std::string s = "*.*";
   if (mode) {
     disable_pause.reset(new TempDisablePause);
     session()->ClearTopScreenProtection();
     dliscan();
-    file_mask(s);
+    s = file_mask();
   } else {
-    sprintf(s, "*.*");
-    align(s);
+    align(&s);
     dliscan1(session()->udir[tempdir].subnum);
   }
   bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
@@ -344,7 +343,7 @@ int read_idz(int mode, int tempdir) {
   for (i = 1; (i <= session()->numf) && (!hangup) && !abort; i++) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
-    if ((compare(s, u.filename)) &&
+    if ((compare(s.c_str(), u.filename)) &&
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
       File::set_current_directory(session()->directories[session()->udir[tempdir].subnum].path);
@@ -411,7 +410,7 @@ void tag_it() {
       break;
     }
     i--;
-    if ((s1[0]) && (i >= 0) && (i < session()->filelist.size())) {
+    if (s1[0] && i >= 0 && i < session()->filelist.size()) {
     auto& f = session()->filelist[i];
       if (check_batch_queue(f.u.filename)) {
         bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
@@ -537,7 +536,7 @@ void tag_files() {
     case RETURN:
       lines_listed = 0;
       session()->filelist.clear();
-      session()->titled = 2;
+      session()->titled = true;
       bout.cls();
       done = true;
       break;
@@ -1008,7 +1007,6 @@ void endlist(int mode) {
   bout << "\r" << std::string(78, '-') << wwiv::endl;
   bout << "\r|#9Files listed: |#2 " << session()->filelist.size();
 }
-
 
 void SetNewFileScanDate() {
   char ag[10];

@@ -42,11 +42,11 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // Local function prototypes
-int  compare_criteria(struct search_record * sr, uploadsrec * ur);
-bool lp_compare_strings(char *raw, char *formula);
-bool lp_compare_strings_wh(char *raw, char *formula, unsigned *pos, int size);
-int  lp_get_token(char *formula, unsigned *pos);
-int  lp_get_value(char *raw, char *formula, unsigned *pos);
+int  compare_criteria(search_record * sr, uploadsrec * ur);
+bool lp_compare_strings(const char *raw, const char *formula);
+bool lp_compare_strings_wh(const char *raw, const char *formula, unsigned *pos, int size);
+int  lp_get_token(const char *formula, unsigned *pos);
+int  lp_get_value(const char *raw, const char *formula, unsigned *pos);
 
 // These are defined in listplus.cpp
 extern int bulk_move;
@@ -96,8 +96,8 @@ int listfiles_plus_function(int type) {
   int file_pos = 0, save_file_pos = 0, menu_pos = 0;
   size_t save_dir = session()->current_user_dir_num();
   bool sysop_mode = false;
-  struct side_menu_colors smc;
-  struct search_record search_rec;
+  side_menu_colors smc;
+  search_record search_rec = {};
 
   load_lp_config();
 
@@ -558,10 +558,10 @@ TOGGLE_EXTENDED:
   return (all_done) ? 1 : 0;
 }
 
-int compare_criteria(struct search_record * sr, uploadsrec * ur) {
+int compare_criteria(search_record * sr, uploadsrec * ur) {
   // "        .   "
-  if (!wwiv::strings::IsEquals(sr->filemask, "        .   ")) {
-    if (!compare(sr->filemask, ur->filename)) {
+  if (sr->filemask != "        .   ") {
+    if (!compare(sr->filemask.c_str(), ur->filename)) {
       return 0;
     }
   }
@@ -611,7 +611,7 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur) {
     strcat(buff, " ");
     strcat(buff, ur->description);
 
-    if (lp_compare_strings(buff, sr->search)) {
+    if (lp_compare_strings(buff, sr->search.c_str())) {
       free(buff);
       return 1;
     }
@@ -626,14 +626,14 @@ int compare_criteria(struct search_record * sr, uploadsrec * ur) {
 }
 
 
-bool lp_compare_strings(char *raw, char *formula) {
+bool lp_compare_strings(const char *raw, const char *formula) {
   unsigned i = 0;
 
   return lp_compare_strings_wh(raw, formula, &i, strlen(formula));
 }
 
 
-bool lp_compare_strings_wh(char *raw, char *formula, unsigned *pos, int size) {
+bool lp_compare_strings_wh(const char *raw, const  char *formula, unsigned *pos, int size) {
   bool rvalue;
   int token;
 
@@ -664,8 +664,7 @@ bool lp_compare_strings_wh(char *raw, char *formula, unsigned *pos, int size) {
   return lvalue;
 }
 
-
-int lp_get_token(char *formula, unsigned *pos) {
+int lp_get_token(const char *formula, unsigned *pos) {
   int tpos = 0;
 
   while (formula[*pos] && isspace(formula[*pos])) {
@@ -683,7 +682,7 @@ int lp_get_token(char *formula, unsigned *pos) {
   return formula[*pos - 1];
 }
 
-int lp_get_value(char *raw, char *formula, unsigned *pos) {
+int lp_get_value(const char *raw, const char *formula, unsigned *pos) {
   char szBuffer[255];
   int tpos = 0;
   int sign = 1, started_number = 0;

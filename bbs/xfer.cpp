@@ -30,14 +30,16 @@
 #include "bbs/dropfile.h"
 #include "bbs/input.h"
 #include "bbs/listplus.h"
-#include "core/strings.h"
 #include "bbs/stuffin.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
 #include "bbs/platform/platformfcns.h"
+#include "core/stl.h"
+#include "core/strings.h"
 
 using std::string;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // How far to indent extended descriptions
@@ -519,6 +521,13 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
   }
 }
 
+void align(std::string *file_name) {
+  char s[MAX_PATH];
+  strcpy(s, file_name->c_str());
+  align(s);
+  file_name->assign(s);
+}
+
 void align(char *file_name) {
   // TODO Modify this to handle long filenames
   char szFileName[40], szExtension[40];
@@ -691,18 +700,19 @@ void printtitle(bool *abort) {
   session()->titled = false;
 }
 
-void file_mask(char *file_mask) {
+std::string file_mask() {
   bout.nl();
   bout << "|#2File mask: ";
-  input(file_mask, 12);
-  if (file_mask[0] == '\0') {
-    strcpy(file_mask, "*.*");
+  string s = input(12);
+  if (s.empty()) {
+    s = "*.*";
   }
-  if (strchr(file_mask, '.') == nullptr) {
-    strcat(file_mask, ".*");
+  if (!contains(s, '.')) {
+    s += ".*";
   }
-  align(file_mask);
+  align(&s);
   bout.nl();
+  return s;
 }
 
 void listfiles() {
@@ -712,8 +722,7 @@ void listfiles() {
   }
 
   dliscan();
-  char szFileMask[81];
-  file_mask(szFileMask);
+  string filemask = file_mask();
   session()->titled = true;
   lines_listed = 0;
 
@@ -724,7 +733,7 @@ void listfiles() {
     FileAreaSetRecord(fileDownload, i);
     uploadsrec u;
     fileDownload.Read(&u, sizeof(uploadsrec));
-    if (compare(szFileMask, u.filename)) {
+    if (compare(filemask.c_str(), u.filename)) {
       fileDownload.Close();
 
       if (session()->titled) {
@@ -842,8 +851,6 @@ void nscanall() {
 }
 
 void searchall() {
-  char szFileMask[81];
-
   if (okansi()) {
     listfiles_plus(LP_SEARCH_ALL);
     return;
@@ -863,7 +870,7 @@ void searchall() {
   int nOldCurDir = session()->current_user_dir_num();
   bout.nl(2);
   bout << "Search all session()->directories.\r\n";
-  file_mask(szFileMask);
+  string filemask = file_mask();
   bout.nl();
   bout << "|#2Searching ";
   lines_listed = 0;
@@ -901,7 +908,7 @@ void searchall() {
         FileAreaSetRecord(fileDownload, i1);
         uploadsrec u;
         fileDownload.Read(&u, sizeof(uploadsrec));
-        if (compare(szFileMask, u.filename)) {
+        if (compare(filemask.c_str(), u.filename)) {
           fileDownload.Close();
           if (session()->titled) {
             if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {

@@ -20,7 +20,10 @@
 #ifndef __INCLUDED_COMMON_H__
 #define __INCLUDED_COMMON_H__
 
+#include <string>
+
 #pragma pack(push, 1)
+
 
 struct side_menu_colors {
   int normal_highlight;   // used to all be unsigned.
@@ -30,14 +33,12 @@ struct side_menu_colors {
 };
 
 struct search_record {
-  char filemask[13];
+  std::string filemask;
+  uint32_t nscandate = 0;
+  std::string search;
 
-  unsigned long nscandate;
-
-  char search[81];
-
-  int alldirs;
-  int search_extended;
+  int alldirs = 0;
+  int search_extended = 0;
 };
 
 constexpr int HOTKEYS_ON = 0;

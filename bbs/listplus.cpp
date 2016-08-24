@@ -82,7 +82,7 @@ static bool ListPlusExist(const char *file_name) {
   return (*szRealFileName) ? File::Exists(szRealFileName) : false;
 }
 
-static void colorize_foundtext(char *text, struct search_record * search_rec, int color) {
+static void colorize_foundtext(char *text, search_record* search_rec, int color) {
   int size;
   char *pszTempBuffer, found_color[10], normal_color[10], *tok;
   char find[101], word[101];
@@ -91,7 +91,7 @@ static void colorize_foundtext(char *text, struct search_record * search_rec, in
   sprintf(normal_color, "|16|%02d", color);
 
   if (lp_config.colorize_found_text) {
-    strcpy(find, search_rec->search);
+    strcpy(find, search_rec->search.c_str());
     tok = strtok(find, "&|!()");
 
     while (tok) {
@@ -117,7 +117,7 @@ static void colorize_foundtext(char *text, struct search_record * search_rec, in
   }
 }
 
-static void colorize_foundtext(string *text, struct search_record * search_rec, int color) {
+static void colorize_foundtext(string *text, search_record * search_rec, int color) {
   std::unique_ptr<char[]> s(new char[text->size() * 2 + (12 * 10)]);  // extra padding for colorized
   strcpy(s.get(), text->c_str());
   colorize_foundtext(s.get(), search_rec, color);
@@ -213,12 +213,12 @@ int first_file_pos() {
   return pos;
 }
 
-void print_searching(struct search_record * search_rec) {
+void print_searching(search_record* search_rec) {
   if (session()->localIO()->WhereY() != 0 || session()->localIO()->WhereX() != 0) {
     bout.cls();
   }
 
-  if (strlen(search_rec->search) > 3) {
+  if (search_rec->search.size() > 3) {
     bout << "|#9Search keywords : |#2" << search_rec->search;
     bout.nl(2);
   }
@@ -316,7 +316,7 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
 }
 
 
-int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, struct search_record * search_rec) {
+int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, search_record * search_rec) {
   char szFileName[MAX_PATH], szFileExt[MAX_PATH];
   char element[150];
   int chars_this_line = 0, numl = 0, cpos = 0, will_fit = 78;
@@ -598,7 +598,7 @@ static void write_config_listing(int config) {
 }
 
 int print_extended_plus(const char *file_name, int numlist, int indent, int color,
-                        struct search_record * search_rec) {
+                        search_record* search_rec) {
   int numl = 0;
   int cpos = 0;
   int chars_this_line = 0;
@@ -730,12 +730,11 @@ int check_lines_needed(uploadsrec * u) {
   return lc_lines_used + elines;
 }
 
-int prep_search_rec(struct search_record * search_rec, int type) {
-  memset(search_rec, 0, sizeof(struct search_record));
+int prep_search_rec(search_record* search_rec, int type) {
   search_rec->search_extended = lp_config.search_extended_on;
 
   if (type == LP_LIST_DIR) {
-    file_mask(search_rec->filemask);
+    search_rec->filemask = file_mask();
     search_rec->alldirs = THIS_DIR;
   } else if (type == LP_SEARCH_ALL) {
     search_rec->alldirs = ALL_DIRS;
@@ -754,16 +753,18 @@ int prep_search_rec(struct search_record * search_rec, int type) {
     return 0;
   }
 
-  if (!search_rec->filemask[0] && !search_rec->nscandate && !search_rec->search[0]) {
+  if (search_rec->filemask.empty() 
+      && !search_rec->nscandate
+      && !search_rec->search[0]) {
     return 0;
   }
 
-  if (search_rec->filemask[0]) {
-    if (strchr(search_rec->filemask, '.') == nullptr) {
-      strcat(search_rec->filemask, ".*");
+  if (!search_rec->filemask.empty()) {
+    if (!contains(search_rec->filemask, '.')) {
+      search_rec->filemask += ".*";
     }
   }
-  align(search_rec->filemask);
+  align(&search_rec->filemask);
   return 1;
 }
 
@@ -1204,7 +1205,6 @@ void config_file_list() {
 }
 
 void update_user_config_screen(uploadsrec * u, int which) {
-  struct search_record sr;
   static const vector<string> lp_color_list{
     "Black   ",
     "Blue    ",
@@ -1223,8 +1223,6 @@ void update_user_config_screen(uploadsrec * u, int which) {
     "Yellow  ",
     "White   "
   };
-
-  memset(&sr, 0, sizeof(struct search_record));
 
   if (which < 1 || which == 1) {
     bout.GotoXY(37, 4);
@@ -1310,6 +1308,8 @@ void update_user_config_screen(uploadsrec * u, int which) {
   bout.nl();
   bout.clreol();
   bout.GotoXY(1, 21);
+
+  search_record sr = {};
   printinfo_plus(u, 1, 1, 30, &sr);
   bout.GotoXY(30, 17);
   bout.SystemColor(YELLOW);
@@ -1776,7 +1776,7 @@ void do_batch_sysop_command(int mode, const char *file_name) {
   dliscan();
 }
 
-int search_criteria(struct search_record * sr) {
+int search_criteria(search_record * sr) {
   int x = 0;
   int all_conf = 1, useconf;
   char s1[81];
@@ -1820,13 +1820,13 @@ LP_SEARCH_HELP:
     switch (x) {
     case 'A':
       bout << "Filename (wildcards okay) : ";
-      input(sr->filemask, 12, true);
+      sr->filemask = input(12, true);
       if (sr->filemask[0]) {
         if (okfn(sr->filemask)) {
-          if (strlen(sr->filemask) < 8) {
+          if (sr->filemask.size() < 8) {
             sysoplogf("Filespec: %s", sr->filemask);
           } else {
-            if (strstr(sr->filemask, ".")) {
+            if (contains(sr->filemask, '.')) {
               sysoplogf("Filespec: %s", sr->filemask);
             } else {
               bout << "|#6Invalid filename: " << sr->filemask << wwiv::endl;
@@ -1844,7 +1844,7 @@ LP_SEARCH_HELP:
 
     case 'B':
       bout << "Keyword(s) : ";
-      input(sr->search, 60, true);
+      sr->search = input(60, true);
       if (sr->search[0]) {
         sysoplogf("Keyword: %s", sr->search);
       }

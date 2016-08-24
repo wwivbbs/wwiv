@@ -124,16 +124,16 @@ extern user_config list_config;
 
 void printtitle_plus();
 int  first_file_pos();
-void print_searching(struct search_record * search_rec);
+void print_searching(search_record * search_rec);
 int  listfiles_plus(int type);
 int  lp_add_batch(const char *file_name, int dn, long fs);
-int  printinfo_plus(uploadsrec *upload_record, int filenum, int marked, int LinesLeft,
-struct search_record * search_rec);
+int  printinfo_plus(uploadsrec* upload_record, int filenum, int marked, int LinesLeft,
+search_record* search_rec);
 int  print_extended_plus(const char *file_name, int numlist, int indent, int color,
-struct search_record * search_rec);
-void show_fileinfo(uploadsrec *upload_record);
-int  check_lines_needed(uploadsrec * upload_record);
-int  prep_search_rec(struct search_record * search_rec, int type);
+search_record* search_rec);
+void show_fileinfo(uploadsrec* upload_record);
+int  check_lines_needed(uploadsrec* upload_record);
+int  prep_search_rec(search_record* search_rec, int type);
 int  calc_max_lines();
 void load_lp_config();
 void save_lp_config();
@@ -142,7 +142,7 @@ short SelectColor(int which);
 void config_file_list();
 void update_user_config_screen(uploadsrec * upload_record, int which);
 void do_batch_sysop_command(int mode, const char *file_name);
-int  search_criteria(struct search_record * sr);
+int  search_criteria(search_record * sr);
 void load_listing();
 void view_file(const char *file_name);
 int  lp_try_to_download(const char *file_mask, int dn);
