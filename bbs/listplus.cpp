@@ -1824,10 +1824,10 @@ LP_SEARCH_HELP:
       if (sr->filemask[0]) {
         if (okfn(sr->filemask)) {
           if (sr->filemask.size() < 8) {
-            sysoplogf("Filespec: %s", sr->filemask);
+            sysoplogf("Filespec: %s", sr->filemask.c_str());
           } else {
             if (contains(sr->filemask, '.')) {
-              sysoplogf("Filespec: %s", sr->filemask);
+              sysoplogf("Filespec: %s", sr->filemask.c_str());
             } else {
               bout << "|#6Invalid filename: " << sr->filemask << wwiv::endl;
               pausescr();
@@ -1846,7 +1846,7 @@ LP_SEARCH_HELP:
       bout << "Keyword(s) : ";
       sr->search = input(60, true);
       if (sr->search[0]) {
-        sysoplogf("Keyword: %s", sr->search);
+        sysoplogf("Keyword: %s", sr->search.c_str());
       }
       break;
 
