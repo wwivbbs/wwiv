@@ -501,11 +501,8 @@ void tag_files() {
     switch (ch) {
     case '?':
     {
-      bool saved_tagging = session()->tagging;
-      session()->tagging = false;
       printfile(TTAGGING_NOEXT);
       pausescr();
-      session()->tagging = saved_tagging;
       relist();
     } break;
     case 'C':
@@ -530,8 +527,6 @@ void tag_files() {
     case 'E':
     {
       lines_listed = 0;
-      bool saved_tagging = session()->tagging;
-      session()->tagging = false;
       bout << "|#9Which file (1-" << session()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
@@ -582,14 +577,10 @@ void tag_files() {
         relist();
 
       }
-      session()->tagging = saved_tagging;
     } break;
     case 'M':
       if (dcs()) {
-        bool saved_tagging = session()->tagging;
-        session()->tagging = false;
         move_file_t();
-        session()->tagging = saved_tagging;
         if (session()->filelist.empty()) {
           done = true;
           return;

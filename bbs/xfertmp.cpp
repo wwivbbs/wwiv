@@ -582,10 +582,7 @@ void temp_extract() {
     if (s1[0] && File::Exists(s2)) {
       bout.nl(2);
       bool abort = false;
-      bool ot = session()->tagging;
-      session()->tagging = true;
       printinfo(&u, &abort);
-      session()->tagging = ot;
       bout.nl();
       if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
         File::set_current_directory(syscfgovr.tempdir);

@@ -718,7 +718,7 @@ void listfiles() {
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeReadOnly);
   bool abort = false;
-  for (int i = 1; i <= session()->numf && !abort && !hangup && session()->tagging != 0; i++) {
+  for (int i = 1; i <= session()->numf && !abort && !hangup && session()->tagging; i++) {
     FileAreaSetRecord(fileDownload, i);
     uploadsrec u;
     fileDownload.Read(&u, sizeof(uploadsrec));
