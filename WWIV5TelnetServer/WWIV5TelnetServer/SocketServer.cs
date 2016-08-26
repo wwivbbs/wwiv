@@ -154,8 +154,15 @@ namespace WWIV5TelnetServer
             }
             finally
             {
-                socket.Shutdown(SocketShutdown.Both);
-                socket.Close();
+                try {
+                  // Let's try to shutdown in a try..catch incase it's already closed.
+                  socket.Shutdown(SocketShutdown.Both);
+                  socket.Close();
+                }
+                catch (SocketException e)
+                {
+                  Console.WriteLine(e.ToString());
+                }
                 nodeManager.freeNode(node);
                 OnNodeUpdated(node);
             }

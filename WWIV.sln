@@ -14,7 +14,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbs_test", "bbs_test\bbs_te
 		{BCF878F6-1997-4C3D-864E-12F0C1B5EB5E} = {BCF878F6-1997-4C3D-864E-12F0C1B5EB5E}
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WWIV5TelnetServer", "WWIV5TelnetServer\WWIV5TelnetServer\WWIV5TelnetServer.csproj", "{DAFEEEBB-B1F1-44C8-9AC4-2BF0F8EF6C24}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "wwiv-server", "WWIV5TelnetServer\WWIV5TelnetServer\wwiv-server.csproj", "{DAFEEEBB-B1F1-44C8-9AC4-2BF0F8EF6C24}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbs_lib", "bbs\bbs_lib.vcxproj", "{BCF878F6-1997-4C3D-864E-12F0C1B5EB5E}"
 EndProject
