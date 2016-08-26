@@ -78,7 +78,7 @@ extern const char *QWKFrom;
 extern int qwk_percent;
 
 // from readmail.cpp
-bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
+bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 
 void qwk_remove_email() {
   emchg = false;
@@ -132,19 +132,15 @@ void qwk_remove_email() {
   } while (!hangup && !done);
 }
 
-
 void qwk_gather_email(struct qwk_junk *qwk_info) {
-  int i, mfl, curmail, done;
+  int i, mfl, curmail;
+  bool done = false;
   char filename[201];
   mailrec m;
   postrec junk;
 
   emchg = false;
-  tmpmailrec *mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
-  if (!mloc) {
-    bout.bputs("Not enough memory");
-    return;
-  }
+  std::vector<tmpmailrec> mloc;
 
   slrec ss = getslrec(session()->GetEffectiveSl());
   std::unique_ptr<File> f(OpenEmailFile(false));
@@ -152,7 +148,6 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     bout.nl(2);
     bout.bputs("No mail file exists!");
     bout.nl();
-    free(mloc);
     return;
   }
   mfl = f->GetLength() / sizeof(mailrec);
@@ -161,11 +156,13 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     f->Seek(((long)(i)) * (sizeof(mailrec)), File::seekBegin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == session()->usernum)) {
-      mloc[mw].index = static_cast<int16_t>(i);
-      mloc[mw].fromsys = m.fromsys;
-      mloc[mw].fromuser = m.fromuser;
-      mloc[mw].daten = m.daten;
-      mloc[mw].msg = m.msg;
+      tmpmailrec r = {};
+      r.index = static_cast<int16_t>(i);
+      r.fromsys = m.fromsys;
+      r.fromuser = m.fromuser;
+      r.daten = m.daten;
+      r.msg = m.msg;
+      mloc.emplace_back(r);
       mw++;
     }
   }
@@ -176,7 +173,6 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     bout.nl();
     bout.bputs("You have no mail.");
     bout.nl();
-    free(mloc);
     return;
   }
 
@@ -233,7 +229,6 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   } while ((!hangup) && (!done));
 
   qwk_info->in_email = 0;
-  free(mloc);
 }
 
 int select_qwk_archiver(struct qwk_junk *qwk_info, int ask) {

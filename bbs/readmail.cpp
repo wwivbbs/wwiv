@@ -19,6 +19,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/bbsovl1.h"
 #include "bbs/conf.h"
@@ -50,33 +51,30 @@
 
 using std::string;
 using std::unique_ptr;
+using std::vector;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 // Local Functions
-bool same_email(tmpmailrec * tm, mailrec * m);
-void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss);
-void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
-bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
 void add_netsubscriber(int system_number);
 
 // Implementation
-bool same_email(tmpmailrec * tm, mailrec * m) {
-  if (tm->fromsys != m->fromsys ||
-      tm->fromuser != m->fromuser ||
+static bool same_email(tmpmailrec& tm, mailrec * m) {
+  if (tm.fromsys != m->fromsys ||
+      tm.fromuser != m->fromuser ||
       m->tosys != 0 ||
       m->touser != session()->usernum ||
-      tm->daten != m->daten ||
-      tm->index == -1 ||
-      memcmp(&tm->msg, &m->msg, sizeof(messagerec)) != 0) {
+      tm.daten != m->daten ||
+      tm.index == -1 ||
+      memcmp(&tm.msg, &m->msg, sizeof(messagerec)) != 0) {
     return false;
   }
   return true;
 }
 
-void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss) {
+static void purgemail(vector<tmpmailrec>& mloc, int mw, int *curmail, mailrec * m1, slrec * ss) {
   mailrec m;
 
   if ((m1->anony & anony_sender) && ((ss->ability & ability_read_email_anony) == 0)) {
@@ -102,7 +100,7 @@ void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss
       if (mloc[i].index >= 0) {
         pFileEmail->Seek(mloc[i].index * sizeof(mailrec), File::seekBegin);
         pFileEmail->Read(&m, sizeof(mailrec));
-        if (same_email(mloc + i, &m)) {
+        if (same_email(mloc[i], &m)) {
           if (m.fromuser == m1->fromuser && m.fromsys == m1->fromsys) {
             bout << "Deleting mail msg #" << i + 1 << wwiv::endl;
             delmail(pFileEmail.get(), mloc[i].index);
@@ -122,7 +120,7 @@ void purgemail(tmpmailrec * mloc, int mw, int *curmail, mailrec * m1, slrec * ss
   }
 }
 
-void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
+static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
   int i, i1;
   mailrec m1;
 
@@ -144,7 +142,7 @@ void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, uns
 
       if (m1.tosys == 0 && m1.touser == session()->usernum) {
         for (i1 = mp; i1 < mw; i1++) {
-          if (same_email(mloc + i1, &m1)) {
+          if (same_email(mloc[i1], &m1)) {
             mloc[i1].index = static_cast<int16_t>(i);
             mp = i1 + 1;
             if (i1 == rec) {
@@ -187,7 +185,7 @@ void resynch_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, uns
   }
 }
 
-bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
+bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
   if (mloc[rec].index < 0) {
     return false;
   }
@@ -196,7 +194,7 @@ bool read_same_email(tmpmailrec * mloc, int mw, int rec, mailrec * m, int del, u
   pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::seekBegin);
   pFileEmail->Read(m, sizeof(mailrec));
 
-  if (!same_email(mloc + rec, m)) {
+  if (!same_email(mloc[rec], m)) {
     pFileEmail->Close();
     session()->status_manager()->RefreshStatusCache();
     if (emchg) {
@@ -338,12 +336,7 @@ void readmail(int mode) {
   emchg = false;
   
   bool next = false, abort = false;
-
-  tmpmailrec *mloc = static_cast<tmpmailrec *>(BbsAllocA(MAXMAIL * sizeof(tmpmailrec)));
-  if (!mloc) {
-    bout << "|#6Not enough memory.\r\n";
-    return;
-  }
+  std::vector<tmpmailrec> mloc;
   write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
   slrec ss = getslrec(session()->GetEffectiveSl());
   int mw = 0;
@@ -351,7 +344,6 @@ void readmail(int mode) {
     unique_ptr<File> pFileEmail(OpenEmailFile(false));
     if (!pFileEmail->IsOpen()) {
       bout << "\r\n\nNo mail file exists!\r\n\n";
-      free(mloc);
       return;
     }
     int mfl = pFileEmail->GetLength() / sizeof(mailrec);
@@ -359,23 +351,24 @@ void readmail(int mode) {
       pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
       pFileEmail->Read(&m, sizeof(mailrec));
       if ((m.tosys == 0) && (m.touser == session()->usernum)) {
-        mloc[mw].index = static_cast<int16_t>(i);
-        mloc[mw].fromsys = m.fromsys;
-        mloc[mw].fromuser = m.fromuser;
-        mloc[mw].daten = m.daten;
-        mloc[mw].msg = m.msg;
+        tmpmailrec r = {};
+        r.index = static_cast<int16_t>(i);
+        r.fromsys = m.fromsys;
+        r.fromuser = m.fromuser;
+        r.daten = m.daten;
+        r.msg = m.msg;
+        mloc.emplace_back(r);
         mw++;
       }
     }
     pFileEmail->Close();
   }
   session()->user()->SetNumMailWaiting(mw);
-  if (mw == 0) {
+  if (mloc.empty()) {
     bout << "\r\n\n|#3You have no mail.\r\n\n";
-    free(mloc);
     return;
   }
-  if (mw == 1) {
+  if (mloc.size() == 1) {
     curmail = 0;
   } else {
     bout << "\r\n\n|#7You have mail from:\r\n\n";
@@ -490,7 +483,6 @@ void readmail(int mode) {
     bout << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
     input(s, 3, true);
     if (strchr(s, 'Q') != nullptr) {
-      free(mloc);
       return;
     }
     i = atoi(s);
@@ -978,7 +970,7 @@ void readmail(int mode) {
                 }
                 pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), File::seekBegin);
                 pFileEmail->Read(&m, sizeof(mailrec));
-                if (!same_email(mloc + curmail, &m)) {
+                if (!same_email(mloc[curmail], &m)) {
                   bout << "Error, mail moved.\r\n";
                   break;
                 }
@@ -1210,8 +1202,6 @@ void readmail(int mode) {
       }
     } while (!i1 && !hangup);
   } while (!hangup && !done);
-
-  free(mloc);
 }
 
 int check_new_mail(int user_number) {
