@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
+using System.IO;
 using System.Windows.Forms;
 
 namespace WWIV5TelnetServer
@@ -50,6 +51,13 @@ namespace WWIV5TelnetServer
       launchLocalNodeCheckBox.Checked = Properties.Settings.Default.launchLocalNodeAtStartup;
       launchNetworkCheckBox.Checked = Properties.Settings.Default.launchNetworkAtStartup;
       checkUpdates.Text = Properties.Settings.Default.checkUpdates;
+
+      useBadIp.Checked = Properties.Settings.Default.badip;
+      useGoodIp.Checked = Properties.Settings.Default.goodip;
+      maxConcurrent.Value = Properties.Settings.Default.concurrentSessions;
+      autoBan.Checked = Properties.Settings.Default.autoban;
+      banCount.Value = Properties.Settings.Default.banSessions;
+      banSeconds.Value = Properties.Settings.Default.banSeconds;
     }
 
     private void ok_Clicked(object sender, EventArgs e)
@@ -87,8 +95,57 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.launchLocalNodeAtStartup = launchLocalNodeCheckBox.Checked;
         Properties.Settings.Default.launchNetworkAtStartup = launchNetworkCheckBox.Checked;
         Properties.Settings.Default.checkUpdates = checkUpdates.Text;
+
+        Properties.Settings.Default.badip = useBadIp.Checked;
+        Properties.Settings.Default.goodip = useGoodIp.Checked;
+        Properties.Settings.Default.concurrentSessions = Convert.ToInt32(maxConcurrent.Value);
+        Properties.Settings.Default.autoban = autoBan.Checked;
+        Properties.Settings.Default.banSessions = Convert.ToInt32(banCount.Value);
+        Properties.Settings.Default.banSeconds = Convert.ToInt32(banSeconds.Value);
+
         Properties.Settings.Default.Save();
       }
+    }
+
+    private void buttonBrowseExecutable_Click(object sender, EventArgs e)
+    {
+      OpenFileDialog dlg = new OpenFileDialog();
+      dlg.Filter = "Executable Files (.exe)|*.exe";
+      dlg.FilterIndex = 1;
+      dlg.Multiselect = false;
+      dlg.InitialDirectory = Path.GetDirectoryName(executableField.Text);
+
+      var result = dlg.ShowDialog();
+      if (result == DialogResult.OK)
+      {
+        executableField.Text = dlg.FileName;
+      }
+    }
+
+    private void buttonBrowseHomeDir_Click(object sender, EventArgs e)
+    {
+      FolderBrowserDialog dlg = new FolderBrowserDialog();
+      dlg.SelectedPath = homeField.Text;
+
+      if (dlg.ShowDialog() == DialogResult.OK)
+      {
+        homeField.Text = dlg.SelectedPath;
+      }
+    }
+
+    private void tableLayoutPanel3_Paint(object sender, PaintEventArgs e)
+    {
+
+    }
+
+    private void checkBox2_CheckedChanged(object sender, EventArgs e)
+    {
+
+    }
+
+    private void label2_Click(object sender, EventArgs e)
+    {
+
     }
   }
 }

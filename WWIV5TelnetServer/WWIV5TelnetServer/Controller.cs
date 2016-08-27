@@ -50,13 +50,6 @@ namespace WWIV5TelnetServer
       serverTelnet.NodeStatusChanged += server_NodeStatusChanged;
       serverSSH.StatusMessageChanged += server_StatusMessage; // SSH
       serverSSH.NodeStatusChanged += server_NodeStatusChanged; // SSH
-
-      Action<string> logger = delegate (string s)
-      {
-        server_StatusMessage(this, new StatusMessageEventArgs(s, StatusMessageEventArgs.MessageType.LogInfo));
-      };
-
-
     }
 
 
@@ -118,33 +111,30 @@ namespace WWIV5TelnetServer
         // Don't try to execute bbs.exe if it does not exist.
         return currentFullVersion;
       }
-      Process p = new Process();
       try
       {
-        p.StartInfo.FileName = bbsExe;
-        p.StartInfo.Arguments = "-V";
-        p.StartInfo.UseShellExecute = false;
-        p.StartInfo.RedirectStandardOutput = true;
-        p.Start();
-        var output = p.StandardOutput.ReadToEnd();
-        p.WaitForExit();
-        char[] delims = { '[', '.', ']' };
-        var partsVersion = output.Split(delims);
-        var majorVersion = partsVersion[1];
-        var minorVersion = partsVersion[2];
-        var minorVersion2 = partsVersion[3];
-        build = partsVersion[4];
-        version = (majorVersion + "." + minorVersion + "." + minorVersion2 + "." + build);
-        currentFullVersion = "WWIV Server - Running WWIV: " + version;
-
+        using (Process p = new Process())
+        {
+          p.StartInfo.FileName = bbsExe;
+          p.StartInfo.Arguments = "-V";
+          p.StartInfo.UseShellExecute = false;
+          p.StartInfo.RedirectStandardOutput = true;
+          p.Start();
+          var output = p.StandardOutput.ReadToEnd();
+          p.WaitForExit();
+          char[] delims = { '[', '.', ']' };
+          var partsVersion = output.Split(delims);
+          var majorVersion = partsVersion[1];
+          var minorVersion = partsVersion[2];
+          var minorVersion2 = partsVersion[3];
+          build = partsVersion[4];
+          version = (majorVersion + "." + minorVersion + "." + minorVersion2 + "." + build);
+          currentFullVersion = "WWIV Server - Running WWIV: " + version;
+        }
       }
       catch
       {
         // Ignore error and return the default currentFullVersion.
-      }
-      finally
-      {
-        p.Close();
       }
       return currentFullVersion;
     }

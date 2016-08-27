@@ -238,5 +238,77 @@ namespace WWIV5TelnetServer.Properties {
                 this["parameters2"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool badip {
+            get {
+                return ((bool)(this["badip"]));
+            }
+            set {
+                this["badip"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool goodip {
+            get {
+                return ((bool)(this["goodip"]));
+            }
+            set {
+                this["goodip"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool autoban {
+            get {
+                return ((bool)(this["autoban"]));
+            }
+            set {
+                this["autoban"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int banSessions {
+            get {
+                return ((int)(this["banSessions"]));
+            }
+            set {
+                this["banSessions"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int banSeconds {
+            get {
+                return ((int)(this["banSeconds"]));
+            }
+            set {
+                this["banSeconds"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public int concurrentSessions {
+            get {
+                return ((int)(this["concurrentSessions"]));
+            }
+            set {
+                this["concurrentSessions"] = value;
+            }
+        }
     }
 }
