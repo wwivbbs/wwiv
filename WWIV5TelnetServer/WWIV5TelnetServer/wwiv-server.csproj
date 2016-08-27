@@ -77,6 +77,7 @@
     <Compile Include="CheckUpdates.cs" />
     <Compile Include="Blacklist.cs" />
     <Compile Include="CommandLineBuilder.cs" />
+    <Compile Include="Controller.cs" />
     <Compile Include="IniReader.cs" />
     <Compile Include="Launcher.cs" />
     <Compile Include="LogForm.cs">

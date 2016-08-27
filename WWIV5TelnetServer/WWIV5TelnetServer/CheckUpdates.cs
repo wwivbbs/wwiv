@@ -82,17 +82,14 @@ namespace WWIV5TelnetServer
             double dayCount = duration.TotalDays;
 
             // Get Global Strings for Version Numbers
-            string buildVersion;
-            buildVersion = MainForm.WWIV_Build;
-            string longVersion;
-            longVersion = MainForm.WWIV_Version;
+            string buildVersion = Controller.WWIV_Build;
+            string longVersion = Controller.WWIV_Version;
 
             // Declare And Initilize Set Build Number Variables to 0
             string wwivBuild5_1 = "0";
 
             // Grab User Check Update Preference 
-            string UserUpdatePref;
-            UserUpdatePref = Properties.Settings.Default.checkUpdates;
+            string UserUpdatePref = Properties.Settings.Default.checkUpdates;
 
             // Fetch Latest Build Number For WWIV 5.1
             // TODO: Add Newer Short Version To Fetch Version Number From Jenkins
@@ -102,8 +99,7 @@ namespace WWIV5TelnetServer
             {
                 wwivBuild5_1 = mTitle1.Groups[1].Value;
             }
-            string newestVersion;
-            newestVersion = wwivBuild5_1;
+            string newestVersion = wwivBuild5_1;
 
             int newBuild = Int32.Parse(newestVersion);
             int oldBuild = newBuild;
