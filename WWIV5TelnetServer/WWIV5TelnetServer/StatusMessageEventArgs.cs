@@ -22,7 +22,7 @@ namespace WWIV5TelnetServer
 {
   class StatusMessageEventArgs : EventArgs
   {
-    public enum MessageType { Connect, Disconnect , Status, LogInfo, LogDebug, LogWarning, LogError}
+    public enum MessageType { Connect, Disconnect, Status, LogInfo, LogDebug, LogWarning, LogError }
     public StatusMessageEventArgs(string message, MessageType type)
     {
       this.Message = message;
@@ -32,7 +32,8 @@ namespace WWIV5TelnetServer
     public string Message { get; private set; }
     public MessageType Type { get; private set; }
 
-    public bool IsConnectionRelated() {
+    public bool IsConnectionRelated()
+    {
       var type = this.Type;
       return type == MessageType.Connect || type == MessageType.Disconnect || type == MessageType.Status;
     }

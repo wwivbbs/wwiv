@@ -26,189 +26,190 @@ using System.IO;
 
 namespace WWIV5TelnetServer
 {
-    class SocketServer : IDisposable
+  class SocketServer : IDisposable
+  {
+    private Socket server;
+    private Thread launcherThread;
+    private NodeManager nodeManager;
+    private Int32 port;
+    private string argumentsTemplate;
+    private string name;
+    private Blacklist bl;
+
+    public delegate void StatusMessageEventHandler(object sender, StatusMessageEventArgs e);
+    public event StatusMessageEventHandler StatusMessageChanged;
+
+    public delegate void NodeStatusEventHandler(object sender, NodeStatusEventArgs e);
+    public event NodeStatusEventHandler NodeStatusChanged;
+
+    public SocketServer(NodeManager nodeManager, Int32 port, string argsTemplate, string name)
     {
-        private Socket server;
-        private Thread launcherThread;
-        private NodeManager nodeManager;
-        private Int32 port;
-        private string argumentsTemplate;
-        private string name;
-        private Blacklist bl;
+      this.nodeManager = nodeManager;
+      this.port = port;
+      this.argumentsTemplate = argsTemplate;
+      this.name = name;
 
-        public delegate void StatusMessageEventHandler(object sender, StatusMessageEventArgs e);
-        public event StatusMessageEventHandler StatusMessageChanged;
-
-        public delegate void NodeStatusEventHandler(object sender, NodeStatusEventArgs e);
-        public event NodeStatusEventHandler NodeStatusChanged;
-
-        public SocketServer(NodeManager nodeManager, Int32 port, string argsTemplate, string name)
-        {
-            this.nodeManager = nodeManager;
-            this.port = port;
-            this.argumentsTemplate = argsTemplate;
-            this.name = name;
-
-            var homeDirectory = Properties.Settings.Default.homeDirectory;
-            var badip_file =  Path.Combine(homeDirectory, "badip.txt");
-            var goodip_file = Path.Combine(homeDirectory, "goodip.txt");
-            var empty = new List<string>();
-            this.bl = new Blacklist(badip_file, goodip_file, empty);
-        }
+      var homeDirectory = Properties.Settings.Default.homeDirectory;
+      var badip_file = Path.Combine(homeDirectory, "badip.txt");
+      var goodip_file = Path.Combine(homeDirectory, "goodip.txt");
+      var empty = new List<string>();
+      this.bl = new Blacklist(badip_file, goodip_file, empty);
+    }
 
     public void Start()
-        {
-            launcherThread = new Thread(Run);
-            launcherThread.Name = this.name;
-            launcherThread.Start();
-            OnStatusMessageUpdated(this.name + " Server Started", StatusMessageEventArgs.MessageType.LogInfo);
-        }
+    {
+      launcherThread = new Thread(Run);
+      launcherThread.Name = this.name;
+      launcherThread.Start();
+      OnStatusMessageUpdated(this.name + " Server Started", StatusMessageEventArgs.MessageType.LogInfo);
+    }
 
-        public void Stop()
-        {
-            if (launcherThread == null)
-            {
-                OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
-                return;
-            }
-            OnStatusMessageUpdated(String.Format("Stopping {0} Server.", this.name), StatusMessageEventArgs.MessageType.LogInfo);
-            if (server != null)
-            {
-                server.Close();
-                server = null;
-            }
-            launcherThread.Abort();
-            launcherThread.Join();
-            launcherThread = null;
-            OnStatusMessageUpdated(String.Format("{0} Server Stopped", this.name), StatusMessageEventArgs.MessageType.LogInfo);
-        }
+    public void Stop()
+    {
+      if (launcherThread == null)
+      {
+        OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
+        return;
+      }
+      OnStatusMessageUpdated(String.Format("Stopping {0} Server.", this.name), StatusMessageEventArgs.MessageType.LogInfo);
+      if (server != null)
+      {
+        server.Close();
+        server = null;
+      }
+      launcherThread.Abort();
+      launcherThread.Join();
+      launcherThread = null;
+      OnStatusMessageUpdated(String.Format("{0} Server Stopped", this.name), StatusMessageEventArgs.MessageType.LogInfo);
+    }
 
-        private void Run()
-        {
-            server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
-            server.Bind(new IPEndPoint(IPAddress.Any, port));
-            server.Listen(4);
-            
-            while (true)
-            {
-                Console.WriteLine("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
-                try
-                {
-                    Socket socket = server.Accept();
-                    Console.WriteLine("After accept.");
-                    NodeStatus node = nodeManager.getNextNode();
-                    string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+    private void Run()
+    {
+      server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
+      server.Bind(new IPEndPoint(IPAddress.Any, port));
+      server.Listen(4);
 
-                    OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
-                    if (bl.IsBlackListed(ip))
-                    {
-                      OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
-                      Thread.Sleep(1000);
-                      node = null;
-                    }
-                    if (node != null)
-                    {
-                        node.RemoteAddress = ip;
-                        OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
-                        Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
-                        instanceThread.Name = "Instance #" + node.Node;
-                        instanceThread.Start();
-                        OnNodeUpdated(node);
-                    }
-                    else
-                    {
-                        // Send BUSY signal.
-                        OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
-                        byte[] busy = System.Text.Encoding.ASCII.GetBytes("BUSY");
-                        try
-                        {
-                            socket.Send(busy);
-                        }
-                        finally
-                        {
-                            socket.Close();
-                        }
-                    }
-                }
-                catch (SocketException e)
-                {
-                    Console.WriteLine(e.ToString());
-                }
-            }
-        }
-
-        private void LaunchInstance(NodeStatus node, Socket socket)
+      while (true)
+      {
+        Console.WriteLine("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
+        try
         {
+          Socket socket = server.Accept();
+          Console.WriteLine("After accept.");
+          NodeStatus node = nodeManager.getNextNode();
+          string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+
+          OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
+          if (bl.IsBlackListed(ip))
+          {
+            OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
+            Thread.Sleep(1000);
+            node = null;
+          }
+          if (node != null)
+          {
+            node.RemoteAddress = ip;
+            OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
+            Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
+            instanceThread.Name = "Instance #" + node.Node;
+            instanceThread.Start();
+            OnNodeUpdated(node);
+          }
+          else
+          {
+            // Send BUSY signal.
+            OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
+            byte[] busy = System.Text.Encoding.ASCII.GetBytes("BUSY");
             try
             {
-                var executable = Properties.Settings.Default.executable;
-                var homeDirectory = Properties.Settings.Default.homeDirectory;
-
-                Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, DebugLog);
-                var socketHandle = socket.Handle.ToInt32();
-                Process p = launcher.launchSocketNode(node.Node, socketHandle);
-                if (p != null)
-                {
-                    p.WaitForExit();
-                }
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine(e.ToString());
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.ToString());
+              socket.Send(busy);
             }
             finally
             {
-                try {
-                  // Let's try to shutdown in a try..catch incase it's already closed.
-                  socket.Shutdown(SocketShutdown.Both);
-                  socket.Close();
-                }
-                catch (SocketException e)
-                {
-                  Console.WriteLine(e.ToString());
-                }
-                nodeManager.freeNode(node);
-                OnNodeUpdated(node);
+              socket.Close();
             }
+          }
         }
-
-        public void Dispose()
+        catch (SocketException e)
         {
-            Stop();
+          Console.WriteLine(e.ToString());
         }
-
-        protected virtual void OnStatusMessageUpdated(string message, StatusMessageEventArgs.MessageType type)
-        {
-            StatusMessageEventArgs e = new StatusMessageEventArgs(message, type);
-            var handler = StatusMessageChanged;
-            if (handler != null)
-            {
-                StatusMessageChanged(this, e);
-            }
-        }
-
-        protected virtual void DebugLog(string message)
-        {
-            StatusMessageEventArgs e = new StatusMessageEventArgs(message, StatusMessageEventArgs.MessageType.LogDebug);
-            var handler = StatusMessageChanged;
-            if (handler != null)
-            {
-                StatusMessageChanged(this, e);
-            }
-        }
-
-        protected virtual void OnNodeUpdated(NodeStatus nodeStatus)
-        {
-            NodeStatusEventArgs e = new NodeStatusEventArgs(nodeStatus);
-            var handler = NodeStatusChanged;
-            if (handler != null)
-            {
-                NodeStatusChanged(this, e);
-            }
-        }
+      }
     }
+
+    private void LaunchInstance(NodeStatus node, Socket socket)
+    {
+      try
+      {
+        var executable = Properties.Settings.Default.executable;
+        var homeDirectory = Properties.Settings.Default.homeDirectory;
+
+        Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, DebugLog);
+        var socketHandle = socket.Handle.ToInt32();
+        Process p = launcher.launchSocketNode(node.Node, socketHandle);
+        if (p != null)
+        {
+          p.WaitForExit();
+        }
+      }
+      catch (SocketException e)
+      {
+        Console.WriteLine(e.ToString());
+      }
+      catch (Exception e)
+      {
+        Console.WriteLine(e.ToString());
+      }
+      finally
+      {
+        try
+        {
+          // Let's try to shutdown in a try..catch incase it's already closed.
+          socket.Shutdown(SocketShutdown.Both);
+          socket.Close();
+        }
+        catch (SocketException e)
+        {
+          Console.WriteLine(e.ToString());
+        }
+        nodeManager.freeNode(node);
+        OnNodeUpdated(node);
+      }
+    }
+
+    public void Dispose()
+    {
+      Stop();
+    }
+
+    protected virtual void OnStatusMessageUpdated(string message, StatusMessageEventArgs.MessageType type)
+    {
+      StatusMessageEventArgs e = new StatusMessageEventArgs(message, type);
+      var handler = StatusMessageChanged;
+      if (handler != null)
+      {
+        StatusMessageChanged(this, e);
+      }
+    }
+
+    protected virtual void DebugLog(string message)
+    {
+      StatusMessageEventArgs e = new StatusMessageEventArgs(message, StatusMessageEventArgs.MessageType.LogDebug);
+      var handler = StatusMessageChanged;
+      if (handler != null)
+      {
+        StatusMessageChanged(this, e);
+      }
+    }
+
+    protected virtual void OnNodeUpdated(NodeStatus nodeStatus)
+    {
+      NodeStatusEventArgs e = new NodeStatusEventArgs(nodeStatus);
+      var handler = NodeStatusChanged;
+      if (handler != null)
+      {
+        NodeStatusChanged(this, e);
+      }
+    }
+  }
 }
