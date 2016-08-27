@@ -21,6 +21,8 @@ using System.Net;
 using System.Net.Sockets;
 using System.Diagnostics;
 using System.Threading;
+using System.Collections.Generic;
+using System.IO;
 
 namespace WWIV5TelnetServer
 {
@@ -32,6 +34,7 @@ namespace WWIV5TelnetServer
         private Int32 port;
         private string argumentsTemplate;
         private string name;
+        private Blacklist bl;
 
         public delegate void StatusMessageEventHandler(object sender, StatusMessageEventArgs e);
         public event StatusMessageEventHandler StatusMessageChanged;
@@ -45,9 +48,15 @@ namespace WWIV5TelnetServer
             this.port = port;
             this.argumentsTemplate = argsTemplate;
             this.name = name;
+
+            var homeDirectory = Properties.Settings.Default.homeDirectory;
+            var badip_file =  Path.Combine(homeDirectory, "badip.txt");
+            var goodip_file = Path.Combine(homeDirectory, "goodip.txt");
+            var empty = new List<string>();
+            this.bl = new Blacklist(badip_file, goodip_file, empty);
         }
 
-        public void Start()
+    public void Start()
         {
             launcherThread = new Thread(Run);
             launcherThread.Name = this.name;
@@ -79,7 +88,7 @@ namespace WWIV5TelnetServer
             server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
             server.Bind(new IPEndPoint(IPAddress.Any, port));
             server.Listen(4);
-
+            
             while (true)
             {
                 Console.WriteLine("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
@@ -89,15 +98,14 @@ namespace WWIV5TelnetServer
                     Console.WriteLine("After accept.");
                     NodeStatus node = nodeManager.getNextNode();
                     string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
-                    // HACK
-                    if (ip == "202.39.236.116")
-                    {
-                        // This IP has been bad. Blacklist it until proper filtering is added.
-                        OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
-                        Thread.Sleep(1000);
-                        node = null;
-                    }
+
                     OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
+                    if (bl.IsBlackListed(ip))
+                    {
+                      OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
+                      Thread.Sleep(1000);
+                      node = null;
+                    }
                     if (node != null)
                     {
                         node.RemoteAddress = ip;

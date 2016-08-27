@@ -31,7 +31,16 @@ namespace WWIV5TelnetServer
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new MainForm());
+            try
+            {
+              Application.Run(new MainForm());
+            } 
+            catch(Exception e)
+            {
+              Console.WriteLine(e.ToString());
+              Console.WriteLine(e.StackTrace);
+              MessageBox.Show(e.ToString());
+            }
         }
     }
 }
