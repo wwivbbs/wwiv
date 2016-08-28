@@ -37,7 +37,6 @@
       this.label1 = new System.Windows.Forms.Label();
       this.launchNetworkCheckBox = new System.Windows.Forms.CheckBox();
       this.launchLocalNodeCheckBox = new System.Windows.Forms.CheckBox();
-      this.runEventsCheckbox = new System.Windows.Forms.CheckBox();
       this.balloonsCheckBox = new System.Windows.Forms.CheckBox();
       this.beginDayCheckBox = new System.Windows.Forms.CheckBox();
       this.launchMinimizedCheckBox = new System.Windows.Forms.CheckBox();
@@ -79,6 +78,7 @@
       this.banSeconds = new System.Windows.Forms.NumericUpDown();
       this.label3 = new System.Windows.Forms.Label();
       this.maxConcurrent = new System.Windows.Forms.NumericUpDown();
+      this.cbPressEsc = new System.Windows.Forms.CheckBox();
       this.tabControlPreferences.SuspendLayout();
       this.generalTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.localNodeSpinner)).BeginInit();
@@ -144,7 +144,6 @@
       this.generalTab.Controls.Add(this.label1);
       this.generalTab.Controls.Add(this.launchNetworkCheckBox);
       this.generalTab.Controls.Add(this.launchLocalNodeCheckBox);
-      this.generalTab.Controls.Add(this.runEventsCheckbox);
       this.generalTab.Controls.Add(this.balloonsCheckBox);
       this.generalTab.Controls.Add(this.beginDayCheckBox);
       this.generalTab.Controls.Add(this.launchMinimizedCheckBox);
@@ -212,17 +211,6 @@
       this.launchLocalNodeCheckBox.TabIndex = 20;
       this.launchLocalNodeCheckBox.Text = "Launch Local Node On Startup?";
       this.launchLocalNodeCheckBox.UseVisualStyleBackColor = true;
-      // 
-      // runEventsCheckbox
-      // 
-      this.runEventsCheckbox.AutoSize = true;
-      this.runEventsCheckbox.Enabled = false;
-      this.runEventsCheckbox.Location = new System.Drawing.Point(22, 254);
-      this.runEventsCheckbox.Name = "runEventsCheckbox";
-      this.runEventsCheckbox.Size = new System.Drawing.Size(226, 17);
-      this.runEventsCheckbox.TabIndex = 19;
-      this.runEventsCheckbox.Text = "Run All WWIV Events? (Not Implemented)";
-      this.runEventsCheckbox.UseVisualStyleBackColor = true;
       // 
       // balloonsCheckBox
       // 
@@ -558,19 +546,20 @@
       this.tableLayoutPanel3.Controls.Add(this.flowLayoutPanel1, 1, 4);
       this.tableLayoutPanel3.Controls.Add(this.lblConcurrent, 0, 2);
       this.tableLayoutPanel3.Controls.Add(this.maxConcurrent, 1, 2);
-      this.tableLayoutPanel3.Controls.Add(this.autoBan, 1, 3);
       this.tableLayoutPanel3.Controls.Add(this.useBadIp, 0, 0);
       this.tableLayoutPanel3.Controls.Add(this.useGoodIp, 0, 1);
+      this.tableLayoutPanel3.Controls.Add(this.cbPressEsc, 0, 5);
+      this.tableLayoutPanel3.Controls.Add(this.autoBan, 0, 3);
       this.tableLayoutPanel3.Location = new System.Drawing.Point(4, 4);
       this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-      this.tableLayoutPanel3.RowCount = 7;
+      this.tableLayoutPanel3.RowCount = 6;
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
       this.tableLayoutPanel3.Size = new System.Drawing.Size(527, 278);
       this.tableLayoutPanel3.TabIndex = 0;
       this.tableLayoutPanel3.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel3_Paint);
@@ -578,6 +567,7 @@
       // useBadIp
       // 
       this.useBadIp.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.useBadIp, 2);
       this.useBadIp.Location = new System.Drawing.Point(3, 3);
       this.useBadIp.Name = "useBadIp";
       this.useBadIp.Size = new System.Drawing.Size(104, 17);
@@ -588,7 +578,8 @@
       // autoBan
       // 
       this.autoBan.AutoSize = true;
-      this.autoBan.Location = new System.Drawing.Point(136, 75);
+      this.tableLayoutPanel3.SetColumnSpan(this.autoBan, 2);
+      this.autoBan.Location = new System.Drawing.Point(3, 75);
       this.autoBan.Name = "autoBan";
       this.autoBan.Size = new System.Drawing.Size(141, 17);
       this.autoBan.TabIndex = 1;
@@ -599,6 +590,7 @@
       // useGoodIp
       // 
       this.useGoodIp.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.useGoodIp, 2);
       this.useGoodIp.Location = new System.Drawing.Point(3, 26);
       this.useGoodIp.Name = "useGoodIp";
       this.useGoodIp.Size = new System.Drawing.Size(114, 17);
@@ -637,7 +629,7 @@
       this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
       this.flowLayoutPanel1.Location = new System.Drawing.Point(136, 98);
       this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-      this.flowLayoutPanel1.Size = new System.Drawing.Size(388, 100);
+      this.flowLayoutPanel1.Size = new System.Drawing.Size(388, 94);
       this.flowLayoutPanel1.TabIndex = 4;
       // 
       // banCount
@@ -678,6 +670,17 @@
       this.maxConcurrent.Name = "maxConcurrent";
       this.maxConcurrent.Size = new System.Drawing.Size(120, 20);
       this.maxConcurrent.TabIndex = 5;
+      // 
+      // cbPressEsc
+      // 
+      this.cbPressEsc.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.cbPressEsc, 2);
+      this.cbPressEsc.Location = new System.Drawing.Point(3, 198);
+      this.cbPressEsc.Name = "cbPressEsc";
+      this.cbPressEsc.Size = new System.Drawing.Size(200, 17);
+      this.cbPressEsc.TabIndex = 6;
+      this.cbPressEsc.Text = "Use \"Press <ESC> Twice for BBS...\"";
+      this.cbPressEsc.UseVisualStyleBackColor = true;
       // 
       // PreferencesDialog
       // 
@@ -743,7 +746,6 @@
         private System.Windows.Forms.CheckBox balloonsCheckBox;
         private System.Windows.Forms.CheckBox beginDayCheckBox;
         private System.Windows.Forms.CheckBox launchMinimizedCheckBox;
-        private System.Windows.Forms.CheckBox runEventsCheckbox;
         private System.Windows.Forms.CheckBox launchLocalNodeCheckBox;
         private System.Windows.Forms.CheckBox launchNetworkCheckBox;
         private System.Windows.Forms.ComboBox checkUpdates;
@@ -773,5 +775,6 @@
     private System.Windows.Forms.NumericUpDown banSeconds;
     private System.Windows.Forms.Label label3;
     private System.Windows.Forms.NumericUpDown maxConcurrent;
+    private System.Windows.Forms.CheckBox cbPressEsc;
   }
 }

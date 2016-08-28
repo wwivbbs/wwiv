@@ -46,7 +46,6 @@ namespace WWIV5TelnetServer
       lowNodeSpinner.Value = Properties.Settings.Default.startNode;
       balloonsCheckBox.Checked = Properties.Settings.Default.useBalloons;
       beginDayCheckBox.Checked = Properties.Settings.Default.useBegindayEvent;
-      runEventsCheckbox.Checked = Properties.Settings.Default.useEvents;
       launchMinimizedCheckBox.Checked = Properties.Settings.Default.launchMinimized;
       launchLocalNodeCheckBox.Checked = Properties.Settings.Default.launchLocalNodeAtStartup;
       launchNetworkCheckBox.Checked = Properties.Settings.Default.launchNetworkAtStartup;
@@ -58,6 +57,7 @@ namespace WWIV5TelnetServer
       autoBan.Checked = Properties.Settings.Default.autoban;
       banCount.Value = Properties.Settings.Default.banSessions;
       banSeconds.Value = Properties.Settings.Default.banSeconds;
+      cbPressEsc.Checked = Properties.Settings.Default.pressEsc;
     }
 
     private void ok_Clicked(object sender, EventArgs e)
@@ -90,7 +90,6 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.startNode = lowNodeSpinner.Value;
         Properties.Settings.Default.useBalloons = balloonsCheckBox.Checked;
         Properties.Settings.Default.useBegindayEvent = beginDayCheckBox.Checked;
-        Properties.Settings.Default.useEvents = runEventsCheckbox.Checked;
         Properties.Settings.Default.launchMinimized = launchMinimizedCheckBox.Checked;
         Properties.Settings.Default.launchLocalNodeAtStartup = launchLocalNodeCheckBox.Checked;
         Properties.Settings.Default.launchNetworkAtStartup = launchNetworkCheckBox.Checked;
@@ -102,7 +101,7 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.autoban = autoBan.Checked;
         Properties.Settings.Default.banSessions = Convert.ToInt32(banCount.Value);
         Properties.Settings.Default.banSeconds = Convert.ToInt32(banSeconds.Value);
-
+        Properties.Settings.Default.pressEsc = cbPressEsc.Checked;
         Properties.Settings.Default.Save();
       }
     }

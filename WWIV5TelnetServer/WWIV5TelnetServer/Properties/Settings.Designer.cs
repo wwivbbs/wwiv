@@ -310,5 +310,17 @@ namespace WWIV5TelnetServer.Properties {
                 this["concurrentSessions"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool pressEsc {
+            get {
+                return ((bool)(this["pressEsc"]));
+            }
+            set {
+                this["pressEsc"] = value;
+            }
+        }
     }
 }

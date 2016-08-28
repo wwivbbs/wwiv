@@ -24,6 +24,7 @@ using System.Threading;
 using System.Collections.Generic;
 using System.IO;
 using System.Collections;
+using System.Text;
 
 namespace WWIV5TelnetServer
 {
@@ -130,6 +131,20 @@ namespace WWIV5TelnetServer
       socket.Send(bytes);
     }
 
+    private string receive(Socket socket)
+    {
+      var a = socket.Available;
+      if (a == 0)
+      {
+        return "";
+      }
+
+      a = Math.Max(a, 255);
+      byte[] buf = new byte[a];
+      var received = socket.Receive(buf);
+      return Encoding.ASCII.GetString(buf, 0, received);
+    }
+
     private void SendBusyAndCloseSocket(Socket socket)
     {
       // Send BUSY signal.
@@ -142,6 +157,21 @@ namespace WWIV5TelnetServer
       {
         socket.Close();
       }
+    }
+
+    private void BlackListIP(Socket socket, string ip)
+    {
+      Thread.Sleep(1000);
+      SendBusyAndCloseSocket(socket);
+      if (bl.BlacklistIP(ip))
+      {
+        OnStatusMessageUpdated("Blacklisting IP: " + ip, StatusMessageEventArgs.MessageType.LogInfo);
+      }
+      else
+      {
+        Console.WriteLine("Error Blacklisting IP: " + ip);
+      }
+      return;
     }
 
     private void Run()
@@ -160,40 +190,56 @@ namespace WWIV5TelnetServer
           Console.WriteLine("After accept from IP: " + ip);
           OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
 
+          if (ShouldBeBanned(ip))
+          {
+            // Add it to the blacklist file.
+            BlackListIP(socket, ip);
+            continue;
+          }
+
+          if (bl.IsBlackListed(ip))
+          {
+            OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
+            SendBusyAndCloseSocket(socket);
+            continue;
+          }
+
+          if (Properties.Settings.Default.pressEsc)
+          {
+            send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
+            int numEscs = 0;
+            string total = "";
+            while (true)
+            {
+              string s = receive(socket);
+              if (s.Length == 0)
+              {
+                continue;
+              }
+              total += s;
+              numEscs += s.Split((char)27).Length - 1;
+              if (numEscs >= 2)
+              {
+                send(socket, "Launching BBS...\r\n");
+                break;
+              }
+              if (total.Contains("root") || total.Contains("admin"))
+              {
+                BlackListIP(socket, ip);
+                continue;
+              }
+            }
+          }
+
+          // Grab a node # after we've cleared everything else.
           NodeStatus node = nodeManager.getNextNode();
           if (node == null)
           {
             // NO node available.
             OnStatusMessageUpdated("No node available.", StatusMessageEventArgs.MessageType.LogInfo);
             SendBusyAndCloseSocket(socket);
-            return;
+            continue;
           }
-
-          if (ShouldBeBanned(ip))
-          {
-            // Add it to the blacklist file.
-            Thread.Sleep(1000);
-            SendBusyAndCloseSocket(socket);
-            if (bl.BlacklistIP(ip))
-            {
-              OnStatusMessageUpdated("Blacklisting IP: " + ip, StatusMessageEventArgs.MessageType.LogInfo);
-            }
-            else
-            {
-              Console.WriteLine("Error Blacklisting IP: " + ip);
-            }
-            return;
-          }
-
-          if (bl.IsBlackListed(ip))
-          {
-            OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
-            Thread.Sleep(1000);
-            SendBusyAndCloseSocket(socket);
-            return;
-          }
-
-          send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
           node.RemoteAddress = ip;
           OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
           Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
