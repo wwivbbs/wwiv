@@ -115,11 +115,6 @@ bool IsPhoneNumberUSAFormat(User *pUser) {
 }
 
 static int GetAnsiStatusAndShowWelcomeScreen() {
-  if (session()->GetCurrentSpeed().length() > 0) {
-    string current_speed = session()->GetCurrentSpeed();
-    StringUpperCase(&current_speed);
-    bout << "CONNECT " << current_speed << "\r\n\r\n";
-  }
   bout << "\r\nWWIV " << wwiv_version << beta_version << wwiv::endl;
   bout << "Copyright (c) 1998-2016 WWIV Software Services." << wwiv::endl;
   bout << "All Rights Reserved." << wwiv::endl;

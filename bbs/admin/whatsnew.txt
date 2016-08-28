@@ -9,6 +9,10 @@ What's New in WWIV 5.2 (2016)
 * "extra color" was only used in transfer section w/o listplus 
   (which means it's not ever used). removed the checks for it.  This
   will come back in the future somewhere else to be useful.
+* Added IP blacklisting/whitelisting and auto blocking. The settings
+  are on the blacklist page in wwivserver.exe. By default 3 connection
+  attempts in 120 seconds will get an IP blacklisted.
+* The wwiv server also pretends to be a FTN mailer for fun.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -543,7 +543,7 @@
       this.blockTab.Name = "blockTab";
       this.blockTab.Size = new System.Drawing.Size(531, 285);
       this.blockTab.TabIndex = 3;
-      this.blockTab.Text = "Blocking (Not Implemented Yet)";
+      this.blockTab.Text = "Blocking";
       this.blockTab.UseVisualStyleBackColor = true;
       // 
       // tableLayoutPanel3

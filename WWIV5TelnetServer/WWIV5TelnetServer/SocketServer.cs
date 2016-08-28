@@ -23,6 +23,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Collections.Generic;
 using System.IO;
+using System.Collections;
 
 namespace WWIV5TelnetServer
 {
@@ -35,6 +36,7 @@ namespace WWIV5TelnetServer
     private string argumentsTemplate;
     private string name;
     private Blacklist bl;
+    private Dictionary<String, List<DateTime>> connections;
 
     public delegate void StatusMessageEventHandler(object sender, StatusMessageEventArgs e);
     public event StatusMessageEventHandler StatusMessageChanged;
@@ -54,6 +56,7 @@ namespace WWIV5TelnetServer
       var goodip_file = Path.Combine(homeDirectory, "goodip.txt");
       var empty = new List<string>();
       this.bl = new Blacklist(badip_file, goodip_file, empty);
+      this.connections = new Dictionary<string, List<DateTime>>();
     }
 
     public void Start()
@@ -83,6 +86,64 @@ namespace WWIV5TelnetServer
       OnStatusMessageUpdated(String.Format("{0} Server Stopped", this.name), StatusMessageEventArgs.MessageType.LogInfo);
     }
 
+    /** Updates the banned state. */
+    bool ShouldBeBanned(String ip)
+    {
+      if (!Properties.Settings.Default.autoban)
+      {
+        return false;
+      }
+      if (Properties.Settings.Default.banSeconds == 0 || Properties.Settings.Default.banSessions == 0)
+      {
+        return false;
+      }
+
+
+      List<DateTime> value;
+      if (connections.TryGetValue(ip, out value))
+      {
+        var s = TimeSpan.FromSeconds(Properties.Settings.Default.banSeconds);
+        value.RemoveAll(x => DateTime.Now.Subtract(x) > s);
+        value.Add(DateTime.Now);
+        connections[ip] = value;
+
+        var c = "Current Sessions: " + value.Count + 
+                ": {" + string.Join(",", value.ToArray()) + "}";
+        OnStatusMessageUpdated(c, StatusMessageEventArgs.MessageType.Status);
+
+        // We should ban if we still have more connections than allowed.
+        var banCount = Properties.Settings.Default.banSessions;
+        return value.Count > banCount;
+      }
+      else
+      {
+        value = new List<DateTime>();
+        value.Add(DateTime.Now);
+        connections[ip] = value;
+        return false;
+      }
+    }
+
+    private void send(Socket socket, string s)
+    {
+      byte[] bytes = System.Text.Encoding.ASCII.GetBytes(s.ToCharArray());
+      socket.Send(bytes);
+    }
+
+    private void SendBusyAndCloseSocket(Socket socket)
+    {
+      // Send BUSY signal.
+      OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
+      try
+      {
+        send(socket, "BUSY");
+      }
+      finally
+      {
+        socket.Close();
+      }
+    }
+
     private void Run()
     {
       server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -95,40 +156,50 @@ namespace WWIV5TelnetServer
         try
         {
           Socket socket = server.Accept();
-          Console.WriteLine("After accept.");
-          NodeStatus node = nodeManager.getNextNode();
           string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
-
+          Console.WriteLine("After accept from IP: " + ip);
           OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
+
+          NodeStatus node = nodeManager.getNextNode();
+          if (node == null)
+          {
+            // NO node available.
+            OnStatusMessageUpdated("No node available.", StatusMessageEventArgs.MessageType.LogInfo);
+            SendBusyAndCloseSocket(socket);
+            return;
+          }
+
+          if (ShouldBeBanned(ip))
+          {
+            // Add it to the blacklist file.
+            Thread.Sleep(1000);
+            SendBusyAndCloseSocket(socket);
+            if (bl.BlacklistIP(ip))
+            {
+              OnStatusMessageUpdated("Blacklisting IP: " + ip, StatusMessageEventArgs.MessageType.LogInfo);
+            }
+            else
+            {
+              Console.WriteLine("Error Blacklisting IP: " + ip);
+            }
+            return;
+          }
+
           if (bl.IsBlackListed(ip))
           {
             OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
             Thread.Sleep(1000);
-            node = null;
+            SendBusyAndCloseSocket(socket);
+            return;
           }
-          if (node != null)
-          {
-            node.RemoteAddress = ip;
-            OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
-            Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
-            instanceThread.Name = "Instance #" + node.Node;
-            instanceThread.Start();
-            OnNodeUpdated(node);
-          }
-          else
-          {
-            // Send BUSY signal.
-            OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
-            byte[] busy = System.Text.Encoding.ASCII.GetBytes("BUSY");
-            try
-            {
-              socket.Send(busy);
-            }
-            finally
-            {
-              socket.Close();
-            }
-          }
+
+          send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
+          node.RemoteAddress = ip;
+          OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
+          Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
+          instanceThread.Name = "Instance #" + node.Node;
+          instanceThread.Start();
+          OnNodeUpdated(node);
         }
         catch (SocketException e)
         {
@@ -146,15 +217,13 @@ namespace WWIV5TelnetServer
 
         Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, DebugLog);
         var socketHandle = socket.Handle.ToInt32();
-        Process p = launcher.launchSocketNode(node.Node, socketHandle);
-        if (p != null)
+        using (Process p = launcher.launchSocketNode(node.Node, socketHandle))
         {
-          p.WaitForExit();
+          if (p != null)
+          {
+            p.WaitForExit();
+          }
         }
-      }
-      catch (SocketException e)
-      {
-        Console.WriteLine(e.ToString());
       }
       catch (Exception e)
       {
@@ -172,8 +241,11 @@ namespace WWIV5TelnetServer
         {
           Console.WriteLine(e.ToString());
         }
-        nodeManager.freeNode(node);
-        OnNodeUpdated(node);
+        finally
+        {
+          nodeManager.freeNode(node);
+          OnNodeUpdated(node);
+        }
       }
     }
 
