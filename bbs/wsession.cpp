@@ -155,11 +155,18 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
     const File key_file(config_->datadir(), "wwiv.key");
     const string system_password = config()->config()->systempw;
     wwiv::bbs::Key key(key_file.full_pathname(), system_password);
-    if (!key.Open()) {
+    if (!key_file.Exists()) {
+      LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
       if (!key.Create()) {
         LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
         type = CommunicationType::TELNET;
       }
+    }
+    if (!key.Open()) {
+      LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?" << endl;
+      LOG(ERROR) << "If so, delete " << key_file.full_pathname();
+      LOG(ERROR) << "SSH will be disabled!";
+      type = CommunicationType::TELNET;
     }
     comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
   } break;

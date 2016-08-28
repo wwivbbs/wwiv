@@ -42,6 +42,7 @@ private:
   const std::string password_;
   const std::string filename_;
   int context_ = 0;
+  bool open_ = false;
 };
 
 class SSHSession {
