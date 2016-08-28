@@ -357,5 +357,17 @@ namespace WWIV5TelnetServer.Properties {
                 this["badCountries"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("zz.countries.nerd.dk")]
+        public string dnsCC {
+            get {
+                return ((string)(this["dnsCC"]));
+            }
+            set {
+                this["dnsCC"] = value;
+            }
+        }
     }
 }

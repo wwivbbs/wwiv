@@ -61,6 +61,7 @@ namespace WWIV5TelnetServer
       cbPressEsc.Checked = Properties.Settings.Default.pressEsc;
       cbUseDbsRbl.Checked = Properties.Settings.Default.useDnsRbl;
       tbDbsRbl.Text = Properties.Settings.Default.dnsRbl;
+      tbDnsCC.Text = Properties.Settings.Default.dnsCC;
 
       if (Properties.Settings.Default.badCountries != null)
       {
@@ -115,11 +116,13 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.pressEsc = cbPressEsc.Checked;
         Properties.Settings.Default.useDnsRbl = cbUseDbsRbl.Checked;
         Properties.Settings.Default.dnsRbl = tbDbsRbl.Text;
+        Properties.Settings.Default.dnsCC = tbDnsCC.Text;
 
         if (Properties.Settings.Default.badCountries == null)
         {
           Properties.Settings.Default.badCountries = new StringCollection();
-        } else
+        }
+        else
         {
           Properties.Settings.Default.badCountries.Clear();
         }

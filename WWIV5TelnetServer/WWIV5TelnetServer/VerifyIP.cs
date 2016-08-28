@@ -2,6 +2,7 @@
 using System;
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -438,6 +439,48 @@ namespace WWIV5TelnetServer
     }
 
     #endregion
+  }
+
+  public class CountryCodeIP
+  {
+    private string ip_;
+    private string ccServer_;
+    public CountryCodeIP(string server, string ip)
+    {
+      ccServer_ = server;
+      ip_ = ip;
+    }
+
+    public int Get()
+    {
+      var exIp = new VerifyIP.exIPAddress(ip_);
+      if (!exIp.Valid)
+      {
+        // No idea, we don't have a valid IP.
+        return 0;
+      }
+      try
+      {
+        // Look up UP address from country code server.
+        IPHostEntry host = Dns.GetHostEntry(exIp.AsRevString + "." + ccServer_);
+        IPAddress[] addresses = host.AddressList;
+        if (addresses == null || addresses.Length == 0)
+        {
+          return 0;
+        }
+        var a = addresses[0];
+        var bytes = a.GetAddressBytes();
+        var countryCode = (bytes[2] * 256) + bytes[3];
+        return countryCode;
+      }
+      catch (System.Net.Sockets.SocketException dnserr)
+      {
+        // 11001 == // IP address not listed
+        Debug.WriteLineIf(dnserr.ErrorCode != 11001,
+            "Error querying country db: " + dnserr.ToString());
+      }
+      return 0;
+    }
   }
 
 

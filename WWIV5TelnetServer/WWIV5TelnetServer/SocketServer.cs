@@ -129,6 +129,34 @@ namespace WWIV5TelnetServer
       }
     }
 
+    private int GetCountryCode(string ip)
+    {
+      var server = Properties.Settings.Default.dnsCC;
+      CountryCodeIP cip = new CountryCodeIP(server, ip);
+      return cip.Get();
+    }
+
+    private bool IsCountryBanned(int country)
+    {
+      if (country == 0)
+      {
+        return false;
+      }
+      var countries = Properties.Settings.Default.badCountries;
+      foreach (var b in countries)
+      {
+        int current;
+        if (Int32.TryParse(b.ToString(), out current))
+        {
+          if (current != 0 && current == country)
+          {
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
     private void send(Socket socket, string s)
     {
       byte[] bytes = System.Text.Encoding.ASCII.GetBytes(s.ToCharArray());
@@ -207,6 +235,18 @@ namespace WWIV5TelnetServer
             SendBusyAndCloseSocket(socket);
             continue;
           }
+
+          int countryCode = GetCountryCode(ip);
+          OnStatusMessageUpdated("IP from country code:" + countryCode, 
+            StatusMessageEventArgs.MessageType.LogInfo);
+          if (IsCountryBanned(countryCode))
+          {
+            OnStatusMessageUpdated("Blocking connection from banned country: " + countryCode, 
+              StatusMessageEventArgs.MessageType.LogInfo);
+            SendBusyAndCloseSocket(socket);
+            continue;
+          }
+
 
           // Since we don't terminate SSH, we can't do this for SSH connections.
           if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))

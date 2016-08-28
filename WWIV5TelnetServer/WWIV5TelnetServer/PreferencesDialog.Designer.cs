@@ -84,11 +84,13 @@
       this.tbDbsRbl = new System.Windows.Forms.TextBox();
       this.linkBadIpFile = new System.Windows.Forms.LinkLabel();
       this.groupBox1 = new System.Windows.Forms.GroupBox();
-      this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+      this.layoutBlockCountries = new System.Windows.Forms.TableLayoutPanel();
       this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
       this.btnBadCountryAdd = new System.Windows.Forms.Button();
       this.btnBadCountryRemove = new System.Windows.Forms.Button();
       this.lbBadCountries = new System.Windows.Forms.ListBox();
+      this.label5 = new System.Windows.Forms.Label();
+      this.tbDnsCC = new System.Windows.Forms.TextBox();
       this.tabControlPreferences.SuspendLayout();
       this.generalTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.localNodeSpinner)).BeginInit();
@@ -107,7 +109,7 @@
       ((System.ComponentModel.ISupportInitialize)(this.banCount)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.banSeconds)).BeginInit();
       this.groupBox1.SuspendLayout();
-      this.tableLayoutPanel4.SuspendLayout();
+      this.layoutBlockCountries.SuspendLayout();
       this.flowLayoutPanel2.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -581,9 +583,9 @@
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 120F));
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 180F));
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-      this.tableLayoutPanel3.Size = new System.Drawing.Size(648, 367);
+      this.tableLayoutPanel3.Size = new System.Drawing.Size(648, 427);
       this.tableLayoutPanel3.TabIndex = 0;
       // 
       // cbPressEsc
@@ -745,29 +747,34 @@
       // groupBox1
       // 
       this.tableLayoutPanel3.SetColumnSpan(this.groupBox1, 2);
-      this.groupBox1.Controls.Add(this.tableLayoutPanel4);
+      this.groupBox1.Controls.Add(this.layoutBlockCountries);
       this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
       this.groupBox1.Location = new System.Drawing.Point(3, 210);
       this.groupBox1.Name = "groupBox1";
-      this.groupBox1.Size = new System.Drawing.Size(642, 114);
+      this.groupBox1.Size = new System.Drawing.Size(642, 174);
       this.groupBox1.TabIndex = 13;
       this.groupBox1.TabStop = false;
       this.groupBox1.Text = "Block Countries";
       // 
-      // tableLayoutPanel4
+      // layoutBlockCountries
       // 
-      this.tableLayoutPanel4.ColumnCount = 2;
-      this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-      this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-      this.tableLayoutPanel4.Controls.Add(this.flowLayoutPanel2, 1, 0);
-      this.tableLayoutPanel4.Controls.Add(this.lbBadCountries, 0, 0);
-      this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 16);
-      this.tableLayoutPanel4.Name = "tableLayoutPanel4";
-      this.tableLayoutPanel4.RowCount = 1;
-      this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
-      this.tableLayoutPanel4.Size = new System.Drawing.Size(636, 95);
-      this.tableLayoutPanel4.TabIndex = 0;
+      this.layoutBlockCountries.ColumnCount = 3;
+      this.layoutBlockCountries.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+      this.layoutBlockCountries.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+      this.layoutBlockCountries.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+      this.layoutBlockCountries.Controls.Add(this.label5, 0, 0);
+      this.layoutBlockCountries.Controls.Add(this.tbDnsCC, 1, 0);
+      this.layoutBlockCountries.Controls.Add(this.flowLayoutPanel2, 2, 1);
+      this.layoutBlockCountries.Controls.Add(this.lbBadCountries, 0, 1);
+      this.layoutBlockCountries.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.layoutBlockCountries.Location = new System.Drawing.Point(3, 16);
+      this.layoutBlockCountries.Name = "layoutBlockCountries";
+      this.layoutBlockCountries.RowCount = 3;
+      this.layoutBlockCountries.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+      this.layoutBlockCountries.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.layoutBlockCountries.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.layoutBlockCountries.Size = new System.Drawing.Size(636, 155);
+      this.layoutBlockCountries.TabIndex = 0;
       // 
       // flowLayoutPanel2
       // 
@@ -777,7 +784,7 @@
       this.flowLayoutPanel2.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
       this.flowLayoutPanel2.Location = new System.Drawing.Point(539, 3);
       this.flowLayoutPanel2.Name = "flowLayoutPanel2";
-      this.flowLayoutPanel2.Size = new System.Drawing.Size(94, 89);
+      this.flowLayoutPanel2.Size = new System.Drawing.Size(94, 123);
       this.flowLayoutPanel2.TabIndex = 0;
       // 
       // btnBadCountryAdd
@@ -802,12 +809,33 @@
       // 
       // lbBadCountries
       // 
+      this.layoutBlockCountries.SetColumnSpan(this.lbBadCountries, 2);
       this.lbBadCountries.Dock = System.Windows.Forms.DockStyle.Fill;
       this.lbBadCountries.FormattingEnabled = true;
       this.lbBadCountries.Location = new System.Drawing.Point(3, 3);
       this.lbBadCountries.Name = "lbBadCountries";
-      this.lbBadCountries.Size = new System.Drawing.Size(530, 89);
+      this.lbBadCountries.Size = new System.Drawing.Size(530, 123);
       this.lbBadCountries.TabIndex = 1;
+      // 
+      // label5
+      // 
+      this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.label5.AutoSize = true;
+      this.label5.Location = new System.Drawing.Point(13, 129);
+      this.label5.Name = "label5";
+      this.label5.Size = new System.Drawing.Size(84, 13);
+      this.label5.TabIndex = 14;
+      this.label5.Text = "DNS-CC Server:";
+      // 
+      // tbDnsCC
+      // 
+      this.tbDnsCC.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.layoutBlockCountries.SetColumnSpan(this.tbDnsCC, 2);
+      this.tbDnsCC.Location = new System.Drawing.Point(103, 132);
+      this.tbDnsCC.Name = "tbDnsCC";
+      this.tbDnsCC.Size = new System.Drawing.Size(530, 20);
+      this.tbDnsCC.TabIndex = 15;
       // 
       // PreferencesDialog
       // 
@@ -849,7 +877,8 @@
       ((System.ComponentModel.ISupportInitialize)(this.banCount)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.banSeconds)).EndInit();
       this.groupBox1.ResumeLayout(false);
-      this.tableLayoutPanel4.ResumeLayout(false);
+      this.layoutBlockCountries.ResumeLayout(false);
+      this.layoutBlockCountries.PerformLayout();
       this.flowLayoutPanel2.ResumeLayout(false);
       this.ResumeLayout(false);
 
@@ -912,10 +941,12 @@
     private System.Windows.Forms.TextBox tbDbsRbl;
     private System.Windows.Forms.LinkLabel linkBadIpFile;
     private System.Windows.Forms.GroupBox groupBox1;
-    private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
+    private System.Windows.Forms.TableLayoutPanel layoutBlockCountries;
     private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
     private System.Windows.Forms.Button btnBadCountryAdd;
     private System.Windows.Forms.Button btnBadCountryRemove;
     private System.Windows.Forms.ListBox lbBadCountries;
+    private System.Windows.Forms.Label label5;
+    private System.Windows.Forms.TextBox tbDnsCC;
   }
 }
