@@ -55,6 +55,9 @@
       this.stopTb = new System.Windows.Forms.ToolStripButton();
       this.prefsTb = new System.Windows.Forms.ToolStripButton();
       this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
+      this.runLocalTb = new System.Windows.Forms.ToolStripButton();
+      this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+      this.aboutTb = new System.Windows.Forms.ToolStripButton();
       this.menuStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
@@ -238,8 +241,6 @@
       // 
       // toolStripContainer1
       // 
-      this.toolStripContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
       // 
       // toolStripContainer1.BottomToolStripPanel
       // 
@@ -248,8 +249,14 @@
       // toolStripContainer1.ContentPanel
       // 
       this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(631, 7);
+      this.toolStripContainer1.LeftToolStripPanelVisible = false;
       this.toolStripContainer1.Location = new System.Drawing.Point(8, 8);
       this.toolStripContainer1.Name = "toolStripContainer1";
+      // 
+      // toolStripContainer1.RightToolStripPanel
+      // 
+      this.toolStripContainer1.RightToolStripPanel.MinimumSize = new System.Drawing.Size(200, 0);
+      this.toolStripContainer1.RightToolStripPanelVisible = false;
       this.toolStripContainer1.Size = new System.Drawing.Size(631, 56);
       this.toolStripContainer1.TabIndex = 2;
       this.toolStripContainer1.Text = "toolStripContainer1";
@@ -265,10 +272,14 @@
             this.startTb,
             this.stopTb,
             this.prefsTb,
-            this.toolStripSeparator3});
-      this.toolStrip1.Location = new System.Drawing.Point(3, 0);
+            this.toolStripSeparator3,
+            this.runLocalTb,
+            this.toolStripSeparator4,
+            this.aboutTb});
+      this.toolStrip1.Location = new System.Drawing.Point(0, 0);
       this.toolStrip1.Name = "toolStrip1";
-      this.toolStrip1.Size = new System.Drawing.Size(118, 25);
+      this.toolStrip1.Size = new System.Drawing.Size(631, 25);
+      this.toolStrip1.Stretch = true;
       this.toolStrip1.TabIndex = 0;
       // 
       // startTb
@@ -305,6 +316,31 @@
       // 
       this.toolStripSeparator3.Name = "toolStripSeparator3";
       this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
+      // 
+      // runLocalTb
+      // 
+      this.runLocalTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+      this.runLocalTb.Image = global::WWIV5TelnetServer.Properties.Resources.complete;
+      this.runLocalTb.ImageTransparentColor = System.Drawing.Color.Magenta;
+      this.runLocalTb.Name = "runLocalTb";
+      this.runLocalTb.Size = new System.Drawing.Size(23, 22);
+      this.runLocalTb.Text = "Run Local Node";
+      this.runLocalTb.Click += new System.EventHandler(this.runLocalTb_Click);
+      // 
+      // toolStripSeparator4
+      // 
+      this.toolStripSeparator4.Name = "toolStripSeparator4";
+      this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
+      // 
+      // aboutTb
+      // 
+      this.aboutTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+      this.aboutTb.Image = global::WWIV5TelnetServer.Properties.Resources.info;
+      this.aboutTb.ImageTransparentColor = System.Drawing.Color.Magenta;
+      this.aboutTb.Name = "aboutTb";
+      this.aboutTb.Size = new System.Drawing.Size(23, 22);
+      this.aboutTb.Text = "About";
+      this.aboutTb.Click += new System.EventHandler(this.aboutTb_Click);
       // 
       // MainForm
       // 
@@ -365,6 +401,9 @@
     private System.Windows.Forms.ToolStripButton stopTb;
     private System.Windows.Forms.ToolStripButton prefsTb;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+    private System.Windows.Forms.ToolStripButton runLocalTb;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+    private System.Windows.Forms.ToolStripButton aboutTb;
   }
 }
 

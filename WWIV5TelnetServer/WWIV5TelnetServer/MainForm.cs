@@ -33,7 +33,9 @@ namespace WWIV5TelnetServer
     {
       InitializeComponent();
       startToolStripMenuItem.Enabled = true;
+      startTb.Enabled = true;
       stopToolStripMenuItem.Enabled = false;
+      stopTb.Enabled = false;
       notifyIcon1.Visible = false;
 
       controller_ = new Controller(this, listBoxNodes, messages, notifyIcon1);
@@ -54,8 +56,11 @@ namespace WWIV5TelnetServer
       controller_.Start();
       
       startToolStripMenuItem.Enabled = false;
+      startTb.Enabled = false;
       stopToolStripMenuItem.Enabled = true;
+      stopTb.Enabled = true;
       preferencesToolStripMenuItem.Enabled = false;
+      prefsTb.Enabled = false;
       notifyIcon1.Text = "WWIV Server: Active";
     }
 
@@ -64,8 +69,11 @@ namespace WWIV5TelnetServer
       listBoxNodes.DataSource = null;
       controller_.Stop();
       startToolStripMenuItem.Enabled = true;
+      startTb.Enabled = true;
       stopToolStripMenuItem.Enabled = false;
+      stopTb.Enabled = false;
       preferencesToolStripMenuItem.Enabled = true;
+      prefsTb.Enabled = true;
     }
 
     private void preferencesToolStripMenuItem_Click(object sender, EventArgs e)
@@ -171,6 +179,16 @@ namespace WWIV5TelnetServer
     private void toolStripButton3_Click(object sender, EventArgs e)
     {
       preferencesToolStripMenuItem_Click(sender, e);
+    }
+
+    private void runLocalTb_Click(object sender, EventArgs e)
+    {
+      runLocalNodeToolStripMenuItem_Click(sender, e);
+    }
+
+    private void aboutTb_Click(object sender, EventArgs e)
+    {
+      aboutToolStripMenuItem_Click(sender, e);
     }
   }
 }
