@@ -82,6 +82,13 @@
       this.cbUseDbsRbl = new System.Windows.Forms.CheckBox();
       this.label4 = new System.Windows.Forms.Label();
       this.tbDbsRbl = new System.Windows.Forms.TextBox();
+      this.linkBadIpFile = new System.Windows.Forms.LinkLabel();
+      this.groupBox1 = new System.Windows.Forms.GroupBox();
+      this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+      this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
+      this.btnBadCountryAdd = new System.Windows.Forms.Button();
+      this.btnBadCountryRemove = new System.Windows.Forms.Button();
+      this.lbBadCountries = new System.Windows.Forms.ListBox();
       this.tabControlPreferences.SuspendLayout();
       this.generalTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.localNodeSpinner)).BeginInit();
@@ -99,13 +106,16 @@
       this.flowLayoutPanel1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.banCount)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.banSeconds)).BeginInit();
+      this.groupBox1.SuspendLayout();
+      this.tableLayoutPanel4.SuspendLayout();
+      this.flowLayoutPanel2.SuspendLayout();
       this.SuspendLayout();
       // 
       // okButton
       // 
       this.okButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.okButton.DialogResult = System.Windows.Forms.DialogResult.OK;
-      this.okButton.Location = new System.Drawing.Point(476, 329);
+      this.okButton.Location = new System.Drawing.Point(597, 476);
       this.okButton.Name = "okButton";
       this.okButton.Size = new System.Drawing.Size(75, 23);
       this.okButton.TabIndex = 0;
@@ -117,7 +127,7 @@
       // 
       this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
       this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-      this.cancelButton.Location = new System.Drawing.Point(395, 329);
+      this.cancelButton.Location = new System.Drawing.Point(516, 476);
       this.cancelButton.Name = "cancelButton";
       this.cancelButton.Size = new System.Drawing.Size(75, 23);
       this.cancelButton.TabIndex = 1;
@@ -137,7 +147,7 @@
       this.tabControlPreferences.Location = new System.Drawing.Point(12, 12);
       this.tabControlPreferences.Name = "tabControlPreferences";
       this.tabControlPreferences.SelectedIndex = 0;
-      this.tabControlPreferences.Size = new System.Drawing.Size(539, 311);
+      this.tabControlPreferences.Size = new System.Drawing.Size(660, 458);
       this.tabControlPreferences.TabIndex = 2;
       // 
       // generalTab
@@ -165,7 +175,7 @@
       this.generalTab.Location = new System.Drawing.Point(4, 22);
       this.generalTab.Name = "generalTab";
       this.generalTab.Padding = new System.Windows.Forms.Padding(3);
-      this.generalTab.Size = new System.Drawing.Size(531, 285);
+      this.generalTab.Size = new System.Drawing.Size(652, 432);
       this.generalTab.TabIndex = 0;
       this.generalTab.Text = "General";
       this.generalTab.UseVisualStyleBackColor = true;
@@ -385,7 +395,7 @@
       this.telnetTab.Location = new System.Drawing.Point(4, 22);
       this.telnetTab.Name = "telnetTab";
       this.telnetTab.Padding = new System.Windows.Forms.Padding(3);
-      this.telnetTab.Size = new System.Drawing.Size(531, 285);
+      this.telnetTab.Size = new System.Drawing.Size(652, 432);
       this.telnetTab.TabIndex = 1;
       this.telnetTab.Text = "Telnet";
       this.telnetTab.UseVisualStyleBackColor = true;
@@ -459,7 +469,7 @@
       this.sshTab.Controls.Add(this.tableLayoutPanel2);
       this.sshTab.Location = new System.Drawing.Point(4, 22);
       this.sshTab.Name = "sshTab";
-      this.sshTab.Size = new System.Drawing.Size(531, 285);
+      this.sshTab.Size = new System.Drawing.Size(652, 432);
       this.sshTab.TabIndex = 2;
       this.sshTab.Text = "SSH";
       this.sshTab.UseVisualStyleBackColor = true;
@@ -532,14 +542,18 @@
       this.blockTab.Controls.Add(this.tableLayoutPanel3);
       this.blockTab.Location = new System.Drawing.Point(4, 22);
       this.blockTab.Name = "blockTab";
-      this.blockTab.Size = new System.Drawing.Size(531, 285);
+      this.blockTab.Size = new System.Drawing.Size(652, 432);
       this.blockTab.TabIndex = 3;
       this.blockTab.Text = "Blocking";
       this.blockTab.UseVisualStyleBackColor = true;
       // 
       // tableLayoutPanel3
       // 
-      this.tableLayoutPanel3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.tableLayoutPanel3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.tableLayoutPanel3.AutoSize = true;
+      this.tableLayoutPanel3.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
       this.tableLayoutPanel3.ColumnCount = 2;
       this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
       this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
@@ -554,6 +568,8 @@
       this.tableLayoutPanel3.Controls.Add(this.cbUseDbsRbl, 0, 6);
       this.tableLayoutPanel3.Controls.Add(this.label4, 0, 7);
       this.tableLayoutPanel3.Controls.Add(this.tbDbsRbl, 1, 7);
+      this.tableLayoutPanel3.Controls.Add(this.linkBadIpFile, 1, 2);
+      this.tableLayoutPanel3.Controls.Add(this.groupBox1, 0, 8);
       this.tableLayoutPanel3.Location = new System.Drawing.Point(4, 4);
       this.tableLayoutPanel3.Name = "tableLayoutPanel3";
       this.tableLayoutPanel3.RowCount = 10;
@@ -565,9 +581,9 @@
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 120F));
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
-      this.tableLayoutPanel3.Size = new System.Drawing.Size(527, 278);
+      this.tableLayoutPanel3.Size = new System.Drawing.Size(648, 367);
       this.tableLayoutPanel3.TabIndex = 0;
       // 
       // cbPressEsc
@@ -602,7 +618,6 @@
       // useBadIp
       // 
       this.useBadIp.AutoSize = true;
-      this.tableLayoutPanel3.SetColumnSpan(this.useBadIp, 2);
       this.useBadIp.Location = new System.Drawing.Point(3, 52);
       this.useBadIp.Name = "useBadIp";
       this.useBadIp.Size = new System.Drawing.Size(104, 17);
@@ -613,7 +628,6 @@
       // useGoodIp
       // 
       this.useGoodIp.AutoSize = true;
-      this.tableLayoutPanel3.SetColumnSpan(this.useGoodIp, 2);
       this.useGoodIp.Location = new System.Drawing.Point(3, 75);
       this.useGoodIp.Name = "useGoodIp";
       this.useGoodIp.Size = new System.Drawing.Size(114, 17);
@@ -653,7 +667,7 @@
       this.flowLayoutPanel1.Location = new System.Drawing.Point(133, 118);
       this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
       this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-      this.flowLayoutPanel1.Size = new System.Drawing.Size(394, 40);
+      this.flowLayoutPanel1.Size = new System.Drawing.Size(515, 40);
       this.flowLayoutPanel1.TabIndex = 4;
       // 
       // banCount
@@ -715,8 +729,85 @@
             | System.Windows.Forms.AnchorStyles.Right)));
       this.tbDbsRbl.Location = new System.Drawing.Point(136, 184);
       this.tbDbsRbl.Name = "tbDbsRbl";
-      this.tbDbsRbl.Size = new System.Drawing.Size(388, 20);
+      this.tbDbsRbl.Size = new System.Drawing.Size(509, 20);
       this.tbDbsRbl.TabIndex = 9;
+      // 
+      // linkBadIpFile
+      // 
+      this.linkBadIpFile.AutoSize = true;
+      this.linkBadIpFile.Location = new System.Drawing.Point(136, 49);
+      this.linkBadIpFile.Name = "linkBadIpFile";
+      this.linkBadIpFile.Size = new System.Drawing.Size(52, 13);
+      this.linkBadIpFile.TabIndex = 12;
+      this.linkBadIpFile.TabStop = true;
+      this.linkBadIpFile.Text = "Open File";
+      // 
+      // groupBox1
+      // 
+      this.tableLayoutPanel3.SetColumnSpan(this.groupBox1, 2);
+      this.groupBox1.Controls.Add(this.tableLayoutPanel4);
+      this.groupBox1.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.groupBox1.Location = new System.Drawing.Point(3, 210);
+      this.groupBox1.Name = "groupBox1";
+      this.groupBox1.Size = new System.Drawing.Size(642, 114);
+      this.groupBox1.TabIndex = 13;
+      this.groupBox1.TabStop = false;
+      this.groupBox1.Text = "Block Countries";
+      // 
+      // tableLayoutPanel4
+      // 
+      this.tableLayoutPanel4.ColumnCount = 2;
+      this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+      this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 100F));
+      this.tableLayoutPanel4.Controls.Add(this.flowLayoutPanel2, 1, 0);
+      this.tableLayoutPanel4.Controls.Add(this.lbBadCountries, 0, 0);
+      this.tableLayoutPanel4.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.tableLayoutPanel4.Location = new System.Drawing.Point(3, 16);
+      this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+      this.tableLayoutPanel4.RowCount = 1;
+      this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+      this.tableLayoutPanel4.Size = new System.Drawing.Size(636, 95);
+      this.tableLayoutPanel4.TabIndex = 0;
+      // 
+      // flowLayoutPanel2
+      // 
+      this.flowLayoutPanel2.Controls.Add(this.btnBadCountryAdd);
+      this.flowLayoutPanel2.Controls.Add(this.btnBadCountryRemove);
+      this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.flowLayoutPanel2.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
+      this.flowLayoutPanel2.Location = new System.Drawing.Point(539, 3);
+      this.flowLayoutPanel2.Name = "flowLayoutPanel2";
+      this.flowLayoutPanel2.Size = new System.Drawing.Size(94, 89);
+      this.flowLayoutPanel2.TabIndex = 0;
+      // 
+      // btnBadCountryAdd
+      // 
+      this.btnBadCountryAdd.Location = new System.Drawing.Point(3, 3);
+      this.btnBadCountryAdd.Name = "btnBadCountryAdd";
+      this.btnBadCountryAdd.Size = new System.Drawing.Size(75, 23);
+      this.btnBadCountryAdd.TabIndex = 0;
+      this.btnBadCountryAdd.Text = "Add";
+      this.btnBadCountryAdd.UseVisualStyleBackColor = true;
+      this.btnBadCountryAdd.Click += new System.EventHandler(this.btnBadCountryAdd_Click);
+      // 
+      // btnBadCountryRemove
+      // 
+      this.btnBadCountryRemove.Location = new System.Drawing.Point(3, 32);
+      this.btnBadCountryRemove.Name = "btnBadCountryRemove";
+      this.btnBadCountryRemove.Size = new System.Drawing.Size(75, 23);
+      this.btnBadCountryRemove.TabIndex = 1;
+      this.btnBadCountryRemove.Text = "Remove";
+      this.btnBadCountryRemove.UseVisualStyleBackColor = true;
+      this.btnBadCountryRemove.Click += new System.EventHandler(this.btnBadCountryRemove_Click);
+      // 
+      // lbBadCountries
+      // 
+      this.lbBadCountries.Dock = System.Windows.Forms.DockStyle.Fill;
+      this.lbBadCountries.FormattingEnabled = true;
+      this.lbBadCountries.Location = new System.Drawing.Point(3, 3);
+      this.lbBadCountries.Name = "lbBadCountries";
+      this.lbBadCountries.Size = new System.Drawing.Size(530, 89);
+      this.lbBadCountries.TabIndex = 1;
       // 
       // PreferencesDialog
       // 
@@ -724,7 +815,7 @@
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.CancelButton = this.cancelButton;
-      this.ClientSize = new System.Drawing.Size(563, 364);
+      this.ClientSize = new System.Drawing.Size(684, 511);
       this.Controls.Add(this.tabControlPreferences);
       this.Controls.Add(this.cancelButton);
       this.Controls.Add(this.okButton);
@@ -749,6 +840,7 @@
       this.tableLayoutPanel2.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.sshSpinner)).EndInit();
       this.blockTab.ResumeLayout(false);
+      this.blockTab.PerformLayout();
       this.tableLayoutPanel3.ResumeLayout(false);
       this.tableLayoutPanel3.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.maxConcurrent)).EndInit();
@@ -756,6 +848,9 @@
       this.flowLayoutPanel1.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.banCount)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.banSeconds)).EndInit();
+      this.groupBox1.ResumeLayout(false);
+      this.tableLayoutPanel4.ResumeLayout(false);
+      this.flowLayoutPanel2.ResumeLayout(false);
       this.ResumeLayout(false);
 
         }
@@ -815,5 +910,12 @@
     private System.Windows.Forms.CheckBox cbUseDbsRbl;
     private System.Windows.Forms.Label label4;
     private System.Windows.Forms.TextBox tbDbsRbl;
+    private System.Windows.Forms.LinkLabel linkBadIpFile;
+    private System.Windows.Forms.GroupBox groupBox1;
+    private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
+    private System.Windows.Forms.FlowLayoutPanel flowLayoutPanel2;
+    private System.Windows.Forms.Button btnBadCountryAdd;
+    private System.Windows.Forms.Button btnBadCountryRemove;
+    private System.Windows.Forms.ListBox lbBadCountries;
   }
 }

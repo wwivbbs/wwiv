@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 using System;
+using System.Collections.Specialized;
 using System.IO;
 using System.Windows.Forms;
 
@@ -60,6 +61,14 @@ namespace WWIV5TelnetServer
       cbPressEsc.Checked = Properties.Settings.Default.pressEsc;
       cbUseDbsRbl.Checked = Properties.Settings.Default.useDnsRbl;
       tbDbsRbl.Text = Properties.Settings.Default.dnsRbl;
+
+      if (Properties.Settings.Default.badCountries != null)
+      {
+        foreach (var item in Properties.Settings.Default.badCountries)
+        {
+          lbBadCountries.Items.Add(item);
+        }
+      }
     }
 
     private void ok_Clicked(object sender, EventArgs e)
@@ -107,6 +116,18 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.useDnsRbl = cbUseDbsRbl.Checked;
         Properties.Settings.Default.dnsRbl = tbDbsRbl.Text;
 
+        if (Properties.Settings.Default.badCountries == null)
+        {
+          Properties.Settings.Default.badCountries = new StringCollection();
+        } else
+        {
+          Properties.Settings.Default.badCountries.Clear();
+        }
+        foreach (var item in lbBadCountries.Items)
+        {
+          Properties.Settings.Default.badCountries.Add(item.ToString());
+        }
+
         Properties.Settings.Default.Save();
       }
     }
@@ -137,5 +158,27 @@ namespace WWIV5TelnetServer
       }
     }
 
+    private void btnBadCountryAdd_Click(object sender, EventArgs e)
+    {
+      string s = "";
+      var result = InputBox.Show("Enter ISO-3166 Country Code: ", "The full list is available here: http://www.csharp-examples.net/inputbox/", ref s);
+      if (result == DialogResult.OK)
+      {
+        int code;
+        if (Int32.TryParse(s, out code))
+        {
+          lbBadCountries.Items.Add(s);
+        }
+      }
+    }
+
+    private void btnBadCountryRemove_Click(object sender, EventArgs e)
+    {
+      var selected = lbBadCountries.SelectedItem;
+      if (selected != null)
+      {
+        lbBadCountries.Items.Remove(selected);
+      }
+    }
   }
 }

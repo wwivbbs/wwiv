@@ -83,5 +83,8 @@
     <Setting Name="dnsRbl" Type="System.String" Scope="User">
       <Value Profile="(Default)">xbl.spamhaus.org</Value>
     </Setting>
+    <Setting Name="badCountries" Type="System.Collections.Specialized.StringCollection" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>

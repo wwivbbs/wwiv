@@ -79,6 +79,7 @@
     <Compile Include="CommandLineBuilder.cs" />
     <Compile Include="Controller.cs" />
     <Compile Include="IniReader.cs" />
+    <Compile Include="InputBox.cs" />
     <Compile Include="Launcher.cs" />
     <Compile Include="LogForm.cs">
       <SubType>Form</SubType>
