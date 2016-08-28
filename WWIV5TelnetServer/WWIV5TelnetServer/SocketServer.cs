@@ -204,7 +204,8 @@ namespace WWIV5TelnetServer
             continue;
           }
 
-          if (Properties.Settings.Default.pressEsc)
+          // Since we don't terminate SSH, we can't do this for SSH connections.
+          if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))
           {
             send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
             int numEscs = 0;
