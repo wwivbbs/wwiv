@@ -322,5 +322,29 @@ namespace WWIV5TelnetServer.Properties {
                 this["pressEsc"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool useDnsRbl {
+            get {
+                return ((bool)(this["useDnsRbl"]));
+            }
+            set {
+                this["useDnsRbl"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("xbl.spamhaus.org")]
+        public string dnsRbl {
+            get {
+                return ((string)(this["dnsRbl"]));
+            }
+            set {
+                this["dnsRbl"] = value;
+            }
+        }
     }
 }

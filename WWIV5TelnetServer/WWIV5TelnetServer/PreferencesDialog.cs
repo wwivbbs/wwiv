@@ -58,6 +58,8 @@ namespace WWIV5TelnetServer
       banCount.Value = Properties.Settings.Default.banSessions;
       banSeconds.Value = Properties.Settings.Default.banSeconds;
       cbPressEsc.Checked = Properties.Settings.Default.pressEsc;
+      cbUseDbsRbl.Checked = Properties.Settings.Default.useDnsRbl;
+      tbDbsRbl.Text = Properties.Settings.Default.dnsRbl;
     }
 
     private void ok_Clicked(object sender, EventArgs e)
@@ -102,6 +104,9 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.banSessions = Convert.ToInt32(banCount.Value);
         Properties.Settings.Default.banSeconds = Convert.ToInt32(banSeconds.Value);
         Properties.Settings.Default.pressEsc = cbPressEsc.Checked;
+        Properties.Settings.Default.useDnsRbl = cbUseDbsRbl.Checked;
+        Properties.Settings.Default.dnsRbl = tbDbsRbl.Text;
+
         Properties.Settings.Default.Save();
       }
     }
@@ -132,19 +137,5 @@ namespace WWIV5TelnetServer
       }
     }
 
-    private void tableLayoutPanel3_Paint(object sender, PaintEventArgs e)
-    {
-
-    }
-
-    private void checkBox2_CheckedChanged(object sender, EventArgs e)
-    {
-
-    }
-
-    private void label2_Click(object sender, EventArgs e)
-    {
-
-    }
   }
 }

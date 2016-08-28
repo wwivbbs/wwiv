@@ -33,6 +33,7 @@
       this.cancelButton = new System.Windows.Forms.Button();
       this.tabControlPreferences = new System.Windows.Forms.TabControl();
       this.generalTab = new System.Windows.Forms.TabPage();
+      this.buttonBrowseHomeDir = new System.Windows.Forms.Button();
       this.checkUpdates = new System.Windows.Forms.ComboBox();
       this.label1 = new System.Windows.Forms.Label();
       this.launchNetworkCheckBox = new System.Windows.Forms.CheckBox();
@@ -59,26 +60,28 @@
       this.labelPort = new System.Windows.Forms.Label();
       this.labelParameters = new System.Windows.Forms.Label();
       this.sshTab = new System.Windows.Forms.TabPage();
-      this.sshSpinner = new System.Windows.Forms.NumericUpDown();
-      this.labelSSH = new System.Windows.Forms.Label();
       this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
-      this.labelParameters2 = new System.Windows.Forms.Label();
       this.parametersField2 = new System.Windows.Forms.TextBox();
-      this.buttonBrowseHomeDir = new System.Windows.Forms.Button();
+      this.labelParameters2 = new System.Windows.Forms.Label();
+      this.labelSSH = new System.Windows.Forms.Label();
+      this.sshSpinner = new System.Windows.Forms.NumericUpDown();
       this.blockTab = new System.Windows.Forms.TabPage();
       this.tableLayoutPanel3 = new System.Windows.Forms.TableLayoutPanel();
-      this.useBadIp = new System.Windows.Forms.CheckBox();
-      this.autoBan = new System.Windows.Forms.CheckBox();
-      this.useGoodIp = new System.Windows.Forms.CheckBox();
+      this.cbPressEsc = new System.Windows.Forms.CheckBox();
       this.lblConcurrent = new System.Windows.Forms.Label();
+      this.maxConcurrent = new System.Windows.Forms.NumericUpDown();
+      this.useBadIp = new System.Windows.Forms.CheckBox();
+      this.useGoodIp = new System.Windows.Forms.CheckBox();
+      this.autoBan = new System.Windows.Forms.CheckBox();
       this.lblAutoBlacklist = new System.Windows.Forms.Label();
       this.flowLayoutPanel1 = new System.Windows.Forms.FlowLayoutPanel();
       this.banCount = new System.Windows.Forms.NumericUpDown();
       this.label2 = new System.Windows.Forms.Label();
       this.banSeconds = new System.Windows.Forms.NumericUpDown();
       this.label3 = new System.Windows.Forms.Label();
-      this.maxConcurrent = new System.Windows.Forms.NumericUpDown();
-      this.cbPressEsc = new System.Windows.Forms.CheckBox();
+      this.cbUseDbsRbl = new System.Windows.Forms.CheckBox();
+      this.label4 = new System.Windows.Forms.Label();
+      this.tbDbsRbl = new System.Windows.Forms.TextBox();
       this.tabControlPreferences.SuspendLayout();
       this.generalTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.localNodeSpinner)).BeginInit();
@@ -88,14 +91,14 @@
       this.tableLayoutPanel1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.portSpinner)).BeginInit();
       this.sshTab.SuspendLayout();
-      ((System.ComponentModel.ISupportInitialize)(this.sshSpinner)).BeginInit();
       this.tableLayoutPanel2.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.sshSpinner)).BeginInit();
       this.blockTab.SuspendLayout();
       this.tableLayoutPanel3.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.maxConcurrent)).BeginInit();
       this.flowLayoutPanel1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.banCount)).BeginInit();
       ((System.ComponentModel.ISupportInitialize)(this.banSeconds)).BeginInit();
-      ((System.ComponentModel.ISupportInitialize)(this.maxConcurrent)).BeginInit();
       this.SuspendLayout();
       // 
       // okButton
@@ -166,6 +169,16 @@
       this.generalTab.TabIndex = 0;
       this.generalTab.Text = "General";
       this.generalTab.UseVisualStyleBackColor = true;
+      // 
+      // buttonBrowseHomeDir
+      // 
+      this.buttonBrowseHomeDir.Location = new System.Drawing.Point(439, 136);
+      this.buttonBrowseHomeDir.Name = "buttonBrowseHomeDir";
+      this.buttonBrowseHomeDir.Size = new System.Drawing.Size(75, 23);
+      this.buttonBrowseHomeDir.TabIndex = 24;
+      this.buttonBrowseHomeDir.Text = "Browse";
+      this.buttonBrowseHomeDir.UseVisualStyleBackColor = true;
+      this.buttonBrowseHomeDir.Click += new System.EventHandler(this.buttonBrowseHomeDir_Click);
       // 
       // checkUpdates
       // 
@@ -451,33 +464,6 @@
       this.sshTab.Text = "SSH";
       this.sshTab.UseVisualStyleBackColor = true;
       // 
-      // sshSpinner
-      // 
-      this.sshSpinner.Location = new System.Drawing.Point(102, 3);
-      this.sshSpinner.Maximum = new decimal(new int[] {
-            65536,
-            0,
-            0,
-            0});
-      this.sshSpinner.Name = "sshSpinner";
-      this.sshSpinner.Size = new System.Drawing.Size(120, 20);
-      this.sshSpinner.TabIndex = 27;
-      this.sshSpinner.Value = new decimal(new int[] {
-            22,
-            0,
-            0,
-            0});
-      // 
-      // labelSSH
-      // 
-      this.labelSSH.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.labelSSH.AutoSize = true;
-      this.labelSSH.Location = new System.Drawing.Point(3, 0);
-      this.labelSSH.Name = "labelSSH";
-      this.labelSSH.Size = new System.Drawing.Size(93, 13);
-      this.labelSSH.TabIndex = 26;
-      this.labelSSH.Text = "SSH TCP/IP Port:";
-      // 
       // tableLayoutPanel2
       // 
       this.tableLayoutPanel2.ColumnCount = 2;
@@ -495,6 +481,14 @@
       this.tableLayoutPanel2.Size = new System.Drawing.Size(680, 59);
       this.tableLayoutPanel2.TabIndex = 28;
       // 
+      // parametersField2
+      // 
+      this.parametersField2.Location = new System.Drawing.Point(102, 32);
+      this.parametersField2.Name = "parametersField2";
+      this.parametersField2.Size = new System.Drawing.Size(466, 20);
+      this.parametersField2.TabIndex = 29;
+      this.parametersField2.Text = "-XS -H@H -N@N";
+      // 
       // labelParameters2
       // 
       this.labelParameters2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
@@ -506,23 +500,32 @@
       this.labelParameters2.Text = "SSH Parameters:";
       this.labelParameters2.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
       // 
-      // parametersField2
+      // labelSSH
       // 
-      this.parametersField2.Location = new System.Drawing.Point(102, 32);
-      this.parametersField2.Name = "parametersField2";
-      this.parametersField2.Size = new System.Drawing.Size(466, 20);
-      this.parametersField2.TabIndex = 29;
-      this.parametersField2.Text = "-XS -H@H -N@N";
+      this.labelSSH.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.labelSSH.AutoSize = true;
+      this.labelSSH.Location = new System.Drawing.Point(3, 0);
+      this.labelSSH.Name = "labelSSH";
+      this.labelSSH.Size = new System.Drawing.Size(93, 13);
+      this.labelSSH.TabIndex = 26;
+      this.labelSSH.Text = "SSH TCP/IP Port:";
       // 
-      // buttonBrowseHomeDir
+      // sshSpinner
       // 
-      this.buttonBrowseHomeDir.Location = new System.Drawing.Point(439, 136);
-      this.buttonBrowseHomeDir.Name = "buttonBrowseHomeDir";
-      this.buttonBrowseHomeDir.Size = new System.Drawing.Size(75, 23);
-      this.buttonBrowseHomeDir.TabIndex = 24;
-      this.buttonBrowseHomeDir.Text = "Browse";
-      this.buttonBrowseHomeDir.UseVisualStyleBackColor = true;
-      this.buttonBrowseHomeDir.Click += new System.EventHandler(this.buttonBrowseHomeDir_Click);
+      this.sshSpinner.Location = new System.Drawing.Point(102, 3);
+      this.sshSpinner.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
+      this.sshSpinner.Name = "sshSpinner";
+      this.sshSpinner.Size = new System.Drawing.Size(120, 20);
+      this.sshSpinner.TabIndex = 27;
+      this.sshSpinner.Value = new decimal(new int[] {
+            22,
+            0,
+            0,
+            0});
       // 
       // blockTab
       // 
@@ -536,100 +539,121 @@
       // 
       // tableLayoutPanel3
       // 
-      this.tableLayoutPanel3.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
+      this.tableLayoutPanel3.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.tableLayoutPanel3.ColumnCount = 2;
       this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
       this.tableLayoutPanel3.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
-      this.tableLayoutPanel3.Controls.Add(this.lblAutoBlacklist, 0, 4);
-      this.tableLayoutPanel3.Controls.Add(this.flowLayoutPanel1, 1, 4);
-      this.tableLayoutPanel3.Controls.Add(this.lblConcurrent, 0, 2);
-      this.tableLayoutPanel3.Controls.Add(this.maxConcurrent, 1, 2);
-      this.tableLayoutPanel3.Controls.Add(this.useBadIp, 0, 0);
-      this.tableLayoutPanel3.Controls.Add(this.useGoodIp, 0, 1);
-      this.tableLayoutPanel3.Controls.Add(this.cbPressEsc, 0, 5);
-      this.tableLayoutPanel3.Controls.Add(this.autoBan, 0, 3);
+      this.tableLayoutPanel3.Controls.Add(this.cbPressEsc, 0, 0);
+      this.tableLayoutPanel3.Controls.Add(this.lblConcurrent, 0, 1);
+      this.tableLayoutPanel3.Controls.Add(this.maxConcurrent, 1, 1);
+      this.tableLayoutPanel3.Controls.Add(this.useBadIp, 0, 2);
+      this.tableLayoutPanel3.Controls.Add(this.useGoodIp, 0, 3);
+      this.tableLayoutPanel3.Controls.Add(this.autoBan, 0, 4);
+      this.tableLayoutPanel3.Controls.Add(this.lblAutoBlacklist, 0, 5);
+      this.tableLayoutPanel3.Controls.Add(this.flowLayoutPanel1, 1, 5);
+      this.tableLayoutPanel3.Controls.Add(this.cbUseDbsRbl, 0, 6);
+      this.tableLayoutPanel3.Controls.Add(this.label4, 0, 7);
+      this.tableLayoutPanel3.Controls.Add(this.tbDbsRbl, 1, 7);
       this.tableLayoutPanel3.Location = new System.Drawing.Point(4, 4);
       this.tableLayoutPanel3.Name = "tableLayoutPanel3";
-      this.tableLayoutPanel3.RowCount = 6;
+      this.tableLayoutPanel3.RowCount = 10;
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
       this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 100F));
-      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
+      this.tableLayoutPanel3.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 40F));
       this.tableLayoutPanel3.Size = new System.Drawing.Size(527, 278);
       this.tableLayoutPanel3.TabIndex = 0;
-      this.tableLayoutPanel3.Paint += new System.Windows.Forms.PaintEventHandler(this.tableLayoutPanel3_Paint);
       // 
-      // useBadIp
+      // cbPressEsc
       // 
-      this.useBadIp.AutoSize = true;
-      this.tableLayoutPanel3.SetColumnSpan(this.useBadIp, 2);
-      this.useBadIp.Location = new System.Drawing.Point(3, 3);
-      this.useBadIp.Name = "useBadIp";
-      this.useBadIp.Size = new System.Drawing.Size(104, 17);
-      this.useBadIp.TabIndex = 0;
-      this.useBadIp.Text = "Use BADIP.TXT";
-      this.useBadIp.UseVisualStyleBackColor = true;
-      // 
-      // autoBan
-      // 
-      this.autoBan.AutoSize = true;
-      this.tableLayoutPanel3.SetColumnSpan(this.autoBan, 2);
-      this.autoBan.Location = new System.Drawing.Point(3, 75);
-      this.autoBan.Name = "autoBan";
-      this.autoBan.Size = new System.Drawing.Size(141, 17);
-      this.autoBan.TabIndex = 1;
-      this.autoBan.Text = "Auto Add to BADIP.TXT";
-      this.autoBan.UseVisualStyleBackColor = true;
-      this.autoBan.CheckedChanged += new System.EventHandler(this.checkBox2_CheckedChanged);
-      // 
-      // useGoodIp
-      // 
-      this.useGoodIp.AutoSize = true;
-      this.tableLayoutPanel3.SetColumnSpan(this.useGoodIp, 2);
-      this.useGoodIp.Location = new System.Drawing.Point(3, 26);
-      this.useGoodIp.Name = "useGoodIp";
-      this.useGoodIp.Size = new System.Drawing.Size(114, 17);
-      this.useGoodIp.TabIndex = 1;
-      this.useGoodIp.Text = "Use GOODIP.TXT";
-      this.useGoodIp.UseVisualStyleBackColor = true;
+      this.cbPressEsc.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.cbPressEsc, 2);
+      this.cbPressEsc.Location = new System.Drawing.Point(3, 3);
+      this.cbPressEsc.Name = "cbPressEsc";
+      this.cbPressEsc.Size = new System.Drawing.Size(200, 17);
+      this.cbPressEsc.TabIndex = 6;
+      this.cbPressEsc.Text = "Use \"Press <ESC> Twice for BBS...\"";
+      this.cbPressEsc.UseVisualStyleBackColor = true;
       // 
       // lblConcurrent
       // 
       this.lblConcurrent.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
       this.lblConcurrent.AutoSize = true;
-      this.lblConcurrent.Location = new System.Drawing.Point(3, 46);
+      this.lblConcurrent.Location = new System.Drawing.Point(3, 23);
       this.lblConcurrent.Name = "lblConcurrent";
       this.lblConcurrent.Size = new System.Drawing.Size(127, 13);
       this.lblConcurrent.TabIndex = 2;
       this.lblConcurrent.Text = "Max concurrent sessions:";
-      this.lblConcurrent.Click += new System.EventHandler(this.label2_Click);
+      // 
+      // maxConcurrent
+      // 
+      this.maxConcurrent.Location = new System.Drawing.Point(136, 26);
+      this.maxConcurrent.Name = "maxConcurrent";
+      this.maxConcurrent.Size = new System.Drawing.Size(120, 20);
+      this.maxConcurrent.TabIndex = 5;
+      // 
+      // useBadIp
+      // 
+      this.useBadIp.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.useBadIp, 2);
+      this.useBadIp.Location = new System.Drawing.Point(3, 52);
+      this.useBadIp.Name = "useBadIp";
+      this.useBadIp.Size = new System.Drawing.Size(104, 17);
+      this.useBadIp.TabIndex = 0;
+      this.useBadIp.Text = "Use BADIP.TXT";
+      this.useBadIp.UseVisualStyleBackColor = true;
+      // 
+      // useGoodIp
+      // 
+      this.useGoodIp.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.useGoodIp, 2);
+      this.useGoodIp.Location = new System.Drawing.Point(3, 75);
+      this.useGoodIp.Name = "useGoodIp";
+      this.useGoodIp.Size = new System.Drawing.Size(114, 17);
+      this.useGoodIp.TabIndex = 1;
+      this.useGoodIp.Text = "Use GOODIP.TXT";
+      this.useGoodIp.UseVisualStyleBackColor = true;
+      // 
+      // autoBan
+      // 
+      this.autoBan.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.autoBan, 2);
+      this.autoBan.Location = new System.Drawing.Point(3, 98);
+      this.autoBan.Name = "autoBan";
+      this.autoBan.Size = new System.Drawing.Size(141, 17);
+      this.autoBan.TabIndex = 1;
+      this.autoBan.Text = "Auto Add to BADIP.TXT";
+      this.autoBan.UseVisualStyleBackColor = true;
       // 
       // lblAutoBlacklist
       // 
       this.lblAutoBlacklist.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
       this.lblAutoBlacklist.AutoSize = true;
-      this.lblAutoBlacklist.Location = new System.Drawing.Point(34, 95);
+      this.lblAutoBlacklist.Location = new System.Drawing.Point(31, 118);
       this.lblAutoBlacklist.Name = "lblAutoBlacklist";
-      this.lblAutoBlacklist.Size = new System.Drawing.Size(96, 13);
+      this.lblAutoBlacklist.Size = new System.Drawing.Size(99, 13);
       this.lblAutoBlacklist.TabIndex = 3;
-      this.lblAutoBlacklist.Text = "Auto Blacklist After";
+      this.lblAutoBlacklist.Text = "Auto Blacklist After:";
       // 
       // flowLayoutPanel1
       // 
+      this.flowLayoutPanel1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.flowLayoutPanel1.Controls.Add(this.banCount);
       this.flowLayoutPanel1.Controls.Add(this.label2);
       this.flowLayoutPanel1.Controls.Add(this.banSeconds);
       this.flowLayoutPanel1.Controls.Add(this.label3);
-      this.flowLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-      this.flowLayoutPanel1.Location = new System.Drawing.Point(136, 98);
+      this.flowLayoutPanel1.Location = new System.Drawing.Point(133, 118);
+      this.flowLayoutPanel1.Margin = new System.Windows.Forms.Padding(0);
       this.flowLayoutPanel1.Name = "flowLayoutPanel1";
-      this.flowLayoutPanel1.Size = new System.Drawing.Size(388, 94);
+      this.flowLayoutPanel1.Size = new System.Drawing.Size(394, 40);
       this.flowLayoutPanel1.TabIndex = 4;
       // 
       // banCount
@@ -664,23 +688,35 @@
       this.label3.TabIndex = 3;
       this.label3.Text = "seconds";
       // 
-      // maxConcurrent
+      // cbUseDbsRbl
       // 
-      this.maxConcurrent.Location = new System.Drawing.Point(136, 49);
-      this.maxConcurrent.Name = "maxConcurrent";
-      this.maxConcurrent.Size = new System.Drawing.Size(120, 20);
-      this.maxConcurrent.TabIndex = 5;
+      this.cbUseDbsRbl.AutoSize = true;
+      this.tableLayoutPanel3.SetColumnSpan(this.cbUseDbsRbl, 2);
+      this.cbUseDbsRbl.Location = new System.Drawing.Point(3, 161);
+      this.cbUseDbsRbl.Name = "cbUseDbsRbl";
+      this.cbUseDbsRbl.Size = new System.Drawing.Size(171, 17);
+      this.cbUseDbsRbl.TabIndex = 7;
+      this.cbUseDbsRbl.Text = "Use DNS-RBL Blacklist Server";
+      this.cbUseDbsRbl.UseVisualStyleBackColor = true;
       // 
-      // cbPressEsc
+      // label4
       // 
-      this.cbPressEsc.AutoSize = true;
-      this.tableLayoutPanel3.SetColumnSpan(this.cbPressEsc, 2);
-      this.cbPressEsc.Location = new System.Drawing.Point(3, 198);
-      this.cbPressEsc.Name = "cbPressEsc";
-      this.cbPressEsc.Size = new System.Drawing.Size(200, 17);
-      this.cbPressEsc.TabIndex = 6;
-      this.cbPressEsc.Text = "Use \"Press <ESC> Twice for BBS...\"";
-      this.cbPressEsc.UseVisualStyleBackColor = true;
+      this.label4.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.label4.AutoSize = true;
+      this.label4.Location = new System.Drawing.Point(39, 181);
+      this.label4.Name = "label4";
+      this.label4.Size = new System.Drawing.Size(91, 13);
+      this.label4.TabIndex = 8;
+      this.label4.Text = "DNS-RBL Server:";
+      // 
+      // tbDbsRbl
+      // 
+      this.tbDbsRbl.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.tbDbsRbl.Location = new System.Drawing.Point(136, 184);
+      this.tbDbsRbl.Name = "tbDbsRbl";
+      this.tbDbsRbl.Size = new System.Drawing.Size(388, 20);
+      this.tbDbsRbl.TabIndex = 9;
       // 
       // PreferencesDialog
       // 
@@ -709,17 +745,17 @@
       this.tableLayoutPanel1.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.portSpinner)).EndInit();
       this.sshTab.ResumeLayout(false);
-      ((System.ComponentModel.ISupportInitialize)(this.sshSpinner)).EndInit();
       this.tableLayoutPanel2.ResumeLayout(false);
       this.tableLayoutPanel2.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.sshSpinner)).EndInit();
       this.blockTab.ResumeLayout(false);
       this.tableLayoutPanel3.ResumeLayout(false);
       this.tableLayoutPanel3.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.maxConcurrent)).EndInit();
       this.flowLayoutPanel1.ResumeLayout(false);
       this.flowLayoutPanel1.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.banCount)).EndInit();
       ((System.ComponentModel.ISupportInitialize)(this.banSeconds)).EndInit();
-      ((System.ComponentModel.ISupportInitialize)(this.maxConcurrent)).EndInit();
       this.ResumeLayout(false);
 
         }
@@ -776,5 +812,8 @@
     private System.Windows.Forms.Label label3;
     private System.Windows.Forms.NumericUpDown maxConcurrent;
     private System.Windows.Forms.CheckBox cbPressEsc;
+    private System.Windows.Forms.CheckBox cbUseDbsRbl;
+    private System.Windows.Forms.Label label4;
+    private System.Windows.Forms.TextBox tbDbsRbl;
   }
 }

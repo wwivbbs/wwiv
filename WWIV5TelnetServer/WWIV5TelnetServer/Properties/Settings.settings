@@ -77,5 +77,11 @@
     <Setting Name="pressEsc" Type="System.Boolean" Scope="User">
       <Value Profile="(Default)">True</Value>
     </Setting>
+    <Setting Name="useDnsRbl" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="dnsRbl" Type="System.String" Scope="User">
+      <Value Profile="(Default)">xbl.spamhaus.org</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

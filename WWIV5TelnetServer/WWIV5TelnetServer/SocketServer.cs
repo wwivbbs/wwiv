@@ -55,8 +55,12 @@ namespace WWIV5TelnetServer
       var homeDirectory = Properties.Settings.Default.homeDirectory;
       var badip_file = Path.Combine(homeDirectory, "badip.txt");
       var goodip_file = Path.Combine(homeDirectory, "goodip.txt");
-      var empty = new List<string>();
-      this.bl = new Blacklist(badip_file, goodip_file, empty);
+      var rbl = new List<string>();
+      if (Properties.Settings.Default.useDnsRbl)
+      {
+        rbl.Add(Properties.Settings.Default.dnsRbl);
+      }
+      this.bl = new Blacklist(badip_file, goodip_file, rbl);
       this.connections = new Dictionary<string, List<DateTime>>();
     }
 
