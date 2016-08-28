@@ -157,5 +157,20 @@ namespace WWIV5TelnetServer
     {
       controller_.ShowLogs();
     }
+
+    private void toolStripButton1_Click(object sender, EventArgs e)
+    {
+      startToolStripMenuItem_Click(sender, e);
+    }
+
+    private void toolStripButton2_Click(object sender, EventArgs e)
+    {
+      stopToolStripMenuItem_Click(sender, e);
+    }
+
+    private void toolStripButton3_Click(object sender, EventArgs e)
+    {
+      preferencesToolStripMenuItem_Click(sender, e);
+    }
   }
 }
