@@ -54,9 +54,6 @@
       this.stopTb = new System.Windows.Forms.ToolStripButton();
       this.prefsTb = new System.Windows.Forms.ToolStripButton();
       this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-      this.runLocalTb = new System.Windows.Forms.ToolStripButton();
-      this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-      this.aboutTb = new System.Windows.Forms.ToolStripButton();
       this.statusStrip1 = new System.Windows.Forms.StatusStrip();
       this.menuStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
@@ -74,7 +71,7 @@
             this.helpToolStripMenuItem});
       this.menuStrip1.Location = new System.Drawing.Point(0, 1);
       this.menuStrip1.Name = "menuStrip1";
-      this.menuStrip1.Size = new System.Drawing.Size(195, 24);
+      this.menuStrip1.Size = new System.Drawing.Size(103, 24);
       this.menuStrip1.TabIndex = 0;
       this.menuStrip1.Text = "menuStrip1";
       // 
@@ -94,6 +91,7 @@
       // 
       // startToolStripMenuItem
       // 
+      this.startToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.StartWithoutDebug_16x;
       this.startToolStripMenuItem.Name = "startToolStripMenuItem";
       this.startToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.startToolStripMenuItem.Text = "Start";
@@ -101,6 +99,7 @@
       // 
       // stopToolStripMenuItem
       // 
+      this.stopToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.Stop_16x;
       this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
       this.stopToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.stopToolStripMenuItem.Text = "Stop";
@@ -109,6 +108,7 @@
       // preferencesToolStripMenuItem
       // 
       this.preferencesToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlLight;
+      this.preferencesToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.PropertyIcon;
       this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
       this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.preferencesToolStripMenuItem.Text = "Preferences";
@@ -237,19 +237,17 @@
             this.startTb,
             this.stopTb,
             this.prefsTb,
-            this.toolStripSeparator3,
-            this.runLocalTb,
-            this.toolStripSeparator4,
-            this.aboutTb});
+            this.toolStripSeparator3});
       this.toolStrip1.Location = new System.Drawing.Point(217, 1);
       this.toolStrip1.Name = "toolStrip1";
-      this.toolStrip1.Size = new System.Drawing.Size(139, 25);
+      this.toolStrip1.Size = new System.Drawing.Size(118, 25);
       this.toolStrip1.Stretch = true;
       this.toolStrip1.TabIndex = 0;
       // 
       // startTb
       // 
       this.startTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+      this.startTb.Image = global::WWIV5TelnetServer.Properties.Resources.StartWithoutDebug_16x;
       this.startTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.startTb.Name = "startTb";
       this.startTb.Size = new System.Drawing.Size(23, 22);
@@ -259,6 +257,7 @@
       // stopTb
       // 
       this.stopTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+      this.stopTb.Image = global::WWIV5TelnetServer.Properties.Resources.Stop_16x;
       this.stopTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.stopTb.Name = "stopTb";
       this.stopTb.Size = new System.Drawing.Size(23, 22);
@@ -268,6 +267,7 @@
       // prefsTb
       // 
       this.prefsTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+      this.prefsTb.Image = global::WWIV5TelnetServer.Properties.Resources.PropertyIcon;
       this.prefsTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.prefsTb.Name = "prefsTb";
       this.prefsTb.Size = new System.Drawing.Size(23, 22);
@@ -278,29 +278,6 @@
       // 
       this.toolStripSeparator3.Name = "toolStripSeparator3";
       this.toolStripSeparator3.Size = new System.Drawing.Size(6, 25);
-      // 
-      // runLocalTb
-      // 
-      this.runLocalTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-      this.runLocalTb.ImageTransparentColor = System.Drawing.Color.Magenta;
-      this.runLocalTb.Name = "runLocalTb";
-      this.runLocalTb.Size = new System.Drawing.Size(23, 22);
-      this.runLocalTb.Text = "Run Local Node";
-      this.runLocalTb.Click += new System.EventHandler(this.runLocalTb_Click);
-      // 
-      // toolStripSeparator4
-      // 
-      this.toolStripSeparator4.Name = "toolStripSeparator4";
-      this.toolStripSeparator4.Size = new System.Drawing.Size(6, 25);
-      // 
-      // aboutTb
-      // 
-      this.aboutTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-      this.aboutTb.ImageTransparentColor = System.Drawing.Color.Magenta;
-      this.aboutTb.Name = "aboutTb";
-      this.aboutTb.Size = new System.Drawing.Size(23, 22);
-      this.aboutTb.Text = "About";
-      this.aboutTb.Click += new System.EventHandler(this.aboutTb_Click);
       // 
       // statusStrip1
       // 
@@ -365,9 +342,6 @@
     private System.Windows.Forms.ToolStripButton stopTb;
     private System.Windows.Forms.ToolStripButton prefsTb;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-    private System.Windows.Forms.ToolStripButton runLocalTb;
-    private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
-    private System.Windows.Forms.ToolStripButton aboutTb;
     private System.Windows.Forms.StatusStrip statusStrip1;
   }
 }
