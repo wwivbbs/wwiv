@@ -226,17 +226,18 @@ namespace WWIV5TelnetServer
           {
             // Add it to the blacklist file.
             BlackListIP(socket, ip);
+            SendBusyAndCloseSocket(socket);
             continue;
           }
 
           if (bl.IsBlackListed(ip))
           {
-            Log("Attempt from blacklisted IP.");
+            Log("Attempt from blacklisted IP: " + ip);
             SendBusyAndCloseSocket(socket);
             continue;
           }
 
-          int countryCode = GetCountryCode(ip);
+          var countryCode = GetCountryCode(ip);
           if (IsCountryBanned(countryCode))
           {
             Log("Blocking connection from banned country code: " + countryCode);
@@ -290,8 +291,8 @@ namespace WWIV5TelnetServer
             SendBusyAndCloseSocket(socket);
             continue;
           }
+
           node.RemoteAddress = ip;
-          Log("Launching Node #" + node.Node);
           Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
           instanceThread.Name = "Instance #" + node.Node;
           instanceThread.Start();

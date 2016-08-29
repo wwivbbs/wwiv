@@ -70,7 +70,7 @@ namespace WWIV5TelnetServer
         p.StartInfo.Arguments = cmdlineBuilder.CreateTelnetArguments(node, socketHandle);
         p.StartInfo.WorkingDirectory = homeDirectory;
         p.StartInfo.UseShellExecute = false;
-        logger("Launching binary: " + cmdlineBuilder.CreateFullCommandLine(node, socketHandle));
+        logger("Launching node #" + node + "; cmd: " + cmdlineBuilder.CreateFullCommandLine(node, socketHandle));
         p.Start();
         Console.WriteLine("binary launched.");
 

@@ -49,7 +49,6 @@
       this.listBoxNodes = new System.Windows.Forms.ListBox();
       this.messages = new System.Windows.Forms.TextBox();
       this.notifyIcon1 = new System.Windows.Forms.NotifyIcon(this.components);
-      this.toolStripContainer1 = new System.Windows.Forms.ToolStripContainer();
       this.toolStrip1 = new System.Windows.Forms.ToolStrip();
       this.startTb = new System.Windows.Forms.ToolStripButton();
       this.stopTb = new System.Windows.Forms.ToolStripButton();
@@ -58,14 +57,12 @@
       this.runLocalTb = new System.Windows.Forms.ToolStripButton();
       this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
       this.aboutTb = new System.Windows.Forms.ToolStripButton();
+      this.statusStrip1 = new System.Windows.Forms.StatusStrip();
       this.menuStrip1.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).BeginInit();
       this.splitContainer1.Panel1.SuspendLayout();
       this.splitContainer1.Panel2.SuspendLayout();
       this.splitContainer1.SuspendLayout();
-      this.toolStripContainer1.BottomToolStripPanel.SuspendLayout();
-      this.toolStripContainer1.TopToolStripPanel.SuspendLayout();
-      this.toolStripContainer1.SuspendLayout();
       this.toolStrip1.SuspendLayout();
       this.SuspendLayout();
       // 
@@ -75,9 +72,9 @@
       this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.helpToolStripMenuItem});
-      this.menuStrip1.Location = new System.Drawing.Point(0, 0);
+      this.menuStrip1.Location = new System.Drawing.Point(0, 1);
       this.menuStrip1.Name = "menuStrip1";
-      this.menuStrip1.Size = new System.Drawing.Size(631, 24);
+      this.menuStrip1.Size = new System.Drawing.Size(103, 24);
       this.menuStrip1.TabIndex = 0;
       this.menuStrip1.Text = "menuStrip1";
       // 
@@ -190,9 +187,11 @@
       // 
       // splitContainer1
       // 
-      this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+      this.splitContainer1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
       this.splitContainer1.FixedPanel = System.Windows.Forms.FixedPanel.Panel1;
-      this.splitContainer1.Location = new System.Drawing.Point(0, 67);
+      this.splitContainer1.Location = new System.Drawing.Point(0, 29);
       this.splitContainer1.Name = "splitContainer1";
       // 
       // splitContainer1.Panel1
@@ -202,7 +201,7 @@
       // splitContainer1.Panel2
       // 
       this.splitContainer1.Panel2.Controls.Add(this.messages);
-      this.splitContainer1.Size = new System.Drawing.Size(639, 195);
+      this.splitContainer1.Size = new System.Drawing.Size(633, 208);
       this.splitContainer1.SplitterDistance = 240;
       this.splitContainer1.TabIndex = 1;
       // 
@@ -214,7 +213,7 @@
       this.listBoxNodes.FormattingEnabled = true;
       this.listBoxNodes.Location = new System.Drawing.Point(3, 0);
       this.listBoxNodes.Name = "listBoxNodes";
-      this.listBoxNodes.Size = new System.Drawing.Size(234, 186);
+      this.listBoxNodes.Size = new System.Drawing.Size(234, 212);
       this.listBoxNodes.TabIndex = 0;
       // 
       // messages
@@ -229,7 +228,7 @@
       this.messages.Name = "messages";
       this.messages.ReadOnly = true;
       this.messages.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-      this.messages.Size = new System.Drawing.Size(396, 189);
+      this.messages.Size = new System.Drawing.Size(396, 205);
       this.messages.TabIndex = 0;
       // 
       // notifyIcon1
@@ -238,32 +237,6 @@
       this.notifyIcon1.Text = "notifyIcon1";
       this.notifyIcon1.Visible = true;
       this.notifyIcon1.MouseDoubleClick += new System.Windows.Forms.MouseEventHandler(this.notifyIcon1_MouseDoubleClick);
-      // 
-      // toolStripContainer1
-      // 
-      // 
-      // toolStripContainer1.BottomToolStripPanel
-      // 
-      this.toolStripContainer1.BottomToolStripPanel.Controls.Add(this.toolStrip1);
-      // 
-      // toolStripContainer1.ContentPanel
-      // 
-      this.toolStripContainer1.ContentPanel.Size = new System.Drawing.Size(631, 7);
-      this.toolStripContainer1.LeftToolStripPanelVisible = false;
-      this.toolStripContainer1.Location = new System.Drawing.Point(8, 8);
-      this.toolStripContainer1.Name = "toolStripContainer1";
-      // 
-      // toolStripContainer1.RightToolStripPanel
-      // 
-      this.toolStripContainer1.RightToolStripPanel.MinimumSize = new System.Drawing.Size(200, 0);
-      this.toolStripContainer1.RightToolStripPanelVisible = false;
-      this.toolStripContainer1.Size = new System.Drawing.Size(631, 56);
-      this.toolStripContainer1.TabIndex = 2;
-      this.toolStripContainer1.Text = "toolStripContainer1";
-      // 
-      // toolStripContainer1.TopToolStripPanel
-      // 
-      this.toolStripContainer1.TopToolStripPanel.Controls.Add(this.menuStrip1);
       // 
       // toolStrip1
       // 
@@ -276,9 +249,9 @@
             this.runLocalTb,
             this.toolStripSeparator4,
             this.aboutTb});
-      this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+      this.toolStrip1.Location = new System.Drawing.Point(217, 1);
       this.toolStrip1.Name = "toolStrip1";
-      this.toolStrip1.Size = new System.Drawing.Size(631, 25);
+      this.toolStrip1.Size = new System.Drawing.Size(139, 25);
       this.toolStrip1.Stretch = true;
       this.toolStrip1.TabIndex = 0;
       // 
@@ -342,12 +315,22 @@
       this.aboutTb.Text = "About";
       this.aboutTb.Click += new System.EventHandler(this.aboutTb_Click);
       // 
+      // statusStrip1
+      // 
+      this.statusStrip1.Location = new System.Drawing.Point(0, 240);
+      this.statusStrip1.Name = "statusStrip1";
+      this.statusStrip1.Size = new System.Drawing.Size(635, 22);
+      this.statusStrip1.TabIndex = 2;
+      this.statusStrip1.Text = "statusStrip1";
+      // 
       // MainForm
       // 
       this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
       this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
       this.ClientSize = new System.Drawing.Size(635, 262);
-      this.Controls.Add(this.toolStripContainer1);
+      this.Controls.Add(this.statusStrip1);
+      this.Controls.Add(this.toolStrip1);
+      this.Controls.Add(this.menuStrip1);
       this.Controls.Add(this.splitContainer1);
       this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
       this.MainMenuStrip = this.menuStrip1;
@@ -363,15 +346,10 @@
       this.splitContainer1.Panel2.PerformLayout();
       ((System.ComponentModel.ISupportInitialize)(this.splitContainer1)).EndInit();
       this.splitContainer1.ResumeLayout(false);
-      this.toolStripContainer1.BottomToolStripPanel.ResumeLayout(false);
-      this.toolStripContainer1.BottomToolStripPanel.PerformLayout();
-      this.toolStripContainer1.TopToolStripPanel.ResumeLayout(false);
-      this.toolStripContainer1.TopToolStripPanel.PerformLayout();
-      this.toolStripContainer1.ResumeLayout(false);
-      this.toolStripContainer1.PerformLayout();
       this.toolStrip1.ResumeLayout(false);
       this.toolStrip1.PerformLayout();
       this.ResumeLayout(false);
+      this.PerformLayout();
 
         }
 
@@ -395,7 +373,6 @@
         private System.Windows.Forms.ToolStripMenuItem submitBugIssueToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem wWIVOnlineDocumentsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewWWIVLogsToolStripMenuItem;
-    private System.Windows.Forms.ToolStripContainer toolStripContainer1;
     private System.Windows.Forms.ToolStrip toolStrip1;
     private System.Windows.Forms.ToolStripButton startTb;
     private System.Windows.Forms.ToolStripButton stopTb;
@@ -404,6 +381,7 @@
     private System.Windows.Forms.ToolStripButton runLocalTb;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
     private System.Windows.Forms.ToolStripButton aboutTb;
+    private System.Windows.Forms.StatusStrip statusStrip1;
   }
 }
 
