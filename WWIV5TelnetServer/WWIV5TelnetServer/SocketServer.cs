@@ -260,8 +260,14 @@ namespace WWIV5TelnetServer
             while (true)
             {
               string s = receive(socket);
+              if (!socket.Connected)
+              {
+                // Lost connection.
+                break;
+              }
               if (s.Length == 0)
               {
+                socket.Send(new byte[]{ 0 });
                 continue;
               }
               total += s;
