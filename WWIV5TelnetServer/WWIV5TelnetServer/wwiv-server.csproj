@@ -96,6 +96,11 @@
     <Compile Include="PreferencesDialog.Designer.cs">
       <DependentUpon>PreferencesDialog.cs</DependentUpon>
     </Compile>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Settings.cs" />
     <Compile Include="SocketServer.cs" />
     <Compile Include="StatusMessageEventArgs.cs" />
@@ -120,14 +125,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <Compile Include="Properties\Resources.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DependentUpon>Resources.resx</DependentUpon>
-      <DesignTime>True</DesignTime>
-    </Compile>
     <None Include="app.manifest" />
     <None Include="Properties\Settings.settings">
       <Generator>PublicSettingsSingleFileGenerator</Generator>
@@ -180,6 +180,15 @@
     <None Include="Resources\view.jpg" />
     <None Include="Resources\bug.png" />
     <None Include="Resources\move.jpg" />
+    <None Include="Resources\PropertyIcon.png" />
+    <None Include="Resources\startwithoutdebugging_6556.png" />
+    <None Include="Resources\StartWithoutDebug_16x_32.bmp" />
+    <None Include="Resources\Stop_16x_32.bmp" />
+    <None Include="Resources\StartWithoutDebug_16x.png" />
+    <None Include="Resources\Stop_16x.png" />
+    <None Include="Resources\Run_16x.png" />
+    <None Include="Resources\LocalServer_16x.png" />
+    <None Include="Resources\Property_16x.png" />
     <Content Include="telnetserver.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

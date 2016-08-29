@@ -213,6 +213,45 @@ namespace WWIV5TelnetServer
       return;
     }
 
+    private bool DoMailerLoop(Socket socket, string ip)
+    {
+      send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
+      int numEscs = 0;
+      string total = "";
+      var startTime = DateTime.Now;
+      var timeout = TimeSpan.FromSeconds(10);
+      while (DateTime.Now - startTime < timeout)
+      {
+        string s = receive(socket);
+        if (!socket.Connected)
+        {
+          // Lost connection.
+          return false;
+        }
+        if (s.Length == 0)
+        {
+          Thread.Sleep(1000);
+          send(socket, ".");
+          continue;
+        }
+        total += s;
+        numEscs += s.Split((char)27).Length - 1;
+        if (numEscs >= 2)
+        {
+          send(socket, "Launching BBS...\r\n");
+          return true;
+        }
+        if (total.Contains("root") || total.Contains("admin"))
+        {
+          Log("Received ROOT or ADMIN login ,blacklisting...");
+          SendBusyAndCloseSocket(socket);
+          BlackListIP(socket, ip);
+          return false;
+        }
+      }
+      return true;
+    }
+
     private void Run()
     {
       server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -261,39 +300,10 @@ namespace WWIV5TelnetServer
           // Since we don't terminate SSH, we can't do this for SSH connections.
           if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))
           {
-            send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
-            int numEscs = 0;
-            string total = "";
-            var startTime = DateTime.Now;
-            var timeout = TimeSpan.FromSeconds(10);
-            while (DateTime.Now - startTime < timeout)
+            if (!DoMailerLoop(socket, ip))
             {
-              string s = receive(socket);
-              if (!socket.Connected)
-              {
-                // Lost connection.
-                break;
-              }
-              if (s.Length == 0)
-              {
-                Thread.Sleep(1000);
-                send(socket, ".");
-                continue;
-              }
-              total += s;
-              numEscs += s.Split((char)27).Length - 1;
-              if (numEscs >= 2)
-              {
-                send(socket, "Launching BBS...\r\n");
-                break;
-              }
-              if (total.Contains("root") || total.Contains("admin"))
-              {
-                Log("Received ROOT or ADMIN login ,blacklisting...");
-                SendBusyAndCloseSocket(socket);
-                BlackListIP(socket, ip);
-                continue;
-              }
+              SendBusyAndCloseSocket(socket);
+              continue;
             }
           }
           socket.ReceiveTimeout = savedTimeout;
@@ -326,7 +336,7 @@ namespace WWIV5TelnetServer
         {
           DebugLog("Exception" + e.ToString());
         }
-        catch (ThreadAbortException e)
+        catch (ThreadAbortException)
         {
           Debug.WriteLine("Server Exiting normally...");
           return;

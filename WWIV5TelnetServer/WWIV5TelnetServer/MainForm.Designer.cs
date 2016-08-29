@@ -74,7 +74,7 @@
             this.helpToolStripMenuItem});
       this.menuStrip1.Location = new System.Drawing.Point(0, 1);
       this.menuStrip1.Name = "menuStrip1";
-      this.menuStrip1.Size = new System.Drawing.Size(103, 24);
+      this.menuStrip1.Size = new System.Drawing.Size(195, 24);
       this.menuStrip1.TabIndex = 0;
       this.menuStrip1.Text = "menuStrip1";
       // 
@@ -94,7 +94,6 @@
       // 
       // startToolStripMenuItem
       // 
-      this.startToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.order;
       this.startToolStripMenuItem.Name = "startToolStripMenuItem";
       this.startToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.startToolStripMenuItem.Text = "Start";
@@ -102,7 +101,6 @@
       // 
       // stopToolStripMenuItem
       // 
-      this.stopToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.alert;
       this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
       this.stopToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.stopToolStripMenuItem.Text = "Stop";
@@ -110,7 +108,7 @@
       // 
       // preferencesToolStripMenuItem
       // 
-      this.preferencesToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.edit;
+      this.preferencesToolStripMenuItem.BackColor = System.Drawing.SystemColors.ControlLight;
       this.preferencesToolStripMenuItem.Name = "preferencesToolStripMenuItem";
       this.preferencesToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.preferencesToolStripMenuItem.Text = "Preferences";
@@ -123,7 +121,6 @@
       // 
       // runLocalNodeToolStripMenuItem
       // 
-      this.runLocalNodeToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.complete;
       this.runLocalNodeToolStripMenuItem.Name = "runLocalNodeToolStripMenuItem";
       this.runLocalNodeToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.runLocalNodeToolStripMenuItem.Text = "Run Local Node";
@@ -136,7 +133,6 @@
       // 
       // exitToolStripMenuItem
       // 
-      this.exitToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.delete;
       this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
       this.exitToolStripMenuItem.Size = new System.Drawing.Size(158, 22);
       this.exitToolStripMenuItem.Text = "Exit";
@@ -155,7 +151,6 @@
       // 
       // aboutToolStripMenuItem
       // 
-      this.aboutToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.info;
       this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
       this.aboutToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
       this.aboutToolStripMenuItem.Text = "About";
@@ -163,7 +158,6 @@
       // 
       // wWIVOnlineDocumentsToolStripMenuItem
       // 
-      this.wWIVOnlineDocumentsToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.move;
       this.wWIVOnlineDocumentsToolStripMenuItem.Name = "wWIVOnlineDocumentsToolStripMenuItem";
       this.wWIVOnlineDocumentsToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
       this.wWIVOnlineDocumentsToolStripMenuItem.Text = "WWIV Online Documents";
@@ -171,7 +165,6 @@
       // 
       // submitBugIssueToolStripMenuItem
       // 
-      this.submitBugIssueToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.bug;
       this.submitBugIssueToolStripMenuItem.Name = "submitBugIssueToolStripMenuItem";
       this.submitBugIssueToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
       this.submitBugIssueToolStripMenuItem.Text = "Submit Bug Issue";
@@ -179,7 +172,6 @@
       // 
       // viewWWIVLogsToolStripMenuItem
       // 
-      this.viewWWIVLogsToolStripMenuItem.Image = global::WWIV5TelnetServer.Properties.Resources.view;
       this.viewWWIVLogsToolStripMenuItem.Name = "viewWWIVLogsToolStripMenuItem";
       this.viewWWIVLogsToolStripMenuItem.Size = new System.Drawing.Size(208, 22);
       this.viewWWIVLogsToolStripMenuItem.Text = "View WWIV Logs";
@@ -258,7 +250,6 @@
       // startTb
       // 
       this.startTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-      this.startTb.Image = global::WWIV5TelnetServer.Properties.Resources.order;
       this.startTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.startTb.Name = "startTb";
       this.startTb.Size = new System.Drawing.Size(23, 22);
@@ -268,7 +259,6 @@
       // stopTb
       // 
       this.stopTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-      this.stopTb.Image = global::WWIV5TelnetServer.Properties.Resources.alert;
       this.stopTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.stopTb.Name = "stopTb";
       this.stopTb.Size = new System.Drawing.Size(23, 22);
@@ -278,7 +268,6 @@
       // prefsTb
       // 
       this.prefsTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-      this.prefsTb.Image = global::WWIV5TelnetServer.Properties.Resources.edit;
       this.prefsTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.prefsTb.Name = "prefsTb";
       this.prefsTb.Size = new System.Drawing.Size(23, 22);
@@ -293,7 +282,6 @@
       // runLocalTb
       // 
       this.runLocalTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-      this.runLocalTb.Image = global::WWIV5TelnetServer.Properties.Resources.complete;
       this.runLocalTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.runLocalTb.Name = "runLocalTb";
       this.runLocalTb.Size = new System.Drawing.Size(23, 22);
@@ -308,7 +296,6 @@
       // aboutTb
       // 
       this.aboutTb.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
-      this.aboutTb.Image = global::WWIV5TelnetServer.Properties.Resources.info;
       this.aboutTb.ImageTransparentColor = System.Drawing.Color.Magenta;
       this.aboutTb.Name = "aboutTb";
       this.aboutTb.Size = new System.Drawing.Size(23, 22);
