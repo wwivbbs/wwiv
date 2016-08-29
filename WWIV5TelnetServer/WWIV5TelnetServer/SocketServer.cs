@@ -159,8 +159,15 @@ namespace WWIV5TelnetServer
 
     private void send(Socket socket, string s)
     {
-      byte[] bytes = System.Text.Encoding.ASCII.GetBytes(s.ToCharArray());
-      socket.Send(bytes);
+      try
+      {
+        byte[] bytes = System.Text.Encoding.ASCII.GetBytes(s.ToCharArray());
+        socket.Send(bytes);
+      }
+      catch (SocketException e)
+      {
+        Debug.WriteLine(e.ToString());
+      }
     }
 
     private string receive(Socket socket)
@@ -257,7 +264,9 @@ namespace WWIV5TelnetServer
             send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
             int numEscs = 0;
             string total = "";
-            while (true)
+            var startTime = DateTime.Now;
+            var timeout = TimeSpan.FromSeconds(10);
+            while (DateTime.Now - startTime < timeout)
             {
               string s = receive(socket);
               if (!socket.Connected)
@@ -267,7 +276,8 @@ namespace WWIV5TelnetServer
               }
               if (s.Length == 0)
               {
-                socket.Send(new byte[]{ 0 });
+                Thread.Sleep(1000);
+                send(socket, ".");
                 continue;
               }
               total += s;
@@ -287,6 +297,14 @@ namespace WWIV5TelnetServer
             }
           }
           socket.ReceiveTimeout = savedTimeout;
+
+          if (!socket.Connected)
+          {
+            // NO node available.
+            Log("nobody home.");
+            SendBusyAndCloseSocket(socket);
+            continue;
+          }
 
           // Grab a node # after we've cleared everything else.
           NodeStatus node = nodeManager.getNextNode();
