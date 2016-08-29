@@ -248,7 +248,8 @@ namespace WWIV5TelnetServer
             Log("IP from country code:" + countryCode);
           }
 
-
+          var savedTimeout = socket.ReceiveTimeout;
+          socket.ReceiveTimeout = 5000;
           // Since we don't terminate SSH, we can't do this for SSH connections.
           if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))
           {
@@ -271,11 +272,14 @@ namespace WWIV5TelnetServer
               }
               if (total.Contains("root") || total.Contains("admin"))
               {
+                Log("Received ROOT or ADMIN login ,blacklisting...");
+                SendBusyAndCloseSocket(socket);
                 BlackListIP(socket, ip);
                 continue;
               }
             }
           }
+          socket.ReceiveTimeout = savedTimeout;
 
           // Grab a node # after we've cleared everything else.
           NodeStatus node = nodeManager.getNextNode();
