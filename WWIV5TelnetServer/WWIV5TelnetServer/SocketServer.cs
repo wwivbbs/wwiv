@@ -66,20 +66,20 @@ namespace WWIV5TelnetServer
 
     public void Start()
     {
-      launcherThread = new Thread(Run);
+      launcherThread = new Thread(() => { Run(); Log("Server Thread Ended.");  });
       launcherThread.Name = this.name;
       launcherThread.Start();
-      OnStatusMessageUpdated(this.name + " Server Started", StatusMessageEventArgs.MessageType.LogInfo);
+      Log(this.name + " Server Started");
     }
 
     public void Stop()
     {
       if (launcherThread == null)
       {
-        OnStatusMessageUpdated("ERROR: LauncherThread was never set.", StatusMessageEventArgs.MessageType.LogError);
+        DebugLog("ERROR: LauncherThread was never set.");
         return;
       }
-      OnStatusMessageUpdated(String.Format("Stopping {0} Server.", this.name), StatusMessageEventArgs.MessageType.LogInfo);
+      Log(String.Format("Stopping {0} Server.", this.name));
       if (server != null)
       {
         server.Close();
@@ -88,7 +88,7 @@ namespace WWIV5TelnetServer
       launcherThread.Abort();
       launcherThread.Join();
       launcherThread = null;
-      OnStatusMessageUpdated(String.Format("{0} Server Stopped", this.name), StatusMessageEventArgs.MessageType.LogInfo);
+      Log(String.Format("{0} Server Stopped", this.name));
     }
 
     /** Updates the banned state. */
@@ -112,7 +112,7 @@ namespace WWIV5TelnetServer
         value.Add(DateTime.Now);
         connections[ip] = value;
 
-        var c = "Current Sessions: " + value.Count + 
+        var c = "Current Sessions: " + value.Count +
                 ": {" + string.Join(",", value.ToArray()) + "}";
         OnStatusMessageUpdated(c, StatusMessageEventArgs.MessageType.Status);
 
@@ -197,11 +197,11 @@ namespace WWIV5TelnetServer
       SendBusyAndCloseSocket(socket);
       if (bl.BlacklistIP(ip))
       {
-        OnStatusMessageUpdated("Blacklisting IP: " + ip, StatusMessageEventArgs.MessageType.LogInfo);
+        Log("Blacklisting IP: " + ip);
       }
       else
       {
-        Console.WriteLine("Error Blacklisting IP: " + ip);
+        DebugLog("Error Blacklisting IP: " + ip);
       }
       return;
     }
@@ -214,12 +214,12 @@ namespace WWIV5TelnetServer
 
       while (true)
       {
-        Console.WriteLine("Waiting for connection.", StatusMessageEventArgs.MessageType.LogInfo);
+        Debug.WriteLine("Waiting for connection.");
         try
         {
           Socket socket = server.Accept();
           string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
-          Console.WriteLine("After accept from IP: " + ip);
+          Debug.WriteLine("After accept from IP: " + ip);
           OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
 
           if (ShouldBeBanned(ip))
@@ -231,20 +231,21 @@ namespace WWIV5TelnetServer
 
           if (bl.IsBlackListed(ip))
           {
-            OnStatusMessageUpdated("Attempt from blacklisted IP.", StatusMessageEventArgs.MessageType.LogInfo);
+            Log("Attempt from blacklisted IP.");
             SendBusyAndCloseSocket(socket);
             continue;
           }
 
           int countryCode = GetCountryCode(ip);
-          OnStatusMessageUpdated("IP from country code:" + countryCode, 
-            StatusMessageEventArgs.MessageType.LogInfo);
           if (IsCountryBanned(countryCode))
           {
-            OnStatusMessageUpdated("Blocking connection from banned country: " + countryCode, 
-              StatusMessageEventArgs.MessageType.LogInfo);
+            Log("Blocking connection from banned country code: " + countryCode);
             SendBusyAndCloseSocket(socket);
             continue;
+          }
+          else
+          {
+            Log("IP from country code:" + countryCode);
           }
 
 
@@ -281,12 +282,12 @@ namespace WWIV5TelnetServer
           if (node == null)
           {
             // NO node available.
-            OnStatusMessageUpdated("No node available.", StatusMessageEventArgs.MessageType.LogInfo);
+            Log("No node available.");
             SendBusyAndCloseSocket(socket);
             continue;
           }
           node.RemoteAddress = ip;
-          OnStatusMessageUpdated("Launching Node #" + node.Node, StatusMessageEventArgs.MessageType.LogInfo);
+          Log("Launching Node #" + node.Node);
           Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
           instanceThread.Name = "Instance #" + node.Node;
           instanceThread.Start();
@@ -294,7 +295,16 @@ namespace WWIV5TelnetServer
         }
         catch (SocketException e)
         {
-          Console.WriteLine(e.ToString());
+          DebugLog("Exception" + e.ToString());
+        }
+        catch (ThreadAbortException e)
+        {
+          Debug.WriteLine("Server Exiting normally...");
+          return;
+        }
+        catch (Exception e)
+        {
+          DebugLog("Exception" + e.ToString());
         }
       }
     }
@@ -318,7 +328,7 @@ namespace WWIV5TelnetServer
       }
       catch (Exception e)
       {
-        Console.WriteLine(e.ToString());
+        DebugLog(e.ToString());
       }
       finally
       {
@@ -355,14 +365,16 @@ namespace WWIV5TelnetServer
       }
     }
 
+    protected virtual void Log(string message)
+    {
+      OnStatusMessageUpdated(message, StatusMessageEventArgs.MessageType.LogInfo);
+    }
+
     protected virtual void DebugLog(string message)
     {
-      StatusMessageEventArgs e = new StatusMessageEventArgs(message, StatusMessageEventArgs.MessageType.LogDebug);
-      var handler = StatusMessageChanged;
-      if (handler != null)
-      {
-        StatusMessageChanged(this, e);
-      }
+      Debug.WriteLine(message);
+      Console.WriteLine(message);
+      OnStatusMessageUpdated(message, StatusMessageEventArgs.MessageType.LogDebug);
     }
 
     protected virtual void OnNodeUpdated(NodeStatus nodeStatus)
