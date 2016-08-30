@@ -295,14 +295,16 @@ void setuconf(ConferenceType nConferenceType, int num, int nOldSubNumber) {
     if (num >= 0 && num < MAX_CONFERENCES && uconfsub[num].confnum != -1) {
       session()->SetCurrentConferenceMessageArea(num);
       setconf(nConferenceType, session()->usub, uconfsub[session()->GetCurrentConferenceMessageArea()].confnum, nOldSubNumber);
-      return;
+    } else {
+      setconf(nConferenceType, session()->usub, -1, nOldSubNumber);
     }
     break;
   case ConferenceType::CONF_DIRS:
     if (num >= 0 && num < MAX_CONFERENCES && uconfdir[num].confnum != -1) {
       session()->SetCurrentConferenceFileArea(num);
       setconf(nConferenceType, session()->udir, uconfdir[session()->GetCurrentConferenceFileArea()].confnum, nOldSubNumber);
-      return;
+    } else {
+      setconf(nConferenceType, session()->udir, -1, nOldSubNumber);
     }
     break;
   default:
