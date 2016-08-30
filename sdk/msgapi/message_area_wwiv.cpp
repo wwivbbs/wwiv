@@ -173,20 +173,20 @@ bool WWIVMessageArea::ParseMessageText(
 
   from_username = *it++;
   StringTrim(&from_username);
-  if (it == std::end(lines)) {
+  if (it == lines.end()) {
     LOG(ERROR) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
   date = *it++;
   StringTrim(&date);
-  if (it == std::end(lines)) {
+  if (it == lines.end()) {
     LOG(ERROR) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
-  for (; it != std::end(lines); it++) {
-    auto line = *it++;
+  for (; it != lines.end(); it++) {
+    auto line = *it;
     StringTrim(&line);
     if (!line.empty() && line.front() == CD) {
       text += line;
