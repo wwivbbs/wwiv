@@ -41,7 +41,17 @@ namespace WWIV5TelnetServer
 
     }
 
-    public bool IsBlackListed(String ipaddress)
+    public bool IsWhiteListed(string ipaddress)
+    {
+      if (goodips_.Contains(ipaddress))
+      {
+        // We're whitelisted.
+        return true;
+      }
+      return false;
+    }
+
+    public bool IsBlackListed(string ipaddress)
     {
       // Check whitelist first.
       if (goodips_.Contains(ipaddress))

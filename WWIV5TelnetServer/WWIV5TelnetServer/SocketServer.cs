@@ -103,6 +103,10 @@ namespace WWIV5TelnetServer
         return false;
       }
 
+      if (bl.IsWhiteListed(ip))
+      {
+        return false;
+      }
 
       List<DateTime> value;
       if (connections.TryGetValue(ip, out value))
@@ -268,17 +272,17 @@ namespace WWIV5TelnetServer
           Debug.WriteLine("After accept from IP: " + ip);
           OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
 
-          if (ShouldBeBanned(ip))
+          if (bl.IsBlackListed(ip))
           {
-            // Add it to the blacklist file.
-            BlackListIP(socket, ip);
+            Log("Attempt from blacklisted IP: " + ip);
             SendBusyAndCloseSocket(socket);
             continue;
           }
 
-          if (bl.IsBlackListed(ip))
+          if (ShouldBeBanned(ip))
           {
-            Log("Attempt from blacklisted IP: " + ip);
+            // Add it to the blacklist file.
+            BlackListIP(socket, ip);
             SendBusyAndCloseSocket(socket);
             continue;
           }
