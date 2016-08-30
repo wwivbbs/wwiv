@@ -256,6 +256,78 @@ namespace WWIV5TelnetServer
       return true;
     }
 
+    private bool CanConnect(Socket socket)
+    {
+      try
+      {
+        string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+
+        if (bl.IsWhiteListed(ip))
+        {
+          return true;
+        }
+
+        if (bl.IsBlackListed(ip))
+        {
+          Log("Attempt from blacklisted IP: " + ip);
+          SendBusyAndCloseSocket(socket);
+          return false;
+        }
+
+        if (ShouldBeBanned(ip))
+        {
+          // Add it to the blacklist file.
+          BlackListIP(socket, ip);
+          SendBusyAndCloseSocket(socket);
+          return false;
+        }
+
+        var countryCode = GetCountryCode(ip);
+        if (IsCountryBanned(countryCode))
+        {
+          Log("Blocking connection from banned country code: " + countryCode);
+          SendBusyAndCloseSocket(socket);
+          return false;
+        }
+        else
+        {
+          Log("IP from country code:" + countryCode);
+        }
+
+        var savedTimeout = socket.ReceiveTimeout;
+        socket.ReceiveTimeout = 5000;
+        // Since we don't terminate SSH, we can't do this for SSH connections.
+        if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))
+        {
+          if (!DoMailerLoop(socket, ip))
+          {
+            SendBusyAndCloseSocket(socket);
+            return false;
+          }
+        }
+        socket.ReceiveTimeout = savedTimeout;
+
+        if (!socket.Connected)
+        {
+          // NO node available.
+          Log("nobody home.");
+          SendBusyAndCloseSocket(socket);
+          return false;
+        }
+        return true;
+      }
+      catch (SocketException e)
+      {
+        Debug.WriteLine(e.ToString());
+        return true;
+      }
+      catch (Exception e)
+      {
+        Debug.WriteLine(e.ToString());
+        return true;
+      }
+    }
+
     private void Run()
     {
       server = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
@@ -272,51 +344,8 @@ namespace WWIV5TelnetServer
           Debug.WriteLine("After accept from IP: " + ip);
           OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
 
-          if (bl.IsBlackListed(ip))
+          if (!CanConnect(socket))
           {
-            Log("Attempt from blacklisted IP: " + ip);
-            SendBusyAndCloseSocket(socket);
-            continue;
-          }
-
-          if (ShouldBeBanned(ip))
-          {
-            // Add it to the blacklist file.
-            BlackListIP(socket, ip);
-            SendBusyAndCloseSocket(socket);
-            continue;
-          }
-
-          var countryCode = GetCountryCode(ip);
-          if (IsCountryBanned(countryCode))
-          {
-            Log("Blocking connection from banned country code: " + countryCode);
-            SendBusyAndCloseSocket(socket);
-            continue;
-          }
-          else
-          {
-            Log("IP from country code:" + countryCode);
-          }
-
-          var savedTimeout = socket.ReceiveTimeout;
-          socket.ReceiveTimeout = 5000;
-          // Since we don't terminate SSH, we can't do this for SSH connections.
-          if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))
-          {
-            if (!DoMailerLoop(socket, ip))
-            {
-              SendBusyAndCloseSocket(socket);
-              continue;
-            }
-          }
-          socket.ReceiveTimeout = savedTimeout;
-
-          if (!socket.Connected)
-          {
-            // NO node available.
-            Log("nobody home.");
-            SendBusyAndCloseSocket(socket);
             continue;
           }
 
