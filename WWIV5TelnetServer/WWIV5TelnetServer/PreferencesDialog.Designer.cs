@@ -85,12 +85,13 @@
       this.linkBadIpFile = new System.Windows.Forms.LinkLabel();
       this.groupBox1 = new System.Windows.Forms.GroupBox();
       this.layoutBlockCountries = new System.Windows.Forms.TableLayoutPanel();
+      this.label5 = new System.Windows.Forms.Label();
+      this.tbDnsCC = new System.Windows.Forms.TextBox();
       this.flowLayoutPanel2 = new System.Windows.Forms.FlowLayoutPanel();
       this.btnBadCountryAdd = new System.Windows.Forms.Button();
       this.btnBadCountryRemove = new System.Windows.Forms.Button();
       this.lbBadCountries = new System.Windows.Forms.ListBox();
-      this.label5 = new System.Windows.Forms.Label();
-      this.tbDnsCC = new System.Windows.Forms.TextBox();
+      this.linkGoodIpFile = new System.Windows.Forms.LinkLabel();
       this.tabControlPreferences.SuspendLayout();
       this.generalTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.localNodeSpinner)).BeginInit();
@@ -572,6 +573,7 @@
       this.tableLayoutPanel3.Controls.Add(this.tbDbsRbl, 1, 7);
       this.tableLayoutPanel3.Controls.Add(this.linkBadIpFile, 1, 2);
       this.tableLayoutPanel3.Controls.Add(this.groupBox1, 0, 8);
+      this.tableLayoutPanel3.Controls.Add(this.linkGoodIpFile, 1, 3);
       this.tableLayoutPanel3.Location = new System.Drawing.Point(4, 4);
       this.tableLayoutPanel3.Name = "tableLayoutPanel3";
       this.tableLayoutPanel3.RowCount = 10;
@@ -743,6 +745,7 @@
       this.linkBadIpFile.TabIndex = 12;
       this.linkBadIpFile.TabStop = true;
       this.linkBadIpFile.Text = "Open File";
+      this.linkBadIpFile.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkBadIpFile_LinkClicked);
       // 
       // groupBox1
       // 
@@ -776,13 +779,33 @@
       this.layoutBlockCountries.Size = new System.Drawing.Size(636, 155);
       this.layoutBlockCountries.TabIndex = 0;
       // 
+      // label5
+      // 
+      this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.label5.AutoSize = true;
+      this.label5.Location = new System.Drawing.Point(13, 0);
+      this.label5.Name = "label5";
+      this.label5.Size = new System.Drawing.Size(84, 13);
+      this.label5.TabIndex = 14;
+      this.label5.Text = "DNS-CC Server:";
+      // 
+      // tbDnsCC
+      // 
+      this.tbDnsCC.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+      this.layoutBlockCountries.SetColumnSpan(this.tbDnsCC, 2);
+      this.tbDnsCC.Location = new System.Drawing.Point(103, 3);
+      this.tbDnsCC.Name = "tbDnsCC";
+      this.tbDnsCC.Size = new System.Drawing.Size(530, 20);
+      this.tbDnsCC.TabIndex = 15;
+      // 
       // flowLayoutPanel2
       // 
       this.flowLayoutPanel2.Controls.Add(this.btnBadCountryAdd);
       this.flowLayoutPanel2.Controls.Add(this.btnBadCountryRemove);
       this.flowLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
       this.flowLayoutPanel2.FlowDirection = System.Windows.Forms.FlowDirection.TopDown;
-      this.flowLayoutPanel2.Location = new System.Drawing.Point(539, 3);
+      this.flowLayoutPanel2.Location = new System.Drawing.Point(539, 29);
       this.flowLayoutPanel2.Name = "flowLayoutPanel2";
       this.flowLayoutPanel2.Size = new System.Drawing.Size(94, 123);
       this.flowLayoutPanel2.TabIndex = 0;
@@ -812,30 +835,21 @@
       this.layoutBlockCountries.SetColumnSpan(this.lbBadCountries, 2);
       this.lbBadCountries.Dock = System.Windows.Forms.DockStyle.Fill;
       this.lbBadCountries.FormattingEnabled = true;
-      this.lbBadCountries.Location = new System.Drawing.Point(3, 3);
+      this.lbBadCountries.Location = new System.Drawing.Point(3, 29);
       this.lbBadCountries.Name = "lbBadCountries";
       this.lbBadCountries.Size = new System.Drawing.Size(530, 123);
       this.lbBadCountries.TabIndex = 1;
       // 
-      // label5
+      // linkGoodIpFile
       // 
-      this.label5.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-      this.label5.AutoSize = true;
-      this.label5.Location = new System.Drawing.Point(13, 129);
-      this.label5.Name = "label5";
-      this.label5.Size = new System.Drawing.Size(84, 13);
-      this.label5.TabIndex = 14;
-      this.label5.Text = "DNS-CC Server:";
-      // 
-      // tbDnsCC
-      // 
-      this.tbDnsCC.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-      this.layoutBlockCountries.SetColumnSpan(this.tbDnsCC, 2);
-      this.tbDnsCC.Location = new System.Drawing.Point(103, 132);
-      this.tbDnsCC.Name = "tbDnsCC";
-      this.tbDnsCC.Size = new System.Drawing.Size(530, 20);
-      this.tbDnsCC.TabIndex = 15;
+      this.linkGoodIpFile.AutoSize = true;
+      this.linkGoodIpFile.Location = new System.Drawing.Point(136, 72);
+      this.linkGoodIpFile.Name = "linkGoodIpFile";
+      this.linkGoodIpFile.Size = new System.Drawing.Size(52, 13);
+      this.linkGoodIpFile.TabIndex = 14;
+      this.linkGoodIpFile.TabStop = true;
+      this.linkGoodIpFile.Text = "Open File";
+      this.linkGoodIpFile.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkGoodIpFile_LinkClicked);
       // 
       // PreferencesDialog
       // 
@@ -948,5 +962,6 @@
     private System.Windows.Forms.ListBox lbBadCountries;
     private System.Windows.Forms.Label label5;
     private System.Windows.Forms.TextBox tbDnsCC;
+    private System.Windows.Forms.LinkLabel linkGoodIpFile;
   }
 }

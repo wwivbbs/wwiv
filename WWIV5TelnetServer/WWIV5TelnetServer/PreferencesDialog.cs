@@ -183,5 +183,29 @@ namespace WWIV5TelnetServer
         lbBadCountries.Items.Remove(selected);
       }
     }
+
+    private void ShowFileIfExists(string file)
+    {
+      if (File.Exists(file))
+      {
+        System.Diagnostics.Process.Start(file);
+      }
+      else
+      {
+        MessageBox.Show("File: '" + file + "' does not exist.");
+      }
+    }
+
+    private void linkBadIpFile_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+    {
+      var homeDirectory = Properties.Settings.Default.homeDirectory;
+      ShowFileIfExists(Path.Combine(homeDirectory, "badip.txt"));
+    }
+
+    private void linkGoodIpFile_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+    {
+      var homeDirectory = Properties.Settings.Default.homeDirectory;
+      ShowFileIfExists(Path.Combine(homeDirectory, "goodip.txt"));
+    }
   }
 }

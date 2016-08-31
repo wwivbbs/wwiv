@@ -192,20 +192,27 @@ namespace WWIV5TelnetServer
     {
       // Send BUSY signal.
       OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
+      bool needClose = true;
       try
       {
         send(socket, "BUSY");
       }
+      catch (ObjectDisposedException)
+      {
+        // Socket is already disposed, no need to close it.
+        needClose = false;
+      }
       finally
       {
-        socket.Close();
+        if (needClose)
+        {
+          socket.Close();
+        }
       }
     }
 
     private void BlackListIP(Socket socket, string ip)
     {
-      Thread.Sleep(1000);
-      SendBusyAndCloseSocket(socket);
       if (bl.BlacklistIP(ip))
       {
         Log("Blacklisting IP: " + ip);
@@ -214,7 +221,7 @@ namespace WWIV5TelnetServer
       {
         DebugLog("Error Blacklisting IP: " + ip);
       }
-      return;
+      SendBusyAndCloseSocket(socket);
     }
 
     private bool DoMailerLoop(Socket socket, string ip)
@@ -412,7 +419,7 @@ namespace WWIV5TelnetServer
         }
         catch (SocketException e)
         {
-          Console.WriteLine(e.ToString());
+          Debug.WriteLine(e.ToString());
         }
         finally
         {
