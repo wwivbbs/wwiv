@@ -190,12 +190,18 @@ namespace WWIV5TelnetServer
 
     private void SendBusyAndCloseSocket(Socket socket)
     {
+      SendMessageAndCloseSocket(socket, "BUSY");
+    }
+
+    private void SendMessageAndCloseSocket(Socket socket, string message)
+    {
       // Send BUSY signal.
-      OnStatusMessageUpdated("Sending Busy Signal.", StatusMessageEventArgs.MessageType.Status);
+      OnStatusMessageUpdated("Sending Busy Signal.",
+          StatusMessageEventArgs.MessageType.Status);
       bool needClose = true;
       try
       {
-        send(socket, "BUSY");
+        send(socket, message);
       }
       catch (ObjectDisposedException)
       {
@@ -226,7 +232,7 @@ namespace WWIV5TelnetServer
 
     private bool DoMailerLoop(Socket socket, string ip)
     {
-      send(socket, "CONNECT 2400\r\nWWIV-Server\r\nPress <ESC> twice for the BBS..\r\n");
+      send(socket, "Press <ESC> twice for the BBS..\r\n");
       int numEscs = 0;
       string total = "";
       var startTime = DateTime.Now;
@@ -306,6 +312,7 @@ namespace WWIV5TelnetServer
         // Since we don't terminate SSH, we can't do this for SSH connections.
         if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))
         {
+          send(socket, "CONNECT 2400\r\nWWIV - Server\r\n");
           if (!DoMailerLoop(socket, ip))
           {
             SendBusyAndCloseSocket(socket);
