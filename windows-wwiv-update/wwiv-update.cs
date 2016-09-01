@@ -32,33 +32,29 @@ namespace windows_wwiv_update
         public static string wwivUpdateVersion;
         public static string updateVersionLabel;
         public static string updateTagLabel;
-        //public static string appPath = Path.GetDirectoryName(Application.ExecutablePath);
-        //public static string startPath = Application.StartupPath;
+
+        public string baseUrl52 = "http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows";
+        public string baseUrl51 = "https://build.wwivbbs.org/jenkins/job/wwiv_5.1/lastSuccessfulBuild/label=windows";
 
         public Form1()
         {
             InitializeComponent();
 
             // Declare And Initilize Set Build Number Variables to 0
+
+            string wwivBuild5_2 = "0";
             string wwivBuild5_1 = "0";
-            string wwivBuild5_0 = "0";
 
             // Fetch Latest Build Number For WWIV 5.2
             // http://build.wwivbbs.org/jenkins/job/wwiv/label=windows/lastSuccessfulBuild/buildNumber
             // http://build.wwivbbs.org/jenkins/job/wwiv_5.1/label=windows/lastSuccessfulBuild/buildNumber
             WebClient wc = new WebClient();
-            string htmlString1 = wc.DownloadString("http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows/");
-            Match mTitle1 = Regex.Match(htmlString1, "(?:number.*?>)(?<buildNumber1>.*?)(?:<)");
+            wwivBuild5_2 = wc.DownloadString(baseUrl52 + "/buildNumber");
 
             // Fetch Latest Build Number For WWIV 5.1
-            string htmlString2 = wc.DownloadString("https://build.wwivbbs.org/jenkins/job/wwiv_5.1/lastSuccessfulBuild/label=windows/");
-            Match mTitle2 = Regex.Match(htmlString2, "(?:number.*?>)(?<buildNumber2>.*?)(?:<)");
-            {
-                wwivBuild5_1 = mTitle1.Groups[1].Value;
-                wwivBuild5_0 = mTitle2.Groups[1].Value;
-            }
-            version51.Text = wwivBuild5_1;
-            version50.Text = wwivBuild5_0;
+            wwivBuild5_1 = wc.DownloadString(baseUrl51 + "/buildNumber");
+            version51.Text = wwivBuild5_2;
+            version50.Text = wwivBuild5_1;
             currentVersion();
         }
 
@@ -117,7 +113,7 @@ namespace windows_wwiv_update
                 // Begin Update 51
                 string fetchVersion = updateToNew51;
                 this.Hide();
-                Form2 frm = new Form2(fetchVersion);
+                Form2 frm = new Form2(baseUrl52, fetchVersion);
                 frm.ShowDialog();
                 this.Close();
             }
@@ -146,7 +142,7 @@ namespace windows_wwiv_update
                 // Begin Update 50
                 string fetchVersion = updateToNew50;
                 this.Hide();
-                Form2 frm = new Form2(fetchVersion);
+                Form2 frm = new Form2(baseUrl51, fetchVersion);
                 frm.ShowDialog();
                 this.Close();
             }
@@ -167,7 +163,7 @@ namespace windows_wwiv_update
                 // Begin Update Custom Build
                 string fetchVersion = customBuildNumber;
                 this.Hide();
-                Form2 frm = new Form2(fetchVersion);
+                Form2 frm = new Form2(baseUrl52, fetchVersion);
                 frm.ShowDialog();
                 this.Close();
             }

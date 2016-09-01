@@ -30,9 +30,13 @@ namespace windows_wwiv_update
     {
         // BackgroundWorker Event
         BackgroundWorker m_oWorker;
+        private string baseUrl_;
+        private string version_;
 
-        public Form2(string fetchVersion)
+        public Form2(string baseUrl, string fetchVersion)
         {
+            baseUrl_ = baseUrl;
+            version_ = fetchVersion;
             // Fetch Version
             InitializeComponent();
             label2.Text = fetchVersion;
@@ -160,6 +164,16 @@ namespace windows_wwiv_update
             m_oWorker.RunWorkerAsync();
         }
 
+        void UpdateStatus(string text)
+        {
+          MethodInvoker d = delegate () { activeStatus.Text = text; };
+          if (this.InvokeRequired)
+          {
+            this.Invoke(d);
+          }
+          d.Invoke();
+        }
+
         void m_oWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             // PERFORM UPDATE
@@ -171,14 +185,14 @@ namespace windows_wwiv_update
             // Make Sure Build Number Is NOT Null
             if (fetchVersion != null)
             {
+                UpdateStatus("Initializing Update...");
                 // Set Global Variables For Update
-                activeStatus.Text = "Initializing Update...";
                 string backupPath = Directory.GetCurrentDirectory();
                 string zipPath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + "_wwiv-backup.zip";
                 string extractPath = Directory.GetCurrentDirectory();
                 string extractPath2 = Environment.GetEnvironmentVariable("SystemRoot") + @"\System32";
                 string updateTempPath = Directory.GetCurrentDirectory() + @"\update-temp";
-                string remoteUri = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/artifact/";
+                string remoteUri = baseUrl_ + "/artifact/";
                 string fileName = "wwiv-build-win-" + fetchVersion + ".zip", myStringWebResource = null;
                 string updatePath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\wwiv-build-win-" + fetchVersion + ".zip";
                 string wwivUpdateFile = "wwiv-update.exe";
@@ -186,21 +200,21 @@ namespace windows_wwiv_update
                 // Update Progress Bar
                 m_oWorker.ReportProgress(20);
 
-                // Begin WWIV Backup
-                activeStatus.Text = "Performing WWIV Backup...";
-                ZipFile.CreateFromDirectory(backupPath, zipPath);
-
-                // Update Progress Bar
-                m_oWorker.ReportProgress(40);
-
                 // Fetch Latest Sucessful Build
-                activeStatus.Text = "Fetching WWIV Package From Server...";
+                UpdateStatus("Fetching WWIV Package From Server...");
                 WebClient myWebClient = new WebClient();
                 myStringWebResource = remoteUri + fileName;
                 myWebClient.DownloadFile(myStringWebResource, Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + fileName);
 
                 // Update Progress Bar
                 m_oWorker.ReportProgress(60);
+
+                // Begin WWIV Backup
+                UpdateStatus("Performing WWIV Backup...");
+                ZipFile.CreateFromDirectory(backupPath, zipPath);
+
+                // Update Progress Bar
+                m_oWorker.ReportProgress(40);
 
                 // Create Temp Update Directory
                 Directory.CreateDirectory("update-temp");
@@ -227,7 +241,7 @@ namespace windows_wwiv_update
                 }
 
                 // Patch Existing WWIV Install
-                activeStatus.Text = "Patching WWIV Files For Update...";
+                UpdateStatus("Patching WWIV Files For Update...");
                 using (ZipArchive archive = ZipFile.OpenRead(updatePath))
                 {
                     foreach (ZipArchiveEntry entry in archive.Entries)
@@ -243,10 +257,6 @@ namespace windows_wwiv_update
                         if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
                         {
                             entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
-                        }
-                        if (entry.FullName.EndsWith("sbbsexec.dll", StringComparison.OrdinalIgnoreCase))
-                        {
-                            entry.ExtractToFile(Path.Combine(extractPath2, entry.FullName), true);
                         }
                         if (entry.FullName.EndsWith("whatsnew.txt", StringComparison.OrdinalIgnoreCase) && entry.FullName.EndsWith("changelog.txt", StringComparison.OrdinalIgnoreCase))
                         {
@@ -297,10 +307,17 @@ namespace windows_wwiv_update
             // Run CleanUp.Bat
             ProcessStartInfo cleanUp = new ProcessStartInfo("cleanup.bat");
             cleanUp.WindowStyle = ProcessWindowStyle.Minimized;
-            Process.Start(cleanUp);
+            try
+            {
+              Process.Start(cleanUp);
+            }
+            catch (Win32Exception ex)
+            {
+              Debug.WriteLine(ex.ToString());
+            }
 
             // Exit Application
-            Application.Exit();
+      Application.Exit();
         }
 
         private void Form2_Load(object sender, EventArgs e)
