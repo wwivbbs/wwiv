@@ -33,8 +33,8 @@ namespace windows_wwiv_update
     public static string updateVersionLabel;
     public static string updateTagLabel;
 
-    public string baseUrl52 = "http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows";
-    public string baseUrl51 = "https://build.wwivbbs.org/jenkins/job/wwiv_5.1/lastSuccessfulBuild/label=windows";
+    public static readonly string baseUrl52 = "http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows";
+    public static readonly string baseUrl51 = "https://build.wwivbbs.org/jenkins/job/wwiv_5.1/lastSuccessfulBuild/label=windows";
 
     public Form1()
     {
@@ -47,8 +47,8 @@ namespace windows_wwiv_update
 
       // Fetch Latest Build Number For WWIV 5.1
       string wwivBuild5_1 = wc.DownloadString(baseUrl51 + "/buildNumber");
-      version51.Text = wwivBuild5_2;
-      version50.Text = wwivBuild5_1;
+      version52.Text = wwivBuild5_2;
+      version51.Text = wwivBuild5_1;
       currentVersion();
     }
 
@@ -88,7 +88,7 @@ namespace windows_wwiv_update
     private void update51_Click(object sender, EventArgs e)
     {
       string updateToNew51;
-      updateToNew51 = version51.Text;
+      updateToNew51 = version52.Text;
       if (updateToNew51 == null || string.IsNullOrWhiteSpace(updateToNew51))
       {
         if (MessageBox.Show("Error! Build Server Unavailable.", "Build Server Down", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
@@ -117,7 +117,7 @@ namespace windows_wwiv_update
     private void update50_Click(object sender, EventArgs e)
     {
       string updateToNew50;
-      updateToNew50 = version50.Text;
+      updateToNew50 = version51.Text;
       if (updateToNew50 == null || string.IsNullOrWhiteSpace(updateToNew50))
       {
         if (MessageBox.Show("Error! Build Server Unavailable.", "Build Server Down", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
