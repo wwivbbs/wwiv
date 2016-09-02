@@ -45,13 +45,11 @@ namespace WWIV5TelnetServer
       serverTelnet = new SocketServer(nodeManager, portTelnet, argumentsTemplateTelnet, "Telnet");
       serverSSH = new SocketServer(nodeManager, portSSH, argumentsTemplateSSH, "SSH"); // SSH
 
-
       serverTelnet.StatusMessageChanged += server_StatusMessage;
       serverTelnet.NodeStatusChanged += server_NodeStatusChanged;
       serverSSH.StatusMessageChanged += server_StatusMessage; // SSH
       serverSSH.NodeStatusChanged += server_NodeStatusChanged; // SSH
     }
-
 
     private void server_NodeStatusChanged(object sender, NodeStatusEventArgs e)
     {
