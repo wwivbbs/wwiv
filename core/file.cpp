@@ -140,7 +140,7 @@ bool File::Open(int nFileMode, int nShareMode) {
   CHECK_NE(nShareMode, File::shareUnknown);
   CHECK_NE(nFileMode, File::modeUnknown);
 
-  VLOG(2) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode;
+  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode;
 
   handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
@@ -150,18 +150,18 @@ bool File::Open(int nFileMode, int nShareMode) {
       handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
         sleep_for(milliseconds((count % 2) ? WAIT_TIME_MILLIS : 0));
-        VLOG(2) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
+        VLOG(3) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
         count++;
         handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
       }
 
       if (handle_ < 0) {
-        VLOG(2) << "The file " << full_path_name_ << " is busy.  Try again later.";
+        VLOG(3) << "The file " << full_path_name_ << " is busy.  Try again later.";
       }
     }
   }
 
-  VLOG(2) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode << ", handle=" << handle_;
+  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode << ", handle=" << handle_;
 
   if (File::IsFileHandleValid(handle_)) {
     flock(handle_, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
