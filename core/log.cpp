@@ -51,7 +51,7 @@ static std::string exit_filename;
 //static
 void Logger::ExitLogger() {
   time_t t = time(nullptr);
-  LOG(INFO) << exit_filename << " exiting at " << asctime(localtime(&t));
+  CLOG(INFO, "startup") << exit_filename << " exiting at " << asctime(localtime(&t));
 }
 
 // static
@@ -77,22 +77,30 @@ void Logger::Init(int argc, char** argv) {
   conf.set(Level::Verbose, ConfigurationType::Format, std::string("%datetime %level-%vlevel %msg"));
   conf.set(Level::Trace, ConfigurationType::Format, std::string("%datetime %level [%func] [%loc] %msg"));
 
+  auto startup = getLoggerStorage()->registeredLoggers()->get("startup");
+
   el::Loggers::reconfigureAllLoggers(conf);
+
+  // Fork a 2nd configuation to use for the startup logger.
+  el::Configurations confStartup = conf;
+  confStartup.set(Level::Info, ConfigurationType::ToStandardOutput, "false");
+  startup->configure(confStartup);
+
   START_EASYLOGGINGPP(argc, argv);
 
   time_t t = time(nullptr);
   string l(asctime(localtime(&t)));
   StringTrim(&l);
-  LOG(INFO) << filename << " version " << wwiv_version << beta_version
+  CLOG(INFO, "startup") << filename << " version " << wwiv_version << beta_version
             << " (" << wwiv_date << ")";
-  LOG(INFO) << filename << " starting at " << l;
+  CLOG(INFO, "startup") << filename << " starting at " << l;
   if (argc > 1) {
     string cmdline;
     for (int i = 1; i < argc; i++) {
       cmdline += argv[i];
       cmdline += " ";
     }
-    LOG(INFO) << "command line: " << cmdline;
+    CLOG(INFO, "startup") << "command line: " << cmdline;
   }
 
   exit_filename = filename;
