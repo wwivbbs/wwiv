@@ -167,21 +167,21 @@ bool WWIVMessageArea::ParseMessageText(
   vector<string> lines = SplitString(raw_text, "\n");
   auto it = lines.begin();
   if (it == std::end(lines)) {
-    LOG(ERROR) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    VLOG(1) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true; 
   }
 
   from_username = *it++;
   StringTrim(&from_username);
   if (it == lines.end()) {
-    LOG(ERROR) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    VLOG(1) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
   date = *it++;
   StringTrim(&date);
   if (it == lines.end()) {
-    LOG(ERROR) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    VLOG(1) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
