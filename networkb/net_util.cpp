@@ -137,10 +137,18 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
     initialized_ = false;
   }
   network_number_ = cmdline.arg("net").as_int();
-  network_name_ = networks_[network_number_].name;
+  const auto& nws = networks_.networks();
+
+  if (network_number_ < 0 || network_number_ >= nws.size()) {
+    LOG(ERROR) << "network number must be between 0 and " << nws.size() << ".";
+    initialized_ = false;
+    return;
+  }
+  network_ = nws[network_number_];
+
+  network_name_ = network_.name;
   StringLowerCase(&network_name_);
 
-  network_ = networks_.networks()[network_number_];
 }
 
 }  // namespace net
