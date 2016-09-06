@@ -104,10 +104,10 @@ namespace windows_wwiv_update
       }
       else
       {
-        // Begin Update 51
+        // Begin Update 52
         string fetchVersion = updateToNew51;
         this.Hide();
-        Form2 frm = new Form2(baseUrl52, fetchVersion);
+        Form2 frm = new Form2(baseUrl52, "5.2", fetchVersion);
         frm.ShowDialog();
         this.Close();
       }
@@ -116,9 +116,8 @@ namespace windows_wwiv_update
     // Update To Newest WWIV
     private void update50_Click(object sender, EventArgs e)
     {
-      string updateToNew50;
-      updateToNew50 = version51.Text;
-      if (updateToNew50 == null || string.IsNullOrWhiteSpace(updateToNew50))
+      string updateToNew51 = version51.Text;
+      if (updateToNew51 == null || string.IsNullOrWhiteSpace(updateToNew51))
       {
         if (MessageBox.Show("Error! Build Server Unavailable.", "Build Server Down", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
         {
@@ -133,10 +132,10 @@ namespace windows_wwiv_update
       }
       else
       {
-        // Begin Update 50
-        string fetchVersion = updateToNew50;
+        // Begin Update 51
+        string fetchBuild = updateToNew51;
         this.Hide();
-        Form2 frm = new Form2(baseUrl51, fetchVersion);
+        Form2 frm = new Form2(baseUrl51, "5.1", fetchBuild);
         frm.ShowDialog();
         this.Close();
       }
@@ -155,9 +154,9 @@ namespace windows_wwiv_update
       else
       {
         // Begin Update Custom Build
-        string fetchVersion = customBuildNumber;
+        string fetchBuild = customBuildNumber;
         this.Hide();
-        Form2 frm = new Form2(baseUrl52, fetchVersion);
+        Form2 frm = new Form2(baseUrl52, "5.2", fetchBuild);
         frm.ShowDialog();
         this.Close();
       }

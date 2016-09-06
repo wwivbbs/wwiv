@@ -31,15 +31,17 @@ namespace windows_wwiv_update
     // BackgroundWorker Event
     BackgroundWorker m_oWorker;
     private string baseUrl_;
-    private string version_;
+    private string major_;
+    private string build_;
 
-    public Form2(string baseUrl, string fetchVersion)
+    public Form2(string baseUrl, string majorVersion, string build)
     {
       baseUrl_ = baseUrl;
-      version_ = fetchVersion;
+      major_ = majorVersion;
+      build_ = build;
       // Fetch Version
       InitializeComponent();
-      label2.Text = fetchVersion;
+      label2.Text = build;
 
       m_oWorker = new BackgroundWorker();
 
@@ -193,7 +195,7 @@ namespace windows_wwiv_update
         string extractPath2 = Environment.GetEnvironmentVariable("SystemRoot") + @"\System32";
         string updateTempPath = Directory.GetCurrentDirectory() + @"\update-temp";
         string remoteUri = baseUrl_ + "/artifact/";
-        string fileName = "wwiv-build-win-" + fetchVersion + ".zip", myStringWebResource = null;
+        string fileName = "wwiv-win-" + major_ + "." + fetchVersion + ".zip";
         string updatePath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\wwiv-build-win-" + fetchVersion + ".zip";
         string wwivUpdateFile = "wwiv-update.exe";
 
@@ -203,7 +205,7 @@ namespace windows_wwiv_update
         // Fetch Latest Sucessful Build
         UpdateStatus("Fetching WWIV Package From Server...");
         WebClient myWebClient = new WebClient();
-        myStringWebResource = remoteUri + fileName;
+        var myStringWebResource = remoteUri + fileName;
         myWebClient.DownloadFile(myStringWebResource, Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + fileName);
 
         // Update Progress Bar
