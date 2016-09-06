@@ -7,7 +7,7 @@
 # BUILD_NUMBER - Jenkins Build number
 
 
-rm ${WORKSPACE}/wwiv-linux-*.tar.gz
+rm ${WORKSPACE}/wwiv-*.tar.gz
 
 set -e
 
