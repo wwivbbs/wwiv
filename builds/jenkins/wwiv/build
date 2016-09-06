@@ -7,11 +7,11 @@
 # BUILD_NUMBER - Jenkins Build number
 
 
-rm ${WORKSPACE}/wwiv-build-linux-*.tar.gz
+rm ${WORKSPACE}/wwiv-*.tar.gz
 
 set -e
 
-declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-build-linux-${BUILD_NUMBER}.tar.gz
+declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-linux-5.2.${BUILD_NUMBER}.tar.gz
 echo "WWIV BBS Build"
 echo "Workspace: ${WORKSPACE}"
 echo "Version:   ${BUILD_NUMBER}"
