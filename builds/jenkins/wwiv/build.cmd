@@ -24,7 +24,7 @@ setlocal
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set RELEASE_ZIP=%WORKSPACE%\wwiv-build-win-%BUILD_NUMBER%.zip
+set RELEASE_ZIP=%WORKSPACE%\wwiv-win-5.1.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
 echo TextTransform: %TEXT_TRANSFORM%
 echo Workspace:     %WORKSPACE%         
