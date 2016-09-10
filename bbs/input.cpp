@@ -222,10 +222,9 @@ std::string inputl(int max_length, bool auto_mpl) {
 
 std::string input_password(const string& prompt_text, int max_length) {
   bout << prompt_text;
+  bout.mpl(max_length);
   local_echo = false;
-
   std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
-
   input1(line.get(), max_length, InputMode::UPPER, true, false);
   return string(line.get());
 }

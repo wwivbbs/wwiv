@@ -186,7 +186,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
 
   string user_name;
   if (remote_username.empty()) {
-    user_name = input(30);
+    user_name = input(30, true);
   } else {
     bout << remote_username << wwiv::endl;
     user_name = remote_username;
