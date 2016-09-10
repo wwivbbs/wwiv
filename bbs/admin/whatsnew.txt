@@ -5,6 +5,9 @@
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+What's New in WWIV 5.1 (2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * removed "debug_level" and Debug menu command. use VLOG(2) now.
 * "extra color" was only used in transfer section w/o listplus 
   (which means it's not ever used). removed the checks for it.  This
@@ -13,9 +16,6 @@ What's New in WWIV 5.2 (2016)
   are on the blacklist page in wwivserver.exe. By default 3 connection
   attempts in 120 seconds will get an IP blacklisted.
 * The wwiv server also pretends to be a FTN mailer for fun.
-
-What's New in WWIV 5.1 (2016)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Removed F6 (toggle sysop alert), to page you after a session ends, since
   this isn't needed post-DOS anymore.
 * Added wwiv-update.exe (contributed to WWIV by TRI0N from 
