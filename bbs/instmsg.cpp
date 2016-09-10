@@ -275,7 +275,7 @@ void process_inst_msgs() {
         file.Close();
         file.Delete();
         session()->localIO()->SetTopLine(0);
-        session()->localIO()->LocalCls();
+        session()->localIO()->Cls();
         hangup = true;
         hang_it_up();
         sleep_for(seconds(1));
@@ -425,7 +425,7 @@ void instance_edit() {
       }
       if (i == session()->instance_number()) {
         session()->localIO()->SetTopLine(0);
-        session()->localIO()->LocalCls();
+        session()->localIO()->Cls();
         hangup = true;
         hang_it_up();
         sleep_for(seconds(1));
@@ -458,7 +458,7 @@ void instance_edit() {
           }
         }
         session()->localIO()->SetTopLine(0);
-        session()->localIO()->LocalCls();
+        session()->localIO()->Cls();
         hangup = true;
         hang_it_up();
         sleep_for(seconds(1));

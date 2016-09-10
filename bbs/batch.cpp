@@ -392,7 +392,7 @@ void zmbatchdl(bool bHangupAfterDl) {
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
-        session()->localIO()->LocalPuts(
+        session()->localIO()->Puts(
             StringPrintf("Files left - %d, Time left - %s\r\n", 
               session()->batch().entry.size(), ctim(session()->batch().dl_time_in_secs())));
         File file(g_szDownloadFileName);
@@ -471,7 +471,7 @@ void ymbatchdl(bool bHangupAfterDl) {
       if (nRecordNumber <= 0) {
         delbatch(cur);
       } else {
-        session()->localIO()->LocalPuts(
+        session()->localIO()->Puts(
 			      StringPrintf("Files left - %d, Time left - %s\r\n", 
               session()->batch().entry.size(), ctim(session()->batch().dl_time_in_secs())));
         File file(g_szDownloadFileName);
@@ -691,13 +691,13 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 
   if (!commandLine.empty()) {
     WWIV_make_abs_cmd(session()->GetHomeDir(), &commandLine);
-    session()->localIO()->LocalCls();
+    session()->localIO()->Cls();
     const string user_name_number = session()->names()->UserName(session()->usernum);
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
         user_name_number.c_str(),
         modem_speed, dl.c_str(), commandLine.c_str());
-    session()->localIO()->LocalPuts(message);
+    session()->localIO()->Puts(message);
     if (incom) {
       File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
       File::Remove(g_szDSZLogFileName);

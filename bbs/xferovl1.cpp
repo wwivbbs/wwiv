@@ -288,7 +288,7 @@ int read_idz_all() {
   TempDisablePause disable_pause;
   session()->ClearTopScreenProtection();
   for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
-       (!session()->localIO()->LocalKeyPressed()); i++) {
+       (!session()->localIO()->KeyPressed()); i++) {
     count += read_idz(0, i);
   }
   tmp_disable_conf(false);
@@ -1168,7 +1168,7 @@ void removenotthere() {
   bout << "|#5Remove N/A files in all session()->directories? ";
   if (yesno()) {
     for (size_t i = 0; ((i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
-                     (!session()->localIO()->LocalKeyPressed())); i++) {
+                     (!session()->localIO()->KeyPressed())); i++) {
       bout.nl();
       bout << "|#1Removing N/A|#0 in " << session()->directories[session()->udir[i].subnum].name;
       bout.nl(2);

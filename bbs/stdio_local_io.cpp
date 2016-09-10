@@ -24,71 +24,71 @@
 StdioLocalIO::StdioLocalIO() {}
 StdioLocalIO::~StdioLocalIO() {}
 
-void StdioLocalIO::LocalPutch(unsigned char ch) {
+void StdioLocalIO::Putch(unsigned char ch) {
   putchar(ch);
 };
 
-void StdioLocalIO::LocalLf() {
+void StdioLocalIO::Lf() {
   putchar(10);
 }
 
-void StdioLocalIO::LocalCr() {
+void StdioLocalIO::Cr() {
   putchar(13);
 }
 
-void StdioLocalIO::LocalCls() {
+void StdioLocalIO::Cls() {
   // NOP
 }
 
-void StdioLocalIO::LocalBackspace() {
+void StdioLocalIO::Backspace() {
   putchar(8);
 }
 
-void StdioLocalIO::LocalPutchRaw(unsigned char ch) {
+void StdioLocalIO::PutchRaw(unsigned char ch) {
   putchar(ch);
 }
 
-void StdioLocalIO::LocalPuts(const std::string& s) {
+void StdioLocalIO::Puts(const std::string& s) {
   puts(s.c_str());
 }
 
-void StdioLocalIO::LocalXYPuts(int, int, const std::string& text) {
-  LocalPuts(text);
+void StdioLocalIO::PutsXY(int, int, const std::string& text) {
+  Puts(text);
 }
 
-void StdioLocalIO::LocalFastPuts(const std::string& text) {
-  LocalPuts(text);
+void StdioLocalIO::FastPuts(const std::string& text) {
+  Puts(text);
 }
 
-int StdioLocalIO::LocalPrintf(const char *formatted_text, ...) { 
+int StdioLocalIO::Printf(const char *formatted_text, ...) { 
   va_list ap;
   char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
-  LocalFastPuts(szBuffer);
+  FastPuts(szBuffer);
   return nNumWritten;
 }
 
-int StdioLocalIO::LocalXYPrintf(int, int, const char *formatted_text, ...) { 
+int StdioLocalIO::PrintfXY(int, int, const char *formatted_text, ...) { 
   va_list ap;
   char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
-  LocalFastPuts(szBuffer);
+  FastPuts(szBuffer);
   return nNumWritten;
 }
 
-int StdioLocalIO::LocalXYAPrintf(int, int, int, const char *formatted_text, ...) { 
+int StdioLocalIO::PrintfXYA(int, int, int, const char *formatted_text, ...) { 
   va_list ap;
   char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
-  LocalFastPuts(szBuffer);
+  FastPuts(szBuffer);
   return nNumWritten;
 }

@@ -811,7 +811,7 @@ void WSession::InitializeBBS() {
   // set default screenlinest
   screenlinest = defscreenbottom + 1;
 
-  localIO()->LocalCls();
+  localIO()->Cls();
 #if !defined( __unix__ )
   std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2016, WWIV Software Services."
             << std::endl << std::endl

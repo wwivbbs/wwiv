@@ -277,7 +277,7 @@ int list_arc_out(const char *file_name, const char *pszDirectory) {
     bout.nl();
   } else {
     bout.nl();
-    session()->localIO()->LocalPuts("Unknown archive: ");
+    session()->localIO()->Puts("Unknown archive: ");
     bout << file_name;
     bout.nl(2);
     nRetCode = 0;

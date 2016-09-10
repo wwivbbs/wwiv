@@ -174,7 +174,7 @@ int bputch(char c, bool bUseInternalBuffer) {
       }
     } else if (local_echo) {
       displayed = 1;
-      session()->localIO()->LocalPutch(local_echo ? c : '\xFE');
+      session()->localIO()->Putch(local_echo ? c : '\xFE');
 
       if (c == SOFTRETURN) {
         ++lines_listed;
@@ -187,7 +187,7 @@ int bputch(char c, bool bUseInternalBuffer) {
         }
       }
     } else {
-      session()->localIO()->LocalPutch('X');
+      session()->localIO()->Putch('X');
       displayed = 1;
     }
   }
@@ -240,29 +240,29 @@ void execute_ansi() {
     switch (cmd) {
     case 'f':
     case 'H':
-      session()->localIO()->LocalGotoXY(args[1] - 1, args[0] - 1);
+      session()->localIO()->GotoXY(args[1] - 1, args[0] - 1);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'A':
-      session()->localIO()->LocalGotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() - args[0]);
+      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() - args[0]);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'B':
-      session()->localIO()->LocalGotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() + args[0]);
+      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() + args[0]);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'C':
-      session()->localIO()->LocalGotoXY(session()->localIO()->WhereX() + args[0], session()->localIO()->WhereY());
+      session()->localIO()->GotoXY(session()->localIO()->WhereX() + args[0], session()->localIO()->WhereY());
       break;
     case 'D':
-      session()->localIO()->LocalGotoXY(session()->localIO()->WhereX() - args[0], session()->localIO()->WhereY());
+      session()->localIO()->GotoXY(session()->localIO()->WhereX() - args[0], session()->localIO()->WhereY());
       break;
     case 's':
       oldx = session()->localIO()->WhereX();
       oldy = session()->localIO()->WhereY();
       break;
     case 'u':
-      session()->localIO()->LocalGotoXY(oldx, oldy);
+      session()->localIO()->GotoXY(oldx, oldy);
       oldx = oldy = 0;
       g_flags |= g_flag_ansi_movement;
       break;
@@ -270,12 +270,12 @@ void execute_ansi() {
       if (args[0] == 2) {
         lines_listed = 0;
         g_flags |= g_flag_ansi_movement;
-        session()->localIO()->LocalCls();
+        session()->localIO()->Cls();
       }
       break;
     case 'k':
     case 'K':
-      session()->localIO()->LocalClrEol();
+      session()->localIO()->ClrEol();
       break;
     case 'm':
       if (!argptr) {

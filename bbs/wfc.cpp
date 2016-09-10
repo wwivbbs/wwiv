@@ -66,7 +66,7 @@ static int inst_num;
 void wfc_cls() {
   if (session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     bout.ResetColors();
-    session()->localIO()->LocalCls();
+    session()->localIO()->Cls();
     session()->wfc_status = 0;
     session()->localIO()->SetCursor(LocalIO::cursorNormal);
   }
@@ -90,17 +90,17 @@ void wfc_update() {
 
   get_inst_info(inst_num, &ir);
   session()->users()->ReadUserNoCache(&u, ir.user);
-  session()->localIO()->LocalXYAPrintf(57, 18, 15, "%-3d", inst_num);
+  session()->localIO()->PrintfXYA(57, 18, 15, "%-3d", inst_num);
   if (ir.flags & INST_FLAGS_ONLINE) {
     const string unn = session()->names()->UserName(ir.user);
-    session()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", unn.c_str());
+    session()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", unn.c_str());
   } else {
-    session()->localIO()->LocalXYAPrintf(42, 19, 14, "%-25.25s", "Nobody");
+    session()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", "Nobody");
   }
 
   string activity_string;
   make_inst_str(inst_num, &activity_string, INST_FORMAT_WFC);
-  session()->localIO()->LocalXYAPrintf(42, 20, 14, "%-25.25s", activity_string.c_str());
+  session()->localIO()->PrintfXYA(42, 20, 14, "%-25.25s", activity_string.c_str());
   if (num_instances() > 1) {
     do {
       ++inst_num;
@@ -124,7 +124,7 @@ void wfc_screen() {
   std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   if (session()->wfc_status == 0) {
     session()->localIO()->SetCursor(LocalIO::cursorNone);
-    session()->localIO()->LocalCls();
+    session()->localIO()->Cls();
     if (pszScreenBuffer == nullptr) {
       pszScreenBuffer = new char[4000];
       File wfcFile(session()->config()->datadir(), WFC_DAT);
@@ -135,52 +135,52 @@ void wfc_screen() {
       }
       wfcFile.Read(pszScreenBuffer, 4000);
     }
-    session()->localIO()->LocalWriteScreenBuffer(pszScreenBuffer);
+    session()->localIO()->WriteScreenBuffer(pszScreenBuffer);
     const string title = StringPrintf("Activity and Statistics of %s Node %d", syscfg.systemname, session()->instance_number());
-    session()->localIO()->LocalXYAPrintf(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
-    session()->localIO()->LocalXYAPrintf(8, 1, 14, fulldate());
+    session()->localIO()->PrintfXYA(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
+    session()->localIO()->PrintfXYA(8, 1, 14, fulldate());
     std::string osVersion = wwiv::os::os_version_string();
-    session()->localIO()->LocalXYAPrintf(40, 1, 3, "OS: ");
-    session()->localIO()->LocalXYAPrintf(44, 1, 14, osVersion.c_str());
-    session()->localIO()->LocalXYAPrintf(21, 6, 14, "%d", pStatus->GetNumCallsToday());
+    session()->localIO()->PrintfXYA(40, 1, 3, "OS: ");
+    session()->localIO()->PrintfXYA(44, 1, 14, osVersion.c_str());
+    session()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
     User sysop{};
     int feedback_waiting = 0;
     if (session()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    session()->localIO()->LocalXYAPrintf(21, 7, 14, "%d", feedback_waiting);
+    session()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
     if (nNumNewMessages) {
-      session()->localIO()->LocalXYAPrintf(29, 7 , 3, "New:");
-      session()->localIO()->LocalXYAPrintf(34, 7 , 12, "%d", nNumNewMessages);
+      session()->localIO()->PrintfXYA(29, 7 , 3, "New:");
+      session()->localIO()->PrintfXYA(34, 7 , 12, "%d", nNumNewMessages);
     }
-    session()->localIO()->LocalXYAPrintf(21, 8, 14, "%d", pStatus->GetNumUploadsToday());
-    session()->localIO()->LocalXYAPrintf(21, 9, 14, "%d", pStatus->GetNumMessagesPostedToday());
-    session()->localIO()->LocalXYAPrintf(21, 10, 14, "%d", pStatus->GetNumLocalPosts());
-    session()->localIO()->LocalXYAPrintf(21, 11, 14, "%d", pStatus->GetNumEmailSentToday());
-    session()->localIO()->LocalXYAPrintf(21, 12, 14, "%d", pStatus->GetNumFeedbackSentToday());
-    session()->localIO()->LocalXYAPrintf(21, 13, 14, "%d Mins (%.1f%%)", pStatus->GetMinutesActiveToday(),
+    session()->localIO()->PrintfXYA(21, 8, 14, "%d", pStatus->GetNumUploadsToday());
+    session()->localIO()->PrintfXYA(21, 9, 14, "%d", pStatus->GetNumMessagesPostedToday());
+    session()->localIO()->PrintfXYA(21, 10, 14, "%d", pStatus->GetNumLocalPosts());
+    session()->localIO()->PrintfXYA(21, 11, 14, "%d", pStatus->GetNumEmailSentToday());
+    session()->localIO()->PrintfXYA(21, 12, 14, "%d", pStatus->GetNumFeedbackSentToday());
+    session()->localIO()->PrintfXYA(21, 13, 14, "%d Mins (%.1f%%)", pStatus->GetMinutesActiveToday(),
                                             100.0 * static_cast<float>(pStatus->GetMinutesActiveToday()) / 1440.0);
-    session()->localIO()->LocalXYAPrintf(58, 6, 14, "%s%s", wwiv_version, beta_version);
+    session()->localIO()->PrintfXYA(58, 6, 14, "%s%s", wwiv_version, beta_version);
 
-    session()->localIO()->LocalXYAPrintf(58, 7, 14, "%d", pStatus->GetNetworkVersion());
-    session()->localIO()->LocalXYAPrintf(58, 8, 14, "%d", pStatus->GetNumUsers());
-    session()->localIO()->LocalXYAPrintf(58, 9, 14, "%ld", pStatus->GetCallerNumber());
+    session()->localIO()->PrintfXYA(58, 7, 14, "%d", pStatus->GetNetworkVersion());
+    session()->localIO()->PrintfXYA(58, 8, 14, "%d", pStatus->GetNumUsers());
+    session()->localIO()->PrintfXYA(58, 9, 14, "%ld", pStatus->GetCallerNumber());
     if (pStatus->GetDays()) {
-      session()->localIO()->LocalXYAPrintf(58, 10, 14, "%.2f", static_cast<float>(pStatus->GetCallerNumber()) /
+      session()->localIO()->PrintfXYA(58, 10, 14, "%.2f", static_cast<float>(pStatus->GetCallerNumber()) /
                                               static_cast<float>(pStatus->GetDays()));
     } else {
-      session()->localIO()->LocalXYAPrintf(58, 10, 14, "N/A");
+      session()->localIO()->PrintfXYA(58, 10, 14, "N/A");
     }
-    session()->localIO()->LocalXYAPrintf(58, 11, 14, sysop2() ? "Available    " : "Not Available");
-    session()->localIO()->LocalXYAPrintf(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
-    session()->localIO()->LocalXYAPrintf(58, 13, 14, "Waiting For Command");
+    session()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+    session()->localIO()->PrintfXYA(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
+    session()->localIO()->PrintfXYA(58, 13, 14, "Waiting For Command");
 
     get_inst_info(session()->instance_number(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {
       const string unn = session()->names()->UserName(ir.user);
-      session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", unn.c_str());
+      session()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", unn.c_str());
     } else {
-      session()->localIO()->LocalXYAPrintf(33, 16, 14, "%-20.20s", "Nobody");
+      session()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", "Nobody");
     }
 
     session()->wfc_status = 1;
@@ -189,8 +189,8 @@ void wfc_screen() {
   } else {
     if ((timer() - wfc_time < session()->screen_saver_time) ||
         (session()->screen_saver_time == 0)) {
-      session()->localIO()->LocalXYAPrintf(28, 1, 14, times());
-      session()->localIO()->LocalXYAPrintf(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+      session()->localIO()->PrintfXYA(28, 1, 14, times());
+      session()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
       if (timer() - poll_time > 10) {
         wfc_update();
         poll_time = timer();
@@ -198,8 +198,8 @@ void wfc_screen() {
     } else {
       if ((timer() - poll_time > 10) || session()->wfc_status == 1) {
         session()->wfc_status = 2;
-        session()->localIO()->LocalCls();
-        session()->localIO()->LocalXYAPrintf(
+        session()->localIO()->Cls();
+        session()->localIO()->PrintfXYA(
             random_number(38), random_number(24), random_number(14) + 1,
             "WWIV Screen Saver - Press Any Key For WWIV");
         wfc_time = timer() - session()->screen_saver_time - 1;

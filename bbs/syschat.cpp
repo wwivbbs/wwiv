@@ -142,13 +142,13 @@ void select_chat_name(char *sysop_name) {
   strcpy(sysop_name, syscfg.sysopname);
   curatr = session()->GetChatNameSelectionColor();
   session()->localIO()->MakeLocalWindow(20, 5, 43, 3);
-  session()->localIO()->LocalXYPuts(22, 6, "Chat As: ");
+  session()->localIO()->PutsXY(22, 6, "Chat As: ");
   curatr = session()->localIO()->GetEditLineColor();
-  session()->localIO()->LocalXYPuts(31, 6, std::string(30, SPACE));
+  session()->localIO()->PutsXY(31, 6, std::string(30, SPACE));
 
   int rc;
-  session()->localIO()->LocalGotoXY(31, 6);
-  session()->localIO()->LocalEditLine(sysop_name, 30, ALL, &rc, sysop_name);
+  session()->localIO()->GotoXY(31, 6);
+  session()->localIO()->EditLine(sysop_name, 30, ALL, &rc, sysop_name);
   if (rc != ABORTED) {
     StringTrimEnd(sysop_name);
     int user_number = atoi(sysop_name);
@@ -576,7 +576,7 @@ void chat1(const char *chat_line, bool two_way) {
   bout.nl(2);
   int nSaveTopData = session()->topdata;
   if (two_way) {
-    session()->localIO()->LocalCls();
+    session()->localIO()->Cls();
     cp0 = cp1 = 0;
     if (defscreenbottom == 24) {
       session()->topdata = LocalIO::topdataNone;
@@ -622,7 +622,7 @@ void chat1(const char *chat_line, bool two_way) {
     }
     if (chat_file && !two_way) {
       if (!chatFile.IsOpen()) {
-        session()->localIO()->LocalPuts("-] Chat file opened.\r\n");
+        session()->localIO()->Puts("-] Chat file opened.\r\n");
         if (chatFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
           chatFile.Seek(0L, File::seekEnd);
           sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", fulldate(), times());
@@ -634,7 +634,7 @@ void chat1(const char *chat_line, bool two_way) {
       strcat(s, "\r\n");
     } else if (chatFile.IsOpen()) {
       chatFile.Close();
-      session()->localIO()->LocalPuts("-] Chat file closed.\r\n");
+      session()->localIO()->Puts("-] Chat file closed.\r\n");
     }
     if (hangup) {
       chatting = 0;

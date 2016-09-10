@@ -49,14 +49,14 @@ int doIO( ZModem *info );
 #endif
 
 static void ProcessLocalKeyDuringZmodem() {
-  if (!session()->localIO()->LocalKeyPressed()) {
+  if (!session()->localIO()->KeyPressed()) {
     return;
   }
-  char localChar = session()->localIO()->LocalGetChar();
+  char localChar = session()->localIO()->GetChar();
   session()->SetLastKeyLocal(true);
   if (!(g_flags & g_flag_allow_extended)) {
     if (!localChar) {
-      session()->handle_sysop_key(session()->localIO()->LocalGetChar());
+      session()->handle_sysop_key(session()->localIO()->GetChar());
     }
   }
 }
@@ -165,8 +165,8 @@ int ZModemWindowStatus(const char *fmt,...) {
 	va_end( ap );
 	int oldX = session()->localIO()->WhereX();
 	int oldY = session()->localIO()->WhereY();
-	session()->localIO()->LocalXYPrintf( 1, 10, "%s                           ", szBuffer );
-	session()->localIO()->LocalGotoXY( oldX, oldY );
+	session()->localIO()->PrintfXY( 1, 10, "%s                           ", szBuffer );
+	session()->localIO()->GotoXY( oldX, oldY );
 	return 0;
 }
 
@@ -184,8 +184,8 @@ int ZModemWindowXferStatus(const char *fmt,...) {
 	va_end( ap );
 	int oldX = session()->localIO()->WhereX();
 	int oldY = session()->localIO()->WhereY();
-	session()->localIO()->LocalXYPrintf( 1, 1, "%s                           ", szBuffer );
-	session()->localIO()->LocalGotoXY( oldX, oldY );
+	session()->localIO()->PrintfXY( 1, 1, "%s                           ", szBuffer );
+	session()->localIO()->GotoXY( oldX, oldY );
 	return 0;
 }
 

@@ -218,17 +218,17 @@ void WSession::tleft(bool check_for_timeout) {
   int nLineNumber = (chatcall && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
   if (topdata) {
-    localIO()->LocalXYPuts(1, nLineNumber, GetCurrentSpeed());
+    localIO()->PutsXY(1, nLineNumber, GetCurrentSpeed());
     for (int i = localIO()->WhereX(); i < 23; i++) {
-      localIO()->LocalPutch(static_cast<unsigned char>('\xCD'));
+      localIO()->Putch(static_cast<unsigned char>('\xCD'));
     }
 
     if (temp_sysop) {
-      localIO()->LocalXYPuts(23, nLineNumber, "Temp Sysop");
+      localIO()->PutsXY(23, nLineNumber, "Temp Sysop");
     }
 
     if (sysop_available) {
-      localIO()->LocalXYPuts(64, nLineNumber, "Available");
+      localIO()->PutsXY(64, nLineNumber, "Available");
     }
   }
 
@@ -238,22 +238,22 @@ void WSession::tleft(bool check_for_timeout) {
   switch (topdata) {
   case LocalIO::topdataSystem:
     if (IsUserOnline()) {
-      localIO()->LocalXYPuts(18, 3, tleft_display);
+      localIO()->PutsXY(18, 3, tleft_display);
     }
     break;
   case LocalIO::topdataUser:
   {
     if (IsUserOnline()) {
-      localIO()->LocalXYPuts(18, 3, tleft_display);
+      localIO()->PutsXY(18, 3, tleft_display);
     } else {
-      localIO()->LocalXYPrintf(18, 3, user()->GetPassword());
+      localIO()->PrintfXY(18, 3, user()->GetPassword());
     }
   }
   break;
   }
   localIO()->SetTopLine(ctl);
   curatr = cc;
-  localIO()->LocalGotoXY(cx, cy);
+  localIO()->GotoXY(cx, cy);
 
   if (check_for_timeout && IsUserOnline()) {
     if (nsln == 0.0) {
@@ -460,14 +460,14 @@ void WSession::UpdateTopScreen() {
     break;
   case LocalIO::topdataSystem:
   {
-    localIO()->LocalXYPrintf(0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate());
+    localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate());
 
-    localIO()->LocalXYPrintf(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
+    localIO()->PrintfXY(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
       pStatus->GetNumUsers(), pStatus->GetCallerNumber(),
       pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
 
     const string username_num = names()->UserName(usernum);
-    localIO()->LocalXYPrintf(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
+    localIO()->PrintfXY(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
       username_num.c_str(),
       pStatus->GetMinutesActiveToday(),
       static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
@@ -478,7 +478,7 @@ void WSession::UpdateTopScreen() {
     if (session()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->LocalXYPrintf(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
+    localIO()->PrintfXY(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
       user()->GetSl(),
       user()->GetDsl(),
       feedback_waiting,
@@ -516,7 +516,7 @@ void WSession::UpdateTopScreen() {
     }
 
     const string username_num = names()->UserName(usernum);
-    localIO()->LocalXYAPrintf(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
+    localIO()->PrintfXYA(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
       username_num.c_str(),
       user()->GetNumMailWaiting(),
       user()->GetFilesUploaded(),
@@ -531,7 +531,7 @@ void WSession::UpdateTopScreen() {
     } else {
       strcpy(szCallSignOrRegNum, user()->GetCallsign());
     }
-    localIO()->LocalXYPrintf(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
+    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
       user()->GetRealName(),
       user()->GetVoicePhoneNumber(),
       szCallSignOrRegNum,
@@ -541,7 +541,7 @@ void WSession::UpdateTopScreen() {
       static_cast<long>((user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE),
       user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
 
-    localIO()->LocalXYPrintf(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
+    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
       ar, dar, restrict, user()->GetExempt(),
       lo, user()->GetNumFeedbackSent());
 
@@ -550,23 +550,23 @@ void WSession::UpdateTopScreen() {
     if (session()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->LocalXYPrintf(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
+    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
       user()->GetNote(),
       user()->GetGender(),
       user()->GetAge(),
       ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
 
     if (chatcall) {
-      localIO()->LocalXYPuts(0, 4, chat_reason_);
+      localIO()->PutsXY(0, 4, chat_reason_);
     }
   }
   break;
   }
   if (nOldTopLine != 0) {
-    localIO()->LocalXYPuts(0, nOldTopLine - 1, sl);
+    localIO()->PutsXY(0, nOldTopLine - 1, sl);
   }
   localIO()->SetTopLine(nOldTopLine);
-  localIO()->LocalGotoXY(cx, cy);
+  localIO()->GotoXY(cx, cy);
   curatr = cc;
   tleft(false);
 
@@ -598,7 +598,7 @@ void WSession::GetCaller() {
   remoteIO()->remote_info().clear();
   frequent_init();
   if (wfc_status == 0) {
-    localIO()->LocalCls();
+    localIO()->Cls();
   }
   usernum = 0;
   SetWfcStatus(0);
@@ -625,8 +625,8 @@ void WSession::GetCaller() {
   }
 
   okskey = true;
-  localIO()->LocalCls();
-  localIO()->LocalPrintf("Logging on at %s ...\r\n",
+  localIO()->Cls();
+  localIO()->Printf("Logging on at %s ...\r\n",
     GetCurrentSpeed().c_str());
   SetWfcStatus(0);
 }
@@ -675,14 +675,14 @@ int WSession::doWFCEvents() {
     }
     wfc_screen();
     okskey = false;
-    if (io->LocalKeyPressed()) {
+    if (io->KeyPressed()) {
       SetWfcStatus(0);
       ReadCurrentUser(1);
       read_qscn(1, qsc, false);
       SetWfcStatus(1);
-      ch = wwiv::UpperCase<char>(io->LocalGetChar());
+      ch = wwiv::UpperCase<char>(io->GetChar());
       if (ch == 0) {
-        ch = io->LocalGetChar();
+        ch = io->GetChar();
         handle_sysop_key(ch);
         ch = 0;
       }
@@ -706,7 +706,7 @@ int WSession::doWFCEvents() {
           string helpFileName = SWFC_NOEXT;
           char chHelp = ESC;
           do {
-            io->LocalCls();
+            io->Cls();
             bout.nl();
             printfile(helpFileName);
             chHelp = getkey();
@@ -730,7 +730,7 @@ int WSession::doWFCEvents() {
         // Fast Net Callout from WFC
       case '*':
       {
-        io->LocalCls(); // added   - 02/23/14 - dsn
+        io->Cls(); // added   - 02/23/14 - dsn
         do_callout(32767); // changed - 02/23/14 - dsn - changed 1160 to 32767
       } break;
       // Run MenuEditor
@@ -740,7 +740,7 @@ int WSession::doWFCEvents() {
         // Print NetLogs
       case ',':
         if (net_sysnum > 0 || !net_networks.empty()) {
-          io->LocalGotoXY(2, 23);
+          io->GotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");
           switch (ch) {
@@ -767,12 +767,12 @@ int WSession::doWFCEvents() {
         break;
         // [ESC] Quit the BBS
       case ESC:
-        io->LocalGotoXY(2, 23);
+        io->GotoXY(2, 23);
         bout << "|#7Exit the BBS? ";
         if (yesno()) {
           QuitBBS();
         }
-        io->LocalCls();
+        io->Cls();
         break;
         // BoardEdit
       case 'B':
@@ -874,7 +874,7 @@ int WSession::doWFCEvents() {
         break;
         // Quit BBS
       case 'Q':
-        io->LocalGotoXY(2, 23);
+        io->GotoXY(2, 23);
         QuitBBS();
         break;
         // Read All Mail
@@ -965,22 +965,22 @@ int WSession::doWFCEvents() {
 }
 
 int WSession::LocalLogon() {
-  localIO()->LocalGotoXY(2, 23);
+  localIO()->GotoXY(2, 23);
   bout << "|#9Log on to the BBS?";
   auto d = timer();
   int lokb = 0;
-  while (!localIO()->LocalKeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE))
+  while (!localIO()->KeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE))
     ;
 
-  if (localIO()->LocalKeyPressed()) {
-    char ch = wwiv::UpperCase<char>(localIO()->LocalGetChar());
+  if (localIO()->KeyPressed()) {
+    char ch = wwiv::UpperCase<char>(localIO()->GetChar());
     if (ch == 'Y') {
-      localIO()->LocalPuts(YesNoString(true));
+      localIO()->Puts(YesNoString(true));
       bout << wwiv::endl;
       lokb = 1;
     } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The ch == 224 is a Win32'ism
-      localIO()->LocalGetChar();
+      localIO()->GetChar();
     } else {
       bool fast = false;
 
@@ -1020,7 +1020,7 @@ int WSession::LocalLogon() {
       read_qscn(usernum, qsc, false);
       SetWfcStatus(nSavedWFCStatus);
       bputch(ch);
-      localIO()->LocalPuts("\r\n\r\n\r\n\r\n\r\n\r\n");
+      localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
       lokb = 2;
       ResetEffectiveSl();
       changedsl();
@@ -1032,11 +1032,11 @@ int WSession::LocalLogon() {
     }
     if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The 224 is a Win32'ism
-      localIO()->LocalGetChar();
+      localIO()->GetChar();
     }
   }
   if (lokb == 0) {
-    localIO()->LocalCls();
+    localIO()->Cls();
   }
   return lokb;
 }
@@ -1044,7 +1044,7 @@ int WSession::LocalLogon() {
 void WSession::GotCaller(unsigned int ms, unsigned long cs) {
   frequent_init();
   if (wfc_status == 0) {
-    localIO()->LocalCls();
+    localIO()->Cls();
   }
   com_speed = cs;
   modem_speed = ms;
@@ -1056,8 +1056,8 @@ void WSession::GotCaller(unsigned int ms, unsigned long cs) {
     user()->SetScreenChars(80);
     user()->SetScreenLines(25);
   }
-  localIO()->LocalCls();
-  localIO()->LocalPrintf("Logging on at %s...\r\n", GetCurrentSpeed().c_str());
+  localIO()->Cls();
+  localIO()->Printf("Logging on at %s...\r\n", GetCurrentSpeed().c_str());
   if (ms) {
     incom = true;
     outcom = true;
@@ -1284,8 +1284,8 @@ int WSession::Run(int argc, char *argv[]) {
         ok_modem_stuff = false;
         break;
       case 'P':
-	      localIO()->LocalCls();
-	      localIO()->LocalPrintf("Waiting for keypress...");
+	      localIO()->Cls();
+	      localIO()->Printf("Waiting for keypress...");
 	      (void)getchar();
 	      break;
       case 'R':
@@ -1349,7 +1349,7 @@ int WSession::Run(int argc, char *argv[]) {
     	    AbortBBS(true);
     	}
         this->InitializeBBS();
-        localIO()->LocalCls();
+        localIO()->Cls();
         if ((i + 1) < argc) {
           i++;
           bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
@@ -1526,7 +1526,7 @@ int WSession::Run(int argc, char *argv[]) {
     catsl();
     frequent_init();
     if (wfc_status == 0) {
-      localIO()->LocalCls();
+      localIO()->Cls();
     }
     cleanup_net();
 

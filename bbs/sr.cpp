@@ -64,10 +64,10 @@ char gettimeout(double d, bool *abort) {
 
   auto d1 = timer();
   while (std::abs(timer() - d1) < d && !bkbhitraw() && !hangup && !*abort) {
-    if (session()->localIO()->LocalKeyPressed()) {
-      char ch = session()->localIO()->LocalGetChar();
+    if (session()->localIO()->KeyPressed()) {
+      char ch = session()->localIO()->GetChar();
       if (ch == 0) {
-        session()->localIO()->LocalGetChar();
+        session()->localIO()->GetChar();
       } else if (ch == ESC) {
         *abort = true;
       }
@@ -114,10 +114,10 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     session()->ClearTopScreenProtection();
     const string unn = session()->names()->UserName(session()->usernum);
     sprintf(s2, "%s is currently online at %u bps", unn.c_str(), modem_speed);
-    session()->localIO()->LocalPuts(s2);
-    session()->localIO()->LocalPuts("\r\n\r\n");
-    session()->localIO()->LocalPuts(command);
-    session()->localIO()->LocalPuts("\r\n");
+    session()->localIO()->Puts(s2);
+    session()->localIO()->Puts("\r\n\r\n");
+    session()->localIO()->Puts(command);
+    session()->localIO()->Puts("\r\n");
     if (incom) {
       int nRetCode = ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_PROT_SINGLE));
       session()->UpdateTopScreen();
@@ -683,5 +683,5 @@ void endbatch() {
     }
     */
   }
-  session()->localIO()->LocalGotoXY(oldx, oldy);
+  session()->localIO()->GotoXY(oldx, oldy);
 }

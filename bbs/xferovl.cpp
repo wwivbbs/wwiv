@@ -293,7 +293,7 @@ void sortdir(int directory_num, int type) {
 void sort_all(int type) {
   tmp_disable_conf(true);
   for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
-       (!session()->localIO()->LocalKeyPressed()); i++) {
+       (!session()->localIO()->KeyPressed()); i++) {
     bout << "\r\n|#1Sorting " << session()->directories[session()->udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }

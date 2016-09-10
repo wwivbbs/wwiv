@@ -66,10 +66,10 @@ int get_kb_event(int nNumLockMode) {
       return 0;
     }
 
-    if (bkbhitraw() || session()->localIO()->LocalKeyPressed()) {
-      if (!incom || session()->localIO()->LocalKeyPressed()) {
+    if (bkbhitraw() || session()->localIO()->KeyPressed()) {
+      if (!incom || session()->localIO()->KeyPressed()) {
         // Check for local keys
-        int key = session()->localIO()->LocalGetChar();
+        int key = session()->localIO()->GetChar();
         if (key == CBACKSPACE) {
           return COMMAND_DELETE;
         }
@@ -79,9 +79,9 @@ int get_kb_event(int nNumLockMode) {
         if (key == RETURN || key == CL) {
           return EXECUTE;
         }
-        if ((key == 0 || key == 224) && session()->localIO()->LocalKeyPressed()) {
+        if ((key == 0 || key == 224) && session()->localIO()->KeyPressed()) {
           // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
-          return session()->localIO()->LocalGetChar() + 256;
+          return session()->localIO()->GetChar() + 256;
         } else {
           if (nNumLockMode == NOTNUMBERS) {
             switch (key) {
@@ -173,8 +173,8 @@ int get_kb_event(int nNumLockMode) {
           }
         } else {
           if (!key) {
-            if (session()->localIO()->LocalKeyPressed()) {
-              key = session()->localIO()->LocalGetChar();
+            if (session()->localIO()->KeyPressed()) {
+              key = session()->localIO()->GetChar();
               return (key + 256);
             }
           }

@@ -102,7 +102,7 @@ void CursesLocalIO::SetColor(int original_color) {
   window_->AttrSet(attr);
 }
 
-void CursesLocalIO::LocalGotoXY(int x, int y) {
+void CursesLocalIO::GotoXY(int x, int y) {
   window_->GotoXY(x, y);
 }
 
@@ -114,7 +114,7 @@ size_t CursesLocalIO::WhereY() {
   return window_->GetcurY();
 }
 
-void CursesLocalIO::LocalLf() {
+void CursesLocalIO::Lf() {
   y_ = WhereY();
   x_ = WhereX();
   y_++;
@@ -126,37 +126,37 @@ void CursesLocalIO::LocalLf() {
   window_->GotoXY(x_, y_);
 }
 
-void CursesLocalIO::LocalCr() {
+void CursesLocalIO::Cr() {
   int y = WhereY();
   window_->GotoXY(0, y);
 }
 
-void CursesLocalIO::LocalCls() {
+void CursesLocalIO::Cls() {
   SetColor(curatr);
   window_->Clear();
 }
 
-void CursesLocalIO::LocalBackspace() {
+void CursesLocalIO::Backspace() {
   SetColor(curatr);
   window_->Putch('\b');
 }
 
-void CursesLocalIO::LocalPutchRaw(unsigned char ch) {
+void CursesLocalIO::PutchRaw(unsigned char ch) {
   SetColor(curatr);
   window_->Putch(ch);
 }
 
-void CursesLocalIO::LocalPutch(unsigned char ch) {
+void CursesLocalIO::Putch(unsigned char ch) {
   if (ch > 31) {
-    LocalPutchRaw(ch);
+    PutchRaw(ch);
   } else if (ch == CM) {
-    LocalCr();
+    Cr();
   } else if (ch == CJ) {
-    LocalLf();
+    Lf();
   } else if (ch == CL) {
-    LocalCls();
+    Cls();
   } else if (ch == BACKSPACE) {
-    LocalBackspace();
+    Backspace();
   } else if (ch == CG) {
     if (!outcom) {
       // TODO Make the bell sound configurable.
@@ -165,45 +165,45 @@ void CursesLocalIO::LocalPutch(unsigned char ch) {
   }
 }
 
-void CursesLocalIO::LocalPuts(const string& s) {
+void CursesLocalIO::Puts(const string& s) {
   for (char ch : s) {
-    LocalPutch(ch);
+    Putch(ch);
   }
 }
 
-void CursesLocalIO::LocalXYPuts(int x, int y, const string& text) {
-  LocalGotoXY(x, y);
-  LocalFastPuts(text);
+void CursesLocalIO::PutsXY(int x, int y, const string& text) {
+  GotoXY(x, y);
+  FastPuts(text);
 }
 
-void CursesLocalIO::LocalFastPuts(const string& text) {
+void CursesLocalIO::FastPuts(const string& text) {
   SetColor(curatr);
   window_->Puts(text.c_str());
 }
 
-int CursesLocalIO::LocalPrintf(const char *formatted_text, ...) {
+int CursesLocalIO::Printf(const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
-  LocalFastPuts(szBuffer);
+  FastPuts(szBuffer);
   return nNumWritten;
 }
 
-int CursesLocalIO::LocalXYPrintf(int x, int y, const char *formatted_text, ...) {
+int CursesLocalIO::PrintfXY(int x, int y, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
-  LocalXYPuts(x, y, szBuffer);
+  PutsXY(x, y, szBuffer);
   return nNumWritten;
 }
 
-int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) {
+int CursesLocalIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
@@ -213,7 +213,7 @@ int CursesLocalIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *form
 
   int nOldColor = curatr;
   curatr = nAttribute;
-  LocalXYPuts(x, y, szBuffer);
+  PutsXY(x, y, szBuffer);
   curatr = nOldColor;
   return nNumWritten;
 }
@@ -256,7 +256,7 @@ void CursesLocalIO::restorescreen() {
 
 static int last_key_pressed = ERR;
 
-bool CursesLocalIO::LocalKeyPressed() {
+bool CursesLocalIO::KeyPressed() {
   if (last_key_pressed != ERR) {
     return true;
   }
@@ -295,7 +295,7 @@ static int CursesToWin32KeyCodes(int curses_code) {
   }
 }
 
-unsigned char CursesLocalIO::LocalGetChar() {
+unsigned char CursesLocalIO::GetChar() {
   if (last_key_pressed != ERR) {
     int ch = last_key_pressed;
     if (ch > 255) {
@@ -315,12 +315,12 @@ void CursesLocalIO::SetCursor(int cursorStyle) {
   curs_set(cursorStyle);
 }
 
-void CursesLocalIO::LocalClrEol() {
+void CursesLocalIO::ClrEol() {
   SetColor(curatr);
   window_->ClrtoEol();
 }
 
-void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {
+void CursesLocalIO::WriteScreenBuffer(const char *buffer) {
   // TODO(rushfan): Optimize me.
   const char *p = buffer;
   scrollok(window_->window(), false);
@@ -331,7 +331,7 @@ void CursesLocalIO::LocalWriteScreenBuffer(const char *buffer) {
 	for (int x = 0; x < 80; x++) {
 	  s[0] = *p++;
     curatr = *p++;
-	  LocalXYPuts(x, y, s);
+	  PutsXY(x, y, s);
     }
   }
   scrollok(window_->window(), true);
@@ -353,7 +353,7 @@ static int GetEditLineStringLength(const char *text) {
   return i;
 }
 
-void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status,
+void CursesLocalIO::EditLine(char *pszInOutText, int len, int editor_status,
   int *returncode, char *pszAllowedSet) {
   int oldatr = curatr;
   int cx = WhereX();
@@ -363,15 +363,15 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
   }
   pszInOutText[len] = '\0';
   curatr = GetEditLineColor();
-  LocalFastPuts(pszInOutText);
-  LocalGotoXY(cx, cy);
+  FastPuts(pszInOutText);
+  GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
   bool insert = false;
   do {
-    unsigned char ch = LocalGetChar();
+    unsigned char ch = GetChar();
     if (ch == 0 || ch == 224) {
-      ch = LocalGetChar();
+      ch = GetChar();
       switch (ch) {
       case F1:
         done = true;
@@ -379,22 +379,22 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
         break;
       case HOME:
         pos = 0;
-        LocalGotoXY(cx, cy);
+        GotoXY(cx, cy);
         break;
       case END:
         pos = GetEditLineStringLength(pszInOutText);
-        LocalGotoXY(cx + pos, cy);
+        GotoXY(cx + pos, cy);
         break;
       case RARROW:
         if (pos < GetEditLineStringLength(pszInOutText)) {
           pos++;
-          LocalGotoXY(cx + pos, cy);
+          GotoXY(cx + pos, cy);
         }
         break;
       case LARROW:
         if (pos > 0) {
           pos--;
-          LocalGotoXY(cx + pos, cy);
+          GotoXY(cx + pos, cy);
         }
         break;
       case UARROW:
@@ -417,8 +417,8 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
             pszInOutText[i] = pszInOutText[i + 1];
           }
           pszInOutText[len - 1] = static_cast<unsigned char>(176);
-          LocalXYPuts(cx, cy, pszInOutText);
-          LocalGotoXY(cx + pos, cy);
+          PutsXY(cx, cy, pszInOutText);
+          GotoXY(cx + pos, cy);
         }
         break;
       }
@@ -435,7 +435,7 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
               if (ch == pszAllowedSet[i] && bLookingForSpace) {
                 bLookingForSpace = false;
                 pos = i;
-                LocalGotoXY(cx + pos, cy);
+                GotoXY(cx + pos, cy);
                 if (pszInOutText[pos] == SPACE) {
                   ch = pszAllowedSet[pos];
                 } else {
@@ -455,11 +455,11 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
               pszInOutText[i] = pszInOutText[i - 1];
             }
             pszInOutText[pos++] = ch;
-            LocalXYPuts(cx, cy, pszInOutText);
-            LocalGotoXY(cx + pos, cy);
+            PutsXY(cx, cy, pszInOutText);
+            GotoXY(cx + pos, cy);
           } else {
             pszInOutText[pos++] = ch;
-            LocalPutch(ch);
+            Putch(ch);
           }
         }
       } else {
@@ -476,11 +476,11 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
           break;
         case CA:
           pos = 0;
-          LocalGotoXY(cx, cy);
+          GotoXY(cx, cy);
           break;
         case CE:
           pos = GetEditLineStringLength(pszInOutText);   // len;
-          LocalGotoXY(cx + pos, cy);
+          GotoXY(cx + pos, cy);
           break;
         case BACKSPACE:
           if (pos > 0) {
@@ -490,8 +490,8 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
               }
               pszInOutText[len - 1] = static_cast<unsigned char>(176);
               pos--;
-              LocalXYPuts(cx, cy, pszInOutText);
-              LocalGotoXY(cx + pos, cy);
+              PutsXY(cx, cy, pszInOutText);
+              GotoXY(cx + pos, cy);
             } else {
               int nStringLen = GetEditLineStringLength(pszInOutText);
               pos--;
@@ -500,8 +500,8 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
               } else {
                 pszInOutText[pos] = SPACE;
               }
-              LocalXYPuts(cx, cy, pszInOutText);
-              LocalGotoXY(cx + pos, cy);
+              PutsXY(cx, cy, pszInOutText);
+              GotoXY(cx + pos, cy);
             }
           }
           break;
@@ -519,10 +519,10 @@ void CursesLocalIO::LocalEditLine(char *pszInOutText, int len, int editor_status
   char szFinishedString[260];
   snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
   szFinishedString[len] = '\0';
-  LocalGotoXY(cx, cy);
+  GotoXY(cx, cy);
   curatr = oldatr;
-  LocalFastPuts(szFinishedString);
-  LocalGotoXY(cx, cy);
+  FastPuts(szFinishedString);
+  GotoXY(cx, cy);
 }
 
 void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
@@ -550,12 +550,12 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
     for (int xloop = 0; xloop < xlen; xloop++) {
       curatr = static_cast<int16_t>(GetUserEditorColor());
       if ((yloop == 0) || (yloop == ylen - 1)) {
-        LocalXYPuts(x + xloop, y + yloop, "\xC4");      // top and bottom
+        PutsXY(x + xloop, y + yloop, "\xC4");      // top and bottom
       } else {
         if ((xloop == 0) || (xloop ==xlen - 1)) {
-          LocalXYPuts(x + xloop, y + yloop, "\xB3");  // right and left sides
+          PutsXY(x + xloop, y + yloop, "\xB3");  // right and left sides
         } else {
-          LocalXYPuts(x + xloop, y + yloop, "\x20");   // nothing... Just filler (space)
+          PutsXY(x + xloop, y + yloop, "\x20");   // nothing... Just filler (space)
         }
       }
     }
@@ -570,7 +570,7 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   ci[xlen * (ylen - 1)].Char.AsciiChar = '\xC0';  // lower left
   ci[xlen * (ylen - 1) + xlen - 1].Char.AsciiChar = '\xD9'; // lower right
   */
-  LocalGotoXY(xx, yy);
+  GotoXY(xx, yy);
 }
 
 void CursesLocalIO::UpdateNativeTitleBar(WSession* session) {

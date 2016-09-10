@@ -73,33 +73,33 @@ private:
 class TestLocalIO : public LocalIO {
 public:
   TestLocalIO(std::string* captured);
-  void LocalPutch(unsigned char ch) override;
-  void LocalGotoXY(int x, int y) override {}
+  void Putch(unsigned char ch) override;
+  void GotoXY(int x, int y) override {}
   size_t WhereX() override { return 0; }
   size_t WhereY() override { return 0; }
-  void LocalLf() override {}
-  void LocalCr() override {}
-  void LocalCls() override {}
-  void LocalBackspace() override {}
-  void LocalPutchRaw(unsigned char ch) override {}
-  void LocalPuts(const std::string& s) override {}
-  void LocalXYPuts(int x, int y, const std::string& text) override {}
-  void LocalFastPuts(const std::string& text) override {}
-  int LocalPrintf(const char *formatted_text, ...) override { return 0; }
-  int LocalXYPrintf(int x, int y, const char *formatted_text, ...) override { return 0; }
-  int LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override { return 0; }
+  void Lf() override {}
+  void Cr() override {}
+  void Cls() override {}
+  void Backspace() override {}
+  void PutchRaw(unsigned char ch) override {}
+  void Puts(const std::string& s) override {}
+  void PutsXY(int x, int y, const std::string& text) override {}
+  void FastPuts(const std::string& text) override {}
+  int Printf(const char *formatted_text, ...) override { return 0; }
+  int PrintfXY(int x, int y, const char *formatted_text, ...) override { return 0; }
+  int PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override { return 0; }
   void set_protect(WSession* session, int l) override {}
   void savescreen() override {}
   void restorescreen() override {}
-  bool LocalKeyPressed() override { return false; }
+  bool KeyPressed() override { return false; }
   void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override {}
-  unsigned char LocalGetChar() override { return getchar(); }
+  unsigned char GetChar() override { return getchar(); }
   void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
   void SetCursor(int cursorStyle) override {}
-  void LocalClrEol() override {}
-  void LocalWriteScreenBuffer(const char *buffer) override {}
+  void ClrEol() override {}
+  void WriteScreenBuffer(const char *buffer) override {}
   size_t GetDefaultScreenBottom() override { return 25; }
-  void LocalEditLine(char *s, int len, int status, int *returncode, char *ss) override {}
+  void EditLine(char *s, int len, int status, int *returncode, char *ss) override {}
   void UpdateNativeTitleBar(WSession* session) override {}
 
   std::string* captured_;

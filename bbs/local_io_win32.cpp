@@ -109,7 +109,7 @@ Win32ConsoleIO::~Win32ConsoleIO() {
 // This, obviously, moves the cursor to the location specified, offset from
 // the protected dispaly at the top of the screen.  Note: this function
 // is 0 based, so (0,0) is the upper left hand corner.
-void Win32ConsoleIO::LocalGotoXY(int x, int y) {
+void Win32ConsoleIO::GotoXY(int x, int y) {
   x = std::max<int>(x, 0);
   x = std::min<int>(x, 79);
   y = std::max<int>(y, 0);
@@ -146,7 +146,7 @@ size_t Win32ConsoleIO::WhereY() {
   return cursor_pos_.Y - GetTopLine();
 }
 
-void Win32ConsoleIO::LocalLf() {
+void Win32ConsoleIO::Lf() {
 /* This function performs a linefeed to the screen (but not remotely) by
 * either moving the cursor down one line, or scrolling the logical screen
 * up one line.
@@ -175,7 +175,7 @@ void Win32ConsoleIO::LocalLf() {
 /**
  * Returns the local cursor to the left-most position on the screen.
  */
-void Win32ConsoleIO::LocalCr() {
+void Win32ConsoleIO::Cr() {
   cursor_pos_.X = 0;
   SetConsoleCursorPosition(out_, cursor_pos_);
 }
@@ -183,7 +183,7 @@ void Win32ConsoleIO::LocalCr() {
 /**
  * Clears the local logical screen
  */
-void Win32ConsoleIO::LocalCls() {
+void Win32ConsoleIO::Cls() {
   int nOldCurrentAttribute = curatr;
   curatr = 0x07;
   SMALL_RECT scrollRect;
@@ -201,12 +201,12 @@ void Win32ConsoleIO::LocalCls() {
 
   ScrollConsoleScreenBuffer(out_, &scrollRect, nullptr, dest, &fill);
 
-  LocalGotoXY(0, 0);
+  GotoXY(0, 0);
   lines_listed = 0;
   curatr = nOldCurrentAttribute;
 }
 
-void Win32ConsoleIO::LocalBackspace() {
+void Win32ConsoleIO::Backspace() {
 /* This function moves the cursor one position to the left, or if the cursor
 * is currently at its left-most position, the cursor is moved to the end of
 * the previous line, except if it is on the top line, in which case nothing
@@ -221,7 +221,7 @@ void Win32ConsoleIO::LocalBackspace() {
   SetConsoleCursorPosition(out_, cursor_pos_);
 }
 
-void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
+void Win32ConsoleIO::PutchRaw(unsigned char ch) {
 /* This function outputs one character to the screen, then updates the
 * cursor position accordingly, scolling the screen if necessary.  Not that
 * this function performs no commands such as a C/R or L/F.  If a value of
@@ -269,17 +269,17 @@ void Win32ConsoleIO::LocalPutchRaw(unsigned char ch) {
  * This function outputs one character to the local screen.  C/R, L/F, TOF,
  * BS, and BELL are interpreted as commands instead of characters.
  */
-void Win32ConsoleIO::LocalPutch(unsigned char ch) {
+void Win32ConsoleIO::Putch(unsigned char ch) {
   if (ch > 31) {
-    LocalPutchRaw(ch);
+    PutchRaw(ch);
   } else if (ch == CM) {
-    LocalCr();
+    Cr();
   } else if (ch == CJ) {
-    LocalLf();
+    Lf();
   } else if (ch == CL) {
-    LocalCls();
+    Cls();
   } else if (ch == BACKSPACE) {
-    LocalBackspace();
+    Backspace();
   } else if (ch == CG) {
     if (!outcom) {
       // TODO Make the bell sound configurable.
@@ -289,18 +289,18 @@ void Win32ConsoleIO::LocalPutch(unsigned char ch) {
 }
 
 // Outputs a string to the local screen.
-void Win32ConsoleIO::LocalPuts(const string& text) {
+void Win32ConsoleIO::Puts(const string& text) {
   for (char ch : text) {
-    LocalPutch(ch);
+    Putch(ch);
   }
 }
 
-void Win32ConsoleIO::LocalXYPuts(int x, int y, const string& text) {
-  LocalGotoXY(x, y);
-  LocalFastPuts(text);
+void Win32ConsoleIO::PutsXY(int x, int y, const string& text) {
+  GotoXY(x, y);
+  FastPuts(text);
 }
 
-void Win32ConsoleIO::LocalFastPuts(const string& text) {
+void Win32ConsoleIO::FastPuts(const string& text) {
 // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
   DWORD cb = 0;
   int len = text.length();
@@ -310,29 +310,29 @@ void Win32ConsoleIO::LocalFastPuts(const string& text) {
   cursor_pos_.X = cursor_pos_.X + static_cast<int16_t>(cb);
 }
 
-int  Win32ConsoleIO::LocalPrintf(const char *formatted_text, ...) {
+int  Win32ConsoleIO::Printf(const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
-  LocalFastPuts(szBuffer);
+  FastPuts(szBuffer);
   return nNumWritten;
 }
 
-int  Win32ConsoleIO::LocalXYPrintf(int x, int y, const char *formatted_text, ...) {
+int  Win32ConsoleIO::PrintfXY(int x, int y, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
   va_start(ap, formatted_text);
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
-  LocalXYPuts(x, y, szBuffer);
+  PutsXY(x, y, szBuffer);
   return nNumWritten;
 }
 
-int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) {
+int  Win32ConsoleIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
@@ -343,7 +343,7 @@ int  Win32ConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *fo
   // bout.SystemColor( nAttribute );
   int nOldColor = curatr;
   curatr = nAttribute;
-  LocalXYPuts(x, y, szBuffer);
+  PutsXY(x, y, szBuffer);
   curatr = nOldColor;
   return nNumWritten;
 }
@@ -371,7 +371,7 @@ void Win32ConsoleIO::set_protect(WSession* session, int l) {
         coord.X = 0;
         coord.Y = static_cast<int16_t>(l);
         ScrollConsoleScreenBuffer(out_, &scrnl, nullptr, coord, &lpFill);
-        LocalGotoXY(WhereX(), WhereY() + l - GetTopLine());
+        GotoXY(WhereX(), WhereY() + l - GetTopLine());
       }
     } else {
       DWORD written;
@@ -426,7 +426,7 @@ void Win32ConsoleIO::restorescreen() {
   }
   SetTopLine(m_ScreenSave.topline1);
   curatr = m_ScreenSave.curatr1;
-  LocalGotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
+  GotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
 }
 
 /**
@@ -434,7 +434,7 @@ void Win32ConsoleIO::restorescreen() {
  *
  * @return true if a key has been pressed at the local console, false otherwise
  */
-bool Win32ConsoleIO::LocalKeyPressed() {
+bool Win32ConsoleIO::KeyPressed() {
   if (ExtendedKeyWaiting) {
     return true;
   }
@@ -451,7 +451,7 @@ bool Win32ConsoleIO::LocalKeyPressed() {
 * Alt-X, etc.).  The function must be called again upon receiving
 * a value of 0 to obtain the value of the extended key pressed.
 */
-unsigned char Win32ConsoleIO::LocalGetChar() {
+unsigned char Win32ConsoleIO::GetChar() {
   if (ExtendedKeyWaiting) {
     ExtendedKeyWaiting = 0;
     return GetKeyboardChar();
@@ -566,7 +566,7 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
     set_attr_xy(x + xlen, y + 1 + i1, 0x08);
   }
 
-  LocalGotoXY(xx, yy);
+  GotoXY(xx, yy);
 }
 
 void Win32ConsoleIO::SetCursor(int cursorStyle) {
@@ -594,7 +594,7 @@ void Win32ConsoleIO::SetCursor(int cursorStyle) {
   }
 }
 
-void Win32ConsoleIO::LocalClrEol() {
+void Win32ConsoleIO::ClrEol() {
   CONSOLE_SCREEN_BUFFER_INFO ConInfo;
   DWORD cb;
   int len = 80 - WhereX();
@@ -604,7 +604,7 @@ void Win32ConsoleIO::LocalClrEol() {
   FillConsoleOutputAttribute(out_, (WORD) curatr, len, ConInfo.dwCursorPosition, &cb);
 }
 
-void Win32ConsoleIO::LocalWriteScreenBuffer(const char *buffer) {
+void Win32ConsoleIO::WriteScreenBuffer(const char *buffer) {
   CHAR_INFO ci[2000];
   const char *p = buffer;
 
@@ -673,7 +673,7 @@ static int GetEditLineStringLength(const char *text) {
   return i;
 }
 
-void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_status,
+void Win32ConsoleIO::EditLine(char *pszInOutText, int len, int editor_status,
     int *returncode, char *pszAllowedSet) {
   
   int oldatr = curatr;
@@ -684,15 +684,15 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
   }
   pszInOutText[len] = '\0';
   curatr = GetEditLineColor();
-  LocalFastPuts(pszInOutText);
-  LocalGotoXY(cx, cy);
+  FastPuts(pszInOutText);
+  GotoXY(cx, cy);
   bool done = false;
   int pos = 0;
   bool insert = false;
   do {
-    unsigned char ch = LocalGetChar();
+    unsigned char ch = GetChar();
     if (ch == 0 || ch == 224) {
-      ch = LocalGetChar();
+      ch = GetChar();
       switch (ch) {
       case F1:
         done = true;
@@ -700,22 +700,22 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
         break;
       case HOME:
         pos = 0;
-        LocalGotoXY(cx, cy);
+        GotoXY(cx, cy);
         break;
       case END:
         pos = GetEditLineStringLength(pszInOutText);
-        LocalGotoXY(cx + pos, cy);
+        GotoXY(cx + pos, cy);
         break;
       case RARROW:
         if (pos < GetEditLineStringLength(pszInOutText)) {
           pos++;
-          LocalGotoXY(cx + pos, cy);
+          GotoXY(cx + pos, cy);
         }
         break;
       case LARROW:
         if (pos > 0) {
           pos--;
-          LocalGotoXY(cx + pos, cy);
+          GotoXY(cx + pos, cy);
         }
         break;
       case UARROW:
@@ -738,8 +738,8 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
             pszInOutText[i] = pszInOutText[ i + 1 ];
           }
           pszInOutText[ len - 1 ] = static_cast<unsigned char>(176);
-          LocalXYPuts(cx, cy, pszInOutText);
-          LocalGotoXY(cx + pos, cy);
+          PutsXY(cx, cy, pszInOutText);
+          GotoXY(cx + pos, cy);
         }
         break;
       }
@@ -756,7 +756,7 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
               if (ch == pszAllowedSet[i] && bLookingForSpace) {
                 bLookingForSpace = false;
                 pos = i;
-                LocalGotoXY(cx + pos, cy);
+                GotoXY(cx + pos, cy);
                 if (pszInOutText[pos] == SPACE) {
                   ch = pszAllowedSet[pos];
                 } else {
@@ -776,11 +776,11 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
               pszInOutText[i] = pszInOutText[i - 1];
             }
             pszInOutText[ pos++ ] = ch;
-            LocalXYPuts(cx, cy, pszInOutText);
-            LocalGotoXY(cx + pos, cy);
+            PutsXY(cx, cy, pszInOutText);
+            GotoXY(cx + pos, cy);
           } else {
             pszInOutText[pos++] = ch;
-            LocalPutch(ch);
+            Putch(ch);
           }
         }
       } else {
@@ -797,11 +797,11 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
           break;
         case CA:
           pos = 0;
-          LocalGotoXY(cx, cy);
+          GotoXY(cx, cy);
           break;
         case CE:
           pos = GetEditLineStringLength(pszInOutText);   // len;
-          LocalGotoXY(cx + pos, cy);
+          GotoXY(cx + pos, cy);
           break;
         case BACKSPACE:
           if (pos > 0) {
@@ -811,8 +811,8 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
               }
               pszInOutText[len - 1] = static_cast<unsigned char>(176);
               pos--;
-              LocalXYPuts(cx, cy, pszInOutText);
-              LocalGotoXY(cx + pos, cy);
+              PutsXY(cx, cy, pszInOutText);
+              GotoXY(cx + pos, cy);
             } else {
               int nStringLen = GetEditLineStringLength(pszInOutText);
               pos--;
@@ -821,8 +821,8 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
               } else {
                 pszInOutText[ pos ] = SPACE;
               }
-              LocalXYPuts(cx, cy, pszInOutText);
-              LocalGotoXY(cx + pos, cy);
+              PutsXY(cx, cy, pszInOutText);
+              GotoXY(cx + pos, cy);
             }
           }
           break;
@@ -840,10 +840,10 @@ void Win32ConsoleIO::LocalEditLine(char *pszInOutText, int len, int editor_statu
   char szFinishedString[260];
   snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
   szFinishedString[ len ] = '\0';
-  LocalGotoXY(cx, cy);
+  GotoXY(cx, cy);
   curatr = oldatr;
-  LocalFastPuts(szFinishedString);
-  LocalGotoXY(cx, cy);
+  FastPuts(szFinishedString);
+  GotoXY(cx, cy);
 }
 
 void Win32ConsoleIO::UpdateNativeTitleBar(WSession* session) {

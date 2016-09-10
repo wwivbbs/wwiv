@@ -448,8 +448,8 @@ void add_arc(const char *arc, const char *file_name, int dos) {
   get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, file_name);
   if (szAddArchiveCommand[0]) {
     File::set_current_directory(syscfgovr.tempdir);
-    session()->localIO()->LocalPuts(szAddArchiveCommand);
-    session()->localIO()->LocalPuts("\r\n");
+    session()->localIO()->Puts(szAddArchiveCommand);
+    session()->localIO()->Puts("\r\n");
     if (dos) {
       ExecuteExternalProgram(szAddArchiveCommand, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
     } else {

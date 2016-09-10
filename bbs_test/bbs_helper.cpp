@@ -102,6 +102,6 @@ string TestIO::captured() {
 
 TestLocalIO::TestLocalIO(string* captured) : LocalIO(), captured_(captured) {}
 
-void TestLocalIO::LocalPutch(unsigned char ch) {
+void TestLocalIO::Putch(unsigned char ch) {
   captured_->push_back(ch);
 }

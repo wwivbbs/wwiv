@@ -39,38 +39,38 @@ class Win32ConsoleIO : public LocalIO {
   Win32ConsoleIO(const LocalIO& copy) = delete;
   virtual ~Win32ConsoleIO();
 
-  void LocalGotoXY(int x, int y) override;
+  void GotoXY(int x, int y) override;
   size_t WhereX() override;
   size_t WhereY() override;
-  void LocalLf() override;
-  void LocalCr() override;
-  void LocalCls() override;
-  void LocalClrEol() override;
-  void LocalBackspace() override;
-  void LocalPutchRaw(unsigned char ch) override;
+  void Lf() override;
+  void Cr() override;
+  void Cls() override;
+  void ClrEol() override;
+  void Backspace() override;
+  void PutchRaw(unsigned char ch) override;
   // Overridden by TestLocalIO in tests
-  void LocalPutch(unsigned char ch) override;
-  void LocalPuts(const std::string& text) override;
-  void LocalXYPuts(int x, int y, const std::string& text) override;
-  int  LocalPrintf(const char *formatted_text, ...) override;
-  int  LocalXYPrintf(int x, int y, const char *formatted_text, ...) override;
-  int  LocalXYAPrintf(int x, int y, int nAttribute, const char *formatted_text, ...) override;
+  void Putch(unsigned char ch) override;
+  void Puts(const std::string& text) override;
+  void PutsXY(int x, int y, const std::string& text) override;
+  int  Printf(const char *formatted_text, ...) override;
+  int  PrintfXY(int x, int y, const char *formatted_text, ...) override;
+  int  PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override;
   void set_protect(WSession* session, int l) override;
   void savescreen() override;
   void restorescreen() override;
-  bool LocalKeyPressed() override;
-  unsigned char LocalGetChar() override;
+  bool KeyPressed() override;
+  unsigned char GetChar() override;
   void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;
   void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
   void SetCursor(int cursorStyle) override;
-  void LocalWriteScreenBuffer(const char *buffer) override;
+  void WriteScreenBuffer(const char *buffer) override;
   size_t GetDefaultScreenBottom() override;
 
-  void LocalEditLine(char *s, int len, int editor_status, int *returncode, char *ss) override;
+  void EditLine(char *s, int len, int editor_status, int *returncode, char *ss) override;
   void UpdateNativeTitleBar(WSession* session) override;
 
 private:
-  void LocalFastPuts(const std::string &text) override;
+  void FastPuts(const std::string &text) override;
 
 private:
   std::string m_chatReason;

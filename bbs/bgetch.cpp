@@ -100,12 +100,12 @@ char bgetch() {
       return charbuffer[charbufferpointer++];
     }
   }
-  if (session()->localIO()->LocalKeyPressed()) {
-    ch = session()->localIO()->LocalGetChar();
+  if (session()->localIO()->KeyPressed()) {
+    ch = session()->localIO()->GetChar();
     session()->SetLastKeyLocal(true);
     if (!(g_flags & g_flag_allow_extended)) {
       if (!ch) {
-        ch = session()->localIO()->LocalGetChar();
+        ch = session()->localIO()->GetChar();
         session()->handle_sysop_key(static_cast<uint8_t>(ch));
         ch = static_cast<char>(((ch == F10) || (ch == CF10)) ? 2 : 0);
       }
@@ -225,8 +225,8 @@ char bgetchraw() {
     if (session()->remoteIO()->incoming()) {
       return (session()->remoteIO()->getW());
     }
-    if (session()->localIO()->LocalKeyPressed()) {
-      return session()->localIO()->LocalGetChar();
+    if (session()->localIO()->KeyPressed()) {
+      return session()->localIO()->GetChar();
     }
   }
   return 0;
@@ -234,15 +234,15 @@ char bgetchraw() {
 
 bool bkbhitraw() {
   if (ok_modem_stuff) {
-    return (session()->remoteIO()->incoming() || session()->localIO()->LocalKeyPressed());
-  } else if (session()->localIO()->LocalKeyPressed()) {
+    return (session()->remoteIO()->incoming() || session()->localIO()->KeyPressed());
+  } else if (session()->localIO()->KeyPressed()) {
     return true;
   }
   return false;
 }
 
 bool bkbhit() {
-  if ((session()->localIO()->LocalKeyPressed() || (incom && bkbhitraw()) ||
+  if ((session()->localIO()->KeyPressed() || (incom && bkbhitraw()) ||
        (charbufferpointer && charbuffer[charbufferpointer])) ||
       bquote) {
     return true;
