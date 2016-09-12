@@ -724,7 +724,6 @@ bool uploadall(int directory_num) {
   return ok;
 }
 
-
 void relist() {
   char s[85], s1[40], s2[81];
   bool next, abort = 0;
@@ -834,10 +833,10 @@ void relist() {
   lines_listed = 0;
 }
 
-void edit_database()
 /*
- * Allows user to add or remove ALLOW.DAT entries.
- */
+* Allows user to add or remove ALLOW.DAT entries.
+*/
+void edit_database()
 {
   char ch, s[20];
   bool done = false;
@@ -886,9 +885,6 @@ void edit_database()
  * is no record #0 ambiguity.
  *
  */
-
-
-
 long db_index(File &fileAllow, const char *file_name) {
   char cfn[18], tfn[81], tfn1[81];
   int i = 0;

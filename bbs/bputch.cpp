@@ -32,9 +32,6 @@
 #include "bbs/wsession.h"
 #include "bbs/local_io.h"
 
-
-void execute_ansi();
-
 #define BPUTCH_LITERAL_PIPE_CODE -1
 #define BPUTCH_NO_CODE 0
 #define BPUTCH_HEART_CODE 1
@@ -43,10 +40,130 @@ void execute_ansi();
 #define BPUTCH_CTRLO_CODE 4
 #define BPUTCH_MACRO_CHAR_CODE 5
 
-#define OUTCOMCH_BUFFER_SIZE 1024
+static constexpr int OUTCOMCH_BUFFER_SIZE = 1024;
 static char s_szOutComChBuffer[ OUTCOMCH_BUFFER_SIZE + 1 ];
 static int  s_nOutComChBufferPosition = 0;
 
+/**
+* This function executes an ANSI string to change color, position the cursor, etc
+*/
+static void execute_ansi() {
+  static int oldx = 0;
+  static int oldy = 0;
+
+  if (ansistr[1] != '[') {
+    // try to fix things after really nasty ANSI comes in - RF 20021105
+    ansiptr = 0;
+    // do nothing if invalid ANSI string.
+  } else {
+    int args[11];
+    char temp[11];
+    static const char clrlst[] = "04261537";
+
+    int argptr = 0;
+    int tempptr = 0;
+    int ptr = 2;
+    int count;
+    for (count = 0; count < 10; count++) {
+      args[count] = temp[count] = 0;
+    }
+    char cmd = ansistr[ansiptr - 1];
+    ansistr[ansiptr - 1] = 0;
+    while ((ansistr[ptr]) && (argptr < 10) && (tempptr < 10)) {
+      if (ansistr[ptr] == ';') {
+        temp[tempptr] = 0;
+        tempptr = 0;
+        args[argptr++] = atoi(temp);
+      } else {
+        temp[tempptr++] = ansistr[ptr];
+      }
+      ++ptr;
+    }
+    if (tempptr && (argptr < 10)) {
+      temp[tempptr] = 0;
+      args[argptr++] = atoi(temp);
+    }
+    if ((cmd >= 'A') && (cmd <= 'D') && !args[0]) {
+      args[0] = 1;
+    }
+    switch (cmd) {
+    case 'f':
+    case 'H':
+      session()->localIO()->GotoXY(args[1] - 1, args[0] - 1);
+      g_flags |= g_flag_ansi_movement;
+      break;
+    case 'A':
+      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() - args[0]);
+      g_flags |= g_flag_ansi_movement;
+      break;
+    case 'B':
+      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() + args[0]);
+      g_flags |= g_flag_ansi_movement;
+      break;
+    case 'C':
+      session()->localIO()->GotoXY(session()->localIO()->WhereX() + args[0], session()->localIO()->WhereY());
+      break;
+    case 'D':
+      session()->localIO()->GotoXY(session()->localIO()->WhereX() - args[0], session()->localIO()->WhereY());
+      break;
+    case 's':
+      oldx = session()->localIO()->WhereX();
+      oldy = session()->localIO()->WhereY();
+      break;
+    case 'u':
+      session()->localIO()->GotoXY(oldx, oldy);
+      oldx = oldy = 0;
+      g_flags |= g_flag_ansi_movement;
+      break;
+    case 'J':
+      if (args[0] == 2) {
+        lines_listed = 0;
+        g_flags |= g_flag_ansi_movement;
+        session()->localIO()->Cls();
+      }
+      break;
+    case 'k':
+    case 'K':
+      session()->localIO()->ClrEol();
+      break;
+    case 'm':
+      if (!argptr) {
+        argptr = 1;
+        args[0] = 0;
+      }
+      for (count = 0; count < argptr; count++) {
+        switch (args[count]) {
+        case 0:
+          curatr = 0x07;
+          break;
+        case 1:
+          curatr = curatr | 0x08;
+          break;
+        case 4:
+          break;
+        case 5:
+          curatr = curatr | 0x80;
+          break;
+        case 7:
+          ptr = curatr & 0x77;
+          curatr = (curatr & 0x88) | (ptr << 4) | (ptr >> 4);
+          break;
+        case 8:
+          curatr = 0;
+          break;
+        default:
+          if ((args[count] >= 30) && (args[count] <= 37)) {
+            curatr = (curatr & 0xf8) | (clrlst[args[count] - 30] - '0');
+          } else if ((args[count] >= 40) && (args[count] <= 47)) {
+            curatr = (curatr & 0x8f) | ((clrlst[args[count] - 40] - '0') << 4);
+          }
+          break;  // moved up a line...
+        }
+      }
+    }
+    ansiptr = 0;
+  }
+}
 
 /**
  * This function outputs one character to the screen, and if output to the
@@ -195,126 +312,6 @@ int bputch(char c, bool bUseInternalBuffer) {
   return displayed;
 }
 
-/**
- * This function executes an ANSI string to change color, position the cursor, etc
- */
-void execute_ansi() {
-  static int oldx = 0;
-  static int oldy = 0;
-
-  if (ansistr[1] != '[') {
-    // try to fix things after really nasty ANSI comes in - RF 20021105
-    ansiptr = 0;
-    // do nothing if invalid ANSI string.
-  } else {
-    int args[11];
-    char temp[11];
-    static const char clrlst[] = "04261537";
-
-    int argptr = 0;
-    int tempptr = 0;
-    int ptr = 2;
-    int count;
-    for (count = 0; count < 10; count++) {
-      args[count] = temp[count] = 0;
-    }
-    char cmd = ansistr[ansiptr - 1];
-    ansistr[ansiptr - 1] = 0;
-    while ((ansistr[ptr]) && (argptr < 10) && (tempptr < 10)) {
-      if (ansistr[ptr] == ';') {
-        temp[tempptr] = 0;
-        tempptr = 0;
-        args[argptr++] = atoi(temp);
-      } else {
-        temp[tempptr++] = ansistr[ptr];
-      }
-      ++ptr;
-    }
-    if (tempptr && (argptr < 10)) {
-      temp[tempptr] = 0;
-      args[argptr++] = atoi(temp);
-    }
-    if ((cmd >= 'A') && (cmd <= 'D') && !args[0]) {
-      args[0] = 1;
-    }
-    switch (cmd) {
-    case 'f':
-    case 'H':
-      session()->localIO()->GotoXY(args[1] - 1, args[0] - 1);
-      g_flags |= g_flag_ansi_movement;
-      break;
-    case 'A':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() - args[0]);
-      g_flags |= g_flag_ansi_movement;
-      break;
-    case 'B':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() + args[0]);
-      g_flags |= g_flag_ansi_movement;
-      break;
-    case 'C':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX() + args[0], session()->localIO()->WhereY());
-      break;
-    case 'D':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX() - args[0], session()->localIO()->WhereY());
-      break;
-    case 's':
-      oldx = session()->localIO()->WhereX();
-      oldy = session()->localIO()->WhereY();
-      break;
-    case 'u':
-      session()->localIO()->GotoXY(oldx, oldy);
-      oldx = oldy = 0;
-      g_flags |= g_flag_ansi_movement;
-      break;
-    case 'J':
-      if (args[0] == 2) {
-        lines_listed = 0;
-        g_flags |= g_flag_ansi_movement;
-        session()->localIO()->Cls();
-      }
-      break;
-    case 'k':
-    case 'K':
-      session()->localIO()->ClrEol();
-      break;
-    case 'm':
-      if (!argptr) {
-        argptr = 1;
-        args[0] = 0;
-      }
-      for (count = 0; count < argptr; count++) {
-        switch (args[count]) {
-        case 0:
-          curatr = 0x07;
-          break;
-        case 1:
-          curatr = curatr | 0x08;
-          break;
-        case 4:
-          break;
-        case 5:
-          curatr = curatr | 0x80;
-          break;
-        case 7:
-          ptr = curatr & 0x77;
-          curatr = (curatr & 0x88) | (ptr << 4) | (ptr >> 4);
-          break;
-        case 8:
-          curatr = 0;
-          break;
-        default:
-          if ((args[count] >= 30) && (args[count] <= 37)) {
-            curatr = (curatr & 0xf8) | (clrlst[args[count] - 30] - '0');
-          } else if ((args[count] >= 40) && (args[count] <= 47)) {
-            curatr = (curatr & 0x8f) | ((clrlst[args[count] - 40] - '0') << 4);
-          }
-          break;  // moved up a line...
-        }
-      }
-    }
-    ansiptr = 0;
-  }
-}
 
 /* This function ouputs a string to the com port.  This is mainly used
  * for modem commands

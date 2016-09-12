@@ -26,6 +26,7 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/strings.h"
 
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
@@ -36,6 +37,7 @@ using std::string;
 using std::vector;
 
 using namespace wwiv::core;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
@@ -100,8 +102,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
       File dir(directories[i].path);
       if (checkDirExists(dir, directories[i].name)) {
         LOG(INFO) << "Checking directory: " << directories[i].name;
-        string filename = directories[i].filename;
-        filename.append(".dir");
+        string filename = StrCat(directories[i].filename, ".dir");
         File recordFile(datadir, filename);
         if (recordFile.Exists()) {
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
@@ -149,14 +150,14 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                     extDescFound = true;
                   }
                 }
-                if (extDescFound && (upload.mask & mask_extended) == 0) {
+                if (extDescFound && ((upload.mask & mask_extended) == 0)) {
                   upload.mask |= mask_extended;
                   modified = true;
-                  LOG(INFO) << "Fixed extended description for: " << upload.filename;
-                } else if (upload.mask & mask_extended) {
+                  LOG(INFO) << "Fixed (added) extended description for: " << upload.filename;
+                } else if (!extDescFound && (upload.mask & mask_extended)) {
                   upload.mask &= ~mask_extended;
                   modified = true;
-                  LOG(INFO) << "Fixed extended description for: " << upload.filename;
+                  LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
                 }
                 File file(directories[i].path, Unalign(upload.filename));
                 if (strlen(upload.filename) > 0 && file.Exists()) {
