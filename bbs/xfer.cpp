@@ -455,7 +455,7 @@ string read_extended_description(const string& file_name) {
       fileExtDescr.Close();
     }
   }
-  return nullptr;
+  return "";
 }
 
 void print_extended(const char *file_name, bool *abort, int numlist, int indent) {
