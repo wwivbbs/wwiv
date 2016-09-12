@@ -135,7 +135,8 @@ public:
 
     if (area_num < 0 || area_num >= size_int(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
-      LOG(ERROR) << "area_num must be between 0 and " << std::max(0U, dirs.size() - 1);
+      auto max_area_num = std::max<int>(0, size_int(dirs) - 1);
+      LOG(ERROR) << "area_num must be between 0 and " << max_area_num;
       return 1;
     }
 
