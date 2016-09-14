@@ -135,7 +135,8 @@ public:
 
     if (area_num < 0 || area_num >= size_int(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
-      LOG(ERROR) << "area_num must be between 0 and " << std::max(0U, dirs.size() - 1);
+      auto max_size = std::max<int>(0, dirs.size() - 1);
+      LOG(ERROR) << "area_num must be between 0 and " << max_size;
       return 1;
     }
 
@@ -201,7 +202,8 @@ public:
 
     if (area_num < 0 || area_num >= size_int(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
-      LOG(ERROR) << "area_num must be between 0 and " << std::max(0U, dirs.size() - 1);
+      auto max_size = std::max<int>(0, dirs.size() - 1);
+      LOG(ERROR) << "area_num must be between 0 and " << max_size;
       return 1;
     }
 
@@ -222,7 +224,8 @@ public:
     int file_number = arg("num").as_int();
     if (file_number < 0 || file_number >= size_int(files)) {
       LOG(ERROR) << "invalid file number '" << area_num << "' specified. ";
-      LOG(ERROR) << "num must be between 0 and " << std::max(0U, files.size() - 1);
+      auto max_size = std::max<int>(0, size_int(files) - 1);
+      LOG(ERROR) << "num must be between 0 and " << max_size;
       return 1;
     }
 
