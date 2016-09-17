@@ -38,6 +38,9 @@
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 
+using std::string;
+using namespace wwiv::strings;
+
 /////////////////////////////////////////////////////////////////////////////
 //
 // NOTE: This file containts wwiv message base specific code and should 
@@ -87,7 +90,8 @@ uint32_t WWIVReadLastRead(int sub_number) {
   // open file, and create it if necessary
   postrec p{};
 
-  File subFile(session()->config()->datadir(), StrCat(session()->subboards[sub_number].filename, ".sub"));
+  File subFile(session()->config()->datadir(), 
+    StrCat(session()->subs().sub(sub_number).filename, ".sub"));
   if (!subFile.Exists()) {
     bool created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (!created) {
@@ -116,26 +120,26 @@ uint32_t WWIVReadLastRead(int sub_number) {
   return p.qscan;
 }
 
-// Initializes use of a sub value (session()->subboards[], not session()->usub[]).  If quick, then
+// Initializes use of a sub value (session()->subs().subs()[], not session()->usub[]).  If quick, then
 // don't worry about anything detailed, just grab qscan info.
 bool iscan1(int sub_index) {
   postrec p{};
 
   // forget it if an invalid sub #
-  if (sub_index < 0 || sub_index >= size_int(session()->subboards)) {
+  if (sub_index < 0 || sub_index >= size_int(session()->subs().subs())) {
     return false;
   }
 
   // go to correct net #
-  if (!session()->xsubs.empty() && !session()->xsubs[sub_index].nets.empty()) {
-    set_net_num(session()->xsubs[sub_index].nets[0].net_num);
+  if (!session()->subs().sub(sub_index).nets.empty()) {
+    set_net_num(session()->subs().sub(sub_index).nets[0].net_num);
   } else {
     set_net_num(0);
   }
 
   // set sub filename
   snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", 
-      syscfg.datadir, session()->subboards[sub_index].filename);
+      syscfg.datadir, session()->subs().sub(sub_index).filename.c_str());
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {
@@ -167,7 +171,7 @@ bool iscan1(int sub_index) {
   return true;
 }
 
-// Initializes use of a sub (session()->usub[] value, not session()->subboards[] value).
+// Initializes use of a sub (session()->usub[] value, not session()->subs().subs()[] value).
 int iscan(int b) {
   return iscan1(session()->usub[b].subnum);
 }
@@ -350,16 +354,15 @@ void pack_sub(int si) {
   if (!iscan1(si)) {
     return;
   }
-  if (open_sub(true) && session()->subboards[si].storage_type == 2) {
-    const char *sfn = session()->subboards[si].filename;
-    const char *nfn = "PACKTMP$";
+  if (open_sub(true) && session()->subs().sub(si).storage_type == 2) {
+    string sfn = session()->subs().sub(si).filename;
+    string nfn = "PACKTMP$";
 
-    char fn1[MAX_PATH], fn2[MAX_PATH];
-    sprintf(fn1, "%s%s.dat", syscfg.msgsdir, sfn);
-    sprintf(fn2, "%s%s.dat", syscfg.msgsdir, nfn);
+    const string fn1 = StrCat(syscfg.msgsdir, sfn, ".dat");
+    const string fn2 = StrCat(syscfg.msgsdir, nfn, ".dat");
 
     bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" 
-         << session()->subboards[si].name << wwiv::endl;
+         << session()->subs().sub(si).name << wwiv::endl;
 
     for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
       if (i % 10 == 0) {
@@ -392,7 +395,7 @@ void pack_sub(int si) {
 }
 
 bool pack_all_subs() {
-  for (size_t i=0; i < session()->subboards.size() && !hangup; i++) {
+  for (size_t i=0; i < session()->subs().subs().size() && !hangup; i++) {
     pack_sub(i);
     if (checka() == true) {
       // checka checks to see if abort is set.

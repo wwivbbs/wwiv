@@ -31,14 +31,13 @@ namespace sdk {
 // per-network message data or subboards.
 struct subboard_network_data_t {
   std::string stype;
-  int32_t flags;
-  int16_t net_num;
-  int16_t host;
-  int16_t category;
+  int32_t flags = 0;
+  int16_t net_num = 0;
+  int16_t host = 0;
+  int16_t category = 0;
 };
 
 // New (5.2+) style subboard. 
-// This data is persisted in JSON, not on disk.
 struct subboard_t {
   // board name
   std::string name;
@@ -48,32 +47,49 @@ struct subboard_t {
   // board database filename
   std::string filename;
   // special key
-  char key;
+  char key = 0;
 
   // sl required to read
-  uint8_t readsl;
+  uint8_t readsl = 0;
   // sl required to post
-  uint8_t postsl;
+  uint8_t postsl = 0;
   // anonymous board?
-  uint8_t anony;
+  uint8_t anony = 0;
   // minimum age for sub
-  uint8_t age;
+  uint8_t age = 0;
 
   // max # of msgs
-  uint16_t maxmsgs;
+  uint16_t maxmsgs = 0;
   // AR for sub-board
-  uint16_t ar;
+  uint16_t ar = 0;
   // how messages are stored
-  uint16_t storage_type;
+  uint16_t storage_type = 0;
   // 4 digit board type
-  uint16_t type;
+  uint16_t type = 0;
   // per-network data type for networked subs.
   std::vector<subboard_network_data_t> nets;
 };
 
-// Wrapper for new 5.2+ style subboards
 struct subs_t {
   std::vector<subboard_t> subs;
+};
+
+class Subs {
+public:
+  Subs(const std::string& datadir, const std::vector<net_networks_rec>& net_networks);
+  virtual ~Subs();
+
+  bool Load();
+  bool Save();
+
+  subboard_t& sub(std::size_t n) { return subs_[n]; }
+  void set_sub(std::size_t n, subboard_t s) { subs_[n] = s; }
+  std::vector<subboard_t> subs() { return subs_; }
+
+private:
+  const std::string datadir_;
+  const std::vector<net_networks_rec> net_networks_;
+  std::vector<subboard_t> subs_;
 };
 
 /*

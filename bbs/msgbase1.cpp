@@ -44,7 +44,7 @@ using std::unique_ptr;
 using namespace wwiv::sdk;
 using wwiv::strings::StringPrintf;
 
-void send_net_post(postrec* pPostRecord, const subboardrec& sub, const wwiv::sdk::xtrasubsrec& xsub) {
+void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   string text;
   if (!readfile(&(pPostRecord->msg), sub.filename, &text)){
     return;
@@ -54,8 +54,8 @@ void send_net_post(postrec* pPostRecord, const subboardrec& sub, const wwiv::sdk
   int nOrigNetNumber = session()->net_num();
   if (pPostRecord->status & status_post_new_net) {
     nNetNumber = pPostRecord->network.network_msg.net_number;
-  } else if (!xsub.nets.empty()) {
-    nNetNumber = xsub.nets[0].net_num;
+  } else if (!sub.nets.empty()) {
+    nNetNumber = sub.nets[0].net_num;
   } else {
     nNetNumber = session()->net_num();
   }
@@ -89,8 +89,8 @@ void send_net_post(postrec* pPostRecord, const subboardrec& sub, const wwiv::sdk
   strcpy(b1.get(), pPostRecord->title);
   memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), message_length);
 
-  for (size_t n = 0; n < xsub.nets.size(); n++) {
-    const auto& xnp = xsub.nets[n];
+  for (size_t n = 0; n < sub.nets.size(); n++) {
+    const auto& xnp = sub.nets[n];
     if (xnp.net_num == nNetNumber && xnp.host) {
       continue;
     }
@@ -172,14 +172,14 @@ void post() {
   MessageEditorData data;
   messagerec m;
   m.storage_type = static_cast<unsigned char>(session()->current_sub().storage_type);
-  data.anonymous_flag = session()->subboards[ session()->GetCurrentReadMessageArea() ].anony & 0x0f;
+  data.anonymous_flag = session()->subs().sub(session()->GetCurrentReadMessageArea()).anony & 0x0f;
   if (data.anonymous_flag == 0 && getslrec(session()->GetEffectiveSl()).ability & ability_post_anony) {
     data.anonymous_flag = anony_enable_anony;
   }
   if (data.anonymous_flag == anony_enable_anony && session()->user()->IsRestrictionAnonymous()) {
     data.anonymous_flag = 0;
   }
-  if (!session()->current_xsub().nets.empty()) {
+  if (!session()->current_sub().nets.empty()) {
     data.anonymous_flag &= (anony_real_name);
     if (session()->user()->IsRestrictionNet()) {
       bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
@@ -187,11 +187,11 @@ void post() {
     }
     if (net_sysnum) {
       bout << "\r\nThis post will go out on ";
-      for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
+      for (size_t i = 0; i < session()->current_sub().nets.size(); i++) {
         if (i) {
           bout << ", ";
         }
-        bout << session()->net_networks[session()->current_xsub().nets[i].net_num].name;
+        bout << session()->net_networks[session()->current_sub().nets[i].net_num].name;
       }
       bout << ".\r\n\n";
     }
@@ -230,7 +230,7 @@ void post() {
 
   open_sub(true);
 
-  if ((!session()->current_xsub().nets.empty()) &&
+  if ((!session()->current_sub().nets.empty()) &&
       (session()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
     p.status |= status_pending_net;
     int dm = 1;
@@ -292,15 +292,15 @@ void post() {
   session()->UpdateTopScreen();
   sysoplogf("+ \"%s\" posted on %s", p.title, session()->current_sub().name);
   bout << "Posted on " << session()->current_sub().name << wwiv::endl;
-  if (!session()->current_xsub().nets.empty()) {
+  if (!session()->current_sub().nets.empty()) {
     session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
     if (!(p.status & status_pending_net)) {
-      send_net_post(&p, session()->current_sub(), session()->current_xsub());
+      send_net_post(&p, session()->current_sub());
     }
   }
 }
 
-void grab_user_name(messagerec* pMessageRecord, const char* file_name) {
+void grab_user_name(messagerec* pMessageRecord, const std::string& file_name) {
   string text;
   session()->net_email_name.clear();
   if (!readfile(pMessageRecord, file_name, &text)) {
@@ -380,7 +380,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     }
   } else {
     bout.bprintf("|#1< Nothing new on %s %s >",
-      session()->subboards[sub_number].name,
+      session()->subs().sub(sub_number).name,
         session()->usub[nBeginSubNumber].keys);
     bout.clreol();
     bout.nl();
@@ -402,7 +402,7 @@ void nscan(int nStartingSubNum) {
   }
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
   for (size_t i = nStartingSubNum; 
-       session()->usub[i].subnum != -1 && i < session()->subboards.size() && nNextSubNumber && !hangup;
+       session()->usub[i].subnum != -1 && i < session()->subs().subs().size() && nNextSubNumber && !hangup;
        i++) {
     if (qsc_q[session()->usub[i].subnum / 32] & (1L << (session()->usub[i].subnum % 32))) {
       qscan(i, &nNextSubNumber);

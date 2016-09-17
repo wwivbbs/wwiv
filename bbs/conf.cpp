@@ -111,7 +111,7 @@ int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
       sprintf(file_name, "%s%s", syscfg.datadir, SUBS_CNF);
     }
     if (num_s) {
-      *num_s = session()->subboards.size();
+      *num_s = session()->subs().subs().size();
     }
     if (uc) {
       *uc = uconfsub;
@@ -392,7 +392,8 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
 
     switch (conftype) {
     case ConferenceType::CONF_SUBS:
-      sprintf(s, "|#1%3d |#2%-39.39s |#7%4.4s %s", i, stripcolors(session()->subboards[i].name),
+      sprintf(s, "|#1%3d |#2%-39.39s |#7%4.4s %s", i, 
+        stripcolors(session()->subs().sub(i).name.c_str()),
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     case ConferenceType::CONF_DIRS:
@@ -1078,7 +1079,7 @@ void list_confs(ConferenceType conftype, int ssc) {
             switch (conftype) {
             case ConferenceType::CONF_SUBS:
               sprintf(s1, "%s%-3d : %s", "Sub #", subconfs[i].subs[i2],
-                      stripcolors(session()->subboards[cp[i].subs[i2]].name));
+                      stripcolors(session()->subs().sub(cp[i].subs[i2]).name.c_str()));
               break;
             case ConferenceType::CONF_DIRS:
               sprintf(s1, "%s%-3d : %s", "Dir #", dirconfs[i].subs[i2],

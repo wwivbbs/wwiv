@@ -47,7 +47,7 @@ void valscan() {
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (size_t sn = 0; sn < session()->subboards.size() && !hangup && !done; sn++) {
+  for (size_t sn = 0; sn < session()->subs().subs().size() && !hangup && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }
@@ -58,7 +58,7 @@ void valscan() {
     uint32_t sq = qsc_p[sn];
 
     // Must be sub with validation "on"
-    if (session()->current_xsub().nets.empty()
+    if (session()->current_sub().nets.empty()
         || !(session()->current_sub().anony & anony_val_net)) {
       continue;
     }
@@ -98,7 +98,7 @@ void valscan() {
             p1->status &= ~status_pending_net;
             write_post(i, p1);
             close_sub();
-            send_net_post(p1, session()->current_sub(), session()->current_xsub());
+            send_net_post(p1, session()->current_sub());
             bout.nl();
             bout << "|#7Message sent.\r\n\n";
           }
@@ -106,7 +106,7 @@ void valscan() {
           case 'M':
             if (lcs() && i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea() &&
                 session()->current_sub().anony & anony_val_net &&
-                !session()->current_xsub().nets.empty()) {
+                !session()->current_sub().nets.empty()) {
               wwiv::bbs::OpenSub opened_sub(true);
               resynch(&i, nullptr);
               postrec *p1 = get_post(i);

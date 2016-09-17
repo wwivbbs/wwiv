@@ -22,12 +22,14 @@
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -139,7 +141,7 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
   network_number_ = cmdline.arg("net").as_int();
   const auto& nws = networks_.networks();
 
-  if (network_number_ < 0 || network_number_ >= nws.size()) {
+  if (network_number_ < 0 || network_number_ >= size_int(nws)) {
     LOG(ERROR) << "network number must be between 0 and " << nws.size() << ".";
     initialized_ = false;
     return;

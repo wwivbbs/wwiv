@@ -71,10 +71,10 @@ static bool GetMessageToName(const char *aux) {
   bool bHasAddress = false;
   bool newlsave = newline;
 
-  if (!session()->current_xsub().nets.empty()) {
-    for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
-      const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
-      if (session()->net_networks[xnp.net_num].type == net_type_fidonet &&
+  if (!session()->current_sub().nets.empty()) {
+    for (size_t i = 0; i < session()->current_sub().nets.size(); i++) {
+      const auto& xnp = session()->current_sub().nets[i];
+      if (session()->net_networks[xnp.net_num].type == net_type_ftn &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
         bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
@@ -339,10 +339,9 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
 static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux) {
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email") &&
-      !session()->current_xsub().nets.empty()) {
-    for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
-      const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
-      if (session()->net_networks[xnp.net_num].type == net_type_fidonet) {
+      !session()->current_sub().nets.empty()) {
+    for (const auto& xnp : session()->current_sub().nets) {
+      if (session()->net_networks[xnp.net_num].type == net_type_ftn) {
         const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
         ss << buf << crlf;
         break;
@@ -377,8 +376,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 }
 
 static string FindTagFileName() {
-  for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
-    const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
+  for (const auto& xnp : session()->current_sub().nets) {
     const char *nd = session()->net_networks[xnp.net_num].dir;
     string filename = StringPrintf("%s%s.tag", nd, xnp.stype);
     if (File::Exists(filename)) {
@@ -401,14 +399,14 @@ static string FindTagFileName() {
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) {
-  if (session()->subboards.size() <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
+  if (session()->subs().subs().size() <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
   const char szMultiMail[] = "Multi-Mail";
   if (IsEqualsIgnoreCase(aux, "email")) {
     return;
   }
-  if (session()->current_xsub().nets.empty()) {
+  if (session()->current_sub().nets.empty()) {
     return;
   }
   if (session()->current_sub().anony & anony_no_tag) {

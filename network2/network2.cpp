@@ -316,13 +316,8 @@ int main(int argc, char** argv) {
       bbsdir, config.datadir(), config.msgsdir(), networks.networks());
     unique_ptr<UserManager> user_manager = make_unique<UserManager>(
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
-    Context context(config, net, *user_manager.get(), *api.get());
-    context.subs = std::move(read_subs(config.datadir()));
+    Context context(config, net, *user_manager.get(), *api.get(), networks.networks());
     context.network_number = net_cmdline.network_number();
-    if (!read_subs_xtr(config.datadir(), networks.networks(), context.subs, context.xsubs)) {
-      LOG(ERROR) << "ERROR: Failed to read file: " << SUBS_XTR;
-      return 5;
-    }
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {

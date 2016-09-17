@@ -64,7 +64,7 @@ static string GetScanReadPrompts(int nMessageNumber) {
   }
 
   string local_network_name = "Local";
-  if (!session()->current_xsub().nets.empty()) {
+  if (!session()->current_sub().nets.empty()) {
     local_network_name = session()->network_name();
   } else {
     set_net_num(0);
@@ -83,7 +83,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
   if (get_post(nMessageNumber)->ownersys && !get_post(nMessageNumber)->owneruser) {
     grab_user_name(&(get_post(nMessageNumber)->msg), session()->current_sub().filename);
   }
-  grab_quotes(&(get_post(nMessageNumber)->msg), session()->current_sub().filename);
+  grab_quotes(&(get_post(nMessageNumber)->msg), session()->current_sub().filename.c_str());
 
   if (okfsed() && session()->user()->IsUseAutoQuote() && nMessageNumber > 0 &&
       nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea() && pszUserInput[0] != 'O') {
@@ -438,16 +438,16 @@ void HandleMessageMove(int &nMessageNumber) {
       return;
     }
     bool ok = false;
-    for (size_t i1 = 0; (i1 < session()->subboards.size() && session()->usub[i1].subnum != -1 && !ok); i1++) {
+    for (size_t i1 = 0; (i1 < session()->subs().subs().size() && session()->usub[i1].subnum != -1 && !ok); i1++) {
       if (IsEquals(session()->usub[i1].keys, ss1)) {
         nTempSubNum = i1;
         bout.nl();
-        bout << "|#9Copying to " << session()->subboards[session()->usub[nTempSubNum].subnum].name << endl;
+        bout << "|#9Copying to " << session()->subs().sub(session()->usub[nTempSubNum].subnum).name << endl;
         ok = true;
       }
     }
     if (nTempSubNum != -1) {
-      if (session()->GetEffectiveSl() < session()->subboards[session()->usub[nTempSubNum].subnum].postsl) {
+      if (session()->GetEffectiveSl() < session()->subs().sub(session()->usub[nTempSubNum].subnum).postsl) {
         bout.nl();
         bout << "Sorry, you don't have post access on that sub.\r\n\n";
         nTempSubNum = -1;
@@ -492,13 +492,13 @@ void HandleMessageMove(int &nMessageNumber) {
         delete_message(nMsgToDelete);
       }
       if ((!(session()->current_sub().anony & anony_val_net)) ||
-          (session()->current_xsub().nets.empty())) {
+          (session()->current_sub().nets.empty())) {
         p2.status &= ~status_pending_net;
       }
-      if (!session()->current_xsub().nets.empty()) {
+      if (!session()->current_sub().nets.empty()) {
         p2.status |= status_pending_net;
         session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
-        send_net_post(&p2, session()->current_sub(), session()->current_xsub());
+        send_net_post(&p2, session()->current_sub());
       }
       add_post(&p2);
       close_sub();
@@ -540,7 +540,7 @@ void HandleMessageReply(int &nMessageNumber) {
     return;
   }
   postrec p2 = *get_post(nMessageNumber);
-  grab_quotes(&(p2.msg), session()->current_sub().filename);
+  grab_quotes(&(p2.msg), session()->current_sub().filename.c_str());
 
   if (okfsed() && session()->user()->IsUseAutoQuote() &&
       nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -690,7 +690,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
         } else {
           bout.nl();
           bout << "|#9Mark messages in "
-            << session()->subboards[session()->current_user_sub().subnum].name
+            << session()->subs().sub(session()->current_user_sub().subnum).name
             << " as read? ";
           if (yesno()) {
             unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
@@ -711,7 +711,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
       nScanOptionType = SCAN_OPTION_READ_MESSAGE;
       break;
     case '@':
-      strcpy(irt_sub, session()->subboards[session()->current_user_sub().subnum].name);
+      to_char_array(irt_sub, session()->subs().sub(session()->current_user_sub().subnum).name);
     case 'O':
     case 'A':
     {
@@ -783,7 +783,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
     case 'X':
       if (lcs() && nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea() &&
         session()->current_sub().anony & anony_val_net &&
-        !session()->current_xsub().nets.empty()) {
+        !session()->current_sub().nets.empty()) {
         wwiv::bbs::OpenSub opened_sub(true);
         resynch(&nMessageNumber, nullptr);
         postrec *p3 = get_post(nMessageNumber);
@@ -847,8 +847,8 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
   do {
     session()->tleft(true);
     CheckForHangup();
-    set_net_num((session()->current_xsub().nets.empty()) ? 0 :
-      session()->current_xsub().nets[0].net_num);
+    set_net_num((session()->current_sub().nets.empty()) ? 0 :
+      session()->current_sub().nets[0].net_num);
     if (nScanOptionType != SCAN_OPTION_READ_PROMPT) {
       resynch(&nMessageNumber, nullptr);
     }
@@ -939,7 +939,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
         }
       }
       for (auto p : to_validate) {
-        send_net_post(&p, session()->current_sub(), session()->current_xsub());
+        send_net_post(&p, session()->current_sub());
         nNumMsgsSent++;
       }
 

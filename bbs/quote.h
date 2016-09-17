@@ -20,7 +20,7 @@
 
 #include "sdk/vardec.h"
 
-void grab_quotes(messagerec * m, const char *aux);
+void grab_quotes(messagerec* m, const char *aux);
 void auto_quote(char *org, long len, int type, time_t tDateTime);
 void get_quote(int fsed);
 

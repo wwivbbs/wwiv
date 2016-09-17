@@ -211,7 +211,7 @@ void kill_old_email() {
 }
 
 void list_users(int mode) {
-  subboardrec s;
+  subboard_t s;
   directoryrec d;
   memset(&s, 0, sizeof(subboardrec));
   memset(&d, 0, sizeof(directoryrec));
@@ -243,7 +243,7 @@ void list_users(int mode) {
   }
 
   if (mode == LIST_USERS_MESSAGE_AREA) {
-    s = session()->subboards[session()->current_user_sub().subnum];
+    s = session()->subs().sub(session()->current_user_sub().subnum);
   } else {
     d = session()->directories[session()->current_user_dir().subnum];
   }

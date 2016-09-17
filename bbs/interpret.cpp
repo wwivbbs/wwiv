@@ -25,6 +25,7 @@
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 
+using namespace wwiv::strings;
 
 const char *interpret(char chKey) {
   static char s[255];
@@ -188,7 +189,7 @@ const char *interpret(char chKey) {
     snprintf(s, sizeof(s), "%u", session()->user()->GetFilesUploaded());
     break;
   case 'u':                               // Current sub
-    strcpy(s, session()->subboards[session()->current_user_sub().subnum].name);
+    to_char_array(s, session()->subs().sub(session()->current_user_sub().subnum).name);
     break;
   case 'W':                               // Total # of messages in sub
     snprintf(s, sizeof(s), "%d", session()->GetNumMessagesInCurrentMessageArea());

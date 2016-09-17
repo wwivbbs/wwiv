@@ -275,9 +275,8 @@ struct net_networks_rec_disk {
   uint8_t padding[12];
 };
 
-
 #define net_type_wwivnet  0
-#define net_type_fidonet  1
+#define net_type_ftn  1
 #define net_type_internet 2
 
 #pragma pack(pop)

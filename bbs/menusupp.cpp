@@ -94,7 +94,7 @@ void UnQScan() {
     bout.nl();
     qsc_p[session()->current_user_sub().subnum] = 0;
     bout << "Messages on " 
-         << session()->subboards[session()->current_user_sub().subnum].name
+         << session()->subs().sub(session()->current_user_sub().subnum).name
          << " marked as unread.\r\n";
   }
   break;
@@ -136,14 +136,14 @@ void DownSub() {
     session()->set_current_user_sub_num(session()->current_user_sub_num() - 1);
   } else {
     while (session()->usub[session()->current_user_sub_num() + 1].subnum >= 0 &&
-           session()->current_user_sub_num() < session()->subboards.size() - 1) {
+           session()->current_user_sub_num() < session()->subs().subs().size() - 1) {
       session()->set_current_user_sub_num(session()->current_user_sub_num() + 1);
     }
   }
 }
 
 void UpSub() {
-  if (session()->current_user_sub_num() < session()->subboards.size() - 1 &&
+  if (session()->current_user_sub_num() < session()->subs().subs().size() - 1 &&
       session()->usub[session()->current_user_sub_num() + 1].subnum >= 0) {
     session()->set_current_user_sub_num(session()->current_user_sub_num() + 1);
   } else {
@@ -723,7 +723,7 @@ void ClearQScan() {
     std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
     bout.nl();
     qsc_p[session()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
-    bout << "Messages on " << session()->subboards[session()->current_user_sub().subnum].name 
+    bout << "Messages on " << session()->subs().sub(session()->current_user_sub().subnum).name
          << " marked as read.\r\n";
     break;
   }
@@ -1067,7 +1067,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const char *pszSubKeys) {
-  for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1); i++) {
+  for (size_t i = 0; (i < session()->subs().subs().size()) && (session()->usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(session()->usub[i].keys, pszSubKeys)) {
       session()->set_current_user_sub_num(i);
     }

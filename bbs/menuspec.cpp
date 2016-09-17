@@ -259,7 +259,8 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   char* s = mmkey(0);
-  for (size_t i = 0; (i < session()->subboards.size()) && (session()->usub[i].subnum != -1); i++) {
+  for (size_t i = 0; (i < session()->subs().subs().size())
+       && (session()->usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(session()->usub[i].keys, s)) {
       session()->set_current_user_sub_num(i);
     }

@@ -910,6 +910,7 @@ void logon() {
 
   session()->UpdateTopScreen();
   session()->read_subs();
+  session()->subs().Load();
   rsm(session()->usernum, session()->user(), true);
 
   LoginCheckForNewMail();

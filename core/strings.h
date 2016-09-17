@@ -45,6 +45,13 @@ std::string StrCat(const A& a, const Args&... args) {
   return ss.str();
 }
 
+template <size_t SIZE>
+bool to_char_array(char(&out)[SIZE], const std::string& s) {
+  strncpy(out, s.c_str(), SIZE);
+  out[SIZE - 1] = '\0';
+  return s.size() <= SIZE;
+}
+
 std::string StringPrintf(const char *formatted_text, ...);
 int GetStringLength(const char* str);
 bool IsEquals(const char *str1, const char *str2);

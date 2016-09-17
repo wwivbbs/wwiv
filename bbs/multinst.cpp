@@ -79,8 +79,9 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_BANK: return ("In TimeBank");
     case INST_LOC_AMSG: return ("AutoMessage");
     case INST_LOC_SUBS:
-      if (so() && ir.subloc < session()->subboards.size()) {
-        string temp = StringPrintf("(Sub: %s)", stripcolors(session()->subboards[ ir.subloc ].name));
+      if (so() && ir.subloc < session()->subs().subs().size()) {
+        string temp = StringPrintf("(Sub: %s)",
+            stripcolors(session()->subs().sub(ir.subloc).name.c_str()));
         return StrCat("Reading Messages", temp);
       }
       return string("Reading Messages");
@@ -94,8 +95,9 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_FEEDBACK: return string("Leaving Feedback");
     case INST_LOC_KILLEMAIL: return string("Viewing Old Email");
     case INST_LOC_POST:
-      if (so() && ir.subloc < session()->subboards.size()) {
-        string temp = StringPrintf(" (Sub: %s)", stripcolors(session()->subboards[ir.subloc].name));
+      if (so() && ir.subloc < session()->subs().subs().size()) {
+        string temp = StringPrintf(" (Sub: %s)",
+            stripcolors(session()->subs().sub(ir.subloc).name.c_str()));
         return StrCat("Posting a Message", temp);
       }
       return string("Posting a Message");

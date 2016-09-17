@@ -25,6 +25,7 @@
 #include "bbs/input.h"
 #include "core/strings.h"
 
+using namespace wwiv::strings;
 
 void HopSub() {
   char s1[81], s2[81];
@@ -61,8 +62,9 @@ void HopSub() {
       setuconf(ConferenceType::CONF_SUBS, c, -1);
     }
     size_t i = 0;
-    while ((i < session()->subboards.size()) && (session()->usub[i].subnum != -1) && !abort) {
-      strcpy(s2, session()->subboards[session()->usub[i].subnum].name);
+    while ((i < session()->subs().subs().size())
+            && (session()->usub[i].subnum != -1) && !abort) {
+      to_char_array(s2, session()->subs().sub(session()->usub[i].subnum).name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
       if (strstr(s2, s1) != nullptr) {
@@ -72,7 +74,7 @@ void HopSub() {
         if (!okansi()) {
           bout.nl();
         }
-        bout << "|#5Do you mean \"" << session()->subboards[session()->usub[i].subnum].name << "\" (Y/N/Q)? ";
+        bout << "|#5Do you mean \"" << session()->subs().sub(session()->usub[i].subnum).name << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;

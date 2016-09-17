@@ -476,6 +476,7 @@ bool WSession::ReadConfig() {
   const configrec* config = config_->config();
   user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
+  
   const string instance_name = StringPrintf("WWIV-%u", instance_number());
   std::unique_ptr<IniFile> ini = std::make_unique<IniFile>(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG);
   if (!ini->IsOpen()) {
@@ -610,10 +611,8 @@ void WSession::read_nintern() {
 }
 
 bool WSession::read_subs() {
-  subboards = wwiv::sdk::read_subs(config()->datadir());
-  // If we already read subs.dat that's sufficient to return true.
-  // since subs.xtr is created as-needed once as sub is created.
-  read_subs_xtr(config()->datadir(), net_networks, subboards, xsubs);
+  subs_.reset(new wwiv::sdk::Subs(config_->datadir(), net_networks));
+  subs_->Load();
   return true;
 }
 
