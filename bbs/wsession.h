@@ -458,8 +458,6 @@ public:
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
   std::vector<languagerec> languages;
-  // std::vector<subboardrec> subboards;
-  // std::vector<wwiv::sdk::xtrasubsrec> xsubs;
   std::vector<net_networks_rec> net_networks;
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;

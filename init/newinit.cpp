@@ -43,10 +43,12 @@
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
+#include "sdk/subxtr.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static void create_text(const char *file_name) {
@@ -237,17 +239,18 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
     namesfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile);
   }
   {
-    subboardrec s1 = {};
-    strcpy(s1.name, "General");
-    strcpy(s1.filename, "GENERAL");
-    s1.readsl = 10;
-    s1.postsl = 20;
-    s1.maxmsgs = 50;
-    s1.storage_type = 2;
-    File subsfile(StrCat("data/", SUBS_DAT));
-    subsfile.Open(File::modeBinary|File::modeCreateFile|File::modeReadWrite);
-    subsfile.Write(&s1, sizeof(subboardrec));
-    subsfile.Close();
+    subboard_t r = {};
+    r.name = "General";
+    r.filename = "GENERAL";
+    r.readsl = 10;
+    r.postsl = 20;
+    r.maxmsgs = 50;
+    r.storage_type = 2;
+
+    Subs subs("data/", {});
+    subs.insert(0, r);
+    // TODO(rushfan): Check for error.
+    subs.Save();
   }
 
   {

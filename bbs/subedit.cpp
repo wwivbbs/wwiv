@@ -77,13 +77,13 @@ static void showsubs() {
   pla("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
   int subnum = 0;
   for (const auto& r : session()->subs().subs()) {
-    ++subnum;
     const string subdata = StrCat(r.name, " ", r.filename);
     if (strcasestr(subdata.c_str(), substring.c_str())) {
       const string line = boarddata(subnum, r);
       pla(line, &abort);
       if (abort) break;
     }
+    ++subnum;
   }
 }
 
