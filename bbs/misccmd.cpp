@@ -211,10 +211,8 @@ void kill_old_email() {
 }
 
 void list_users(int mode) {
-  subboard_t s;
-  directoryrec d;
-  memset(&s, 0, sizeof(subboardrec));
-  memset(&d, 0, sizeof(directoryrec));
+  subboard_t s = {};
+  directoryrec d = {};
   User user;
   char szFindText[21];
 

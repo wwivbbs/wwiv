@@ -439,8 +439,11 @@ struct colorrec {
 };
 
 
-// MESSAGE BASE INFORMATION
-struct subboardrec {
+/**
+ * ON DISK format for MESSAGE BASE INFORMATION (SUBS.DAT)
+ * This has been the same since *at least* 4.22.
+ */
+struct subboardrec_422_t {
   char name[41],                              // board name
        filename[9],                            // board database filename
        key;                                    // board special key
@@ -768,7 +771,7 @@ struct batchrec {
 #define ability_cosysop             0x0020
 #define ability_val_net             0x0040
 
-// subboardrec.anony
+// subs anony
 #define anony_none                  0x00
 #define anony_enable_anony          0x01
 #define anony_enable_dear_abby      0x02
@@ -1069,7 +1072,7 @@ static_assert(sizeof(configrec) == 6228, "configrec == 6228");
 static_assert(sizeof(configoverrec) == 512, "configoverrec == 512");
 static_assert(sizeof(statusrec_t) == 151, "statusrec == 151");
 static_assert(sizeof(colorrec) == 240, "colorrec == 240");
-static_assert(sizeof(subboardrec) == 63, "subboardrec == 63");
+static_assert(sizeof(subboardrec_422_t) == 63, "subboardrec_422_t == 63");
 static_assert(sizeof(directoryrec) == 141, "directoryrec == 141");
 static_assert(sizeof(smalrec) == 33, "smalrec == 33");
 static_assert(sizeof(messagerec) == 5, "messagerec == 5");

@@ -39,7 +39,7 @@ struct subboard_network_data_t {
 
 // New (5.2+) style subboard. 
 struct subboard_t {
-  // board name
+  // sub name
   std::string name;
   // long description - for subs.lst
   std::string desc;

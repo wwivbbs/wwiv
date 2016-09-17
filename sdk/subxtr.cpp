@@ -46,11 +46,11 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
-bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
 
-std::vector<subboardrec> read_subs(const std::string &datadir);
-bool write_subs(const std::string &datadir, const std::vector<subboardrec>& subboards);
+std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
+bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
 
 
 template <class Archive>
@@ -113,7 +113,7 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
   return true;
 }
 
-bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs) {
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs) {
   TextFile subs_xtr(datadir, SUBS_XTR, "rt");
   if (!subs_xtr.IsOpen()) {
     return false;
@@ -187,22 +187,22 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
   return true;
 }
 
-vector<subboardrec> read_subs(const string &datadir) {
-  DataFile<subboardrec> file(datadir, SUBS_DAT);
+vector<subboardrec_422_t> read_subs(const string &datadir) {
+  DataFile<subboardrec_422_t> file(datadir, SUBS_DAT);
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
     //LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return{};
   }
-  std::vector<subboardrec> subboards;
+  std::vector<subboardrec_422_t> subboards;
   if (!file.ReadVector(subboards)) {
     return{};
   }
   return subboards;
 }
 
-bool write_subs(const string &datadir, const vector<subboardrec>& subboards) {
-  DataFile<subboardrec> subsfile(datadir, SUBS_DAT,
+bool write_subs(const string &datadir, const vector<subboardrec_422_t>& subboards) {
+  DataFile<subboardrec_422_t> subsfile(datadir, SUBS_DAT,
     File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
   if (!subsfile) {
     return false;
@@ -258,11 +258,11 @@ bool Subs::Load() {
 }
 
 bool Subs::Save() {
-  std::vector<subboardrec> subs;
+  std::vector<subboardrec_422_t> subs;
   std::vector<xtrasubsrec> xsubs;
 
   for (const auto& s : subs_) {
-    subboardrec ls = {};
+    subboardrec_422_t ls = {};
     xtrasubsrec lx = {};
     to_char_array(ls.name, s.name);
     to_char_array(lx.desc, s.desc);
