@@ -46,6 +46,13 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
+
+std::vector<subboardrec> read_subs(const std::string &datadir);
+bool write_subs(const std::string &datadir, const std::vector<subboardrec>& subboards);
+
+
 template <class Archive>
 void serialize(Archive & ar, subboard_network_data_t& s) {
   ar(make_nvp("stype", s.stype),
@@ -291,6 +298,24 @@ bool Subs::Save() {
     LOG(ERROR) << "Error saving xsubs";
     return false;
   }
+  return true;
+}
+
+// TODO(rushfan): Since should we make this algo available 
+// in wwiv::sdk since we do it on all containers often.
+bool Subs::insert(std::size_t n, subboard_t r) {
+  // TODO(rushfan): Add size checking
+  auto it = subs_.begin();
+  std::advance(it, n);
+  subs_.insert(it, r);
+  return true;
+}
+
+bool Subs::erase(std::size_t n) {
+  // TODO(rushfan): Add size checking
+  auto it = subs_.begin();
+  std::advance(it, n);
+  subs_.erase(it);
   return true;
 }
 

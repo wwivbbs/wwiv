@@ -82,9 +82,13 @@ public:
   bool Load();
   bool Save();
 
+  const subboard_t& sub(std::size_t n) const { return subs_.at(n); }
   subboard_t& sub(std::size_t n) { return subs_[n]; }
   void set_sub(std::size_t n, subboard_t s) { subs_[n] = s; }
-  std::vector<subboard_t> subs() { return subs_; }
+  const std::vector<subboard_t> subs() const { return subs_; }
+  bool insert(std::size_t n, subboard_t r);
+  bool erase(std::size_t n);
+  std::vector<net_networks_rec>::size_type size() const { return subs_.size(); }
 
 private:
   const std::string datadir_;
@@ -125,13 +129,6 @@ struct xtrasubsrec {
 
 #define XTRA_NET_AUTO_ADDDROP 0x00000001    /* can auto add-drop the sub */
 #define XTRA_NET_AUTO_INFO    0x00000002    /* sends subs.lst info for sub */
-
-
-bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
-bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
-
-std::vector<subboardrec> read_subs(const std::string &datadir);
-bool write_subs(const std::string &datadir, const std::vector<subboardrec>& subboards);
 
 }
 }

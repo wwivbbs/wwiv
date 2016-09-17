@@ -32,6 +32,17 @@ using std::vector;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+namespace wwiv {
+namespace sdk {
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
+
+std::vector<subboardrec> read_subs(const std::string &datadir);
+bool write_subs(const std::string &datadir, const std::vector<subboardrec>& subboards);
+
+}
+}
+
 class SubXtrTest: public testing::Test {
 protected:
   virtual void SetUp() { 

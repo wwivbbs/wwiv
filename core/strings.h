@@ -54,8 +54,12 @@ bool to_char_array(char(&out)[SIZE], const std::string& s) {
 
 std::string StringPrintf(const char *formatted_text, ...);
 int GetStringLength(const char* str);
+
+// Comparisons
 bool IsEquals(const char *str1, const char *str2);
 bool IsEqualsIgnoreCase(const char *str1, const char *str2);
+bool iequals(const char* s1, const char* s2);
+bool iequals(const std::string& s1, const std::string& s2);
 int  StringCompareIgnoreCase(const char *str1, const char *str2);
 int  StringCompare(const char *str1, const char *str2);
 

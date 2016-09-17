@@ -777,7 +777,7 @@ struct batchrec {
 #define anony_val_net               0x10
 #define anony_ansi_only             0x20
 #define anony_no_tag                0x40
-#define anony_require_sv            0x80
+#define unused_anony_require_sv     0x80
 
 // postrec.anony, mailrec.anony
 #define anony_sender                0x01

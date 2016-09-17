@@ -75,13 +75,14 @@ static void showsubs() {
   string substring = input(20, true);
   pla("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE", &abort);
   pla("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
-  for (size_t i = 0; i < session()->subs().subs().size() && !abort; i++) {
-    const string subdata = StrCat(session()->subs().sub(i).name, " ",
-      session()->subs().sub(i).filename);
+  int subnum = 0;
+  for (const auto& r : session()->subs().subs()) {
+    ++subnum;
+    const string subdata = StrCat(r.name, " ", r.filename);
     if (strcasestr(subdata.c_str(), substring.c_str())) {
-      session()->subs().sub(i).anony &= ~anony_require_sv;
-      const string line = boarddata(i, session()->subs().sub(i));
+      const string line = boarddata(subnum, r);
       pla(line, &abort);
+      if (abort) break;
     }
   }
 }
@@ -507,11 +508,8 @@ static void insert_sub(int n) {
   r.type = 0;
   r.storage_type = 2;
 
-  {
-    auto it = session()->subs().subs().begin();
-    std::advance(it, n);
-    session()->subs().subs().insert(it, r);
-  }
+  // Insert new item.
+  session()->subs().insert(n, r);
 
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
@@ -566,11 +564,7 @@ static void delete_sub(int n) {
   while (size_int(session()->subs().subs()) > n && !session()->subs().sub(n).nets.empty()) {
     sub_xtr_del(n, 0, 1);
   }
-  {
-    auto it = session()->subs().subs().begin();
-    std::advance(it, n);
-    session()->subs().subs().erase(it);
-  }
+  session()->subs().erase(n);
   nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;

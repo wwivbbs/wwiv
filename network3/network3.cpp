@@ -85,17 +85,15 @@ static bool check_host_networks(
   int network_number,
   std::ostringstream& text) {
   
-  std::vector<subboardrec> subs = read_subs(config.datadir());
-
-  std::vector<wwiv::sdk::xtrasubsrec> xsubs;
-
-  if (!read_subs_xtr(config.datadir(), network.networks(), subs, xsubs)) {
+  wwiv::sdk::Subs subs(config.datadir(), network.networks());
+  if (!subs.Load()) {
+    LOG(ERROR) << "Unable to load subs (.dat and .xtr)";
     return false;
   }
 
  const auto& net = network.networks()[network_number];
 
-  for (const auto& x : xsubs) {
+  for (const auto& x : subs.subs()) {
     for (const auto& n : x.nets) {
       if (n.net_num == network_number) {
         if (n.host == 0) {
