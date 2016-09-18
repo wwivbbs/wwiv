@@ -20,29 +20,33 @@
 
 #include "bbs/stuffin.h"
 #include "bbs/vars.h"
+#include "bbs_test/bbs_helper.h"
+#include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::cout;
 using std::endl;
 using std::ostringstream;
 using std::string;
 
+using namespace wwiv::strings;
+
+
 class StuffInTest : public testing::Test {
 protected:
     virtual void SetUp() {
-        incom = false;
-        com_speed = 0;
-        modem_speed = 0;
-        syscfgovr.primaryport = 0;
-        syscfgovr.tempdir[0] = 0;
-        gfiles_dir_ = "C:\\temp";
-        syscfg.gfilesdir = const_cast<char*>(gfiles_dir_.c_str());
+      helper.SetUp();
+      incom = false;
+      com_speed = 0;
+      modem_speed = 0;
     }
+
 public:
     const std::string t(const std::string name) {
-        ostringstream os;
-        os << syscfgovr.tempdir << name;
-        return string(os.str());
+      return StrCat(session()->temp_directory(), name);
     }
+
+    BbsHelper helper;
 private:
   string gfiles_dir_;
 };
@@ -50,30 +54,30 @@ private:
 TEST_F(StuffInTest, SimpleCase) {
     const string actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
 
-    ostringstream expected;
-    expected << "foo one " << t("chain.txt") << " two " << syscfg.gfilesdir << "comment.txt";
+    ostringstream os;
+    os << "foo one " << t("chain.txt")
+      << " two " << syscfg.gfilesdir << COMMENT_TXT;
+    string expected = os.str();
 
-    EXPECT_EQ(expected.str(), actual);
+    EXPECT_EQ(expected, actual);
 }
-
 
 TEST_F(StuffInTest, Empty) {
     const string actual = stuff_in("", "", "", "", "", "");
     EXPECT_EQ(0, actual.length());
 }
 
-TEST_F(StuffInTest, AllNumbers) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %%       A single '%'                      "%"
 //  %1-%5    Specified passed-in parameter
+TEST_F(StuffInTest, AllNumbers) {
     const string actual = stuff_in("%0%1%2%3%4%5%6%%", "1", "2", "3", "4", "5");
     string expected = "12345%";
 
     EXPECT_EQ(expected, actual);
 }
 
-TEST_F(StuffInTest, AllDropFiles) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %A       callinfo full pathname            "c:\wwiv\temp\callinfo.bbs"
@@ -82,7 +86,8 @@ TEST_F(StuffInTest, AllDropFiles) {
 //  %E       door32.sys full pathname          "C:\wwiv\temp\door32.sys"    string in = "foo %1 %c %2 %k";
 //  %O       pcboard full pathname             "c:\wwiv\temp\pcboard.sys"
 //  %R       door full pathname                "c:\wwiv\temp\door.sys"
-    const string actual_lower = stuff_in("%a %c %d %e %o %r ", "", "", "", "", "");
+TEST_F(StuffInTest, AllDropFiles) {
+  const string actual_lower = stuff_in("%a %c %d %e %o %r ", "", "", "", "", "");
     const string actual_upper = stuff_in("%A %C %D %E %O %R ", "", "", "", "", "");
 
     ostringstream expected;
@@ -97,38 +102,36 @@ TEST_F(StuffInTest, AllDropFiles) {
     EXPECT_EQ(expected.str(), actual_upper);
 }
 
-TEST_F(StuffInTest, PortAndNode) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %N       Instance number                   "1"
 //  %P       Com port number                   "1"
-    EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
+TEST_F(StuffInTest, PortAndNode) {
+  incom = false;
+  EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
     
-    incom = true;
-    syscfgovr.primaryport = 1;
-    EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
+  incom = true;
+  EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
 
-    // TODO(Rushfan): Figure out how to get application() working in tests and
-    // reenable this one.
-//    EXPECT_EQ(string("1"), stuff_in("%N", "", "", "", "", ""));
+  EXPECT_EQ(string("42"), stuff_in("%N", "", "", "", "", ""));
 }
 
-TEST_F(StuffInTest, Speeds) {
 // Param     Description                       Example
 // ---------------------------------------------------------------------
 //  %M       Modem baud rate                   "14400"
 //  %S       Com port baud rate                "38400"
-    EXPECT_EQ(string("0"), stuff_in("%M", "", "", "", "", ""));
-    EXPECT_EQ(string("0"), stuff_in("%S", "", "", "", "", ""));
+TEST_F(StuffInTest, Speeds) {
+  EXPECT_EQ(string("0"), stuff_in("%M", "", "", "", "", ""));
+  EXPECT_EQ(string("0"), stuff_in("%S", "", "", "", "", ""));
 
-    modem_speed = 38400;
-    EXPECT_EQ(string("38400"), stuff_in("%M", "", "", "", "", ""));
+  modem_speed = 38400;
+  EXPECT_EQ(string("38400"), stuff_in("%M", "", "", "", "", ""));
 
-    com_speed = 38400;
-    EXPECT_EQ(string("38400"), stuff_in("%S", "", "", "", "", ""));
+  com_speed = 38400;
+  EXPECT_EQ(string("38400"), stuff_in("%S", "", "", "", "", ""));
 
-    com_speed = 115200;
-    EXPECT_EQ(string("115200"), stuff_in("%S", "", "", "", "", ""));
+  com_speed = 115200;
+  EXPECT_EQ(string("115200"), stuff_in("%S", "", "", "", "", ""));
 }
 
 

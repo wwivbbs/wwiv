@@ -288,7 +288,8 @@ bool fill_sec(int sn) {
   bool bFound = false;
 
   gfilerec *g = read_sec(sn, &n1);
-  sprintf(s1, "%s%s%c*.*", syscfg.gfilesdir, session()->gfilesec[sn].filename, File::pathSeparatorChar);
+  string gfilesdir = session()->config()->gfilesdir();
+  sprintf(s1, "%s%s%c*.*", gfilesdir.c_str(), session()->gfilesec[sn].filename, File::pathSeparatorChar);
   bFound = fnd.open(s1, 0);
   bool ok = true;
   int chd = 0;

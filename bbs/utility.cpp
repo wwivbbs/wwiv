@@ -66,11 +66,9 @@ template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& m
  * @param pszDirectoryName  Name of the directory to delete files from
  * @param bPrintStatus      Print out locally as files are deleted
  */
-void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool bPrintStatus) {
-  WWIV_ASSERT(file_name);
-  WWIV_ASSERT(pszDirectoryName);
+void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus) {
 
-  const string filespec = StrCat(pszDirectoryName, stripfn(file_name));
+  const string filespec = StrCat(directory_name, stripfn(file_name.c_str()));
   WFindFile fnd;
   bool bFound = fnd.open(filespec, 0);
   bout.nl();
@@ -79,9 +77,9 @@ void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool 
     // We don't want to delete ".", "..".
     if (filename != "." && filename != "..") {
       if (bPrintStatus) {
-        std::clog << "Deleting TEMP file: " << pszDirectoryName << filename << std::endl;
+        std::clog << "Deleting TEMP file: " << directory_name << filename << std::endl;
       }
-      File::Remove(pszDirectoryName, filename);
+      File::Remove(directory_name, filename);
     }
     bFound = fnd.next();
   }
@@ -204,16 +202,6 @@ long nsl() {
     }
   }
   return in_range<long>(0, 32767, rtn);
-}
-
-/**
- * Returns the number of bytes free on the disk/volume specified.
- *
- * @param pszPathName Directory or Drive of which to list the free space.
- */
-long freek1(const char *pszPathName) {
-  WWIV_ASSERT(pszPathName);
-  return File::GetFreeSpaceForPath(pszPathName);
 }
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname) {

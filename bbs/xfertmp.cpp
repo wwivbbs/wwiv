@@ -393,7 +393,8 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     return false;
   }
   char szDownloadFileName[MAX_PATH];
-  sprintf(szDownloadFileName, "%s%s.%s", syscfgovr.tempdir, file_name, session()->arcs[ARC_NUMBER].extension);
+  sprintf(szDownloadFileName, "%s%s.%s", session()->temp_directory().c_str(),
+    file_name, session()->arcs[ARC_NUMBER].extension);
   File file(szDownloadFileName);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
@@ -447,7 +448,7 @@ void add_arc(const char *arc, const char *file_name, int dos) {
 
   get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, file_name);
   if (szAddArchiveCommand[0]) {
-    File::set_current_directory(syscfgovr.tempdir);
+    File::set_current_directory(session()->temp_directory());
     session()->localIO()->Puts(szAddArchiveCommand);
     session()->localIO()->Puts("\r\n");
     if (dos) {
@@ -504,14 +505,14 @@ void del_temp() {
     if (strchr(szFileName, '.') == nullptr) {
       strcat(szFileName, ".*");
     }
-    remove_from_temp(szFileName, syscfgovr.tempdir, true);
+    remove_from_temp(szFileName, session()->temp_directory(), true);
   }
 }
 
 void list_temp_dir() {
   char szFileMask[MAX_PATH];
 
-  sprintf(szFileMask, "%s*.*", syscfgovr.tempdir);
+  sprintf(szFileMask, "%s*.*", session()->temp_directory().c_str());
   WFindFile fnd;
   bool bFound = fnd.open(szFileMask, 0);
   bout.nl();
@@ -537,7 +538,7 @@ void list_temp_dir() {
   }
   bout.nl();
   if (!abort && !hangup) {
-    bout << "Free space: " << freek1(syscfgovr.tempdir) << wwiv::endl;
+    bout << "Free space: " << File::GetFreeSpaceForPath(session()->temp_directory()) << wwiv::endl;
     bout.nl();
   }
 }
@@ -572,7 +573,7 @@ void temp_extract() {
     StringRemoveWhitespace(s2);
     if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
       sprintf(s1, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
-      sprintf(s2, "%s%s", syscfgovr.tempdir, u.filename);
+      sprintf(s2, "%s%s", session()->temp_directory().c_str(), u.filename);
       StringRemoveWhitespace(s1);
       if (!File::Exists(s2)) {
         copyfile(s1, s2, false);
@@ -585,7 +586,7 @@ void temp_extract() {
       printinfo(&u, &abort);
       bout.nl();
       if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
-        File::set_current_directory(syscfgovr.tempdir);
+        File::set_current_directory(session()->temp_directory());
       } else {
         File::set_current_directory(session()->directories[session()->current_user_dir().subnum].path);
       }
@@ -622,7 +623,7 @@ void temp_extract() {
               strcat(s1, ".*");
             }
             get_arc_cmd(s3, file.full_pathname().c_str(), 1, stripfn(s1));
-            File::set_current_directory(syscfgovr.tempdir);
+            File::set_current_directory(session()->temp_directory());
             if (!okfn(s1)) {
               s3[0] = '\0';
             }
@@ -665,14 +666,14 @@ void list_temp_text() {
     if (strchr(s, '.') == nullptr) {
       strcat(s, ".*");
     }
-    sprintf(s1, "%s%s", syscfgovr.tempdir, stripfn(s));
+    sprintf(s1, "%s%s", session()->temp_directory().c_str(), stripfn(s));
     WFindFile fnd;
     bool bFound = fnd.open(s1, 0);
     int ok = 1;
     bout.nl();
     while (bFound && ok) {
       strcpy(szFileName, fnd.GetFileName());
-      sprintf(s, "%s%s", syscfgovr.tempdir, szFileName);
+      sprintf(s, "%s%s", session()->temp_directory().c_str(), szFileName);
       if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
           !IsEqualsIgnoreCase(szFileName, "door.sys")) {
         bout.nl();
@@ -697,7 +698,7 @@ void list_temp_arc() {
   char szFileName[MAX_PATH];
 
   sprintf(szFileName, "temp.%s", session()->arcs[ARC_NUMBER].extension);
-  list_arc_out(szFileName, syscfgovr.tempdir);
+  list_arc_out(szFileName, session()->temp_directory().c_str());
   bout.nl();
 }
 
@@ -811,7 +812,7 @@ void move_file_t() {
             ok = false;
             bout << "Too many files in that directory.\r\n";
           }
-          if (freek1(session()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
+          if (File::GetFreeSpaceForPath(session()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
             ok = false;
             bout << "Not enough disk space to move it.\r\n";
           }

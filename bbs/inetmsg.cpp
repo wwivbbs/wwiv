@@ -187,7 +187,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   if (session()->net_num() != -1) {
     set_net_num(session()->net_num());
     TextFile in(session()->network_directory(), ACCT_INI, "rt");
-    TextFile out(syscfgovr.tempdir, ACCT_INI, "wt+");
+    TextFile out(session()->temp_directory(), ACCT_INI, "wt+");
     if (in.IsOpen() && out.IsOpen()) {
       char szLine[260];
       while (in.ReadLine(szLine, 255)) {

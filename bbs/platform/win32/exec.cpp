@@ -63,7 +63,7 @@ using namespace wwiv::strings;
 // Helper functions
 
 static string GetSyncFosTempFilePath() {
-  return StrCat(syscfgovr.tempdir, "WWIVSYNC.ENV");
+  return StrCat(session()->temp_directory(), "WWIVSYNC.ENV");
 }
 
 static const string GetDosXtrnPath() {

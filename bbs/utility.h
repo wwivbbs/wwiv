@@ -26,7 +26,7 @@
 #include "sdk/net.h"
 #include "sdk/vardec.h"
 
-void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool bPrintStatus);
+void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus);
 bool sysop1();
 void ToggleScrollLockKey();
 bool okansi();
@@ -35,7 +35,6 @@ void frequent_init();
 double ratio();
 double post_ratio();
 long nsl();
-long freek1(const char *pszPathName);
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname);
 void giveup_timeslice();
 char *stripfn(const char *file_name);

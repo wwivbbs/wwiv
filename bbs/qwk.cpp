@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 
 #include "bbs/bbsovl3.h"
+#include "bbs/utility.h"
 #include "bbs/conf.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
@@ -112,7 +113,7 @@ void build_qwk_packet() {
 
   write_inst(INST_LOC_QWK, session()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
-  const string filename = StrCat(QWK_DIRECTORY, MESSAGES_DAT);
+  const string filename = StrCat(session()->batch_directory(), MESSAGES_DAT);
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {
@@ -166,7 +167,7 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (size_t i = 0; (session()->usub[i].subnum != -1) && (i < session()->subboards.size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
+  for (size_t i = 0; (session()->usub[i].subnum != -1) && (i < session()->subs().subs().size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
     if (qsc_q[session()->usub[i].subnum / 32] & (1L << (session()->usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
@@ -222,7 +223,6 @@ void build_qwk_packet() {
 
 void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   int i, os;
-  char subinfo[201], thissub[81];
 
   float temp_percent;
   int sn = session()->usub[bn].subnum;
@@ -259,9 +259,10 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
           static_cast<int>(temp_percent * session()->GetNumMessagesInCurrentMessageArea());
     }
 
-    strncpy(thissub, session()->current_sub().name, 65);
+    char thissub[81];
+    to_char_array(thissub, session()->current_sub().name);
     thissub[60] = 0;
-    sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
+    string subinfo = StringPrintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, session()->GetNumMessagesInCurrentMessageArea(),
             session()->GetNumMessagesInCurrentMessageArea() - i + 1 - (qwk_percent ? 1 : 0));
     bout.bputs(subinfo);
@@ -286,9 +287,10 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     qwk_iscan(session()->current_user_sub_num());
 
-    strncpy(thissub, session()->current_sub().name, 65);
+    char thissub[81];
+    to_char_array(thissub, session()->current_sub().name);
     thissub[60] = 0;
-    sprintf(subinfo, "|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
+    string subinfo = StringPrintf("|#7\xB3|#9%-4d|#7\xB3|#1%-60s|#7\xB3 |#2%-4d|#7\xB3|#3%-4d|#7\xB3",
             bn + 1, thissub, session()->GetNumMessagesInCurrentMessageArea(), 0);
     bout.bputs(subinfo);
     bout.nl();
@@ -308,8 +310,8 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     return;
   }
   // Used to be inside do loop
-  if (!session()->current_xsub().nets.empty()) {
-    set_net_num(session()->current_xsub().nets[0].net_num);
+  if (!session()->current_sub().nets.empty()) {
+    set_net_num(session()->current_sub().nets[0].net_num);
   } else {
     set_net_num(0);
   }
@@ -349,7 +351,7 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
     set_net_num(p->network.network_msg.net_number);
   }
 
-  put_in_qwk(p, (session()->current_sub().filename), msgnum, qwk_info);
+  put_in_qwk(p, session()->current_sub().filename.c_str(), msgnum, qwk_info);
   if (nn != session()->net_num()) {
     set_net_num(nn);
   }
@@ -650,7 +652,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
   
   int amount = 0;
-  for (size_t cur = 0; (session()->usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
+  for (size_t cur = 0; (session()->usub[cur].subnum != -1) && (cur < session()->subs().subs().size()) && (!hangup); cur++) {
     if (qsc_q[session()->usub[cur].subnum / 32] & (1L << (session()->usub[cur].subnum % 32))) {
       ++amount;
     }
@@ -660,13 +662,13 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "0\r\n");
   fprintf(fp, "E-Mail\r\n");
 
-  for (size_t cur = 0; (session()->usub[cur].subnum != -1) && (cur < session()->subboards.size()) && (!hangup); cur++) {
+  for (size_t cur = 0; (session()->usub[cur].subnum != -1) && (cur < session()->subs().subs().size()) && (!hangup); cur++) {
     if (qsc_q[session()->usub[cur].subnum / 32] & (1L << (session()->usub[cur].subnum % 32))) {
       // QWK support says this should be truncated to 10 or 13 characters
       // however QWKE allows for 255 characters. This works fine in multimail which
       // is the only still maintained QWK reader I'm aware of at this time, so we'll
       // allow it to be the full length.
-      string sub_name = stripcolors(session()->subboards[session()->usub[cur].subnum].name);
+      string sub_name = stripcolors(session()->subs().sub(session()->usub[cur].subnum).name);
 
       fprintf(fp, "%d\r\n", session()->usub[cur].subnum + 1);
       fprintf(fp, "%s\r\n", sub_name.c_str());

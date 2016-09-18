@@ -88,6 +88,7 @@
   <ItemGroup>
     <ClInclude Include="archivers.h" />
     <ClInclude Include="autoval.h" />
+    <ClInclude Include="convert.h" />
     <ClInclude Include="editors.h" />
     <ClInclude Include="init.h" />
     <ClInclude Include="instance_settings.h" />

@@ -724,7 +724,7 @@ void readmail(int mode) {
               }
             } else {
               // need instance
-              File::Remove(syscfgovr.tempdir, INPUT_MSG);
+              File::Remove(session()->temp_directory(), INPUT_MSG);
             }
           } else {
             bout << "\r\nFile not found.\r\n\n";
@@ -788,13 +788,14 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; (i1 < size_int(session()->subboards)) && (session()->usub[i1].subnum != -1); i1++) {
+          for (i1 = 0; (i1 < size_int(session()->subs().subs())) 
+               && (session()->usub[i1].subnum != -1); i1++) {
             if (IsEquals(session()->usub[i1].keys, ss1)) {
               i = i1;
             }
           }
           if (i != -1) {
-            if (session()->GetEffectiveSl() < session()->subboards[session()->usub[i].subnum].postsl) {
+            if (session()->GetEffectiveSl() < session()->subs().sub(session()->usub[i].subnum).postsl) {
               bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
               i = -1;
             }
@@ -815,7 +816,7 @@ void readmail(int mode) {
 
             iscan(i);
             open_sub(true);
-            if (!session()->current_xsub().nets.empty()) {
+            if (!session()->current_sub().nets.empty()) {
               p.status |= status_pending_net;
             }
             p.msg.storage_type = (uint8_t)session()->current_sub().storage_type;
@@ -1183,7 +1184,7 @@ void readmail(int mode) {
           if (!okfn(downloadFileName.c_str())) {
             break;
           }
-          File fileTemp(syscfgovr.tempdir, downloadFileName.c_str());
+          File fileTemp(session()->temp_directory(), downloadFileName.c_str());
           fileTemp.Delete();
           fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           fileTemp.Write(b);

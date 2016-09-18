@@ -24,6 +24,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"
+#include "core/log.h"
 #include "core/strings.h"
 
 using std::string;
@@ -55,37 +56,33 @@ void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
 */
 void catsl() {
   char szInstanceBaseName[MAX_PATH];
-  char szInstanceLogFileName[MAX_PATH];
 
   GetTemporaryInstanceLogFileName(szInstanceBaseName);
-  sprintf(szInstanceLogFileName, "%s%s", syscfg.gfilesdir, szInstanceBaseName);
+  string instance_logfilename = StrCat(session()->config()->gfilesdir(), szInstanceBaseName);
 
-  if (File::Exists(szInstanceLogFileName)) {
+  if (File::Exists(instance_logfilename)) {
     string basename = GetSysopLogFileName(date());
     File wholeLogFile(session()->config()->gfilesdir(), basename);
 
-    char* pLogBuffer = static_cast<char *>(BbsAllocA(CAT_BUFSIZE));
-    if (pLogBuffer) {
-      if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-        wholeLogFile.Seek(0, File::seekBegin);
-        wholeLogFile.Seek(0, File::seekEnd);
+    auto buffer = std::make_unique<char[]>(CAT_BUFSIZE);
+    if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+      wholeLogFile.Seek(0, File::seekBegin);
+      wholeLogFile.Seek(0, File::seekEnd);
 
-        File instLogFile(szInstanceLogFileName);
-        if (instLogFile.Open(File::modeReadOnly | File::modeBinary)) {
-          int nNumRead = 0;
-          do {
-            nNumRead = instLogFile.Read(pLogBuffer, CAT_BUFSIZE);
-            if (nNumRead > 0) {
-              wholeLogFile.Write(pLogBuffer, nNumRead);
-            }
-          } while (nNumRead == CAT_BUFSIZE);
+      File instLogFile(instance_logfilename);
+      if (instLogFile.Open(File::modeReadOnly | File::modeBinary)) {
+        int num_read = 0;
+        do {
+          num_read = instLogFile.Read(buffer.get(), CAT_BUFSIZE);
+          if (num_read > 0) {
+            wholeLogFile.Write(buffer.get(), num_read);
+          }
+        } while (num_read == CAT_BUFSIZE);
 
-          instLogFile.Close();
-          instLogFile.Delete();
-        }
-        wholeLogFile.Close();
+        instLogFile.Close();
+        instLogFile.Delete();
       }
-      free(pLogBuffer);
+      wholeLogFile.Close();
     }
   }
 }
@@ -96,9 +93,9 @@ void catsl() {
 void AddLineToSysopLogImpl(int cmd, const string& text) {
   static string::size_type midline = 0;
   static char s_szLogFileName[MAX_PATH];
-
-  if (!(syscfg.gfilesdir)) {
-    // TODO Use error log.
+  
+  if (session()->config()->gfilesdir().empty() || !syscfg.gfilesdir) {
+    LOG(ERROR) << "gfilesdir empty, can't write to sysop log";
     return;
   }
 

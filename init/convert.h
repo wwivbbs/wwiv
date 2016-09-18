@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
+/*                  WWIV Initialization Utility Version 5                 */
 /*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
@@ -16,49 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/workspace.h"
-#include <memory>
+#ifndef __INCLUDED_CONVERT_H__
+#define __INCLUDED_CONVERT_H__
+
 #include <string>
 
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
-#include "bbs/bbs.h"
-#include "bbs/utility.h"
-#include "bbs/wsession.h"
-#include "bbs/vars.h"
-#include "sdk/filenames.h"
+#include "localui/curses_win.h"
 
-bool use_workspace;
+void convert_config_424_to_430(CursesWindow* window, const std::string& config_filename);
+bool convert_config_to_52(CursesWindow* window, const std::string& config_filename);
 
-using std::unique_ptr;
 
-void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, bool silent_mode) {
-  File fileOrig(filename);
-  if (!fileOrig.Open(File::modeBinary | File::modeReadOnly)) {
-    bout << "\r\nFile not found.\r\n\n";
-    return;
-  }
-
-  long lOrigSize = fileOrig.GetLength();
-  unique_ptr<char[]> b(new char[lOrigSize + 1024]);
-  fileOrig.Read(b.get(), lOrigSize);
-  fileOrig.Close();
-  if (b[lOrigSize - 1] != CZ) {
-    b[lOrigSize++] = CZ;
-  }
-
-  File fileOut(session()->temp_directory(), INPUT_MSG);
-  fileOut.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  fileOut.Write(b.get(), lOrigSize);
-  fileOut.Close();
-
-  use_workspace = (bNoEditAllowed || !okfsed()) ? true : false;
-
-  if (!silent_mode) {
-    bout << "\r\nFile loaded into workspace.\r\n\n";
-    if (!use_workspace) {
-      bout << "Editing will be allowed.\r\n";
-    }
-  }
-}
+#endif

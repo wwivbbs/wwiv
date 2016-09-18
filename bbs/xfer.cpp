@@ -125,7 +125,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   if (syscfg.upload_cmd.empty()) {
     return true;
   }
-  const string comport = StringPrintf("%d", incom ? syscfgovr.primaryport : 0);
+  const string comport = StringPrintf("%d", incom ? session()->primary_port() : 0);
   const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(),
                                   session()->directories[directory_num].path,
                                   stripfn(u->filename), comport, "");
@@ -247,47 +247,41 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
 }
 
 int list_arc_out(const char *file_name, const char *pszDirectory) {
-  char szFileNameToDelete[81];
-  int nRetCode = 0;
+  string name_to_delete;
 
-  szFileNameToDelete[0] = 0;
-
-  char szFullPathName[MAX_PATH];
-  sprintf(szFullPathName, "%s%s", pszDirectory, file_name);
+  string full_pathname = StrCat(pszDirectory, file_name);
   if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
-    sprintf(szFullPathName, "%s%s", syscfgovr.tempdir, file_name);
-    if (!File::Exists(szFullPathName)) {
-      char szFullPathNameInDir[MAX_PATH];
-      sprintf(szFullPathNameInDir, "%s%s", pszDirectory, file_name);
-      copyfile(szFullPathNameInDir, szFullPathName, false);
-      strcpy(szFileNameToDelete, szFullPathName);
+    full_pathname = StrCat(session()->temp_directory(), file_name);
+    if (!File::Exists(full_pathname)) {
+      string name_in_dir = StrCat(pszDirectory, file_name);
+      copyfile(name_in_dir, full_pathname, false);
+      name_to_delete = full_pathname;
     }
   }
   char szArchiveCmd[MAX_PATH];
-  get_arc_cmd(szArchiveCmd, szFullPathName, 0, "");
+  get_arc_cmd(szArchiveCmd, full_pathname.c_str(), 0, "");
   if (!okfn(file_name)) {
     szArchiveCmd[0] = 0;
   }
 
-  if (File::Exists(szFullPathName) && (szArchiveCmd[0] != 0)) {
+  int return_code = 0;
+  if (File::Exists(full_pathname) && (szArchiveCmd[0] != 0)) {
     bout.nl(2);
-    bout << "Archive listing for " << file_name << wwiv::endl;
-    bout.nl();
-    nRetCode = ExecuteExternalProgram(szArchiveCmd, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
-    bout.nl();
+    bout << "Archive listing for " << file_name;
+    bout.nl(2);
+    return_code = ExecuteExternalProgram(szArchiveCmd, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
   } else {
     bout.nl();
-    session()->localIO()->Puts("Unknown archive: ");
-    bout << file_name;
-    bout.nl(2);
-    nRetCode = 0;
+    bout << "Unknown archive: " << file_name;
+    bout.nl();
+  }
+  bout.nl();
+
+  if (!name_to_delete.empty()) {
+    File::Remove(name_to_delete);
   }
 
-  if (szFileNameToDelete[0]) {
-    File::Remove(szFileNameToDelete);
-  }
-
-  return nRetCode;
+  return return_code;
 }
 
 bool ratio_ok() {

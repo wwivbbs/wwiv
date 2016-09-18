@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "init/convert.h"
+
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
@@ -32,6 +34,7 @@
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "core/version.h"
 #include "core/wwivport.h"
 #include "init/archivers.h"
 #include "init/init.h"
@@ -45,7 +48,39 @@ using std::string;
 using std::vector;
 using namespace wwiv::strings;
 
-void convcfg(CursesWindow* window, const string& config_filename) {
+bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
+  File file(config_filename);
+  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
+    return false;
+  }
+
+  window->SetColor(SchemeId::INFO);
+  window->Printf("Converting config.dat to 4.3/5.x format...\n");
+  window->SetColor(SchemeId::NORMAL);
+  file.Read(&syscfg, sizeof(configrec));
+
+  configrec_header_t h = {};
+  h.config_revision_number = 0;
+  h.config_size = sizeof(configrec);
+  h.written_by_wwiv_num_version = wwiv_num_version;
+  strcpy(h.signature, "WWIV");
+  h.signature[4] = 0;
+
+  // Save old newuser password.
+  string newuserpw = syscfg.header.newuserpw;
+  // Update newuser password to new location.
+  to_char_array(syscfg.newuserpw, newuserpw);
+  // Set new header on config.dat.
+  syscfg.header.header = h;
+
+  // Write it all back.
+  file.Seek(0, File::seekBegin);
+  file.Write(&syscfg, sizeof(configrec));
+  file.Close();
+  return true;
+}
+
+void convert_config_424_to_430(CursesWindow* window, const string& config_filename) {
   File file(config_filename);
   if (!file.Open(File::modeBinary|File::modeReadWrite)) {
     return;

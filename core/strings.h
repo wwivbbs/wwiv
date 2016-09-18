@@ -45,10 +45,21 @@ std::string StrCat(const A& a, const Args&... args) {
   return ss.str();
 }
 
+template <size_t SIZE>
+bool to_char_array(char(&out)[SIZE], const std::string& s) {
+  strncpy(out, s.c_str(), SIZE);
+  out[SIZE - 1] = '\0';
+  return s.size() <= SIZE;
+}
+
 std::string StringPrintf(const char *formatted_text, ...);
 int GetStringLength(const char* str);
+
+// Comparisons
 bool IsEquals(const char *str1, const char *str2);
 bool IsEqualsIgnoreCase(const char *str1, const char *str2);
+bool iequals(const char* s1, const char* s2);
+bool iequals(const std::string& s1, const std::string& s2);
 int  StringCompareIgnoreCase(const char *str1, const char *str2);
 int  StringCompare(const char *str1, const char *str2);
 

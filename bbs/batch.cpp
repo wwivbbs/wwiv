@@ -227,7 +227,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         } while (nRecNum != -1 && u.numbytes != 0);
         downFile.Close();
         if (nRecNum != -1 && u.numbytes == 0) {
-          string source_filename = StrCat(syscfgovr.batchdir, file_name);
+          string source_filename = StrCat(session()->batch_directory(), file_name);
           string dest_filename = StrCat(session()->directories[b.dir].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             bool found = false;
@@ -293,7 +293,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
     sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
-    File::Remove(syscfgovr.batchdir, file_name);
+    File::Remove(session()->batch_directory(), file_name);
   }
 }
 
@@ -404,7 +404,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         if (session()->directories[session()->batch().entry[cur].dir].mask & mask_cdrom) {
           string orig_filename = StrCat(session()->directories[session()->batch().entry[cur].dir].path, u.filename);
           // update the send filename and copy it from the cdrom
-          send_filename = StrCat(syscfgovr.tempdir, u.filename);
+          send_filename = StrCat(session()->temp_directory(), u.filename);
           if (!File::Exists(send_filename)) {
             copyfile(orig_filename, send_filename, true);
           }
@@ -479,19 +479,17 @@ void ymbatchdl(bool bHangupAfterDl) {
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
-        char szSendFileName[MAX_PATH];
-        sprintf(szSendFileName, "%s%s", session()->directories[session()->batch().entry[cur].dir].path, u.filename);
+        string send_filename = StrCat(session()->directories[session()->batch().entry[cur].dir].path, u.filename);
         if (session()->directories[session()->batch().entry[cur].dir].mask & mask_cdrom) {
-          char szOrigFileName[MAX_PATH];
-          sprintf(szOrigFileName, "%s%s", session()->directories[session()->batch().entry[cur].dir].path, u.filename);
-          sprintf(szSendFileName, "%s%s", syscfgovr.tempdir, u.filename);
-          if (!File::Exists(szSendFileName)) {
-            copyfile(szOrigFileName, szSendFileName, true);
+          string orig_filename = StrCat(session()->directories[session()->batch().entry[cur].dir].path, u.filename);
+          send_filename = StrCat(session()->temp_directory(), u.filename);
+          if (!File::Exists(send_filename)) {
+            copyfile(orig_filename, send_filename, true);
           }
         }
         write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
         double percent;
-        xymodem_send(szSendFileName, &ok, &percent, true, true, true);
+        xymodem_send(send_filename.c_str(), &ok, &percent, true, true, true);
         if (ok) {
           downloaded(u.filename, 0);
         }
@@ -610,7 +608,7 @@ static string make_dl_batch_list() {
     if (b.sending) {
       string filename_to_send;
       if (session()->directories[b.dir].mask & mask_cdrom) {
-        File::set_current_directory(syscfgovr.tempdir);
+        File::set_current_directory(session()->temp_directory());
         const string current_dir = File::current_directory();
         File fileToSend(current_dir, stripfn(b.filename));
         if (!fileToSend.Exists()) {
@@ -684,7 +682,7 @@ void ProcessDSZLogFile() {
 static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist, const string& dl, bool bHangupAfterDl) {
   string commandLine = stuff_in(orig_commandline,
       std::to_string(std::min<int>(com_speed, 57600)), 
-      std::to_string(syscfgovr.primaryport),
+      std::to_string(session()->primary_port()),
       downlist, 
       std::to_string(std::min<int>(modem_speed, 57600)), 
       uplist);
@@ -701,7 +699,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
     if (incom) {
       File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
       File::Remove(g_szDSZLogFileName);
-      File::set_current_directory(syscfgovr.batchdir);
+      File::set_current_directory(session()->batch_directory());
       ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);
@@ -900,14 +898,14 @@ int batchdl(int mode) {
 
 void upload(int dn) {
   dliscan1(dn);
-  directoryrec d = session()->directories[ dn ];
-  long lFreeSpace = freek1(d.path);
-  if (lFreeSpace < 100) {
+  auto d = session()->directories[dn];
+  long free_space = File::GetFreeSpaceForPath(d.path);
+  if (free_space < 100) {
     bout << "\r\nNot enough disk space to upload here.\r\n\n";
     return;
   }
   listbatch();
-  bout << "Upload - " << lFreeSpace << "k free.";
+  bout << "Upload - " << free_space << "k free.";
   bout.nl();
   printfile(TRY2UL_NOEXT);
 

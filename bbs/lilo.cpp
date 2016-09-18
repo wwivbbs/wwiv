@@ -910,6 +910,7 @@ void logon() {
 
   session()->UpdateTopScreen();
   session()->read_subs();
+  session()->subs().Load();
   rsm(session()->usernum, session()->user(), true);
 
   LoginCheckForNewMail();
@@ -1084,8 +1085,8 @@ void logoff() {
   }
   session()->WriteCurrentUser();
   write_qscn(session()->usernum, qsc, false);
-  remove_from_temp("*.*", syscfgovr.tempdir, false);
-  remove_from_temp("*.*", syscfgovr.batchdir, false);
+  remove_from_temp("*.*", session()->temp_directory(), false);
+  remove_from_temp("*.*", session()->batch_directory(), false);
   if (!session()->batch().entry.empty() && (session()->batch().entry.size() != session()->batch().numbatchdl())) {
     for (const auto& b : session()->batch().entry) {
       if (!b.sending) { didnt_upload(b); }

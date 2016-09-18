@@ -690,7 +690,7 @@ void print_pending_list() {
   }
 }
 
-void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char *pszAuthorName,
+void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::string& author_name,
   vector<uint16_t> list, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
@@ -793,7 +793,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
     nh->length += strlen(newname);
     if ((nh->main_type == main_type_email_name) ||
         (nh->main_type == main_type_new_post)) {
-      nh->length += strlen(pszAuthorName) + 1;
+      nh->length += author_name.size() + 1;
     }
     const string packet_filename = StringPrintf("%sp1%s",
       session()->net_networks[nNetNumber].dir, session()->network_extension().c_str());
@@ -811,7 +811,7 @@ void gate_msg(net_header_rec * nh, char *messageText, int nNetNumber, const char
         file.Write(&list[0], sizeof(uint16_t) * (nh->list_len));
       }
       if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
-        file.Write(pszAuthorName, strlen(pszAuthorName) + 1);
+        file.Write(author_name.c_str(), author_name.size() + 1);
       }
       file.Write(pszOriginalText, strlen(pszOriginalText) + 1);
       file.Write(newname, strlen(newname));

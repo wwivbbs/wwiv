@@ -125,7 +125,7 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  File file(syscfgovr.tempdir, INPUT_MSG);
+  File file(session()->temp_directory(), INPUT_MSG);
   long lMaxBytes = 250 * static_cast<long>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
@@ -286,7 +286,8 @@ void text_edit() {
   logText << "@ Edited: " << filename;
   sysoplog(logText.str());
   if (okfsed()) {
-    external_text_edit(filename.c_str(), syscfg.gfilesdir, 500, syscfg.gfilesdir, MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(filename, session()->config()->gfilesdir(), 500, 
+      session()->config()->gfilesdir(), MSGED_FLAG_NO_TAGLINE);
   }
 }
 

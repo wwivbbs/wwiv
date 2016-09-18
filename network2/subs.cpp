@@ -98,7 +98,7 @@ static string to_string(sub_info_t& s, uint16_t system_number) {
 static std::vector<string> create_sub_info(Context& context) {
   int current = 0;
   std::vector <std::string> result;
-  for (const auto& x : context.xsubs) {
+  for (const auto& x : context.subs.subs()) {
     for (const auto& n : x.nets) {
       if (n.net_num != context.network_number) {
         continue;
@@ -111,12 +111,12 @@ static std::vector<string> create_sub_info(Context& context) {
         continue;
       }
       sub_info_t s;
-      const auto& b = context.subs.at(current);
+      const auto& b = context.subs.sub(current);
       s.stype = n.stype;
       s.category = n.category;
       s.description = stripcolors(x.desc);
       if (s.description.empty()) {
-        s.description = stripcolors(context.subs.at(current).name);
+        s.description = stripcolors(context.subs.sub(current).name);
       }
       if (s.description.size() > 60) {
         s.description.resize(60);
@@ -176,9 +176,11 @@ static bool send_sub_add_drop_resp(Context& context,
 }
 
 static bool IsHostedHere(Context& context, const std::string& subtype) {
-  for (const auto x : context.xsubs) {
+  for (const auto x : context.subs.subs()) {
     for (const auto n : x.nets) {
-      if (IsEqualsIgnoreCase(subtype.c_str(), n.stype) && n.host == 0 && n.net_num == context.network_number) {
+      if (IsEqualsIgnoreCase(subtype.c_str(), n.stype.c_str()) 
+          && n.host == 0
+          && n.net_num == context.network_number) {
         return true;
       }
     }

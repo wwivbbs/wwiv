@@ -281,9 +281,10 @@ void asv() {
       break;
 
     case '2':
+    {
       bout.nl();
       do {
-        bout <<  "|#3Enter your BBS name, phone and modem speed.\r\n\n|#1:";
+        bout << "|#3Enter your BBS name, phone and modem speed.\r\n\n|#1:";
         inputl(s, 28, true);
       } while (!s[0]);
       properize(s);
@@ -297,8 +298,8 @@ void asv() {
       set_autoval(session()->advasv.nonreg_wwiv);
       bout.nl();
       valfile = 9;
-      break;
-    case '3':
+    } break;
+    case '3': {
       bout.nl();
       do {
         bout << "|#3Enter your BBS name, phone, software and modem speed.\r\n\n|#1:";
@@ -315,8 +316,8 @@ void asv() {
       set_autoval(session()->advasv.non_wwiv);
       bout.nl();
       valfile = 10;
-      break;
-    case '4':
+    } break;
+    case '4': {
       bout.nl();
       do {
         bout << "|#3Enter the BBS name, phone, software and modem speed.\r\n\n|#1:";
@@ -324,11 +325,11 @@ void asv() {
       } while (!s[0]);
       properize(s);
 
-      sprintf(s1, "Co-SysOp: %s", s);
-      session()->user()->SetNote(s1);
-      sprintf(s1, "* Co-SysOp of %s", session()->user()->GetNote());
-      sysoplog(s1);
+      const string note = StringPrintf("Co-SysOp: ", s);
+      session()->user()->SetNote(note);
+      sysoplog(StrCat("* Co-SysOp of ", session()->user()->GetNote()));
       set_autoval(session()->advasv.cosysop);
+    } break;
     case 'Q':
       break;
     }

@@ -445,7 +445,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     char s2[81];
     net_system_list_rec *csne = nullptr;
 
-    if (freek1(syscfg.msgsdir) < 10) {
+    if (File::GetFreeSpaceForPath(session()->config()->msgsdir()) < 10) {
       bout.nl();
       bout.bputs("Sorry, not enough disk space left.");
       bout.nl();
@@ -686,7 +686,7 @@ void process_reply_dat(char *name) {
             
       if (to_email) {
         qwk_email_text(text.get(), title, to);
-      } else if (freek1(syscfg.msgsdir) < 10) {
+      } else if (File::GetFreeSpaceForPath(session()->config()->msgsdir()) < 10) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");
@@ -733,7 +733,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     }
 
 
-    if (sub >= size_int(session()->subboards) || sub < 0) {
+    if (sub >= size_int(session()->subs().subs()) || sub < 0) {
       bout.Color(5);
       bout.bputs("Sub out of range");
 
@@ -790,7 +790,7 @@ void qwk_post_text(char *text, char *title, int sub) {
 
     a = 0;
 
-    if (!session()->current_xsub().nets.empty()) {
+    if (!session()->current_sub().nets.empty()) {
       a &= (anony_real_name);
 
       if (session()->user()->data.restrict & restrict_net) {
@@ -815,14 +815,12 @@ void qwk_post_text(char *text, char *title, int sub) {
     bout.bputs(stripcolors(session()->current_sub().name));
     bout.nl();
 
-    if (session()->current_xsub().nets.size() > 0) {
+    if (session()->current_sub().nets.size() > 0) {
       bout.Color(2);
       bout.bprintf("Going on   : ");
       bout.Color(3);
-      for (size_t i = 0; i < session()->current_xsub().nets.size(); i++) {
-        const xtrasubsnetrec& xnp = session()->current_xsub().nets[i];
-        string network_name = session()->net_networks[xnp.net_num].name;
-        bout << network_name << " ";
+      for (const auto& xnp : session()->current_sub().nets) {
+        bout << session()->net_networks[xnp.net_num].name << " ";
       }
       bout.nl();
     }
@@ -848,7 +846,7 @@ void qwk_post_text(char *text, char *title, int sub) {
   }
 
   time_t thetime = time(nullptr);
-  qwk_inmsg(text, &m, session()->current_sub().filename, user_name, thetime);
+  qwk_inmsg(text, &m, session()->current_sub().filename.c_str(), user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
     char s[201];
@@ -895,7 +893,7 @@ void qwk_post_text(char *text, char *title, int sub) {
 
     open_sub(1);
 
-    if ((!session()->current_xsub().nets.empty()) &&
+    if ((!session()->current_sub().nets.empty()) &&
         (session()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
       p.status |= status_pending_net;
       dm = 1;
@@ -942,13 +940,13 @@ void qwk_post_text(char *text, char *title, int sub) {
 
     close_sub();
 
-    sprintf(s, "+ \"%s\" posted on %s", p.title, session()->current_sub().name);
+    sprintf(s, "+ \"%s\" posted on %s", p.title, session()->current_sub().name.c_str());
     sysoplog(s);
 
-    if (!session()->current_xsub().nets.empty()) {
+    if (!session()->current_sub().nets.empty()) {
       ++session()->user()->data.postnet;
       if (!(p.status & status_pending_net)) {
-        send_net_post(&p, session()->current_sub(), session()->current_xsub());
+        send_net_post(&p, session()->current_sub());
       }
     }
   }

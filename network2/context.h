@@ -38,7 +38,10 @@ public:
     const wwiv::sdk::Config& c,
     const net_networks_rec& n,
     wwiv::sdk::UserManager& u,
-    wwiv::sdk::msgapi::WWIVMessageApi& a): config(c), net(n), user_manager(u), api(a) 
+    wwiv::sdk::msgapi::WWIVMessageApi& a,
+    const std::vector<net_networks_rec>& networks)
+        : config(c), net(n), user_manager(u), api(a),
+          subs(c.datadir(), networks)
     {}
 
   const wwiv::sdk::Config& config;
@@ -46,8 +49,7 @@ public:
   wwiv::sdk::UserManager& user_manager;
   wwiv::sdk::msgapi::WWIVMessageApi& api;
   int network_number = 0;
-  std::vector<subboardrec> subs;
-  std::vector<wwiv::sdk::xtrasubsrec> xsubs;
+  wwiv::sdk::Subs subs;
   bool verbose = false;
 };
 

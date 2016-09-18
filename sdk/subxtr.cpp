@@ -46,6 +46,13 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs);
+bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<xtrasubsrec>& xsubs);
+
+std::vector<subboardrec_422_t> read_subs(const std::string &datadir);
+bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>& subboards);
+
+
 template <class Archive>
 void serialize(Archive & ar, subboard_network_data_t& s) {
   ar(make_nvp("stype", s.stype),
@@ -70,7 +77,6 @@ template <class Archive>
 void serialize(Archive & archive, subs_t& s) {
   archive(cereal::make_nvp("subs", s.subs));
 }
-
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (size_t i = 0; i < net_networks.size(); i++) {
@@ -107,7 +113,7 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
   return true;
 }
 
-bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec>& subs, std::vector<xtrasubsrec>& xsubs) {
+bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs) {
   TextFile subs_xtr(datadir, SUBS_XTR, "rt");
   if (!subs_xtr.IsOpen()) {
     return false;
@@ -181,27 +187,136 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
   return true;
 }
 
-vector<subboardrec> read_subs(const string &datadir) {
-  DataFile<subboardrec> file(datadir, SUBS_DAT);
+vector<subboardrec_422_t> read_subs(const string &datadir) {
+  DataFile<subboardrec_422_t> file(datadir, SUBS_DAT);
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
     //LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return{};
   }
-  std::vector<subboardrec> subboards;
+  std::vector<subboardrec_422_t> subboards;
   if (!file.ReadVector(subboards)) {
     return{};
   }
   return subboards;
 }
 
-bool write_subs(const string &datadir, const vector<subboardrec>& subboards) {
-  DataFile<subboardrec> subsfile(datadir, SUBS_DAT,
+bool write_subs(const string &datadir, const vector<subboardrec_422_t>& subboards) {
+  DataFile<subboardrec_422_t> subsfile(datadir, SUBS_DAT,
     File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
   if (!subsfile) {
     return false;
   }
   return subsfile.WriteVector(subboards);
+}
+
+
+// Classes
+
+Subs::Subs(const std::string& datadir, 
+    const std::vector<net_networks_rec>& net_networks)
+  : datadir_(datadir), net_networks_(net_networks) {};
+
+Subs::~Subs() {}
+
+bool Subs::Load() {
+  auto old_subs = read_subs(datadir_);
+  std::vector<xtrasubsrec> xsubs;
+  if (!read_subs_xtr(datadir_, net_networks_, old_subs, xsubs)) {
+    return false;
+  }
+
+  subs_.clear();
+  for (decltype(old_subs)::size_type i = 0; i < old_subs.size(); i++) {
+    const auto& olds = old_subs.at(i);
+    auto& oldx = xsubs[i];
+    subboard_t sub{};
+    sub.name = olds.name;
+    sub.desc = oldx.desc;
+    sub.filename = olds.filename;
+    sub.key = olds.key;
+    sub.readsl = olds.readsl;
+    sub.postsl = olds.postsl;
+    sub.anony = olds.anony;
+    sub.age = olds.age;
+    sub.maxmsgs = olds.maxmsgs;
+    sub.ar = olds.ar;
+    sub.storage_type = olds.storage_type;
+    sub.type = olds.type;
+    for (const auto& n : oldx.nets) {
+      subboard_network_data_t netdata = {};
+      netdata.stype = n.stype;
+      netdata.flags = n.flags;
+      netdata.net_num = n.net_num;
+      netdata.host = n.host;
+      netdata.category = n.category;
+      sub.nets.emplace_back(netdata);
+    }
+    subs_.emplace_back(std::move(sub));
+  }
+  return true;
+}
+
+bool Subs::Save() {
+  std::vector<subboardrec_422_t> subs;
+  std::vector<xtrasubsrec> xsubs;
+
+  for (const auto& s : subs_) {
+    subboardrec_422_t ls = {};
+    xtrasubsrec lx = {};
+    to_char_array(ls.name, s.name);
+    to_char_array(lx.desc, s.desc);
+    to_char_array(ls.filename, s.filename);
+    ls.key = s.key;
+    ls.readsl = s.readsl;
+    ls.postsl = s.postsl;
+    ls.anony = s.anony;
+    ls.age = s.age;
+    ls.maxmsgs = s.maxmsgs;
+    ls.ar = s.ar;
+    ls.storage_type = s.storage_type;
+    ls.type = s.type;
+    for (const auto& n : s.nets) {
+      xtrasubsnetrec on = {};
+      to_char_array(on.stype, n.stype);
+      on.flags = n.flags;
+      on.net_num = n.net_num;
+      on.host = n.host;
+      on.category = n.category;
+      lx.nets.emplace_back(on);
+    }
+    subs.emplace_back(ls);
+    xsubs.emplace_back(lx);
+  }
+
+  if (!write_subs(datadir_, subs)) {
+    LOG(ERROR) << "Error saving subs";
+    return false;
+  }
+
+  if (!write_subs_xtr(datadir_, net_networks_, xsubs)) {
+    LOG(ERROR) << "Error saving xsubs";
+    return false;
+  }
+  return true;
+}
+
+// TODO(rushfan): Since should we make this algo available 
+// in wwiv::sdk since we do it on all containers often.
+bool Subs::insert(std::size_t n, subboard_t r) {
+  // TODO(rushfan): Add size checking
+  auto it = subs_.begin();
+  std::advance(it, n);
+  subs_.insert(it, r);
+  return true;
+}
+
+bool Subs::erase(std::size_t n) {
+  // TODO(rushfan): Add size checking
+  auto it = subs_.begin();
+  std::advance(it, n);
+  subs_.erase(it);
+  return true;
 }
 
 }

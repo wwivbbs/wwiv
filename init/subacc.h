@@ -20,11 +20,12 @@
 #define __INCLUDED_SUBACC_H__
 
 #include <vector>
+#include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 
 void    close_sub();
 bool    open_sub(bool wr);
-bool    iscan1(int si, const std::vector<subboardrec>& subboards);
+bool    iscan1(int si, const wwiv::sdk::Subs& subs);
 postrec *get_post(int mn);
 void    write_post(int mn, postrec * pp);
 

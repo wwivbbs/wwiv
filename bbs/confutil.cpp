@@ -83,7 +83,7 @@ static bool access_conf(User * u, int sl, confrec * c) {
   return true;
 }
 
-static bool access_sub(User& u, int sl, subboardrec& s) {
+static bool access_sub(User& u, int sl, const subboard_t& s) {
   if (sl < s.readsl) {
     return false;
   }
@@ -162,7 +162,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
   size_t ns = 0;
   switch (type) {
   case ConferenceType::CONF_SUBS:
-    ns = session()->subboards.size();
+    ns = session()->subs().subs().size();
     if (old_subnum == -1) {
       osub = session()->current_user_sub().subnum;
     } else {
@@ -215,8 +215,8 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
       switch (type) {
       case ConferenceType::CONF_SUBS:
         if (access_sub(*session()->user(), session()->GetEffectiveSl(),
-                       session()->subboards[c->subs[i]])) {
-          addusub(ss1, ns, c->subs[i], session()->subboards[c->subs[i]].key);
+                       session()->subs().sub(c->subs[i]))) {
+          addusub(ss1, ns, c->subs[i], session()->subs().sub(c->subs[i]).key);
         }
         break;
       case ConferenceType::CONF_DIRS:
@@ -237,8 +237,9 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
         if (access_conf(session()->user(), session()->GetEffectiveSl(), &(subconfs[i]))) {
           for (size_t i1 = 0; i1 < subconfs[i].num; i1++) {
             if (access_sub(*session()->user(), session()->GetEffectiveSl(),
-                           session()->subboards[subconfs[i].subs[i1]])) {
-              addusub(ss1, ns, subconfs[i].subs[i1], session()->subboards[subconfs[i].subs[i1]].key);
+                           session()->subs().sub(subconfs[i].subs[i1]))) {
+              addusub(ss1, ns, subconfs[i].subs[i1],
+                  session()->subs().sub(subconfs[i].subs[i1]).key);
             }
           }
         }

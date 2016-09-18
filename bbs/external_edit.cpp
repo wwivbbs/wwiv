@@ -42,7 +42,7 @@ using namespace wwiv::strings;
 bool external_edit_internal(const string& edit_filename, const string& new_directory, const editorrec& editor, int numlines);
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  File file(syscfgovr.tempdir, filename);
+  File file(session()->temp_directory(), filename);
   file.SetFilePermissions(File::permReadWrite);
   file.Delete();
 }
@@ -67,8 +67,8 @@ static void RemoveControlFiles(const editorrec& editor) {
 }
 
 static void ReadWWIVResultFiles(string* title, int* anon) {
-  if (File::Exists(syscfgovr.tempdir, RESULT_ED)) {
-    TextFile file(syscfgovr.tempdir, RESULT_ED, "rt");
+  if (File::Exists(session()->temp_directory(), RESULT_ED)) {
+    TextFile file(session()->temp_directory(), RESULT_ED, "rt");
     string anon_string;
     if (file.ReadLine(&anon_string)) {
       *anon = atoi(anon_string.c_str());
@@ -78,10 +78,10 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
       }
     }
     file.Close();
-  } else if (File::Exists(syscfgovr.tempdir, FEDIT_INF)) {
+  } else if (File::Exists(session()->temp_directory(), FEDIT_INF)) {
     fedit_data_rec fedit_data;
     memset(&fedit_data, '\0', sizeof(fedit_data_rec));
-    File file(syscfgovr.tempdir, FEDIT_INF);
+    File file(session()->temp_directory(), FEDIT_INF);
     file.Open(File::modeBinary | File::modeReadOnly);
       if (file.Read(&fedit_data, sizeof(fedit_data))) {
         title->assign(fedit_data.ttl);
@@ -92,7 +92,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
 }
 
 static bool WriteMsgInf(const string& title, const string& destination, const string& aux) {
-  TextFile file(syscfgovr.tempdir, MSGINF, "wt");
+  TextFile file(session()->temp_directory(), MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
   }
@@ -125,7 +125,7 @@ static bool WriteMsgInf(const string& title, const string& destination, const st
 }
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& destination, int flags) {
-  TextFile fileEditorInf(syscfgovr.tempdir, EDITOR_INF, "wt");
+  TextFile fileEditorInf(session()->temp_directory(), EDITOR_INF, "wt");
   if (fileEditorInf.IsOpen()) {
     if (irt_name[0]) {
       flags |= MSGED_FLAG_HAS_REPLY_NAME;
@@ -164,7 +164,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   strcpy(fedit_data.ttl, title.c_str());
   fedit_data.anon = 0;
 
-  File fileFEditInf(syscfgovr.tempdir, FEDIT_INF);
+  File fileFEditInf(session()->temp_directory(), FEDIT_INF);
   if (fileFEditInf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyRead)) {
     fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
     fileFEditInf.Close();
@@ -173,10 +173,10 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
 
 bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, const string& aux) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
-    if (File::Exists(syscfgovr.tempdir, QUOTES_TXT)) {
+    if (File::Exists(session()->temp_directory(), QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
-      File source(syscfgovr.tempdir, QUOTES_TXT);
-      File dest(syscfgovr.tempdir, MSGTMP);
+      File source(session()->temp_directory(), QUOTES_TXT);
+      File dest(session()->temp_directory(), MSGTMP);
       File::Copy(source.full_pathname(), dest.full_pathname());
     }
     return WriteMsgInf(title, destination, aux);
@@ -200,7 +200,7 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
   const string editor_filenme = (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
 
   WriteExternalEditorControlFiles(editor, *title, destination, flags, aux);
-  bool save_message = external_edit_internal(editor_filenme, syscfgovr.tempdir, editor, maxli);
+  bool save_message = external_edit_internal(editor_filenme, session()->temp_directory(), editor, maxli);
 
   if (!save_message) {
     return false;
@@ -210,8 +210,8 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
     // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
     // TODO(rushfan): Let this function return an object with result and filename and anything
     // else that needs to be passed back.
-    File source(syscfgovr.tempdir, MSGTMP);
-    File dest(syscfgovr.tempdir, INPUT_MSG);
+    File source(session()->temp_directory(), MSGTMP);
+    File dest(session()->temp_directory(), INPUT_MSG);
     File::Copy(source.full_pathname(), dest.full_pathname());
 
     // TODO(rushfan): Do we need to re-read MSGINF to look for changes to title or setanon?

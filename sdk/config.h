@@ -35,15 +35,23 @@ public:
   configrec* config() const { return config_.get(); }
   void set_config(configrec* config);
 
+  bool versioned_config_dat() const { return versioned_config_dat_; }
+  uint16_t written_by_wwiv_num_version() const { return written_by_wwiv_num_version_; }
+  uint32_t config_revision_number() const { return config_revision_number_; }
+
   const std::string root_directory() const { return root_directory_; }
   const std::string datadir() const { return config_->datadir; }
   const std::string msgsdir() const { return config_->msgsdir; }
   const std::string gfilesdir() const { return config_->gfilesdir; }
+  const std::string menudir() const { return config_->menudir; }
 
 private:
-  bool initialized_;
+  bool initialized_ = false;
   std::unique_ptr<configrec> config_;
   const std::string root_directory_;
+  bool versioned_config_dat_ = false;
+  uint32_t config_revision_number_ = 0;
+  uint16_t written_by_wwiv_num_version_ = 0;
 };
 
 }  // namespace sdk

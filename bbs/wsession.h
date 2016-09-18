@@ -82,6 +82,7 @@ extern WOutStream bout;
 // Per-user session data
 //
 class WSession : public Runnable {
+  friend class BbsHelper;
 public:
   // Constants
   static const int exitLevelOK = 0;
@@ -196,8 +197,7 @@ public:
   int  GetCurrentReadMessageArea() const { return m_nCurrentReadMessageArea; }
   void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
 
-  const subboardrec& current_sub() const { return subboards[GetCurrentReadMessageArea()]; }
-  const wwiv::sdk::xtrasubsrec& current_xsub() const { return xsubs[GetCurrentReadMessageArea()]; }
+  const wwiv::sdk::subboard_t& current_sub() { return subs().sub(GetCurrentReadMessageArea()); }
   net_networks_rec& current_net() { return net_networks[net_num()]; }
 
   size_t GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
@@ -235,6 +235,9 @@ public:
   wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
   wwiv::sdk::UserManager* users() { return user_manager_.get(); }
 
+  const std::string& temp_directory() const { return temp_directory_; }
+  const std::string& batch_directory() const { return batch_directory_; }
+  const uint8_t primary_port() const { return primary_port_; }
 
   /*!
   * @function GetHomeDir Returns the current home directory
@@ -317,7 +320,6 @@ public:
  private:
    unsigned short str2spawnopt(const char *s);
    unsigned short str2restrict(const char *s);
-   unsigned char stryn2tf(const char *s);
    void read_nextern();
    void read_arcs();
    void read_editors();
@@ -425,6 +427,9 @@ private:
   std::string cur_lang_name;
   std::string chat_reason_;
   std::string net_email_name;
+  std::string temp_directory_;
+  std::string batch_directory_;
+  uint8_t primary_port_ = 1;
 
   int wfc_status;
   int usernum;
@@ -448,6 +453,8 @@ public:
   // Public subsystems
   Batch batch_;
   Batch& batch() { return batch_; }
+  std::unique_ptr<wwiv::sdk::Subs> subs_;
+  wwiv::sdk::Subs& subs() { return *subs_.get(); }
 
   // public data structures
   std::vector<editorrec> editors;
@@ -457,8 +464,6 @@ public:
   std::vector<newexternalrec> externs;
   std::vector<newexternalrec> over_intern;
   std::vector<languagerec> languages;
-  std::vector<subboardrec> subboards;
-  std::vector<wwiv::sdk::xtrasubsrec> xsubs;
   std::vector<net_networks_rec> net_networks;
   std::vector<gfiledirrec> gfilesec;
   std::vector<arcrec> arcs;

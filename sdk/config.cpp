@@ -20,10 +20,12 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/strings.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
 using namespace wwiv::core;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace sdk {
@@ -44,6 +46,15 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
       int size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
       initialized_ = (size_read == CONFIG_DAT_SIZE_424);
       LOG(INFO) << "WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".";
+    } else {
+      if (IsEquals("WWIV", config_->header.header.signature)) {
+        // WWIV 5.2 style header.
+        const auto& h = config_->header.header;
+        versioned_config_dat_ = true;
+        config_revision_number_ = h.config_revision_number;
+        written_by_wwiv_num_version_ = h.written_by_wwiv_num_version;
+        
+      }
     }
   }
 }

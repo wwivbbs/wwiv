@@ -43,10 +43,12 @@
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
+#include "sdk/subxtr.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static void create_text(const char *file_name) {
@@ -202,7 +204,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   syscfg.max_dirs = 64;
   syscfg.qscn_len = 4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
 
-  strcpy(syscfg.unused_dial_prefix, "ATDT");
   syscfg.post_call_ratio = 0.0;
   save_config();
 
@@ -224,7 +225,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   memset(qsc, 0, syscfg.qscn_len);
 
   save_status();
-  userrec u;
+  userrec u = {};
   memset(&u, 0, sizeof(u));
   write_user(0, &u);
   write_qscn(0, qsc);
@@ -237,17 +238,18 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
     namesfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile);
   }
   {
-    subboardrec s1 = {};
-    strcpy(s1.name, "General");
-    strcpy(s1.filename, "GENERAL");
-    s1.readsl = 10;
-    s1.postsl = 20;
-    s1.maxmsgs = 50;
-    s1.storage_type = 2;
-    File subsfile(StrCat("data/", SUBS_DAT));
-    subsfile.Open(File::modeBinary|File::modeCreateFile|File::modeReadWrite);
-    subsfile.Write(&s1, sizeof(subboardrec));
-    subsfile.Close();
+    subboard_t r = {};
+    r.name = "General";
+    r.filename = "GENERAL";
+    r.readsl = 10;
+    r.postsl = 20;
+    r.maxmsgs = 50;
+    r.storage_type = 2;
+
+    Subs subs("data/", {});
+    subs.insert(0, r);
+    // TODO(rushfan): Check for error.
+    subs.Save();
   }
 
   {

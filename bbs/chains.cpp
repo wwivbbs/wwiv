@@ -153,7 +153,9 @@ void run_chain(int nChainum) {
   }
   const string chainCmdLine = stuff_in(
     session()->chains[nChainum].filename, create_chain_file(), 
-    std::to_string(com_speed), std::to_string(syscfgovr.primaryport), std::to_string(modem_speed), "");
+    std::to_string(com_speed),
+    std::to_string(session()->primary_port()),
+    std::to_string(modem_speed), "");
 
   sysoplogf("!Ran \"%s\"", session()->chains[nChainum].description);
   session()->user()->SetNumChainsRun(session()->user()->GetNumChainsRun() + 1);

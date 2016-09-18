@@ -24,6 +24,7 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "init/subacc.h"
 
@@ -84,13 +85,13 @@ bool open_sub(bool wr) {
   return fileSub.IsOpen();
 }
 
-bool iscan1(int si, const vector<subboardrec>& subboards) {
-  // Initializes use of a sub value (subboards[], not session()->usub[]).  If quick, then
+bool iscan1(int si, const wwiv::sdk::Subs& subs) {
+  // Initializes use of a sub value (subs[], not session()->usub[]).  If quick, then
   // don't worry about anything detailed, just grab qscan info.
   postrec p{};
 
   // forget it if an invalid sub #
-  if (si < 0 || si >= size_int(subboards)) {
+  if (si < 0 || si >= size_int(subs.subs())) {
     return false;
   }
 
@@ -105,7 +106,8 @@ bool iscan1(int si, const vector<subboardrec>& subboards) {
   }
 
   // set sub filename
-  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", syscfg.datadir, subboards[si].filename);
+  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", 
+    syscfg.datadir, subs.sub(si).filename.c_str());
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {

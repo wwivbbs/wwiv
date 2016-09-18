@@ -5,6 +5,12 @@
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+* Login prompt looks a little snazzier, uses the colorized input prompt.
+* config.dat now includes version info on what wrote to it for better
+  versioning of upgrades.  The only change is now if you go back to 4.3
+  you will need to run init to reset your newuser password (if you have
+  one, or to clear it on downgrade since the newuserpw field and version
+  info in config.dat live in the same first 21 characters in the file.)
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

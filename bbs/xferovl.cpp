@@ -126,7 +126,7 @@ void move_file() {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (freek1(session()->directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
+        if (File::GetFreeSpaceForPath(session()->directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }

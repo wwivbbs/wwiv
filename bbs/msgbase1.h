@@ -21,9 +21,9 @@
 #include "sdk/vardec.h"
 #include "sdk/subxtr.h"
 
-void send_net_post(postrec* pPostRecord, const subboardrec& sub, const wwiv::sdk::xtrasubsrec& xsub);
+void send_net_post(postrec* pPostRecord, const wwiv::sdk::subboard_t& sub);
 void post();
-void grab_user_name(messagerec* pMessageRecord, const char *file_name);
+void grab_user_name(messagerec* pMessageRecord, const std::string& file_name);
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);
 void qscan(int nBeginSubNumber, int *pnNextSubNumber);
 void nscan(int nStartingSubNum = 0);

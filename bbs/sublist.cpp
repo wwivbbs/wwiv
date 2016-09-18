@@ -74,7 +74,7 @@ void old_sublist() {
       pla(s, &abort);
     }
     size_t i1 = 0;
-    while ((i1 < session()->subboards.size()) && (session()->usub[i1].subnum != -1) && (!abort)) {
+    while ((i1 < session()->subs().subs().size()) && (session()->usub[i1].subnum != -1) && (!abort)) {
       sprintf(s, "  |#5%4.4s|#2", session()->usub[i1].keys);
       if (qsc_q[session()->usub[i1].subnum / 32] & (1L << (session()->usub[i1].subnum % 32))) {
         strcat(s, " - ");
@@ -82,16 +82,16 @@ void old_sublist() {
         strcat(s, "  ");
       }
       if (net_sysnum || session()->max_net_num() > 1) {
-        if (!session()->xsubs[session()->usub[i1].subnum].nets.empty()) {
+        if (!session()->subs().sub(session()->usub[i1].subnum).nets.empty()) {
           const char *ss;
-          if (session()->xsubs[session()->usub[i1].subnum].nets.size() > 1) {
+          if (session()->subs().sub(session()->usub[i1].subnum).nets.size() > 1) {
             ss = "Gated";
           } else {
-            ss = stripcolors(session()->net_networks[session()->xsubs[session()->usub[i1].subnum].nets[0].net_num].name);
+            ss = stripcolors(session()->net_networks[session()->subs().sub(session()->usub[i1].subnum).nets[0].net_num].name);
           }
 
           char s1[80];
-          if (session()->subboards[session()->usub[i1].subnum].anony & anony_val_net) {
+          if (session()->subs().sub(session()->usub[i1].subnum).anony & anony_val_net) {
             sprintf(s1, "|B1|15[%-8.8s]|#9 ", ss);
           } else {
             sprintf(s1, "|B1|15<%-8.8s>|#9 ", ss);
@@ -102,7 +102,7 @@ void old_sublist() {
         }
         strcat(s, "|#9");
       }
-      strcat(s, stripcolors(session()->subboards[session()->usub[i1].subnum].name));
+      strcat(s, stripcolors(session()->subs().sub(session()->usub[i1].subnum).name.c_str()));
       pla(s, &abort);
       i1++;
     }
@@ -169,7 +169,7 @@ void SubList() {
         i1 = 0;
       }
       size_t firstp = 0;
-      while (i1 < session()->subboards.size() && session()->usub[i1].subnum != -1 && !abort) {
+      while (i1 < session()->subs().subs().size() && session()->usub[i1].subnum != -1 && !abort) {
         if (p) {
           p = 0;
           firstp = i1;
@@ -195,17 +195,17 @@ void SubList() {
         }
         iscan(i1);
         if (net_sysnum || session()->max_net_num() > 1) {
-          if (!session()->xsubs[session()->usub[i1].subnum].nets.empty()) {
+          if (!session()->subs().sub(session()->usub[i1].subnum).nets.empty()) {
 	          const char* ss;
-            if (session()->xsubs[session()->usub[i1].subnum].nets.size() > 1) {
+            if (session()->subs().sub(session()->usub[i1].subnum).nets.size() > 1) {
               wc = 6;
               ss = "Gated";
             } else {
-              strcpy(s3, session()->net_networks[session()->xsubs[session()->usub[i1].subnum].nets[0].net_num].name);
+              strcpy(s3, session()->net_networks[session()->subs().sub(session()->usub[i1].subnum).nets[0].net_num].name);
               ss = stripcolors(s3);
               wc = session()->net_num() % 8;
             }
-            if (session()->subboards[session()->usub[i1].subnum].anony & anony_val_net) {
+            if (session()->subs().sub(session()->usub[i1].subnum).anony & anony_val_net) {
               sprintf(s3, "|#7[|#%i%-8.8s|#7]", wc, ss);
             } else {
               sprintf(s3, "|#7<|#%i%-8.8s|#7>", wc, ss);
@@ -224,11 +224,13 @@ void SubList() {
         newTally = session()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
         if (session()->current_user_sub().subnum == session()->usub[i1].subnum) {
           sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |B1|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
-                  i1 + 1, s2, s3, session()->subboards[session()->usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
+                  i1 + 1, s2, s3, session()->subs().sub(session()->usub[i1].subnum).name.c_str(), 
+                  session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         } else {
           sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |#1%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
-                  i1 + 1, s2, s3, session()->subboards[session()->usub[i1].subnum].name, session()->GetNumMessagesInCurrentMessageArea(),
+                  i1 + 1, s2, s3, session()->subs().sub(session()->usub[i1].subnum).name.c_str(),
+                  session()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         }
         if (okansi()) {
@@ -245,7 +247,7 @@ void SubList() {
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
           const char* ss = mmkey(0, true);
           if (isdigit(ss[0])) {
-            for (size_t i2 = 0; i2 < session()->subboards.size(); i2++) {
+            for (size_t i2 = 0; i2 < session()->subs().subs().size(); i2++) {
               if (IsEquals(session()->usub[i2].keys, ss)) {
                 session()->set_current_user_sub_num(i2);
                 oldSub = session()->current_user_sub().subnum;
@@ -310,7 +312,7 @@ void SubList() {
           ns = i = 0;
         }
         if (isdigit(ss[0])) {
-          for (size_t i2 = 0; i2 < session()->subboards.size(); i2++) {
+          for (size_t i2 = 0; i2 < session()->subs().subs().size(); i2++) {
             if (IsEquals(session()->usub[i2].keys, ss)) {
               session()->set_current_user_sub_num(i2);
               oldSub = session()->current_user_sub().subnum;

@@ -36,14 +36,14 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 bool display_sub_categories();
-int find_hostfor(char *type, short *ui, char *description, short *opt);
+int find_hostfor(const std::string& type, short *ui, char *description, short *opt);
 
 
-static void maybe_netmail(xtrasubsnetrec * ni, bool bAdd) {
+static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
   bout << "|#5Send email request to the host now? ";
   if (yesno()) {
     strcpy(irt, "Sub type ");
-    strcat(irt, ni->stype);
+    to_char_array(irt, ni->stype);
     if (bAdd) {
       strcat(irt, " - ADD request");
     } else {
@@ -88,7 +88,7 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype) {
 #define OPTION_ANSI   0x0010
 
 
-int find_hostfor(char *type, short *ui, char *description, short *opt) {
+int find_hostfor(const std::string& type, short *ui, char *description, short *opt) {
   char s[255], *ss;
   int rc = 0;
 
@@ -110,7 +110,7 @@ int find_hostfor(char *type, short *ui, char *description, short *opt) {
         if (s[0] > ' ') {
           ss = strtok(s, " \r\n\t");
           if (ss) {
-            if (IsEqualsIgnoreCase(ss, type)) {
+            if (IsEqualsIgnoreCase(ss, type.c_str())) {
               ss = strtok(nullptr, " \r\n\t");
               if (ss) {
                 short h = static_cast<short>(atol(ss));
@@ -191,14 +191,14 @@ int find_hostfor(char *type, short *ui, char *description, short *opt) {
 
 void sub_xtr_del(int n, int nn, int f) {
   // make a copy of the old network info.
-  xtrasubsnetrec xn = session()->xsubs[n].nets[nn];
+  auto xn = session()->subs().sub(n).nets[nn];
 
   if (f) {
-    auto it = session()->xsubs[n].nets.begin();
+    auto it = session()->subs().sub(n).nets.begin();
     if (nn > 0) {
       std::advance(it, nn);
     }
-    session()->xsubs[n].nets.erase(it);
+    session()->subs().sub(n).nets.erase(it);
   }
   set_net_num(xn.net_num);
 
@@ -232,13 +232,10 @@ void sub_xtr_add(int n, int nn) {
   int onxi, ii, gc;
 
   // nn may be -1
-  while (nn >= size_int(session()->xsubs[n].nets)) {
-    xtrasubsnetrec xnp;
-    memset(&xnp, 0, sizeof(xtrasubsnetrec));
-    session()->xsubs[n].nets.push_back(xnp);
+  while (nn >= size_int(session()->subs().sub(n).nets)) {
+    session()->subs().sub(n).nets.push_back({});
   }
-  xtrasubsnetrec xnp;
-  memset(&xnp, 0, sizeof(xtrasubsnetrec));
+  subboard_network_data_t xnp = {};
 
   if (session()->max_net_num() > 1) {
     std::set<char> odc;
@@ -283,15 +280,14 @@ void sub_xtr_add(int n, int nn) {
 
   bout.nl();
   bout << "|#2What sub type? ";
-  input(xnp.stype, 7);
+  xnp.stype = input(7);
   if (xnp.stype[0] == 0) {
     return;
   }
 
   bout << "|#5Will you be hosting the sub? ";
   if (yesno()) {
-    char file_name[MAX_PATH];
-    sprintf(file_name, "%sn%s.net", session()->network_directory().c_str(), xnp.stype);
+    string file_name = StrCat(session()->network_directory(), "n", xnp.stype, ".net");
     File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
@@ -347,8 +343,8 @@ void sub_xtr_add(int n, int nn) {
       xnp.host = static_cast<uint16_t>(atol(szDescription));
       szDescription[0] = '\0';
     }
-    if (!session()->xsubs[n].desc[0]) {
-      strcpy(session()->xsubs[n].desc, szDescription);
+    if (!session()->subs().sub(n).desc[0]) {
+      session()->subs().sub(n).desc = szDescription;
     }
 
     if (xnp.host == net_sysnum) {
@@ -359,7 +355,7 @@ void sub_xtr_add(int n, int nn) {
       if (valid_system(xnp.host)) {
         if (ok) {
           if (opt & OPTION_NO_TAG) {
-            session()->subboards[n].anony |= anony_no_tag;
+            session()->subs().sub(n).anony |= anony_no_tag;
           }
           bout.nl();
           if (opt & OPTION_AUTO) {
@@ -387,11 +383,11 @@ void sub_xtr_add(int n, int nn) {
       }
     }
   }
-  if (nn == -1 || nn >= size_int(session()->xsubs[n].nets)) {
+  if (nn == -1 || nn >= size_int(session()->subs().sub(n).nets)) {
     // nn will be -1 when adding a new sub.
-    session()->xsubs[n].nets.push_back(xnp);
+    session()->subs().sub(n).nets.push_back(xnp);
   } else {
-    session()->xsubs[n].nets[nn] = xnp;
+    session()->subs().sub(n).nets[nn] = xnp;
   }
 }
 

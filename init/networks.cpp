@@ -101,23 +101,22 @@ static bool save_networks_dat(const vector<net_networks_rec>& net_networks) {
 }
 
 static bool del_net(
-    vector<subboardrec>& subboards, 
     vector<net_networks_rec>& net_networks, int nn) {
-
-  subboards = wwiv::sdk::read_subs(syscfg.datadir);
-  if (subboards.empty()) {
+  wwiv::sdk::Subs subs(syscfg.datadir, net_networks);
+  if (subs.subs().empty()) {
     return false;
   }
 
-  for (size_t i = 0; i < subboards.size(); i++) {
+  // TODO(rushfan): Ensure that no subs are using it.
+  for (size_t i = 0; i < subs.subs().size(); i++) {
     size_t i2;
     for (i2 = 0; i2 < i; i2++) {
-      if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
+      if (subs.sub(i).filename == subs.sub(i2).filename) {
         break;
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards);
+      iscan1(i, subs);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
@@ -135,7 +134,11 @@ static bool del_net(
     }
   }
 
-  wwiv::sdk::write_subs(syscfg.datadir, subboards);
+  // TODO(rushfan): xsubs - don't think we need to do this here, we didn't change
+  // anything in subs.dat
+  // wwiv::sdk::write_subs(syscfg.datadir, subboards);
+
+  // Now we update the email.
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
@@ -168,6 +171,7 @@ static bool del_net(
     }
   }
 
+  // Update the user 
   unique_ptr<char[]> u(new char[syscfg.userreclen]);
   read_user(1, reinterpret_cast<userrec*>(u.get()));
   int nu = number_userrecs();
@@ -183,6 +187,8 @@ static bool del_net(
       }
     }
   }
+
+  // FInally delete it from networks.dat
   {
     auto it = net_networks.begin();
     std::advance(it, nn);
@@ -265,23 +271,22 @@ static void edit_net(vector<net_networks_rec>& net_networks, int nn) {
 }
 
 static bool insert_net(
-    vector<subboardrec>& subboards, 
     vector<net_networks_rec>& net_networks,
     int nn) {
-  subboards = wwiv::sdk::read_subs(syscfg.datadir);
-  if (subboards.empty()) {
+  wwiv::sdk::Subs subs(syscfg.datadir, net_networks);
+  if (subs.subs().empty()) {
     return false;
   }
 
-  for (size_t i = 0; i < subboards.size(); i++) {
+  for (size_t i = 0; i < subs.subs().size(); i++) {
     size_t i2 = 0;
     for (i2 = 0; i2 < i; i2++) {
-      if (strcmp(subboards[i].filename, subboards[i2].filename) == 0) {
+      if (subs.sub(i).filename == subs.sub(i2).filename) {
         break;
       }
     }
     if (i2 >= i) {
-      iscan1(i, subboards);
+      iscan1(i, subs);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
@@ -296,7 +301,8 @@ static bool insert_net(
     }
   }
 
-  wwiv::sdk::write_subs(syscfg.datadir, subboards);
+  // same as del_net, don't think we need to do this here.
+  // wwiv::sdk::write_subs(syscfg.datadir, subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     long t = emailfile.GetLength() / sizeof(mailrec);
@@ -353,7 +359,6 @@ static bool insert_net(
 }
 
 void networks() {
-  vector<subboardrec> subboards;
   vector<net_networks_rec> net_networks;
 
   // We may not load any, and that's OK since there may be none.
@@ -392,7 +397,7 @@ void networks() {
           if (yn) {
             yn = dialog_yn(window, "Are you REALLY sure? ");
             if (yn) {
-              del_net(subboards, net_networks, result.selected);
+              del_net(net_networks, result.selected);
             }
           }
         } else {
@@ -413,7 +418,7 @@ void networks() {
         const size_t net_num = dialog_input_number(window, prompt, 1, net_networks.size() + 1  );
         if (net_num > 0 && net_num <= net_networks.size() + 1) {
           if (dialog_yn(window, "Are you sure? ")) {
-            insert_net(subboards, net_networks, net_num - 1);
+            insert_net(net_networks, net_num - 1);
           }
         }
         break;

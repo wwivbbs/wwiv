@@ -85,13 +85,13 @@ namespace network2 {
 
 static bool find_basename(Context& context, const string& netname, string& basename) {
   int current = 0;
-  for (const auto& x : context.xsubs) {
+  for (const auto& x : context.subs.subs()) {
     for (const auto& n : x.nets) {
       if (n.net_num == context.network_number) {
-        if (IsEqualsIgnoreCase(netname.c_str(), n.stype)) {
+        if (IsEqualsIgnoreCase(netname.c_str(), n.stype.c_str())) {
           // Since the subtype matches, we need to find the subboard base filename.
           // and return that.
-          basename.assign(context.subs.at(current).filename);
+          basename.assign(context.subs.sub(current).filename);
           return true;
         }
       }

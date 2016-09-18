@@ -209,11 +209,27 @@ struct arcrec {
        arct[50];                               // test commandline
 };
 
+/*
+ * WWIV 5.2+ config.dat header.
+ */
+struct configrec_header_t {
+  // "WWIV"+ NULL
+  char signature[5];
+  uint8_t padding[1];
+  uint16_t written_by_wwiv_num_version;
+  uint32_t config_revision_number;
+  uint32_t config_size;
+  uint8_t unused[5];
+};
 
 // STATIC SYSTEM INFORMATION
 struct configrec {
-  char newuserpw[21],                         // new user password
-       systempw[21],                           // system password
+  union {
+    // new user password
+    char newuserpw[21];
+    configrec_header_t header;
+  } header;
+  char systempw[21],                           // system password
        msgsdir[81],                            // path for msgs directory
        gfilesdir[81],                          // path for gfiles dir
        datadir[81],                            // path for data directory
@@ -288,7 +304,8 @@ struct configrec {
 
   uint32_t wwiv_reg_number;                   // user's reg number
 
-  char unused_dial_prefix[21];
+  char newuserpw[21];
+
 
   float post_call_ratio;
 
@@ -374,16 +391,13 @@ struct small_configrec {
 
 
 // overlay information per instance
-struct configoverrec {
-  uint8_t unused_com_ISR[9],
-          primaryport;
-  uint16_t  unused_com_base[9];
-  char unused_modem_type[9],
-       tempdir[81],
-       batchdir[81];
-  uint16_t unused_comflags;
-  char unused_bootdrive;
-  char res[310];
+struct legacy_configovrrec_424_t {
+  uint8_t unused1[9];
+  uint8_t primaryport;
+  uint8_t unused2[27];
+  char tempdir[81];
+  char batchdir[81];
+  char unused3[313];
 };
 
 
@@ -439,8 +453,11 @@ struct colorrec {
 };
 
 
-// MESSAGE BASE INFORMATION
-struct subboardrec {
+/**
+ * ON DISK format for MESSAGE BASE INFORMATION (SUBS.DAT)
+ * This has been the same since *at least* 4.22.
+ */
+struct subboardrec_422_t {
   char name[41],                              // board name
        filename[9],                            // board database filename
        key;                                    // board special key
@@ -768,7 +785,7 @@ struct batchrec {
 #define ability_cosysop             0x0020
 #define ability_val_net             0x0040
 
-// subboardrec.anony
+// subs anony
 #define anony_none                  0x00
 #define anony_enable_anony          0x01
 #define anony_enable_dear_abby      0x02
@@ -777,7 +794,7 @@ struct batchrec {
 #define anony_val_net               0x10
 #define anony_ansi_only             0x20
 #define anony_no_tag                0x40
-#define anony_require_sv            0x80
+#define unused_anony_require_sv     0x80
 
 // postrec.anony, mailrec.anony
 #define anony_sender                0x01
@@ -835,9 +852,6 @@ struct batchrec {
 #define sysconfig_extended_info     0x08000
 #define unused_sysconfig_1          0x10000
 #define unused_sysconfig_2          0x20000
-
-// configoverrec.comflags
-#define unused_comflags_1           0x0001
 
 #define ansir_ansi                  0x01
 #define ansir_no_DOS                0x02
@@ -1066,10 +1080,10 @@ static_assert(sizeof(slrec) == 14, "slrec == 14");
 static_assert(sizeof(valrec) == 8, "valrec == 8");
 static_assert(sizeof(arcrec) == 336, "arcrec == 336");
 static_assert(sizeof(configrec) == 6228, "configrec == 6228");
-static_assert(sizeof(configoverrec) == 512, "configoverrec == 512");
+static_assert(sizeof(legacy_configovrrec_424_t) == 512, "legacy_configovrrec_424_t == 512");
 static_assert(sizeof(statusrec_t) == 151, "statusrec == 151");
 static_assert(sizeof(colorrec) == 240, "colorrec == 240");
-static_assert(sizeof(subboardrec) == 63, "subboardrec == 63");
+static_assert(sizeof(subboardrec_422_t) == 63, "subboardrec_422_t == 63");
 static_assert(sizeof(directoryrec) == 141, "directoryrec == 141");
 static_assert(sizeof(smalrec) == 33, "smalrec == 33");
 static_assert(sizeof(messagerec) == 5, "messagerec == 5");

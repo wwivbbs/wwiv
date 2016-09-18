@@ -113,10 +113,21 @@ bool IsEquals(const char* str1, const char* str2) {
  * @return true of the strings contain the same contents ignoring case
  */
 bool IsEqualsIgnoreCase(const char *str1, const char *str2) {
+  return iequals(str1, str2);
+}
+
+bool iequals(const char *str1, const char *str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
 
   return (StringCompareIgnoreCase(str1, str2) == 0) ? true : false;
+}
+
+bool iequals(const std::string& s1, const std::string& s2) {
+  return std::equal(s1.begin(), s1.end(), s2.begin(),
+    [](const char& c1, const char& c2) {
+    return (std::tolower(c1) == std::tolower(c2));
+  });
 }
 
 int StringCompareIgnoreCase(const char *str1, const char *str2) {
