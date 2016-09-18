@@ -70,7 +70,7 @@ static string GetScanReadPrompts(int nMessageNumber) {
     set_net_num(0);
   }
   const string sub_name_prompt = StringPrintf("|#7[|#1%s|#7] [|#2%s|#7]",
-      local_network_name.c_str(), session()->current_sub().name);
+      local_network_name.c_str(), session()->current_sub().name.c_str());
   return StringPrintf("%s |#7(|#1Read |#2%d |#1of |#2%d|#1|#7) : ",
         sub_name_prompt.c_str(), nMessageNumber,
         session()->GetNumMessagesInCurrentMessageArea());
@@ -176,7 +176,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
               fileExtract.Seek(-1L, File::seekEnd);
             }
           }
-          string buffer = StringPrintf("ON: %s", session()->current_sub().name);
+          string buffer = StringPrintf("ON: %s", session()->current_sub().name.c_str());
           fileExtract.Write(buffer);
           fileExtract.Write("\r\n\r\n", 4);
           fileExtract.Write(get_post(nMessageNumber)->title, strlen(get_post(nMessageNumber)->title));

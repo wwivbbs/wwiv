@@ -350,7 +350,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     memory_last_read = qsc_p[sub_number];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
-                 session()->current_sub().name,
+                 session()->current_sub().name.c_str(),
                  session()->current_user_sub().keys,
                  session()->GetNumMessagesInCurrentMessageArea());
 
@@ -439,7 +439,7 @@ void ScanMessageTitles() {
   }
   bout.bprintf("|#2%d |#9messages in area |#2%s\r\n",
                session()->GetNumMessagesInCurrentMessageArea(),
-               session()->current_sub().name);
+               session()->current_sub().name.c_str());
   if (session()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }
@@ -474,7 +474,7 @@ void remove_post() {
   }
   bool any = false, abort = false;
   bout.bprintf("\r\n\nPosts by you on %s\r\n\n",
-    session()->current_sub().name);
+    session()->current_sub().name.c_str());
   for (int j = 1; j <= session()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == session()->usernum) {
       any = true;
@@ -507,7 +507,7 @@ void remove_post() {
         }
       }
       sysoplogf("- \"%s\" removed from %s", get_post(nPostNumber)->title,
-        session()->current_sub().name);
+        session()->current_sub().name.c_str());
       delete_message(nPostNumber);
       bout << "\r\nMessage removed.\r\n\n";
     }

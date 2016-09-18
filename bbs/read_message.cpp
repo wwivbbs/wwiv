@@ -334,7 +334,7 @@ void read_post(int n, bool *next, int *val) {
 
   bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d %s\r\n", n,
     session()->GetNumMessagesInCurrentMessageArea(), session()->GetMessageColor(),
-    session()->current_sub().name);
+    session()->current_sub().name.c_str());
   const string subjectLine = "|#9Subj|#7: ";
   osan(subjectLine, &abort, next);
   bout.Color(session()->GetMessageColor());
