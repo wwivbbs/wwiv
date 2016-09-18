@@ -125,7 +125,7 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  File file(syscfgovr.tempdir, INPUT_MSG);
+  File file(session()->temp_directory(), INPUT_MSG);
   long lMaxBytes = 250 * static_cast<long>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;

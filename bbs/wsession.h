@@ -234,6 +234,9 @@ public:
   wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
   wwiv::sdk::UserManager* users() { return user_manager_.get(); }
 
+  const std::string& temp_directory() const { return temp_directory_; }
+  const std::string& batch_directory() const { return batch_directory_; }
+  const uint8_t primary_port() const { return primary_port_; }
 
   /*!
   * @function GetHomeDir Returns the current home directory
@@ -316,7 +319,6 @@ public:
  private:
    unsigned short str2spawnopt(const char *s);
    unsigned short str2restrict(const char *s);
-   unsigned char stryn2tf(const char *s);
    void read_nextern();
    void read_arcs();
    void read_editors();
@@ -424,6 +426,9 @@ private:
   std::string cur_lang_name;
   std::string chat_reason_;
   std::string net_email_name;
+  std::string temp_directory_;
+  std::string batch_directory_;
+  uint8_t primary_port_ = 1;
 
   int wfc_status;
   int usernum;

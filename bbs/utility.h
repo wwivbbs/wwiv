@@ -26,7 +26,7 @@
 #include "sdk/net.h"
 #include "sdk/vardec.h"
 
-void remove_from_temp(const char *file_name, const char *pszDirectoryName, bool bPrintStatus);
+void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus);
 bool sysop1();
 void ToggleScrollLockKey();
 bool okansi();

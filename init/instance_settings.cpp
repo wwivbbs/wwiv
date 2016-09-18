@@ -50,54 +50,6 @@ void show_instance(EditItems* items) {
   items->Display();
 }
 
-int number_instances() {
-  File configfile(CONFIG_OVR);
-  if (!configfile.Open(File::modeBinary|File::modeReadOnly)) {
-    return 0;
-  }
-  return configfile.GetLength() / sizeof(configoverrec);
-}
-
-bool read_instance(int num, configoverrec* instance) {
-  File configfile(CONFIG_OVR);
-  if (!configfile.Open(File::modeBinary|File::modeReadWrite)) {
-    return false;
-  }
-
-  configfile.Seek((num - 1) * sizeof(configoverrec), File::seekBegin);
-  configfile.Read(instance, sizeof(configoverrec));
-  configfile.Close();
-  return true;
-}
-
-bool write_instance(int num, configoverrec* instance) {
-  File configfile(CONFIG_OVR);
-  if (!configfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile, File::shareDenyReadWrite)) {
-    return true;
-  }
-  long n = configfile.GetLength() / sizeof(configoverrec);
-  while (n < (num - 1)) {
-    configfile.Seek(0, File::seekEnd);
-    configfile.Write(instance, sizeof(configoverrec));
-    n++;
-  }
-  configfile.Seek(sizeof(configoverrec) * (num - 1), File::seekBegin);
-  configfile.Write(instance, sizeof(configoverrec));
-  configfile.Close();
-  return true;
-}
-
-bool write_instance(int num, const string batch_dir, const string temp_dir) {
-  configoverrec instance;
-  memset(&instance, 0, sizeof(configoverrec));
-
-  // primary port is always 1 now.
-  instance.primaryport = 1;
-  strcpy(instance.batchdir, batch_dir.c_str());
-  strcpy(instance.tempdir, temp_dir.c_str());
-  return write_instance(num, &instance);
-}
-
 void instance_editor() {
   IniFile ini("wwiv.ini", "WWIV");
   if (ini.IsOpen() && ini.GetValue("TEMP_DIRECTORY") == nullptr) {

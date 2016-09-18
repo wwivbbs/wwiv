@@ -20,29 +20,33 @@
 
 #include "bbs/stuffin.h"
 #include "bbs/vars.h"
+#include "bbs_test/bbs_helper.h"
+#include "core/strings.h"
+#include "sdk/filenames.h"
 
 using std::cout;
 using std::endl;
 using std::ostringstream;
 using std::string;
 
+using namespace wwiv::strings;
+
+
 class StuffInTest : public testing::Test {
 protected:
     virtual void SetUp() {
-        incom = false;
-        com_speed = 0;
-        modem_speed = 0;
-        syscfgovr.primaryport = 0;
-        syscfgovr.tempdir[0] = 0;
-        gfiles_dir_ = "C:\\temp";
-        syscfg.gfilesdir = const_cast<char*>(gfiles_dir_.c_str());
+      helper.SetUp();
+      incom = false;
+      com_speed = 0;
+      modem_speed = 0;
     }
+
 public:
     const std::string t(const std::string name) {
-        ostringstream os;
-        os << syscfgovr.tempdir << name;
-        return string(os.str());
+      return StrCat(session()->temp_directory(), name);
     }
+
+    BbsHelper helper;
 private:
   string gfiles_dir_;
 };
@@ -51,7 +55,8 @@ TEST_F(StuffInTest, SimpleCase) {
     const string actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
 
     ostringstream expected;
-    expected << "foo one " << t("chain.txt") << " two " << syscfg.gfilesdir << "comment.txt";
+    expected << "foo one " << t("chain.txt")
+      << " two " << syscfg.gfilesdir << COMMENT_TXT;
 
     EXPECT_EQ(expected.str(), actual);
 }
@@ -105,7 +110,6 @@ TEST_F(StuffInTest, PortAndNode) {
     EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
     
     incom = true;
-    syscfgovr.primaryport = 1;
     EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
 
     // TODO(Rushfan): Figure out how to get application() working in tests and

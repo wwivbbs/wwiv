@@ -270,7 +270,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
       bout.nl(2);
       bout << "|#9Add a |#1FILE_ID.DIZ|#9 to archive? ";
       if (noyes()) {
-        sprintf(idz_fn, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
+        sprintf(idz_fn, "%s%s", session()->temp_directory().c_str(), FILE_ID_DIZ);
         sprintf(dir_path, "%s%s", session()->directories[session()->udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
         TextFile file(idz_fn, "w");
         file.WriteFormatted("%.58s\n", szDescription);
@@ -318,7 +318,7 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
         strcpy(s2, syscfg.datadir);
         break;
       case '4':
-        strcpy(s2, syscfgovr.tempdir);
+        to_char_array(s2, session()->temp_directory());
         break;
       case '?':
         printfile(MEXTRACT_NOEXT);

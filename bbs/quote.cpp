@@ -61,6 +61,7 @@ static int quotes_ind_l;
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::strings;
 
 static bool ste(int i) {
   if (irt_name[i] == 32 && irt_name[i + 1] == 'O' && irt_name[i + 2] == 'F' && irt_name[i + 3] == 32) {
@@ -112,17 +113,17 @@ void grab_quotes(messagerec * m, const char *aux) {
   char *pfx;
   int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
   int pfxlen;
-  char szQuotesTextFileName[MAX_PATH], szQuotesIndexFileName[MAX_PATH];
   char cc = QUOTECOL + 48;
   int linelen = LINELEN, tf = 0;
 
-  sprintf(szQuotesTextFileName, "%s%s", syscfgovr.tempdir, QUOTES_TXT);
-  sprintf(szQuotesIndexFileName, "%s%s", syscfgovr.tempdir, QUOTES_IND);
+  string quotes_txt_fn = StrCat(session()->temp_directory(), QUOTES_TXT);
+  string quotes_ind_fn = StrCat(session()->temp_directory(), QUOTES_IND);
 
-  File::SetFilePermissions(szQuotesTextFileName, File::permReadWrite);
-  File::Remove(szQuotesTextFileName);
-  File::SetFilePermissions(szQuotesIndexFileName, File::permReadWrite);
-  File::Remove(szQuotesIndexFileName);
+  File::SetFilePermissions(quotes_txt_fn, File::permReadWrite);
+  File::Remove(quotes_txt_fn);
+  File::SetFilePermissions(quotes_ind_fn, File::permReadWrite);
+  File::Remove(quotes_ind_fn);
+
   if (quotes_ind) {
     free(quotes_ind);
   }
@@ -144,12 +145,12 @@ void grab_quotes(messagerec * m, const char *aux) {
         ss.pop_back();
       }
 
-      File quotesTextFile(szQuotesTextFileName);
+      File quotesTextFile(quotes_txt_fn);
       if (quotesTextFile.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
         quotesTextFile.Write(ss);
         quotesTextFile.Close();
       }
-      TextFile file(szQuotesIndexFileName, "wb");
+      TextFile file(quotes_ind_fn, "wb");
       if (file.IsOpen()) {
         l3 = l2 = 0;
         ss1 = nullptr;
@@ -264,7 +265,7 @@ void grab_quotes(messagerec * m, const char *aux) {
         }
         file.Close();
 #ifdef SAVE_IN_MEM
-        File ff(szQuotesIndexFileName);
+        File ff(quotes_ind_fn);
         if (ff.Open(File::modeBinary | File::modeReadOnly)) {
           quotes_ind_l = ff.GetLength();
           quotes_ind = static_cast<char*>(BbsAllocA(quotes_ind_l));
@@ -291,7 +292,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
 
 
   p = b = org;
-  File fileInputMsg(syscfgovr.tempdir, INPUT_MSG);
+  File fileInputMsg(session()->temp_directory(), INPUT_MSG);
   fileInputMsg.Delete();
   if (!hangup) {
     fileInputMsg.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);

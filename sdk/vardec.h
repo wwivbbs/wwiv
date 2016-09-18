@@ -374,16 +374,13 @@ struct small_configrec {
 
 
 // overlay information per instance
-struct configoverrec {
-  uint8_t unused_com_ISR[9],
-          primaryport;
-  uint16_t  unused_com_base[9];
-  char unused_modem_type[9],
-       tempdir[81],
-       batchdir[81];
-  uint16_t unused_comflags;
-  char unused_bootdrive;
-  char res[310];
+struct legacy_configovrrec_424_t {
+  uint8_t unused1[9];
+  uint8_t primaryport;
+  uint8_t unused2[27];
+  char tempdir[81];
+  char batchdir[81];
+  char unused3[313];
 };
 
 
@@ -839,9 +836,6 @@ struct batchrec {
 #define unused_sysconfig_1          0x10000
 #define unused_sysconfig_2          0x20000
 
-// configoverrec.comflags
-#define unused_comflags_1           0x0001
-
 #define ansir_ansi                  0x01
 #define ansir_no_DOS                0x02
 #define ansir_emulate_fossil        0x04
@@ -1069,7 +1063,7 @@ static_assert(sizeof(slrec) == 14, "slrec == 14");
 static_assert(sizeof(valrec) == 8, "valrec == 8");
 static_assert(sizeof(arcrec) == 336, "arcrec == 336");
 static_assert(sizeof(configrec) == 6228, "configrec == 6228");
-static_assert(sizeof(configoverrec) == 512, "configoverrec == 512");
+static_assert(sizeof(legacy_configovrrec_424_t) == 512, "legacy_configovrrec_424_t == 512");
 static_assert(sizeof(statusrec_t) == 151, "statusrec == 151");
 static_assert(sizeof(colorrec) == 240, "colorrec == 240");
 static_assert(sizeof(subboardrec_422_t) == 63, "subboardrec_422_t == 63");

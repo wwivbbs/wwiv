@@ -64,7 +64,6 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
   int bOkToDL;
   uploadsrec u;
   User ur;
-  char s1[81], s2[81];
   bool abort = false;
 
   int dn = FindDN(pszDirFileName);
@@ -109,19 +108,19 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
-      sprintf(s1, "%s%s", session()->directories[dn].path, u.filename);
+      string s1 = StrCat(session()->directories[dn].path, u.filename);
       if (session()->directories[dn].mask & mask_cdrom) {
-        sprintf(s2, "%s%s", session()->directories[dn].path, u.filename);
-        sprintf(s1, "%s%s", syscfgovr.tempdir, u.filename);
+        string s2 = StrCat(session()->directories[dn].path, u.filename);
+        s1 = StrCat(session()->temp_directory(), u.filename);
         if (!File::Exists(s1)) {
           copyfile(s2, s1, false);
         }
       }
       bool sent = false;
       if (bOkToDL == -1) {
-        send_file(s1, &sent, &abort, u.filename, dn, -2L);
+        send_file(s1.c_str(), &sent, &abort, u.filename, dn, -2L);
       } else {
-        send_file(s1, &sent, &abort, u.filename, dn, u.numbytes);
+        send_file(s1.c_str(), &sent, &abort, u.filename, dn, u.numbytes);
       }
 
       if (sent) {

@@ -3,7 +3,6 @@
                  Copyright 2002-2016 WWIV Software Services
 ==============================================================================
 
-* use new subs code, kill subboards and xsubs
 * look at timelastchar1
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.

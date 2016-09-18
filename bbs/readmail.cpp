@@ -724,7 +724,7 @@ void readmail(int mode) {
               }
             } else {
               // need instance
-              File::Remove(syscfgovr.tempdir, INPUT_MSG);
+              File::Remove(session()->temp_directory(), INPUT_MSG);
             }
           } else {
             bout << "\r\nFile not found.\r\n\n";
@@ -1184,7 +1184,7 @@ void readmail(int mode) {
           if (!okfn(downloadFileName.c_str())) {
             break;
           }
-          File fileTemp(syscfgovr.tempdir, downloadFileName.c_str());
+          File fileTemp(session()->temp_directory(), downloadFileName.c_str());
           fileTemp.Delete();
           fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           fileTemp.Write(b);

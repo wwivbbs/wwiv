@@ -194,7 +194,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
           LoadFileIntoWorkspace(filename, true);
         }
         send_email();
-        filename = StringPrintf("%s%s", syscfgovr.tempdir, INPUT_MSG);
+        filename = StrCat(session()->temp_directory(), INPUT_MSG);
         if (File::Exists(filename)) {
           File::Remove(filename);
         }
@@ -403,7 +403,7 @@ static void HandleMessageDownload(int nMessageNumber) {
     if (!okfn(filename)) {
       return;
     }
-    File fileTemp(syscfgovr.tempdir, filename);
+    File fileTemp(session()->temp_directory(), filename);
     fileTemp.Delete();
     fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     fileTemp.Write(b);

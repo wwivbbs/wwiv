@@ -450,7 +450,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const string quotes_filename = StrCat(syscfgovr.tempdir, QUOTES_TXT);
+  const string quotes_filename = StrCat(session()->temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
@@ -466,7 +466,7 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const string msginf_filename = StrCat(syscfgovr.tempdir, "msginf");
+  const string msginf_filename = StrCat(session()->temp_directory(), "msginf");
   copyfile(quotes_filename, msginf_filename, false);
 }
 
@@ -530,7 +530,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = INMSG_NOFSED;
   }
 
-  const string exted_filename = StringPrintf("%s%s", syscfgovr.tempdir, INPUT_MSG);
+  const string exted_filename = StrCat(session()->temp_directory(), INPUT_MSG);
   if (data.fsed_flags) {
     data.fsed_flags = INMSG_FSED;
   }

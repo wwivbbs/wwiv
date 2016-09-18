@@ -122,7 +122,7 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << create_filename(CHAINFILE_PCBOARD);
         break;
       case 'P':
-        os << ((incom) ? syscfgovr.primaryport : 0);
+        os << ((incom) ? session()->primary_port() : 0);
         break;
       case 'R':
         os << create_filename(CHAINFILE_DOOR);

@@ -36,6 +36,7 @@
 
 #include "core/inifile.h"
 #include "core/strings.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -72,7 +73,7 @@
 
 using std::string;
 using std::vector;
-using wwiv::core::IniFile;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 configrec syscfg;
@@ -81,44 +82,58 @@ statusrec_t statusrec;
 // from convert.cpp
 void convcfg(CursesWindow* window, const string& config_filename);
 
-static void ValidateConfigOverlayExists(const string& bbsdir) {
+static bool CreateConfigOvr(const string& bbsdir) {
   IniFile oini(WWIV_INI, "WWIV");
   int num_instances = oini.GetNumericValue("NUM_INSTANCES", 4);
 
-  File config_overlay(CONFIG_OVR);
-  if (!config_overlay.Exists() || config_overlay.GetLength() < sizeof(configoverrec)) {
-    // Handle the case where there is no config.ovr.
-    write_instance(1, syscfg.tempdir, syscfg.tempdir);
-  }
+  std::vector<legacy_configovrrec_424_t> config_ovr_data;
+  for (int i=1; i <= num_instances; i++) {
+    string instance_tag = StringPrintf("WWIV-%u", i);
+    IniFile ini("wwiv.ini", instance_tag, "WWIV");
 
-  if (config_overlay.GetLength() < static_cast<long>(num_instances * sizeof(configoverrec))) {
-    const string base(bbsdir);
-    // Not enough instances are configured.  Recreate all of them based on INI setting.
-    for (int i=1; i <= num_instances; i++) {
-      string instance_tag = StringPrintf("WWIV-%u", i);
-      IniFile ini("wwiv.ini", instance_tag, "WWIV");
-
-      const char* temp_directory_char = ini.GetValue("TEMP_DIRECTORY");
-      if (temp_directory_char != nullptr) {
-        string temp_directory(temp_directory_char);
-        // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
-        // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-        string batch_directory(ini.GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
-
-        // Replace %n with instance number value.
-        const string instance_num_string = std::to_string(i);
-        StringReplace(&temp_directory, "%n", instance_num_string);
-        StringReplace(&batch_directory, "%n", instance_num_string);
-
-        File::MakeAbsolutePath(base, &temp_directory);
-        File::MakeAbsolutePath(base, &batch_directory);
-
-        File::EnsureTrailingSlash(&temp_directory);
-        File::EnsureTrailingSlash(&batch_directory);
-        write_instance(i, batch_directory, temp_directory);
-      }
+    const char* temp_directory_char = ini.GetValue("TEMP_DIRECTORY");
+    if (temp_directory_char == nullptr) {
+      LOG(ERROR) << "TEMP_DIRECTORY is not set! Unable to create CONFIG.OVR";
+      return false;
     }
+
+    string temp_directory(temp_directory_char);
+    // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
+    // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
+    string batch_directory(ini.GetValue("BATCH_DIRECTORY", temp_directory.c_str()));
+
+    // Replace %n with instance number value.
+    const string instance_num_string = std::to_string(i);
+    StringReplace(&temp_directory, "%n", instance_num_string);
+    StringReplace(&batch_directory, "%n", instance_num_string);
+
+    File::MakeAbsolutePath(bbsdir, &temp_directory);
+    File::MakeAbsolutePath(bbsdir, &batch_directory);
+
+    File::EnsureTrailingSlash(&temp_directory);
+    File::EnsureTrailingSlash(&batch_directory);
+
+    legacy_configovrrec_424_t r = {};
+    r.primaryport = 1;
+    to_char_array(r.batchdir, batch_directory);
+    to_char_array(r.tempdir, temp_directory);
+
+    config_ovr_data.emplace_back(r);
   }
+
+  DataFile<legacy_configovrrec_424_t> file(CONFIG_OVR,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
+  if (!file) {
+    LOG(ERROR) << "Unable to open CONFIG.OVR for writing.";
+    return false;
+  }
+
+  if (!file.WriteVector(config_ovr_data)) {
+    LOG(ERROR) << "Unable to write to CONFIG.OVR.";
+    return false;
+  }
+
+  return true;
 }
 
 WInitApp::WInitApp() {
@@ -188,7 +203,7 @@ int WInitApp::main(int, char **) {
   }
   configfile.Close();
 
-  ValidateConfigOverlayExists(bbsdir);
+  CreateConfigOvr(bbsdir);
 
   {
     File archiverfile(syscfg.datadir, ARCHIVER_DAT);

@@ -33,6 +33,7 @@
 #include <sys/stat.h>
 
 #include "bbs/bbsovl3.h"
+#include "bbs/utility.h"
 #include "bbs/conf.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
@@ -112,7 +113,7 @@ void build_qwk_packet() {
 
   write_inst(INST_LOC_QWK, session()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
-  const string filename = StrCat(QWK_DIRECTORY, MESSAGES_DAT);
+  const string filename = StrCat(session()->batch_directory(), MESSAGES_DAT);
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {

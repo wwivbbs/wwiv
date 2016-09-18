@@ -107,7 +107,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   // Use this since fdsz doesn't like 115200
   nEffectiveXferSpeed = std::min<int>(modem_speed, 57600);
   sprintf(sx3, "%d", nEffectiveXferSpeed);
-  sx2[0] = '0' + syscfgovr.primaryport;
+  sx2[0] = '0' + session()->primary_port();
   sx2[1] = '\0';
   const string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
   if (!command.empty()) {

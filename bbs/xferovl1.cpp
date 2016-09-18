@@ -85,11 +85,10 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
     }
     if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(syscfgovr.tempdir, "extended.dsc", "w");
+        TextFile file(session()->temp_directory(), "extended.dsc", "w");
         file.Write(*sss);
       } else {
-        sprintf(s, "%sextended.dsc", syscfgovr.tempdir);
-        File::Remove(StrCat(syscfgovr.tempdir, "extended.dsc"));
+        File::Remove(StrCat(session()->temp_directory(), "extended.dsc"));
       }
 
       const int saved_screen_chars = session()->user()->GetScreenChars();
@@ -97,11 +96,11 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         session()->user()->SetScreenChars(76 - INDENTION);
       }
 
-      bool bEditOK = external_text_edit("extended.dsc", syscfgovr.tempdir,
+      bool bEditOK = external_text_edit("extended.dsc", session()->temp_directory(),
           session()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
       session()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        TextFile file(syscfgovr.tempdir, "extended.dsc", "r");
+        TextFile file(session()->temp_directory(), "extended.dsc", "r");
         *sss = file.ReadFileIntoString();
 
         for (int i3 = sss->size() - 1; i3 >= 0; i3--) {
@@ -207,8 +206,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     }
   }
 
-  File::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
-  File::Remove(syscfgovr.tempdir, DESC_SDI);
+  File::Remove(session()->temp_directory(), FILE_ID_DIZ);
+  File::Remove(session()->temp_directory(), DESC_SDI);
 
   File::set_current_directory(session()->directories[dn].path);
   {
@@ -216,12 +215,12 @@ bool get_file_idz(uploadsrec * u, int dn) {
 	  session()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
-  File::set_current_directory(syscfgovr.tempdir);
+  File::set_current_directory(session()->temp_directory());
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
   session()->CdHome();
-  sprintf(s, "%s%s", syscfgovr.tempdir, FILE_ID_DIZ);
+  sprintf(s, "%s%s", session()->temp_directory().c_str(), FILE_ID_DIZ);
   if (!File::Exists(s)) {
-    sprintf(s, "%s%s", syscfgovr.tempdir, DESC_SDI);
+    sprintf(s, "%s%s", session()->temp_directory().c_str(), DESC_SDI);
   }
   if (File::Exists(s)) {
     bout.nl();
@@ -276,8 +275,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     free(b);
     bout << "Done!\r\n";
   }
-  File::Remove(syscfgovr.tempdir, FILE_ID_DIZ);
-  File::Remove(syscfgovr.tempdir, DESC_SDI);
+  File::Remove(session()->temp_directory(), FILE_ID_DIZ);
+  File::Remove(session()->temp_directory(), DESC_SDI);
   return true;
 }
 
@@ -409,7 +408,7 @@ void tag_it() {
         if (f.dir_mask & mask_cdrom) {
           sprintf(s2, "%s%s", session()->directories[f.directory].path,
                   stripfn(f.u.filename));
-          sprintf(s, "%s%s", syscfgovr.tempdir, stripfn(f.u.filename));
+          sprintf(s, "%s%s", session()->temp_directory().c_str(), stripfn(f.u.filename));
           if (!File::Exists(s)) {
             copyfile(s2, s, true);
           }
@@ -612,7 +611,7 @@ void tag_files() {
         if (session()->directories[f.directory].mask & mask_cdrom) {
           sprintf(s2, "%s%s", session()->directories[f.directory].path,
                   stripfn(f.u.filename));
-          sprintf(s1, "%s%s", syscfgovr.tempdir,
+          sprintf(s1, "%s%s", session()->temp_directory().c_str(),
                   stripfn(f.u.filename));
           if (!File::Exists(s1)) {
             copyfile(s2, s1, true);
@@ -689,7 +688,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
       if (wwiv::UpperCase<char>(ch) == 'Y') {
         if (session()->directories[dn].mask & mask_cdrom) {
           sprintf(s2, "%s%s", session()->directories[dn].path, file_name);
-          sprintf(s1, "%s%s", syscfgovr.tempdir, file_name);
+          sprintf(s1, "%s%s", session()->temp_directory().c_str(), file_name);
           if (!File::Exists(s1)) {
             if (!copyfile(s2, s1, true)) {
               bout << "|#6 file unavailable... press any key.";

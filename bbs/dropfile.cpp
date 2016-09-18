@@ -95,20 +95,20 @@ static int GetDoor32Emulation() {
 const string create_filename(int nDropFileType) {
   switch (nDropFileType) {
   case CHAINFILE_CHAIN:
-    return StrCat(syscfgovr.tempdir, "chain.txt");
+    return StrCat(session()->temp_directory(), "chain.txt");
   case CHAINFILE_DORINFO:
-    return  StrCat(syscfgovr.tempdir, "dorinfo1.def");
+    return  StrCat(session()->temp_directory(), "dorinfo1.def");
   case CHAINFILE_PCBOARD:
-    return  StrCat(syscfgovr.tempdir, "pcboard.sys");
+    return  StrCat(session()->temp_directory(), "pcboard.sys");
   case CHAINFILE_CALLINFO:
-    return  StrCat(syscfgovr.tempdir, "callinfo.bbs");
+    return  StrCat(session()->temp_directory(), "callinfo.bbs");
   case CHAINFILE_DOOR:
-    return  StrCat(syscfgovr.tempdir, "door.sys");
+    return  StrCat(session()->temp_directory(), "door.sys");
   case CHAINFILE_DOOR32:
-    return  StrCat(syscfgovr.tempdir, "door32.sys");
+    return  StrCat(session()->temp_directory(), "door32.sys");
   default:
     // Default to CHAIN.TXT since this is the native WWIV dormat
-    return  StrCat(syscfgovr.tempdir, "chain.txt");
+    return  StrCat(session()->temp_directory(), "chain.txt");
   }
 }
 
@@ -146,7 +146,7 @@ void CreateDoorInfoDropFile() {
   TextFile fileDorInfoSys(fileName, "wt");
   if (fileDorInfoSys.IsOpen()) {
     fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
-                                  incom ? syscfgovr.primaryport : 0);
+                                  incom ? session()->primary_port() : 0);
     fileDorInfoSys.WriteFormatted("%u ", ((session()->using_modem) ? com_speed : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
     if (syscfg.sysconfig & sysconfig_no_alias) {
@@ -229,7 +229,7 @@ void CreatePCBoardSysDropFile() {
     memcpy(pcb.seventtime, "01:00", 5);
     memcpy(pcb.seventactive, " 0", 2);
     memcpy(pcb.sslide, " 0", 2);
-    pcb.scomport = syscfgovr.primaryport + '0';
+    pcb.scomport = session()->primary_port() + '0';
     pcb.packflag = 27;
     pcb.bpsflag = 32;
     // Added for PCB 14.5 Revision
@@ -283,7 +283,7 @@ void CreateCallInfoBbsDropFile() {
                         session()->user()->GetFilesDownloaded(),
                         "8N1",
                         (incom) ? "REMOTE" : "LOCAL",
-                        (incom) ? 0 : syscfgovr.primaryport);
+                        (incom) ? session()->primary_port() : 0);
     char szDate[81], szTemp[81];
     strcpy(szDate, "00/00/00");
     sprintf(szTemp, "%d", session()->user()->GetBirthdayMonth());
@@ -368,7 +368,7 @@ void CreateDoorSysDropFile() {
     char szLine[255];
     string cspeed = std::to_string(com_speed);
     sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
-            (session()->using_modem) ? syscfgovr.primaryport : 0,
+            (session()->using_modem) ? session()->primary_port() : 0,
             cspeed.c_str(),
             '8',
             session()->instance_number(),                       // node
@@ -458,14 +458,6 @@ static void create_drop_files() {
 const string create_chain_file() {
   string cspeed;
 
-  unsigned char nSaveComPortNum = syscfgovr.primaryport;
-  if (syscfgovr.primaryport == 0 && ok_modem_stuff) {
-    // This is so that we'll use COM1 in DOORS even though our comport is set
-    // to 0 in init.  It's not perfect, but it'll make sure doors work more
-    // often than not.
-    syscfgovr.primaryport = 1;
-  }
-
   cspeed = std::to_string(com_speed);
 
   create_drop_files();
@@ -505,24 +497,23 @@ const string create_chain_file() {
       file.WriteFormatted("KB\n");
     }
     file.WriteFormatted("%d\n%s\n%s\n%ld\n%ld\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n",
-                        syscfgovr.primaryport,
-                        syscfg.systemname,
-                        syscfg.sysopname,
-                        l,
-                        l1,
-                        session()->user()->GetUploadK(),
-                        session()->user()->GetFilesUploaded(),
-                        session()->user()->GetDownloadK(),
-                        session()->user()->GetFilesDownloaded(),
-                        "8N1",
-                        cspeed.c_str(),
-                        net_sysnum);
+        session()->primary_port(),
+        syscfg.systemname,
+        syscfg.sysopname,
+        l,
+        l1,
+        session()->user()->GetUploadK(),
+        session()->user()->GetFilesUploaded(),
+        session()->user()->GetDownloadK(),
+        session()->user()->GetFilesDownloaded(),
+        "8N1",
+        cspeed.c_str(),
+        net_sysnum);
     file.WriteFormatted("N\nN\nN\n");
     file.WriteFormatted("%u\n%u\n", session()->user()->GetAr(), session()->user()->GetDar());
     file.Close();
   }
-  syscfgovr.primaryport = nSaveComPortNum;
-
+  
   return fileName;
 }
 

@@ -447,9 +447,8 @@ bool WSession::ReadConfigOverlayFile(int instance_number, IniFile& ini) {
   File::EnsureTrailingSlash(&temp_directory);
   File::EnsureTrailingSlash(&batch_directory);
 
-  syscfgovr.primaryport = 1;
-  strcpy(syscfgovr.tempdir, temp_directory.c_str());
-  strcpy(syscfgovr.batchdir, batch_directory.c_str());
+  temp_directory_ = temp_directory;
+  batch_directory_ = batch_directory;
 
   int max_num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
@@ -570,8 +569,15 @@ bool WSession::ReadConfig() {
   make_abs_path(syscfg.dloadsdir);
   make_abs_path(syscfg.menudir);
 
-  make_abs_path(syscfgovr.tempdir);
-  make_abs_path(syscfgovr.batchdir);
+  char temp_dir[MAX_PATH];
+  to_char_array(temp_dir, temp_directory());
+  make_abs_path(temp_dir);
+  temp_directory_ = temp_dir;
+
+  char batch_dir[MAX_PATH];
+  to_char_array(batch_dir, batch_directory());
+  make_abs_path(batch_dir);
+  batch_directory_ = batch_dir;
 
   return true;
 }
@@ -825,18 +831,18 @@ void WSession::InitializeBBS() {
   SetQuoting(false);
 
   XINIT_PRINTF("Processing configuration file: WWIV.INI.");
-  if (!File::Exists(syscfgovr.tempdir)) {
-    if (!File::mkdirs(syscfgovr.tempdir)) {
+  if (!File::Exists(temp_directory())) {
+    if (!File::mkdirs(temp_directory())) {
       LOG(ERROR) << "Your temp dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << syscfgovr.tempdir << "'";
+      LOG(ERROR) << "It is now set to: '" << temp_directory() << "'";
       AbortBBS();
     }
   }
 
-  if (!File::Exists(syscfgovr.batchdir)) {
-    if (!File::mkdirs(syscfgovr.batchdir)) {
+  if (!File::Exists(batch_directory())) {
+    if (!File::mkdirs(batch_directory())) {
       LOG(ERROR) << "Your batch dir isn't valid.";
-      LOG(ERROR) << "It is now set to: '" << syscfgovr.batchdir << "'";
+      LOG(ERROR) << "It is now set to: '" << batch_directory() << "'";
       AbortBBS();
     }
   }
@@ -850,12 +856,6 @@ void WSession::InitializeBBS() {
     LOG(ERROR) << "Could not open file '" << fileQScan.full_pathname() << "'";
     LOG(ERROR) << "You must go into INIT and convert your userlist before running the BBS.";
     AbortBBS();
-  }
-
-  if (!syscfgovr.primaryport) {
-    // On all platforms primaryport is now 1 (this case should only ever happen
-    // on an upgraded system.
-    syscfgovr.primaryport = 1;
   }
 
   if (!read_language()) {
@@ -933,7 +933,9 @@ void WSession::InitializeBBS() {
   statusMgr->RefreshStatusCache();
   topdata = LocalIO::topdataUser;
 
-  snprintf(g_szDSZLogFileName, sizeof(g_szDSZLogFileName), "%sdsz.log", syscfgovr.tempdir);
+  string dsz_logfile_name = StrCat(session()->temp_directory(), "dsz.log");
+  to_char_array(g_szDSZLogFileName, dsz_logfile_name);
+
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
   string newprompt = "WWIV: ";
   const string old_prompt = environment_variable("PROMPT");
@@ -987,8 +989,8 @@ void WSession::InitializeBBS() {
   frequent_init();
   if (!m_bUserAlreadyOn) {
     TempDisablePause disable_pause;
-    remove_from_temp("*.*", syscfgovr.tempdir, true);
-    remove_from_temp("*.*", syscfgovr.batchdir, true);
+    remove_from_temp("*.*", temp_directory(), true);
+    remove_from_temp("*.*", batch_directory(), true);
     cleanup_net();
   }
   subconfnum = dirconfnum = 0;

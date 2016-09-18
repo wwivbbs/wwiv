@@ -172,7 +172,7 @@ void wfc_screen() {
       session()->localIO()->PrintfXYA(58, 10, 14, "N/A");
     }
     session()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
-    session()->localIO()->PrintfXYA(58, 12, 14, "Local %code", (syscfgovr.primaryport) ? 'M' : 'N');
+    session()->localIO()->PrintfXYA(58, 12, 14, "Local Mode");
     session()->localIO()->PrintfXYA(58, 13, 14, "Waiting For Command");
 
     get_inst_info(session()->instance_number(), &ir);

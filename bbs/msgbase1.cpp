@@ -370,7 +370,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
     session()->set_current_user_sub_num(nOldSubNumber);
     *pnNextSubNumber = nNextSubNumber;
-    bout.bprintf("|#1< %s Q-Scan Done >", session()->current_sub().name);
+    bout << "|#1< " << session()->current_sub().name << " Q-Scan Done >";
     bout.clreol();
     bout.nl();
     lines_listed = 0;
@@ -379,9 +379,8 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       bout << "\r\x1b[4A";
     }
   } else {
-    bout.bprintf("|#1< Nothing new on %s %s >",
-      session()->subs().sub(sub_number).name,
-        session()->usub[nBeginSubNumber].keys);
+    bout << "|#1< Nothing new on " << session()->subs().sub(sub_number).name
+      << " " << session()->usub[nBeginSubNumber].keys;
     bout.clreol();
     bout.nl();
     lines_listed = 0;

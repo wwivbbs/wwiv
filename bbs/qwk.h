@@ -25,7 +25,7 @@
 #include "sdk/vardec.h"
 #include "printfile.h"
 
-#define QWK_DIRECTORY (syscfgovr.batchdir)
+#define QWK_DIRECTORY (session()->batch_directory().c_str())
 
 #define append_block(file, memory, size) write(file, memory, size)
 #define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
