@@ -131,12 +131,13 @@ void DisplayNetInfo(size_t nSubNum) {
       strcpy(szBuffer2, " Auto-Info");
     }
     if ((*it).host == 0) {
-      const string net_file_name = StringPrintf("%sn%s.net", session()->net_networks[(*it).net_num].dir, (*it).stype);
+      const auto dir = session()->net_networks[(*it).net_num].dir;
+      const string net_file_name = StrCat(dir, "n", (*it).stype, ".net");
       int num = amount_of_subscribers(net_file_name.c_str());
       bout.bprintf("   |#9%c) |#2%-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',
                     session()->net_networks[(*it).net_num].name,
-                    (*it).stype,
+                    (*it).stype.c_str(),
                     szBuffer,
                     num,
                     ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
@@ -145,7 +146,7 @@ void DisplayNetInfo(size_t nSubNum) {
       bout.bprintf("   |#9%c) |#2%-12.12s %-7.7s %-6.6s  %s%s\r\n",
                     i + 'a',
                     session()->net_networks[(*it).net_num].name,
-                    (*it).stype,
+                    (*it).stype.c_str(),
                     szBuffer,
                     ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
                     ((*it).flags & XTRA_NET_AUTO_INFO) ? szBuffer2 : "");

@@ -40,9 +40,8 @@
 
 using std::string;
 using std::unique_ptr;
-using std::unique_ptr;
 using namespace wwiv::sdk;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   string text;
@@ -105,7 +104,8 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     if (xnp.host) {
       nh.tosys = xnp.host;
     } else {
-      File file(StringPrintf("%sn%s.net", session()->network_directory().c_str(), xnp.stype));
+      const auto fn = StrCat(session()->network_directory(), "n", xnp.stype, ".net");
+      File file(fn);
       if (file.Open(File::modeBinary | File::modeReadOnly)) {
         int len1 = file.GetLength();
         // looks like this leaks
@@ -290,7 +290,7 @@ void post() {
   close_sub();
 
   session()->UpdateTopScreen();
-  sysoplogf("+ \"%s\" posted on %s", p.title, session()->current_sub().name);
+  sysoplogf("+ \"%s\" posted on %s", p.title, session()->current_sub().name.c_str());
   bout << "Posted on " << session()->current_sub().name << wwiv::endl;
   if (!session()->current_sub().nets.empty()) {
     session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);

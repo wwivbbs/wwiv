@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_NETSUP_H__
 #define __INCLUDED_BBS_NETSUP_H__
 
+#include <string>
 #include "sdk/net.h"
 
 void cleanup_net();

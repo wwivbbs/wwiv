@@ -204,7 +204,7 @@ int WInitApp::main(int, char **) {
 
   // Check for 5.2 config
   {
-    constexpr char* expected_sig = "WWIV";
+    const char* expected_sig = "WWIV";
     if (!wwiv::strings::IsEquals(expected_sig, syscfg.header.header.signature)) {
       // We don't have a 5.2 header, let's convert.
 

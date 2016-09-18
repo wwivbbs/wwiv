@@ -378,7 +378,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 static string FindTagFileName() {
   for (const auto& xnp : session()->current_sub().nets) {
     const char *nd = session()->net_networks[xnp.net_num].dir;
-    string filename = StringPrintf("%s%s.tag", nd, xnp.stype);
+    string filename = StrCat(nd, xnp.stype, ".tag");
     if (File::Exists(filename)) {
       return filename;
     }
@@ -386,11 +386,11 @@ static string FindTagFileName() {
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StringPrintf("%s%s.tag", syscfg.datadir, xnp.stype);
+    filename = StrCat(session()->config()->datadir(), xnp.stype, ".tag");
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StringPrintf("%s%s", syscfg.datadir, GENERAL_TAG);
+    filename = StrCat(session()->config()->datadir(), GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
