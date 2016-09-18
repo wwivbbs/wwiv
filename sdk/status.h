@@ -25,8 +25,6 @@
 #include "sdk/vardec.h"
 #include "core/file.h"
 
-extern statusrec_t statusrec;
-
 namespace wwiv {
 namespace sdk {
 
@@ -227,7 +225,7 @@ public:
    */
   StatusMgr(const std::string& datadir, status_callabck_fn callback)
     : datadir_(datadir), callback_(callback) {}
-  ~StatusMgr() {}
+  virtual ~StatusMgr() {}
   /*!
    * @function Read Loads the contents of STATUS.DAT
    */
