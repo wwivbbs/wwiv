@@ -77,6 +77,9 @@
     <ClInclude Include="autoval.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="convert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp">

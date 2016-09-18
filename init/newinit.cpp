@@ -204,7 +204,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   syscfg.max_dirs = 64;
   syscfg.qscn_len = 4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
 
-  strcpy(syscfg.unused_dial_prefix, "ATDT");
   syscfg.post_call_ratio = 0.0;
   save_config();
 
@@ -226,7 +225,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   memset(qsc, 0, syscfg.qscn_len);
 
   save_status();
-  userrec u;
+  userrec u = {};
   memset(&u, 0, sizeof(u));
   write_user(0, &u);
   write_qscn(0, qsc);

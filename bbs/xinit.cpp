@@ -471,6 +471,11 @@ bool WSession::ReadConfig() {
     return false;
   }
 
+  if (!config_->versioned_config_dat()) {
+    LOG(ERROR) << "Please run INIT to upgrade " << CONFIG_DAT << " to the most recent version.";
+    return false;
+  }
+
   // initialize the user manager
   const configrec* config = config_->config();
   user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));

@@ -209,11 +209,27 @@ struct arcrec {
        arct[50];                               // test commandline
 };
 
+/*
+ * WWIV 5.2+ config.dat header.
+ */
+struct configrec_header_t {
+  // "WWIV"+ NULL
+  char signature[5];
+  uint8_t padding[1];
+  uint16_t written_by_wwiv_num_version;
+  uint32_t config_revision_number;
+  uint32_t config_size;
+  uint8_t unused[5];
+};
 
 // STATIC SYSTEM INFORMATION
 struct configrec {
-  char newuserpw[21],                         // new user password
-       systempw[21],                           // system password
+  union {
+    // new user password
+    char newuserpw[21];
+    configrec_header_t header;
+  } header;
+  char systempw[21],                           // system password
        msgsdir[81],                            // path for msgs directory
        gfilesdir[81],                          // path for gfiles dir
        datadir[81],                            // path for data directory
@@ -288,7 +304,8 @@ struct configrec {
 
   uint32_t wwiv_reg_number;                   // user's reg number
 
-  char unused_dial_prefix[21];
+  char newuserpw[21];
+
 
   float post_call_ratio;
 

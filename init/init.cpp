@@ -46,6 +46,7 @@
 
 #include "init/archivers.h"
 #include "init/autoval.h"
+#include "init/convert.h"
 #include "init/editors.h"
 #include "init/init.h"
 #include "init/instance_settings.h"
@@ -78,9 +79,6 @@ using namespace wwiv::strings;
 
 configrec syscfg;
 statusrec_t statusrec;
-
-// from convert.cpp
-void convcfg(CursesWindow* window, const string& config_filename);
 
 static bool CreateConfigOvr(const string& bbsdir) {
   IniFile oini(WWIV_INI, "WWIV");
@@ -194,14 +192,34 @@ int WInitApp::main(int, char **) {
   // Convert 4.2X to 4.3 format if needed.
   File configfile(CONFIG_DAT);
   if (configfile.GetLength() != sizeof(configrec)) {
-    // TODO(rushfan): Create a subwindow
-    convcfg(out->window(), CONFIG_DAT);
+    // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
+    out->window()->Bkgd(' ');
+    convert_config_424_to_430(out->window(), CONFIG_DAT);
   }
 
   if (configfile.Open(File::modeBinary|File::modeReadOnly)) {
     configfile.Read(&syscfg, sizeof(configrec));
   }
   configfile.Close();
+
+  // Check for 5.2 config
+  {
+    constexpr char* expected_sig = "WWIV";
+    if (!wwiv::strings::IsEquals(expected_sig, syscfg.header.header.signature)) {
+      // We don't have a 5.2 header, let's convert.
+
+      // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
+      out->window()->Bkgd(' ');
+      convert_config_to_52(out->window(), CONFIG_DAT);
+      {
+        if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
+          configfile.Read(&syscfg, sizeof(configrec));
+        }
+      }
+    } else {
+      // TODO(rushfan): Check for older 5.x headers.
+    }
+  }
 
   CreateConfigOvr(bbsdir);
 
