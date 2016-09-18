@@ -279,7 +279,7 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  string filename =- StrCat(session()->language_dir.c_str(), LOGOFF_MAT);
+  string filename = StrCat(session()->language_dir.c_str(), LOGOFF_MAT);
   if (!File::Exists(filename)) {
     filename = StrCat(session()->config()->gfilesdir(), LOGOFF_MAT);
   }
