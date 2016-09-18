@@ -224,12 +224,8 @@ public:
     int file_number = arg("num").as_int();
     if (file_number < 0 || file_number >= size_int(files)) {
       LOG(ERROR) << "invalid file number '" << area_num << "' specified. ";
-<<<<<<< HEAD
       auto max_size = std::max<int>(0, size_int(files) - 1);
       LOG(ERROR) << "num must be between 0 and " << max_size;
-=======
-      LOG(ERROR) << "num must be between 0 and " << std::max<int>(0, files.size() - 1);
->>>>>>> singlesubrec
       return 1;
     }
 
