@@ -82,6 +82,7 @@ extern WOutStream bout;
 // Per-user session data
 //
 class WSession : public Runnable {
+  friend class BbsHelper;
 public:
   // Constants
   static const int exitLevelOK = 0;

@@ -898,14 +898,14 @@ int batchdl(int mode) {
 
 void upload(int dn) {
   dliscan1(dn);
-  directoryrec d = session()->directories[ dn ];
-  long lFreeSpace = freek1(d.path);
-  if (lFreeSpace < 100) {
+  auto d = session()->directories[dn];
+  long free_space = File::GetFreeSpaceForPath(d.path);
+  if (free_space < 100) {
     bout << "\r\nNot enough disk space to upload here.\r\n\n";
     return;
   }
   listbatch();
-  bout << "Upload - " << lFreeSpace << "k free.";
+  bout << "Upload - " << free_space << "k free.";
   bout.nl();
   printfile(TRY2UL_NOEXT);
 

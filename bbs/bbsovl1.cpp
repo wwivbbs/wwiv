@@ -286,7 +286,8 @@ void text_edit() {
   logText << "@ Edited: " << filename;
   sysoplog(logText.str());
   if (okfsed()) {
-    external_text_edit(filename.c_str(), syscfg.gfilesdir, 500, syscfg.gfilesdir, MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(filename, session()->config()->gfilesdir(), 500, 
+      session()->config()->gfilesdir(), MSGED_FLAG_NO_TAGLINE);
   }
 }
 

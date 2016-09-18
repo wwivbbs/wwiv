@@ -152,13 +152,8 @@ char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
  * Main Automessage menu.  Displays the auto message then queries for input.
  */
 void do_automessage() {
-  stringstream lockFileStream;
-  lockFileStream << syscfg.gfilesdir << LOCKAUTO_MSG;
-  string automessageLockFile = lockFileStream.str();
-
-  stringstream autoMessageStream;
-  autoMessageStream << syscfg.gfilesdir << AUTO_MSG;
-  string autoMessageFile = autoMessageStream.str();
+  string automessageLockFile = StrCat(session()->config()->gfilesdir(), LOCKAUTO_MSG);
+  string autoMessageFile = StrCat(syscfg.gfilesdir, AUTO_MSG);
 
   // initally show the auto message
   read_automessage();

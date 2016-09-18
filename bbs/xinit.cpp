@@ -744,8 +744,8 @@ bool WSession::read_language() {
     languagerec lang;
     memset(&lang, 0, sizeof(languagerec));
     strcpy(lang.name, "English");
-    strncpy(lang.dir, syscfg.gfilesdir, sizeof(lang.dir) - 1);
-    strncpy(lang.mdir, syscfg.menudir, sizeof(lang.mdir) - 1);
+    to_char_array(lang.dir, session()->config()->gfilesdir());
+    to_char_array(lang.mdir, session()->config()->menudir());
     
     languages.emplace_back(lang);
   }

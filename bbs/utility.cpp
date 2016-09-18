@@ -204,16 +204,6 @@ long nsl() {
   return in_range<long>(0, 32767, rtn);
 }
 
-/**
- * Returns the number of bytes free on the disk/volume specified.
- *
- * @param pszPathName Directory or Drive of which to list the free space.
- */
-long freek1(const char *pszPathName) {
-  WWIV_ASSERT(pszPathName);
-  return File::GetFreeSpaceForPath(pszPathName);
-}
-
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname) {
   WWIV_ASSERT(nh);
 

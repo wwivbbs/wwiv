@@ -394,8 +394,8 @@ class User {
   const char *GetNote() const {
     return reinterpret_cast<const char*>(data.note);
   }
-  void SetNote(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.note), s);
+  void SetNote(const std::string& s) {
+    strcpy(reinterpret_cast<char*>(data.note), s.c_str());
   }
   const char *GetMacro(int nLine) const {
     return reinterpret_cast<const char*>(data.macros[ nLine ]);

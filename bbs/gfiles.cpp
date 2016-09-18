@@ -239,12 +239,15 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     strcpy(s3, charstr(12, '-'));
   }
   gfl_hdr(1);
+  string gfilesdir = session()->config()->gfilesdir();
   for (i = 0; i < nf && !abort && !hangup; i++) {
     i2++;
     sprintf(lnum, "%d", i + 1);
     strncpy(s4, g[i].description, 29);
     s4[29] = '\0';
-    sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i].filename);
+    sprintf(path_name, "%s%s%c%s", 
+      gfilesdir.c_str(), session()->gfilesec[sn].filename, 
+      File::pathSeparatorChar, g[i].filename);
     if (File::Exists(path_name)) {
       File handle(path_name);
       sprintf(lsize, "%ld""k", bytes_to_k(handle.GetLength()));
@@ -265,7 +268,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       sprintf(rnum, "%d", i + 2);
       strncpy(s5, g[i + 1].description, 29);
       s5[29] = '\0';
-      sprintf(path_name, "%s%s%c%s", syscfg.gfilesdir, session()->gfilesec[sn].filename,
+      sprintf(path_name, "%s%s%c%s", gfilesdir.c_str(), session()->gfilesec[sn].filename,
               File::pathSeparatorChar, g[i + 1].filename);
       if (File::Exists(path_name)) {
         File handle(path_name);
@@ -388,7 +391,8 @@ void gfile_sec(int sn) {
         if (yesno()) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
-            sprintf(file_name, "%s%s%c%s", syscfg.gfilesdir,
+            string gfilesdir = session()->config()->gfilesdir();
+            sprintf(file_name, "%s%s%c%s", gfilesdir.c_str(),
                     session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
             File::Remove(file_name);
           }
@@ -430,7 +434,8 @@ void gfile_sec(int sn) {
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            sprintf(file_name, "%s%s%c%s", syscfg.gfilesdir, session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
+            string gfilesdir = session()->config()->gfilesdir();
+            sprintf(file_name, "%s%s%c%s", gfilesdir.c_str(), session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
             File file(file_name);
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";

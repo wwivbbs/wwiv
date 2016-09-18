@@ -64,9 +64,7 @@ char *get_file(const string& filename, long *len) {
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
 const string CreateFullPathToPrint(const string& basename) {
-  string langdir(session()->language_dir);
-  string gfilesdir(syscfg.gfilesdir);
-  std::vector<string> dirs { langdir, gfilesdir };
+  std::vector<string> dirs { session()->language_dir, session()->config()->gfilesdir()};
   for (const auto& base : dirs) {
     File file(base, basename);
     if (basename.find('.') != string::npos) {

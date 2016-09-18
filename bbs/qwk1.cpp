@@ -445,7 +445,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     char s2[81];
     net_system_list_rec *csne = nullptr;
 
-    if (freek1(syscfg.msgsdir) < 10) {
+    if (File::GetFreeSpaceForPath(session()->config()->msgsdir()) < 10) {
       bout.nl();
       bout.bputs("Sorry, not enough disk space left.");
       bout.nl();
@@ -686,7 +686,7 @@ void process_reply_dat(char *name) {
             
       if (to_email) {
         qwk_email_text(text.get(), title, to);
-      } else if (freek1(syscfg.msgsdir) < 10) {
+      } else if (File::GetFreeSpaceForPath(session()->config()->msgsdir()) < 10) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");

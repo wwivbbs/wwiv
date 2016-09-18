@@ -324,10 +324,9 @@ void asv() {
       } while (!s[0]);
       properize(s);
 
-      sprintf(s1, "Co-SysOp: %s", s);
-      session()->user()->SetNote(s1);
-      sprintf(s1, "* Co-SysOp of %s", session()->user()->GetNote());
-      sysoplog(s1);
+      const string note = StringPrintf("Co-SysOp: ", s);
+      session()->user()->SetNote(note);
+      sysoplog(StrCat("* Co-SysOp of ", session()->user()->GetNote());
       set_autoval(session()->advasv.cosysop);
     case 'Q':
       break;

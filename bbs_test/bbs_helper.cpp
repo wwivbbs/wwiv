@@ -85,6 +85,7 @@ void BbsHelper::SetUp() {
   config->set_config(sysconfig.release());
   session()->set_config_for_test(move(config));
   user_ = session()->user();
+  session()->instance_number_ = 42;
 }
 
 void BbsHelper::TearDown() {

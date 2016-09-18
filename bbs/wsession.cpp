@@ -918,7 +918,7 @@ int WSession::doWFCEvents() {
       case 'W': {
           wfc_cls();
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-          bout << "|#1Edit " << syscfg.gfilesdir << "<filename>: \r\n";
+          bout << "|#1Edit " << session()->config()->gfilesdir() << "<filename>: \r\n";
           text_edit();
         }
         break;

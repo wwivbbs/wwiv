@@ -418,10 +418,11 @@ void CreateDoorSysDropFile() {
     szTemp[2] = '\0';
     memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
     szDate[9] = '\0';
+    string gfilesdir = session()->config()->gfilesdir();
     sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n",
             szDate,
             syscfg.datadir,
-            syscfg.gfilesdir,
+            gfilesdir.c_str(),
             syscfg.sysopname,
             session()->user()->GetName(),
             "00:01",                        // event time
@@ -489,8 +490,10 @@ const string create_chain_file() {
                         session()->user()->GetSl());
     char szTemporaryLogFileName[MAX_PATH];
     GetTemporaryInstanceLogFileName(szTemporaryLogFileName);
+    string gfilesdir = session()->config()->gfilesdir();
     file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n",
-                        cs(), so(), okansi(), incom, nsl(), syscfg.gfilesdir, syscfg.datadir, szTemporaryLogFileName);
+      cs(), so(), okansi(), incom, nsl(), 
+      gfilesdir.c_str(), syscfg.datadir, szTemporaryLogFileName);
     if (session()->using_modem) {
       file.WriteFormatted("%d\n", modem_speed);
     } else {

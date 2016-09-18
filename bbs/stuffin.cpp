@@ -110,7 +110,7 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << session()->remoteIO()->GetDoorHandle();
         break;
       case 'K':
-        os << syscfg.gfilesdir << COMMENT_TXT;
+        os << session()->config()->gfilesdir() << COMMENT_TXT;
         break;
       case 'M':
         os << modem_speed;

@@ -49,7 +49,7 @@ void multimail(int *pnUserNumber, int numu) {
   User user;
   memset(&m, 0, sizeof(mailrec));
 
-  if (freek1(syscfg.msgsdir) < 10) {
+  if (File::GetFreeSpaceForPath(session()->config()->msgsdir()) < 10) {
     bout.nl();
     bout << "Sorry, not enough disk space left.\r\n\n";
     return;
@@ -296,7 +296,7 @@ void slash_e() {
 
   mml_s = nullptr;
   mml_started = 0;
-  if (freek1(syscfg.msgsdir) < 10) {
+  if (File::GetFreeSpaceForPath(session()->config()->msgsdir()) < 10) {
     bout.nl();
     bout << "Sorry, not enough disk space left.\r\n\n";
     return;

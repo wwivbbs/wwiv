@@ -538,7 +538,7 @@ void list_temp_dir() {
   }
   bout.nl();
   if (!abort && !hangup) {
-    bout << "Free space: " << freek1(session()->temp_directory().c_str()) << wwiv::endl;
+    bout << "Free space: " << File::GetFreeSpaceForPath(session()->temp_directory()) << wwiv::endl;
     bout.nl();
   }
 }
@@ -812,7 +812,7 @@ void move_file_t() {
             ok = false;
             bout << "Too many files in that directory.\r\n";
           }
-          if (freek1(session()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
+          if (File::GetFreeSpaceForPath(session()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
             ok = false;
             bout << "Not enough disk space to move it.\r\n";
           }

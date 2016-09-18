@@ -35,7 +35,6 @@ void frequent_init();
 double ratio();
 double post_ratio();
 long nsl();
-long freek1(const char *pszPathName);
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname);
 void giveup_timeslice();
 char *stripfn(const char *file_name);

@@ -1611,7 +1611,7 @@ static int move_filename(const char *file_name, int dn) {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (freek1(session()->directories[nDestDirNum].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
+        if (File::GetFreeSpaceForPath(session()->directories[nDestDirNum].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }

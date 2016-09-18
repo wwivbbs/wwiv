@@ -917,7 +917,7 @@ void beginday(bool displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }
 
-  long fk = freek1(syscfg.datadir);
+  long fk = File::GetFreeSpaceForPath(session()->config()->datadir());
 
   if (fk < 512) {
     ssm(1, 0) << "Only " << fk << "k free in data directory.";

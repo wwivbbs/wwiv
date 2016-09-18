@@ -180,7 +180,7 @@ void attach_file(int mode) {
             }
             }
           }
-          if (freek1(session()->GetAttachmentDirectory().c_str()) < 500) {
+          if (File::GetFreeSpaceForPath(session()->GetAttachmentDirectory()) < 500) {
             bout << "Not enough free space to attach a file.\r\n";
           } else {
             if (!done2) {

@@ -155,7 +155,7 @@ void post() {
     return;
   }
 
-  if (freek1(syscfg.msgsdir) < 10) {
+  if (File::GetFreeSpaceForPath(session()->config()->msgsdir()) < 10) {
     bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }

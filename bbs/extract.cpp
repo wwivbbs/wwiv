@@ -312,7 +312,7 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
         extract_mod(b, len, tDateTime);
         break;
       case '2':
-        strcpy(s2, syscfg.gfilesdir);
+        to_char_array(s2, session()->config()->gfilesdir());
         break;
       case '3':
         strcpy(s2, syscfg.datadir);
@@ -416,7 +416,8 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
         if (strchr(s1, ':') || strchr(s1, '\\')) {
           strcpy(s2, s1);
         } else {
-          sprintf(s2, "%s%s", syscfg.gfilesdir, s1);
+          string g = session()->config()->gfilesdir();
+          sprintf(s2, "%s%s", g.c_str(), s1);
         }
         if (File::Exists(s2)) {
           bout << "\r\nFilename already in use.\r\n\n";

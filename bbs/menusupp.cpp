@@ -269,7 +269,6 @@ void NewMessageScan() {
 }
 
 void GoodBye() {
-  char szFileName[MAX_PATH];
   int cycle;
   int ch;
 
@@ -280,15 +279,15 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  sprintf(szFileName, "%s%s", session()->language_dir.c_str(), LOGOFF_MAT);
-  if (!File::Exists(szFileName)) {
-    sprintf(szFileName, "%s%s", syscfg.gfilesdir, LOGOFF_MAT);
+  string filename =- StrCat(session()->language_dir.c_str(), LOGOFF_MAT);
+  if (!File::Exists(filename)) {
+    filename = StrCat(session()->config()->gfilesdir(), LOGOFF_MAT);
   }
-  if (File::Exists(szFileName)) {
+  if (File::Exists(filename)) {
     cycle = 0;
     do {
       bout.cls();
-      printfile(szFileName);
+      printfile(filename);
       ch = onek("QFTO", true);
       switch (ch) {
       case 'Q':
