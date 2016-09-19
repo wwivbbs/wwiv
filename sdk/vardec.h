@@ -510,7 +510,7 @@ struct source_verified_message_t {
   uint16_t source_verified_type;
 };
 struct network_message_t {
-  uint16_t __unused;
+  uint16_t unused;
   uint8_t net_number;               // network number for the message
 };
 
