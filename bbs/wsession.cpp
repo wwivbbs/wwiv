@@ -702,19 +702,20 @@ int WSession::doWFCEvents() {
         lokb = this->LocalLogon();
         break;
         // Show WFC Menu
-      case '?': {
-          string helpFileName = SWFC_NOEXT;
-          char chHelp = ESC;
-          do {
-            io->Cls();
-            bout.nl();
-            printfile(helpFileName);
-            chHelp = getkey();
-            helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
-          } while (chHelp != SPACE && chHelp != ESC);
-        }
-        break;
-        // Force Network Callout
+      case '?':
+      {
+        string helpFileName = SWFC_NOEXT;
+        char chHelp = ESC;
+        do {
+          io->Cls();
+          bout.nl();
+          printfile(helpFileName);
+          chHelp = getkey();
+          helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
+        } while (chHelp != SPACE && chHelp != ESC);
+      }
+      break;
+      // Force Network Callout
       case '/':
         if (net_sysnum) {
           force_callout(0);
@@ -809,13 +810,20 @@ int WSession::doWFCEvents() {
         write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
         eventedit();
         break;
-        // InitVotes
+        // Send Internet Mail
       case 'I':
+      {
         wfc_cls();
-        write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
-        ivotes();
-        break;
-        // ConfEdit
+        usernum = 1;
+        SetUserOnline(true);
+        get_user_ppp_addr();
+        send_inet_email();
+        SetUserOnline(false);
+        WriteCurrentUser(1);
+        cleanup_net();
+      }
+      break;
+      // ConfEdit
       case 'J':
         wfc_cls();
         edit_confs();
@@ -902,19 +910,14 @@ int WSession::doWFCEvents() {
         write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
         uedit(1, UEDIT_NONE);
         break;
-        // Send Internet Mail
-      case 'V': {
-          wfc_cls();
-          usernum = 1;
-          SetUserOnline(true);
-          get_user_ppp_addr();
-          send_inet_email();
-          SetUserOnline(false);
-          WriteCurrentUser(1);
-          cleanup_net();
-        }
-        break;
-        // Edit Gfile
+      // InitVotes
+      case 'V':
+      {
+        wfc_cls();
+        write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
+        ivotes();
+      } break;
+      // Edit Gfile
       case 'W': {
           wfc_cls();
           write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
