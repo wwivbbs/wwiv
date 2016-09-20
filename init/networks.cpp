@@ -103,6 +103,9 @@ static bool save_networks_dat(const vector<net_networks_rec>& net_networks) {
 static bool del_net(
     vector<net_networks_rec>& net_networks, int nn) {
   wwiv::sdk::Subs subs(syscfg.datadir, net_networks);
+  if (!subs.Load()) {
+    return false;
+  }
   if (subs.subs().empty()) {
     return false;
   }
@@ -274,6 +277,9 @@ static bool insert_net(
     vector<net_networks_rec>& net_networks,
     int nn) {
   wwiv::sdk::Subs subs(syscfg.datadir, net_networks);
+  if (!subs.Load()) {
+    return false;
+  }
   if (subs.subs().empty()) {
     return false;
   }

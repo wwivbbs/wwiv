@@ -42,7 +42,9 @@ public:
     const std::vector<net_networks_rec>& networks)
         : config(c), net(n), user_manager(u), api(a),
           subs(c.datadir(), networks)
-    {}
+  {
+    subs_initialized = subs.Load();
+  }
 
   const wwiv::sdk::Config& config;
   const net_networks_rec& net;
@@ -51,6 +53,7 @@ public:
   int network_number = 0;
   wwiv::sdk::Subs subs;
   bool verbose = false;
+  bool subs_initialized = false;
 };
 
 
