@@ -45,8 +45,8 @@ static char s_szOutComChBuffer[ OUTCOMCH_BUFFER_SIZE + 1 ];
 static int  s_nOutComChBufferPosition = 0;
 
 /**
-* This function executes an ANSI string to change color, position the cursor, etc
-*/
+ * This function executes an ANSI string to change color, position the cursor, etc
+ */
 static void execute_ansi() {
   static int oldx = 0;
   static int oldy = 0;
