@@ -35,6 +35,7 @@ namespace windows_wwiv_update
 
     public static readonly string baseUrl52 = "http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows";
     public static readonly string baseUrl51 = "https://build.wwivbbs.org/jenkins/job/wwiv_5.1/lastSuccessfulBuild/label=windows";
+    public static string version_number = "5.1";
 
     public Form1()
     {
@@ -89,6 +90,7 @@ namespace windows_wwiv_update
     {
       string updateToNew51;
       updateToNew51 = version52.Text;
+      version_number = "5.2";
       if (updateToNew51 == null || string.IsNullOrWhiteSpace(updateToNew51))
       {
         if (MessageBox.Show("Error! Build Server Unavailable.", "Build Server Down", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
@@ -107,7 +109,7 @@ namespace windows_wwiv_update
         // Begin Update 51
         string fetchVersion = updateToNew51;
         this.Hide();
-        Form2 frm = new Form2(baseUrl52, fetchVersion);
+        Form2 frm = new Form2(baseUrl52, "5.2", fetchVersion);
         frm.ShowDialog();
         this.Close();
       }
@@ -118,6 +120,7 @@ namespace windows_wwiv_update
     {
       string updateToNew50;
       updateToNew50 = version51.Text;
+      version_number = "5.1";
       if (updateToNew50 == null || string.IsNullOrWhiteSpace(updateToNew50))
       {
         if (MessageBox.Show("Error! Build Server Unavailable.", "Build Server Down", MessageBoxButtons.RetryCancel, MessageBoxIcon.Error) == DialogResult.Retry)
@@ -136,7 +139,7 @@ namespace windows_wwiv_update
         // Begin Update 50
         string fetchVersion = updateToNew50;
         this.Hide();
-        Form2 frm = new Form2(baseUrl51, fetchVersion);
+        Form2 frm = new Form2(baseUrl51, "5.1", fetchVersion);
         frm.ShowDialog();
         this.Close();
       }
@@ -157,7 +160,7 @@ namespace windows_wwiv_update
         // Begin Update Custom Build
         string fetchVersion = customBuildNumber;
         this.Hide();
-        Form2 frm = new Form2(baseUrl52, fetchVersion);
+        Form2 frm = new Form2(baseUrl52, "5.2", fetchVersion);
         frm.ShowDialog();
         this.Close();
       }

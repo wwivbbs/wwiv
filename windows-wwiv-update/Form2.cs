@@ -31,15 +31,17 @@ namespace windows_wwiv_update
     // BackgroundWorker Event
     BackgroundWorker m_oWorker;
     private string baseUrl_;
-    private string version_;
+    private string buildNumber_;
+    private string majorVersion_;
 
-    public Form2(string baseUrl, string fetchVersion)
+    public Form2(string baseUrl, string majorVersion, string buildNumber)
     {
       baseUrl_ = baseUrl;
-      version_ = fetchVersion;
+      majorVersion_ = majorVersion;
+      buildNumber_ = buildNumber;
       // Fetch Version
       InitializeComponent();
-      label2.Text = fetchVersion;
+      label2.Text = buildNumber;
 
       m_oWorker = new BackgroundWorker();
 
@@ -186,6 +188,7 @@ namespace windows_wwiv_update
       if (fetchVersion != null)
       {
         UpdateStatus("Initializing Update...");
+        string myStringWebResource;
         // Set Global Variables For Update
         string backupPath = Directory.GetCurrentDirectory();
         string zipPath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + "_wwiv-backup.zip";
@@ -193,8 +196,8 @@ namespace windows_wwiv_update
         string extractPath2 = Environment.GetEnvironmentVariable("SystemRoot") + @"\System32";
         string updateTempPath = Directory.GetCurrentDirectory() + @"\update-temp";
         string remoteUri = baseUrl_ + "/artifact/";
-        string fileName = "wwiv-build-win-" + fetchVersion + ".zip", myStringWebResource = null;
-        string updatePath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\wwiv-build-win-" + fetchVersion + ".zip";
+        string fileName = "wwiv-win-" + majorVersion_ + "." + fetchVersion + ".zip";
+        string updatePath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + fileName;
         string wwivUpdateFile = "wwiv-update.exe";
 
         // Update Progress Bar
@@ -204,7 +207,8 @@ namespace windows_wwiv_update
         UpdateStatus("Fetching WWIV Package From Server...");
         WebClient myWebClient = new WebClient();
         myStringWebResource = remoteUri + fileName;
-        myWebClient.DownloadFile(myStringWebResource, Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + fileName);
+        myWebClient.DownloadFile(myStringWebResource,
+          Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + fileName);
 
         // Update Progress Bar
         m_oWorker.ReportProgress(60);
