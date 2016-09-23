@@ -29,10 +29,11 @@ namespace windows_wwiv_update
   public partial class Form2 : Form
   {
     // BackgroundWorker Event
-    BackgroundWorker m_oWorker;
+    BackgroundWorker worker_ = new BackgroundWorker();
     private string baseUrl_;
     private string buildNumber_;
     private string majorVersion_;
+    private string fullVersion_;
 
     public Form2(string baseUrl, string majorVersion, string buildNumber)
     {
@@ -41,24 +42,23 @@ namespace windows_wwiv_update
       buildNumber_ = buildNumber;
       // Fetch Version
       InitializeComponent();
-      label2.Text = buildNumber;
-
-      m_oWorker = new BackgroundWorker();
+      fullVersion_ = majorVersion_ + "." + buildNumber_;
+      labelVersion.Text = fullVersion_;
 
       // BackgroundWorker Properties
-      m_oWorker.DoWork += new DoWorkEventHandler(m_oWorker_DoWork);
-      m_oWorker.ProgressChanged += new ProgressChangedEventHandler
+      worker_.DoWork += new DoWorkEventHandler(m_oWorker_DoWork);
+      worker_.ProgressChanged += new ProgressChangedEventHandler
               (m_oWorker_ProgressChanged);
-      m_oWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler
+      worker_.RunWorkerCompleted += new RunWorkerCompletedEventHandler
               (m_oWorker_RunWorkerCompleted);
-      m_oWorker.WorkerReportsProgress = true;
-      m_oWorker.WorkerSupportsCancellation = true;
+      worker_.WorkerReportsProgress = true;
+      worker_.WorkerSupportsCancellation = true;
 
       // Update UI Cosmetics
       label1.Visible = false;
-      label2.Visible = false;
-      button3.Visible = false;
-      button5.Visible = false;
+      labelVersion.Visible = false;
+      buttonLaunch.Visible = false;
+      buttonExit.Visible = false;
       progressBar1.Visible = false;
       activeStatus.Visible = false;
 
@@ -95,13 +95,13 @@ namespace windows_wwiv_update
       }
       if (wwivStatus.Text != "OFFLINE" || netStatus.Text != "OFFLINE" || telnetStatus.Text != "OFFLINE")
       {
-        button2.Enabled = false;
+        buttonUpdate.Enabled = false;
         infoStatus.ForeColor = System.Drawing.Color.Red;
         infoStatus.Text = "All Systems Must Be Offline Before Update!";
       }
       else
       {
-        button1.Enabled = false;
+        buttonRestart.Enabled = false;
         infoStatus.ForeColor = System.Drawing.Color.Green;
         infoStatus.Text = "All Systems Are Offline... Ready To Update!";
       }
@@ -111,8 +111,6 @@ namespace windows_wwiv_update
     void m_oWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
     {
       // Fetch Version
-      string fetchVersion;
-      fetchVersion = label2.Text;
       // Cancel Reporting 
       if (e.Cancelled)
       {
@@ -126,13 +124,13 @@ namespace windows_wwiv_update
       else
       {
         // Everything completed normally.
-        infoStatus.Text = "WWIV 5 Build " + fetchVersion + " Is Complete!";
+        infoStatus.Text = "WWIV 5 Build " + majorVersion_ + "." + buildNumber_ + " Is Complete!";
         progressBar1.Visible = true;
         activeStatus.Visible = false;
 
         // Update UI Cosmetics
-        button3.Visible = true;
-        button5.Visible = true;
+        buttonLaunch.Visible = true;
+        buttonExit.Visible = true;
       }
     }
 
@@ -144,26 +142,24 @@ namespace windows_wwiv_update
     }
 
     // Restart Button
-    private void button1_Click(object sender, EventArgs e)
+    private void buttonRestart_Click(object sender, EventArgs e)
     {
       Application.Restart();
     }
 
     // Update WWIV Button
-    private void button2_Click(object sender, EventArgs e)
+    private void buttonUpdate_Click(object sender, EventArgs e)
     {
       // Update UI Cosmetics
-      string fetchVersion;
-      fetchVersion = label2.Text;
-      button1.Visible = false;
-      button2.Visible = false;
+      buttonRestart.Visible = false;
+      buttonUpdate.Visible = false;
       label1.Visible = true;
-      label2.Visible = true;
+      labelVersion.Visible = true;
       progressBar1.Visible = true;
       activeStatus.Visible = true;
 
       // Perform BackgroundWorker
-      m_oWorker.RunWorkerAsync();
+      worker_.RunWorkerAsync();
     }
 
     void UpdateStatus(string text)
@@ -180,132 +176,108 @@ namespace windows_wwiv_update
     {
       // PERFORM UPDATE
 
-      // Fetch Version
-      string fetchVersion;
-      fetchVersion = label2.Text;
-
       // Make Sure Build Number Is NOT Null
-      if (fetchVersion != null)
+      if (buildNumber_ != null)
       {
         UpdateStatus("Initializing Update...");
-        string myStringWebResource;
+        var USERPROFILE = Environment.GetEnvironmentVariable("USERPROFILE");
+        var documentsDir = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\";
+        var downloadsDir = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\";
+
         // Set Global Variables For Update
-        string backupPath = Directory.GetCurrentDirectory();
-        string zipPath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Documents\" + DateTime.Now.ToString("yyyyMMddHHmmssfff") + "_wwiv-backup.zip";
-        string extractPath = Directory.GetCurrentDirectory();
-        string extractPath2 = Environment.GetEnvironmentVariable("SystemRoot") + @"\System32";
-        string updateTempPath = Directory.GetCurrentDirectory() + @"\update-temp";
-        string remoteUri = baseUrl_ + "/artifact/";
-        string fileName = "wwiv-win-" + majorVersion_ + "." + fetchVersion + ".zip";
-        string updatePath = Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + fileName;
-        string wwivUpdateFile = "wwiv-update.exe";
+        var wwivUpdateFile = "wwiv-update.exe";
 
-        // Update Progress Bar
-        m_oWorker.ReportProgress(20);
+        var backupPath = Directory.GetCurrentDirectory();
+        var zipPath = documentsDir + DateTime.Now.ToString("yyyyMMddHHmmssfff") + "_wwiv-backup.zip";
+        var extractPath = Directory.GetCurrentDirectory();
+        var updateTempPath = Directory.GetCurrentDirectory() + @"\update-temp";
+        var fileName = "wwiv-win-" + fullVersion_ + ".zip";
+        var fullUri = new Uri(baseUrl_ + "/lastSuccessfulBuild/artifact/" + fileName);
+        var outputPathToSaveFile = Path.Combine(downloadsDir, fileName);
 
-        // Fetch Latest Sucessful Build
+        // Update Progress Bar.
+        worker_.ReportProgress(20);
+
+        // Fetch Latest Sucessful Build.
         UpdateStatus("Fetching WWIV Package From Server...");
         WebClient myWebClient = new WebClient();
-        myStringWebResource = remoteUri + fileName;
-        myWebClient.DownloadFile(myStringWebResource,
-          Environment.GetEnvironmentVariable("USERPROFILE") + @"\Downloads\" + fileName);
+        myWebClient.DownloadFile(fullUri, outputPathToSaveFile);
 
-        // Update Progress Bar
-        m_oWorker.ReportProgress(60);
+        // Update Progress Bar.
+        worker_.ReportProgress(60);
 
-        // Begin WWIV Backup
+        // Begin WWIV Backup.
         UpdateStatus("Performing WWIV Backup...");
         ZipFile.CreateFromDirectory(backupPath, zipPath);
 
-        // Update Progress Bar
-        m_oWorker.ReportProgress(40);
+        // Update Progress Bar.
+        worker_.ReportProgress(40);
 
-        // Create Temp Update Directory
-        Directory.CreateDirectory("update-temp");
+        // Create Temp Update Directory.
+        Directory.CreateDirectory(updateTempPath);
 
-        // Create Cleanup Batch File If Not Existant
+        // Create Cleanup Batch File if it does not already exist.
         string cleanupFile = Path.Combine(Application.StartupPath, "cleanup.bat");
         if (!File.Exists(cleanupFile))
         {
           File.Delete(cleanupFile);
           using (StreamWriter w = new StreamWriter(cleanupFile))
           {
-            w.WriteLine(@"@ECHO OFF");
-            w.WriteLine(@"");
-            w.WriteLine(@"REM This File Is Created By wwiv-update.exe. DO NOT MODIFY!");
-            w.WriteLine(@"");
-            w.WriteLine(@":START_CLEANUP");
-            w.WriteLine(@"TIMEOUT /T 1");
-            w.WriteLine(@"xcopy update-temp\*.* .\ /Y");
-            w.WriteLine(@"rd update-temp /S /Q");
-            w.WriteLine(@"");
-            w.WriteLine(@":EXIT");
+            w.WriteLine(@"
+@ECHO OFF
+
+REM This File Is Created By wwiv-update.exe. DO NOT MODIFY!
+:START_CLEANUP
+TIMEOUT /T 1
+xcopy update-temp\*.* .\ /Y
+rd update-temp /S /Q
+:EXIT");
             w.Close();
           }
         }
 
         // Patch Existing WWIV Install
         UpdateStatus("Patching WWIV Files For Update...");
-        using (ZipArchive archive = ZipFile.OpenRead(updatePath))
+        using (ZipArchive archive = ZipFile.OpenRead(outputPathToSaveFile))
         {
           foreach (ZipArchiveEntry entry in archive.Entries)
           {
-            if (entry.FullName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && !entry.FullName.Equals(wwivUpdateFile, StringComparison.OrdinalIgnoreCase))
+            try
             {
-              entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
-            }
-            if (entry.FullName.Equals(wwivUpdateFile, StringComparison.OrdinalIgnoreCase))
-            {
-              entry.ExtractToFile(Path.Combine(updateTempPath, entry.FullName), true);
-            }
-            if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
-            {
-              entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
-            }
-            if (entry.FullName.EndsWith("whatsnew.txt", StringComparison.OrdinalIgnoreCase) && entry.FullName.EndsWith("changelog.txt", StringComparison.OrdinalIgnoreCase))
-            {
-              entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
+              if (entry.FullName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) && !entry.FullName.Equals(wwivUpdateFile, StringComparison.OrdinalIgnoreCase))
+              {
+                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
+              }
+              if (entry.FullName.Equals(wwivUpdateFile, StringComparison.OrdinalIgnoreCase))
+              {
+                entry.ExtractToFile(Path.Combine(updateTempPath, entry.FullName), true);
+              }
+              if (entry.FullName.EndsWith(".dll", StringComparison.OrdinalIgnoreCase))
+              {
+                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
+              }
+              if (entry.FullName.EndsWith("whatsnew.txt", StringComparison.OrdinalIgnoreCase) && entry.FullName.EndsWith("changelog.txt", StringComparison.OrdinalIgnoreCase))
+              {
+                entry.ExtractToFile(Path.Combine(extractPath, entry.FullName), true);
+              }
+            } catch (IOException ex) {
+              Debug.WriteLine(ex.ToString());
+              var message = "Unable to extract file: " + entry.FullName + "\nCause: " + ex.Message;
+              MessageBox.Show(message);
             }
           }
         }
         // Update Progress Bar
-        m_oWorker.ReportProgress(80);
+        worker_.ReportProgress(80);
       }
       //Report 100% completion on operation completed
-      m_oWorker.ReportProgress(100);
+      worker_.ReportProgress(100);
     }
 
-    // Launch WWIV
-    private void button3_Click(object sender, EventArgs e)
-    {
-      // Launch WWIV, WWIVnet and Latest Changes in Browser.
-      string fetchVersion;
-      fetchVersion = label2.Text;
-      string wwivChanges = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/changes";
-
-      // Launch WWIV Server
-      ProcessStartInfo telNet = new ProcessStartInfo("WWIVServer.exe");
-      Process.Start(telNet);
-
-      // Launch Latest Realse Changes into Default Browser
-      Process.Start(wwivChanges);
-
-      // Run CleanUp.Bat
-      ProcessStartInfo cleanUp = new ProcessStartInfo("cleanup.bat");
-      cleanUp.WindowStyle = ProcessWindowStyle.Minimized;
-      Process.Start(cleanUp);
-
-      // Exit Application
-      Application.Exit();
-    }
-
-    // Exit Program Button
-    private void button5_Click(object sender, EventArgs e)
+    private void cleanupAfterWWIVUpdate()
     {
       // Launch Latest Realse Changes into Default Browser
-      string fetchVersion;
-      fetchVersion = label2.Text;
-      string wwivChanges = "http://build.wwivbbs.org/jenkins/job/wwiv/" + fetchVersion + "/label=windows/changes";
+      string wwivChanges = baseUrl_ + "/" + buildNumber_ + "/changes";
       Process.Start(wwivChanges);
 
       // Run CleanUp.Bat
@@ -320,6 +292,20 @@ namespace windows_wwiv_update
         Debug.WriteLine(ex.ToString());
       }
 
+    }
+
+    // Launch WWIV
+    private void buttonLaunch_Click(object sender, EventArgs e)
+    {
+      cleanupAfterWWIVUpdate();
+      // Exit Application
+      Application.Exit();
+    }
+
+    // Exit Program Button
+    private void buttonExit_Click(object sender, EventArgs e)
+    {
+      cleanupAfterWWIVUpdate();
       // Exit Application
       Application.Exit();
     }

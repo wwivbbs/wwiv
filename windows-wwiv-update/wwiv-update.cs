@@ -33,8 +33,8 @@ namespace windows_wwiv_update
     public static string updateVersionLabel;
     public static string updateTagLabel;
 
-    public static readonly string baseUrl52 = "http://build.wwivbbs.org/jenkins/job/wwiv/lastSuccessfulBuild/label=windows";
-    public static readonly string baseUrl51 = "https://build.wwivbbs.org/jenkins/job/wwiv_5.1/lastSuccessfulBuild/label=windows";
+    public static readonly string baseUrl52 = "http://build.wwivbbs.org/jenkins/job/wwiv/label=windows";
+    public static readonly string baseUrl51 = "https://build.wwivbbs.org/jenkins/job/wwiv_5.1/label=windows";
     public static string version_number = "5.1";
 
     public Form1()
@@ -44,10 +44,10 @@ namespace windows_wwiv_update
       // http://build.wwivbbs.org/jenkins/job/wwiv/label=windows/lastSuccessfulBuild/buildNumber
       // http://build.wwivbbs.org/jenkins/job/wwiv_5.1/label=windows/lastSuccessfulBuild/buildNumber
       WebClient wc = new WebClient();
-      string wwivBuild5_2 = wc.DownloadString(baseUrl52 + "/buildNumber");
+      string wwivBuild5_2 = wc.DownloadString(baseUrl52 + "/lastSuccessfulBuild/buildNumber");
 
       // Fetch Latest Build Number For WWIV 5.1
-      string wwivBuild5_1 = wc.DownloadString(baseUrl51 + "/buildNumber");
+      string wwivBuild5_1 = wc.DownloadString(baseUrl51 + "/lastSuccessfulBuild/buildNumber");
       version52.Text = wwivBuild5_2;
       version51.Text = wwivBuild5_1;
       currentVersion();
