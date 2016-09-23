@@ -25,8 +25,6 @@
 #endif
 
 #if __GNUC__ >= 3
-#undef  inline
-#define inline         inline __attribute__ ((always_inline))
 #define __noinline     __attribute__ ((noinline))
 #define __pure         __attribute__ ((pure))
 #define __const        __attribute__((const))
