@@ -83,8 +83,14 @@ struct userrec {
            language,                                // language to use
            unused_cbv;                              // called back
 
+  uint32_t lp_options;
+  uint8_t lp_colors[32];
+
+  char szMenuSet[9];   // Selected AMENU set to use
+  uint8_t cHotKeys;    // Use hot keys in AMENU
+
   char
-  res_byte[49];
+  res_byte[3];
 
   uint16_t
   homeuser,                                // user number where user can found
@@ -234,38 +240,29 @@ struct configrec {
        gfilesdir[81],                          // path for gfiles dir
        datadir[81],                            // path for data directory
        dloadsdir[81],                          // path for dloads dir
-       ramdrive,                               // drive for ramdisk
+       unused_ramdrive,                        // drive for ramdisk
        tempdir[81],                            // path for temporary directory
        xmark,                                  // 0xff
-       unused_regcode[83],                     // registration code
-       unused_bbs_init_modem[51],              // modem initialization cmd
-       unused_answer[21],                      // modem answer cmd
-       unused_connect_300[21],                 // modem responses for
-       unused_connect_1200[21],                // connections made at
-       unused_connect_2400[21],                // various speeds
-       unused_connect_9600[21],                // ""
-       unused_connect_19200[21],               // ""
-       unused_no_carrier[21],                  // modem disconnect
-       unused_ring[21],                        // modem ring
-       unused_terminal[21],                    // UNUSED DOS cmd for run term prg
+       // former reg code + modem config.
+       unused1[323],
        systemname[51],                         // BBS system name
        systemphone[13],                        // BBS system phone number
        sysopname[51],                          // sysop's name
-       unused_executestr[51];                  // Old single event command (removed in 4.3i0)
+       unused2[51];                  // Old single event command (removed in 4.3i0)
 
   uint8_t newusersl,                           // new user SL
           newuserdsl,                          // new user DSL
           maxwaiting,                          // max mail waiting
-          comport[5],                          // what connected to comm
-          com_ISR[5],                          // Com Interrupts
+          unused3[10],
           primaryport,                         // primary comm port
           newuploads,                          // file dir new uploads go
           closedsystem;                        // if system is closed
 
-  uint16_t systemnumber,                       // BBS system number
-           baudrate[5],                        // Baud rate for com ports
-           com_base[5],                        // Com base addresses
-           maxusers,                           // max users on system
+  uint16_t systemnumber;                       // BBS system number
+  
+  // Former baud rate and comports
+  uint8_t  unused4[20];
+  uint16_t maxusers,                           // max users on system
            newuser_restrict,                   // new user restrictions
            sysconfig,                          // System configuration
            sysoplowtime,                       // Chat time on
@@ -279,40 +276,25 @@ struct configrec {
  
   valrec autoval[10];                          // sysop quik-validation data
 
-  char hangupphone[21],                        // string to hang up phone
-       pickupphone[21];                        // string to pick up phone
-
-  uint16_t unused_netlowtime,                  // net time on
-           unused_nethightime;                  // net time off
-
-  char unused_connect_300_a[21],               // alternate connect string
-       unused_connect_1200_a[21],              // alternate connect string
-       unused_connect_2400_a[21],              // alternate connect string
-       unused_connect_9600_a[21],              // alternate connect string
-       unused_connect_19200_a[21];             // alternate connect string
+  uint8_t unused5[151];
 
   arcrec_424_t arcs[4];                       // old archivers (4.24 format)
 
-  char unused_legacy_beginday_c[51],          // beginday event
-       unused_legacy_logon_c[51];             // logon event
+  uint8_t unused6[102];
 
   int16_t userreclen,                         // user record length
         waitingoffset,                        // mail waiting offset
         inactoffset;                          // inactive offset
 
-  char unused_legacy_newuser_c[51];           // newuser event
+  uint8_t unused7[51];           // newuser event
 
   uint32_t wwiv_reg_number;                   // user's reg number
 
   char newuserpw[21];
 
-
   float post_call_ratio;
 
-  char unused_legacy_upload_c[51],            // upload event
-       unused_dszbatchdl[81],
-       unused_modem_type[9],
-       unused_batchdir[81];
+  uint8_t unused8[222];
 
   int16_t sysstatusoffset;                      // system status offset
 
@@ -326,13 +308,10 @@ struct configrec {
 
   uint8_t email_storage_type;                 // how to store email
 
-  uint32_t unused_sysconfig1,
-           unused_rrd;                        // shareware expiration date
+  uint8_t unused9[8];
 
   char menudir[81];                           // path for menu dir
-  char unused_logoff_c[51];                   // logoff event
-  char unused_v_scan_c[51];                   // virus scanning event
-  char res[400];                              // RESERVED
+  uint8_t res[502];                              // RESERVED
 };
 
 
@@ -372,8 +351,6 @@ struct small_configrec {
            sysoplowtime,       // Chat time on
            sysophightime,      // Chat time off
            executetime,        // time to run mail router
-           unused_netlowtime,  // net time on
-           unused_nethightime, // net time off
            max_subs,
            max_dirs,
            qscn_len,

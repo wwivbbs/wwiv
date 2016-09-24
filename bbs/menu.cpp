@@ -37,9 +37,6 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
-static user_config *pSecondUserRec;         // Userrec2 style setup
-static int nSecondUserRecLoaded;            // Whos config is loaded
-
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::sdk;
@@ -51,15 +48,12 @@ namespace menus {
 
 
 // Local function prototypes
-bool LoadMenuSetup(int user_number);
 bool ValidateMenuSet(const char *pszMenuDir);
 void StartMenus();
 bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword);
 void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command);
 void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu);
 void PrintMenuPrompt(MenuInstanceData* menu_data);
-void WriteMenuSetup(int user_number);
-void UnloadMenuSetup();
 const string GetCommand(const MenuInstanceData* menu_data);
 bool CheckMenuItemSecurity(MenuRec* pMenu, bool bCheckPassword);
 void InterpretCommand(MenuInstanceData* menu_data, const char *pszScript);
@@ -72,40 +66,21 @@ static bool CheckMenuPassword(const string& original_password) {
 }
 
 void mainmenu() {
-  if (pSecondUserRec) {
-    free(pSecondUserRec);
-    pSecondUserRec = nullptr;
-  }
-  pSecondUserRec = static_cast<user_config *>(malloc(sizeof(user_config)));
   while (!hangup) {
     StartMenus();
   }
-
-  free(pSecondUserRec);
-  pSecondUserRec = nullptr;
-  nSecondUserRecLoaded = 0;
 }
 
 void StartMenus() {
   unique_ptr<MenuInstanceData> menu_data(new MenuInstanceData());
   menu_data->reload = true;                    // force loading of menu
-
-  if (!LoadMenuSetup(session()->usernum)) {
-    strcpy(pSecondUserRec->szMenuSet, "wwiv"); // default menu set name
-    pSecondUserRec->cHotKeys = HOTKEYS_ON;
-    WriteMenuSetup(session()->usernum);
-  }
   while (menu_data->reload && !hangup) {
     menu_data->finished = false;
     menu_data->reload = false;
-    if (!LoadMenuSetup(session()->usernum)) {
-      LoadMenuSetup(1);
+    if (!ValidateMenuSet(session()->user()->data.szMenuSet)) {
       ConfigUserMenuSet();
     }
-    if (!ValidateMenuSet(pSecondUserRec->szMenuSet)) {
-      ConfigUserMenuSet();
-    }
-    menu_data->Menus(pSecondUserRec->szMenuSet, "main"); // default starting menu
+    menu_data->Menus(session()->user()->data.szMenuSet, "main"); // default starting menu
   }
 }
 
@@ -380,22 +355,14 @@ void TurnMCIOn() {
 }
 
 void ConfigUserMenuSet() {
-  if (session()->usernum != nSecondUserRecLoaded) {
-    if (!LoadMenuSetup(session()->usernum)) {
-      LoadMenuSetup(1);
-    }
-  }
-
-  nSecondUserRecLoaded = session()->usernum;
-
   bout.cls();
   bout.litebar("Configure Menus");
   printfile(MENUWEL_NOEXT);
   bool bDone = false;
   while (!bDone && !hangup) {
     bout.nl();
-    bout << "|#11|#9) Menuset      :|#2 " << pSecondUserRec->szMenuSet << wwiv::endl;
-    bout << "|#12|#9) Use hot keys :|#2 " << (pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Yes" : "No ")
+    bout << "|#11|#9) Menuset      :|#2 " << session()->user()->data.szMenuSet << wwiv::endl;
+    bout << "|#12|#9) Use hot keys :|#2 " << (session()->user()->data.cHotKeys == HOTKEYS_ON ? "Yes" : "No ")
          << wwiv::endl;
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) : ";
@@ -416,20 +383,20 @@ void ConfigUserMenuSet() {
         bout << "|#9Menu Set : |#2" <<  menuSetName.c_str() << " :  |#1" << descriptions.description(menuSetName) << wwiv::endl;
         bout << "|#5Use this menu set? ";
         if (noyes()) {
-          strcpy(pSecondUserRec->szMenuSet, menuSetName.c_str());
+          strcpy(session()->user()->data.szMenuSet, menuSetName.c_str());
           break;
         }
       }
       bout.nl();
       bout << "|#6That menu set does not exists, resetting to the default menu set" << wwiv::endl;
       pausescr();
-      if (pSecondUserRec->szMenuSet[0] == '\0') {
-        strcpy(pSecondUserRec->szMenuSet, "wwiv");
+      if (session()->user()->data.szMenuSet[0] == '\0') {
+        strcpy(session()->user()->data.szMenuSet, "wwiv");
       }
     }
     break;
     case '2':
-      pSecondUserRec->cHotKeys = !pSecondUserRec->cHotKeys;
+      session()->user()->data.cHotKeys = !session()->user()->data.cHotKeys;
       break;
     case '?':
       printfile(MENUWEL_NOEXT);
@@ -439,7 +406,7 @@ void ConfigUserMenuSet() {
   }
 
   // If menu is invalid, it picks the first one it finds
-  if (!ValidateMenuSet(pSecondUserRec->szMenuSet)) {
+  if (!ValidateMenuSet(session()->user()->data.szMenuSet)) {
     if (session()->languages.size() > 1 && session()->user()->GetLanguage() != 0) {
       bout << "|#6No menus for " << session()->languages[session()->user()->GetLanguage()].name
            << " language.";
@@ -447,82 +414,21 @@ void ConfigUserMenuSet() {
     }
   }
 
-  WriteMenuSetup(session()->usernum);
-  MenuSysopLog(StringPrintf("Menu in use : %s - %s", pSecondUserRec->szMenuSet,
-          pSecondUserRec->cHotKeys == HOTKEYS_ON ? "Hot" : "Off"));
+  // Save current menu setup.
+  session()->WriteCurrentUser();
+
+  MenuSysopLog(StringPrintf("Menu in use : %s - %s", session()->user()->data.szMenuSet,
+          session()->user()->data.cHotKeys == HOTKEYS_ON ? "Hot" : "Off"));
   bout.nl(2);
 }
 
 bool ValidateMenuSet(const char *pszMenuDir) {
-  if (session()->usernum != nSecondUserRecLoaded) {
-    if (!LoadMenuSetup(session()->usernum)) {
-      LoadMenuSetup(1);
-    }
-  }
-  nSecondUserRecLoaded = session()->usernum;
   // ensure the entry point exists
   return File::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
 }
 
-bool LoadMenuSetup(int user_number) {
-  if (!pSecondUserRec) {
-    MenuSysopLog("Mem Error");
-    return false;
-  }
-  UnloadMenuSetup();
-
-  if (!user_number) {
-    return false;
-  }
-  File userConfig(session()->config()->datadir(), CONFIG_USR);
-  if (!userConfig.Exists()) {
-    return false;
-  }
-  User user;
-  session()->users()->ReadUser(&user, user_number);
-  if (userConfig.Open(File::modeReadOnly | File::modeBinary)) {
-    userConfig.Seek(user_number * sizeof(user_config), File::seekBegin);
-
-    int len = userConfig.Read(pSecondUserRec, sizeof(user_config));
-    userConfig.Close();
-
-    if (len != sizeof(user_config) || !IsEqualsIgnoreCase(reinterpret_cast<char*>(pSecondUserRec->name), user.GetName())) {
-      memset(pSecondUserRec, 0, sizeof(user_config));
-      strcpy(reinterpret_cast<char*>(pSecondUserRec->name), user.GetName());
-      return 0;
-    }
-    nSecondUserRecLoaded = user_number;
-    return true;
-  }
-  return false;
-}
-
-void WriteMenuSetup(int user_number) {
-  if (!user_number) {
-    return;
-  }
-
-  User user;
-  session()->users()->ReadUser(&user, user_number);
-  strcpy(pSecondUserRec->name, user.GetName());
-
-  File userConfig(session()->config()->datadir(), CONFIG_USR);
-  if (!userConfig.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    return;
-  }
-
-  userConfig.Seek(user_number * sizeof(user_config), File::seekBegin);
-  userConfig.Write(pSecondUserRec, sizeof(user_config));
-  userConfig.Close();
-}
-
-void UnloadMenuSetup() {
-  nSecondUserRecLoaded = 0;
-  memset(pSecondUserRec, 0, sizeof(user_config));
-}
-
 const string GetCommand(const MenuInstanceData* menu_data) {
-  if (pSecondUserRec->cHotKeys == HOTKEYS_ON) {
+  if (session()->user()->data.cHotKeys == HOTKEYS_ON) {
     if (menu_data->header.nums == MENU_NUMFLAG_DIRNUMBER) {
       write_inst(INST_LOC_XFER, session()->current_user_dir().subnum, INST_FLAGS_NONE);
       return string(mmkey(1));
@@ -662,7 +568,7 @@ void MenuInstanceData::GenerateMenu() const {
         menu.nHide != MENU_HIDE_REGULAR &&
         menu.nHide != MENU_HIDE_BOTH) {
       char szKey[30];
-      if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && pSecondUserRec->cHotKeys == HOTKEYS_ON) {
+      if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && session()->user()->data.cHotKeys == HOTKEYS_ON) {
         sprintf(szKey, "//%s", menu.szKey);
       } else {
         sprintf(szKey, "[%s]", menu.szKey);
@@ -680,7 +586,7 @@ void MenuInstanceData::GenerateMenu() const {
       bout.nl();
     }
     bout.bprintf("|#1%-8.8s  |#2%-25.25s  ",
-      pSecondUserRec->cHotKeys == HOTKEYS_ON ? "//APPLY" : "[APPLY]",
+      session()->user()->data.cHotKeys == HOTKEYS_ON ? "//APPLY" : "[APPLY]",
       "Guest Account Application");
     ++iDisplayed;
   }

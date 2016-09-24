@@ -98,18 +98,6 @@ void write_user(unsigned int un, userrec *u) {
     file.Seek(un);
     file.Write(u);
   }
-
-  user_config SecondUserRec = { 0 };
-  strcpy(SecondUserRec.name, (char *) u->name);
-  strcpy(SecondUserRec.szMenuSet, "WWIV");
-  SecondUserRec.cHotKeys = HOTKEYS_ON;
-
-  DataFile<user_config> userdat(syscfg.datadir, "user.dat",
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
-  if (file) {
-    userdat.Seek(un);
-    userdat.Write(&SecondUserRec);
-  }
 }
 
 void save_status() {

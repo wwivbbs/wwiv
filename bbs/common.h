@@ -44,20 +44,6 @@ struct search_record {
 constexpr int HOTKEYS_ON = 0;
 constexpr int HOTKEYS_OFF = 1;
 
-struct user_config {
-  char name[31];          // verify against a user
-
-  unsigned long unused_status;
-
-  unsigned long lp_options;
-  unsigned char lp_colors[32];
-
-  char szMenuSet[9];   // Selected AMENU set to use
-  char cHotKeys;       // Use hot keys in AMENU
-
-  char junk[119];   // AMENU took 11 bytes from here
-};
-
 #pragma pack(pop)
 
 #endif // __INCLUDED_COMMON_H__

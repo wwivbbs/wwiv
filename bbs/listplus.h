@@ -112,7 +112,6 @@ struct listplus_config {
 #pragma pack(pop)
 
 extern listplus_config lp_config;
-extern user_config list_config;
 
 #define STR_AND         '&'
 #define STR_SPC         ' '
@@ -143,7 +142,6 @@ void config_file_list();
 void update_user_config_screen(uploadsrec * upload_record, int which);
 void do_batch_sysop_command(int mode, const char *file_name);
 int  search_criteria(search_record * sr);
-void load_listing();
 void view_file(const char *file_name);
 int  lp_try_to_download(const char *file_mask, int dn);
 void download_plus(const char *file_name);

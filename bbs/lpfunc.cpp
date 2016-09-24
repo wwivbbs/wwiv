@@ -89,6 +89,17 @@ static void prep_menu_items(vector<string>* menu_items) {
   }
 }
 
+static void load_listing() {
+  session()->user()->data.lp_options |= cfl_fname;
+  session()->user()->data.lp_options |= cfl_description;
+
+  for (int i = 0; i < 32; i++) {
+    if (session()->user()->data.lp_colors[i] == 0) {
+      session()->user()->data.lp_colors[i] = 7;
+    }
+  }
+}
+
 int listfiles_plus_function(int type) {
   uploadsrec(*file_recs)[1];
   int file_handle[51];

@@ -357,9 +357,10 @@ void changedsl() {
     session()->SetCurrentConferenceMessageArea(0);
   }
 
-  for (session()->SetCurrentConferenceFileArea(0); (session()->GetCurrentConferenceFileArea() < MAX_CONFERENCES)
+  for (session()->SetCurrentConferenceFileArea(0);
+       (session()->GetCurrentConferenceFileArea() < MAX_CONFERENCES)
        && (uconfdir[session()->GetCurrentConferenceFileArea()].confnum != -1);
-       session()->SetCurrentConferenceMessageArea(session()->GetCurrentConferenceFileArea() + 1)) {
+       session()->SetCurrentConferenceFileArea(session()->GetCurrentConferenceFileArea() + 1)) {
     if (uconfdir[session()->GetCurrentConferenceFileArea()].confnum == ocurconfdir) {
       break;
     }

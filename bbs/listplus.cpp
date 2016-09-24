@@ -57,14 +57,10 @@ using namespace wwiv::strings;
 static constexpr int STOP_LIST = 0;
 static constexpr int MAX_EXTENDED_SIZE = 1000;
 
-static user_config config_listing;
-static int list_loaded = 0;
-
 int bulk_move = 0;
 int bulk_dir = -1;
 bool ext_is_on = false;
 
-static int extended_desc_used;
 static int lc_lines_used;
 
 listplus_config lp_config;
@@ -127,29 +123,29 @@ static void colorize_foundtext(string *text, search_record * search_rec, int col
 static void build_header() {
   int desc_pos = 30;
   string header(" Tag # ");
-  if (config_listing.lp_options & cfl_fname) {
+  if (session()->user()->data.lp_options & cfl_fname) {
     header += "FILENAME";
   }
-  if (config_listing.lp_options & cfl_extension) {
+  if (session()->user()->data.lp_options & cfl_extension) {
     header += ".EXT ";
   }
-  if (config_listing.lp_options & cfl_dloads) {
+  if (session()->user()->data.lp_options & cfl_dloads) {
     header += " DL ";
   }
-  if (config_listing.lp_options & cfl_kbytes) {
+  if (session()->user()->data.lp_options & cfl_kbytes) {
     header += "Bytes ";
   }
 
-  if (config_listing.lp_options & cfl_days_old) {
+  if (session()->user()->data.lp_options & cfl_days_old) {
     header += "Age ";
   }
-  if (config_listing.lp_options & cfl_times_a_day_dloaded) {
+  if (session()->user()->data.lp_options & cfl_times_a_day_dloaded) {
     header += "DL'PD ";
   }
-  if (config_listing.lp_options & cfl_days_between_dloads) {
+  if (session()->user()->data.lp_options & cfl_days_between_dloads) {
     header += "DBDLS ";
   }
-  if (config_listing.lp_options & cfl_description) {
+  if (session()->user()->data.lp_options & cfl_description) {
     desc_pos = header.size();
     header += "Description";
   }
@@ -157,10 +153,10 @@ static void build_header() {
   bout << "|23|01" << header << wwiv::endl;
 
   header.clear();
-  if (config_listing.lp_options & cfl_date_uploaded) {
+  if (session()->user()->data.lp_options & cfl_date_uploaded) {
     header += "Date Uploaded      ";
   }
-  if (config_listing.lp_options & cfl_upby) {
+  if (session()->user()->data.lp_options & cfl_upby) {
     header += "Who uploaded";
   }
   if (!header.empty()) {
@@ -177,7 +173,7 @@ static void printtitle_plus_old() {
           session()->directories[session()->current_user_dir().subnum].name, session()->numf);
   bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
 
-  if (config_listing.lp_options & cfl_header) {
+  if (session()->user()->data.lp_options & cfl_header) {
     build_header();
   }
 
@@ -190,7 +186,7 @@ void printtitle_plus() {
     bout.cls();
   }
 
-  if (config_listing.lp_options & cfl_header) {
+  if (session()->user()->data.lp_options & cfl_header) {
     printtitle_plus_old();
   } else {
     const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(session()->current_user_dir().keys),
@@ -201,13 +197,13 @@ void printtitle_plus() {
 }
 
 static int lp_configured_lines() {
-  return (config_listing.lp_options & cfl_date_uploaded || 
-          config_listing.lp_options & cfl_upby) ? 3 : 2;
+  return (session()->user()->data.lp_options & cfl_date_uploaded || 
+          session()->user()->data.lp_options & cfl_upby) ? 3 : 2;
 }
 
 int first_file_pos() {
   int pos = FIRST_FILE_POS;
-  if (config_listing.lp_options & cfl_header) {
+  if (session()->user()->data.lp_options & cfl_header) {
     pos += lp_configured_lines();
   }
   return pos;
@@ -347,30 +343,30 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   lines_listed = 0;
 
   string buffer;
-  if (config_listing.lp_options & cfl_fname) {
+  if (session()->user()->data.lp_options & cfl_fname) {
     buffer = szFileName;
     StringJustify(&buffer, 8, ' ', JustificationType::LEFT);
     if (search_rec) {
-      colorize_foundtext(&buffer, search_rec, config_listing.lp_colors[0]);
+      colorize_foundtext(&buffer, search_rec, session()->user()->data.lp_colors[0]);
     }
-    file_information += StringPrintf("|%02d%s", config_listing.lp_colors[0], buffer.c_str());
+    file_information += StringPrintf("|%02d%s", session()->user()->data.lp_colors[0], buffer.c_str());
     width += 8;
   }
-  if (config_listing.lp_options & cfl_extension) {
+  if (session()->user()->data.lp_options & cfl_extension) {
     buffer = szFileExt;
     StringJustify(&buffer, 3, ' ', JustificationType::LEFT);
     if (search_rec) {
-      colorize_foundtext(&buffer, search_rec, config_listing.lp_colors[1]);
+      colorize_foundtext(&buffer, search_rec, session()->user()->data.lp_colors[1]);
     }
-    sprintf(element, "|%02d.%s", config_listing.lp_colors[1], buffer.c_str());
+    sprintf(element, "|%02d.%s", session()->user()->data.lp_colors[1], buffer.c_str());
     file_information += element;
     width += 4;
   }
-  if (config_listing.lp_options & cfl_dloads) {
-    file_information += StringPrintf(" |%02d%3d", config_listing.lp_colors[2], u->numdloads);
+  if (session()->user()->data.lp_options & cfl_dloads) {
+    file_information += StringPrintf(" |%02d%3d", session()->user()->data.lp_colors[2], u->numdloads);
     width += 4;
   }
-  if (config_listing.lp_options & cfl_kbytes) {
+  if (session()->user()->data.lp_options & cfl_kbytes) {
     buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
     if (!(session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom)) {
       char szTempFile[MAX_PATH];
@@ -384,40 +380,40 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
         }
       }
     }
-    sprintf(element, " |%02d%s", config_listing.lp_colors[3], buffer.c_str());
+    sprintf(element, " |%02d%s", session()->user()->data.lp_colors[3], buffer.c_str());
     file_information += element;
     width += 6;
   }
 
-  if (config_listing.lp_options & cfl_days_old) {
-    sprintf(element, " |%02d%3d", config_listing.lp_colors[6], nDaysOld);
+  if (session()->user()->data.lp_options & cfl_days_old) {
+    sprintf(element, " |%02d%3d", session()->user()->data.lp_colors[6], nDaysOld);
     file_information += element;
     width += 4;
   }
-  if (config_listing.lp_options & cfl_times_a_day_dloaded) {
+  if (session()->user()->data.lp_options & cfl_times_a_day_dloaded) {
     float t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
     buffer = StringPrintf("%2.2f", t);
     buffer.resize(5);
-    sprintf(element, " |%02d%-5s", config_listing.lp_colors[8], buffer.c_str());
+    sprintf(element, " |%02d%-5s", session()->user()->data.lp_colors[8], buffer.c_str());
     file_information += element;
     width += 6;
   }
-  if (config_listing.lp_options & cfl_days_between_dloads) {
+  if (session()->user()->data.lp_options & cfl_days_between_dloads) {
     float t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
     t = t ? (float) 1 / (float) t : (float) 0.0;
     buffer = StringPrintf("%3.1f", t);
     buffer.resize(5);
-    sprintf(element, " |%02d%s", config_listing.lp_colors[9], buffer.c_str());
+    sprintf(element, " |%02d%s", session()->user()->data.lp_colors[9], buffer.c_str());
     file_information += element;
     width += 6;
   }
-  if (config_listing.lp_options & cfl_description) {
+  if (session()->user()->data.lp_options & cfl_description) {
     ++width;
     buffer = u->description;
     if (search_rec) {
-      colorize_foundtext(&buffer, search_rec, config_listing.lp_colors[10]);
+      colorize_foundtext(&buffer, search_rec, session()->user()->data.lp_colors[10]);
     }
-    sprintf(element, " |%02d%s", config_listing.lp_colors[10], buffer.c_str());
+    sprintf(element, " |%02d%s", session()->user()->data.lp_colors[10], buffer.c_str());
     file_information += element;
     extdesc_pos = width;
   } else {
@@ -467,7 +463,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       num_extended = lines_left;
     }
     if (ext_is_on && mask_extended & u->mask) {
-      lines_printed = print_extended_plus(u->filename, num_extended, -extdesc_pos, config_listing.lp_colors[10], search_rec);
+      lines_printed = print_extended_plus(u->filename, num_extended, -extdesc_pos, session()->user()->data.lp_colors[10], search_rec);
     } else {
       lines_printed = 0;
     }
@@ -488,7 +484,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   }
   file_information.clear();
 
-  if (config_listing.lp_options & cfl_date_uploaded) {
+  if (session()->user()->data.lp_options & cfl_date_uploaded) {
     if ((u->actualdate[2] == '/') && (u->actualdate[5] == '/')) {
       buffer = StringPrintf("UL: %s  New: %s", u->date, u->actualdate);
       StringJustify(&buffer, 27, ' ', JustificationType::LEFT);
@@ -496,19 +492,19 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       buffer = StringPrintf("UL: %s", u->date);
       StringJustify(&buffer, 12, ' ', JustificationType::LEFT);
     }
-    sprintf(element, "|%02d%s  ", config_listing.lp_colors[4], buffer.c_str());
+    sprintf(element, "|%02d%s  ", session()->user()->data.lp_colors[4], buffer.c_str());
     file_information += element;
   }
 
-  if (config_listing.lp_options & cfl_upby) {
-    if (config_listing.lp_options & cfl_date_uploaded) {
+  if (session()->user()->data.lp_options & cfl_upby) {
+    if (session()->user()->data.lp_options & cfl_date_uploaded) {
       StringJustify(&file_information, file_information.size() + width, ' ', JustificationType::RIGHT);
       bout << file_information;
       bout.nl();
       ++numl;
     }
     string tmp = properize(string(u->upby));
-    file_information = StringPrintf("|%02dUpby: %-15s", config_listing.lp_colors[7], tmp.c_str());
+    file_information = StringPrintf("|%02dUpby: %-15s", session()->user()->data.lp_colors[7], tmp.c_str());
   }
 
   if (!buffer.empty()) {
@@ -518,83 +514,6 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     ++numl;
   }
   return numl;
-}
-
-static void CheckLPColors() {
-  for (int i = 0; i < 32; i++) {
-    if (config_listing.lp_colors[i] == 0) {
-      config_listing.lp_colors[i] = 7;
-    }
-  }
-}
-
-static void unload_config_listing() {
-  list_loaded = 0;
-  memset(&config_listing, 0, sizeof(user_config));
-}
-
-static int load_config_listing(int config) {
-  unload_config_listing();
-  memset(&config_listing, 0, sizeof(user_config));
-
-  for (int fh = 0; fh < 32; fh++) {
-    config_listing.lp_colors[fh] = 7;
-  }
-
-  config_listing.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
-
-  if (!config) {
-    return 0;
-  }
-
-  File fileConfig(session()->config()->datadir(), CONFIG_USR);
-
-  if (fileConfig.Exists()) {
-    User user;
-    session()->users()->ReadUser(&user, config);
-    if (fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
-      fileConfig.Seek(config * sizeof(user_config), File::seekBegin);
-      int len = fileConfig.Read(&config_listing, sizeof(user_config));
-      fileConfig.Close();
-      if (len != sizeof(user_config) ||
-          !IsEqualsIgnoreCase(config_listing.name, user.GetName())) {
-        memset(&config_listing, 0, sizeof(config_listing));
-        strcpy(config_listing.name, user.GetName());
-        CheckLPColors();
-        return 0;
-      }
-      list_loaded = config;
-      extended_desc_used = config_listing.lp_options & cfl_description;
-      config_listing.lp_options |= cfl_fname;
-      config_listing.lp_options |= cfl_description;
-      CheckLPColors();
-      return 1;
-    }
-  }
-  CheckLPColors();
-  return 0;
-}
-
-static void write_config_listing(int config) {
-  if (!config) {
-    return;
-  }
-
-  User user;
-  session()->users()->ReadUser(&user, config);
-  strcpy(config_listing.name, user.GetName());
-
-  File fileUserConfig(session()->config()->datadir(), CONFIG_USR);
-  if (!fileUserConfig.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
-    return;
-  }
-
-  config_listing.lp_options |= cfl_fname;
-  config_listing.lp_options |= cfl_description;
-
-  fileUserConfig.Seek(config * sizeof(user_config), File::seekBegin);
-  fileUserConfig.Write(&config_listing, sizeof(user_config));
-  fileUserConfig.Close();
 }
 
 int print_extended_plus(const char *file_name, int numlist, int indent, int color,
@@ -694,7 +613,7 @@ int check_lines_needed(uploadsrec * u) {
     max_lines = num_extended;
   }
 
-  if (extended_desc_used) {
+  if (session()->user()->data.lp_options & cfl_description) {
     max_extended = session()->user()->GetNumExtended();
 
     if (max_extended < lp_config.show_at_least_extended) {
@@ -775,8 +694,8 @@ int calc_max_lines() {
 
 static void check_lp_colors() {
   for (int i = 0; i < 32; i++) {
-    if (!config_listing.lp_colors[i]) {
-      config_listing.lp_colors[i] = 1;
+    if (!session()->user()->data.lp_colors[i]) {
+      session()->user()->data.lp_colors[i] = 1;
     }
   }
 }
@@ -1060,20 +979,14 @@ void config_file_list() {
 
   load_lp_config();
 
-  if (session()->usernum != list_loaded) {
-    if (!load_config_listing(session()->usernum)) {
-      load_config_listing(1);
-    }
-  }
-
   bout.cls();
   printfile(LPCONFIG_NOEXT);
-  if (!config_listing.lp_options & cfl_fname) {
-    config_listing.lp_options |= cfl_fname;
+  if (!session()->user()->data.lp_options & cfl_fname) {
+    session()->user()->data.lp_options |= cfl_fname;
   }
 
-  if (!(config_listing.lp_options & cfl_description)) {
-    config_listing.lp_options |= cfl_description;
+  if (!(session()->user()->data.lp_options & cfl_description)) {
+    session()->user()->data.lp_options |= cfl_description;
   }
 
   action[0] = '\0';
@@ -1125,10 +1038,10 @@ void config_file_list() {
         break;
       }
 
-      if (config_listing.lp_options & bit) {
-        config_listing.lp_options &= ~bit;
+      if (session()->user()->data.lp_options & bit) {
+        session()->user()->data.lp_options &= ~bit;
       } else {
-        config_listing.lp_options |= bit;
+        session()->user()->data.lp_options |= bit;
       }
       break;
 
@@ -1180,9 +1093,9 @@ void config_file_list() {
         break;
       }
 
-      ++config_listing.lp_colors[bit];
-      if (config_listing.lp_colors[bit] > 15) {
-        config_listing.lp_colors[bit] = 1;
+      ++session()->user()->data.lp_colors[bit];
+      if (session()->user()->data.lp_colors[bit] > 15) {
+        session()->user()->data.lp_colors[bit] = 1;
       }
       break;
     case 'Q':
@@ -1190,8 +1103,6 @@ void config_file_list() {
       break;
     }
   }
-  list_loaded = session()->usernum;
-  write_config_listing(session()->usernum);
   bout.nl(4);
 }
 
@@ -1217,78 +1128,78 @@ void update_user_config_screen(uploadsrec * u, int which) {
 
   if (which < 1 || which == 1) {
     bout.GotoXY(37, 4);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_fname ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_fname ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[ config_listing.lp_colors[ 0 ] ];
+    bout << lp_color_list[ session()->user()->data.lp_colors[ 0 ] ];
   }
   if (which < 1 || which == 2) {
     bout.GotoXY(37, 5);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_extension ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_extension ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[ config_listing.lp_colors[1] ];
+    bout << lp_color_list[ session()->user()->data.lp_colors[1] ];
   }
   if (which < 1 || which == 3) {
     bout.GotoXY(37, 6);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_dloads ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_dloads ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[ config_listing.lp_colors[ 2 ] ];
+    bout << lp_color_list[ session()->user()->data.lp_colors[ 2 ] ];
   }
   if (which < 1 || which == 4) {
     bout.GotoXY(37, 7);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_kbytes ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_kbytes ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[ config_listing.lp_colors[ 3 ] ];
+    bout << lp_color_list[ session()->user()->data.lp_colors[ 3 ] ];
   }
   if (which < 1 || which == 5) {
     bout.GotoXY(37, 8);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_description ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_description ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[ config_listing.lp_colors[ 10 ] ];
+    bout << lp_color_list[ session()->user()->data.lp_colors[ 10 ] ];
   }
   if (which < 1 || which == 6) {
     bout.GotoXY(37, 9);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_date_uploaded ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_date_uploaded ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[ config_listing.lp_colors[ 4 ] ];
+    bout << lp_color_list[ session()->user()->data.lp_colors[ 4 ] ];
   }
   if (which < 1 || which == 7) {
     bout.GotoXY(37, 10);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_file_points ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_file_points ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[config_listing.lp_colors[5]];
+    bout << lp_color_list[session()->user()->data.lp_colors[5]];
   }
   if (which < 1 || which == 8) {
     bout.GotoXY(37, 11);
-    bout.SystemColor((config_listing.lp_options & cfl_days_old ? RED + (BLUE << 4) : BLACK + (BLUE << 4)));
+    bout.SystemColor((session()->user()->data.lp_options & cfl_days_old ? RED + (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[config_listing.lp_colors[6]];
+    bout << lp_color_list[session()->user()->data.lp_colors[6]];
   }
   if (which < 1 || which == 9) {
     bout.GotoXY(37, 12);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_upby ? RED + (BLUE << 4) : BLACK +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_upby ? RED + (BLUE << 4) : BLACK +
                                    (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
-    bout << lp_color_list[config_listing.lp_colors[7]];
+    bout << lp_color_list[session()->user()->data.lp_colors[7]];
   }
   if (which < 1 || which == 10) {
     bout.GotoXY(37, 13);
-    bout.SystemColor(static_cast<uint8_t>(config_listing.lp_options & cfl_header ? RED +
+    bout.SystemColor(static_cast<uint8_t>(session()->user()->data.lp_options & cfl_header ? RED +
                                    (BLUE << 4) : BLACK + (BLUE << 4)));
     bout << "\xFE ";
     bout.SystemColor(BLACK + (BLUE << 4));
@@ -1874,23 +1785,6 @@ LP_SEARCH_HELP:
 
   return x;
 }
-
-
-void load_listing() {
-
-  if (session()->usernum != list_loaded) {
-    load_config_listing(session()->usernum);
-  }
-
-  if (!list_loaded) {
-    load_config_listing(1);                   // default to what the sysop has
-  }                                         // config it for themselves
-  // force filename to be shown
-  if (!config_listing.lp_options & cfl_fname) {
-    config_listing.lp_options |= cfl_fname;
-  }
-}
-
 
 void view_file(const char *file_name) {
   char szBuffer[30];

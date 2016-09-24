@@ -25,6 +25,7 @@
 
 void convert_config_424_to_430(CursesWindow* window, const std::string& config_filename);
 bool convert_config_to_52(CursesWindow* window, const std::string& config_filename);
+bool ensure_latest_5x_config(CursesWindow* window, const std::string& config_filename);
 
 
 #endif

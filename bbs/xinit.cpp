@@ -544,8 +544,6 @@ bool WSession::ReadConfig() {
   syscfg.sysoplowtime     = config_->config()->sysoplowtime;
   syscfg.sysophightime    = config_->config()->sysophightime;
   syscfg.executetime      = config_->config()->executetime;
-  syscfg.unused_netlowtime = config_->config()->unused_netlowtime;
-  syscfg.unused_nethightime = config_->config()->unused_nethightime;
   syscfg.max_subs         = config_->config()->max_subs;
   syscfg.max_dirs         = config_->config()->max_dirs;
   syscfg.qscn_len         = config_->config()->qscn_len;
@@ -806,9 +804,6 @@ static bool SaveConfig() {
   full_syscfg.autoval[7] = syscfg.autoval[7];
   full_syscfg.autoval[8] = syscfg.autoval[8];
   full_syscfg.autoval[9] = syscfg.autoval[9];
-
-  full_syscfg.unused_rrd = 0;
-  memset(full_syscfg.unused_regcode, '\0', 83);
 
   file.Seek(0, File::seekBegin);
   file.Write(&full_syscfg, sizeof(configrec));

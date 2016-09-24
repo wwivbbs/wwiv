@@ -182,8 +182,6 @@ bool valid_desc(const string& description) {
 // TODO(rushfan): This is probably completely broken
 bool get_file_idz(uploadsrec * u, int dn) {
   char *b, cmd[MAX_PATH], s[81];
-  int i;
-  bool ok = false;
 
   if (session()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (session()->directories[dn].mask & mask_cdrom)) {
     return false;
@@ -196,7 +194,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
       return false;
     }
     ++ss;
-    for (i = 0; i < MAX_ARCS; i++) {
+    bool ok = false;
+    for (auto i = 0; i < MAX_ARCS; i++) {
       if (!ok) {
         ok = IsEqualsIgnoreCase(ss, session()->arcs[i].extension);
       }
@@ -246,7 +245,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     if (session()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
       if (!ss.empty()) {
-        for (i = 0; i < ss.size(); i++) {
+        for (auto i = 0; i < ss.size(); i++) {
           if ((strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), ss[i]) != nullptr) && (ss[i] != CZ)) {
             ss[i] = '\x20';
           }
@@ -264,7 +263,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
       ss = b;
     }
     if (!ss.empty()) {
-      for (i = ss.size() - 1; i > 0; i--) {
+      for (auto i = ss.size() - 1; i > 0; i--) {
         if (ss[i] == CZ || ss[i] == 12) {
           ss[i] = '\x20';
         }

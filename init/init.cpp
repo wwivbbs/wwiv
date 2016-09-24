@@ -208,17 +208,15 @@ int WInitApp::main(int, char **) {
     if (!wwiv::strings::IsEquals(expected_sig, syscfg.header.header.signature)) {
       // We don't have a 5.2 header, let's convert.
 
-      // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
-      out->window()->Bkgd(' ');
       convert_config_to_52(out->window(), CONFIG_DAT);
       {
         if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
           configfile.Read(&syscfg, sizeof(configrec));
         }
       }
-    } else {
-      // TODO(rushfan): Check for older 5.x headers.
     }
+
+    ensure_latest_5x_config(out->window(), CONFIG_DAT);
   }
 
   CreateConfigOvr(bbsdir);

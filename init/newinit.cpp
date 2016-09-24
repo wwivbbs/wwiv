@@ -89,18 +89,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), File::pathSeparatorChar, File::pathSeparatorChar);
-  strcpy(syscfg.unused_bbs_init_modem, "ATS0=0M0Q0V0E0S2=1S7=20H0{");
-  strcpy(syscfg.unused_answer, "ATA{");
-  strcpy(syscfg.unused_connect_300, "1");
-  strcpy(syscfg.unused_connect_1200, "5");
-  strcpy(syscfg.unused_connect_2400, "10");
-  strcpy(syscfg.unused_connect_9600, "13");
-  strcpy(syscfg.unused_connect_19200, "50");
-  strcpy(syscfg.unused_no_carrier, "3");
-  strcpy(syscfg.unused_ring, "2");
-  strcpy(syscfg.hangupphone, "ATH0{");
-  strcpy(syscfg.pickupphone, "ATH1{");
-  strcpy(syscfg.unused_terminal, "");
   strcpy(syscfg.systemname, "My WWIV BBS");
   strcpy(syscfg.systemphone, "   -   -    ");
   strcpy(syscfg.sysopname, "The New Sysop");
@@ -108,20 +96,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   syscfg.newusersl = 10;
   syscfg.newuserdsl = 0;
   syscfg.maxwaiting = 50;
-  for (int i = 0; i < 5; i++) {
-    syscfg.baudrate[i] = 300;
-  }
-  syscfg.com_ISR[0] = 0;
-  syscfg.com_ISR[1] = 4;
-  syscfg.com_ISR[2] = 3;
-  syscfg.com_ISR[3] = 4;
-  syscfg.com_ISR[4] = 3;
-  syscfg.com_base[0] = 0;
-  syscfg.com_base[1] = 0x3f8;
-  syscfg.com_base[2] = 0x2f8;
-  syscfg.com_base[3] = 0x3e8;
-  syscfg.com_base[4] = 0x2e8;
-  syscfg.comport[1] = 0;
   // Always use 1 for the primary port.
   syscfg.primaryport = 1;
   syscfg.newuploads = 0;

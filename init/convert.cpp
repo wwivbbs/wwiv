@@ -33,6 +33,7 @@
 
 #include "bbs/wconstants.h"
 #include "core/strings.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/version.h"
 #include "core/wwivport.h"
@@ -46,7 +47,43 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::strings;
+
+#define cfl_fname                   0x00000001
+#define cfl_extension               0x00000002
+#define cfl_dloads                  0x00000004
+#define cfl_kbytes                  0x00000008
+#define cfl_date_uploaded           0x00000010
+#define cfl_file_points             0x00000020
+#define cfl_days_old                0x00000040
+#define cfl_upby                    0x00000080
+#define cfl_times_a_day_dloaded     0x00000100
+#define cfl_days_between_dloads     0x00000200
+#define cfl_description             0x00000400
+#define cfl_header                  0x80000000L
+
+struct user_config {
+  char name[31];          // verify against a user
+
+  unsigned long unused_status;
+
+  unsigned long lp_options;
+  unsigned char lp_colors[32];
+
+  char szMenuSet[9];   // Selected AMENU set to use
+  char cHotKeys;       // Use hot keys in AMENU
+
+  char junk[119];   // AMENU took 11 bytes from here
+};
+
+static void ShowBanner(CursesWindow* window, const std::string& m) {
+  // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
+  out->window()->Bkgd(' ');
+  window->SetColor(SchemeId::INFO);
+  window->Printf("%s\n", m.c_str());
+  window->SetColor(SchemeId::NORMAL);
+}
 
 bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
   File file(config_filename);
@@ -54,9 +91,7 @@ bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
     return false;
   }
 
-  window->SetColor(SchemeId::INFO);
-  window->Printf("Converting config.dat to 4.3/5.x format...\n");
-  window->SetColor(SchemeId::NORMAL);
+  ShowBanner(window, "Converting config.dat to 4.3/5.x format...");
   file.Read(&syscfg, sizeof(configrec));
 
   configrec_header_t h = {};
@@ -80,6 +115,132 @@ bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
   return true;
 }
 
+static bool convert_to_52_1(CursesWindow* window, const std::string& config_filename) {
+  ShowBanner(window, "Updating to latest 5.2 format...");
+
+  string users_lst = StrCat(syscfg.datadir, USER_LST);
+  string backup_file = StrCat(users_lst, ".backup.pre-init-upgrade");
+
+  // Make a backup file.
+  File::Copy(users_lst, backup_file);
+
+  DataFile<userrec> usersFile(syscfg.datadir, USER_LST,
+    File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
+  if (!usersFile) {
+    messagebox(window, "Unable to open user.lst.");
+    return false;
+  }
+
+  vector<userrec> users;
+  if (!usersFile.ReadVector(users)) {
+    messagebox(window, "Unable to read user.lst.");
+    return false;
+  }
+
+  // zero out the res_xxx records for good housekeeping.
+  for (auto& u : users) {
+    memset(u.res_byte, 0, sizeof(u.res_byte));
+    memset(u.res_char, 0, sizeof(u.res_char));
+    memset(u.res_float, 0, sizeof(u.res_float));
+    memset(u.res_gp, 0, sizeof(u.res_gp));
+    memset(u.res_long, 0, sizeof(u.res_long));
+    memset(u.res_short, 0, sizeof(u.res_short));
+    memset(u.szMenuSet, 0, sizeof(u.szMenuSet));
+
+    // Set new defaults.
+    memset(u.lp_colors, 7, sizeof(u.lp_colors));
+    u.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
+    u.cHotKeys = 0;
+    strcpy(u.szMenuSet, "wwiv");
+  }
+
+  // Save where we are.
+  usersFile.Seek(0);
+  usersFile.WriteVector(users);
+
+  // Update config.dat with new version to consider this "successful"
+  // enough of an upgrade at this point.
+  {
+    File file(config_filename);
+    if (!file.Open(File::modeBinary | File::modeReadWrite)) {
+      return false;
+    }
+    if (file.Read(&syscfg, sizeof(configrec)) < sizeof(configrec)) {
+      return false;
+    }
+    memset(syscfg.res, 0, sizeof(syscfg.res));
+    memset(syscfg.unused1, 0, sizeof(syscfg.unused1));
+    memset(syscfg.unused2, 0, sizeof(syscfg.unused2));
+    memset(syscfg.unused3, 0, sizeof(syscfg.unused3));
+    memset(syscfg.unused4, 0, sizeof(syscfg.unused4));
+    memset(syscfg.unused5, 0, sizeof(syscfg.unused5));
+    memset(syscfg.unused6, 0, sizeof(syscfg.unused6));
+    memset(syscfg.unused7, 0, sizeof(syscfg.unused7));
+    memset(syscfg.unused8, 0, sizeof(syscfg.unused8));
+    memset(syscfg.unused9, 0, sizeof(syscfg.unused9));
+    syscfg.header.header.config_revision_number = 1;
+
+    file.Seek(0, File::seekBegin);
+    file.Write(&syscfg, sizeof(configrec));
+    file.Close();
+  }
+
+  DataFile<user_config> configUsrFile(syscfg.datadir, CONFIG_USR,
+    File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
+  if (!configUsrFile) {
+    messagebox(window, "Unable to read CONFIG_USR.");
+    return false;
+  }
+
+  vector<user_config> second_config;
+  if (!configUsrFile.ReadVector(second_config)) {
+    messagebox(window, "Unable to read CONFIG_USR.");
+    return false;
+  }
+
+  // merge in data from user_config
+  for (size_t i = 0; i < users.size(); i++) {
+    auto& u = users.at(i);
+    if (i >= second_config.size()) {
+      continue;
+    }
+    const auto& c = second_config.at(i);
+    u.cHotKeys = c.cHotKeys;
+    u.lp_options = c.lp_options;
+    memcpy(u.lp_colors, c.lp_colors, sizeof(u.lp_colors));
+  }
+
+  // Save where we are.
+  usersFile.Seek(0);
+  if (!usersFile.WriteVector(users)) {
+    messagebox(window, "Unable to write user.lst.");
+    return false;
+  }
+
+  // Close the user_config file (config.usr) and delete it.
+  configUsrFile.Close();
+  configUsrFile.file().Delete();
+
+  // 2nd version of config.usr that INIT was mistankenly creating.
+  File userDatFile(syscfg.datadir, "user.dat");
+  userDatFile.Delete();
+
+  return true;
+}
+
+bool ensure_latest_5x_config(CursesWindow* window, const std::string& config_filename) {
+  const auto v = syscfg.header.header.config_revision_number;
+  if (v < 1) {
+    if (!convert_to_52_1(window, config_filename)) {
+      return false;
+    }
+  }
+
+  // add others
+
+  return true;
+}
+
 void convert_config_424_to_430(CursesWindow* window, const string& config_filename) {
   File file(config_filename);
   if (!file.Open(File::modeBinary|File::modeReadWrite)) {
@@ -90,8 +251,6 @@ void convert_config_424_to_430(CursesWindow* window, const string& config_filena
   window->SetColor(SchemeId::NORMAL);
   file.Read(&syscfg, sizeof(configrec));
   sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, File::pathSeparatorChar);
-  strcpy(syscfg.unused_logoff_c, " ");
-  strcpy(syscfg.unused_v_scan_c, " ");
 
   arcrec arc[MAX_ARCS];
   for (int i = 0; i < MAX_ARCS; i++) {
