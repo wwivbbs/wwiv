@@ -25,16 +25,6 @@
 constexpr int NOTNUMBERS = 1;
 constexpr int NUMBERS = 0;
 
-// Defines for listplus
-constexpr int LP_LIST_DIR = 0;
-constexpr int LP_SEARCH_ALL = 1;
-constexpr int LP_NSCAN_DIR = 2;
-constexpr int LP_NSCAN_NSCAN = 3;
-
-constexpr int ALL_DIRS = 0;
-constexpr int THIS_DIR = 1;
-constexpr int NSCAN_DIRS = 2;
-
 // Defines for Q/Nscan Plus
 constexpr int QSCAN = 0;
 constexpr int NSCAN = 1;

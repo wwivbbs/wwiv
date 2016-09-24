@@ -14,7 +14,8 @@ What's New in WWIV 5.2 (2016)
   you will need to run init to reset your newuser password (if you have
   one, or to clear it on downgrade since the newuserpw field and version
   info in config.dat live in the same first 21 characters in the file.)
-* 
+* CONFUG.USR is no longer needed, INIT in 5.2.2129+ will move the data into
+  user.lst and delete the file.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

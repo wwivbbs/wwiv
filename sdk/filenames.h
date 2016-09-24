@@ -64,7 +64,6 @@
 
 #define CONFIG_DAT "config.dat"
 #define CONFIG_OVR "config.ovr"
-#define CONFIG_USR "config.usr"
 
 #define COMMENT_TXT "comment.txt"
 #define CONNECT_NET "connect.net"

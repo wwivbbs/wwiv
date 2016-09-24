@@ -50,6 +50,8 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
+#define CONFIG_USR "config.usr"
+
 #define cfl_fname                   0x00000001
 #define cfl_extension               0x00000002
 #define cfl_dloads                  0x00000004
@@ -216,7 +218,7 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
     file.Close();
   }
 
-  DataFile<user_config> configUsrFile(syscfg.datadir, CONFIG_USR,
+  DataFile<user_config> configUsrFile(syscfg.datadir, "config.usr",
     File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
   if (!configUsrFile) {
     messagebox(window, "Unable to read CONFIG_USR.");

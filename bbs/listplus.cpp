@@ -641,7 +641,7 @@ int check_lines_needed(uploadsrec * u) {
 }
 
 int prep_search_rec(search_record* search_rec, int type) {
-  search_rec->search_extended = lp_config.search_extended_on;
+  search_rec->search_extended = lp_config.search_extended_on ? true : false;
 
   if (type == LP_LIST_DIR) {
     search_rec->filemask = file_mask();
@@ -1679,7 +1679,7 @@ int search_criteria(search_record * sr) {
 
 
 LP_SEARCH_HELP:
-  sr->search_extended = lp_config.search_extended_on;
+  sr->search_extended = lp_config.search_extended_on ? true : false;
 
   bout.cls();
   printfile(LPSEARCH_NOEXT);

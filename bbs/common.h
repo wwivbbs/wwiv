@@ -23,6 +23,16 @@
 #include <string>
 #include "bbs/wwivcolors.h"
 
+// Defines for listplus
+constexpr int LP_LIST_DIR = 0;
+constexpr int LP_SEARCH_ALL = 1;
+constexpr int LP_NSCAN_DIR = 2;
+constexpr int LP_NSCAN_NSCAN = 3;
+
+constexpr int ALL_DIRS = 0;
+constexpr int THIS_DIR = 1;
+constexpr int NSCAN_DIRS = 2;
+
 constexpr int WWIV_LISTPLUS_NORMAL_HIGHLIGHT = (YELLOW + (BLACK << 4));
 constexpr int WWIV_LISTPLUS_NORMAL_MENU_ITEM = (CYAN + (BLACK << 4));
 constexpr int WWIV_LISTPLUS_CURRENT_HIGHLIGHT = (RED + (LIGHTGRAY << 4));
@@ -42,7 +52,7 @@ struct search_record {
   std::string search;
 
   int alldirs = 0;
-  int search_extended = 0;
+  bool search_extended = false;
 };
 
 constexpr int HOTKEYS_ON = 0;
