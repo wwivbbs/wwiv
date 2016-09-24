@@ -102,7 +102,6 @@ bool okansi() {
 void frequent_init() {
   setiia(90);
   g_flags = 0;
-  session()->tagging = false;
   newline = true;
   session()->SetCurrentReadMessageArea(-1);
   session()->SetCurrentConferenceMessageArea(0);

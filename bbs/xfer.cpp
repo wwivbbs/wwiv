@@ -663,7 +663,6 @@ void printinfo(uploadsrec * u, bool *abort) {
 
   if (*abort) {
     session()->filelist.clear();
-    session()->tagging = false;
   }
 }
 
@@ -680,7 +679,6 @@ void printtitle(bool *abort) {
 
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
-  session()->titled = false;
 }
 
 std::string file_mask() {
@@ -706,21 +704,22 @@ void listfiles() {
 
   dliscan();
   string filemask = file_mask();
-  session()->titled = true;
+  bool need_title = true;
   lines_listed = 0;
 
   File fileDownload(g_szDownloadFileName);
   fileDownload.Open(File::modeBinary | File::modeReadOnly);
   bool abort = false;
-  for (int i = 1; i <= session()->numf && !abort && !hangup && session()->tagging; i++) {
+  for (int i = 1; i <= session()->numf && !abort && !hangup; i++) {
     FileAreaSetRecord(fileDownload, i);
     uploadsrec u;
     fileDownload.Read(&u, sizeof(uploadsrec));
     if (compare(filemask.c_str(), u.filename)) {
       fileDownload.Close();
 
-      if (session()->titled) {
+      if (need_title) {
         printtitle(&abort);
+        need_title = false;
       }
 
       printinfo(&u, &abort);
@@ -728,7 +727,7 @@ void listfiles() {
       // Moved to here from bputch.cpp
       if (lines_listed >= session()->screenlinest - 3) {
         if (!session()->filelist.empty()) {
-          tag_files();
+          tag_files(need_title);
           lines_listed = 0;
         }
       }
@@ -742,7 +741,7 @@ void listfiles() {
   endlist(1);
 }
 
-void nscandir(int nDirNum, bool *abort) {
+void nscandir(int nDirNum, bool& need_title, bool *abort) {
   int nOldCurDir = session()->current_user_dir_num();
   session()->set_current_user_dir_num(nDirNum);
   dliscan();
@@ -754,7 +753,7 @@ void nscandir(int nDirNum, bool *abort) {
     }
     File fileDownload(g_szDownloadFileName);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
-    for (int i = 1; i <= session()->numf && !(*abort) && !hangup && session()->tagging; i++) {
+    for (int i = 1; i <= session()->numf && !(*abort) && !hangup; i++) {
       CheckForHangup();
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
@@ -762,11 +761,14 @@ void nscandir(int nDirNum, bool *abort) {
       if (u.daten >= static_cast<uint32_t>(nscandate)) {
         fileDownload.Close();
 
-        if (session()->titled) {
+        if (need_title) {
           if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
-            tag_files();
+            tag_files(need_title);
           }
-          printtitle(abort);
+          if (need_title) {
+            printtitle(abort);
+            need_title = false;
+          }
         }
 
         printinfo(&u, abort);
@@ -806,8 +808,7 @@ void nscanall() {
   int count       = 0;
   int color       = 3;
   bout << "\r" << "|#2Searching ";
-  for (size_t i = 0; i < session()->directories.size() && !abort && session()->udir[i].subnum != -1 &&
-       session()->tagging; i++) {
+  for (size_t i = 0; i < session()->directories.size() && !abort && session()->udir[i].subnum != -1; i++) {
     count++;
     bout << "|#" << color << ".";
     if (count >= NUM_DOTS) {
@@ -823,8 +824,8 @@ void nscanall() {
     }
     int nSubNum = session()->udir[i].subnum;
     if (qsc_n[nSubNum / 32] & (1L << (nSubNum % 32))) {
-      session()->titled = true;
-      nscandir(i, &abort);
+      bool need_title = true;
+      nscandir(i, need_title, &abort);
     }
   }
   endlist(2);
@@ -859,7 +860,7 @@ void searchall() {
   lines_listed = 0;
   int count = 0;
   int color = 3;
-  for (size_t i = 0; i < session()->directories.size() && !abort && !hangup && session()->tagging
+  for (size_t i = 0; i < session()->directories.size() && !abort && !hangup
        && session()->udir[i].subnum != -1; i++) {
     int nDirNum = session()->udir[i].subnum;
     bool bIsDirMarked = false;
@@ -884,20 +885,23 @@ void searchall() {
       }
       session()->set_current_user_dir_num(i);
       dliscan();
-      session()->titled = true;
+      bool need_title = true;
       File fileDownload(g_szDownloadFileName);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
-      for (int i1 = 1; i1 <= session()->numf && !abort && !hangup && session()->tagging; i1++) {
+      for (int i1 = 1; i1 <= session()->numf && !abort && !hangup; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         uploadsrec u;
         fileDownload.Read(&u, sizeof(uploadsrec));
         if (compare(filemask.c_str(), u.filename)) {
           fileDownload.Close();
-          if (session()->titled) {
+          if (need_title) {
             if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
-              tag_files();
+              tag_files(need_title);
             }
-            printtitle(&abort);
+            if (need_title) {
+              printtitle(&abort);
+              need_title = false;
+            }
           }
           printinfo(&u, &abort);
           fileDownload.Open(File::modeBinary | File::modeReadOnly);

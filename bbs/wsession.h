@@ -393,9 +393,6 @@ private:
   bool        m_bNewScanAtLogin = false,
               m_bInternalZmodem = true,
               m_bExecLogSyncFoss = true;
-  bool tagging = false;
-  bool titled = false;
-
   int         m_nNumMessagesReadThisLogon = 0,
               m_nCurrentLanguageNumber = 0,
               m_nCurrentFileArea = 0,

@@ -1167,9 +1167,7 @@ void config_scan_plus(int type) {
           } else {
             i = session()->current_user_dir_num();
             session()->set_current_user_dir_num(top + pos);
-            session()->tagging = true;
             listfiles();
-            session()->tagging = false;
             session()->set_current_user_dir_num(i);
           }
           menu_done = true;

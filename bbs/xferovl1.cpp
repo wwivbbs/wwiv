@@ -473,13 +473,13 @@ static char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
   return ch;
 }
 
-void tag_files() {
+void tag_files(bool& need_title) {
   int i;
   char s[255], s1[255], s2[81], ch;
   bool had = false;
   double d;
 
-  if (lines_listed == 0 || !session()->tagging) {
+  if (lines_listed == 0) {
     return;
   }
   bool abort = false;
@@ -508,13 +508,12 @@ void tag_files() {
     case RETURN:
       lines_listed = 0;
       session()->filelist.clear();
-      session()->titled = true;
+      need_title = true;
       bout.cls();
       done = true;
       break;
     case 'D':
       batchdl(1);
-      session()->tagging = false;
       if (!had) {
         bout.nl();
         pausescr();
@@ -587,10 +586,9 @@ void tag_files() {
       }
       break;
     case 'Q':
-      session()->tagging = false;
-      session()->titled = false;
       session()->filelist.clear();
       lines_listed = 0;
+      need_title = false;
       done = true;
       return;
     case 'R':
@@ -627,11 +625,9 @@ void tag_files() {
         }
         if (s[0] != 0) {
           bout.nl();
-          session()->tagging = false;
           ExecuteExternalProgram(s, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
-          session()->tagging = true;
           session()->UpdateTopScreen();
           bout.cls();
           relist();
@@ -954,19 +950,16 @@ void download() {
   }
 }
 
-
 void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
-  if (!session()->tagging) {
-    return;
-  }
   if (session()->filelist.empty()) {
     bout << ((mode == 1) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n");
     return;
   }
-  if (session()->tagging && !session()->filelist.empty()) {
-    tag_files();
+  bool need_title = false;
+  if (!session()->filelist.empty()) {
+    tag_files(need_title);
     return;
   }
   bout.Color(FRAME_COLOR);

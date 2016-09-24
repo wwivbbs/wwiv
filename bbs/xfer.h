@@ -44,7 +44,7 @@ void printinfo(uploadsrec * upload_record, bool *abort);
 void printtitle(bool *abort);
 std::string file_mask();
 void listfiles();
-void nscandir(int nDirNum, bool *abort);
+void nscandir(int nDirNum, bool& need_title, bool *abort);
 void nscanall();
 void searchall();
 int  recno(const std::string& file_mask);

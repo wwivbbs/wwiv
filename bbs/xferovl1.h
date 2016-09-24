@@ -26,7 +26,7 @@ bool get_file_idz(uploadsrec * upload_record, int dn);
 int  read_idz_all();
 int  read_idz(int mode, int tempdir);
 void tag_it();
-void tag_files();
+void tag_files(bool& need_title);
 int  add_batch(char *description, const char *file_name, int dn, long fs);
 int  try_to_download(const char *file_mask, int dn);
 void download();

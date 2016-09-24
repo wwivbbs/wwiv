@@ -335,7 +335,6 @@ bool checka(bool *abort, bool *next) {
     char ch = bgetch();
     switch (ch) {
     case CN:
-      // used to check for tagging.
       lines_listed = 0;
       *next = true;
     case CC:
@@ -343,14 +342,12 @@ bool checka(bool *abort, bool *next) {
     case CX:
     case 'Q':
     case 'q':
-      // used to check for tagging.
       lines_listed = 0;
       *abort = true;
       break;
     case 'P':
     case 'p':
     case CS:
-      // used to check for tagging.
       lines_listed = 0;
       ch = getkey();
       break;

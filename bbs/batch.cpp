@@ -767,8 +767,6 @@ static void dszbatchul(bool bHangupAfterDl, char *command_line, char *descriptio
 int batchdl(int mode) {
   bool bHangupAfterDl = false;
   bool done = false;
-  bool otag = session()->tagging;
-  session()->tagging = false;
   do {
     char ch = 0;
     switch (mode) {
@@ -892,7 +890,6 @@ int batchdl(int mode) {
       break;
     }
   } while (!done && !hangup);
-  session()->tagging = otag;
   return 0;
 }
 

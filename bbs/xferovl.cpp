@@ -734,8 +734,6 @@ void relist() {
   }
   bout.cls();
   lines_listed = 0;
-  bool otag = session()->tagging;
-  session()->tagging = false;
   if (session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
     bout.Color(FRAME_COLOR);
     bout << string(78, '-') << wwiv::endl;
@@ -829,7 +827,6 @@ void relist() {
   }
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
-  session()->tagging = otag;
   lines_listed = 0;
 }
 
@@ -1229,17 +1226,17 @@ void finddescription() {
   color = 3;
   bout << "\r|#2Searching ";
   lines_listed = 0;
-  for (size_t i = 0; (i < session()->directories.size()) && !abort && !hangup && session()->tagging
+  for (size_t i = 0; (i < session()->directories.size()) && !abort && !hangup
        && (session()->udir[i].subnum != -1); i++) {
     size_t i1 = session()->udir[i].subnum;
     pts = 0;
-    session()->titled = true;
+    bool need_title = true;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       pts = 1;
     }
     pts = 1;
     // remove pts=1 to search only marked session()->directories
-    if (pts && !abort && session()->tagging) {
+    if (pts && !abort) {
       count++;
       bout << static_cast<char>(3) << color << ".";
       if (count == NUM_DOTS) {
@@ -1258,7 +1255,7 @@ void finddescription() {
       File fileDownload(g_szDownloadFileName);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
       for (i1 = 1; i1 <= static_cast<size_t>(session()->numf) 
-           && !abort && !hangup && session()->tagging; i1++) {
+           && !abort && !hangup; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
         strcpy(s, u.description);
@@ -1268,11 +1265,14 @@ void finddescription() {
         if (strstr(s, s1) != nullptr) {
           fileDownload.Close();
 
-          if (session()->titled) {
+          if (need_title) {
             if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
-              tag_files();
+              tag_files(need_title);
             }
-            printtitle(&abort);
+            if (need_title) {
+              printtitle(&abort);
+              need_title = false;
+            }
           }
 
           printinfo(&u, &abort);

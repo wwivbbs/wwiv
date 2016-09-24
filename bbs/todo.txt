@@ -11,7 +11,6 @@
 * change record 0 of .sub files to be a message header. Right now only owneruser
   is used and the rest is loaded/saved as-is by the bbs code.
 * add tests for usermanager and user (in SDK)
-* cleanup session()->tagging and session()->titled
 
 * remove extra include statements from user.cpp
 * Finish wrappering WSession

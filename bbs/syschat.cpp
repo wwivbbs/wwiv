@@ -554,9 +554,6 @@ void chat1(const char *chat_line, bool two_way) {
     return;
   }
 
-  bool otag = session()->tagging;
-  session()->tagging = false;
-
   chatcall = false;
   if (two_way) {
     write_inst(INST_LOC_CHAT2, 0, INST_FLAGS_NONE);
@@ -673,7 +670,6 @@ void chat1(const char *chat_line, bool two_way) {
   local_echo = oe;
   RestoreCurrentLine(cl, atr, xl, &cc);
 
-  session()->tagging = otag;
   if (okansi()) {
     bout << "\x1b[K";
   }
