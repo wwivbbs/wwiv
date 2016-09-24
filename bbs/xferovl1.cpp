@@ -245,7 +245,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     if (session()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
       if (!ss.empty()) {
-        for (auto i = 0; i < ss.size(); i++) {
+        for (size_t i = 0; i < ss.size(); i++) {
           if ((strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(invalid_chars)), ss[i]) != nullptr) && (ss[i] != CZ)) {
             ss[i] = '\x20';
           }
@@ -385,7 +385,7 @@ void tag_it() {
       break;
     }
     i--;
-    if (s1[0] && i >= 0 && i < session()->filelist.size()) {
+    if (s1[0] && i >= 0 && i < size_int(session()->filelist)) {
     auto& f = session()->filelist[i];
       if (check_batch_queue(f.u.filename)) {
         bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
@@ -528,7 +528,7 @@ void tag_files() {
       bout << "|#9Which file (1-" << session()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if (s[0] && i >= 0 && i < session()->filelist.size()) {
+      if (s[0] && i >= 0 && i < size_int(session()->filelist)) {
         auto& f = session()->filelist[i];
         d = XFER_TIME(f.u.numbytes);
         bout.nl();
@@ -603,7 +603,7 @@ void tag_files() {
       bout << "|#2Which file (1-|#2" << session()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if ((s[0]) && (i >= 0) && (i < session()->filelist.size())) {
+      if ((s[0]) && (i >= 0) && (i < size_int(session()->filelist))) {
         auto& f = session()->filelist[i];
         sprintf(s1, "%s%s", session()->directories[f.directory].path,
                 stripfn(f.u.filename));

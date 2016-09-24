@@ -727,7 +727,7 @@ void listfiles() {
 
       // Moved to here from bputch.cpp
       if (lines_listed >= session()->screenlinest - 3) {
-        if (session()->tagging && !session()->filelist.empty()) {
+        if (!session()->filelist.empty()) {
           tag_files();
           lines_listed = 0;
         }
