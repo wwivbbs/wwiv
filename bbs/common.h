@@ -21,15 +21,19 @@
 #define __INCLUDED_COMMON_H__
 
 #include <string>
+#include "bbs/wwivcolors.h"
 
-#pragma pack(push, 1)
+constexpr int WWIV_LISTPLUS_NORMAL_HIGHLIGHT = (YELLOW + (BLACK << 4));
+constexpr int WWIV_LISTPLUS_NORMAL_MENU_ITEM = (CYAN + (BLACK << 4));
+constexpr int WWIV_LISTPLUS_CURRENT_HIGHLIGHT = (RED + (LIGHTGRAY << 4));
+constexpr int WWIV_LISTPLUS_CURRENT_MENU_ITEM = (BLACK + (LIGHTGRAY << 4));
 
 
 struct side_menu_colors {
-  int normal_highlight;   // used to all be unsigned.
-  int normal_menu_item;
-  int current_highlight;
-  int current_menu_item;
+  int normal_highlight = WWIV_LISTPLUS_NORMAL_HIGHLIGHT;
+  int normal_menu_item = WWIV_LISTPLUS_NORMAL_MENU_ITEM;
+  int current_highlight = WWIV_LISTPLUS_CURRENT_HIGHLIGHT;
+  int current_menu_item = WWIV_LISTPLUS_CURRENT_MENU_ITEM;
 };
 
 struct search_record {
@@ -43,7 +47,5 @@ struct search_record {
 
 constexpr int HOTKEYS_ON = 0;
 constexpr int HOTKEYS_OFF = 1;
-
-#pragma pack(pop)
 
 #endif // __INCLUDED_COMMON_H__

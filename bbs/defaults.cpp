@@ -56,10 +56,6 @@ using namespace wwiv::strings;
 static const int STOP_LIST = 0;
 static const int MAX_SCREEN_LINES_TO_SHOW = 24;
 
-#define NORMAL_HIGHLIGHT   (YELLOW+(BLACK<<4))
-#define NORMAL_MENU_ITEM   (CYAN+(BLACK<<4))
-#define CURRENT_HIGHLIGHT  (RED+(LIGHTGRAY<<4))
-#define CURRENT_MENU_ITEM  (BLACK+(LIGHTGRAY<<4))
 // Undefine this so users can not toggle the sysop sub on and off
 // #define NOTOGGLESYSOP
 
@@ -972,12 +968,7 @@ void config_scan_plus(int type) {
   int i, command;
   unsigned int top = 0;
   int amount = 0, pos = 0, side_pos = 0;
-  side_menu_colors smc = {
-    NORMAL_HIGHLIGHT,
-    NORMAL_MENU_ITEM,
-    CURRENT_HIGHLIGHT,
-    CURRENT_MENU_ITEM
-  };
+  side_menu_colors smc{};
 
   int useconf = (subconfnum > 1 && okconf(session()->user()));
   session()->topdata = LocalIO::topdataNone;

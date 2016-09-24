@@ -22,8 +22,6 @@
 
 #include "common.h"
 
-#define EXTRA_SPACE
-
 extern int foundany;
 
 // This is the place the first file will be printed, which defaults to line

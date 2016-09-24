@@ -107,7 +107,7 @@ int listfiles_plus_function(int type) {
   int file_pos = 0, save_file_pos = 0, menu_pos = 0;
   size_t save_dir = session()->current_user_dir_num();
   bool sysop_mode = false;
-  side_menu_colors smc;
+  side_menu_colors smc{};
   search_record search_rec = {};
 
   load_lp_config();
@@ -191,12 +191,10 @@ int listfiles_plus_function(int type) {
               vert_pos[matches] = static_cast<char>(lines);
               int lines_used = printinfo_plus(file_recs[matches], file_handle[matches],
                                               check_batch_queue(file_recs[matches]->filename), lines_left, &search_rec);
-#ifdef EXTRA_SPACE
               if (lines_used > 1 && lines_used < lines_left) {
                 bout.nl();
                 ++lines_used;
               }
-#endif
               lines += lines_used;
               ++matches;
             } else {
