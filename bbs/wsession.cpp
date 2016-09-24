@@ -670,6 +670,8 @@ int WSession::doWFCEvents() {
     time_t diff_time = current_time - last_time_c;
     bool time_to_call = diff_time > 60; // was 1200
     if (!any && time_to_call && net_sysnum && node_supports_callout) {
+      // also try this.
+      wfc_cls();
       attempt_callout();
       any = true;
     }
@@ -958,6 +960,8 @@ int WSession::doWFCEvents() {
     if (!any) {
       static int mult_time = 0;
       if (this->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
+        // let's try this.
+        wfc_cls();
         cleanup_net();
         mult_time = timer1();
       }

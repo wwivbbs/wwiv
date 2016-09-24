@@ -1248,56 +1248,49 @@ void force_callout(int dw) {
       }
     }
     if (ok) {
-      if (session()->current_net().ncn[ss2[nitu]].bytes_waiting == 0L) {
-        if (!(session()->current_net().con[ss1[nitu]].options & options_sendback)) {
-          ok = false;
-        }
+      if (dw) {
+        bout.nl();
+        bout << "|#2Num Retries : ";
+        input(s, 5, true);
+        total_attempts = atoi(s);
       }
-      if (ok) {
-        if (dw) {
-          bout.nl();
-          bout << "|#2Num Retries : ";
-          input(s, 5, true);
-          total_attempts = atoi(s);
+      if (dw == 2) {
+        if (session()->IsUserOnline()) {
+          session()->WriteCurrentUser();
+          write_qscn(session()->usernum, qsc, false);
+          session()->SetUserOnline(false);
         }
-        if (dw == 2) {
-          if (session()->IsUserOnline()) {
-            session()->WriteCurrentUser();
-            write_qscn(session()->usernum, qsc, false);
-            session()->SetUserOnline(false);
-          }
-          hang_it_up();
-          sleep_for(seconds(5));
-        }
-        if (!dw || total_attempts < 1) {
-          total_attempts = 1;
-        }
+        hang_it_up();
+        sleep_for(seconds(5));
+      }
+      if (!dw || total_attempts < 1) {
+        total_attempts = 1;
+      }
 
-        read_contacts();
-        lc = session()->current_net().ncn[ss2[nitu]].lastcontact;
-        while ((current_attempt < total_attempts) && (!abort)) {
-          if (session()->localIO()->KeyPressed()) {
-            while (session()->localIO()->KeyPressed()) {
-              ch = wwiv::UpperCase<char>(session()->localIO()->GetChar());
-              if (!abort) {
-                abort = (ch == ESC) ? true : false;
-              }
+      read_contacts();
+      lc = session()->current_net().ncn[ss2[nitu]].lastcontact;
+      while ((current_attempt < total_attempts) && (!abort)) {
+        if (session()->localIO()->KeyPressed()) {
+          while (session()->localIO()->KeyPressed()) {
+            ch = wwiv::UpperCase<char>(session()->localIO()->GetChar());
+            if (!abort) {
+              abort = (ch == ESC) ? true : false;
             }
           }
-          current_attempt++;
-          set_net_num(ss[nitu]);
-          read_contacts();
-          cc = session()->current_net().ncn[ss2[nitu]].lastcontact;
-          if (abort || cc != lc) {
-            break;
-          } else {
-            session()->localIO()->Cls();
-            bout << "|#9Retries |#0= |#2" << total_attempts 
-                 << "|#9, Current |#0= |#2" << current_attempt
-                 << "|#9, Remaining |#0= |#2" << total_attempts - current_attempt
-                 << "|#9. ESC to abort.\r\n";
-            do_callout(sn);
-          }
+        }
+        current_attempt++;
+        set_net_num(ss[nitu]);
+        read_contacts();
+        cc = session()->current_net().ncn[ss2[nitu]].lastcontact;
+        if (abort || cc != lc) {
+          break;
+        } else {
+          session()->localIO()->Cls();
+          bout << "|#9Retries |#0= |#2" << total_attempts 
+                << "|#9, Current |#0= |#2" << current_attempt
+                << "|#9, Remaining |#0= |#2" << total_attempts - current_attempt
+                << "|#9. ESC to abort.\r\n";
+          do_callout(sn);
         }
       }
     }
