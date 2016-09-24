@@ -37,10 +37,12 @@
 #include "bbs/vars.h"
 
 #include "core/stl.h"
+#include "core/strings.h"
 
 using std::string;
 
 using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;
@@ -566,7 +568,7 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
       *sent = true;
       add_ass(10, "Aborted on last block");
     } else {
-      sysoplogf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
+      sysoplog() << StringPrintf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
     }
   }
 }

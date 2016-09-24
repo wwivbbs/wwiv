@@ -738,7 +738,7 @@ void chuser() {
     session()->usernum = static_cast<uint16_t>(user_number);
     session()->SetEffectiveSl(255);
     const string unn = session()->names()->UserName(session()->usernum);
-    sysoplogf("#*#*#* Changed to %s", unn.c_str());
+    sysoplog() << StringPrintf("#*#*#* Changed to %s", unn.c_str());
     changedsl();
     session()->UpdateTopScreen();
   } else {
@@ -803,7 +803,6 @@ void set_user_age() {
 
 
 void auto_purge() {
-  char s[80];
   unsigned int days = 0;
   unsigned int skipsl = 0;
 
@@ -816,15 +815,15 @@ void auto_purge() {
 
   if (days < 60) {
     if (days > 0) {
-      sysoplog("!!! WARNING: Auto-Purge canceled [AUTO_USER_PURGE < 60]", false);
-      sysoplog("!!! WARNING: Edit WWIV.INI and Fix this", false);
+      sysoplog(false) << "!!! WARNING: Auto-Purge canceled [AUTO_USER_PURGE < 60]";
+      sysoplog(false) << "!!! WARNING: Edit WWIV.INI and Fix this";
     }
     return;
   }
 
   time_t tTime = time(nullptr);
   int user_number = 1;
-  sysoplogfi(false, "Auto-Purged Inactive Users (over %d days, SL less than %u)", days, skipsl);
+  sysoplog(false) << "Auto-Purged Inactive Users (over " << days << " days, SL less than " << skipsl << ")";
 
   do {
     User user;
@@ -834,8 +833,7 @@ void auto_purge() {
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
       if (!user.IsUserDeleted() && user.GetSl() < skipsl && d > days) {
-        sprintf(s, "*** AUTOPURGE: Deleted User: #%3.3d %s", user_number, user.GetName());
-        sysoplog(s, false);
+        sysoplog(false) << "*** AUTOPURGE: Deleted User: #" << user_number << " " << user.GetName();
         deluser(user_number);
       }
     }
@@ -941,9 +939,9 @@ void beginday(bool displayStatus) {
     bout << "|#7* |#1Done!\r\n";
   }
 
-  sysoplog("", false);
-  sysoplog("* Ran Daily Maintenance...", false);
-  sysoplog("", false);
+  sysoplog(false);
+  sysoplog(false) << "* Ran Daily Maintenance...";
+  sysoplog(false);
 }
 
 

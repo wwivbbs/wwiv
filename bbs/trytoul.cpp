@@ -44,12 +44,12 @@ static void t2u_error(const string& file_name, const string& msg) {
   bout.nl(2);
   string s1 = StrCat("**  ", file_name, " failed T2U qualifications");
   bout << s1 << wwiv::endl;
-  sysoplog(s1);
+  sysoplog() << s1;
 
   string s2 = StrCat("** Reason : ", msg);
   bout << s2 << wwiv::endl;
   bout.nl();
-  sysoplog(s2);
+  sysoplog() << s2;
 }
 
 static int try_to_ul_wh(const string& orig_file_name) {
@@ -372,7 +372,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   pStatus->IncrementNumUploadsToday();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
   session()->status_manager()->CommitTransaction(pStatus);
-  sysoplogf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
+  sysoplog() << StringPrintf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
   return 0;                                 // This means success
 }
 
@@ -396,7 +396,7 @@ int try_to_ul(const string& file_name) {
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
-  sysoplogf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
+  sysoplog() << StringPrintf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
 
   const string src = StrCat(session()->batch_directory(), file_name);
   const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, file_name.c_str());

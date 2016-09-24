@@ -286,7 +286,7 @@ void normalupload(int dn) {
             pStatus->IncrementNumUploadsToday();
             pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
             session()->status_manager()->CommitTransaction(pStatus);
-            sysoplogf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
+            sysoplog() << StringPrintf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
             bout.nl(2);
             bout.bprintf("File uploaded.\r\n\nYour ratio is now: %-6.3f\r\n", ratio());
             bout.nl(2);

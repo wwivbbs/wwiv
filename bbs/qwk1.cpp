@@ -357,7 +357,7 @@ void upload_reply_packet() {
       sprintf(namepath, "%s%s", QWK_DIRECTORY, name);
       process_reply_dat(namepath);
     } else {
-      sysoplog("Aborted");
+      sysoplog() << "Aborted";
       bout.nl();
       bout.bprintf("%s not found", name);
       bout.nl();
@@ -849,8 +849,6 @@ void qwk_post_text(char *text, char *title, int sub) {
   qwk_inmsg(text, &m, session()->current_sub().filename.c_str(), user_name, thetime);
 
   if (m.stored_as != 0xffffffff) {
-    char s[201];
-
     while (!hangup) {
       f = qwk_iscan_literal(session()->GetCurrentReadMessageArea());
 
@@ -940,8 +938,7 @@ void qwk_post_text(char *text, char *title, int sub) {
 
     close_sub();
 
-    sprintf(s, "+ \"%s\" posted on %s", p.title, session()->current_sub().name.c_str());
-    sysoplog(s);
+    sysoplog() << "+ '" << p.title << "' posted on '" << session()->current_sub().name;
 
     if (!session()->current_sub().nets.empty()) {
       ++session()->user()->data.postnet;

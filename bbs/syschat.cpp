@@ -109,7 +109,7 @@ void RequestChat() {
         char szChatReason[81];
         sprintf(szChatReason, "Chat: %s", chatReason.c_str());
         bout.nl();
-        sysoplog(szChatReason);
+        sysoplog() << szChatReason;
         for (int nTemp = strlen(szChatReason); nTemp < 80; nTemp++) {
           szChatReason[nTemp] = SPACE;
         }

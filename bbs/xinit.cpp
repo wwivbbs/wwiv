@@ -999,9 +999,9 @@ void WSession::InitializeBBS() {
   read_all_conferences();
 
   if (!m_bUserAlreadyOn) {
-    sysoplog("", false);
-    sysoplogfi(false, "WWIV %s%s, inst %ld, brought up at %s on %s.", wwiv_version, beta_version, 
-        instance_number(), times(), fulldate());
+    sysoplog(false);
+    sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
+      << ", brought up at " << times() << " on " << fulldate() << ".";
   }
   if (instance_number() > 1) {
     File::Remove(StringPrintf("%s.%3.3u", WWIV_NET_NOEXT, instance_number()));

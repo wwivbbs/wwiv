@@ -158,44 +158,18 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
 }
 
 /*
-* Writes a string to the sysoplog, if user online and EffectiveSl < 255.
+* Writes a string to the sysoplog.
 */
 void sysopchar(const string& text) {
-  if ((incom || session()->GetEffectiveSl() != 255) && !text.empty()) {
+  if (!text.empty()) {
     AddLineToSysopLogImpl(LOG_CHAR, text);
   }
 }
 
-/*
-* Writes a string to the sysoplog, if EffectiveSl < 255 and user online,
-* indented a few spaces.
-*/
-void sysoplog(const string& text, bool bIndent) {
-  if (bIndent) {
-    AddLineToSysopLogImpl(LOG_STRING, StrCat("   ", text));
+sysoplog::~sysoplog() {
+  if (indent_) {
+    AddLineToSysopLogImpl(LOG_STRING, StrCat("   ", stream_.str()));
   } else {
-    AddLineToSysopLogImpl(LOG_STRING, text);
+    AddLineToSysopLogImpl(LOG_STRING, stream_.str());
   }
-}
-
-// printf style function to write to the sysop log
-void sysoplogf(const char *format, ...) {
-  va_list ap;
-  char szBuffer[2048];
-
-  va_start(ap, format);
-  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
-  va_end(ap);
-  sysoplog(szBuffer);
-}
-
-// printf style function to write to the sysop log
-void sysoplogfi(bool bIndent, const char *format, ...) {
-  va_list ap;
-  char szBuffer[2048];
-
-  va_start(ap, format);
-  vsnprintf(szBuffer, sizeof(szBuffer), format, ap);
-  va_end(ap);
-  sysoplog(szBuffer, bIndent);
 }

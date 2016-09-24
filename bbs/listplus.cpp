@@ -226,7 +226,7 @@ void print_searching(search_record* search_rec) {
 
 static void catch_divide_by_zero(int signum) {
   if (signum == SIGFPE) {
-    sysoplog("Caught divide by 0");
+    sysoplog() << "Caught divide by 0";
   }
 }
 
@@ -657,7 +657,7 @@ int prep_search_rec(search_record* search_rec, int type) {
     search_rec->nscandate = static_cast<uint32_t>(nscandate);
     search_rec->alldirs = ALL_DIRS;
   } else {
-    sysoplog("Undef LP type");
+    sysoplog() << "Undef LP type";
     return 0;
   }
 
@@ -1402,7 +1402,7 @@ static int remove_filename(const char *file_name, int dn) {
         if (u.mask & mask_extended) {
           delete_extended_description(u.filename);
         }
-        sysoplogf("- \"%s\" removed off of %s", u.filename, session()->directories[dn].name);
+        sysoplog() << StringPrintf("- \"%s\" removed off of %s", u.filename, session()->directories[dn].name);
 
         if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
           for (int i1 = i; i1 < session()->numf; i1++) {
@@ -1716,10 +1716,10 @@ LP_SEARCH_HELP:
       if (sr->filemask[0]) {
         if (okfn(sr->filemask)) {
           if (sr->filemask.size() < 8) {
-            sysoplogf("Filespec: %s", sr->filemask.c_str());
+            sysoplog() << "Filespec: " << sr->filemask;
           } else {
             if (contains(sr->filemask, '.')) {
-              sysoplogf("Filespec: %s", sr->filemask.c_str());
+              sysoplog() << "Filespec: " << sr->filemask;
             } else {
               bout << "|#6Invalid filename: " << sr->filemask << wwiv::endl;
               pausescr();
@@ -1738,7 +1738,7 @@ LP_SEARCH_HELP:
       bout << "Keyword(s) : ";
       sr->search = input(60, true);
       if (sr->search[0]) {
-        sysoplogf("Keyword: %s", sr->search.c_str());
+        sysoplog() << "Keyword: " << sr->search;
       }
       break;
 

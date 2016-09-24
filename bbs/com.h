@@ -28,5 +28,6 @@ bool noyes();
 char ynq();
 char onek(const char *allowable_chars, bool auto_mpl = false);
 char onek_ncr(const char *allowable_chars);
+void lastchar_pressed();
 
 #endif  // __INCLUDED_BBS_COM_H__

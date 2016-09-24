@@ -135,7 +135,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
         fileDownload.Write(&u, sizeof(uploadsrec));
         fileDownload.Close();
 
-        sysoplogf("Downloaded \"%s\"", u.filename);
+        sysoplog() << "Downloaded '" << u.filename << "'.";
 
         if (syscfg.sysconfig & sysconfig_log_dl) {
           session()->users()->ReadUser(&ur, u.ownerusr);
@@ -331,6 +331,6 @@ void DisableConf() {
 }
 
 void SetNewScanMsg() {
-  sysoplog("Select Subs");
+  sysoplog() << "Select Subs";
   config_qscan();
 }

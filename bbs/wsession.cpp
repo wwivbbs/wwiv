@@ -1097,10 +1097,10 @@ void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
     if (exit_level != WSession::exitLevelOK && exit_level != WSession::exitLevelQuit) {
       // Only log the exiting at absnomal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probers, etc).
-      sysoplog("", false);
-      sysoplogfi(false, "WWIV %s, inst %u, taken down at %s on %s with exit code %d.",
-        wwiv_version, instance_number(), times(), fulldate(), exit_level);
-      sysoplog("", false);
+      sysoplog(false);
+      sysoplog(false) << "WWIV " << wwiv_version << ", inst " << instance_number() << ", taken down at " << times()
+        << " on " << fulldate() << " with exit code " << exit_level << ".";
+      sysoplog(false);
     }
     catsl();
     write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
@@ -1359,12 +1359,12 @@ int WSession::Run(int argc, char *argv[]) {
           while (i < argc) {
             int nSubNumToPack = atoi(argv[i]);
             pack_sub(nSubNumToPack);
-            sysoplogf("* Packed Message Area %d", nSubNumToPack);
+            sysoplog() << "* Packed Message Area:" << nSubNumToPack;
             i++;
           }
         } else {
           bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
-          sysoplog("* Packing All Message Areas");
+          sysoplog() << "* Packing All Message Areas";
           wwiv::bbs::TempDisablePause disable_pause;
           if (!pack_all_subs()) {
             bout << "|#6Aborted.\r\n";
@@ -1460,7 +1460,7 @@ int WSession::Run(int argc, char *argv[]) {
       // event from the commandline, so we'll just check the date.
       beginday(true);
     } else {
-      sysoplog("!!! Wanted to run the beginday event when it's not required!!!", false);
+      sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
       clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }

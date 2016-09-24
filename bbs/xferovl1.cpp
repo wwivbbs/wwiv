@@ -945,7 +945,7 @@ void download() {
     }
     if (!had) {
       bout.nl();
-      bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
+      bout << "Your ratio is now: " << ratio() << wwiv::endl;
     }
   }
 }
@@ -954,7 +954,12 @@ void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
   if (session()->filelist.empty()) {
-    bout << ((mode == 1) ? "\r|#3No matching files found.\r\n\n" : "\r|#1No new files found.\r\n\n");
+    bout << "\r";
+    if (mode == 1) {
+      bout << "|#3No matching files found.\r\n\n";
+    } else {
+      bout << "\r|#1No new files found.\r\n\n";
+    }
     return;
   }
   bool need_title = false;
@@ -1118,7 +1123,7 @@ void removefilesnotthere(int dn, int *autodel) {
         if (u.mask & mask_extended) {
           delete_extended_description(u.filename);
         }
-        sysoplogf("-%s Removed from %s", u.filename, session()->directories[dn].name);
+        sysoplog() << "- '" << u.filename << "' Removed from " << session()->directories[dn].name;
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         for (int i1 = i; i1 < session()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);

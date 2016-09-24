@@ -4,7 +4,6 @@
 ==============================================================================
 
 * cleanup wfc since we aren't waiting for a call
-* look at timelastchar1
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.
 * detangle global net_email_name (maybe it needs to be added to EmailData?)

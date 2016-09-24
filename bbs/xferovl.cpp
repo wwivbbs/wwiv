@@ -507,7 +507,7 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     pStatus->IncrementNumUploadsToday();
     pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
     session()->status_manager()->CommitTransaction(pStatus);
-    sysoplogf("+ \"%s\" uploaded on %s", u.filename, d.name);
+    sysoplog() << "+ '" << u.filename << "' uploaded on " << d.name;
     session()->UpdateTopScreen();
   }
   return true;

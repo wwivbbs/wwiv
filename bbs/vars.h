@@ -93,8 +93,6 @@ __EXTRN__ unsigned int
           dirconfnum,
           subconfnum;
 
-__EXTRN__ int timelastchar1;
-
 __EXTRN__ time_t nscandate;
 
 

@@ -177,7 +177,7 @@ void asv() {
             bout.nl();
             bout << "|#5Is " << sysname << " a server in " << session()->network_name() << "? ";
             if (noyes()) {
-              sysoplog("* Claims to run a network server.");
+              sysoplog() << "* Claims to run a network server.";
               reg = 2;
               valfile = 6;
             }
@@ -213,9 +213,8 @@ void asv() {
         properize(s);
         ssm(1, 0) << s << " validated as " << session()->network_name()
           << " 1@" << inode << " on " << fulldate() << ".";
-        sprintf(s1, "* Validated as %s 1@%d", session()->network_name(), inode);
-        sysoplog(s1);
-        sysoplog(s);
+        sysoplog() << "* Validated as " << session()->network_name() << " 1@" << inode;
+        sysoplog() << s;
         session()->user()->SetStatusFlag(User::expert);
         session()->user()->SetExempt(0);
         session()->user()->SetForwardSystemNumber(inode);
@@ -293,7 +292,7 @@ void asv() {
       strcpy(s, session()->user()->GetName());
       properize(s);
       ssm(1, 0) << s << " validated as a WWIV SysOp on " << fulldate() << ".";
-      sysoplog("* Validated as a WWIV SysOp");
+      sysoplog() << "* Validated as a WWIV SysOp";
       session()->user()->SetStatusFlag(User::expert);
       set_autoval(session()->advasv.nonreg_wwiv);
       bout.nl();
@@ -311,7 +310,7 @@ void asv() {
       strcpy(s, session()->user()->GetName());
       properize(s);
       ssm(1, 0) << s << " validated as a Non-WWIV SysOp on " << fulldate() << ".";
-      sysoplog("* Validation of a Non-WWIV SysOp");
+      sysoplog() << "* Validation of a Non-WWIV SysOp";
       session()->user()->SetExempt(0);
       set_autoval(session()->advasv.non_wwiv);
       bout.nl();
@@ -327,7 +326,7 @@ void asv() {
 
       const string note = StringPrintf("Co-SysOp: ", s);
       session()->user()->SetNote(note);
-      sysoplog(StrCat("* Co-SysOp of ", session()->user()->GetNote()));
+      sysoplog() << "* Co-SysOp of " << session()->user()->GetNote();
       set_autoval(session()->advasv.cosysop);
     } break;
     case 'Q':

@@ -740,7 +740,7 @@ bool CanCreateNewUserAccountHere() {
       if (password == syscfg.newuserpw) {
         ok = true;
       } else {
-        sysoplogf("Wrong newuser password: %s", password.c_str());
+        sysoplog() << StringPrintf("Wrong newuser password: %s", password.c_str());
       }
     } while (!ok && !hangup && (nPasswordAttempt++ < 4));
     if (!ok) {
@@ -973,28 +973,28 @@ void VerifyNewUserFullInfo() {
 
 
 void WriteNewUserInfoToSysopLog() {
-  sysoplog("** New User Information **");
-  sysoplogf("-> %s #%ld (%s)", session()->user()->GetName(), session()->usernum,
+  sysoplog() << "** New User Information **";
+  sysoplog() << StringPrintf("-> %s #%ld (%s)", session()->user()->GetName(), session()->usernum,
             session()->user()->GetRealName());
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    sysoplogf("-> %s", session()->user()->GetStreet());
-    sysoplogf("-> %s, %s %s  (%s)", session()->user()->GetCity(),
+    sysoplog() << StringPrintf("-> %s", session()->user()->GetStreet());
+    sysoplog() << StringPrintf("-> %s, %s %s  (%s)", session()->user()->GetCity(),
               session()->user()->GetState(), session()->user()->GetZipcode(),
               session()->user()->GetCountry());
   }
-  sysoplogf("-> %s (Voice)", session()->user()->GetVoicePhoneNumber());
+  sysoplog() << StringPrintf("-> %s (Voice)", session()->user()->GetVoicePhoneNumber());
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    sysoplogf("-> %s (Data)", session()->user()->GetDataPhoneNumber());
+    sysoplog() << StringPrintf("-> %s (Data)", session()->user()->GetDataPhoneNumber());
   }
-  sysoplogf("-> %02d/%02d/%02d (%d yr old %s)",
+  sysoplog() << StringPrintf("-> %02d/%02d/%02d (%d yr old %s)",
             session()->user()->GetBirthdayMonth(), session()->user()->GetBirthdayDay(),
             session()->user()->GetBirthdayYear(), session()->user()->GetAge(),
             ((session()->user()->GetGender() == 'M') ? "Male" : "Female"));
-  sysoplogf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()).c_str());
+  sysoplog() << StringPrintf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()).c_str());
   if (session()->user()->GetWWIVRegNumber()) {
-    sysoplogf("-> WWIV Registration # %ld", session()->user()->GetWWIVRegNumber());
+    sysoplog() << StringPrintf("-> WWIV Registration # %ld", session()->user()->GetWWIVRegNumber());
   }
-  sysoplog("********");
+  sysoplog() << "********";
 
 
   if (session()->user()->GetVoicePhoneNumber()[0]) {
@@ -1036,7 +1036,7 @@ void SendNewUserFeedbackIfRequired() {
   if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     noabort(FEEDBACK_NOEXT);
   } else if (printfile(FEEDBACK_NOEXT)) {
-    sysoplog("", false);
+    sysoplog(false) << "";
   }
   feedback(true);
   if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
@@ -1056,8 +1056,8 @@ void ExecNewUserCommand() {
     const string commandLine = stuff_in(syscfg.newuser_cmd, create_chain_file(), "", "", "", "");
 
     // Log what is happening here.
-    sysoplog("Executing New User Event: ", false);
-    sysoplog(commandLine.c_str(), true);
+    sysoplog(false) << "Executing New User Event: ";
+    sysoplog() << commandLine;
 
     session()->WriteCurrentUser();
     ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_NEWUSER));
@@ -1073,8 +1073,8 @@ void newuser() {
 
   input_language();
 
-  sysoplog("", false);
-  sysoplogfi(false, "*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
+  sysoplog(false);
+  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
              session()->instance_number());
 
   if (!CanCreateNewUserAccountHere() || hangup) {
@@ -1266,13 +1266,13 @@ bool check_dupes(const char *pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);
   if (user_number && user_number != session()->usernum) {
     string s = StringPrintf("    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
-    sysoplog(s, false);
+    sysoplog(false) << s;
     ssm(1, 0) << s;
 
     User user;
     session()->users()->ReadUser(&user, user_number);
     s = StringPrintf("      also entered by %s", user.GetName());
-    sysoplog(s, false);
+    sysoplog(false) << s;
     ssm(1, 0) << s;
 
     return true;

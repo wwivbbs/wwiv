@@ -421,7 +421,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
         bout.nl(2);
         bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
-      sysoplogf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
+      sysoplog() << StringPrintf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
       if (session()->IsUserOnline()) {
         session()->UpdateTopScreen();
       }
@@ -458,7 +458,7 @@ void add_arc(const char *arc, const char *file_name, int dos) {
       session()->UpdateTopScreen();
     }
     session()->CdHome();
-    sysoplogf("Added \"%s\" to %s", file_name, szArchiveFileName);
+    sysoplog() << StringPrintf("Added \"%s\" to %s", file_name, szArchiveFileName);
 
   } else {
     bout << "Sorry, can't add to temp archive.\r\n\n";
@@ -635,7 +635,7 @@ void temp_extract() {
             }
             session()->CdHome();
             if (s2[0]) {
-              sysoplog(s2);
+              sysoplog() << s2;
             }
           }
         } while (!hangup && ok && ok1);
@@ -682,9 +682,9 @@ void list_temp_text() {
         bool sent;
         ascii_send(s, &sent, &percent);
         if (sent) {
-          sysoplogf("Temp text D/L \"%s\"", szFileName);
+          sysoplog() << StringPrintf("Temp text D/L \"%s\"", szFileName);
         } else {
-          sysoplogf("Temp Tried text D/L \"%s\" %3.2f%%", szFileName, percent * 100.0);
+          sysoplog() << StringPrintf("Temp Tried text D/L \"%s\" %3.2f%%", szFileName, percent * 100.0);
           ok = 0;
         }
       }
@@ -982,7 +982,7 @@ void removefile() {
           if (u.mask & mask_extended) {
             delete_extended_description(u.filename);
           }
-          sysoplogf("- \"%s\" removed off of %s", u.filename, session()->directories[session()->current_user_dir().subnum].name);
+          sysoplog() << StringPrintf("- \"%s\" removed off of %s", u.filename, session()->directories[session()->current_user_dir().subnum].name);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int i1 = i; i1 < session()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);

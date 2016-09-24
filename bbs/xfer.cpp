@@ -133,7 +133,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
 
   File file(session()->directories[directory_num].path, stripfn(u->filename));
   if (!file.Exists()) {
-    sysoplogf("File \"%s\" to %s deleted by UL event.", u->filename, session()->directories[directory_num].name);
+    sysoplog() << "File \"" << u->filename << "\" to " << session()->directories[directory_num].name << " deleted by UL event.";
     bout << u->filename << " was deleted by the upload event.\r\n";
     return false;
   }

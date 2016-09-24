@@ -20,13 +20,8 @@
 #include "bbs/bbs.h"
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
-#include "bbs/wconstants.h"
 #include "sdk/user.h"
 #include "bbs/wsession.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "sdk/filenames.h"
 
 using namespace wwiv::sdk;
 
@@ -42,7 +37,7 @@ bool okconf(User *pUser) {
 }
 
 void add_ass(int num_points, const char *reason) {
-  sysoplog("***");
-  sysoplogf("*** ASS-PTS: %d, Reason: [%s]", num_points, reason);
+  sysoplog() << "***";
+  sysoplog() << "*** ASS-PTS: " << num_points << ", Reason: [" << reason << "]";
   session()->user()->IncrementAssPoints(num_points);
 }

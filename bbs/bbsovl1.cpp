@@ -278,13 +278,11 @@ void feedback(bool bNewUserFeedback) {
 void text_edit() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  string filename = input(12, true);
+  const string filename = input(12, true);
   if (filename.find(".log") != string::npos || !okfn(filename)) {
     return;
   }
-  std::stringstream logText;
-  logText << "@ Edited: " << filename;
-  sysoplog(logText.str());
+  sysoplog() << "@ Edited: " << filename;
   if (okfsed()) {
     external_text_edit(filename, session()->config()->gfilesdir(), 500, 
       session()->config()->gfilesdir(), MSGED_FLAG_NO_TAGLINE);

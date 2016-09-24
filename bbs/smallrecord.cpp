@@ -51,8 +51,8 @@ void DeleteSmallRecord(const char *name) {
   int found_user = session()->names()->FindUser(name);
   if (found_user < 1) {
     session()->status_manager()->AbortTransaction(pStatus);
-    sysoplogfi(false, "%s NOT ABLE TO BE DELETED#*#*#*#*#*#*#*#", name);
-    sysoplog("#*#*#*# Run //resetf to fix it", false);
+    sysoplog(false) << "#*#*#*#*#*#*#*# '" << name << "' NOT ABLE TO BE DELETED";
+    sysoplog(false) << "#*#*#*#*#*#*#*# Run //RESETF to fix it.";
     return;
   }
   session()->names()->Remove(found_user);

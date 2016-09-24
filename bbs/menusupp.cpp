@@ -157,7 +157,7 @@ void ValidateUser() {
   string userName = input(30, true);
   int nUserNum = finduser1(userName.c_str());
   if (nUserNum > 0) {
-    sysoplogf("@ Validated user #%d", nUserNum);
+    sysoplog() << "@ Validated user #" << nUserNum;
     valuser(nUserNum);
   } else {
     bout << "Unknown user.\r\n";
@@ -444,13 +444,13 @@ void JumpEdit() {
 
 void BoardEdit() {
   write_inst(INST_LOC_BOARDEDIT, 0, INST_FLAGS_NONE);
-  sysoplog("@ Ran Board Edit");
+  sysoplog() << "@ Ran Board Edit";
   boardedit();
 }
 
 void ChainEdit() {
   write_inst(INST_LOC_CHAINEDIT, 0, INST_FLAGS_NONE);
-  sysoplog("@ Ran Chain Edit");
+  sysoplog() << "@ Ran Chain Edit";
   chainedit();
 }
 
@@ -461,7 +461,7 @@ void ToggleChat() {
   bool bNewAvail = sysop2();
   if (bOldAvail != bNewAvail) {
     bout << ((bNewAvail) ? "|#5Sysop now available\r\n" : "|#3Sysop now unavailable\r\n");
-    sysoplog("@ Changed sysop available status");
+    sysoplog() << "@ Changed sysop available status";
   } else {
     bout << "|#6Unable to toggle Sysop availability (hours restriction)\r\n";
   }
@@ -479,13 +479,13 @@ void CallOut() {
 
 void DirEdit() {
   write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
-  sysoplog("@ Ran Directory Edit");
+  sysoplog() << "@ Ran Directory Edit";
   dlboardedit();
 }
 
 void EventEdit() {
   write_inst(INST_LOC_EVENTEDIT, 0, INST_FLAGS_NONE);
-  sysoplog("- Ran Event Editor");
+  sysoplog() << "- Ran Event Editor";
   eventedit();
 }
 
@@ -518,13 +518,13 @@ void EditText() {
 
 void EditBulletins() {
   write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
-  sysoplog("@ Ran Gfile Edit");
+  sysoplog() << "@ Ran Gfile Edit";
   gfileedit();
 }
 
 void ReadAllMail() {
   write_inst(INST_LOC_MAILR, 0, INST_FLAGS_NONE);
-  sysoplog("@ Read mail");
+  sysoplog() << "@ Read mail";
   mailr();
 }
 
@@ -573,7 +573,7 @@ void PackMessages() {
 
 void InitVotes() {
   write_inst(INST_LOC_VOTE, 0, INST_FLAGS_NONE);
-  sysoplog("@ Ran Ivotes");
+  sysoplog() << "@ Ran Ivotes";
   ivotes();
 }
 
@@ -596,13 +596,13 @@ void PrintStatus() {
 
 void TextEdit() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-  sysoplog("@ Ran Text Edit");
+  sysoplog() << "@ Ran Text Edit";
   text_edit();
 }
 
 void UserEdit() {
   write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
-  sysoplog("@ Ran User Edit");
+  sysoplog() << "@ Ran User Edit";
   uedit(session()->usernum, UEDIT_NONE);
 }
 

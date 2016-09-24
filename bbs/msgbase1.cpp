@@ -290,7 +290,7 @@ void post() {
   close_sub();
 
   session()->UpdateTopScreen();
-  sysoplogf("+ \"%s\" posted on %s", p.title, session()->current_sub().name.c_str());
+  sysoplog() << StringPrintf("+ \"%s\" posted on %s", p.title, session()->current_sub().name.c_str());
   bout << "Posted on " << session()->current_sub().name << wwiv::endl;
   if (!session()->current_sub().nets.empty()) {
     session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
@@ -504,7 +504,7 @@ void remove_post() {
           }
         }
       }
-      sysoplogf("- \"%s\" removed from %s", get_post(nPostNumber)->title,
+      sysoplog() << StringPrintf("- \"%s\" removed from %s", get_post(nPostNumber)->title,
         session()->current_sub().name.c_str());
       delete_message(nPostNumber);
       bout << "\r\nMessage removed.\r\n\n";

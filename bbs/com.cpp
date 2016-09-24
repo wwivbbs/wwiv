@@ -32,8 +32,11 @@
 #include "core/wwivassert.h"
 
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 extern char str_quit[];
+static long time_lastchar_pressed = 0;
+
 
 void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc) {
   if (session()->localIO()->WhereX()) {
@@ -61,7 +64,7 @@ bool CheckForHangup() {
   if (!hangup && session()->using_modem && !session()->remoteIO()->carrier()) {
     hangup = true;
     if (session()->IsUserOnline()) {
-      sysoplog("Hung Up.");
+      sysoplog() << "Hung Up.";
     }
   }
   return hangup;
@@ -111,6 +114,10 @@ void makeansi(int attr, char *out_buffer, bool forceit) {
   }
 }
 
+void lastchar_pressed() {
+  time_lastchar_pressed = timer1();
+}
+
 /* This function returns one character from either the local keyboard or
 * remote com port (if applicable).  After 1.5 minutes of inactivity, a
 * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
@@ -118,9 +125,8 @@ void makeansi(int attr, char *out_buffer, bool forceit) {
 char getkey() {
   resetnsp();
   bool beepyet = false;
-  timelastchar1 = timer1();
+  lastchar_pressed();
 
-  using namespace wwiv::strings;
   long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
   long tv1 = tv - 1092L;     // change 4.31 Build3
 
@@ -129,18 +135,18 @@ char getkey() {
     while (!bkbhit() && !hangup) {
       giveup_timeslice();
       long dd = timer1();
-      if (dd < timelastchar1 && ((dd + 1000) > timelastchar1)) {
-        timelastchar1 = dd;
+      if (dd < time_lastchar_pressed && ((dd + 1000) > time_lastchar_pressed)) {
+        time_lastchar_pressed = dd;
       }
-      if (std::abs(dd - timelastchar1) > 65536L) {
-        timelastchar1 -= static_cast<int>(floor(SECONDS_PER_DAY * 18.2));
+      if (std::abs(dd - time_lastchar_pressed) > 65536L) {
+        time_lastchar_pressed -= static_cast<int>(floor(SECONDS_PER_DAY * 18.2));
       }
-      if ((dd - timelastchar1) > tv1 && !beepyet) {
+      if ((dd - time_lastchar_pressed) > tv1 && !beepyet) {
         beepyet = true;
         bputch(CG);
       }
       session()->UpdateShutDownStatus();
-      if (std::abs(dd - timelastchar1) > tv) {
+      if (std::abs(dd - time_lastchar_pressed) > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";
         hangup = true;

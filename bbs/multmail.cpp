@@ -81,7 +81,7 @@ void multimail(int *pnUserNumber, int numu) {
   strcpy(m.title, data.title.c_str());
 
   bout <<  "Mail sent to:\r\n";
-  sysoplog("Multi-Mail to:");
+  sysoplog() << "Multi-Mail to:";
 
   lineadd(&m.msg, "\003""7----", "email");
 
@@ -118,7 +118,7 @@ void multimail(int *pnUserNumber, int numu) {
       session()->user()->SetNumEmailSentToday(session()->user()->GetNumEmailSentToday() + 1);
     }
     session()->status_manager()->CommitTransaction(pStatus);
-    sysoplog(s);
+    sysoplog() << s;
     bout << s;
     bout.nl();
     if (show_all) {

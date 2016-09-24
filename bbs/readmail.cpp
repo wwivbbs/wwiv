@@ -651,10 +651,10 @@ void readmail(int mode) {
         send_file(s1, &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
           bout << "\r\nAttached file sent.\r\n";
-          sysoplogf("Downloaded %ldk of attached file %s.", (fsr.numbytes + 1023) / 1024, fsr.filename);
+          sysoplog() << StringPrintf("Downloaded %ldk of attached file %s.", (fsr.numbytes + 1023) / 1024, fsr.filename);
         } else {
           bout << "\r\nAttached file not completely sent.\r\n";
-          sysoplogf("Tried to download attached file %s.", fsr.filename);
+          sysoplog() << StringPrintf("Tried to download attached file %s.", fsr.filename);
         }
         bout.nl();
         break;
@@ -1194,7 +1194,7 @@ void readmail(int mode) {
           send_file(fileTemp.full_pathname().c_str(), &bSent, &bAbort, fileTemp.full_pathname().c_str(), -1, b.size());
           if (bSent) {
             bout << "E-mail download successful.\r\n";
-            sysoplog("Downloaded E-mail");
+            sysoplog() << "Downloaded E-mail";
           } else {
             bout << "E-mail download aborted.\r\n";
           }

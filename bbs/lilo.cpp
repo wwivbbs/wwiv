@@ -251,9 +251,9 @@ static void DoFailedLoginAttempt() {
   const string logline = StrCat("### ILLEGAL LOGON for ",
     session()->names()->UserName(session()->usernum),
     " (",  ctim(timer()), ")");
-  sysoplog("", false);
-  sysoplog(logline, false);
-  sysoplog("", false);
+  sysoplog(false) << "";
+  sysoplog(false) << logline;
+  sysoplog(false) << "";
   session()->usernum = 0;
 }
 
@@ -557,29 +557,28 @@ static void UpdateLastOnFileAndUserLog() {
     pausescr();
   }
 
+  {
+    const string username_num = session()->names()->UserName(session()->usernum);
+    const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
+      pStatus->GetCallerNumber(),
+      username_num.c_str(),
+      times(),
+      fulldate(),
+      session()->GetCurrentSpeed().c_str(),
+      session()->user()->GetTimesOnToday(),
+      session()->instance_number());
+    sysoplog(false) << "";
+    sysoplog(false) << stripcolors(sysop_log_line);
+    sysoplog(false) << "";
+  }
   if (session()->GetEffectiveSl() != 255 || incom) {
-    {
-      const string username_num = session()->names()->UserName(session()->usernum);
-      const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
-        pStatus->GetCallerNumber(),
-        username_num.c_str(),
-        times(),
-        fulldate(),
-        session()->GetCurrentSpeed().c_str(),
-        session()->user()->GetTimesOnToday(),
-        session()->instance_number());
-        sysoplog("", false);
-        sysoplog(stripcolors(sysop_log_line), false);
-        sysoplog("", false);
-    }
-
     string remote_address = session()->remoteIO()->remote_info().address;
     string cid_name = session()->remoteIO()->remote_info().cid_name;
     if (!remote_address.empty()) {
-      sysoplogf("CID NUM : %s", remote_address.c_str());
+      sysoplog() << "CID NUM : " << remote_address;
     }
     if (!cid_name.empty()) {
-      sysoplogf("CID NAME: %s", cid_name.c_str());
+      sysoplog() << "CID NAME: " << cid_name;
     }
     string log_line;
     if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
@@ -989,8 +988,8 @@ void logoff() {
   string text = "  Logged Off At ";
   text += times();
   if (session()->GetEffectiveSl() != 255 || incom) {
-    sysoplog("", false);
-    sysoplog(stripcolors(text.c_str()), false);
+    sysoplog(false) << "";
+    sysoplog(false) << stripcolors(text);
   }
   session()->user()->SetLastBaudRate(modem_speed);
 
@@ -1016,8 +1015,8 @@ void logoff() {
   }
   time_t lTime = time(nullptr);
   session()->user()->SetLastOnDateNumber(lTime);
-  sysoplogfi(false, "Read: %lu   Time on: %lu", session()->GetNumMessagesReadThisLogon(),
-             static_cast<long>((timer() - timeon) / MINUTES_PER_HOUR));
+  sysoplog(false) << "Read: " << session()->GetNumMessagesReadThisLogon() 
+      << "   Time on: "  << (timer() - timeon) / MINUTES_PER_HOUR;
   {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {

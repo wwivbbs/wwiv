@@ -301,10 +301,10 @@ void sendout_email(EmailData& data) {
     }
     if (data.an) {
       logMessage += session()->names()->UserName(data.user_number);
-      sysoplog(logMessage.c_str());
+      sysoplog() << logMessage;
     } else {
       string tempLogMessage = StrCat(logMessage, session()->names()->UserName(data.user_number));
-      sysoplog(tempLogMessage);
+      sysoplog() << tempLogMessage;
       logMessage += ">UNKNOWN<";
     }
     if (data.system_number == 0 
@@ -338,7 +338,7 @@ void sendout_email(EmailData& data) {
       }
     }
     logMessage += logMessagePart;
-    sysoplog(logMessage);
+    sysoplog() << logMessage;
   }
 
   WStatus* pStatus = session()->status_manager()->BeginTransaction();

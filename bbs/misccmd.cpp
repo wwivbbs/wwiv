@@ -179,11 +179,11 @@ void kill_old_email() {
             bout.nl();
             if (found) {
               bout << "Mail and file deleted.\r\n\n";
-              sysoplogf("Deleted mail and attached file %s.", fsr.filename);
+              sysoplog() << "Deleted mail and attached file: " << fsr.filename;
             } else {
               bout << "Mail deleted.\r\n\n";
               const string username_num = session()->names()->UserName(m1.touser);
-              sysoplogf("Deleted mail sent to %s", username_num.c_str());
+              sysoplog() << "Deleted mail sent to " << username_num;
             }
           } else {
             bout << "Mail file changed; try again.\r\n";

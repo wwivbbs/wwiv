@@ -157,7 +157,7 @@ void run_chain(int nChainum) {
     std::to_string(session()->primary_port()),
     std::to_string(modem_speed), "");
 
-  sysoplogf("!Ran \"%s\"", session()->chains[nChainum].description);
+  sysoplog() << "!Ran \"" << session()->chains[nChainum].description << "\"";
   session()->user()->SetNumChainsRun(session()->user()->GetNumChainsRun() + 1);
 
   int flags = 0;

@@ -110,7 +110,7 @@ char bgetch() {
         ch = static_cast<char>(((ch == F10) || (ch == CF10)) ? 2 : 0);
       }
     }
-    timelastchar1 = timer1();
+    lastchar_pressed();
   } else if (incom && bkbhitraw()) {
     ch = bgetchraw();
     session()->SetLastKeyLocal(false);

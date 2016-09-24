@@ -318,8 +318,8 @@ void attach_file(int mode) {
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();
                         const string to_user_name = session()->names()->UserName(m.touser);
-                        sysoplog(StringPrintf("Attached %s (%u bytes) in message to %s",
-                                fsr.filename, fsr.numbytes, to_user_name.c_str()));
+                        sysoplog() << StringPrintf("Attached %s (%u bytes) in message to %s",
+                                       fsr.filename, fsr.numbytes, to_user_name.c_str());
                         bout << "File attached.\r\n" ;
                       }
                     } else {

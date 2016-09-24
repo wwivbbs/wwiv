@@ -316,10 +316,10 @@ void LogUserFunction(const MenuInstanceData* menu_data, const string& command, M
     sysopchar(command);
     break;
   case MENU_LOGTYPE_COMMAND:
-    sysoplog(pMenu->szExecute);
+    sysoplog() << pMenu->szExecute;
     break;
   case MENU_LOGTYPE_DESC:
-    sysoplog(pMenu->szMenuText[0] ? pMenu->szMenuText : pMenu->szExecute);
+    sysoplog() << (pMenu->szMenuText[0] ? pMenu->szMenuText : pMenu->szExecute);
     break;
   case MENU_LOGTYPE_NONE:
   default:
@@ -329,7 +329,7 @@ void LogUserFunction(const MenuInstanceData* menu_data, const string& command, M
 
 void MenuSysopLog(const string& msg) {
   const string log_message = StrCat("*MENU* : ", msg);
-  sysoplog(log_message);
+  sysoplog() << log_message;
   bout << log_message << wwiv::endl;
 }
 

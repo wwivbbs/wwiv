@@ -631,7 +631,7 @@ static void change_password() {
     } else {
       session()->user()->SetPassword(password.c_str());
       bout << "\r\n|#1Password changed.\r\n\n";
-      sysoplog("Changed Password.");
+      sysoplog() << "Changed Password.";
     }
   } else {
     bout << "\r\n|#6VERIFY FAILED.\r\n|#6Password not changed.\r\n\n";

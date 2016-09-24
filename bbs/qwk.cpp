@@ -118,7 +118,7 @@ void build_qwk_packet() {
 
   if (qwk_info.file < 1) {
     bout.bputs("Open error");
-    sysoplog("Couldn't open MESSAGES.DAT");
+    sysoplog() << "Couldn't open MESSAGES.DAT";
     return;
   }
 
@@ -209,7 +209,7 @@ void build_qwk_packet() {
   if (qwk_info.abort || session()->user()->data.qwk_dontsetnscan || hangup) {
     save_qscan.restore();
     if (qwk_info.abort) {
-      sysoplog("Aborted");
+      sysoplog() << "Aborted";
     }
   }
   if (session()->user()->data.qwk_delete_mail && !qwk_info.abort) {
@@ -545,7 +545,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
   char* temp = static_cast<char *>(malloc(new_size));
 
   if (!temp) {
-    sysoplog("Couldn't allocate memory to make qwk ready");
+    sysoplog() << "Couldn't allocate memory to make qwk ready";
     return;
   }
   while (pos < *len && new_pos < new_size && !hangup) {
@@ -837,12 +837,12 @@ void qwk_menu() {
       break;
 
     case 'U':
-      sysoplog("Upload REP packet");
+      sysoplog() << "Upload REP packet";
       upload_reply_packet();
       break;
 
     case 'D':
-      sysoplog("Download QWK packet");
+      sysoplog() << "Download QWK packet";
       qwk_system_name(temp);
       strcat(temp, ".REP");
       sprintf(namepath, "%s%s", QWK_DIRECTORY, temp);
@@ -851,13 +851,13 @@ void qwk_menu() {
       build_qwk_packet();
 
       if (File::Exists(namepath)) {
-        sysoplog("REP was uploaded");
+        sysoplog() << "REP was uploaded";
         upload_reply_packet();
       }
       break;
 
     case 'B':
-      sysoplog("Down/Up QWK/REP packet");
+      sysoplog() << "Down/Up QWK/REP packet";
 
       qwk_system_name(temp);
       strcat(temp, ".REP");
@@ -872,17 +872,17 @@ void qwk_menu() {
       break;
 
     case 'S':
-      sysoplog("Select Subs");
+      sysoplog() << "Select Subs";
       config_qscan();
       break;
 
     case 'C':
-      sysoplog("Config Options");
+      sysoplog() << "Config Options";
       config_qwk_bw();
       break;
 
     case '%':
-      sysoplog("Set %");
+      sysoplog() << "Set %";
       bout.Color(2);
       bout.bprintf("Enter percent of all messages in all QSCAN subs to pack:");
       bout.mpl(3);
@@ -895,7 +895,7 @@ void qwk_menu() {
 
     case '1':
       if (so()) {
-        sysoplog("Ran Sysop Config");
+        sysoplog() << "Ran Sysop Config";
         qwk_sysop();
       }
       break;

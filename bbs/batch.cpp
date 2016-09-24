@@ -139,9 +139,9 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
         file.Write(&u, sizeof(uploadsrec));
         file.Close();
         if (lCharsPerSecond) {
-          sysoplogf("Downloaded \"%s\" (%ld cps)", u.filename, lCharsPerSecond);
+          sysoplog() << StringPrintf("Downloaded \"%s\" (%ld cps)", u.filename, lCharsPerSecond);
         } else {
-          sysoplogf("Downloaded \"%s\"", u.filename);
+          sysoplog() << StringPrintf("Downloaded \"%s\"", u.filename);
         }
         if (syscfg.sysconfig & sysconfig_log_dl) {
           User user;
@@ -159,7 +159,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
       return;
     }
   }
-  sysoplogf("!!! Couldn't find \"%s\" in DL batch queue.", file_name.c_str());
+  sysoplog() << "!!! Couldn't find \"" << file_name << "\" in DL batch queue.";
 }
 
 void didnt_upload(const batchrec& b) {
@@ -204,7 +204,7 @@ void didnt_upload(const batchrec& b) {
       return;
     }
   }
-  sysoplogf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
+  sysoplog() << StringPrintf("!!! Couldn't find \"%s\" in transfer area.", b.filename);
 }
 
 static void uploaded(const string& file_name, long lCharsPerSecond) {
@@ -272,7 +272,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               FileAreaSetRecord(fileDn, nRecNum);
               fileDn.Write(&u, sizeof(uploadsrec));
               fileDn.Close();
-              sysoplogf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, session()->directories[b.dir].name, lCharsPerSecond);
+              sysoplog() << StringPrintf("+ \"%s\" uploaded on %s (%ld cps)", u.filename, session()->directories[b.dir].name, lCharsPerSecond);
               bout << "Uploaded '" << u.filename << "' to "  << session()->directories[b.dir].name 
                    << " (" << lCharsPerSecond << " cps)" << wwiv::endl;
             }
@@ -283,14 +283,14 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
       }
       it = delbatch(it);
       if (try_to_ul(file_name)) {
-        sysoplogf("!!! Couldn't find file \"%s\" in directory.", file_name.c_str());
+        sysoplog() << StringPrintf("!!! Couldn't find file \"%s\" in directory.", file_name.c_str());
         bout << "Deleting - couldn't find data for file " << file_name << wwiv::endl;
       }
       return;
     }
   }
   if (try_to_ul(file_name)) {
-    sysoplogf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
+    sysoplog() << StringPrintf("!!! Couldn't find \"%s\" in UL batch queue.", file_name.c_str());
     bout << "Deleting - don't know what to do with file " << file_name << wwiv::endl;
 
     File::Remove(session()->batch_directory(), file_name);
@@ -304,8 +304,7 @@ static void bihangup(int up) {
   int color = 5;
 
   dump();
-  // Maybe we could use a local instead of timelastchar1
-  timelastchar1 = timer1();
+  long batch_lastchar = timer1();
   long nextbeep = 18L;
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
   bout << "|#2Press 'H' to hangup, or any other key to return to system.\r\n";
@@ -315,11 +314,11 @@ static void bihangup(int up) {
   do {
     while (!bkbhit() && !hangup) {
       long dd = timer1();
-      if (std::abs(dd - timelastchar1) > 65536L) {
+      if (std::abs(dd - batch_lastchar) > 65536L) {
         nextbeep -= 1572480L;
-        timelastchar1 -= 1572480L;
+        batch_lastchar -= 1572480L;
       }
-      if ((dd - timelastchar1) > nextbeep) {
+      if ((dd - batch_lastchar) > nextbeep) {
         bout << "\r|#" << color << (static_cast<int>(182L - nextbeep) / 18L) <<
           "  " << static_cast<char>(7);
         nextbeep += 18L;
@@ -330,7 +329,7 @@ static void bihangup(int up) {
           color = 6;
         }
       }
-      if (std::abs(dd - timelastchar1) > 182L) {
+      if (std::abs(dd - batch_lastchar) > 182L) {
         bout.nl();
         bout << "Thank you for calling.";
         bout.nl();
@@ -366,7 +365,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   if (bHangupAfterDl) {
     message += ", HAD";
   }
-  sysoplog(message);
+  sysoplog() << message;
   bout.nl();
   bout << message;
   bout.nl(2);
@@ -445,7 +444,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   if (bHangupAfterDl) {
     message += ", HAD";
   }
-  sysoplog(message);
+  sysoplog() << message;
   bout.nl();
   bout << message;
   bout.nl(2);
@@ -552,7 +551,7 @@ static void handle_dszline(char *l) {
     case 'l':
     case 'U':
       // error
-      sysoplogf("Error transferring \"%s\"", ss);
+      sysoplog() << StringPrintf("Error transferring \"%s\"", ss);
       break;
     }
   }
@@ -731,7 +730,7 @@ void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
-  sysoplog(download_log_entry);
+  sysoplog() << download_log_entry;
   bout.nl();
   bout << download_log_entry;
   bout.nl(2);
@@ -747,7 +746,7 @@ static void dszbatchul(bool bHangupAfterDl, char *command_line, char *descriptio
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
-  sysoplog(download_log_entry);
+  sysoplog() << download_log_entry;
   bout.nl();
   bout << download_log_entry;
   bout.nl(2);
