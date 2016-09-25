@@ -20,6 +20,7 @@
 #define __INCLUDED_STRINGS_H__
 
 #include <cstdint>
+#include <cstring> // strncpy
 #include <sstream>
 #include <string>
 #include <vector>

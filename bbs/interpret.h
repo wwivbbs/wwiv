@@ -18,7 +18,9 @@
 #ifndef __INCLUDED_BBS_INTERPRET_H__
 #define __INCLUDED_BBS_INTERPRET_H__
 
-const char *interpret(char chKey);
+#include <string>
+
+std::string interpret(char chKey);
 
 
 #endif  // __INCLUDED_BBS_INTERPRET_H__

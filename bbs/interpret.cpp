@@ -26,191 +26,132 @@
 #include "core/strings.h"
 
 using namespace wwiv::strings;
+using std::string;
+using std::to_string;
 
-const char *interpret(char chKey) {
-  static char s[255];
-
-  memset(s, 0, sizeof(s));
+std::string interpret(char ch) {
   if (g_flags & g_flag_disable_mci) {
     return "";
   }
 
-  switch (chKey) {
+  switch (ch) {
   case '@':                               // Dir name
-    strcpy(s, session()->directories[session()->current_user_dir().subnum].name);
-    break;
+    return session()->directories[session()->current_user_dir().subnum].name;
   case '~':                               // Total mails/feedbacks sent
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumEmailSent() +
+    return to_string(session()->user()->GetNumEmailSent() +
              session()->user()->GetNumFeedbackSent() + session()->user()->GetNumNetEmailSent());
-    break;
   case '/':                               // Today's date
-    strcpy(s, fulldate());
-    break;
+    return fulldate();
   case '%':                               // Time left today
-    snprintf(s, sizeof(s), "%d", static_cast<int>(nsl() / 60));
+    return to_string(static_cast<int>(nsl() / 60));
     break;
   case '#':                               // User's number
-    snprintf(s, sizeof(s), "%d", session()->usernum);
-    break;
+    return to_string(session()->usernum);
   case '$':                               // File points
-    snprintf(s, sizeof(s), "%lu", session()->user()->GetFilePoints());
-    break;
+    return to_string(session()->user()->GetFilePoints());
   case '*':                               // User reg num
-    snprintf(s, sizeof(s), "%lu", session()->user()->GetWWIVRegNumber());
-    break;
+    return to_string(session()->user()->GetWWIVRegNumber());
   case '-':                               // Aggravation points
-    snprintf(s, sizeof(s), "%u", session()->user()->GetAssPoints());
-    break;
+    return to_string(session()->user()->GetAssPoints());
   case ':':                               // Sub number
-    strcpy(s, session()->current_user_sub().keys);
-    break;
+    return session()->current_user_sub().keys;
   case ';':                               // Directory number
-    strcpy(s, session()->current_user_dir().keys);
-    break;
+    return session()->current_user_dir().keys;
   case '!':                               // Built-in pause
     pausescr();
-    break;
-  case '&': {
-    strcpy(s, session()->user()->HasAnsi() ? "ANSI" : "ASCII");
-  }
-  break;
+    return "";
+  case '&':
+    return session()->user()->HasAnsi() ? "ANSI" : "ASCII";
   case 'A':                               // User's age
-    snprintf(s, sizeof(s), "%d", session()->user()->GetAge());
-    break;
+    return to_string(session()->user()->GetAge());
   case 'a':                               // User's language
-    strcpy(s, session()->cur_lang_name.c_str());
-    break;
+    return session()->cur_lang_name;
   case 'B':                               // User's birthday
-    snprintf(s, sizeof(s), "%d/%d/%d", session()->user()->GetBirthdayMonth(),
+    return StringPrintf("%d/%d/%d", session()->user()->GetBirthdayMonth(),
              session()->user()->GetBirthdayDay(), session()->user()->GetBirthdayYear());
-    break;
   case 'b':                               // Minutes in bank
-    snprintf(s, sizeof(s), "%u", session()->user()->GetTimeBankMinutes());
-    break;
+    return to_string(session()->user()->GetTimeBankMinutes());
   case 'C':                               // User's city
-    strcpy(s, session()->user()->GetCity());
-    break;
+    return session()->user()->GetCity();
   case 'c':                               // User's country
-    strcpy(s, session()->user()->GetCountry());
-    break;
+    return session()->user()->GetCountry();
   case 'D':                               // Files downloaded
-    snprintf(s, sizeof(s), "%u", session()->user()->GetFilesDownloaded());
-    break;
+    return to_string(session()->user()->GetFilesDownloaded());
   case 'd':                               // User's DSL
-    snprintf(s, sizeof(s), "%d", session()->user()->GetDsl());
-    break;
+    return to_string(session()->user()->GetDsl());
   case 'E':                               // E-mails sent
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumEmailSent());
-    break;
+    return to_string(session()->user()->GetNumEmailSent());
   case 'e':                               // Net E-mails sent
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumNetEmailSent());
-    break;
+    return to_string(session()->user()->GetNumNetEmailSent());
   case 'F':
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumFeedbackSent());
-    break;
+    return to_string(session()->user()->GetNumFeedbackSent());
   case 'f':                               // First time user called
-    strcpy(s, session()->user()->GetFirstOn());
-    break;
+    return session()->user()->GetFirstOn();
   case 'G':                               // MessaGes read
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumMessagesRead());
-    break;
+    return to_string(session()->user()->GetNumMessagesRead());
   case 'g':                               // Gold
-    snprintf(s, sizeof(s), "%f", session()->user()->GetGold());
-    break;
+    return to_string(session()->user()->GetGold());
   case 'I':                               // User's call sIgn
-    strcpy(s, session()->user()->GetCallsign());
-    break;
+    return session()->user()->GetCallsign();
   case 'i':                               // Illegal log-ons
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumIllegalLogons());
-    break;
+    return to_string(session()->user()->GetNumIllegalLogons());
   case 'J':                               // Message conference
-    strcpy(s, reinterpret_cast<char*>(subconfs[uconfsub[session()->GetCurrentConferenceMessageArea()].confnum].name));
-    break;
+    return reinterpret_cast<char*>(subconfs[uconfsub[session()->GetCurrentConferenceMessageArea()].confnum].name);
   case 'j':                               // Transfer conference
-    strcpy(s, reinterpret_cast<char*>(dirconfs[uconfdir[session()->GetCurrentConferenceFileArea()].confnum].name));
-    break;
+    return reinterpret_cast<char*>(dirconfs[uconfdir[session()->GetCurrentConferenceFileArea()].confnum].name);
   case 'K':                               // Kb uploaded
-    snprintf(s, sizeof(s), "%lu", session()->user()->GetUploadK());
-    break;
+    return to_string(session()->user()->GetUploadK());
   case 'k':                               // Kb downloaded
-    snprintf(s, sizeof(s), "%lu", session()->user()->GetDownloadK());
-    break;
+    return to_string(session()->user()->GetDownloadK());
   case 'L':                               // Last call
-    strcpy(s, session()->user()->GetLastOn());
-    break;
+    return session()->user()->GetLastOn();
   case 'l':                               // Number of logons
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumLogons());
-    break;
+    return to_string(session()->user()->GetNumLogons());
   case 'M':                               // Mail waiting
-    snprintf(s, sizeof(s), "%d", session()->user()->GetNumMailWaiting());
-    break;
+    return to_string(session()->user()->GetNumMailWaiting());
   case 'm':                               // Messages posted
-    snprintf(s, sizeof(s), "%u", session()->user()->GetNumMessagesPosted());
-    break;
+    return to_string(session()->user()->GetNumMessagesPosted());
   case 'N':                               // User's name
-    strcpy(s, session()->user()->GetName());
-    break;
+    return session()->user()->GetName();
   case 'n':                               // Sysop's note
-    strcpy(s, session()->user()->GetNote());
-    break;
+    return session()->user()->GetNote();
   case 'O':                               // Times on today
-    snprintf(s, sizeof(s), "%d", session()->user()->GetTimesOnToday());
-    break;
+    return to_string(session()->user()->GetTimesOnToday());
   case 'o':                               // Time on today
-    snprintf(s, sizeof(s), "%ld", static_cast<long>((session()->user()->GetTimeOn() +
-             timer() - timeon) /
-             SECONDS_PER_MINUTE));
-    break;
+    return to_string(static_cast<long>(
+      (session()->user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE));
   case 'P':                               // BBS phone
-    strcpy(s, reinterpret_cast<char*>(syscfg.systemphone));
-    break;
+    return reinterpret_cast<char*>(syscfg.systemphone);
   case 'p':                               // User's phone
-    strcpy(s, session()->user()->GetDataPhoneNumber());
-    break;
+    return session()->user()->GetDataPhoneNumber();
   case 'R':                               // User's real name
-    strcpy(s, session()->user()->GetRealName());
-    break;
+    return session()->user()->GetRealName();
   case 'r':                               // Last baud rate
-    snprintf(s, sizeof(s), "%d", session()->user()->GetLastBaudRate());
-    break;
+    return to_string(session()->user()->GetLastBaudRate());
   case 'S':                               // User's SL
-    snprintf(s, sizeof(s), "%d", session()->user()->GetSl());
-    break;
+    return to_string(session()->user()->GetSl());
   case 's':                               // User's street address
-    strcpy(s, session()->user()->GetStreet());
-    break;
+    return session()->user()->GetStreet();
   case 'T':                               // User's sTate
-    strcpy(s, session()->user()->GetState());
-    break;
+    return session()->user()->GetState();
   case 't':                               // Current time
-    strcpy(s, times());
-    break;
+    return times();
   case 'U':                               // Files uploaded
-    snprintf(s, sizeof(s), "%u", session()->user()->GetFilesUploaded());
-    break;
+    return to_string(session()->user()->GetFilesUploaded());
   case 'u':                               // Current sub
-    to_char_array(s, session()->subs().sub(session()->current_user_sub().subnum).name);
-    break;
+    return session()->subs().sub(session()->current_user_sub().subnum).name;
   case 'W':                               // Total # of messages in sub
-    snprintf(s, sizeof(s), "%d", session()->GetNumMessagesInCurrentMessageArea());
-    break;
+    return to_string(session()->GetNumMessagesInCurrentMessageArea());
   case 'X':                               // User's sex
-    snprintf(s, sizeof(s), "%c", session()->user()->GetGender());
-    break;
+    return StringPrintf("%c", session()->user()->GetGender());
   case 'Y':                               // Your BBS name
-    strcpy(s, syscfg.systemname);
-    break;
-  case 'y': {                              // Computer type
-    const std::string ctype = ctypes(session()->user()->GetComputerType());
-    strcpy(s, ctype.c_str());
-  } break;
+    return syscfg.systemname;
+  case 'y':                               // Computer type
+    return ctypes(session()->user()->GetComputerType());
   case 'Z':                               // User's zip code
-    strcpy(s, session()->user()->GetZipcode());
-    break;
+    return session()->user()->GetZipcode();
   default:
     return "";
   }
-
-  return s;
 }
 

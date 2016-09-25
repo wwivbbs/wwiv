@@ -132,7 +132,8 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
             cp -= 2;
             bout.Color(0);
           } else if (buffer[cp - 2] == CO) {
-            for (string::size_type i = strlen(interpret(buffer[cp - 1])); i > 0; i--) {
+            const string interpreted = interpret(buffer[cp - 1]);
+            for (auto i = interpreted.size(); i > 0; i--) {
               bout.bs();
             }
             cp -= 2;

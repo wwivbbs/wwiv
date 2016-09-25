@@ -177,7 +177,7 @@ int bputch(char c, bool bUseInternalBuffer) {
 
   if (change_color == BPUTCH_MACRO_CHAR_CODE) {
     change_color = BPUTCH_NO_CODE;
-    return bout.bputs(static_cast<const char *>(interpret(c)));
+    return bout.bputs(interpret(c));
   } else if (change_color == BPUTCH_CTRLO_CODE) {
     if (c == CO) {
       change_color = BPUTCH_MACRO_CHAR_CODE;
