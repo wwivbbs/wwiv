@@ -344,7 +344,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
-      sysoplog() << StringPrintf("!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
+      sysoplog() << "!!! Unable to create Hangup Event for SyncFoss External program: " << GetLastError();
       return false;
     }
 
@@ -353,7 +353,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
-      sysoplog() << StringPrintf("!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
+      sysoplog() << "!!! Unable to create mail slot for reading for SyncFoss External program: " << GetLastError();
       CloseHandle(hSyncHangupEvent);
       hSyncHangupEvent = INVALID_HANDLE_VALUE;
       return false;
@@ -380,7 +380,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
 
   if (!bRetCP) {
     delete[] title;
-    sysoplog() << StringPrintf("!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(), GetLastError());
+    sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Code: " << GetLastError();
     if (bUsingSync) {
       fprintf(hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(),
               GetLastError());

@@ -139,9 +139,6 @@ static void build_header() {
   if (session()->user()->data.lp_options & cfl_days_old) {
     header += "Age ";
   }
-  if (session()->user()->data.lp_options & cfl_times_a_day_dloaded) {
-    header += "DL'PD ";
-  }
   if (session()->user()->data.lp_options & cfl_days_between_dloads) {
     header += "DBDLS ";
   }
@@ -387,14 +384,6 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     sprintf(element, " |%02d%3d", session()->user()->data.lp_colors[6], nDaysOld);
     file_information += element;
     width += 4;
-  }
-  if (session()->user()->data.lp_options & cfl_times_a_day_dloaded) {
-    float t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
-    buffer = StringPrintf("%2.2f", t);
-    buffer.resize(5);
-    sprintf(element, " |%02d%-5s", session()->user()->data.lp_colors[8], buffer.c_str());
-    file_information += element;
-    width += 6;
   }
   if (session()->user()->data.lp_options & cfl_days_between_dloads) {
     float t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
@@ -1402,7 +1391,7 @@ static int remove_filename(const char *file_name, int dn) {
         if (u.mask & mask_extended) {
           delete_extended_description(u.filename);
         }
-        sysoplog() << StringPrintf("- \"%s\" removed off of %s", u.filename, session()->directories[dn].name);
+        sysoplog() << "- '" << u.filename << "' removed off of " << session()->directories[dn].name;
 
         if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
           for (int i1 = i; i1 < session()->numf; i1++) {

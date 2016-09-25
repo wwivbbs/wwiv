@@ -63,7 +63,7 @@ extern int foundany;
 #define cfl_file_points             0x00000020
 #define cfl_days_old                0x00000040
 #define cfl_upby                    0x00000080
-#define cfl_times_a_day_dloaded     0x00000100
+#define unused_cfl_times_a_day_dloaded 0x00000100
 #define cfl_days_between_dloads     0x00000200
 #define cfl_description             0x00000400
 #define cfl_header                  0x80000000L

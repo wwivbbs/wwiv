@@ -664,37 +664,38 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
 // Clears session()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
 void CreateNewUserRecord() {
-  session()->user()->ZeroUserData();
+  const auto u = session()->user();
+  u->ZeroUserData();
   memset(qsc, 0, syscfg.qscn_len);
 
-  session()->user()->SetFirstOn(date());
-  session()->user()->SetLastOn("Never.");
-  session()->user()->SetMacro(0, "Wow! This is a GREAT BBS!");
-  session()->user()->SetMacro(1, "Guess you forgot to define this one....");
-  session()->user()->SetMacro(2, "User = Monkey + Keyboard");
+  u->SetFirstOn(date());
+  u->SetLastOn("Never.");
+  u->SetMacro(0, "Wow! This is a GREAT BBS!");
+  u->SetMacro(1, "Guess you forgot to define this one....");
+  u->SetMacro(2, "User = Monkey + Keyboard");
 
-  session()->user()->SetScreenLines(25);
-  session()->user()->SetScreenChars(80);
+  u->SetScreenLines(25);
+  u->SetScreenChars(80);
 
-  session()->user()->SetSl(syscfg.newusersl);
-  session()->user()->SetDsl(syscfg.newuserdsl);
+  u->SetSl(syscfg.newusersl);
+  u->SetDsl(syscfg.newuserdsl);
 
-  session()->user()->SetTimesOnToday(1);
-  session()->user()->SetLastOnDateNumber(0);
-  session()->user()->SetRestriction(syscfg.newuser_restrict);
+  u->SetTimesOnToday(1);
+  u->SetLastOnDateNumber(0);
+  u->SetRestriction(syscfg.newuser_restrict);
 
   *qsc = 999;
   memset(qsc_n, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
   memset(qsc_q, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
 
-  session()->user()->SetStatusFlag(User::pauseOnPage);
-  session()->user()->ClearStatusFlag(User::conference);
-  session()->user()->ClearStatusFlag(User::nscanFileSystem);
-  session()->user()->SetGold(syscfg.newusergold);
+  u->SetStatusFlag(User::pauseOnPage);
+  u->ClearStatusFlag(User::conference);
+  u->ClearStatusFlag(User::nscanFileSystem);
+  u->SetGold(syscfg.newusergold);
 
   for (int nColorLoop = 0; nColorLoop <= 9; nColorLoop++) {
-    session()->user()->SetColor(nColorLoop, session()->newuser_colors[ nColorLoop ]);
-    session()->user()->SetBWColor(nColorLoop, session()->newuser_bwcolors[ nColorLoop ]);
+    u->SetColor(nColorLoop, session()->newuser_colors[ nColorLoop ]);
+    u->SetBWColor(nColorLoop, session()->newuser_bwcolors[ nColorLoop ]);
   }
 
   session()->ResetEffectiveSl();
@@ -708,8 +709,8 @@ void CreateNewUserRecord() {
     }
     randomPassword += ch;
   }
-  session()->user()->SetPassword(randomPassword.c_str());
-  session()->user()->SetEmailAddress("");
+  u->SetPassword(randomPassword.c_str());
+  u->SetEmailAddress("");
 
 }
 
@@ -740,7 +741,7 @@ bool CanCreateNewUserAccountHere() {
       if (password == syscfg.newuserpw) {
         ok = true;
       } else {
-        sysoplog() << StringPrintf("Wrong newuser password: %s", password.c_str());
+        sysoplog() << "Wrong newuser password: " << password;
       }
     } while (!ok && !hangup && (nPasswordAttempt++ < 4));
     if (!ok) {
@@ -771,11 +772,13 @@ static void DefaultToWWIVEditIfPossible() {
   }
 }
 void DoFullNewUser() {
+  const auto u = session()->user();
+
   input_name();
   input_realname();
   input_phone();
   if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
-    if (check_dupes(session()->user()->GetVoicePhoneNumber())) {
+    if (check_dupes(u->GetVoicePhoneNumber())) {
       if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
         hangup = true;
         hang_it_up();
@@ -789,28 +792,28 @@ void DoFullNewUser() {
     sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar);
     if (File::Exists(szZipFileName)) {
       input_zipcode();
-      if (!check_zip(session()->user()->GetZipcode(), 1)) {
-        session()->user()->SetCity("");
-        session()->user()->SetState("");
+      if (!check_zip(u->GetZipcode(), 1)) {
+        u->SetCity("");
+        u->SetState("");
       }
-      session()->user()->SetCountry("USA");
+      u->SetCountry("USA");
     }
-    if (session()->user()->GetCity()[0] == '\0') {
+    if (u->GetCity()[0] == '\0') {
       input_city();
     }
-    if (session()->user()->GetState()[0] == '\0') {
+    if (u->GetState()[0] == '\0') {
       input_state();
     }
-    if (session()->user()->GetZipcode()[0] == '\0') {
+    if (u->GetZipcode()[0] == '\0') {
       input_zipcode();
     }
-    if (session()->user()->GetCountry()[0] == '\0') {
+    if (u->GetCountry()[0] == '\0') {
       input_country();
     }
     input_dataphone();
 
     if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
-      if (check_dupes(session()->user()->GetDataPhoneNumber())) {
+      if (check_dupes(u->GetDataPhoneNumber())) {
         if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
           hangup = true;
           hang_it_up();
@@ -821,10 +824,10 @@ void DoFullNewUser() {
   }
   input_callsign();
   input_sex();
-  input_age(session()->user());
+  input_age(u);
   input_comptype();
 
-  if (session()->editors.size() && session()->user()->HasAnsi()) {
+  if (session()->editors.size() && u->HasAnsi()) {
     bout.nl();
     bout << "|#5Select a fullscreen editor? ";
     if (yesno()) {
@@ -840,7 +843,7 @@ void DoFullNewUser() {
     bout << "Enter your default protocol, or 0 for none.\r\n\n";
     int nDefProtocol = get_protocol(xf_down);
     if (nDefProtocol) {
-      session()->user()->SetDefaultProtocol(nDefProtocol);
+      u->SetDefaultProtocol(nDefProtocol);
     }
   }
 }
@@ -876,33 +879,35 @@ void DoNewUserASV() {
 
 void VerifyNewUserFullInfo() {
   bool ok = false;
+  const auto u = session()->user();
+
   do {
     bout.nl(2);
-    bout << "|#91) Name          : |#2" << session()->user()->GetName() << wwiv::endl;
+    bout << "|#91) Name          : |#2" << u->GetName() << wwiv::endl;
     if (!(syscfg.sysconfig & sysconfig_no_alias)) {
-      bout << "|#92) Real Name     : |#2" << session()->user()->GetRealName() << wwiv::endl;
+      bout << "|#92) Real Name     : |#2" << u->GetRealName() << wwiv::endl;
     }
-    bout << "|#93) Callsign      : |#2" << session()->user()->GetCallsign() << wwiv::endl;
-    bout << "|#94) Phone No.     : |#2" << session()->user()->GetVoicePhoneNumber() <<
+    bout << "|#93) Callsign      : |#2" << u->GetCallsign() << wwiv::endl;
+    bout << "|#94) Phone No.     : |#2" << u->GetVoicePhoneNumber() <<
                        wwiv::endl;
-    bout << "|#95) Gender        : |#2" << session()->user()->GetGender() << wwiv::endl;
+    bout << "|#95) Gender        : |#2" << u->GetGender() << wwiv::endl;
     bout << "|#96) Birthdate     : |#2" <<
-                       static_cast<int>(session()->user()->GetBirthdayMonth()) << "/" <<
-                       static_cast<int>(session()->user()->GetBirthdayDay()) << "/" <<
-                       static_cast<int>(session()->user()->GetBirthdayYear()) << wwiv::endl;
-    bout << "|#97) Computer type : |#2" << ctypes(session()->user()->GetComputerType()) <<
+                       static_cast<int>(u->GetBirthdayMonth()) << "/" <<
+                       static_cast<int>(u->GetBirthdayDay()) << "/" <<
+                       static_cast<int>(u->GetBirthdayYear()) << wwiv::endl;
+    bout << "|#97) Computer type : |#2" << ctypes(u->GetComputerType()) <<
                        wwiv::endl;
     bout << "|#98) Screen size   : |#2" <<
-                       session()->user()->GetScreenChars() << " X " <<
-                       session()->user()->GetScreenLines() << wwiv::endl;
-    bout << "|#99) Password      : |#2" << session()->user()->GetPassword() << wwiv::endl;
+                       u->GetScreenChars() << " X " <<
+                       u->GetScreenLines() << wwiv::endl;
+    bout << "|#99) Password      : |#2" << u->GetPassword() << wwiv::endl;
     if (syscfg.sysconfig & sysconfig_extended_info) {
-      bout << "|#9A) Street Address: |#2" << session()->user()->GetStreet() << wwiv::endl;
-      bout << "|#9B) City          : |#2" << session()->user()->GetCity() << wwiv::endl;
-      bout << "|#9C) State         : |#2" << session()->user()->GetState() << wwiv::endl;
-      bout << "|#9D) Country       : |#2" << session()->user()->GetCountry() << wwiv::endl;
-      bout << "|#9E) Zipcode       : |#2" << session()->user()->GetZipcode() << wwiv::endl;
-      bout << "|#9F) Dataphone     : |#2" << session()->user()->GetDataPhoneNumber() << wwiv::endl;
+      bout << "|#9A) Street Address: |#2" << u->GetStreet() << wwiv::endl;
+      bout << "|#9B) City          : |#2" << u->GetCity() << wwiv::endl;
+      bout << "|#9C) State         : |#2" << u->GetState() << wwiv::endl;
+      bout << "|#9D) Country       : |#2" << u->GetCountry() << wwiv::endl;
+      bout << "|#9E) Zipcode       : |#2" << u->GetZipcode() << wwiv::endl;
+      bout << "|#9F) Dataphone     : |#2" << u->GetDataPhoneNumber() << wwiv::endl;
     }
     bout.nl();
     bout << "Q) No changes.\r\n";
@@ -938,7 +943,7 @@ void VerifyNewUserFullInfo() {
       input_sex();
       break;
     case '6':
-      input_age(session()->user());
+      input_age(u);
       break;
     case '7':
       input_comptype();
@@ -947,7 +952,7 @@ void VerifyNewUserFullInfo() {
       input_screensize();
       break;
     case '9':
-      input_pw(session()->user());
+      input_pw(u);
       break;
     case 'A':
       input_street();
@@ -973,35 +978,36 @@ void VerifyNewUserFullInfo() {
 
 
 void WriteNewUserInfoToSysopLog() {
+  const auto u = session()->user();
   sysoplog() << "** New User Information **";
-  sysoplog() << StringPrintf("-> %s #%ld (%s)", session()->user()->GetName(), session()->usernum,
-            session()->user()->GetRealName());
+  sysoplog() << StringPrintf("-> %s #%ld (%s)", u->GetName(), session()->usernum,
+            u->GetRealName());
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    sysoplog() << StringPrintf("-> %s", session()->user()->GetStreet());
-    sysoplog() << StringPrintf("-> %s, %s %s  (%s)", session()->user()->GetCity(),
-              session()->user()->GetState(), session()->user()->GetZipcode(),
-              session()->user()->GetCountry());
+    sysoplog() << "-> " << u->GetStreet();
+    sysoplog() << "-> " << u->GetCity() << ", " << u->GetState() << " " << u->GetZipcode()
+      << "  (" << u->GetCountry() << " )";
+              
   }
-  sysoplog() << StringPrintf("-> %s (Voice)", session()->user()->GetVoicePhoneNumber());
+  sysoplog() << StringPrintf("-> %s (Voice)", u->GetVoicePhoneNumber());
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    sysoplog() << StringPrintf("-> %s (Data)", session()->user()->GetDataPhoneNumber());
+    sysoplog() << StringPrintf("-> %s (Data)", u->GetDataPhoneNumber());
   }
   sysoplog() << StringPrintf("-> %02d/%02d/%02d (%d yr old %s)",
-            session()->user()->GetBirthdayMonth(), session()->user()->GetBirthdayDay(),
-            session()->user()->GetBirthdayYear(), session()->user()->GetAge(),
-            ((session()->user()->GetGender() == 'M') ? "Male" : "Female"));
-  sysoplog() << StringPrintf("-> Using a %s Computer", ctypes(session()->user()->GetComputerType()).c_str());
-  if (session()->user()->GetWWIVRegNumber()) {
-    sysoplog() << StringPrintf("-> WWIV Registration # %ld", session()->user()->GetWWIVRegNumber());
+            u->GetBirthdayMonth(), u->GetBirthdayDay(),
+            u->GetBirthdayYear(), u->GetAge(),
+            ((u->GetGender() == 'M') ? "Male" : "Female"));
+  sysoplog() << StringPrintf("-> Using a %s Computer", ctypes(u->GetComputerType()).c_str());
+  if (u->GetWWIVRegNumber()) {
+    sysoplog() << StringPrintf("-> WWIV Registration # %ld", u->GetWWIVRegNumber());
   }
   sysoplog() << "********";
 
 
-  if (session()->user()->GetVoicePhoneNumber()[0]) {
-    add_phone_number(session()->usernum, session()->user()->GetVoicePhoneNumber());
+  if (u->GetVoicePhoneNumber()[0]) {
+    add_phone_number(session()->usernum, u->GetVoicePhoneNumber());
   }
-  if (session()->user()->GetDataPhoneNumber()[0]) {
-    add_phone_number(session()->usernum, session()->user()->GetDataPhoneNumber());
+  if (u->GetDataPhoneNumber()[0]) {
+    add_phone_number(session()->usernum, u->GetDataPhoneNumber());
   }
 }
 
@@ -1309,6 +1315,8 @@ static void cln_nu() {
 
 
 void DoMinimalNewUser() {
+  const auto u = session()->user();
+
   int m =  1, d =  1, y = 2000, ch =  0;
   char s[101], s1[81], m1[3], d1[3], y1[5];
   static const char *mon[12] = {
@@ -1336,7 +1344,7 @@ void DoMinimalNewUser() {
     bout.cls();
     bout.litebar("%s New User Registration", syscfg.systemname);
     bout << "|#1[A] Name (real or alias)    : ";
-    if (session()->user()->GetName()[0] == '\0') {
+    if (u->GetName()[0] == '\0') {
       bool ok = true;
       char szTempName[ 81 ];
       do {
@@ -1347,14 +1355,14 @@ void DoMinimalNewUser() {
           BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
         }
       } while (!ok && !hangup);
-      session()->user()->SetName(szTempName);
+      u->SetName(szTempName);
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << session()->user()->GetName();
+    bout << "|#2" << u->GetName();
     bout.nl();
     bout << "|#1[B] Birth Date (MM/DD/YYYY) : ";
-    if (session()->user()->GetAge() == 0) {
+    if (u->GetAge() == 0) {
       bool ok = false;
       do {
         ok = false;
@@ -1388,67 +1396,67 @@ void DoMinimalNewUser() {
     if (hangup) {
       return;
     }
-    session()->user()->SetBirthdayMonth(m);
-    session()->user()->SetBirthdayDay(d);
-    session()->user()->SetBirthdayYear(y);
-    session()->user()->SetAge(years_old(m, d, y));
+    u->SetBirthdayMonth(m);
+    u->SetBirthdayDay(d);
+    u->SetBirthdayYear(y);
+    u->SetAge(years_old(m, d, y));
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << mon[ std::max<int>(0, session()->user()->GetBirthdayMonth() - 1) ] << " "
-         << session()->user()->GetBirthdayDay() << ", "
-         << session()->user()->GetBirthdayYear()
-         << " (" << session()->user()->GetAge() << " years old)\r\n"
+    bout << "|#2" << mon[ std::max<int>(0, u->GetBirthdayMonth() - 1) ] << " "
+         << u->GetBirthdayDay() << ", "
+         << u->GetBirthdayYear()
+         << " (" << u->GetAge() << " years old)\r\n"
          << "|#1[C] Sex (Gender)            : ";
-    if (session()->user()->GetGender() != 'M' && session()->user()->GetGender()  != 'F') {
+    if (u->GetGender() != 'M' && u->GetGender()  != 'F') {
       bout.mpl(1);
-      session()->user()->SetGender(onek_ncr("MF"));
+      u->SetGender(onek_ncr("MF"));
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << (session()->user()->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
+    bout << "|#2" << (u->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
     bout <<  "|#1[D] Country                 : " ;
-    if (session()->user()->GetCountry()[0] == '\0') {
-      Input1(reinterpret_cast<char*>(session()->user()->data.country), "", 3, false, InputMode::UPPER);
-      if (session()->user()->GetCountry()[0] == '\0') {
-        session()->user()->SetCountry("USA");
+    if (u->GetCountry()[0] == '\0') {
+      Input1(reinterpret_cast<char*>(u->data.country), "", 3, false, InputMode::UPPER);
+      if (u->GetCountry()[0] == '\0') {
+        u->SetCountry("USA");
       }
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << session()->user()->GetCountry() << wwiv::endl;
+    bout << "|#2" << u->GetCountry() << wwiv::endl;
     bout << "|#1[E] ZIP or Postal Code      : ";
-    if (session()->user()->GetZipcode()[0] == 0) {
+    if (u->GetZipcode()[0] == 0) {
       bool ok = false;
       do {
-        if (IsEquals(session()->user()->GetCountry(), "USA")) {
-          Input1(reinterpret_cast<char*>(session()->user()->data.zipcode), s1, 5, true, InputMode::UPPER);
-          check_zip(session()->user()->GetZipcode(), 2);
+        if (IsEquals(u->GetCountry(), "USA")) {
+          Input1(reinterpret_cast<char*>(u->data.zipcode), s1, 5, true, InputMode::UPPER);
+          check_zip(u->GetZipcode(), 2);
         } else {
-          Input1(reinterpret_cast<char*>(session()->user()->data.zipcode), s1, 7, true, InputMode::UPPER);
+          Input1(reinterpret_cast<char*>(u->data.zipcode), s1, 7, true, InputMode::UPPER);
         }
-        if (session()->user()->GetZipcode()[0]) {
+        if (u->GetZipcode()[0]) {
           ok = true;
         }
       } while (!ok && !hangup);
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << session()->user()->GetZipcode() << wwiv::endl;
+    bout << "|#2" << u->GetZipcode() << wwiv::endl;
     bout << "|#1[F] City/State/Province     : ";
-    if (session()->user()->GetCity()[0] == 0) {
+    if (u->GetCity()[0] == 0) {
       bool ok = false;
       do {
-        Input1(reinterpret_cast<char*>(session()->user()->data.city), s1, 30, true, InputMode::PROPER);
-        if (session()->user()->GetCity()[0]) {
+        Input1(reinterpret_cast<char*>(u->data.city), s1, 30, true, InputMode::PROPER);
+        if (u->GetCity()[0]) {
           ok = true;
         }
       } while (!ok && !hangup);
       bout << ", ";
-      if (session()->user()->GetState()[0] == 0) {
+      if (u->GetState()[0] == 0) {
         do {
           ok = false;
-          Input1(reinterpret_cast<char*>(session()->user()->data.state), s1, 2, true, InputMode::UPPER);
-          if (session()->user()->GetState()[0]) {
+          Input1(reinterpret_cast<char*>(u->data.state), s1, 2, true, InputMode::UPPER);
+          if (u->GetState()[0]) {
             ok = true;
           }
         } while (!ok && !hangup);
@@ -1456,24 +1464,24 @@ void DoMinimalNewUser() {
     }
     s1[0] = '\0';
     cln_nu();
-    properize(reinterpret_cast<char*>(session()->user()->data.city));
-    bout << "|#2" << session()->user()->GetCity() << ", " <<
-                       session()->user()->GetState() << wwiv::endl;
+    properize(reinterpret_cast<char*>(u->data.city));
+    bout << "|#2" << u->GetCity() << ", " <<
+                       u->GetState() << wwiv::endl;
     bout << "|#1[G] Internet Mail Address   : ";
-    if (session()->user()->GetEmailAddress()[0] == 0) {
+    if (u->GetEmailAddress()[0] == 0) {
       string emailAddress = Input1(s1, 44, true, InputMode::MIXED);
-      session()->user()->SetEmailAddress(emailAddress.c_str());
-      if (!check_inet_addr(session()->user()->GetEmailAddress())) {
+      u->SetEmailAddress(emailAddress.c_str());
+      if (!check_inet_addr(u->GetEmailAddress())) {
         cln_nu();
         BackPrint("Invalid address!", 6, 20, 1000);
       }
-      if (session()->user()->GetEmailAddress()[0] == 0) {
-        session()->user()->SetEmailAddress("None");
+      if (u->GetEmailAddress()[0] == 0) {
+        u->SetEmailAddress("None");
       }
     }
     s1[0] = '\0';
     cln_nu();
-    bout << "|#2" << session()->user()->GetEmailAddress() << wwiv::endl;
+    bout << "|#2" << u->GetEmailAddress() << wwiv::endl;
     bout.nl();
     bout << "|#5Item to change or [Q] to Quit : |#0";
     ch = onek("QABCDEFG");
@@ -1482,38 +1490,38 @@ void DoMinimalNewUser() {
       done = true;
       break;
     case 'A':
-      strcpy(s1, session()->user()->GetName());
-      session()->user()->SetName("");
+      strcpy(s1, u->GetName());
+      u->SetName("");
       break;
     case 'B':
-      session()->user()->SetAge(0);
-      sprintf(s1, "%02d/%02d/%02d", session()->user()->GetBirthdayDay(),
-              session()->user()->GetBirthdayMonth(), session()->user()->GetBirthdayYear());
+      u->SetAge(0);
+      sprintf(s1, "%02d/%02d/%02d", u->GetBirthdayDay(),
+              u->GetBirthdayMonth(), u->GetBirthdayYear());
       break;
     case 'C':
-      session()->user()->SetGender('N');
+      u->SetGender('N');
       break;
     case 'D':
-      session()->user()->SetCountry("");
+      u->SetCountry("");
     case 'E':
-      session()->user()->SetZipcode("");
+      u->SetZipcode("");
     case 'F':
-      strcpy(s1, session()->user()->GetCity());
-      session()->user()->SetCity("");
-      session()->user()->SetState("");
+      strcpy(s1, u->GetCity());
+      u->SetCity("");
+      u->SetState("");
       break;
     case 'G':
-      strcpy(s1, session()->user()->GetEmailAddress());
-      session()->user()->SetEmailAddress("");
+      strcpy(s1, u->GetEmailAddress());
+      u->SetEmailAddress("");
       break;
     }
   } while (!done && !hangup);
-  session()->user()->SetRealName(session()->user()->GetName());
-  session()->user()->SetVoicePhoneNumber("999-999-9999");
-  session()->user()->SetDataPhoneNumber(session()->user()->GetVoicePhoneNumber());
-  session()->user()->SetStreet("None Requested");
-  if (session()->editors.size() && session()->user()->HasAnsi()) {
-    session()->user()->SetDefaultEditor(1);
+  u->SetRealName(u->GetName());
+  u->SetVoicePhoneNumber("999-999-9999");
+  u->SetDataPhoneNumber(u->GetVoicePhoneNumber());
+  u->SetStreet("None Requested");
+  if (session()->editors.size() && u->HasAnsi()) {
+    u->SetDefaultEditor(1);
   }
   session()->topdata = nSaveTopData;
   session()->UpdateTopScreen();

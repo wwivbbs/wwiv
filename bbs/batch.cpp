@@ -139,9 +139,9 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
         file.Write(&u, sizeof(uploadsrec));
         file.Close();
         if (lCharsPerSecond) {
-          sysoplog() << StringPrintf("Downloaded \"%s\" (%ld cps)", u.filename, lCharsPerSecond);
+          sysoplog() << "Downloaded '" << u.filename << "' (" << lCharsPerSecond << " cps).";
         } else {
-          sysoplog() << StringPrintf("Downloaded \"%s\"", u.filename);
+          sysoplog() << "Downloaded '" << u.filename << "'.";
         }
         if (syscfg.sysconfig & sysconfig_log_dl) {
           User user;

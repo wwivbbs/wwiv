@@ -56,14 +56,7 @@ using namespace wwiv::strings;
 #define cfl_extension               0x00000002
 #define cfl_dloads                  0x00000004
 #define cfl_kbytes                  0x00000008
-#define cfl_date_uploaded           0x00000010
-#define cfl_file_points             0x00000020
-#define cfl_days_old                0x00000040
-#define cfl_upby                    0x00000080
-#define cfl_times_a_day_dloaded     0x00000100
-#define cfl_days_between_dloads     0x00000200
 #define cfl_description             0x00000400
-#define cfl_header                  0x80000000L
 
 // TODO(rushfan): use wwivcolors.h and move it to sdk.
 enum COLORS {
