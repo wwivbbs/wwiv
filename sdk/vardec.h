@@ -35,22 +35,31 @@
 // DATA FOR EVERY USER
 struct userrec {
   unsigned char
-  name[31],                                     // user's name/handle
-       realname[21],                            // user's real name
-       callsign[7],                             // user's amateur callsign
-       phone[13],                               // user's phone number
-       dataphone[13],                           // user's data phone
-       street[31],                              // street address
-       city[31],                                // city
-       state[3],                                // state code [MO, CA, etc]
-       country[4],                              // country [USA, CAN, FRA, etc]
-       zipcode[11],                             // zipcode [#####-####]
-       pw[9],                                   // user's password
-       laston[9],                               // last date on
-       firston[9],                              // first date on
-       note[61],                                // sysop's note about user
-       macros[3][81],                           // macro keys
-       sex;                                     // user's sex
+    name[31],                                // user's name/handle
+    realname[21];                            // user's real name
+  char
+    callsign[7],                             // user's amateur callsign
+    phone[13],                               // user's phone number
+    dataphone[13],                           // user's data phone
+    street[31],                              // street address
+    city[31],                                // city
+    state[3],                                // state code [MO, CA, etc]
+    country[4],                              // country [USA, CAN, FRA, etc]
+    zipcode[11];                             // zipcode [#####-####]
+  char
+    // user's password
+    pw[9],
+    // last date on
+    laston[9],
+    // first date on
+    firston[9],
+    // sysop's note about user
+    note[61];
+  // macro keys
+  unsigned char
+    macros[3][81];
+  // gender.
+  char sex;
 
   char
   email[65],                                    // Internet mail address

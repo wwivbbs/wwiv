@@ -629,7 +629,7 @@ static void change_password() {
       bout.nl();
       bout << "|#6Password must be 3-8 characters long.\r\n|#6Password was not changed.\r\n\n";
     } else {
-      session()->user()->SetPassword(password.c_str());
+      session()->user()->SetPassword(password);
       bout << "\r\n|#1Password changed.\r\n\n";
       sysoplog() << "Changed Password.";
     }

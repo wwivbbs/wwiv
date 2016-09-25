@@ -551,7 +551,7 @@ void input_pw(User *pUser) {
   } while (!ok && !hangup);
 
   if (ok) {
-    pUser->SetPassword(password.c_str());
+    pUser->SetPassword(password);
   } else {
     bout << "Password not changed.\r\n";
   }
@@ -710,7 +710,7 @@ void CreateNewUserRecord() {
     }
     randomPassword += ch;
   }
-  u->SetPassword(randomPassword.c_str());
+  u->SetPassword(randomPassword);
   u->SetEmailAddress("");
 
   // Set default menu set abd listplus colors.

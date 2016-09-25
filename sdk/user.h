@@ -23,6 +23,7 @@
 #include <sstream>
 #include <cstring>
 #include <string>
+#include "core/strings.h"
 #include "sdk/vardec.h"
 
 namespace wwiv {
@@ -376,8 +377,8 @@ class User {
   const char *GetPassword() const {
     return reinterpret_cast<const char*>(data.pw);
   }
-  void SetPassword(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.pw), s);
+  void SetPassword(const std::string& s) {
+    wwiv::strings::to_char_array(data.pw, s);
   }
   const char *GetLastOn() const {
     return reinterpret_cast<const char*>(data.laston);
