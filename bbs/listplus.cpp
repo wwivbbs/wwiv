@@ -139,9 +139,6 @@ static void build_header() {
   if (session()->user()->data.lp_options & cfl_days_old) {
     header += "Age ";
   }
-  if (session()->user()->data.lp_options & cfl_days_between_dloads) {
-    header += "DBDLS ";
-  }
   if (session()->user()->data.lp_options & cfl_description) {
     desc_pos = header.size();
     header += "Description";
@@ -384,15 +381,6 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     sprintf(element, " |%02d%3d", session()->user()->data.lp_colors[6], nDaysOld);
     file_information += element;
     width += 4;
-  }
-  if (session()->user()->data.lp_options & cfl_days_between_dloads) {
-    float t = nDaysOld ? (float) u->numdloads / (float) nDaysOld : (float) 0.0;
-    t = t ? (float) 1 / (float) t : (float) 0.0;
-    buffer = StringPrintf("%3.1f", t);
-    buffer.resize(5);
-    sprintf(element, " |%02d%s", session()->user()->data.lp_colors[9], buffer.c_str());
-    file_information += element;
-    width += 6;
   }
   if (session()->user()->data.lp_options & cfl_description) {
     ++width;
