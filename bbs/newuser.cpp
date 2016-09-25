@@ -41,6 +41,7 @@
 #include "bbs/inmsg.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"
+#include "bbs/listplus.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/uedit.h"
@@ -712,6 +713,22 @@ void CreateNewUserRecord() {
   u->SetPassword(randomPassword.c_str());
   u->SetEmailAddress("");
 
+  // Set default menu set abd listplus colors.
+  strcpy(u->data.szMenuSet, "wwiv");
+  u->data.cHotKeys = 0;
+  u->data.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
+  memset(u->data.lp_colors, CYAN, sizeof(u->data.lp_colors));
+  u->data.lp_colors[0] = LIGHTGREEN;
+  u->data.lp_colors[1] = LIGHTGREEN;
+  u->data.lp_colors[2] = CYAN;
+  u->data.lp_colors[3] = CYAN;
+  u->data.lp_colors[4] = LIGHTCYAN;
+  u->data.lp_colors[5] = LIGHTCYAN;
+  u->data.lp_colors[6] = CYAN;
+  u->data.lp_colors[7] = CYAN;
+  u->data.lp_colors[8] = CYAN;
+  u->data.lp_colors[9] = CYAN;
+  u->data.lp_colors[10] = LIGHTCYAN;
 }
 
 

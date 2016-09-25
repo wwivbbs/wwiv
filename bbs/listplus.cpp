@@ -968,7 +968,7 @@ void config_file_list() {
   char action[51];
   uploadsrec u;
 
-  strcpy(u.filename, "WWIV51.ZIP");
+  strcpy(u.filename, "WWIV52.ZIP");
   strcpy(u.description, "This is a sample description!");
   strcpy(u.date, date());
   const string username_num = session()->names()->UserName(session()->usernum);
