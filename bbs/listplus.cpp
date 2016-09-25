@@ -685,6 +685,18 @@ static void check_lp_colors() {
       session()->user()->data.lp_colors[i] = 1;
     }
   }
+  session()->user()->data.lp_colors[0] = LIGHTGREEN;
+  session()->user()->data.lp_colors[1] = LIGHTGREEN;
+  session()->user()->data.lp_colors[2] = CYAN;
+  session()->user()->data.lp_colors[3] = CYAN;
+  session()->user()->data.lp_colors[4] = LIGHTCYAN;
+  session()->user()->data.lp_colors[5] = LIGHTCYAN;
+  session()->user()->data.lp_colors[6] = CYAN;
+  session()->user()->data.lp_colors[7] = CYAN;
+  session()->user()->data.lp_colors[8] = CYAN;
+  session()->user()->data.lp_colors[9] = CYAN;
+  session()->user()->data.lp_colors[10] = LIGHTCYAN;
+
 }
 
 void load_lp_config() {
