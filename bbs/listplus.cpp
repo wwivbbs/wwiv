@@ -680,22 +680,23 @@ int calc_max_lines() {
 }
 
 static void check_lp_colors() {
+  auto u = session()->user();
   for (int i = 0; i < 32; i++) {
-    if (!session()->user()->data.lp_colors[i]) {
-      session()->user()->data.lp_colors[i] = 1;
+    if (!u->data.lp_colors[i]) {
+      u->data.lp_colors[i] = CYAN;
     }
   }
-  session()->user()->data.lp_colors[0] = LIGHTGREEN;
-  session()->user()->data.lp_colors[1] = LIGHTGREEN;
-  session()->user()->data.lp_colors[2] = CYAN;
-  session()->user()->data.lp_colors[3] = CYAN;
-  session()->user()->data.lp_colors[4] = LIGHTCYAN;
-  session()->user()->data.lp_colors[5] = LIGHTCYAN;
-  session()->user()->data.lp_colors[6] = CYAN;
-  session()->user()->data.lp_colors[7] = CYAN;
-  session()->user()->data.lp_colors[8] = CYAN;
-  session()->user()->data.lp_colors[9] = CYAN;
-  session()->user()->data.lp_colors[10] = LIGHTCYAN;
+  u->data.lp_colors[0] = LIGHTGREEN;
+  u->data.lp_colors[1] = LIGHTGREEN;
+  u->data.lp_colors[2] = CYAN;
+  u->data.lp_colors[3] = CYAN;
+  u->data.lp_colors[4] = LIGHTCYAN;
+  u->data.lp_colors[5] = LIGHTCYAN;
+  u->data.lp_colors[6] = CYAN;
+  u->data.lp_colors[7] = CYAN;
+  u->data.lp_colors[8] = CYAN;
+  u->data.lp_colors[9] = CYAN;
+  u->data.lp_colors[10] = LIGHTCYAN;
 
 }
 
