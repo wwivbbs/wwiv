@@ -124,7 +124,7 @@ void CursesWindow::Printf(const char* format, ...) {
   char buffer[1024];
 
   va_start(ap, format);
-  vsnprintf(buffer, 1024, format, ap);
+  vsnprintf(buffer, sizeof(buffer), format, ap);
   va_end(ap);
   Puts(buffer);
 }
@@ -134,7 +134,7 @@ void CursesWindow::PrintfXY(int x, int y, const char* format, ...) {
   char buffer[1024];
 
   va_start(ap, format);
-  vsnprintf(buffer, 1024, format, ap);
+  vsnprintf(buffer, sizeof(buffer), format, ap);
   va_end(ap);
   PutsXY(x, y, buffer);
 }

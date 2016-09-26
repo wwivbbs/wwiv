@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_INSTMSG_H__
 #define __INCLUDED_INSTMSG_H__
 
+#include <string>
 #include "sdk/vardec.h"
 
 constexpr int INST_MSG_STRING = 1;  // A string to print out to the user
@@ -124,7 +125,7 @@ struct inst_msg_header {
 void send_inst_str(int whichinst, const char *send_string);
 void send_inst_shutdown(int whichinst);
 void send_inst_cleannet();
-void broadcast(const char *fmt, ...);
+void broadcast(const std::string& message);
 void process_inst_msgs();
 bool get_inst_info(int nInstanceNum, instancerec * ir);
 int  num_instances();

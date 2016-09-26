@@ -146,7 +146,7 @@ void send_inst_cleannet() {
 /*
  * "Broadcasts" a message to all online instances.
  */
-void _broadcast(char *send_string) {
+void broadcast(const std::string& message) {
   instancerec ir;
 
   int ni = num_instances();
@@ -156,20 +156,10 @@ void _broadcast(char *send_string) {
     }
     if (get_inst_info(i, &ir)) {
       if (inst_available(&ir)) {
-        send_inst_str(i, send_string);
+        send_inst_str(i, message.c_str());
       }
     }
   }
-}
-
-void broadcast(const char *fmt, ...) {
-  va_list ap;
-  char szBuffer[2048];
-
-  va_start(ap, fmt);
-  vsnprintf(szBuffer, sizeof(szBuffer), fmt, ap);
-  va_end(ap);
-  _broadcast(szBuffer);
 }
 
 

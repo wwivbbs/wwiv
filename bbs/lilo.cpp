@@ -924,7 +924,7 @@ void logon() {
   CheckUserForVotingBooth();
 
   if ((incom || sysop1()) && session()->user()->GetSl() < 255) {
-    broadcast("%s Just logged on!", session()->user()->GetName());
+    broadcast(StringPrintf("%s Just logged on!", session()->user()->GetName()));
   }
   setiia(90);
 
@@ -975,7 +975,7 @@ void logoff() {
 
   if (session()->usernum > 0) {
     if ((incom || sysop1()) && session()->user()->GetSl() < 255) {
-      broadcast("%s Just logged off!", session()->user()->GetName());
+      broadcast(StringPrintf("%s Just logged off!", session()->user()->GetName()));
     }
   }
   setiia(90);
