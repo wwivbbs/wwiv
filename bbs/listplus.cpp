@@ -668,24 +668,22 @@ int calc_max_lines() {
 }
 
 static void check_lp_colors() {
+  bool needs_defaults = false;
   auto u = session()->user();
   for (int i = 0; i < 32; i++) {
     if (!u->data.lp_colors[i]) {
+      needs_defaults = true;
       u->data.lp_colors[i] = CYAN;
     }
   }
-  u->data.lp_colors[0] = LIGHTGREEN;
-  u->data.lp_colors[1] = LIGHTGREEN;
-  u->data.lp_colors[2] = CYAN;
-  u->data.lp_colors[3] = CYAN;
-  u->data.lp_colors[4] = LIGHTCYAN;
-  u->data.lp_colors[5] = LIGHTCYAN;
-  u->data.lp_colors[6] = CYAN;
-  u->data.lp_colors[7] = CYAN;
-  u->data.lp_colors[8] = CYAN;
-  u->data.lp_colors[9] = CYAN;
-  u->data.lp_colors[10] = LIGHTCYAN;
 
+  if (needs_defaults) {
+    u->data.lp_colors[0] = LIGHTGREEN;
+    u->data.lp_colors[1] = LIGHTGREEN;
+    u->data.lp_colors[4] = LIGHTCYAN;
+    u->data.lp_colors[5] = LIGHTCYAN;
+    u->data.lp_colors[10] = LIGHTCYAN;
+  }
 }
 
 void load_lp_config() {
