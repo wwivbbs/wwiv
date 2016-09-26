@@ -686,6 +686,16 @@ static void check_lp_colors() {
   }
 }
 
+void save_lp_config() {
+  if (lp_config_loaded) {
+    File fileConfig(session()->config()->datadir(), LISTPLUS_CFG);
+    if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
+      fileConfig.Write(&lp_config, sizeof(struct listplus_config));
+      fileConfig.Close();
+    }
+  }
+}
+
 void load_lp_config() {
   if (!lp_config_loaded) {
     File fileConfig(session()->config()->datadir(), LISTPLUS_CFG);
@@ -726,16 +736,6 @@ void load_lp_config() {
     }
   }
   check_lp_colors();
-}
-
-void save_lp_config() {
-  if (lp_config_loaded) {
-    File fileConfig(session()->config()->datadir(), LISTPLUS_CFG);
-    if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
-      fileConfig.Write(&lp_config, sizeof(struct listplus_config));
-      fileConfig.Close();
-    }
-  }
 }
 
 void sysop_configure() {
