@@ -137,7 +137,6 @@ void save_lp_config();
 void sysop_configure();
 short SelectColor(int which);
 void config_file_list();
-void update_user_config_screen(uploadsrec * upload_record, int which);
 void do_batch_sysop_command(int mode, const char *file_name);
 int  search_criteria(search_record * sr);
 void view_file(const char *file_name);

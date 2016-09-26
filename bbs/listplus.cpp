@@ -948,17 +948,127 @@ short SelectColor(int which) {
   return -1;
 }
 
+static void update_user_config_screen(uploadsrec* u, int which) {
+  static const vector<string> lp_color_list{
+    "Black   ",
+    "Blue    ",
+    "Green   ",
+    "Cyan    ",
+    "Red     ",
+    "Purple  ",
+    "Brown   ",
+    "L-Gray  ",
+    "D-Gray  ",
+    "L-Blue  ",
+    "L-Green ",
+    "L-Cyan  ",
+    "L-Red   ",
+    "L-Purple",
+    "Yellow  ",
+    "White   "
+  };
+
+  uint8_t color_background = BLUE << 4;
+  uint8_t color_selected = LIGHTRED | color_background;
+  uint8_t color_notselected = BLACK | color_background;
+  uint8_t color_colortext = LIGHTCYAN | color_background;
+  auto& lpo = session()->user()->data.lp_options;
+  auto& lpc = session()->user()->data.lp_colors;
+
+  if (which < 1 || which == 1) {
+    bout.GotoXY(37, 4);
+    bout.SystemColor(lpo & cfl_fname ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[0]];
+  }
+  if (which < 1 || which == 2) {
+    bout.GotoXY(37, 5);
+    bout.SystemColor(lpo & cfl_extension ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[1]];
+  }
+  if (which < 1 || which == 3) {
+    bout.GotoXY(37, 6);
+    bout.SystemColor(lpo & cfl_dloads ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[2]];
+  }
+  if (which < 1 || which == 4) {
+    bout.GotoXY(37, 7);
+    bout.SystemColor(lpo & cfl_kbytes ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[3]];
+  }
+  if (which < 1 || which == 5) {
+    bout.GotoXY(37, 8);
+    bout.SystemColor(lpo & cfl_description ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[10]];
+  }
+  if (which < 1 || which == 6) {
+    bout.GotoXY(37, 9);
+    bout.SystemColor(lpo & cfl_date_uploaded ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[4]];
+  }
+  if (which < 1 || which == 7) {
+    bout.GotoXY(37, 10);
+    bout.SystemColor(lpo & cfl_file_points ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[5]];
+  }
+  if (which < 1 || which == 8) {
+    bout.GotoXY(37, 11);
+    bout.SystemColor(lpo & cfl_days_old ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[6]];
+  }
+  if (which < 1 || which == 9) {
+    bout.GotoXY(37, 12);
+    bout.SystemColor(lpo & cfl_upby ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+    bout << lp_color_list[lpc[7]];
+  }
+  if (which < 1 || which == 10) {
+    bout.GotoXY(37, 13);
+    bout.SystemColor(lpo & cfl_header ? color_selected : color_notselected);
+    bout << "\xFE ";
+    bout.SystemColor(color_colortext);
+  }
+  bout.SystemColor(YELLOW);
+  bout.GotoXY(1, 21);
+  bout.clreol();
+  bout.nl();
+  bout.clreol();
+  bout.GotoXY(1, 21);
+
+  search_record sr{};
+  printinfo_plus(u, 1, 1, 30, &sr);
+  bout.GotoXY(30, 17);
+  bout.SystemColor(YELLOW);
+  bout.bs();
+}
+
 void config_file_list() {
   int key, which = -1;
   unsigned long bit = 0L;
   char action[51];
-  uploadsrec u;
+  uploadsrec u = {};
 
   strcpy(u.filename, "WWIV52.ZIP");
   strcpy(u.description, "This is a sample description!");
   strcpy(u.date, date());
   const string username_num = session()->names()->UserName(session()->usernum);
-  strcpy(reinterpret_cast<char*>(u.upby), username_num.c_str());
+  to_char_array(u.upby, username_num);
   u.numdloads = 50;
   u.numbytes = 655535L;
   u.daten = static_cast<uint32_t>(time(nullptr) - 10000);
@@ -1090,116 +1200,6 @@ void config_file_list() {
     }
   }
   bout.nl(4);
-}
-
-void update_user_config_screen(uploadsrec * u, int which) {
-  static const vector<string> lp_color_list{
-    "Black   ",
-    "Blue    ",
-    "Green   ",
-    "Cyan    ",
-    "Red     ",
-    "Purple  ",
-    "Brown   ",
-    "L-Gray  ",
-    "D-Gray  ",
-    "L-Blue  ",
-    "L-Green ",
-    "L-Cyan  ",
-    "L-Red   ",
-    "L-Purple",
-    "Yellow  ",
-    "White   "
-  };
-
-  uint8_t color_background = BLUE << 4;
-  uint8_t color_selected = LIGHTRED | color_background;
-  uint8_t color_notselected = BLACK | color_background;
-  uint8_t color_colortext = LIGHTCYAN | color_background;
-  auto& lpo = session()->user()->data.lp_options;
-  auto& lpc = session()->user()->data.lp_colors;
-
-  if (which < 1 || which == 1) {
-    bout.GotoXY(37, 4);
-    bout.SystemColor(lpo & cfl_fname ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[0]];
-  }
-  if (which < 1 || which == 2) {
-    bout.GotoXY(37, 5);
-    bout.SystemColor(lpo & cfl_extension ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[1]];
-  }
-  if (which < 1 || which == 3) {
-    bout.GotoXY(37, 6);
-    bout.SystemColor(lpo & cfl_dloads ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[2]];
-  }
-  if (which < 1 || which == 4) {
-    bout.GotoXY(37, 7);
-    bout.SystemColor(lpo & cfl_kbytes ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[3]];
-  }
-  if (which < 1 || which == 5) {
-    bout.GotoXY(37, 8);
-    bout.SystemColor(lpo & cfl_description ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[10]];
-  }
-  if (which < 1 || which == 6) {
-    bout.GotoXY(37, 9);
-    bout.SystemColor(lpo & cfl_date_uploaded ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[4]];
-  }
-  if (which < 1 || which == 7) {
-    bout.GotoXY(37, 10);
-    bout.SystemColor(lpo & cfl_file_points ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[5]];
-  }
-  if (which < 1 || which == 8) {
-    bout.GotoXY(37, 11);
-    bout.SystemColor(lpo & cfl_days_old ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[6]];
-  }
-  if (which < 1 || which == 9) {
-    bout.GotoXY(37, 12);
-    bout.SystemColor(lpo & cfl_upby ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-    bout << lp_color_list[lpc[7]];
-  }
-  if (which < 1 || which == 10) {
-    bout.GotoXY(37, 13);
-    bout.SystemColor(lpo & cfl_header ? color_selected : color_notselected);
-    bout << "\xFE ";
-    bout.SystemColor(color_colortext);
-  }
-  bout.SystemColor(YELLOW);
-  bout.GotoXY(1, 21);
-  bout.clreol();
-  bout.nl();
-  bout.clreol();
-  bout.GotoXY(1, 21);
-
-  search_record sr{};
-  printinfo_plus(u, 1, 1, 30, &sr);
-  bout.GotoXY(30, 17);
-  bout.SystemColor(YELLOW);
-  bout.bs();
 }
 
 static int rename_filename(const char *file_name, int dn) {
