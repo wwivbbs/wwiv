@@ -564,7 +564,7 @@ void temp_extract() {
   i = recno(s);
   bool ok = true;
   while ((i > 0) && ok && !hangup) {
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -767,7 +767,7 @@ void move_file_t() {
     int nCurPos = 0;
     while (!hangup && (nTempRecordNum > 0) && !done) {
       nCurPos = nTempRecordNum;
-      File fileDownload(g_szDownloadFileName);
+      File fileDownload(session()->download_filename_);
       fileDownload.Open(File::modeReadOnly | File::modeBinary);
       FileAreaSetRecord(fileDownload, nTempRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
@@ -927,7 +927,7 @@ void removefile() {
   int i = recno(szFileToRemove);
   bool abort = false;
   while (!hangup && (i > 0) && !abort) {
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));

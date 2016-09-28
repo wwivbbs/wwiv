@@ -1221,7 +1221,7 @@ static int rename_filename(const char *file_name, int dn) {
 
   int i = recno(orig_aligned_filename);
   while (i > 0) {
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     if (!fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
       break;
     }
@@ -1339,7 +1339,7 @@ static int remove_filename(const char *file_name, int dn) {
   bool abort = false;
   bool rdlp = false;
   while (!hangup && i > 0 && !abort) {
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     if (fileDownload.Open(File::modeReadOnly | File::modeBinary)) {
       FileAreaSetRecord(fileDownload, i);
       fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1436,7 +1436,7 @@ static int move_filename(const char *file_name, int dn) {
 
   while (!hangup && nRecNum > 0 && !done) {
     int cp = nRecNum;
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
       FileAreaSetRecord(fileDownload, nRecNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1785,7 +1785,7 @@ void view_file(const char *file_name) {
   i = recno(file_name);
   do {
     if (i > 0) {
-      File fileDownload(g_szDownloadFileName);
+      File fileDownload(session()->download_filename_);
       if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
         FileAreaSetRecord(fileDownload, i);
         fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1820,7 +1820,7 @@ int lp_try_to_download(const char *file_mask, int dn) {
   foundany = 1;
   do {
     session()->tleft(true);
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));

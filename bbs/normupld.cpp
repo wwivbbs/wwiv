@@ -263,7 +263,7 @@ void normalupload(int dn) {
           time_t lCurrentTime;
           time(&lCurrentTime);
           u.daten = static_cast<uint32_t>(lCurrentTime);
-          File fileDownload(g_szDownloadFileName);
+          File fileDownload(session()->download_filename_);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           for (int j = session()->numf; j >= 1; j--) {
             FileAreaSetRecord(fileDownload, j);

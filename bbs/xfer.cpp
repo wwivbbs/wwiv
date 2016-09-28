@@ -76,7 +76,7 @@ void get_ed_info() {
   }
 
   long lCurFilePos = 0;
-  File fileExtDescr(g_szExtDescrFileName);
+  File fileExtDescr(session()->extended_description_filename_);
   if (fileExtDescr.Open(File::modeReadOnly | File::modeBinary)) {
     long lFileSize = fileExtDescr.GetLength();
     if (lFileSize > 0) {
@@ -315,8 +315,8 @@ bool dcs() {
 }
 
 void dliscan1(int directory_num) {
-  sprintf(g_szDownloadFileName, "%s%s.dir", syscfg.datadir, session()->directories[directory_num].filename);
-  File fileDownload(g_szDownloadFileName);
+  session()->download_filename_ = StrCat(syscfg.datadir, session()->directories[directory_num].filename, ".dir");
+  File fileDownload(session()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
   uploadsrec u;
@@ -347,7 +347,7 @@ void dliscan1(int directory_num) {
   session()->numf = u.numbytes;
   this_date = u.daten;
 
-  sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, session()->directories[directory_num].filename);
+  session()->extended_description_filename_ = StrCat(syscfg.datadir, session()->directories[directory_num].filename, ".ext");
   zap_ed_info();
 }
 
@@ -361,7 +361,7 @@ void add_extended_description(const string& file_name, const string& description
   strcpy(ed.name, file_name.c_str());
   ed.len = static_cast<int16_t>(description.size());
 
-  File file(g_szExtDescrFileName);
+  File file(session()->extended_description_filename_);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::seekEnd);
   file.Write(&ed, sizeof(ext_desc_type));
@@ -374,7 +374,7 @@ void add_extended_description(const string& file_name, const string& description
 void delete_extended_description(const string& file_name) {
   ext_desc_type ed;
 
-  File fileExtDescr(g_szExtDescrFileName);
+  File fileExtDescr(session()->extended_description_filename_);
   fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   long lFileSize = fileExtDescr.GetLength();
   long r = 0, w = 0;
@@ -406,7 +406,7 @@ string read_extended_description(const string& file_name) {
   if (ed_got && ed_info) {
     for (int i = 0; i < ed_num; i++) {
       if (file_name == ed_info[i].name) {
-        File fileExtDescr(g_szExtDescrFileName);
+        File fileExtDescr(session()->extended_description_filename_);
         if (!fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
           return nullptr;
         }
@@ -428,7 +428,7 @@ string read_extended_description(const string& file_name) {
     }
   }
   if (ed_got != 1) {
-    File fileExtDescr(g_szExtDescrFileName);
+    File fileExtDescr(session()->extended_description_filename_);
     if (fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
       long lFileSize = fileExtDescr.GetLength();
       long lCurPos = 0;
@@ -707,7 +707,7 @@ void listfiles() {
   bool need_title = true;
   lines_listed = 0;
 
-  File fileDownload(g_szDownloadFileName);
+  File fileDownload(session()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeReadOnly);
   bool abort = false;
   for (int i = 1; i <= session()->numf && !abort && !hangup; i++) {
@@ -751,7 +751,7 @@ void nscandir(int nDirNum, bool& need_title, bool *abort) {
       session()->set_current_user_dir_num(nOldCurDir);
       return;
     }
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     for (int i = 1; i <= session()->numf && !(*abort) && !hangup; i++) {
       CheckForHangup();
@@ -886,7 +886,7 @@ void searchall() {
       session()->set_current_user_dir_num(i);
       dliscan();
       bool need_title = true;
-      File fileDownload(g_szDownloadFileName);
+      File fileDownload(session()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
       for (int i1 = 1; i1 <= session()->numf && !abort && !hangup; i1++) {
         FileAreaSetRecord(fileDownload, i1);
@@ -929,7 +929,7 @@ int nrecno(const std::string& file_mask, int nStartingRec) {
     return -1;
   }
 
-  File fileDownload(g_szDownloadFileName);
+  File fileDownload(session()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeReadOnly);
   FileAreaSetRecord(fileDownload, nRecNum);
   uploadsrec u;

@@ -127,7 +127,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
       dliscan1(b.dir);
       int nRecNum = recno(b.filename);
       if (nRecNum > 0) {
-        File file(g_szDownloadFileName);
+        File file(session()->download_filename_);
         file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
         FileAreaSetRecord(file, nRecNum);
         file.Read(&u, sizeof(uploadsrec));
@@ -172,7 +172,7 @@ void didnt_upload(const batchrec& b) {
   dliscan1(b.dir);
   int nRecNum = recno(b.filename);
   if (nRecNum > 0) {
-    File file(g_szDownloadFileName);
+    File file(session()->download_filename_);
     file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite, File::shareDenyNone);
     do {
       FileAreaSetRecord(file, nRecNum);
@@ -216,7 +216,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
       dliscan1(b.dir);
       int nRecNum = recno(b.filename);
       if (nRecNum > 0) {
-        File downFile(g_szDownloadFileName);
+        File downFile(session()->download_filename_);
         downFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         do {
           FileAreaSetRecord(downFile, nRecNum);
@@ -267,7 +267,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               pStatus->IncrementNumUploadsToday();
               pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
               session()->status_manager()->CommitTransaction(pStatus);
-              File fileDn(g_szDownloadFileName);
+              File fileDn(session()->download_filename_);
               fileDn.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
               FileAreaSetRecord(fileDn, nRecNum);
               fileDn.Write(&u, sizeof(uploadsrec));
@@ -394,7 +394,7 @@ void zmbatchdl(bool bHangupAfterDl) {
         session()->localIO()->Puts(
             StringPrintf("Files left - %d, Time left - %s\r\n", 
               session()->batch().entry.size(), ctim(session()->batch().dl_time_in_secs())));
-        File file(g_szDownloadFileName);
+        File file(session()->download_filename_);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
@@ -473,7 +473,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         session()->localIO()->Puts(
 			      StringPrintf("Files left - %d, Time left - %s\r\n", 
               session()->batch().entry.size(), ctim(session()->batch().dl_time_in_secs())));
-        File file(g_szDownloadFileName);
+        File file(session()->download_filename_);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
@@ -653,7 +653,7 @@ void ProcessDSZLogFile() {
     return;
   }
 
-  File fileDszLog(g_szDSZLogFileName);
+  File fileDszLog(session()->dsz_logfile_name_);
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
     int nFileSize = static_cast<int>(fileDszLog.GetLength());
     char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
@@ -696,8 +696,8 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
         modem_speed, dl.c_str(), commandLine.c_str());
     session()->localIO()->Puts(message);
     if (incom) {
-      File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
-      File::Remove(g_szDSZLogFileName);
+      File::SetFilePermissions(session()->dsz_logfile_name_, File::permReadWrite);
+      File::Remove(session()->dsz_logfile_name_);
       File::set_current_directory(session()->batch_directory());
       ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {

@@ -425,7 +425,7 @@ void WSession::ReadINIFile(IniFile& ini) {
   max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
 }
 
-bool WSession::ReadConfigOverlayFile(int instance_number, IniFile& ini) {
+bool WSession::ReadInstanceSettings(int instance_number, IniFile& ini) {
   const char* temp_directory_char = ini.GetValue("TEMP_DIRECTORY");
   if (temp_directory_char == nullptr) {
     LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
@@ -488,7 +488,7 @@ bool WSession::ReadConfig() {
     AbortBBS();
   }
   ReadINIFile(*ini);
-  bool config_ovr_read = ReadConfigOverlayFile(instance_number(), *ini);
+  bool config_ovr_read = ReadInstanceSettings(instance_number(), *ini);
   if (!config_ovr_read) {
     return false;
   }
@@ -521,7 +521,6 @@ bool WSession::ReadConfig() {
   syscfg.newuserpw        = strdup(config_->config()->newuserpw);
   syscfg.systempw         = strdup(config_->config()->systempw);
 
-  syscfg.msgsdir          = DuplicatePath(config_->config()->msgsdir);
   syscfg.gfilesdir        = DuplicatePath(config_->config()->gfilesdir);
   syscfg.datadir          = DuplicatePath(config_->config()->datadir);
   syscfg.dloadsdir        = DuplicatePath(config_->config()->dloadsdir);
@@ -568,7 +567,6 @@ bool WSession::ReadConfig() {
 
   make_abs_path(syscfg.gfilesdir);
   make_abs_path(syscfg.datadir);
-  make_abs_path(syscfg.msgsdir);
   make_abs_path(syscfg.dloadsdir);
   make_abs_path(syscfg.menudir);
 
@@ -933,8 +931,7 @@ void WSession::InitializeBBS() {
   statusMgr->RefreshStatusCache();
   topdata = LocalIO::topdataUser;
 
-  string dsz_logfile_name = StrCat(session()->temp_directory(), "dsz.log");
-  to_char_array(g_szDSZLogFileName, dsz_logfile_name);
+  dsz_logfile_name_ = StrCat(session()->temp_directory(), "dsz.log");
 
 #if !defined ( __unix__ ) && !defined ( __APPLE__ )
   string newprompt = "WWIV: ";
@@ -949,7 +946,7 @@ void WSession::InitializeBBS() {
   set_environment_variable("PROMPT", newprompt);
 
   if (environment_variable("DSZLOG").empty()) {
-    set_environment_variable("DSZLOG", g_szDSZLogFileName);
+    set_environment_variable("DSZLOG", dsz_logfile_name_);
   }
   set_environment_variable("BBS", wwiv_version);
 
@@ -987,7 +984,7 @@ void WSession::InitializeBBS() {
 
   read_bbs_list_index();
   frequent_init();
-  if (!m_bUserAlreadyOn) {
+  if (!user_already_on_) {
     TempDisablePause disable_pause;
     remove_from_temp("*.*", temp_directory(), true);
     remove_from_temp("*.*", batch_directory(), true);
@@ -998,7 +995,7 @@ void WSession::InitializeBBS() {
   XINIT_PRINTF("Reading Conferences.");
   read_all_conferences();
 
-  if (!m_bUserAlreadyOn) {
+  if (!user_already_on_) {
     sysoplog(false);
     sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
       << ", brought up at " << times() << " on " << fulldate() << ".";

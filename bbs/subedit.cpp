@@ -724,7 +724,7 @@ void boardedit() {
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (yesno()) {
             File::Remove(StrCat(session()->config()->datadir(), fn, ".sub"));
-            File::Remove(StrCat(syscfg.msgsdir, fn, ".dat"));
+            File::Remove(StrCat(session()->config()->msgsdir(), fn, ".dat"));
           }
         }
       }

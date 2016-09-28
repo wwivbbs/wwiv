@@ -105,9 +105,9 @@ WOutStream bout;
 
 WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
     local_io_(localIO),
-    m_nOkLevel(exitLevelOK),
-    m_nErrorLevel(exitLevelNotOK),
-    m_nBbsShutdownStatus(shutdownNone),
+    oklevel_(exitLevelOK),
+    errorlevel_(exitLevelNotOK),
+    shutdown_status_(shutdownNone),
     batch_() {
   ::bout.SetLocalIO(localIO);
 
@@ -280,7 +280,7 @@ void WSession::handle_sysop_key(uint8_t key) {
         UpdateTopScreen();
         break;
       case CF1:                          /* Ctrl-F1 */
-        ToggleShutDown();
+        // Used to be shutdown bbs in 3 minutes.
         break;
       case F2:                          /* F2 */
         topdata++;
@@ -593,7 +593,6 @@ const std::string WSession::network_directory() const {
 
 
 void WSession::GetCaller() {
-  SetShutDownStatus(WSession::shutdownNone);
   wfc_init();
   remoteIO()->remote_info().clear();
   frequent_init();
@@ -992,7 +991,7 @@ int WSession::LocalLogon() {
       bool fast = false;
 
       if (ch == 'F') {   // 'F' for Fast
-        m_unx = 1;
+        unx_ = 1;
         fast = true;
       } else {
         switch (ch) {
@@ -1006,21 +1005,21 @@ int WSession::LocalLogon() {
         case '8':
         case '9':
           fast = true;
-          m_unx = ch - '0';
+          unx_ = ch - '0';
           break;
         }
       }
-      if (!fast || m_unx > status_manager()->GetUserCount()) {
+      if (!fast || unx_ > status_manager()->GetUserCount()) {
         return lokb;
       }
 
       User tu;
-      users()->ReadUserNoCache(&tu, m_unx);
+      users()->ReadUserNoCache(&tu, unx_);
       if (tu.GetSl() != 255 || tu.IsUserDeleted()) {
         return lokb;
       }
 
-      usernum = m_unx;
+      usernum = unx_;
       int nSavedWFCStatus = GetWfcStatus();
       SetWfcStatus(0);
       ReadCurrentUser();
@@ -1089,7 +1088,7 @@ const string WSession::GetHomeDir() {
 
 void WSession::AbortBBS(bool bSkipShutdown) {
   clog.flush();
-  ExitBBSImpl(m_nErrorLevel, !bSkipShutdown);
+  ExitBBSImpl(errorlevel_, !bSkipShutdown);
 }
 
 void WSession::QuitBBS() {
@@ -1120,64 +1119,6 @@ void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   exit(exit_level);
 }
 
-void WSession::ShutDownBBS(int nShutDownStatus) {
-  char xl[81], cl[81], atr[81], cc;
-  localIO()->SaveCurrentLine(cl, atr, xl, &cc);
-
-  switch (nShutDownStatus) {
-  case 1:
-    SetShutDownTime(timer() + 180.0);
-  case 2:
-  case 3:
-    SetShutDownStatus(nShutDownStatus);
-    bout.nl(2);
-    bout << "|#7***\r\n|#7To All Users, System will shut down in " <<
-      4 - GetShutDownStatus() << " minunte(s) for maintenance.\r \n" <<
-      "|#7Please finish your session and log off. Thank you\r\n|#7***\r\n";
-    break;
-  case 4:
-    bout.nl(2);
-    bout << "|#7***\r\n|#7Please call back later.\r\n|#7***\r\n\n";
-    user()->SetExtraTime(user()->GetExtraTime() + static_cast<float>
-      (nsl()));
-    bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
-    printfile(LOGOFF_NOEXT);
-    hangup = true;
-    SetShutDownStatus(WSession::shutdownNone);
-    break;
-  default:
-    LOG(FATAL) << "[utility.cpp] shutdown called with illegal type: " << nShutDownStatus;
-  }
-  RestoreCurrentLine(cl, atr, xl, &cc);
-}
-
-void WSession::UpdateShutDownStatus() {
-  if (!IsShutDownActive()) {
-    return;
-  }
-  if (((GetShutDownTime() - timer()) < 120) && ((GetShutDownTime() - timer()) > 60)) {
-    if (GetShutDownStatus() != WSession::shutdownTwoMinutes) {
-      ShutDownBBS(WSession::shutdownTwoMinutes);
-    }
-  }
-  if (((GetShutDownTime() - timer()) < 60) && ((GetShutDownTime() - timer()) > 0)) {
-    if (GetShutDownStatus() != WSession::shutdownOneMinute) {
-      ShutDownBBS(WSession::shutdownOneMinute);
-    }
-  }
-  if ((GetShutDownTime() - timer()) <= 0) {
-    ShutDownBBS(WSession::shutdownImmediate);
-  }
-}
-
-void WSession::ToggleShutDown() {
-  if (IsShutDownActive()) {
-    SetShutDownStatus(WSession::shutdownNone);
-  } else {
-    ShutDownBBS(WSession::shutdownThreeMinutes);
-  }
-}
-
 void WSession::ShowUsage() {
   cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" <<
     "Usage:\r\n\n" <<
@@ -1192,7 +1133,6 @@ void WSession::ShowUsage() {
     "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n" <<
     "  -M         - Don't access modem at all\r\n" <<
     "  -N<inst>   - Designate instance number <inst>\r\n" <<
-    "  -O         - Quit WWIV after one user done\r\n" <<
     "  -Q<level>  - Normal exit level\r\n" <<
     "  -R<min>    - Specify max # minutes until event\r\n" <<
     "  -S<rate>   - Used only with -B, indicates com port speed\r\n" <<
@@ -1234,8 +1174,6 @@ int WSession::Run(int argc, char *argv[]) {
     File::set_current_directory(wwiv_dir);
   }
 
-  // ooneuser = true;
-
   for (int i = 1; i < argc; i++) {
     string argumentRaw = argv[i];
     if (argumentRaw.length() > 1 && (argumentRaw[0] == '-' || argumentRaw[0] == '/')) {
@@ -1251,7 +1189,7 @@ int WSession::Run(int argc, char *argv[]) {
         if (!us) {
           us = ui;
         }
-        m_bUserAlreadyOn = true;
+        user_already_on_ = true;
       }
       break;
       case 'C':
@@ -1266,13 +1204,10 @@ int WSession::Run(int argc, char *argv[]) {
         }
         break;
       case 'Q':
-        m_nOkLevel = stoi(argument);
+        oklevel_ = stoi(argument);
         break;
       case 'A':
-        m_nErrorLevel = stoi(argument);
-        break;
-      case 'O':
-        ooneuser = true;
+        errorlevel_ = stoi(argument);
         break;
       case 'H':
         hSockOrComm = stoi(argument);
@@ -1283,7 +1218,7 @@ int WSession::Run(int argc, char *argv[]) {
         instance_number_ = stoi(argument);
         if (instance_number_ <= 0 || instance_number_ > 999) {
           clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_ << endl;
-          session()->ExitBBSImpl(m_nErrorLevel, false);
+          session()->ExitBBSImpl(errorlevel_, false);
         }
       }
       break;
@@ -1300,10 +1235,10 @@ int WSession::Run(int argc, char *argv[]) {
         break;
       case 'U':
         this_usernum = StringToUnsignedShort(argument);
-        if (!m_bUserAlreadyOn) {
+        if (!user_already_on_) {
           SetCurrentSpeed("KB");
         }
-        m_bUserAlreadyOn = true;
+        user_already_on_ = true;
         break;
       case 'V':
         cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;
@@ -1322,7 +1257,7 @@ int WSession::Run(int argc, char *argv[]) {
           SetUserOnline(false);
           us = 115200;
           ui = us;
-          m_bUserAlreadyOn = true;
+          user_already_on_ = true;
           ooneuser = true;
           using_modem = 0;
           hangup = false;
@@ -1338,7 +1273,7 @@ int WSession::Run(int argc, char *argv[]) {
           }
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
-          ExitBBSImpl(m_nErrorLevel, false);
+          ExitBBSImpl(errorlevel_, false);
         }
       }
       break;
@@ -1374,7 +1309,7 @@ int WSession::Run(int argc, char *argv[]) {
             bout << "|#6Aborted.\r\n";
           }
         }
-        ExitBBSImpl(m_nOkLevel, true);
+        ExitBBSImpl(oklevel_, true);
       }
       break;
       case '?':
@@ -1392,14 +1327,14 @@ int WSession::Run(int argc, char *argv[]) {
       default:
       {
         clog << "Invalid Command line argument given '" << argument << "'\r\n\n";
-        ExitBBSImpl(m_nErrorLevel, false);
+        ExitBBSImpl(errorlevel_, false);
       }
       break;
       }
     } else {
       // Command line argument did not start with a '-' or a '/'
       clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
-      ExitBBSImpl(m_nErrorLevel, false);
+      ExitBBSImpl(errorlevel_, false);
     }
   }
 
@@ -1441,7 +1376,7 @@ int WSession::Run(int argc, char *argv[]) {
   if (!remote_opened) {
     // Remote side disconnected.
     clog << "Remote side disconnected." << std::endl;
-    ExitBBSImpl(m_nOkLevel, false);
+    ExitBBSImpl(oklevel_, false);
   }
 
   if (num_min > 0) {
@@ -1468,7 +1403,7 @@ int WSession::Run(int argc, char *argv[]) {
       clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
-    ExitBBSImpl(m_nOkLevel, true);
+    ExitBBSImpl(oklevel_, true);
   }
 
   do {
@@ -1483,19 +1418,12 @@ int WSession::Run(int argc, char *argv[]) {
         ResetEffectiveSl();
         changedsl();
         okmacro = true;
-        if (!hangup && usernum > 0 &&
-          user()->IsRestrictionLogon() &&
-          IsEquals(date(), user()->GetLastOn()) &&
-          user()->GetTimesOnToday() > 0) {
-          bout << "\r\n|#6Sorry, you can only logon once per day.\r\n\n";
-          hangup = true;
-        }
       } else {
         this_usernum = 0;
       }
     }
     if (!this_usernum) {
-      if (m_bUserAlreadyOn) {
+      if (user_already_on_) {
         GotCaller(ui, us);
       }  else {
         GetCaller();
@@ -1509,7 +1437,7 @@ int WSession::Run(int argc, char *argv[]) {
     } else {
       using_modem = 0;
       okmacro = true;
-      usernum = m_unx;
+      usernum = unx_;
       ResetEffectiveSl();
       changedsl();
     }
@@ -1540,9 +1468,9 @@ int WSession::Run(int argc, char *argv[]) {
     if (!no_hangup && ok_modem_stuff) {
       remoteIO()->dtr(false);
     }
-    m_bUserAlreadyOn = false;
+    user_already_on_ = false;
   } while (!ooneuser);
 
-  return m_nOkLevel;
+  return oklevel_;
 }
 

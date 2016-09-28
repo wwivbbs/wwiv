@@ -132,8 +132,8 @@ void frequent_init() {
   use_workspace = false;
   extratimecall = 0;
   session()->using_modem = 0;
-  File::SetFilePermissions(g_szDSZLogFileName, File::permReadWrite);
-  File::Remove(g_szDSZLogFileName);
+  File::SetFilePermissions(session()->dsz_logfile_name_, File::permReadWrite);
+  File::Remove(session()->dsz_logfile_name_);
   session()->SetTimeOnlineLimited(false);
   set_net_num(0);
   set_language(session()->user()->GetLanguage());

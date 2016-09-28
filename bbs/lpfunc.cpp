@@ -165,7 +165,7 @@ int listfiles_plus_function(int type) {
       int lines = 0;
       int changedir = 0;
 
-      File fileDownload(g_szDownloadFileName);
+      File fileDownload(session()->download_filename_);
       while (!done && !hangup && !all_done) {
         checka(&all_done);
         if (!amount) {

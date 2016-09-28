@@ -328,7 +328,6 @@ struct small_configrec {
   char          * newuserpw,          // new user password
                 * systempw,           // system password
 
-                * msgsdir,            // path for msgs directory
                 * gfilesdir,          // path for gfiles dir
                 * datadir,            // path for data directory
                 * dloadsdir,          // path for dloads dir

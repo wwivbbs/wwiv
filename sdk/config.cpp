@@ -38,24 +38,30 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
   DataFile<configrec> configFile(root_directory, CONFIG_DAT, File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
+    return;
+  } 
+  initialized_ = configFile.Read(config_.get());
+  // Handle 4.24 datafile
+  if (!initialized_) {
+    configFile.Seek(0);
+    int size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
+    initialized_ = (size_read == CONFIG_DAT_SIZE_424);
+    LOG(INFO) << "WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".";
   } else {
-    initialized_ = configFile.Read(config_.get());
-    // Handle 4.24 datafile
-    if (!initialized_) {
-      configFile.Seek(0);
-      int size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
-      initialized_ = (size_read == CONFIG_DAT_SIZE_424);
-      LOG(INFO) << "WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".";
-    } else {
-      if (IsEquals("WWIV", config_->header.header.signature)) {
-        // WWIV 5.2 style header.
-        const auto& h = config_->header.header;
-        versioned_config_dat_ = true;
-        config_revision_number_ = h.config_revision_number;
-        written_by_wwiv_num_version_ = h.written_by_wwiv_num_version;
-        
-      }
+    // We're in a 4.3x, 5.x format.
+    if (IsEquals("WWIV", config_->header.header.signature)) {
+      // WWIV 5.2 style header.
+      const auto& h = config_->header.header;
+      versioned_config_dat_ = true;
+      config_revision_number_ = h.config_revision_number;
+      written_by_wwiv_num_version_ = h.written_by_wwiv_num_version;
     }
+  }
+
+  if (initialized_) {
+    // We've initialized something.
+    // Update absolute paths.
+    update_paths();
   }
 }
 
@@ -64,10 +70,27 @@ void Config::set_config(configrec* config) {
   // assign value
   *temp = *config;
   config_.swap(temp);
+
+  // Update absolute paths.
+  update_paths();
 }
 
 Config::~Config() {}
 
+std::string Config::to_abs_path(const char* dir) {
+  std::string directory = dir;
+  File::MakeAbsolutePath(root_directory_, &directory);
+  return directory;
+}
+
+
+void Config::update_paths() {
+  datadir_ = to_abs_path(config_->datadir);
+  msgsdir_ = to_abs_path(config_->msgsdir);
+  gfilesdir_ = to_abs_path(config_->gfilesdir);
+  menudir_ = to_abs_path(config_->menudir);
+
+}
 
 }
 }

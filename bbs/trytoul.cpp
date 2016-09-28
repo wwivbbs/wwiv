@@ -344,7 +344,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   time_t tCurrentDate = time(nullptr);
   u.daten = static_cast<uint32_t>(tCurrentDate);
-  File fileDownload(g_szDownloadFileName);
+  File fileDownload(session()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   for (int i = session()->numf; i >= 1; i--) {
     FileAreaSetRecord(fileDownload, i);

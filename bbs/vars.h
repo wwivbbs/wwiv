@@ -40,9 +40,6 @@
 static constexpr int MAX_FILENAME_LENGTH = 260;
 __EXTRN__ char  ansistr[81],
           charbuffer[255],
-          g_szDownloadFileName[MAX_FILENAME_LENGTH],
-          g_szDSZLogFileName[MAX_FILENAME_LENGTH],
-          g_szExtDescrFileName[MAX_FILENAME_LENGTH],
           endofline[81],
           irt[81],
           irt_name[205],

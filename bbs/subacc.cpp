@@ -358,8 +358,8 @@ void pack_sub(int si) {
     string sfn = session()->subs().sub(si).filename;
     string nfn = "PACKTMP$";
 
-    const string fn1 = StrCat(syscfg.msgsdir, sfn, ".dat");
-    const string fn2 = StrCat(syscfg.msgsdir, nfn, ".dat");
+    const string fn1 = StrCat(session()->config()->msgsdir(), sfn, ".dat");
+    const string fn2 = StrCat(session()->config()->msgsdir(), nfn, ".dat");
 
     bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" 
          << session()->subs().sub(si).name << wwiv::endl;

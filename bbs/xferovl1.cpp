@@ -313,7 +313,7 @@ int read_idz(int mode, int tempdir) {
   bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
                                     session()->directories[session()->udir[tempdir].subnum].name,
                                     session()->udir[tempdir].keys);
-  File fileDownload(g_szDownloadFileName);
+  File fileDownload(session()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   for (i = 1; (i <= session()->numf) && (!hangup) && !abort; i++) {
     FileAreaSetRecord(fileDownload, i);
@@ -546,13 +546,13 @@ void tag_files(bool& need_title) {
         bout << "|#1Filename   : |#2" << f.u.filename << wwiv::endl;
         bout << "|#1Description: |#2" << f.u.description << wwiv::endl;
         if (f.u.mask & mask_extended) {
-          strcpy(s1, g_szExtDescrFileName);
-          sprintf(g_szExtDescrFileName, "%s%s.ext", syscfg.datadir, session()->directories[f.directory].filename);
+          to_char_array(s1, session()->extended_description_filename_);
+          session()->extended_description_filename_ = StrCat(syscfg.datadir, session()->directories[f.directory].filename, ".ext");
           zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
           print_extended(f.u.filename, &abort, session()->max_extend_lines, 2);
           zap_ed_info();
-          strcpy(g_szExtDescrFileName, s1);
+          session()->extended_description_filename_ = s1;
         }
         bout << "|#1File size  : |#2" << bytes_to_k(f.u.numbytes) << wwiv::endl;
         bout << "|#1Apprx. time: |#2" << ctim(d) << wwiv::endl;
@@ -753,7 +753,7 @@ int try_to_download(const char *file_mask, int dn) {
   foundany = 1;
   do {
     session()->tleft(true);
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1094,7 +1094,7 @@ void removefilesnotthere(int dn, int *autodel) {
   bool abort = false;
   while (!hangup && i > 0 && !abort) {
     char szCandidateFileName[MAX_PATH];
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));

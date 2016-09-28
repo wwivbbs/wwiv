@@ -16,6 +16,9 @@ What's New in WWIV 5.2 (2016)
   info in config.dat live in the same first 21 characters in the file.)
 * CONFUG.USR is no longer needed, INIT in 5.2.2129+ will move the data into
   user.lst and delete the file.
+* Removed command line option -O, since -X{T,S} implies -O
+* Removed Control-F1 to shutdown the BBS, it's not needed anymore on
+  non-single user operating systems.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

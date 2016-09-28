@@ -50,7 +50,6 @@ static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::si
   // Stop over stop chars
   while (iter != c.end()
     && stop.find(*iter) != std::end(stop)) {
-    int i = 0;
     iter++;
   }
 

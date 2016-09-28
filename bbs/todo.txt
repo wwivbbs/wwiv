@@ -3,6 +3,10 @@
                  Copyright 2002-2016 WWIV Software Services
 ==============================================================================
 
+* get rid of more char[] variables from vars.h, move to wsession as strings.
+* get rid of syscfg.{datadir,gfilesdir,menudir} in bbs code, use config() strings.
+* get_message_field ignores max.
+* update routing information in network1.
 * cleanup wfc since we aren't waiting for a call
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.

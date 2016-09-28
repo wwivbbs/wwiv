@@ -915,8 +915,8 @@ void ListUsersDL() {
 }
 
 void PrintDSZLog() {
-  if (File::Exists(g_szDSZLogFileName)) {
-    print_local_file(g_szDSZLogFileName);
+  if (File::Exists(session()->dsz_logfile_name_)) {
+    print_local_file(session()->dsz_logfile_name_);
   }
 }
 

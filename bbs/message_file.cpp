@@ -59,7 +59,7 @@ uint16_t *gat = nullptr;
 static File* OpenMessageFile(const string messageAreaFileName) {
   session()->status_manager()->RefreshStatusCache();
 
-  const string filename = StrCat(syscfg.msgsdir, messageAreaFileName, FILENAME_DAT_EXTENSION);
+  const string filename = StrCat(session()->config()->msgsdir(), messageAreaFileName, FILENAME_DAT_EXTENSION);
   File *pFileMessage = new File(filename);
   if (!pFileMessage->Open(File::modeReadWrite | File::modeBinary)) {
     // Create message area file if it doesn't exist.

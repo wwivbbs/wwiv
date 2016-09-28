@@ -40,18 +40,26 @@ public:
   uint32_t config_revision_number() const { return config_revision_number_; }
 
   const std::string root_directory() const { return root_directory_; }
-  const std::string datadir() const { return config_->datadir; }
-  const std::string msgsdir() const { return config_->msgsdir; }
-  const std::string gfilesdir() const { return config_->gfilesdir; }
-  const std::string menudir() const { return config_->menudir; }
+  const std::string datadir() const { return datadir_; }
+  const std::string msgsdir() const { return msgsdir_; }
+  const std::string gfilesdir() const { return gfilesdir_; }
+  const std::string menudir() const { return menudir_; }
 
 private:
+  std::string to_abs_path(const char* dir);
+  void update_paths();
+
   bool initialized_ = false;
   std::unique_ptr<configrec> config_;
   const std::string root_directory_;
   bool versioned_config_dat_ = false;
   uint32_t config_revision_number_ = 0;
   uint16_t written_by_wwiv_num_version_ = 0;
+
+  std::string datadir_;
+  std::string msgsdir_;
+  std::string gfilesdir_;
+  std::string menudir_;
 };
 
 }  // namespace sdk

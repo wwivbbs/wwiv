@@ -258,20 +258,15 @@ public:
   void ClearConfigFlag(int nFlag) { flags &= ~nFlag; }
   bool HasConfigFlag(int nFlag) const { return (flags & nFlag) != 0; }
   void SetConfigFlags(int nFlags) { flags = nFlags; }
-  unsigned long GetConfigFlags() const { return flags; }
+  uint32_t GetConfigFlags() const { return flags; }
 
-  unsigned short GetSpawnOptions(int nCmdID) { return spawn_opts[nCmdID]; }
+  uint16_t GetSpawnOptions(int nCmdID) { return spawn_opts[nCmdID]; }
 
-  bool IsCleanNetNeeded() const { return m_bNeedToCleanNetwork; }
-  void SetCleanNetNeeded(bool b) { m_bNeedToCleanNetwork = b; }
+  bool IsCleanNetNeeded() const { return need_to_clean_net_; }
+  void SetCleanNetNeeded(bool b) { need_to_clean_net_ = b; }
 
-  bool IsShutDownActive() const { return m_nBbsShutdownStatus > 0; }
-
-  double GetShutDownTime() const { return m_fShutDownTime; }
-  void   SetShutDownTime(double d) { m_fShutDownTime = d; }
-
-  void SetWfcStatus(int nStatus) { m_nWfcStatus = nStatus; }
-  int  GetWfcStatus() { return m_nWfcStatus; }
+  void SetWfcStatus(int nStatus) { wfc_status_ = nStatus; }
+  int  GetWfcStatus() { return wfc_status_; }
 
   void SetChatReason(const std::string& chat_reason) { chat_reason_ = chat_reason; }
 
@@ -282,9 +277,7 @@ public:
   wwiv::sdk::Names* names() const { return names_.get(); }
 
   bool read_subs();
-  void UpdateShutDownStatus();
-  void ToggleShutDown();
-
+  
   // former global variables and system_operation_rec members
   // to be moved
   unsigned long flags;
@@ -304,22 +297,18 @@ public:
   */
   int Run(int argc, char *argv[]);
 
-   int  GetShutDownStatus() const { return m_nBbsShutdownStatus; }
-   void SetShutDownStatus(int n) { m_nBbsShutdownStatus = n; }
-   void ShutDownBBS(int shutdown_status);
-
    void ExitBBSImpl(int exit_level, bool perform_shutdown);
 
    void InitializeBBS(); // old init() method
    void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
-   bool ReadConfigOverlayFile(int instance_number, wwiv::core::IniFile& ini);
+   bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
    bool ReadConfig();
 
    int LocalLogon();
 
  private:
-   unsigned short str2spawnopt(const char *s);
-   unsigned short str2restrict(const char *s);
+   uint16_t str2spawnopt(const char *s);
+   uint16_t str2restrict(const char *s);
    void read_nextern();
    void read_arcs();
    void read_editors();
@@ -350,19 +339,19 @@ public:
    void GotCaller(unsigned int ms, unsigned long cs);
 
 private:
-  unsigned short  m_unx;
+  uint16_t  unx_;
   /*! The current working directory.*/
   std::string current_dir_;
-  int             m_nOkLevel;
-  int             m_nErrorLevel;
+  int             oklevel_;
+  int             errorlevel_;
   int             instance_number_ = -1;
   std::string     network_extension_;
   double          last_time = 0;
-  bool            m_bUserAlreadyOn = false;
-  bool            m_bNeedToCleanNetwork = false;
-  int             m_nBbsShutdownStatus = shutdownNone;
-  double          m_fShutDownTime = 0;
-  int             m_nWfcStatus = 0;
+  bool            user_already_on_ = false;
+  bool            need_to_clean_net_ = false;
+  int             shutdown_status_ = shutdownNone;
+  double          shutdown_time_ = 0;
+  int             wfc_status_ = 0;
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
@@ -384,11 +373,11 @@ private:
     int chatname_color_ = 0;
     int message_color_ = 0;
 
-  int         m_nForcedReadSubNumber = 0;
-  bool        m_bAllowCC = false;
-  bool        m_bUserOnline = false;
-  bool        m_bQuoting = false;
-  bool        m_bTimeOnlineLimited = false;
+    int         m_nForcedReadSubNumber = 0;
+    bool        m_bAllowCC = false;
+    bool        m_bUserOnline = false;
+    bool        m_bQuoting = false;
+    bool        m_bTimeOnlineLimited = false;
 
   bool        m_bNewScanAtLogin = false,
               m_bInternalZmodem = true,
@@ -427,6 +416,10 @@ private:
   std::string temp_directory_;
   std::string batch_directory_;
   uint8_t primary_port_ = 1;
+  std::string extended_description_filename_;
+  std::string dsz_logfile_name_;
+  std::string download_filename_;
+
 
   int wfc_status;
   int usernum;

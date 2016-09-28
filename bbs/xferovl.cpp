@@ -82,7 +82,7 @@ void move_file() {
 
   while (!hangup && nCurRecNum > 0 && !done) {
     int nCurrentPos = nCurRecNum;
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, nCurRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -243,7 +243,7 @@ void quicksort(int l, int r, int type) {
 
   int i = l;
   int j = r;
-  File fileDownload(g_szDownloadFileName);
+  File fileDownload(session()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
 
   FileAreaSetRecord(fileDownload, ((l + r) / 2));
@@ -320,7 +320,7 @@ void rename_file() {
   strcpy(s3, s);
   int nRecNum = recno(s);
   while (nRecNum > 0 && !hangup) {
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     int nCurRecNum = nRecNum;
     FileAreaSetRecord(fileDownload, nRecNum);
@@ -485,7 +485,7 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(lFileSize));
     time_t tCurrentTime = time(nullptr);
     u.daten = static_cast<uint32_t>(tCurrentTime);
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     for (int i = session()->numf; i >= 1; i--) {
       FileAreaSetRecord(fileDownload, i);
@@ -549,7 +549,7 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
       ok = false;
     }
   } else {
-    File fileDownload(g_szDownloadFileName);
+    File fileDownload(session()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -634,7 +634,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
         }
         if (ok1) {
           if (last_fn[0] && ext && *ext) {
-            File fileDownload(g_szDownloadFileName);
+            File fileDownload(session()->download_filename_);
             fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
             FileAreaSetRecord(fileDownload, 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
@@ -668,7 +668,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
     }
     file.Close();
     if (ok && last_fn[0] && ext && *ext) {
-      File fileDownload(g_szDownloadFileName);
+      File fileDownload(session()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
       FileAreaSetRecord(fileDownload, 1);
       fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1252,7 +1252,7 @@ void finddescription() {
       }
       session()->set_current_user_dir_num(i);
       dliscan();
-      File fileDownload(g_szDownloadFileName);
+      File fileDownload(session()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
       for (i1 = 1; i1 <= static_cast<size_t>(session()->numf) 
            && !abort && !hangup; i1++) {
@@ -1311,7 +1311,7 @@ void arc_l() {
   int nRecordNum = recno(szFileSpec);
   do {
     if (nRecordNum > 0) {
-      File fileDownload(g_szDownloadFileName);
+      File fileDownload(session()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
       FileAreaSetRecord(fileDownload, nRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
