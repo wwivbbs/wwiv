@@ -130,6 +130,8 @@ char getkey() {
   long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
   long tv1 = tv - 1092L;     // change 4.31 Build3
 
+  // Since were waitig for a key, reset the # of lines we've displayed since a pause.
+  lines_listed = 0;
   char ch = 0;
   do {
     while (!bkbhit() && !hangup) {
