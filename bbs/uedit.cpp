@@ -167,9 +167,9 @@ void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScree
     session()->localIO()->Puts(pUser->GetPassword());
 
     if (incom && session()->user()->GetSl() == 255) {
-      rputs(pUser->GetPassword());
+      bout.rputs(pUser->GetPassword());
     } else {
-      rputs("(not shown remotely)");
+      bout.rputs("(not shown remotely)");
     }
     bout.nl();
 

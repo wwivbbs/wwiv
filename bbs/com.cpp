@@ -44,9 +44,9 @@ void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const c
   }
   for (size_t i = 0; cl[i] != 0; i++) {
     bout.SystemColor(atr[i]);
-    bputch(cl[i], true);
+    bout.bputch(cl[i], true);
   }
-  FlushOutComChBuffer();
+  bout.FlushOutComChBuffer();
   bout.SystemColor(*cc);
   strcpy(endofline, xl);
 }
@@ -145,7 +145,7 @@ char getkey() {
       }
       if ((dd - time_lastchar_pressed) > tv1 && !beepyet) {
         beepyet = true;
-        bputch(CG);
+        bout.bputch(CG);
       }
       if (std::abs(dd - time_lastchar_pressed) > tv) {
         bout.nl();
@@ -248,6 +248,6 @@ char onek_ncr(const char *allowable_chars) {
   if (hangup) {
     ch = allowable_chars[0];
   }
-  bputch(ch);
+  bout.bputch(ch);
   return ch;
 }

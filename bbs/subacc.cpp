@@ -28,7 +28,7 @@
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"
-#include "bbs/woutstreambuffer.h"
+#include "bbs/output.h"
 #include "bbs/wsession.h"
 #include "sdk/status.h"
 #include "core/file.h"

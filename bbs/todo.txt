@@ -3,6 +3,10 @@
                  Copyright 2002-2016 WWIV Software Services
 ==============================================================================
 
+* Move SaveCurrentLine out of WLocalIO into bout.  Also we should be able to
+  just keep the last chars until newline saved always, then use that for restoring
+  the most recent line.
+* move endofline into Output
 * get rid of more char[] variables from vars.h, move to wsession as strings.
 * get rid of syscfg.{datadir,gfilesdir,menudir} in bbs code, use config() strings.
 * get_message_field ignores max.

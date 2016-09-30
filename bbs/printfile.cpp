@@ -27,7 +27,6 @@
 #include "bbs/bgetch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/bputch.h"
 #include "bbs/local_io.h"
 #include "bbs/keycodes.h"
 #include "bbs/pause.h"
@@ -147,7 +146,7 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
       // on the screen, unless the caller tells us to pause anyway)
       lines_listed = 0;
     }
-    bputch(ss[lCurPos++], true);
+    bout.bputch(ss[lCurPos++], true);
     if (bAbortable) {
       bool abort = false;
       checka(&abort);
@@ -162,7 +161,7 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
       }
     }
   }
-  FlushOutComChBuffer();
+  bout.FlushOutComChBuffer();
   // If the file is empty, lets' return false here since nothing was displayed.
   return lFileSize > 0;
 }

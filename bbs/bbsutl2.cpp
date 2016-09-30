@@ -87,12 +87,12 @@ void osan(const string& text, bool *abort, bool *next) {
   checka(abort, next);
 
   for (auto ch : text) {
-    bputch(ch, true);     // RF20020927 use buffered bputch
+    bout.bputch(ch, true);     // RF20020927 use buffered bputch
     if (checka(abort, next) || hangup) {
       break;
     }
   }
-  FlushOutComChBuffer();
+  bout.FlushOutComChBuffer();
 }
 
 /**

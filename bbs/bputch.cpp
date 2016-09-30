@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/bputch.h"
+#include "bbs/output.h"
 
 #include "bbs/bgetch.h"
 #include "bbs/bbs.h"
@@ -171,13 +171,13 @@ static void execute_ansi() {
  * are also trapped here, and the ansi function is called to execute the
  * ANSI codes
  */
-int bputch(char c, bool bUseInternalBuffer) {
+int Output::bputch(char c, bool use_buffer) {
   int nc = 0, displayed = 0;
   static char pipe_color[3];
 
   if (change_color == BPUTCH_MACRO_CHAR_CODE) {
     change_color = BPUTCH_NO_CODE;
-    return bout.bputs(interpret(c));
+    return bputs(interpret(c));
   } else if (change_color == BPUTCH_CTRLO_CODE) {
     if (c == CO) {
       change_color = BPUTCH_MACRO_CHAR_CODE;
@@ -201,7 +201,7 @@ int bputch(char c, bool bUseInternalBuffer) {
     } else if (pipe_color[0] == 'b' || pipe_color[0] == 'B') {
       nc = 16 + atoi(pipe_color + 1);
     } else if (pipe_color[0] == '#') {
-      bout.Color(atoi(pipe_color + 1));
+      Color(atoi(pipe_color + 1));
       return 0;
     } else {
       change_color = BPUTCH_LITERAL_PIPE_CODE;
@@ -213,7 +213,7 @@ int bputch(char c, bool bUseInternalBuffer) {
 
     if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
       bout << "|" ;
-      return bout.bputs(pipe_color) + 1;
+      return bputs(pipe_color) + 1;
     } else {
       char szAnsiColorCode[20];
       if (nc < 16) {
@@ -221,7 +221,7 @@ int bputch(char c, bool bUseInternalBuffer) {
       } else {
         makeansi((curatr & 0x0f) | (nc << 4), szAnsiColorCode, false);
       }
-      bout.bputs(szAnsiColorCode);
+      bputs(szAnsiColorCode);
     }
     return 0; // color was printed, no chars displayed
   } else if (change_color == BPUTCH_AT_MACRO_CODE) {
@@ -236,7 +236,7 @@ int bputch(char c, bool bUseInternalBuffer) {
   } else if (change_color == BPUTCH_HEART_CODE) {
     change_color = BPUTCH_NO_CODE;
     if ((c >= SPACE) && (static_cast<unsigned char>(c) <= 126)) {
-      bout.Color(static_cast<unsigned char>(c) - 48);
+      Color(static_cast<unsigned char>(c) - 48);
     }
     return 0;
   }
@@ -251,7 +251,7 @@ int bputch(char c, bool bUseInternalBuffer) {
     change_color = BPUTCH_AT_MACRO_CODE;
     return 0;
   } else if (c == SOFTRETURN && endofline[0]) {
-    displayed = bout.bputs(endofline);
+    displayed = bputs(endofline);
     endofline[0] = '\0';
   } else if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
     change_color = BPUTCH_NO_CODE;
@@ -259,7 +259,7 @@ int bputch(char c, bool bUseInternalBuffer) {
   if (outcom && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
       char x = okansi() ? '\xFE' : 'X';
-      rputch(local_echo ? c : x, bUseInternalBuffer);
+      rputch(local_echo ? c : x, use_buffer);
       displayed = 1;
     }
   }
@@ -316,14 +316,14 @@ int bputch(char c, bool bUseInternalBuffer) {
 /* This function ouputs a string to the com port.  This is mainly used
  * for modem commands
  */
-void rputs(const char *text) {
+void Output::rputs(const char *text) {
   // Rushfan fix for COM/IP weirdness
   if (ok_modem_stuff) {
     session()->remoteIO()->write(text, strlen(text));
   }
 }
 
-void FlushOutComChBuffer() {
+void Output::FlushOutComChBuffer() {
   if (s_nOutComChBufferPosition > 0) {
     session()->remoteIO()->write(s_szOutComChBuffer, s_nOutComChBufferPosition);
     s_nOutComChBufferPosition = 0;
@@ -331,7 +331,7 @@ void FlushOutComChBuffer() {
   }
 }
 
-void rputch(char ch, bool bUseInternalBuffer) {
+void Output::rputch(char ch, bool bUseInternalBuffer) {
   if (ok_modem_stuff && nullptr != session()->remoteIO()) {
     if (bUseInternalBuffer) {
       if (s_nOutComChBufferPosition >= OUTCOMCH_BUFFER_SIZE) {

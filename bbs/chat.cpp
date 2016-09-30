@@ -791,7 +791,7 @@ void list_channels() {
       who_online(nodes, tl + INST_LOC_CH1 - 1);
       if (nodes[0]) {
         if (tl == 10) {
-          bputch(SPACE);
+          bout.bputch(SPACE);
         }
         bout << "    |#9Users in channel: ";
         for (int i2 = 1; i2 <= nodes[0]; i2++) {

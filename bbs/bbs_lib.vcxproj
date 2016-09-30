@@ -187,7 +187,7 @@
     <ClInclude Include="wfc.h" />
     <ClInclude Include="remote_socket_io.h" />
     <ClInclude Include="workspace.h" />
-    <ClInclude Include="woutstreambuffer.h" />
+    <ClInclude Include="output.h" />
     <ClInclude Include="wsession.h" />
     <ClInclude Include="wstatus.h" />
     <ClInclude Include="wwivcolors.h" />
@@ -312,8 +312,7 @@
     <ClCompile Include="wfc.cpp" />
     <ClCompile Include="remote_socket_io.cpp" />
     <ClCompile Include="workspace.cpp" />
-    <ClCompile Include="WOutStream.cpp" />
-    <ClCompile Include="WOutStreamBuffer.cpp" />
+    <ClCompile Include="output.cpp" />
     <ClCompile Include="wqscn.cpp" />
     <ClCompile Include="WSession.cpp" />
     <ClCompile Include="xfer.cpp" />

@@ -421,7 +421,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       } while (ch != '\n' && ch != 0);
       --cpos;
     } else if (ch) {
-      chars_this_line += bputch(ch);
+      chars_this_line += bout.bputch(ch);
     }
   }
 
@@ -454,7 +454,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       bout.nl();
       ++numl;
     } else {
-      bputch('\r');
+      bout.bputch('\r');
     }
   }
   file_information.clear();
@@ -523,7 +523,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, int colo
   while (new_ss[cpos] && numl < numlist && !hangup) {
     if (ch == SOFTRETURN && indent) {
       bout.SystemColor(color);
-      bputch('\r');
+      bout.bputch('\r');
       bout << "\x1b[" << std::abs(indent) << "C";
     }
     do {
@@ -540,7 +540,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, int colo
       } while (ch != '\n' && ch != 0);
       --cpos;
     } else {
-      chars_this_line += bputch(ch);
+      chars_this_line += bout.bputch(ch);
     }
   }
 

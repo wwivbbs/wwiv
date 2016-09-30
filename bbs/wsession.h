@@ -28,7 +28,7 @@
 #include "bbs/runnable.h"
 #include "bbs/remote_io.h"
 #include "sdk/status.h"
-#include "bbs/woutstreambuffer.h"
+#include "bbs/output.h"
 #include "sdk/subxtr.h"
 #include "bbs/local_io.h"
 #include "core/inifile.h"
@@ -76,7 +76,7 @@ struct tagrec_t {
   uint16_t dir_mask;
 };
 
-extern WOutStream bout;
+extern Output bout;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Per-user session data

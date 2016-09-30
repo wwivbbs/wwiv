@@ -487,7 +487,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
           }
         }
       }
-      bputch(ch = ss[ cpos++ ]);
+      bout.bputch(ch = ss[ cpos++ ]);
       checka(abort, &next);
       if (ch == SOFTRETURN) {
         ++numl;

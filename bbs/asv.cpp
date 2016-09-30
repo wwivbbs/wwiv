@@ -21,7 +21,6 @@
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
-#include "bbs/bputch.h"
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
@@ -139,7 +138,7 @@ void asv() {
               ph1[i2] = onek_ncr("0123456789\r");
               if (ph1[i2] == 8) {
                 if (!(i2 == 0)) {
-                  bputch(' ');
+                  bout.bputch(' ');
                   bout.bs();
                   i2--;
                   if ((i2 == 3) || (i2 == 7)) {
@@ -147,7 +146,7 @@ void asv() {
                     bout.bs();
                   }
                 } else {
-                  bputch(' ');
+                  bout.bputch(' ');
                 }
                 ph1[i2] = '\0';
                 i2--;
@@ -402,7 +401,7 @@ int printasv(const string& filename, int num, bool abort) {
           if (nums[i1++] == '~') {
             i1 = 2;
             if (okprint) {
-              bputch('~');
+              bout.bputch('~');
             }
             asvline = false;
           } else if (wwiv::UpperCase<char>(nums[0]) == 'C') {
@@ -425,7 +424,7 @@ int printasv(const string& filename, int num, bool abort) {
         }
       } else {
         if (okprint) {
-          bputch(*(buff + j));
+          bout.bputch(*(buff + j));
         }
       }
 

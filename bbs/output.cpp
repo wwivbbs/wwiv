@@ -16,12 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/output.h"
+
 #include <algorithm>
 #include <cstdarg>
 #include <string>
 
 #include "bbs/keycodes.h"
-#include "bbs/woutstreambuffer.h"
+#include "bbs/output.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"
@@ -32,15 +34,17 @@ using std::ostream;
 using std::string;
 using wwiv::strings::StringPrintf;
 
-std::ostream::int_type WOutStreamBuffer::overflow(std::ostream::int_type c) {
+outputstreambuf::outputstreambuf() {}
+outputstreambuf::~outputstreambuf() {}
+
+std::ostream::int_type outputstreambuf::overflow(std::ostream::int_type c) {
   if (c != EOF) {
-    bputch(static_cast<char>(c), false);
+    bout.bputch(static_cast<char>(c), false);
   }
   return c;
 }
 
-std::streamsize WOutStreamBuffer::xsputn(const char *text, std::streamsize numChars) {
-  //fprintf(stderr, "{xsputn[%s] #%u}\n", text, numChars);
+std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize numChars) {
   if (numChars == 0) {
     return 0;
   }
@@ -53,13 +57,13 @@ std::streamsize WOutStreamBuffer::xsputn(const char *text, std::streamsize numCh
       // Hit an embedded \0, stop early.
       break;
     }
-    bputch(text[i], true);
+    bout.bputch(text[i], true);
   }
-  FlushOutComChBuffer();
+  bout.FlushOutComChBuffer();
   return numChars;
 }
 
-void WOutStream::Color(int wwivColor) {
+void Output::Color(int wwivColor) {
   int c = '\0';
 
   if (wwivColor <= -1 && wwivColor >= -16) {
@@ -78,25 +82,25 @@ void WOutStream::Color(int wwivColor) {
     return;
   }
 
-  bout.SystemColor(c);
+  SystemColor(c);
 
   makeansi(session()->user()->HasColor() ?
            session()->user()->GetColor(0) : session()->user()->GetBWColor(0), endofline, false);
 }
 
-void WOutStream::ResetColors() {
+void Output::ResetColors() {
   // ANSI Clear Attributes String
   bputs("\x1b[0m");
 }
 
-void WOutStream::GotoXY(int x, int y) {
+void Output::GotoXY(int x, int y) {
   if (okansi()) {
     y = std::min<int>(y, session()->screenlinest);    // Don't get Y get too big or mTelnet will not be happy
     *this << "\x1b[" << y << ";" << x << "H";
   }
 }
 
-void WOutStream::nl(int nNumLines) {
+void Output::nl(int nNumLines) {
   for (int i = 0; i < nNumLines; i++) {
     if (endofline[0]) {
       bputs(endofline);
@@ -111,20 +115,20 @@ void WOutStream::nl(int nNumLines) {
   }
 }
 
-void WOutStream::bs() {
+void Output::bs() {
   bool bSavedEcho = local_echo;
   local_echo = true;
   bputs("\b \b");
   local_echo = bSavedEcho;
 }
 
-void WOutStream::SystemColor(int nColor) {
+void Output::SystemColor(int nColor) {
   char szBuffer[255];
   makeansi(nColor, szBuffer, false);
   bputs(szBuffer);
 }
 
-void WOutStream::litebar(const char *formatText, ...) {
+void Output::litebar(const char *formatText, ...) {
   va_list ap;
   char s[1024];
 
@@ -149,12 +153,12 @@ void WOutStream::litebar(const char *formatText, ...) {
 #else
   const string header = StringPrintf("|B1|15 %-78s", s);
   bout << header;
-  bout.Color(0);
-  bout.nl(2);
+  Color(0);
+  nl(2);
 #endif
 }
 
-void WOutStream::backline() {
+void Output::backline() {
   Color(0);
   bputch(SPACE);
   for (int i = localIO()->WhereX() + 1; i >= 0; i--) {
@@ -165,7 +169,7 @@ void WOutStream::backline() {
 /**
  * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
  */
-void WOutStream::cls() {
+void Output::cls() {
   if (okansi()) {
     bputs("\x1b[2J");
     GotoXY(1, 1);
@@ -178,13 +182,13 @@ void WOutStream::cls() {
  * Moves the cursor to the end of the line using ANSI sequences.  If the user
  * does not have ansi, this this function does nothing.
  */
-void WOutStream::clreol() {
+void Output::clreol() {
   if (okansi()) {
     bputs("\x1b[K");
   }
 }
 
-void WOutStream::mpl(int length) {
+void Output::mpl(int length) {
   if (!okansi()) {
     return;
   }
@@ -193,7 +197,7 @@ void WOutStream::mpl(int length) {
   bputs(StringPrintf("\x1b[%dD", length));
 }
 
-int WOutStream::bputs(const string& text) {
+int Output::bputs(const string& text) {
   CheckForHangup();
   if (text.empty() || hangup) { return 0; }
 
@@ -205,7 +209,7 @@ int WOutStream::bputs(const string& text) {
   return text.size();
 }
 
-int WOutStream::bprintf(const char *formatText, ...) {
+int Output::bprintf(const char *formatText, ...) {
   va_list ap;
   char szBuffer[4096];
 

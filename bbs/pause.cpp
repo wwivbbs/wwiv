@@ -123,7 +123,7 @@ void pausescr() {
         if (ttotal == 120) {
           if (!warned) {
             warned = 1;
-            bputch(CG);
+            bout.bputch(CG);
             bout.SystemColor(session()->user()->HasColor() ? session()->user()->GetColor(
                                              6) :
                                            session()->user()->GetBWColor(6));
@@ -138,9 +138,9 @@ void pausescr() {
           }
         } else {
           if (ttotal > 180) {
-            bputch(CG);
+            bout.bputch(CG);
             for (int i3 = 0; i3 < i1; i3++) {
-              bputch(' ');
+              bout.bputch(' ');
             }
             bout << "\x1b[" << i1 << "D";
             bout.SystemColor(i);
@@ -154,7 +154,7 @@ void pausescr() {
       ch = GetKeyForPause();
     } while (!ch && !hangup);
     for (int i3 = 0; i3 < i1; i3++) {
-      bputch(' ');
+      bout.bputch(' ');
     }
     bout << "\x1b[" << i1 << "D";
     bout.SystemColor(i);

@@ -391,7 +391,7 @@ void modify_event(int evnt) {
       do {
         if (j == 2) {
           s[j++] = ':';
-          bputch(':');
+          bout.bputch(':');
         } else {
           switch (j) {
           case 0:

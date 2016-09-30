@@ -25,10 +25,10 @@
 #include <ios>
 #include <string>
 
-class WOutStreamBuffer : public std::streambuf {
+class outputstreambuf : public std::streambuf {
  public:
-  WOutStreamBuffer();
-  ~WOutStreamBuffer();
+  outputstreambuf();
+  ~outputstreambuf();
   virtual std::ostream::int_type overflow(std::ostream::int_type c);
   virtual std::streamsize xsputn(const char *text, std::streamsize numChars);
 };
@@ -36,21 +36,21 @@ class WOutStreamBuffer : public std::streambuf {
 class RemoteIO;
 class LocalIO;
 
-class WOutStream : public std::ostream {
+class Output : public std::ostream {
  protected:
-  WOutStreamBuffer buf;
+  outputstreambuf buf;
   LocalIO *local_io_;
   RemoteIO *comm_;
 
  public:
-  WOutStream() :
+  Output() :
 #if defined(_WIN32)
     buf(),
 #endif
     std::ostream(&buf) {
     init(&buf);
   }
-  virtual ~WOutStream() {}
+  virtual ~Output() {}
 
   void SetLocalIO(LocalIO *local_io) { local_io_ = local_io; }
   LocalIO* localIO() const { return local_io_; }
@@ -96,6 +96,12 @@ class WOutStream : public std::ostream {
    */
   int bputs(const std::string& text);
   int bprintf(const char *fmt, ...);
+
+  int bputch(char c, bool use_buffer = false);
+  void FlushOutComChBuffer();
+  void rputch(char ch, bool use_buffer = false);
+  void rputs(const char *text);
+
 };
 
 namespace wwiv {

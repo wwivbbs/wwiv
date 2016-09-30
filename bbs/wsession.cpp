@@ -34,7 +34,6 @@
 #include "bbs/bbsovl2.h"
 #include "bbs/chnedit.h"
 #include "bbs/bgetch.h"
-#include "bbs/bputch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
@@ -100,7 +99,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 extern time_t last_time_c;
-WOutStream bout;
+Output bout;
 
 
 WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
@@ -307,7 +306,7 @@ void WSession::handle_sysop_key(uint8_t key) {
       case SF5:                          /* Shift-F5 */
         i1 = (rand() % 20) + 10;
         for (i = 0; i < i1; i++) {
-          bputch(static_cast<unsigned char>(rand() % 256));
+          bout.bputch(static_cast<unsigned char>(rand() % 256));
         }
         hangup = true;
         remoteIO()->dtr(false);
@@ -390,7 +389,7 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
   } else {
     if (okansi()) {
       for (unsigned int j = 0; j < nNumPrintableChars; j++) {
-        bputch(' ');
+        bout.bputch(' ');
       }
       bout << "\x1b[" << nNumPrintableChars << "D";
     } else {
@@ -1025,7 +1024,7 @@ int WSession::LocalLogon() {
       ReadCurrentUser();
       read_qscn(usernum, qsc, false);
       SetWfcStatus(nSavedWFCStatus);
-      bputch(ch);
+      bout.bputch(ch);
       localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
       lokb = 2;
       ResetEffectiveSl();

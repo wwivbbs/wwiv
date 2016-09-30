@@ -184,7 +184,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
       if (in_chatroom) {
         i = 0;
         while (i < ih->msg_size) {
-          bputch(msg[ i++ ]);
+          bout.bputch(msg[ i++ ]);
         }
         bout.nl();
         RestoreCurrentLine(cl, atr, xl, &cc);
@@ -199,7 +199,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
       }
       i = 0;
       while (i < ih->msg_size) {
-        bputch(msg[i++]);
+        bout.bputch(msg[i++]);
       }
       bout.nl(2);
       RestoreCurrentLine(cl, atr, xl, &cc);

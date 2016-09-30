@@ -477,21 +477,21 @@ static void list_macro(const char *macro_text) {
 
   while ((i < 80) && (macro_text[i] != 0)) {
     if (macro_text[i] >= 32) {
-      bputch(macro_text[i]);
+      bout.bputch(macro_text[i]);
     } else {
       if (macro_text[i] == 16) {
         bout.Color(macro_text[++i] - 48);
       } else {
         switch (macro_text[i]) {
         case RETURN:
-          bputch('|');
+          bout.bputch('|');
           break;
         case TAB:
-          bputch('\xF9');
+          bout.bputch('\xF9');
           break;
         default:
-          bputch('^');
-          bputch(static_cast<unsigned char>(macro_text[i] + 64));
+          bout.bputch('^');
+          bout.bputch(static_cast<unsigned char>(macro_text[i] + 64));
           break;
         }
       }
@@ -532,13 +532,13 @@ static void macroedit(char *macro_text) {
     case RETURN:
       macro_text[i++] = ch;
       bout.Color(0);
-      bputch('|');
+      bout.bputch('|');
       bout.Color(textclr);
       break;
     case TAB:
       macro_text[i++] = ch;
       bout.Color(0);
-      bputch('\xF9') ;
+      bout.bputch('\xF9') ;
       bout.Color(textclr);
       break;
     default:
@@ -548,7 +548,7 @@ static void macroedit(char *macro_text) {
         textclr = ch - 48;
         bout.Color(textclr);
       } else {
-        bputch(ch);
+        bout.bputch(ch);
       }
       break;
     }
@@ -568,7 +568,7 @@ static void make_macros() {
   bool done = false;
 
   do {
-    bputch(CL);
+    bout.bputch(CL);
     bout << "|#4Macro A: \r\n";
     list_macro(session()->user()->GetMacro(2));
     bout.nl();

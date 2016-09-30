@@ -108,8 +108,7 @@ set(COMMON_SOURCES
  vote.cpp
  voteedit.cpp
  remote_io.cpp
- woutstream.cpp
- woutstreambuffer.cpp
+ output.cpp
  wqscn.cpp
  wsession.cpp
  xfer.cpp

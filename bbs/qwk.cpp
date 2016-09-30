@@ -337,7 +337,7 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     checka(&qwk_info->abort);
 
   } while (!done && !hangup && !qwk_info->abort);
-  bputch('\r');
+  bout.bputch('\r');
 }
 
 void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {

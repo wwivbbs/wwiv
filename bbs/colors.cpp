@@ -101,7 +101,7 @@ void color_config() {
   strcpy(s, "      SAMPLE COLOR      ");
   get_colordata();
   do {
-    bputch(CL);
+    bout.bputch(CL);
     bout << "Extended Color Configuration - Enter Choice, ^Z to Quit, ^R to Relist\r\n:";
     list_ext_colors();
     bout.GotoXY(2, 2);
@@ -114,7 +114,7 @@ void color_config() {
       bout.GotoXY(2, 2);
     }
     if (ch >= 32) {
-      bputch(ch);
+      bout.bputch(ch);
       n = ch - 48;
       bout.nl(2);
       color_list();
@@ -183,7 +183,7 @@ void color_config() {
   } else {
     get_colordata();
   }
-  bputch(CL);
+  bout.bputch(CL);
   bout.nl(3);
 }
 

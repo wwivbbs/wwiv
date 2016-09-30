@@ -410,7 +410,7 @@ void ascii_send(const char *file_name, bool *sent, double *percent) {
       int nBufferPos = 0;
       while (!hangup && !abort && nBufferPos < nNumRead) {
         CheckForHangup();
-        bputch(b[nBufferPos++]);
+        bout.bputch(b[nBufferPos++]);
         checka(&abort);
       }
       lTotalBytes += nBufferPos;

@@ -237,7 +237,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
       desc1[58] = '\0';
       desc2[58] = '\0';
       desc3[58] = '\0';
-      bputch(CL);
+      bout.bputch(CL);
       bout << "|#7Available Descriptions For |#1" << s2 << " |#7by |#1" << author << "|#7.";
       bout.nl(2);
       bout << "|#21) |#1" << desc1 << wwiv::endl;

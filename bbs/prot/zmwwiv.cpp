@@ -26,7 +26,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
-#include "bbs/bputch.h"
 #include "bbs/utility.h"
 #include "bbs/remote_io.h"
 #include "bbs/vars.h"
@@ -292,11 +291,11 @@ int ZAttn(ZModem *info) {
 #endif
 			sleep_for(milliseconds(100));
 		} else {
-			rputch( *ptr, true );
+			bout.rputch( *ptr, true );
 			//append_buffer(&outputBuf, ptr, 1, ofd);
 		}
 	}
-	FlushOutComChBuffer();
+	bout.FlushOutComChBuffer();
 	return 0;
 }
 

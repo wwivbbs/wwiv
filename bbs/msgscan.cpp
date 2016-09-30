@@ -825,7 +825,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
       break;
     }
   } else if (IsEquals(szUserInput, "cls")) {
-    bputch('\x0c');
+    bout.bputch('\x0c');
   }
 }
 

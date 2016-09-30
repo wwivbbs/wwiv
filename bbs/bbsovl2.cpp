@@ -23,7 +23,6 @@
 
 #include "bbs/confutil.h"
 #include "bbs/bbs.h"
-#include "bbs/bputch.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
@@ -306,7 +305,7 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
   bout.Color(nColorCode);
   sleep_for(milliseconds(nCharDelay));
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
-    bputch(*iter);
+    bout.bputch(*iter);
     sleep_for(milliseconds(nCharDelay));
   }
 
@@ -358,7 +357,7 @@ void SpinPuts(const string& strText, int nColorCode) {
       bout << "|";
       MoveLeft(1);
       sleep_for(milliseconds(dly));
-      bputch(*iter);
+      bout.bputch(*iter);
     }
   } else {
     bout << strText;

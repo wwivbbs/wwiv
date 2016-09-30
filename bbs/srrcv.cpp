@@ -193,9 +193,9 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
       return;
     }
     if (use_crc) {
-      rputch('C');
+      bout.rputch('C');
     } else {
-      rputch(CU);
+      bout.rputch(CU);
     }
 
     auto d1 = timer();
@@ -244,7 +244,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
             ++i1;
           }
         }
-        rputch(CF);
+        bout.rputch(CF);
       } else if ((bn & 0x00ff) == static_cast<unsigned int>(bln)) {
         file.Seek(pos, File::seekBegin);
         long lx = reallen - pos;
@@ -255,54 +255,54 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
         file.Write(b, i2);
         pos += static_cast<long>(i2);
         ++bn;
-        rputch(CF);
+        bout.rputch(CF);
       } else if (((bn - 1) & 0x00ff) == static_cast<unsigned int>(bln)) {
-        rputch(CF);
+        bout.rputch(CF);
       } else {
-        rputch(CX);
+        bout.rputch(CX);
         ok = false;
         done = true;
       }
       nConsecErrors = 0;
     } else if (i == 2 || i == 7 || i == 3) {
       if (pos == 0L && reallen == 0L && use_crc) {
-        rputch('C');
+        bout.rputch('C');
       } else {
-        rputch(CU);
+        bout.rputch(CU);
       }
       ++nConsecErrors;
       ++nTotalErrors;
       if (nConsecErrors > 9) {
-        rputch(CX);
+        bout.rputch(CX);
         ok = false;
         done = true;
       }
     } else if (i == CF) {
       ok = false;
       done = true;
-      rputch(CX);
+      bout.rputch(CX);
     } else if (i == 4) {
       if (lastcan) {
         ok = false;
         done = true;
-        rputch(CF);
+        bout.rputch(CF);
       } else {
         lastcan = true;
-        rputch(CU);
+        bout.rputch(CU);
       }
     } else  if (i == 5) {
       lasteot = true;
       if (lasteot) {
         done = true;
-        rputch(CF);
+        bout.rputch(CF);
       } else {
         lasteot = true;
-        rputch(CU);
+        bout.rputch(CU);
       }
     } else if (i == 8) {
       // This used to be where the filetype was set.
       //*ft = bln;
-      rputch(CF);
+      bout.rputch(CF);
       nConsecErrors = 0;
     } else if (i == 9) {
       dump();

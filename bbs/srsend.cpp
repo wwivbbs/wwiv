@@ -48,46 +48,46 @@ void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   switch (block_type) {
   case 5:
     nBlockSize = 128;
-    rputch(1);
+    bout.rputch(1);
     break;
   case 4:
-    rputch('\x81');
-    rputch(byBlockNumber);
-    rputch(byBlockNumber ^ 0xff);
+    bout.rputch('\x81');
+    bout.rputch(byBlockNumber);
+    bout.rputch(byBlockNumber ^ 0xff);
     break;
   case 3:
-    rputch(CX);
+    bout.rputch(CX);
     break;
   case 2:
-    rputch(4);
+    bout.rputch(4);
     break;
   case 1:
     nBlockSize = 1024;
-    rputch(2);
+    bout.rputch(2);
     break;
   case 0:
     nBlockSize = 128;
-    rputch(1);
+    bout.rputch(1);
   }
   if (block_type > 1 && block_type < 5) {
     return;
   }
 
-  rputch(byBlockNumber);
-  rputch(byBlockNumber ^ 0xff);
+  bout.rputch(byBlockNumber);
+  bout.rputch(byBlockNumber ^ 0xff);
   crc = 0;
   checksum = 0;
   for (int i = 0; i < nBlockSize; i++) {
     char ch = b[i];
-    rputch(ch);
+    bout.rputch(ch);
     calc_CRC(ch);
   }
 
   if (use_crc) {
-    rputch(static_cast<char>(crc >> 8));
-    rputch(static_cast<char>(crc & 0x00ff));
+    bout.rputch(static_cast<char>(crc >> 8));
+    bout.rputch(static_cast<char>(crc & 0x00ff));
   } else {
-    rputch(checksum);
+    bout.rputch(checksum);
   }
   dump();
 }

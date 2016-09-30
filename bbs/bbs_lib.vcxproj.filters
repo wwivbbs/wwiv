@@ -274,12 +274,6 @@
     <ClCompile Include="wfc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WOutStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="WOutStreamBuffer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="wqscn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -370,6 +364,9 @@
     <ClCompile Include="mmkey.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="output.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -436,9 +433,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="sysoplog.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="woutstreambuffer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xinitini.h">
@@ -673,6 +667,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xferovl1.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="output.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

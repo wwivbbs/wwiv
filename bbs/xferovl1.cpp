@@ -460,7 +460,7 @@ static char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
     ch = onek_ncr(s3);
     bout << "\x1b[" << i1 << "D";
     for (int i = 0; i < i1; i++) {
-      bputch(' ');
+      bout.bputch(' ');
     }
     bout << "\x1b[" << i1 << "D";
   } else {
@@ -990,7 +990,7 @@ void SetNewFileScanDate() {
   do {
     if (i == 2 || i == 5) {
       ag[i++] = '/';
-      bputch('/');
+      bout.bputch('/');
     } else {
       switch (i) {
       case 0:

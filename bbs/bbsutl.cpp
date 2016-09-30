@@ -107,7 +107,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
     if (ch >= SPACE) {
       if ((session()->localIO()->WhereX() < (session()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {
         buffer[cp++] = ch;
-        bputch(ch);
+        bout.bputch(ch);
         if (session()->localIO()->WhereX() == (session()->user()->GetScreenChars() - 1)) {
           done = true;
         }
@@ -119,7 +119,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
     } else switch (ch) {
       case CG:
         if (chatting && outcom) {
-          rputch(CG);
+          bout.rputch(CG);
         }
         break;
       case RETURN:                            // C/R
@@ -143,7 +143,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
           } else {
             if (buffer[cp - 1] == BACKSPACE) {
               cp--;
-              bputch(SPACE);
+              bout.bputch(SPACE);
             } else {
               cp--;
               bout.bs();
@@ -176,7 +176,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
               bout.Color(0);
             } else if (buffer[cp - 1] == BACKSPACE) {
               cp--;
-              bputch(SPACE);
+              bout.bputch(SPACE);
             } else {
               cp--;
               bout.bs();
@@ -186,7 +186,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
         break;
       case CN:                            // Ctrl-N
         if (session()->localIO()->WhereX() && cp < nMaxLen) {
-          bputch(BACKSPACE);
+          bout.bputch(BACKSPACE);
           buffer[cp++] = BACKSPACE;
         }
         break;
@@ -203,9 +203,9 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
               buffer[cp++] = CO;
               buffer[cp++] = CO;
               buffer[cp++] = ch;
-              bputch('\xf');
-              bputch('\xf');
-              bputch(ch);
+              bout.bputch('\xf');
+              bout.bputch('\xf');
+              bout.bputch(ch);
             }
           }
         }
@@ -217,7 +217,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
           charsNeeded = 5 - ((session()->localIO()->WhereX() + 1) % 5);
           for (int j = 0; j < charsNeeded; j++) {
             buffer[cp++] = SPACE;
-            bputch(SPACE);
+            bout.bputch(SPACE);
           }
         }
       }
@@ -239,10 +239,10 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
         && lastwordstart != (cp - 1)) {
       string::size_type lastwordlen = cp - lastwordstart - 1;
       for (string::size_type j = 0; j < lastwordlen; j++) {
-        bputch(BACKSPACE);
+        bout.bputch(BACKSPACE);
       }
       for (string::size_type j = 0; j < lastwordlen; j++) {
-        bputch(SPACE);
+        bout.bputch(SPACE);
       }
       for (string::size_type j = 0; j < lastwordlen; j++) {
         rollover[j] = buffer[cp - lastwordlen + j];
@@ -368,9 +368,9 @@ void pla(const string& text, bool *abort) {
     if (checka(abort)) {
       break;
     }
-    bputch(c, true);
+    bout.bputch(c, true);
   }
-  FlushOutComChBuffer();
+  bout.FlushOutComChBuffer();
   if (!*abort) {
     bout.nl();
   }
@@ -389,12 +389,12 @@ void plal(const string& text, string::size_type limit, bool *abort) {
   for (auto iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit
        && !*abort; ++iter) {
     if (*iter != '\r' && *iter != '\n') {
-      bputch(*iter, true);
+      bout.bputch(*iter, true);
     }
     checka(abort);
   }
 
-  FlushOutComChBuffer();
+  bout.FlushOutComChBuffer();
   if (!*abort) {
     bout.nl();
   }
@@ -434,7 +434,7 @@ int check_ansi() {
     bgetchraw();
   }
 
-  rputs("\x1b[6n");
+  bout.rputs("\x1b[6n");
 
   long l = timer1() + 36 + 18;
 

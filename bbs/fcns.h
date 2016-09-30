@@ -40,9 +40,6 @@
 // File: bgetch.cpp
 #include "bbs/bgetch.h"
 
-// File: bputch.cpp
-#include "bbs/bputch.h"
-
 // File: com.cpp
 #include "bbs/com.h"
 

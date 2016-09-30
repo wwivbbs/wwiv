@@ -27,7 +27,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
-#include "bbs/bputch.h"
 #include "bbs/connect1.h"
 #include "bbs/message_file.h"
 #include "bbs/subacc.h"
@@ -188,7 +187,7 @@ void display_message_text(const std::string& text, bool *next) {
               osan(s, &abort, next);
               if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
                 if (session()->localIO()->WhereX() < session()->user()->GetScreenChars() - 1) {
-                  bputch(SPACE);
+                  bout.bputch(SPACE);
                   bout.nl();
                 } else {
                   bout.nl();

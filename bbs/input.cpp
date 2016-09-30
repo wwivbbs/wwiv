@@ -26,7 +26,6 @@
 #include "core/wwivport.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
-#include "bbs/bputch.h"
 #include "bbs/com.h"
 #include "bbs/keycodes.h"
 #include "bbs/utility.h"
@@ -121,7 +120,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
         }
         if (curpos < max_length && chCurrent) {
           out_text[curpos++] = chCurrent;
-          bputch(chCurrent);
+          bout.bputch(chCurrent);
         }
       } else {
         switch (chCurrent) {
@@ -307,7 +306,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
         bout.GotoXY(nLength + x, y);
         while (nLength--) {
           bout.GotoXY(nLength + x, y);
-          bputch(input_background_char);
+          bout.bputch(input_background_char);
         }
         nLength = pos = szTemp[0] = 0;
       }
@@ -353,9 +352,9 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
       }
       nLength--;
       for (int i = pos; i < nLength; i++) {
-        bputch(szTemp[i]);
+        bout.bputch(szTemp[i]);
       }
-      bputch(input_background_char);
+      bout.bputch(input_background_char);
       break;
     case BACKSPACE:                               // Backspace
       if (pos) {
@@ -368,7 +367,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
             nLength--;
             bout.GotoXY(pos + x, y);
             for (int i = pos; i < nLength; i++) {
-              bputch(szTemp[i]);
+              bout.bputch(szTemp[i]);
             }
             bout << input_background_char;
           }
@@ -412,7 +411,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
           }
         }
         if (mode == InputMode::DATE && (pos == 2 || pos == 5)) {
-          bputch(slash);
+          bout.bputch(slash);
           for (int i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
@@ -421,7 +420,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
           bout << &szTemp[pos];
         }
         if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
-          bputch(dash);
+          bout.bputch(dash);
           for (int i = nLength++; i >= pos; i--) {
             szTemp[i + 1] = szTemp[i];
           }
@@ -433,13 +432,13 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
              (mode == InputMode::PHONE && c != dash)) ||
             (mode != InputMode::DATE && mode != InputMode::PHONE && c != 0)) {
           if (!bInsert || pos == nLength) {
-            bputch(static_cast<unsigned char>(c));
+            bout.bputch(static_cast<unsigned char>(c));
             szTemp[pos++] = static_cast<char>(c);
             if (pos > nLength) {
               nLength++;
             }
           } else {
-            bputch((unsigned char) c);
+            bout.bputch((unsigned char) c);
             for (int i = nLength++; i >= pos; i--) {
               szTemp[i + 1] = szTemp[i];
             }

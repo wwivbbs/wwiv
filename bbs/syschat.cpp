@@ -268,7 +268,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
         if (session()->localIO()->WhereX() < (session()->user()->GetScreenChars() - 1) && cp0 < max_length) {
           if (session()->localIO()->WhereY() < 11) {
             side0[session()->localIO()->WhereY()][cp0++] = ch;
-            bputch(ch);
+            bout.bputch(ch);
           } else {
             side0[session()->localIO()->WhereY()][cp0++] = ch;
             side0[session()->localIO()->WhereY()][cp0] = 0;
@@ -301,7 +301,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
             && (cp1 < max_length)) {
           if (session()->localIO()->WhereY() < 23) {
             side1[session()->localIO()->WhereY() - 13][cp1++] = ch;
-            bputch(ch);
+            bout.bputch(ch);
           } else {
             side1[session()->localIO()->WhereY() - 13][cp1++] = ch;
             side1[session()->localIO()->WhereY() - 13][cp1] = 0;
@@ -333,7 +333,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
     } else switch (ch) {
       case 7: {
         if (chatting && outcom) {
-          rputch(7);
+          bout.rputch(7);
         }
       }
       break;
@@ -353,7 +353,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
               bout.Color(0);
             } else if (side0[session()->localIO()->WhereY()][cp0 - 1] == 8) {
               cp0--;
-              bputch(SPACE);
+              bout.bputch(SPACE);
             } else {
               cp0--;
               bout.bs();
@@ -365,7 +365,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
             bout.Color(0);
           } else  if (side1[session()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
             cp1--;
-            bputch(SPACE);
+            bout.bputch(SPACE);
           } else {
             cp1--;
             bout.bs();
@@ -393,7 +393,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
                 bout.Color(0);
               } else if (side0[session()->localIO()->WhereY()][cp0 - 1] == BACKSPACE) {
                 cp0--;
-                bputch(SPACE);
+                bout.bputch(SPACE);
               } else {
                 cp0--;
                 bout.bs();
@@ -410,7 +410,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
                 bout.Color(0);
               } else if (side1[session()->localIO()->WhereY() - 13][cp1 - 1] == BACKSPACE) {
                 cp1--;
-                bputch(SPACE);
+                bout.bputch(SPACE);
               } else {
                 cp1--;
                 bout.bs();
@@ -424,11 +424,11 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
       case CN:                            /* Ctrl-N */
         if (side == 0) {
           if ((session()->localIO()->WhereX()) && (cp0 < max_length)) {
-            bputch(BACKSPACE);
+            bout.bputch(BACKSPACE);
             side0[session()->localIO()->WhereY()][cp0++] = BACKSPACE;
           }
         } else  if ((session()->localIO()->WhereX()) && (cp1 < max_length)) {
-          bputch(BACKSPACE);
+          bout.bputch(BACKSPACE);
           side1[session()->localIO()->WhereY() - 13][cp1++] = BACKSPACE;
         }
         break;
@@ -461,7 +461,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
             i = 5 - ((session()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
               side0[session()->localIO()->WhereY()][cp0++] = SPACE;
-              bputch(SPACE);
+              bout.bputch(SPACE);
             }
           }
         } else {
@@ -471,7 +471,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
             i = 5 - ((session()->localIO()->WhereX() + 1) % 5);
             for (i1 = 0; i1 < i; i1++) {
               side1[session()->localIO()->WhereY() - 13][cp1++] = SPACE;
-              bputch(SPACE);
+              bout.bputch(SPACE);
             }
           }
         }
@@ -490,10 +490,10 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
       if ((i > static_cast<int>(session()->localIO()->WhereX() / 2)) && (i != (cp0 - 1))) {
         i1 = cp0 - i - 1;
         for (i = 0; i < i1; i++) {
-          bputch(BACKSPACE);
+          bout.bputch(BACKSPACE);
         }
         for (i = 0; i < i1; i++) {
-          bputch(SPACE);
+          bout.bputch(SPACE);
         }
         for (i = 0; i < i1; i++) {
           rollover[i] = side0[session()->localIO()->WhereY()][cp0 - i1 + i];
@@ -512,10 +512,10 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
       if ((i > static_cast<int>(session()->localIO()->WhereX() / 2)) && (i != (cp1 - 1))) {
         i1 = cp1 - i - 1;
         for (i = 0; i < i1; i++) {
-          bputch(BACKSPACE);
+          bout.bputch(BACKSPACE);
         }
         for (i = 0; i < i1; i++) {
-          bputch(SPACE);
+          bout.bputch(SPACE);
         }
         for (i = 0; i < i1; i++) {
           rollover[i] = side1[session()->localIO()->WhereY() - 13][cp1 - i1 + i];
@@ -588,9 +588,9 @@ void chat1(const char *chat_line, bool two_way) {
     bout << "\x1b[12;1H";
     bout.Color(7);
     for (size_t screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
-      bputch(static_cast<unsigned char>(205), true);
+      bout.bputch(static_cast<unsigned char>(205), true);
     }
-    FlushOutComChBuffer();
+    bout.FlushOutComChBuffer();
     const string unn = session()->names()->UserName(session()->usernum);
     sprintf(s, " %s chatting with %s ", szSysopName, unn.c_str());
     int nNumCharsToMove = ((session()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);

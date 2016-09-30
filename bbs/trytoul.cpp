@@ -201,7 +201,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
       i2 = i4;
       bout << s1;
-      bputch('\r');
+      bout.bputch('\r');
 
       dliscan1(session()->udir[i].subnum);
       i1 = recno(u.filename);

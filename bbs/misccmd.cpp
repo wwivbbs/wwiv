@@ -289,13 +289,13 @@ void list_users(int mode) {
       } else {
         int i1;
         for (i1 = 0; i1 < 78; i1++) {
-          bputch(45);
+          bout.bputch(45);
         }
         bout.nl();
         bout << "|#5" << szTitleLine;
         bout.nl();
         for (i1 = 0; i1 < 78; i1++) {
-          bputch(45);
+          bout.bputch(45);
         }
         bout.nl();
       }

@@ -383,12 +383,12 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
 
       if (*menu_pos == x) {
         bout.SystemColor(smc->current_highlight);
-        bputch(menu_item[0]);
+        bout.bputch(menu_item[0]);
         bout.SystemColor(smc->current_menu_item);
         bout.bputs(menu_item.substr(1));
       } else {
         bout.SystemColor(smc->normal_highlight);
-        bputch(menu_item[0]);
+        bout.bputch(menu_item[0]);
         bout.SystemColor(smc->normal_menu_item);
         bout.bputs(menu_item.substr(1));
       }
@@ -405,13 +405,13 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         if (event == wwiv::UpperCase<int>(menu_item[0]) || event == wwiv::LowerCase<int>(menu_item[0])) {
           bout.GotoXY(positions[*menu_pos], ypos);
           bout.SystemColor(smc->normal_highlight);
-          bputch(menu_items[*menu_pos][0]);
+          bout.bputch(menu_items[*menu_pos][0]);
           bout.SystemColor(smc->normal_menu_item);
           bout.bputs(menu_items[*menu_pos].substr(1));
           *menu_pos = x;
           bout.SystemColor(smc->current_highlight);
           bout.GotoXY(positions[*menu_pos], ypos);
-          bputch(menu_items[*menu_pos][0]);
+          bout.bputch(menu_items[*menu_pos][0]);
           bout.SystemColor(smc->current_menu_item);
           bout.bputs(menu_items[*menu_pos].substr(1));
           bout.GotoXY(positions[*menu_pos], ypos);
@@ -425,7 +425,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
       case COMMAND_LEFT:
         bout.GotoXY(positions[*menu_pos], ypos);
         bout.SystemColor(smc->normal_highlight);
-        bputch(menu_items[*menu_pos][0]);
+        bout.bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->normal_menu_item);
         bout.bputs(menu_items[*menu_pos].substr(1));
         if (!*menu_pos) {
@@ -435,7 +435,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         }
         bout.SystemColor(smc->current_highlight);
         bout.GotoXY(positions[*menu_pos], ypos);
-        bputch(menu_items[*menu_pos][0]);
+        bout.bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->current_menu_item);
         bout.bputs(menu_items[*menu_pos].substr(1));
         bout.GotoXY(positions[*menu_pos], ypos);
@@ -444,7 +444,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
       case COMMAND_RIGHT:
         bout.GotoXY(positions[*menu_pos], ypos);
         bout.SystemColor(smc->normal_highlight);
-        bputch(menu_items[*menu_pos][0]);
+        bout.bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->normal_menu_item);
         bout.bputs(menu_items[*menu_pos].substr(1));
         if (*menu_pos == static_cast<int>(menu_items.size() - 1)) {
@@ -454,7 +454,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
         }
         bout.SystemColor(smc->current_highlight);
         bout.GotoXY(positions[*menu_pos], ypos);
-        bputch(menu_items[*menu_pos][0]);
+        bout.bputch(menu_items[*menu_pos][0]);
         bout.SystemColor(smc->current_menu_item);
         bout.bputs(menu_items[*menu_pos].substr(1));
         bout.GotoXY(positions[*menu_pos], ypos);

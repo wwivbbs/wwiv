@@ -497,7 +497,7 @@ TOGGLE_EXTENDED:
                       sysop_mode = false;
                       prep_menu_items(&menu_items);
                     }
-                    bputch('\r');
+                    bout.bputch('\r');
                     bout.clreol();
                     break;
                   }

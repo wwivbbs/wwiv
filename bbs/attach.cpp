@@ -31,7 +31,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/wconstants.h"
-#include "bbs/woutstreambuffer.h"
+#include "bbs/output.h"
 #include "bbs/vars.h"
 #include "bbs/xfer.h"
 #include "sdk/user.h"
