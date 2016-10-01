@@ -523,7 +523,7 @@ static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLen
   return result;
 }
 
-static void UpdateLastOnFileAndUserLog() {
+static void UpdateLastOnFile() {
   unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   const string laston_txt_filename = StrCat(session()->config()->gfilesdir(), LASTON_TXT);
   long len;
@@ -892,7 +892,7 @@ void logon() {
   FixUserLinesAndColors();
   UpdateUserStatsForLogin();
   PrintLogonFile();
-  UpdateLastOnFileAndUserLog();
+  UpdateLastOnFile();
   PrintUserSpecificFiles();
 
   read_automessage();

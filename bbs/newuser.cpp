@@ -1179,7 +1179,7 @@ void newuser() {
   }
 
   WriteNewUserInfoToSysopLog();
-  ssm(1, 0) << "You have a new user: " << session()->user()->GetName() << " #%" << session()->usernum;
+  ssm(1, 0) << "You have a new user: " << session()->user()->GetName() << " #" << session()->usernum;
   session()->UpdateTopScreen();
   VerifyNewUserPassword();
   SendNewUserFeedbackIfRequired();

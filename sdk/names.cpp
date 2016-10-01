@@ -47,7 +47,7 @@ static smalrec smalrec_for(uint32_t user_number, const std::vector<smalrec>& nam
       return n;
     }
   }
-  return smalrec{"", 0};
+  return {"", 0};
 }
 
 std::string Names::UserName(uint32_t user_number) const {
