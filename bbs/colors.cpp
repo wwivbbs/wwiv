@@ -105,7 +105,7 @@ void color_config() {
     bout << "Extended Color Configuration - Enter Choice, ^Z to Quit, ^R to Relist\r\n:";
     list_ext_colors();
     bout.GotoXY(2, 2);
-    ch = getkey();
+    ch = bout.getkey();
     if (ch == CZ) {
       done = 1;
     }

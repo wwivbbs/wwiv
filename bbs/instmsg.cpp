@@ -169,7 +169,6 @@ void broadcast(const std::string& message) {
  */
 int handle_inst_msg(inst_msg_header * ih, const char *msg) {
   unsigned short i;
-  char xl[81], cl[81], atr[81], cc;
 
   if (!ih || (ih->msg_size > 0 && msg == nullptr)) {
     return -1;
@@ -179,7 +178,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
   case INST_MSG_STRING:
   case INST_MSG_SYSMSG:
     if (ih->msg_size > 0 && session()->IsUserOnline() && !hangup) {
-      session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+      SavedLine line = bout.SaveCurrentLine();
       bout.nl(2);
       if (in_chatroom) {
         i = 0;
@@ -187,7 +186,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
           bout.bputch(msg[ i++ ]);
         }
         bout.nl();
-        RestoreCurrentLine(cl, atr, xl, &cc);
+        bout.RestoreCurrentLine(line);
         return (ih->main);
       }
       if (ih->main == INST_MSG_STRING) {
@@ -202,7 +201,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
         bout.bputch(msg[i++]);
       }
       bout.nl(2);
-      RestoreCurrentLine(cl, atr, xl, &cc);
+      bout.RestoreCurrentLine(line);
     }
     break;
   case INST_MSG_CLEANNET:
@@ -613,31 +612,29 @@ int setiia(int poll_ticks) {
 // Toggles user availability, called when ctrl-N is hit
 
 void toggle_avail() {
-  instancerec ir;
-  char xl[81], cl[81], atr[81], cc;
+  instancerec ir = {};
 
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  SavedLine line = bout.SaveCurrentLine();
   get_inst_info(session()->instance_number(), &ir);
   chat_avail = !chat_avail;
 
   bout << "\n\rYou are now ";
   bout << (chat_avail ? "available for chat.\n\r\n" : "not available for chat.\n\r\n");
   write_inst(ir.loc, session()->current_user_sub().subnum, INST_FLAGS_NONE);
-  RestoreCurrentLine(cl, atr, xl, &cc);
+  bout.RestoreCurrentLine(line);
 }
 
 // Toggles invisibility, called when ctrl-L is hit by a sysop
 
 void toggle_invis() {
   instancerec ir;
-  char xl[81], cl[81], atr[81], cc;
 
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  SavedLine line = bout.SaveCurrentLine();
   get_inst_info(session()->instance_number(), &ir);
   chat_invis = !chat_invis;
 
   bout << "\r\n|#1You are now ";
   bout << (chat_invis ? "invisible.\n\r\n" : "visible.\n\r\n");
   write_inst(ir.loc, session()->current_user_sub().subnum, INST_FLAGS_NONE);
-  RestoreCurrentLine(cl, atr, xl, &cc);
+  bout.RestoreCurrentLine(line);
 }

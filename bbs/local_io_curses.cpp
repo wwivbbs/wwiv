@@ -265,13 +265,6 @@ bool CursesLocalIO::KeyPressed() {
   return last_key_pressed != ERR;
 }
 
-void CursesLocalIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
-  *cl = 0;
-  *atr = 0;
-  strcpy(xl, endofline);
-  *cc = static_cast<char>(curatr);
-}
-
 static int CursesToWin32KeyCodes(int curses_code) {
   switch (curses_code) {
   case KEY_F(1): return F1;

@@ -291,7 +291,7 @@ void WSession::handle_sysop_key(uint8_t key) {
       case F3:                          /* F3 */
         if (using_modem) {
           incom = !incom;
-          dump();
+          bout.dump();
           tleft(false);
         }
         break;
@@ -710,7 +710,7 @@ int WSession::doWFCEvents() {
           io->Cls();
           bout.nl();
           printfile(helpFileName);
-          chHelp = getkey();
+          chHelp = bout.getkey();
           helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
         } while (chHelp != SPACE && chHelp != ESC);
       }
@@ -894,14 +894,14 @@ int WSession::doWFCEvents() {
         // Print Current Status
       case 'S':
         prstatus();
-        getkey();
+        bout.getkey();
         break;
         // UserEdit
       case 'T':
         if (syscfg.terminal_command.empty()) {
           bout << "Terminal Command not specified. " << wwiv::endl 
                << " Please set TERMINAL_CMD in WWIV.INI" << wwiv::endl;
-          getkey();
+          bout.getkey();
           break;
         }
         ExecExternalProgram(syscfg.terminal_command, INST_FLAGS_NONE);
@@ -939,7 +939,7 @@ int WSession::doWFCEvents() {
       case 'Z': {
           zlog();
           bout.nl();
-          getkey();
+          bout.getkey();
         }
         break;
       }

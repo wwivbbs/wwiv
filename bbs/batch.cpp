@@ -303,7 +303,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
 static void bihangup(int up) {
   int color = 5;
 
-  dump();
+  bout.dump();
   long batch_lastchar = timer1();
   long nextbeep = 18L;
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";

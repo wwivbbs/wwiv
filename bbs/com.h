@@ -18,16 +18,12 @@
 #ifndef __INCLUDED_BBS_COM_H__
 #define __INCLUDED_BBS_COM_H__
 
-void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc);
-void dump();
 bool CheckForHangup();
 void makeansi(int attr, char *out_buffer, bool forceit);
-char getkey();
 bool yesno();
 bool noyes();
 char ynq();
 char onek(const char *allowable_chars, bool auto_mpl = false);
 char onek_ncr(const char *allowable_chars);
-void lastchar_pressed();
 
 #endif  // __INCLUDED_BBS_COM_H__

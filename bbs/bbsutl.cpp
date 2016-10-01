@@ -95,7 +95,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
   bool done = false;
   unsigned char ch = '\0';
   do {
-    ch = getkey();
+    ch = bout.getkey();
     if (bTwoColorChatMode) {
       bout.Color(session()->IsLastKeyLocal() ? 1 : 0);
     }
@@ -192,13 +192,13 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
         break;
       case CP:                            // Ctrl-P
         if (cp < nMaxLen - 1) {
-          ch = getkey();
+          ch = bout.getkey();
           if (ch >= SPACE && ch <= 126) {
             buffer[cp++] = CC;
             buffer[cp++] = ch;
             bout.Color(ch - '0');
           } else if (ch == CP && cp < nMaxLen - 2) {
-            ch = getkey();
+            ch = bout.getkey();
             if (ch != CP) {
               buffer[cp++] = CO;
               buffer[cp++] = CO;
@@ -350,7 +350,7 @@ bool checka(bool *abort, bool *next) {
     case 'p':
     case CS:
       lines_listed = 0;
-      ch = getkey();
+      ch = bout.getkey();
       break;
     }
   }
@@ -370,7 +370,7 @@ void pla(const string& text, bool *abort) {
     }
     bout.bputch(c, true);
   }
-  bout.FlushOutComChBuffer();
+  bout.flush();
   if (!*abort) {
     bout.nl();
   }
@@ -394,7 +394,7 @@ void plal(const string& text, string::size_type limit, bool *abort) {
     checka(abort);
   }
 
-  bout.FlushOutComChBuffer();
+  bout.flush();
   if (!*abort) {
     bout.nl();
   }

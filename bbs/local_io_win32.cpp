@@ -464,28 +464,6 @@ unsigned char Win32ConsoleIO::GetChar() {
   return rc;
 }
 
-void Win32ConsoleIO::SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) {
-  *cc = static_cast<char>(curatr);
-  strcpy(xl, endofline);
-  {
-    WORD Attr[80];
-    CONSOLE_SCREEN_BUFFER_INFO ConInfo;
-    GetConsoleScreenBufferInfo(out_, &ConInfo);
-
-    int len = ConInfo.dwCursorPosition.X;
-    ConInfo.dwCursorPosition.X = 0;
-    DWORD cb;
-    ReadConsoleOutputCharacter(out_, cl, len, ConInfo.dwCursorPosition, &cb);
-    ReadConsoleOutputAttribute(out_, Attr, len, ConInfo.dwCursorPosition, &cb);
-
-    for (int i = 0; i < len; i++) {
-      atr[i] = static_cast<char>(Attr[i]);   // atr is 8bit char, Attr is 16bit
-    }
-  }
-  cl[ WhereX() ]  = 0;
-  atr[ WhereX() ] = 0;
-}
-
 void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
   curatr = GetUserEditorColor();

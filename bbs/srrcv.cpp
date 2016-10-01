@@ -305,7 +305,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
       bout.rputch(CF);
       nConsecErrors = 0;
     } else if (i == 9) {
-      dump();
+      bout.dump();
     }
     if (i != 4) {
       lastcan = false;

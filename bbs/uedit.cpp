@@ -918,7 +918,7 @@ void uedit(int usern, int other) {
       case '?': {
         bout.cls();
         printfile(SUEDIT_NOEXT);
-        getkey();
+        bout.getkey();
       }
       break;
       case '~':

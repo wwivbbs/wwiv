@@ -92,7 +92,7 @@ void osan(const string& text, bool *abort, bool *next) {
       break;
     }
   }
-  bout.FlushOutComChBuffer();
+  bout.flush();
 }
 
 /**

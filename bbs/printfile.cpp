@@ -161,7 +161,7 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
       }
     }
   }
-  bout.FlushOutComChBuffer();
+  bout.flush();
   // If the file is empty, lets' return false here since nothing was displayed.
   return lFileSize > 0;
 }

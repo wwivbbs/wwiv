@@ -124,9 +124,9 @@ static void GetMessageTitle(MessageEditorData& data) {
       }
       if (!data.silent_mode && !force_title) {
         bout << s1;
-        ch = getkey();
+        ch = bout.getkey();
         if (ch == 10) {
-          ch = getkey();
+          ch = bout.getkey();
         }
       } else {
         data.title.assign(s1);

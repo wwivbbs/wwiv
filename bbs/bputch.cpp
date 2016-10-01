@@ -40,14 +40,10 @@
 #define BPUTCH_CTRLO_CODE 4
 #define BPUTCH_MACRO_CHAR_CODE 5
 
-static constexpr int OUTCOMCH_BUFFER_SIZE = 1024;
-static char s_szOutComChBuffer[ OUTCOMCH_BUFFER_SIZE + 1 ];
-static int  s_nOutComChBufferPosition = 0;
-
 /**
  * This function executes an ANSI string to change color, position the cursor, etc
  */
-static void execute_ansi() {
+static void execute_ansi(LocalIO& localIO) {
   static int oldx = 0;
   static int oldy = 0;
 
@@ -89,29 +85,29 @@ static void execute_ansi() {
     switch (cmd) {
     case 'f':
     case 'H':
-      session()->localIO()->GotoXY(args[1] - 1, args[0] - 1);
+      localIO.GotoXY(args[1] - 1, args[0] - 1);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'A':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() - args[0]);
+      localIO.GotoXY(localIO.WhereX(), localIO.WhereY() - args[0]);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'B':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX(), session()->localIO()->WhereY() + args[0]);
+      localIO.GotoXY(localIO.WhereX(), localIO.WhereY() + args[0]);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'C':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX() + args[0], session()->localIO()->WhereY());
+      localIO.GotoXY(localIO.WhereX() + args[0], localIO.WhereY());
       break;
     case 'D':
-      session()->localIO()->GotoXY(session()->localIO()->WhereX() - args[0], session()->localIO()->WhereY());
+      localIO.GotoXY(localIO.WhereX() - args[0], localIO.WhereY());
       break;
     case 's':
-      oldx = session()->localIO()->WhereX();
-      oldy = session()->localIO()->WhereY();
+      oldx = localIO.WhereX();
+      oldy = localIO.WhereY();
       break;
     case 'u':
-      session()->localIO()->GotoXY(oldx, oldy);
+      localIO.GotoXY(oldx, oldy);
       oldx = oldy = 0;
       g_flags |= g_flag_ansi_movement;
       break;
@@ -119,12 +115,12 @@ static void execute_ansi() {
       if (args[0] == 2) {
         lines_listed = 0;
         g_flags |= g_flag_ansi_movement;
-        session()->localIO()->Cls();
+        localIO.Cls();
       }
       break;
     case 'k':
     case 'K':
-      session()->localIO()->ClrEol();
+      localIO.ClrEol();
       break;
     case 'm':
       if (!argptr) {
@@ -276,7 +272,7 @@ int Output::bputch(char c, bool use_buffer) {
         (ansistr[1] != '[') || (ansiptr > 75)) {
       // The below two lines kill thedraw's ESC[?7h seq
       if (!((ansiptr == 2 && c == '?') || (ansiptr == 3 && ansistr[2] == '?'))) {
-        execute_ansi();
+        execute_ansi(*localIO());
       }
     }
   } else if (c == ESC) {
@@ -285,15 +281,19 @@ int Output::bputch(char c, bool use_buffer) {
     ansistr[ansiptr] = '\0';
   } else {
     if (c == TAB) {
-      int nScreenPos = session()->localIO()->WhereX();
+      int nScreenPos = localIO()->WhereX();
       for (int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++) {
         displayed += bputch(SPACE);
       }
     } else if (local_echo) {
       displayed = 1;
-      session()->localIO()->Putch(local_echo ? c : '\xFE');
+      auto display_char = local_echo ? c : '\xFE';
+      localIO()->Putch(display_char);
+
+      current_line_.push_back({display_char, curatr});
 
       if (c == SOFTRETURN) {
+        current_line_.clear();
         ++lines_listed;
         // change Build3 + 5.0 to fix message read.
         if (lines_listed >= (session()->screenlinest - 1)) {
@@ -304,7 +304,7 @@ int Output::bputch(char c, bool use_buffer) {
         }
       }
     } else {
-      session()->localIO()->Putch('X');
+      localIO()->Putch('X');
       displayed = 1;
     }
   }
@@ -323,21 +323,22 @@ void Output::rputs(const char *text) {
   }
 }
 
-void Output::FlushOutComChBuffer() {
-  if (s_nOutComChBufferPosition > 0) {
-    session()->remoteIO()->write(s_szOutComChBuffer, s_nOutComChBufferPosition);
-    s_nOutComChBufferPosition = 0;
-    memset(s_szOutComChBuffer, 0, OUTCOMCH_BUFFER_SIZE + 1);
+void Output::flush() {
+  if (bputch_buffer_.empty()) {
+    return;
   }
+
+  session()->remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
+  bputch_buffer_.clear();
 }
 
 void Output::rputch(char ch, bool bUseInternalBuffer) {
   if (ok_modem_stuff && nullptr != session()->remoteIO()) {
     if (bUseInternalBuffer) {
-      if (s_nOutComChBufferPosition >= OUTCOMCH_BUFFER_SIZE) {
-        FlushOutComChBuffer();
+      if (bputch_buffer_.size() > 1024) {
+        flush();
       }
-      s_szOutComChBuffer[ s_nOutComChBufferPosition++ ] = ch;
+      bputch_buffer_.push_back(ch);
     } else {
       session()->remoteIO()->put(ch);
     }

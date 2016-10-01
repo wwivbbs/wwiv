@@ -64,7 +64,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
   bool done = false;
 
   while (!done && !hangup) {
-    unsigned char chCurrent = getkey();
+    unsigned char chCurrent = bout.getkey();
 
     if (curpos) {
       bChatLine = true;

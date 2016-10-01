@@ -531,9 +531,6 @@
     <ClInclude Include="bgetch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bputch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="com.h">
       <Filter>Header Files</Filter>
     </ClInclude>

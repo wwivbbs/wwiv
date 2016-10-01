@@ -110,7 +110,6 @@
     <ClInclude Include="bbsutl1.h" />
     <ClInclude Include="bbsutl2.h" />
     <ClInclude Include="bgetch.h" />
-    <ClInclude Include="bputch.h" />
     <ClInclude Include="chains.h" />
     <ClInclude Include="chat.h" />
     <ClInclude Include="chnedit.h" />

@@ -35,27 +35,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 extern char str_quit[];
-static long time_lastchar_pressed = 0;
 
-
-void RestoreCurrentLine(const char *cl, const char *atr, const char *xl, const char *cc) {
-  if (session()->localIO()->WhereX()) {
-    bout.nl();
-  }
-  for (size_t i = 0; cl[i] != 0; i++) {
-    bout.SystemColor(atr[i]);
-    bout.bputch(cl[i], true);
-  }
-  bout.FlushOutComChBuffer();
-  bout.SystemColor(*cc);
-  strcpy(endofline, xl);
-}
-
-void dump() {
-  if (ok_modem_stuff) {
-    session()->remoteIO()->purgeIn();
-  }
-}
 
 // This function checks to see if the user logged on to the com port has
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
@@ -114,51 +94,6 @@ void makeansi(int attr, char *out_buffer, bool forceit) {
   }
 }
 
-void lastchar_pressed() {
-  time_lastchar_pressed = timer1();
-}
-
-/* This function returns one character from either the local keyboard or
-* remote com port (if applicable).  After 1.5 minutes of inactivity, a
-* beep is sounded.  After 3 minutes of inactivity, the user is hung up.
-*/
-char getkey() {
-  resetnsp();
-  bool beepyet = false;
-  lastchar_pressed();
-
-  long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
-  long tv1 = tv - 1092L;     // change 4.31 Build3
-
-  // Since were waitig for a key, reset the # of lines we've displayed since a pause.
-  lines_listed = 0;
-  char ch = 0;
-  do {
-    while (!bkbhit() && !hangup) {
-      giveup_timeslice();
-      long dd = timer1();
-      if (dd < time_lastchar_pressed && ((dd + 1000) > time_lastchar_pressed)) {
-        time_lastchar_pressed = dd;
-      }
-      if (std::abs(dd - time_lastchar_pressed) > 65536L) {
-        time_lastchar_pressed -= static_cast<int>(floor(SECONDS_PER_DAY * 18.2));
-      }
-      if ((dd - time_lastchar_pressed) > tv1 && !beepyet) {
-        beepyet = true;
-        bout.bputch(CG);
-      }
-      if (std::abs(dd - time_lastchar_pressed) > tv) {
-        bout.nl();
-        bout << "Call back later when you are there.\r\n";
-        hangup = true;
-      }
-      CheckForHangup();
-    }
-    ch = bgetch();
-  } while (!ch && !hangup);
-  return ch;
-}
-
 static void print_yn(bool yes) {
   bout << YesNoString(yes);
   bout.nl();
@@ -172,7 +107,7 @@ bool yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!hangup) && ((ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!hangup) && ((ch = wwiv::UpperCase<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -191,7 +126,7 @@ bool noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!hangup) && ((ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!hangup) && ((ch = wwiv::UpperCase<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -208,7 +143,7 @@ char ynq() {
 
   bout.Color(1);
   while (!hangup &&
-         (ch = wwiv::UpperCase<char>(getkey())) != *(YesNoString(true)) &&
+         (ch = wwiv::UpperCase<char>(bout.getkey())) != *(YesNoString(true)) &&
          ch != *(YesNoString(false)) &&
          ch != *str_quit && ch != RETURN) {
     // NOP
@@ -243,7 +178,7 @@ char onek_ncr(const char *allowable_chars) {
   WWIV_ASSERT(allowable_chars);
 
   char ch = '\0';
-  while (!strchr(allowable_chars, ch = wwiv::UpperCase<char>(getkey())) && !hangup)
+  while (!strchr(allowable_chars, ch = wwiv::UpperCase<char>(bout.getkey())) && !hangup)
     ;
   if (hangup) {
     ch = allowable_chars[0];

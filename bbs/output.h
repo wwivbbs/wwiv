@@ -24,6 +24,8 @@
 #include <streambuf>
 #include <ios>
 #include <string>
+#include <utility>
+#include <vector>
 
 class outputstreambuf : public std::streambuf {
  public:
@@ -35,6 +37,14 @@ class outputstreambuf : public std::streambuf {
 
 class RemoteIO;
 class LocalIO;
+
+class SavedLine {
+public:
+  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c, const std::string& e): line(l), color(c), endofline(e) {}
+  std::vector<std::pair<char, uint8_t>> line;
+  int color;
+  std::string endofline;
+};
 
 class Output : public std::ostream {
  protected:
@@ -98,10 +108,17 @@ class Output : public std::ostream {
   int bprintf(const char *fmt, ...);
 
   int bputch(char c, bool use_buffer = false);
-  void FlushOutComChBuffer();
+  void flush();
   void rputch(char ch, bool use_buffer = false);
   void rputs(const char *text);
+  char getkey();
+  bool RestoreCurrentLine(const SavedLine& line);
+  SavedLine SaveCurrentLine();
+  void dump();
 
+private:
+  std::string bputch_buffer_;
+  std::vector<std::pair<char, uint8_t>> current_line_;
 };
 
 namespace wwiv {

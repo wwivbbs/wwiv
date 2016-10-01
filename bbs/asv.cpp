@@ -442,10 +442,10 @@ int printasv(const string& filename, int num, bool abort) {
         }
       }
       if (session()->localIO()->KeyPressed()) {
-        switch (wwiv::UpperCase<char>(getkey())) {
+        switch (wwiv::UpperCase<char>(bout.getkey())) {
         case 19:
         case 'P': {
-          getkey();
+          bout.getkey();
         }
         break;
         case 11:

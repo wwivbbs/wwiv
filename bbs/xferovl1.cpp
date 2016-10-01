@@ -349,7 +349,7 @@ void tag_it() {
 
   if (session()->batch().entry.size() >= session()->max_batch) {
     bout << "|#6No room left in batch queue.";
-    getkey();
+    bout.getkey();
     return;
   }
   bout << "|#2Which file(s) (1-" << session()->filelist.size() 
@@ -665,7 +665,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
 
   if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
     bout << "|#6 Insufficient time remaining... press any key.";
-    getkey();
+    bout.getkey();
   } else {
     if (dn == -1) {
       return 0;
@@ -687,7 +687,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
           if (!File::Exists(s1)) {
             if (!copyfile(s2, s1, true)) {
               bout << "|#6 file unavailable... press any key.";
-              getkey();
+              bout.getkey();
             }
             bout.backline();
             bout.clreol();
@@ -699,7 +699,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
             bout << "\r";
             bout.clreol();
             bout << "|#6 file unavailable... press any key.";
-            getkey();
+            bout.getkey();
             bout << "\r";
             bout.clreol();
             return 0;
@@ -880,7 +880,7 @@ void download() {
             }
             if (!foundany) {
               bout << "|#6 File not found... press any key.";
-              getkey();
+              bout.getkey();
               bout.backline();
               ok = false;
             }

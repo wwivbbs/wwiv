@@ -295,7 +295,7 @@ int ZAttn(ZModem *info) {
 			//append_buffer(&outputBuf, ptr, 1, ofd);
 		}
 	}
-	bout.FlushOutComChBuffer();
+	bout.flush();
 	return 0;
 }
 

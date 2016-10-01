@@ -60,7 +60,6 @@ class Win32ConsoleIO : public LocalIO {
   void restorescreen() override;
   bool KeyPressed() override;
   unsigned char GetChar() override;
-  void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;
   void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
   void SetCursor(int cursorStyle) override;
   void WriteScreenBuffer(const char *buffer) override;

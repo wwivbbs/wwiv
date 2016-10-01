@@ -271,7 +271,7 @@ void attach_file(int mode) {
                     ok = 1;
                   } else {
                     bout << "\r\n|#6Error in copy.\r\n";
-                    getkey();
+                    bout.getkey();
                   }
                 } else {
                   sprintf(szFullPathName, "%s%s", session()->GetAttachmentDirectory().c_str(), szFileToAttach);

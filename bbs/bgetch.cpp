@@ -28,13 +28,33 @@
 #include "bbs/multinst.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
+#include "bbs/wconstants.h"
+
+#include "core/strings.h"
 
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 // Local functions
 void HandleControlKey(char *ch);
 void PrintTime();
 void RedrawCurrentLine();
+
+static long time_lastchar_pressed = 0;
+
+static void lastchar_pressed() {
+  time_lastchar_pressed = timer1();
+}
+
+
+extern int nsp;
+static void resetnsp() {
+  if (nsp == 1 && !(session()->user()->HasPause())) {
+    session()->user()->ToggleStatusFlag(User::pauseOnPage);
+  }
+  nsp = 0;
+}
+
 
 /* This function checks both the local keyboard, and the remote terminal
  * (if any) for input.  If there is input, the key is returned.  If there
@@ -151,13 +171,12 @@ void HandleControlKey(char *ch) {
       break;
     case CU:  // CTRL-U
       if (local_echo) {
-        char xl[81], cl[81], atr[81], cc;
-        session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+        SavedLine line = bout.SaveCurrentLine();
         bout.Color(0);
         bout.nl(2);
         multi_instance();
         bout.nl();
-        RestoreCurrentLine(cl, atr, xl, &cc);
+        bout.RestoreCurrentLine(line);
       }
       break;
     case 18: // CR
@@ -182,9 +201,7 @@ void HandleControlKey(char *ch) {
 }
 
 void PrintTime() {
-  char xl[81], cl[81], atr[81], cc;
-
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  SavedLine line = bout.SaveCurrentLine();
 
   bout.Color(0);
   bout.nl(2);
@@ -201,20 +218,20 @@ void PrintTime() {
   }
   bout.nl();
 
-  RestoreCurrentLine(cl, atr, xl, &cc);
+  bout.RestoreCurrentLine(line);
 }
 
 void RedrawCurrentLine() {
-  char xl[81], cl[81], atr[81], cc, ansistr_1[81];
+  char ansistr_1[81];
 
   int ansiptr_1 = ansiptr;
   ansiptr = 0;
   ansistr[ansiptr_1] = 0;
   strncpy(ansistr_1, ansistr, sizeof(ansistr_1) - 1);
 
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  SavedLine line = bout.SaveCurrentLine();
   bout.nl();
-  RestoreCurrentLine(cl, atr, xl, &cc);
+  bout.RestoreCurrentLine(line);
 
   strcpy(ansistr, ansistr_1);
   ansiptr = ansiptr_1;
@@ -249,3 +266,71 @@ bool bkbhit() {
   }
   return false;
 }
+
+
+bool Output::RestoreCurrentLine(const SavedLine& line) {
+  if (session()->localIO()->WhereX()) {
+    bout.nl();
+  }
+  for (const auto& c : line.line) {
+    bout.SystemColor(c.second);
+    bout.bputch(c.first, true);
+  }
+  bout.flush();
+  bout.SystemColor(line.color);
+  strcpy(endofline, line.endofline.c_str());
+
+  return true;
+}
+
+SavedLine Output::SaveCurrentLine() {
+  return {current_line_, curatr, endofline};
+}
+
+void Output::dump() {
+  if (ok_modem_stuff) {
+    session()->remoteIO()->purgeIn();
+  }
+}
+
+/* This function returns one character from either the local keyboard or
+* remote com port (if applicable).  After 1.5 minutes of inactivity, a
+* beep is sounded.  After 3 minutes of inactivity, the user is hung up.
+*/
+char Output::getkey() {
+  resetnsp();
+  bool beepyet = false;
+  lastchar_pressed();
+
+  long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
+  long tv1 = tv - 1092L;     // change 4.31 Build3
+
+                             // Since were waitig for a key, reset the # of lines we've displayed since a pause.
+  lines_listed = 0;
+  char ch = 0;
+  do {
+    while (!bkbhit() && !hangup) {
+      giveup_timeslice();
+      long dd = timer1();
+      if (dd < time_lastchar_pressed && ((dd + 1000) > time_lastchar_pressed)) {
+        time_lastchar_pressed = dd;
+      }
+      if (std::abs(dd - time_lastchar_pressed) > 65536L) {
+        time_lastchar_pressed -= static_cast<int>(floor(SECONDS_PER_DAY * 18.2));
+      }
+      if ((dd - time_lastchar_pressed) > tv1 && !beepyet) {
+        beepyet = true;
+        bout.bputch(CG);
+      }
+      if (std::abs(dd - time_lastchar_pressed) > tv) {
+        bout.nl();
+        bout << "Call back later when you are there.\r\n";
+        hangup = true;
+      }
+      CheckForHangup();
+    }
+    ch = bgetch();
+  } while (!ch && !hangup);
+  return ch;
+}
+

@@ -89,7 +89,7 @@ void send_block(char *b, int block_type, bool use_crc, char byBlockNumber) {
   } else {
     bout.rputch(checksum);
   }
-  dump();
+  bout.dump();
 }
 
 char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
@@ -252,7 +252,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
       abort = true;
     } else if (ch == CU) {
       sleep_for(seconds(1));
-      dump();
+      bout.dump();
       send_b(file, 0L, 3, 0, &use_crc, pszWorkingFileName, &terr, &abort);
       abort = true;
     } else {

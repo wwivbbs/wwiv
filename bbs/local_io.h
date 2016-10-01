@@ -76,7 +76,6 @@ class LocalIO {
   virtual void restorescreen() = 0;
   virtual bool KeyPressed() = 0;
   virtual unsigned char GetChar() = 0;
-  virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) = 0;
   /*
    * MakeLocalWindow makes a "shadowized" window with the upper-left hand corner at
    * (x,y), and the lower-right corner at (x+xlen,y+ylen).

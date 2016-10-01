@@ -45,7 +45,7 @@ using std::string;
 
 static int pd_getkey() {
   g_flags |= g_flag_allow_extended;
-  int x = getkey();
+  int x = bout.getkey();
   g_flags &= ~g_flag_allow_extended;
   return x;
 }

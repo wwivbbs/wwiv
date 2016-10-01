@@ -1310,11 +1310,11 @@ void noabort(const char *file_name) {
   if (session()->using_modem) {
     oic   = incom;
     incom = false;
-    dump();
+    bout.dump();
   }
   printfile(file_name);
   if (session()->using_modem) {
-    dump();
+    bout.dump();
     incom = oic;
   }
 }

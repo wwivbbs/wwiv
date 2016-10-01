@@ -59,7 +59,7 @@ std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize numCha
     }
     bout.bputch(text[i], true);
   }
-  bout.FlushOutComChBuffer();
+  bout.flush();
   return numChars;
 }
 
@@ -205,7 +205,7 @@ int Output::bputs(const string& text) {
     bputch(c, true);
   }
 
-  FlushOutComChBuffer();
+  flush();
   return text.size();
 }
 

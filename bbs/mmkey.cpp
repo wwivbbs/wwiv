@@ -41,7 +41,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
 
   do {
     do {
-      ch = getkey();
+      ch = bout.getkey();
       if (bListOption && (ch == RETURN || ch == SPACE)) {
         ch = upcase(ch);
         return string(1, ch);
@@ -68,7 +68,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
     int cp = 1;
     do {
       do {
-        ch = getkey();
+        ch = bout.getkey();
       } while ((((ch < ' ') && (ch != RETURN) && (ch != BACKSPACE)) || (ch > 126)) && !hangup);
       ch = upcase(ch);
       if (ch == RETURN) {

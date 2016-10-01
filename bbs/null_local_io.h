@@ -49,7 +49,6 @@ public:
   void savescreen() override {}
   void restorescreen() override {}
   bool KeyPressed() override { return false; }
-  void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override {}
   unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
   void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
   void SetCursor(int cursorStyle) override {}

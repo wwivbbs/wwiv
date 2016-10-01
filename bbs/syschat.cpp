@@ -192,7 +192,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
   int side = 0;
   unsigned char ch = 0;
   do {
-    ch = getkey();
+    ch = bout.getkey();
     if (session()->IsLastKeyLocal()) {
       if (session()->localIO()->WhereY() == 11) {
         bout << "\x1b[12;1H";
@@ -435,7 +435,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
       case CP:                            /* Ctrl-P */
         if (side == 0) {
           if (cp0 < max_length - 1) {
-            ch = getkey();
+            ch = bout.getkey();
             if ((ch >= SPACE) && (ch <= 126)) {
               side0[session()->localIO()->WhereY()][cp0++] = CC;
               side0[session()->localIO()->WhereY()][cp0++] = ch;
@@ -444,7 +444,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
           }
         } else {
           if (cp1 < max_length - 1) {
-            ch = getkey();
+            ch = bout.getkey();
             if ((ch >= SPACE) && (ch <= 126)) {
               side1[session()->localIO()->WhereY() - 13][cp1++] = CC;
               side1[session()->localIO()->WhereY() - 13][cp1++] = ch;
@@ -544,7 +544,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
  */
 
 void chat1(const char *chat_line, bool two_way) {
-  char cl[81], xl[81], s[255], s1[255], atr[81], s2[81], cc, szSysopName[81];
+  char s[255], s1[255], s2[81], szSysopName[81];
   if (!okansi()) {
     two_way = false;
   }
@@ -565,7 +565,7 @@ void chat1(const char *chat_line, bool two_way) {
   auto tc_start = timer();
   File chatFile(session()->config()->gfilesdir(), "chat.txt");
 
-  session()->localIO()->SaveCurrentLine(cl, atr, xl, &cc);
+  SavedLine line = bout.SaveCurrentLine();
   s1[0] = '\0';
 
   bool oe = local_echo;
@@ -590,7 +590,7 @@ void chat1(const char *chat_line, bool two_way) {
     for (size_t screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {
       bout.bputch(static_cast<unsigned char>(205), true);
     }
-    bout.FlushOutComChBuffer();
+    bout.flush();
     const string unn = session()->names()->UserName(session()->usernum);
     sprintf(s, " %s chatting with %s ", szSysopName, unn.c_str());
     int nNumCharsToMove = ((session()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);
@@ -668,7 +668,7 @@ void chat1(const char *chat_line, bool two_way) {
     session()->UpdateTopScreen();
   }
   local_echo = oe;
-  RestoreCurrentLine(cl, atr, xl, &cc);
+  bout.RestoreCurrentLine(line);
 
   if (okansi()) {
     bout << "\x1b[K";
