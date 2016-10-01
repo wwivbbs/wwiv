@@ -20,6 +20,7 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/menu.h"

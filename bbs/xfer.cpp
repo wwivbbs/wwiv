@@ -21,10 +21,13 @@
 #include <vector>
 
 #include "bbs/bbs.h"
+#include "bbs/bgetch.h"
 #include "bbs/execexternal.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bbsutl2.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"

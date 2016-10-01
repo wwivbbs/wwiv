@@ -18,6 +18,7 @@
 /**************************************************************************/
 
 #include "bbs/bbsovl1.h"
+#include "bbs/bbsutl2.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/bbs.h"

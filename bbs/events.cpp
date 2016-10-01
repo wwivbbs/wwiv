@@ -20,9 +20,11 @@
 
 #include <algorithm>
 
+#include "bbs/bbsutl1.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/execexternal.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"

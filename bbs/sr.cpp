@@ -25,6 +25,8 @@
 
 #include "core/strings.h"
 
+#include "bbs/bgetch.h"
+#include "bbs/com.h"
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"

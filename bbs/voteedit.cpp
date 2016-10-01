@@ -21,6 +21,7 @@
 #include "bbs/input.h"
 #include "sdk/status.h"
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "sdk/filenames.h"

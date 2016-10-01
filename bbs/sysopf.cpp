@@ -21,10 +21,15 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/bbsutl2.h"
+#include "bbs/com.h"
 #include "bbs/execexternal.h"
 #include "bbs/fcns.h"
+#include "bbs/finduser.h"
 #include "bbs/vars.h"
 #include "bbs/confutil.h"
+#include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/dropfile.h"
 #include "bbs/email.h"

@@ -16,13 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/misccmd.h"
+
 #include <memory>
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl2.h"
 #include "bbs/execexternal.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/defaults.h"

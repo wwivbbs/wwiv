@@ -19,6 +19,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsutl1.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
@@ -26,6 +27,7 @@
 #include "bbs/keycodes.h"
 #include "sdk/status.h"
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "core/file.h"

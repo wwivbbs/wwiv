@@ -31,6 +31,9 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/bbs.h"
+#include "bbs/bgetch.h"
+#include "bbs/com.h"
+#include "bbs/connect1.h"
 #include "bbs/events.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"

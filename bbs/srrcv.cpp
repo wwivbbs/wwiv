@@ -19,11 +19,13 @@
 #include <cmath>
 #include <string>
 
+#include "bbs/bgetch.h"
+#include "bbs/remote_io.h"
+#include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
-#include "bbs/remote_io.h"
-#include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 

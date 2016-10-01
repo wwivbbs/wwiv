@@ -23,9 +23,11 @@
 
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/defaults.h"
+#include "bbs/dirlist.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/keycodes.h"

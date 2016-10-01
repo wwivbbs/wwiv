@@ -21,6 +21,7 @@
 #include <algorithm>
 
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/fcns.h"

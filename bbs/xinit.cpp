@@ -30,6 +30,7 @@
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/colors.h"
+#include "bbs/connect1.h"
 #include "bbs/events.h"
 #include "bbs/execexternal.h"
 #include "bbs/fcns.h"

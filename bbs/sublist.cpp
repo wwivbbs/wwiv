@@ -21,6 +21,8 @@
 #include <string>
 
 #include "bbs/bbsovl1.h"
+#include "bbs/bbsutl2.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"

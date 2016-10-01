@@ -34,6 +34,9 @@
 
 #include "bbs/archivers.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/connect1.h"
 #include "bbs/conf.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
@@ -42,6 +45,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/msgbase1.h"
+#include "bbs/quote.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "bbs/vars.h"

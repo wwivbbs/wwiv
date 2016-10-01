@@ -14,50 +14,15 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include "bbs/execexternal.h"
+#ifndef __INCLUDED_BBS_MISCCMD_H__
+#define __INCLUDED_BBS_MISCCMD_H__
 
-#include "bbs/bbs.h"
-#include "bbs/com.h"
-#include "bbs/fcns.h"
-#include "bbs/vars.h"
-#include "bbs/dropfile.h"
-#include "bbs/instmsg.h"
-#include "bbs/platform/platformfcns.h"
+void kill_old_email();
+void list_users(int mode);
+void time_bank();
+int  getnetnum(const char *network_name);
+void uudecode(const char *input_filename, const char *output_filename);
+void Packers();
 
-int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
-  // forget it if the user has hung up
-  if (!(nFlags & EFLAG_NOHUP)) {
-    if (CheckForHangup()) {
-      return -1;
-    }
-  }
-  create_chain_file();
-
-  // get ready to run it
-  if (session()->IsUserOnline()) {
-    session()->WriteCurrentUser();
-    write_qscn(session()->usernum, qsc, false);
-  }
-
-  // extra processing for net programs
-  if (nFlags & EFLAG_NETPROG) {
-    write_inst(INST_LOC_NET, session()->net_num() + 1, INST_FLAGS_NONE);
-  }
-
-  // Execute the program and make sure the workingdir is reset
-  int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
-  session()->CdHome();
-
-  // Reread the user record.
-  if (session()->IsUserOnline()) {
-    session()->ReadCurrentUser();
-    read_qscn(session()->usernum, qsc, false, true);
-    session()->UpdateTopScreen();
-  }
-
-  // return to caller
-  return nExecRetCode;
-}
-
+#endif  // __INCLUDED_BBS_MISCCMD_H__

@@ -17,6 +17,8 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"

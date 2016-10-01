@@ -22,6 +22,8 @@
 #include <cstdarg>
 #include <string>
 
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/multinst.h"

@@ -116,11 +116,16 @@ class Output : public std::ostream {
   SavedLine SaveCurrentLine();
   void dump();
   void clear_endofline() { endofline_.clear(); }
+  int wherex();
 
 private:
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
   std::string endofline_;
+  int x_ = 0;
+
+  void execute_ansi();
+
 };
 
 namespace wwiv {

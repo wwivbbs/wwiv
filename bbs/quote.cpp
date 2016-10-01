@@ -24,6 +24,8 @@
 #include "bbs/keycodes.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl2.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/message_file.h"
 #include "bbs/vars.h"

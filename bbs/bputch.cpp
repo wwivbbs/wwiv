@@ -43,7 +43,7 @@
 /**
  * This function executes an ANSI string to change color, position the cursor, etc
  */
-static void execute_ansi(LocalIO& localIO) {
+void Output::execute_ansi() {
   static int oldx = 0;
   static int oldy = 0;
 
@@ -85,29 +85,36 @@ static void execute_ansi(LocalIO& localIO) {
     switch (cmd) {
     case 'f':
     case 'H':
-      localIO.GotoXY(args[1] - 1, args[0] - 1);
+    {
+      int y = args[0] - 1;
+      int x = args[1] - 1;
+      x_ = x;
+      local_io_->GotoXY(x, y);
       g_flags |= g_flag_ansi_movement;
-      break;
+    } break;
     case 'A':
-      localIO.GotoXY(localIO.WhereX(), localIO.WhereY() - args[0]);
+      local_io_->GotoXY(local_io_->WhereX(), local_io_->WhereY() - args[0]);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'B':
-      localIO.GotoXY(localIO.WhereX(), localIO.WhereY() + args[0]);
+      local_io_->GotoXY(local_io_->WhereX(), local_io_->WhereY() + args[0]);
       g_flags |= g_flag_ansi_movement;
       break;
     case 'C':
-      localIO.GotoXY(localIO.WhereX() + args[0], localIO.WhereY());
+      x_ += args[0];
+      local_io_->GotoXY(local_io_->WhereX() + args[0], local_io_->WhereY());
       break;
     case 'D':
-      localIO.GotoXY(localIO.WhereX() - args[0], localIO.WhereY());
+      x_ -= args[0];
+      local_io_->GotoXY(local_io_->WhereX() - args[0], local_io_->WhereY());
       break;
     case 's':
-      oldx = localIO.WhereX();
-      oldy = localIO.WhereY();
+      oldx = local_io_->WhereX();
+      oldy = local_io_->WhereY();
       break;
     case 'u':
-      localIO.GotoXY(oldx, oldy);
+      local_io_->GotoXY(oldx, oldy);
+      x_ = oldx;
       oldx = oldy = 0;
       g_flags |= g_flag_ansi_movement;
       break;
@@ -115,12 +122,13 @@ static void execute_ansi(LocalIO& localIO) {
       if (args[0] == 2) {
         lines_listed = 0;
         g_flags |= g_flag_ansi_movement;
-        localIO.Cls();
+        local_io_->Cls();
+        x_ = 0;
       }
       break;
     case 'k':
     case 'K':
-      localIO.ClrEol();
+      local_io_->ClrEol();
       break;
     case 'm':
       if (!argptr) {
@@ -272,7 +280,7 @@ int Output::bputch(char c, bool use_buffer) {
         (ansistr[1] != '[') || (ansiptr > 75)) {
       // The below two lines kill thedraw's ESC[?7h seq
       if (!((ansiptr == 2 && c == '?') || (ansiptr == 3 && ansistr[2] == '?'))) {
-        execute_ansi(*localIO());
+        execute_ansi();
       }
     }
   } else if (c == ESC) {
@@ -291,9 +299,11 @@ int Output::bputch(char c, bool use_buffer) {
       localIO()->Putch(display_char);
 
       current_line_.push_back({display_char, curatr});
+      x_++;
 
       if (c == SOFTRETURN) {
         current_line_.clear();
+        x_ = 0;
         ++lines_listed;
         // change Build3 + 5.0 to fix message read.
         if (lines_listed >= (session()->screenlinest - 1)) {

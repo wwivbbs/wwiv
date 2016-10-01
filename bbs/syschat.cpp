@@ -22,6 +22,7 @@
 
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl1.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"

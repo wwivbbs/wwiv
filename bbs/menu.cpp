@@ -20,6 +20,7 @@
 #include <memory>
 
 #include "bbs/input.h"
+#include "bbs/com.h"
 #include "bbs/common.h"
 #include "bbs/instmsg.h"
 #include "bbs/menu.h"

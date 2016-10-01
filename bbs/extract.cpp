@@ -21,6 +21,7 @@
 #include <ctime>
 #include <string>
 
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
@@ -28,7 +29,9 @@
 #include "bbs/stuffin.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
+#include "bbs/dirlist.h"
 #include "bbs/fcns.h"
+#include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "core/strings.h"

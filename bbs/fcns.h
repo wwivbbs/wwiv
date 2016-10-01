@@ -31,38 +31,6 @@
 // File: bbsutl.cpp
 #include "bbs/bbsutl.h"
 
-// File: bbsutl1.cpp
-#include "bbs/bbsutl1.h"
-
-// File: bbsutl2.cpp
-#include "bbs/bbsutl2.h"
-
-// File: bgetch.cpp
-#include "bbs/bgetch.h"
-
-// File: com.cpp
-#include "bbs/com.h"
-
-// File: connect1.cpp
-#include "bbs/connect1.h"
-
-// File: diredit.cpp
-void dlboardedit();
-
-
-// File: dirlist.cpp
-void dirlist(int mode);
-
-
-// File: dupphone.cpp
-void add_phone_number(int usernum, const char *phone);
-void delete_phone_number(int usernum, const char *phone);
-int  find_phone_number(const char *phone);
-
-// File: finduser.cpp
-int finduser(const std::string& searchString);
-int finduser1(const std::string& searchString);
-
 // File: gfiles.cpp
 gfilerec *read_sec(int sn, int *nf);
 void gfiles();
@@ -90,23 +58,12 @@ void *BbsAllocA(size_t lNumBytes);
 void EditMenus();
 void ListMenuDirs();
 
-// File: misccmd.cpp
-void kill_old_email();
-void list_users(int mode);
-void time_bank();
-int  getnetnum(const char *network_name);
-void uudecode(const char *input_filename, const char *output_filename);
-void Packers();
-
 // File: multmail.cpp
 void multimail(int *user_number, int numu);
 void slash_e();
 
 // File: pause.cpp
 void pausescr();
-
-// File: quote.cpp
-#include "bbs/quote.h"
 
 // File: readmail.cpp
 void readmail(int mode);

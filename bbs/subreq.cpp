@@ -21,6 +21,8 @@
 #include "bbs/input.h"
 #include "sdk/subxtr.h"
 #include "bbs/bbs.h"
+#include "bbs/com.h"
+#include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/mmkey.h"
 #include "bbs/fcns.h"

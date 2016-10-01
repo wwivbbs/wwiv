@@ -20,13 +20,18 @@
 #include <memory>
 #include <string>
 
-#include "bbs/conf.h"
 #include "bbs/bbs.h"
+#include "bbs/bgetch.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/conf.h"
+#include "bbs/connect1.h"
 #include "bbs/fcns.h"
-#include "bbs/mmkey.h"
-#include "bbs/vars.h"
+#include "bbs/finduser.h"
 #include "bbs/input.h"
+#include "bbs/mmkey.h"
 #include "bbs/remote_io.h"
+#include "bbs/vars.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/textfile.h"

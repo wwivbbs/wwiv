@@ -23,6 +23,9 @@
 #include <string>
 
 #include "bbs/attach.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/connect1.h"
 #include "bbs/instmsg.h"
 #include "bbs/inmsg.h"
 #include "bbs/inetmsg.h"
@@ -33,6 +36,7 @@
 #include "bbs/read_message.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/quote.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
@@ -42,7 +46,6 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
-
 
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9

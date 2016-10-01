@@ -22,7 +22,10 @@
 #include <vector>
 
 #include "bbs/bbsovl1.h"
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/email.h"
 #include "bbs/extract.h"
@@ -31,6 +34,7 @@
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
+#include "bbs/quote.h"
 #include "bbs/read_message.h"
 #include "sdk/subxtr.h"
 #include "bbs/printfile.h"

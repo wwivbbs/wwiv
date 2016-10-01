@@ -19,16 +19,17 @@
 #include <string>
 
 #include "bbs/batch.h"
+#include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/datetime.h"
+#include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/keycodes.h"
-#include "bbs/wconstants.h"
-#include "sdk/status.h"
-#include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
+#include "sdk/status.h"
 
 using std::string;
 using namespace wwiv::sdk;

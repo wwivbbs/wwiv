@@ -21,6 +21,7 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"

@@ -18,6 +18,9 @@
 /**************************************************************************/
 #include "bbs/bgetch.h"
 
+#include <cmath>
+#include <string>
+
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/chat.h"
@@ -30,15 +33,11 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 
+#include "core/log.h"
 #include "core/strings.h"
 
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
-
-// Local functions
-void HandleControlKey(char *ch);
-void PrintTime();
-void RedrawCurrentLine();
 
 static long time_lastchar_pressed = 0;
 
@@ -55,6 +54,99 @@ static void resetnsp() {
   nsp = 0;
 }
 
+static void PrintTime() {
+  SavedLine line = bout.SaveCurrentLine();
+
+  bout.Color(0);
+  bout.nl(2);
+  time_t l = time(nullptr);
+  std::string currentTime = asctime(localtime(&l));
+
+  // Remove the ending \n character.
+  currentTime.erase(currentTime.find_last_of("\r\n"));
+
+  bout << "|#2" << currentTime << wwiv::endl;
+  if (session()->IsUserOnline()) {
+    bout << "|#9Time on   = |#1" << ctim(timer() - timeon) << wwiv::endl;
+    bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
+  }
+  bout.nl();
+
+  bout.RestoreCurrentLine(line);
+}
+
+static void RedrawCurrentLine() {
+  char ansistr_1[81];
+
+  int ansiptr_1 = ansiptr;
+  ansiptr = 0;
+  ansistr[ansiptr_1] = 0;
+  strncpy(ansistr_1, ansistr, sizeof(ansistr_1) - 1);
+
+  SavedLine line = bout.SaveCurrentLine();
+  bout.nl();
+  bout.RestoreCurrentLine(line);
+
+  strcpy(ansistr, ansistr_1);
+  ansiptr = ansiptr_1;
+}
+
+static void HandleControlKey(char *ch) {
+  char c = *ch;
+
+  if (c == CBACKSPACE) {
+    c = BACKSPACE;
+  }
+  if (okskey) {
+    switch (c) {
+    case CA:   // CTRL-A
+    case CD:   // CTRL-D
+    case CF:   // CTRL-F
+      if (okmacro && (!charbufferpointer)) {
+        static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
+        int macroNum = MACRO_KEY_TABLE[(int)c];
+        strncpy(charbuffer, &(session()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
+        c = charbuffer[0];
+        if (c) {
+          charbufferpointer = 1;
+        }
+      }
+      break;
+    case CT:  // CTRL - T
+      if (local_echo) {
+        PrintTime();
+      }
+      break;
+    case CU:  // CTRL-U
+      if (local_echo) {
+        SavedLine line = bout.SaveCurrentLine();
+        bout.Color(0);
+        bout.nl(2);
+        multi_instance();
+        bout.nl();
+        bout.RestoreCurrentLine(line);
+      }
+      break;
+    case 18: // CR
+      if (local_echo) {
+        RedrawCurrentLine();
+      }
+      break;
+    case CL:  // CTRL - L
+      if (so()) {
+        toggle_invis();
+      }
+      break;
+    case CN:  // CTRL - N
+      toggle_avail();
+      break;
+    case CY:
+      session()->user()->ToggleStatusFlag(User::pauseOnPage);
+      break;
+    }
+  }
+  *ch = c;
+}
 
 /* This function checks both the local keyboard, and the remote terminal
  * (if any) for input.  If there is input, the key is returned.  If there
@@ -143,100 +235,6 @@ char bgetch() {
   return ch;
 }
 
-void HandleControlKey(char *ch) {
-  char c = *ch;
-
-  if (c == CBACKSPACE) {
-    c = BACKSPACE;
-  }
-  if (okskey) {
-    switch (c) {
-    case CA:   // CTRL-A
-    case CD:   // CTRL-D
-    case CF:   // CTRL-F
-      if (okmacro && (!charbufferpointer)) {
-        static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
-        int macroNum = MACRO_KEY_TABLE[(int)c];
-        strncpy(charbuffer, &(session()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
-        c = charbuffer[0];
-        if (c) {
-          charbufferpointer = 1;
-        }
-      }
-      break;
-    case CT:  // CTRL - T
-      if (local_echo) {
-        PrintTime();
-      }
-      break;
-    case CU:  // CTRL-U
-      if (local_echo) {
-        SavedLine line = bout.SaveCurrentLine();
-        bout.Color(0);
-        bout.nl(2);
-        multi_instance();
-        bout.nl();
-        bout.RestoreCurrentLine(line);
-      }
-      break;
-    case 18: // CR
-      if (local_echo) {
-        RedrawCurrentLine();
-      }
-      break;
-    case CL:  // CTRL - L
-      if (so()) {
-        toggle_invis();
-      }
-      break;
-    case CN:  // CTRL - N
-      toggle_avail();
-      break;
-    case CY:
-      session()->user()->ToggleStatusFlag(User::pauseOnPage);
-      break;
-    }
-  }
-  *ch = c;
-}
-
-void PrintTime() {
-  SavedLine line = bout.SaveCurrentLine();
-
-  bout.Color(0);
-  bout.nl(2);
-  time_t l = time(nullptr);
-  std::string currentTime = asctime(localtime(&l));
-
-  //Remove the ending \n character.
-  currentTime.erase(currentTime.find_last_of("\r\n"));
-
-  bout << "|#2" << currentTime << wwiv::endl;
-  if (session()->IsUserOnline()) {
-    bout << "|#9Time on   = |#1" << ctim(timer() - timeon) << wwiv::endl;
-    bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
-  }
-  bout.nl();
-
-  bout.RestoreCurrentLine(line);
-}
-
-void RedrawCurrentLine() {
-  char ansistr_1[81];
-
-  int ansiptr_1 = ansiptr;
-  ansiptr = 0;
-  ansistr[ansiptr_1] = 0;
-  strncpy(ansistr_1, ansistr, sizeof(ansistr_1) - 1);
-
-  SavedLine line = bout.SaveCurrentLine();
-  bout.nl();
-  bout.RestoreCurrentLine(line);
-
-  strcpy(ansistr, ansistr_1);
-  ansiptr = ansiptr_1;
-}
-
 char bgetchraw() {
   if (ok_modem_stuff && nullptr != session()->remoteIO()) {
     if (session()->remoteIO()->incoming()) {
@@ -291,6 +289,14 @@ void Output::dump() {
   if (ok_modem_stuff) {
     session()->remoteIO()->purgeIn();
   }
+}
+
+int Output::wherex() { 
+  int x = localIO()->WhereX();
+  if (x != x_) {
+    LOG(INFO) << "x: " << x << " != x_: " << x_;
+  }
+  return x_; 
 }
 
 /* This function returns one character from either the local keyboard or

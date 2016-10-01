@@ -18,10 +18,11 @@
 /**************************************************************************/
 
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
+#include "bbs/finduser.h"
 #include "bbs/vars.h"
 #include "bbs/input.h"
-#include "core/inifile.h"
 #include "bbs/keycodes.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
@@ -29,6 +30,7 @@
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
 #include "bbs/wconstants.h"
+#include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"

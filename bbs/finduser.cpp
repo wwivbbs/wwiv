@@ -22,13 +22,14 @@
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/wconstants.h"
-#include "sdk/user.h"
-#include "bbs/wsession.h"
+#include "bbs/finduser.h"
 #include "bbs/vars.h"
-#include "sdk/status.h"
+#include "bbs/wconstants.h"
+#include "bbs/wsession.h"
 #include "core/strings.h"
 #include "core/file.h"
+#include "sdk/status.h"
+#include "sdk/user.h"
 #include "sdk/filenames.h"
 
 using std::string;

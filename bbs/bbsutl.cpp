@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/bgetch.h"
+#include "bbs/com.h"
 #include "bbs/datetime.h"
 #include "bbs/input.h"
 #include "bbs/interpret.h"

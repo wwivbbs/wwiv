@@ -19,11 +19,13 @@
 
 #include <chrono>
 
-#include "bbs/pause.h"
-#include "bbs/keycodes.h"
 #include "bbs/bbs.h"
+#include "bbs/bgetch.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"
+#include "bbs/keycodes.h"
+#include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "core/os.h"
 #include "core/strings.h"

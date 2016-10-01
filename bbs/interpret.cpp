@@ -19,6 +19,7 @@
 #include "bbs/interpret.h"
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl2.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"

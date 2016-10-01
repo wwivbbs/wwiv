@@ -34,7 +34,9 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/utility.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
+#include "bbs/connect1.h"
 #include "bbs/defaults.h"
 #include "bbs/execexternal.h"
 #include "bbs/instmsg.h"

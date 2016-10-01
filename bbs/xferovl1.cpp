@@ -24,11 +24,13 @@
 
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/bbs.h"
+#include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/external_edit.h"

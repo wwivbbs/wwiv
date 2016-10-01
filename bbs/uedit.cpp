@@ -21,19 +21,25 @@
 #include <memory>
 #include <string>
 
-#include "bbs/datetime.h"
-#include "bbs/input.h"
-#include "bbs/newuser.h"
 #include "bbs/bbs.h"
-#include "bbs/inetmsg.h"
+#include "bbs/bbsutl2.h"
+#include "bbs/com.h"
+#include "bbs/connect1.h"
+#include "bbs/datetime.h"
 #include "bbs/email.h"
+#include "bbs/dupphone.h"
 #include "bbs/fcns.h"
-#include "bbs/vars.h"
+#include "bbs/finduser.h"
+#include "bbs/inetmsg.h"
+#include "bbs/input.h"
+#include "bbs/keycodes.h"
+#include "bbs/misccmd.h"
+#include "bbs/newuser.h"
 #include "bbs/printfile.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -47,9 +53,183 @@ static char *sp = nullptr;
 static char search_pattern[81];
 char *daten_to_date(time_t dt);
 
-int  matchuser(int user_number);
-int  matchuser(User * pUser);
-void changeopt();
+static void changeopt() {
+  bout.cls();
+  bout << "Current search string:\r\n";
+  bout << ((search_pattern[0]) ? search_pattern : "-NONE-");
+  bout.nl(3);
+  bout << "|#9Change it? ";
+  if (yesno()) {
+    bout << "Enter new search pattern:\r\n|#7:";
+    input(search_pattern, 75);
+  }
+}
+
+static int matchuser(User *pUser) {
+  int ok = 1;
+  bool _not = 0, less = 0;
+  int cpf = 0, cpp = 0;
+  bool  _and = true, gotfcn = false;
+  unsigned evalit = 0;
+  unsigned int tmp2;
+  char fcn[20], parm[80], ts[40];
+  time_t l;
+
+  bool done = false;
+  bool tmp = false;
+  unsigned tmp1 = 0;
+  do {
+    if (*sp == 0) {
+      done = true;
+    } else {
+      if (strchr("()|&!<>", *sp)) {
+        switch (*sp++) {
+        case '(':
+          evalit = 2;
+          break;
+        case ')':
+          done = true;
+          break;
+        case '|':
+          _and = false;
+          break;
+        case '&':
+          _and = true;
+          break;
+        case '!':
+          _not = true;
+          break;
+        case '<':
+          less = true;
+          break;
+        case '>':
+          less = false;
+          break;
+        }
+      } else if (*sp == '[') {
+        gotfcn = true;
+        sp++;
+      } else if (*sp == ']') {
+        evalit = 1;
+        ++sp;
+      } else if (*sp != ' ' || gotfcn) {
+        if (gotfcn) {
+          if (cpp < 22) {
+            parm[cpp++] = *sp++;
+          } else {
+            sp++;
+          }
+        } else {
+          if (cpf < static_cast<int>(sizeof(fcn)) - 1) {
+            fcn[cpf++] = *sp++;
+          } else {
+            sp++;
+          }
+        }
+      } else {
+        ++sp;
+      }
+      if (evalit) {
+        if (evalit == 1) {
+          fcn[cpf] = 0;
+          parm[cpp] = 0;
+          tmp = true;
+          tmp1 = atoi(parm);
+
+          if (IsEquals(fcn, "SL")) {
+            if (less) {
+              tmp = (tmp1 > pUser->GetSl());
+            } else {
+              tmp = (tmp1 < pUser->GetSl());
+            }
+          } else if (IsEquals(fcn, "DSL")) {
+            if (less) {
+              tmp = (tmp1 > pUser->GetDsl());
+            } else {
+              tmp = (tmp1 < pUser->GetDsl());
+            }
+          } else if (IsEquals(fcn, "AR")) {
+            if (parm[0] >= 'A' && parm[0] <= 'P') {
+              tmp1 = 1 << (parm[0] - 'A');
+              tmp = pUser->HasArFlag(tmp1);
+            } else {
+              tmp = false;
+            }
+          } else if (IsEquals(fcn, "DAR")) {
+            if ((parm[0] >= 'A') && (parm[0] <= 'P')) {
+              tmp1 = 1 << (parm[0] - 'A');
+              tmp = pUser->HasDarFlag(tmp1);
+            } else {
+              tmp = false;
+            }
+          } else if (IsEquals(fcn, "SEX")) {
+            tmp = parm[0] == pUser->GetGender();
+          } else if (IsEquals(fcn, "AGE")) {
+            if (less) {
+              tmp = (tmp1 > pUser->GetAge());
+            } else {
+              tmp = (tmp1 < pUser->GetAge());
+            }
+          } else if (IsEquals(fcn, "LASTON")) {
+            time(&l);
+            tmp2 = static_cast<unsigned int>((l - pUser->GetLastOnDateNumber()) / SECONDS_PER_DAY);
+            if (less) {
+              tmp = tmp2 < tmp1;
+            } else {
+              tmp = tmp2 > tmp1;
+            }
+          } else if (IsEquals(fcn, "AREACODE")) {
+            tmp = !strncmp(parm, pUser->GetVoicePhoneNumber(), 3);
+          } else if (IsEquals(fcn, "RESTRICT")) {
+            ;
+          } else if (IsEquals(fcn, "LOGONS")) {
+            if (less) {
+              tmp = pUser->GetNumLogons() < tmp1;
+            } else {
+              tmp = pUser->GetNumLogons() > tmp1;
+            }
+          } else if (IsEquals(fcn, "REALNAME")) {
+            strcpy(ts, pUser->GetRealName());
+            strupr(ts);
+            tmp = (strstr(ts, parm) != nullptr);
+          } else if (IsEquals(fcn, "BAUD")) {
+            if (less) {
+              tmp = pUser->GetLastBaudRate() < tmp1;
+            } else {
+              tmp = pUser->GetLastBaudRate() > tmp1;
+            }
+
+          } else if (IsEquals(fcn, "COMP_TYPE")) {
+            tmp = pUser->GetComputerType() == static_cast<int>(tmp1);
+          }
+        } else {
+          tmp = matchuser(pUser) > 0;
+        }
+
+        if (_not) {
+          tmp = !tmp;
+        }
+        if (_and) {
+          ok = ok && tmp;
+        } else {
+          ok = ok || tmp;
+        }
+
+        _not = less = gotfcn = false;
+        cpf = cpp = evalit = 0;
+        _and = true;
+      }
+    }
+  } while (!done);
+  return ok;
+}
+
+static int matchuser(int user_number) {
+  User user;
+  session()->users()->ReadUser(&user, user_number);
+  sp = search_pattern;
+  return matchuser(&user);
+}
 
 void deluser(int user_number) {
   User user;
@@ -245,187 +425,6 @@ void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScree
     bout << "|#9   WWIV Reg Num : |#1" << pUser->GetWWIVRegNumber() << wwiv::endl;
   }
 }
-
-int matchuser(int user_number) {
-  User user;
-  session()->users()->ReadUser(&user, user_number);
-  sp = search_pattern;
-  return matchuser(&user);
-}
-
-
-int matchuser(User *pUser) {
-  int ok = 1;
-  bool _not = 0, less = 0;
-  int cpf = 0, cpp = 0;
-  bool  _and = true, gotfcn = false;
-  unsigned evalit = 0;
-  unsigned int tmp2;
-  char fcn[20], parm[80], ts[40];
-  time_t l;
-
-  bool done = false;
-  bool tmp = false;
-  unsigned tmp1 = 0;
-  do {
-    if (*sp == 0) {
-      done = true;
-    } else {
-      if (strchr("()|&!<>", *sp)) {
-        switch (*sp++) {
-        case '(':
-          evalit = 2;
-          break;
-        case ')':
-          done = true;
-          break;
-        case '|':
-          _and = false;
-          break;
-        case '&':
-          _and = true;
-          break;
-        case '!':
-          _not = true;
-          break;
-        case '<':
-          less = true;
-          break;
-        case '>':
-          less = false;
-          break;
-        }
-      } else if (*sp == '[') {
-        gotfcn = true;
-        sp++;
-      } else if (*sp == ']') {
-        evalit = 1;
-        ++sp;
-      } else if (*sp != ' ' || gotfcn) {
-        if (gotfcn) {
-          if (cpp < 22) {
-            parm[cpp++] = *sp++;
-          } else {
-            sp++;
-          }
-        } else {
-          if (cpf < static_cast<int>(sizeof(fcn)) - 1) {
-            fcn[cpf++] = *sp++;
-          } else {
-            sp++;
-          }
-        }
-      } else {
-        ++sp;
-      }
-      if (evalit) {
-        if (evalit == 1) {
-          fcn[cpf] = 0;
-          parm[cpp] = 0;
-          tmp = true;
-          tmp1 = atoi(parm);
-
-          if (IsEquals(fcn, "SL")) {
-            if (less) {
-              tmp = (tmp1 > pUser->GetSl());
-            } else {
-              tmp = (tmp1 < pUser->GetSl());
-            }
-          } else if (IsEquals(fcn, "DSL")) {
-            if (less) {
-              tmp = (tmp1 > pUser->GetDsl());
-            } else {
-              tmp = (tmp1 < pUser->GetDsl());
-            }
-          } else if (IsEquals(fcn, "AR")) {
-            if (parm[0] >= 'A' && parm[0] <= 'P') {
-              tmp1 = 1 << (parm[0] - 'A');
-              tmp = pUser->HasArFlag(tmp1);
-            } else {
-              tmp = false;
-            }
-          } else if (IsEquals(fcn, "DAR")) {
-            if ((parm[0] >= 'A') && (parm[0] <= 'P')) {
-              tmp1 = 1 << (parm[0] - 'A');
-              tmp = pUser->HasDarFlag(tmp1);
-            } else {
-              tmp = false;
-            }
-          } else if (IsEquals(fcn, "SEX")) {
-            tmp = parm[0] == pUser->GetGender();
-          } else if (IsEquals(fcn, "AGE")) {
-            if (less) {
-              tmp = (tmp1 > pUser->GetAge());
-            } else {
-              tmp = (tmp1 < pUser->GetAge());
-            }
-          } else if (IsEquals(fcn, "LASTON")) {
-            time(&l);
-            tmp2 = static_cast<unsigned int>((l - pUser->GetLastOnDateNumber()) / SECONDS_PER_DAY);
-            if (less) {
-              tmp = tmp2 < tmp1;
-            } else {
-              tmp = tmp2 > tmp1;
-            }
-          } else if (IsEquals(fcn, "AREACODE")) {
-            tmp = !strncmp(parm, pUser->GetVoicePhoneNumber(), 3);
-          } else if (IsEquals(fcn, "RESTRICT")) {
-            ;
-          } else if (IsEquals(fcn, "LOGONS")) {
-            if (less) {
-              tmp = pUser->GetNumLogons() < tmp1;
-            } else {
-              tmp = pUser->GetNumLogons() > tmp1;
-            }
-          } else if (IsEquals(fcn, "REALNAME")) {
-            strcpy(ts, pUser->GetRealName());
-            strupr(ts);
-            tmp = (strstr(ts, parm) != nullptr);
-          } else if (IsEquals(fcn, "BAUD")) {
-            if (less) {
-              tmp = pUser->GetLastBaudRate() < tmp1;
-            } else {
-              tmp = pUser->GetLastBaudRate() > tmp1;
-            }
-
-          } else if (IsEquals(fcn, "COMP_TYPE")) {
-            tmp = pUser->GetComputerType() == static_cast<int>(tmp1);
-          }
-        } else {
-          tmp = matchuser(pUser) > 0;
-        }
-
-        if (_not) {
-          tmp = !tmp;
-        }
-        if (_and) {
-          ok = ok && tmp;
-        } else {
-          ok = ok || tmp;
-        }
-
-        _not = less = gotfcn = false;
-        cpf = cpp = evalit = 0;
-        _and = true;
-      }
-    }
-  } while (!done);
-  return ok;
-}
-
-
-void changeopt() {
-  bout.cls();
-  bout << "Current search string:\r\n";
-  bout << ((search_pattern[0]) ? search_pattern : "-NONE-");
-  bout.nl(3);
-  bout << "|#9Change it? ";
-  if (yesno()) {
-    bout << "Enter new search pattern:\r\n|#7:";
-    input(search_pattern, 75);
-  }
-}
-
 
 void auto_val(int n, User *pUser) {
   if (pUser->GetSl() == 255) {

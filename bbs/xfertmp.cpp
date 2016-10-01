@@ -27,6 +27,8 @@
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/bbs.h"
+#include "bbs/com.h"
+#include "bbs/dirlist.h"
 #include "bbs/fcns.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"

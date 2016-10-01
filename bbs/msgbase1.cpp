@@ -25,6 +25,7 @@
 #include "bbs/datetime.h"
 #include "bbs/netsup.h"
 #include "bbs/bbs.h"
+#include "bbs/connect1.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/inmsg.h"

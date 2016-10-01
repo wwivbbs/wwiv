@@ -23,6 +23,9 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
@@ -31,6 +34,7 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"
+#include "bbs/misccmd.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"

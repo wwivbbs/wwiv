@@ -29,6 +29,7 @@
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"
+#include "bbs/misccmd.h"
 #include "bbs/new_bbslist.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"

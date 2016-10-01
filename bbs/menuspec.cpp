@@ -22,6 +22,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/chains.h"
+#include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
