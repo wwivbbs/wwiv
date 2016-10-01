@@ -523,44 +523,74 @@ static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLen
   return result;
 }
 
+static std::string CreateLastOnLogLine(const WStatus& status) {
+  string log_line;
+  if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
+    (syscfg.sysconfig & sysconfig_extended_info)) {
+    const string username_num = session()->names()->UserName(session()->usernum);
+    log_line = StringPrintf(
+      "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
+      status.GetCallerNumber(),
+      username_num.c_str(),
+      times(),
+      fulldate(),
+      session()->user()->GetCity(),
+      session()->user()->GetState(),
+      session()->user()->GetCountry(),
+      session()->GetCurrentSpeed().c_str(),
+      session()->user()->GetTimesOnToday());
+  } else {
+    const string username_num = session()->names()->UserName(session()->usernum);
+    log_line = StringPrintf(
+      "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
+      status.GetCallerNumber(),
+      username_num.c_str(),
+      session()->cur_lang_name.c_str(),
+      times(),
+      fulldate(),
+      session()->GetCurrentSpeed().c_str(),
+      session()->user()->GetTimesOnToday());
+  }
+  return log_line;
+}
+
+
 static void UpdateLastOnFile() {
-  unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   const string laston_txt_filename = StrCat(session()->config()->gfilesdir(), LASTON_TXT);
-  long len;
-  unique_ptr<char[], void (*)(void*)> ss(get_file(laston_txt_filename, &len), &std::free);
-  long pos = 0;
-  if (ss) {
-    if (!cs()) {
-      for (int i = 0; i < 4; i++) {
-        copy_line(ss.get(), &pos, len);
-      }
-    }
+  vector<string> lines;
+  {
+    TextFile laston_file(laston_txt_filename, "r");
+    string raw_text = laston_file.ReadFileIntoString();
+    lines = wwiv::strings::SplitString(raw_text, "\n");
+  }
+
+  if (!lines.empty()) {
     bool needs_header = true;
-    do {
-      const string s1 = copy_line(ss.get(), &pos, len);
-      if (!s1.empty()) {
-        if (needs_header) {
-          bout.nl(2);
-          bout << "|#1Last few callers|#7: |#0";
-          bout.nl(2);
-          if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-              (syscfg.sysconfig & sysconfig_extended_info)) {
-            bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##" << wwiv::endl;
-          } else {
-            bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
-          }
-          unsigned char chLine = (okansi()) ? '\xCD' : '=';
-          bout << "|#7" << std::string(79, chLine) << wwiv::endl;
-          needs_header = false;
-        }
-        bout << s1;
-        bout.nl();
+    for (const auto& line : lines) {
+      if (line.empty()) {
+        continue;
       }
-    } while (pos < len);
+      if (needs_header) {
+        bout.nl(2);
+        bout << "|#1Last few callers|#7: |#0";
+        bout.nl(2);
+        if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
+            (syscfg.sysconfig & sysconfig_extended_info)) {
+          bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##" << wwiv::endl;
+        } else {
+          bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
+        }
+        char chLine = (okansi()) ? static_cast<char>('\xCD') : '=';
+        bout << "|#7" << std::string(79, chLine) << wwiv::endl;
+        needs_header = false;
+      }
+      bout << line << wwiv::endl;
+    }
     bout.nl(2);
     pausescr();
   }
 
+  unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
   {
     const string username_num = session()->names()->UserName(session()->usernum);
     const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
@@ -575,7 +605,7 @@ static void UpdateLastOnFile() {
     sysoplog(false) << stripcolors(sysop_log_line);
     sysoplog(false) << "";
   }
-  if (session()->GetEffectiveSl() != 255 || incom) {
+  if (incom) {
     string remote_address = session()->remoteIO()->remote_info().address;
     string cid_name = session()->remoteIO()->remote_info().cid_name;
     if (!remote_address.empty()) {
@@ -584,51 +614,25 @@ static void UpdateLastOnFile() {
     if (!cid_name.empty()) {
       sysoplog() << "CID NAME: " << cid_name;
     }
-    string log_line;
-    if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-        (syscfg.sysconfig & sysconfig_extended_info)) {
-      const string username_num = session()->names()->UserName(session()->usernum);
-      log_line = StringPrintf(
-          "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
-          pStatus->GetCallerNumber(),
-          username_num.c_str(),
-          times(),
-          fulldate(),
-          session()->user()->GetCity(),
-          session()->user()->GetState(),
-          session()->user()->GetCountry(),
-          session()->GetCurrentSpeed().c_str(),
-          session()->user()->GetTimesOnToday());
-    } else {
-      const string username_num = session()->names()->UserName(session()->usernum);
-      log_line = StringPrintf(
-          "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
-          pStatus->GetCallerNumber(),
-          username_num.c_str(),
-          session()->cur_lang_name.c_str(),
-          times(),
-          fulldate(),
-          session()->GetCurrentSpeed().c_str(),
-          session()->user()->GetTimesOnToday());
-    }
+  }
+  if (session()->GetEffectiveSl() == 255 && !incom) {
+    return;
+  }
 
-    if (session()->GetEffectiveSl() != 255) {
-      File lastonFile(laston_txt_filename);
-      if (lastonFile.Open(File::modeReadWrite | File::modeBinary |
-                          File::modeCreateFile | File::modeTruncate)) {
-        if (ss) {
-          // Need to ensure ss is not null here
-          pos = 0;
-          // skip the 1st line.
-          copy_line(ss.get(), &pos, len);
-          for (int i = 1; i < 8; i++) {
-            const string s1 = copy_line(ss.get(), &pos, len) + "\r\n";
-            lastonFile.Write(s1);
-          }
-        }
-        lastonFile.Write(log_line);
-        lastonFile.Close();
+  // add line to laston.txt. We keep 8 lines
+  if (session()->GetEffectiveSl() != 255) {
+    TextFile lastonFile(laston_txt_filename, "w");
+    if (lastonFile.IsOpen()) {
+      auto it = lines.begin();
+      // skip over any lines over 7
+      while (lines.size() - std::distance(lines.begin(), it) >= 8) {
+        it++;
       }
+      while (it != lines.end()) {
+        lastonFile.WriteLine(*it++);
+      }
+      lastonFile.Write(CreateLastOnLogLine(*pStatus.get()));
+      lastonFile.Close();
     }
   }
 }
