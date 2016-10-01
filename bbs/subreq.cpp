@@ -71,7 +71,7 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype) {
   nh.method = 0;
   // This is an alphanumeric sub type.
   nh.length = stype.size() + 1;
-  send_net(&nh, {}, stype, nullptr);
+  send_net(&nh, {}, stype, "");
 
   bout.nl();
   if (main_type == main_type_sub_add_req) {
