@@ -84,8 +84,11 @@ void Output::Color(int wwivColor) {
 
   SystemColor(c);
 
+  char buffer[81];
+  memset(buffer, 0, sizeof(buffer));
   makeansi(session()->user()->HasColor() ?
-           session()->user()->GetColor(0) : session()->user()->GetBWColor(0), endofline, false);
+           session()->user()->GetColor(0) : session()->user()->GetBWColor(0), buffer, false);
+  endofline_ = buffer;
 }
 
 void Output::ResetColors() {
@@ -102,9 +105,9 @@ void Output::GotoXY(int x, int y) {
 
 void Output::nl(int nNumLines) {
   for (int i = 0; i < nNumLines; i++) {
-    if (endofline[0]) {
-      bputs(endofline);
-      endofline[0] = '\0';
+    if (!endofline_.empty()) {
+      bputs(endofline_);
+      endofline_.clear();
     }
     bputs("\r\n");
     // TODO Change this to fire a notification to a Subject

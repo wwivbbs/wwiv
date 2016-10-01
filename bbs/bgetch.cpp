@@ -278,13 +278,13 @@ bool Output::RestoreCurrentLine(const SavedLine& line) {
   }
   bout.flush();
   bout.SystemColor(line.color);
-  strcpy(endofline, line.endofline.c_str());
+  endofline_ = line.endofline;
 
   return true;
 }
 
 SavedLine Output::SaveCurrentLine() {
-  return {current_line_, curatr, endofline};
+  return {current_line_, curatr, endofline_};
 }
 
 void Output::dump() {

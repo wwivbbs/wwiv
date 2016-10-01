@@ -167,9 +167,6 @@ public:
   int  GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
   void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
 
-  bool IsQuoting() const { return m_bQuoting; }
-  void SetQuoting(bool b) { m_bQuoting = b; }
-
   bool IsNewScanAtLogin() const {return m_bNewScanAtLogin; } 
   void SetNewScanAtLogin(bool b) { m_bNewScanAtLogin =  b; }
 

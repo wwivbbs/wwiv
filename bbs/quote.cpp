@@ -373,7 +373,6 @@ void get_quote(int fsed) {
   static int i, i1, i2, i3, rl;
   static int l1, l2;
 
-  session()->SetQuoting((fsed) ? true : false);
   if (quotes_ind == nullptr) {
     if (fsed) {
       bout << "\x0c";
@@ -384,7 +383,6 @@ void get_quote(int fsed) {
     if (fsed) {
       pausescr();
     }
-    session()->SetQuoting(false);
     return;
   }
   rl = 1;
@@ -484,7 +482,6 @@ void get_quote(int fsed) {
       }
     }
   } while (!hangup && rl && !i2);
-  session()->SetQuoting(false);
   charbufferpointer = 0;
   if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !hangup) {
     bquote = i1;

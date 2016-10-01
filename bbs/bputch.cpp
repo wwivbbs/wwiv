@@ -246,9 +246,9 @@ int Output::bputch(char c, bool use_buffer) {
   } else if (c == '|' && change_color != BPUTCH_LITERAL_PIPE_CODE) {
     change_color = BPUTCH_AT_MACRO_CODE;
     return 0;
-  } else if (c == SOFTRETURN && endofline[0]) {
-    displayed = bputs(endofline);
-    endofline[0] = '\0';
+  } else if (c == SOFTRETURN && !endofline_.empty()) {
+    displayed = bputs(endofline_);
+    endofline_.clear();
   } else if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
     change_color = BPUTCH_NO_CODE;
   }

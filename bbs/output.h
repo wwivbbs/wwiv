@@ -115,10 +115,12 @@ class Output : public std::ostream {
   bool RestoreCurrentLine(const SavedLine& line);
   SavedLine SaveCurrentLine();
   void dump();
+  void clear_endofline() { endofline_.clear(); }
 
 private:
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
+  std::string endofline_;
 };
 
 namespace wwiv {

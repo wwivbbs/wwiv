@@ -40,7 +40,6 @@
 static constexpr int MAX_FILENAME_LENGTH = 260;
 __EXTRN__ char  ansistr[81],
           charbuffer[255],
-          endofline[81],
           irt[81],
           irt_name[205],
           irt_sub[81],

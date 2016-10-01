@@ -113,7 +113,7 @@ void frequent_init() {
   charbufferpointer = 0;
   session()->localIO()->SetTopLine(0);
   session()->screenlinest = defscreenbottom + 1;
-  endofline[0] = '\0';
+  bout.clear_endofline();
   hangup = false;
   chatcall = false;
   session()->SetChatReason("");
