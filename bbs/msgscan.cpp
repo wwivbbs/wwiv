@@ -111,20 +111,19 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
 
   if (pszUserInput[0] == 'O' && (so() || lcs())) {
     irt_sub[0] = 0;
-    show_files("*.frm", syscfg.gfilesdir);
+    show_files("*.frm", session()->config()->gfilesdir().c_str());
     bout << "|#2Which form letter: ";
     char szFileName[MAX_PATH];
     input(szFileName, 8, true);
     if (!szFileName[0]) {
       return;
     }
-    char szFullPathName[MAX_PATH];
-    sprintf(szFullPathName, "%s%s.frm", syscfg.gfilesdir, szFileName);
-    if (!File::Exists(szFullPathName)) {
-      sprintf(szFullPathName, "%sform%s.msg", syscfg.gfilesdir, szFileName);
+    string full_pathname = StrCat(session()->config()->gfilesdir(), szFileName, ".frm");
+    if (!File::Exists(full_pathname)) {
+      full_pathname = StrCat(session()->config()->gfilesdir(), "form", szFileName, ".msg");
     }
-    if (File::Exists(szFullPathName)) {
-      LoadFileIntoWorkspace(szFullPathName, true);
+    if (File::Exists(full_pathname)) {
+      LoadFileIntoWorkspace(full_pathname, true);
       email(irt, get_post(nMessageNumber)->owneruser, get_post(nMessageNumber)->ownersys, false, get_post(nMessageNumber)->anony);
       grab_quotes(nullptr, nullptr);
     }

@@ -35,6 +35,7 @@
 using wwiv::bbs::InputMode;
 using wwiv::core::DataFile;
 using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 //
 // Local Function Prototypes
@@ -328,20 +329,19 @@ void swap_dirs(int dir1, int dir2) {
 }
 
 void insert_dir(int n) {
-  subconf_t nconv = static_cast<subconf_t>(n);
-
   if (n < 0 || n > size_int(session()->directories)) {
     return;
   }
+  subconf_t nconv = static_cast<subconf_t>(n);
 
   update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
   n = static_cast<int>(nconv);
 
-  directoryrec r;
+  directoryrec r = {};
   strcpy(r.name, "** NEW DIR **");
   strcpy(r.filename, "NONAME");
-  strcpy(r.path, syscfg.dloadsdir);
+  to_char_array(r.path, session()->config()->dloadsdir());
   r.dsl = 10;
   r.age = 0;
   r.maxfiles = 50;
@@ -427,7 +427,7 @@ void delete_dir(int n) {
 
 void dlboardedit() {
   int i, i1, i2, confchg = 0;
-  char s[81], s1[81], ch;
+  char s[81], ch;
   subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
@@ -532,10 +532,8 @@ void dlboardedit() {
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (yesno()) {
-            sprintf(s1, "%s%s.dir", syscfg.datadir, s);
-            File::Remove(s1);
-            sprintf(s1, "%s%s.ext", syscfg.datadir, s);
-            File::Remove(s1);
+            File::Remove(StrCat(session()->config()->datadir(), s, ".dir"));
+            File::Remove(StrCat(session()->config()->datadir(), s, ".ext"));
           }
         }
       }

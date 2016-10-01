@@ -47,8 +47,6 @@ public:
     }
 
     BbsHelper helper;
-private:
-  string gfiles_dir_;
 };
 
 TEST_F(StuffInTest, SimpleCase) {
@@ -56,7 +54,7 @@ TEST_F(StuffInTest, SimpleCase) {
 
     ostringstream os;
     os << "foo one " << t("chain.txt")
-      << " two " << syscfg.gfilesdir << COMMENT_TXT;
+      << " two " << helper.gfiles() << COMMENT_TXT;
     string expected = os.str();
 
     EXPECT_EQ(expected, actual);

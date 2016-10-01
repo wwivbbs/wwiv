@@ -41,8 +41,8 @@ template <typename C, typename I>
 static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::size_t max) {
   const auto begin = iter;
 
-  int count = 0;
-  while (stop.find(*iter) == std::end(stop) && ++count < 80 && iter != c.end()) {
+  std::size_t count = 0;
+  while (stop.find(*iter) == std::end(stop) && ++count < max && iter != c.end()) {
     iter++;
   }
   std::string result(begin, iter);

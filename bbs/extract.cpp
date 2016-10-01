@@ -318,7 +318,7 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
         to_char_array(s2, session()->config()->gfilesdir());
         break;
       case '3':
-        strcpy(s2, syscfg.datadir);
+        to_char_array(s2, session()->config()->datadir());
         break;
       case '4':
         to_char_array(s2, session()->temp_directory());

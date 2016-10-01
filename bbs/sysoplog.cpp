@@ -94,18 +94,13 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
   static string::size_type midline = 0;
   static char s_szLogFileName[MAX_PATH];
   
-  if (session()->config()->gfilesdir().empty() || !syscfg.gfilesdir) {
+  if (session()->config()->gfilesdir().empty()) {
     LOG(ERROR) << "gfilesdir empty, can't write to sysop log";
     return;
   }
 
-  if (&syscfg.gfilesdir[0] == nullptr) {
-    // If we try to write we will throw a NPE.
-    return;
-  }
-
   if (!s_szLogFileName[0]) {
-    strcpy(s_szLogFileName, syscfg.gfilesdir);
+    to_char_array(s_szLogFileName, session()->config()->gfilesdir());
     GetTemporaryInstanceLogFileName(s_szLogFileName + strlen(s_szLogFileName));
   }
   switch (cmd) {

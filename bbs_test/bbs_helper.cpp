@@ -76,7 +76,6 @@ void BbsHelper::SetUp() {
   unique_ptr<configrec> sysconfig = make_unique<configrec>();
   syscfg.datadir = const_cast<char*>(dir_data_.c_str());
   strcpy(sysconfig->datadir, dir_data_.c_str());
-  syscfg.gfilesdir = const_cast<char*>(dir_gfiles_.c_str());
   strcpy(sysconfig->gfilesdir, dir_gfiles_.c_str());
 
   session()->language_dir = dir_en_gfiles_;

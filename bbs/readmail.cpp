@@ -649,11 +649,12 @@ void readmail(int mode) {
       delme = 0;
       switch (ch) {
       case 'T':
+      {
         bout.nl();
-        sprintf(s1, "%s%s", session()->GetAttachmentDirectory().c_str(), fsr.filename);
+        string fn = StrCat(session()->GetAttachmentDirectory(), fsr.filename);
         bool sentt;
         bool abortt;
-        send_file(s1, &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
+        send_file(fn.c_str(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
           bout << "\r\nAttached file sent.\r\n";
           sysoplog() << StringPrintf("Downloaded %ldk of attached file %s.", (fsr.numbytes + 1023) / 1024, fsr.filename);
@@ -662,7 +663,7 @@ void readmail(int mode) {
           sysoplog() << StringPrintf("Tried to download attached file %s.", fsr.filename);
         }
         bout.nl();
-        break;
+      } break;
       case 'N':
         if (m.fromuser == 1) {
           add_netsubscriber(m.fromsys);
@@ -683,34 +684,35 @@ void readmail(int mode) {
         done = true;
         break;
       case 'O':
+      {
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
-          show_files("*.frm", syscfg.gfilesdir);
+          show_files("*.frm", session()->config()->gfilesdir().c_str());
           bout << "|#2Which form letter: ";
           input(s, 8, true);
           if (!s[0]) {
             break;
           }
-          sprintf(s1, "%s%s.frm", syscfg.gfilesdir, s);
-          if (!File::Exists(s1)) {
-            sprintf(s1, "%sform%s.msg", syscfg.gfilesdir, s);
+          string fn = StrCat(session()->config()->gfilesdir(), s, ".frm");
+          if (!File::Exists(fn)) {
+            fn = StrCat(session()->config()->gfilesdir(), "form", s, ".msg");
           }
-          if (File::Exists(s1)) {
-            LoadFileIntoWorkspace(s1, true);
-            num_mail =  static_cast<long>(session()->user()->GetNumFeedbackSent()) +
-                        static_cast<long>(session()->user()->GetNumEmailSent()) +
-                        static_cast<long>(session()->user()->GetNumNetEmailSent());
+          if (File::Exists(fn)) {
+            LoadFileIntoWorkspace(fn, true);
+            num_mail = static_cast<long>(session()->user()->GetNumFeedbackSent()) +
+              static_cast<long>(session()->user()->GetNumEmailSent()) +
+              static_cast<long>(session()->user()->GetNumNetEmailSent());
             grab_quotes(nullptr, nullptr);
             if (m.fromuser != 65535) {
               email(irt, m.fromuser, m.fromsys, false, m.anony);
             }
             num_mail1 = static_cast<long>(session()->user()->GetNumFeedbackSent()) +
-                        static_cast<long>(session()->user()->GetNumEmailSent()) +
-                        static_cast<long>(session()->user()->GetNumNetEmailSent());
+              static_cast<long>(session()->user()->GetNumEmailSent()) +
+              static_cast<long>(session()->user()->GetNumNetEmailSent());
             if (num_mail != num_mail1) {
               const string userandnet = session()->names()->UserName(session()->usernum, net_sysnum);
               if (m.fromsys != 0) {
                 sprintf(s, "%s: %s", session()->network_name(),
-                        userandnet.c_str());
+                  userandnet.c_str());
               } else {
                 strcpy(s, userandnet.c_str());
               }
@@ -736,7 +738,7 @@ void readmail(int mode) {
             i1 = 0;
           }
         }
-        break;
+      } break;
       case 'G':
         bout << "|#2Go to which (1-" << mw << ") ? |#0";
         input(s, 3);
@@ -931,7 +933,7 @@ void readmail(int mode) {
         input(s, 75);
         if (((i3 = strcspn(s, "@")) != (GetStringLength(s))) && (isalpha(s[i3 + 1]))) {
           if (strstr(s, "@32767") == nullptr) {
-            strlwr(s1);
+            strlwr(s);
             strcat(s, " @32767");
           }
         }

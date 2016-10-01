@@ -79,7 +79,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
       }
       const string filename = StringPrintf(
         "%s%s%c%s.%-3u",
-        syscfg.datadir,
+        session()->config()->datadir().c_str(),
         REGIONS_DIR,
         File::pathSeparatorChar,
         REGIONS_DIR,

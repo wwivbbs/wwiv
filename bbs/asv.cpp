@@ -239,9 +239,9 @@ void asv() {
         if (strlen(irt) > 60) {
           irt[60] = '\0';
         }
-        sprintf(s1, "%s%s", syscfg.gfilesdir, FORMASV_MSG);
-        if (File::Exists(s1)) {
-          LoadFileIntoWorkspace(s1, true, true);
+        string fn = StrCat(session()->config()->gfilesdir(), FORMASV_MSG);
+        if (File::Exists(fn)) {
+          LoadFileIntoWorkspace(fn, true, true);
           messagerec msg;
           msg.storage_type = 2;
           session()->net_email_name = StringPrintf("%s #1@%u", syscfg.sysopname, net_sysnum);
@@ -350,7 +350,7 @@ int printasv(const string& filename, int num, bool abort) {
   bout.nl();
 
   char szFileName[MAX_PATH], szFileName1[MAX_PATH];
-  sprintf(szFileName, "%s%s", syscfg.gfilesdir, filename.c_str());
+  sprintf(szFileName, "%s%s", session()->config()->gfilesdir().c_str(), filename.c_str());
   if (!strrchr(szFileName, '.')) {
     if (session()->user()->HasAnsi()) {
       if (session()->user()->HasColor()) {

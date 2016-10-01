@@ -1229,19 +1229,19 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     bout.bputs("Grabbing hello/news/goodbye text files...");
 
     if (qwk_cfg.hello[0]) {
-      sprintf(parem1, "%s%s", syscfg.gfilesdir, qwk_cfg.hello);
+      sprintf(parem1, "%s%s", session()->config()->gfilesdir().c_str(), qwk_cfg.hello);
       sprintf(parem2, "%s%s", QWK_DIRECTORY, qwk_cfg.hello);
       copyfile(parem1, parem2, 1);
     }
 
     if (qwk_cfg.news[0]) {
-      sprintf(parem1, "%s%s", syscfg.gfilesdir, qwk_cfg.news);
+      sprintf(parem1, "%s%s", session()->config()->gfilesdir().c_str(), qwk_cfg.news);
       sprintf(parem2, "%s%s", QWK_DIRECTORY, qwk_cfg.news);
       copyfile(parem1, parem2, 1);
     }
 
     if (qwk_cfg.bye[0]) {
-      sprintf(parem1, "%s%s", syscfg.gfilesdir, qwk_cfg.bye);
+      sprintf(parem1, "%s%s", session()->config()->gfilesdir().c_str(), qwk_cfg.bye);
       sprintf(parem2, "%s%s", QWK_DIRECTORY, qwk_cfg.bye);
       copyfile(parem1, parem2, 1);
     }

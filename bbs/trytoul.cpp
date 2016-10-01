@@ -392,7 +392,7 @@ int try_to_ul(const string& file_name) {
     return 0;  // success
   }
 
-  const string dest_dir = StringPrintf("%sTRY2UL", syscfg.dloadsdir);
+  const string dest_dir = StrCat(session()->config()->dloadsdir(), "TRY2UL");
   File::mkdirs(dest_dir);
   session()->CdHome();   // ensure we are in the correct directory
 
@@ -401,7 +401,7 @@ int try_to_ul(const string& file_name) {
   sysoplog() << StringPrintf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
 
   const string src = StrCat(session()->batch_directory(), file_name);
-  const string dest = StringPrintf("%sTRY2UL%c%s", syscfg.dloadsdir, File::pathSeparatorChar, file_name.c_str());
+  const string dest = StrCat(session()->config()->dloadsdir(), "TRY2UL", File::pathSeparatorChar, file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep

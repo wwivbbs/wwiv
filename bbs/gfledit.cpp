@@ -339,8 +339,7 @@ bool fill_sec(int sn) {
     bout << "Section full.\r\n";
   }
   if (chd) {
-    char file_name[MAX_PATH];
-    sprintf(file_name, "%s%s.gfl", syscfg.datadir, session()->gfilesec[sn].filename);
+    string file_name = StrCat(syscfg.datadir, session()->gfilesec[sn].filename, ".gfl");
     File gflFile(file_name);
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));

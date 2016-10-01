@@ -522,11 +522,8 @@ bool WSession::ReadConfig() {
   syscfg.newuserpw        = strdup(config_->config()->newuserpw);
   syscfg.systempw         = strdup(config_->config()->systempw);
 
-  syscfg.gfilesdir        = DuplicatePath(config_->config()->gfilesdir);
   syscfg.datadir          = DuplicatePath(config_->config()->datadir);
-  syscfg.dloadsdir        = DuplicatePath(config_->config()->dloadsdir);
-  syscfg.menudir          = DuplicatePath(config_->config()->menudir);
-
+  
   syscfg.systemname       = strdup(config_->config()->systemname);
   syscfg.systemphone      = strdup(config_->config()->systemphone);
   syscfg.sysopname        = strdup(config_->config()->sysopname);
@@ -566,10 +563,7 @@ bool WSession::ReadConfig() {
 
   syscfg.wwiv_reg_number  = config_->config()->wwiv_reg_number;
 
-  make_abs_path(syscfg.gfilesdir);
   make_abs_path(syscfg.datadir);
-  make_abs_path(syscfg.dloadsdir);
-  make_abs_path(syscfg.menudir);
 
   char temp_dir[MAX_PATH];
   to_char_array(temp_dir, temp_directory());

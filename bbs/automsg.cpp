@@ -153,7 +153,7 @@ char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
  */
 void do_automessage() {
   string automessageLockFile = StrCat(session()->config()->gfilesdir(), LOCKAUTO_MSG);
-  string autoMessageFile = StrCat(syscfg.gfilesdir, AUTO_MSG);
+  string autoMessageFile = StrCat(session()->config()->gfilesdir(), AUTO_MSG);
 
   // initally show the auto message
   read_automessage();

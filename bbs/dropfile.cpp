@@ -420,20 +420,20 @@ void CreateDoorSysDropFile() {
     szDate[9] = '\0';
     string gfilesdir = session()->config()->gfilesdir();
     sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n",
-            szDate,
-            syscfg.datadir,
-            gfilesdir.c_str(),
-            syscfg.sysopname,
-            session()->user()->GetName(),
-            "00:01",                        // event time
-            'Y',
-            (okansi()) ? 'N' : 'Y',           // ansi ok but graphics turned off
-            'N',                            // record-locking
-            session()->user()->GetColor(0),
-            session()->user()->GetTimeBankMinutes(),
-            session()->user()->GetLastOn(),                // last n-scan date
-            times(),
-            "00:01");                       // time last call
+        szDate,
+        session()->config()->datadir().c_str(),
+        gfilesdir.c_str(),
+        syscfg.sysopname,
+        session()->user()->GetName(),
+        "00:01",                        // event time
+        'Y',
+        (okansi()) ? 'N' : 'Y',           // ansi ok but graphics turned off
+        'N',                            // record-locking
+        session()->user()->GetColor(0),
+        session()->user()->GetTimeBankMinutes(),
+        session()->user()->GetLastOn(),                // last n-scan date
+        times(),
+        "00:01");                       // time last call
     file.WriteFormatted(szLine);
     sprintf(szLine, "%u\n%u\n%ld\n%ld\n%s\n%u\n%d\n",
             99,                             // max files dl/day
@@ -493,7 +493,7 @@ const string create_chain_file() {
     string gfilesdir = session()->config()->gfilesdir();
     file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n",
       cs(), so(), okansi(), incom, nsl(), 
-      gfilesdir.c_str(), syscfg.datadir, szTemporaryLogFileName);
+      gfilesdir.c_str(), session()->config()->datadir().c_str(), szTemporaryLogFileName);
     if (session()->using_modem) {
       file.WriteFormatted("%d\n", modem_speed);
     } else {

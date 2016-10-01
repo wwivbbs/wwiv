@@ -89,7 +89,7 @@ void Config::update_paths() {
   msgsdir_ = to_abs_path(config_->msgsdir);
   gfilesdir_ = to_abs_path(config_->gfilesdir);
   menudir_ = to_abs_path(config_->menudir);
-
+  dloadsdir_ = to_abs_path(config_->dloadsdir);
 }
 
 }

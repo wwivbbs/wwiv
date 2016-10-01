@@ -44,6 +44,7 @@ public:
   const std::string msgsdir() const { return msgsdir_; }
   const std::string gfilesdir() const { return gfilesdir_; }
   const std::string menudir() const { return menudir_; }
+  const std::string dloadsdir() const { return dloadsdir_; }
 
 private:
   std::string to_abs_path(const char* dir);
@@ -60,6 +61,7 @@ private:
   std::string msgsdir_;
   std::string gfilesdir_;
   std::string menudir_;
+  std::string dloadsdir_;
 };
 
 }  // namespace sdk
