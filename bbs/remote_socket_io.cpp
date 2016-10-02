@@ -149,6 +149,14 @@ bool RemoteSocketIO::open() {
       write(reinterpret_cast<char*>(s), 3, true);
     }
     { 
+      unsigned char s[3] = {
+          RemoteSocketIO::TELNET_OPTION_IAC,
+          RemoteSocketIO::TELNET_OPTION_WILL,
+          RemoteSocketIO::TELNET_OPTION_SUPPRESSS_GA
+      };
+      write(reinterpret_cast<char*>(s), 3, true);
+    }
+    {
       unsigned char s[3] = { 
           RemoteSocketIO::TELNET_OPTION_IAC,
           RemoteSocketIO::TELNET_OPTION_DONT,
