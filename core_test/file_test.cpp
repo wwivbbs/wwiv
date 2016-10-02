@@ -48,9 +48,38 @@ TEST(FileTest, Exists) {
     string tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
     ASSERT_TRUE(file.Mkdir("newdir"));
-    File dne(tmp, "newdir");
-    ASSERT_TRUE(dne.Exists()) << dne.full_pathname(); 
+    File f(tmp, "newdir");
+    ASSERT_TRUE(f.Exists()) << f.full_pathname();
 }
+
+TEST(FileTest, ExistsWildCard) {
+  FileHelper helper;
+  const string path = helper.CreateTempFile("msg00000.001", "msg00000.001");
+  ASSERT_TRUE(File::Exists(path));
+
+  string wildcard_path = StrCat(helper.TempDir(), File::pathSeparatorString, "msg*");
+  ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
+
+  wildcard_path = StrCat(helper.TempDir(), File::pathSeparatorString, "msg*.*");
+  EXPECT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
+
+  wildcard_path = StrCat(helper.TempDir(), File::pathSeparatorString, "msg*.???");
+  EXPECT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
+}
+
+TEST(FileTest, ExistsWildCard_Extension) {
+  FileHelper helper;
+  const string path = helper.CreateTempFile("msg00000.001", "msg00000.001");
+  ASSERT_TRUE(File::Exists(path));
+
+  string wildcard_path = StrCat(helper.TempDir(), File::pathSeparatorString, "msg*.001");
+  ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
+
+  wildcard_path = StrCat(helper.TempDir(), File::pathSeparatorString, "msg*.??1");
+  ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
+}
+
+
 
 TEST(FileTest, Exists_Static) {
     FileHelper file;

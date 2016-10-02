@@ -60,7 +60,7 @@ static char *getdir_from_file(const char *pszFileName) {
 }
 
 static int fname_ok(const struct dirent *ent) {
-  char f[13], *ptr = NULL, s3[13];
+  char f[13], s3[13];
   // kinda a hack but there's no way to pass parameters into this easily.
   const char *s1 = filespec_ptr;
   const char *s2 = ent->d_name;
@@ -87,7 +87,8 @@ static int fname_ok(const struct dirent *ent) {
     }
 
     strcpy(s3, s2);
-    if (strlen(s3) < 12 && (ptr = strchr(s3, '.')) != NULL) {
+    char* ptr = strchr(s3, '.');
+    if (strlen(s3) <= 12 && ptr != NULL) {
       *ptr = '\0';
       strcpy(f, s3);
       size_t i = strlen(f);

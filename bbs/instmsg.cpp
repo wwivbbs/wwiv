@@ -63,7 +63,7 @@ bool is_chat_invis() {
 }
 
 static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
-  const string fn = StringPrintf("TMSG%3.3u.%3.3d", session()->instance_number(), ih->dest_inst);
+  const string fn = StringPrintf("tmsg%3.3u.%3.3d", session()->instance_number(), ih->dest_inst);
   File file(session()->config()->datadir(), fn);
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
     file.Seek(0L, File::seekEnd);
@@ -77,7 +77,7 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
     file.Close();
 
     for (int i = 0; i < 1000; i++) {
-      string dest = StringPrintf("%sMSG%5.5d.%3.3d", syscfg.datadir, i, ih->dest_inst);
+      string dest = StringPrintf("%smsg%5.5d.%3.3d", syscfg.datadir, i, ih->dest_inst);
       if (!File::Rename(file.full_pathname(), dest) || (errno != EACCES)) {
         break;
       }
@@ -209,7 +209,7 @@ void process_inst_msgs() {
   last_iia = timer1();
   int oiia = setiia(0);
 
-  string fndspec = StringPrintf("%sMSG*.%3.3u", session()->config()->datadir().c_str(), session()->instance_number());
+  string fndspec = StringPrintf("%smsg*.%3.3u", session()->config()->datadir().c_str(), session()->instance_number());
   WFindFile fnd;
   bool found = fnd.open(fndspec, 0);
   while (found && !hangup) {
@@ -458,7 +458,7 @@ bool inst_msg_waiting() {
     return false;
   }
 
-  const string filename = StringPrintf("MSG*.%3.3u", session()->instance_number());
+  const string filename = StringPrintf("msg*.%3.3u", session()->instance_number());
   if (!File::ExistsWildcard(StrCat(session()->config()->datadir(), filename))) {
     last_iia = l;
     return false;

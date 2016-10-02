@@ -169,7 +169,7 @@ bool File::Open(int nFileMode, int nShareMode) {
 
   if (File::IsFileHandleValid(handle_)) {
     int mode = (nShareMode == shareDenyReadWrite || nShareMode == shareDenyWrite) ? LOCK_EX : LOCK_SH;
-    flock(handle_, (nShareMode & shareDenyWrite) ? mode);
+    flock(handle_, mode);
   }
 
   if (handle_ == File::invalid_handle) {
