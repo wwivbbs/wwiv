@@ -103,13 +103,9 @@ using namespace wwiv::strings;
 extern time_t last_time_c;
 Output bout;
 
-
-WSession::WSession(WApplication* app, LocalIO* localIO) : application_(app), 
-    local_io_(localIO),
-    oklevel_(exitLevelOK),
-    errorlevel_(exitLevelNotOK),
-    shutdown_status_(shutdownNone),
-    batch_() {
+WSession::WSession(WApplication* app, LocalIO* localIO)
+    : application_(app), local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), shutdown_status_(
+        shutdownNone), batch_() {
   ::bout.SetLocalIO(localIO);
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
@@ -151,43 +147,43 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
 
 void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
-  case CommunicationType::SSH:
-  {
+  case CommunicationType::SSH: {
     const File key_file(config_->datadir(), "wwiv.key");
     const string system_password = config()->config()->systempw;
     wwiv::bbs::Key key(key_file.full_pathname(), system_password);
     if (!key_file.Exists()) {
-      LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
+      LOG(ERROR)<< "Key file doesn't exist. Will try to create it.";
       if (!key.Create()) {
         LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
         type = CommunicationType::TELNET;
       }
     }
     if (!key.Open()) {
-      LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?" << endl;
+      LOG(ERROR)<< "Unable to open key file!. Did you change your sytem pw?" << endl;
       LOG(ERROR) << "If so, delete " << key_file.full_pathname();
       LOG(ERROR) << "SSH will be disabled!";
       type = CommunicationType::TELNET;
     }
     comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
-  } break;
-  case CommunicationType::TELNET:
-  {
+  }
+    break;
+  case CommunicationType::TELNET: {
     comm_.reset(new RemoteSocketIO(nHandle, true));
-  } break;
-  case CommunicationType::UNIX:
-  {
+  }
+    break;
+  case CommunicationType::UNIX: {
 #ifdef __unix__
-  comm_.reset(new WIOUnix());
+    comm_.reset(new WIOUnix());
 #else
-  // TODO(rushfan): Should we warn here?
-  comm_.reset(new NullRemoteIO());
-#endif
-  } break;
-  case CommunicationType::NONE:
-  {
+    // TODO(rushfan): Should we warn here?
     comm_.reset(new NullRemoteIO());
-  } break;
+#endif
+  }
+    break;
+  case CommunicationType::NONE: {
+    comm_.reset(new NullRemoteIO());
+  }
+    break;
   }
   bout.SetComm(comm_.get());
 }
@@ -196,8 +192,7 @@ bool WSession::ReadCurrentUser(int user_number) {
   bool result = users()->ReadUser(&thisuser_, user_number);
 
   // Update all other session variables that are dependent.
-  screenlinest = (using_modem) ? 
-      user()->GetScreenLines() : defscreenbottom + 1;
+  screenlinest = (using_modem) ? user()->GetScreenLines() : defscreenbottom + 1;
   return result;
 }
 
@@ -242,15 +237,14 @@ void WSession::tleft(bool check_for_timeout) {
       localIO()->PutsXY(18, 3, tleft_display);
     }
     break;
-  case LocalIO::topdataUser:
-  {
+  case LocalIO::topdataUser: {
     if (IsUserOnline()) {
       localIO()->PutsXY(18, 3, tleft_display);
     } else {
       localIO()->PrintfXY(18, 3, user()->GetPassword());
     }
   }
-  break;
+    break;
   }
   localIO()->SetTopLine(ctl);
   curatr = cc;
@@ -272,7 +266,7 @@ void WSession::handle_sysop_key(uint8_t key) {
       set_autoval(key - 104);
     } else {
       switch (key) {
-      case F1:                          /* F1 */
+      case F1: /* F1 */
         OnlineUserEditor();
         break;
       case SF1:
@@ -280,32 +274,32 @@ void WSession::handle_sysop_key(uint8_t key) {
         // Nothing.
         UpdateTopScreen();
         break;
-      case CF1:                          /* Ctrl-F1 */
+      case CF1: /* Ctrl-F1 */
         // Used to be shutdown bbs in 3 minutes.
         break;
-      case F2:                          /* F2 */
+      case F2: /* F2 */
         topdata++;
         if (topdata > LocalIO::topdataUser) {
           topdata = LocalIO::topdataNone;
         }
         UpdateTopScreen();
         break;
-      case F3:                          /* F3 */
+      case F3: /* F3 */
         if (using_modem) {
           incom = !incom;
           bout.dump();
           tleft(false);
         }
         break;
-      case F4:                          /* F4 */
+      case F4: /* F4 */
         chatcall = false;
         UpdateTopScreen();
         break;
-      case F5:                          /* F5 */
+      case F5: /* F5 */
         hangup = true;
         remoteIO()->dtr(false);
         break;
-      case SF5:                          /* Shift-F5 */
+      case SF5: /* Shift-F5 */
         i1 = (rand() % 20) + 10;
         for (i = 0; i < i1; i++) {
           bout.bputch(static_cast<unsigned char>(rand() % 256));
@@ -313,25 +307,23 @@ void WSession::handle_sysop_key(uint8_t key) {
         hangup = true;
         remoteIO()->dtr(false);
         break;
-      case CF5:                          /* Ctrl-F5 */
+      case CF5: /* Ctrl-F5 */
         bout << "\r\nCall back later when you are there.\r\n\n";
         hangup = true;
         remoteIO()->dtr(false);
         break;
-      case F6:                          /* F6 - was Toggle Sysop Alert*/
+      case F6: /* F6 - was Toggle Sysop Alert*/
         tleft(false);
         break;
-      case F7:                          /* F7 */
-        user()->SetExtraTime(user()->GetExtraTime() -
-          static_cast<float>(5 * SECONDS_PER_MINUTE));
+      case F7: /* F7 */
+        user()->SetExtraTime(user()->GetExtraTime() - static_cast<float>(5 * SECONDS_PER_MINUTE));
         tleft(false);
         break;
-      case F8:                          /* F8 */
-        user()->SetExtraTime(user()->GetExtraTime() +
-          static_cast<float>(5 * SECONDS_PER_MINUTE));
+      case F8: /* F8 */
+        user()->SetExtraTime(user()->GetExtraTime() + static_cast<float>(5 * SECONDS_PER_MINUTE));
         tleft(false);
         break;
-      case F9:                          /* F9 */
+      case F9: /* F9 */
         if (user()->GetSl() != 255) {
           if (GetEffectiveSl() != 255) {
             SetEffectiveSl(255);
@@ -342,7 +334,7 @@ void WSession::handle_sysop_key(uint8_t key) {
           tleft(false);
         }
         break;
-      case F10:                          /* F10 */
+      case F10: /* F10 */
         if (chatting == 0) {
           if (syscfg.sysconfig & sysconfig_2_way) {
             chat1("", true);
@@ -353,14 +345,14 @@ void WSession::handle_sysop_key(uint8_t key) {
           chatting = 0;
         }
         break;
-      case CF10:                         /* Ctrl-F10 */
+      case CF10: /* Ctrl-F10 */
         if (chatting == 0) {
           chat1("", false);
         } else {
           chatting = 0;
         }
         break;
-      case HOME:                          /* HOME */
+      case HOME: /* HOME */
         if (chatting == 1) {
           chat_file = !chat_file;
         }
@@ -422,7 +414,7 @@ void WSession::UpdateTopScreen() {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
     string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(),
-      username_num.c_str());
+        username_num.c_str());
     ::SetConsoleTitle(title.c_str());
   }
 #endif // _WIN32
@@ -459,36 +451,28 @@ void WSession::UpdateTopScreen() {
   switch (topdata) {
   case LocalIO::topdataNone:
     break;
-  case LocalIO::topdataSystem:
-  {
+  case LocalIO::topdataSystem: {
     localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate());
 
     localIO()->PrintfXY(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
-      pStatus->GetNumUsers(), pStatus->GetCallerNumber(),
-      pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
+        pStatus->GetNumUsers(), pStatus->GetCallerNumber(), pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
 
     const string username_num = names()->UserName(usernum);
-    localIO()->PrintfXY(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-      username_num.c_str(),
-      pStatus->GetMinutesActiveToday(),
-      static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
-      pStatus->GetNumEmailSentToday());
+    localIO()->PrintfXY(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ", username_num.c_str(),
+        pStatus->GetMinutesActiveToday(), static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
+        pStatus->GetNumEmailSentToday());
 
-    User sysop{};
+    User sysop { };
     int feedback_waiting = 0;
     if (session()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PrintfXY(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-      user()->GetSl(),
-      user()->GetDsl(),
-      feedback_waiting,
-      pStatus->GetNumUploadsToday(),
-      pStatus->GetNumFeedbackSentToday());
+        user()->GetSl(), user()->GetDsl(), feedback_waiting, pStatus->GetNumUploadsToday(),
+        pStatus->GetNumFeedbackSentToday());
   }
-  break;
-  case LocalIO::topdataUser:
-  {
+    break;
+  case LocalIO::topdataUser: {
     strcpy(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
       if (user()->HasArFlag(1 << i)) {
@@ -517,14 +501,9 @@ void WSession::UpdateTopScreen() {
     }
 
     const string username_num = names()->UserName(usernum);
-    localIO()->PrintfXYA(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
-      username_num.c_str(),
-      user()->GetNumMailWaiting(),
-      user()->GetFilesUploaded(),
-      user()->GetUploadK(),
-      user()->GetSl(),
-      user()->GetNumLogons(),
-      user()->GetNumMessagesPosted());
+    localIO()->PrintfXYA(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num.c_str(),
+        user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->GetUploadK(), user()->GetSl(),
+        user()->GetNumLogons(), user()->GetNumMessagesPosted());
 
     char szCallSignOrRegNum[41];
     if (user()->GetWWIVRegNumber()) {
@@ -532,36 +511,27 @@ void WSession::UpdateTopScreen() {
     } else {
       strcpy(szCallSignOrRegNum, user()->GetCallsign());
     }
-    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u",
-      user()->GetRealName(),
-      user()->GetVoicePhoneNumber(),
-      szCallSignOrRegNum,
-      user()->GetFilesDownloaded(),
-      user()->GetDownloadK(),
-      user()->GetDsl(),
-      static_cast<long>((user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE),
-      user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
+    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u", user()->GetRealName(),
+        user()->GetVoicePhoneNumber(), szCallSignOrRegNum, user()->GetFilesDownloaded(), user()->GetDownloadK(),
+        user()->GetDsl(), static_cast<long>((user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE),
+        user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
 
-    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u",
-      ar, dar, restrict, user()->GetExempt(),
-      lo, user()->GetNumFeedbackSent());
+    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict, user()->GetExempt(), lo,
+        user()->GetNumFeedbackSent());
 
-    User sysop{};
+    User sysop { };
     int feedback_waiting = 0;
     if (session()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
-      user()->GetNote(),
-      user()->GetGender(),
-      user()->GetAge(),
-      ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
+    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", user()->GetNote(), user()->GetGender(),
+        user()->GetAge(), ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
 
     if (chatcall) {
       localIO()->PutsXY(0, 4, chat_reason_);
     }
   }
-  break;
+    break;
   }
   if (nOldTopLine != 0) {
     localIO()->PutsXY(0, nOldTopLine - 1, sl);
@@ -591,7 +561,6 @@ const std::string WSession::network_directory() const {
   }
   return std::string(net_networks[m_nNetworkNumber].dir);
 }
-
 
 void WSession::GetCaller() {
   wfc_init();
@@ -626,8 +595,7 @@ void WSession::GetCaller() {
 
   okskey = true;
   localIO()->Cls();
-  localIO()->Printf("Logging on at %s ...\r\n",
-    GetCurrentSpeed().c_str());
+  localIO()->Printf("Logging on at %s ...\r\n", GetCurrentSpeed().c_str());
   SetWfcStatus(0);
 }
 
@@ -668,7 +636,7 @@ int WSession::doWFCEvents() {
     bool node_supports_callout = HasConfigFlag(OP_FLAGS_NET_CALLOUT);
     // try to check for packets to send every minute.
     time_t diff_time = current_time - last_time_c;
-    bool time_to_call = diff_time > 60; // was 1200
+    bool time_to_call = diff_time > 60;  // was 1200
     if (!any && time_to_call && net_sysnum && node_supports_callout) {
       // also try this.
       wfc_cls();
@@ -699,13 +667,12 @@ int WSession::doWFCEvents() {
       resetnsp();
       io->SetCursor(LocalIO::cursorNormal);
       switch (ch) {
-        // Local Logon
+      // Local Logon
       case SPACE:
         lokb = this->LocalLogon();
         break;
         // Show WFC Menu
-      case '?':
-      {
+      case '?': {
         string helpFileName = SWFC_NOEXT;
         char chHelp = ESC;
         do {
@@ -716,8 +683,8 @@ int WSession::doWFCEvents() {
           helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
         } while (chHelp != SPACE && chHelp != ESC);
       }
-      break;
-      // Force Network Callout
+        break;
+        // Force Network Callout
       case '/':
         if (net_sysnum) {
           force_callout(0);
@@ -731,12 +698,12 @@ int WSession::doWFCEvents() {
         break;
 
         // Fast Net Callout from WFC
-      case '*':
-      {
-        io->Cls(); // added   - 02/23/14 - dsn
-        do_callout(32767); // changed - 02/23/14 - dsn - changed 1160 to 32767
-      } break;
-      // Run MenuEditor
+      case '*': {
+        io->Cls();  // added   - 02/23/14 - dsn
+        do_callout(32767);  // changed - 02/23/14 - dsn - changed 1160 to 32767
+      }
+        break;
+        // Run MenuEditor
       case '!':
         EditMenus();
         break;
@@ -749,11 +716,10 @@ int WSession::doWFCEvents() {
           switch (ch) {
           case '0':
           case '1':
-          case '2':
-          {
+          case '2': {
             print_local_file(StringPrintf("netdat%c.log", ch));
           }
-          break;
+            break;
           }
         }
         break;
@@ -813,8 +779,7 @@ int WSession::doWFCEvents() {
         eventedit();
         break;
         // Send Internet Mail
-      case 'I':
-      {
+      case 'I': {
         wfc_cls();
         usernum = 1;
         SetUserOnline(true);
@@ -824,63 +789,63 @@ int WSession::doWFCEvents() {
         WriteCurrentUser(1);
         cleanup_net();
       }
-      break;
-      // ConfEdit
+        break;
+        // ConfEdit
       case 'J':
         wfc_cls();
         edit_confs();
         break;
         // SendMailFile
       case 'K': {
-          wfc_cls();
-          usernum = 1;
-          bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
-          string buffer = input(50);
-          LoadFileIntoWorkspace(buffer, false);
-          send_email();
-          WriteCurrentUser(1);
-          cleanup_net();
-        }
+        wfc_cls();
+        usernum = 1;
+        bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
+        string buffer = input(50);
+        LoadFileIntoWorkspace(buffer, false);
+        send_email();
+        WriteCurrentUser(1);
+        cleanup_net();
+      }
         break;
         // Print Log Daily logs
       case 'L': {
-          wfc_cls();
-          unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
-          print_local_file(pStatus->GetLogFileName(0));
-        }
+        wfc_cls();
+        unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+        print_local_file(pStatus->GetLogFileName(0));
+      }
         break;
         // Read User Mail
       case 'M': {
-          wfc_cls();
-          usernum = 1;
-          readmail(0);
-          WriteCurrentUser(1);
-          cleanup_net();
-        }
+        wfc_cls();
+        usernum = 1;
+        readmail(0);
+        WriteCurrentUser(1);
+        cleanup_net();
+      }
         break;
         // Print Net Log
       case 'N': {
-          wfc_cls();
-          print_local_file("net.log");
-        }
+        wfc_cls();
+        print_local_file("net.log");
+      }
         break;
         // EditTextFile
       case 'O': {
-          wfc_cls();
-          write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-          bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
-          const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
-          string newFileName = Input1(current_dir_slash, 50, true, InputMode::UPPER);
-          if (!newFileName.empty()) {
-            external_text_edit(newFileName, "", 500, ".", MSGED_FLAG_NO_TAGLINE);
-          }
+        wfc_cls();
+        write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
+        bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
+        const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
+        string newFileName = Input1(current_dir_slash, 50, true, InputMode::UPPER);
+        if (!newFileName.empty()) {
+          external_text_edit(newFileName, "", 500, ".", MSGED_FLAG_NO_TAGLINE);
         }
+      }
         break;
         // Print Network Pending list
-      case 'P':{
-          wfc_cls();
-          print_pending_list();
-        }
+      case 'P': {
+        wfc_cls();
+        print_pending_list();
+      }
         break;
         // Quit BBS
       case 'Q':
@@ -901,8 +866,8 @@ int WSession::doWFCEvents() {
         // UserEdit
       case 'T':
         if (syscfg.terminal_command.empty()) {
-          bout << "Terminal Command not specified. " << wwiv::endl 
-               << " Please set TERMINAL_CMD in WWIV.INI" << wwiv::endl;
+          bout << "Terminal Command not specified. " << wwiv::endl << " Please set TERMINAL_CMD in WWIV.INI"
+              << wwiv::endl;
           bout.getkey();
           break;
         }
@@ -912,37 +877,37 @@ int WSession::doWFCEvents() {
         write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
         uedit(1, UEDIT_NONE);
         break;
-      // InitVotes
-      case 'V':
-      {
+        // InitVotes
+      case 'V': {
         wfc_cls();
         write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
         ivotes();
-      } break;
-      // Edit Gfile
+      }
+        break;
+        // Edit Gfile
       case 'W': {
-          wfc_cls();
-          write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-          bout << "|#1Edit " << session()->config()->gfilesdir() << "<filename>: \r\n";
-          text_edit();
-        }
+        wfc_cls();
+        write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
+        bout << "|#1Edit " << session()->config()->gfilesdir() << "<filename>: \r\n";
+        text_edit();
+      }
         break;
         // Print Environment
       case 'X':
         break;
         // Print Yesterday's Log
       case 'Y': {
-          wfc_cls();
-          unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
-          print_local_file(pStatus->GetLogFileName(1));
-        }
+        wfc_cls();
+        unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+        print_local_file(pStatus->GetLogFileName(1));
+      }
         break;
         // Print Activity (Z) Log
       case 'Z': {
-          zlog();
-          bout.nl();
-          bout.getkey();
-        }
+        zlog();
+        bout.nl();
+        bout.getkey();
+      }
         break;
       }
       wfc_cls();  // moved from after getch
@@ -1076,7 +1041,6 @@ void WSession::GotCaller(unsigned int ms, unsigned long cs) {
   }
 }
 
-
 void WSession::CdHome() {
   File::set_current_directory(current_dir_);
 }
@@ -1103,14 +1067,14 @@ void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
       // in the logs that don't correspond to sessions every being created (network probers, etc).
       sysoplog(false);
       sysoplog(false) << "WWIV " << wwiv_version << ", inst " << instance_number() << ", taken down at " << times()
-        << " on " << fulldate() << " with exit code " << exit_level << ".";
+          << " on " << fulldate() << " with exit code " << exit_level << ".";
       sysoplog(false);
     }
     catsl();
     write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
     clog << "\r\n";
     clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << exit_level
-      << endl << endl;
+        << endl << endl;
   }
 
   // We just delete the session class, not the application class
@@ -1121,30 +1085,23 @@ void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 }
 
 void WSession::ShowUsage() {
-  cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" <<
-    "Usage:\r\n\n" <<
-    "bbs -I<inst> [options] \r\n\n" <<
-    "Options:\r\n\n" <<
-    "  -?         - Display command line options (This screen)\r\n\n" <<
-    "  -A<level>  - Specify the Error Exit Level\r\n" <<
-    "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n" <<
-    "  -E         - Load for beginday event only\r\n" <<
-    "  -H<handle> - Socket handle\r\n" <<
-    "  -I<inst>   - Designate instance number <inst>\r\n" <<
-    "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n" <<
-    "  -M         - Don't access modem at all\r\n" <<
-    "  -N<inst>   - Designate instance number <inst>\r\n" <<
-    "  -Q<level>  - Normal exit level\r\n" <<
-    "  -R<min>    - Specify max # minutes until event\r\n" <<
-    "  -S<rate>   - Used only with -B, indicates com port speed\r\n" <<
-    "  -U<user#>  - Pass usernumber <user#> online\r\n" <<
-    "  -V         - Display WWIV Version\r\n" <<
-    "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
+  cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" << "Usage:\r\n\n"
+      << "bbs -I<inst> [options] \r\n\n" << "Options:\r\n\n"
+      << "  -?         - Display command line options (This screen)\r\n\n"
+      << "  -A<level>  - Specify the Error Exit Level\r\n"
+      << "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n"
+      << "  -E         - Load for beginday event only\r\n" << "  -H<handle> - Socket handle\r\n"
+      << "  -I<inst>   - Designate instance number <inst>\r\n"
+      << "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n"
+      << "  -M         - Don't access modem at all\r\n" << "  -N<inst>   - Designate instance number <inst>\r\n"
+      << "  -Q<level>  - Normal exit level\r\n" << "  -R<min>    - Specify max # minutes until event\r\n"
+      << "  -S<rate>   - Used only with -B, indicates com port speed\r\n"
+      << "  -U<user#>  - Pass usernumber <user#> online\r\n" << "  -V         - Display WWIV Version\r\n"
+      << "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
 #if defined (_WIN32)
-    "  -XS        - Someone already logged on via SSH (socket handle)\r\n" <<
+      "  -XS        - Someone already logged on via SSH (socket handle)\r\n" <<
 #endif // _WIN32
-    "  -Z         - Do not hang up on user when at log off\r\n"
-    << endl;
+      "  -Z         - Do not hang up on user when at log off\r\n" << endl;
 }
 
 int WSession::Run(int argc, char *argv[]) {
@@ -1166,7 +1123,7 @@ int WSession::Run(int argc, char *argv[]) {
   const std::string bbs_env = environment_variable("BBS");
   if (!bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
-      LOG(ERROR) << "You are already in the BBS, type 'EXIT' instead.\n\n";
+      LOG(ERROR)<< "You are already in the BBS, type 'EXIT' instead.\n\n";
       session()->ExitBBSImpl(255, false);
     }
   }
@@ -1181,8 +1138,7 @@ int WSession::Run(int argc, char *argv[]) {
       string argument = argumentRaw.substr(2);
       char ch = wwiv::UpperCase<char>(argumentRaw[1]);
       switch (ch) {
-      case 'B':
-      {
+      case 'B': {
         // I think this roundtrip here is just to ensure argument is really a number.
         ui = static_cast<unsigned int>(atol(argument.c_str()));
         const string current_speed_string = std::to_string(ui);
@@ -1192,7 +1148,7 @@ int WSession::Run(int argc, char *argv[]) {
         }
         user_already_on_ = true;
       }
-      break;
+        break;
       case 'C':
         break;
       case 'E':
@@ -1214,23 +1170,22 @@ int WSession::Run(int argc, char *argv[]) {
         hSockOrComm = stoi(argument);
         break;
       case 'I':
-      case 'N':
-      {
+      case 'M':
+        ok_modem_stuff = false;
+        break;
+      case 'N': {
         instance_number_ = stoi(argument);
         if (instance_number_ <= 0 || instance_number_ > 999) {
           clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_ << endl;
           session()->ExitBBSImpl(errorlevel_, false);
         }
       }
-      break;
-      case 'M':
-        ok_modem_stuff = false;
         break;
       case 'P':
-	      localIO()->Cls();
-	      localIO()->Printf("Waiting for keypress...");
-	      (void)getchar();
-	      break;
+        localIO()->Cls();
+        localIO()->Printf("Waiting for keypress...");
+        (void) getchar();
+        break;
       case 'R':
         num_min = stoi(argument);
         break;
@@ -1245,11 +1200,9 @@ int WSession::Run(int argc, char *argv[]) {
         cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;
         ExitBBSImpl(0, false);
         break;
-      case 'X':
-      {
+      case 'X': {
         char argument2Char = wwiv::UpperCase<char>(argument.at(0));
-        if (argument2Char == 'T' || argument2Char == 'S'
-        		|| argument2Char == 'U') {
+        if (argument2Char == 'T' || argument2Char == 'S' || argument2Char == 'U') {
           // This more of a hack to make sure the WWIV
           // Server's -Bxxx parameter doesn't hose us.
           SetCurrentSpeed("115200");
@@ -1270,14 +1223,14 @@ int WSession::Run(int argc, char *argv[]) {
             type = CommunicationType::SSH;
           } else if (argument2Char == 'U') {
             session()->reset_local_io(new NullLocalIO());
-          	type = CommunicationType::UNIX;
+            type = CommunicationType::UNIX;
           }
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
           ExitBBSImpl(errorlevel_, false);
         }
       }
-      break;
+        break;
       case 'Z':
         no_hangup = true;
         break;
@@ -1285,12 +1238,11 @@ int WSession::Run(int argc, char *argv[]) {
         // TODO Add handling for Socket and Comm handle here
         //
         //
-      case 'K':
-      {
-    	if (!ReadConfig()) {
-    		std::clog << "Unable to load CONFIG.DAT";
-    	    AbortBBS(true);
-    	}
+      case 'K': {
+        if (!ReadConfig()) {
+          std::clog << "Unable to load CONFIG.DAT";
+          AbortBBS(true);
+        }
         this->InitializeBBS();
         localIO()->Cls();
         if ((i + 1) < argc) {
@@ -1312,166 +1264,169 @@ int WSession::Run(int argc, char *argv[]) {
         }
         ExitBBSImpl(oklevel_, true);
       }
-      break;
+        break;
       case '?':
         ShowUsage();
         ExitBBSImpl(0, false);
         break;
-      case '-':
-      {
+      case '-': {
         if (argumentRaw == "--help") {
           ShowUsage();
           ExitBBSImpl(0, false);
         }
-      }
-      break;
-      default:
-      {
-        clog << "Invalid Command line argument given '" << argument << "'\r\n\n";
+      } break;
+      default: {
+        LOG(ERROR) << "Invalid Command line argument given '" << argument << "'";
         ExitBBSImpl(errorlevel_, false);
       }
-      break;
+        break;
       }
     } else {
       // Command line argument did not start with a '-' or a '/'
-      clog << "Invalid Command line argument given '" << argumentRaw << "'\r\n\n";
+      LOG(ERROR) << "Invalid Command line argument given '" << argumentRaw << "'";
       ExitBBSImpl(errorlevel_, false);
     }
   }
 
-  // Setup the full-featured localIO if we have a TTY (or console)
-  if (isatty(fileno(stdin))) {
+    // Setup the full-featured localIO if we have a TTY (or console)
+if (isatty(fileno(stdin))) {
 #if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
-    reset_local_io(new Win32ConsoleIO());
+  reset_local_io(new Win32ConsoleIO());
 #else
-    if (type == CommunicationType::NONE) {
-      // We only want the localIO if we ran this locally at a terminal
-      // and also not passed in from the telnet handler, etc.  On Windows
-      // We always have a local console, so this is *NIX specific.
-      CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
-      reset_local_io(new CursesLocalIO(out->GetMaxY()));
-    }
+  if (type == CommunicationType::NONE) {
+    // We only want the localIO if we ran this locally at a terminal
+    // and also not passed in from the telnet handler, etc.  On Windows
+    // We always have a local console, so this is *NIX specific.
+    CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
+    reset_local_io(new CursesLocalIO(out->GetMaxY()));
+  } else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+    reset_local_io(new NullLocalIO());
+  }
 #endif
+} else {
+#ifdef __unix__
+  reset_local_io(new NullLocalIO());
+#endif  // __unix__
+}
+
+// Add the environment variable or overwrite the existing one
+const string env_str = std::to_string(instance_number());
+set_environment_variable("WWIV_INSTANCE", env_str);
+if (!ReadConfig()) {
+  // Gotta read the config before we can create the socket handles.
+  // Since we may need the SSH key.
+  AbortBBS(true);
+}
+
+CreateComm(hSockOrComm, type);
+InitializeBBS();
+localIO()->UpdateNativeTitleBar(this);
+
+bool remote_opened = true;
+// If we are telnet...
+if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+  ok_modem_stuff = true;
+  remote_opened = remoteIO()->open();
+}
+
+if (!remote_opened) {
+  // Remote side disconnected.
+  clog << "Remote side disconnected." << std::endl;
+  ExitBBSImpl(oklevel_, false);
+}
+
+if (num_min > 0) {
+  syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60);
+  if (syscfg.executetime > 1440) {
+    syscfg.executetime -= 1440;
   }
-
-  // Add the environment variable or overwrite the existing one
-  const string env_str = std::to_string(instance_number());
-  set_environment_variable("WWIV_INSTANCE", env_str);
-  if (!ReadConfig()) {
-    // Gotta read the config before we can create the socket handles.
-    // Since we may need the SSH key.
-    AbortBBS(true);
+  time_event = static_cast<long>(syscfg.executetime) * MINUTES_PER_HOUR;
+  last_time = time_event - timer();
+  if (last_time < 0.0) {
+    last_time += SECONDS_PER_DAY;
   }
+}
 
-  CreateComm(hSockOrComm, type);
-  InitializeBBS();
-  localIO()->UpdateNativeTitleBar(this);
-
-  bool remote_opened = true;
-  // If we are telnet...
-  if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
-    ok_modem_stuff = true;
-    remote_opened = remoteIO()->open();
+if (event_only) {
+  unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+  cleanup_events();
+  if (!IsEquals(date(), pStatus->GetLastDate())) {
+    // This may be another node, but the user explicitly wanted to run the beginday
+    // event from the commandline, so we'll just check the date.
+    beginday(true);
+  } else {
+    sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
+    clog << "! WARNING: Tried to run beginday event again\r\n\n";
+    sleep_for(seconds(2));
   }
+  ExitBBSImpl(oklevel_, true);
+}
 
-  if (!remote_opened) {
-    // Remote side disconnected.
-    clog << "Remote side disconnected." << std::endl;
-    ExitBBSImpl(oklevel_, false);
-  }
-
-  if (num_min > 0) {
-    syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60);
-    if (syscfg.executetime > 1440) {
-      syscfg.executetime -= 1440;
-    }
-    time_event = static_cast<long>(syscfg.executetime) * MINUTES_PER_HOUR;
-    last_time = time_event - timer();
-    if (last_time < 0.0) {
-      last_time += SECONDS_PER_DAY;
-    }
-  }
-
-  if (event_only) {
-    unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
-    cleanup_events();
-    if (!IsEquals(date(), pStatus->GetLastDate())) {
-      // This may be another node, but the user explicitly wanted to run the beginday
-      // event from the commandline, so we'll just check the date.
-      beginday(true);
-    } else {
-      sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
-      clog << "! WARNING: Tried to run beginday event again\r\n\n";
-      sleep_for(seconds(2));
-    }
-    ExitBBSImpl(oklevel_, true);
-  }
-
-  do {
-    if (this_usernum) {
+do {
+  if (this_usernum) {
+    usernum = this_usernum;
+    ReadCurrentUser();
+    if (!user()->IsUserDeleted()) {
+      GotCaller(ui, us);
       usernum = this_usernum;
       ReadCurrentUser();
-      if (!user()->IsUserDeleted()) {
-        GotCaller(ui, us);
-        usernum = this_usernum;
-        ReadCurrentUser();
-        read_qscn(usernum, qsc, false);
-        ResetEffectiveSl();
-        changedsl();
-        okmacro = true;
-      } else {
-        this_usernum = 0;
-      }
-    }
-    if (!this_usernum) {
-      if (user_already_on_) {
-        GotCaller(ui, us);
-      }  else {
-        GetCaller();
-      }
-    }
-
-    if (using_modem > -1) {
-      if (!this_usernum) {
-        getuser();
-      }
-    } else {
-      using_modem = 0;
-      okmacro = true;
-      usernum = unx_;
+      read_qscn(usernum, qsc, false);
       ResetEffectiveSl();
       changedsl();
+      okmacro = true;
+    } else {
+      this_usernum = 0;
     }
-    this_usernum = 0;
-    if (!hangup) {
-      logon();
-      setiia(90);
-      set_net_num(0);
-      while (!hangup) {
-        filelist.clear();
-        zap_ed_info();
-        write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
-        wwiv::menus::mainmenu();
-      }
-      logoff();
+  }
+  if (!this_usernum) {
+    if (user_already_on_) {
+      GotCaller(ui, us);
+    } else {
+      GetCaller();
     }
+  }
 
-    if (!no_hangup && using_modem && ok_modem_stuff) {
-      hang_it_up();
+  if (using_modem > -1) {
+    if (!this_usernum) {
+      getuser();
     }
-    catsl();
-    frequent_init();
-    if (wfc_status == 0) {
-      localIO()->Cls();
+  } else {
+    using_modem = 0;
+    okmacro = true;
+    usernum = unx_;
+    ResetEffectiveSl();
+    changedsl();
+  }
+  this_usernum = 0;
+  if (!hangup) {
+    logon();
+    setiia(90);
+    set_net_num(0);
+    while (!hangup) {
+      filelist.clear();
+      zap_ed_info();
+      write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
+      wwiv::menus::mainmenu();
     }
-    cleanup_net();
+    logoff();
+  }
 
-    if (!no_hangup && ok_modem_stuff) {
-      remoteIO()->dtr(false);
-    }
-    user_already_on_ = false;
-  } while (!ooneuser);
+  if (!no_hangup && using_modem && ok_modem_stuff) {
+    hang_it_up();
+  }
+  catsl();
+  frequent_init();
+  if (wfc_status == 0) {
+    localIO()->Cls();
+  }
+  cleanup_net();
 
-  return oklevel_;
+  if (!no_hangup && ok_modem_stuff) {
+    remoteIO()->dtr(false);
+  }
+  user_already_on_ = false;
+}while (!ooneuser);
+
+return oklevel_;
 }
 

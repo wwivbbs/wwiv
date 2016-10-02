@@ -28,9 +28,13 @@
 #include <sys/types.h>
 #include <sys/wait.h>
  
+#include "core/command_line.h"
 #include "core/file.h"
 #include "core/inifile.h"
+#include "core/log.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/vardec.h"
@@ -83,11 +87,11 @@ static bool launchNode(const Config& config, int node_number, int sock) {
   const string cmd = StringPrintf("./%s -N%u -XT -H%d",
 				  BBS_BINARY, node_number, sock);
 
-  clog << "Invoking WWIV with command line:" << cmd << endl;
+  LOG(INFO) << "Invoking WWIV with command line:" << cmd;
   pid_t child_pid = fork();
   if (child_pid == -1) {
     // fork failed.
-    clog << "Error forking WWIV." << endl;
+    LOG(ERROR) << "Error forking WWIV.";
     return false;
   } else if (child_pid == 0) {
     // child process.
@@ -106,9 +110,10 @@ static bool launchNode(const Config& config, int node_number, int sock) {
 
   bool delete_ok = semaphore_file.Delete();
   if (!delete_ok) {
-    clog << "Unable to delete semaphore file: "<< semaphore_file << "; errno: "
-         << errno << endl;
+    LOG(ERROR) << "Unable to delete semaphore file: "<< semaphore_file << "; errno: "
+         << errno;
   }
+  LOG(INFO) << "Node #" << node_number << "exited with error code ?";
   return true;
 }
 
@@ -128,13 +133,18 @@ void setup_signal_handlers() {
  */
 int main(int argc, char *argv[])
 {
-  cout << "wwivd - WWIV UNIX Daemon." << endl;
+  Logger::Init(argc, argv);
+  ScopeExit at_exit(Logger::ExitLogger);
+  CommandLine cmdline(argc, argv, "net");
+  cmdline.AddStandardArgs();
+
+  LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
 
   const string wwiv_dir = environment_variable("WWIV_DIR");
   string config_dir = !wwiv_dir.empty() ? wwiv_dir : File::current_directory();
   Config config(config_dir);
   if (!config.IsInitialized()) {
-    clog << "Unable to load CONFIG.DAT" << endl;
+    LOG(ERROR) << "Unable to load CONFIG.DAT";
     return 1;
   }
   File::set_current_directory(config_dir);
@@ -143,24 +153,24 @@ int main(int argc, char *argv[])
   setup_signal_handlers();
 
   int used_nodes = loadUsedNodeData(config, num_instances);
-  cout << "Found " << used_nodes << "/" << num_instances
-       << " Nodes in use." << endl;
+  LOG(INFO) << "Found " << used_nodes << "/" << num_instances
+       << " Nodes in use.";
 
   int port = 2323;
   struct sockaddr_in my_addr;
   struct sockaddr_in saddr;
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1) {
-    cerr << "Unable to create socket";
+    LOG(ERROR) << "Unable to create socket";
     return 1;
   }
   int optval = 1;
   if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-    cerr << "Unable to create socket";
+    LOG(ERROR) << "Unable to create socket";
     return 1;
   }
   if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval)) == -1) {
-    cerr << "Unable to create socket";
+    LOG(ERROR) << "Unable to create socket";
     return 1;
   }
   // Try to set nodelay.
@@ -172,12 +182,12 @@ int main(int argc, char *argv[])
   my_addr.sin_addr.s_addr = INADDR_ANY ;
      
   if (bind(sock, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
-    cerr << "Error binding to socket, make sure nothing else is listening "
-	 << "on this port: " << errno << endl;
+    LOG(ERROR)  << "Error binding to socket, make sure nothing else is listening "
+        << "on this port: " << errno;
     return 2;
   }
   if (listen(sock, 10) == -1) {
-    cerr << "Error listening " << errno << endl;
+    LOG(ERROR) << "Error listening " << errno;
     return 3;
   }
  
@@ -186,22 +196,22 @@ int main(int argc, char *argv[])
     int client_sock = accept(sock, (sockaddr*)&saddr, &addr_size);
     clog << "Connection from: " << inet_ntoa(saddr.sin_addr) << endl;
     if (client_sock == -1) {
-      cerr << "Error accepting client socket. " << errno << endl;
+      LOG(INFO)<< "Error accepting client socket. " << errno;
       continue;
     }
 
     int childpid = fork();
     if (childpid == -1) {
-      cerr << "Error spawning child process. " << errno << endl;
+      LOG(ERROR) << "Error spawning child process. " << errno;
       continue;
     } else if (childpid == 0) {
       // We're in the child process now.
       // Find open node number and launch the child.
       for (int node = 1; node <= num_instances; node++) {
-	if (!node_file(config, node).Exists()) {
-	  launchNode(config, node, client_sock);
-	  return 0;
-	}
+        if (!node_file(config, node).Exists()) {
+          launchNode(config, node, client_sock);
+          return 0;
+        }
       }
     } else {
       // we're in the parent still.
