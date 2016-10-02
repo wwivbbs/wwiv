@@ -492,37 +492,6 @@ static void PrintUserSpecificFiles() {
   }
 }
 
-/**
- * Copies the next line located at pszWholeBuffer[plBufferPtr] to pszOutLine
- *
- * @param @pszOutLine The output buffer
- * @param pszWholeBuffer The original text buffer
- * @param plBufferPtr The offset into pszWholeBuffer
- * @param lBufferLength The length of pszWholeBuffer
- */
-static string copy_line(char *pszWholeBuffer, long *plBufferPtr, long lBufferLength) {
-  WWIV_ASSERT(pszWholeBuffer);
-  WWIV_ASSERT(plBufferPtr);
-  string result;
-
-  if (*plBufferPtr >= lBufferLength) {
-    return result;
-  }
-  long lCurrentPtr = *plBufferPtr;
-  while ((pszWholeBuffer[lCurrentPtr] != '\r') && (pszWholeBuffer[lCurrentPtr] != '\n')
-         && (lCurrentPtr < lBufferLength)) {
-    result.push_back(pszWholeBuffer[lCurrentPtr++]);
-  }
-  if ((pszWholeBuffer[lCurrentPtr] == '\r') && (lCurrentPtr < lBufferLength)) {
-    ++lCurrentPtr;
-  }
-  if ((pszWholeBuffer[lCurrentPtr] == '\n') && (lCurrentPtr < lBufferLength)) {
-    ++lCurrentPtr;
-  }
-  *plBufferPtr = lCurrentPtr;
-  return result;
-}
-
 static std::string CreateLastOnLogLine(const WStatus& status) {
   string log_line;
   if (session()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&

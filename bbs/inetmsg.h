@@ -25,6 +25,6 @@ void send_inet_email();
 bool check_inet_addr(const std::string& inetaddr);
 void read_inet_addr(std::string& internet_address, int user_number);
 void write_inet_addr(const std::string& internet_address, int user_number);
-void send_inst_sysstr(int whichinst, const char *send_string);
+void send_inst_sysstr(int whichinst, const std::string& send_string);
 
 #endif  // __INCLUDED_BBS_INETMSG_H__
