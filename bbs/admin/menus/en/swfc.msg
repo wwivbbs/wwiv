@@ -9,9 +9,8 @@
 |#2P     |#9Pending Network data  |#2Q |#9Quit the BBS          |#2R |#9Read all email
 |#2S     |#9System Status         |#2T |#9Run Terminal Program  |#2U |#9User Editor
 |#2V     |#9Initialize Vote Data  |#2Y |#9Yesterday's Sysop Log |#2Z |#9System Activity Log
-|#2TAB   |#9Instance Editor       |#2` |#9Show Net Information  |#2. |#9War Dial Net connect
-|#2ESC   |#9Quit BBS              |#2= |#9Reset User File       |#2! |#9Menu Editor            
-|#2/     |#9Force Net callout
+|#2`     |#9Show Net Information  |#2. |#9War Dial Net connect  |#2/ |#9Force Net callout
+|#2ESC   |#9Quit BBS              |#2= |#9Reset User File       |#2! |#9Menu Editor
 |#7===============================================================================
 |#9[|#2ESCAPE |#9Exit Help] [|#2RETURN |#9Next Screen] [|#2ScrLck |#9Toggle Available]
 |#0

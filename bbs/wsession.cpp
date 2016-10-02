@@ -729,11 +729,6 @@ int WSession::doWFCEvents() {
           print_net_listing(true);
         }
         break;
-        // [TAB] Instance Editor
-      case TAB:
-        wfc_cls();
-        instance_edit();
-        break;
         // [ESC] Quit the BBS
       case ESC:
         io->GotoXY(2, 23);

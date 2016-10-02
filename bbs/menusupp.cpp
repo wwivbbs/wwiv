@@ -440,10 +440,6 @@ void WWIVVersion() {
   pausescr();
 }
 
-void InstanceEdit() {
-  instance_edit();
-}
-
 void JumpEdit() {
   write_inst(INST_LOC_CONFEDIT, 0, INST_FLAGS_NONE);
   edit_confs();

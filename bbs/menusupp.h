@@ -50,7 +50,6 @@ void Vote();
 void ToggleExpert();
 void ExpressScan();
 void WWIVVersion();
-void InstanceEdit();
 void JumpEdit();
 void BoardEdit();
 void ChainEdit();

@@ -30,7 +30,11 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "core/datafile.h"
+#include "core/file.h"
+#include "core/log.h"
 #include "core/os.h"
+#include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 #include "bbs/pause.h"
@@ -40,14 +44,13 @@
 using std::chrono::seconds;
 using std::string;
 using namespace wwiv::os;
+using namespace wwiv::strings;
 
 static bool chat_avail;
 static bool chat_invis;
 
 // Local functions
-void send_inst_msg(inst_msg_header * ih, const char *msg);
 int  handle_inst_msg(inst_msg_header * ih, const char *msg);
-void send_inst_str1(int m, int whichinst, const char *send_string);
 bool inst_available(instancerec * ir);
 bool inst_available_chat(instancerec * ir);
 
@@ -55,27 +58,27 @@ using wwiv::bbs::TempDisablePause;
 
 static int32_t last_iia = 0;
 
-bool is_chat_invis() { return chat_invis; }
-void send_inst_msg(inst_msg_header *ih, const char *msg) {
-  char szFileName[MAX_PATH];
+bool is_chat_invis() { 
+  return chat_invis; 
+}
 
-  sprintf(szFileName, "%sTMSG%3.3u.%3.3d", syscfg.datadir, session()->instance_number(), ih->dest_inst);
-  File file(szFileName);
-  if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
+static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
+  const string fn = StringPrintf("TMSG%3.3u.%3.3d", session()->instance_number(), ih->dest_inst);
+  File file(session()->config()->datadir(), fn);
+  if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
     file.Seek(0L, File::seekEnd);
-    if (ih->msg_size > 0 && !msg) {
+    if (ih->msg_size > 0 && msg.empty()) {
       ih->msg_size = 0;
     }
     file.Write(ih, sizeof(inst_msg_header));
     if (ih->msg_size > 0) {
-      file.Write(msg, ih->msg_size);
+      file.Write(msg.c_str(), ih->msg_size);
     }
     file.Close();
 
     for (int i = 0; i < 1000; i++) {
-      char szMsgFileName[MAX_PATH];
-      sprintf(szMsgFileName, "%sMSG%5.5d.%3.3d", syscfg.datadir, i, ih->dest_inst);
-      if (!File::Rename(szFileName, szMsgFileName) || (errno != EACCES)) {
+      string dest = StringPrintf("%sMSG%5.5d.%3.3d", syscfg.datadir, i, ih->dest_inst);
+      if (!File::Rename(file.full_pathname(), dest) || (errno != EACCES)) {
         break;
       }
     }
@@ -84,42 +87,27 @@ void send_inst_msg(inst_msg_header *ih, const char *msg) {
 
 #define LAST(s) s[strlen(s)-1]
 
-void send_inst_str1(int m, int whichinst, const char *send_string) {
+static void send_inst_str1(int m, int whichinst, const std::string& send_string) {
   inst_msg_header ih;
-  char szTempSendString[1024];
 
-  sprintf(szTempSendString, "%s\r\n", send_string);
+  string tempsendstring = StrCat(send_string, "\r\n");
   ih.main = static_cast<uint16_t>(m);
   ih.minor = 0;
   ih.from_inst = static_cast<uint16_t>(session()->instance_number());
   ih.from_user = static_cast<uint16_t>(session()->usernum);
-  ih.msg_size = strlen(szTempSendString) + 1;
+  ih.msg_size = tempsendstring.size() + 1;
   ih.dest_inst = static_cast<uint16_t>(whichinst);
   ih.daten = static_cast<uint32_t>(time(nullptr));
 
-  send_inst_msg(&ih, szTempSendString);
+  send_inst_msg(&ih, tempsendstring);
 }
 
-void send_inst_str(int whichinst, const char *send_string) {
+void send_inst_str(int whichinst, const std::string& send_string) {
   send_inst_str1(INST_MSG_STRING, whichinst, send_string);
 }
 
-void send_inst_sysstr(int whichinst, const char *send_string) {
+void send_inst_sysstr(int whichinst, const std::string& send_string) {
   send_inst_str1(INST_MSG_SYSMSG, whichinst, send_string);
-}
-
-void send_inst_shutdown(int whichinst) {
-  inst_msg_header ih;
-
-  ih.main = INST_MSG_SHUTDOWN;
-  ih.minor = 0;
-  ih.from_inst = static_cast<uint16_t>(session()->instance_number());
-  ih.from_user = static_cast<uint16_t>(session()->usernum);
-  ih.msg_size = 0;
-  ih.dest_inst = static_cast<uint16_t>(whichinst);
-  ih.daten = static_cast<uint32_t>(time(nullptr));
-
-  send_inst_msg(&ih, nullptr);
 }
 
 void send_inst_cleannet() {
@@ -199,9 +187,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
       }
       i = 0;
-      while (i < ih->msg_size) {
-        bout.bputch(msg[i++]);
-      }
+      bout << msg;
       bout.nl(2);
       bout.RestoreCurrentLine(line);
     }
@@ -209,8 +195,6 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
   case INST_MSG_CLEANNET:
     session()->SetCleanNetNeeded(true);
     break;
-  // Handle this one in process_inst_msgs
-  case INST_MSG_SHUTDOWN:
   default:
     break;
   }
@@ -223,59 +207,35 @@ void process_inst_msgs() {
     return;
   }
   last_iia = timer1();
-
   int oiia = setiia(0);
-  char* m = nullptr;
-  char szFindFileName[MAX_PATH];
-  inst_msg_header ih;
-  WFindFile fnd;
 
-  sprintf(szFindFileName, "%sMSG*.%3.3u", syscfg.datadir, session()->instance_number());
-  bool bDone = fnd.open(szFindFileName, 0);
-  while ((bDone) && (!hangup)) {
+  string fndspec = StringPrintf("%sMSG*.%3.3u", session()->config()->datadir().c_str(), session()->instance_number());
+  WFindFile fnd;
+  bool found = fnd.open(fndspec, 0);
+  while (found && !hangup) {
     File file(session()->config()->datadir(), fnd.GetFileName());
-    if (!file.Open(File::modeBinary | File::modeReadOnly)) {
+    if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
+      LOG(ERROR) << "Unable to open file: " << file.full_pathname();
       continue;
     }
-    long lFileSize = file.GetLength();
-    long lFilePos = 0L;
-    while (lFilePos < lFileSize) {
-      m = nullptr;
-      file.Read(&ih, sizeof(inst_msg_header));
-      lFilePos += sizeof(inst_msg_header);
+    while (true) {
+      inst_msg_header ih = {};
+      int num_read = file.Read(&ih, sizeof(inst_msg_header));
+      if (num_read == 0) {
+        // End of file.
+        break;
+      }
+      string m;
       if (ih.msg_size > 0) {
-        m = static_cast<char*>(BbsAllocA(ih.msg_size));
-        file.Read(m, ih.msg_size);
-        lFilePos += ih.msg_size;
+        m.resize(ih.msg_size + 1);
+        file.Read(&m[0], ih.msg_size);
+        m.resize(ih.msg_size);
       }
-      int hi = handle_inst_msg(&ih, m);
-      if (m) {
-        free(m);
-        m = nullptr;
-      }
-      if (hi == INST_MSG_SHUTDOWN) {
-        if (session()->IsUserOnline()) {
-          TempDisablePause diable_pause;
-          bout.nl(2);
-          printfile(OFFLINE_NOEXT);
-          if (session()->IsUserOnline()) {
-            session()->WriteCurrentUser();
-            write_qscn(session()->usernum, qsc, false);
-          }
-        }
-        file.Close();
-        file.Delete();
-        session()->localIO()->SetTopLine(0);
-        session()->localIO()->Cls();
-        hangup = true;
-        hang_it_up();
-        sleep_for(seconds(1));
-        session()->QuitBBS();
-      }
+      handle_inst_msg(&ih, m.c_str());
     }
     file.Close();
     file.Delete();
-    bDone = fnd.next();
+    found = fnd.next();
   }
   setiia(oiia);
 }
@@ -367,101 +327,6 @@ bool user_online(int user_number, int *wi) {
     *wi = -1;
   }
   return false;
-}
-
-
-/*
- * Allows sending some types of messages to other instances, or simply
- * viewing the status of the other instances.
- */
-void instance_edit() {
-  instancerec ir;
-
-  if (!ValidateSysopPassword()) {
-    return;
-  }
-
-  int ni = num_instances();
-
-  bool done = false;
-  while (!done && !hangup) {
-    CheckForHangup();
-    bout.nl();
-    bout << "|#21|#7)|#1 Multi-Instance Status\r\n";
-    bout << "|#22|#7)|#1 Shut Down One Instance\r\n";
-    bout << "|#23|#7)|#1 Shut Down ALL Instances\r\n";
-    bout << "|#2Q|#7)|#1 Quit\r\n";
-    bout.nl();
-    bout << "|#1Select: ";
-    char ch = onek("Q123");
-    switch (ch) {
-    case '1':
-      bout.nl();
-      bout << "|#1Instance Status:\r\n";
-      multi_instance();
-      break;
-    case '2': {
-      bout.nl();
-      bout << "|#2Which Instance: ";
-      char szInst[ 10 ];
-      input(szInst, 3, true);
-      if (!szInst[0]) {
-        break;
-      }
-      int i = atoi(szInst);
-      if (!i || i > ni) {
-        bout.nl();
-        bout << "|#6Instance unavailable.\r\n";
-        break;
-      }
-      if (i == session()->instance_number()) {
-        session()->localIO()->SetTopLine(0);
-        session()->localIO()->Cls();
-        hangup = true;
-        hang_it_up();
-        sleep_for(seconds(1));
-        session()->QuitBBS();
-        break;
-      }
-      if (get_inst_info(i, &ir)) {
-        if (ir.loc != INST_LOC_DOWN) {
-          bout.nl();
-          bout << "|#2Shutting down instance " << i << wwiv::endl;
-          send_inst_shutdown(i);
-        } else {
-          bout << "\r\n|#6Instance already shut down.\r\n";
-        }
-      } else {
-        bout << "\r\n|#6Instance unavailable.\r\n";
-      }
-    }
-    break;
-    case '3':
-      bout.nl();
-      bout << "|#5Are you sure? ";
-      if (yesno()) {
-        bout << "\r\n|#2Shutting down all instances.\r\n";
-        for (int i1 = 1; i1 <= ni; i1++) {
-          if (i1 != session()->instance_number()) {
-            if (get_inst_info(i1, &ir) && ir.loc != INST_LOC_DOWN) {
-              send_inst_shutdown(i1);
-            }
-          }
-        }
-        session()->localIO()->SetTopLine(0);
-        session()->localIO()->Cls();
-        hangup = true;
-        hang_it_up();
-        sleep_for(seconds(1));
-        session()->QuitBBS();
-      }
-      break;
-    case 'Q':
-    default:
-      done = true;
-      break;
-    }
-  }
 }
 
 /*
@@ -593,14 +458,13 @@ bool inst_msg_waiting() {
     return false;
   }
 
-  char szFileName[81];
-  sprintf(szFileName, "%sMSG*.%3.3u", syscfg.datadir, session()->instance_number());
-  bool bExist = File::ExistsWildcard(szFileName);
-  if (!bExist) {
+  const string filename = StringPrintf("MSG*.%3.3u", session()->instance_number());
+  if (!File::ExistsWildcard(StrCat(session()->config()->datadir(), filename))) {
     last_iia = l;
+    return false;
   }
 
-  return bExist;
+  return true;
 }
 
 // Sets inter-instance availability on/off, for inter-instance messaging.

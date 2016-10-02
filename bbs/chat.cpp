@@ -78,7 +78,6 @@ void secure_ch(int ch);
 void cleanup_chat();
 void page_user(int loc);
 void moving(bool bOnline, int loc);
-void out_msg(const char *message, int loc);
 void get_colors(char *color_string, IniFile *pIniFile);
 void load_actions(IniFile *pIniFile);
 void add_action(ch_action act);
@@ -229,6 +228,16 @@ int f_action(int start_pos, int end_pos, char *aword) {
   return test;
 }
 
+// Sends out a message to everyone in channel LOC
+static void out_msg(const std::string& message, int loc) {
+  for (int i = 1; i <= num_instances(); i++) {
+    instancerec ir;
+    get_inst_info(i, &ir);
+    if ((ir.loc == loc) && (i != session()->instance_number())) {
+      send_inst_str(i, message);
+    }
+  }
+}
 
 int main_loop(char *message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
               int loc, int num_actions) {
@@ -564,17 +573,6 @@ void moving(bool bOnline, int loc) {
     sprintf(space, "|#6%s %s", session()->user()->GetName(), (bOnline ? "is on the air." :
             "has signed off."));
     out_msg(space, loc);
-  }
-}
-
-// Sends out a message to everyone in channel LOC
-void out_msg(const char *message, int loc) {
-  for (int i = 1; i <= num_instances(); i++) {
-    instancerec ir;
-    get_inst_info(i, &ir);
-    if ((ir.loc == loc) && (i != session()->instance_number())) {
-      send_inst_str(i, message);
-    }
   }
 }
 

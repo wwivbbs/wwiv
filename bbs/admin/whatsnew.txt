@@ -19,6 +19,8 @@ What's New in WWIV 5.2 (2016)
 * Removed command line option -O, since -X{T,S} implies -O
 * Removed Control-F1 to shutdown the BBS, it's not needed anymore on
   non-single user operating systems.
+* Removed TAB {Instance Editor, didn't really edit, just allowed you to see
+  status or shutdown an instance} command from WFC. Not really needed anymore.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

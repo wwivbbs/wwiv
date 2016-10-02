@@ -69,6 +69,10 @@
 #define ftruncate chsize
 #endif  // ftruncate
 #define flock(h, m)
+#define LOCK_SH		1
+#define LOCK_EX		2
+#define LOCK_NB		4
+#define LOCK_UN		8
 #define F_OK 0
 
 #else 
@@ -164,7 +168,8 @@ bool File::Open(int nFileMode, int nShareMode) {
   VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode << ", handle=" << handle_;
 
   if (File::IsFileHandleValid(handle_)) {
-    flock(handle_, (nShareMode & shareDenyWrite) ? LOCK_EX : LOCK_SH);
+    int mode = (nShareMode == shareDenyReadWrite || nShareMode == shareDenyWrite) ? LOCK_EX : LOCK_SH;
+    flock(handle_, (nShareMode & shareDenyWrite) ? mode);
   }
 
   if (handle_ == File::invalid_handle) {

@@ -116,7 +116,7 @@ string GetInstanceActivityString(instancerec &ir) {
 }
 
 /*
- * Builds a string (in pszOutInstanceString) like:
+ * Builds a string (in out) like:
  *
  * Instance   1: Offline
  *     LastUser: Sysop #1
