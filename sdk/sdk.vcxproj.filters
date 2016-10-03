@@ -85,6 +85,9 @@
     <ClInclude Include="ssm.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fido\fido_packets.h">
+      <Filter>Source Files\fido</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -98,6 +101,9 @@
     </Filter>
     <Filter Include="Header Files\msgapi">
       <UniqueIdentifier>{4200a725-3dba-451a-9412-9ca431716b6a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fido">
+      <UniqueIdentifier>{7ae92491-f7c7-44d1-85d0-a81eb681a841}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +169,9 @@
     </ClCompile>
     <ClCompile Include="ssm.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fido\fido_packets.cpp">
+      <Filter>Source Files\fido</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

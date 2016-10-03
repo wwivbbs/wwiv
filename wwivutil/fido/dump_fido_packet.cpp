@@ -27,12 +27,13 @@
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
 #include "sdk/net.h"
+#include "sdk/fido/fido_packets.h"
 
 using std::cout;
 using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
-using namespace wwiv::net;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -54,15 +55,18 @@ int dump_file(const std::string& filename) {
   }
 
   bool done = false;
+  packet_header_2p_t header = {};
+  int num_header_read = f.Read(&header, sizeof(packet_header_2p_t));
   while (!done) {
-    Packet packet;
-    ReadPacketResponse response = read_packet(f, packet);
+    FidoPackedMessage msg;
+    ReadPacketResponse response = read_packed_message(f, msg);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return 0;
     } else if (response == ReadPacketResponse::ERROR) {
       return 1;
     }
 
+    cout << "subject:" << msg.vh.subject << std::endl;
     //    cout << "destination: " << packet.nh.touser << "@" << packet.nh.tosys << endl;
     cout << "==============================================================================" << endl;
   }
