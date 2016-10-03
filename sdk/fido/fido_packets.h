@@ -1,0 +1,168 @@
+/**************************************************************************/
+/*                                                                        */
+/*                          WWIV Version 5.x                              */
+/*              Copyright (C)2016 WWIV Software Services                  */
+/*                                                                        */
+/*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
+/*    you may not use this  file  except in compliance with the License.  */
+/*    You may obtain a copy of the License at                             */
+/*                                                                        */
+/*                http://www.apache.org/licenses/LICENSE-2.0              */
+/*                                                                        */
+/*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
+/*    software  distributed  under  the  License  is  distributed on an   */
+/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    either  express  or implied.  See  the  License for  the specific   */
+/*    language governing permissions and limitations under the License.   */
+/**************************************************************************/
+#ifndef __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
+#define __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
+
+#include <cstdint>
+#include <set>
+#include <string>
+#include <vector>
+
+#include "core/file.h"
+#include "sdk/config.h"
+#include "sdk/networks.h"
+#include "sdk/net.h"
+
+namespace wwiv {
+namespace sdk {
+namespace fido {
+
+#ifndef __MSDOS__
+#pragma pack(push, 1)
+#endif  // __MSDOS__
+
+/*
+Type-2 Packet Format (proposed, but currently in use)
+  -----------------------------------------------------
+  Field    Ofs Siz Type  Description                Expected value(s)
+  -------  --- --- ----  -------------------------- -----------------
+  OrgNode  0x0   2 Word  Origination node address   0-65535
+  DstNode    2   2 Word  Destination node address   1-65535
+  Year       4   2  Int  Year packet generated      19??-2???
+  Month      6   2  Int  Month  "        "          0-11 (0=Jan)
+  Day        8   2  Int  Day    "        "          1-31
+  Hour       A   2  Int  Hour   "        "          0-23
+  Min        C   2  Int  Minute "        "          0-59
+  Sec        E   2  Int  Second "        "          0-59
+  Baud      10   2  Int  Baud Rate (not in use)     ????
+  PktVer    12   2  Int  Packet Version             Always 2
+  OrgNet    14   2 Word  Origination net address    1-65535
+  DstNet    16   2 Word  Destination net address    1-65535
+  PrdCodL   18   1 Byte  FTSC Product Code     (lo) 1-255
+* PVMajor   19   1 Byte  FTSC Product Rev   (major) 1-255
+  Password  1A   8 Char  Packet password            A-Z,0-9
+* QOrgZone  22   2  Int  Orig Zone (ZMailQ,QMail)   1-65535
+* QDstZone  24   2  Int  Dest Zone (ZMailQ,QMail)   1-65535
+  Filler    26   2 Byte  Spare Change               ?
+* CapValid  28   2 Word  CW Byte-Swapped Valid Copy BitField
+* PrdCodH   2A   1 Byte  FTSC Product Code     (hi) 1-255
+* PVMinor   2B   1 Byte  FTSC Product Rev   (minor) 1-255
+* CapWord   2C   2 Word  Capability Word            BitField
+* OrigZone  2E   2  Int  Origination Zone           1-65535
+* DestZone  30   2  Int  Destination Zone           1-65535
+* OrigPoint 32   2  Int  Origination Point          1-65535
+* DestPoint 34   2  Int  Destination Point          1-65535
+* ProdData  36   4 Long  Product-specific data      Whatever
+  PktTerm   3A   2 Word  Packet terminator          0000
+*/
+struct packet_header_2p_t {               /* FSC-0039 Type 2.+ */
+  uint16_t orig_node,
+           dest_node,
+           year,
+           month,
+           day,
+           hour,
+           minute,
+           second,
+           baud,
+           packet_ver,
+           orig_net,
+           dest_net;
+ 
+  uint8_t product_code_low,
+          product_rev_major,
+          password[8];
+  
+  uint16_t qm_orig_zone,
+           qm_dest_zone;
+  
+  uint8_t filler[2];
+  
+  uint16_t capabilities_valid;
+  
+  uint8_t product_code_high,
+          product_rev_minor;
+
+  uint16_t capabilities,
+           orig_zone,
+           dest_zone,
+           orig_point,
+           dest_point;
+
+  uint32_t product_data;
+};
+
+#ifndef __MSDOS__
+#pragma pack(pop)
+#endif  // __MSDOS__
+
+static_assert(sizeof(packet_header_2p_t) == 58, "packet_header_2p_t != 58 bytes");
+/*
+,-------------------------------------------------------------------.
+| Name      | Offset | Bytes | Type  | Description                  |
++-----------+--------+-------+-------+------------------------------+
+| msgType   | 0      | 2     | Int16 | MUST have a value of 2       |
+| origNode  | 2      | 2     | Int16 | Node number packet is from   |
+| destNode  | 4      | 2     | Int16 | Node number packet is to     |
+| origNet   | 6      | 2     | Int16 | Network number packet is from|
+| destNet   | 8      | 2     | Int16 | Network number packet is to  |
+| attribute | 10     | 2     | Int16 | See Notes                    |
+| cost      | 12     | 2     | Int16 | See Notes                    |
+`-----------+--------+-------+-------+------------------------------'
+ */
+
+struct fido_packed_message_t {
+  uint16_t message_type,
+           orig_node,
+           dest_node,
+           orig_net,
+           dest_net,
+           attribute,
+           cost;
+};
+
+struct fido_variable_length_header_t {
+  std::string date_time;
+  std::string to_user_name;
+  std::string from_user_name;
+  std::string subject; 
+  std::string text;
+};
+
+class FidoPackedMessage {
+public:
+  FidoPackedMessage(const fido_packed_message_t& h, const fido_variable_length_header_t& v)
+    : nh(h), vh(v) {}
+
+  FidoPackedMessage() {}
+  virtual ~FidoPackedMessage() {}
+
+  fido_packed_message_t nh{};
+  fido_variable_length_header_t vh;
+};
+
+
+enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
+ReadPacketResponse read_packed_message(File& file, FidoPackedMessage& packet);
+
+
+}  // namespace fido
+}  // namespace sdk
+}  // namespace wwiv
+
+#endif  // __INCLUDED_SDK_FIDO_FIDO_PACKETS_H__
