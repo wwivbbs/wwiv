@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
@@ -35,7 +36,7 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
-
+using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
@@ -412,9 +413,8 @@ void ch_direct(const char *message, int loc, char *color_string, int node, int n
     return;
   }
 
-  instancerec ir;
+  instancerec ir = {};
   get_inst_info(node, &ir);
-  char szMessage[ 512 ];
   if (ir.loc == loc) {
     if (!strlen(message + nOffSet)) {
       bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
@@ -422,20 +422,18 @@ void ch_direct(const char *message, int loc, char *color_string, int node, int n
     }
     User u;
     session()->users()->ReadUser(&u, ir.user);
-    char szUserName[ 81 ];
-    strcpy(szUserName, u.GetName());
-    sprintf(szMessage, "|#9From %.12s|#6 [to %s]|#1: %s%s",
-            session()->user()->GetName(), szUserName, color_string,
+    const string s = StringPrintf("|#9From %.12s|#6 [to %s]|#1: %s%s",
+            session()->user()->GetName(), u.GetName(), color_string,
             message + nOffSet + 1);
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
       if (ir.loc == loc &&  i != session()->instance_number()) {
-        send_inst_str(i, szMessage);
+        send_inst_str(i, s);
       }
     }
-    bout << "|#1[|#9Message directed to " << szUserName << "|#1\r\n";
+    bout << "|#1[|#9Message directed to " << u.GetName() << "|#1\r\n";
   } else {
-    bout << szMessage;
+    bout << message;
     bout.nl();
   }
 }
@@ -469,9 +467,9 @@ void ch_whisper(const char *message, char *color_string, int node, int nOffSet) 
 // This function determines whether or not user N is online
 
 int wusrinst(char *n) {
-  instancerec ir;
 
   for (int i = 0; i <= num_instances(); i++) {
+    instancerec ir{};
     get_inst_info(i, &ir);
     if (ir.flags & INST_FLAGS_ONLINE) {
       User user;

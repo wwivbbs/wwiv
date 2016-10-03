@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <string>
 
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
@@ -32,6 +33,7 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
+using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::core::DataFile;
 using namespace wwiv::stl;
@@ -84,30 +86,18 @@ void showdirs() {
   }
 }
 
-
-char* GetAttributeString(directoryrec r, char* attributes) {
-  char szBuffer[255];
-
-  strcpy(szBuffer, "None.");
+static string GetAttributeString(directoryrec r) {
   if (r.dar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
-        szBuffer[0] = static_cast<char>('A' + i);
+        return string(1, static_cast<char>('A' + i));
       }
     }
-    szBuffer[1] = 0;
   }
-  strcpy(attributes, szBuffer);
-  return attributes;
+  return "None.";
 }
 
-#define LAST(s) s[strlen(s)-1]
-
-
 void modify_dir(int n) {
-  char s[81], ch, ch2;
-  int i;
-
   directoryrec r = session()->directories[n];
   bool done = false;
   do {
@@ -119,7 +109,7 @@ void modify_dir(int n) {
     bout << "|#9D) DSL        : |#2" << static_cast<int>(r.dsl) << wwiv::endl;
     bout << "|#9E) Min. Age   : |#2" << static_cast<int>(r.age) << wwiv::endl;
     bout << "|#9F) Max Files  : |#2" << r.maxfiles << wwiv::endl;
-    bout << "|#9G) DAR        : |#2" << GetAttributeString(r, s)  << wwiv::endl;
+    bout << "|#9G) DAR        : |#2" << GetAttributeString(r)  << wwiv::endl;
     bout << "|#9H) Require PD : |#2" << YesNoString((r.mask & mask_PD) ? true : false) << wwiv::endl;
     bout << "|#9I) Dir Type   : |#2" <<  r.type << wwiv::endl;
     bout << "|#9J) Uploads    : |#2" << ((r.mask & mask_no_uploads) ? "Disallowed" : "Allowed") << wwiv::endl;
@@ -132,7 +122,7 @@ void modify_dir(int n) {
     bout << "|#9O) WWIV Reg   : |#2" << YesNoString((r.mask & mask_wwivreg) ? true : false) << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1M|#7,|#1[|#7,|#1]|#7) : ";
-    ch = onek("QABCDEFGHIJKLMNO[]", true);
+    char ch = onek("QABCDEFGHIJKLMNO[]", true);
     switch (ch) {
     case 'Q':
       done = true;
@@ -152,100 +142,89 @@ void modify_dir(int n) {
       r = session()->directories[n];
       break;
     case 'A':
+    {
       bout.nl();
       bout << "|#2New name? ";
-      Input1(s, r.name, 40, true, InputMode::MIXED);
-      if (s[0]) {
-        strcpy(r.name, s);
+      string s = Input1(r.name, 40, true, InputMode::MIXED);
+      if (!s.empty()) {
+        to_char_array(r.name, s);
       }
-      break;
+    } break;
     case 'B':
+    {
       bout.nl();
       bout << "|#2New filename? ";
-      Input1(s, r.filename, 8, true, InputMode::FILENAME);
-      if ((s[0] != 0) && (strchr(s, '.') == 0)) {
-        strcpy(r.filename, s);
+      string s = Input1(r.filename, 8, true, InputMode::FILENAME);
+      if (!s.empty() && !contains(s, '.')) {
+        to_char_array(r.filename, s);
       }
-      break;
+    } break;
     case 'C':
+    {
       bout.nl();
       bout << "|#9Enter new path, optionally with drive specifier.\r\n" <<
-                         "|#9No backslash on end.\r\n\n" <<
-                         "|#9The current path is:\r\n" <<
-                         "|#1" << r.path << wwiv::endl << wwiv::endl;
+        "|#9No backslash on end.\r\n\n" <<
+        "|#9The current path is:\r\n" <<
+        "|#1" << r.path << wwiv::endl << wwiv::endl;
       bout << " \b";
-      Input1(s, r.path, 79, true, InputMode::MIXED);
-      if (s[0]) {
+      string s = Input1(r.path, 79, true, InputMode::MIXED);
+      if (!s.empty()) {
         File dir(s);
         if (!dir.Exists()) {
           session()->CdHome();
           if (!File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
             pausescr();
-            s[0] = 0;
+            s.clear();
           }
         }
-        if (s[0]) {
-          if (LAST(s) != File::pathSeparatorChar) {
-            strcat(s, File::pathSeparatorString);
+        if (!s.empty()) {
+          if (s.back() != File::pathSeparatorChar) {
+            s.push_back(File::pathSeparatorChar);
           }
-          strcpy(r.path, s);
+          to_char_array(r.path, s);
           bout.nl(2);
           bout << "|#3The path for this directory is changed.\r\n";
           bout << "|#9If there are any files in it, you must manually move them to the new directory.\r\n";
           pausescr();
         }
       }
-      break;
+    } break;
     case 'D': {
       bout.nl();
       bout << "|#2New DSL? ";
-      input(s, 3);
-      int dsl = atoi(s);
-      if (dsl >= 0 && dsl < 256 && s[0]) {
-        r.dsl = static_cast<unsigned char>(dsl);
-      }
+      r.dsl = input_number<uint8_t>(r.dsl, 0, 255);
     }
     break;
     case 'E': {
       bout.nl();
       bout << "|#2New Min Age? ";
-      input(s, 3);
-      int age = atoi(s);
-      if (age >= 0 && age < 128 && s[0]) {
-        r.age = static_cast<unsigned char>(age);
-      }
+      r.age = input_number<uint8_t>(r.age, 0, 128);
     }
     break;
     case 'F':
+    {
       bout.nl();
       bout << "|#2New max files? ";
-      input(s, 4);
-      i = atoi(s);
-      if ((i > 0) && (i < 10000) && (s[0])) {
-        r.maxfiles = static_cast<uint16_t>(i);
-      }
-      break;
+      r.maxfiles = input_number<uint16_t>(r.maxfiles, 0, 9999);
+    } break;
     case 'G':
+    {
       bout.nl();
       bout << "|#2New DAR (<SPC>=None) ? ";
-      ch2 = onek("ABCDEFGHIJKLMNOP ");
+      char ch2 = onek("ABCDEFGHIJKLMNOP ");
       if (ch2 == SPACE) {
         r.dar = 0;
       } else {
         r.dar = 1 << (ch2 - 'A');
       }
-      break;
+    } break;
     case 'H':
       r.mask ^= mask_PD;
       break;
     case 'I':
       bout << "|#2New Dir Type? ";
-      input(s, 4);
-      i = atoi(s);
-      if ((s[0]) && (i != r.type)) {
-        r.type = static_cast<uint16_t>(i);
-      }
+      r.type = input_number<uint16_t>(r.type, 0, 9999);
       break;
     case 'J':
       r.mask ^= mask_no_uploads;
@@ -272,7 +251,7 @@ void modify_dir(int n) {
     case 'O':
       r.mask &= ~mask_wwivreg;
       bout.nl();
-      bout << "|#5Require WWIV registration? ";
+      bout << "|#5Require WWIV 4.xx registration? ";
       if (yesno()) {
         r.mask |= mask_wwivreg;
       }

@@ -85,8 +85,6 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
   }
 }
 
-#define LAST(s) s[strlen(s)-1]
-
 static void send_inst_str1(int m, int whichinst, const std::string& send_string) {
   inst_msg_header ih;
 
