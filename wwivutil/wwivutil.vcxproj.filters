@@ -37,6 +37,12 @@
     <Filter Include="Header Files\files">
       <UniqueIdentifier>{9dd45445-ace4-4881-a238-adb488c4f741}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\fido">
+      <UniqueIdentifier>{dbfe6578-5aef-44f1-b716-4d2f93df1e24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\fido">
+      <UniqueIdentifier>{9d123300-8fc6-425b-9b3d-27644077599b}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wwivutil.cpp">
@@ -77,6 +83,12 @@
     </ClCompile>
     <ClCompile Include="files\files.cpp">
       <Filter>Source Files\files</Filter>
+    </ClCompile>
+    <ClCompile Include="fido\fido.cpp">
+      <Filter>Source Files\fido</Filter>
+    </ClCompile>
+    <ClCompile Include="fido\dump_fido_packet.cpp">
+      <Filter>Source Files\fido</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -121,6 +133,12 @@
     </ClInclude>
     <ClInclude Include="files\files.h">
       <Filter>Header Files\files</Filter>
+    </ClInclude>
+    <ClInclude Include="fido\fido.h">
+      <Filter>Header Files\fido</Filter>
+    </ClInclude>
+    <ClInclude Include="fido\dump_fido_packet.h">
+      <Filter>Header Files\fido</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

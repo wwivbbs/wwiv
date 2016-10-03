@@ -32,10 +32,11 @@
 #include "core/strings.h"
 #include "core/stl.h"
 #include "sdk/config.h"
+#include "wwivutil/fido/fido.h"
 #include "wwivutil/files/files.h"
+#include "wwivutil/fix/fix.h"
 #include "wwivutil/messages/messages.h"
 #include "wwivutil/net/net.h"
-#include "wwivutil/fix/fix.h"
 
 using std::map;
 using std::string;
@@ -62,6 +63,7 @@ public:
       Add(std::make_unique<MessagesCommand>());
       Add(std::make_unique<NetCommand>());
       Add(std::make_unique<FixCommand>());
+      Add(std::make_unique<wwiv::wwivutil::fido::FidoCommand>());
 
       if (!cmdline_.Parse()) { return 1; }
       const std::string bbsdir(cmdline_.arg("bbsdir").as_string());

@@ -7,6 +7,8 @@ set(WWIVUTIL_MAIN wwivutil.cpp)
 
 set(COMMAND_SOURCES
   command.cpp
+  fido/fido.cpp
+  fido/dump_fido_packet.cpp
   files/files.cpp
   fix/dirs.cpp
   fix/fix.cpp
