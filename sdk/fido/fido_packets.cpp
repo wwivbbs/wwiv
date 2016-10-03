@@ -84,7 +84,6 @@ ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
 
   if (packet.nh.message_type != 2) {
     LOG(INFO) << "invalid message_type: " << packet.nh.message_type << "; expected: 2";
-    //return ReadPacketResponse::ERROR;
   }
   packet.vh.date_time = ReadFixedLengthField(f, 19);
   packet.vh.to_user_name = ReadVariableLengthField(f, 36);

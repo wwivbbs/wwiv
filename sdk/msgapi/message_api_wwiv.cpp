@@ -112,22 +112,26 @@ bool WWIVMessageApi::Remove(const std::string& name) {
 WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
   const std::string sub_filename = StrCat(name, ".sub");
   File fileSub(subs_directory_, sub_filename);
-  if (!fileSub.Exists()) {
-    return nullptr;
-  }
-  if (!fileSub.Open(File::modeReadOnly | File::modeBinary)) {
-    return nullptr;
-  }
+
   const string msgs_filename = StrCat(name, ".dat");
   File msgs_file(messages_directory_, msgs_filename);
-  if (!msgs_file.Exists()) {
-    File create_msgs_file(messages_directory_, msgs_filename);
-    if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+  {
+    if (!fileSub.Exists()) {
       return nullptr;
     }
-  }
-  if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
-    return nullptr;
+    if (!fileSub.Open(File::modeReadOnly | File::modeBinary)) {
+      return nullptr;
+    }
+
+    if (!msgs_file.Exists()) {
+      File create_msgs_file(messages_directory_, msgs_filename);
+      if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+        return nullptr;
+      }
+    }
+    if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
+      return nullptr;
+    }
   }
 
   return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());
