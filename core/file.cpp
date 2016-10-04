@@ -124,6 +124,7 @@ File::File(const string& dir, const string& filename) : File() {
 }
 
 File::~File() {
+  VLOG(3) << "~File " << full_path_name_ << ", handle=" << handle_;
   if (this->IsOpen()) {
     this->Close();
   }
@@ -180,6 +181,7 @@ bool File::Open(int nFileMode, int nShareMode) {
 }
 
 void File::Close() {
+  VLOG(3) << "CLOSE " << full_path_name_ << ", handle=" << handle_;
   if (File::IsFileHandleValid(handle_)) {
     flock(handle_, LOCK_UN);
     close(handle_);
