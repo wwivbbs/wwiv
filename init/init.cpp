@@ -215,6 +215,7 @@ int WInitApp::main(int, char **) {
         if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
           configfile.Read(&syscfg, sizeof(configrec));
         }
+        configfile.Close();
       }
     }
 
