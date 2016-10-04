@@ -56,7 +56,6 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
   char *ss1, onx[20], ch;
   unsigned user_number, system_number;
   int nv, on, xx, onxi, odci;
-  net_system_list_rec *csne;
   std::set<char> odc;
 
   char szEmailAddress[255];
@@ -192,7 +191,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
         bout.nl();
         for (int i = 0; i < nv; i++) {
           set_net_num(ss[i]);
-          csne = next_system(*pSystemNumber);
+          net_system_list_rec *csne = next_system(*pSystemNumber);
           if (csne) {
             if (i < 9) {
               onx[onxi++] = static_cast<char>(i + '1');

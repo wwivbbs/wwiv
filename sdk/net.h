@@ -261,10 +261,6 @@ struct net_networks_rec {
   char            name[16];       /* network name */
   char            dir[69];        /* directory for net data */
   uint16_t  sysnum;         /* system number */
-  net_call_out_rec  *con;         /* ptr to callout data */
-  net_contact_rec  *ncn;          /* ptr to contact info */
-  int16_t           num_con;        /* number in array */
-  int16_t           num_ncn;        /* number in array */
 };
 
 struct net_networks_rec_disk {

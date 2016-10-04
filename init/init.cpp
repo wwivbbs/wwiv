@@ -67,6 +67,7 @@
 #include "localui/curses_io.h"
 #include "localui/listbox.h"
 
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 
 // Make sure it's after windows.h
@@ -75,6 +76,7 @@
 using std::string;
 using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 configrec syscfg;
@@ -286,6 +288,7 @@ int WInitApp::main(int, char **) {
     }
     out->footer()->SetDefaultFooter();
 
+    Config config(bbsdir);
     // It's easier to use the hotkey for this case statement so it's simple to know
     // which case statement matches which item.
     switch (selected_hotkey) {
@@ -320,7 +323,7 @@ int WInitApp::main(int, char **) {
       edit_languages();
       break;
     case 'N':
-      networks();
+      networks(config);
       break;
     case 'R':
       edit_registration_code();

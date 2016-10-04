@@ -19,10 +19,11 @@
 #ifndef __INCLUDED_TEMPLATE_H__
 #define __INCLUDED_TEMPLATE_H__
 
+#include "sdk/config.h"
 #include "sdk/net.h"
 
 #define MAX_NETWORKS 100
 
-void networks();
+void networks(wwiv::sdk::Config& config);
 
 #endif // __INCLUDED_TEMPLATE_H__

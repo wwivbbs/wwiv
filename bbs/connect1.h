@@ -20,14 +20,9 @@
 
 #include "sdk/net.h"
 
-void zap_call_out_list();
-void read_call_out_list();
-void zap_bbs_list();
-void read_bbs_list_index();
 bool valid_system(int ts);
 net_system_list_rec *next_system(int ts);
-void zap_contacts();
-void read_contacts();
 void set_net_num(int network_number);
+int32_t next_system_reg(int16_t ts);
 
 #endif  // __INCLUDED_BBS_CONNECT1_H__

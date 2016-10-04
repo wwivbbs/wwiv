@@ -37,30 +37,21 @@ namespace sdk {
 
 const int Networks::npos;  // reserve space.
 
-Networks::Networks(const Config& config) {
+Networks::Networks(const Config& config) : datadir_(config.datadir()) {
   if (!config.IsInitialized()) {
     return;
   }
 
-  DataFile<net_networks_rec_disk> file(config.datadir(), NETWORKS_DAT, File::modeBinary|File::modeReadOnly, File::shareDenyNone);
-  if (!file) {
-    return;
+  {
+    DataFile<net_networks_rec_disk> file(datadir_, NETWORKS_DAT, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+    if (!file) {
+      return;
+    }
   }
 
-  std::vector<net_networks_rec_disk> networks_disk;
-
-  const int num_records = file.number_of_records();
-  networks_.resize(num_records);
-  networks_disk.resize(num_records);
-  initialized_ = file.Read(&networks_disk[0], num_records);
-  for (int i = 0; i < num_records; i++) {
-    networks_[i].type = networks_disk[i].type;
-    strcpy(networks_[i].name, networks_disk[i].name);
-    strcpy(networks_[i].dir, networks_disk[i].dir);
-    networks_[i].sysnum = networks_disk[i].sysnum;
-  }
+  initialized_ = Load();
   if (!initialized_) {
-    LOG(ERROR) << "failed to read the expected number of bytes: " << num_records * sizeof(net_networks_rec_disk);
+    LOG(ERROR) << "Failed to read " << NETWORKS_DAT;
   }
   initialized_ = true;
 }
@@ -105,6 +96,65 @@ bool Networks::contains(const std::string& network_name) const {
   return false;
 }
 
+// TODO(rushfan): Since should we make this algo available 
+// in wwiv::sdk since we do it on all containers often.
+bool Networks::insert(std::size_t n, net_networks_rec r) {
+  // TODO(rushfan): Add size checking
+  auto it = networks_.begin();
+  std::advance(it, n);
+  networks_.insert(it, r);
+  return true;
+}
+
+bool Networks::erase(std::size_t n) {
+  // TODO(rushfan): Add size checking
+  auto it = networks_.begin();
+  std::advance(it, n);
+  networks_.erase(it);
+  return true;
+}
+
+bool Networks::Load() {
+  DataFile<net_networks_rec_disk> file(datadir_, NETWORKS_DAT, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+  if (!file) {
+    return false;
+  }
+
+  std::vector<net_networks_rec_disk> networks_disk;
+
+  if (!file.ReadVector(networks_disk)) {
+    return false;
+  }
+  for (const auto& n : networks_disk) {
+    net_networks_rec r = {};
+    r.type = n.type;
+    strcpy(r.name, n.name);
+    strcpy(r.dir, n.dir);
+    r.sysnum = n.sysnum;
+    networks_.emplace_back(r);
+  }
+  return true;
+}
+
+bool Networks::Save() {
+  std::vector<net_networks_rec_disk> disk;
+
+  for (const auto& from : networks_) {
+    net_networks_rec_disk to{};
+    to.type = from.type;
+    strcpy(to.name, from.name);
+    strcpy(to.dir, from.dir);
+    to.sysnum = from.sysnum;
+    disk.emplace_back(to);
+  }
+
+  DataFile<net_networks_rec_disk> file(datadir_, NETWORKS_DAT,
+    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+  if (!file) {
+    return false;
+  }
+  return file.WriteVector(disk);
+}
 
 }
 }

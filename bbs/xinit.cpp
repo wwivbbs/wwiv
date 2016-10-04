@@ -56,6 +56,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
+#include "sdk/networks.h"
 #include "sdk/subxtr.h"
 
 // Additional INI file function and structure
@@ -103,14 +104,7 @@ void StatusManagerCallback(int i) {
     break;
   case WStatus::fileChangeNet:
   {
-    int nOldNetNum = session()->net_num();
-    zap_bbs_list();
-    for (int i1 = 0; i1 < session()->max_net_num(); i1++) {
-      set_net_num(i1);
-      zap_call_out_list();
-      zap_contacts();
-    }
-    set_net_num(nOldNetNum);
+    set_net_num(session()->net_num());
   }
   break;
   }
@@ -650,30 +644,13 @@ void WSession::read_networks() {
     fileNetIni.Close();
   }
 
-  DataFile<net_networks_rec_disk> networksfile(config()->datadir(), NETWORKS_DAT);
-  if (!networksfile) {
-    return;
-  }
-  int net_num_max = networksfile.number_of_records();
-  std::vector<net_networks_rec_disk> net_networks_disk;
-  if (!net_num_max) {
-    return;
-  }
-  if (!networksfile.ReadVector(net_networks_disk)) {
-    return;
-  }
-  for (const auto& from : net_networks_disk) {
-    net_networks_rec to{};
-    to.type = from.type;
-    strcpy(to.name, from.name);
-    StringTrim(to.name);
-    strcpy(to.dir, from.dir);
-    to.sysnum = from.sysnum;
-    net_networks.emplace_back(to);
+  wwiv::sdk::Networks networks(*config());
+  if (networks.IsInitialized()) {
+    net_networks = networks.networks();
   }
 
+  // Add a default entry for us.
   if (net_networks.empty()) {
-    // Add a default entry for us.
     net_networks_rec n{};
     strcpy(n.name, "WWIVnet");
     string datadir = config()->datadir();
@@ -976,7 +953,6 @@ void WSession::InitializeBBS() {
     }
   }
 
-  read_bbs_list_index();
   frequent_init();
   if (!user_already_on_) {
     TempDisablePause disable_pause;

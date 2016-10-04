@@ -458,8 +458,6 @@ public:
   std::vector<usersubrec> usub;
   std::vector<usersubrec> udir;
   std::vector<eventsrec> events;
-  std::vector<net_system_list_rec> csn;
-  std::vector<uint16_t> csn_index;
   std::vector<tagrec_t> filelist;
 };
 

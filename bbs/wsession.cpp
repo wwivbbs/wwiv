@@ -690,20 +690,17 @@ int WSession::doWFCEvents() {
           force_callout(0);
         }
         break;
-        // War Dial Connect
+      // War Dial Connect
       case '.':
         if (net_sysnum) {
           force_callout(1);
-        }
-        break;
-
-        // Fast Net Callout from WFC
+        } break;
+      // Fast Net Callout from WFC
       case '*': {
-        io->Cls();  // added   - 02/23/14 - dsn
-        do_callout(32767);  // changed - 02/23/14 - dsn - changed 1160 to 32767
-      }
-        break;
-        // Run MenuEditor
+        io->Cls();
+        do_callout(32767);
+      } break;
+      // Run MenuEditor
       case '!':
         EditMenus();
         break;

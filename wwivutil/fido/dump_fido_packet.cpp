@@ -40,11 +40,19 @@ namespace wwiv {
 namespace wwivutil {
 namespace fido {
 
-static string daten_to_humantime(uint32_t daten) {
-  time_t t = static_cast<time_t>(daten);
-  string human_date = string(asctime(localtime(&t)));
-  StringTrimEnd(&human_date);
-  return human_date;
+static std::string FidoToWWIVText(const std::string& ft) {
+  std::string wt;
+  for (auto& c : ft) {
+    if (c == 13) {
+      wt.push_back(13);
+      wt.push_back(10);
+    } else if (c == 10) {
+      // NOP
+    } else {
+      wt.push_back(c);
+    }
+  }
+  return wt;
 }
 
 int dump_file(const std::string& filename) {
@@ -57,6 +65,10 @@ int dump_file(const std::string& filename) {
   bool done = false;
   packet_header_2p_t header = {};
   int num_header_read = f.Read(&header, sizeof(packet_header_2p_t));
+  if (num_header_read < sizeof(packet_header_2p_t)) {
+    LOG(ERROR) << "Read less than packet header";
+    return 1;
+  }
   while (!done) {
     FidoPackedMessage msg;
     ReadPacketResponse response = read_packed_message(f, msg);
@@ -66,8 +78,13 @@ int dump_file(const std::string& filename) {
       return 1;
     }
 
-    cout << "subject:" << msg.vh.subject << std::endl;
-    //    cout << "destination: " << packet.nh.touser << "@" << packet.nh.tosys << endl;
+    cout << "msg_type:" << msg.nh.message_type << std::endl;
+    cout << "cost:    " << msg.nh.cost << std::endl;
+    cout << "to:      " << msg.vh.to_user_name << "(" << msg.nh.dest_net << "/" << msg.nh.dest_node << ")" << std::endl;
+    cout << "from:    " << msg.vh.from_user_name << "(" << msg.nh.orig_net << "/" << msg.nh.orig_node << ")" << std::endl;
+    cout << "subject: " << msg.vh.subject << std::endl;
+    cout << "date:    " << msg.vh.date_time << std::endl;
+    cout << "text: " << std::endl << std::endl << FidoToWWIVText(msg.vh.text) << std::endl;
     cout << "==============================================================================" << endl;
   }
   return 0;

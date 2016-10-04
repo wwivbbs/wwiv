@@ -49,6 +49,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/bbslist.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 
 using std::string;
@@ -282,7 +283,6 @@ void valuser(int user_number) {
 void print_net_listing(bool bForcePause) {
   int i, gn = 0;
   char town[5];
-  net_system_list_rec csne;
   unsigned short slist, cmdbit = 0;
   char substr[81], onx[20], acstr[4], phstr[13];
   char s[255], s1[101], s2[101], bbstype;
@@ -357,7 +357,6 @@ void print_net_listing(bool bForcePause) {
     while (!done1) {
       int i2 = i;
       set_net_num(i2);
-      read_bbs_list_index();
       abort = false;
       cmdbit = 0;
       slist = 0;
@@ -480,18 +479,18 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      File bbsListFile(session()->network_directory(), BBSDATA_NET);
-      if (!bbsListFile.Open(File::modeReadOnly | File::modeBinary)) {
-        bout << "|#6Error opening " << bbsListFile.full_pathname() << "!\r\n";
+      BbsListNet bbslist = BbsListNet::ReadBbsDataNet(session()->current_net().dir);
+      if (bbslist.empty()) {
+        bout << "|#6Error opening BBSDATA.NET in " << session()->current_net().dir << wwiv::endl;
         pausescr();
         continue;
       }
       strcpy(s, "000-000-0000");
       bout.nl(2);
 
-      for (i = 0; i < size_int(session()->csn) && !abort; i++) {
+      for (const auto& b : bbslist.node_config()) {
         bool matched = false;
-        bbsListFile.Read(&csne, sizeof(net_system_list_rec));
+        const auto& csne = b.second;
         if ((csne.forsys == 65535) && (cmdbit != NET_SEARCH_NOCONNECT)) {
           continue;
         }
@@ -605,7 +604,6 @@ void print_net_listing(bool bForcePause) {
           pla(line, &abort);
         }
       }
-      bbsListFile.Close();
       if (!abort && slist) {
         bout.nl();
         bout << "|#1Systems Listed |#7: |#2" << slist;
@@ -620,12 +618,6 @@ void print_net_listing(bool bForcePause) {
 }
 
 void read_new_stuff() {
-  zap_bbs_list();
-  for (size_t i = 0; i < session()->net_networks.size(); i++) {
-    set_net_num(i);
-    zap_call_out_list();
-    zap_contacts();
-  }
   set_language_1(session()->language_number());
 }
 

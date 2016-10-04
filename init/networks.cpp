@@ -45,6 +45,7 @@
 #include "init/wwivinit.h"
 #include "init/subacc.h"
 #include "sdk/filenames.h"
+#include "sdk/networks.h"
 #include "sdk/subxtr.h"
 
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
@@ -54,55 +55,12 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static bool load_networks_dat(vector<net_networks_rec>& net_networks) {
-  vector<net_networks_rec_disk> net_networks_disk;
-  net_networks.clear();
-  {
-    DataFile<net_networks_rec_disk> networksfile(syscfg.datadir, NETWORKS_DAT);
-    if (!networksfile) {
-      return false;
-    }
-    if (!networksfile.ReadVector(net_networks_disk)) {
-      return false;
-    }
-  }
-
-  for (const auto& from : net_networks_disk) {
-    net_networks_rec to{};
-    to.type = from.type;
-    strcpy(to.name, from.name);
-    strcpy(to.dir, from.dir);
-    to.sysnum = from.sysnum;
-    net_networks.emplace_back(to);
-  }
-  return true;
-}
-
-static bool save_networks_dat(const vector<net_networks_rec>& net_networks) {
-  vector<net_networks_rec_disk> disk;
-
-  for (const auto& from : net_networks) {
-    net_networks_rec_disk to{};
-    to.type = from.type;
-    strcpy(to.name, from.name);
-    strcpy(to.dir, from.dir);
-    to.sysnum = from.sysnum;
-    disk.emplace_back(to);
-  }
-
-  DataFile<net_networks_rec_disk> file(syscfg.datadir, NETWORKS_DAT,
-      File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
-  if (!file) {
-    return false;
-  }
-  return file.WriteVector(disk);
-}
-
 static bool del_net(
-    vector<net_networks_rec>& net_networks, int nn) {
-  wwiv::sdk::Subs subs(syscfg.datadir, net_networks);
+    Networks& networks, int nn) {
+  wwiv::sdk::Subs subs(syscfg.datadir, networks.networks());
   if (!subs.Load()) {
     return false;
   }
@@ -136,10 +94,6 @@ static bool del_net(
       close_sub();
     }
   }
-
-  // TODO(rushfan): xsubs - don't think we need to do this here, we didn't change
-  // anything in subs.dat
-  // wwiv::sdk::write_subs(syscfg.datadir, subboards);
 
   // Now we update the email.
   File emailfile(syscfg.datadir, EMAIL_DAT);
@@ -191,16 +145,12 @@ static bool del_net(
     }
   }
 
-  // FInally delete it from networks.dat
-  {
-    auto it = net_networks.begin();
-    std::advance(it, nn);
-    net_networks.erase(it);
-  }
-  return save_networks_dat(net_networks);
+  // Finally delete it from networks.dat
+  networks.erase(nn);
+  return networks.Save();
 }
 
-static void edit_net(vector<net_networks_rec>& net_networks, int nn) {
+static void edit_net(Networks& networks, int nn) {
   static const vector<string> nettypes = {
     "WWIVnet ",
     "Fido    ",
@@ -209,7 +159,7 @@ static void edit_net(vector<net_networks_rec>& net_networks, int nn) {
 
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
-  net_networks_rec& n = net_networks[nn];
+  net_networks_rec& n = networks.at(nn);
   char szOldNetworkName[20];
   strcpy(szOldNetworkName, n.name);
 
@@ -271,12 +221,11 @@ static void edit_net(vector<net_networks_rec>& net_networks, int nn) {
       }
     }
   }
+  networks.Save();
 }
 
-static bool insert_net(
-    vector<net_networks_rec>& net_networks,
-    int nn) {
-  wwiv::sdk::Subs subs(syscfg.datadir, net_networks);
+static bool insert_net(Networks& networks, int nn) {
+  wwiv::sdk::Subs subs(syscfg.datadir, networks.networks());
   if (!subs.Load()) {
     return false;
   }
@@ -351,30 +300,25 @@ static bool insert_net(
   }
 
   {
-    auto it = net_networks.begin();
-    std::advance(it, nn);
     net_networks_rec n{};
     strcpy(n.name, "NetNet");
     sprintf(n.dir, "newnet.dir%c", File::pathSeparatorChar);
-    net_networks.insert(it, n);
+    networks.insert(nn, n);
   }
 
-  save_networks_dat(net_networks);
-  edit_net(net_networks, nn);
+  edit_net(networks, nn);
   return true;
 }
 
-void networks() {
-  vector<net_networks_rec> net_networks;
+void networks(wwiv::sdk::Config& config) {
+  Networks networks(config);
 
-  // We may not load any, and that's OK since there may be none.
-  load_networks_dat(net_networks);
   bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
 
     vector<ListBoxItem> items;
-    for (const auto& n : net_networks) {
+    for (const auto& n : networks.networks()) {
       items.emplace_back(StringPrintf("@%u %s", n.sysnum, n.name));
     }
     CursesWindow* window = out->window();
@@ -387,7 +331,7 @@ void networks() {
     ListBoxResult result = list.Run();
 
     if (result.type == ListBoxResultType::SELECTION) {
-      edit_net(net_networks, result.selected);
+      edit_net(networks, result.selected);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     } else if (result.type == ListBoxResultType::HOTKEY) {
@@ -397,13 +341,13 @@ void networks() {
           messagebox(window, { "You must run the BBS once", "to set up some variables before ", "deleting a network." });
           break;
         }
-        if (net_networks.size() > 1) {
-          const string prompt = StringPrintf("Delete '%s'", net_networks[result.selected].name);
+        if (networks.networks().size() > 1) {
+          const string prompt = StringPrintf("Delete '%s'", networks.at(result.selected).name);
           bool yn = dialog_yn(window, prompt);
           if (yn) {
             yn = dialog_yn(window, "Are you REALLY sure? ");
             if (yn) {
-              del_net(net_networks, result.selected);
+              del_net(networks, result.selected);
             }
           }
         } else {
@@ -416,22 +360,21 @@ void networks() {
           messagebox(window, lines);
           break;
         }
-        if (net_networks.size() >= MAX_NETWORKS) {
+        if (networks.networks().size() >= MAX_NETWORKS) {
           messagebox(window, "Too many networks.");
           break;
         }
-        const string prompt = StringPrintf("Insert before which (1-%d) ? ", net_networks.size() + 1);
-        const size_t net_num = dialog_input_number(window, prompt, 1, net_networks.size() + 1  );
-        if (net_num > 0 && net_num <= net_networks.size() + 1) {
+        const string prompt = StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
+        const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
+        if (net_num > 0 && net_num <= networks.networks().size() + 1) {
           if (dialog_yn(window, "Are you sure? ")) {
-            insert_net(net_networks, net_num - 1);
+            insert_net(networks, net_num - 1);
           }
         }
         break;
       }
     }
   } while (!done);
-
-  save_networks_dat(net_networks);
+  networks.Save();
 }
 

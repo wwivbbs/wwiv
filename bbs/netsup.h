@@ -18,21 +18,20 @@
 #ifndef __INCLUDED_BBS_NETSUP_H__
 #define __INCLUDED_BBS_NETSUP_H__
 
+#include <cstdint>
 #include <string>
 #include "sdk/net.h"
 
 void cleanup_net();
-void do_callout(int sn);
-bool attempt_callout();
+void do_callout(uint16_t sn);
 void print_pending_list();
 void gate_msg(
   net_header_rec* nh, char *messageText, int net_number,
   const std::string& author_name, std::vector<uint16_t> list,
   int nFromNetworkNumber);
 void force_callout(int dw);
-long next_system_reg(int ts);
 void run_exp();
-
+bool attempt_callout();
 
 
 #endif  // __INCLUDED_BBS_NETSUP_H__

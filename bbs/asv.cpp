@@ -18,6 +18,8 @@
 /**************************************************************************/
 #include "bbs/asv.h"
 
+#include <cstdint>
+
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
@@ -55,8 +57,8 @@ int printasv(const string& filename, int num, bool abort);
 
 void asv() {
   int i = 0;
-  int inode = 0;
-  char ch, s[41], s1[81], ph1[13], ph[13], sysname[35], snode[6];
+  int16_t inode = 0;
+  char ch, s[41], s1[81], ph1[13], ph[13], sysname[35];
   net_system_list_rec *csne;
   long reg_num, reg_num1;
   int i2 = 0, reg = 0, valfile = 0;
@@ -72,12 +74,13 @@ void asv() {
     bout.nl();
     switch (ch) {
     case '1':
+    {
       bout << "|#5Select a network you are in [Q=Quit].";
       bout.nl(2);
       i = 1;
       for (const auto& n : session()->net_networks) {
         if (n.sysnum) {
-          bout << " |#3" << i  << "|#1. " << n.name << wwiv::endl;
+          bout << " |#3" << i << "|#1. " << n.name << wwiv::endl;
           i++;
         }
       }
@@ -92,11 +95,12 @@ void asv() {
       }
       set_net_num(i - 1);
 
+      string snode;
       do {
         bout.nl();
         bout << "|#5Enter your node number [Q=Quit].\r\n|#1: |#4@";
-        input(snode, 5, true);
-        inode = atoi(snode);
+        snode = input(5, true);
+        inode = StringToUnsignedShort(snode);
         csne = next_system(inode);
         if ((!csne) && (inode > 0)) {
           bout.nl();
@@ -113,10 +117,10 @@ void asv() {
 
       ph1[0] = 0;
       if (session()->user()->GetDataPhoneNumber()[0] &&
-          !IsEquals(session()->user()->GetDataPhoneNumber(), "999-999-9999")) {
+        !IsEquals(session()->user()->GetDataPhoneNumber(), "999-999-9999")) {
         bout.nl();
         bout << "|#9Is |#2" << session()->user()->GetDataPhoneNumber()
-             << "|#9 the number of your BBS? ";
+          << "|#9 the number of your BBS? ";
         if (yesno()) {
           strcpy(ph1, session()->user()->GetDataPhoneNumber());
         }
@@ -245,7 +249,7 @@ void asv() {
           messagerec msg;
           msg.storage_type = 2;
           session()->net_email_name = StringPrintf("%s #1@%u", syscfg.sysopname, net_sysnum);
-          
+
           MessageEditorData data;
           data.title = irt;
           data.anonymous_flag = 0;
@@ -276,8 +280,7 @@ void asv() {
         valfile = 2;
         break;
       }
-      break;
-
+    } break;
     case '2':
     {
       bout.nl();

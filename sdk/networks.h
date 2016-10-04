@@ -53,8 +53,15 @@ public:
   size_type network_number(const std::string& network_name) const;
   bool contains(const std::string& network_name) const;
 
+  bool insert(std::size_t n, net_networks_rec r);
+  bool erase(std::size_t n);
+  bool Load();
+  bool Save();
+
+
 private:
   bool initialized_ = false;
+  std::string datadir_;
   std::vector<net_networks_rec> networks_;
 };
 
