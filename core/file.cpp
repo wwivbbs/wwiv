@@ -124,7 +124,6 @@ File::File(const string& dir, const string& filename) : File() {
 }
 
 File::~File() {
-  VLOG(3) << "~File " << full_path_name_ << ", handle=" << handle_;
   if (this->IsOpen()) {
     this->Close();
   }
