@@ -72,8 +72,8 @@ int  main_loop(char *message, char *from_message, char *color_string, char *mess
                int loc, int num_actions);
 void who_online(int *nodes, int loc);
 void intro(int loc);
-void ch_direct(const char *message, int loc, char *color_string, int node, int nOffSet);
-void ch_whisper(const char *message, char *color_string, int node, int nOffSet);
+void ch_direct(const string& message, int loc, char *color_string, int node);
+void ch_whisper(const std::string& , char *color_string, int node);
 int  wusrinst(char *n);
 void secure_ch(int ch);
 void cleanup_chat();
@@ -92,10 +92,76 @@ int  change_channels(int loc);
 bool check_ch(int ch);
 void load_channels(IniFile *pIniFile);
 int  userinst(char *user);
-int  grabname(const char *message, int ch);
 bool usercomp(const char *st1, const char *st2);
 
 using wwiv::bbs::TempDisablePause;
+
+static int grabname(const std::string& orig, int channel) {
+  int node = 0;
+  User u;
+  instancerec ir;
+
+  if (orig.empty() || orig.front() == ' ') {
+    return 0;
+  }
+
+  string::size_type space = orig.find(' ', 1);
+  string message = orig.substr(0, space);
+
+  int n = atoi(message.c_str());
+  if (n) {
+    if (n < 1 || n > num_instances()) {
+      bout << StringPrintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+      return 0;
+    }
+    get_inst_info(n, &ir);
+    if ((ir.flags & INST_FLAGS_ONLINE) &&
+      ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
+      if (channel && (ir.loc != channel)) {
+        bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
+        return 0;
+      }
+      return n;
+    }
+    bout << StringPrintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
+    return 0;
+  }
+  {
+    node = 0;
+    string name = message;
+    StringUpperCase(&name);
+    for (int i = 1; i <= num_instances(); i++) {
+      get_inst_info(i, &ir);
+      if ((ir.flags & INST_FLAGS_ONLINE) && ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
+        if (channel && (ir.loc != channel)) {
+          continue;
+        }
+        session()->users()->ReadUser(&u, ir.user);
+        if (name == u.GetName()) {
+          node = i;
+          break;
+        }
+      }
+    }
+  }
+  if (!node) {
+    if (channel) {
+      bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
+    } else {
+      bout << "|#1[|#9Specified user is not online|#1]\r\n";
+    }
+  }
+  return node;
+}
+
+static string StripName(const std::string& in) {
+  if (in.empty() || in.front() == ' ') {
+    return in;
+  }
+
+  string::size_type space = in.find(' ', 1);
+  return in.substr(space);
+}
 
 void chat_room() {
   int oiia = iia;
@@ -229,7 +295,7 @@ int f_action(int start_pos, int end_pos, char *aword) {
   return test;
 }
 
-// Sends out a message to everyone in channel LOC
+// Sends out a raw_message to everyone in channel LOC
 static void out_msg(const std::string& message, int loc) {
   for (int i = 1; i <= num_instances(); i++) {
     instancerec ir;
@@ -240,16 +306,16 @@ static void out_msg(const std::string& message, int loc) {
   }
 }
 
-int main_loop(char *message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
+int main_loop(char *raw_message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
               int loc, int num_actions) {
   char szText[300];
   User u;
 
   bool bActionHandled = true;
   if (bActionMode) {
-    bActionHandled = !check_action(message, color_string, loc);
+    bActionHandled = !check_action(raw_message, color_string, loc);
   }
-  if (IsEqualsIgnoreCase(message, "/r")) {
+  if (IsEqualsIgnoreCase(raw_message, "/r")) {
     /* "Undocumented Feature" - the original alpha version of WMChat had a /r
     * command to look up a user's registry from inside chat.  I took this
     * out when I released the program, but am now putting it back in due to
@@ -262,23 +328,23 @@ int main_loop(char *message, char *from_message, char *color_string, char *messa
     bout.nl();
     bActionHandled = 0;
 #endif
-  } else if (IsEqualsIgnoreCase(message, "/w")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/w")) {
     bActionHandled = 0;
     multi_instance();
     bout.nl();
-  } else if (IsEqualsIgnoreCase(message, "list")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "list")) {
     bout.nl();
     for (int i2 = 0; i2 <= num_actions; i2++) {
       bout.bprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(message, "/q") ||
-             IsEqualsIgnoreCase(message, "x")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/q") ||
+             IsEqualsIgnoreCase(raw_message, "x")) {
     bActionHandled = 0;
     bout << "\r\n|#2Exiting Chatroom\r\n";
     return 0;
-  } else if (IsEqualsIgnoreCase(message, "/a")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/a")) {
     bActionHandled = 0;
     if (bActionMode) {
       bout << "|#1[|#9Action mode disabled|#1]\r\n";
@@ -287,10 +353,10 @@ int main_loop(char *message, char *from_message, char *color_string, char *messa
       bout << "|#1[|#9Action mode enabled|#1]\r\n";
       bActionMode = true;
     }
-  } else if (IsEqualsIgnoreCase(message, "/s")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/s")) {
     bActionHandled = 0;
     secure_ch(loc);
-  } else if (IsEqualsIgnoreCase(message, "/u")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/u")) {
     bActionHandled = 0;
     char szFileName[MAX_PATH];
     sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
@@ -302,7 +368,7 @@ int main_loop(char *message, char *from_message, char *color_string, char *messa
     } else {
       bout << "|#1[|#9Channel not secured!|#1]\r\n";
     }
-  } else if (IsEqualsIgnoreCase(message, "/l") &&
+  } else if (IsEqualsIgnoreCase(raw_message, "/l") &&
              session()->user()->GetSl() >= g_nChatOpSecLvl) {
     bout << "\r\n|#9Username: ";
     input(szText, 30);
@@ -315,39 +381,41 @@ int main_loop(char *message, char *from_message, char *color_string, char *messa
       bout << "|#6Unknown user.\r\n";
     }
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(message, "/p")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/p")) {
     bActionHandled = 0;
     page_user(loc);
-  } else if (IsEqualsIgnoreCase(message, "/c")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/c")) {
     int nChannel = change_channels(loc);
     loc = nChannel;
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(message, "?") ||
-             IsEqualsIgnoreCase(message, "/?")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "?") ||
+             IsEqualsIgnoreCase(raw_message, "/?")) {
     bActionHandled = 0;
     printfile(CHAT_NOEXT);
-  } else if (bActionHandled && message[0] == '>') {
+  } else if (bActionHandled && raw_message[0] == '>') {
     bActionHandled = 0;
-    int nUserNum = grabname(message + 1, loc);
+    int nUserNum = grabname(raw_message + 1, loc);
     if (nUserNum) {
-      ch_direct(message + 1, loc, color_string, nUserNum, message[1]);
+      string message = StripName(raw_message);
+      ch_direct(message, loc, color_string, nUserNum);
     }
-  } else if (bActionHandled && message[0] == '/') {
-    int nUserNum = grabname(message + 1, 0);
+  } else if (bActionHandled && raw_message[0] == '/') {
+    int nUserNum = grabname(raw_message + 1, 0);
     if (nUserNum) {
-      ch_whisper(message + 1, color_string, nUserNum, message[1]);
+      string message = StripName(raw_message);
+      ch_whisper(message, color_string, nUserNum);
     }
     bActionHandled = 0;
   } else {
     if (bActionHandled) {
       bout << messageSent;
     }
-    if (!message[0]) {
+    if (!raw_message[0]) {
       return loc;
     }
   }
   if (bActionHandled) {
-    sprintf(szText, from_message, session()->user()->GetName(), color_string, message);
+    sprintf(szText, from_message, session()->user()->GetName(), color_string, raw_message);
     out_msg(szText, loc);
   }
   return loc;
@@ -356,7 +424,7 @@ int main_loop(char *message, char *from_message, char *color_string, char *messa
 
 // Fills an array with information of who's online.
 void who_online(int *nodes, int loc) {
-  instancerec ir;
+  instancerec ir{};
 
   int c = 0;
   for (int i = 1; i <= num_instances(); i++) {
@@ -407,8 +475,8 @@ void intro(int loc) {
 // This function is called when a > sign is encountered at the beginning of
 //   a line, it's used for directing messages
 
-void ch_direct(const char *message, int loc, char *color_string, int node, int nOffSet) {
-  if (strlen(message + nOffSet) == 0) {
+void ch_direct(const string& message, int loc, char *color_string, int node) {
+  if (message.empty()) {
     bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
   }
@@ -416,15 +484,11 @@ void ch_direct(const char *message, int loc, char *color_string, int node, int n
   instancerec ir = {};
   get_inst_info(node, &ir);
   if (ir.loc == loc) {
-    if (!strlen(message + nOffSet)) {
-      bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
-      return;
-    }
     User u;
     session()->users()->ReadUser(&u, ir.user);
     const string s = StringPrintf("|#9From %.12s|#6 [to %s]|#1: %s%s",
             session()->user()->GetName(), u.GetName(), color_string,
-            message + nOffSet + 1);
+            message.c_str());
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
       if (ir.loc == loc &&  i != session()->instance_number()) {
@@ -439,9 +503,9 @@ void ch_direct(const char *message, int loc, char *color_string, int node, int n
 }
 
 // This function is called when a / sign is encountered at the beginning of
-//   a message, used for whispering
-void ch_whisper(const char *message, char *color_string, int node, int nOffSet) {
-  if (strlen(message + nOffSet) == 0) {
+//   a raw_message, used for whispering
+void ch_whisper(const std::string& message, char *color_string, int node) {
+  if (message.empty()) {
     bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
   }
@@ -451,14 +515,12 @@ void ch_whisper(const char *message, char *color_string, int node, int nOffSet) 
   instancerec ir;
   get_inst_info(node, &ir);
 
-  char szText[ 512 ];
+  string text = message;
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
-    sprintf(szText, "|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", session()->user()->GetName(), color_string,
-            message + nOffSet);
-  } else {
-    strcpy(szText, message + nOffSet);
+    text = StringPrintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", session()->user()->GetName(), color_string,
+      message.c_str());
   }
-  send_inst_str(node, szText);
+  send_inst_str(node, text);
   User u;
   session()->users()->ReadUser(&u, ir.user);
   bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
@@ -966,99 +1028,6 @@ int userinst(char *user) {
 }
 
 
-int grabname(const char *message, int ch) {
-  int c = 0, node = 0, dupe = 0, sp = 0;
-  char name[41];
-  User u;
-  instancerec ir;
-
-  if (message[0] == ' ') {
-    return 0;
-  }
-
-  int n = atoi(message);
-  if (n) {
-    if (n < 1 || n > num_instances()) {
-      char buffer[255];
-      sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-      bout << buffer;
-      return 0;
-    }
-    get_inst_info(n, &ir);
-    if ((ir.flags & INST_FLAGS_ONLINE) &&
-        ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
-      if (ch && (ir.loc != ch)) {
-        bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
-        return 0;
-      }
-      while (!sp) {
-        c++;
-        if ((message[c] == ' ') || (message[c] == '\0')) {
-          sp = 1;
-        }
-      }
-      return n;
-    }
-    char buffer[255];
-    sprintf(buffer, "%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
-    bout << buffer;
-    return 0;
-  }
-  while (!node && c < GetStringLength(message) && c < 40) {
-    int x = 0;
-    if (sp) {
-      name[sp++] = ' ';
-    }
-    while (!x) {
-      if ((message[c] == ' ') || (message[c] == '\0')) {
-        x = 1;
-      } else {
-        name[sp++] = wwiv::UpperCase<char>(message[c]);
-      }
-      if (sp == 40) {
-        break;
-      }
-      c++;
-    }
-    name[sp] = '\0';
-    for (int i = 1; i <= num_instances(); i++) {
-      get_inst_info(i, &ir);
-      if ((ir.flags & INST_FLAGS_ONLINE) && ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
-        if (ch && (ir.loc != ch)) {
-          continue;
-        }
-        session()->users()->ReadUser(&u, ir.user);
-        int t1 = strlen(name);
-        int t2 = strlen(u.GetName());
-        if (t1 > t2) {
-          continue;
-        }
-        if (usercomp(name, u.GetName())) {
-          if (node && (t1 != t2)) {
-            dupe = 1;
-            node = 0;
-            break;
-          } else {
-            node = i;
-            if (t1 == t2) {
-              break;
-            }
-          }
-        }
-      }
-    }
-  }
-  if (!node) {
-    if (dupe) {
-      bout << "|#1[|#9Name specified matched multiple users.|#1]\r\n";
-    } else if (ch) {
-      bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
-    } else {
-      bout << "|#1[|#9Specified user is not online|#1]\r\n";
-    }
-  }
-  return node;
-}
 
 bool usercomp(const char *st1, const char *st2) {
   for (int i = 0; i < GetStringLength(st1); i++) {
