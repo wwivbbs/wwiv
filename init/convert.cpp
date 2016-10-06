@@ -214,13 +214,11 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
   DataFile<user_config> configUsrFile(syscfg.datadir, "config.usr",
     File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
   if (!configUsrFile) {
-    messagebox(window, "Unable to read CONFIG_USR.");
     return false;
   }
 
   vector<user_config> second_config;
   if (!configUsrFile.ReadVector(second_config)) {
-    messagebox(window, "Unable to read CONFIG_USR.");
     return false;
   }
 
@@ -247,7 +245,7 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
   configUsrFile.Close();
   configUsrFile.file().Delete();
 
-  // 2nd version of config.usr that INIT was mistankenly creating.
+  // 2nd version of config.usr that INIT was mistakenly creating.
   File userDatFile(syscfg.datadir, "user.dat");
   userDatFile.Delete();
 

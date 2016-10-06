@@ -111,11 +111,12 @@ bool WWIVMessageApi::Remove(const std::string& name) {
 
 WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
   const std::string sub_filename = StrCat(name, ".sub");
-  File fileSub(subs_directory_, sub_filename);
-
   const string msgs_filename = StrCat(name, ".dat");
-  File msgs_file(messages_directory_, msgs_filename);
+  string sub;
+  string msgs;
   {
+    File fileSub(subs_directory_, sub_filename);
+    File msgs_file(messages_directory_, msgs_filename);
     if (!fileSub.Exists()) {
       return nullptr;
     }
@@ -132,28 +133,37 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
     if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
       return nullptr;
     }
+
+    sub = fileSub.full_pathname();
+    msgs = msgs_file.full_pathname();
   }
 
-  return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());
+  return new WWIVMessageArea(this, sub, msgs);
 }
 
 WWIVEmail* WWIVMessageApi::OpenEmail() {
-  File datafile(subs_directory_, EMAIL_DAT);
-  if (!datafile.Exists()) {
-    return nullptr;
-  }
-  if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
-    return nullptr;
-  }
-  File textfile(messages_directory_, EMAIL_DAT);
-  if (!textfile.Exists()) {
-    return nullptr;
-  }
-  if (!textfile.Open(File::modeReadOnly | File::modeBinary)) {
-    return nullptr;
+  string data;
+  string text;
+  {
+    File datafile(subs_directory_, EMAIL_DAT);
+    File textfile(messages_directory_, EMAIL_DAT);
+    if (!datafile.Exists()) {
+      return nullptr;
+    }
+    if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
+      return nullptr;
+    }
+    if (!textfile.Exists()) {
+      return nullptr;
+    }
+    if (!textfile.Open(File::modeReadOnly | File::modeBinary)) {
+      return nullptr;
+    }
+    data = datafile.full_pathname();
+    text = textfile.full_pathname();
   }
 
-  return new WWIVEmail(root_directory_, datafile.full_pathname(), textfile.full_pathname(), net_networks_.size());
+  return new WWIVEmail(root_directory_, data, text, net_networks_.size());
 }
 
 }  // namespace msgapi
