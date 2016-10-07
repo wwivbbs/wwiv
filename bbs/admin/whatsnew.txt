@@ -26,6 +26,9 @@ What's New in WWIV 5.2 (2016)
   instances.
 * bbs -XU is no longer supported.  valid connection types are local, ssh and
   telnet on all platforms.
+* bbs -I# is no longer supported. It's been a duplicate of -N forever, please
+  use -N## to specify the node number. (It also hasn't worked for quite some
+  time)
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -1042,7 +1042,7 @@ void WSession::QuitBBS() {
 void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   if (perform_shutdown) {
     if (exit_level != WSession::exitLevelOK && exit_level != WSession::exitLevelQuit) {
-      // Only log the exiting at absnomal error levels, since we see lots of exiting statements
+      // Only log the exiting at abnormal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probers, etc).
       sysoplog(false);
       sysoplog(false) << "WWIV " << wwiv_version << ", inst " << instance_number() << ", taken down at " << times()
@@ -1065,22 +1065,25 @@ void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 
 void WSession::ShowUsage() {
   cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" << "Usage:\r\n\n"
-      << "bbs -I<inst> [options] \r\n\n" << "Options:\r\n\n"
+      << "bbs -N<inst> [options] \r\n\n" << "Options:\r\n\n"
       << "  -?         - Display command line options (This screen)\r\n\n"
       << "  -A<level>  - Specify the Error Exit Level\r\n"
       << "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n"
-      << "  -E         - Load for beginday event only\r\n" << "  -H<handle> - Socket handle\r\n"
-      << "  -I<inst>   - Designate instance number <inst>\r\n"
+      << "  -E         - Load for beginday event only\r\n"
+      << "  -H<handle> - Socket handle\r\n"
       << "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n"
-      << "  -M         - Don't access modem at all\r\n" << "  -N<inst>   - Designate instance number <inst>\r\n"
-      << "  -Q<level>  - Normal exit level\r\n" << "  -R<min>    - Specify max # minutes until event\r\n"
+      << "  -M         - Don't access modem at all\r\n"
+      << "  -N<inst>   - Designate instance number <inst>\r\n"
+      << "  -Q<level>  - Normal exit level\r\n"
+      << "  -R<min>    - Specify max # minutes until event\r\n"
       << "  -S<rate>   - Used only with -B, indicates com port speed\r\n"
-      << "  -U<user#>  - Pass usernumber <user#> online\r\n" << "  -V         - Display WWIV Version\r\n"
-      << "  -XT        - Someone already logged on via telnet (socket handle)\r\n" <<
+      << "  -U<user#>  - Pass usernumber <user#> online\r\n"
+      << "  -V         - Display WWIV Version\r\n"
+      << "  -XT        - Someone already logged on via telnet (socket handle)\r\n"
 #if defined (_WIN32)
-      "  -XS        - Someone already logged on via SSH (socket handle)\r\n" <<
+      << "  -XS        - Someone already logged on via SSH (socket handle)\r\n"
 #endif // _WIN32
-      "  -Z         - Do not hang up on user when at log off\r\n" << endl;
+      << "  -Z         - Do not hang up on user when at log off\r\n" << endl;
 }
 
 int WSession::Run(int argc, char *argv[]) {
@@ -1148,7 +1151,6 @@ int WSession::Run(int argc, char *argv[]) {
       case 'H':
         hSockOrComm = stoi(argument);
         break;
-      case 'I':
       case 'M':
         ok_modem_stuff = false;
         break;
