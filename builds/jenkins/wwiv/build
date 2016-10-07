@@ -47,6 +47,7 @@ cp  ${WORKSPACE}/bbs/bbs \
     ${WORKSPACE}/network1/network1 \
     ${WORKSPACE}/network2/network2 \
     ${WORKSPACE}/network3/network3 \
+    ${WORKSPACE}/wwivd/wwivd \
     ${WORKSPACE}/wwivutil/wwivutil \
     ${WORKSPACE}/release
 
