@@ -79,7 +79,6 @@
 #include "bbs/local_io_win32.h"
 #else
 #include <unistd.h>
-#include "bbs/platform/unix/wiou.h"
 #endif // _WIN32
 
 using std::chrono::milliseconds;
@@ -165,25 +164,13 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
       type = CommunicationType::TELNET;
     }
     comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
-  }
-    break;
+  } break;
   case CommunicationType::TELNET: {
     comm_.reset(new RemoteSocketIO(nHandle, true));
-  }
-    break;
-  case CommunicationType::UNIX: {
-#ifdef __unix__
-    comm_.reset(new WIOUnix());
-#else
-    // TODO(rushfan): Should we warn here?
-    comm_.reset(new NullRemoteIO());
-#endif
-  }
-    break;
+  } break;
   case CommunicationType::NONE: {
     comm_.reset(new NullRemoteIO());
-  }
-    break;
+  } break;
   }
   bout.SetComm(comm_.get());
 }
@@ -1213,9 +1200,6 @@ int WSession::Run(int argc, char *argv[]) {
             type = CommunicationType::TELNET;
           } else if (argument2Char == 'S') {
             type = CommunicationType::SSH;
-          } else if (argument2Char == 'U') {
-            session()->reset_local_io(new NullLocalIO());
-            type = CommunicationType::UNIX;
           }
         } else {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;

@@ -26,8 +26,7 @@ enum class CommunicationType {
   NONE,
   TELNET,
   SSH,
-  STDIO,
-  UNIX
+  STDIO
 };
 
 /** Information about the remote session. */

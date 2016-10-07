@@ -137,9 +137,9 @@ if(UNIX)
   # Enable if you are cleaning them up actively.
   # add_definitions ("-Wall")
   set(PLATFORM_SOURCES 
-	platform/unix/exec.cpp 
-	platform/unix/utility2.cpp 
-	platform/unix/wiou.cpp)
+    	platform/unix/exec.cpp 
+    	platform/unix/utility2.cpp 
+  )
   find_package (Threads)
   if(APPLE)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.mm)

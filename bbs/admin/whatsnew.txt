@@ -24,6 +24,8 @@ What's New in WWIV 5.2 (2016)
 * BBS now uses the network support code from the SDK module (like net51).
 * nodemgr is deleted.  wwivd is the new preferred *nix daemon for spawning
   instances.
+* bbs -XU is no longer supported.  valid connection types are local, ssh and
+  telnet on all platforms.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
