@@ -65,7 +65,9 @@ struct wwivd_config_t {
   string bbsdir;
   bool syslog = true;
 
-  int num_instances;
+  int start_node;
+  int end_node;
+  int local_node;
 };
 
 enum class ConnectionType { SSH, TELNET };
@@ -100,13 +102,6 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
   wwivd_config_t c{};
 
   {
-    IniFile ini(wwiv_ini_fn.full_pathname(), "WWIV");
-    if (!ini.IsOpen()) {
-      LOG(ERROR) << "Unable to open INI file: " << wwiv_ini_fn.full_pathname();
-    }
-    c.num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
-  }
-  {
     IniFile ini(wwivd_ini_fn.full_pathname(), "WWIVD");
     if (!ini.IsOpen()) {
       LOG(ERROR) << "Unable to open INI file: " << wwivd_ini_fn.full_pathname();
@@ -117,6 +112,9 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
     c.telnet_cmd = ini.GetValue("telnet_command", "./bbs -XT -H@H -N@N");
     c.telnet_port = ini.GetNumericValue("telnet_port", -1);
     c.syslog = ini.GetBooleanValue("use_syslog", true);
+    c.local_node = ini.GetNumericValue("local_node", 1);
+    c.start_node = ini.GetNumericValue("start_node", 2);
+    c.end_node = ini.GetNumericValue("end_node", 4);
   }
 
   return c;
@@ -133,9 +131,9 @@ static void huphandler(int mysignal) {
   kill(bbs_pid, SIGHUP); // send SIGHUP to process group
 }
 
-static int loadUsedNodeData(const Config& config, int num_instances) {
+static int loadUsedNodeData(const Config& config, int start_node, int end_node) {
   int used_nodes = 0;
-  for(int counter = 1; counter <= num_instances; counter++) {
+  for(int counter = start_node; counter <= end_node; counter++) {
     File semaphore_file(node_file(config, counter));
     if (semaphore_file.Exists()) {
       ++used_nodes;
@@ -282,8 +280,9 @@ int Main(CommandLine& cmdline) {
 
   setup_signal_handlers();
 
-  int used_nodes = loadUsedNodeData(config, c.num_instances);
-  LOG(INFO) << "Found " << used_nodes << "/" << c.num_instances
+  const int num_instances = (c.end_node - c.start_node + 1);
+  const int used_nodes = loadUsedNodeData(config, c.start_node, c.end_node);
+  LOG(INFO) << "Found " << used_nodes << "/" << num_instances
        << " Nodes in use.";
 
   fd_set fds;
@@ -345,7 +344,7 @@ int Main(CommandLine& cmdline) {
     } else if (childpid == 0) {
       // We're in the child process now.
       // Find open node number and launch the child.
-      for (int node = 1; node <= c.num_instances; node++) {
+      for (int node = c.start_node; node <= c.end_node; node++) {
         if (!node_file(config, node).Exists()) {
           launchNode(config, c, node, client_sock, connection_type);
           return 0;
