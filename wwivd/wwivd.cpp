@@ -147,12 +147,14 @@ static int loadUsedNodeData(const Config& config, int num_instances) {
 static bool launchNode(
     const Config& config, const wwivd_config_t& c,
     int node_number, int sock, ConnectionType connection_type) {
-  VLOG(1) << "launchNode(" << node_number << ")";
+
+  const string pid = StringPrintf("[%d] ", getpid());
+  VLOG(1) << pid << "launchNode(" << node_number << ")";
   File semaphore_file(node_file(config, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
     // TODO(rushfan): What to do?
-    clog << "Unable to create semaphore file: " << semaphore_file << "; errno: "
-         << errno << endl;
+    LOG(ERROR) << pid << "Unable to create semaphore file: " << semaphore_file
+               << "; errno: " << errno;
   }
   semaphore_file.Close();
 
@@ -167,16 +169,17 @@ static bool launchNode(
   }
   const string cmd = CreateCommandLine(telnet_or_ssh_cmd, params);
 
-  LOG(INFO) << "Invoking WWIV with command line:" << cmd;
+  LOG(INFO) << pid << "Invoking WWIV with command line:" << cmd;
   pid_t child_pid = fork();
   if (child_pid == -1) {
     // fork failed.
-    LOG(ERROR) << "Error forking WWIV.";
+    LOG(ERROR) << pid << "Error forking WWIV.";
     return false;
   } else if (child_pid == 0) {
     // child process.
     struct sigaction sa;
     execl("/bin/sh", "sh", "-c", cmd.c_str(), nullptr);
+    LOG(ERROR) << "Unable to exec: '" << cmd.c_str() << "' errno: " << errno;
     // Should not happen unless we can't exec /bin/sh
     _exit(127);
   }
@@ -190,16 +193,16 @@ static bool launchNode(
 
   bool delete_ok = semaphore_file.Delete();
   if (!delete_ok) {
-    LOG(ERROR) << "Unable to delete semaphore file: "<< semaphore_file << "; errno: "
+    LOG(ERROR) << pid << "Unable to delete semaphore file: "<< semaphore_file << "; errno: "
          << errno;
   }
   if (WIFEXITED(status)) {
     // Process exited.
-    LOG(INFO) << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
+    LOG(INFO) << pid << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
   } else if (WIFSIGNALED(status)) {
-    LOG(INFO) << "Node #" << node_number << " killed by signal: " << WTERMSIG(status);
+    LOG(INFO) << pid << "Node #" << node_number << " killed by signal: " << WTERMSIG(status);
   } else if (WIFSTOPPED(status)) {
-    LOG(INFO) << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
+    LOG(INFO) << pid << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
   }
   return true;
 }
@@ -255,14 +258,7 @@ int CreateListenSocket(int port) {
  *  This program is the manager of the nodes for the WWIV BBS software
  *  on UNIX platforms.
  */
-int main(int argc, char *argv[])
-{
-  Logger::Init(argc, argv);
-  ScopeExit at_exit(Logger::ExitLogger);
-  CommandLine cmdline(argc, argv, "net");
-  cmdline.AddStandardArgs();
-
-  LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
+int Main(CommandLine& cmdline) {
 
   const string wwiv_dir = environment_variable("WWIV_DIR");
   string config_dir = !wwiv_dir.empty() ? wwiv_dir : File::current_directory();
@@ -356,4 +352,22 @@ int main(int argc, char *argv[])
   }
 
   return 1;
+}
+
+int main(int argc, char* argv[]) {
+  Logger::Init(argc, argv);
+  ScopeExit at_exit(Logger::ExitLogger);
+  CommandLine cmdline(argc, argv, "net");
+  cmdline.AddStandardArgs();
+
+  LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
+
+  signal(SIGCHLD, SIG_IGN);
+
+  try {
+    return Main(cmdline);
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "Caught top level exception: " << e.what();
+    return EXIT_FAILURE;
+  }
 }
