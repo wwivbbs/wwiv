@@ -185,16 +185,21 @@ static bool launchNode(
   }
   bbs_pid = child_pid;
   int status = 0;
+  VLOG(2) << pid << "before waitpid";
   while (waitpid(child_pid, &status, 0) == -1) {
     if (errno != EINTR) {
       break;
     }
   }
+  VLOG(2) << pid << "after  waitpid";
 
   bool delete_ok = semaphore_file.Delete();
   if (!delete_ok) {
-    LOG(ERROR) << pid << "Unable to delete semaphore file: "<< semaphore_file << "; errno: "
-         << errno;
+    LOG(ERROR) << pid << "Unable to delete semaphore file: "
+        << semaphore_file.full_pathname()
+        << "; errno: " << errno;
+  } else {
+    VLOG(2) << "Deleted sepaphore file: " << semaphore_file.full_pathname();
   }
   if (WIFEXITED(status)) {
     // Process exited.
