@@ -152,10 +152,11 @@ static bool launchNode(
   VLOG(1) << pid << "launchNode(" << node_number << ")";
   File semaphore_file(node_file(config, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
-    // TODO(rushfan): What to do?
     LOG(ERROR) << pid << "Unable to create semaphore file: " << semaphore_file
                << "; errno: " << errno;
+    return false;
   }
+  semaphore_file.Write(StringPrintf("Created by pid: %s\n", pid.c_str()));
   semaphore_file.Close();
 
   map<char, string> params = {
@@ -191,16 +192,8 @@ static bool launchNode(
       break;
     }
   }
-  VLOG(2) << pid << "after  waitpid";
+  VLOG(2) << pid << "after waitpid";
 
-  bool delete_ok = semaphore_file.Delete();
-  if (!delete_ok) {
-    LOG(ERROR) << pid << "Unable to delete semaphore file: "
-        << semaphore_file.full_pathname()
-        << "; errno: " << errno;
-  } else {
-    VLOG(2) << "Deleted sepaphore file: " << semaphore_file.full_pathname();
-  }
   if (WIFEXITED(status)) {
     // Process exited.
     LOG(INFO) << pid << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
@@ -209,6 +202,17 @@ static bool launchNode(
   } else if (WIFSTOPPED(status)) {
     LOG(INFO) << pid << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
   }
+
+  VLOG(2) << "About to delete semaphore file: "<< semaphore_file.full_pathname();
+  bool delete_ok = semaphore_file.Delete();
+  if (!delete_ok) {
+    LOG(ERROR) << pid << "Unable to delete semaphore file: "
+        << semaphore_file.full_pathname()
+        << "; errno: " << errno;
+  } else {
+    VLOG(2) << "Deleted semaphore file: " << semaphore_file.full_pathname();
+  }
+
   return true;
 }
 
@@ -350,6 +354,7 @@ int Main(CommandLine& cmdline) {
       LOG(INFO) << "Sending BUSY. No available node to handle connection.";
       send(client_sock, "BUSY\r\n", 6, 0);
       close(client_sock);
+      return 0;
     } else {
       // we're in the parent still.
       close(client_sock);
