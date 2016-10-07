@@ -18,6 +18,9 @@
 /**************************************************************************/
 
 #include <iostream>
+#include <map>
+#include <string>
+
 #include <signal.h>
 #include <string>
 #include <unistd.h>
@@ -44,15 +47,78 @@ using std::cerr;
 using std::clog;
 using std::cout;
 using std::endl;
+using std::map;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-#define BBS_BINARY "bbs"
-
 static pid_t bbs_pid = 0;
+
+
+struct wwivd_config_t {
+  int ssh_port = -1;
+  int telnet_port = 2323;
+  string ssh_cmd;
+  string telnet_cmd;
+  string bbsdir;
+  bool syslog = true;
+
+  int num_instances;
+};
+
+static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
+  string out;
+
+  for (auto it = tmpl.begin(); it != tmpl.end(); it++) {
+    if (*it == '@') {
+      ++it;
+      if (it == tmpl.end()) {
+        out.push_back('@');
+        break;
+      }
+      try {
+        out.append(params.at(*it));
+      } catch (const std::out_of_range& e) {
+        out.push_back(*it);
+      }
+    } else {
+      out.push_back(*it);
+    }
+  }
+
+  return out;
+}
+
+static wwivd_config_t LoadIniConfig(const Config& config) {
+  File wwiv_ini_fn(config.root_directory(), "wwiv.ini");
+  File wwivd_ini_fn(config.root_directory(), "wwivd.ini");
+
+  wwivd_config_t c{};
+
+  {
+    IniFile ini(wwiv_ini_fn.full_pathname(), "WWIV");
+    if (!ini.IsOpen()) {
+      LOG(ERROR) << "Unable to open INI file: " << wwiv_ini_fn.full_pathname();
+    }
+    c.num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+  }
+  {
+    IniFile ini(wwivd_ini_fn.full_pathname(), "WWIVD");
+    if (!ini.IsOpen()) {
+      LOG(ERROR) << "Unable to open INI file: " << wwivd_ini_fn.full_pathname();
+    }
+    c.bbsdir = config.root_directory();
+    c.ssh_cmd = ini.GetValue("ssh_command", "./bbs -XS -H@H -N@N");
+    c.ssh_port = ini.GetNumericValue("ssh_port", -1);
+    c.telnet_cmd = ini.GetValue("telnet_command", "./bbs -XT -H@H -N@N");
+    c.telnet_port = ini.GetNumericValue("telnet_port", -1);
+    c.syslog = ini.GetBooleanValue("use_syslog", true);
+  }
+
+  return c;
+}
 
 static const File node_file(const Config& config, int node_number) {
   return File(config.datadir(), StrCat("nodeinuse.", node_number));
@@ -76,7 +142,10 @@ static int loadUsedNodeData(const Config& config, int num_instances) {
   return used_nodes;
 }
 
-static bool launchNode(const Config& config, int node_number, int sock) {
+static bool launchNode(
+    const Config& config, const wwivd_config_t& c,
+    int node_number, int sock) {
+  VLOG(1) << "launchNode(" << node_number;
   File semaphore_file(node_file(config, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
     // TODO(rushfan): What to do?
@@ -84,8 +153,9 @@ static bool launchNode(const Config& config, int node_number, int sock) {
          << errno << endl;
   }
   semaphore_file.Close();
-  const string cmd = StringPrintf("./%s -N%u -XT -H%d",
-				  BBS_BINARY, node_number, sock);
+
+  map<char, string> params = { {'N', std::to_string(node_number) }, {'H', std::to_string(sock) } };
+  const string cmd = CreateCommandLine(c.telnet_cmd, params);
 
   LOG(INFO) << "Invoking WWIV with command line:" << cmd;
   pid_t child_pid = fork();
@@ -113,7 +183,14 @@ static bool launchNode(const Config& config, int node_number, int sock) {
     LOG(ERROR) << "Unable to delete semaphore file: "<< semaphore_file << "; errno: "
          << errno;
   }
-  LOG(INFO) << "Node #" << node_number << "exited with error code ?";
+  if (WIFEXITED(status)) {
+    // Process exited.
+    LOG(INFO) << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
+  } else if (WIFSIGNALED(status)) {
+    LOG(INFO) << "Node #" << node_number << " killed by signal: " << WTERMSIG(status);
+  } else if (WIFSTOPPED(status)) {
+    LOG(INFO) << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
+  }
   return true;
 }
 
@@ -147,16 +224,17 @@ int main(int argc, char *argv[])
     LOG(ERROR) << "Unable to load CONFIG.DAT";
     return 1;
   }
-  File::set_current_directory(config_dir);
-  IniFile ini("wwiv.ini", "WWIV");
-  const int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+
+  wwivd_config_t c = LoadIniConfig(config);
+  File::set_current_directory(c.bbsdir);
+
   setup_signal_handlers();
 
-  int used_nodes = loadUsedNodeData(config, num_instances);
-  LOG(INFO) << "Found " << used_nodes << "/" << num_instances
+  int used_nodes = loadUsedNodeData(config, c.num_instances);
+  LOG(INFO) << "Found " << used_nodes << "/" << c.num_instances
        << " Nodes in use.";
 
-  int port = 2323;
+  int port = c.telnet_port;
   struct sockaddr_in my_addr;
   struct sockaddr_in saddr;
   int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -190,11 +268,12 @@ int main(int argc, char *argv[])
     LOG(ERROR) << "Error listening " << errno;
     return 3;
   }
+  LOG(INFO) << "Listening to telnet on port: " << c.telnet_port;
  
   socklen_t addr_size = sizeof(sockaddr_in);
   while (true) {
     int client_sock = accept(sock, (sockaddr*)&saddr, &addr_size);
-    clog << "Connection from: " << inet_ntoa(saddr.sin_addr) << endl;
+    LOG(INFO) << "Connection from: " << inet_ntoa(saddr.sin_addr) << endl;
     if (client_sock == -1) {
       LOG(INFO)<< "Error accepting client socket. " << errno;
       continue;
@@ -207,12 +286,15 @@ int main(int argc, char *argv[])
     } else if (childpid == 0) {
       // We're in the child process now.
       // Find open node number and launch the child.
-      for (int node = 1; node <= num_instances; node++) {
+      for (int node = 1; node <= c.num_instances; node++) {
         if (!node_file(config, node).Exists()) {
-          launchNode(config, node, client_sock);
+          launchNode(config, c, node, client_sock);
           return 0;
         }
       }
+      LOG(INFO) << "Sending BUSY. No available node to handle connection.";
+      send(client_sock, "BUSY\r\n", 6, 0);
+      close(client_sock);
     } else {
       // we're in the parent still.
       close(client_sock);
