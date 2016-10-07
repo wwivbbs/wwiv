@@ -69,7 +69,7 @@ void Logger::Init(int argc, char** argv) {
   el::Configurations conf;
   conf.setToDefault();
   conf.setGlobally(ConfigurationType::Filename, log_filename);
-  conf.setGlobally(ConfigurationType::Format, std::string("%datetime %level  %msg"));
+  conf.setGlobally(ConfigurationType::Format, std::string("%datetime %level %msg"));
   conf.set(Level::Debug, ConfigurationType::Format, std::string("%datetime %level [%user@%host] [%func] [%loc] %msg"));
   // INFO and WARNING are set to default by Level::Global
   conf.set(Level::Error, ConfigurationType::Format, std::string("%datetime %level %msg"));
