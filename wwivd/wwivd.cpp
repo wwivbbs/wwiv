@@ -68,6 +68,8 @@ struct wwivd_config_t {
   int num_instances;
 };
 
+enum class ConnectionType { SSH, TELNET };
+
 static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
 
@@ -144,8 +146,8 @@ static int loadUsedNodeData(const Config& config, int num_instances) {
 
 static bool launchNode(
     const Config& config, const wwivd_config_t& c,
-    int node_number, int sock) {
-  VLOG(1) << "launchNode(" << node_number;
+    int node_number, int sock, ConnectionType connection_type) {
+  VLOG(1) << "launchNode(" << node_number << ")";
   File semaphore_file(node_file(config, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
     // TODO(rushfan): What to do?
@@ -154,8 +156,16 @@ static bool launchNode(
   }
   semaphore_file.Close();
 
-  map<char, string> params = { {'N', std::to_string(node_number) }, {'H', std::to_string(sock) } };
-  const string cmd = CreateCommandLine(c.telnet_cmd, params);
+  map<char, string> params = {
+      {'N', std::to_string(node_number) },
+      {'H', std::to_string(sock) }
+  };
+
+  string telnet_or_ssh_cmd = c.telnet_cmd;
+  if (connection_type == ConnectionType::SSH) {
+    telnet_or_ssh_cmd = c.ssh_cmd;
+  }
+  const string cmd = CreateCommandLine(telnet_or_ssh_cmd, params);
 
   LOG(INFO) << "Invoking WWIV with command line:" << cmd;
   pid_t child_pid = fork();
@@ -204,6 +214,43 @@ void setup_signal_handlers() {
   }
 }
 
+int CreateListenSocket(int port) {
+  struct sockaddr_in my_addr;
+  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock == -1) {
+    LOG(ERROR) << "Unable to create socket";
+    return -1;
+  }
+  int optval = 1;
+  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
+    LOG(ERROR) << "Unable to create socket";
+    return -1;
+  }
+  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval)) == -1) {
+    LOG(ERROR) << "Unable to create socket";
+    return -1;
+  }
+  // Try to set nodelay.
+  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
+
+  my_addr.sin_family = AF_INET ;
+  my_addr.sin_port = htons(port);
+  memset(&(my_addr.sin_zero), 0, 8);
+  my_addr.sin_addr.s_addr = INADDR_ANY ;
+
+  if (bind(sock, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
+    LOG(ERROR)  << "Error binding to socket, make sure nothing else is listening "
+        << "on this port: " << errno;
+    return -1;
+  }
+  if (listen(sock, 10) == -1) {
+    LOG(ERROR) << "Error listening " << errno;
+    return -1;
+  }
+
+  return sock;
+}
+
 /**
  *  This program is the manager of the nodes for the WWIV BBS software
  *  on UNIX platforms.
@@ -234,45 +281,52 @@ int main(int argc, char *argv[])
   LOG(INFO) << "Found " << used_nodes << "/" << c.num_instances
        << " Nodes in use.";
 
-  int port = c.telnet_port;
-  struct sockaddr_in my_addr;
-  struct sockaddr_in saddr;
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
-  if (sock == -1) {
-    LOG(ERROR) << "Unable to create socket";
-    return 1;
+  fd_set fds;
+  int telnet_socket = -1;
+  int ssh_socket = -1;
+  if (c.telnet_port > 0) {
+    LOG(INFO) << "Listening to telnet on port: " << c.telnet_port;
+    telnet_socket = CreateListenSocket(c.telnet_port);
   }
-  int optval = 1;
-  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket";
-    return 1;
+  if (c.ssh_port > 0) {
+    LOG(INFO) << "Listening to SSH on port: " << c.ssh_port;
+    ssh_socket = CreateListenSocket(c.ssh_port);
   }
-  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket";
-    return 1;
-  }
-  // Try to set nodelay.
-  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
+  int max_fd = std::max<int>(telnet_socket, ssh_socket);
 
-  my_addr.sin_family = AF_INET ;
-  my_addr.sin_port = htons(port);
-  memset(&(my_addr.sin_zero), 0, 8);
-  my_addr.sin_addr.s_addr = INADDR_ANY ;
-     
-  if (bind(sock, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
-    LOG(ERROR)  << "Error binding to socket, make sure nothing else is listening "
-        << "on this port: " << errno;
-    return 2;
-  }
-  if (listen(sock, 10) == -1) {
-    LOG(ERROR) << "Error listening " << errno;
-    return 3;
-  }
-  LOG(INFO) << "Listening to telnet on port: " << c.telnet_port;
  
   socklen_t addr_size = sizeof(sockaddr_in);
+
   while (true) {
-    int client_sock = accept(sock, (sockaddr*)&saddr, &addr_size);
+    FD_ZERO(&fds);
+    if (c.telnet_port > 0) {
+      FD_SET(telnet_socket, &fds);
+    }
+    if (c.ssh_port > 0) {
+      FD_SET(ssh_socket, &fds);
+    }
+    ConnectionType connection_type = ConnectionType::TELNET;
+    VLOG(1) << "About to call select. (" << max_fd << ")";
+    int status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
+    VLOG(1) << "After select.";
+    if (status < 0) {
+      LOG(ERROR) << "Error calling select, errno: " << errno;
+      return 2;
+    }
+
+    struct sockaddr_in saddr = {};
+    int client_sock = -1;
+    if (c.telnet_port > 0 && FD_ISSET(telnet_socket, &fds)) {
+      client_sock = accept(telnet_socket, (sockaddr*)&saddr, &addr_size);
+      connection_type = ConnectionType::TELNET;
+    } else if (c.ssh_port > 0 && FD_ISSET(ssh_socket, &fds)) {
+      client_sock = accept(ssh_socket, (sockaddr*)&saddr, &addr_size);
+      connection_type = ConnectionType::SSH;
+    } else {
+      LOG(ERROR) << "Unable to determine which socket triggered select!";
+      continue;
+    }
+
     LOG(INFO) << "Connection from: " << inet_ntoa(saddr.sin_addr) << endl;
     if (client_sock == -1) {
       LOG(INFO)<< "Error accepting client socket. " << errno;
@@ -288,7 +342,7 @@ int main(int argc, char *argv[])
       // Find open node number and launch the child.
       for (int node = 1; node <= c.num_instances; node++) {
         if (!node_file(config, node).Exists()) {
-          launchNode(config, c, node, client_sock);
+          launchNode(config, c, node, client_sock, connection_type);
           return 0;
         }
       }
