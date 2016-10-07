@@ -1,4 +1,4 @@
-# CMake for WWIV 5.0 NodeMgr
+# CMake for WWIV Daemon
 cmake_minimum_required (VERSION 2.6)
 project (wwivd)
 include_directories(..)

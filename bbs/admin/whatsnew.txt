@@ -22,7 +22,8 @@ What's New in WWIV 5.2 (2016)
 * Removed TAB {Instance Editor, didn't really edit, just allowed you to see
   status or shutdown an instance} command from WFC. Not really needed anymore.
 * BBS now uses the network support code from the SDK module (like net51).
-* 
+* nodemgr is deleted.  wwivd is the new preferred *nix daemon for spawning
+  instances.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
