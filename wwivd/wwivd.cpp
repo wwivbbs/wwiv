@@ -257,6 +257,7 @@ int CreateListenSocket(int port) {
  */
 int main(int argc, char *argv[])
 {
+  signal(SIGCHLD, SIG_IGN);
   Logger::Init(argc, argv);
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
