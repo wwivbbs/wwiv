@@ -200,6 +200,8 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
 
   Trashcan trashcan(*session()->config());
   if (trashcan.IsTrashName(user_name)) {
+    LOG(INFO) << "Trashcan name entered from IP: " << session()->remoteIO()->remote_info().address
+              << "; name: " << user_name;
     hangup = true;
     hang_it_up();
     return 0;
@@ -585,12 +587,8 @@ static void UpdateLastOnFile() {
   }
   if (incom) {
     string remote_address = session()->remoteIO()->remote_info().address;
-    string cid_name = session()->remoteIO()->remote_info().cid_name;
     if (!remote_address.empty()) {
-      sysoplog() << "CID NUM : " << remote_address;
-    }
-    if (!cid_name.empty()) {
-      sysoplog() << "CID NAME: " << cid_name;
+      sysoplog() << "Remote IP: " << remote_address;
     }
   }
   if (session()->GetEffectiveSl() == 255 && !incom) {

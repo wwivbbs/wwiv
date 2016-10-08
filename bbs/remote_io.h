@@ -33,13 +33,11 @@ enum class CommunicationType {
 class RemoteInfo {
 public:
   void clear() {
-    cid_name.clear();
     address.clear();
     username.clear();
     password.clear();
   }
 
-  std::string cid_name;
   std::string address;
   std::string username;
   std::string password;

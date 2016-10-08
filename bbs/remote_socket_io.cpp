@@ -128,7 +128,6 @@ bool RemoteSocketIO::open() {
 
   getpeername(socket_, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
 
-  remote_info().cid_name = "Internet TELNET Session";
   const string address = inet_ntoa(addr.sin_addr);
   remote_info().address = address;
   if (telnet_) {
