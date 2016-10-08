@@ -125,10 +125,26 @@ static const File node_file(const Config& config, int node_number) {
 }
 
 static void huphandler(int mysignal) {
-  // TODO(rushfan): Should this be clog? Where does stderr go?
-  cout << endl;
-  cout << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
+  cerr << endl;
+  cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
   kill(bbs_pid, SIGHUP); // send SIGHUP to process group
+}
+
+static void sigint_handler(int mysignal) {
+  cerr << endl;
+  cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
+  kill(bbs_pid, SIGINT); // send SIGINT to process group
+}
+
+static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
+  for(int i = start_node; i <= end_node; i++) {
+    File semaphore_file(node_file(config, i));
+    if (semaphore_file.Exists()) {
+      semaphore_file.Delete();
+    }
+  }
+
+  return true;
 }
 
 static int loadUsedNodeData(const Config& config, int start_node, int end_node) {
@@ -214,13 +230,23 @@ static bool launchNode(
   return true;
 }
 
-void setup_signal_handlers() {
+void setup_sighup_handlers() {
   struct sigaction sa;
   sa.sa_handler = huphandler;
   sa.sa_flags = SA_RESETHAND;
   sigfillset(&sa.sa_mask);
   if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    clog << "Unable to install signal handler for SIGHUP";
+    LOG(ERROR) << "Unable to install signal handler for SIGHUP";
+  }
+}
+
+void setup_sigint_handlers() {
+  struct sigaction sa;
+  sa.sa_handler = sigint_handler;
+  sa.sa_flags = SA_RESETHAND;
+  sigfillset(&sa.sa_mask);
+  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGINT";
   }
 }
 
@@ -278,12 +304,12 @@ int Main(CommandLine& cmdline) {
   wwivd_config_t c = LoadIniConfig(config);
   File::set_current_directory(c.bbsdir);
 
-  setup_signal_handlers();
+  setup_sighup_handlers();
+  setup_sigint_handlers();
 
-  const int num_instances = (c.end_node - c.start_node + 1);
-  const int used_nodes = loadUsedNodeData(config, c.start_node, c.end_node);
-  LOG(INFO) << "Found " << used_nodes << "/" << num_instances
-       << " Nodes in use.";
+  if (!DeleteAllSemaphores(config, c.start_node, c.end_node)) {
+    LOG(ERROR) << "Unable to clear semaphores.";
+  }
 
   fd_set fds;
   int telnet_socket = -1;
@@ -296,12 +322,15 @@ int Main(CommandLine& cmdline) {
     LOG(INFO) << "Listening to SSH on port: " << c.ssh_port;
     ssh_socket = CreateListenSocket(c.ssh_port);
   }
-  int max_fd = std::max<int>(telnet_socket, ssh_socket);
 
- 
+  int max_fd = std::max<int>(telnet_socket, ssh_socket);
   socklen_t addr_size = sizeof(sockaddr_in);
 
   while (true) {
+    const int num_instances = (c.end_node - c.start_node + 1);
+    const int used_nodes = loadUsedNodeData(config, c.start_node, c.end_node);
+    LOG(INFO) << "Nodes in use: (" << used_nodes << "/" << num_instances << ")";
+
     FD_ZERO(&fds);
     if (c.telnet_port > 0) {
       FD_SET(telnet_socket, &fds);
@@ -314,7 +343,7 @@ int Main(CommandLine& cmdline) {
     int status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
     VLOG(1) << "After select.";
     if (status < 0) {
-      LOG(ERROR) << "Error calling select, errno: " << errno;
+      LOG(ERROR) << "Error calling select; errno: " << errno;
       return 2;
     }
 
