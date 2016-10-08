@@ -31,7 +31,6 @@ using std::string;
 
 using namespace wwiv::strings;
 
-
 class TrashcanTest : public testing::Test {
 protected:
     virtual void SetUp() {
