@@ -45,6 +45,7 @@
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/remote_io.h"
+#include "bbs/trashcan.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -196,6 +197,14 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
     user_name = remote_username;
   }
   StringTrim(&user_name);
+
+  Trashcan trashcan(*session()->config());
+  if (trashcan.IsTrashName(user_name)) {
+    hangup = true;
+    hang_it_up();
+    return 0;
+  }
+
 
   int user_number = finduser(user_name);
   if (user_number != 0) {

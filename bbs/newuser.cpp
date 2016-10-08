@@ -49,6 +49,7 @@
 #include "bbs/listplus.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
+#include "bbs/trashcan.h"
 #include "bbs/uedit.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
@@ -178,47 +179,13 @@ static bool check_name(const string& userName) {
     return false;
   }
 
-  File trashFile(session()->config()->gfilesdir(), TRASHCAN_TXT);
-  if (!trashFile.Open(File::modeReadOnly | File::modeBinary)) {
-    return true;
-  }
-
-  trashFile.Seek(0L, File::seekBegin);
-  long lTrashFileLen = trashFile.GetLength();
-  long lTrashFilePointer = 0;
-  sprintf(s2, " %s ", userName.c_str());
-  bool ok = true;
-  while (lTrashFilePointer < lTrashFileLen && ok && !hangup) {
-    CheckForHangup();
-    trashFile.Seek(lTrashFilePointer, File::seekBegin);
-    trashFile.Read(s, 150);
-    int i = 0;
-    while ((i < 150) && (s[i])) {
-      if (s[i] == '\r') {
-        s[i] = '\0';
-      } else {
-        ++i;
-      }
-    }
-    s[150] = '\0';
-    lTrashFilePointer += static_cast<long>(i + 2);
-    if (s[i - 1] == 1) {
-      s[i - 1] = 0;
-    }
-    for (i = 0; i < static_cast<int>(strlen(s)); i++) {
-      s[i] = upcase(s[i]);
-    }
-    sprintf(s1, " %s ", s);
-    if (strstr(s2, s1) != nullptr) {
-      ok = false;
-    }
-  }
-  trashFile.Close();
-  if (!ok) {
+  Trashcan trashcan(*session()->config());
+  if (trashcan.IsTrashName(userName)) {
     hangup = true;
     hang_it_up();
+    return false;
   }
-  return ok;
+  return true;
 }
 
 void input_name() {

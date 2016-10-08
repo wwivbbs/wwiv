@@ -83,6 +83,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="command.cpp" />
+    <ClCompile Include="config\config.cpp" />
     <ClCompile Include="fido\dump_fido_packet.cpp" />
     <ClCompile Include="fido\fido.cpp" />
     <ClCompile Include="files\files.cpp" />
@@ -100,6 +101,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="command.h" />
+    <ClInclude Include="config\config.h" />
     <ClInclude Include="fido\dump_fido_packet.h" />
     <ClInclude Include="fido\fido.h" />
     <ClInclude Include="files\files.h" />

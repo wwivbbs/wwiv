@@ -100,6 +100,7 @@ set(COMMON_SOURCES
  syschat.cpp
  sysopf.cpp
  sysoplog.cpp
+ trashcan.cpp
  trytoul.cpp
  uedit.cpp
  user.cpp
