@@ -1,0 +1,8 @@
+[Unit]
+Description=wwivd: WWIV UNIX Daemon
+[Service]
+ExecStart=/home/wwiv/bbs/wwivd
+EnvironmentFile=/etc/default/wwivd
+[Install]
+WantedBy=multi-user.target
+
