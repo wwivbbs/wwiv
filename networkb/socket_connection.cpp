@@ -176,6 +176,22 @@ static void *get_in_addr(struct sockaddr* sa) {
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
+unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
+  static bool initialized = InitializeSockets();
+  if (!initialized) {
+    throw socket_error("Unable to initialize sockets.");
+  }
+
+  SOCKADDR_IN addr;
+  socklen_t nAddrSize = sizeof(SOCKADDR);
+  getpeername(socket, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
+  char s[255];
+  const string ip = inet_ntop(addr.sin_family, &addr.sin_addr, s, sizeof(s));
+  LOG(INFO) << "Received connection from: " << ip;
+
+  return unique_ptr<SocketConnection>(new SocketConnection(socket, ip, port));
+}
+
 unique_ptr<SocketConnection> Accept(int port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
@@ -213,10 +229,8 @@ unique_ptr<SocketConnection> Accept(int port) {
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
 
-  char ip[81];
-  struct sockaddr_in* clientAddr = static_cast<struct sockaddr_in*>(
-      get_in_addr(reinterpret_cast<struct sockaddr*>(&saddr)));
-  inet_ntop(saddr.sin_family, clientAddr , ip, sizeof ip);
+  char buf[255];
+  const string ip = inet_ntop(saddr.sin_family, &saddr.sin_addr, buf, sizeof(buf));
   LOG(INFO) << "Received connection from: " << ip;
 
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));

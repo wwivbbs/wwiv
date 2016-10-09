@@ -19,10 +19,8 @@
 #include "bbs/ssh.h"
 
 #ifdef _WIN32
-// work around error using inet_ntoa on build machine.
 #define NOCRYPT                /* Disable include of wincrypt.h */
 #include <winsock2.h>
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
 #else

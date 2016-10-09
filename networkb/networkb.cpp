@@ -69,6 +69,7 @@ static void RegisterHelpCommands(CommandLine& cmdline) {
   cmdline.add_argument(BooleanCommandLineArgument("send", "Send network traffic to --node"));
   cmdline.add_argument(BooleanCommandLineArgument("receive", "Receive from any node"));
   cmdline.add_argument({"node", "Node number (only used when sending)", "0"});
+  cmdline.add_argument({"handle", "Existing socket handle (only used when receiving)", "0"});
   cmdline.add_argument({"port", "Port number to use (receiving only)", "24554"});
 }
   
@@ -123,10 +124,16 @@ int main(int argc, char** argv) {
     }
 
     if (cmdline.arg("receive").as_bool()) {
-      LOG(INFO) << "BinkP receive";
-      side = BinkSide::ANSWERING;
-      c = Accept(port);
-
+      if (cmdline.arg("handle").as_int()) {
+        SOCKET socket = static_cast<SOCKET>(cmdline.arg("handle").as_int());
+        LOG(INFO) << "BinkP receive; existing socket; handle: " << socket;
+        side = BinkSide::ANSWERING;
+        c = Wrap(socket, port);
+      } else {
+        LOG(INFO) << "BinkP receive";
+        side = BinkSide::ANSWERING;
+        c = Accept(port);
+      }
     } else if (cmdline.arg("send").as_bool()) {
       LOG(INFO) << "BinkP send to: " << expected_remote_node;
 

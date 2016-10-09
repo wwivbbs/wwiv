@@ -17,8 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 #ifdef _WIN32
-// work around error using inet_ntoa on build machine.
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
 // Really windows?
@@ -128,7 +126,8 @@ bool RemoteSocketIO::open() {
 
   getpeername(socket_, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
 
-  const string address = inet_ntoa(addr.sin_addr);
+  char buf[255];
+  const string address = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
   remote_info().address = address;
   if (telnet_) {
     { 
