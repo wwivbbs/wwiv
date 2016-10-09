@@ -176,7 +176,23 @@ static void *get_in_addr(struct sockaddr* sa) {
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-unique_ptr<SocketConnection> Accept(int port) {
+unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
+  static bool initialized = InitializeSockets();
+  if (!initialized) {
+    throw socket_error("Unable to initialize sockets.");
+  }
+
+  sockaddr_in addr;
+  socklen_t nAddrSize = sizeof(sockaddr);
+  getpeername(socket, reinterpret_cast<sockaddr *>(&addr), &nAddrSize);
+  char s[255];
+  const string ip = inet_ntop(addr.sin_family, &addr.sin_addr, s, sizeof(s));
+  LOG(INFO) << "Received connection from: " << ip;
+
+  return unique_ptr<SocketConnection>(new SocketConnection(socket, ip, port));
+}
+
+SOCKET Listen(int port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
@@ -184,10 +200,11 @@ unique_ptr<SocketConnection> Accept(int port) {
 
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
-  sockaddr_in saddr;
+  sockaddr_in saddr = {};
   saddr.sin_addr.s_addr = INADDR_ANY;
-  saddr.sin_family = PF_INET;
+  saddr.sin_family = AF_INET;
   saddr.sin_port = htons(port);
+  memset(&saddr.sin_zero, 0, sizeof(saddr.sin_zero));
   int ret = bind(sock, reinterpret_cast<const struct sockaddr *>(&saddr), sizeof(sockaddr_in));
   if (ret == SOCKET_ERROR) {
     throw socket_error("Unable to bind to socket.");
@@ -196,8 +213,12 @@ unique_ptr<SocketConnection> Accept(int port) {
   if (ret == SOCKET_ERROR) {
     throw socket_error("Unable to listen to socket.");
   }
- 
-  socklen_t addr_length = sizeof(sockaddr_in);
+  return sock;
+}
+
+unique_ptr<SocketConnection> Accept(SOCKET sock, int port) {
+  sockaddr_in saddr = {};
+  socklen_t addr_length = sizeof(saddr);
   SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
 
   if (!SetNonBlockingMode(s)) {
@@ -213,10 +234,8 @@ unique_ptr<SocketConnection> Accept(int port) {
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
 
-  char ip[81];
-  struct sockaddr_in* clientAddr = static_cast<struct sockaddr_in*>(
-      get_in_addr(reinterpret_cast<struct sockaddr*>(&saddr)));
-  inet_ntop(saddr.sin_family, clientAddr , ip, sizeof ip);
+  char buf[255];
+  const string ip = inet_ntop(saddr.sin_family, &saddr.sin_addr, buf, sizeof(buf));
   LOG(INFO) << "Received connection from: " << ip;
 
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));

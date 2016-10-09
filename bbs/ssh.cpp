@@ -19,10 +19,8 @@
 #include "bbs/ssh.h"
 
 #ifdef _WIN32
-// work around error using inet_ntoa on build machine.
 #define NOCRYPT                /* Disable include of wincrypt.h */
 #include <winsock2.h>
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
 #else
@@ -35,7 +33,6 @@
 typedef int HANDLE;
 typedef int SOCKET;
 constexpr int SOCKET_ERROR = -1;
-#define SOCKADDR_IN sockaddr_in
 #define closesocket(s) close(s)
 #endif  // _WIN32
 
@@ -346,7 +343,7 @@ IOSSH::~IOSSH() {
 }
 
 bool IOSSH::ssh_initalize() {
-  SOCKADDR_IN a{};
+  sockaddr_in a{};
 
   SOCKET listener = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
   if (listener == INVALID_SOCKET) {
