@@ -31,8 +31,6 @@ typedef int socklen_t;
 typedef int HANDLE;
 typedef int SOCKET;
 constexpr int SOCKET_ERROR = -1;
-#define SOCKADDR_IN sockaddr_in
-#define SOCKADDR sockaddr
 #define closesocket(s) close(s)
 #endif  // _WIN32
 
@@ -121,10 +119,10 @@ bool RemoteSocketIO::open() {
   }
   StartThreads();
 
-  SOCKADDR_IN addr;
-  socklen_t nAddrSize = sizeof(SOCKADDR);
+  sockaddr_in addr;
+  socklen_t nAddrSize = sizeof(sockaddr);
 
-  getpeername(socket_, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
+  getpeername(socket_, reinterpret_cast<sockaddr *>(&addr), &nAddrSize);
 
   char buf[255];
   const string address = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));

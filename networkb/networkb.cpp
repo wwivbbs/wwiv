@@ -77,27 +77,10 @@ static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp() << endl;
 }
 
-//WWIV_INIT_LOGGER()
-int main(int argc, char** argv) {
+static int Main(CommandLine& cmdline) {
   try {
     auto start_time = system_clock::now();
-    Logger::Init(argc, argv);
-    wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
-    CommandLine cmdline(argc, argv, "net");
-    cmdline.AddStandardArgs();
-    AddStandardNetworkArgs(cmdline, File::current_directory());
-    RegisterHelpCommands(cmdline);
-    if (!cmdline.Parse()) {
-      ShowHelp(cmdline);
-      return 1;
-    }
-    if (cmdline.help_requested()) {
-      std::clog << "Help Requested." << endl;
-      ShowHelp(cmdline);
-      return 0;
-    }
-    
     int port = cmdline.arg("port").as_int();
     bool skip_net = cmdline.arg("skip_net").as_bool();
     NetworkCommandLine net_cmdline(cmdline);
@@ -113,7 +96,6 @@ int main(int argc, char** argv) {
     bink_config.set_skip_net(skip_net);
     bink_config.set_verbose(cmdline.iarg("v"));
     bink_config.set_network_version(status->GetNetworkVersion());
-    unique_ptr<SocketConnection> c;
     BinkSide side = BinkSide::ORIGINATING;
 
     map<const string, Callout> callouts;
@@ -124,17 +106,35 @@ int main(int argc, char** argv) {
     }
 
     if (cmdline.arg("receive").as_bool()) {
+      side = BinkSide::ANSWERING;
+      bool loop = false;
+      SOCKET sock = -1;
+      bool socket_connected = false;
       if (cmdline.arg("handle").as_int()) {
-        SOCKET socket = static_cast<SOCKET>(cmdline.arg("handle").as_int());
-        LOG(INFO) << "BinkP receive; existing socket; handle: " << socket;
-        side = BinkSide::ANSWERING;
-        c = Wrap(socket, port);
+        sock = static_cast<SOCKET>(cmdline.arg("handle").as_int());
+        LOG(INFO) << "BinkP receive; existing socket; handle: " << sock;
+        socket_connected = true;
       } else {
-        LOG(INFO) << "BinkP receive";
-        side = BinkSide::ANSWERING;
-        SOCKET sock = Listen(port);
-        c = Accept(sock, port);
+        sock = Listen(port);
+        loop = true;
       }
+      do {
+        unique_ptr<SocketConnection> c;
+        if (socket_connected) {
+          c = Wrap(sock, port);
+        } else {
+          LOG(INFO) << "BinkP receive; listening on port: " << port;
+          c = Accept(sock, port);
+        }
+        BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
+          const net_networks_rec& net = bink_config.networks()[network_name];
+          File* f = new File(net.dir, filename);
+          return new WFileTransferFile(filename, unique_ptr<File>(f));
+        };
+        BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
+        binkp.Run();
+      } while (loop);
+
     } else if (cmdline.arg("send").as_bool()) {
       LOG(INFO) << "BinkP send to: " << expected_remote_node;
 
@@ -143,6 +143,7 @@ int main(int argc, char** argv) {
         LOG(ERROR) << "Unable to find node config for node: " << expected_remote_node;
         return 2;
       }
+      unique_ptr<SocketConnection> c;
       try {
         c = Connect(node_config->host, node_config->port);
       } catch (const connection_error& e) {
@@ -151,18 +152,20 @@ int main(int argc, char** argv) {
         c.add_failure(expected_remote_node, system_clock::to_time_t(start_time));
         throw e;
       }
+
+      BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
+        const net_networks_rec& net = bink_config.networks()[network_name];
+        File* f = new File(net.dir, filename);
+        return new WFileTransferFile(filename, unique_ptr<File>(f));
+      };
+      BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
+      binkp.Run();
+      return 0;
     } else {
       ShowHelp(cmdline);
       return 1;
     } 
 
-    BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) { 
-      const net_networks_rec& net = bink_config.networks()[network_name];
-      File* f = new File(net.dir, filename);
-      return new WFileTransferFile(filename, unique_ptr<File>(f)); 
-    };
-    BinkP binkp(c.get(), &bink_config, callouts, side, expected_remote_node, factory);
-    binkp.Run();
   } catch (const connection_error& e) {
     LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
   } catch (const socket_error& e) {
@@ -170,4 +173,25 @@ int main(int argc, char** argv) {
   } catch (const exception& e) {
     LOG(ERROR) << "ERROR: [networkb]: " << e.what();
   }
+}
+
+int main(int argc, char** argv) {
+  Logger::Init(argc, argv);
+  wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+
+  CommandLine cmdline(argc, argv, "net");
+  cmdline.AddStandardArgs();
+  AddStandardNetworkArgs(cmdline, File::current_directory());
+  RegisterHelpCommands(cmdline);
+  if (!cmdline.Parse()) {
+    ShowHelp(cmdline);
+    return 1;
+  }
+  if (cmdline.help_requested()) {
+    std::clog << "Help Requested." << endl;
+    ShowHelp(cmdline);
+    return 0;
+  }
+
+  return Main(cmdline);
 }

@@ -182,9 +182,9 @@ unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
     throw socket_error("Unable to initialize sockets.");
   }
 
-  SOCKADDR_IN addr;
-  socklen_t nAddrSize = sizeof(SOCKADDR);
-  getpeername(socket, reinterpret_cast<SOCKADDR *>(&addr), &nAddrSize);
+  sockaddr_in addr;
+  socklen_t nAddrSize = sizeof(sockaddr);
+  getpeername(socket, reinterpret_cast<sockaddr *>(&addr), &nAddrSize);
   char s[255];
   const string ip = inet_ntop(addr.sin_family, &addr.sin_addr, s, sizeof(s));
   LOG(INFO) << "Received connection from: " << ip;
