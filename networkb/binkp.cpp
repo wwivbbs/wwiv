@@ -147,12 +147,11 @@ private:
   const uint16_t destination_node_;
 };
 
-BinkP::BinkP(Connection* conn, BinkConfig* config, map<const string, Callout>& callouts, BinkSide side,
+BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
         int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
   : conn_(conn),
     config_(config), 
-    callouts_(callouts),
     side_(side),
     expected_remote_node_(expected_remote_node), 
     error_received_(false),
@@ -417,7 +416,7 @@ BinkState BinkP::SendPasswd() {
   // This is on the sending side.
   const string network_name(remote_network_name());
   VLOG(1) << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
-  Callout callout = callouts_.at(network_name);
+  Callout callout = config_->callouts().at(network_name);
   string password = expected_password_for(&callout, expected_remote_node_);
   VLOG(1) << "       sending password packet";
   switch (auth_type_) {
@@ -458,7 +457,7 @@ BinkState BinkP::PasswordAck() {
   int remote_node = remote_network_node();
   LOG(INFO) << "       remote node: " << remote_node;
 
-  Callout callout(callouts_.at(network_name));
+  Callout callout(config_->callouts().at(network_name));
   const string expected_password = expected_password_for(&callout, remote_node);
   VLOG(1) << "STATE: PasswordAck";
   if (auth_type_ == AuthType::PLAIN_TEXT) {
@@ -535,13 +534,13 @@ BinkState BinkP::AuthRemote() {
   if (side_ == BinkSide::ANSWERING) {
     int caller_node = node_number_from_address_list(address_list_, network_name);
     LOG(INFO) << "       remote_network_name: " << network_name << "; caller_node: " << caller_node;
-    if (callouts_.find(network_name) == end(callouts_)) {
+    if (config_->callouts().find(network_name) == end(config_->callouts())) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
           StrCat("Error (NETWORKB-0003): Unable to find callout.net for: ", network_name));
       return BinkState::FATAL_ERROR;
     }
-    const net_call_out_rec* callout_record = callouts_.at(network_name).node_config_for(caller_node);
+    const net_call_out_rec* callout_record = config_->callouts().at(network_name).node_config_for(caller_node);
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
