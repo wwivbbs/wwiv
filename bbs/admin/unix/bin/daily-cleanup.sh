@@ -3,7 +3,7 @@
 # Daily cleanup jobs
 #
 
-source /etc/default/wwivd
+source /etc/wwiv/config
 
 cd ${WWIV_DIR}
 

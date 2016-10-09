@@ -98,5 +98,5 @@ echo "and set up a new user to be the sysop (#1) account"
 echo
 echo "To create a systemd service, please copy the following files (as root):"
 echo
-echo "sudo cp $(pwd)/systemd/wwivd.default /etc/default/wwivd"
+echo "sudo cp $(pwd)/systemd/config /etc/wwiv/config"
 echo "sudo cp $(pwd)/systemd/wwivd.service /etc/systemd/system/wwivd.service"

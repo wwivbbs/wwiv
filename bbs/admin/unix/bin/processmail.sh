@@ -7,7 +7,7 @@
 # This only covers a basic connetion to the main WWIVnet node.
 # You can add multiple network calls if you add other nets.
 
-source /etc/default/wwivd
+source /etc/wwiv/config
 
 date
 
