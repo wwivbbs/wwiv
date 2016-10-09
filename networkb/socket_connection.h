@@ -42,7 +42,8 @@ class SocketConnection;
 
 std::unique_ptr<SocketConnection> Connect(const std::string& host, int port);
 // Accepts a single connection, used for testing.
-std::unique_ptr<SocketConnection> Accept(int port);
+SOCKET Listen(int port);
+std::unique_ptr<SocketConnection> Accept(SOCKET sock, int port);
 std::unique_ptr<SocketConnection> Wrap(SOCKET socket, int port);
 
 class SocketConnection : public Connection

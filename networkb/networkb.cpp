@@ -132,7 +132,8 @@ int main(int argc, char** argv) {
       } else {
         LOG(INFO) << "BinkP receive";
         side = BinkSide::ANSWERING;
-        c = Accept(port);
+        SOCKET sock = Listen(port);
+        c = Accept(sock, port);
       }
     } else if (cmdline.arg("send").as_bool()) {
       LOG(INFO) << "BinkP send to: " << expected_remote_node;

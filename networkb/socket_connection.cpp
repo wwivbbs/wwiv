@@ -192,7 +192,7 @@ unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
   return unique_ptr<SocketConnection>(new SocketConnection(socket, ip, port));
 }
 
-unique_ptr<SocketConnection> Accept(int port) {
+SOCKET Listen(int port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
@@ -200,10 +200,11 @@ unique_ptr<SocketConnection> Accept(int port) {
 
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
 
-  sockaddr_in saddr;
+  sockaddr_in saddr = {};
   saddr.sin_addr.s_addr = INADDR_ANY;
-  saddr.sin_family = PF_INET;
+  saddr.sin_family = AF_INET;
   saddr.sin_port = htons(port);
+  memset(&saddr.sin_zero, 0, sizeof(saddr.sin_zero));
   int ret = bind(sock, reinterpret_cast<const struct sockaddr *>(&saddr), sizeof(sockaddr_in));
   if (ret == SOCKET_ERROR) {
     throw socket_error("Unable to bind to socket.");
@@ -212,8 +213,12 @@ unique_ptr<SocketConnection> Accept(int port) {
   if (ret == SOCKET_ERROR) {
     throw socket_error("Unable to listen to socket.");
   }
- 
-  socklen_t addr_length = sizeof(sockaddr_in);
+  return sock;
+}
+
+unique_ptr<SocketConnection> Accept(SOCKET sock, int port) {
+  sockaddr_in saddr = {};
+  socklen_t addr_length = sizeof(saddr);
   SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
 
   if (!SetNonBlockingMode(s)) {
