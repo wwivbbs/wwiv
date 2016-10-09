@@ -22,6 +22,8 @@ using System.Text;
 
 namespace WWIV5TelnetServer
 {
+  public enum NodeType { BBS, BINKP };
+
   public class NodeStatus : INotifyPropertyChanged
   {
     public static string WFC = "Waiting for Call";
@@ -30,6 +32,7 @@ namespace WWIV5TelnetServer
     private string status;
     private string remoteAddress;
     private bool inUse;
+    private NodeType type;
 
     public event PropertyChangedEventHandler PropertyChanged;
 
@@ -90,11 +93,27 @@ namespace WWIV5TelnetServer
       }
     }
 
+    public NodeType NodeType
+    {
+      get
+      {
+        return type;
+      }
+    }
+
     public string FullStatus
     {
       get
       {
-        StringBuilder s = new StringBuilder("Node#" + node);
+        StringBuilder s = new StringBuilder();
+        if (type == NodeType.BBS)
+        {
+          s.Append("Node #").Append(node);
+        }
+        else if (type == NodeType.BINKP)
+        {
+          s.Append("BinkP");
+        }
         s.Append(" ");
         if (inUse)
         {
@@ -108,12 +127,13 @@ namespace WWIV5TelnetServer
       }
     }
 
-    public NodeStatus(int node)
+    public NodeStatus(NodeType type, int node)
     {
       this.node = node;
       status = "WFC";
       remoteAddress = "";
       inUse = false;
+      this.type = type;
     }
 
     public override string ToString()

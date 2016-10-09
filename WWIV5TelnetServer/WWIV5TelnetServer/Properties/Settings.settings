@@ -89,5 +89,17 @@
     <Setting Name="dnsCC" Type="System.String" Scope="User">
       <Value Profile="(Default)">zz.countries.nerd.dk</Value>
     </Setting>
+    <Setting Name="portBinkp" Type="System.Decimal" Scope="User">
+      <Value Profile="(Default)">24554</Value>
+    </Setting>
+    <Setting Name="parametersBinkp" Type="System.String" Scope="User">
+      <Value Profile="(Default)">--receive --handle=@H</Value>
+    </Setting>
+    <Setting Name="useBinkP" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">True</Value>
+    </Setting>
+    <Setting Name="binkpExecutable" Type="System.String" Scope="User">
+      <Value Profile="(Default)">C:\wwiv\networkb.exe</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

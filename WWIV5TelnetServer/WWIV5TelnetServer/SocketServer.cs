@@ -36,6 +36,7 @@ namespace WWIV5TelnetServer
     private Int32 port;
     private string argumentsTemplate;
     private string name;
+    private NodeType nodeType;
     private Blacklist bl;
     private Dictionary<String, List<DateTime>> connections;
 
@@ -45,12 +46,13 @@ namespace WWIV5TelnetServer
     public delegate void NodeStatusEventHandler(object sender, NodeStatusEventArgs e);
     public event NodeStatusEventHandler NodeStatusChanged;
 
-    public SocketServer(NodeManager nodeManager, Int32 port, string argsTemplate, string name)
+    public SocketServer(NodeManager nodeManager, Int32 port, string argsTemplate, string name, NodeType nodeType)
     {
       this.nodeManager = nodeManager;
       this.port = port;
       this.argumentsTemplate = argsTemplate;
       this.name = name;
+      this.nodeType = nodeType;
 
       var homeDirectory = Properties.Settings.Default.homeDirectory;
       var badip_file = Path.Combine(homeDirectory, "badip.txt");
@@ -86,7 +88,8 @@ namespace WWIV5TelnetServer
         server = null;
       }
       launcherThread.Abort();
-      launcherThread.Join();
+      // Causes a deadlock with updating the main form.
+      // launcherThread.Join();
       launcherThread = null;
       Log(String.Format("{0} Server Stopped", this.name));
     }
@@ -310,7 +313,7 @@ namespace WWIV5TelnetServer
         var savedTimeout = socket.ReceiveTimeout;
         socket.ReceiveTimeout = 5000;
         // Since we don't terminate SSH, we can't do this for SSH connections.
-        if (Properties.Settings.Default.pressEsc && name.Equals("Telnet"))
+        if (Properties.Settings.Default.pressEsc && this.name.Equals("Telnet"))
         {
           send(socket, "CONNECT 2400\r\nWWIV - Server\r\n");
           if (!DoMailerLoop(socket, ip))
@@ -356,7 +359,7 @@ namespace WWIV5TelnetServer
           Socket socket = server.Accept();
           string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
           Debug.WriteLine("After accept from IP: " + ip);
-          OnStatusMessageUpdated(name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
+          OnStatusMessageUpdated(this.name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
 
           if (!CanConnect(socket))
           {
@@ -364,7 +367,7 @@ namespace WWIV5TelnetServer
           }
 
           // Grab a node # after we've cleared everything else.
-          NodeStatus node = nodeManager.getNextNode();
+          NodeStatus node = nodeManager.getNextNode(this.nodeType);
           if (node == null)
           {
             // NO node available.
@@ -375,7 +378,15 @@ namespace WWIV5TelnetServer
 
           node.RemoteAddress = ip;
           Thread instanceThread = new Thread(() => LaunchInstance(node, socket));
-          instanceThread.Name = "Instance #" + node.Node;
+          StringBuilder n = new StringBuilder();
+          if (node.NodeType == NodeType.BBS)
+          {
+            n.Append("Instance #").Append(node.Node);
+          } else if (node.NodeType == NodeType.BINKP)
+          {
+            n.Append("BinkP");
+          }
+          instanceThread.Name = n.ToString();
           instanceThread.Start();
           OnNodeUpdated(node);
         }
@@ -399,7 +410,9 @@ namespace WWIV5TelnetServer
     {
       try
       {
-        var executable = Properties.Settings.Default.executable;
+        var executable = (node.NodeType == NodeType.BBS)
+          ? Properties.Settings.Default.executable : Properties.Settings.Default.binkpExecutable;
+
         var homeDirectory = Properties.Settings.Default.homeDirectory;
 
         Launcher launcher = new Launcher(executable, homeDirectory, argumentsTemplate, DebugLog);

@@ -369,5 +369,53 @@ namespace WWIV5TelnetServer.Properties {
                 this["dnsCC"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("24554")]
+        public decimal portBinkp {
+            get {
+                return ((decimal)(this["portBinkp"]));
+            }
+            set {
+                this["portBinkp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("--receive --handle=@H")]
+        public string parametersBinkp {
+            get {
+                return ((string)(this["parametersBinkp"]));
+            }
+            set {
+                this["parametersBinkp"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool useBinkP {
+            get {
+                return ((bool)(this["useBinkP"]));
+            }
+            set {
+                this["useBinkP"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\wwiv\\networkb.exe")]
+        public string binkpExecutable {
+            get {
+                return ((string)(this["binkpExecutable"]));
+            }
+            set {
+                this["binkpExecutable"] = value;
+            }
+        }
     }
 }

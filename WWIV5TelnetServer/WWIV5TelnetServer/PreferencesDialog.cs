@@ -62,6 +62,10 @@ namespace WWIV5TelnetServer
       cbUseDbsRbl.Checked = Properties.Settings.Default.useDnsRbl;
       tbDbsRbl.Text = Properties.Settings.Default.dnsRbl;
       tbDnsCC.Text = Properties.Settings.Default.dnsCC;
+      binkpPort.Value = Properties.Settings.Default.portBinkp;
+      textNetworkbParameters.Text = Properties.Settings.Default.parametersBinkp;
+      cbUseBinkp.Checked = Properties.Settings.Default.useBinkP;
+      binkpExecutable.Text = Properties.Settings.Default.binkpExecutable;
 
       if (Properties.Settings.Default.badCountries != null)
       {
@@ -117,6 +121,11 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.useDnsRbl = cbUseDbsRbl.Checked;
         Properties.Settings.Default.dnsRbl = tbDbsRbl.Text;
         Properties.Settings.Default.dnsCC = tbDnsCC.Text;
+
+        Properties.Settings.Default.portBinkp = binkpPort.Value;
+        Properties.Settings.Default.parametersBinkp = textNetworkbParameters.Text;
+        Properties.Settings.Default.useBinkP = cbUseBinkp.Checked;
+        Properties.Settings.Default.binkpExecutable = binkpExecutable.Text;
 
         if (Properties.Settings.Default.badCountries == null)
         {
@@ -206,6 +215,11 @@ namespace WWIV5TelnetServer
     {
       var homeDirectory = Properties.Settings.Default.homeDirectory;
       ShowFileIfExists(Path.Combine(homeDirectory, "goodip.txt"));
+    }
+
+    private void checkBox1_CheckedChanged(object sender, EventArgs e)
+    {
+
     }
   }
 }
