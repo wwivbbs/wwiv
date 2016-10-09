@@ -1,0 +1,7 @@
+#
+# WWIV Environment Settings
+#
+
+WWIV_DIR=${WWIV_DIR}
+WWIV_USER=${WWIV_USER}
+
