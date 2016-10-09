@@ -423,10 +423,6 @@ int main(int argc, char* argv[]) {
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
 
-  if (daemon(1, 1) == -1) {
-    LOG(ERROR) << "Unable to call daemon; errno: " << errno;
-  }
-
   LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
 
   signal(SIGCHLD, SIG_IGN);
