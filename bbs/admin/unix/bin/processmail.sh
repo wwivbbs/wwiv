@@ -7,7 +7,7 @@
 # This only covers a basic connetion to the main WWIVnet node.
 # You can add multiple network calls if you add other nets.
 
-source REPLACE-WWIVBASE/.wwivrc
+source /etc/default/wwivd
 
 date
 
@@ -17,5 +17,5 @@ cd ${WWIV_DIR}
 # nets from init data.  Currently it has to be done manually
 
 # Calls out to @1 of WWIVnet (assuming your first network is 0)
-./network --net=0 --node=1 --bbsdir=${WWIV_DIR}
+./network /n1
 

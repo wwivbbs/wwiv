@@ -1,0 +1,4 @@
+# WWIVd environment
+WWIV_DIR=${WWIV_DIR}
+WWIV_USER=${WWIV_USER}
+
