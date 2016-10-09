@@ -132,10 +132,10 @@ static int cleanup_net1() {
     return 0;
   }
 
-  int any = 1;
+  bool any = true;
 
   while (any && (nl++ < 10)) {
-    any = 0;
+    any = false;
 
     for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
       set_net_num(nNetNumber);
@@ -152,8 +152,7 @@ static int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        string s = StringPrintf("%sp*%s", 
-          session()->network_directory().c_str(), session()->network_extension().c_str());
+        string s = StrCat(session()->network_directory(), "p*", session()->network_extension());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
@@ -183,7 +182,7 @@ static int cleanup_net1() {
             if (ExecuteExternalProgram(StringPrintf("network1 .%d", session()->net_num()), EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
-              any = 1;
+              any = true;
             }
             ok2 = 1;
           }
@@ -195,14 +194,14 @@ static int cleanup_net1() {
               wfc_cls();
             }
             ++i;
-            any = 1;
+            any = true;
             ok = 1;
             hangup = false;
             session()->using_modem = 0;
             if (ExecuteExternalProgram(StringPrintf("network2 .%d", session()->net_num()), EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
-              any = 1;
+              any = true;
             }
             ok2 = 1;
             session()->status_manager()->RefreshStatusCache();
