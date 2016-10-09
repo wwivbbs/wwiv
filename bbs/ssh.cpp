@@ -149,18 +149,18 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
   status = cryptCreateSession(&session_, CRYPT_UNUSED, CRYPT_SESSION_SSH_SERVER);
   if (!OK(status)) {
-    LOG(ERROR) << "ERROR: Unable to create SSH session.";
+    LOG(INFO) << "ERROR: Unable to create SSH session.";
     return;
   }
   
-  LOG(ERROR) << "setting private key.";
+  VLOG(1) << "setting private key.";
   status = cryptSetAttribute(session_, CRYPT_SESSINFO_PRIVATEKEY, key.context());
   if (!OK(status)) {
-    LOG(ERROR) << "ERROR: Failed to set private key";
+    LOG(INFO) << "ERROR: Failed to set private key";
     return;
   }
 
-  LOG(ERROR) << "setting socket handle.";
+  VLOG(1) << "setting socket handle.";
   status = cryptSetAttribute(session_, CRYPT_SESSINFO_NETWORKSOCKET, socket_handle_);
   if (!OK(status)) {
     LOG(ERROR) << "ERROR adding socket handle!";
@@ -169,19 +169,19 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
   bool success = false;
   for (int i = 0; i < 10; i++) {
-    LOG(ERROR) << "Looping to activate SSH Sessoin" << status;
+    VLOG(1) << "Looping to activate SSH Session" << status;
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_AUTHRESPONSE, 1);
     if (!OK(status)) {
-      LOG(ERROR) << "Error setting CRYPT_SESSINFO_AUTHRESPONSE " << status;
+      LOG(INFO) << "Error setting CRYPT_SESSINFO_AUTHRESPONSE " << status;
       continue;
     }
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
     if (OK(status)) {
-      LOG(ERROR) << "Success setting CRYPT_SESSINFO_ACTIVE " << status;
+      VLOG(1) << "Success setting CRYPT_SESSINFO_ACTIVE " << status;
       success = true;
       break;
     } else {
-      LOG(ERROR) << "Error setting CRYPT_SESSINFO_ACTIVE " << status;
+      LOG(INFO) << "Error setting CRYPT_SESSINFO_ACTIVE " << status;
     }
   }
 
@@ -191,7 +191,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 #endif  // PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
 
   if (!success) {
-    LOG(ERROR) << "We don't have a valid SSH connection here!";
+    LOG(INFO) << "We don't have a valid SSH connection here!";
   } else {
     // Clear out any remaining control messages.
     int bytes_received = 0;
@@ -203,7 +203,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     }
 
     GetSSHUserNameAndPassword(session_, remote_username_, remote_password_);
-    LOG(ERROR) << "Got Username and Password!";
+    VLOG(1) << "Got Username and Password!";
   }
   initialized_ = success;
 }
