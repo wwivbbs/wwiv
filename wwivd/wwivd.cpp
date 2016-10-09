@@ -119,7 +119,7 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
     c.ssh_port = ini.GetNumericValue("ssh_port", -1);
     c.ssh_cmd = ini.GetValue("ssh_command", "./bbs -XS -H@H -N@N");
 
-    c.binkp_port = 24554;
+    c.binkp_port = ini.GetNumericValue("binkp_port", -1);
     c.binkp_cmd = ini.GetValue("binkp_command", "./networkb --receive --handle=@H");
 
     c.local_node = ini.GetNumericValue("local_node", 1);
