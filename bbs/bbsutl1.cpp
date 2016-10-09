@@ -268,12 +268,12 @@ bool ValidateSysopPassword() {
  */
 void hang_it_up() {
   hangup = true;
-#if !defined( __unix__ )
   if (!ok_modem_stuff) {
     return;
   }
-
   session()->remoteIO()->dtr(false);
+
+#if !defined( __unix__ )
   if (!session()->remoteIO()->carrier()) {
     return;
   }
