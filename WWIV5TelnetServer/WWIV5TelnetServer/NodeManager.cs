@@ -14,7 +14,7 @@ namespace WWIV5TelnetServer
     // Property for Nodes
     public List<NodeStatus> Nodes { get { return nodes_; } }
 
-    public NodeManager(int l, int h)
+    public NodeManager(int l, int h, bool binkp)
     {
       lowNode_ = l;
       highNode_ = h;
@@ -22,20 +22,24 @@ namespace WWIV5TelnetServer
       nodes_ = new List<NodeStatus>(size);
       for (int i = 0; i < size; i++)
       {
-        nodes_.Add(new NodeStatus(i + lowNode_));
+        nodes_.Add(new NodeStatus(NodeType.BBS, i + lowNode_));
+      }
+      if (binkp)
+      {
+        nodes_.Add(new WWIV5TelnetServer.NodeStatus(NodeType.BINKP, 0));
       }
     }
 
     /**
      * Gets the next free node or null of none exists.
      */
-    public NodeStatus getNextNode()
+    public NodeStatus getNextNode(NodeType type)
     {
       lock (nodeLock)
       {
         foreach (NodeStatus node in nodes_)
         {
-          if (!node.InUse)
+          if (!node.InUse && node.NodeType == type)
           {
             // Mark it in use.
             node.InUse = true;

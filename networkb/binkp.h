@@ -73,7 +73,6 @@ public:
       received_transfer_file_factory_t;
   BinkP(Connection* conn,
         BinkConfig* config,
-        std::map<const std::string, wwiv::sdk::Callout>& callouts,
 	      BinkSide side, 
 	      int expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory);
@@ -121,7 +120,6 @@ private:
   bool HandleFileRequest(const std::string& request_line);
 
   BinkConfig* config_ = nullptr;
-  std::map<const std::string, wwiv::sdk::Callout> callouts_;
   Connection* conn_ = nullptr;
   std::string address_list_;
   bool ok_received_ = false;

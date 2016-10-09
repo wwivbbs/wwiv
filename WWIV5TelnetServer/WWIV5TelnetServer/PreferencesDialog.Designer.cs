@@ -92,6 +92,15 @@
       this.btnBadCountryRemove = new System.Windows.Forms.Button();
       this.lbBadCountries = new System.Windows.Forms.ListBox();
       this.linkGoodIpFile = new System.Windows.Forms.LinkLabel();
+      this.binkpTab = new System.Windows.Forms.TabPage();
+      this.tableLayoutPanel4 = new System.Windows.Forms.TableLayoutPanel();
+      this.textNetworkbParameters = new System.Windows.Forms.TextBox();
+      this.lblNetworkbParams = new System.Windows.Forms.Label();
+      this.label7 = new System.Windows.Forms.Label();
+      this.binkpPort = new System.Windows.Forms.NumericUpDown();
+      this.cbUseBinkp = new System.Windows.Forms.CheckBox();
+      this.label6 = new System.Windows.Forms.Label();
+      this.binkpExecutable = new System.Windows.Forms.TextBox();
       this.tabControlPreferences.SuspendLayout();
       this.generalTab.SuspendLayout();
       ((System.ComponentModel.ISupportInitialize)(this.localNodeSpinner)).BeginInit();
@@ -112,6 +121,9 @@
       this.groupBox1.SuspendLayout();
       this.layoutBlockCountries.SuspendLayout();
       this.flowLayoutPanel2.SuspendLayout();
+      this.binkpTab.SuspendLayout();
+      this.tableLayoutPanel4.SuspendLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.binkpPort)).BeginInit();
       this.SuspendLayout();
       // 
       // okButton
@@ -146,6 +158,7 @@
       this.tabControlPreferences.Controls.Add(this.generalTab);
       this.tabControlPreferences.Controls.Add(this.telnetTab);
       this.tabControlPreferences.Controls.Add(this.sshTab);
+      this.tabControlPreferences.Controls.Add(this.binkpTab);
       this.tabControlPreferences.Controls.Add(this.blockTab);
       this.tabControlPreferences.Location = new System.Drawing.Point(12, 12);
       this.tabControlPreferences.Name = "tabControlPreferences";
@@ -851,6 +864,115 @@
       this.linkGoodIpFile.Text = "Open File";
       this.linkGoodIpFile.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.linkGoodIpFile_LinkClicked);
       // 
+      // binkpTab
+      // 
+      this.binkpTab.Controls.Add(this.tableLayoutPanel4);
+      this.binkpTab.Location = new System.Drawing.Point(4, 22);
+      this.binkpTab.Name = "binkpTab";
+      this.binkpTab.Padding = new System.Windows.Forms.Padding(3);
+      this.binkpTab.Size = new System.Drawing.Size(652, 432);
+      this.binkpTab.TabIndex = 4;
+      this.binkpTab.Text = "BinkP";
+      this.binkpTab.UseVisualStyleBackColor = true;
+      // 
+      // tableLayoutPanel4
+      // 
+      this.tableLayoutPanel4.ColumnCount = 2;
+      this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+      this.tableLayoutPanel4.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+      this.tableLayoutPanel4.Controls.Add(this.label7, 0, 1);
+      this.tableLayoutPanel4.Controls.Add(this.binkpPort, 1, 1);
+      this.tableLayoutPanel4.Controls.Add(this.cbUseBinkp, 1, 0);
+      this.tableLayoutPanel4.Controls.Add(this.lblNetworkbParams, 0, 3);
+      this.tableLayoutPanel4.Controls.Add(this.label6, 0, 2);
+      this.tableLayoutPanel4.Controls.Add(this.textNetworkbParameters, 1, 3);
+      this.tableLayoutPanel4.Controls.Add(this.binkpExecutable, 1, 2);
+      this.tableLayoutPanel4.Location = new System.Drawing.Point(5, 5);
+      this.tableLayoutPanel4.Name = "tableLayoutPanel4";
+      this.tableLayoutPanel4.RowCount = 4;
+      this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel4.RowStyles.Add(new System.Windows.Forms.RowStyle());
+      this.tableLayoutPanel4.Size = new System.Drawing.Size(647, 106);
+      this.tableLayoutPanel4.TabIndex = 29;
+      // 
+      // textNetworkbParameters
+      // 
+      this.textNetworkbParameters.Location = new System.Drawing.Point(121, 78);
+      this.textNetworkbParameters.Name = "textNetworkbParameters";
+      this.textNetworkbParameters.Size = new System.Drawing.Size(466, 20);
+      this.textNetworkbParameters.TabIndex = 29;
+      this.textNetworkbParameters.Text = "-receive --handle=@H";
+      // 
+      // lblNetworkbParams
+      // 
+      this.lblNetworkbParams.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.lblNetworkbParams.AutoSize = true;
+      this.lblNetworkbParams.Location = new System.Drawing.Point(3, 75);
+      this.lblNetworkbParams.Name = "lblNetworkbParams";
+      this.lblNetworkbParams.Size = new System.Drawing.Size(112, 13);
+      this.lblNetworkbParams.TabIndex = 30;
+      this.lblNetworkbParams.Text = "Networkb Parameters:";
+      this.lblNetworkbParams.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+      // 
+      // label7
+      // 
+      this.label7.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+      this.label7.AutoSize = true;
+      this.label7.Location = new System.Drawing.Point(55, 23);
+      this.label7.Name = "label7";
+      this.label7.Size = new System.Drawing.Size(60, 13);
+      this.label7.TabIndex = 26;
+      this.label7.Text = "BinkP Port:";
+      // 
+      // binkpPort
+      // 
+      this.binkpPort.Location = new System.Drawing.Point(121, 26);
+      this.binkpPort.Maximum = new decimal(new int[] {
+            65536,
+            0,
+            0,
+            0});
+      this.binkpPort.Name = "binkpPort";
+      this.binkpPort.Size = new System.Drawing.Size(120, 20);
+      this.binkpPort.TabIndex = 27;
+      this.binkpPort.Value = new decimal(new int[] {
+            22,
+            0,
+            0,
+            0});
+      // 
+      // cbUseBinkp
+      // 
+      this.cbUseBinkp.AutoSize = true;
+      this.cbUseBinkp.Checked = true;
+      this.cbUseBinkp.CheckState = System.Windows.Forms.CheckState.Checked;
+      this.cbUseBinkp.Location = new System.Drawing.Point(121, 3);
+      this.cbUseBinkp.Name = "cbUseBinkp";
+      this.cbUseBinkp.Size = new System.Drawing.Size(175, 17);
+      this.cbUseBinkp.TabIndex = 32;
+      this.cbUseBinkp.Text = "Listen to BinkP using NetworkB";
+      this.cbUseBinkp.UseVisualStyleBackColor = true;
+      this.cbUseBinkp.CheckedChanged += new System.EventHandler(this.checkBox1_CheckedChanged);
+      // 
+      // label6
+      // 
+      this.label6.AutoSize = true;
+      this.label6.Location = new System.Drawing.Point(3, 49);
+      this.label6.Name = "label6";
+      this.label6.Size = new System.Drawing.Size(112, 13);
+      this.label6.TabIndex = 33;
+      this.label6.Text = "Networkb Executable:";
+      this.label6.TextAlign = System.Drawing.ContentAlignment.MiddleRight;
+      // 
+      // binkpExecutable
+      // 
+      this.binkpExecutable.Location = new System.Drawing.Point(121, 52);
+      this.binkpExecutable.Name = "binkpExecutable";
+      this.binkpExecutable.Size = new System.Drawing.Size(466, 20);
+      this.binkpExecutable.TabIndex = 34;
+      // 
       // PreferencesDialog
       // 
       this.AcceptButton = this.okButton;
@@ -894,6 +1016,10 @@
       this.layoutBlockCountries.ResumeLayout(false);
       this.layoutBlockCountries.PerformLayout();
       this.flowLayoutPanel2.ResumeLayout(false);
+      this.binkpTab.ResumeLayout(false);
+      this.tableLayoutPanel4.ResumeLayout(false);
+      this.tableLayoutPanel4.PerformLayout();
+      ((System.ComponentModel.ISupportInitialize)(this.binkpPort)).EndInit();
       this.ResumeLayout(false);
 
         }
@@ -963,5 +1089,14 @@
     private System.Windows.Forms.Label label5;
     private System.Windows.Forms.TextBox tbDnsCC;
     private System.Windows.Forms.LinkLabel linkGoodIpFile;
+    private System.Windows.Forms.TabPage binkpTab;
+    private System.Windows.Forms.TableLayoutPanel tableLayoutPanel4;
+    private System.Windows.Forms.TextBox textNetworkbParameters;
+    private System.Windows.Forms.Label lblNetworkbParams;
+    private System.Windows.Forms.Label label7;
+    private System.Windows.Forms.NumericUpDown binkpPort;
+    private System.Windows.Forms.CheckBox cbUseBinkp;
+    private System.Windows.Forms.Label label6;
+    private System.Windows.Forms.TextBox binkpExecutable;
   }
 }

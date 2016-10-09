@@ -18,6 +18,7 @@ namespace WWIV5TelnetServer
     private NodeManager nodeManager;
     private SocketServer serverTelnet;
     private SocketServer serverSSH;
+    private SocketServer serverBinkp;
 
     private Form form_;
     private ListBox listBoxNodes_;
@@ -34,21 +35,35 @@ namespace WWIV5TelnetServer
 
     internal void Initalize()
     {
+      var useBinkp = Properties.Settings.Default.useBinkP;
       var lowNode = Convert.ToInt32(Properties.Settings.Default.startNode);
       var highNode = Convert.ToInt32(Properties.Settings.Default.endNode);
-      nodeManager = new NodeManager(lowNode, highNode);
+      nodeManager = new NodeManager(lowNode, highNode, useBinkp);
 
-      var portTelnet = Convert.ToInt32(Properties.Settings.Default.port);
-      var argumentsTemplateTelnet = Properties.Settings.Default.parameters;
-      var portSSH = Convert.ToInt32(Properties.Settings.Default.portSSH); // SSH
-      var argumentsTemplateSSH = Properties.Settings.Default.parameters2; // SSH
-      serverTelnet = new SocketServer(nodeManager, portTelnet, argumentsTemplateTelnet, "Telnet");
-      serverSSH = new SocketServer(nodeManager, portSSH, argumentsTemplateSSH, "SSH"); // SSH
+      {
+        var port = Convert.ToInt32(Properties.Settings.Default.port);
+        var args = Properties.Settings.Default.parameters;
+        serverTelnet = new SocketServer(nodeManager, port, args, "Telnet", NodeType.BBS);
+        serverTelnet.StatusMessageChanged += server_StatusMessage;
+        serverTelnet.NodeStatusChanged += server_NodeStatusChanged;
+      }
+      {
+        var port = Convert.ToInt32(Properties.Settings.Default.portSSH);
+        var args = Properties.Settings.Default.parameters2;
+        serverSSH = new SocketServer(nodeManager, port, args, "SSH", NodeType.BBS);
+        serverSSH.StatusMessageChanged += server_StatusMessage;
+        serverSSH.NodeStatusChanged += server_NodeStatusChanged;
+      }
 
-      serverTelnet.StatusMessageChanged += server_StatusMessage;
-      serverTelnet.NodeStatusChanged += server_NodeStatusChanged;
-      serverSSH.StatusMessageChanged += server_StatusMessage; // SSH
-      serverSSH.NodeStatusChanged += server_NodeStatusChanged; // SSH
+      if (useBinkp)
+      {
+        var port = Convert.ToInt32(Properties.Settings.Default.portBinkp);
+        var args = Properties.Settings.Default.parametersBinkp;
+        serverBinkp = new SocketServer(nodeManager, port, args, "Binkp", NodeType.BINKP);
+        serverBinkp.StatusMessageChanged += server_StatusMessage;
+        serverBinkp.NodeStatusChanged += server_NodeStatusChanged;
+      }
+
     }
 
     private void server_NodeStatusChanged(object sender, NodeStatusEventArgs e)
@@ -61,13 +76,16 @@ namespace WWIV5TelnetServer
         listBoxNodes_.Items.Clear();
         listBoxNodes_.Items.AddRange(nodeManager.Nodes.ToArray());
       };
-      if (form_.InvokeRequired)
+      if (!form_.IsDisposed)
       {
-        form_.Invoke(update);
-      }
-      else
-      {
-        update();
+        if (form_.InvokeRequired)
+        {
+          form_.Invoke(update);
+        }
+        else
+        {
+          update();
+        }
       }
     }
 
@@ -139,8 +157,18 @@ namespace WWIV5TelnetServer
 
     public void Start()
     {
-      serverTelnet.Start();
-      serverSSH.Start();
+      if (serverTelnet != null)
+      {
+        serverTelnet.Start();
+      }
+      if (serverSSH != null)
+      {
+        serverSSH.Start();
+      }
+      if (serverBinkp != null)
+      {
+        serverBinkp.Start();
+      }
 
       // Hack. can't figure out C# databinding. According to stackoverflow, many others can't either.
       listBoxNodes_.Items.Clear();
@@ -149,8 +177,18 @@ namespace WWIV5TelnetServer
 
     public void Stop()
     {
-      serverTelnet.Stop();
-      serverSSH.Stop();
+      if (serverTelnet != null)
+      {
+        serverTelnet.Stop();
+      }
+      if (serverSSH != null)
+      {
+        serverSSH.Stop();
+      }
+      if (serverBinkp != null)
+      {
+        serverBinkp.Stop();
+      }
 
       // Clear the list of nodes in the list.
       listBoxNodes_.Items.Clear();

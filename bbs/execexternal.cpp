@@ -46,6 +46,9 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
     write_inst(INST_LOC_NET, session()->net_num() + 1, INST_FLAGS_NONE);
   }
 
+  // Make sure our working dir is back to the BBS dir.
+  session()->CdHome();
+
   // Execute the program and make sure the workingdir is reset
   int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
   session()->CdHome();

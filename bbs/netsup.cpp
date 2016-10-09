@@ -179,6 +179,7 @@ static int cleanup_net1() {
             ++i;
             hangup = false;
             session()->using_modem = 0;
+            hang_it_up();
             if (ExecuteExternalProgram(StringPrintf("network1 .%d", session()->net_num()), EFLAG_NETPROG) < 0) {
               abort = true;
             } else {

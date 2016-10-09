@@ -28,6 +28,7 @@
 
 #include "core/inifile.h"
 #include "networkb/config_exceptions.h"
+#include "sdk/callout.h"
 #include "sdk/networks.h"
 
 namespace wwiv {
@@ -52,6 +53,8 @@ class BinkConfig {
   const std::string callout_network_name() const { return callout_network_name_; }
   const std::string network_dir(const std::string& network_name) const;
   const wwiv::sdk::Networks& networks() { return networks_; }
+  std::map<const std::string, wwiv::sdk::Callout>& callouts() { return callouts_; }
+
 
   void set_skip_net(bool skip_net) { skip_net_ = skip_net; }
   bool skip_net() const { return skip_net_; }
@@ -70,6 +73,7 @@ class BinkConfig {
   std::string sysop_name_;
   std::string gfiles_directory_;
   const wwiv::sdk::Networks networks_;
+  std::map<const std::string, wwiv::sdk::Callout> callouts_;
   bool skip_net_ = false;
   int verbose_ = 0;
   int network_version_ = 38;
