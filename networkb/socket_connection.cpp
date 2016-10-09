@@ -182,7 +182,20 @@ unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
     throw socket_error("Unable to initialize sockets.");
   }
 
-  sockaddr_in addr;
+  if (!SetNonBlockingMode(socket)) {
+    LOG(ERROR) << "Unable to put socket into nonblocking mode.";
+    closesocket(socket);
+    socket = INVALID_SOCKET;
+    throw socket_error("Unable to set nonblocking mode on the socket.");
+  }
+  if (!SetNoDelayMode(socket)) {
+    LOG(ERROR) << "Unable to put socket into nodelay mode.";
+    closesocket(socket);
+    socket = INVALID_SOCKET;
+    throw socket_error("Unable to set nodelay mode on the socket.");
+  }
+
+  sockaddr_in addr = {};
   socklen_t nAddrSize = sizeof(sockaddr);
   getpeername(socket, reinterpret_cast<sockaddr *>(&addr), &nAddrSize);
   char s[255];
