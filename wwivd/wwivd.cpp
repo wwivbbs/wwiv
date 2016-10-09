@@ -25,6 +25,7 @@
 #include <string>
 #include <unistd.h>
 #include <resolv.h>
+#include <pwd.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
@@ -287,15 +288,30 @@ int CreateListenSocket(int port) {
   return sock;
 }
 
+uid_t GetWWIVUserId(const string& username) {
+  passwd* pw = getpwnam(username.c_str());
+  if (pw == nullptr) {
+    // Unable to find user, let's return our current uid.
+    LOG(ERROR) << "Unable to find uid for username: " << username;
+    return getuid();
+  }
+  return pw->pw_uid;
+}
 /**
  *  This program is the manager of the nodes for the WWIV BBS software
  *  on UNIX platforms.
  */
 int Main(CommandLine& cmdline) {
 
-  const string wwiv_dir = environment_variable("WWIV_DIR");
-  string config_dir = !wwiv_dir.empty() ? wwiv_dir : File::current_directory();
-  Config config(config_dir);
+  string wwiv_dir = environment_variable("WWIV_DIR");
+  if (wwiv_dir.empty()) {
+    wwiv_dir = File::current_directory();
+  }
+  string wwiv_user = environment_variable("WWIV_USER");
+  if (wwiv_user.empty()) {
+    wwiv_user = "wwiv";
+  }
+  Config config(wwiv_dir);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT";
     return 1;
@@ -325,6 +341,15 @@ int Main(CommandLine& cmdline) {
 
   int max_fd = std::max<int>(telnet_socket, ssh_socket);
   socklen_t addr_size = sizeof(sockaddr_in);
+
+  uid_t current_uid = getuid();
+  uid_t wwiv_uid = GetWWIVUserId(wwiv_user);
+  if (wwiv_uid != current_uid) {
+    if (setuid(wwiv_uid) != 0) {
+      LOG(ERROR) << "Unable to call setuid(" << wwiv_uid << "); errno: " << errno;
+      // TODO(rushfan): Should we exit or continue here?
+    }
+  }
 
   while (true) {
     const int num_instances = (c.end_node - c.start_node + 1);
@@ -397,6 +422,10 @@ int main(int argc, char* argv[]) {
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
+
+  if (daemon(1, 1) == -1) {
+    LOG(ERROR) << "Unable to call daemon; errno: " << errno;
+  }
 
   LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
 
