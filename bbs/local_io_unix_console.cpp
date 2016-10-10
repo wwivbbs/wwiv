@@ -417,7 +417,6 @@ void UnixConsoleIO::SetCursor(int cursorStyle) {}
 void UnixConsoleIO::LocalClrEol() {}
 void UnixConsoleIO::LocalWriteScreenBuffer(const char *pszBuffer) {}
 int UnixConsoleIO::GetDefaultScreenBottom() { return 25; }
-void UnixConsoleIO::LocalEditLine(char *s, int len, int status, int *returncode, const char *ss) {}
 void UnixConsoleIO::UpdateNativeTitleBar() {}
 
 void UnixConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {}
