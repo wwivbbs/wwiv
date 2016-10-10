@@ -653,7 +653,7 @@ static int GetEditLineStringLength(const char *text) {
 }
 
 void Win32ConsoleIO::EditLine(char *pszInOutText, int len, int editor_status,
-    int *returncode, char *pszAllowedSet) {
+    int *returncode, const char *pszAllowedSet) {
   
   int oldatr = curatr;
   int cx = WhereX();

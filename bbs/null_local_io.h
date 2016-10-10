@@ -55,7 +55,7 @@ public:
   void ClrEol() override {}
   void WriteScreenBuffer(const char *buffer) override {}
   size_t GetDefaultScreenBottom() override { return 24; }
-  void EditLine(char *s, int len, int statusx, int *returncode, char *ss) override {}
+  void EditLine(char *s, int len, int statusx, int *returncode, const char *ss) override {}
   void UpdateNativeTitleBar(WSession* session) override {}
 };
 

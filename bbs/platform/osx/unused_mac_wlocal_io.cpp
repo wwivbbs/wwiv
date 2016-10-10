@@ -631,7 +631,7 @@ int WLocalIO::GetDefaultScreenBottom() {
 /**
  * Edits a string, doing local screen I/O only.
  */
-void WLocalIO::LocalEditLine(char *s, int len, int status, int *returncode, char *ss) {}
+void WLocalIO::LocalEditLine(char *s, int len, int status, int *returncode, const char *ss) {}
 
 int WLocalIO::GetEditLineStringLength(const char *pszText) {
   int i = strlen(pszText);

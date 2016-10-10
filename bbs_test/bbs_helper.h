@@ -98,7 +98,7 @@ public:
   void ClrEol() override {}
   void WriteScreenBuffer(const char *buffer) override {}
   size_t GetDefaultScreenBottom() override { return 25; }
-  void EditLine(char *s, int len, int status, int *returncode, char *ss) override {}
+  void EditLine(char *s, int len, int status, int *returncode, const char *ss) override {}
   void UpdateNativeTitleBar(WSession* session) override {}
 
   std::string* captured_;

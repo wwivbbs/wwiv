@@ -84,7 +84,7 @@ class LocalIO {
   virtual void SetCursor(int cursorStyle) = 0;
   virtual void WriteScreenBuffer(const char *buffer) = 0;
   virtual size_t GetDefaultScreenBottom() = 0;
-  virtual void EditLine(char *s, int len, int status, int *returncode, char *ss) = 0;
+  virtual void EditLine(char *s, int len, int status, int *returncode, const char *ss) = 0;
   virtual void UpdateNativeTitleBar(WSession* session) = 0;
 
   int  GetTopScreenColor() const { return top_screen_color_; }
