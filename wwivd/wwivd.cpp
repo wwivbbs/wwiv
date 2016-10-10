@@ -476,7 +476,12 @@ int main(int argc, char* argv[]) {
   cmdline.add_argument({"wwiv_user", "WWIV User to use.", "wwiv2"});
 
   if (!cmdline.Parse()) {
-    LOG(ERROR) << "Error parsing commandlins.";
+    cout << cmdline.GetHelp() << endl;
+    return 1;
+  }
+  if (cmdline.help_requested()) {
+    cout << cmdline.GetHelp() << endl;
+    return 0;
   }
 
   LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
