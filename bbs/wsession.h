@@ -56,10 +56,10 @@ class WApplication;
 //
 struct asv_rec {
   uint8_t
-  sl, dsl, exempt;
+    sl, dsl, exempt;
 
   uint16_t
-  ar, dar, restrict;
+    ar, dar, restrict;
 };
 
 struct adv_asv_rec {
@@ -81,21 +81,15 @@ extern Output bout;
 ///////////////////////////////////////////////////////////////////////////////
 // Per-user session data
 //
-class WSession : public Runnable {
+class WSession: public Runnable {
   friend class BbsHelper;
+
 public:
   // Constants
   static const int exitLevelOK = 0;
   static const int exitLevelNotOK = 1;
   static const int exitLevelQuit = 2;
 
-  static const int shutdownNone = 0;
-  static const int shutdownThreeMinutes = 1;
-  static const int shutdownTwoMinutes = 2;
-  static const int shutdownOneMinute = 3;
-  static const int shutdownImmediate = 4;
-
-public:
   WSession(WApplication* app, LocalIO* localIO);
   virtual ~WSession();
 
@@ -153,8 +147,8 @@ public:
   void SetUserOnline(bool b) { m_bUserOnline = b; }
 
   int  language_number() const { return m_nCurrentLanguageNumber; }
-  void set_language_number(int n) { 
-    m_nCurrentLanguageNumber = n; 
+  void set_language_number(int n) {
+    m_nCurrentLanguageNumber = n;
     if (n >= 0 && n <= static_cast<int>(languages.size())) {
       cur_lang_name = languages[n].name;
       language_dir = languages[n].dir;
@@ -167,8 +161,8 @@ public:
   int  GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
   void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
 
-  bool IsNewScanAtLogin() const {return m_bNewScanAtLogin; } 
-  void SetNewScanAtLogin(bool b) { m_bNewScanAtLogin =  b; }
+  bool IsNewScanAtLogin() const { return m_bNewScanAtLogin; }
+  void SetNewScanAtLogin(bool b) { m_bNewScanAtLogin = b; }
 
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (session()->udir[b], not directories[b]).
@@ -211,7 +205,7 @@ public:
 
   int  GetBeginDayNodeNumber() const { return m_nBeginDayNodeNumber; }
   void SetBeginDayNodeNumber(int n) { m_nBeginDayNodeNumber = n; }
-  
+
   int  GetExecChildProcessWaitTime() const { return m_nExecChildProcessWaitTime; }
   void SetExecChildProcessWaitTime(int n) { m_nExecChildProcessWaitTime = n; }
 
@@ -223,7 +217,7 @@ public:
 
   int  net_type() const { return m_nCurrentNetworkType; }
   void set_net_type(int n) { m_nCurrentNetworkType = n; }
-   
+
   int  net_num() const { return m_nNetworkNumber; }
   void set_net_num(int n) { m_nNetworkNumber = n; }
 
@@ -274,11 +268,6 @@ public:
   wwiv::sdk::Names* names() const { return names_.get(); }
 
   bool read_subs();
-  
-  // former global variables and system_operation_rec members
-  // to be moved
-  unsigned long flags;
-  unsigned short spawn_opts[20];
 
   /*!
   * @function ShowUsage - Shows the help screen to the user listing
@@ -294,110 +283,49 @@ public:
   */
   int Run(int argc, char *argv[]);
 
-   void ExitBBSImpl(int exit_level, bool perform_shutdown);
+  void ExitBBSImpl(int exit_level, bool perform_shutdown);
 
-   void InitializeBBS(); // old init() method
-   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
-   bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
-   bool ReadConfig();
+  void InitializeBBS(); // old init() method
+  void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
+  bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
+  bool ReadConfig();
 
-   int LocalLogon();
-
- private:
-   uint16_t str2spawnopt(const char *s);
-   uint16_t str2restrict(const char *s);
-   void read_nextern();
-   void read_arcs();
-   void read_editors();
-   void read_nintern();
-   void read_networks();
-   bool read_names();
-   bool read_dirs();
-   void read_chains();
-   bool read_language();
-   void read_gfile();
-   void make_abs_path(char *dir);
-   void check_phonenum();
-   void create_phone_file();
-
- protected:
-   /*!
-   * @function GetCaller WFC Screen loop
-   */
-   void GetCaller();
-
-   int doWFCEvents();
-
-   /*!
-   * @function GotCaller login routines
-   * @param ms Modem Speed (may be a locked speed)
-   * @param cs Connect Speed (real speed)
-   */
-   void GotCaller(unsigned int ms, unsigned long cs);
-
-private:
-  uint16_t  unx_;
-  /*! The current working directory.*/
-  std::string current_dir_;
-  int             oklevel_;
-  int             errorlevel_;
-  int             instance_number_ = -1;
-  std::string     network_extension_;
-  double          last_time = 0;
-  bool            user_already_on_ = false;
-  bool            need_to_clean_net_ = false;
-  int             shutdown_status_ = shutdownNone;
-  double          shutdown_time_ = 0;
-  int             wfc_status_ = 0;
-
-  std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
-  std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
-  std::string m_attachmentDirectory;
-  WApplication* application_;
-  wwiv::sdk::User thisuser_;
-  bool last_key_local_ = true;
-  int effective_sl_ = 0;
-  std::unique_ptr<RemoteIO> comm_;
-  std::unique_ptr<LocalIO> local_io_;
-  std::string current_speed_;
-  std::unique_ptr<wwiv::sdk::Config> config_;
-  std::unique_ptr<wwiv::sdk::Names> names_;
-
+  int LocalLogon();
 
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
-  public:
-    int chatname_color_ = 0;
-    int message_color_ = 0;
+public:
+  int chatname_color_ = 0;
+  int message_color_ = 0;
 
-    int         m_nForcedReadSubNumber = 0;
-    bool        m_bAllowCC = false;
-    bool        m_bUserOnline = false;
-    bool        m_bQuoting = false;
-    bool        m_bTimeOnlineLimited = false;
+  int m_nForcedReadSubNumber = 0;
+  bool m_bAllowCC = false;
+  bool m_bUserOnline = false;
+  bool m_bQuoting = false;
+  bool m_bTimeOnlineLimited = false;
 
-  bool        m_bNewScanAtLogin = false,
-              m_bInternalZmodem = true,
-              m_bExecLogSyncFoss = true;
-  int         m_nNumMessagesReadThisLogon = 0,
-              m_nCurrentLanguageNumber = 0,
-              m_nCurrentFileArea = 0,
-              current_sub_num_ = 0,
-              m_nCurrentReadMessageArea = 0,
-              m_nCurrentConferenceMessageArea = 0,
-              m_nCurrentConferenceFileArea = 0,
-              m_nNumMsgsInCurrentSub = 0,
-              m_nBeginDayNodeNumber = 0,
-              m_nExecChildProcessWaitTime = 0,
-              m_nMaxNumberMessageAreas = 0,
-              m_nMaxNumberFileAreas = 0,
-              m_nCurrentNetworkType = 0,
-              m_nNetworkNumber = 0,
-              m_nMaxNetworkNumber = 0,
-              numf = 0,
-              subchg = 0,
-              topdata = 0,
-              using_modem = 0;
+  bool  m_bNewScanAtLogin = false,
+    m_bInternalZmodem = true,
+    m_bExecLogSyncFoss = true;
+  int m_nNumMessagesReadThisLogon = 0,
+    m_nCurrentLanguageNumber = 0,
+    m_nCurrentFileArea = 0,
+    current_sub_num_ = 0,
+    m_nCurrentReadMessageArea = 0,
+    m_nCurrentConferenceMessageArea = 0,
+    m_nCurrentConferenceFileArea = 0,
+    m_nNumMsgsInCurrentSub = 0,
+    m_nBeginDayNodeNumber = 0,
+    m_nExecChildProcessWaitTime = 0,
+    m_nMaxNumberMessageAreas = 0,
+    m_nMaxNumberFileAreas = 0,
+    m_nCurrentNetworkType = 0,
+    m_nNetworkNumber = 0,
+    m_nMaxNetworkNumber = 0,
+    numf = 0,
+    subchg = 0,
+    topdata = 0,
+    using_modem = 0;
   unsigned int screenlinest = 0;
 
   std::string internetPopDomain;
@@ -417,7 +345,6 @@ private:
   std::string dsz_logfile_name_;
   std::string download_filename_;
 
-
   int wfc_status;
   int usernum;
 
@@ -425,22 +352,20 @@ private:
   adv_asv_rec advasv;
 
   uint16_t
-  mail_who_field_len = 0,
-  max_batch = 0,
-  max_extend_lines = 0,
-  max_chains = 0,
-  max_gfilesec = 0,
-  screen_saver_time = 0;
+    mail_who_field_len = 0,
+    max_batch = 0,
+    max_extend_lines = 0,
+    max_chains = 0,
+    max_gfilesec = 0,
+    screen_saver_time = 0;
 
   unsigned char
-  newuser_colors[10],         // skip for now
-  newuser_bwcolors[10];       // skip for now
+    newuser_colors[10],         // skip for now
+    newuser_bwcolors[10];       // skip for now
 
 public:
   // Public subsystems
-  Batch batch_;
   Batch& batch() { return batch_; }
-  std::unique_ptr<wwiv::sdk::Subs> subs_;
   wwiv::sdk::Subs& subs() { return *subs_.get(); }
 
   // public data structures
@@ -459,6 +384,71 @@ public:
   std::vector<usersubrec> udir;
   std::vector<eventsrec> events;
   std::vector<tagrec_t> filelist;
+
+protected:
+  /*!
+  * @function GetCaller WFC Screen loop
+  */
+  void GetCaller();
+
+  int doWFCEvents();
+
+  /*!
+  * @function GotCaller login routines
+  * @param ms Modem Speed (may be a locked speed)
+  * @param cs Connect Speed (real speed)
+  */
+  void GotCaller(unsigned int ms, unsigned long cs);
+
+private:
+  uint16_t str2spawnopt(const char *s);
+  uint16_t str2restrict(const char *s);
+  void read_nextern();
+  void read_arcs();
+  void read_editors();
+  void read_nintern();
+  void read_networks();
+  bool read_names();
+  bool read_dirs();
+  void read_chains();
+  bool read_language();
+  void read_gfile();
+  void make_abs_path(char *dir);
+  void check_phonenum();
+  void create_phone_file();
+
+  uint16_t  unx_;
+  /*! The current working directory.*/
+  std::string current_dir_;
+  int oklevel_;
+  int errorlevel_;
+  int  instance_number_ = -1;
+  std::string network_extension_;
+  double last_time = 0;
+  bool user_already_on_ = false;
+  bool need_to_clean_net_ = false;
+  int wfc_status_ = 0;
+
+  std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
+  std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
+  std::string m_attachmentDirectory;
+  WApplication* application_;
+  wwiv::sdk::User thisuser_;
+  bool last_key_local_ = true;
+  int effective_sl_ = 0;
+  std::unique_ptr<RemoteIO> comm_;
+  std::unique_ptr<LocalIO> local_io_;
+  std::string current_speed_;
+  std::unique_ptr<wwiv::sdk::Config> config_;
+  std::unique_ptr<wwiv::sdk::Names> names_;
+
+  Batch batch_;
+  std::unique_ptr<wwiv::sdk::Subs> subs_;
+
+  // Former global variables and system_operation_rec members to be moved
+  unsigned long flags;
+  unsigned short spawn_opts[20];
+
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

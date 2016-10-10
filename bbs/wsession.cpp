@@ -103,8 +103,7 @@ extern time_t last_time_c;
 Output bout;
 
 WSession::WSession(WApplication* app, LocalIO* localIO)
-    : application_(app), local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), shutdown_status_(
-        shutdownNone), batch_() {
+    : application_(app), local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_() {
   ::bout.SetLocalIO(localIO);
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));
