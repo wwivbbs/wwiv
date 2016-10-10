@@ -59,19 +59,23 @@ static pid_t bbs_pid = 0;
 
 
 struct wwivd_config_t {
-  int ssh_port = -1;
-  int telnet_port = 2323;
-  string ssh_cmd;
-  string telnet_cmd;
   string bbsdir;
-  bool syslog = true;
+
+  int telnet_port = 2323;
+  string telnet_cmd;
+
+  int ssh_port = -1;
+  string ssh_cmd;
+
+  int binkp_port = -1;
+  string binkp_cmd;
 
   int start_node;
   int end_node;
   int local_node;
 };
 
-enum class ConnectionType { SSH, TELNET };
+enum class ConnectionType { SSH, TELNET, BINKP };
 
 static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
@@ -108,11 +112,16 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
       LOG(ERROR) << "Unable to open INI file: " << wwivd_ini_fn.full_pathname();
     }
     c.bbsdir = config.root_directory();
-    c.ssh_cmd = ini.GetValue("ssh_command", "./bbs -XS -H@H -N@N");
-    c.ssh_port = ini.GetNumericValue("ssh_port", -1);
-    c.telnet_cmd = ini.GetValue("telnet_command", "./bbs -XT -H@H -N@N");
+
     c.telnet_port = ini.GetNumericValue("telnet_port", -1);
-    c.syslog = ini.GetBooleanValue("use_syslog", true);
+    c.telnet_cmd = ini.GetValue("telnet_command", "./bbs -XT -H@H -N@N");
+
+    c.ssh_port = ini.GetNumericValue("ssh_port", -1);
+    c.ssh_cmd = ini.GetValue("ssh_command", "./bbs -XS -H@H -N@N");
+
+    c.binkp_port = ini.GetNumericValue("binkp_port", -1);
+    c.binkp_cmd = ini.GetValue("binkp_command", "./networkb --receive --handle=@H");
+
     c.local_node = ini.GetNumericValue("local_node", 1);
     c.start_node = ini.GetNumericValue("start_node", 2);
     c.end_node = ini.GetNumericValue("end_node", 4);
@@ -121,7 +130,10 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
   return c;
 }
 
-static const File node_file(const Config& config, int node_number) {
+static const File node_file(const Config& config, ConnectionType ct, int node_number) {
+  if (ct == ConnectionType::BINKP) {
+    return File(config.datadir(), "binkpinuse");
+  }
   return File(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
@@ -138,11 +150,18 @@ static void sigint_handler(int mysignal) {
 }
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
+  // Delete telnet/SSH node semaphore files.
   for(int i = start_node; i <= end_node; i++) {
-    File semaphore_file(node_file(config, i));
+    File semaphore_file(node_file(config, ConnectionType::TELNET, i));
     if (semaphore_file.Exists()) {
       semaphore_file.Delete();
     }
+  }
+
+  // Delete any BINKP semaphores.
+  File binkp_file(node_file(config, ConnectionType::BINKP, 0));
+  if (binkp_file.Exists()) {
+    binkp_file.Delete();
   }
 
   return true;
@@ -151,7 +170,7 @@ static bool DeleteAllSemaphores(const Config& config, int start_node, int end_no
 static int loadUsedNodeData(const Config& config, int start_node, int end_node) {
   int used_nodes = 0;
   for(int counter = start_node; counter <= end_node; counter++) {
-    File semaphore_file(node_file(config, counter));
+    File semaphore_file(node_file(config, ConnectionType::TELNET, counter));
     if (semaphore_file.Exists()) {
       ++used_nodes;
     }
@@ -161,17 +180,19 @@ static int loadUsedNodeData(const Config& config, int start_node, int end_node) 
 
 static bool launchNode(
     const Config& config, const wwivd_config_t& c,
-    int node_number, int sock, ConnectionType connection_type) {
+    int node_number, int sock, ConnectionType connection_type,
+    const string& remote_peer) {
 
   const string pid = StringPrintf("[%d] ", getpid());
   VLOG(1) << pid << "launchNode(" << node_number << ")";
-  File semaphore_file(node_file(config, node_number));
+  File semaphore_file(node_file(config, connection_type, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << semaphore_file
                << "; errno: " << errno;
     return false;
   }
-  semaphore_file.Write(StringPrintf("Created by pid: %s\n", pid.c_str()));
+  semaphore_file.Write(StringPrintf("Created by pid: %s\nremote peer: %s",
+      pid.c_str(), remote_peer.c_str()));
   semaphore_file.Close();
 
   map<char, string> params = {
@@ -179,13 +200,17 @@ static bool launchNode(
       {'H', std::to_string(sock) }
   };
 
-  string telnet_or_ssh_cmd = c.telnet_cmd;
-  if (connection_type == ConnectionType::SSH) {
-    telnet_or_ssh_cmd = c.ssh_cmd;
+  string raw_cmd;
+  if (connection_type == ConnectionType::TELNET) {
+    raw_cmd = c.telnet_cmd;
+  } else if (connection_type == ConnectionType::SSH) {
+    raw_cmd = c.ssh_cmd;
+  } else if (connection_type == ConnectionType::BINKP) {
+    raw_cmd = c.binkp_cmd;
   }
-  const string cmd = CreateCommandLine(telnet_or_ssh_cmd, params);
+  const string cmd = CreateCommandLine(raw_cmd, params);
 
-  LOG(INFO) << pid << "Invoking WWIV with command line:" << cmd;
+  LOG(INFO) << pid << "Invoking Command Line:" << cmd;
   pid_t child_pid = fork();
   if (child_pid == -1) {
     // fork failed.
@@ -193,9 +218,8 @@ static bool launchNode(
     return false;
   } else if (child_pid == 0) {
     // child process.
-    struct sigaction sa;
     execl("/bin/sh", "sh", "-c", cmd.c_str(), nullptr);
-    LOG(ERROR) << "Unable to exec: '" << cmd.c_str() << "' errno: " << errno;
+    LOG(ERROR) << "Unable to exec: '" << cmd << "' errno: " << errno;
     // Should not happen unless we can't exec /bin/sh
     _exit(127);
   }
@@ -305,12 +329,15 @@ int Main(CommandLine& cmdline) {
 
   string wwiv_dir = environment_variable("WWIV_DIR");
   if (wwiv_dir.empty()) {
-    wwiv_dir = File::current_directory();
+    wwiv_dir = cmdline.arg("bbsdir").as_string();
   }
+  VLOG(2) << "Using WWIV_DIR: " << wwiv_dir;
   string wwiv_user = environment_variable("WWIV_USER");
+  VLOG(2) << "Using WWIV_USER(1): " << wwiv_user;
   if (wwiv_user.empty()) {
-    wwiv_user = "wwiv";
+    wwiv_user = cmdline.arg("wwiv_user").as_string();
   }
+  VLOG(2) << "Using WWIV_USER: " << wwiv_user;
   Config config(wwiv_dir);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT";
@@ -330,6 +357,7 @@ int Main(CommandLine& cmdline) {
   fd_set fds;
   int telnet_socket = -1;
   int ssh_socket = -1;
+  int binkp_socket = -1;
   if (c.telnet_port > 0) {
     LOG(INFO) << "Listening to telnet on port: " << c.telnet_port;
     telnet_socket = CreateListenSocket(c.telnet_port);
@@ -338,8 +366,12 @@ int Main(CommandLine& cmdline) {
     LOG(INFO) << "Listening to SSH on port: " << c.ssh_port;
     ssh_socket = CreateListenSocket(c.ssh_port);
   }
+  if (c.binkp_port > 0) {
+    LOG(INFO) << "Listening to BINKP on port: " << c.binkp_port;
+    binkp_socket = CreateListenSocket(c.binkp_port);
+  }
 
-  int max_fd = std::max<int>(telnet_socket, ssh_socket);
+  int max_fd = std::max<int>(std::max<int>(telnet_socket, ssh_socket), binkp_socket);
   socklen_t addr_size = sizeof(sockaddr_in);
 
   uid_t current_uid = getuid();
@@ -363,6 +395,9 @@ int Main(CommandLine& cmdline) {
     if (c.ssh_port > 0) {
       FD_SET(ssh_socket, &fds);
     }
+    if (c.binkp_port > 0) {
+      FD_SET(binkp_socket, &fds);
+    }
     ConnectionType connection_type = ConnectionType::TELNET;
     VLOG(1) << "About to call select. (" << max_fd << ")";
     int status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
@@ -380,12 +415,17 @@ int Main(CommandLine& cmdline) {
     } else if (c.ssh_port > 0 && FD_ISSET(ssh_socket, &fds)) {
       client_sock = accept(ssh_socket, (sockaddr*)&saddr, &addr_size);
       connection_type = ConnectionType::SSH;
+    } else if (c.binkp_port > 0 && FD_ISSET(binkp_socket, &fds)) {
+      client_sock = accept(binkp_socket, (sockaddr*)&saddr, &addr_size);
+      connection_type = ConnectionType::BINKP;
     } else {
       LOG(ERROR) << "Unable to determine which socket triggered select!";
       continue;
     }
 
-    LOG(INFO) << "Connection from: " << inet_ntoa(saddr.sin_addr) << endl;
+    char ntop_buffer[255];
+    const string remote_peer = inet_ntop(saddr.sin_family, &saddr.sin_addr, ntop_buffer, sizeof(ntop_buffer));
+    LOG(INFO) << "Connection from: " << remote_peer << endl;
     if (client_sock == -1) {
       LOG(INFO)<< "Error accepting client socket. " << errno;
       continue;
@@ -396,17 +436,28 @@ int Main(CommandLine& cmdline) {
       LOG(ERROR) << "Error spawning child process. " << errno;
       continue;
     } else if (childpid == 0) {
+      VLOG(2) << "In child process.";
       // We're in the child process now.
-      // Find open node number and launch the child.
-      for (int node = c.start_node; node <= c.end_node; node++) {
-        if (!node_file(config, node).Exists()) {
-          launchNode(config, c, node, client_sock, connection_type);
+
+      if (connection_type == ConnectionType::BINKP) {
+        // BINKP Connection.
+        if (!node_file(config, connection_type, 0)) {
+          launchNode(config, c, 0, client_sock, connection_type, remote_peer);
           return 0;
         }
+
+      } else {
+        // Telnet or SSH connection.  Find open node number and launch the child.
+        for (int node = c.start_node; node <= c.end_node; node++) {
+          if (!node_file(config, connection_type, node).Exists()) {
+            launchNode(config, c, node, client_sock, connection_type, remote_peer);
+            return 0;
+          }
+        }
+        LOG(INFO) << "Sending BUSY. No available node to handle connection.";
+        send(client_sock, "BUSY\r\n", 6, 0);
+        close(client_sock);
       }
-      LOG(INFO) << "Sending BUSY. No available node to handle connection.";
-      send(client_sock, "BUSY\r\n", 6, 0);
-      close(client_sock);
       return 0;
     } else {
       // we're in the parent still.
@@ -422,6 +473,17 @@ int main(int argc, char* argv[]) {
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
+  cmdline.add_argument({"wwiv_user", "WWIV User to use.", "wwiv2"});
+  cmdline.set_no_args_allowed(true);
+
+  if (!cmdline.Parse()) {
+    cout << cmdline.GetHelp() << endl;
+    return 1;
+  }
+  if (cmdline.help_requested()) {
+    cout << cmdline.GetHelp() << endl;
+    return 0;
+  }
 
   LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
 

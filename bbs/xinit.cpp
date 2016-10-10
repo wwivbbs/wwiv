@@ -62,11 +62,7 @@
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
 
-#ifdef __unix__
-#define XINIT_PRINTF( x )
-#else
-#define XINIT_PRINTF( x ) std::clog << '\xFE' << ' ' << ( x )  << std::endl
-#endif // __unix__
+#define XINIT_PRINTF( x ) std::cerr << '\xFE' << ' ' << ( x )  << std::endl
 
 struct ini_flags_type {
   int     strnum;
@@ -902,26 +898,13 @@ void WSession::InitializeBBS() {
   statusMgr->RefreshStatusCache();
   topdata = LocalIO::topdataUser;
 
+  // Set DSZLOG
   dsz_logfile_name_ = StrCat(session()->temp_directory(), "dsz.log");
-
-#if !defined ( __unix__ ) && !defined ( __APPLE__ )
-  string newprompt = "WWIV: ";
-  const string old_prompt = environment_variable("PROMPT");
-  if (!old_prompt.empty()) {
-    newprompt.append(old_prompt);
-  } else {
-    newprompt.append("$P$G");
-  }
-  // put in our environment since passing the xenviron wasn't working
-  // with sync emulated fossil
-  set_environment_variable("PROMPT", newprompt);
-
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", dsz_logfile_name_);
   }
+  // SET BBS environment variable.
   set_environment_variable("BBS", wwiv_version);
-
-#endif // defined ( __unix__ )
 
   XINIT_PRINTF("Reading External Events.");
   init_events();

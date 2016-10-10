@@ -42,7 +42,6 @@ using namespace wwiv::strings;
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
-#if !defined ( __unix__ )
   char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8], up[6], down[6],
        posts[6], banktime[6], gold[10], ass[6], logons[6];
   int cp, i, rc = ABORTED;
@@ -74,7 +73,7 @@ void OnlineUserEditor() {
   sprintf(logons, "%u", session()->user()->GetNumLogons());
   sprintf(ass, "%u", session()->user()->GetAssPoints());
 
-  _gcvt(session()->user()->GetGold(), 5, gold);
+  sprintf(gold, "%7.2f", session()->user()->GetGold());
   strcpy(rst, restrict_string);
   for (i = 0; i <= 15; i++) {
     if (session()->user()->HasArFlag(1 << i)) {
@@ -202,7 +201,7 @@ void OnlineUserEditor() {
       session()->localIO()->GotoXY(wx + 50, wy + 6);
       session()->localIO()->EditLine(gold, 5, NUM_ONLY, &rc, "");
       session()->user()->SetGold(static_cast<float>(atof(gold)));
-      _gcvt(session()->user()->GetGold(), 5, gold);
+      sprintf(gold, "%7.2", session()->user()->GetGold());
       session()->localIO()->Printf("%-5s", gold);
       break;
     case 10:
@@ -279,7 +278,6 @@ void OnlineUserEditor() {
   session()->ResetEffectiveSl();
   changedsl();
   session()->DisplaySysopWorkingIndicator(false);
-#endif // !defined ( __unix__ )
 }
 
 /**

@@ -69,7 +69,7 @@ class CursesLocalIO : public LocalIO {
   void WriteScreenBuffer(const char *buffer) override;
   size_t GetDefaultScreenBottom() override;
 
-  void EditLine(char *s, int len, int status, int *returncode, char *ss) override;
+  void EditLine(char *s, int len, int status, int *returncode, const char *ss) override;
   void UpdateNativeTitleBar(WSession* session) override;
   virtual void ResetColors();
 
