@@ -474,6 +474,7 @@ int main(int argc, char* argv[]) {
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
   cmdline.add_argument({"wwiv_user", "WWIV User to use.", "wwiv2"});
+  cmdline.set_no_args_allowed(true);
 
   if (!cmdline.Parse()) {
     cout << cmdline.GetHelp() << endl;
