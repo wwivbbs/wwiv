@@ -400,26 +400,18 @@ public:
  */
 static bool ok_to_call_from_contact_rec(const net_contact_rec& ncn, const net_call_out_rec& con) {
   time_t tCurrentTime = time(nullptr);
-  if (ncn.bytes_waiting == 0L) {
-    if (!con.call_anyway) {
-      return false;
-    }
-    time_t next_contact_time = ncn.lastcontact + SECONDS_PER_HOUR * con.call_anyway;
-    if (tCurrentTime < next_contact_time) {
-      return false;
-    }
-  } else {
-    // Only retry connections hourly if we have bytes waiting.
-    time_t next_contact_time = ncn.lastcontact + SECONDS_PER_HOUR * 1;
-    if (tCurrentTime < next_contact_time) {
-      return false;
-    }
+  if (ncn.bytes_waiting == 0L && !con.call_anyway) {
+    return false;
   }
-  if (con.options & options_once_per_day) {
-    if (std::abs(tCurrentTime - ncn.lastcontactsent) <
-      (20L * SECONDS_PER_HOUR / con.times_per_day)) {
-      return false;
-    }
+  int min_minutes = std::max<int>(con.call_anyway, 1);
+  time_t next_contact_time = ncn.lastcontact + SECONDS_PER_MINUTE * min_minutes;
+  if (tCurrentTime < next_contact_time) {
+    return false;
+  }
+  if ((con.options & options_once_per_day)
+    && std::abs(tCurrentTime - ncn.lastcontactsent) <
+    (20L * SECONDS_PER_HOUR / con.times_per_day)) {
+    return false;
   }
   if ((bytes_to_k(ncn.bytes_waiting) < con.min_k)
     && (std::abs(tCurrentTime - ncn.lastcontact) < SECONDS_PER_DAY)) {

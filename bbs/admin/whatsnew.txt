@@ -34,6 +34,7 @@ What's New in WWIV 5.2 (2016)
   automatically. Make sure that you configure it on the binkp page. This won't
   callout but will receive network binkp requests.
 * / callout menu displays host:port if it's a binkp connection.
+* callout.net flag /## now means ## minutes not ## hours
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
