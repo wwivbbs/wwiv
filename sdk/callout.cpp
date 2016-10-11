@@ -83,6 +83,10 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       } break;
       case '/': {
         con->call_anyway = StringToUnsignedChar(string(++iter, ss.end()));
+        if (con->call_anyway > 0) {
+          // Let's set a minimum of 10 minutes in between calls.
+          con->call_anyway = std::max<uint8_t>(con->call_anyway, 10);
+        }
       } break;
       case '#': {
         con->call_x_days = StringToUnsignedChar(string(++iter, ss.end()));
