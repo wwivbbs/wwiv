@@ -30,7 +30,6 @@
 #define NOMINMAX
 #include <Windows.h>
 #include <DbgHelp.h>
-#include <VersionHelpers.h>
 
 #endif  // _WIN32
 
@@ -61,24 +60,7 @@ void sound(uint32_t frequency, std::chrono::milliseconds d) {
 }
 
 std::string os_version_string() {
-  bool server = IsWindowsServer();
-  if (IsWindows10OrGreater()) {
-    // TODO(rushfan): Sort out Windows 10 SDK issues on build server.
-    return server ? "Windows 2016 Server" : "Windows 10";
-  }
-  if (IsWindows8Point1OrGreater()) {
-    return server ? "Windows Server 2012R2" : "Windows 8.1";
-  }
-  if (IsWindows8OrGreater()) {
-    return server ? "Windows Server 2012" : "Windows 8.0";
-  }
-  if (IsWindows7SP1OrGreater()) {
-    return server ? "Windows Server 2008" : "Windows 7 SP1";
-  }
-  if (IsWindows7OrGreater()) {
-    return server ? "Windows Server 2008" : "Windows 7";
-  }
-  return "WIN32";
+  return "Windows";
 }
 
 bool set_environment_variable(const std::string& variable_name, const std::string value) {
