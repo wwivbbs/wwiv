@@ -6,6 +6,7 @@ include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES
   bbslist.cpp
+  binkp.cpp
   callout.cpp
   config.cpp
   connect.cpp

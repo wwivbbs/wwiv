@@ -88,6 +88,9 @@
     <ClInclude Include="fido\fido_packets.h">
       <Filter>Source Files\fido</Filter>
     </ClInclude>
+    <ClInclude Include="binkp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -172,6 +175,9 @@
     </ClCompile>
     <ClCompile Include="fido\fido_packets.cpp">
       <Filter>Source Files\fido</Filter>
+    </ClCompile>
+    <ClCompile Include="binkp.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

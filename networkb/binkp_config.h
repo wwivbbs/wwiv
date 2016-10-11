@@ -28,23 +28,19 @@
 
 #include "core/inifile.h"
 #include "networkb/config_exceptions.h"
+#include "sdk/binkp.h"
 #include "sdk/callout.h"
 #include "sdk/networks.h"
 
 namespace wwiv {
 namespace net {
 
-struct BinkNodeConfig {
-  std::string host;
-  int port;
-};
-
 class BinkConfig {
  public:
   BinkConfig(const std::string& callout_network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
   BinkConfig(int node_number, const wwiv::sdk::Config& config, const std::string& network_dir);
   virtual ~BinkConfig();
-  const BinkNodeConfig* node_config_for(int node) const;
+  const wwiv::sdk::BinkNodeConfig* node_config_for(int node) const;
 
   uint16_t callout_node_number() const { return callout_node_; }
   const std::string system_name() const { return system_name_; }
@@ -55,7 +51,6 @@ class BinkConfig {
   const wwiv::sdk::Networks& networks() { return networks_; }
   std::map<const std::string, wwiv::sdk::Callout>& callouts() { return callouts_; }
 
-
   void set_skip_net(bool skip_net) { skip_net_ = skip_net; }
   bool skip_net() const { return skip_net_; }
   void set_verbose(int verbose) { verbose_ = verbose; }
@@ -64,7 +59,6 @@ class BinkConfig {
   int network_version() const { return network_version_; }
 
  private:
-  std::map<uint16_t, BinkNodeConfig> node_config_;
   std::string home_dir_;
 
   uint16_t callout_node_ = 0;
@@ -74,14 +68,12 @@ class BinkConfig {
   std::string gfiles_directory_;
   const wwiv::sdk::Networks networks_;
   std::map<const std::string, wwiv::sdk::Callout> callouts_;
+  std::unique_ptr<wwiv::sdk::Binkp> binkp_;
+
   bool skip_net_ = false;
   int verbose_ = 0;
   int network_version_ = 38;
 };
-
-bool ParseBinkConfigLine(const std::string& line,
-			 uint16_t* node,
-			 BinkNodeConfig* config);
 
 }  // namespace net
 }  // namespace wwiv

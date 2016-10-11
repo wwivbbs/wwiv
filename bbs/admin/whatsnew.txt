@@ -33,7 +33,8 @@ What's New in WWIV 5.2 (2016)
 * wwivserver (windows), can now run networkb on demand for receiving connections
   automatically. Make sure that you configure it on the binkp page. This won't
   callout but will receive network binkp requests.
-  
+* / callout menu displays host:port if it's a binkp connection.
+
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * removed "debug_level" and Debug menu command. use VLOG(2) now.

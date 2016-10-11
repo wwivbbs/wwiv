@@ -48,6 +48,7 @@
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
 #include "sdk/bbslist.h"
+#include "sdk/binkp.h"
 #include "sdk/callout.h"
 #include "sdk/contact.h"
 #include "sdk/filenames.h"
@@ -254,6 +255,7 @@ void do_callout(uint16_t sn) {
   
   Callout callout(session()->current_net().dir);
   Contact contact(session()->current_net().dir, false);
+  Binkp binkp(session()->current_net().dir);
 
   const net_call_out_rec* callout_rec = callout.node_config_for(sn); // i con
   if (callout_rec == nullptr) {
@@ -784,6 +786,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
   set_net_num(nNetNumber);
   Callout callout(session()->current_net().dir);
   Contact contact(session()->current_net().dir, false);
+  Binkp binkp(session()->current_net().dir);
 
   net_contact_rec *ncn = contact.contact_rec_for(sn);
   net_system_list_rec *csne = next_system(sn);
@@ -853,12 +856,16 @@ static void print_call(uint16_t sn, int nNetNumber) {
   session()->localIO()->PrintfXYA(58, 15, color, "%-17.16s", s1.c_str());
   session()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts);
   session()->localIO()->PrintfXYA(41, 3, color, "%-30.30s", csne->name);
-  session()->localIO()->PrintfXYA(23, 19, color, "%-17.17s", csne->phone);
-  s1 = StrCat(to_string(csne->speed), " BPS");
-  session()->localIO()->PrintfXYA(58, 18, color, "%-10.16s", s1.c_str());
-  const string areacode= describe_area_code(atoi(csne->phone));
-  const string stripped = stripcolors(areacode);
-  session()->localIO()->PrintfXYA(58, 19, color, "%-17.17s", stripped.c_str());
+  auto binkp_node = binkp.node_config_for(csne->sysnum);
+  string hostname = csne->phone;
+  string speed = StrCat(to_string(csne->speed), " BPS");
+  if (binkp_node != nullptr) {
+    // Use host:port is we have it.
+    hostname = StrCat(binkp_node->host, ":", binkp_node->port);
+    speed = "BinkP";
+  }
+  session()->localIO()->PrintfXYA(23, 19, color, "%-30.30s", hostname.c_str());
+  session()->localIO()->PrintfXYA(58, 18, color, "%-10.16s", speed.c_str());
   session()->localIO()->PrintfXYA(14, 3, color, "%-11.16s", session()->network_name());
 }
 
@@ -941,12 +948,11 @@ static std::pair<uint16_t, int> ansicallout() {
     session()->localIO()->PrintfXYA(5, 16,  color3, "First Contact   :");
     session()->localIO()->PrintfXYA(5, 17,  color3, "Bytes Received  :");
     session()->localIO()->PrintfXYA(5, 18,  color3, "Bytes Sent      :");
-    session()->localIO()->PrintfXYA(5, 19,  color3, "Phone Number    :");
+    session()->localIO()->PrintfXYA(5, 19,  color3, "Address         :");
     session()->localIO()->PrintfXYA(40, 15, color3, "Last Try Contact:");
     session()->localIO()->PrintfXYA(40, 16, color3, "Last Contact    :");
     session()->localIO()->PrintfXYA(40, 17, color3, "Bytes Waiting   :");
     session()->localIO()->PrintfXYA(40, 18, color3, "Max Speed       :");
-    session()->localIO()->PrintfXYA(40, 19, color3, "System Location :");
 
     fill_call(color4, rownum, netnum, nodenum);
     curatr = color2;

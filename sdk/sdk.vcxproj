@@ -12,6 +12,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbslist.h" />
+    <ClInclude Include="binkp.h" />
     <ClInclude Include="callout.h" />
     <ClInclude Include="config.h" />
     <ClInclude Include="connect.h" />
@@ -43,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="bbslist.cpp" />
+    <ClCompile Include="binkp.cpp" />
     <ClCompile Include="callout.cpp" />
     <ClCompile Include="config.cpp" />
     <ClCompile Include="connect.cpp" />
