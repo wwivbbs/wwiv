@@ -915,13 +915,13 @@ static std::pair<uint16_t, int> ansicallout() {
       Callout callout(session()->current_net().dir);
       Contact contact(session()->current_net().dir, false);
 
-      for (const auto& p : callout.node_config()) {
+      const auto& nodemap = callout.node_config();
+      for (const auto& p : nodemap) {
         auto con = contact.contact_rec_for(p.first);
         if ((!(p.second.options & options_hide_pend)) && valid_system(p.second.sysnum)) {
           netpos[netnum] = nNetNumber;
           nodenum[netnum] = con->systemnumber;
           ++netnum;
-          break;
         }
       }
       if (netnum > MAX_CONNECTS) {
