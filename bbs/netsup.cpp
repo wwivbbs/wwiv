@@ -783,12 +783,11 @@ static void print_call(uint16_t sn, int nNetNumber) {
   net_contact_rec *ncn = contact.contact_rec_for(sn);
   net_system_list_rec *csne = next_system(sn);
 
-  color = 30;
   if (!got_color) {
     got_color = 1;
     IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
-      color = StringToInt(iniFile.GetValue("CALLOUT_COLOR_TEXT", "30"));
+      color = StringToInt(iniFile.GetValue("CALLOUT_COLOR_TEXT", "14"));
     }
   }
   curatr = color;
@@ -884,21 +883,22 @@ static void fill_call(int color, int row, int netmax, std::map<int, uint16_t>& n
 static const int MAX_CONNECTS = 2000;
 
 static std::pair<uint16_t, int> ansicallout() {
-  static int callout_ansi, color1, color2, color3, color4, got_info = 0;
+  static bool callout_ansi = true;
+  static int color1, color2, color3, color4;
+  static bool got_info = false;
   char ch = 0;
   int netnum = 0, x = 0, y = 0, pos = 0, sn = 0, snn = 0;
   int rownum = 0;
   session()->localIO()->SetCursor(LocalIO::cursorNone);
   if (!got_info) {
-    got_info = 1;
-    callout_ansi = 0;
-    color1 = 31;
-    color2 = 59;
-    color3 = 7;
-    color4 = 30;
+    got_info = true;
+    color1 = 9;
+    color2 = 30;
+    color3 = 3;
+    color4 = 14;
     IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
-      callout_ansi = iniFile.GetBooleanValue("CALLOUT_ANSI") ? 1 : 0;
+      callout_ansi = iniFile.GetBooleanValue("CALLOUT_ANSI");
       color1 = iniFile.GetNumericValue("CALLOUT_COLOR", color1);
       color2 = iniFile.GetNumericValue("CALLOUT_HIGHLIGHT", color2);
       color3 = iniFile.GetNumericValue("CALLOUT_NORMAL", color3);

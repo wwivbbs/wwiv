@@ -937,31 +937,26 @@ files which should be placed in the same directory as your
 BBS.EXE file.  The files which belong in your DATA          
 directory are discussed in the next section.                
                                                             
-  1)   NETWORK.EXE - This file is run when a BBS is calling 
-another board through the network.  This program handles the
-modem and the network security.                             
+  1)   NETWORK.EXE - This file is provided for compatibility
+with legacy net38 and below. It spawns networkb for binkp
+connections over the internet.                             
 
-  2)   NETWORKF.EXE -  This is a FOSSIL based version of
-NETWORK.EXE.  If you are running WWIV v4.30 or later or have
-a FOSSIL driver installed, delete NETWORK.EXE and rename this
-file to NETWORK.EXE
-                                                            
-  3)   NETWORK1.EXE - This program analyzes P*.NET files to
+  2)   NETWORK1.EXE - This program analyzes P*.NET files to
 determine which are for local distribution and which are to 
 be sent to boards that you connect with.  The latter files  
 will be stored in DATA in Sxxxx.NET files where xxxx is the 
 node number of the receiving board.                                
                                                             
-  4)   NETWORK2.EXE - This program analyzes local mail and
+  3)   NETWORK2.EXE - This program analyzes local mail and
 distributes it to the proper message sub or to email.       
                                                             
-  5)   NETWORK3.EXE - This program analyzes CONNECT.NET and
+  4)   NETWORK3.EXE - This program analyzes CONNECT.NET and
 BBSLIST.NET. The analysis may cause the network software to 
 leave you messages.  The sysop should read these messages   
 and respond to them ASAP.  These messages are discussed in  
 the Appendix.
                                                          
-  6)   LNET.EXE - This program allows the deletion of
+  5)   LNET.EXE - This program allows the deletion of
 corrupted messages prior to their being sent over the net-  
 work.  It can also be used to delete a message which the    
 Sysop does not want to go out over the network....such as   
@@ -980,21 +975,17 @@ often they go there because one or more of the destination
 boards have gone down.  If these messages are several weeks 
 old, there is probably no harm in deleting the DEAD.NET.    
                                                             
-  7)   DExxx.EXE - These programs authenticate updates
-received from the network or group coordinator.  These files
-are not used by all networks and are network specific.  If
-you are on several networks, put these files in the network 
-data directory for each separate network or consult your network
-documentation for installation instructions.
-                                                            
-  8)   NETINIT.C - This file needs to be used only if you   
+  6)   NETINIT.C - This file needs to be used only if you   
 have modified the structure or size of the userrec structure.  
 If you have modified it, compile and run NETINIT and it will 
 store information necessary for the network in the CONFIG.DAT file.
                                                             
-  9)   REQ.EXE - This file is provided to allow those       
+  7)   REQ.EXE - This file is provided to allow those       
 systems that do not run WWIV BBS software a means of auto-  
-requesting subs.                                            
+requesting subs.   
+
+  8) WWIVUTIL - This is the main utility program for WWIV
+  and has a "net command to handle various WWIVnet operations.                                         
                                                             
   Additional files may be added to the network as the       
 development progresses or some of the existing files may be 
