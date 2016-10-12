@@ -66,6 +66,14 @@ using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+constexpr int MAX_CONNECTS = 1000;
+
+struct CalloutEntry {
+  CalloutEntry(uint16_t o, int e): node(o), net(e) {}
+  uint16_t node;
+  int net;
+};
+
 static void rename_pend(const string& directory, const string& filename) {
   const string pend_filename = StringPrintf("%s%s", directory.c_str(), filename.c_str());
   const string num = filename.substr(1);
@@ -811,7 +819,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
     }
     s1 += " Hrs";
   } else {
-    s1 += "NEVER";
+    s1 = "NEVER";
   }
   session()->localIO()->PrintfXYA(23, 16, color, "%-17.16s", s1.c_str());
 
@@ -826,7 +834,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
     }
     s1 += " Hrs";
   } else {
-    s1 += "NEVER";
+    s1 = "NEVER";
   }
   session()->localIO()->PrintfXYA(58, 16, color, "%-17.16s", s1.c_str());
 
@@ -842,7 +850,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
     }
     s1 += " Hrs";
   } else {
-    s1 += "NEVER";
+    s1 = "NEVER";
   }
   session()->localIO()->PrintfXYA(58, 15, color, "%-17.16s", s1.c_str());
   session()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts);
@@ -860,18 +868,18 @@ static void print_call(uint16_t sn, int nNetNumber) {
   session()->localIO()->PrintfXYA(14, 3, color, "%-11.16s", session()->network_name());
 }
 
-static void fill_call(int color, int row, int netmax, std::map<int, uint16_t>& nodenum) {
-  int i, x = 0, y = 0;
+static void fill_call(int color, int row, const std::vector<CalloutEntry>& entries) {
+  int x = 0, y = 0;
   char s1[6];
 
   curatr = color;
-  for (i = row * 10; (i < ((row + 6) * 10)); i++) {
+  for (int i = row * 10; (i < ((row + 6) * 10)); i++) {
     if (x > 69) {
       x = 0;
       y++;
     }
-    if (i < netmax) {
-      sprintf(s1, "%-5u", nodenum[i]);
+    if (i < entries.size()) {
+      sprintf(s1, "%-5u", entries.at(i).node);
     } else {
       strcpy(s1, "     ");
     }
@@ -880,14 +888,12 @@ static void fill_call(int color, int row, int netmax, std::map<int, uint16_t>& n
   }
 }
 
-static const int MAX_CONNECTS = 2000;
-
 static std::pair<uint16_t, int> ansicallout() {
   static bool callout_ansi = true;
   static int color1, color2, color3, color4;
   static bool got_info = false;
   char ch = 0;
-  int netnum = 0, x = 0, y = 0, pos = 0, sn = 0, snn = 0;
+  int x = 0, y = 0, pos = 0, sn = 0, snn = 0;
   int rownum = 0;
   session()->localIO()->SetCursor(LocalIO::cursorNone);
   if (!got_info) {
@@ -908,8 +914,7 @@ static std::pair<uint16_t, int> ansicallout() {
   }
 
   if (callout_ansi) {
-    std::map<int, uint16_t> nodenum;
-    std::map<int, int> netpos;
+    std::vector<CalloutEntry> entries;
     for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
       set_net_num(nNetNumber);
       Callout callout(session()->current_net().dir);
@@ -919,12 +924,10 @@ static std::pair<uint16_t, int> ansicallout() {
       for (const auto& p : nodemap) {
         auto con = contact.contact_rec_for(p.first);
         if ((!(p.second.options & options_hide_pend)) && valid_system(p.second.sysnum)) {
-          netpos[netnum] = nNetNumber;
-          nodenum[netnum] = con->systemnumber;
-          ++netnum;
+          entries.emplace_back(con->systemnumber, nNetNumber);
         }
       }
-      if (netnum > MAX_CONNECTS) {
+      if (entries.size() > MAX_CONNECTS) {
         break;
       }
     }
@@ -934,24 +937,24 @@ static std::pair<uint16_t, int> ansicallout() {
     session()->localIO()->MakeLocalWindow(3, 2, 73, 10);
     session()->localIO()->PrintfXYA(3, 4, color1, "\xC3%s\xB4", charstr(71, '\xC4'));
     session()->localIO()->MakeLocalWindow(3, 14, 73, 7);
-    session()->localIO()->PrintfXYA(5, 3,   color3, "NetWork:");
+    session()->localIO()->PrintfXYA(5, 3,   color3, "Network:");
     session()->localIO()->PrintfXYA(31, 3,  color3, "BBS Name:");
-    session()->localIO()->PrintfXYA(5, 15,  color3, "Contact Number  :");
+    session()->localIO()->PrintfXYA(5, 15,  color3, "# Connections   :");
     session()->localIO()->PrintfXYA(5, 16,  color3, "First Contact   :");
-    session()->localIO()->PrintfXYA(5, 17,  color3, "Bytes Received  :");
-    session()->localIO()->PrintfXYA(5, 18,  color3, "Bytes Sent      :");
+    session()->localIO()->PrintfXYA(5, 17,  color3, "KB Received     :");
+    session()->localIO()->PrintfXYA(5, 18,  color3, "KB Sent         :");
     session()->localIO()->PrintfXYA(5, 19,  color3, "Address         :");
-    session()->localIO()->PrintfXYA(40, 15, color3, "Last Try Contact:");
+    session()->localIO()->PrintfXYA(40, 15, color3, "Last Attempt    :");
     session()->localIO()->PrintfXYA(40, 16, color3, "Last Contact    :");
-    session()->localIO()->PrintfXYA(40, 17, color3, "Bytes Waiting   :");
+    session()->localIO()->PrintfXYA(40, 17, color3, "KB Waiting      :");
     session()->localIO()->PrintfXYA(40, 18, color3, "Max Speed       :");
 
-    fill_call(color4, rownum, netnum, nodenum);
+    fill_call(color4, rownum, entries);
     curatr = color2;
     x = 0;
     y = 0;
-    session()->localIO()->PrintfXYA(6, 5, color2, "%-5u", nodenum[pos]);
-    print_call(nodenum[pos], netpos[pos]);
+    session()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
+    print_call(entries[pos].node, entries[pos].net);
 
     bool done = false;
     do {
@@ -959,8 +962,8 @@ static std::pair<uint16_t, int> ansicallout() {
       switch (ch) {
       case ' ':
       case RETURN:
-        sn = nodenum[pos];
-        snn = netpos[pos];
+        sn = entries.at(pos).node;
+        snn = entries.at(pos).net;
         done = true;
         break;
       case 'Q':
@@ -974,57 +977,57 @@ static std::pair<uint16_t, int> ansicallout() {
         ch = wwiv::UpperCase<char>(static_cast<char>(session()->localIO()->GetChar()));
         switch (ch) {
         case RARROW:                        // right arrow
-          if ((pos < netnum - 1) && (x < 63)) {
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", nodenum[pos]);
+          if ((pos < entries.size() - 1) && (x < 63)) {
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
             pos++;
             x += 7;
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           }
           break;
         case LARROW:                        // left arrow
           if (x > 0) {
             curatr = color4;
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", nodenum[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
             pos--;
             x -= 7;
             curatr = color2;
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           }
           break;
         case UPARROW:                        // up arrow
           if (y > 0) {
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", nodenum[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
             pos -= 10;
             y--;
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           } else if (rownum > 0) {
             pos -= 10;
             rownum--;
-            fill_call(color4, rownum, netnum, nodenum);
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            fill_call(color4, rownum, entries);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           }
           break;
         case DNARROW:                        // down arrow
-          if ((y < 5) && (pos + 10 < netnum)) {
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", nodenum[pos]);
+          if ((y < 5) && (pos + 10 < entries.size())) {
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
             pos += 10;
             y++;
-          } else if ((rownum + 6) * 10 < netnum) {
+          } else if ((rownum + 6) * 10 < entries.size()) {
             rownum++;
-            fill_call(color4, rownum, netnum, nodenum);
-            if (pos + 10 < netnum) {
+            fill_call(color4, rownum, entries);
+            if (pos + 10 < entries.size()) {
               pos += 10;
             } else {
               --y;
             }
           }
           curatr = color2;
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-          print_call(nodenum[pos], netpos[pos]);
+          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          print_call(entries[pos].node, entries[pos].net);
           break;
         case HOME:                        // home
           if (pos > 0) {
@@ -1032,17 +1035,17 @@ static std::pair<uint16_t, int> ansicallout() {
             y = 0;
             pos = 0;
             rownum = 0;
-            fill_call(color4, rownum, netnum, nodenum);
-            session()->localIO()->PrintfXYA(6, 5, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            fill_call(color4, rownum, entries);
+            session()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           }
         case PAGEUP:                        // page up
           if (y > 0) {
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", nodenum[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
             pos -= 10 * y;
             y = 0;
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           } else {
             if (rownum > 5) {
               pos -= 60;
@@ -1051,36 +1054,36 @@ static std::pair<uint16_t, int> ansicallout() {
               pos -= 10 * rownum;
               rownum = 0;
             }
-            fill_call(color4, rownum, netnum, nodenum);
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            fill_call(color4, rownum, entries);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           }
           break;
         case PAGEDN:                        // page down
           if (y < 5) {
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", nodenum[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
             pos += 10 * (5 - y);
             y = 5;
-            if (pos >= netnum) {
+            if (pos >= entries.size()) {
               pos -= 10;
               --y;
             }
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
-          } else if ((rownum + 6) * 10 < netnum) {
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
+          } else if ((rownum + 6) * 10 < entries.size()) {
             for (int i1 = 0; i1 < 6; i1++) {
-              if ((rownum + 6) * 10 < netnum) {
+              if ((rownum + 6) * 10 < entries.size()) {
                 rownum++;
                 pos += 10;
               }
             }
-            fill_call(color4, rownum, netnum, nodenum);
-            if (pos >= netnum) {
+            fill_call(color4, rownum, entries);
+            if (pos >= entries.size()) {
               pos -= 10;
               --y;
             }
-            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", nodenum[pos]);
-            print_call(nodenum[pos], netpos[pos]);
+            session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+            print_call(entries[pos].node, entries[pos].net);
           }
           break;
         }
@@ -1089,7 +1092,7 @@ static std::pair<uint16_t, int> ansicallout() {
     session()->localIO()->SetCursor(LocalIO::cursorNormal);
     curatr = color3;
     session()->localIO()->Cls();
-    netw = (netpos[pos]);
+    netw = (entries[pos].net);
   } else {
     bout.nl();
     bout << "|#2Which system: ";
