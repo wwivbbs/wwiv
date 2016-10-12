@@ -118,6 +118,17 @@ bool Names::Save() {
     LOG(ERROR) << "Error saving NAMES.LST";
     return false;
   }
+
+  std::sort(names_.begin(), names_.end(), [](const smalrec& a, const smalrec& b) -> bool {
+    int equal = strcmp((char*)a.name, (char*)b.name);
+    // Sort by user number if names match.
+    if (equal == 0) {
+      return a.number < b.number;
+    }
+    // Otherwise sort by name comparison.
+    return equal < 0;
+  });
+
   return file.WriteVector(names_);
 }
 

@@ -1,6 +1,6 @@
 import struct
 
-with open('names2.lst', 'rb') as f:
+with open('names.lst', 'rb') as f:
 	while True:
 		b = f.read(31 + 2)
 		if not b:
