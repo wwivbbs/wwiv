@@ -15,58 +15,99 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/net/dump_contact.h"
+#include "wwivutil/net/req.h"
 
 #include <iostream>
 #include <map>
 #include <string>
 #include <vector>
+#include "core/command_line.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "networkb/net_util.h"
+#include "networkb/packets.h"
+#include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/contact.h"
+#include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/networks.h"
 
-using std::clog;
 using std::cout;
 using std::endl;
 using std::map;
 using std::string;
-using wwiv::sdk::Contact;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
 
-std::string DumpContactCommand::GetUsage() const {
+std::string SubReqCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   contact" << endl;
-  ss << "Example: contact" << endl;
+  ss << "Usage:   req <A|D> <subtype> <host>" << endl;
+  ss << "Example: req A GENCHAT 1" << endl;
   return ss.str();
 }
 
-int DumpContactCommand::Execute() {
+bool SubReqCommand::AddSubCommands() {
+  add_argument({"net", "Network number to use (i.e. 0).", "0"});
+
+  return true;
+}
+
+int SubReqCommand::Execute() {
   Networks networks(*config()->config());
   if (!networks.IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     return 1;
   }
 
-  map<const string, Contact> contacts;
-  for (const auto net : networks.networks()) {
-    string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    contacts.emplace(lower_case_network_name, Contact(net.dir, false));
+  // TODO: make NetworkCommandLine just take bbsdir and net.
+  wwiv::net::NetworkCommandLine net_cmdline(config()->bbsdir(), arg("net").as_int());
+  if (!net_cmdline.IsInitialized()) {
+    return 1;
   }
 
-  for (const auto& c : contacts) {
-    cout << "CONTACT.NET information: : " << c.first << endl;
-    cout << "===========================================================" << endl;
-    cout << c.second.ToString() << endl;
+  auto r = this->remaining();
+  if (r.size() < 3) {
+    cout << GetUsage();
+    return 2;
   }
 
+  auto net = net_cmdline.network();
+  string packet_filename = wwiv::net::create_pend(net.dir, false, 'r');
+  uint16_t main_type = main_type_sub_add_req;
+  auto add_drop = upcase(r.at(0).front());
+  if (add_drop != 'A') {
+    main_type = main_type_sub_drop_req;
+  }
+
+  net_header_rec nh = {};
+  auto host = StringToUnsignedShort(r.at(2));
+  nh.tosys = static_cast<uint16_t>(host);
+  nh.touser = 1;
+  nh.fromsys = net.sysnum;
+  nh.fromuser = 1;
+  nh.main_type = main_type_sub_add_req;
+  // always use 0 since we use the stype
+  nh.minor_type = 0;
+  nh.list_len = 0;
+  nh.daten = static_cast<uint32_t>(time(nullptr));
+  nh.method = 0;
+  // This is an alphanumeric sub type.
+  auto subtype = r.at(1);
+  nh.length = subtype.size() + 1;
+  string text = subtype;
+  StringUpperCase(&text);
+  text.push_back('\0');
+  wwiv::net::Packet packet(nh, {}, text);
+  bool ok = wwiv::net::write_packet(packet_filename, net, packet);
+  if (!ok) {
+    LOG(ERROR) << "Error writing packet: " << packet_filename;
+    return 1;
+  }
+  LOG(INFO) << "Wrote Packet: " << packet_filename;
   return 0;
 }
 

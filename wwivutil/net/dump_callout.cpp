@@ -40,8 +40,8 @@ namespace wwivutil {
 
 std::string DumpCalloutCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   dump_callout" << endl;
-  ss << "Example: dump_callout" << endl;
+  ss << "Usage:   callout" << endl;
+  ss << "Example: callout" << endl;
   return ss.str();
 }
 

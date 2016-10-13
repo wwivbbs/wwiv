@@ -591,6 +591,12 @@ BinkState BinkP::TransferFiles() {
     process_frames(seconds(1));
   } else {
     VLOG(1) << "       files_to_send_ is not empty, Not sending EOB";
+    string files;
+    for (const auto& f : files_to_send_) {
+      files += f.first;
+      files += " ";
+    }
+    VLOG(2) << "Files: " << files;
   }
   return BinkState::WAIT_EOB;
 }

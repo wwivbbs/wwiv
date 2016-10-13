@@ -31,7 +31,7 @@ namespace wwivutil {
 class DumpContactCommand final: public UtilCommand {
 public:
   DumpContactCommand()
-    : UtilCommand("dump_contact", "Dumps parsed representation of CONTACT.NET") {}
+    : UtilCommand("contact", "Dumps parsed representation of CONTACT.NET") {}
   int Execute() override final;
   std::string GetUsage() const override final;
   bool AddSubCommands() override final { return true; }

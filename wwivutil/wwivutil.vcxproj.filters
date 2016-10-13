@@ -96,6 +96,9 @@
     <ClCompile Include="config\config.cpp">
       <Filter>Source Files\config</Filter>
     </ClCompile>
+    <ClCompile Include="net\req.cpp">
+      <Filter>Source Files\net</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="wwivutil.h">
@@ -148,6 +151,9 @@
     </ClInclude>
     <ClInclude Include="config\config.h">
       <Filter>Source Files\config</Filter>
+    </ClInclude>
+    <ClInclude Include="net\req.h">
+      <Filter>Header Files\net</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -170,7 +170,7 @@ static bool send_sub_add_drop_resp(Context& context,
   text.push_back(0); // null after subtype.
   text.push_back(code);
   nh.length = text.size();  // should be subtype.size() + 2
-  const string pendfile = create_pend(context.net.dir, false, 2);
+  const string pendfile = create_pend(context.net.dir, false, '2');
   Packet packet(nh, {}, std::move(text));
   return write_packet(pendfile, context.net, packet);
 }
@@ -295,7 +295,7 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
 
-  const string filename = create_pend(context.net.dir, true, context.network_number);
+  const string filename = create_pend(context.net.dir, true, static_cast<char>('0' + context.network_number));
   return send_network_email(filename, context.net, nh, {}, body, byname, title);
 }
 
@@ -324,7 +324,7 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   LOG(INFO) << "Sending subs line for subs.inf:";
   LOG(INFO) << text;
 
-  const string pendfile = create_pend(context.net.dir, false, 2);
+  const string pendfile = create_pend(context.net.dir, false, '2');
   Packet np(nh, {}, text);
   return write_packet(pendfile, context.net, np);
 }

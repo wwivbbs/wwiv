@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
-#define __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
+#ifndef __INCLUDED_WWIVUTIL_REQ_H__
+#define __INCLUDED_WWIVUTIL_REQ_H__
 
 #include <map>
 #include <string>
@@ -28,17 +28,17 @@
 namespace wwiv {
 namespace wwivutil {
 
-class DumpCalloutCommand final: public UtilCommand {
+class SubReqCommand final: public UtilCommand {
 public:
-  DumpCalloutCommand()
-    : UtilCommand("callout", "Dumps parsed representation of CALLOUT.NET") {}
+  SubReqCommand()
+    : UtilCommand("req", "Add/Drop WWIVnet Sub") {}
   int Execute() override final;
   std::string GetUsage() const override final;
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override final;
 };
 
 
 }  // namespace wwivutil
 }  // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_CALLOUT_H__
+#endif  // __INCLUDED_WWIVUTIL_REQ_H__

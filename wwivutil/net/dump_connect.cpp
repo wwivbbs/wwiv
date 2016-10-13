@@ -40,8 +40,8 @@ namespace wwivutil {
 
 std::string DumpConnectCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   dump_connect" << endl;
-  ss << "Example: dump_connect" << endl;
+  ss << "Usage:   connect" << endl;
+  ss << "Example: connect" << endl;
   return ss.str();
 }
 

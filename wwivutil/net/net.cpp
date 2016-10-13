@@ -35,6 +35,7 @@
 #include "wwivutil/net/dump_connect.h"
 #include "wwivutil/net/dump_contact.h"
 #include "wwivutil/net/dump_packet.h"
+#include "wwivutil/net/req.h"
 
 using std::endl;
 using std::make_unique;
@@ -54,6 +55,7 @@ bool NetCommand::AddSubCommands() {
   add(make_unique<DumpConnectCommand>());
   add(make_unique<DumpContactCommand>());
   add(make_unique<DumpBbsDataCommand>());
+  add(make_unique<SubReqCommand>());
   return true;
 }
 

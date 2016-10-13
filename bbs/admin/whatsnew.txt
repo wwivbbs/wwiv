@@ -35,6 +35,9 @@ What's New in WWIV 5.2 (2016)
   callout but will receive network binkp requests.
 * / callout menu displays host:port if it's a binkp connection.
 * callout.net flag /## now means ## minutes not ## hours
+* wwivutil net dump_xxx commands are now just called wwivutil net xxx
+  for example dump_callout -> callout
+* 
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

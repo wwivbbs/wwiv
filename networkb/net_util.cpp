@@ -56,11 +56,11 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
   LOG(ERROR) << "all attempts failed to rename_pend";
 }
 
-std::string create_pend(const string& directory, bool local, uint8_t network_app_num) {
+std::string create_pend(const string& directory, bool local, char network_app_id) {
   uint8_t prefix = (local) ? 0 : 1;
   for (int i = 0; i < 1000; i++) {
     const string filename =
-      StringPrintf("p%u-%u-%u.net", prefix, network_app_num, i);
+      StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
     File f(directory, filename);
     if (f.Exists()) {
       continue;
@@ -127,9 +127,8 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
   cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
 }
 
-NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
-  : bbsdir_(cmdline.arg("bbsdir").as_string()),
-    config_(bbsdir_), networks_(config_) {
+NetworkCommandLine::NetworkCommandLine(const std::string& bbsdir, int net) 
+  : bbsdir_(bbsdir), config_(bbsdir_), networks_(config_), network_number_(net) {
   if (!config_.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
     initialized_ = false;
@@ -138,7 +137,6 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
     LOG(ERROR) << "Unable to load networks.";
     initialized_ = false;
   }
-  network_number_ = cmdline.arg("net").as_int();
   const auto& nws = networks_.networks();
 
   if (network_number_ < 0 || network_number_ >= size_int(nws)) {
@@ -150,8 +148,10 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
 
   network_name_ = network_.name;
   StringLowerCase(&network_name_);
-
 }
+
+NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
+  : NetworkCommandLine(cmdline.arg("bbsdir").as_string(), cmdline.arg("net").as_int()) {}
 
 }  // namespace net
 }  // namespace wwiv

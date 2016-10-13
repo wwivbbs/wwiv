@@ -21,6 +21,7 @@ set(COMMAND_SOURCES
   net/dump_contact.cpp
   net/dump_packet.cpp
   net/net.cpp
+  net/req.cpp
   )
 
 add_executable(wwivutil ${WWIVUTIL_MAIN} ${COMMAND_SOURCES})

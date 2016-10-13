@@ -32,7 +32,7 @@ namespace wwiv {
 namespace net {
 
 void rename_pend(const std::string& directory, const std::string& filename, uint8_t network_app_num);
-std::string create_pend(const std::string& directory, bool local, uint8_t network_app_num);
+std::string create_pend(const std::string& directory, bool local, char network_app_id);
 
 std::string main_type_name(int typ);
 std::string net_info_minor_type_name(int typ);
@@ -62,6 +62,7 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
 class NetworkCommandLine {
 public:
   NetworkCommandLine(wwiv::core::CommandLine& cmdline);
+  NetworkCommandLine(const std::string& bbsdir, int net);
 
   bool IsInitialized() const { return initialized_; }
   const std::string bbsdir() const { return bbsdir_; }
