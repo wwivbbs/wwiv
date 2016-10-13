@@ -63,7 +63,6 @@ int SubReqCommand::Execute() {
     return 1;
   }
 
-  // TODO: make NetworkCommandLine just take bbsdir and net.
   wwiv::net::NetworkCommandLine net_cmdline(config()->bbsdir(), arg("net").as_int());
   if (!net_cmdline.IsInitialized()) {
     return 1;

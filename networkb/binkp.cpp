@@ -260,6 +260,8 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
 
     // Close the current file, add the name to the list of received files.
     current_receive_file_->Close();
+
+    // TODO(rushfan): If we have a crc, check it.
     received_files_.push_back(current_receive_file_->filename());
 
     //  delete the reference to this file and signal the other side we received it.
@@ -710,18 +712,21 @@ bool BinkP::HandleFileRequest(const string& request_line) {
   long expected_length;
   time_t timestamp;
   long starting_offset = 0;
+  uint32_t crc = 0;
   if (!ParseFileRequestLine(request_line,
       &filename, 
       &expected_length,
       &timestamp, 
-      &starting_offset)) {
+      &starting_offset,
+      &crc)) {
     return false;
   }
   const auto net = remote_network_name();
   auto *p = new ReceiveFile(received_transfer_file_factory_(net, filename),
     filename,
     expected_length,
-    timestamp);
+    timestamp,
+    crc);
   current_receive_file_.reset(p);
   return true;
 }
@@ -1002,7 +1007,8 @@ bool ParseFileRequestLine(const string& request_line,
         string* filename,
         long* length,
         time_t* timestamp,
-        long* offset) {
+        long* offset,
+        uint32_t* crc) {
   vector<string> s = SplitString(request_line, " ");
   if (s.size() < 3) {
     LOG(ERROR) << "ERROR: INVALID request_line: "<< request_line
@@ -1015,6 +1021,9 @@ bool ParseFileRequestLine(const string& request_line,
   *offset = 0;
   if (s.size() >= 4) {
     *offset = stol(s.at(3));
+  }
+  if (s.size() >= 5) {
+    *crc = stoul(s.at(4));
   }
   return true;
 }

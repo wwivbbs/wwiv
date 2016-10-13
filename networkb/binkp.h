@@ -148,7 +148,8 @@ bool ParseFileRequestLine(const std::string& request_line,
 			  std::string* filename,
 			  long* length,
 			  time_t* timestamp,
-			  long* offset);
+			  long* offset,
+        uint32_t* crc);
 
 // Returns just the expected password for a node (node) contained in the
 // CALLOUT.NET file used by the wwiv::sdk::Callout class.

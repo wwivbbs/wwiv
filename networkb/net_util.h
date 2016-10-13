@@ -39,8 +39,12 @@ std::string net_info_minor_type_name(int typ);
 
 template <typename C, typename I>
 static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::size_t max) {
-  const auto begin = iter;
+  // No need to continue if we're already at the end.
+  if (iter == c.end()) {
+    return "";
+  }
 
+  const auto begin = iter;
   std::size_t count = 0;
   while (stop.find(*iter) == std::end(stop) && ++count < max && iter != c.end()) {
     iter++;
