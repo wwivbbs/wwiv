@@ -9,6 +9,7 @@ set(fixture_sources
 )
 
 set(test_sources
+  crc32_test.cpp
   command_line_test.cpp
   datafile_test.cpp
   file_test.cpp
