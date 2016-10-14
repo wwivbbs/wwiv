@@ -94,6 +94,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="command_line.cpp" />
+    <ClCompile Include="crc32.cpp" />
     <ClCompile Include="graphs.cpp" />
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="log.cpp" />
@@ -118,6 +119,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="command_line.h" />
+    <ClInclude Include="crc32.h" />
     <ClInclude Include="datafile.h" />
     <ClInclude Include="graphs.h" />
     <ClInclude Include="inifile.h" />

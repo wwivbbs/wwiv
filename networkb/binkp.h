@@ -139,6 +139,7 @@ private:
   Cram cram_;
   // Auth type used.
   AuthType auth_type_ = AuthType::PLAIN_TEXT;
+  bool crc_ = false;
 };
 
 // Parses a M_FILE request line into it's parts.

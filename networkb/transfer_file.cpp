@@ -25,6 +25,7 @@
 #include <iostream>
 #include <string>
 
+#include "core/crc32.h"
 #include "core/log.h"
 #include "core/strings.h"
 
@@ -32,22 +33,26 @@ using std::chrono::seconds;
 using std::chrono::system_clock;
 using std::endl;
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace net {
 
-TransferFile::TransferFile(const string& filename, time_t timestamp)
-  : filename_(filename), timestamp_(timestamp) {}
+TransferFile::TransferFile(const string& filename, time_t timestamp, uint32_t crc)
+  : filename_(filename), timestamp_(timestamp), crc_(crc) {}
 
 TransferFile::~TransferFile() {}
 
 const string TransferFile::as_packet_data(int size, int offset) const {
-  return StringPrintf("%s %u %u %d", filename_.c_str(), size, timestamp_, offset);
+  string dataline = StringPrintf("%s %u %u %d", filename_.c_str(), size, timestamp_, offset);
+  if (crc_ != 0) {
+    dataline += StringPrintf(" %08X", crc_);
+  }
+  return dataline;
 }
 
 InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents, time_t timestamp)
-  : TransferFile(filename, timestamp), 
+  : TransferFile(filename, timestamp, wwiv::core::crc32string(contents)), 
     contents_(contents) {}
 
 InMemoryTransferFile::InMemoryTransferFile(const std::string& filename, const std::string& contents)

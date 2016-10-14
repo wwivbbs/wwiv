@@ -29,6 +29,7 @@
 #include <string>
 #include <vector>
 
+#include "core/crc32.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
@@ -64,6 +65,7 @@ using std::unique_ptr;
 using std::vector;
 
 using namespace std::chrono;
+using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -157,7 +159,11 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
     error_received_(false),
     received_transfer_file_factory_(received_transfer_file_factory),
     bytes_sent_(0),
-    bytes_received_(0) {}
+    bytes_received_(0) {
+  if (side_ == BinkSide::ORIGINATING) {
+    crc_ = config_->crc();
+  }
+}
 
 BinkP::~BinkP() {
   files_to_send_.clear();
@@ -197,6 +203,11 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
           VLOG(1) << "        challenge: " << challenge;
           cram_.set_challenge_data(challenge);
           auth_type_ = AuthType::CRAM_MD5;
+        }
+      } else if (starts_with(s, "CRC")) {
+        if (config_->crc()) {
+          // If we support crc. Let's use it at receiving time now.
+          crc_ = true;
         }
       }
     }
@@ -250,10 +261,16 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   if (current_receive_file_->length() >= current_receive_file_->expected_length()) {
     LOG(INFO) << "       file finished; bytes_received: " << current_receive_file_->length();
 
-    const string data_line = StringPrintf("%s %u %u",
+    string data_line = StringPrintf("%s %u %u",
         current_receive_file_->filename().c_str(),
         current_receive_file_->length(),
         current_receive_file_->timestamp());
+
+    auto crc = current_receive_file_->crc();
+    // If we want to use CRCs and we don't have a zero CRC.
+    if (crc_ && crc != 0) {
+      data_line += StringPrintf(" %08X", current_receive_file_->crc());
+    }
 
     // Increment the nubmer of bytes received.
     bytes_received_ += current_receive_file_->length();
@@ -261,10 +278,26 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
     // Close the current file, add the name to the list of received files.
     current_receive_file_->Close();
 
-    // TODO(rushfan): If we have a crc, check it.
+    // If we have a crc; check it.
+    if (crc_ && crc != 0) {
+      auto dir = config_->network_dir(remote_network_name());
+      File received_file(dir, current_receive_file_->filename());
+      auto file_crc = crc32file(received_file.full_pathname());
+      if (file_crc == 0) {
+        LOG(ERROR) << "Error calculating CRC32 of: " << current_receive_file_->filename();
+      } else {
+        if (file_crc != current_receive_file_->crc()) {
+          // TODO(rushfan): Once we're sure this works, make it mark the file bad.
+          LOG(ERROR) << "Wrong CRC32 of: " << current_receive_file_->filename()
+            << "; expected: " << std::hex << current_receive_file_->crc()
+            << "; actual: " << std::hex << file_crc;
+        }
+      }
+    }
+
     received_files_.push_back(current_receive_file_->filename());
 
-    //  delete the reference to this file and signal the other side we received it.
+    // Delete the reference to this file and signal the other side we received it.
     current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   } else {
@@ -371,6 +404,7 @@ static string wwiv_version_string_with_date() {
 
 BinkState BinkP::WaitConn() {
   VLOG(1) << "STATE: WaitConn";
+  // Send initial CRAM command.
   if (side_ == BinkSide::ANSWERING) {
     cram_.GenerateChallengeData();
     const string opt_cram = StrCat("OPT CRAM-MD5-", cram_.challenge_data());
@@ -383,6 +417,9 @@ BinkState BinkP::WaitConn() {
   const string version_packet = StrCat("VER networkb/", wwiv_version_string(), " binkp/1.0");
   send_command_packet(BinkpCommands::M_NUL, version_packet);
   send_command_packet(BinkpCommands::M_NUL, "LOC Unknown");
+  if (config_->crc()) {
+    send_command_packet(BinkpCommands::M_NUL, "OPT CRC");
+  }
 
   string network_addresses;
   if (side_ == BinkSide::ANSWERING) {
@@ -398,6 +435,7 @@ BinkState BinkP::WaitConn() {
       network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
     }
   } else {
+    // Sending side: 
     // Present single primary address.
     send_command_packet(BinkpCommands::M_NUL,
         StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
@@ -1023,7 +1061,7 @@ bool ParseFileRequestLine(const string& request_line,
     *offset = stol(s.at(3));
   }
   if (s.size() >= 5) {
-    *crc = stoul(s.at(4));
+    *crc = stoul(s.at(4), nullptr, 16);
   }
   return true;
 }

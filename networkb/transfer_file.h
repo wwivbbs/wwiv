@@ -31,7 +31,7 @@ namespace net {
   
 class TransferFile {
 public:
-  TransferFile(const std::string& filename, time_t timestamp);
+  TransferFile(const std::string& filename, time_t timestamp, uint32_t crc);
   virtual ~TransferFile();
 
   const std::string filename() const { return filename_; }
@@ -49,7 +49,8 @@ public:
   virtual const std::string as_packet_data(int size, int offset) const final;
 
   const std::string filename_;
-  const time_t timestamp_;
+  const time_t timestamp_ = 0;
+  const uint32_t crc_ = 0;
 };
 
 class InMemoryTransferFile : public TransferFile {

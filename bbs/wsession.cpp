@@ -741,7 +741,7 @@ int WSession::doWFCEvents() {
       case 'E':
         wfc_cls();
         usernum = 1;
-        bout << "|#1Send Email:";
+        bout.bputs("|#1Send Email:");
         send_email();
         WriteCurrentUser(1);
         cleanup_net();

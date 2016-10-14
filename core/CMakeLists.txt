@@ -4,11 +4,12 @@ project (CORE)
 include_directories(..)
 
 set(COMMON_SOURCES
+  crc32.cpp
   command_line.cpp
-  inifile.cpp
   file.cpp
   file_unix.cpp
   graphs.cpp
+  inifile.cpp
   log.cpp
   md5.cpp
   os.cpp

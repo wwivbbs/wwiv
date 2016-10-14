@@ -97,6 +97,18 @@ const BinkNodeConfig* BinkConfig::node_config_for(int node) const {
   return binkp_->node_config_for(node);
 }
 
+bool BinkConfig::ProcessIniFile(const IniFile& ini) {
+  if (!ini.IsOpen()) {
+    return false;
+  }
+
+  set_verbose(ini.GetBooleanValue("verbose", false));
+  set_skip_net(ini.GetBooleanValue("skip_net", false));
+  crc_ = ini.GetBooleanValue("crc", true);
+
+  return true;
+}
+
 }  // namespace net
 }  // namespace wwiv
 

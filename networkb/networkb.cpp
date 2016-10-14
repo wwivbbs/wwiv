@@ -161,6 +161,17 @@ static int Main(CommandLine& cmdline) {
 
     int sendto_node = cmdline.arg("node").as_int();
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
+
+    File inifile(net_cmdline.config().root_directory(), "networkb.ini");
+    if (inifile.Exists()) {
+      IniFile ini(inifile.full_pathname(), "binkp");
+      if (!bink_config.ProcessIniFile(ini)) {
+        LOG(INFO) << "Unable to open INI file: " << inifile.full_pathname();
+      }
+    } else {
+      LOG(WARNING) << "Warning: INI file does not exist: " << inifile.full_pathname();
+    }
+
     bink_config.set_skip_net(skip_net);
     bink_config.set_verbose(cmdline.iarg("v"));
     bink_config.set_network_version(status->GetNetworkVersion());

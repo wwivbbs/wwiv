@@ -34,6 +34,9 @@
     <ClCompile Include="command_line_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="crc32_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Helpers">

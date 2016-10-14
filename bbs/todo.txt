@@ -3,6 +3,12 @@
                  Copyright 2002-2016 WWIV Software Services
 ==============================================================================
 
+* look into http://create.stephan-brumme.com/ for faster crc impl.
+* eventualy need crc32 impl that works on big endian too. (My RPI is little endian)
+* finish implementing crc32 support at file level in core.
+* Add support for options in networkb (like receiving a M_NUL OPT CRC)
+* Add support for setting config options in binkp.ini
+* add crc32 support (checking received ones and sending one) to M_FILE in networkb 
 * get rid of more char[] variables from vars.h, move to wsession as strings.
 * get rid of syscfg.{datadir} in bbs code, use config() strings.
 * update routing information in network1.

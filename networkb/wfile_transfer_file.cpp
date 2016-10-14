@@ -25,6 +25,7 @@
 #include <iostream>
 #include <string>
 
+#include "core/crc32.h"
 #include "core/log.h"
 #include "core/strings.h"
 
@@ -33,15 +34,15 @@ using std::chrono::system_clock;
 using std::clog;
 using std::endl;
 using std::string;
-using wwiv::strings::StrCat;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::core;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace net {
 
 WFileTransferFile::WFileTransferFile(const string& filename,
 	  std::unique_ptr<File>&& file)
-  : TransferFile(filename, file->Exists() ? file->last_write_time() : time(nullptr)), file_(std::move(file)) {
+  : TransferFile(filename, file->Exists() ? file->last_write_time() : time(nullptr), crc32file(file->full_pathname())), file_(std::move(file)) {
   if (filename.find(File::pathSeparatorChar) != string::npos) {
     // Don't allow filenames with slashes in it.
     throw std::invalid_argument("filename can not be relative pathed");
