@@ -41,6 +41,8 @@ class IniFile {
   const long GetNumericValueT(const std::string& key, long default_value = 0) const;
   const bool GetBooleanValue(const std::string& key, bool default_value = false) const;
 
+  std::string string_value(const std::string& key, const std::string& default_value = "") const;
+
   template<typename T>
   const T GetNumericValue(const std::string& key, T default_value = 0) const {
     return static_cast<T>(GetNumericValueT(key, default_value));
@@ -54,17 +56,6 @@ class IniFile {
   // and Copy constructor.
   IniFile(const IniFile& other) = delete;
   IniFile& operator=(const IniFile& other) = delete;
-
-  bool Open();
-
-  /**
-   * Reads a specified value from INI file data (contained in *inidata). The
-   * name of the value to read is contained in *value_name. If such a name
-   * doesn't exist in this INI file subsection, then *val is nullptr, else *val
-   * will be set to the string value of that value name. If *val has been set
-   * to something, then this function returns 1, else it returns 0.
-   */
-  static bool StringToBoolean(const char *p);
 
   const std::string file_name_;
   bool open_;

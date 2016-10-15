@@ -44,6 +44,7 @@
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivport.h"
@@ -63,6 +64,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 constexpr int MAX_CONNECTS = 1000;
@@ -877,7 +879,7 @@ static void fill_call(int color, int row, const std::vector<CalloutEntry>& entri
       x = 0;
       y++;
     }
-    if (i < entries.size()) {
+    if (i < size_int(entries)) {
       sprintf(s1, "%-5u", entries.at(i).node);
     } else {
       strcpy(s1, "     ");
@@ -983,7 +985,7 @@ static std::pair<uint16_t, int> ansicallout() {
       ch = wwiv::UpperCase<char>(static_cast<char>(session()->localIO()->GetChar()));
       switch (ch) {
       case RARROW:                        // right arrow
-        if ((pos < entries.size() - 1) && (x < 63)) {
+        if ((pos < size_int(entries) - 1) && (x < 63)) {
           session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos++;
           x += 7;
@@ -1016,14 +1018,14 @@ static std::pair<uint16_t, int> ansicallout() {
         }
         break;
       case DNARROW:                        // down arrow
-        if ((y < 5) && (pos + 10 < entries.size())) {
+        if ((y < 5) && (pos + 10 < size_int(entries))) {
           session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos += 10;
           y++;
-        } else if ((rownum + 6) * 10 < entries.size()) {
+        } else if ((rownum + 6) * 10 < size_int(entries)) {
           rownum++;
           fill_call(color4, rownum, entries);
-          if (pos + 10 < entries.size()) {
+          if (pos + 10 < size_int(entries)) {
             pos += 10;
           } else {
             --y;
@@ -1067,21 +1069,21 @@ static std::pair<uint16_t, int> ansicallout() {
           session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos += 10 * (5 - y);
           y = 5;
-          if (pos >= entries.size()) {
+          if (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }
           session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
-        } else if ((rownum + 6) * 10 < entries.size()) {
+        } else if ((rownum + 6) * 10 < size_int(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
-            if ((rownum + 6) * 10 < entries.size()) {
+            if ((rownum + 6) * 10 < size_int(entries)) {
               rownum++;
               pos += 10;
             }
           }
           fill_call(color4, rownum, entries);
-          if (pos >= entries.size()) {
+          if (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }

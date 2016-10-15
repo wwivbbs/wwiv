@@ -614,30 +614,17 @@ void WSession::read_networks() {
   internetPopDomain = "";
   SetInternetUseRealNames(false);
 
-  // TODO: wire up for NetX
-  TextFile fileNetIni("NET.INI", "rt");
-  if (fileNetIni.IsOpen()) {
-    while (!fileNetIni.IsEndOfFile()) {
-      char buffer[255];
-      fileNetIni.ReadLine(buffer, 80);
-      buffer[sizeof(buffer) - 1] = 0;
-      StringRemoveWhitespace(buffer);
-      if (!strncasecmp(buffer, "DOMAIN=", 7) && internetEmailDomain.empty()) {
-        internetEmailDomain = &(buffer[7]);
-      } else if (!strncasecmp(buffer, "POPNAME=", 8) && internetEmailName.empty()) {
-        internetEmailName = &(buffer[8]);
-      } else if (!strncasecmp(buffer, "FWDDOM=", 7)) {
-        internetEmailDomain = &(buffer[7]);
-      } else if (!strncasecmp(buffer, "FWDNAME=", 8)) {
-        internetEmailName = &(buffer[8]);
-      } else if (!strncasecmp(buffer, "POPDOMAIN=", 10)) {
-        internetPopDomain = &(buffer[10]);
-      } else if (!strncasecmp(buffer, "REALNAME=", 9) &&
-                 (buffer[9] == 'Y' || buffer[9] == 'y')) {
-        SetInternetUseRealNames(true);
-      }
-    }
-    fileNetIni.Close();
+  // TODO(rushfan): Remove these and put them somewhere else.
+  // Like on a per-network config when we add proper internet
+  // support.
+  IniFile ini("net.ini", "NETWORK");
+  if (ini.IsOpen()) {
+    // Note FWDNAME isn't listed here.
+    internetEmailName = ini.string_value("POPNAME");
+    // Note FWDDOM isn't listed here.
+    internetEmailDomain = ini.string_value("DOMAIN");
+    internetPopDomain = ini.string_value("POPDOMAIN");
+    SetInternetUseRealNames(ini.GetBooleanValue("REALNAME"));
   }
 
   wwiv::sdk::Networks networks(*config());

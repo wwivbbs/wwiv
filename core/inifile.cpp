@@ -33,6 +33,23 @@ using std::string;
 namespace wwiv {
 namespace core {
 
+namespace {
+/**
+* Reads a specified value from INI file data (contained in *inidata). The
+* name of the value to read is contained in *value_name. If such a name
+* doesn't exist in this INI file subsection, then *val is nullptr, else *val
+* will be set to the string value of that value name. If *val has been set
+* to something, then this function returns 1, else it returns 0.
+*/
+static bool StringToBoolean(const char *p) {
+  if (!p) {
+    return false;
+  }
+  char ch = wwiv::UpperCase<char>(*p);
+  return (ch == 'Y' || ch == 'T' || ch == '1');
+}
+}  // namespace {}
+
 string FilePath(const string& directoryName, const string& fileName) {
   string fullPathName(directoryName);
   char last_char = directoryName.back();
@@ -110,18 +127,14 @@ const char* IniFile::GetValue(const string& key, const char *default_value)  con
   return default_value;
 }
 
-const bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
+std::string IniFile::string_value(const std::string& key, const std::string& default_value) const {
   const char *s = GetValue(key);
-  return (s != nullptr) ? IniFile::StringToBoolean(s) : defaultValue;
+  return (s != nullptr) ? s : default_value;
 }
 
-// static
-bool IniFile::StringToBoolean(const char *p) {
-  if (!p) {
-    return false;
-  }
-  char ch = wwiv::UpperCase<char>(*p);
-  return (ch == 'Y' || ch == 'T' || ch == '1');
+const bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
+  const char *s = GetValue(key);
+  return (s != nullptr) ? StringToBoolean(s) : defaultValue;
 }
 
 const long IniFile::GetNumericValueT(const string& key, long default_value) const {
