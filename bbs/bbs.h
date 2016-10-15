@@ -31,8 +31,6 @@
 #include "bbs/wsession.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
-#include "core/inifile.h"
-#include "core/file.h"
 
 /*!
  * @class WApplication  Main Application object for WWIV.

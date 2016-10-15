@@ -201,7 +201,7 @@ void OnlineUserEditor() {
       session()->localIO()->GotoXY(wx + 50, wy + 6);
       session()->localIO()->EditLine(gold, 5, NUM_ONLY, &rc, "");
       session()->user()->SetGold(static_cast<float>(atof(gold)));
-      sprintf(gold, "%7.2", session()->user()->GetGold());
+      sprintf(gold, "%7.2f", session()->user()->GetGold());
       session()->localIO()->Printf("%-5s", gold);
       break;
     case 10:

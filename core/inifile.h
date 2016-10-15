@@ -47,9 +47,9 @@ class IniFile {
   const T GetNumericValue(const std::string& key, T default_value = 0) const {
     return static_cast<T>(GetNumericValueT(key, default_value));
   }
-  const long GetNumericValue(const std::string& key, long default_value = 0) const {
-    return GetNumericValueT(key, default_value);
-  }
+  //const long GetNumericValue(const std::string& key, long default_value = 0) const {
+  //  return GetNumericValueT(key, default_value);
+  //}
 
  private:
   // This class should not be assigneable via '=' so remove the implicit operator=

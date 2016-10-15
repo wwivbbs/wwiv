@@ -90,7 +90,7 @@ void ga(const char *message, char *color_string, int loc, int type);
 void list_channels();
 int  change_channels(int loc);
 bool check_ch(int ch);
-void load_channels(IniFile *pIniFile);
+void load_channels(IniFile& pIniFile);
 int  userinst(char *user);
 bool usercomp(const char *st1, const char *st2);
 
@@ -176,9 +176,9 @@ void chat_room() {
   strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
   IniFile iniFile(FilePath(session()->GetHomeDir(), CHAT_INI), "CHAT");
   if (iniFile.IsOpen()) {
-    g_nChatOpSecLvl = iniFile.GetNumericValue("CHATOP_SL");
+    g_nChatOpSecLvl = iniFile.GetNumericValue<int>("CHATOP_SL");
     bShowPrompt = iniFile.GetBooleanValue("CH_PROMPT");
-    load_channels(&iniFile);
+    load_channels(iniFile);
     load_actions(&iniFile);
     get_colors(szColorString, &iniFile);
     iniFile.Close();
@@ -648,7 +648,7 @@ void get_colors(char *color_string, IniFile *pIniFile) {
 // Loads the actions into memory
 
 void load_actions(IniFile *pIniFile) {
-  int to_read = pIniFile->GetNumericValue("NUM_ACTIONS");
+  int to_read = pIniFile->GetNumericValue<int>("NUM_ACTIONS");
   if (!to_read) {
     return;
   }
@@ -967,7 +967,7 @@ bool check_ch(int ch) {
 }
 
 // Loads channel information into memory
-void load_channels(IniFile *pIniFile) {
+void load_channels(IniFile& ini) {
   char buffer[6], szTemp[10];
 
   for (int cn = 1; cn <= 10; cn++) {
@@ -975,13 +975,13 @@ void load_channels(IniFile *pIniFile) {
       sprintf(buffer, "CH%d%c", cn, 65 + ca);
       switch (ca) {
       case 0:
-        strcpy(channels[cn].name, pIniFile->GetValue(buffer));
+        strcpy(channels[cn].name, ini.GetValue(buffer));
         break;
       case 1:
-        channels[cn].sl = pIniFile->GetNumericValue(buffer);
+        channels[cn].sl = ini.GetNumericValue<int>(buffer);
         break;
       case 2:
-        strcpy(szTemp, pIniFile->GetValue(buffer));
+        strcpy(szTemp, ini.GetValue(buffer));
         if (szTemp[0] != '0') {
           channels[cn].ar = szTemp[0];
         } else {
@@ -989,14 +989,14 @@ void load_channels(IniFile *pIniFile) {
         }
         break;
       case 3:
-        strcpy(szTemp, pIniFile->GetValue(buffer));
+        strcpy(szTemp, ini.GetValue(buffer));
         channels[cn].sex = szTemp[0];
         break;
       case 4:
-        channels[cn].min_age = static_cast<char>(pIniFile->GetNumericValue(buffer));
+        channels[cn].min_age = ini.GetNumericValue<uint8_t>(buffer);
         break;
       case 5:
-        channels[cn].max_age = StringToChar(pIniFile->GetValue(buffer));
+        channels[cn].max_age = ini.GetNumericValue<uint8_t>(buffer);
         break;
       }
     }
