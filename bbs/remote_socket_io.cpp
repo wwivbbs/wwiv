@@ -91,8 +91,6 @@ RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
 
   // Make sure our signal event is not set to the "signaled" state.
   stop_.store(false);
-  // Threads haven't started yet.
-  threads_started_.store(false);
 
   if (socket_handle == 0) {
     // This means we don't have a real socket handle, for example running in local mode.
@@ -284,7 +282,7 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
 bool RemoteSocketIO::carrier() {
   bool carrier = valid_socket();
   if (!carrier) {
-    LOG(ERROR) << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_.load();
+    LOG(ERROR) << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_;
   }
   return valid_socket();
 }
@@ -298,10 +296,14 @@ bool RemoteSocketIO::incoming() {
 }
 
 void RemoteSocketIO::StopThreads() {
-  if (!threads_started_.load()) {
-    return;
+  {
+    lock_guard<mutex> lock(threads_started_mu_);
+    if (!threads_started_) {
+      return;
+    }
+    stop_.store(true);
+    threads_started_ = false;
   }
-  stop_.store(true);
   yield();
 
   // Wait for read thread to exit.
@@ -314,17 +316,19 @@ void RemoteSocketIO::StopThreads() {
     LOG(ERROR) << "Caught system_error with code: " << e.code()
         << "; meaning: " << e.what();
   }
-  threads_started_.store(false);
 }
 
 void RemoteSocketIO::StartThreads() {
-  if (threads_started_.load()) {
-    return;
+  {
+    lock_guard<mutex> lock(threads_started_mu_);
+    if (threads_started_) {
+      return;
+    }
+    threads_started_ = true;
   }
 
   stop_.store(false);
   read_thread_ = thread(&RemoteSocketIO::InboundTelnetProc, this);
-  threads_started_.store(true);
 }
 
 RemoteSocketIO::~RemoteSocketIO() {
@@ -371,6 +375,10 @@ bool RemoteSocketIO::Initialize() {
 }
 
 void RemoteSocketIO::InboundTelnetProc() {
+  wwiv::core::ScopeExit on_exit([this] {
+      lock_guard<mutex> lock(threads_started_mu_);
+      threads_started_ = false;
+  });
   constexpr size_t size = 4 * 1024;
   unique_ptr<char[]> data = make_unique<char[]>(size);
   try {

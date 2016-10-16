@@ -90,10 +90,11 @@ class RemoteSocketIO : public RemoteIO {
 
   std::queue<char> queue_;
   mutable std::mutex mu_;
+  mutable std::mutex threads_started_mu_;
   SOCKET socket_ = INVALID_SOCKET;
   std::thread read_thread_;
   std::atomic<bool> stop_;
-  std::atomic<bool> threads_started_;
+  bool threads_started_ = false;
   bool telnet_ = true;
 };
 
