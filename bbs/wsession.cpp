@@ -556,6 +556,9 @@ void WSession::GetCaller() {
     localIO()->Cls();
   }
   usernum = 0;
+  // Since hang_it_up sets hangup = true, let's ensure we're always
+  // not in this state when we enter the WFC.
+  hangup = false;
   SetWfcStatus(0);
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
   ReadCurrentUser(1);

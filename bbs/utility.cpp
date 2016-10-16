@@ -141,6 +141,9 @@ void frequent_init() {
   set_net_num(0);
   set_language(session()->user()->GetLanguage());
   reset_disable_conf();
+
+  // Reset the error bit on bout since after a hangup it can be set.
+  bout.clear();
 }
 
 

@@ -72,13 +72,11 @@ private:
   void FastPuts(const std::string &text) override;
 
 private:
-  std::string m_chatReason;
   bool ExtendedKeyWaiting;
 
   COORD cursor_pos_;
   HANDLE out_;
   HANDLE in_;
-  CONSOLE_SCREEN_BUFFER_INFO buffer_info_;
   DWORD saved_input_mode_ = 0;
 
   void set_attr_xy(int x, int y, int a);

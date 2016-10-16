@@ -45,15 +45,17 @@ std::ostream::int_type outputstreambuf::overflow(std::ostream::int_type c) {
   return c;
 }
 
-std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize numChars) {
-  if (numChars == 0) {
+std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize num_chars) {
+  if (num_chars == 0) {
     return 0;
   }
   CheckForHangup();
   if (hangup) {
-    return 0;
+    // Returning 0 here would set the fail bit on the stream, which
+    // is not what we want, so pretend that we emitted all of the characters.
+    return num_chars;
   }
-  for (int i = 0; i < numChars; i++) {
+  for (int i = 0; i < num_chars; i++) {
     if (text[i] == 0) {
       // Hit an embedded \0, stop early.
       break;
@@ -61,7 +63,7 @@ std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize numCha
     bout.bputch(text[i], true);
   }
   bout.flush();
-  return numChars;
+  return num_chars;
 }
 
 void Output::Color(int wwivColor) {
