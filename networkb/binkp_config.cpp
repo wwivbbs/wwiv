@@ -102,8 +102,8 @@ bool BinkConfig::ProcessIniFile(const IniFile& ini) {
     return false;
   }
 
-  set_skip_net(ini.GetBooleanValue("skip_net", false));
-  crc_ = ini.GetBooleanValue("crc", true);
+  set_skip_net(ini.value<bool>("skip_net", false));
+  crc_ = ini.value<bool>("crc", true);
 
   return true;
 }

@@ -60,8 +60,15 @@ string FilePath(const string& directoryName, const string& fileName) {
   return fullPathName;
 }
 
-IniFile::IniFile(const string& fileName, const string& primary, const string& secondary) 
-    : file_name_(fileName), open_(false), primary_(primary), secondary_(secondary) {
+IniFile::IniFile(const string& filename, const string& primary)
+  : IniFile(filename, std::vector<std::string>{primary}) {}
+
+IniFile::IniFile(const string& filename, const string& primary, const string& secondary)
+  : IniFile(filename, std::vector<std::string>{primary, secondary}) {}
+
+
+IniFile::IniFile(const std::string& filename, const std::vector<std::string>& sections)
+  : file_name_(filename), open_(false), sections_(sections) {
 
   TextFile file(file_name_, "rt");
   if (!file.IsOpen()) {
@@ -88,7 +95,7 @@ IniFile::IniFile(const string& fileName, const string& primary, const string& se
 
       std::size_t equals = line.find('=');
       if (equals == string::npos) {
-        // not a line of the form key = value [; comment]
+        // not a line of the form full_key = value [; comment]
         continue;
       }
       string key = line.substr(0, equals);
@@ -108,26 +115,20 @@ IniFile::~IniFile() { open_ = false; }
 /* Close is now a NOP */
 void IniFile::Close() {}
 
-const char* IniFile::GetValue(const string& key, const char *default_value)  const {
-  const string primary_key = StrCat(primary_, ".", key);
-  {
-    const auto& it = data_.find(primary_key);
-    if (it != data_.end()) {
-      return it->second.c_str();
-    }
-  }
-  // Not in primary, try secondary.
-  const string secondary_key = secondary_ + "." + key;
-  {
-    const auto& it = data_.find(secondary_key);
-    if (it != data_.end()) {
-      return it->second.c_str();
+const char* IniFile::GetValue(const string& raw_key, const char *default_value)  const {
+  for (const auto& section : sections_) {
+    const string full_key = StrCat(section, ".", raw_key);
+    {
+      const auto& it = data_.find(full_key);
+      if (it != data_.end()) {
+        return it->second.c_str();
+      }
     }
   }
   return default_value;
 }
 
-std::string IniFile::string_value(const std::string& key, const std::string& default_value) const {
+const std::string IniFile::GetStringValue(const std::string& key, const std::string& default_value) const {
   const char *s = GetValue(key);
   return (s != nullptr) ? s : default_value;
 }

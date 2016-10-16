@@ -66,7 +66,7 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
 bool UseNewBBSList() {
   IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
   if (iniFile.IsOpen()) {
-    return iniFile.GetBooleanValue("USE_NEW_BBSLIST", true);
+    return iniFile.value<bool>("USE_NEW_BBSLIST", true);
   }
   return false;
 }

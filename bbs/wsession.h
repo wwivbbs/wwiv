@@ -401,8 +401,6 @@ protected:
   void GotCaller(unsigned int ms, unsigned long cs);
 
 private:
-  uint16_t str2spawnopt(const char *s);
-  uint16_t str2restrict(const char *s);
   void read_nextern();
   void read_arcs();
   void read_editors();
@@ -446,8 +444,8 @@ private:
   std::unique_ptr<wwiv::sdk::Subs> subs_;
 
   // Former global variables and system_operation_rec members to be moved
-  unsigned long flags;
-  unsigned short spawn_opts[20];
+  uint32_t flags;
+  uint16_t spawn_opts[20];
 
 };
 

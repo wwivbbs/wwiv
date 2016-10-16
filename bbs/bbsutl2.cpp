@@ -25,6 +25,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "core/inifile.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
@@ -32,7 +33,8 @@ using std::string;
 using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 /**
  * Returns the computer type string for computer type number num.
@@ -60,14 +62,9 @@ std::string ctypes(int num) {
 
   IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
-    const string comptype = StringPrintf("COMP_TYPE[%d]", num + 1);
-    const char *ss = iniFile.GetValue(comptype.c_str());
-    if (ss && *ss) {
-      return std::string(ss);
-    }
-    return "";
+    return iniFile.value(StringPrintf("COMP_TYPE[%d]", num + 1));
   }
-  if ((num < 0) || (num > static_cast<int>(default_ctypes.size()))) {
+  if (num < 0 || num > size_int(default_ctypes)) {
     return "";
   }
   return default_ctypes[num];

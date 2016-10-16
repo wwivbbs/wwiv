@@ -245,20 +245,19 @@ void cleanup_net() {
 
     IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
-      const char *pszValue = iniFile.GetValue("NET_CLEANUP_CMD1");
-      if (pszValue != nullptr) {
-        ExecuteExternalProgram(pszValue, session()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
+      const string cmd1 = iniFile.value("NET_CLEANUP_CMD1");
+      if (!cmd1.empty()) {
+        ExecuteExternalProgram(cmd1, session()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
         cleanup_net1();
       }
-      pszValue = iniFile.GetValue("NET_CLEANUP_CMD2");
-      if (pszValue != nullptr) {
-        ExecuteExternalProgram(pszValue, session()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
+      const string cmd2 = iniFile.value("NET_CLEANUP_CMD2");
+      if (!cmd2.empty()) {
+        ExecuteExternalProgram(cmd2, session()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
         cleanup_net1();
       }
       iniFile.Close();
     }
   }
-
 }
 
 void do_callout(uint16_t sn) {
@@ -798,7 +797,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
     got_color = 1;
     IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
-      color = StringToInt(iniFile.GetValue("CALLOUT_COLOR_TEXT", "14"));
+      color = iniFile.value("CALLOUT_COLOR_TEXT", 14);
     }
   }
   string s1 = to_string(bytes_to_k(ncn->bytes_waiting));
@@ -904,11 +903,11 @@ static std::pair<uint16_t, int> ansicallout() {
     color4 = 14;
     IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
-      callout_ansi = iniFile.GetBooleanValue("CALLOUT_ANSI");
-      color1 = iniFile.GetNumericValue("CALLOUT_COLOR", color1);
-      color2 = iniFile.GetNumericValue("CALLOUT_HIGHLIGHT", color2);
-      color3 = iniFile.GetNumericValue("CALLOUT_NORMAL", color3);
-      color4 = iniFile.GetNumericValue("CALLOUT_COLOR_TEXT", color4);
+      callout_ansi = iniFile.value<bool>("CALLOUT_ANSI");
+      color1 = iniFile.value("CALLOUT_COLOR", color1);
+      color2 = iniFile.value("CALLOUT_HIGHLIGHT", color2);
+      color3 = iniFile.value("CALLOUT_NORMAL", color3);
+      color4 = iniFile.value("CALLOUT_COLOR_TEXT", color4);
       iniFile.Close();
     }
   }

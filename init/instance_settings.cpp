@@ -52,14 +52,14 @@ void show_instance(EditItems* items) {
 
 void instance_editor() {
   IniFile ini("wwiv.ini", "WWIV");
-  if (ini.IsOpen() && ini.GetValue("TEMP_DIRECTORY") == nullptr) {
+  string temp(ini.value("TEMP_DIRECTORY"));
+  if (ini.IsOpen() && !temp.empty()) {
     messagebox(out->window(), "TEMP_DIRECTORY must be set in WWIV.INI");
     return;
   }
 
-  string temp(ini.GetValue("TEMP_DIRECTORY"));
-  string batch(ini.GetValue("BATCH_DIRECTORY", temp.c_str()));
-  int num_instances = ini.GetNumericValue("NUM_INSTANCES", 4);
+  string batch(ini.value("BATCH_DIRECTORY", temp));
+  int num_instances = ini.value("NUM_INSTANCES", 4);
 
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Temporary Directory Configuration", 10, 76));

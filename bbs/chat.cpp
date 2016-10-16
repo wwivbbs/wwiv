@@ -174,14 +174,14 @@ void chat_room() {
   char szMessageSent[80], szFromMessage[50];
   strcpy(szMessageSent, "|#1[|#9Message Sent|#1]\r\n");
   strcpy(szFromMessage, "|#9From %.12s|#1: %s%s");
-  IniFile iniFile(FilePath(session()->GetHomeDir(), CHAT_INI), "CHAT");
-  if (iniFile.IsOpen()) {
-    g_nChatOpSecLvl = iniFile.GetNumericValue<int>("CHATOP_SL");
-    bShowPrompt = iniFile.GetBooleanValue("CH_PROMPT");
-    load_channels(iniFile);
-    load_actions(&iniFile);
-    get_colors(szColorString, &iniFile);
-    iniFile.Close();
+  IniFile ini(FilePath(session()->GetHomeDir(), CHAT_INI), "CHAT");
+  if (ini.IsOpen()) {
+    g_nChatOpSecLvl = ini.value<int>("CHATOP_SL");
+    bShowPrompt = ini.value<bool>("CH_PROMPT");
+    load_channels(ini);
+    load_actions(&ini);
+    get_colors(szColorString, &ini);
+    ini.Close();
   } else {
     bout << "|#6[CHAT] SECTION MISSING IN CHAT.INI - ALERT THE SYSOP IMMEDIATELY!\r\n";
     pausescr();
@@ -639,16 +639,14 @@ void moving(bool bOnline, int loc) {
 // Sets color_string string for current node
 
 void get_colors(char *color_string, IniFile *pIniFile) {
-  char szKey[10];
-
-  sprintf(szKey, "C%u", session()->instance_number());
-  strcpy(color_string, pIniFile->GetValue(szKey));
+  string s = pIniFile->value(StringPrintf("C%u", session()->instance_number()));
+  strcpy(color_string, s.c_str());
 }
 
 // Loads the actions into memory
 
 void load_actions(IniFile *pIniFile) {
-  int to_read = pIniFile->GetNumericValue<int>("NUM_ACTIONS");
+  int to_read = pIniFile->value<int>("NUM_ACTIONS");
   if (!to_read) {
     return;
   }
@@ -658,7 +656,8 @@ void load_actions(IniFile *pIniFile) {
     for (int ca = 0; ca <= 5; ca++) {
       char rstr[10];
       sprintf(rstr, "%d%c", cn, 65 + ca);
-      const char* ini_value = pIniFile->GetValue(rstr);
+      string s = pIniFile->value(rstr);
+      const char* ini_value = s.c_str();
       switch (ca) {
       case 0:
         act.r = atoi((ini_value != nullptr) ? ini_value : "0");
@@ -968,35 +967,38 @@ bool check_ch(int ch) {
 
 // Loads channel information into memory
 void load_channels(IniFile& ini) {
-  char buffer[6], szTemp[10];
+  char buffer[6];
 
   for (int cn = 1; cn <= 10; cn++) {
     for (int ca = 0; ca <= 5; ca++) {
       sprintf(buffer, "CH%d%c", cn, 65 + ca);
       switch (ca) {
       case 0:
-        strcpy(channels[cn].name, ini.GetValue(buffer));
+        to_char_array(channels[cn].name, ini.value(buffer));
         break;
       case 1:
-        channels[cn].sl = ini.GetNumericValue<int>(buffer);
+        channels[cn].sl = ini.value<int>(buffer);
         break;
       case 2:
-        strcpy(szTemp, ini.GetValue(buffer));
-        if (szTemp[0] != '0') {
-          channels[cn].ar = szTemp[0];
-        } else {
+      {
+        string temp = ini.value(buffer);
+        if (temp.empty() || temp.front() == '0') {
           channels[cn].ar = 0;
+        } else {
+          channels[cn].ar = temp.front();
         }
-        break;
-      case 3:
-        strcpy(szTemp, ini.GetValue(buffer));
-        channels[cn].sex = szTemp[0];
-        break;
+      } break;
+      case 3: {
+        string temp = ini.value(buffer);
+        if (!temp.empty()) {
+          channels[cn].sex = temp.front();
+        }
+      } break;
       case 4:
-        channels[cn].min_age = ini.GetNumericValue<uint8_t>(buffer);
+        channels[cn].min_age = ini.value<uint8_t>(buffer);
         break;
       case 5:
-        channels[cn].max_age = ini.GetNumericValue<uint8_t>(buffer);
+        channels[cn].max_age = ini.value<uint8_t>(buffer);
         break;
       }
     }
