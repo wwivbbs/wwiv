@@ -126,7 +126,7 @@ void send_inst_cleannet() {
     ih.dest_inst = 1;
     ih.daten = static_cast<uint32_t>(time(nullptr));
 
-    send_inst_msg(&ih, nullptr);
+    send_inst_msg(&ih, "");
   }
 }
 
