@@ -1059,6 +1059,12 @@ void ExecNewUserCommand() {
 }
 
 void newuser() {
+  sysoplog(false);
+  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
+             session()->instance_number());
+
+  LOG(INFO) << "New User Attempt from IP Address: " << session()->remoteIO()->remote_info().address;
+
   get_colordata();
   session()->screenlinest = 25;
 
@@ -1066,9 +1072,6 @@ void newuser() {
 
   input_language();
 
-  sysoplog(false);
-  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
-             session()->instance_number());
 
   if (!CanCreateNewUserAccountHere() || hangup) {
     hangup = true;
@@ -1094,6 +1097,7 @@ void newuser() {
     hang_it_up();
     return;
   }
+
   input_screensize();
   input_country();
   bool newuser_min = UseMinimalNewUserInfo();
@@ -1145,6 +1149,10 @@ void newuser() {
 
   WriteNewUserInfoToSysopLog();
   ssm(1, 0) << "You have a new user: " << session()->user()->GetName() << " #" << session()->usernum;
+
+  LOG(INFO) << "New User Created: '" << session()->user()->GetName() << "' "
+            << "IP Address: " << session()->remoteIO()->remote_info().address;
+
   session()->UpdateTopScreen();
   VerifyNewUserPassword();
   SendNewUserFeedbackIfRequired();
