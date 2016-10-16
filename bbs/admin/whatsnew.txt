@@ -37,7 +37,14 @@ What's New in WWIV 5.2 (2016)
 * callout.net flag /## now means ## minutes not ## hours
 * wwivutil net dump_xxx commands are now just called wwivutil net xxx
   for example dump_callout -> callout
-* 
+* networkb now supports CRC verification when sending files. To disable it
+  set crc=N in the newly created net.ini
+* net.ini can now handle defaults on a per-network basis or
+  per-network-node basis (when calling out) using tags of 
+  [networkb-network_name] and [networkb-network_name-sendto_node].
+  The only settings are crc=[Y|N] and skip_net=[Y|N].
+* The short lived networkb.ini is renamed to net.ini (yes, this is the same
+  as the WINS one, but WINS will go away over time).
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
