@@ -38,6 +38,7 @@ constexpr int SOCKET_ERROR = -1;
 
 #include <iostream>
 #include <memory>
+#include <system_error>
 
 #include "sdk/user.h"
 #include "bbs/platform/platformfcns.h"
@@ -90,6 +91,8 @@ RemoteSocketIO::RemoteSocketIO(int socket_handle, bool telnet)
 
   // Make sure our signal event is not set to the "signaled" state.
   stop_.store(false);
+  // Threads haven't started yet.
+  threads_started_.store(false);
 
   if (socket_handle == 0) {
     // This means we don't have a real socket handle, for example running in local mode.
@@ -281,7 +284,7 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
 bool RemoteSocketIO::carrier() {
   bool carrier = valid_socket();
   if (!carrier) {
-    LOG(ERROR) << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_;
+    LOG(ERROR) << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_.load();
   }
   return valid_socket();
 }
@@ -295,31 +298,33 @@ bool RemoteSocketIO::incoming() {
 }
 
 void RemoteSocketIO::StopThreads() {
-  if (!threads_started_) {
+  if (!threads_started_.load()) {
     return;
   }
   stop_.store(true);
   yield();
 
   // Wait for read thread to exit.
-  read_thread_.join();
-  threads_started_ = false;
-/*
-  if (socket_ != INVALID_SOCKET) {
-    closesocket(socket_);
-    socket_ = INVALID_SOCKET;
+  if (!read_thread_.joinable()) {
+    LOG(ERROR) << "read_thread_ is not JOINABLE.  Should not happen.";
   }
-  */
+  try {
+    read_thread_.join();
+  } catch (const std::system_error& e) {
+    LOG(ERROR) << "Caught system_error with code: " << e.code()
+        << "; meaning: " << e.what();
+  }
+  threads_started_.store(false);
 }
 
 void RemoteSocketIO::StartThreads() {
-  if (threads_started_) {
+  if (threads_started_.load()) {
     return;
   }
 
   stop_.store(false);
   read_thread_ = thread(&RemoteSocketIO::InboundTelnetProc, this);
-  threads_started_ = true;
+  threads_started_.store(true);
 }
 
 RemoteSocketIO::~RemoteSocketIO() {

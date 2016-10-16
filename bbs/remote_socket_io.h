@@ -93,7 +93,7 @@ class RemoteSocketIO : public RemoteIO {
   SOCKET socket_ = INVALID_SOCKET;
   std::thread read_thread_;
   std::atomic<bool> stop_;
-  bool threads_started_ = false;
+  std::atomic<bool> threads_started_;
   bool telnet_ = true;
 };
 
