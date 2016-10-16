@@ -19,8 +19,9 @@
 #ifndef __INCLUDED_INIFILE_H__
 #define __INCLUDED_INIFILE_H__
 
-#include <string>
+#include <initializer_list>
 #include <map>
+#include <string>
 #include <vector>
 
 namespace wwiv {
@@ -28,9 +29,8 @@ namespace core {
 
 class IniFile {
  public:
-  IniFile(const std::string& filename, const std::string& primarySection);
-  IniFile(const std::string& filename, const std::string& primarySection, const std::string& secondarySection);
-  IniFile(const std::string& filename, const std::vector<std::string>& sections);
+  IniFile(const std::string& filename, const std::initializer_list<const char*> sections);
+  IniFile(const std::string& filename, const std::initializer_list<const std::string> sections);
   // Constructor/Destructor
   virtual ~IniFile(); 
 

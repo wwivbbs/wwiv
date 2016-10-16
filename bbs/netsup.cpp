@@ -252,7 +252,7 @@ void cleanup_net() {
       session()->localIO()->Cls();
     }
 
-    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
     if (iniFile.IsOpen()) {
       const string cmd1 = iniFile.value<string>("NET_CLEANUP_CMD1");
       if (!cmd1.empty()) {
@@ -793,7 +793,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
 
   if (!got_color) {
     got_color = 1;
-    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
     if (iniFile.IsOpen()) {
       color = iniFile.value("CALLOUT_COLOR_TEXT", 14);
     }
@@ -899,7 +899,7 @@ static std::pair<uint16_t, int> ansicallout() {
     color2 = 30;
     color3 = 3;
     color4 = 14;
-    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
+    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
     if (iniFile.IsOpen()) {
       callout_ansi = iniFile.value<bool>("CALLOUT_ANSI");
       color1 = iniFile.value("CALLOUT_COLOR", color1);

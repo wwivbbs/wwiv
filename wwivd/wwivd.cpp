@@ -107,7 +107,7 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
   wwivd_config_t c{};
 
   {
-    IniFile ini(wwivd_ini_fn.full_pathname(), "WWIVD");
+    IniFile ini(wwivd_ini_fn.full_pathname(), {"WWIVD"});
     if (!ini.IsOpen()) {
       LOG(ERROR) << "Unable to open INI file: " << wwivd_ini_fn.full_pathname();
     }

@@ -83,13 +83,13 @@ configrec syscfg;
 statusrec_t statusrec;
 
 static bool CreateConfigOvr(const string& bbsdir) {
-  IniFile oini(WWIV_INI, "WWIV");
+  IniFile oini(WWIV_INI, {"WWIV"});
   int num_instances = oini.value("NUM_INSTANCES", 4);
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
   for (int i=1; i <= num_instances; i++) {
     string instance_tag = StringPrintf("WWIV-%u", i);
-    IniFile ini("wwiv.ini", instance_tag, "WWIV");
+    IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
 
    string temp_directory = ini.value<string>("TEMP_DIRECTORY");
     if (temp_directory.empty()) {

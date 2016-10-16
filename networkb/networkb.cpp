@@ -164,7 +164,7 @@ static int Main(CommandLine& cmdline) {
 
     File inifile(net_cmdline.config().root_directory(), "networkb.ini");
     if (inifile.Exists()) {
-      IniFile ini(inifile.full_pathname(), "networkb", StrCat("networkb-", net_cmdline.network_number()));
+      IniFile ini(inifile.full_pathname(), {StrCat("networkb-", net_cmdline.network_number()), "networkb"});
       if (!bink_config.ProcessIniFile(ini)) {
         LOG(INFO) << "Unable to open INI file: " << inifile.full_pathname();
       }

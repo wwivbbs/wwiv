@@ -466,7 +466,7 @@ bool WSession::ReadConfig() {
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
   
   const string instance_name = StringPrintf("WWIV-%u", instance_number());
-  IniFile ini(FilePath(GetHomeDir(), WWIV_INI), instance_name, INI_TAG);
+  IniFile ini(FilePath(GetHomeDir(), WWIV_INI), {instance_name, INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     AbortBBS();
@@ -610,7 +610,7 @@ void WSession::read_networks() {
   // TODO(rushfan): Remove these and put them somewhere else.
   // Like on a per-network config when we add proper internet
   // support.
-  IniFile ini("net.ini", "NETWORK");
+  IniFile ini("net.ini", {"NETWORK"});
   if (ini.IsOpen()) {
     // Note FWDNAME isn't listed here.
     internetEmailName = ini.value<string>("POPNAME");

@@ -3,7 +3,6 @@
                  Copyright 2002-2016 WWIV Software Services
 ==============================================================================
 
-* Move FilePath to file (from inifile)
 * move File to namespace wwiv::core
 * Add support for more than 2 levels in IniFile (like net-0-561 then net-0, then net)
   this way you can have 3 or more levels of customization

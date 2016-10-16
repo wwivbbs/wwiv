@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <initializer_list>
 #include <map>
 #include <sstream>
 #include <string>
@@ -50,20 +51,11 @@ static bool StringToBoolean(const char *p) {
 }
 }  // namespace {}
 
-IniFile::IniFile(const string& filename, const string& primary)
-  : IniFile(filename, std::vector<std::string>{primary}) {}
-
-IniFile::IniFile(const string& filename, const string& primary, const string& secondary)
-  : IniFile(filename, std::vector<std::string>{primary, secondary}) {}
-
-
-IniFile::IniFile(const std::string& filename, const std::vector<std::string>& sections)
-  : file_name_(filename), open_(false), sections_(sections) {
-
-  TextFile file(file_name_, "rt");
+static bool ParseIniFile(const string& filename, std::map<string, string>& data) {
+  data.clear();
+  TextFile file(filename, "rt");
   if (!file.IsOpen()) {
-    open_ = false;
-    return;
+    return false;
   }
 
   string section("");
@@ -94,10 +86,30 @@ IniFile::IniFile(const std::string& filename, const std::vector<std::string>& se
       StringTrim(&value);
 
       string real_key = section + "." + key;
-      data_[real_key] = value;
+      data[real_key] = value;
     }
   }
-  open_ = true;
+  return true;
+}
+
+IniFile::IniFile(const std::string& filename, const std::initializer_list<const char*> sections)
+  : file_name_(filename), open_(false) {
+  // Can't use initializer_list to go from const string -> vector<string>
+  // and can't use vector<const string>
+  for (const auto& s : sections) {
+    sections_.emplace_back(s);
+  }
+  open_ = ParseIniFile(filename, data_);
+}
+
+IniFile::IniFile(const std::string& filename, const std::initializer_list<const std::string> sections)
+  : file_name_(filename), open_(false) {
+  // Can't use initializer_list to go from const string -> vector<string>
+  // and can't use vector<const string>
+  for (const auto& s : sections) {
+    sections_.emplace_back(s);
+  }
+  open_ = ParseIniFile(filename, data_);
 }
 
 IniFile::~IniFile() { open_ = false; }

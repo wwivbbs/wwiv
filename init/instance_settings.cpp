@@ -51,7 +51,7 @@ void show_instance(EditItems* items) {
 }
 
 void instance_editor() {
-  IniFile ini("wwiv.ini", "WWIV");
+  IniFile ini("wwiv.ini", {"WWIV"});
   string temp(ini.value<string>("TEMP_DIRECTORY"));
   if (ini.IsOpen() && !temp.empty()) {
     messagebox(out->window(), "TEMP_DIRECTORY must be set in WWIV.INI");
