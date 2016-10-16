@@ -75,6 +75,8 @@ const std::string IniFile::value<std::string>(const std::string& key) const;
 
 template<>
 const bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
+template<>
+const bool IniFile::value<bool>(const std::string& key) const;
 
 
 

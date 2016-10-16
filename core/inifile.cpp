@@ -158,6 +158,11 @@ const bool IniFile::value<bool>(const std::string& key, const bool& default_valu
   return GetBooleanValue(key, default_value);
 }
 
+template<>
+const bool IniFile::value<bool>(const std::string& key) const {
+  return GetBooleanValue(key, false);
+}
+
 
 }  // namespace core
 }  // namespace wwiv
