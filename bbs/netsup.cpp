@@ -31,7 +31,6 @@
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
-#include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/instmsg.h"
@@ -39,6 +38,7 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
+#include "bbs/platform/platformfcns.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/inifile.h"
@@ -53,6 +53,7 @@
 #include "sdk/callout.h"
 #include "sdk/contact.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 
 time_t last_time_c;
 
@@ -191,7 +192,10 @@ static int cleanup_net1() {
             if (session()->IsUserOnline()) {
               hang_it_up();
             }
-            if (ExecuteExternalProgram(StringPrintf("network1 .%d", session()->net_num()), EFLAG_NETPROG) < 0) {
+            string network1_cmd = StringPrintf("network1 .%d", session()->net_num());
+            WWIV_make_abs_cmd(session()->GetHomeDir(), &network1_cmd);
+
+            if (ExecuteExternalProgram(network1_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
               any = true;
@@ -210,7 +214,9 @@ static int cleanup_net1() {
             ok = 1;
             hangup = false;
             session()->using_modem = 0;
-            if (ExecuteExternalProgram(StringPrintf("network2 .%d", session()->net_num()), EFLAG_NETPROG) < 0) {
+            string network2_cmd = StringPrintf("network2 .%d", session()->net_num());
+            WWIV_make_abs_cmd(session()->GetHomeDir(), &network2_cmd);
+            if (ExecuteExternalProgram(network2_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
               any = true;
