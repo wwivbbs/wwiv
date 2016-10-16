@@ -245,12 +245,12 @@ void cleanup_net() {
 
     IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), INI_TAG);
     if (iniFile.IsOpen()) {
-      const string cmd1 = iniFile.value("NET_CLEANUP_CMD1");
+      const string cmd1 = iniFile.value<string>("NET_CLEANUP_CMD1");
       if (!cmd1.empty()) {
         ExecuteExternalProgram(cmd1, session()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
         cleanup_net1();
       }
-      const string cmd2 = iniFile.value("NET_CLEANUP_CMD2");
+      const string cmd2 = iniFile.value<string>("NET_CLEANUP_CMD2");
       if (!cmd2.empty()) {
         ExecuteExternalProgram(cmd2, session()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
         cleanup_net1();

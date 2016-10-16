@@ -78,7 +78,7 @@ TEST_F(IniFileTest, Single_GetValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=BAR" } );
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
   ASSERT_TRUE(ini.IsOpen());
-  EXPECT_EQ("BAR", ini.value("FOO"));
+  EXPECT_EQ("BAR", ini.value<string>("FOO"));
   ini.Close();
 }
 
@@ -86,7 +86,7 @@ TEST_F(IniFileTest, Single_GetValue_Comment) {
   const string path = this->CreateIniFile("TEST", { "FOO=BAR  ; BAZ" } );
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST");
   ASSERT_TRUE(ini.IsOpen());
-  EXPECT_EQ("BAR", ini.value("FOO"));
+  EXPECT_EQ("BAR", ini.value<string>("FOO"));
   ini.Close();
 }
 
@@ -120,12 +120,12 @@ TEST_F(IniFileTest, Reopen_GetValue) {
   {
     IniFile ini(path, "TEST");
     ASSERT_TRUE(ini.IsOpen());
-    EXPECT_EQ("BAR", ini.value("FOO"));
+    EXPECT_EQ("BAR", ini.value<string>("FOO"));
     ini.Close();
   }
 
   IniFile ini(path, "TEST2");
-  EXPECT_EQ("BAZ", ini.value("BAR"));
+  EXPECT_EQ("BAZ", ini.value<string>("BAR"));
   ini.Close();
 }
 
@@ -133,7 +133,7 @@ TEST_F(IniFileTest, TwoSection_GetValue) {
   const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST-1", { "FOO=BAZ" } );
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST-1", "TEST");
   ASSERT_TRUE(ini.IsOpen());
-  EXPECT_EQ("BAZ", ini.value("FOO"));
+  EXPECT_EQ("BAZ", ini.value<string>("FOO"));
   ini.Close();
 }
 
@@ -141,7 +141,7 @@ TEST_F(IniFileTest, TwoSection_GetValue_OnlyInSecondary) {
   const string path = this->CreateIniFile("TEST", { "FOO=BAR" }, "TEST-1", { "FOO1=BAZ" } );
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST-1", "TEST");
   ASSERT_TRUE(ini.IsOpen());
-  EXPECT_EQ("BAR", ini.value("FOO"));
+  EXPECT_EQ("BAR", ini.value<string>("FOO"));
   ini.Close();
 }
 
@@ -149,6 +149,6 @@ TEST_F(IniFileTest, CommentAtStart) {
   const string path = this->CreateIniFile("TEST", { ";FOO=BAR" } );
   IniFile ini(FilePath(helper_.TempDir(), this->test_name()), "TEST-1", "TEST");
   ASSERT_TRUE(ini.IsOpen());
-  EXPECT_EQ("", ini.value("FOO"));
+  EXPECT_EQ("", ini.value<string>("FOO"));
   ini.Close();
 }

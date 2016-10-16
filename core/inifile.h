@@ -28,6 +28,7 @@ namespace core {
 
 std::string FilePath(const std::string& directoryName, const std::string& fileName);
 
+
 class IniFile {
  public:
   IniFile(const std::string& filename, const std::string& primarySection);
@@ -41,23 +42,15 @@ class IniFile {
   bool IsOpen() const { return open_; }
 
   template<typename T>
-  const T value(const std::string& key, const T& default_value = T()) const {
+  const T value(const std::string& key, const T& default_value) const {
     return static_cast<T>(GetNumericValueT(key, default_value));
   }
-  template<>
-  const std::string value(const std::string& key, const std::string& default_value) const {
-    return GetStringValue(key, default_value);
-  }
-  template<>
-  const bool value(const std::string& key, const bool& default_value) const {
-    return GetBooleanValue(key, default_value);
+  template<typename T>
+  const T value(const std::string& key) const {
+    return static_cast<T>(GetNumericValueT(key, T()));
   }
 
-  const std::string value(const std::string& key) const {
-    return value<std::string>(key, "");
-  }
-
-private:
+ private:
   // This class should not be assigneable via '=' so remove the implicit operator=
   // and Copy constructor.
   IniFile(const IniFile& other) = delete;
@@ -73,6 +66,17 @@ private:
   std::vector<std::string> sections_;
   std::map<std::string, std::string> data_;
 };
+
+template<>
+const std::string IniFile::value<std::string>(const std::string& key, const std::string& default_value) const;
+
+template<>
+const std::string IniFile::value<std::string>(const std::string& key) const;
+
+template<>
+const bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
+
+
 
 }  // namespace core
 }  // namespace wwiv

@@ -639,7 +639,7 @@ void moving(bool bOnline, int loc) {
 // Sets color_string string for current node
 
 void get_colors(char *color_string, IniFile *pIniFile) {
-  string s = pIniFile->value(StringPrintf("C%u", session()->instance_number()));
+  string s = pIniFile->value<string>(StringPrintf("C%u", session()->instance_number()));
   strcpy(color_string, s.c_str());
 }
 
@@ -656,7 +656,7 @@ void load_actions(IniFile *pIniFile) {
     for (int ca = 0; ca <= 5; ca++) {
       char rstr[10];
       sprintf(rstr, "%d%c", cn, 65 + ca);
-      string s = pIniFile->value(rstr);
+      string s = pIniFile->value<string>(rstr);
       const char* ini_value = s.c_str();
       switch (ca) {
       case 0:
@@ -974,14 +974,14 @@ void load_channels(IniFile& ini) {
       sprintf(buffer, "CH%d%c", cn, 65 + ca);
       switch (ca) {
       case 0:
-        to_char_array(channels[cn].name, ini.value(buffer));
+        to_char_array(channels[cn].name, ini.value<string>(buffer));
         break;
       case 1:
         channels[cn].sl = ini.value<int>(buffer);
         break;
       case 2:
       {
-        string temp = ini.value(buffer);
+        string temp = ini.value<string>(buffer);
         if (temp.empty() || temp.front() == '0') {
           channels[cn].ar = 0;
         } else {
@@ -989,7 +989,7 @@ void load_channels(IniFile& ini) {
         }
       } break;
       case 3: {
-        string temp = ini.value(buffer);
+        string temp = ini.value<string>(buffer);
         if (!temp.empty()) {
           channels[cn].sex = temp.front();
         }

@@ -62,7 +62,7 @@ std::string ctypes(int num) {
 
   IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), "CTYPES");
   if (iniFile.IsOpen()) {
-    return iniFile.value(StringPrintf("COMP_TYPE[%d]", num + 1));
+    return iniFile.value<string>(StringPrintf("COMP_TYPE[%d]", num + 1));
   }
   if (num < 0 || num > size_int(default_ctypes)) {
     return "";

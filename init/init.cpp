@@ -91,7 +91,7 @@ static bool CreateConfigOvr(const string& bbsdir) {
     string instance_tag = StringPrintf("WWIV-%u", i);
     IniFile ini("wwiv.ini", instance_tag, "WWIV");
 
-   string temp_directory = ini.value("TEMP_DIRECTORY");
+   string temp_directory = ini.value<string>("TEMP_DIRECTORY");
     if (temp_directory.empty()) {
       LOG(ERROR) << "TEMP_DIRECTORY is not set! Unable to create CONFIG.OVR";
       return false;
@@ -99,7 +99,7 @@ static bool CreateConfigOvr(const string& bbsdir) {
 
     // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
     // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-    string batch_directory(ini.value("BATCH_DIRECTORY", temp_directory));
+    string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
 
     // Replace %n with instance number value.
     const string instance_num_string = std::to_string(i);

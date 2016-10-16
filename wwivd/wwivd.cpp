@@ -113,18 +113,18 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
     }
     c.bbsdir = config.root_directory();
 
-    c.telnet_port = ini.GetNumericValue("telnet_port", -1);
-    c.telnet_cmd = ini.GetValue("telnet_command", "./bbs -XT -H@H -N@N");
+    c.telnet_port = ini.value<int>("telnet_port", -1);
+    c.telnet_cmd = ini.value<string>("telnet_command", "./bbs -XT -H@H -N@N");
 
-    c.ssh_port = ini.GetNumericValue("ssh_port", -1);
-    c.ssh_cmd = ini.GetValue("ssh_command", "./bbs -XS -H@H -N@N");
+    c.ssh_port = ini.value<int>("ssh_port", -1);
+    c.ssh_cmd = ini.value<string>("ssh_command", "./bbs -XS -H@H -N@N");
 
-    c.binkp_port = ini.GetNumericValue("binkp_port", -1);
-    c.binkp_cmd = ini.GetValue("binkp_command", "./networkb --receive --handle=@H");
+    c.binkp_port = ini.value<int>("binkp_port", -1);
+    c.binkp_cmd = ini.value<string>("binkp_command", "./networkb --receive --handle=@H");
 
-    c.local_node = ini.GetNumericValue("local_node", 1);
-    c.start_node = ini.GetNumericValue("start_node", 2);
-    c.end_node = ini.GetNumericValue("end_node", 4);
+    c.local_node = ini.value<int>("local_node", 1);
+    c.start_node = ini.value<int>("start_node", 2);
+    c.end_node = ini.value<int>("end_node", 4);
   }
 
   return c;

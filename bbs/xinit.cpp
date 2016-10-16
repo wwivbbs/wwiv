@@ -192,12 +192,12 @@ static const char *get_key_str(int n, const char *index = nullptr) {
 }
 
 static void ini_init_str(IniFile& ini, size_t key_idx, std::string& s) {
-  s = ini.value(get_key_str(key_idx));
+  s = ini.value<string>(get_key_str(key_idx));
 }
 
 #define INI_GET_ASV(s, f, func, d) \
 { \
-  const std::string ss = ini.value(get_key_str(INI_STR_SIMPLE_ASV,s)); \
+  const std::string ss = ini.value<std::string>(get_key_str(INI_STR_SIMPLE_ASV,s)); \
   if (!ss.empty()) { \
     asv.f = func (ss.c_str()); \
   } else { \
@@ -296,7 +296,7 @@ void WSession::ReadINIFile(IniFile& ini) {
   // pull out event flags
   for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(spawn_opts); nTempSpawnOptNum++) {
     const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
-    string ss = ini.value(key_name);
+    string ss = ini.value<string>(key_name);
     if (!ss.empty()) {
       spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
     }
@@ -323,20 +323,20 @@ void WSession::ReadINIFile(IniFile& ini) {
   SetCarbonCopyEnabled(ini.value<bool>("ALLOW_CC_BCC"));
 
   // pull out sysop-side colors
-  localIO()->SetTopScreenColor(ini.value(
+  localIO()->SetTopScreenColor(ini.value<int>(
     get_key_str(INI_STR_TOPCOLOR), localIO()->GetTopScreenColor()));
-  localIO()->SetUserEditorColor(ini.value(
+  localIO()->SetUserEditorColor(ini.value<int>(
     get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
-  localIO()->SetEditLineColor(ini.value(
+  localIO()->SetEditLineColor(ini.value<int>(
     get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
-  SetChatNameSelectionColor(ini.value(
+  SetChatNameSelectionColor(ini.value<int>(
     get_key_str(INI_STR_CHATSELCOLOR),GetChatNameSelectionColor()));
 
   // pull out sizing options
-  max_batch = ini.value(get_key_str(INI_STR_MAX_BATCH), max_batch);
-  max_extend_lines = ini.value(get_key_str(INI_STR_MAX_EXTEND_LINES), max_extend_lines);
-  max_chains = ini.value(get_key_str(INI_STR_MAX_CHAINS), max_chains);
-  max_gfilesec = ini.value(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
+  max_batch = ini.value<uint16_t>(get_key_str(INI_STR_MAX_BATCH), max_batch);
+  max_extend_lines = ini.value<uint16_t>(get_key_str(INI_STR_MAX_EXTEND_LINES), max_extend_lines);
+  max_chains = ini.value<uint16_t>(get_key_str(INI_STR_MAX_CHAINS), max_chains);
+  max_gfilesec = ini.value<uint16_t>(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
 
   // pull out strings
   ini_init_str(ini, INI_STR_UPLOAD_CMD, syscfg.upload_cmd);
@@ -345,22 +345,22 @@ void WSession::ReadINIFile(IniFile& ini) {
   ini_init_str(ini, INI_STR_LOGON_CMD, syscfg.logon_cmd);
   ini_init_str(ini, INI_STR_TERMINAL_CMD, syscfg.terminal_command);
 
-  m_nForcedReadSubNumber = ini.value(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), m_nForcedReadSubNumber);
+  m_nForcedReadSubNumber = ini.value<int>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), m_nForcedReadSubNumber);
   m_bInternalZmodem = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), m_bInternalZmodem);
   m_bNewScanAtLogin = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), m_bNewScanAtLogin);
 
   m_bExecLogSyncFoss = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), m_bExecLogSyncFoss);
   m_nExecChildProcessWaitTime = 
-      ini.value(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), m_nExecChildProcessWaitTime);
+      ini.value<int>(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), m_nExecChildProcessWaitTime);
 
-  SetBeginDayNodeNumber(ini.value(get_key_str(INI_STR_BEGINDAYNODENUMBER), GetBeginDayNodeNumber()));
+  SetBeginDayNodeNumber(ini.value<int>(get_key_str(INI_STR_BEGINDAYNODENUMBER), GetBeginDayNodeNumber()));
 
   // pull out sysinfo_flags
   SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
                                     GetConfigFlags()));
 
   // allow override of WSession::message_color_
-  SetMessageColor(ini.value(get_key_str(INI_STR_MSG_COLOR), GetMessageColor()));
+  SetMessageColor(ini.value<int>(get_key_str(INI_STR_MSG_COLOR), GetMessageColor()));
 
   // get asv values
   if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
@@ -386,12 +386,12 @@ void WSession::ReadINIFile(IniFile& ini) {
   uint16_t num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
   if (num > 0) { mail_who_field_len = num; }
 
-  const string ratio_str = ini.value(get_key_str(INI_STR_RATIO));
+  const string ratio_str = ini.value<string>(get_key_str(INI_STR_RATIO));
   if (!ratio_str.empty()) {
     syscfg.req_ratio = StringToFloat(ratio_str);
   }
 
-  const string attach_dir = ini.value(get_key_str(INI_STR_ATTACH_DIR));
+  const string attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
   if (!attach_dir.empty()) {
     m_attachmentDirectory = attach_dir;
     if (!m_attachmentDirectory.back() != File::pathSeparatorChar) {
@@ -402,7 +402,7 @@ void WSession::ReadINIFile(IniFile& ini) {
     m_attachmentDirectory.push_back(File::pathSeparatorChar);
   }
 
-  screen_saver_time = ini.value(get_key_str(INI_STR_SCREEN_SAVER_TIME), screen_saver_time);
+  screen_saver_time = ini.value<uint16_t>(get_key_str(INI_STR_SCREEN_SAVER_TIME), screen_saver_time);
 
   max_extend_lines    = std::min<uint16_t>(max_extend_lines, 99);
   max_batch           = std::min<uint16_t>(max_batch , 999);
@@ -411,14 +411,14 @@ void WSession::ReadINIFile(IniFile& ini) {
 }
 
 bool WSession::ReadInstanceSettings(int instance_number, IniFile& ini) {
-  string temp_directory = ini.value("TEMP_DIRECTORY");
+  string temp_directory = ini.value<string>("TEMP_DIRECTORY");
   if (temp_directory.empty()) {
     LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
     return false;
   }
   // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to 
   // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
-  string batch_directory(ini.value("BATCH_DIRECTORY", temp_directory));
+  string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
 
   // Replace %n with instance number value.
   string instance_num_string = std::to_string(instance_number);
@@ -434,7 +434,7 @@ bool WSession::ReadInstanceSettings(int instance_number, IniFile& ini) {
   temp_directory_ = temp_directory;
   batch_directory_ = batch_directory;
 
-  int max_num_instances = ini.value("NUM_INSTANCES", 4);
+  int max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
     LOG(ERROR) << "Not enough instances configured (" << max_num_instances << ").";
     return false;
@@ -613,10 +613,10 @@ void WSession::read_networks() {
   IniFile ini("net.ini", "NETWORK");
   if (ini.IsOpen()) {
     // Note FWDNAME isn't listed here.
-    internetEmailName = ini.value("POPNAME");
+    internetEmailName = ini.value<string>("POPNAME");
     // Note FWDDOM isn't listed here.
-    internetEmailDomain = ini.value("DOMAIN");
-    internetPopDomain = ini.value("POPDOMAIN");
+    internetEmailDomain = ini.value<string>("DOMAIN");
+    internetPopDomain = ini.value<string>("POPDOMAIN");
     SetInternetUseRealNames(ini.value<bool>("REALNAME"));
   }
 
@@ -1001,7 +1001,7 @@ uint32_t GetFlagsFromIniFile(IniFile& ini, ini_flags_type * fs, int nFlagNumber,
     if (!key) {
       continue;
     }
-    string val = ini.value(key);
+    string val = ini.value<string>(key);
     if (val.empty()) {
       continue;
     }
