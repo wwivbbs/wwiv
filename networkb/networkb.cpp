@@ -162,9 +162,11 @@ static int Main(CommandLine& cmdline) {
     int sendto_node = cmdline.arg("node").as_int();
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
-    File inifile(net_cmdline.config().root_directory(), "networkb.ini");
+    File inifile(net_cmdline.config().root_directory(), "net.ini");
     if (inifile.Exists()) {
-      IniFile ini(inifile.full_pathname(), {StrCat("networkb-", net_cmdline.network_number()), "networkb"});
+      const string ini_net_node = StrCat("networkb-", net_cmdline.network_name(), "-", sendto_node);
+      const string ini_net = StrCat("networkb-", net_cmdline.network_name());
+      IniFile ini(inifile.full_pathname(), {ini_net_node, ini_net, "networkb"});
       if (!bink_config.ProcessIniFile(ini)) {
         LOG(INFO) << "Unable to open INI file: " << inifile.full_pathname();
       }
