@@ -67,7 +67,7 @@ class RemoteIO {
   void set_binary_mode(bool b) { binary_mode_ = b; }
   bool binary_mode() const { return binary_mode_; }
 
-  RemoteInfo& remote_info() { return remote_info_; }
+  virtual RemoteInfo& remote_info() { return remote_info_; }
 
 protected:
   bool binary_mode_;

@@ -165,18 +165,20 @@ void input_language() {
   }
 }
 
-static bool check_name(const string& userName) {
-  if (userName.length() == 0 ||
-      userName[ userName.length() - 1 ] == 32   ||
-      userName[0] < 65                 ||
-      finduser(userName) != 0          ||
-      userName.find("@") != string::npos ||
-      userName.find("#") != string::npos) {
+static bool check_name(const string& user_name) {
+  if (user_name.length() == 0 ||
+      user_name[ user_name.length() - 1 ] == 32   ||
+      user_name[0] < 65                 ||
+      finduser(user_name) != 0          ||
+      user_name.find("@") != string::npos ||
+      user_name.find("#") != string::npos) {
     return false;
   }
 
   Trashcan trashcan(*session()->config());
-  if (trashcan.IsTrashName(userName)) {
+  if (trashcan.IsTrashName(user_name)) {
+    LOG(INFO) << "Trashcan name entered from IP: " << session()->remoteIO()->remote_info().address
+              << "; name: " << user_name;
     hangup = true;
     hang_it_up();
     return false;
