@@ -70,6 +70,11 @@ using namespace wwiv::strings;
 
 constexpr int MAX_CONNECTS = 1000;
 
+/** Returns a full path to exe under the WWIV_DIR */
+static string CreateNetworkBinary(const std::string exe) {
+  return (StrCat(session()->GetHomeDir(), exe));
+}
+
 struct CalloutEntry {
   CalloutEntry(uint16_t o, int e): node(o), net(e) {}
   uint16_t node;
@@ -121,7 +126,7 @@ static bool check_bbsdata() {
   if (!File::Exists(session()->network_directory().c_str(), CALLOUT_NET)) {
     return false;
   }
-  const string network3 = StringPrintf("network3 .%d Y", session()->net_num());
+  const string network3 = StrCat(CreateNetworkBinary("network3"), " .", session()->net_num(), " Y");
   ExecuteExternalProgram(network3, EFLAG_NETPROG);
   WStatus* wwiv_status = session()->status_manager()->BeginTransaction();
   wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
@@ -192,8 +197,7 @@ static int cleanup_net1() {
             if (session()->IsUserOnline()) {
               hang_it_up();
             }
-            string network1_cmd = StringPrintf("network1 .%d", session()->net_num());
-            WWIV_make_abs_cmd(session()->GetHomeDir(), &network1_cmd);
+            string network1_cmd = StrCat(CreateNetworkBinary("network1"), " .", session()->net_num());
 
             if (ExecuteExternalProgram(network1_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
@@ -214,8 +218,7 @@ static int cleanup_net1() {
             ok = 1;
             hangup = false;
             session()->using_modem = 0;
-            string network2_cmd = StringPrintf("network2 .%d", session()->net_num());
-            WWIV_make_abs_cmd(session()->GetHomeDir(), &network2_cmd);
+            string network2_cmd = StrCat(CreateNetworkBinary("network2"), " .", session()->net_num());
             if (ExecuteExternalProgram(network2_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
@@ -283,23 +286,12 @@ void do_callout(uint16_t sn) {
   if (!csne) {
     return;
   }
-  std::ostringstream cmd;
-  cmd << "network /N" << sn 
-      << " /A1"
-      << " /P" << csne->phone 
-      << " /S0 /T" << tCurrentTime;
 
-  if (callout_rec->macnum) {
-    cmd << " /M" << static_cast<uint32_t>(callout_rec->macnum);
-  }
-  cmd << " ." << session()->net_num();
+  const string cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", session()->net_num());
   if (strncmp(csne->phone, "000", 3)) {
+    // TODO(rushfan): Figure out a better way to see if we need to call WINS exp.exe
     run_exp();
-    bout << "|#7Calling out to: |#2" << csne->name << " - ";
-    if (session()->max_net_num() > 1) {
-      bout << session()->network_name() << " ";
-    }
-    bout << "@" << sn << wwiv::endl;
+    bout << "|#7Calling out to: |#2" << csne->name << " - " << session()->network_name() << " @" << sn << wwiv::endl;
     const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
             REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
     string region = "Unknown Region";
@@ -315,9 +307,9 @@ void do_callout(uint16_t sn) {
             << bytes_to_k(contact_rec->bytes_waiting)
             << "k" << wwiv::endl;
     }
-    bout << "|#7Commandline is: |#2" << cmd.str() << wwiv::endl
+    bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
          << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
-    ExecuteExternalProgram(cmd.str(), EFLAG_NETPROG);
+    ExecuteExternalProgram(cmd, EFLAG_NETPROG);
     session()->status_manager()->RefreshStatusCache();
     last_time_c = static_cast<int>(tCurrentTime);
     cleanup_net();
