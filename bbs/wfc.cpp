@@ -39,11 +39,12 @@
 #include "bbs/voteedit.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
+#include "core/inifile.h"
+#include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "core/inifile.h"
 #include "localui/curses_io.h"
 #include "sdk/filenames.h"
 

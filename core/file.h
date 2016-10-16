@@ -36,6 +36,17 @@
 #define O_TEXT    0
 #endif  // __unix__
 
+namespace wwiv {
+namespace core {
+/**
+* Creates a full pathname of directory_name + file_name ensuring that any
+* path separators are added as needed.
+*/
+std::string FilePath(const std::string& directory_name, const std::string& file_name);
+
+}  // namespace core
+}  // namespace wwiv
+
 /**
  * File - File I/O Class.
  */

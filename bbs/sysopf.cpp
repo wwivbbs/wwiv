@@ -45,6 +45,7 @@
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
 #include "core/inifile.h"
+#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"

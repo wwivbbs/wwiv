@@ -50,16 +50,6 @@ static bool StringToBoolean(const char *p) {
 }
 }  // namespace {}
 
-string FilePath(const string& directoryName, const string& fileName) {
-  string fullPathName(directoryName);
-  char last_char = directoryName.back();
-  if (last_char != File::pathSeparatorChar) {
-    fullPathName.push_back(File::pathSeparatorChar);
-  }
-  fullPathName.append(fileName);
-  return fullPathName;
-}
-
 IniFile::IniFile(const string& filename, const string& primary)
   : IniFile(filename, std::vector<std::string>{primary}) {}
 

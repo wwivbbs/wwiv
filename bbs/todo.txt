@@ -4,6 +4,7 @@
 ==============================================================================
 
 * Move FilePath to file (from inifile)
+* move File to namespace wwiv::core
 * Add support for more than 2 levels in IniFile (like net-0-561 then net-0, then net)
   this way you can have 3 or more levels of customization
 * Add hierarchial settings to networkb.ini

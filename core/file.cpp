@@ -110,6 +110,22 @@ const int File::invalid_handle     = -1;
 static constexpr int WAIT_TIME_MILLIS = 10;
 static constexpr int TRIES = 100;
 
+namespace wwiv {
+namespace core {
+
+string FilePath(const string& directoryName, const string& fileName) {
+  string fullPathName(directoryName);
+  char last_char = directoryName.back();
+  if (last_char != File::pathSeparatorChar) {
+    fullPathName.push_back(File::pathSeparatorChar);
+  }
+  fullPathName.append(fileName);
+  return fullPathName;
+}
+
+}  // namespace core
+}  // namespace wwiv
+
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 

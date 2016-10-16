@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "file_helper.h"
+#include "core/file.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 
