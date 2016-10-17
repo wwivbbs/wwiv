@@ -88,10 +88,6 @@ public:
   unsigned int GetHandle() const override;
   unsigned int GetDoorHandle() const override;
 
-  // Delegate to the underlying socket
-  virtual RemoteInfo& remote_info() override { return io_->remote_info(); }
-
-
 private:
   std::thread ssh_receive_thread_;
   std::thread ssh_send_thread_;
