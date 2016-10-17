@@ -338,8 +338,17 @@ IOSSH::IOSSH(SOCKET ssh_socket, Key& key)
 }
 
 IOSSH::~IOSSH() {
-  ssh_receive_thread_.join();
-  ssh_send_thread_.join();
+  if (ssh_receive_thread_.joinable()) {
+    ssh_receive_thread_.join();
+  }
+  if (ssh_send_thread_.joinable()) {
+    ssh_send_thread_.join();
+  }
+
+  // Release the remote before it happens automatically.
+  io_.reset(nullptr);
+
+  std::cerr << "~IOSSH";
 }
 
 bool IOSSH::ssh_initalize() {

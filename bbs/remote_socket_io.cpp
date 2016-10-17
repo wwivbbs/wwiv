@@ -311,7 +311,9 @@ void RemoteSocketIO::StopThreads() {
     LOG(ERROR) << "read_thread_ is not JOINABLE.  Should not happen.";
   }
   try {
-    read_thread_.join();
+    if (read_thread_.joinable()) {
+      read_thread_.join();
+    }
   } catch (const std::system_error& e) {
     LOG(ERROR) << "Caught system_error with code: " << e.code()
         << "; meaning: " << e.what();
@@ -332,11 +334,16 @@ void RemoteSocketIO::StartThreads() {
 }
 
 RemoteSocketIO::~RemoteSocketIO() {
-  StopThreads();
+  try {
+    StopThreads();
 
 #ifdef _WIN32
-  WSACleanup();
+    WSACleanup();
 #endif  // _WIN32
+  } catch (const std::exception& e) {
+    std::cerr << e.what();
+  }
+  std::cerr << "~RemoteSocketIO";
 }
 
 // Static Class Members.
@@ -375,10 +382,6 @@ bool RemoteSocketIO::Initialize() {
 }
 
 void RemoteSocketIO::InboundTelnetProc() {
-  wwiv::core::ScopeExit on_exit([this] {
-      lock_guard<mutex> lock(threads_started_mu_);
-      threads_started_ = false;
-  });
   constexpr size_t size = 4 * 1024;
   unique_ptr<char[]> data = make_unique<char[]>(size);
   try {
