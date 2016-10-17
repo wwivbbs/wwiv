@@ -62,8 +62,6 @@
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
 
-#define XINIT_PRINTF( x ) std::cerr << '\xFE' << ' ' << ( x )  << std::endl
-
 struct ini_flags_type {
   int     strnum;
   bool    sense;
@@ -775,7 +773,7 @@ void WSession::InitializeBBS() {
   bquote = 0;
   equote = 0;
 
-  XINIT_PRINTF("Processing configuration file: WWIV.INI.");
+  VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(temp_directory())) {
     if (!File::mkdirs(temp_directory())) {
       LOG(ERROR) << "Your temp dir isn't valid.";
@@ -795,7 +793,7 @@ void WSession::InitializeBBS() {
   write_inst(INST_LOC_INIT, 0, INST_FLAGS_NONE);
 
   // make sure it is the new USERREC structure
-  XINIT_PRINTF("Reading user scan pointers.");
+  VLOG(1) << "Reading user scan pointers.";
   File fileQScan(config()->datadir(), USER_QSC);
   if (!fileQScan.Exists()) {
     LOG(ERROR) << "Could not open file '" << fileQScan.full_pathname() << "'";
@@ -811,14 +809,14 @@ void WSession::InitializeBBS() {
   read_networks();
   set_net_num(0);
 
-  XINIT_PRINTF("Reading status information.");
+  VLOG(1) << "Reading status information.";
   WStatus* pStatus = statusMgr->BeginTransaction();
   if (!pStatus) {
     LOG(ERROR) << "Unable to return statusrec.dat.";
     AbortBBS();
   }
 
-  XINIT_PRINTF("Reading color information.");
+  VLOG(1) << "Reading color information.";
   File fileColor(config()->datadir(), COLOR_DAT);
   if (!fileColor.Exists()) {
     buildcolorfile();
@@ -831,36 +829,36 @@ void WSession::InitializeBBS() {
 
   gat = static_cast<unsigned short*>(BbsAllocA(2048 * sizeof(uint16_t)));
 
-  XINIT_PRINTF("Reading Gfiles.");
+  VLOG(1) << "Reading Gfiles.";
   read_gfile();
 
-  XINIT_PRINTF("Reading user names.");
+  VLOG(1) << "Reading user names.";
   if (!read_names()) {
     AbortBBS();
   }
 
-  XINIT_PRINTF("Reading Message Areas.");
+  VLOG(1) << "Reading Message Areas.";
   if (!read_subs()) {
     AbortBBS();
   }
 
-  XINIT_PRINTF("Reading File Areas.");
+  VLOG(1) << "Reading File Areas.";
   if (!read_dirs()) {
     AbortBBS();
   }
 
-  XINIT_PRINTF("Reading Chains.");
+  VLOG(1) << "Reading Chains.";
   read_chains();
 
-  XINIT_PRINTF("Reading File Transfer Protocols.");
+  VLOG(1) << "Reading File Transfer Protocols.";
   read_nextern();
   read_nintern();
 
-  XINIT_PRINTF("Reading File Archivers.");
+  VLOG(1) << "Reading File Archivers.";
   read_arcs();
   SaveConfig();
 
-  XINIT_PRINTF("Reading Full Screen Message Editors.");
+  VLOG(1) << "Reading Full Screen Message Editors.";
   read_editors();
 
   if (!File::mkdirs(m_attachmentDirectory)) {
@@ -873,7 +871,7 @@ void WSession::InitializeBBS() {
   check_phonenum(); // dupphone addition
   batch().clear();
 
-  XINIT_PRINTF("Reading User Information.");
+  VLOG(1) << "Reading User Information.";
   ReadCurrentUser(1);
   statusMgr->RefreshStatusCache();
   topdata = LocalIO::topdataUser;
@@ -886,14 +884,14 @@ void WSession::InitializeBBS() {
   // SET BBS environment variable.
   set_environment_variable("BBS", wwiv_version);
 
-  XINIT_PRINTF("Reading External Events.");
+  VLOG(1) << "Reading External Events.";
   init_events();
   last_time = time_event - timer();
   if (last_time < 0.0) {
     last_time += SECONDS_PER_DAY;
   }
 
-  XINIT_PRINTF("Allocating Memory for Message/File Areas.");
+  VLOG(1) << "Allocating Memory for Message/File Areas.";
   do_event = 0;
   usub.resize(syscfg.max_subs);
   udir.resize(syscfg.max_dirs);
@@ -925,7 +923,7 @@ void WSession::InitializeBBS() {
   }
   subconfnum = dirconfnum = 0;
 
-  XINIT_PRINTF("Reading Conferences.");
+  VLOG(1) << "Reading Conferences.";
   read_all_conferences();
 
   if (!user_already_on_) {
@@ -942,7 +940,7 @@ void WSession::InitializeBBS() {
   srand(static_cast<unsigned int>(time(nullptr)));
   catsl();
 
-  XINIT_PRINTF("Saving Instance information.");
+  VLOG(1) << "Saving Instance information.";
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
 }
 
