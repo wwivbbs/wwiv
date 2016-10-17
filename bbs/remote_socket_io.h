@@ -20,6 +20,7 @@
 #define __INCLUDED_BBS_REMOTE_SOCKET_IO_H__
 
 #include "bbs/remote_io.h"
+#include "core/net.h"
 
 #include <atomic>
 #include <cstdint>
@@ -34,7 +35,6 @@
 
 typedef int HANDLE;
 typedef int SOCKET;
-constexpr int INVALID_SOCKET = -1;
 #endif // _WIN32
 
 class RemoteSocketIO : public RemoteIO {

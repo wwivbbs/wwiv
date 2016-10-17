@@ -26,13 +26,13 @@
 #include <stdexcept>
 #include <string>
 
+#include "core/net.h"
 #include "networkb/connection.h"
 
 #ifdef _WIN32
 #include <WinSock2.h>
 
 #else  // _WIN32
-#define SOCKET int
 #endif  // _WIN32
 
 namespace wwiv {
