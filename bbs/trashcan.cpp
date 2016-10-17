@@ -21,51 +21,14 @@
 #include <algorithm>
 #include <chrono>
 #include <string>
-
-#include "bbs/asv.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsovl1.h"
-#include "bbs/bbsovl2.h"
-#include "bbs/bbsovl3.h"
-#include "bbs/bbsutl1.h"
-#include "bbs/bbsutl2.h"
-#include "bbs/com.h"
-#include "bbs/confutil.h"
-#include "bbs/defaults.h"
-#include "bbs/dupphone.h"
-#include "bbs/colors.h"
-#include "bbs/defaults.h"
-#include "bbs/email.h"
-#include "bbs/execexternal.h"
-#include "bbs/fcns.h"
-#include "bbs/finduser.h"
-#include "bbs/datetime.h"
-#include "bbs/dropfile.h"
-#include "bbs/message_file.h"
-#include "bbs/mmkey.h"
-#include "bbs/inmsg.h"
-#include "bbs/inetmsg.h"
-#include "bbs/input.h"
-#include "bbs/listplus.h"
-#include "bbs/printfile.h"
-#include "bbs/stuffin.h"
-#include "bbs/uedit.h"
-#include "bbs/vars.h"
-#include "bbs/wconstants.h"
-#include "bbs/workspace.h"
-#include "sdk/status.h"
 #include "core/inifile.h"
-#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
-using std::chrono::milliseconds;
 using std::string;
-using wwiv::bbs::InputMode;
 using namespace wwiv::core;
-using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -106,6 +69,10 @@ static bool Matches(string whole, string pattern) {
 
 bool Trashcan::IsTrashName(const std::string& rawname) {
   if (!file_.Exists()) {
+    return false;
+  }
+  // Gotta have a name to be in the trashcan.
+  if (rawname.empty()) {
     return false;
   }
   TextFile file(file_.full_pathname(), "rt");

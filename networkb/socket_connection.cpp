@@ -46,6 +46,7 @@
 #endif  // _WIN32
 
 #include "core/log.h"
+#include "core/net.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "networkb/socket_exceptions.h"
@@ -195,11 +196,10 @@ unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
 
-  sockaddr_in addr = {};
-  socklen_t nAddrSize = sizeof(sockaddr);
-  getpeername(socket, reinterpret_cast<sockaddr *>(&addr), &nAddrSize);
-  char s[255];
-  const string ip = inet_ntop(addr.sin_family, &addr.sin_addr, s, sizeof(s));
+  string ip;
+  if (!wwiv::core::GetRemotePeerAddress(socket, ip)) {
+    ip = "*UNKNOWN*";
+  }
   LOG(INFO) << "Received connection from: " << ip;
 
   return unique_ptr<SocketConnection>(new SocketConnection(socket, ip, port));
@@ -247,8 +247,10 @@ unique_ptr<SocketConnection> Accept(SOCKET sock, int port) {
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
 
-  char buf[255];
-  const string ip = inet_ntop(saddr.sin_family, &saddr.sin_addr, buf, sizeof(buf));
+  string ip;
+  if (!wwiv::core::GetRemotePeerAddress(s, ip)) {
+    ip = "*UNKNOWN*";
+  }
   LOG(INFO) << "Received connection from: " << ip;
 
   return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));

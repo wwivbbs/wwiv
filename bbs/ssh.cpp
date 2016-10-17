@@ -45,6 +45,7 @@ constexpr int SOCKET_ERROR = -1;
 #include "cryptlib.h"
 
 #include "core/log.h"
+#include "core/net.h"
 #include "core/os.h"
 
 using std::string;
@@ -416,15 +417,7 @@ bool IOSSH::ssh_initalize() {
 bool IOSSH::open() { 
   if (!initialized_) return false;  
   
-  // Set the peer address from the ssh socket.
-  sockaddr_in addr;
-  socklen_t nAddrSize = sizeof(sockaddr);
-
-  getpeername(ssh_socket_, reinterpret_cast<sockaddr *>(&addr), &nAddrSize);
-  char buf[255];
-  const string address = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
-  remote_info().address = address;
-
+  wwiv::core::GetRemotePeerAddress(ssh_socket_, remote_info().address);
   return io_->open(); 
 }
 

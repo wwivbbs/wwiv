@@ -352,7 +352,9 @@ static void CheckCallRestrictions() {
 }
 
 void getuser() {
-  bout << "Client Address: " << session()->remoteIO()->remote_info().address << wwiv::endl;
+  const auto& ip = session()->remoteIO()->remote_info().address;
+  const auto& hostname = session()->remoteIO()->remote_info().address_name;
+  bout << "Client Address: " << hostname << " (" << ip << ")" << wwiv::endl;
   bout.nl();
   write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
 

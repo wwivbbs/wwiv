@@ -45,6 +45,7 @@ constexpr int SOCKET_ERROR = -1;
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/wwivport.h"
@@ -61,6 +62,7 @@ using std::unique_ptr;
 using wwiv::core::ScopeExit;
 using wwiv::os::sleep_for;
 using wwiv::os::yield;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 struct socket_error: public std::runtime_error {
@@ -120,14 +122,8 @@ bool RemoteSocketIO::open() {
   }
   StartThreads();
 
-  sockaddr_in addr;
-  socklen_t nAddrSize = sizeof(sockaddr);
-
-  getpeername(socket_, reinterpret_cast<sockaddr *>(&addr), &nAddrSize);
-
-  char buf[255];
-  const string address = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
-  remote_info().address = address;
+  GetRemotePeerAddress(socket_, remote_info().address);
+  GetRemotePeerHostname(socket_, remote_info().address_name);
   if (telnet_) {
     { 
       unsigned char s[3] = {

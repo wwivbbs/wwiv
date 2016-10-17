@@ -12,6 +12,7 @@ set(COMMON_SOURCES
   inifile.cpp
   log.cpp
   md5.cpp
+  net.cpp
   os.cpp
   os_unix.cpp
   strings.cpp
