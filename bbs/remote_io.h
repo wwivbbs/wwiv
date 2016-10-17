@@ -34,11 +34,13 @@ class RemoteInfo {
 public:
   void clear() {
     address.clear();
+    address_name.clear();
     username.clear();
     password.clear();
   }
 
   std::string address;
+  std::string address_name;
   std::string username;
   std::string password;
 };

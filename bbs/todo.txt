@@ -3,6 +3,8 @@
                  Copyright 2002-2016 WWIV Software Services
 ==============================================================================
 
+* make core/net.h.  Add code to get remote peer and also call getnameinfo there.
+  since we're calling inet_ntop in 4 places now.
 * move File to namespace wwiv::core
 * make all places where we open wwiv.ini respect node settings in the bbs.
 * get rid of more char[] variables from vars.h, move to wsession as strings.
