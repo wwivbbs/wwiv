@@ -31,7 +31,7 @@
 #include "bbs/output.h"
 #include "sdk/subxtr.h"
 #include "bbs/local_io.h"
-#include "core/inifile.h"
+//#include "core/inifile.h"
 #include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
@@ -78,6 +78,11 @@ struct tagrec_t {
 
 extern Output bout;
 
+namespace wwiv {
+namespace core {
+  class IniFile;
+}
+}
 ///////////////////////////////////////////////////////////////////////////////
 // Per-user session data
 //
@@ -110,9 +115,6 @@ public:
 
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle, CommunicationType type);
-
-  bool IsLastKeyLocal() const { return last_key_local_; }
-  void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
   bool ReadCurrentUser() { return ReadCurrentUser(usernum); }
   bool ReadCurrentUser(int user_number);
@@ -432,7 +434,6 @@ private:
   std::string m_attachmentDirectory;
   WApplication* application_;
   wwiv::sdk::User thisuser_;
-  bool last_key_local_ = true;
   int effective_sl_ = 0;
   std::unique_ptr<RemoteIO> comm_;
   std::unique_ptr<LocalIO> local_io_;

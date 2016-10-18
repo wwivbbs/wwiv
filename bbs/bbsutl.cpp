@@ -99,7 +99,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
   do {
     ch = bout.getkey();
     if (bTwoColorChatMode) {
-      bout.Color(session()->IsLastKeyLocal() ? 1 : 0);
+      bout.Color(bout.IsLastKeyLocal() ? 1 : 0);
     }
     if (cm) {
       if (chatting == 0) {

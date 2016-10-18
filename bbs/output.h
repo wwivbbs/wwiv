@@ -117,12 +117,16 @@ class Output : public std::ostream {
   void dump();
   void clear_endofline() { endofline_.clear(); }
   int wherex();
+  bool IsLastKeyLocal() const { return last_key_local_; }
+  void SetLastKeyLocal(bool b) { last_key_local_ = b; }
+
 
 private:
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
   std::string endofline_;
   int x_ = 0;
+  bool last_key_local_ = true;
 
   void execute_ansi();
 

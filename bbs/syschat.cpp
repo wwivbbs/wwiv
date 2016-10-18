@@ -194,7 +194,7 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) 
   unsigned char ch = 0;
   do {
     ch = bout.getkey();
-    if (session()->IsLastKeyLocal()) {
+    if (bout.IsLastKeyLocal()) {
       if (session()->localIO()->WhereY() == 11) {
         bout << "\x1b[12;1H";
         for (size_t screencount = 0; screencount < session()->user()->GetScreenChars(); screencount++) {

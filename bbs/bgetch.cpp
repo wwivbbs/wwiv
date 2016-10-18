@@ -214,7 +214,7 @@ char bgetch() {
   }
   if (session()->localIO()->KeyPressed()) {
     ch = session()->localIO()->GetChar();
-    session()->SetLastKeyLocal(true);
+    bout.SetLastKeyLocal(true);
     if (!(g_flags & g_flag_allow_extended)) {
       if (!ch) {
         ch = session()->localIO()->GetChar();
@@ -225,7 +225,7 @@ char bgetch() {
     lastchar_pressed();
   } else if (incom && bkbhitraw()) {
     ch = bgetchraw();
-    session()->SetLastKeyLocal(false);
+    bout.SetLastKeyLocal(false);
   }
 
   if (!(g_flags & g_flag_allow_extended)) {

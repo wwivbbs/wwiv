@@ -216,12 +216,12 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
 }
 
 bool IsPhoneRequired() {
-  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
-  if (iniFile.IsOpen()) {
-    if (iniFile.value<bool>("NEWUSER_MIN")) {
+  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
+  if (ini.IsOpen()) {
+    if (ini.value<bool>("NEWUSER_MIN")) {
       return false;
     }
-    if (!iniFile.value<bool>("LOGON_PHONE")) {
+    if (!ini.value<bool>("LOGON_PHONE")) {
       return false;
     }
   }
