@@ -35,6 +35,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/misccmd.h"
 #include "bbs/newuser.h"
+#include "bbs/smallrecord.h"
 #include "bbs/printfile.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"

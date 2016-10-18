@@ -54,6 +54,7 @@
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/stuffin.h"
+#include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "bbs/wwivcolors.h"
 #include "core/file.h"

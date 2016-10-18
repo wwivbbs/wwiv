@@ -36,6 +36,7 @@
 #include "bbs/msgbase1.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
+#include "bbs/sysoplog.h"
 #include "bbs/read_message.h"
 #include "bbs/wconstants.h"
 #include "bbs/keycodes.h"

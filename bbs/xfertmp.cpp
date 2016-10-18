@@ -33,6 +33,7 @@
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
+#include "bbs/sysoplog.h"
 #include "core/wfndfile.h"
 #include "bbs/printfile.h"
 #include "bbs/xfer_common.h"

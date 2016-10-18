@@ -38,6 +38,7 @@
 #include "bbs/read_message.h"
 #include "sdk/subxtr.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
 #include "bbs/pause.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"

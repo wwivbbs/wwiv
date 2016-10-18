@@ -27,6 +27,7 @@
 #include "bbs/bbs.h"
 #include "bbs/dirlist.h"
 #include "bbs/fcns.h"
+#include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h"

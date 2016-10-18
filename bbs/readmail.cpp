@@ -43,6 +43,7 @@
 #include "bbs/read_message.h"
 #include "bbs/wconstants.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
 #include "sdk/status.h"
 #include "bbs/workspace.h"

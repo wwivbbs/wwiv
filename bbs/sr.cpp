@@ -35,6 +35,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
 #include "bbs/srsend.h"
+#include "bbs/sysoplog.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
 

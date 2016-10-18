@@ -57,6 +57,7 @@
 #include "bbs/newuser.h"
 #include "bbs/quote.h"
 #include "bbs/pause.h"
+#include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
 #include "bbs/valscan.h"
 #include "bbs/vote.h"

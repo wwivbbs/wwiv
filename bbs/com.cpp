@@ -28,6 +28,7 @@
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/fcns.h"
+#include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"

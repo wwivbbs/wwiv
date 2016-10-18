@@ -41,6 +41,7 @@
 #include "bbs/printfile.h"
 #include "bbs/read_message.h"
 #include "bbs/stuffin.h"
+#include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h"

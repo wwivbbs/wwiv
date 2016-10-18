@@ -43,6 +43,7 @@
 #include "bbs/netsup.h"
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
 #include "bbs/stuffin.h"
 #include "bbs/remote_io.h"
 #include "bbs/trashcan.h"
@@ -348,6 +349,36 @@ static void CheckCallRestrictions() {
     bout.nl();
     bout << "|#6Sorry, you can only logon once per day.\r\n";
     hangup = true;
+  }
+}
+
+static void logon_guest() {
+  session()->SetUserOnline(true);
+  bout.nl(2);
+  input_ansistat();
+
+  printfile(GUEST_NOEXT);
+  pausescr();
+
+  string userName, reason;
+  int count = 0;
+  do {
+    bout << "\r\n|#5Enter your real name : ";
+    userName = input(25, true);
+    bout << "\r\n|#5Purpose of your call?\r\n";
+    reason = input(79, true);
+    if (!userName.empty() && !reason.empty()) {
+      break;
+    }
+    count++;
+  } while (!hangup && count < 3);
+
+  if (count >= 3) {
+    printfile(REJECT_NOEXT);
+    ssm(1, 0) << "Guest Account failed to enter name and purpose";
+    hangup = true;
+  } else {
+    ssm(1, 0) << "Guest Account accessed by " << userName << " on " << times() << " for" << reason;
   }
 }
 
@@ -1080,35 +1111,5 @@ void logoff() {
     }
   }
   session()->batch().clear();
-}
-
-void logon_guest() {
-  session()->SetUserOnline(true);
-  bout.nl(2);
-  input_ansistat();
-
-  printfile(GUEST_NOEXT);
-  pausescr();
-
-  string userName, reason;
-  int count = 0;
-  do {
-    bout << "\r\n|#5Enter your real name : ";
-    userName = input(25, true);
-    bout << "\r\n|#5Purpose of your call?\r\n";
-    reason = input(79, true);
-    if (!userName.empty() && !reason.empty()) {
-      break;
-    }
-    count++;
-  } while (!hangup && count < 3);
-
-  if (count >= 3) {
-    printfile(REJECT_NOEXT);
-    ssm(1, 0) << "Guest Account failed to enter name and purpose";
-    hangup = true;
-  } else {
-    ssm(1, 0) << "Guest Account accessed by " << userName << " on " << times() << " for" << reason;
-  }
 }
 

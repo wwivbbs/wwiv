@@ -26,6 +26,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
+#include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "core/datafile.h"
 #include "core/stl.h"

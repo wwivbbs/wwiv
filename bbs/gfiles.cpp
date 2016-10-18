@@ -26,6 +26,7 @@
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

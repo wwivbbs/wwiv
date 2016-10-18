@@ -48,6 +48,7 @@
 #include "bbs/input.h"
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
+#include "bbs/lilo.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
 #include "bbs/null_local_io.h"

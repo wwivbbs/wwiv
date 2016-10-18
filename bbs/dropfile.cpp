@@ -28,6 +28,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/vars.h"
 #include "bbs/remote_io.h"
+#include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
 #include "core/strings.h"

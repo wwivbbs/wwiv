@@ -27,6 +27,7 @@
 #include "bbs/vars.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
+#include "bbs/sysoplog.h"
 #include "bbs/message_file.h"
 #include "bbs/printfile.h"
 #include "bbs/wconstants.h"

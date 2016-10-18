@@ -36,6 +36,7 @@
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"

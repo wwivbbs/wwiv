@@ -40,17 +40,6 @@ void modify_sec(int n);
 void gfileedit();
 bool fill_sec(int sn);
 
-// File: hop.cpp
-void HopSub();
-void HopDir();
-
-// File: lilo.cpp
-bool IsPhoneNumberUSAFormat(wwiv::sdk::User* pUser);
-void getuser();
-void logon();
-void logoff();
-void logon_guest();
-
 // File: memory.cpp
 void *BbsAllocA(size_t lNumBytes);
 
@@ -74,10 +63,6 @@ int  check_new_mail(int user_number);
 
 // File: showfiles.cpp
 void show_files(const char *file_name, const char *pszDirectoryName);
-
-// File: SmallRecord.cpp
-void InsertSmallRecord(int user_number, const char *name);
-void DeleteSmallRecord(const char *name);
 
 // File: sr.cpp
 #include "bbs/sr.h"
@@ -110,8 +95,6 @@ void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name);
 void chat1(const char *chat_line, bool two_way);
 
 
-// File: sysoplog.cpp
-#include "sysoplog.h"
 // File: sysopf.cpp
 #include "bbs/sysopf.h"
 

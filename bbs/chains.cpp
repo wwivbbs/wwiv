@@ -35,6 +35,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
+#include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "core/datafile.h"
 #include "core/strings.h"

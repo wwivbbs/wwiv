@@ -25,6 +25,7 @@
 #include "bbs/fcns.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/sysoplog.h"
 #include "bbs/keycodes.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"

@@ -29,6 +29,7 @@
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"

@@ -32,6 +32,7 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
+#include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/textfile.h"

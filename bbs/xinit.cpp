@@ -40,6 +40,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
+#include "bbs/sysoplog.h"
 #include "bbs/pause.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"

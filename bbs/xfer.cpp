@@ -34,6 +34,7 @@
 #include "bbs/input.h"
 #include "bbs/listplus.h"
 #include "bbs/stuffin.h"
+#include "bbs/sysoplog.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"

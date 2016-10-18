@@ -15,19 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_DEFAULTS_H__
-#define __INCLUDED_BBS_DEFAULTS_H__
+#ifndef __INCLUDED_BBS_HOP_H__
+#define __INCLUDED_BBS_HOP_H__
 
-#include <string>
+void HopSub();
+void HopDir();
 
-#include "bbs/menu.h"
-
-void select_editor();
-const std::string DescribeColorCode(int nColorCode);
-void color_list();
-void config_qscan();
-void enter_regnum();
-void defaults(wwiv::menus::MenuInstanceData * MenuData);
-void config_scan_plus(int type);
-
-#endif  // __INCLUDED_BBS_DEFAULTS_H__
+#endif  // __INCLUDED_BBS_HOP_H__

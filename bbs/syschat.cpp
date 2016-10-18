@@ -30,6 +30,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
+#include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "core/os.h"
 #include "core/strings.h"

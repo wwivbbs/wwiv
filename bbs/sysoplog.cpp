@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/sysoplog.h"
+
 #include <cstdarg>
 #include <cstddef>
 #include <string>

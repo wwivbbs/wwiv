@@ -19,6 +19,7 @@
 #define __INCLUDED_SYSOPLOG_H__
 
 #include <string>
+#include <sstream>
 
 std::string GetSysopLogFileName(const std::string& date);
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);

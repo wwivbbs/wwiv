@@ -41,6 +41,7 @@
 #include "bbs/msgbase1.h"
 #include "bbs/newuser.h"
 #include "bbs/printfile.h"
+#include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "bbs/vars.h"
 #include "bbs/wwivcolors.h"

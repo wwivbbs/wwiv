@@ -34,6 +34,7 @@
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/read_message.h"
+#include "bbs/sysoplog.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/quote.h"
