@@ -31,15 +31,6 @@
 // File: bbsutl.cpp
 #include "bbs/bbsutl.h"
 
-// File: gfiles.cpp
-gfilerec *read_sec(int sn, int *nf);
-void gfiles();
-
-// File: gfledit.cpp
-void modify_sec(int n);
-void gfileedit();
-bool fill_sec(int sn);
-
 // File: memory.cpp
 void *BbsAllocA(size_t lNumBytes);
 
@@ -76,9 +67,6 @@ void zmodem_receive(const std::string& filename, bool *received);
 // File: subacc.cpp
 #include "bbs/subacc.h"
 
-// File: subedit.cpp
-void boardedit();
-
 // File: sublist.cpp
 void old_sublist();
 void SubList();
@@ -100,13 +88,11 @@ void chat1(const char *chat_line, bool two_way);
 
 // File: user.cpp
 bool okconf(wwiv::sdk::User *pUser);
-void add_ass(int num_points, const char *reason);
 
 // File: utility.cpp
 #include "utility.h"
 
 // File: wqscn.cpp
-bool open_qscn();
 void close_qscn();
 void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead = false);
 void write_qscn(int user_number, uint32_t* qscn, bool stay_open);

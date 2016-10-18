@@ -53,7 +53,7 @@ extern int bulk_move;
 extern bool ext_is_on;
 
 static void drawfile(int filepos, int filenum) {
-  lines_listed = 0;
+  bout.clear_lines_listed();
   bout.GotoXY(4, filepos + first_file_pos());
   bout.SystemColor(lp_config.current_file_color);
   bout.bprintf("%3d|#0", filenum);
@@ -61,7 +61,7 @@ static void drawfile(int filepos, int filenum) {
 }
 
 static void undrawfile(int filepos, int filenum) {
-  lines_listed = 0;
+  bout.clear_lines_listed();
   bout.GotoXY(4, filepos + first_file_pos());
   bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
 }
@@ -475,7 +475,7 @@ TOGGLE_EXTENDED:
                     done = true;
                     amount = lines = matches = 0;
                     all_done = true;
-                    lines_listed = 0;
+                    bout.clear_lines_listed();
                     break;
                   case 10:
                     bout.cls();

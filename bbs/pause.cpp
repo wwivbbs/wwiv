@@ -116,7 +116,7 @@ void pausescr() {
 
     time(&tstart);
 
-    lines_listed = 0;
+    bout.clear_lines_listed();
     warned = 0;
     do {
       while (!bkbhit() && !hangup) {

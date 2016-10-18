@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/gfileedit.h"
+
 #include <string>
 #include <vector>
 
@@ -25,6 +27,7 @@
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/fcns.h"
+#include "bbs/gfiles.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "sdk/status.h"

@@ -16,11 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/gfiles.h"
 #include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/fcns.h"
+#include "bbs/gfileedit.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"

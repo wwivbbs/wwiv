@@ -244,7 +244,7 @@ int listfiles_plus(int type) {
   bout.GotoXY(1, session()->user()->GetScreenLines() - 3);
   bout.nl(3);
 
-  lines_listed = 0;
+  bout.clear_lines_listed();
 
   if (type != LP_NSCAN_NSCAN) {
     tmp_disable_conf(false);
@@ -335,7 +335,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
 
   string file_information = StringPrintf("|%2d %c |%2d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
   int width = 7;
-  lines_listed = 0;
+  bout.clear_lines_listed();
 
   string buffer;
   if (session()->user()->data.lp_options & cfl_fname) {

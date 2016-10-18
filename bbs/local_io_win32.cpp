@@ -196,7 +196,7 @@ void Win32ConsoleIO::Cls() {
   FillConsoleOutputAttribute(out_, (WORD)7, dwConSize, coordScreen, &charsWriten);
   GotoXY(0, 0);
   // TODO(rushfan): We shouldn't be doing this here.
-  lines_listed = 0;
+  bout.clear_lines_listed();
 }
 
 void Win32ConsoleIO::Backspace() {

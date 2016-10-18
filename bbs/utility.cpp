@@ -126,7 +126,7 @@ void frequent_init() {
   local_echo = true;
   irt[0] = '\0';
   irt_name[0] = '\0';
-  lines_listed = 0;
+  bout.clear_lines_listed();
   session()->ReadCurrentUser(1);
   read_qscn(1, qsc, false);
   okmacro = true;

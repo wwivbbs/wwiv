@@ -444,7 +444,7 @@ void tag_it() {
     } else {
       bout << "|#6Bad file number " << i + 1 << wwiv::endl;
     }
-    lines_listed = 0;
+    bout.clear_lines_listed();
   }
 }
 
@@ -482,7 +482,7 @@ void tag_files(bool& need_title) {
   bool had = false;
   double d;
 
-  if (lines_listed == 0) {
+  if (bout.lines_listed() == 0) {
     return;
   }
   bool abort = false;
@@ -490,15 +490,15 @@ void tag_files(bool& need_title) {
   if (hangup) {
     return;
   }
-  lines_listed = 0;
+  bout.clear_lines_listed();
   bout.Color(FRAME_COLOR);
   bout << "\r" << std::string(78, '-') << wwiv::endl;
 
   bool done = false;
   while (!done && !hangup) {
-    lines_listed = 0;
+    bout.clear_lines_listed();
     ch = fancy_prompt("File Tagging", "CDEMQRTV?");
-    lines_listed = 0;
+    bout.clear_lines_listed();
     switch (ch) {
     case '?':
     {
@@ -509,7 +509,7 @@ void tag_files(bool& need_title) {
     case 'C':
     case SPACE:
     case RETURN:
-      lines_listed = 0;
+      bout.clear_lines_listed();
       session()->filelist.clear();
       need_title = true;
       bout.cls();
@@ -526,7 +526,7 @@ void tag_files(bool& need_title) {
       break;
     case 'E':
     {
-      lines_listed = 0;
+      bout.clear_lines_listed();
       bout << "|#9Which file (1-" << session()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
@@ -590,7 +590,7 @@ void tag_files(bool& need_title) {
       break;
     case 'Q':
       session()->filelist.clear();
-      lines_listed = 0;
+      bout.clear_lines_listed();
       need_title = false;
       done = true;
       return;
@@ -648,7 +648,7 @@ void tag_files(bool& need_title) {
     }
   }
   session()->filelist.clear();
-  lines_listed = 0;
+  bout.clear_lines_listed();
 }
 
 

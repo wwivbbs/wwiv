@@ -739,7 +739,7 @@ void relist() {
     return;
   }
   bout.cls();
-  lines_listed = 0;
+  bout.clear_lines_listed();
   if (session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
     bout.Color(FRAME_COLOR);
     bout << string(78, '-') << wwiv::endl;
@@ -833,7 +833,7 @@ void relist() {
   }
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
-  lines_listed = 0;
+  bout.clear_lines_listed();
 }
 
 /*
@@ -1231,7 +1231,7 @@ void finddescription() {
   count = 0;
   color = 3;
   bout << "\r|#2Searching ";
-  lines_listed = 0;
+  bout.clear_lines_listed();
   for (size_t i = 0; (i < session()->directories.size()) && !abort && !hangup
        && (session()->udir[i].subnum != -1); i++) {
     size_t i1 = session()->udir[i].subnum;
@@ -1272,7 +1272,7 @@ void finddescription() {
           fileDownload.Close();
 
           if (need_title) {
-            if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
+            if (bout.lines_listed() >= session()->screenlinest - 7 && !session()->filelist.empty()) {
               tag_files(need_title);
             }
             if (need_title) {

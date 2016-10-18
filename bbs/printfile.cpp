@@ -144,7 +144,7 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
       // If this is an ANSI file, then don't pause
       // (since we may be moving around
       // on the screen, unless the caller tells us to pause anyway)
-      lines_listed = 0;
+      bout.clear_lines_listed();
     }
     bout.bputch(ss[lCurPos++], true);
     if (bAbortable) {

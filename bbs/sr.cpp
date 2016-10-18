@@ -569,7 +569,6 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
   if (!*sent && !ok) {
     if (percent == 1.0) {
       *sent = true;
-      add_ass(10, "Aborted on last block");
     } else {
       sysoplog() << StringPrintf("Tried D/L \"%s\" %3.2f%%", stripfn(file_name), percent * 100.0);
     }

@@ -338,20 +338,20 @@ bool checka(bool *abort, bool *next) {
     char ch = bgetch();
     switch (ch) {
     case CN:
-      lines_listed = 0;
+      bout.clear_lines_listed();
       *next = true;
     case CC:
     case SPACE:
     case CX:
     case 'Q':
     case 'q':
-      lines_listed = 0;
+      bout.clear_lines_listed();
       *abort = true;
       break;
     case 'P':
     case 'p':
     case CS:
-      lines_listed = 0;
+      bout.clear_lines_listed();
       ch = bout.getkey();
       break;
     }

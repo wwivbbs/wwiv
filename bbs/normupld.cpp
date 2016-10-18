@@ -159,7 +159,8 @@ void normalupload(int dn) {
         bout << "upload other programs.  If you have\r\ntrouble with this policy, please contact\r\n";
         bout << "the sysop.\r\n\n";
         const string message = StringPrintf("Wanted to upload \"%s\"", u.filename);
-        add_ass(5, message.c_str());
+        sysoplog() << "*** ASS-PTS: " << 5 << ", Reason: [" << message << "]";
+        session()->user()->IncrementAssPoints(5);
         ok = 0;
       } else {
         u.mask = mask_PD;

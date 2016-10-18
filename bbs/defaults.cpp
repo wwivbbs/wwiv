@@ -865,7 +865,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
   bool bUseConf = (subconfnum > 1 && okconf(session()->user())) ? true : false;
 
   bout.cls();
-  lines_listed = 0;
+  bout.clear_lines_listed();
 
   if (bUseConf) {
     strncpy(s, type == 0 ? stripcolors(reinterpret_cast<char*>
@@ -887,7 +887,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
   if (type == 0) {
     for (size_t this_sub = first; (this_sub < session()->subs().subs().size()) && (session()->usub[this_sub].subnum != -1) &&
          *amount < max_lines * 2; this_sub++) {
-      lines_listed = 0;
+      bout.clear_lines_listed();
       sprintf(s, "|#7[|#1%c|#7] |#9%s",
               (qsc_q[session()->usub[this_sub].subnum / 32] & (1L << (session()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
               session()->subs().sub(session()->usub[this_sub].subnum).name.c_str());
@@ -904,7 +904,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
   } else {
     for (size_t this_dir = first; (this_dir < session()->directories.size()) && (session()->udir[this_dir].subnum != -1) &&
          *amount < max_lines * 2; this_dir++) {
-      lines_listed = 0;
+      bout.clear_lines_listed();
       int alias_dir = session()->udir[this_dir].subnum;
       sprintf(s, "|#7[|#1%c|#7] |#2%s", qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE' : ' ',
         session()->directories[alias_dir].name);
@@ -920,7 +920,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
     }
   }
   bout.nl();
-  lines_listed = 0;
+  bout.clear_lines_listed();
 }
 
 static void drawscan(int filepos, long tagged) {
@@ -1018,7 +1018,7 @@ void config_scan_plus(int type) {
                           session()->user()->GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
                           MAX_SCREEN_LINES_TO_SHOW - STOP_LIST :
                           session()->user()->GetScreenLines() - STOP_LIST, &smc);
-      lines_listed = 0;
+      bout.clear_lines_listed();
       redraw = true;
       bout.Color(0);
       if (do_sysop_command(command)) {
@@ -1255,6 +1255,6 @@ void config_scan_plus(int type) {
       }
     }
   }
-  lines_listed = 0;
+  bout.clear_lines_listed();
   bout.nl();
 }

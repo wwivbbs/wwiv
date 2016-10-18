@@ -45,6 +45,8 @@
 #include "bbs/events.h"
 #include "bbs/external_edit.h"
 #include "bbs/fcns.h"
+#include "bbs/gfileedit.h"
+#include "bbs/gfiles.h"
 #include "bbs/input.h"
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
@@ -63,6 +65,7 @@
 #include "bbs/utility.h"
 #include "bbs/voteedit.h"
 #include "bbs/remote_io.h"
+#include "bbs/subedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/wsession.h"
@@ -198,20 +201,20 @@ void WSession::tleft(bool check_for_timeout) {
   int cc = curatr;
   curatr = localIO()->GetTopScreenColor();
   localIO()->SetTopLine(0);
-  int nLineNumber = (chatcall && (topdata == LocalIO::topdataUser)) ? 5 : 4;
+  int line_number = (chatcall && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
   if (topdata) {
-    localIO()->PutsXY(1, nLineNumber, GetCurrentSpeed());
+    localIO()->PutsXY(1, line_number, GetCurrentSpeed());
     for (int i = localIO()->WhereX(); i < 23; i++) {
       localIO()->Putch(static_cast<unsigned char>('\xCD'));
     }
 
     if (temp_sysop) {
-      localIO()->PutsXY(23, nLineNumber, "Temp Sysop");
+      localIO()->PutsXY(23, line_number, "Temp Sysop");
     }
 
     if (sysop_available) {
-      localIO()->PutsXY(64, nLineNumber, "Available");
+      localIO()->PutsXY(64, line_number, "Available");
     }
   }
 
@@ -390,7 +393,7 @@ void WSession::UpdateTopScreen() {
   char i;
   char sl[82], ar[17], dar[17], restrict[17], rst[17], lo[90];
 
-  int lll = lines_listed;
+  int lll = bout.lines_listed();
 
   if (so() && !incom) {
     topdata = LocalIO::topdataNone;
@@ -528,7 +531,7 @@ void WSession::UpdateTopScreen() {
   curatr = cc;
   tleft(false);
 
-  lines_listed = lll;
+  bout.lines_listed_ = lll;
 }
 
 void WSession::ClearTopScreenProtection() {

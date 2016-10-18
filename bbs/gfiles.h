@@ -14,25 +14,13 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_BBS_GFILES_H__
+#define __INCLUDED_BBS_GFILES_H__
 
-#include "bbs/bbs.h"
-#include "bbs/sysoplog.h"
-#include "bbs/vars.h"
-#include "sdk/user.h"
-#include "bbs/wsession.h"
+#include "sdk/vardec.h"
 
-using namespace wwiv::sdk;
+gfilerec *read_sec(int sn, int *nf);
+void gfiles();
 
-/*
-* Checks status of given userrec to see if conferencing is turned on.
-*/
-bool okconf(User *pUser) {
-  if (g_flags & g_flag_disable_conf) {
-    return false;
-  }
-
-  return pUser->HasStatusFlag(User::conference);
-}
-
+#endif  // __INCLUDED_BBS_GFILES_H__

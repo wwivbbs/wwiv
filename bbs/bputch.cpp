@@ -120,7 +120,7 @@ void Output::execute_ansi() {
       break;
     case 'J':
       if (args[0] == 2) {
-        lines_listed = 0;
+        bout.clear_lines_listed();
         g_flags |= g_flag_ansi_movement;
         local_io_->Cls();
         x_ = 0;
@@ -304,13 +304,13 @@ int Output::bputch(char c, bool use_buffer) {
       if (c == SOFTRETURN) {
         current_line_.clear();
         x_ = 0;
-        ++lines_listed;
+        bout.lines_listed_++;
         // change Build3 + 5.0 to fix message read.
-        if (lines_listed >= (session()->screenlinest - 1)) {
+        if (bout.lines_listed() >= (session()->screenlinest - 1)) {
           if (session()->user()->HasPause()) {
             pausescr();
           }
-          lines_listed = 0;   // change Build3
+          bout.clear_lines_listed();   // change Build3
         }
       }
     } else {

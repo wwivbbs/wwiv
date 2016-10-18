@@ -375,7 +375,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     bout << "|#1< " << session()->current_sub().name << " Q-Scan Done >";
     bout.clreol();
     bout.nl();
-    lines_listed = 0;
+    bout.clear_lines_listed();
     bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[4A";
@@ -385,7 +385,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
       << " " << session()->usub[nBeginSubNumber].keys;
     bout.clreol();
     bout.nl();
-    lines_listed = 0;
+    bout.clear_lines_listed();
     bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[3A";
@@ -420,7 +420,7 @@ void nscan(int nStartingSubNum) {
   if (nNextSubNumber && session()->user()->IsNewScanFiles() &&
       (syscfg.sysconfig & sysconfig_no_xfer) == 0 &&
       (!(g_flags & g_flag_scanned_files))) {
-    lines_listed = 0;
+    bout.clear_lines_listed();
     tmp_disable_conf(true);
     nscanall();
     tmp_disable_conf(false);

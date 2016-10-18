@@ -298,7 +298,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   ExecuteExternalProgram(cmdLine, flags);
   
   // After launched FSED
-  lines_listed = 0;
+  bout.clear_lines_listed();
   File::set_current_directory(new_directory);
 
   bool bModifiedOrExists = false;

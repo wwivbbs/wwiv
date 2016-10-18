@@ -242,9 +242,9 @@ void SubList() {
         }
         size_t lastp = i1++;
         bout.nl();
-        if (lines_listed >= session()->screenlinest - 2) {
+        if (bout.lines_listed() >= session()->screenlinest - 2) {
           p = 1;
-          lines_listed = 0;
+          bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
           const char* ss = mmkey(0, true);

@@ -68,7 +68,7 @@ void valscan() {
     bout.Color(2);
     bout.clreol();
     bout << "{{ ValScanning " << session()->current_sub().name << " }}\r\n";
-    lines_listed = 0;
+    bout.clear_lines_listed();
     bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[2A";

@@ -56,9 +56,6 @@ defscreenbottom,
 do_event,
 equote;
 
-__EXTRN__ unsigned int
-lines_listed;
-
 __EXTRN__ bool  bChatLine,
           newline,
           forcescansub,

@@ -312,7 +312,7 @@ char Output::getkey() {
   long tv1 = tv - 1092L;     // change 4.31 Build3
 
                              // Since were waitig for a key, reset the # of lines we've displayed since a pause.
-  lines_listed = 0;
+  bout.clear_lines_listed();
   char ch = 0;
   do {
     while (!bkbhit() && !hangup) {

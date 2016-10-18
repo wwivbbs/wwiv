@@ -158,7 +158,7 @@ void display_message_text(const std::string& text, bool *next) {
           }
           if (g_flags & g_flag_ansi_movement) {
             g_flags &= ~g_flag_ansi_movement;
-            lines_listed = 0;
+            bout.clear_lines_listed();
             if (session()->localIO()->GetTopLine() && session()->localIO()->GetScreenBottom() == 24) {
               session()->ClearTopScreenProtection();
             }

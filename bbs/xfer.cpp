@@ -709,7 +709,7 @@ void listfiles() {
   dliscan();
   string filemask = file_mask();
   bool need_title = true;
-  lines_listed = 0;
+  bout.clear_lines_listed();
 
   File fileDownload(session()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeReadOnly);
@@ -729,10 +729,10 @@ void listfiles() {
       printinfo(&u, &abort);
 
       // Moved to here from bputch.cpp
-      if (lines_listed >= session()->screenlinest - 3) {
+      if (bout.lines_listed() >= session()->screenlinest - 3) {
         if (!session()->filelist.empty()) {
           tag_files(need_title);
-          lines_listed = 0;
+          bout.clear_lines_listed();
         }
       }
 
@@ -766,7 +766,7 @@ void nscandir(int nDirNum, bool& need_title, bool *abort) {
         fileDownload.Close();
 
         if (need_title) {
-          if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
+          if (bout.lines_listed() >= session()->screenlinest - 7 && !session()->filelist.empty()) {
             tag_files(need_title);
           }
           if (need_title) {
@@ -861,7 +861,7 @@ void searchall() {
   string filemask = file_mask();
   bout.nl();
   bout << "|#2Searching ";
-  lines_listed = 0;
+  bout.clear_lines_listed();
   int count = 0;
   int color = 3;
   for (size_t i = 0; i < session()->directories.size() && !abort && !hangup
@@ -899,7 +899,7 @@ void searchall() {
         if (compare(filemask.c_str(), u.filename)) {
           fileDownload.Close();
           if (need_title) {
-            if (lines_listed >= session()->screenlinest - 7 && !session()->filelist.empty()) {
+            if (bout.lines_listed() >= session()->screenlinest - 7 && !session()->filelist.empty()) {
               tag_files(need_title);
             }
             if (need_title) {

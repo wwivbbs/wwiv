@@ -116,10 +116,14 @@ class Output : public std::ostream {
   SavedLine SaveCurrentLine();
   void dump();
   void clear_endofline() { endofline_.clear(); }
+  void clear_lines_listed() { lines_listed_ = 0; }
+  unsigned int lines_listed() const { return lines_listed_; }
   int wherex();
   bool IsLastKeyLocal() const { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
+public:
+  unsigned int lines_listed_;
 
 private:
   std::string bputch_buffer_;

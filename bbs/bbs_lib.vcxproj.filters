@@ -112,9 +112,6 @@
     <ClCompile Include="gfiles.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gfledit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="hop.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -370,6 +367,7 @@
     <ClCompile Include="trashcan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="gfileedit.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -673,6 +671,48 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="trashcan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="diredit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dirlist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="dupphone.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="execexternal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="finduser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gfileedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="gfiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hop.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lilo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="local_io_unix_console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="lpfunc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="misccmd.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="smallrecord.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xferovl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
