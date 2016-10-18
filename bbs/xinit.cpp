@@ -261,18 +261,13 @@ void WSession::ReadINIFile(IniFile& ini) {
     newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
   }
 
-  SetChatNameSelectionColor(95);
-  SetMessageColor(2);
+  chatname_color_ = 95;
+  message_color_ = 2;
   max_batch = 50;
   max_extend_lines = 10;
   max_chains = 50;
   max_gfilesec = 32;
   mail_who_field_len = 35;
-  SetBeginDayNodeNumber(1);
-  SetUseInternalZmodem(true);
-  SetExecChildProcessWaitTime(500);
-  SetExecLogSyncFoss(true);
-  SetNewScanAtLogin(false);
 
   for (size_t nTempEventNum = 0; nTempEventNum < NEL(eventinfo); nTempEventNum++) {
     spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
@@ -328,8 +323,8 @@ void WSession::ReadINIFile(IniFile& ini) {
     get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
   localIO()->SetEditLineColor(ini.value<int>(
     get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
-  SetChatNameSelectionColor(ini.value<int>(
-    get_key_str(INI_STR_CHATSELCOLOR),GetChatNameSelectionColor()));
+  chatname_color_ = ini.value<int>(
+    get_key_str(INI_STR_CHATSELCOLOR),GetChatNameSelectionColor());
 
   // pull out sizing options
   max_batch = ini.value<uint16_t>(get_key_str(INI_STR_MAX_BATCH), max_batch);
@@ -345,21 +340,17 @@ void WSession::ReadINIFile(IniFile& ini) {
   ini_init_str(ini, INI_STR_TERMINAL_CMD, syscfg.terminal_command);
 
   m_nForcedReadSubNumber = ini.value<int>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), m_nForcedReadSubNumber);
-  m_bInternalZmodem = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), m_bInternalZmodem);
-  m_bNewScanAtLogin = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), m_bNewScanAtLogin);
-
-  m_bExecLogSyncFoss = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), m_bExecLogSyncFoss);
-  m_nExecChildProcessWaitTime = 
-      ini.value<int>(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), m_nExecChildProcessWaitTime);
-
-  SetBeginDayNodeNumber(ini.value<int>(get_key_str(INI_STR_BEGINDAYNODENUMBER), GetBeginDayNodeNumber()));
+  m_bInternalZmodem = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), true);
+  m_bNewScanAtLogin = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), true);
+  m_bExecLogSyncFoss = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), true);
+  m_nExecChildProcessWaitTime = ini.value<int>(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), 500);
+  m_nBeginDayNodeNumber = ini.value<int>(get_key_str(INI_STR_BEGINDAYNODENUMBER), 1);
 
   // pull out sysinfo_flags
-  SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags),
-                                    GetConfigFlags()));
+  SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags), GetConfigFlags()));
 
   // allow override of WSession::message_color_
-  SetMessageColor(ini.value<int>(get_key_str(INI_STR_MSG_COLOR), GetMessageColor()));
+  message_color_ = ini.value<int>(get_key_str(INI_STR_MSG_COLOR), GetMessageColor());
 
   // get asv values
   if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {

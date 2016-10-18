@@ -123,13 +123,11 @@ public:
 
   void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
-  unsigned int GetEffectiveSl() const { return effective_sl_; }
+  int GetEffectiveSl() const { return effective_sl_; }
 
   int  GetChatNameSelectionColor() const { return chatname_color_; }
-  void SetChatNameSelectionColor(int n) { chatname_color_ = n; }
 
   int  GetMessageColor() const { return message_color_; }
-  void SetMessageColor(int n) { message_color_ = n; }
 
   int  GetForcedReadSubNumber() const { return m_nForcedReadSubNumber; }
   void SetForcedReadSubNumber(int n) { m_nForcedReadSubNumber = n; }
@@ -142,11 +140,11 @@ public:
   const char* network_name() const;
   const std::string network_directory() const;
 
-  bool IsCarbonCopyEnabled() const { return m_bAllowCC; }
-  void SetCarbonCopyEnabled(bool b) { m_bAllowCC = b; }
+  bool IsCarbonCopyEnabled() const { return allow_cc_; }
+  void SetCarbonCopyEnabled(bool b) { allow_cc_ = b; }
 
-  bool IsUserOnline() const { return m_bUserOnline; }
-  void SetUserOnline(bool b) { m_bUserOnline = b; }
+  bool IsUserOnline() const { return user_online_; }
+  void SetUserOnline(bool b) { user_online_ = b; }
 
   int  language_number() const { return m_nCurrentLanguageNumber; }
   void set_language_number(int n) {
@@ -200,8 +198,7 @@ public:
   void SetCurrentConferenceFileArea(size_t n) { m_nCurrentConferenceFileArea = n; }
 
   bool IsUseInternalZmodem() const { return m_bInternalZmodem; }
-  void SetUseInternalZmodem(bool b) { m_bInternalZmodem = b; }
-
+  
   int  GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
   void SetNumMessagesInCurrentMessageArea(int n) { m_nNumMsgsInCurrentSub = n; }
 
@@ -212,8 +209,7 @@ public:
   void SetExecChildProcessWaitTime(int n) { m_nExecChildProcessWaitTime = n; }
 
   bool IsExecLogSyncFoss() const { return m_bExecLogSyncFoss; }
-  void SetExecLogSyncFoss(bool b) { m_bExecLogSyncFoss = b; }
-
+  
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
@@ -301,8 +297,8 @@ public:
   int message_color_ = 0;
 
   int m_nForcedReadSubNumber = 0;
-  bool m_bAllowCC = false;
-  bool m_bUserOnline = false;
+  bool allow_cc_ = false;
+  bool user_online_ = false;
   bool m_bQuoting = false;
   bool m_bTimeOnlineLimited = false;
 
@@ -317,8 +313,8 @@ public:
     m_nCurrentConferenceMessageArea = 0,
     m_nCurrentConferenceFileArea = 0,
     m_nNumMsgsInCurrentSub = 0,
-    m_nBeginDayNodeNumber = 0,
-    m_nExecChildProcessWaitTime = 0,
+    m_nBeginDayNodeNumber = 1,
+    m_nExecChildProcessWaitTime = 500,
     m_nMaxNumberMessageAreas = 0,
     m_nMaxNumberFileAreas = 0,
     m_nCurrentNetworkType = 0,
