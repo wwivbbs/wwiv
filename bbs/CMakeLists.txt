@@ -44,7 +44,7 @@ set(COMMON_SOURCES
  extract.cpp
  finduser.cpp
  gfiles.cpp
- gfiledit.cpp
+ gfileedit.cpp
  hop.cpp
  inetmsg.cpp
  inmsg.cpp
