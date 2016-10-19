@@ -4,7 +4,7 @@ echo "Workpace: %WORKSPACE%"
 echo "WWIV_TEST_TEMPDIR: %WWIV_TEST_TEMPDIR%"
 
 cd %WORKSPACE%
-msbuild WWIV.sln /t:Build /p:Configuration=Debug || exit /b
+msbuild WWIV.sln /t:Build /p:Configuration=Debug /p:Platform=Win32 || exit /b
 
 cd %WORKSPACE%\Debug
 del result.xml
