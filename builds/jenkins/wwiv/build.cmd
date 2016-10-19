@@ -39,7 +39,7 @@ echo:
 echo * Updating the Build Number in version.cpp
 cd %WORKSPACE%\core
 
-%SED% -i -e "s@.development@.%BUILD_NUMBER%@" core/version.cpp
+%SED% -i -e "s@.development@.%BUILD_NUMBER%@" version.cpp
 
 echo:
 echo * Building WWIV
