@@ -44,21 +44,21 @@ cd %WORKSPACE%\core
 echo:
 echo * Building WWIV
 cd %WORKSPACE%
-msbuild WWIV.sln /t:Build /p:Configuration=Release || exit /b
+msbuild WWIV.sln /t:Build /p:Configuration=Release /p:Platform=Win32|| exit /b
 
 @rem build WINS
 echo:
 echo * Building WINS
 cd %WORKSPACE%\wins
 
-msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild networkp\networkp.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild news\news.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release || exit /b
+msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild networkp\networkp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild news\news.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
 
 @rem build InfoZIP Zip/UnZip
@@ -66,8 +66,8 @@ echo:
 echo * Building INFOZIP (zip/unzip)
 cd %WORKSPACE%\deps\infozip
 
-msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release || exit /b
-msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release || exit /b
+msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
 cd %WORKSPACE%\
 if not exist %STAGE_DIR% (
