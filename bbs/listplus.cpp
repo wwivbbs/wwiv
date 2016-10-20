@@ -63,9 +63,6 @@ static constexpr int MAX_EXTENDED_SIZE = 1000;
 int bulk_move = 0;
 int bulk_dir = -1;
 bool ext_is_on = false;
-
-static int lc_lines_used;
-
 listplus_config lp_config;
 
 static char _on_[] = "ON!";
@@ -577,10 +574,7 @@ void show_fileinfo(uploadsrec * u) {
 }
 
 int check_lines_needed(uploadsrec * u) {
-  int elines = 0;
-  int max_extended;
 
-  lc_lines_used = lp_configured_lines();
   int max_lines = calc_max_lines();
   int num_extended = session()->user()->GetNumExtended();
 
@@ -592,8 +586,9 @@ int check_lines_needed(uploadsrec * u) {
     max_lines = num_extended;
   }
 
+  int elines = 0;
   if (session()->user()->data.lp_options & cfl_description) {
-    max_extended = session()->user()->GetNumExtended();
+    int max_extended = session()->user()->GetNumExtended();
 
     if (max_extended < lp_config.show_at_least_extended) {
       max_extended = lp_config.show_at_least_extended;
@@ -612,6 +607,7 @@ int check_lines_needed(uploadsrec * u) {
       }
     }
   }
+  const int lc_lines_used = lp_configured_lines();
   if (lc_lines_used + elines > max_lines) {
     return max_lines - 1;
   }
