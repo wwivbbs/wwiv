@@ -96,6 +96,9 @@ class LocalIO {
   int  GetEditLineColor() const { return edit_line_color_; }
   void SetEditLineColor(int n) { edit_line_color_ = n; }
 
+  virtual void DisableLocalIO() {}
+  virtual void ReenableLocalIO() {}
+
 private:
   virtual void FastPuts(const std::string& text) = 0;
 

@@ -73,6 +73,10 @@ class CursesLocalIO : public LocalIO {
   void UpdateNativeTitleBar(WSession* session) override;
   virtual void ResetColors();
 
+  virtual void DisableLocalIO();
+  virtual void ReenableLocalIO();
+
+
 private:
   void FastPuts(const std::string &text) override;
   virtual void SetColor(int color);
