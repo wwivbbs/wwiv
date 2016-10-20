@@ -579,6 +579,15 @@ void CursesLocalIO::ResetColors() {
 	InitPairs();
 }
 
+void CursesLocalIO::DisableLocalIO() {
+  endwin();
+}
+
+void CursesLocalIO::ReenableLocalIO() {
+  refresh();
+  window_->Refresh();
+}
+
 #if defined( _MSC_VER )
 #pragma warning( pop )
 #endif // _MSC_VER

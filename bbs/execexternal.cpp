@@ -49,8 +49,13 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // Make sure our working dir is back to the BBS dir.
   session()->CdHome();
 
-  // Execute the program and make sure the workingdir is reset
+  // Some LocalIO implementations (Curses) needs to disable itself before
+  // we fork some other process.
+  session()->localIO()->DisableLocalIO();
   int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
+
+  // Re-engage the local IO engine if needed.
+  session()->localIO()->ReenableLocalIO();
   session()->CdHome();
 
   // Reread the user record.
