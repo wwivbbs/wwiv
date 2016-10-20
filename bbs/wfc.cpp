@@ -71,6 +71,8 @@ void wfc_cls() {
     session()->wfc_status = 0;
     session()->localIO()->SetCursor(LocalIO::cursorNormal);
   }
+  // Every time we clear the WFC, reset the lines listed.
+  bout.clear_lines_listed();
 }
 
 void wfc_init() {
@@ -82,12 +84,15 @@ void wfc_init() {
 }
 
 void wfc_update() {
+  // Every time we update the WFC, reset the lines listed.
+  bout.clear_lines_listed();
+
   if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
   }
 
-  instancerec ir;
-  User u;
+  instancerec ir = {};
+  User u = {};
 
   get_inst_info(inst_num, &ir);
   session()->users()->ReadUserNoCache(&u, ir.user);
