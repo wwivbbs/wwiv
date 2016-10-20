@@ -60,7 +60,7 @@ TEST_F(CalloutTest, OncePerDay) {
 
 TEST_F(CalloutTest, LotsOfOptions) {
   net_call_out_rec con;
-  const string line = "@1234 &!24%21/1* \"pass\"";
+  const string line = "@1234 &!24%21/60* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & options_dial_ten);
@@ -69,7 +69,7 @@ TEST_F(CalloutTest, LotsOfOptions) {
   EXPECT_STREQ("pass", con.password);
   EXPECT_EQ(24, con.times_per_day);
   EXPECT_EQ(21, con.macnum);
-  EXPECT_EQ(1, con.call_anyway);
+  EXPECT_EQ(60, static_cast<int>(con.call_anyway));
 }
 
 TEST_F(CalloutTest, MinMax) {
