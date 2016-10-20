@@ -51,7 +51,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwivcolors.h"
 #include "sdk/status.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/file.h"

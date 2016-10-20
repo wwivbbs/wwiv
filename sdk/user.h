@@ -26,6 +26,22 @@
 #include "core/strings.h"
 #include "sdk/vardec.h"
 
+//
+// ListPlus options from lp_options.
+//
+static constexpr uint32_t cfl_fname = 0x00000001;
+static constexpr uint32_t cfl_extension = 0x00000002;
+static constexpr uint32_t cfl_dloads = 0x00000004;
+static constexpr uint32_t cfl_kbytes = 0x00000008;
+static constexpr uint32_t cfl_date_uploaded = 0x00000010;
+static constexpr uint32_t cfl_file_points = 0x00000020;
+static constexpr uint32_t cfl_days_old = 0x00000040;
+static constexpr uint32_t cfl_upby = 0x00000080;
+static constexpr uint32_t unused_cfl_times_a_day_dloaded = 0x00000100;
+static constexpr uint32_t unused_cfl_days_between_dloads = 0x00000200;
+static constexpr uint32_t cfl_description = 0x00000400;
+static constexpr uint32_t cfl_header = 0x80000000;
+
 namespace wwiv {
 namespace sdk {
 
@@ -830,6 +846,12 @@ class User {
     SetForwardSystemNumber(0);
     SetForwardUserNumber(0);
   }
+
+  ///////////////////////////////////////////////////////////////////////////
+  // Static Helper Methods
+
+  static bool CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
+    const uint8_t* newuser_colors, const uint8_t* newuser_bwcolors);
 };
 
 }  // namespace sdk

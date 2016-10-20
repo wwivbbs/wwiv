@@ -43,40 +43,17 @@
 #include "localui/input.h"
 #include "localui/curses_io.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
 #include "sdk/vardec.h"
+#include "sdk/wwivcolors.h"
 
 using std::string;
 using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 #define CONFIG_USR "config.usr"
-
-#define cfl_fname                   0x00000001
-#define cfl_extension               0x00000002
-#define cfl_dloads                  0x00000004
-#define cfl_kbytes                  0x00000008
-#define cfl_description             0x00000400
-
-// TODO(rushfan): use wwivcolors.h and move it to sdk.
-enum COLORS {
-  BLACK,
-  BLUE,
-  GREEN,
-  CYAN,
-  RED,
-  MAGENTA,
-  BROWN,
-  LIGHTGRAY,
-  DARKGRAY,
-  LIGHTBLUE,
-  LIGHTGREEN,
-  LIGHTCYAN,
-  LIGHTRED,
-  LIGHTMAGENTA,
-  YELLOW,
-  WHITE
-};
 
 struct user_config {
   char name[31];          // verify against a user
@@ -163,18 +140,18 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
     memset(u.szMenuSet, 0, sizeof(u.szMenuSet));
 
     // Set new defaults.
-    memset(u.lp_colors, CYAN, sizeof(u.lp_colors));
-    u.lp_colors[0] = LIGHTGREEN;
-    u.lp_colors[1] = LIGHTGREEN;
-    u.lp_colors[2] = CYAN;
-    u.lp_colors[3] = CYAN;
-    u.lp_colors[4] = LIGHTCYAN;
-    u.lp_colors[5] = LIGHTCYAN;
-    u.lp_colors[6] = CYAN;
-    u.lp_colors[7] = CYAN;
-    u.lp_colors[8] = CYAN;
-    u.lp_colors[9] = CYAN;
-    u.lp_colors[10] = LIGHTCYAN;
+    memset(u.lp_colors, static_cast<uint8_t>(Color::CYAN), sizeof(u.lp_colors));
+    u.lp_colors[0] = static_cast<uint8_t>(Color::LIGHTGREEN);
+    u.lp_colors[1] = static_cast<uint8_t>(Color::LIGHTGREEN);
+    u.lp_colors[2] = static_cast<uint8_t>(Color::CYAN);
+    u.lp_colors[3] = static_cast<uint8_t>(Color::CYAN);
+    u.lp_colors[4] = static_cast<uint8_t>(Color::LIGHTCYAN);
+    u.lp_colors[5] = static_cast<uint8_t>(Color::LIGHTCYAN);
+    u.lp_colors[6] = static_cast<uint8_t>(Color::CYAN);
+    u.lp_colors[7] = static_cast<uint8_t>(Color::CYAN);
+    u.lp_colors[8] = static_cast<uint8_t>(Color::CYAN);
+    u.lp_colors[9] = static_cast<uint8_t>(Color::CYAN);
+    u.lp_colors[10] = static_cast<uint8_t>(Color::LIGHTCYAN);
     u.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
     u.cHotKeys = 0;
     strcpy(u.szMenuSet, "wwiv");

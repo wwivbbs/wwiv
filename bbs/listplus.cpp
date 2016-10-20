@@ -41,12 +41,12 @@
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
-#include "bbs/wwivcolors.h"
 
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
+#include "sdk/wwivcolors.h"
 
 using std::string;
 using std::vector;
@@ -441,7 +441,8 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
       num_extended = lines_left;
     }
     if (ext_is_on && mask_extended & u->mask) {
-      lines_printed = print_extended_plus(u->filename, num_extended, -extdesc_pos, session()->user()->data.lp_colors[10], search_rec);
+      lines_printed = print_extended_plus(u->filename, num_extended, -extdesc_pos, 
+        static_cast<Color>(session()->user()->data.lp_colors[10]), search_rec);
     } else {
       lines_printed = 0;
     }
@@ -494,7 +495,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   return numl;
 }
 
-int print_extended_plus(const char *file_name, int numlist, int indent, int color,
+int print_extended_plus(const char *file_name, int numlist, int indent, Color color,
                         search_record* search_rec) {
   int numl = 0;
   int cpos = 0;
@@ -516,7 +517,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, int colo
   auto new_ss = std::make_unique<char[]>((nBufferSize * 4) + 30);
   strcpy(new_ss.get(), ss.c_str());
   if (search_rec) {
-    colorize_foundtext(new_ss.get(), search_rec, color);
+    colorize_foundtext(new_ss.get(), search_rec, static_cast<uint8_t>(color));
   }
   if (indent > -1 && indent != 16) {
     bout << "  |#9Extended Description:\n\r";
@@ -525,7 +526,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, int colo
 
   while (new_ss[cpos] && numl < numlist && !hangup) {
     if (ch == SOFTRETURN && indent) {
-      bout.SystemColor(color);
+      bout.SystemColor(static_cast<uint8_t>(color));
       bout.bputch('\r');
       bout << "\x1b[" << std::abs(indent) << "C";
     }
@@ -568,7 +569,7 @@ void show_fileinfo(uploadsrec * u) {
   bout << "  |#9Size        : |#2" << bytes_to_k(u->numbytes) << wwiv::endl;
   bout << "  |#9Downloads   : |#2" << u->numdloads << "|#9" << wwiv::endl;
   bout << "  |#9Description : |#2" << u->description << wwiv::endl;
-  print_extended_plus(u->filename, 255, 16, YELLOW, nullptr);
+  print_extended_plus(u->filename, 255, 16, Color::YELLOW, nullptr);
   bout.Color(7);
   bout << string(78, '\xCD');
   bout.nl();
@@ -676,16 +677,16 @@ static void check_lp_colors() {
   for (int i = 0; i < 32; i++) {
     if (!u->data.lp_colors[i]) {
       needs_defaults = true;
-      u->data.lp_colors[i] = CYAN;
+      u->data.lp_colors[i] = static_cast<uint8_t>(Color::CYAN);
     }
   }
 
   if (needs_defaults) {
-    u->data.lp_colors[0] = LIGHTGREEN;
-    u->data.lp_colors[1] = LIGHTGREEN;
-    u->data.lp_colors[4] = LIGHTCYAN;
-    u->data.lp_colors[5] = LIGHTCYAN;
-    u->data.lp_colors[10] = LIGHTCYAN;
+    u->data.lp_colors[0] = static_cast<uint8_t>(Color::LIGHTGREEN);
+    u->data.lp_colors[1] = static_cast<uint8_t>(Color::LIGHTGREEN);
+    u->data.lp_colors[4] = static_cast<uint8_t>(Color::LIGHTCYAN);
+    u->data.lp_colors[5] = static_cast<uint8_t>(Color::LIGHTCYAN);
+    u->data.lp_colors[10] = static_cast<uint8_t>(Color::LIGHTCYAN);
   }
 }
 
@@ -705,18 +706,18 @@ void load_lp_config() {
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(listplus_config));
 
-      lp_config.normal_highlight  = (YELLOW + (BLACK << 4));
-      lp_config.normal_menu_item  = (CYAN + (BLACK << 4));
-      lp_config.current_highlight = (BLUE + (LIGHTGRAY << 4));
-      lp_config.current_menu_item = (BLACK + (LIGHTGRAY << 4));
+      lp_config.normal_highlight  = (static_cast<uint8_t>(Color::YELLOW) + (static_cast<uint8_t>(Color::BLACK) << 4));
+      lp_config.normal_menu_item  = (static_cast<uint8_t>(Color::CYAN) + (static_cast<uint8_t>(Color::BLACK) << 4));
+      lp_config.current_highlight = (static_cast<uint8_t>(Color::BLUE) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
+      lp_config.current_menu_item = (static_cast<uint8_t>(Color::BLACK) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4));
 
-      lp_config.tagged_color      = LIGHTGRAY;
-      lp_config.file_num_color    = GREEN;
+      lp_config.tagged_color      = static_cast<uint8_t>(Color::LIGHTGRAY);
+      lp_config.file_num_color    = static_cast<uint8_t>(Color::GREEN);
 
-      lp_config.found_fore_color  = RED;
-      lp_config.found_back_color  = (LIGHTGRAY) + 16;
+      lp_config.found_fore_color  = static_cast<uint8_t>(Color::RED);
+      lp_config.found_back_color  = static_cast<uint8_t>(Color::LIGHTGRAY) + 16;
 
-      lp_config.current_file_color = BLACK + (LIGHTGRAY << 4);
+      lp_config.current_file_color = static_cast<uint8_t>(Color::BLACK) + (static_cast<uint8_t>(Color::LIGHTGRAY) << 4);
 
       lp_config.max_screen_lines_to_show = 24;
       lp_config.show_at_least_extended = 5;
@@ -971,13 +972,13 @@ static void update_user_config_screen(uploadsrec* u, int which) {
     "White   "
   };
 
-  uint8_t color_background = BLUE << 4;
-  uint8_t color_selected = LIGHTRED | color_background;
-  uint8_t color_notselected = BLACK | color_background;
-  uint8_t color_colortext = LIGHTCYAN | color_background;
+  uint8_t color_background = static_cast<uint8_t>(Color::BLUE) << 4;
+  uint8_t color_selected = static_cast<uint8_t>(Color::LIGHTRED) | color_background;
+  uint8_t color_notselected = static_cast<uint8_t>(Color::BLACK) | color_background;
+  uint8_t color_colortext = static_cast<uint8_t>(Color::LIGHTCYAN) | color_background;
   auto& lpo = session()->user()->data.lp_options;
   auto& lpc = session()->user()->data.lp_colors;
-
+  
   if (which < 1 || which == 1) {
     bout.GotoXY(37, 4);
     bout.SystemColor(lpo & cfl_fname ? color_selected : color_notselected);
@@ -1047,7 +1048,7 @@ static void update_user_config_screen(uploadsrec* u, int which) {
     bout << "\xFE ";
     bout.SystemColor(color_colortext);
   }
-  bout.SystemColor(YELLOW);
+  bout.SystemColor(Color::YELLOW);
   bout.GotoXY(1, 21);
   bout.clreol();
   bout.nl();
@@ -1057,7 +1058,7 @@ static void update_user_config_screen(uploadsrec* u, int which) {
   search_record sr{};
   printinfo_plus(u, 1, 1, 30, &sr);
   bout.GotoXY(30, 17);
-  bout.SystemColor(YELLOW);
+  bout.SystemColor(Color::YELLOW);
   bout.bs();
 }
 

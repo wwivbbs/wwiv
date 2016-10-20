@@ -76,7 +76,6 @@ using namespace wwiv::strings;
 
 // Local function prototypes
 
-void CreateNewUserRecord();
 bool CanCreateNewUserAccountHere();
 bool UseMinimalNewUserInfo();
 void noabort(const char *file_name);
@@ -637,71 +636,18 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
 
 // Clears session()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
-void CreateNewUserRecord() {
-  const auto u = session()->user();
-  u->ZeroUserData();
+static bool CreateNewUserRecord() {
   memset(qsc, 0, syscfg.qscn_len);
-
-  u->SetFirstOn(date());
-  u->SetLastOn("Never.");
-  u->SetMacro(0, "Wow! This is a GREAT BBS!");
-  u->SetMacro(1, "Guess you forgot to define this one....");
-  u->SetMacro(2, "User = Monkey + Keyboard");
-
-  u->SetScreenLines(25);
-  u->SetScreenChars(80);
-
-  u->SetSl(syscfg.newusersl);
-  u->SetDsl(syscfg.newuserdsl);
-
-  u->SetTimesOnToday(1);
-  u->SetLastOnDateNumber(0);
-  u->SetRestriction(syscfg.newuser_restrict);
-
   *qsc = 999;
   memset(qsc_n, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
   memset(qsc_q, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
 
-  u->SetStatusFlag(User::pauseOnPage);
-  u->ClearStatusFlag(User::conference);
-  u->ClearStatusFlag(User::nscanFileSystem);
-  u->SetGold(syscfg.newusergold);
-
-  for (int nColorLoop = 0; nColorLoop <= 9; nColorLoop++) {
-    u->SetColor(nColorLoop, session()->newuser_colors[ nColorLoop ]);
-    u->SetBWColor(nColorLoop, session()->newuser_bwcolors[ nColorLoop ]);
-  }
-
+  auto u = session()->user();
   session()->ResetEffectiveSl();
-  string randomPassword;
-  for (int i = 0; i < 6; i++) {
-    char ch = static_cast<char>(rand() % 36);
-    if (ch < 10) {
-      ch += '0';
-    } else {
-      ch += 'A' - 10;
-    }
-    randomPassword += ch;
-  }
-  u->SetPassword(randomPassword);
-  u->SetEmailAddress("");
-
-  // Set default menu set abd listplus colors.
-  strcpy(u->data.szMenuSet, "wwiv");
-  u->data.cHotKeys = 0;
-  u->data.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
-  memset(u->data.lp_colors, CYAN, sizeof(u->data.lp_colors));
-  u->data.lp_colors[0] = LIGHTGREEN;
-  u->data.lp_colors[1] = LIGHTGREEN;
-  u->data.lp_colors[2] = CYAN;
-  u->data.lp_colors[3] = CYAN;
-  u->data.lp_colors[4] = LIGHTCYAN;
-  u->data.lp_colors[5] = LIGHTCYAN;
-  u->data.lp_colors[6] = CYAN;
-  u->data.lp_colors[7] = CYAN;
-  u->data.lp_colors[8] = CYAN;
-  u->data.lp_colors[9] = CYAN;
-  u->data.lp_colors[10] = LIGHTCYAN;
+  
+  return User::CreateNewUserRecord(u, syscfg.newusersl, syscfg.newuserdsl, 
+    syscfg.newuser_restrict, syscfg.newusergold,
+    session()->newuser_colors, session()->newuser_bwcolors);
 }
 
 
@@ -1071,7 +1017,9 @@ void newuser() {
   get_colordata();
   session()->screenlinest = 25;
 
-  CreateNewUserRecord();
+  if (!CreateNewUserRecord()) {
+    return;
+  }
 
   input_language();
 

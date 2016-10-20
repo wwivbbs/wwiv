@@ -20,7 +20,8 @@
 #define __INCLUDED_LISTPLUS_H__
 
 
-#include "common.h"
+#include "bbs/common.h"
+#include "sdk/wwivcolors.h"
 
 extern int foundany;
 
@@ -41,32 +42,10 @@ extern int foundany;
 #define SR_OLDER      1
 #define SR_EQUAL      2
 
-
-
 // Defines for the sysop commands
 #define SYSOP_DELETE 1
 #define SYSOP_RENAME 2
 #define SYSOP_MOVE   3
-
-
-//
-// File options
-//
-
-#define cfl_status_inactive         0x00000001
-
-#define cfl_fname                   0x00000001
-#define cfl_extension               0x00000002
-#define cfl_dloads                  0x00000004
-#define cfl_kbytes                  0x00000008
-#define cfl_date_uploaded           0x00000010
-#define cfl_file_points             0x00000020
-#define cfl_days_old                0x00000040
-#define cfl_upby                    0x00000080
-#define unused_cfl_times_a_day_dloaded 0x00000100
-#define unused_cfl_days_between_dloads     0x00000200
-#define cfl_description             0x00000400
-#define cfl_header                  0x80000000L
 
 #pragma pack( push,  1)
 
@@ -126,7 +105,7 @@ int  listfiles_plus(int type);
 int  lp_add_batch(const char *file_name, int dn, long fs);
 int  printinfo_plus(uploadsrec* upload_record, int filenum, int marked, int LinesLeft,
 search_record* search_rec);
-int  print_extended_plus(const char *file_name, int numlist, int indent, int color,
+int  print_extended_plus(const char *file_name, int numlist, int indent, wwiv::sdk::Color color,
 search_record* search_rec);
 void show_fileinfo(uploadsrec* upload_record);
 int  check_lines_needed(uploadsrec* upload_record);

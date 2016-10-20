@@ -56,7 +56,6 @@
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
-#include "bbs/wwivcolors.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/stl.h"

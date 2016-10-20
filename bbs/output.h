@@ -27,6 +27,8 @@
 #include <utility>
 #include <vector>
 
+#include "sdk/wwivcolors.h"
+
 class outputstreambuf : public std::streambuf {
  public:
   outputstreambuf();
@@ -77,6 +79,7 @@ class Output : public std::ostream {
    * specified (in IBM format).
    */
   void SystemColor(int nColor);
+  void SystemColor(wwiv::sdk::Color color);
   void litebar(const char *fmt, ...);
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();

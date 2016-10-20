@@ -21,7 +21,7 @@
 #define __INCLUDED_COMMON_H__
 
 #include <string>
-#include "bbs/wwivcolors.h"
+#include "sdk/wwivcolors.h"
 
 // Defines for listplus
 constexpr int LP_LIST_DIR = 0;
@@ -33,10 +33,14 @@ constexpr int ALL_DIRS = 0;
 constexpr int THIS_DIR = 1;
 constexpr int NSCAN_DIRS = 2;
 
-constexpr int WWIV_LISTPLUS_NORMAL_HIGHLIGHT = (YELLOW + (BLACK << 4));
-constexpr int WWIV_LISTPLUS_NORMAL_MENU_ITEM = (CYAN + (BLACK << 4));
-constexpr int WWIV_LISTPLUS_CURRENT_HIGHLIGHT = (RED + (LIGHTGRAY << 4));
-constexpr int WWIV_LISTPLUS_CURRENT_MENU_ITEM = (BLACK + (LIGHTGRAY << 4));
+constexpr int WWIV_LISTPLUS_NORMAL_HIGHLIGHT = 
+  (static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
+constexpr int WWIV_LISTPLUS_NORMAL_MENU_ITEM = 
+  (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
+constexpr int WWIV_LISTPLUS_CURRENT_HIGHLIGHT = 
+  (static_cast<uint8_t>(wwiv::sdk::Color::RED) + (static_cast<uint8_t>(wwiv::sdk::Color::LIGHTGRAY) << 4));
+constexpr int WWIV_LISTPLUS_CURRENT_MENU_ITEM = 
+  (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::LIGHTGRAY) << 4));
 
 
 struct side_menu_colors {

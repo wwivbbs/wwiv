@@ -128,6 +128,10 @@ void Output::bs() {
   local_echo = bSavedEcho;
 }
 
+void Output::SystemColor(wwiv::sdk::Color color) {
+  SystemColor(static_cast<uint8_t>(color));
+}
+
 void Output::SystemColor(int nColor) {
   char szBuffer[255];
   makeansi(nColor, szBuffer, false);

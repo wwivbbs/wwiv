@@ -44,7 +44,6 @@
 #include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "bbs/vars.h"
-#include "bbs/wwivcolors.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
@@ -931,9 +930,9 @@ static void drawscan(int filepos, long tagged) {
     bout.GotoXY(1, filepos + 3);
   }
 
-  bout.SystemColor(BLACK + (CYAN << 4));
+  bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) << 4));
   bout.bprintf("[%c]", tagged ? '\xFE' : ' ');
-  bout.SystemColor(YELLOW + (BLACK << 4));
+  bout.SystemColor(static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
 
   if (filepos >= max_lines) {
     bout.GotoXY(41, 3 + filepos - max_lines);
