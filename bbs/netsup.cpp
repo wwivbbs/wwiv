@@ -937,6 +937,10 @@ static std::pair<uint16_t, int> ansicallout() {
     }
   }
 
+  if (entries.empty()) {
+    return std::make_pair(0, -1);
+  }
+
   session()->localIO()->Cls();
   curatr = color1;
   session()->localIO()->MakeLocalWindow(3, 2, 73, 10);
