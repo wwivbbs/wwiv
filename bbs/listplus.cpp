@@ -654,17 +654,12 @@ int prep_search_rec(search_record* search_rec, int type) {
 }
 
 int calc_max_lines() {
-  int max_lines;
-
   if (lp_config.max_screen_lines_to_show) {
-    max_lines = std::min<int>(session()->user()->GetScreenLines(),
-                              lp_config.max_screen_lines_to_show) -
-                (first_file_pos() + 1 + STOP_LIST);
-  } else {
-    max_lines = session()->user()->GetScreenLines() - (first_file_pos() + 1 + STOP_LIST);
+    return std::min<int>(session()->user()->GetScreenLines(),
+      lp_config.max_screen_lines_to_show) -
+      (first_file_pos() + 1 + STOP_LIST);
   }
-
-  return max_lines;
+  return session()->user()->GetScreenLines() - (first_file_pos() + 1 + STOP_LIST);
 }
 
 static void check_lp_colors() {

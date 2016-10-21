@@ -297,19 +297,19 @@ void WSession::ReadINIFile(IniFile& ini) {
   }
 
   // pull out newuser colors
-  for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
+  for (int i = 0; i < 10; i++) {
     {
-      const string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), nTempColorNum);
+      const string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), i);
       uint8_t num = ini.value<uint8_t>(key_name);
       if (num != 0) {
-        newuser_colors[nTempColorNum] = num;
+        newuser_colors[i] = num;
       }
     }
     {
-      const string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLORBW), nTempColorNum);
+      const string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLORBW), i);
       uint8_t num = ini.value<uint8_t>(key_name);
       if (num != 0) {
-        newuser_bwcolors[nTempColorNum] = num;
+        newuser_bwcolors[i] = num;
       }
     }
   }

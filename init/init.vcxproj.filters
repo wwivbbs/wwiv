@@ -80,6 +80,9 @@
     <ClInclude Include="convert.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="sysop_account.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="init.cpp">
@@ -134,6 +137,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="autoval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="sysop_account.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

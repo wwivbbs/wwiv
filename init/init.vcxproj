@@ -102,6 +102,7 @@
     <ClInclude Include="regcode.h" />
     <ClInclude Include="subacc.h" />
     <ClInclude Include="subsdirs.h" />
+    <ClInclude Include="sysop_account.h" />
     <ClInclude Include="system_info.h" />
     <ClInclude Include="user_editor.h" />
     <ClInclude Include="utility.h" />
@@ -123,6 +124,7 @@
     <ClCompile Include="regcode.cpp" />
     <ClCompile Include="subacc.cpp" />
     <ClCompile Include="subsdirs.cpp" />
+    <ClCompile Include="sysop_account.cpp" />
     <ClCompile Include="system_info.cpp" />
     <ClCompile Include="user_editor.cpp" />
     <ClCompile Include="utility.cpp" />

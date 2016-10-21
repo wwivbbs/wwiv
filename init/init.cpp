@@ -59,6 +59,7 @@
 #include "init/regcode.h"
 #include "init/subsdirs.h"
 #include "init/system_info.h"
+#include "init/sysop_account.h"
 #include "init/user_editor.h"
 #include "init/wwivinit.h"
 #include "init/utility.h"
@@ -248,6 +249,13 @@ int WInitApp::main(int, char **) {
       } else {
         pwok = true;
       }
+    }
+
+    if (!dialog_yn(out->window(), "Would you like to create a sysop account now?")) {
+      messagebox(out->window(), "You will need to log in locally and manually create one");
+    } else {
+      Config config(bbsdir);
+      create_sysop_account(config);
     }
   }
 

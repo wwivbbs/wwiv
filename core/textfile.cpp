@@ -185,6 +185,9 @@ TextFile::~TextFile() {
 }
 
 std::string TextFile::ReadFileIntoString() {
+  if (file_ == nullptr) {
+    return "";
+  }
   string contents;
   fseek(file_, 0, SEEK_END);
   contents.resize(ftell(file_));

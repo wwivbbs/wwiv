@@ -45,9 +45,9 @@ using std::vector;
 using namespace wwiv::strings;
 
 static string create_autoval_line(int n) {
-  char s3[81], ar[20], dar[20], r[20];
+  char ar[20], dar[20], r[20];
   valrec v = syscfg.autoval[n];
-  strcpy(s3, restrict_string);
+  string res_str = restrict_string;
   for (int8_t i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {
       ar[i] = 'A' + i;
@@ -60,7 +60,7 @@ static string create_autoval_line(int n) {
       dar[i] = 32;
     }
     if (v.restrict & (1 << i)) {
-      r[i] = s3[i];
+      r[i] = res_str[i];
     } else {
       r[i] = 32;
     }

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_TEMPLATE_H__
-#define __INCLUDED_TEMPLATE_H__
+#ifndef __INCLUDED_INIT_NETWORKS_H__
+#define __INCLUDED_INIT_NETWORKS_H__
 
 #include "sdk/config.h"
 #include "sdk/net.h"
@@ -26,4 +26,4 @@
 
 void networks(wwiv::sdk::Config& config);
 
-#endif // __INCLUDED_TEMPLATE_H__
+#endif // __INCLUDED_INIT_NETWORKS_H__

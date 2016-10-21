@@ -91,7 +91,6 @@ bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
   h.config_size = sizeof(configrec);
   h.written_by_wwiv_num_version = wwiv_num_version;
   strcpy(h.signature, "WWIV");
-  h.signature[4] = 0;
 
   // Save old newuser password.
   string newuserpw = syscfg.header.newuserpw;
