@@ -21,6 +21,7 @@ set(COMMON_SOURCES
   subacc.cpp 
   subsdirs.cpp 
   system_info.cpp
+  sysop_account.cpp
   user_editor.cpp 
   utility.cpp 
   )
