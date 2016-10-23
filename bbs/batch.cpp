@@ -300,7 +300,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
 // This function returns one character from either the local keyboard or
 // remote com port (if applicable).  Every second of inactivity, a
 // beep is sounded.  After 10 seconds of inactivity, the user is hung up.
-static void bihangup(int up) {
+static void bihangup() {
   int color = 5;
 
   bout.dump();
@@ -422,7 +422,7 @@ void zmbatchdl(bool bHangupAfterDl) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n\n";
   }
   if (bHangupAfterDl) {
-    bihangup(0);
+    bihangup();
   }
 }
 
@@ -499,7 +499,7 @@ void ymbatchdl(bool bHangupAfterDl) {
     bout << "\r\nYour ratio is too low to continue the transfer.\r\n\n";
   }
   if (bHangupAfterDl) {
-    bihangup(0);
+    bihangup();
   }
 }
 
@@ -695,7 +695,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       File::set_current_directory(session()->batch_directory());
       ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
-        bihangup(1);
+        bihangup();
       } else {
         bout << "\r\n|#9Please wait...\r\n\n";
       }
