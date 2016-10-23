@@ -60,7 +60,7 @@ class RemoteIO {
   virtual unsigned int put(unsigned char ch) = 0;
   virtual unsigned int read(char *buffer, unsigned int count) = 0;
   virtual unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) = 0;
-  virtual bool carrier() = 0;
+  virtual bool connected() = 0;
   virtual bool incoming() = 0;
 
   virtual unsigned int GetHandle() const = 0;

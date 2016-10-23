@@ -108,7 +108,7 @@ int bbsmain(int argc, char *argv[]) {
     wwiv::core::Logger::Init(argc, argv);
     app_ = new WApplication();
     return app_->BBSMainLoop(argc, argv);
-  } catch (exception& e) {
+  } catch (const exception& e) {
     LOG(FATAL) << "BBS Terminated by exception: " << e.what();
     return 1;
   }

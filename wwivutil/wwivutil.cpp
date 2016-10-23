@@ -79,7 +79,7 @@ public:
       }
       SetConfigs();
       return cmdline_.Execute();
-    } catch (std::exception& e) {
+    } catch (const std::exception& e) {
       LOG(ERROR) << e.what();
     }
     return 1;

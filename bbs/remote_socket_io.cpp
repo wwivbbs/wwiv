@@ -74,7 +74,7 @@ static bool socket_avail(SOCKET sock, int seconds) {
   FD_ZERO(&fds);
   FD_SET(sock, &fds);
 
-  timeval tv;
+  timeval tv = {};
   tv.tv_sec = seconds;
   tv.tv_usec = 0;
 
@@ -225,18 +225,18 @@ unsigned int RemoteSocketIO::read(char *buffer, unsigned int count) {
   // Early return on invalid sockets.
   if (!valid_socket()) { return 0; }
 
-  unsigned int nRet = 0;
-  char * temp = buffer;
+  unsigned int num_read = 0;
+  char* temp = buffer;
 
   std::lock_guard<std::mutex> lock(mu_);
-  while (!queue_.empty() && nRet <= count) {
+  while (!queue_.empty() && num_read <= count) {
     char ch = queue_.front();
     queue_.pop();
     *temp++ = ch;
-    nRet++;
+    num_read++;
   }
   *temp++ = '\0';
-  return nRet;
+  return num_read;
 }
 
 unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool bNoTranslation) {
@@ -273,12 +273,12 @@ unsigned int RemoteSocketIO::write(const char *buffer, unsigned int count, bool 
   return num_sent;
 }
 
-bool RemoteSocketIO::carrier() {
-  bool carrier = valid_socket();
-  if (!carrier) {
-    LOG(ERROR) << "!carrier(); threads_started_ = " << std::boolalpha << threads_started_;
+bool RemoteSocketIO::connected() {
+  bool connected = valid_socket();
+  if (!connected) {
+    LOG(ERROR) << "!connected(); threads_started_ = " << std::boolalpha << threads_started_;
   }
-  return valid_socket();
+  return connected;
 }
 
 bool RemoteSocketIO::incoming() {

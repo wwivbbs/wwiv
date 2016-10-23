@@ -122,7 +122,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   int nCounter = 0;
   for (;;) {
     nCounter++;
-    if (session()->using_modem && (!session()->remoteIO()->carrier())) {
+    if (session()->using_modem && (!session()->remoteIO()->connected())) {
       SetEvent(hSyncHangupEvent);
       fprintf(hLogFile, "Setting Hangup Event and Sleeping\r\n");
       ::Sleep(1000);

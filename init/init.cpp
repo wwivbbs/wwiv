@@ -152,9 +152,8 @@ int main(int argc, char* argv[]) {
     wwiv::core::Logger::Init(argc, argv);
     std::unique_ptr<WInitApp> app(new WInitApp());
     return app->main(argc, argv);
-  } catch (std::exception& e) {
-    LOG(INFO) << "Fatal exception launching init: " 
-              << e.what();
+  } catch (const std::exception& e) {
+    LOG(INFO) << "Fatal exception launching init: " << e.what();
   }
 }
 

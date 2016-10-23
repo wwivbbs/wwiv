@@ -43,7 +43,7 @@ extern char str_quit[];
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
 bool CheckForHangup() {
-  if (!hangup && session()->using_modem && !session()->remoteIO()->carrier()) {
+  if (!hangup && session()->using_modem && !session()->remoteIO()->connected()) {
     hangup = true;
     if (session()->IsUserOnline()) {
       sysoplog() << "Hung Up.";

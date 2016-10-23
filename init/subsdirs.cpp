@@ -54,7 +54,7 @@ static T input_number(CursesWindow* window, int max_digits) {
   try {
     auto num = std::stoi(s);
     return static_cast<T>(num);
-  } catch (std::invalid_argument) { 
+  } catch (const std::invalid_argument&) { 
     // No conversion possible.
     return 0;
   }

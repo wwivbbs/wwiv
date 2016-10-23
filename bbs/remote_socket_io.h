@@ -75,7 +75,7 @@ class RemoteSocketIO : public RemoteIO {
   unsigned int put(unsigned char ch) override;
   unsigned int read(char *buffer, unsigned int count) override;
   unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
-  bool carrier() override;
+  bool connected() override;
   bool incoming() override;
   void StopThreads();
   void StartThreads();

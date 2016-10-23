@@ -73,8 +73,8 @@ public:
   const int as_int() const {
     try {
       return std::stoi(value_); 
-    } catch (std::exception&) {
-      return 0;
+    } catch (std::logic_error&) {
+        return 0;
     }
   }
   const bool as_bool() const {

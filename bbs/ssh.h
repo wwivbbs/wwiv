@@ -83,7 +83,7 @@ public:
   unsigned int put(unsigned char ch) override;
   unsigned int read(char *buffer, unsigned int count) override;
   unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation) override;
-  bool carrier() override;
+  bool connected() override;
   bool incoming() override;
   unsigned int GetHandle() const override;
   unsigned int GetDoorHandle() const override;

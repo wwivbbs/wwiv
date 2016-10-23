@@ -42,7 +42,7 @@ class NullRemoteIO : public RemoteIO {
   unsigned int put(unsigned char) override { return 0; }
   unsigned int read(char *, unsigned int) override { return 0; }
   unsigned int write(const char *, unsigned int, bool) override { return 0; }
-  bool carrier() override { return false; }
+  bool connected() override { return false; }
   bool incoming() override { return false; }
 
   unsigned int GetHandle() const override { return 0; }

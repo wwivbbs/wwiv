@@ -453,9 +453,9 @@ unsigned int IOSSH::write(const char *buffer, unsigned int count, bool bNoTransl
   if (!initialized_) return 0;
   return io_->write(buffer, count, bNoTranslation);
 }
-bool IOSSH::carrier() { 
+bool IOSSH::connected() { 
   if (!initialized_) return false;
-  return io_->carrier(); 
+  return io_->connected(); 
 }
 
 bool IOSSH::incoming() {
