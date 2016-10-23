@@ -202,14 +202,12 @@ unsigned char RemoteSocketIO::getW() {
   return static_cast<unsigned char>(ch);
 }
 
-bool RemoteSocketIO::dtr(bool raise) {
+bool RemoteSocketIO::disconnect() {
   // Early return on invalid sockets.
   if (!valid_socket()) { return false; }
 
-  if (!raise) {
-    closesocket(socket_);
-    socket_ = INVALID_SOCKET;
-  }
+  closesocket(socket_);
+  socket_ = INVALID_SOCKET;
   return true;
 }
 

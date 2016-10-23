@@ -287,7 +287,7 @@ void WSession::handle_sysop_key(uint8_t key) {
         break;
       case F5: /* F5 */
         hangup = true;
-        remoteIO()->dtr(false);
+        remoteIO()->disconnect();
         break;
       case SF5: /* Shift-F5 */
         i1 = (rand() % 20) + 10;
@@ -295,12 +295,12 @@ void WSession::handle_sysop_key(uint8_t key) {
           bout.bputch(static_cast<unsigned char>(rand() % 256));
         }
         hangup = true;
-        remoteIO()->dtr(false);
+        remoteIO()->disconnect();
         break;
       case CF5: /* Ctrl-F5 */
         bout << "\r\nCall back later when you are there.\r\n\n";
         hangup = true;
-        remoteIO()->dtr(false);
+        remoteIO()->disconnect();
         break;
       case F6: /* F6 - was Toggle Sysop Alert*/
         tleft(false);
@@ -1406,7 +1406,7 @@ do {
   cleanup_net();
 
   if (!no_hangup && ok_modem_stuff) {
-    remoteIO()->dtr(false);
+    remoteIO()->disconnect();
   }
   user_already_on_ = false;
 }while (!ooneuser);

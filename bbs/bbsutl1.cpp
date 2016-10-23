@@ -271,23 +271,7 @@ void hang_it_up() {
   if (!ok_modem_stuff) {
     return;
   }
-  session()->remoteIO()->dtr(false);
-
-#if !defined( __unix__ )
-  if (!session()->remoteIO()->carrier()) {
-    return;
-  }
-
-  sleep_for(milliseconds(500));
-  if (!session()->remoteIO()->carrier()) {
-    return;
-  }
-
-  sleep_for(milliseconds(500));
-  if (!session()->remoteIO()->carrier()) {
-    return;
-  }
-#endif
+  session()->remoteIO()->disconnect();
 }
 
 /**

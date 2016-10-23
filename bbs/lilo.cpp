@@ -293,10 +293,7 @@ static void ExecuteWWIVNetworkRequest() {
   }
   session()->status_manager()->RefreshStatusCache();
   hangup = true;
-  session()->remoteIO()->dtr(false);
-  sleep_for(seconds(1));
-  session()->remoteIO()->dtr(true);
-  sleep_for(milliseconds(100));
+  session()->remoteIO()->disconnect();
   cleanup_net();
   hangup = true;
 }
@@ -998,7 +995,7 @@ void logoff() {
     }
   }
   setiia(90);
-  session()->remoteIO()->dtr(false);
+  session()->remoteIO()->disconnect();
   hangup = true;
   if (session()->usernum < 1) {
     return;

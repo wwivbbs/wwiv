@@ -55,7 +55,7 @@ class RemoteIO {
   virtual bool open() = 0;
   virtual void close(bool temporary) = 0;
   virtual unsigned char getW() = 0;
-  virtual bool dtr(bool raise) = 0;
+  virtual bool disconnect() = 0;
   virtual void purgeIn() = 0;
   virtual unsigned int put(unsigned char ch) = 0;
   virtual unsigned int read(char *buffer, unsigned int count) = 0;

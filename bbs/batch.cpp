@@ -333,14 +333,8 @@ static void bihangup(int up) {
         bout.nl();
         bout << "Thank you for calling.";
         bout.nl();
-        session()->remoteIO()->dtr(false);
+        session()->remoteIO()->disconnect();
         hangup = true;
-        if (up) {
-          wwiv::os::sleep_for(std::chrono::milliseconds(100));
-          if (!session()->remoteIO()->carrier()) {
-            session()->remoteIO()->dtr(true);
-          }
-        }
       }
       giveup_timeslice();
       CheckForHangup();
@@ -702,9 +696,6 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_PROT_BATCH));
       if (bHangupAfterDl) {
         bihangup(1);
-        if (!session()->remoteIO()->carrier()) {
-          session()->remoteIO()->dtr(true);
-        }
       } else {
         bout << "\r\n|#9Please wait...\r\n\n";
       }

@@ -433,9 +433,9 @@ unsigned char IOSSH::getW() {
   if (!initialized_) return 0;
   return io_->getW();
 }
-bool IOSSH::dtr(bool raise) {
+bool IOSSH::disconnect() {
   if (!initialized_) return false;
-  return io_->dtr(raise);
+  return io_->disconnect();
 }
 void IOSSH::purgeIn() { 
   if (!initialized_) return;

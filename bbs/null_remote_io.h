@@ -37,7 +37,7 @@ class NullRemoteIO : public RemoteIO {
   bool open() override { return true; }
   void close(bool) override {}
   unsigned char getW() override { return 0; }
-  bool dtr(bool) override { return true; }
+  bool disconnect() override { return true; }
   void purgeIn() override {}
   unsigned int put(unsigned char) override { return 0; }
   unsigned int read(char *, unsigned int) override { return 0; }

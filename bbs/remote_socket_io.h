@@ -70,7 +70,7 @@ class RemoteSocketIO : public RemoteIO {
   bool open() override;
   void close(bool bIsTemporary) override;
   unsigned char getW() override;
-  bool dtr(bool raise) override;
+  bool disconnect() override;
   void purgeIn() override;
   unsigned int put(unsigned char ch) override;
   unsigned int read(char *buffer, unsigned int count) override;

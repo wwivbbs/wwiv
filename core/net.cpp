@@ -51,7 +51,11 @@ bool GetRemotePeerAddress(SOCKET socket, std::string& ip) {
   }
 
   char buf[255];
+#ifdef _WIN32
   ip = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
+#else
+  ip = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
+#endif
   return true;
 }
 

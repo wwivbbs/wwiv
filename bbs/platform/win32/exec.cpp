@@ -389,7 +389,6 @@ int ExecExternalProgram(const string commandLine, int flags) {
     // If we return here, we may have to reopen the communications port.
     if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
       session()->remoteIO()->open();
-      session()->remoteIO()->dtr(true);
     }
     return -1;
   }
@@ -438,7 +437,6 @@ int ExecExternalProgram(const string commandLine, int flags) {
   // reengage comm stuff
   if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
     session()->remoteIO()->open();
-    session()->remoteIO()->dtr(true);
   }
 
   return static_cast<int>(dwExitCode);
