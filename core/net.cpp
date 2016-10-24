@@ -50,10 +50,11 @@ bool GetRemotePeerAddress(SOCKET socket, std::string& ip) {
     return false;
   }
 
-  char buf[255];
 #ifdef _WIN32
-  ip = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
+  // inet_ntop is not available on Windows XP, but is deprecated.
+  ip = inet_ntoa(addr.sin_addr);
 #else
+  char buf[255];
   ip = inet_ntop(addr.sin_family, &addr.sin_addr, buf, sizeof(buf));
 #endif
   return true;
