@@ -309,6 +309,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
 }
 
 bool BinkP::process_frames(milliseconds d) {
+  VLOG(3) << "       process_frames(" << d.count() << ")";
   return process_frames([&]() -> bool { return false; }, d);
 }
 
@@ -318,6 +319,7 @@ bool BinkP::process_frames(function<bool()> predicate, milliseconds d) {
   }
   try {
     while (!predicate()) {
+      VLOG(3) << "       process_frames(pred)";
       uint16_t header = conn_->read_uint16(d);
       if (header & 0x8000) {
         if (!process_command(header & 0x7fff, d)) {
