@@ -24,30 +24,10 @@
 #include "bbs/vars.h"
 #include "bbs/remote_io.h"
 
-// Local function prototypes
-int UnixSpawn(char *pszCommand, char* environ[]);
+#include "core/log.h"
 
-int ExecExternalProgram(const std::string commandLine, int flags) {
-  (void)flags;
-
-  if (ok_modem_stuff) {
-    session()->remoteIO()->close(true);
-  }
-
-  char s[256];
-  strcpy(s, commandLine.c_str());
-  int i = UnixSpawn(s, NULL);
-
-  // reengage comm stuff
-  if (ok_modem_stuff) {
-    session()->remoteIO()->open();
-    session()->remoteIO()->dtr(true);
-  }
-  return i;
-}
-
-int UnixSpawn(char *pszCommand, char* environ[]) {
-  if (pszCommand == 0) {
+static int UnixSpawn(const std::string& cmd, char* environ[]) {
+  if (cmd.empty()) {
     return 1;
   }
   int pid = fork();
@@ -55,7 +35,7 @@ int UnixSpawn(char *pszCommand, char* environ[]) {
     return -1;
   }
   if (pid == 0) {
-    const char* argv[4] = { "/bin/sh", "-c", pszCommand, 0 };
+    const char* argv[4] = { "/bin/sh", "-c", cmd.c_str(), 0 };
     execv("/bin/sh", const_cast<char ** const>(argv));
     exit(127);
   }
@@ -70,6 +50,30 @@ int UnixSpawn(char *pszCommand, char* environ[]) {
       return nStatusCode;
     }
   }
+
+  // Should never happen.
+  return -1;
+}
+
+int ExecExternalProgram(const std::string cmdline, int flags) {
+  if (flags & EFLAG_FOSSIL) {
+    LOG(ERROR) << "EFLAG_FOSSIL is not supported on UNIX";
+  }
+  if (flags & EFLAG_COMIO) {
+    LOG(ERROR) << "EFLAG_COMIO is not supported on UNIX";
+  }
+
+  if (ok_modem_stuff) {
+    session()->remoteIO()->close(true);
+  }
+
+  int i = UnixSpawn(cmdline, NULL);
+
+  // reengage comm stuff
+  if (ok_modem_stuff) {
+    session()->remoteIO()->open();
+  }
+  return i;
 }
 
 
