@@ -7,7 +7,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="network3.cpp">
+    <ClCompile Include="network1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
