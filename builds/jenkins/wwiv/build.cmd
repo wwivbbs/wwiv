@@ -39,14 +39,7 @@ echo:
 echo * Updating the Build Number in version.cpp
 cd %WORKSPACE%\core
 
-setlocal
-rem
-rem When LIB contains paths that do not exist, then TextTransform
-rem fails, so we'll clear it out while running TEXT_TRANSFORM
-rem
-set LIB=
-%TEXT_TRANSFORM% -a !!version!%BUILD_NUMBER% version.template || exit /b
-endlocal
+%SED% -i -e "s@.development@.%BUILD_NUMBER%@" version.cpp
 
 echo:
 echo * Building WWIV
