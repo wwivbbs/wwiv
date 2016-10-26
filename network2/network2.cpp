@@ -313,7 +313,7 @@ int main(int argc, char** argv) {
     const auto& config = net_cmdline.config();
     const auto& networks = net_cmdline.networks();
     unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
-      bbsdir, config.datadir(), config.msgsdir(), networks.networks());
+      config, networks.networks());
     unique_ptr<UserManager> user_manager = make_unique<UserManager>(
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
     Context context(config, net, *user_manager.get(), *api.get(), networks.networks());

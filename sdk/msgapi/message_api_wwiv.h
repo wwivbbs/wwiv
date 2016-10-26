@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
 #define __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
 
+#include "sdk/config.h"
 #include "sdk/net.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_area_wwiv.h"
@@ -36,14 +37,19 @@ class WWIVMessageArea;
 class WWIVMessageApi: public MessageApi {
 public:
   WWIVMessageApi(
+    const wwiv::sdk::Config& config,
+    const std::vector<net_networks_rec>& net_networks);
+  WWIVMessageApi(
     const std::string& bbs_directory,
     const std::string& subs_directory,
     const std::string& messages_directory,
     const std::vector<net_networks_rec>& net_networks);
   virtual ~WWIVMessageApi();
   bool Exist(const std::string& name) const override;
+  virtual WWIVMessageArea* Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext);
   WWIVMessageArea* Create(const std::string& name) override;
   bool Remove(const std::string& name) override;
+  virtual WWIVMessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext);
   WWIVMessageArea* Open(const std::string& name) override;
   WWIVEmail* OpenEmail();
 };

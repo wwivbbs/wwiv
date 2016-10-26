@@ -78,7 +78,7 @@ protected:
     const std::string& in_reply_to, const MessageApi* api);
 
 private:
-  postrec header_;
+  postrec header_ = {};
   std::string from_;
   std::string to_;
   std::string in_reply_to_;

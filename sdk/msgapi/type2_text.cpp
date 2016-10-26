@@ -64,20 +64,22 @@ Type2Text::~Type2Text() {
 
 // Implementation Details
 
-void Type2Text::remove_link(messagerec& msg) {
+bool Type2Text::remove_link(messagerec& msg) {
   unique_ptr<File> file(OpenMessageFile());
-  if (file->IsOpen()) {
-    size_t section = static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS);
-    vector<uint16_t> gat = load_gat(*file, section);
-    uint32_t current_section = msg.stored_as % GAT_NUMBER_ELEMENTS;
-    while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-      uint32_t next_section = static_cast<long>(gat[current_section]);
-      gat[current_section] = 0;
-      current_section = next_section;
-    }
-    save_gat(*file, section, gat);
-    file->Close();
+  if (!file->IsOpen()) {
+    return false;
   }
+  size_t section = static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS);
+  vector<uint16_t> gat = load_gat(*file, section);
+  uint32_t current_section = msg.stored_as % GAT_NUMBER_ELEMENTS;
+  while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
+    uint32_t next_section = static_cast<long>(gat[current_section]);
+    gat[current_section] = 0;
+    current_section = next_section;
+  }
+  save_gat(*file, section, gat);
+  file->Close();
+  return true;
 }
 
 
@@ -163,13 +165,13 @@ bool Type2Text::readfile(const messagerec* msg, string* out) {
   return true;
 }
 
-void Type2Text::savefile(const string& text, messagerec* msg) {
+bool Type2Text::savefile(const string& text, messagerec* msg) {
   vector<uint16_t> gati;
   unique_ptr<File> msgfile(OpenMessageFile());
   if (!msgfile->IsOpen()) {
     // Unable to write to the message file.
     msg->stored_as = 0xffffffff;
-    return;
+    return false;
   }
   size_t section = 0;
   for (section = 0; section < 1024; section++) {
@@ -195,6 +197,7 @@ void Type2Text::savefile(const string& text, messagerec* msg) {
     }
   }
   msg->stored_as = static_cast<uint32_t>(gati[0]) + static_cast<uint32_t>(section) * GAT_NUMBER_ELEMENTS;
+  return true;
 }
 
 }  // namespace msgapi

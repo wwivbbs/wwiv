@@ -153,8 +153,7 @@ public:
 
     const string basename(remaining().front());
     // TODO(rushfan): Create the right API type for the right message area.
-    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(config()->bbsdir(),
-      config()->config()->datadir(), config()->config()->msgsdir(), config()->networks().networks());
+    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(*config()->config(), config()->networks().networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
@@ -241,14 +240,11 @@ bool MessagesDumpHeaderCommand::AddSubCommands() {
 }
 
 int MessagesDumpHeaderCommand::ExecuteImpl(
-  const string& basename, const string& subs_dir,
-	const string& msgs_dir,
-  const std::vector<net_networks_rec>& net_networks,
+  const string& basename,
   int start, int end, bool all) {
 
   // TODO(rushfan): Create the right API type for the right message area.
-  unique_ptr<MessageApi> api(new WWIVMessageApi(config()->bbsdir(),
-      subs_dir, msgs_dir, net_networks));
+  unique_ptr<MessageApi> api(new WWIVMessageApi(*config()->config(), config()->networks().networks()));
   if (!api->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;
     return 1;
@@ -321,8 +317,7 @@ int MessagesDumpHeaderCommand::Execute() {
   int end = arg("end").as_int();
   const bool all = arg("all").as_bool();
   return ExecuteImpl(
-    basename, config()->config()->datadir(), config()->config()->msgsdir(), 
-    config()->networks().networks(), start, end, all);
+    basename, start, end, all);
 }
 
 }  // namespace wwivutil

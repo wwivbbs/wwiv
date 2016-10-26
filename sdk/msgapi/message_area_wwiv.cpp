@@ -302,9 +302,17 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   p.msg = m;
   p.ownersys = header.from_system();
   p.owneruser = header.from_usernum();
-  p.qscan = next_qscan_value_and_increment_post(api_->root_directory());
   if (p.qscan == 0) {
-    // TODO(rushfan): Fail here?
+    // new message.
+    VLOG(3) << "AddMessage needs a qscan";
+    p.qscan = next_qscan_value_and_increment_post(api_->root_directory());
+    if (p.qscan == 0) {
+      // TODO(rushfan): Fail here?
+    }
+  } else {
+    // TODO(rushfan): Make this a VLOG(2)
+    VLOG(3) << "AddMessage called with existing qscan ptr: title: " << message.header()->title()
+            << "; qscan: " << header.data().qscan;
   }
   p.daten = header.daten();
   p.status = header.status();
@@ -312,12 +320,13 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   //  p.status |= status_unvalidated;
   //}
 
-  string text = StrCat(header.from(), "\r\n",
-    daten_to_humantime(header.daten()), "\r\n");
-  text += message.text()->text();
-  savefile(text, &p.msg);
-  add_post(p);
-  return true;
+  const string text = StrCat(header.from(), "\r\n",
+    daten_to_humantime(header.daten()), "\r\n",
+    message.text()->text());
+  if (!savefile(text, &p.msg)) {
+    return false;
+  }
+  return add_post(p);
 }
 
 bool WWIVMessageArea::DeleteMessage(int message_number) {

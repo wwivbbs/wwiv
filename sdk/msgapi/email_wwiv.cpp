@@ -113,7 +113,9 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
     m.network.network_msg.net_number = static_cast<int8_t>(data.from_network_number);
   }
 
-  savefile(data.text, &m.msg);
+  if (!savefile(data.text, &m.msg)) {
+    return false;
+  }
   increment_email_counters(root_directory_, m.touser);
   return add_email(m);
 }

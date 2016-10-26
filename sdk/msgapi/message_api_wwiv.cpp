@@ -41,13 +41,18 @@ static constexpr int  GAT_NUMBER_ELEMENTS = 2048;
 static constexpr int GAT_SECTION_SIZE = 4096;
 static constexpr int MSG_BLOCK_SIZE = 512;
 
+WWIVMessageApi::WWIVMessageApi(
+  const wwiv::sdk::Config& config,
+  const std::vector<net_networks_rec>& net_networks)
+  : WWIVMessageApi(config.root_directory(), config.datadir(), config.msgsdir(), net_networks) {}
+
 
 WWIVMessageApi::WWIVMessageApi(
   const std::string& bbs_directory,
-  const std::string& subs_directory,
+  const std::string& data_directory,
   const std::string& messages_directory,
   const std::vector<net_networks_rec>& net_networks)
-  : MessageApi(bbs_directory, subs_directory, messages_directory, net_networks) {}
+  : MessageApi(bbs_directory, data_directory, messages_directory, net_networks) {}
 WWIVMessageApi::~WWIVMessageApi() {}
 
 bool WWIVMessageApi::Exist(const std::string& name) const {
@@ -56,9 +61,13 @@ bool WWIVMessageApi::Exist(const std::string& name) const {
   return subs.Exists();
 }
 
-// todo(rushfan): should this be create *OR* open instead?
 WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
-  const std::string sub_filename = StrCat(name, ".sub");
+  return Create(name, ".sub", ".dat");
+}
+
+// todo(rushfan): should this be create *OR* open instead?
+WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext) {
+  const std::string sub_filename = StrCat(name, sub_ext);
   File fileSub(subs_directory_, sub_filename);
   if (fileSub.Exists()) {
     // Don't create if it already exists.
@@ -74,7 +83,7 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
     return nullptr;
   }
 
-  const std::string text_filename = StrCat(name, ".dat");
+  const std::string text_filename = StrCat(name, text_ext);
   File msgs_file(messages_directory_, text_filename);
   if (msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create since we have this file already.
@@ -110,8 +119,12 @@ bool WWIVMessageApi::Remove(const std::string& name) {
 }
 
 WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
-  const std::string sub_filename = StrCat(name, ".sub");
-  const string msgs_filename = StrCat(name, ".dat");
+  return Open(name, ".sub", ".dat");
+}
+
+WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext) {
+    const std::string sub_filename = StrCat(name, sub_ext);
+  const string msgs_filename = StrCat(name, text_ext);
   string sub;
   string msgs;
   {
@@ -138,6 +151,8 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
     msgs = msgs_file.full_pathname();
   }
 
+  // We have to return this after the last block exited so that
+  // fileSub and msgs_file will both be closed.
   return new WWIVMessageArea(this, sub, msgs);
 }
 

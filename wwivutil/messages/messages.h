@@ -39,11 +39,7 @@ public:
   bool AddSubCommands() override final;
 
 protected:
-  int ExecuteImpl(
-    const std::string& basename, const std::string& subs_dir,
-    const std::string& msgs_dir,
-    const std::vector<net_networks_rec>& net_networks,
-    int start, int end, bool all);
+  int ExecuteImpl(const std::string& basename, int start, int end, bool all);
 };
 
 }  // namespace wwivutil

@@ -37,8 +37,8 @@ public:
   std::vector<uint16_t> load_gat(File& file, size_t section);
   void save_gat(File& f, size_t section, const std::vector<uint16_t>& gat);
   bool readfile(const messagerec* msg, std::string* out);
-  void savefile(const std::string& text, messagerec* pMessageRecord);
-  void remove_link(messagerec& msg);
+  bool savefile(const std::string& text, messagerec* pMessageRecord);
+  bool remove_link(messagerec& msg);
 
 private:
   File* OpenMessageFile();
