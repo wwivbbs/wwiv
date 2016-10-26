@@ -45,7 +45,7 @@ using std::string;
 using std::make_unique;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
@@ -214,10 +214,112 @@ public:
   }
 };
 
+class PackMessageCommand: public UtilCommand {
+public:
+  PackMessageCommand()
+    : UtilCommand("pack", "Packs a WWIV type-2 message area.") {}
+
+  bool AddSubCommands() override final {
+    add_argument(BooleanCommandLineArgument{"backup", "make a backup of the subs", true});
+    return true;
+  }
+
+  std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage:   pack <base sub filename>" << endl;
+    ss << "Example: post general" << endl;
+    return ss.str();
+  }
+
+  bool backup(Config& config, const string& name) {
+    string sub_filename = StrCat(config.datadir(), name, ".sub");
+    string dat_filename = StrCat(config.msgsdir(), name, ".dat");
+
+    time_t now = time(nullptr);
+    struct tm* local = localtime(&now);
+
+    string backup_extension = put_time(local, ".backup.%Y%m%d%H%M%S");
+    File::Copy(sub_filename, StrCat(sub_filename, backup_extension));
+    File::Copy(dat_filename, StrCat(dat_filename, backup_extension));
+    return true;
+  }
+
+  virtual int Execute() {
+    if (remaining().size() < 1) {
+      clog << "Missing sub basename." << endl;
+      cout << GetUsage() << GetHelp();
+      return 2;
+    }
+
+    const string basename(remaining().front());
+    // TODO(rushfan): Create the right API type for the right message area.
+    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(*config()->config(), config()->networks().networks());
+    if (!api->Exist(basename)) {
+      clog << "Message area: '" << basename << "' does not exist." << endl;
+      clog << "Attempting to create it." << endl;
+      // Since the area does not exist, let's create it automatically
+      // like WWIV alwyas does.
+      unique_ptr<MessageArea> creator(api->Create(basename));
+      if (!creator) {
+        clog << "Failed to create message area: " << basename << ". Exiting." << endl;
+        return 1;
+      }
+    }
+
+    // Ensure we can open it.
+    {
+      unique_ptr<WWIVMessageArea> area(api->Open(basename));
+      if (!area) {
+        clog << "Error opening message area: '" << basename << "'." << endl;
+        return 1;
+      }
+    }
+
+    if (barg("backup")) {
+      backup(*config()->config(), basename);
+    }
+
+    string newbasename = StrCat(basename, ".new");
+    {
+      unique_ptr<WWIVMessageArea> area(api->Open(basename));
+      unique_ptr<WWIVMessageArea> newarea(api->Create(newbasename));
+      if (!newarea) {
+        clog << "Unable to create new area: " << newbasename;
+        return 1;
+      }
+      int total = area->number_of_messages();
+      for (int i = 1; i <= total; i++) {
+        unique_ptr<WWIVMessage> message(area->ReadMessage(i));
+        if (!message) { continue; }
+        if (!newarea->AddMessage(*message.get())) {
+          LOG(ERROR) << "Error adding message: " << message->header()->title();
+        } else {
+          cout << "[" << i << "]";
+        }
+      }
+    }
+
+    // Copy "new" versions back to sub and dat
+    const string orig_sub_fn = StrCat(config()->config()->datadir(), basename, ".sub");
+    File::Remove(orig_sub_fn);
+    if (!File::Rename(StrCat(config()->config()->datadir(), newbasename, ".sub"), orig_sub_fn)) {
+      clog << "Unable to move sub";
+    }
+    const string orig_dat_fn = StrCat(config()->config()->msgsdir(), basename, ".dat");
+    File::Remove(orig_dat_fn);
+    if (!File::Rename(StrCat(config()->config()->msgsdir(), newbasename, ".dat"), orig_dat_fn)) {
+      clog << "Unable to move dat";
+    }
+
+    return 0;
+  }
+};
+
 bool MessagesCommand::AddSubCommands() {
   if (!add(make_unique<MessagesDumpHeaderCommand>())) { return false; }
   if (!add(make_unique<DeleteMessageCommand>())) { return false; }
   if (!add(make_unique<PostMessageCommand>())) { return false; }
+  if (!add(make_unique<PackMessageCommand>())) { return false; }
   return true;
 }
 

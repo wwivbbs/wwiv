@@ -21,6 +21,7 @@
 
 #include <cstdint>
 #include <cstring> // strncpy
+#include <ctime> // struct tm
 #include <sstream>
 #include <string>
 #include <vector>
@@ -83,7 +84,6 @@ bool ends_with(const std::string& input, const std::string& match);
 
 void StringJustify(std::string* s, std::string::size_type length, char bg, JustificationType just_type);
 void StringTrim(char *str);
-//std::string StringTrim(const std::string& s);
 void StringTrim(std::string* s);
 void StringTrimEnd(std::string* s);
 void StringTrimEnd(char *str);
@@ -100,6 +100,9 @@ char *StringRemoveChar(const char *str, char ch);
 
 std::string JoinStrings(const std::vector<std::string> lines, const std::string end_of_line);
 
+// Time and STL things to come in C++14 or GCC5
+
+std::string put_time(const struct tm *tm_info, const std::string& fmt_arg);
 
 }  // namespace strings
 

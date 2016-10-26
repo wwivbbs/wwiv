@@ -402,6 +402,15 @@ std::string JoinStrings(const std::vector<std::string> lines, const std::string 
   return out;
 }
 
+std::string put_time(const struct tm *tm_info, const std::string& fmt_arg) {
+  char buffer[1024];
+
+  size_t num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
+  if (num == 0) {
+    return "";
+  }
+  return string(buffer);
+}
 }  // namespace strings
 }  // namespace wwiv
 
