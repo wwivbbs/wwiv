@@ -499,16 +499,29 @@ struct network_message_t {
 
 struct subfile_header_t {
   char signature[6];
+  // WWIV version used to create this sub.
   uint16_t wwiv_version;
+  // Message SDK compatibility revision used to create this sub.  
+  // Currently only value is 1.
   uint32_t revision;
+  // 32-bit time_t value for when this sub was created.
   uint32_t daten_created;
+  // Extra padding to be used when we switch to 64 bit time_t values.
   uint32_t unused_padding_for_64bit_time_t;
+  // Modification count for this sub.  Every write to this file should
+  // Increase the mod count.  This can be used for caching.
   uint32_t mod_count;
+  // Extra padding to be used when we switch to 64 bit mod count values.
   uint32_t unused_padding_for_64bit_mod_count;
+  // For future expansion: 32-bit CRC password to access this sub.
   uint32_t password_crc32;
+  // ????
   uint32_t base_message_num;
+  // UNUSED
   uint8_t padding_1[49];
+  // Number of messages in this area.
   uint16_t active_message_count;
+  // UNUSED
   uint8_t padding_2[13];
 };
 
