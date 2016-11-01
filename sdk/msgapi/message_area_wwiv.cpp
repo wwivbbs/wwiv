@@ -69,7 +69,10 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
 }
 
 static bool WriteHeader(DataFile<postrec>& file, const WWIVMessageAreaHeader& header) {
-  return file.Write(0, reinterpret_cast<const postrec*>(&header.header()));
+  auto p = header.header();
+  // Increment the mod_count every time we write the header.
+  p.mod_count++;
+  return file.Write(0, reinterpret_cast<const postrec*>(&p));
 }
 
 WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t num_messages)

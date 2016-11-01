@@ -372,7 +372,8 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email")) {
-    const string irt_name_buf = StringPrintf("BY: %s", irt_name);
+    const string 
+      irt_name_buf = StringPrintf("BY: %s", irt_name);
     ss << irt_name_buf << crlf;
   }
   ss << crlf;

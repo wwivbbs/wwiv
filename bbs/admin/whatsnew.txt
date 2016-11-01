@@ -45,6 +45,11 @@ What's New in WWIV 5.2 (2016)
   The only settings are crc=[Y|N] and skip_net=[Y|N].
 * The short lived networkb.ini is renamed to net.ini (yes, this is the same
   as the WINS one, but WINS will go away over time).
+* networkb will loop on receive, no need to run binkp.cmd, but
+  since wwivserver can answer binkp for you, no need to run networkb
+  manually to receive traffic.
+* wwivutil messages now has a pack comand to pack a message area.
+
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -104,12 +104,12 @@ public:
          << num_messages << " messages." << endl;
 
     if (message_number < 0 || message_number > num_messages) {
-      clog << "Invalid message number: " << message_number << endl;
+      LOG(ERROR) << "Invalid message number #" << message_number;
       return 1;
     }
     bool success = area->DeleteMessage(message_number);
     if (!success) {
-      clog << "Error deleting message number: " << message_number << endl;
+      LOG(ERROR) << "Unable to delete message #" << message_number << "; Try packing this sub.";
       return 1;
     }
 
@@ -290,7 +290,10 @@ public:
       int total = area->number_of_messages();
       for (int i = 1; i <= total; i++) {
         unique_ptr<WWIVMessage> message(area->ReadMessage(i));
-        if (!message) { continue; }
+        if (!message) { 
+          LOG(ERROR) << "Unable to load message #" << i;
+          continue; 
+        }
         if (!newarea->AddMessage(*message.get())) {
           LOG(ERROR) << "Error adding message: " << message->header()->title();
         } else {

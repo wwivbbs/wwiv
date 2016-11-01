@@ -475,16 +475,19 @@ struct directoryrec {
 
 // QUICK REFERNCE TO FIND USER NUMBER FROM NAME
 struct smalrec {
+  // User name.
   unsigned char name[31];
-
+  // User number.
   uint16_t number;
 };
 
 
-// TYPE TO TELL WHERE A MESSAGE IS STORED
+// TYPE-1 and TYPE-2 locator to find the message text.
 struct messagerec {
-  uint8_t storage_type;                 // how it is stored (type, 1 or 2)
-  uint32_t stored_as;                   // where it is stored (type specific)
+  // how it is stored (type, 1 or 2)
+  uint8_t storage_type;
+  // where it is stored (type specific)
+  uint32_t stored_as;
 };
 
 // Union types used by postrec/mailrec network settings.
@@ -527,23 +530,34 @@ struct subfile_header_t {
 
 // DATA HELD FOR EVERY POST
 struct postrec {
-  char title[72];                       // title of post
+  // title of post
+  char title[72];
+  // UNUSED padding from title.
   uint8_t padding_from_title[6];
   union {
+    // Used if this is a source verified message.
     source_verified_message_t src_verified_msg;
+    // Used if this is a network message.
     network_message_t network_msg;
   } network;
 
-  uint8_t anony,                        // anony-stat of message
-          status;                       // bit-mapped status
+  // anony-stat of message
+  uint8_t anony;
+  // bit-mapped status
+  uint8_t status;
 
-  uint16_t ownersys,                    // what system it came from
-           owneruser;                   // who posted it
+  // what system it came from
+  uint16_t ownersys;
+  // User number who posted it
+  uint16_t owneruser;
 
-  uint32_t qscan,                        // qscan pointer
-           daten;                        // numerical date posted
+  // qscan pointer
+  uint32_t qscan;
+  // 32-bit time_t value for the date posted
+  uint32_t daten;
 
-  messagerec msg;                        // where to find it
+  // where to find it in the type-2 messagebase.
+  messagerec msg;
 };
 
 // DATA HELD FOR EVERY E-MAIL OR F-BACK

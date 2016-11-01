@@ -267,14 +267,14 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string 
   }
 }
 
-void read_type2_message(messagerec * pMessageRecord, char an, bool readit, bool *next, const char *file_name,
-  int nFromSystem, int nFromUser) {
+void read_type2_message(messagerec* msg, char an, bool readit, bool* next, const char* file_name,
+  int from_sys_num, int from_user) {
 
   g_flags &= ~g_flag_ansi_movement;
   *next = false;
 
   string message_text;
-  if (!readfile(pMessageRecord, file_name, &message_text)) {
+  if (!readfile(msg, file_name, &message_text)) {
     return;
   }
 
@@ -295,25 +295,25 @@ void read_type2_message(messagerec * pMessageRecord, char an, bool readit, bool 
 
   irt_name[0] = '\0';
   g_flags |= g_flag_disable_mci;
-  string from;
-  string loc;
+  string from_sys_name;
+  string from_sys_loc;
 
   UpdateHeaderInformation(an, readit, name, &name, &date);
   if (an == 0) {
     if (syscfg.sysconfig & sysconfig_enable_mci) {
       g_flags &= ~g_flag_disable_mci;
     }
-    SetMessageOriginInfo(nFromSystem, nFromUser, &from, &loc);
+    SetMessageOriginInfo(from_sys_num, from_user, &from_sys_name, &from_sys_loc);
     strcpy(irt_name, name.c_str());
   }
 
-  bout << "|#9Name|#7: |#1" << name << wwiv::endl;
+  bout << "|#9From|#7: |#1" << name << wwiv::endl;
   bout << "|#9Date|#7: |#1" << date << wwiv::endl;
-  if (!from.empty()) {
-    bout << "|#9From|#7: |#1" << from << wwiv::endl;
+  if (!from_sys_name.empty()) {
+    bout << "|#9 Sys|#7: |#1" << from_sys_name << wwiv::endl;
   }
-  if (!loc.empty()) {
-    bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
+  if (!from_sys_loc.empty()) {
+    bout << "|#9Loc|#7:  |#1" << from_sys_loc << wwiv::endl;
   }
   display_message_text(message_text, next);
 }
