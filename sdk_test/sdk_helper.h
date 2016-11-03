@@ -30,11 +30,13 @@ public:
 
   const std::string& root() const { return root_; }
   const std::string& data() const { return data_; }
+  const std::string& msgs() const { return msgs_; }
   FileHelper& files() { return files_; }
 
   std::string CreatePath(const std::string& name);
   FileHelper files_;
   std::string data_;
+  std::string msgs_;
 
 private:
   const std::string saved_dir_;

@@ -27,6 +27,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "bbs/subacc.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
@@ -59,12 +60,24 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     return header;
   }
   if (raw_header.active_message_count > file.number_of_records()) {
-    /*LOG(INFO) << "Header claims too many messages, raw_header.active_message_count("
+    VLOG(1) << "Header claims too many messages, raw_header.active_message_count("
       << raw_header.active_message_count << ") > file.number_of_records("
       << file.number_of_records() << ")";
-    */
     raw_header.active_message_count = static_cast<uint16_t>(file.number_of_records());
   }
+
+  if (strncmp(raw_header.signature, "WWIV\x1A", 5) != 0) {
+    LOG(INFO) << "Missing 5.x header on sub: " << file.file().GetName();
+    auto saved_count = raw_header.active_message_count;
+    memset(&raw_header, 0, sizeof(subfile_header_t));
+    // We don't have a modern header.
+    strcpy(raw_header.signature, "WWIV\x1A");
+    raw_header.active_message_count = saved_count;
+    raw_header.revision = 1;
+    raw_header.wwiv_version = wwiv_num_version;
+    raw_header.daten_created = static_cast<uint32_t>(time(nullptr));
+  }
+
   return WWIVMessageAreaHeader(raw_header);
 }
 
@@ -112,7 +125,9 @@ bool WWIVMessageArea::Unlock() {
 
 void WWIVMessageArea::ReadMessageAreaHeader(MessageAreaHeader& header) {
   DataFile<postrec> sub(sub_filename_);
-  header = ReadHeader(sub);
+  WWIVMessageAreaHeader h = ReadHeader(sub);
+  header_ = h.raw_header();
+  header = h;
 }
 
 void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader& header) {
@@ -374,6 +389,108 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
   return true;
 }
 
+bool WWIVMessageArea::ResyncMessage(int& message_number) {
+  if (!HasSubChanged()) {
+    return true;
+  }
+
+  unique_ptr<WWIVMessage> m(ReadMessage(message_number));
+  if (!m) {
+    auto num_messages = number_of_messages();
+    if (message_number > num_messages) {
+      message_number = num_messages;
+      return true;
+    }
+    return false;
+  }
+
+  return ResyncMessageImpl(message_number, *m);
+}
+
+bool WWIVMessageArea::HasSubChanged() {
+  subfile_header_t last_read_header = this->header_;
+  subfile_header_t current_read_header = {};
+  {
+    DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
+    WWIVMessageAreaHeader h = ReadHeader(sub);
+    current_read_header = h.raw_header();
+  }
+
+  return current_read_header.mod_count > last_read_header.mod_count;
+}
+
+bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
+  if (!HasSubChanged()) {
+    return true;
+  }
+
+  // Assume it has changed.
+  return ResyncMessageImpl(message_number, raw_message);
+}
+
+bool IsSamePost(postrec& l, postrec& r) {
+  return l.qscan == r.qscan 
+    && l.anony == r.anony 
+    && l.daten == r.daten 
+    && l.ownersys == r.ownersys 
+    && l.owneruser == r.owneruser 
+    && l.msg.stored_as == r.msg.stored_as;
+}
+
+bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_message) {
+  WWIVMessage& message = dynamic_cast<WWIVMessage&>(raw_message);
+  postrec p = message.header()->data();
+
+  auto num_messages = number_of_messages();
+  if (message_number > num_messages) {
+    message_number = num_messages;
+    return true;
+  }
+
+  unique_ptr<WWIVMessageHeader> pp1(ReadMessageHeader(message_number));
+  if (!pp1) {
+    return true;
+  }
+
+  if (IsSamePost(pp1->header_, p)) {
+    return true;
+  }
+  if (p.qscan < pp1->header_.qscan) {
+    // Search from the current message to the first.
+    int num_msgs = number_of_messages();
+    if (message_number > num_msgs) {
+      message_number = num_msgs + 1;
+    }
+    for (int i = message_number - 1; i > 0; i--) {
+      pp1.reset(ReadMessageHeader(i));
+      if (!pp1) {
+        continue;
+      }
+      if (p.qscan >= pp1->header_.qscan || IsSamePost(p, pp1->header_)) {
+        message_number = i;
+        return true;
+      }
+    }
+    message_number = 0;
+    return true;
+  }
+
+  // Search the full list
+  int num_msgs = number_of_messages();
+  for (int i = message_number + 1; i <= num_msgs; i++) {
+    pp1.reset(ReadMessageHeader(i));
+    if (!pp1) {
+      continue;
+    }
+    if (p.qscan >= pp1->header_.qscan || IsSamePost(p, pp1->header_)) {
+      message_number = i;
+      return true;
+    }
+  }
+  message_number = num_msgs;
+  return true;
+}
+
 WWIVMessage* WWIVMessageArea::CreateMessage() {
   return new WWIVMessage(
     make_unique<WWIVMessageHeader>(api_),
@@ -390,7 +507,7 @@ bool WWIVMessageArea::add_post(const postrec& post) {
   if (sub.number_of_records() == 0) {
     return false;
   }
-  WWIVMessageAreaHeader wwiv_header = ReadHeader(sub);
+  WWIVMessageAreaHeader wwiv_header(ReadHeader(sub));
   if (!wwiv_header.initialized()) {
     // This is an invalid header.
     return false;

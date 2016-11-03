@@ -55,6 +55,9 @@ public:
   virtual MessageText* ReadMessageText(int message_number) = 0;
   virtual bool AddMessage(const Message& message) = 0;
   virtual bool DeleteMessage(int message_number) = 0;
+  /** Updates message_number to point to the */
+  virtual bool ResyncMessage(int& message_number) = 0;
+  virtual bool ResyncMessage(int& message_number, Message& message) = 0;
 
   /** Creates a new empty message for this area. */
   virtual Message* CreateMessage() = 0;

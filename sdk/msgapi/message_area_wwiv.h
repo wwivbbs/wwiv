@@ -49,6 +49,8 @@ public:
   bool initialized() const { return initialized_; }
   void set_initialized(bool initialized) { initialized_ = initialized; }
 
+  subfile_header_t raw_header() const { return header_; }
+
 private:
   subfile_header_t header_{};
   bool initialized_ = true;
@@ -76,6 +78,8 @@ public:
   WWIVMessageText*  ReadMessageText(int message_number) override;
   bool AddMessage(const Message& message) override;
   bool DeleteMessage(int message_number) override;
+  bool ResyncMessage(int& message_number) override;
+  bool ResyncMessage(int& message_number, Message& message) override;
 
   WWIVMessage* CreateMessage() override;
 
@@ -89,9 +93,13 @@ private:
     std::string& to, 
     std::string& in_reply_to, 
     std::string& text);
+  bool HasSubChanged();
+  bool ResyncMessageImpl(int& message_number, Message& message);
+
 
   const std::string sub_filename_;
   bool open_ = false;
+  subfile_header_t header_;
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 };

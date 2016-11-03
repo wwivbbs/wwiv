@@ -47,4 +47,3 @@ Message Areas
 * Make read_type2_message return a structure of the data from a type-2 message. 
   Also add a display_default_header or something to display what read_type2_message
   used to display by default.
-* Need resynch so we can use the messageapi in the bbs

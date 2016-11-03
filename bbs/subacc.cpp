@@ -222,12 +222,24 @@ void add_post(postrec * pp) {
     // get updated info
     session()->status_manager()->RefreshStatusCache();
     fileSub.Seek(0L, File::seekBegin);
-    postrec p;
-    fileSub.Read(&p, sizeof(postrec));
+    subfile_header_t p = {};
+    fileSub.Read(&p, sizeof(subfile_header_t));
+
+    if (strncmp(p.signature, "WWIV\x1A", 5) != 0) {
+      auto saved_count = p.active_message_count;
+      memset(&p, 0, sizeof(subfile_header_t));
+      // We don't have a modern header.
+      strcpy(p.signature, "WWIV\x1A");
+      p.active_message_count = saved_count;
+      p.revision = 1;
+      p.wwiv_version = wwiv_num_version;
+      p.daten_created = static_cast<uint32_t>(time(nullptr));
+    }
 
     // one more post
-    p.owneruser++;
-    session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
+    p.active_message_count++;
+    p.mod_count++;
+    session()->SetNumMessagesInCurrentMessageArea(p.active_message_count);
     fileSub.Seek(0L, File::seekBegin);
     fileSub.Write(&p, sizeof(postrec));
 

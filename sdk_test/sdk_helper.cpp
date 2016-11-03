@@ -35,27 +35,61 @@
 using namespace std;
 using namespace wwiv::strings;
 
+static string date() {
+  time_t t = time(nullptr);
+  struct tm* pTm = localtime(&t);
+  return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+}
+
+static statusrec_t create_status() {
+  statusrec_t s = {};
+  memset(&s, 0, sizeof(statusrec_t));
+  string now(date());
+  strcpy(s.date1, now.c_str());
+  strcpy(s.date2, "00/00/00");
+  strcpy(s.date3, "00/00/00");
+  strcpy(s.log1, "000000.log");
+  strcpy(s.log2, "000000.log");
+  strcpy(s.gfiledate, now.c_str());
+  s.callernum = 65535;
+  s.qscanptr = 2;
+  s.net_bias = 0.001f;
+  s.net_req_free = 3.0;
+  return s;
+}
 
 SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.CreateTempFilePath("bbs")) {
-  const string msgs = CreatePath("msgs");
+  data_ = CreatePath("data");
+  msgs_ = CreatePath("msgs");
   const string gfiles = CreatePath("gfiles");
   const string menus = CreatePath("menus");
-  data_ = CreatePath("data");
   const string dloads = CreatePath("dloads");
 
-  configrec c;
-  strcpy(c.msgsdir, msgs.c_str());
-  strcpy(c.gfilesdir, gfiles.c_str());
-  strcpy(c.menudir, menus.c_str());
-  strcpy(c.datadir, data_.c_str());
-  strcpy(c.dloadsdir, dloads.c_str());
+  {
+    configrec c = {};
+    to_char_array(c.msgsdir, msgs_);
+    to_char_array(c.gfilesdir, gfiles);
+    to_char_array(c.menudir, menus);
+    to_char_array(c.datadir, data_);
+    to_char_array(c.dloadsdir, dloads);
 
-  File cfile(root_, CONFIG_DAT);
-  if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
-    throw "failed to create config.dat";
+    File cfile(root_, CONFIG_DAT);
+    if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
+      throw std::exception("failed to create config.dat");
+    }
+    cfile.Write(&c, sizeof(configrec));
+    cfile.Close();
   }
-  cfile.Write(&c, sizeof(configrec));
-  cfile.Close();
+
+  {
+    File sfile(data_, STATUS_DAT);
+    if (!sfile.Open(File::modeBinary | File::modeCreateFile | File::modeWriteOnly)) {
+      throw std::exception("failed to create status.dat");
+    }
+    statusrec_t s = create_status();
+    sfile.Write(&s, sizeof statusrec_t);
+    sfile.Close();
+  }
 }
 
 std::string SdkHelper::CreatePath(const string& name) {
