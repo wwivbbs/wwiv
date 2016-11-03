@@ -1023,7 +1023,7 @@ void readmail(int mode) {
                   session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() - 1);
                 }
                 bout << "Forwarding: ";
-                EmailData email;
+                ::EmailData email;
                 email.title = m.title;
                 email.msg = &m.msg;
                 email.anony = m.anony;

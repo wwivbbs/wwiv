@@ -59,6 +59,8 @@
 #include "sdk/names.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
@@ -588,6 +590,13 @@ void WSession::read_nintern() {
 bool WSession::read_subs() {
   subs_.reset(new wwiv::sdk::Subs(config_->datadir(), net_networks));
   subs_->Load();
+  return true;
+}
+
+bool WSession::create_message_api() {
+  // We only support type-2
+  msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(*config_.get(), net_networks);
+
   return true;
 }
 

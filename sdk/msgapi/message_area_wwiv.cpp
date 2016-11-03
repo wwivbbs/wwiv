@@ -428,7 +428,7 @@ bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
   return ResyncMessageImpl(message_number, raw_message);
 }
 
-bool IsSamePost(postrec& l, postrec& r) {
+static bool IsSamePost(postrec& l, postrec& r) {
   return l.qscan == r.qscan 
     && l.anony == r.anony 
     && l.daten == r.daten 

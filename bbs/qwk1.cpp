@@ -531,7 +531,7 @@ void qwk_email_text(char *text, char *title, char *to) {
 
     bout.Color(8);
 
-    EmailData email;
+    ::EmailData email;
     email.title = title;
     email.msg = &msg;
     email.anony = 0;

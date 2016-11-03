@@ -20,6 +20,7 @@
 #define __INCLUDED_BBS_WSESSION_H__
 
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -27,12 +28,11 @@
 #include "bbs/batch.h"
 #include "bbs/runnable.h"
 #include "bbs/remote_io.h"
-#include "sdk/status.h"
 #include "bbs/output.h"
-#include "sdk/subxtr.h"
 #include "bbs/local_io.h"
-//#include "core/inifile.h"
 #include "core/file.h"
+#include "sdk/status.h"
+#include "sdk/subxtr.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/net.h"
@@ -40,6 +40,8 @@
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
 //
 // WSession - Holds information and status data about the current user
@@ -264,8 +266,10 @@ public:
   void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) { config_ = std::move(config); }
   /** Returns the WWIV Names.LST Config Object. */
   wwiv::sdk::Names* names() const { return names_.get(); }
+  wwiv::sdk::msgapi::MessageApi* msgapi(int type) const { return msgapis_.at(type).get(); }
 
   bool read_subs();
+  bool create_message_api();
 
   /*!
   * @function ShowUsage - Shows the help screen to the user listing
@@ -436,6 +440,7 @@ private:
   std::string current_speed_;
   std::unique_ptr<wwiv::sdk::Config> config_;
   std::unique_ptr<wwiv::sdk::Names> names_;
+  std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> msgapis_;
 
   Batch batch_;
   std::unique_ptr<wwiv::sdk::Subs> subs_;

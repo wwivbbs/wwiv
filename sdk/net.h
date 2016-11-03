@@ -257,17 +257,25 @@ struct net_call_out_rec {
 #define options_hide_pend     0x0400   /* = hide in pending display */
 
 struct net_networks_rec {
-  uint8_t   type;           /* type of network */
-  char            name[16];       /* network name */
-  char            dir[69];        /* directory for net data */
-  uint16_t  sysnum;         /* system number */
+  /* type of network */
+  uint8_t type;
+  /* network name */
+  char name[16];
+  /* directory for net data */
+  char dir[69];
+  /* system number */
+  uint16_t sysnum;
 };
 
 struct net_networks_rec_disk {
-  uint8_t   type;           /* type of network */
-  char            name[16];       /* network name */
-  char            dir[69];        /* directory for net data */
-  uint16_t  sysnum;         /* system number */
+  /* type of network */
+  uint8_t type;
+  /* network name */
+  char name[16];
+  /* directory for net data */
+  char dir[69];
+  /* system number */
+  uint16_t  sysnum;
   uint8_t padding[12];
 };
 
