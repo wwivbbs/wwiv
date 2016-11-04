@@ -809,6 +809,9 @@ void WSession::InitializeBBS() {
   set_net_num(0);
   read_networks();
   set_net_num(0);
+  if (!create_message_api()) {
+    AbortBBS();
+  }
 
   VLOG(1) << "Reading status information.";
   WStatus* pStatus = statusMgr->BeginTransaction();

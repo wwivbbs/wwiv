@@ -242,7 +242,6 @@ bool Subs::Load() {
     sub.maxmsgs = olds.maxmsgs;
     sub.ar = olds.ar;
     sub.storage_type = olds.storage_type;
-    sub.type = olds.type;
     for (const auto& n : oldx.nets) {
       subboard_network_data_t netdata = {};
       netdata.stype = n.stype;
@@ -275,7 +274,7 @@ bool Subs::Save() {
     ls.maxmsgs = s.maxmsgs;
     ls.ar = s.ar;
     ls.storage_type = s.storage_type;
-    ls.type = s.type;
+    ls.unused_legacy_type = 0;
     for (const auto& n : s.nets) {
       xtrasubsnetrec on = {};
       to_char_array(on.stype, n.stype);

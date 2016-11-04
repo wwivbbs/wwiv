@@ -510,7 +510,6 @@ static void insert_sub(int n) {
   r.age = 0;
   r.maxmsgs = 50;
   r.ar = 0;
-  r.type = 0;
   r.storage_type = 2;
 
   // Insert new item.

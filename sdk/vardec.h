@@ -453,7 +453,7 @@ struct subboardrec_422_t {
   uint16_t maxmsgs,                     // max # of msgs
            ar,                                     // AR for sub-board
            storage_type,                           // how messages are stored
-           type;                                   // 4 digit board type
+           unused_legacy_type;                                   // 4 digit board type
 };
 
 
