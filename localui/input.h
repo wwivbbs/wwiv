@@ -418,10 +418,10 @@ protected:
   }
 };
 
-class StringFilePathItem: public EditItem<std::string> {
+class StringFilePathItem: public EditItem<std::string&> {
 public:
-  StringFilePathItem(int x, int y, int maxsize, const std::string& data)
-    : EditItem<std::string>(x, y, maxsize, data) {}
+  StringFilePathItem(int x, int y, int maxsize, std::string& data)
+    : EditItem<std::string&>(x, y, maxsize, data) {}
   virtual ~StringFilePathItem() {}
 
   virtual int Run(CursesWindow* window) override {
@@ -429,9 +429,11 @@ public:
     int return_code = 0;
     editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
     wwiv::strings::StringTrimEnd(&this->data_);
-    if (!data_.back() == File::pathSeparatorChar) {
+    if (data_.back() != File::pathSeparatorChar) {
       data_.push_back(File::pathSeparatorChar);
     }
+    // Update what we display in case it changed.
+    DefaultDisplay(window);
     return return_code;
   }
 
@@ -441,7 +443,7 @@ protected:
     window->PutsXY(this->x_, this->y_, blanks.c_str());
 
     const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
-    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_);
+    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_.c_str());
   }
 };
 
