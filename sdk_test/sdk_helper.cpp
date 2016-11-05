@@ -75,7 +75,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
 
     File cfile(root_, CONFIG_DAT);
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
-      throw std::exception("failed to create config.dat");
+      throw std::runtime_error("failed to create config.dat");
     }
     cfile.Write(&c, sizeof(configrec));
     cfile.Close();
@@ -84,10 +84,10 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
   {
     File sfile(data_, STATUS_DAT);
     if (!sfile.Open(File::modeBinary | File::modeCreateFile | File::modeWriteOnly)) {
-      throw std::exception("failed to create status.dat");
+      throw std::runtime_error("failed to create status.dat");
     }
     statusrec_t s = create_status();
-    sfile.Write(&s, sizeof statusrec_t);
+    sfile.Write(&s, sizeof(statusrec_t));
     sfile.Close();
   }
 }
