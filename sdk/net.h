@@ -23,6 +23,7 @@
 #include "sdk/msdos_stdint.h"
 #else
 #include <cstdint>
+#include <string>
 #include <vector>
 #endif  // __MSDOS__
 
@@ -256,6 +257,12 @@ struct net_call_out_rec {
 #define options_dial_ten      0x0200   /* * use ten digit dialing format */
 #define options_hide_pend     0x0400   /* = hide in pending display */
 
+#ifndef __MSDOS__
+
+/**
+ * Internal structure for networks.dat or networks.json used by WWIV.
+ * On disk it's persisted as net_networks_rec_disk.
+ */
 struct net_networks_rec {
   /* type of network */
   uint8_t type;
@@ -267,6 +274,13 @@ struct net_networks_rec {
   uint16_t sysnum;
 };
 
+#endif  // __MSDOS__
+
+/**
+ * Contains the metadata for each network.
+ * 
+ * On disk format for networks.dat
+ */
 struct net_networks_rec_disk {
   /* type of network */
   uint8_t type;
