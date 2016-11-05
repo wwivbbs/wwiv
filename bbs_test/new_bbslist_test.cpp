@@ -61,7 +61,7 @@ TEST_F(NewBbsListTest, NoFile) {
 }
 
 TEST_F(NewBbsListTest, SingleItem_NoAddress) {
-  const string json = "{ \"bbslist\": [ { \"name\": \"n1\", \"software\": \"s1\" } ] }";
+  const string json = "{ \"bbslist\": [ { \"name\": \"n1\", \"storage_type\": 2 } ] }";
   this->CreateTempFile("bbslist.json", json);
    
   vector<BbsListEntry> entries;

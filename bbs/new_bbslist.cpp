@@ -68,19 +68,23 @@ void serialize(Archive & ar, wwiv::bbslist::BbsListEntry &b) {
   ar(cereal::make_nvp("name", b.name));
   try {
     ar(cereal::make_nvp("software", b.software));
-  } catch (...) {
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
   }
   try {
     ar(cereal::make_nvp("sysop_name", b.sysop_name));
-  } catch (...) {
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
   }
   try {
     ar(cereal::make_nvp("location", b.location));
-  } catch (...) {
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
   }
   try {
     ar(cereal::make_nvp("addresses", b.addresses));
-  } catch (const std::exception& e) {
+  } catch (const cereal::Exception& e) {
+    ar.setNextName(nullptr);
     LOG(ERROR) << e.what();
   }
 }

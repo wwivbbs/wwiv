@@ -88,6 +88,10 @@ public:
   bool erase(std::size_t n);
   std::vector<net_networks_rec>::size_type size() const { return subs_.size(); }
 
+  static bool LoadFromJSON(const std::string& dir, const std::string& filename, subs_t& entries);
+  static bool SaveToJSON(const std::string& dir, const std::string& filename, const subs_t& entries);
+
+
 private:
   const std::string datadir_;
   const std::vector<net_networks_rec> net_networks_;

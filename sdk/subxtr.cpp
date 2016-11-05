@@ -55,27 +55,130 @@ bool write_subs(const std::string &datadir, const std::vector<subboardrec_422_t>
 
 template <class Archive>
 void serialize(Archive & ar, subboard_network_data_t& s) {
-  ar(make_nvp("stype", s.stype),
-    make_nvp("flags", s.flags),
-    make_nvp("net_num", s.net_num),
-    make_nvp("host", s.host),
-    make_nvp("category", s.category));
+  try {
+    ar(make_nvp("stype", s.stype));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+  ar(make_nvp("flags", s.flags));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("net_num", s.net_num));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("host", s.host));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("category", s.category));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
 }
 
 template <class Archive>
-void serialize(Archive & archive, subboard_t& s) {
-  archive(make_nvp("name", s.name), make_nvp("desc", s.desc), 
-    make_nvp("filename", s.filename), make_nvp("key", s.key),
-    make_nvp("readsl", s.readsl), make_nvp("postsl", s.postsl), 
-    make_nvp("anony", s.anony), make_nvp("age", s.age), 
-    make_nvp("maxmsgs", s.maxmsgs), make_nvp("ar", s.ar), 
-    make_nvp("storage_type", s.storage_type), make_nvp("stype", s.type), 
-    make_nvp("nets", s.nets));
+void serialize(Archive & ar, subboard_t& s) {
+  ar(make_nvp("name", s.name));
+  try {
+    ar(make_nvp("desc", s.desc));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("filename", s.filename));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("key", s.key));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("readsl", s.readsl));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("postsl", s.postsl));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("anony", s.anony));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("age", s.age));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("maxmsgs", s.maxmsgs));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("ar", s.ar));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("storage_type", s.storage_type));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("nets", s.nets));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
 }
 
 template <class Archive>
-void serialize(Archive & archive, subs_t& s) {
-  archive(cereal::make_nvp("subs", s.subs));
+void serialize(Archive & ar, subs_t& s) {
+  ar(cereal::make_nvp("subs", s.subs));
+}
+
+bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, subs_t& s) {
+  s.subs.clear();
+  TextFile file(dir, filename, "r");
+  if (!file.IsOpen()) {
+    return false;
+  }
+  string text = file.ReadFileIntoString();
+  std::stringstream ss;
+  ss << text;
+  cereal::JSONInputArchive load(ss);
+  load(cereal::make_nvp("subs", s.subs));
+
+  return true;
+}
+
+//static 
+bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const subs_t& s) {
+  std::ostringstream ss;
+  {
+    cereal::JSONOutputArchive save(ss);
+    save(cereal::make_nvp("subs", s.subs));
+  }
+
+  TextFile file(dir, filename, "w");
+  if (!file.IsOpen()) {
+    // rapidjson will assert if the file does not exist, so we need to 
+    // verify that the file exists first.
+    return false;
+  }
+
+  file.Write(ss.str());
+  return true;
 }
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
@@ -297,6 +400,7 @@ bool Subs::Save() {
     LOG(ERROR) << "Error saving xsubs";
     return false;
   }
+
   return true;
 }
 

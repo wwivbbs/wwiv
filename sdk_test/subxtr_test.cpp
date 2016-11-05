@@ -129,3 +129,17 @@ TEST_F(SubXtrTest, Read) {
     EXPECT_TRUE(equal(expected.at(i), actual.at(i)));
   }
 }
+
+
+TEST_F(SubXtrTest, JsonSmoke) {
+  const string json = "{ \"subs\": [ { \"name\": \"n1\", \"storage_type\": 2 } ] }";
+  this->CreateTempFile("subs.json", json);
+
+  subs_t subs;
+  ASSERT_TRUE(Subs::LoadFromJSON(dir(), "subs.json", subs));
+
+  ASSERT_EQ(1, subs.subs.size());
+  EXPECT_EQ("n1", subs.subs[0].name);
+  EXPECT_EQ(2, subs.subs[0].storage_type);
+
+}
