@@ -262,7 +262,7 @@ struct net_networks_rec {
   /* network name */
   char name[16];
   /* directory for net data */
-  char dir[69];
+  std::string dir;
   /* system number */
   uint16_t sysnum;
 };

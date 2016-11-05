@@ -628,8 +628,7 @@ void WSession::read_networks() {
   if (net_networks.empty()) {
     net_networks_rec n{};
     strcpy(n.name, "WWIVnet");
-    string datadir = config()->datadir();
-    strcpy(n.dir, datadir.c_str());
+    n.dir = config()->datadir();
     n.sysnum = syscfg.systemnumber;
   }
 }

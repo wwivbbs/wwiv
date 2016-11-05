@@ -52,7 +52,7 @@ public:
     config.IsInitialized();
   }
 
-  bool CreateNetworksDat(const Config& config, vector<string> names) {
+  bool CreateNetworksDat(const Config& config, std::vector<std::string> names) {
     std::clog << "Writing NETWORK.DAT to: " << config.datadir() << std::endl;
     File file(config.datadir(), NETWORKS_DAT);
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
@@ -97,11 +97,11 @@ TEST_F(NetworkTest, Networks_Bracket) {
 TEST_F(NetworkTest, Networks_Dir) {
   const Networks& networks = test_networks();
 
-  const string expected_two_dir = StrCat(config.root_directory(), File::pathSeparatorString, "two");
-  EXPECT_STREQ(expected_two_dir.c_str(), networks.at(1).dir);
-  EXPECT_STREQ(expected_two_dir.c_str(), networks.at("two").dir);
-  EXPECT_STREQ(expected_two_dir.c_str(), networks[1].dir);
-  EXPECT_STREQ(expected_two_dir.c_str(), networks["two"].dir);
+  const std::string expected_two_dir = StrCat(config.root_directory(), File::pathSeparatorString, "two");
+  EXPECT_EQ(expected_two_dir, networks.at(1).dir);
+  EXPECT_EQ(expected_two_dir, networks.at("two").dir);
+  EXPECT_EQ(expected_two_dir, networks[1].dir);
+  EXPECT_EQ(expected_two_dir, networks["two"].dir);
 }
 
 TEST_F(NetworkTest, Networks_NetworkNumber) {

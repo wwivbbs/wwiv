@@ -28,6 +28,7 @@
 
 #include <string.h>
 
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "localui/curses_io.h"
@@ -404,6 +405,33 @@ public:
     int return_code = 0;
     editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
     trimstrpath(this->data_);
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const override {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+
+    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
+    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_);
+  }
+};
+
+class StringFilePathItem: public EditItem<std::string> {
+public:
+  StringFilePathItem(int x, int y, int maxsize, const std::string& data)
+    : EditItem<std::string>(x, y, maxsize, data) {}
+  virtual ~StringFilePathItem() {}
+
+  virtual int Run(CursesWindow* window) override {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
+    wwiv::strings::StringTrimEnd(&this->data_);
+    if (!data_.back() == File::pathSeparatorChar) {
+      data_.push_back(File::pathSeparatorChar);
+    }
     return return_code;
   }
 

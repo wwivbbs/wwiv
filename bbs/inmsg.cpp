@@ -381,7 +381,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 
 static string FindTagFileName() {
   for (const auto& xnp : session()->current_sub().nets) {
-    const char *nd = session()->net_networks[xnp.net_num].dir;
+    auto nd = session()->net_networks[xnp.net_num].dir;
     string filename = StrCat(nd, xnp.stype, ".tag");
     if (File::Exists(filename)) {
       return filename;

@@ -129,7 +129,7 @@ bool Networks::Load() {
     net_networks_rec r = {};
     r.type = n.type;
     strcpy(r.name, n.name);
-    strcpy(r.dir, n.dir);
+    r.dir = n.dir;
     r.sysnum = n.sysnum;
     networks_.emplace_back(r);
   }
@@ -143,7 +143,7 @@ bool Networks::Save() {
     net_networks_rec_disk to{};
     to.type = from.type;
     strcpy(to.name, from.name);
-    strcpy(to.dir, from.dir);
+    to_char_array(to.dir, from.dir);
     to.sysnum = from.sysnum;
     disk.emplace_back(to);
   }

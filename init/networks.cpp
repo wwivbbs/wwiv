@@ -172,7 +172,7 @@ static void edit_net(Networks& networks, int nn) {
     new ToggleEditItem<uint8_t>(COL1_POSITION, 1, nettypes, &n.type),
     new StringEditItem<char*>(COL1_POSITION, 2, 15, n.name, false),
     new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n.sysnum),
-    new FilePathItem(COL1_POSITION, 4, 60, n.dir),
+    new StringFilePathItem(COL1_POSITION, 4, 60, n.dir),
   };
   items.set_curses_io(out, window.get());
 
@@ -302,7 +302,7 @@ static bool insert_net(Networks& networks, int nn) {
   {
     net_networks_rec n{};
     strcpy(n.name, "NetNet");
-    sprintf(n.dir, "newnet.dir%c", File::pathSeparatorChar);
+    n.dir = StrCat("newnet.dir", File::pathSeparatorChar);
     networks.insert(nn, n);
   }
 

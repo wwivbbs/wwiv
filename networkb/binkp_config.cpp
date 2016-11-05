@@ -76,7 +76,7 @@ static net_networks_rec test_net(const string& network_dir) {
   net.sysnum = 1;
   strcpy(net.name, "wwivnet");
   net.type = net_type_wwivnet;
-  strcpy(net.dir, network_dir.c_str());
+  net.dir = network_dir;
   return net;
 }
 
