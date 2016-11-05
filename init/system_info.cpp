@@ -66,7 +66,7 @@ public:
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
     string s = print_time(*this->data_);
-    editline(window, &s, MAX_TIME_EDIT_LEN + 1, ALL, &return_code, "");
+    editline(window, &s, MAX_TIME_EDIT_LEN + 1, EditLineMode::ALL, &return_code, "");
     *this->data_ = get_time(s);
     return return_code;
   }
@@ -93,7 +93,7 @@ public:
     // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
     float d = *this->data_;
     string s = StringPrintf("%5.3f", d);
-    editline(window, &s, 5 + 1, NUM_ONLY, &return_code, "");
+    editline(window, &s, 5 + 1, EditLineMode::NUM_ONLY, &return_code, "");
 
     float f;
     sscanf(s.c_str(), "%f", &f);

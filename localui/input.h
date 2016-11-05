@@ -35,16 +35,18 @@
 #include "localui/curses_win.h"
 #include "init/utility.h"
 
-#define NUM_ONLY            1
-#define UPPER_ONLY          2
-#define ALL                 4
-#define SET                 8
+enum class EditLineMode {
+  NUM_ONLY,
+  UPPER_ONLY,
+  ALL,
+  SET
+};
 
 #ifndef EDITLINE_FILENAME_CASE
 #ifdef __unix__
-#define EDITLINE_FILENAME_CASE ALL
+#define EDITLINE_FILENAME_CASE EditLineMode::ALL
 #else
-#define EDITLINE_FILENAME_CASE UPPER_ONLY
+#define EDITLINE_FILENAME_CASE EditLineMode::UPPER_ONLY
 #endif  // __unix__
 #endif  // EDITLINE_FILENAME_CASE
 
@@ -54,8 +56,8 @@ bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text);
 bool dialog_yn(CursesWindow* window, const std::string& prompt);
 int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value, int max_value);
 char onek(CursesWindow* window, const char *s);
-void editline(CursesWindow* window, std::string* s, int len, int status, int *returncode, const char *ss);
-void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss);
+void editline(CursesWindow* window, std::string* s, int len, EditLineMode status, int *returncode, const char *ss);
+void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *returncode, const char *ss);
 int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& strings, int *returncode);
 
 void input_password(CursesWindow* window, const std::string& prompt, const std::vector<std::string>& text, std::string *output, int max_length);
@@ -125,7 +127,7 @@ public:
   int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
-    int st = uppercase_ ? UPPER_ONLY : ALL;
+    auto st = uppercase_ ? EditLineMode::UPPER_ONLY : EditLineMode::ALL;
     editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, st, &return_code, "");
     return return_code;
   }
@@ -152,7 +154,7 @@ public:
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
     std::string s = wwiv::strings::StringPrintf("%-7u", *this->data_);
-    editline(window, &s, MAXLEN + 1, NUM_ONLY, &return_code, "");
+    editline(window, &s, MAXLEN + 1, EditLineMode::NUM_ONLY, &return_code, "");
     *this->data_ = static_cast<T>(atoi(s.c_str()));
     return return_code;
   }
@@ -264,7 +266,7 @@ public:
     }
     s[16] = 0;
 
-    editline(window, s, 16, SET, &return_code, rs);
+    editline(window, s, 16, EditLineMode::SET, &return_code, rs);
 
     *this->data_ = 0;
     for (int i = 0; i < 16; i++) {
@@ -319,7 +321,7 @@ public:
       }
     }
     s[16] = 0;
-    editline(window, s, 16, SET, &return_code, rs);
+    editline(window, s, 16, EditLineMode::SET, &return_code, rs);
     *this->data_ = 0;
     for (int i = 0; i < 16; i++) {
       if (s[i] != 32 && s[i] != 0) {
@@ -405,6 +407,9 @@ public:
     int return_code = 0;
     editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
     trimstrpath(this->data_);
+
+    // Update what we display in case it changed.
+    DefaultDisplay(window);
     return return_code;
   }
 

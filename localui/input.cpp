@@ -47,11 +47,6 @@
 #define DONE                4
 #define ABORTED             8
 
-#define NUM_ONLY            1
-#define UPPER_ONLY          2
-#define ALL                 4
-#define SET                   8
-
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -62,7 +57,7 @@ int CustomEditItem::Run(CursesWindow* window) {
   string s = to_field_();
 
   int return_code = 0;
-  editline(window, &s, maxsize_, ALL, &return_code, "");
+  editline(window, &s, maxsize_, EditLineMode::ALL, &return_code, "");
   from_field_(s);
   return return_code;
 }
@@ -288,7 +283,7 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
 
   int return_code = 0;
   string s;
-  editline(dialog.get(), &s, num_digits, NUM_ONLY, &return_code, "");
+  editline(dialog.get(), &s, num_digits, EditLineMode::NUM_ONLY, &return_code, "");
   if (s.empty()) {
     return 0;
   }
@@ -319,7 +314,7 @@ static int editlinestrlen(char *text) {
   return i;
 }
 
-void editline(CursesWindow* window, string* s, int len, int status, int *returncode, const char *ss) {
+void editline(CursesWindow* window, string* s, int len, EditLineMode status, int *returncode, const char *ss) {
   char buffer[255];
   strcpy(buffer, s->c_str());
   editline(window, buffer, len, status, returncode, ss);
@@ -327,7 +322,7 @@ void editline(CursesWindow* window, string* s, int len, int status, int *returnc
 }
 
 /* editline edits a string, doing I/O to the screen only. */
-void editline(CursesWindow* window, char *s, int len, int status, int *returncode, const char *ss) {
+void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *returncode, const char *ss) {
   attr_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
@@ -384,7 +379,7 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
       *returncode = NEXT;
       break;
     case KEY_IC: // curses
-      if (status != SET) {
+      if (status != EditLineMode::SET) {
         if (bInsert) {
           bInsert = false;
 	        out->SetIndicatorMode(IndicatorMode::OVERWRITE);
@@ -398,7 +393,7 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
       break;
     case KEY_DC: // curses
     case CD: // control-d
-      if (status != SET) {
+      if (status != EditLineMode::SET) {
         for (int i = pos; i < len; i++) {
           s[i] = s[i + 1];
         }
@@ -409,10 +404,10 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
       break;
     default:
       if (ch > 31) {
-        if (status == UPPER_ONLY) {
+        if (status == EditLineMode::UPPER_ONLY) {
           ch = toupper(ch);
         }
-        if (status == SET) {
+        if (status == EditLineMode::SET) {
           ch = toupper(ch);
           if (ch != ' ')  {
             bool bLookingForSpace = true;
@@ -433,8 +428,10 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
             }
           }
         }
-        if ((pos < len) && ((status == ALL) || (status == UPPER_ONLY) || (status == SET) ||
-                            ((status == NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == ' '))))) {
+        if ((pos < len) && 
+          (status == EditLineMode::ALL || (status == EditLineMode::UPPER_ONLY) 
+            || (status == EditLineMode::SET) 
+            || ((status == EditLineMode::NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == ' '))))) {
           if (bInsert)  {
             for (int i = len - 1; i > pos; i--) {
               s[i] = s[i - 1];
@@ -465,7 +462,7 @@ void editline(CursesWindow* window, char *s, int len, int status, int *returncod
     case 0x7f:  // yet some other delete key
     case KEY_BACKSPACE:  // curses
     case BACKSPACE:  //backspace
-      if (status != SET) {
+      if (status != EditLineMode::SET) {
         if (pos > 0) {
           for (int i = pos - 1; i < len; i++) {
             s[i] = s[i + 1];

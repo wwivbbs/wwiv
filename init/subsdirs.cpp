@@ -47,7 +47,7 @@ template<typename T>
 static T input_number(CursesWindow* window, int max_digits) {
   string s;
   int return_code = 0;
-  editline(window, &s, max_digits, NUM_ONLY, &return_code, "");
+  editline(window, &s, max_digits, EditLineMode::NUM_ONLY, &return_code, "");
   if (s.empty()) {
     return 0;
   }
