@@ -217,6 +217,16 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
 }
 
 bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const std::vector<subboardrec_422_t>& subs, std::vector<xtrasubsrec>& xsubs) {
+  // Clear the existing xsubs.
+  xsubs.clear();
+  // add default constructed xtrasubsrec entries
+  xsubs.resize(subs.size());
+
+  // subs.xtr may not exist on new installs.
+  if (!File::Exists(datadir, SUBS_XTR)) {
+    return true;
+  }
+
   TextFile subs_xtr(datadir, SUBS_XTR, "rt");
   if (!subs_xtr.IsOpen()) {
     return false;

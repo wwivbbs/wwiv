@@ -589,8 +589,7 @@ void WSession::read_nintern() {
 
 bool WSession::read_subs() {
   subs_.reset(new wwiv::sdk::Subs(config_->datadir(), net_networks));
-  subs_->Load();
-  return true;
+  return subs_->Load();
 }
 
 bool WSession::create_message_api() {
