@@ -98,10 +98,13 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t
 }
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename)
-  : MessageArea(api), Type2Text(text_filename), sub_filename_(sub_filename) {
+  : MessageArea(api), Type2Text(text_filename), sub_filename_(sub_filename), header_{} {
   DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!sub) {
     // TODO: throw exception
+  } else {
+    WWIVMessageAreaHeader h = ReadHeader(sub);
+    header_ = h.raw_header();
   }
   open_ = true;
 }
@@ -390,10 +393,6 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
 }
 
 bool WWIVMessageArea::ResyncMessage(int& message_number) {
-  if (!HasSubChanged()) {
-    return true;
-  }
-
   unique_ptr<WWIVMessage> m(ReadMessage(message_number));
   if (!m) {
     auto num_messages = number_of_messages();
@@ -402,6 +401,11 @@ bool WWIVMessageArea::ResyncMessage(int& message_number) {
       return true;
     }
     return false;
+  }
+
+  if (!HasSubChanged()) {
+    // Since we also use resynch to see if were past the last message...
+    //return true;
   }
 
   return ResyncMessageImpl(message_number, *m);
@@ -421,7 +425,8 @@ bool WWIVMessageArea::HasSubChanged() {
 
 bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
   if (!HasSubChanged()) {
-    return true;
+    // Since we also use resynch to see if were past the last message...
+    //return true;
   }
 
   // Assume it has changed.
