@@ -60,6 +60,11 @@ public:
 
 
 private:
+  bool LoadFromJSON();
+  bool LoadFromDat();
+  bool SaveToJSON();
+  bool SaveToDat();
+
   bool initialized_ = false;
   std::string datadir_;
   std::vector<net_networks_rec> networks_;

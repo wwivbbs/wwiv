@@ -20,17 +20,55 @@
 #include <exception>
 #include <stdexcept>
 #include <string>
+#include <vector>
+
+#include <cereal/cereal.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/json.hpp>
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
+using cereal::make_nvp;
 using namespace wwiv::core;
 using namespace wwiv::strings;
+
+// This has to be in the default namespae to match net_networks_rec which
+// is in the default namespace.
+template <class Archive>
+void serialize(Archive & ar, net_networks_rec& n) {
+  try {
+    ar(make_nvp("type", n.type));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    std::string name(n.name);
+    ar(make_nvp("name", name));
+    to_char_array(n.name, name);
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("dir", n.dir));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+  try {
+    ar(make_nvp("sysnum", n.sysnum));
+  } catch (const cereal::Exception&) {
+    ar.setNextName(nullptr);
+  }
+}
+
 
 namespace wwiv {
 namespace sdk {
@@ -43,15 +81,15 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
   }
 
   {
-    DataFile<net_networks_rec_disk> file(datadir_, NETWORKS_DAT, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
-    if (!file) {
+    DataFile<net_networks_rec_disk> file_dat(datadir_, NETWORKS_DAT, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+    if (!File::Exists(datadir_, NETWORKS_JSON) && !File::Exists(datadir_, NETWORKS_DAT)) {
       return;
     }
   }
 
   initialized_ = Load();
   if (!initialized_) {
-    LOG(ERROR) << "Failed to read " << NETWORKS_DAT;
+    LOG(ERROR) << "Failed to read " << NETWORKS_JSON << " or " << NETWORKS_DAT;
   }
   initialized_ = true;
 }
@@ -115,6 +153,19 @@ bool Networks::erase(std::size_t n) {
 }
 
 bool Networks::Load() {
+  if (LoadFromJSON()) {
+    return true;
+  }
+  return LoadFromDat();
+}
+
+bool Networks::LoadFromJSON() {
+  networks_.clear();
+  JsonFile<decltype(networks_)> json(datadir_, NETWORKS_JSON, "networks", networks_);
+  return json.Load();
+}
+
+bool Networks::LoadFromDat() {
   DataFile<net_networks_rec_disk> file(datadir_, NETWORKS_DAT, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return false;
@@ -137,6 +188,18 @@ bool Networks::Load() {
 }
 
 bool Networks::Save() {
+  bool dat = SaveToDat();
+  bool json = SaveToJSON();
+
+  return dat && json;
+}
+
+bool Networks::SaveToJSON() {
+  JsonFile<decltype(networks_)> json(datadir_, NETWORKS_JSON, "networks", networks_);
+  return json.Save();
+}
+
+bool Networks::SaveToDat() {
   std::vector<net_networks_rec_disk> disk;
 
   for (const auto& from : networks_) {

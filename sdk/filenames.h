@@ -138,6 +138,7 @@
 
 #define NAMES_LST "names.lst"
 #define NETWORKS_DAT "networks.dat"
+#define NETWORKS_JSON "networks.json"
 #define NEWUSER_NOEXT "newuser"
 #define NEWMAIL_MSG "newmail.msg"
 #define NEWSYSOP_MSG "newsysop.msg"

@@ -100,7 +100,7 @@ string strip_to_node(const string& txt) {
   std::ostringstream os;
   if (txt.find("@") != string::npos) {
     bool ok = true;
-    for (string::const_iterator i = txt.begin(); i != txt.end(); i++) {
+    for (auto i = txt.begin(); i != txt.end(); i++) {
       if (ok) {
         os << *i;
       }
@@ -108,7 +108,7 @@ string strip_to_node(const string& txt) {
         ok = false;
       }
     }
-    return string(os.str());
+    return os.str();
   } else if (txt.find("AT") != string::npos) {
     bool ok = true;
     for (string::const_iterator i = txt.begin() + 2; i != txt.end(); i++) {
@@ -119,7 +119,7 @@ string strip_to_node(const string& txt) {
         ok = false;
       }
     }
-    return string(os.str());
+    return os.str();
   }
-  return string(txt);
+  return txt;
 }
