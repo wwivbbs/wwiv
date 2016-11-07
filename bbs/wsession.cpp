@@ -542,14 +542,14 @@ const char* WSession::network_name() const {
   if (net_networks.empty()) {
     return "";
   }
-  return net_networks[m_nNetworkNumber].name;
+  return net_networks[network_num_].name;
 }
 
 const std::string WSession::network_directory() const {
   if (net_networks.empty()) {
     return "";
   }
-  return std::string(net_networks[m_nNetworkNumber].dir);
+  return std::string(net_networks[network_num_].dir);
 }
 
 void WSession::GetCaller() {
@@ -630,7 +630,7 @@ int WSession::doWFCEvents() {
     // try to check for packets to send every minute.
     time_t diff_time = current_time - last_time_c;
     bool time_to_call = diff_time > 60;  // was 1200
-    if (!any && time_to_call && net_sysnum && node_supports_callout) {
+    if (!any && time_to_call && current_net().sysnum && node_supports_callout) {
       // also try this.
       wfc_cls();
       attempt_callout();
@@ -679,13 +679,13 @@ int WSession::doWFCEvents() {
         break;
         // Force Network Callout
       case '/':
-        if (net_sysnum) {
+        if (current_net().sysnum) {
           force_callout(0);
         }
         break;
       // War Dial Connect
       case '.':
-        if (net_sysnum) {
+        if (current_net().sysnum) {
           force_callout(1);
         } break;
       // Fast Net Callout from WFC
@@ -699,7 +699,7 @@ int WSession::doWFCEvents() {
         break;
         // Print NetLogs
       case ',':
-        if (net_sysnum > 0 || !net_networks.empty()) {
+        if (current_net().sysnum > 0 || !net_networks.empty()) {
           io->GotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";
           ch = onek("Q012");
@@ -715,7 +715,7 @@ int WSession::doWFCEvents() {
         break;
         // Net List
       case '`':
-        if (net_sysnum) {
+        if (current_net().sysnum) {
           print_net_listing(true);
         }
         break;

@@ -248,7 +248,7 @@ void asv() {
           LoadFileIntoWorkspace(fn, true, true);
           messagerec msg;
           msg.storage_type = 2;
-          session()->net_email_name = StringPrintf("%s #1@%u", syscfg.sysopname, net_sysnum);
+          session()->net_email_name = StringPrintf("%s #1@%u", syscfg.sysopname, session()->current_net().sysnum);
 
           MessageEditorData data;
           data.title = irt;
@@ -268,7 +268,7 @@ void asv() {
             email.system_number = inode;
             email.an = false;
             email.from_user = 1;
-            email.from_system = net_sysnum;
+            email.from_system = session()->current_net().sysnum;
             email.forwarded_code = 1;
             email.from_network_number = session()->net_num();
             email.silent_mode = true;

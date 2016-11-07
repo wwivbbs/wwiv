@@ -97,7 +97,6 @@
     <ClCompile Include="crc32.cpp" />
     <ClCompile Include="graphs.cpp" />
     <ClCompile Include="inifile.cpp" />
-    <ClCompile Include="jsonfile.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="md5.cpp" />
     <ClCompile Include="net.cpp" />

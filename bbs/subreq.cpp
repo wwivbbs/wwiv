@@ -61,7 +61,7 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype) {
 
   nh.tosys = static_cast<uint16_t>(tosys);
   nh.touser = 1;
-  nh.fromsys = net_sysnum;
+  nh.fromsys = session()->current_net().sysnum;
   nh.fromuser = 1;
   nh.main_type = main_type;
   // always use 0 since we use the stype
@@ -349,7 +349,7 @@ void sub_xtr_add(int n, int nn) {
       session()->subs().sub(n).desc = szDescription;
     }
 
-    if (xnp.host == net_sysnum) {
+    if (xnp.host == session()->current_net().sysnum) {
       xnp.host = 0;
     }
 
@@ -394,7 +394,7 @@ void sub_xtr_add(int n, int nn) {
 }
 
 bool display_sub_categories() {
-  if (!net_sysnum) {
+  if (!session()->current_net().sysnum) {
     return false;
   }
 

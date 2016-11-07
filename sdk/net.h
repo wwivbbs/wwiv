@@ -259,19 +259,57 @@ struct net_call_out_rec {
 
 #ifndef __MSDOS__
 
+enum class fido_packet_type { NONE, TYPE2_PLUS };
+enum class fido_transport_type { DIRECTORY, BINKP };
+enum class fido_mailer_type { FLO, ATTACH };
+
+struct fido_packet_config_t {
+  // Type of packet to create
+  fido_packet_type packet_type;
+  // File extension to map to type defined in archivers.dat
+  std::string compression_type;
+  std::string packet_password;
+  std::string areafix_password;
+  int max_archive_size;
+  int max_packet_size;
+};
+
+struct fido_network_config_t {
+  fido_mailer_type mailer_type;
+  // Type of transport to use for this packet.
+  fido_transport_type transport;
+  // Inbound directory for packets
+  std::string inbound_dir;
+  // Secure inbound directory for packets?
+  std::string secure_inbound_dir;
+  // Outbound directory for packets
+  std::string outbound_dir;
+  // Configuration for packet specific options.
+  fido_packet_config_t packet_config;
+};
+
+enum class network_type_t: uint8_t {
+  wwivnet = 0,
+  ftn,
+  internet
+};
+
 /**
  * Internal structure for networks.dat or networks.json used by WWIV.
  * On disk it's persisted as net_networks_rec_disk.
  */
 struct net_networks_rec {
   /* type of network */
-  uint8_t type;
+  network_type_t type;
   /* network name */
   char name[16];
   /* directory for net data */
   std::string dir;
   /* system number */
   uint16_t sysnum;
+
+  // Used by FIDOnet type nodes.
+  fido_network_config_t fido;
 };
 
 #endif  // __MSDOS__
@@ -292,10 +330,6 @@ struct net_networks_rec_disk {
   uint16_t  sysnum;
   uint8_t padding[12];
 };
-
-#define net_type_wwivnet  0
-#define net_type_ftn  1
-#define net_type_internet 2
 
 #pragma pack(pop)
 

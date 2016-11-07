@@ -186,7 +186,7 @@ void sendout_email(EmailData& data) {
   strcpy(m.title, data.title.c_str());
   m.msg = *data.msg;
   m.anony = static_cast<unsigned char>(data.anony);
-  if (data.from_system == net_sysnum) {
+  if (data.from_system == session()->current_net().sysnum) {
     m.fromsys = 0;
   } else {
     m.fromsys = static_cast<uint16_t>(data.from_system);
@@ -248,7 +248,7 @@ void sendout_email(EmailData& data) {
     if (data.from_system > 0) {
       nh.fromsys = static_cast<uint16_t>(data.from_system);
     } else {
-      nh.fromsys = net_sysnum;
+      nh.fromsys = session()->current_net().sysnum;
     }
     nh.fromuser = static_cast<uint16_t>(data.from_user);
     nh.main_type = main_type_email;
@@ -368,7 +368,7 @@ void sendout_email(EmailData& data) {
 }
 
 bool ok_to_mail(int user_number, int system_number, bool bForceit) {
-  if (system_number != 0 && net_sysnum == 0) {
+  if (system_number != 0 && session()->current_net().sysnum == 0) {
     bout << "\r\nSorry, this system is not a part of WWIVnet.\r\n\n";
     return false;
   }
@@ -643,7 +643,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   email.anony = i;
   email.an = an;
   email.from_user = session()->usernum;
-  email.from_system = net_sysnum;
+  email.from_system = session()->current_net().sysnum;
   email.forwarded_code = 0;
 
   if (!cc) {

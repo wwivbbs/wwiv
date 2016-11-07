@@ -83,7 +83,7 @@ void old_sublist() {
       } else {
         strcat(s, "  ");
       }
-      if (net_sysnum || session()->max_net_num() > 1) {
+      if (session()->current_net().sysnum || session()->max_net_num() > 1) {
         if (!session()->subs().sub(session()->usub[i1].subnum).nets.empty()) {
           const char *ss;
           if (session()->subs().sub(session()->usub[i1].subnum).nets.size() > 1) {
@@ -196,7 +196,7 @@ void SubList() {
           strcpy(s2, "|#6No ");
         }
         iscan(i1);
-        if (net_sysnum || session()->max_net_num() > 1) {
+        if (session()->current_net().sysnum || session()->max_net_num() > 1) {
           if (!session()->subs().sub(session()->usub[i1].subnum).nets.empty()) {
 	          const char* ss;
             if (session()->subs().sub(session()->usub[i1].subnum).nets.size() > 1) {

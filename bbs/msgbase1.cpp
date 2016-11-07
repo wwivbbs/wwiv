@@ -100,7 +100,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     std::vector<uint16_t> list;
     nh.minor_type = 0;
     if (!nh.fromsys) {
-      nh.fromsys = net_sysnum;
+      nh.fromsys = session()->current_net().sysnum;
     }
     nh.main_type = main_type_new_post;
     if (xnp.host) {
@@ -123,7 +123,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
           }
           if ((text[len2] >= '0') && (text[len2] <= '9') && (len2 < len1)) {
             uint16_t i = wwiv::strings::StringToUnsignedShort(&(text[len2]));
-            if (((session()->net_num() != nNetNumber) || (nh.fromsys != i)) && (i != net_sysnum)) {
+            if (((session()->net_num() != nNetNumber) || (nh.fromsys != i)) && (i != session()->current_net().sysnum)) {
               if (valid_system(i)) {
                 nh.list_len++;
                 list.push_back(i);
@@ -187,7 +187,7 @@ void post() {
       bout << "\r\nYou can't post on networked sub-boards.\r\n\n";
       return;
     }
-    if (net_sysnum) {
+    if (session()->current_net().sysnum != 0) {
       bout << "\r\nThis post will go out on ";
       for (size_t i = 0; i < session()->current_sub().nets.size(); i++) {
         if (i) {

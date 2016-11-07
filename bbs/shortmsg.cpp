@@ -130,7 +130,7 @@ static void SendRemoteShortMessage(int nUserNum, int nSystemNum, const char *mes
   net_header_rec nh;
   nh.tosys = static_cast<uint16_t>(nSystemNum);
   nh.touser = static_cast<uint16_t>(nUserNum);
-  nh.fromsys = net_sysnum;
+  nh.fromsys = session()->current_net().sysnum;
   nh.fromuser = static_cast<uint16_t>(session()->usernum);
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;

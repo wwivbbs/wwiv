@@ -77,7 +77,6 @@ __EXTRN__ bool  bChatLine,
 
 // Chatroom additions
 __EXTRN__ bool  in_chatroom;
-__EXTRN__ uint16_t net_sysnum;
 
 __EXTRN__ int modem_speed;
 

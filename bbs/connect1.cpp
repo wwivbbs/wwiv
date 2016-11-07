@@ -53,8 +53,6 @@ bool valid_system(int ts) {
 void set_net_num(int network_number) {
   if (network_number >= 0 && network_number < session()->max_net_num()) {
     session()->set_net_num(network_number);
-    net_sysnum = session()->current_net().sysnum;
-    session()->set_net_type(session()->current_net().type);
   }
 }
 

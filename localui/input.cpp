@@ -499,8 +499,8 @@ void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *
   window->GotoXY(cx, cy);
 }
 
-int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& strings, int *returncode) {
-  if (value < 0 || value >= static_cast<int>(strings.size())) {
+std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector<std::string>::size_type value, const std::vector<std::string>& strings, int *returncode) {
+  if (value < 0 || value >= strings.size()) {
     value = 0;
   }
 

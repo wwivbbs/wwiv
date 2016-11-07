@@ -64,7 +64,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
     return;
   }
 
-  if (system_number && session()->net_type() == net_type_wwivnet) {
+  if (system_number && session()->current_net().type == network_type_t::wwivnet) {
     net_system_list_rec *csne = next_system(system_number);
     if (csne) {
       string netstatus;

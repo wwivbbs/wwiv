@@ -77,7 +77,7 @@ static bool GetMessageToName(const char *aux) {
   if (!session()->current_sub().nets.empty()) {
     for (size_t i = 0; i < session()->current_sub().nets.size(); i++) {
       const auto& xnp = session()->current_sub().nets[i];
-      if (session()->net_networks[xnp.net_num].type == net_type_ftn &&
+      if (session()->net_networks[xnp.net_num].type == network_type_t::ftn &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
         bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
@@ -344,7 +344,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
       !IsEqualsIgnoreCase(aux, "email") &&
       !session()->current_sub().nets.empty()) {
     for (const auto& xnp : session()->current_sub().nets) {
-      if (session()->net_networks[xnp.net_num].type == net_type_ftn) {
+      if (session()->net_networks[xnp.net_num].type == network_type_t::ftn) {
         const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
         ss << buf << crlf;
         break;
@@ -613,7 +613,7 @@ bool inmsg(MessageEditorData& data) {
   } else if (data.silent_mode) {
     b << syscfg.sysopname << " #1" << crlf;
   } else {
-    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
+    const string name = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
     b << name << crlf;
   }
 

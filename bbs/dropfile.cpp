@@ -512,7 +512,7 @@ const string create_chain_file() {
         session()->user()->GetFilesDownloaded(),
         "8N1",
         cspeed.c_str(),
-        net_sysnum);
+      session()->current_net().sysnum);
     file.WriteFormatted("N\nN\nN\n");
     file.WriteFormatted("%u\n%u\n", session()->user()->GetAr(), session()->user()->GetDar());
     file.Close();

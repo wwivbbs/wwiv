@@ -156,7 +156,7 @@ static int cleanup_net1() {
     for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
       set_net_num(nNetNumber);
 
-      if (!net_sysnum) {
+      if (!session()->current_net().sysnum) {
         continue;
       }
 
@@ -449,7 +449,7 @@ bool attempt_callout() {
 
   for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
-    if (!net_sysnum) {
+    if (!session()->current_net().sysnum) {
       continue;
     }
 
@@ -534,7 +534,7 @@ void print_pending_list() {
   for (nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
 
-    if (!net_sysnum) {
+    if (!session()->current_net().sysnum) {
       continue;
     }
 
@@ -605,7 +605,7 @@ void print_pending_list() {
   for (nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
 
-    if (!net_sysnum) {
+    if (!session()->current_net().sysnum) {
       continue;
     }
 
@@ -623,7 +623,7 @@ void print_pending_list() {
   for (nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
 
-    if (!net_sysnum) {
+    if (!session()->current_net().sysnum) {
       continue;
     }
 
@@ -1187,7 +1187,7 @@ void run_exp() {
   set_net_num(nFileNetNetworkNumber);
 
   const string exp_command = StringPrintf("exp s32767.net %s %d %s %s %s", 
-      session()->network_directory().c_str(), net_sysnum,
+      session()->network_directory().c_str(), session()->current_net().sysnum,
       session()->internetEmailName.c_str(), 
       session()->internetEmailDomain.c_str(), 
       session()->network_name());

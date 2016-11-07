@@ -522,7 +522,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     msg.storage_type = EMAIL_STORAGE;
     time_t thetime = time(nullptr);
 
-    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
+    const string name = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
     qwk_inmsg(text, &msg, "email", name.c_str(), thetime);
 
     if (msg.stored_as == 0xffffffff) {
@@ -539,7 +539,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     email.system_number = sy;
     email.an = true;
     email.from_user = session()->usernum;
-    email.from_system = net_sysnum;
+    email.from_system = session()->current_net().sysnum;
     email.forwarded_code = 0;
     email.from_network_number = session()->net_num();
     sendout_email(email);
@@ -845,7 +845,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     strcpy(user_name, session()->user()->GetRealName());
     properize(user_name);
   } else {
-    const string name = session()->names()->UserName(session()->usernum, net_sysnum);
+    const string name = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
     strcpy(user_name, name.c_str());
   }
 

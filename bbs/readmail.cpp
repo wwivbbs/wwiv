@@ -710,7 +710,7 @@ void readmail(int mode) {
               static_cast<long>(session()->user()->GetNumEmailSent()) +
               static_cast<long>(session()->user()->GetNumNetEmailSent());
             if (num_mail != num_mail1) {
-              const string userandnet = session()->names()->UserName(session()->usernum, net_sysnum);
+              const string userandnet = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
               if (m.fromsys != 0) {
                 sprintf(s, "%s: %s", session()->network_name(),
                   userandnet.c_str());
@@ -874,9 +874,9 @@ void readmail(int mode) {
         }
         if (m.fromsys != 0) {
           message = StrCat(session()->network_name(), ": ", 
-            session()->names()->UserName(session()->usernum, net_sysnum));
+            session()->names()->UserName(session()->usernum, session()->current_net().sysnum));
         } else {
-          message = session()->names()->UserName(session()->usernum, net_sysnum);
+          message = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
         }
 
         if (m.anony & anony_receiver) {
@@ -967,7 +967,7 @@ void readmail(int mode) {
               }
             } else {
               set_net_num(nn);
-              const string name = session()->names()->UserName(user_number, net_sysnum);
+              const string name = session()->names()->UserName(user_number, session()->current_net().sysnum);
               strcpy(s1, name.c_str());
             }
             if (ok_to_mail(user_number, system_number, false)) {
@@ -1007,7 +1007,7 @@ void readmail(int mode) {
                 pFileEmail->Close();
 
                 i = session()->net_num();
-                const string fwd_name = session()->names()->UserName(session()->usernum, net_sysnum);
+                const string fwd_name = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
                 sprintf(s, "\r\nForwarded to %s from %s.", s1, fwd_name.c_str());
 
                 set_net_num(nn);
@@ -1040,7 +1040,7 @@ void readmail(int mode) {
                   sendout_email(email);
                 } else {
                   email.from_user = session()->usernum;
-                  email.from_system = net_sysnum;
+                  email.from_system = session()->current_net().sysnum;
                   email.from_network_number = session()->net_num();
                   sendout_email(email);
                 }
@@ -1104,7 +1104,7 @@ void readmail(int mode) {
         if (ch == 'A' || ch == '@') {
           if (num_mail != num_mail1) {
             string message;
-            const string name = session()->names()->UserName(session()->usernum, net_sysnum);
+            const string name = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
             if (m.fromsys != 0) {
               message = session()->network_name();
               message += ": ";

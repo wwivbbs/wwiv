@@ -125,13 +125,13 @@ public:
 
   void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
-  int GetEffectiveSl() const { return effective_sl_; }
+  unsigned int GetEffectiveSl() const { return effective_sl_; }
 
-  int  GetChatNameSelectionColor() const { return chatname_color_; }
+  int GetChatNameSelectionColor() const { return chatname_color_; }
 
-  int  GetMessageColor() const { return message_color_; }
+  int GetMessageColor() const { return message_color_; }
 
-  int  GetForcedReadSubNumber() const { return m_nForcedReadSubNumber; }
+  int GetForcedReadSubNumber() const { return m_nForcedReadSubNumber; }
   void SetForcedReadSubNumber(int n) { m_nForcedReadSubNumber = n; }
 
   const std::string GetCurrentSpeed() const { return current_speed_; }
@@ -215,11 +215,8 @@ public:
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
-  int  net_type() const { return m_nCurrentNetworkType; }
-  void set_net_type(int n) { m_nCurrentNetworkType = n; }
-
-  int  net_num() const { return m_nNetworkNumber; }
-  void set_net_num(int n) { m_nNetworkNumber = n; }
+  int  net_num() const { return network_num_; }
+  void set_net_num(int n) { network_num_ = n; }
 
   int  max_net_num() const { return net_networks.size(); }
 
@@ -321,8 +318,7 @@ public:
     m_nExecChildProcessWaitTime = 500,
     m_nMaxNumberMessageAreas = 0,
     m_nMaxNumberFileAreas = 0,
-    m_nCurrentNetworkType = 0,
-    m_nNetworkNumber = 0,
+    network_num_ = 0,
     m_nMaxNetworkNumber = 0,
     numf = 0,
     subchg = 0,

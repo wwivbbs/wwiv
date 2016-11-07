@@ -58,7 +58,7 @@ int dialog_input_number(CursesWindow* window, const std::string& prompt, int min
 char onek(CursesWindow* window, const char *s);
 void editline(CursesWindow* window, std::string* s, int len, EditLineMode status, int *returncode, const char *ss);
 void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *returncode, const char *ss);
-int toggleitem(CursesWindow* window, int value, const std::vector<std::string>& strings, int *returncode);
+std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector<std::string>::size_type value, const std::vector<std::string>& strings, int *returncode);
 
 void input_password(CursesWindow* window, const std::string& prompt, const std::vector<std::string>& text, std::string *output, int max_length);
 int messagebox(CursesWindow* window, const std::string& text);
@@ -181,11 +181,11 @@ public:
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
-    if (*this->data_ > items_.size()) {
+    if (static_cast<std::vector<std::string>::size_type>(*this->data_) > items_.size()) {
       // Data is out of bounds, reset it to a senible value.
-      *this->data_ = 0;
+      *this->data_ = static_cast<T>(0);
     }
-    *this->data_ = (T)toggleitem(window, *this->data_, items_, &return_code);
+    *this->data_ = static_cast<T>(toggleitem(window, static_cast<std::vector<std::string>::size_type>(*this->data_), items_, &return_code));
     return return_code;
   }
 
@@ -194,7 +194,7 @@ protected:
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
     try {
-      window->PutsXY(this->x_, this->y_, this->items_.at(*this->data_).c_str());
+      window->PutsXY(this->x_, this->y_, this->items_.at(static_cast<std::vector<std::string>::size_type>(*this->data_)).c_str());
     } catch (const std::out_of_range&) {
       // Leave it empty since we are out of range.
     }
@@ -217,7 +217,7 @@ public:
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
-    int state = (*this->data_ & this->flag_) ? 1 : 0;
+    std::vector<std::string>::size_type state = (*this->data_ & this->flag_) ? 1 : 0;
     state = toggleitem(window, state, this->items_, &return_code);
     if (state == 0) {
       *this->data_ &= ~this->flag_;
@@ -357,7 +357,7 @@ public:
     static const std::vector<std::string> boolean_strings = { "No ", "Yes" };
 
     window->GotoXY(this->x_, this->y_);
-    int data = *this->data_ ? 1 : 0;
+    std::vector<std::string>::size_type data = *this->data_ ? 1 : 0;
     int return_code = 0;
     data = toggleitem(window, data, boolean_strings, &return_code);
 

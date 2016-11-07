@@ -131,7 +131,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
             bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
             *pSystemNumber = *pUserNumber = 0;
           } else {
-            if (*pSystemNumber == net_sysnum) {
+            if (*pSystemNumber == session()->current_net().sysnum) {
               *pSystemNumber = 0;
               if (*pUserNumber == 0) {
                 *pUserNumber = static_cast<uint16_t>(finduser(session()->net_email_name));
@@ -162,7 +162,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       xx = -1;
       for (int i = 0; i < session()->max_net_num(); i++) {
         set_net_num(i);
-        if (net_sysnum == *pSystemNumber) {
+        if (session()->current_net().sysnum == *pSystemNumber) {
           xx = i;
         } else if (valid_system(*pSystemNumber)) {
           ss[nv++] = static_cast<char>(i);
@@ -229,7 +229,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       }
       free(ss);
     } else {
-      if (*pSystemNumber == net_sysnum) {
+      if (*pSystemNumber == session()->current_net().sysnum) {
         *pSystemNumber = 0;
         if (*pUserNumber == 0) {
           *pUserNumber = static_cast<uint16_t>(finduser(session()->net_email_name));

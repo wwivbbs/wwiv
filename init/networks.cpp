@@ -163,13 +163,13 @@ static void edit_net(Networks& networks, int nn) {
   char szOldNetworkName[20];
   strcpy(szOldNetworkName, n.name);
 
-  if (n.type >= nettypes.size()) {
-    n.type = 0;
+  if (static_cast<int>(n.type) >= nettypes.size()) {
+    n.type = static_cast<network_type_t>(0);
   }
 
   const int COL1_POSITION = 14;
   EditItems items{
-    new ToggleEditItem<uint8_t>(COL1_POSITION, 1, nettypes, &n.type),
+    new ToggleEditItem<network_type_t>(COL1_POSITION, 1, nettypes, &n.type),
     new StringEditItem<char*>(COL1_POSITION, 2, 15, n.name, false),
     new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n.sysnum),
     new StringFilePathItem(COL1_POSITION, 4, 60, n.dir),

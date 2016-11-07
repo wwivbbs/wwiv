@@ -48,7 +48,7 @@ class SubXtrTest: public testing::Test {
 protected:
   virtual void SetUp() { 
     helper.SetUp(); 
-    net_networks.emplace_back(net_networks_rec{net_type_wwivnet, "testnet", "testnet/", 2});
+    net_networks.emplace_back(net_networks_rec{network_type_t::wwivnet, "testnet", "testnet/", 2});
     subs.emplace_back(subboardrec_422_t{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
     subs.emplace_back(subboardrec_422_t{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
   }

@@ -41,15 +41,34 @@ using cereal::make_nvp;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-// This has to be in the default namespae to match net_networks_rec which
+#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+namespace cereal {
+
+template <class Archive>
+void serialize(Archive & ar, fido_packet_config_t& n) {
+  SERIALIZE(n, packet_type);
+  SERIALIZE(n, compression_type);
+  SERIALIZE(n, packet_password);
+  SERIALIZE(n, areafix_password);
+  SERIALIZE(n, max_archive_size);
+  SERIALIZE(n, max_packet_size);
+}
+
+template <class Archive>
+void serialize(Archive & ar, fido_network_config_t& n) {
+  SERIALIZE(n, mailer_type);
+  SERIALIZE(n, transport);
+  SERIALIZE(n, inbound_dir);
+  SERIALIZE(n, secure_inbound_dir);
+  SERIALIZE(n, outbound_dir);
+  SERIALIZE(n, packet_config);
+}
+
+// This has to be in the cereal or default to match net_networks_rec which
 // is in the default namespace.
 template <class Archive>
 void serialize(Archive & ar, net_networks_rec& n) {
-  try {
-    ar(make_nvp("type", n.type));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
+  SERIALIZE(n, type);
   try {
     std::string name(n.name);
     ar(make_nvp("name", name));
@@ -57,18 +76,11 @@ void serialize(Archive & ar, net_networks_rec& n) {
   } catch (const cereal::Exception&) {
     ar.setNextName(nullptr);
   }
-  try {
-    ar(make_nvp("dir", n.dir));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
-  try {
-    ar(make_nvp("sysnum", n.sysnum));
-  } catch (const cereal::Exception&) {
-    ar.setNextName(nullptr);
-  }
+  SERIALIZE(n, dir);
+  SERIALIZE(n, sysnum);
 }
 
+}  // namespace cereal
 
 namespace wwiv {
 namespace sdk {
@@ -178,7 +190,7 @@ bool Networks::LoadFromDat() {
   }
   for (const auto& n : networks_disk) {
     net_networks_rec r = {};
-    r.type = n.type;
+    r.type = static_cast<network_type_t>(n.type);
     strcpy(r.name, n.name);
     r.dir = n.dir;
     r.sysnum = n.sysnum;
@@ -204,7 +216,7 @@ bool Networks::SaveToDat() {
 
   for (const auto& from : networks_) {
     net_networks_rec_disk to{};
-    to.type = from.type;
+    to.type = static_cast<uint8_t>(from.type);
     strcpy(to.name, from.name);
     to_char_array(to.dir, from.dir);
     to.sysnum = from.sysnum;
