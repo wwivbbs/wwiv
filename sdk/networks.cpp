@@ -23,6 +23,7 @@
 #include <vector>
 
 #include <cereal/cereal.hpp>
+#include <cereal/access.hpp>
 #include <cereal/types/vector.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
@@ -42,7 +43,34 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 
 #define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(network_type_t, cereal::specialization::non_member_load_save_minimal);
 namespace cereal {
+
+
+template <class Archive> inline
+std::string save_minimal(Archive const &, const network_type_t& t) {
+  static std::vector<std::string> network_types_names{"wwivnet", "ftn", "internet"};
+  try {
+    return network_types_names.at(static_cast<int>(t));
+  } catch (std::out_of_range&) {
+    return network_types_names.at(0);
+  }
+}
+
+template <class Archive> inline
+void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
+  static std::vector<std::string> network_types_names{"wwivnet", "ftn", "internet"};
+  try {
+    for (size_t i = 0; i < network_types_names.size(); i++) {
+      if (v == network_types_names.at(i)) {
+        t = static_cast<network_type_t>(i);
+      }
+    }
+  } catch (std::out_of_range&) {
+    // NOP
+  }
+  t = network_type_t::wwivnet;
+}
 
 template <class Archive>
 void serialize(Archive & ar, fido_packet_config_t& n) {
