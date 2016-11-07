@@ -35,6 +35,7 @@
 #include "init/init.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
@@ -151,17 +152,18 @@ static bool del_net(
 }
 
 static void edit_net(Networks& networks, int nn) {
-  static const vector<string> nettypes = {
+  static const vector<string> nettypes{
     "WWIVnet ",
     "Fido    ",
     "Internet",
   };
 
-  out->Cls(ACS_CKBOARD);
+  Subs subs(syscfg.datadir, networks.networks());
+  bool subs_loaded = subs.Load();
+
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
   net_networks_rec& n = networks.at(nn);
-  char szOldNetworkName[20];
-  strcpy(szOldNetworkName, n.name);
+  const string orig_network_name(n.name);
 
   if (static_cast<int>(n.type) >= nettypes.size()) {
     n.type = static_cast<network_type_t>(0);
@@ -184,43 +186,10 @@ static void edit_net(Networks& networks, int nn) {
 
   items.Run();
 
-  if (strcmp(szOldNetworkName, n.name)) {
-    const string input_filename = StringPrintf("%ssubs.xtr", syscfg.datadir);
-    const string output_filename = StringPrintf("%ssubsxtr.new", syscfg.datadir);
-    FILE *pInputFile = fopen(input_filename.c_str(), "r");
-    if (pInputFile) {
-      FILE *pOutputFile = fopen(output_filename.c_str(), "w");
-      if (pOutputFile) {
-        char buffer[255];
-        while (fgets(buffer, 80, pInputFile)) {
-          if (buffer[0] == '$') {
-            char* ss = strchr(buffer, ' ');
-            if (ss) {
-              *ss = 0;
-              if (strcasecmp(szOldNetworkName, buffer + 1) == 0) {
-                fprintf(pOutputFile, "$%s %s", n.name, ss + 1);
-              } else {
-                fprintf(pOutputFile, "%s %s", buffer, ss + 1);
-              }
-            } else {
-              fprintf(pOutputFile, "%s", buffer);
-            }
-          } else {
-            fprintf(pOutputFile, "%s", buffer);
-          }
-        }
-        fclose(pOutputFile);
-        fclose(pInputFile);
-        const string old_filename = StringPrintf("%ssubsxtr.old", syscfg.datadir);
-        File::Remove(old_filename);
-        File::Rename(input_filename, old_filename);
-        File::Remove(input_filename);
-        File::Rename(output_filename, input_filename);
-      } else {
-        fclose(pInputFile);
-      }
-    }
+  if (subs_loaded && orig_network_name != n.name) {
+    subs.Save();
   }
+
   networks.Save();
 }
 
@@ -311,70 +280,72 @@ static bool insert_net(Networks& networks, int nn) {
 }
 
 void networks(wwiv::sdk::Config& config) {
-  Networks networks(config);
+  try {
+    Networks networks(config);
 
-  bool done = false;
-  do {
-    out->Cls(ACS_CKBOARD);
+    bool done = false;
+    do {
+      vector<ListBoxItem> items;
+      for (const auto& n : networks.networks()) {
+        items.emplace_back(StringPrintf("@%u %s", n.sysnum, n.name));
+      }
+      CursesWindow* window = out->window();
+      ListBox list(out, window, "Select Network", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+          static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
 
-    vector<ListBoxItem> items;
-    for (const auto& n : networks.networks()) {
-      items.emplace_back(StringPrintf("@%u %s", n.sysnum, n.name));
-    }
-    CursesWindow* window = out->window();
-    ListBox list(out, window, "Select Network", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
-        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+      list.selection_returns_hotkey(true);
+      list.set_additional_hotkeys("DI");
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
+      ListBoxResult result = list.Run();
 
-    list.selection_returns_hotkey(true);
-    list.set_additional_hotkeys("DI");
-    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
-    ListBoxResult result = list.Run();
-
-    if (result.type == ListBoxResultType::SELECTION) {
-      edit_net(networks, result.selected);
-    } else if (result.type == ListBoxResultType::NO_SELECTION) {
-      done = true;
-    } else if (result.type == ListBoxResultType::HOTKEY) {
-      switch (result.hotkey) {
-      case 'D':
-        if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
-          messagebox(window, { "You must run the BBS once", "to set up some variables before ", "deleting a network." });
-          break;
-        }
-        if (networks.networks().size() > 1) {
-          const string prompt = StringPrintf("Delete '%s'", networks.at(result.selected).name);
-          bool yn = dialog_yn(window, prompt);
-          if (yn) {
-            yn = dialog_yn(window, "Are you REALLY sure? ");
+      if (result.type == ListBoxResultType::SELECTION) {
+        edit_net(networks, result.selected);
+      } else if (result.type == ListBoxResultType::NO_SELECTION) {
+        done = true;
+      } else if (result.type == ListBoxResultType::HOTKEY) {
+        switch (result.hotkey) {
+        case 'D':
+          if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
+            messagebox(window, { "You must run the BBS once", "to set up some variables before ", "deleting a network." });
+            break;
+          }
+          if (networks.networks().size() > 1) {
+            const string prompt = StringPrintf("Delete '%s'", networks.at(result.selected).name);
+            bool yn = dialog_yn(window, prompt);
             if (yn) {
-              del_net(networks, result.selected);
+              yn = dialog_yn(window, "Are you REALLY sure? ");
+              if (yn) {
+                del_net(networks, result.selected);
+              }
+            }
+          } else {
+            messagebox(window, "You must leave at least one network.");
+          }
+          break;
+        case 'I':
+          if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
+            vector<string> lines{ "You must run the BBS once to set up ", "some variables before inserting a network." };
+            messagebox(window, lines);
+            break;
+          }
+          if (networks.networks().size() >= MAX_NETWORKS) {
+            messagebox(window, "Too many networks.");
+            break;
+          }
+          const string prompt = StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
+          const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
+          if (net_num > 0 && net_num <= networks.networks().size() + 1) {
+            if (dialog_yn(window, "Are you sure? ")) {
+              insert_net(networks, net_num - 1);
             }
           }
-        } else {
-          messagebox(window, "You must leave at least one network.");
-        }
-        break;
-      case 'I':
-        if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
-          vector<string> lines{ "You must run the BBS once to set up ", "some variables before inserting a network." };
-          messagebox(window, lines);
           break;
         }
-        if (networks.networks().size() >= MAX_NETWORKS) {
-          messagebox(window, "Too many networks.");
-          break;
-        }
-        const string prompt = StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
-        const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
-        if (net_num > 0 && net_num <= networks.networks().size() + 1) {
-          if (dialog_yn(window, "Are you sure? ")) {
-            insert_net(networks, net_num - 1);
-          }
-        }
-        break;
       }
-    }
-  } while (!done);
-  networks.Save();
+    } while (!done);
+    networks.Save();
+  } catch (const std::exception& e) {
+    LOG(ERROR) << e.what();
+  }
 }
 

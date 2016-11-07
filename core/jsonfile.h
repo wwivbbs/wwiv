@@ -27,6 +27,7 @@
 //#include <cereal/types/memory.hpp>
 //#include <cereal/archives/json.hpp>
 
+#include "core/log.h"
 #include "core/textfile.h"
 
 namespace wwiv {
@@ -41,22 +42,32 @@ public:
   virtual ~JsonFile() {}
 
   bool Load() {
-    TextFile file(file_name_, "r");
-    if (!file.IsOpen()) {
+    try {
+      TextFile file(file_name_, "r");
+      if (!file.IsOpen()) {
+        return false;
+      }
+      std::string text = file.ReadFileIntoString();
+      if (text.empty()) {
+        return false;
+      }
+      std::stringstream ss(text);
+      cereal::JSONInputArchive load(ss);
+      load(cereal::make_nvp(key_, t_));
+      return true;
+    } catch (const cereal::RapidJSONException&e) {
+      LOG(ERROR) << e.what();
       return false;
     }
-    std::string text = file.ReadFileIntoString();
-    std::stringstream ss;
-    ss << text;
-    cereal::JSONInputArchive load(ss);
-    load(cereal::make_nvp(key_, t_));
-    return true;
   }
   bool Save() { 
     std::ostringstream ss;
-    {
+    try {
       cereal::JSONOutputArchive save(ss);
       save(cereal::make_nvp(key_, t_));
+    } catch (const cereal::RapidJSONException& e) {
+      LOG(ERROR) << e.what();
+      return false;
     }
 
     TextFile file(file_name_, "w");

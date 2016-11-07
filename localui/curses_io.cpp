@@ -203,6 +203,14 @@ void CursesIO::Init(const std::string& title) {
   static bool initialized_once = once_init();
 }
 
+// static 
+CursesIO* CursesIO::Get() {
+  return out;
+}
+
+
+// static
+
 int CursesIO::GetMaxX() const {
   return getmaxx(stdscr);
 }

@@ -47,18 +47,17 @@ static unsigned char translate_table[] = {
 
 void get_user_ppp_addr() {
   session()->internetFullEmailAddress = "";
-  bool found = false;
   int network_number = getnetnum("FILEnet");
-  session()->set_net_num(network_number);
   if (network_number == -1) {
     return;
   }
-  set_net_num(session()->net_num());
+  set_net_num(network_number);
   session()->internetFullEmailAddress = StringPrintf("%s@%s",
       session()->internetEmailName.c_str(),
       session()->internetEmailDomain.c_str());
   TextFile acctFile(session()->network_directory(), ACCT_INI, "rt");
   char szLine[260];
+  bool found = false;
   if (acctFile.IsOpen()) {
     while (acctFile.ReadLine(szLine, 255) && !found) {
       if (strncasecmp(szLine, "USER", 4) == 0) {

@@ -71,6 +71,7 @@ class CursesIO {
 
   ColorScheme* color_scheme() { return color_scheme_.get(); }
   static void Init(const std::string& title);
+  static CursesIO* Get();
   virtual int GetMaxX() const;
   virtual int GetMaxY() const;
 
