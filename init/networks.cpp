@@ -151,6 +151,37 @@ static bool del_net(
   return networks.Save();
 }
 
+// Base item of an editable value, this class does not use templates.
+class SubDialogEditItem : public BaseEditItem {
+public:
+  SubDialogEditItem(int x, int y, const std::string& title, int width, net_networks_rec& d)
+      : BaseEditItem(x, y, 1), title_(title), width_(width), d_(d) {};
+  virtual ~SubDialogEditItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    const int COL1_POSITION = 14;
+    char s[81];
+    memset(s, 0, sizeof(s));
+    EditItems items{};
+    switch (d_.type) {
+    case network_type_t::wwivnet: return 2;
+    case network_type_t::internet: return 2;
+    case network_type_t::ftn: {
+      items.add(new StringEditItem<char*>(COL1_POSITION, 1, 60, s, false));
+    } break;
+    };
+    unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, items.size() + 2, width_));
+    items.set_curses_io(CursesIO::Get(), sw.get());
+    items.Run();
+    window->RedrawWin();
+    return 2;
+  }
+  virtual void Display(CursesWindow* window) const {}
+private:
+  const std::string title_;
+  int width_ = 40;
+  net_networks_rec& d_;
+};
 static void edit_net(Networks& networks, int nn) {
   static const vector<string> nettypes{
     "WWIVnet ",
@@ -161,7 +192,6 @@ static void edit_net(Networks& networks, int nn) {
   Subs subs(syscfg.datadir, networks.networks());
   bool subs_loaded = subs.Load();
 
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", 6, 76));
   net_networks_rec& n = networks.at(nn);
   const string orig_network_name(n.name);
 
@@ -175,7 +205,9 @@ static void edit_net(Networks& networks, int nn) {
     new StringEditItem<char*>(COL1_POSITION, 2, 15, n.name, false),
     new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n.sysnum),
     new StringFilePathItem(COL1_POSITION, 4, 60, n.dir),
+    new SubDialogEditItem(COL1_POSITION, 5, "Network Settings", 76, n)
   };
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", items.size() + 2, 76));
   items.set_curses_io(out, window.get());
 
   int y = 1;
@@ -183,7 +215,7 @@ static void edit_net(Networks& networks, int nn) {
   window->PutsXY(2, y++, "Net Name  :");
   window->PutsXY(2, y++, "Node #    :");
   window->PutsXY(2, y++, "Directory :");
-
+  window->PutsXY(2, y++, "Settings  :");
   items.Run();
 
   if (subs_loaded && orig_network_name != n.name) {

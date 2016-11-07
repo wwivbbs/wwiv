@@ -482,7 +482,7 @@ public:
   EditItems(std::initializer_list<BaseEditItem*> l)
     : items_(l), navigation_help_items_(StandardNavigationHelpItems()),
       editor_help_items_(StandardEditorHelpItems()), 
-      edit_mode_(false) {}
+      edit_mode_(false), io_(CursesIO::Get()) {}
   virtual ~EditItems();
 
   virtual void Run();
@@ -492,9 +492,13 @@ public:
   void set_editmode_help_items(const std::vector<HelpItem> items) { editor_help_items_ = items; }
   void set_navigation_extra_help_items(const std::vector<HelpItem> items) { navigation_extra_help_items_ = items; }
   std::vector<BaseEditItem*>& items() { return items_; }
+  void add(BaseEditItem* item) {
+    items_.push_back(item);
+  }
 
   void set_curses_io(CursesIO* io, CursesWindow* window) { io_ = io; window_ = window; }
   CursesWindow* window() const { return window_; }
+  size_t size() const { return items_.size(); }
 
   static std::vector<HelpItem> StandardNavigationHelpItems() {
     return { {"Esc", "Exit"}, 

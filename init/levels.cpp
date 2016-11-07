@@ -54,13 +54,13 @@ static vector<HelpItem> create_extra_help_items() {
   return help_items;
 }
 
-static const uint8_t JumpToSl(CursesIO* io, CursesWindow* window) {
+static const uint8_t JumpToSl(CursesWindow* window) {
  vector<ListBoxItem> items;
   for (int i = MIN_SL; i < MAX_SL; i++) {
     items.emplace_back(StringPrintf("SL #%d", i), 0, i);
   }
   
-  ListBox list(io, window, "Select SL", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+  ListBox list(out, window, "Select SL", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
     static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
   ListBoxResult result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
@@ -116,7 +116,7 @@ void sec_levs() {
       window->Refresh();
     } break;
     case 'J': {
-      uint8_t sl_number = JumpToSl(out, window.get());
+      uint8_t sl_number = JumpToSl(window.get());
       if (sl_number >= MIN_SL) {
         cursl = sl_number;
       }
