@@ -259,13 +259,13 @@ struct net_call_out_rec {
 
 #ifndef __MSDOS__
 
-enum class fido_packet_type { NONE, TYPE2_PLUS };
-enum class fido_transport_type { DIRECTORY, BINKP };
-enum class fido_mailer_type { FLO, ATTACH };
+enum class fido_packet_t { none, type2_plus};
+enum class fido_transport_t { directory, binkp};
+enum class fido_mailer_t { flo, attach};
 
 struct fido_packet_config_t {
   // Type of packet to create
-  fido_packet_type packet_type;
+  fido_packet_t packet_type;
   // File extension to map to type defined in archivers.dat
   std::string compression_type;
   std::string packet_password;
@@ -275,9 +275,9 @@ struct fido_packet_config_t {
 };
 
 struct fido_network_config_t {
-  fido_mailer_type mailer_type;
+  fido_mailer_t mailer_type;
   // Type of transport to use for this packet.
-  fido_transport_type transport;
+  fido_transport_t transport;
   // Inbound directory for packets
   std::string inbound_dir;
   // Secure inbound directory for packets?

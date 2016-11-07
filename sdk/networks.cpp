@@ -42,34 +42,72 @@ using cereal::make_nvp;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+// We want to override how we store network_type_t to store it as a string, not int.
+// This has to be in the global namespace. 
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(network_type_t, cereal::specialization::non_member_load_save_minimal);
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_packet_t, cereal::specialization::non_member_load_save_minimal);
+
 namespace cereal {
 
+#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
 
-template <class Archive> inline
-std::string save_minimal(Archive const &, const network_type_t& t) {
-  static std::vector<std::string> network_types_names{"wwivnet", "ftn", "internet"};
+template <typename T> inline
+std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
   try {
-    return network_types_names.at(static_cast<int>(t));
+    return names.at(static_cast<int>(t));
   } catch (std::out_of_range&) {
-    return network_types_names.at(0);
+    return names.at(0);
   }
 }
 
-template <class Archive> inline
-void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
-  static std::vector<std::string> network_types_names{"wwivnet", "ftn", "internet"};
+template <typename T> inline
+T from_enum_string(const std::string& v, const std::vector<std::string>& names) {
   try {
-    for (size_t i = 0; i < network_types_names.size(); i++) {
-      if (v == network_types_names.at(i)) {
-        t = static_cast<network_type_t>(i);
+    for (size_t i = 0; i < names.size(); i++) {
+      if (v == names.at(i)) {
+        return static_cast<T>(i);
       }
     }
   } catch (std::out_of_range&) {
     // NOP
   }
-  t = network_type_t::wwivnet;
+  return static_cast<T>(0);
+}
+
+template <class Archive> inline 
+std::string save_minimal(Archive const &, const network_type_t& t) {
+  return to_enum_string<network_type_t>(t, {"wwivnet", "fido", "internet"});
+}
+template <class Archive> inline
+void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
+  t = from_enum_string<network_type_t>(v, {"wwivnet", "fido", "internet"});
+}
+
+template <class Archive> inline
+std::string save_minimal(Archive const &, const fido_packet_t& t) {
+  return to_enum_string<fido_packet_t>(t, {"none", "type2+"});
+}
+template <class Archive> inline
+void load_minimal(Archive const &, fido_packet_t& t, const std::string& v) {
+  t = from_enum_string<fido_packet_t>(v,{"none", "type2+"});
+}
+
+template <class Archive> inline
+std::string save_minimal(Archive const &, const fido_transport_t& t) {
+  return to_enum_string<fido_transport_t>(t, {"directory", "binkp"});
+}
+template <class Archive> inline
+void load_minimal(Archive const &, fido_transport_t& t, const std::string& v) {
+  t = from_enum_string<fido_transport_t>(v, {"directory", "binkp"});
+}
+
+template <class Archive> inline
+std::string save_minimal(Archive const &, const fido_mailer_t& t) {
+  return to_enum_string<fido_mailer_t>(t, {"flo", "attach"});
+}
+template <class Archive> inline
+void load_minimal(Archive const &, fido_mailer_t& t, const std::string& v) {
+  t = from_enum_string<fido_mailer_t>(v, {"flo", "attach"});
 }
 
 template <class Archive>
@@ -106,6 +144,11 @@ void serialize(Archive & ar, net_networks_rec& n) {
   }
   SERIALIZE(n, dir);
   SERIALIZE(n, sysnum);
+
+  // Seralize the Fido config
+  if (n.type == network_type_t::ftn) {
+    SERIALIZE(n, fido);
+  }
 }
 
 }  // namespace cereal
