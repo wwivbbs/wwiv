@@ -159,7 +159,6 @@ public:
   virtual ~SubDialogEditItem() {}
 
   virtual int Run(CursesWindow* window) {
-    const int COL1_POSITION = 14;
     char s[81];
     memset(s, 0, sizeof(s));
     EditItems items{};
@@ -167,11 +166,37 @@ public:
     case network_type_t::wwivnet: return 2;
     case network_type_t::internet: return 2;
     case network_type_t::ftn: {
-      items.add(new StringEditItem<char*>(COL1_POSITION, 1, 60, s, false));
+      const int COL1_POSITION = 17;
+      const int MAX_STRING_LEN = 56;
+      fido_network_config_t* n = &d_.fido;
+      int y = 1;
+      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"FLO", "ATTACH"}, &n->mailer_type));
+      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "BINKP"}, &n->transport));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir, false));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->secure_inbound_dir, false));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir, false));
+      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"FLO", "ATTACH"}, &n->packet_config.packet_type));
+      items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "NONE"}, n->packet_config.compression_type));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, false));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, false));
+      items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_archive_size));
+      items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_packet_size));
     } break;
     };
     unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, items.size() + 2, width_));
     items.set_curses_io(CursesIO::Get(), sw.get());
+    int y = 1;
+    sw->PutsXY(2, y++, "Mailer       :");
+    sw->PutsXY(2, y++, "Transport    :");
+    sw->PutsXY(2, y++, "Inbound      :");
+    sw->PutsXY(2, y++, "Sec Inbound  :");
+    sw->PutsXY(2, y++, "Outbound     :");
+    sw->PutsXY(2, y++, "Packet Type  :");
+    sw->PutsXY(2, y++, "Compression  :");
+    sw->PutsXY(2, y++, "Packet PW   :");
+    sw->PutsXY(2, y++, "AreaFix PW  :");
+    sw->PutsXY(2, y++, "Max Arc Size:");
+    sw->PutsXY(2, y++, "Max Pkt Size:");
     items.Run();
     window->RedrawWin();
     return 2;
@@ -182,6 +207,7 @@ private:
   int width_ = 40;
   net_networks_rec& d_;
 };
+
 static void edit_net(Networks& networks, int nn) {
   static const vector<string> nettypes{
     "WWIVnet ",

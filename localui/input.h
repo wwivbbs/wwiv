@@ -118,9 +118,9 @@ protected:
   displayfn display_;
 };
 
-template<typename T> class StringEditItem : public EditItem<T> {
+template<typename T> class StringEditItem: public EditItem<T> {
 public:
-  StringEditItem(int x, int y, int maxsize, T data, bool uppercase) 
+  StringEditItem(int x, int y, int maxsize, T data, bool uppercase)
     : EditItem<T>(x, y, maxsize, data), uppercase_(uppercase) {}
   virtual ~StringEditItem() {}
 
@@ -144,7 +144,34 @@ private:
   bool uppercase_;
 };
 
-template<typename T, int MAXLEN = std::numeric_limits<T>::digits10> 
+template<> class StringEditItem<std::string&>: public EditItem<std::string&> {
+public:
+  StringEditItem(int x, int y, int maxsize, std::string& data, bool uppercase)
+    : EditItem<std::string&>(x, y, maxsize, data), uppercase_(uppercase) {}
+  virtual ~StringEditItem() {}
+
+  int Run(CursesWindow* window) override {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    auto st = uppercase_ ? EditLineMode::UPPER_ONLY : EditLineMode::ALL;
+    editline(window, &this->data_, this->maxsize_, st, &return_code, "");
+    return return_code;
+  }
+
+protected:
+  void DefaultDisplay(CursesWindow* window) const override {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+
+    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
+    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_.c_str());
+  }
+private:
+  bool uppercase_;
+};
+
+
+template<typename T, int MAXLEN = std::numeric_limits<T>::digits10>
 class NumberEditItem : public EditItem<T*> {
 public:
   NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, 0, data) {}
@@ -203,7 +230,46 @@ private:
   const std::vector<std::string> items_;
 };
 
-template<typename T> 
+class StringListItem: public EditItem<std::string&> {
+public:
+  StringListItem(int x, int y, const std::vector<std::string>& items, std::string& data)
+    : EditItem<std::string&>(x, y, 0, data), items_(items) {
+    for (const auto& item : items) {
+      this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.size());
+    }
+  }
+  virtual ~StringListItem() {}
+
+  virtual int Run(CursesWindow* window) {
+    window->GotoXY(this->x_, this->y_);
+    int return_code = 0;
+    std::vector<std::string>::size_type selection = 0;
+    for (size_t i = 0; i < items_.size(); i++) {
+      if (data_ == items_.at(i)) {
+        selection = i;
+        break;
+      }
+    }
+    selection = toggleitem(window, static_cast<std::vector<std::string>::size_type>(selection), items_, &return_code);
+    data_ = items_.at(selection);
+    return return_code;
+  }
+
+protected:
+  virtual void DefaultDisplay(CursesWindow* window) const {
+    std::string blanks(this->maxsize_, ' ');
+    window->PutsXY(this->x_, this->y_, blanks.c_str());
+    try {
+      window->PutsXY(this->x_, this->y_, this->data_.c_str());
+    } catch (const std::out_of_range&) {
+      // Leave it empty since we are out of range.
+    }
+  }
+private:
+  const std::vector<std::string> items_;
+};
+
+template<typename T>
 class FlagEditItem : public EditItem<T*> {
 public:
   FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data) 
