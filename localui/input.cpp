@@ -314,7 +314,7 @@ static std::size_t editlinestrlen(char *text) {
 
 int editline(CursesWindow* window, string* s, int len, EditLineMode status, const char *ss) {
   char buffer[255];
-  strcpy(buffer, s->c_str());
+  wwiv::strings::to_char_array(buffer, *s);
   int rc = editline(window, buffer, len, status, ss);
   s->assign(buffer);
   return rc;

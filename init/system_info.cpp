@@ -72,10 +72,8 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
     string s = print_time(*this->data_);
-    window->PutsXY(this->x_, this->y_, s);
+    DefaultDisplayString(window, s);
   }
 };
 
@@ -104,13 +102,11 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-    
     // passing *this->data_ to StringPrintf is causing a bus error
     // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
     float d = *this->data_;
-    window->PrintfXY(this->x_, this->y_, "%5.3f", d);
+    std::string s = StringPrintf("%5.3f", d);
+    DefaultDisplayString(window, s);
   }
 };
 
