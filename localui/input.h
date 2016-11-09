@@ -57,8 +57,8 @@ bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text);
 bool dialog_yn(CursesWindow* window, const std::string& prompt);
 int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value, int max_value);
 char onek(CursesWindow* window, const char *s);
-void editline(CursesWindow* window, std::string* s, int len, EditLineMode status, int *returncode, const char *ss);
-void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *returncode, const char *ss);
+int editline(CursesWindow* window, std::string* s, int len, EditLineMode status, const char *ss);
+int editline(CursesWindow* window, char *s, int len, EditLineMode status, const char *ss);
 std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector<std::string>::size_type value, const std::vector<std::string>& strings, int *returncode);
 
 void input_password(CursesWindow* window, const std::string& prompt, const std::vector<std::string>& text, std::string *output, int max_length);
@@ -149,9 +149,8 @@ public:
 
   int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    int return_code = 0;
     auto st = uppercase_ ? EditLineMode::UPPER_ONLY : EditLineMode::ALL;
-    editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, st, &return_code, "");
+    int return_code = editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, st, "");
     return return_code;
   }
 
@@ -172,9 +171,8 @@ public:
 
   int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    int return_code = 0;
     auto st = uppercase_ ? EditLineMode::UPPER_ONLY : EditLineMode::ALL;
-    editline(window, &this->data_, this->maxsize_, st, &return_code, "");
+    int return_code = editline(window, &this->data_, this->maxsize_, st, "");
     return return_code;
   }
 
@@ -195,9 +193,8 @@ public:
 
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
-    int return_code = 0;
     std::string s = wwiv::strings::StringPrintf("%-7u", *this->data_);
-    editline(window, &s, MAXLEN + 1, EditLineMode::NUM_ONLY, &return_code, "");
+    int return_code = editline(window, &s, MAXLEN + 1, EditLineMode::NUM_ONLY, "");
     *this->data_ = static_cast<T>(atoi(s.c_str()));
     return return_code;
   }
@@ -323,7 +320,6 @@ public:
     char s[21];
     char rs[21];
     char ch1 = '0';
-    int return_code = 0;
 
     strcpy(rs, restrictstring);
     for (int i = 0; i <= 15; i++) {
@@ -338,7 +334,7 @@ public:
     }
     s[16] = 0;
 
-    editline(window, s, 16, EditLineMode::SET, &return_code, rs);
+    int return_code = editline(window, s, 16, EditLineMode::SET, rs);
 
     *this->data_ = 0;
     for (int i = 0; i < 16; i++) {
@@ -369,7 +365,6 @@ public:
     char s[21];
     char rs[21];
     char ch1 = '0';
-    int return_code = 0;
 
     strcpy(rs, ar_string);
     for (int i = 0; i <= 15; i++) {
@@ -383,7 +378,7 @@ public:
       }
     }
     s[16] = 0;
-    editline(window, s, 16, EditLineMode::SET, &return_code, rs);
+    int return_code = editline(window, s, 16, EditLineMode::SET, rs);
     *this->data_ = 0;
     for (int i = 0; i < 16; i++) {
       if (s[i] != 32 && s[i] != 0) {
@@ -453,8 +448,7 @@ public:
 
   virtual int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    int return_code = 0;
-    editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
+    int return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     trimstrpath(this->data_);
 
     // Update what we display in case it changed.
@@ -476,8 +470,7 @@ public:
 
   virtual int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    int return_code = 0;
-    editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
+    int return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
     if (data_.back() != File::pathSeparatorChar) {
       data_.push_back(File::pathSeparatorChar);
@@ -501,8 +494,7 @@ public:
 
   virtual int Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    int return_code = 0;
-    editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, &return_code, "");
+    int return_code = editline(window, this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(this->data_);
     return return_code;
   }

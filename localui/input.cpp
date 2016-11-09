@@ -56,8 +56,7 @@ int CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
   string s = to_field_();
 
-  int return_code = 0;
-  editline(window, &s, maxsize_, EditLineMode::ALL, &return_code, "");
+  int return_code = editline(window, &s, maxsize_, EditLineMode::ALL, "");
   from_field_(s);
   return return_code;
 }
@@ -281,9 +280,8 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 
-  int return_code = 0;
   string s;
-  editline(dialog.get(), &s, num_digits, EditLineMode::NUM_ONLY, &return_code, "");
+  int return_code = editline(dialog.get(), &s, num_digits, EditLineMode::NUM_ONLY, "");
   if (s.empty()) {
     return 0;
   }
@@ -306,28 +304,30 @@ char onek(CursesWindow* window, const char *pszKeys) {
 
 static const int background_character = 32;;
 
-static int editlinestrlen(char *text) {
-  int i = strlen(text);
+static std::size_t editlinestrlen(char *text) {
+  std::size_t i = strlen(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == background_character)) {
     --i;
   }
   return i;
 }
 
-void editline(CursesWindow* window, string* s, int len, EditLineMode status, int *returncode, const char *ss) {
+int editline(CursesWindow* window, string* s, int len, EditLineMode status, const char *ss) {
   char buffer[255];
   strcpy(buffer, s->c_str());
-  editline(window, buffer, len, status, returncode, ss);
+  int rc = editline(window, buffer, len, status, ss);
   s->assign(buffer);
+  return rc;
 }
 
 /* editline edits a string, doing I/O to the screen only. */
-void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *returncode, const char *ss) {
+int editline(CursesWindow* window, char *s, int len, EditLineMode status, const char *ss) {
   attr_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
   int cx = window->GetcurX();
   int cy = window->GetcurY();
+  int rc = 0;
   for (int i = strlen(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
@@ -344,7 +344,7 @@ void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *
     switch (ch) {
     case KEY_F(1): // curses
       done = true;
-      *returncode = DONE;
+      rc = DONE;
       break;
     case KEY_HOME: // curses
       pos = 0;
@@ -372,11 +372,11 @@ void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *
     case CO:                                      //return
     case KEY_UP: // curses
       done = true;
-      *returncode = PREV;
+      rc = PREV;
       break;
     case KEY_DOWN: // curses
       done = true;
-      *returncode = NEXT;
+      rc = NEXT;
       break;
     case KEY_IC: // curses
       if (status != EditLineMode::SET) {
@@ -453,11 +453,11 @@ void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *
     case RETURN: // return
     case TAB:
       done = true;
-      *returncode = NEXT;
+      rc = NEXT;
       break;
     case ESC: // esc
       done = true;
-      *returncode = DONE;
+      rc = DONE;
       break;
     case 0x7f:  // yet some other delete key
     case KEY_BACKSPACE:  // curses
@@ -497,9 +497,11 @@ void editline(CursesWindow* window, char *s, int len, EditLineMode status, int *
   window->AttrSet(COLOR_PAIR(old_pair) | old_attr);
   window->PutsXY(cx, cy, szFinishedString);
   window->GotoXY(cx, cy);
+
+  return rc;
 }
 
-std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector<std::string>::size_type value, const std::vector<std::string>& strings, int *returncode) {
+std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector<std::string>::size_type value, const std::vector<std::string>& strings, int *rc) {
   if (value < 0 || value >= strings.size()) {
     value = 0;
   }
@@ -525,24 +527,24 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
     case RETURN:
     case TAB:
       done = true;
-      *returncode = NEXT;
+      *rc = NEXT;
       break;
     case ESC:
       done = true;
-      *returncode = DONE;
+      *rc = DONE;
       break;
     case KEY_F(1): // F1
       done = true;
-      *returncode = DONE;
+      *rc = DONE;
       break;
     case KEY_UP: // UP
     case KEY_BTAB: // SHIFT-TAB
       done = true;
-      *returncode = PREV;
+      *rc = PREV;
       break;
     case KEY_DOWN: // DOWN
       done = true;
-      *returncode = NEXT;
+      *rc = NEXT;
       break;
     default:
       if (ch == 32) {
