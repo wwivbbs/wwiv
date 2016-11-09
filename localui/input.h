@@ -34,6 +34,7 @@
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 #include "init/utility.h"
+#include "core/stl.h"
 
 enum class EditLineMode {
   NUM_ONLY,
@@ -66,6 +67,18 @@ int messagebox(CursesWindow* window, const std::vector<std::string>& text);
 
 void trimstrpath(char *s);
 
+template<typename T>
+static std::string to_restriction_string(T data, std::size_t size, const char* res) {
+  std::string s;
+  for (size_t i = 0; i < size; i++) {
+    if (data & (1 << i)) {
+      s.push_back(res[i]);
+    } else {
+      s.push_back(' ');
+    }
+  }
+  return s;
+}
 
 // Base item of an editable value, this class does not use templates.
 class BaseEditItem {
@@ -111,6 +124,16 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const = 0;
+  virtual void DefaultDisplayString(CursesWindow* window, const std::string& text) const {
+    std::string s = text;
+    if (wwiv::stl::size_int(s) > maxsize_) {
+      s = text.substr(0, maxsize_);
+    } else if (wwiv::stl::size_int(s) < maxsize_) {
+      s = text + std::string(static_cast<std::string::size_type> (maxsize_)-text.size(), ' ');
+    }
+
+    window->PutsXY(this->x_, this->y_, s);
+  }
 
   const T data() const { return data_; }
   void set_data(T data) { data_ = data; }
@@ -134,11 +157,8 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-
-    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
-    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_);
+    std::string s = reinterpret_cast<char*>(const_cast<const T>(this->data_));
+    DefaultDisplayString(window, s);
   }
 private:
   bool uppercase_;
@@ -160,11 +180,7 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-
-    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
-    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_.c_str());
+    DefaultDisplayString(window, data_);
   }
 private:
   bool uppercase_;
@@ -213,17 +229,17 @@ public:
       *this->data_ = static_cast<T>(0);
     }
     *this->data_ = static_cast<T>(toggleitem(window, static_cast<std::vector<std::string>::size_type>(*this->data_), items_, &return_code));
+    DefaultDisplay(window);
     return return_code;
   }
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
     try {
-      window->PutsXY(this->x_, this->y_, this->items_.at(static_cast<std::vector<std::string>::size_type>(*this->data_)).c_str());
+      std::string s = items_.at(static_cast<std::vector<std::string>::size_type>(*this->data_));
+      DefaultDisplayString(window, s);
     } catch (const std::out_of_range&) {
-      // Leave it empty since we are out of range.
+      DefaultDisplayString(window, "");
     }
   }
 private:
@@ -243,12 +259,10 @@ public:
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
+    auto it = std::find(items_.begin(), items_.end(), data_);
     std::vector<std::string>::size_type selection = 0;
-    for (size_t i = 0; i < items_.size(); i++) {
-      if (data_ == items_.at(i)) {
-        selection = i;
-        break;
-      }
+    if (it != items_.end()) {
+      selection = std::distance(it, items_.begin());
     }
     selection = toggleitem(window, static_cast<std::vector<std::string>::size_type>(selection), items_, &return_code);
     data_ = items_.at(selection);
@@ -257,13 +271,7 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-    try {
-      window->PutsXY(this->x_, this->y_, this->data_.c_str());
-    } catch (const std::out_of_range&) {
-      // Leave it empty since we are out of range.
-    }
+    DefaultDisplayString(window, data_);
   }
 private:
   const std::vector<std::string> items_;
@@ -295,10 +303,8 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
     int state = (*this->data_ & this->flag_) ? 1 : 0;
-    window->PrintfXY(this->x_, this->y_, "%s", this->items_.at(state).c_str());
+    DefaultDisplayString(window, items_.at(state));
   }
 private:
   std::vector<std::string> items_;
@@ -346,18 +352,8 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-    char s[21];
-    for (int i=0; i < 16; i++) {
-      if (*this->data_ & (1 << i)) {
-        s[i] = restrictstring[i];
-      } else {
-        s[i] = 32;
-      }
-    }
-    s[16] = 0;
-    window->PrintfXY(this->x_, this->y_, "%s", s);
+    std::string s = to_restriction_string(*data_, 16, restrictstring);
+    DefaultDisplayString(window, s);
   }
 };
 
@@ -399,18 +395,8 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-    char s[21];
-    for (int i=0; i < 16; i++) {
-      if (*this->data_ & (1 << i)) {
-        s[i] = ar_string[i];
-      } else {
-        s[i] = 32;
-      }
-    }
-    s[16] = 0;
-    window->PrintfXY(this->x_, this->y_, "%s", s);
+    std::string s = to_restriction_string(*data_, 16, ar_string);
+    DefaultDisplayString(window, s);
   }
 };
 
@@ -434,11 +420,8 @@ public:
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     static const std::vector<std::string> boolean_strings = { "No ", "Yes" };
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-
-    int data = *this->data_ ? 1 : 0;
-    window->PrintfXY(this->x_, this->y_, "%s", boolean_strings.at(data).c_str());
+    std::string s = boolean_strings.at(*data_ ? 1 : 0);
+    DefaultDisplayString(window, s);
   }
 };
 
@@ -481,11 +464,7 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const override {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-
-    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
-    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_);
+    DefaultDisplayString(window, data_);
   }
 };
 
@@ -510,11 +489,7 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const override {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-
-    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
-    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_.c_str());
+    DefaultDisplayString(window, data_);
   }
 };
 
@@ -534,11 +509,7 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const override {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-
-    const std::string pattern = wwiv::strings::StringPrintf("%%-%ds", this->maxsize_);
-    window->PrintfXY(this->x_, this->y_, pattern.c_str(), this->data_);
+    DefaultDisplayString(window, data_);
   }
 };
 

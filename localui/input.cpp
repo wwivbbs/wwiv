@@ -504,13 +504,18 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
     value = 0;
   }
 
+  size_t max_size = 0;
+  for (const auto& item : strings) {
+    max_size = std::max<std::size_t>(max_size, item.size());
+  }
+
   attr_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
   int cx = window->GetcurX();
   int cy = window->GetcurY();
   int curatr = 0x1f;
-  window->Puts(strings.at(value));
+  window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
   bool done = false;
   do  {
@@ -542,7 +547,11 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
     default:
       if (ch == 32) {
         value = (value + 1) % strings.size();
-        window->Puts(strings.at(value));
+        string s = strings.at(value);
+        if (s.size() < max_size) {
+          s += string(max_size - s.size(), ' ');
+        }
+        window->PutsXY(cx, cy, s);
         window->GotoXY(cx, cy);
       }
       break;
