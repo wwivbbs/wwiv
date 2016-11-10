@@ -157,7 +157,7 @@ public:
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
     std::string s = reinterpret_cast<char*>(const_cast<const T>(this->data_));
-    DefaultDisplayString(window, s);
+    this->DefaultDisplayString(window, s);
   }
 private:
   bool uppercase_;
@@ -178,7 +178,7 @@ public:
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
-    DefaultDisplayString(window, data_);
+    this->DefaultDisplayString(window, data_);
   }
 private:
   bool uppercase_;
@@ -234,9 +234,9 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     try {
       std::string s = items_.at(static_cast<std::vector<std::string>::size_type>(*this->data_));
-      DefaultDisplayString(window, s);
+      this->DefaultDisplayString(window, s);
     } catch (const std::out_of_range&) {
-      DefaultDisplayString(window, "");
+      this->DefaultDisplayString(window, "");
     }
   }
 private:
@@ -301,7 +301,7 @@ public:
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     int state = (*this->data_ & this->flag_) ? 1 : 0;
-    DefaultDisplayString(window, items_.at(state));
+    this->DefaultDisplayString(window, items_.at(state));
   }
 private:
   std::vector<std::string> items_;
