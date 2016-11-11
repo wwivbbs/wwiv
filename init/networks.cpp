@@ -193,10 +193,10 @@ public:
     sw->PutsXY(2, y++, "Outbound     :");
     sw->PutsXY(2, y++, "Packet Type  :");
     sw->PutsXY(2, y++, "Compression  :");
-    sw->PutsXY(2, y++, "Packet PW   :");
-    sw->PutsXY(2, y++, "AreaFix PW  :");
-    sw->PutsXY(2, y++, "Max Arc Size:");
-    sw->PutsXY(2, y++, "Max Pkt Size:");
+    sw->PutsXY(2, y++, "Packet PW    :");
+    sw->PutsXY(2, y++, "AreaFix PW   :");
+    sw->PutsXY(2, y++, "Max Arc Size :");
+    sw->PutsXY(2, y++, "Max Pkt Size :");
     items.Run();
     window->RedrawWin();
     return 2;
