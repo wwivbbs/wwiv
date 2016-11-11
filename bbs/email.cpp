@@ -209,7 +209,7 @@ void sendout_email(EmailData& data) {
     if (!pFileEmail->IsOpen()) {
       return;
     }
-    int nEmailFileLen = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
+    auto nEmailFileLen = pFileEmail->GetLength() / sizeof(mailrec);
     if (nEmailFileLen == 0) {
       i = 0;
     } else {
@@ -708,11 +708,11 @@ void imail(int user_number, int system_number) {
   }
 }
 
-void delmail(File *pFile, int loc) {
-  mailrec m, m1;
+void delmail(File *pFile, size_t loc) {
+  mailrec m{};
   User user;
 
-  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
+  pFile->Seek(loc * sizeof(mailrec), File::seekBegin);
   pFile->Read(&m, sizeof(mailrec));
 
   if (m.touser == 0 && m.tosys == 0) {
@@ -721,10 +721,11 @@ void delmail(File *pFile, int loc) {
 
   bool rm = true;
   if (m.status & status_multimail) {
-    int t = pFile->GetLength() / sizeof(mailrec);
-    int otf = false;
-    for (int i = 0; i < t; i++) {
+    auto t = pFile->GetLength() / sizeof(mailrec);
+    bool otf = false;
+    for (size_t i = 0; i < t; i++) {
       if (i != loc) {
+        mailrec m1{};
         pFile->Seek(static_cast<long>(i * sizeof(mailrec)), File::seekBegin);
         pFile->Read(&m1, sizeof(mailrec));
         if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {

@@ -106,7 +106,7 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
   }
   if (nb) {
     file.Seek(pos, File::seekBegin);
-    int nNumRead = file.Read(b, nb);
+    auto nNumRead = file.Read(b, nb);
     for (int i = nNumRead; i < nb; i++) {
       b[i] = '\0';
     }
@@ -202,7 +202,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     *percent = 0.0;
     return;
   }
-  long lFileSize = file.GetLength();
+  auto lFileSize = file.GetLength();
   if (!lFileSize) {
     lFileSize = 1;
   }

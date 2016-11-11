@@ -109,7 +109,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       const auto fn = StrCat(session()->network_directory(), "n", xnp.stype, ".net");
       File file(fn);
       if (file.Open(File::modeBinary | File::modeReadOnly)) {
-        int len1 = file.GetLength();
+        auto len1 = file.GetLength();
         // looks like this leaks
         text.clear();
         text.resize(len1);

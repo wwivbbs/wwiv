@@ -44,7 +44,7 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
   // Handle 4.24 datafile
   if (!initialized_) {
     configFile.Seek(0);
-    int size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
+    auto size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
     initialized_ = (size_read == CONFIG_DAT_SIZE_424);
     written_by_wwiv_num_version_ = 424;
     config_revision_number_ = 0;

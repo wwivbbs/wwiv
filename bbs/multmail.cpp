@@ -154,7 +154,7 @@ void multimail(int *pnUserNumber, int numu) {
   m.daten = static_cast<uint32_t>(time(nullptr));
 
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
-  int len = pFileEmail->GetLength() / sizeof(mailrec);
+  auto len = pFileEmail->GetLength() / sizeof(mailrec);
   int i = 0;
   if (len != 0) {
     i = len - 1;

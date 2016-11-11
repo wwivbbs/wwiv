@@ -46,8 +46,8 @@ UserManager::~UserManager() { }
 int  UserManager::GetNumberOfUserRecords() const {
   File userList(data_directory_, USER_LST);
   if (userList.Open(File::modeReadOnly | File::modeBinary)) {
-    long nSize = userList.GetLength();
-    int nNumRecords = static_cast<int>(nSize / userrec_length_) - 1;
+    auto nSize = userList.GetLength();
+    auto nNumRecords = static_cast<int>(nSize / userrec_length_) - 1;
     return nNumRecords;
   }
   return 0;
@@ -60,7 +60,7 @@ bool UserManager::ReadUserNoCache(User *pUser, int user_number) {
     pUser->FixUp();
     return false;
   }
-  long nSize = userList.GetLength();
+  auto nSize = userList.GetLength();
   int nNumUserRecords = static_cast<int>(nSize / userrec_length_) - 1;
 
   if (user_number > nNumUserRecords) {

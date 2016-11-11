@@ -340,7 +340,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       file.Open(File::modeBinary | File::modeReadOnly);
     }
   }
-  long lFileLength = file.GetLength();
+  auto lFileLength = file.GetLength();
   u.numbytes = lFileLength;
   file.Close();
   session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);

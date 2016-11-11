@@ -199,7 +199,7 @@ int inst_ok(int loc, int subloc) {
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
-  int nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec));
+  auto nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec));
   instFile.Close();
   for (int nInstance = 1; nInstance < nNumInstances; nInstance++) {
     if (instFile.Open(File::modeReadOnly | File::modeBinary)) {

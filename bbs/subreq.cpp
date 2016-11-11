@@ -424,7 +424,7 @@ int amount_of_subscribers(const char *pszNetworkFileName) {
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   } else {
-    long len1 = file.GetLength();
+    auto len1 = file.GetLength();
     if (len1 == 0) {
       return 0;
     }

@@ -107,11 +107,59 @@ struct packet_header_2p_t {               /* FSC-0039 Type 2.+ */
   uint32_t product_data;
 };
 
+/*
+Stored Message (*.MSG format)
+From http://ftsc.org/docs/fts-0001.016
+-----------------------------------------------------
+
+Message    = 
+fromUserName(36)  (* Null terminated *)
+toUserName(36)    (* Null terminated *)
+subject(72)       (* see FileList below *)
+DateTime          (* message body was last edited *)
+timesRead         (* number of times msg has been read *)
+destNode          (* of message *)
+origNode          (* of message *)
+cost              (* in lowest unit of originator's
+currency *)
+origNet           (* of message *)
+destNet           (* of message *)
+destZone          (* of message *)
+origZone          (* of message *)
+destPoint         (* of message *)
+origPoint         (* of message *)
+replyTo           (* msg to which this replies *)
+AttributeWord
+nextReply         (* msg which replies to this *)
+text(unbounded)   (* Null terminated *)
+*/
+struct fido_stored_message_t {
+  char from[36];
+  char to[36];
+  char subject[72];
+  char datetime[20];
+  int16_t times_read,
+    dest_node,
+    orig_node,
+    cost,
+    orig_net,
+    dest_net,
+    dest_zone,
+    orig_zone,
+    dest_point,
+    orig_point,
+    reply_to,
+    attribute,
+    next_reply;
+};
+
+
 #ifndef __MSDOS__
 #pragma pack(pop)
 #endif  // __MSDOS__
 
 static_assert(sizeof(packet_header_2p_t) == 58, "packet_header_2p_t != 58 bytes");
+static_assert(sizeof(fido_stored_message_t) == 190, "fido_stored_message_t != 190 bytes");
 /*
 ,-------------------------------------------------------------------.
 | Name      | Offset | Bytes | Type  | Description                  |
@@ -156,9 +204,18 @@ public:
   fido_variable_length_header_t vh;
 };
 
+class FidoStoredMessage {
+public:
+  FidoStoredMessage(const fido_stored_message_t& h, const std::string& t): nh(h), text(t) {}
+  virtual ~FidoStoredMessage() {}
+
+  fido_stored_message_t nh;
+  std::string text;
+};
 
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
 ReadPacketResponse read_packed_message(File& file, FidoPackedMessage& packet);
+ReadPacketResponse read_stored_message(File& file, FidoStoredMessage& packet);
 
 
 }  // namespace fido

@@ -135,7 +135,7 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     return;
   }
 
-  int nu = oqf.GetLength() / syscfg.qscn_len;
+  auto nu = oqf.GetLength() / syscfg.qscn_len;
   for (int i = 0; i < nu; i++) {
     if (i % 10 == 0) {
       window->Printf("%u/%u\r", i, nu);

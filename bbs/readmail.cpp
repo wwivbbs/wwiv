@@ -296,7 +296,7 @@ void delete_attachment(unsigned long daten, int forceit) {
   bool found = false;
   File fileAttach(session()->config()->datadir(), ATTACH_DAT);
   if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
-    long l = fileAttach.Read(&fsr, sizeof(fsr));
+    auto l = fileAttach.Read(&fsr, sizeof(fsr));
     while (l > 0 && !found) {
       if (daten == (unsigned long) fsr.id) {
         found = true;

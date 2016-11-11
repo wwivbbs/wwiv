@@ -1037,7 +1037,7 @@ void logoff() {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       session()->user()->SetNumMailWaiting(0);
-      int t = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
+      auto t = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
       int r = 0;
       int w = 0;
       while (r < t) {
@@ -1075,7 +1075,7 @@ void logoff() {
   if (smwcheck) {
     File smwFile(session()->config()->datadir(), SMW_DAT);
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      int t = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
+      auto t = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
       int r = 0;
       int w = 0;
       while (r < t) {

@@ -218,7 +218,7 @@ void process_inst_msgs() {
     }
     while (true) {
       inst_msg_header ih = {};
-      int num_read = file.Read(&ih, sizeof(inst_msg_header));
+      auto num_read = file.Read(&ih, sizeof(inst_msg_header));
       if (num_read == 0) {
         // End of file.
         break;
@@ -250,8 +250,8 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
   if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
-  int i = static_cast<int>(instFile.GetLength() / sizeof(instancerec));
-  if (i < (nInstanceNum + 1)) {
+  auto i = instFile.GetLength() / sizeof(instancerec);
+  if (i < static_cast<size_t>(nInstanceNum + 1)) {
     instFile.Close();
     return false;
   }
@@ -296,7 +296,7 @@ int num_instances() {
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
-  int nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec)) - 1;
+  auto nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec)) - 1;
   instFile.Close();
   return nNumInstances;
 }

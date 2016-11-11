@@ -963,7 +963,7 @@ void WSession::create_phone_file() {
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  long lFileSize = file.GetLength();
+  auto lFileSize = file.GetLength();
   file.Close();
   int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 

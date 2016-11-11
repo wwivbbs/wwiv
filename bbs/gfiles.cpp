@@ -443,7 +443,7 @@ void gfile_sec(int sn) {
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {
-              long lFileSize = file.GetLength();
+              auto lFileSize = file.GetLength();
               file.Close();
               bool sent = false;
               abort = false;

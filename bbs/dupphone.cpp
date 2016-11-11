@@ -79,7 +79,7 @@ int find_phone_number(const char *phone) {
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
     return 0;
   }
-  long lFileSize = phoneFile.GetLength();
+  auto lFileSize = phoneFile.GetLength();
   int nNumRecords = static_cast<int>(lFileSize / sizeof(phonerec));
   phonerec *p = static_cast<phonerec *>(BbsAllocA(lFileSize));
   WWIV_ASSERT(p);

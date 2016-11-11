@@ -99,7 +99,7 @@ static bool del_net(
   // Now we update the email.
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
-    long t = emailfile.GetLength() / sizeof(mailrec);
+    auto t = emailfile.GetLength() / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
       mailrec m = {};
       emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
@@ -287,7 +287,7 @@ static bool insert_net(Networks& networks, int nn) {
   // wwiv::sdk::write_subs(syscfg.datadir, subboards);
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
-    long t = emailfile.GetLength() / sizeof(mailrec);
+    auto t = emailfile.GetLength() / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
       mailrec m;
       emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);

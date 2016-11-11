@@ -67,7 +67,7 @@ void kill_old_email() {
     bout << "\r\nNo mail.\r\n";
     return;
   }
-  int max = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
+  auto max = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
   int cur = 0;
   if (forward) {
     cur = max - 1;
@@ -118,7 +118,7 @@ void kill_old_email() {
           File fileAttach(session()->config()->datadir(), ATTACH_DAT);
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bool found = false;
-            long l1 = fileAttach.Read(&fsr, sizeof(fsr));
+            auto l1 = fileAttach.Read(&fsr, sizeof(fsr));
             while (l1 > 0 && !found) {
               if (m.daten == static_cast<uint32_t>(fsr.id)) {
                 bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0" << wwiv::endl;
@@ -166,7 +166,7 @@ void kill_old_email() {
             if (m.status & status_file) {
               File fileAttach(session()->config()->datadir(), ATTACH_DAT);
               if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
-                long l1 = fileAttach.Read(&fsr, sizeof(fsr));
+                auto l1 = fileAttach.Read(&fsr, sizeof(fsr));
                 while (l1 > 0 && !found) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     found = true;

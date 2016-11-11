@@ -649,11 +649,11 @@ void ProcessDSZLogFile() {
 
   File fileDszLog(session()->dsz_logfile_name_);
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
-    int nFileSize = static_cast<int>(fileDszLog.GetLength());
+    auto nFileSize = fileDszLog.GetLength();
     char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
     WWIV_ASSERT(ss != nullptr);
     if (ss) {
-      int nBytesRead = fileDszLog.Read(ss, nFileSize);
+      auto nBytesRead = fileDszLog.Read(ss, nFileSize);
       if (nBytesRead > 0) {
         ss[nBytesRead] = 0;
         lines[0] = strtok(ss, "\r\n");

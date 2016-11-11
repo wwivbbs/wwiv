@@ -35,17 +35,28 @@ namespace fido {
 
 static char ReadCharFromFile(File& f) {
   char buf[1];
-  int num_read = f.Read(buf, 1);
+  auto num_read = f.Read(buf, 1);
   if (num_read == 0) {
     return 0;
   }
   return buf[0];
 }
 
+static std::string ReadRestOfFile(File& f, int max_size) {
+  auto current = f.current_position();
+  auto size = f.GetLength();
+  string s;
+  s.resize(size - current + 1);
+  auto num_read = f.Read(&s[0], max_size + 1);
+  s.resize(num_read);
+  return s;
+}
+
+
 static std::string ReadFixedLengthField(File& f, int len) {
   string s;
   s.resize(len + 1);
-  int num_read = f.Read(&s[0], len + 1);
+  auto num_read = f.Read(&s[0], len + 1);
   s.resize(num_read);
   return s;
 }
@@ -64,7 +75,7 @@ static std::string ReadVariableLengthField(File& f, int max_len) {
 }
 
 ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
-  int num_read = f.Read(&packet.nh, sizeof(fido_packed_message_t));
+  auto num_read = f.Read(&packet.nh, sizeof(fido_packed_message_t));
   if (num_read == 0) {
     // at the end of the packet.
     return ReadPacketResponse::END_OF_FILE;
@@ -93,6 +104,16 @@ ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
   return ReadPacketResponse::OK;
 }
 
+ReadPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
+  auto num_read = f.Read(&packet.nh, sizeof(fido_stored_message_t));
+  if (num_read == 0) {
+    // at the end of the packet.
+    return ReadPacketResponse::END_OF_FILE;
+  }
+
+  packet.text = ReadRestOfFile(f, 32 * 1024);
+  return ReadPacketResponse::OK;
+}
 
 }
 }  // namespace net

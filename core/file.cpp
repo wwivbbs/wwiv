@@ -222,8 +222,8 @@ bool File::SetName(const string& dirName, const string& fileName) {
   return SetName(full_path_name.str());
 }
 
-int File::Read(void* pBuffer, size_t nCount) {
-  int ret = read(handle_, pBuffer, nCount);
+ssize_t File::Read(void* pBuffer, size_t nCount) {
+  ssize_t ret = read(handle_, pBuffer, nCount);
   if (ret == -1) {
     LOG(ERROR) << "[DEBUG: Read errno: " << errno
       << " filename: " << full_path_name_;
@@ -234,8 +234,8 @@ int File::Read(void* pBuffer, size_t nCount) {
   return ret;
 }
 
-int File::Write(const void* pBuffer, size_t nCount) {
-  int nRet = write(handle_, pBuffer, nCount);
+ssize_t File::Write(const void* pBuffer, size_t nCount) {
+  ssize_t nRet = write(handle_, pBuffer, nCount);
   if (nRet == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno
       << " filename: " << full_path_name_;
@@ -246,14 +246,14 @@ int File::Write(const void* pBuffer, size_t nCount) {
   return nRet;
 }
 
-long File::Seek(long lOffset, int nFrom) {
+off_t File::Seek(off_t lOffset, int nFrom) {
   CHECK(nFrom == File::seekBegin || nFrom == File::seekCurrent || nFrom == File::seekEnd);
   CHECK(File::IsFileHandleValid(handle_));
 
   return lseek(handle_, lOffset, nFrom);
 }
 
-long File::current_position() const {
+off_t File::current_position() const {
   return lseek(handle_, 0, SEEK_CUR);
 
 }
@@ -269,7 +269,7 @@ bool File::Delete() {
   return unlink(full_path_name_.c_str()) == 0;
 }
 
-void File::SetLength(long lNewLength) {
+void File::SetLength(off_t lNewLength) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
   ftruncate(handle_, lNewLength);
 }
@@ -311,7 +311,7 @@ bool File::Exists(const string& original_pathname) {
     // If the pathname ends in / or \, then remove the last character.
     fn.pop_back();
   }
-  int ret = access(fn.c_str(), F_OK);
+  auto ret = access(fn.c_str(), F_OK);
   return ret == 0;
 }
 
@@ -387,7 +387,7 @@ bool File::IsAbsolutePath(const string& path) {
 
 // static
 bool File::mkdir(const string& path) {
-  int result = MKDIR(path.c_str());
+  auto result = MKDIR(path.c_str());
   if (result != -1) {
     return true;
   }
@@ -401,7 +401,7 @@ bool File::mkdir(const string& path) {
 // static
 // based loosely on http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
 bool File::mkdirs(const string& path) {
-  int result = MKDIR(path.c_str());
+  auto result = MKDIR(path.c_str());
   if (result != -1) {
     return true;
   }

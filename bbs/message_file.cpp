@@ -80,8 +80,8 @@ static File* OpenMessageFile(const string messageAreaFileName) {
 
 static void set_gat_section(File *pMessageFile, int section) {
   if (gat_section != section) {
-    long lFileSize = pMessageFile->GetLength();
-    long lSectionPos = static_cast<long>(section) * GATSECLEN;
+    auto lFileSize = pMessageFile->GetLength();
+    auto lSectionPos = static_cast<long>(section) * GATSECLEN;
     if (lFileSize < lSectionPos) {
       pMessageFile->SetLength(lSectionPos);
       lFileSize = lSectionPos;

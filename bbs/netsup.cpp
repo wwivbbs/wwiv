@@ -611,7 +611,7 @@ void print_pending_list() {
 
     File deadNetFile(session()->network_directory(), DEAD_NET);
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
-      long lFileSize = deadNetFile.GetLength();
+      auto lFileSize = deadNetFile.GetLength();
       deadNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s "
@@ -629,7 +629,7 @@ void print_pending_list() {
 
     File checkNetFile(session()->network_directory(), CHECK_NET);
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
-      long lFileSize = checkNetFile.GetLength();
+      auto lFileSize = checkNetFile.GetLength();
       checkNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       strcat(s3, "k");

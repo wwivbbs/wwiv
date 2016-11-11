@@ -135,9 +135,9 @@ const string MenuInstanceData::create_menu_filename(const string& extension) con
 
 bool MenuInstanceData::CreateMenuMap(File* menu_file) {
   insertion_order_.clear();
-  int nAmount = menu_file->GetLength() / sizeof(MenuRec);
+  auto nAmount = menu_file->GetLength() / sizeof(MenuRec);
 
-  for (int nRec = 1; nRec < nAmount; nRec++) {
+  for (size_t nRec = 1; nRec < nAmount; nRec++) {
     MenuRec menu;
     menu_file->Seek(nRec * sizeof(MenuRec), File::seekBegin);
     menu_file->Read(&menu, sizeof(MenuRec));

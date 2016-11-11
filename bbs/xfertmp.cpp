@@ -102,7 +102,7 @@ int check_for_files_arc(const char *file_name) {
     }
     while (lFilePos < lFileSize) {
       file.Seek(lFilePos, File::seekBegin);
-      int nNumRead = file.Read(&a, sizeof(arch));
+      auto nNumRead = file.Read(&a, sizeof(arch));
       if (nNumRead == sizeof(arch)) {
         lFilePos += sizeof(arch);
         if (a.type == 1) {
@@ -280,7 +280,7 @@ int check_for_files_lzh(const char *file_name) {
       l = lFileSize;
       break;
     }
-    int nNumRead = file.Read(&a, sizeof(lharc_header));
+    auto nNumRead = file.Read(&a, sizeof(lharc_header));
     if (nNumRead != sizeof(lharc_header)) {
       bout << stripfn(file_name) << " is not a valid .LZH file.";
       err = 1;

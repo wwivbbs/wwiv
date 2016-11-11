@@ -404,9 +404,9 @@ void ascii_send(const char *file_name, bool *sent, double *percent) {
 
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    long lFileSize = file.GetLength();
-    lFileSize = std::max<long>(lFileSize, 1);
-    int nNumRead = file.Read(b, 1024);
+    auto lFileSize = file.GetLength();
+    lFileSize = std::max<off_t>(lFileSize, 1);
+    auto nNumRead = file.Read(b, 1024);
     long lTotalBytes = 0L;
     bool abort = false;
     while (nNumRead && !hangup && !abort) {

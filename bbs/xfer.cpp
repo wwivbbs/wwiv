@@ -82,7 +82,7 @@ void get_ed_info() {
   long lCurFilePos = 0;
   File fileExtDescr(session()->extended_description_filename_);
   if (fileExtDescr.Open(File::modeReadOnly | File::modeBinary)) {
-    long lFileSize = fileExtDescr.GetLength();
+    auto lFileSize = fileExtDescr.GetLength();
     if (lFileSize > 0) {
       ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(session()->numf) * sizeof(ext_desc_rec)));
       if (ed_info == nullptr) {
@@ -380,7 +380,7 @@ void delete_extended_description(const string& file_name) {
 
   File fileExtDescr(session()->extended_description_filename_);
   fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  long lFileSize = fileExtDescr.GetLength();
+  auto lFileSize = fileExtDescr.GetLength();
   long r = 0, w = 0;
   while (r < lFileSize) {
     fileExtDescr.Seek(r, File::seekBegin);
@@ -434,7 +434,7 @@ string read_extended_description(const string& file_name) {
   if (ed_got != 1) {
     File fileExtDescr(session()->extended_description_filename_);
     if (fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
-      long lFileSize = fileExtDescr.GetLength();
+      auto lFileSize = fileExtDescr.GetLength();
       long lCurPos = 0;
       while (lCurPos < lFileSize) {
         fileExtDescr.Seek(lCurPos, File::seekBegin);

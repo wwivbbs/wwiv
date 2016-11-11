@@ -54,7 +54,7 @@ static bool IsBBSPhoneNumberUnique(const string& phoneNumber) {
   File file(session()->config()->gfilesdir(), BBSLIST_MSG);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     file.Seek(0L, File::seekBegin);
-    long lBbsListLength = file.GetLength();
+    auto lBbsListLength = file.GetLength();
     char *ss = static_cast<char *>(calloc(lBbsListLength + 500L, 1));
     if (ss == nullptr) {
       file.Close();

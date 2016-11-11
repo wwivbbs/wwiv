@@ -60,8 +60,8 @@ void attach_file(int mode) {
     pFileEmail->Close();
     return;
   }
-  int max = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
-  int cur = (bDirectionForward) ? max - 1 : 0;
+  auto max = pFileEmail->GetLength() / sizeof(mailrec);
+  auto cur = (bDirectionForward) ? max - 1 : 0;
 
   int ok = 0;
   bool done = false;
@@ -108,7 +108,7 @@ void attach_file(int mode) {
           File fileAttach(session()->config()->datadir(), ATTACH_DAT);
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bFound = false;
-            long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
+            auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
             while (lNumRead > 0 && !bFound) {
               if (m.daten == static_cast<uint32_t>(fsr.id)) {
                 bout << "|#1Filename|#0.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0";
@@ -158,7 +158,7 @@ void attach_file(int mode) {
               File attachFile(session()->config()->datadir(), ATTACH_DAT);
               if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                 bFound = false;
-                long lNumRead = attachFile.Read(&fsr, sizeof(fsr));
+                auto lNumRead = attachFile.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     fsr.id = 0;
@@ -251,7 +251,7 @@ void attach_file(int mode) {
               }
               File fileAttach(session()->config()->datadir(), ATTACH_DAT);
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
-                long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
+                auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     bFound = true;
@@ -352,7 +352,7 @@ void attach_file(int mode) {
             File fileAttach(session()->config()->datadir(), ATTACH_DAT);
             if (fileAttach.Open(File::modeReadOnly | File::modeBinary)) {
               bFound = false;
-              long lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
+              auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
               while (lNumRead > 0 && !bFound) {
                 if (m.daten == static_cast<uint32_t>(fsr.id)) {
                   bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";

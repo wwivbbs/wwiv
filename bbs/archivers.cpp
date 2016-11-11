@@ -38,7 +38,7 @@ static int check_arc(const char* filename)
   }
 
   char header[10];
-  int num_read = f.Read(&header, 10);
+  auto num_read = f.Read(&header, 10);
   if (num_read < 10) {
     return COMPRESSION_UNKNOWN;
   }

@@ -78,7 +78,7 @@ bool send_network_email(const std::string& filename,
 }
 
 ReadPacketResponse read_packet(File& f, Packet& packet) {
-  int num_read = f.Read(&packet.nh, sizeof(net_header_rec));
+  auto num_read = f.Read(&packet.nh, sizeof(net_header_rec));
   if (num_read == 0) {
     // at the end of the packet.
     return ReadPacketResponse::END_OF_FILE;

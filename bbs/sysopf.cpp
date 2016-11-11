@@ -648,7 +648,7 @@ void mailr() {
             File attachDat(session()->config()->datadir(), ATTACH_DAT);
             if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
               bool found = false;
-              long lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
+              auto lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
               while (lAttachFileSize > 0 && !found) {
                 if (m.daten == static_cast<uint32_t>(fsr.id)) {
                   bout << "|#9Filename.... |#2" << fsr.filename << " (" << fsr.numbytes << " bytes)|#0\r\n";
@@ -684,7 +684,7 @@ void mailr() {
               if (m.status & status_file) {
                 File attachFile(session()->config()->datadir(), ATTACH_DAT);
                 if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
-                  long lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
+                  auto lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
                   while (lAttachFileSize > 0 && !found) {
                     if (m.daten == static_cast<uint32_t>(fsr.id)) {
                       found = true;

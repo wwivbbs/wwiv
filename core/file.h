@@ -104,27 +104,27 @@ class File {
   virtual void Close();
   virtual bool IsOpen() const { return File::IsFileHandleValid(handle_); }
 
-  virtual int Read(void * pBuffer, size_t nCount);
-  virtual int Write(const void * pBuffer, size_t nCount);
+  virtual ssize_t Read(void * pBuffer, size_t nCount);
+  virtual ssize_t Write(const void * pBuffer, size_t nCount);
 
-  virtual int Write(const std::string& s) {
+  virtual ssize_t Write(const std::string& s) {
     return this->Write(s.c_str(), s.length());
   }
   
-  virtual int Writeln(const void *pBuffer, size_t nCount) {
-    int ret = this->Write(pBuffer, nCount);
+  virtual ssize_t Writeln(const void *pBuffer, size_t nCount) {
+    auto ret = this->Write(pBuffer, nCount);
     ret += this->Write("\r\n", 2);
     return ret;
   }
 
-  virtual int Writeln(const std::string& s) {
+  virtual ssize_t Writeln(const std::string& s) {
     return this->Writeln(s.c_str(), s.length());
   }
 
-  virtual long GetLength();
-  virtual long Seek(long lOffset, int nFrom);
-  virtual void SetLength(long lNewLength);
-  virtual long current_position() const;
+  virtual off_t GetLength();
+  virtual off_t Seek(off_t lOffset, int nFrom);
+  virtual void SetLength(off_t lNewLength);
+  virtual off_t current_position() const;
 
   virtual bool Exists() const;
   virtual bool Delete();
