@@ -102,7 +102,7 @@ static bool del_net(
     auto t = emailfile.GetLength() / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
       mailrec m = {};
-      emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
+      emailfile.Seek(r * sizeof(mailrec), File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         if (strlen(m.title) >= WWIV_MESSAGE_TITLE_LENGTH) {
@@ -123,7 +123,7 @@ static bool del_net(
             m.network.network_msg.net_number--;
           }
         }
-        emailfile.Seek(r * sizeof(mailrec), File::seekBegin);
+        emailfile.Seek(r * sizeof(mailrec), File::Whence::begin);
         emailfile.Write(&m, sizeof(mailrec));
       }
     }
@@ -290,7 +290,7 @@ static bool insert_net(Networks& networks, int nn) {
     auto t = emailfile.GetLength() / sizeof(mailrec);
     for (int r = 0; r < t; r++) {
       mailrec m;
-      emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);
+      emailfile.Seek(sizeof(mailrec) * r, File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));
       if (((m.tosys != 0) || (m.touser != 0)) && m.fromsys) {
         if (strlen(m.title) >= WWIV_MESSAGE_TITLE_LENGTH) {
@@ -307,7 +307,7 @@ static bool insert_net(Networks& networks, int nn) {
             m.network.network_msg.net_number++;
           }
         }
-        emailfile.Seek(sizeof(mailrec) * r, File::seekBegin);
+        emailfile.Seek(sizeof(mailrec) * r, File::Whence::begin);
         emailfile.Write(&m, sizeof(mailrec));
       }
     }

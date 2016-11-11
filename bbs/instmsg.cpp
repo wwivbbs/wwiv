@@ -66,7 +66,7 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
   const string fn = StringPrintf("tmsg%3.3u.%3.3d", session()->instance_number(), ih->dest_inst);
   File file(session()->config()->datadir(), fn);
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
-    file.Seek(0L, File::seekEnd);
+    file.Seek(0L, File::Whence::end);
     if (ih->msg_size > 0 && msg.empty()) {
       ih->msg_size = 0;
     }
@@ -255,7 +255,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
     instFile.Close();
     return false;
   }
-  instFile.Seek(static_cast<long>(nInstanceNum * sizeof(instancerec)), File::seekBegin);
+  instFile.Seek(static_cast<long>(nInstanceNum * sizeof(instancerec)), File::Whence::begin);
   instFile.Read(ir, sizeof(instancerec));
   instFile.Close();
   return true;
@@ -436,7 +436,7 @@ void write_inst(int loc, int subloc, int flags) {
     ti.last_update = static_cast<uint32_t>(time(nullptr));
     File instFile(session()->config()->datadir(), INSTANCE_DAT);
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      instFile.Seek(static_cast<long>(session()->instance_number() * sizeof(instancerec)), File::seekBegin);
+      instFile.Seek(static_cast<long>(session()->instance_number() * sizeof(instancerec)), File::Whence::begin);
       instFile.Write(&ti, sizeof(instancerec));
       instFile.Close();
     }

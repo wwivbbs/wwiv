@@ -1041,7 +1041,7 @@ void logoff() {
       int r = 0;
       int w = 0;
       while (r < t) {
-        pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::seekBegin);
+        pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
         if (m.tosys != 0 || m.touser != 0) {
           if (m.tosys == 0 && m.touser == session()->usernum) {
@@ -1050,7 +1050,7 @@ void logoff() {
             }
           }
           if (r != w) {
-            pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w), File::seekBegin);
+            pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w), File::Whence::begin);
             pFileEmail->Write(&m, sizeof(mailrec));
           }
           ++w;
@@ -1061,7 +1061,7 @@ void logoff() {
         m.tosys = 0;
         m.touser = 0;
         for (int w1 = w; w1 < r; w1++) {
-          pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w1), File::seekBegin);
+          pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w1), File::Whence::begin);
           pFileEmail->Write(&m, sizeof(mailrec));
         }
       }
@@ -1080,14 +1080,14 @@ void logoff() {
       int w = 0;
       while (r < t) {
         shortmsgrec sm;
-        smwFile.Seek(r * sizeof(shortmsgrec), File::seekBegin);
+        smwFile.Seek(r * sizeof(shortmsgrec), File::Whence::begin);
         smwFile.Read(&sm, sizeof(shortmsgrec));
         if (sm.tosys != 0 || sm.touser != 0) {
           if (sm.tosys == 0 && sm.touser == session()->usernum) {
             session()->user()->SetStatusFlag(User::SMW);
           }
           if (r != w) {
-            smwFile.Seek(w * sizeof(shortmsgrec), File::seekBegin);
+            smwFile.Seek(w * sizeof(shortmsgrec), File::Whence::begin);
             smwFile.Write(&sm, sizeof(shortmsgrec));
           }
           ++w;

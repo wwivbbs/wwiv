@@ -35,7 +35,7 @@ static void print_quests() {
   }
   bool abort = false;
   for (int i = 1; (i <= 20) && !abort; i++) {
-    file.Seek(static_cast<long>(i - 1) * sizeof(votingrec), File::seekBegin);
+    file.Seek(static_cast<long>(i - 1) * sizeof(votingrec), File::Whence::begin);
 
     votingrec v;
     file.Read(&v, sizeof(votingrec));
@@ -89,7 +89,7 @@ static void set_question(int ii) {
 
   File votingDat(session()->config()->datadir(), VOTING_DAT);
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  votingDat.Seek(ii * sizeof(votingrec), File::seekBegin);
+  votingDat.Seek(ii * sizeof(votingrec), File::Whence::begin);
   votingDat.Write(&v, sizeof(votingrec));
   votingDat.Close();
 
@@ -162,7 +162,7 @@ void voteprint() {
     if (!votingDat.Open(File::modeReadOnly | File::modeBinary)) {
       continue;
     }
-    votingDat.Seek(i1 * sizeof(votingrec), File::seekBegin);
+    votingDat.Seek(i1 * sizeof(votingrec), File::Whence::begin);
     votingDat.Read(&v, sizeof(votingrec));
     votingDat.Close();
     if (v.numanswers) {

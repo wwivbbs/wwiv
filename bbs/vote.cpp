@@ -48,7 +48,7 @@ static void print_quest(int mapp, int map[21]) {
   }
 
   for (int i = 1; i <= mapp && !abort; i++) {
-    voteFile.Seek(map[i] * sizeof(votingrec), File::seekBegin);
+    voteFile.Seek(map[i] * sizeof(votingrec), File::Whence::begin);
     voteFile.Read(&v, sizeof(votingrec));
 
     char szBuffer[255];
@@ -70,7 +70,7 @@ static bool print_question(int i, int ii) {
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return false;
   }
-  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
   voteFile.Read(&v, sizeof(votingrec));
   voteFile.Close();
   bool abort = false;
@@ -130,7 +130,7 @@ static void vote_question(int i, int ii) {
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
   voteFile.Read(&v, sizeof(votingrec));
   voteFile.Close();
 
@@ -165,7 +165,7 @@ static void vote_question(int i, int ii) {
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
   voteFile.Read(&v, sizeof(votingrec));
 
   if (!v.numanswers) {
@@ -179,7 +179,7 @@ static void vote_question(int i, int ii) {
   if (i1) {
     v.responses[ session()->user()->GetVote(ii) - 1 ].numresponses++;
   }
-  voteFile.Seek(ii * sizeof(votingrec), File::seekBegin);
+  voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
   voteFile.Write(&v, sizeof(votingrec));
   voteFile.Close();
   bout.nl(2);
@@ -206,7 +206,7 @@ void vote() {
 
   int map[21], mapp = 0;
   for (int i1 = 0; i1 < 20; i1++) {
-    voteFile.Seek(i1 * sizeof(votingrec), File::seekBegin);
+    voteFile.Seek(i1 * sizeof(votingrec), File::Whence::begin);
     voteFile.Read(&v, sizeof(votingrec));
     if (v.numanswers) {
       map[++mapp] = i1;

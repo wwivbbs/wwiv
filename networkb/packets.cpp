@@ -50,7 +50,7 @@ bool send_network_email(const std::string& filename,
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }
-  file.Seek(0L, File::seekEnd);
+  file.Seek(0L, File::Whence::end);
   nh.list_len = static_cast<uint16_t>(list.size());
 
   string date = wwiv::sdk::daten_to_humantime(nh.daten);
@@ -138,7 +138,7 @@ bool write_packet(
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }
-  file.Seek(0L, File::seekEnd);
+  file.Seek(0L, File::Whence::end);
   file.Write(&p.nh, sizeof(net_header_rec));
   if (p.nh.list_len) {
     file.Write(&p.list[0], sizeof(uint16_t) * (p.nh.list_len));

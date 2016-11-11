@@ -101,10 +101,6 @@ const int File::modeExclusive      = O_EXCL;
 const int File::modeUnknown        = -1;
 const int File::shareUnknown       = -1;
 
-const int File::seekBegin          = SEEK_SET;
-const int File::seekCurrent        = SEEK_CUR;
-const int File::seekEnd            = SEEK_END;
-
 const int File::invalid_handle     = -1;
 
 static constexpr int WAIT_TIME_MILLIS = 10;
@@ -246,16 +242,15 @@ ssize_t File::Write(const void* pBuffer, size_t nCount) {
   return nRet;
 }
 
-off_t File::Seek(off_t lOffset, int nFrom) {
-  CHECK(nFrom == File::seekBegin || nFrom == File::seekCurrent || nFrom == File::seekEnd);
+off_t File::Seek(off_t lOffset, Whence whence) {
+  CHECK(whence == File::Whence::begin || whence == File::Whence::current || whence == File::Whence::end);
   CHECK(File::IsFileHandleValid(handle_));
 
-  return lseek(handle_, lOffset, nFrom);
+  return lseek(handle_, lOffset, static_cast<int>(whence));
 }
 
 off_t File::current_position() const {
   return lseek(handle_, 0, SEEK_CUR);
-
 }
 
 bool File::Exists() const {

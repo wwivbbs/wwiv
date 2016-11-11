@@ -474,7 +474,7 @@ void EditMenus() {
     int nCur = 0;
 
     // read first record
-    fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
+    fileEditMenu.Seek(nCur * sizeof(MenuRec), File::Whence::begin);
     fileEditMenu.Read(&menu, sizeof(MenuRec));
 
     bool menuitem_done = false;
@@ -491,13 +491,13 @@ void EditMenus() {
 
 void ReadMenuRec(File &fileEditMenu, MenuRec * menu, int nCur) {
   memset(menu, 0,  sizeof(MenuRec));
-  if (fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin) != -1) {
+  if (fileEditMenu.Seek(nCur * sizeof(MenuRec), File::Whence::begin) != -1) {
     fileEditMenu.Read(menu, sizeof(MenuRec));
   }
 }
 
 void WriteMenuRec(File &fileEditMenu, MenuRec * menu, int nCur) {
-  long lRet = fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
+  long lRet = fileEditMenu.Seek(nCur * sizeof(MenuRec), File::Whence::begin);
   if (lRet == -1) {
     return;
   }
@@ -506,7 +506,7 @@ void WriteMenuRec(File &fileEditMenu, MenuRec * menu, int nCur) {
   if (lRet != sizeof(MenuRec)) {
     return;
   }
-  fileEditMenu.Seek(nCur * sizeof(MenuRec), File::seekBegin);
+  fileEditMenu.Seek(nCur * sizeof(MenuRec), File::Whence::begin);
 }
 
 bool GetMenuMenu(const string& directoryName, string& menuName) {

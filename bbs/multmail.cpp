@@ -158,11 +158,11 @@ void multimail(int *pnUserNumber, int numu) {
   int i = 0;
   if (len != 0) {
     i = len - 1;
-    pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
+    pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m1, sizeof(mailrec));
     while ((i > 0) && (m1.tosys == 0) && (m1.touser == 0)) {
       --i;
-      pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
+      pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::Whence::begin);
       int i1 = pFileEmail->Read(&m1, sizeof(mailrec));
       if (i1 == -1) {
         bout << "|#6DIDN'T READ WRITE!\r\n";
@@ -172,7 +172,7 @@ void multimail(int *pnUserNumber, int numu) {
       ++i;
     }
   }
-  pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::seekBegin);
+  pFileEmail->Seek(static_cast<long>(i) * sizeof(mailrec), File::Whence::begin);
   for (int cv = 0; cv < numu; cv++) {
     if (pnUserNumber[cv] > 0) {
       m.touser = static_cast<uint16_t>(pnUserNumber[cv]);

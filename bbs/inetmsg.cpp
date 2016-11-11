@@ -156,7 +156,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
     } else {
       char szUserName[255];
       file.Open(File::modeReadOnly | File::modeBinary);
-      file.Seek(80 * user_number, File::seekBegin);
+      file.Seek(80 * user_number, File::Whence::begin);
       file.Read(szUserName, 80L);
       if (check_inet_addr(szUserName)) {
         internet_address = szUserName;
@@ -180,7 +180,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   File inetAddrFile(session()->config()->datadir(), INETADDR_DAT);
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(user_number);
-  inetAddrFile.Seek(lCurPos, File::seekBegin);
+  inetAddrFile.Seek(lCurPos, File::Whence::begin);
   inetAddrFile.Write(internet_address.c_str(), 80L);
   inetAddrFile.Close();
   char szDefaultUserAddr[255];

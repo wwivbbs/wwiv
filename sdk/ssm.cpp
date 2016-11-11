@@ -63,7 +63,7 @@ bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint3
   const string packet_filename = StrCat(net.dir, "p0.net");
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  file.Seek(0L, File::seekEnd);
+  file.Seek(0L, File::Whence::end);
   file.Write(&nh, sizeof(net_header_rec));
   file.Write(text.c_str(), nh.length);
   file.Close();
@@ -84,11 +84,11 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   int pos = size - 1;
   shortmsgrec sm;
   if (pos >= 0) {
-    file.Seek(pos * sizeof(shortmsgrec), File::seekBegin);
+    file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);
     file.Read(&sm, sizeof(shortmsgrec));
     while (sm.tosys == 0 && sm.touser == 0 && pos > 0) {
       --pos;
-      file.Seek(pos * sizeof(shortmsgrec), File::seekBegin);
+      file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);
       file.Read(&sm, sizeof(shortmsgrec));
     }
     if (sm.tosys != 0 || sm.touser != 0) {
@@ -101,7 +101,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   sm.touser = static_cast<uint16_t>(user_number);
   strncpy(sm.message, text.c_str(), 80);
   sm.message[80] = '\0';
-  file.Seek(pos * sizeof(shortmsgrec), File::seekBegin);
+  file.Seek(pos * sizeof(shortmsgrec), File::Whence::begin);
   file.Write(&sm, sizeof(shortmsgrec));
   file.Close();
   user.SetStatusFlag(User::SMW);

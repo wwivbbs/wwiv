@@ -71,7 +71,7 @@ static File* OpenMessageFile(const string messageAreaFileName) {
     pFileMessage->SetLength(GAT_SECTION_SIZE + (75L * 1024L));
     gat_section = 0;
   }
-  pFileMessage->Seek(0L, File::seekBegin);
+  pFileMessage->Seek(0L, File::Whence::begin);
   pFileMessage->Read(gat, GAT_SECTION_SIZE);
 
   gat_section = 0;
@@ -86,7 +86,7 @@ static void set_gat_section(File *pMessageFile, int section) {
       pMessageFile->SetLength(lSectionPos);
       lFileSize = lSectionPos;
     }
-    pMessageFile->Seek(lSectionPos, File::seekBegin);
+    pMessageFile->Seek(lSectionPos, File::Whence::begin);
     if (lFileSize < (lSectionPos + GAT_SECTION_SIZE)) {
       for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
         gat[i] = 0;
@@ -101,7 +101,7 @@ static void set_gat_section(File *pMessageFile, int section) {
 
 static void save_gat(File *pMessageFile) {
   long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
-  pMessageFile->Seek(lSectionPos, File::seekBegin);
+  pMessageFile->Seek(lSectionPos, File::Whence::begin);
   pMessageFile->Write(gat, GAT_SECTION_SIZE);
   WStatus *pStatus = session()->status_manager()->BeginTransaction();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
@@ -165,7 +165,7 @@ void savefile(const std::string& text, messagerec * pMessageRecord, const string
         if (gatp >= nNumBlocksRequired) {
           gati[gatp] = -1;
           for (int i = 0; i < nNumBlocksRequired; i++) {
-            pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::seekBegin);
+            pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
             pMessageFile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
             gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
           }
@@ -206,7 +206,7 @@ bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
 
   current_section = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-    file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::seekBegin);
+    file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::Whence::begin);
     char b[MSG_BLOCK_SIZE + 1];
     file->Read(b, MSG_BLOCK_SIZE);
     b[MSG_BLOCK_SIZE] = 0;
@@ -248,17 +248,17 @@ void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {
       message_file->Close();
       return;
     }
-    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::seekBegin);
+    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
     message_file->Read(b, MSG_BLOCK_SIZE);
     int j = 0;
     while (j < MSG_BLOCK_SIZE && b[j] != CZ) {
       ++j;
     }
     strcpy(&(b[j]), line.c_str());
-    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::seekBegin);
+    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
     message_file->Write(b, MSG_BLOCK_SIZE);
     if (((j + line.size()) > MSG_BLOCK_SIZE) && (new1 != GAT_NUMBER_ELEMENTS)) {
-      message_file->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::seekBegin);
+      message_file->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::Whence::begin);
       message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
       gat[i] = static_cast<uint16_t>(new1);

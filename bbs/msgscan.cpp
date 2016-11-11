@@ -173,11 +173,11 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
           bout << "|#6Could not open file for writing.\r\n";
         } else {
           if (fileExtract.GetLength() > 0) {
-            fileExtract.Seek(-1L, File::seekEnd);
+            fileExtract.Seek(-1L, File::Whence::end);
             char chLastChar = CZ;
             fileExtract.Read(&chLastChar, 1);
             if (chLastChar == CZ) {
-              fileExtract.Seek(-1L, File::seekEnd);
+              fileExtract.Seek(-1L, File::Whence::end);
             }
           }
           string buffer = StringPrintf("ON: %s", session()->current_sub().name.c_str());

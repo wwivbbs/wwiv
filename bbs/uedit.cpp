@@ -248,7 +248,7 @@ void deluser(int user_number) {
       for (int nMailRecord = 0; nMailRecord < lEmailFileLen; nMailRecord++) {
         mailrec m;
 
-        pFileEmail->Seek(nMailRecord * sizeof(mailrec), File::seekBegin);
+        pFileEmail->Seek(nMailRecord * sizeof(mailrec), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
         if ((m.tosys == 0 && m.touser == user_number) ||
             (m.fromsys == 0 && m.fromuser == user_number)) {
@@ -266,12 +266,12 @@ void deluser(int user_number) {
           votingrec v;
           voting_response vr;
 
-          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::seekBegin);
+          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
           voteFile.Read(&v, sizeof(votingrec));
           vr = v.responses[ user.GetVote(lCurVoteRecord) - 1 ];
           vr.numresponses--;
           v.responses[ user.GetVote(lCurVoteRecord) - 1 ] = vr;
-          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::seekBegin);
+          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
           voteFile.Write(&v, sizeof(votingrec));
         }
         user.SetVote(lCurVoteRecord, 0);

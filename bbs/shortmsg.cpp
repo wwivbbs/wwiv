@@ -46,7 +46,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
     int nTotalMsgsInFile = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
     for (int nCurrentMsg = 0; nCurrentMsg < nTotalMsgsInFile; nCurrentMsg++) {
       shortmsgrec sm;
-      file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::seekBegin);
+      file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::Whence::begin);
       file.Read(&sm, sizeof(shortmsgrec));
       if (sm.touser == nUserNum && sm.tosys == 0) {
         bout.Color(9);
@@ -71,7 +71,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
           sm.touser = 0;
           sm.tosys = 0;
           sm.message[0] = 0;
-          file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::seekBegin);
+          file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::Whence::begin);
           file.Write(&sm, sizeof(shortmsgrec));
         } else {
           bShownAllMessages = false;
@@ -101,11 +101,11 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
     int nNewMsgPos = nTotalMsgsInFile - 1;
     shortmsgrec sm;
     if (nNewMsgPos >= 0) {
-      file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
+      file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::Whence::begin);
       file.Read(&sm, sizeof(shortmsgrec));
       while (sm.tosys == 0 && sm.touser == 0 && nNewMsgPos > 0) {
         --nNewMsgPos;
-        file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
+        file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::Whence::begin);
         file.Read(&sm, sizeof(shortmsgrec));
       }
       if (sm.tosys != 0 || sm.touser != 0) {
@@ -118,7 +118,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
     sm.touser = static_cast<uint16_t>(nUserNum);
     strncpy(sm.message, messageText, 80);
     sm.message[80] = '\0';
-    file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::seekBegin);
+    file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::Whence::begin);
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
     user.SetStatusFlag(User::SMW);
@@ -147,7 +147,7 @@ static void SendRemoteShortMessage(int nUserNum, int nSystemNum, const char *mes
     session()->network_extension().c_str());
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  file.Seek(0L, File::seekEnd);
+  file.Seek(0L, File::Whence::end);
   file.Write(&nh, sizeof(net_header_rec));
   file.Write(msg.c_str(), nh.length);
   file.Close();

@@ -105,7 +105,7 @@ void qwk_remove_email() {
 
   mailrec m;
   for (long i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
-    f->Seek(i * sizeof(mailrec), File::seekBegin);
+    f->Seek(i * sizeof(mailrec), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == session()->usernum)) {
       mloc[mw].index = static_cast<int16_t>(i);
@@ -157,7 +157,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   mfl = f->GetLength() / sizeof(mailrec);
   uint8_t mw = 0;
   for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
-    f->Seek(((long)(i)) * (sizeof(mailrec)), File::seekBegin);
+    f->Seek(((long)(i)) * (sizeof(mailrec)), File::Whence::begin);
     f->Read(&m, sizeof(mailrec));
     if ((m.tosys == 0) && (m.touser == session()->usernum)) {
       tmpmailrec r = {};

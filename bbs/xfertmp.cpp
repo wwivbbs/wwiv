@@ -93,7 +93,7 @@ int check_for_files_arc(const char *file_name) {
     arch a;
     long lFileSize = file.GetLength();
     long lFilePos = 1;
-    file.Seek(0, File::seekBegin);
+    file.Seek(0, File::Whence::begin);
     file.Read(&a, 1);
     if (a.type != 26) {
       file.Close();
@@ -101,7 +101,7 @@ int check_for_files_arc(const char *file_name) {
       return 1;
     }
     while (lFilePos < lFileSize) {
-      file.Seek(lFilePos, File::seekBegin);
+      file.Seek(lFilePos, File::Whence::begin);
       auto nNumRead = file.Read(&a, sizeof(arch));
       if (nNumRead == sizeof(arch)) {
         lFilePos += sizeof(arch);
@@ -205,9 +205,9 @@ int check_for_files_zip(const char *file_name) {
     long len = file.GetLength();
     while (l < len) {
       long sig = 0;
-      file.Seek(l, File::seekBegin);
+      file.Seek(l, File::Whence::begin);
       file.Read(&sig, 4);
-      file.Seek(l, File::seekBegin);
+      file.Seek(l, File::Whence::begin);
       switch (sig) {
       case ZIP_LOCAL_SIG:
         file.Read(&zl, sizeof(zl));
@@ -273,7 +273,7 @@ int check_for_files_lzh(const char *file_name) {
   int err = 0;
   for (long l = 0; l < lFileSize;
        l += a.fn_len + a.comp_size + sizeof(lharc_header) + file.Read(&nCrc, sizeof(nCrc)) + 1) {
-    file.Seek(l, File::seekBegin);
+    file.Seek(l, File::Whence::begin);
     char flag;
     file.Read(&flag, 1);
     if (!flag) {
@@ -309,9 +309,9 @@ int check_for_files_arj(const char *file_name) {
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long lFileSize = file.GetLength();
     long lCurPos = 0;
-    file.Seek(0L, File::seekBegin);
+    file.Seek(0L, File::Whence::begin);
     while (lCurPos < lFileSize) {
-      file.Seek(lCurPos, File::seekBegin);
+      file.Seek(lCurPos, File::Whence::begin);
       unsigned short sh;
       int nNumRead = file.Read(&sh, 2);
       if (nNumRead != 2 || sh != 0xea60) {
@@ -323,10 +323,10 @@ int check_for_files_arj(const char *file_name) {
       file.Read(&sh, 2);
       unsigned char s1;
       file.Read(&s1, 1);
-      file.Seek(lCurPos + 12, File::seekBegin);
+      file.Seek(lCurPos + 12, File::Whence::begin);
       long l2;
       file.Read(&l2, 4);
-      file.Seek(lCurPos + static_cast<long>(s1), File::seekBegin);
+      file.Seek(lCurPos + static_cast<long>(s1), File::Whence::begin);
       char buffer[256];
       file.Read(buffer, 250);
       buffer[250] = '\0';
@@ -336,12 +336,12 @@ int check_for_files_arj(const char *file_name) {
         return 1;
       }
       lCurPos += 4 + static_cast<long>(sh);
-      file.Seek(lCurPos, File::seekBegin);
+      file.Seek(lCurPos, File::Whence::begin);
       file.Read(&sh, 2);
       lCurPos += 2;
       while ((lCurPos < lFileSize) && sh) {
         lCurPos += 6 + static_cast<long>(sh);
-        file.Seek(lCurPos - 2, File::seekBegin);
+        file.Seek(lCurPos - 2, File::Whence::begin);
         file.Read(&sh, 2);
       }
       lCurPos += l2;

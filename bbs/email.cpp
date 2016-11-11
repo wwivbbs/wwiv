@@ -214,11 +214,11 @@ void sendout_email(EmailData& data) {
       i = 0;
     } else {
       i = nEmailFileLen - 1;
-      pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
+      pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
       pFileEmail->Read(&messageRecord, sizeof(mailrec));
       while (i > 0 && messageRecord.tosys == 0 && messageRecord.touser == 0) {
         --i;
-        pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
+        pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
         int i1 = pFileEmail->Read(&messageRecord, sizeof(mailrec));
         if (i1 == -1) {
           bout << "|#6DIDN'T READ WRITE!\r\n";
@@ -229,7 +229,7 @@ void sendout_email(EmailData& data) {
       }
     }
 
-    pFileEmail->Seek(i * sizeof(mailrec), File::seekBegin);
+    pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
     int nBytesWritten = pFileEmail->Write(&m, sizeof(mailrec));
     pFileEmail->Close();
     if (nBytesWritten == -1) {
@@ -288,7 +288,7 @@ void sendout_email(EmailData& data) {
       }
       File fileNetworkPacket(net_filename);
       fileNetworkPacket.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-      fileNetworkPacket.Seek(0L, File::seekEnd);
+      fileNetworkPacket.Seek(0L, File::Whence::end);
       fileNetworkPacket.Write(&nh, sizeof(net_header_rec));
       fileNetworkPacket.Write(b1.get(), nh.length);
       fileNetworkPacket.Close();
@@ -712,7 +712,7 @@ void delmail(File *pFile, size_t loc) {
   mailrec m{};
   User user;
 
-  pFile->Seek(loc * sizeof(mailrec), File::seekBegin);
+  pFile->Seek(loc * sizeof(mailrec), File::Whence::begin);
   pFile->Read(&m, sizeof(mailrec));
 
   if (m.touser == 0 && m.tosys == 0) {
@@ -726,7 +726,7 @@ void delmail(File *pFile, size_t loc) {
     for (size_t i = 0; i < t; i++) {
       if (i != loc) {
         mailrec m1{};
-        pFile->Seek(static_cast<long>(i * sizeof(mailrec)), File::seekBegin);
+        pFile->Seek(static_cast<long>(i * sizeof(mailrec)), File::Whence::begin);
         pFile->Read(&m1, sizeof(mailrec));
         if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {
           otf = true;
@@ -748,7 +748,7 @@ void delmail(File *pFile, size_t loc) {
       session()->users()->WriteUser(&user, m.touser);
     }
   }
-  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::seekBegin);
+  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::Whence::begin);
   m.touser = 0;
   m.tosys = 0;
   m.daten = 0xffffffff;

@@ -585,7 +585,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   }
 
   int nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
-  userFile.Seek(syscfg.userreclen, File::seekBegin);
+  userFile.Seek(syscfg.userreclen, File::Whence::begin);
   int user_number = 1;
 
   if (nNewUserNumber == session()->status_manager()->GetUserCount()) {
@@ -602,14 +602,14 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
         if (!userFile.IsOpen()) {
           return -1;
         }
-        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
+        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::Whence::begin);
         nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
       }
       User tu;
       userFile.Read(&tu.data, syscfg.userreclen);
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
-        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
+        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::Whence::begin);
         userFile.Write(&pUser->data, syscfg.userreclen);
         userFile.Close();
         write_qscn(user_number, qscn, false);
@@ -622,7 +622,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   }
 
   if (user_number <= syscfg.maxusers) {
-    userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::seekBegin);
+    userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::Whence::begin);
     userFile.Write(&pUser->data, syscfg.userreclen);
     userFile.Close();
     write_qscn(user_number, qscn, false);

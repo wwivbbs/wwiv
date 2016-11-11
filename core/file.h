@@ -74,9 +74,11 @@ class File {
 
   static const int permReadWrite;
 
-  static const int seekBegin;
-  static const int seekCurrent;
-  static const int seekEnd;
+  enum class Whence : int {
+    begin = SEEK_SET, 
+    current = SEEK_CUR, 
+    end = SEEK_END
+  };
 
   static const int invalid_handle;
 
@@ -122,7 +124,7 @@ class File {
   }
 
   virtual off_t GetLength();
-  virtual off_t Seek(off_t lOffset, int nFrom);
+  virtual off_t Seek(off_t lOffset, Whence whence);
   virtual void SetLength(off_t lNewLength);
   virtual off_t current_position() const;
 

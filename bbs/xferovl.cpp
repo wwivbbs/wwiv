@@ -914,7 +914,7 @@ long db_index(File &fileAllow, const char *file_name) {
       }
     }
     ocurrec = currec;
-    fileAllow.Seek(currec * 13, File::seekBegin);
+    fileAllow.Seek(currec * 13, File::Whence::begin);
     fileAllow.Read(&cfn, 13);
     i = StringCompare(cfn, tfn);
 
@@ -976,9 +976,9 @@ void modify_database(const char *file_name, bool add) {
         nb = ALLOW_BUFSIZE;
       }
       if (nb) {
-        fileAllow.Seek(l1 - static_cast<long>(nb), File::seekBegin);
+        fileAllow.Seek(l1 - static_cast<long>(nb), File::Whence::begin);
         fileAllow.Read(bfr, nb);
-        fileAllow.Seek(l1 - static_cast<long>(nb) + 13, File::seekBegin);
+        fileAllow.Seek(l1 - static_cast<long>(nb) + 13, File::Whence::begin);
         fileAllow.Write(bfr, nb);
         l1 -= nb;
       }
@@ -988,7 +988,7 @@ void modify_database(const char *file_name, bool add) {
     strcpy(tfn1, file_name);
     align(tfn1);
     strncpy(tfn, stripfn(tfn1), 13);
-    fileAllow.Seek(cp, File::seekBegin);
+    fileAllow.Seek(cp, File::Whence::begin);
     fileAllow.Write(tfn, 13);
   } else {
     cp = rec * 13;
@@ -1001,9 +1001,9 @@ void modify_database(const char *file_name, bool add) {
         nb = ALLOW_BUFSIZE;
       }
       if (nb) {
-        fileAllow.Seek(cp, File::seekBegin);
+        fileAllow.Seek(cp, File::Whence::begin);
         fileAllow.Read(bfr, nb);
-        fileAllow.Seek(cp - 13, File::seekBegin);
+        fileAllow.Seek(cp - 13, File::Whence::begin);
         fileAllow.Write(bfr, nb);
         cp += nb;
       }

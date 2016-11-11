@@ -69,7 +69,7 @@ bool UserManager::ReadUserNoCache(User *pUser, int user_number) {
     return false;
   }
   long pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
-  userList.Seek(pos, File::seekBegin);
+  userList.Seek(pos, File::Whence::begin);
   userList.Read(&pUser->data, userrec_length_);
   pUser->FixUp();
   return true;
@@ -83,7 +83,7 @@ bool UserManager::WriteUserNoCache(User *pUser, int user_number) {
   File userList(data_directory_, USER_LST);
   if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     long pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
-    userList.Seek(pos, File::seekBegin);
+    userList.Seek(pos, File::Whence::begin);
     userList.Write(&pUser->data, userrec_length_);
     return true;
   }

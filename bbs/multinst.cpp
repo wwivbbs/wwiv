@@ -203,7 +203,7 @@ int inst_ok(int loc, int subloc) {
   instFile.Close();
   for (int nInstance = 1; nInstance < nNumInstances; nInstance++) {
     if (instFile.Open(File::modeReadOnly | File::modeBinary)) {
-      instFile.Seek(nInstance * sizeof(instancerec), File::seekBegin);
+      instFile.Seek(nInstance * sizeof(instancerec), File::Whence::begin);
       instFile.Read(&instance_temp, sizeof(instancerec));
       instFile.Close();
       if (instance_temp.loc == loc &&

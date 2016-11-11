@@ -298,7 +298,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
   fileInputMsg.Delete();
   if (!hangup) {
     fileInputMsg.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    fileInputMsg.Seek(0L, File::seekEnd);
+    fileInputMsg.Seek(0L, File::Whence::end);
     while (*p != '\r') {
       ++p;
     }

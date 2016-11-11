@@ -53,7 +53,7 @@ static bool IsBBSPhoneNumberUnique(const string& phoneNumber) {
   bool ok = true;
   File file(session()->config()->gfilesdir(), BBSLIST_MSG);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
-    file.Seek(0L, File::seekBegin);
+    file.Seek(0L, File::Whence::begin);
     auto lBbsListLength = file.GetLength();
     char *ss = static_cast<char *>(calloc(lBbsListLength + 500L, 1));
     if (ss == nullptr) {
@@ -109,12 +109,12 @@ static void AddBBSListLine(const string bbsListLine) {
   File file(session()->config()->gfilesdir(), BBSLIST_MSG);
   bool bOpen = file.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary);
   if (bOpen && file.GetLength() > 0) {
-    file.Seek(-1L, File::seekEnd);
+    file.Seek(-1L, File::Whence::end);
     char chLastChar = 0;
     file.Read(&chLastChar, 1);
     if (chLastChar == CZ) {
       // If last char is a EOF, skip it.
-      file.Seek(-1L, File::seekEnd);
+      file.Seek(-1L, File::Whence::end);
     }
   }
   file.Write(bbsListLine.c_str(), bbsListLine.length());

@@ -73,7 +73,7 @@ bool open_sub(bool wr) {
     fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (fileSub.IsOpen()) {
       // re-read info from file, to be safe
-      fileSub.Seek(0L, File::seekBegin);
+      fileSub.Seek(0L, File::Whence::begin);
       postrec p;
       fileSub.Read(&p, sizeof(postrec));
       session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
@@ -115,7 +115,7 @@ uint32_t WWIVReadLastRead(int sub_number) {
   }
 
   // read in sub date, if don't already know it
-  subFile.Seek(p.owneruser * sizeof(postrec), File::seekBegin);
+  subFile.Seek(p.owneruser * sizeof(postrec), File::Whence::begin);
   subFile.Read(&p, sizeof(postrec));
   return p.qscan;
 }
@@ -157,7 +157,7 @@ bool iscan1(int sub_index) {
   session()->subchg = 0;
 
   // read in first rec, specifying # posts
-  fileSub.Seek(0L, File::seekBegin);
+  fileSub.Seek(0L, File::Whence::begin);
   fileSub.Read(&p, sizeof(postrec));
   session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
 
@@ -193,7 +193,7 @@ postrec *get_post(int mn) {
   }
   // read in post
   static postrec p;
-  fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
+  fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
   fileSub.Read(&p, sizeof(postrec));
 
   if (need_close) {
@@ -206,7 +206,7 @@ void write_post(int mn, postrec * pp) {
   if (!fileSub.IsOpen()) {
     return;
   }
-  fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
+  fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
   fileSub.Write(pp, sizeof(postrec));
 }
 
@@ -221,7 +221,7 @@ void add_post(postrec * pp) {
   if (fileSub.IsOpen()) {
     // get updated info
     session()->status_manager()->RefreshStatusCache();
-    fileSub.Seek(0L, File::seekBegin);
+    fileSub.Seek(0L, File::Whence::begin);
     subfile_header_t p = {};
     fileSub.Read(&p, sizeof(subfile_header_t));
 
@@ -240,11 +240,11 @@ void add_post(postrec * pp) {
     p.active_message_count++;
     p.mod_count++;
     session()->SetNumMessagesInCurrentMessageArea(p.active_message_count);
-    fileSub.Seek(0L, File::seekBegin);
+    fileSub.Seek(0L, File::Whence::begin);
     fileSub.Write(&p, sizeof(postrec));
 
     // add the new post
-    fileSub.Seek(session()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::seekBegin);
+    fileSub.Seek(session()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::Whence::begin);
     fileSub.Write(pp, sizeof(postrec));
 
     // we've modified the sub
@@ -283,9 +283,9 @@ void delete_message(int mn) {
           long l = len - cp;
           nb = (l < BUFSIZE) ? static_cast<int>(l) : BUFSIZE;
           if (nb) {
-            fileSub.Seek(cp, File::seekBegin);
+            fileSub.Seek(cp, File::Whence::begin);
             fileSub.Read(pBuffer, nb);
-            fileSub.Seek(cp - sizeof(postrec), File::seekBegin);
+            fileSub.Seek(cp - sizeof(postrec), File::Whence::begin);
             fileSub.Write(pBuffer, nb);
             cp += nb;
           }
@@ -293,11 +293,11 @@ void delete_message(int mn) {
 
         // update # msgs
         postrec p;
-        fileSub.Seek(0L, File::seekBegin);
+        fileSub.Seek(0L, File::Whence::begin);
         fileSub.Read(&p, sizeof(postrec));
         p.owneruser--;
         session()->SetNumMessagesInCurrentMessageArea(p.owneruser);
-        fileSub.Seek(0L, File::seekBegin);
+        fileSub.Seek(0L, File::Whence::begin);
         fileSub.Write(&p, sizeof(postrec));
         free(pBuffer);
       }

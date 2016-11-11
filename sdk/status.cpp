@@ -156,7 +156,7 @@ bool StatusMgr::Get(bool bLockFile) {
     int nLockMode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
     m_statusFile.Open(nLockMode);
   } else {
-    m_statusFile.Seek(0L, File::seekBegin);
+    m_statusFile.Seek(0L, File::Whence::begin);
   }
   if (!m_statusFile.IsOpen()) {
     return false;
@@ -212,7 +212,7 @@ bool StatusMgr::Write(statusrec_t *pStatus) {
     m_statusFile.SetName(datadir_, STATUS_DAT);
     m_statusFile.Open(File::modeReadWrite | File::modeBinary);
   } else {
-    m_statusFile.Seek(0L, File::seekBegin);
+    m_statusFile.Seek(0L, File::Whence::begin);
   }
 
   if (!m_statusFile.IsOpen()) {

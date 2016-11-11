@@ -69,7 +69,7 @@ static uint32_t *qsc;
 static void write_qscn(unsigned int un, uint32_t *qscn) {
   File file(syscfg.datadir, USER_QSC);
   if (file.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile)) {
-    file.Seek(syscfg.qscn_len * un, File::seekBegin);
+    file.Seek(syscfg.qscn_len * un, File::Whence::begin);
     file.Write(qscn, syscfg.qscn_len);
     file.Close();
   }

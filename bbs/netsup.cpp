@@ -755,7 +755,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
       session()->net_networks[nNetNumber].dir, "p1", session()->network_extension());
     File file(packet_filename);
     if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      file.Seek(0L, File::seekEnd);
+      file.Seek(0L, File::Whence::end);
       if (list.empty()) {
         nh->list_len = 0;
       }

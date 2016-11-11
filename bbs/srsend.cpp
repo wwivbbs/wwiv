@@ -105,7 +105,7 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
     nb = 1024;
   }
   if (nb) {
-    file.Seek(pos, File::seekBegin);
+    file.Seek(pos, File::Whence::begin);
     auto nNumRead = file.Read(b, nb);
     for (int i = nNumRead; i < nb; i++) {
       b[i] = '\0';

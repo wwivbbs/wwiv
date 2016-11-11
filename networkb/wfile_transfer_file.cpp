@@ -76,7 +76,7 @@ bool WFileTransferFile::GetChunk(char* chunk, size_t start, size_t size) {
   // TODO(rushfan): Cache the current file pointer and only re-seek
   // if needed (realistically we should ever have to seek after the
   // first time.
-  file_->Seek(start, File::seekBegin);
+  file_->Seek(start, File::Whence::begin);
   return file_->Read(chunk, size) == size;
 }
 

@@ -68,8 +68,8 @@ void catsl() {
 
     auto buffer = std::make_unique<char[]>(CAT_BUFSIZE);
     if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      wholeLogFile.Seek(0, File::seekBegin);
-      wholeLogFile.Seek(0, File::seekEnd);
+      wholeLogFile.Seek(0, File::Whence::begin);
+      wholeLogFile.Seek(0, File::Whence::end);
 
       File instLogFile(instance_logfilename);
       if (instLogFile.Open(File::modeReadOnly | File::modeBinary)) {
@@ -112,7 +112,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
       return;
     }
     if (logFile.GetLength()) {
-      logFile.Seek(0L, File::seekEnd);
+      logFile.Seek(0L, File::Whence::end);
     }
     string logLine;
     if (midline > 0) {
@@ -133,7 +133,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
       return;
     }
     if (logFile.GetLength()) {
-      logFile.Seek(0L, File::seekEnd);
+      logFile.Seek(0L, File::Whence::end);
     }
     string logLine;
     if (midline == 0 || (midline + 2 + text.length()) > 78) {

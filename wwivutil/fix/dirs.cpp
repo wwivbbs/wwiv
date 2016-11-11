@@ -114,7 +114,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
             if (upload.numbytes != numFiles) {
               LOG(INFO) << "Corrected # of files in: " << directories[i].name;
               upload.numbytes = numFiles;
-              recordFile.Seek(0L, File::seekBegin);
+              recordFile.Seek(0L, File::Whence::begin);
               recordFile.Write(&upload, sizeof(uploadsrec));
             }
             if (numFiles >= 1) {
@@ -129,7 +129,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   size_t offs = 0;
                   while (offs < (unsigned long)extDescFile.GetLength() && recNo < numFiles) {
                     ext_desc_type ed;
-                    extDescFile.Seek(offs, File::seekBegin);
+                    extDescFile.Seek(offs, File::Whence::begin);
                     if (extDescFile.Read(&ed, sizeof(ext_desc_type)) == sizeof(ext_desc_type)) {
                       strcpy(extDesc[recNo].name, ed.name);
                       extDesc[recNo].offset = offs;
@@ -142,7 +142,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
               }
               for (size_t fileNo = 1; fileNo < numFiles; fileNo++) {
                 bool modified = false;
-                recordFile.Seek(sizeof(uploadsrec) * fileNo, File::seekBegin);
+                recordFile.Seek(sizeof(uploadsrec) * fileNo, File::Whence::begin);
                 recordFile.Read(&upload, sizeof(uploadsrec));
                 bool extDescFound = false;
                 for (unsigned int desc = 0; desc < recNo; desc++) {
@@ -177,7 +177,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   }
 								}
 								if (modified) {
-									recordFile.Seek(sizeof(uploadsrec) * fileNo, File::seekBegin);
+									recordFile.Seek(sizeof(uploadsrec) * fileNo, File::Whence::begin);
 									recordFile.Write(&upload, sizeof(uploadsrec));
 								}
 							}

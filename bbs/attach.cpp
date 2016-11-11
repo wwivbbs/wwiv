@@ -67,7 +67,7 @@ void attach_file(int mode) {
   bool done = false;
   do {
     mailrec m;
-    pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
+    pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
     while ((m.fromsys != 0 || m.fromuser != session()->usernum || m.touser == 0) &&
            cur < max && cur >= 0) {
@@ -77,7 +77,7 @@ void attach_file(int mode) {
         ++cur;
       }
       if (cur < max && cur >= 0) {
-        pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
+        pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
@@ -153,7 +153,7 @@ void attach_file(int mode) {
             case 'D':
             case 'O': {
               m.status ^= status_file;
-              pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::seekCurrent);
+              pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
               pFileEmail->Write(&m, sizeof(mailrec));
               File attachFile(session()->config()->datadir(), ATTACH_DAT);
               if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
@@ -163,7 +163,7 @@ void attach_file(int mode) {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     fsr.id = 0;
                     File::Remove(session()->GetAttachmentDirectory(), fsr.filename);
-                    attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
+                    attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     attachFile.Write(&fsr, sizeof(fsr));
                   }
                   if (!bFound) {
@@ -294,13 +294,13 @@ void attach_file(int mode) {
                     bout << "|#5Attach " << fsr.filename << " (" << fsr.numbytes << " bytes) to Email? ";
                     if (yesno()) {
                       m.status ^= status_file;
-                      pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::seekCurrent);
+                      pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                       pFileEmail->Write(&m, sizeof(mailrec));
                       File attachFile(session()->config()->datadir(), ATTACH_DAT);
                       if (!attachFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
                         bout << "Could not write attachment data.\r\n";
                         m.status ^= status_file;
-                        pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::seekCurrent);
+                        pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                         pFileEmail->Write(&m, sizeof(mailrec));
                       } else {
                         filestatusrec fsr1;
@@ -311,9 +311,9 @@ void attach_file(int mode) {
                         } while (lNumRead > 0 && fsr1.id != 0);
 
                         if (fsr1.id == 0) {
-                          attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
+                          attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                         } else {
-                          attachFile.Seek(0L, File::seekEnd);
+                          attachFile.Seek(0L, File::Whence::end);
                         }
                         attachFile.Write(&fsr, sizeof(filestatusrec));
                         attachFile.Close();

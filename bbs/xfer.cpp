@@ -91,7 +91,7 @@ void get_ed_info() {
       }
       ed_num = 0;
       while (lCurFilePos < lFileSize && ed_num < session()->numf) {
-        fileExtDescr.Seek(lCurFilePos, File::seekBegin);
+        fileExtDescr.Seek(lCurFilePos, File::Whence::begin);
         ext_desc_type ed;
         int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
         if (nNumRead == sizeof(ext_desc_type)) {
@@ -367,7 +367,7 @@ void add_extended_description(const string& file_name, const string& description
 
   File file(session()->extended_description_filename_);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  file.Seek(0L, File::seekEnd);
+  file.Seek(0L, File::Whence::end);
   file.Write(&ed, sizeof(ext_desc_type));
   file.Write(description.c_str(), ed.len);
   file.Close();
@@ -383,14 +383,14 @@ void delete_extended_description(const string& file_name) {
   auto lFileSize = fileExtDescr.GetLength();
   long r = 0, w = 0;
   while (r < lFileSize) {
-    fileExtDescr.Seek(r, File::seekBegin);
+    fileExtDescr.Seek(r, File::Whence::begin);
     fileExtDescr.Read(&ed, sizeof(ext_desc_type));
     if (ed.len < 10000) {
       auto ss = std::make_unique<char[]>(ed.len);
       fileExtDescr.Read(ss.get(), ed.len);
       if (file_name != ed.name) {
         if (r != w) {
-          fileExtDescr.Seek(w, File::seekBegin);
+          fileExtDescr.Seek(w, File::Whence::begin);
           fileExtDescr.Write(&ed, sizeof(ext_desc_type));
           fileExtDescr.Write(ss.get(), ed.len);
         }
@@ -414,7 +414,7 @@ string read_extended_description(const string& file_name) {
         if (!fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
           return nullptr;
         }
-        fileExtDescr.Seek(ed_info[i].offset, File::seekBegin);
+        fileExtDescr.Seek(ed_info[i].offset, File::Whence::begin);
         ext_desc_type ed;
         int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
         if (nNumRead == sizeof(ext_desc_type) && file_name == ed.name) {
@@ -437,7 +437,7 @@ string read_extended_description(const string& file_name) {
       auto lFileSize = fileExtDescr.GetLength();
       long lCurPos = 0;
       while (lCurPos < lFileSize) {
-        fileExtDescr.Seek(lCurPos, File::seekBegin);
+        fileExtDescr.Seek(lCurPos, File::Whence::begin);
         ext_desc_type ed;
         lCurPos += static_cast<long>(fileExtDescr.Read(&ed, sizeof(ext_desc_type)));
         if (file_name == ed.name) {
@@ -994,5 +994,5 @@ void remlist(const char *file_name) {
 }
 
 int FileAreaSetRecord(File &file, int nRecordNumber) {
-  return file.Seek(nRecordNumber * sizeof(uploadsrec), File::seekBegin);
+  return file.Seek(nRecordNumber * sizeof(uploadsrec), File::Whence::begin);
 }

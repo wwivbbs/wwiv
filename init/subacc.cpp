@@ -73,7 +73,7 @@ bool open_sub(bool wr) {
 
     if (fileSub.IsOpen()) {
       // re-read info from file, to be safe
-      fileSub.Seek(0L, File::seekBegin);
+      fileSub.Seek(0L, File::Whence::begin);
       fileSub.Read(&p, sizeof(postrec));
       SetNumMessagesInCurrentMessageArea(p.owneruser);
     }
@@ -125,7 +125,7 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs) {
   subchg = 0;
 
   // read in first rec, specifying # posts
-  fileSub.Seek(0L, File::seekBegin);
+  fileSub.Seek(0L, File::Whence::begin);
   fileSub.Read(&p, sizeof(postrec));
   SetNumMessagesInCurrentMessageArea(p.owneruser);
 
@@ -150,14 +150,14 @@ postrec *get_post(int mn) {
   }
 
   // read in some sub info
-  fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
+  fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
   fileSub.Read(&p, sizeof(postrec));
   return &p;
 }
 
 void write_post(int mn, postrec * pp) {
   if (fileSub.IsOpen()) {
-    fileSub.Seek(mn * sizeof(postrec), File::seekBegin);
+    fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
     fileSub.Write(pp, sizeof(postrec));
   }
 }

@@ -633,7 +633,7 @@ void mailr() {
     int nRecordNumber = pFileEmail->GetLength() / sizeof(mailrec) - 1;
     char c = ' ';
     while (nRecordNumber >= 0 && c != 'Q' && !hangup) {
-      pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::seekBegin);
+      pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
       pFileEmail->Read(&m, sizeof(mailrec));
       if (m.touser != 0) {
         pFileEmail->Close();
@@ -676,7 +676,7 @@ void mailr() {
           }
           if (c == 'D') {
             pFileEmail = OpenEmailFile(true);
-            pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::seekBegin);
+            pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
             pFileEmail->Read(&m1, sizeof(mailrec));
             if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
               delmail(pFileEmail.get(), nRecordNumber);
@@ -689,7 +689,7 @@ void mailr() {
                     if (m.daten == static_cast<uint32_t>(fsr.id)) {
                       found = true;
                       fsr.id = 0;
-                      attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
+                      attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                       attachFile.Write(&fsr, sizeof(filestatusrec));
                       File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
                     } else {
@@ -777,7 +777,7 @@ void zlog() {
     }
     ++i;
     if (i < 97) {
-      file.Seek(i * sizeof(zlogrec), File::seekBegin);
+      file.Seek(i * sizeof(zlogrec), File::Whence::begin);
       file.Read(&z, sizeof(zlogrec));
     }
   }
@@ -894,13 +894,13 @@ void beginday(bool displayStatus) {
     }
   } else {
     for (int i = 96; i >= 1; i--) {
-      fileZLog.Seek((i - 1) * sizeof(zlogrec), File::seekBegin);
+      fileZLog.Seek((i - 1) * sizeof(zlogrec), File::Whence::begin);
       fileZLog.Read(&z1, sizeof(zlogrec));
-      fileZLog.Seek(i * sizeof(zlogrec), File::seekBegin);
+      fileZLog.Seek(i * sizeof(zlogrec), File::Whence::begin);
       fileZLog.Write(&z1, sizeof(zlogrec));
     }
   }
-  fileZLog.Seek(0L, File::seekBegin);
+  fileZLog.Seek(0L, File::Whence::begin);
   fileZLog.Write(&z, sizeof(zlogrec));
   fileZLog.Close();
 

@@ -171,7 +171,7 @@ bool edit_archivers() {
   }
 
   // seek to beginning of file, write arcrecs, close file
-  file.Seek(0, File::seekBegin);
+  file.Seek(0, File::Whence::begin);
   file.Write(arc, MAX_ARCS * sizeof(arcrec));
   return true;
 }

@@ -75,7 +75,7 @@ void kill_old_email() {
 
   bool done = false;
   do {
-    pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
+    pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
     while ((m.fromsys != 0 || m.fromuser != session()->usernum || m.touser == 0) && cur < max && cur >= 0) {
       if (forward) {
@@ -84,7 +84,7 @@ void kill_old_email() {
         ++cur;
       }
       if (cur < max && cur >= 0) {
-        pFileEmail->Seek(cur * sizeof(mailrec), File::seekBegin);
+        pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
@@ -158,7 +158,7 @@ void kill_old_email() {
         case 'D': {
           done1 = true;
           unique_ptr<File> delete_email_file(OpenEmailFile(true));
-          delete_email_file->Seek(cur * sizeof(mailrec), File::seekBegin);
+          delete_email_file->Seek(cur * sizeof(mailrec), File::Whence::begin);
           delete_email_file->Read(&m1, sizeof(mailrec));
           if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
             delmail(delete_email_file.get(), cur);
@@ -171,7 +171,7 @@ void kill_old_email() {
                   if (m.daten == static_cast<uint32_t>(fsr.id)) {
                     found = true;
                     fsr.id = 0;
-                    fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::seekCurrent);
+                    fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
                     File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
                   } else {

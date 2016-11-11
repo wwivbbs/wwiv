@@ -220,7 +220,7 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
-  file.Seek(0L, File::seekEnd);
+  file.Seek(0L, File::Whence::end);
   if (list.empty()) {
     nh->list_len = 0;
   }

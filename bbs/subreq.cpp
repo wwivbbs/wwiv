@@ -429,7 +429,7 @@ int amount_of_subscribers(const char *pszNetworkFileName) {
       return 0;
     }
     char *b = static_cast<char *>(BbsAllocA(len1));
-    file.Seek(0L, File::seekBegin);
+    file.Seek(0L, File::Whence::begin);
     file.Read(b, len1);
     b[len1] = 0;
     file.Close();

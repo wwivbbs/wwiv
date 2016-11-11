@@ -139,7 +139,7 @@ bool MenuInstanceData::CreateMenuMap(File* menu_file) {
 
   for (size_t nRec = 1; nRec < nAmount; nRec++) {
     MenuRec menu;
-    menu_file->Seek(nRec * sizeof(MenuRec), File::seekBegin);
+    menu_file->Seek(nRec * sizeof(MenuRec), File::Whence::begin);
     menu_file->Read(&menu, sizeof(MenuRec));
 
     menu_command_map_.emplace(menu.szKey, menu);
@@ -162,7 +162,7 @@ bool MenuInstanceData::Open() {
   }
 
   // Read the header (control) record into memory
-  menu_file->Seek(0L, File::seekBegin);
+  menu_file->Seek(0L, File::Whence::begin);
   menu_file->Read(&header, sizeof(MenuHeader));
 
   // Version numbers can be checked here.

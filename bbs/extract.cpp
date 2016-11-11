@@ -185,7 +185,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
     {
       File file(file_name);
       file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-      file.Seek(0L, File::seekEnd);
+      file.Seek(0L, File::Whence::end);
       file.Write(b, len);
       file.Close();
     }
@@ -392,10 +392,10 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
             bout << "|#6Could not open file for writing.\r\n";
           } else {
             if (file.GetLength() > 0) {
-              file.Seek(-1L, File::seekEnd);
+              file.Seek(-1L, File::Whence::end);
               file.Read(&ch1, 1);
               if (ch1 == CZ) {
-                file.Seek(-1L, File::seekEnd);
+                file.Seek(-1L, File::Whence::end);
               }
             }
             file.Write(title, strlen(title));
@@ -453,10 +453,10 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
         bout << "|#6Could not open file for writing.\r\n";
       } else {
         if (file.GetLength() > 0) {
-          file.Seek(-1L, File::seekEnd);
+          file.Seek(-1L, File::Whence::end);
           file.Read(&ch1, 1);
           if (ch1 == CZ) {
-            file.Seek(-1L, File::seekEnd);
+            file.Seek(-1L, File::Whence::end);
           }
         }
         file.Write(title, strlen(title));

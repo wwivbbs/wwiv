@@ -57,7 +57,7 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
   if (open_qscn()) {
     long lPos = static_cast<long>(syscfg.qscn_len) * static_cast<long>(user_number);
     if (lPos + static_cast<long>(syscfg.qscn_len) <= qscanFile.GetLength()) {
-      qscanFile.Seek(lPos, File::seekBegin);
+      qscanFile.Seek(lPos, File::Whence::begin);
       qscanFile.Read(qscn, syscfg.qscn_len);
       if (!stay_open) {
         close_qscn();
@@ -91,7 +91,7 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
   }
   if (open_qscn()) {
     long lPos = static_cast<long>(syscfg.qscn_len) * static_cast<long>(user_number);
-    qscanFile.Seek(lPos, File::seekBegin);
+    qscanFile.Seek(lPos, File::Whence::begin);
     qscanFile.Write(qscn, syscfg.qscn_len);
     if (!stay_open) {
       close_qscn();

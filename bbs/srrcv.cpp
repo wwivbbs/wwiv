@@ -248,7 +248,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
         }
         bout.rputch(CF);
       } else if ((bn & 0x00ff) == static_cast<unsigned int>(bln)) {
-        file.Seek(pos, File::seekBegin);
+        file.Seek(pos, File::Whence::begin);
         long lx = reallen - pos;
         i2 = (i == 0) ? 128 : 1024;
         if ((static_cast<long>(i2) > lx) && reallen) {

@@ -748,7 +748,7 @@ static bool SaveConfig() {
   full_syscfg.autoval[8] = syscfg.autoval[8];
   full_syscfg.autoval[9] = syscfg.autoval[9];
 
-  file.Seek(0, File::seekBegin);
+  file.Seek(0, File::Whence::begin);
   file.Write(&full_syscfg, sizeof(configrec));
   return true;
 }

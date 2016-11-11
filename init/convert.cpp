@@ -100,7 +100,7 @@ bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
   syscfg.header.header = h;
 
   // Write it all back.
-  file.Seek(0, File::seekBegin);
+  file.Seek(0, File::Whence::begin);
   file.Write(&syscfg, sizeof(configrec));
   file.Close();
   return true;
@@ -182,7 +182,7 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
     memset(syscfg.unused9, 0, sizeof(syscfg.unused9));
     syscfg.header.header.config_revision_number = 1;
 
-    file.Seek(0, File::seekBegin);
+    file.Seek(0, File::Whence::begin);
     file.Write(&syscfg, sizeof(configrec));
     file.Close();
   }
@@ -269,7 +269,7 @@ void convert_config_424_to_430(CursesWindow* window, const string& config_filena
       strncpy(arc[i].arcl, "archive list command", 32);
     }
   }
-  file.Seek(0, File::seekBegin);
+  file.Seek(0, File::Whence::begin);
   file.Write(&syscfg, sizeof(configrec));
   file.Close();
 

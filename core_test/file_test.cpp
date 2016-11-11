@@ -341,16 +341,16 @@ TEST(FileTest, Seek) {
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
 
-  EXPECT_EQ(0, file.Seek(0, File::seekBegin));
+  EXPECT_EQ(0, file.Seek(0, File::Whence::begin));
   char c{};
   file.Read(&c, 1);
   EXPECT_EQ('0', c);
 
-  EXPECT_EQ(3, file.Seek(2, File::seekCurrent));
+  EXPECT_EQ(3, file.Seek(2, File::Whence::current));
   file.Read(&c, 1);
   EXPECT_EQ('3', c);
 
-  EXPECT_EQ(kContents.size(), file.Seek(0, File::seekEnd));
+  EXPECT_EQ(kContents.size(), file.Seek(0, File::Whence::end));
   EXPECT_EQ(0, file.Read(&c, 1));
 }
 
@@ -361,9 +361,9 @@ TEST(FileTest, CurrentPosition) {
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
 
-  EXPECT_EQ(3, file.Seek(3, File::seekBegin));
+  EXPECT_EQ(3, file.Seek(3, File::Whence::begin));
   EXPECT_EQ(3, file.current_position());
 
-  EXPECT_EQ(kContents.size(), file.Seek(0, File::seekEnd));
+  EXPECT_EQ(kContents.size(), file.Seek(0, File::Whence::end));
   EXPECT_EQ(kContents.size(), file.current_position());
 }

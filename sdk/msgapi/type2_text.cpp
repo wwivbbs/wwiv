@@ -111,7 +111,7 @@ std::vector<uint16_t> Type2Text::load_gat(File& file, size_t section) {
     file.SetLength(section_pos);
     file_size = section_pos;
   }
-  file.Seek(section_pos, File::seekBegin);
+  file.Seek(section_pos, File::Whence::begin);
   if (file_size < static_cast<long>(section_pos + GAT_SECTION_SIZE)) {
     // TODO(rushfan): Check that gat is loaded.
     file.Write(&gat[0], GAT_SECTION_SIZE);
@@ -124,7 +124,7 @@ std::vector<uint16_t> Type2Text::load_gat(File& file, size_t section) {
 
 void Type2Text::save_gat(File& file, size_t section, const std::vector<uint16_t>& gat) {
   long section_pos = static_cast<long>(section * GATSECLEN);
-  file.Seek(section_pos, File::seekBegin);
+  file.Seek(section_pos, File::Whence::begin);
   file.Write(&gat[0], GAT_SECTION_SIZE);
 
   // TODO(rushfan): Pass in the status manager. this is needed to
@@ -148,7 +148,7 @@ bool Type2Text::readfile(const messagerec* msg, string* out) {
 
   uint32_t current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-    file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::seekBegin);
+    file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::Whence::begin);
     char b[MSG_BLOCK_SIZE + 1];
     file->Read(b, MSG_BLOCK_SIZE);
     b[MSG_BLOCK_SIZE] = 0;
@@ -188,7 +188,7 @@ bool Type2Text::savefile(const string& text, messagerec* msg) {
     if (size_int(gati) >= nNumBlocksRequired) {
       gati.push_back(-1);
       for (int i = 0; i < nNumBlocksRequired; i++) {
-        msgfile->Seek(MSG_STARTING(section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::seekBegin);
+        msgfile->Seek(MSG_STARTING(section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
         msgfile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
         gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
       }
