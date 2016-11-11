@@ -46,7 +46,7 @@ using namespace wwiv::strings;
 template<typename T>
 static T input_number(CursesWindow* window, int max_digits) {
   string s;
-  int return_code = editline(window, &s, max_digits, EditLineMode::NUM_ONLY, "");
+  editline(window, &s, max_digits, EditLineMode::NUM_ONLY, "");
   if (s.empty()) {
     return 0;
   }
