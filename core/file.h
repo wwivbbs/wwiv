@@ -24,6 +24,7 @@
 #include <ctime>
 #include <iostream>
 #include <string>
+#include <sys/types.h>
 
 #include "core/wwivport.h"
 
@@ -123,6 +124,7 @@ class File {
   virtual long GetLength();
   virtual long Seek(long lOffset, int nFrom);
   virtual void SetLength(long lNewLength);
+  virtual long current_position() const;
 
   virtual bool Exists() const;
   virtual bool Delete();

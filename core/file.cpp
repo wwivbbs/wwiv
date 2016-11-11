@@ -68,12 +68,12 @@
 #if !defined(ftruncate)
 #define ftruncate chsize
 #endif  // ftruncate
-#define flock(h, m)
-#define LOCK_SH		1
-#define LOCK_EX		2
-#define LOCK_NB		4
-#define LOCK_UN		8
-#define F_OK 0
+#define flock(h, m) { (h), (m); }
+static constexpr int LOCK_SH = 1;
+static constexpr int LOCK_EX = 2;
+static constexpr int LOCK_NB = 4;
+static constexpr int LOCK_UN = 8;
+static constexpr int F_OK = 0;
 
 #else 
 #define _sopen(n, f, s, p) open(n, f, 0644)
@@ -184,8 +184,7 @@ bool File::Open(int nFileMode, int nShareMode) {
   VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode << ", handle=" << handle_;
 
   if (File::IsFileHandleValid(handle_)) {
-    int mode = (nShareMode == shareDenyReadWrite || nShareMode == shareDenyWrite) ? LOCK_EX : LOCK_SH;
-    flock(handle_, mode);
+    flock(handle_, (nShareMode == shareDenyReadWrite || nShareMode == shareDenyWrite) ? LOCK_EX : LOCK_SH);
   }
 
   if (handle_ == File::invalid_handle) {
@@ -252,6 +251,11 @@ long File::Seek(long lOffset, int nFrom) {
   CHECK(File::IsFileHandleValid(handle_));
 
   return lseek(handle_, lOffset, nFrom);
+}
+
+long File::current_position() const {
+  return lseek(handle_, 0, SEEK_CUR);
+
 }
 
 bool File::Exists() const {

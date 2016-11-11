@@ -79,8 +79,6 @@ TEST(FileTest, ExistsWildCard_Extension) {
   ASSERT_TRUE(File::ExistsWildcard(wildcard_path)) << path << "; w: " << wildcard_path;
 }
 
-
-
 TEST(FileTest, Exists_Static) {
     FileHelper file;
     string tmp = file.TempDir();
@@ -334,4 +332,38 @@ TEST(FileTest, IsOpen_NotOpen) {
   File file(path + "DNE");
   EXPECT_FALSE(file.IsOpen());
   EXPECT_FALSE(file);
+}
+
+TEST(FileTest, Seek) {
+  static const string kContents = "0123456789";
+  FileHelper helper;
+  string path = helper.CreateTempFile(this->test_info_->name(), kContents);
+  File file(path);
+  ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
+
+  EXPECT_EQ(0, file.Seek(0, File::seekBegin));
+  char c{};
+  file.Read(&c, 1);
+  EXPECT_EQ('0', c);
+
+  EXPECT_EQ(3, file.Seek(2, File::seekCurrent));
+  file.Read(&c, 1);
+  EXPECT_EQ('3', c);
+
+  EXPECT_EQ(kContents.size(), file.Seek(0, File::seekEnd));
+  EXPECT_EQ(0, file.Read(&c, 1));
+}
+
+TEST(FileTest, CurrentPosition) {
+  static const string kContents = "0123456789";
+  FileHelper helper;
+  string path = helper.CreateTempFile(this->test_info_->name(), kContents);
+  File file(path);
+  ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
+
+  EXPECT_EQ(3, file.Seek(3, File::seekBegin));
+  EXPECT_EQ(3, file.current_position());
+
+  EXPECT_EQ(kContents.size(), file.Seek(0, File::seekEnd));
+  EXPECT_EQ(kContents.size(), file.current_position());
 }
