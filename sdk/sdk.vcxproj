@@ -18,6 +18,7 @@
     <ClInclude Include="connect.h" />
     <ClInclude Include="contact.h" />
     <ClInclude Include="datetime.h" />
+    <ClInclude Include="fido\fido_address.h" />
     <ClInclude Include="fido\fido_packets.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="msdos_stdint.h" />
@@ -50,6 +51,7 @@
     <ClCompile Include="connect.cpp" />
     <ClCompile Include="contact.cpp" />
     <ClCompile Include="datetime.cpp" />
+    <ClCompile Include="fido\fido_address.cpp" />
     <ClCompile Include="fido\fido_packets.cpp" />
     <ClCompile Include="msgapi\email_wwiv.cpp" />
     <ClCompile Include="msgapi\message_api.cpp" />

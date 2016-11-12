@@ -21,9 +21,12 @@ bld/
 [Oo]bj/
 unzip__Win32_Release/
 zip___Win32_Release/
-
+unzip__Win32_Debug/
+zip___Win32_Debug/
 # archives directory from jenkins
 archives/
+staging/
+wwiv-build-*.zip
 
 # Roslyn cache directories
 *.ide/
@@ -187,6 +190,9 @@ UpgradeLog*.htm
 
 # Microsoft Fakes
 FakesAssemblies/
+
+# Templates
+template.h
 
 ################################################################################
 #

@@ -11,6 +11,7 @@ set(SOURCES
  binkp_config.cpp
  connection.cpp
  cram.cpp
+ fido_util.cpp
  net_log.cpp
  net_util.cpp
  packets.cpp

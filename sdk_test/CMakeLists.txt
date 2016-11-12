@@ -16,6 +16,7 @@ set(test_sources
   sdk_helper.cpp
   subxtr_test.cpp
   user_test.cpp
+  fido/fido_address_test.cpp
 )
 
 add_executable(sdk_tests ${test_sources})

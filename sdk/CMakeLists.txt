@@ -12,6 +12,7 @@ set(COMMON_SOURCES
   connect.cpp
   contact.cpp
   datetime.cpp
+  fido/fido_address.cpp
   fido/fido_packets.cpp
   msgapi/email_wwiv.cpp
   msgapi/message_api.cpp
