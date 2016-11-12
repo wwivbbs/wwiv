@@ -218,35 +218,33 @@ bool File::SetName(const string& dirName, const string& fileName) {
   return SetName(full_path_name.str());
 }
 
-ssize_t File::Read(void* pBuffer, size_t nCount) {
-  ssize_t ret = read(handle_, pBuffer, nCount);
+ssize_t File::Read(void* pBuffer, size_t size) {
+  ssize_t ret = read(handle_, pBuffer, size);
   if (ret == -1) {
     LOG(ERROR) << "[DEBUG: Read errno: " << errno
-      << " filename: " << full_path_name_;
+      << " filename: " << full_path_name_ << " size: " << size;
     LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
     LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
-  // TODO: Make this an CHECK once we get rid of these issues
   return ret;
 }
 
-ssize_t File::Write(const void* pBuffer, size_t nCount) {
-  ssize_t nRet = write(handle_, pBuffer, nCount);
+ssize_t File::Write(const void* pBuffer, size_t size) {
+  ssize_t nRet = write(handle_, pBuffer, size);
   if (nRet == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno
-      << " filename: " << full_path_name_;
+      << " filename: " << full_path_name_ << " size: " << size;
     LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
     LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
-  // TODO: Make this an WWIV_ASSERT once we get rid of these issues
   return nRet;
 }
 
-off_t File::Seek(off_t lOffset, Whence whence) {
+off_t File::Seek(off_t offset, Whence whence) {
   CHECK(whence == File::Whence::begin || whence == File::Whence::current || whence == File::Whence::end);
   CHECK(File::IsFileHandleValid(handle_));
 
-  return lseek(handle_, lOffset, static_cast<int>(whence));
+  return lseek(handle_, offset, static_cast<int>(whence));
 }
 
 off_t File::current_position() const {

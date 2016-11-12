@@ -137,7 +137,7 @@ struct fido_stored_message_t {
   char from[36];
   char to[36];
   char subject[72];
-  char datetime[20];
+  char date_time[20];
   int16_t times_read,
     dest_node,
     orig_node,
@@ -207,9 +207,10 @@ public:
 class FidoStoredMessage {
 public:
   FidoStoredMessage(const fido_stored_message_t& h, const std::string& t): nh(h), text(t) {}
+  FidoStoredMessage() {}
   virtual ~FidoStoredMessage() {}
 
-  fido_stored_message_t nh;
+  fido_stored_message_t nh = {};
   std::string text;
 };
 

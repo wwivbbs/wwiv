@@ -46,8 +46,10 @@ static std::string ReadRestOfFile(File& f, int max_size) {
   auto current = f.current_position();
   auto size = f.GetLength();
   string s;
-  s.resize(size - current + 1);
-  auto num_read = f.Read(&s[0], max_size + 1);
+
+  auto to_read = std::min<size_t>(max_size, size - current);
+  s.resize(to_read + 1);
+  auto num_read = f.Read(&s[0], to_read);
   s.resize(num_read);
   return s;
 }

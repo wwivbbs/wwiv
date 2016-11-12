@@ -86,12 +86,6 @@ class File {
   static const char pathSeparatorString[];
   static const char separatorChar;
 
- private:
-  int handle_;
-  std::string full_path_name_;
-  std::string error_text_;
-
- public:
   // Constructor/Destructor
   File();
   File(const std::string& dir, const std::string& filename);
@@ -159,7 +153,7 @@ class File {
 
   // operators
   explicit operator bool() const { return IsOpen(); }
-  friend std::ostream& operator<< (std::ostream &os, const File &cPoint);
+  friend std::ostream& operator<< (std::ostream &os, const File &f);
 
   // static functions
   static bool Remove(const std::string& fileName);
@@ -189,6 +183,11 @@ class File {
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
   static long GetFreeSpaceForPath(const std::string& path);
+
+ private:
+   int handle_;
+   std::string full_path_name_;
+   std::string error_text_;
 };
 
 

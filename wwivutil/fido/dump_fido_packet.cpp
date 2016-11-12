@@ -55,7 +55,35 @@ static std::string FidoToWWIVText(const std::string& ft) {
   return wt;
 }
 
-int dump_file(const std::string& filename) {
+int dump_stored_message(const std::string& filename) {
+  File f(filename);
+  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+    LOG(ERROR) << "Unable to open file: " << filename;
+    return 1;
+  }
+
+  FidoStoredMessage msg;
+  ReadPacketResponse response = read_stored_message(f, msg);
+  if (response == ReadPacketResponse::END_OF_FILE) {
+    return 0;
+  } else if (response == ReadPacketResponse::ERROR) {
+    return 1;
+  }
+
+  const auto& h = msg.nh;
+  cout << "cost:    " << h.cost << std::endl;
+  cout << "to:      " << h.to << "(" << h.dest_zone << ":" << h.dest_net << "/" << h.dest_node << "." << h.dest_point << ")" << std::endl;
+  cout << "from:    " << h.from << "(" << h.orig_zone << ":" << h.orig_net << "/" << h.orig_node << "." << h.orig_point << ")" << std::endl;
+  cout << "subject: " << h.subject << std::endl;
+  cout << "date:    " << h.date_time << std::endl;
+  cout << "# read:  " << h.times_read << "; reply_to: " << h.reply_to << std::endl;
+  cout << "attrib:  " << h.attribute;
+  if (h.attribute & 1) { cout << " {PRIVATE}"; }
+  cout << std::endl;
+  cout << "text: " << std::endl << std::endl << FidoToWWIVText(msg.text) << std::endl;
+}
+
+int dump_packet_file(const std::string& filename) {
   File f(filename);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(ERROR) << "Unable to open file: " << filename;
@@ -88,6 +116,20 @@ int dump_file(const std::string& filename) {
     cout << "==============================================================================" << endl;
   }
   return 0;
+}
+
+int dump_file(const std::string& filename) {
+  string s = filename;
+  StringLowerCase(&s);
+
+  if (ends_with(s, ".msg")) {
+    return dump_stored_message(filename);
+  } else if (ends_with(s, ".pkt")) {
+    return dump_packet_file(filename);
+  }
+
+  cout << "Can't tell filetype for: " << filename;
+  return 1;
 }
 
 std::string DumpFidoPacketCommand::GetUsage() const {
