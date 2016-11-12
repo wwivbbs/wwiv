@@ -25,15 +25,19 @@
 #include "core/command_line.h"
 #include "core/file.h"
 #include "sdk/config.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
 
 namespace wwiv {
 namespace net {
+namespace fido {
 
 std::string packet_name();
-std::string bundle_name(std::string address);
+std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest);
+std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
 
+}  // namespace fido
 }  // namespace net
 }  // namespace wwiv
 

@@ -15,61 +15,35 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "gtest/gtest.h"
+#include "core/strings.h"
+#include "core_test/file_helper.h"
 #include "networkb/fido_util.h"
+#include "sdk/fido/fido_address.h"
 
-#include <chrono>
+#include <cstdint>
+#include <memory>
 #include <string>
 
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/log.h"
-#include "core/stl.h"
-#include "core/strings.h"
-#include "sdk/datetime.h"
-#include "sdk/filenames.h"
-
+using std::endl;
 using std::string;
-using namespace wwiv::core;
-using namespace wwiv::stl;
+using std::unique_ptr;
 using namespace wwiv::strings;
+using namespace wwiv::net;
+using namespace wwiv::net::fido;
+using namespace wwiv::sdk::fido;
 
-namespace wwiv {
-namespace net {
-namespace fido {
+class FidoUtilTest: public testing::Test {
+public:
+  FidoUtilTest() {}
+protected:
+  FileHelper helper_;
+};
 
-// We use DDHHMMSS like SBBSECHO does.
-std::string packet_name() {
-  auto now = time(nullptr);
-  auto tm = localtime(&now);
+TEST_F(FidoUtilTest, BundleName) {
+  FidoAddress source("1:105/6");
+  FidoAddress dest("1:105/42");
+  string actual = bundle_name(source, dest, "su0");
 
-  string fmt = "%d%H%M%S";
-
-  char buf[1024];
-  auto res = strftime(buf, sizeof(buf), fmt.c_str(), tm);
-  if (res <= 0) {
-    LOG(ERROR) << "Unable to create packet name from strftime";
-    to_char_array(buf, "DDHHMMSS");
-  }
-  return buf;
+  EXPECT_EQ("0000ffdc.su0", actual);
 }
-
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {
-  int16_t net = source.net() - dest.net();
-  uint16_t node = source.node() - dest.node();
-
-  return StringPrintf("%04.4x%04.4x.%s", net, node, extension.c_str());
-}
-
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest) {
-  static const std::vector<string> dow = {"sun", "mon", "tue", "wed", "thu", "fri", "sat", "sun" };
-  auto now = time(nullptr);
-  auto tm = localtime(&now);
-  int dow_num = tm->tm_wday;
-
-  return bundle_name(source, dest, dow.at(dow_num));
-}
-
-}  // namespace fido
-}  // namespace net
-}  // namespace wwiv
-

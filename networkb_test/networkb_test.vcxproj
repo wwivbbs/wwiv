@@ -109,6 +109,7 @@
     <ClCompile Include="binkp_config_test.cpp" />
     <ClCompile Include="binkp_test.cpp" />
     <ClCompile Include="fake_connection.cpp" />
+    <ClCompile Include="fido_util_test.cpp" />
     <ClCompile Include="networkb_test_main.cpp" />
     <ClCompile Include="net_log_test.cpp" />
     <ClCompile Include="net_util_test.cpp" />

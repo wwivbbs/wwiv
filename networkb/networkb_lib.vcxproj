@@ -101,6 +101,7 @@
     <ClInclude Include="config_exceptions.h" />
     <ClInclude Include="contact.h" />
     <ClInclude Include="cram.h" />
+    <ClInclude Include="fido_util.h" />
     <ClInclude Include="net_log.h" />
     <ClInclude Include="net_util.h" />
     <ClInclude Include="packets.h" />
@@ -118,6 +119,7 @@
     <ClCompile Include="binkp_commands.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="cram.cpp" />
+    <ClCompile Include="fido_util.cpp" />
     <ClCompile Include="net_log.cpp" />
     <ClCompile Include="net_util.cpp" />
     <ClCompile Include="packets.cpp" />

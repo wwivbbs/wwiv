@@ -82,16 +82,16 @@ public:
   ~FidoAddress() {}
 
   std::string as_string(bool include_domain = false) const;
-  int zone() const { return zone_; }
-  int net() const { return net_; }
-  int node() const { return node_; }
-  int point() const { return point_; }
+  int16_t zone() const { return zone_; }
+  int16_t net() const { return net_; }
+  int16_t node() const { return node_; }
+  int16_t point() const { return point_; }
   std::string domain() const { return domain_; }
 private:
-  int zone_ = 0;
-  int net_ = 0;
-  int node_ = 0;
-  int point_ = 0;
+  int16_t zone_ = 0;
+  int16_t net_ = 0;
+  int16_t node_ = 0;
+  int16_t point_ = 0;
   std::string domain_;
 };
 
