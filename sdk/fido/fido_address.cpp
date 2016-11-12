@@ -87,7 +87,7 @@ std::string FidoAddress::as_string(bool include_domain) const {
     s += StrCat(".", point_);
   }
 
-  if (include_domain) {
+  if (include_domain && !domain_.empty()) {
     s += StrCat("@", domain_);
   }
 

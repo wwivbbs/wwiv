@@ -41,3 +41,33 @@ TEST(FidoAddressTest, Basic) {
 
   EXPECT_EQ("11:10/211.123@wwiv-ftn", f.as_string(true));
 }
+
+TEST(FidoAddressTest, ZoneNetNode) {
+  FidoAddress f("11:10/211");
+  EXPECT_EQ(11, f.zone());
+  EXPECT_EQ(10, f.net());
+  EXPECT_EQ(211, f.node());
+  EXPECT_EQ(0, f.point());
+  EXPECT_TRUE(f.domain().empty());
+
+  EXPECT_EQ("11:10/211", f.as_string(true));
+}
+
+TEST(FidoAddressTest, DefaultZone) {
+  FidoAddress f("10/211");
+  EXPECT_EQ(1, f.zone());  // 1 is the default
+  EXPECT_EQ(10, f.net());
+  EXPECT_EQ(211, f.node());
+  EXPECT_EQ(0, f.point());
+  EXPECT_TRUE(f.domain().empty());
+
+  EXPECT_EQ("1:10/211", f.as_string(true));
+}
+
+TEST(FidoAddressTest, MissingNetOrNode) {
+  try {
+    FidoAddress f("1");
+    FAIL() << "Exception expected";
+  } catch (const wwiv::sdk::fido::bad_fidonet_address& expected) {
+  }
+}
