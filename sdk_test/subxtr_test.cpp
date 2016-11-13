@@ -87,7 +87,7 @@ static bool equal(const xtrasubsnetrec& x1, const xtrasubsnetrec& x2) {
     return false;
   } else if (x1.net_num != x2.net_num) {
     return false;
-  } else return IsEqualsIgnoreCase(x1.stype, x2.stype);
+  } else return iequals(x1.stype_str, x2.stype_str);
 }
 
 static bool equal(const xtrasubsrec& x1, const xtrasubsrec& x2) {

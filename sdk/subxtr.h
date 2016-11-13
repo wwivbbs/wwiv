@@ -98,6 +98,7 @@ private:
   std::vector<subboard_t> subs_;
 };
 
+// Not serialized as binary on disk.
 /*
  * Info for each network the sub is on.
  *  flags - bitmask
@@ -106,13 +107,12 @@ private:
  *  host - host system of sub, or 0 if locally hosted
  *  stype - string sub type (up to 7 chars)
  */
-
 struct xtrasubsnetrec {
   long flags;
   int16_t net_num;
   int16_t host;
   int16_t category;
-  char stype[8];
+  std::string stype_str;
 };
 
 

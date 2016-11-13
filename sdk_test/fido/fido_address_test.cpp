@@ -21,6 +21,7 @@
 #include <cstring>
 #include <type_traits>
 
+#include "core/stl.h"
 #include "sdk/fido/fido_address.h"
 
 using std::cout;
@@ -29,6 +30,7 @@ using std::is_standard_layout;
 using std::string;
 
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::sdk::fido;
 
 TEST(FidoAddressTest, Basic) {
@@ -68,6 +70,24 @@ TEST(FidoAddressTest, MissingNetOrNode) {
   try {
     FidoAddress f("1");
     FAIL() << "Exception expected";
-  } catch (const wwiv::sdk::fido::bad_fidonet_address& expected) {
+  } catch (const wwiv::sdk::fido::bad_fidonet_address&) {
   }
+}
+
+TEST(FidoAddressTest, LT) {
+  FidoAddress f1("11:10/211");
+  FidoAddress f2("11:10/212");
+
+  EXPECT_LT(f1, f2);
+}
+
+TEST(FidoAddressTest, Set) {
+  FidoAddress f1("11:10/211");
+  FidoAddress f2("11:10/212");
+  FidoAddress f3("11:10/213");
+
+  std::set<FidoAddress> addrs{f1, f2};
+  EXPECT_TRUE(contains(addrs, f1));
+  EXPECT_TRUE(contains(addrs, f2));
+  EXPECT_FALSE(contains(addrs, f3));
 }

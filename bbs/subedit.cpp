@@ -113,14 +113,13 @@ static string GetAnon(const subboard_t& r) {
   }
 }
 
-void DisplayNetInfo(size_t nSubNum) {
+static void DisplayNetInfo(size_t nSubNum) {
   if (session()->subs().sub(nSubNum).nets.empty()) {
     bout << "|#2Not networked.\r\n";
     return;
   }
 
-  bout.bprintf("\r\n|#9      %-12.12s %-7.7s %-6.6s  Scrb  %s\r\n",
-                "Network", "Type", "Host", " Flags");
+  bout << "\r\n|#9      Network      Type    Host    Scrb   Flags\r\n";
   int i = 0;
   const auto& nets = session()->subs().sub(nSubNum).nets;
   for (auto it = nets.begin(); it != nets.end(); i++, it++) {

@@ -20,14 +20,16 @@
 
 #include <set>
 #include <string>
+#include "sdk/fido/fido_address.h"
 
 namespace wwiv {
 namespace sdk {
 
+bool ReadFidoSubcriberFile(const ::std::string& dir, const std::string& filename, std::set<wwiv::sdk::fido::FidoAddress>& subscribers);
 bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers);
 bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers);
 
-}  // namespace net
+}  // namespace sdk
 }  // namespace wwiv
 
 #endif  // __INCLUDED_SDK_SUBSCRIBERS_H__

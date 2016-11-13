@@ -29,7 +29,6 @@
 #include <string>
 #include <vector>
 
-
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
@@ -38,6 +37,7 @@
 #include "core/os.h"
 #include "core/textfile.h"
 #include "core/wfndfile.h"
+#include "sdk/fido/fido_address.h"
 
 using std::set;
 using std::string;
@@ -45,9 +45,31 @@ using std::unique_ptr;
 using std::vector;
 
 using namespace wwiv::strings;
+using namespace wwiv::sdk::fido;
 
 namespace wwiv {
 namespace sdk {
+
+bool ReadFidoSubcriberFile(const std::string& dir, const std::string& filename, std::set<FidoAddress>& subscribers) {
+  subscribers.clear();
+
+  TextFile file(dir, filename, "rt");
+  if (!file.IsOpen()) {
+    return false;
+  }
+
+  string line;
+  while (file.ReadLine(&line)) {
+    StringTrim(&line);
+    try {
+      FidoAddress a(line);
+      subscribers.insert(a);
+    } catch (const bad_fidonet_address& e) {
+      LOG(ERROR) << e.what();
+    }
+  }
+  return true;
+}
 
 bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers) {
   subscribers.clear();

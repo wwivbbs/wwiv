@@ -183,7 +183,7 @@ int find_hostfor(const std::string& type, short *ui, char *description, short *o
       }
       file.Close();
     } else {
-      done = true;
+done = true;
     }
   }
 
@@ -282,13 +282,22 @@ void sub_xtr_add(int n, int nn) {
 
   bout.nl();
   bout << "|#2What sub type? ";
+  int stype_len = 7;
+  if (session()->current_net().type == network_type_t::ftn) {
+    stype_len = 40;
+  }
   xnp.stype = input(7);
-  if (xnp.stype[0] == 0) {
+  if (xnp.stype.empty()) {
     return;
   }
 
-  bout << "|#5Will you be hosting the sub? ";
-  if (yesno()) {
+  bool is_hosting = false;
+  if (session()->current_net().type == network_type_t::wwivnet || session()->current_net().type == network_type_t::internet) {
+    bout << "|#5Will you be hosting the sub? ";
+    is_hosting = yesno();
+  }
+
+  if (is_hosting) {
     string file_name = StrCat(session()->network_directory(), "n", xnp.stype, ".net");
     File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
@@ -335,6 +344,9 @@ void sub_xtr_add(int n, int nn) {
         }
       }
     }
+  } else if (session()->current_net().type == network_type_t::ftn) {
+    // Set the fake fido node up as the host.
+    xnp.host = session()->current_net().fido.fake_outbound_node;
   } else {
     int ok = find_hostfor(xnp.stype, &(xnp.host), szDescription, &opt);
 

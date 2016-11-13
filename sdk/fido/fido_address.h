@@ -76,28 +76,47 @@ namespace fido {
 class FidoAddress {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
-  explicit FidoAddress(const std::string& address);
-  FidoAddress(int zone, int net, int node, int point, const std::string& domain)
+  explicit FidoAddress(const ::std::string& address);
+  FidoAddress(int16_t zone, int16_t net, int16_t node, int16_t point, const ::std::string& domain)
     : zone_(zone), net_(net), node_(node), point_(point), domain_(domain) {}
   ~FidoAddress() {}
 
-  std::string as_string(bool include_domain = false) const;
+  ::std::string as_string(bool include_domain = false) const;
   int16_t zone() const { return zone_; }
   int16_t net() const { return net_; }
   int16_t node() const { return node_; }
   int16_t point() const { return point_; }
-  std::string domain() const { return domain_; }
+  ::std::string domain() const { return domain_; }
+
+  // Needed to put FidoAddress into a set.
+  inline bool operator< (const FidoAddress& r) const {
+    if (zone_ < r.zone_) return true;
+    if (net_ < r.net_) return true;
+    if (node_ < r.node_) return true;
+    if (point_ < r.point_) return true;
+    if (domain_ < r.domain_) return true;
+    return false;
+  }
+  inline bool operator== (const FidoAddress& o) const {
+    if (zone_ != o.zone_) return false;
+    if (net_ != o.net_) return false;
+    if (node_ != o.node_) return false;
+    if (point_ != o.point_) return false;
+    if (domain_ != o.domain_) return false;
+    return true;
+  }
+
 private:
   int16_t zone_ = 0;
   int16_t net_ = 0;
   int16_t node_ = 0;
   int16_t point_ = 0;
-  std::string domain_;
+  ::std::string domain_;
 };
 
-class bad_fidonet_address: public std::runtime_error {
+class bad_fidonet_address: public ::std::runtime_error {
 public:
-  bad_fidonet_address(const std::string& message): std::runtime_error(message) {}
+  bad_fidonet_address(const ::std::string& message): ::std::runtime_error(message) {}
 };
 
 }  // namespace fido

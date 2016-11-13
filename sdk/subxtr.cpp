@@ -205,7 +205,7 @@ bool ParseXSubsLine(const std::vector<net_networks_rec>& net_networks, const std
   string stype;
   stream >> stype;
   StringTrim(&stype);
-  strcpy(x.stype, stype.c_str());
+  x.stype_str = stype;
   x.net_num = static_cast<int16_t>(net_num);
 
   stream >> x.flags;
@@ -289,7 +289,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
       for (const auto& n : x.nets) {
         f.WriteFormatted("$%s %s %lu %u %u\n",
           net_networks[n.net_num].name,
-          n.stype,
+          n.stype_str.c_str(),
           n.flags,
           n.host,
           n.category);
@@ -357,7 +357,7 @@ bool Subs::Load() {
     sub.storage_type = olds.storage_type;
     for (const auto& n : oldx.nets) {
       subboard_network_data_t netdata = {};
-      netdata.stype = n.stype;
+      netdata.stype = n.stype_str;
       netdata.flags = n.flags;
       netdata.net_num = n.net_num;
       netdata.host = n.host;
@@ -390,7 +390,7 @@ bool Subs::Save() {
     ls.unused_legacy_type = 0;
     for (const auto& n : s.nets) {
       xtrasubsnetrec on = {};
-      to_char_array(on.stype, n.stype);
+      on.stype_str = n.stype;
       on.flags = n.flags;
       on.net_num = n.net_num;
       on.host = n.host;
@@ -411,6 +411,19 @@ bool Subs::Save() {
     return false;
   }
 
+  {
+    // Backup subs.json
+    const string subs_xtr_old_name = StrCat(SUBS_JSON, ".old");
+    File::Remove(datadir_, subs_xtr_old_name);
+    File subs_json(datadir_, SUBS_JSON);
+    File subs_json_old(datadir_, subs_xtr_old_name);
+    File::Move(subs_json.full_pathname(), subs_json_old.full_pathname());
+
+    // Save subs.
+    subs_t t;
+    t.subs = subs_;
+    SaveToJSON(datadir_, SUBS_JSON, t);
+  }
   return true;
 }
 

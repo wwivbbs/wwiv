@@ -172,6 +172,7 @@
 #define SUEDIT_NOEXT "suedit"
 #define SUBS_CNF "subs.cnf"
 #define SUBS_DAT "subs.dat"
+#define SUBS_JSON "subs.json"
 #define SUBS_LST "subs.lst"
 #define SUBS_NOEXT "subs"
 #define SUBS_PUB "subs.pub"
