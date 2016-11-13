@@ -38,8 +38,7 @@ namespace net {
 namespace fido {
 
 // We use DDHHMMSS like SBBSECHO does.
-std::string packet_name() {
-  auto now = time(nullptr);
+std::string packet_name(time_t now) {
   auto tm = localtime(&now);
 
   string fmt = "%d%H%M%S";
@@ -60,13 +59,21 @@ std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::
   return StringPrintf("%04.4x%04.4x.%s", net, node, extension.c_str());
 }
 
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest) {
-  static const std::vector<string> dow = {"sun", "mon", "tue", "wed", "thu", "fri", "sat", "sun" };
-  auto now = time(nullptr);
-  auto tm = localtime(&now);
-  int dow_num = tm->tm_wday;
+std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number) {
+  return bundle_name(source, dest, dow_extension(dow, bundle_number));
+}
 
-  return bundle_name(source, dest, dow.at(dow_num));
+std::string dow_extension(int dow_num, int bundle_number) {
+  // TODO(rushfan): Should we assert of bundle_number > 25 (0-9=10, + a-z=26 = 0-35)
+
+  static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
+  std::string ext = dow.at(dow_num);
+  char c = static_cast<char>('0' + bundle_number);
+  if (bundle_number > 9) {
+    c = static_cast<char>('a' + bundle_number - 10);
+  }
+  ext.push_back(c);
+  return ext;
 }
 
 }  // namespace fido

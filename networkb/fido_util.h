@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_NETWORKB_FIDO_UTIL_H__
 #define __INCLUDED_NETWORKB_FIDO_UTIL_H__
 
+#include <ctime>
 #include <set>
 #include <string>
 #include <vector>
@@ -33,9 +34,10 @@ namespace wwiv {
 namespace net {
 namespace fido {
 
-std::string packet_name();
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest);
+std::string packet_name(time_t now);
+std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number);
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
+std::string dow_extension(int dow, int bundle_number);
 
 }  // namespace fido
 }  // namespace net
