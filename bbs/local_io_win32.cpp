@@ -599,7 +599,7 @@ void Win32ConsoleIO::WriteScreenBuffer(const char *buffer) {
 size_t Win32ConsoleIO::GetDefaultScreenBottom() {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(out_, &csbi);
-  return csbi.srWindow.Bottom - csbi.srWindow.Top + 1;
+  return csbi.srWindow.Bottom - csbi.srWindow.Top;
 }
 
 bool HasKeyBeenPressed(HANDLE in) {
