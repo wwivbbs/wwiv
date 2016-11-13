@@ -170,6 +170,7 @@ public:
       const int MAX_STRING_LEN = 56;
       fido_network_config_t* n = &d_.fido;
       int y = 1;
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
       items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n->fake_outbound_node));
       items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"FLO", "ATTACH"}, &n->mailer_type));
       items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "BINKP"}, &n->transport));
@@ -187,6 +188,7 @@ public:
     unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, items.size() + 2, width_));
     items.set_curses_io(CursesIO::Get(), sw.get());
     int y = 1;
+    sw->PutsXY(2, y++, "FTN Address  :");
     sw->PutsXY(2, y++, "Fake Outbound:");
     sw->PutsXY(2, y++, "Mailer       :");
     sw->PutsXY(2, y++, "Transport    :");

@@ -119,8 +119,26 @@ public:
   bad_fidonet_address(const ::std::string& message): ::std::runtime_error(message) {}
 };
 
+
 }  // namespace fido
 }  // namespace sdk
 }  // namespace wwiv
+
+namespace std {
+template <>
+struct hash<wwiv::sdk::fido::FidoAddress> {
+  size_t operator()(const wwiv::sdk::fido::FidoAddress& a) const {
+    // See http://stackoverflow.com/a/1646913/126995
+    size_t res = 17 * a.zone();
+    res = res * 31 + a.net();
+    res = res * 31 + a.node();
+    res = res * 31 + a.point();
+    if (!a.domain().empty()) {
+      res = res * 31 + hash<std::string>()(a.domain());
+    }
+    return res;
+  }
+};
+}  // namespace std
 
 #endif  // __INCLUDED_SDK_FIDO_FIDO_ADDRESS_H__

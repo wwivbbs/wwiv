@@ -297,6 +297,8 @@ struct fido_packet_config_t {
  * Fido specific per-network settings.
  */
 struct fido_network_config_t {
+  // Your FTN network address. (i.e. 1:100/123) [3d-5d accepted].
+  std::string fido_address;
   // Fake wwivnet style node number to use for outbound messages.
   // With fido style networking, the fake wwivnet ftn only will
   // have 2 nodes, @1 for your, and @NNN for the rest of the world.

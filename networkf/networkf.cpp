@@ -39,10 +39,12 @@
 #include "core/os.h"
 #include "core/textfile.h"
 #include "core/wfndfile.h"
+#include "core/version.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
+#include "networkb/fido_util.h"
 #include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 
@@ -54,6 +56,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/subscribers.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_packets.h"
 
@@ -66,6 +69,7 @@ using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
+using namespace wwiv::net::fido;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -107,7 +111,7 @@ static string arc_stuff_in(const string& command_line, const string& a1, const s
       os << *it;
     }
   }
-  return string(os.str());
+  return os.str();
 }
 
 static void ShowHelp(CommandLine& cmdline) {
@@ -119,47 +123,9 @@ static void ShowHelp(CommandLine& cmdline) {
     << " import    Import messages from FTN Packet to WWIV (P*.net)" << endl
     << " export    Export messages from WWIV (p*.net) to FTN packet" << endl
     << endl;
+
   exit(1);
 }
-/*
-static bool handle_packet(
-  const BbsListNet& b,
-  const net_networks_rec& net, Packet& p) {
-
-  if (p.nh.tosys == net.sysnum) {
-    // Local Packet.
-    return write_wwivnet_packet(LOCAL_NET, net, p);
-  } else if (p.list.empty()) {
-    // Network packet, single destination
-    return write_wwivnet_packet(wwivnet_packet_name(net, get_forsys(b, p.nh.tosys)), net, p);
-  } else {
-    // Network packet, multiple destinations.
-    std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
-    for (const auto& node : p.list) {
-      uint16_t forsys = get_forsys(b, node);
-      forsys_to_all[forsys].insert(node);
-    }
-
-    bool result = true;
-    for (const auto& fa : forsys_to_all) {
-      const auto forsys = fa.first;
-      Packet np(p.nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), p.text);
-      np.nh.list_len = static_cast<uint16_t>(np.list.size());
-      if (np.list.size() == 1) {
-        // If we only have 1, move it out of list into tosys.
-        np.nh.tosys = *np.list.begin();
-        np.nh.list_len = 0;
-        np.list.clear();
-      }
-      if (!write_wwivnet_packet(wwivnet_packet_name(net, forsys), net, np)) {
-        result = false;
-      }
-    }
-    return result;
-  }
-
-  return false;
-}*/
 
 // TODO(rushfan): move this somewhere common since it's copied
 // from dump_fido_packet.cpp
@@ -167,6 +133,10 @@ static std::string FidoToWWIVText(const std::string& ft) {
   std::string wt;
   for (auto& c : ft) {
     if (c == 13) {
+      wt.push_back(13);
+      wt.push_back(10);
+    } else if (c == 0x8d) {
+      // FIDOnet style Soft CR
       wt.push_back(13);
       wt.push_back(10);
     } else if (c == 10) {
@@ -238,7 +208,7 @@ static bool import_packet_file(const net_networks_rec& net, const std::string& d
     text.append(msg.vh.text);
 
     nh.length = text.size();
-    // Create packet, write to LOCAL.NET for network2 to import.
+    // Create file, write to LOCAL.NET for network2 to import.
     Packet packet(nh, {}, text);
     write_wwivnet_packet(LOCAL_NET, net, packet);
   }
@@ -258,7 +228,6 @@ static bool import_packets(const net_networks_rec& net, const std::string& dir, 
   }
   return true;
 }
-
 
 static bool import_bundle_file(const Config& config, const net_networks_rec& net, const std::string& dir, const string& name) {
   File f(dir, name);
@@ -281,7 +250,7 @@ static bool import_bundle_file(const Config& config, const net_networks_rec& net
     return false;
   }
 
-  // TODO(rushfan): Need callout.json support to set packet specific options here.
+  // TODO(rushfan): Need callout.json support to set file specific options here.
   const auto& arc = find_arc(arcs, net.fido.packet_config.compression_type);
   // We have no parameter 2 since we're extracting everything.
   string unzip_cmd = arc_stuff_in(arc.arce, FilePath(dir, name), "");
@@ -307,6 +276,96 @@ static bool import_bundles(const Config& config, const net_networks_rec& net, co
     has_next = files.next();
   }
   return true;
+}
+
+bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const Packet& wwivnet_packet, string& fido_packet_name) {
+  return false;
+}
+
+bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const Packet& wwivnet_packet, string& fido_packet_name) {
+  using wwiv::net::ReadPacketResponse;
+
+  string net_dir(net.dir);
+  File::MakeAbsolutePath(config.root_directory(), &net_dir);
+  string out_dir(net.fido.outbound_dir);
+  File::MakeAbsolutePath(net_dir, &out_dir);
+
+
+  for (int tries = 0; tries < 10; tries++) {
+    time_t now = time(nullptr);
+    File file(out_dir, packet_name(now));
+    if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite | File::modeBinary, File::shareDenyReadWrite)) {
+      continue;
+    }
+
+    FidoAddress address(net.fido.fido_address);
+    packet_header_2p_t header = {};
+    header.orig_zone = address.zone();
+    header.orig_net = address.net();
+    header.orig_node = address.node();
+    header.orig_point = address.point();
+    header.dest_zone = dest.zone();
+    header.dest_net = dest.net();
+    header.dest_node = dest.node();
+    header.dest_point = dest.point();
+
+    auto tm = localtime(&now);
+    header.year = tm->tm_year;
+    header.month = tm->tm_mon;
+    header.day = tm->tm_mday;
+    header.hour = tm->tm_hour;
+    header.minute = tm->tm_min;
+    header.second = tm->tm_sec;
+    header.baud = 33600;
+    header.packet_ver = 2;
+    header.product_code_high = 0x1d;
+    header.product_code_low = 0xff;
+    header.qm_dest_zone = dest.zone();
+    header.qm_orig_zone = address.zone();
+    header.capabilities = 0x0001;
+    header.capabilities_valid = 
+      ((header.capabilities_valid & 0x7f00) >> 8) | ((header.capabilities_valid & 0xff) << 8);
+    header.product_code_high = 0;
+    header.product_code_low = wwiv_net_version;
+    if (!write_fido_packet_header(file, header)) {
+      LOG(ERROR) << "Error writing packet header.";
+      return false;
+    }
+
+    const string& raw_text = wwivnet_packet.text;
+    auto& iter = raw_text.begin();
+    string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    string text = string(iter, raw_text.end());
+
+    fido_variable_length_header_t vh;
+    vh.date_time = daten_to_humantime(wwivnet_packet.nh.daten);
+    vh.from_user_name = sender_name;
+    vh.subject = title;
+    vh.to_user_name = "All"; // TODO(rushfan): Get To Name
+
+    string fido_text = StrCat("AREA:", subtype, "\r");
+    // TODO(rushfan): need to add in TID, PID, MSGID and all that nonsense.
+    vh.text = fido_text + text;
+
+    fido_packed_message_t nh{};
+    nh.message_type = 2;
+    nh.attribute = 0;
+    nh.cost = 0;
+    nh.orig_net = address.net();
+    nh.orig_node = address.node();
+    nh.dest_net = dest.net();
+    nh.dest_node = dest.node();
+    FidoPackedMessage p(nh, vh);
+    if (!write_packed_message(file, p)) {
+      LOG(ERROR) << "Error writing packed message.";
+      return false;
+    }
+    return true;
+  }
+  return false;
 }
 
 int main(int argc, char** argv) {
@@ -379,7 +438,70 @@ int main(int argc, char** argv) {
 #endif
       }
     } else if (cmd == "export") {
+      const string sfilename = StrCat("s", net.fido.fake_outbound_node, ".net");
+      if (!File::Exists(net.dir, sfilename)) {
+        LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
+        return 1;
+      }
 
+      // Packet file is created by us for sure.
+      File f(net.dir, sfilename);
+      if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+        LOG(ERROR) << "Unable to open file: " << net.dir << sfilename;
+        return 1;
+      }
+
+      bool done = false;
+      while (!done) {
+        Packet p;
+        wwiv::net::ReadPacketResponse response = read_packet(f, p);
+        if (response == wwiv::net::ReadPacketResponse::END_OF_FILE) {
+          break;
+        } else if (response == wwiv::net::ReadPacketResponse::ERROR) {
+          return 1;
+        }
+
+        if (p.nh.main_type == main_type_new_post) {
+          string fido_packet_name;
+          // Lame implementation that creates 1 file per message.
+          string raw_text = p.text;
+          string subtype = get_message_field(p.text, p.text.cbegin(), {'\0', '\r', '\n'}, 80);
+
+          std::set<FidoAddress> subscribers;
+          ReadFidoSubcriberFile(net.dir, StrCat("f", subtype, ".net"), subscribers);
+          for (const auto& sub : subscribers) {
+            if (!create_ftn_packet(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, p, fido_packet_name)) {
+              // oops. let's skip.
+              write_wwivnet_packet(DEAD_NET, net, p);
+              continue;
+            }
+            if (!fido_packet_name.empty()) {
+              LOG(ERROR) << "Error creating ftn packet name";
+              continue;
+            }
+            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, p, fido_packet_name)) {
+              // oops. let's skip.
+              write_wwivnet_packet(DEAD_NET, net, p);
+            }
+            // Delete the file, since we made a bundle.
+            
+            //File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
+
+            // TODO(rushfan): Create FLO or attach file.
+          }
+        } else {
+          LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
+          // Let's write it to dead.net
+          if (!write_wwivnet_packet(DEAD_NET, net, p)) {
+            LOG(ERROR) << "Error writing to DEAD.NET";
+          }
+        }
+      }
+
+      // Create a ftn file.
+      // string packet_name = create_ftn_packet(config, net, sfilename);
+      // Add it to an existing bundle, of one exists.
+      // upsert_bundle(config, net, packet_name);
     } else {
       LOG(ERROR) << "Unknown command: " << cmd;
       return 1;

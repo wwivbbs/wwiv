@@ -46,7 +46,7 @@ TEST_F(FidoUtilTest, PacketName) {
   auto tm = localtime(&now);
   string actual = packet_name(now);
 
-  string expected = StringPrintf("%2.2d%2.2d%2.2d%2.2d", tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+  string expected = StringPrintf("%2.2d%2.2d%2.2d%2.2d.pkt", tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
   EXPECT_EQ(expected, actual);
 }
 

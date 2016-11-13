@@ -49,7 +49,7 @@ std::string packet_name(time_t now) {
     LOG(ERROR) << "Unable to create packet name from strftime";
     to_char_array(buf, "DDHHMMSS");
   }
-  return buf;
+  return StrCat(buf, ".pkt");
 }
 
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {

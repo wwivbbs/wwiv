@@ -38,7 +38,7 @@ std::string main_type_name(int typ);
 std::string net_info_minor_type_name(int typ);
 
 template <typename C, typename I>
-static std::string get_message_field(C& c, I& iter, std::set<char> stop, std::size_t max) {
+static std::string get_message_field(const C& c, I& iter, std::set<char> stop, std::size_t max) {
   // No need to continue if we're already at the end.
   if (iter == c.end()) {
     return "";

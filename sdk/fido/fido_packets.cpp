@@ -76,6 +76,34 @@ static std::string ReadVariableLengthField(File& f, int max_len) {
   return s;
 }
 
+bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
+  auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
+  if (num_written != sizeof(packet_header_2p_t)) {
+    LOG(ERROR) << "short write to packet, wrote " << num_written << "; expected: " << sizeof(packet_header_2p_t);
+    return false;
+  }
+}
+
+bool write_packed_message(File& f, FidoPackedMessage& packet) {
+  auto num_written = f.Write(&packet.nh, sizeof(fido_packed_message_t));
+  if (num_written != sizeof(fido_packed_message_t)) {
+    LOG(ERROR) << "short write to packet, wrote " << num_written << "; expected: " << sizeof(fido_packed_message_t);
+    return false;
+  }
+  f.Write(packet.vh.date_time.c_str(), 19);
+  f.Write("\0", 1);
+  f.Write(packet.vh.to_user_name);
+  f.Write("\0", 1);
+  f.Write(packet.vh.from_user_name);
+  f.Write("\0", 1);
+  f.Write(packet.vh.subject);
+  f.Write("\0", 1);
+  f.Write(packet.vh.text);
+  f.Write("\0", 1);
+  // End of packet.
+  f.Write("\0\0", 2);
+}
+
 ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
   auto num_read = f.Read(&packet.nh, sizeof(fido_packed_message_t));
   if (num_read == 0) {
