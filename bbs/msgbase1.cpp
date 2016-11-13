@@ -38,6 +38,7 @@
 #include "core/textfile.h"
 #include "sdk/datetime.h"
 #include "sdk/status.h"
+#include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 
 using std::string;
@@ -106,31 +107,14 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     if (xnp.host) {
       nh.tosys = xnp.host;
     } else {
-      const auto fn = StrCat(session()->network_directory(), "n", xnp.stype, ".net");
-      File file(fn);
-      if (file.Open(File::modeBinary | File::modeReadOnly)) {
-        auto len1 = file.GetLength();
-        // looks like this leaks
-        text.clear();
-        text.resize(len1);
-        file.Read(&text[0], len1);
-        file.Close();
-        text[len1] = '\0';
-        int len2 = 0;
-        while (len2 < len1) {
-          while (len2 < len1 && (text[len2] < '0' || text[len2] > '9')) {
-            ++len2;
-          }
-          if ((text[len2] >= '0') && (text[len2] <= '9') && (len2 < len1)) {
-            uint16_t i = wwiv::strings::StringToUnsignedShort(&(text[len2]));
-            if (((session()->net_num() != nNetNumber) || (nh.fromsys != i)) && (i != session()->current_net().sysnum)) {
-              if (valid_system(i)) {
-                nh.list_len++;
-                list.push_back(i);
-              }
-            }
-            while ((len2 < len1) && (text[len2] >= '0') && (text[len2] <= '9')) {
-              ++len2;
+      std::set<uint16_t> subscribers;
+      bool subscribers_read = ReadSubcriberFile(session()->network_directory(), StrCat("n", xnp.stype, ".net"), subscribers);
+      if (subscribers_read) {
+        for (const auto& s : subscribers) {
+          if (((session()->net_num() != nNetNumber) || (nh.fromsys != s)) && (s != session()->current_net().sysnum)) {
+            if (valid_system(s)) {
+              nh.list_len++;
+              list.push_back(s);
             }
           }
         }

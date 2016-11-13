@@ -16,13 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #ifndef __INCLUDED_SDK_SUBSCRIBERS_H__
-#define __INCLUDED_NETWORKB_SUBSCRIBERS_H__
+#define __INCLUDED_SDK_SUBSCRIBERS_H__
 
 #include <set>
 #include <string>
 
 namespace wwiv {
-namespace net {
+namespace sdk {
 
 bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers);
 bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers);

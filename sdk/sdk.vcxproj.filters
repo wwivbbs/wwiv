@@ -94,6 +94,9 @@
     <ClInclude Include="fido\fido_address.h">
       <Filter>Source Files\fido</Filter>
     </ClInclude>
+    <ClInclude Include="subscribers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -184,6 +187,9 @@
     </ClCompile>
     <ClCompile Include="fido\fido_address.cpp">
       <Filter>Source Files\fido</Filter>
+    </ClCompile>
+    <ClCompile Include="subscribers.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

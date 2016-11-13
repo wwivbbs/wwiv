@@ -76,6 +76,21 @@ std::string dow_extension(int dow_num, int bundle_number) {
   return ext;
 }
 
+static string control_file_extension(wwiv::sdk::fido::FidoBundleStatus dow) {
+  string s = "flo";
+  s[0] = static_cast<char>(dow);
+  return s;
+}
+
+std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, wwiv::sdk::fido::FidoBundleStatus status) {
+  int16_t net = dest.net();
+  int16_t node = dest.node();
+
+  const string ext = control_file_extension(status);
+  return StringPrintf("%04.4x%04.4x.%s", net, node, ext.c_str());
+
+}
+
 }  // namespace fido
 }  // namespace net
 }  // namespace wwiv

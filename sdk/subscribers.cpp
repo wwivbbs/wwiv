@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/subscribers.h"
+#include "sdk/subscribers.h"
 
 #include <cctype>
 #include <cstdlib>
@@ -47,9 +47,7 @@ using std::vector;
 using namespace wwiv::strings;
 
 namespace wwiv {
-namespace net {
-
-
+namespace sdk {
 
 bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers) {
   subscribers.clear();

@@ -74,7 +74,6 @@ void SubList();
 // File: subreq.cpp
 void sub_xtr_del(int n, int nn, int f);
 void sub_xtr_add(int n, int nn);
-int  amount_of_subscribers(const char *pszNetworkFileName);
 
 // File: syschat.cpp
 void RequestChat();

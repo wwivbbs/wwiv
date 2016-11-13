@@ -46,7 +46,6 @@
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
 #include "networkb/ppp_config.h"
-#include "networkb/subscribers.h"
 #include "network2/context.h"
 #include "network2/email.h"
 
@@ -58,6 +57,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
 #include "sdk/msgapi/msgapi.h"

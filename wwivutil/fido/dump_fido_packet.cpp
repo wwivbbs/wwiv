@@ -81,6 +81,7 @@ int dump_stored_message(const std::string& filename) {
   if (h.attribute & 1) { cout << " {PRIVATE}"; }
   cout << std::endl;
   cout << "text: " << std::endl << std::endl << FidoToWWIVText(msg.text) << std::endl;
+  return 0;
 }
 
 int dump_packet_file(const std::string& filename) {

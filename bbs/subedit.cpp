@@ -38,6 +38,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/subscribers.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -137,7 +138,9 @@ void DisplayNetInfo(size_t nSubNum) {
     if ((*it).host == 0) {
       const auto dir = session()->net_networks[(*it).net_num].dir;
       const string net_file_name = StrCat(dir, "n", (*it).stype, ".net");
-      int num = amount_of_subscribers(net_file_name.c_str());
+      std::set<uint16_t> subscribers;
+      ReadSubcriberFile(dir, StrCat("n", (*it).stype, ".net"), subscribers);
+      int num = size_int(subscribers);
       bout.bprintf("   |#9%c) |#2%-12.12s %-7.7s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',
                     session()->net_networks[(*it).net_num].name,

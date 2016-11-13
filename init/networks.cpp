@@ -100,7 +100,7 @@ static bool del_net(
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     auto t = emailfile.GetLength() / sizeof(mailrec);
-    for (int r = 0; r < t; r++) {
+    for (size_t r = 0; r < t; r++) {
       mailrec m = {};
       emailfile.Seek(r * sizeof(mailrec), File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));
@@ -201,7 +201,7 @@ public:
     window->RedrawWin();
     return 2;
   }
-  virtual void Display(CursesWindow* window) const {}
+  virtual void Display(CursesWindow* window) const { (window); }
 private:
   const std::string title_;
   int width_ = 40;
@@ -233,7 +233,8 @@ static void edit_net(Networks& networks, int nn) {
     new StringFilePathItem(COL1_POSITION, 4, 60, n.dir),
     new SubDialogEditItem(COL1_POSITION, 5, "Network Settings", 76, n)
   };
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Network Configuration", items.size() + 2, 76));
+  const string title = StrCat("Network Configuration; Net #", nn);
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, items.size() + 2, 76));
   items.set_curses_io(out, window.get());
 
   int y = 1;
@@ -288,7 +289,7 @@ static bool insert_net(Networks& networks, int nn) {
   File emailfile(syscfg.datadir, EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     auto t = emailfile.GetLength() / sizeof(mailrec);
-    for (int r = 0; r < t; r++) {
+    for (size_t r = 0; r < t; r++) {
       mailrec m;
       emailfile.Seek(sizeof(mailrec) * r, File::Whence::begin);
       emailfile.Read(&m, sizeof(mailrec));

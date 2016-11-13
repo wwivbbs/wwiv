@@ -38,6 +38,7 @@
     <ClInclude Include="phone_numbers.h" />
     <ClInclude Include="ssm.h" />
     <ClInclude Include="status.h" />
+    <ClInclude Include="subscribers.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="user.h" />
     <ClInclude Include="usermanager.h" />
@@ -65,6 +66,7 @@
     <ClCompile Include="phone_numbers.cpp" />
     <ClCompile Include="ssm.cpp" />
     <ClCompile Include="status.cpp" />
+    <ClCompile Include="subscribers.cpp" />
     <ClCompile Include="subxtr.cpp" />
     <ClCompile Include="user.cpp" />
     <ClCompile Include="usermanager.cpp" />

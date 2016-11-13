@@ -26,6 +26,7 @@ set(COMMON_SOURCES
   phone_numbers.cpp
   ssm.cpp
   status.cpp
+  subscribers.cpp
   subxtr.cpp
   user.cpp
   usermanager.cpp

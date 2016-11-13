@@ -109,7 +109,6 @@
     <ClInclude Include="receive_file.h" />
     <ClInclude Include="socket_connection.h" />
     <ClInclude Include="socket_exceptions.h" />
-    <ClInclude Include="subscribers.h" />
     <ClInclude Include="transfer_file.h" />
     <ClInclude Include="wfile_transfer_file.h" />
   </ItemGroup>
@@ -126,7 +125,6 @@
     <ClCompile Include="ppp_config.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />
-    <ClCompile Include="subscribers.cpp" />
     <ClCompile Include="transfer_file.cpp" />
     <ClCompile Include="wfile_transfer_file.cpp" />
   </ItemGroup>

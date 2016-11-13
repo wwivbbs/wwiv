@@ -18,7 +18,6 @@ set(SOURCES
  ppp_config.cpp
  socket_connection.cpp
  socket_exceptions.cpp
- subscribers.cpp
  transfer_file.cpp
  wfile_transfer_file.cpp
 )

@@ -399,53 +399,17 @@ bool display_sub_categories() {
   }
 
   TextFile ff(session()->network_directory(), CATEG_NET, "rt");
-  if (ff.IsOpen()) {
-    bout.nl();
-    bout << "Available sub categories are:\r\n";
-    bool abort = false;
-    char szLine[255];
-    while (!abort && ff.ReadLine(szLine, 100)) {
-      char* ss = strchr(szLine, '\n');
-      if (ss) {
-        *ss = 0;
-      }
-      pla(szLine, &abort);
-    }
-    ff.Close();
-    return true;
+  if (!ff.IsOpen()) {
+    return false;
   }
-  return false;
-}
-
-int amount_of_subscribers(const char *pszNetworkFileName) {
-  int numnodes = 0;
-
-  File file(pszNetworkFileName);
-  if (!file.Open(File::modeReadOnly | File::modeBinary)) {
-    return 0;
-  } else {
-    auto len1 = file.GetLength();
-    if (len1 == 0) {
-      return 0;
-    }
-    char *b = static_cast<char *>(BbsAllocA(len1));
-    file.Seek(0L, File::Whence::begin);
-    file.Read(b, len1);
-    b[len1] = 0;
-    file.Close();
-    long len2 = 0;
-    while (len2 < len1) {
-      while ((len2 < len1) && ((b[len2] < '0') || (b[len2] > '9'))) {
-        ++len2;
-      }
-      if ((b[len2] >= '0') && (b[len2] <= '9') && (len2 < len1)) {
-        numnodes++;
-        while ((len2 < len1) && (b[len2] >= '0') && (b[len2] <= '9')) {
-          ++len2;
-        }
-      }
-    }
-    free(b);
+  bout.nl();
+  bout << "Available sub categories are:\r\n";
+  bool abort = false;
+  string s;
+  while (!abort && ff.ReadLine(&s)) {
+    StringTrim(&s); 
+    pla(s, &abort);
   }
-  return numnodes;
+  ff.Close();
+  return true;
 }

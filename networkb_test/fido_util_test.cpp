@@ -72,3 +72,11 @@ TEST_F(FidoUtilTest, DowExtension) {
   EXPECT_EQ("sua", dow_extension(0, 10));
   EXPECT_EQ("suz", dow_extension(0, 35));
 }
+
+TEST_F(FidoUtilTest, ControlFileName) {
+  FidoAddress dest("1:105/42");
+  EXPECT_EQ("0069002a.flo", control_file_name(dest, FidoBundleStatus::normal));
+  EXPECT_EQ("0069002a.clo", control_file_name(dest, FidoBundleStatus::crash));
+  EXPECT_EQ("0069002a.dlo", control_file_name(dest, FidoBundleStatus::direct));
+  EXPECT_EQ("0069002a.hlo", control_file_name(dest, FidoBundleStatus::hold));
+}

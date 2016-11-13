@@ -153,11 +153,6 @@ struct fido_stored_message_t {
     next_reply;
 };
 
-
-#ifndef __MSDOS__
-#pragma pack(pop)
-#endif  // __MSDOS__
-
 static_assert(sizeof(packet_header_2p_t) == 58, "packet_header_2p_t != 58 bytes");
 static_assert(sizeof(fido_stored_message_t) == 190, "fido_stored_message_t != 190 bytes");
 /*
@@ -182,6 +177,25 @@ struct fido_packed_message_t {
            dest_net,
            attribute,
            cost;
+};
+
+#ifndef __MSDOS__
+#pragma pack(pop)
+#endif  // __MSDOS__
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Non DOS packed structs and classes.
+//
+//
+
+enum class FidoBundleStatus: char {
+  normal = 'f',
+  crash = 'c',
+  direct = 'd',
+  hold = 'h',
+  // Do not use for creating a packet.
+  unknown = 'x'
 };
 
 struct fido_variable_length_header_t {

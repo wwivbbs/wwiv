@@ -45,7 +45,6 @@
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
 #include "networkb/ppp_config.h"
-#include "networkb/subscribers.h"
 
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
@@ -55,6 +54,7 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 
 using std::cout;
@@ -78,7 +78,7 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-static bool check_host_networks(
+static bool check_wwivnet_host_networks(
   const wwiv::sdk::Config& config, 
   const wwiv::sdk::Networks& network,
   const BbsListNet& b,
@@ -133,7 +133,7 @@ static bool check_connect_net(
   for (const auto& entry : b.node_config()) {
     const auto n = connect.node_config_for(entry.first);
     if (n == nullptr) {
-      text << "connect.net entry missing for node @" << entry.first;
+      text << "connect.net entry missing for node @" << entry.first << "\r\n";
     }
   }
   return true;
@@ -146,7 +146,7 @@ static bool check_binkp_net(
   for (const auto& entry : b.node_config()) {
     const auto binkp_entry = bink_config.node_config_for(entry.first);
     if (binkp_entry == nullptr) {
-      text << "binkp.net entry missing for node @" << entry.first;
+      text << "binkp.net entry missing for node @" << entry.first << "\r\n";
     }
   }
   return true;
@@ -250,7 +250,7 @@ static bool add_feedback_general_info(
       const auto cnc = callout.node_config_for(callout_node);
       if (cnc == nullptr) {
         text << "Can call " << callout_node << " but isn't in CALLOUT.NET.\r\n"
-          << "  ** Add to CALLOUT.NET\r\n";
+          << "  ** Add to CALLOUT.NET\r\n\r\n";
       }
     }
   }
@@ -357,6 +357,60 @@ static void ensure_contact_net_entries(const Callout& callout, const string& dir
   }
 }
 
+static int network3_wwivnet(CommandLine& cmdline, NetworkCommandLine& net_cmdline) {
+  VLOG(1) << "Reading BBSLIST.NET..";
+  const auto& net = net_cmdline.network();
+  BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
+  if (b.empty()) {
+    LOG(ERROR) << "ERROR: bbslist.net didn't parse.";
+    return 1;
+  }
+
+  auto nc = get_network_cordinator(b);
+  bool is_nc = (net.sysnum == nc);
+  LOG(INFO) << "I am the nc, my node # is @" << net.sysnum;
+
+  vector<net_system_list_rec> bbsdata_data;
+  for (const auto& entry : b.node_config()) {
+    const auto& n = entry.second;
+    bbsdata_data.push_back(n);
+  }
+
+  write_bbsdata_files(b, bbsdata_data, net.dir);
+
+  VLOG(1) << "Reading CALLOUT.NET...";
+  Callout callout(net.dir);
+  ensure_contact_net_entries(callout, net.dir);
+  update_filechange_status_dat(net_cmdline.config().datadir());
+  rename_pending_files(net.dir);
+
+  bool need_to_send_feedback = cmdline.barg("feedback");
+  if (!need_to_send_feedback) {
+    for (const auto& s : cmdline.remaining()) {
+      if (s == "Y" || s == "y") {
+        need_to_send_feedback = true;
+      }
+    }
+  }
+
+  if (need_to_send_feedback || is_nc) {
+    std::ostringstream text;
+    add_feedback_header(net.dir, text);
+    LOG(INFO) << "Sending Feedback.";
+    add_feedback_general_info(b, callout, net, bbsdata_data, text);
+    check_wwivnet_host_networks(net_cmdline.config(), net_cmdline.networks(), b, net_cmdline.network_number(), text);
+
+    if (is_nc) {
+      // We should alwyas send feedback to the NCs.
+      BinkConfig bink_config(net_cmdline.network_name(), net_cmdline.config(), net_cmdline.networks());
+      check_binkp_net(b, bink_config, text);
+      check_connect_net(b, net, text);
+    }
+    send_feedback_email(net, text.str());
+  }
+  return 0;
+}
+
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
@@ -377,61 +431,33 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    BinkConfig bink_config(net_cmdline.network_name(), net_cmdline.config(), net_cmdline.networks());
-
-    bool need_to_send_feedback = cmdline.barg("feedback");
-    if (!need_to_send_feedback) {
-      for (const auto& s : cmdline.remaining()) {
-        if (s == "Y" || s == "y") {
-          need_to_send_feedback = true;
-        }
-      }
-    }
-
     const auto& net = net_cmdline.network();
     LOG(INFO) << "NETWORK3 for network: " << net.name;
     update_net_ver_status_dat(net_cmdline.config().datadir());
 
-    VLOG(1) << "Reading BBSLIST.NET..";
-    BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
-    if (b.empty()) {
-      LOG(ERROR) << "ERROR: bbslist.net didn't parse.";
-      return 1;
+    switch (net.type) {
+    case network_type_t::wwivnet:
+    {
+      return network3_wwivnet(cmdline, net_cmdline);
+    } break;
+    case network_type_t::ftn:
+    {
+      LOG(INFO) << "Nothing to do for network type FIDO";
+      return 0;
+    } break;
+    case network_type_t::internet:
+    {
+      LOG(INFO) << "Treating network type internet like wwivnet until native internet support is added.";
+      return network3_wwivnet(cmdline, net_cmdline);
+    } break;
+    default:
+    {
+      LOG(ERROR) << "Unknown network type for network: " << net.name;
+      return 3;
     }
-
-    auto nc = get_network_cordinator(b);
-    bool is_nc = (net.sysnum == nc);
-    LOG(INFO) << "I am the nc, my node # is @" << net.sysnum;
-
-    vector<net_system_list_rec> bbsdata_data;
-    for (const auto& entry : b.node_config()) {
-      const auto& n = entry.second;
-      bbsdata_data.push_back(n);
     }
-
-    write_bbsdata_files(b, bbsdata_data, net.dir);
-
-    VLOG(1) << "Reading CALLOUT.NET...";
-    Callout callout(net.dir);
-    ensure_contact_net_entries(callout, net.dir);
-    update_filechange_status_dat(net_cmdline.config().datadir());
-    rename_pending_files(net.dir);
-
-    if (need_to_send_feedback || is_nc) {
-      std::ostringstream text;
-      add_feedback_header(net.dir, text);
-      LOG(INFO) << "Sending Feedback.";
-      add_feedback_general_info(b, callout, net, bbsdata_data, text);
-      check_host_networks(net_cmdline.config(), net_cmdline.networks(), b, net_cmdline.network_number(), text);
-
-      if (is_nc) {
-        // We should alwyas send feedback to the NCs.
-        check_binkp_net(b, bink_config, text);
-        check_connect_net(b, net, text);
-      }
-      send_feedback_email(net, text.str());
-    }
-
+    LOG(FATAL) << "Should not reach here.";
+    return 4;
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
