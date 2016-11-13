@@ -375,7 +375,7 @@ int main(int argc, char** argv) {
 #ifndef _WIN32
         string uext = ext;
         StringUpperCase(&uext);
-        import_bundle(net, net_dir, uext);
+        import_bundles(net_cmdline.config(), net, tempdir, StrCat("*.", uext));
 #endif
       }
     } else if (cmd == "export") {
