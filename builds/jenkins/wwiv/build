@@ -41,8 +41,9 @@ make -j12
 echo "Populating built binaries"
 cp  ${WORKSPACE}/bbs/bbs \
     ${WORKSPACE}/init/init \
-    ${WORKSPACE}/networkb/networkb \
     ${WORKSPACE}/network/network \
+    ${WORKSPACE}/networkb/networkb \
+    ${WORKSPACE}/networkf/networkf \
     ${WORKSPACE}/network1/network1 \
     ${WORKSPACE}/network2/network2 \
     ${WORKSPACE}/network3/network3 \
