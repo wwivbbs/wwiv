@@ -173,9 +173,9 @@ public:
       items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n->fake_outbound_node));
       items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"FLO", "ATTACH"}, &n->mailer_type));
       items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "BINKP"}, &n->transport));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir, false));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->secure_inbound_dir, false));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir, false));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
       items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"FLO", "ATTACH"}, &n->packet_config.packet_type));
       items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "NONE"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, false));
@@ -191,7 +191,7 @@ public:
     sw->PutsXY(2, y++, "Mailer       :");
     sw->PutsXY(2, y++, "Transport    :");
     sw->PutsXY(2, y++, "Inbound      :");
-    sw->PutsXY(2, y++, "Sec Inbound  :");
+    sw->PutsXY(2, y++, "Inbound Temp :");
     sw->PutsXY(2, y++, "Outbound     :");
     sw->PutsXY(2, y++, "Packet Type  :");
     sw->PutsXY(2, y++, "Compression  :");

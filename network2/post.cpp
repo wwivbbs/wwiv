@@ -132,7 +132,7 @@ bool handle_post(Context& context, Packet& p) {
   string basename;
   if (!find_basename(context, subtype, basename)) {
     LOG(INFO) << "    ! ERROR: Unable to find subtype of subtype: " << subtype << "; writing to dead.net.";
-    return write_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
   if (!context.api.Exist(basename)) {
@@ -143,14 +143,14 @@ bool handle_post(Context& context, Packet& p) {
     unique_ptr<MessageArea> creator(context.api.Create(basename));
     if (!creator) {
       LOG(INFO) << "    ! ERROR: Failed to create message area: " << basename << "; writing to dead.net.";
-      return write_packet(DEAD_NET, context.net, p);
+      return write_wwivnet_packet(DEAD_NET, context.net, p);
     }
   }
 
   unique_ptr<MessageArea> area(context.api.Open(basename));
   if (!area) {
     LOG(INFO) << "    ! ERROR Unable to open message area: " << basename << "; writing to dead.net.";
-    return write_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
   unique_ptr<Message> msg(area->CreateMessage());
@@ -186,7 +186,7 @@ bool handle_post(Context& context, Packet& p) {
 
   if (!area->AddMessage(*msg)) {
     LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";
-    return write_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   LOG(INFO) << "    + Posted  '" << title << "'";
   return true;

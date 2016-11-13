@@ -119,7 +119,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   SSM ssm(context.config, context.user_manager);
   if (!ssm.send_local(p.nh.touser, p.text)) {
     LOG(ERROR) << "  ERROR writing SSM: '" << p.text << "'; writing to dead.net";
-    return write_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
   LOG(INFO) << "    + SSM  '" << p.text << "'";
@@ -147,7 +147,7 @@ static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
   if (p.nh.minor_type == net_info_file) {
     // we don't know the filename
     LOG(ERROR) << "ERROR: net_info_file not supported; writing to dead.net";
-    return write_packet(DEAD_NET, net, p);
+    return write_wwivnet_packet(DEAD_NET, net, p);
   } else if (!filename.empty()) {
     // we know the name.
     File file(net.dir, filename);
@@ -155,7 +155,7 @@ static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
       File::shareDenyReadWrite)) {
       // We couldn't create or open the file.
       LOG(ERROR) << "ERROR: Unable to create or open file: " << filename << " writing to dead.net";
-      return write_packet(DEAD_NET, net, p);
+      return write_wwivnet_packet(DEAD_NET, net, p);
     }
     file.Write(p.text);
     LOG(INFO) << "  + Got " << filename;
@@ -163,7 +163,7 @@ static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
   }
   // error.
   LOG(ERROR) << "ERROR: Fell through handle_net_info_file; writing to dead.net";
-  return write_packet(DEAD_NET, net, p);
+  return write_wwivnet_packet(DEAD_NET, net, p);
 }
 
 static bool handle_packet(
@@ -253,7 +253,7 @@ static bool handle_packet(
     // Anything undefined or anything we missed.
   default:
     LOG(ERROR) << "Writing message to dead.net for unhandled type: " << main_type_name(p.nh.main_type);
-    return write_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
   return false;

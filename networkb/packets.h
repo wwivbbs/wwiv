@@ -49,7 +49,7 @@ public:
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
 ReadPacketResponse read_packet(File& file, Packet& packet);
 
-bool write_packet(
+bool write_wwivnet_packet(
   const std::string& filename,
   const net_networks_rec& net, Packet& packet);
 

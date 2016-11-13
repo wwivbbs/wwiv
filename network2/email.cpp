@@ -111,7 +111,7 @@ bool handle_email_byname(Context& context, Packet& p) {
     // Not found.
     LOG(ERROR) << "Received email to user: '" << to_name << "' who is not found on this system.";
     // Write it to DEAD_NET
-    return write_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   
   p.text = text;
@@ -160,7 +160,7 @@ bool handle_email(Context& context,
   bool added = email->AddMessage(d);
   if (!added) {
     LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
-    return write_packet(DEAD_NET, context.net, p);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   User user;
   context.user_manager.ReadUser(&user, d.user_number);

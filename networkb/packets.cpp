@@ -115,15 +115,15 @@ ReadPacketResponse read_packet(File& f, Packet& packet) {
   return ReadPacketResponse::OK;
 }
 
-//bool write_packet(
+//bool write_wwivnet_packet(
 //  const std::string& filename,
 //  const net_networks_rec& net,
 //  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text) {
 //  std::vector<uint16_t> v(list.begin(), list.end());
-//  return write_packet(filename, net, nh, v, text);
+//  return write_wwivnet_packet(filename, net, nh, v, text);
 //}
 //
-bool write_packet(
+bool write_wwivnet_packet(
   const string& filename,
   const net_networks_rec& net, Packet& p) {
 

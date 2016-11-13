@@ -308,8 +308,8 @@ struct fido_network_config_t {
   fido_transport_t transport;
   // Inbound directory for packets
   std::string inbound_dir;
-  // Secure inbound directory for packets?
-  std::string secure_inbound_dir;
+  // Inbound temporary directory.
+  std::string temp_inbound_dir;
   // Outbound directory for packets
   std::string outbound_dir;
   // Configuration for packet specific options.

@@ -47,7 +47,7 @@ enum class EditLineMode {
 #ifdef __unix__
 #define EDITLINE_FILENAME_CASE EditLineMode::ALL
 #else
-#define EDITLINE_FILENAME_CASE EditLineMode::UPPER_ONLY
+#define EDITLINE_FILENAME_CASE EditLineMode::ALL
 #endif  // __unix__
 #endif  // EDITLINE_FILENAME_CASE
 
@@ -472,7 +472,7 @@ public:
     window->GotoXY(this->x_, this->y_);
     int return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
-    if (data_.back() != File::pathSeparatorChar) {
+    if (!data_.empty() && data_.back() != File::pathSeparatorChar) {
       data_.push_back(File::pathSeparatorChar);
     }
     // Update what we display in case it changed.

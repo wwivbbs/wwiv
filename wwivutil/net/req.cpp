@@ -101,7 +101,7 @@ int SubReqCommand::Execute() {
   StringUpperCase(&text);
   text.push_back('\0');
   wwiv::net::Packet packet(nh, {}, text);
-  bool ok = wwiv::net::write_packet(packet_filename, net, packet);
+  bool ok = wwiv::net::write_wwivnet_packet(packet_filename, net, packet);
   if (!ok) {
     LOG(ERROR) << "Error writing packet: " << packet_filename;
     return 1;

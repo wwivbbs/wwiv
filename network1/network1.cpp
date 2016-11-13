@@ -88,7 +88,7 @@ static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
   return n->forsys;
 }
 
-static string CreateNetworkFileName(const net_networks_rec& net, uint16_t node) {
+static string wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
   if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return LOCAL_NET;
@@ -105,10 +105,10 @@ static bool handle_packet(
 
   if (p.nh.tosys == net.sysnum) {
     // Local Packet.
-    return write_packet(LOCAL_NET, net, p);
+    return write_wwivnet_packet(LOCAL_NET, net, p);
   } else if (p.list.empty()) {
     // Network packet, single destination
-    return write_packet(CreateNetworkFileName(net, get_forsys(b, p.nh.tosys)), net, p);
+    return write_wwivnet_packet(wwivnet_packet_name(net, get_forsys(b, p.nh.tosys)), net, p);
   } else {
     // Network packet, multiple destinations.
     std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
@@ -128,7 +128,7 @@ static bool handle_packet(
         np.nh.list_len = 0;
         np.list.clear();
       }
-      if (!write_packet(CreateNetworkFileName(net, forsys), net, np)) {
+      if (!write_wwivnet_packet(wwivnet_packet_name(net, forsys), net, np)) {
         result = false;
       }
     }
@@ -203,7 +203,7 @@ int main(int argc, char** argv) {
 
     return 0;
   } catch (const std::exception& e) {
-    LOG(ERROR) << "ERROR: [network]: " << e.what();
+    LOG(ERROR) << "ERROR: [network1]: " << e.what();
   }
   return 2;
 }

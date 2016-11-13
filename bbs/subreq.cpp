@@ -286,7 +286,7 @@ void sub_xtr_add(int n, int nn) {
   if (session()->current_net().type == network_type_t::ftn) {
     stype_len = 40;
   }
-  xnp.stype = input(7);
+  xnp.stype = input(stype_len);
   if (xnp.stype.empty()) {
     return;
   }

@@ -126,7 +126,7 @@ void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, mailer_type);
   SERIALIZE(n, transport);
   SERIALIZE(n, inbound_dir);
-  SERIALIZE(n, secure_inbound_dir);
+  SERIALIZE(n, temp_inbound_dir);
   SERIALIZE(n, outbound_dir);
   SERIALIZE(n, packet_config);
 }
