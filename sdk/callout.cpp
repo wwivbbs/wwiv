@@ -50,7 +50,6 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
     // skip empty lines and those not starting with @.
     return false;
   }
-  memset(con, 0, sizeof(net_call_out_rec));
   con->min_hr = -1;
   con->max_hr = -1;
 
@@ -144,7 +143,7 @@ static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_m
   string line;
   while (node_config_file.ReadLine(&line)) {
     StringTrim(&line);
-    net_call_out_rec node_config;
+    net_call_out_rec node_config{};
     if (ParseCalloutNetLine(line, &node_config)) {
       // Parsed a line correctly.
       node_config_map->emplace(node_config.sysnum, node_config);
@@ -197,9 +196,6 @@ static std::string DumpCallout(const net_call_out_rec& n) {
   }
   if (n.min_k) {
     ss << "min_k:         " << static_cast<int>(n.min_k) << std::endl;
-  }
-  if (n.opts && *n.opts) {
-    ss << "opts:          " << n.opts << std::endl;
   }
   return ss.str();
 }

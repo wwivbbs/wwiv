@@ -219,18 +219,32 @@ struct net_interconnect_rec {
 #endif  // __MSDOS__
 };
 
+// This data is not serialized to disk, but parsed
+// on demand from callout.net
+/**
+ * Contains per-node data in callout.net
+ */
 struct net_call_out_rec {
-  uint16_t  sysnum;         /* system number */
-  uint8_t   macnum;         /* macro/script to use */
-  uint16_t  options;        /* bit mapped */
-  uint8_t   call_anyway;    /* hours between callouts */
-  char            min_hr,         /* callout min hour */
-                  max_hr;         /* callout max hour */
-  char            password[20];   /* password for system */
-  uint8_t   times_per_day;  /* number of calls per day */
-  uint8_t   call_x_days;    /* call only every x days */
-  uint16_t  min_k;          /* minimum # k before callout */
-  char* opts;           /* options or nullptr */
+  /* system number */
+  uint16_t  sysnum;
+  /* macro/script to use */
+  uint8_t macnum;
+  /* bit mapped */
+  uint16_t options;
+  /* hours between callouts */
+  uint8_t call_anyway;
+  /* callout min hour */
+  int8_t min_hr;
+  /* callout max hour */
+  int8_t max_hr;
+  /* password for system */
+  char password[20];
+  /* number of calls per day */
+  uint8_t times_per_day;
+  /* call only every x days */
+  uint8_t call_x_days;
+  /* minimum # k before callout */
+  uint16_t min_k;
 };
 
 /* This record holds info about other systems that the sysop has determined
