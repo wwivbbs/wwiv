@@ -75,6 +75,7 @@ static void SkipWhiteSpace(I& iter, const C& c) {
 
 // [[ VisibleForTesting ]]
 bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
+  // A line will be of the format: @node (node=cost)+
   if (ss.empty() || ss[0] != '@') {
     // skip empty lines and those not starting with @.
     return false;
@@ -112,11 +113,11 @@ static bool ParseConnectFile(std::map<uint16_t, net_interconnect_rec>* node_conf
   if (!connect_file.IsOpen()) {
     return false;
   }
-  // A line will be of the format @node host:port [password].
+  // A line will be of the format: @node (node=cost)+
   string line;
   while (connect_file.ReadLine(&line)) {
     StringTrim(&line);
-    net_interconnect_rec rec;
+    net_interconnect_rec rec{};
     if (ParseConnectNetLine(line, &rec)) {
       // Parsed a line correctly.
       node_config_map->emplace(rec.sysnum, rec);

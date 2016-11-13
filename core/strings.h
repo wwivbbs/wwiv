@@ -49,7 +49,11 @@ std::string StrCat(const A& a, const Args&... args) {
 
 template <size_t SIZE>
 bool to_char_array(char(&out)[SIZE], const std::string& s) {
+#ifdef _MSC_VER
+  strncpy_s(out, s.c_str(), SIZE);
+#else
   strncpy(out, s.c_str(), SIZE);
+#endif  // _WIN32
   out[SIZE - 1] = '\0';
   return s.size() <= SIZE;
 }

@@ -267,8 +267,18 @@ void update_timestamps(const string& dir) {
   File(dir, CALLOUT_NET).set_last_write_time(t);
 }
 
-void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>& bbsdata_data,
-  const string& dir) {
+static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
+  LOG(INFO) << "Writing BBSDATA.REG...";
+  vector<int32_t> bbsdata_reg_data;
+  const auto& reg = b.reg_number();
+  for (const auto& entry : b.node_config()) {
+    bbsdata_reg_data.push_back(reg.at(entry.first));
+  }
+  DataFile<int32_t> bbsdata_reg_file(dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+  bbsdata_reg_file.WriteVector(bbsdata_reg_data);
+}
+
+static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, const string& dir) {
   {
     LOG(INFO) << "Writing BBSDATA.NET...";
     DataFile<net_system_list_rec> bbsdata_net_file(dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
@@ -292,16 +302,6 @@ void write_bbsdata_files(const BbsListNet& b, const vector<net_system_list_rec>&
     }
     DataFile<uint16_t> bbsdata_rou_file(dir, BBSDATA_ROU, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_rou_file.WriteVector(bbsdata_rou_data);
-  }
-  {
-    LOG(INFO) << "Writing BBSDATA.REG...";
-    vector<int32_t> bbsdata_reg_data;
-    const auto& reg = b.reg_number();
-    for (const auto& entry : b.node_config()) {
-      bbsdata_reg_data.push_back(reg.at(entry.first));
-    }
-    DataFile<int32_t> bbsdata_reg_file(dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-    bbsdata_reg_file.WriteVector(bbsdata_reg_data);
   }
 }
 
@@ -357,6 +357,66 @@ static void ensure_contact_net_entries(const Callout& callout, const string& dir
   }
 }
 
+static int network3_fido(CommandLine& cmdline, NetworkCommandLine& net_cmdline) {
+  VLOG(1) << "network3_fido";
+  const auto& net = net_cmdline.network();
+  std::ostringstream text;
+  add_feedback_header(net.dir, text);
+  LOG(INFO) << "Sending Feedback.";
+
+  if (net.fido.fake_outbound_node == 0 || net.fido.fake_outbound_node == 1) {
+    LOG(ERROR) << "Fido fake outbound node can not be 0 or 1";
+    text << "Fido fake outbound node can not be 0 or 1\r\n";
+    send_feedback_email(net, text.str());
+    return 1;
+  }
+  vector<net_system_list_rec> bbsdata_data;
+  string phone = net_cmdline.config().config()->systemphone;
+  {
+    net_system_list_rec n1{};
+    to_char_array(n1.name, net_cmdline.config().config()->systemname);
+    to_char_array(n1.phone, phone);
+    n1.forsys = net.fido.fake_outbound_node;
+    n1.group = 0;
+    n1.speed = 33600;
+    n1.sysnum = 1;
+    n1.numhops = 0;
+    n1.forsys = 1;
+    bbsdata_data.emplace_back(n1);
+  }
+  {
+    string fake_phone = phone;
+    if (fake_phone.size() > 3) {
+      fake_phone = fake_phone.substr(0, 3);
+    } else {
+      fake_phone = "415";
+    }
+    fake_phone += "-000-FIDO";
+
+    net_system_list_rec n2{};
+    to_char_array(n2.name, StrCat(net.name, " Gateway"));
+    to_char_array(n2.phone, fake_phone);
+    n2.sysnum = net.fido.fake_outbound_node;
+    n2.group = 0;
+    n2.speed = 33600;
+    n2.numhops = 1;
+    n2.forsys = net.fido.fake_outbound_node;
+    bbsdata_data.emplace_back(n2);
+  }
+
+  write_bbsdata_files(bbsdata_data, net.dir);
+
+  // create bbsdata.reg
+  {
+    vector<int32_t> bbsdata_reg_data;
+    bbsdata_reg_data.push_back(net_cmdline.config().config()->wwiv_reg_number);
+    bbsdata_reg_data.push_back(0);
+    DataFile<int32_t> bbsdata_reg_file(net.dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    bbsdata_reg_file.WriteVector(bbsdata_reg_data);
+  }
+  return 0;
+}
+
 static int network3_wwivnet(CommandLine& cmdline, NetworkCommandLine& net_cmdline) {
   VLOG(1) << "Reading BBSLIST.NET..";
   const auto& net = net_cmdline.network();
@@ -376,7 +436,8 @@ static int network3_wwivnet(CommandLine& cmdline, NetworkCommandLine& net_cmdlin
     bbsdata_data.push_back(n);
   }
 
-  write_bbsdata_files(b, bbsdata_data, net.dir);
+  write_bbsdata_files(bbsdata_data, net.dir);
+  write_bbsdata_reg_file(b, net.dir);
 
   VLOG(1) << "Reading CALLOUT.NET...";
   Callout callout(net.dir);
@@ -435,6 +496,12 @@ int main(int argc, char** argv) {
     LOG(INFO) << "NETWORK3 for network: " << net.name;
     update_net_ver_status_dat(net_cmdline.config().datadir());
 
+    if (!File::Exists(net.dir)) {
+      LOG(ERROR) << "Network directory '" << net.dir << "' does not exist.";
+      LOG(ERROR) << "Please create it.";
+      return 1;
+    }
+
     switch (net.type) {
     case network_type_t::wwivnet:
     {
@@ -442,8 +509,7 @@ int main(int argc, char** argv) {
     } break;
     case network_type_t::ftn:
     {
-      LOG(INFO) << "Nothing to do for network type FIDO";
-      return 0;
+      return network3_fido(cmdline, net_cmdline);
     } break;
     case network_type_t::internet:
     {
