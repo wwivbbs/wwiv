@@ -39,7 +39,7 @@ public:
   static constexpr int fileChangeNet = 4;
 
 private:
-  statusrec_t* m_pStatusRecord;
+  statusrec_t* status_;
 
 public:
   WStatus(const std::string& datadir, statusrec_t* pStatusRecord);
@@ -57,154 +57,154 @@ public:
   const char* GetLastDate(int nDaysAgo = 0) const;
   const char* GetLogFileName(int nDaysAgo = 0) const;
   const char* GetGFileDate() const {
-    return m_pStatusRecord->gfiledate;
+    return status_->gfiledate;
   }
   void SetGFileDate(const char *s) {
-    strcpy(m_pStatusRecord->gfiledate, s);
+    strcpy(status_->gfiledate, s);
   }
   const char  GetFileChangedFlag(int nFlag) const {
-    return m_pStatusRecord->filechange[nFlag];
+    return status_->filechange[nFlag];
   }
   void IncrementFileChangedFlag(int nFlag) {
-    m_pStatusRecord->filechange[nFlag]++;
+    status_->filechange[nFlag]++;
   }
 
   const unsigned short GetNumLocalPosts() const {
-    return m_pStatusRecord->localposts;
+    return status_->localposts;
   }
   const int IncrementNumLocalPosts() {
-    return m_pStatusRecord->localposts++;
+    return status_->localposts++;
   }
   void SetNumLocalPosts(int n) {
-    m_pStatusRecord->localposts = static_cast<uint16_t>(n);
+    status_->localposts = static_cast<uint16_t>(n);
   }
 
   const int GetNumUsers() const {
-    return m_pStatusRecord->users;
+    return status_->users;
   }
   const int IncrementNumUsers() {
-    return m_pStatusRecord->users++;
+    return status_->users++;
   }
   const int DecrementNumUsers() {
-    return m_pStatusRecord->users--;
+    return status_->users--;
   }
   void SetNumUsers(int n) {
-    m_pStatusRecord->users = static_cast<uint16_t>(n);
+    status_->users = static_cast<uint16_t>(n);
   }
 
   const unsigned long GetCallerNumber() const {
-    return m_pStatusRecord->callernum1;
+    return status_->callernum1;
   }
   const unsigned long  IncrementCallerNumber() {
-    return m_pStatusRecord->callernum1++;
+    return status_->callernum1++;
   }
   void SetCallerNumber(unsigned long l) {
-    m_pStatusRecord->callernum1 = l;
+    status_->callernum1 = l;
   }
 
   const unsigned short GetNumCallsToday() const {
-    return m_pStatusRecord->callstoday;
+    return status_->callstoday;
   }
   const int IncrementNumCallsToday() {
-    return m_pStatusRecord->callstoday++;
+    return status_->callstoday++;
   }
   void SetNumCallsToday(int n) {
-    m_pStatusRecord->callstoday = static_cast<uint16_t>(n);
+    status_->callstoday = static_cast<uint16_t>(n);
   }
 
   const int GetNumMessagesPostedToday() const {
-    return m_pStatusRecord->msgposttoday;
+    return status_->msgposttoday;
   }
   const int IncrementNumMessagesPostedToday() {
-    return m_pStatusRecord->msgposttoday++;
+    return status_->msgposttoday++;
   }
   void SetNumMessagesPostedToday(int n) {
-    m_pStatusRecord->msgposttoday = static_cast<uint16_t>(n);
+    status_->msgposttoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetNumEmailSentToday() const {
-    return m_pStatusRecord->emailtoday;
+    return status_->emailtoday;
   }
   const int IncrementNumEmailSentToday() {
-    return m_pStatusRecord->emailtoday++;
+    return status_->emailtoday++;
   }
   void SetNumEmailSentToday(int n) {
-    m_pStatusRecord->emailtoday = static_cast<uint16_t>(n);
+    status_->emailtoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetNumFeedbackSentToday() const {
-    return m_pStatusRecord->fbacktoday;
+    return status_->fbacktoday;
   }
   const int IncrementNumFeedbackSentToday() {
-    return m_pStatusRecord->fbacktoday++;
+    return status_->fbacktoday++;
   }
   void SetNumFeedbackSentToday(int n) {
-    m_pStatusRecord->fbacktoday = static_cast<uint16_t>(n);
+    status_->fbacktoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetNumUploadsToday() const {
-    return m_pStatusRecord->uptoday;
+    return status_->uptoday;
   }
   const int IncrementNumUploadsToday() {
-    return m_pStatusRecord->uptoday++;
+    return status_->uptoday++;
   }
   void SetNumUploadsToday(int n) {
-    m_pStatusRecord->uptoday = static_cast<uint16_t>(n);
+    status_->uptoday = static_cast<uint16_t>(n);
   }
 
   const unsigned short GetMinutesActiveToday() const {
-    return m_pStatusRecord->activetoday;
+    return status_->activetoday;
   }
   const int IncrementMinutesActiveToday(int nMinutes) {
-    return m_pStatusRecord->uptoday += static_cast<uint16_t>(nMinutes);
+    return status_->uptoday += static_cast<uint16_t>(nMinutes);
   }
   void SetMinutesActiveToday(int n) {
-    m_pStatusRecord->activetoday = static_cast<uint16_t>(n);
+    status_->activetoday = static_cast<uint16_t>(n);
   }
 
   const uint32_t GetQScanPointer() const {
-    return m_pStatusRecord->qscanptr;
+    return status_->qscanptr;
   }
   const uint32_t IncrementQScanPointer() {
-    return m_pStatusRecord->qscanptr++;
+    return status_->qscanptr++;
   }
   void SetQScanPointer(uint32_t l) {
-    m_pStatusRecord->qscanptr = l;
+    status_->qscanptr = l;
   }
 
   const bool IsAutoMessageAnonymous() const {
-    return m_pStatusRecord->amsganon ? true : false;
+    return status_->amsganon ? true : false;
   }
   void SetAutoMessageAnonymous(bool b) {
-    m_pStatusRecord->amsganon = (b) ? 1 : 0;
+    status_->amsganon = (b) ? 1 : 0;
   }
 
   const int GetAutoMessageAuthorUserNumber() const {
-    return m_pStatusRecord->amsguser;
+    return status_->amsguser;
   }
   void SetAutoMessageAuthorUserNumber(int n) {
-    m_pStatusRecord->amsguser = static_cast<uint16_t>(n);
+    status_->amsguser = static_cast<uint16_t>(n);
   }
 
   const int GetWWIVVersion() const {
-    return m_pStatusRecord->wwiv_version;
+    return status_->wwiv_version;
   }
   void SetWWIVVersion(int n) {
-    m_pStatusRecord->wwiv_version = static_cast<uint16_t>(n);
+    status_->wwiv_version = static_cast<uint16_t>(n);
   }
 
   const int GetNetworkVersion() const {
-    return m_pStatusRecord->net_version;
+    return status_->net_version;
   }
   void SetNetworkVersion(int n) {
-    m_pStatusRecord->net_version = static_cast<uint16_t>(n);
+    status_->net_version = static_cast<uint16_t>(n);
   }
 
   const int GetDays() const {
-    return m_pStatusRecord->days;
+    return status_->days;
   }
   void SetDays(int n) {
-    m_pStatusRecord->days = static_cast<uint16_t>(n);
+    status_->days = static_cast<uint16_t>(n);
   }
 private:
   const std::string datadir_;
@@ -251,7 +251,7 @@ public:
   const int GetUserCount();
 
 private:
-  File m_statusFile;
+  File status_file_;
   const std::string datadir_;
   status_callabck_fn callback_;
   bool Write(statusrec_t *pStatus);

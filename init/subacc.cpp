@@ -37,13 +37,13 @@ static File fileSub;                       // File object for '.sub' file
 static char subdat_fn[MAX_PATH];            // filename of .sub file
 
 // locals
-static int m_nCurrentReadMessageArea, subchg;
+static int current_read_message_area, subchg;
 static int  GetCurrentReadMessageArea() {
-  return m_nCurrentReadMessageArea;
+  return current_read_message_area;
 }
 
 static void SetCurrentReadMessageArea(int n) {
-  m_nCurrentReadMessageArea = n;
+  current_read_message_area = n;
 }
 
 static int nNumMsgsInCurrentSub;

@@ -187,8 +187,8 @@ public:
   // if (session()->GetCurrentReadMessageArea() < 0) { ... }
 
   // Note: This may be set to -1 to mean no area.
-  int  GetCurrentReadMessageArea() const { return m_nCurrentReadMessageArea; }
-  void SetCurrentReadMessageArea(int n) { m_nCurrentReadMessageArea = n; }
+  int  GetCurrentReadMessageArea() const { return current_read_message_area; }
+  void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
   const wwiv::sdk::subboard_t& current_sub() { return subs().sub(GetCurrentReadMessageArea()); }
   net_networks_rec& current_net() { return net_networks[net_num()]; }
@@ -310,7 +310,7 @@ public:
     m_nCurrentLanguageNumber = 0,
     m_nCurrentFileArea = 0,
     current_sub_num_ = 0,
-    m_nCurrentReadMessageArea = 0,
+    current_read_message_area = 0,
     m_nCurrentConferenceMessageArea = 0,
     m_nCurrentConferenceFileArea = 0,
     m_nNumMsgsInCurrentSub = 0,

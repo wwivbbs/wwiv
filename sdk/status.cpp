@@ -45,11 +45,11 @@ static string GetSysopLogFileName(const string& d) {
 }
 
 WStatus::WStatus(const std::string& datadir, statusrec_t* pStatusRecord) : datadir_(datadir) {
-  m_pStatusRecord = pStatusRecord;
+  status_ = pStatusRecord;
 }
 
 WStatus::WStatus(const std::string& datadir) {
-  m_pStatusRecord = &statusrec;
+  status_ = &statusrec;
 }
 
 WStatus::~WStatus() {};
@@ -59,13 +59,13 @@ const char* WStatus::GetLastDate(int days_ago) const {
   DCHECK_LE(days_ago, 2);
   switch (days_ago) {
   case 0:
-    return m_pStatusRecord->date1;
+    return status_->date1;
   case 1:
-    return m_pStatusRecord->date2;
+    return status_->date2;
   case 2:
-    return m_pStatusRecord->date3;
+    return status_->date3;
   default:
-    return m_pStatusRecord->date1;
+    return status_->date1;
   }
 }
 
@@ -80,95 +80,95 @@ const char* WStatus::GetLogFileName(int nDaysAgo) const {
     return s;
   }
   case 1:
-    return m_pStatusRecord->log1;
+    return status_->log1;
   case 2:
-    return m_pStatusRecord->log2;
+    return status_->log2;
   default:
-    return m_pStatusRecord->log1;
+    return status_->log1;
   }
 }
 
 void WStatus::EnsureCallerNumberIsValid() {
-  if (m_pStatusRecord->callernum != 65535) {
-    this->SetCallerNumber(m_pStatusRecord->callernum);
-    m_pStatusRecord->callernum = 65535;
+  if (status_->callernum != 65535) {
+    this->SetCallerNumber(status_->callernum);
+    status_->callernum = 65535;
   }
 }
 
 void WStatus::ValidateAndFixDates() {
-  if (m_pStatusRecord->date1[8] != '\0') {
-    m_pStatusRecord->date1[6] = '0';
-    m_pStatusRecord->date1[7] = '0';
-    m_pStatusRecord->date1[8] = '\0'; // forgot to add null termination
+  if (status_->date1[8] != '\0') {
+    status_->date1[6] = '0';
+    status_->date1[7] = '0';
+    status_->date1[8] = '\0'; // forgot to add null termination
   }
 
   string currentDate = daten_to_date(time(nullptr));
-  if (m_pStatusRecord->date3[8] != '\0') {
-    m_pStatusRecord->date3[6] = currentDate[6];
-    m_pStatusRecord->date3[7] = currentDate[7];
-    m_pStatusRecord->date3[8] = '\0';
+  if (status_->date3[8] != '\0') {
+    status_->date3[6] = currentDate[6];
+    status_->date3[7] = currentDate[7];
+    status_->date3[8] = '\0';
   }
-  if (m_pStatusRecord->date2[8] != '\0') {
-    m_pStatusRecord->date2[6] = currentDate[6];
-    m_pStatusRecord->date2[7] = currentDate[7];
-    m_pStatusRecord->date2[8] = '\0';
+  if (status_->date2[8] != '\0') {
+    status_->date2[6] = currentDate[6];
+    status_->date2[7] = currentDate[7];
+    status_->date2[8] = '\0';
   }
-  if (m_pStatusRecord->date1[8] != '\0') {
-    m_pStatusRecord->date1[6] = currentDate[6];
-    m_pStatusRecord->date1[7] = currentDate[7];
-    m_pStatusRecord->date1[8] = '\0';
+  if (status_->date1[8] != '\0') {
+    status_->date1[6] = currentDate[6];
+    status_->date1[7] = currentDate[7];
+    status_->date1[8] = '\0';
   }
-  if (m_pStatusRecord->gfiledate[8] != '\0') {
-    m_pStatusRecord->gfiledate[6] = currentDate[6];
-    m_pStatusRecord->gfiledate[7] = currentDate[7];
-    m_pStatusRecord->gfiledate[8] = '\0';
+  if (status_->gfiledate[8] != '\0') {
+    status_->gfiledate[6] = currentDate[6];
+    status_->gfiledate[7] = currentDate[7];
+    status_->gfiledate[8] = '\0';
   }
 }
 
 bool WStatus::NewDay() {
-  m_pStatusRecord->callstoday = 0;
-  m_pStatusRecord->msgposttoday = 0;
-  m_pStatusRecord->localposts = 0;
-  m_pStatusRecord->emailtoday = 0;
-  m_pStatusRecord->fbacktoday = 0;
-  m_pStatusRecord->uptoday = 0;
-  m_pStatusRecord->activetoday = 0;
-  m_pStatusRecord->days++;
+  status_->callstoday = 0;
+  status_->msgposttoday = 0;
+  status_->localposts = 0;
+  status_->emailtoday = 0;
+  status_->fbacktoday = 0;
+  status_->uptoday = 0;
+  status_->activetoday = 0;
+  status_->days++;
 
   // Need to verify the dates aren't trashed otherwise we can crash here.
   ValidateAndFixDates();
 
-  strcpy(m_pStatusRecord->date3, m_pStatusRecord->date2);
-  strcpy(m_pStatusRecord->date2, m_pStatusRecord->date1);
+  strcpy(status_->date3, status_->date2);
+  strcpy(status_->date2, status_->date1);
   const string d = daten_to_date(time(nullptr));
-  strcpy(m_pStatusRecord->date1, d.c_str());
-  strcpy(m_pStatusRecord->log2, m_pStatusRecord->log1);
+  strcpy(status_->date1, d.c_str());
+  strcpy(status_->log2, status_->log1);
 
   const string log = GetSysopLogFileName(GetLastDate(1));
-  strcpy(m_pStatusRecord->log1, log.c_str());
+  strcpy(status_->log1, log.c_str());
   return true;
 }
 
 // StatusMgr
 bool StatusMgr::Get(bool bLockFile) {
-  if (!m_statusFile.IsOpen()) {
-    m_statusFile.SetName(datadir_, STATUS_DAT);
+  if (!status_file_.IsOpen()) {
+    status_file_.SetName(datadir_, STATUS_DAT);
     int nLockMode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
-    m_statusFile.Open(nLockMode);
+    status_file_.Open(nLockMode);
   } else {
-    m_statusFile.Seek(0L, File::Whence::begin);
+    status_file_.Seek(0L, File::Whence::begin);
   }
-  if (!m_statusFile.IsOpen()) {
+  if (!status_file_.IsOpen()) {
     return false;
   } else {
     char oldFileChangeFlags[7];
     for (int nFcIndex = 0; nFcIndex < 7; nFcIndex++) {
       oldFileChangeFlags[nFcIndex] = statusrec.filechange[nFcIndex];
     }
-    m_statusFile.Read(&statusrec, sizeof(statusrec_t));
+    status_file_.Read(&statusrec, sizeof(statusrec_t));
 
     if (!bLockFile) {
-      m_statusFile.Close();
+      status_file_.Close();
     }
 
     for (int i = 0; i < 7; i++) {
@@ -192,8 +192,8 @@ WStatus* StatusMgr::GetStatus() {
 
 void StatusMgr::AbortTransaction(WStatus* pStatus) {
   unique_ptr<WStatus> deleter(pStatus);
-  if (m_statusFile.IsOpen()) {
-    m_statusFile.Close();
+  if (status_file_.IsOpen()) {
+    status_file_.Close();
   }
 }
 
@@ -204,22 +204,22 @@ WStatus* StatusMgr::BeginTransaction() {
 
 bool StatusMgr::CommitTransaction(WStatus* pStatus) {
   unique_ptr<WStatus> deleter(pStatus);
-  return this->Write(pStatus->m_pStatusRecord);
+  return this->Write(pStatus->status_);
 }
 
 bool StatusMgr::Write(statusrec_t *pStatus) {
-  if (!m_statusFile.IsOpen()) {
-    m_statusFile.SetName(datadir_, STATUS_DAT);
-    m_statusFile.Open(File::modeReadWrite | File::modeBinary);
+  if (!status_file_.IsOpen()) {
+    status_file_.SetName(datadir_, STATUS_DAT);
+    status_file_.Open(File::modeReadWrite | File::modeBinary);
   } else {
-    m_statusFile.Seek(0L, File::Whence::begin);
+    status_file_.Seek(0L, File::Whence::begin);
   }
 
-  if (!m_statusFile.IsOpen()) {
+  if (!status_file_.IsOpen()) {
     return false;
   }
-  m_statusFile.Write(pStatus, sizeof(statusrec_t));
-  m_statusFile.Close();
+  status_file_.Write(pStatus, sizeof(statusrec_t));
+  status_file_.Close();
   return true;
 }
 
