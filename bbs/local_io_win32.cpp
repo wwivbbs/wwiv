@@ -54,7 +54,7 @@ struct screentype {
   CHAR_INFO* scrn1;
 };
 
-static screentype m_ScreenSave;
+static screentype saved_screen;
 /*
  * Sets screen attribute at screen pos x,y to attribute contained in a.
  */
@@ -69,21 +69,17 @@ void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
 }
 
 Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
-  SetTopLine(0);
-  SetScreenBottom(0);
-  ExtendedKeyWaiting = 0;
-
   out_ = GetStdHandle(STD_OUTPUT_HANDLE);
   in_  = GetStdHandle(STD_INPUT_HANDLE);
   if (out_ == INVALID_HANDLE_VALUE) {
     std::cout << "\n\nCan't get console handle!.\n\n";
     abort();
   }
-  CONSOLE_SCREEN_BUFFER_INFO csbi;
+  CONSOLE_SCREEN_BUFFER_INFO csbi{};
   GetConsoleScreenBufferInfo(out_, &csbi);
   original_size_ = csbi.dwSize;
   SMALL_RECT rect = csbi.srWindow;
-  COORD bufSize;
+  COORD bufSize{};
   bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
   bufSize.Y = static_cast<SHORT>(rect.Bottom - rect.Top + 1);
   bufSize.X = static_cast<SHORT>(std::min<SHORT>(bufSize.X, 80));
@@ -391,22 +387,22 @@ void Win32ConsoleIO::savescreen() {
   region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
   region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
-  if (!m_ScreenSave.scrn1) {
-    m_ScreenSave.scrn1 = static_cast< CHAR_INFO *>(malloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
+  if (!saved_screen.scrn1) {
+    saved_screen.scrn1 = static_cast< CHAR_INFO *>(malloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
   }
 
-  ReadConsoleOutput(out_, (CHAR_INFO *)m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
-  m_ScreenSave.x1 = static_cast<int16_t>(WhereX());
-  m_ScreenSave.y1 = static_cast<int16_t>(WhereY());
-  m_ScreenSave.topline1 = static_cast<int16_t>(GetTopLine());
-  m_ScreenSave.curatr1 = static_cast<int16_t>(curatr);
+  ReadConsoleOutput(out_, (CHAR_INFO *)saved_screen.scrn1, bufinfo.dwSize, topleft, &region);
+  saved_screen.x1 = static_cast<int16_t>(WhereX());
+  saved_screen.y1 = static_cast<int16_t>(WhereY());
+  saved_screen.topline1 = static_cast<int16_t>(GetTopLine());
+  saved_screen.curatr1 = static_cast<int16_t>(curatr);
 }
 
 /*
  * restorescreen restores a screen previously saved with savescreen
  */
 void Win32ConsoleIO::restorescreen() {
-  if (m_ScreenSave.scrn1) {
+  if (saved_screen.scrn1) {
     // COORD size;
     COORD topleft;
     CONSOLE_SCREEN_BUFFER_INFO bufinfo;
@@ -417,13 +413,13 @@ void Win32ConsoleIO::restorescreen() {
     region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
     region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
-    WriteConsoleOutput(out_, m_ScreenSave.scrn1, bufinfo.dwSize, topleft, &region);
-    free(m_ScreenSave.scrn1);
-    m_ScreenSave.scrn1 = nullptr;
+    WriteConsoleOutput(out_, saved_screen.scrn1, bufinfo.dwSize, topleft, &region);
+    free(saved_screen.scrn1);
+    saved_screen.scrn1 = nullptr;
   }
-  SetTopLine(m_ScreenSave.topline1);
-  curatr = m_ScreenSave.curatr1;
-  GotoXY(m_ScreenSave.x1, m_ScreenSave.y1);
+  SetTopLine(saved_screen.topline1);
+  curatr = saved_screen.curatr1;
+  GotoXY(saved_screen.x1, saved_screen.y1);
 }
 
 /**
@@ -432,7 +428,7 @@ void Win32ConsoleIO::restorescreen() {
  * @return true if a key has been pressed at the local console, false otherwise
  */
 bool Win32ConsoleIO::KeyPressed() {
-  if (ExtendedKeyWaiting) {
+  if (extended_key_waiting_) {
     return true;
   }
 
@@ -449,13 +445,13 @@ bool Win32ConsoleIO::KeyPressed() {
 * a value of 0 to obtain the value of the extended key pressed.
 */
 unsigned char Win32ConsoleIO::GetChar() {
-  if (ExtendedKeyWaiting) {
-    ExtendedKeyWaiting = 0;
+  if (extended_key_waiting_) {
+    extended_key_waiting_ = 0;
     return GetKeyboardChar();
   }
   unsigned char rc = GetKeyboardChar();
   if (rc == 0 || rc == 0xe0) {
-    ExtendedKeyWaiting = 1;
+    extended_key_waiting_ = 1;
   }
   return rc;
 }

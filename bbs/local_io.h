@@ -49,11 +49,11 @@ class LocalIO {
   static constexpr int topdataSystem = 1;
   static constexpr int topdataUser = 2;
 
-  const size_t GetTopLine() const { return m_nTopLine; }
-  void SetTopLine(int nTopLine) { m_nTopLine = nTopLine; }
+  const size_t GetTopLine() const { return topline_; }
+  void SetTopLine(int nTopLine) { topline_ = nTopLine; }
 
-  const size_t GetScreenBottom() const { return m_nScreenBottom; }
-  void SetScreenBottom(int nScreenBottom) { m_nScreenBottom = nScreenBottom; }
+  const size_t GetScreenBottom() const { return screen_bottom_; }
+  void SetScreenBottom(int nScreenBottom) { screen_bottom_ = nScreenBottom; }
 
   virtual void GotoXY(int x, int y) = 0;
   virtual size_t WhereX() = 0;
@@ -103,8 +103,8 @@ private:
   virtual void FastPuts(const std::string& text) = 0;
 
 private:
-  int m_nTopLine = 0;
-  int m_nScreenBottom = 0;
+  int topline_ = 0;
+  int screen_bottom_ = 0;
   int top_screen_color_ = 27;
   int user_editor_color_ = 9;
   int edit_line_color_ = 31;

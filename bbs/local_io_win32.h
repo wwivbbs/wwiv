@@ -72,11 +72,11 @@ private:
   void FastPuts(const std::string &text) override;
 
 private:
-  bool ExtendedKeyWaiting;
+  bool extended_key_waiting_ = false;
 
-  COORD cursor_pos_;
-  HANDLE out_;
-  HANDLE in_;
+  COORD cursor_pos_{};
+  HANDLE out_ = INVALID_HANDLE_VALUE;
+  HANDLE in_ = INVALID_HANDLE_VALUE;
   DWORD saved_input_mode_ = 0;
 
   void set_attr_xy(int x, int y, int a);
