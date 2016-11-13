@@ -263,6 +263,10 @@ enum class fido_packet_t { none, type2_plus};
 enum class fido_transport_t { directory, binkp};
 enum class fido_mailer_t { flo, attach};
 
+// Remember to update the serialize function in net.cpp when updating these.
+/**
+ * Fido specific per-packet settings.
+ */
 struct fido_packet_config_t {
   // Type of packet to create
   fido_packet_t packet_type;
@@ -274,7 +278,17 @@ struct fido_packet_config_t {
   int max_packet_size;
 };
 
+// Remember to update the serialize function in net.cpp when updating these.
+/**
+ * Fido specific per-network settings.
+ */
 struct fido_network_config_t {
+  // Fake wwivnet style node number to use for outbound messages.
+  // With fido style networking, the fake wwivnet ftn only will
+  // have 2 nodes, @1 for your, and @NNN for the rest of the world.
+  uint16_t fake_outbound_node;
+  // Fidonet mailer type {FLO, Attach}.
+  // Only FLO is even close to being supported.
   fido_mailer_t mailer_type;
   // Type of transport to use for this packet.
   fido_transport_t transport;
