@@ -237,11 +237,11 @@ static bool import_bundle_file(const Config& config, const net_networks_rec& net
   }
 
   const std::string saved_dir = File::current_directory();
+  ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
   auto tempdir = net.fido.temp_inbound_dir;
   File::MakeAbsolutePath(net.dir, &tempdir);
   File::set_current_directory(tempdir);
 
-  ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
 
   // were in the temp dir now.
   vector<arcrec> arcs = read_arcs(config.datadir());
@@ -278,7 +278,45 @@ static bool import_bundles(const Config& config, const net_networks_rec& net, co
   return true;
 }
 
-bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const Packet& wwivnet_packet, string& fido_packet_name) {
+bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const string& fido_packet_name) {
+
+  // were in the temp dir now.
+  vector<arcrec> arcs = read_arcs(config.datadir());
+  if (arcs.empty()) {
+    LOG(ERROR) << "No archivers defined!";
+    return false;
+  }
+
+  time_t now = time(nullptr);
+  auto tm = localtime(&now);
+  auto dow = tm->tm_wday;
+  int bundle_num = 0;
+
+  const std::string saved_dir = File::current_directory();
+  ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
+
+  string net_dir(net.dir);
+  File::MakeAbsolutePath(config.root_directory(), &net_dir);
+  string out_dir(net.fido.outbound_dir);
+  File::MakeAbsolutePath(net_dir, &out_dir);
+
+  FidoAddress orig(net.fido.fido_address);
+  for (int i = 0; i < 35; i++) {
+    string bname = bundle_name(orig, dest, dow, bundle_num);
+    if (File::Exists(out_dir, bname)) {
+      // Already exists.
+      continue;
+    }
+    File::set_current_directory(out_dir);
+    // TODO(rushfan): Need callout.json support to set file specific options here.
+    const auto& arc = find_arc(arcs, net.fido.packet_config.compression_type);
+    // We have no parameter 2 since we're extracting everything.
+    string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), fido_packet_name);
+    // Execute the command
+    system(zip_cmd.c_str());
+    File::set_current_directory(saved_dir);
+    return true;
+  }
   return false;
 }
 
@@ -363,6 +401,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
       LOG(ERROR) << "Error writing packed message.";
       return false;
     }
+    fido_packet_name = file.GetName();
     return true;
   }
   return false;
@@ -475,11 +514,11 @@ int main(int argc, char** argv) {
               write_wwivnet_packet(DEAD_NET, net, p);
               continue;
             }
-            if (!fido_packet_name.empty()) {
+            if (fido_packet_name.empty()) {
               LOG(ERROR) << "Error creating ftn packet name";
               continue;
             }
-            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, p, fido_packet_name)) {
+            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, fido_packet_name)) {
               // oops. let's skip.
               write_wwivnet_packet(DEAD_NET, net, p);
             }

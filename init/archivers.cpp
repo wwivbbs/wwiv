@@ -88,7 +88,7 @@ static void edit_arc(int arc_number, arcrec* a) {
 bool create_arcs(CursesWindow* window) {
   vector<arcrec> arc;
   arc.emplace_back(arcrec{"Zip", "ZIP", 
-    "zip %1 %2", "unzip -C %1 %2", 
+    "zip -j %1 %2", "unzip -j -C %1 %2", 
     "unzip -l %1", "zip -d %1 -@ < BBSADS.TXT", 
     "zip -z %1 < COMMENT.TXT", "unzip -t %1" });
   arc.emplace_back(arcrec{"Arj","ARJ", 

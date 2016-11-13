@@ -61,6 +61,9 @@ bool ReadFidoSubcriberFile(const std::string& dir, const std::string& filename, 
   string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
+    if (line.empty()) {
+      continue;
+    }
     try {
       FidoAddress a(line);
       subscribers.insert(a);
