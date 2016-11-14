@@ -88,8 +88,22 @@ std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, wwiv::sd
 
   const string ext = control_file_extension(status);
   return StringPrintf("%04.4x%04.4x.%s", net, node, ext.c_str());
-
 }
+
+// 10 Nov 16  21:15:45
+std::string daten_to_fido(time_t t) {
+  auto tm = localtime(&t);
+  const string fmt = "%d %b %y  %H:%M:%S";
+
+  char buf[1024];
+  auto res = strftime(buf, sizeof(buf), fmt.c_str(), tm);
+  if (res <= 0) {
+    LOG(ERROR) << "Unable to create date format in daten_to_fido from strftime";
+    return "";
+  }
+  return buf;
+}
+
 
 }  // namespace fido
 }  // namespace net

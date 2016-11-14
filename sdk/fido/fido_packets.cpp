@@ -82,6 +82,7 @@ bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
     LOG(ERROR) << "short write to packet, wrote " << num_written << "; expected: " << sizeof(packet_header_2p_t);
     return false;
   }
+  return true;
 }
 
 bool write_packed_message(File& f, FidoPackedMessage& packet) {
@@ -102,6 +103,18 @@ bool write_packed_message(File& f, FidoPackedMessage& packet) {
   f.Write("\0", 1);
   // End of packet.
   f.Write("\0\0", 2);
+  return true;
+}
+
+bool write_stored_message(File& f, FidoStoredMessage& packet) {
+  auto num = f.Write(&packet.nh, sizeof(fido_stored_message_t));
+  if (num != sizeof(fido_stored_message_t)) {
+    LOG(ERROR) << "Short write on write_stored_message. Wrote: " << num
+      << "; expected: " << sizeof(fido_stored_message_t);
+    return false;
+  }
+  num = f.Write(packet.text);
+  return true;
 }
 
 ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {

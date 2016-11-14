@@ -189,6 +189,40 @@ struct fido_packed_message_t {
 //
 //
 
+
+// Private message
+static constexpr uint16_t MSGPRIVATE = 0x0001;
+// High priority
+static constexpr uint16_t MSGCRASH = 0x0002;
+// Read by addressee
+static constexpr uint16_t MSGREAD = 0x0004; 
+// Has been sent
+static constexpr uint16_t MSGSENT = 0x0008;
+// File attached to msg
+static constexpr uint16_t MSGFILE = 0x0010;
+// In transit
+static constexpr uint16_t MSGTRANSIT = 0x0020;
+// Unknown node
+static constexpr uint16_t MSGORPHAN = 0x0040;
+// Kill after mailing
+static constexpr uint16_t MSGKILL = 0x0080;
+// Message was entered here
+static constexpr uint16_t MSGLOCAL = 0x0100;
+// Hold for pickup
+static constexpr uint16_t MSGHOLD = 0x0200;
+// Unused
+static constexpr uint16_t MSGUNUSED = 0x0400;
+// File request
+static constexpr uint16_t MSGFREQ = 0x0800;
+// Return receipt request
+static constexpr uint16_t MSGRRREQ = 0x1000;
+// Is return receipt
+static constexpr uint16_t MSGISRR = 0x2000;
+// Audit request
+static constexpr uint16_t MSGAREQ = 0x4000;
+// File update request
+static constexpr uint16_t MSGFUPDREQ = 0x8000;
+
 enum class FidoBundleStatus: char {
   normal = 'f',
   crash = 'c',
@@ -230,6 +264,7 @@ public:
 
 bool write_fido_packet_header(File& f, packet_header_2p_t& header);
 bool write_packed_message(File& f, FidoPackedMessage& packet);
+bool write_stored_message(File& f, FidoStoredMessage& packet);
 
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
 ReadPacketResponse read_packed_message(File& file, FidoPackedMessage& packet);

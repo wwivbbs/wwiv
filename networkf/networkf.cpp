@@ -412,6 +412,16 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
   return false;
 }
 
+string NextNetmailFileName(const string& dir) {
+  for (int i = 2; i < 10000; i++) {
+    string candidate = FilePath(dir, StrCat(i, ".msg"));
+    if (!File::Exists(candidate)) {
+      return candidate;
+    }
+  }
+  return "";
+}
+
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
@@ -538,14 +548,47 @@ int main(int argc, char** argv) {
               write_wwivnet_packet(DEAD_NET, net, p);
               continue;
             }
-            LOG(INFO) << "Created bundle: " << FilePath(net.fido.outbound_dir, bundle_name);
+            string net_dir(net.dir);
+            File::MakeAbsolutePath(net_cmdline.config().root_directory(), &net_dir);
+            string out_dir(net.fido.outbound_dir);
+            File::MakeAbsolutePath(net_dir, &out_dir);
+            LOG(INFO) << "Created bundle: " << FilePath(out_dir, bundle_name);
 
             // Delete the file, since we made a bundle.
             File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
 
             // TODO(rushfan): Create FLO or attach file.
             if (net.fido.mailer_type == fido_mailer_t::attach) {
-              LOG(ERROR) << "Don't know how to make netmail attach.";
+              string netmail_filename = NextNetmailFileName(net.fido.netmail_dir);
+              if (netmail_filename.empty()) {
+                LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << net.fido.netmail_dir << "'";
+                continue;
+              }
+              File netmail(netmail_filename);
+              if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive | File::modeReadWrite, File::shareDenyReadWrite)) {
+                LOG(ERROR) << "Unable to open netmail filen: '" << netmail.full_pathname() << "'";
+                continue;
+              }
+              FidoAddress orig(net.fido.fido_address);
+              fido_stored_message_t h{};
+              h.attribute = MSGFILE;
+              h.cost = 0;
+              to_char_array(h.date_time, daten_to_fido(time(nullptr)));
+              h.dest_net = sub.net();
+              h.dest_node = sub.node();
+              h.dest_point = sub.point();
+              h.dest_zone = sub.zone();
+              to_char_array(h.from, "ARCmail");
+              h.next_reply = 0;
+              h.orig_net = orig.net();
+              h.orig_node = orig.node();
+              h.orig_point = orig.point();
+              h.orig_zone = orig.zone();
+              to_char_array(h.subject, FilePath(out_dir, bundle_name));
+              to_char_array(h.to, "ARCmail");
+              FidoStoredMessage m(h, "");
+              write_stored_message(netmail, m);
+              LOG(INFO) << "Wrote attach netmail: " << netmail.full_pathname();
             } else if (net.fido.mailer_type == fido_mailer_t::flo) {
               LOG(ERROR) << "Don't know how to make FLO file.";
             } else {

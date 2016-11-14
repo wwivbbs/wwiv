@@ -36,6 +36,7 @@ std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
 std::string dow_extension(int dow, int bundle_number);
 std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, wwiv::sdk::fido::FidoBundleStatus dow);
+std::string daten_to_fido(time_t t);
 
 }  // namespace fido
 }  // namespace net
