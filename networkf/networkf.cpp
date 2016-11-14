@@ -333,6 +333,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     File::MakeAbsolutePath(net_dir, &temp_dir);
   }
 
+  FidoAddress address(net.fido.fido_address);
   for (int tries = 0; tries < 10; tries++) {
     time_t now = time(nullptr);
     File file(temp_dir, packet_name(now));
@@ -342,7 +343,6 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
       continue;
     }
 
-    FidoAddress address(net.fido.fido_address);
     packet_header_2p_t header = {};
     header.orig_zone = address.zone();
     header.orig_net = address.net();
@@ -391,14 +391,21 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     vh.from_user_name = sender_name;
     vh.subject = title;
     vh.to_user_name = "All"; // TODO(rushfan): Get To Name
+    string bbs_text = string(iter, raw_text.end());
+    // Since WWIV uses CRLF, remove the LF's and we have happy CR's.
+    bbs_text.erase(std::remove(bbs_text.begin(), bbs_text.end(), 10), bbs_text.end());
 
-    string top = StrCat("AREA:", subtype, "\r")
-      + StrCat("\001PID: WWIV ", wwiv_version, beta_version, "\r")
-      + StrCat("\001TID: WWIV NET", wwiv_net_version, beta_version, "\r");
-    string bottom = StrCat("--- WWIV ", wwiv_version, beta_version, "\r", " * Origin: Nowhere Yet.\r");
+    // TODO(rushfan): need to add in MSGID and all that nonsense.
+    std::ostringstream text;
+    text << "AREA:" << subtype << "\r"
+      << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
+      << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r"
+      << bbs_text << "\r"
+      << "--- WWIV " << wwiv_version << beta_version << "\r"
+      << " * Origin: Nowhere Yet.\r"
+      << "SEEN-BY: ", address.net(), "/", address.node(), "\r\r";
 
-    // TODO(rushfan): need to add in TID, PID, MSGID and all that nonsense.
-    vh.text = top + string(iter, raw_text.end()) + bottom;
+    vh.text = text.str();
 
     fido_packed_message_t nh{};
     nh.message_type = 2;
