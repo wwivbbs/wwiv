@@ -359,22 +359,20 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
       session()->usenetReferencesLine = "";
     }
   }
-  if (irt[0] != '"') {
-    const string irt_buf = StringPrintf("RE: %s", irt);
-    ss << irt_buf << crlf;
+
+  // WTF is \xAB. FidoAddr sets it, but we don't want
+  // to add the RE: line when it's \xAB, so let's skip it.
+  if (irt[0] != '"' && irt[0] != '\xAB') {
+    ss << "RE: " << irt << crlf;
     if (irt_sub[0]) {
-      const string irt_sub_buf = StringPrintf("ON: %s", irt_sub);
-      ss << irt_sub_buf << crlf;
+      ss << "ON: " << irt_sub << crlf;
     }
   } else {
     irt_sub[0] = '\0';
   }
 
-  if (irt_name[0] &&
-      !IsEqualsIgnoreCase(aux, "email")) {
-    const string 
-      irt_name_buf = StringPrintf("BY: %s", irt_name);
-    ss << irt_name_buf << crlf;
+  if (irt_name[0] && !IsEqualsIgnoreCase(aux, "email")) {
+    ss << "BY: " << irt_name << crlf;
   }
   ss << crlf;
 }
