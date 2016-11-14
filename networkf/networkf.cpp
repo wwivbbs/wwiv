@@ -338,6 +338,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     File file(temp_dir, packet_name(now));
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite | File::modeBinary, File::shareDenyReadWrite)) {
       LOG(INFO) << "Will try again: Unable to create packet file: " << file.full_pathname();
+      wwiv::os::sleep_for(std::chrono::seconds(1));
       continue;
     }
 
@@ -370,6 +371,9 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
       ((header.capabilities_valid & 0x7f00) >> 8) | ((header.capabilities_valid & 0xff) << 8);
     header.product_code_high = 0;
     header.product_code_low = wwiv_net_version;
+    // Add in packet password.
+    to_char_array(header.password, net.fido.packet_config.packet_password);
+
     if (!write_fido_packet_header(file, header)) {
       LOG(ERROR) << "Error writing packet header.";
       return false;
@@ -381,17 +385,20 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    string text = string(iter, raw_text.end());
 
     fido_variable_length_header_t vh;
-    vh.date_time = daten_to_humantime(wwivnet_packet.nh.daten);
+    vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
     vh.from_user_name = sender_name;
     vh.subject = title;
     vh.to_user_name = "All"; // TODO(rushfan): Get To Name
 
-    string fido_text = StrCat("AREA:", subtype, "\r");
+    string top = StrCat("AREA:", subtype, "\r")
+      + StrCat("\001PID: WWIV ", wwiv_version, beta_version, "\r")
+      + StrCat("\001TID: WWIV NET", wwiv_net_version, beta_version, "\r");
+    string bottom = StrCat("--- WWIV ", wwiv_version, beta_version, "\r", " * Origin: Nowhere Yet.\r");
+
     // TODO(rushfan): need to add in TID, PID, MSGID and all that nonsense.
-    vh.text = fido_text + text;
+    vh.text = top + string(iter, raw_text.end()) + bottom;
 
     fido_packed_message_t nh{};
     nh.message_type = 2;

@@ -84,9 +84,9 @@ struct packet_header_2p_t {               /* FSC-0039 Type 2.+ */
            orig_net,
            dest_net;
  
-  uint8_t product_code_low,
-          product_rev_major,
-          password[8];
+  uint8_t product_code_low;
+  uint8_t product_rev_major;
+  char password[8];
   
   uint16_t qm_orig_zone,
            qm_dest_zone;
