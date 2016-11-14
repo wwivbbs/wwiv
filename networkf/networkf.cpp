@@ -507,7 +507,7 @@ int main(int argc, char** argv) {
           string subtype = get_message_field(p.text, p.text.cbegin(), {'\0', '\r', '\n'}, 80);
 
           std::set<FidoAddress> subscribers;
-          ReadFidoSubcriberFile(net.dir, StrCat("f", subtype, ".net"), subscribers);
+          ReadFidoSubcriberFile(net.dir, StrCat("n", subtype, ".net"), subscribers);
           for (const auto& sub : subscribers) {
             if (!create_ftn_packet(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, p, fido_packet_name)) {
               // oops. let's skip.
