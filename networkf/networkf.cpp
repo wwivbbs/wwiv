@@ -394,6 +394,9 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     string bbs_text = string(iter, raw_text.end());
     // Since WWIV uses CRLF, remove the LF's and we have happy CR's.
     bbs_text.erase(std::remove(bbs_text.begin(), bbs_text.end(), 10), bbs_text.end());
+    if (!bbs_text.empty() && bbs_text.back() == '\x1a') {
+      bbs_text.pop_back();
+    }
 
     // TODO(rushfan): need to add in MSGID and all that nonsense.
     std::ostringstream text;
@@ -403,7 +406,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
       << bbs_text << "\r"
       << "--- WWIV " << wwiv_version << beta_version << "\r"
       << " * Origin: Nowhere Yet.\r"
-      << "SEEN-BY: ", address.net(), "/", address.node(), "\r\r";
+      << "SEEN-BY: " << address.net() << "/" << address.node() << "\r\r";
 
     vh.text = text.str();
 
