@@ -278,7 +278,7 @@ static bool import_bundles(const Config& config, const net_networks_rec& net, co
   return true;
 }
 
-bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const string& fido_packet_name) {
+bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const string& fido_packet_name, std::string& out_bundle_name) {
 
   // were in the temp dir now.
   vector<arcrec> arcs = read_arcs(config.datadir());
@@ -299,11 +299,13 @@ bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_
   File::MakeAbsolutePath(config.root_directory(), &net_dir);
   string out_dir(net.fido.outbound_dir);
   File::MakeAbsolutePath(net_dir, &out_dir);
+  string temp_dir(tempdir);
+  File::MakeAbsolutePath(net_dir, &temp_dir);
 
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
     string bname = bundle_name(orig, dest, dow, bundle_num);
-    if (File::Exists(out_dir, bname)) {
+    if (File::Exists(temp_dir, bname)) {
       // Already exists.
       continue;
     }
@@ -311,10 +313,11 @@ bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_
     // TODO(rushfan): Need callout.json support to set file specific options here.
     const auto& arc = find_arc(arcs, net.fido.packet_config.compression_type);
     // We have no parameter 2 since we're extracting everything.
-    string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), fido_packet_name);
+    string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), FilePath(temp_dir, fido_packet_name));
     // Execute the command
     system(zip_cmd.c_str());
     File::set_current_directory(saved_dir);
+    out_bundle_name = bname;
     return true;
   }
   return false;
@@ -323,16 +326,18 @@ bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_
 bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const Packet& wwivnet_packet, string& fido_packet_name) {
   using wwiv::net::ReadPacketResponse;
 
-  string net_dir(net.dir);
-  File::MakeAbsolutePath(config.root_directory(), &net_dir);
-  string out_dir(net.fido.outbound_dir);
-  File::MakeAbsolutePath(net_dir, &out_dir);
-
+  string temp_dir(tempdir);
+  {
+    string net_dir(net.dir);
+    File::MakeAbsolutePath(config.root_directory(), &net_dir);
+    File::MakeAbsolutePath(net_dir, &temp_dir);
+  }
 
   for (int tries = 0; tries < 10; tries++) {
     time_t now = time(nullptr);
-    File file(out_dir, packet_name(now));
+    File file(temp_dir, packet_name(now));
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite | File::modeBinary, File::shareDenyReadWrite)) {
+      LOG(INFO) << "Will try again: Unable to create packet file: " << file.full_pathname();
       continue;
     }
 
@@ -506,28 +511,46 @@ int main(int argc, char** argv) {
           string raw_text = p.text;
           auto it = p.text.cbegin();
           string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
+          LOG(INFO) << "Creating packet for subtype: " << subtype;
 
           std::set<FidoAddress> subscribers;
           ReadFidoSubcriberFile(net.dir, StrCat("n", subtype, ".net"), subscribers);
+          if (subscribers.empty()) {
+            LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
+          }
           for (const auto& sub : subscribers) {
+            LOG(INFO) << "Creating packet for subscriber: " << sub.as_string();
             if (!create_ftn_packet(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, p, fido_packet_name)) {
               // oops. let's skip.
+              LOG(ERROR) << "Failed to create FTN packet.";
               write_wwivnet_packet(DEAD_NET, net, p);
               continue;
             }
+            LOG(INFO) << "Created packet: " << FilePath(net.fido.temp_inbound_dir, fido_packet_name);
             if (fido_packet_name.empty()) {
               LOG(ERROR) << "Error creating ftn packet name";
               continue;
             }
-            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, fido_packet_name)) {
+            string bundle_name;
+            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, fido_packet_name, bundle_name)) {
               // oops. let's skip.
+              LOG(ERROR) << "Failed to create FTN bundle.";
               write_wwivnet_packet(DEAD_NET, net, p);
+              continue;
             }
+            LOG(INFO) << "Created bundle: " << FilePath(net.fido.outbound_dir, bundle_name);
+
             // Delete the file, since we made a bundle.
-            
-            //File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
+            File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
 
             // TODO(rushfan): Create FLO or attach file.
+            if (net.fido.mailer_type == fido_mailer_t::attach) {
+              LOG(ERROR) << "Don't know how to make netmail attach.";
+            } else if (net.fido.mailer_type == fido_mailer_t::flo) {
+              LOG(ERROR) << "Don't know how to make FLO file.";
+            } else {
+              LOG(ERROR) << "Unknown mailer type: " << static_cast<int>(net.fido.mailer_type);
+            }
           }
         } else {
           LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);

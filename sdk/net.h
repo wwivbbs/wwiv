@@ -314,6 +314,10 @@ struct fido_network_config_t {
   std::string temp_inbound_dir;
   // Outbound directory for packets
   std::string outbound_dir;
+  // Location of FidoNet NetMail directory.
+  // Note that this usually lives under your mailer's directory
+  // if you are using an ATTACH style mailer.
+  std::string netmail_dir;
   // Configuration for packet specific options.
   fido_packet_config_t packet_config;
 };
