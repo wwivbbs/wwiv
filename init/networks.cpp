@@ -31,7 +31,9 @@
 #include <io.h>
 #endif
 #include <sys/stat.h>
+#include <curses.h>
 
+#include "bbs/keycodes.h"
 #include "init/init.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -155,12 +157,10 @@ static bool del_net(
 class SubDialogEditItem : public BaseEditItem {
 public:
   SubDialogEditItem(int x, int y, const std::string& title, int width, net_networks_rec& d)
-      : BaseEditItem(x, y, 1), title_(title), width_(width), d_(d) {};
+      : BaseEditItem(x, y, 1), title_(title), width_(width), d_(d), x_(x), y_(y) {};
   virtual ~SubDialogEditItem() {}
 
   virtual int Run(CursesWindow* window) {
-    char s[81];
-    memset(s, 0, sizeof(s));
     EditItems items{};
     switch (d_.type) {
     case network_type_t::wwivnet: return 2;
@@ -183,33 +183,44 @@ public:
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, false));
       items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_archive_size));
       items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_packet_size));
+      window->GotoXY(x_, y_);
+      int ch = window->GetChar();
+      if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+        unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, items.size() + 2, width_));
+        items.set_curses_io(CursesIO::Get(), sw.get());
+        int y = 1;
+        sw->PutsXY(2, y++, "FTN Address  :");
+        sw->PutsXY(2, y++, "Fake Outbound:");
+        sw->PutsXY(2, y++, "Mailer       :");
+        sw->PutsXY(2, y++, "Transport    :");
+        sw->PutsXY(2, y++, "Inbound      :");
+        sw->PutsXY(2, y++, "Inbound Temp :");
+        sw->PutsXY(2, y++, "Outbound     :");
+        sw->PutsXY(2, y++, "Packet Type  :");
+        sw->PutsXY(2, y++, "Compression  :");
+        sw->PutsXY(2, y++, "Packet PW    :");
+        sw->PutsXY(2, y++, "AreaFix PW   :");
+        sw->PutsXY(2, y++, "Max Arc Size :");
+        sw->PutsXY(2, y++, "Max Pkt Size :");
+        items.Run();
+        window->RedrawWin();
+        return 2;
+      } else if (ch == KEY_UP || ch == KEY_BTAB) {
+        return 1; // PREV
+      } else {
+        return 2;
+      }
     } break;
     };
-    unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, items.size() + 2, width_));
-    items.set_curses_io(CursesIO::Get(), sw.get());
-    int y = 1;
-    sw->PutsXY(2, y++, "FTN Address  :");
-    sw->PutsXY(2, y++, "Fake Outbound:");
-    sw->PutsXY(2, y++, "Mailer       :");
-    sw->PutsXY(2, y++, "Transport    :");
-    sw->PutsXY(2, y++, "Inbound      :");
-    sw->PutsXY(2, y++, "Inbound Temp :");
-    sw->PutsXY(2, y++, "Outbound     :");
-    sw->PutsXY(2, y++, "Packet Type  :");
-    sw->PutsXY(2, y++, "Compression  :");
-    sw->PutsXY(2, y++, "Packet PW    :");
-    sw->PutsXY(2, y++, "AreaFix PW   :");
-    sw->PutsXY(2, y++, "Max Arc Size :");
-    sw->PutsXY(2, y++, "Max Pkt Size :");
-    items.Run();
-    window->RedrawWin();
     return 2;
   }
-  virtual void Display(CursesWindow* window) const { (window); }
+  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 private:
   const std::string title_;
   int width_ = 40;
   net_networks_rec& d_;
+  int x_ = 0;
+  int y_ = 0;
 };
 
 static void edit_net(Networks& networks, int nn) {
@@ -234,9 +245,12 @@ static void edit_net(Networks& networks, int nn) {
     new ToggleEditItem<network_type_t>(COL1_POSITION, 1, nettypes, &n.type),
     new StringEditItem<char*>(COL1_POSITION, 2, 15, n.name, false),
     new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n.sysnum),
-    new StringFilePathItem(COL1_POSITION, 4, 60, n.dir),
-    new SubDialogEditItem(COL1_POSITION, 5, "Network Settings", 76, n)
+    new StringFilePathItem(COL1_POSITION, 4, 60, n.dir)
   };
+  if (n.type == network_type_t::ftn) {
+    items.add(new SubDialogEditItem(COL1_POSITION, 5, "Network Settings", 76, n));
+  }
+
   const string title = StrCat("Network Configuration; Net #", nn);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, items.size() + 2, 76));
   items.set_curses_io(out, window.get());
@@ -246,7 +260,9 @@ static void edit_net(Networks& networks, int nn) {
   window->PutsXY(2, y++, "Net Name  :");
   window->PutsXY(2, y++, "Node #    :");
   window->PutsXY(2, y++, "Directory :");
-  window->PutsXY(2, y++, "Settings  :");
+  if (n.type == network_type_t::ftn) {
+    window->PutsXY(2, y++, "Settings  :");
+  }
   items.Run();
 
   if (subs_loaded && orig_network_name != n.name) {
