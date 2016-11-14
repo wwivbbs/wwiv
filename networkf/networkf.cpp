@@ -370,8 +370,8 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
       return false;
     }
 
-    const string& raw_text = wwivnet_packet.text;
-    auto& iter = raw_text.begin();
+    const string raw_text = wwivnet_packet.text;
+    auto iter = raw_text.cbegin();
     string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
@@ -504,7 +504,8 @@ int main(int argc, char** argv) {
           string fido_packet_name;
           // Lame implementation that creates 1 file per message.
           string raw_text = p.text;
-          string subtype = get_message_field(p.text, p.text.cbegin(), {'\0', '\r', '\n'}, 80);
+          auto it = p.text.cbegin();
+          string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
 
           std::set<FidoAddress> subscribers;
           ReadFidoSubcriberFile(net.dir, StrCat("f", subtype, ".net"), subscribers);
