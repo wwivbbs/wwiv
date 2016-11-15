@@ -323,6 +323,67 @@ bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_
   return false;
 }
 
+static bool CleanupWWIVName(std::string& sender_name) {
+  string::size_type idx = sender_name.find_first_of("#@");
+  if (idx != string::npos) {
+    sender_name = sender_name.substr(0, idx);
+  }
+  StringTrim(&sender_name);
+  return true;
+}
+
+template <typename C, typename I>
+static std::string get_control_line(const C& c, I& iter, std::set<char> stop, std::size_t max) {
+  // No need to continue if we're already at the end.
+  if (iter == c.end()) {
+    return "";
+  }
+  if (*iter != '\004') {
+    // #4 is control-D and a WWIV control line.
+    return "";
+  }
+  return get_message_field(c, iter, stop, max);
+}
+
+template <typename C, typename I>
+static std::string get_fido_addr(const C& c, I& iter, std::set<char> stop, std::size_t max) {
+  static const string kFidoAddr = "\x04""0FidoAddr: ";
+  string address;
+  do {
+    address = get_control_line(c, iter, stop, max);
+    if (address.empty()) {
+      return "";
+    }
+    if (address.front() != '\004') {
+      // Bail if we have a non-control line.
+      return "";
+    }
+    // HACK until I figure out why I get double \004 in wwiv...
+    if (address.size() > 2 && address[1] == '\004') {
+      address.erase(address.begin());
+    }
+    if (starts_with(address, kFidoAddr)) {
+      // This is the address line.
+      return address.substr(kFidoAddr.size());
+    }
+  } while (!address.empty());
+  return "";
+}
+
+template <typename C, typename I>
+static bool iter_starts_with(const C& c, I& iter, string expected) {
+  for (const auto& ch : expected) {
+    if (iter == c.end()) {
+      return false;
+    }
+    if (*iter != ch) {
+      return false;
+    }
+    iter++;
+  }
+  return true;
+}
+
 bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const Packet& wwivnet_packet, string& fido_packet_name) {
   using wwiv::net::ReadPacketResponse;
 
@@ -385,17 +446,32 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    string fido_addr = get_fido_addr(raw_text, iter, {'\0', '\r', '\n'}, 80);
 
-    fido_variable_length_header_t vh;
-    vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
-    vh.from_user_name = sender_name;
-    vh.subject = title;
-    vh.to_user_name = "All"; // TODO(rushfan): Get To Name from \0040FidoAddr: or BY: line.
+    if (iter_starts_with(raw_text, iter, "BY: ")) {
+      // Skip BY line.
+      get_message_field(raw_text, iter, {'\r', '\n'}, 80);
+    }
+
+    // Clean up sender name.
+    CleanupWWIVName(sender_name);
+
     string bbs_text = string(iter, raw_text.end());
     // Since WWIV uses CRLF, remove the LF's and we have happy CR's.
     bbs_text.erase(std::remove(bbs_text.begin(), bbs_text.end(), 10), bbs_text.end());
     if (!bbs_text.empty() && bbs_text.back() == '\x1a') {
       bbs_text.pop_back();
+    }
+
+    fido_variable_length_header_t vh;
+    vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
+    vh.from_user_name = sender_name;
+    vh.subject = title;
+    if (!fido_addr.empty()) {
+      vh.to_user_name = fido_addr;
+    } else {
+      vh.to_user_name = "All";
+
     }
 
     // TODO(rushfan): need to add in MSGID and all that nonsense.
