@@ -468,10 +468,13 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     vh.from_user_name = sender_name;
     vh.subject = title;
     if (!fido_addr.empty()) {
+      if (fido_addr == "ALL") {
+        // WWIV uses all upper case ALL, let's make it look ftn-ish
+        fido_addr = "All";
+      }
       vh.to_user_name = fido_addr;
     } else {
       vh.to_user_name = "All";
-
     }
 
     // TODO(rushfan): need to add in MSGID and all that nonsense.
