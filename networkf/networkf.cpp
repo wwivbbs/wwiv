@@ -390,7 +390,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
     vh.from_user_name = sender_name;
     vh.subject = title;
-    vh.to_user_name = "All"; // TODO(rushfan): Get To Name
+    vh.to_user_name = "All"; // TODO(rushfan): Get To Name from \0040FidoAddr: or BY: line.
     string bbs_text = string(iter, raw_text.end());
     // Since WWIV uses CRLF, remove the LF's and we have happy CR's.
     bbs_text.erase(std::remove(bbs_text.begin(), bbs_text.end(), 10), bbs_text.end());
