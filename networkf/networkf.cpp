@@ -637,8 +637,8 @@ int main(int argc, char** argv) {
               LOG(ERROR) << "Error creating ftn packet name";
               continue;
             }
-            string bundle_name;
-            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, fido_packet_name, bundle_name)) {
+            string bundlename;
+            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, fido_packet_name, bundlename)) {
               // oops. let's skip.
               LOG(ERROR) << "Failed to create FTN bundle.";
               write_wwivnet_packet(DEAD_NET, net, p);
@@ -648,7 +648,7 @@ int main(int argc, char** argv) {
             File::MakeAbsolutePath(net_cmdline.config().root_directory(), &net_dir);
             string out_dir(net.fido.outbound_dir);
             File::MakeAbsolutePath(net_dir, &out_dir);
-            LOG(INFO) << "Created bundle: " << FilePath(out_dir, bundle_name);
+            LOG(INFO) << "Created bundle: " << FilePath(out_dir, bundlename);
 
             // Delete the file, since we made a bundle.
             File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
@@ -680,13 +680,30 @@ int main(int argc, char** argv) {
               h.orig_node = orig.node();
               h.orig_point = orig.point();
               h.orig_zone = orig.zone();
-              to_char_array(h.subject, FilePath(out_dir, bundle_name));
+              to_char_array(h.subject, FilePath(out_dir, bundlename));
               to_char_array(h.to, "ARCmail");
               FidoStoredMessage m(h, "");
               write_stored_message(netmail, m);
               LOG(INFO) << "Wrote attach netmail: " << netmail.full_pathname();
             } else if (net.fido.mailer_type == fido_mailer_t::flo) {
-              LOG(ERROR) << "Don't know how to make FLO file.";
+              FidoAddress orig(net.fido.fido_address);
+              const string flo_name = bundle_name(orig, sub, "flo");
+              const string bsy_name = bundle_name(orig, sub, "bsy");
+              {
+                File bsy(out_dir, bsy_name);
+                if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
+                  LOG(ERROR) << "Unable to create BSY file.";
+                  // TODO(rushfan): Sleep and loop
+                  continue;
+                }
+              }
+              ScopeExit at_exit([=] { File::Remove(out_dir, bsy_name); });
+              TextFile flo_file(out_dir, flo_name, "a+");
+              if (!flo_file.IsOpen()) {
+                LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
+                continue;
+              }
+              flo_file.WriteLine(StrCat("^", FilePath(out_dir, bundlename)));
             } else {
               LOG(ERROR) << "Unknown mailer type: " << static_cast<int>(net.fido.mailer_type);
             }
