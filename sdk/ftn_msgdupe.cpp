@@ -59,6 +59,10 @@ bool FtnMessageDupe::Load() {
   }
 
   const int num_records = file.number_of_records();
+  if (num_records == 0) {
+    // nothing to read.
+    return true;
+  }
   std::vector<uint64_t> dupes(num_records);
   if (!file.Read(&dupes[0], num_records)) {
     return false;
@@ -96,7 +100,8 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
   file.file().Seek(0, File::Whence::begin);
   file.Write(0, &msg_num);
 
-  return StringPrintf("%s %08X", to_zone_net_node(a), msg_num);
+  string address_string = to_zone_net_node(a);
+  return StringPrintf("%s %08X", address_string.c_str(), msg_num);
 }
 
 static string GetMessageIDFromText(const std::string& text) {
