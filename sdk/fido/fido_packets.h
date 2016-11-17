@@ -240,6 +240,9 @@ struct fido_variable_length_header_t {
   std::string text;
 };
 
+/**
+* Representes a message in a .PKT file in FidoNET.
+*/
 class FidoPackedMessage {
 public:
   FidoPackedMessage(const fido_packed_message_t& h, const fido_variable_length_header_t& v)
@@ -252,6 +255,9 @@ public:
   fido_variable_length_header_t vh;
 };
 
+/**
+ * Representes a .MSG file in FidoNET.
+ */
 class FidoStoredMessage {
 public:
   FidoStoredMessage(const fido_stored_message_t& h, const std::string& t): nh(h), text(t) {}

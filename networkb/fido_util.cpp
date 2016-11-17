@@ -104,6 +104,23 @@ std::string daten_to_fido(time_t t) {
   return buf;
 }
 
+std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a) {
+  return StrCat(a.net(), "/", a.node());
+}
+
+std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a) {
+  return StrCat(a.zone(), ":", to_net_node(a));
+}
+
+std::vector<std::string> split_message(const std::string& s) {
+  string temp(s);
+  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
+  temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
+  return SplitString(temp, "\r");
+}
+/*
+
+*/
 
 }  // namespace fido
 }  // namespace net

@@ -130,6 +130,10 @@
 #define MEXTRACT_NOEXT "mextract"
 #define MMAIL_NOEXT "mmail"
 
+// FTN style message IDs
+#define MSGDUPE_DAT "msgdupe.dat"
+#define MSGID_DAT "msgid.dat"
+
 // Used by QBBS style editors.
 #define MSGINF "msginf"
 #define MSGTMP "msgtmp"

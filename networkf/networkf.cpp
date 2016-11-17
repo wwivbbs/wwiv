@@ -55,6 +55,7 @@
 #include "sdk/contact.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/ftn_msgdupe.h"
 #include "sdk/networks.h"
 #include "sdk/subscribers.h"
 #include "sdk/fido/fido_address.h"
@@ -149,10 +150,7 @@ static std::string FidoToWWIVText(const std::string& ft) {
 }
 
 static string get_echomail_areaname(const std::string& text) {
-  string temp = text;
-  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
-  temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
-  vector<string> lines = SplitString(temp, "\r");
+  vector<string> lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, "AREA:")) {
       return line.substr(5);
@@ -477,15 +475,27 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
       vh.to_user_name = "All";
     }
 
+    string msgid;
+    FtnMessageDupe dupe(config);
+    if (!dupe.IsInitialized()) {
+      LOG(ERROR) << "Unable to initialize FtnDupe";
+      msgid = StrCat(to_zone_net_node(address), " DEADBEEF");
+    } else {
+      msgid = dupe.CreateMessageID(address);
+    }
+
     // TODO(rushfan): need to add in MSGID and all that nonsense.
     std::ostringstream text;
     text << "AREA:" << subtype << "\r"
       << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
-      << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r"
-      << bbs_text << "\r"
+      << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
+    if (!msgid.empty()) {
+      text << "\001MSGID: " << msgid << "\r";
+    }
+    text << bbs_text << "\r"
       << "--- WWIV " << wwiv_version << beta_version << "\r"
-      << " * Origin: Nowhere Yet.\r"
-      << "SEEN-BY: " << address.net() << "/" << address.node() << "\r\r";
+      << " * Origin: Nowhere Yet. (" << to_zone_net_node(address) << ")\r"
+      << "SEEN-BY: " << to_net_node(address) << "\r\r";
 
     vh.text = text.str();
 
@@ -502,6 +512,10 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
       LOG(ERROR) << "Error writing packed message.";
       return false;
     }
+
+    // Since we wrote the packed message, let's add it to the 
+    // duplicate message database.
+    dupe.add(p);
     fido_packet_name = file.GetName();
     return true;
   }
@@ -606,6 +620,9 @@ int main(int argc, char** argv) {
         Packet p;
         wwiv::net::ReadPacketResponse response = read_packet(f, p);
         if (response == wwiv::net::ReadPacketResponse::END_OF_FILE) {
+          // Delete the packet.
+          f.Close();
+          f.Delete();
           break;
         } else if (response == wwiv::net::ReadPacketResponse::ERROR) {
           return 1;
@@ -717,10 +734,6 @@ int main(int argc, char** argv) {
         }
       }
 
-      // Create a ftn file.
-      // string packet_name = create_ftn_packet(config, net, sfilename);
-      // Add it to an existing bundle, of one exists.
-      // upsert_bundle(config, net, packet_name);
     } else {
       LOG(ERROR) << "Unknown command: " << cmd;
       return 1;

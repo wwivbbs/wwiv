@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*              Copyright (C)2016 WWIV Software Services                  */
+/*                Copyright (C)2016, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,34 +15,43 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_FIDO_UTIL_H__
-#define __INCLUDED_NETWORKB_FIDO_UTIL_H__
+#ifndef __INCLUDED_SDK_FTN_MSGDUPE_H__
+#define __INCLUDED_SDK_MSGID_H__
 
-#include <ctime>
-#include <set>
 #include <string>
-#include <vector>
-
-#include "core/file.h"
+#include <set>
+#include "sdk/config.h"
+#include "sdk/vardec.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_packets.h"
 
 namespace wwiv {
-namespace net {
-namespace fido {
+namespace sdk {
 
-std::string packet_name(time_t now);
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number);
-std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
-std::string dow_extension(int dow, int bundle_number);
-std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, wwiv::sdk::fido::FidoBundleStatus dow);
-std::string daten_to_fido(time_t t);
-std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a);
-std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a);
-std::vector<std::string> split_message(const std::string& string);
+class FtnMessageDupe {
+public:
+  explicit FtnMessageDupe(const Config& config);
+  virtual ~FtnMessageDupe();
 
-}  // namespace fido
-}  // namespace net
-}  // namespace wwiv
+  bool IsInitialized() const { return initialized_; }
+  const std::string CreateMessageID(const wwiv::sdk::fido::FidoAddress& a);
+  bool add(const wwiv::sdk::fido::FidoPackedMessage& msg);
+  bool add(uint32_t header_crc32, uint32_t msgid_crc32);
+  bool remove(uint32_t header_crc32, uint32_t msgid_crc32);
+  bool is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const;
 
-#endif  // __INCLUDED_NETWORKB_FIDO_UTIL_H__
+private:
+  bool Load();
+  bool Save();
+
+  bool initialized_;
+  std::string datadir_;
+  std::set<uint64_t> dupes_;
+};
+
+
+}
+}
+
+
+#endif  // __INCLUDED_SDK_MSGID_H__

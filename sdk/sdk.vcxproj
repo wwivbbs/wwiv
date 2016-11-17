@@ -32,6 +32,7 @@
     <ClInclude Include="msgapi\message_wwiv.h" />
     <ClInclude Include="msgapi\msgapi.h" />
     <ClInclude Include="msgapi\type2_text.h" />
+    <ClInclude Include="ftn_msgdupe.h" />
     <ClInclude Include="names.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
@@ -61,6 +62,7 @@
     <ClCompile Include="msgapi\message_utils_wwiv.cpp" />
     <ClCompile Include="msgapi\message_wwiv.cpp" />
     <ClCompile Include="msgapi\type2_text.cpp" />
+    <ClCompile Include="ftn_msgdupe.cpp" />
     <ClCompile Include="names.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="phone_numbers.cpp" />
