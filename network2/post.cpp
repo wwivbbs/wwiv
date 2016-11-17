@@ -178,7 +178,7 @@ bool handle_post(Context& context, Packet& p) {
       && header->title() == title
       && header->from_system() == p.nh.fromsys
       && header->from_usernum() == p.nh.fromuser) {
-      LOG(INFO) << "    - Discarding Duplicate Message.";
+      LOG(INFO) << "    - Discarding Duplicate Message on sub: " << subtype << "; title: " << title << ".";
       // Returning true since we properly handled this by discarding it.
       return true;
     }

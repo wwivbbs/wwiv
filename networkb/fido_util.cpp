@@ -18,7 +18,10 @@
 #include "networkb/fido_util.h"
 
 #include <chrono>
+#include <iostream>
+#include <sstream>
 #include <string>
+#include <vector>
 
 #include "core/command_line.h"
 #include "core/file.h"
@@ -29,6 +32,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -104,6 +108,36 @@ std::string daten_to_fido(time_t t) {
   return buf;
 }
 
+// Format: 10 Nov 16  21:15:45
+time_t fido_to_daten(std::string d) {
+  try {
+    vector<string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    std::stringstream stream(d);
+    tm t{};
+    stream >> t.tm_mday;
+    string mon_str;
+    stream >> mon_str;
+    if (!contains(months, mon_str)) {
+      // Unparsable date. return now.
+      return time(nullptr);
+    }
+    t.tm_mon = std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str));
+    stream >> t.tm_year;
+
+    string hms;
+    stream >> hms;
+    vector<string> parts = SplitString(hms, ":");
+    t.tm_hour = StringToInt(parts.at(0)) - 1;
+    t.tm_min = StringToInt(parts.at(1));
+    t.tm_sec = StringToInt(parts.at(2));
+
+    return mktime(&t);
+  } catch (const std::exception& e) {
+    LOG(ERROR) << "exception in fido_to_daten('" << d << "'): " << e.what();
+    return time(nullptr);
+  }
+}
+
 std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a) {
   return StrCat(a.net(), "/", a.node());
 }
@@ -118,9 +152,46 @@ std::vector<std::string> split_message(const std::string& s) {
   temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
   return SplitString(temp, "\r");
 }
-/*
 
-*/
+std::string FidoToWWIVText(const std::string& ft) {
+  std::string wt;
+  bool newline = true;
+  for (auto& c : ft) {
+    if (c == 13) {
+      wt.push_back(13);
+      wt.push_back(10);
+      newline = true;
+    } else if (c == 0x8d) {
+      // FIDOnet style Soft CR
+      wt.push_back(13);
+      wt.push_back(10);
+    } else if (c == 10) {
+      // NOP
+    } else if (c == 1 && newline) {
+      // Control-A on a newline.  Since FidoNet uses control-A as a control
+      // code, WWIV uses control-D + '0', we'll change it to control-D + '0'
+      wt.push_back(4);  // control-D
+      wt.push_back('0');
+    } else {
+      newline = false;
+      wt.push_back(c);
+    }
+  }
+  return wt;
+}
+
+std::string WWIVToFidoText(const std::string& wt) {
+  string temp(wt);
+  // Fido Text is CR, not CRLF, so remove the LFs
+  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
+  // Also remove the soft CRs since WWIV has no concept
+  temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
+  // Remove the trailing control-Z (if one exists).
+  if (!temp.empty() && temp.back() == '\x1a') {
+    temp.pop_back();
+  }
+  return temp;
+}
 
 }  // namespace fido
 }  // namespace net

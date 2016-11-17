@@ -212,7 +212,7 @@ static constexpr uint16_t MSGLOCAL = 0x0100;
 static constexpr uint16_t MSGHOLD = 0x0200;
 // Unused
 static constexpr uint16_t MSGUNUSED = 0x0400;
-// File request
+// File req uest
 static constexpr uint16_t MSGFREQ = 0x0800;
 // Return receipt request
 static constexpr uint16_t MSGRRREQ = 0x1000;

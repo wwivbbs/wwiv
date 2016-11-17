@@ -128,27 +128,6 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-// TODO(rushfan): move this somewhere common since it's copied
-// from dump_fido_packet.cpp
-static std::string FidoToWWIVText(const std::string& ft) {
-  std::string wt;
-  for (auto& c : ft) {
-    if (c == 13) {
-      wt.push_back(13);
-      wt.push_back(10);
-    } else if (c == 0x8d) {
-      // FIDOnet style Soft CR
-      wt.push_back(13);
-      wt.push_back(10);
-    } else if (c == 10) {
-      // NOP
-    } else {
-      wt.push_back(c);
-    }
-  }
-  return wt;
-}
-
 static string get_echomail_areaname(const std::string& text) {
   vector<string> lines = split_message(text);
   for (const auto& line : lines) {
@@ -185,8 +164,7 @@ static bool import_packet_file(const net_networks_rec& net, const std::string& d
     }
 
     net_header_rec nh{};
-    // TODO(rushfan): Hack - need to parse the fidonet date.
-    nh.daten = static_cast<uint32_t>(time(nullptr));
+    nh.daten = fido_to_daten(msg.vh.date_time);
     nh.fromsys = net.fido.fake_outbound_node;
     nh.fromuser = 0;
     nh.list_len = 0;
@@ -203,7 +181,7 @@ static bool import_packet_file(const net_networks_rec& net, const std::string& d
     text.push_back(0);
     text.append(StrCat(msg.vh.from_user_name, "(", msg.nh.orig_net, "/", msg.nh.orig_node, ")\r\n"));
     text.append(StrCat(msg.vh.date_time, "\r\n"));
-    text.append(msg.vh.text);
+    text.append(FidoToWWIVText(msg.vh.text));
 
     nh.length = text.size();
     // Create file, write to LOCAL.NET for network2 to import.
@@ -220,6 +198,7 @@ static bool import_packets(const net_networks_rec& net, const std::string& dir, 
   while (has_next) {
     const auto& name = files.GetFileName();
     if (import_packet_file(net, dir, name)) {
+      LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
       File::Remove(dir, name);
     }
     has_next = files.next();
@@ -228,6 +207,7 @@ static bool import_packets(const net_networks_rec& net, const std::string& dir, 
 }
 
 static bool import_bundle_file(const Config& config, const net_networks_rec& net, const std::string& dir, const string& name) {
+  VLOG(1) << "import_bundle_file: name: " << name;
   File f(dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(INFO) << "Unable to open file: " << dir << name;
@@ -264,6 +244,7 @@ static bool import_bundle_file(const Config& config, const net_networks_rec& net
 }
 
 static bool import_bundles(const Config& config, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+  VLOG(1) << "import_bundles: mask: " << mask;
   WFindFile files;
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
   while (has_next) {
@@ -453,13 +434,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
 
     // Clean up sender name.
     CleanupWWIVName(sender_name);
-
-    string bbs_text = string(iter, raw_text.end());
-    // Since WWIV uses CRLF, remove the LF's and we have happy CR's.
-    bbs_text.erase(std::remove(bbs_text.begin(), bbs_text.end(), 10), bbs_text.end());
-    if (!bbs_text.empty() && bbs_text.back() == '\x1a') {
-      bbs_text.pop_back();
-    }
+    string bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
 
     fido_variable_length_header_t vh;
     vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
@@ -684,7 +659,7 @@ int main(int argc, char** argv) {
               }
               FidoAddress orig(net.fido.fido_address);
               fido_stored_message_t h{};
-              h.attribute = MSGFILE;
+              h.attribute = (MSGFILE | MSGKILL | MSGLOCAL);
               h.cost = 0;
               to_char_array(h.date_time, daten_to_fido(time(nullptr)));
               h.dest_net = sub.net();

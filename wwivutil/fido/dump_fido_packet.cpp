@@ -24,6 +24,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "networkb/fido_util.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
 #include "sdk/net.h"
@@ -33,6 +34,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
+using namespace wwiv::net::fido;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
@@ -40,19 +42,26 @@ namespace wwiv {
 namespace wwivutil {
 namespace fido {
 
-static std::string FidoToWWIVText(const std::string& ft) {
-  std::string wt;
-  for (auto& c : ft) {
-    if (c == 13) {
-      wt.push_back(13);
-      wt.push_back(10);
-    } else if (c == 10) {
-      // NOP
-    } else {
-      wt.push_back(c);
-    }
-  }
-  return wt;
+static string fido_attrib_to_string(uint16_t a) {
+  string s;
+  if (a & MSGPRIVATE) s += "[PRIVATE]";
+  if (a & MSGCRASH) s += "[CRASH] ";
+  if (a & MSGREAD) s += "[READ] ";
+  if (a & MSGSENT) s += "[SENT] ";
+  if (a & MSGFILE) s += "[FILE] ";
+  if (a & MSGTRANSIT) s += "[TRANSIT] ";
+  if (a & MSGORPHAN) s += "[ORPHAN]";
+  if (a & MSGKILL) s += "[KILL]";
+  if (a & MSGLOCAL) s += "[LOCAL]";
+  if (a & MSGHOLD) s += "[HOLD]";
+  if (a & MSGUNUSED) s += "[UNUSED]";
+  if (a & MSGFREQ) s += "[FREQ]";
+  if (a & MSGRRREQ) s += "[RRREQ]";
+  if (a & MSGISRR) s += "[ISRR]";
+  if (a & MSGAREQ) s += "[AREQ]";
+  if (a & MSGFUPDREQ) s += "[UPDREQ]";
+
+  return s;
 }
 
 int dump_stored_message(const std::string& filename) {
@@ -77,8 +86,7 @@ int dump_stored_message(const std::string& filename) {
   cout << "subject: " << h.subject << std::endl;
   cout << "date:    " << h.date_time << std::endl;
   cout << "# read:  " << h.times_read << "; reply_to: " << h.reply_to << std::endl;
-  cout << "attrib:  " << h.attribute;
-  if (h.attribute & 1) { cout << " {PRIVATE}"; }
+  cout << "attrib:  " << fido_attrib_to_string(h.attribute);
   cout << std::endl;
   cout << "text: " << std::endl << std::endl << FidoToWWIVText(msg.text) << std::endl;
   return 0;
