@@ -126,18 +126,25 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
   cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
   cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
 }
+NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
+  cmdline.set_no_args_allowed(true);
+  cmdline.AddStandardArgs();
+  AddStandardNetworkArgs(cmdline, File::current_directory());
+  bbsdir_ = cmdline.arg("bbsdir").as_string();
+  network_number_ = cmdline.arg("net").as_int();
 
-NetworkCommandLine::NetworkCommandLine(const std::string& bbsdir, int net) 
-  : bbsdir_(bbsdir), config_(bbsdir_), networks_(config_), network_number_(net) {
-  if (!config_.IsInitialized()) {
+  config_.reset(new wwiv::sdk::Config(bbsdir_));
+  networks_.reset(new wwiv::sdk::Networks(*config_.get()));
+
+  if (!config_->IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
     initialized_ = false;
   }
-  if (!networks_.IsInitialized()) {
+  if (!networks_->IsInitialized()) {
     LOG(ERROR) << "Unable to load networks.";
     initialized_ = false;
   }
-  const auto& nws = networks_.networks();
+  const auto& nws = networks_->networks();
 
   if (network_number_ < 0 || network_number_ >= size_int(nws)) {
     LOG(ERROR) << "network number must be between 0 and " << nws.size() << ".";
@@ -149,9 +156,6 @@ NetworkCommandLine::NetworkCommandLine(const std::string& bbsdir, int net)
   network_name_ = network_.name;
   StringLowerCase(&network_name_);
 }
-
-NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline)
-  : NetworkCommandLine(cmdline.arg("bbsdir").as_string(), cmdline.arg("net").as_int()) {}
 
 }  // namespace net
 }  // namespace wwiv

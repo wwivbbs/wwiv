@@ -360,6 +360,15 @@ void File::MakeAbsolutePath(const string& base, string* relative) {
   }
 }
 
+// static 
+string File::MakeAbsolutePath(const std::string& base, const std::string& relative) {
+  if (File::IsAbsolutePath(relative)) {
+    return relative;
+  }
+  File dir(base, relative);
+  return dir.full_pathname();
+}
+
 // static
 bool File::IsAbsolutePath(const string& path) {
   if (path.empty()) {

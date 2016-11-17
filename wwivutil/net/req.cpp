@@ -63,18 +63,13 @@ int SubReqCommand::Execute() {
     return 1;
   }
 
-  wwiv::net::NetworkCommandLine net_cmdline(config()->bbsdir(), arg("net").as_int());
-  if (!net_cmdline.IsInitialized()) {
-    return 1;
-  }
-
   auto r = this->remaining();
   if (r.size() < 3) {
     cout << GetUsage();
     return 2;
   }
 
-  auto net = net_cmdline.network();
+  auto net = config()->networks().at(arg("net").as_int());
   string packet_filename = wwiv::net::create_pend(net.dir, false, 'r');
   uint16_t main_type = main_type_sub_add_req;
   auto add_drop = upcase(r.at(0).front());

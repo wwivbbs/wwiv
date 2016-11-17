@@ -211,8 +211,6 @@ int main(int argc, char** argv) {
   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
   CommandLine cmdline(argc, argv, "net");
-  cmdline.AddStandardArgs();
-  AddStandardNetworkArgs(cmdline, File::current_directory());
   RegisterHelpCommands(cmdline);
   if (!cmdline.Parse()) {
     ShowHelp(cmdline);

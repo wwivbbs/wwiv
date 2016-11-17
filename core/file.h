@@ -172,6 +172,7 @@ class File {
   static std::string current_directory();
   static bool set_current_directory(const std::string& dir);
   static void MakeAbsolutePath(const std::string& base, std::string* relative);
+  static std::string MakeAbsolutePath(const std::string& base, const std::string& relative);
   static bool IsAbsolutePath(const std::string& path);
   static bool IsRelativePath(const std::string& path) { return !IsAbsolutePath(path); }
 

@@ -166,16 +166,9 @@ int main(int argc, char** argv) {
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
-    cmdline.set_no_args_allowed(true);
-    cmdline.AddStandardArgs();
-    AddStandardNetworkArgs(cmdline, File::current_directory());
-
-    if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
-      ShowHelp(cmdline);
-      return 1;
-    }
     NetworkCommandLine net_cmdline(cmdline);
-    if (!net_cmdline.IsInitialized()) {
+    if (!net_cmdline.IsInitialized() || !cmdline.Parse() || cmdline.arg("help").as_bool()) {
+      ShowHelp(cmdline);
       return 1;
     }
 

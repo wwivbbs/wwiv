@@ -164,7 +164,7 @@ static bool import_packet_file(const net_networks_rec& net, const std::string& d
     }
 
     net_header_rec nh{};
-    nh.daten = fido_to_daten(msg.vh.date_time);
+    nh.daten = static_cast<uint32_t>(fido_to_daten(msg.vh.date_time));
     nh.fromsys = net.fido.fake_outbound_node;
     nh.fromuser = 0;
     nh.list_len = 0;
@@ -216,8 +216,7 @@ static bool import_bundle_file(const Config& config, const net_networks_rec& net
 
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
-  auto tempdir = net.fido.temp_inbound_dir;
-  File::MakeAbsolutePath(net.dir, &tempdir);
+  auto tempdir = File::MakeAbsolutePath(net.dir, net.fido.temp_inbound_dir);
   File::set_current_directory(tempdir);
 
 
@@ -274,12 +273,9 @@ bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
 
-  string net_dir(net.dir);
-  File::MakeAbsolutePath(config.root_directory(), &net_dir);
-  string out_dir(net.fido.outbound_dir);
-  File::MakeAbsolutePath(net_dir, &out_dir);
-  string temp_dir(tempdir);
-  File::MakeAbsolutePath(net_dir, &temp_dir);
+  string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
+  string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
+  string temp_dir(File::MakeAbsolutePath(net_dir, tempdir));
 
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
@@ -368,8 +364,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
 
   string temp_dir(tempdir);
   {
-    string net_dir(net.dir);
-    File::MakeAbsolutePath(config.root_directory(), &net_dir);
+    string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
     File::MakeAbsolutePath(net_dir, &temp_dir);
   }
 
@@ -497,7 +492,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
   return false;
 }
 
-string NextNetmailFileName(const string& dir) {
+string NextNetmailFilePath(const string& dir) {
   for (int i = 2; i < 10000; i++) {
     string candidate = FilePath(dir, StrCat(i, ".msg"));
     if (!File::Exists(candidate)) {
@@ -507,21 +502,42 @@ string NextNetmailFileName(const string& dir) {
   return "";
 }
 
+bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest, const string& from, const string& to, const string& netmail_filename, const string& bundle_path) {
+  File netmail(netmail_filename);
+  if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive | File::modeReadWrite, File::shareDenyReadWrite)) {
+    LOG(ERROR) << "Unable to open netmail filen: '" << netmail.full_pathname() << "'";
+    return false;
+  }
+  fido_stored_message_t h{};
+  h.attribute = (MSGFILE | MSGKILL | MSGLOCAL);
+  h.cost = 0;
+  to_char_array(h.date_time, daten_to_fido(time(nullptr)));
+  h.dest_net = dest.net();
+  h.dest_node = dest.node();
+  h.dest_point = dest.point();
+  h.dest_zone = dest.zone();
+  to_char_array(h.from, from);
+  h.next_reply = 0;
+  h.orig_net = orig.net();
+  h.orig_node = orig.node();
+  h.orig_point = orig.point();
+  h.orig_zone = orig.zone();
+  to_char_array(h.subject, bundle_path);
+  to_char_array(h.to, to);
+  FidoStoredMessage m(h, "");
+  write_stored_message(netmail, m);
+
+  return true;
+}
+
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
-    cmdline.set_no_args_allowed(true);
-    cmdline.AddStandardArgs();
-    AddStandardNetworkArgs(cmdline, File::current_directory());
-
-    if (!cmdline.Parse() || cmdline.arg("help").as_bool()) {
-      ShowHelp(cmdline);
-      return 1;
-    }
     NetworkCommandLine net_cmdline(cmdline);
-    if (!net_cmdline.IsInitialized()) {
+    if (!net_cmdline.IsInitialized() || !cmdline.Parse() || cmdline.arg("help").as_bool()) {
+      ShowHelp(cmdline);
       return 1;
     }
 
@@ -564,10 +580,8 @@ int main(int argc, char** argv) {
 
     if (cmd == "import") {
       const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?"};
-      auto net_dir = net.dir;
-      File::MakeAbsolutePath(net_cmdline.config().root_directory(), &net_dir);
-      auto tempdir = net.fido.inbound_dir;
-      File::MakeAbsolutePath(net_dir, &tempdir);
+      auto net_dir = File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir);
+      auto tempdir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
       for (const auto& ext : extensions) {
         import_bundles(net_cmdline.config(), net, tempdir, StrCat("*.", ext));
 #ifndef _WIN32
@@ -591,6 +605,7 @@ int main(int argc, char** argv) {
       }
 
       bool done = false;
+      std::set<std::string> bundles;
       while (!done) {
         Packet p;
         wwiv::net::ReadPacketResponse response = read_packet(f, p);
@@ -636,68 +651,49 @@ int main(int argc, char** argv) {
               write_wwivnet_packet(DEAD_NET, net, p);
               continue;
             }
-            string net_dir(net.dir);
-            File::MakeAbsolutePath(net_cmdline.config().root_directory(), &net_dir);
-            string out_dir(net.fido.outbound_dir);
-            File::MakeAbsolutePath(net_dir, &out_dir);
+            string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
+            string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
             LOG(INFO) << "Created bundle: " << FilePath(out_dir, bundlename);
 
             // Delete the file, since we made a bundle.
             File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
 
-            // TODO(rushfan): Create FLO or attach file.
-            if (net.fido.mailer_type == fido_mailer_t::attach) {
-              string netmail_filename = NextNetmailFileName(net.fido.netmail_dir);
-              if (netmail_filename.empty()) {
-                LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << net.fido.netmail_dir << "'";
-                continue;
-              }
-              File netmail(netmail_filename);
-              if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive | File::modeReadWrite, File::shareDenyReadWrite)) {
-                LOG(ERROR) << "Unable to open netmail filen: '" << netmail.full_pathname() << "'";
-                continue;
-              }
-              FidoAddress orig(net.fido.fido_address);
-              fido_stored_message_t h{};
-              h.attribute = (MSGFILE | MSGKILL | MSGLOCAL);
-              h.cost = 0;
-              to_char_array(h.date_time, daten_to_fido(time(nullptr)));
-              h.dest_net = sub.net();
-              h.dest_node = sub.node();
-              h.dest_point = sub.point();
-              h.dest_zone = sub.zone();
-              to_char_array(h.from, "ARCmail");
-              h.next_reply = 0;
-              h.orig_net = orig.net();
-              h.orig_node = orig.node();
-              h.orig_point = orig.point();
-              h.orig_zone = orig.zone();
-              to_char_array(h.subject, FilePath(out_dir, bundlename));
-              to_char_array(h.to, "ARCmail");
-              FidoStoredMessage m(h, "");
-              write_stored_message(netmail, m);
-              LOG(INFO) << "Wrote attach netmail: " << netmail.full_pathname();
-            } else if (net.fido.mailer_type == fido_mailer_t::flo) {
-              FidoAddress orig(net.fido.fido_address);
-              const string flo_name = bundle_name(orig, sub, "flo");
-              const string bsy_name = bundle_name(orig, sub, "bsy");
-              {
-                File bsy(out_dir, bsy_name);
-                if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
-                  LOG(ERROR) << "Unable to create BSY file.";
-                  // TODO(rushfan): Sleep and loop
+            if (!contains(bundles, bundlename)) {
+              bundles.insert(bundlename);
+              if (net.fido.mailer_type == fido_mailer_t::attach) {
+                string netmail_filepath = NextNetmailFilePath(net.fido.netmail_dir);
+                if (netmail_filepath.empty()) {
+                  LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << net.fido.netmail_dir << "'";
                   continue;
                 }
+                const string bundlepath = FilePath(out_dir, bundlename);
+                if (!CreateFidoNetAttachNetMail(FidoAddress(net.fido.fido_address), sub, "ARCmail", "ARCmail", netmail_filepath, bundlepath)) {
+                  LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
+                  continue;
+                }
+                LOG(INFO) << "Wrote attach netmail: " << netmail_filepath;
+              } else if (net.fido.mailer_type == fido_mailer_t::flo) {
+                FidoAddress orig(net.fido.fido_address);
+                const string flo_name = bundle_name(orig, sub, "flo");
+                const string bsy_name = bundle_name(orig, sub, "bsy");
+                {
+                  File bsy(out_dir, bsy_name);
+                  if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
+                    LOG(ERROR) << "Unable to create BSY file.";
+                    // TODO(rushfan): Sleep and loop
+                    continue;
+                  }
+                }
+                ScopeExit at_exit([=] { File::Remove(out_dir, bsy_name); });
+                TextFile flo_file(out_dir, flo_name, "a+");
+                if (!flo_file.IsOpen()) {
+                  LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
+                  continue;
+                }
+                flo_file.WriteLine(StrCat("^", FilePath(out_dir, bundlename)));
+              } else {
+                LOG(ERROR) << "Unknown mailer type: " << static_cast<int>(net.fido.mailer_type);
               }
-              ScopeExit at_exit([=] { File::Remove(out_dir, bsy_name); });
-              TextFile flo_file(out_dir, flo_name, "a+");
-              if (!flo_file.IsOpen()) {
-                LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
-                continue;
-              }
-              flo_file.WriteLine(StrCat("^", FilePath(out_dir, bundlename)));
-            } else {
-              LOG(ERROR) << "Unknown mailer type: " << static_cast<int>(net.fido.mailer_type);
             }
           }
         } else {
