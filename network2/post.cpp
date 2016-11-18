@@ -131,7 +131,8 @@ bool handle_post(Context& context, Packet& p) {
 
   string basename;
   if (!find_basename(context, subtype, basename)) {
-    LOG(INFO) << "    ! ERROR: Unable to find subtype of subtype: " << subtype << "; writing to dead.net.";
+    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << subtype;
+    LOG(INFO) << "      title: " << title << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 

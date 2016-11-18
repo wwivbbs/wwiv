@@ -142,7 +142,7 @@ ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
   packet.vh.date_time = ReadFixedLengthField(f, 19);
   packet.vh.to_user_name = ReadVariableLengthField(f, 36);
   packet.vh.from_user_name = ReadVariableLengthField(f, 36);
-  packet.vh.subject = ReadVariableLengthField(f, 36);
+  packet.vh.subject = ReadVariableLengthField(f, 72);
   packet.vh.text = ReadVariableLengthField(f, 256 * 1024);
   return ReadPacketResponse::OK;
 }
