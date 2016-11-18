@@ -179,6 +179,7 @@ static bool import_packet_file(const FidoCallout& callout, const net_networks_re
     LOG(ERROR) << "Unexpected packet password from node: " << address
       << "; actual: '" << actual << "; expected: " << expected << "'";
     // TODO(rushfan): Move to BADMSGS?
+    return 1;
   }
 
 
