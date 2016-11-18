@@ -396,7 +396,6 @@ bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, co
       continue;
     }
     File::set_current_directory(out_dir);
-    // TODO(rushfan): Need callout.json support to set file specific options here.
     const auto& arc = find_arc(arcs, ctype);
     // We have no parameter 2 since we're extracting everything.
     string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), FilePath(temp_dir, fido_packet_name));
@@ -570,7 +569,8 @@ bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, co
       msgid = dupe.CreateMessageID(address);
     }
 
-    // TODO(rushfan): need to add in MSGID and all that nonsense.
+    // TODO(rushfan): need to add in INTL for netmails, and all that nonsense.
+    // We probably have other stuff we need to add for echomail too.
     std::ostringstream text;
     text << "AREA:" << subtype << "\r"
       << "\001PID: WWIV " << wwiv_version << beta_version << "\r"

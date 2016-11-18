@@ -330,9 +330,7 @@ void insert_dir(int n) {
   r.mask = 0;
 
   {
-    auto it = session()->directories.begin();
-    std::advance(it, n);
-    session()->directories.insert(it, r);
+    insert_at(session()->directories, n, r);
   }
   int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
 
@@ -374,10 +372,7 @@ void delete_dir(int n) {
   update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_DELETE);
 
   n = static_cast<int>(nconv);
-
-  auto it = session()->directories.begin();
-  std::advance(it, n);
-  session()->directories.erase(it);
+  erase_at(session()->directories, n);
 
   size_t num_users = session()->users()->GetNumberOfUserRecords();
 

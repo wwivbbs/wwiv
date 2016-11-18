@@ -113,9 +113,7 @@ void delbatch(int num) {
   if (num >= size_int(session()->batch().entry)) {
     return;
   }
-  auto it = begin(session()->batch().entry);
-  std::advance(it, num);
-  session()->batch().entry.erase(it);
+  erase_at(session()->batch().entry, static_cast<size_t>(num));
 }
 
 static void downloaded(const string& file_name, long lCharsPerSecond) {
@@ -943,10 +941,7 @@ bool Batch::delbatch(size_t pos) {
   if (pos >= entry.size()) {
     return false;
   }
-  auto it = begin(entry);
-  std::advance(it, pos);
-  entry.erase(it);
-  return true;
+  return erase_at(entry, pos);
 }
 
 long Batch::dl_time_in_secs() const {

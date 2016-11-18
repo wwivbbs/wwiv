@@ -96,3 +96,22 @@ TEST(StlTest, SizeAsInt8) {
   auto vs = size_int8(v);
   EXPECT_EQ(3, vs);
 }
+
+TEST(StlTest, InsertAt) {
+  struct Foo { int a; };
+  vector<Foo> v = {Foo{1}};
+  vector<Foo>::size_type pos = 0;
+  insert_at(v, pos, Foo{0});
+  EXPECT_EQ(0, v[0].a);
+  EXPECT_EQ(1, v[1].a);
+}
+
+TEST(StlTest, EraseAt) {
+  struct Foo { int a; };
+  vector<Foo> v = {Foo{0}, Foo{1}, Foo{2}};
+  vector<Foo>::size_type pos = 1;
+  erase_at(v, pos);
+  EXPECT_EQ(0, v[0].a);
+  EXPECT_EQ(2, v[1].a);
+}
+

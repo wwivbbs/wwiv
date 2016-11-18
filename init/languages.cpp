@@ -36,6 +36,7 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/stl.h"
 #include "core/wwivport.h"
 #include "init/init.h"
 #include "init/utility.h"
@@ -48,6 +49,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static constexpr int MAX_LANGUAGES = 100;
@@ -129,9 +131,7 @@ void edit_languages() {
           if (!yn) {
             break;
           }
-          auto it = languages.begin();
-          std::advance(it, result.selected);
-          languages.erase(it);
+          erase_at(languages, result.selected);
           if (languages.size() == 1) {
             languages[0].num = 0;
           }

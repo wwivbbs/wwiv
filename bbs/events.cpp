@@ -532,9 +532,7 @@ void insert_event() {
 }
 
 void delete_event(int n) {
-  auto it = session()->events.begin();
-  std::advance(it, n);
-  session()->events.erase(it);
+  erase_at(session()->events, n);
 }
 
 void eventedit() {

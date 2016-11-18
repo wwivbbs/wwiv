@@ -84,7 +84,6 @@ int WApplication::BBSMainLoop(int argc, char *argv[]) {
 }
 
 WApplication::WApplication() {
-  // TODO this should move into the WSystemConfig object (syscfg wrapper) once it is established.
   if (syscfg.userreclen == 0) {
     syscfg.userreclen = sizeof(userrec);
   }

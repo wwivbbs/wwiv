@@ -427,22 +427,12 @@ bool Subs::Save() {
   return true;
 }
 
-// TODO(rushfan): Since should we make this algo available 
-// in wwiv::sdk since we do it on all containers often.
 bool Subs::insert(std::size_t n, subboard_t r) {
-  // TODO(rushfan): Add size checking
-  auto it = subs_.begin();
-  std::advance(it, n);
-  subs_.insert(it, r);
-  return true;
+  return insert_at(subs_, n, r);
 }
 
 bool Subs::erase(std::size_t n) {
-  // TODO(rushfan): Add size checking
-  auto it = subs_.begin();
-  std::advance(it, n);
-  subs_.erase(it);
-  return true;
+  return erase_at(subs_, n);
 }
 
 }

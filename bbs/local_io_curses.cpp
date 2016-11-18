@@ -28,7 +28,6 @@
 #include <string>
 #include <fcntl.h>
 #ifdef __unix__
-// TODO(rushfan): Remove this
 #include <unistd.h>
 #endif
 

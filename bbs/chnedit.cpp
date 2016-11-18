@@ -349,30 +349,22 @@ void insert_chain(int nCurrentChainum) {
     c.ansir = 0;
     c.ansir |= ansir_no_DOS;
 
-    auto it = session()->chains.begin();
-    std::advance(it, nCurrentChainum);
-    session()->chains.insert(it, c);
+    insert_at(session()->chains, nCurrentChainum, c);
   }
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     chainregrec r;
     memset(&r, 0, sizeof(r));
     r.maxage = 255;
 
-    auto it = session()->chains_reg.begin();
-    std::advance(it, nCurrentChainum);
-    session()->chains_reg.insert(it, r);
+    insert_at(session()->chains_reg, nCurrentChainum, r);
   }
   modify_chain(nCurrentChainum);
 }
 
 void delete_chain(int nCurrentChainum) {
-  auto it = session()->chains.begin();
-  std::advance(it, nCurrentChainum);
-  session()->chains.erase(it);
+  erase_at(session()->chains, nCurrentChainum);
   if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    auto rit = session()->chains_reg.begin();
-    std::advance(rit, nCurrentChainum);
-    session()->chains_reg.erase(rit);
+    erase_at(session()->chains_reg, nCurrentChainum);
   }
 }
 

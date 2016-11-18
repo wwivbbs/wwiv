@@ -99,6 +99,31 @@ const signed int size_int(C c) {
   return wwiv::stl::size_int32(c);
 }
 
+template <typename C, typename S = std::size_t, typename R>
+bool insert_at(C& c, S on, R r) {
+  std::size_t n = static_cast<decltype(std::size(c))>(on);
+
+  if (n < 0 || n > std::size(c)) {
+    return false;
+  }
+  auto it = c.begin();
+  std::advance(it, n);
+  c.insert(it, r);
+  return true;
+}
+
+template <typename C, typename S = std::size_t>
+bool erase_at(C& c, S on) {
+  std::size_t n = static_cast<decltype(std::size(c))>(on);
+  if (n >= std::size(c)) {
+    return false;
+  }
+  auto it = c.begin();
+  std::advance(it, n);
+  c.erase(it);
+  return true;
+}
+
 }  // namespace stl
 }  // namespace wwiv
 

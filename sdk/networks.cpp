@@ -32,6 +32,7 @@
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
@@ -40,6 +41,7 @@
 
 using cereal::make_nvp;
 using namespace wwiv::core;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 #include "sdk/networks_cereal.h"
@@ -111,19 +113,11 @@ bool Networks::contains(const std::string& network_name) const {
 // TODO(rushfan): Since should we make this algo available 
 // in wwiv::sdk since we do it on all containers often.
 bool Networks::insert(std::size_t n, net_networks_rec r) {
-  // TODO(rushfan): Add size checking
-  auto it = networks_.begin();
-  std::advance(it, n);
-  networks_.insert(it, r);
-  return true;
+  return insert_at(networks_, n, r);
 }
 
 bool Networks::erase(std::size_t n) {
-  // TODO(rushfan): Add size checking
-  auto it = networks_.begin();
-  std::advance(it, n);
-  networks_.erase(it);
-  return true;
+  return erase_at(networks_, n);
 }
 
 bool Networks::Load() {

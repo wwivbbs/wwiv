@@ -196,11 +196,7 @@ void sub_xtr_del(int n, int nn, int f) {
   auto xn = session()->subs().sub(n).nets[nn];
 
   if (f) {
-    auto it = session()->subs().sub(n).nets.begin();
-    if (nn > 0) {
-      std::advance(it, nn);
-    }
-    session()->subs().sub(n).nets.erase(it);
+    erase_at(session()->subs().sub(n).nets, nn);
   }
   set_net_num(xn.net_num);
 

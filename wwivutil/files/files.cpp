@@ -229,10 +229,7 @@ public:
       return 1;
     }
 
-    auto iter = files.begin();
-    std::advance(iter, file_number); // move to file number.
-    // erase item.
-    files.erase(iter);
+    erase_at(files, file_number);
 
     file.Seek(0);
     if (!file.WriteVector(files)) {

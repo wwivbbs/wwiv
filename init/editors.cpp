@@ -121,9 +121,7 @@ void extrn_editors() {
             if (!yn) {
               break;
             }
-            auto it = editors.begin();
-            std::advance(it, result.selected);
-            editors.erase(it);
+            erase_at(editors, result.selected);
           }
         } break;
         case 'I': {

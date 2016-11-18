@@ -207,18 +207,13 @@ void insert_sec(int n) {
   r.maxfiles  = 99;
   r.ar    = 0;
 
-  auto it = session()->gfilesec.begin();
-  std::advance(it, n);
-  session()->gfilesec.insert(it, r);
-
+  insert_at(session()->gfilesec, n, r);
   modify_sec(n);
 }
 
 
 void delete_sec(int n) {
-  auto it = session()->gfilesec.begin();
-  std::advance(it, n);
-  session()->gfilesec.erase(it);
+  erase_at(session()->gfilesec, n);
 }
 
 
