@@ -36,6 +36,8 @@
 #include "wwivutil/net/dump_contact.h"
 #include "wwivutil/net/dump_packet.h"
 
+using std::cerr;
+using std::cout;
 using std::endl;
 using std::make_unique;
 using std::setw;
@@ -44,18 +46,40 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
+
+static int show_version(Config& config) {
+  cout << "5.2 Versioned Config    : " << std::boolalpha << config.versioned_config_dat() << std::endl;
+  cout << "Written By WWIV Version : " << config.written_by_wwiv_num_version() << std::endl;
+  cout << "Config Revision #       : " << config.config_revision_number() << std::endl;
+
+  return 0;
+}
 
 class ConfigVersionCommand : public UtilCommand {
 public:
   ConfigVersionCommand(): UtilCommand("version", "Sets or Gets the config version") {}
   std::string GetUsage() const override final {
-    return "";
+    std::ostringstream ss;
+    ss << "Usage: " << std::endl;
+    ss << "  get : Gets the config.dat version information." << std::endl;
+    return ss.str();
   }
   int Execute() override final {
-    return 0;
+    if (remaining().empty()) {
+      std::cout << GetUsage() << GetHelp() << endl;
+      return 2;
+    }
+    string set_or_get(remaining().front());
+    StringLowerCase(&set_or_get);
+
+    if (set_or_get == "get") {
+      return show_version(*this->config()->config());
+    }
+    return 1;
   }
   bool AddSubCommands() override final {
     return true;

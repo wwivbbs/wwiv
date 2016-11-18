@@ -32,6 +32,7 @@
 #include "core/strings.h"
 #include "core/stl.h"
 #include "sdk/config.h"
+#include "wwivutil/config/config.h"
 #include "wwivutil/fido/fido.h"
 #include "wwivutil/files/files.h"
 #include "wwivutil/fix/fix.h"
@@ -59,6 +60,7 @@ public:
   int Main() {
     ScopeExit at_exit(Logger::ExitLogger);
     try {
+      Add(std::make_unique<ConfigCommand>());
       Add(std::make_unique<FilesCommand>());
       Add(std::make_unique<MessagesCommand>());
       Add(std::make_unique<NetCommand>());

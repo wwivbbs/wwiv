@@ -1,6 +1,6 @@
 ==============================================================================
                              WWIV BBS TODO List
-                 Copyright 2002-2016 WWIV Software Services
+                 Copyright 2002-2016 WWI V Software Services
 ==============================================================================
 
 FTN
@@ -38,7 +38,6 @@ General Improvements
 Net52
 =====
 * update routing information in network1.
-* Add wwivutil config {set,get}-version <version>
 
 Message Areas
 =============
