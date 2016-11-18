@@ -65,7 +65,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-static void RegisterHelpCommands(CommandLine& cmdline) {
+static void RegisterNetworkBCommands(CommandLine& cmdline) {
   cmdline.add_argument(BooleanCommandLineArgument("send", "Send network traffic to --node"));
   cmdline.add_argument(BooleanCommandLineArgument("receive", "Receive from any node"));
   cmdline.add_argument({"node", "Node number (only used when sending)", "0"});
@@ -147,11 +147,10 @@ static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, int se
   return true;
 }
 
-static int Main(CommandLine& cmdline) {
+static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
   try {
     int port = cmdline.arg("port").as_int();
     bool skip_net = cmdline.arg("skip_net").as_bool();
-    NetworkCommandLine net_cmdline(cmdline);
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     std::unique_ptr<WStatus> status(sm.GetStatus());
@@ -211,8 +210,9 @@ int main(int argc, char** argv) {
   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
 
   CommandLine cmdline(argc, argv, "net");
-  RegisterHelpCommands(cmdline);
-  if (!cmdline.Parse()) {
+  RegisterNetworkBCommands(cmdline);
+  NetworkCommandLine net_cmdline(cmdline);
+  if (!net_cmdline.IsInitialized()) {
     ShowHelp(cmdline);
     return 1;
   }
@@ -222,5 +222,5 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  return Main(cmdline);
+  return Main(cmdline, net_cmdline);
 }

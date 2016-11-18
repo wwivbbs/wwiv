@@ -66,7 +66,6 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
 class NetworkCommandLine {
 public:
   NetworkCommandLine(wwiv::core::CommandLine& cmdline);
-  //NetworkCommandLine(const std::string& bbsdir);
 
   bool IsInitialized() const { return initialized_; }
   const std::string bbsdir() const { return bbsdir_; }
@@ -74,7 +73,7 @@ public:
   const wwiv::sdk::Networks& networks() const { return *networks_.get(); }
   const std::string network_name() const { return network_name_; }
   const int network_number() const { return network_number_; }
-  const net_networks_rec& network() { return network_; }
+  const net_networks_rec& network() const { return network_; }
 
 private:
   std::string bbsdir_;

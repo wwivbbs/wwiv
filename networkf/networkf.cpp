@@ -530,13 +530,13 @@ bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest
   return true;
 }
 
-int main(int argc, char** argv) {
+int   main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
     NetworkCommandLine net_cmdline(cmdline);
-    if (!net_cmdline.IsInitialized() || !cmdline.Parse() || cmdline.arg("help").as_bool()) {
+    if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(cmdline);
       return 1;
     }
@@ -659,6 +659,8 @@ int main(int argc, char** argv) {
             File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
 
             if (!contains(bundles, bundlename)) {
+              // We only want to attach the bundle (or add it to the flo file)
+              // one time, so skip ones that have already been done.
               bundles.insert(bundlename);
               if (net.fido.mailer_type == fido_mailer_t::attach) {
                 string netmail_filepath = NextNetmailFilePath(net.fido.netmail_dir);

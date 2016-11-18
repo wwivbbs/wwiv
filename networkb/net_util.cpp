@@ -130,6 +130,10 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
   cmdline.set_no_args_allowed(true);
   cmdline.AddStandardArgs();
   AddStandardNetworkArgs(cmdline, File::current_directory());
+
+  if (!cmdline.Parse()) {
+    initialized_ = false;
+  }
   bbsdir_ = cmdline.arg("bbsdir").as_string();
   network_number_ = cmdline.arg("net").as_int();
 

@@ -357,7 +357,7 @@ static void ensure_contact_net_entries(const Callout& callout, const string& dir
   }
 }
 
-static int network3_fido(CommandLine& cmdline, NetworkCommandLine& net_cmdline) {
+static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
   VLOG(1) << "network3_fido";
   const auto& net = net_cmdline.network();
   std::ostringstream text;
@@ -417,7 +417,7 @@ static int network3_fido(CommandLine& cmdline, NetworkCommandLine& net_cmdline) 
   return 0;
 }
 
-static int network3_wwivnet(CommandLine& cmdline, NetworkCommandLine& net_cmdline) {
+static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
   VLOG(1) << "Reading BBSLIST.NET..";
   const auto& net = net_cmdline.network();
   BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
@@ -480,7 +480,7 @@ int main(int argc, char** argv) {
     cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
 
     NetworkCommandLine net_cmdline(cmdline);
-    if (!net_cmdline.IsInitialized() || !cmdline.Parse() || cmdline.arg("help").as_bool()) {
+    if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(cmdline);
       return 1;
     }
