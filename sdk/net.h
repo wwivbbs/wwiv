@@ -273,26 +273,27 @@ struct net_call_out_rec {
 
 #ifndef __MSDOS__
 
-enum class fido_packet_t { type2_plus};
-enum class fido_transport_t { directory, binkp};
-enum class fido_mailer_t { flo, attach};
+enum class fido_packet_t { unset, type2_plus };
+enum class fido_transport_t { unset, directory, binkp };
+enum class fido_mailer_t { unset, flo, attach };
 
-// Remember to update the serialize function in net.cpp when updating these.
+// Remember to update the serialize function in networks_cereal.h and also
+// the code (packet_config_for) in fido_callout.cpp when updating these.
 /**
  * Fido specific per-packet settings.
  */
 struct fido_packet_config_t {
   // Type of packet to create
-  fido_packet_t packet_type;
+  fido_packet_t packet_type = fido_packet_t::unset;
   // File extension to map to type defined in archivers.dat
   std::string compression_type;
   std::string packet_password;
   std::string areafix_password;
-  int max_archive_size;
-  int max_packet_size;
+  int max_archive_size = 0;
+  int max_packet_size = 0;
 };
 
-// Remember to update the serialize function in net.cpp when updating these.
+// Remember to update the serialize function in networks_cereal.h when updating these.
 /**
  * Fido specific per-network settings.
  */

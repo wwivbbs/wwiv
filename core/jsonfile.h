@@ -60,6 +60,7 @@ public:
       return false;
     }
   }
+
   bool Save() { 
     std::ostringstream ss;
     try {
@@ -80,7 +81,6 @@ public:
     file.Write(ss.str());
     return true;
   }
-
 
  private:
    const std::string file_name_;

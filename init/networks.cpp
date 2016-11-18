@@ -179,7 +179,7 @@ public:
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->netmail_dir));
       items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"2+"}, &n->packet_config.packet_type));
-      items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "NONE"}, n->packet_config.compression_type));
+      items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, false));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, false));
       items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_archive_size));

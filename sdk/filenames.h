@@ -92,6 +92,7 @@
 
 #define FEDIT_INF "fedit.inf"
 #define FEEDBACK_NOEXT "feedback"
+#define FIDO_CALLOUT_JSON "fido_callout.json"
 #define FILESDL_NOEXT "filesdl"
 #define FILESUL_NOEXT "filesul"
 #define FILE_ID_DIZ "file_id.diz"

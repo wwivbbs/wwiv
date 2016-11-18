@@ -20,6 +20,13 @@
 #include <set>
 #include <string>
 
+#include <cereal/cereal.hpp>
+#include <cereal/access.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/archives/json.hpp>
+
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"

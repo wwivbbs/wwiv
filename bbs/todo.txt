@@ -3,6 +3,15 @@
                  Copyright 2002-2016 WWIV Software Services
 ==============================================================================
 
+FTN
+===
+* Make separate inbound and outbound temp directories
+* inbound netmail support
+* outbound netmail support
+* add option to save packets
+* ability to put more than 1 message per packet.
+* Make sending non-compressed packets work.
+* add per-node overrides.
 
 Ini Files and Configuration
 ===========================

@@ -100,6 +100,9 @@
     <ClInclude Include="ftn_msgdupe.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="fido\fido_callout.h">
+      <Filter>Source Files\fido</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -196,6 +199,9 @@
     </ClCompile>
     <ClCompile Include="ftn_msgdupe.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="fido\fido_callout.cpp">
+      <Filter>Source Files\fido</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
