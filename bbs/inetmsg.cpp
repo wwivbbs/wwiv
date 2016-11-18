@@ -47,7 +47,7 @@ static unsigned char translate_table[] = {
 
 void get_user_ppp_addr() {
   session()->internetFullEmailAddress = "";
-  int network_number = getnetnum("FILEnet");
+  int network_number = getnetnum_by_type(network_type_t::internet);
   if (network_number == -1) {
     return;
   }
@@ -102,7 +102,7 @@ void send_inet_email() {
     return;
   }
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
-  int network_number = getnetnum("FILEnet");
+  int network_number = getnetnum_by_type(network_type_t::internet);
   session()->set_net_num(network_number);
   if (network_number == -1) {
     return;
@@ -185,7 +185,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   inetAddrFile.Close();
   char szDefaultUserAddr[255];
   sprintf(szDefaultUserAddr, "USER%d", user_number);
-  session()->set_net_num(getnetnum("FILEnet"));
+  session()->set_net_num(getnetnum_by_type(network_type_t::internet));
   if (session()->net_num() != -1) {
     set_net_num(session()->net_num());
     TextFile in(session()->network_directory(), ACCT_INI, "rt");

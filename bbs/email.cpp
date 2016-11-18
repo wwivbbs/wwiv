@@ -322,8 +322,8 @@ void sendout_email(EmailData& data) {
     }
   } else {
     string logMessagePart;
-    if ((data.system_number == 1 && IsEqualsIgnoreCase(session()->network_name(), "Internet")) ||
-      data.system_number == 32767) {
+    if ((data.system_number == 1 && session()->current_net().type == network_type_t::internet)
+      || data.system_number == 32767) {
       logMessagePart = session()->net_email_name;
     } else {
       if (session()->max_net_num() > 1) {
@@ -469,9 +469,8 @@ void email(const string& title, int user_number, int system_number, bool forceit
       destination = ">UNKNOWN<";
     }
   } else {
-    if ((system_number == 1 && user_number == 0 &&
-         IsEqualsIgnoreCase(session()->network_name(), "Internet")) ||
-        system_number == 32767) {
+    if ((system_number == 1 && user_number == 0 && session()->current_net().type == network_type_t::internet)
+      || system_number == 32767) {
       destination = session()->net_email_name;
     } else {
       if (session()->max_net_num() > 1) {
@@ -519,7 +518,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   MessageEditorData data;
   data.title = title;
   data.need_title = true;
-  data.fsed_flags = (bAllowFSED) ? INMSG_FSED : INMSG_NOFSED;
+  data.fsed_flags = (bAllowFSED) ? FsedFlags::FSED : FsedFlags::NOFSED;
   data.anonymous_flag = i;
   data.aux = "email";
   data.to_name = destination;
@@ -592,7 +591,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
       } else {
         if (carbon_copy[j].system_number == 1 &&
             carbon_copy[j].user_number == 0 &&
-            IsEqualsIgnoreCase(carbon_copy[j].net_name, "Internet")) {
+            session()->net_networks[carbon_copy[j].net_num].type == network_type_t::internet) {
           destination = carbon_copy[j].net_email_name;
         } else {
           set_net_num(carbon_copy[j].net_num);

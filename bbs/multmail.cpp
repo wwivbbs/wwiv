@@ -74,7 +74,7 @@ void multimail(int *pnUserNumber, int numu) {
   irt_name[0] = 0;
   File::Remove(QUOTES_TXT);
   data.aux = "email";
-  data.fsed_flags = INMSG_NOFSED;
+  data.fsed_flags = FsedFlags::NOFSED;
   data.to_name = "Multi-Mail";
   data.msged_flags = MSGED_FLAG_NONE;
   if (!inmsg(data)) {

@@ -186,7 +186,7 @@ void post() {
 
   write_inst(INST_LOC_POST, session()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
-  data.fsed_flags = INMSG_FSED;
+  data.fsed_flags = FsedFlags::FSED;
   data.msged_flags = (session()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
   data.aux = session()->current_sub().filename;
   data.to_name = session()->current_sub().name;

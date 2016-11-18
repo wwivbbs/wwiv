@@ -11,8 +11,6 @@ FTN
 * add option to save packets
 * ability to put more than 1 message per packet.
 * Make sending non-compressed packets work.
-* add per-node overrides.
-* Check packet password.
 
 Ini Files and Configuration
 ===========================
@@ -50,8 +48,6 @@ Message Areas
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
-* internet email assumes "FILEnet" as a network, this needs to be fixes.
-  (search for getnetnum("FILEnet"))
 * Make read_type2_message return a structure of the data from a type-2 message. 
   Also add a display_default_header or something to display what read_type2_message
   used to display by default.

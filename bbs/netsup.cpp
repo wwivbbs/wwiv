@@ -730,7 +730,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
         strcpy(on, nm + i);
       }
       if (session()->net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
-          IsEqualsIgnoreCase(session()->net_networks[nFromNetworkNumber].name, "Internet")) {
+          session()->net_networks[nFromNetworkNumber].type == network_type_t::internet) {
         sprintf(newname, "%s%s", qn, on);
       } else {
         if (on[0]) {
@@ -1180,11 +1180,11 @@ void force_callout(int dw) {
 
 void run_exp() {
   int nOldNetworkNumber = session()->net_num();
-  int nFileNetNetworkNumber = getnetnum("FILEnet");
-  if (nFileNetNetworkNumber == -1) {
+  int internet_net_num = getnetnum_by_type(network_type_t::internet);
+  if (internet_net_num == -1) {
     return;
   }
-  set_net_num(nFileNetNetworkNumber);
+  set_net_num(internet_net_num);
 
   const string exp_command = StringPrintf("exp s32767.net %s %d %s %s %s", 
       session()->network_directory().c_str(), session()->current_net().sysnum,

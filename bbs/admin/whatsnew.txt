@@ -49,7 +49,10 @@ What's New in WWIV 5.2 (2016)
   since wwivserver can answer binkp for you, no need to run networkb
   manually to receive traffic.
 * wwivutil messages now has a pack comand to pack a message area.
-
+* Network names "Filenet" and "internet" no longer have special meaning,
+  within the BBS, please ensure those networks are of type "internet" for
+  WWIV to understand those are internet network types. (don't rename them
+  since WINS may care about the name).
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -506,16 +506,24 @@ void time_bank() {
   } while (!done && !hangup);
 }
 
-
-int getnetnum(const char *network_name) {
+int getnetnum(const std::string& network_name) {
   for (int i = 0; i < session()->max_net_num(); i++) {
-    if (IsEqualsIgnoreCase(session()->net_networks[i].name, network_name)) {
+    if (iequals(session()->net_networks[i].name, network_name)) {
       return i;
     }
   }
   return -1;
 }
 
+int getnetnum_by_type(network_type_t type) {
+  const auto& n = session()->net_networks;
+  for (int i = 0; i < session()->max_net_num(); i++) {
+    if (n[i].type == type) {
+      return i;
+    }
+  }
+  return -1;
+}
 
 void uudecode(const char *input_filename, const char *output_filename) {
   bout << "|#2Now UUDECODING " << input_filename;
@@ -530,4 +538,3 @@ void uudecode(const char *input_filename, const char *output_filename) {
 void Packers() {
   qwk_menu();
 }
-

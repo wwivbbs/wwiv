@@ -352,8 +352,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
       }
     }
   }
-  if ((strncasecmp("internet", session()->network_name(), 8) == 0) ||
-      (strncasecmp("filenet", session()->network_name(), 7) == 0)) {
+  if (session()->current_net().type == network_type_t::internet) {
     if (session()->usenetReferencesLine.length() > 0) {
       const string buf = StringPrintf("%c0RReferences: %s", CD, session()->usenetReferencesLine.c_str());
       ss << buf << crlf;
@@ -529,19 +528,19 @@ bool inmsg(MessageEditorData& data) {
   vector<string> lin;
 
   int oiia = setiia(0);
-  if (data.fsed_flags != INMSG_NOFSED && !okfsed()) {
-    data.fsed_flags = INMSG_NOFSED;
+  if (data.fsed_flags != FsedFlags::NOFSED && !okfsed()) {
+    data.fsed_flags = FsedFlags::NOFSED;
   }
 
   const string exted_filename = StrCat(session()->temp_directory(), INPUT_MSG);
-  if (data.fsed_flags) {
-    data.fsed_flags = INMSG_FSED;
+  if (data.fsed_flags != FsedFlags::NOFSED) {
+    data.fsed_flags = FsedFlags::FSED;
   }
   if (use_workspace) {
     if (!File::Exists(exted_filename)) {
       use_workspace = false;
     } else {
-      data.fsed_flags = INMSG_FSED_WORKSPACE;
+      data.fsed_flags = FsedFlags::WORKSPACE;
     }
   }
 
@@ -550,7 +549,7 @@ bool inmsg(MessageEditorData& data) {
     charbufferpointer = 0;
     charbuffer[0] = '\0';
     grab_quotes(nullptr, nullptr);
-    if (data.fsed_flags) {
+    if (data.fsed_flags != FsedFlags::NOFSED) {
       File::Remove(exted_filename);
     }
   });
@@ -573,11 +572,11 @@ bool inmsg(MessageEditorData& data) {
   int setanon = 0;
   int curli = 0;
   bool bSaveMessage = false;
-  if (data.fsed_flags == INMSG_NOFSED) {   // Use Internal Message Editor
+  if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
     bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, &data.title);
-  } else if (data.fsed_flags == INMSG_FSED) {   // Use Full Screen Editor
+  } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
     bSaveMessage = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.msged_flags, data.aux);
-  } else if (data.fsed_flags == INMSG_FSED_WORKSPACE) {   // "auto-send mail message"
+  } else if (data.fsed_flags == FsedFlags::WORKSPACE) {   // "auto-send mail message"
     bSaveMessage = File::Exists(exted_filename);
     if (bSaveMessage && !data.silent_mode) {
       bout << "Reading in file...\r\n";
@@ -596,7 +595,7 @@ bool inmsg(MessageEditorData& data) {
   if (!data.silent_mode) {
     SpinPuts("Saving...", 2);
   }
-  if (data.fsed_flags) {
+  if (data.fsed_flags != FsedFlags::NOFSED) {
     File fileExtEd(exted_filename);
     max_message_size = std::max<int>(fileExtEd.GetLength(), 30000);
   } else {
@@ -627,7 +626,7 @@ bool inmsg(MessageEditorData& data) {
   if (irt[0]) {
     UpdateMessageBufferInReplyToInfo(b, data.aux.c_str());
   }
-  if (data.fsed_flags) {
+  if (data.fsed_flags != FsedFlags::NOFSED) {
     // Read the file produced by the external editor and add it to the message.
     TextFile editor_file(exted_filename, "r");
     string line;

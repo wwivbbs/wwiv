@@ -78,8 +78,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
     int i = 0;
     for (i = 0; i < session()->max_net_num(); i++) {
       set_net_num(i);
-      if ((strncasecmp("internet", session()->network_name(), 8) == 0) ||
-          ((strncasecmp("filenet", session()->network_name(), 7) == 0) && (*pSystemNumber == 32767))) {
+      if (session()->current_net().type == network_type_t::internet) {
         for (ss1 = szEmailAddress; *ss1; ss1++) {
           if ((*ss1 >= 'A') && (*ss1 <= 'Z')) {
             *ss1 += 'a' - 'A';

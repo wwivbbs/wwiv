@@ -658,7 +658,7 @@ static void modify_mailbox() {
     return;
   }
   if (session()->user()->GetSl() >= syscfg.newusersl) {
-    int network_number = getnetnum("FILEnet");
+    int network_number = getnetnum_by_type(network_type_t::internet);
     session()->set_net_num(network_number);
     if (network_number != -1) {
       set_net_num(session()->net_num());

@@ -254,7 +254,7 @@ void asv() {
           data.title = irt;
           data.anonymous_flag = 0;
           data.aux = "email";
-          data.fsed_flags = INMSG_NOFSED;
+          data.fsed_flags = FsedFlags::NOFSED;
           data.to_name = snode;
           data.msged_flags = MSGED_FLAG_NONE;
           data.silent_mode = true;

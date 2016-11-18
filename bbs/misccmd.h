@@ -18,10 +18,14 @@
 #ifndef __INCLUDED_BBS_MISCCMD_H__
 #define __INCLUDED_BBS_MISCCMD_H__
 
+#include <string>
+#include "sdk/net.h"
+
 void kill_old_email();
 void list_users(int mode);
 void time_bank();
-int  getnetnum(const char *network_name);
+int getnetnum(const std::string& network_name);
+int getnetnum_by_type(network_type_t type);
 void uudecode(const char *input_filename, const char *output_filename);
 void Packers();
 

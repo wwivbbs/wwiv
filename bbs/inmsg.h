@@ -23,25 +23,23 @@
 #include "bbs/external_edit.h"
 #include "sdk/vardec.h"
 
-constexpr int INMSG_NOFSED = 0;
-constexpr int INMSG_FSED = 1;
-constexpr int INMSG_FSED_WORKSPACE = 2;
+enum class FsedFlags {
+  NOFSED, FSED, WORKSPACE
+};
 
 class MessageEditorData {
 public:
-  MessageEditorData(): need_title(true), anonymous_flag(0), 
-    msged_flags(MSGED_FLAG_NONE), fsed_flags(INMSG_NOFSED), 
-    silent_mode(false) {}
+  MessageEditorData() {}
   ~MessageEditorData() {}
 
   std::string title;
   std::string to_name;  // szDestination (to or sub name)
 
-  bool need_title;
-  int anonymous_flag;   // an
-  int msged_flags;      // used to be flags
-  int fsed_flags;       // fsed
-  bool silent_mode;     // Used for ASV and newemail emails.  No questions, etc.
+  bool need_title = true;
+  int anonymous_flag = 0;   // an
+  int msged_flags = MSGED_FLAG_NONE;      // used to be flags
+  FsedFlags fsed_flags = FsedFlags::NOFSED;       // fsed
+  bool silent_mode = false;     // Used for ASV and newemail emails.  No questions, etc.
 
   // legacy filename, used to see if it's email or not.
   std::string aux;
