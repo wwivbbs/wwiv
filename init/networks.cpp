@@ -174,7 +174,7 @@ public:
       int y = 1;
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
       items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n->fake_outbound_node));
-      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"FLO", "NetMail (ATTACH)"}, &n->mailer_type));
+      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"unset", "FLO", "NetMail (ATTACH)"}, &n->mailer_type));
       items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "WWIV BINKP (Not Implemented Yet)"}, &n->transport));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_inbound_dir));
@@ -182,8 +182,8 @@ public:
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->netmail_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->bad_packets_dir));
-      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"2+"}, &n->packet_config.packet_type));
-      items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
+      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"unset", "2+"}, &n->packet_config.packet_type));
+      items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, true));
       items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_archive_size));

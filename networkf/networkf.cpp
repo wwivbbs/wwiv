@@ -326,6 +326,20 @@ bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, co
   string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
   string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
   string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_outbound_dir));
+  const string ctype = fido_callout.packet_config_for(dest).compression_type;
+
+  if (ctype == "PKT") {
+    // No bundles, only packet files.
+    string in = FilePath(temp_dir, fido_packet_name);
+    string out = FilePath(out_dir, fido_packet_name);
+    if (!File::Move(in, out)) {
+      LOG(ERROR) << "Unable to move packet file into outbound dir. file: " << fido_packet_name;
+      return false;
+    }
+    LOG(INFO) << "Created bundle(packet): " << FilePath(out_dir, fido_packet_name);
+    out_bundle_name = fido_packet_name;
+    return true;
+  }
 
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
@@ -336,7 +350,6 @@ bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, co
     }
     File::set_current_directory(out_dir);
     // TODO(rushfan): Need callout.json support to set file specific options here.
-    const string ctype = fido_callout.packet_config_for(dest).areafix_password;
     const auto& arc = find_arc(arcs, ctype);
     // We have no parameter 2 since we're extracting everything.
     string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), FilePath(temp_dir, fido_packet_name));
@@ -344,6 +357,11 @@ bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, co
     system(zip_cmd.c_str());
     File::set_current_directory(saved_dir);
     out_bundle_name = bname;
+
+    LOG(INFO) << "Created bundle: " << FilePath(out_dir, bname);
+    if (!File::Remove(temp_dir, fido_packet_name)) {
+      LOG(ERROR) << "Error removing packet: " << FilePath(temp_dir, fido_packet_name);
+    }
     return true;
   }
   return false;
@@ -582,6 +600,89 @@ bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest
   return true;
 }
 
+bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, const net_networks_rec& net, const FidoCallout& fido_callout, std::set<string>& bundles, Packet& p) {
+  string fido_packet_name;
+  // Lame implementation that creates 1 file per message.
+  string raw_text = p.text;
+  auto it = p.text.cbegin();
+  string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
+  LOG(INFO) << "Creating packet for subtype: " << subtype;
+
+  std::set<FidoAddress> subscribers;
+  ReadFidoSubcriberFile(net.dir, StrCat("n", subtype, ".net"), subscribers);
+  if (subscribers.empty()) {
+    LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
+  }
+  for (const auto& sub : subscribers) {
+    LOG(INFO) << "Creating packet for subscriber: " << sub.as_string();
+    if (!create_ftn_packet(net_cmdline.config(), fido_callout, sub, net, p, fido_packet_name)) {
+      // oops. let's skip.
+      LOG(ERROR) << "Failed to create FTN packet.";
+      write_wwivnet_packet(DEAD_NET, net, p);
+      continue;
+    }
+    LOG(INFO) << "Created packet: " << FilePath(net.fido.temp_outbound_dir, fido_packet_name);
+    if (fido_packet_name.empty()) {
+      LOG(ERROR) << "Error creating ftn packet name";
+      continue;
+    }
+    string bundlename;
+    if (!create_ftn_bundle(net_cmdline.config(), fido_callout, sub, net, fido_packet_name, bundlename)) {
+      // oops. let's skip.
+      LOG(ERROR) << "Failed to create FTN bundle.";
+      write_wwivnet_packet(DEAD_NET, net, p);
+      continue;
+    }
+    string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
+    string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
+
+    if (contains(bundles, bundlename)) {
+      VLOG(1) << "Not creating attach or flo for known bundle: " << bundlename;
+      continue;
+    }
+    // We only want to attach the bundle (or add it to the flo file)
+    // one time, so skip ones that have already been done.
+    bundles.insert(bundlename);
+    if (net.fido.mailer_type == fido_mailer_t::attach) {
+      string netmail_filepath = NextNetmailFilePath(net.fido.netmail_dir);
+      if (netmail_filepath.empty()) {
+        LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << net.fido.netmail_dir << "'";
+        continue;
+      }
+      const string bundlepath = FilePath(out_dir, bundlename);
+      if (!CreateFidoNetAttachNetMail(FidoAddress(net.fido.fido_address), sub, "ARCmail", "ARCmail", netmail_filepath, bundlepath)) {
+        LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
+        continue;
+      }
+      LOG(INFO) << "Wrote attach netmail: " << netmail_filepath;
+    } else if (net.fido.mailer_type == fido_mailer_t::flo) {
+      FidoAddress orig(net.fido.fido_address);
+      const string flo_name = bundle_name(orig, sub, "flo");
+      const string bsy_name = bundle_name(orig, sub, "bsy");
+      {
+        File bsy(out_dir, bsy_name);
+        if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
+          LOG(ERROR) << "Unable to create BSY file.";
+          sleep_for(std::chrono::seconds(1));
+          // TODO(rushfan): Sleep and loop
+          continue;
+        }
+      }
+      ScopeExit at_exit([=] { File::Remove(out_dir, bsy_name); });
+      TextFile flo_file(out_dir, flo_name, "a+");
+      if (!flo_file.IsOpen()) {
+        LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
+        continue;
+      }
+      flo_file.WriteLine(StrCat("^", FilePath(out_dir, bundlename)));
+    } else {
+      LOG(ERROR) << "Unknown mailer type: " << static_cast<int>(net.fido.mailer_type);
+    }
+  }
+  return true;
+}
+
+
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
@@ -677,89 +778,9 @@ int main(int argc, char** argv) {
         }
 
         if (p.nh.main_type == main_type_new_post) {
-          string fido_packet_name;
-          // Lame implementation that creates 1 file per message.
-          string raw_text = p.text;
-          auto it = p.text.cbegin();
-          string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
-          LOG(INFO) << "Creating packet for subtype: " << subtype;
 
-          std::set<FidoAddress> subscribers;
-          ReadFidoSubcriberFile(net.dir, StrCat("n", subtype, ".net"), subscribers);
-          if (subscribers.empty()) {
-            LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
-          }
-          for (const auto& sub : subscribers) {
-            LOG(INFO) << "Creating packet for subscriber: " << sub.as_string();
-            if (!create_ftn_packet(net_cmdline.config(), fido_callout, sub, net, p, fido_packet_name)) {
-              // oops. let's skip.
-              LOG(ERROR) << "Failed to create FTN packet.";
-              write_wwivnet_packet(DEAD_NET, net, p);
-              continue;
-            }
-            LOG(INFO) << "Created packet: " << FilePath(net.fido.temp_outbound_dir, fido_packet_name);
-            if (fido_packet_name.empty()) {
-              LOG(ERROR) << "Error creating ftn packet name";
-              continue;
-            }
-            string bundlename;
-            if (!create_ftn_bundle(net_cmdline.config(), fido_callout, sub, net, fido_packet_name, bundlename)) {
-              // oops. let's skip.
-              LOG(ERROR) << "Failed to create FTN bundle.";
-              write_wwivnet_packet(DEAD_NET, net, p);
-              continue;
-            }
-            string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
-            string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
-            string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_outbound_dir));
-            LOG(INFO) << "Created bundle: " << FilePath(out_dir, bundlename);
+          export_main_type_new_post(net_cmdline, net, fido_callout, bundles, p);
 
-            // Delete the file, since we made a bundle.
-            if (!File::Remove(temp_dir, fido_packet_name)) {
-              LOG(ERROR) << "Error removing packet: " << FilePath(temp_dir, fido_packet_name);
-            }
-
-            if (!contains(bundles, bundlename)) {
-              // We only want to attach the bundle (or add it to the flo file)
-              // one time, so skip ones that have already been done.
-              bundles.insert(bundlename);
-              if (net.fido.mailer_type == fido_mailer_t::attach) {
-                string netmail_filepath = NextNetmailFilePath(net.fido.netmail_dir);
-                if (netmail_filepath.empty()) {
-                  LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << net.fido.netmail_dir << "'";
-                  continue;
-                }
-                const string bundlepath = FilePath(out_dir, bundlename);
-                if (!CreateFidoNetAttachNetMail(FidoAddress(net.fido.fido_address), sub, "ARCmail", "ARCmail", netmail_filepath, bundlepath)) {
-                  LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
-                  continue;
-                }
-                LOG(INFO) << "Wrote attach netmail: " << netmail_filepath;
-              } else if (net.fido.mailer_type == fido_mailer_t::flo) {
-                FidoAddress orig(net.fido.fido_address);
-                const string flo_name = bundle_name(orig, sub, "flo");
-                const string bsy_name = bundle_name(orig, sub, "bsy");
-                {
-                  File bsy(out_dir, bsy_name);
-                  if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
-                    LOG(ERROR) << "Unable to create BSY file.";
-                    sleep_for(std::chrono::seconds(1));
-                    // TODO(rushfan): Sleep and loop
-                    continue;
-                  }
-                }
-                ScopeExit at_exit([=] { File::Remove(out_dir, bsy_name); });
-                TextFile flo_file(out_dir, flo_name, "a+");
-                if (!flo_file.IsOpen()) {
-                  LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
-                  continue;
-                }
-                flo_file.WriteLine(StrCat("^", FilePath(out_dir, bundlename)));
-              } else {
-                LOG(ERROR) << "Unknown mailer type: " << static_cast<int>(net.fido.mailer_type);
-              }
-            }
-          }
         } else {
           LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
           // Let's write it to dead.net

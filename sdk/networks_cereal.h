@@ -61,29 +61,29 @@ void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
 
 template <class Archive> inline
 std::string save_minimal(Archive const &, const fido_packet_t& t) {
-  return to_enum_string<fido_packet_t>(t, {"none", "type2+"});
+  return to_enum_string<fido_packet_t>(t, {"unset", "type2+"});
 }
 template <class Archive> inline
 void load_minimal(Archive const &, fido_packet_t& t, const std::string& v) {
-  t = from_enum_string<fido_packet_t>(v, {"none", "type2+"});
+  t = from_enum_string<fido_packet_t>(v, {"unset", "type2+"});
 }
 
 template <class Archive> inline
 std::string save_minimal(Archive const &, const fido_transport_t& t) {
-  return to_enum_string<fido_transport_t>(t, {"directory", "binkp"});
+  return to_enum_string<fido_transport_t>(t, {"unset", "directory", "binkp"});
 }
 template <class Archive> inline
 void load_minimal(Archive const &, fido_transport_t& t, const std::string& v) {
-  t = from_enum_string<fido_transport_t>(v, {"directory", "binkp"});
+  t = from_enum_string<fido_transport_t>(v, {"unset", "directory", "binkp"});
 }
 
 template <class Archive> inline
 std::string save_minimal(Archive const &, const fido_mailer_t& t) {
-  return to_enum_string<fido_mailer_t>(t, {"flo", "attach"});
+  return to_enum_string<fido_mailer_t>(t, {"unset", "flo", "attach"});
 }
 template <class Archive> inline
 void load_minimal(Archive const &, fido_mailer_t& t, const std::string& v) {
-  t = from_enum_string<fido_mailer_t>(v, {"flo", "attach"});
+  t = from_enum_string<fido_mailer_t>(v, {"unset", "flo", "attach"});
 }
 
 template <class Archive>
