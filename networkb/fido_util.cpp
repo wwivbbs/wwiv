@@ -153,7 +153,7 @@ std::vector<std::string> split_message(const std::string& s) {
   return SplitString(temp, "\r");
 }
 
-std::string FidoToWWIVText(const std::string& ft) {
+std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
   std::string wt;
   bool newline = true;
   for (auto& sc : ft) {
@@ -168,7 +168,7 @@ std::string FidoToWWIVText(const std::string& ft) {
       newline = true;
     } else if (c == 10) {
       // NOP
-    } else if (c == 1 && newline) {
+    } else if (c == 1 && newline && convert_control_codes) {
       // Control-A on a newline.  Since FidoNet uses control-A as a control
       // code, WWIV uses control-D + '0', we'll change it to control-D + '0'
       wt.push_back(4);  // control-D

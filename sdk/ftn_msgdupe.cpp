@@ -87,7 +87,7 @@ bool FtnMessageDupe::Save() {
 }
 
 const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& a) {
-  DataFile<uint64_t> file(datadir_, MSGDUPE_DAT,
+  DataFile<uint64_t> file(datadir_, MSGID_DAT,
     File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!file) {
     throw std::runtime_error("Unable to open file: " + file.file().full_pathname());

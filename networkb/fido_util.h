@@ -42,7 +42,7 @@ std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a);
 std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a);
 std::vector<std::string> split_message(const std::string& string);
 
-std::string FidoToWWIVText(const std::string& ft);
+std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes = true);
 std::string WWIVToFidoText(const std::string& wt);
 
 }  // namespace fido

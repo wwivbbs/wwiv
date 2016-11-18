@@ -109,6 +109,12 @@ TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine) {
   EXPECT_EQ("\004""0PID\r\nWorld\r\n", wwiv);
 }
 
+TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine_DoNotConvert) {
+  string fido = "\001""PID\rWorld\r";
+  string wwiv = FidoToWWIVText(fido, false);
+  EXPECT_EQ("\001""PID\r\nWorld\r\n", wwiv);
+}
+
 TEST_F(FidoUtilTest, WWIVToFido_Basic) {
   string wwiv = "a\r\nb\r\n";
   string fido = WWIVToFidoText(wwiv);
