@@ -277,12 +277,14 @@ void sub_xtr_add(int n, int nn) {
   xnp.net_num = static_cast<short>(session()->net_num());
 
   bout.nl();
-  bout << "|#2What sub type? ";
   int stype_len = 7;
   if (session()->current_net().type == network_type_t::ftn) {
+    bout << "|#2What echomail area: ";
     stype_len = 40;
+  } else {
+    bout << "|#2What sub type? ";
   }
-  xnp.stype = input(stype_len);
+  xnp.stype = input(stype_len, true);
   if (xnp.stype.empty()) {
     return;
   }

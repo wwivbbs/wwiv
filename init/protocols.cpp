@@ -205,10 +205,8 @@ void extrn_prots() {
           if (!yn) {
             break;
           }
-          int pos = result.selected - 3; // 3 is the number of internal protocols listed.
-          auto it = externs.begin();
-          std::advance(it, pos);
-          externs.erase(it);
+          size_t pos = result.selected - 3; // 3 is the number of internal protocols listed.
+          erase_at(externs, pos);
         }
       } break;
       case 'I': {
@@ -225,9 +223,7 @@ void extrn_prots() {
           if (extern_pos > externs.size()) {
             externs.push_back(e);
           } else {
-            auto it = externs.begin();
-            std::advance(it, extern_pos);
-            externs.insert(it, e);
+            insert_at(externs, extern_pos, e);
           }
           edit_prot(externs, over_interns, pos);
         } else {

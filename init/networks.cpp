@@ -182,7 +182,7 @@ public:
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->netmail_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->bad_packets_dir));
-      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"unset", "2+"}, &n->packet_config.packet_type));
+      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"unset", "FSC-0039 Type 2+"}, &n->packet_config.packet_type));
       items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, true));
@@ -235,7 +235,7 @@ void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_
   const int COL1_POSITION = 17;
   int y = 1;
   EditItems items{};
-  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"2+"}, &p.packet_type));
+  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"unset", "FSC-0039 Type 2+"}, &p.packet_type));
   items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.packet_password, true));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.areafix_password, true));

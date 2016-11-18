@@ -38,7 +38,6 @@ General Improvements
 Net52
 =====
 * update routing information in network1.
-* Create new JSON version of networks.dat that includes FTN data.
 * Add wwivutil config {set,get}-version <version>
 
 Message Areas

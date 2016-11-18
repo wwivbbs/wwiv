@@ -94,7 +94,7 @@ static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& men
     WriteMenuRec(fileEditMenu, (MenuRec*) header, nCur);
     memset(header, 0, sizeof(MenuRec));
     nAmount = static_cast<uint16_t>(fileEditMenu.GetLength() / sizeof(MenuRec)) - 1;
-    (nCur) = nAmount + 1;
+    nCur = nAmount + 1;
 
     // TODO(rushfan): WTF is this for?
     ((MenuRec*) header)->iMaxSL = 255;

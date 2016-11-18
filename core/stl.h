@@ -64,8 +64,8 @@ struct ci_less {
 
 template <typename C>
 const typename C::mapped_type get_or_default(C c,
-                                             const typename C::key_type& key,
-                                             const typename C::mapped_type default_value) {
+    const typename C::key_type& key,
+    const typename C::mapped_type default_value) {
   typename C::const_iterator iter = c.find(key);
   if (iter == std::end(c)) {
     return default_value;
