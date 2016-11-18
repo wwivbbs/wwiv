@@ -78,6 +78,49 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
+
+static string determine_arc_extension(const std::string& filename) {
+  File f(filename);
+  if (!f.Open(File::modeReadOnly)) {
+    return "";
+  }
+
+  char header[10];
+  auto num_read = f.Read(&header, 10);
+  if (num_read < 10) {
+    return "";
+  }
+
+  switch (header[0]) {
+  case 0x60:
+    if ((unsigned char)header[1] == (unsigned char)0xEA)
+      return "ARJ";
+    break;
+  case 0x1a:
+    return "ARC";
+  case 'P':
+    if (header[1] == 'K')
+      return "ZIP";
+    break;
+  case 'R':
+    if (header[1] == 'a')
+      return "RAR";
+    break;
+  case 'Z':
+    if (header[1] == 'O' && header[2] == 'O')
+      return "ZOO";
+    break;
+  }
+  if (header[0] == 'P') {
+    return "";
+  }
+  header[9] = 0;
+  if (strstr(header, "-lh")) {
+    return "LHA";
+  }
+  return "";
+}
+
 static vector<arcrec> read_arcs(const std::string& datadir) {
   vector<arcrec> arcs;
   DataFile<arcrec> file(datadir, ARCHIVER_DAT);
@@ -271,8 +314,12 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
     return false;
   }
 
-  // TODO(rushfan): Need support for auto-detecting compression.
-  const auto& arc = find_arc(arcs, net.fido.packet_config.compression_type);
+  string extension = determine_arc_extension(FilePath(dir, name));
+  if (extension.empty()) {
+    LOG(INFO) << "Unable to determine archiver type for packet: " << name;
+    extension = net.fido.packet_config.compression_type;
+  }
+  const auto& arc = find_arc(arcs, extension);
   // We have no parameter 2 since we're extracting everything.
   string unzip_cmd = arc_stuff_in(arc.arce, FilePath(dir, name), "");
   // Execute the command

@@ -40,7 +40,6 @@ protected:
   FileHelper helper_;
 };
 
-
 TEST_F(FidoUtilTest, PacketName) {
   time_t now = time(nullptr);
   auto tm = localtime(&now);
