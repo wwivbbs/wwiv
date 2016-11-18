@@ -50,14 +50,14 @@ using namespace wwiv::sdk::fido;
 namespace wwiv {
 namespace sdk {
 
-bool ReadFidoSubcriberFile(const std::string& dir, const std::string& filename, std::set<FidoAddress>& subscribers) {
-  subscribers.clear();
+std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& dir, const std::string& filename) {
 
   TextFile file(dir, filename, "rt");
   if (!file.IsOpen()) {
-    return false;
+    return{};
   }
 
+  std::set<FidoAddress> subscribers;
   string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
@@ -65,13 +65,12 @@ bool ReadFidoSubcriberFile(const std::string& dir, const std::string& filename, 
       continue;
     }
     try {
-      FidoAddress a(line);
-      subscribers.insert(a);
+      subscribers.insert(FidoAddress(line));
     } catch (const bad_fidonet_address& e) {
       LOG(ERROR) << e.what();
     }
   }
-  return true;
+  return subscribers;
 }
 
 bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers) {

@@ -125,7 +125,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet) {
 //
 bool write_wwivnet_packet(
   const string& filename,
-  const net_networks_rec& net, Packet& p) {
+  const net_networks_rec& net, const Packet& p) {
 
   LOG(INFO) << "Writing type " << p.nh.main_type << "/" << p.nh.minor_type << " message to packet: " << filename;
   if (p.nh.length != p.text.size()) {

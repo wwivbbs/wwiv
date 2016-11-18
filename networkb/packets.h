@@ -51,7 +51,7 @@ ReadPacketResponse read_packet(File& file, Packet& packet);
 
 bool write_wwivnet_packet(
   const std::string& filename,
-  const net_networks_rec& net, Packet& packet);
+  const net_networks_rec& net, const Packet& packet);
 
 bool send_local_email(
   const net_networks_rec& network, net_header_rec& nh,
