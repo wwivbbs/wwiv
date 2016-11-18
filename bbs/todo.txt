@@ -12,6 +12,7 @@ FTN
 * ability to put more than 1 message per packet.
 * Make sending non-compressed packets work.
 * add per-node overrides.
+* Check packet password.
 
 Ini Files and Configuration
 ===========================

@@ -59,6 +59,7 @@
 #include "sdk/networks.h"
 #include "sdk/subscribers.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_callout.h"
 #include "sdk/fido/fido_packets.h"
 
 using std::cout;
@@ -227,7 +228,7 @@ static bool import_bundle_file(const Config& config, const net_networks_rec& net
     return false;
   }
 
-  // TODO(rushfan): Need callout.json support to set file specific options here.
+  // TODO(rushfan): Need support for auto-detecting compression.
   const auto& arc = find_arc(arcs, net.fido.packet_config.compression_type);
   // We have no parameter 2 since we're extracting everything.
   string unzip_cmd = arc_stuff_in(arc.arce, FilePath(dir, name), "");
@@ -256,7 +257,7 @@ static bool import_bundles(const Config& config, const net_networks_rec& net, co
   return true;
 }
 
-bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const string& fido_packet_name, std::string& out_bundle_name) {
+bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const string& fido_packet_name, std::string& out_bundle_name) {
 
   // were in the temp dir now.
   vector<arcrec> arcs = read_arcs(config.datadir());
@@ -275,7 +276,7 @@ bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_
 
   string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
   string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
-  string temp_dir(File::MakeAbsolutePath(net_dir, tempdir));
+  string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_inbound_dir));
 
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
@@ -286,7 +287,8 @@ bool create_ftn_bundle(const Config& config, const FidoAddress& dest, const net_
     }
     File::set_current_directory(out_dir);
     // TODO(rushfan): Need callout.json support to set file specific options here.
-    const auto& arc = find_arc(arcs, net.fido.packet_config.compression_type);
+    const string ctype = fido_callout.packet_config_for(dest).areafix_password;
+    const auto& arc = find_arc(arcs, ctype);
     // We have no parameter 2 since we're extracting everything.
     string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), FilePath(temp_dir, fido_packet_name));
     // Execute the command
@@ -359,10 +361,10 @@ static bool iter_starts_with(const C& c, I& iter, string expected) {
   return true;
 }
 
-bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_networks_rec& net, const std::string& tempdir, const Packet& wwivnet_packet, string& fido_packet_name) {
+bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& wwivnet_packet, string& fido_packet_name) {
   using wwiv::net::ReadPacketResponse;
 
-  string temp_dir(tempdir);
+  string temp_dir(net.fido.temp_inbound_dir);
   {
     string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
     File::MakeAbsolutePath(net_dir, &temp_dir);
@@ -407,7 +409,7 @@ bool create_ftn_packet(const Config& config, const FidoAddress& dest, const net_
     header.product_code_high = 0;
     header.product_code_low = wwiv_net_version;
     // Add in packet password.
-    to_char_array(header.password, net.fido.packet_config.packet_password);
+    to_char_array(header.password, fido_callout.packet_config_for(dest).packet_password);
 
     if (!write_fido_packet_header(file, header)) {
       LOG(ERROR) << "Error writing packet header.";
@@ -564,6 +566,12 @@ int main(int argc, char** argv) {
       return 3;
     }
 
+    FidoCallout fido_callout(net_cmdline.config(), net);
+    if (!fido_callout.IsInitialized()) {
+      LOG(ERROR) << "Unable to initialize fido_callout.";
+      return 1;
+    }
+
     auto cmds = cmdline.remaining();
     if (cmds.empty()) {
       LOG(ERROR) << "No command specified. Exiting.";
@@ -633,7 +641,7 @@ int main(int argc, char** argv) {
           }
           for (const auto& sub : subscribers) {
             LOG(INFO) << "Creating packet for subscriber: " << sub.as_string();
-            if (!create_ftn_packet(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, p, fido_packet_name)) {
+            if (!create_ftn_packet(net_cmdline.config(), fido_callout, sub, net, p, fido_packet_name)) {
               // oops. let's skip.
               LOG(ERROR) << "Failed to create FTN packet.";
               write_wwivnet_packet(DEAD_NET, net, p);
@@ -645,7 +653,7 @@ int main(int argc, char** argv) {
               continue;
             }
             string bundlename;
-            if (!create_ftn_bundle(net_cmdline.config(), sub, net, net.fido.temp_inbound_dir, fido_packet_name, bundlename)) {
+            if (!create_ftn_bundle(net_cmdline.config(), fido_callout, sub, net, fido_packet_name, bundlename)) {
               // oops. let's skip.
               LOG(ERROR) << "Failed to create FTN bundle.";
               write_wwivnet_packet(DEAD_NET, net, p);
