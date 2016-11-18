@@ -178,8 +178,10 @@ public:
       items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "WWIV BINKP (Not Implemented Yet)"}, &n->transport));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->netmail_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->bad_packets_dir));
       items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"2+"}, &n->packet_config.packet_type));
       items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
@@ -197,9 +199,11 @@ public:
         sw->PutsXY(2, y++, "Mailer       :");
         sw->PutsXY(2, y++, "Transport    :");
         sw->PutsXY(2, y++, "Inbound Dir  :");
-        sw->PutsXY(2, y++, "Temporary Dir:");
+        sw->PutsXY(2, y++, "Temp In Dir  :");
+        sw->PutsXY(2, y++, "Temp Out Dir :");
         sw->PutsXY(2, y++, "Outbound Dir :");
         sw->PutsXY(2, y++, "NetMail Dir  :");
+        sw->PutsXY(2, y++, "BadPacket Dir:");
         sw->PutsXY(2, y++, "Packet Type  :");
         sw->PutsXY(2, y++, "Compression  :");
         sw->PutsXY(2, y++, "Packet PW    :");

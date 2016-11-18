@@ -104,8 +104,10 @@ void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, transport);
   SERIALIZE(n, inbound_dir);
   SERIALIZE(n, temp_inbound_dir);
+  SERIALIZE(n, temp_outbound_dir);
   SERIALIZE(n, outbound_dir);
   SERIALIZE(n, netmail_dir);
+  SERIALIZE(n, bad_packets_dir);
   SERIALIZE(n, packet_config);
 }
 

@@ -39,6 +39,7 @@ public:
   bool add(uint32_t header_crc32, uint32_t msgid_crc32);
   bool remove(uint32_t header_crc32, uint32_t msgid_crc32);
   bool is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const;
+  bool is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const;
 
 private:
   bool Load();

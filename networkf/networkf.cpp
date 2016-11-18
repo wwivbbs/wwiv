@@ -155,7 +155,7 @@ static string get_address_from_origin(const std::string& text) {
   return "";
 }
 
-static bool import_packet_file(const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
+static bool import_packet_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   using wwiv::sdk::fido::ReadPacketResponse;
 
   File f(dir, name);
@@ -169,7 +169,7 @@ static bool import_packet_file(const FidoCallout& callout, const net_networks_re
   auto num_header_read = f.Read(&header, sizeof(packet_header_2p_t));
   if (num_header_read < sizeof(packet_header_2p_t)) {
     LOG(ERROR) << "Read less than packet header";
-    return 1;
+    return false;
   }
 
   FidoAddress address(header.orig_zone, header.orig_net, header.orig_node, header.orig_point, "");
@@ -178,19 +178,34 @@ static bool import_packet_file(const FidoCallout& callout, const net_networks_re
   if (!iequals(expected, actual)) {
     LOG(ERROR) << "Unexpected packet password from node: " << address
       << "; actual: '" << actual << "; expected: " << expected << "'";
-    // TODO(rushfan): Move to BADMSGS?
-    return 1;
+    // Move to BADMSGS
+    f.Close();
+    string badmsgs_path = File::MakeAbsolutePath(net.dir, net.fido.bad_packets_dir);
+    const string dest = FilePath(badmsgs_path, f.GetName());
+
+    if (!File::Move(f.full_pathname(), dest)) {
+      LOG(ERROR) << "Error moving file to BADMSGS; file: " << f;
+    }
+    return false;
   }
 
+  // TODO(rushfan): move this outside do we only load it once.
+  FtnMessageDupe dupe(config);
 
   while (!done) {
     FidoPackedMessage msg;
     ReadPacketResponse response = read_packed_message(f, msg);
     if (response == ReadPacketResponse::END_OF_FILE) {
-      return 0;
+      return true;
     } else if (response == ReadPacketResponse::ERROR) {
-      return 1;
+      return false;
     }
+
+    if (dupe.is_dupe(msg)) {
+      LOG(ERROR) << "Skipping duplicate FTN message: " << msg.vh.subject;
+      continue;
+    }
+    dupe.add(msg);
 
     net_header_rec nh{};
     nh.daten = static_cast<uint32_t>(fido_to_daten(msg.vh.date_time));
@@ -221,12 +236,12 @@ static bool import_packet_file(const FidoCallout& callout, const net_networks_re
   return true;
 }
 
-static bool import_packets(const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+static bool import_packets(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   WFindFile files;
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
   while (has_next) {
     const auto& name = files.GetFileName();
-    if (import_packet_file(callout, net, dir, name)) {
+    if (import_packet_file(config, callout, net, dir, name)) {
       LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
       File::Remove(dir, name);
     }
@@ -264,20 +279,26 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   system(unzip_cmd.c_str());
   File::set_current_directory(saved_dir);
 
-  import_packets(callout, net, tempdir, "*.pkt");
+  import_packets(config, callout, net, tempdir, "*.pkt");
 #ifndef _WIN32
-  import_packets(callout, net, tempdir, "*.PKT");
+  import_packets(config, callout, net, tempdir, "*.PKT");
 #endif  // _WIN32
   return true;
 }
 
-static bool import_bundles(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+static bool import_bundles(const Config& config, const FidoCallout& callout,
+  const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   VLOG(1) << "import_bundles: mask: " << mask;
   WFindFile files;
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
   while (has_next) {
     const auto& name = files.GetFileName();
-    if (import_bundle_file(config, callout, net, dir, name)) {
+    if (ends_with(name, ".pkt") || ends_with(name, ".PKT")) {
+      if (import_packet_file(config, callout, net, dir, name)) {
+        LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
+        File::Remove(dir, name);
+      }
+    } else if (import_bundle_file(config, callout, net, dir, name)) {
       File::Remove(dir, name);
     }
     has_next = files.next();
@@ -304,7 +325,7 @@ bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, co
 
   string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
   string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
-  string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_inbound_dir));
+  string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_outbound_dir));
 
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
@@ -392,7 +413,7 @@ static bool iter_starts_with(const C& c, I& iter, string expected) {
 bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& wwivnet_packet, string& fido_packet_name) {
   using wwiv::net::ReadPacketResponse;
 
-  string temp_dir(net.fido.temp_inbound_dir);
+  string temp_dir(net.fido.temp_outbound_dir);
   {
     string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
     File::MakeAbsolutePath(net_dir, &temp_dir);
@@ -507,6 +528,7 @@ bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, co
     nh.orig_node = address.node();
     nh.dest_net = dest.net();
     nh.dest_node = dest.node();
+    nh.attribute = MSGLOCAL;
     FidoPackedMessage p(nh, vh);
     if (!write_packed_message(file, p)) {
       LOG(ERROR) << "Error writing packed message.";
@@ -615,7 +637,7 @@ int main(int argc, char** argv) {
     }
 
     if (cmd == "import") {
-      const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?"};
+      const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
       auto net_dir = File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir);
       auto tempdir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
       for (const auto& ext : extensions) {
@@ -675,7 +697,7 @@ int main(int argc, char** argv) {
               write_wwivnet_packet(DEAD_NET, net, p);
               continue;
             }
-            LOG(INFO) << "Created packet: " << FilePath(net.fido.temp_inbound_dir, fido_packet_name);
+            LOG(INFO) << "Created packet: " << FilePath(net.fido.temp_outbound_dir, fido_packet_name);
             if (fido_packet_name.empty()) {
               LOG(ERROR) << "Error creating ftn packet name";
               continue;
@@ -689,7 +711,7 @@ int main(int argc, char** argv) {
             }
             string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
             string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
-            string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_inbound_dir));
+            string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_outbound_dir));
             LOG(INFO) << "Created bundle: " << FilePath(out_dir, bundlename);
 
             // Delete the file, since we made a bundle.

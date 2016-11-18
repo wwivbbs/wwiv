@@ -37,6 +37,7 @@
     <ClInclude Include="names.h" />
     <ClInclude Include="net.h" />
     <ClInclude Include="networks.h" />
+    <ClInclude Include="networks_cereal.h" />
     <ClInclude Include="phone_numbers.h" />
     <ClInclude Include="ssm.h" />
     <ClInclude Include="status.h" />

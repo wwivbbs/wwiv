@@ -103,6 +103,9 @@
     <ClInclude Include="fido\fido_callout.h">
       <Filter>Source Files\fido</Filter>
     </ClInclude>
+    <ClInclude Include="networks_cereal.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">

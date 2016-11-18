@@ -169,6 +169,15 @@ bool FtnMessageDupe::is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const 
   return contains(dupes_, entry);
 }
 
+bool FtnMessageDupe::is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const {
+  uint32_t header_crc32 = 0;
+  uint32_t msgid_crc32 = 0;
+
+  if (!crc32(msg, header_crc32, msgid_crc32)) {
+    return false;
+  }
+  return is_dupe(header_crc32, msgid_crc32);
+}
 
 }
 }

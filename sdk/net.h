@@ -313,6 +313,8 @@ struct fido_network_config_t {
   std::string inbound_dir;
   // Inbound temporary directory.
   std::string temp_inbound_dir;
+  // Outbound temporary directory.
+  std::string temp_outbound_dir;
   // Outbound directory for packets
   std::string outbound_dir;
   // Location of FidoNet NetMail directory.
@@ -321,6 +323,8 @@ struct fido_network_config_t {
   std::string netmail_dir;
   // Configuration for packet specific options.
   fido_packet_config_t packet_config;
+  // Location to move bad packets
+  std::string bad_packets_dir;
 };
 
 enum class network_type_t: uint8_t {
