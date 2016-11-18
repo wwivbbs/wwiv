@@ -530,7 +530,7 @@ bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest
   return true;
 }
 
-int   main(int argc, char** argv) {
+int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
@@ -653,10 +653,13 @@ int   main(int argc, char** argv) {
             }
             string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
             string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
+            string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_inbound_dir));
             LOG(INFO) << "Created bundle: " << FilePath(out_dir, bundlename);
 
             // Delete the file, since we made a bundle.
-            File::Remove(net.fido.temp_inbound_dir, fido_packet_name);
+            if (!File::Remove(temp_dir, fido_packet_name)) {
+              LOG(ERROR) << "Error removing packet: " << FilePath(temp_dir, fido_packet_name);
+            }
 
             if (!contains(bundles, bundlename)) {
               // We only want to attach the bundle (or add it to the flo file)
@@ -682,6 +685,7 @@ int   main(int argc, char** argv) {
                   File bsy(out_dir, bsy_name);
                   if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
                     LOG(ERROR) << "Unable to create BSY file.";
+                    sleep_for(std::chrono::seconds(1));
                     // TODO(rushfan): Sleep and loop
                     continue;
                   }

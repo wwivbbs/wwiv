@@ -273,7 +273,7 @@ struct net_call_out_rec {
 
 #ifndef __MSDOS__
 
-enum class fido_packet_t { none, type2_plus};
+enum class fido_packet_t { type2_plus};
 enum class fido_transport_t { directory, binkp};
 enum class fido_mailer_t { flo, attach};
 
