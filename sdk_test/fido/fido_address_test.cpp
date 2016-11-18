@@ -91,3 +91,12 @@ TEST(FidoAddressTest, Set) {
   EXPECT_TRUE(contains(addrs, f2));
   EXPECT_FALSE(contains(addrs, f3));
 }
+
+TEST(FidoAddressTest, Streams) {
+  const string kAddr = "11:10/211";
+  FidoAddress f1(kAddr);
+
+  std::ostringstream ss;
+  ss << f1;
+  EXPECT_EQ(kAddr, ss.str());
+}

@@ -156,15 +156,16 @@ std::vector<std::string> split_message(const std::string& s) {
 std::string FidoToWWIVText(const std::string& ft) {
   std::string wt;
   bool newline = true;
-  for (auto& c : ft) {
+  for (auto& sc : ft) {
+    unsigned char c = static_cast<unsigned char>(sc);
     if (c == 13) {
       wt.push_back(13);
       wt.push_back(10);
-      newline = true;
     } else if (c == 0x8d) {
       // FIDOnet style Soft CR
       wt.push_back(13);
       wt.push_back(10);
+      newline = true;
     } else if (c == 10) {
       // NOP
     } else if (c == 1 && newline) {
@@ -184,7 +185,8 @@ std::string WWIVToFidoText(const std::string& wt) {
   string temp(wt);
   // Fido Text is CR, not CRLF, so remove the LFs
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
-  // Also remove the soft CRs since WWIV has no concept
+  // Also remove the soft CRs since WWIV has no concept.
+  // TODO(rushfan): Is this really needed.
   temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
   // Remove the trailing control-Z (if one exists).
   if (!temp.empty() && temp.back() == '\x1a') {

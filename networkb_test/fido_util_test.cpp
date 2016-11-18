@@ -80,3 +80,44 @@ TEST_F(FidoUtilTest, ControlFileName) {
   EXPECT_EQ("0069002a.dlo", control_file_name(dest, FidoBundleStatus::direct));
   EXPECT_EQ("0069002a.hlo", control_file_name(dest, FidoBundleStatus::hold));
 }
+
+TEST_F(FidoUtilTest, ToNetNode) {
+  EXPECT_EQ("105/42", to_net_node(FidoAddress("1:105/42")));
+  EXPECT_EQ("105/42", to_net_node(FidoAddress("105/42")));
+}
+
+TEST_F(FidoUtilTest, ToNetNodeZone) {
+  EXPECT_EQ("2:105/42", to_zone_net_node(FidoAddress("2:105/42")));
+  EXPECT_EQ("1:105/42", to_zone_net_node(FidoAddress("105/42")));
+}
+
+TEST_F(FidoUtilTest, FidoToWWIVText_Basic) {
+  string fido = "Hello\rWorld\r";
+  string wwiv = FidoToWWIVText(fido);
+  EXPECT_EQ("Hello\r\nWorld\r\n", wwiv);
+}
+
+TEST_F(FidoUtilTest, FidoToWWIVText_SoftCr) {
+  string fido = "a\x8d""b\r";
+  string wwiv = FidoToWWIVText(fido);
+  EXPECT_EQ("a\r\nb\r\n", wwiv);
+}
+
+TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine) {
+  string fido = "\001""PID\rWorld\r";
+  string wwiv = FidoToWWIVText(fido);
+  EXPECT_EQ("\004""0PID\r\nWorld\r\n", wwiv);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_Basic) {
+  string wwiv = "a\r\nb\r\n";
+  string fido = WWIVToFidoText(wwiv);
+  EXPECT_EQ("a\rb\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZ) {
+  string wwiv = "a\r\n\x1a";
+  string fido = WWIVToFidoText(wwiv);
+  EXPECT_EQ("a\r", fido);
+}
+
