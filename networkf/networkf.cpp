@@ -139,7 +139,23 @@ static string get_echomail_areaname(const std::string& text) {
   return "";
 }
 
-static bool import_packet_file(const net_networks_rec& net, const std::string& dir, const string& name) {
+// TODO(rushfan): Not used anymore, but could be useful later.
+static string get_address_from_origin(const std::string& text) {
+  vector<string> lines = split_message(text);
+  for (const auto& line : lines) {
+    if (starts_with(line, "* Origin:")) {
+      size_t start = line.find_last_of('(');
+      size_t end = line.find_last_of(')');
+      if (start == string::npos || end == string::npos) {
+        return "";
+      }
+      return line.substr(start + 1, end - start - 1);
+    }
+  }
+  return "";
+}
+
+static bool import_packet_file(const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   using wwiv::sdk::fido::ReadPacketResponse;
 
   File f(dir, name);
@@ -155,6 +171,17 @@ static bool import_packet_file(const net_networks_rec& net, const std::string& d
     LOG(ERROR) << "Read less than packet header";
     return 1;
   }
+
+  FidoAddress address(header.orig_zone, header.orig_net, header.orig_node, header.orig_point, "");
+  string expected = callout.packet_config_for(address).packet_password;
+  string actual = header.password;
+  if (!iequals(expected, actual)) {
+    LOG(ERROR) << "Unexpected packet password from node: " << address
+      << "; actual: '" << actual << "; expected: " << expected << "'";
+    // TODO(rushfan): Move to BADMSGS?
+  }
+
+
   while (!done) {
     FidoPackedMessage msg;
     ReadPacketResponse response = read_packed_message(f, msg);
@@ -193,12 +220,12 @@ static bool import_packet_file(const net_networks_rec& net, const std::string& d
   return true;
 }
 
-static bool import_packets(const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+static bool import_packets(const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   WFindFile files;
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
   while (has_next) {
     const auto& name = files.GetFileName();
-    if (import_packet_file(net, dir, name)) {
+    if (import_packet_file(callout, net, dir, name)) {
       LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
       File::Remove(dir, name);
     }
@@ -207,7 +234,7 @@ static bool import_packets(const net_networks_rec& net, const std::string& dir, 
   return true;
 }
 
-static bool import_bundle_file(const Config& config, const net_networks_rec& net, const std::string& dir, const string& name) {
+static bool import_bundle_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   VLOG(1) << "import_bundle_file: name: " << name;
   File f(dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
@@ -236,20 +263,20 @@ static bool import_bundle_file(const Config& config, const net_networks_rec& net
   system(unzip_cmd.c_str());
   File::set_current_directory(saved_dir);
 
-  import_packets(net, tempdir, "*.pkt");
+  import_packets(callout, net, tempdir, "*.pkt");
 #ifndef _WIN32
-  import_packets(net, tempdir, "*.PKT");
+  import_packets(callout, net, tempdir, "*.PKT");
 #endif  // _WIN32
   return true;
 }
 
-static bool import_bundles(const Config& config, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+static bool import_bundles(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   VLOG(1) << "import_bundles: mask: " << mask;
   WFindFile files;
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
   while (has_next) {
     const auto& name = files.GetFileName();
-    if (import_bundle_file(config, net, dir, name)) {
+    if (import_bundle_file(config, callout, net, dir, name)) {
       File::Remove(dir, name);
     }
     has_next = files.next();
@@ -591,7 +618,7 @@ int main(int argc, char** argv) {
       auto net_dir = File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir);
       auto tempdir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
       for (const auto& ext : extensions) {
-        import_bundles(net_cmdline.config(), net, tempdir, StrCat("*.", ext));
+        import_bundles(net_cmdline.config(), fido_callout, net, tempdir, StrCat("*.", ext));
 #ifndef _WIN32
         string uext = ext;
         StringUpperCase(&uext);

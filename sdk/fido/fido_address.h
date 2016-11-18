@@ -82,7 +82,8 @@ public:
     : zone_(zone), net_(net), node_(node), point_(point), domain_(domain) {}
   ~FidoAddress() {}
 
-  ::std::string as_string(bool include_domain = false) const;
+  std::string as_string(bool include_domain = false) const;
+  friend std::ostream& operator<< (std::ostream &os, const FidoAddress &f) { os << f.as_string(); return os; }
   int16_t zone() const { return zone_; }
   int16_t net() const { return net_; }
   int16_t node() const { return node_; }
