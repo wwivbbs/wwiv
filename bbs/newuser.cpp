@@ -689,9 +689,9 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
-  if (iniFile.IsOpen()) {
-    return iniFile.value<bool>("NEWUSER_MIN");
+  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+  if (ini.IsOpen()) {
+    return ini.value<bool>("NEWUSER_MIN");
   }
   return false;
 }

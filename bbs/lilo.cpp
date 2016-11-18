@@ -217,7 +217,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
 }
 
 bool IsPhoneRequired() {
-  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
+  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     if (ini.value<bool>("NEWUSER_MIN")) {
       return false;

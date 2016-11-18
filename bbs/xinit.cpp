@@ -457,8 +457,7 @@ bool WSession::ReadConfig() {
   user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
   
-  const string instance_name = StringPrintf("WWIV-%u", instance_number());
-  IniFile ini(FilePath(GetHomeDir(), WWIV_INI), {instance_name, INI_TAG});
+  IniFile ini(FilePath(GetHomeDir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     AbortBBS();

@@ -64,8 +64,8 @@ public:
   ConfigVersionCommand(): UtilCommand("version", "Sets or Gets the config version") {}
   std::string GetUsage() const override final {
     std::ostringstream ss;
-    ss << "Usage: " << std::endl;
-    ss << "  get : Gets the config.dat version information." << std::endl;
+    ss << "Usage: " << std::endl << std::endl;
+    ss << "  get : Gets the config.dat version information." << std::endl << std::endl;
     return ss.str();
   }
   int Execute() override final {

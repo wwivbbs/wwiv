@@ -12,7 +12,6 @@ FTN
 
 Ini Files and Configuration
 ===========================
-* make all places where we open wwiv.ini respect node settings in the bbs.
 * Add net.ini support into network{1,2,3}
 
 General Cleanup

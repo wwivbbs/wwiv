@@ -805,12 +805,12 @@ void auto_purge() {
   unsigned int days = 0;
   unsigned int skipsl = 0;
 
-  IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
-  if (iniFile.IsOpen()) {
-    days = iniFile.value<unsigned int>("AUTO_USER_PURGE");
-    skipsl = iniFile.value<int>("NO_PURGE_SL");
+  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+  if (ini.IsOpen()) {
+    days = ini.value<unsigned int>("AUTO_USER_PURGE");
+    skipsl = ini.value<int>("NO_PURGE_SL");
   }
-  iniFile.Close();
+  ini.Close();
 
   if (days < 60) {
     if (days > 0) {

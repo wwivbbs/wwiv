@@ -252,19 +252,19 @@ void cleanup_net() {
       session()->localIO()->Cls();
     }
 
-    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
-    if (iniFile.IsOpen()) {
-      const string cmd1 = iniFile.value<string>("NET_CLEANUP_CMD1");
+    IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+    if (ini.IsOpen()) {
+      const string cmd1 = ini.value<string>("NET_CLEANUP_CMD1");
       if (!cmd1.empty()) {
         ExecuteExternalProgram(cmd1, session()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
         cleanup_net1();
       }
-      const string cmd2 = iniFile.value<string>("NET_CLEANUP_CMD2");
+      const string cmd2 = ini.value<string>("NET_CLEANUP_CMD2");
       if (!cmd2.empty()) {
         ExecuteExternalProgram(cmd2, session()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
         cleanup_net1();
       }
-      iniFile.Close();
+      ini.Close();
     }
   }
 }
@@ -793,9 +793,9 @@ static void print_call(uint16_t sn, int nNetNumber) {
 
   if (!got_color) {
     got_color = 1;
-    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
-    if (iniFile.IsOpen()) {
-      color = iniFile.value("CALLOUT_COLOR_TEXT", 14);
+    IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+    if (ini.IsOpen()) {
+      color = ini.value("CALLOUT_COLOR_TEXT", 14);
     }
   }
   string s1 = to_string(bytes_to_k(ncn->bytes_waiting));
@@ -899,14 +899,14 @@ static std::pair<uint16_t, int> ansicallout() {
     color2 = 30;
     color3 = 3;
     color4 = 14;
-    IniFile iniFile(FilePath(session()->GetHomeDir(), WWIV_INI), {INI_TAG});
-    if (iniFile.IsOpen()) {
-      callout_ansi = iniFile.value<bool>("CALLOUT_ANSI");
-      color1 = iniFile.value("CALLOUT_COLOR", color1);
-      color2 = iniFile.value("CALLOUT_HIGHLIGHT", color2);
-      color3 = iniFile.value("CALLOUT_NORMAL", color3);
-      color4 = iniFile.value("CALLOUT_COLOR_TEXT", color4);
-      iniFile.Close();
+    IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+    if (ini.IsOpen()) {
+      callout_ansi = ini.value<bool>("CALLOUT_ANSI");
+      color1 = ini.value("CALLOUT_COLOR", color1);
+      color2 = ini.value("CALLOUT_HIGHLIGHT", color2);
+      color3 = ini.value("CALLOUT_NORMAL", color3);
+      color4 = ini.value("CALLOUT_COLOR_TEXT", color4);
+      ini.Close();
     }
   }
 
