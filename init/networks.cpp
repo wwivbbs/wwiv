@@ -48,6 +48,7 @@
 #include "init/wwivinit.h"
 #include "init/subacc.h"
 #include "sdk/filenames.h"
+#include "sdk/fido/fido_callout.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
 
@@ -59,6 +60,7 @@ using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
 static bool del_net(
@@ -154,11 +156,11 @@ static bool del_net(
 }
 
 // Base item of an editable value, this class does not use templates.
-class SubDialogEditItem : public BaseEditItem {
+class FidoNetworkConfigSubDialog : public BaseEditItem {
 public:
-  SubDialogEditItem(int x, int y, const std::string& title, int width, net_networks_rec& d)
+  FidoNetworkConfigSubDialog(int x, int y, const std::string& title, int width, net_networks_rec& d)
       : BaseEditItem(x, y, 1), title_(title), width_(width), d_(d), x_(x), y_(y) {};
-  virtual ~SubDialogEditItem() {}
+  virtual ~FidoNetworkConfigSubDialog() {}
 
   virtual int Run(CursesWindow* window) {
     EditItems items{};
@@ -172,7 +174,7 @@ public:
       int y = 1;
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
       items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n->fake_outbound_node));
-      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"FLO", "ATTACH"}, &n->mailer_type));
+      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"FLO", "NetMail (ATTACH)"}, &n->mailer_type));
       items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "WWIV BINKP (Not Implemented Yet)"}, &n->transport));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_inbound_dir));
@@ -225,7 +227,115 @@ private:
   int y_ = 0;
 };
 
-static void edit_net(Networks& networks, int nn) {
+void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_config_t& p) {
+  const int COL1_POSITION = 17;
+  int y = 1;
+  EditItems items{};
+  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"2+"}, &p.packet_type));
+  items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
+  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.packet_password, false));
+  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.areafix_password, false));
+  items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_archive_size));
+  items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_packet_size));
+
+  const string title = StrCat("Address: ", a.as_string());
+  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 76));
+  items.set_curses_io(out, sw.get());
+
+  y = 1;
+  sw->PutsXY(2, y++, "Packet Type  :");
+  sw->PutsXY(2, y++, "Compression  :");
+  sw->PutsXY(2, y++, "Packet PW    :");
+  sw->PutsXY(2, y++, "AreaFix PW   :");
+  sw->PutsXY(2, y++, "Max Arc Size :");
+  sw->PutsXY(2, y++, "Max Pkt Size :");
+  items.Run();
+}
+
+// Base item of an editable value, this class does not use templates.
+class FidoPacketConfigSubDialog: public BaseEditItem {
+public:
+  FidoPacketConfigSubDialog(int x, int y, const std::string& title, int width, const Config& config, net_networks_rec& d)
+    : BaseEditItem(x, y, 1), title_(title), width_(width), config_(config), d_(d), x_(x), y_(y) {};
+  virtual ~FidoPacketConfigSubDialog() {}
+
+  virtual int Run(CursesWindow* window) {
+    window->GotoXY(x_, y_);
+    int ch = window->GetChar();
+    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+      wwiv::sdk::fido::FidoCallout callout(config_, d_);
+      if (!callout.IsInitialized()) {
+        messagebox(window, "Unable to initialize fido_callout.json.");
+        return 2;
+      }
+      bool done = false;
+      do {
+        vector<ListBoxItem> items;
+        for (const auto& e : callout.node_configs()) {
+          items.emplace_back(e.first.as_string());
+        }
+        ListBox list(out, window, "Select Address",
+          static_cast<int>(floor(window->GetMaxX() * 0.8)),
+          std::min<int>(10, static_cast<int>(floor(window->GetMaxY() * 0.8))),
+          items, out->color_scheme());
+
+        list.selection_returns_hotkey(true);
+        list.set_additional_hotkeys("DI");
+        list.set_help_items({{"Esc", "Exit"},{"Enter", "Edit"},{"D", "Delete"},{"I", "Insert"}});
+        ListBoxResult result = list.Run();
+        if (result.type == ListBoxResultType::HOTKEY) {
+          switch (result.hotkey) {
+          case 'D': {
+            if (items.empty()) {
+              break;
+            }
+            if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
+              break;
+            }
+            wwiv::sdk::fido::FidoAddress a(items[result.selected].text());
+            callout.erase(a);
+          } break;
+          case 'I': {
+            const string prompt = "Enter Address (Z:N/O) : ";
+            const string address_string = dialog_input_string(window, prompt, 20);
+            if (address_string.empty()) { break; }
+            wwiv::sdk::fido::FidoAddress address(address_string);
+            fido_packet_config_t config{};
+            edit_packet_config(config_, address, config);
+            callout.insert(address, config);
+          } break;
+          }
+        } else if (result.type == ListBoxResultType::SELECTION) {
+          const string address_string = items.at(result.selected).text();
+          FidoAddress address(address_string);
+          fido_packet_config_t c = callout.packet_override_for(address);
+          edit_packet_config(config_, address, c);
+          callout.insert(address, c);
+        } else if (result.type == ListBoxResultType::NO_SELECTION) {
+          done = true;
+        }
+      } while (!done);
+      callout.Save();
+
+      return 2;
+    } else if (ch == KEY_UP || ch == KEY_BTAB) {
+      return 1; // PREV
+    } else {
+      return 2;
+    }
+  }
+  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+private:
+  const std::string title_;
+  int width_ = 40;
+  const Config& config_;
+  net_networks_rec& d_;
+  int x_ = 0;
+  int y_ = 0;
+};
+
+
+static void edit_net(const Config& config, Networks& networks, int nn) {
   static const vector<string> nettypes{
     "WWIVnet ",
     "Fido    ",
@@ -243,27 +353,30 @@ static void edit_net(Networks& networks, int nn) {
   }
 
   const int COL1_POSITION = 14;
+  int y = 1;
   EditItems items{
-    new ToggleEditItem<network_type_t>(COL1_POSITION, 1, nettypes, &n.type),
-    new StringEditItem<char*>(COL1_POSITION, 2, 15, n.name, false),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 3, &n.sysnum),
-    new StringFilePathItem(COL1_POSITION, 4, 60, n.dir)
+    new ToggleEditItem<network_type_t>(COL1_POSITION, y++, nettypes, &n.type),
+    new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false),
+    new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum),
+    new StringFilePathItem(COL1_POSITION, y++, 60, n.dir)
   };
   if (n.type == network_type_t::ftn) {
-    items.add(new SubDialogEditItem(COL1_POSITION, 5, "Network Settings", 76, n));
+    items.add(new FidoNetworkConfigSubDialog(COL1_POSITION, y++, "Network Settings", 76, n));
+    items.add(new FidoPacketConfigSubDialog(COL1_POSITION, y++, "Node Settings", 76, config, n));
   }
 
   const string title = StrCat("Network Configuration; Net #", nn);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, items.size() + 2, 76));
   items.set_curses_io(out, window.get());
 
-  int y = 1;
+  y = 1;
   window->PutsXY(2, y++, "Net Type  :");
   window->PutsXY(2, y++, "Net Name  :");
   window->PutsXY(2, y++, "Node #    :");
   window->PutsXY(2, y++, "Directory :");
   if (n.type == network_type_t::ftn) {
     window->PutsXY(2, y++, "Settings  :");
+    window->PutsXY(2, y++, "Addresses :");
   }
   items.Run();
 
@@ -274,7 +387,7 @@ static void edit_net(Networks& networks, int nn) {
   networks.Save();
 }
 
-static bool insert_net(Networks& networks, int nn) {
+static bool insert_net(const Config& config, Networks& networks, int nn) {
   wwiv::sdk::Subs subs(syscfg.datadir, networks.networks());
   if (!subs.Load()) {
     return false;
@@ -356,7 +469,7 @@ static bool insert_net(Networks& networks, int nn) {
     networks.insert(nn, n);
   }
 
-  edit_net(networks, nn);
+  edit_net(config, networks, nn);
   return true;
 }
 
@@ -380,7 +493,7 @@ void networks(wwiv::sdk::Config& config) {
       ListBoxResult result = list.Run();
 
       if (result.type == ListBoxResultType::SELECTION) {
-        edit_net(networks, result.selected);
+        edit_net(config, networks, result.selected);
       } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       } else if (result.type == ListBoxResultType::HOTKEY) {
@@ -417,7 +530,7 @@ void networks(wwiv::sdk::Config& config) {
           const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
           if (net_num > 0 && net_num <= networks.networks().size() + 1) {
             if (dialog_yn(window, "Are you sure? ")) {
-              insert_net(networks, net_num - 1);
+              insert_net(config, networks, net_num - 1);
             }
           }
           break;

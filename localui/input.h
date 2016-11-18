@@ -55,6 +55,7 @@ enum class EditLineMode {
 
 bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text);
 bool dialog_yn(CursesWindow* window, const std::string& prompt);
+std::string dialog_input_string(CursesWindow* window, const std::string& prompt, size_t max_length);
 int dialog_input_number(CursesWindow* window, const std::string& prompt, int min_value, int max_value);
 char onek(CursesWindow* window, const char *s);
 int editline(CursesWindow* window, std::string* s, int len, EditLineMode status, const char *ss);
@@ -259,7 +260,7 @@ public:
     auto it = std::find(items_.begin(), items_.end(), data_);
     std::vector<std::string>::size_type selection = 0;
     if (it != items_.end()) {
-      selection = std::distance(it, items_.begin());
+      selection = std::distance(items_.begin(), it);
     }
     selection = toggleitem(window, static_cast<std::vector<std::string>::size_type>(selection), items_, &return_code);
     data_ = items_.at(selection);

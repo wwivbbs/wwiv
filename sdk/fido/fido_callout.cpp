@@ -83,6 +83,13 @@ FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
 
 FidoCallout::~FidoCallout() {}
 
+fido_packet_config_t FidoCallout::packet_override_for(const FidoAddress& a) const {
+  if (!contains(node_configs_, a)) {
+    return{};
+  }
+  return node_configs_.at(a);
+}
+
 fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& a) const {
   // base config
   fido_packet_config_t config = net_.fido.packet_config;
@@ -100,6 +107,8 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& a) const 
 }
 
 bool FidoCallout::insert(const FidoAddress& a, const fido_packet_config_t& c) {
+  // emplace only inserts, doesn't update.
+  node_configs_.erase(a);
   node_configs_.emplace(a, c);
   return true;
 }
@@ -112,6 +121,9 @@ bool FidoCallout::erase(const FidoAddress& a) {
 bool FidoCallout::Load() {
   node_configs_.clear();
   const string dir = File::MakeAbsolutePath(root_dir_, net_.dir);
+  if (!File::Exists(dir, FIDO_CALLOUT_JSON)) {
+    return true;
+  }
   JsonFile<decltype(node_configs_)> json(dir, FIDO_CALLOUT_JSON, "callout", node_configs_);
   return json.Load();
 }

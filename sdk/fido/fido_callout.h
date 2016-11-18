@@ -41,12 +41,13 @@ public:
   bool IsInitialized() const { return initialized_; }
 
   fido_packet_config_t packet_config_for(const FidoAddress& a) const;
+  fido_packet_config_t packet_override_for(const FidoAddress& a) const;
 
   bool insert(const FidoAddress& a, const fido_packet_config_t& c);
   bool erase(const FidoAddress& a);
   bool Load();
   bool Save();
-
+  std::map<wwiv::sdk::fido::FidoAddress, fido_packet_config_t> node_configs() const { return node_configs_; }
 
 private:
   bool initialized_ = false;
