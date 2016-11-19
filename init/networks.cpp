@@ -23,6 +23,7 @@
 #include <cstdlib>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <fcntl.h>
@@ -55,6 +56,7 @@
 #define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
 #define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
 
+using std::pair;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -187,9 +189,19 @@ public:
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->bad_packets_dir));
 
       dy_start_ = y;
-      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"unset", "FLO", "NetMail (ATTACH)"}, &n->mailer_type));
-      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "WWIV BINKP (N/A)"}, &n->transport));
-      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"unset", "FSC-0039 Type 2+"}, &n->packet_config.packet_type));
+      vector<pair<fido_mailer_t, string>> mailerlist = {{fido_mailer_t::flo, "FLO"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
+      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type));
+
+      vector<pair<fido_transport_t, string>> transportlist = {
+        {fido_transport_t::directory, "Directory"}, {fido_transport_t::binkp, "WWIV BinkP (N/A)"}
+      };
+      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist, &n->transport));
+
+      vector<pair<fido_packet_t, string>> packetlist = {
+        {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
+      };
+      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &n->packet_config.packet_type));
+
       items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, true));
@@ -250,7 +262,11 @@ void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_
   const int COL1_POSITION = 17;
   int y = 1;
   EditItems items{};
-  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"unset", "FSC-0039 Type 2+"}, &p.packet_type));
+  vector<pair<fido_packet_t, string>> packetlist = {
+    {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
+  };
+
+  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &p.packet_type));
   items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.packet_password, true));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.areafix_password, true));
@@ -355,10 +371,10 @@ private:
 
 
 static void edit_net(const Config& config, Networks& networks, int nn) {
-  static const vector<string> nettypes{
-    "WWIVnet ",
-    "Fido    ",
-    "Internet",
+  static const vector<pair<network_type_t, string>> nettypes = {
+    {network_type_t::wwivnet, "WWIVnet "},
+    {network_type_t::ftn, "Fido    "},
+    {network_type_t::internet, "Internet"}
   };
 
   Subs subs(syscfg.datadir, networks.networks());
@@ -366,10 +382,6 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
 
   net_networks_rec& n = networks.at(nn);
   const string orig_network_name(n.name);
-
-  if (static_cast<int>(n.type) >= nettypes.size()) {
-    n.type = static_cast<network_type_t>(0);
-  }
 
   const int COL1_POSITION = 14;
   int y = 1;

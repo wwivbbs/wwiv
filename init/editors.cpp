@@ -54,7 +54,7 @@ static void edit_editor(editorrec& e) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("External Editor Configuration", 17, 78));
 
-  const vector<string> bbs_types = { "WWIV    ", "QuickBBS" };
+  const vector<std::pair<uint8_t, string>> bbs_types = {{0, "WWIV"}, {1,"QuickBBS"}};
   const int COL1_POSITION = 22;
 
   if (!(e.ansir & ansir_ansi)) {

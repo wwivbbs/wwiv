@@ -24,6 +24,8 @@
 #include <limits>
 #include <stdexcept>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include <string.h>
@@ -208,13 +210,37 @@ protected:
   }
 };
 
+template <typename T>
+constexpr typename std::underlying_type<T>::type enum_to_int(T value) {
+  return static_cast<typename std::underlying_type<T>::type>(value);
+}
+
+template <typename T>
+std::vector<std::string> item_list(const std::vector<std::pair<T, std::string>>& orig) {
+  std::vector<std::string> items;
+  for (const auto& e : orig) {
+    items.push_back(e.second);
+  }
+  return items;
+}
+
+template <typename T>
+std::size_t index_of(T& haystack, const std::vector<std::pair<T, std::string>>& needle) {
+  for (std::size_t i = 0; i < needle.size(); i++) {
+    if (haystack == needle.at(i).first) {
+      return i;
+    }
+  }
+  return 0;
+}
+
 template<typename T> 
 class ToggleEditItem : public EditItem<T*> {
 public:
-  ToggleEditItem(int x, int y, const std::vector<std::string>& items, T* data) 
+  ToggleEditItem(int x, int y, const std::vector<std::pair<T, std::string>>& items, T* data) 
       : EditItem<T*>(x, y, 0, data), items_(items) {
     for (const auto& item : items) {
-      this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.size());
+      this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.second.size());
     }
   }
   virtual ~ToggleEditItem() {}
@@ -224,9 +250,12 @@ public:
     int return_code = 0;
     if (static_cast<std::vector<std::string>::size_type>(*this->data_) > items_.size()) {
       // Data is out of bounds, reset it to a senible value.
-      *this->data_ = static_cast<T>(0);
+      *this->data_ = items_.front().first;
     }
-    *this->data_ = static_cast<T>(toggleitem(window, static_cast<std::vector<std::string>::size_type>(*this->data_), items_, &return_code));
+    std::size_t index = index_of(*this->data_, items_);
+    const std::vector<std::string> items = item_list(items_);
+    index = toggleitem(window, index, items, &return_code);
+    *this->data_ = items_.at(index).first;
     DefaultDisplay(window);
     return return_code;
   }
@@ -234,14 +263,15 @@ public:
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     try {
-      std::string s = items_.at(static_cast<std::vector<std::string>::size_type>(*this->data_));
+      std::size_t index = index_of(*this->data_, items_);
+      const auto& s = items_.at(index).second;
       this->DefaultDisplayString(window, s);
     } catch (const std::out_of_range&) {
       this->DefaultDisplayString(window, "");
     }
   }
 private:
-  const std::vector<std::string> items_;
+  const std::vector<std::pair<T, std::string>> items_;
 };
 
 class StringListItem: public EditItem<std::string&> {
