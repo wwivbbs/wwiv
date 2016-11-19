@@ -276,6 +276,14 @@ struct net_call_out_rec {
 enum class fido_packet_t { unset, type2_plus };
 enum class fido_transport_t { unset, directory, binkp };
 enum class fido_mailer_t { unset, flo, attach };
+enum class fido_bundle_status_t: char {
+  normal = 'f',
+  crash = 'c',
+  direct = 'd',
+  hold = 'h',
+  // Do not use for creating a packet.
+  unknown = 'x'
+};
 
 // Remember to update the serialize function in networks_cereal.h and also
 // the code (packet_config_for) in fido_callout.cpp when updating these.
@@ -291,6 +299,7 @@ struct fido_packet_config_t {
   std::string areafix_password;
   int max_archive_size = 0;
   int max_packet_size = 0;
+  fido_bundle_status_t netmaiL_status = fido_bundle_status_t::normal;
 };
 
 // Remember to update the serialize function in networks_cereal.h when updating these.

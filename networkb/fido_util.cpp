@@ -80,13 +80,13 @@ std::string dow_extension(int dow_num, int bundle_number) {
   return ext;
 }
 
-static string control_file_extension(wwiv::sdk::fido::FidoBundleStatus dow) {
+static string control_file_extension(fido_bundle_status_t status) {
   string s = "flo";
-  s[0] = static_cast<char>(dow);
+  s[0] = static_cast<char>(status);
   return s;
 }
 
-std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, wwiv::sdk::fido::FidoBundleStatus status) {
+std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
   int16_t net = dest.net();
   int16_t node = dest.node();
 

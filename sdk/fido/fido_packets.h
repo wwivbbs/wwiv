@@ -223,15 +223,6 @@ static constexpr uint16_t MSGAREQ = 0x4000;
 // File update request
 static constexpr uint16_t MSGFUPDREQ = 0x8000;
 
-enum class FidoBundleStatus: char {
-  normal = 'f',
-  crash = 'c',
-  direct = 'd',
-  hold = 'h',
-  // Do not use for creating a packet.
-  unknown = 'x'
-};
-
 struct fido_variable_length_header_t {
   std::string date_time;
   std::string to_user_name;

@@ -306,7 +306,6 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   auto tempdir = File::MakeAbsolutePath(net.dir, net.fido.temp_inbound_dir);
   File::set_current_directory(tempdir);
 
-
   // were in the temp dir now.
   vector<arcrec> arcs = read_arcs(config.datadir());
   if (arcs.empty()) {
@@ -353,7 +352,7 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
   return true;
 }
 
-bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const string& fido_packet_name, std::string& out_bundle_name) {
+static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const string& fido_packet_name, std::string& out_bundle_name) {
 
   // were in the temp dir now.
   vector<arcrec> arcs = read_arcs(config.datadir());
@@ -474,7 +473,7 @@ static bool iter_starts_with(const C& c, I& iter, string expected) {
   return true;
 }
 
-bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& wwivnet_packet, string& fido_packet_name) {
+static bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& wwivnet_packet, string& fido_packet_name) {
   using wwiv::net::ReadPacketResponse;
 
   string temp_dir(net.fido.temp_outbound_dir);
@@ -609,7 +608,7 @@ bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, co
   return false;
 }
 
-bool create_ftn_packet_and_bundle(const NetworkCommandLine& net_cmdline, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& p, string& bundlename) {
+static bool create_ftn_packet_and_bundle(const NetworkCommandLine& net_cmdline, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& p, string& bundlename) {
   LOG(INFO) << "Creating packet for subscriber: " << dest.as_string();
   string fido_packet_name;
   if (!create_ftn_packet(net_cmdline.config(), fido_callout, dest, net, p, fido_packet_name)) {
@@ -627,7 +626,7 @@ bool create_ftn_packet_and_bundle(const NetworkCommandLine& net_cmdline, const F
   return true;
 }
 
-string NextNetmailFilePath(const string& dir) {
+static string NextNetmailFilePath(const string& dir) {
   for (int i = 2; i < 10000; i++) {
     string candidate = FilePath(dir, StrCat(i, ".msg"));
     if (!File::Exists(candidate)) {
@@ -637,7 +636,7 @@ string NextNetmailFilePath(const string& dir) {
   return "";
 }
 
-bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest, const string& from, const string& to, const string& netmail_filename, const string& bundle_path) {
+static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest, const string& from, const string& to, const string& netmail_filename, const string& bundle_path) {
   File netmail(netmail_filename);
   if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive | File::modeReadWrite, File::shareDenyReadWrite)) {
     LOG(ERROR) << "Unable to open netmail filen: '" << netmail.full_pathname() << "'";
@@ -676,8 +675,12 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
   for (int i = 1; i < 7; i++) {
     File bsy(out_dir, bsy_name);
     if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
-      LOG(ERROR) << "Unable to create BSY file. Will try again...";
-      sleep_for(std::chrono::milliseconds((i^2) * 50));
+      if (bsy.Exists()) {
+        LOG(ERROR) << "BSY file: '" << bsy.full_pathname() << "' already exists. Will try again...";
+      } else {
+        LOG(ERROR) << "Unable to create BSY file: '" << bsy.full_pathname() << "'. Will try again...";
+      }
+      sleep_for(std::chrono::milliseconds((i ^ 2) * 50));
       continue;
     }
   }

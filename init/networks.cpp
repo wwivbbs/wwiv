@@ -168,48 +168,62 @@ public:
     case network_type_t::wwivnet: return 2;
     case network_type_t::internet: return 2;
     case network_type_t::ftn: {
-      const int COL1_POSITION = 17;
-      const int MAX_STRING_LEN = 56;
+      constexpr int LABEL_WIDTH = 15;
+      constexpr int SHORT_FIELD_WIDTH = 25;
+      constexpr int LBL1_POSITION = 2;
+      constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH;
+      constexpr int LBL2_POSITION = COL1_POSITION + SHORT_FIELD_WIDTH;
+      constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH;
+      constexpr int MAX_STRING_LEN = 56;
       fido_network_config_t* n = &d_.fido;
       int y = 1;
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
       items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n->fake_outbound_node));
-      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"unset", "FLO", "NetMail (ATTACH)"}, &n->mailer_type));
-      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "WWIV BINKP (Not Implemented Yet)"}, &n->transport));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->netmail_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->bad_packets_dir));
+
+      dy_start_ = y;
+      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, {"unset", "FLO", "NetMail (ATTACH)"}, &n->mailer_type));
+      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, {"DIRECTORY", "WWIV BINKP (N/A)"}, &n->transport));
       items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, {"unset", "FSC-0039 Type 2+"}, &n->packet_config.packet_type));
       items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, true));
-      items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_archive_size));
-      items.add(new NumberEditItem<int>(COL1_POSITION, y++, &n->packet_config.max_packet_size));
+
+      // dy_start
+      int dy = dy_start_;
+      items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_archive_size));
+      items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_packet_size));
       window->GotoXY(x_, y_);
       int ch = window->GetChar();
       if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-        unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, items.size() + 2, width_));
+        unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, y + 1, width_));
         items.set_curses_io(CursesIO::Get(), sw.get());
         y = 1;
-        sw->PutsXY(2, y++, "FTN Address  :");
-        sw->PutsXY(2, y++, "Fake Outbound:");
-        sw->PutsXY(2, y++, "Mailer       :");
-        sw->PutsXY(2, y++, "Transport    :");
-        sw->PutsXY(2, y++, "Inbound Dir  :");
-        sw->PutsXY(2, y++, "Temp In Dir  :");
-        sw->PutsXY(2, y++, "Temp Out Dir :");
-        sw->PutsXY(2, y++, "Outbound Dir :");
-        sw->PutsXY(2, y++, "NetMail Dir  :");
-        sw->PutsXY(2, y++, "BadPacket Dir:");
-        sw->PutsXY(2, y++, "Packet Type  :");
-        sw->PutsXY(2, y++, "Compression  :");
-        sw->PutsXY(2, y++, "Packet PW    :");
-        sw->PutsXY(2, y++, "AreaFix PW   :");
-        sw->PutsXY(2, y++, "Max Arc Size :");
-        sw->PutsXY(2, y++, "Max Pkt Size :");
+        sw->PutsXY(LBL1_POSITION, y++, "FTN Address  :");
+        sw->PutsXY(LBL1_POSITION, y++, "Fake Outbound:");
+        sw->PutsXY(LBL1_POSITION, y++, "Inbound Dir  :");
+        sw->PutsXY(LBL1_POSITION, y++, "Temp In Dir  :");
+        sw->PutsXY(LBL1_POSITION, y++, "Temp Out Dir :");
+        sw->PutsXY(LBL1_POSITION, y++, "Outbound Dir :");
+        sw->PutsXY(LBL1_POSITION, y++, "NetMail Dir  :");
+        sw->PutsXY(LBL1_POSITION, y++, "BadPacket Dir:");
+
+        sw->PutsXY(LBL1_POSITION, y++, "Mailer       :");
+        sw->PutsXY(LBL1_POSITION, y++, "Transport    :");
+        sw->PutsXY(LBL1_POSITION, y++, "Packet Type  :");
+        sw->PutsXY(LBL1_POSITION, y++, "Compression  :");
+        sw->PutsXY(LBL1_POSITION, y++, "Packet PW    :");
+        sw->PutsXY(LBL1_POSITION, y++, "AreaFix PW   :");
+
+        // dy = y where we start to double up.
+        dy = dy_start_;
+        sw->PutsXY(LBL2_POSITION, dy++, "Max Arc Size :");
+        sw->PutsXY(LBL2_POSITION, dy++, "Max Pkt Size :");
         items.Run();
         window->RedrawWin();
         return 2;
@@ -229,6 +243,7 @@ private:
   net_networks_rec& d_;
   int x_ = 0;
   int y_ = 0;
+  int dy_start_ = 0;
 };
 
 void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_config_t& p) {

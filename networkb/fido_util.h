@@ -35,7 +35,7 @@ std::string packet_name(time_t now);
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number);
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
 std::string dow_extension(int dow, int bundle_number);
-std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, wwiv::sdk::fido::FidoBundleStatus dow);
+std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status);
 std::string daten_to_fido(time_t t);
 time_t fido_to_daten(std::string d);
 std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a);

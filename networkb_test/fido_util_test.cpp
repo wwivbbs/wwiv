@@ -74,10 +74,10 @@ TEST_F(FidoUtilTest, DowExtension) {
 
 TEST_F(FidoUtilTest, ControlFileName) {
   FidoAddress dest("1:105/42");
-  EXPECT_EQ("0069002a.flo", control_file_name(dest, FidoBundleStatus::normal));
-  EXPECT_EQ("0069002a.clo", control_file_name(dest, FidoBundleStatus::crash));
-  EXPECT_EQ("0069002a.dlo", control_file_name(dest, FidoBundleStatus::direct));
-  EXPECT_EQ("0069002a.hlo", control_file_name(dest, FidoBundleStatus::hold));
+  EXPECT_EQ("0069002a.flo", control_file_name(dest, fido_bundle_status_t::normal));
+  EXPECT_EQ("0069002a.clo", control_file_name(dest, fido_bundle_status_t::crash));
+  EXPECT_EQ("0069002a.dlo", control_file_name(dest, fido_bundle_status_t::direct));
+  EXPECT_EQ("0069002a.hlo", control_file_name(dest, fido_bundle_status_t::hold));
 }
 
 TEST_F(FidoUtilTest, ToNetNode) {
