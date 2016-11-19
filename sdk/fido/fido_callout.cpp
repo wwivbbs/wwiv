@@ -68,7 +68,7 @@ namespace sdk {
 namespace fido {
 
 FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
-    : net_(net), root_dir_(config.root_directory()) {
+    : root_dir_(config.root_directory()), net_(net) {
 
   if (!config.IsInitialized()) {
     return;

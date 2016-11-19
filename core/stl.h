@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <chrono>
 #include <cstring>
+#include <iterator>
 #include <map>
 #include <functional>
 #include <string>
@@ -101,9 +102,9 @@ const signed int size_int(C c) {
 
 template <typename C, typename S = std::size_t, typename R>
 bool insert_at(C& c, S on, R r) {
-  std::size_t n = static_cast<decltype(std::size(c))>(on);
+  std::size_t n = static_cast<decltype(c.size())>(on);
 
-  if (n < 0 || n > std::size(c)) {
+  if (n < 0 || n > c.size()) {
     return false;
   }
   auto it = c.begin();
@@ -114,8 +115,8 @@ bool insert_at(C& c, S on, R r) {
 
 template <typename C, typename S = std::size_t>
 bool erase_at(C& c, S on) {
-  std::size_t n = static_cast<decltype(std::size(c))>(on);
-  if (n >= std::size(c)) {
+  std::size_t n = static_cast<decltype(c.size())>(on);
+  if (n >= c.size()) {
     return false;
   }
   auto it = c.begin();
