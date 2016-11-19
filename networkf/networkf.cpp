@@ -812,7 +812,7 @@ int main(int argc, char** argv) {
 #ifndef _WIN32
         string uext = ext;
         StringUpperCase(&uext);
-        import_bundles(net_cmdline.config(), net, tempdir, StrCat("*.", uext));
+        import_bundles(net_cmdline.config(), fido_callout, net, tempdir, StrCat("*.", uext));
 #endif
       }
     } else if (cmd == "export") {
