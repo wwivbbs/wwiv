@@ -238,13 +238,13 @@ bool SSHSession::close() {
 std::string SSHSession::GetAndClearRemoteUserName() {
   string temp = remote_username_;
   remote_username_.clear();
-  return std::move(temp);
+  return temp;
 }
 
 std::string SSHSession::GetAndClearRemotePassword() {
   string temp = remote_password_;
   remote_password_.clear();
-  return std::move(temp);
+  return temp;
 }
 
 static bool socket_avail(SOCKET sock, int seconds) {

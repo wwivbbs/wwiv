@@ -61,35 +61,28 @@ static std::string get_field(const C& c, I& iter, std::set<char> stop, std::size
   return result;
 }
 
-static NodelistKeyword to_keyword(const std::string& orig) {
-  if (orig.empty()) {
+static NodelistKeyword to_keyword(const std::string& k) {
+  if (k.empty()) {
     return NodelistKeyword::node;
   }
-  string k(orig);
-  StringLowerCase(&k);
 
-  if (k == "down") return NodelistKeyword::down;
-  if (k == "host") return NodelistKeyword::host;
-  if (k == "hub") return NodelistKeyword::hub;
-  if (k == "pvt") return NodelistKeyword::pvt;
-  if (k == "region") return NodelistKeyword::region;
-  if (k == "zone") return NodelistKeyword::zone;
+  if (k == "Down") return NodelistKeyword::down;
+  if (k == "Host") return NodelistKeyword::host;
+  if (k == "Hub") return NodelistKeyword::hub;
+  if (k == "Pvt") return NodelistKeyword::pvt;
+  if (k == "Region") return NodelistKeyword::region;
+  if (k == "Zone") return NodelistKeyword::zone;
 
   return NodelistKeyword::node;
 }
 
-static bool bool_flag(const std::string& value, const std::string& flag_name, bool& f) {
+static inline bool bool_flag(const std::string& value, const std::string& flag_name, bool& f) {
   if (value == flag_name) {
     f = true;
     return true;
   }
   return false;
 }
-
-struct internet_flag {
-  string host;
-  uint16_t port;
-};
 
 static bool internet_flag(const std::string& value, const std::string& flag_name, bool& f, string& host, uint16_t& port) {
   if (!contains(value, ':')) return false;
@@ -133,10 +126,6 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   }
 
   vector<string> parts = SplitString(data_line, ",");
-  for (auto& p : parts) {
-    StringTrim(&p);
-  }
-
   if (parts.size() < 8) {
     return false;
   }
@@ -203,7 +192,6 @@ bool Nodelist::Load() {
     if (line.empty()) continue;
     if (line.front() == ';') {
       // TODO(rushfan): Do we care to do anything with this?
-      VLOG(3) << line;
       continue;
     }
     NodelistEntry e{};
@@ -224,7 +212,6 @@ bool Nodelist::Load() {
       case NodelistKeyword::node:
       {
         FidoAddress address(zone, net, e.number_, 0, "");
-        VLOG(4) << address << "; " << line;
         entries_.emplace(address, e);
       } break;
       case NodelistKeyword::pvt:

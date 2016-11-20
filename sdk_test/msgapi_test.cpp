@@ -58,7 +58,7 @@ public:
     h->set_in_reply_to("IRT");
     msg->text()->set_text(text);
     
-    return std::move(msg);
+    return msg;
   }
 
   SdkHelper helper;
