@@ -22,6 +22,7 @@
 #include <map>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 #include "sdk/fido/fido_address.h"
 
@@ -54,29 +55,29 @@ public:
   // TODO(rushfan): private
 public:
   FidoAddress address_;
-  NodelistKeyword keyword_;
-  uint16_t number_;
+  NodelistKeyword keyword_ = NodelistKeyword::node;
+  int16_t number_ = 0;
   // If the bbs supports internet access, the hostname
   // should be used here instead of the name.
   std::string name_;
   std::string location_;
   std::string sysop_name_;
   std::string phone_number_;
-  uint32_t baud_rate_;
+  uint32_t baud_rate_ = 0;
   // flags.
-  bool cm_;
-  bool icm_;
-  bool mo_;
-  bool lo_;
-  bool mn_;
+  bool cm_ = false;
+  bool icm_ = false;
+  bool mo_ = false;
+  bool lo_ = false;
+  bool mn_ = false;
 
   /*
    * Capabilities defined by the X{A,B,C,P,R,W,X} flags.
    */
-  bool bark_file_;
-  bool bark_update_;
-  bool wazoo_file_;
-  bool wazoo_update_;
+  bool bark_file_ = false;
+  bool bark_update_ = false;
+  bool wazoo_file_ = false;
+  bool wazoo_update_ = false;
 
   //
   // Internet flags.
@@ -85,16 +86,16 @@ public:
   // INA: Hostname to use (without port) for all services.
   std::string hostname_;
   // IBN: BinkP over internet
-  bool binkp_;
-  uint16_t binkp_port_;
+  bool binkp_ = false;
+  uint16_t binkp_port_ = 0;
   std::string binkp_hostname_;
   // ITN: FTS-0001 or later over telnet.
-  bool telnet_;
-  uint16_t telnet_port_;
+  bool telnet_ = false;
+  uint16_t telnet_port_ = 0;
   std::string telnet_hostname_;
   // IVM: FTS-0001 or later over telnet.
-  bool vmodem_;
-  uint16_t vmodem_port_;
+  bool vmodem_ = false;
+  uint16_t vmodem_port_ = 0;
   std::string vmodem_hostname_;
   // The rest are ignoded
   // IP, IFC, IFT, IVM, IN04
@@ -107,15 +108,28 @@ class Nodelist {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
   Nodelist(const std::string& path);
+  Nodelist(const std::vector<std::string>& lines);
   virtual ~Nodelist();
 
-  bool Load();
+  bool initialized() const { return initialized_; }
+  explicit operator bool() const { return initialized_; }
+
+  bool Load(const std::string& path);
+  bool Load(const std::vector<std::string>& lines);
   const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
   const std::map<FidoAddress, NodelistEntry> entries() const { return entries_; }
+  const std::vector<NodelistEntry> entries(int16_t zone, int16_t net) const;
+  const std::vector<NodelistEntry> entries(int16_t zone) const;
+  const std::vector<int16_t> zones() const;
+  const std::vector<int16_t> nets(int16_t zone) const;
+  const std::vector<int16_t> nodes(int16_t zone, int16_t net) const;
+  const NodelistEntry* entry(int16_t zone, int16_t net, int16_t node);
 
 private:
-  const std::string path_;
+
+  bool HandleLine(const std::string& line, int16_t& zone, int16_t& region, int16_t& net, int16_t& hub );
   std::map<FidoAddress, NodelistEntry> entries_;
+  bool initialized_ = false;
 };
 
 

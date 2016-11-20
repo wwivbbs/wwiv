@@ -155,9 +155,6 @@
     <ClCompile Include="msgapi\message_area_wwiv.cpp">
       <Filter>Source Files\msgapi</Filter>
     </ClCompile>
-    <ClCompile Include="msgapi\message_utils_wwiv.cpp">
-      <Filter>Source Files\msgapi</Filter>
-    </ClCompile>
     <ClCompile Include="msgapi\message_wwiv.cpp">
       <Filter>Source Files\msgapi</Filter>
     </ClCompile>

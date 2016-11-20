@@ -101,8 +101,12 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   }
 
   vector<string> parts = SplitString(data_line, ",");
-  if (parts.size() < 8) {
+  if (parts.size() < 6) {
     return false;
+  }
+
+  for (auto& p : parts) {
+    StringTrim(&p);
   }
 
   auto it = parts.cbegin();
@@ -113,11 +117,16 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
     e.keyword_ = to_keyword(*it++);
   }
   e.number_ = StringToUnsignedShort(*it++);
-  e.name_ = *it++;
+
+  string name = *it++;
+  std::replace(std::begin(name), std::end(name), '_', ' ');
+  e.name_ = name;
   e.location_ = *it++;
   e.sysop_name_ = *it++;
   e.phone_number_ = *it++;
-  e.baud_rate_ = StringToUnsignedInt(*it++);
+  if (it != parts.end()) {
+    e.baud_rate_ = StringToUnsignedInt(*it++);
+  }
 
   while (it != parts.end()) {
     const auto& f = *it++;
@@ -151,64 +160,148 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   return true;
 }
 
-Nodelist::Nodelist(const std::string& path) : path_(path) {}
+Nodelist::Nodelist(const std::string& path) 
+  : entries_(), initialized_(Load(path)) {}
+
+Nodelist::Nodelist(const std::vector<std::string>& lines) 
+  : entries_(), initialized_(Load(lines)) {}
 
 Nodelist::~Nodelist() {}
 
-bool Nodelist::Load() {
-  TextFile f(path_, "rt");
+bool Nodelist::HandleLine(const string& line, int16_t& zone, int16_t& region, int16_t& net, int16_t& hub) {
+  if (line.empty()) return true;
+  if (line.front() == ';') {
+    // TODO(rushfan): Do we care to do anything with this?
+    return true;
+  }
+  NodelistEntry e{};
+  if (!NodelistEntry::ParseDataLine(line, e)) {
+    return false;
+  }
+  switch (e.keyword_) {
+  case NodelistKeyword::down:
+    // let's skip these for now
+  break;
+  case NodelistKeyword::host:
+  {
+    net = e.number_;
+  } break;
+  case NodelistKeyword::hub:
+  {
+    hub = e.number_;
+  } break;
+  case NodelistKeyword::node:
+  {
+    FidoAddress address(zone, net, e.number_, 0, "");
+    e.address_ = address;
+    entries_.emplace(address, e);
+  } break;
+  case NodelistKeyword::pvt:
+    // skip
+  break;
+  case NodelistKeyword::region:
+  {
+    region = e.number_;
+    hub = net = 0;
+  } break;
+  case NodelistKeyword::zone:
+  {
+    zone = e.number_;
+    region = hub = net = 0;
+  } break;
+  }
+
+  return true;
+}
+
+bool Nodelist::Load(const std::string& path) {
+  TextFile f(path, "rt");
   if (!f) {
     return false;
   }
   string line;
-  uint16_t zone = 0, region = 0, net = 0, hub = 0;
+  int16_t zone = 0, region = 0, net = 0, hub = 0;
   while (f.ReadLine(&line)) {
     StringTrim(&line);
-    if (line.empty()) continue;
-    if (line.front() == ';') {
-      // TODO(rushfan): Do we care to do anything with this?
-      continue;
-    }
-    NodelistEntry e{};
-    if (NodelistEntry::ParseDataLine(line, e)) {
-      switch (e.keyword_) {
-      case NodelistKeyword::down:
-      {
-        // let's skip these for now
-      } break;
-      case NodelistKeyword::host:
-      {
-        net = e.number_;
-      } break;
-      case NodelistKeyword::hub:
-      {
-        hub = e.number_;
-      } break;
-      case NodelistKeyword::node:
-      {
-        FidoAddress address(zone, net, e.number_, 0, "");
-        entries_.emplace(address, e);
-      } break;
-      case NodelistKeyword::pvt:
-      {
-        // skip
-      } break;
-      case NodelistKeyword::region:
-      {
-        region = e.number_;
-        hub = net = 0;
-      } break;
-      case NodelistKeyword::zone:
-      {
-        zone = e.number_;
-        region = hub = net = 0;
-      } break;
-      default:
-        break;
-      }
-    }
+    HandleLine(line, zone, region, net, hub);
   }
   return true;
+}
+
+bool Nodelist::Load(const std::vector<std::string>& lines) {
+  if (lines.empty()) return false;
+  int16_t zone = 0, region = 0, net = 0, hub = 0;
+  for (const auto& raw_line : lines) {
+    string line(raw_line);
+    StringTrim(&line);
+    HandleLine(line, zone, region, net, hub);
+  }
+  return true;
+}
+
+const std::vector<NodelistEntry> Nodelist::entries(int16_t zone, int16_t net) const {
+  std::vector<NodelistEntry> entries;
+  for (const auto& e : entries_) {
+    if (e.first.zone() == zone && e.first.net() == net) {
+      entries.push_back(e.second);
+    }
+  }
+  return entries;
+}
+
+const std::vector<NodelistEntry> Nodelist::entries(int16_t zone) const {
+  std::vector<NodelistEntry> entries;
+  for (const auto& e : entries_) {
+    if (e.first.zone() == zone) {
+      entries.push_back(e.second);
+    }
+  }
+  return entries;
+}
+
+const std::vector<int16_t> Nodelist::zones() const {
+  std::set<int16_t> s;
+  for (const auto& e : entries_) {
+    s.emplace(e.first.zone());
+  }
+  std::vector<int16_t> zones;
+  for (const auto& n : s) {
+    zones.emplace_back(n);
+  }
+  return zones;
+}
+
+const std::vector<int16_t> Nodelist::nets(int16_t zone) const {
+  std::set<int16_t> s;
+  for (const auto& e : entries_) {
+    if (e.first.zone() == zone) {
+      s.emplace(e.first.net());
+    }
+  }
+  std::vector<int16_t> nets;
+  for (const auto& n : s) {
+    nets.emplace_back(n);
+  }
+  return nets;
+}
+
+const std::vector<int16_t> Nodelist::nodes(int16_t zone, int16_t net) const {
+  std::vector<int16_t> nodes;
+  for (const auto& e : entries_) {
+    if (e.first.zone() == zone && e.first.net() == net) {
+      nodes.emplace_back(e.first.node());
+    }
+  }
+  return nodes;
+}
+
+const NodelistEntry* Nodelist::entry(int16_t zone, int16_t net, int16_t node) {
+  FidoAddress a(zone, net, node, 0, "");
+  if (!contains(entries_, a)) {
+    return nullptr;
+  }
+  return &entries_.at(a);
+
 }
 
 }  // namespace fido

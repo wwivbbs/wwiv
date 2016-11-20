@@ -41,14 +41,13 @@ namespace fido {
 
 static int dump_file(const std::string& filename) {
 
-  Nodelist n(filename);
-
   auto start = std::chrono::steady_clock::now();
-  if (!n.Load()) {
+  Nodelist n(filename);
+  auto end = std::chrono::steady_clock::now();
+  if (!n.initialized()) {
     LOG(ERROR) << "Unable to load nodelist: " << filename;
     return 1;
   }
-  auto end = std::chrono::steady_clock::now();
 
   const auto& entries = n.entries();
 
