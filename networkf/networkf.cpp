@@ -182,27 +182,25 @@ static string get_echomail_areaname(const std::string& text) {
   return "";
 }
 
-// TODO(rushfan): Not used anymore, but could be useful later.
-static string get_address_from_origin(const std::string& text) {
+static FidoAddress get_address_from_origin(const std::string& text) {
   vector<string> lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, "* Origin:")) {
       size_t start = line.find_last_of('(');
       size_t end = line.find_last_of(')');
       if (start == string::npos || end == string::npos) {
-        return "";
+        return FidoAddress(0, 0, 0, 0, "");
       }
 
       auto astr = line.substr(start + 1, end - start - 1);
       try {
-        FidoAddress a(astr);
-        return a.as_string();
+        return FidoAddress(astr);
       } catch (std::exception&) {
-        return astr;
+        return FidoAddress(0, 0, 0, 0, "");
       }
     }
   }
-  return "";
+  return FidoAddress(0, 0, 0, 0, "");
 }
 
 static bool import_packet_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
@@ -269,13 +267,21 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     nh.touser = 0;
 
     auto from_address = get_address_from_origin(msg.vh.text);
+    auto net_num = from_address.net();
+    auto node_num = from_address.node();
+    if (net_num == 0) {
+      net_num = msg.nh.orig_net;
+    }
+    if (node_num == 0) {
+      node_num = msg.nh.orig_node;
+    }
 
     // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
     auto text = get_echomail_areaname(msg.vh.text);
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
-    text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
+    text.append(StrCat(msg.vh.from_user_name, "(", net_num,  "/", node_num, ")\r\n"));
     text.append(StrCat(msg.vh.date_time, "\r\n"));
     text.append(FidoToWWIVText(msg.vh.text));
 
