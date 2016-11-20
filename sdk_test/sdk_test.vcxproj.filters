@@ -46,6 +46,9 @@
     <ClCompile Include="fido\fido_address_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="fido\nodelist_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="sdk_helper.h">

@@ -17,6 +17,7 @@ set(test_sources
   subxtr_test.cpp
   user_test.cpp
   fido/fido_address_test.cpp
+  fido/nodelist_test.cpp
 )
 
 add_executable(sdk_tests ${test_sources})
