@@ -192,7 +192,14 @@ static string get_address_from_origin(const std::string& text) {
       if (start == string::npos || end == string::npos) {
         return "";
       }
-      return line.substr(start + 1, end - start - 1);
+
+      auto astr = line.substr(start + 1, end - start - 1);
+      try {
+        FidoAddress a(astr);
+        return a.as_string();
+      } catch (std::exception&) {
+        return astr;
+      }
     }
   }
   return "";
@@ -261,12 +268,14 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     nh.tosys = 1; // always 1 in new fido
     nh.touser = 0;
 
+    auto from_address = get_address_from_origin(msg.vh.text);
+
     // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-    string text = get_echomail_areaname(msg.vh.text);
+    auto text = get_echomail_areaname(msg.vh.text);
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
-    text.append(StrCat(msg.vh.from_user_name, "(", msg.nh.orig_net, "/", msg.nh.orig_node, ")\r\n"));
+    text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
     text.append(StrCat(msg.vh.date_time, "\r\n"));
     text.append(FidoToWWIVText(msg.vh.text));
 
