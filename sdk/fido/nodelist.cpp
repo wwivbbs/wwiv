@@ -20,19 +20,11 @@
 #include <set>
 #include <string>
 
-#include <cereal/cereal.hpp>
-#include <cereal/access.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/types/memory.hpp>
-#include <cereal/archives/json.hpp>
-
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
-#include "sdk/filenames.h"
+#include "core/textfile.h"
 
 using std::string;
 using std::vector;
@@ -46,7 +38,6 @@ namespace fido {
 
 // Cribbed from networkb/net_util.h
 // TODO: Move it somewhere here in SDK.
-
 template <typename C, typename I>
 static std::string get_field(const C& c, I& iter, std::set<char> stop, std::size_t max) {
   // No need to continue if we're already at the end.
@@ -136,13 +127,20 @@ static bool bool_flag(const std::string& value, const std::string& flag_name, bo
 }
 
 //static 
-NodelistEntry NodelistEntry::ParseDataLine(const std::string& data_line) {
+bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e) {
+  if (data_line.front() == ';') {
+    return false;
+  }
+
   vector<string> parts = SplitString(data_line, ",");
   for (auto& p : parts) {
     StringTrim(&p);
   }
 
-  NodelistEntry e{};
+  if (parts.size() < 8) {
+    return false;
+  }
+
   auto it = parts.begin();
   if (data_line.front() == ',') {
     // We have no 1st field, default the keyword and skip the iterator.
@@ -186,10 +184,70 @@ NodelistEntry NodelistEntry::ParseDataLine(const std::string& data_line) {
     if (e.vmodem_hostname_.empty()) e.vmodem_hostname_ = e.hostname_;
   }
 
-  return e;
+  return true;
 }
 
+Nodelist::Nodelist(const std::string& path) : path_(path) {}
 
+Nodelist::~Nodelist() {}
+
+bool Nodelist::Load() {
+  TextFile f(path_, "rt");
+  if (!f) {
+    return false;
+  }
+  string line;
+  uint16_t zone = 0, region = 0, net = 0, hub = 0;
+  while (f.ReadLine(&line)) {
+    StringTrim(&line);
+    if (line.empty()) continue;
+    if (line.front() == ';') {
+      // TODO(rushfan): Do we care to do anything with this?
+      VLOG(3) << line;
+      continue;
+    }
+    NodelistEntry e{};
+    if (NodelistEntry::ParseDataLine(line, e)) {
+      switch (e.keyword_) {
+      case NodelistKeyword::down:
+      {
+        // let's skip these for now
+      } break;
+      case NodelistKeyword::host:
+      {
+        net = e.number_;
+      } break;
+      case NodelistKeyword::hub:
+      {
+        hub = e.number_;
+      } break;
+      case NodelistKeyword::node:
+      {
+        FidoAddress address(zone, net, e.number_, 0, "");
+        VLOG(4) << address << "; " << line;
+        entries_.emplace(address, e);
+      } break;
+      case NodelistKeyword::pvt:
+      {
+        // skip
+      } break;
+      case NodelistKeyword::region:
+      {
+        region = e.number_;
+        hub = net = 0;
+      } break;
+      case NodelistKeyword::zone:
+      {
+        zone = e.number_;
+        region = hub = net = 0;
+      } break;
+      default:
+        break;
+      }
+    }
+  }
+  return true;
+}
 
 }  // namespace fido
 }  // namespace sdk

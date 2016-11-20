@@ -15,42 +15,73 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/fido/fido.h"
+#include "wwivutil/fido/dump_nodelist.h"
 
-#include <cstdio>
-#include <iomanip>
+#include <chrono>
 #include <iostream>
-#include <memory>
 #include <string>
 #include <vector>
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
-#include "sdk/config.h"
 #include "sdk/net.h"
-#include "sdk/networks.h"
-#include "wwivutil/fido/dump_fido_packet.h"
-#include "wwivutil/fido/dump_nodelist.h"
+#include "sdk/fido/nodelist.h"
 
+using std::cout;
 using std::endl;
-using std::make_unique;
-using std::setw;
 using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
-using namespace wwiv::sdk;
+using wwiv::core::CommandLineCommand;
+using namespace wwiv::sdk::fido;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
 namespace fido {
 
-bool FidoCommand::AddSubCommands() {
-  add(make_unique<DumpFidoPacketCommand>());
-  add(make_unique<DumpNodelistCommand>());
+static int dump_file(const std::string& filename) {
+
+  Nodelist n(filename);
+
+  auto start = std::chrono::steady_clock::now();
+  if (!n.Load()) {
+    LOG(ERROR) << "Unable to load nodelist: " << filename;
+    return 1;
+  }
+  auto end = std::chrono::steady_clock::now();
+
+  const auto& entries = n.entries();
+
+  auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+  cout << "Parsed " << entries.size() << " in " << elapsed.count() << " milliseconds. " << std::endl;
+  cout << "Parsed " << entries.size() << " in " << elapsed.count()/1000 << " seconds. " << std::endl;
+
+  for (const auto& e : entries) {
+    cout << e.first << ":" << e.second.name_ << std::endl;
+  }
+  return 0;
+}
+
+std::string DumpNodelistCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   nodelist <nodelistfilename>" << endl;
+  ss << "Example: nodelist nodelist.123" << endl;
+  return ss.str();
+}
+
+int DumpNodelistCommand::Execute() {
+  if (remaining().empty()) {
+    cout << GetUsage() << GetHelp() << endl;
+    return 2;
+  }
+  const string filename(remaining().front());
+  return dump_file(filename);
+}
+
+bool DumpNodelistCommand::AddSubCommands() {
   return true;
 }
 
 }
-}  // namespace wwivutil
-}  // namespace wwiv
+}
+}

@@ -196,3 +196,8 @@ std::string TextFile::ReadFileIntoString() {
   contents.resize(num_read); 
   return contents;
 }
+
+std::ostream& operator<<(std::ostream& os, const TextFile& file) {
+  os << file.full_pathname();
+  return os;
+}

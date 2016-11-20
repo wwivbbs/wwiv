@@ -19,6 +19,7 @@
 #define __INCLUDED_SDK_FIDO_NODELIST_H__
 
 #include <cstdint>
+#include <map>
 #include <stdexcept>
 #include <string>
 
@@ -48,7 +49,7 @@ public:
   NodelistEntry() {}
   virtual ~NodelistEntry() {}
 
-  static NodelistEntry ParseDataLine(const std::string& data_line);
+  static bool ParseDataLine(const std::string& data_line, NodelistEntry& e);
 
   // TODO(rushfan): private
 public:
@@ -105,10 +106,16 @@ public:
 class Nodelist {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
-  Nodelist(const std::string& dir, const std::string& filename);
-  ~Nodelist() {}
+  Nodelist(const std::string& path);
+  virtual ~Nodelist();
 
-private: 
+  bool Load();
+  const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
+  const std::map<FidoAddress, NodelistEntry> entries() const { return entries_; }
+
+private:
+  const std::string path_;
+  std::map<FidoAddress, NodelistEntry> entries_;
 };
 
 

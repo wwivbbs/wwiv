@@ -64,7 +64,7 @@ static string fido_attrib_to_string(uint16_t a) {
   return s;
 }
 
-int dump_stored_message(const std::string& filename) {
+static int dump_stored_message(const std::string& filename) {
   File f(filename);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(ERROR) << "Unable to open file: " << filename;
@@ -92,7 +92,7 @@ int dump_stored_message(const std::string& filename) {
   return 0;
 }
 
-int dump_packet_file(const std::string& filename) {
+static int dump_packet_file(const std::string& filename) {
   File f(filename);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(ERROR) << "Unable to open file: " << filename;
@@ -127,7 +127,7 @@ int dump_packet_file(const std::string& filename) {
   return 0;
 }
 
-int dump_file(const std::string& filename) {
+static int dump_file(const std::string& filename) {
   string s = filename;
   StringLowerCase(&s);
 

@@ -100,3 +100,12 @@ TEST(FidoAddressTest, Streams) {
   ss << f1;
   EXPECT_EQ(kAddr, ss.str());
 }
+
+// 1:0/120<1:103/17
+TEST(FidoAddressTest, LTGT) {
+  FidoAddress f1("1:0/120");
+  FidoAddress f2("1:103/17");
+
+  EXPECT_LT(f1, f2);
+  EXPECT_FALSE(f2 < f1);
+}

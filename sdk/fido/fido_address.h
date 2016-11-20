@@ -91,22 +91,8 @@ public:
   ::std::string domain() const { return domain_; }
 
   // Needed to put FidoAddress into a set.
-  inline bool operator< (const FidoAddress& r) const {
-    if (zone_ < r.zone_) return true;
-    if (net_ < r.net_) return true;
-    if (node_ < r.node_) return true;
-    if (point_ < r.point_) return true;
-    if (domain_ < r.domain_) return true;
-    return false;
-  }
-  inline bool operator== (const FidoAddress& o) const {
-    if (zone_ != o.zone_) return false;
-    if (net_ != o.net_) return false;
-    if (node_ != o.node_) return false;
-    if (point_ != o.point_) return false;
-    if (domain_ != o.domain_) return false;
-    return true;
-  }
+  bool operator< (const FidoAddress& r) const;
+  bool operator== (const FidoAddress& o) const;
 
 private:
   int16_t zone_ = 0;

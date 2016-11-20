@@ -66,7 +66,11 @@ public:
   // The file position will be at the end of the file after returning.
   std::string ReadFileIntoString();
 
- public:
+  // operators
+  explicit operator bool() const { return IsOpen(); }
+  friend std::ostream& operator<< (std::ostream &os, const TextFile &f);
+
+public:
   ~TextFile();
 
  private:
