@@ -36,31 +36,6 @@ namespace wwiv {
 namespace sdk {
 namespace fido {
 
-// Cribbed from networkb/net_util.h
-// TODO: Move it somewhere here in SDK.
-template <typename C, typename I>
-static std::string get_field(const C& c, I& iter, std::set<char> stop, std::size_t max) {
-  // No need to continue if we're already at the end.
-  if (iter == c.end()) {
-    return "";
-  }
-
-  const auto begin = iter;
-  std::size_t count = 0;
-  while (stop.find(*iter) == std::end(stop) && ++count < max && iter != c.end()) {
-    iter++;
-  }
-  std::string result(begin, iter);
-
-  // Stop over stop chars
-  while (iter != c.end()
-    && stop.find(*iter) != std::end(stop)) {
-    iter++;
-  }
-
-  return result;
-}
-
 static NodelistKeyword to_keyword(const std::string& k) {
   if (k.empty()) {
     return NodelistKeyword::node;
@@ -130,7 +105,7 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
     return false;
   }
 
-  auto it = parts.begin();
+  auto it = parts.cbegin();
   if (data_line.front() == ',') {
     // We have no 1st field, default the keyword and skip the iterator.
     e.keyword_ = NodelistKeyword::node;
@@ -145,7 +120,7 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   e.baud_rate_ = StringToUnsignedInt(*it++);
 
   while (it != parts.end()) {
-    const auto f = *it++;
+    const auto& f = *it++;
     if (bool_flag(f, "CM", e.cm_)) continue;
     if (bool_flag(f, "ICM", e.icm_)) continue;
     if (bool_flag(f, "MO", e.mo_)) continue;
