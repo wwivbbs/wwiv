@@ -21,7 +21,6 @@ set(COMMON_SOURCES
   msgapi/message_api.cpp
   msgapi/message_api_wwiv.cpp
   msgapi/message_area_wwiv.cpp
-  msgapi/message_utils_wwiv.cpp
   msgapi/message_wwiv.cpp
   msgapi/type2_text.cpp
   names.cpp
