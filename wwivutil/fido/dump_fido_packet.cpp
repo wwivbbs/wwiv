@@ -80,11 +80,15 @@ static int dump_stored_message(const std::string& filename) {
   }
 
   const auto& h = msg.nh;
+  auto from_address = get_address_from_origin(msg.text);
+  auto dt = fido_to_daten(h.date_time);
+  auto roundtrip_dt = daten_to_fido(dt);
+  
   cout << "cost:    " << h.cost << std::endl;
   cout << "to:      " << h.to << "(" << h.dest_zone << ":" << h.dest_net << "/" << h.dest_node << "." << h.dest_point << ")" << std::endl;
-  cout << "from:    " << h.from << "(" << h.orig_zone << ":" << h.orig_net << "/" << h.orig_node << "." << h.orig_point << ")" << std::endl;
+  cout << "from:    " << h.from << "(" << from_address.as_string() << "." << h.orig_point << ")" << std::endl;
   cout << "subject: " << h.subject << std::endl;
-  cout << "date:    " << h.date_time << std::endl;
+  cout << "date:    " << h.date_time << "; [" << roundtrip_dt << "]" << std::endl;
   cout << "# read:  " << h.times_read << "; reply_to: " << h.reply_to << std::endl;
   cout << "attrib:  " << fido_attrib_to_string(h.attribute);
   cout << std::endl;
@@ -115,12 +119,16 @@ static int dump_packet_file(const std::string& filename) {
       return 1;
     }
 
+    auto from_address = get_address_from_origin(msg.vh.text);
+    auto dt = fido_to_daten(msg.vh.date_time);
+    auto roundtrip_dt = daten_to_fido(dt);
+
     cout << "msg_type:" << msg.nh.message_type << std::endl;
     cout << "cost:    " << msg.nh.cost << std::endl;
     cout << "to:      " << msg.vh.to_user_name << "(" << msg.nh.dest_net << "/" << msg.nh.dest_node << ")" << std::endl;
-    cout << "from:    " << msg.vh.from_user_name << "(" << msg.nh.orig_net << "/" << msg.nh.orig_node << ")" << std::endl;
+    cout << "from:    " << msg.vh.from_user_name << "(" << from_address << ")" << std::endl;
     cout << "subject: " << msg.vh.subject << std::endl;
-    cout << "date:    " << msg.vh.date_time << std::endl;
+    cout << "date:    " << msg.vh.date_time << "; [" << roundtrip_dt << "]" << std::endl;
     cout << "text: " << std::endl << std::endl << FidoToWWIVText(msg.vh.text, false) << std::endl;
     cout << "==============================================================================" << endl;
   }

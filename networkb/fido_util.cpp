@@ -30,10 +30,12 @@
 #include "core/strings.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/fido/fido_address.h"
 
 using std::string;
 using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -113,25 +115,30 @@ time_t fido_to_daten(std::string d) {
   try {
     vector<string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
-    tm t{};
-    stream >> t.tm_mday;
+    auto now = time(nullptr);
+    struct tm* t = localtime(&now);
+    stream >> t->tm_mday;
     string mon_str;
     stream >> mon_str;
     if (!contains(months, mon_str)) {
       // Unparsable date. return now.
       return time(nullptr);
     }
-    t.tm_mon = std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str));
-    stream >> t.tm_year;
+    t->tm_mon = std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str));
+    int year;
+    stream >> year;
+    // tm_year is since 1900.
+    year -= 1900;
+    t->tm_year;
 
     string hms;
     stream >> hms;
     vector<string> parts = SplitString(hms, ":");
-    t.tm_hour = StringToInt(parts.at(0)) - 1;
-    t.tm_min = StringToInt(parts.at(1));
-    t.tm_sec = StringToInt(parts.at(2));
+    t->tm_hour = StringToInt(parts.at(0)) - 1;
+    t->tm_min = StringToInt(parts.at(1));
+    t->tm_sec = StringToInt(parts.at(2));
 
-    return mktime(&t);
+    return mktime(t);
   } catch (const std::exception& e) {
     LOG(ERROR) << "exception in fido_to_daten('" << d << "'): " << e.what();
     return time(nullptr);
@@ -195,6 +202,26 @@ std::string WWIVToFidoText(const std::string& wt) {
   return temp;
 }
 
+FidoAddress get_address_from_origin(const std::string& text) {
+  vector<string> lines = split_message(text);
+  for (const auto& line : lines) {
+    if (starts_with(line, " * Origin:")) {
+      size_t start = line.find_last_of('(');
+      size_t end = line.find_last_of(')');
+      if (start == string::npos || end == string::npos) {
+        return FidoAddress(0, 0, 0, 0, "");
+      }
+
+      auto astr = line.substr(start + 1, end - start - 1);
+      try {
+        return FidoAddress(astr);
+      } catch (std::exception&) {
+        return FidoAddress(0, 0, 0, 0, "");
+      }
+    }
+  }
+  return FidoAddress(0, 0, 0, 0, "");
+}
 }  // namespace fido
 }  // namespace net
 }  // namespace wwiv

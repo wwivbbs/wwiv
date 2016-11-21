@@ -126,3 +126,12 @@ TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZ) {
   EXPECT_EQ("a\r", fido);
 }
 
+TEST_F(FidoUtilTest, MkTime) {
+  auto now = time(nullptr);
+  auto tm = localtime(&now);
+
+  auto rt = mktime(tm);
+
+  EXPECT_EQ(now, rt);
+
+}
