@@ -234,12 +234,18 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     }
     dupe.add(msg);
 
+    bool is_email = (msg.nh.attribute & MSGPRIVATE);
     net_header_rec nh{};
     nh.daten = static_cast<uint32_t>(fido_to_daten(msg.vh.date_time));
     nh.fromsys = FTN_FAKE_OUTBOUND_NODE;
     nh.fromuser = 0;
     nh.list_len = 0;
-    nh.main_type = main_type_new_post;
+    if (is_email) {
+      nh.main_type = main_type_email_name;
+    } else {
+      nh.main_type = main_type_new_post;
+    }
+
     nh.method = 0;
     nh.minor_type = 0;
     nh.tosys = 1; // always 1 in new fido
@@ -247,13 +253,22 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
 
     auto from_address = get_address_from_origin(msg.vh.text);
 
-    // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-    auto text = get_echomail_areaname(msg.vh.text);
+    std::string text;
+    if (is_email) {
+      // TO_USER<nul>SUBJECT<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
+      text.append(msg.vh.to_user_name);
+    } else {
+      // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
+      text.append(get_echomail_areaname(msg.vh.text));
+    }
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
     text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
-    text.append(StrCat(msg.vh.date_time, "\r\n"));
+    auto dt = fido_to_daten(msg.vh.date_time);
+    text.append(daten_to_humantime(dt));
+    text.append("\r\n");
+
     text.append(FidoToWWIVText(msg.vh.text));
 
     nh.length = text.size();
@@ -850,10 +865,9 @@ int main(int argc, char** argv) {
         }
 
         if (p.nh.main_type == main_type_new_post) {
-
-          if (export_main_type_new_post(net_cmdline, net, fido_callout, bundles, p)) {
+          if (!export_main_type_new_post(net_cmdline, net, fido_callout, bundles, p)) {
+            LOG(ERROR) << "Error exporting post.";
           }
-
         } else {
           LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
           // Let's write it to dead.net
