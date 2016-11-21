@@ -299,7 +299,7 @@ struct fido_packet_config_t {
   std::string areafix_password;
   int max_archive_size = 0;
   int max_packet_size = 0;
-  fido_bundle_status_t netmaiL_status = fido_bundle_status_t::normal;
+  fido_bundle_status_t netmail_status = fido_bundle_status_t::normal;
 };
 
 // Remember to update the serialize function in networks_cereal.h when updating these.

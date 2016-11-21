@@ -65,6 +65,14 @@ std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::
   return StringPrintf("%04.4x%04.4x.%s", net, node, extension.c_str());
 }
 
+std::string flo_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
+  string extension = "flo";
+  if (status != fido_bundle_status_t::unknown) {
+    extension[0] = static_cast<char>(status);
+  }
+  return bundle_name(source, dest, extension);
+}
+
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number) {
   return bundle_name(source, dest, dow_extension(dow, bundle_number));
 }

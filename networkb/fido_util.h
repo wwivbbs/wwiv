@@ -34,6 +34,7 @@ namespace fido {
 std::string packet_name(time_t now);
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number);
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
+std::string flo_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status);
 std::string dow_extension(int dow, int bundle_number);
 std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status);
 std::string daten_to_fido(time_t t);

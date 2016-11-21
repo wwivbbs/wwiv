@@ -210,6 +210,15 @@ public:
       int dy = dy_start_;
       items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_archive_size));
       items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_packet_size));
+
+      vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
+        {fido_bundle_status_t::normal, "Normal"},
+        {fido_bundle_status_t::crash, "Crash"},
+        {fido_bundle_status_t::direct, "Immediate"},
+        {fido_bundle_status_t::hold, "Hold"},
+      };
+      items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist, &n->packet_config.netmail_status));
+
       window->GotoXY(x_, y_);
       int ch = window->GetChar();
       if (ch == KEY_ENTER || ch == TAB || ch == 13) {
@@ -236,6 +245,7 @@ public:
         dy = dy_start_;
         sw->PutsXY(LBL2_POSITION, dy++, "Max Arc Size :");
         sw->PutsXY(LBL2_POSITION, dy++, "Max Pkt Size :");
+        sw->PutsXY(LBL2_POSITION, dy++, "Bundle Status:");
         items.Run();
         window->RedrawWin();
         return 2;
@@ -259,7 +269,8 @@ private:
 };
 
 void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_config_t& p) {
-  const int COL1_POSITION = 17;
+  constexpr int LBL1_POSITION = 2;
+  constexpr int COL1_POSITION = 17;
   int y = 1;
   EditItems items{};
   vector<pair<fido_packet_t, string>> packetlist = {
@@ -273,17 +284,26 @@ void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_
   items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_archive_size));
   items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_packet_size));
 
+  vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
+    {fido_bundle_status_t::normal, "Normal"},
+    {fido_bundle_status_t::crash, "Crash"},
+    {fido_bundle_status_t::direct, "Immediate"},
+    {fido_bundle_status_t::hold, "Hold"},
+  };
+  items.add(new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
+
   const string title = StrCat("Address: ", a.as_string());
-  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 76));
+  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + LBL1_POSITION, 76));
   items.set_curses_io(out, sw.get());
 
   y = 1;
-  sw->PutsXY(2, y++, "Packet Type  :");
-  sw->PutsXY(2, y++, "Compression  :");
-  sw->PutsXY(2, y++, "Packet PW    :");
-  sw->PutsXY(2, y++, "AreaFix PW   :");
-  sw->PutsXY(2, y++, "Max Arc Size :");
-  sw->PutsXY(2, y++, "Max Pkt Size :");
+  sw->PutsXY(LBL1_POSITION, y++, "Packet Type  :");
+  sw->PutsXY(LBL1_POSITION, y++, "Compression  :");
+  sw->PutsXY(LBL1_POSITION, y++, "Packet PW    :");
+  sw->PutsXY(LBL1_POSITION, y++, "AreaFix PW   :");
+  sw->PutsXY(LBL1_POSITION, y++, "Max Arc Size :");
+  sw->PutsXY(LBL1_POSITION, y++, "Max Pkt Size :");
+  sw->PutsXY(LBL1_POSITION, y++, "Bundle Status:");
   items.Run();
 }
 

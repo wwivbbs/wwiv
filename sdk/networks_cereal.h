@@ -22,6 +22,7 @@
 // This has to be in the global namespace. 
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(network_type_t, cereal::specialization::non_member_load_save_minimal);
 CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_packet_t, cereal::specialization::non_member_load_save_minimal);
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(fido_bundle_status_t, cereal::specialization::non_member_load_save_minimal);
 
 namespace cereal {
 
@@ -60,6 +61,20 @@ void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
 }
 
 template <class Archive> inline
+std::string save_minimal(Archive const &, const fido_bundle_status_t& t) {
+  char c = static_cast<char>(t);
+  return std::string(1, c);
+}
+template <class Archive> inline
+void load_minimal(Archive const &, fido_bundle_status_t& t, const std::string& v) {
+  char c = 'f';
+  if (!v.empty()) {
+    c = v.front();
+  }
+  t = static_cast<fido_bundle_status_t>(c);
+}
+
+template <class Archive> inline
 std::string save_minimal(Archive const &, const fido_packet_t& t) {
   return to_enum_string<fido_packet_t>(t, {"unset", "type2+"});
 }
@@ -94,6 +109,7 @@ void serialize(Archive & ar, fido_packet_config_t& n) {
   SERIALIZE(n, areafix_password);
   SERIALIZE(n, max_archive_size);
   SERIALIZE(n, max_packet_size);
+  SERIALIZE(n, netmail_status);
 }
 
 template <class Archive>
