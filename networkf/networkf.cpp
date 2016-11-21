@@ -622,7 +622,7 @@ static string NextNetmailFilePath(const string& dir) {
   return "";
 }
 
-static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest, const string& from, const string& to, const string& netmail_filename, const string& bundle_path, fido_packet_config_t& packet_config) {
+static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest, const string& from, const string& to, const string& netmail_filename, const string& bundle_path, const fido_packet_config_t& packet_config) {
   File netmail(netmail_filename);
   if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive | File::modeReadWrite, File::shareDenyReadWrite)) {
     LOG(ERROR) << "Unable to open netmail filen: '" << netmail.full_pathname() << "'";
@@ -661,7 +661,7 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
   return true;
 }
 
-bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, fido_packet_config_t& packet_config) {
+bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, const fido_packet_config_t& packet_config) {
   FidoAddress orig(net.fido.fido_address);
   string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
   string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
@@ -691,7 +691,7 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
   return num_written > 0;
 }
 
-bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline,const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, fido_packet_config_t& packet_config) {
+bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline,const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, const fido_packet_config_t& packet_config) {
   string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
   string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
   string netmail_dir(File::MakeAbsolutePath(net_dir, net.fido.netmail_dir));
@@ -711,7 +711,7 @@ bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline,const FidoAddress
   return true;
 }
 
-bool CreateNetmailAttachOrFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, fido_packet_config_t& packet_config) {
+static bool CreateNetmailAttachOrFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, const fido_packet_config_t& packet_config) {
   if (net.fido.mailer_type == fido_mailer_t::attach) {
     return CreateNetmailAttach(net_cmdline, dest, net, bundlename, packet_config);
   } else if (net.fido.mailer_type == fido_mailer_t::flo) {
