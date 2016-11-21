@@ -192,7 +192,7 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
   }
 
   bool done = false;
-  packet_header_2p_t header = {};
+  packet_header_2p_t header{};
   auto num_header_read = f.Read(&header, sizeof(packet_header_2p_t));
   if (num_header_read < sizeof(packet_header_2p_t)) {
     LOG(ERROR) << "Read less than packet header";
@@ -246,21 +246,13 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     nh.touser = 0;
 
     auto from_address = get_address_from_origin(msg.vh.text);
-    auto net_num = from_address.net();
-    auto node_num = from_address.node();
-    if (net_num == 0) {
-      net_num = msg.nh.orig_net;
-    }
-    if (node_num == 0) {
-      node_num = msg.nh.orig_node;
-    }
 
     // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
     auto text = get_echomail_areaname(msg.vh.text);
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
-    text.append(StrCat(msg.vh.from_user_name, "(", net_num,  "/", node_num, ")\r\n"));
+    text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
     text.append(StrCat(msg.vh.date_time, "\r\n"));
     text.append(FidoToWWIVText(msg.vh.text));
 
