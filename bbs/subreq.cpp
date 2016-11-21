@@ -344,7 +344,7 @@ void sub_xtr_add(int n, int nn) {
     }
   } else if (session()->current_net().type == network_type_t::ftn) {
     // Set the fake fido node up as the host.
-    xnp.host = session()->current_net().fido.fake_outbound_node;
+    xnp.host = FTN_FAKE_OUTBOUND_NODE;
   } else {
     int ok = find_hostfor(xnp.stype, &(xnp.host), szDescription, &opt);
 

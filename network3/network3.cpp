@@ -364,19 +364,13 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
   add_feedback_header(net.dir, text);
   LOG(INFO) << "Sending Feedback.";
 
-  if (net.fido.fake_outbound_node == 0 || net.fido.fake_outbound_node == 1) {
-    LOG(ERROR) << "Fido fake outbound node can not be 0 or 1";
-    text << "Fido fake outbound node can not be 0 or 1\r\n";
-    send_feedback_email(net, text.str());
-    return 1;
-  }
   vector<net_system_list_rec> bbsdata_data;
   string phone = net_cmdline.config().config()->systemphone;
   {
     net_system_list_rec n1{};
     to_char_array(n1.name, net_cmdline.config().config()->systemname);
     to_char_array(n1.phone, phone);
-    n1.forsys = net.fido.fake_outbound_node;
+    n1.forsys = FTN_FAKE_OUTBOUND_NODE;
     n1.group = 0;
     n1.speed = 33600;
     n1.sysnum = 1;
@@ -396,11 +390,11 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     net_system_list_rec n2{};
     to_char_array(n2.name, StrCat(net.name, " Gateway"));
     to_char_array(n2.phone, fake_phone);
-    n2.sysnum = net.fido.fake_outbound_node;
+    n2.sysnum = FTN_FAKE_OUTBOUND_NODE;
     n2.group = 0;
     n2.speed = 33600;
     n2.numhops = 1;
-    n2.forsys = net.fido.fake_outbound_node;
+    n2.forsys = FTN_FAKE_OUTBOUND_NODE;
     bbsdata_data.emplace_back(n2);
   }
 

@@ -180,7 +180,6 @@ public:
       fido_network_config_t* n = &d_.fido;
       int y = 1;
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
-      items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n->fake_outbound_node));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_outbound_dir));
@@ -226,7 +225,6 @@ public:
         items.set_curses_io(CursesIO::Get(), sw.get());
         y = 1;
         sw->PutsXY(LBL1_POSITION, y++, "FTN Address  :");
-        sw->PutsXY(LBL1_POSITION, y++, "Fake Outbound:");
         sw->PutsXY(LBL1_POSITION, y++, "Inbound Dir  :");
         sw->PutsXY(LBL1_POSITION, y++, "Temp In Dir  :");
         sw->PutsXY(LBL1_POSITION, y++, "Temp Out Dir :");

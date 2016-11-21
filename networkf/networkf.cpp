@@ -236,7 +236,7 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
 
     net_header_rec nh{};
     nh.daten = static_cast<uint32_t>(fido_to_daten(msg.vh.date_time));
-    nh.fromsys = net.fido.fake_outbound_node;
+    nh.fromsys = FTN_FAKE_OUTBOUND_NODE;
     nh.fromuser = 0;
     nh.list_len = 0;
     nh.main_type = main_type_new_post;
@@ -776,9 +776,9 @@ int main(int argc, char** argv) {
       return 3;
     }
 
-    const net_system_list_rec* fake_ftn_node = b.node_config_for(net.fido.fake_outbound_node);
+    const net_system_list_rec* fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
     if (!fake_ftn_node) {
-      LOG(ERROR) << "Can not find node for Fake FTN address: " << net.fido.fake_outbound_node;
+      LOG(ERROR) << "Can not find node for outbound FTN address.";
       LOG(ERROR) << "Have you run network3?";
       return 3;
     }
@@ -816,7 +816,7 @@ int main(int argc, char** argv) {
 #endif
       }
     } else if (cmd == "export") {
-      const string sfilename = StrCat("s", net.fido.fake_outbound_node, ".net");
+      const string sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
       if (!File::Exists(net.dir, sfilename)) {
         LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
         return 1;
