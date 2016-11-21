@@ -94,6 +94,12 @@ static bool bool_flag(const std::string& value, const std::string& flag_name, bo
   return false;
 }
 
+static string ToSpaces(const std::string& orig) {
+  string s(orig);
+  std::replace(std::begin(s), std::end(s), '_', ' ');
+  return s;
+}
+
 //static 
 bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e) {
   if (data_line.front() == ';') {
@@ -117,12 +123,9 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
     e.keyword_ = to_keyword(*it++);
   }
   e.number_ = StringToUnsignedShort(*it++);
-
-  string name = *it++;
-  std::replace(std::begin(name), std::end(name), '_', ' ');
-  e.name_ = name;
-  e.location_ = *it++;
-  e.sysop_name_ = *it++;
+  e.name_ = ToSpaces(*it++);
+  e.location_ = ToSpaces(*it++);
+  e.sysop_name_ = ToSpaces(*it++);
   e.phone_number_ = *it++;
   if (it != parts.end()) {
     e.baud_rate_ = StringToUnsignedInt(*it++);

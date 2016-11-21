@@ -81,11 +81,12 @@ TEST(NodelistTest, Smoke) {
   auto n1_261_1 = nl.entry(1, 261, 1);
   ASSERT_TRUE(n1_261_1 != nullptr);
   EXPECT_EQ("Weather Station Hub", n1_261_1->name_);
+  EXPECT_EQ("Sysop Name261 1", n1_261_1->sysop_name_);
+  EXPECT_EQ("Bel Air MD", n1_261_1->location_);
   EXPECT_TRUE(n1_261_1->binkp_);
   EXPECT_EQ("bbs.weather-station.org", n1_261_1->hostname_);
   EXPECT_EQ("bbs.weather-station.org", n1_261_1->binkp_hostname_);
   EXPECT_EQ(24555, n1_261_1->binkp_port_);
-
   EXPECT_FALSE(n1_261_1->vmodem_);
 }
 
