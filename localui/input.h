@@ -248,10 +248,6 @@ public:
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
-    if (static_cast<std::vector<std::string>::size_type>(*this->data_) > items_.size()) {
-      // Data is out of bounds, reset it to a senible value.
-      *this->data_ = items_.front().first;
-    }
     std::size_t index = index_of(*this->data_, items_);
     const std::vector<std::string> items = item_list(items_);
     index = toggleitem(window, index, items, &return_code);
