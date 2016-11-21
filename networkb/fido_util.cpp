@@ -168,6 +168,7 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
     if (c == 13) {
       wt.push_back(13);
       wt.push_back(10);
+      newline = true;
     } else if (c == 0x8d) {
       // FIDOnet style Soft CR
       wt.push_back(13);
@@ -180,6 +181,7 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
       // code, WWIV uses control-D + '0', we'll change it to control-D + '0'
       wt.push_back(4);  // control-D
       wt.push_back('0');
+      newline = false;
     } else {
       newline = false;
       wt.push_back(c);
