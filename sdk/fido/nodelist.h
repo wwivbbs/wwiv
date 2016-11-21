@@ -56,7 +56,7 @@ public:
 public:
   FidoAddress address_;
   NodelistKeyword keyword_ = NodelistKeyword::node;
-  int16_t number_ = 0;
+  uint16_t number_ = 0;
   // If the bbs supports internet access, the hostname
   // should be used here instead of the name.
   std::string name_;
@@ -118,16 +118,16 @@ public:
   bool Load(const std::vector<std::string>& lines);
   const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
   const std::map<FidoAddress, NodelistEntry> entries() const { return entries_; }
-  const std::vector<NodelistEntry> entries(int16_t zone, int16_t net) const;
-  const std::vector<NodelistEntry> entries(int16_t zone) const;
-  const std::vector<int16_t> zones() const;
-  const std::vector<int16_t> nets(int16_t zone) const;
-  const std::vector<int16_t> nodes(int16_t zone, int16_t net) const;
-  const NodelistEntry* entry(int16_t zone, int16_t net, int16_t node);
+  const std::vector<NodelistEntry> entries(uint16_t zone, uint16_t net) const;
+  const std::vector<NodelistEntry> entries(uint16_t zone) const;
+  const std::vector<uint16_t> zones() const;
+  const std::vector<uint16_t> nets(uint16_t zone) const;
+  const std::vector<uint16_t> nodes(uint16_t zone, uint16_t net) const;
+  const NodelistEntry* entry(uint16_t zone, uint16_t net, uint16_t node);
 
 private:
 
-  bool HandleLine(const std::string& line, int16_t& zone, int16_t& region, int16_t& net, int16_t& hub );
+  bool HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub );
   std::map<FidoAddress, NodelistEntry> entries_;
   bool initialized_ = false;
 };

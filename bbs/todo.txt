@@ -9,9 +9,7 @@ FTN
 * outbound netmail support
 * add option to save packets
 * ability to put more than 1 message per packet.
-* fidonet nodelist items should be uint16 not int16
 * zone:region/node is acceptible (not just zone:net/node)
-* 
 
 Ini Files and Configuration
 ===========================

@@ -87,7 +87,7 @@ static bool bool_flag(const std::string& value, const std::string& flag_name, bo
     f = true;
     if (parts.size() > 1) {
       fs = parts.back();
-      StringTrim(&fs);
+//      StringTrim(&fs);
     }
     return true;
   }
@@ -105,9 +105,9 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
     return false;
   }
 
-  for (auto& p : parts) {
-    StringTrim(&p);
-  }
+  //for (auto& p : parts) {
+  //  StringTrim(&p);
+  //}
 
   auto it = parts.cbegin();
   if (data_line.front() == ',') {
@@ -168,7 +168,7 @@ Nodelist::Nodelist(const std::vector<std::string>& lines)
 
 Nodelist::~Nodelist() {}
 
-bool Nodelist::HandleLine(const string& line, int16_t& zone, int16_t& region, int16_t& net, int16_t& hub) {
+bool Nodelist::HandleLine(const string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub) {
   if (line.empty()) return true;
   if (line.front() == ';') {
     // TODO(rushfan): Do we care to do anything with this?
@@ -194,7 +194,10 @@ bool Nodelist::HandleLine(const string& line, int16_t& zone, int16_t& region, in
   {
     FidoAddress address(zone, net, e.number_, 0, "");
     e.address_ = address;
-    entries_.emplace(address, e);
+    if (zone != 0 && net != 0) {
+      // skip malformed entries.
+      entries_.emplace(address, e);
+    }
   } break;
   case NodelistKeyword::pvt:
     // skip
@@ -220,7 +223,7 @@ bool Nodelist::Load(const std::string& path) {
     return false;
   }
   string line;
-  int16_t zone = 0, region = 0, net = 0, hub = 0;
+  uint16_t zone = 0, region = 0, net = 0, hub = 0;
   while (f.ReadLine(&line)) {
     StringTrim(&line);
     HandleLine(line, zone, region, net, hub);
@@ -230,7 +233,7 @@ bool Nodelist::Load(const std::string& path) {
 
 bool Nodelist::Load(const std::vector<std::string>& lines) {
   if (lines.empty()) return false;
-  int16_t zone = 0, region = 0, net = 0, hub = 0;
+  uint16_t zone = 0, region = 0, net = 0, hub = 0;
   for (const auto& raw_line : lines) {
     string line(raw_line);
     StringTrim(&line);
@@ -239,7 +242,7 @@ bool Nodelist::Load(const std::vector<std::string>& lines) {
   return true;
 }
 
-const std::vector<NodelistEntry> Nodelist::entries(int16_t zone, int16_t net) const {
+const std::vector<NodelistEntry> Nodelist::entries(uint16_t zone, uint16_t net) const {
   std::vector<NodelistEntry> entries;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone && e.first.net() == net) {
@@ -249,7 +252,7 @@ const std::vector<NodelistEntry> Nodelist::entries(int16_t zone, int16_t net) co
   return entries;
 }
 
-const std::vector<NodelistEntry> Nodelist::entries(int16_t zone) const {
+const std::vector<NodelistEntry> Nodelist::entries(uint16_t zone) const {
   std::vector<NodelistEntry> entries;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone) {
@@ -259,34 +262,34 @@ const std::vector<NodelistEntry> Nodelist::entries(int16_t zone) const {
   return entries;
 }
 
-const std::vector<int16_t> Nodelist::zones() const {
-  std::set<int16_t> s;
+const std::vector<uint16_t> Nodelist::zones() const {
+  std::set<uint16_t> s;
   for (const auto& e : entries_) {
     s.emplace(e.first.zone());
   }
-  std::vector<int16_t> zones;
+  std::vector<uint16_t> zones;
   for (const auto& n : s) {
     zones.emplace_back(n);
   }
   return zones;
 }
 
-const std::vector<int16_t> Nodelist::nets(int16_t zone) const {
-  std::set<int16_t> s;
+const std::vector<uint16_t> Nodelist::nets(uint16_t zone) const {
+  std::set<uint16_t> s;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone) {
       s.emplace(e.first.net());
     }
   }
-  std::vector<int16_t> nets;
+  std::vector<uint16_t> nets;
   for (const auto& n : s) {
     nets.emplace_back(n);
   }
   return nets;
 }
 
-const std::vector<int16_t> Nodelist::nodes(int16_t zone, int16_t net) const {
-  std::vector<int16_t> nodes;
+const std::vector<uint16_t> Nodelist::nodes(uint16_t zone, uint16_t net) const {
+  std::vector<uint16_t> nodes;
   for (const auto& e : entries_) {
     if (e.first.zone() == zone && e.first.net() == net) {
       nodes.emplace_back(e.first.node());
@@ -295,7 +298,7 @@ const std::vector<int16_t> Nodelist::nodes(int16_t zone, int16_t net) const {
   return nodes;
 }
 
-const NodelistEntry* Nodelist::entry(int16_t zone, int16_t net, int16_t node) {
+const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node) {
   FidoAddress a(zone, net, node, 0, "");
   if (!contains(entries_, a)) {
     return nullptr;
