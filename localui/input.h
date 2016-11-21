@@ -237,8 +237,8 @@ std::size_t index_of(T& haystack, const std::vector<std::pair<T, std::string>>& 
 template<typename T> 
 class ToggleEditItem : public EditItem<T*> {
 public:
-  ToggleEditItem(int x, int y, const std::vector<std::pair<T, std::string>>& items, T* data) 
-      : EditItem<T*>(x, y, 0, data), items_(items) {
+  ToggleEditItem(CursesIO* io, int x, int y, const std::vector<std::pair<T, std::string>>& items, T* data)
+      : EditItem<T*>(x, y, 0, data), io_(io), items_(items) {
     for (const auto& item : items) {
       this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.second.size());
     }
@@ -246,6 +246,8 @@ public:
   virtual ~ToggleEditItem() {}
 
   virtual int Run(CursesWindow* window) {
+    io_->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, { "SPACE", "Toggle Item" } });
+
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
     std::size_t index = index_of(*this->data_, items_);
@@ -253,6 +255,7 @@ public:
     index = toggleitem(window, index, items, &return_code);
     *this->data_ = items_.at(index).first;
     DefaultDisplay(window);
+    io_->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -267,13 +270,14 @@ protected:
     }
   }
 private:
+  CursesIO* io_;
   const std::vector<std::pair<T, std::string>> items_;
 };
 
 class StringListItem: public EditItem<std::string&> {
 public:
-  StringListItem(int x, int y, const std::vector<std::string>& items, std::string& data)
-    : EditItem<std::string&>(x, y, 0, data), items_(items) {
+  StringListItem(CursesIO* io, int x, int y, const std::vector<std::string>& items, std::string& data)
+    : EditItem<std::string&>(x, y, 0, data), io_(io), items_(items) {
     for (const auto& item : items) {
       this->maxsize_ = std::max<std::size_t>(this->maxsize_, item.size());
     }
@@ -281,6 +285,7 @@ public:
   virtual ~StringListItem() {}
 
   virtual int Run(CursesWindow* window) {
+    io_->footer()->ShowHelpItems(0, {{"Esc", "Exit"},{"SPACE", "Toggle Item"}});
     window->GotoXY(this->x_, this->y_);
     int return_code = 0;
     auto it = std::find(items_.begin(), items_.end(), data_);
@@ -290,6 +295,7 @@ public:
     }
     selection = toggleitem(window, static_cast<std::vector<std::string>::size_type>(selection), items_, &return_code);
     data_ = items_.at(selection);
+    io_->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -298,14 +304,15 @@ protected:
     DefaultDisplayString(window, data_);
   }
 private:
+  CursesIO* io_;
   const std::vector<std::string> items_;
 };
 
 template<typename T>
 class FlagEditItem : public EditItem<T*> {
 public:
-  FlagEditItem(int x, int y, int flag, const std::string& on, const std::string& off, T* data) 
-      : EditItem<T*>(x, y, 0, data), flag_(flag) {
+  FlagEditItem(CursesIO* io, int x, int y, int flag, const std::string& on, const std::string& off, T* data) 
+      : EditItem<T*>(x, y, 0, data), io_(io), flag_(flag) {
     this->maxsize_ = std::max<int>(on.size(), off.size());
     this->items_.push_back(off);
     this->items_.push_back(on);
@@ -314,6 +321,7 @@ public:
 
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
+    io_->footer()->ShowHelpItems(0, {{"Esc", "Exit"},{"SPACE", "Toggle Item"}});
     int return_code = 0;
     std::vector<std::string>::size_type state = (*this->data_ & this->flag_) ? 1 : 0;
     state = toggleitem(window, state, this->items_, &return_code);
@@ -322,6 +330,7 @@ public:
     } else {
       *this->data_ |= this->flag_;
     }
+    io_->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -331,6 +340,7 @@ protected:
     this->DefaultDisplayString(window, items_.at(state));
   }
 private:
+  CursesIO* io_;
   std::vector<std::string> items_;
   int flag_;
 };
@@ -424,10 +434,11 @@ protected:
 
 class BooleanEditItem : public EditItem<bool*> {
 public:
-  BooleanEditItem(int x, int y, bool* data) : EditItem<bool*>(x, y, 4, data) {}
+  BooleanEditItem(CursesIO* io, int x, int y, bool* data) : EditItem<bool*>(x, y, 4, data), io_(io) {}
   virtual ~BooleanEditItem() {}
 
   virtual int Run(CursesWindow* window) {
+    io_->footer()->ShowHelpItems(0, {{"Esc", "Exit"},{"SPACE", "Toggle Item"}});
     static const std::vector<std::string> boolean_strings = { "No ", "Yes" };
 
     window->GotoXY(this->x_, this->y_);
@@ -436,6 +447,7 @@ public:
     data = toggleitem(window, data, boolean_strings, &return_code);
 
     *this->data_ = (data > 0) ? true : false;
+    io_->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -445,6 +457,9 @@ protected:
     std::string s = boolean_strings.at(*data_ ? 1 : 0);
     DefaultDisplayString(window, s);
   }
+
+private:
+  CursesIO* io_;
 };
 
 class CustomEditItem : public BaseEditItem {

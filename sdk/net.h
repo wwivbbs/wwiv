@@ -332,6 +332,8 @@ struct fido_network_config_t {
   fido_packet_config_t packet_config;
   // Location to move bad packets
   std::string bad_packets_dir;
+  // Default Origin line to use for this network.
+  std::string origin_line;
 };
 
 enum class network_type_t: uint8_t {

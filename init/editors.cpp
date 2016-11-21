@@ -65,9 +65,9 @@ static void edit_editor(editorrec& e) {
 
   EditItems items{
     new StringEditItem<char*>(COL1_POSITION, 1, 35, e.description, false),
-    new ToggleEditItem<uint8_t>(COL1_POSITION, 2, bbs_types, &e.bbs_type),
-    new FlagEditItem<uint8_t>(COL1_POSITION, 3, ansir_no_DOS, "No ", "Yes", &e.ansir),
-    new FlagEditItem<uint8_t>(COL1_POSITION, 4, ansir_emulate_fossil, "Yes", "No ", &e.ansir),
+    new ToggleEditItem<uint8_t>(out, COL1_POSITION, 2, bbs_types, &e.bbs_type),
+    new FlagEditItem<uint8_t>(out, COL1_POSITION, 3, ansir_no_DOS, "No ", "Yes", &e.ansir),
+    new FlagEditItem<uint8_t>(out, COL1_POSITION, 4, ansir_emulate_fossil, "Yes", "No ", &e.ansir),
     new CommandLineItem(2, 6, 75, e.filename),
     new CommandLineItem(2, 9, 75, e.filenamecon)
   };

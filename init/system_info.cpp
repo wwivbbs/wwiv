@@ -149,7 +149,7 @@ void sysinfo1() {
     new StringEditItem<char*>(COL1_POSITION, 1, 20, syscfg.systempw, true),
     new StringEditItem<char*>(COL1_POSITION, 2, 50, syscfg.systemname, false),
     new StringEditItem<char*>(COL1_POSITION, 3, 12, syscfg.systemphone, true),
-    new BooleanEditItem(COL1_POSITION, 4, &closed_system),
+    new BooleanEditItem(out, COL1_POSITION, 4, &closed_system),
     new StringEditItem<char*>(COL1_POSITION, 5, 20, syscfg.newuserpw, true),
     new RestrictionsEditItem(COL1_POSITION, 6, &syscfg.newuser_restrict),
     new NumberEditItem<uint8_t>(COL1_POSITION, 7, &syscfg.newusersl),

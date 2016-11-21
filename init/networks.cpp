@@ -42,6 +42,7 @@
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/scope_exit.h"
 #include "core/wwivport.h"
 #include "core/file.h"
 #include "init/subacc.h"
@@ -165,6 +166,8 @@ public:
   virtual ~FidoNetworkConfigSubDialog() {}
 
   virtual int Run(CursesWindow* window) {
+    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
+    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     EditItems items{};
     switch (d_.type) {
     case network_type_t::wwivnet: return 2;
@@ -186,22 +189,23 @@ public:
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->netmail_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->bad_packets_dir));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line, false));
 
       dy_start_ = y;
       vector<pair<fido_mailer_t, string>> mailerlist = {{fido_mailer_t::flo, "FLO"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
-      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type));
+      items.add(new ToggleEditItem<fido_mailer_t>(out, COL1_POSITION, y++, mailerlist, &n->mailer_type));
 
       vector<pair<fido_transport_t, string>> transportlist = {
         {fido_transport_t::directory, "Directory"}, {fido_transport_t::binkp, "WWIV BinkP (N/A)"}
       };
-      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist, &n->transport));
+      items.add(new ToggleEditItem<fido_transport_t>(out, COL1_POSITION, y++, transportlist, &n->transport));
 
       vector<pair<fido_packet_t, string>> packetlist = {
         {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
       };
-      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &n->packet_config.packet_type));
+      items.add(new ToggleEditItem<fido_packet_t>(out, COL1_POSITION, y++, packetlist, &n->packet_config.packet_type));
 
-      items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
+      items.add(new StringListItem(out, COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, true));
 
@@ -216,7 +220,7 @@ public:
         {fido_bundle_status_t::direct, "Immediate"},
         {fido_bundle_status_t::hold, "Hold"},
       };
-      items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist, &n->packet_config.netmail_status));
+      items.add(new ToggleEditItem<fido_bundle_status_t>(out, COL2_POSITION, dy++, bundlestatuslist, &n->packet_config.netmail_status));
 
       window->GotoXY(x_, y_);
       int ch = window->GetChar();
@@ -231,6 +235,7 @@ public:
         sw->PutsXY(LBL1_POSITION, y++, "Outbound Dir :");
         sw->PutsXY(LBL1_POSITION, y++, "NetMail Dir  :");
         sw->PutsXY(LBL1_POSITION, y++, "BadPacket Dir:");
+        sw->PutsXY(LBL1_POSITION, y++, "Origin Line  :");
 
         sw->PutsXY(LBL1_POSITION, y++, "Mailer       :");
         sw->PutsXY(LBL1_POSITION, y++, "Transport    :");
@@ -275,8 +280,8 @@ void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_
     {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
   };
 
-  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &p.packet_type));
-  items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
+  items.add(new ToggleEditItem<fido_packet_t>(out, COL1_POSITION, y++, packetlist, &p.packet_type));
+  items.add(new StringListItem(out, COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.packet_password, true));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.areafix_password, true));
   items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_archive_size));
@@ -288,10 +293,10 @@ void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_
     {fido_bundle_status_t::direct, "Immediate"},
     {fido_bundle_status_t::hold, "Hold"},
   };
-  items.add(new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
+  items.add(new ToggleEditItem<fido_bundle_status_t>(out, COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
 
   const string title = StrCat("Address: ", a.as_string());
-  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + LBL1_POSITION, 76));
+  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 40));
   items.set_curses_io(out, sw.get());
 
   y = 1;
@@ -313,6 +318,8 @@ public:
   virtual ~FidoPacketConfigSubDialog() {}
 
   virtual int Run(CursesWindow* window) {
+    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
+    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"},{"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
     int ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
@@ -404,7 +411,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   const int COL1_POSITION = 14;
   int y = 1;
   EditItems items{
-    new ToggleEditItem<network_type_t>(COL1_POSITION, y++, nettypes, &n.type),
+    new ToggleEditItem<network_type_t>(out, COL1_POSITION, y++, nettypes, &n.type),
     new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false),
     new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum),
     new StringFilePathItem(COL1_POSITION, y++, 60, n.dir)

@@ -95,12 +95,12 @@ void sec_levs() {
     new NumberEditItem<uint16_t>(COL1_POSITION, 4, &sl.messages_read),
     new NumberEditItem<uint16_t>(COL1_POSITION, 5, &sl.emails),
     new NumberEditItem<uint16_t>(COL1_POSITION, 6, &sl.posts),
-    new FlagEditItem<uint32_t>(COL1_POSITION, 7, ability_post_anony, "Yes", "No ", &sl.ability),
-    new FlagEditItem<uint32_t>(COL1_POSITION, 8, ability_email_anony, "Yes", "No ", &sl.ability),
-    new FlagEditItem<uint32_t>(COL1_POSITION, 9, ability_read_post_anony, "Yes", "No ", &sl.ability),
-    new FlagEditItem<uint32_t>(COL1_POSITION, 10, ability_read_email_anony, "Yes", "No ", &sl.ability),
-    new FlagEditItem<uint32_t>(COL1_POSITION, 11, ability_limited_cosysop, "Yes", "No ", &sl.ability),
-    new FlagEditItem<uint32_t>(COL1_POSITION, 12, ability_cosysop, "Yes", "No ", &sl.ability),
+    new FlagEditItem<uint32_t>(out, COL1_POSITION, 7, ability_post_anony, "Yes", "No ", &sl.ability),
+    new FlagEditItem<uint32_t>(out, COL1_POSITION, 8, ability_email_anony, "Yes", "No ", &sl.ability),
+    new FlagEditItem<uint32_t>(out, COL1_POSITION, 9, ability_read_post_anony, "Yes", "No ", &sl.ability),
+    new FlagEditItem<uint32_t>(out, COL1_POSITION, 10, ability_read_email_anony, "Yes", "No ", &sl.ability),
+    new FlagEditItem<uint32_t>(out, COL1_POSITION, 11, ability_limited_cosysop, "Yes", "No ", &sl.ability),
+    new FlagEditItem<uint32_t>(out, COL1_POSITION, 12, ability_cosysop, "Yes", "No ", &sl.ability),
   };
 
   items.set_navigation_extra_help_items(create_extra_help_items());

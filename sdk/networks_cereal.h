@@ -123,6 +123,7 @@ void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, outbound_dir);
   SERIALIZE(n, netmail_dir);
   SERIALIZE(n, bad_packets_dir);
+  SERIALIZE(n, origin_line);
   SERIALIZE(n, packet_config);
 }
 

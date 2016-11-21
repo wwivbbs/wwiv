@@ -563,9 +563,15 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     if (!msgid.empty()) {
       text << "\001MSGID: " << msgid << "\r";
     }
+    auto origin_line = net.fido.origin_line;
+    if (origin_line.empty()) {
+      // default origin line to system name if it doesn't exist.
+      origin_line = config.config()->systemname;
+    }
+
     text << bbs_text << "\r"
       << "--- WWIV " << wwiv_version << beta_version << "\r"
-      << " * Origin: Nowhere Yet. (" << to_zone_net_node(address) << ")\r"
+      << " * Origin: " << origin_line << " (" << to_zone_net_node(address) << ")\r"
       << "SEEN-BY: " << to_net_node(address) << "\r\r";
 
     vh.text = text.str();
