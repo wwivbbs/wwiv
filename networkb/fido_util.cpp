@@ -212,26 +212,31 @@ std::string WWIVToFidoText(const std::string& wt) {
   return temp;
 }
 
+FidoAddress get_address_from_line(const std::string& line) {
+  auto start = line.find_last_of('(');
+  auto end = line.find_last_of(')');
+  if (start == string::npos || end == string::npos) {
+    return FidoAddress(0, 0, 0, 0, "");
+  }
+
+  auto astr = line.substr(start + 1, end - start - 1);
+  try {
+    return FidoAddress(astr);
+  } catch (std::exception&) {
+    return FidoAddress(0, 0, 0, 0, "");
+  }
+}
+
 FidoAddress get_address_from_origin(const std::string& text) {
   vector<string> lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, " * Origin:")) {
-      size_t start = line.find_last_of('(');
-      size_t end = line.find_last_of(')');
-      if (start == string::npos || end == string::npos) {
-        return FidoAddress(0, 0, 0, 0, "");
-      }
-
-      auto astr = line.substr(start + 1, end - start - 1);
-      try {
-        return FidoAddress(astr);
-      } catch (std::exception&) {
-        return FidoAddress(0, 0, 0, 0, "");
-      }
+      return get_address_from_line(line);
     }
   }
   return FidoAddress(0, 0, 0, 0, "");
 }
+
 }  // namespace fido
 }  // namespace net
 }  // namespace wwiv

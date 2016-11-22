@@ -414,7 +414,8 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
 }
 
 static bool CleanupWWIVName(std::string& sender_name) {
-  string::size_type idx = sender_name.find_first_of("#@");
+  // #NN, @NODE or (FIDO_ADDR)
+  string::size_type idx = sender_name.find_first_of("#@(");
   if (idx != string::npos) {
     sender_name = sender_name.substr(0, idx);
   }
@@ -483,7 +484,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     File::MakeAbsolutePath(net_dir, &temp_dir);
   }
 
-  FidoAddress address(net.fido.fido_address);
+  FidoAddress from_address(net.fido.fido_address);
   for (int tries = 0; tries < 10; tries++) {
     time_t now = time(nullptr);
     File file(temp_dir, packet_name(now));
@@ -494,10 +495,10 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     }
 
     packet_header_2p_t header = {};
-    header.orig_zone = address.zone();
-    header.orig_net = address.net();
-    header.orig_node = address.node();
-    header.orig_point = address.point();
+    header.orig_zone = from_address.zone();
+    header.orig_net = from_address.net();
+    header.orig_node = from_address.node();
+    header.orig_point = from_address.point();
     header.dest_zone = dest.zone();
     header.dest_net = dest.net();
     header.dest_node = dest.node();
@@ -515,7 +516,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     header.product_code_high = 0x1d;
     header.product_code_low = 0xff;
     header.qm_dest_zone = dest.zone();
-    header.qm_orig_zone = address.zone();
+    header.qm_orig_zone = from_address.zone();
     header.capabilities = 0x0001;
     header.capabilities_valid = 
       ((header.capabilities_valid & 0x7f00) >> 8) | ((header.capabilities_valid & 0xff) << 8);
@@ -529,15 +530,31 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
       return false;
     }
 
+    bool is_email = (wwivnet_packet.nh.main_type == main_type_email || wwivnet_packet.nh.main_type == main_type_email_name);
     const string raw_text = wwivnet_packet.text;
     auto iter = raw_text.cbegin();
-    string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    string fido_addr = get_fido_addr(raw_text, iter, {'\0', '\r', '\n'}, 80);
 
-    if (iter_starts_with(raw_text, iter, "BY: ")) {
+    string subtype;
+    string title;
+    string sender_name;
+    string date_string;
+    string to_user_name;
+    // or we can put code in for email here??
+
+    if (is_email) {
+      to_user_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+      CleanupWWIVName(to_user_name);
+    } else {
+      subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    }
+    title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    if (!is_email) {
+      to_user_name = get_fido_addr(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    }
+
+    if (!is_email && iter_starts_with(raw_text, iter, "BY: ")) {
       // Skip BY line.
       get_message_field(raw_text, iter, {'\r', '\n'}, 80);
     }
@@ -545,17 +562,17 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     // Clean up sender name.
     CleanupWWIVName(sender_name);
     string bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
-
+    
     fido_variable_length_header_t vh;
     vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
     vh.from_user_name = sender_name;
     vh.subject = title;
-    if (!fido_addr.empty()) {
-      if (fido_addr == "ALL") {
+    if (!to_user_name.empty()) {
+      if (to_user_name == "ALL") {
         // WWIV uses all upper case ALL, let's make it look ftn-ish
-        fido_addr = "All";
+        to_user_name = "All";
       }
-      vh.to_user_name = fido_addr;
+      vh.to_user_name = to_user_name;
     } else {
       vh.to_user_name = "All";
     }
@@ -564,16 +581,18 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     FtnMessageDupe dupe(config);
     if (!dupe.IsInitialized()) {
       LOG(ERROR) << "Unable to initialize FtnDupe";
-      msgid = StrCat(to_zone_net_node(address), " DEADBEEF");
+      msgid = StrCat(to_zone_net_node(from_address), " DEADBEEF");
     } else {
-      msgid = dupe.CreateMessageID(address);
+      msgid = dupe.CreateMessageID(from_address);
     }
 
     // TODO(rushfan): need to add in INTL for netmails, and all that nonsense.
     // We probably have other stuff we need to add for echomail too.
     std::ostringstream text;
-    text << "AREA:" << subtype << "\r"
-      << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
+    if (wwivnet_packet.nh.main_type == main_type_new_post) {
+      text << "AREA:" << subtype << "\r";
+    }
+    text << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
       << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
     if (!msgid.empty()) {
       text << "\001MSGID: " << msgid << "\r";
@@ -586,8 +605,8 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
     text << bbs_text << "\r"
       << "--- WWIV " << wwiv_version << beta_version << "\r"
-      << " * Origin: " << origin_line << " (" << to_zone_net_node(address) << ")\r"
-      << "SEEN-BY: " << to_net_node(address) << "\r\r";
+      << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r"
+      << "SEEN-BY: " << to_net_node(from_address) << "\r\r";
 
     vh.text = text.str();
 
@@ -595,11 +614,16 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     nh.message_type = 2;
     nh.attribute = 0;
     nh.cost = 0;
-    nh.orig_net = address.net();
-    nh.orig_node = address.node();
+    nh.orig_net = from_address.net();
+    nh.orig_node = from_address.node();
     nh.dest_net = dest.net();
     nh.dest_node = dest.node();
     nh.attribute = MSGLOCAL;
+
+    if (wwivnet_packet.nh.main_type == main_type_email_name) {
+      nh.attribute |= MSGPRIVATE;
+    }
+
     FidoPackedMessage p(nh, vh);
     if (!write_packed_message(file, p)) {
       LOG(ERROR) << "Error writing packed message.";
@@ -769,6 +793,32 @@ bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, const net_
   return true;
 }
 
+bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const net_networks_rec& net, const FidoCallout& fido_callout, std::set<string>& bundles, Packet& p) {
+  // Lame implementation that creates 1 file per message.
+  LOG(INFO) << "Creating packet for netmail.";
+
+  string bundlename;
+  auto it = p.text.begin();
+  auto to = get_message_field(p.text, it, {0}, 80);
+  auto address = get_address_from_line(to);
+  if (address.node() == 0) {
+    LOG(ERROR) << "Unable to get address from to line: " << to;
+    return false;
+  }
+
+  // todo - actually we need a new way of making hte ftn packet that works right
+  // with netmaol
+  if (create_ftn_packet_and_bundle(net_cmdline, fido_callout, address, net, p, bundlename)) {
+    if (!contains(bundles, bundlename)) {
+      // We only want to attach the bundle (or add it to the flo file)
+      // one time, so skip ones that have already been done.
+      bundles.insert(bundlename);
+      CreateNetmailAttachOrFloFile(net_cmdline, address, net, bundlename, fido_callout.packet_config_for(address));
+    }
+  }
+  return true;
+}
+
 
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
@@ -867,6 +917,10 @@ int main(int argc, char** argv) {
         if (p.nh.main_type == main_type_new_post) {
           if (!export_main_type_new_post(net_cmdline, net, fido_callout, bundles, p)) {
             LOG(ERROR) << "Error exporting post.";
+          }
+        } else if (p.nh.main_type == main_type_email_name) {
+          if (!export_main_type_email_name(net_cmdline, net, fido_callout, bundles, p)) {
+            LOG(ERROR) << "Error exporting email.";
           }
         } else {
           LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
