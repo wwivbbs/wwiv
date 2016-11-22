@@ -273,7 +273,7 @@ struct net_call_out_rec {
 
 #ifndef __MSDOS__
 
-static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 999;
+static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 32675;
 
 enum class fido_packet_t { unset, type2_plus };
 enum class fido_transport_t { unset, directory, binkp };
