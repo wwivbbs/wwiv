@@ -58,13 +58,13 @@ uint32_t date_to_daten(std::string datet) {
   return static_cast<uint32_t>(mktime(pTm));
 }
 
-std::string daten_to_date(time_t t) {
+std::string daten_to_mmddyy(time_t t) {
   struct tm* pTm = localtime(&t);
   return StringPrintf("%02d/%02d/%02d", 
     pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
 }
 
-std::string daten_to_humantime(time_t t) {
+std::string daten_to_wwivnet_time(time_t t) {
   string human_date = string(asctime(localtime(&t)));
   StringTrimEnd(&human_date);
   return human_date;

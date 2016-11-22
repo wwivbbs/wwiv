@@ -85,7 +85,7 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   const uint8_t* colors, const uint8_t* bwcolors) {
   u->ZeroUserData();
 
-  std::string date = daten_to_date(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+  std::string date = daten_to_mmddyy(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
   u->SetFirstOn(date.c_str());
   u->SetLastOn("Never.");
   u->SetMacro(0, "Wow! This is a GREAT BBS!");

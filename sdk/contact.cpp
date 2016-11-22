@@ -30,6 +30,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 
@@ -166,22 +167,15 @@ void Contact::add_contact(net_contact_rec* c, time_t time) {
   }
 }
 
-string daten_to_humantime(uint32_t daten) {
-  time_t t = static_cast<time_t>(daten);
-  string human_date = string(asctime(localtime(&t)));
-  wwiv::strings::StringTrimEnd(&human_date);
-  return human_date;
-}
-
 static std::string DumpCallout(const net_contact_rec& n) {
   std::ostringstream ss;
   ss << "sysnum:         " << n.systemnumber << std::endl;
   ss << "numcontacts:    " << n.numcontacts << std::endl;
   ss << "numfails:       " << n.numfails << std::endl;
-  ss << "firstcontact:   " << daten_to_humantime(n.firstcontact) << std::endl;
-  ss << "lastcontact:    " << daten_to_humantime(n.lastcontact) << std::endl;
-  ss << "lastcontatsent: " << daten_to_humantime(n.lastcontactsent) << std::endl;
-  ss << "lasttry:        " << daten_to_humantime(n.lasttry) << std::endl;
+  ss << "firstcontact:   " << daten_to_wwivnet_time(n.firstcontact) << std::endl;
+  ss << "lastcontact:    " << daten_to_wwivnet_time(n.lastcontact) << std::endl;
+  ss << "lastcontatsent: " << daten_to_wwivnet_time(n.lastcontactsent) << std::endl;
+  ss << "lasttry:        " << daten_to_wwivnet_time(n.lasttry) << std::endl;
   ss << "bytes_received: " << n.bytes_received << std::endl;
   ss << "bytes_sent:     " << n.bytes_sent << std::endl;
   ss << "bytes_waiting:  " << n.bytes_waiting << std::endl;

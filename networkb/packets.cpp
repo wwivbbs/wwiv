@@ -53,7 +53,7 @@ bool send_network_email(const std::string& filename,
   file.Seek(0L, File::Whence::end);
   nh.list_len = static_cast<uint16_t>(list.size());
 
-  string date = wwiv::sdk::daten_to_humantime(nh.daten);
+  string date = wwiv::sdk::daten_to_wwivnet_time(nh.daten);
   nh.length = (text.size() + 1 + byname.size() + date.size() + 4 + title.size());
   file.Write(&nh, sizeof(net_header_rec));
   if (nh.list_len) {

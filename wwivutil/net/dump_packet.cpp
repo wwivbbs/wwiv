@@ -26,6 +26,7 @@
 #include "core/strings.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
+#include "sdk/datetime.h"
 #include "sdk/net.h"
 
 using std::cout;
@@ -33,17 +34,11 @@ using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
 using namespace wwiv::net;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
-
-static string daten_to_humantime(uint32_t daten) {
-  time_t t = static_cast<time_t>(daten);
-  string human_date = string(asctime(localtime(&t)));
-  StringTrimEnd(&human_date);
-  return human_date;
-}
 
 int dump_file(const std::string& filename) {
   File f(filename);
@@ -74,7 +69,7 @@ int dump_file(const std::string& filename) {
     if (packet.nh.list_len > 0) {
       cout << "list_len:    " << packet.nh.list_len << endl;
     }
-    cout << "daten:       " << daten_to_humantime(packet.nh.daten) << endl;
+    cout << "daten:       " << daten_to_wwivnet_time(packet.nh.daten) << endl;
     cout << "length:      " << packet.nh.length << endl;
     if (packet.nh.method > 0) {
       cout << "compression: de" << packet.nh.method << endl;

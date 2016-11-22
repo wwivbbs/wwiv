@@ -266,7 +266,7 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     text.push_back(0);
     text.append(StrCat(msg.vh.from_user_name, "(", from_address, ")\r\n"));
     auto dt = fido_to_daten(msg.vh.date_time);
-    text.append(daten_to_humantime(dt));
+    text.append(daten_to_wwivnet_time(dt));
     text.append("\r\n");
 
     text.append(FidoToWWIVText(msg.vh.text));
@@ -340,7 +340,9 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
   while (has_next) {
     const auto& name = files.GetFileName();
-    if (ends_with(name, ".pkt") || ends_with(name, ".PKT")) {
+    string lname = name;
+    StringLowerCase(&lname);
+    if (ends_with(lname, ".pkt")) {
       if (import_packet_file(config, callout, net, dir, name)) {
         LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
         File::Remove(dir, name);
@@ -563,7 +565,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     CleanupWWIVName(sender_name);
     string bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
     
-    fido_variable_length_header_t vh;
+    fido_variable_length_header_t vh{};
     vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
     vh.from_user_name = sender_name;
     vh.subject = title;
@@ -585,7 +587,9 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     // TODO(rushfan): need to add in INTL for netmails, and all that nonsense.
     // We probably have other stuff we need to add for echomail too.
     std::ostringstream text;
-    if (wwivnet_packet.nh.main_type == main_type_new_post) {
+    if (is_email) {
+      text << "\001" << "INTL " << dest << " " << from_address << "\r";
+    } else {
       text << "AREA:" << subtype << "\r";
     }
     text << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
@@ -601,8 +605,10 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
     text << bbs_text << "\r"
       << "--- WWIV " << wwiv_version << beta_version << "\r"
-      << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r"
-      << "SEEN-BY: " << to_net_node(from_address) << "\r\r";
+      << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r";
+    if (!is_email) {
+      text << "SEEN-BY: " << to_net_node(from_address) << "\r\r";
+    }
 
     vh.text = text.str();
 
@@ -663,25 +669,38 @@ static string NextNetmailFilePath(const string& dir) {
   return "";
 }
 
-static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest, const string& from, const string& to, const string& netmail_filename, const string& bundle_path, const fido_packet_config_t& packet_config) {
+static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddress& dest, const string& netmail_filename, const string& bundle_path, const fido_packet_config_t& packet_config) {
   File netmail(netmail_filename);
   if (!netmail.Open(File::modeBinary | File::modeCreateFile | File::modeExclusive | File::modeReadWrite, File::shareDenyReadWrite)) {
     LOG(ERROR) << "Unable to open netmail filen: '" << netmail.full_pathname() << "'";
     return false;
   }
+
+  // FTC-0053 flags
+  string flags = "FLAGS FIL TFS PVT";
   fido_stored_message_t h{};
   h.attribute = (MSGFILE | MSGKILL | MSGLOCAL);
   const auto& st = packet_config.netmail_status;
   switch (st) {
   case fido_bundle_status_t::hold:h.attribute |= MSGHOLD;
+    flags += " HLD";
     break;
   case fido_bundle_status_t::direct:
-  case fido_bundle_status_t::crash:h.attribute |= MSGCRASH;
+    h.attribute |= MSGCRASH;
+    flags += " CRA";
+    break;
+  case fido_bundle_status_t::crash:
+    h.attribute |= MSGCRASH;
+    flags += " IMM";
     break;
   case fido_bundle_status_t::unknown:
   case fido_bundle_status_t::normal: // NOP
     break;
   }
+
+  string from = StrCat("WWIV NET ", wwiv_version, beta_version);
+  string to = "SYSOP";
+
   h.cost = 0;
   to_char_array(h.date_time, daten_to_fido(time(nullptr)));
   h.dest_net = dest.net();
@@ -696,7 +715,21 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
   h.orig_zone = orig.zone();
   to_char_array(h.subject, bundle_path);
   to_char_array(h.to, to);
-  FidoStoredMessage m(h, "");
+
+  string msgid;
+  std::ostringstream text;
+
+  // FTC-0053 flags
+  text << "\001" << flags << "\r";
+  // FTS-4001 INTL line
+  text << "\001" << "INTL " << dest << " " << orig << "\r";
+  text << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
+    << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
+  if (!msgid.empty()) {
+    text << "\001MSGID: " << msgid << "\r";
+  }
+
+  FidoStoredMessage m(h, text.str());
   write_stored_message(netmail, m);
 
   return true;
@@ -744,7 +777,7 @@ bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline,const FidoAddress
     return false;
   }
   const string bundlepath = FilePath(out_dir, bundlename);
-  if (!CreateFidoNetAttachNetMail(FidoAddress(net.fido.fido_address), dest, "ARCmail", "ARCmail", netmail_filepath, bundlepath, packet_config)) {
+  if (!CreateFidoNetAttachNetMail(FidoAddress(net.fido.fido_address), dest, netmail_filepath, bundlepath, packet_config)) {
     LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
     return false;
   }

@@ -165,6 +165,9 @@ void send_email() {
     }
   }
 
+  // TODO(rushfan): This is where we'd check for (NNNN) 
+  // and add in the @NNN for the FTN networks.
+
   int system_number, user_number;
   parse_email_info(username, &user_number, &system_number);
   grab_quotes(nullptr, nullptr);

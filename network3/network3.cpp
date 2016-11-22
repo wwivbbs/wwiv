@@ -155,8 +155,8 @@ static bool check_binkp_net(
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
-  string now_human = wwiv::sdk::daten_to_date(time(nullptr));
-  string title = StringPrintf("%s analysis on %s", net.name, now_human.c_str());
+  string now_mmddyy = wwiv::sdk::daten_to_mmddyy(time(nullptr));
+  string title = StringPrintf("%s analysis on %s", net.name, now_mmddyy.c_str());
   string byname = StringPrintf("%s @%u", net.name, net.sysnum);
 
   nh.touser = 1;

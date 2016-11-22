@@ -371,7 +371,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     }
     cout << "#" << setw(5) << std::left << current
          << " From: " << setw(20) << header->from()
-         << "date: " << daten_to_humantime(header->daten()) << endl
+         << "date: " << daten_to_wwivnet_time(header->daten()) << endl
          << "title: " << header->title();
     if (header->is_local()) {
       cout << "[LOCAL]";

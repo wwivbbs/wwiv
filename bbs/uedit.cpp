@@ -41,6 +41,7 @@
 #include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -52,7 +53,6 @@ using namespace wwiv::strings;
 static uint32_t *u_qsc = 0;
 static char *sp = nullptr;
 static char search_pattern[81];
-char *daten_to_date(time_t dt);
 
 static void changeopt() {
   bout.cls();
@@ -308,8 +308,8 @@ void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScree
   }
 
   if (pUser->GetRegisteredDateNum() != 0) {
-    bout << "|#2X|#9) Registration : |#1" << daten_to_date(pUser->GetRegisteredDateNum()) <<
-                       "       Expires on   : " << daten_to_date(pUser->GetExpiresDateNum()) << wwiv::endl;
+    bout << "|#2X|#9) Registration : |#1" << daten_to_mmddyy(pUser->GetRegisteredDateNum()) <<
+                       "       Expires on   : " << daten_to_mmddyy(pUser->GetExpiresDateNum()) << wwiv::endl;
   }
 
   if (pUser->GetCallsign()[0] != '\0') {
@@ -749,8 +749,8 @@ void uedit(int usern, int other) {
         }
         bout.nl();
         if (user.GetRegisteredDateNum() != 0) {
-          regDate = daten_to_date(user.GetRegisteredDateNum());
-          expDate = daten_to_date(user.GetExpiresDateNum());
+          regDate = daten_to_mmddyy(user.GetRegisteredDateNum());
+          expDate = daten_to_mmddyy(user.GetExpiresDateNum());
           bout << "Registered on " << regDate << ", expires on " << expDate << wwiv::endl;
         } else {
           bout << "Not registered.\r\n";
@@ -1031,20 +1031,6 @@ void uedit(int usern, int other) {
 
   u_qsc = nullptr;
 }
-
-
-char *daten_to_date(time_t dt) {
-  static char s[9];
-  struct tm * pTm = localtime(&dt);
-
-  if (pTm) {
-    sprintf(s, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, pTm->tm_year % 100);
-  } else {
-    strcpy(s, "01/01/00");
-  }
-  return s;
-}
-
 
 void print_affil(User *pUser) {
   net_system_list_rec *csne;

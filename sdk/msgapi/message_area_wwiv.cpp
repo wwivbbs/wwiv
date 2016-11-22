@@ -342,7 +342,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   //}
 
   const string text = StrCat(header.from(), "\r\n",
-    daten_to_humantime(header.daten()), "\r\n",
+    daten_to_wwivnet_time(header.daten()), "\r\n",
     message.text()->text());
   if (!savefile(text, &p.msg)) {
     return false;
