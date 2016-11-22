@@ -227,11 +227,11 @@ void post() {
   if ((!session()->current_sub().nets.empty()) &&
       (session()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
     p.status |= status_pending_net;
-    int dm = 1;
+    bool dm = true;
     for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
           && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
       if (get_post(i)->status & status_pending_net) {
-        dm = 0;
+        dm = false;
         break;
       }
     }

@@ -222,7 +222,7 @@ void add_post(postrec * pp) {
     // get updated info
     session()->status_manager()->RefreshStatusCache();
     fileSub.Seek(0L, File::Whence::begin);
-    subfile_header_t p = {};
+    subfile_header_t p{};
     fileSub.Read(&p, sizeof(subfile_header_t));
 
     if (strncmp(p.signature, "WWIV\x1A", 5) != 0) {
@@ -255,7 +255,7 @@ void add_post(postrec * pp) {
   }
 }
 
-#define BUFSIZE 32000
+static constexpr size_t BUFSIZE = 32000;
 
 void delete_message(int mn) {
   bool need_close = false;
