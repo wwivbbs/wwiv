@@ -568,11 +568,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     vh.from_user_name = sender_name;
     vh.subject = title;
     if (!to_user_name.empty()) {
-      if (to_user_name == "ALL") {
-        // WWIV uses all upper case ALL, let's make it look ftn-ish
-        to_user_name = "All";
-      }
-      vh.to_user_name = to_user_name;
+      vh.to_user_name = properize(to_user_name);
     } else {
       vh.to_user_name = "All";
     }
