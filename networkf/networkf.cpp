@@ -451,7 +451,9 @@ static std::string get_fido_addr(const C& c, I& iter, std::set<char> stop, std::
       // Bail if we have a non-control line.
       return "";
     }
-    // HACK until I figure out why I get double \004 in wwiv...
+    // HACK until the double \004 in wwiv has been out in 5.2
+    // for a while (fixed 2016-11-22).  Let's leave this here until
+    // 5.2 is GA since some may use net52 with wwiv51.
     if (address.size() > 2 && address[1] == '\004') {
       address.erase(address.begin());
     }

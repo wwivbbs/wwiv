@@ -172,12 +172,20 @@ void post() {
       return;
     }
     if (session()->current_net().sysnum != 0) {
-      bout << "\r\nThis post will go out on ";
+      bout << "\r\n|#9This post will go out on: ";
       for (size_t i = 0; i < session()->current_sub().nets.size(); i++) {
         if (i) {
-          bout << ", ";
+          bout << "|#9, ";
         }
-        bout << session()->net_networks[session()->current_sub().nets[i].net_num].name;
+        const auto& n = session()->net_networks[session()->current_sub().nets[i].net_num];
+        bout << "|#2" << n.name << "|#1";
+        if (n.type == network_type_t::wwivnet) {
+          bout << "|#1 (WWIV)";
+        } else if (n.type == network_type_t::ftn) {
+          bout << "|#1 (FTN)";
+        } else if (n.type == network_type_t::internet) {
+          bout << "|#1 (Internet)";
+        }
       }
       bout << ".\r\n\n";
     }

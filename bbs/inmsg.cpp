@@ -47,6 +47,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
+#include "sdk/datetime.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
 
@@ -80,12 +81,12 @@ static bool GetMessageToName(const char *aux) {
       if (session()->net_networks[xnp.net_num].type == network_type_t::ftn &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
-        bout << "|#1Fidonet addressee, |#7[|#2Enter|#7]|#1 for ALL |#0: ";
+        bout << "|#2To   : ";
         newline = false;
-        string to_name = Input1("", 40, true, InputMode::MIXED);
+        string to_name = Input1("All", 40, true, InputMode::MIXED);
         newline = newlsave;
         if (to_name.empty()) {
-          strcpy(irt_name, "ALL");
+          strcpy(irt_name, "All");
           bout << "|#4All\r\n";
           bout.Color(0);
         } else {
@@ -346,7 +347,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
       !session()->current_sub().nets.empty()) {
     for (const auto& xnp : session()->current_sub().nets) {
       if (session()->net_networks[xnp.net_num].type == network_type_t::ftn) {
-        const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
+        const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
         ss << buf << crlf;
         break;
       }
@@ -616,11 +617,7 @@ bool inmsg(MessageEditorData& data) {
   }
 
   // Add date to message body
-  time_t lTime = time(nullptr);
-  string time_string(asctime(localtime(&lTime)));
-  // asctime appends a \n to the end of the string.
-  StringTrimEnd(&time_string);
-  b << time_string << crlf;
+  b << daten_to_wwivnet_time(time(nullptr)) << crlf;
   UpdateMessageBufferQuotesCtrlLines(b);
 
   if (irt[0]) {
