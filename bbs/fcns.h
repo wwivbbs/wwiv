@@ -23,8 +23,6 @@
 #include <memory>
 #include <string>
 
-#include "core/file.h"
-#include "sdk/net.h"
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 

@@ -55,6 +55,8 @@ What's New in WWIV 5.2 (2016)
   since WINS may care about the name).
 * networkf is now bundled with the binaries. It can import and export
   message network types fido.
+* The fake FTN network address is now hard coded, and its' 32765.
+* 
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
