@@ -87,13 +87,16 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-string create_network_cmdline(const NetworkCommandLine& net_cmdline, int num, int verbose) {
+string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, int verbose, const string& cmd) {
   const string path = FilePath(net_cmdline.bbsdir(), StrCat("network", num));
 
   std::ostringstream ss;
   ss << path << " --v=" << verbose << " ." << net_cmdline.network_number();
-  if (num == 3) {
+  if (num == '3') {
     ss << " Y";
+  }
+  if (!cmd.empty()) {
+    ss << " " << cmd;
   }
   return ss.str();
 }
@@ -162,15 +165,34 @@ int main(int argc, char** argv) {
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     std::unique_ptr<WStatus> status(sm.GetStatus());
 
-    const auto dir = net_cmdline.network().dir;
+    const auto dir = net.dir;
+    // Pending files, call network1 to put them into s* or local.net.
     if (File::ExistsWildcard(StrCat(dir, "p*.net"))) {
-      System(create_network_cmdline(net_cmdline, 1, verbose));
-      if (File::Exists(StrCat(dir, LOCAL_NET))) {
-        System(create_network_cmdline(net_cmdline, 2, verbose));
+      System(create_network_cmdline(net_cmdline, '1', verbose, ""));
+    }
+
+    // If the network type is a FTN network.
+    if (net.type == network_type_t::ftn) {
+      // Import everything into LOCAL.NET
+      if (File::ExistsWildcard(FilePath(net.fido.inbound_dir, "*.*"))) {
+        System(create_network_cmdline(net_cmdline, 'f', verbose, "import"));
+      }
+
+      // Export everything to FTN bundles
+      string fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
+      if (File::Exists(dir, fido_out)) {
+        System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
       }
     }
+
+    // Process local mail with network2.
+    if (File::Exists(StrCat(dir, LOCAL_NET))) {
+      System(create_network_cmdline(net_cmdline, '2', verbose, ""));
+    }
+
+    // If our network files have changed, run network3 and send feedback.
     if (need_network3(dir, status->GetNetworkVersion())) {
-      System(create_network_cmdline(net_cmdline, 3, verbose));
+      System(create_network_cmdline(net_cmdline, '3', verbose, ""));
     }
 
     return 0;
