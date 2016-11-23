@@ -170,7 +170,8 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
         LOG(INFO) << "Unable to open INI file: " << inifile.full_pathname();
       }
     } else {
-      LOG(WARNING) << "Warning: INI file does not exist: " << inifile.full_pathname();
+      // We don't want to warn now until we have usefull stuff in it.
+      VLOG(1) << "FYI: INI file for this command doesn't exist; filename: " << inifile.full_pathname();
     }
 
     bink_config.set_skip_net(skip_net);
