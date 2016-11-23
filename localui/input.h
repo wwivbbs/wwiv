@@ -484,8 +484,8 @@ private:
 
 class FilePathItem : public EditItem<char*> {
 public:
-  FilePathItem(int x, int y, int maxsize, char* data) 
-    : EditItem<char*>(x, y, maxsize, data) {}
+  FilePathItem(int x, int y, int maxsize, const std::string& base, char* data) 
+    : EditItem<char*>(x, y, maxsize, data), base_(base) {}
   virtual ~FilePathItem() {}
 
   virtual int Run(CursesWindow* window) override {
@@ -495,19 +495,28 @@ public:
 
     // Update what we display in case it changed.
     DefaultDisplay(window);
+
+    auto dir = File::MakeAbsolutePath(this->base_, this->data_);
+    if (!File::Exists(dir)) {
+      const std::string s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
+      if (dialog_yn(window, {s1, "Would you like to create it?"})) {
+        File::mkdirs(dir);
+      }
+    }
     return return_code;
   }
-
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const override {
     DefaultDisplayString(window, data_);
   }
+private:
+  const std::string base_;
 };
 
 class StringFilePathItem: public EditItem<std::string&> {
 public:
-  StringFilePathItem(int x, int y, int maxsize, std::string& data)
-    : EditItem<std::string&>(x, y, maxsize, data) {}
+  StringFilePathItem(int x, int y, int maxsize, const std::string& base, std::string& data)
+    : EditItem<std::string&>(x, y, maxsize, data), base_(base) {}
   virtual ~StringFilePathItem() {}
 
   virtual int Run(CursesWindow* window) override {
@@ -519,6 +528,14 @@ public:
     }
     // Update what we display in case it changed.
     DefaultDisplay(window);
+
+    auto dir = File::MakeAbsolutePath(this->base_, this->data_);
+    if (!File::Exists(dir)) {
+      const std::string s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
+      if (dialog_yn(window, {s1, "Would you like to create it?"})) {
+        File::mkdirs(dir);
+      }
+    }
     return return_code;
   }
 
@@ -526,6 +543,8 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const override {
     DefaultDisplayString(window, data_);
   }
+private:
+  const std::string base_;
 };
 
 class CommandLineItem : public EditItem<char*> {

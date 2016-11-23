@@ -38,13 +38,11 @@
 using std::unique_ptr;
 using std::string;
 
-extern char bbsdir[];
-
 static const int COL1_LINE = 2;
 static const int COL1_POSITION = 14;
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir */
-void setpaths() {
+void setpaths(const std::string& bbsdir) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Paths", 15, 76));
 
@@ -64,11 +62,11 @@ void setpaths() {
   window->PrintfXY(COL1_LINE + 2, y++, "any of these settings.");
 
   EditItems items{
-    new FilePathItem(COL1_POSITION, 1, 60, syscfg.msgsdir),
-    new FilePathItem(COL1_POSITION, 2, 60, syscfg.gfilesdir),
-    new FilePathItem(COL1_POSITION, 3, 60, syscfg.menudir),
-    new FilePathItem(COL1_POSITION, 4, 60, syscfg.datadir),
-    new FilePathItem(COL1_POSITION, 5, 60, syscfg.dloadsdir),
+    new FilePathItem(COL1_POSITION, 1, 60, bbsdir, syscfg.msgsdir),
+    new FilePathItem(COL1_POSITION, 2, 60, bbsdir, syscfg.gfilesdir),
+    new FilePathItem(COL1_POSITION, 3, 60, bbsdir, syscfg.menudir),
+    new FilePathItem(COL1_POSITION, 4, 60, bbsdir, syscfg.datadir),
+    new FilePathItem(COL1_POSITION, 5, 60, bbsdir, syscfg.dloadsdir),
   };
 
   items.set_curses_io(out, window.get());

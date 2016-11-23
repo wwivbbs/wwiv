@@ -54,7 +54,7 @@ using namespace wwiv::strings;
 
 static constexpr int MAX_LANGUAGES = 100;
 
-static void edit_lang(languagerec& n) {
+static void edit_lang(const std::string& bbsdir, languagerec& n) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Language Configuration", 9, 78));
   const int COL1_POSITION = 19;
@@ -62,8 +62,8 @@ static void edit_lang(languagerec& n) {
   EditItems items{
     // The string is 20 total (19 usable).
     new StringEditItem<char*>(COL1_POSITION, 1, 19, n.name, false),
-    new FilePathItem(2, 3, 75, n.dir),
-    new FilePathItem(2, 6, 75, n.mdir),
+    new FilePathItem(2, 3, 75, bbsdir, n.dir),
+    new FilePathItem(2, 6, 75, bbsdir, n.mdir),
   };
   items.set_curses_io(out, window.get());
 
@@ -98,7 +98,7 @@ static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
   return 255;
 }
 
-void edit_languages() {
+void edit_languages(const std::string& bbsdir) {
   vector<languagerec> languages;
   {
     DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
@@ -161,17 +161,17 @@ void edit_languages() {
 
         if (i > languages.size()) {
           languages.push_back(l);
-          edit_lang(languages.back());
+          edit_lang(bbsdir, languages.back());
         } else {
           auto it = languages.begin();
           std::advance(it, i - 1);
           auto new_lang = languages.insert(it, l);
-          edit_lang(*new_lang);
+          edit_lang(bbsdir, *new_lang);
         }
         break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
-      edit_lang(languages[result.selected]);
+      edit_lang(bbsdir, languages[result.selected]);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }

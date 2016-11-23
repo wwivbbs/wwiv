@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_LANGUAGES_H__
 #define __INCLUDED_LANGUAGES_H__
 
-void edit_languages();
+#include <string>
+
+void edit_languages(const std::string& bbsdir);
 
 #endif // __INCLUDED_LANGUAGES_H__

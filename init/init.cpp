@@ -306,7 +306,7 @@ int WInitApp::main(int, char **) {
       sysinfo1();
       break;
     case 'P':
-      setpaths();
+      setpaths(bbsdir);
       break;
     case 'T':
       extrn_prots();
@@ -327,7 +327,7 @@ int WInitApp::main(int, char **) {
       instance_editor();
       break;
     case 'L':
-      edit_languages();
+      edit_languages(bbsdir);
       break;
     case 'N':
       networks(config);

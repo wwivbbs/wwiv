@@ -161,8 +161,8 @@ static bool del_net(
 // Base item of an editable value, this class does not use templates.
 class FidoNetworkConfigSubDialog : public BaseEditItem {
 public:
-  FidoNetworkConfigSubDialog(int x, int y, const std::string& title, int width, net_networks_rec& d)
-      : BaseEditItem(x, y, 1), title_(title), width_(width), d_(d), x_(x), y_(y) {};
+  FidoNetworkConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width, net_networks_rec& d)
+      : BaseEditItem(x, y, 1), bbsdir_(bbsdir), title_(title), width_(width), d_(d), x_(x), y_(y) {};
   virtual ~FidoNetworkConfigSubDialog() {}
 
   virtual int Run(CursesWindow* window) {
@@ -183,12 +183,12 @@ public:
       fido_network_config_t* n = &d_.fido;
       int y = 1;
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->temp_outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->netmail_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, n->bad_packets_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->temp_inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->temp_outbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->outbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->netmail_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->bad_packets_dir));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line, false));
 
       dy_start_ = y;
@@ -263,6 +263,7 @@ public:
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 private:
+  const std::string bbsdir_;
   const std::string title_;
   int width_ = 40;
   net_networks_rec& d_;
@@ -315,8 +316,8 @@ static void edit_fido_node_config(const Config& config, const FidoAddress& a, fi
 // Base item of an editable value, this class does not use templates.
 class FidoPacketConfigSubDialog: public BaseEditItem {
 public:
-  FidoPacketConfigSubDialog(int x, int y, const std::string& title, int width, const Config& config, net_networks_rec& d)
-    : BaseEditItem(x, y, 1), title_(title), width_(width), config_(config), d_(d), x_(x), y_(y) {};
+  FidoPacketConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width, const Config& config, net_networks_rec& d)
+    : BaseEditItem(x, y, 1), bbsdir_(bbsdir), title_(title), width_(width), config_(config), d_(d), x_(x), y_(y) {};
   virtual ~FidoPacketConfigSubDialog() {}
 
   virtual int Run(CursesWindow* window) {
@@ -388,6 +389,7 @@ public:
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 private:
+  const std::string bbsdir_;
   const std::string title_;
   int width_ = 40;
   const Config& config_;
@@ -416,11 +418,12 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     new ToggleEditItem<network_type_t>(out, COL1_POSITION, y++, nettypes, &n.type),
     new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false),
     new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum),
-    new StringFilePathItem(COL1_POSITION, y++, 60, n.dir)
+    new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir)
   };
   if (n.type == network_type_t::ftn) {
-    items.add(new FidoNetworkConfigSubDialog(COL1_POSITION, y++, "Network Settings", 76, n));
-    items.add(new FidoPacketConfigSubDialog(COL1_POSITION, y++, "Node Settings", 76, config, n));
+    auto net_dir = File::MakeAbsolutePath(config.root_directory(), n.dir);
+    items.add(new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", 76, n));
+    items.add(new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", 76, config, n));
   }
 
   const string title = StrCat("Network Configuration; Net #", nn);

@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_PATHS_H__
 #define __INCLUDED_PATHS_H__
 
-void setpaths();
+#include <string>
+
+void setpaths(const std::string& bbsdir);
 
 #endif // __INCLUDED_PATHS_H__
