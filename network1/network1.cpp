@@ -179,6 +179,7 @@ int main(int argc, char** argv) {
     BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
       LOG(ERROR) << "ERROR: Unable to read BBSDATA.NET.";
+      LOG(ERROR) << "       Do you need to run network3?";
       return 1;
     }
 

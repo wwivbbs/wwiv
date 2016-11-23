@@ -197,8 +197,11 @@ static int cleanup_net1() {
             if (session()->IsUserOnline()) {
               hang_it_up();
             }
-            string network1_cmd = StrCat(CreateNetworkBinary("network1"), " .", session()->net_num());
-
+            // Try to run network3 before network1.
+            if (!File::Exists(session()->network_directory(), BBSDATA_NET)) {
+              check_bbsdata();
+            }
+            const string network1_cmd = StrCat(CreateNetworkBinary("network1"), " .", session()->net_num());
             if (ExecuteExternalProgram(network1_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
             } else {

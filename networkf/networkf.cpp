@@ -874,14 +874,14 @@ int main(int argc, char** argv) {
     BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
       LOG(ERROR) << "ERROR: Unable to read BBSDATA.NET.";
-      LOG(ERROR) << "Have you run network3?";
+      LOG(ERROR) << "       Do you need to run network3?";
       return 3;
     }
 
     const net_system_list_rec* fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
     if (!fake_ftn_node) {
       LOG(ERROR) << "Can not find node for outbound FTN address.";
-      LOG(ERROR) << "Have you run network3?";
+      LOG(ERROR) << "       Do you need to run network3?";
       return 3;
     }
 
