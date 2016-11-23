@@ -56,6 +56,9 @@
 #include "sdk/networks.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
+#include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_callout.h"
+#include "sdk/fido/nodelist.h"
 
 using std::cout;
 using std::endl;
@@ -68,6 +71,7 @@ using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
@@ -124,6 +128,43 @@ static bool check_wwivnet_host_networks(
   return true;
 }
 
+static bool check_fido_host_networks(
+  const wwiv::sdk::Config& config,
+  const wwiv::sdk::Networks& network,
+  const net_networks_rec& net,
+  int network_number,
+  std::ostringstream& text) {
+
+  wwiv::sdk::Subs subs(config.datadir(), network.networks());
+  if (!subs.Load()) {
+    LOG(ERROR) << "Unable to load subs (.dat and .xtr)";
+    text << "Unable to load subs (.dat and .xtr)\r\n";
+    return false;
+  }
+
+  for (const auto& x : subs.subs()) {
+    for (const auto& n : x.nets) {
+      if (n.net_num != network_number) {
+        continue;
+      }
+      if (n.host != 0) {
+        continue;
+      }
+      const string filename = StrCat("n", n.stype, ".net");
+      if (!File::Exists(net.dir, filename)) {
+        text << "subscriber file '" << filename << "' for echotag: '" << n.stype << "' is missing.\r\n";
+        text << " ** Please fix it.\r\n\n";
+      }
+      auto subscribers = ReadFidoSubcriberFile(net.dir, filename);
+      if (subscribers.empty()) {
+        text << "Unable to find any uplinks in subscriber file for echotag: " << n.stype << "\r\n";
+        text << " ** Please fix it.\r\n\n";
+      }
+    }
+  }
+  return true;
+}
+
 static bool check_connect_net(
   const BbsListNet& b,
   const net_networks_rec& net,
@@ -152,7 +193,7 @@ static bool check_binkp_net(
   return true;
 }
 
-static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
+static bool send_feedback_email(const net_networks_rec& net, std::string& text) {
   net_header_rec nh = {};
 
   string now_mmddyy = wwiv::sdk::daten_to_mmddyy(time(nullptr));
@@ -163,6 +204,8 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
   nh.fromuser = std::numeric_limits<uint16_t>::max();
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+
+  text += StrCat("\r\nBest,\r\n\r\n", byname, "\r\n\r\n");
 
   return send_local_email(net, nh, text, byname, title);
 }
@@ -357,6 +400,18 @@ static void ensure_contact_net_entries(const Callout& callout, const string& dir
   }
 }
 
+static bool need_to_send_feedback(CommandLine& cmdline) {
+  if (cmdline.barg("feedback")) {
+    return true;
+  }
+  for (const auto& s : cmdline.remaining()) {
+    if (s == "Y" || s == "y") {
+      return true;
+    }
+  }
+  return false;
+}
+
 static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
   VLOG(1) << "network3_fido";
   const auto& net = net_cmdline.network();
@@ -408,6 +463,69 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     DataFile<int32_t> bbsdata_reg_file(net.dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_reg_file.WriteVector(bbsdata_reg_data);
   }
+
+  FidoAddress address;
+  try {
+    FidoAddress a(net.fido.fido_address);
+    address = a;
+  } catch (const std::exception&) {
+    text << "Unable to parse your address of: " << net.fido.fido_address << "\r\n";
+    text << " ** Please fix it.\r\n\n";
+  }
+  text << "Inbound dir:            " << net.fido.inbound_dir << "\r\n";
+  text << "Outbound dir:           " << net.fido.outbound_dir << "\r\n";
+  text << "Temporary Inbound dir:  " << net.fido.temp_inbound_dir << "\r\n";
+  text << "Temporary Outbound dir: " << net.fido.temp_outbound_dir << "\r\n";
+  text << "Bad Packets dir:        " << net.fido.bad_packets_dir << "\r\n";
+  text << "\r\n";
+
+  if (!File::Exists(net.dir, FIDO_CALLOUT_JSON)) {
+    text << " ** fido_callout.json file DOES NOT EXIST.\r\n\n";
+  }
+  FidoCallout callout(net_cmdline.config(), net);
+  if (!callout.IsInitialized()) {
+    text << " ** Unable to read fido_callout.json\r\n\n";
+  } else {
+    check_fido_host_networks(net_cmdline.config(), net_cmdline.networks(), net, net_cmdline.network_number(), text);
+  }
+
+  text << "Using nodelist base:    " << net.fido.nodelist_base << "\r\n";
+  std::string nodelist = Nodelist::FindLatestNodelist(net.dir, net.fido.nodelist_base);
+  File nlfile(net.dir, nodelist);
+  text << "Latest FTN is:          " << nodelist;
+  if (!nlfile.Exists()) {
+    text << " (DOES NOT EXIST)\r\n";
+    text << " ** Please fix it.\r\n\n";
+  } else {
+    text << " [" << daten_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
+    auto nl_path = File::MakeAbsolutePath(net.dir, nodelist);
+    Nodelist nl(nl_path);
+    if (!nl.initialized()) {
+      text << " ** Unable to parse nodelist.\r\n";
+      text << " ** Please fix it.\r\n\n";
+    } else {
+      if (!nl.contains(address)) {
+        text << " ** Your address: '" << address << "' does not exist in the nodelist: '" << nodelist << ".\r\n";
+      }
+      for (const auto& ncs : callout.node_configs_map()) {
+        if (!nl.contains(ncs.first)) {
+          text << " ** Callout address: '" << address << "' does not exist in the nodelist.\r\n";
+        }
+      }
+
+    }
+  }
+  
+  text << "\r\n";
+
+  if (net.fido.origin_line.empty()) {
+    text << "You may want to define an origin line for your network.\r\n";
+  }
+
+  if (need_to_send_feedback(cmdline)) {
+    send_feedback_email(net, text.str());
+  }
+
   return 0;
 }
 
@@ -439,16 +557,7 @@ static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_
   update_filechange_status_dat(net_cmdline.config().datadir());
   rename_pending_files(net.dir);
 
-  bool need_to_send_feedback = cmdline.barg("feedback");
-  if (!need_to_send_feedback) {
-    for (const auto& s : cmdline.remaining()) {
-      if (s == "Y" || s == "y") {
-        need_to_send_feedback = true;
-      }
-    }
-  }
-
-  if (need_to_send_feedback || is_nc) {
+  if (need_to_send_feedback(cmdline) || is_nc) {
     std::ostringstream text;
     add_feedback_header(net.dir, text);
     LOG(INFO) << "Sending Feedback.";

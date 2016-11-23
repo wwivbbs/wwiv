@@ -129,6 +129,7 @@ class File {
   virtual bool IsFile() const ;
 
   virtual bool SetFilePermissions(int nPermissions);
+  virtual time_t creation_time();
   virtual time_t last_write_time();
   virtual bool set_last_write_time(time_t last_write_time);
 

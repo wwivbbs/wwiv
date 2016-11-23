@@ -328,6 +328,8 @@ struct fido_node_config_t {
 struct fido_network_config_t {
   // Your FTN network address. (i.e. 1:100/123) [3d-5d accepted].
   std::string fido_address;
+  // Your FTN nodelist base name (i.e. NODELiST)
+  std::string nodelist_base;
   // Fidonet mailer type {FLO, Attach}.
   // Only FLO is even close to being supported.
   fido_mailer_t mailer_type;

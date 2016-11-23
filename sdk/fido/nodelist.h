@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "core/stl.h"
 #include "sdk/fido/fido_address.h"
 
 /**
@@ -114,9 +115,8 @@ public:
   bool initialized() const { return initialized_; }
   explicit operator bool() const { return initialized_; }
 
-  bool Load(const std::string& path);
-  bool Load(const std::vector<std::string>& lines);
   const NodelistEntry& entry(const FidoAddress& a) const { return entries_.at(a); }
+  bool contains(const FidoAddress& a) const { return wwiv::stl::contains(entries_, a); }
   const std::map<FidoAddress, NodelistEntry> entries() const { return entries_; }
   const std::vector<NodelistEntry> entries(uint16_t zone, uint16_t net) const;
   const std::vector<NodelistEntry> entries(uint16_t zone) const;
@@ -125,7 +125,11 @@ public:
   const std::vector<uint16_t> nodes(uint16_t zone, uint16_t net) const;
   const NodelistEntry* entry(uint16_t zone, uint16_t net, uint16_t node);
 
+  static std::string FindLatestNodelist(const std::string& dir, const std::string& base);
+
 private:
+  bool Load(const std::string& path);
+  bool Load(const std::vector<std::string>& lines);
 
   bool HandleLine(const std::string& line, uint16_t& zone, uint16_t& region, uint16_t& net, uint16_t& hub );
   std::map<FidoAddress, NodelistEntry> entries_;

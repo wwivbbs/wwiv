@@ -56,7 +56,12 @@ What's New in WWIV 5.2 (2016)
 * networkf is now bundled with the binaries. It can import and export
   message network types fido.
 * The fake FTN network address is now hard coded, and its' 32765.
-* 
+* Routing in FTN now works, uou need to define a route string for nodes
+  in the address list in INIT for the network.  The format is space
+  separated list of routes.  A route is a partial address ending in *
+  as a wildcard. Optionally starting with ! to be a negative match.
+  Example "11:* !11:2/*" would match everything in zone 11, except
+  for everything in net 11:2/*.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

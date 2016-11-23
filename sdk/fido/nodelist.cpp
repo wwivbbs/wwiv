@@ -25,6 +25,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "core/wfndfile.h"
 
 using std::string;
 using std::vector;
@@ -110,10 +111,6 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   if (parts.size() < 6) {
     return false;
   }
-
-  //for (auto& p : parts) {
-  //  StringTrim(&p);
-  //}
 
   auto it = parts.cbegin();
   if (data_line.front() == ',') {
@@ -208,7 +205,10 @@ bool Nodelist::HandleLine(const string& line, uint16_t& zone, uint16_t& region, 
   case NodelistKeyword::region:
   {
     region = e.number_;
-    hub = net = 0;
+    // also use region for the net since we're addressable
+    // as zone:region/node.
+    net = e.number_;
+    hub = 0;
   } break;
   case NodelistKeyword::zone:
   {
@@ -303,12 +303,58 @@ const std::vector<uint16_t> Nodelist::nodes(uint16_t zone, uint16_t net) const {
 
 const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node) {
   FidoAddress a(zone, net, node, 0, "");
-  if (!contains(entries_, a)) {
+  if (!wwiv::stl::contains(entries_, a)) {
     return nullptr;
   }
   return &entries_.at(a);
-
 }
+
+static int year_of(time_t c) {
+  struct tm* t = localtime(&c);
+  return t->tm_year;
+}
+
+int extension_number(const std::string& fn) {
+  if (!contains(fn, '.')) {
+    return 0;
+  }
+
+  string num = fn.substr(fn.find_last_of('.') + 1);
+  return StringToInt(num);
+}
+
+static std::string latest_extension(const std::map<int, int>& ey) {
+  int highest_year = 0;
+  for (const auto& y : ey) {
+    if (y.second > highest_year) {
+      highest_year = y.second;
+    }
+  }
+
+  for (auto r = ey.rbegin(); r != ey.rend(); r++) {
+    if ((*r).second == highest_year) {
+      return StringPrintf("%03d", (*r).first);
+    }
+  }
+  return "000";
+}
+
+// static
+std::string Nodelist::FindLatestNodelist(const std::string& dir, const std::string& base) {
+  const string filespec = StrCat(FilePath(dir, base), ".*");
+  std::map<int, int> extension_year;
+  WFindFile fnd;
+  bool next = fnd.open(filespec, WFINDFILE_FILES);
+  while (next) {
+    File f(dir, fnd.GetFileName());
+    extension_year.emplace(extension_number(f.GetName()), year_of(f.creation_time()));
+    next = fnd.next();
+  }
+
+  string ext = latest_extension(extension_year);
+  return StrCat(base, ".", ext);
+}
+
 
 }  // namespace fido
 }  // namespace sdk

@@ -84,21 +84,18 @@ long File::GetLength() {
   return fileinfo.st_size;
 }
 
-time_t File::last_write_time() {
-  bool bOpenedHere = false;
-  if (!this->IsOpen()) {
-    bOpenedHere = true;
-    Open();
-  }
+time_t File::creation_time() {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
 
-  struct stat buf;
-  time_t nFileTime = (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+  struct stat buf {};
+  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+}
 
-  if (bOpenedHere) {
-    Close();
-  }
-  return nFileTime;
+time_t File::last_write_time() {
+  WWIV_ASSERT(File::IsFileHandleValid(handle_));
+
+  struct stat buf {};
+  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
 }
 
 /////////////////////////////////////////////////////////////////////////////

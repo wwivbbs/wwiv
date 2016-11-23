@@ -182,7 +182,9 @@ public:
       constexpr int MAX_STRING_LEN = 56;
       fido_network_config_t* n = &d_.fido;
       int y = 1;
+      
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->nodelist_base, false));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->temp_inbound_dir));
       items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->temp_outbound_dir));
@@ -229,6 +231,7 @@ public:
         items.set_curses_io(CursesIO::Get(), sw.get());
         y = 1;
         sw->PutsXY(LBL1_POSITION, y++, "FTN Address  :");
+        sw->PutsXY(LBL1_POSITION, y++, "Nodelist Base:");
         sw->PutsXY(LBL1_POSITION, y++, "Inbound Dir  :");
         sw->PutsXY(LBL1_POSITION, y++, "Temp In Dir  :");
         sw->PutsXY(LBL1_POSITION, y++, "Temp Out Dir :");

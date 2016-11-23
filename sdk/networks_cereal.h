@@ -122,6 +122,7 @@ void serialize(Archive & ar, fido_node_config_t& n) {
 template <class Archive>
 void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, fido_address);
+  SERIALIZE(n, nodelist_base);
   SERIALIZE(n, mailer_type);
   SERIALIZE(n, transport);
   SERIALIZE(n, inbound_dir);
