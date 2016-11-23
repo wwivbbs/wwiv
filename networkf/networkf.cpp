@@ -323,8 +323,11 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   // We have no parameter 2 since we're extracting everything.
   string unzip_cmd = arc_stuff_in(arc.arce, FilePath(dir, name), "");
   // Execute the command
-  system(unzip_cmd.c_str());
-  File::set_current_directory(saved_dir);
+  LOG(INFO) << "Command: " << unzip_cmd;
+  if (system(unzip_cmd.c_str()) != 0) {
+    LOG(ERROR) << "Failed executing: " << unzip_cmd;
+    return false;
+  }
 
   import_packets(config, callout, net, tempdir, "*.pkt");
 #ifndef _WIN32
@@ -368,7 +371,6 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   time_t now = time(nullptr);
   auto tm = localtime(&now);
   auto dow = tm->tm_wday;
-  int bundle_num = 0;
 
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
@@ -393,8 +395,9 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
 
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
-    string bname = bundle_name(orig, route_to, dow, bundle_num);
-    if (File::Exists(temp_dir, bname)) {
+    string bname = bundle_name(orig, route_to, dow, i);
+    if (File::Exists(out_dir, bname)) {
+      VLOG(1) << "Skipping candidate bundle: " << FilePath(out_dir, bname);
       // Already exists.
       continue;
     }
@@ -403,8 +406,11 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     // We have no parameter 2 since we're extracting everything.
     string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), FilePath(temp_dir, fido_packet_name));
     // Execute the command
-    system(zip_cmd.c_str());
-    File::set_current_directory(saved_dir);
+    LOG(INFO) << "Command: " << zip_cmd;
+    if (0 != system(zip_cmd.c_str())) {
+      LOG(ERROR) << "Failed executing: " << zip_cmd;
+      return false;
+    }
     out_bundle_name = bname;
 
     LOG(INFO) << "Created bundle: " << FilePath(out_dir, bname);
