@@ -101,6 +101,7 @@ copy /v/y %WORKSPACE%\Release\network1.exe %STAGE_DIR%\network1.exe || exit /b
 copy /v/y %WORKSPACE%\Release\network2.exe %STAGE_DIR%\network2.exe || exit /b
 copy /v/y %WORKSPACE%\Release\network3.exe %STAGE_DIR%\network3.exe || exit /b
 copy /v/y %WORKSPACE%\Release\networkb.exe %STAGE_DIR%\networkb.exe || exit /b
+copy /v/y %WORKSPACE%\Release\networkc.exe %STAGE_DIR%\networkc.exe || exit /b
 copy /v/y %WORKSPACE%\Release\networkf.exe %STAGE_DIR%\networkf.exe || exit /b
 copy /v/y %WORKSPACE%\Release\wwivutil.exe %STAGE_DIR%\wwivutil.exe || exit /b
 copy /v/y %WORKSPACE%\bbs\admin\* %STAGE_DIR%\
