@@ -314,6 +314,9 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
 }
 
 bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::string& routes) {
+  if (routes.empty()) {
+    return false;
+  }
   const std::vector<std::string> rs = parse_routes(routes);
   bool ok = false;
   for (const auto& rr : rs) {
@@ -336,7 +339,6 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
     if (nc.first == a) {
       return a;
     }
-    const auto routes = nc.second.routes;
     if (RoutesThroughAddress(a, nc.second.routes)) {
       return nc.first;
     }

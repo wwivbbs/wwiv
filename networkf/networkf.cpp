@@ -877,7 +877,7 @@ bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const ne
       // We only want to attach the bundle (or add it to the flo file)
       // one time, so skip ones that have already been done.
       bundles.insert(bundlename);
-      CreateNetmailAttachOrFloFile(net_cmdline, dest, net, bundlename, fido_callout.packet_config_for(dest));
+      CreateNetmailAttachOrFloFile(net_cmdline, route_to, net, bundlename, fido_callout.packet_config_for(dest));
     }
   }
   return true;

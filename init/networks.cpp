@@ -283,6 +283,7 @@ static void edit_fido_node_config(const Config& config, const FidoAddress& a, fi
     {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
   };
 
+  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, n.routes, false));
   items.add(new ToggleEditItem<fido_packet_t>(out, COL1_POSITION, y++, packetlist, &p.packet_type));
   items.add(new StringListItem(out, COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.packet_password, true));
@@ -299,10 +300,11 @@ static void edit_fido_node_config(const Config& config, const FidoAddress& a, fi
   items.add(new ToggleEditItem<fido_bundle_status_t>(out, COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
 
   const string title = StrCat("Address: ", a.as_string());
-  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 40));
+  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 60));
   items.set_curses_io(out, sw.get());
 
   y = 1;
+  sw->PutsXY(LBL1_POSITION, y++, "Routes       :");
   sw->PutsXY(LBL1_POSITION, y++, "Packet Type  :");
   sw->PutsXY(LBL1_POSITION, y++, "Compression  :");
   sw->PutsXY(LBL1_POSITION, y++, "Packet PW    :");
