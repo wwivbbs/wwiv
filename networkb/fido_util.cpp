@@ -237,6 +237,98 @@ FidoAddress get_address_from_origin(const std::string& text) {
   return FidoAddress(0, 0, 0, 0, "");
 }
 
+// Returns a vector of valid routes.
+// A valid route is Zone:*, Zone:Net/*
+static std::vector<std::string> parse_routes(const std::string& routes) {
+  std::vector<std::string> result;
+  std::vector<std::string> raw = SplitString(routes, " ");
+  for (const auto& rr : raw) {
+    string r(rr);
+    StringTrim(&r);
+    result.push_back(r);
+  }
+  return result;
+}
+
+
+static enum class RouteMatch { yes, no, exclude };
+
+// route can be a mask of: {Zone:*, Zone:Net/*, or Zone:Net/node}
+// also a route can be negated with ! in front of it.
+static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std::string& route) {
+  string r(route);
+  StringTrim(&r);
+  
+  RouteMatch positive = RouteMatch::yes;
+
+  // Negated route.
+  if (starts_with(r, "!")) {
+    r = r.substr(1);
+    positive = RouteMatch::exclude;
+  }
+
+  // Just a "*: for the route.
+  if (r == "*") {
+    return positive;
+  }
+
+  // No wild card, so see if it's a complete route.
+  if (!ends_with(r, "*")) {
+    try {
+      // Let's see if it's an address.
+      FidoAddress route_address(r);
+      return (route_address == a) ? positive : RouteMatch::no;
+    } catch (const std::exception&) {
+      // Not a valid address.
+      VLOG(2) << "Malformed route (not a complete address): " << route;
+      return RouteMatch::no;
+    }
+  } else {
+    // Remove the trailing *
+    r.pop_back();
+  }
+
+  if (contains(r, ':') && ends_with(r, "/")) {
+    // We have a ZONE:NET/*
+    r.pop_back();
+    vector<string> parts = SplitString(r, ":");
+    if (parts.size() != 2) {
+      VLOG(2) << "Malformed route: " << route;
+      return RouteMatch::no;
+    }
+    auto zone = StringToUnsignedShort(parts.at(0));
+    auto net = StringToUnsignedShort(parts.at(1));
+    if (a.zone() == zone && a.net() == net) {
+      return positive;
+    }
+  } else if (ends_with(r, ":")) {
+    // We have a ZONE:*
+    r.pop_back();
+    auto zone = StringToUnsignedShort(r);
+    if (a.zone() == zone) {
+      return positive;
+    }
+  }
+
+  return RouteMatch::no;
+}
+
+bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::string& routes) {
+  const std::vector<std::string> rs = parse_routes(routes);
+  bool ok = false;
+  for (const auto& rr : rs) {
+    RouteMatch m = matches_route(a, rr);
+    if (m != RouteMatch::no) {
+       // Ignore any no matches, return otherwise;
+      if (m != RouteMatch::no) {
+        ok = (m == RouteMatch::yes);
+      }
+    }
+  }
+  return ok;
+}
+
+
 }  // namespace fido
 }  // namespace net
 }  // namespace wwiv

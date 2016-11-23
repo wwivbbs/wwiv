@@ -133,5 +133,28 @@ TEST_F(FidoUtilTest, MkTime) {
   auto rt = mktime(tm);
 
   EXPECT_EQ(now, rt);
+}
 
+TEST_F(FidoUtilTest, Routes) {
+  FidoAddress a("11:1/100");
+
+  EXPECT_TRUE(RoutesThroughAddress(a, "*"));
+  EXPECT_TRUE(RoutesThroughAddress(a, "11:*"));
+  EXPECT_TRUE(RoutesThroughAddress(a, "11:1/*"));
+  EXPECT_TRUE(RoutesThroughAddress(a, "11:1/100"));
+
+  EXPECT_TRUE(RoutesThroughAddress(a, "11:* 1:* 2:* 3:* 4:*"));
+
+  EXPECT_FALSE(RoutesThroughAddress(a, "!*"));
+  EXPECT_FALSE(RoutesThroughAddress(a, "12:*"));
+  EXPECT_FALSE(RoutesThroughAddress(a, "11:2/*"));
+  EXPECT_FALSE(RoutesThroughAddress(a, "11:1/101"));
+
+  EXPECT_FALSE(RoutesThroughAddress(a, "11:* !11:1/100"));
+  EXPECT_FALSE(RoutesThroughAddress(a, "11:* 11:1/* !11:1/100"));
+
+  EXPECT_TRUE(RoutesThroughAddress(a, "11:* !11:1/* 11:1/100"));
+  EXPECT_TRUE(RoutesThroughAddress(a, "!11:* 11:1/100"));
+  EXPECT_TRUE(RoutesThroughAddress(a, "* !11:* 11:1/100"));
+  EXPECT_TRUE(RoutesThroughAddress(a, "11:* !11:1/* 11:1/100"));
 }

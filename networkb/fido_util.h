@@ -49,6 +49,8 @@ std::string WWIVToFidoText(const std::string& wt);
 wwiv::sdk::fido::FidoAddress get_address_from_line(const std::string& line);
 wwiv::sdk::fido::FidoAddress get_address_from_origin(const std::string& text);
 
+bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::string& routes);
+
 }  // namespace fido
 }  // namespace net
 }  // namespace wwiv
