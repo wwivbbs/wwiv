@@ -334,7 +334,7 @@ public:
       bool done = false;
       do {
         vector<ListBoxItem> items;
-        for (const auto& e : callout.node_configs()) {
+        for (const auto& e : callout.node_configs_map()) {
           items.emplace_back(e.first.as_string());
         }
         ListBox list(out, window, "Select Address",

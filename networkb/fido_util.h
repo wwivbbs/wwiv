@@ -25,6 +25,7 @@
 
 #include "core/file.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_callout.h"
 #include "sdk/fido/fido_packets.h"
 
 namespace wwiv {
@@ -50,6 +51,9 @@ wwiv::sdk::fido::FidoAddress get_address_from_line(const std::string& line);
 wwiv::sdk::fido::FidoAddress get_address_from_origin(const std::string& text);
 
 bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::string& routes);
+wwiv::sdk::fido::FidoAddress FindRouteToAddress(const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout);
+wwiv::sdk::fido::FidoAddress FindRouteToAddress(
+  const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout);
 
 }  // namespace fido
 }  // namespace net

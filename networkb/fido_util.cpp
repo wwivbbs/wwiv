@@ -251,7 +251,7 @@ static std::vector<std::string> parse_routes(const std::string& routes) {
 }
 
 
-static enum class RouteMatch { yes, no, exclude };
+enum class RouteMatch { yes, no, exclude };
 
 // route can be a mask of: {Zone:*, Zone:Net/*, or Zone:Net/node}
 // also a route can be negated with ! in front of it.
@@ -326,6 +326,28 @@ bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::stri
     }
   }
   return ok;
+}
+
+wwiv::sdk::fido::FidoAddress FindRouteToAddress(
+  const wwiv::sdk::fido::FidoAddress& a,
+  const std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t>& node_configs_map) {
+
+  for (const auto& nc : node_configs_map) {
+    if (nc.first == a) {
+      return a;
+    }
+    const auto routes = nc.second.routes;
+    if (RoutesThroughAddress(a, nc.second.routes)) {
+      return nc.first;
+    }
+  }
+  return FidoAddress(0, 0, 0, 0, "");
+}
+
+wwiv::sdk::fido::FidoAddress FindRouteToAddress(
+  const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout) {
+
+  return FindRouteToAddress(a, callout.node_configs_map());
 }
 
 

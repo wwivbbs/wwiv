@@ -355,8 +355,9 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
   return true;
 }
 
-static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const string& fido_packet_name, std::string& out_bundle_name) {
-
+static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, 
+    const FidoAddress& route_to, const net_networks_rec& net, const string& fido_packet_name, 
+    std::string& out_bundle_name) {
   // were in the temp dir now.
   vector<arcrec> arcs = read_arcs(config.datadir());
   if (arcs.empty()) {
@@ -375,7 +376,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
   string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
   string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_outbound_dir));
-  const string ctype = fido_callout.packet_config_for(dest).compression_type;
+  const string ctype = fido_callout.packet_config_for(route_to).compression_type;
 
   if (ctype == "PKT") {
     // No bundles, only packet files.
@@ -392,7 +393,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
 
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
-    string bname = bundle_name(orig, dest, dow, bundle_num);
+    string bname = bundle_name(orig, route_to, dow, bundle_num);
     if (File::Exists(temp_dir, bname)) {
       // Already exists.
       continue;
@@ -479,7 +480,47 @@ static bool iter_starts_with(const C& c, I& iter, string expected) {
   return true;
 }
 
-static bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& wwivnet_packet, string& fido_packet_name) {
+static packet_header_2p_t CreateType2PlusPacketHeader(
+  const FidoAddress& from_address, const FidoAddress& dest, 
+  time_t now, const std::string& packet_password) {
+
+  packet_header_2p_t header = {};
+  header.orig_zone = from_address.zone();
+  header.orig_net = from_address.net();
+  header.orig_node = from_address.node();
+  header.orig_point = from_address.point();
+  header.dest_zone = dest.zone();
+  header.dest_net = dest.net();
+  header.dest_node = dest.node();
+  header.dest_point = dest.point();
+
+  auto tm = localtime(&now);
+  header.year = tm->tm_year;
+  header.month = tm->tm_mon;
+  header.day = tm->tm_mday;
+  header.hour = tm->tm_hour;
+  header.minute = tm->tm_min;
+  header.second = tm->tm_sec;
+  header.baud = 33600;
+  header.packet_ver = 2;
+  header.product_code_high = 0x1d;
+  header.product_code_low = 0xff;
+  header.qm_dest_zone = dest.zone();
+  header.qm_orig_zone = from_address.zone();
+  header.capabilities = 0x0001;
+  header.capabilities_valid =
+    ((header.capabilities_valid & 0x7f00) >> 8) | ((header.capabilities_valid & 0xff) << 8);
+  header.product_code_high = 0;
+  header.product_code_low = wwiv_net_version;
+  // Add in packet password.
+  to_char_array(header.password, packet_password);
+
+  return header;
+}
+
+static bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, 
+  const FidoAddress& dest, const FidoAddress& route_to, const net_networks_rec& net,
+  const Packet& wwivnet_packet, string& fido_packet_name) {
   using wwiv::net::ReadPacketResponse;
 
   string temp_dir(net.fido.temp_outbound_dir);
@@ -498,36 +539,8 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
       continue;
     }
 
-    packet_header_2p_t header = {};
-    header.orig_zone = from_address.zone();
-    header.orig_net = from_address.net();
-    header.orig_node = from_address.node();
-    header.orig_point = from_address.point();
-    header.dest_zone = dest.zone();
-    header.dest_net = dest.net();
-    header.dest_node = dest.node();
-    header.dest_point = dest.point();
-
-    auto tm = localtime(&now);
-    header.year = tm->tm_year;
-    header.month = tm->tm_mon;
-    header.day = tm->tm_mday;
-    header.hour = tm->tm_hour;
-    header.minute = tm->tm_min;
-    header.second = tm->tm_sec;
-    header.baud = 33600;
-    header.packet_ver = 2;
-    header.product_code_high = 0x1d;
-    header.product_code_low = 0xff;
-    header.qm_dest_zone = dest.zone();
-    header.qm_orig_zone = from_address.zone();
-    header.capabilities = 0x0001;
-    header.capabilities_valid = 
-      ((header.capabilities_valid & 0x7f00) >> 8) | ((header.capabilities_valid & 0xff) << 8);
-    header.product_code_high = 0;
-    header.product_code_low = wwiv_net_version;
-    // Add in packet password.
-    to_char_array(header.password, fido_callout.packet_config_for(dest).packet_password);
+    auto pw = fido_callout.packet_config_for(route_to).packet_password;
+    packet_header_2p_t header = CreateType2PlusPacketHeader(from_address, route_to, now, pw);
 
     if (!write_fido_packet_header(file, header)) {
       LOG(ERROR) << "Error writing packet header.";
@@ -643,17 +656,19 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
   return false;
 }
 
-static bool create_ftn_packet_and_bundle(const NetworkCommandLine& net_cmdline, const FidoCallout& fido_callout, const FidoAddress& dest, const net_networks_rec& net, const Packet& p, string& bundlename) {
-  LOG(INFO) << "Creating packet for subscriber: " << dest.as_string();
+static bool create_ftn_packet_and_bundle(
+    const NetworkCommandLine& net_cmdline, const FidoCallout& fido_callout, const FidoAddress& dest,
+    const FidoAddress& route_to, const net_networks_rec& net, const Packet& p, string& bundlename) {
+  LOG(INFO) << "Creating packet for subscriber: " << dest << "; route_to: " << route_to;
   string fido_packet_name;
-  if (!create_ftn_packet(net_cmdline.config(), fido_callout, dest, net, p, fido_packet_name)) {
+  if (!create_ftn_packet(net_cmdline.config(), fido_callout, dest, route_to, net, p, fido_packet_name)) {
     LOG(ERROR) << "Failed to create FTN packet.";
     write_wwivnet_packet(DEAD_NET, net, p);
     return false;
   }
   LOG(INFO) << "Created packet: " << FilePath(net.fido.temp_outbound_dir, fido_packet_name);
 
-  if (!create_ftn_bundle(net_cmdline.config(), fido_callout, dest, net, fido_packet_name, bundlename)) {
+  if (!create_ftn_bundle(net_cmdline.config(), fido_callout, dest, route_to, net, fido_packet_name, bundlename)) {
     LOG(ERROR) << "Failed to create FTN bundle.";
     write_wwivnet_packet(DEAD_NET, net, p);
     return false;
@@ -798,7 +813,20 @@ static bool CreateNetmailAttachOrFloFile(const NetworkCommandLine& net_cmdline, 
   }
 }
 
-bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, const net_networks_rec& net, const FidoCallout& fido_callout, std::set<string>& bundles, Packet& p) {
+static FidoAddress find_route_to(const FidoAddress& dest, const FidoCallout& callout, const fido_packet_config_t& packet_config) {
+  if (packet_config.netmail_status == fido_bundle_status_t::direct) {
+    return dest;
+  }
+
+  FidoAddress a = FindRouteToAddress(dest, callout);
+  if (a.node() == 0) {
+    // is this right? returning direct if we have no route?
+    return dest;
+  }
+  return a;
+}
+
+static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, const net_networks_rec& net, const FidoCallout& fido_callout, std::set<string>& bundles, Packet& p) {
   // Lame implementation that creates 1 file per message.
   string raw_text = p.text;
   auto it = p.text.cbegin();
@@ -811,14 +839,17 @@ bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, const net_
   }
   for (const auto& sub : subscribers) {
     string bundlename;
-    if (!create_ftn_packet_and_bundle(net_cmdline, fido_callout, sub, net, p, bundlename)) {
+    auto packet_config = fido_callout.packet_config_for(sub);
+    FidoAddress route_to = find_route_to(sub, fido_callout, packet_config);
+    if (!create_ftn_packet_and_bundle(net_cmdline, fido_callout, sub, route_to, net, p, bundlename)) {
       continue;
     }
     if (!contains(bundles, bundlename)) {
       // We only want to attach the bundle (or add it to the flo file)
       // one time, so skip ones that have already been done.
       bundles.insert(bundlename);
-      CreateNetmailAttachOrFloFile(net_cmdline, sub, net, bundlename, fido_callout.packet_config_for(sub));
+      auto route_packet_config = fido_callout.packet_config_for(route_to);
+      CreateNetmailAttachOrFloFile(net_cmdline, route_to, net, bundlename, route_packet_config);
     }
   }
   return true;
@@ -831,20 +862,22 @@ bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const ne
   string bundlename;
   auto it = p.text.begin();
   auto to = get_message_field(p.text, it, {0}, 80);
-  auto address = get_address_from_line(to);
-  if (address.node() == 0) {
+  auto dest = get_address_from_line(to);
+  if (dest.node() == 0) {
     LOG(ERROR) << "Unable to get address from to line: " << to;
     return false;
   }
 
   // todo - actually we need a new way of making hte ftn packet that works right
   // with netmaol
-  if (create_ftn_packet_and_bundle(net_cmdline, fido_callout, address, net, p, bundlename)) {
+  auto packet_config = fido_callout.packet_config_for(dest);
+  FidoAddress route_to = find_route_to(dest, fido_callout, packet_config);
+  if (create_ftn_packet_and_bundle(net_cmdline, fido_callout, dest, route_to, net, p, bundlename)) {
     if (!contains(bundles, bundlename)) {
       // We only want to attach the bundle (or add it to the flo file)
       // one time, so skip ones that have already been done.
       bundles.insert(bundlename);
-      CreateNetmailAttachOrFloFile(net_cmdline, address, net, bundlename, fido_callout.packet_config_for(address));
+      CreateNetmailAttachOrFloFile(net_cmdline, dest, net, bundlename, fido_callout.packet_config_for(dest));
     }
   }
   return true;

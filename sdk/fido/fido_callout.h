@@ -48,7 +48,7 @@ public:
   bool erase(const FidoAddress& a);
   bool Load();
   bool Save();
-  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs() const { return node_configs_; }
+  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_map() const { return node_configs_; }
 
 private:
   bool initialized_ = false;
