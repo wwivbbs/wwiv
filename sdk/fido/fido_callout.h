@@ -40,20 +40,21 @@ public:
 
   bool IsInitialized() const { return initialized_; }
 
+  fido_node_config_t node_config_for(const FidoAddress& a) const;
   fido_packet_config_t packet_config_for(const FidoAddress& a) const;
   fido_packet_config_t packet_override_for(const FidoAddress& a) const;
 
-  bool insert(const FidoAddress& a, const fido_packet_config_t& c);
+  bool insert(const FidoAddress& a, const fido_node_config_t& c);
   bool erase(const FidoAddress& a);
   bool Load();
   bool Save();
-  std::map<wwiv::sdk::fido::FidoAddress, fido_packet_config_t> node_configs() const { return node_configs_; }
+  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs() const { return node_configs_; }
 
 private:
   bool initialized_ = false;
   const std::string root_dir_;
   net_networks_rec net_;
-  std::map<wwiv::sdk::fido::FidoAddress, fido_packet_config_t> node_configs_;
+  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_;
 };
 
 }

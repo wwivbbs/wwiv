@@ -112,6 +112,13 @@ void serialize(Archive & ar, fido_packet_config_t& n) {
   SERIALIZE(n, netmail_status);
 }
 
+// fido_node_config_t
+template <class Archive>
+void serialize(Archive & ar, fido_node_config_t& n) {
+  SERIALIZE(n, routes);
+  SERIALIZE(n, packet_config);
+}
+
 template <class Archive>
 void serialize(Archive & ar, fido_network_config_t& n) {
   SERIALIZE(n, fido_address);

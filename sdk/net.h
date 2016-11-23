@@ -297,11 +297,28 @@ struct fido_packet_config_t {
   fido_packet_t packet_type = fido_packet_t::unset;
   // File extension to map to type defined in archivers.dat
   std::string compression_type;
+  // Password to use in the packet.  It must be <= 8 chars.
   std::string packet_password;
+  // Password to use for areafix requests. It must be <= 8 chars.
   std::string areafix_password;
+  // Maxumim size of the bundles in bytes before a new one is created.
   int max_archive_size = 0;
+  // Maxumim size of the packets in bytes before a new one is created.
   int max_packet_size = 0;
+  // Status used for the bundles or packets to send.
+  // i.e.: CRASH, IMMEDIATE, NORMAL.
   fido_bundle_status_t netmail_status = fido_bundle_status_t::normal;
+};
+
+/**
+ * Specific config for a fido node.
+ */
+struct fido_node_config_t {
+  // Space separated list of nodes that route through this node.
+  // i.e.: "1:*" will route all of zone 1 through this node.
+  std::string routes;
+  // Configuration for packet specific options.
+  fido_packet_config_t packet_config;
 };
 
 // Remember to update the serialize function in networks_cereal.h when updating these.

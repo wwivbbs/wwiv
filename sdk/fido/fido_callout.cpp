@@ -87,7 +87,14 @@ fido_packet_config_t FidoCallout::packet_override_for(const FidoAddress& a) cons
   if (!contains(node_configs_, a)) {
     return{};
   }
-  return node_configs_.at(a);
+  return node_configs_.at(a).packet_config;
+}
+
+fido_node_config_t FidoCallout::node_config_for(const FidoAddress& a) const {
+  if (contains(node_configs_, a)) {
+    return node_configs_.at(a);
+  }
+  return{};
 }
 
 fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& a) const {
@@ -95,7 +102,7 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& a) const 
   fido_packet_config_t config = net_.fido.packet_config;
   if (contains(node_configs_, a)) {
     // handle overrides
-    const fido_packet_config_t n = node_configs_.at(a);
+    const fido_packet_config_t n = node_configs_.at(a).packet_config;
     if (!n.areafix_password.empty()) config.areafix_password = n.areafix_password;
     if (!n.compression_type.empty()) config.compression_type = n.compression_type;
     if (n.max_archive_size > 0) config.max_archive_size = n.max_archive_size;
@@ -106,7 +113,7 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& a) const 
   return config;
 }
 
-bool FidoCallout::insert(const FidoAddress& a, const fido_packet_config_t& c) {
+bool FidoCallout::insert(const FidoAddress& a, const fido_node_config_t& c) {
   // emplace only inserts, doesn't update.
   node_configs_.erase(a);
   node_configs_.emplace(a, c);

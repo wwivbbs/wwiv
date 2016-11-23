@@ -271,10 +271,12 @@ private:
   int dy_start_ = 0;
 };
 
-void edit_packet_config(const Config& config, const FidoAddress& a, fido_packet_config_t& p) {
+static void edit_fido_node_config(const Config& config, const FidoAddress& a, fido_node_config_t& n) {
   constexpr int LBL1_POSITION = 2;
   constexpr int COL1_POSITION = 17;
   int y = 1;
+
+  auto& p = n.packet_config;
   EditItems items{};
   vector<pair<fido_packet_t, string>> packetlist = {
     {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
@@ -360,16 +362,16 @@ public:
             const string address_string = dialog_input_string(window, prompt, 20);
             if (address_string.empty()) { break; }
             wwiv::sdk::fido::FidoAddress address(address_string);
-            fido_packet_config_t config{};
-            edit_packet_config(config_, address, config);
+            fido_node_config_t config{};
+            edit_fido_node_config(config_, address, config);
             callout.insert(address, config);
           } break;
           }
         } else if (result.type == ListBoxResultType::SELECTION) {
           const string address_string = items.at(result.selected).text();
           FidoAddress address(address_string);
-          fido_packet_config_t c = callout.packet_override_for(address);
-          edit_packet_config(config_, address, c);
+          fido_node_config_t c = callout.node_config_for(address);
+          edit_fido_node_config(config_, address, c);
           callout.insert(address, c);
         } else if (result.type == ListBoxResultType::NO_SELECTION) {
           done = true;
