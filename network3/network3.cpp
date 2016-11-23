@@ -193,7 +193,7 @@ static bool check_binkp_net(
   return true;
 }
 
-static bool send_feedback_email(const net_networks_rec& net, std::string& text) {
+static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
   string now_mmddyy = wwiv::sdk::daten_to_mmddyy(time(nullptr));
@@ -204,8 +204,6 @@ static bool send_feedback_email(const net_networks_rec& net, std::string& text) 
   nh.fromuser = std::numeric_limits<uint16_t>::max();
   nh.main_type = main_type_email;
   nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
-
-  text += StrCat("\r\nBest,\r\n\r\n", byname, "\r\n\r\n");
 
   return send_local_email(net, nh, text, byname, title);
 }
@@ -522,6 +520,8 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     text << "You may want to define an origin line for your network.\r\n";
   }
 
+  text << "\r\nBest,\r\n\r\n" << net.name << "@" << net.sysnum << "\r\n\r\n";
+
   if (need_to_send_feedback(cmdline)) {
     send_feedback_email(net, text.str());
   }
@@ -570,6 +570,7 @@ static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_
       check_binkp_net(b, bink_config, text);
       check_connect_net(b, net, text);
     }
+    text << "\r\nBest,\r\n\r\n" << net.name << "@" << net.sysnum << "\r\n\r\n";
     send_feedback_email(net, text.str());
   }
   return 0;
