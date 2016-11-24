@@ -386,6 +386,9 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
       cout << "[PRIVATE]";
     }
     cout << endl;
+    if (all) {
+      cout << "qscan: " << ((WWIVMessageHeader*)header.get())->data().qscan << endl;
+    }
     if (header->is_deleted()) {
       // Don't try to read the text of deleted messages.
       continue;

@@ -189,7 +189,7 @@ bool handle_post(Context& context, Packet& p) {
     LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
-  LOG(INFO) << "    + Posted  '" << title << "'";
+  LOG(INFO) << "    + Posted  '" << title << "' on sub: '" << subtype << "'.";
   return true;
 }
 

@@ -183,6 +183,7 @@ static string get_echomail_areaname(const std::string& text) {
 }
 
 static bool import_packet_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
+  VLOG(1) << "import_packet_file: " << dir << name;
   using wwiv::sdk::fido::ReadPacketResponse;
 
   File f(dir, name);
@@ -207,7 +208,8 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
       << "; actual: '" << actual << "; expected: " << expected << "'";
     // Move to BADMSGS
     f.Close();
-    string badmsgs_path = File::MakeAbsolutePath(net.dir, net.fido.bad_packets_dir);
+    auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
+    string badmsgs_path = File::MakeAbsolutePath(net_dir, net.fido.bad_packets_dir);
     const string dest = FilePath(badmsgs_path, f.GetName());
 
     if (!File::Move(f.full_pathname(), dest)) {
@@ -274,15 +276,21 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     nh.length = text.size();
     // Create file, write to LOCAL.NET for network2 to import.
     Packet packet(nh, {}, text);
-    write_wwivnet_packet(LOCAL_NET, net, packet);
+    if (!write_wwivnet_packet(LOCAL_NET, net, packet)) {
+      LOG(ERROR) << "ERROR Writing WWIV packet for message: " << packet.nh.main_type << "/" << packet.nh.minor_type;
+    }
   }
 
   return true;
 }
 
 static bool import_packets(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+  VLOG(1) << "Importing packets from: " << dir;
   WFindFile files;
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
+  if (!has_next) {
+    LOG(INFO) << "No packets to import in: " << dir;
+  }
   while (has_next) {
     const auto& name = files.GetFileName();
     if (import_packet_file(config, callout, net, dir, name)) {
@@ -304,7 +312,8 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
 
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
-  auto tempdir = File::MakeAbsolutePath(net.dir, net.fido.temp_inbound_dir);
+  auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
+  auto tempdir = File::MakeAbsolutePath(net_dir, net.fido.temp_inbound_dir);
   File::set_current_directory(tempdir);
 
   // were in the temp dir now.
@@ -328,6 +337,8 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
     LOG(ERROR) << "Failed executing: " << unzip_cmd;
     return false;
   }
+  // Need to be back home.
+  File::set_current_directory(saved_dir);
 
   import_packets(config, callout, net, tempdir, "*.pkt");
 #ifndef _WIN32
@@ -411,6 +422,8 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
       LOG(ERROR) << "Failed executing: " << zip_cmd;
       return false;
     }
+    // Need to be back home.
+    File::set_current_directory(saved_dir);
     out_bundle_name = bname;
 
     LOG(INFO) << "Created bundle: " << FilePath(out_dir, bname);
@@ -527,6 +540,8 @@ static packet_header_2p_t CreateType2PlusPacketHeader(
 static bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, 
   const FidoAddress& dest, const FidoAddress& route_to, const net_networks_rec& net,
   const Packet& wwivnet_packet, string& fido_packet_name) {
+
+  VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
   using wwiv::net::ReadPacketResponse;
 
   string temp_dir(net.fido.temp_outbound_dir);
@@ -839,7 +854,8 @@ static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, con
   string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
-  std::set<FidoAddress> subscribers = ReadFidoSubcriberFile(net.dir, StrCat("n", subtype, ".net"));
+  auto net_dir = File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir);
+  std::set<FidoAddress> subscribers = ReadFidoSubcriberFile(net_dir, StrCat("n", subtype, ".net"));
   if (subscribers.empty()) {
     LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
   }

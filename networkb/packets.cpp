@@ -139,7 +139,11 @@ bool write_wwivnet_packet(
     return false;
   }
   file.Seek(0L, File::Whence::end);
-  file.Write(&p.nh, sizeof(net_header_rec));
+  auto num = file.Write(&p.nh, sizeof(net_header_rec));
+  if (num != sizeof(net_header_rec)) {
+    // Let's fail now since we didn't write this right.
+    return false;
+  }
   if (p.nh.list_len) {
     file.Write(&p.list[0], sizeof(uint16_t) * (p.nh.list_len));
   }
