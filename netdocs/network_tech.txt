@@ -1,100 +1,34 @@
 
 
-
-
-
-
-
-
-
-
-
-
               Network Technical Documentation
 
 
-                       version 2.1.51
-
-
-
-
-
-
-
-
+                       version 3.0.52
                              by
-
-
-
                        Wayne Heyward
                   aka Midnight Tree Bandit
-                   Updated for Net51, WSS
+                   Updated for Net37, WSS
+                   Updated for Net52, WSS
 
-
-
-
-
-
-
-
-   Copyright (c) 1998-2016, WWIV Software Services, LLC
+   Copyright (c) 1998-2016, WWIV Software Services
                Copyright (c) 1995, Wayne Bell
 
-
+
+======================================================
+0. Table of Contents
+======================================================
+
+  1.  INTRODUCTION
+  2.  GENERAL OVERVIEW OF WWIV NETWORKING
+  3.  MAKING CONNECTIONS
+  4.  MESSAGE PACKETS
+  5.  BBSLIST/CONNECT FILES AND MESSAGE ROUTING
+  6.  TIPS FOR WRITING WWIVNET SOFTWARE
 
 
-
-
-                     Table of Contents
-
-
-
-    I.  INTRODUCTION.................................  1
-
-   II.  GENERAL OVERVIEW OF WWIV NETWORKING..........  4
-
-  III.  MAKING CONNECTIONS...........................  6
-
-   IV.  MESSAGE PACKETS.............................. 12
-
-    V.  BBSLIST/CONNECT FILES AND MESSAGE ROUTING.... 28
-
-   VI.  TIPS FOR WRITING WWIVNET SOFTWARE............ 37
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                            -i-
-
-
-
-I.   INTRODUCTION
+======================================================
+1. INTRODUCTION
+======================================================
 
  A.   History
 
@@ -128,11 +62,10 @@ I.   INTRODUCTION
 
   The documentation that you are reading now is more an
   expansion and clarification of the original docs than it
-  is a total rewrite.  It looks a little neater too, thanks
-  to Word Perfect. Now that the bulk of the work is done,
+  is a total rewrite.  Now that the bulk of the work is done,
   the plan is to update them with each release of NETxx to
   reflect new features.  The information in this document
-  is current as of the Net38 release (NET38).
+  is current as of the Net52 release (NET52).
 
   First clarification: in the context of this document, the
   term "NETXX" refers to the software for interfacing
@@ -140,24 +73,9 @@ I.   INTRODUCTION
   software.
 
   This documentation assumes that the reader at least: a)
-
-                            -1-
-
-
-
   has a good working knowledge of C and the various C data
   types and data structures. b)   has a general familiarity
   of how file transfer protocols work.
-
-  Due to the proprietary nature of the NETXX software, we
-  will not cover the inner workings of the current networking
-  programs distributed in NET??.ZIP.  We will only discuss
-  the external requirements for any third  party interfaces
-  that may be written for connecting non-WWIV systems to
-  WWIV networks. Likewise, we will not discuss the NETUP
-  software, which generates and sends out the network node
-  lists and connect lists.  You'll just have to figure that
-  out for yourself.
 
   This document is not a replacement for the NetXX
   Software Documentation.  This doc does not describe how
@@ -167,14 +85,15 @@ I.   INTRODUCTION
   which can be found in the current NetXX release.
 
   A note on the numbering for this document.  This is
-  version 2.1.51.  The first number indicates that this is
-  a major rewrite from the original by Wayne Bell.  Unless
+  version 3.0.51.  The first number indicates that this is
+  a major rewrite from the Midnight Tree Bandit which was
+  a rewrite of the original by Wayne Bell.  Unless
   a major overhaul is done, this is not likely to change.
-  The 1 in the second part indicates that this is the second
+  The 0 in the second part indicates that this is the first
   version of this document.  If there are any major changes
-  or additions made, this will be incremented.  The 51
+  or additions made, this will be incremented.  The 52
   indicates that this information is current as of version
-  51 of the NETXX software (NET51).  Minor changes
+  52 of the NETXX software (NET52).  Minor changes
   reflecting small interface changes in the NETXX
   software will cause this number to be changed.  This
   number will not always be the same as the latest version
@@ -184,13 +103,8 @@ I.   INTRODUCTION
   Comments concerning this document are welcome as are
   suggestions for additional information to include,
   things that could be explained more fully, and so
-  forth.  Send comments and suggestions to rushfan@wwivbbs.org
-  or log a bug on github at http://github.com/wwivbbs/wwiv 
-
-
-
-                            -2-
-
+  forth. For comments please log a bug on github at 
+  http://github.com/wwivbbs/wwiv 
 
  C.   Relevant Copyrights and Acknowledgements
   This document is Copyright 1994 by Wayne Heyward (aka
@@ -204,7 +118,7 @@ I.   INTRODUCTION
 
   WWIV BBS and the NETXX software (distributed as NETxx)
   are Copyright 1989-1995 by Wayne Bell
-  and Copyright 1998-2016, WWIV Software Services, LLC
+  and Copyright 1998-2016, WWIV Software Services.
 
   The NETXX interface information and code in this
   document is placed in the public domain, and may be
@@ -231,15 +145,9 @@ I.   INTRODUCTION
   information and advice without which this documentation
   would be incomplete.
 
-
-
-
-
-                            -3-
-
-
-
-II.  GENERAL OVERVIEW OF WWIV NETWORKING
+======================================================
+2.  GENERAL OVERVIEW OF WWIV NETWORKING
+======================================================
 
  A WWIV network is basically a loose confederation of WWIV
  BBS systems that use the NETXX (or compatible) software.
@@ -250,56 +158,44 @@ II.  GENERAL OVERVIEW OF WWIV NETWORKING
  administration, the network may be split up into Groups,
  each with their own coordinator.  Node numbers are an
  unsigned short int, so that nodes may be assigned a value
- from 1 to 65535.
+ from 1 to 65535. Node numbers from 32000 to 32767 are 
+ reserved for internal use by WWIV.  For example 32767
+ is reserved for Internet network Gateway, and 32765 is
+ reserved for native FTN style networking.
 
  The lists of nodes are distributed in two sets of files:
- BBSLIST.xxx and CONNECT.xxx.  There are two different ways
- of handling these files.  The old way has just one
- BBSLIST.NET and one CONNECT.NET file. The CONNECT.NET file
- assigns costs to each connection for each system. Some
- smaller networks still use this setup.  The new way,
- implemented in 1990, uses several BBSLIST and CONNECT
- files with extensions indicating group number (e.g. Group
- 1's files would be BBSLIST.1 and CONNECT.1).  BBSLIST.0
- contains a list of Group numbers, and CONNECT.0 contains
- inter-Group connections.  It is important that any
- non-WWIV systems be able to support both setups if they
- wish to connect to a WWIV network.
+ BBSLIST.NET and CONNECT.NET.  The CONNECT.NET file
+ assigns costs to each connection for each system.
 
  Like all BBS networks, the primary purpose is to exchange
- private mail and public posts between BBSes.  The passing
+ private mail and public posts between BBSes. The passing
  of files in binary form, however, is not currently
  supported by the NETXX software. There are some third party
  programs and in fact, an entire network which can handle
  the network transfer of files.  All messages also have a
  maximum size limit of 32k.
 
- The basic NETXX software distributed in NETxx.ZIP by WSS
- consists of five programs: NETWORK.EXE, NETWORKF.EXE,
- NETWORK1.EXE, NETWORK2.EXE and NETWORK3.EXE.  Any
- alternative software  for interfacing with WWIV
- should follow the same structure.
+ NETXX (NET38) and earlier is proprietary software, from
+ WSS, distributed in netXX.zip by WSS.  Since NET51, the
+ network software is a new implementation of a subset of
+ this technical specification.  It is not related at all
+ in either code or complete functionality to NEW38 and
+ earlier.
 
- NETWORK.EXE handles connections between systems.  On the
- sending end of the connection, NETWORK.EXE calls out to
- another system, chosen from the CALLOUT.NET file on that
- system.  The answering system activates NETWORK.EXE when
- it detects a network call.  Once they're talking, they
+ The basic NETXX software distributed as part of the
+ BBS software.  It consists of five programs: NETWORK.EXE, 
+ NETWORKB.EXE, NETWORKC.EXE, NETWORKF.EXE, NETWORK1.EXE, 
+ NETWORK2.EXE and NETWORK3.EXE.
 
-                            -4-
-
+ NETWORK.EXE is a shim to invoke networkb.exe using the
+ same arguments as the legacy networking software.
 
+ NETWORKB.EXE is the WWIVnet transport software, it's
+ implemented as a BINKP'ish protocol.
 
- make any mail packet transfers needed.
-
- NETWORKF.EXE is a FOSSIL version of NETWORK.EXE.  If
- your system operates on V4.30 or later of the BBS software
- or you have an installed FOSSIL driver, you should delete
- NETWORK.EXE and rename this file to NETWORK.EXE. You must
- also have the freeware FOSSIL protocol CEXYZ properly
- installed for this version of NETWORK.EXE to operate.
- If you are running an earlier version of the BBS or do
- not use a FOSSIL driver, this file may be deleted.
+ NETWORKC.EXE is similar to the old CLNUP.EXE software by
+ Cerebrum Software.  It runs the other network{1,2,3} 
+ commands as needed.
 
  NETWORK1.EXE is the first of the two mail tossers.  This
  one takes the incoming packet received by NETWORK.EXE and
@@ -328,351 +224,19 @@ II.  GENERAL OVERVIEW OF WWIV NETWORKING
  need for calling the appropriate DEmmm.EXE, as described
  below.
 
-
-
-
-
-
-
-
-
-
-
-                            -5-
-
-
-
-III. MAKING CONNECTIONS
-
- A.   Establishing Contact
-
-  Through some process, one system decides to call another.
-  Various techniques can be used for deciding when and who
-  to call; that should have no effect on the network.  Any
-  NETXX system should be able to receive a network
-  connection at any time (i.e., there is no network mail
-  hour).  For an example of a method for limiting call out
-  times, see the NETXX Software Docs.
-
-  However the decision is made, a call is made to another
-  NETXX system.  If he connects, the connection protocol
-  is then begun.
-
-  After connection, the caller waits for the string "NN:".
-  To get to this prompt, the caller sends the string "N "
-  ('N', space), every half second.  Every 7 seconds, the
-  caller sends a carriage return (char 13 decimal).  The
-  reason for sending "N " is twofold:  1) the N is to
-  answer any yes/no question that may occur on connection;
-  and 2) the space is to abort any message printed out to
-  callers, if the BBS allows it.  After 16.5 seconds, the
-  caller gives up and assumes he is at the NN: prompt.
-
-  Since this sequence is designed specifically with WWIV
-  systems in mind, any BBS or front end program receiving a
-  call from a NETXX system must be at its login prompt,
-  or have already started the network response program
-  (such as NETWORK.EXE), by 16.5 seconds after the modem
-  connection is estabilshed.  Whether or not it can respond
-  to the "N " sequence does not matter as long as it is
-  prepared for the next step.  Likewise, any network
-  program calling a NETXX system must follow the above
-  sequence to ensure a proper connection.
-
-  After the NN: prompt is reached, the caller sends the
-  string "\030!-@NETWORK@-!\r" (Ctrl-x, "!-@NETWORK@-!",
-  return), to identify that this is the network calling.
-  The caller then waits for the net identification string.
-  The "!-@NETWORK@-!" string is sent every 6 seconds.
-  After 20 seconds without receiving the network
-  identification string, the caller gives up and hangs up.
-
-  The network identification string is sent by the
-  answering system after getting the "!-@NETWORK@-!"
-  string.  The network ident string is sent every 6
-
-                            -6-
-
-
-
-  seconds, until the network response is received.  The
-  answering system gives up and hangs up after 20 seconds.
-
-  The network ident string is:
-
-       \x1b[8mxX33211\x0c31412718\x1b[8DNETWORK!
- (i.e.,
- ESC "[8mxX33211" Ctrl-L "31412718" ESC "[8DNETWORK!")
-
-  The network response string from the calling system is:
-
-       \x1b[8mxyzzy$.@83\x0c##
-  (i.e. ESC "[8mxyxxy$.@83" Ctrl-L "##")
-
-  After getting the network identification string, the
-  caller sends the network response string every 6 seconds.
-  If, after 20 seconds, the answering system does not
-  receive a Ctrl-B ('\002\'), the calling system gives up
-  the attempt and hangs up. If the Ctrl-B is received, the
-  caller considers the connection established.
-
-  After getting the network response string, the answering
-  system sends three Ctrl-B characters ("\002\002\002"),
-  and considers the two systems connected.
-          
- B.   Data Exchange
-
-  After the two systems are connected, the caller sends an
-  identification block to the answering system.  The block
-  is 128 bytes long, and is sent in the same method as an
-  xmodem block of data is sent, complete with CRC.  The
-  caller does not wait for a NAK before beginning
-  transmission, but begins transmission of the block
-  immediately after receiving one Ctrl-B.  The block is
-  sent as block #0, with CRC and 128 bytes of data.  After
-  receiving the block, the answering system sends the usual
-  ACK/NAK, etc.  If after 6 tries the block is not received
-  correctly, both sides give up and disconnect.
-
-  The block of data contains from seven to nine pieces of
-  data, each separated by a space character (char 32
-  decimal).  All bytes after the last piece of data have a
-  value of zero.  The pieces of data are:
-
-  system number  Net node number of the sender.
-
-  sendback
-
-
-                            -7-
-
-
-
-    Whether the answering system may send a net file back
-    to the sender ("0" for no, or "1" for yes).  The caller
-    will ignore this field when the answering system sends
-    its ident block.  In other words, the only system that
-    determines whether sendback is allowed is the system
-    making the call.
-
-  cost
-
-   The cost for the call, in cents per minute, as defined
-   in CONNECT.NET under the old NETXX setup.  If
-   the network is using the Group setup, this
-   value will be zero ("0").
-
-  features
-
-   A long integer, sent as a literal, specifying the
-   features supported by that system.  Right now, five
-   values are possible, affecting mainly the protocol used
-   in transfer.  It is read as a bitmap ('fea
-   tures&[value]'), with the bits having the following
-   effects:
-   1 -- Zmodem available (DSZ or Visual Zmodem);
-   2 -- numk and netver found after password (see below);
-   Current versions of the NETXX software start with the
-   2 bit set, then sets the 1 bit as appropriate.
-   If Zmodem is not available, transfer defaults to internal
-   Ymodem.
-
-  tosendlen
-
-   The number of bytes in the mail file that is to be
-   transferred, sent as literal.
-
-  password
-
-   The password to be used between the two systems.  If no
-   password has been set yet, this is set to "NONE". Usual
-   passwords are 15 characters long.
-
-  numk
-
-   Number of KB the sender is able to take, sent as a
-   literal.  This is calculated as free space on the data
-   drive divided by three.  This field will only be
-   present if features&2 is set.
-
-
-                            -8-
-
-
-
-  net_ver
-
-   Version of the network software, such as "34" for
-   NET34.  Third-party calling programs must send the
-   version of NETXX software it is compatible with.
-   This field will only be present if features&2 is set.
-
-  net_name
-
-   Name of the network the call is for.  This is used  by
-   the receiver to determine which data directory the
-   network files go into.  This is not a required field,
-   but to be safe it should always be included.  One case
-   in which it would be necessary is if a BBS is connect
-   ing two nodes with the same node number on different
-   WWIV networks (i.e., one is @3050.IceNET and the other
-   is @3050.TerraNet).
- 
-  See below for examples of identification blocks sent
-  between systems.  To assure that the identification block
-  is compatible with that generated by NETWORK.EXE in
-  NET38, here is how it's generated and sent out by
-  NETWORK.EXE:
-
-    for (i=0; i<128; i++)
-      b[i]=0;
-     /* 'b' is the net ident string */
-    itoa(net_sysnum,b,10);
-     /* net_sysnum = system's node number */
-    strcat(b," ");
-    itoa(sendback,s,10);
-    strcat(b,s);
-    strcat(b," ");
-    itoa((int) (cost*100.0),s,10);
-    strcat(b,s);
-    strcat(b," ");
-    ltoa(features,s,10);
-    strcat(b,s);
-    strcat(b," ");
-    ltoa(tosendlen,s,10);
-    strcat(b,s);
-    strcat(b," ");
-    if (password[0])
-      strcat(b,password);
-    else
-      strcat(b,"NONE");
-    if (features & 2) {
-      /* 'net_data' is network data dir, FREE_FACT = 3 */
-
-                            -9-
-
-
-
-      ltoa((long) (freek1(net_data) / FREE_FACT), s, 10);
-      strcat(b," ");
-      strcat(b,s);
-      strcat(b," ");
-      itoa(NET_VER,s,10);
-      strcat(b,s);
-    }
-    strcat(b," ");
-    strcat(b,net_name);
-
-  After the caller sends the block of data to the answering
-  system, the answering system checks the password with the
-  password expected from that system.  If the password is
-  wrong, or calls from that system are not allowed, the
-  answering system discon nects.  Information on passwords
-  and allowable systems should be in a separate data file,
-  such as the CALLOUT.NET
-
-  If the password is OK, the answering system then sends a
-  similar block of data back to the caller, giving its
-  system number, features, and bytes to send.  Also, if no
-  password had been set yet (the password received from the
-  caller is "NONE"), then the answering system randomly
-  picks a password and puts it in the password field.
-
-  After both systems have sent and received the data
-  blocks, transfers begin.  If the caller has any data to
-  send, it is sent first.  If the answering has any data to
-  send, it is sent second if the sendback flag is set on.
-  It should be noted at this point that since Ymodem is the
-  default protocol in the absence of Zmodem, it
-  must be supported internally in the NETXX calling
-  program, or at least be able to run it externally.
-
-  The Ymodem used by the NETXX software  is not
-  quite the true Ymodem defined by Forsberg.  There is a
-  block #0 which contains the filename, timestamp, and size
-  (in bytes), followed by the file itself, ending with an
-  EOT block.  There is no "end of batch" block, however.
-
-  If the caller has no data to send, the answering system
-  immedi ately begins sending data (again, if sendback is
-  set on).  If neither has any data to send, the transfer
-  protocol is not started.  Once a netmail file is
-  completely sent, it is erased on the sending system. If
-  the file is not completely sent (due to excessive errors
-  or carrier loss), the file is not deleted, so that
-  another attempt can be made on a later call.
-
-                            -10-
-
-
-
-    After transfers (if any) are done, both systems wait
-  0.5-1.0 second, then hang up.  The transfer of files is
-  then done.
-          
- C.   Identification Block Examples
-
-  1.   System 1 calls system 2 on NetworkX.  System 1 has
-  100KB to send to system 2, supports Zmodem and can accept
-  400KB. System 2 has 200KB to send to system 1, does not
-  support Zmodem, and can accept 1200KB.  The call costs
-  $0.10/min (old CONNECT.NET being used).  No password has
-  been set yet on system 1, sendback is allowed, and NET38
-  is in use on both ends.
-
-  System #1 sends:
-
-       1 1 10 3 102400 NONE 409600 38 NetworkX
-
-  System #2 sends:
-
-       2 1 10 2 204800 ARANDOMPASSWORD 1228800 38 NetworkX
-
-  Since Zmodem is not supported by both systems, Xmodem-1k
-  is used to transfer the mail.
-
-  2.   System 10 calls system 20 in IceNET.  System 10 has
-  56KB to send, can accept 3485KB, and uses NET36.  System
-  20 has 678KB to send, can accept 10MB, and is a PCBoard
-  system using software compatible with NET38.  Both
-  support Zmodem and the selected password is
-  "PASSWORDPASSWOR".  Sendback is not enabled.
-
-  System #10 sends:
-
-       10 0 0 3 57344 PASSWORDPASSWOR 3568640 36 IceNET
-
-  System #20 sends:
-
-       20 0 0 3 0 PASSWORDPASSWOR 10240000 38 IceNET
-
-  Since sendback is not allowed (the caller decides this),
-  system 20 won't send any data to system 10, hence the
-  number of bytes to send is zero.  Zmodem will be used
-
-                            -11-
-
-
-
-  since both ends support it.
-
-  3.   System 100 calls system 200 on MTBnet.  System 10
-  has 125KB to send, and can accept 300KB.  System 200 has
-  350KB to send and can accept 500KB.  Both use NET38, and
-  use the password "OURPASSWORD1234".  Sendback is enabled.
-
-  System #100 sends:
-
-       100 1 0 6 128000 OURPASSWORD1234 307200 38 MTBnet
-
-  System #200 sends:
-
-       200 1 0 6 358400 OURPASSWORD1234 512000 38 MTBnet
-
-  Since system 100 cannot accept the 350KB system 200 has
-  for it, only the 125KB from system 1 is sent.
+======================================================
+3. MAKING CONNECTIONS
+======================================================
+
+ A.   With Net51 connections happen outside of the network
+ software. You use networkb to call out to another node
+ or use networkb to listen on BinkP, or use another
+ proxy like wwiv-server or wwivd to invoke networkb
+ when receiving a BinkP request.
                
-IV.  MESSAGE PACKETS
+======================================================
+4.  MESSAGE PACKETS
+======================================================
 
  The most important component of any network is the mail
  file, which contains all the public posts, email, and
@@ -696,22 +260,18 @@ IV.  MESSAGE PACKETS
   where it is to be sent to, the type of message, and other
   information.  The structure of the header is:
 
-  typedef struct {
-       unsigned short tosys,
-
-                            -12-
-
-
-                      touser,
-                      fromsys,
-                      fromuser;
-       unsigned short main_type,
-                      minor_type;
-       unsigned short list_len;
-       unsigned long  daten;
-       unsigned long  length;
-       unsigned short method;
-  } net_header_rec;
+struct net_header_rec {
+  uint16_t  tosys,    /* destination system */
+           touser,     /* destination user */
+           fromsys,    /* originating system */
+           fromuser,   /* originating user */
+           main_type,  /* main message type */
+           minor_type, /* minor message type */
+           list_len;   /* # of entries in system list */
+  uint32_t   daten,    /* date/time sent */
+             length;   /* # of bytes of msg after header */
+  uint16_t  method;    /* method of compression */
+};
 
   Each header is 24 bytes long.  The fields, in detail,
   are:
@@ -751,10 +311,6 @@ IV.  MESSAGE PACKETS
    the sender's name, message title, and so forth.  Note that
    the length does not include the node list indicated by
    list_len.
-
-                            -13-
-
-
 
   method
 
@@ -804,11 +360,6 @@ IV.  MESSAGE PACKETS
 
   A packet thus consists of a net header, a destination
   list (if any), and the text of the message.  The length
-
-                            -14-
-
-
-
   of a full message packet is thus: 24 + 2*list_len +
   msg_length.
 
@@ -846,10 +397,6 @@ IV.  MESSAGE PACKETS
 
   A NETXX file is simply several packets appended into
   one file. 
-
-                            -15-
-
-
 
   Once it has been received the mail file should be processed 
   following these steps:
@@ -892,11 +439,6 @@ IV.  MESSAGE PACKETS
 
   2.   If list_len is non-zero, do steps 3-6 for each entry
        in the list, substituting that entry for "tosys"
-
-                            -16-
-
-
-
 
   3.   If tosys is this system, process the file locally
        (in the case of NETWORK1.EXE, the message is copied
@@ -946,11 +488,6 @@ IV.  MESSAGE PACKETS
 
   3.   Read in the message itself (length bytes).
 
-                            -17-
-
-
-
-
   4.   Process the message.  This is done according to the
        main_type and (if applicable) minor_type of the
        message.
@@ -998,11 +535,6 @@ IV.  MESSAGE PACKETS
        executed.
 
   3.   The DEmmm.EXE program is then responsible for
-
-                            -18-
-
-
-
        reading the TEMPDE.XXX in from disk, deleting it,
        then attempting to decode it.  Two things can then
        happen: a.   If the TEMPDE.XXX fails decoding (bad
@@ -1049,16 +581,9 @@ IV.  MESSAGE PACKETS
         0 -- Feedback to sysop from the NC.  This is sent
        to the #1 account as source-verified email.
 
-        1 -- BBSLIST.NET -- Old-style node list (non-Group
-       setup).
+        1 -- BBSLIST.NET -- Node list.
 
-                            -19-
-
-
-
-
-        2 -- CONNECT.NET -- Old-style connections list
-       (non-Group).
+        2 -- CONNECT.NET -- Connections list.
 
         3 -- SUBS.LST -- List of subboards ("subs")
        available through the network.  This has been
@@ -1104,11 +629,6 @@ IV.  MESSAGE PACKETS
        no minor type, so minor_type will always be zero.
 
        Processing of the email is straightforward.  The
-
-                            -20-
-
-
-
        analyzer looks for the user number indicated by the
        touser field.  If the number exists and the user has
        not been deleted from the BBS, the message is
@@ -1122,18 +642,13 @@ IV.  MESSAGE PACKETS
 
   main_type 3 (0x0003) -- main_type_post
 
-       NET51 only supports type main_type_new_post.
+       NET51 and later only supports type main_type_new_post.
 
   main_type 4 (0x0004) -- UNUSED
 
   main_type 5 (0x0005) -- main_type_obsolete_pre_post
 
        NET51 only suppors type main_type_new_post.  
-
-                            -21-
-
-
-
        text (and the list_len field modified reflecting the
        addition of the node list).  If the file cannot be
        found, the analyzer assumes the BBS does not host
@@ -1154,11 +669,6 @@ IV.  MESSAGE PACKETS
   main_type 7 (0x0007) -- main_type_email_name
 
        The other email type.  The touser field is zero, and
-
-                            -22-
-
-
-
        the name is found at the beginning of the message
        text, followed by a NUL character.  Minor_type will
        always be zero.
@@ -1201,11 +711,6 @@ IV.  MESSAGE PACKETS
 
   main_type 11 (0x000b) -- main_type_not_implemented_group_bbslist
 
-
-                            -23-
-
-
-
   main_type 12 (0x000c) -- main_type_not_implemented_group_connect
 
   main_type 13 (0x000d) -- UNUSED
@@ -1237,11 +742,6 @@ IV.  MESSAGE PACKETS
   main_type 16 (0x0010) -- main_type_sub_add_req
 
        This is for requests to add the sending system to a
-
-                            -25-
-
-
-
        sub's subscriber list.  Minor_type will be the
        numeric sub type, or zero for alphanumeric sub
        types.  For minor_type==0, the sub type (followed by
@@ -1291,11 +791,6 @@ IV.  MESSAGE PACKETS
        is the status of the add request. Possible status
        byte values are:
 
-                            -26-
-
-
-
-
        0 -- Subscriber added successfully.
 
        1 -- This system is not the host (N[subtype].NET not
@@ -1343,11 +838,6 @@ IV.  MESSAGE PACKETS
        the distributed SUBS.LST, a list of them is returned
        to the SLC via another main_type 20 message with
        minor_type==1).  When the SLC recieves the reply, it
-
-                            -27-
-
-
-
        is written into SUBS.INF in the network's data
        directory (appended if the file exists).
 
@@ -1366,15 +856,11 @@ IV.  MESSAGE PACKETS
 
   main_type 27 (0x001b) -- main_type_unused_new_external
 
-
-V.  BBSLIST/CONNECT FILES AND MESSAGE ROUTING
+======================================================
+5.  BBSLIST/CONNECT FILES AND MESSAGE ROUTING
+======================================================
 
 So how does the network software know where to send an
-
-                            -28-
-
-
-
 off-system message, especially if the BBS has more than one
 connect?  FidoNet has its nodelists, and so does NETXX.
 NETXX actually has two different types of node lists, as
@@ -1423,11 +909,6 @@ discuss figuring out the routing.
 
  \ -- Fidonet system.  Some systems in the network have
       "gateways" into Fidonet (or Fidonet compatible, such
-
-                            -29-
-
-
-
       as GlobalNet).
 
  = -- PCPursuitable system.  This is actually not useful
@@ -1476,11 +957,6 @@ discuss figuring out the routing.
 
       Note that the routing analysis software should make
       sure both ends of the connection have entries
-
-                            -30-
-
-
-
       referring to each other.
 
  2.   If there are three systems, each can call the others
@@ -1529,11 +1005,6 @@ discuss figuring out the routing.
  It is possible for a system to have references in one or
  both of the .NET files, but not be reachable from any
  other system.  For example, two systems may be listed in
-
-                            -31-
-
-
-
  BBSLIST.NET, and listed in CONNECT.NET, but each can only
  call the other.  No other system in the network can
  connect with them, so they don't exist, essentially.
@@ -1586,11 +1057,6 @@ discuss figuring out the routing.
   1.   System records are read into an array from
        BBSLIST.NET. The array is of struct 
        net_system_list_rec (see below).  All
-
-                            -34-
-
-
-
        fields are filled from the BBSLIST.NET except numhops
        and forsys, which are set to 65535 and 0, respec
        tively.  For the Group setup, the BBSLIST.NET
@@ -1639,43 +1105,38 @@ discuss figuring out the routing.
        then sent to the sysop giving the results of the
        analysis (for instance, how many valid systems are
        in the network, how many systems route through each
-
-                            -35-
-
-
-
        of this system's connections, who the NC and GC and
        AC are, and so forth).
 
   The data structure NETxx's NETWORK3.EXE uses for the
   network data file is:
 
-  typedef struct {
-       unsigned short sysnum;
-             /* system number */
-       char           phone[13]
-       ,     /* phone number of system */
-                      name[40];
-             /* name of system */
-       unsigned char  group;
-             /* group system is in */
-       unsigned short speed,
-             /* max bps rate of system */
-                      other,
-             /* other info (bit mapped) */
-                      forsys;
-             /* next hop from here */
-       short          numhops;
-             /* how far to get there */
-       union {
-            unsigned short rout_fact;
-             /* routing factor */
-            float          cost;
-            /* cost factor */
-            long           temp;
-            /* temporary variable */
-       } xx;
-  } net_system_list_rec;
+  struct net_system_list_rec {
+  // system number of the system
+  uint16_t  sysnum;
+  /* phone number of system */
+  char phone[13];
+  /* name of system */
+  char name[40];
+  /* group of the system */
+  uint8_t   group;
+  /* max baud rate of system */
+  uint16_t  speed;
+  /* other info about sys (bit-mapped) */
+  uint16_t other;
+  /* how to get there */
+  uint16_t forsys;
+  /* how long to get there */
+  int16_t numhops;
+  union {
+    /* routing factor */
+    uint16_t  rout_fact;
+    /* cost factor */
+    float  cost;
+    /* temporary variable */
+    int32_t temp;
+  } xx;
+};
 
   It is encouraged that this structure be used by any
   NETXX compatible analyzer.  Not only is this used by
@@ -1692,11 +1153,6 @@ discuss figuring out the routing.
 
             \    other_fido          0x0001
             |    other_Telebit_19200 0x0002
-
-                            -36-
-
-
-
             <    other_USR_9600      0x0004
             >    other_Hayes_9600    0x0008
             ^    other_area_coord    0x0010
@@ -1735,18 +1191,15 @@ discuss figuring out the routing.
   If the system is identified as unreachable
   (forsys==65535), the system is also considered unknown.
 
-VI.  TIPS FOR WRITING WWIVNET SOFTWARE
+======================================================
+6.  TIPS FOR WRITING WWIVNET SOFTWARE
+======================================================
 
  That about covers all the technical details for designing
  software compatible with WWIV networks.  Now for some
  things to consider for those wishing to design a NETXX
  interface for a non-WWIV BBS, or add-ons to existing
  NETXX software.
-
-
-                            -37-
-
-
 
  A.   NETXX Interface Software
 
@@ -1796,11 +1249,6 @@ VI.  TIPS FOR WRITING WWIVNET SOFTWARE
        filedate of the database file created last time the
        routing analyzer ran.  If one or more of the files
        is new (or there is a partial BBSLIST update), run
-
-                            -38-
-
-
-
        the routing analyzer (NETWORK3.EXE).
 
   If the software cannot be modified to handle these steps,
@@ -1847,11 +1295,6 @@ VI.  TIPS FOR WRITING WWIVNET SOFTWARE
   processed by the netmail analyzer.
 
   The WWIV BBS just creates P0.NET (network email,
-
-                            -39-
-
-
-
   generally) and P1.NET (outggoing sub posts, generally).
   Multi-instance WWIV create P*.nnn (where 'nnn' is the
   instance number, such as P*.001 for instance 1) while a
@@ -1885,11 +1328,6 @@ VI.  TIPS FOR WRITING WWIVNET SOFTWARE
   file for certain types of messages before the local mail
   processor gets to it.  One example is JAFO's AUTOSEND,
   which looks for sub requests and sends out messages from
-
-                            -40-
-
-
-
   the system's subs to new subscribers.  These, also, are
   described in the NETXX Software Documentation.
 
