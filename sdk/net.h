@@ -225,6 +225,8 @@ struct net_interconnect_rec {
  * Contains per-node data in callout.net
  */
 struct net_call_out_rec {
+  // FTN Address.
+  std::string ftn_address;
   /* system number */
   uint16_t sysnum;
   /* macro/script to use */

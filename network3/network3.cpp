@@ -288,7 +288,7 @@ static bool add_feedback_general_info(
     text << " ** Missing CONNECT.NET entries.";
   } else {
     for (const auto& callout_node : c->connect) {
-      const auto cnc = callout.node_config_for(callout_node);
+      const auto cnc = callout.net_call_out_for(callout_node);
       if (cnc == nullptr) {
         text << "Can call " << callout_node << " but isn't in CALLOUT.NET.\r\n"
           << "  ** Add to CALLOUT.NET\r\n\r\n";
@@ -552,7 +552,7 @@ static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_
   write_bbsdata_reg_file(b, net.dir);
 
   VLOG(1) << "Reading CALLOUT.NET...";
-  Callout callout(net.dir);
+  Callout callout(net);
   ensure_contact_net_entries(callout, net.dir);
   update_filechange_status_dat(net_cmdline.config().datadir());
   rename_pending_files(net.dir);

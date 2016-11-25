@@ -30,17 +30,19 @@ namespace sdk {
   
 class Callout {
  public:
-  explicit Callout(const std::string& network_dir);
+  explicit Callout(const net_networks_rec& net);
   // VisibleForTesting
   Callout(std::initializer_list<net_call_out_rec> l);
   virtual ~Callout();
-  const net_call_out_rec* node_config_for(int node) const;
+  virtual const net_call_out_rec* net_call_out_for(int node) const;
+  virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
   Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
 
   const std::map<uint16_t, net_call_out_rec>& node_config() const { return node_config_; }
   std::string ToString() const;
 
  private:
+  net_networks_rec net_;
   std::map<uint16_t, net_call_out_rec> node_config_;
 };
 

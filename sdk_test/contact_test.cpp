@@ -33,76 +33,76 @@ protected:
     now = time(nullptr);
     then = now - 100;
   }
-  net_contact_rec c1{1};
-  net_contact_rec c2{2};
+  NetworkContact c1{1};
+  NetworkContact c2{2};
   time_t now;
   time_t then;
 };
 
 TEST_F(ContactTest, SimpleCase) {
   Contact c({ c1, c2 });
-  net_contact_rec* ncr1 = c.contact_rec_for(1);
+  NetworkContact* ncr1 = c.contact_rec_for(1);
 
   c.add_connect(1, then, 100, 200);
 
-  EXPECT_EQ(then, ncr1->lastcontact);
-  EXPECT_EQ(then, ncr1->lastcontactsent);
-  EXPECT_EQ(then, ncr1->lasttry);
-  EXPECT_EQ(1, ncr1->numcontacts);
-  EXPECT_EQ(0, ncr1->numfails);
-  EXPECT_EQ(100, ncr1->bytes_sent);
-  EXPECT_EQ(200, ncr1->bytes_received);
-  EXPECT_EQ(0, ncr1->bytes_waiting);
+  EXPECT_EQ(then, ncr1->lastcontact());
+  EXPECT_EQ(then, ncr1->lastcontactsent());
+  EXPECT_EQ(then, ncr1->lasttry());
+  EXPECT_EQ(1, ncr1->numcontacts());
+  EXPECT_EQ(0, ncr1->numfails());
+  EXPECT_EQ(100, ncr1->bytes_sent());
+  EXPECT_EQ(200, ncr1->bytes_received());
+  EXPECT_EQ(0, ncr1->bytes_waiting());
 }
 
 TEST_F(ContactTest, MultipleConnects) {
   Contact c({ c1, c2 });
-  net_contact_rec* ncr1 = c.contact_rec_for(1);
+  NetworkContact* ncr1 = c.contact_rec_for(1);
 
   c.add_connect(1, then, 100, 200);
   c.add_connect(1, now, 200, 300);
 
-  EXPECT_EQ(now, ncr1->lastcontact);
-  EXPECT_EQ(now, ncr1->lastcontactsent);
-  EXPECT_EQ(now, ncr1->lasttry);
-  EXPECT_EQ(then, ncr1->firstcontact);
-  EXPECT_EQ(2, ncr1->numcontacts);
-  EXPECT_EQ(0, ncr1->numfails);
-  EXPECT_EQ(300, ncr1->bytes_sent);
-  EXPECT_EQ(500, ncr1->bytes_received);
-  EXPECT_EQ(0, ncr1->bytes_waiting);
+  EXPECT_EQ(now, ncr1->lastcontact());
+  EXPECT_EQ(now, ncr1->lastcontactsent());
+  EXPECT_EQ(now, ncr1->lasttry());
+  EXPECT_EQ(then, ncr1->firstcontact());
+  EXPECT_EQ(2, ncr1->numcontacts());
+  EXPECT_EQ(0, ncr1->numfails());
+  EXPECT_EQ(300, ncr1->bytes_sent());
+  EXPECT_EQ(500, ncr1->bytes_received());
+  EXPECT_EQ(0, ncr1->bytes_waiting());
 }
 
 TEST_F(ContactTest, WithFailure) {
   Contact c({ c1, c2 });
-  net_contact_rec* ncr1 = c.contact_rec_for(1);
+  NetworkContact* ncr1 = c.contact_rec_for(1);
 
   c.add_connect(1, then, 100, 200);
   c.add_failure(1, now);
 
-  EXPECT_EQ(now, ncr1->lastcontact);
-  EXPECT_EQ(now, ncr1->lasttry);
-  EXPECT_EQ(then, ncr1->lastcontactsent);
-  EXPECT_EQ(then, ncr1->firstcontact);
-  EXPECT_EQ(2, ncr1->numcontacts);
-  EXPECT_EQ(1, ncr1->numfails);
-  EXPECT_EQ(100, ncr1->bytes_sent);
-  EXPECT_EQ(200, ncr1->bytes_received);
-  EXPECT_EQ(0, ncr1->bytes_waiting);
+  EXPECT_EQ(now, ncr1->lastcontact());
+  EXPECT_EQ(now, ncr1->lasttry());
+  EXPECT_EQ(then, ncr1->lastcontactsent());
+  EXPECT_EQ(then, ncr1->firstcontact());
+  EXPECT_EQ(2, ncr1->numcontacts());
+  EXPECT_EQ(1, ncr1->numfails());
+  EXPECT_EQ(100, ncr1->bytes_sent());
+  EXPECT_EQ(200, ncr1->bytes_received());
+  EXPECT_EQ(0, ncr1->bytes_waiting());
 }
 
 TEST_F(ContactTest, EnsureBytesWaitingClears) {
   Contact c({ c1, c2 });
-  net_contact_rec* ncr1 = c.contact_rec_for(1);
+  NetworkContact* ncr1 = c.contact_rec_for(1);
 
-  ncr1->bytes_waiting = 100;
+  ncr1->set_bytes_waiting(100);
   c.add_connect(1, then, 100, 200);
-  EXPECT_EQ(0, ncr1->bytes_waiting);
+  EXPECT_EQ(0, ncr1->bytes_waiting());
 
-  ncr1->bytes_waiting = 100;
+  ncr1->set_bytes_waiting(100);
   c.add_failure(1, now);
-  EXPECT_EQ(100, ncr1->bytes_waiting);
+  EXPECT_EQ(100, ncr1->bytes_waiting());
 
   c.add_connect(1, now+1, 100, 200);
-  EXPECT_EQ(0, ncr1->bytes_waiting);
+  EXPECT_EQ(0, ncr1->bytes_waiting());
 }

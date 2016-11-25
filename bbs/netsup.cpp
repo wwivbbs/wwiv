@@ -275,16 +275,16 @@ void cleanup_net() {
 void do_callout(uint16_t sn) {
   time_t tCurrentTime = time(nullptr);
   
-  Callout callout(session()->current_net().dir);
+  Callout callout(session()->current_net());
   Contact contact(session()->current_net().dir, false);
   Binkp binkp(session()->current_net().dir);
 
-  const net_call_out_rec* callout_rec = callout.node_config_for(sn); // i con
+  const net_call_out_rec* callout_rec = callout.net_call_out_for(sn); // i con
   if (callout_rec == nullptr) {
     return;
   }
 
-  net_contact_rec* contact_rec = contact.contact_rec_for(sn);  // i2 ncn
+  const NetworkContact* contact_rec = contact.contact_rec_for(sn);  // i2 ncn
   net_system_list_rec *csne = next_system(callout_rec->sysnum);
   if (!csne) {
     return;
@@ -305,9 +305,9 @@ void do_callout(uint16_t sn) {
       region = describe_area_code(atoi(csne->phone));
     }
     bout << "|#7Sys located in: |#2" << region << wwiv::endl;
-    if (contact_rec->bytes_waiting) {
+    if (contact_rec->bytes_waiting() > 0) {
       bout << "|#7Amount pending: |#2"
-            << bytes_to_k(contact_rec->bytes_waiting)
+            << bytes_to_k(contact_rec->bytes_waiting())
             << "k" << wwiv::endl;
     }
     bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
@@ -327,7 +327,6 @@ static bool ok_to_call(const net_call_out_rec *con) {
   if (con->options & options_receive_only) {
     ok = false;
   }
-  int nDow = dow();
 
   time_t t;
   time(&t);
@@ -373,16 +372,6 @@ static bool ok_to_call(const net_call_out_rec *con) {
   return ok;
 }
 
-static void fixup_long(uint32_t *f, time_t l) {
-  if (*f > static_cast<uint32_t>(l)) {
-    *f = static_cast<uint32_t>(l);
-  }
-
-  if (*f + (SECONDS_PER_DAY * 30L) < static_cast<uint32_t>(l)) {
-    *f = static_cast<uint32_t>(l) - (SECONDS_PER_DAY * 30L);
-  }
-}
-
 class NodeAndWeight {
 public:
   NodeAndWeight() {}
@@ -397,23 +386,23 @@ public:
  * Checks the net_contact_rec and net_call_out_rec to ensure the node specified
  * is ok to call and does not violate any constraints.
  */
-static bool ok_to_call_from_contact_rec(const net_contact_rec& ncn, const net_call_out_rec& con) {
+static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_call_out_rec& con) {
   time_t tCurrentTime = time(nullptr);
-  if (ncn.bytes_waiting == 0L && !con.call_anyway) {
+  if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
     return false;
   }
   int min_minutes = std::max<int>(con.call_anyway, 1);
-  time_t next_contact_time = ncn.lastcontact + SECONDS_PER_MINUTE * min_minutes;
+  time_t next_contact_time = ncn.lastcontact() + SECONDS_PER_MINUTE * min_minutes;
   if (tCurrentTime < next_contact_time) {
     return false;
   }
   if ((con.options & options_once_per_day)
-    && std::abs(tCurrentTime - ncn.lastcontactsent) <
+    && std::abs(tCurrentTime - ncn.lastcontactsent()) <
     (20L * SECONDS_PER_HOUR / con.times_per_day)) {
     return false;
   }
-  if ((bytes_to_k(ncn.bytes_waiting) < con.min_k)
-    && (std::abs(tCurrentTime - ncn.lastcontact) < SECONDS_PER_DAY)) {
+  if ((bytes_to_k(ncn.bytes_waiting()) < con.min_k)
+    && (std::abs(tCurrentTime - ncn.lastcontact()) < SECONDS_PER_DAY)) {
     return false;
   }
   return true;
@@ -444,7 +433,7 @@ bool attempt_callout() {
       continue;
     }
 
-    Callout callout(session()->current_net().dir);
+    Callout callout(session()->current_net());
     Contact contact(session()->current_net().dir, false);
 
     for (const auto& p : callout.node_config()) {
@@ -453,23 +442,20 @@ bool attempt_callout() {
         continue;
       }
 
-      net_contact_rec* ncr = contact.contact_rec_for(p.first);
-      const net_call_out_rec* ncor = callout.node_config_for(p.first);
+      const NetworkContact* ncr = contact.contact_rec_for(p.first);
+      const net_call_out_rec* ncor = callout.net_call_out_for(p.first);
       ok = ok_to_call_from_contact_rec(*ncr, *ncor);
 
-      fixup_long(&(ncr->lastcontactsent), tCurrentTime);
-      fixup_long(&(ncr->lasttry), tCurrentTime);
-
       if (ok) {
-        uint64_t time_weight = tCurrentTime - ncr->lasttry;
+        uint64_t time_weight = tCurrentTime - ncr->lasttry();
 
-        if (ncr->bytes_waiting == 0L) {
+        if (ncr->bytes_waiting() == 0L) {
           if (to_call.at(nNetNumber).weight_ < time_weight) {
             to_call[nNetNumber] = NodeAndWeight(
               nNetNumber, ncor->sysnum, time_weight);
           }
         } else {
-          uint64_t bytes_weight = ncr->bytes_waiting * 60 + time_weight;
+          uint64_t bytes_weight = ncr->bytes_waiting() * 60 + time_weight;
           if (to_call.at(nNetNumber).weight_ < bytes_weight) {
             to_call[nNetNumber] = NodeAndWeight(
               nNetNumber, ncor->sysnum, bytes_weight);
@@ -496,8 +482,6 @@ bool attempt_callout() {
 void print_pending_list() {
   int adjust = 0, lines = 0;
   char s1[81], s2[81], s3[81], s4[81], s5[81];
-  time_t tCurrentTime;
-  time_t t = time(nullptr);
   long ss = session()->user()->GetStatus();
 
   if (session()->net_networks.empty()) {
@@ -507,7 +491,7 @@ void print_pending_list() {
     return;
   }
 
-  time(&tCurrentTime);
+  time_t tCurrentTime = time(nullptr);
 
   bout.nl(2);
   bout << "                           |#3-> |#9Network Status |#3<-\r\n";
@@ -525,11 +509,11 @@ void print_pending_list() {
       continue;
     }
 
-    Callout callout(session()->current_net().dir);
+    Callout callout(session()->current_net());
     Contact contact(session()->current_net().dir, false);
 
     for (const auto& p : callout.node_config()) {
-      net_contact_rec* r = contact.contact_rec_for(p.first);
+      const NetworkContact* r = contact.contact_rec_for(p.first);
       const auto& con = p.second;
       if (con.options & options_hide_pend) {
         // skip hidden ones.
@@ -543,8 +527,8 @@ void print_pending_list() {
       }
 
       int32_t m = 0, h = 0;
-      if (r->lastcontactsent) {
-        time_t tLastContactTime = tCurrentTime - r->lastcontactsent;
+      if (r->lastcontactsent()) {
+        time_t tLastContactTime = tCurrentTime - r->lastcontactsent();
         int32_t se = tLastContactTime % 60;
         tLastContactTime = (tLastContactTime - se) / 60;
         m = static_cast<int32_t>(tLastContactTime % 60);
@@ -554,9 +538,9 @@ void print_pending_list() {
         strcpy(s1, "|#6     -    ");
       }
 
-      sprintf(s3, "%dk", ((r->bytes_sent) + 1023) / 1024);
-      sprintf(s4, "%dk", ((r->bytes_received) + 1023) / 1024);
-      sprintf(s5, "%dk", ((r->bytes_waiting) + 1023) / 1024);
+      sprintf(s3, "%dk", ((r->bytes_sent()) + 1023) / 1024);
+      sprintf(s4, "%dk", ((r->bytes_received()) + 1023) / 1024);
+      sprintf(s5, "%dk", ((r->bytes_waiting()) + 1023) / 1024);
 
       if (m >= 30) {
         h++;
@@ -571,7 +555,7 @@ void print_pending_list() {
 
       bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
           "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#2%4d |#7\xB3\r\n",
-          s2, session()->network_name(), r->systemnumber, s3, s4, s5, r->numfails, s1, i3);
+          s2, session()->network_name(), r->systemnumber(), s3, s4, s5, r->numfails(), s1, i3);
       if (!session()->user()->HasPause() && ((lines++) == 20)) {
         pausescr();
         lines = 0;
@@ -761,11 +745,11 @@ static void print_call(uint16_t sn, int nNetNumber) {
   time_t tCurrentTime = time(nullptr);
 
   set_net_num(nNetNumber);
-  Callout callout(session()->current_net().dir);
+  Callout callout(session()->current_net());
   Contact contact(session()->current_net().dir, false);
   Binkp binkp(session()->current_net().dir);
 
-  net_contact_rec *ncn = contact.contact_rec_for(sn);
+  const NetworkContact *ncn = contact.contact_rec_for(sn);
   net_system_list_rec *csne = next_system(sn);
 
   if (!got_color) {
@@ -775,18 +759,18 @@ static void print_call(uint16_t sn, int nNetNumber) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
     }
   }
-  string s1 = to_string(bytes_to_k(ncn->bytes_waiting));
+  string s1 = to_string(bytes_to_k(ncn->bytes_waiting()));
   session()->localIO()->PrintfXYA(58, 17, color, "%-10.16s", s1.c_str());
 
-  s1 = to_string(bytes_to_k(ncn->bytes_received));
+  s1 = to_string(bytes_to_k(ncn->bytes_received()));
   session()->localIO()->PrintfXYA(23, 17, color, "%-10.16s", s1.c_str());
 
-  s1 = to_string(bytes_to_k(ncn->bytes_sent));
+  s1 = to_string(bytes_to_k(ncn->bytes_sent()));
   session()->localIO()->PrintfXYA(23, 18, color, "%-10.16s", s1.c_str());
 
-  if (ncn->firstcontact) {
-    s1 = StrCat(to_string((tCurrentTime - ncn->firstcontact) / SECONDS_PER_HOUR), ":");
-    time_t tTime = (((tCurrentTime - ncn->firstcontact) % SECONDS_PER_HOUR) / 60);
+  if (ncn->firstcontact() > 0) {
+    s1 = StrCat(to_string((tCurrentTime - ncn->firstcontact()) / SECONDS_PER_HOUR), ":");
+    time_t tTime = (((tCurrentTime - ncn->firstcontact()) % SECONDS_PER_HOUR) / 60);
     string s = to_string(tTime);
     if (tTime < 10) {
       s1 += StrCat("0", s);
@@ -799,9 +783,9 @@ static void print_call(uint16_t sn, int nNetNumber) {
   }
   session()->localIO()->PrintfXYA(23, 16, color, "%-17.16s", s1.c_str());
 
-  if (ncn->lastcontactsent) {
-    s1 = StrCat(to_string((tCurrentTime - ncn->lastcontactsent) / SECONDS_PER_HOUR), ":");
-    time_t tTime = (((tCurrentTime - ncn->lastcontactsent) % SECONDS_PER_HOUR) / 60);
+  if (ncn->lastcontactsent() > 0) {
+    s1 = StrCat(to_string((tCurrentTime - ncn->lastcontactsent()) / SECONDS_PER_HOUR), ":");
+    time_t tTime = (((tCurrentTime - ncn->lastcontactsent()) % SECONDS_PER_HOUR) / 60);
     string s = to_string(tTime);
     if (tTime < 10) {
       s1 += StrCat("0", s);
@@ -814,10 +798,10 @@ static void print_call(uint16_t sn, int nNetNumber) {
   }
   session()->localIO()->PrintfXYA(58, 16, color, "%-17.16s", s1.c_str());
 
-  if (ncn->lasttry) {
-    string tmp = to_string((tCurrentTime - ncn->lasttry) / SECONDS_PER_HOUR);
+  if (ncn->lasttry() > 0) {
+    string tmp = to_string((tCurrentTime - ncn->lasttry()) / SECONDS_PER_HOUR);
     s1 = StrCat(tmp, ":");
-    time_t tTime = (((tCurrentTime - ncn->lasttry) % SECONDS_PER_HOUR) / 60);
+    time_t tTime = (((tCurrentTime - ncn->lasttry()) % SECONDS_PER_HOUR) / 60);
     string s = to_string(tTime);
     if (tTime < 10) {
       s1 += StrCat("0", s);
@@ -829,7 +813,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
     s1 = "NEVER";
   }
   session()->localIO()->PrintfXYA(58, 15, color, "%-17.16s", s1.c_str());
-  session()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts);
+  session()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts());
   session()->localIO()->PrintfXYA(41, 3, color, "%-30.30s", csne->name);
   auto binkp_node = binkp.node_config_for(csne->sysnum);
   string hostname = csne->phone;
@@ -899,14 +883,14 @@ static std::pair<uint16_t, int> ansicallout() {
   std::vector<CalloutEntry> entries;
   for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
-    Callout callout(session()->current_net().dir);
+    Callout callout(session()->current_net());
     Contact contact(session()->current_net().dir, false);
 
     const auto& nodemap = callout.node_config();
     for (const auto& p : nodemap) {
       auto con = contact.contact_rec_for(p.first);
       if ((!(p.second.options & options_hide_pend)) && valid_system(p.second.sysnum)) {
-        entries.emplace_back(con->systemnumber, nNetNumber);
+        entries.emplace_back(con->systemnumber(), nNetNumber);
       }
     }
     if (entries.size() > MAX_CONNECTS) {
@@ -1082,8 +1066,8 @@ static std::pair<uint16_t, int> ansicallout() {
 static int FindNetworkNumberForNode(int sn) {
   for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
-    Callout callout(session()->current_net().dir);
-    if (callout.node_config_for(sn) != nullptr) {
+    Callout callout(session()->current_net());
+    if (callout.net_call_out_for(sn) != nullptr) {
       return nNetNumber;
     }
   }
@@ -1108,9 +1092,9 @@ void force_callout(int dw) {
   }
 
   set_net_num(network_number);
-  Callout callout(session()->current_net().dir);
+  Callout callout(session()->current_net());
 
-  bool ok = ok_to_call(callout.node_config_for(sn.first));
+  bool ok = ok_to_call(callout.net_call_out_for(sn.first));
   if (!ok) {
     return;
   }

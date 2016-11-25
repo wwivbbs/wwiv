@@ -48,6 +48,7 @@
 #include "sdk/contact.h"
 #include "sdk/networks.h"
 #include "sdk/status.h"
+#include "sdk/fido/fido_callout.h"
 
 using std::cout;
 using std::endl;
@@ -61,6 +62,7 @@ using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
@@ -118,7 +120,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
   return true;
 }
 
-static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, int sendto_node, const std::string& network_name) {
+static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, const string& sendto_node, const std::string& network_name) {
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
 
@@ -132,17 +134,26 @@ static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, int se
     c = Connect(node_config->host, node_config->port);
   } catch (const connection_error& e) {
     const net_networks_rec& net = bink_config.networks()[network_name];
-    Contact c(net.dir, true);
-    c.add_failure(sendto_node, system_clock::to_time_t(start_time));
+    Contact contact(net.dir, true);
+    contact.add_failure(sendto_node, system_clock::to_time_t(start_time));
     throw e;
   }
 
+  const net_networks_rec& net = bink_config.networks()[network_name];
   BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
-    const net_networks_rec& net = bink_config.networks()[network_name];
     File* f = new File(net.dir, filename);
     return new WFileTransferFile(filename, unique_ptr<File>(f));
   };
-  BinkP binkp(c.get(), &bink_config, BinkSide::ORIGINATING, sendto_node, factory);
+
+  string sendto_ftn_node;
+  if (net.type == network_type_t::wwivnet) {
+    sendto_ftn_node = StrCat("20000:20000/", sendto_node, "@", network_name);
+  } else if (net.type == network_type_t::ftn) {
+    sendto_ftn_node = sendto_node;
+  } else {
+    throw config_error("BinkP only supports wwivnet or ftn networks.");
+  }
+  BinkP binkp(c.get(), &bink_config, BinkSide::ORIGINATING, sendto_ftn_node, factory);
   binkp.Run();
   return true;
 }
@@ -158,7 +169,7 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     const auto& net = net_cmdline.network();
     const auto& network_name = net_cmdline.network_name();
 
-    int sendto_node = cmdline.iarg("node");
+    const string sendto_node = cmdline.sarg("node");
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
     File inifile(net_cmdline.config().root_directory(), "net.ini");
@@ -181,7 +192,11 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     for (const auto& n : bink_config.networks().networks()) {
       string lower_case_network_name(n.name);
       StringLowerCase(&lower_case_network_name);
-      bink_config.callouts().emplace(lower_case_network_name, Callout(n.dir));
+      if (n.type == network_type_t::wwivnet) {
+        bink_config.callouts().emplace(lower_case_network_name, new Callout(n));
+      } else if (n.type == network_type_t::ftn) {
+        bink_config.callouts().emplace(lower_case_network_name, new FidoCallout(net_cmdline.config(), n));
+      }
     }
 
     if (cmdline.arg("receive").as_bool()) {

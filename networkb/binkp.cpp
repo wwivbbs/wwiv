@@ -48,6 +48,7 @@
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
 #include "sdk/filenames.h"
+#include "sdk/fido/fido_address.h"
 
 using std::boolalpha;
 using std::end;
@@ -68,6 +69,7 @@ using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
@@ -75,16 +77,13 @@ using namespace wwiv::os;
 namespace wwiv {
 namespace net {
 
-string expected_password_for(const Callout* callout, int node) {
-  const net_call_out_rec* con = callout->node_config_for(node);
+string expected_password_for(const net_call_out_rec* con) {
   string password("-");  // default password
   if (con != nullptr) {
     const char *p = con->password;
     if (p && *p) {
       // If the password is null nullptr and not empty string.
       password.assign(p);
-    } else {
-      LOG(ERROR) << "       No password found for node: " << node << " using default password of '-'";
     }
   }
   return password;
@@ -92,17 +91,26 @@ string expected_password_for(const Callout* callout, int node) {
 
 int node_number_from_address_list(const string& network_list, const string& network_name) {
   VLOG(1) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
+  string s = ftn_address_from_address_list(network_list, network_name);
+  if (starts_with(s, "20000:20000/")) {
+    s = s.substr(12);
+    s = s.substr(0, s.find('/'));
+    return stoi(s);
+  }
+  return -1;
+}
+
+std::string ftn_address_from_address_list(const string& network_list, const string& network_name) {
+  VLOG(1) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
   vector<string> v = SplitString(network_list, " ");
   for (auto s : v) {
     StringTrim(&s);
     VLOG(1) << "       node_number_from_address_list(s): '" << s << "'";
-    if (ends_with(s, StrCat("@", network_name)) && starts_with(s, "20000:20000/")) {
-      s = s.substr(12);
-      s = s.substr(0, s.find('/'));
-      return stoi(s);
+    if (ends_with(s, StrCat("@", network_name))) {
+      return s;
     }
   }
-  return -1;
+  return "";
 }
 
 // Returns the single network name from the address list (only used when we
@@ -150,7 +158,7 @@ private:
 };
 
 BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
-        int expected_remote_node,
+        const std::string& expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
   : conn_(conn),
     config_(config), 
@@ -438,13 +446,19 @@ BinkState BinkP::WaitConn() {
     }
   } else {
     // Sending side: 
-    // Present single primary address.
-    send_command_packet(BinkpCommands::M_NUL,
-        StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
     const auto net = config_->networks()[config_->callout_network_name()];
-    string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
+    if (config_->network(config_->callout_network_name()).type == network_type_t::wwivnet) {
+      // Present single primary WWIVnet address.
+      send_command_packet(BinkpCommands::M_NUL,
+        StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
+      string lower_case_network_name(net.name);
+      StringLowerCase(&lower_case_network_name);
+      network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
+    } else {
+      // Present single FTN address.
+      FidoAddress address(net.fido.fido_address);
+      network_addresses = address.as_string();
+    }
   }
   send_command_packet(BinkpCommands::M_ADR, network_addresses);
 
@@ -458,8 +472,8 @@ BinkState BinkP::SendPasswd() {
   // This is on the sending side.
   const string network_name(remote_network_name());
   VLOG(1) << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
-  Callout callout = config_->callouts().at(network_name);
-  string password = expected_password_for(&callout, expected_remote_node_);
+  Callout* callout = config_->callouts().at(network_name).get();
+  string password = expected_password_for(callout, expected_remote_node_);
   VLOG(1) << "       sending password packet";
   switch (auth_type_) {
   case AuthType::CRAM_MD5:
@@ -499,8 +513,8 @@ BinkState BinkP::PasswordAck() {
   int remote_node = remote_network_node();
   LOG(INFO) << "       remote node: " << remote_node;
 
-  Callout callout(config_->callouts().at(network_name));
-  const string expected_password = expected_password_for(&callout, remote_node);
+  auto callout = config_->callouts().at(network_name).get();
+  const string expected_password = expected_password_for(callout, remote_node);
   VLOG(1) << "STATE: PasswordAck";
   if (auth_type_ == AuthType::PLAIN_TEXT) {
     // VLOG(1) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
@@ -582,7 +596,7 @@ BinkState BinkP::AuthRemote() {
           StrCat("Error (NETWORKB-0003): Unable to find callout.net for: ", network_name));
       return BinkState::FATAL_ERROR;
     }
-    const net_call_out_rec* callout_record = config_->callouts().at(network_name).node_config_for(caller_node);
+    const net_call_out_rec* callout_record = config_->callouts().at(network_name)->net_call_out_for(caller_node);
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
@@ -592,7 +606,7 @@ BinkState BinkP::AuthRemote() {
     return BinkState::WAIT_PWD;
   }
 
-  const string expected_ftn = StringPrintf("20000:20000/%d@%s", expected_remote_node_, network_name.c_str());
+  const string expected_ftn = expected_remote_node_;
   VLOG(1) << "       expected_ftn: " << expected_ftn;
   if (address_list_.find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
@@ -1040,10 +1054,27 @@ int BinkP::remote_network_node() const {
     return node_number_from_address_list(address_list_, network_name);
   }
   // When sending, we should be talking to who we wanted to.
+  return StringToInt(expected_remote_node_);
+}
+
+const std::string BinkP::remote_network_ftn_address() const {
+  if (side_ == BinkSide::ANSWERING) {
+    const string network_name = remote_network_name();
+    return ftn_address_from_address_list(address_list_, network_name);
+  }
+  // When sending, we should be talking to who we wanted to.
   return expected_remote_node_;
 }
 
-bool ParseFileRequestLine(const string& request_line, 
+const net_networks_rec& BinkP::remote_network() const {
+  return config_->network(remote_network_name());
+}
+
+const net_networks_rec& BinkP::callout_network() const {
+  return config_->callout_network();
+}
+
+bool ParseFileRequestLine(const string& request_line,
         string* filename,
         long* length,
         time_t* timestamp,

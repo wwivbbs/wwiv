@@ -146,17 +146,18 @@ static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_m
     net_call_out_rec node_config{};
     if (ParseCalloutNetLine(line, &node_config)) {
       // Parsed a line correctly.
+      node_config.ftn_address = StrCat("20000:20000/", node_config.sysnum);
       node_config_map->emplace(node_config.sysnum, node_config);
     }
   }
   return true;
 }
 
-Callout::Callout(const string& network_dir) {
-  ParseCalloutFile(&node_config_, network_dir);
+Callout::Callout(const net_networks_rec& net) : net_(net) {
+  ParseCalloutFile(&node_config_, net.dir);
 }
 
-Callout::Callout(std::initializer_list<net_call_out_rec> l) {
+Callout::Callout(std::initializer_list<net_call_out_rec> l) : net_() {
   for (const auto& r : l) {
     node_config_.emplace(r.sysnum, r);
   }
@@ -164,12 +165,21 @@ Callout::Callout(std::initializer_list<net_call_out_rec> l) {
 
 Callout::~Callout() {}
 
-const net_call_out_rec* Callout::node_config_for(int node) const {
+const net_call_out_rec* Callout::net_call_out_for(int node) const {
   auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
   }
   return nullptr;
+}
+
+const net_call_out_rec* Callout::net_call_out_for(const std::string& node) const {
+  if (starts_with(node, "20000:20000/")) {
+    auto s = node.substr(12);
+    s = s.substr(0, s.find('/'));
+    return net_call_out_for(StringToInt(s));
+  }
+  return net_call_out_for(StringToInt(node));
 }
 
 static std::string DumpCallout(const net_call_out_rec& n) {

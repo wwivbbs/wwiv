@@ -108,9 +108,11 @@ TEST_F(CalloutTest, NodeConfig) {
   files.Mkdir("network");
   const string line("@1 & \"foo\"");
   files.CreateTempFile("network/callout.net", line);
-  const string network_dir = files.DirName("network");
-  Callout callout(network_dir);
-  const net_call_out_rec* con = callout.node_config_for(1);
+  net_networks_rec net{};
+  strcpy(net.name, "Dummy Network");
+  net.dir = files.DirName("network");
+  Callout callout(net);
+  const net_call_out_rec* con = callout.net_call_out_for(1);
   ASSERT_TRUE(con != nullptr);
   EXPECT_EQ(options_sendback, con->options);
   EXPECT_STREQ("foo", con->password);

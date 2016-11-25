@@ -58,17 +58,36 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
 
   if (networks.contains(callout_network_name)) {
     const net_networks_rec& net = networks[callout_network_name];
-    callout_node_ = net.sysnum;
-    if (callout_node_ == 0) {
-      throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+    if (net.type == network_type_t::wwivnet) {
+      callout_wwivnet_node_ = net.sysnum;
+      if (callout_wwivnet_node_ == 0) {
+        throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+      }
+      binkp_.reset(new Binkp(net.dir));
+    } else if (net.type == network_type_t::ftn) {
+      callout_fido_node_ = net.fido.fido_address;
+      if (callout_fido_node_.empty()) {
+        throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+      }
+    } else {
+      throw config_error("BinkP is not supported for this network type.");
     }
-
+    // TODO(rushfan): This needs to be a shim binkp that reads from the nodelist
+    // or overrides.
     binkp_.reset(new Binkp(net.dir));
   }
 }
 
+const net_networks_rec& BinkConfig::network(const std::string& network_name) const {
+  return networks_[network_name];
+}
+
+const net_networks_rec& BinkConfig::callout_network() const {
+  return network(callout_network_name_);
+}
+
 const std::string BinkConfig::network_dir(const std::string& network_name) const {
-  return networks_[network_name].dir;
+  return network(network_name).dir;
 }
 
 static net_networks_rec test_net(const string& network_dir) {
@@ -82,7 +101,7 @@ static net_networks_rec test_net(const string& network_dir) {
 
 // For testing
 BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config, const string& network_dir)
-  : callout_network_name_("wwivnet"), callout_node_(callout_node_number), 
+  : callout_network_name_("wwivnet"), callout_wwivnet_node_(callout_node_number), 
     networks_({ test_net(network_dir) }) {
   binkp_.reset(new Binkp(network_dir));
   system_name_ = config.config()->systemname;
@@ -92,9 +111,13 @@ BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
 
 BinkConfig::~BinkConfig() {}
 
-const BinkNodeConfig* BinkConfig::node_config_for(int node) const {
+const BinkNodeConfig* BinkConfig::node_config_for(const std::string& node) const {
   if (!binkp_) { return nullptr; }
   return binkp_->node_config_for(node);
+}
+
+const wwiv::sdk::BinkNodeConfig* BinkConfig::node_config_for(uint16_t node) const {
+  return node_config_for(std::to_string(node));
 }
 
 bool BinkConfig::ProcessIniFile(const IniFile& ini) {

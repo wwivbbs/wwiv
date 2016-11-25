@@ -74,7 +74,7 @@ public:
   BinkP(Connection* conn,
         BinkConfig* config,
 	      BinkSide side, 
-	      int expected_remote_node,
+	      const std::string& expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory);
   virtual ~BinkP();
 
@@ -98,6 +98,9 @@ private:
   void process_network_files() const;
   const std::string remote_network_name() const;
   int remote_network_node() const;
+  const std::string remote_network_ftn_address() const;
+  const net_networks_rec& remote_network() const;
+  const net_networks_rec& callout_network() const;
 
   BinkState ConnInit();
   BinkState WaitConn();
@@ -126,7 +129,7 @@ private:
   bool eob_received_ = false;
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
   BinkSide side_;
-  const int expected_remote_node_ = 0;
+  const std::string expected_remote_node_;
   std::string remote_password_;
   bool error_received_ = false;
   received_transfer_file_factory_t received_transfer_file_factory_;
@@ -154,11 +157,19 @@ bool ParseFileRequestLine(const std::string& request_line,
 
 // Returns just the expected password for a node (node) contained in the
 // CALLOUT.NET file used by the wwiv::sdk::Callout class.
-std::string expected_password_for(const wwiv::sdk::Callout* callout, int node);
+std::string expected_password_for(const net_call_out_rec* con);
+
+template <typename N>
+std::string expected_password_for(const wwiv::sdk::Callout* callout, N node) {
+  return expected_password_for(callout->net_call_out_for(node));
+}
 
 // Returns just the node number (such as "1") from a FTN address like
 // (such as "20000:20000/1@wwivnet")
 int node_number_from_address_list(const std::string& network_list, const std::string& network_name);
+
+// Returns a FTN address like "20000:20000/1@wwivnet".
+std::string ftn_address_from_address_list(const std::string& network_list, const std::string& network_name);
 
 // Returns just the network name (such as "wwivnet") from a FTN address like
 // (such as "20000:20000/1@wwivnet")

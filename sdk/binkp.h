@@ -43,16 +43,17 @@ class Binkp {
  public:
   Binkp(const std::string& network_dir);
   virtual ~Binkp();
-  const BinkNodeConfig* node_config_for(int node) const;
+  const BinkNodeConfig* node_config_for(const std::string& node) const;
+  const BinkNodeConfig* node_config_for(uint16_t node) const;
 
  private:
-  std::map<uint16_t, BinkNodeConfig> node_config_;
+  std::map<std::string, BinkNodeConfig> node_config_;
   std::string network_dir_;
 };
 
 bool ParseBinkConfigLine(const std::string& line,
-			 uint16_t* node,
-			 BinkNodeConfig* config);
+       std::string& node,
+			 BinkNodeConfig& config);
 
 }  // namespace sdk
 }  // namespace wwiv

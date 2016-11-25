@@ -43,7 +43,7 @@ namespace wwiv {
 namespace sdk {
 
 // [[ VisibleForTesting ]]
-bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* config) {
+bool ParseBinkConfigLine(const string& line, std::string& node, BinkNodeConfig& config) {
 
   // A line will be of the format @node host:port
   if (line.empty() || line[0] != '@') {
@@ -54,7 +54,7 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
   stringstream stream(line);
   string node_str;
   stream >> node_str;
-  *node = StringToUnsignedShort(node_str.substr(1));
+  node = node_str.substr(1);
   string host_port_str;
   stream >> host_port_str;
   
@@ -66,22 +66,22 @@ bool ParseBinkConfigLine(const string& line, uint16_t* node, BinkNodeConfig* con
     port = StringToUnsignedShort(host_port[1]);
   }
   
-  config->host = host;
-  config->port = port;
+  config.host = host;
+  config.port = port;
 
   return true;
 }
 
-static bool ParseAddressesFile(std::map<uint16_t, BinkNodeConfig>* node_config_map, const string network_dir) {
+static bool ParseAddressesFile(std::map<std::string, BinkNodeConfig>* node_config_map, const string network_dir) {
   TextFile node_config_file(network_dir, "binkp.net", "rt");
   if (node_config_file.IsOpen()) {
     // Only load the configuration file if it exists.
     string line;
     while (node_config_file.ReadLine(&line)) {
-      uint16_t node_number;
+      std::string node_number;
       BinkNodeConfig node_config;
       StringTrim(&line);
-      if (ParseBinkConfigLine(line, &node_number, &node_config)) {
+      if (ParseBinkConfigLine(line, node_number, node_config)) {
         // Parsed a line correctly.
         node_config_map->emplace(node_number, node_config);
       }
@@ -98,12 +98,16 @@ Binkp::Binkp(const std::string& network_dir) {
 
 Binkp::~Binkp() {}
 
-const BinkNodeConfig* Binkp::node_config_for(int node) const {
+const BinkNodeConfig* Binkp::node_config_for(const std::string& node) const {
   auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
   }
   return nullptr;
+}
+
+const BinkNodeConfig* Binkp::node_config_for(uint16_t node) const {
+  return node_config_for(std::to_string(node));
 }
 
 }  // namespace net

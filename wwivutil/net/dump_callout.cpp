@@ -56,7 +56,7 @@ int DumpCalloutCommand::Execute() {
   for (const auto net : networks.networks()) {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
-    callouts.emplace(lower_case_network_name, Callout(net.dir));
+    callouts.emplace(lower_case_network_name, Callout(net));
   }
 
   for (const auto& c : callouts) {

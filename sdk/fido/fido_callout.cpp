@@ -68,7 +68,7 @@ namespace sdk {
 namespace fido {
 
 FidoCallout::FidoCallout(const Config& config, const net_networks_rec& net)
-    : root_dir_(config.root_directory()), net_(net) {
+    : Callout(net), root_dir_(config.root_directory()), net_(net) {
 
   if (!config.IsInitialized()) {
     return;
@@ -88,6 +88,24 @@ fido_packet_config_t FidoCallout::packet_override_for(const FidoAddress& a) cons
     return{};
   }
   return node_configs_.at(a).packet_config;
+}
+
+
+const net_call_out_rec* FidoCallout::net_call_out_for(int node) const {
+  return net_call_out_for(StringPrintf("20000:20000/%d@%s", node, net_.name));
+}
+
+const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) const {
+  static net_call_out_rec nc{};
+
+  try {
+    memset(&nc, 0, sizeof(net_call_out_rec));
+    auto p = packet_config_for(FidoAddress(node));
+    // TODO(rushfan): Add session password.
+    to_char_array(nc.password, p.packet_password);
+  } catch (const std::exception&) {
+  }
+  return nullptr;
 }
 
 fido_node_config_t FidoCallout::node_config_for(const FidoAddress& a) const {

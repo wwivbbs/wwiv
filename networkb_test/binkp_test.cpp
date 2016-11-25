@@ -39,7 +39,7 @@ using wwiv::sdk::Callout;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 
-static const int ANSWERING_ADDRESS = 1;
+static const string ANSWERING_ADDRESS = "20000/20000:1";
 static const int ORIGINATING_ADDRESS = 2;
 
 class BinkTest : public testing::Test {
@@ -58,12 +58,17 @@ protected:
     strcpy(wwiv_config_.sysopname, "Test Sysop");
     strcpy(wwiv_config_.gfilesdir, gfiles_dir.c_str());
     config.set_config(&wwiv_config_);
+    net_networks_rec net{};
+    net.dir = network_dir;
+    strcpy(net.name, "Dummy Network");
+    net.type = network_type_t::wwivnet;
+    net.sysnum = 0;
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, config, network_dir);
-    Callout dummy_callout(network_dir);
+    std::unique_ptr<Callout> dummy_callout = std::make_unique<Callout>(net);
     BinkP::received_transfer_file_factory_t null_factory = [](const string& network_name, const string& filename) { 
       return new InMemoryTransferFile(filename, "");
     };
-    dummy_config->callouts().emplace("wwivnet", dummy_callout);
+    dummy_config->callouts().emplace("wwivnet", dummy_callout.release());
     binkp_.reset(new BinkP(&conn_, dummy_config, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
     thread_ = thread([&]() {binkp_->Run(); });
   } 
@@ -110,14 +115,14 @@ TEST(NetworkNameFromAddressTest, SingleAddress) {
 
 // string expected_password_for(Callout* callout, int node)
 TEST(ExpectedPasswordTest, Basic) {
-  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7 };
+  net_call_out_rec n{ "20000:20000/1234", 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7 };
   Callout callout({ n });
   string actual = expected_password_for(&callout, 1234);
   EXPECT_EQ("pass", actual);
 }
 
 TEST(ExpectedPasswordTest, WrongNode) {
-  net_call_out_rec n{ 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7 };
+  net_call_out_rec n{"20000:20000/1234", 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6, 7 };
   Callout callout({ n });
   string actual = expected_password_for(&callout, 12345);
   EXPECT_EQ("-", actual);

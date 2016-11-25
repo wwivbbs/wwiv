@@ -32,33 +32,33 @@ using namespace wwiv::sdk;
 class ParseBinkConfigLineTest : public testing::Test {};
 
 TEST_F(ParseBinkConfigLineTest, NoPort) {
-  uint16_t node;
+  string node;
   BinkNodeConfig config;
 
   string line = "@1234 myhost";
-  ASSERT_TRUE(ParseBinkConfigLine(line, &node, &config));
-  EXPECT_EQ(1234, node);
+  ASSERT_TRUE(ParseBinkConfigLine(line, node, config));
+  EXPECT_EQ("1234", node);
   EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(24554, config.port);
 }
 
 TEST_F(ParseBinkConfigLineTest, Port) {
-  uint16_t node;
+  string node;
   BinkNodeConfig config;
 
   string line = "@1234 myhost:2345";
-  ASSERT_TRUE(ParseBinkConfigLine(line, &node, &config));
-  EXPECT_EQ(1234, node);
+  ASSERT_TRUE(ParseBinkConfigLine(line, node, config));
+  EXPECT_EQ("1234", node);
   EXPECT_EQ("myhost", config.host);
   EXPECT_EQ(2345, config.port);
 }
 
 TEST_F(ParseBinkConfigLineTest, InvalidLine) {
-  uint16_t node;
+  string node;
   BinkNodeConfig config;
 
   string line = "*@1234 myhost";
-  ASSERT_FALSE(ParseBinkConfigLine(line, &node, &config));
+  ASSERT_FALSE(ParseBinkConfigLine(line, node, config));
 }
 
 TEST(BinkConfigTest, NodeConfig) {
