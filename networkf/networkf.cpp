@@ -256,13 +256,16 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     auto from_address = get_address_from_origin(msg.vh.text);
 
     std::string text;
+    std::string s1;
     if (is_email) {
       // TO_USER<nul>SUBJECT<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-      text.append(msg.vh.to_user_name);
+      s1 = msg.vh.to_user_name;
     } else {
       // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-      text.append(get_echomail_areaname(msg.vh.text));
+      s1 = get_echomail_areaname(msg.vh.text);
     }
+    text.append(s1);
+
     text.push_back(0);
     text.append(msg.vh.subject);
     text.push_back(0);
@@ -278,6 +281,12 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     Packet packet(nh, {}, text);
     if (!write_wwivnet_packet(LOCAL_NET, net, packet)) {
       LOG(ERROR) << "ERROR Writing WWIV packet for message: " << packet.nh.main_type << "/" << packet.nh.minor_type;
+    } else {
+      if (is_email) {
+        LOG(INFO) << "     + Imported Email '" << msg.vh.subject << "' to '" << s1;
+      } else {
+        LOG(INFO) << "     + Imported Post '" << msg.vh.subject << "' in area '" << s1;
+      }
     }
   }
 
