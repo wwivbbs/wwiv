@@ -158,7 +158,7 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     const auto& net = net_cmdline.network();
     const auto& network_name = net_cmdline.network_name();
 
-    int sendto_node = cmdline.arg("node").as_int();
+    int sendto_node = cmdline.iarg("node");
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
     File inifile(net_cmdline.config().root_directory(), "net.ini");

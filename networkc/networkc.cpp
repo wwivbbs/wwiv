@@ -147,6 +147,31 @@ static bool need_network3(const string& dir, int network_version) {
     || checkup2(bbsdata_time, dir, CALLOUT_NET);
 }
 
+bool exists_ftn(const Config& config, const net_networks_rec& net) {
+  const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
+  auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
+  auto inbounddir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
+  for (const auto& e : extensions) {
+    {
+      const string mask = StrCat("*.", e);
+      if (File::ExistsWildcard(FilePath(inbounddir, mask))) {
+        File f(inbounddir, mask);
+        if (f.GetLength() > 0) return true;
+      }
+    }
+    {
+      string ue(e);
+      StringUpperCase(&ue);
+      const string mask = StrCat("*.", ue);
+      if (File::ExistsWildcard(FilePath(inbounddir, mask))) {
+        File f(inbounddir, mask);
+        if (f.GetLength() > 0) return true;
+      }
+    }
+  }
+  return false;
+}
+
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
@@ -176,6 +201,10 @@ int main(int argc, char** argv) {
       // Import everything into LOCAL.NET
       if (File::ExistsWildcard(FilePath(net.fido.inbound_dir, "*.*"))) {
         System(create_network_cmdline(net_cmdline, 'f', verbose, "import"));
+      }
+      
+      if (exists_ftn(net_cmdline.config(), net)) {
+        System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
       }
 
       // Export everything to FTN bundles

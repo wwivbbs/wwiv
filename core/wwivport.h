@@ -80,6 +80,11 @@
 #define unlikely(x)    (x)
 #endif
 
+// WWIV's daten type is a 32-bit unsigned int.
+// It can never be used for date comparisons since
+// negative values don't exist.  This will allow us
+// to truncate a 64-bit time_t value for display.
+typedef uint32_t daten_t;
 
 #ifdef _MSC_VER
 #ifdef _WIN64

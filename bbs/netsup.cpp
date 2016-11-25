@@ -333,18 +333,6 @@ static bool ok_to_call(const net_call_out_rec *con) {
   time(&t);
   struct tm * pTm = localtime(&t);
 
-  if (con->options & options_ATT_night) {
-    if (nDow != 0 && nDow != 6) {
-      if (pTm->tm_hour < 23 && pTm->tm_hour >= 7) {
-        ok = false;
-      }
-    }
-    if (nDow == 0) {
-      if (pTm->tm_hour < 23 && pTm->tm_hour >= 16) {
-        ok = false;
-      }
-    }
-  }
   char l = con->min_hr;
   char h = con->max_hr;
   if (l > -1 && h > -1 && h != l) {
@@ -510,11 +498,7 @@ void print_pending_list() {
   char s1[81], s2[81], s3[81], s4[81], s5[81];
   time_t tCurrentTime;
   time_t t = time(nullptr);
-  struct tm* pTm = localtime(&t);
-
   long ss = session()->user()->GetStatus();
-
-  int nDow = dow();
 
   if (session()->net_networks.empty()) {
     return;
@@ -574,16 +558,6 @@ void print_pending_list() {
       sprintf(s4, "%dk", ((r->bytes_received) + 1023) / 1024);
       sprintf(s5, "%dk", ((r->bytes_waiting) + 1023) / 1024);
 
-      if (con.options & options_ATT_night) {
-        if ((nDow != 0) && (nDow != 6)) {
-          if (!((pTm->tm_hour < 23) && (pTm->tm_hour >= 7))) {
-            adjust = (7 - pTm->tm_hour);
-            if (pTm->tm_hour == 23) {
-              adjust = 8;
-            }
-          }
-        }
-      }
       if (m >= 30) {
         h++;
       }
@@ -637,7 +611,7 @@ void print_pending_list() {
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       strcat(s3, "k");
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n",
-                                        session()->network_name(), s3);
+                   session()->network_name(), s3);
     }
   }
 

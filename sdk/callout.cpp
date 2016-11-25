@@ -62,10 +62,10 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
         con->options |= options_sendback;
         break;
       case '-':
-        con->options |= options_ATT_night;
+        con->options |= unused_options_ATT_night;
         break;
       case '_':
-        con->options |= options_ppp;
+        con->options |= unused_options_ppp;
         break;
       case '+':
         con->options |= options_no_call;
@@ -100,19 +100,19 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
         con->min_k = std::max<uint16_t>(1, StringToUnsignedShort(string(++iter, ss.end())));
       } break;
       case ';':
-        con->options |= options_compress;
+        con->options |= unused_options_compress;
         break;
       case '^':
-        con->options |= options_hslink;
+        con->options |= unused_options_hslink;
         break;
       case '$':
-        con->options |= options_force_ac;
+        con->options |= unused_options_force_ac;
         break;
       case '=':
         con->options |= options_hide_pend;
         break;
       case '*':
-        con->options |= options_dial_ten;
+        con->options |= unused_options_dial_ten;
         break;
       case '\"': {
         ++iter;  // skip past first "

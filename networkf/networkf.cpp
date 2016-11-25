@@ -362,6 +362,10 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
   WFindFile files;
   bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
   while (has_next) {
+    if (files.GetFileSize() == 0) {
+      // skip zero byte files.
+      continue;
+    }
     const auto& name = files.GetFileName();
     string lname = name;
     StringLowerCase(&lname);
@@ -371,6 +375,7 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
         File::Remove(dir, name);
       }
     } else if (import_bundle_file(config, callout, net, dir, name)) {
+      LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, name);
       File::Remove(dir, name);
     }
     has_next = files.next();
@@ -972,9 +977,9 @@ int main(int argc, char** argv) {
     if (cmd == "import") {
       const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
       auto net_dir = File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir);
-      auto tempdir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
+      auto inbounddir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
       for (const auto& ext : extensions) {
-        import_bundles(net_cmdline.config(), fido_callout, net, tempdir, StrCat("*.", ext));
+        import_bundles(net_cmdline.config(), fido_callout, net, inbounddir, StrCat("*.", ext));
 #ifndef _WIN32
         string uext = ext;
         StringUpperCase(&uext);

@@ -9,6 +9,9 @@ FTN
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
+* skip importing zero byte files.
+* let networkc check for files to import and invoke the software
+  if needed.
 
 Ini Files and Configuration
 ===========================
@@ -27,6 +30,7 @@ General Cleanup
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
 * investigate making WTextFile always trim whitespace
 * TopScreen doesn't work with CursesIO
+* use daten_t everywhere we have a daten date.
 
 General Improvements
 ====================

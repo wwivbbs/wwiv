@@ -62,6 +62,10 @@ What's New in WWIV 5.2 (2016)
   as a wildcard. Optionally starting with ! to be a negative match.
   Example "11:* !11:2/*" would match everything in zone 11, except
   for everything in net 11:2/*.
+* NETWORKC.EXE is added, it's like the Cerebrum software clnup.exe. It
+  will run network{1,2,3} as needed to process all mail. It'll also
+  run networkf to export packets to FTN bundles if any exist.
+* FTN NetMail now works.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

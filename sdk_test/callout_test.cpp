@@ -41,7 +41,7 @@ TEST_F(CalloutTest, WithPassword) {
   const string line = "@1234 &* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_STREQ("pass", con.password);
 }
@@ -51,7 +51,7 @@ TEST_F(CalloutTest, OncePerDay) {
   const string line = "@1234 &!24* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_NE(0, con.options & options_once_per_day);
   EXPECT_STREQ("pass", con.password);
@@ -63,7 +63,7 @@ TEST_F(CalloutTest, LotsOfOptions) {
   const string line = "@1234 &!24%21/60* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_NE(0, con.options & options_once_per_day);
   EXPECT_STREQ("pass", con.password);
@@ -77,7 +77,7 @@ TEST_F(CalloutTest, MinMax) {
   const string line = "@1234 &(8)12* \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_STREQ("pass", con.password);
   EXPECT_EQ(8, con.min_hr);
@@ -89,7 +89,7 @@ TEST_F(CalloutTest, EveryWeekWith10k) {
   const string line = "@1234 &*#7|10 \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
-  EXPECT_NE(0, con.options & options_dial_ten);
+  EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_STREQ("pass", con.password);
   EXPECT_EQ(7, con.call_x_days);

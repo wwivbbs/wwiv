@@ -106,14 +106,14 @@ struct net_header_rec {
 #define sub_adddrop_error         0xff  /* internal error */
 
 struct net_contact_rec {
-  uint16_t  systemnumber,       /* System number of the contact */
+  uint16_t systemnumber,       /* System number of the contact */
            numcontacts,        /* # of contacts with system */
            numfails;           /* # of consec failed calls out */
   uint32_t firstcontact,       /* time of first contact w/ system */
            lastcontact,        /* time of most recent contact */
            lastcontactsent,    /* time of last contact w/data sent */
-           lasttry,            /* time of last try to connect */
-           bytes_received,     /* bytes received from system */
+           lasttry;            /* time of last try to connect */
+  uint32_t bytes_received,     /* bytes received from system */
            bytes_sent,         /* bytes sent to system */
            bytes_waiting;      /* bytes waiting to be sent */
 };
@@ -142,15 +142,15 @@ struct net_contact_rec {
  */
 struct net_system_list_rec {
   // system number of the system
-  uint16_t  sysnum;
+  uint16_t sysnum;
   /* phone number of system */
   char phone[13];
   /* name of system */
   char name[40];
   /* group of the system */
-  uint8_t   group;
+  uint8_t group;
   /* max baud rate of system */
-  uint16_t  speed;
+  uint16_t speed;
   /* other info about sys (bit-mapped) */
   uint16_t other;
   /* how to get there */
@@ -159,9 +159,9 @@ struct net_system_list_rec {
   int16_t numhops;
   union {
     /* routing factor */
-    uint16_t  rout_fact;
+    uint16_t rout_fact;
     /* cost factor */
-    float  cost;
+    float cost;
     /* temporary variable */
     int32_t temp;
   } xx;
@@ -226,7 +226,7 @@ struct net_interconnect_rec {
  */
 struct net_call_out_rec {
   /* system number */
-  uint16_t  sysnum;
+  uint16_t sysnum;
   /* macro/script to use */
   uint8_t macnum;
   /* bit mapped */
@@ -260,15 +260,15 @@ struct net_call_out_rec {
  * password - is the password used for connection to this system.
  */
 #define options_sendback      0x0001   /* & they can send data back */
-#define options_ATT_night     0x0002   /* - callout only at AT&T nigh hours */
-#define options_ppp           0x0004   /* _ transfer via PPP */
+#define unused_options_ATT_night     0x0002   /* - callout only at AT&T nigh hours */
+#define unused_options_ppp           0x0004   /* _ transfer via PPP */
 #define options_no_call       0x0008   /* + don't call that system, it will */
 #define options_receive_only  0x0010   /* ~ never send anything */
 #define options_once_per_day  0x0020   /* ! only call once per day */
-#define options_compress      0x0040   /* ; compress data */
-#define options_hslink        0x0080   /* ^ use HSLINK if available */
-#define options_force_ac      0x0100   /* $ force area code on dial */
-#define options_dial_ten      0x0200   /* * use ten digit dialing format */
+#define unused_options_compress      0x0040   /* ; compress data */
+#define unused_options_hslink        0x0080   /* ^ use HSLINK if available */
+#define unused_options_force_ac      0x0100   /* $ force area code on dial */
+#define unused_options_dial_ten      0x0200   /* * use ten digit dialing format */
 #define options_hide_pend     0x0400   /* = hide in pending display */
 
 #ifndef __MSDOS__

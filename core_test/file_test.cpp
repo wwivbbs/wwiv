@@ -232,14 +232,32 @@ TEST(FileTest, MakeAbsolutePath_Relative) {
   EXPECT_EQ(path, relative);
 }
 
-TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
+TEST(FileTest, MakeAbsolutePath_Relative_Returning) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
-  string relative(path);  // Note: relative == absolute path (path)
-  File::MakeAbsolutePath(helper.TempDir(), &relative);
+  string relative = File::MakeAbsolutePath(helper.TempDir(), kFileName);
   EXPECT_EQ(path, relative);
+}
+
+TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string expected = helper.CreateTempFile(kFileName, "Hello World");
+
+  string path(expected);
+  File::MakeAbsolutePath(helper.TempDir(), &path);
+  EXPECT_EQ(expected, path);
+}
+
+TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
+  static const string kFileName = this->test_info_->name();
+  FileHelper helper;
+  const string expected = helper.CreateTempFile(kFileName, "Hello World");
+
+  string path = File::MakeAbsolutePath(helper.TempDir(), expected);
+  EXPECT_EQ(expected, path);
 }
 
 TEST(FileTest, IsAbsolute) {
