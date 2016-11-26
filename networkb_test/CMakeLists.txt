@@ -7,6 +7,7 @@ include_directories(..)
 set(test_sources
   binkp_test.cpp
   binkp_config_test.cpp
+  cram_test.cpp
   fake_connection.cpp
   fido_util_test.cpp
   transfer_file_test.cpp

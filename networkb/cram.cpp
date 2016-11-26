@@ -34,7 +34,7 @@ namespace net {
 
 bool Cram::GenerateChallengeData() {
   if (challenge_data_.empty()) {
-    challenge_data_ = "cafebabecafebabe";
+    challenge_data_ = "cafebabecafebabecafebabecafebabe";
   }
   initialized_ = true;
   return true;
@@ -46,6 +46,30 @@ bool Cram::ValidatePassword(const std::string& challenge,
   auto expected = CreateHashedSecret(challenge, secret);
   VLOG(2) << "expected pw: " << expected << "; given: " << given_hashed_secret;
   return expected == given_hashed_secret;
+}
+ 
+static std::string FromHex(const std::string& hex) {
+  if ((hex.length() % 2) != 0) {
+    throw std::logic_error("FromHex needs length of size a multiple of 2");
+  }
+
+  if (hex.length() > 256) {
+    throw std::logic_error("FromHex needs length of < 256");
+  }
+
+  char result[128];
+  int len = 0;
+  auto it = hex.begin();
+  while (it != hex.end()) {
+    string s;
+    s.push_back(*it++);
+    s.push_back(*it++);
+
+    unsigned long chl = std::stoul(s.c_str(), nullptr, 16);
+    char ch = (chl & 0xff);
+    result[len++] = ch;
+  }
+  return std::string(result, len);
 }
 
 static std::string SecretOrHash(const std::string& secret) {
@@ -66,20 +90,22 @@ static std::string SecretOrHash(const std::string& secret) {
 }
 
 std::string Cram::CreateHashedSecret(
-  const std::string& original_challenge, const std::string& secret) {
+  const std::string& original_challenge_hex, const std::string& secret) {
   if (!initialized_) {
     if (!GenerateChallengeData()) {
       // TODO: Go Boom
     }
   }
 
+  string original_challenge = FromHex(original_challenge_hex);
+
   string challenge = SecretOrHash(original_challenge);
   unsigned char ipad[65];
   unsigned char opad[65];
   memset(ipad, 0, sizeof(ipad));
   memset(opad, 0, sizeof(opad));
-  memcpy(ipad, challenge.data(), challenge.size());
-  memcpy(opad, challenge.data(), challenge.size());
+  memcpy(ipad, secret.data(), secret.size());
+  memcpy(opad, secret.data(), secret.size());
 
   for (size_t i = 0; i < 65; i++) {
     ipad[i] ^= 0x36;
@@ -91,7 +117,7 @@ std::string Cram::CreateHashedSecret(
   unsigned char digest[17];
   MD5_Init(&ctx);
   MD5_Update(&ctx, ipad, 64);
-  MD5_Update(&ctx, secret.data(), secret.size());
+  MD5_Update(&ctx, challenge.data(), challenge.size());
   MD5_Final(digest, &ctx);
 
   // Outer

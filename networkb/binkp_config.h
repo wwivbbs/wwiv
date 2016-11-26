@@ -62,6 +62,7 @@ class BinkConfig {
   void set_network_version(int network_version) { network_version_ = network_version; }
   int network_version() const { return network_version_; }
   bool crc() const { return crc_; }
+  bool cram_md5() const { return cram_md5_; }
 
   /** 
    * Sets defaults from the INI file. This should be called before setting any
@@ -87,6 +88,7 @@ class BinkConfig {
   int verbose_ = 0;
   int network_version_ = 38;
   bool crc_ = false;
+  bool cram_md5_ = true;
 };
 
 }  // namespace net

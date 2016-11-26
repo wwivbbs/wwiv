@@ -227,10 +227,15 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
         }
       } else if (starts_with(s, "CRC")) {
         if (config_->crc()) {
+          LOG(INFO) << "Enabling CRC support";
           // If we support crc. Let's use it at receiving time now.
           crc_ = true;
         }
       }
+    } else if (starts_with(s, "SYS ")) {
+      LOG(INFO) << "Remote Side: " << s.substr(4);
+    } else if (starts_with(s, "VER ")) {
+      LOG(INFO) << "Remote Side: " << s.substr(4);
     }
   } break;
   case BinkpCommands::M_ADR: {
@@ -429,9 +434,11 @@ BinkState BinkP::WaitConn() {
   VLOG(1) << "STATE: WaitConn";
   // Send initial CRAM command.
   if (side_ == BinkSide::ANSWERING) {
-    cram_.GenerateChallengeData();
-    const string opt_cram = StrCat("OPT CRAM-MD5-", cram_.challenge_data());
-    send_command_packet(BinkpCommands::M_NUL, opt_cram);
+    if (config_->cram_md5()) {
+      cram_.GenerateChallengeData();
+      const string opt_cram = StrCat("OPT CRAM-MD5-", cram_.challenge_data());
+      send_command_packet(BinkpCommands::M_NUL, opt_cram);
+    }
   }
   send_command_packet(BinkpCommands::M_NUL, StrCat("WWIVVER ", wwiv_version_string_with_date()));
   send_command_packet(BinkpCommands::M_NUL, StrCat("SYS ", config_->system_name()));

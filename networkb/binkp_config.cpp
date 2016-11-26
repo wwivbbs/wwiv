@@ -153,6 +153,7 @@ bool BinkConfig::ProcessIniFile(const IniFile& ini) {
 
   set_skip_net(ini.value<bool>("skip_net", false));
   crc_ = ini.value<bool>("crc", true);
+  cram_md5_ = ini.value<bool>("cram_md5", true);
 
   return true;
 }
