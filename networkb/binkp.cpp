@@ -39,14 +39,15 @@
 #include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
-#include "sdk/callout.h"
 #include "networkb/connection.h"
 #include "networkb/cram.h"
-#include "sdk/contact.h"
+#include "networkb/file_manager.h"
 #include "networkb/net_log.h"
 #include "networkb/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
+#include "sdk/callout.h"
+#include "sdk/contact.h"
 #include "sdk/filenames.h"
 #include "sdk/fido/fido_address.h"
 
@@ -104,72 +105,6 @@ static int wwivnet_node_number_from_ftn_address(const string& address) {
   return -1;
 }
 
-int node_number_from_address_list(const string& network_list, const string& network_name) {
-  VLOG(1) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
-  string s = ftn_address_from_address_list(network_list, network_name);
-  if (starts_with(s, "20000:20000/")) {
-    return wwivnet_node_number_from_ftn_address(s);
-  }
-  return -1;
-}
-
-std::string ftn_address_from_address_list(const string& network_list, const string& network_name) {
-  VLOG(1) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
-  vector<string> v = SplitString(network_list, " ");
-  for (auto s : v) {
-    StringTrim(&s);
-    VLOG(1) << "       node_number_from_address_list(s): '" << s << "'";
-    if (ends_with(s, StrCat("@", network_name))) {
-      return s;
-    }
-  }
-  return "";
-}
-
-// Returns the single network name from the address list (only used when we
-// are in answering mode, where a single address is presented) or the empty
-// string if no address is present.
-string network_name_from_single_address(const string& network_list) {
-  vector<string> v = SplitString(network_list, " ");
-  if (v.empty()) {
-    return "";
-  }
-  string s = v.front();
-  string::size_type index = s.find_last_of("@");
-  if (index == string::npos) {
-    return "";
-  }
-  return s.substr(index+1);
-}
-
-class SendFiles {
-public:
-  SendFiles(const string& network_directory, uint16_t destination_node) 
-    : network_directory_(network_directory), destination_node_(destination_node) {}
-  virtual ~SendFiles() {}
-
-  vector<TransferFile*> CreateTransferFileList() {
-    vector<TransferFile*> result;
-    string dir = network_directory_;
-    File::EnsureTrailingSlash(&dir);
-    const string s_node_net = StringPrintf("s%d.net", destination_node_);
-    const string search_path = StrCat(dir, s_node_net);
-    VLOG(2) << "       CreateTransferFileList: search_path: " << search_path;
-    if (File::Exists(search_path)) {
-      File file (search_path);
-      const string basename = file.GetName();
-      result.push_back(new WFileTransferFile(basename, unique_ptr<File>(new File(network_directory_, basename))));
-      LOG(INFO) << "       CreateTransferFileList: found file: " << basename;
-    }
-
-    return result;
-  }
-
-private:
-  const string network_directory_;
-  const uint16_t destination_node_;
-};
-
 BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
         const std::string& expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
@@ -180,7 +115,8 @@ BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
     error_received_(false),
     received_transfer_file_factory_(received_transfer_file_factory),
     bytes_sent_(0),
-    bytes_received_(0) {
+    bytes_received_(0),
+    remote_(config, side_ == BinkSide::ANSWERING, expected_remote_node) {
   if (side_ == BinkSide::ORIGINATING) {
     crc_ = config_->crc();
   }
@@ -234,14 +170,14 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
       }
     } else if (starts_with(s, "SYS ")) {
       LOG(INFO) << "Remote Side: " << s.substr(4);
+      remote_.set_system_name(s.substr(4));
     } else if (starts_with(s, "VER ")) {
       LOG(INFO) << "Remote Side: " << s.substr(4);
+      remote_.set_version(s.substr(4));
     }
   } break;
   case BinkpCommands::M_ADR: {
-    address_list_ = s;
-    // address list is always lower cased compared.
-    StringLowerCase(&address_list_);
+    remote_.set_address_list(s);
   } break;
   case BinkpCommands::M_OK: {
     ok_received_ = true;
@@ -306,7 +242,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
 
     // If we have a crc; check it.
     if (crc_ && crc != 0) {
-      auto dir = config_->network_dir(remote_network_name());
+      auto dir = config_->network_dir(remote_.network_name());
       File received_file(dir, current_receive_file_->filename());
       auto file_crc = crc32file(received_file.full_pathname());
       if (file_crc == 0) {
@@ -490,7 +426,7 @@ BinkState BinkP::WaitConn() {
 
 BinkState BinkP::SendPasswd() {
   // This is on the sending side.
-  const string network_name(remote_network_name());
+  const string network_name(remote_.network_name());
   VLOG(1) << "STATE: SendPasswd for network '" << network_name << "' for node: " << expected_remote_node_;
   Callout* callout = config_->callouts().at(network_name).get();
   string password = expected_password_for(callout, expected_remote_node_);
@@ -511,10 +447,10 @@ BinkState BinkP::SendPasswd() {
 
 BinkState BinkP::WaitAddr() {
   VLOG(1) << "STATE: WaitAddr";
-  auto predicate = [&]() -> bool { return !address_list_.empty(); };
+  auto predicate = [&]() -> bool { return !remote_.address_list().empty(); };
   for (int i=0; i < 10; i++) {
     process_frames(predicate, seconds(1));
-    if (!address_list_.empty()) {
+    if (!remote_.address_list().empty()) {
       return BinkState::AUTH_REMOTE;
     }
   }
@@ -530,16 +466,16 @@ BinkState BinkP::PasswordAck() {
 
   string expected_password;
 
-  const string network_name = remote_network_name();
+  const string network_name = remote_.network_name();
   auto callout = config_->callouts().at(network_name).get();
-  if (remote_network().type == network_type_t::wwivnet) {
+  if (remote_.network().type == network_type_t::wwivnet) {
     // TODO(rushfan): we need to use the network name we matched not the one that config thinks.
-    auto remote_node = remote_network_node();
+    auto remote_node = remote_.wwivnet_node();
     LOG(INFO) << "       remote node: " << remote_node;
 
     expected_password = expected_password_for(callout, remote_node);
-  } else if (remote_network().type == network_type_t::ftn) {
-    auto remote_node = remote_network_ftn_address();
+  } else if (remote_.network().type == network_type_t::ftn) {
+    auto remote_node = remote_.ftn_address();
     expected_password = expected_password_for(callout, remote_node);
   }
 
@@ -614,8 +550,8 @@ BinkState BinkP::IfSecure() {
 BinkState BinkP::AuthRemote() {
   VLOG(1) << "STATE: AuthRemote";
   // Check that the address matches who we thought we called.
-  VLOG(1) << "       remote address_list: " << address_list_;
-  const string network_name(remote_network_name());
+  VLOG(1) << "       remote address_list: " << remote_.address_list();
+  const string network_name(remote_.network_name());
   if (side_ == BinkSide::ANSWERING) {
     if (!contains(config_->callouts(), network_name)) {
       // We don't have a callout.net entry for this caller. Fail the connection
@@ -625,19 +561,19 @@ BinkState BinkP::AuthRemote() {
     }
 
     const net_call_out_rec* callout_record = nullptr;
-    if (remote_network().type == network_type_t::wwivnet) {
-      auto caller = node_number_from_address_list(address_list_, network_name);
+    if (remote_.network().type == network_type_t::wwivnet) {
+      auto caller = remote_.wwivnet_node();
       LOG(INFO) << "       remote_network_name: " << network_name << "; caller_node: " << caller;
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
     } else {
-      auto caller = ftn_address_from_address_list(address_list_, network_name);
+      auto caller = remote_.ftn_address();
       LOG(INFO) << "       remote_network_name: " << network_name << "; caller_address: " << caller;
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
     }
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
-          StrCat("Error (NETWORKB-0002): Unexpected Address: ", address_list_));
+          StrCat("Error (NETWORKB-0002): Unexpected Address: ", remote_.address_list()));
       return BinkState::FATAL_ERROR;
     }
     return BinkState::WAIT_PWD;
@@ -645,25 +581,25 @@ BinkState BinkP::AuthRemote() {
 
   const string expected_ftn = expected_remote_node_;
   VLOG(1) << "       expected_ftn: " << expected_ftn;
-  if (address_list_.find(expected_ftn) != string::npos) {
+  if (remote_.address_list().find(expected_ftn) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(BinkpCommands::M_ERR, 
-      StrCat("Error (NETWORKB-0001): Unexpected Address: ", address_list_));
+      StrCat("Error (NETWORKB-0001): Unexpected Address: ", remote_.address_list()));
     return BinkState::FATAL_ERROR;
   }
 }
 
 BinkState BinkP::TransferFiles() {
-  int remote_node = remote_network_node();
-  const string network_name(remote_network_name());
+  int remote_node = remote_.wwivnet_node();
+  const string network_name(remote_.network_name());
 
   VLOG(1) << "STATE: TransferFiles to node: " << remote_node;
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(500));
-  SendFiles file_sender(config_->network_dir(network_name), remote_node);
-  const auto list = file_sender.CreateTransferFileList();
+  file_manager_.reset(new FileManager(config_->network_dir(network_name)));
+  const auto list = file_manager_->CreateTransferFileList(remote_node);
   for (auto file : list) {
     SendFilePacket(file);
   }
@@ -813,7 +749,7 @@ bool BinkP::HandleFileRequest(const string& request_line) {
       &crc)) {
     return false;
   }
-  const auto net = remote_network_name();
+  const auto net = remote_.network_name();
   auto *p = new ReceiveFile(received_transfer_file_factory_(net, filename),
     filename,
     expected_length,
@@ -961,21 +897,21 @@ void BinkP::Run() {
     process_network_files();
   }
 
-  if (remote_network().type == network_type_t::wwivnet) {
+  if (remote_.network().type == network_type_t::wwivnet) {
     // Log to net.log
     auto sec = duration_cast<seconds>(end_time - start_time);
     // Update WWIVnet net.log and contact.net for WWIVnet connections.
     NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
     NetworkLog net_log(config_->gfiles_directory());
     net_log.Log(system_clock::to_time_t(start_time), network_log_side,
-      remote_network_node(), bytes_sent_, bytes_received_, sec, remote_network_name());
+      remote_.wwivnet_node(), bytes_sent_, bytes_received_, sec, remote_.network_name());
 
     // Update CONTACT.NET
-    Contact c(config_->network_dir(remote_network_name()), true);
+    Contact c(config_->network_dir(remote_.network_name()), true);
     if (error_received_) {
-      c.add_failure(remote_network_node(), system_clock::to_time_t(start_time));
+      c.add_failure(remote_.wwivnet_node(), system_clock::to_time_t(start_time));
     } else {
-      c.add_connect(remote_network_node(), system_clock::to_time_t(start_time),
+      c.add_connect(remote_.wwivnet_node(), system_clock::to_time_t(start_time),
         bytes_sent_, bytes_received_);
     }
   } else {
@@ -986,12 +922,12 @@ void BinkP::Run() {
 void BinkP::rename_pending_files() const {
   VLOG(1) << "STATE: rename_pending_files";
   for (const auto& file : received_files_) {
-    if (!config_->networks().contains(remote_network_name())) {
+    if (!config_->networks().contains(remote_.network_name())) {
       // unknown network. log and skip.
-      LOG(ERROR) << "ERROR: unknown network name (not in config.dat): " << remote_network_name();
+      LOG(ERROR) << "ERROR: unknown network name (not in config.dat): " << remote_.network_name();
       continue;
     }
-    const auto dir = config_->networks()[remote_network_name()].dir;
+    const auto dir = remote_.network().dir;
     LOG(INFO) << "       renaming_pending_file: dir: " << dir << "; file: " << file;
     rename_pend(dir, file);
   }
@@ -1060,13 +996,13 @@ string BinkP::create_cmdline(int num, int network_number) const {
 }
 
 void BinkP::process_network_files() const {
-  const string network_name = remote_network_name();
+  const string network_name = remote_.network_name();
   VLOG(1) << "STATE: process_network_files for network: " << network_name;
   int network_number = config_->networks().network_number(network_name);
   if (network_number == wwiv::sdk::Networks::npos) {
     return;
   }
-  const auto dir = config_->networks()[remote_network_name()].dir;
+  const auto dir = remote_.network().dir;
   if (File::ExistsWildcard(StrCat(dir, "p*.net"))) {
     System(create_cmdline(1, network_number));
     if (File::Exists(StrCat(dir, LOCAL_NET))) {
@@ -1076,42 +1012,6 @@ void BinkP::process_network_files() const {
   if (need_network3(dir, config_->network_version())) {
     System(create_cmdline(3, network_number));
   }
-}
-
-const string BinkP::remote_network_name() const {
-  if (side_ == BinkSide::ANSWERING) {
-    auto name = network_name_from_single_address(address_list_);
-    if (!name.empty()) {
-      return name;
-    }
-  }
-  return config_->callout_network_name();
-}
-
-int BinkP::remote_network_node() const {
-  if (side_ == BinkSide::ANSWERING) {
-    const string network_name = remote_network_name();
-    return node_number_from_address_list(address_list_, network_name);
-  }
-  // When sending, we should be talking to who we wanted to.
-  return wwivnet_node_number_from_ftn_address(expected_remote_node_);
-}
-
-const std::string BinkP::remote_network_ftn_address() const {
-  if (side_ == BinkSide::ANSWERING) {
-    const string network_name = remote_network_name();
-    return ftn_address_from_address_list(address_list_, network_name);
-  }
-  // When sending, we should be talking to who we wanted to.
-  return expected_remote_node_;
-}
-
-const net_networks_rec& BinkP::remote_network() const {
-  return config_->network(remote_network_name());
-}
-
-const net_networks_rec& BinkP::callout_network() const {
-  return config_->callout_network();
 }
 
 bool ParseFileRequestLine(const string& request_line,

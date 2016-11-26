@@ -29,6 +29,8 @@
 
 #include "sdk/callout.h"
 #include "networkb/cram.h"
+#include "networkb/file_manager.h"
+#include "networkb/remote.h"
 #include "networkb/receive_file.h"
 
 namespace wwiv {
@@ -96,11 +98,6 @@ private:
   std::string create_cmdline(int num, int network_number) const;
   void rename_pending_files() const;
   void process_network_files() const;
-  const std::string remote_network_name() const;
-  int remote_network_node() const;
-  const std::string remote_network_ftn_address() const;
-  const net_networks_rec& remote_network() const;
-  const net_networks_rec& callout_network() const;
 
   BinkState ConnInit();
   BinkState WaitConn();
@@ -124,7 +121,6 @@ private:
 
   BinkConfig* config_ = nullptr;
   Connection* conn_ = nullptr;
-  std::string address_list_;
   bool ok_received_ = false;
   bool eob_received_ = false;
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;
@@ -143,6 +139,9 @@ private:
   // Auth type used.
   AuthType auth_type_ = AuthType::PLAIN_TEXT;
   bool crc_ = false;
+
+  std::unique_ptr<FileManager> file_manager_;
+  Remote remote_;
 };
 
 // Parses a M_FILE request line into it's parts.
@@ -163,17 +162,6 @@ template <typename N>
 std::string expected_password_for(const wwiv::sdk::Callout* callout, N node) {
   return expected_password_for(callout->net_call_out_for(node));
 }
-
-// Returns just the node number (such as "1") from a FTN address like
-// (such as "20000:20000/1@wwivnet")
-int node_number_from_address_list(const std::string& network_list, const std::string& network_name);
-
-// Returns a FTN address like "20000:20000/1@wwivnet".
-std::string ftn_address_from_address_list(const std::string& network_list, const std::string& network_name);
-
-// Returns just the network name (such as "wwivnet") from a FTN address like
-// (such as "20000:20000/1@wwivnet")
-std::string network_name_from_single_address(const std::string& network_list);
 
 }  // namespace net
 }  // namespace wwiv

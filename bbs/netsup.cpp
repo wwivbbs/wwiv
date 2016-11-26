@@ -889,6 +889,7 @@ static std::pair<uint16_t, int> ansicallout() {
     const auto& nodemap = callout.node_config();
     for (const auto& p : nodemap) {
       auto con = contact.contact_rec_for(p.first);
+      if (!con) continue;
       if ((!(p.second.options & options_hide_pend)) && valid_system(p.second.sysnum)) {
         entries.emplace_back(con->systemnumber(), nNetNumber);
       }

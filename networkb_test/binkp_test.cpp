@@ -94,6 +94,11 @@ TEST_F(BinkTest, ErrorAbortsSession) {
   }
 }
 
+static int node_number_from_address_list(const std::string& addresses, const string& network_name) {
+  auto a = ftn_address_from_address_list(addresses, network_name);
+  return wwivnet_node_number_from_ftn_address(a);
+}
+
 TEST(NodeFromAddressTest, SingleAddress) {
   const string address = "20000:20000/1234@foonet";
   EXPECT_EQ(1234, node_number_from_address_list(address, "foonet"));

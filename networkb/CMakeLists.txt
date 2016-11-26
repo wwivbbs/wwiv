@@ -12,10 +12,12 @@ set(SOURCES
  connection.cpp
  cram.cpp
  fido_util.cpp
+ file_manager.cpp
  net_log.cpp
  net_util.cpp
  packets.cpp
  ppp_config.cpp
+ remote.cpp
  socket_connection.cpp
  socket_exceptions.cpp
  transfer_file.cpp
