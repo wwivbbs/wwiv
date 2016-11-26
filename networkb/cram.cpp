@@ -25,6 +25,7 @@
 #include <string>
 
 #include "core/md5.h"
+#include "core/log.h"
 
 using std::string;
 
@@ -42,7 +43,8 @@ bool Cram::GenerateChallengeData() {
 bool Cram::ValidatePassword(const std::string& challenge,
                             const std::string& secret, 
                             const std::string& given_hashed_secret) {
-  string expected = CreateHashedSecret(challenge, secret);
+  auto expected = CreateHashedSecret(challenge, secret);
+  VLOG(2) << "expected pw: " << expected << "; given: " << given_hashed_secret;
   return expected == given_hashed_secret;
 }
 
@@ -50,6 +52,8 @@ static std::string SecretOrHash(const std::string& secret) {
   if (secret.size() <= 64) {
     return secret;
   }
+
+  VLOG(1) << "secret is >64 bytes";
 
   MD5_CTX ctx;
   MD5_Init(&ctx);

@@ -548,6 +548,7 @@ BinkState BinkP::PasswordAck() {
     }
   } else if (auth_type_ == AuthType::CRAM_MD5) {
     VLOG(1) << "       CRAM_MD5 expected_password = '" << expected_password << "'";
+    VLOG(1) << "       received password: " << remote_password_;
     if (cram_.ValidatePassword(cram_.challenge_data(), expected_password, remote_password_)) {
       // Passwords match, send OK.
       send_command_packet(BinkpCommands::M_OK, "Passwords match; secure session.");

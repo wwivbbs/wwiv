@@ -121,6 +121,7 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) 
   FidoAddress a = address;
   if (!contains(node_configs_, a)) {
     // Try 4D addressing if we don't have 5D.
+    VLOG(2) << "FidoCallout::packet_config_for: Trying address without zone";
     a = FidoAddress(address.zone(), address.net(), address.node(), address.point(), "");
   }
 
