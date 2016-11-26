@@ -89,6 +89,19 @@ string expected_password_for(const net_call_out_rec* con) {
   return password;
 }
 
+static int wwivnet_node_number_from_ftn_address(const string& address) {
+  string s = address;
+  if (starts_with(s, "20000:20000/")) {
+    s = s.substr(12);
+    s = s.substr(0, s.find('/'));
+
+    if (contains(s, '@')) {
+      s = s.substr(0, s.find('@'));
+    }
+    return StringToInt(s);
+  }
+}
+
 int node_number_from_address_list(const string& network_list, const string& network_name) {
   VLOG(1) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
   string s = ftn_address_from_address_list(network_list, network_name);

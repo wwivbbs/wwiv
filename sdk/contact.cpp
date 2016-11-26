@@ -60,13 +60,21 @@ constexpr long SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
 
 Contact::Contact(const string& network_dir, bool save_on_destructor) 
     : network_dir_(network_dir), save_on_destructor_(save_on_destructor) {
-  DataFile<NetworkContact> file(network_dir, CONTACT_NET, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+  DataFile<net_contact_rec> file(network_dir, CONTACT_NET, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return;
   }
   
+  std::vector<net_contact_rec> vs;
   if (file.number_of_records() > 0) {
-    initialized_ = file.ReadVector(contacts_);
+    initialized_ = file.ReadVector(vs);
+  }
+
+  for (const auto& v : vs) {
+    network_contact_record r{};
+    r.address = StringPrintf("20000:20000/%u@wwivnet", v.systemnumber);
+    r.ncr = v;
+    contacts_.emplace_back(r);
   }
 
   if (!initialized_) {
