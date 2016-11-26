@@ -89,6 +89,9 @@
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\deps\cl342\crypt32.vcxproj">
+      <Project>{d0793ab4-c236-4105-ad9e-7e8b1716037b}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\deps\googletest-master\googletest\msvc\gtest-md.vcxproj">
       <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be8}</Project>
     </ProjectReference>
@@ -102,6 +105,7 @@
     <ClCompile Include="crc32_test.cpp" />
     <ClCompile Include="datafile_test.cpp" />
     <ClCompile Include="inifile_test.cpp" />
+    <ClCompile Include="md5_test.cpp" />
     <ClCompile Include="os_test.cpp" />
     <ClCompile Include="scope_exit_test.cpp" />
     <ClCompile Include="stl_test.cpp" />

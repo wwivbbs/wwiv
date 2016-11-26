@@ -39,6 +39,9 @@
 
 #include <cstdint>
 #include <cstring>
+#include <iomanip>
+#include <string>
+#include <sstream>
 
 #include "md5.h"
 
@@ -288,6 +291,21 @@ void MD5_Final(unsigned char *result, MD5_CTX *ctx) {
   result[15] = static_cast<uint8_t>(ctx->d >> 24);
 
   memset(ctx, 0, sizeof(*ctx));
+}
+
+std::string md5(const std::string& text) {
+  MD5_CTX ctx;
+  MD5_Init(&ctx);
+
+  unsigned char hash[16];
+  MD5_Update(&ctx, (void*)text.c_str(), text.size());
+  MD5_Final(hash, &ctx);
+
+  std::ostringstream ss;
+  for (int i = 0; i < 16; i++) {
+    ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(hash[i]);
+  }
+  return ss.str();
 }
 
 #endif

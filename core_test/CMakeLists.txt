@@ -14,6 +14,7 @@ set(test_sources
   datafile_test.cpp
   file_test.cpp
   inifile_test.cpp
+  md5_test.cpp
   os_test.cpp
   scope_exit_test.cpp
   stl_test.cpp
