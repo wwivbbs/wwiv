@@ -29,31 +29,27 @@
 #include "core/inifile.h"
 #include "networkb/config_exceptions.h"
 #include "sdk/callout.h"
+#include "sdk/net.h"
 #include "sdk/networks.h"
 
 namespace wwiv {
 namespace sdk {
 
-struct BinkNodeConfig {
-  std::string host;
-  int port;
-};
-
 class Binkp {
  public:
   Binkp(const std::string& network_dir);
   virtual ~Binkp();
-  const BinkNodeConfig* node_config_for(const std::string& node) const;
-  const BinkNodeConfig* node_config_for(uint16_t node) const;
+  const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
+  const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
 
  private:
-  std::map<std::string, BinkNodeConfig> node_config_;
+  std::map<std::string, binkp_session_config_t> node_config_;
   std::string network_dir_;
 };
 
 bool ParseBinkConfigLine(const std::string& line,
        std::string& node,
-			 BinkNodeConfig& config);
+			 binkp_session_config_t& config);
 
 }  // namespace sdk
 }  // namespace wwiv

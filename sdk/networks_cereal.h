@@ -117,7 +117,17 @@ template <class Archive>
 void serialize(Archive & ar, fido_node_config_t& n) {
   SERIALIZE(n, routes);
   SERIALIZE(n, packet_config);
+  SERIALIZE(n, binkp_config);
 }
+
+// binkp_session_config_t
+template <class Archive>
+void serialize(Archive & ar, binkp_session_config_t& n) {
+  SERIALIZE(n, host);
+  SERIALIZE(n, port);
+  SERIALIZE(n, password);
+}
+
 
 template <class Archive>
 void serialize(Archive & ar, fido_network_config_t& n) {

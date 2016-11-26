@@ -115,7 +115,7 @@ int main(int argc, char** argv) {
     }
 
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
-    const BinkNodeConfig* node_config = bink_config.node_config_for(node);
+    const binkp_session_config_t* node_config = bink_config.node_config_for(node);
     if (node_config != nullptr) {
       // We have a node configuration for this one, use networkb.
       LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;

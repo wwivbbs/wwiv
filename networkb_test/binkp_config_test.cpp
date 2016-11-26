@@ -33,7 +33,7 @@ class ParseBinkConfigLineTest : public testing::Test {};
 
 TEST_F(ParseBinkConfigLineTest, NoPort) {
   string node;
-  BinkNodeConfig config;
+  binkp_session_config_t config;
 
   string line = "@1234 myhost";
   ASSERT_TRUE(ParseBinkConfigLine(line, node, config));
@@ -44,7 +44,7 @@ TEST_F(ParseBinkConfigLineTest, NoPort) {
 
 TEST_F(ParseBinkConfigLineTest, Port) {
   string node;
-  BinkNodeConfig config;
+  binkp_session_config_t config;
 
   string line = "@1234 myhost:2345";
   ASSERT_TRUE(ParseBinkConfigLine(line, node, config));
@@ -55,7 +55,7 @@ TEST_F(ParseBinkConfigLineTest, Port) {
 
 TEST_F(ParseBinkConfigLineTest, InvalidLine) {
   string node;
-  BinkNodeConfig config;
+  binkp_session_config_t config;
 
   string line = "*@1234 myhost";
   ASSERT_FALSE(ParseBinkConfigLine(line, node, config));
@@ -69,7 +69,7 @@ TEST(BinkConfigTest, NodeConfig) {
   const string network_dir = files.DirName("network");
   Config wwiv_config;
   BinkConfig config(1, wwiv_config, network_dir);
-  const BinkNodeConfig* node_config = config.node_config_for(2);
+  const binkp_session_config_t* node_config = config.node_config_for(2);
   ASSERT_TRUE(node_config != nullptr);
   EXPECT_EQ("example.com", node_config->host);
   EXPECT_EQ(24554, node_config->port);

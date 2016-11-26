@@ -302,8 +302,13 @@ static void edit_fido_node_config(const Config& config, const FidoAddress& a, fi
   };
   items.add(new ToggleEditItem<fido_bundle_status_t>(out, COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
 
+  auto& b = n.binkp_config;
+  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, b.host, false));
+  items.add(new NumberEditItem<int>(COL1_POSITION, y++, &b.port));
+  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, b.password, true));
+
   const string title = StrCat("Address: ", a.as_string());
-  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 60));
+  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 61));
   items.set_curses_io(out, sw.get());
 
   y = 1;
@@ -315,6 +320,11 @@ static void edit_fido_node_config(const Config& config, const FidoAddress& a, fi
   sw->PutsXY(LBL1_POSITION, y++, "Max Arc Size :");
   sw->PutsXY(LBL1_POSITION, y++, "Max Pkt Size :");
   sw->PutsXY(LBL1_POSITION, y++, "Bundle Status:");
+
+  sw->PutsXY(LBL1_POSITION, y++, "BinkP host   :");
+  sw->PutsXY(LBL1_POSITION, y++, "BinkP post   :");
+  sw->PutsXY(LBL1_POSITION, y++, "Session PW   :");
+
   items.Run();
 }
 

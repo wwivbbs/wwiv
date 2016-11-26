@@ -46,8 +46,8 @@ public:
   fido_packet_config_t packet_override_for(const FidoAddress& a) const;
 
   // wwiv::sdk::Callout implementation
-  virtual const net_call_out_rec* net_call_out_for(int node) const override;
-  virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
+  const net_call_out_rec* net_call_out_for(int node) const override;
+  const net_call_out_rec* net_call_out_for(const std::string& node) const override;
 
   bool insert(const FidoAddress& a, const fido_node_config_t& c);
   bool erase(const FidoAddress& a);

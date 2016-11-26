@@ -815,7 +815,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
   session()->localIO()->PrintfXYA(58, 15, color, "%-17.16s", s1.c_str());
   session()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts());
   session()->localIO()->PrintfXYA(41, 3, color, "%-30.30s", csne->name);
-  auto binkp_node = binkp.node_config_for(csne->sysnum);
+  auto binkp_node = binkp.binkp_session_config_for(csne->sysnum);
   string hostname = csne->phone;
   string speed = StrCat(to_string(csne->speed), " BPS");
   if (binkp_node != nullptr) {

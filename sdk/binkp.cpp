@@ -43,7 +43,7 @@ namespace wwiv {
 namespace sdk {
 
 // [[ VisibleForTesting ]]
-bool ParseBinkConfigLine(const string& line, std::string& node, BinkNodeConfig& config) {
+bool ParseBinkConfigLine(const string& line, std::string& node, binkp_session_config_t& config) {
 
   // A line will be of the format @node host:port
   if (line.empty() || line[0] != '@') {
@@ -72,14 +72,14 @@ bool ParseBinkConfigLine(const string& line, std::string& node, BinkNodeConfig& 
   return true;
 }
 
-static bool ParseAddressesFile(std::map<std::string, BinkNodeConfig>* node_config_map, const string network_dir) {
+static bool ParseAddressesFile(std::map<std::string, binkp_session_config_t>* node_config_map, const string network_dir) {
   TextFile node_config_file(network_dir, "binkp.net", "rt");
   if (node_config_file.IsOpen()) {
     // Only load the configuration file if it exists.
     string line;
     while (node_config_file.ReadLine(&line)) {
       std::string node_number;
-      BinkNodeConfig node_config;
+      binkp_session_config_t node_config;
       StringTrim(&line);
       if (ParseBinkConfigLine(line, node_number, node_config)) {
         // Parsed a line correctly.
@@ -98,7 +98,7 @@ Binkp::Binkp(const std::string& network_dir) {
 
 Binkp::~Binkp() {}
 
-const BinkNodeConfig* Binkp::node_config_for(const std::string& node) const {
+const binkp_session_config_t* Binkp::binkp_session_config_for(const std::string& node) const {
   auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
@@ -106,8 +106,8 @@ const BinkNodeConfig* Binkp::node_config_for(const std::string& node) const {
   return nullptr;
 }
 
-const BinkNodeConfig* Binkp::node_config_for(uint16_t node) const {
-  return node_config_for(std::to_string(node));
+const binkp_session_config_t* Binkp::binkp_session_config_for(uint16_t node) const {
+  return binkp_session_config_for(std::to_string(node));
 }
 
 }  // namespace net

@@ -28,6 +28,8 @@
 #include "core/file.h"
 #include "core/textfile.h"
 #include "sdk/networks.h"
+#include "sdk/fido/fido_address.h"
+#include "sdk/fido/fido_callout.h"
 
 using std::endl;
 using std::map;
@@ -38,12 +40,13 @@ using std::vector;
 using wwiv::core::IniFile;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::fido;
 
 namespace wwiv {
 namespace net {
 
 BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& config, const Networks& networks)
-    : callout_network_name_(callout_network_name), networks_(networks) {
+    : config_(config), callout_network_name_(callout_network_name), networks_(networks) {
   // network names will alwyas be compared lower case.
   StringLowerCase(&callout_network_name_);
   system_name_ = config.config()->systemname;
@@ -101,7 +104,7 @@ static net_networks_rec test_net(const string& network_dir) {
 
 // For testing
 BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config, const string& network_dir)
-  : callout_network_name_("wwivnet"), callout_wwivnet_node_(callout_node_number), 
+  : config_(config), callout_network_name_("wwivnet"), callout_wwivnet_node_(callout_node_number), 
     networks_({ test_net(network_dir) }) {
   binkp_.reset(new Binkp(network_dir));
   system_name_ = config.config()->systemname;
@@ -111,12 +114,35 @@ BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
 
 BinkConfig::~BinkConfig() {}
 
-const BinkNodeConfig* BinkConfig::node_config_for(const std::string& node) const {
+const binkp_session_config_t* BinkConfig::node_config_for(const std::string& node) const {
   if (!binkp_) { return nullptr; }
-  return binkp_->node_config_for(node);
+
+  static binkp_session_config_t static_session{};
+
+  if (callout_network().type == network_type_t::wwivnet) {
+    return binkp_->binkp_session_config_for(node);
+  } else if (callout_network().type == network_type_t::ftn) {
+    try {
+      FidoAddress address(node);
+      FidoCallout fc(config_, callout_network());
+      if (!fc.IsInitialized()) return false;
+
+      auto fido_node = fc.node_config_for(address);
+      static_session = fido_node.binkp_config;
+
+      if (static_session.port == 0 && static_session.host.empty()) {
+        return nullptr;
+      }
+
+      return &static_session;
+    } catch (const std::exception&) {
+    }
+    return nullptr;
+  }
+  return nullptr;
 }
 
-const wwiv::sdk::BinkNodeConfig* BinkConfig::node_config_for(uint16_t node) const {
+const binkp_session_config_t* BinkConfig::node_config_for(uint16_t node) const {
   return node_config_for(std::to_string(node));
 }
 

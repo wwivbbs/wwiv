@@ -27,6 +27,7 @@
 #include <vector>
 #endif  // __MSDOS__
 
+
 #pragma pack(push, 1)
 
 /* All network nodes except the destination will only look at:
@@ -313,6 +314,17 @@ struct fido_packet_config_t {
 };
 
 /**
+ * Contains the binkp session specific settings. This can come
+ * from a fidonet nodelist, WWIVnet's binkp.net, or overrides
+ * specified in the address settings.
+ */
+struct binkp_session_config_t {
+  std::string host;
+  int port = 0;
+  std::string password;
+};
+
+/**
  * Specific config for a fido node.
  */
 struct fido_node_config_t {
@@ -321,6 +333,8 @@ struct fido_node_config_t {
   std::string routes;
   // Configuration for packet specific options.
   fido_packet_config_t packet_config;
+  // BinkP session options.
+  binkp_session_config_t binkp_config;
 };
 
 // Remember to update the serialize function in networks_cereal.h when updating these.

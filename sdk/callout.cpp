@@ -27,6 +27,7 @@
 #include "core/strings.h"
 #include "core/inifile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
@@ -166,6 +167,7 @@ Callout::Callout(std::initializer_list<net_call_out_rec> l) : net_() {
 Callout::~Callout() {}
 
 const net_call_out_rec* Callout::net_call_out_for(int node) const {
+  VLOG(2) << "Callout::net_call_out_for(" << node << ")";
   auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;
@@ -174,6 +176,7 @@ const net_call_out_rec* Callout::net_call_out_for(int node) const {
 }
 
 const net_call_out_rec* Callout::net_call_out_for(const std::string& node) const {
+  VLOG(2) << "Callout::net_call_out_for(" << node << ")";
   if (starts_with(node, "20000:20000/")) {
     auto s = node.substr(12);
     s = s.substr(0, s.find('/'));

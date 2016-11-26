@@ -100,15 +100,15 @@ static int wwivnet_node_number_from_ftn_address(const string& address) {
     }
     return StringToInt(s);
   }
+
+  return -1;
 }
 
 int node_number_from_address_list(const string& network_list, const string& network_name) {
   VLOG(1) << "       node_number_from_address_list: '" << network_list << "'; network_name: " << network_name;
   string s = ftn_address_from_address_list(network_list, network_name);
   if (starts_with(s, "20000:20000/")) {
-    s = s.substr(12);
-    s = s.substr(0, s.find('/'));
-    return stoi(s);
+    return wwivnet_node_number_from_ftn_address(s);
   }
   return -1;
 }
@@ -221,7 +221,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
         if (last_dash != string::npos) {
           // we really have CRAM-MD5
           string challenge = s.substr(last_dash + 1);
-          VLOG(1) << "        challenge: " << challenge;
+          VLOG(1) << "        challenge: '" << challenge << "'";
           cram_.set_challenge_data(challenge);
           auth_type_ = AuthType::CRAM_MD5;
         }
@@ -521,13 +521,21 @@ BinkState BinkP::PasswordAck() {
     LOG(ERROR) << "**** ERROR: WaitPwd Called on ORIGINATING side";
   }
 
-  // TODO(rushfan): we need to use the network name we matched not the one that config thinks.
-  const string network_name = remote_network_name();
-  int remote_node = remote_network_node();
-  LOG(INFO) << "       remote node: " << remote_node;
+  string expected_password;
 
+  const string network_name = remote_network_name();
   auto callout = config_->callouts().at(network_name).get();
-  const string expected_password = expected_password_for(callout, remote_node);
+  if (remote_network().type == network_type_t::wwivnet) {
+    // TODO(rushfan): we need to use the network name we matched not the one that config thinks.
+    auto remote_node = remote_network_node();
+    LOG(INFO) << "       remote node: " << remote_node;
+
+    expected_password = expected_password_for(callout, remote_node);
+  } else if (remote_network().type == network_type_t::ftn) {
+    auto remote_node = remote_network_ftn_address();
+    expected_password = expected_password_for(callout, remote_node);
+  }
+
   VLOG(1) << "STATE: PasswordAck";
   if (auth_type_ == AuthType::PLAIN_TEXT) {
     // VLOG(1) << "       PLAIN_TEXT expected_password = '" << expected_password << "'";
@@ -601,15 +609,23 @@ BinkState BinkP::AuthRemote() {
   VLOG(1) << "       remote address_list: " << address_list_;
   const string network_name(remote_network_name());
   if (side_ == BinkSide::ANSWERING) {
-    int caller_node = node_number_from_address_list(address_list_, network_name);
-    LOG(INFO) << "       remote_network_name: " << network_name << "; caller_node: " << caller_node;
-    if (config_->callouts().find(network_name) == end(config_->callouts())) {
+    if (!contains(config_->callouts(), network_name)) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
           StrCat("Error (NETWORKB-0003): Unable to find callout.net for: ", network_name));
       return BinkState::FATAL_ERROR;
     }
-    const net_call_out_rec* callout_record = config_->callouts().at(network_name)->net_call_out_for(caller_node);
+
+    const net_call_out_rec* callout_record = nullptr;
+    if (remote_network().type == network_type_t::wwivnet) {
+      auto caller = node_number_from_address_list(address_list_, network_name);
+      LOG(INFO) << "       remote_network_name: " << network_name << "; caller_node: " << caller;
+      callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
+    } else {
+      auto caller = ftn_address_from_address_list(address_list_, network_name);
+      LOG(INFO) << "       remote_network_name: " << network_name << "; caller_address: " << caller;
+      callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
+    }
     if (callout_record == nullptr) {
       // We don't have a callout.net entry for this caller. Fail the connection
       send_command_packet(BinkpCommands::M_ERR, 
@@ -748,6 +764,7 @@ bool BinkP::SendFileData(TransferFile* file) {
 
 bool BinkP::HandlePassword(const string& password_line) {
   VLOG(1) << "        HandlePassword: ";
+  VLOG(2) << "        password_line: " << password_line;
   if (!starts_with(password_line, "CRAM")) {
     LOG(INFO) << "        HandlePassword: Received Plain text password";
     auth_type_ = AuthType::PLAIN_TEXT;
@@ -936,23 +953,25 @@ void BinkP::Run() {
     process_network_files();
   }
 
-
-  // Log to net.log
-  auto diff = end_time - start_time;
-  auto sec = duration_cast<seconds>(diff);
-
-  NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
-  NetworkLog net_log(config_->gfiles_directory());
-  net_log.Log(system_clock::to_time_t(start_time), network_log_side,
+  if (remote_network().type == network_type_t::wwivnet) {
+    // Log to net.log
+    auto sec = duration_cast<seconds>(end_time - start_time);
+    // Update WWIVnet net.log and contact.net for WWIVnet connections.
+    NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
+    NetworkLog net_log(config_->gfiles_directory());
+    net_log.Log(system_clock::to_time_t(start_time), network_log_side,
       remote_network_node(), bytes_sent_, bytes_received_, sec, remote_network_name());
 
-  // Update CONTACT.NET
-  Contact c(config_->network_dir(remote_network_name()), true);
-  if (error_received_) {
-    c.add_failure(remote_network_node(), system_clock::to_time_t(start_time));
+    // Update CONTACT.NET
+    Contact c(config_->network_dir(remote_network_name()), true);
+    if (error_received_) {
+      c.add_failure(remote_network_node(), system_clock::to_time_t(start_time));
+    } else {
+      c.add_connect(remote_network_node(), system_clock::to_time_t(start_time),
+        bytes_sent_, bytes_received_);
+    }
   } else {
-    c.add_connect(remote_network_node(), system_clock::to_time_t(start_time),
-      bytes_sent_, bytes_received_);
+    // TODO(rushfan): We should have some contact.net equivalent for FTN connections.
   }
 }
 
@@ -1067,7 +1086,7 @@ int BinkP::remote_network_node() const {
     return node_number_from_address_list(address_list_, network_name);
   }
   // When sending, we should be talking to who we wanted to.
-  return StringToInt(expected_remote_node_);
+  return wwivnet_node_number_from_ftn_address(expected_remote_node_);
 }
 
 const std::string BinkP::remote_network_ftn_address() const {

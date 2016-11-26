@@ -107,7 +107,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
         File* f = new File(net.dir, filename);
         return new WFileTransferFile(filename, unique_ptr<File>(f));
       };
-      BinkP binkp(c.get(), &bink_config, side, 0, factory);
+      BinkP binkp(c.get(), &bink_config, side, "0", factory);
       binkp.Run();
     } catch (const connection_error& e) {
       LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
@@ -124,7 +124,7 @@ static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, const 
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
 
-  const BinkNodeConfig* node_config = bink_config.node_config_for(sendto_node);
+  const binkp_session_config_t* node_config = bink_config.node_config_for(sendto_node);
   if (node_config == nullptr) {
     LOG(ERROR) << "Unable to find node config for node: " << sendto_node;
     return false;
@@ -195,6 +195,7 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
       if (n.type == network_type_t::wwivnet) {
         bink_config.callouts().emplace(lower_case_network_name, new Callout(n));
       } else if (n.type == network_type_t::ftn) {
+        LOG(INFO) << "Adding FidoCallout for " << n.name;
         bink_config.callouts().emplace(lower_case_network_name, new FidoCallout(net_cmdline.config(), n));
       }
     }
