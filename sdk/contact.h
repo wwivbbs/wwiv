@@ -68,6 +68,9 @@ public:
   void AddContact(time_t t);
   void AddConnect(time_t t, uint32_t bytes_sent, uint32_t bytes_received);
   void AddFailure(time_t t);
+
+  const net_contact_rec& ncr() const { return ncr_.ncr; }
+
 private:
   network_contact_record ncr_{};
 };

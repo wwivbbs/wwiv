@@ -92,14 +92,11 @@ Contact::Contact(std::initializer_list<NetworkContact> l)
 }
 
 bool Contact::Save() {
-  if (!initialized_) {
-    return false;
-  }
   if (network_dir_.empty()) {
     return false;
   }
 
-  DataFile<NetworkContact> file(network_dir_, CONTACT_NET, 
+  DataFile<net_contact_rec> file(network_dir_, CONTACT_NET, 
       File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
       File::shareDenyReadWrite);
   if (!file) {
@@ -108,7 +105,13 @@ bool Contact::Save() {
   if (contacts_.size() == 0) {
     return false;
   }
-  return file.WriteVector(contacts_);
+
+  std::vector<net_contact_rec> vs;
+  for (const auto& v : contacts_) {
+    vs.emplace_back(v.ncr());
+  }
+
+  return file.WriteVector(vs);
 }
 
 Contact::~Contact() {
