@@ -9,9 +9,6 @@ FTN
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
-* skip importing zero byte files.
-* let networkc check for files to import and invoke the software
-  if needed.
 
 Ini Files and Configuration
 ===========================
