@@ -857,9 +857,12 @@ void BinkP::Run() {
   auto end_time = system_clock::now();
   if (remote_.network().type == network_type_t::wwivnet) {
     // Handle WWIVnet inbound files.
-    file_manager_->rename_pending_files();
-    if (!config_->skip_net()) {
-      process_network_files();
+    if (file_manager_) {
+      // file_manager_ is null in some tests (BinkpTest).
+      file_manager_->rename_pending_files();
+      if (!config_->skip_net()) {
+        process_network_files();
+      }
     }
 
     // Log to net.log

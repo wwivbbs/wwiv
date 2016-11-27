@@ -44,7 +44,7 @@ public:
   void set_address_list(const std::string& a);
   const std::string address_list() const { return address_list_; }
   const std::string network_name() const;
-  const net_networks_rec& Remote::network() const;
+  const net_networks_rec& network() const;
 
   int wwivnet_node() const { return wwivnet_node_; }
   std::string ftn_address() const { return ftn_address_; }

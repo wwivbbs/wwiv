@@ -981,9 +981,7 @@ int main(int argc, char** argv) {
       for (const auto& ext : extensions) {
         import_bundles(net_cmdline.config(), fido_callout, net, inbounddir, StrCat("*.", ext));
 #ifndef _WIN32
-        string uext = ext;
-        StringUpperCase(&uext);
-        import_bundles(net_cmdline.config(), fido_callout, net, tempdir, StrCat("*.", uext));
+        import_bundles(net_cmdline.config(), fido_callout, net, inbounddir, StrCat("*.", ToStringUpperCase(ext)));
 #endif
       }
     } else if (cmd == "export") {

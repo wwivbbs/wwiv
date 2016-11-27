@@ -28,22 +28,6 @@ using std::map;
 using std::string;
 using std::vector;
 
-static string md5(const std::string& s) {
-  MD5_CTX ctx;
-  MD5_Init(&ctx);
-
-  unsigned char hash[16];
-  std::cerr << "s=" << s;
-  MD5_Update(&ctx, (void*)s.c_str(), s.size());
-  MD5_Final(hash, &ctx);
-
-  std::ostringstream ss;
-  for (int i = 0; i < 16; i++) {
-    ss << std::setw(2) << std::setfill('0') << std::hex << static_cast<int>(hash[i]);
-  }
-  return ss.str();
-}
-
 TEST(Md5Test, Welcome) {
   EXPECT_EQ("f851256dff2a8825ad4af615111b6a4f", md5("WELCOME"));
 }
