@@ -285,6 +285,9 @@ void do_callout(uint16_t sn) {
   }
 
   const NetworkContact* contact_rec = contact.contact_rec_for(sn);  // i2 ncn
+  if (!contact_rec) {
+    return;
+  }
   net_system_list_rec *csne = next_system(callout_rec->sysnum);
   if (!csne) {
     return;
@@ -444,6 +447,9 @@ bool attempt_callout() {
 
       const NetworkContact* ncr = contact.contact_rec_for(p.first);
       const net_call_out_rec* ncor = callout.net_call_out_for(p.first);
+      if (!ncr || !ncor) {
+        continue;
+      }
       ok = ok_to_call_from_contact_rec(*ncr, *ncor);
 
       if (ok) {
@@ -514,6 +520,9 @@ void print_pending_list() {
 
     for (const auto& p : callout.node_config()) {
       const NetworkContact* r = contact.contact_rec_for(p.first);
+      if (!r) {
+        continue;
+      }
       const auto& con = p.second;
       if (con.options & options_hide_pend) {
         // skip hidden ones.
@@ -750,7 +759,9 @@ static void print_call(uint16_t sn, int nNetNumber) {
   Binkp binkp(session()->current_net().dir);
 
   const NetworkContact *ncn = contact.contact_rec_for(sn);
+  if (!ncn) { return; }
   net_system_list_rec *csne = next_system(sn);
+  if (!csne) { return; }
 
   if (!got_color) {
     got_color = 1;

@@ -114,6 +114,8 @@ class Contact {
    bool save_on_destructor_;
    std::vector<NetworkContact> contacts_;
    bool initialized_;
+
+   NetworkContact empty_contact{};
 };
 
 
