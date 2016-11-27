@@ -859,7 +859,7 @@ void BinkP::Run() {
     // Handle WWIVnet inbound files.
     if (file_manager_) {
       // file_manager_ is null in some tests (BinkpTest).
-      file_manager_->rename_pending_files();
+      file_manager_->rename_wwivnet_pending_files();
       if (!config_->skip_net()) {
         process_network_files();
       }

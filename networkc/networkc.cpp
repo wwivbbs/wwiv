@@ -40,28 +40,18 @@
 #include "core/textfile.h"
 #include "core/wfndfile.h"
 #include "core/version.h"
-#include "networkb/binkp.h"
-#include "networkb/binkp_config.h"
-#include "networkb/connection.h"
 #include "networkb/net_util.h"
 #include "networkb/fido_util.h"
-#include "networkb/packets.h"
-#include "networkb/ppp_config.h"
 
-#include "sdk/bbslist.h"
 #include "sdk/callout.h"
 #include "sdk/connect.h"
 #include "sdk/config.h"
-#include "sdk/contact.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
-#include "sdk/ftn_msgdupe.h"
 #include "sdk/networks.h"
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/fido/fido_address.h"
-#include "sdk/fido/fido_callout.h"
-#include "sdk/fido/fido_packets.h"
 
 using std::cout;
 using std::endl;
@@ -145,31 +135,6 @@ static bool need_network3(const string& dir, int network_version) {
   return checkup2(bbsdata_time, dir, BBSLIST_NET)
     || checkup2(bbsdata_time, dir, CONNECT_NET)
     || checkup2(bbsdata_time, dir, CALLOUT_NET);
-}
-
-bool exists_ftn(const Config& config, const net_networks_rec& net) {
-  const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
-  auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
-  auto inbounddir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
-  for (const auto& e : extensions) {
-    {
-      const string mask = StrCat("*.", e);
-      if (File::ExistsWildcard(FilePath(inbounddir, mask))) {
-        File f(inbounddir, mask);
-        if (f.GetLength() > 0) return true;
-      }
-    }
-    {
-      string ue(e);
-      StringUpperCase(&ue);
-      const string mask = StrCat("*.", ue);
-      if (File::ExistsWildcard(FilePath(inbounddir, mask))) {
-        File f(inbounddir, mask);
-        if (f.GetLength() > 0) return true;
-      }
-    }
-  }
-  return false;
 }
 
 int main(int argc, char** argv) {

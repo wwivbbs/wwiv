@@ -71,7 +71,7 @@ void FileManager::ReceiveFile(const std::string& filename) {
   received_files_.push_back(filename);
 }
 
-static void rename_pend(const string& directory, const string& filename) {
+static void rename_wwivnet_pend(const string& directory, const string& filename) {
   File pend_file(directory, filename);
   if (!pend_file.Exists()) {
     LOG(ERROR) << " pending file does not exist: " << pend_file;
@@ -89,14 +89,14 @@ static void rename_pend(const string& directory, const string& filename) {
       return;
     }
   }
-  LOG(ERROR) << "all attempts failed to rename_pend";
+  LOG(ERROR) << "all attempts failed to rename_wwivnet_pend";
 }
 
-void FileManager::rename_pending_files() {
-  VLOG(1) << "STATE: rename_pending_files";
+void FileManager::rename_wwivnet_pending_files() {
+  VLOG(1) << "STATE: rename_wwivnet_pending_files";
   for (const auto& file : received_files()) {
     LOG(INFO) << "       renaming_pending_file: dir: " << net_.dir << "; file: " << file;
-    rename_pend(net_.dir, file);
+    rename_wwivnet_pend(net_.dir, file);
   }
 }
 

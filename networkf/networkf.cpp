@@ -792,8 +792,8 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
   string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
   string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
 
-  const string floname = flo_name(orig, dest, packet_config.netmail_status);
-  const string bsyname = bundle_name(orig, dest, "bsy");
+  const string floname = flo_name(dest, packet_config.netmail_status);
+  const string bsyname = net_node_name(dest, "bsy");
 
   for (int i = 1; i < 7; i++) {
     File bsy(out_dir, bsyname);

@@ -65,12 +65,16 @@ std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::
   return StringPrintf("%04.4x%04.4x.%s", net, node, extension.c_str());
 }
 
-std::string flo_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
+std::string net_node_name(const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension) {
+  return StringPrintf("%04.4x%04.4x.%s", dest.net(), dest.node(), extension.c_str());
+}
+
+std::string flo_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
   string extension = "flo";
   if (status != fido_bundle_status_t::unknown) {
     extension[0] = static_cast<char>(status);
   }
-  return bundle_name(source, dest, extension);
+  return net_node_name(dest, extension);
 }
 
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number) {
@@ -350,6 +354,35 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
   const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout) {
 
   return FindRouteToAddress(a, callout.node_configs_map());
+}
+
+bool exists_ftn(const wwiv::sdk::Config& config, const net_networks_rec& net) {
+  auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
+  auto inbounddir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
+  return exists_ftn(inbounddir);
+}
+
+bool exists_ftn(const std::string& dir) {
+  const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
+  for (const auto& e : extensions) {
+    {
+      const string mask = StrCat("*.", e);
+      if (File::ExistsWildcard(FilePath(dir, mask))) {
+        File f(dir, mask);
+        if (f.GetLength() > 0) return true;
+      }
+    }
+    {
+      string ue(e);
+      StringUpperCase(&ue);
+      const string mask = StrCat("*.", ue);
+      if (File::ExistsWildcard(FilePath(dir, mask))) {
+        File f(dir, mask);
+        if (f.GetLength() > 0) return true;
+      }
+    }
+  }
+  return false;
 }
 
 

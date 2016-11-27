@@ -53,7 +53,7 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
       return;
     }
   }
-  LOG(ERROR) << "all attempts failed to rename_pend";
+  LOG(ERROR) << "all attempts failed to rename_wwivnet_pend";
 }
 
 std::string create_pend(const string& directory, bool local, char network_app_id) {

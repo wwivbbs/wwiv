@@ -42,7 +42,7 @@ public:
   std::vector<TransferFile*> CreateTransferFileList(const Remote& remote);
   void ReceiveFile(const std::string& filename);
   const std::vector<std::string>& received_files() const { return received_files_; }
-  void rename_pending_files();
+  void rename_wwivnet_pending_files();
 
 private:
   std::vector<TransferFile*> CreateWWIVnetTransferFileList(uint16_t destination_node);

@@ -104,13 +104,17 @@ void Remote::set_address_list(const std::string& a) {
   StringLowerCase(&address_list_);
 
   if (is_caller_) {
+    // The remote is the caller. That means we are presented with
+    // a single address for the remote.
     auto name = network_name_from_single_address(address_list_);
     if (!name.empty()) {
       network_name_ = name;
     }
 
+    // This is a pure FTN address or a stub wwivnet ftn address.
     ftn_address_ = ftn_address_from_address_list(address_list_, network_name_);
     if (network().type == network_type_t::wwivnet) {
+      // only valid for WWIVnet BinkP connections
       wwivnet_node_ = wwivnet_node_number_from_ftn_address(ftn_address_);
     }
   }
