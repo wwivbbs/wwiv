@@ -276,7 +276,7 @@ void do_callout(uint16_t sn) {
   time_t tCurrentTime = time(nullptr);
   
   Callout callout(session()->current_net());
-  Contact contact(session()->current_net().dir, false);
+  Contact contact(session()->current_net(), false);
   Binkp binkp(session()->current_net().dir);
 
   const net_call_out_rec* callout_rec = callout.net_call_out_for(sn); // i con
@@ -437,7 +437,7 @@ bool attempt_callout() {
     }
 
     Callout callout(session()->current_net());
-    Contact contact(session()->current_net().dir, false);
+    Contact contact(session()->current_net(), false);
 
     for (const auto& p : callout.node_config()) {
       bool ok = ok_to_call(&p.second);
@@ -516,7 +516,7 @@ void print_pending_list() {
     }
 
     Callout callout(session()->current_net());
-    Contact contact(session()->current_net().dir, false);
+    Contact contact(session()->current_net(), false);
 
     for (const auto& p : callout.node_config()) {
       const NetworkContact* r = contact.contact_rec_for(p.first);
@@ -757,7 +757,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
 
   set_net_num(nNetNumber);
   Callout callout(session()->current_net());
-  Contact contact(session()->current_net().dir, false);
+  Contact contact(session()->current_net(), false);
   Binkp binkp(session()->current_net().dir);
 
   const NetworkContact *ncn = contact.contact_rec_for(sn);
@@ -897,7 +897,7 @@ static std::pair<uint16_t, int> ansicallout() {
   for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
     Callout callout(session()->current_net());
-    Contact contact(session()->current_net().dir, false);
+    Contact contact(session()->current_net(), false);
 
     const auto& nodemap = callout.node_config();
     for (const auto& p : nodemap) {
@@ -1132,7 +1132,7 @@ void force_callout(int dw) {
     total_attempts = 1;
   }
 
-  Contact contact(session()->current_net().dir, false);
+  Contact contact(session()->current_net(), false);
   while (current_attempt < total_attempts && !abort) {
     while (session()->localIO()->KeyPressed()) {
       ch = wwiv::UpperCase<char>(session()->localIO()->GetChar());

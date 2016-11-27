@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/net.h"
 
@@ -37,7 +38,7 @@ struct network_contact_record {
 
 static inline network_contact_record to_network_contact_record(const net_contact_rec& n) {
   network_contact_record ncr{};
-  ncr.address = std::to_string(n.systemnumber);
+  ncr.address = wwiv::strings::StrCat("20000:20000/", n.systemnumber);
   ncr.ncr = n;
   return ncr;
 }
@@ -45,8 +46,11 @@ static inline network_contact_record to_network_contact_record(const net_contact
 class NetworkContact {
 public:
   NetworkContact(): ncr_() {}
-  explicit NetworkContact(uint16_t node): ncr_() { ncr_.ncr.systemnumber = node; ncr_.address = std::to_string(node); }
-  explicit NetworkContact(const std::string& node): ncr_() { ncr_.address = node; }
+  explicit NetworkContact(uint16_t node): ncr_() { 
+    ncr_.ncr.systemnumber = node;
+    ncr_.address = wwiv::strings::StrCat("20000:20000/",node); 
+  }
+  explicit NetworkContact(const std::string& address): ncr_() { ncr_.address = address; }
   explicit NetworkContact(const net_contact_rec& ncr): ncr_(to_network_contact_record(ncr)) {}
   explicit NetworkContact(const wwiv::sdk::network_contact_record& ncr): ncr_(ncr) {}
   ~NetworkContact() {}
@@ -83,7 +87,7 @@ static_assert(sizeof(network_contact_record) == sizeof(NetworkContact),
   */
 class Contact {
  public:
-  Contact(const std::string& network_dir, bool save_on_destructor);
+  Contact(const net_networks_rec& net, bool save_on_destructor);
   // VisibleForTesting
   Contact(std::initializer_list<NetworkContact> l);
   virtual ~Contact();
@@ -110,7 +114,7 @@ class Contact {
    /** add a contact. called by connect or failure. */
    void add_contact(NetworkContact* c, time_t time);
 
-   std::string network_dir_;
+   const net_networks_rec net_;
    bool save_on_destructor_;
    std::vector<NetworkContact> contacts_;
    bool initialized_;

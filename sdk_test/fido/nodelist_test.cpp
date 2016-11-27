@@ -115,7 +115,7 @@ TEST(NodelistTest, Nets) {
   ASSERT_TRUE(nl);
 
   auto nets = nl.nets(1);
-  std::vector<uint16_t>expected{102 ,123, 261};
+  std::vector<uint16_t>expected{10, 102 ,123, 261};
   EXPECT_EQ(expected, nets);
 }
 

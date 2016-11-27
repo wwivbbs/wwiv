@@ -58,9 +58,9 @@ constexpr long HOURS_PER_DAY = 24L;
 constexpr long SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
 }
 
-Contact::Contact(const string& network_dir, bool save_on_destructor) 
-    : network_dir_(network_dir), save_on_destructor_(save_on_destructor) {
-  DataFile<net_contact_rec> file(network_dir, CONTACT_NET, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+Contact::Contact(const net_networks_rec& net, bool save_on_destructor) 
+    : net_(net), save_on_destructor_(save_on_destructor) {
+  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return;
   }
@@ -72,7 +72,7 @@ Contact::Contact(const string& network_dir, bool save_on_destructor)
 
   for (const auto& v : vs) {
     network_contact_record r{};
-    r.address = StringPrintf("20000:20000/%u@wwivnet", v.systemnumber);
+    r.address = StringPrintf("20000:20000/%u@%s", v.systemnumber, net.name);
     r.ncr = v;
     contacts_.emplace_back(r);
   }
@@ -92,11 +92,11 @@ Contact::Contact(std::initializer_list<NetworkContact> l)
 }
 
 bool Contact::Save() {
-  if (network_dir_.empty()) {
+  if (net_.dir.empty()) {
     return false;
   }
 
-  DataFile<net_contact_rec> file(network_dir_, CONTACT_NET, 
+  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET, 
       File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
       File::shareDenyReadWrite);
   if (!file) {
@@ -140,6 +140,10 @@ void NetworkContact::AddContact(time_t t) {
   ncr_.ncr.lasttry = d;
   ncr_.ncr.lastcontact = d;
   ncr_.ncr.numcontacts++;
+
+  if (ncr_.ncr.firstcontact == 0) {
+    ncr_.ncr.firstcontact = d;
+  }
 }
 
 void NetworkContact::AddConnect(time_t t, uint32_t bytes_sent, uint32_t bytes_received) {
@@ -155,6 +159,7 @@ void NetworkContact::AddConnect(time_t t, uint32_t bytes_sent, uint32_t bytes_re
 }
 
 void NetworkContact::AddFailure(time_t t) {
+  AddContact(t);
   ncr_.ncr.numfails++;
 }
 

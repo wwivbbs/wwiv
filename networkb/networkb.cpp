@@ -134,7 +134,7 @@ static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, const 
     c = Connect(node_config->host, node_config->port);
   } catch (const connection_error& e) {
     const net_networks_rec& net = bink_config.networks()[network_name];
-    Contact contact(net.dir, true);
+    Contact contact(net, true);
     contact.add_failure(sendto_node, system_clock::to_time_t(start_time));
     throw e;
   }

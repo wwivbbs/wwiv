@@ -390,8 +390,8 @@ static void rename_pending_files(const string& dir) {
   }
 }
 
-static void ensure_contact_net_entries(const Callout& callout, const string& dir) {
-  Contact contact(dir, true);
+static void ensure_contact_net_entries(const Callout& callout, const net_networks_rec& net) {
+  Contact contact(net, true);
   for (const auto& entry : callout.node_config()) {
     // Ensure we have a contact entry for each node in CALLOUT.NET
     contact.ensure_rec_for(entry.first);
@@ -553,7 +553,7 @@ static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_
 
   VLOG(1) << "Reading CALLOUT.NET...";
   Callout callout(net);
-  ensure_contact_net_entries(callout, net.dir);
+  ensure_contact_net_entries(callout, net);
   update_filechange_status_dat(net_cmdline.config().datadir());
   rename_pending_files(net.dir);
 

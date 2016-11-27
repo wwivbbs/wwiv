@@ -56,9 +56,8 @@ int DumpContactCommand::Execute() {
 
   map<const string, Contact> contacts;
   for (const auto net : networks.networks()) {
-    string lower_case_network_name(net.name);
-    StringLowerCase(&lower_case_network_name);
-    contacts.emplace(lower_case_network_name, Contact(net.dir, false));
+    const string lower_case_network_name = ToStringLowerCase(net.name);
+    contacts.emplace(lower_case_network_name, Contact(net, false));
   }
 
   for (const auto& c : contacts) {

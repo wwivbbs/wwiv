@@ -878,7 +878,7 @@ void BinkP::Run() {
       remote_.wwivnet_node(), bytes_sent_, bytes_received_, sec, remote_.network_name());
 
     // Update CONTACT.NET
-    Contact c(config_->network_dir(remote_.network_name()), true);
+    Contact c(config_->network(remote_.network_name()), true);
     if (error_received_) {
       c.add_failure(remote_.wwivnet_node(), system_clock::to_time_t(start_time));
     } else {
