@@ -96,7 +96,6 @@ private:
   bool send_data_packet(const char* data, std::size_t size);
 
   std::string create_cmdline(int num, int network_number) const;
-  void rename_pending_files() const;
   void process_network_files() const;
 
   BinkState ConnInit();
@@ -129,7 +128,6 @@ private:
   std::string remote_password_;
   bool error_received_ = false;
   received_transfer_file_factory_t received_transfer_file_factory_;
-  std::vector<std::string> received_files_;
   std::unique_ptr<ReceiveFile> current_receive_file_;
   unsigned int bytes_received_ = 0;
   unsigned int bytes_sent_ = 0;

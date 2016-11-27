@@ -90,21 +90,6 @@ string expected_password_for(const net_call_out_rec* con) {
   return password;
 }
 
-static int wwivnet_node_number_from_ftn_address(const string& address) {
-  string s = address;
-  if (starts_with(s, "20000:20000/")) {
-    s = s.substr(12);
-    s = s.substr(0, s.find('/'));
-
-    if (contains(s, '@')) {
-      s = s.substr(0, s.find('@'));
-    }
-    return StringToInt(s);
-  }
-
-  return -1;
-}
-
 BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
         const std::string& expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
@@ -178,6 +163,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   } break;
   case BinkpCommands::M_ADR: {
     remote_.set_address_list(s);
+    file_manager_.reset(new FileManager(remote_.network()));
   } break;
   case BinkpCommands::M_OK: {
     ok_received_ = true;
@@ -257,7 +243,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
       }
     }
 
-    received_files_.push_back(current_receive_file_->filename());
+    file_manager_->ReceiveFile(current_receive_file_->filename());
 
     // Delete the reference to this file and signal the other side we received it.
     current_receive_file_.release();
@@ -407,8 +393,7 @@ BinkState BinkP::WaitConn() {
       // Present single primary WWIVnet address.
       send_command_packet(BinkpCommands::M_NUL,
         StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
-      string lower_case_network_name(net.name);
-      StringLowerCase(&lower_case_network_name);
+      const string lower_case_network_name = ToStringLowerCase(net.name);
       network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
     } else {
       // Present single FTN address.
@@ -579,27 +564,26 @@ BinkState BinkP::AuthRemote() {
     return BinkState::WAIT_PWD;
   }
 
-  const string expected_ftn = expected_remote_node_;
-  VLOG(1) << "       expected_ftn: " << expected_ftn;
-  if (remote_.address_list().find(expected_ftn) != string::npos) {
+  VLOG(1) << "       expected_ftn: " << expected_remote_node_;
+  if (remote_.address_list().find(expected_remote_node_) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(BinkpCommands::M_ERR, 
-      StrCat("Error (NETWORKB-0001): Unexpected Address: ", remote_.address_list()));
+      StrCat("Error (NETWORKB-0001): Unexpected Addresses: ", remote_.address_list()));
     return BinkState::FATAL_ERROR;
   }
 }
 
 BinkState BinkP::TransferFiles() {
-  int remote_node = remote_.wwivnet_node();
-  const string network_name(remote_.network_name());
-
-  VLOG(1) << "STATE: TransferFiles to node: " << remote_node;
+  if (remote_.network().type == network_type_t::wwivnet) {
+    VLOG(1) << "STATE: TransferFiles to node: " << remote_.wwivnet_node();
+  } else {
+    VLOG(1) << "STATE: TransferFiles to node: " << remote_.ftn_address();
+  }
   // Quickly let the inbound event loop percolate.
   process_frames(milliseconds(500));
-  file_manager_.reset(new FileManager(config_->network_dir(network_name)));
-  const auto list = file_manager_->CreateTransferFileList(remote_node);
+  const auto list = file_manager_->CreateTransferFileList(remote_);
   for (auto file : list) {
     SendFilePacket(file);
   }
@@ -803,27 +787,6 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   return true;
 }
 
-static void rename_pend(const string& directory, const string& filename) {
-  File pend_file(directory, filename);
-  if (!pend_file.Exists()) {
-    LOG(ERROR) << " pending file does not exist: " << pend_file;
-    return;
-  }
-  const string pend_filename(pend_file.full_pathname());
-  const string num = filename.substr(1);
-  const string prefix = (atoi(num.c_str())) ? "1" : "0";
-
-  for (int i = 0; i < 1000; i++) {
-    const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
-    VLOG(2) << new_filename;
-    if (File::Rename(pend_filename, new_filename)) {
-      LOG(INFO) << "renamed file to: " << new_filename;
-      return;
-    }
-  }
-  LOG(ERROR) << "all attempts failed to rename_pend";
-}
-
 void BinkP::Run() {
   VLOG(1) << "STATE: Run(): side:" << static_cast<int>(side_);
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
@@ -892,12 +855,13 @@ void BinkP::Run() {
   }
 
   auto end_time = system_clock::now();
-  rename_pending_files();
-  if (!config_->skip_net()) {
-    process_network_files();
-  }
-
   if (remote_.network().type == network_type_t::wwivnet) {
+    // Handle WWIVnet inbound files.
+    file_manager_->rename_pending_files();
+    if (!config_->skip_net()) {
+      process_network_files();
+    }
+
     // Log to net.log
     auto sec = duration_cast<seconds>(end_time - start_time);
     // Update WWIVnet net.log and contact.net for WWIVnet connections.
@@ -916,20 +880,8 @@ void BinkP::Run() {
     }
   } else {
     // TODO(rushfan): We should have some contact.net equivalent for FTN connections.
-  }
-}
 
-void BinkP::rename_pending_files() const {
-  VLOG(1) << "STATE: rename_pending_files";
-  for (const auto& file : received_files_) {
-    if (!config_->networks().contains(remote_.network_name())) {
-      // unknown network. log and skip.
-      LOG(ERROR) << "ERROR: unknown network name (not in config.dat): " << remote_.network_name();
-      continue;
-    }
-    const auto dir = remote_.network().dir;
-    LOG(INFO) << "       renaming_pending_file: dir: " << dir << "; file: " << file;
-    rename_pend(dir, file);
+
   }
 }
 

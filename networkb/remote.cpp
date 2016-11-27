@@ -72,6 +72,7 @@ string network_name_from_single_address(const string& network_list) {
 
 int wwivnet_node_number_from_ftn_address(const string& address) {
   string s = address;
+  LOG(INFO) << "wwivnet_node_number_from_ftn_address: '" << s << "'";
   if (starts_with(s, "20000:20000/")) {
     s = s.substr(12);
     s = s.substr(0, s.find('/'));
@@ -91,7 +92,8 @@ Remote::Remote(BinkConfig* config, bool caller, const std::string& expected_remo
   network_name_ = default_network_name_;
 
   // When sending, we should be talking to who we wanted to.
-  if (caller) {
+  if (!caller) {
+    LOG(INFO) << "*********** REMOTE IS NOT CALLER ****************: " << expected_remote_node;
     ftn_address_ = expected_remote_node;
     wwivnet_node_ = wwivnet_node_number_from_ftn_address(ftn_address_);
   }
@@ -101,7 +103,7 @@ void Remote::set_address_list(const std::string& a) {
   address_list_ = a;
   StringLowerCase(&address_list_);
 
-  if (!is_caller_) {
+  if (is_caller_) {
     auto name = network_name_from_single_address(address_list_);
     if (!name.empty()) {
       network_name_ = name;

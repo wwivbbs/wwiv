@@ -72,13 +72,13 @@ long File::GetLength() {
   if (IsOpen()) {
     // File is open, use fstat
     if (fstat(handle_, &fileinfo) != 0) {
-      return -1;
+      return 0;
     }
   }
   else {
     // stat works on filenames, not filehandles.
     if (stat(full_path_name_.c_str(), &fileinfo) != 0) {
-      return -1;
+      return 0;
     }
   }
   return fileinfo.st_size;

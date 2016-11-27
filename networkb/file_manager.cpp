@@ -40,18 +40,64 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-vector<TransferFile*> FileManager::CreateTransferFileList(uint16_t destination_node) {
+vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) {
   vector<TransferFile*> result;
   const string s_node_net = StringPrintf("s%d.net", destination_node);
-  const string search_path = FilePath(network_directory_, s_node_net);
-  VLOG(2) << "       CreateTransferFileList: search_path: " << search_path;
+  const string search_path = FilePath(net_.dir, s_node_net);
+  VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
   if (File::Exists(search_path)) {
     File file(search_path);
     const string basename = file.GetName();
-    result.push_back(new WFileTransferFile(basename, std::make_unique<File>(network_directory_, basename)));
-    LOG(INFO) << "       CreateTransferFileList: found file: " << basename;
+    result.push_back(new WFileTransferFile(basename, std::make_unique<File>(net_.dir, basename)));
+    LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << basename;
   }
   return result;
+}
+
+std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& address) {
+  return{};
+}
+
+std::vector<TransferFile*> FileManager::CreateTransferFileList(const Remote& remote) {
+  if (net_.type == network_type_t::wwivnet) {
+    return CreateWWIVnetTransferFileList(remote.wwivnet_node());
+  } else if (net_.type == network_type_t::ftn) {
+    return CreateFtnTransferFileList(remote.ftn_address());
+  }
+  return{};
+}
+
+void FileManager::ReceiveFile(const std::string& filename) {
+  received_files_.push_back(filename);
+}
+
+static void rename_pend(const string& directory, const string& filename) {
+  File pend_file(directory, filename);
+  if (!pend_file.Exists()) {
+    LOG(ERROR) << " pending file does not exist: " << pend_file;
+    return;
+  }
+  const string pend_filename(pend_file.full_pathname());
+  const string num = filename.substr(1);
+  const string prefix = (atoi(num.c_str())) ? "1" : "0";
+
+  for (int i = 0; i < 1000; i++) {
+    const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
+    VLOG(2) << new_filename;
+    if (File::Rename(pend_filename, new_filename)) {
+      LOG(INFO) << "renamed file to: " << new_filename;
+      return;
+    }
+  }
+  LOG(ERROR) << "all attempts failed to rename_pend";
+}
+
+void FileManager::rename_pending_files() {
+  VLOG(1) << "STATE: rename_pending_files";
+  for (const auto& file : received_files()) {
+    LOG(INFO) << "       renaming_pending_file: dir: " << net_.dir << "; file: " << file;
+    rename_pend(net_.dir, file);
+  }
 }
 
 

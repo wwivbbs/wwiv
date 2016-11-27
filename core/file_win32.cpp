@@ -67,14 +67,14 @@ long File::GetLength() {
     // File is open, use GetFileSizeEx
     BOOL result = GetFileSizeEx((HANDLE)_get_osfhandle(handle_), &size);
     if (!result) {
-      return -1;
+      return 0;
     }
     return size.LowPart;
   } else {
     WIN32_FILE_ATTRIBUTE_DATA info;
     BOOL result = GetFileAttributesEx(full_path_name_.c_str(), GetFileExInfoStandard, &info);
     if (!result) {
-      return -1;
+      return 0;
     }
     return info.nFileSizeLow;
   }

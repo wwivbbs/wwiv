@@ -28,19 +28,29 @@
 #include <vector>
 
 #include "networkb/transfer_file.h"
+#include "networkb/remote.h"
+#include "sdk/net.h"
 
 namespace wwiv {
 namespace net {
   
 class FileManager {
 public:
-  explicit FileManager(const std::string& network_directory): network_directory_(network_directory) {}
+  explicit FileManager(const net_networks_rec& net): net_(net) {}
   virtual ~FileManager() {}
 
-  std::vector<TransferFile*> CreateTransferFileList(uint16_t destination_node);
+  std::vector<TransferFile*> CreateTransferFileList(const Remote& remote);
+  void ReceiveFile(const std::string& filename);
+  const std::vector<std::string>& received_files() const { return received_files_; }
+  void rename_pending_files();
 
 private:
+  std::vector<TransferFile*> CreateWWIVnetTransferFileList(uint16_t destination_node);
+  std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address);
+
+  const net_networks_rec net_;
   const std::string network_directory_;
+  std::vector<std::string> received_files_;
 };
 
 }  // namespace net

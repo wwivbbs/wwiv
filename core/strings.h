@@ -93,7 +93,9 @@ void StringTrimEnd(std::string* s);
 void StringTrimEnd(char *str);
 void StringTrimBegin(std::string* s);
 void StringUpperCase(std::string* s);
+std::string ToStringUpperCase(const std::string& s);
 void StringLowerCase(std::string* s);
+std::string ToStringLowerCase(const std::string& s);
 void StringRemoveWhitespace(std::string* s);
 
 

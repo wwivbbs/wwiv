@@ -332,8 +332,20 @@ void StringUpperCase(string* s) {
   std::transform(std::begin(*s), std::end(*s), std::begin(*s), (int(*)(int)) toupper);
 }
 
+string ToStringUpperCase(const string& orig) {
+  string s(orig);
+  StringUpperCase(&s);
+  return s;
+}
+
 void StringLowerCase(string* s) {
   std::transform(std::begin(*s), std::end(*s), std::begin(*s), (int(*)(int)) tolower);
+}
+
+string ToStringLowerCase(const string& orig) {
+  string s(orig);
+  StringLowerCase(&s);
+  return s;
 }
 
 /**
