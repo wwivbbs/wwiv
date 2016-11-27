@@ -520,8 +520,10 @@ void print_pending_list() {
 
     for (const auto& p : callout.node_config()) {
       const NetworkContact* r = contact.contact_rec_for(p.first);
+      NetworkContact empty_contact;
       if (!r) {
-        continue;
+        // default it to a null entry.
+        r = &empty_contact;
       }
       const auto& con = p.second;
       if (con.options & options_hide_pend) {

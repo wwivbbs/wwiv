@@ -160,7 +160,7 @@ void NetworkContact::AddFailure(time_t t) {
 
 NetworkContact* Contact::contact_rec_for(uint16_t node) {
   for (NetworkContact& c : contacts_) {
-    if (c.address() == std::to_string(node)) {
+    if (c.ncr().systemnumber == node) {
       c.fixup();
       return &c;
     }
