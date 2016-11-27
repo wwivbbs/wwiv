@@ -148,7 +148,7 @@ static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const 
   bool done = false;
   while (!done) {
     Packet packet;
-    ReadPacketResponse response = read_packet(f, packet);
+    ReadPacketResponse response = read_packet(f, packet, false);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return true;
     } else if (response == ReadPacketResponse::ERROR) {

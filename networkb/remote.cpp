@@ -93,7 +93,7 @@ Remote::Remote(BinkConfig* config, bool caller, const std::string& expected_remo
 
   // When sending, we should be talking to who we wanted to.
   if (!caller) {
-    LOG(INFO) << "*********** REMOTE IS NOT CALLER ****************: " << expected_remote_node;
+    VLOG(3) << "*********** REMOTE IS NOT CALLER ****************: " << expected_remote_node;
     ftn_address_ = expected_remote_node;
     wwivnet_node_ = wwivnet_node_number_from_ftn_address(ftn_address_);
   }

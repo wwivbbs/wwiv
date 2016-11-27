@@ -1002,7 +1002,7 @@ int main(int argc, char** argv) {
       std::set<std::string> bundles;
       while (!done) {
         Packet p;
-        wwiv::net::ReadPacketResponse response = read_packet(f, p);
+        wwiv::net::ReadPacketResponse response = read_packet(f, p, true);
         if (response == wwiv::net::ReadPacketResponse::END_OF_FILE) {
           // Delete the packet.
           f.Close();

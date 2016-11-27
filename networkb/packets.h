@@ -47,7 +47,7 @@ public:
 
 
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
-ReadPacketResponse read_packet(File& file, Packet& packet);
+ReadPacketResponse read_packet(File& file, Packet& packet, bool process_de);
 
 bool write_wwivnet_packet(
   const std::string& filename,

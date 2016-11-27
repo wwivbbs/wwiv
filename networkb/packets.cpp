@@ -77,7 +77,7 @@ bool send_network_email(const std::string& filename,
   return true;
 }
 
-ReadPacketResponse read_packet(File& f, Packet& packet) {
+ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
   auto num_read = f.Read(&packet.nh, sizeof(net_header_rec));
   if (num_read == 0) {
     // at the end of the packet.
@@ -102,7 +102,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet) {
 
   if (packet.nh.length > 0) {
     int length = packet.nh.length;
-    if (packet.nh.method > 0) {
+    if (packet.nh.method > 0 && process_de) {
       // HACK - this should do this in a shim DE
       // 146 is the sizeof EN/DE header.
       packet.nh.length -= 146;
@@ -110,7 +110,8 @@ ReadPacketResponse read_packet(File& f, Packet& packet) {
       f.Read(header, 146);
     }
     packet.text.resize(length);
-    f.Read(&packet.text[0], packet.nh.length);
+    int num_read = f.Read(&packet.text[0], packet.nh.length);
+    packet.text.resize(num_read);
   }
   return ReadPacketResponse::OK;
 }

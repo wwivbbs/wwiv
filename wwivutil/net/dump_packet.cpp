@@ -50,7 +50,7 @@ int dump_file(const std::string& filename) {
   bool done = false;
   while (!done) {
     Packet packet;
-    ReadPacketResponse response = read_packet(f, packet);
+    ReadPacketResponse response = read_packet(f, packet, true);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return 0;
     } else if (response == ReadPacketResponse::ERROR) {

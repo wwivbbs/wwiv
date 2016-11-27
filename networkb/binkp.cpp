@@ -144,7 +144,11 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
           string challenge = s.substr(last_dash + 1);
           VLOG(1) << "        challenge: '" << challenge << "'";
           cram_.set_challenge_data(challenge);
-          auth_type_ = AuthType::CRAM_MD5;
+          if (config_->cram_md5()) {
+            auth_type_ = AuthType::CRAM_MD5;
+          } else {
+            LOG(INFO) << "       CRAM-MD5 disabled in net.ini; Using plain text passwords.";
+          }
         }
       } else if (starts_with(s, "CRC")) {
         if (config_->crc()) {
