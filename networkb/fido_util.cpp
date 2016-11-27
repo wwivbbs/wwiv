@@ -352,17 +352,16 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
 
 wwiv::sdk::fido::FidoAddress FindRouteToAddress(
   const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout) {
-
   return FindRouteToAddress(a, callout.node_configs_map());
 }
 
-bool exists_ftn(const wwiv::sdk::Config& config, const net_networks_rec& net) {
+bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net) {
   auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
   auto inbounddir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
-  return exists_ftn(inbounddir);
+  return exists_bundle(inbounddir);
 }
 
-bool exists_ftn(const std::string& dir) {
+bool exists_bundle(const std::string& dir) {
   const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
   for (const auto& e : extensions) {
     {

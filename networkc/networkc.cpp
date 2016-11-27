@@ -168,7 +168,7 @@ int main(int argc, char** argv) {
         System(create_network_cmdline(net_cmdline, 'f', verbose, "import"));
       }
       
-      if (exists_ftn(net_cmdline.config(), net)) {
+      if (exists_bundle(net_cmdline.config(), net)) {
         System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
       }
 

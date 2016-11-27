@@ -57,8 +57,8 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(const wwiv::sdk::fido::FidoAddre
 wwiv::sdk::fido::FidoAddress FindRouteToAddress(
   const wwiv::sdk::fido::FidoAddress& a, const wwiv::sdk::fido::FidoCallout& callout);
 
-bool exists_ftn(const wwiv::sdk::Config& config, const net_networks_rec& net);
-bool exists_ftn(const std::string& dir);
+bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net);
+bool exists_bundle(const std::string& dir);
 
 }  // namespace fido
 }  // namespace net
