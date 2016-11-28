@@ -209,7 +209,8 @@ void check_event() {
                ((session()->events[i].instance == session()->instance_number()) ||
                 (session()->events[i].instance == 0))) {
       // periodic events run after N minutes from last execution.
-      int16_t nextrun = ((session()->events[i].lastrun == 0) ? session()->events[i].time : session()->events[i].lastrun) + session()->events[i].period;
+      auto& e = session()->events[i];
+      int16_t nextrun = ((e.lastrun == 0) ? e.time : e.lastrun) + e.period;
       // The next run time should be the later of "now", or the next scheduled time.
       // This should keep events from executing numerous times to "catch up".
       nextrun = std::max(tl, nextrun);
@@ -231,12 +232,14 @@ void check_event() {
 }
 
 void run_event(int evnt) {
+  auto& e = session()->events[evnt];
+
   write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
   session()->localIO()->SetCursor(LocalIO::cursorNormal);
   bout.cls();
   bout << "\r\nNow running external event.\r\n\n";
   if (session()->events[evnt].status & EVENT_EXIT) {
-    int exitlevel = static_cast<int>(session()->events[evnt].cmd[0]);
+    int exitlevel = static_cast<int>(e.cmd[0]);
     if (ok_modem_stuff && session()->remoteIO() != nullptr) {
       session()->remoteIO()->close(false);
     }
@@ -247,6 +250,9 @@ void run_event(int evnt) {
   get_next_forced_event();
   cleanup_net();
   wfc_cls();
+
+  e.lastrun = t_now();
+  write_event(evnt);
 }
 
 void show_events() {
