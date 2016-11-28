@@ -48,13 +48,21 @@ FileHelper::FileHelper() {
   tmp_ = FileHelper::CreateTempDir(dir);
 }
 
-const string FileHelper::DirName(const string& name) const {
+const string FileHelper::DirName(const string& oname) const {
+  string name = oname;
+#ifdef _WIN32
+  std::replace(std::begin(name), std::end(name), '/', File::pathSeparatorChar);
+#endif  // _WIN32
   return StrCat(tmp_, File::pathSeparatorString, name, File::pathSeparatorString);
 }
 
-bool FileHelper::Mkdir(const string& name) const {
-    const string path = DirName(name); 
-    return File::mkdir(path);
+bool FileHelper::Mkdir(const string& oname) const {
+  string name = oname;
+#ifdef _WIN32
+  std::replace(std::begin(name), std::end(name), '/', File::pathSeparatorChar);
+#endif  // _WIN32
+  const string path = DirName(name);
+  return File::mkdir(path);
 }
 
 static const string GetTestTempDir() {

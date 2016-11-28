@@ -321,8 +321,8 @@ static void edit_fido_node_config(const Config& config, const FidoAddress& a, fi
   sw->PutsXY(LBL1_POSITION, y++, "Max Pkt Size :");
   sw->PutsXY(LBL1_POSITION, y++, "Bundle Status:");
 
-  sw->PutsXY(LBL1_POSITION, y++, "BinkP host   :");
-  sw->PutsXY(LBL1_POSITION, y++, "BinkP post   :");
+  sw->PutsXY(LBL1_POSITION, y++, "BinkP Host   :");
+  sw->PutsXY(LBL1_POSITION, y++, "BinkP Port   :");
   sw->PutsXY(LBL1_POSITION, y++, "Session PW   :");
 
   items.Run();

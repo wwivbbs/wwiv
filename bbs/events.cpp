@@ -110,6 +110,9 @@ static void read_event(int n) {
 }
 
 void sort_events() {
+  if (session()->events.size() <= 1) {
+    return;
+  }
   // keeping events sorted in time order makes things easier.
   for (size_t i = 0; i < (session()->events.size() - 1); i++) {
     size_t z = i;

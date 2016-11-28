@@ -28,6 +28,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/wfndfile.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/fido/fido_address.h"
@@ -365,19 +366,17 @@ bool exists_bundle(const std::string& dir) {
   const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
   for (const auto& e : extensions) {
     {
-      const string mask = StrCat("*.", e);
-      if (File::ExistsWildcard(FilePath(dir, mask))) {
-        File f(dir, mask);
-        if (f.GetLength() > 0) return true;
+      WFindFile fnd;
+      bool exists = fnd.open(FilePath(dir, StrCat("*.", e)), 0);
+      if (exists) {
+        return fnd.GetFileSize() > 0;
       }
     }
     {
-      string ue(e);
-      StringUpperCase(&ue);
-      const string mask = StrCat("*.", ue);
-      if (File::ExistsWildcard(FilePath(dir, mask))) {
-        File f(dir, mask);
-        if (f.GetLength() > 0) return true;
+      WFindFile fnd;
+      bool exists = fnd.open(FilePath(dir, StrCat("*.", ToStringUpperCase(e))), 0);
+      if (exists) {
+        return fnd.GetFileSize() > 0;
       }
     }
   }

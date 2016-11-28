@@ -158,3 +158,35 @@ TEST_F(FidoUtilTest, Routes) {
   EXPECT_TRUE(RoutesThroughAddress(a, "* !11:* 11:1/100"));
   EXPECT_TRUE(RoutesThroughAddress(a, "11:* !11:1/* 11:1/100"));
 }
+
+class FidoUtilConfigTest : public testing::Test{
+public:
+  FidoUtilConfigTest() {
+    files_.Mkdir("bbs");
+    files_.Mkdir("bbs/net");
+    string root = files_.DirName("bbs");
+    config_.reset(new wwiv::sdk::Config(root));
+    wwiv::sdk::Config config;
+    memset(&wwiv_config_, 0, sizeof(configrec));
+    config.set_initialized_for_test(true);
+  }
+
+  FileHelper files_;
+  std::unique_ptr<wwiv::sdk::Config> config_;
+  configrec wwiv_config_;
+};
+
+TEST_F(FidoUtilConfigTest, ExistsBundle) {
+  net_networks_rec net;
+  to_char_array(net.name, "testnet");
+  files_.Mkdir("bbs/net");
+  net.dir = files_.DirName("bbs/net");
+
+  EXPECT_FALSE(exists_bundle(*config_, net));
+  EXPECT_FALSE(exists_bundle(net.dir));
+
+  string path = files_.CreateTempFile("bbs/net/00124567.su0", "x");
+  EXPECT_TRUE(exists_bundle(*config_, net));
+  EXPECT_TRUE(exists_bundle(net.dir)) << net.dir;
+
+}
