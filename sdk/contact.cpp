@@ -85,7 +85,7 @@ Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
 }
 
 Contact::Contact(std::initializer_list<NetworkContact> l)
-    : save_on_destructor_(false), initialized_(true) {
+  : net_{}, save_on_destructor_(false), initialized_(true) {
   for (const auto& r : l) {
     contacts_.emplace_back(r);
   }
