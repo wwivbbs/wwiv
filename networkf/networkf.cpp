@@ -797,15 +797,15 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
 
   for (int i = 1; i < 7; i++) {
     File bsy(out_dir, bsyname);
-    if (!bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
-      if (bsy.Exists()) {
-        LOG(ERROR) << "BSY file: '" << bsy.full_pathname() << "' already exists. Will try again...";
-      } else {
-        LOG(ERROR) << "Unable to create BSY file: '" << bsy.full_pathname() << "'. Will try again...";
-      }
-      sleep_for(std::chrono::milliseconds((i ^ 2) * 50));
-      continue;
+    if (bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
+      break;
     }
+    if (bsy.Exists()) {
+      LOG(ERROR) << "BSY file: '" << bsy.full_pathname() << "' already exists. Will try again...";
+    } else {
+      LOG(ERROR) << "Unable to create BSY file: '" << bsy.full_pathname() << "'. Will try again...";
+    }
+    sleep_for(std::chrono::milliseconds((i ^ 2) * 50));
   }
   ScopeExit at_exit([=] { File::Remove(out_dir, bsyname); });
   TextFile flo_file(out_dir, floname, "a+");

@@ -160,6 +160,7 @@ bool File::Open(int nFileMode, int nShareMode) {
 
   handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
+    VLOG(3) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
     int count = 1;
     if (access(full_path_name_.c_str(), 0) != -1) {
       sleep_for(milliseconds(WAIT_TIME_MILLIS));
