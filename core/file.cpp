@@ -286,10 +286,8 @@ bool File::Remove(const string& fileName) {
   return (unlink(fileName.c_str()) ? false : true);
 }
 
-bool File::Remove(const string& directoryName, const string& fileName) {
-  string strFullFileName = directoryName;
-  strFullFileName += fileName;
-  return File::Remove(strFullFileName);
+bool File::Remove(const string& dir, const string& file) {
+  return File::Remove(wwiv::core::FilePath(dir, file));
 }
 
 bool File::Exists(const string& original_pathname) {
@@ -308,14 +306,8 @@ bool File::Exists(const string& original_pathname) {
   return ret == 0;
 }
 
-bool File::Exists(const string& directoryName, const string& fileName) {
-  std::stringstream full_path_name;
-  if (!directoryName.empty() && directoryName[directoryName.length() - 1] == pathSeparatorChar) {
-    full_path_name << directoryName << fileName;
-  } else {
-    full_path_name << directoryName << pathSeparatorChar << fileName;
-  }
-  return Exists(full_path_name.str());
+bool File::Exists(const string& dir, const string& file) {
+  return Exists(wwiv::core::FilePath(dir, file));
 }
 
 bool File::ExistsWildcard(const string& wildCard) {

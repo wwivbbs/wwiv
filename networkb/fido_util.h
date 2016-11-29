@@ -49,7 +49,7 @@ std::vector<std::string> split_message(const std::string& string);
 std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes = true);
 std::string WWIVToFidoText(const std::string& wt);
 
-wwiv::sdk::fido::FidoAddress get_address_from_line(const std::string& line);
+wwiv::sdk::fido::FidoAddress get_address_from_single_line(const std::string& line);
 wwiv::sdk::fido::FidoAddress get_address_from_origin(const std::string& text);
 
 bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::string& routes);
@@ -59,6 +59,47 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
 
 bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net);
 bool exists_bundle(const std::string& dir);
+
+enum class flo_directive : char {
+  truncate_file = '#',
+  delete_file = '^',
+  skip_file = '~',
+  unknown = ' '
+};
+
+/**
+ * Representes a FLO file on disk.  The file is locked open the entire time that
+ * this class exists.
+ */
+class FloFile {
+public:
+  FloFile(const net_networks_rec& net, const std::string& dir, const std::string filename);
+  virtual ~FloFile();
+
+  wwiv::sdk::fido::FidoAddress destination_address() const;
+  bool poll() const { return poll_; }
+  void set_poll(bool p) { poll_ = p; }
+  fido_bundle_status_t status() const { return status_; }
+  const std::vector<std::pair<std::string, flo_directive>>& flo_entries() const { return entries_; }
+
+  bool empty() const { return entries_.empty(); }
+  bool insert(const std::string& file, flo_directive directive);
+  bool clear() { entries_.clear(); poll_ = false; return true; }
+  bool erase(const std::string& file);
+  bool Load();
+  bool Save();
+
+private:
+  const net_networks_rec& net_;
+  const std::string dir_;
+  const std::string filename_;
+  fido_bundle_status_t status_ = fido_bundle_status_t::unknown;
+  std::unique_ptr<wwiv::sdk::fido::FidoAddress> dest_;
+  bool exists_ = false;
+  bool poll_ = false;
+
+  std::vector<std::pair<std::string, flo_directive>> entries_;
+};
 
 }  // namespace fido
 }  // namespace net

@@ -898,7 +898,7 @@ bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const ne
   string bundlename;
   auto it = p.text.begin();
   auto to = get_message_field(p.text, it, {0}, 80);
-  auto dest = get_address_from_line(to);
+  auto dest = get_address_from_single_line(to);
   if (dest.node() == 0) {
     LOG(ERROR) << "Unable to get address from to line: " << to;
     return false;

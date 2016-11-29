@@ -16,7 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+#include "core/file.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "core_test/file_helper.h"
 #include "networkb/fido_util.h"
 #include "sdk/fido/fido_address.h"
@@ -129,7 +131,6 @@ TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZ) {
 TEST_F(FidoUtilTest, MkTime) {
   auto now = time(nullptr);
   auto tm = localtime(&now);
-
   auto rt = mktime(tm);
 
   EXPECT_EQ(now, rt);
@@ -188,5 +189,68 @@ TEST_F(FidoUtilConfigTest, ExistsBundle) {
   string path = files_.CreateTempFile("bbs/net/00124567.su0", "x");
   EXPECT_TRUE(exists_bundle(*config_, net));
   EXPECT_TRUE(exists_bundle(net.dir)) << net.dir;
+}
+
+TEST_F(FidoUtilTest, GetAddressFromSingleLine) {
+  {
+    auto a = get_address_from_single_line("");
+    EXPECT_EQ(0, a.net());
+    EXPECT_EQ(0, a.node());
+  }
+
+  {
+    auto a = get_address_from_single_line("Not an origin line");
+    EXPECT_EQ(0, a.net());
+    EXPECT_EQ(0, a.node());
+  }
+
+  {
+    auto a = get_address_from_single_line(" * Origin: Kewl BBS (1:2/3)");
+    EXPECT_EQ(1, a.zone());
+    EXPECT_EQ(2, a.net());
+    EXPECT_EQ(3, a.node());
+  }
+}
+
+TEST_F(FidoUtilTest, FloFile) {
+  auto b = helper_.CreateTempFile("00010064.flo", "^C:\\db\\outbound\\0000006f.su0");
+  File f(b);
+  net_networks_rec net{};
+  net.dir = helper_.TempDir();
+  net.fido.fido_address = "11:1/211";
+  FloFile flo(net, f.GetParent(), f.GetName());
+  EXPECT_FALSE(flo.poll());
+  EXPECT_EQ(1, flo.flo_entries().size());
+
+  {
+    auto e = flo.flo_entries().front();
+    EXPECT_EQ("C:\\db\\outbound\\0000006f.su0", e.first);
+    EXPECT_EQ(flo_directive::delete_file, e.second);
+    flo.clear();
+    EXPECT_TRUE(flo.empty());
+    EXPECT_TRUE(flo.Save());
+    EXPECT_FALSE(f.Exists()) << f;
+  }
+
+  flo.insert("C:\\db\\outbound\\0000006f.mo0", flo_directive::truncate_file);
+  {
+    auto e = flo.flo_entries().front();
+    EXPECT_EQ("C:\\db\\outbound\\0000006f.mo0", e.first);
+    EXPECT_EQ(flo_directive::truncate_file, e.second);
+    flo.Save();
+    EXPECT_TRUE(f.Exists());
+    flo.clear();
+    f.Delete();
+  }
+
+  {
+    flo.set_poll(true);
+    flo.Save();
+    EXPECT_TRUE(f.Exists());
+
+    TextFile tf(f.full_pathname(), "r");
+    const string contents = tf.ReadFileIntoString();
+    EXPECT_EQ("", contents);
+  }
 
 }

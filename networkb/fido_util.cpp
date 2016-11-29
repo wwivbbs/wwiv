@@ -21,6 +21,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "core/command_line.h"
@@ -28,6 +29,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "core/wfndfile.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
@@ -217,7 +219,7 @@ std::string WWIVToFidoText(const std::string& wt) {
   return temp;
 }
 
-FidoAddress get_address_from_line(const std::string& line) {
+FidoAddress get_address_from_single_line(const std::string& line) {
   auto start = line.find_last_of('(');
   auto end = line.find_last_of(')');
   if (start == string::npos || end == string::npos) {
@@ -236,7 +238,7 @@ FidoAddress get_address_from_origin(const std::string& text) {
   vector<string> lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, " * Origin:")) {
-      return get_address_from_line(line);
+      return get_address_from_single_line(line);
     }
   }
   return FidoAddress(0, 0, 0, 0, "");
@@ -381,6 +383,121 @@ bool exists_bundle(const std::string& dir) {
     }
   }
   return false;
+}
+
+static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std::string path) {
+  TextFile file(path, "r");
+  if (!file.IsOpen()) {
+    return{};
+  }
+
+  std::vector<std::pair<std::string, flo_directive>> result;
+  string line;
+  while (file.ReadLine(&line)) {
+    StringTrim(&line);
+    if (line.empty()) { continue; }
+    char st = line.front();
+    if (st == '^' || st == '#' || st == '~') {
+      const string fn = line.substr(1);
+      result.emplace_back(fn, static_cast<flo_directive>(st));
+    }
+  }
+  return result;
+}
+
+FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std::string filename)
+  : net_(net), dir_(dir), filename_(filename), dest_() {
+  if (!contains(filename, '.')) {
+    // This is a malformed flo file
+    return;
+  }
+
+  string::size_type dot = filename.find_last_of('.');
+  if (dot == string::npos) {
+    // WTF
+    return;
+  }
+
+  string basename = ToStringLowerCase(filename.substr(0, dot));
+  string ext = ToStringLowerCase(filename.substr(dot + 1));
+
+  if (ext.length() != 3) {
+    // malformed flo file
+    return;
+  }
+
+  if (basename.length() != 8) {
+    // malformed flo file
+    return;
+  }
+
+  if (!ends_with(ext, "lo")) {
+    // malformed flo file
+    return;
+  }
+  char st = tolower(ext.front());
+  status_ = static_cast<fido_bundle_status_t>(st);
+
+  auto netstr = basename.substr(0, 4);
+  auto net_num = static_cast<int16_t>(std::stol(netstr.c_str(), nullptr, 16));
+  auto nodestr = basename.substr(4);
+  auto node_num = static_cast<int16_t>(std::stol(nodestr.c_str(), nullptr, 16));
+
+  FidoAddress source(net_.fido.fido_address);
+  dest_.reset(new FidoAddress(source.zone(), net_num, node_num, 0, source.domain()));
+
+  Load();
+}
+
+FloFile::~FloFile() {
+}
+
+bool FloFile::insert(const std::string& file, flo_directive directive) { 
+  entries_.push_back(std::make_pair(file, directive));
+  return true;
+}
+
+bool FloFile::erase(const std::string& file) {
+  for (auto it = entries_.begin(); it != entries_.end(); it++) {
+    if ((*it).first == file) {
+      entries_.erase(it);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool FloFile::Load() {
+  File f(dir_, filename_);
+  exists_ = f.Exists();
+  if (!exists_) {
+    return false;
+  }
+  
+  poll_ = f.GetLength() == 0;
+  entries_ = ParseFloFile(FilePath(dir_, filename_));
+  return true;
+}
+
+bool FloFile::Save() {
+  if (poll_ || !entries_.empty()) {
+    File f(dir_, filename_);
+    if (!f.Open(File::modeCreateFile | File::modeReadWrite | File::modeText | File::modeTruncate, File::shareDenyReadWrite)) {
+      return false;
+    }
+    for (const auto& e : entries_) {
+      auto dr = static_cast<char>(e.second);
+      auto& name = e.first;
+      f.Writeln(StrCat(dr, name));
+    }
+    return true;
+  } else if (File::Exists(dir_, filename_)) {
+    return File::Remove(dir_, filename_);
+  }
+}
+
+FidoAddress FloFile::destination_address() const {
+  return *dest_.get();
 }
 
 
