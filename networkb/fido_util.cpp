@@ -84,6 +84,11 @@ std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::
   return bundle_name(source, dest, dow_extension(dow, bundle_number));
 }
 
+std::vector<std::string> dow_prefixes() {
+  static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa", "su" };
+  return dow;
+}
+
 std::string dow_extension(int dow_num, int bundle_number) {
   // TODO(rushfan): Should we assert of bundle_number > 25 (0-9=10, + a-z=26 = 0-35)
 
@@ -95,6 +100,17 @@ std::string dow_extension(int dow_num, int bundle_number) {
   }
   ext.push_back(c);
   return ext;
+}
+
+bool is_bundle_file(const std::string& name) {
+  static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa", "su" };
+  string::size_type dot = name.find_last_of('.');
+  if (dot == string::npos) { return false; }
+  string ext = name.substr(dot + 1);
+  if (ext.length() != 3) { return false; }
+  ext.pop_back();
+  StringLowerCase(&ext);
+  return contains(dow, ext);
 }
 
 static string control_file_extension(fido_bundle_status_t status) {

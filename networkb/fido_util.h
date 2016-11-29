@@ -38,7 +38,9 @@ std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
 std::string net_node_name(const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
 std::string flo_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status);
+std::vector<std::string> dow_prefixes();
 std::string dow_extension(int dow, int bundle_number);
+bool is_bundle_file(const std::string& name);
 std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status);
 std::string daten_to_fido(time_t t);
 time_t fido_to_daten(std::string d);

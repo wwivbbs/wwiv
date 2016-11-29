@@ -74,6 +74,11 @@ TEST_F(FidoUtilTest, DowExtension) {
   EXPECT_EQ("suz", dow_extension(0, 35));
 }
 
+TEST_F(FidoUtilTest, IsBundleFile) {
+  EXPECT_TRUE(is_bundle_file("00000000.su0"));
+  EXPECT_FALSE(is_bundle_file("00000000.foo"));
+}
+
 TEST_F(FidoUtilTest, ControlFileName) {
   FidoAddress dest("1:105/42");
   EXPECT_EQ("0069002a.flo", control_file_name(dest, fido_bundle_status_t::normal));
