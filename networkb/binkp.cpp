@@ -78,6 +78,11 @@ using namespace wwiv::os;
 namespace wwiv {
 namespace net {
 
+static int System(const string& cmd) {
+  LOG(INFO) << "       executing: " << cmd;
+  return system(cmd.c_str());
+}
+
 string expected_password_for(const net_call_out_rec* con) {
   string password("-");  // default password
   if (con != nullptr) {
@@ -886,15 +891,19 @@ void BinkP::Run() {
         bytes_sent_, bytes_received_);
     }
   } else {
-    // TODO(rushfan): We should have some contact.net equivalent for FTN connections.
+    // Handle WWIVnet inbound files.
+    if (file_manager_) {
+      // file_manager_ is null in some tests (BinkpTest).
+      file_manager_->rename_ftn_pending_files();
+      if (!config_->skip_net()) {
+        const int network_number = config_->networks().network_number(remote_.network_name());
+        const string cmd = StrCat("networkc .", network_number, " --v=", config_->verbose());
+        System(cmd);
+      }
+    }
 
 
   }
-}
-
-static int System(const string& cmd) {
-  LOG(INFO) << "       executing: " << cmd;
-  return system(cmd.c_str());
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {

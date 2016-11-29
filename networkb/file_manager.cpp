@@ -29,13 +29,14 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "networkb/wfile_transfer_file.h"
-
+#include "networkb/fido_util.h"
 
 using std::string;
 using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace wwiv::net::fido;
 
 namespace wwiv {
 namespace net {
@@ -97,6 +98,22 @@ void FileManager::rename_wwivnet_pending_files() {
   for (const auto& file : received_files()) {
     LOG(INFO) << "       renaming_pending_file: dir: " << net_.dir << "; file: " << file;
     rename_wwivnet_pend(net_.dir, file);
+  }
+}
+
+void FileManager::rename_ftn_pending_files() {
+  VLOG(1) << "STATE: rename_ftn_pending_files";
+  for (const auto& file : received_files()) {
+    if (is_bundle_file(file)) {
+      LOG(INFO) << "       renaming_pending_file: dir: " << net_.dir << "; file: " << file;
+      if (!File::Exists(net_.fido.inbound_dir, file)) {
+        File::Move(FilePath(net_.dir, file), FilePath(net_.fido.inbound_dir, file));
+      } else {
+        LOG(ERROR) << "File: " << file << " already exists in fido inbound dir. Please move manually.";
+      }
+    } else {
+      LOG(ERROR) << "       unknown file received: " << file;
+    }
   }
 }
 
