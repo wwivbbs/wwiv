@@ -30,6 +30,7 @@
 #include "core/strings.h"
 #include "networkb/wfile_transfer_file.h"
 #include "networkb/fido_util.h"
+#include "sdk/fido/fido_address.h"
 
 using std::string;
 using std::vector;
@@ -37,6 +38,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::net::fido;
+using namespace wwiv::sdk::fido;
 
 namespace wwiv {
 namespace net {
@@ -56,7 +58,36 @@ vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destin
 }
 
 std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& address) {
-  return{};
+  LOG(INFO) << "CreateFtnTransferFileList: " << address;
+
+  std::vector<fido_bundle_status_t> statuses{
+    fido_bundle_status_t::crash,
+    fido_bundle_status_t::normal,
+    fido_bundle_status_t::direct
+  };
+
+  vector<TransferFile*> result;
+
+  FidoAddress dest(address);
+  const auto dir = net_.fido.outbound_dir;
+  for (const auto& st : statuses) {
+    const auto name = flo_name(dest, st);
+    if (File::Exists(dir, name)) {
+      LOG(INFO) << "Found file file: " << dir << "; name: " << name;
+      FloFile flo(net_, dir, name);
+      if (!flo.Load()) { continue; }
+      for (const auto& e : flo.flo_entries()) {
+        File f(e.first);
+        const auto basename = f.GetName();
+        auto w = new WFileTransferFile(basename, std::make_unique<File>(e.first));
+        w->set_flo_file(std::make_unique<FloFile>(net_, dir, name));
+        result.push_back(w);
+      }
+
+    }
+
+  }
+  return result;
 }
 
 std::vector<TransferFile*> FileManager::CreateTransferFileList(const Remote& remote) {
