@@ -48,3 +48,4 @@ Message Areas
   Also add a display_default_header or something to display what read_type2_message
   used to display by default.
 * AddMessage should delete messages to keep total number of posts at the right number.
+* Make the emailmessage extend the message so most things are common between them.

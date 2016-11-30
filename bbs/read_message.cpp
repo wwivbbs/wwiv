@@ -264,53 +264,61 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string 
   }
 }
 
-void read_type2_message(messagerec* msg, char an, bool readit, bool* next, const char* file_name,
+Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const char* file_name,
   int from_sys_num, int from_user) {
 
-  g_flags &= ~g_flag_ansi_movement;
-  *next = false;
-
-  string message_text;
-  if (!readfile(msg, file_name, &message_text)) {
-    return;
+  Type2MessageData data;
+  if (!readfile(msg, file_name, &data.message_text)) {
+    return{};
   }
 
   size_t ptr = 0;
-  string name, date;
-  for (ptr = 0; ptr < message_text.size() && message_text[ptr] != RETURN && ptr<=200; ptr++) {
-    name.push_back(message_text[ptr]);
+  for (ptr = 0; 
+    ptr <data.message_text.size() && data.message_text[ptr] != RETURN && ptr <= 200;
+    ptr++) {
+    data.to.push_back(data.message_text[ptr]);
   }
-  if (ptr < message_text.size() && message_text[++ptr] == SOFTRETURN) {
+  if (ptr < data.message_text.size() && data.message_text[++ptr] == SOFTRETURN) {
     ++ptr;
   }
-  for (size_t start=ptr; ptr < message_text.size() && message_text[ptr] != RETURN && ptr-start <= 60; ptr++) {
-    date.push_back(message_text[ptr]);
+  for (size_t start = ptr; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60; ptr++) {
+    data.date.push_back(data.message_text[ptr]);
   }
-  if (ptr + 1 < message_text.size()) {
-    message_text = message_text.substr(ptr + 1);
+  if (ptr + 1 < data.message_text.size()) {
+    data.message_text = data.message_text.substr(ptr + 1);
   }
 
   irt_name[0] = '\0';
-  g_flags |= g_flag_disable_mci;
-  string from_sys_name;
-  string from_sys_loc;
 
-  UpdateHeaderInformation(an, readit, name, &name, &date);
+  UpdateHeaderInformation(an, readit, data.to, &data.to, &data.date);
   if (an == 0) {
     g_flags &= ~g_flag_disable_mci;
-    SetMessageOriginInfo(from_sys_num, from_user, &from_sys_name, &from_sys_loc);
-    strcpy(irt_name, name.c_str());
+    SetMessageOriginInfo(from_sys_num, from_user, &data.from_sys_name, &data.from_sys_loc);
+    to_char_array(irt_name, data.to);
   }
 
-  bout << "|#9From|#7: |#1" << name << wwiv::endl;
-  bout << "|#9Date|#7: |#1" << date << wwiv::endl;
-  if (!from_sys_name.empty()) {
-    bout << "|#9 Sys|#7: |#1" << from_sys_name << wwiv::endl;
+  return data;
+}
+
+void display_type2_message(Type2MessageData& msg, char an, bool* next) {
+
+  g_flags &= ~g_flag_ansi_movement;
+  *next = false;
+  g_flags |= g_flag_disable_mci;
+  if (an == 0) {
+    g_flags &= ~g_flag_disable_mci;
   }
-  if (!from_sys_loc.empty()) {
-    bout << "|#9Loc|#7:  |#1" << from_sys_loc << wwiv::endl;
+
+
+  bout << "|#9From|#7: |#1" << msg.to << wwiv::endl;
+  bout << "|#9Date|#7: |#1" << msg.date << wwiv::endl;
+  if (!msg.from_sys_name.empty()) {
+    bout << "|#9 Sys|#7: |#1" << msg.from_sys_name << wwiv::endl;
   }
-  display_message_text(message_text, next);
+  if (!msg.from_sys_loc.empty()) {
+    bout << "|#9Loc|#7:  |#1" << msg.from_sys_loc << wwiv::endl;
+  }
+  display_message_text(msg.message_text, next);
 }
 
 void read_post(int n, bool *next, int *val) {
@@ -369,8 +377,9 @@ void read_post(int n, bool *next, int *val) {
     if (p.status & status_post_new_net) {
       set_net_num(p.network.network_msg.net_number);
     }
-    read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit, next,
+    auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
       session()->current_sub().filename.c_str(), p.ownersys, p.owneruser);
+    display_type2_message(m, static_cast<char>(p.anony & 0x0f), next);
 
     if (nNetNumSaved != session()->net_num()) {
       set_net_num(nNetNumSaved);

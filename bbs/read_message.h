@@ -18,11 +18,23 @@
 #ifndef __INCLUDED_BBS_READ_MESSAGE_H__
 #define __INCLUDED_BBS_READ_MESSAGE_H__
 
+#include <string>
+
 #include "sdk/vardec.h"
 
-void read_type2_message(messagerec * pMessageRecord, char an, bool readit,
-                        bool *next, const char *file_name, int nFromSystem,
-                        int nFromUser);
+struct Type2MessageData {
+  std::string to;
+  std::string date;
+  std::string message_text;
+  std::string from_sys_name;
+  std::string from_sys_loc;
+};
+
+Type2MessageData read_type2_message(
+  messagerec* msg, char an, bool readit, const char* file_name,
+  int from_sys_num, int from_user);
+
+void display_type2_message(Type2MessageData& msg, char an, bool* next);
 
 void read_post(int n, bool *next, int *val);
 

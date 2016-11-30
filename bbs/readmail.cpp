@@ -567,7 +567,8 @@ void readmail(int mode) {
         // message, including sender name (which is all we have for FTN messages).
         // We need to get the full header before that and pass it into this
         // method to display it.
-        read_type2_message(&m.msg, (m.anony & 0x0f), (i) ? true : false, &next, "email", nFromSystem, nFromUser);
+        auto msg = read_type2_message(&m.msg, (m.anony & 0x0f), (i) ? true : false, "email", nFromSystem, nFromUser);
+        display_type2_message(msg, (m.anony & 0x0f), &next);
         if (!(m.status & status_seen)) {
           read_same_email(mloc, mw, curmail, &m, 0, status_seen);
         }

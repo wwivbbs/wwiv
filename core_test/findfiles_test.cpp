@@ -73,5 +73,3 @@ TEST(FindFiles, SingleCharExtensionPrefix) {
   EXPECT_STREQ("msg00000.001", fnd.GetFileName());
   EXPECT_FALSE(fnd.next());
 }
-
-
