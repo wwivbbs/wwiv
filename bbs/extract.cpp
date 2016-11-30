@@ -298,173 +298,115 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
   WWIV_ASSERT(b);
   char s1[81], s2[81], s3[81], ch = 26, ch1, s4[81];
 
-  if (session()->HasConfigFlag(OP_FLAGS_NEW_EXTRACT)) {
-    printfile(MEXTRACT_NOEXT);
-    bool done = false;
-    bool uued = false;
-    do {
-      uued = false;
-      s1[0] = 0;
-      s2[0] = 0;
-      s3[0] = 0;
-      done = true;
-      bout << "|#5Which (1-4,Q,?): ";
-      ch1 = onek("Q1234?");
-      switch (ch1) {
-      case '1':
-        extract_mod(b, len, tDateTime);
-        break;
-      case '2':
-        to_char_array(s2, session()->config()->gfilesdir());
-        break;
-      case '3':
-        to_char_array(s2, session()->config()->datadir());
-        break;
-      case '4':
-        to_char_array(s2, session()->temp_directory());
-        break;
-      case '?':
-        printfile(MEXTRACT_NOEXT);
-        done = false;
-        break;
-      }
-    } while (!done && !hangup);
-
-    if (s2[0]) {
-      do {
-        bout << "|#2Save under what filename? ";
-        input(s1, 50);
-        if (s1[0]) {
-          if ((strchr(s1, ':')) || (strchr(s1, '\\'))) {
-            strcpy(s3, s1);
-          } else {
-            sprintf(s3, "%s%s", s2, s1);
-          }
-
-          strcpy(s4, s2);
-
-          if (strstr(s3, ".UUE") != nullptr) {
-            bout << "|#1UUEncoded File.  Save Output File As? ";
-
-            input(s1, 30);
-            if (strchr(s1, '.') == nullptr) {
-              strcat(s1, ".MOD");
-            }
-
-            strcat(s4, s1);
-            uued = true;
-
-            if (File::Exists(s4)) {
-              bout << s1 << s4 << " already exists!\r\n";
-              uued = false;
-            }
-          }
-
-          if (File::Exists(s3)) {
-            bout << "\r\nFilename already in use.\r\n\n";
-            bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
-            ch1 = onek("QOAN");
-            switch (ch1) {
-            case 'Q':
-              s3[0] = 1;
-              s1[0] = 0;
-              break;
-            case 'N':
-              s3[0] = 0;
-              break;
-            case 'A':
-              break;
-            case 'O':
-              File::Remove(s3);
-              break;
-            }
-            bout.nl();
-          }
-        } else {
-          s3[0] = 1;
-        }
-      } while (!hangup && s3[0] == '\0');
-
-      if (s3[0] && !hangup) {
-        if (s3[0] != '\x01') {
-          File file(s3);
-          if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
-            bout << "|#6Could not open file for writing.\r\n";
-          } else {
-            if (file.GetLength() > 0) {
-              file.Seek(-1L, File::Whence::end);
-              file.Read(&ch1, 1);
-              if (ch1 == CZ) {
-                file.Seek(-1L, File::Whence::end);
-              }
-            }
-            file.Write(title, strlen(title));
-            file.Write("\r\n", 2);
-            file.Write(b, len);
-            file.Write(&ch, 1);
-            file.Close();
-            bout <<  "|#9Message written to|#0: |#2" << s3 << wwiv::endl;
-            if (uued == true) {
-              uudecode(s3, s4);
-            }
-          }
-        }
-      }
+  printfile(MEXTRACT_NOEXT);
+  bool done = false;
+  bool uued = false;
+  do {
+    uued = false;
+    s1[0] = 0;
+    s2[0] = 0;
+    s3[0] = 0;
+    done = true;
+    bout << "|#5Which (1-4,Q,?): ";
+    ch1 = onek("Q1234?");
+    switch (ch1) {
+    case '1':
+      extract_mod(b, len, tDateTime);
+      break;
+    case '2':
+      to_char_array(s2, session()->config()->gfilesdir());
+      break;
+    case '3':
+      to_char_array(s2, session()->config()->datadir());
+      break;
+    case '4':
+      to_char_array(s2, session()->temp_directory());
+      break;
+    case '?':
+      printfile(MEXTRACT_NOEXT);
+      done = false;
+      break;
     }
-  } else {
+  } while (!done && !hangup);
+
+  if (s2[0]) {
     do {
       bout << "|#2Save under what filename? ";
       input(s1, 50);
       if (s1[0]) {
-        if (strchr(s1, ':') || strchr(s1, '\\')) {
-          strcpy(s2, s1);
+        if ((strchr(s1, ':')) || (strchr(s1, '\\'))) {
+          strcpy(s3, s1);
         } else {
-          string g = session()->config()->gfilesdir();
-          sprintf(s2, "%s%s", g.c_str(), s1);
+          sprintf(s3, "%s%s", s2, s1);
         }
-        if (File::Exists(s2)) {
+
+        strcpy(s4, s2);
+
+        if (strstr(s3, ".UUE") != nullptr) {
+          bout << "|#1UUEncoded File.  Save Output File As? ";
+
+          input(s1, 30);
+          if (strchr(s1, '.') == nullptr) {
+            strcat(s1, ".MOD");
+          }
+
+          strcat(s4, s1);
+          uued = true;
+
+          if (File::Exists(s4)) {
+            bout << s1 << s4 << " already exists!\r\n";
+            uued = false;
+          }
+        }
+
+        if (File::Exists(s3)) {
           bout << "\r\nFilename already in use.\r\n\n";
           bout << "|#0O|#1)verwrite, |#0A|#1)ppend, |#0N|#1)ew name, |#0Q|#1)uit? |#0";
           ch1 = onek("QOAN");
           switch (ch1) {
           case 'Q':
-            s2[0] = '\0';
-            s1[0] = '\0';
+            s3[0] = 1;
+            s1[0] = 0;
             break;
           case 'N':
-            s1[0] = '\0';
+            s3[0] = 0;
             break;
           case 'A':
             break;
           case 'O':
-            File::Remove(s2);
+            File::Remove(s3);
             break;
           }
           bout.nl();
         }
       } else {
-        s2[0] = '\0';
+        s3[0] = 1;
       }
-    } while (!hangup && s2[0] != 0 && s1[0] == 0);
+    } while (!hangup && s3[0] == '\0');
 
-    if (s1[0] && !hangup) {
-      File file(s2);
-      if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
-        bout << "|#6Could not open file for writing.\r\n";
-      } else {
-        if (file.GetLength() > 0) {
-          file.Seek(-1L, File::Whence::end);
-          file.Read(&ch1, 1);
-          if (ch1 == CZ) {
+    if (s3[0] && !hangup) {
+      if (s3[0] != '\x01') {
+        File file(s3);
+        if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+          bout << "|#6Could not open file for writing.\r\n";
+        } else {
+          if (file.GetLength() > 0) {
             file.Seek(-1L, File::Whence::end);
+            file.Read(&ch1, 1);
+            if (ch1 == CZ) {
+              file.Seek(-1L, File::Whence::end);
+            }
+          }
+          file.Write(title, strlen(title));
+          file.Write("\r\n", 2);
+          file.Write(b, len);
+          file.Write(&ch, 1);
+          file.Close();
+          bout <<  "|#9Message written to|#0: |#2" << s3 << wwiv::endl;
+          if (uued == true) {
+            uudecode(s3, s4);
           }
         }
-        file.Write(title, strlen(title));
-        file.Write("\r\n", 2);
-        file.Write(b, len);
-        file.Write(&ch, 1);
-        file.Close();
-        bout <<  "|#9Message written to|#0: |#2" << s2 << wwiv::endl;
       }
     }
   }

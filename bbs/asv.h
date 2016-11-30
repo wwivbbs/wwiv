@@ -18,7 +18,6 @@
 #ifndef __INCLUDED_BBS_ASV_H__
 #define __INCLUDED_BBS_ASV_H__
 
-void asv();
 void set_autoval(int n);
 
 #endif  // __INCLUDED_BBS_ASV_H__

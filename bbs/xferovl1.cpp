@@ -762,12 +762,7 @@ int try_to_download(const char *file_mask, int dn) {
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
 
-    bool ok2 = false;
-    if (strncmp(u.filename, "WWIV4", 5) == 0 && !session()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
-      ok2 = true;
-    }
-
-    if (!ok2 && (!(u.mask & mask_no_ratio)) && (!ratio_ok())) {
+    if (!(u.mask & mask_no_ratio) && !ratio_ok()) {
       return -2;
     }
 

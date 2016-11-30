@@ -38,7 +38,6 @@ using namespace wwiv::sdk;
 
 int nsp;
 
-
 namespace wwiv {
 namespace bbs {
 
@@ -108,9 +107,8 @@ void pausescr() {
 
     i1 = strlen(stripcolors(ss));
     i = curatr;
-    bout.SystemColor(session()->user()->HasColor() ? session()->user()->GetColor(
-                                     3) :
-                                   session()->user()->GetBWColor(3));
+    bout.SystemColor(session()->user()->HasColor() ? session()->user()->GetColor(3) 
+      : session()->user()->GetBWColor(3));
     bout << ss << "\x1b[" << i1 << "D";
     bout.SystemColor(i);
 
@@ -126,9 +124,9 @@ void pausescr() {
           if (!warned) {
             warned = 1;
             bout.bputch(CG);
-            bout.SystemColor(session()->user()->HasColor() ? session()->user()->GetColor(
-                                             6) :
-                                           session()->user()->GetBWColor(6));
+            bout.SystemColor(
+              session()->user()->HasColor() ? session()->user()->GetColor(6)
+              : session()->user()->GetBWColor(6));
             bout << ss;
             for (int i3 = 0; i3 < i2; i3++) {
               if (ss[i3] == 3 && i1 > 1) {
@@ -180,7 +178,6 @@ void pausescr() {
     incom = false;
   }
 }
-
 
 void resetnsp() {
   if (nsp == 1 && !(session()->user()->HasPause())) {

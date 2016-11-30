@@ -331,7 +331,7 @@ void readmail(int mode) {
   char s[201], s1[205], s2[81], *ss2, mnu[81];
   mailrec m, m1;
   char ch;
-  long num_mail, num_mail1;
+  int num_mail, num_mail1;
   int user_number, system_number;
   net_system_list_rec *csne;
   filestatusrec fsr;
@@ -562,6 +562,11 @@ void readmail(int mode) {
         nFromUser = m.fromuser;
       }
       if (!abort) {
+
+        // read_type2_message will parse out the title and other fields of the
+        // message, including sender name (which is all we have for FTN messages).
+        // We need to get the full header before that and pass it into this
+        // method to display it.
         read_type2_message(&m.msg, (m.anony & 0x0f), (i) ? true : false, &next, "email", nFromSystem, nFromUser);
         if (!(m.status & status_seen)) {
           read_same_email(mloc, mw, curmail, &m, 0, status_seen);
@@ -699,9 +704,9 @@ void readmail(int mode) {
           }
           if (File::Exists(fn)) {
             LoadFileIntoWorkspace(fn, true);
-            num_mail = static_cast<long>(session()->user()->GetNumFeedbackSent()) +
-              static_cast<long>(session()->user()->GetNumEmailSent()) +
-              static_cast<long>(session()->user()->GetNumNetEmailSent());
+            num_mail = session()->user()->GetNumFeedbackSent() +
+              session()->user()->GetNumEmailSent() +
+              session()->user()->GetNumNetEmailSent();
             grab_quotes(nullptr, nullptr);
             if (m.fromuser != 65535) {
               email(irt, m.fromuser, m.fromsys, false, m.anony);

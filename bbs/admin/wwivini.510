@@ -172,14 +172,13 @@ NET_PROCESS        = Y                      ; allow processing of network packet
 FORCE_FBACK            = N                  ; force newusers to send fback
 FORCE_NEWUSER          = N                  ; force newusers to read NEWUSER.MSG
 FORCE_SCAN             = N                  ; force user to scan sysop sub
-FORCE_SCAN_SUBNUM      = N                  ; sub to force scan on
+FORCE_SCAN_SUBNUM      = 1                  ; sub to force scan on
 CHECK_DUP_PHONES       = N                  ; check newuser dupe phones
 HANGUP_DUP_PHONES      = N                  ; hangup on newuser dupe phone
 POSTTIME_COMPENS       = N                  ; compensate for time posting
 SHOW_HIER              = Y                  ; show conf details in //je
 IDZ_DESC               = Y                  ; 1st line of file_id.diz as descrip
 SETLDATE               = N                  ; set file date on nscan
-NEW_CHATSOUND          = Y                  ; use different chat alarm
 READ_CD_IDZ            = N                  ; read file_id.diz from cdroms
 FSED_EXT_DESC          = Y                  ; allow fsed for extended descriptions
 FAST_TAG_RELIST        = Y                  ; don't show xfer dirs on tag relist
@@ -190,23 +189,18 @@ OFF_HOOK               = Y                  ; phone offhook when sysop on
 LOG_DOWNLOADS          = N                  ; send SSM to uploader on file DL
 CLOSE_XFER             = N                  ; disable transfer section
 ALL_UL_TO_SYSOP        = Y                  ; all uploads go to sysop dir
-NO_EASY_DL             = N                  ; Disable WWIV4*.* DL ignorng time,ratio
 NEW_EXTRACT            = Y                  ; extended sysop-extract email/posts
 FAST_SEARCH            = Y                  ; quick check of dup uploads
 USER_REGISTRATION      = N                  ; allow account expirations
 MSG_TAG                = Y                  ; sysop post/email taglines
 CHAIN_REG              = Y                  ; user sponsoring of chains
 CAN_SAVE_SSM           = Y                  ; allow saving of SSMs
-BEEP_CHAT              = Y                  ; alert sysop of chat requests
-TWO_COLOR_CHAT         = Y                  ; dual color in non-2-way chat
 ALLOW_ALIASES          = Y                  ; allow users to use aliases
-USE_LIST               = N                  ; use list.com to show sysoplog, etc
 FREE_PHONE             = N                  ; allow any format phone #
 LOGON_PHONE            = N                  ; check phone # at logon?
 EXTENDED_USERINFO      = N                  ; enable addr, etc info in userrec
 NEWUSER_MIN            = Y                  ; ask minimal new user information
 ALLOW_CC_BCC           = Y                  ; allow CC: and BCC: for email?
-DISABLE_PD             = Y                  ; disable Pulldown menu support
 TITLEBAR               = Y                  ; show user in console titlebar
 ;
 ;=============================================================================
@@ -257,8 +251,8 @@ NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new
 ;                        TEMPORARY DIRECTORY SETTING
 ;=============================================================================
 NUM_INSTANCES        = 4
-TEMP_DIRECTORY       = temp%n
-BATCH_DIRECTORY      = batch%n
+TEMP_DIRECTORY       = temp/%n
+BATCH_DIRECTORY      = batch/%n
 ;
 ;
 ;=============================================================================
@@ -280,18 +274,6 @@ USE_SIMPLE_ASV                  = N         ; Use Simple ASV?
 ;SIMPLE_ASV[AR]                 =           ; AR to assign
 ;SIMPLE_ASV[DAR]                =           ; DAR to assign
 ;SIMPLE_ASV[RESTRICT]           =           ; Restriction to assign
-;
-USE_ADVANCED_ASV                = N         ; Use Advanced ASV?
-;
-;Advanced ASV values correspond to auto-val settings in INIT minus one, e.g.
-;Alt-[F1] auto-validation would be set to '0', Alt-[F2] to '1', etc.
-;
-;ADVANCED_ASV[REG_WWIV]         = 0         ; Alt-[F1] for Registered WWIV
-;ADVANCED_ASV[NONREG_WWIV]      = 1         ; Alt-[F2] for Unregistered WWIV
-;ADVANCED_ASV[NON_WWIV]         = 2         ; Alt-[F3] for Non-WWIV
-;ADVANCED_ASV[COSYSOP]          = 3         ; Alt-[F4] for Co-Sysops
-;
-USE_VOICE_VAL                 = N           ; Voice validation
 ;
 ;
 ;=============================================================================

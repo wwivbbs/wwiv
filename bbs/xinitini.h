@@ -74,8 +74,8 @@ constexpr int INI_STR_TITLEBAR = 53;
 constexpr int INI_STR_LOG_DOWNLOADS = 54;
 constexpr int INI_STR_CLOSE_XFER = 55;
 constexpr int INI_STR_ALL_UL_TO_SYSOP = 56;
-constexpr int INI_STR_NO_EASY_DL = 57;
-constexpr int INI_STR_NEW_EXTRACT = 58;
+//constexpr int INI_STR_NO_EASY_DL = 57;
+//constexpr int INI_STR_NEW_EXTRACT = 58;
 constexpr int INI_STR_FAST_SEARCH = 59;
 constexpr int INI_STR_USER_REGISTRATION = 60;
 constexpr int INI_STR_MSG_TAG = 61;
@@ -94,8 +94,8 @@ constexpr int UNUSED_INI_STR_THREAD_SUBS = 73;
 constexpr int UNUSED_INI_STR_DISABLE_PD = 74;
 constexpr int INI_STR_MAIL_WHO_LEN = 75;
 constexpr int INI_STR_ATTACH_DIR = 76;
-constexpr int INI_STR_ENABLE_PIPES = 77;
-constexpr int INI_STR_ENABLE_MCI = 78;
+//constexpr int INI_STR_ENABLE_PIPES = 77;
+constexpr int INI_STR_UNUSED_ENABLE_MCI = 78;
 constexpr int INI_STR_24HR_CLOCK = 79;         //added Build2
 
 
@@ -119,11 +119,11 @@ constexpr int INI_STR_WFC_DRIVE = 99;
 //---ASV SETTINGS---
 constexpr int INI_STR_USE_SIMPLE_ASV = 103;
 constexpr int INI_STR_SIMPLE_ASV = 104;
-constexpr int INI_STR_USE_ADVANCED_ASV = 105;
+//constexpr int INI_STR_USE_ADVANCED_ASV = 105;
 constexpr int INI_STR_ADVANCED_ASV = 106;
 constexpr int UNUSED_INI_STR_USE_CALLBACK = 107;
 constexpr int UNUSED_INI_STR_CALLBACK = 108;
-constexpr int UNUSED_INI_STR_USE_VOICE_VAL = 109;
+//constexpr int UNUSED_INI_STR_USE_VOICE_VAL = 109;
 constexpr int INI_STR_AUTO_USER_PURGE = 110;
 constexpr int INI_STR_NO_PURGE_SL = 111;
 
@@ -179,7 +179,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "SHOW_HIER",                // 40
   "IDZ_DESC",
   "SETLDATE",
-  "NEW_CHATSOUND",
+  "", // NEW_CHATSOUND
   "",
   "READ_CD_IDZ",              // 45
   "FSED_EXT_DESC",
@@ -193,7 +193,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "LOG_DOWNLOADS",
   "CLOSE_XFER",               // 55
   "ALL_UL_TO_SYSOP",
-  "NO_EASY_DL",
+  "",  // NO_EASY_DL
   "NEW_EXTRACT",
   "FAST_SEARCH",
   "USER_REGISTRATION",        // 60
@@ -214,7 +214,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "MAIL_WHO_LEN",             // 75
   "ATTACH_DIR",
   "ENABLE_PIPES",
-  "ENABLE_MCI",
+  "", // ENABLE_MCI
   "24HR_CLOCK",
   "",                         // 80
   "",
@@ -241,8 +241,8 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "//---ASV SETTINGS---*",
   "USE_SIMPLE_ASV",
   "SIMPLE_ASV",
-  "USE_ADVANCED_ASV",         // 100
-  "ADVANCED_ASV",
+  "", // USE_ADVANCED_ASV        // 100
+  "", // ADVANCED_ASV
   "", // USE_CALLBACK
   "", // CALLBACK
   "", // USE_VOICE_VAL

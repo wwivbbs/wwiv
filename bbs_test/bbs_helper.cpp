@@ -67,8 +67,8 @@ void BbsHelper::SetUp() {
   dir_gfiles_ = files_.DirName("gfiles");
   dir_en_gfiles_ = files_.DirName("en/gfiles");
 #ifdef _WIN32
-  replace(begin(dir_gfiles_), end(dir_gfiles_), '/', File::pathSeparatorChar);
-  replace(begin(dir_en_gfiles_), end(dir_en_gfiles_), '/', File::pathSeparatorChar);
+  File::FixPathSeparators(&dir_gfiles_);
+  File::FixPathSeparators(&dir_en_gfiles_);
 #endif  // _WIN32
 
   // We have to set syscfg too until everything in the bbs moves to 

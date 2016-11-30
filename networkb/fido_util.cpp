@@ -510,6 +510,7 @@ bool FloFile::Save() {
   } else if (File::Exists(dir_, filename_)) {
     return File::Remove(dir_, filename_);
   }
+  return true;
 }
 
 FidoAddress FloFile::destination_address() const {

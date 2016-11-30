@@ -233,9 +233,7 @@ void display_message_text(const std::string& text, bool *next) {
   if (ansi && session()->topdata && session()->IsUserOnline()) {
     session()->UpdateTopScreen();
   }
-  if (syscfg.sysconfig & sysconfig_enable_mci) {
-    g_flags &= ~g_flag_disable_mci;
-  }
+  g_flags &= ~g_flag_disable_mci;
 }
 
 static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string default_name,
@@ -299,9 +297,7 @@ void read_type2_message(messagerec* msg, char an, bool readit, bool* next, const
 
   UpdateHeaderInformation(an, readit, name, &name, &date);
   if (an == 0) {
-    if (syscfg.sysconfig & sysconfig_enable_mci) {
-      g_flags &= ~g_flag_disable_mci;
-    }
+    g_flags &= ~g_flag_disable_mci;
     SetMessageOriginInfo(from_sys_num, from_user, &from_sys_name, &from_sys_loc);
     strcpy(irt_name, name.c_str());
   }

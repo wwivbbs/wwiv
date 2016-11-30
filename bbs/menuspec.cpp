@@ -101,12 +101,8 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     bOkToDL = printfileinfo(&u, dn);
 
 
-    if (strncmp(u.filename, "WWIV4", 5) == 0 && !session()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
-      bOkToDL = 1;
-    } else {
-      if (!ratio_ok()) {
-        return -1;
-      }
+    if (!ratio_ok()) {
+      return -1;
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);

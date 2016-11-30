@@ -846,13 +846,13 @@ struct batchrec {
 
 // configrec.sysconfig
 #define unused_sysconfig_no_local  0x00001
-#define sysconfig_no_beep           0x00002
-#define sysconfig_enable_pipes      0x00004
+#define unused_sysconfig_no_beep           0x00002
+#define unused_sysconfig_enable_pipes 0x00004
 #define sysconfig_no_newuser_feedback 0x00008
-#define sysconfig_two_color         0x00010
-#define sysconfig_enable_mci        0x00020
+#define unused_sysconfig_two_color         0x00010
+#define unused_sysconfig_enable_mci 0x00020
 #define sysconfig_titlebar          0x00040
-#define sysconfig_list              0x00080
+#define unused_sysconfig_list              0x00080
 #define sysconfig_no_xfer           0x00100
 #define sysconfig_2_way             0x00200
 #define sysconfig_no_alias          0x00400
@@ -1002,8 +1002,8 @@ struct filestatusrec {
 #define OP_FLAGS_FAST_TAG_RELIST          0x00001000
 #define OP_FLAGS_MAIL_PROMPT              0x00002000
 #define OP_FLAGS_SHOW_CITY_ST             0x00004000
-#define OP_FLAGS_NO_EASY_DL               0x00008000
-#define OP_FLAGS_NEW_EXTRACT              0x00010000
+//#define OP_FLAGS_NO_EASY_DL               0x00008000
+//#define OP_FLAGS_NEW_EXTRACT              0x00010000
 #define OP_FLAGS_FAST_SEARCH              0x00020000
 #define OP_FLAGS_NET_CALLOUT              0x00040000
 #define OP_FLAGS_WFC_SCREEN               0x00080000
@@ -1018,7 +1018,7 @@ struct filestatusrec {
 #define OP_FLAGS_NET_PROCESS              0x10000000
 #define OP_FLAGS_UNUSED_2                 0x20000000
 #define OP_FLAGS_UNUSED_4                 0x40000000
-#define OP_FLAGS_ADV_ASV                  0x80000000
+//#define OP_FLAGS_ADV_ASV                  0x80000000
 
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
 

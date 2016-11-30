@@ -347,9 +347,7 @@ void PrintMenuPrompt(MenuInstanceData* menu_data) {
 }
 
 void TurnMCIOff() {
-  if (!(syscfg.sysconfig & sysconfig_enable_mci)) {
-    g_flags |= g_flag_disable_mci;
-  }
+  g_flags |= g_flag_disable_mci;
 }
 
 void TurnMCIOn() {

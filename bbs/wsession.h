@@ -64,10 +64,6 @@ struct asv_rec {
     ar, dar, restrict;
 };
 
-struct adv_asv_rec {
-  uint8_t reg_wwiv, nonreg_wwiv, non_wwiv, cosysop;
-};
-
 // Holds information about tagged files.
 struct tagrec_t {
   // file information
@@ -108,7 +104,7 @@ public:
   RemoteIO* remoteIO() { return comm_.get(); }
   LocalIO* localIO() { return local_io_.get(); }
   bool reset_local_io(LocalIO* wlocal_io);
-  const std::string& GetAttachmentDirectory() { return m_attachmentDirectory; }
+  const std::string& GetAttachmentDirectory() { return attach_dir_; }
   int  instance_number() const { return instance_number_; }
   const std::string& network_extension() const { return network_extension_; }
 
@@ -347,7 +343,6 @@ public:
   int usernum;
 
   asv_rec asv;
-  adv_asv_rec advasv;
 
   uint16_t
     mail_who_field_len = 0,
@@ -427,7 +422,7 @@ private:
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
-  std::string m_attachmentDirectory;
+  std::string attach_dir_;
   WApplication* application_;
   wwiv::sdk::User thisuser_;
   int effective_sl_ = 0;

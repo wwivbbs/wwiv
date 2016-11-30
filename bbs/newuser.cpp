@@ -785,10 +785,6 @@ void DoFullNewUser() {
 }
 
 void DoNewUserASV() {
-  if (session()->HasConfigFlag(OP_FLAGS_ADV_ASV)) {
-    asv();
-    return;
-  }
   if (session()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
       session()->asv.sl > syscfg.newusersl && session()->asv.sl < 90) {
     bout.nl();

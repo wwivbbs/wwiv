@@ -325,8 +325,11 @@ bool File::IsFileHandleValid(int hFile) {
   return hFile != File::invalid_handle;
 }
 
-//static
+// static
 void File::EnsureTrailingSlash(string* path) {
+  if (path->empty()) {
+    return;
+  }
   char last_char = path->back();
   if (last_char != File::pathSeparatorChar) {
     path->push_back(File::pathSeparatorChar);
@@ -343,6 +346,22 @@ string File::current_directory() {
 // static
 bool File::set_current_directory(const string& dir) {
   return chdir(dir.c_str()) == 0;
+}
+
+// static 
+void File::FixPathSeparators(std::string* name) {
+#ifdef _WIN32
+  std::replace(std::begin(*name), std::end(*name), '/', File::pathSeparatorChar);
+#else
+  std::replace(std::begin(*name), std::end(*name), '\\', File::pathSeparatorChar);
+#endif  // _WIN32
+}
+
+// static 
+std::string File::FixPathSeparators(const std::string& path) {
+  string s = path;
+  FixPathSeparators(&s);
+  return s;
 }
 
 // static

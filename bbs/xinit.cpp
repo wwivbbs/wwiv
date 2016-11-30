@@ -176,11 +176,11 @@ static eventinfo_t eventinfo[] = {
   {"ARCH_D",        EFLAG_NONE},
   {"ARCH_K",        EFLAG_NONE},
   {"ARCH_T",        EFLAG_NONE},
-  {"NET_CMD1",      EFLAG_NONE},
+  {"NET_CMD1",      EFLAG_NETPROG},
   {"NET_CMD2",      EFLAG_NETPROG},
   {"LOGOFF",        EFLAG_NONE},
   {"",              EFLAG_NONE}, // UNUSED (18)
-  {"NETWORK",       EFLAG_NONE},
+  {"NETWORK",       EFLAG_NETPROG},
 };
 
 static const char *get_key_str(int n, const char *index = nullptr) {
@@ -222,8 +222,7 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_FAST_TAG_RELIST, false, OP_FLAGS_FAST_TAG_RELIST},
   {INI_STR_MAIL_PROMPT, false, OP_FLAGS_MAIL_PROMPT},
   {INI_STR_SHOW_CITY_ST, false, OP_FLAGS_SHOW_CITY_ST},
-  {INI_STR_NO_EASY_DL, false, OP_FLAGS_NO_EASY_DL},
-  {INI_STR_NEW_EXTRACT, false, OP_FLAGS_NEW_EXTRACT},
+  //{INI_STR_NEW_EXTRACT, false, OP_FLAGS_NEW_EXTRACT},
   {INI_STR_FAST_SEARCH, false, OP_FLAGS_FAST_SEARCH},
   {INI_STR_NET_CALLOUT, false, OP_FLAGS_NET_CALLOUT},
   {INI_STR_WFC_SCREEN, false, OP_FLAGS_WFC_SCREEN},
@@ -234,7 +233,6 @@ static ini_flags_type sysinfo_flags[] = {
   {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
   {INI_STR_CAN_SAVE_SSM, false, OP_FLAGS_CAN_SAVE_SSM},
   {INI_STR_EXTRA_COLOR, false, OP_FLAGS_EXTRA_COLOR},
-  {INI_STR_USE_ADVANCED_ASV, false, OP_FLAGS_ADV_ASV},
   {INI_STR_USE_FORCE_SCAN, false, OP_FLAGS_USE_FORCESCAN},
   {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
 };
@@ -246,21 +244,19 @@ static ini_flags_type sysconfig_flags[] = {
   {INI_STR_LOG_DOWNLOADS, false, sysconfig_log_dl},
   {INI_STR_CLOSE_XFER, false, sysconfig_no_xfer},
   {INI_STR_ALL_UL_TO_SYSOP, false, sysconfig_all_sysop},
-  {INI_STR_BEEP_CHAT, true, sysconfig_no_beep},
-  {INI_STR_TWO_COLOR_CHAT, false, sysconfig_two_color},
+  {INI_STR_BEEP_CHAT, true, unused_sysconfig_no_beep},
+  {INI_STR_TWO_COLOR_CHAT, false, unused_sysconfig_two_color},
   {INI_STR_ALLOW_ALIASES, true, sysconfig_no_alias},
-  {INI_STR_USE_LIST, false, sysconfig_list},
+  {INI_STR_USE_LIST, false, unused_sysconfig_list},
   {INI_STR_EXTENDED_USERINFO, false, sysconfig_extended_info},
-  {INI_STR_FREE_PHONE, false, sysconfig_free_phone},
-  {INI_STR_ENABLE_PIPES, false, sysconfig_enable_pipes},
-  {INI_STR_ENABLE_MCI, false, sysconfig_enable_mci},
+  {INI_STR_FREE_PHONE, false, sysconfig_free_phone}
 };
 
 void WSession::ReadINIFile(IniFile& ini) {
   // Setup default  data
-  for (int nTempColorNum = 0; nTempColorNum < 10; nTempColorNum++) {
-    newuser_colors[ nTempColorNum ] = nucol[ nTempColorNum ];
-    newuser_bwcolors[ nTempColorNum ] = nucolbw[ nTempColorNum ];
+  for (int i = 0; i < 10; i++) {
+    newuser_colors[ i ] = nucol[ i ];
+    newuser_bwcolors[ i ] = nucolbw[ i ];
   }
 
   chatname_color_ = 95;
@@ -271,8 +267,8 @@ void WSession::ReadINIFile(IniFile& ini) {
   max_gfilesec = 32;
   mail_who_field_len = 35;
 
-  for (size_t nTempEventNum = 0; nTempEventNum < NEL(eventinfo); nTempEventNum++) {
-    spawn_opts[ nTempEventNum ] = eventinfo[ nTempEventNum ].eflags;
+  for (size_t i = 0; i < NEL(eventinfo); i++) {
+    spawn_opts[ i ] = eventinfo[ i ].eflags;
   }
 
   // put in default WSession::flags
@@ -290,29 +286,23 @@ void WSession::ReadINIFile(IniFile& ini) {
 
   // found something
   // pull out event flags
-  for (size_t nTempSpawnOptNum = 0; nTempSpawnOptNum < NEL(spawn_opts); nTempSpawnOptNum++) {
-    const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[nTempSpawnOptNum].name);
-    string ss = ini.value<string>(key_name);
+  for (size_t i = 0; i < NEL(spawn_opts); i++) {
+    const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[i].name);
+    const auto ss = ini.value<string>(key_name);
     if (!ss.empty()) {
-      spawn_opts[nTempSpawnOptNum] = str2spawnopt(ss);
+      spawn_opts[i] = str2spawnopt(ss);
     }
   }
 
   // pull out newuser colors
   for (int i = 0; i < 10; i++) {
-    {
-      const string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), i);
-      uint8_t num = ini.value<uint8_t>(key_name);
-      if (num != 0) {
-        newuser_colors[i] = num;
-      }
+    auto num = ini.value<uint8_t>(StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), i));
+    if (num != 0) {
+      newuser_colors[i] = num;
     }
-    {
-      const string key_name = StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLORBW), i);
-      uint8_t num = ini.value<uint8_t>(key_name);
-      if (num != 0) {
-        newuser_bwcolors[i] = num;
-      }
+    num = ini.value<uint8_t>(StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLORBW), i));
+    if (num != 0) {
+      newuser_bwcolors[i] = num;
     }
   }
 
@@ -363,35 +353,27 @@ void WSession::ReadINIFile(IniFile& ini) {
     INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
     INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
   }
-  if (HasConfigFlag(OP_FLAGS_ADV_ASV)) {
-    advasv.reg_wwiv = ini.value<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "REG_WWIV"), 1);
-    advasv.nonreg_wwiv = ini.value<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NONREG_WWIV"), 1);
-    advasv.non_wwiv = ini.value<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "NON_WWIV"), 1);
-    advasv.cosysop = ini.value<uint8_t>(get_key_str(INI_STR_ADVANCED_ASV, "COSYSOP"), 1);
-  }
 
   // sysconfig flags
   syscfg.sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
                       NEL(sysconfig_flags), syscfg.sysconfig));
 
   // misc stuff
-  uint16_t num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
+  auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
   if (num > 0) { mail_who_field_len = num; }
 
-  const string ratio_str = ini.value<string>(get_key_str(INI_STR_RATIO));
+  const auto ratio_str = ini.value<string>(get_key_str(INI_STR_RATIO));
   if (!ratio_str.empty()) {
     syscfg.req_ratio = StringToFloat(ratio_str);
   }
 
-  const string attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
+  const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
   if (!attach_dir.empty()) {
-    m_attachmentDirectory = attach_dir;
-    if (!m_attachmentDirectory.back() != File::pathSeparatorChar) {
-      m_attachmentDirectory.push_back(File::pathSeparatorChar);
-    }
+    attach_dir_ = attach_dir;
+    File::EnsureTrailingSlash(&attach_dir_);
   } else {
-    m_attachmentDirectory = StrCat(GetHomeDir(), ATTACH_DIR);
-    m_attachmentDirectory.push_back(File::pathSeparatorChar);
+    attach_dir_ = StrCat(GetHomeDir(), ATTACH_DIR);
+    attach_dir_.push_back(File::pathSeparatorChar);
   }
 
   screen_saver_time = ini.value<uint16_t>(get_key_str(INI_STR_SCREEN_SAVER_TIME), screen_saver_time);
@@ -857,9 +839,9 @@ void WSession::InitializeBBS() {
   VLOG(1) << "Reading Full Screen Message Editors.";
   read_editors();
 
-  if (!File::mkdirs(m_attachmentDirectory)) {
+  if (!File::mkdirs(attach_dir_)) {
     LOG(ERROR) << "Your file attachment directory is invalid.";
-    LOG(ERROR) << "It is now set to: " << m_attachmentDirectory << "'";
+    LOG(ERROR) << "It is now set to: " << attach_dir_ << "'";
     AbortBBS();
   }
   CdHome();

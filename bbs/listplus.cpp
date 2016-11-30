@@ -1822,11 +1822,6 @@ int lp_try_to_download(const char *file_mask, int dn) {
     fileDownload.Close();
 
     ok2 = 0;
-    if (strncmp(u.filename, "WWIV4", 5) == 0 &&
-        !session()->HasConfigFlag(OP_FLAGS_NO_EASY_DL)) {
-      ok2 = 1;
-    }
-
     if (!ok2 && (!(u.mask & mask_no_ratio))) {
       if (!ratio_ok()) {
         return -2;

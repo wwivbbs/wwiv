@@ -28,13 +28,7 @@
 #define ATTACH_DIR "attach"
 #define ARCHIVER_DAT "archiver.dat"
 #define AUTO_MSG "auto.msg"
-
-#define ASV_HLP "asv.hlp"
 #define ASV_NOEXT "asv"
-#define ASV0_NOEXT "asv0"
-#define ASV1_NOEXT "asv1"
-#define ASV2_NOEXT "asv2"
-#define ASV3_NOEXT "asv3"
 
 #define BBSDATA_NET "bbsdata.net"
 #define BBSDATA_IND "bbsdata.ind"
