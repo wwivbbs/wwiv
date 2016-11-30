@@ -125,7 +125,7 @@ const binkp_session_config_t* BinkConfig::node_config_for(const std::string& nod
     try {
       FidoAddress address(node);
       FidoCallout fc(config_, callout_network());
-      if (!fc.IsInitialized()) return false;
+      if (!fc.IsInitialized()) return nullptr;
 
       auto fido_node = fc.node_config_for(address);
       static_session = fido_node.binkp_config;
