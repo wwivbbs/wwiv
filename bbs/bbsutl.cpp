@@ -48,11 +48,17 @@ extern int nsp;
 bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool bAddCRLF,
           bool bAllowPrevious, bool bTwoColorChatMode, bool clear_previous_line) {
   char szBuffer[4096] = {0}, szRollover[4096] = {0};
-  strcpy(szBuffer, outBuffer->c_str());
-  strcpy(szRollover, rollOver->c_str());
+  to_char_array(szBuffer, *outBuffer);
+  if (rollOver) {
+    to_char_array(szRollover, *rollOver);
+  } else {
+    memset(szRollover, 0, sizeof(szRollover));
+  }
   bool ret = inli(szBuffer, szRollover, nMaxLen, bAddCRLF, bAllowPrevious, bTwoColorChatMode, clear_previous_line);
   outBuffer->assign(szBuffer);
-  rollOver->assign(szRollover);
+  if (rollOver) {
+    rollOver->assign(szRollover);
+  }
   return ret;
 }
 
