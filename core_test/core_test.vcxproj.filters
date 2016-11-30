@@ -40,6 +40,9 @@
     <ClCompile Include="md5_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="findfiles_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Helpers">

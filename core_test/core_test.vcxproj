@@ -104,6 +104,7 @@
     <ClCompile Include="core_test_main.cpp" />
     <ClCompile Include="crc32_test.cpp" />
     <ClCompile Include="datafile_test.cpp" />
+    <ClCompile Include="findfiles_test.cpp" />
     <ClCompile Include="inifile_test.cpp" />
     <ClCompile Include="md5_test.cpp" />
     <ClCompile Include="os_test.cpp" />
