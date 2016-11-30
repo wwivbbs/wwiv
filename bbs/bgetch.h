@@ -23,5 +23,13 @@ char bgetchraw();
 bool bkbhitraw();
 bool bkbhit();
 
+// For bgetch_event, decides if the number pad turns '8' into an arrow etc.. or not
+enum class numlock_status_t {
+  NUMBERS,
+  NOTNUMBERS
+};
+
+int bgetch_event(numlock_status_t numlock_mode);
+
 
 #endif  // __INCLUDED_BBS_BGETCH_H__

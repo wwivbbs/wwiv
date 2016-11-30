@@ -911,7 +911,12 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     express = false;
     expressabort = false;
   }
-  if ((val & 1) && lcs() && !express) {
+  // Express is true when we are just ripping through all
+  // messages, probably to screen capture them all.
+  if (express) {
+    return;
+  }
+  if ((val & 1) && lcs()) {
     bout.nl();
     bout << "|#5Validate messages here? ";
     if (noyes()) {
@@ -925,7 +930,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
       }
     }
   }
-  if ((val & 2) && lcs() && !express) {
+  if ((val & 2) && lcs()) {
     bout.nl();
     bout << "|#5Network validate here? ";
     if (yesno()) {
@@ -953,7 +958,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     }
   }
   bout.nl();
-  if (quit || express) {
+  if (quit) {
     return;
   }
   if (!session()->user()->IsRestrictionPost() &&

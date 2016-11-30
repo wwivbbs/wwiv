@@ -404,7 +404,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   bout.SystemColor(smc->normal_menu_item);
 
   while (!hangup) {
-    int event = get_kb_event(NOTNUMBERS);
+    int event = bgetch_event(numlock_status_t::NOTNUMBERS);
     if (event < 128) {
       int x = 0;
       for (const string& menu_item : menu_items) {

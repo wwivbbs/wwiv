@@ -26,6 +26,7 @@
 #include "core/wwivport.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
+#include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/keycodes.h"
 #include "bbs/utility.h"
@@ -296,7 +297,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
   do {
     bout.GotoXY(pos + x, y);
 
-    int c = get_kb_event(NUMBERS);
+    int c = bgetch_event(numlock_status_t::NUMBERS);
 
     switch (c) {
     case CX:                // Control-X

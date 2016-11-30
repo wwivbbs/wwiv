@@ -21,10 +21,6 @@
 
 #include <cstdint>
 
-// For get_kb_event, decides if the number pad turns '8' into an arrow etc.. or not
-constexpr int NOTNUMBERS = 1;
-constexpr int NUMBERS = 0;
-
 // Defines for Q/Nscan Plus
 constexpr int QSCAN = 0;
 constexpr int NSCAN = 1;

@@ -309,7 +309,6 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
     g_flags &= ~g_flag_disable_mci;
   }
 
-
   bout << "|#9From|#7: |#1" << msg.to << wwiv::endl;
   bout << "|#9Date|#7: |#1" << msg.date << wwiv::endl;
   if (!msg.from_sys_name.empty()) {
@@ -318,7 +317,9 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
   if (!msg.from_sys_loc.empty()) {
     bout << "|#9Loc|#7:  |#1" << msg.from_sys_loc << wwiv::endl;
   }
+  bout << string(78, '=');
   display_message_text(msg.message_text, next);
+  bout << string(78, '=');
 }
 
 void read_post(int n, bool *next, int *val) {

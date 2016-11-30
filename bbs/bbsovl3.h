@@ -20,7 +20,6 @@
 
 #include <string>
 
-int  get_kb_event(int nNumLockMode);
 bool do_sysop_command(int command);
 bool copyfile(const std::string& sourceFileName, const std::string& destFileName, bool stats);
 bool movefile(const std::string& sourceFileName, const std::string& destFileName, bool stats);

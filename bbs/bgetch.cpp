@@ -340,3 +340,190 @@ char Output::getkey() {
   return ch;
 }
 
+// The final character of an ansi sequence
+#define OB ('[')
+#define O ('O')
+#define A_HOME ('H')
+#define A_LEFT ('D')
+#define A_END ('K')
+#define A_UP ('A')
+#define A_DOWN ('B')
+#define A_RIGHT ('C')
+#define A_INSERT ('r')
+#define A_DELETE ('s')
+
+static int pd_getkey() {
+  g_flags |= g_flag_allow_extended;
+  int x = bout.getkey();
+  g_flags &= ~g_flag_allow_extended;
+  return x;
+}
+
+int bgetch_event(numlock_status_t numlock_mode) {
+  session()->tleft(true);
+  time_t time1 = time(nullptr);
+
+  do {
+    time_t time2 = time(nullptr);
+    if (difftime(time2, time1) > 180) {
+      // greater than 3 minutes
+      hangup = true;
+      return 0;
+    }
+    if (hangup) {
+      return 0;
+    }
+
+    if (bkbhitraw() || session()->localIO()->KeyPressed()) {
+      if (!incom || session()->localIO()->KeyPressed()) {
+        // Check for local keys
+        int key = session()->localIO()->GetChar();
+        if (key == CBACKSPACE) {
+          return COMMAND_DELETE;
+        }
+        if (key == CV) {
+          return COMMAND_INSERT;
+        }
+        if (key == RETURN || key == CL) {
+          return EXECUTE;
+        }
+        if ((key == 0 || key == 224) && session()->localIO()->KeyPressed()) {
+          // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
+          return session()->localIO()->GetChar() + 256;
+        }
+        else {
+          if (numlock_mode == numlock_status_t::NOTNUMBERS) {
+            switch (key) {
+            case '8':
+              return COMMAND_UP;
+            case '4':
+              return COMMAND_LEFT;
+            case '2':
+              return COMMAND_DOWN;
+            case '6':
+              return COMMAND_RIGHT;
+            case '0':
+              return COMMAND_INSERT;
+            case '.':
+              return COMMAND_DELETE;
+            case '9':
+              return COMMAND_PAGEUP;
+            case '3':
+              return COMMAND_PAGEDN;
+            case '7':
+              return COMMAND_HOME;
+            case '1':
+              return COMMAND_END;
+            }
+          }
+          switch (key) {
+          case TAB:
+            return TAB;
+          case ESC:
+            return GET_OUT;
+          default:
+            return key;
+          }
+        }
+      }
+      else if (bkbhitraw()) {
+        int key = pd_getkey();
+
+        if (key == CBACKSPACE) {
+          return COMMAND_DELETE;
+        }
+        if (key == CV) {
+          return COMMAND_INSERT;
+        }
+        if (key == RETURN || key == CL) {
+          return EXECUTE;
+        }
+        else if (key == ESC) {
+          time_t esc_time1 = time(nullptr);
+          time_t esc_time2 = time(nullptr);
+          do {
+            esc_time2 = time(nullptr);
+            if (bkbhitraw()) {
+              key = pd_getkey();
+              if (key == OB || key == O) {
+                key = pd_getkey();
+
+                // Check for a second set of brackets
+                if (key == OB || key == O) {
+                  key = pd_getkey();
+                }
+
+                switch (key) {
+                case A_UP:
+                  return COMMAND_UP;
+                case A_LEFT:
+                  return COMMAND_LEFT;
+                case A_DOWN:
+                  return COMMAND_DOWN;
+                case A_RIGHT:
+                  return COMMAND_RIGHT;
+                case A_INSERT:
+                  return COMMAND_INSERT;
+                case A_DELETE:
+                  return COMMAND_DELETE;
+                case A_HOME:
+                  return COMMAND_HOME;
+                case A_END:
+                  return COMMAND_END;
+                default:
+                  return key;
+                }
+              }
+              else {
+                return GET_OUT;
+              }
+            }
+          } while (difftime(esc_time2, esc_time1) < 1 && !hangup);
+
+          if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
+            return GET_OUT;
+          }
+        }
+        else {
+          if (!key) {
+            if (session()->localIO()->KeyPressed()) {
+              key = session()->localIO()->GetChar();
+              return (key + 256);
+            }
+          }
+          if (numlock_mode == numlock_status_t::NOTNUMBERS) {
+            switch (key) {
+            case '8':
+              return COMMAND_UP;
+            case '4':
+              return COMMAND_LEFT;
+            case '2':
+              return COMMAND_DOWN;
+            case '6':
+              return COMMAND_RIGHT;
+            case '0':
+              return COMMAND_INSERT;
+            case '.':
+              return COMMAND_DELETE;
+            case '9':
+              return COMMAND_PAGEUP;
+            case '3':
+              return COMMAND_PAGEDN;
+            case '7':
+              return COMMAND_HOME;
+            case '1':
+              return COMMAND_END;
+            }
+          }
+          return key;
+        }
+      }
+      time1 = time(nullptr);                           // reset timer
+    }
+    else {
+      giveup_timeslice();
+    }
+
+  } while (!hangup);
+  return 0;                                 // must have hung up
+}
