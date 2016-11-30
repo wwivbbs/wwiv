@@ -101,28 +101,30 @@ int main(int argc, char** argv) {
     auto network_name = net_cmdline.network_name();
     LOG(INFO) << "NETWORK for network: " << network_name;
 
-    int node = cmdline.arg("node").as_int();
-    if (node == 0 || node > 32767) {
-      LOG(ERROR) << "Invalid node number: '" << node << "' specified.";
-      ShowHelp(cmdline);
-      return 1;
-    }
-    if (node == 32767) {
-      // 32767 is the PPP project address for "send everything". Some people use this
-      // "magic" node number.
-      LOG(INFO) << "USE PPP Project to send to: Internet Email (@32767)";
-      return LaunchOldNetworkingStack("networkp", argc, argv);
+    auto node = cmdline.sarg("node");
+    if (!contains(node, ':')) {
+      int nodeint = StringToInt(node);
+      if (nodeint == 0 || nodeint > 32767) {
+        LOG(ERROR) << "Invalid node number: '" << node << "' specified.";
+        ShowHelp(cmdline);
+        return 1;
+      }
+      if (nodeint == 32767) {
+        // 32767 is the PPP project address for "send everything". Some people use this
+        // "magic" node number.
+        LOG(INFO) << "USE PPP Project to send to: Internet Email (@32767)";
+        return LaunchOldNetworkingStack("networkp", argc, argv);
+      }
     }
 
-    const auto& net = net_cmdline.network();
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
     const binkp_session_config_t* node_config = bink_config.node_config_for(node);
-    if (node_config != nullptr || net.type == network_type_t::ftn) {
+    if (node_config != nullptr) {
       // We have a node configuration for this one, or it is a FTN
       // network, so we will use networkb.
       LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;
-      string command_line = StringPrintf("networkb --send --net=%u --node=%d",
-        net_cmdline.network_number(), node);
+      string command_line = StringPrintf("networkb --send --net=%u --node=%s",
+        net_cmdline.network_number(), node.c_str());
       if (cmdline.barg("skip_net")) {
         command_line += " --skip_net";
       }
@@ -134,8 +136,13 @@ int main(int argc, char** argv) {
       return system(command_line.c_str());
     }
 
+    auto nodeint = StringToInt(node);
+    if (nodeint == 0) {
+      LOG(ERROR) << "Not sure how to call out to: " << node;
+      return 1;
+    }
     PPPConfig ppp_config(network_name, net_cmdline.config(), net_cmdline.networks());
-    const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(node);
+    const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(nodeint);
     if (ppp_node_config != nullptr) {
       LOG(INFO) << "USE PPP Project to send to: " << ppp_node_config->email_address;
       return LaunchOldNetworkingStack("networkp", argc, argv);
@@ -146,4 +153,5 @@ int main(int argc, char** argv) {
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
+  return 1;
 }

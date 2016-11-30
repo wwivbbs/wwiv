@@ -122,6 +122,7 @@
     <ClInclude Include="command_line.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="datafile.h" />
+    <ClInclude Include="findfiles.h" />
     <ClInclude Include="graphs.h" />
     <ClInclude Include="inifile.h" />
     <ClInclude Include="jsonfile.h" />
