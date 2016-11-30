@@ -30,10 +30,10 @@ class WFindFile {
  protected:
   std::string filename_;
   std::string filespec_;
-  long file_size_;
-  unsigned int type_mask_;
-  unsigned char nFileType;
-  bool open_;
+  long file_size_ = 0;
+  unsigned int type_mask_ = 0;
+  unsigned char nFileType = 0;
+  bool open_ = false;
 
   void __open(const std::string& file_spec, unsigned int type_mask) {
     filespec_ = file_spec;
@@ -53,8 +53,8 @@ class WFindFile {
   HANDLE  hFind;
 #elif defined ( __unix__ )
   struct dirent **entries;
-  int nMatches;
-  int nCurrentEntry;
+  int nMatches = 0;
+  int nCurrentEntry = 0;
 #endif
 
  public:
