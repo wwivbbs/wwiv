@@ -343,7 +343,6 @@ void PrintMenuPrompt(MenuInstanceData* menu_data) {
   if (!menu_data->prompt.empty()) {
     bout << menu_data->prompt;
   }
-  TurnMCIOff();
 }
 
 void TurnMCIOff() {
