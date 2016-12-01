@@ -718,9 +718,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
       to_char_array(irt_sub, session()->subs().sub(session()->current_user_sub().subnum).name);
     case 'O':
     case 'A':
-    {
       HandleScanReadAutoReply(nMessageNumber, szUserInput, nScanOptionType);
-    }
     break;
     case 'P':
       irt[0] = '\0';
@@ -912,6 +910,16 @@ static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan)
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
       case 'Q': done = true; break;
+      case 'A': HandleScanReadAutoReply(msgnum, "A", scan_option);
+        break;
+      case 'P':
+        irt[0] = '\0';
+        irt_name[0] = '\0';
+        post();
+        break;
+      case 'W':
+        HandleMessageReply(msgnum);
+        break;
       }
     } break;
     }
