@@ -436,23 +436,8 @@ static std::string pad(int screen_width, std::string::size_type line_len) {
   return std::string(screen_width - line_len, ' ');
 }
 
-static char display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
-  g_flags &= ~g_flag_ansi_movement;
-  *next = false;
-  g_flags |= g_flag_disable_mci;
-  if (an == 0) {
-    g_flags &= ~g_flag_disable_mci;
-  }
-
-  bout.cls();
-  const auto info = display_type2_message_header(msg);
-  const auto screen_width = session()->user()->GetScreenChars();
-  const auto screen_length = session()->user()->GetScreenLines() - 1;
-  const auto message_height = screen_length - info.num_lines - 2 - 1;
-  const auto lines_start = info.num_lines + 2;
-  const auto lines_end = lines_start + message_height;
-
-  std::vector<std::string> orig_lines = SplitString(msg.message_text, "\n");
+static std::vector<std::string> split_wwiv_message(const std::string& text) {
+  std::vector<std::string> orig_lines = SplitString(text, "\n");
   std::vector<std::string> lines;
   for (auto line : orig_lines) {
     StringTrim(&line);
@@ -463,7 +448,8 @@ static char display_type2_message_new(Type2MessageData& msg, char an, bool* next
         if (line.front() == '\x04') { continue; }
         lines.emplace_back(l);
       }
-    } else {
+    }
+    else {
       if (!line.empty() && line.front() == '\x04') {
         // skip contril lines.
         continue;
@@ -471,6 +457,39 @@ static char display_type2_message_new(Type2MessageData& msg, char an, bool* next
       lines.emplace_back(line);
     }
   }
+  return lines;
+}
+
+static void display_message_text_new(const std::vector<std::string>& lines, int start, 
+  int message_height, int screen_width, int lines_start) {
+  for (int i = start; i < start + message_height; i++) {
+    if (i >= lines.size()) {
+      break;
+    }
+    bout.GotoXY(1, i - start + lines_start);
+    const auto& l = lines.at(i);
+    bout << "|#0" << l << pad(screen_width, l.size());
+  }
+
+}
+
+static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
+  g_flags &= ~g_flag_ansi_movement;
+  *next = false;
+  g_flags |= g_flag_disable_mci;
+  if (an == 0) {
+    g_flags &= ~g_flag_disable_mci;
+  }
+
+  bout.cls();
+  const auto info = display_type2_message_header(msg);
+  const int screen_width = session()->user()->GetScreenChars();
+  const int screen_length = session()->user()->GetScreenLines() - 1;
+  const int message_height = screen_length - info.num_lines - 2 - 1;
+  const int lines_start = info.num_lines + 2;
+  const int lines_end = lines_start + message_height;
+
+  auto lines = split_wwiv_message(msg.message_text);
 
   bout.GotoXY(1, info.num_lines + 1);
   bout << "|#7" << string(screen_width - 1, '=');
@@ -478,24 +497,19 @@ static char display_type2_message_new(Type2MessageData& msg, char an, bool* next
   bout.GotoXY(1, screen_length - 1);
   bout << "|#7" << string(screen_width - 1, '=');
   bout.GotoXY(1, screen_length);
-  bout << "|#9Use Arrow Keys, [|#2Enter|#9] for menu.";
+  bout << "|#9Scroll:{Up,Down} Left,[=Prev, Right,]=Next, J=Jump, Q=Quit.";
 
   bout.GotoXY(1, info.num_lines + 2);
   const int first = 0;
-  const auto last = std::max<int>(0, lines.size() - message_height);
+  const int last = std::max<int>(0, lines.size() - message_height);
 
   int start = first;
   bool done = false;
   bout.Color(0);
+  ReadMessageResult result{};
   while (!done) {
-    for (int i = start; i < start + message_height; i++) {
-      if (i >= lines.size()) {
-        break;
-      }
-      bout.GotoXY(1, i - start + lines_start);
-      const auto& l = lines.at(i);
-      bout << "|#0" << l << pad(screen_width, l.size());
-    }
+    display_message_text_new(lines, start, message_height, screen_width, lines_start);
+    bout.GotoXY(1, screen_length);
 
     int key = bgetch_event(numlock_status_t::NOTNUMBERS);
     switch (key) {
@@ -504,27 +518,64 @@ static char display_type2_message_new(Type2MessageData& msg, char an, bool* next
         --start;
       }
     } break;
+    case COMMAND_PAGEUP: {
+      if (start - message_height > first) {
+        start -= message_height;
+      } else {
+        start = first;
+      }
+    } break;
     case COMMAND_DOWN: {
       if (start < last) {
         ++start;
       }
     } break;
+    case COMMAND_PAGEDN: {
+      if (start + message_height < last) {
+        start += message_height;
+      } else {
+        start = last;
+      }
+    } break;
+    case COMMAND_RIGHT: {
+      result.option = ReadMessageOption::NEXT_MSG;
+      return result;
+    } break;
+    case COMMAND_LEFT: {
+      result.option = ReadMessageOption::PREV_MSG;
+      return result;
+    } break;
     default: {
       if ((key & 0xff) == key) {
-        return key & 0xff;
+        key = toupper(key & 0xff);
+        if (key == RETURN) {
+          result.option = ReadMessageOption::NEXT_MSG;
+        }
+        else if (key == ']') {
+          result.option = ReadMessageOption::NEXT_MSG;
+        }
+        else if (key == '[') {
+          result.option = ReadMessageOption::PREV_MSG;
+        }
+        else if (key == 'J') {
+          result.option = ReadMessageOption::JUMP_TO_MSG;
+        } else {
+          result.option = ReadMessageOption::COMMAND;
+          result.command = key;
+        }
+        return result;
       }
     }
     }
   }
 
   bout.GotoXY(1, screen_length);
-  return 0;
+  return result;
 }
 
-void display_type2_message(Type2MessageData& msg, char an, bool* next) {
+ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* next) {
   if (session()->experimental_read_prompt()) {
-    display_type2_message_new(msg, an, next);
-    return;
+    return display_type2_message_new(msg, an, next);
   }
 
   g_flags &= ~g_flag_ansi_movement;
@@ -540,6 +591,10 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
 
   display_message_text(msg.message_text, next);
   g_flags &= ~g_flag_disable_mci;
+
+  ReadMessageResult result{};
+  result.option = ReadMessageOption::NONE;
+  return result;
 }
 
 static void update_qscan(uint32_t qscan) {
@@ -563,7 +618,7 @@ static void update_qscan(uint32_t qscan) {
   }
 }
 
-char read_post(int n, bool *next, int *val) {
+ReadMessageResult read_post(int n, bool *next, int *val) {
   if (session()->user()->IsUseClearScreen()) {
     bout.cls();
   } else {
@@ -600,7 +655,7 @@ char read_post(int n, bool *next, int *val) {
 
   if (p.status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
-      return 0;
+      return{};
     }
     m.flags.insert(MessageFlags::NOT_VALIDATED);
     *val |= 1;
@@ -616,13 +671,14 @@ char read_post(int n, bool *next, int *val) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }
+  ReadMessageResult result{};
   if (!abort) {
     int saved_net_num = session()->net_num();
 
     if (p.status & status_post_new_net) {
       set_net_num(network_number_from(&p));
     }
-    display_type2_message(m, static_cast<char>(p.anony & 0x0f), next);
+    result = display_type2_message(m, static_cast<char>(p.anony & 0x0f), next);
 
     if (saved_net_num != session()->net_num()) {
       set_net_num(saved_net_num);
@@ -635,5 +691,5 @@ char read_post(int n, bool *next, int *val) {
   }
 
   update_qscan(p.qscan);
-  return 0;
+  return result;
 }

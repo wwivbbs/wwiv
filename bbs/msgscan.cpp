@@ -833,6 +833,86 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
   }
 }
 
+static void validate() {
+  bout.nl();
+  bout << "|#5Validate messages here? ";
+  if (noyes()) {
+    wwiv::bbs::OpenSub opened_sub(true);
+    for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
+      postrec* p3 = get_post(i);
+      if (p3->status & (status_unvalidated | status_delete)) {
+        p3->status &= (~(status_unvalidated | status_delete));
+      }
+      write_post(i, p3);
+    }
+  }
+}
+
+static void network_validate() {
+  bout.nl();
+  bout << "|#5Network validate here? ";
+  if (yesno()) {
+    int nNumMsgsSent = 0;
+    vector<postrec> to_validate;
+    {
+      wwiv::bbs::OpenSub opened_sub(true);
+      for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
+        postrec *p4 = get_post(i);
+        if (p4->status & status_pending_net) {
+          to_validate.push_back(*p4);
+          p4->status &= ~status_pending_net;
+          write_post(i, p4);
+        }
+      }
+    }
+    for (auto p : to_validate) {
+      send_net_post(&p, session()->current_sub());
+      nNumMsgsSent++;
+    }
+
+    bout.nl();
+    bout << nNumMsgsSent << " messages sent.";
+    bout.nl(2);
+  }
+}
+
+static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan) {
+  bool done = false;
+  while (!done) {
+    ReadMessageResult result{};
+    if (scan_option == SCAN_OPTION_READ_PROMPT) {
+      bool next = true;
+      int val = 0;
+      result = read_post(msgnum, &next, &val);
+    }
+    else if (scan_option == SCAN_OPTION_LIST_TITLES) {
+      HandleListTitles(msgnum, scan_option);
+    }
+    switch (result.option) {
+    case ReadMessageOption::NEXT_MSG: {
+      if (++msgnum > session()->GetNumMessagesInCurrentMessageArea()) {
+        done = true;
+      }
+    } break;
+    case ReadMessageOption::PREV_MSG: {
+      if (--msgnum <= 0) {
+        done = true;
+      }
+    } break;
+    case ReadMessageOption::JUMP_TO_MSG: {
+      const auto maxnum = session()->GetNumMessagesInCurrentMessageArea();
+      bout << "Enter Message Number (1-" << maxnum << ") :";
+      msgnum = input_number(msgnum, 1, maxnum);
+    }
+    case ReadMessageOption::COMMAND: {
+      switch (result.command) {
+      case 'Q': done = true; break;
+      }
+    } break;
+    }
+  }
+}
+
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
   irt[0] = '\0';
   irt_name[0] = '\0';
@@ -843,6 +923,11 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
   if (session()->GetCurrentReadMessageArea() < 0) {
     bout.nl();
     bout << "No subs available.\r\n\n";
+    return;
+  }
+
+  if (session()->experimental_read_prompt()) {
+    scan_new(nMessageNumber, nScanOptionType, nextsub, bTitleScan);
     return;
   }
 
@@ -917,45 +1002,10 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     return;
   }
   if ((val & 1) && lcs()) {
-    bout.nl();
-    bout << "|#5Validate messages here? ";
-    if (noyes()) {
-      wwiv::bbs::OpenSub opened_sub(true);
-      for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-        postrec* p3 = get_post(i);
-        if (p3->status & (status_unvalidated | status_delete)) {
-          p3->status &= (~(status_unvalidated | status_delete));
-        }
-        write_post(i, p3);
-      }
-    }
+    validate();
   }
   if ((val & 2) && lcs()) {
-    bout.nl();
-    bout << "|#5Network validate here? ";
-    if (yesno()) {
-      int nNumMsgsSent = 0;
-      vector<postrec> to_validate;
-      {
-        wwiv::bbs::OpenSub opened_sub(true);
-        for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {
-          postrec *p4 = get_post(i);
-          if (p4->status & status_pending_net) {
-            to_validate.push_back(*p4);
-            p4->status &= ~status_pending_net;
-            write_post(i, p4);
-          }
-        }
-      }
-      for (auto p : to_validate) {
-        send_net_post(&p, session()->current_sub());
-        nNumMsgsSent++;
-      }
-
-      bout.nl();
-      bout << nNumMsgsSent << " messages sent.";
-      bout.nl(2);
-    }
+    network_validate();
   }
   bout.nl();
   if (quit) {

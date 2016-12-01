@@ -53,8 +53,25 @@ Type2MessageData read_type2_message(
   messagerec* msg, char an, bool readit, const char* file_name,
   int from_sys_num, int from_user);
 
-void display_type2_message(Type2MessageData& msg, char an, bool* next);
 
-char read_post(int n, bool *next, int *val);
+enum class ReadMessageOption {
+  NONE,
+  JUMP_TO_MSG,
+  NEXT_MSG,
+  PREV_MSG,
+  NEXT_SUB,
+  PREV_SUB,
+  COMMAND
+};
+
+struct ReadMessageResult {
+  ReadMessageOption option = ReadMessageOption::NONE;
+  char command = 0;
+  std::string data;
+};
+
+ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* next);
+
+ReadMessageResult read_post(int n, bool *next, int *val);
 
 #endif  // __INCLUDED_BBS_READ_MESSAGE_H__
