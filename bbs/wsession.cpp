@@ -819,7 +819,7 @@ int WSession::doWFCEvents() {
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
         bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
         const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
-        string newFileName = Input1(current_dir_slash, 50, true, InputMode::UPPER);
+        string newFileName = Input1(current_dir_slash, 50, true, InputMode::FULL_PATH_NAME);
         if (!newFileName.empty()) {
           external_text_edit(newFileName, "", 500, ".", MSGED_FLAG_NO_TAGLINE);
         }

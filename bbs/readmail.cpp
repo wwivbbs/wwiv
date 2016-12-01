@@ -431,7 +431,7 @@ void readmail(int mode) {
             if (readfile(&(m.msg), "email", &b)) {
               strncpy(s2, b.c_str(), sizeof(s2) - 1);
               ss2 = strtok(s2, "\r");
-              if (m.fromsys == 32767) {
+              if (m.fromsys == 32767 || m.fromsys == 32765) {
                 sprintf(s1, "%s", stripcolors(ss2));
               } else {
                 sprintf(s1, "%s %u@%u.%s (%s)",
@@ -507,50 +507,36 @@ void readmail(int mode) {
   do {
     abort = false;
     bout.nl(2);
-    sprintf(s, "|#9Msg|#7:  [|#2%u|#7/|#2%d|#7] |#%dE-Mail\r\n", curmail + 1, mw, session()->GetMessageColor());
-    osan(s, &abort, &next);
-    sprintf(s, "|#9Subj|#7: ");
-    osan(s, &abort, &next);
     next = false;
-    bout.Color(session()->GetMessageColor());
+    string title = m.title;
     s[0] = '\0';
 
     if (!read_same_email(mloc, mw, curmail, &m, 0, 0)) {
-      strcat(s, ">>> MAIL DELETED <<<");
+      title += ">>> MAIL DELETED <<<";
       okmail = false;
-      bout << s;
       bout.nl(3);
     } else {
-      strcat(s, m.title);
       strcpy(irt, m.title);
       irt_name[0] = '\0';
       abort = false;
       i = ((ability_read_email_anony & ss.ability) != 0);
       okmail = true;
-      pla(s, &abort);
       if (m.fromsys && !m.fromuser) {
-        grab_user_name(&(m.msg), "email");
+        grab_user_name(&(m.msg), "email", network_number_from(&m));
       } else {
         session()->net_email_name.clear();
       }
       if (m.status & status_source_verified) {
         int sv_type = source_verfied_type(&m);
         if (sv_type > 0) {
-          strcpy(s, "-=> Source Verified Type ");
-          sprintf(s + strlen(s), "%u", sv_type);
+          title += StrCat("-=> Source Verified Type ", sv_type);
           if (sv_type == 1) {
-            strcat(s, " (From NC)");
+            title += " (From NC)";
           } else if (sv_type > 256 && sv_type < 512) {
-            strcpy(s2, " (From GC-");
-            sprintf(s2 + strlen(s2), "%d)", sv_type - 256);
-            strcat(s, s2);
+            title += StrCat(" (From GC-", sv_type - 256, ")");
           }
         } else {
-          strcpy(s, "-=> Source Verified (unknown type)");
-        }
-        if (!abort) {
-          bout.Color(4);
-          pla(s, &abort);
+          title += "-=> Source Verified (unknown type)";
         }
       }
       nn = network_number_from(&m);
@@ -562,12 +548,21 @@ void readmail(int mode) {
         nFromUser = m.fromuser;
       }
       if (!abort) {
-
         // read_type2_message will parse out the title and other fields of the
         // message, including sender name (which is all we have for FTN messages).
         // We need to get the full header before that and pass it into this
         // method to display it.
         auto msg = read_type2_message(&m.msg, (m.anony & 0x0f), (i) ? true : false, "email", nFromSystem, nFromUser);
+        msg.message_area = "Personal E-Mail";
+        msg.title = m.title;
+        msg.message_number = curmail + 1;
+        msg.total_messages = mw;
+        if (session()->current_net().type == network_type_t::ftn) {
+          // Set email name to be the to address.
+          // This is also done above in grab_user_name, but we should stop using
+          // session()->net_email_name
+          session()->net_email_name = msg.from_user_name;
+        }
         display_type2_message(msg, (m.anony & 0x0f), &next);
         if (!(m.status & status_seen)) {
           read_same_email(mloc, mw, curmail, &m, 0, status_seen);

@@ -123,8 +123,8 @@ void RequestChat() {
       }
     }
   } else {
-    bout << "|#6" << syscfg.sysopname <<
-                       " is not available.\r\n\n|#5Try sending feedback instead.\r\n";
+    bout << "|#6" << syscfg.sysopname
+         << " is not available.\r\n\n|#5Try sending feedback instead.\r\n";
     strcpy(irt, "|#1Tried Chatting");
     irt_name[0] = '\0';
     imail(1, 0);

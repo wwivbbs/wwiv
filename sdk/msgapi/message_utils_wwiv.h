@@ -28,7 +28,7 @@ namespace msgapi {
 template<typename M>
 uint8_t network_number_from(const M* m) {
   if (!(m->status & status_new_net)) {
-    return 0;
+    return 255;
   }
   if (m->status & status_source_verified) {
     return m->network.src_verified_msg.net_number;

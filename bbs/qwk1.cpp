@@ -208,7 +208,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     i = ((ability_read_email_anony & ss.ability) != 0);
 
     if ((m.fromsys) && (!m.fromuser)) {
-      grab_user_name(&(m.msg), "email");
+      grab_user_name(&(m.msg), "email", network_number_from(&m));
     } else {
       session()->net_email_name.clear();
     }

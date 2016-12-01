@@ -38,12 +38,14 @@
 #include "core/textfile.h"
 #include "sdk/datetime.h"
 #include "sdk/status.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
 
 void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
@@ -206,95 +208,96 @@ void post() {
   }
   savefile(data.text, &m, data.aux);
 
-  postrec p{};
-  memset(&p, 0, sizeof(postrec));
-  strcpy(p.title, data.title.c_str());
-  p.anony = static_cast<unsigned char>(data.anonymous_flag);
-  p.msg = m;
-  p.ownersys  = 0;
-  p.owneruser = static_cast<uint16_t>(session()->usernum);
-  WStatus* pStatus = session()->status_manager()->BeginTransaction();
-  p.qscan = pStatus->IncrementQScanPointer();
-  session()->status_manager()->CommitTransaction(pStatus);
-  p.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
-  p.status = 0;
-  if (session()->user()->IsRestrictionValidate()) {
-    p.status |= status_unvalidated;
-  }
-
-  open_sub(true);
-
-  if ((!session()->current_sub().nets.empty()) &&
-      (session()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
-    p.status |= status_pending_net;
-    bool dm = true;
-    for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
-          && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
-      if (get_post(i)->status & status_pending_net) {
-        dm = false;
-        break;
-      }
-    }
-    if (dm) {
-      ssm(1, 0) << "Unvalidated net posts on " << session()->current_sub().name << ".";
-    }
-  }
-  if (session()->GetNumMessagesInCurrentMessageArea() >=
-    session()->current_sub().maxmsgs) {
-    int i = 1;
-    int dm = 0;
-    while (i <= session()->GetNumMessagesInCurrentMessageArea()) {
-      postrec* pp = get_post(i);
-      if (!pp) {
-        break;
-      } else if (((pp->status & status_no_delete) == 0) ||
-                  (pp->msg.storage_type != session()->current_sub().storage_type)) {
-        dm = i;
-        break;
-      }
-      ++i;
-    }
-    if (dm == 0) {
-      dm = 1;
-    }
-    delete_message(dm);
-  }
-  add_post(&p);
-
-  session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
-  session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
-  pStatus = session()->status_manager()->BeginTransaction();
-  pStatus->IncrementNumMessagesPostedToday();
-  pStatus->IncrementNumLocalPosts();
-
-  if (session()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
-    time_t lEndTime = time(nullptr);
-    if (start_time > lEndTime) {
-      lEndTime += SECONDS_PER_DAY;
-    }
-    start_time = static_cast<long>(lEndTime - start_time);
-    if ((start_time / MINUTES_PER_HOUR) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
-      start_time = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
-                                      MINUTES_PER_HOUR));
-    }
-    session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
-        (start_time));
-  }
-  session()->status_manager()->CommitTransaction(pStatus);
-  close_sub();
-
-  session()->UpdateTopScreen();
-  sysoplog() << "+ '" << p.title << "' posted on " << session()->current_sub().name;
-  bout << "Posted on " << session()->current_sub().name << wwiv::endl;
-  if (!session()->current_sub().nets.empty()) {
-    session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
-    if (!(p.status & status_pending_net)) {
-      send_net_post(&p, session()->current_sub());
-    }
-  }
+postrec p{};
+memset(&p, 0, sizeof(postrec));
+strcpy(p.title, data.title.c_str());
+p.anony = static_cast<unsigned char>(data.anonymous_flag);
+p.msg = m;
+p.ownersys = 0;
+p.owneruser = static_cast<uint16_t>(session()->usernum);
+WStatus* pStatus = session()->status_manager()->BeginTransaction();
+p.qscan = pStatus->IncrementQScanPointer();
+session()->status_manager()->CommitTransaction(pStatus);
+p.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+p.status = 0;
+if (session()->user()->IsRestrictionValidate()) {
+  p.status |= status_unvalidated;
 }
 
-void grab_user_name(messagerec* pMessageRecord, const std::string& file_name) {
+open_sub(true);
+
+if ((!session()->current_sub().nets.empty()) &&
+(session()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
+  p.status |= status_pending_net;
+  bool dm = true;
+  for (int i = session()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
+    && (i > (session()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
+    if (get_post(i)->status & status_pending_net) {
+      dm = false;
+      break;
+    }
+  }
+  if (dm) {
+    ssm(1, 0) << "Unvalidated net posts on " << session()->current_sub().name << ".";
+  }
+}
+if (session()->GetNumMessagesInCurrentMessageArea() >=
+  session()->current_sub().maxmsgs) {
+  int i = 1;
+  int dm = 0;
+  while (i <= session()->GetNumMessagesInCurrentMessageArea()) {
+    postrec* pp = get_post(i);
+    if (!pp) {
+      break;
+    }
+    else if (((pp->status & status_no_delete) == 0) ||
+      (pp->msg.storage_type != session()->current_sub().storage_type)) {
+      dm = i;
+      break;
+    }
+    ++i;
+  }
+  if (dm == 0) {
+    dm = 1;
+  }
+  delete_message(dm);
+}
+add_post(&p);
+
+session()->user()->SetNumMessagesPosted(session()->user()->GetNumMessagesPosted() + 1);
+session()->user()->SetNumPostsToday(session()->user()->GetNumPostsToday() + 1);
+pStatus = session()->status_manager()->BeginTransaction();
+pStatus->IncrementNumMessagesPostedToday();
+pStatus->IncrementNumLocalPosts();
+
+if (session()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
+  time_t lEndTime = time(nullptr);
+  if (start_time > lEndTime) {
+    lEndTime += SECONDS_PER_DAY;
+  }
+  start_time = static_cast<long>(lEndTime - start_time);
+  if ((start_time / MINUTES_PER_HOUR) > getslrec(session()->GetEffectiveSl()).time_per_logon) {
+    start_time = static_cast<long>(static_cast<float>(getslrec(session()->GetEffectiveSl()).time_per_logon *
+      MINUTES_PER_HOUR));
+  }
+  session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
+    (start_time));
+}
+session()->status_manager()->CommitTransaction(pStatus);
+close_sub();
+
+session()->UpdateTopScreen();
+sysoplog() << "+ '" << p.title << "' posted on " << session()->current_sub().name;
+bout << "Posted on " << session()->current_sub().name << wwiv::endl;
+if (!session()->current_sub().nets.empty()) {
+  session()->user()->SetNumNetPosts(session()->user()->GetNumNetPosts() + 1);
+  if (!(p.status & status_pending_net)) {
+    send_net_post(&p, session()->current_sub());
+  }
+}
+}
+
+void grab_user_name(messagerec* pMessageRecord, const std::string& file_name, int network_number) {
   string text;
   session()->net_email_name.clear();
   if (!readfile(pMessageRecord, file_name, &text)) {
@@ -305,6 +308,11 @@ void grab_user_name(messagerec* pMessageRecord, const std::string& file_name) {
     return;
   }
   text.resize(cr);
+  if (session()->net_networks[network_number].type == network_type_t::ftn) {
+    // 1st line of message is from.
+    session()->net_email_name = text;
+    return;
+  }
   const char* ss2 = text.c_str();
   if (text[0] == '`' && text[1] == '`') {
     for (const char* ss1 = ss2 + 2; *ss1; ss1++) {

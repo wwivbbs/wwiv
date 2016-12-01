@@ -23,7 +23,7 @@
 
 void send_net_post(postrec* pPostRecord, const wwiv::sdk::subboard_t& sub);
 void post();
-void grab_user_name(messagerec* pMessageRecord, const std::string& file_name);
+void grab_user_name(messagerec*m, const std::string& file_name, int network_number);
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);
 void qscan(int nBeginSubNumber, int *pnNextSubNumber);
 void nscan(int nStartingSubNum = 0);

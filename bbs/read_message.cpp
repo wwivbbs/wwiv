@@ -33,6 +33,7 @@
 #include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/net.h"
 #include "sdk/filenames.h"
@@ -40,6 +41,7 @@
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 
@@ -58,7 +60,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   outNetworkName->clear();
   outLocation->clear();
 
-  if (session()->current_net().type == network_type_t::internet || system_number == 32767) {
+  if (session()->current_net().type == network_type_t::internet) {
     outNetworkName->assign("Internet Mail and Newsgroups");
     return;
   }
@@ -272,11 +274,13 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     return{};
   }
 
+  // TODO(rushfan): Use get_control_line from networking code here.
+
   size_t ptr = 0;
   for (ptr = 0; 
     ptr <data.message_text.size() && data.message_text[ptr] != RETURN && ptr <= 200;
     ptr++) {
-    data.to.push_back(data.message_text[ptr]);
+    data.from_user_name.push_back(data.message_text[ptr]);
   }
   if (ptr < data.message_text.size() && data.message_text[++ptr] == SOFTRETURN) {
     ++ptr;
@@ -285,23 +289,44 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     data.date.push_back(data.message_text[ptr]);
   }
   if (ptr + 1 < data.message_text.size()) {
-    data.message_text = data.message_text.substr(ptr + 1);
+    // skip trailing \r\n
+    while (ptr + 1 < data.message_text.size() && (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
+      ptr++;
+    }
+    data.message_text = data.message_text.substr(ptr);
+    ptr = 0;
   }
 
+  if (starts_with(data.message_text, "\004""0FidoAddr:")) {
+    string cl;
+    for (size_t start = ptr; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60; ptr++) {
+      cl.push_back(data.message_text[ptr]);
+    }
+    while (ptr + 1 < data.message_text.size() && (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
+      ptr++;
+    }
+    cl = cl.substr(12);
+    StringTrim(&cl);
+    if (!cl.empty()) {
+      data.to_user_name = cl;
+    }
+  }
+  // TODO: pull out ^D0FidoAddr here and set data.to_user_name.
+  // Also remove any BY: line if we have a To user name.
   irt_name[0] = '\0';
 
-  UpdateHeaderInformation(an, readit, data.to, &data.to, &data.date);
+  UpdateHeaderInformation(an, readit, data.from_user_name, &data.from_user_name, &data.date);
   if (an == 0) {
     g_flags &= ~g_flag_disable_mci;
     SetMessageOriginInfo(from_sys_num, from_user, &data.from_sys_name, &data.from_sys_loc);
-    to_char_array(irt_name, data.to);
+    to_char_array(irt_name, data.from_user_name);
   }
 
   return data;
 }
 
 void display_type2_message(Type2MessageData& msg, char an, bool* next) {
-
+  static constexpr int COLUMN2 = 42;
   g_flags &= ~g_flag_ansi_movement;
   *next = false;
   g_flags |= g_flag_disable_mci;
@@ -309,13 +334,83 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
     g_flags &= ~g_flag_disable_mci;
   }
 
-  bout << "|#9From|#7: |#1" << msg.to << wwiv::endl;
-  bout << "|#9Date|#7: |#1" << msg.date << wwiv::endl;
-  if (!msg.from_sys_name.empty()) {
-    bout << "|#9 Sys|#7: |#1" << msg.from_sys_name << wwiv::endl;
+  if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
+    string msgarea = msg.message_area;
+    if (msgarea.size() > 35) { msgarea = msgarea.substr(0, 35); }
+    bout << "|#9Area|#7: |#" << session()->GetMessageColor() << msgarea;
+    if (session()->user()->GetScreenChars() >= 78) {
+      int used = 6 + msgarea.size();
+      auto pad = COLUMN2 - used;
+      bout << string(pad, ' ');
+    } else {
+      bout.nl();
+    }
+    bout << "|#9Msg#|#7: ";
+    if (msg.message_number > 0 && msg.total_messages > 0) {
+      bout << "[|#" << session()->GetMessageColor() << msg.message_number 
+           << "|#7 of |#" << session()->GetMessageColor() 
+           << msg.total_messages << "|#7]";
+    }
+    bout.nl();
   }
-  if (!msg.from_sys_loc.empty()) {
-    bout << "|#9Loc|#7:  |#1" << msg.from_sys_loc << wwiv::endl;
+
+  string from = msg.from_user_name;
+  if (from.size() > 35) {
+    from = from.substr(0, 35);
+  }
+  bout << "|#9From|#7: |#1" << from;
+  if (session()->user()->GetScreenChars() >= 78) {
+    int used = 6 + from.size();
+    auto pad = COLUMN2 - used;
+    bout << string(pad, ' ');
+  } else {
+    bout.nl();
+  }
+  bout << "|#9Date|#7: |#1" << msg.date << wwiv::endl;
+  if (!msg.to_user_name.empty()) {
+    bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
+  }
+  bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << msg.title << wwiv::endl;
+
+  auto sysname = msg.from_sys_name;
+  if (!msg.from_sys_name.empty()) {
+    if (sysname.size() > 35) {
+      sysname = sysname.substr(0, 35);
+    }
+    bout << "|#9 Sys|#7: |#1" << sysname;
+    if (session()->user()->GetScreenChars() >= 78) {
+      int used = 6 + sysname.size();
+      auto pad = COLUMN2 - used;
+      bout << string(pad, ' ');
+    }
+    else {
+      bout.nl();
+    }
+    if (!msg.from_sys_loc.empty()) {
+      auto loc = msg.from_sys_loc;
+      int maxlen = session()->user()->GetScreenChars() - 7 - COLUMN2;
+      if (loc.size() > maxlen) {
+        loc = loc.substr(0, maxlen);
+      }
+      bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
+    }
+  }
+
+  if (!msg.flags.empty()) {
+    bout << "|#9Info|#7: |#1";
+    for (const auto& f : msg.flags) {
+      switch (f) {
+      case MessageFlags::FORCED: bout << "|13[FORCED] "; break;
+      case MessageFlags::NOT_NETWORK_VALIDATED: bout << "|12[Not Network Validated] "; break;
+      case MessageFlags::NOT_VALIDATED: bout << "|12<<< NOT VALIDATED >>>"; break;
+      case MessageFlags::PERMANENT: bout << "|13[Permanent] "; break;
+      case MessageFlags::LOCAL: bout << "|10[Local] "; break;
+      case MessageFlags::FTN: bout << "|10[Fido] "; break;
+      case MessageFlags::PRIVATE: bout << "|10[Pvt] "; break;
+      case MessageFlags::WWIVNET: bout << "|10[WWIVnet] "; break;
+      }
+    }
+    bout.nl();
   }
   display_message_text(msg.message_text, next);
   g_flags &= ~g_flag_disable_mci;
@@ -328,61 +423,61 @@ void read_post(int n, bool *next, int *val) {
   if (session()->user()->IsUseClearScreen()) {
     bout.cls();
   }
+
+  postrec p = *get_post(n);
+  bool bReadit = (lcs() || (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
+  auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
+    session()->current_sub().filename.c_str(), p.ownersys, p.owneruser);
+
   if (forcescansub) {
-    bout.cls();
-    bout.GotoXY(1, 1);
-    bout << "|#4   FORCED SCAN OF SYSOP INFORMATION - YOU MAY NOT ABORT.  PLEASE READ THESE!  |#0\r\n";
+    m.flags.insert(MessageFlags::FORCED);
   }
 
-  bout.bprintf(" |#9Msg|#7: [|#1%u|#7/|#1%lu|#7]|#%d %s\r\n", n,
-    session()->GetNumMessagesInCurrentMessageArea(), session()->GetMessageColor(),
-    session()->current_sub().name.c_str());
-  const string subjectLine = "|#9Subj|#7: ";
-  osan(subjectLine, &abort, next);
-  bout.Color(session()->GetMessageColor());
-  postrec p = *get_post(n);
+  m.message_number = n;
+  m.total_messages = session()->GetNumMessagesInCurrentMessageArea();
+  m.message_area = session()->current_sub().name;
+
+  if (session()->current_sub().nets.empty()) {
+    m.flags.insert(MessageFlags::LOCAL);
+  }
+  for (const auto& nets : session()->current_sub().nets) {
+    const auto& n = session()->net_networks[nets.net_num];
+    if (n.type == network_type_t::ftn) {
+      m.flags.insert(MessageFlags::FTN);
+    }
+    else if (n.type == network_type_t::wwivnet) {
+      m.flags.insert(MessageFlags::WWIVNET);
+    }
+  }
+
   if (p.status & (status_unvalidated | status_delete)) {
-    bout.Color(6);
-    osan("<<< NOT VALIDATED YET >>>", &abort, next);
-    bout.nl();
     if (!lcs()) {
       return;
     }
+    m.flags.insert(MessageFlags::NOT_VALIDATED);
     *val |= 1;
-    osan(subjectLine, &abort, next);
-    bout.Color(session()->GetMessageColor());
   }
+  m.title = p.title;
   strncpy(irt, p.title, 60);
   irt_name[0] = '\0';
-  bout.Color(session()->GetMessageColor());
-  osan(irt, &abort, next);
-  bout.nl();
+
   if ((p.status & status_no_delete) && lcs()) {
-    osan("|#9Info|#7: ", &abort, next);
-    bout.Color(session()->GetMessageColor());
-    osan("Permanent Message", &abort, next);
-    bout.nl();
+    m.flags.insert(MessageFlags::PERMANENT);
   }
   if ((p.status & status_pending_net) && session()->user()->GetSl() > syscfg.newusersl) {
-    osan("|#9Val|#7:  ", &abort, next);
-    bout.Color(session()->GetMessageColor());
-    osan("Not Network Validated", &abort, next);
-    bout.nl();
     *val |= 2;
+    m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }
   if (!abort) {
-    bool bReadit = (lcs() || (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
-    int nNetNumSaved = session()->net_num();
+    int saved_net_num = session()->net_num();
 
     if (p.status & status_post_new_net) {
       set_net_num(p.network.network_msg.net_number);
     }
-    auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
-      session()->current_sub().filename.c_str(), p.ownersys, p.owneruser);
     display_type2_message(m, static_cast<char>(p.anony & 0x0f), next);
 
-    if (nNetNumSaved != session()->net_num()) {
-      set_net_num(nNetNumSaved);
+    if (saved_net_num != session()->net_num()) {
+      set_net_num(saved_net_num);
     }
 
     session()->user()->SetNumMessagesRead(session()->user()->GetNumMessagesRead() + 1);
@@ -394,7 +489,7 @@ void read_post(int n, bool *next, int *val) {
     qsc_p[session()->GetCurrentReadMessageArea()] = p.qscan;
   }
 
-  unsigned long current_qscan_pointer = 0;
+  uint32_t current_qscan_pointer = 0;
   {
     std::unique_ptr<WStatus> wwiv_status(session()->status_manager()->GetStatus());
     // not sure why we check this twice...

@@ -104,8 +104,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
       }
       BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
         const net_networks_rec& net = bink_config.networks()[network_name];
-        File* f = new File(net.dir, filename);
-        return new WFileTransferFile(filename, unique_ptr<File>(f));
+        return new WFileTransferFile(filename, std::make_unique<File>(net.dir, filename));
       };
       BinkP binkp(c.get(), &bink_config, side, "0", factory);
       binkp.Run();
@@ -141,8 +140,7 @@ static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, const 
 
   const net_networks_rec& net = bink_config.networks()[network_name];
   BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
-    File* f = new File(net.dir, filename);
-    return new WFileTransferFile(filename, unique_ptr<File>(f));
+    return new WFileTransferFile(filename, std::make_unique<File>(net.dir, filename));
   };
 
   string sendto_ftn_node;

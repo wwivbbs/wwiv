@@ -40,6 +40,7 @@ static constexpr int MSG_BLOCK_SIZE = 512;
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -56,82 +57,83 @@ uint16_t *gat = nullptr;
 * Opens the message area file {messageAreaFileName} and returns the file handle.
 * Note: This is a Private method to this module.
 */
-static File* OpenMessageFile(const string messageAreaFileName) {
+static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
   session()->status_manager()->RefreshStatusCache();
 
-  const string filename = StrCat(session()->config()->msgsdir(), messageAreaFileName, FILENAME_DAT_EXTENSION);
-  File *pFileMessage = new File(filename);
-  if (!pFileMessage->Open(File::modeReadWrite | File::modeBinary)) {
+  const string filename = StrCat(
+    FilePath(session()->config()->msgsdir(), messageAreaFileName), FILENAME_DAT_EXTENSION);
+  auto file = std::make_unique<File>(filename);
+  if (!file->Open(File::modeReadWrite | File::modeBinary)) {
     // Create message area file if it doesn't exist.
-    pFileMessage->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+    file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
       gat[i] = 0;
     }
-    pFileMessage->Write(gat, GAT_SECTION_SIZE);
-    pFileMessage->SetLength(GAT_SECTION_SIZE + (75L * 1024L));
+    file->Write(gat, GAT_SECTION_SIZE);
+    file->SetLength(GAT_SECTION_SIZE + (75L * 1024L));
     gat_section = 0;
   }
-  pFileMessage->Seek(0L, File::Whence::begin);
-  pFileMessage->Read(gat, GAT_SECTION_SIZE);
+  file->Seek(0L, File::Whence::begin);
+  file->Read(gat, GAT_SECTION_SIZE);
 
   gat_section = 0;
-  return pFileMessage;
+  return std::move(file);
 }
 
-static void set_gat_section(File *pMessageFile, int section) {
+static void set_gat_section(File& file, int section) {
   if (gat_section != section) {
-    auto lFileSize = pMessageFile->GetLength();
-    auto lSectionPos = static_cast<long>(section) * GATSECLEN;
-    if (lFileSize < lSectionPos) {
-      pMessageFile->SetLength(lSectionPos);
-      lFileSize = lSectionPos;
+    auto file_size = file.GetLength();
+    auto section_pos = static_cast<off_t>(section) * GATSECLEN;
+    if (file_size < section_pos) {
+      file.SetLength(section_pos);
+      file_size = section_pos;
     }
-    pMessageFile->Seek(lSectionPos, File::Whence::begin);
-    if (lFileSize < (lSectionPos + GAT_SECTION_SIZE)) {
+    file.Seek(section_pos, File::Whence::begin);
+    if (file_size < (section_pos + GAT_SECTION_SIZE)) {
       for (int i = 0; i < GAT_NUMBER_ELEMENTS; i++) {
         gat[i] = 0;
       }
-      pMessageFile->Write(gat, GAT_SECTION_SIZE);
+      file.Write(gat, GAT_SECTION_SIZE);
     } else {
-      pMessageFile->Read(gat, GAT_SECTION_SIZE);
+      file.Read(gat, GAT_SECTION_SIZE);
     }
     gat_section = section;
   }
 }
 
-static void save_gat(File *pMessageFile) {
-  long lSectionPos = static_cast<long>(gat_section) * GATSECLEN;
-  pMessageFile->Seek(lSectionPos, File::Whence::begin);
-  pMessageFile->Write(gat, GAT_SECTION_SIZE);
+static void save_gat(File& file) {
+  auto section_pos = static_cast<off_t>(gat_section) * GATSECLEN;
+  file.Seek(section_pos, File::Whence::begin);
+  file.Write(gat, GAT_SECTION_SIZE);
   WStatus *pStatus = session()->status_manager()->BeginTransaction();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
   session()->status_manager()->CommitTransaction(pStatus);
 }
 
-
 /**
 * Deletes a message
 * This is a public function.
 */
-void remove_link(messagerec * pMessageRecord, string fileName) {
-  switch (pMessageRecord->storage_type) {
+void remove_link(messagerec* msg, string fileName) {
+  switch (msg->storage_type) {
   case 0:
   case 1:
     break;
   case 2:
   {
     unique_ptr<File> file(OpenMessageFile(fileName));
-    if (file->IsOpen()) {
-      set_gat_section(file.get(), static_cast<int>(pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS));
-      long lCurrentSection = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
-      while (lCurrentSection > 0 && lCurrentSection < GAT_NUMBER_ELEMENTS) {
-        long lNextSection = static_cast<long>(gat[lCurrentSection]);
-        gat[lCurrentSection] = 0;
-        lCurrentSection = lNextSection;
-      }
-      save_gat(file.get());
-      file->Close();
+    if (!file->IsOpen()) {
+      return;
     }
+    set_gat_section(*file.get(), static_cast<int>(msg->stored_as / GAT_NUMBER_ELEMENTS));
+    int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
+    while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
+      int next_section = static_cast<long>(gat[current_section]);
+      gat[current_section] = 0;
+      current_section = next_section;
+    }
+    save_gat(*file.get());
+    file->Close();
   }
   break;
   default:
@@ -140,8 +142,8 @@ void remove_link(messagerec * pMessageRecord, string fileName) {
   }
 }
 
-void savefile(const std::string& text, messagerec * pMessageRecord, const string fileName) {
-  switch (pMessageRecord->storage_type) {
+void savefile(const std::string& text, messagerec* msg, const string& fileName) {
+  switch (msg->storage_type) {
   case 0:
   case 1:
     break;
@@ -149,10 +151,10 @@ void savefile(const std::string& text, messagerec * pMessageRecord, const string
   {
     int gati[128];
     memset(&gati, 0, sizeof(gati));
-    unique_ptr<File> pMessageFile(OpenMessageFile(fileName));
-    if (pMessageFile->IsOpen()) {
+    unique_ptr<File> file(OpenMessageFile(fileName));
+    if (file->IsOpen()) {
       for (int section = 0; section < 1024; section++) {
-        set_gat_section(pMessageFile.get(), section);
+        set_gat_section(*file.get(), section);
         int gatp = 0;
         int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
         int i4 = 1;
@@ -165,46 +167,47 @@ void savefile(const std::string& text, messagerec * pMessageRecord, const string
         if (gatp >= nNumBlocksRequired) {
           gati[gatp] = -1;
           for (int i = 0; i < nNumBlocksRequired; i++) {
-            pMessageFile->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
-            pMessageFile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
+            file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
+            file->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
             gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
           }
-          save_gat(pMessageFile.get());
+          save_gat(*file.get());
           break;
         }
       }
-      pMessageFile->Close();
+      file->Close();
     }
-    pMessageRecord->stored_as = static_cast<long>(gati[0]) + static_cast<long>(gat_section) * GAT_NUMBER_ELEMENTS;
+    msg->stored_as = static_cast<long>(gati[0]) + static_cast<long>(gat_section) * GAT_NUMBER_ELEMENTS;
   }
   break;
   default:
   {
-    bout.bprintf("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", pMessageRecord->storage_type);
+    bout.bprintf("WWIV:ERROR:msgbase.cpp: Save - storage_type=%u!\r\n", msg->storage_type);
   }
   break;
   }
 }
 
-bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
+bool readfile(messagerec* msg, const string& fileName, string* out) {
   out->clear();
-  if (pMessageRecord->storage_type != 2) {
+  if (msg->storage_type != 2) {
     return false;
   }
+
   unique_ptr<File> file(OpenMessageFile(fileName));
-  set_gat_section(file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
-  int current_section = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
-  long lMessageLength = 0;
+  set_gat_section(*file.get(), msg->stored_as / GAT_NUMBER_ELEMENTS);
+  int current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
+  long message_length = 0;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-    lMessageLength += MSG_BLOCK_SIZE;
+    message_length += MSG_BLOCK_SIZE;
     current_section = gat[current_section];
   }
-  if (lMessageLength == 0) {
+  if (message_length == 0) {
     bout << "\r\nNo message found.\r\n\n";
     return false;
   }
 
-  current_section = pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS;
+  current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::Whence::begin);
     char b[MSG_BLOCK_SIZE + 1];
@@ -223,22 +226,22 @@ bool readfile(messagerec * pMessageRecord, string fileName,string* out) {
   return true;
 }
 
-void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {
+void lineadd(messagerec* msg, const string& sx, string fileName) {
   const string line = StringPrintf("%s\r\n\x1a", sx.c_str());
 
-  switch (pMessageRecord->storage_type) {
+  switch (msg->storage_type) {
   case 0:
   case 1:
     break;
   case 2:
   {
     unique_ptr<File> message_file(OpenMessageFile(fileName));
-    set_gat_section(message_file.get(), pMessageRecord->stored_as / GAT_NUMBER_ELEMENTS);
+    set_gat_section(*message_file.get(), msg->stored_as / GAT_NUMBER_ELEMENTS);
     int new1 = 1;
     while (new1 < GAT_NUMBER_ELEMENTS && gat[new1] != 0) {
       ++new1;
     }
-    int i = static_cast<int>(pMessageRecord->stored_as % GAT_NUMBER_ELEMENTS);
+    int i = static_cast<int>(msg->stored_as % GAT_NUMBER_ELEMENTS);
     while (gat[i] != 65535) {
       i = gat[i];
     }
@@ -262,7 +265,7 @@ void lineadd(messagerec* pMessageRecord, const string& sx, string fileName) {
       message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
       gat[i] = static_cast<uint16_t>(new1);
-      save_gat(message_file.get());
+      save_gat(*message_file.get());
     }
     free(b);
     message_file->Close();

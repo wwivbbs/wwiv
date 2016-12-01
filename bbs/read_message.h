@@ -19,15 +19,34 @@
 #define __INCLUDED_BBS_READ_MESSAGE_H__
 
 #include <string>
+#include <set>
 
 #include "sdk/vardec.h"
 
+enum class MessageFlags {
+  NOT_VALIDATED,
+  NOT_NETWORK_VALIDATED,
+  FORCED,
+  PERMANENT,
+  LOCAL,
+  PRIVATE,
+  FTN,
+  WWIVNET
+};
+
 struct Type2MessageData {
-  std::string to;
+  std::string to_user_name;
+  std::string from_user_name;
   std::string date;
   std::string message_text;
   std::string from_sys_name;
   std::string from_sys_loc;
+
+  std::string title;
+  std::set<MessageFlags> flags;
+  int message_number = 0;
+  int total_messages = 0;
+  std::string message_area;
 };
 
 Type2MessageData read_type2_message(

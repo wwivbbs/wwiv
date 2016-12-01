@@ -345,29 +345,29 @@ void attach_file(int mode) {
           break;
         case 'R': {
           bout.nl(2);
-          bout << "Title: " << m.title;
           bool next;
           Type2MessageData msg = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0);
+          msg.title = m.title;
           display_type2_message(msg, static_cast<char>(m.anony & 0x0f), &next);
           if (m.status & status_file) {
-            File fileAttach(session()->config()->datadir(), ATTACH_DAT);
-            if (fileAttach.Open(File::modeReadOnly | File::modeBinary)) {
+            File f(session()->config()->datadir(), ATTACH_DAT);
+            if (f.Open(File::modeReadOnly | File::modeBinary)) {
               bFound = false;
-              auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
-              while (lNumRead > 0 && !bFound) {
+              auto num_read = f.Read(&fsr, sizeof(fsr));
+              while (num_read > 0 && !bFound) {
                 if (m.daten == static_cast<uint32_t>(fsr.id)) {
                   bout << "Attached file: " << fsr.filename << " (" << fsr.numbytes << " bytes).";
                   bout.nl();
                   bFound = true;
                 }
                 if (!bFound) {
-                  lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
+                  num_read = f.Read(&fsr, sizeof(fsr));
                 }
               }
               if (!bFound) {
                 bout << "File attached but attachment data missing.  Alert sysop!\r\n";
               }
-              fileAttach.Close();
+              f.Close();
             } else {
               bout << "File attached but attachment data missing.  Alert sysop!\r\n";
             }

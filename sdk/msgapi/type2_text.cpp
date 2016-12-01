@@ -87,20 +87,20 @@ bool Type2Text::remove_link(messagerec& msg) {
 * Opens the message area file {messageAreaFileName} and returns the file handle.
 * Note: This is a Private method to this module.
 */
-File* Type2Text::OpenMessageFile() {
+std::unique_ptr<File> Type2Text::OpenMessageFile() {
   // TODO(rushfan): Pass in the status manager. this is needed to
   // set session()->subchg if any of the subs receive a post so that 
   // resynch can work right on multi node configs.
   // 
   // session()->status_manager()->RefreshStatusCache();
 
-  unique_ptr<File> message_file(new File(filename_));
+  auto message_file = std::make_unique<File>(filename_);
   if (!message_file->Open(File::modeReadWrite | File::modeBinary)) {
     // Create should have created this.
     // TODO(rushfan): Set error code
-    return nullptr;
+    return {};
   }
-  return message_file.release();
+  return std::move(message_file);
 }
 
 std::vector<uint16_t> Type2Text::load_gat(File& file, size_t section) {

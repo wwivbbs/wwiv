@@ -46,7 +46,7 @@ public:
 
 bool ForwardMessage(int *user_number, int *system_number);
 std::unique_ptr<File> OpenEmailFile(bool allow_write);
-void sendout_email(EmailData& data);
+void sendout_email(::EmailData& data);
 bool ok_to_mail(int user_number, int system_number, bool force_it);
 void email(const std::string& title, int user_number, int system_number, bool force_it, int anony, bool allow_fsed = true);
 void imail(int user_number, int system_number);

@@ -41,7 +41,7 @@ public:
   bool remove_link(messagerec& msg);
 
 private:
-  File* OpenMessageFile();
+  std::unique_ptr<File> OpenMessageFile();
   const std::string filename_;
 };
 

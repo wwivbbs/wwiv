@@ -152,7 +152,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
 }
 
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
-  File *file = new File(session()->config()->datadir(), EMAIL_DAT);
+  auto file = std::make_unique<File>(session()->config()->datadir(), EMAIL_DAT);
 
   // If the file doesn't exist, just return the opaque handle now instead of flailing
   // around trying to open it
@@ -160,7 +160,7 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
     // if it does not exist, try to create it via the open call
     // sf bug 1215434
     file->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    return unique_ptr<File>(file);
+    return std::move(file);
   }
 
   for (int nAttempNum = 0; nAttempNum < NUM_ATTEMPTS_TO_OPEN_EMAIL; nAttempNum++) {
@@ -174,7 +174,7 @@ std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
     }
     sleep_for(seconds(DELAY_BETWEEN_EMAIL_ATTEMPTS));
   }
-  return unique_ptr<File>(file);
+  return std::move(file);
 }
 
 void sendout_email(EmailData& data) {
@@ -419,7 +419,7 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
 
 void email(const string& title, int user_number, int system_number, bool forceit, int anony, bool bAllowFSED) {
   int nNumUsers = 0;
-  messagerec messageRecord;
+  messagerec msg{};
   string destination;
   net_system_list_rec *csne = nullptr;
   struct {
@@ -469,8 +469,9 @@ void email(const string& title, int user_number, int system_number, bool forceit
       destination = ">UNKNOWN<";
     }
   } else {
-    if ((system_number == 1 && user_number == 0 && session()->current_net().type == network_type_t::internet)
-      || system_number == 32767) {
+    if (session()->current_net().type == network_type_t::internet
+      || session()->current_net().type == network_type_t::ftn) {
+      // Internet and 
       destination = session()->net_email_name;
     } else {
       if (session()->max_net_num() > 1) {
@@ -514,7 +515,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   }
   write_inst(INST_LOC_EMAIL, (system_number == 0) ? user_number : 0, INST_FLAGS_NONE);
 
-  messageRecord.storage_type = EMAIL_STORAGE;
+  msg.storage_type = EMAIL_STORAGE;
   MessageEditorData data;
   data.title = title;
   data.need_title = true;
@@ -526,7 +527,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   if (!inmsg(data)) {
     return;
   }
-  savefile(data.text, &messageRecord, data.aux);
+  savefile(data.text, &msg, data.aux);
   i = data.anonymous_flag;
   if (anony & anony_sender) {
     i |= anony_receiver;
@@ -583,7 +584,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   if (cc && !bcc) {
     int listed = 0;
     string s1 = "\003""6Carbon Copy: \003""1";
-    lineadd(&messageRecord, "\003""7----", "email");
+    lineadd(&msg, "\003""7----", "email");
     for (int j = 0; j < nNumUsers; j++) {
       if (carbon_copy[j].system_number == 0) {
         set_net_num(0);
@@ -613,7 +614,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
       }
       if (j == 0) {
         s1 = StrCat("\003""6Original To: \003""1", destination);
-        lineadd(&messageRecord, s1, "email");
+        lineadd(&msg, s1, "email");
         s1 = "\003""6Carbon Copy: \003""1";
       } else {
         if (s1.length() + destination.length() < 77) {
@@ -625,7 +626,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
           }
           listed = 0;
         } else {
-          lineadd(&messageRecord, s1, "email");
+          lineadd(&msg, s1, "email");
           s1 += "\003""1             ";
           j--;
           listed = 1;
@@ -633,12 +634,12 @@ void email(const string& title, int user_number, int system_number, bool forceit
       }
     }
     if (!listed) {
-      lineadd(&messageRecord, s1, "email");
+      lineadd(&msg, s1, "email");
     }
   }
 
   EmailData email(data);
-  email.msg = &messageRecord;
+  email.msg = &msg;
   email.anony = i;
   email.an = an;
   email.from_user = session()->usernum;

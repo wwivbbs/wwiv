@@ -198,9 +198,10 @@ void kill_old_email() {
         break;
         case 'R': {
           bout.nl(2);
-          bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", session()->GetMessageColor(), m.title);
-          bool next;
           Type2MessageData msg = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0);
+          msg.title = m.title;
+          msg.message_area = "Personal E-Mail";
+          bool next;
           display_type2_message(msg, static_cast<char>(m.anony & 0x0f), &next);
         }
         break;

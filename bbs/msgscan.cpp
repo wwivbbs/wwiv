@@ -86,7 +86,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
     return;
   }
   if (get_post(nMessageNumber)->ownersys && !get_post(nMessageNumber)->owneruser) {
-    grab_user_name(&(get_post(nMessageNumber)->msg), session()->current_sub().filename);
+    grab_user_name(&(get_post(nMessageNumber)->msg), session()->current_sub().filename, session()->net_num());
   }
   grab_quotes(&(get_post(nMessageNumber)->msg), session()->current_sub().filename.c_str());
 
