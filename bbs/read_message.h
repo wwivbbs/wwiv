@@ -55,6 +55,6 @@ Type2MessageData read_type2_message(
 
 void display_type2_message(Type2MessageData& msg, char an, bool* next);
 
-void read_post(int n, bool *next, int *val);
+char read_post(int n, bool *next, int *val);
 
 #endif  // __INCLUDED_BBS_READ_MESSAGE_H__

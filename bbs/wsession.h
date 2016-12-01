@@ -250,7 +250,9 @@ public:
   void SetCleanNetNeeded(bool b) { need_to_clean_net_ = b; }
 
   void SetWfcStatus(int nStatus) { wfc_status_ = nStatus; }
-  int  GetWfcStatus() { return wfc_status_; }
+  int  GetWfcStatus() const { return wfc_status_; }
+
+  bool experimental_read_prompt() const { return experimental_read_prompt_; }
 
   void SetChatReason(const std::string& chat_reason) { chat_reason_ = chat_reason; }
 
@@ -439,6 +441,7 @@ private:
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags;
   uint16_t spawn_opts[20];
+  bool experimental_read_prompt_ = false;
 
 };
 

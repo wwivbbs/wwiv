@@ -31,6 +31,7 @@
     <ClInclude Include="msgapi\message_area.h" />
     <ClInclude Include="msgapi\message_areas.h" />
     <ClInclude Include="msgapi\message_area_wwiv.h" />
+    <ClInclude Include="msgapi\message_utils_wwiv.h" />
     <ClInclude Include="msgapi\message_wwiv.h" />
     <ClInclude Include="msgapi\msgapi.h" />
     <ClInclude Include="msgapi\type2_text.h" />

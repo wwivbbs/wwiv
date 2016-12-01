@@ -382,6 +382,8 @@ void WSession::ReadINIFile(IniFile& ini) {
   max_batch           = std::min<uint16_t>(max_batch , 999);
   max_chains          = std::min<uint16_t>(max_chains, 999);
   max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
+
+  experimental_read_prompt_ = ini.value<bool>("EXPERIMENTAL_READ_PROMPT", false);
 }
 
 bool WSession::ReadInstanceSettings(int instance_number, IniFile& ini) {

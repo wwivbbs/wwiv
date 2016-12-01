@@ -27,6 +27,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
+#include "bbs/bgetch.h"
 #include "bbs/connect1.h"
 #include "bbs/message_file.h"
 #include "bbs/subacc.h"
@@ -37,10 +38,12 @@
 #include "core/strings.h"
 #include "sdk/net.h"
 #include "sdk/filenames.h"
+#include "sdk/msgapi/message_utils_wwiv.h"
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -325,14 +328,13 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   return data;
 }
 
-void display_type2_message(Type2MessageData& msg, char an, bool* next) {
+struct MessageHeaderInfo {
+  int num_lines = 0;
+};
+
+static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
   static constexpr int COLUMN2 = 42;
-  g_flags &= ~g_flag_ansi_movement;
-  *next = false;
-  g_flags |= g_flag_disable_mci;
-  if (an == 0) {
-    g_flags &= ~g_flag_disable_mci;
-  }
+  MessageHeaderInfo info{};
 
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     string msgarea = msg.message_area;
@@ -342,16 +344,19 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
       int used = 6 + msgarea.size();
       auto pad = COLUMN2 - used;
       bout << string(pad, ' ');
-    } else {
+    }
+    else {
       bout.nl();
+      info.num_lines++;
     }
     bout << "|#9Msg#|#7: ";
     if (msg.message_number > 0 && msg.total_messages > 0) {
-      bout << "[|#" << session()->GetMessageColor() << msg.message_number 
-           << "|#7 of |#" << session()->GetMessageColor() 
-           << msg.total_messages << "|#7]";
+      bout << "[|#" << session()->GetMessageColor() << msg.message_number
+        << "|#7 of |#" << session()->GetMessageColor()
+        << msg.total_messages << "|#7]";
     }
     bout.nl();
+    info.num_lines++;
   }
 
   string from = msg.from_user_name;
@@ -363,14 +368,19 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
     int used = 6 + from.size();
     auto pad = COLUMN2 - used;
     bout << string(pad, ' ');
-  } else {
+  }
+  else {
     bout.nl();
+    info.num_lines++;
   }
   bout << "|#9Date|#7: |#1" << msg.date << wwiv::endl;
+  info.num_lines++;
   if (!msg.to_user_name.empty()) {
     bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
+    info.num_lines++;
   }
   bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << msg.title << wwiv::endl;
+  info.num_lines++;
 
   auto sysname = msg.from_sys_name;
   if (!msg.from_sys_name.empty()) {
@@ -385,14 +395,16 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
     }
     else {
       bout.nl();
+      info.num_lines++;
     }
     if (!msg.from_sys_loc.empty()) {
       auto loc = msg.from_sys_loc;
       int maxlen = session()->user()->GetScreenChars() - 7 - COLUMN2;
-      if (loc.size() > maxlen) {
+      if (size_int(loc) > maxlen) {
         loc = loc.substr(0, maxlen);
       }
       bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
+      info.num_lines++;
     }
   }
 
@@ -411,18 +423,154 @@ void display_type2_message(Type2MessageData& msg, char an, bool* next) {
       }
     }
     bout.nl();
+    info.num_lines++;
   }
+
+  return info;
+}
+
+static std::string pad(int screen_width, std::string::size_type line_len) {
+  if (line_len >= screen_width) {
+    return{};
+  }
+  return std::string(screen_width - line_len, ' ');
+}
+
+static char display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
+  g_flags &= ~g_flag_ansi_movement;
+  *next = false;
+  g_flags |= g_flag_disable_mci;
+  if (an == 0) {
+    g_flags &= ~g_flag_disable_mci;
+  }
+
+  bout.cls();
+  const auto info = display_type2_message_header(msg);
+  const auto screen_width = session()->user()->GetScreenChars();
+  const auto screen_length = session()->user()->GetScreenLines() - 1;
+  const auto message_height = screen_length - info.num_lines - 2 - 1;
+  const auto lines_start = info.num_lines + 2;
+  const auto lines_end = lines_start + message_height;
+
+  std::vector<std::string> orig_lines = SplitString(msg.message_text, "\n");
+  std::vector<std::string> lines;
+  for (auto line : orig_lines) {
+    StringTrim(&line);
+    //if (line.empty()) { continue; }
+    if (contains(line, '\r')) {
+      for (auto l : SplitString(line, "\r")) {
+        StringTrim(&l);
+        if (line.front() == '\x04') { continue; }
+        lines.emplace_back(l);
+      }
+    } else {
+      if (!line.empty() && line.front() == '\x04') {
+        // skip contril lines.
+        continue;
+      }
+      lines.emplace_back(line);
+    }
+  }
+
+  bout.GotoXY(1, info.num_lines + 1);
+  bout << "|#7" << string(screen_width - 1, '=');
+
+  bout.GotoXY(1, screen_length - 1);
+  bout << "|#7" << string(screen_width - 1, '=');
+  bout.GotoXY(1, screen_length);
+  bout << "|#9Use Arrow Keys, [|#2Enter|#9] for menu.";
+
+  bout.GotoXY(1, info.num_lines + 2);
+  const int first = 0;
+  const auto last = std::max<int>(0, lines.size() - message_height);
+
+  int start = first;
+  bool done = false;
+  bout.Color(0);
+  while (!done) {
+    for (int i = start; i < start + message_height; i++) {
+      if (i >= lines.size()) {
+        break;
+      }
+      bout.GotoXY(1, i - start + lines_start);
+      const auto& l = lines.at(i);
+      bout << "|#0" << l << pad(screen_width, l.size());
+    }
+
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS);
+    switch (key) {
+    case COMMAND_UP: {
+      if (start > first) {
+        --start;
+      }
+    } break;
+    case COMMAND_DOWN: {
+      if (start < last) {
+        ++start;
+      }
+    } break;
+    default: {
+      if ((key & 0xff) == key) {
+        return key & 0xff;
+      }
+    }
+    }
+  }
+
+  bout.GotoXY(1, screen_length);
+  return 0;
+}
+
+void display_type2_message(Type2MessageData& msg, char an, bool* next) {
+  if (session()->experimental_read_prompt()) {
+    display_type2_message_new(msg, an, next);
+    return;
+  }
+
+  g_flags &= ~g_flag_ansi_movement;
+  *next = false;
+  g_flags |= g_flag_disable_mci;
+  if (an == 0) {
+    g_flags &= ~g_flag_disable_mci;
+  }
+
+
+  auto info = display_type2_message_header(msg);
+  bout.lines_listed_ = info.num_lines;
+
   display_message_text(msg.message_text, next);
   g_flags &= ~g_flag_disable_mci;
 }
 
-void read_post(int n, bool *next, int *val) {
-  bout.nl();
-  bool abort = false;
-  *next = false;
+static void update_qscan(uint32_t qscan) {
+  if (qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
+    qsc_p[session()->GetCurrentReadMessageArea()] = qscan;
+  }
+
+  uint32_t current_qscan_pointer = 0;
+  {
+    std::unique_ptr<WStatus> wwiv_status(session()->status_manager()->GetStatus());
+    // not sure why we check this twice...
+    // maybe we need a getCachedQScanPointer?
+    current_qscan_pointer = wwiv_status->GetQScanPointer();
+  }
+  if (qscan >= current_qscan_pointer) {
+    WStatus* pStatus = session()->status_manager()->BeginTransaction();
+    if (qscan >= pStatus->GetQScanPointer()) {
+      pStatus->SetQScanPointer(qscan + 1);
+    }
+    session()->status_manager()->CommitTransaction(pStatus);
+  }
+}
+
+char read_post(int n, bool *next, int *val) {
   if (session()->user()->IsUseClearScreen()) {
     bout.cls();
+  } else {
+    bout.nl();
   }
+  bool abort = false;
+  *next = false;
 
   postrec p = *get_post(n);
   bool bReadit = (lcs() || (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
@@ -452,7 +600,7 @@ void read_post(int n, bool *next, int *val) {
 
   if (p.status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
-      return;
+      return 0;
     }
     m.flags.insert(MessageFlags::NOT_VALIDATED);
     *val |= 1;
@@ -472,7 +620,7 @@ void read_post(int n, bool *next, int *val) {
     int saved_net_num = session()->net_num();
 
     if (p.status & status_post_new_net) {
-      set_net_num(p.network.network_msg.net_number);
+      set_net_num(network_number_from(&p));
     }
     display_type2_message(m, static_cast<char>(p.anony & 0x0f), next);
 
@@ -485,22 +633,7 @@ void read_post(int n, bool *next, int *val) {
   } else if (express && !*next) {
     expressabort = true;
   }
-  if (p.qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
-    qsc_p[session()->GetCurrentReadMessageArea()] = p.qscan;
-  }
 
-  uint32_t current_qscan_pointer = 0;
-  {
-    std::unique_ptr<WStatus> wwiv_status(session()->status_manager()->GetStatus());
-    // not sure why we check this twice...
-    // maybe we need a getCachedQScanPointer?
-    current_qscan_pointer = wwiv_status->GetQScanPointer();
-  }
-  if (p.qscan >= current_qscan_pointer) {
-    WStatus* pStatus = session()->status_manager()->BeginTransaction();
-    if (p.qscan >= pStatus->GetQScanPointer()) {
-      pStatus->SetQScanPointer(p.qscan + 1);
-    }
-    session()->status_manager()->CommitTransaction(pStatus);
-  }
+  update_qscan(p.qscan);
+  return 0;
 }

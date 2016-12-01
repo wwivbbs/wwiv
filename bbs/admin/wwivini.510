@@ -246,6 +246,7 @@ EXEC_CHILDWAITTIME     = 500                ; Time to wait for the DOOR to load
                                             ; (used under Win9X)
 NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new 
                                             ; messages when they log in.
+EXPERIMENTAL_READ_PROMPT = Y
 ;
 ;=============================================================================
 ;                        TEMPORARY DIRECTORY SETTING

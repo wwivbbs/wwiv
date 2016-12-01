@@ -109,6 +109,9 @@
     <ClInclude Include="fido\nodelist.h">
       <Filter>Source Files\fido</Filter>
     </ClInclude>
+    <ClInclude Include="msgapi\message_utils_wwiv.h">
+      <Filter>Header Files\msgapi</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
