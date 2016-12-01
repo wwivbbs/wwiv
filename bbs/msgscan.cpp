@@ -880,13 +880,18 @@ static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan)
   bool done = false;
   while (!done) {
     ReadMessageResult result{};
-    if (scan_option == SCAN_OPTION_READ_PROMPT) {
+    if (scan_option == SCAN_OPTION_READ_MESSAGE) {
       bool next = true;
       int val = 0;
       result = read_post(msgnum, &next, &val);
     }
     else if (scan_option == SCAN_OPTION_LIST_TITLES) {
       HandleListTitles(msgnum, scan_option);
+    } else if (scan_option == SCAN_OPTION_READ_PROMPT) {
+      bool quit = false;
+      int val = 0;
+      HandleScanReadPrompt(msgnum, scan_option, nextsub, title_scan, done, quit, val);
+      if (quit) { done = true; }
     }
     switch (result.option) {
     case ReadMessageOption::NEXT_MSG: {
