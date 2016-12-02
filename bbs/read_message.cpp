@@ -301,22 +301,23 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     data.message_text = data.message_text.substr(ptr);
     ptr = 0;
   }
-
-  if (starts_with(data.message_text, "\004""0FidoAddr:")) {
-    string cl;
-    for (size_t start = ptr; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60; ptr++) {
-      cl.push_back(data.message_text[ptr]);
-    }
-    while (ptr + 1 < data.message_text.size() && (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
-      ptr++;
-    }
-    cl = cl.substr(12);
-    StringTrim(&cl);
-    if (!cl.empty()) {
-      data.to_user_name = cl;
+  
+  auto lines = SplitString(data.message_text, "\r");
+  for (auto line : lines) {
+    StringTrim(&line);
+    if (line.empty()) continue;
+    if (starts_with(line, "\004""0FidoAddr:")) {
+      string cl = line.substr(12);
+      if (!cl.empty()) {
+        data.to_user_name = cl;
+      }
     }
   }
-  // TODO: pull out ^D0FidoAddr here and set data.to_user_name.
+
+  if (!data.message_text.empty() && data.message_text.back() == CZ) {
+    data.message_text.pop_back();
+  }
+
   // Also remove any BY: line if we have a To user name.
   irt_name[0] = '\0';
 
