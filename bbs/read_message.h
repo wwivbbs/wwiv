@@ -61,6 +61,7 @@ enum class ReadMessageOption {
   PREV_MSG,
   NEXT_SUB,
   PREV_SUB,
+  LIST_TITLES,
   COMMAND
 };
 

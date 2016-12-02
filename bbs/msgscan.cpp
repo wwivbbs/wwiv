@@ -888,10 +888,6 @@ static void query_post() {
   }
 }
 
-static void show_message_reader_help() {
-
-}
-
 static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan) {
   bool done = false;
   while (!done) {
@@ -924,7 +920,10 @@ static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan)
       const auto maxnum = session()->GetNumMessagesInCurrentMessageArea();
       bout << "Enter Message Number (1-" << maxnum << ") :";
       msgnum = input_number(msgnum, 1, maxnum);
-    }
+    } break;
+    case ReadMessageOption::LIST_TITLES: {
+      scan_option = SCAN_OPTION_LIST_TITLES;
+    } break;
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
       case 'Q': done = true; break;

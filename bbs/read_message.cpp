@@ -432,7 +432,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
 }
 
 static std::string pad(int screen_width, std::string::size_type line_len) {
-  if (line_len >= screen_width) {
+  if (static_cast<int>(line_len) >= screen_width) {
     return{};
   }
   return std::string(screen_width - line_len, ' ');
@@ -464,7 +464,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
 
 static void display_message_text_new(const std::vector<std::string>& lines, int start, 
   int message_height, int screen_width, int lines_start) {
-  for (int i = start; i < start + message_height; i++) {
+  for (size_t i = start; i < start + message_height; i++) {
     if (i >= lines.size()) {
       break;
     }
@@ -495,10 +495,9 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   auto lines = split_wwiv_message(msg.message_text);
 
   bout.GotoXY(1, info.num_lines + 1);
-  bout << "|#7" << string(screen_width - 1, '=');
-
+  bout << "|#7" << static_cast<char>(198) << string(screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
   bout.GotoXY(1, screen_length - 1);
-  bout << "|#7" << string(screen_width - 1, '=');
+  bout << "|#7" << static_cast<char>(198) << string(screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
 
   bout.GotoXY(1, info.num_lines + 2);
   const int first = 0;
@@ -553,7 +552,19 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       if ((key & 0xff) == key) {
         key = toupper(key & 0xff);
         if (key == RETURN) {
-          result.option = ReadMessageOption::NEXT_MSG;
+          if (start == last) {
+            result.option = ReadMessageOption::NEXT_MSG;
+          }
+          else {
+            if (start + message_height < last) {
+              start += message_height;
+            }
+            else {
+              start = last;
+            }
+            // Continue here so we don't return below.
+            continue;
+          }
         }
         else if (key == ']') {
           result.option = ReadMessageOption::NEXT_MSG;
@@ -563,6 +574,9 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         }
         else if (key == 'J') {
           result.option = ReadMessageOption::JUMP_TO_MSG;
+        } 
+        else if (key == 'T') {
+          result.option = ReadMessageOption::LIST_TITLES;
         } else if (key == '?') {
           for (int y = lines_start; y < lines_end; y++) {
             bout.GotoXY(1, y);
@@ -577,7 +591,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
           bout.clreol();
         } else {
           result.option = ReadMessageOption::COMMAND;
-          result.command = key;
+          result.command = static_cast<char>(key);
         }
         bout.GotoXY(1, command_line);
         bout.clreol();
@@ -665,11 +679,11 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
     m.flags.insert(MessageFlags::LOCAL);
   }
   for (const auto& nets : session()->current_sub().nets) {
-    const auto& n = session()->net_networks[nets.net_num];
-    if (n.type == network_type_t::ftn) {
+    const auto& net = session()->net_networks[nets.net_num];
+    if (net.type == network_type_t::ftn) {
       m.flags.insert(MessageFlags::FTN);
     }
-    else if (n.type == network_type_t::wwivnet) {
+    else if (net.type == network_type_t::wwivnet) {
       m.flags.insert(MessageFlags::WWIVNET);
     }
   }
