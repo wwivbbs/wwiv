@@ -81,7 +81,7 @@ static string GetScanReadPrompts(int nMessageNumber) {
         session()->GetNumMessagesInCurrentMessageArea());
 }
 
-static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, int &nScanOptionType) {
+static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInput, MsgScanOption& nScanOptionType) {
   if (!lcs() && get_post(nMessageNumber)->status & (status_unvalidated | status_delete)) {
     return;
   }
@@ -138,7 +138,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
     switch (chReply) {
     case '\r':
     case 'Q':
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       break;
     case '1': {
       bout.nl();
@@ -157,7 +157,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
       if (user_number || system_number) {
         email("", user_number, system_number, false, 0);
       }
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
     }
     break;
     case '2': {
@@ -203,7 +203,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
           File::Remove(filename);
         }
       }
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
     }
     break;
     }
@@ -219,7 +219,7 @@ static void HandleScanReadAutoReply(int &nMessageNumber, const char *pszUserInpu
   }
 }
 
-static void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
+static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) {
   bool abort = false;
   char *pszTempFindString = nullptr;
   if (!(g_flags & g_flag_made_find_str)) {
@@ -303,14 +303,14 @@ static void HandleScanReadFind(int &nMessageNumber, int &nScanOptionType) {
   if (fnd) {
     bout << "Found!\r\n";
     nMessageNumber = nTempMsgNum;
-    nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+    scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
   } else {
     bout << "|#6Not found!\r\n";
-    nScanOptionType = SCAN_OPTION_READ_PROMPT;
+    scan_option = MsgScanOption::SCAN_OPTION_READ_PROMPT;
   }
 }
 
-static void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
+static void HandleListTitles(int &nMessageNumber, MsgScanOption& nScanOptionType) {
   int i = 0;
   bool abort = false;
   if (nMessageNumber >= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -394,7 +394,7 @@ static void HandleListTitles(int &nMessageNumber, int &nScanOptionType) {
       abort = true;
     }
   }
-  nScanOptionType = SCAN_OPTION_READ_PROMPT;
+  nScanOptionType = MsgScanOption::SCAN_OPTION_READ_PROMPT;
 }
 
 static void HandleMessageDownload(int nMessageNumber) {
@@ -622,7 +622,7 @@ static void HandleMessageHelp() {
   }
 }
 
-static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
+static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
   bool &quit, int &val) {
   resetnsp();
   string read_prompt = GetScanReadPrompts(nMessageNumber);
@@ -643,12 +643,12 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
     }
   }
   if (bTitleScan && szUserInput[0] == 0 && nMessageNumber < session()->GetNumMessagesInCurrentMessageArea()) {
-    nScanOptionType = SCAN_OPTION_LIST_TITLES;
+    nScanOptionType = MsgScanOption::SCAN_OPTION_LIST_TITLES;
     szUserInput[0] = 'T';
     szUserInput[1] = '\0';
   } else {
     bTitleScan = false;
-    nScanOptionType = SCAN_OPTION_READ_PROMPT;
+    nScanOptionType = MsgScanOption::SCAN_OPTION_READ_PROMPT;
   }
   int nUserInput = atoi(szUserInput);
   if (szUserInput[0] == '\0') {
@@ -659,7 +659,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
   }
 
   if (nUserInput != 0 && nUserInput <= session()->GetNumMessagesInCurrentMessageArea() && nUserInput >= 1) {
-    nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+    nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
     nMessageNumber = nUserInput;
   } else if (szUserInput[1] == '\0') {
     if (forcescansub) {
@@ -668,7 +668,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
     switch (szUserInput[0]) {
     case '$':
     { // Last message in area.
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       nMessageNumber = session()->GetNumMessagesInCurrentMessageArea();
     }
     break;
@@ -709,10 +709,10 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
       break;
     case 'T':
       bTitleScan = true;
-      nScanOptionType = SCAN_OPTION_LIST_TITLES;
+      nScanOptionType = MsgScanOption::SCAN_OPTION_LIST_TITLES;
       break;
     case 'R':
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       break;
     case '@':
       to_char_array(irt_sub, session()->subs().sub(session()->current_user_sub().subnum).name);
@@ -737,7 +737,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
     case '-':
       if (nMessageNumber > 1 && (nMessageNumber - 1 < session()->GetNumMessagesInCurrentMessageArea())) {
         --nMessageNumber;
-        nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+        nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       }
       break;
     case 'C':
@@ -754,7 +754,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, int &nScanOptionType, int 
       break;
     case '>':
       // This used to be threaded code.
-      nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+      nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       break;
 
     case 'V':
@@ -888,18 +888,18 @@ static void query_post() {
   }
 }
 
-static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan) {
+static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool title_scan) {
   bool done = false;
   while (!done) {
     ReadMessageResult result{};
-    if (scan_option == SCAN_OPTION_READ_MESSAGE) {
+    if (scan_option == MsgScanOption::SCAN_OPTION_READ_MESSAGE) {
       bool next = true;
       int val = 0;
       result = read_post(msgnum, &next, &val);
     }
-    else if (scan_option == SCAN_OPTION_LIST_TITLES) {
+    else if (scan_option == MsgScanOption::SCAN_OPTION_LIST_TITLES) {
       HandleListTitles(msgnum, scan_option);
-    } else if (scan_option == SCAN_OPTION_READ_PROMPT) {
+    } else if (scan_option == MsgScanOption::SCAN_OPTION_READ_PROMPT) {
       bool quit = false;
       int val = 0;
       HandleScanReadPrompt(msgnum, scan_option, nextsub, title_scan, done, quit, val);
@@ -922,7 +922,7 @@ static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan)
       msgnum = input_number(msgnum, 1, maxnum);
     } break;
     case ReadMessageOption::LIST_TITLES: {
-      scan_option = SCAN_OPTION_LIST_TITLES;
+      scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES;
     } break;
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
@@ -944,7 +944,7 @@ static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan)
   query_post();
 }
 
-void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
+void scan(int nMessageNumber, MsgScanOption nScanOptionType, int *nextsub, bool bTitleScan) {
   irt[0] = '\0';
   irt_name[0] = '\0';
 
@@ -969,23 +969,23 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     CheckForHangup();
     set_net_num((session()->current_sub().nets.empty()) ? 0 :
       session()->current_sub().nets[0].net_num);
-    if (nScanOptionType != SCAN_OPTION_READ_PROMPT) {
+    if (nScanOptionType != MsgScanOption::SCAN_OPTION_READ_PROMPT) {
       resynch(&nMessageNumber, nullptr);
     }
     write_inst(INST_LOC_SUBS, session()->current_user_sub().subnum, INST_FLAGS_NONE);
 
     switch (nScanOptionType) {
-    case SCAN_OPTION_READ_PROMPT:
+    case MsgScanOption::SCAN_OPTION_READ_PROMPT:
     { // Read Prompt
       HandleScanReadPrompt(nMessageNumber, nScanOptionType, nextsub, bTitleScan, done, quit, val);
     }
     break;
-    case SCAN_OPTION_LIST_TITLES:
+    case MsgScanOption::SCAN_OPTION_LIST_TITLES:
     { // List Titles
       HandleListTitles(nMessageNumber, nScanOptionType);
     }
     break;
-    case SCAN_OPTION_READ_MESSAGE:
+    case MsgScanOption::SCAN_OPTION_READ_MESSAGE:
     { // Read Message
       bool next = false;
       if (nMessageNumber > 0 && nMessageNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
@@ -1004,9 +1004,9 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
         if (nMessageNumber > session()->GetNumMessagesInCurrentMessageArea()) {
           done = true;
         }
-        nScanOptionType = SCAN_OPTION_READ_MESSAGE;
+        nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       } else {
-        nScanOptionType = SCAN_OPTION_READ_PROMPT;
+        nScanOptionType = MsgScanOption::SCAN_OPTION_READ_PROMPT;
       }
       if (expressabort) {
         if (realexpress) {
@@ -1016,7 +1016,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
         } else {
           expressabort = false;
           express = false;
-          nScanOptionType = SCAN_OPTION_READ_PROMPT;
+          nScanOptionType = MsgScanOption::SCAN_OPTION_READ_PROMPT;
         }
       }
     }

@@ -1060,11 +1060,6 @@ struct ext_desc_rec {
   int32_t offset;
 };
 
-// Used by scan(...)
-#define SCAN_OPTION_READ_PROMPT   0
-#define SCAN_OPTION_LIST_TITLES   1
-#define SCAN_OPTION_READ_MESSAGE  2
-
 struct instancerec {
   int16_t
   number, user;

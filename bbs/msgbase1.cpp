@@ -297,10 +297,10 @@ if (!session()->current_sub().nets.empty()) {
 }
 }
 
-void grab_user_name(messagerec* pMessageRecord, const std::string& file_name, int network_number) {
+void grab_user_name(messagerec* msg, const std::string& file_name, int network_number) {
   string text;
   session()->net_email_name.clear();
-  if (!readfile(pMessageRecord, file_name, &text)) {
+  if (!readfile(msg, file_name, &text)) {
     return;
   }
   string::size_type cr = text.find_first_of('\r');
@@ -327,8 +327,8 @@ void grab_user_name(messagerec* pMessageRecord, const std::string& file_name, in
   }
 }
 
-void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
-  int sub_number = session()->usub[nBeginSubNumber].subnum;
+void qscan(int start_subnum, int *next_subnum) {
+  int sub_number = session()->usub[start_subnum].subnum;
   g_flags &= ~g_flag_made_find_str;
 
   if (hangup || sub_number < 0) {
@@ -341,9 +341,9 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
 
   uint32_t on_disk_last_post = WWIVReadLastRead(sub_number);
   if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
-    int nNextSubNumber = *pnNextSubNumber;
+    int nNextSubNumber = *next_subnum;
     int nOldSubNumber = session()->current_user_sub_num();
-    session()->set_current_user_sub_num(nBeginSubNumber);
+    session()->set_current_user_sub_num(start_subnum);
 
     if (!iscan(session()->current_user_sub_num())) {
       bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
@@ -364,14 +364,14 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     if (session()->GetNumMessagesInCurrentMessageArea() > 0
         && i <= session()->GetNumMessagesInCurrentMessageArea()
         && get_post(i)->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
-      scan(i, SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
+      scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
     } else {
       unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
       qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 
     session()->set_current_user_sub_num(nOldSubNumber);
-    *pnNextSubNumber = nNextSubNumber;
+    *next_subnum = nNextSubNumber;
     bout << "|#1< " << session()->current_sub().name << " Q-Scan Done >";
     bout.clreol();
     bout.nl();
@@ -382,7 +382,7 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
     }
   } else {
     bout << "|#1< Nothing new on " << session()->subs().sub(sub_number).name
-      << " " << session()->usub[nBeginSubNumber].keys;
+      << " " << session()->usub[start_subnum].keys;
     bout.clreol();
     bout.nl();
     bout.clear_lines_listed();
@@ -394,30 +394,30 @@ void qscan(int nBeginSubNumber, int *pnNextSubNumber) {
   bout.nl();
 }
 
-void nscan(int nStartingSubNum) {
-  int nNextSubNumber = 1;
+void nscan(int start_subnum) {
+  int next_subnum = 1;
 
-  if (nStartingSubNum < 0) {
+  if (start_subnum < 0) {
     // TODO(rushfan): Log error?
     return;
   }
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
-  for (size_t i = nStartingSubNum; 
-       session()->usub[i].subnum != -1 && i < session()->subs().subs().size() && nNextSubNumber && !hangup;
+  for (size_t i = start_subnum; 
+       session()->usub[i].subnum != -1 && i < session()->subs().subs().size() && next_subnum && !hangup;
        i++) {
     if (qsc_q[session()->usub[i].subnum / 32] & (1L << (session()->usub[i].subnum % 32))) {
-      qscan(i, &nNextSubNumber);
+      qscan(i, &next_subnum);
     }
     bool abort = false;
     checka(&abort);
     if (abort) {
-      nNextSubNumber = 0;
+      next_subnum = 0;
     }
   }
   bout.nl();
   bout.clreol();
   bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
-  if (nNextSubNumber && session()->user()->IsNewScanFiles() &&
+  if (next_subnum && session()->user()->IsNewScanFiles() &&
       (syscfg.sysconfig & sysconfig_no_xfer) == 0 &&
       (!(g_flags & g_flag_scanned_files))) {
     bout.clear_lines_listed();
@@ -457,9 +457,9 @@ void ScanMessageTitles() {
   int nNextSubNumber = 0;
   // 'S' means start reading at the 1st message.
   if (messageNumber == "S") {
-    scan(0, SCAN_OPTION_READ_PROMPT, &nNextSubNumber, true);
+    scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, &nNextSubNumber, true);
   } else if (nMessageNumber >= 0) {
-    scan(nMessageNumber, SCAN_OPTION_LIST_TITLES, &nNextSubNumber, true);
+    scan(nMessageNumber, MsgScanOption::SCAN_OPTION_LIST_TITLES, &nNextSubNumber, true);
   }
 }
 

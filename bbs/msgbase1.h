@@ -21,12 +21,18 @@
 #include "sdk/vardec.h"
 #include "sdk/subxtr.h"
 
-void send_net_post(postrec* pPostRecord, const wwiv::sdk::subboard_t& sub);
+enum class MsgScanOption {
+  SCAN_OPTION_READ_PROMPT,
+  SCAN_OPTION_LIST_TITLES,
+  SCAN_OPTION_READ_MESSAGE 
+};
+
+void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);
 void post();
 void grab_user_name(messagerec*m, const std::string& file_name, int network_number);
-void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan);
-void qscan(int nBeginSubNumber, int *pnNextSubNumber);
-void nscan(int nStartingSubNum = 0);
+void scan(int msgnum, MsgScanOption scan_option, int *nextsub, bool title_scan);
+void qscan(int start_subnum, int *next_subnum);
+void nscan(int start_subnum = 0);
 void ScanMessageTitles();
 void remove_post();
 
