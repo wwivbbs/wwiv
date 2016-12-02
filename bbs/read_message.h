@@ -68,6 +68,8 @@ struct ReadMessageResult {
   ReadMessageOption option = ReadMessageOption::NONE;
   char command = 0;
   std::string data;
+  int lines_start = 0;
+  int lines_end = 20;
 };
 
 ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* next);

@@ -117,6 +117,7 @@
 #define LPSYSOP_NOEXT "lpsysop"
 
 #define MBMAIN_NOEXT "mbmain"
+#define MBFSED_NOEXT "mbfsed"
 
 // QWK
 #define MESSAGES_DAT "MESSAGES.DAT"

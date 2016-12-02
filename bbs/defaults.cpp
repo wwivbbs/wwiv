@@ -163,6 +163,9 @@ static void print_cur_stat() {
       ((session()->user()->GetEmailAddress()[0] == '\0') ? "None." : session()->user()->GetEmailAddress());
   bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << session()->user()->GetOptionalVal() << " "
        << "|#1C|#9) Conferencing      : |#2" << YesNoString(session()->user()->IsUseConference()) << wwiv::endl;
+  if (okansi()) {
+    bout << "|#1G|#9) Message Reader    : |#2" << (session()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
+  }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
   bout << "|#1K|#9) Configure Menus" << wwiv::endl;
   if (session()->languages.size() > 1) {
@@ -731,7 +734,7 @@ void enter_regnum() {
   }
 }
 
-void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
+void defaults(wwiv::menus::MenuInstanceData* menudata) {
   bool done = false;
   do {
     print_cur_stat();
@@ -742,10 +745,14 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
     bout.nl();
     char ch;
     if (okansi()) {
-      bout << "|#9Defaults: (1-9,A-C,I,K,L,M,S,T,U,W,?,Q) : ";
-      ch = onek("Q?123456789ABCIKLMSTUW", true);
+      bout << "|#9Defaults: ";
+      string allowable = "Q?123456789ABCIKLMSTUW";
+      if (session()->experimental_read_prompt()) {
+        allowable.push_back('G');
+      }
+      ch = onek(allowable, true);
     } else {
-      bout << "|#9Defaults: (1-7,B,C,I,K,L,M,S,T,U,W,?,Q) : ";
+      bout << "|#9Defaults: ";
       ch = onek("Q?1234567BCIKLMTUW", true);
     }
     switch (ch) {
@@ -792,7 +799,9 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
       session()->user()->ToggleStatusFlag(User::conference);
       changedsl();
       break;
-
+    case 'G':
+      session()->user()->ToggleStatusFlag(User::fullScreenReader);
+      break;
     case 'I': {
       bout.nl();
       bout << "|#9Enter your Internet mailing address.\r\n|#7:";
@@ -815,8 +824,8 @@ void defaults(wwiv::menus::MenuInstanceData* pMenuData) {
     break;
     case 'K':
       wwiv::menus::ConfigUserMenuSet();
-      pMenuData->finished = true;
-      pMenuData->reload = true;
+      menudata->finished = true;
+      menudata->reload = true;
       break;
     case 'L':
       if (session()->languages.size() > 1) {

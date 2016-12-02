@@ -874,6 +874,24 @@ static void network_validate() {
   }
 }
 
+static void query_post() {
+  if (!session()->user()->IsRestrictionPost() &&
+     (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
+     (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
+    bout << "|#5Post on " << session()->current_sub().name << "? ";
+    irt[0] = '\0';
+    irt_name[0] = '\0';
+    grab_quotes(nullptr, nullptr);
+    if (yesno()) {
+      post();
+    }
+  }
+}
+
+static void show_message_reader_help() {
+
+}
+
 static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan) {
   bool done = false;
   while (!done) {
@@ -924,6 +942,7 @@ static void scan_new(int msgnum, int scan_option, int *nextsub, bool title_scan)
     } break;
     }
   }
+  query_post();
 }
 
 void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan) {
@@ -939,7 +958,7 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
     return;
   }
 
-  if (session()->experimental_read_prompt()) {
+  if (session()->experimental_read_prompt() && session()->user()->HasStatusFlag(User::fullScreenReader)) {
     scan_new(nMessageNumber, nScanOptionType, nextsub, bTitleScan);
     return;
   }
@@ -1024,16 +1043,6 @@ void scan(int nMessageNumber, int nScanOptionType, int *nextsub, bool bTitleScan
   if (quit) {
     return;
   }
-  if (!session()->user()->IsRestrictionPost() &&
-    (session()->user()->GetNumPostsToday() < getslrec(session()->GetEffectiveSl()).posts) &&
-    (session()->GetEffectiveSl() >= session()->current_sub().postsl)) {
-    bout << "|#5Post on " << session()->current_sub().name << "? ";
-    irt[0] = '\0';
-    irt_name[0] = '\0';
-    grab_quotes(nullptr, nullptr);
-    if (yesno()) {
-      post();
-    }
-  }
+  query_post();
   bout.nl();
 }

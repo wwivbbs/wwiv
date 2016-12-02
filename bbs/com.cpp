@@ -30,10 +30,12 @@
 #include "bbs/fcns.h"
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 extern char str_quit[];
@@ -165,26 +167,26 @@ char ynq() {
   return ch;
 }
 
-char onek(const char *allowable_chars, bool auto_mpl) {
+char onek(const std::string& allowable, bool auto_mpl) {
   if (auto_mpl) {
     bout.mpl(1);
   }
-  char ch = onek_ncr(allowable_chars);
+  char ch = onek_ncr(allowable);
   bout.nl();
   return ch;
 }
 
 // Like onek but does not put cursor down a line
 // One key, no carriage return
-char onek_ncr(const char *allowable_chars) {
-  WWIV_ASSERT(allowable_chars);
-
+char onek_ncr(const std::string& allowable) {
   char ch = '\0';
-  while (!strchr(allowable_chars, ch = wwiv::UpperCase<char>(bout.getkey())) && !hangup)
-    ;
-  if (hangup) {
-    ch = allowable_chars[0];
+  while (!hangup) {
+    auto ch = wwiv::UpperCase(bout.getkey());
+    if (contains(allowable, ch)) {
+      return ch;
+    }
   }
+  if (hangup) { return allowable.front(); }
   bout.bputch(ch);
   return ch;
 }

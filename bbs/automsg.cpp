@@ -135,8 +135,7 @@ char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
 
   char cmdKey = 0;
   if (cs()) {
-    bout <<
-                       "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, (|#2D|#9)el, (|#2U|#9)nlock : ";
+    bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite, (|#2L|#9)ock, (|#2D|#9)el, (|#2U|#9)nlock : ";
     cmdKey = onek("QRWALDU", true);
   } else if (bCanWrite) {
     bout << "|#9(|#2Q|#9)uit, (|#2R|#9)ead, (|#2A|#9)uto-reply, (|#2W|#9)rite : ";

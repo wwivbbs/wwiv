@@ -18,12 +18,14 @@
 #ifndef __INCLUDED_BBS_COM_H__
 #define __INCLUDED_BBS_COM_H__
 
+#include <string>
+
 bool CheckForHangup();
 void makeansi(int attr, char *out_buffer, bool forceit);
 bool yesno();
 bool noyes();
 char ynq();
-char onek(const char *allowable_chars, bool auto_mpl = false);
-char onek_ncr(const char *allowable_chars);
+char onek(const std::string& allowable, bool auto_mpl = false);
+char onek_ncr(const std::string& allowable);
 
 #endif  // __INCLUDED_BBS_COM_H__

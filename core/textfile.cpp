@@ -29,9 +29,10 @@
 #include <string>
 #include <sys/stat.h>
 
+#include "core/file.h"
+#include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/file.h"
 #include "core/wwivport.h"
 
 #ifdef _WIN32
@@ -185,6 +186,7 @@ TextFile::~TextFile() {
 }
 
 std::string TextFile::ReadFileIntoString() {
+  VLOG(3) << "ReadFileIntoString: ";
   if (file_ == nullptr) {
     return "";
   }

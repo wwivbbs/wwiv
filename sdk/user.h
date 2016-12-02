@@ -92,7 +92,7 @@ class User {
   static constexpr int conference                 = 0x00001000;
   static constexpr int noChat                     = 0x00002000;
   static constexpr int noMsgs                     = 0x00004000;
-  static constexpr int menuSys                    = 0x00008000; // not used?
+  static constexpr int fullScreenReader           = 0x00008000;
   static constexpr int unused_listPlus            = 0x00010000;
   static constexpr int autoQuote                  = 0x00020000;
   static constexpr int twentyFourHourClock        = 0x00040000;

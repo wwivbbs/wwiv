@@ -30,6 +30,8 @@
 #include "bbs/bgetch.h"
 #include "bbs/connect1.h"
 #include "bbs/message_file.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
@@ -488,6 +490,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   const int message_height = screen_length - info.num_lines - 2 - 1;
   const int lines_start = info.num_lines + 2;
   const int lines_end = lines_start + message_height;
+  const int command_line = screen_length;
 
   auto lines = split_wwiv_message(msg.message_text);
 
@@ -496,8 +499,6 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
   bout.GotoXY(1, screen_length - 1);
   bout << "|#7" << string(screen_width - 1, '=');
-  bout.GotoXY(1, screen_length);
-  bout << "|#9Scroll:{Up,Down} Left,[=Prev, Right,]=Next, J=Jump, Q=Quit.";
 
   bout.GotoXY(1, info.num_lines + 2);
   const int first = 0;
@@ -507,9 +508,12 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   bool done = false;
   bout.Color(0);
   ReadMessageResult result{};
+  result.lines_start = lines_start;
+  result.lines_end = lines_end;
   while (!done) {
     display_message_text_new(lines, start, message_height, screen_width, lines_start);
-    bout.GotoXY(1, screen_length);
+    bout.GotoXY(1, command_line);
+    bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
 
     int key = bgetch_event(numlock_status_t::NOTNUMBERS);
     switch (key) {
@@ -559,22 +563,37 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         }
         else if (key == 'J') {
           result.option = ReadMessageOption::JUMP_TO_MSG;
+        } else if (key == '?') {
+          for (int y = lines_start; y < lines_end; y++) {
+            bout.GotoXY(1, y);
+            bout.clreol();
+          }
+          bout.GotoXY(1, lines_start);
+          printfile(MBFSED_NOEXT);
+          bout.GotoXY(1, command_line);
+          bout.clreol();
+          pausescr();
+          bout.GotoXY(1, command_line);
+          bout.clreol();
         } else {
           result.option = ReadMessageOption::COMMAND;
           result.command = key;
         }
+        bout.GotoXY(1, command_line);
+        bout.clreol();
         return result;
       }
     }
     }
   }
 
-  bout.GotoXY(1, screen_length);
+  bout.GotoXY(1, command_line);
+  bout.clreol();
   return result;
 }
 
 ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* next) {
-  if (session()->experimental_read_prompt()) {
+  if (session()->experimental_read_prompt() && session()->user()->HasStatusFlag(User::fullScreenReader)) {
     return display_type2_message_new(msg, an, next);
   }
 
@@ -593,6 +612,8 @@ ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* ne
   g_flags &= ~g_flag_disable_mci;
 
   ReadMessageResult result{};
+  result.lines_start = 1;
+  result.lines_end = session()->user()->GetScreenLines() - 1;
   result.option = ReadMessageOption::NONE;
   return result;
 }
