@@ -49,7 +49,6 @@ namespace WWIV5TelnetServer
       beginDayCheckBox.Checked = Properties.Settings.Default.useBegindayEvent;
       launchMinimizedCheckBox.Checked = Properties.Settings.Default.launchMinimized;
       launchLocalNodeCheckBox.Checked = Properties.Settings.Default.launchLocalNodeAtStartup;
-      launchNetworkCheckBox.Checked = Properties.Settings.Default.launchNetworkAtStartup;
       checkUpdates.Text = Properties.Settings.Default.checkUpdates;
 
       useBadIp.Checked = Properties.Settings.Default.badip;
@@ -108,7 +107,6 @@ namespace WWIV5TelnetServer
         Properties.Settings.Default.useBegindayEvent = beginDayCheckBox.Checked;
         Properties.Settings.Default.launchMinimized = launchMinimizedCheckBox.Checked;
         Properties.Settings.Default.launchLocalNodeAtStartup = launchLocalNodeCheckBox.Checked;
-        Properties.Settings.Default.launchNetworkAtStartup = launchNetworkCheckBox.Checked;
         Properties.Settings.Default.checkUpdates = checkUpdates.Text;
 
         Properties.Settings.Default.badip = useBadIp.Checked;

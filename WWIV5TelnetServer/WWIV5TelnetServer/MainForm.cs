@@ -108,11 +108,6 @@ namespace WWIV5TelnetServer
         Console.WriteLine("AutoStarting Local Node.");
         runLocalNodeToolStripMenuItem_Click(sender, e);
       }
-      // Launch binkp.cmd for WWIVNet on Startup
-      if (Properties.Settings.Default.launchNetworkAtStartup)
-      {
-        controller_.RunBinkP();
-      }
       controller_.CheckForUpdates();
     }
 

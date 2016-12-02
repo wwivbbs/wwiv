@@ -193,18 +193,6 @@ namespace WWIV5TelnetServer.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("False")]
-        public bool launchNetworkAtStartup {
-            get {
-                return ((bool)(this["launchNetworkAtStartup"]));
-            }
-            set {
-                this["launchNetworkAtStartup"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("On Startup")]
         public string checkUpdates {
             get {
