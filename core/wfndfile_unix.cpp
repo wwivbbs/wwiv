@@ -58,7 +58,7 @@ static int fname_ok(const struct dirent *ent) {
   }
 
   int result = fnmatch(filespec_ptr, ent->d_name, FNM_PATHNAME|FNM_CASEFOLD);
-  std::cerr << "fnmatch: " << filespec_ptr << ";" << ent->d_name << "; " << result << "\r\n";
+  VLOG(3) << "fnmatch: " << filespec_ptr << ";" << ent->d_name << "; " << result << "\r\n";
 
   if (result == 0) {
     // fnmatch returns 0 on match. We return nonzero.
@@ -87,7 +87,6 @@ bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
 
   nMatches = scandir(dir.c_str(), &entries, fname_ok, alphasort);
   if (nMatches < 0) {
-    std::cout << "could not open dir '" << dir << "'\r\n";
     perror("scandir");
     return false;
   }
