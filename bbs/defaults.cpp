@@ -163,7 +163,7 @@ static void print_cur_stat() {
       ((session()->user()->GetEmailAddress()[0] == '\0') ? "None." : session()->user()->GetEmailAddress());
   bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << session()->user()->GetOptionalVal() << " "
        << "|#1C|#9) Conferencing      : |#2" << YesNoString(session()->user()->IsUseConference()) << wwiv::endl;
-  if (okansi()) {
+  if (session()->experimental_read_prompt()) {
     bout << "|#1G|#9) Message Reader    : |#2" << (session()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
