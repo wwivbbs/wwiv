@@ -343,7 +343,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     string msgarea = msg.message_area;
     if (msgarea.size() > 35) { msgarea = msgarea.substr(0, 35); }
-    bout << "|#9Area|#7: |#" << session()->GetMessageColor() << msgarea;
+    bout << "|#9 Sub|#7: |#" << session()->GetMessageColor() << msgarea;
     if (session()->user()->GetScreenChars() >= 78) {
       int used = 6 + msgarea.size();
       auto pad = COLUMN2 - used;

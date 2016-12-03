@@ -40,7 +40,7 @@ public:
   MessageArea(MessageApi* api);
   virtual ~MessageArea();
   
-  // Message Area Specific Operations
+  // Message Sub Specific Operations
   virtual bool Close() = 0;
   virtual bool Lock() = 0;
   virtual bool Unlock() = 0;

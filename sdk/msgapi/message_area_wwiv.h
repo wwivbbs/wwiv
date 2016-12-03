@@ -61,7 +61,7 @@ public:
   WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename);
   virtual ~WWIVMessageArea();
 
-  // Message Area Specific Operations
+  // Message Sub Specific Operations
   bool Close() override;
   bool Lock() override;
   bool Unlock() override;

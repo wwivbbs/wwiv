@@ -174,7 +174,7 @@ static void modify_sub(int n) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebar("%s %d", "Editing Message Area #", n);
+    bout.litebar("%s %d", "Editing Message Sub #", n);
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) Key        : |#2" << GetKey(r) << wwiv::endl;
@@ -349,7 +349,7 @@ static void modify_sub(int n) {
 
       if (ch2 == 'A') {
         sub_xtr_add(n, -1);
-        if (session()->subs().sub(n).name == "** New WWIV Message Area **") {
+        if (session()->subs().sub(n).name == "** New WWIV Message Sub **") {
           session()->subs().sub(n).name = session()->subs().sub(n).desc;
         }
         if (session()->subs().sub(n).filename == "NONAME") {
@@ -503,7 +503,7 @@ static void insert_sub(int n) {
   n = static_cast<int>(nconv);
 
   subboard_t r = {};
-  r.name = "** New WWIV Message Area **";
+  r.name = "** New WWIV Message Sub **";
   r.filename = "NONAME";
   r.key = 0;
   r.readsl = 10;

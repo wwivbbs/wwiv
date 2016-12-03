@@ -373,7 +373,7 @@ void pack_sub(int si) {
     const string fn1 = StrCat(session()->config()->msgsdir(), sfn, ".dat");
     const string fn2 = StrCat(session()->config()->msgsdir(), nfn, ".dat");
 
-    bout << "\r\n|#7\xFE |#1Packing Message Area: |#5" 
+    bout << "\r\n|#7\xFE |#1Packing Message Subboard: |#5" 
          << session()->subs().sub(si).name << wwiv::endl;
 
     for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea(); i++) {

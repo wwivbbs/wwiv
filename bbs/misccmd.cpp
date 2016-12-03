@@ -224,7 +224,7 @@ void list_users(int mode) {
   char szFindText[21];
 
   if (session()->current_user_sub().subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
-    bout << "\r\n|#6No Message Area Available!\r\n\n";
+    bout << "\r\n|#6No Message Sub Available!\r\n\n";
     return;
   }
   if (session()->current_user_dir().subnum == -1 && mode == LIST_USERS_FILE_AREA) {

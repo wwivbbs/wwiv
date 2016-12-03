@@ -100,7 +100,7 @@ public:
 
     int num_messages = area->number_of_messages();
     int message_number = arg("num").as_int();
-    cout << "Message Area: '" << basename << "' has "
+    cout << "Message Sub: '" << basename << "' has "
          << num_messages << " messages." << endl;
 
     if (message_number < 0 || message_number > num_messages) {
@@ -362,7 +362,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   }
 
   int num_messages = (end >= 0) ? end : area->number_of_messages();
-  cout << "Message Area: '" << basename << "' has "
+  cout << "Message Sub: '" << basename << "' has "
        << num_messages << " messages." << endl;
   for (int current = start; current <= num_messages; current++) {
     unique_ptr<MessageHeader> header(area->ReadMessageHeader(current));

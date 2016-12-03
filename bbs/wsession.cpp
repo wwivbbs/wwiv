@@ -1235,12 +1235,12 @@ int WSession::Run(int argc, char *argv[]) {
           while (i < argc) {
             int nSubNumToPack = atoi(argv[i]);
             pack_sub(nSubNumToPack);
-            sysoplog() << "* Packed Message Area:" << nSubNumToPack;
+            sysoplog() << "* Packed Message Subboard:" << nSubNumToPack;
             i++;
           }
         } else {
-          bout << "\r\n|#7\xFE |#5Packing all subs: \r\n";
-          sysoplog() << "* Packing All Message Areas";
+          bout << "\r\n|#7\xFE |#5Packing all subboards: \r\n";
+          sysoplog() << "* Packing All Message Subboards";
           wwiv::bbs::TempDisablePause disable_pause;
           if (!pack_all_subs()) {
             bout << "|#6Aborted.\r\n";

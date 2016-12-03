@@ -316,6 +316,10 @@ char Output::getkey() {
   char ch = 0;
   do {
     while (!bkbhit() && !hangup) {
+      // Try to make hangups happen faster.
+      if (incom && ok_modem_stuff && !session()->remoteIO()->connected()) {
+        Hangup();
+      }
       giveup_timeslice();
       long dd = timer1();
       if (dd < time_lastchar_pressed && ((dd + 1000) > time_lastchar_pressed)) {
