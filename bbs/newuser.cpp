@@ -181,8 +181,8 @@ static bool check_name(const string& user_name) {
   if (trashcan.IsTrashName(user_name)) {
     LOG(INFO) << "Trashcan name entered from IP: " << session()->remoteIO()->remote_info().address
               << "; name: " << user_name;
-    hangup = true;
     hang_it_up();
+    Hangup();
     return false;
   }
   return true;
@@ -207,8 +207,8 @@ void input_name() {
       bout << "|#6I'm sorry, you can't use that name.\r\n";
       ++count;
       if (count == 3) {
-        hangup = true;
         hang_it_up();
+        Hangup();
       }
     }
   } while (!ok && !hangup);
@@ -716,7 +716,6 @@ void DoFullNewUser() {
   if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
     if (check_dupes(u->GetVoicePhoneNumber())) {
       if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
-        hangup = true;
         hang_it_up();
         return;
       }
@@ -751,8 +750,7 @@ void DoFullNewUser() {
     if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
       if (check_dupes(u->GetDataPhoneNumber())) {
         if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
-          hangup = true;
-          hang_it_up();
+          Hangup();
           return;
         }
       }
@@ -981,8 +979,7 @@ void SendNewUserFeedbackIfRequired() {
     if (!session()->user()->GetNumEmailSent() && !session()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
       deluser(session()->usernum);
-      hangup = true;
-      hang_it_up();
+      Hangup();
       return;
     }
   }
@@ -1021,7 +1018,7 @@ void newuser() {
 
 
   if (!CanCreateNewUserAccountHere() || hangup) {
-    hangup = true;
+    Hangup();
     return;
   }
 
@@ -1040,8 +1037,7 @@ void newuser() {
   bout << "|#5Create a new user account on " << syscfg.systemname << "? ";
   if (!noyes()) {
     bout << "|#6Sorry the system does not meet your needs!\r\n";
-    hangup = true;
-    hang_it_up();
+    Hangup();
     return;
   }
 
@@ -1082,7 +1078,7 @@ void newuser() {
   if (session()->usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";
-    hangup = true;
+    Hangup();
     return;
   } else if (session()->usernum == 1) {
     // This is the #1 sysop record. Tell the sysop thank you and

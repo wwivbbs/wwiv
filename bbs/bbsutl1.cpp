@@ -266,11 +266,11 @@ bool ValidateSysopPassword() {
  * hangup to 1.
  */
 void hang_it_up() {
-  hangup = true;
   if (!ok_modem_stuff) {
     return;
   }
   session()->remoteIO()->disconnect();
+  Hangup();
 }
 
 /**

@@ -20,7 +20,8 @@
 
 #include <string>
 
-bool CheckForHangup(bool throw_on_hangup = false);
+bool CheckForHangup();
+void Hangup();
 void makeansi(int attr, char *out_buffer, bool forceit);
 bool yesno();
 bool noyes();

@@ -45,17 +45,20 @@ extern char str_quit[];
 // This function checks to see if the user logged on to the com port has
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
-bool CheckForHangup(bool throw_on_hangup) {
+bool CheckForHangup() {
   if (!hangup && session()->using_modem && !session()->remoteIO()->connected()) {
-    hangup = true;
     if (session()->IsUserOnline()) {
       sysoplog() << "Hung Up.";
     }
-  }
-  if (throw_on_hangup && hangup) {
-    throw wwiv::bbs::hangup_error(session()->user()->GetName());
+    Hangup();
   }
   return hangup;
+}
+
+void Hangup() {
+  if (hangup) { return; }
+  hangup = true;
+  throw wwiv::bbs::hangup_error(session()->user()->GetName());
 }
 
 static void addto(char *ansi_str, int num) {
@@ -183,14 +186,12 @@ char onek(const std::string& allowable, bool auto_mpl) {
 // Like onek but does not put cursor down a line
 // One key, no carriage return
 char onek_ncr(const std::string& allowable) {
-  char ch = '\0';
-  while (!hangup) {
+  while (true) {
+    CheckForHangup();
     auto ch = wwiv::UpperCase(bout.getkey());
     if (contains(allowable, ch)) {
       return ch;
     }
   }
-  if (hangup) { return allowable.front(); }
-  bout.bputch(ch);
-  return ch;
+  return 0;
 }

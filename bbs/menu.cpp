@@ -76,7 +76,8 @@ void mainmenu() {
 void StartMenus() {
   unique_ptr<MenuInstanceData> menu_data(new MenuInstanceData());
   menu_data->reload = true;                    // force loading of menu
-  while (menu_data->reload && !hangup) {
+  while (menu_data->reload) {
+    CheckForHangup();
     menu_data->finished = false;
     menu_data->reload = false;
     if (!ValidateMenuSet(session()->user()->data.szMenuSet)) {
@@ -107,7 +108,7 @@ void MenuInstanceData::Menus(const string& menuDirectory, const string& menuName
       MenuExecuteCommand(this, command);
     }
   } else if (IsEqualsIgnoreCase(menuName.c_str(), "main")) {     // default menu name
-    hangup = true;
+    Hangup();
   }
   Close();
 }

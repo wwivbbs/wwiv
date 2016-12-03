@@ -203,8 +203,8 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
   if (trashcan.IsTrashName(user_name)) {
     LOG(INFO) << "Trashcan name entered from IP: " << session()->remoteIO()->remote_info().address
               << "; name: " << user_name;
-    hangup = true;
     hang_it_up();
+    Hangup();
     return 0;
   }
 
@@ -275,7 +275,7 @@ static void DoFailedLoginAttempt() {
 
 static void ExecuteWWIVNetworkRequest() {
   if (incom) {
-    hangup = true;
+    Hangup();
     return;
   }
 
@@ -292,10 +292,9 @@ static void ExecuteWWIVNetworkRequest() {
     set_net_num(0);
   }
   session()->status_manager()->RefreshStatusCache();
-  hangup = true;
   session()->remoteIO()->disconnect();
   cleanup_net();
-  hangup = true;
+  Hangup();
 }
 
 static void LeaveBadPasswordFeedback(int ans) {
@@ -336,7 +335,7 @@ static void LeaveBadPasswordFeedback(int ans) {
     }
   }
   session()->usernum = 0;
-  hangup = 1;
+  Hangup();
 }
 
 static void CheckCallRestrictions() {
@@ -345,7 +344,7 @@ static void CheckCallRestrictions() {
       session()->user()->GetTimesOnToday() > 0) {
     bout.nl();
     bout << "|#6Sorry, you can only logon once per day.\r\n";
-    hangup = true;
+    Hangup();
   }
 }
 
@@ -373,7 +372,7 @@ static void logon_guest() {
   if (count >= 3) {
     printfile(REJECT_NOEXT);
     ssm(1, 0) << "Guest Account failed to enter name and purpose";
-    hangup = true;
+    Hangup();
   } else {
     ssm(1, 0) << "Guest Account accessed by " << userName << " on " << times() << " for" << reason;
   }
@@ -890,7 +889,7 @@ static void CheckUserForVotingBooth() {
 
 void logon() {
   if (session()->usernum < 1) {
-    hangup = true;
+    Hangup();
     return;
   }
   session()->SetUserOnline(true);
@@ -996,7 +995,7 @@ void logoff() {
   }
   setiia(90);
   session()->remoteIO()->disconnect();
-  hangup = true;
+  Hangup();
   if (session()->usernum < 1) {
     return;
   }

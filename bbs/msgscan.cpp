@@ -891,7 +891,7 @@ static void query_post() {
 static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool title_scan) {
   bool done = false;
   while (!done) {
-    CheckForHangup(true);
+    CheckForHangup();
     ReadMessageResult result{};
     if (scan_option == MsgScanOption::SCAN_OPTION_READ_MESSAGE) {
       bool next = true;

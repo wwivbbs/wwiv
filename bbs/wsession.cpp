@@ -243,7 +243,7 @@ void WSession::tleft(bool check_for_timeout) {
   if (check_for_timeout && IsUserOnline()) {
     if (nsln == 0.0) {
       bout << "\r\nTime expired.\r\n\n";
-      hangup = true;
+      Hangup();
     }
   }
 }
@@ -286,21 +286,21 @@ void WSession::handle_sysop_key(uint8_t key) {
         UpdateTopScreen();
         break;
       case F5: /* F5 */
-        hangup = true;
         remoteIO()->disconnect();
+        Hangup();
         break;
       case SF5: /* Shift-F5 */
         i1 = (rand() % 20) + 10;
         for (i = 0; i < i1; i++) {
           bout.bputch(static_cast<unsigned char>(rand() % 256));
         }
-        hangup = true;
         remoteIO()->disconnect();
+        Hangup();
         break;
       case CF5: /* Ctrl-F5 */
         bout << "\r\nCall back later when you are there.\r\n\n";
-        hangup = true;
         remoteIO()->disconnect();
+        Hangup();
         break;
       case F6: /* F6 - was Toggle Sysop Alert*/
         tleft(false);
@@ -1366,39 +1366,39 @@ int WSession::Run(int argc, char *argv[]) {
         this_usernum = 0;
       }
     }
-    if (!this_usernum) {
-      if (user_already_on_) {
-        GotCaller(ui, us);
+    try {
+      if (!this_usernum) {
+        if (user_already_on_) {
+          GotCaller(ui, us);
+        }
+        else {
+          GetCaller();
+        }
+      }
+
+      if (using_modem > -1) {
+        if (!this_usernum) {
+          getuser();
+        }
       }
       else {
-        GetCaller();
+        using_modem = 0;
+        okmacro = true;
+        usernum = unx_;
+        ResetEffectiveSl();
+        changedsl();
       }
-    }
-
-    if (using_modem > -1) {
-      if (!this_usernum) {
-        getuser();
-      }
-    }
-    else {
-      using_modem = 0;
-      okmacro = true;
-      usernum = unx_;
-      ResetEffectiveSl();
-      changedsl();
-    }
-    this_usernum = 0;
-    try {
-      if (!hangup) {
-        logon();
-        setiia(90);
-        set_net_num(0);
-        while (!hangup) {
-          filelist.clear();
-          zap_ed_info();
-          write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
-          wwiv::menus::mainmenu();
-        }
+      this_usernum = 0;
+      CheckForHangup();
+      logon();
+      setiia(90);
+      set_net_num(0);
+      while (true) {
+        CheckForHangup();
+        filelist.clear();
+        zap_ed_info();
+        write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
+        wwiv::menus::mainmenu();
       }
     }
     catch (wwiv::bbs::hangup_error& h) {

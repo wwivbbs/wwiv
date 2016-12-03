@@ -331,9 +331,8 @@ char Output::getkey() {
       if (std::abs(dd - time_lastchar_pressed) > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";
-        hangup = true;
+        Hangup();
       }
-      CheckForHangup();
     }
     ch = bgetch();
   } while (!ch && !hangup);
@@ -367,7 +366,7 @@ int bgetch_event(numlock_status_t numlock_mode) {
     time_t time2 = time(nullptr);
     if (difftime(time2, time1) > 180) {
       // greater than 3 minutes
-      hangup = true;
+      Hangup();
       return 0;
     }
     if (hangup) {

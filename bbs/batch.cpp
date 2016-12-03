@@ -332,14 +332,14 @@ static void bihangup() {
         bout << "Thank you for calling.";
         bout.nl();
         session()->remoteIO()->disconnect();
-        hangup = true;
+        Hangup();
       }
       giveup_timeslice();
       CheckForHangup();
     }
     ch = bgetch();
     if (ch == 'h' || ch == 'H') {
-      hangup = true;
+      Hangup();
     }
   } while (!ch && !hangup);
 }

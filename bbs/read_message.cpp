@@ -512,7 +512,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   result.lines_start = lines_start;
   result.lines_end = lines_end;
   while (!done) {
-    CheckForHangup(true);
+    CheckForHangup();
     
     display_message_text_new(lines, start, message_height, screen_width, lines_start);
     bout.GotoXY(1, command_line);

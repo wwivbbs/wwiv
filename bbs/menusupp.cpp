@@ -328,7 +328,7 @@ void GoodBye() {
           session()->user()->SetLastSubConf(session()->GetCurrentConferenceMessageArea());
           session()->user()->SetLastDirConf(session()->GetCurrentConferenceFileArea());
         }
-        hangup = true;
+        Hangup();
         break;
       }
     } while (cycle == 0);
@@ -349,7 +349,7 @@ void GoodBye() {
         session()->user()->SetLastSubConf(session()->GetCurrentConferenceMessageArea());
         session()->user()->SetLastDirConf(session()->GetCurrentConferenceFileArea());
       }
-      hangup = true;
+      Hangup();
     }
   }
 }
@@ -742,10 +742,10 @@ void FastGoodBye() {
     if (noyes()) {
       batchdl(1);
     } else {
-      hangup = true;
+      Hangup();
     }
   } else {
-    hangup = true;
+    Hangup();
   }
   session()->user()->SetLastSubNum(session()->current_user_sub_num());
   session()->user()->SetLastDirNum(session()->current_user_dir_num());
