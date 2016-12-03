@@ -54,19 +54,19 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     return;
   }
 
-  int nNetNumber;
-  int nOrigNetNumber = session()->net_num();
+  int netnum;
+  int orig_netnum = session()->net_num();
   if (pPostRecord->status & status_post_new_net) {
-    nNetNumber = pPostRecord->network.network_msg.net_number;
+    netnum = pPostRecord->network.network_msg.net_number;
   } else if (!sub.nets.empty()) {
-    nNetNumber = sub.nets[0].net_num;
+    netnum = sub.nets[0].net_num;
   } else {
-    nNetNumber = session()->net_num();
+    netnum = session()->net_num();
   }
 
-  int nn1 = nNetNumber;
+  int nn1 = netnum;
   if (pPostRecord->ownersys == 0) {
-    nNetNumber = -1;
+    netnum = -1;
   }
 
   net_header_rec nhorig = {};
@@ -87,7 +87,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   }
   unique_ptr<char[]> b1(new char[nhorig.length + 100]);
   if (!b1) {
-    set_net_num(nOrigNetNumber);
+    set_net_num(orig_netnum);
     return;
   }
   strcpy(b1.get(), pPostRecord->title);
@@ -95,7 +95,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
 
   for (size_t n = 0; n < sub.nets.size(); n++) {
     const auto& xnp = sub.nets[n];
-    if (xnp.net_num == nNetNumber && xnp.host) {
+    if (xnp.net_num == netnum && xnp.host) {
       continue;
     }
     set_net_num(xnp.net_num);
@@ -113,7 +113,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       bool subscribers_read = ReadSubcriberFile(session()->network_directory(), StrCat("n", xnp.stype, ".net"), subscribers);
       if (subscribers_read) {
         for (const auto& s : subscribers) {
-          if (((session()->net_num() != nNetNumber) || (nh.fromsys != s)) && (s != session()->current_net().sysnum)) {
+          if (((session()->net_num() != netnum) || (nh.fromsys != s)) && (s != session()->current_net().sysnum)) {
             if (valid_system(s)) {
               nh.list_len++;
               list.push_back(s);
@@ -126,11 +126,11 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       const string body(b1.get(), nh.length);
       send_net(&nh, list, body, xnp.stype);
     } else {
-      gate_msg(&nh, b1.get(), xnp.net_num, xnp.stype, list, nNetNumber);
+      gate_msg(&nh, b1.get(), xnp.net_num, xnp.stype, list, netnum);
     }
   }
 
-  set_net_num(nOrigNetNumber);
+  set_net_num(orig_netnum);
 }
 
 void post() {
@@ -341,8 +341,8 @@ void qscan(int start_subnum, int *next_subnum) {
 
   uint32_t on_disk_last_post = WWIVReadLastRead(sub_number);
   if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
-    int nNextSubNumber = *next_subnum;
-    int nOldSubNumber = session()->current_user_sub_num();
+    int next_netnum = *next_subnum;
+    int old_subnum = session()->current_user_sub_num();
     session()->set_current_user_sub_num(start_subnum);
 
     if (!iscan(session()->current_user_sub_num())) {
@@ -364,14 +364,14 @@ void qscan(int start_subnum, int *next_subnum) {
     if (session()->GetNumMessagesInCurrentMessageArea() > 0
         && i <= session()->GetNumMessagesInCurrentMessageArea()
         && get_post(i)->qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
-      scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, &nNextSubNumber, false);
+      scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, &next_netnum, false);
     } else {
       unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
       qsc_p[session()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 
-    session()->set_current_user_sub_num(nOldSubNumber);
-    *next_subnum = nNextSubNumber;
+    session()->set_current_user_sub_num(old_subnum);
+    *next_subnum = next_netnum;
     bout << "|#1< " << session()->current_sub().name << " Q-Scan Done >";
     bout.clreol();
     bout.nl();
@@ -445,21 +445,21 @@ void ScanMessageTitles() {
   }
   bout << "|#9Start listing at (|#21|#9-|#2"
        << session()->GetNumMessagesInCurrentMessageArea() << "|#9): ";
-  string messageNumber = input(5, true);
-  int nMessageNumber = atoi(messageNumber.c_str());
-  if (nMessageNumber < 1) {
-    nMessageNumber = 0;
-  } else if (nMessageNumber > session()->GetNumMessagesInCurrentMessageArea()) {
-    nMessageNumber = session()->GetNumMessagesInCurrentMessageArea();
+  string smsgnum = input(5, true);
+  int msgnum = atoi(smsgnum.c_str());
+  if (msgnum < 1) {
+    msgnum = 0;
+  } else if (msgnum > session()->GetNumMessagesInCurrentMessageArea()) {
+    msgnum = session()->GetNumMessagesInCurrentMessageArea();
   } else {
-    nMessageNumber--;
+    msgnum--;
   }
-  int nNextSubNumber = 0;
+  int next_subnum = 0;
   // 'S' means start reading at the 1st message.
-  if (messageNumber == "S") {
-    scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, &nNextSubNumber, true);
-  } else if (nMessageNumber >= 0) {
-    scan(nMessageNumber, MsgScanOption::SCAN_OPTION_LIST_TITLES, &nNextSubNumber, true);
+  if (smsgnum == "S") {
+    scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, &next_subnum, true);
+  } else if (msgnum >= 0) {
+    scan(msgnum, MsgScanOption::SCAN_OPTION_LIST_TITLES, &next_subnum, true);
   }
 }
 
@@ -490,24 +490,24 @@ void remove_post() {
   }
   bout << "\r\n|#2Remove which? ";
   string postNumberToRemove = input(5);
-  int nPostNumber = atoi(postNumberToRemove.c_str());
+  int postnum = atoi(postNumberToRemove.c_str());
   wwiv::bbs::OpenSub opened_sub(true);
-  if (nPostNumber > 0 && nPostNumber <= session()->GetNumMessagesInCurrentMessageArea()) {
-    if (((get_post(nPostNumber)->ownersys == 0) && (get_post(nPostNumber)->owneruser == session()->usernum)) || lcs()) {
-      if ((get_post(nPostNumber)->owneruser == session()->usernum) && (get_post(nPostNumber)->ownersys == 0)) {
+  if (postnum > 0 && postnum <= session()->GetNumMessagesInCurrentMessageArea()) {
+    if (((get_post(postnum)->ownersys == 0) && (get_post(postnum)->owneruser == session()->usernum)) || lcs()) {
+      if ((get_post(postnum)->owneruser == session()->usernum) && (get_post(postnum)->ownersys == 0)) {
         User tu;
-        session()->users()->ReadUser(&tu, get_post(nPostNumber)->owneruser);
+        session()->users()->ReadUser(&tu, get_post(postnum)->owneruser);
         if (!tu.IsUserDeleted()) {
-          if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(nPostNumber)->daten)) {
+          if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(postnum)->daten)) {
             if (tu.GetNumMessagesPosted()) {
               tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - 1);
-              session()->users()->WriteUser(&tu, get_post(nPostNumber)->owneruser);
+              session()->users()->WriteUser(&tu, get_post(postnum)->owneruser);
             }
           }
         }
       }
-      sysoplog() << "- '" << get_post(nPostNumber)->title << "' removed from " << session()->current_sub().name;
-      delete_message(nPostNumber);
+      sysoplog() << "- '" << get_post(postnum)->title << "' removed from " << session()->current_sub().name;
+      delete_message(postnum);
       bout << "\r\nMessage removed.\r\n\n";
     }
   }

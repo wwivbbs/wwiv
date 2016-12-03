@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2016, WWIV Software Services             */
+/*                          WWIV Version 5.x                              */
+/*                Copyright (C)2016 WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,17 +15,25 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_COM_H__
-#define __INCLUDED_BBS_COM_H__
+#ifndef __INCLUDED_BBS_EXCEPTIONS_H__
+#define __INCLUDED_BBS_EXCEPTIONS_H__
 
-#include <string>
+#include <exception>
+#include <stdexcept>
 
-bool CheckForHangup(bool throw_on_hangup = false);
-void makeansi(int attr, char *out_buffer, bool forceit);
-bool yesno();
-bool noyes();
-char ynq();
-char onek(const std::string& allowable, bool auto_mpl = false);
-char onek_ncr(const std::string& allowable);
+#include "core/strings.h"
 
-#endif  // __INCLUDED_BBS_COM_H__
+namespace wwiv {
+namespace bbs {
+
+
+struct hangup_error : public std::runtime_error {
+ hangup_error(const std::string& username)
+   : std::runtime_error(wwiv::strings::StrCat(username, " hung up.")) {}
+};
+
+}  // namespace bbs
+}  // namespace wwiv
+
+
+#endif  // __INCLUDED_BBS_EXCEPTIONS_H__

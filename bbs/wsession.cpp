@@ -43,6 +43,7 @@
 #include "bbs/datetime.h"
 #include "bbs/diredit.h"
 #include "bbs/events.h"
+#include "bbs/exceptions.h"
 #include "bbs/external_edit.h"
 #include "bbs/fcns.h"
 #include "bbs/gfileedit.h"
@@ -1271,145 +1272,156 @@ int WSession::Run(int argc, char *argv[]) {
     }
   }
 
-    // Setup the full-featured localIO if we have a TTY (or console)
-if (isatty(fileno(stdin))) {
+  // Setup the full-featured localIO if we have a TTY (or console)
+  if (isatty(fileno(stdin))) {
 #if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
-  reset_local_io(new Win32ConsoleIO());
+    reset_local_io(new Win32ConsoleIO());
 #else
-  if (type == CommunicationType::NONE) {
-    // We only want the localIO if we ran this locally at a terminal
-    // and also not passed in from the telnet handler, etc.  On Windows
-    // We always have a local console, so this is *NIX specific.
-    CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
-    reset_local_io(new CursesLocalIO(out->GetMaxY()));
-  } else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
-    reset_local_io(new NullLocalIO());
-  }
+    if (type == CommunicationType::NONE) {
+      // We only want the localIO if we ran this locally at a terminal
+      // and also not passed in from the telnet handler, etc.  On Windows
+      // We always have a local console, so this is *NIX specific.
+      CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
+      reset_local_io(new CursesLocalIO(out->GetMaxY()));
+    }
+    else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+      reset_local_io(new NullLocalIO());
+    }
 #endif
-} else {
+  }
+  else {
 #ifdef __unix__
-  reset_local_io(new NullLocalIO());
+    reset_local_io(new NullLocalIO());
 #endif  // __unix__
-}
-
-// Add the environment variable or overwrite the existing one
-const string env_str = std::to_string(instance_number());
-set_environment_variable("WWIV_INSTANCE", env_str);
-if (!ReadConfig()) {
-  // Gotta read the config before we can create the socket handles.
-  // Since we may need the SSH key.
-  AbortBBS(true);
-}
-
-CreateComm(hSockOrComm, type);
-InitializeBBS();
-localIO()->UpdateNativeTitleBar(this);
-
-bool remote_opened = true;
-// If we are telnet...
-if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
-  ok_modem_stuff = true;
-  remote_opened = remoteIO()->open();
-}
-
-if (!remote_opened) {
-  // Remote side disconnected.
-  clog << "Remote side disconnected." << std::endl;
-  ExitBBSImpl(oklevel_, false);
-}
-
-if (num_min > 0) {
-  syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60);
-  if (syscfg.executetime > 1440) {
-    syscfg.executetime -= 1440;
   }
-  time_event = static_cast<long>(syscfg.executetime) * MINUTES_PER_HOUR;
-  last_time = time_event - timer();
-  if (last_time < 0.0) {
-    last_time += SECONDS_PER_DAY;
-  }
-}
 
-if (event_only) {
-  unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
-  cleanup_events();
-  if (!IsEquals(date(), pStatus->GetLastDate())) {
-    // This may be another node, but the user explicitly wanted to run the beginday
-    // event from the commandline, so we'll just check the date.
-    beginday(true);
-  } else {
-    sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
-    clog << "! WARNING: Tried to run beginday event again\r\n\n";
-    sleep_for(seconds(2));
+  // Add the environment variable or overwrite the existing one
+  const string env_str = std::to_string(instance_number());
+  set_environment_variable("WWIV_INSTANCE", env_str);
+  if (!ReadConfig()) {
+    // Gotta read the config before we can create the socket handles.
+    // Since we may need the SSH key.
+    AbortBBS(true);
   }
-  ExitBBSImpl(oklevel_, true);
-}
 
-do {
-  if (this_usernum) {
-    usernum = this_usernum;
-    ReadCurrentUser();
-    if (!user()->IsUserDeleted()) {
-      GotCaller(ui, us);
+  CreateComm(hSockOrComm, type);
+  InitializeBBS();
+  localIO()->UpdateNativeTitleBar(this);
+
+  bool remote_opened = true;
+  // If we are telnet...
+  if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+    ok_modem_stuff = true;
+    remote_opened = remoteIO()->open();
+  }
+
+  if (!remote_opened) {
+    // Remote side disconnected.
+    clog << "Remote side disconnected." << std::endl;
+    ExitBBSImpl(oklevel_, false);
+  }
+
+  if (num_min > 0) {
+    syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60);
+    if (syscfg.executetime > 1440) {
+      syscfg.executetime -= 1440;
+    }
+    time_event = static_cast<long>(syscfg.executetime) * MINUTES_PER_HOUR;
+    last_time = time_event - timer();
+    if (last_time < 0.0) {
+      last_time += SECONDS_PER_DAY;
+    }
+  }
+
+  if (event_only) {
+    unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+    cleanup_events();
+    if (!IsEquals(date(), pStatus->GetLastDate())) {
+      // This may be another node, but the user explicitly wanted to run the beginday
+      // event from the commandline, so we'll just check the date.
+      beginday(true);
+    }
+    else {
+      sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
+      clog << "! WARNING: Tried to run beginday event again\r\n\n";
+      sleep_for(seconds(2));
+    }
+    ExitBBSImpl(oklevel_, true);
+  }
+
+  do {
+    if (this_usernum) {
       usernum = this_usernum;
       ReadCurrentUser();
-      read_qscn(usernum, qsc, false);
+      if (!user()->IsUserDeleted()) {
+        GotCaller(ui, us);
+        usernum = this_usernum;
+        ReadCurrentUser();
+        read_qscn(usernum, qsc, false);
+        ResetEffectiveSl();
+        changedsl();
+        okmacro = true;
+      }
+      else {
+        this_usernum = 0;
+      }
+    }
+    if (!this_usernum) {
+      if (user_already_on_) {
+        GotCaller(ui, us);
+      }
+      else {
+        GetCaller();
+      }
+    }
+
+    if (using_modem > -1) {
+      if (!this_usernum) {
+        getuser();
+      }
+    }
+    else {
+      using_modem = 0;
+      okmacro = true;
+      usernum = unx_;
       ResetEffectiveSl();
       changedsl();
-      okmacro = true;
-    } else {
-      this_usernum = 0;
     }
-  }
-  if (!this_usernum) {
-    if (user_already_on_) {
-      GotCaller(ui, us);
-    } else {
-      GetCaller();
+    this_usernum = 0;
+    try {
+      if (!hangup) {
+        logon();
+        setiia(90);
+        set_net_num(0);
+        while (!hangup) {
+          filelist.clear();
+          zap_ed_info();
+          write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
+          wwiv::menus::mainmenu();
+        }
+      }
     }
-  }
-
-  if (using_modem > -1) {
-    if (!this_usernum) {
-      getuser();
-    }
-  } else {
-    using_modem = 0;
-    okmacro = true;
-    usernum = unx_;
-    ResetEffectiveSl();
-    changedsl();
-  }
-  this_usernum = 0;
-  if (!hangup) {
-    logon();
-    setiia(90);
-    set_net_num(0);
-    while (!hangup) {
-      filelist.clear();
-      zap_ed_info();
-      write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
-      wwiv::menus::mainmenu();
+    catch (wwiv::bbs::hangup_error& h) {
+      std::cerr << h.what() << "\r\n";
+      sysoplog() << "hangup_error:" << h.what();
     }
     logoff();
-  }
+    if (!no_hangup && using_modem && ok_modem_stuff) {
+      hang_it_up();
+    }
+    catsl();
+    frequent_init();
+    if (wfc_status == 0) {
+      localIO()->Cls();
+    }
+    cleanup_net();
 
-  if (!no_hangup && using_modem && ok_modem_stuff) {
-    hang_it_up();
-  }
-  catsl();
-  frequent_init();
-  if (wfc_status == 0) {
-    localIO()->Cls();
-  }
-  cleanup_net();
+    if (!no_hangup && ok_modem_stuff) {
+      remoteIO()->disconnect();
+    }
+    user_already_on_ = false;
+  } while (!ooneuser);
 
-  if (!no_hangup && ok_modem_stuff) {
-    remoteIO()->disconnect();
-  }
-  user_already_on_ = false;
-}while (!ooneuser);
-
-return oklevel_;
+  return oklevel_;
 }
 

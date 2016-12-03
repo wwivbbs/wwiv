@@ -21,6 +21,7 @@
 
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
+#include "bbs/exceptions.h"
 #include "bbs/keycodes.h"
 #include "bbs/pause.h"
 #include "bbs/remote_io.h"
@@ -44,12 +45,15 @@ extern char str_quit[];
 // This function checks to see if the user logged on to the com port has
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
-bool CheckForHangup() {
+bool CheckForHangup(bool throw_on_hangup) {
   if (!hangup && session()->using_modem && !session()->remoteIO()->connected()) {
     hangup = true;
     if (session()->IsUserOnline()) {
       sysoplog() << "Hung Up.";
     }
+  }
+  if (throw_on_hangup && hangup) {
+    throw wwiv::bbs::hangup_error(session()->user()->GetName());
   }
   return hangup;
 }

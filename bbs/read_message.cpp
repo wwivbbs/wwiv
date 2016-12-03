@@ -28,6 +28,7 @@
 #include "bbs/bbsutl1.h"
 #include "bbs/bbsutl2.h"
 #include "bbs/bgetch.h"
+#include "bbs/com.h"
 #include "bbs/connect1.h"
 #include "bbs/message_file.h"
 #include "bbs/pause.h"
@@ -511,6 +512,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   result.lines_start = lines_start;
   result.lines_end = lines_end;
   while (!done) {
+    CheckForHangup(true);
+    
     display_message_text_new(lines, start, message_height, screen_width, lines_start);
     bout.GotoXY(1, command_line);
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
