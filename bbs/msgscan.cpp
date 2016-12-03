@@ -276,7 +276,7 @@ static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) 
     nMsgNumLimit = session()->GetNumMessagesInCurrentMessageArea();
   }
 
-  while (nTempMsgNum != nMsgNumLimit && !abort && !hangup && !fnd) {
+  while (nTempMsgNum != nMsgNumLimit && !abort && !fnd) {
     if (bSearchForwards) {
       nTempMsgNum++;
     } else {
@@ -319,7 +319,7 @@ static void HandleListTitles(int &nMessageNumber, MsgScanOption& nScanOptionType
     bout.nl();
   }
   int nNumTitleLines = std::max<int>(session()->screenlinest - 6, 1);
-  while (!abort && !hangup && ++i <= nNumTitleLines) {
+  while (!abort && ++i <= nNumTitleLines) {
     ++nMessageNumber;
     postrec *p3 = get_post(nMessageNumber);
 
@@ -435,7 +435,7 @@ void HandleMessageMove(int &nMessageNumber) {
       if (ss1[0] == '?') {
         old_sublist();
       }
-    } while (!hangup && ss1[0] == '?');
+    } while (ss1[0] == '?');
     int nTempSubNum = -1;
     if (ss1[0] == 0) {
       tmp_disable_conf(false);
@@ -1023,7 +1023,7 @@ void scan(int nMessageNumber, MsgScanOption nScanOptionType, int *nextsub, bool 
     }
     break;
     }
-  } while (!done && !hangup);
+  } while (!done);
   if (!realexpress) {
     express = false;
     expressabort = false;

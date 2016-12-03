@@ -215,5 +215,5 @@ void do_automessage() {
       }
       break;
     }
-  } while (!done && !hangup);
+  } while (!done);
 }

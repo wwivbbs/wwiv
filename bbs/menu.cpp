@@ -68,7 +68,7 @@ static bool CheckMenuPassword(const string& original_password) {
 }
 
 void mainmenu() {
-  while (!hangup) {
+  while (true) {
     StartMenus();
   }
 }
@@ -102,10 +102,9 @@ void MenuInstanceData::Menus(const string& menuDirectory, const string& menuName
       DisplayHelp();
     }
 
-    while (!hangup && !finished) {
+    while (!finished) {
       PrintMenuPrompt(this);
-      const string command = GetCommand(this);
-      MenuExecuteCommand(this, command);
+      MenuExecuteCommand(this, GetCommand(this));
     }
   } else if (IsEqualsIgnoreCase(menuName.c_str(), "main")) {     // default menu name
     Hangup();
@@ -358,8 +357,8 @@ void ConfigUserMenuSet() {
   bout.cls();
   bout.litebar("Configure Menus");
   printfile(MENUWEL_NOEXT);
-  bool bDone = false;
-  while (!bDone && !hangup) {
+  bool done = false;
+  while (!done) {
     bout.nl();
     bout << "|#11|#9) Menuset      :|#2 " << session()->user()->data.szMenuSet << wwiv::endl;
     bout << "|#12|#9) Use hot keys :|#2 " << (session()->user()->data.cHotKeys == HOTKEYS_ON ? "Yes" : "No ")
@@ -370,7 +369,7 @@ void ConfigUserMenuSet() {
 
     switch (chKey) {
     case 'Q':
-      bDone = true;
+      done = true;
       break;
     case '1': {
       ListMenuDirs();

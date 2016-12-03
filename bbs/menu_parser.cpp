@@ -115,13 +115,13 @@ const char *MenuParseLine(const char *pszSrc, char *pszCmd, char *pszParam1, cha
   pszParam2[0] = 0;
 
   pszSrc = MenuSkipSpaces(pszSrc);
-  while (pszSrc[0] == '~' && !hangup) {
+  while (pszSrc[0] == '~') {
     ++pszSrc;
     pszSrc = MenuSkipSpaces(pszSrc);
   }
 
   int nLen = 0;
-  while (isalnum(*pszSrc) && !hangup) {
+  while (isalnum(*pszSrc)) {
     if (nLen < 30) {
       pszCmd[nLen++] = *pszSrc;
     }

@@ -121,32 +121,32 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
 	  // Not a file, no need to print a file that is not a file.
 	  return false;
   }
-  long lFileSize;
-  unique_ptr<char[], void (*)(void*)> ss(get_file(full_path_name.c_str(), &lFileSize), &std::free);
+  long file_size;
+  unique_ptr<char[], void (*)(void*)> ss(get_file(full_path_name.c_str(), &file_size), &std::free);
   if (!ss) {
     return false;
   }
-  long lCurPos = 0;
-  bool bHasAnsi = false;
-  while (lCurPos < lFileSize && !hangup) {
-    if (ss[lCurPos] == ESC) {
+  long curpos = 0;
+  bool has_ansi = false;
+  while (curpos < file_size) {
+    if (ss[curpos] == ESC) {
       // if we have an ESC, then this file probably contains
       // an ansi sequence
-      bHasAnsi = true;
-    } else if (ss[lCurPos] == CZ) {
+      has_ansi = true;
+    } else if (ss[curpos] == CZ) {
       // We are done here on a control-Z since that's DOS EOF.  Also ANSI
       // files created with PabloDraw expect that anything after a Control-Z
       // is fair game for metadata and includes SAUCE metadata after it which
       // we do not want to render in the bbs.
       break;
     }
-    if (bHasAnsi && !bForcePause) {
+    if (has_ansi && !bForcePause) {
       // If this is an ANSI file, then don't pause
       // (since we may be moving around
       // on the screen, unless the caller tells us to pause anyway)
       bout.clear_lines_listed();
     }
-    bout.bputch(ss[lCurPos++], true);
+    bout.bputch(ss[curpos++], true);
     if (bAbortable) {
       bool abort = false;
       checka(&abort);
@@ -163,7 +163,7 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
   }
   bout.flush();
   // If the file is empty, lets' return false here since nothing was displayed.
-  return lFileSize > 0;
+  return file_size > 0;
 }
 
 /**

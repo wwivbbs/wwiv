@@ -339,7 +339,7 @@ static void LeaveBadPasswordFeedback(int ans) {
 }
 
 static void CheckCallRestrictions() {
-  if (!hangup && session()->usernum > 0 && session()->user()->IsRestrictionLogon() &&
+  if (session()->usernum > 0 && session()->user()->IsRestrictionLogon() &&
       IsEquals(date(), session()->user()->GetLastOn()) &&
       session()->user()->GetTimesOnToday() > 0) {
     bout.nl();
@@ -367,7 +367,7 @@ static void logon_guest() {
       break;
     }
     count++;
-  } while (!hangup && count < 3);
+  } while (count < 3);
 
   if (count >= 3) {
     printfile(REJECT_NOEXT);
@@ -456,7 +456,7 @@ void getuser() {
     } else if (session()->usernum == -2) {  // network
       ExecuteWWIVNetworkRequest();
     }
-  } while (!hangup && !ok && ++count < 3);
+  } while (!ok && ++count < 3);
 
   if (count >= 3) {
     LeaveBadPasswordFeedback(ans);
@@ -658,7 +658,7 @@ static void CheckAndUpdateUserInfo() {
       if (!yesno()) {
         session()->user()->SetBirthdayYear(0);
       }
-    } while (!hangup && session()->user()->GetBirthdayYear() == 0);
+    } while (session()->user()->GetBirthdayYear() == 0);
   }
 
   if (!session()->user()->GetRealName()[0]) {

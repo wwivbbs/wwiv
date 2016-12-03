@@ -315,11 +315,12 @@ char Output::getkey() {
   bout.clear_lines_listed();
   char ch = 0;
   do {
-    while (!bkbhit() && !hangup) {
+    while (!bkbhit()) {
       // Try to make hangups happen faster.
       if (incom && ok_modem_stuff && !session()->remoteIO()->connected()) {
         Hangup();
       }
+      CheckForHangup();
       giveup_timeslice();
       long dd = timer1();
       if (dd < time_lastchar_pressed && ((dd + 1000) > time_lastchar_pressed)) {
@@ -339,7 +340,7 @@ char Output::getkey() {
       }
     }
     ch = bgetch();
-  } while (!ch && !hangup);
+  } while (!ch);
   return ch;
 }
 
@@ -366,7 +367,7 @@ int bgetch_event(numlock_status_t numlock_mode) {
   session()->tleft(true);
   time_t time1 = time(nullptr);
 
-  do {
+  while (true) {
     time_t time2 = time(nullptr);
     if (difftime(time2, time1) > 180) {
       // greater than 3 minutes
@@ -481,7 +482,7 @@ int bgetch_event(numlock_status_t numlock_mode) {
                 return GET_OUT;
               }
             }
-          } while (difftime(esc_time2, esc_time1) < 1 && !hangup);
+          } while (difftime(esc_time2, esc_time1) < 1);
 
           if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
             return GET_OUT;
@@ -527,6 +528,6 @@ int bgetch_event(numlock_status_t numlock_mode) {
       giveup_timeslice();
     }
 
-  } while (!hangup);
+  };
   return 0;                                 // must have hung up
 }

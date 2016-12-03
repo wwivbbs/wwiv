@@ -86,7 +86,7 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
   }
 
   const char* pszScriptPointer = szTempScript;
-  while (pszScriptPointer && !hangup) {
+  while (pszScriptPointer) {
     pszScriptPointer = MenuParseLine(pszScriptPointer, szCmd, szParam1, szParam2);
 
     if (szCmd[0] == 0) { 

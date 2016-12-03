@@ -259,7 +259,7 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
   bool done = false;
   int mml = (mml_s != nullptr);
   mml_started = 0;
-  while (!done && !hangup && (*numu < maxu)) {
+  while (!done && (*numu < maxu)) {
     int i = oneuser();
     if (mml && (!mml_s)) {
       done = true;
@@ -411,5 +411,5 @@ void slash_e() {
       break;
     }
     CheckForHangup();
-  } while (!done && !hangup);
+  } while (!done);
 }

@@ -424,8 +424,7 @@ int MessagesDumpHeaderCommand::Execute() {
   const int start = arg("start").as_int();
   int end = arg("end").as_int();
   const bool all = arg("all").as_bool();
-  return ExecuteImpl(
-    basename, start, end, all);
+  return ExecuteImpl(basename, start, end, all);
 }
 
 }  // namespace wwivutil
