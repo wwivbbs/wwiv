@@ -996,7 +996,9 @@ void logoff() {
   }
   setiia(90);
   session()->remoteIO()->disconnect();
-  Hangup();
+  // Don't need to hangup here, but *do* want to ensure that hangup is true.
+  hangup = true;
+  // Hangup();
   if (session()->usernum < 1) {
     return;
   }

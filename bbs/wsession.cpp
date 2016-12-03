@@ -1367,6 +1367,10 @@ int WSession::Run(int argc, char *argv[]) {
       }
     }
     try {
+      // Try setting this at the top of the try loop. It's currently only
+      // set in logon() which could cause problems if we get hung up before then.
+      timeon = timer();
+
       if (!this_usernum) {
         if (user_already_on_) {
           GotCaller(ui, us);
@@ -1403,7 +1407,7 @@ int WSession::Run(int argc, char *argv[]) {
     }
     catch (wwiv::bbs::hangup_error& h) {
       std::cerr << h.what() << "\r\n";
-      sysoplog() << "hangup_error:" << h.what();
+      sysoplog() << h.what();
     }
     logoff();
     if (!no_hangup && using_modem && ok_modem_stuff) {
