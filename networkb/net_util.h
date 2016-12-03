@@ -18,12 +18,14 @@
 #ifndef __INCLUDED_NETWORKB_NET_UTIL_H__
 #define __INCLUDED_NETWORKB_NET_UTIL_H__
 
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/inifile.h"
 #include "sdk/config.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
@@ -74,6 +76,8 @@ public:
   const std::string network_name() const { return network_name_; }
   const int network_number() const { return network_number_; }
   const net_networks_rec& network() const { return network_; }
+
+  std::unique_ptr<wwiv::core::IniFile> LoadNetIni(char net_cmd);
 
 private:
   std::string bbsdir_;

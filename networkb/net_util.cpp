@@ -126,6 +126,7 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
   cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
   cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
 }
+
 NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
   cmdline.set_no_args_allowed(true);
   cmdline.AddStandardArgs();
@@ -161,6 +162,17 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
   StringLowerCase(&network_name_);
 }
 
+std::unique_ptr<wwiv::core::IniFile> NetworkCommandLine::LoadNetIni(char net_cmd) {
+  const string net_tag = StrCat("network", net_cmd);
+  const string net_tag_net = StrCat(net_tag, "-", network_name());
+
+  File file(config().root_directory(), "net.ini");
+  return std::unique_ptr<IniFile>(new IniFile(file.full_pathname(), { net_tag_net, net_tag }));
+}
+
+/*
+
+*/
 }  // namespace net
 }  // namespace wwiv
 

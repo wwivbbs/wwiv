@@ -25,7 +25,6 @@ General Cleanup
 * Finish wrappering WSession
 * add IncrementXXXXX methods to User where it makes sense.
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
-* investigate making WTextFile always trim whitespace
 * TopScreen doesn't work with CursesIO
 * use daten_t everywhere we have a daten date.
 * stop checking while (!hangup) since we throw now. Maybe make the hangup
@@ -46,9 +45,6 @@ Message Areas
 * to try strip down all message base code in wwiv to have no external
   dependencies so it can get moved into sdk.
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
-* Make read_type2_message return a structure of the data from a type-2 message. 
-  Also add a display_default_header or something to display what read_type2_message
-  used to display by default.
 * AddMessage should delete messages to keep total number of posts at the right number.
 * Make the emailmessage extend the message so most things are common between them.
 * Load subs.json too, and use it as source of truth if it exists.
