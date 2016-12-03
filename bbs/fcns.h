@@ -41,7 +41,6 @@ void multimail(int *user_number, int numu);
 void slash_e();
 
 // File: pause.cpp
-void pausescr();
 
 // File: readmail.cpp
 void readmail(int mode);
@@ -90,9 +89,7 @@ bool okconf(wwiv::sdk::User *pUser);
 #include "utility.h"
 
 // File: wqscn.cpp
-void close_qscn();
-void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead = false);
-void write_qscn(int user_number, uint32_t* qscn, bool stay_open);
+#include "bbs/wqscn.h"
 
 // File: xfer.cpp
 #include "bbs/xfer.h"
@@ -104,17 +101,6 @@ void write_qscn(int user_number, uint32_t* qscn, bool stay_open);
 #include "bbs/xferovl1.h"
 
 // File: xfertmp.cpp
-bool bad_filename(const char *file_name);
-// returns true if the file is downloaded.
-void add_arc(const char *arc, const char *file_name, int dos);
-void add_temp_arc();
-void del_temp();
-void list_temp_dir();
-void temp_extract();
-void list_temp_text();
-void list_temp_arc();
-void temporary_stuff();
-void move_file_t();
-void removefile();
+#include "bbs/xfertmp.h"
 
 #endif // __INCLUDED_FCNS_H__

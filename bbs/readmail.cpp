@@ -39,6 +39,7 @@
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
+#include "bbs/pause.h"
 #include "bbs/quote.h"
 #include "bbs/read_message.h"
 #include "bbs/wconstants.h"

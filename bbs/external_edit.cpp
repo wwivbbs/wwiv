@@ -25,6 +25,7 @@
 #include "bbs/execexternal.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "bbs/pause.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"

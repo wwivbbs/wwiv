@@ -28,6 +28,7 @@
 #include "bbs/com.h"
 #include "bbs/fcns.h"
 #include "bbs/gfiles.h"
+#include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "sdk/status.h"

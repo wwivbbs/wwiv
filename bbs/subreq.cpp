@@ -26,6 +26,7 @@
 #include "bbs/email.h"
 #include "bbs/mmkey.h"
 #include "bbs/fcns.h"
+#include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "core/stl.h"
 #include "core/strings.h"

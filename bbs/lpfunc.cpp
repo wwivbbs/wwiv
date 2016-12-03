@@ -28,6 +28,7 @@
 #include "bbs/vars.h"
 #include "bbs/common.h"
 #include "bbs/listplus.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"

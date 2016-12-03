@@ -28,6 +28,8 @@ General Cleanup
 * investigate making WTextFile always trim whitespace
 * TopScreen doesn't work with CursesIO
 * use daten_t everywhere we have a daten date.
+* stop checking while (!hangup) since we throw now. Maybe make the hangup
+  variable a static in the Hangup class.
 
 General Improvements
 ====================

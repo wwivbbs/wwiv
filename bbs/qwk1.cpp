@@ -45,6 +45,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/msgbase1.h"
+#include "bbs/pause.h"
 #include "bbs/quote.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"

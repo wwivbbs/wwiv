@@ -31,6 +31,7 @@
 #include "bbs/dirlist.h"
 #include "bbs/fcns.h"
 #include "bbs/mmkey.h"
+#include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
 #include "bbs/sysoplog.h"

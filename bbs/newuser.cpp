@@ -48,6 +48,7 @@
 #include "bbs/listplus.h"
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/stuffin.h"
 #include "bbs/smallrecord.h"

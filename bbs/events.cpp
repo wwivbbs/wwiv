@@ -31,6 +31,7 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"

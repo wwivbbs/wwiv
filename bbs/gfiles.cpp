@@ -27,6 +27,7 @@
 #include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
 #include "core/strings.h"

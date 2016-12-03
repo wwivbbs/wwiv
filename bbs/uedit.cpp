@@ -28,7 +28,6 @@
 #include "bbs/datetime.h"
 #include "bbs/email.h"
 #include "bbs/dupphone.h"
-#include "bbs/fcns.h"
 #include "bbs/finduser.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"
@@ -36,9 +35,12 @@
 #include "bbs/misccmd.h"
 #include "bbs/newuser.h"
 #include "bbs/smallrecord.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
+#include "bbs/shortmsg.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
+#include "bbs/wqscn.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/datetime.h"
@@ -50,7 +52,7 @@ using namespace wwiv::bbs;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static uint32_t *u_qsc = 0;
+static uint32_t *u_qsc = nullptr;
 static char *sp = nullptr;
 static char search_pattern[81];
 
@@ -450,7 +452,7 @@ void uedit(int usern, int other) {
   bool bClearScreen = true;
   User user;
 
-  u_qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
+  u_qsc = new uint32_t[(syscfg.qscn_len / sizeof(uint32_t))];
 
   bool full = (incom) ? false : true;
   if (other & 1) {
@@ -1025,10 +1027,7 @@ void uedit(int usern, int other) {
     } while (!bDoneWithUser && !hangup);
   } while (!bDoneWithUEdit && !hangup);
 
-  if (u_qsc) {
-    free(u_qsc);
-  }
-
+  delete u_qsc;
   u_qsc = nullptr;
 }
 

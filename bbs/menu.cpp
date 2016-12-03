@@ -28,6 +28,7 @@
 #include "bbs/menu_parser.h"
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/bbs.h"

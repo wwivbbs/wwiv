@@ -38,6 +38,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/mmkey.h"
 #include "bbs/multinst.h"
+#include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/read_message.h"
 #include "bbs/stuffin.h"
