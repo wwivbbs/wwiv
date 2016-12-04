@@ -57,6 +57,7 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
@@ -299,6 +300,11 @@ static void ExecuteWWIVNetworkRequest() {
 }
 
 static void LeaveBadPasswordFeedback(int ans) {
+  ScopeExit at_exit([] {
+    session()->usernum = 0;
+    Hangup();
+  });
+  
   if (ans > 0) {
     session()->user()->SetStatusFlag(User::ansi);
   } else {
@@ -306,37 +312,37 @@ static void LeaveBadPasswordFeedback(int ans) {
   }
   bout << "|#6Too many logon attempts!!\r\n\n";
   bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
-  if (yesno()) {
-    bout.nl();
-    bout << "What is your NAME or HANDLE? ";
-    string tempName = Input1("", 31, true, wwiv::bbs::InputMode::PROPER);
-    if (!tempName.empty()) {
-      bout.nl();
-      session()->usernum = 1;
-      sprintf(irt, "** Illegal logon feedback from %s", tempName.c_str());
-      session()->user()->SetName(tempName.c_str());
-      session()->user()->SetMacro(0, "");
-      session()->user()->SetMacro(1, "");
-      session()->user()->SetMacro(2, "");
-      session()->user()->SetSl(syscfg.newusersl);
-      session()->user()->SetScreenChars(80);
-      if (ans > 0) {
-        select_editor();
-      } else {
-        session()->user()->SetDefaultEditor(0);
-      }
-      session()->user()->SetNumEmailSent(0);
-      bool bSaveAllowCC = session()->IsCarbonCopyEnabled();
-      session()->SetCarbonCopyEnabled(false);
-      email(irt, 1, 0, true, 0, true);
-      session()->SetCarbonCopyEnabled(bSaveAllowCC);
-      if (session()->user()->GetNumEmailSent() > 0) {
-        ssm(1, 0) << "Check your mailbox.  Someone forgot their password again!";
-      }
-    }
+  if (!yesno()) {
+    return;
   }
-  session()->usernum = 0;
-  Hangup();
+  bout.nl();
+  bout << "What is your NAME or HANDLE? ";
+  string tempName = Input1("", 31, true, wwiv::bbs::InputMode::PROPER);
+  if (tempName.empty()) {
+    return;
+  }
+  bout.nl();
+  session()->usernum = 1;
+  sprintf(irt, "** Illegal logon feedback from %s", tempName.c_str());
+  session()->user()->SetName(tempName.c_str());
+  session()->user()->SetMacro(0, "");
+  session()->user()->SetMacro(1, "");
+  session()->user()->SetMacro(2, "");
+  session()->user()->SetSl(syscfg.newusersl);
+  session()->user()->SetScreenChars(80);
+  if (ans > 0) {
+    select_editor();
+  } else {
+    session()->user()->SetDefaultEditor(0);
+  }
+  session()->user()->SetNumEmailSent(0);
+  bool bSaveAllowCC = session()->IsCarbonCopyEnabled();
+  session()->SetCarbonCopyEnabled(false);
+  email(irt, 1, 0, true, 0, true);
+  session()->SetCarbonCopyEnabled(bSaveAllowCC);
+  if (session()->user()->GetNumEmailSent() > 0) {
+    ssm(1, 0) << "Check your mailbox.  Someone forgot their password again!";
+  }
 }
 
 static void CheckCallRestrictions() {
