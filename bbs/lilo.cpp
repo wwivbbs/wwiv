@@ -1102,13 +1102,5 @@ void logoff() {
   }
   session()->WriteCurrentUser();
   write_qscn(session()->usernum, qsc, false);
-  remove_from_temp("*.*", session()->temp_directory(), false);
-  remove_from_temp("*.*", session()->batch_directory(), false);
-  if (!session()->batch().entry.empty() && (session()->batch().entry.size() != session()->batch().numbatchdl())) {
-    for (const auto& b : session()->batch().entry) {
-      if (!b.sending) { didnt_upload(b); }
-    }
-  }
-  session()->batch().clear();
 }
 

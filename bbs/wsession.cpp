@@ -575,9 +575,16 @@ void WSession::GetCaller() {
   hangup = false;
   SetWfcStatus(0);
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
+  // We'll read the sysop record for defaults, but let's set
+  // usernum to 0 here since we don't want to botch up the
+  // sysop's record if things go wrong. 
+  // TODO(rushfan): Let's make record 0 the logon defaults
+  // and stop using the sysop record.
   ReadCurrentUser(1);
   read_qscn(1, qsc, false);
-  usernum = 1;
+  // N.B. This used to be 1.
+  usernum = 0;
+
   ResetEffectiveSl();
   if (user()->IsUserDeleted()) {
     user()->SetScreenChars(80);
@@ -1422,6 +1429,17 @@ int WSession::Run(int argc, char *argv[]) {
       sysoplog() << h.what();
     }
     logoff();
+    {
+      // post_logoff_cleanup
+      remove_from_temp("*.*", session()->temp_directory(), false);
+      remove_from_temp("*.*", session()->batch_directory(), false);
+      if (!session()->batch().entry.empty() && (session()->batch().entry.size() != session()->batch().numbatchdl())) {
+        for (const auto& b : session()->batch().entry) {
+          if (!b.sending) { didnt_upload(b); }
+        }
+      }
+      session()->batch().clear();
+    }
     if (!no_hangup && using_modem && ok_modem_stuff) {
       hang_it_up();
     }
