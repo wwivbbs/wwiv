@@ -261,10 +261,10 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               modify_database(u.filename, true);
               session()->user()->SetUploadK(session()->user()->GetUploadK() +
                   static_cast<int>(bytes_to_k(u.numbytes)));
-              WStatus *pStatus = session()->status_manager()->BeginTransaction();
-              pStatus->IncrementNumUploadsToday();
-              pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-              session()->status_manager()->CommitTransaction(pStatus);
+              session()->status_manager()->Run([](WStatus& s) {
+                s.IncrementNumUploadsToday();
+                s.IncrementFileChangedFlag(WStatus::fileChangeUpload);
+              });
               File fileDn(session()->download_filename_);
               fileDn.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
               FileAreaSetRecord(fileDn, nRecNum);

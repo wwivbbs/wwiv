@@ -108,10 +108,10 @@ static void write_automessage() {
 
   bout << "|#9Is this OK? ";
   if (yesno()) {
-    WStatus *pStatus = session()->status_manager()->BeginTransaction();
-    pStatus->SetAutoMessageAnonymous(bAnonStatus);
-    pStatus->SetAutoMessageAuthorUserNumber(session()->usernum);
-    session()->status_manager()->CommitTransaction(pStatus);
+    session()->status_manager()->Run([bAnonStatus](WStatus& s) {
+      s.SetAutoMessageAnonymous(bAnonStatus);
+      s.SetAutoMessageAuthorUserNumber(session()->usernum);
+    });
 
     TextFile file(session()->config()->gfilesdir(), AUTO_MSG, "wt");
     const string authorName = session()->names()->UserName(session()->usernum);

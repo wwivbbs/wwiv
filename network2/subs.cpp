@@ -190,7 +190,7 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
 
 bool handle_sub_add_req(Context& context, Packet& p) {
   const string subtype = SubTypeFromText(p.text);
-  auto resp = [&subtype, &context, &p](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_add_resp, code, subtype); };
+  auto resp = [&](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_add_resp, code, subtype); };
   if (subtype.empty()) {
     return resp(sub_adddrop_error);
   }
@@ -219,7 +219,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
 
 bool handle_sub_drop_req(Context& context, Packet& p) {
   const string subtype = SubTypeFromText(p.text);
-  auto resp = [&subtype, &context, &p](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype); };
+  auto resp = [&](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype); };
   if (subtype.empty()) {
     return resp(sub_adddrop_error);
   }

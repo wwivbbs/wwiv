@@ -158,10 +158,10 @@ void user_editor() {
   });
 
   auto birthday_field = new CustomEditItem(COL1_POSITION, 9, 10, 
-      [&user]() -> string { 
+      [&]() -> string { 
         return StringPrintf("%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
       },
-      [&user](const string& s) {
+      [&](const string& s) {
         if (s[2] != '/' || s[5] != '/') {
           return;
         }

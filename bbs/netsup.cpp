@@ -129,9 +129,10 @@ static bool check_bbsdata() {
   }
   const string network3 = StrCat(CreateNetworkBinary("network3"), " .", session()->net_num(), " Y");
   ExecuteExternalProgram(network3, EFLAG_NETPROG);
-  WStatus* wwiv_status = session()->status_manager()->BeginTransaction();
-  wwiv_status->IncrementFileChangedFlag(WStatus::fileChangeNet);
-  session()->status_manager()->CommitTransaction(wwiv_status);
+
+  session()->status_manager()->Run([](WStatus& s) {
+    s.IncrementFileChangedFlag(WStatus::fileChangeNet);
+  });
 
   return true;
 }

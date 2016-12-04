@@ -231,7 +231,7 @@ const int StatusMgr::GetUserCount() {
 bool StatusMgr::Run(status_txn_fn fn) {
   WStatus* status = BeginTransaction();
   CHECK_NOTNULL(status);
-  fn(status);
+  fn(*status);
   return CommitTransaction(status);
 }
 

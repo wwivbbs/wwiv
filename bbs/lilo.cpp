@@ -385,15 +385,6 @@ static void logon_guest() {
 }
 
 void getuser() {
-  const auto& ip = session()->remoteIO()->remote_info().address;
-  const auto& hostname = session()->remoteIO()->remote_info().address_name;
-  bout << "Client Address: " << hostname << " (" << ip << ")" << wwiv::endl;
-  bout.nl();
-  write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
-
-  int count = 0;
-  bool ok = false;
-
   okmacro = false;
   ScopeExit at_exit([] { okmacro = true; });
   // Let's set this to 0 here since we don't have a user yet.
@@ -402,6 +393,17 @@ void getuser() {
   session()->SetCurrentConferenceFileArea(0);
   session()->SetEffectiveSl(syscfg.newusersl);
   session()->user()->SetStatus(0);
+
+  const auto& ip = session()->remoteIO()->remote_info().address;
+  const auto& hostname = session()->remoteIO()->remote_info().address_name;
+  if (!ip.empty()) {
+    bout << "Client Address: " << hostname << " (" << ip << ")" << wwiv::endl;
+    bout.nl();
+  }
+  write_inst(INST_LOC_GETUSER, 0, INST_FLAGS_NONE);
+
+  int count = 0;
+  bool ok = false;
 
   int ans = GetAnsiStatusAndShowWelcomeScreen();
   bool first_time = true;
@@ -505,9 +507,9 @@ static void UpdateUserStatsForLogin() {
     session()->set_current_user_dir_num(0);
   }
   if (session()->GetEffectiveSl() != 255 && !guest_user) {
-    session()->status_manager()->Run([](WStatus* s) {
-      s->IncrementCallerNumber();
-      s->IncrementNumCallsToday();
+    session()->status_manager()->Run([](WStatus& s) {
+      s.IncrementCallerNumber();
+      s.IncrementNumCallsToday();
     });
   }
 }
@@ -1029,9 +1031,9 @@ void logoff() {
   session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() +
     static_cast<float>(dTimeOnNow - extratimecall));
 
-  session()->status_manager()->Run([dTimeOnNow](WStatus* s) {
-    int nActiveToday = s->GetMinutesActiveToday();
-    s->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR));
+  session()->status_manager()->Run([=](WStatus& s) {
+    int nActiveToday = s.GetMinutesActiveToday();
+    s.SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR));
   });
 
   if (g_flags & g_flag_scanned_files) {
@@ -1074,8 +1076,8 @@ void logoff() {
         }
       }
       pFileEmail->SetLength(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
-      session()->status_manager()->Run([dTimeOnNow](WStatus* s) {
-        s->IncrementFileChangedFlag(WStatus::fileChangeEmail);
+      session()->status_manager()->Run([dTimeOnNow](WStatus& s) {
+        s.IncrementFileChangedFlag(WStatus::fileChangeEmail);
       });
       pFileEmail->Close();
     }

@@ -879,9 +879,9 @@ void qwk_post_text(char *text, char *title, int sub) {
     p.ownersys = 0;
     p.owneruser = static_cast<uint16_t>(session()->usernum);
     {
-      WStatus* pStatus = session()->status_manager()->BeginTransaction();
-      p.qscan = pStatus->IncrementQScanPointer();
-      session()->status_manager()->CommitTransaction(pStatus);
+      session()->status_manager()->Run([&](WStatus& s) {
+        p.qscan = s.IncrementQScanPointer();
+      });
     }
     time_t now = time(nullptr);
     p.daten = static_cast<uint32_t>(now);
@@ -932,10 +932,10 @@ void qwk_post_text(char *text, char *title, int sub) {
     ++session()->user()->data.posttoday;
 
     {
-      WStatus* pStatus = session()->status_manager()->BeginTransaction();
-      pStatus->IncrementNumLocalPosts();
-      pStatus->IncrementNumMessagesPostedToday();
-      session()->status_manager()->CommitTransaction(pStatus);
+      session()->status_manager()->Run([](WStatus& s) {
+        s.IncrementNumLocalPosts();
+        s.IncrementNumMessagesPostedToday();
+      });
     }
 
     close_sub();

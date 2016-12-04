@@ -219,7 +219,7 @@ class StatusMgr {
 public:
 
   typedef std::function<void(int)> status_callabck_fn;
-  typedef std::function<void(WStatus* s)> status_txn_fn;
+  typedef std::function<void(WStatus& s)> status_txn_fn;
 
   /*!
    * @function StatusMgr Constructor

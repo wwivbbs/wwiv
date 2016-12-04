@@ -477,9 +477,9 @@ void HandleMessageMove(int &nMessageNumber) {
       open_sub(true);
       p2.msg.storage_type = static_cast<unsigned char>(session()->current_sub().storage_type);
       savefile(b, &(p2.msg), (session()->current_sub().filename));
-      WStatus* pStatus = session()->status_manager()->BeginTransaction();
-      p2.qscan = pStatus->IncrementQScanPointer();
-      session()->status_manager()->CommitTransaction(pStatus);
+      session()->status_manager()->Run([&](WStatus& s) {
+        p2.qscan = s.IncrementQScanPointer();
+      });
       if (session()->GetNumMessagesInCurrentMessageArea() >=
         session()->current_sub().maxmsgs) {
         int nTempMsgNum = 1;

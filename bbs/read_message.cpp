@@ -649,11 +649,11 @@ static void update_qscan(uint32_t qscan) {
     current_qscan_pointer = wwiv_status->GetQScanPointer();
   }
   if (qscan >= current_qscan_pointer) {
-    WStatus* pStatus = session()->status_manager()->BeginTransaction();
-    if (qscan >= pStatus->GetQScanPointer()) {
-      pStatus->SetQScanPointer(qscan + 1);
-    }
-    session()->status_manager()->CommitTransaction(pStatus);
+    session()->status_manager()->Run([&](WStatus& s) {
+      if (qscan >= s.GetQScanPointer()) {
+        s.SetQScanPointer(qscan + 1);
+      }
+    });
   }
 }
 

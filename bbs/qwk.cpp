@@ -368,9 +368,9 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   uint32_t lQScanPtr = pStatus1->GetQScanPointer();
   delete pStatus1;
   if (p->qscan >= lQScanPtr) {
-    WStatus* pStatus = session()->status_manager()->BeginTransaction();
-    pStatus->SetQScanPointer(p->qscan + 1);
-    session()->status_manager()->CommitTransaction(pStatus);
+    session()->status_manager()->Run([p](WStatus& s) {
+      s.SetQScanPointer(p->qscan + 1);
+    });
   }
 }
 

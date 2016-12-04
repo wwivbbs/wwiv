@@ -105,9 +105,9 @@ static void save_gat(File& file) {
   auto section_pos = static_cast<off_t>(gat_section) * GATSECLEN;
   file.Seek(section_pos, File::Whence::begin);
   file.Write(gat, GAT_SECTION_SIZE);
-  WStatus *pStatus = session()->status_manager()->BeginTransaction();
-  pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
-  session()->status_manager()->CommitTransaction(pStatus);
+  session()->status_manager()->Run([](WStatus& s) {
+    s.IncrementFileChangedFlag(WStatus::fileChangePosts);
+  });
 }
 
 /**
