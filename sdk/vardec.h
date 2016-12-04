@@ -78,7 +78,7 @@ struct userrec {
   uint8_t inact;
 
   // computer type
-  char comp_type;
+  int8_t comp_type;
 
   uint8_t defprot,                                  // default transfer protocol
            defed,                                   // default editor
