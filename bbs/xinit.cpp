@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <chrono>
 #include <cstddef>
 #include <memory>
 #include <string>
@@ -580,6 +581,16 @@ bool WSession::create_message_api() {
   msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(*config_.get(), net_networks);
 
   return true;
+}
+
+void WSession::SetLogonTime() {
+  steady_logon_time_ = std::chrono::steady_clock::now();
+  system_logon_time_ = std::chrono::system_clock::now();
+  timeon = timer();
+}
+
+std::chrono::system_clock::duration WSession::duration_used_this_session() const {
+  return std::chrono::system_clock::now() - system_logon_time_; 
 }
 
 void WSession::read_networks() {

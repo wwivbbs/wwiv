@@ -95,8 +95,10 @@ void YourInfo() {
   bout << "|#9E-mail sent    : |#2" << (session()->user()->GetNumEmailSent() +
                      session()->user()->GetNumFeedbackSent() + session()->user()->GetNumNetEmailSent()) <<
                      wwiv::endl;
-  bout << "|#9Time spent on  : |#2" << static_cast<long>((session()->user()->GetTimeOn() +
-                     timer() - timeon) / SECONDS_PER_MINUTE) << " |#9Minutes" << wwiv::endl;
+  auto seconds_used = static_cast<int>(session()->user()->GetTimeOn());
+  auto minutes_used = seconds_used / SECONDS_PER_MINUTE;
+  minutes_used += std::chrono::duration_cast<std::chrono::minutes>(session()->duration_used_this_session()).count();
+  bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
   bout << "|#9Uploads        : |#2" << session()->user()->GetUploadK() << "|#9k in|#2 " <<

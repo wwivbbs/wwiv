@@ -312,7 +312,7 @@ char Output::getkey() {
   lastchar_pressed();
 
   auto tv = std::chrono::minutes(3);
-  if (so || session()->GetCurrentSpeed() == "TELNET") {
+  if (so() || session()->GetCurrentSpeed() == "TELNET") {
     tv = std::chrono::minutes(10);
   }
   // change 4.31 Build3

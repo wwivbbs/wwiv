@@ -1389,7 +1389,7 @@ int WSession::Run(int argc, char *argv[]) {
     try {
       // Try setting this at the top of the try loop. It's currently only
       // set in logon() which could cause problems if we get hung up before then.
-      timeon = timer();
+      session()->SetLogonTime();
 
       if (!this_usernum) {
         if (user_already_on_) {

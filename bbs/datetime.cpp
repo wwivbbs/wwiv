@@ -243,3 +243,14 @@ int years_old(int nMonth, int nDay, int nYear) {
   }
   return nAge;
 }
+
+std::chrono::system_clock::duration duration_since_midnight(time_t tnow) {
+  auto now = std::chrono::system_clock::from_time_t(tnow);
+  tm *date = std::localtime(&tnow);
+  date->tm_hour = 0;
+  date->tm_min = 0;
+  date->tm_sec = 0;
+  auto midnight = std::chrono::system_clock::from_time_t(std::mktime(date));
+
+  return now - midnight;
+}

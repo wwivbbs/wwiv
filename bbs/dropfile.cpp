@@ -457,6 +457,42 @@ static void create_drop_files() {
   CreateDoor32SysDropFile();
 }
 
+/**
+CHAIN.TXT Definition File by MrBill.
+-----------CHAIN.TXT-----------------------------------
+1                  User number
+MRBILL             User alias
+Bill               User real name
+User callsign (HAM radio)
+21                 User age
+M                  User sex
+16097.00         User gold
+05/19/89           User last logon date
+80                 User colums
+25                 User width
+255                User security level (0-255)
+1                  1 if Co-SysOp, 0 if not
+1                  1 if SysOp, 0 if not
+1                  1 if ANSI, 0 if not
+0                  1 if at remote, 0 if local console
+2225.78         User number of seconds left till logoff
+F:\WWIV\GFILES\    System GFILES directory (gen. txt files)
+F:\WWIV\DATA\      System DATA directory
+890519.LOG         System log of the day
+2400               User baud rate
+2                  System com port
+MrBill's Abode     System name
+MrBill             System SysOp
+83680              Time user logged on/# of secs. from midn
+554                User number of seconds on system so far
+5050               User number of uploaded k
+22                 User number of uploads
+42                 User amount of downloaded k
+1                  User number of downloads
+8N1                User parity
+2400               Com port baud rate
+7400               WWIVnet node number
+ */
 const string create_chain_file() {
   string cspeed;
 

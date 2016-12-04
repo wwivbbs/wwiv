@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_DATETIME_H__
 #define __INCLUDED_DATETIME_H__
 
+#include <chrono>
 #include <ctime>
 #include <string>
 
@@ -35,6 +36,7 @@ char *ctim(double f);
 char *ctim(long d);
 std::string ctim2(long d);
 int years_old(int nMonth, int nDay, int nYear);
+std::chrono::system_clock::duration duration_since_midnight(time_t start);
 
 
 #endif // __INCLUDED_DATETIME_H__

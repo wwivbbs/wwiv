@@ -19,6 +19,7 @@
 #if !defined ( __INCLUDED_BBS_WSESSION_H__ )
 #define __INCLUDED_BBS_WSESSION_H__
 
+#include <chrono>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -265,6 +266,10 @@ public:
 
   bool read_subs();
   bool create_message_api();
+  void SetLogonTime();
+  std::chrono::steady_clock::time_point steady_logon_time() const { return steady_logon_time_; }
+  std::chrono::system_clock::time_point system_logon_time() const { return system_logon_time_; }
+  std::chrono::system_clock::duration duration_used_this_session() const;
 
   /*!
   * @function ShowUsage - Shows the help screen to the user listing
@@ -443,6 +448,8 @@ private:
   uint16_t spawn_opts[20];
   bool experimental_read_prompt_ = false;
   int last_read_user_number_ = 0;
+  std::chrono::system_clock::time_point system_logon_time_;
+  std::chrono::steady_clock::time_point steady_logon_time_;
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

@@ -472,8 +472,9 @@ void getuser() {
   }
 
   CheckCallRestrictions();
-  Hangup();
-  // TODO(rushfan): This is where we'd do internet email validation.
+  if (!ok) {
+    Hangup();
+  }
 }
 
 static void FixUserLinesAndColors() {
@@ -916,7 +917,7 @@ void logon() {
   PrintUserSpecificFiles();
 
   read_automessage();
-  timeon = timer();
+  session()->SetLogonTime();
   session()->UpdateTopScreen();
   bout.nl(2);
   pausescr();
@@ -1039,8 +1040,8 @@ void logoff() {
   if (g_flags & g_flag_scanned_files) {
     session()->user()->SetNewScanDateNumber(session()->user()->GetLastOnDateNumber());
   }
-  time_t lTime = time(nullptr);
-  session()->user()->SetLastOnDateNumber(lTime);
+  time_t t = time(nullptr);
+  session()->user()->SetLastOnDateNumber(t);
   sysoplog(false) << "Read: " << session()->GetNumMessagesReadThisLogon() 
       << "   Time on: "  << (timer() - timeon) / MINUTES_PER_HOUR;
   {

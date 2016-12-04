@@ -299,8 +299,6 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
 // remote com port (if applicable).  Every second of inactivity, a
 // beep is sounded.  After 10 seconds of inactivity, the user is hung up.
 static void bihangup() {
-  int color = 5;
-
   bout.dump();
   auto batch_lastchar = std::chrono::steady_clock::now();
   auto nextbeep = std::chrono::seconds(1);
