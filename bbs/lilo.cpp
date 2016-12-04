@@ -395,6 +395,9 @@ void getuser() {
   bool ok = false;
 
   okmacro = false;
+  ScopeExit at_exit([] { okmacro = true; });
+  // Let's set this to 0 here since we don't have a user yet.
+  session()->usernum = 0;
   session()->SetCurrentConferenceMessageArea(0);
   session()->SetCurrentConferenceFileArea(0);
   session()->SetEffectiveSl(syscfg.newusersl);
@@ -466,7 +469,6 @@ void getuser() {
     LeaveBadPasswordFeedback(ans);
   }
 
-  okmacro = true;
   CheckCallRestrictions();
   Hangup();
   // TODO(rushfan): This is where we'd do internet email validation.
