@@ -741,11 +741,7 @@ void FastGoodBye() {
     bout << "|#2Download files in your batch queue (|#1Y/n|#2)? ";
     if (noyes()) {
       batchdl(1);
-    } else {
-      Hangup();
     }
-  } else {
-    Hangup();
   }
   session()->user()->SetLastSubNum(session()->current_user_sub_num());
   session()->user()->SetLastDirNum(session()->current_user_dir_num());
@@ -753,6 +749,7 @@ void FastGoodBye() {
     session()->user()->SetLastSubConf(session()->GetCurrentConferenceMessageArea());
     session()->user()->SetLastDirConf(session()->GetCurrentConferenceFileArea());
   }
+  Hangup();
 }
 
 void NewFilesAllConfs() {

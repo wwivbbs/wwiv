@@ -302,7 +302,6 @@ static void ExecuteWWIVNetworkRequest() {
 static void LeaveBadPasswordFeedback(int ans) {
   ScopeExit at_exit([] {
     session()->usernum = 0;
-    Hangup();
   });
   
   if (ans > 0) {
@@ -469,6 +468,7 @@ void getuser() {
 
   okmacro = true;
   CheckCallRestrictions();
+  Hangup();
   // TODO(rushfan): This is where we'd do internet email validation.
 }
 

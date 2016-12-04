@@ -190,6 +190,7 @@ bool WSession::ReadCurrentUser(int user_number) {
 }
 
 bool WSession::WriteCurrentUser(int user_number) {
+
   if (user_number == 0) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number 0";
   }
