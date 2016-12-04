@@ -757,7 +757,7 @@ class User {
   void SetDownloadK(unsigned long l) {
     data.dk = l;
   }
-  const uint32_t GetLastOnDateNumber() const {
+  const time_t GetLastOnDateNumber() const {
     return data.daten;
   }
   void SetLastOnDateNumber(time_t l) {
@@ -787,7 +787,7 @@ class User {
   void SetExpiresDateNum(time_t l) {
     data.expires = static_cast<uint32_t>(l);
   }
-  const unsigned long GetNewScanDateNumber() const {
+  const time_t GetNewScanDateNumber() const {
     return data.datenscan;
   }
   void SetNewScanDateNumber(time_t l) {

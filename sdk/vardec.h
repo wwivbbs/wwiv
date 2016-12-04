@@ -34,42 +34,51 @@
 
 // DATA FOR EVERY USER
 struct userrec {
-  unsigned char
-    name[31],                                // user's name/handle
-    realname[21];                            // user's real name
-  char
-    callsign[7],                             // user's amateur callsign
-    phone[13],                               // user's phone number
-    dataphone[13],                           // user's data phone
-    street[31],                              // street address
-    city[31],                                // city
-    state[3],                                // state code [MO, CA, etc]
-    country[4],                              // country [USA, CAN, FRA, etc]
-    zipcode[11];                             // zipcode [#####-####]
-  char
-    // user's password
-    pw[9],
-    // last date on
-    laston[9],
-    // first date on
-    firston[9],
-    // sysop's note about user
-    note[61];
+  // user's name/handle
+  unsigned char name[31];
+  // user's real name
+  unsigned char realname[21];
+  // user's amateur callsign
+  char callsign[7];
+  // user's phone number
+  char phone[13];
+  // user's data phone
+  char dataphone[13];
+  // street address
+  char street[31];
+  // city
+  char city[31];
+  // state code [MO, CA, etc]
+  char state[3];
+  // country [USA, CAN, FRA, etc]
+  char country[4];
+  // zipcode [#####-####]
+  char zipcode[11];
+  // user's password
+  char pw[9];
+  // last date on
+  char laston[9];
+  // first date on
+  char firston[9];
+  // sysop's note about user
+  char note[61];
   // macro keys
-  unsigned char
-    macros[3][81];
+  unsigned char macros[3][81];
   // gender.
   char sex;
 
-  char
-  email[65],                                    // Internet mail address
-        res_char[13];                           // bytes for more strings
+  // Internet mail address
+  char email[65];
+  // bytes for more strings
+  char res_char[13];
+  
+  // user's age
+  uint8_t age;
+  // if deleted or inactive
+  uint8_t inact;
 
-  uint8_t
-  age,                                     // user's age
-  inact;                                   // if deleted or inactive
-
-  signed char comp_type;                       // computer type
+  // computer type
+  char comp_type;
 
   uint8_t defprot,                                  // default transfer protocol
            defed,                                   // default editor
@@ -94,12 +103,12 @@ struct userrec {
 
   uint32_t lp_options;
   uint8_t lp_colors[32];
+  // Selected AMENU set to use
+  char szMenuSet[9];
+  // Use hot keys in AMENU
+  uint8_t cHotKeys;
 
-  char szMenuSet[9];   // Selected AMENU set to use
-  uint8_t cHotKeys;    // Use hot keys in AMENU
-
-  char
-  res_byte[3];
+  char res_byte[3];
 
   uint16_t
   homeuser,                                // user number where user can found
@@ -131,42 +140,58 @@ struct userrec {
   subconf,                                 // previous conference subs
   dirconf;                                 // previous conference dirs
 
-  uint16_t
-  subnum,                                  // last sub at logoff
-  dirnum;                                  // last dir at logoff
+  // last sub at logoff
+  uint16_t subnum;
+  // last dir at logoff
+  uint16_t dirnum;
 
-  char
-  res_short[40];                           // reserved for short values
+  // reserved for short values
+  char res_short[40];
 
-  uint32_t
-  msgread,                                 // total num msgs read
-  uk,                                      // number of k uploaded
-  dk,                                      // number of k downloaded
-  daten,                                   // numerical time last on
-  sysstatus,                               // status/defaults
-  wwiv_regnum,                             // user's WWIV reg number
-  filepoints,                              // points to spend for files
-  registered,                              // numerical registration date
-  expires,                                 // numerical expiration date
-  datenscan,                               // numerical date of last file scan
-  unued_nameinfo;                          // bit mapping for name case
+  // total num msgs read
+  uint32_t msgread;
+  // number of k uploaded
+  uint32_t uk;
+  // number of k downloaded
+  uint32_t dk;
+  // numerical time last on
+  uint32_t daten;
+  // status/defaults
+  uint32_t sysstatus;
+  // user's WWIV reg number
+  uint32_t wwiv_regnum;
+  // points to spend for files
+  uint32_t filepoints;
+  // numerical registration date
+  uint32_t registered;
+  // numerical expiration date
+  uint32_t expires;
+  // numerical date of last file scan
+  uint32_t datenscan;
+  // bit mapping for name case
+  uint32_t unued_nameinfo;
 
-  char
-  res_long[40];                            // reserved for long values
+  // reserved for long values
+  char res_long[40];
 
-  float
-  timeontoday,                             // time on today
-  extratime,                               // time left today
-  timeon,                                  // total time on system
-  pos_account,                             // $ credit
-  neg_account,                             // $ debit
-  gold;                                    // game money
+  // time on today
+  float timeontoday;
+  // time left today
+  float extratime;
+  // total time on system
+  float timeon;
+  // $ credit
+  float pos_account;
+  // $ debit
+  float neg_account;
 
-  char
-  res_float[32];                           // reserved for real values
+  // game money
+  float gold;
 
-  char
-  res_gp[94];                              // reserved for whatever
+  // reserved for real values
+  char res_float[32];
+  // reserved for whatever
+  char res_gp[94];
 
   uint16_t qwk_max_msgs;
   unsigned short int qwk_max_msgs_per_sub;
