@@ -407,10 +407,8 @@ void getuser() {
     string remote_username;
     string remote_password;
     if (first_time) {
-      remote_username = session()->remoteIO()->remote_info().username;
-      remote_password = session()->remoteIO()->remote_info().password;
-      StringUpperCase(&remote_username);
-      StringUpperCase(&remote_password);
+      remote_username = ToStringUpperCase(session()->remoteIO()->remote_info().username);
+      remote_password = ToStringUpperCase(session()->remoteIO()->remote_info().password);
       first_time = false;
     }
     session()->usernum = ShowLoginAndGetUserNumber(remote_username);
@@ -505,10 +503,10 @@ static void UpdateUserStatsForLogin() {
     session()->set_current_user_dir_num(0);
   }
   if (session()->GetEffectiveSl() != 255 && !guest_user) {
-    WStatus* pStatus = session()->status_manager()->BeginTransaction();
-    pStatus->IncrementCallerNumber();
-    pStatus->IncrementNumCallsToday();
-    session()->status_manager()->CommitTransaction(pStatus);
+    session()->status_manager()->Run([](WStatus* s) {
+      s->IncrementCallerNumber();
+      s->IncrementNumCallsToday();
+    });
   }
 }
 
@@ -1028,12 +1026,12 @@ void logoff() {
   session()->user()->SetTimeOn(session()->user()->GetTimeOn() + static_cast<float>(dTimeOnNow));
   session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() +
     static_cast<float>(dTimeOnNow - extratimecall));
-  {
-    WStatus* pStatus = session()->status_manager()->BeginTransaction();
-    int nActiveToday = pStatus->GetMinutesActiveToday();
-    pStatus->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR));
-    session()->status_manager()->CommitTransaction(pStatus);
-  }
+
+  session()->status_manager()->Run([dTimeOnNow](WStatus* s) {
+    int nActiveToday = s->GetMinutesActiveToday();
+    s->SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR));
+  });
+
   if (g_flags & g_flag_scanned_files) {
     session()->user()->SetNewScanDateNumber(session()->user()->GetLastOnDateNumber());
   }
@@ -1074,9 +1072,9 @@ void logoff() {
         }
       }
       pFileEmail->SetLength(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
-      WStatus *pStatus = session()->status_manager()->BeginTransaction();
-      pStatus->IncrementFileChangedFlag(WStatus::fileChangeEmail);
-      session()->status_manager()->CommitTransaction(pStatus);
+      session()->status_manager()->Run([dTimeOnNow](WStatus* s) {
+        s->IncrementFileChangedFlag(WStatus::fileChangeEmail);
+      });
       pFileEmail->Close();
     }
   }
