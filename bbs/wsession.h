@@ -439,10 +439,10 @@ private:
   std::unique_ptr<wwiv::sdk::Subs> subs_;
 
   // Former global variables and system_operation_rec members to be moved
-  uint32_t flags;
+  uint32_t flags = 0;
   uint16_t spawn_opts[20];
   bool experimental_read_prompt_ = false;
-
+  int last_read_user_number_ = 0;
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)

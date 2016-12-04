@@ -180,13 +180,23 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
 
 bool WSession::ReadCurrentUser(int user_number) {
   bool result = users()->ReadUser(&thisuser_, user_number);
+  if (result) {
+    last_read_user_number_ = user_number;
+    // Update all other session variables that are dependent.
+    screenlinest = (using_modem) ? user()->GetScreenLines() : defscreenbottom + 1;
+  }
 
-  // Update all other session variables that are dependent.
-  screenlinest = (using_modem) ? user()->GetScreenLines() : defscreenbottom + 1;
   return result;
 }
 
 bool WSession::WriteCurrentUser(int user_number) {
+  if (user_number == 0) {
+    LOG(ERROR) << "Trying to call WriteCurrentUser with user_number 0";
+  }
+  else if (user_number != last_read_user_number_) {
+    LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
+      << "; last_read_user_number_: " << last_read_user_number_;
+  }
   return users()->WriteUser(&thisuser_, user_number);
 }
 

@@ -466,7 +466,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
 
 static void display_message_text_new(const std::vector<std::string>& lines, int start, 
   int message_height, int screen_width, int lines_start) {
-  for (size_t i = start; i < start + message_height; i++) {
+  for (int i = start; i < start + message_height; i++) {
     if (i >= lines.size()) {
       break;
     }
