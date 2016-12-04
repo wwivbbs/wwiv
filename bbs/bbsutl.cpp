@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <chrono>
 #include <string>
 
 #include "bbs/bgetch.h"
@@ -34,6 +35,8 @@
 #include "core/wwivassert.h"
 
 using std::string;
+using std::chrono::seconds;
+using std::chrono::steady_clock;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
@@ -443,18 +446,15 @@ int check_ansi() {
   }
 
   bout.rputs("\x1b[6n");
+  auto now = steady_clock::now();
+  auto l = now + seconds(3);
 
-  long l = timer1() + 36 + 18;
-
-  while ((timer1() < l) && (!hangup)) {
+  while (steady_clock::now() < l) {
     CheckForHangup();
     char ch = bgetchraw();
     if (ch == '\x1b') {
-      l = timer1() + 18;
-      while (timer1() < l && !hangup) {
-        if ((timer1() + 1820) < l) {
-          l = timer1() + 18;
-        }
+      l = steady_clock::now() + seconds(1);
+      while (steady_clock::now() < l) {
         CheckForHangup();
         ch = bgetchraw();
         if (ch) {
@@ -466,9 +466,6 @@ int check_ansi() {
       return 1;
     } else if (ch == 'N') {
       return -1;
-    }
-    if ((timer1() + 1820) < l) {
-      l = timer1() + 36;
     }
   }
   return 0;

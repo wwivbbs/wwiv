@@ -164,7 +164,6 @@ static string StripName(const std::string& in) {
 }
 
 void chat_room() {
-  int oiia = iia;
   char szColorString[15];
   bool bShowPrompt = false;
 
@@ -212,7 +211,7 @@ void chat_room() {
   TempDisablePause disable_pause;
   bChatLine = false;
   in_chatroom = true;
-  setiia(9);
+  auto oiia = setiia(std::chrono::milliseconds(500));
   char szFileName[MAX_PATH];
   sprintf(szFileName, "%sEXTCHAT", syscfg.datadir);
 

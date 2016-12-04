@@ -103,7 +103,7 @@ bool okansi() {
  * screen-access variables.
  */
 void frequent_init() {
-  setiia(90);
+  setiia(std::chrono::seconds(5));
   g_flags = 0;
   newline = true;
   session()->SetCurrentReadMessageArea(-1);

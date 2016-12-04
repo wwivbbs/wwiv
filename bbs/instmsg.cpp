@@ -41,6 +41,7 @@
 #include "bbs/printfile.h"
 #include "sdk/filenames.h"
 
+using std::chrono::steady_clock;
 using std::chrono::seconds;
 using std::string;
 using namespace wwiv::os;
@@ -56,7 +57,8 @@ bool inst_available_chat(instancerec * ir);
 
 using wwiv::bbs::TempDisablePause;
 
-static int32_t last_iia = 0;
+static steady_clock::time_point last_iia;
+static std::chrono::milliseconds iia;
 
 bool is_chat_invis() { 
   return chat_invis; 
@@ -204,8 +206,8 @@ void process_inst_msgs() {
   if (!inst_msg_waiting()) {
     return;
   }
-  last_iia = timer1();
-  int oiia = setiia(0);
+  last_iia = steady_clock::now();
+  auto oiia = setiia(std::chrono::milliseconds(0));
 
   string fndspec = StringPrintf("%smsg*.%3.3u", session()->config()->datadir().c_str(), session()->instance_number());
   WFindFile fnd;
@@ -447,12 +449,10 @@ void write_inst(int loc, int subloc, int flags) {
 * Returns 1 if a message waiting for this instance, 0 otherwise.
 */
 bool inst_msg_waiting() {
-  if (!iia || !local_echo) {
-    return false;
-  }
+  if (iia.count() == 0 || !local_echo) return false;
 
-  long l = timer1();
-  if (std::abs(l - last_iia) < iia) {
+  auto l = steady_clock::now();
+  if ((l - last_iia) < iia) {
     return false;
   }
 
@@ -467,9 +467,9 @@ bool inst_msg_waiting() {
 
 // Sets inter-instance availability on/off, for inter-instance messaging.
 // retruns the old iia value.
-int setiia(int poll_ticks) {
-  int oiia = iia;
-  iia = poll_ticks;
+std::chrono::milliseconds setiia(std::chrono::milliseconds poll_time) {
+  auto oiia = iia;
+  iia = poll_time;
   return oiia;
 }
 

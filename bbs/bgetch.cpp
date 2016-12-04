@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/bgetch.h"
 
+#include <chrono>
 #include <cmath>
 #include <string>
 
@@ -36,13 +37,15 @@
 #include "core/log.h"
 #include "core/strings.h"
 
+using std::chrono::steady_clock;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static long time_lastchar_pressed = 0;
+//static long time_lastchar_pressed = 0;
+static steady_clock::time_point time_lastchar_pressed;
 
 static void lastchar_pressed() {
-  time_lastchar_pressed = timer1();
+  time_lastchar_pressed = steady_clock::now();
 }
 
 
@@ -308,10 +311,14 @@ char Output::getkey() {
   bool beepyet = false;
   lastchar_pressed();
 
-  long tv = (so() || IsEqualsIgnoreCase(session()->GetCurrentSpeed().c_str(), "TELNET")) ? 10920L : 3276L;
-  long tv1 = tv - 1092L;     // change 4.31 Build3
+  auto tv = std::chrono::minutes(3);
+  if (so || session()->GetCurrentSpeed() == "TELNET") {
+    tv = std::chrono::minutes(10);
+  }
+  // change 4.31 Build3
+  auto tv1 = tv - std::chrono::minutes(1);
 
-                             // Since were waitig for a key, reset the # of lines we've displayed since a pause.
+  // Since were waitig for a key, reset the # of lines we've displayed since a pause.
   bout.clear_lines_listed();
   char ch = 0;
   do {
@@ -322,18 +329,14 @@ char Output::getkey() {
       }
       CheckForHangup();
       giveup_timeslice();
-      long dd = timer1();
-      if (dd < time_lastchar_pressed && ((dd + 1000) > time_lastchar_pressed)) {
-        time_lastchar_pressed = dd;
-      }
-      if (std::abs(dd - time_lastchar_pressed) > 65536L) {
-        time_lastchar_pressed -= static_cast<int>(floor(SECONDS_PER_DAY * 18.2));
-      }
-      if ((dd - time_lastchar_pressed) > tv1 && !beepyet) {
+      auto dd = steady_clock::now();
+
+      auto diff = dd - time_lastchar_pressed;
+      if (diff > tv1 && !beepyet) {
         beepyet = true;
         bout.bputch(CG);
       }
-      if (std::abs(dd - time_lastchar_pressed) > tv) {
+      if (diff > tv) {
         bout.nl();
         bout << "Call back later when you are there.\r\n";
         Hangup();

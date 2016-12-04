@@ -96,12 +96,6 @@ long timer() {
          static_cast<long>(t->tm_sec);
 }
 
-/* This function returns the time, in ticks since midnight. */
-long timer1() {
-  static const double TICKS_PER_SECOND = 18.2;
-  return static_cast<long>(timer() * TICKS_PER_SECOND);
-}
-
 void ToggleScrollLockKey() {
 #if defined( _WIN32 )
   // Simulate a key press

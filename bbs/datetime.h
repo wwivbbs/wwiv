@@ -28,7 +28,6 @@ char *times();
 time_t date_to_daten(const char *datet);
 void filedate(const char *fpath, char *rtn);
 long timer();
-long timer1();
 bool isleap(int nYear);
 int dow();
 char *ctim(float f);

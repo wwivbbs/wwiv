@@ -93,7 +93,7 @@ void pausescr() {
   time_t tstart, tstop;
 
   nsp = 0;
-  int oiia = setiia(0);
+  auto oiia = setiia(std::chrono::milliseconds(0));
   char* ss = str_pause;
   int i2 = i1 = strlen(ss);
   bool com_freeze = incom;

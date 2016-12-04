@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_INSTMSG_H__
 #define __INCLUDED_INSTMSG_H__
 
+#include <chrono>
 #include <string>
 #include "sdk/vardec.h"
 
@@ -131,7 +132,7 @@ int  num_instances();
 bool user_online(int user_number, int *wi);
 void write_inst(int loc, int subloc, int flags);
 bool inst_msg_waiting();
-int  setiia(int poll_ticks);
+std::chrono::milliseconds setiia(std::chrono::milliseconds poll_time);
 void toggle_invis();
 void toggle_avail();
 bool is_chat_invis();

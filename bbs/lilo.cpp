@@ -942,7 +942,7 @@ void logon() {
   if ((incom || sysop1()) && session()->user()->GetSl() < 255) {
     broadcast(StringPrintf("%s Just logged on!", session()->user()->GetName()));
   }
-  setiia(90);
+  setiia(std::chrono::seconds(5));
 
   // New Message Scan
   if (session()->IsNewScanAtLogin()) {
@@ -994,7 +994,7 @@ void logoff() {
       broadcast(StringPrintf("%s Just logged off!", session()->user()->GetName()));
     }
   }
-  setiia(90);
+  setiia(std::chrono::seconds(5));
   session()->remoteIO()->disconnect();
   // Don't need to hangup here, but *do* want to ensure that hangup is true.
   hangup = true;

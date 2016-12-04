@@ -908,12 +908,14 @@ int WSession::doWFCEvents() {
     }
 
     if (!any) {
-      static int mult_time = 0;
-      if (this->IsCleanNetNeeded() || std::abs(timer1() - mult_time) > 1000L) {
+      static std::chrono::steady_clock::time_point mult_time;
+      auto now = std::chrono::steady_clock::now();
+      auto diff = now - mult_time;
+      if (this->IsCleanNetNeeded() || diff > std::chrono::seconds(54)) {
         // let's try this.
         wfc_cls();
         cleanup_net();
-        mult_time = timer1();
+        mult_time = std::chrono::steady_clock::now();
       }
       giveup_timeslice();
     }
@@ -1395,7 +1397,7 @@ int WSession::Run(int argc, char *argv[]) {
       this_usernum = 0;
       CheckForHangup();
       logon();
-      setiia(90);
+      setiia(std::chrono::seconds(5));
       set_net_num(0);
       while (true) {
         CheckForHangup();

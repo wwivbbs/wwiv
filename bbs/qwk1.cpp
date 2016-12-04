@@ -549,12 +549,9 @@ void qwk_email_text(char *text, char *title, char *to) {
 
 void qwk_inmsg(const char *text, messagerec *m1, const char *aux, const char *name, time_t thetime) {
   char s[181];
-  int oiia = iia;
-  setiia(0);
   wwiv::core::ScopeExit  at_exit([=]() {
     charbufferpointer = 0;
     charbuffer[0] = 0;
-    setiia(oiia);
   });
 
   messagerec m = *m1;

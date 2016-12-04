@@ -107,7 +107,6 @@ __EXTRN__ small_configrec syscfg;
 __EXTRN__ colorrec rescolor;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ confrec *subconfs, *dirconfs;
-__EXTRN__ int iia;
 
 #endif // __INCLUDED_VARS_H__
 

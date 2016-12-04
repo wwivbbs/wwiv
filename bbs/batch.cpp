@@ -302,32 +302,19 @@ static void bihangup() {
   int color = 5;
 
   bout.dump();
-  long batch_lastchar = timer1();
-  long nextbeep = 18L;
+  auto batch_lastchar = std::chrono::steady_clock::now();
+  auto nextbeep = std::chrono::seconds(1);
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
   bout << "|#2Press 'H' to hangup, or any other key to return to system.\r\n";
-  bout << "|#" << color << static_cast<int>(182L / nextbeep) << "  " << static_cast<char>(7);
 
   unsigned char ch = 0;
   do {
     while (!bkbhit() && !hangup) {
-      long dd = timer1();
-      if (std::abs(dd - batch_lastchar) > 65536L) {
-        nextbeep -= 1572480L;
-        batch_lastchar -= 1572480L;
-      }
+      auto dd = std::chrono::steady_clock::now();
       if ((dd - batch_lastchar) > nextbeep) {
-        bout << "\r|#" << color << (static_cast<int>(182L - nextbeep) / 18L) <<
-          "  " << static_cast<char>(7);
-        nextbeep += 18L;
-        if ((182L - nextbeep) / 18L <= 6) {
-          color = 2;
-        }
-        if ((182L - nextbeep) / 18L <= 3) {
-          color = 6;
-        }
+        nextbeep += std::chrono::seconds(1);
       }
-      if (std::abs(dd - batch_lastchar) > 182L) {
+      if ((dd - batch_lastchar) > std::chrono::seconds(10)) {
         bout.nl();
         bout << "Thank you for calling.";
         bout.nl();

@@ -19,6 +19,7 @@
 #include "bbs/inmsg.h"
 
 #include <algorithm>
+#include <chrono>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -528,7 +529,7 @@ static void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
 bool inmsg(MessageEditorData& data) {
   vector<string> lin;
 
-  int oiia = setiia(0);
+  auto oiia = setiia(std::chrono::milliseconds(0));
   if (data.fsed_flags != FsedFlags::NOFSED && !okfsed()) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
