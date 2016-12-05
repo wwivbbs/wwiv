@@ -51,9 +51,9 @@
 #include "core/wwivassert.h"
 #include "sdk/config.h"
 
-using std::chrono::milliseconds;
 using std::string;
 using std::vector;
+using namespace std::chrono;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -103,7 +103,7 @@ bool okansi() {
  * screen-access variables.
  */
 void frequent_init() {
-  setiia(std::chrono::seconds(5));
+  setiia(seconds(5));
   g_flags = 0;
   newline = true;
   session()->SetCurrentReadMessageArea(-1);
@@ -173,21 +173,21 @@ double post_ratio() {
 }
 
 long nsl() {
-  long rtn = 1;
+  int64_t rtn = 1;
 
-  auto dd = std::chrono::system_clock::now();
+  auto dd = system_clock::now();
   if (session()->IsUserOnline()) {
     auto tot = dd - session()->system_logon_time();
 
-    auto tpl = std::chrono::minutes(getslrec(session()->GetEffectiveSl()).time_per_logon);
-    auto tpd = std::chrono::minutes(getslrec(session()->GetEffectiveSl()).time_per_day);
-    auto extra_time = std::chrono::seconds(std::lround(session()->user()->GetExtraTime()) + extratimecall);
+    auto tpl = minutes(getslrec(session()->GetEffectiveSl()).time_per_logon);
+    auto tpd = minutes(getslrec(session()->GetEffectiveSl()).time_per_day);
+    auto extra_time = seconds(std::lround(session()->user()->GetExtraTime()) + extratimecall);
     auto tlc = tpl - tot + extra_time;
     auto tlt = tpd - tot - 
-      std::chrono::seconds(std::lround(session()->user()->GetTimeOnToday() + session()->user()->GetExtraTime()));
+      seconds(std::lround(session()->user()->GetTimeOnToday() + session()->user()->GetExtraTime()));
 
     tlt = std::min(tlc, tlt);
-    rtn = in_range<long>(0, 32767, std::chrono::duration_cast<std::chrono::seconds>(tlt).count());
+    rtn = in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count());
   }
 
   session()->SetTimeOnlineLimited(false);
@@ -208,7 +208,7 @@ if (syscfg.executetime) {
     }
   }
   */
-  return in_range<long>(0, 32767, rtn);
+  return static_cast<long>(in_range<int64_t>(0, 32767, rtn));
 }
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text, const std::string& byname) {

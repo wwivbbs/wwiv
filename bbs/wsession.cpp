@@ -511,9 +511,9 @@ void WSession::UpdateTopScreen() {
     } else {
       strcpy(szCallSignOrRegNum, user()->GetCallsign());
     }
-    auto used_this_session = (std::chrono::system_clock::now() - session()->system_logon_time());
+    auto used_this_session = (system_clock::now() - session()->system_logon_time());
     auto used_total = used_this_session + user()->timeon();
-    auto minutes_used = std::chrono::duration_cast<std::chrono::minutes>(used_total);
+    auto minutes_used = duration_cast<minutes>(used_total);
 
     localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u", user()->GetRealName(),
         user()->GetVoicePhoneNumber(), szCallSignOrRegNum, user()->GetFilesDownloaded(), user()->GetDownloadK(),
@@ -930,14 +930,14 @@ int WSession::doWFCEvents() {
     }
 
     if (!any) {
-      static std::chrono::steady_clock::time_point mult_time;
-      auto now = std::chrono::steady_clock::now();
+      static steady_clock::time_point mult_time;
+      auto now = steady_clock::now();
       auto diff = now - mult_time;
       if (this->IsCleanNetNeeded() || diff > seconds(54)) {
         // let's try this.
         wfc_cls();
         cleanup_net();
-        mult_time = std::chrono::steady_clock::now();
+        mult_time = steady_clock::now();
       }
       giveup_timeslice();
     }

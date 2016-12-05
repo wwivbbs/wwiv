@@ -31,6 +31,7 @@
 #include "sdk/filenames.h"
 #include "sdk/wwivcolors.h"
 
+using namespace std::chrono;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -85,7 +86,7 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   const uint8_t* colors, const uint8_t* bwcolors) {
   u->ZeroUserData();
 
-  std::string date = daten_to_mmddyy(std::chrono::system_clock::to_time_t(std::chrono::system_clock::now()));
+  std::string date = daten_to_mmddyy(system_clock::to_time_t(system_clock::now()));
   u->SetFirstOn(date.c_str());
   u->SetLastOn("Never.");
   u->SetMacro(0, "Wow! This is a GREAT BBS!");
@@ -146,30 +147,30 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
 }
 
 // TODO(rushfan): May be able to templatize these.
-std::chrono::seconds User::add_extratime(std::chrono::duration<double> extra) {
+seconds User::add_extratime(duration<double> extra) {
   auto extratime_seconds = static_cast<int64_t>(GetExtraTime());
-  extratime_seconds += std::chrono::duration_cast<std::chrono::seconds>(extra).count();
+  extratime_seconds += duration_cast<seconds>(extra).count();
   SetExtraTime(static_cast<float>(extratime_seconds));
-  return std::chrono::seconds(extratime_seconds);
+  return seconds(extratime_seconds);
 }
 
-std::chrono::seconds User::add_timeon(std::chrono::duration<double> d) {
+seconds User::add_timeon(duration<double> d) {
   auto timeon = static_cast<int64_t>(GetTimeOn());
-  timeon += std::chrono::duration_cast<std::chrono::seconds>(d).count();
+  timeon += duration_cast<seconds>(d).count();
   SetTimeOn(static_cast<float>(timeon));
-  return std::chrono::seconds(timeon);
+  return seconds(timeon);
 }
 
-std::chrono::seconds User::add_timeon_today(std::chrono::duration<double> d) {
+seconds User::add_timeon_today(duration<double> d) {
   auto t = static_cast<int64_t>(GetTimeOnToday());
-  t += std::chrono::duration_cast<std::chrono::seconds>(d).count();
+  t += duration_cast<seconds>(d).count();
   SetTimeOnToday(static_cast<float>(t));
-  return std::chrono::seconds(t);
+  return seconds(t);
 }
 
-std::chrono::seconds User::timeon() const {
+seconds User::timeon() const {
   auto secs_used = static_cast<int64_t>(GetTimeOn());
-  return std::chrono::seconds(secs_used);
+  return seconds(secs_used);
 }
 
 }  // namespace sdk
