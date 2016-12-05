@@ -175,25 +175,26 @@ double post_ratio() {
 long nsl() {
   long rtn = 1;
 
-  auto dd = timer();
+  auto dd = std::chrono::system_clock::now();
   if (session()->IsUserOnline()) {
-    if (timeon > (dd + SECONDS_PER_MINUTE)) {
-      timeon -= SECONDS_PER_DAY;
-    }
-    auto tot = dd - timeon;
-    auto tpl = static_cast<long>(getslrec(session()->GetEffectiveSl()).time_per_logon) * MINUTES_PER_HOUR;
-    auto tpd = static_cast<long>(getslrec(session()->GetEffectiveSl()).time_per_day) * MINUTES_PER_HOUR;
-    auto tlc = tpl - tot + std::lround(session()->user()->GetExtraTime()) + extratimecall;
-    auto tlt = tpd - tot - std::lround(
-        session()->user()->GetTimeOnToday()) + std::lround(session()->user()->GetExtraTime());
+    auto tot = dd - session()->system_logon_time();
 
-    tlt = std::min<long>(tlc, tlt);
-    rtn = in_range<long>(0, 32767, tlt);
+    auto tpl = std::chrono::minutes(getslrec(session()->GetEffectiveSl()).time_per_logon);
+    auto tpd = std::chrono::minutes(getslrec(session()->GetEffectiveSl()).time_per_day);
+    auto extra_time = std::chrono::seconds(std::lround(session()->user()->GetExtraTime()) + extratimecall);
+    auto tlc = tpl - tot + extra_time;
+    auto tlt = tpd - tot - 
+      std::chrono::seconds(std::lround(session()->user()->GetTimeOnToday() + session()->user()->GetExtraTime()));
+
+    tlt = std::min(tlc, tlt);
+    rtn = in_range<long>(0, 32767, std::chrono::duration_cast<std::chrono::seconds>(tlt).count());
   }
 
   session()->SetTimeOnlineLimited(false);
-  if (syscfg.executetime) {
-    auto tlt = time_event - dd;
+/*
+ TODO(rushfan): Do we really need to limit based on event time anymore?
+if (syscfg.executetime) {
+    auto tlt = session()->time_event_time() - dd;
     if (tlt < 0) {
       tlt += SECONDS_PER_DAY;
     }
@@ -206,6 +207,7 @@ long nsl() {
       rtn = 0;
     }
   }
+  */
   return in_range<long>(0, 32767, rtn);
 }
 

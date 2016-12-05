@@ -254,3 +254,14 @@ std::chrono::system_clock::duration duration_since_midnight(time_t tnow) {
 
   return now - midnight;
 }
+
+std::chrono::system_clock::time_point minutes_after_midnight(int minutes) {
+  auto tnow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  tm *date = std::localtime(&tnow);
+  date->tm_hour = minutes / 60;
+  date->tm_min = minutes % 60;
+  date->tm_sec = 0;
+
+  auto t = std::chrono::system_clock::from_time_t(std::mktime(date));
+  return t;
+}

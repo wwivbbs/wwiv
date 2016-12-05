@@ -877,10 +877,6 @@ void WSession::InitializeBBS() {
 
   VLOG(1) << "Reading External Events.";
   init_events();
-  last_time = time_event - timer();
-  if (last_time < 0.0) {
-    last_time += SECONDS_PER_DAY;
-  }
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
   do_event = 0;

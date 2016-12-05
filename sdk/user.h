@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_WUSER_H__
 #define __INCLUDED_WUSER_H__
 
+#include <chrono>
 #include <sstream>
 #include <cstring>
 #include <string>
@@ -806,6 +807,11 @@ class User {
   void SetExtraTime(float f) {
     data.extratime = f;
   }
+  /** Adds extra time to the user, returns the new total exta time. */
+  std::chrono::seconds add_extratime(std::chrono::duration<double> extra);
+
+  std::chrono::seconds timeon() const;
+  /** Returns the time on as seconds. */
   const float GetTimeOn() const {
     return data.timeon;
   }

@@ -37,6 +37,6 @@ char *ctim(long d);
 std::string ctim2(long d);
 int years_old(int nMonth, int nDay, int nYear);
 std::chrono::system_clock::duration duration_since_midnight(time_t start);
-
+std::chrono::system_clock::time_point minutes_after_midnight(int minutes);
 
 #endif // __INCLUDED_DATETIME_H__

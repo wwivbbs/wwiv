@@ -1346,11 +1346,7 @@ int WSession::Run(int argc, char *argv[]) {
     if (syscfg.executetime > 1440) {
       syscfg.executetime -= 1440;
     }
-    time_event = static_cast<long>(syscfg.executetime) * MINUTES_PER_HOUR;
-    last_time = time_event - timer();
-    if (last_time < 0.0) {
-      last_time += SECONDS_PER_DAY;
-    }
+    session()->set_time_event_time(minutes_after_midnight(syscfg.executetime));
   }
 
   if (event_only) {

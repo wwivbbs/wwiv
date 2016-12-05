@@ -92,19 +92,18 @@ void YourInfo() {
   bout << "|#9Times on       : |#2" << session()->user()->GetNumLogons() << wwiv::endl;
   bout << "|#9On today       : |#2" << session()->user()->GetTimesOnToday() << wwiv::endl;
   bout << "|#9Messages posted: |#2" << session()->user()->GetNumMessagesPosted() << wwiv::endl;
-  bout << "|#9E-mail sent    : |#2" << (session()->user()->GetNumEmailSent() +
-                     session()->user()->GetNumFeedbackSent() + session()->user()->GetNumNetEmailSent()) <<
-                     wwiv::endl;
+  auto total_mail_sent = session()->user()->GetNumEmailSent() + session()->user()->GetNumFeedbackSent() + session()->user()->GetNumNetEmailSent();
+  bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
   auto seconds_used = static_cast<int>(session()->user()->GetTimeOn());
   auto minutes_used = seconds_used / SECONDS_PER_MINUTE;
   minutes_used += std::chrono::duration_cast<std::chrono::minutes>(session()->duration_used_this_session()).count();
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
-  bout << "|#9Uploads        : |#2" << session()->user()->GetUploadK() << "|#9k in|#2 " <<
-                     session()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
-  bout << "|#9Downloads      : |#2" << session()->user()->GetDownloadK() << "|#9k in|#2 " <<
-                     session()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
+  bout << "|#9Uploads        : |#2" << session()->user()->GetUploadK() << "|#9k in|#2 "
+    << session()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
+  bout << "|#9Downloads      : |#2" << session()->user()->GetDownloadK() << "|#9k in|#2 "
+    << session()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
   bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
   bout.nl();
   pausescr();

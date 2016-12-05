@@ -728,13 +728,10 @@ static void dszbatchul(bool bHangupAfterDl, char *command_line, char *descriptio
   write_inst(INST_LOC_UPLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
   string list_filename = make_ul_batch_list();
 
-  auto ti = timer();
+  auto ti = std::chrono::system_clock::now();
   run_cmd(command_line, "", list_filename, download_log_entry, bHangupAfterDl);
-  ti = timer() - ti;
-  if (ti < 0) {
-    ti += SECONDS_PER_DAY;
-  }
-  session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast< float >(ti));
+  auto time_used = std::chrono::system_clock::now() - ti;
+  session()->user()->add_extratime(time_used);
 }
 
 int batchdl(int mode) {

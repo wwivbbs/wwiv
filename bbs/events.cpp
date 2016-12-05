@@ -134,7 +134,7 @@ void init_events() {
 
 void get_next_forced_event() {
   syscfg.executetime = 0;
-  time_event = 0;
+  session()->clear_time_event_time();
   int first = -1;
   int16_t tl = t_now();
   int day = dow() + 1;
@@ -147,7 +147,7 @@ void get_next_forced_event() {
         first = e.time;
       }
       if ((e.status & EVENT_RUNTODAY) == 0 && (e.days & (1 << dow())) > 0 && !syscfg.executetime) {
-        time_event = static_cast<long>(e.time) * SECONDS_PER_MINUTE;
+        session()->set_time_event_time(minutes_after_midnight(e.time));
         syscfg.executetime = e.time;
         if (!syscfg.executetime) {
           ++syscfg.executetime;
@@ -157,7 +157,7 @@ void get_next_forced_event() {
   }
   if (first >= 0 && !syscfg.executetime) {
     // all of todays events are
-    time_event = static_cast<long>(first) * SECONDS_PER_MINUTE;     // complete, set next forced
+    session()->set_time_event_time(minutes_after_midnight(first));
     syscfg.executetime = static_cast<uint16_t>(first);                // event to first one
     if (!syscfg.executetime) {                                              // scheduled for tomorrow
       ++syscfg.executetime;
