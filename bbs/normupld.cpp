@@ -219,13 +219,10 @@ void normalupload(int dn) {
       bout.nl();
       if (xfer) {
         write_inst(INST_LOC_UPLOAD, session()->current_user_dir().subnum, INST_FLAGS_ONLINE);
-        auto ti = timer();
+        auto ti = std::chrono::system_clock::now();
         receive_file(szReceiveFileName, &ok, u.filename, dn);
-        ti = timer() - ti;
-        if (ti < 0) {
-          ti += SECONDS_PER_DAY;
-        }
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>(ti));
+        auto used = std::chrono::system_clock::now() - ti;
+        session()->user()->add_extratime(used);
       }
       if (ok) {
         File file(szReceiveFileName);

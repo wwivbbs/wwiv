@@ -951,6 +951,7 @@ int WSession::LocalLogon() {
   bout << "|#9Log on to the BBS?";
   auto d = timer();
   int lokb = 0;
+  // TODO(rushfan): use wwiv::os::wait_for
   while (!localIO()->KeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE))
     ;
 
@@ -1347,10 +1348,7 @@ int WSession::Run(int argc, char *argv[]) {
   }
 
   if (num_min > 0) {
-    syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60);
-    if (syscfg.executetime > 1440) {
-      syscfg.executetime -= 1440;
-    }
+    syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60) % 1440;
     session()->set_time_event_time(minutes_after_midnight(syscfg.executetime));
   }
 
