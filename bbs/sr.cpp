@@ -19,6 +19,7 @@
 #include "bbs/sr.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cmath>
 #include <string>
 #include <vector>
@@ -43,7 +44,7 @@
 #include "core/strings.h"
 
 using std::string;
-
+using namespace std::chrono;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -62,13 +63,14 @@ void calc_CRC(unsigned char b) {
 }
 
 
-char gettimeout(double d, bool *abort) {
+char gettimeout(long ds, bool *abort) {
   if (bkbhitraw()) {
     return bgetchraw();
   }
 
-  auto d1 = timer();
-  while (std::abs(timer() - d1) < d && !bkbhitraw() && !hangup && !*abort) {
+  seconds d(ds);
+  auto d1 = steady_clock::now();
+  while (steady_clock::now() - d1 < d && !bkbhitraw() && !hangup && !*abort) {
     if (session()->localIO()->KeyPressed()) {
       char ch = session()->localIO()->GetChar();
       if (ch == 0) {
@@ -640,7 +642,7 @@ char end_batch1() {
   char ch = 0;
   do {
     send_block(b, 5, 1, 0);
-    ch = gettimeout(5.0, &bAbort);
+    ch = gettimeout(5, &bAbort);
     if (ch == CF || ch == CX) {
       done = true;
     } else {

@@ -32,7 +32,7 @@
 #include "core/strings.h"
 
 using std::string;
-using std::chrono::seconds;
+using namespace std::chrono;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -129,7 +129,7 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
   char ch = 0;
   do {
     send_block(b, block_type, *use_crc, byBlockNumber);
-    ch = gettimeout(5.0, abort);
+    ch = gettimeout(5, abort);
     if (ch == 'C' && pos == 0) {
       *use_crc = true;
     }
@@ -156,12 +156,13 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
 }
 
 bool okstart(bool *use_crc, bool *abort) {
-  auto d = timer();
+  auto d = steady_clock::now();
   bool ok = false;
   bool done = false;
 
-  while (std::abs(timer() - d) < 90.0 && !done && !hangup && !*abort) {
-    char ch = gettimeout(91.0 - d, abort);
+  seconds s90(90);
+  while (steady_clock::now() - d < s90 && !done && !hangup && !*abort) {
+    char ch = gettimeout(91, abort);
     if (ch == 'C') {
       *use_crc = true;
       ok = true;

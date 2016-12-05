@@ -37,7 +37,8 @@
 #include "sdk/filenames.h"
 
 using std::string;
-using std::chrono::milliseconds;
+using std::chrono::duration_cast;
+using namespace std::chrono;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -564,7 +565,7 @@ void chat1(const char *chat_line, bool two_way) {
     write_inst(INST_LOC_CHAT, 0, INST_FLAGS_NONE);
     chatting = 1;
   }
-  auto tc_start = timer();
+  auto tc_start = steady_clock::now();
   File chatFile(session()->config()->gfilesdir(), "chat.txt");
 
   SavedLine line = bout.SaveCurrentLine();
@@ -660,11 +661,8 @@ void chat1(const char *chat_line, bool two_way) {
   bout.nl();
   bout << "|#7Chat mode over...\r\n\n";
   chatting = 0;
-  tc_start = timer() - tc_start;
-  if (tc_start < 0) {
-    tc_start += SECONDS_PER_DAY;
-  }
-  extratimecall += tc_start;
+  auto tc_used = steady_clock::now() - tc_start;
+  extratimecall += duration_cast<seconds>(tc_used).count();
   session()->topdata = nSaveTopData;
   if (session()->IsUserOnline()) {
     session()->UpdateTopScreen();

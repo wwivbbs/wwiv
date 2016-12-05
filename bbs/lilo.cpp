@@ -267,8 +267,7 @@ static void DoFailedLoginAttempt() {
   bout << "\r\n\aILLEGAL LOGON\a\r\n\n";
 
   const string logline = StrCat("### ILLEGAL LOGON for ",
-    session()->names()->UserName(session()->usernum),
-    " (",  ctim(timer()), ")");
+    session()->names()->UserName(session()->usernum));
   sysoplog(false) << "";
   sysoplog(false) << logline;
   sysoplog(false) << "";

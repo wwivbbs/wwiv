@@ -53,7 +53,7 @@ void normalupload(int dn) {
     bout << "This directory is currently full.\r\n\n";
     return;
   }
-  if ((d.mask & mask_no_uploads) && (!dcs())) {
+  if ((d.mask & mask_no_uploads) && !dcs()) {
     bout.nl(2);
     bout << "Uploads are not allowed to this directory.\r\n\n";
     return;

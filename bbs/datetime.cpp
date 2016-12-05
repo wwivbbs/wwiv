@@ -28,6 +28,9 @@
 #include "core/wwivassert.h"
 #include "sdk/datetime.h"
 
+using std::string;
+using namespace std::chrono;
+
 char *date() {
   static char date_string[11];
   time_t t = time(nullptr);
@@ -86,16 +89,6 @@ void filedate(const char *file_name, char *out) {
   snprintf(out, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
 }
 
-/* This function returns the time, in seconds since midnight. */
-long timer() {
-  time_t ti       = time(nullptr);
-  struct tm *t    = localtime(&ti);
-
-  return static_cast<long>(t->tm_hour * SECONDS_PER_HOUR) +
-         static_cast<long>(t->tm_min * SECONDS_PER_MINUTE) +
-         static_cast<long>(t->tm_sec);
-}
-
 void ToggleScrollLockKey() {
 #if defined( _WIN32 )
   // Simulate a key press
@@ -117,9 +110,9 @@ bool sysop1() {
 #endif
 }
 
-bool isleap(int nYear) {
-  WWIV_ASSERT(nYear >= 0);
-  return nYear % 400 == 0 || (nYear % 4 == 0 && nYear % 100 != 0);
+bool isleap(int year) {
+  WWIV_ASSERT(year >= 0);
+  return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
 }
 
 /* returns day of week, 0=Sun, 6=Sat */
@@ -149,68 +142,6 @@ char *ctim(long d) {
   snprintf(szCurrentTime, sizeof(szCurrentTime), "%2.2ld:%2.2ld:%2.2ld", hour, minute, second);
 
   return szCurrentTime;
-}
-
-/*
-* Returns current time as string formatted as HH hours, MM minutes, SS seconds
-*/
-std::string ctim2(long d) {
-  char szHours[20], szMinutes[20], szSeconds[20];
-
-  auto h = static_cast<long>(d / SECONDS_PER_HOUR);
-  d -= (h * SECONDS_PER_HOUR);
-  auto m = static_cast<long>(d / SECONDS_PER_MINUTE);
-  d -= (m * SECONDS_PER_MINUTE);
-  auto s = d;
-
-  if (h == 0) {
-    strcpy(szHours, "");
-  } else {
-    snprintf(szHours, sizeof(szHours), "|#1%ld |#9%s", h, (h > 1) ? "hours" : "hour");
-  }
-  if (m == 0) {
-    strcpy(szMinutes, "");
-  } else {
-    snprintf(szMinutes, sizeof(szMinutes), "|#1%ld |#9%s", m, (m > 1) ? "minutes" : "minute");
-  }
-  if (s == 0) {
-    strcpy(szSeconds, "");
-  } else {
-    snprintf(szSeconds, sizeof(szSeconds), "|#1%ld |#9%s", s, (s > 1) ? "seconds" : "second");
-  }
-
-  std::string result;
-  if (h == 0) {
-    if (m == 0) {
-      if (s == 0) {
-        result = " ";
-      } else {
-        result = szSeconds;
-      }
-    } else {
-      result = szMinutes;
-      if (s != 0) {
-        result += ", ";
-        result += szSeconds;
-      }
-    }
-  } else {
-    result = szHours;
-    if (m == 0) {
-      if (s != 0) {
-        result += ", ";
-        result += szSeconds;
-      }
-    } else {
-      result += ", ";
-      result += szMinutes;
-      if (s != 0) {
-        result += ", ";
-        result += szSeconds;
-      }
-    }
-  }
-  return result;
 }
 
 int years_old(int nMonth, int nDay, int nYear) {
@@ -244,24 +175,29 @@ int years_old(int nMonth, int nDay, int nYear) {
   return nAge;
 }
 
-std::chrono::system_clock::duration duration_since_midnight(std::chrono::system_clock::time_point now) {
-  auto tnow = std::chrono::system_clock::to_time_t(now);
+system_clock::duration duration_since_midnight(system_clock::time_point now) {
+  auto tnow = system_clock::to_time_t(now);
   tm *date = std::localtime(&tnow);
   date->tm_hour = 0;
   date->tm_min = 0;
   date->tm_sec = 0;
-  auto midnight = std::chrono::system_clock::from_time_t(std::mktime(date));
+  auto midnight = system_clock::from_time_t(std::mktime(date));
 
   return now - midnight;
 }
 
-std::chrono::system_clock::time_point minutes_after_midnight(int minutes) {
-  auto tnow = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+system_clock::time_point minutes_after_midnight(int minutes) {
+  auto tnow = system_clock::to_time_t(system_clock::now());
   tm *date = std::localtime(&tnow);
   date->tm_hour = minutes / 60;
   date->tm_min = minutes % 60;
   date->tm_sec = 0;
 
-  auto t = std::chrono::system_clock::from_time_t(std::mktime(date));
+  auto t = system_clock::from_time_t(std::mktime(date));
   return t;
+}
+
+int minutes_since_midnight() {
+  auto d = duration_since_midnight(system_clock::now());
+  return duration_cast<minutes>(d).count();
 }

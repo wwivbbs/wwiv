@@ -415,22 +415,23 @@ void plal(const string& text, string::size_type limit, bool *abort) {
 // current user's chat restriction (if any) and sysop high and low times,
 // if any, as well as status of scroll-lock key.
 bool sysop2() {
-  bool ok = sysop1();
+  if (!sysop1()) {
+    return false;
+  }
   if (session()->user()->IsRestrictionChat()) {
-    ok = false;
+    return false;
   }
   if (syscfg.sysoplowtime != syscfg.sysophightime) {
+    const auto m = minutes_since_midnight();
     if (syscfg.sysophightime > syscfg.sysoplowtime) {
-      if (timer() <= (syscfg.sysoplowtime * SECONDS_PER_MINUTE) ||
-          timer() >= (syscfg.sysophightime * SECONDS_PER_MINUTE)) {
-        ok = false;
+      if (m <= syscfg.sysoplowtime || m >= syscfg.sysophightime) {
+        return false;
       }
-    } else if (timer() <= (syscfg.sysoplowtime * SECONDS_PER_MINUTE) &&
-               timer() >= (syscfg.sysophightime * SECONDS_PER_MINUTE)) {
-      ok = false;
+    } else if (m <= syscfg.sysoplowtime && m >= syscfg.sysophightime) {
+      return false;
     }
   }
-  return ok;
+  return true;
 }
 
 // Returns 1 if ANSI detected, or if local user, else returns 0. Uses the

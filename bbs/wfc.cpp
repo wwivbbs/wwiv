@@ -19,6 +19,7 @@
 #include "bbs/wfc.h"
 
 #include <cctype>
+#include <chrono>
 #include <memory>
 #include <string>
 #include <vector>
@@ -54,6 +55,7 @@ using std::vector;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
+using namespace std::chrono;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -120,7 +122,8 @@ void wfc_update() {
 void wfc_screen() {
   instancerec ir;
   User u;
-  static long wfc_time = 0, poll_time = 0;
+  static steady_clock::time_point wfc_time;
+  static steady_clock::time_point poll_time;
 
   if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
@@ -191,25 +194,26 @@ void wfc_screen() {
 
     session()->wfc_status = 1;
     wfc_update();
-    poll_time = wfc_time = timer();
+    poll_time = wfc_time = steady_clock::now();
   } else {
-    if ((timer() - wfc_time < session()->screen_saver_time) ||
-        (session()->screen_saver_time == 0)) {
+    auto screen_saver_time = seconds(session()->screen_saver_time);
+    if ((session()->screen_saver_time == 0) 
+        || (steady_clock::now() - wfc_time < screen_saver_time)) {
       session()->localIO()->PrintfXYA(28, 1, 14, times());
       session()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
-      if (timer() - poll_time > 10) {
+      if (steady_clock::now() - poll_time > seconds(10)) {
         wfc_update();
-        poll_time = timer();
+        poll_time = steady_clock::now();
       }
     } else {
-      if ((timer() - poll_time > 10) || session()->wfc_status == 1) {
+      if ((steady_clock::now() - poll_time > seconds(10)) || session()->wfc_status == 1) {
         session()->wfc_status = 2;
         session()->localIO()->Cls();
         session()->localIO()->PrintfXYA(
             random_number(38), random_number(24), random_number(14) + 1,
             "WWIV Screen Saver - Press Any Key For WWIV");
-        wfc_time = timer() - session()->screen_saver_time - 1;
-        poll_time = timer();
+        wfc_time = steady_clock::now() - seconds(session()->screen_saver_time) - seconds(1);
+        poll_time = steady_clock::now();
       }
     }
   }

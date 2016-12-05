@@ -86,8 +86,6 @@
 #include <unistd.h>
 #endif // _WIN32
 
-using std::chrono::milliseconds;
-using std::chrono::seconds;
 using std::clog;
 using std::cout;
 using std::endl;
@@ -100,6 +98,7 @@ using std::max;
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
+using namespace std::chrono;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -934,7 +933,7 @@ int WSession::doWFCEvents() {
       static std::chrono::steady_clock::time_point mult_time;
       auto now = std::chrono::steady_clock::now();
       auto diff = now - mult_time;
-      if (this->IsCleanNetNeeded() || diff > std::chrono::seconds(54)) {
+      if (this->IsCleanNetNeeded() || diff > seconds(54)) {
         // let's try this.
         wfc_cls();
         cleanup_net();
@@ -949,10 +948,10 @@ int WSession::doWFCEvents() {
 int WSession::LocalLogon() {
   localIO()->GotoXY(2, 23);
   bout << "|#9Log on to the BBS?";
-  auto d = timer();
+  auto d = steady_clock::now();
   int lokb = 0;
   // TODO(rushfan): use wwiv::os::wait_for
-  while (!localIO()->KeyPressed() && (std::abs(timer() - d) < SECONDS_PER_MINUTE))
+  while (!localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1)))
     ;
 
   if (localIO()->KeyPressed()) {
@@ -1348,7 +1347,7 @@ int WSession::Run(int argc, char *argv[]) {
   }
 
   if (num_min > 0) {
-    syscfg.executetime = static_cast<uint16_t>((timer() + num_min * 60) / 60) % 1440;
+    syscfg.executetime = static_cast<uint16_t>((minutes_since_midnight() + num_min * 60) / 60) % 1440;
     session()->set_time_event_time(minutes_after_midnight(syscfg.executetime));
   }
 
@@ -1414,7 +1413,7 @@ int WSession::Run(int argc, char *argv[]) {
       this_usernum = 0;
       CheckForHangup();
       logon();
-      setiia(std::chrono::seconds(5));
+      setiia(seconds(5));
       set_net_num(0);
       while (true) {
         CheckForHangup();

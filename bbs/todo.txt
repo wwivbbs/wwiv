@@ -30,7 +30,7 @@ General Cleanup
 * stop checking while (!hangup) since we throw now. Maybe make the hangup
   variable a static in the Hangup class.
 * Use StatusManager::Run for simple transactional updates.
-* get rid of timer()
+* redo ctim and ctim2
 
 General Improvements
 ====================

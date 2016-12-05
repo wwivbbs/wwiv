@@ -908,7 +908,7 @@ void download() {
   }
   bout.nl();
   bout << "|#1Files in Batch Queue   : |#2" << session()->batch().entry.size() << wwiv::endl;
-  bout << "|#1Estimated Download Time: |#2" << ctim2(session()->batch().dl_time_in_secs()) << wwiv::endl;
+  bout << "|#1Estimated Download Time: |#2" << ctim(session()->batch().dl_time_in_secs()) << wwiv::endl;
   bout.nl();
   rtn = batchdl(3);
   if (rtn) {

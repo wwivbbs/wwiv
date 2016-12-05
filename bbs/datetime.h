@@ -28,15 +28,26 @@ char *fulldate();
 char *times();
 time_t date_to_daten(const char *datet);
 void filedate(const char *fpath, char *rtn);
-long timer();
 bool isleap(int nYear);
 int dow();
 char *ctim(float f);
 char *ctim(double f);
 char *ctim(long d);
-std::string ctim2(long d);
 int years_old(int nMonth, int nDay, int nYear);
+
+/** 
+ * Returns a duration represeting the duration since midnight of the current day.
+ */
 std::chrono::system_clock::duration duration_since_midnight(std::chrono::system_clock::time_point now);
+
+/**
+ * Returns a time_point representing minutes past midnight in the current day.
+ */
 std::chrono::system_clock::time_point minutes_after_midnight(int minutes);
+/** 
+ * Returns an integer for the number of minutes since midnight. 
+ * N.B. This is the same as duration_cast<minutes>(duration_since_midnight(now())).count();
+ */
+int minutes_since_midnight();
 
 #endif // __INCLUDED_DATETIME_H__

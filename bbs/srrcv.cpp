@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include <chrono>
 #include <cmath>
 #include <string>
 
@@ -32,6 +33,7 @@
 #include "core/strings.h"
 
 using std::string;
+using namespace std::chrono;
 
 // From zmwwiv.cpp
 bool NewZModemReceiveFile(const char *file_name);
@@ -45,8 +47,8 @@ char modemkey(int *tout) {
   if (*tout) {
     return 0;
   }
-  auto d1 = timer();
-  while (std::abs(timer() - d1) < 0.5 && !bkbhitraw() && !hangup) {
+  auto d1 = steady_clock::now();
+  while (steady_clock::now() - d1 < milliseconds(500) && !bkbhitraw() && !hangup) {
     CheckForHangup();
   }
   if (bkbhitraw()) {
@@ -62,7 +64,7 @@ char modemkey(int *tout) {
 
 int receive_block(char *b, unsigned char *bln, bool use_crc) {
   bool abort = false;
-  unsigned char ch = gettimeout(5.0, &abort);
+  unsigned char ch = gettimeout(5, &abort);
   int err = 0;
 
   if (abort) {
@@ -200,8 +202,8 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
       bout.rputch(CU);
     }
 
-    auto d1 = timer();
-    while (std::abs(timer() - d1) < 10.0 && !bkbhitraw() && !hangup) {
+    auto d1 = steady_clock::now();
+    while (steady_clock::now() - d1 < seconds(10) && !bkbhitraw() && !hangup) {
       CheckForHangup();
       if (session()->localIO()->KeyPressed()) {
         ch = session()->localIO()->GetChar();
