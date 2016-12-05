@@ -244,8 +244,8 @@ int years_old(int nMonth, int nDay, int nYear) {
   return nAge;
 }
 
-std::chrono::system_clock::duration duration_since_midnight(time_t tnow) {
-  auto now = std::chrono::system_clock::from_time_t(tnow);
+std::chrono::system_clock::duration duration_since_midnight(std::chrono::system_clock::time_point now) {
+  auto tnow = std::chrono::system_clock::to_time_t(now);
   tm *date = std::localtime(&tnow);
   date->tm_hour = 0;
   date->tm_min = 0;

@@ -811,6 +811,8 @@ class User {
   std::chrono::seconds add_extratime(std::chrono::duration<double> extra);
 
   std::chrono::seconds timeon() const;
+  std::chrono::seconds add_timeon(std::chrono::duration<double> d);
+  std::chrono::seconds add_timeon_today(std::chrono::duration<double> d);
   /** Returns the time on as seconds. */
   const float GetTimeOn() const {
     return data.timeon;

@@ -586,7 +586,6 @@ bool WSession::create_message_api() {
 void WSession::SetLogonTime() {
   steady_logon_time_ = std::chrono::steady_clock::now();
   system_logon_time_ = std::chrono::system_clock::now();
-  timeon = timer();
 }
 
 std::chrono::system_clock::duration WSession::duration_used_this_session() const {

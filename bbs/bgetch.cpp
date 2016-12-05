@@ -70,7 +70,9 @@ static void PrintTime() {
 
   bout << "|#2" << currentTime << wwiv::endl;
   if (session()->IsUserOnline()) {
-    bout << "|#9Time on   = |#1" << ctim(timer() - timeon) << wwiv::endl;
+    auto time_on = std::chrono::system_clock::now() - session()->system_logon_time();
+    auto seconds_on = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
+    bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
     bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
   }
   bout.nl();

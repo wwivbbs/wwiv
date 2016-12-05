@@ -119,9 +119,12 @@ std::string interpret(char ch) {
     return session()->user()->GetNote();
   case 'O':                               // Times on today
     return to_string(session()->user()->GetTimesOnToday());
-  case 'o':                               // Time on today
-    return to_string(static_cast<long>(
-      (session()->user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE));
+  case 'o': {
+    // Time on today
+    auto used_this_session = (std::chrono::system_clock::now() - session()->system_logon_time());
+    auto min_used = session()->user()->timeon() + used_this_session;
+    return to_string(std::chrono::duration_cast<std::chrono::minutes>(min_used).count());
+  }
   case 'P':                               // BBS phone
     return reinterpret_cast<char*>(syscfg.systemphone);
   case 'p':                               // User's phone

@@ -145,11 +145,26 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   return true;
 }
 
+// TODO(rushfan): May be able to templatize these.
 std::chrono::seconds User::add_extratime(std::chrono::duration<double> extra) {
   auto extratime_seconds = static_cast<int64_t>(GetExtraTime());
   extratime_seconds += std::chrono::duration_cast<std::chrono::seconds>(extra).count();
   SetExtraTime(static_cast<float>(extratime_seconds));
   return std::chrono::seconds(extratime_seconds);
+}
+
+std::chrono::seconds User::add_timeon(std::chrono::duration<double> d) {
+  auto timeon = static_cast<int64_t>(GetTimeOn());
+  timeon += std::chrono::duration_cast<std::chrono::seconds>(d).count();
+  SetTimeOn(static_cast<float>(timeon));
+  return std::chrono::seconds(timeon);
+}
+
+std::chrono::seconds User::add_timeon_today(std::chrono::duration<double> d) {
+  auto t = static_cast<int64_t>(GetTimeOnToday());
+  t += std::chrono::duration_cast<std::chrono::seconds>(d).count();
+  SetTimeOnToday(static_cast<float>(t));
+  return std::chrono::seconds(t);
 }
 
 std::chrono::seconds User::timeon() const {

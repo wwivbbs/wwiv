@@ -512,9 +512,14 @@ void WSession::UpdateTopScreen() {
     } else {
       strcpy(szCallSignOrRegNum, user()->GetCallsign());
     }
+    auto used_this_session = (std::chrono::system_clock::now() - session()->system_logon_time());
+    auto used_total = used_this_session + user()->timeon();
+    auto minutes_used = std::chrono::duration_cast<std::chrono::minutes>(used_total);
+
     localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u", user()->GetRealName(),
         user()->GetVoicePhoneNumber(), szCallSignOrRegNum, user()->GetFilesDownloaded(), user()->GetDownloadK(),
-        user()->GetDsl(), static_cast<long>((user()->GetTimeOn() + timer() - timeon) / SECONDS_PER_MINUTE),
+        user()->GetDsl(), 
+        static_cast<long>(minutes_used.count()),
         user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
 
     localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict, user()->GetExempt(), lo,

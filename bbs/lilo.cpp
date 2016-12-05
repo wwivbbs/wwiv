@@ -1024,17 +1024,15 @@ void logoff() {
   session()->user()->SetLastOn(g_szLastLoginDate);
 
   session()->user()->SetNumIllegalLogons(0);
-  if ((timer() - timeon) < -30) {
-    timeon -= SECONDS_PER_DAY;
-  }
-  auto dTimeOnNow = timer() - timeon;
-  session()->user()->SetTimeOn(session()->user()->GetTimeOn() + static_cast<float>(dTimeOnNow));
-  session()->user()->SetTimeOnToday(session()->user()->GetTimeOnToday() +
-    static_cast<float>(dTimeOnNow - extratimecall));
+  auto seconds_used_duration = std::chrono::system_clock::now() - session()->system_logon_time();
+  seconds_used_duration -= std::chrono::seconds(extratimecall);
+  session()->user()->add_timeon(seconds_used_duration);
+  session()->user()->add_timeon_today(seconds_used_duration);
 
   session()->status_manager()->Run([=](WStatus& s) {
-    int nActiveToday = s.GetMinutesActiveToday();
-    s.SetMinutesActiveToday(nActiveToday + static_cast<uint16_t>(dTimeOnNow / MINUTES_PER_HOUR));
+    int active_today = s.GetMinutesActiveToday();
+    auto minutes_used_now = std::chrono::duration_cast<std::chrono::minutes>(seconds_used_duration).count();
+    s.SetMinutesActiveToday(active_today + minutes_used_now);
   });
 
   if (g_flags & g_flag_scanned_files) {
@@ -1042,8 +1040,10 @@ void logoff() {
   }
   time_t t = time(nullptr);
   session()->user()->SetLastOnDateNumber(t);
+  auto used_this_session = (std::chrono::system_clock::now() - session()->system_logon_time());
+  auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << session()->GetNumMessagesReadThisLogon() 
-      << "   Time on: "  << (timer() - timeon) / MINUTES_PER_HOUR;
+      << "   Time on: "  << min_used.count() << " minutes.";
   {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
@@ -1077,7 +1077,7 @@ void logoff() {
         }
       }
       pFileEmail->SetLength(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
-      session()->status_manager()->Run([dTimeOnNow](WStatus& s) {
+      session()->status_manager()->Run([](WStatus& s) {
         s.IncrementFileChangedFlag(WStatus::fileChangeEmail);
       });
       pFileEmail->Close();

@@ -266,14 +266,16 @@ void CreateCallInfoBbsDropFile() {
       file.WriteFormatted("3\n");
     }
     string t = times();
+    auto start_duration = duration_since_midnight(session()->system_logon_time());
+    auto start_minute = std::chrono::duration_cast<std::chrono::minutes>(start_duration).count();
     file.WriteFormatted(" \n%d\n%ld\n%s\n%s\n%d\n%d\n%.5s\n0\nABCD\n0\n0\n0\n0\n",
-                        session()->user()->GetSl(),
+      session()->user()->GetSl(),
 			GetMinutesRemainingForDropFile(),
-                        session()->user()->HasAnsi() ? "COLOR" : "MONO",
-                        "X" /* session()->user()->GetPassword() */,
+      session()->user()->HasAnsi() ? "COLOR" : "MONO",
+      "X" /* session()->user()->GetPassword() */,
 			session()->usernum,
-			static_cast<int>(timeon / 60),
-                        t.c_str());
+      start_minute,
+      t.c_str());
     file.WriteFormatted("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
                         session()->user()->GetVoicePhoneNumber(),
                         session()->user()->GetLastOn(),
@@ -499,32 +501,27 @@ const string create_chain_file() {
   cspeed = std::to_string(com_speed);
 
   create_drop_files();
-  long l = static_cast<long>(timeon);
-  if (l < 0) {
-    l += SECONDS_PER_DAY;
-  }
-  long l1 = static_cast<long>(timer() - timeon);
-  if (l1 < 0) {
-    l1 += SECONDS_PER_DAY;
-  }
+  auto start_duration = duration_since_midnight(session()->system_logon_time());
+  int start_second = std::chrono::duration_cast<std::chrono::seconds>(start_duration).count();
+  auto used_duration = std::chrono::system_clock::now() - session()->system_logon_time();
+  int seconds_used = std::chrono::duration_cast<std::chrono::seconds>(used_duration).count();
 
-  string fileName = create_filename(CHAINFILE_CHAIN);
-
+  const string fileName = create_filename(CHAINFILE_CHAIN);
   File::Remove(fileName);
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n",
-                        session()->usernum,
-                        session()->user()->GetName(),
-                        session()->user()->GetRealName(),
-                        session()->user()->GetCallsign(),
-                        session()->user()->GetAge(),
-                        session()->user()->GetGender(),
-                        session()->user()->GetGold(),
-                        session()->user()->GetLastOn(),
-                        session()->user()->GetScreenChars(),
-                        session()->user()->GetScreenLines(),
-                        session()->user()->GetSl());
+      session()->usernum,
+      session()->user()->GetName(),
+      session()->user()->GetRealName(),
+      session()->user()->GetCallsign(),
+      session()->user()->GetAge(),
+      session()->user()->GetGender(),
+      session()->user()->GetGold(),
+      session()->user()->GetLastOn(),
+      session()->user()->GetScreenChars(),
+      session()->user()->GetScreenLines(),
+      session()->user()->GetSl());
     char szTemporaryLogFileName[MAX_PATH];
     GetTemporaryInstanceLogFileName(szTemporaryLogFileName);
     string gfilesdir = session()->config()->gfilesdir();
@@ -536,12 +533,12 @@ const string create_chain_file() {
     } else {
       file.WriteFormatted("KB\n");
     }
-    file.WriteFormatted("%d\n%s\n%s\n%ld\n%ld\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n",
+    file.WriteFormatted("%d\n%s\n%s\n%d\n%d\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n",
         session()->primary_port(),
         syscfg.systemname,
         syscfg.sysopname,
-        l,
-        l1,
+        start_second,
+        seconds_used,
         session()->user()->GetUploadK(),
         session()->user()->GetFilesUploaded(),
         session()->user()->GetDownloadK(),

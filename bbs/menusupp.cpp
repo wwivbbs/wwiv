@@ -317,7 +317,9 @@ void GoodBye() {
         cycle = 1;
         write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
         bout.cls();
-        bout <<  "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
+        auto used_this_session = (std::chrono::system_clock::now() - session()->system_logon_time());
+        auto secs_used = std::chrono::duration_cast<std::chrono::seconds>(used_this_session);
+        bout <<  "Time on   = " << ctim(static_cast<long>(secs_used.count())) << wwiv::endl;
         {
           TempDisablePause disable_pause;
           printfile(LOGOFF_NOEXT);
@@ -338,7 +340,9 @@ void GoodBye() {
     if (yesno()) {
       write_inst(INST_LOC_LOGOFF, 0, INST_FLAGS_NONE);
       bout.cls();
-      bout << "Time on   = " << ctim(timer() - timeon) << wwiv::endl;
+      auto used_this_session = (std::chrono::system_clock::now() - session()->system_logon_time());
+      auto sec_used = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(used_this_session).count());
+      bout << "Time on   = " << ctim(sec_used) << wwiv::endl;
       {
         TempDisablePause disable_pause;
         printfile(LOGOFF_NOEXT);
