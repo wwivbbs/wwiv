@@ -339,8 +339,7 @@ void save_confs(ConferenceType conftype, int whichnum, confrec * c) {
         }
         f.WriteFormatted("\n\n");
       }
-    }
-    if (i < num) {
+    } else if (i < num) {
       f.WriteFormatted("~%c %s\n!%d %d %d %d %d %d %d %u %d %s ",
                        cp[i].designator, cp[i].name, cp[i].status,
                        cp[i].minsl, cp[i].maxsl, cp[i].mindsl,
