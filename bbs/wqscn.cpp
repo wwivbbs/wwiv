@@ -26,7 +26,7 @@ static File qscanFile;
 
 static bool open_qscn() {
   if (!qscanFile.IsOpen()) {
-    qscanFile.SetName(session()->config()->datadir(), USER_QSC);
+    qscanFile.SetName(a()->config()->datadir(), USER_QSC);
     if (!qscanFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return false;
     }
@@ -44,8 +44,8 @@ void close_qscn() {
 
 void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead) {
   if (!bForceRead) {
-    if ((session()->IsUserOnline() && user_number == session()->usernum) ||
-        (session()->at_wfc() && user_number == 1)) {
+    if ((a()->IsUserOnline() && user_number == a()->usernum) ||
+        (a()->at_wfc() && user_number == 1)) {
       if (qscn != qsc) {
         for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
           qscn[i] = qsc[i];
@@ -81,8 +81,8 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
     return;
   }
 
-  if ((session()->IsUserOnline() && (user_number == session()->usernum)) ||
-      (session()->at_wfc() && user_number == 1)) {
+  if ((a()->IsUserOnline() && (user_number == a()->usernum)) ||
+      (a()->at_wfc() && user_number == 1)) {
     if (qsc != qscn) {
       for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
         qsc[i] = qscn[i];

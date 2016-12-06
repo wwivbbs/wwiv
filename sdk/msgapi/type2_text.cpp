@@ -89,10 +89,10 @@ bool Type2Text::remove_link(messagerec& msg) {
 */
 std::unique_ptr<File> Type2Text::OpenMessageFile() {
   // TODO(rushfan): Pass in the status manager. this is needed to
-  // set session()->subchg if any of the subs receive a post so that 
+  // set a()->subchg if any of the subs receive a post so that 
   // resynch can work right on multi node configs.
   // 
-  // session()->status_manager()->RefreshStatusCache();
+  // a()->status_manager()->RefreshStatusCache();
 
   auto message_file = std::make_unique<File>(filename_);
   if (!message_file->Open(File::modeReadWrite | File::modeBinary)) {
@@ -128,12 +128,12 @@ void Type2Text::save_gat(File& file, size_t section, const std::vector<uint16_t>
   file.Write(&gat[0], GAT_SECTION_SIZE);
 
   // TODO(rushfan): Pass in the status manager. this is needed to
-  // set session()->subchg if any of the subs receive a post so that 
+  // set a()->subchg if any of the subs receive a post so that 
   // resynch can work right on multi node configs.
   // 
-  // WStatus *pStatus = session()->status_manager()->BeginTransaction();
+  // WStatus *pStatus = a()->status_manager()->BeginTransaction();
   // pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
-  // session()->status_manager()->CommitTransaction(pStatus);
+  // a()->status_manager()->CommitTransaction(pStatus);
 }
 
 bool Type2Text::readfile(const messagerec* msg, string* out) {

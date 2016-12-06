@@ -44,14 +44,14 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_EMAIL: return string("Sending Email");
     case INST_LOC_MAIN: return string("Main Menu");
     case INST_LOC_XFER:
-      if (so() && ir.subloc < session()->directories.size()) {
-        string temp = StringPrintf("Dir : %s", stripcolors(session()->directories[ ir.subloc ].name));
+      if (so() && ir.subloc < a()->directories.size()) {
+        string temp = StringPrintf("Dir : %s", stripcolors(a()->directories[ ir.subloc ].name));
         return StrCat("Transfer Area", temp);
       }
       return string("Transfer Area");
     case INST_LOC_CHAINS:
-      if (ir.subloc > 0 && ir.subloc <= session()->chains.size()) {
-        string temp = StringPrintf("Door: %s", stripcolors(session()->chains[ ir.subloc - 1 ].description));
+      if (ir.subloc > 0 && ir.subloc <= a()->chains.size()) {
+        string temp = StringPrintf("Door: %s", stripcolors(a()->chains[ ir.subloc - 1 ].description));
         return StrCat("Chains", temp);
       }
       return string("Chains");
@@ -79,9 +79,9 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_BANK: return ("In TimeBank");
     case INST_LOC_AMSG: return ("AutoMessage");
     case INST_LOC_SUBS:
-      if (so() && ir.subloc < session()->subs().subs().size()) {
+      if (so() && ir.subloc < a()->subs().subs().size()) {
         string temp = StringPrintf("(Sub: %s)",
-            stripcolors(session()->subs().sub(ir.subloc).name.c_str()));
+            stripcolors(a()->subs().sub(ir.subloc).name.c_str()));
         return StrCat("Reading Messages", temp);
       }
       return string("Reading Messages");
@@ -95,9 +95,9 @@ string GetInstanceActivityString(instancerec &ir) {
     case INST_LOC_FEEDBACK: return string("Leaving Feedback");
     case INST_LOC_KILLEMAIL: return string("Viewing Old Email");
     case INST_LOC_POST:
-      if (so() && ir.subloc < session()->subs().subs().size()) {
+      if (so() && ir.subloc < a()->subs().subs().size()) {
         string temp = StringPrintf(" (Sub: %s)",
-            stripcolors(session()->subs().sub(ir.subloc).name.c_str()));
+            stripcolors(a()->subs().sub(ir.subloc).name.c_str()));
         return StrCat("Posting a Message", temp);
       }
       return string("Posting a Message");
@@ -146,11 +146,11 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
     std::string userName;
     if (ir.user < syscfg.maxusers && ir.user > 0) {
       User user;
-      session()->users()->ReadUser(&user, ir.user);
+      a()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
-        userName = session()->names()->UserName(ir.user);
+        userName = a()->names()->UserName(ir.user);
       } else {
-        userName = StrCat("Last: ", session()->names()->UserName(ir.user));
+        userName = StrCat("Last: ", a()->names()->UserName(ir.user));
       }
     } else {
       userName = "(Nobody)";
@@ -195,7 +195,7 @@ int inst_ok(int loc, int subloc) {
   }
 
   int nInstNum = 0;
-  File instFile(session()->config()->datadir(), INSTANCE_DAT);
+  File instFile(a()->config()->datadir(), INSTANCE_DAT);
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
@@ -208,7 +208,7 @@ int inst_ok(int loc, int subloc) {
       instFile.Close();
       if (instance_temp.loc == loc &&
           instance_temp.subloc == subloc &&
-          instance_temp.number != session()->instance_number()) {
+          instance_temp.number != a()->instance_number()) {
         nInstNum = instance_temp.number;
       }
     }

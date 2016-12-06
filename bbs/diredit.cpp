@@ -55,7 +55,7 @@ void delete_dir(int n);
 
 void dirdata(int n, char *s) {
   char x = 0;
-  directoryrec r = session()->directories[n];
+  directoryrec r = a()->directories[n];
   if (r.dar == 0) {
     x = 32;
   } else {
@@ -79,8 +79,8 @@ void showdirs() {
   bool abort = false;
   pla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
   pla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
-  for (size_t i = 0; i < session()->directories.size() && !abort; i++) {
-    sprintf(s, "%s %s", session()->directories[i].name, session()->directories[i].filename);
+  for (size_t i = 0; i < a()->directories.size() && !abort; i++) {
+    sprintf(s, "%s %s", a()->directories[i].name, a()->directories[i].filename);
     if (strcasestr(s, s1)) {
       dirdata(i, s);
       pla(s, &abort);
@@ -100,7 +100,7 @@ static string GetAttributeString(directoryrec r) {
 }
 
 void modify_dir(int n) {
-  directoryrec r = session()->directories[n];
+  directoryrec r = a()->directories[n];
   bool done = false;
   do {
     bout.cls();
@@ -130,18 +130,18 @@ void modify_dir(int n) {
       done = true;
       break;
     case '[':
-      session()->directories[n] = r;
+      a()->directories[n] = r;
       if (--n < 0) {
-        n = size_int(session()->directories) - 1;
+        n = size_int(a()->directories) - 1;
       }
-      r = session()->directories[n];
+      r = a()->directories[n];
       break;
     case ']':
-      session()->directories[n] = r;
-      if (++n >= size_int(session()->directories)) {
+      a()->directories[n] = r;
+      if (++n >= size_int(a()->directories)) {
         n = 0;
       }
-      r = session()->directories[n];
+      r = a()->directories[n];
       break;
     case 'A':
     {
@@ -173,7 +173,7 @@ void modify_dir(int n) {
       if (!s.empty()) {
         File dir(s);
         if (!dir.Exists()) {
-          session()->CdHome();
+          a()->CdHome();
           if (!File::mkdirs(dir)) {
             bout << "|#6Unable to create or change to directory." << wwiv::endl;
             pausescr();
@@ -261,7 +261,7 @@ void modify_dir(int n) {
     }
   } while (!done && !hangup);
 
-  session()->directories[n] = r;
+  a()->directories[n] = r;
 }
 
 
@@ -269,7 +269,7 @@ void swap_dirs(int dir1, int dir2) {
   subconf_t dir1conv = static_cast<subconf_t>(dir1);
   subconf_t dir2conv = static_cast<subconf_t>(dir2);
 
-  if (dir1 < 0 || dir1 >= size_int(session()->directories) || dir2 < 0 || dir2 >= size_int(session()->directories)) {
+  if (dir1 < 0 || dir1 >= size_int(a()->directories) || dir2 < 0 || dir2 >= size_int(a()->directories)) {
     return;
   }
 
@@ -278,7 +278,7 @@ void swap_dirs(int dir1, int dir2) {
   dir1 = static_cast<int>(dir1conv);
   dir2 = static_cast<int>(dir2conv);
 
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
@@ -304,13 +304,13 @@ void swap_dirs(int dir1, int dir2) {
     close_qscn();
     free(pTempQScan);
   }
-  directoryrec drt = session()->directories[dir1];
-  session()->directories[dir1] = session()->directories[dir2];
-  session()->directories[dir2] = drt;
+  directoryrec drt = a()->directories[dir1];
+  a()->directories[dir1] = a()->directories[dir2];
+  a()->directories[dir2] = drt;
 }
 
 void insert_dir(int n) {
-  if (n < 0 || n > size_int(session()->directories)) {
+  if (n < 0 || n > size_int(a()->directories)) {
     return;
   }
   subconf_t nconv = static_cast<subconf_t>(n);
@@ -322,7 +322,7 @@ void insert_dir(int n) {
   directoryrec r = {};
   strcpy(r.name, "** NEW DIR **");
   strcpy(r.filename, "NONAME");
-  to_char_array(r.path, session()->config()->dloadsdir());
+  to_char_array(r.path, a()->config()->dloadsdir());
   r.dsl = 10;
   r.age = 0;
   r.maxfiles = 50;
@@ -331,9 +331,9 @@ void insert_dir(int n) {
   r.mask = 0;
 
   {
-    insert_at(session()->directories, n, r);
+    insert_at(a()->directories, n, r);
   }
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
   uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
@@ -347,7 +347,7 @@ void insert_dir(int n) {
       read_qscn(i, pTempQScan, true);
 
       int i1;
-      for (i1 = size_int(session()->directories) / 32; i1 > n / 32; i1--) {
+      for (i1 = size_int(a()->directories) / 32; i1 > n / 32; i1--) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] << 1) | (pTempQScan_n[i1 - 1] >> 31);
       }
       pTempQScan_n[i1] = m1 | (m2 & (pTempQScan_n[i1] << 1)) | (m3 & pTempQScan_n[i1]);
@@ -366,16 +366,16 @@ void delete_dir(int n) {
 
   nconv = static_cast<subconf_t>(n);
 
-  if ((n < 0) || (n >= size_int(session()->directories))) {
+  if ((n < 0) || (n >= size_int(a()->directories))) {
     return;
   }
 
   update_conf(ConferenceType::CONF_DIRS, &nconv, nullptr, CONF_UPDATE_DELETE);
 
   n = static_cast<int>(nconv);
-  erase_at(session()->directories, n);
+  erase_at(a()->directories, n);
 
-  size_t num_users = session()->users()->GetNumberOfUserRecords();
+  size_t num_users = a()->users()->GetNumberOfUserRecords();
 
   pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
   if (pTempQScan) {
@@ -390,7 +390,7 @@ void delete_dir(int n) {
       pTempQScan_n[n / 32] = (pTempQScan_n[n / 32] & m3) | ((pTempQScan_n[n / 32] >> 1) & m2) |
                              (pTempQScan_n[(n / 32) + 1] << 31);
 
-      for (size_t i1 = (n / 32) + 1; i1 <= (session()->directories.size() / 32); i1++) {
+      for (size_t i1 = (n / 32) + 1; i1 <= (a()->directories.size() / 32); i1++) {
         pTempQScan_n[i1] = (pTempQScan_n[i1] >> 1) | (pTempQScan_n[i1 + 1] << 31);
       }
 
@@ -427,31 +427,31 @@ void dlboardedit() {
       bout << "|#2Dir number? ";
       input(s, 4);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < size_int(session()->directories))) {
+      if ((s[0] != 0) && (i >= 0) && (i < size_int(a()->directories))) {
         modify_dir(i);
       }
       break;
     case 'S':
-      if (session()->directories.size() < syscfg.max_dirs) {
+      if (a()->directories.size() < syscfg.max_dirs) {
         bout.nl();
         bout << "|#2Take dir number? ";
         input(s, 4);
         i1 = atoi(s);
-        if (!s[0] || i1 < 0 || i1 >= size_int(session()->directories)) {
+        if (!s[0] || i1 < 0 || i1 >= size_int(a()->directories)) {
           break;
         }
         bout.nl();
         bout << "|#2And put before dir number? ";
         input(s, 4);
         i2 = atoi(s);
-        if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > size_int(session()->directories)) || (i1 == i2)) {
+        if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > size_int(a()->directories)) || (i1 == i2)) {
           break;
         }
         bout.nl();
         if (i2 < i1) {
           i1++;
         }
-        write_qscn(session()->usernum, qsc, true);
+        write_qscn(a()->usernum, qsc, true);
         bout << "|#1Moving dir now...Please wait...";
         insert_dir(i2);
         swap_dirs(i1, i2);
@@ -463,12 +463,12 @@ void dlboardedit() {
       }
       break;
     case 'I':
-      if (session()->directories.size() < syscfg.max_dirs) {
+      if (a()->directories.size() < syscfg.max_dirs) {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);
         i = atoi(s);
-        if ((s[0] != 0) && (i >= 0) && (i <= size_int(session()->directories))) {
+        if ((s[0] != 0) && (i >= 0) && (i <= size_int(a()->directories))) {
           insert_dir(i);
           modify_dir(i);
           confchg = 1;
@@ -498,35 +498,35 @@ void dlboardedit() {
       bout << "|#2Delete which dir? ";
       input(s, 4);
       i = atoi(s);
-      if ((s[0] != 0) && (i >= 0) && (i < size_int(session()->directories))) {
+      if ((s[0] != 0) && (i >= 0) && (i < size_int(a()->directories))) {
         bout.nl();
-        bout << "|#5Delete " << session()->directories[i].name << "? ";
+        bout << "|#5Delete " << a()->directories[i].name << "? ";
         if (yesno()) {
-          strcpy(s, session()->directories[i].filename);
+          strcpy(s, a()->directories[i].filename);
           delete_dir(i);
           confchg = 1;
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (yesno()) {
-            File::Remove(StrCat(session()->config()->datadir(), s, ".dir"));
-            File::Remove(StrCat(session()->config()->datadir(), s, ".ext"));
+            File::Remove(StrCat(a()->config()->datadir(), s, ".dir"));
+            File::Remove(StrCat(a()->config()->datadir(), s, ".ext"));
           }
         }
       }
       break;
     }
   } while (!done && !hangup);
-  DataFile<directoryrec> dirsFile(session()->config()->datadir(), DIRS_DAT,
+  DataFile<directoryrec> dirsFile(a()->config()->datadir(), DIRS_DAT,
       File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!dirsFile) {
     sysoplog(false) << "!!! Unable to open DIRS.DAT for writing, some changes may have been lost";
   } else {
-    dirsFile.WriteVector(session()->directories);
+    dirsFile.WriteVector(a()->directories);
   }
   if (confchg) {
     save_confs(ConferenceType::CONF_DIRS, -1, nullptr);
   }
-  if (!session()->at_wfc()) {
+  if (!a()->at_wfc()) {
     changedsl();
   }
 }

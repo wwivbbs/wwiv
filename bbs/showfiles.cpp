@@ -21,7 +21,7 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/local_io.h"
 #include "bbs/utility.h"
 #include "core/wwivport.h"
@@ -53,9 +53,9 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
 #endif
 
   snprintf(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(file_name)), drive, direc);
-  int i = (session()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
+  int i = (a()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
   bout << "|#7" << std::string(i, c) << s;
-  i = session()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
+  i = a()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
   bout << "|#7" << std::string(i, c);
 
   std::string full_pathname = StrCat(pszDirectoryName, strupr(stripfn(file_name)));
@@ -65,7 +65,7 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
     strncpy(s, fnd.GetFileName(), MAX_PATH);
     align(s);
     full_pathname = StrCat("|#7[|#2", s, "|#7]|#1 ");
-    if (session()->localIO()->WhereX() > (session()->user()->GetScreenChars() - 15)) {
+    if (a()->localIO()->WhereX() > (a()->user()->GetScreenChars() - 15)) {
       bout.nl();
     }
     bout << full_pathname;
@@ -74,6 +74,6 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
 
   bout.nl();
   bout.Color(7);
-  bout << std::string(session()->user()->GetScreenChars() - 1, c);
+  bout << std::string(a()->user()->GetScreenChars() - 1, c);
   bout.nl(2);
 }

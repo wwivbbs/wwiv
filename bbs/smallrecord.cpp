@@ -36,28 +36,28 @@ using namespace wwiv::strings;
 
 // Inserts a record into NAMES.LST
 void InsertSmallRecord(int user_number, const char *name) {
-  WStatus *pStatus = session()->status_manager()->BeginTransaction();
-  session()->names()->Add(name, user_number);
-  session()->names()->Save();
+  WStatus *pStatus = a()->status_manager()->BeginTransaction();
+  a()->names()->Add(name, user_number);
+  a()->names()->Save();
 
   pStatus->IncrementNumUsers();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  session()->status_manager()->CommitTransaction(pStatus);
+  a()->status_manager()->CommitTransaction(pStatus);
 }
 
 // Deletes a record from NAMES.LST (DeleteSmallRec)
 void DeleteSmallRecord(const char *name) {
-  WStatus *pStatus = session()->status_manager()->BeginTransaction();
-  int found_user = session()->names()->FindUser(name);
+  WStatus *pStatus = a()->status_manager()->BeginTransaction();
+  int found_user = a()->names()->FindUser(name);
   if (found_user < 1) {
-    session()->status_manager()->AbortTransaction(pStatus);
+    a()->status_manager()->AbortTransaction(pStatus);
     sysoplog(false) << "#*#*#*#*#*#*#*# '" << name << "' NOT ABLE TO BE DELETED";
     sysoplog(false) << "#*#*#*#*#*#*#*# Run //RESETF to fix it.";
     return;
   }
-  session()->names()->Remove(found_user);
+  a()->names()->Remove(found_user);
   pStatus->DecrementNumUsers();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  session()->names()->Save();
-  session()->status_manager()->CommitTransaction(pStatus);
+  a()->names()->Save();
+  a()->status_manager()->CommitTransaction(pStatus);
 }

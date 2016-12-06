@@ -28,7 +28,7 @@
 #include "localui/curses_win.h"
 #include "sdk/status.h"
 
-class WSession;
+class Application;
 
 #if defined( _MSC_VER )
 #pragma warning( push )
@@ -59,7 +59,7 @@ class CursesLocalIO : public LocalIO {
   int  Printf(const char *formatted_text, ...) override;
   int  PrintfXY(int x, int y, const char *formatted_text, ...) override;
   int  PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override;
-  void set_protect(WSession* session, int l) override;
+  void set_protect(Application* session, int l) override;
   void savescreen() override;
   void restorescreen() override;
   bool KeyPressed() override;
@@ -70,7 +70,7 @@ class CursesLocalIO : public LocalIO {
   size_t GetDefaultScreenBottom() override;
 
   void EditLine(char *s, int len, int status, int *returncode, const char *ss) override;
-  void UpdateNativeTitleBar(WSession* session) override;
+  void UpdateNativeTitleBar(Application* session) override;
   virtual void ResetColors();
 
   virtual void DisableLocalIO();

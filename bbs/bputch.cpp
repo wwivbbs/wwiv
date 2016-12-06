@@ -29,7 +29,7 @@
 #include "bbs/vars.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/local_io.h"
 
 #define BPUTCH_LITERAL_PIPE_CODE -1
@@ -306,8 +306,8 @@ int Output::bputch(char c, bool use_buffer) {
         x_ = 0;
         bout.lines_listed_++;
         // change Build3 + 5.0 to fix message read.
-        if (bout.lines_listed() >= (session()->screenlinest - 1)) {
-          if (session()->user()->HasPause()) {
+        if (bout.lines_listed() >= (a()->screenlinest - 1)) {
+          if (a()->user()->HasPause()) {
             pausescr();
           }
           bout.clear_lines_listed();   // change Build3
@@ -329,7 +329,7 @@ int Output::bputch(char c, bool use_buffer) {
 void Output::rputs(const char *text) {
   // Rushfan fix for COM/IP weirdness
   if (ok_modem_stuff) {
-    session()->remoteIO()->write(text, strlen(text));
+    a()->remoteIO()->write(text, strlen(text));
   }
 }
 
@@ -338,19 +338,19 @@ void Output::flush() {
     return;
   }
 
-  session()->remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
+  a()->remoteIO()->write(bputch_buffer_.c_str(), bputch_buffer_.size());
   bputch_buffer_.clear();
 }
 
 void Output::rputch(char ch, bool bUseInternalBuffer) {
-  if (ok_modem_stuff && nullptr != session()->remoteIO()) {
+  if (ok_modem_stuff && nullptr != a()->remoteIO()) {
     if (bUseInternalBuffer) {
       if (bputch_buffer_.size() > 1024) {
         flush();
       }
       bputch_buffer_.push_back(ch);
     } else {
-      session()->remoteIO()->put(ch);
+      a()->remoteIO()->put(ch);
     }
   }
 }

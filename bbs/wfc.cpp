@@ -65,7 +65,7 @@
 #include "bbs/subedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/workspace.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
@@ -90,7 +90,7 @@ using namespace wwiv::strings;
 static char* pszScreenBuffer = nullptr;
 static int inst_num;
 
-void wfc_cls(WSession* a) {
+void wfc_cls(Application* a) {
   if (a->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     bout.ResetColors();
     a->localIO()->Cls();
@@ -107,7 +107,7 @@ static void wfc_update() {
   // Every time we update the WFC, reset the lines listed.
   bout.clear_lines_listed();
 
-  if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (!a()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
   }
 
@@ -115,25 +115,25 @@ static void wfc_update() {
   User u = {};
 
   get_inst_info(inst_num, &ir);
-  session()->users()->ReadUserNoCache(&u, ir.user);
-  session()->localIO()->PrintfXYA(57, 18, 15, "%-3d", inst_num);
+  a()->users()->ReadUserNoCache(&u, ir.user);
+  a()->localIO()->PrintfXYA(57, 18, 15, "%-3d", inst_num);
   if (ir.flags & INST_FLAGS_ONLINE) {
-    const string unn = session()->names()->UserName(ir.user);
-    session()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", unn.c_str());
+    const string unn = a()->names()->UserName(ir.user);
+    a()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", unn.c_str());
   } else {
-    session()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", "Nobody");
+    a()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", "Nobody");
   }
 
   string activity_string;
   make_inst_str(inst_num, &activity_string, INST_FORMAT_WFC);
-  session()->localIO()->PrintfXYA(42, 20, 14, "%-25.25s", activity_string.c_str());
+  a()->localIO()->PrintfXYA(42, 20, 14, "%-25.25s", activity_string.c_str());
   if (num_instances() > 1) {
     do {
       ++inst_num;
       if (inst_num > num_instances()) {
         inst_num = 1;
       }
-    } while (inst_num == session()->instance_number());
+    } while (inst_num == a()->instance_number());
   }
 }
 
@@ -148,82 +148,82 @@ void WFC::DrawScreen() {
   static steady_clock::time_point wfc_time;
   static steady_clock::time_point poll_time;
 
-  if (!session()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
+  if (!a()->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     return;
   }
 
-  int nNumNewMessages = check_new_mail(session()->usernum);
-  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
+  int nNumNewMessages = check_new_mail(a()->usernum);
+  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
   if (status_ == 0) {
-    session()->localIO()->SetCursor(LocalIO::cursorNone);
-    session()->localIO()->Cls();
+    a()->localIO()->SetCursor(LocalIO::cursorNone);
+    a()->localIO()->Cls();
     if (pszScreenBuffer == nullptr) {
       pszScreenBuffer = new char[4000];
-      File wfcFile(session()->config()->datadir(), WFC_DAT);
+      File wfcFile(a()->config()->datadir(), WFC_DAT);
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
         LOG(FATAL) << wfcFile.full_pathname() << " NOT FOUND.";
-        session()->AbortBBS();
+        a()->AbortBBS();
       }
       wfcFile.Read(pszScreenBuffer, 4000);
     }
-    session()->localIO()->WriteScreenBuffer(pszScreenBuffer);
-    const string title = StringPrintf("Activity and Statistics of %s Node %d", syscfg.systemname, session()->instance_number());
-    session()->localIO()->PrintfXYA(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
-    session()->localIO()->PrintfXYA(8, 1, 14, fulldate());
+    a()->localIO()->WriteScreenBuffer(pszScreenBuffer);
+    const string title = StringPrintf("Activity and Statistics of %s Node %d", syscfg.systemname, a()->instance_number());
+    a()->localIO()->PrintfXYA(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
+    a()->localIO()->PrintfXYA(8, 1, 14, fulldate());
     std::string osVersion = wwiv::os::os_version_string();
-    session()->localIO()->PrintfXYA(40, 1, 3, "OS: ");
-    session()->localIO()->PrintfXYA(44, 1, 14, osVersion.c_str());
-    session()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
+    a()->localIO()->PrintfXYA(40, 1, 3, "OS: ");
+    a()->localIO()->PrintfXYA(44, 1, 14, osVersion.c_str());
+    a()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
     User sysop{};
     int feedback_waiting = 0;
-    if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+    if (a()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    session()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
+    a()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
     if (nNumNewMessages) {
-      session()->localIO()->PrintfXYA(29, 7 , 3, "New:");
-      session()->localIO()->PrintfXYA(34, 7 , 12, "%d", nNumNewMessages);
+      a()->localIO()->PrintfXYA(29, 7 , 3, "New:");
+      a()->localIO()->PrintfXYA(34, 7 , 12, "%d", nNumNewMessages);
     }
-    session()->localIO()->PrintfXYA(21, 8, 14, "%d", pStatus->GetNumUploadsToday());
-    session()->localIO()->PrintfXYA(21, 9, 14, "%d", pStatus->GetNumMessagesPostedToday());
-    session()->localIO()->PrintfXYA(21, 10, 14, "%d", pStatus->GetNumLocalPosts());
-    session()->localIO()->PrintfXYA(21, 11, 14, "%d", pStatus->GetNumEmailSentToday());
-    session()->localIO()->PrintfXYA(21, 12, 14, "%d", pStatus->GetNumFeedbackSentToday());
-    session()->localIO()->PrintfXYA(21, 13, 14, "%d Mins (%.1f%%)", pStatus->GetMinutesActiveToday(),
+    a()->localIO()->PrintfXYA(21, 8, 14, "%d", pStatus->GetNumUploadsToday());
+    a()->localIO()->PrintfXYA(21, 9, 14, "%d", pStatus->GetNumMessagesPostedToday());
+    a()->localIO()->PrintfXYA(21, 10, 14, "%d", pStatus->GetNumLocalPosts());
+    a()->localIO()->PrintfXYA(21, 11, 14, "%d", pStatus->GetNumEmailSentToday());
+    a()->localIO()->PrintfXYA(21, 12, 14, "%d", pStatus->GetNumFeedbackSentToday());
+    a()->localIO()->PrintfXYA(21, 13, 14, "%d Mins (%.1f%%)", pStatus->GetMinutesActiveToday(),
                                             100.0 * static_cast<float>(pStatus->GetMinutesActiveToday()) / 1440.0);
-    session()->localIO()->PrintfXYA(58, 6, 14, "%s%s", wwiv_version, beta_version);
+    a()->localIO()->PrintfXYA(58, 6, 14, "%s%s", wwiv_version, beta_version);
 
-    session()->localIO()->PrintfXYA(58, 7, 14, "%d", pStatus->GetNetworkVersion());
-    session()->localIO()->PrintfXYA(58, 8, 14, "%d", pStatus->GetNumUsers());
-    session()->localIO()->PrintfXYA(58, 9, 14, "%ld", pStatus->GetCallerNumber());
+    a()->localIO()->PrintfXYA(58, 7, 14, "%d", pStatus->GetNetworkVersion());
+    a()->localIO()->PrintfXYA(58, 8, 14, "%d", pStatus->GetNumUsers());
+    a()->localIO()->PrintfXYA(58, 9, 14, "%ld", pStatus->GetCallerNumber());
     if (pStatus->GetDays()) {
-      session()->localIO()->PrintfXYA(58, 10, 14, "%.2f", static_cast<float>(pStatus->GetCallerNumber()) /
+      a()->localIO()->PrintfXYA(58, 10, 14, "%.2f", static_cast<float>(pStatus->GetCallerNumber()) /
                                               static_cast<float>(pStatus->GetDays()));
     } else {
-      session()->localIO()->PrintfXYA(58, 10, 14, "N/A");
+      a()->localIO()->PrintfXYA(58, 10, 14, "N/A");
     }
-    session()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
-    session()->localIO()->PrintfXYA(58, 12, 14, "Local Mode");
-    session()->localIO()->PrintfXYA(58, 13, 14, "Waiting For Command");
+    a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+    a()->localIO()->PrintfXYA(58, 12, 14, "Local Mode");
+    a()->localIO()->PrintfXYA(58, 13, 14, "Waiting For Command");
 
-    get_inst_info(session()->instance_number(), &ir);
+    get_inst_info(a()->instance_number(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {
-      const string unn = session()->names()->UserName(ir.user);
-      session()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", unn.c_str());
+      const string unn = a()->names()->UserName(ir.user);
+      a()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", unn.c_str());
     } else {
-      session()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", "Nobody");
+      a()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", "Nobody");
     }
 
     status_ = 1;
     wfc_update();
     poll_time = wfc_time = steady_clock::now();
   } else {
-    auto screen_saver_time = seconds(session()->screen_saver_time);
-    if ((session()->screen_saver_time == 0) 
+    auto screen_saver_time = seconds(a()->screen_saver_time);
+    if ((a()->screen_saver_time == 0) 
         || (steady_clock::now() - wfc_time < screen_saver_time)) {
-      session()->localIO()->PrintfXYA(28, 1, 14, times());
-      session()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+      a()->localIO()->PrintfXYA(28, 1, 14, times());
+      a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
       if (steady_clock::now() - poll_time > seconds(10)) {
         wfc_update();
         poll_time = steady_clock::now();
@@ -232,17 +232,17 @@ void WFC::DrawScreen() {
       if ((steady_clock::now() - poll_time > seconds(10)) || status_ == 1) {
         status_ = 2;
         a_->localIO()->Cls();
-        session()->localIO()->PrintfXYA(
+        a()->localIO()->PrintfXYA(
             random_number(38), random_number(24), random_number(14) + 1,
             "WWIV Screen Saver - Press Any Key For WWIV");
-        wfc_time = steady_clock::now() - seconds(session()->screen_saver_time) - seconds(1);
+        wfc_time = steady_clock::now() - seconds(a()->screen_saver_time) - seconds(1);
         poll_time = steady_clock::now();
       }
     }
   }
 }
 
-WFC::WFC(WSession* a) : a_(a) {
+WFC::WFC(Application* a) : a_(a) {
   a_->localIO()->SetCursor(LocalIO::cursorNormal);
   if (a_->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     status_ = 0;
@@ -537,7 +537,7 @@ int WFC::doWFCEvents() {
       case 'W': {
         Clear();
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
-        bout << "|#1Edit " << session()->config()->gfilesdir() << "<filename>: \r\n";
+        bout << "|#1Edit " << a()->config()->gfilesdir() << "<filename>: \r\n";
         text_edit();
       }
       break;

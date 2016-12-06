@@ -30,7 +30,7 @@
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 
-class WSession;
+class Application;
 
 class Win32ConsoleIO : public LocalIO {
  public:
@@ -55,7 +55,7 @@ class Win32ConsoleIO : public LocalIO {
   int  Printf(const char *formatted_text, ...) override;
   int  PrintfXY(int x, int y, const char *formatted_text, ...) override;
   int  PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override;
-  void set_protect(WSession* session, int l) override;
+  void set_protect(Application* session, int l) override;
   void savescreen() override;
   void restorescreen() override;
   bool KeyPressed() override;
@@ -66,7 +66,7 @@ class Win32ConsoleIO : public LocalIO {
   size_t GetDefaultScreenBottom() override;
 
   void EditLine(char *s, int len, int editor_status, int *returncode, const char *ss) override;
-  void UpdateNativeTitleBar(WSession* session) override;
+  void UpdateNativeTitleBar(Application* session) override;
 
 private:
   void FastPuts(const std::string &text) override;

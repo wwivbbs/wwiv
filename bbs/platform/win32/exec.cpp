@@ -28,7 +28,7 @@
 #include "bbs/remote_io.h"
 #include "bbs/platform/platformfcns.h"
 #include "bbs/sysoplog.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/vars.h"
 #include "core/File.h"
 #include "core/strings.h"
@@ -63,19 +63,19 @@ using namespace wwiv::strings;
 // Helper functions
 
 static string GetSyncFosTempFilePath() {
-  return StrCat(session()->temp_directory(), "WWIVSYNC.ENV");
+  return StrCat(a()->temp_directory(), "WWIVSYNC.ENV");
 }
 
 static const string GetDosXtrnPath() {
   std::stringstream sstream;
-  sstream << session()->GetHomeDir() << "DOSXTRN.EXE";
+  sstream << a()->GetHomeDir() << "DOSXTRN.EXE";
   return string(sstream.str());
 }
 
 static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
   std::stringstream sstream;
   sstream << GetDosXtrnPath() << " " << tempFilePath << " " << "NT" << " ";
-  sstream << session()->instance_number() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
+  sstream << a()->instance_number() << " " << nSyncMode << " " << CONST_SBBSFOS_LOOPS_BEFORE_YIELD;
   out->assign(sstream.str());
 }
 
@@ -122,7 +122,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   int nCounter = 0;
   for (;;) {
     nCounter++;
-    if (session()->using_modem && (!session()->remoteIO()->connected())) {
+    if (a()->using_modem && (!a()->remoteIO()->connected())) {
       SetEvent(hSyncHangupEvent);
       fprintf(hLogFile, "Setting Hangup Event and Sleeping\r\n");
       ::Sleep(1000);
@@ -141,10 +141,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       }
     }
 
-    if (session()->remoteIO()->incoming()) {
+    if (a()->remoteIO()->incoming()) {
       nCounter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
-      int nNumReadFromComm = session()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
+      int nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
       fprintf(hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm);
 
       int nLp = 0;
@@ -162,7 +162,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         char szWriteSlotName[MAX_PATH];
         ::Sleep(500);
         _snprintf(szWriteSlotName, sizeof(szWriteSlotName), "\\\\.\\mailslot\\sbbsexec\\wr%d",
-                  session()->instance_number());
+                  a()->instance_number());
         fprintf(hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName);
 
         hSyncWriteSlot = CreateFile(szWriteSlotName,
@@ -232,10 +232,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
           bout << szReadBuffer;
 
           //ExpandWWIVHeartCodes( szReadBuffer );
-          //int nNumWritten = session()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
+          //int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
           //fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
         } else {
-          int nNumWritten = session()->remoteIO()->write(szReadBuffer, nBufferPtr);
+          int nNumWritten = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
           fprintf(hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten);
         }
 
@@ -262,7 +262,7 @@ bool ExpandWWIVHeartCodes(char *buffer) {
       if (*pIn >= '0' && *pIn <= '9') {
         char szTempColor[ 81 ];
         int nColor = *pIn - '0';
-        makeansi(session()->user()->GetColor(nColor), szTempColor, false);
+        makeansi(a()->user()->GetColor(nColor), szTempColor, false);
         char *pColor = szTempColor;
         while (*pColor) {
           *pOut++ = *pColor++;
@@ -293,7 +293,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
   bool bShouldUseSync = false;
   bool bUsingSync = false;
   int nSyncMode = 0;
-  if (session()->using_modem) {
+  if (a()->using_modem) {
     if (flags & EFLAG_FOSSIL) {
       bShouldUseSync = true;
     } else if (flags & EFLAG_COMIO) {
@@ -311,7 +311,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
-    const string logfile_name = StrCat(session()->GetHomeDir(), "wwivsync.log");
+    const string logfile_name = StrCat(a()->GetHomeDir(), "wwivsync.log");
     hLogFile = fopen(logfile_name.c_str(), "at");
     fprintf(hLogFile, charstr(78, '='));
     fprintf(hLogFile, "\r\n\r\n");
@@ -327,12 +327,12 @@ int ExecExternalProgram(const string commandLine, int flags) {
     strcpy(title, "NETWORK");
   } else {
     _snprintf(title, sizeof(title), "%s in door on node %d",
-              session()->user()->GetName(), session()->instance_number());
+              a()->user()->GetName(), a()->instance_number());
   }
   si.lpTitle = title;
 
-  if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
-    session()->remoteIO()->close(true);
+  if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
+    a()->remoteIO()->close(true);
   }
 
   HANDLE hSyncHangupEvent = INVALID_HANDLE_VALUE;
@@ -340,7 +340,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     
   if (bUsingSync) {
     // Create Hangup Event.
-    const string event_name = StringPrintf("sbbsexec_hungup%d", session()->instance_number());
+    const string event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
     hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
@@ -349,7 +349,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     }
 
     // Create Read Mail Slot
-    const string readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", session()->instance_number());
+    const string readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", a()->instance_number());
     hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
       fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
@@ -373,7 +373,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
                   nullptr,
                   TRUE,
                   dwCreationFlags,
-                  nullptr, // session()->xenviron not using nullptr causes things to not work.
+                  nullptr, // a()->xenviron not using nullptr causes things to not work.
                   current_directory.c_str(),
                   &si,
                   &pi);
@@ -387,14 +387,14 @@ int ExecExternalProgram(const string commandLine, int flags) {
     }
 
     // If we return here, we may have to reopen the communications port.
-    if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
-      session()->remoteIO()->open();
+    if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
+      a()->remoteIO()->open();
     }
     return -1;
   }
 
   // Kinda hacky but WaitForInputIdle doesn't work on console application.
-  ::Sleep(session()->GetExecChildProcessWaitTime());
+  ::Sleep(a()->GetExecChildProcessWaitTime());
   const int sleep_zero_times = 5;
   for (int iter = 0; iter < sleep_zero_times; iter++) {
     ::Sleep(0);
@@ -402,8 +402,8 @@ int ExecExternalProgram(const string commandLine, int flags) {
   CloseHandle(pi.hThread);
 
   if (bUsingSync) {
-    bool bSavedBinaryMode = session()->remoteIO()->binary_mode();
-    session()->remoteIO()->set_binary_mode(true);
+    bool bSavedBinaryMode = a()->remoteIO()->binary_mode();
+    a()->remoteIO()->set_binary_mode(true);
     bool bSyncLoopStatus = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
     fprintf(hLogFile,  "DoSyncFosLoopNT: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
 
@@ -420,7 +420,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
         TerminateProcess(pi.hProcess, 0);
       }
     }
-    session()->remoteIO()->set_binary_mode(bSavedBinaryMode);
+    a()->remoteIO()->set_binary_mode(bSavedBinaryMode);
   } else {
     // Wait until child process exits.
     WaitForSingleObject(pi.hProcess, INFINITE);
@@ -435,8 +435,8 @@ int ExecExternalProgram(const string commandLine, int flags) {
   delete[] title;
 
   // reengage comm stuff
-  if (ok_modem_stuff && !bUsingSync && session()->using_modem) {
-    session()->remoteIO()->open();
+  if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
+    a()->remoteIO()->open();
   }
 
   return static_cast<int>(dwExitCode);

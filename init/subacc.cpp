@@ -86,7 +86,7 @@ bool open_sub(bool wr) {
 }
 
 bool iscan1(int si, const wwiv::sdk::Subs& subs) {
-  // Initializes use of a sub value (subs[], not session()->usub[]).  If quick, then
+  // Initializes use of a sub value (subs[], not a()->usub[]).  If quick, then
   // don't worry about anything detailed, just grab qscan info.
   postrec p{};
 

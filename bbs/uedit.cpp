@@ -229,21 +229,21 @@ static int matchuser(User *pUser) {
 
 static int matchuser(int user_number) {
   User user;
-  session()->users()->ReadUser(&user, user_number);
+  a()->users()->ReadUser(&user, user_number);
   sp = search_pattern;
   return matchuser(&user);
 }
 
 void deluser(int user_number) {
   User user;
-  session()->users()->ReadUser(&user, user_number);
+  a()->users()->ReadUser(&user, user_number);
 
   if (!user.IsUserDeleted()) {
     rsm(user_number, &user, false);
     DeleteSmallRecord(user.GetName());
     user.SetInactFlag(User::userDeleted);
     user.SetNumMailWaiting(0);
-    session()->users()->WriteUser(&user, user_number);
+    a()->users()->WriteUser(&user, user_number);
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       long lEmailFileLen = pFileEmail->GetLength() / sizeof(mailrec);
@@ -259,7 +259,7 @@ void deluser(int user_number) {
       }
       pFileEmail->Close();
     }
-    File voteFile(session()->config()->datadir(), VOTING_DAT);
+    File voteFile(a()->config()->datadir(), VOTING_DAT);
     voteFile.Open(File::modeReadWrite | File::modeBinary);
     long nNumVoteRecords = static_cast<int>(voteFile.GetLength() / sizeof(votingrec)) - 1;
     for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {
@@ -280,7 +280,7 @@ void deluser(int user_number) {
       }
     }
     voteFile.Close();
-    session()->users()->WriteUser(&user, user_number);
+    a()->users()->WriteUser(&user, user_number);
     delete_phone_number(user_number, user.GetVoicePhoneNumber());   // dupphone addition
     delete_phone_number(user_number, user.GetDataPhoneNumber());    // dupphone addition
   }
@@ -333,8 +333,8 @@ void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScree
   if (pUser->GetForwardUserNumber() != 0) {
     bout << "|#9   Forwarded To : |#1";
     if (pUser->GetForwardSystemNumber() != 0) {
-      if (session()->max_net_num() > 1) {
-        bout << session()->net_networks[ pUser->GetForwardNetNumber() ].name 
+      if (a()->max_net_num() > 1) {
+        bout << a()->net_networks[ pUser->GetForwardNetNumber() ].name 
              << " #" << pUser->GetForwardUserNumber()
              << " @" << pUser->GetForwardSystemNumber() << wwiv::endl;
       } else {
@@ -347,9 +347,9 @@ void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScree
   if (bLongFormat) {
     // TODO(rushfan): Should we always mask this?
     bout << "|#2H|#9) Password     : |#1";
-    session()->localIO()->Puts(pUser->GetPassword());
+    a()->localIO()->Puts(pUser->GetPassword());
 
-    if (incom && session()->user()->GetSl() == 255) {
+    if (incom && a()->user()->GetSl() == 255) {
       bout.rputs(pUser->GetPassword());
     } else {
       bout.rputs("(not shown remotely)");
@@ -463,10 +463,10 @@ void uedit(int usern, int other) {
   }
   int user_number = usern;
   bool bDoneWithUEdit = false;
-  session()->users()->ReadUser(&user, user_number);
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  a()->users()->ReadUser(&user, user_number);
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
   do {
-    session()->users()->ReadUser(&user, user_number);
+    a()->users()->ReadUser(&user, user_number);
     read_qscn(user_number, u_qsc, false);
     bool bDoneWithUser = false;
     bool temp_full = false;
@@ -475,7 +475,7 @@ void uedit(int usern, int other) {
       bout.nl();
       bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
       char ch = 0;
-      if (session()->user()->GetSl() == 255 || session()->at_wfc()) {
+      if (a()->user()->GetSl() == 255 || a()->at_wfc()) {
         ch = onek("ACDEFGHILMNOPQRSTUWXYZ0123456789[]{}/,.?~%:", true);
       } else {
         ch = onek("ACDEFGHILMNOPQRSTUWYZ0123456789[]{}/,.?%", true);
@@ -487,9 +487,9 @@ void uedit(int usern, int other) {
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
-          if (session()->at_wfc() || (session()->user()->HasArFlag(1 << ch1))) {
+          if (a()->at_wfc() || (a()->user()->HasArFlag(1 << ch1))) {
             user.ToggleArFlag(1 << ch1);
-            session()->users()->WriteUser(&user, user_number);
+            a()->users()->WriteUser(&user, user_number);
           }
         }
       }
@@ -500,22 +500,22 @@ void uedit(int usern, int other) {
         input(s, 6);
         if (s[0]) {
           user.SetCallsign(s);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         } else {
           bout << "|#5Delete callsign? ";
           if (yesno()) {
             user.SetCallsign("");
-            session()->users()->WriteUser(&user, user_number);
+            a()->users()->WriteUser(&user, user_number);
           }
         }
         break;
       case 'D':
         if (user_number != 1) {
-          if (!user.IsUserDeleted() && session()->GetEffectiveSl() > user.GetSl()) {
+          if (!user.IsUserDeleted() && a()->GetEffectiveSl() > user.GetSl()) {
             bout << "|#5Delete? ";
             if (yesno()) {
               deluser(user_number);
-              session()->users()->ReadUser(&user, user_number);
+              a()->users()->ReadUser(&user, user_number);
             }
           }
         }
@@ -527,15 +527,15 @@ void uedit(int usern, int other) {
         int nExemption = atoi(s);
         if (nExemption >= 0 && nExemption <= 255 && s[0]) {
           user.SetExempt(nExemption);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
       case 'F': {
         int network_number = getnetnum_by_type(network_type_t::internet);
-        session()->set_net_num(network_number);
+        a()->set_net_num(network_number);
         if (network_number != -1) {
-          set_net_num(session()->net_num());
+          set_net_num(a()->net_num());
           bout << "Current Internet Address\r\n:" << user.GetEmailAddress() << wwiv::endl;
           bout << "New Address\r\n:";
           inputl(s, 75);
@@ -543,7 +543,7 @@ void uedit(int usern, int other) {
             if (check_inet_addr(s)) {
               user.SetEmailAddress(s);
               write_inet_addr(s, user_number);
-              user.SetForwardNetNumber(session()->net_num());
+              user.SetForwardNetNumber(a()->net_num());
             } else {
               bout.nl();
               bout << "Invalid format.\r\n";
@@ -555,7 +555,7 @@ void uedit(int usern, int other) {
               user.SetEmailAddress("");
             }
           }
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
@@ -566,14 +566,14 @@ void uedit(int usern, int other) {
           bout.bprintf("Current birthdate: %02d/%02d/%02d\r\n",
                                             user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
           input_age(&user);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
         break;
       case 'H':
         bout << "|#5Change this user's password? ";
         if (yesno()) {
           input_pw(&user);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
         break;
       case 'I': {
@@ -582,9 +582,9 @@ void uedit(int usern, int other) {
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
-          if (session()->at_wfc() || (session()->user()->HasDarFlag(1 << ch1))) {
+          if (a()->at_wfc() || (a()->user()->HasDarFlag(1 << ch1))) {
             user.ToggleDarFlag(1 << ch1);
-            session()->users()->WriteUser(&user, user_number);
+            a()->users()->WriteUser(&user, user_number);
           }
         }
       }
@@ -595,7 +595,7 @@ void uedit(int usern, int other) {
         string realName = Input1(user.GetRealName(), 20, true, InputMode::PROPER);
         if (!realName.empty()) {
           user.SetRealName(realName.c_str());
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
@@ -613,7 +613,7 @@ void uedit(int usern, int other) {
         int nComputerType = atoi(s);
         if (nComputerType >= 0 && nComputerType <= nNumCompTypes) {
           user.SetComputerType(nComputerType);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
@@ -626,7 +626,7 @@ void uedit(int usern, int other) {
             DeleteSmallRecord(user.GetName());
             user.SetName(s);
             InsertSmallRecord(user_number, user.GetName());
-            session()->users()->WriteUser(&user, user_number);
+            a()->users()->WriteUser(&user, user_number);
           }
         }
         break;
@@ -635,7 +635,7 @@ void uedit(int usern, int other) {
         bout << "|#7New note? ";
         inputl(s, 60);
         user.SetNote(s);
-        session()->users()->WriteUser(&user, user_number);
+        a()->users()->WriteUser(&user, user_number);
         break;
 
       case 'P': {
@@ -667,7 +667,7 @@ void uedit(int usern, int other) {
           bWriteUser = true;
         }
         if (bWriteUser) {
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
@@ -680,7 +680,7 @@ void uedit(int usern, int other) {
         if (user.IsUserDeleted()) {
           user.ToggleInactFlag(User::userDeleted);
           InsertSmallRecord(user_number, user.GetName());
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
 
           // begin dupphone additions
 
@@ -697,39 +697,39 @@ void uedit(int usern, int other) {
         }
         break;
       case 'S': {
-        if (user.GetSl() >= session()->GetEffectiveSl()) {
+        if (user.GetSl() >= a()->GetEffectiveSl()) {
           break;
         }
         bout.nl();
         bout << "|#7New SL? ";
         string sl = input(3);
         uint8_t nNewSL = StringToUnsignedChar(sl);
-        if (!session()->at_wfc() && nNewSL >= session()->GetEffectiveSl() && user_number != 1) {
+        if (!a()->at_wfc() && nNewSL >= a()->GetEffectiveSl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
         } else  if (nNewSL < 255 && sl[0]) {
           user.SetSl(nNewSL);
-          session()->users()->WriteUser(&user, user_number);
-          if (user_number == session()->usernum) {
-            session()->SetEffectiveSl(nNewSL);
+          a()->users()->WriteUser(&user, user_number);
+          if (user_number == a()->usernum) {
+            a()->SetEffectiveSl(nNewSL);
           }
         }
       }
       break;
       case 'T': {
-        if (user.GetDsl() >= session()->user()->GetDsl()) {
+        if (user.GetDsl() >= a()->user()->GetDsl()) {
           break;
         }
         bout.nl();
         bout << "|#7New DSL? ";
         string dsl = input(3);
         uint8_t nNewDSL = StringToUnsignedChar(dsl);
-        if (!session()->at_wfc() && nNewDSL >= session()->user()->GetDsl() && user_number != 1) {
+        if (!a()->at_wfc() && nNewDSL >= a()->user()->GetDsl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
         } else  if (nNewDSL < 255 && dsl[0]) {
           user.SetDsl(nNewDSL);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
@@ -746,7 +746,7 @@ void uedit(int usern, int other) {
       break;
       case 'X': {
         string regDate, expDate;
-        if (!session()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
+        if (!a()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
           break;
         }
         bout.nl();
@@ -793,7 +793,7 @@ void uedit(int usern, int other) {
         if (newExpDate.length() == 8 && m > 0 && m <= 12 && dd > 0 && dd < 32) {
           user.SetExpiresDateNum(date_to_daten(newExpDate.c_str()));
         }
-        session()->users()->WriteUser(&user, user_number);
+        a()->users()->WriteUser(&user, user_number);
       }
       break;
       case 'Y':
@@ -834,7 +834,7 @@ void uedit(int usern, int other) {
             }
             if (nRestriction > -1) {
               user.ToggleRestrictionFlag(1 << nRestriction);
-              session()->users()->WriteUser(&user, user_number);
+              a()->users()->WriteUser(&user, user_number);
             }
           }
         } while (!hangup && ch1 == '?');
@@ -854,12 +854,12 @@ void uedit(int usern, int other) {
         if (ch != '0') {
           nAutoValNum = ch - '1';
         }
-        if ((session()->GetEffectiveSl() >= syscfg.autoval[nAutoValNum].sl) &&
-            (session()->user()->GetDsl() >= syscfg.autoval[nAutoValNum].dsl) &&
-            (((~session()->user()->GetAr()) & syscfg.autoval[nAutoValNum].ar) == 0) &&
-            (((~session()->user()->GetDar()) & syscfg.autoval[nAutoValNum].dar) == 0)) {
+        if ((a()->GetEffectiveSl() >= syscfg.autoval[nAutoValNum].sl) &&
+            (a()->user()->GetDsl() >= syscfg.autoval[nAutoValNum].dsl) &&
+            (((~a()->user()->GetAr()) & syscfg.autoval[nAutoValNum].ar) == 0) &&
+            (((~a()->user()->GetDar()) & syscfg.autoval[nAutoValNum].dar) == 0)) {
           auto_val(nAutoValNum, &user);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
@@ -925,7 +925,7 @@ void uedit(int usern, int other) {
       break;
       case '~':
         user.SetAssPoints(0);
-        session()->users()->WriteUser(&user, user_number);
+        a()->users()->WriteUser(&user, user_number);
         break;
       case '%': {
         char s1[ 255];
@@ -934,37 +934,37 @@ void uedit(int usern, int other) {
         inputl(s1, 30);
         if (s1[0]) {
           user.SetStreet(s1);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
         bout << "|#7New City? ";
         inputl(s1, 30);
         if (s1[0]) {
           user.SetCity(s1);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
         bout << "|#7New State? ";
         input(s1, 2);
         if (s1[0]) {
           user.SetState(s1);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
         bout << "|#7New Country? ";
         input(s1, 3);
         if (s1[0]) {
           user.SetCountry(s1);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
         bout << "|#7New Zip? ";
         input(s1, 10);
         if (s1[0]) {
           user.SetZipcode(s1);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
         bout << "|#7New DataPhone (0=none)? ";
         input(s1, 12);
         if (s1[0]) {
           user.SetDataPhoneNumber(s1);
-          session()->users()->WriteUser(&user, user_number);
+          a()->users()->WriteUser(&user, user_number);
         }
       }
       break;
@@ -1020,7 +1020,7 @@ void uedit(int usern, int other) {
             break;
           }
         } while (!done2);
-        session()->users()->WriteUser(&user, user_number);
+        a()->users()->WriteUser(&user, user_number);
       }
       break;
       }
@@ -1042,9 +1042,9 @@ void print_affil(User *pUser) {
   bout << "|#2   Sysp    : |#1";
   if (csne) {
     bout << "@" << pUser->GetHomeSystemNumber() << ", " << csne->name << ", on " <<
-                       session()->network_name() << ".";
+                       a()->network_name() << ".";
   } else {
-    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << session()->network_name() <<
+    bout << "@" << pUser->GetHomeSystemNumber() << ", <UNKNOWN>, on " << a()->network_name() <<
                        ".";
   }
   bout.nl(2);

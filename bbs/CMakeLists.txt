@@ -6,6 +6,7 @@ include_directories(../deps/cl342)
 include_directories(../deps/cereal/include)
 
 set(COMMON_SOURCES 
+ application.cpp
  archivers.cpp
  arword.cpp
  asv.cpp
@@ -111,7 +112,6 @@ set(COMMON_SOURCES
  remote_io.cpp
  output.cpp
  wqscn.cpp
- wsession.cpp
  xfer.cpp
  xferovl.cpp
  xferovl1.cpp

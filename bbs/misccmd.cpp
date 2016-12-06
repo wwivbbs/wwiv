@@ -77,7 +77,7 @@ void kill_old_email() {
   do {
     pFileEmail->Seek(cur * sizeof(mailrec), File::Whence::begin);
     pFileEmail->Read(&m, sizeof(mailrec));
-    while ((m.fromsys != 0 || m.fromuser != session()->usernum || m.touser == 0) && cur < max && cur >= 0) {
+    while ((m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0) && cur < max && cur >= 0) {
       if (forward) {
         --cur;
       } else {
@@ -88,7 +88,7 @@ void kill_old_email() {
         pFileEmail->Read(&m, sizeof(mailrec));
       }
     }
-    if (m.fromsys != 0 || m.fromuser != session()->usernum || m.touser == 0 || cur >= max || cur < 0) {
+    if (m.fromsys != 0 || m.fromuser != a()->usernum || m.touser == 0 || cur >= max || cur < 0) {
       done = true;
     } else {
       pFileEmail->Close();
@@ -96,13 +96,13 @@ void kill_old_email() {
       bool done1 = false;
       do {
         bout.nl();
-        bout << "|#1  To|#9: |#" << session()->GetMessageColor();
+        bout << "|#1  To|#9: |#" << a()->GetMessageColor();
 
         if (m.tosys == 0) {
-          session()->users()->ReadUser(&user, m.touser);
-          string tempName = session()->names()->UserName(session()->usernum);
+          a()->users()->ReadUser(&user, m.touser);
+          string tempName = a()->names()->UserName(a()->usernum);
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
-              && ((getslrec(session()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
+              && ((getslrec(a()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
           }
           bout << tempName;
@@ -110,12 +110,12 @@ void kill_old_email() {
         } else {
           bout << "#" << m.tosys << " @" << m.tosys << wwiv::endl;
         }
-        bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", session()->GetMessageColor(), m.title);
+        bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", a()->GetMessageColor(), m.title);
         time_t lCurrentTime = time(nullptr);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / SECONDS_PER_DAY);
-        bout << "|#1Sent|#9: |#" << session()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
+        bout << "|#1Sent|#9: |#" << a()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
-          File fileAttach(session()->config()->datadir(), ATTACH_DAT);
+          File fileAttach(a()->config()->datadir(), ATTACH_DAT);
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bool found = false;
             auto l1 = fileAttach.Read(&fsr, sizeof(fsr));
@@ -164,7 +164,7 @@ void kill_old_email() {
             delmail(delete_email_file.get(), cur);
             bool found = false;
             if (m.status & status_file) {
-              File fileAttach(session()->config()->datadir(), ATTACH_DAT);
+              File fileAttach(a()->config()->datadir(), ATTACH_DAT);
               if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
                 auto l1 = fileAttach.Read(&fsr, sizeof(fsr));
                 while (l1 > 0 && !found) {
@@ -173,7 +173,7 @@ void kill_old_email() {
                     fsr.id = 0;
                     fileAttach.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                     fileAttach.Write(&fsr, sizeof(filestatusrec));
-                    File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
+                    File::Remove(a()->GetAttachmentDirectory().c_str(), fsr.filename);
                   } else {
                     l1 = fileAttach.Read(&fsr, sizeof(filestatusrec));
                   }
@@ -187,7 +187,7 @@ void kill_old_email() {
               sysoplog() << "Deleted mail and attached file: " << fsr.filename;
             } else {
               bout << "Mail deleted.\r\n\n";
-              const string username_num = session()->names()->UserName(m1.touser);
+              const string username_num = a()->names()->UserName(m1.touser);
               sysoplog() << "Deleted mail sent to " << username_num;
             }
           } else {
@@ -223,16 +223,16 @@ void list_users(int mode) {
   User user;
   char szFindText[21];
 
-  if (session()->current_user_sub().subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
+  if (a()->current_user_sub().subnum == -1 && mode == LIST_USERS_MESSAGE_AREA) {
     bout << "\r\n|#6No Message Sub Available!\r\n\n";
     return;
   }
-  if (session()->current_user_dir().subnum == -1 && mode == LIST_USERS_FILE_AREA) {
+  if (a()->current_user_dir().subnum == -1 && mode == LIST_USERS_FILE_AREA) {
     bout << "\r\n|#6 No Dirs Available.\r\n\n";
     return;
   }
 
-  int snum = session()->usernum;
+  int snum = a()->usernum;
 
   bout.nl();
   bout << "|#5Sort by user number? ";
@@ -248,9 +248,9 @@ void list_users(int mode) {
   }
 
   if (mode == LIST_USERS_MESSAGE_AREA) {
-    s = session()->subs().sub(session()->current_user_sub().subnum);
+    s = a()->subs().sub(a()->current_user_sub().subnum);
   } else {
-    d = session()->directories[session()->current_user_dir().subnum];
+    d = a()->directories[a()->current_user_dir().subnum];
   }
 
   bool abort  = false;
@@ -262,15 +262,15 @@ void list_users(int mode) {
   int ncnm    = 0;
   int numscn  = 0;
   int color   = 3;
-  session()->WriteCurrentUser();
-  write_qscn(session()->usernum, qsc, false);
-  session()->status_manager()->RefreshStatusCache();
+  a()->WriteCurrentUser();
+  write_qscn(a()->usernum, qsc, false);
+  a()->status_manager()->RefreshStatusCache();
 
-  File userList(session()->config()->datadir(), USER_LST);
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  File userList(a()->config()->datadir(), USER_LST);
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !hangup; i++) {
-    session()->usernum = 0;
+    a()->usernum = 0;
     if (ncnm > 5) {
       count++;
       bout << "|#" << color << ".";
@@ -312,12 +312,12 @@ void list_users(int mode) {
       found = false;
     }
 
-    int user_number = (bSortByUserNumber) ? i + 1 : session()->names()->names_vector()[i].number;
-    session()->users()->ReadUser(&user, user_number);
+    int user_number = (bSortByUserNumber) ? i + 1 : a()->names()->names_vector()[i].number;
+    a()->users()->ReadUser(&user, user_number);
     read_qscn(user_number, qsc, false);
     changedsl();
-    bool in_qscan = (qsc_q[session()->current_user_sub().subnum / 32] & (1L <<
-                     (session()->current_user_sub().subnum % 32))) ? true : false;
+    bool in_qscan = (qsc_q[a()->current_user_sub().subnum / 32] & (1L <<
+                     (a()->current_user_sub().subnum % 32))) ? true : false;
     bool ok = true;
     if (user.IsUserDeleted()) {
       ok = false;
@@ -383,7 +383,7 @@ void list_users(int mode) {
         numscn++;
       }
       ++p;
-      if (p == static_cast<int>(session()->user()->GetScreenLines()) - 6) {
+      if (p == static_cast<int>(a()->user()->GetScreenLines()) - 6) {
         //bout.backline();
         bout.clreol();
         bout.Color(FRAME_COLOR);
@@ -394,7 +394,7 @@ void list_users(int mode) {
         switch (ch) {
         case 'Q':
           abort = true;
-          i = session()->status_manager()->GetUserCount();
+          i = a()->status_manager()->GetUserCount();
           break;
         case SPACE:
         case RETURN:
@@ -417,9 +417,9 @@ void list_users(int mode) {
     bout.nl();
     pausescr();
   }
-  session()->ReadCurrentUser(snum);
+  a()->ReadCurrentUser(snum);
   read_qscn(snum, qsc, false);
-  session()->usernum = snum;
+  a()->usernum = snum;
   changedsl();
 }
 
@@ -430,12 +430,12 @@ void time_bank() {
   long nsln;
 
   bout.nl();
-  if (session()->user()->GetSl() <= syscfg.newusersl) {
+  if (a()->user()->GetSl() <= syscfg.newusersl) {
     bout << "|#6You must be validated to access the timebank.\r\n";
     return;
   }
-  if (session()->user()->GetTimeBankMinutes() > getslrec(session()->GetEffectiveSl()).time_per_logon) {
-    session()->user()->SetTimeBankMinutes(getslrec(session()->GetEffectiveSl()).time_per_logon);
+  if (a()->user()->GetTimeBankMinutes() > getslrec(a()->GetEffectiveSl()).time_per_logon) {
+    a()->user()->SetTimeBankMinutes(getslrec(a()->GetEffectiveSl()).time_per_logon);
   }
 
   if (okansi()) {
@@ -453,7 +453,7 @@ void time_bank() {
     bout << "|#2W|#9)ithdraw Time\r\n";
     bout << "|#2Q|#9)uit\r\n";
     bout.nl();
-    bout << "|#9Balance: |#2" << session()->user()->GetTimeBankMinutes() << "|#9 minutes\r\n";
+    bout << "|#9Balance: |#2" << a()->user()->GetTimeBankMinutes() << "|#9 minutes\r\n";
     bout << "|#9Time Left: |#2" << static_cast<int>(nsl() / 60) << "|#9 minutes\r\n";
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) [|#2Time Bank|#9] Enter Command: |#2";
@@ -467,23 +467,23 @@ void time_bank() {
       i = atoi(s);
       if (i > 0) {
         nsln = nsl();
-        if ((i + session()->user()->GetTimeBankMinutes()) > getslrec(
-              session()->GetEffectiveSl()).time_per_logon) {
-          i = getslrec(session()->GetEffectiveSl()).time_per_logon - session()->user()->GetTimeBankMinutes();
+        if ((i + a()->user()->GetTimeBankMinutes()) > getslrec(
+              a()->GetEffectiveSl()).time_per_logon) {
+          i = getslrec(a()->GetEffectiveSl()).time_per_logon - a()->user()->GetTimeBankMinutes();
         }
         if (i > (nsln / SECONDS_PER_MINUTE)) {
           i = static_cast<int>(nsln / SECONDS_PER_MINUTE);
         }
-        session()->user()->SetTimeBankMinutes(session()->user()->GetTimeBankMinutes() +
+        a()->user()->SetTimeBankMinutes(a()->user()->GetTimeBankMinutes() +
             static_cast<uint16_t>(i));
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() - 
+        a()->user()->SetExtraTime(a()->user()->GetExtraTime() - 
             static_cast<float>(i * SECONDS_PER_MINUTE));
-        session()->tleft(false);
+        a()->tleft(false);
       }
       break;
     case 'W':
       bout.nl();
-      if (session()->user()->GetTimeBankMinutes() == 0) {
+      if (a()->user()->GetTimeBankMinutes() == 0) {
         break;
       }
       bout << "|#1Withdraw How Many Minutes: ";
@@ -491,14 +491,14 @@ void time_bank() {
       i = atoi(s);
       if (i > 0) {
         nsln = nsl();
-        if (i > session()->user()->GetTimeBankMinutes()) {
-          i = session()->user()->GetTimeBankMinutes();
+        if (i > a()->user()->GetTimeBankMinutes()) {
+          i = a()->user()->GetTimeBankMinutes();
         }
-        session()->user()->SetTimeBankMinutes(session()->user()->GetTimeBankMinutes() -
+        a()->user()->SetTimeBankMinutes(a()->user()->GetTimeBankMinutes() -
             static_cast<uint16_t>(i));
-        session()->user()->SetExtraTime(session()->user()->GetExtraTime() + static_cast<float>
+        a()->user()->SetExtraTime(a()->user()->GetExtraTime() + static_cast<float>
             (i * SECONDS_PER_MINUTE));
-        session()->tleft(false);
+        a()->tleft(false);
       }
       break;
     case 'Q':
@@ -509,8 +509,8 @@ void time_bank() {
 }
 
 int getnetnum(const std::string& network_name) {
-  for (int i = 0; i < session()->max_net_num(); i++) {
-    if (iequals(session()->net_networks[i].name, network_name)) {
+  for (int i = 0; i < a()->max_net_num(); i++) {
+    if (iequals(a()->net_networks[i].name, network_name)) {
       return i;
     }
   }
@@ -518,8 +518,8 @@ int getnetnum(const std::string& network_name) {
 }
 
 int getnetnum_by_type(network_type_t type) {
-  const auto& n = session()->net_networks;
-  for (int i = 0; i < session()->max_net_num(); i++) {
+  const auto& n = a()->net_networks;
+  for (int i = 0; i < a()->max_net_num(); i++) {
     if (n[i].type == type) {
       return i;
     }

@@ -67,7 +67,7 @@ public:
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
 
 bool UseNewBBSList() {
-  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+  IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     return ini.value<bool>("USE_NEW_BBSLIST", true);
   }
@@ -184,7 +184,7 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       context.pMenuData->reload = true;
     } },
     { "DisplayHelp", [](MenuItemContext& context) {
-      if (session()->user()->IsExpert()) {
+      if (a()->user()->IsExpert()) {
         context.pMenuData->DisplayHelp();
       }
     } },

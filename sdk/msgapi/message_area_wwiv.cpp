@@ -337,7 +337,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   }
   p.daten = header.daten();
   p.status = header.status();
-  //if (session()->user()->IsRestrictionValidate()) {
+  //if (a()->user()->IsRestrictionValidate()) {
   //  p.status |= status_unvalidated;
   //}
 

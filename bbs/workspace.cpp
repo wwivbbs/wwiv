@@ -25,7 +25,7 @@
 #include "core/wwivassert.h"
 #include "bbs/bbs.h"
 #include "bbs/utility.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/vars.h"
 #include "sdk/filenames.h"
 
@@ -48,7 +48,7 @@ void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, boo
     b[lOrigSize++] = CZ;
   }
 
-  File fileOut(session()->temp_directory(), INPUT_MSG);
+  File fileOut(a()->temp_directory(), INPUT_MSG);
   fileOut.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   fileOut.Write(b.get(), lOrigSize);
   fileOut.Close();

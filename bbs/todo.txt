@@ -22,7 +22,7 @@ General Cleanup
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
 * remove extra include statements from user.cpp
-* Finish wrappering WSession
+* Finish wrappering Application
 * add IncrementXXXXX methods to User where it makes sense.
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
 * TopScreen doesn't work with CursesIO

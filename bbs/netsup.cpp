@@ -72,7 +72,7 @@ std::chrono::steady_clock::time_point last_time_c_;
 
 /** Returns a full path to exe under the WWIV_DIR */
 static string CreateNetworkBinary(const std::string exe) {
-  return (StrCat(session()->GetHomeDir(), exe));
+  return (StrCat(a()->GetHomeDir(), exe));
 }
 
 struct CalloutEntry {
@@ -95,7 +95,7 @@ static void rename_pend(const string& directory, const string& filename) {
 }
 
 static bool checkup2(const time_t tFileTime, const char *file_name) {
-  File file(session()->network_directory(), file_name);
+  File file(a()->network_directory(), file_name);
 
   if (file.Open(File::modeReadOnly)) {
     time_t tNewFileTime = file.last_write_time();
@@ -106,8 +106,8 @@ static bool checkup2(const time_t tFileTime, const char *file_name) {
 }
 
 static bool check_bbsdata() {
-  unique_ptr<WStatus> wwiv_status_ro(session()->status_manager()->GetStatus());
-  File bbsdataNet(session()->network_directory().c_str(), BBSDATA_NET);
+  unique_ptr<WStatus> wwiv_status_ro(a()->status_manager()->GetStatus());
+  File bbsdataNet(a()->network_directory().c_str(), BBSDATA_NET);
   if (bbsdataNet.Open(File::modeReadOnly)) {
     time_t tFileTime = bbsdataNet.last_write_time();
     bbsdataNet.Close();
@@ -117,19 +117,19 @@ static bool check_bbsdata() {
       return false;
     }
   }
-  if (!File::Exists(session()->network_directory(), BBSLIST_NET)) {
+  if (!File::Exists(a()->network_directory(), BBSLIST_NET)) {
     return false;
   }
-  if (!File::Exists(session()->network_directory().c_str(), CONNECT_NET)) {
+  if (!File::Exists(a()->network_directory().c_str(), CONNECT_NET)) {
     return false;
   }
-  if (!File::Exists(session()->network_directory().c_str(), CALLOUT_NET)) {
+  if (!File::Exists(a()->network_directory().c_str(), CALLOUT_NET)) {
     return false;
   }
-  const string network3 = StrCat(CreateNetworkBinary("network3"), " .", session()->net_num(), " Y");
+  const string network3 = StrCat(CreateNetworkBinary("network3"), " .", a()->net_num(), " Y");
   ExecuteExternalProgram(network3, EFLAG_NETPROG);
 
-  session()->status_manager()->Run([](WStatus& s) {
+  a()->status_manager()->Run([](WStatus& s) {
     s.IncrementFileChangedFlag(WStatus::fileChangeNet);
   });
 
@@ -140,12 +140,12 @@ static int cleanup_net1() {
   int ok, ok2, nl = 0, anynew = 0, i = 0;
   bool abort;     
 
-  session()->SetCleanNetNeeded(false);
+  a()->SetCleanNetNeeded(false);
 
-  if (session()->net_networks.empty()) {
+  if (a()->net_networks.empty()) {
     return 0;
   }
-  if (session()->net_networks[0].sysnum == 0 && session()->max_net_num() == 1) {
+  if (a()->net_networks[0].sysnum == 0 && a()->max_net_num() == 1) {
     return 0;
   }
 
@@ -154,14 +154,14 @@ static int cleanup_net1() {
   while (any && (nl++ < 10)) {
     any = false;
 
-    for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
+    for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
       set_net_num(nNetNumber);
 
-      if (!session()->current_net().sysnum) {
+      if (!a()->current_net().sysnum) {
         continue;
       }
 
-      session()->ClearTopScreenProtection();
+      a()->ClearTopScreenProtection();
 
       ok2 = 1;
       abort = false;
@@ -169,35 +169,35 @@ static int cleanup_net1() {
         ok2 = 0;
         ok = 0;
         WFindFile fnd;
-        string s = StrCat(session()->network_directory(), "p*", session()->network_extension());
+        string s = StrCat(a()->network_directory(), "p*", a()->network_extension());
         bool bFound = fnd.open(s, 0);
         while (bFound) {
           ok = 1;
           ++i;
-          rename_pend(session()->network_directory(), fnd.GetFileName());
+          rename_pend(a()->network_directory(), fnd.GetFileName());
           anynew = 1;
           bFound = fnd.next();
         }
 
-        bool supports_process_net = session()->HasConfigFlag(OP_FLAGS_NET_PROCESS);
+        bool supports_process_net = a()->HasConfigFlag(OP_FLAGS_NET_PROCESS);
         if (supports_process_net) {
           if (!ok) {
             WFindFile fnd_net;
-            ok = fnd_net.open(StrCat(session()->network_directory(), "p*.net"), 0);
+            ok = fnd_net.open(StrCat(a()->network_directory(), "p*.net"), 0);
           }
           if (ok) {
-            wfc_cls(session());
+            wfc_cls(a());
             ++i;
             hangup = false;
-            session()->using_modem = 0;
-            if (session()->IsUserOnline()) {
+            a()->using_modem = 0;
+            if (a()->IsUserOnline()) {
               hang_it_up();
             }
             // Try to run network3 before network1.
-            if (!File::Exists(session()->network_directory(), BBSDATA_NET)) {
+            if (!File::Exists(a()->network_directory(), BBSDATA_NET)) {
               check_bbsdata();
             }
-            const string network1_cmd = StrCat(CreateNetworkBinary("network1"), " .", session()->net_num());
+            const string network1_cmd = StrCat(CreateNetworkBinary("network1"), " .", a()->net_num());
             if (ExecuteExternalProgram(network1_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
@@ -205,55 +205,55 @@ static int cleanup_net1() {
             }
             ok2 = 1;
           }
-          if (File::Exists(session()->network_directory(), LOCAL_NET)) {
-            wfc_cls(session());
+          if (File::Exists(a()->network_directory(), LOCAL_NET)) {
+            wfc_cls(a());
             ++i;
             any = true;
             ok = 1;
             hangup = false;
-            session()->using_modem = 0;
-            string network2_cmd = StrCat(CreateNetworkBinary("network2"), " .", session()->net_num());
+            a()->using_modem = 0;
+            string network2_cmd = StrCat(CreateNetworkBinary("network2"), " .", a()->net_num());
             if (ExecuteExternalProgram(network2_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
               any = true;
             }
             ok2 = 1;
-            session()->status_manager()->RefreshStatusCache();
-            session()->SetCurrentReadMessageArea(-1);
-            session()->ReadCurrentUser(1);
+            a()->status_manager()->RefreshStatusCache();
+            a()->SetCurrentReadMessageArea(-1);
+            a()->ReadCurrentUser(1);
           }
           if (check_bbsdata()) {
             ok2 = 1;
           }
           if (ok2) {
-            session()->localIO()->Cls();
+            a()->localIO()->Cls();
             ++i;
           }
         }
       }
     }
   }
-  if (anynew && (session()->instance_number() != 1)) {
+  if (anynew && (a()->instance_number() != 1)) {
     send_inst_cleannet();
   }
   return i;
 }
 
 void cleanup_net() {
-  if (cleanup_net1() && session()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
-    wfc_cls(session());
+  if (cleanup_net1() && a()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
+    wfc_cls(a());
 
-    IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       const string cmd1 = ini.value<string>("NET_CLEANUP_CMD1");
       if (!cmd1.empty()) {
-        ExecuteExternalProgram(cmd1, session()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
+        ExecuteExternalProgram(cmd1, a()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
         cleanup_net1();
       }
       const string cmd2 = ini.value<string>("NET_CLEANUP_CMD2");
       if (!cmd2.empty()) {
-        ExecuteExternalProgram(cmd2, session()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
+        ExecuteExternalProgram(cmd2, a()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
         cleanup_net1();
       }
       ini.Close();
@@ -262,9 +262,9 @@ void cleanup_net() {
 }
 
 void do_callout(uint16_t sn) {
-  Callout callout(session()->current_net());
-  Contact contact(session()->current_net(), false);
-  Binkp binkp(session()->current_net().dir);
+  Callout callout(a()->current_net());
+  Contact contact(a()->current_net(), false);
+  Binkp binkp(a()->current_net().dir);
 
   const net_call_out_rec* callout_rec = callout.net_call_out_for(sn); // i con
   if (callout_rec == nullptr) {
@@ -280,11 +280,11 @@ void do_callout(uint16_t sn) {
     return;
   }
 
-  const string cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", session()->net_num());
+  const string cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", a()->net_num());
   if (strncmp(csne->phone, "000", 3)) {
     // TODO(rushfan): Figure out a better way to see if we need to call WINS exp.exe
     run_exp();
-    bout << "|#7Calling out to: |#2" << csne->name << " - " << session()->network_name() << " @" << sn << wwiv::endl;
+    bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn << wwiv::endl;
     const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
             REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
     string region = "Unknown Region";
@@ -303,7 +303,7 @@ void do_callout(uint16_t sn) {
     bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
          << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
     ExecuteExternalProgram(cmd, EFLAG_NETPROG);
-    session()->status_manager()->RefreshStatusCache();
+    a()->status_manager()->RefreshStatusCache();
     last_time_c_ = steady_clock::now();
     cleanup_net();
     run_exp();
@@ -399,7 +399,7 @@ static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_cal
 }
 
 bool attempt_callout() {
-  session()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->RefreshStatusCache();
 
   auto now = steady_clock::now();
   if (last_time_c_ == steady_clock::time_point::min()) {
@@ -413,16 +413,16 @@ bool attempt_callout() {
   // Set the last connect time to now since we are attempting to connect.
   last_time_c_ = now;
   wwiv::core::ScopeExit set_net_num_zero([&]() { set_net_num(0); });
-  vector<NodeAndWeight> to_call(session()->max_net_num());
+  vector<NodeAndWeight> to_call(a()->max_net_num());
 
-  for (int nn = 0; nn < session()->max_net_num(); nn++) {
+  for (int nn = 0; nn < a()->max_net_num(); nn++) {
     set_net_num(nn);
-    if (!session()->current_net().sysnum) {
+    if (!a()->current_net().sysnum) {
       continue;
     }
 
-    Callout callout(session()->current_net());
-    Contact contact(session()->current_net(), false);
+    Callout callout(a()->current_net());
+    Contact contact(a()->current_net(), false);
 
     for (const auto& p : callout.node_config()) {
       bool ok = ok_to_call(&p.second);
@@ -473,12 +473,12 @@ bool attempt_callout() {
 void print_pending_list() {
   int adjust = 0, lines = 0;
   char s1[81], s2[81], s3[81], s4[81], s5[81];
-  long ss = session()->user()->GetStatus();
+  long ss = a()->user()->GetStatus();
 
-  if (session()->net_networks.empty()) {
+  if (a()->net_networks.empty()) {
     return;
   }
-  if (session()->net_networks[0].sysnum == 0 && session()->max_net_num() == 1) {
+  if (a()->net_networks[0].sysnum == 0 && a()->max_net_num() == 1) {
     return;
   }
 
@@ -493,15 +493,15 @@ void print_pending_list() {
   bout << "|#7\xC3\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
 
   int nNetNumber;
-  for (nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
+  for (nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
 
-    if (!session()->current_net().sysnum) {
+    if (!a()->current_net().sysnum) {
       continue;
     }
 
-    Callout callout(session()->current_net());
-    Contact contact(session()->current_net(), false);
+    Callout callout(a()->current_net());
+    Contact contact(a()->current_net(), false);
 
     for (const auto& p : callout.node_config()) {
       const NetworkContact* r = contact.contact_rec_for(p.first);
@@ -551,54 +551,54 @@ void print_pending_list() {
 
       bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
           "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#2%4d |#7\xB3\r\n",
-          s2, session()->network_name(), r->systemnumber(), s3, s4, s5, r->numfails(), s1, i3);
-      if (!session()->user()->HasPause() && ((lines++) == 20)) {
+          s2, a()->network_name(), r->systemnumber(), s3, s4, s5, r->numfails(), s1, i3);
+      if (!a()->user()->HasPause() && ((lines++) == 20)) {
         pausescr();
         lines = 0;
       }
     }
   }
 
-  for (nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
+  for (nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
 
-    if (!session()->current_net().sysnum) {
+    if (!a()->current_net().sysnum) {
       continue;
     }
 
-    File deadNetFile(session()->network_directory(), DEAD_NET);
+    File deadNetFile(a()->network_directory(), DEAD_NET);
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto lFileSize = deadNetFile.GetLength();
       deadNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s "
                    "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n",
-          session()->network_name(), s3);
+          a()->network_name(), s3);
     }
   }
 
-  for (nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
+  for (nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
 
-    if (!session()->current_net().sysnum) {
+    if (!a()->current_net().sysnum) {
       continue;
     }
 
-    File checkNetFile(session()->network_directory(), CHECK_NET);
+    File checkNetFile(a()->network_directory(), CHECK_NET);
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto lFileSize = checkNetFile.GetLength();
       checkNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       strcat(s3, "k");
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3|#2 --- |#7\xB3\r\n",
-                   session()->network_name(), s3);
+                   a()->network_name(), s3);
     }
   }
 
   bout << "|#7\xc0\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
   bout.nl();
-  session()->user()->SetStatus(ss);
-  if (!session()->IsUserOnline() && bout.lines_listed()) {
+  a()->user()->SetStatus(ss);
+  if (!a()->IsUserOnline() && bout.lines_listed()) {
     pausescr();
   }
 }
@@ -630,12 +630,12 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
 
     qn[0] = on[0] = '\0';
 
-    if (nFromNetworkNumber == 65535 || nh->fromsys == session()->net_networks[nFromNetworkNumber].sysnum) {
+    if (nFromNetworkNumber == 65535 || nh->fromsys == a()->net_networks[nFromNetworkNumber].sysnum) {
 
       strcpy(newname, nm);
       ss = strrchr(newname, '@');
       if (ss) {
-        sprintf(ss + 1, "%u", session()->net_networks[nNetNumber].sysnum);
+        sprintf(ss + 1, "%u", a()->net_networks[nNetNumber].sysnum);
         ss = strrchr(nm, '@');
         if (ss) {
           ++ss;
@@ -645,7 +645,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
           strcat(newname, ss);
         }
         strcat(newname, "\r\n");
-        nh->fromsys = session()->net_networks[nNetNumber].sysnum;
+        nh->fromsys = a()->net_networks[nNetNumber].sysnum;
       }
     } else {
       if ((nm[0] == '`') && (nm[1] == '`')) {
@@ -686,19 +686,19 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
       if ((on[0] == 0) && (nh->fromuser == 0)) {
         strcpy(on, nm + i);
       }
-      if (session()->net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
-          session()->net_networks[nFromNetworkNumber].type == network_type_t::internet) {
+      if (a()->net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
+          a()->net_networks[nFromNetworkNumber].type == network_type_t::internet) {
         sprintf(newname, "%s%s", qn, on);
       } else {
         if (on[0]) {
           sprintf(newname, "%s%s@%u.%s\r\n", qn, on, nh->fromsys,
-                  session()->net_networks[nFromNetworkNumber].name);
+                  a()->net_networks[nFromNetworkNumber].name);
         } else {
           sprintf(newname, "%s#%u@%u.%s\r\n", qn, nh->fromuser, nh->fromsys,
-                  session()->net_networks[nFromNetworkNumber].name);
+                  a()->net_networks[nFromNetworkNumber].name);
         }
       }
-      nh->fromsys = session()->net_networks[nNetNumber].sysnum;
+      nh->fromsys = a()->net_networks[nNetNumber].sysnum;
       nh->fromuser = 0;
     }
 
@@ -709,7 +709,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
       nh->length += author_name.size() + 1;
     }
     const string packet_filename = StrCat(
-      session()->net_networks[nNetNumber].dir, "p1", session()->network_extension());
+      a()->net_networks[nNetNumber].dir, "p1", a()->network_extension());
     File file(packet_filename);
     if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       file.Seek(0L, File::Whence::end);
@@ -741,9 +741,9 @@ static void print_call(uint16_t sn, int nNetNumber) {
   time_t tCurrentTime = time(nullptr);
 
   set_net_num(nNetNumber);
-  Callout callout(session()->current_net());
-  Contact contact(session()->current_net(), false);
-  Binkp binkp(session()->current_net().dir);
+  Callout callout(a()->current_net());
+  Contact contact(a()->current_net(), false);
+  Binkp binkp(a()->current_net().dir);
 
   const NetworkContact *ncn = contact.contact_rec_for(sn);
   if (!ncn) { return; }
@@ -752,19 +752,19 @@ static void print_call(uint16_t sn, int nNetNumber) {
 
   if (!got_color) {
     got_color = 1;
-    IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
     }
   }
   string s1 = to_string(bytes_to_k(ncn->bytes_waiting()));
-  session()->localIO()->PrintfXYA(58, 17, color, "%-10.16s", s1.c_str());
+  a()->localIO()->PrintfXYA(58, 17, color, "%-10.16s", s1.c_str());
 
   s1 = to_string(bytes_to_k(ncn->bytes_received()));
-  session()->localIO()->PrintfXYA(23, 17, color, "%-10.16s", s1.c_str());
+  a()->localIO()->PrintfXYA(23, 17, color, "%-10.16s", s1.c_str());
 
   s1 = to_string(bytes_to_k(ncn->bytes_sent()));
-  session()->localIO()->PrintfXYA(23, 18, color, "%-10.16s", s1.c_str());
+  a()->localIO()->PrintfXYA(23, 18, color, "%-10.16s", s1.c_str());
 
   if (ncn->firstcontact() > 0) {
     s1 = StrCat(to_string((tCurrentTime - ncn->firstcontact()) / SECONDS_PER_HOUR), ":");
@@ -779,7 +779,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
   } else {
     s1 = "NEVER";
   }
-  session()->localIO()->PrintfXYA(23, 16, color, "%-17.16s", s1.c_str());
+  a()->localIO()->PrintfXYA(23, 16, color, "%-17.16s", s1.c_str());
 
   if (ncn->lastcontactsent() > 0) {
     s1 = StrCat(to_string((tCurrentTime - ncn->lastcontactsent()) / SECONDS_PER_HOUR), ":");
@@ -794,7 +794,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
   } else {
     s1 = "NEVER";
   }
-  session()->localIO()->PrintfXYA(58, 16, color, "%-17.16s", s1.c_str());
+  a()->localIO()->PrintfXYA(58, 16, color, "%-17.16s", s1.c_str());
 
   if (ncn->lasttry() > 0) {
     string tmp = to_string((tCurrentTime - ncn->lasttry()) / SECONDS_PER_HOUR);
@@ -810,9 +810,9 @@ static void print_call(uint16_t sn, int nNetNumber) {
   } else {
     s1 = "NEVER";
   }
-  session()->localIO()->PrintfXYA(58, 15, color, "%-17.16s", s1.c_str());
-  session()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts());
-  session()->localIO()->PrintfXYA(41, 3, color, "%-30.30s", csne->name);
+  a()->localIO()->PrintfXYA(58, 15, color, "%-17.16s", s1.c_str());
+  a()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts());
+  a()->localIO()->PrintfXYA(41, 3, color, "%-30.30s", csne->name);
   auto binkp_node = binkp.binkp_session_config_for(csne->sysnum);
   string hostname = csne->phone;
   string speed = StrCat(to_string(csne->speed), " BPS");
@@ -821,9 +821,9 @@ static void print_call(uint16_t sn, int nNetNumber) {
     hostname = StrCat(binkp_node->host, ":", binkp_node->port);
     speed = "BinkP";
   }
-  session()->localIO()->PrintfXYA(23, 19, color, "%-30.30s", hostname.c_str());
-  session()->localIO()->PrintfXYA(58, 18, color, "%-10.16s", speed.c_str());
-  session()->localIO()->PrintfXYA(14, 3, color, "%-11.16s", session()->network_name());
+  a()->localIO()->PrintfXYA(23, 19, color, "%-30.30s", hostname.c_str());
+  a()->localIO()->PrintfXYA(58, 18, color, "%-10.16s", speed.c_str());
+  a()->localIO()->PrintfXYA(14, 3, color, "%-11.16s", a()->network_name());
 }
 
 static void fill_call(int color, int row, const std::vector<CalloutEntry>& entries) {
@@ -841,7 +841,7 @@ static void fill_call(int color, int row, const std::vector<CalloutEntry>& entri
       strcpy(s1, "     ");
     }
     curatr = color;
-    session()->localIO()->PutsXY(6 + x, 5 + y, s1);
+    a()->localIO()->PutsXY(6 + x, 5 + y, s1);
     x += 7;
   }
 }
@@ -851,14 +851,14 @@ static std::pair<uint16_t, int> ansicallout() {
   static int color1, color2, color3, color4;
   static bool got_info = false;
   int rownum = 0;
-  session()->localIO()->SetCursor(LocalIO::cursorNone);
+  a()->localIO()->SetCursor(LocalIO::cursorNone);
   if (!got_info) {
     got_info = true;
     color1 = 9;
     color2 = 30;
     color3 = 3;
     color4 = 14;
-    IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       callout_ansi = ini.value<bool>("CALLOUT_ANSI");
       color1 = ini.value("CALLOUT_COLOR", color1);
@@ -873,16 +873,16 @@ static std::pair<uint16_t, int> ansicallout() {
     bout.nl();
     bout << "|#2Which system: ";
     int sn = input_number<int>(0, 0, 32767);
-    session()->localIO()->SetCursor(LocalIO::cursorNormal);
+    a()->localIO()->SetCursor(LocalIO::cursorNormal);
     return std::make_pair(sn, -1);
 
   }
   int pos = 0, sn = 0, snn = 0;
   std::vector<CalloutEntry> entries;
-  for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
+  for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
-    Callout callout(session()->current_net());
-    Contact contact(session()->current_net(), false);
+    Callout callout(a()->current_net());
+    Contact contact(a()->current_net(), false);
 
     const auto& nodemap = callout.node_config();
     for (const auto& p : nodemap) {
@@ -901,33 +901,33 @@ static std::pair<uint16_t, int> ansicallout() {
     return std::make_pair(0, -1);
   }
 
-  session()->localIO()->Cls();
+  a()->localIO()->Cls();
   curatr = color1;
-  session()->localIO()->MakeLocalWindow(3, 2, 73, 10);
-  session()->localIO()->PrintfXYA(3, 4, color1, "\xC3%s\xB4", charstr(71, '\xC4'));
-  session()->localIO()->MakeLocalWindow(3, 14, 73, 7);
-  session()->localIO()->PrintfXYA(5, 3,   color3, "Network:");
-  session()->localIO()->PrintfXYA(31, 3,  color3, "BBS Name:");
-  session()->localIO()->PrintfXYA(5, 15,  color3, "# Connections   :");
-  session()->localIO()->PrintfXYA(5, 16,  color3, "First Contact   :");
-  session()->localIO()->PrintfXYA(5, 17,  color3, "KB Received     :");
-  session()->localIO()->PrintfXYA(5, 18,  color3, "KB Sent         :");
-  session()->localIO()->PrintfXYA(5, 19,  color3, "Address         :");
-  session()->localIO()->PrintfXYA(40, 15, color3, "Last Attempt    :");
-  session()->localIO()->PrintfXYA(40, 16, color3, "Last Contact    :");
-  session()->localIO()->PrintfXYA(40, 17, color3, "KB Waiting      :");
-  session()->localIO()->PrintfXYA(40, 18, color3, "Max Speed       :");
+  a()->localIO()->MakeLocalWindow(3, 2, 73, 10);
+  a()->localIO()->PrintfXYA(3, 4, color1, "\xC3%s\xB4", charstr(71, '\xC4'));
+  a()->localIO()->MakeLocalWindow(3, 14, 73, 7);
+  a()->localIO()->PrintfXYA(5, 3,   color3, "Network:");
+  a()->localIO()->PrintfXYA(31, 3,  color3, "BBS Name:");
+  a()->localIO()->PrintfXYA(5, 15,  color3, "# Connections   :");
+  a()->localIO()->PrintfXYA(5, 16,  color3, "First Contact   :");
+  a()->localIO()->PrintfXYA(5, 17,  color3, "KB Received     :");
+  a()->localIO()->PrintfXYA(5, 18,  color3, "KB Sent         :");
+  a()->localIO()->PrintfXYA(5, 19,  color3, "Address         :");
+  a()->localIO()->PrintfXYA(40, 15, color3, "Last Attempt    :");
+  a()->localIO()->PrintfXYA(40, 16, color3, "Last Contact    :");
+  a()->localIO()->PrintfXYA(40, 17, color3, "KB Waiting      :");
+  a()->localIO()->PrintfXYA(40, 18, color3, "Max Speed       :");
 
   fill_call(color4, rownum, entries);
   int x = 0;
   int y = 0;
-  session()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
+  a()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
   print_call(entries[pos].node, entries[pos].net);
   char ch = 0;
 
   bool done = false;
   do {
-    ch = wwiv::UpperCase<char>(static_cast<char>(session()->localIO()->GetChar()));
+    ch = wwiv::UpperCase<char>(static_cast<char>(a()->localIO()->GetChar()));
     switch (ch) {
     case ' ':
     case RETURN:
@@ -943,44 +943,44 @@ static std::pair<uint16_t, int> ansicallout() {
       break;
     case -32: // (224) I don't know MS's CRT returns this on arrow keys....
     case 0:
-      ch = wwiv::UpperCase<char>(static_cast<char>(session()->localIO()->GetChar()));
+      ch = wwiv::UpperCase<char>(static_cast<char>(a()->localIO()->GetChar()));
       switch (ch) {
       case RARROW:                        // right arrow
         if ((pos < size_int(entries) - 1) && (x < 63)) {
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos++;
           x += 7;
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
       case LARROW:                        // left arrow
         if (x > 0) {
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos--;
           x -= 7;
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
       case UPARROW:                        // up arrow
         if (y > 0) {
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos -= 10;
           y--;
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         } else if (rownum > 0) {
           pos -= 10;
           rownum--;
           fill_call(color4, rownum, entries);
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
       case DNARROW:                        // down arrow
         if ((y < 5) && (pos + 10 < size_int(entries))) {
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos += 10;
           y++;
         } else if ((rownum + 6) * 10 < size_int(entries)) {
@@ -992,7 +992,7 @@ static std::pair<uint16_t, int> ansicallout() {
             --y;
           }
         }
-        session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+        a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
         print_call(entries[pos].node, entries[pos].net);
         break;
       case HOME:                        // home
@@ -1002,15 +1002,15 @@ static std::pair<uint16_t, int> ansicallout() {
           pos = 0;
           rownum = 0;
           fill_call(color4, rownum, entries);
-          session()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         }
       case PAGEUP:                        // page up
         if (y > 0) {
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos -= 10 * y;
           y = 0;
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         } else {
           if (rownum > 5) {
@@ -1021,20 +1021,20 @@ static std::pair<uint16_t, int> ansicallout() {
             rownum = 0;
           }
           fill_call(color4, rownum, entries);
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
       case PAGEDN:                        // page down
         if (y < 5) {
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos += 10 * (5 - y);
           y = 5;
           if (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         } else if ((rownum + 6) * 10 < size_int(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
@@ -1048,7 +1048,7 @@ static std::pair<uint16_t, int> ansicallout() {
             pos -= 10;
             --y;
           }
-          session()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
@@ -1057,15 +1057,15 @@ static std::pair<uint16_t, int> ansicallout() {
   } while (!done);
 
   curatr = color3;
-  session()->localIO()->Cls();
-  session()->localIO()->SetCursor(LocalIO::cursorNormal);
+  a()->localIO()->Cls();
+  a()->localIO()->SetCursor(LocalIO::cursorNormal);
   return std::make_pair(sn, snn);
 }
 
 static int FindNetworkNumberForNode(int sn) {
-  for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
+  for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
-    Callout callout(session()->current_net());
+    Callout callout(a()->current_net());
     if (callout.net_call_out_for(sn) != nullptr) {
       return nNetNumber;
     }
@@ -1091,7 +1091,7 @@ void force_callout(int dw) {
   }
 
   set_net_num(network_number);
-  Callout callout(session()->current_net());
+  Callout callout(a()->current_net());
 
   bool ok = ok_to_call(callout.net_call_out_for(sn.first));
   if (!ok) {
@@ -1105,10 +1105,10 @@ void force_callout(int dw) {
     total_attempts = atoi(s);
   }
   if (dw == 2) {
-    if (session()->IsUserOnline()) {
-      session()->WriteCurrentUser();
-      write_qscn(session()->usernum, qsc, false);
-      session()->SetUserOnline(false);
+    if (a()->IsUserOnline()) {
+      a()->WriteCurrentUser();
+      write_qscn(a()->usernum, qsc, false);
+      a()->SetUserOnline(false);
     }
     hang_it_up();
     sleep_for(seconds(5));
@@ -1117,10 +1117,10 @@ void force_callout(int dw) {
     total_attempts = 1;
   }
 
-  Contact contact(session()->current_net(), false);
+  Contact contact(a()->current_net(), false);
   while (current_attempt < total_attempts && !abort) {
-    while (session()->localIO()->KeyPressed()) {
-      ch = wwiv::UpperCase<char>(session()->localIO()->GetChar());
+    while (a()->localIO()->KeyPressed()) {
+      ch = wwiv::UpperCase<char>(a()->localIO()->GetChar());
       if (!abort) {
         abort = (ch == ESC) ? true : false;
       }
@@ -1129,7 +1129,7 @@ void force_callout(int dw) {
     if (abort) {
       break;
     } 
-    session()->localIO()->Cls();
+    a()->localIO()->Cls();
     bout << "|#9Retries |#0= |#2" << total_attempts 
           << "|#9, Current |#0= |#2" << current_attempt
           << "|#9, Remaining |#0= |#2" << total_attempts - current_attempt
@@ -1139,7 +1139,7 @@ void force_callout(int dw) {
 }
 
 void run_exp() {
-  int nOldNetworkNumber = session()->net_num();
+  int nOldNetworkNumber = a()->net_num();
   int internet_net_num = getnetnum_by_type(network_type_t::internet);
   if (internet_net_num == -1) {
     return;
@@ -1147,14 +1147,14 @@ void run_exp() {
   set_net_num(internet_net_num);
 
   const string exp_command = StringPrintf("exp s32767.net %s %d %s %s %s", 
-      session()->network_directory().c_str(), session()->current_net().sysnum,
-      session()->internetEmailName.c_str(), 
-      session()->internetEmailDomain.c_str(), 
-      session()->network_name());
+      a()->network_directory().c_str(), a()->current_net().sysnum,
+      a()->internetEmailName.c_str(), 
+      a()->internetEmailDomain.c_str(), 
+      a()->network_name());
   ExecuteExternalProgram(exp_command, EFLAG_NETPROG);
 
   set_net_num(nOldNetworkNumber);
-  session()->localIO()->Cls();
+  a()->localIO()->Cls();
 }
 
 std::chrono::steady_clock::time_point last_network_attempt() {

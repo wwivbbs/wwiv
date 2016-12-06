@@ -177,17 +177,17 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
   bool done = false;
   double tpb = (12.656) / ((double)(modem_speed));
   bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
-  int nOldXPos = session()->localIO()->WhereX();
-  int nOldYPos = session()->localIO()->WhereY();
-  session()->localIO()->PutsXY(52, 0, "\xB3 Filename :               ");
-  session()->localIO()->PutsXY(52, 1, "\xB3 Xfer Time:               ");
-  session()->localIO()->PutsXY(52, 2, "\xB3 File Size:               ");
-  session()->localIO()->PutsXY(52, 3, "\xB3 Cur Block: 1 - 1k        ");
-  session()->localIO()->PutsXY(52, 4, "\xB3 Consec Errors: 0         ");
-  session()->localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
-  session()->localIO()->PutsXY(52, 6,
+  int nOldXPos = a()->localIO()->WhereX();
+  int nOldYPos = a()->localIO()->WhereY();
+  a()->localIO()->PutsXY(52, 0, "\xB3 Filename :               ");
+  a()->localIO()->PutsXY(52, 1, "\xB3 Xfer Time:               ");
+  a()->localIO()->PutsXY(52, 2, "\xB3 File Size:               ");
+  a()->localIO()->PutsXY(52, 3, "\xB3 Cur Block: 1 - 1k        ");
+  a()->localIO()->PutsXY(52, 4, "\xB3 Consec Errors: 0         ");
+  a()->localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
+  a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
-  session()->localIO()->PutsXY(65, 0, stripfn(file_name));
+  a()->localIO()->PutsXY(65, 0, stripfn(file_name));
   int nNumStartTries = 0;
   do {
     if (nNumStartTries++ > 9) {
@@ -205,10 +205,10 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
     auto d1 = steady_clock::now();
     while (steady_clock::now() - d1 < seconds(10) && !bkbhitraw() && !hangup) {
       CheckForHangup();
-      if (session()->localIO()->KeyPressed()) {
-        ch = session()->localIO()->GetChar();
+      if (a()->localIO()->KeyPressed()) {
+        ch = a()->localIO()->GetChar();
         if (ch == 0) {
-          session()->localIO()->GetChar();
+          a()->localIO()->GetChar();
         } else if (ch == ESC) {
           done = true;
           ok = false;
@@ -220,11 +220,11 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
   int i = 0;
   do {
     bln = 255;
-    session()->localIO()->PrintfXY(69, 4, "%d  ", nConsecErrors);
-    session()->localIO()->PrintfXY(69, 5, "%d", nTotalErrors);
-    session()->localIO()->PrintfXY(65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
+    a()->localIO()->PrintfXY(69, 4, "%d  ", nConsecErrors);
+    a()->localIO()->PrintfXY(69, 5, "%d", nTotalErrors);
+    a()->localIO()->PrintfXY(65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
     if (reallen) {
-      session()->localIO()->PutsXY(65, 1, ctim(std::lround((reallen - pos) * tpb)));
+      a()->localIO()->PutsXY(65, 1, ctim(std::lround((reallen - pos) * tpb)));
     }
     i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {
@@ -237,7 +237,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
         }
         x[i3 - i1] = '\0';
         reallen = atol(x);
-        session()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (reallen + 127) / 128, bytes_to_k(reallen));
+        a()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (reallen + 127) / 128, bytes_to_k(reallen));
         while ((b[i1] != SPACE) && (i1 < 64)) {
           ++i1;
         }
@@ -318,7 +318,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
       lasteot = false;
     }
   } while (!hangup && !done);
-  session()->localIO()->GotoXY(nOldXPos, nOldYPos);
+  a()->localIO()->GotoXY(nOldXPos, nOldYPos);
   if (ok) {
     file.Close();
     if (filedatetime) {
@@ -336,10 +336,10 @@ void zmodem_receive(const string& filename, bool *received) {
   string local_filename(filename);
   wwiv::strings::RemoveWhitespace(&local_filename);
 
-  bool bOldBinaryMode = session()->remoteIO()->binary_mode();
-  session()->remoteIO()->set_binary_mode(true);
+  bool bOldBinaryMode = a()->remoteIO()->binary_mode();
+  a()->remoteIO()->set_binary_mode(true);
   bool bResult = NewZModemReceiveFile(local_filename.c_str());
-  session()->remoteIO()->set_binary_mode(bOldBinaryMode);
+  a()->remoteIO()->set_binary_mode(bOldBinaryMode);
 
   *received = (bResult) ? true : false;
 }

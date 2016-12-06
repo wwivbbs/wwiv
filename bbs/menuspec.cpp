@@ -87,8 +87,8 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
   }
   bool ok = true;
   while ((nRecordNumber > 0) && ok && !hangup) {
-    session()->tleft(true);
-    File fileDownload(session()->download_filename_);
+    a()->tleft(true);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, nRecordNumber);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -96,7 +96,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     bout.nl();
 
     if (bTitle) {
-      bout << "Directory  : " << session()->directories[dn].name << wwiv::endl;
+      bout << "Directory  : " << a()->directories[dn].name << wwiv::endl;
     }
     bOkToDL = printfileinfo(&u, dn);
 
@@ -105,11 +105,11 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
       return -1;
     }
     if (bOkToDL || bFreeDL) {
-      write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_NONE);
-      string s1 = StrCat(session()->directories[dn].path, u.filename);
-      if (session()->directories[dn].mask & mask_cdrom) {
-        string s2 = StrCat(session()->directories[dn].path, u.filename);
-        s1 = StrCat(session()->temp_directory(), u.filename);
+      write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
+      string s1 = StrCat(a()->directories[dn].path, u.filename);
+      if (a()->directories[dn].mask & mask_cdrom) {
+        string s2 = StrCat(a()->directories[dn].path, u.filename);
+        s1 = StrCat(a()->temp_directory(), u.filename);
         if (!File::Exists(s1)) {
           copyfile(s2, s1, false);
         }
@@ -123,8 +123,8 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
 
       if (sent) {
         if (!bFreeDL) {
-          session()->user()->SetFilesDownloaded(session()->user()->GetFilesDownloaded() + 1);
-          session()->user()->SetDownloadK(session()->user()->GetDownloadK() + static_cast<int>
+          a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
+          a()->user()->SetDownloadK(a()->user()->GetDownloadK() + static_cast<int>
               (bytes_to_k(u.numbytes)));
         }
         ++u.numdloads;
@@ -136,10 +136,10 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
         sysoplog() << "Downloaded '" << u.filename << "'.";
 
         if (syscfg.sysconfig & sysconfig_log_dl) {
-          session()->users()->ReadUser(&ur, u.ownerusr);
+          a()->users()->ReadUser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
-              const string username_num = session()->names()->UserName(session()->usernum);
+              const string username_num = a()->names()->UserName(a()->usernum);
               ssm(u.ownerusr, 0) << username_num << " downloaded '" << u.filename << "' on " << date();
             }
           }
@@ -149,8 +149,8 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
       bout.nl(2);
       bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
 
-      if (session()->IsUserOnline()) {
-        session()->UpdateTopScreen();
+      if (a()->IsUserOnline()) {
+        a()->UpdateTopScreen();
       }
     } else {
       bout << "\r\n\nNot enough time left to D/L.\r\n";
@@ -166,8 +166,8 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
 
 
 int FindDN(const char *pszDownloadFileName) {
-  for (size_t i = 0; (i < session()->directories.size()); i++) {
-    if (IsEqualsIgnoreCase(session()->directories[i].filename, pszDownloadFileName)) {
+  for (size_t i = 0; (i < a()->directories.size()); i++) {
+    if (IsEqualsIgnoreCase(a()->directories[i].filename, pszDownloadFileName)) {
       return i;
     }
   }
@@ -197,8 +197,8 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 }
 
 int FindDoorNo(const char *pszDoor) {
-  for (size_t i = 0; i < session()->chains.size(); i++) {
-    if (IsEqualsIgnoreCase(session()->chains[i].description, pszDoor)) {
+  for (size_t i = 0; i < a()->chains.size(); i++) {
+    if (IsEqualsIgnoreCase(a()->chains[i].description, pszDoor)) {
       return i;
     }
   }
@@ -210,8 +210,8 @@ bool ValidateDoorAccess(int nDoorNumber) {
   int inst = inst_ok(INST_LOC_CHAINS, nDoorNumber + 1);
   if (inst != 0) {
     char szChainInUse[255];
-    sprintf(szChainInUse,  "|#2Chain %s is in use on instance %d.  ", session()->chains[nDoorNumber].description, inst);
-    if (!(session()->chains[nDoorNumber].ansir & ansir_multi_user)) {
+    sprintf(szChainInUse,  "|#2Chain %s is in use on instance %d.  ", a()->chains[nDoorNumber].description, inst);
+    if (!(a()->chains[nDoorNumber].ansir & ansir_multi_user)) {
       bout << szChainInUse << " Try again later.\r\n";
       return false;
     } else {
@@ -221,25 +221,25 @@ bool ValidateDoorAccess(int nDoorNumber) {
       }
     }
   }
-  chainfilerec& c = session()->chains[nDoorNumber];
+  chainfilerec& c = a()->chains[nDoorNumber];
   if ((c.ansir & ansir_ansi) && !okansi()) {
     return false;
   }
-  if ((c.ansir & ansir_local_only) && session()->using_modem) {
+  if ((c.ansir & ansir_local_only) && a()->using_modem) {
     return false;
   }
-  if (c.sl > session()->GetEffectiveSl()) {
+  if (c.sl > a()->GetEffectiveSl()) {
     return false;
   }
-  if (c.ar && !session()->user()->HasArFlag(c.ar)) {
+  if (c.ar && !a()->user()->HasArFlag(c.ar)) {
     return false;
   }
-  if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && session()->chains_reg.size() > 0
-      && session()->GetEffectiveSl() < 255) {
-    chainregrec& r = session()->chains_reg[ nDoorNumber ];
+  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
+      && a()->chains_reg.size() > 0
+      && a()->GetEffectiveSl() < 255) {
+    chainregrec& r = a()->chains_reg[ nDoorNumber ];
     if (r.maxage) {
-      if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {
+      if (r.minage > a()->user()->GetAge() || r.maxage < a()->user()->GetAge()) {
         return false;
       }
     }
@@ -256,10 +256,10 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   char* s = mmkey(0);
-  for (size_t i = 0; (i < session()->subs().subs().size())
-       && (session()->usub[i].subnum != -1); i++) {
-    if (wwiv::strings::IsEquals(session()->usub[i].keys, s)) {
-      session()->set_current_user_sub_num(i);
+  for (size_t i = 0; (i < a()->subs().subs().size())
+       && (a()->usub[i].subnum != -1); i++) {
+    if (wwiv::strings::IsEquals(a()->usub[i].keys, s)) {
+      a()->set_current_user_sub_num(i);
     }
   }
 }
@@ -277,9 +277,9 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (size_t i = 0; i < session()->directories.size(); i++) {
-      if (wwiv::strings::IsEquals(session()->udir[i].keys, s)) {
-        session()->set_current_user_dir_num(i);
+    for (size_t i = 0; i < a()->directories.size(); i++) {
+      if (wwiv::strings::IsEquals(a()->udir[i].keys, s)) {
+        a()->set_current_user_dir_num(i);
         done = true;
       }
     }

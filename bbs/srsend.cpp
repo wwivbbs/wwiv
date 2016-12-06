@@ -141,8 +141,8 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
       if (nNumErrors >= 9) {
         done = true;
       }
-      session()->localIO()->PrintfXY(69, 4, "%d", nNumErrors);
-      session()->localIO()->PrintfXY(69, 5, "%d", *terr);
+      a()->localIO()->PrintfXY(69, 4, "%d", nNumErrors);
+      a()->localIO()->PrintfXY(69, 5, "%d", *terr);
     }
   } while (!done && !hangup && !*abort);
 
@@ -213,18 +213,18 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
   if (!use_ymodemBatch) {
     bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";
   }
-  int xx1 = session()->localIO()->WhereX();
-  int yy1 = session()->localIO()->WhereY();
-  session()->localIO()->PutsXY(52, 0, "\xB3 Filename :               ");
-  session()->localIO()->PutsXY(52, 1, "\xB3 Xfer Time:               ");
-  session()->localIO()->PutsXY(52, 2, "\xB3 File Size:               ");
-  session()->localIO()->PutsXY(52, 3, "\xB3 Cur Block: 1 - 1k        ");
-  session()->localIO()->PutsXY(52, 4, "\xB3 Consec Errors: 0         ");
-  session()->localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
-  session()->localIO()->PutsXY(52, 6,
+  int xx1 = a()->localIO()->WhereX();
+  int yy1 = a()->localIO()->WhereY();
+  a()->localIO()->PutsXY(52, 0, "\xB3 Filename :               ");
+  a()->localIO()->PutsXY(52, 1, "\xB3 Xfer Time:               ");
+  a()->localIO()->PutsXY(52, 2, "\xB3 File Size:               ");
+  a()->localIO()->PutsXY(52, 3, "\xB3 Cur Block: 1 - 1k        ");
+  a()->localIO()->PutsXY(52, 4, "\xB3 Consec Errors: 0         ");
+  a()->localIO()->PutsXY(52, 5, "\xB3 Total Errors : 0         ");
+  a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
-  session()->localIO()->PutsXY(65, 0, stripfn(pszWorkingFileName));
-  session()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k(lFileSize));
+  a()->localIO()->PutsXY(65, 0, stripfn(pszWorkingFileName));
+  a()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k(lFileSize));
 
   if (!okstart(&use_crc, &abort)) {
     abort = true;
@@ -245,9 +245,9 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     if ((lFileSize - cp) < 128L) {
       bUse1kBlocks = false;
     }
-    session()->localIO()->PrintfXY(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
-    session()->localIO()->PutsXY(65, 1, ctim(std::lround((lFileSize - cp) * tpb)));
-    session()->localIO()->PutsXY(69, 4, "0");
+    a()->localIO()->PrintfXY(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
+    a()->localIO()->PutsXY(65, 1, ctim(std::lround((lFileSize - cp) * tpb)));
+    a()->localIO()->PutsXY(69, 4, "0");
 
     ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &use_crc, pszWorkingFileName, &terr, &abort);
     if (ch == CX) {
@@ -279,7 +279,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     }
   }
   file.Close();
-  session()->localIO()->GotoXY(xx1, yy1);
+  a()->localIO()->GotoXY(xx1, yy1);
   if (*sent && !use_ymodemBatch) {
     bout << "-=> File transmission complete.\r\n\n";
   }
@@ -293,10 +293,10 @@ void zmodem_send(const string& file_name, bool *sent, double *percent) {
   string s = file_name;
   StringRemoveWhitespace(&s);
 
-  bool bOldBinaryMode = session()->remoteIO()->binary_mode();
-  session()->remoteIO()->set_binary_mode(true);
+  bool bOldBinaryMode = a()->remoteIO()->binary_mode();
+  a()->remoteIO()->set_binary_mode(true);
   bool bResult = NewZModemSendFile(s.c_str());
-  session()->remoteIO()->set_binary_mode(bOldBinaryMode);
+  a()->remoteIO()->set_binary_mode(bOldBinaryMode);
 
   if (bResult) {
     *sent = true;

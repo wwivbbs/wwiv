@@ -55,8 +55,8 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   bout.nl();
   bool abort = false;
   bool next = false;
-  if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && session()->chains_reg.size() > 0) {
+  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
+      && a()->chains_reg.size() > 0) {
     pla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
@@ -68,39 +68,39 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       User user;
       if (okansi()) {
-        session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[0]);
+        a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[0]);
         pla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
                 FRAME_COLOR,
                 i + 1,
                 FRAME_COLOR,
-                session()->chains[map[i]].description,
+                a()->chains[map[i]].description,
                 FRAME_COLOR,
-                (session()->chains_reg[map[i]].regby[0]) ? 14 : 13,
-                (session()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
+                (a()->chains_reg[map[i]].regby[0]) ? 14 : 13,
+                (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
                 FRAME_COLOR,
-                session()->chains_reg[map[i]].usage,
+                a()->chains_reg[map[i]].usage,
                 FRAME_COLOR), &abort);
-        if (session()->chains_reg[map[i]].regby[0] != 0) {
+        if (a()->chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5 && !abort; i1++) {
-            if (session()->chains_reg[map[i]].regby[i1] != 0) {
-              session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[i1]);
+            if (a()->chains_reg[map[i]].regby[i1] != 0) {
+              a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[i1]);
               pla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
                       FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
             }
           }
         }
       } else {
-        session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[0]);
+        a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[0]);
         pla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
-                i + 1, session()->chains[map[i]].description,
-                (session()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
-                session()->chains_reg[map[i]].usage), &abort);
-        if (session()->chains_reg[map[i]].regby[0] != 0) {
+                i + 1, a()->chains[map[i]].description,
+                (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
+                a()->chains_reg[map[i]].usage), &abort);
+        if (a()->chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5; i1++) {
-            if (session()->chains_reg[map[i]].regby[i1] != 0) {
-              session()->users()->ReadUser(&user, session()->chains_reg[map[i]].regby[i1]);
+            if (a()->chains_reg[map[i]].regby[i1] != 0) {
+              a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[i1]);
               pla(StringPrintf(" |   |                                         |%-21.21s|     |",
-                      (session()->chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
+                      (a()->chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
             }
           }
         }
@@ -115,13 +115,13 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     bout.litebar(" %s Online Programs ", syscfg.systemname);
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
-      osan(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, session()->chains[map[i]].description), &abort, &next);
+      osan(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort, &next);
       i++;
       if (!abort && !hangup) {
         if (i >= *mapp) {
           pla(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
-          pla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, session()->chains[map[i]].description), &abort);
+          pla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort);
         }
       }
     }
@@ -134,8 +134,8 @@ void run_chain(int nChainum) {
   int inst = inst_ok(INST_LOC_CHAINS, nChainum + 1);
   if (inst != 0) {
     const string message = StringPrintf("|#2Chain %s is in use on instance %d.  ", 
-        session()->chains[nChainum].description, inst);
-    if (!(session()->chains[nChainum].ansir & ansir_multi_user)) {
+        a()->chains[nChainum].description, inst);
+    if (!(a()->chains[nChainum].ansir & ansir_multi_user)) {
       bout << message << "Try again later.\r\n";
       return;
     } else {
@@ -146,34 +146,34 @@ void run_chain(int nChainum) {
     }
   }
   write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(nChainum + 1), INST_FLAGS_NONE);
-  if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    session()->chains_reg[nChainum].usage++;
-    wwiv::core::DataFile<chainregrec> regFile(session()->config()->datadir(), CHAINS_REG,
+  if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
+    a()->chains_reg[nChainum].usage++;
+    wwiv::core::DataFile<chainregrec> regFile(a()->config()->datadir(), CHAINS_REG,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (regFile) {
-      regFile.WriteVector(session()->chains_reg);
+      regFile.WriteVector(a()->chains_reg);
     }
   }
   const string chainCmdLine = stuff_in(
-    session()->chains[nChainum].filename, create_chain_file(), 
+    a()->chains[nChainum].filename, create_chain_file(), 
     std::to_string(com_speed),
-    std::to_string(session()->primary_port()),
+    std::to_string(a()->primary_port()),
     std::to_string(modem_speed), "");
 
-  sysoplog() << "!Ran \"" << session()->chains[nChainum].description << "\"";
-  session()->user()->SetNumChainsRun(session()->user()->GetNumChainsRun() + 1);
+  sysoplog() << "!Ran \"" << a()->chains[nChainum].description << "\"";
+  a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);
 
   int flags = 0;
-  if (!(session()->chains[nChainum].ansir & ansir_no_DOS)) {
+  if (!(a()->chains[nChainum].ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
-  if (session()->chains[nChainum].ansir & ansir_emulate_fossil) {
+  if (a()->chains[nChainum].ansir & ansir_emulate_fossil) {
     flags |= EFLAG_FOSSIL;
   }
 
   ExecuteExternalProgram(chainCmdLine, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
-  session()->UpdateTopScreen();
+  a()->UpdateTopScreen();
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -184,30 +184,30 @@ void do_chains() {
 
   std::map<int, int> map;
 
-  session()->tleft(true);
+  a()->tleft(true);
   int mapp = 0;
   std::set<char> odc;
-  for (size_t i = 0; i < session()->chains.size(); i++) {
+  for (size_t i = 0; i < a()->chains.size(); i++) {
     bool ok = true;
-    chainfilerec c = session()->chains[i];
+    chainfilerec c = a()->chains[i];
     if ((c.ansir & ansir_ansi) && !okansi()) {
       ok = false;
     }
-    if ((c.ansir & ansir_local_only) && session()->using_modem) {
+    if ((c.ansir & ansir_local_only) && a()->using_modem) {
       ok = false;
     }
-    if (c.sl > session()->GetEffectiveSl()) {
+    if (c.sl > a()->GetEffectiveSl()) {
       ok = false;
     }
-    if (c.ar && !session()->user()->HasArFlag(c.ar)) {
+    if (c.ar && !a()->user()->HasArFlag(c.ar)) {
       ok = false;
     }
-    if (session()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
-      && session()->chains_reg.size() > 0 
-      && (session()->GetEffectiveSl() < 255)) {
-      chainregrec r = session()->chains_reg[i];
+    if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
+      && a()->chains_reg.size() > 0 
+      && (a()->GetEffectiveSl() < 255)) {
+      chainregrec r = a()->chains_reg[i];
       if (r.maxage) {
-        if (r.minage > session()->user()->GetAge() || r.maxage < session()->user()->GetAge()) {
+        if (r.minage > a()->user()->GetAge() || r.maxage < a()->user()->GetAge()) {
           ok = false;
         }
       }
@@ -231,7 +231,7 @@ void do_chains() {
   string ss;
   do {
     show_chains(&mapp, map);
-    session()->tleft(true);
+    a()->tleft(true);
     bout.nl();
     bout << "|#7Which chain (1-" << mapp << ", Q=Quit, ?=List): ";
 

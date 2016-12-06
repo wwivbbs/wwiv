@@ -64,11 +64,11 @@ static const int LEN = 161;
 static const char crlf[] = "\r\n";
 
 static bool GetMessageToName(const char *aux) {
-  // If session()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
+  // If a()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
   // also, if we are using e-mail, this is definately NOT a FidoNet
   // post so there's no reason in wasting everyone's time in the loop...
   WWIV_ASSERT(aux);
-  if (session()->GetCurrentReadMessageArea() == -1 ||
+  if (a()->GetCurrentReadMessageArea() == -1 ||
       IsEqualsIgnoreCase(aux, "email")) {
     return 0;
   }
@@ -76,10 +76,10 @@ static bool GetMessageToName(const char *aux) {
   bool bHasAddress = false;
   bool newlsave = newline;
 
-  if (!session()->current_sub().nets.empty()) {
-    for (size_t i = 0; i < session()->current_sub().nets.size(); i++) {
-      const auto& xnp = session()->current_sub().nets[i];
-      if (session()->net_networks[xnp.net_num].type == network_type_t::ftn &&
+  if (!a()->current_sub().nets.empty()) {
+    for (size_t i = 0; i < a()->current_sub().nets.size(); i++) {
+      const auto& xnp = a()->current_sub().nets[i];
+      if (a()->net_networks[xnp.net_num].type == network_type_t::ftn &&
           !IsEqualsIgnoreCase(aux, "email")) {
         bHasAddress = true;
         bout << "|#2To   : ";
@@ -179,8 +179,8 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
 
   bout.Color(7);
   string header = "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]";
-  if (session()->user()->GetScreenChars() < 80) {
-    header.resize(session()->user()->GetScreenChars());
+  if (a()->user()->GetScreenChars() < 80) {
+    header.resize(a()->user()->GetScreenChars());
   }
   bout << header;
   bout.nl();
@@ -198,8 +198,8 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
       if (*curli >= 0) {
         // Don't keep retreating past line 0.
         rollover_line = lin.at(*curli);
-        if (rollover_line.length() > session()->user()->GetScreenChars() - 1) {
-          rollover_line.resize(session()->user()->GetScreenChars() - 2);
+        if (rollover_line.length() > a()->user()->GetScreenChars() - 1) {
+          rollover_line.resize(a()->user()->GetScreenChars() - 2);
         }
       } else {
         *curli = 0;
@@ -242,7 +242,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
                 ++i5;
               }
             }
-            for (size_t i4 = 0; (i4 < (session()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
+            for (size_t i4 = 0; (i4 < (a()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
               osan(" ", &abort, &next);
             }
           }
@@ -345,20 +345,20 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
 static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux) {
   if (irt_name[0] &&
       !IsEqualsIgnoreCase(aux, "email") &&
-      !session()->current_sub().nets.empty()) {
-    for (const auto& xnp : session()->current_sub().nets) {
-      if (session()->net_networks[xnp.net_num].type == network_type_t::ftn) {
+      !a()->current_sub().nets.empty()) {
+    for (const auto& xnp : a()->current_sub().nets) {
+      if (a()->net_networks[xnp.net_num].type == network_type_t::ftn) {
         const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
         ss << buf << crlf;
         break;
       }
     }
   }
-  if (session()->current_net().type == network_type_t::internet) {
-    if (session()->usenetReferencesLine.length() > 0) {
-      const string buf = StringPrintf("%c0RReferences: %s", CD, session()->usenetReferencesLine.c_str());
+  if (a()->current_net().type == network_type_t::internet) {
+    if (a()->usenetReferencesLine.length() > 0) {
+      const string buf = StringPrintf("%c0RReferences: %s", CD, a()->usenetReferencesLine.c_str());
       ss << buf << crlf;
-      session()->usenetReferencesLine = "";
+      a()->usenetReferencesLine = "";
     }
   }
 
@@ -380,8 +380,8 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 }
 
 static string FindTagFileName() {
-  for (const auto& xnp : session()->current_sub().nets) {
-    auto nd = session()->net_networks[xnp.net_num].dir;
+  for (const auto& xnp : a()->current_sub().nets) {
+    auto nd = a()->net_networks[xnp.net_num].dir;
     string filename = StrCat(nd, xnp.stype, ".tag");
     if (File::Exists(filename)) {
       return filename;
@@ -390,11 +390,11 @@ static string FindTagFileName() {
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StrCat(session()->config()->datadir(), xnp.stype, ".tag");
+    filename = StrCat(a()->config()->datadir(), xnp.stype, ".tag");
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StrCat(session()->config()->datadir(), GENERAL_TAG);
+    filename = StrCat(a()->config()->datadir(), GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
@@ -403,17 +403,17 @@ static string FindTagFileName() {
 }
 
 static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) {
-  if (session()->subs().subs().size() <= 0 && session()->GetCurrentReadMessageArea() <= 0) {
+  if (a()->subs().subs().size() <= 0 && a()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
   const char szMultiMail[] = "Multi-Mail";
   if (IsEqualsIgnoreCase(aux, "email")) {
     return;
   }
-  if (session()->current_sub().nets.empty()) {
+  if (a()->current_sub().nets.empty()) {
     return;
   }
-  if (session()->current_sub().anony & anony_no_tag) {
+  if (a()->current_sub().anony & anony_no_tag) {
     return;
   }
   if (IsEqualsIgnoreCase(irt, szMultiMail)) {
@@ -454,7 +454,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const string quotes_filename = StrCat(session()->temp_directory(), QUOTES_TXT);
+  const string quotes_filename = StrCat(a()->temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
@@ -470,7 +470,7 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const string msginf_filename = StrCat(session()->temp_directory(), "msginf");
+  const string msginf_filename = StrCat(a()->temp_directory(), "msginf");
   copyfile(quotes_filename, msginf_filename, false);
 }
 
@@ -498,7 +498,7 @@ static void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
     break;
   case anony_enable_dear_abby: {
     bout.nl();
-    bout << "1. " << session()->names()->UserName(session()->usernum) << wwiv::endl;
+    bout << "1. " << a()->names()->UserName(a()->usernum) << wwiv::endl;
     bout << "2. Abby\r\n";
     bout << "3. Problemed Person\r\n\n";
     bout << "|#5Which? ";
@@ -534,7 +534,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const string exted_filename = StrCat(session()->temp_directory(), INPUT_MSG);
+  const string exted_filename = StrCat(a()->temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }
@@ -609,11 +609,11 @@ bool inmsg(MessageEditorData& data) {
 
   // Add author name
   if (real_name) {
-    b << session()->user()->GetRealName() << crlf;
+    b << a()->user()->GetRealName() << crlf;
   } else if (data.silent_mode) {
     b << syscfg.sysopname << " #1" << crlf;
   } else {
-    const string name = session()->names()->UserName(session()->usernum, session()->current_net().sysnum);
+    const string name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
     b << name << crlf;
   }
 
@@ -638,7 +638,7 @@ bool inmsg(MessageEditorData& data) {
     }
   }
 
-  if (session()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
+  if (a()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
     UpdateMessageBufferTagLine(b, data.aux.c_str());
   }
 

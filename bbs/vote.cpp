@@ -20,6 +20,7 @@
 
 #include <string>
 
+#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/fcns.h"
@@ -42,7 +43,7 @@ static void print_quest(int mapp, int map[21]) {
     bout << "|#5Voting Questions:\r\n\n";
   }
   bool abort = false;
-  File voteFile(session()->config()->datadir(), VOTING_DAT);
+  File voteFile(a()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -53,7 +54,7 @@ static void print_quest(int mapp, int map[21]) {
 
     char szBuffer[255];
     snprintf(szBuffer, sizeof(szBuffer), "|#6%c |#2%2d|#7) |#1%s",
-             session()->user()->GetVote(map[i]) ? ' ' : '*', i, v.question);
+             a()->user()->GetVote(map[i]) ? ' ' : '*', i, v.question);
     pla(szBuffer, &abort);
   }
   voteFile.Close();
@@ -66,7 +67,7 @@ static void print_quest(int mapp, int map[21]) {
 static bool print_question(int i, int ii) {
   votingrec v;
 
-  File voteFile(session()->config()->datadir(), VOTING_DAT);
+  File voteFile(a()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return false;
   }
@@ -93,9 +94,9 @@ static bool print_question(int i, int ii) {
     t += vr.numresponses;
   }
 
-  session()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->RefreshStatusCache();
   sprintf(szBuffer , "|#9Users voting: |#2%4.1f%%\r\n",
-          static_cast<double>(t) / static_cast<double>(session()->status_manager()->GetUserCount()) * 100.0);
+          static_cast<double>(t) / static_cast<double>(a()->status_manager()->GetUserCount()) * 100.0);
   pla(szBuffer, &abort);
   int t1 = (t) ? t : 1;
   pla(" |#20|#9) |#9No Comment", &abort);
@@ -121,12 +122,12 @@ static void vote_question(int i, int ii) {
   votingrec v;
 
   bool pqo = print_question(i, ii);
-  if (session()->user()->IsRestrictionVote() || session()->GetEffectiveSl() <= 10 || !pqo) {
+  if (a()->user()->IsRestrictionVote() || a()->GetEffectiveSl() <= 10 || !pqo) {
     return;
   }
 
 
-  File voteFile(session()->config()->datadir(), VOTING_DAT);
+  File voteFile(a()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -139,8 +140,8 @@ static void vote_question(int i, int ii) {
   }
 
   std::string message = "|#9Your vote: |#1";
-  if (session()->user()->GetVote(ii)) {
-    message.append(v.responses[ session()->user()->GetVote(ii) - 1 ].response);
+  if (a()->user()->GetVote(ii)) {
+    message.append(v.responses[ a()->user()->GetVote(ii) - 1 ].response);
   } else {
     message +=  "No Comment";
   }
@@ -153,12 +154,12 @@ static void vote_question(int i, int ii) {
 
   bout << "|#5Which (0-" << static_cast<int>(v.numanswers) << ")? ";
   bout.mpl(2);
-  string a = mmkey({});
-  int i1 = StringToInt(a);
+  string ans = mmkey({});
+  int i1 = StringToInt(ans);
   if (i1 > v.numanswers) {
     i1 = 0;
   }
-  if (i1 == 0 && a != "0") {
+  if (i1 == 0 && ans != "0") {
     return;
   }
 
@@ -172,12 +173,12 @@ static void vote_question(int i, int ii) {
     voteFile.Close();
     return;
   }
-  if (session()->user()->GetVote(ii)) {
-    v.responses[ session()->user()->GetVote(ii) - 1 ].numresponses--;
+  if (a()->user()->GetVote(ii)) {
+    v.responses[ a()->user()->GetVote(ii) - 1 ].numresponses--;
   }
-  session()->user()->SetVote(ii, i1);
+  a()->user()->SetVote(ii, i1);
   if (i1) {
-    v.responses[ session()->user()->GetVote(ii) - 1 ].numresponses++;
+    v.responses[ a()->user()->GetVote(ii) - 1 ].numresponses++;
   }
   voteFile.Seek(ii * sizeof(votingrec), File::Whence::begin);
   voteFile.Write(&v, sizeof(votingrec));
@@ -188,7 +189,7 @@ static void vote_question(int i, int ii) {
 void vote() {
   votingrec v;
 
-  File voteFile(session()->config()->datadir(), VOTING_DAT);
+  File voteFile(a()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }

@@ -35,7 +35,7 @@ using namespace wwiv::strings;
 net_system_list_rec *next_system(int ts) {
   static net_system_list_rec csne;
 
-  BbsListNet b = BbsListNet::ReadBbsDataNet(session()->current_net().dir);
+  BbsListNet b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
   auto c = b.node_config_for(ts);
   if (c == nullptr) {
     csne = {};
@@ -51,13 +51,13 @@ bool valid_system(int ts) {
 }
 
 void set_net_num(int network_number) {
-  if (network_number >= 0 && network_number < session()->max_net_num()) {
-    session()->set_net_num(network_number);
+  if (network_number >= 0 && network_number < a()->max_net_num()) {
+    a()->set_net_num(network_number);
   }
 }
 
 int32_t next_system_reg(int16_t ts) {
-  BbsListNet b = BbsListNet::ReadBbsDataNet(session()->current_net().dir);
+  BbsListNet b = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
   const auto& r = b.reg_number();
   if (r.find(ts) != r.end()) {
     return r.at(ts);

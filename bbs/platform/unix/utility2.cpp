@@ -23,7 +23,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 
 #include "core/strings.h"
 #include "core/file.h"
@@ -36,7 +36,7 @@ void WWIV_make_abs_cmd(const string root, string* out) {
   if (out->find("/") == string::npos) {
 	// Use current path of we don't have an abs path.
     string s(*out);
-    File f(session()->GetHomeDir(), s);
+    File f(a()->GetHomeDir(), s);
     *out = f.full_pathname();
   }
 }

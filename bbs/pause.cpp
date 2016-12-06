@@ -44,12 +44,12 @@ namespace bbs {
 TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
     if (g_flags & g_flag_disable_pause) {
       g_flags &= ~g_flag_disable_pause;
-      session()->user()->SetStatusFlag(User::pauseOnPage);
+      a()->user()->SetStatusFlag(User::pauseOnPage);
     }
   }, nullptr) {
-  if (session()->user()->HasPause()) {
+  if (a()->user()->HasPause()) {
     g_flags |= g_flag_disable_pause;
-    session()->user()->ClearStatusFlag(User::pauseOnPage);
+    a()->user()->ClearStatusFlag(User::pauseOnPage);
   }
 }
 
@@ -74,9 +74,9 @@ static char GetKeyForPause() {
     break;
   case 'C':
   case '=':
-    if (session()->user()->HasPause()) {
+    if (a()->user()->HasPause()) {
       nsp = 1;
-      session()->user()->ToggleStatusFlag(User::pauseOnPage);
+      a()->user()->ToggleStatusFlag(User::pauseOnPage);
     }
     break;
   default:
@@ -107,8 +107,8 @@ void pausescr() {
 
     i1 = strlen(stripcolors(ss));
     i = curatr;
-    bout.SystemColor(session()->user()->HasColor() ? session()->user()->GetColor(3) 
-      : session()->user()->GetBWColor(3));
+    bout.SystemColor(a()->user()->HasColor() ? a()->user()->GetColor(3) 
+      : a()->user()->GetBWColor(3));
     bout << ss << "\x1b[" << i1 << "D";
     bout.SystemColor(i);
 
@@ -125,8 +125,8 @@ void pausescr() {
             warned = 1;
             bout.bputch(CG);
             bout.SystemColor(
-              session()->user()->HasColor() ? session()->user()->GetColor(6)
-              : session()->user()->GetBWColor(6));
+              a()->user()->HasColor() ? a()->user()->GetColor(6)
+              : a()->user()->GetBWColor(6));
             bout << ss;
             for (int i3 = 0; i3 < i2; i3++) {
               if (ss[i3] == 3 && i1 > 1) {
@@ -180,8 +180,8 @@ void pausescr() {
 }
 
 void resetnsp() {
-  if (nsp == 1 && !(session()->user()->HasPause())) {
-    session()->user()->ToggleStatusFlag(User::pauseOnPage);
+  if (nsp == 1 && !(a()->user()->HasPause())) {
+    a()->user()->ToggleStatusFlag(User::pauseOnPage);
   }
   nsp = 0;
 }

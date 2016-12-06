@@ -62,7 +62,7 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype) {
 
   nh.tosys = static_cast<uint16_t>(tosys);
   nh.touser = 1;
-  nh.fromsys = session()->current_net().sysnum;
+  nh.fromsys = a()->current_net().sysnum;
   nh.fromuser = 1;
   nh.main_type = main_type;
   // always use 0 since we use the stype
@@ -103,9 +103,9 @@ int find_hostfor(const std::string& type, short *ui, char *description, short *o
   bool done = false;
   for (int i = 0; i < 256 && !done; i++) {
     if (i) {
-      sprintf(s, "%s%s.%d", session()->network_directory().c_str(), SUBS_NOEXT, i);
+      sprintf(s, "%s%s.%d", a()->network_directory().c_str(), SUBS_NOEXT, i);
     } else {
-      sprintf(s, "%s%s", session()->network_directory().c_str(), SUBS_LST);
+      sprintf(s, "%s%s", a()->network_directory().c_str(), SUBS_LST);
     }
     TextFile file(s, "r");
     if (file.IsOpen()) {
@@ -194,10 +194,10 @@ done = true;
 
 void sub_xtr_del(int n, int nn, int f) {
   // make a copy of the old network info.
-  auto xn = session()->subs().sub(n).nets[nn];
+  auto xn = a()->subs().sub(n).nets[nn];
 
   if (f) {
-    erase_at(session()->subs().sub(n).nets, nn);
+    erase_at(a()->subs().sub(n).nets, nn);
   }
   set_net_num(xn.net_num);
 
@@ -231,18 +231,18 @@ void sub_xtr_add(int n, int nn) {
   int onxi, ii, gc;
 
   // nn may be -1
-  while (nn >= size_int(session()->subs().sub(n).nets)) {
-    session()->subs().sub(n).nets.push_back({});
+  while (nn >= size_int(a()->subs().sub(n).nets)) {
+    a()->subs().sub(n).nets.push_back({});
   }
   subboard_network_data_t xnp = {};
 
-  if (session()->max_net_num() > 1) {
+  if (a()->max_net_num() > 1) {
     std::set<char> odc;
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (ii = 0; ii < session()->max_net_num(); ii++) {
+    for (ii = 0; ii < a()->max_net_num(); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
@@ -250,11 +250,11 @@ void sub_xtr_add(int n, int nn) {
         int odci = (ii + 1) / 10;
         odc.insert(static_cast<char>(odci + '0'));
       }
-      bout << "(" << ii + 1 << ") " << session()->net_networks[ii].name << wwiv::endl;
+      bout << "(" << ii + 1 << ") " << a()->net_networks[ii].name << wwiv::endl;
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
-    if (session()->max_net_num() < 9) {
+    if (a()->max_net_num() < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
         ii = -1;
@@ -269,17 +269,17 @@ void sub_xtr_add(int n, int nn) {
         ii = StringToInt(mmk) - 1;
       }
     }
-    if (ii >= 0 && ii < session()->max_net_num()) {
+    if (ii >= 0 && ii < a()->max_net_num()) {
       set_net_num(ii);
     } else {
       return;
     }
   }
-  xnp.net_num = static_cast<short>(session()->net_num());
+  xnp.net_num = static_cast<short>(a()->net_num());
 
   bout.nl();
   int stype_len = 7;
-  if (session()->current_net().type == network_type_t::ftn) {
+  if (a()->current_net().type == network_type_t::ftn) {
     bout << "|#2What echomail area: ";
     stype_len = 40;
   } else {
@@ -291,13 +291,13 @@ void sub_xtr_add(int n, int nn) {
   }
 
   bool is_hosting = false;
-  if (session()->current_net().type == network_type_t::wwivnet || session()->current_net().type == network_type_t::internet) {
+  if (a()->current_net().type == network_type_t::wwivnet || a()->current_net().type == network_type_t::internet) {
     bout << "|#5Will you be hosting the sub? ";
     is_hosting = yesno();
   }
 
   if (is_hosting) {
-    string file_name = StrCat(session()->network_directory(), "n", xnp.stype, ".net");
+    string file_name = StrCat(a()->network_directory(), "n", xnp.stype, ".net");
     File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();
@@ -319,7 +319,7 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = StringToUnsignedShort(s);
           if (i || IsEquals(s, "0")) {
-            TextFile ff(session()->network_directory(), CATEG_NET, "rt");
+            TextFile ff(a()->network_directory(), CATEG_NET, "rt");
             while (ff.ReadLine(s, 100)) {
               int i1 = StringToUnsignedShort(s);
               if (i1 == i) {
@@ -343,7 +343,7 @@ void sub_xtr_add(int n, int nn) {
         }
       }
     }
-  } else if (session()->current_net().type == network_type_t::ftn) {
+  } else if (a()->current_net().type == network_type_t::ftn) {
     // Set the fake fido node up as the host.
     xnp.host = FTN_FAKE_OUTBOUND_NODE;
   } else {
@@ -356,11 +356,11 @@ void sub_xtr_add(int n, int nn) {
       xnp.host = static_cast<uint16_t>(atol(szDescription));
       szDescription[0] = '\0';
     }
-    if (!session()->subs().sub(n).desc[0]) {
-      session()->subs().sub(n).desc = szDescription;
+    if (!a()->subs().sub(n).desc[0]) {
+      a()->subs().sub(n).desc = szDescription;
     }
 
-    if (xnp.host == session()->current_net().sysnum) {
+    if (xnp.host == a()->current_net().sysnum) {
       xnp.host = 0;
     }
 
@@ -368,7 +368,7 @@ void sub_xtr_add(int n, int nn) {
       if (valid_system(xnp.host)) {
         if (ok) {
           if (opt & OPTION_NO_TAG) {
-            session()->subs().sub(n).anony |= anony_no_tag;
+            a()->subs().sub(n).anony |= anony_no_tag;
           }
           bout.nl();
           if (opt & OPTION_AUTO) {
@@ -396,20 +396,20 @@ void sub_xtr_add(int n, int nn) {
       }
     }
   }
-  if (nn == -1 || nn >= size_int(session()->subs().sub(n).nets)) {
+  if (nn == -1 || nn >= size_int(a()->subs().sub(n).nets)) {
     // nn will be -1 when adding a new sub.
-    session()->subs().sub(n).nets.push_back(xnp);
+    a()->subs().sub(n).nets.push_back(xnp);
   } else {
-    session()->subs().sub(n).nets[nn] = xnp;
+    a()->subs().sub(n).nets[nn] = xnp;
   }
 }
 
 bool display_sub_categories() {
-  if (!session()->current_net().sysnum) {
+  if (!a()->current_net().sysnum) {
     return false;
   }
 
-  TextFile ff(session()->network_directory(), CATEG_NET, "rt");
+  TextFile ff(a()->network_directory(), CATEG_NET, "rt");
   if (!ff.IsOpen()) {
     return false;
   }

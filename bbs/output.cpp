@@ -70,16 +70,16 @@ void Output::Color(int wwivColor) {
   int c = '\0';
 
   if (wwivColor <= -1 && wwivColor >= -16) {
-    c = (session()->user()->HasColor() ?
-         rescolor.resx[207 + std::abs(wwivColor)] : session()->user()->GetBWColor(0));
+    c = (a()->user()->HasColor() ?
+         rescolor.resx[207 + std::abs(wwivColor)] : a()->user()->GetBWColor(0));
   }
   if (wwivColor >= 0 && wwivColor <= 9) {
-    c = (session()->user()->HasColor() ?
-         session()->user()->GetColor(wwivColor) : session()->user()->GetBWColor(wwivColor));
+    c = (a()->user()->HasColor() ?
+         a()->user()->GetColor(wwivColor) : a()->user()->GetBWColor(wwivColor));
   }
   if (wwivColor >= 10 && wwivColor <= 207) {
-    c = (session()->user()->HasColor() ?
-         rescolor.resx[wwivColor - 10] : session()->user()->GetBWColor(0));
+    c = (a()->user()->HasColor() ?
+         rescolor.resx[wwivColor - 10] : a()->user()->GetBWColor(0));
   }
   if (c == curatr) {
     return;
@@ -89,8 +89,8 @@ void Output::Color(int wwivColor) {
 
   char buffer[81];
   memset(buffer, 0, sizeof(buffer));
-  makeansi(session()->user()->HasColor() ?
-           session()->user()->GetColor(0) : session()->user()->GetBWColor(0), buffer, false);
+  makeansi(a()->user()->HasColor() ?
+           a()->user()->GetColor(0) : a()->user()->GetBWColor(0), buffer, false);
   endofline_ = buffer;
 }
 
@@ -101,7 +101,7 @@ void Output::ResetColors() {
 
 void Output::GotoXY(int x, int y) {
   if (okansi()) {
-    y = std::min<int>(y, session()->screenlinest);    // Don't get Y get too big or mTelnet will not be happy
+    y = std::min<int>(y, a()->screenlinest);    // Don't get Y get too big or mTelnet will not be happy
     *this << "\x1b[" << y << ";" << x << "H";
   }
 }

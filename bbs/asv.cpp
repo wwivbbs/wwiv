@@ -23,13 +23,13 @@
 #include "bbs/bbs.h"
 #include "bbs/uedit.h"
 #include "bbs/vars.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/xfer.h"
 
 using std::string;
 
 void set_autoval(int n) {
-  auto_val(n, session()->user());
-  session()->ResetEffectiveSl();
+  auto_val(n, a()->user());
+  a()->ResetEffectiveSl();
   changedsl();
 }

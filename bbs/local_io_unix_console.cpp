@@ -257,7 +257,7 @@ int  UnixConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *psz
 
 void UnixConsoleIO::set_protect(int l) {
   SetTopLine(l);
-  session()->screenlinest = (session()->using_modem) ? session()->user()->GetScreenLines() :
+  a()->screenlinest = (a()->using_modem) ? a()->user()->GetScreenLines() :
                                defscreenbottom + 1 - GetTopLine();
 }
 
@@ -285,14 +285,14 @@ void UnixConsoleIO::skey(char ch) {
           application()->ToggleShutDown();
           break;
         case F2:                          /* F2 */
-          session()->topdata++;
-          if (session()->topdata > UnixConsoleIO::topdataUser) {
-            session()->topdata = UnixConsoleIO::topdataNone;
+          a()->topdata++;
+          if (a()->topdata > UnixConsoleIO::topdataUser) {
+            a()->topdata = UnixConsoleIO::topdataNone;
           }
           application()->UpdateTopScreen();
           break;
         case F3:                          /* F3 */
-          if (session()->using_modem) {
+          if (a()->using_modem) {
             incom = !incom;
             dump();
             tleft(false);
@@ -304,7 +304,7 @@ void UnixConsoleIO::skey(char ch) {
           break;
         case F5:                          /* F5 */
           hangup = true;
-          session()->remoteIO()->dtr(false);
+          a()->remoteIO()->dtr(false);
           break;
         case SF5:                          /* Shift-F5 */
           i1 = (rand() % 20) + 10;
@@ -312,33 +312,33 @@ void UnixConsoleIO::skey(char ch) {
             bputch(static_cast< unsigned char >(rand() % 256));
           }
           hangup = true;
-          session()->remoteIO()->dtr(false);
+          a()->remoteIO()->dtr(false);
           break;
         case CF5:                          /* Ctrl-F5 */
           bout << "\r\nCall back later when you are there.\r\n\n";
           hangup = true;
-          session()->remoteIO()->dtr(false);
+          a()->remoteIO()->dtr(false);
           break;
         case F6:                          /* F6 */
           SetSysopAlert(!GetSysopAlert());
           tleft(false);
           break;
         case F7:                          /* F7 */
-          session()->user()->SetExtraTime(session()->user()->GetExtraTime() -
+          a()->user()->SetExtraTime(a()->user()->GetExtraTime() -
               static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
           tleft(false);
           break;
         case F8:                          /* F8 */
-          session()->user()->SetExtraTime(session()->user()->GetExtraTime() +
+          a()->user()->SetExtraTime(a()->user()->GetExtraTime() +
               static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
           tleft(false);
           break;
         case F9:                          /* F9 */
-          if (session()->user()->GetSl() != 255) {
-            if (session()->GetEffectiveSl() != 255) {
-              session()->SetEffectiveSl(255);
+          if (a()->user()->GetSl() != 255) {
+            if (a()->GetEffectiveSl() != 255) {
+              a()->SetEffectiveSl(255);
             } else {
-              session()->ResetEffectiveSl();
+              a()->ResetEffectiveSl();
             }
             changedsl();
             tleft(false);

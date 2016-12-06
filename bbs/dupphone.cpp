@@ -32,7 +32,7 @@ void add_phone_number(int usernum, const char *phone) {
     return;
   }
 
-  File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
+  File phoneFile(a()->config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile)) {
     return;
   }
@@ -45,7 +45,7 @@ void add_phone_number(int usernum, const char *phone) {
 }
 
 void delete_phone_number(int usernum, const char *phone) {
-  File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
+  File phoneFile(a()->config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
     return;
   }
@@ -75,7 +75,7 @@ void delete_phone_number(int usernum, const char *phone) {
 }
 
 int find_phone_number(const char *phone) {
-  File phoneFile(session()->config()->datadir(), PHONENUM_DAT);
+  File phoneFile(a()->config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
     return 0;
   }
@@ -92,7 +92,7 @@ int find_phone_number(const char *phone) {
   for (i = 0; i < nNumRecords; i++) {
     if (wwiv::strings::IsEquals(reinterpret_cast<char*>(p[i].phone), phone)) {
       User user;
-      session()->users()->ReadUser(&user, p[i].usernum);
+      a()->users()->ReadUser(&user, p[i].usernum);
       if (!user.IsUserDeleted()) {
         break;
       }

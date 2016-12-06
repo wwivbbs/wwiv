@@ -58,10 +58,10 @@ uint16_t *gat = nullptr;
 * Note: This is a Private method to this module.
 */
 static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
-  session()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->RefreshStatusCache();
 
   const string filename = StrCat(
-    FilePath(session()->config()->msgsdir(), messageAreaFileName), FILENAME_DAT_EXTENSION);
+    FilePath(a()->config()->msgsdir(), messageAreaFileName), FILENAME_DAT_EXTENSION);
   auto file = std::make_unique<File>(filename);
   if (!file->Open(File::modeReadWrite | File::modeBinary)) {
     // Create message area file if it doesn't exist.
@@ -105,7 +105,7 @@ static void save_gat(File& file) {
   auto section_pos = static_cast<off_t>(gat_section) * GATSECLEN;
   file.Seek(section_pos, File::Whence::begin);
   file.Write(gat, GAT_SECTION_SIZE);
-  session()->status_manager()->Run([](WStatus& s) {
+  a()->status_manager()->Run([](WStatus& s) {
     s.IncrementFileChangedFlag(WStatus::fileChangePosts);
   });
 }

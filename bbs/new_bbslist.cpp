@@ -34,7 +34,7 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysopf.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -169,7 +169,7 @@ static bool ConvertLegacyList(
 static void ReadBBSList(const vector<BbsListEntry>& entries) {
   int cnt = 0;
   bout.cls();
-  bout.litebar("%s BBS List", session()->config()->config()->systemname);
+  bout.litebar("%s BBS List", a()->config()->config()->systemname);
   for (const auto& entry : entries) {
     bout.Color((++cnt % 2) == 0 ? 1 : 9);
     bout << left << setw(3) << entry.id << " : " << setw(60) << entry.name << " (" << entry.software << ")" << wwiv::endl;
@@ -183,7 +183,7 @@ static void ReadBBSList(const vector<BbsListEntry>& entries) {
 
 static void DeleteBbsListEntry() {
   vector<BbsListEntry> entries;
-  LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
+  LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
 
   if (entries.empty()) {
     bout << "|#6You can not delete an entry when the list is empty." << wwiv::endl;
@@ -204,7 +204,7 @@ static void DeleteBbsListEntry() {
     if (b->id == entry_num) {
       entries.erase(b);
       bout << "|10Entry deleted." << wwiv::endl;
-      SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
+      SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
       return;
     }
   }
@@ -320,16 +320,16 @@ void NewBBSList() {
     switch (ch) {
     case 'A': {
       vector<BbsListEntry> entries;
-      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
-      if (session()->GetEffectiveSl() <= 10) {
+      LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
+      if (a()->GetEffectiveSl() <= 10) {
         bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
-      } else if (session()->user()->IsRestrictionAutomessage()) {
+      } else if (a()->user()->IsRestrictionAutomessage()) {
         bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
         break;
       }
       if (AddBBSListEntry(entries)) {
-        SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
+        SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
       }
     } break;
     case 'D': {
@@ -340,10 +340,10 @@ void NewBBSList() {
       break;
     case 'R': {
       vector<BbsListEntry> entries;
-      LoadFromJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
+      LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
       if (entries.empty()) {
-        ConvertLegacyList(session()->config()->gfilesdir(), BBSLIST_MSG, entries);
-        SaveToJSON(session()->config()->datadir(), BBSLIST_JSON, entries);
+        ConvertLegacyList(a()->config()->gfilesdir(), BBSLIST_MSG, entries);
+        SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
       }
       ReadBBSList(entries);
     } break;

@@ -87,23 +87,23 @@ void StatusManagerCallback(int i) {
   case WStatus::fileChangeNames:
   {
     // re-read names.lst
-    if (session()->names()) {
+    if (a()->names()) {
       // We may not have the BBS initialized yet, so only
       // re-read the names file if it's changed from another node.
-      session()->names()->Load();
+      a()->names()->Load();
     }
   } break;
   case WStatus::fileChangeUpload:
     break;
   case WStatus::fileChangePosts:
-    session()->subchg = 1;
+    a()->subchg = 1;
     break;
   case WStatus::fileChangeEmail:
     emchg = true;
     break;
   case WStatus::fileChangeNet:
   {
-    set_net_num(session()->net_num());
+    set_net_num(a()->net_num());
   }
   break;
   }
@@ -254,7 +254,7 @@ static ini_flags_type sysconfig_flags[] = {
   {INI_STR_FREE_PHONE, false, sysconfig_free_phone}
 };
 
-void WSession::ReadINIFile(IniFile& ini) {
+void Application::ReadINIFile(IniFile& ini) {
   // Setup default  data
   for (int i = 0; i < 10; i++) {
     newuser_colors[ i ] = nucol[ i ];
@@ -273,7 +273,7 @@ void WSession::ReadINIFile(IniFile& ini) {
     spawn_opts[ i ] = eventinfo[ i ].eflags;
   }
 
-  // put in default WSession::flags
+  // put in default Application::flags
   SetConfigFlags(OP_FLAGS_FIDO_PROCESS);
   if (instance_number() == 1) {
     // By default allow node1 to process wwivnet packets.
@@ -343,7 +343,7 @@ void WSession::ReadINIFile(IniFile& ini) {
   // pull out sysinfo_flags
   SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags), GetConfigFlags()));
 
-  // allow override of WSession::message_color_
+  // allow override of Application::message_color_
   message_color_ = ini.value<int>(get_key_str(INI_STR_MSG_COLOR), GetMessageColor());
 
   // get asv values
@@ -388,7 +388,7 @@ void WSession::ReadINIFile(IniFile& ini) {
   experimental_read_prompt_ = ini.value<bool>("EXPERIMENTAL_READ_PROMPT", false);
 }
 
-bool WSession::ReadInstanceSettings(int instance_number, IniFile& ini) {
+bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   string temp_directory = ini.value<string>("TEMP_DIRECTORY");
   if (temp_directory.empty()) {
     LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
@@ -426,7 +426,7 @@ static char* DuplicatePath(const char* path) {
   return out;
 }
 
-bool WSession::ReadConfig() {
+bool Application::ReadConfig() {
   config_.reset(new Config());
   if (!config_->IsInitialized()) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
@@ -539,7 +539,7 @@ bool WSession::ReadConfig() {
 }
 
 
-void WSession::read_nextern() {
+void Application::read_nextern() {
   externs.clear();
   DataFile<newexternalrec> externalFile(config()->datadir(), NEXTERN_DAT);
   if (externalFile) {
@@ -547,7 +547,7 @@ void WSession::read_nextern() {
   }
 }
 
-void WSession::read_arcs() {
+void Application::read_arcs() {
   arcs.clear();
   DataFile<arcrec> file(config()->datadir(), ARCHIVER_DAT);
   if (file) {
@@ -555,7 +555,7 @@ void WSession::read_arcs() {
   }
 }
 
-void WSession::read_editors() {
+void Application::read_editors() {
   editors.clear();
   DataFile<editorrec> file(config()->datadir(), EDITORS_DAT);
   if (!file) {
@@ -564,7 +564,7 @@ void WSession::read_editors() {
   file.ReadVector(editors, 10);
 }
 
-void WSession::read_nintern() {
+void Application::read_nintern() {
   over_intern.clear();
   DataFile<newexternalrec> file(config()->datadir(), NINTERN_DAT);
   if (file) {
@@ -572,28 +572,28 @@ void WSession::read_nintern() {
   }
 }
 
-bool WSession::read_subs() {
+bool Application::read_subs() {
   subs_.reset(new wwiv::sdk::Subs(config_->datadir(), net_networks));
   return subs_->Load();
 }
 
-bool WSession::create_message_api() {
+bool Application::create_message_api() {
   // We only support type-2
   msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(*config_.get(), net_networks);
 
   return true;
 }
 
-void WSession::SetLogonTime() {
+void Application::SetLogonTime() {
   steady_logon_time_ = std::chrono::steady_clock::now();
   system_logon_time_ = std::chrono::system_clock::now();
 }
 
-std::chrono::system_clock::duration WSession::duration_used_this_session() const {
+std::chrono::system_clock::duration Application::duration_used_this_session() const {
   return std::chrono::system_clock::now() - system_logon_time_; 
 }
 
-void WSession::read_networks() {
+void Application::read_networks() {
   internetEmailName = "";
   internetEmailDomain = "";
   internetPopDomain = "";
@@ -626,13 +626,13 @@ void WSession::read_networks() {
   }
 }
 
-bool WSession::read_names() {
+bool Application::read_names() {
   // Load the SDK Names class too.
   names_.reset(new Names(*config_.get()));
   return true;
 }
 
-bool WSession::read_dirs() {
+bool Application::read_dirs() {
   directories.clear();
   DataFile<directoryrec> file(config()->datadir(), DIRS_DAT);
   if (!file) {
@@ -643,7 +643,7 @@ bool WSession::read_dirs() {
   return true;
 }
 
-void WSession::read_chains() {
+void Application::read_chains() {
   chains.clear();
   DataFile<chainfilerec> file(config()->datadir(), CHAINS_DAT);
   if (!file) {
@@ -672,7 +672,7 @@ void WSession::read_chains() {
   }
 }
 
-bool WSession::read_language() {
+bool Application::read_language() {
   {
     DataFile<languagerec> file(config()->datadir(), LANGUAGE_DAT);
     if (file) {
@@ -684,8 +684,8 @@ bool WSession::read_language() {
     languagerec lang;
     memset(&lang, 0, sizeof(languagerec));
     strcpy(lang.name, "English");
-    to_char_array(lang.dir, session()->config()->gfilesdir());
-    to_char_array(lang.mdir, session()->config()->menudir());
+    to_char_array(lang.dir, a()->config()->gfilesdir());
+    to_char_array(lang.mdir, a()->config()->menudir());
     
     languages.emplace_back(lang);
   }
@@ -698,7 +698,7 @@ bool WSession::read_language() {
   return true;
 }
 
-void WSession::read_gfile() {
+void Application::read_gfile() {
   DataFile<gfiledirrec> file(config()->datadir(), GFILE_DAT);
   if (file) {
     file.ReadVector(gfilesec, max_gfilesec);
@@ -709,7 +709,7 @@ void WSession::read_gfile() {
  * Makes a path into an absolute path, returns true if original path altered,
  * else returns false
  */
-void WSession::make_abs_path(char *pszDirectory) {
+void Application::make_abs_path(char *pszDirectory) {
   string base(GetHomeDir());
   string dir(pszDirectory);
   File::MakeAbsolutePath(base, &dir);
@@ -747,7 +747,7 @@ static bool SaveConfig() {
   return true;
 }
 
-void WSession::InitializeBBS() {
+void Application::InitializeBBS() {
   localIO()->Cls();
 #if !defined( __unix__ )
   std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2016, WWIV Software Services."
@@ -868,7 +868,7 @@ void WSession::InitializeBBS() {
   topdata = LocalIO::topdataUser;
 
   // Set DSZLOG
-  dsz_logfile_name_ = StrCat(session()->temp_directory(), "dsz.log");
+  dsz_logfile_name_ = StrCat(a()->temp_directory(), "dsz.log");
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", dsz_logfile_name_);
   }
@@ -934,14 +934,14 @@ void WSession::InitializeBBS() {
 
 // begin dupphone additions
 
-void WSession::check_phonenum() {
+void Application::check_phonenum() {
   File phoneFile(config()->datadir(), PHONENUM_DAT);
   if (!phoneFile.Exists()) {
     create_phone_file();
   }
 }
 
-void WSession::create_phone_file() {
+void Application::create_phone_file() {
   phonerec p;
 
   File file(config()->datadir(), USER_LST);

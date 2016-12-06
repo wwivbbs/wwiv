@@ -121,7 +121,7 @@ char *mmkey(int dl, bool bListOption) {
   std::set<char> xx{};
   switch (dl) {
   case 0: {
-    int max_key = max_sub_key(session()->usub);
+    int max_key = max_sub_key(a()->usub);
     for (char i = 1; i <= max_key / 10; i++) {
       x.insert(i + '0');
     }
@@ -130,7 +130,7 @@ char *mmkey(int dl, bool bListOption) {
     }
   } break;
   case 1: {
-    int max_key = max_sub_key(session()->udir);
+    int max_key = max_sub_key(a()->udir);
     for (char i = 1; i <= max_key / 10; i++) {
       x.insert(i);
     }

@@ -47,7 +47,7 @@ public:
   int PrintfXY(int x, int y, const char *formatted_text, ...) override;
   int PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override;
 
-  void set_protect(WSession* session, int l) override {}
+  void set_protect(Application* session, int l) override {}
   void savescreen() override {}
   void restorescreen() override {}
   bool KeyPressed() override { return false; }
@@ -58,7 +58,7 @@ public:
   void WriteScreenBuffer(const char *buffer) override {}
   size_t GetDefaultScreenBottom() override { return 24; }
   void EditLine(char *s, int len, int statusx, int *returncode, const char *ss) override {}
-  void UpdateNativeTitleBar(WSession* session) override {}
+  void UpdateNativeTitleBar(Application* session) override {}
 };
 
 #if defined( _MSC_VER )

@@ -53,7 +53,7 @@ public:
     std::string dir_gfiles_;
     std::string dir_en_gfiles_;
     std::string dir_menus_;
-    std::unique_ptr<WSession> sess_;
+    std::unique_ptr<Application> sess_;
     std::unique_ptr<TestIO> io_;
     wwiv::sdk::User* user_;
 };
@@ -87,7 +87,7 @@ public:
   int Printf(const char *formatted_text, ...) override { return 0; }
   int PrintfXY(int x, int y, const char *formatted_text, ...) override { return 0; }
   int PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override { return 0; }
-  void set_protect(WSession* session, int l) override {}
+  void set_protect(Application* session, int l) override {}
   void savescreen() override {}
   void restorescreen() override {}
   bool KeyPressed() override { return false; }
@@ -98,7 +98,7 @@ public:
   void WriteScreenBuffer(const char *buffer) override {}
   size_t GetDefaultScreenBottom() override { return 25; }
   void EditLine(char *s, int len, int status, int *returncode, const char *ss) override {}
-  void UpdateNativeTitleBar(WSession* session) override {}
+  void UpdateNativeTitleBar(Application* session) override {}
 
   std::string* captured_;
 };

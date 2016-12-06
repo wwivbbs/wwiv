@@ -27,7 +27,7 @@
 #include "sdk/filenames.h"
 
 void get_colordata() {
-  File file(session()->config()->datadir(), COLOR_DAT);
+  File file(a()->config()->datadir(), COLOR_DAT);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
@@ -35,7 +35,7 @@ void get_colordata() {
 }
 
 void save_colordata() {
-  File file(session()->config()->datadir(), COLOR_DAT);
+  File file(a()->config()->datadir(), COLOR_DAT);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
   }
@@ -168,7 +168,7 @@ void color_config() {
         if ((n <= -1) && (n >= -16)) {
           rescolor.resx[207 + std::abs(n)] = c;
         } else if ((n >= 0) && (n <= 9)) {
-          session()->user()->SetColor(n, c);
+          a()->user()->SetColor(n, c);
         } else {
           rescolor.resx[n - 10] = c;
         }

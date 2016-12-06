@@ -46,8 +46,8 @@ extern char str_quit[];
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
 // returns the value of hangup
 bool CheckForHangup() {
-  if (!hangup && session()->using_modem && !session()->remoteIO()->connected()) {
-    if (session()->IsUserOnline()) {
+  if (!hangup && a()->using_modem && !a()->remoteIO()->connected()) {
+    if (a()->IsUserOnline()) {
       sysoplog() << "Hung Up.";
     }
     Hangup();
@@ -58,7 +58,7 @@ bool CheckForHangup() {
 void Hangup() {
   if (hangup) { return; }
   hangup = true;
-  throw wwiv::bbs::hangup_error(session()->user()->GetName());
+  throw wwiv::bbs::hangup_error(a()->user()->GetName());
 }
 
 static void addto(char *ansi_str, int num) {

@@ -29,7 +29,7 @@
 using namespace wwiv::sdk;
 
 static void print_quests() {
-  File file(session()->config()->datadir(), VOTING_DAT);
+  File file(a()->config()->datadir(), VOTING_DAT);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     return;
   }
@@ -87,19 +87,19 @@ static void set_question(int ii) {
     }
   }
 
-  File votingDat(session()->config()->datadir(), VOTING_DAT);
+  File votingDat(a()->config()->datadir(), VOTING_DAT);
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   votingDat.Seek(ii * sizeof(votingrec), File::Whence::begin);
   votingDat.Write(&v, sizeof(votingrec));
   votingDat.Close();
 
   User u;
-  session()->users()->ReadUser(&u, 1);
-  int nNumUsers = session()->users()->GetNumberOfUserRecords();
+  a()->users()->ReadUser(&u, 1);
+  int nNumUsers = a()->users()->GetNumberOfUserRecords();
   for (int i1 = 1; i1 <= nNumUsers; i1++) {
-    session()->users()->ReadUser(&u, i1);
+    a()->users()->ReadUser(&u, i1);
     u.SetVote(nNumUsers, 0);
-    session()->users()->WriteUser(&u, i1);
+    a()->users()->WriteUser(&u, i1);
   }
 }
 
@@ -107,7 +107,7 @@ static void set_question(int ii) {
 void ivotes() {
   votingrec v;
 
-  File votingDat(session()->config()->datadir(), VOTING_DAT);
+  File votingDat(a()->config()->datadir(), VOTING_DAT);
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   int n = static_cast<int>((votingDat.GetLength() / sizeof(votingrec)) - 1);
   if (n < 20) {
@@ -138,25 +138,25 @@ void ivotes() {
 void voteprint() {
   votingrec v;
 
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
   char *x = static_cast<char *>(BbsAllocA(20 * (2 + nNumUserRecords)));
   if (x == nullptr) {
     return;
   }
   for (int i = 0; i <= nNumUserRecords; i++) {
     User u;
-    session()->users()->ReadUser(&u, i);
+    a()->users()->ReadUser(&u, i);
     for (int i1 = 0; i1 < 20; i1++) {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
     }
   }
-  File votingText(session()->config()->gfilesdir(), VOTING_TXT);
+  File votingText(a()->config()->gfilesdir(), VOTING_TXT);
   votingText.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeText);
   votingText.Write(votingText.full_pathname());
 
-  File votingDat(session()->config()->datadir(), VOTING_DAT);
+  File votingDat(a()->config()->datadir(), VOTING_DAT);
 
-  session()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->RefreshStatusCache();
 
   for (int i1 = 0; i1 < 20; i1++) {
     if (!votingDat.Open(File::modeReadOnly | File::modeBinary)) {
@@ -176,7 +176,7 @@ void voteprint() {
         text.str("     ");
         text << v.responses[i2].response << "\r\n";
         votingText.Write(text.str());
-        for (const auto& n : session()->names()->names_vector()) {
+        for (const auto& n : a()->names()->names_vector()) {
           if (x[i1 + 20 * n.number] == i2 + 1) {
             text.clear();
             text.str("          ");

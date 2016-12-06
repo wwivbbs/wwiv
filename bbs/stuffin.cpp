@@ -26,7 +26,7 @@
 #include "bbs/dropfile.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
@@ -107,22 +107,22 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << create_filename(CHAINFILE_DOOR32);
         break;
       case 'H':
-        os << session()->remoteIO()->GetDoorHandle();
+        os << a()->remoteIO()->GetDoorHandle();
         break;
       case 'K':
-        os << session()->config()->gfilesdir() << COMMENT_TXT;
+        os << a()->config()->gfilesdir() << COMMENT_TXT;
         break;
       case 'M':
         os << modem_speed;
         break;
       case 'N':
-        os << session()->instance_number();
+        os << a()->instance_number();
         break;
       case 'O':
         os << create_filename(CHAINFILE_PCBOARD);
         break;
       case 'P':
-        os << ((incom) ? session()->primary_port() : 0);
+        os << ((incom) ? a()->primary_port() : 0);
         break;
       case 'R':
         os << create_filename(CHAINFILE_DOOR);
@@ -134,7 +134,7 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << GetTimeLeft();
         break;
       case 'U':
-        os << session()->user()->GetName();
+        os << a()->user()->GetName();
         break;
       }
       ++iter;

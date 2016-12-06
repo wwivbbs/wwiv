@@ -45,7 +45,7 @@
 #include "bbs/stdio_local_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/remote_io.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/os.h"
@@ -60,7 +60,7 @@
 // Uncomment this line to use curses on Win32
 #define WWIV_WIN32_CURSES_IO
 
-static WSession* sess_;
+static Application* sess_;
 
 using std::cout;
 using std::endl;
@@ -69,11 +69,11 @@ using std::string;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-WSession* session() { return sess_; }
+Application* a() { return sess_; }
 
 // [ VisibleForTesting ]
-WSession* CreateSession(LocalIO* localIO) {
-  sess_ = new WSession(localIO);
+Application* CreateSession(LocalIO* localIO) {
+  sess_ = new Application(localIO);
   return sess_;
 }
 

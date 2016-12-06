@@ -119,8 +119,8 @@ void grab_quotes(messagerec * m, const char *aux) {
   char cc = QUOTECOL + 48;
   int linelen = LINELEN, tf = 0;
 
-  string quotes_txt_fn = StrCat(session()->temp_directory(), QUOTES_TXT);
-  string quotes_ind_fn = StrCat(session()->temp_directory(), QUOTES_IND);
+  string quotes_txt_fn = StrCat(a()->temp_directory(), QUOTES_TXT);
+  string quotes_ind_fn = StrCat(a()->temp_directory(), QUOTES_IND);
 
   File::SetFilePermissions(quotes_txt_fn, File::permReadWrite);
   File::Remove(quotes_txt_fn);
@@ -157,8 +157,8 @@ void grab_quotes(messagerec * m, const char *aux) {
       if (file.IsOpen()) {
         l3 = l2 = 0;
         ss1 = nullptr;
-        session()->internetFullEmailAddress = "";
-        if (session()->current_net().type == network_type_t::internet) {
+        a()->internetFullEmailAddress = "";
+        if (a()->current_net().type == network_type_t::internet) {
           for (size_t l1 = 0; l1 < ss.length(); l1++) {
             if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
                 (ss[l1 + 3] == 'M')) {
@@ -175,7 +175,7 @@ void grab_quotes(messagerec * m, const char *aux) {
                     ss1 = strtok(nullptr, "\r\n");
                   }
                   if (ss1) {
-                    session()->usenetReferencesLine = ss1;
+                    a()->usenetReferencesLine = ss1;
                   }
                 }
               }
@@ -294,7 +294,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
 
 
   p = b = org;
-  File fileInputMsg(session()->temp_directory(), INPUT_MSG);
+  File fileInputMsg(a()->temp_directory(), INPUT_MSG);
   fileInputMsg.Delete();
   if (!hangup) {
     fileInputMsg.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -363,7 +363,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
       b = p;
     }
     fileInputMsg.Close();
-    if (session()->user()->GetNumMessagesPosted() < 10) {
+    if (a()->user()->GetNumMessagesPosted() < 10) {
       printfile(QUOTE_NOEXT);
     }
     irt_name[0] = '\0';

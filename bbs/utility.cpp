@@ -95,7 +95,7 @@ void remove_from_temp(const std::string& file_name, const std::string& directory
  * @return true if the user wants ANSI, false otherwise.
  */
 bool okansi() {
-  return session()->user()->HasAnsi();
+  return a()->user()->HasAnsi();
 }
 
 /**
@@ -106,40 +106,40 @@ void frequent_init() {
   setiia(seconds(5));
   g_flags = 0;
   newline = true;
-  session()->SetCurrentReadMessageArea(-1);
-  session()->SetCurrentConferenceMessageArea(0);
-  session()->SetCurrentConferenceFileArea(0);
+  a()->SetCurrentReadMessageArea(-1);
+  a()->SetCurrentConferenceMessageArea(0);
+  a()->SetCurrentConferenceFileArea(0);
   ansiptr = 0;
   curatr = 0x07;
   outcom = false;
   incom = false;
   charbufferpointer = 0;
-  session()->localIO()->SetTopLine(0);
-  session()->screenlinest = defscreenbottom + 1;
+  a()->localIO()->SetTopLine(0);
+  a()->screenlinest = defscreenbottom + 1;
   bout.clear_endofline();
   hangup = false;
   chatcall = false;
-  session()->SetChatReason("");
-  session()->SetUserOnline(false);
+  a()->SetChatReason("");
+  a()->SetUserOnline(false);
   change_color = 0;
   chatting = 0;
   local_echo = true;
   irt[0] = '\0';
   irt_name[0] = '\0';
   bout.clear_lines_listed();
-  session()->ReadCurrentUser(1);
+  a()->ReadCurrentUser(1);
   read_qscn(1, qsc, false);
   okmacro = true;
   okskey = true;
   smwcheck = false;
   use_workspace = false;
   extratimecall = 0;
-  session()->using_modem = 0;
-  File::SetFilePermissions(session()->dsz_logfile_name_, File::permReadWrite);
-  File::Remove(session()->dsz_logfile_name_);
-  session()->SetTimeOnlineLimited(false);
+  a()->using_modem = 0;
+  File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
+  File::Remove(a()->dsz_logfile_name_);
+  a()->SetTimeOnlineLimited(false);
   set_net_num(0);
-  set_language(session()->user()->GetLanguage());
+  set_language(a()->user()->GetLanguage());
   reset_disable_conf();
 
   // Reset the error bit on bout since after a hangup it can be set.
@@ -151,11 +151,11 @@ void frequent_init() {
  * Gets the current users upload/download ratio.
  */
 double ratio() {
-  if (session()->user()->GetDownloadK() == 0) {
+  if (a()->user()->GetDownloadK() == 0) {
     return 99.999;
   }
-  double r = static_cast<float>(session()->user()->GetUploadK()) /
-             static_cast<float>(session()->user()->GetDownloadK());
+  double r = static_cast<float>(a()->user()->GetUploadK()) /
+             static_cast<float>(a()->user()->GetDownloadK());
 
   return (r > 99.998) ? 99.998 : r;
 }
@@ -164,11 +164,11 @@ double ratio() {
  * Gets the current users post/call ratio.
  */
 double post_ratio() {
-  if (session()->user()->GetNumLogons() == 0) {
+  if (a()->user()->GetNumLogons() == 0) {
     return 99.999;
   }
-  double r = static_cast<float>(session()->user()->GetNumMessagesPosted()) /
-             static_cast<float>(session()->user()->GetNumLogons());
+  double r = static_cast<float>(a()->user()->GetNumMessagesPosted()) /
+             static_cast<float>(a()->user()->GetNumLogons());
   return (r > 99.998) ? 99.998 : r;
 }
 
@@ -176,31 +176,31 @@ long nsl() {
   int64_t rtn = 1;
 
   auto dd = system_clock::now();
-  if (session()->IsUserOnline()) {
-    auto tot = dd - session()->system_logon_time();
+  if (a()->IsUserOnline()) {
+    auto tot = dd - a()->system_logon_time();
 
-    auto tpl = minutes(getslrec(session()->GetEffectiveSl()).time_per_logon);
-    auto tpd = minutes(getslrec(session()->GetEffectiveSl()).time_per_day);
-    auto extra_time = seconds(std::lround(session()->user()->GetExtraTime()) + extratimecall);
+    auto tpl = minutes(getslrec(a()->GetEffectiveSl()).time_per_logon);
+    auto tpd = minutes(getslrec(a()->GetEffectiveSl()).time_per_day);
+    auto extra_time = seconds(std::lround(a()->user()->GetExtraTime()) + extratimecall);
     auto tlc = tpl - tot + extra_time;
     auto tlt = tpd - tot - 
-      seconds(std::lround(session()->user()->GetTimeOnToday() + session()->user()->GetExtraTime()));
+      seconds(std::lround(a()->user()->GetTimeOnToday() + a()->user()->GetExtraTime()));
 
     tlt = std::min(tlc, tlt);
     rtn = in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count());
   }
 
-  session()->SetTimeOnlineLimited(false);
+  a()->SetTimeOnlineLimited(false);
 /*
  TODO(rushfan): Do we really need to limit based on event time anymore?
 if (syscfg.executetime) {
-    auto tlt = session()->time_event_time() - dd;
+    auto tlt = a()->time_event_time() - dd;
     if (tlt < 0) {
       tlt += SECONDS_PER_DAY;
     }
     if (rtn > tlt) {
       rtn = tlt;
-      session()->SetTimeOnlineLimited(true);
+      a()->SetTimeOnlineLimited(true);
     }
     check_event();
     if (do_event) {
@@ -215,9 +215,9 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
   WWIV_ASSERT(nh);
 
   const string filename = StrCat(
-    session()->network_directory().c_str(),
+    a()->network_directory().c_str(),
     "p1",
-    session()->network_extension().c_str());
+    a()->network_extension().c_str());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;
@@ -370,7 +370,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   WWIV_ASSERT(menu_pos);
   WWIV_ASSERT(smc);
 
-  session()->tleft(true);
+  a()->tleft(true);
 
   if (bNeedsRedraw) {
     amount = 1;
@@ -486,7 +486,7 @@ slrec getslrec(int nSl) {
   wwiv::sdk::Config config;
   if (!config.IsInitialized()) {
     // Bad ju ju here.
-    session()->AbortBBS();
+    a()->AbortBBS();
   }
   nCurSl = nSl;
   CurSlRec = config.config()->sl[nSl];
@@ -495,8 +495,8 @@ slrec getslrec(int nSl) {
 
 bool okfsed() {
   return okansi()
-         && session()->user()->GetDefaultEditor() > 0 
-         && session()->user()->GetDefaultEditor() <= session()->editors.size();
+         && a()->user()->GetDefaultEditor() > 0 
+         && a()->user()->GetDefaultEditor() <= a()->editors.size();
 }
 
 
@@ -545,7 +545,7 @@ std::string W_DateString(time_t tDateTime, const std::string& origMode , const s
       }
 
       // which form of the clock is in use?
-      if (session()->user()->IsUse24HourClock()) {
+      if (a()->user()->IsUse24HourClock()) {
         strftime(s, 40, "%H:%M", pTm);
       } else {
         strftime(s, 40, "%I:%M %p", pTm);

@@ -51,8 +51,8 @@ static void lastchar_pressed() {
 
 extern int nsp;
 static void resetnsp() {
-  if (nsp == 1 && !(session()->user()->HasPause())) {
-    session()->user()->ToggleStatusFlag(User::pauseOnPage);
+  if (nsp == 1 && !(a()->user()->HasPause())) {
+    a()->user()->ToggleStatusFlag(User::pauseOnPage);
   }
   nsp = 0;
 }
@@ -69,8 +69,8 @@ static void PrintTime() {
   currentTime.erase(currentTime.find_last_of("\r\n"));
 
   bout << "|#2" << currentTime << wwiv::endl;
-  if (session()->IsUserOnline()) {
-    auto time_on = std::chrono::system_clock::now() - session()->system_logon_time();
+  if (a()->IsUserOnline()) {
+    auto time_on = std::chrono::system_clock::now() - a()->system_logon_time();
     auto seconds_on = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
     bout << "|#9Time on   = |#1" << ctim(seconds_on) << wwiv::endl;
     bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
@@ -110,7 +110,7 @@ static void HandleControlKey(char *ch) {
       if (okmacro && (!charbufferpointer)) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         int macroNum = MACRO_KEY_TABLE[(int)c];
-        strncpy(charbuffer, &(session()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
+        strncpy(charbuffer, &(a()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
         c = charbuffer[0];
         if (c) {
           charbufferpointer = 1;
@@ -146,7 +146,7 @@ static void HandleControlKey(char *ch) {
       toggle_avail();
       break;
     case CY:
-      session()->user()->ToggleStatusFlag(User::pauseOnPage);
+      a()->user()->ToggleStatusFlag(User::pauseOnPage);
       break;
     }
   }
@@ -217,13 +217,13 @@ char bgetch() {
       return charbuffer[charbufferpointer++];
     }
   }
-  if (session()->localIO()->KeyPressed()) {
-    ch = session()->localIO()->GetChar();
+  if (a()->localIO()->KeyPressed()) {
+    ch = a()->localIO()->GetChar();
     bout.SetLastKeyLocal(true);
     if (!(g_flags & g_flag_allow_extended)) {
       if (!ch) {
-        ch = session()->localIO()->GetChar();
-        session()->handle_sysop_key(static_cast<uint8_t>(ch));
+        ch = a()->localIO()->GetChar();
+        a()->handle_sysop_key(static_cast<uint8_t>(ch));
         ch = static_cast<char>(((ch == F10) || (ch == CF10)) ? 2 : 0);
       }
     }
@@ -241,12 +241,12 @@ char bgetch() {
 }
 
 char bgetchraw() {
-  if (ok_modem_stuff && nullptr != session()->remoteIO()) {
-    if (session()->remoteIO()->incoming()) {
-      return (session()->remoteIO()->getW());
+  if (ok_modem_stuff && nullptr != a()->remoteIO()) {
+    if (a()->remoteIO()->incoming()) {
+      return (a()->remoteIO()->getW());
     }
-    if (session()->localIO()->KeyPressed()) {
-      return session()->localIO()->GetChar();
+    if (a()->localIO()->KeyPressed()) {
+      return a()->localIO()->GetChar();
     }
   }
   return 0;
@@ -254,15 +254,15 @@ char bgetchraw() {
 
 bool bkbhitraw() {
   if (ok_modem_stuff) {
-    return (session()->remoteIO()->incoming() || session()->localIO()->KeyPressed());
-  } else if (session()->localIO()->KeyPressed()) {
+    return (a()->remoteIO()->incoming() || a()->localIO()->KeyPressed());
+  } else if (a()->localIO()->KeyPressed()) {
     return true;
   }
   return false;
 }
 
 bool bkbhit() {
-  if ((session()->localIO()->KeyPressed() || (incom && bkbhitraw()) ||
+  if ((a()->localIO()->KeyPressed() || (incom && bkbhitraw()) ||
        (charbufferpointer && charbuffer[charbufferpointer])) ||
       bquote) {
     return true;
@@ -272,7 +272,7 @@ bool bkbhit() {
 
 
 bool Output::RestoreCurrentLine(const SavedLine& line) {
-  if (session()->localIO()->WhereX()) {
+  if (a()->localIO()->WhereX()) {
     bout.nl();
   }
   for (const auto& c : line.line) {
@@ -292,7 +292,7 @@ SavedLine Output::SaveCurrentLine() {
 
 void Output::dump() {
   if (ok_modem_stuff) {
-    session()->remoteIO()->purgeIn();
+    a()->remoteIO()->purgeIn();
   }
 }
 
@@ -314,7 +314,7 @@ char Output::getkey() {
   lastchar_pressed();
 
   auto tv = std::chrono::minutes(3);
-  if (so() || session()->GetCurrentSpeed() == "TELNET") {
+  if (so() || a()->GetCurrentSpeed() == "TELNET") {
     tv = std::chrono::minutes(10);
   }
   // change 4.31 Build3
@@ -326,7 +326,7 @@ char Output::getkey() {
   do {
     while (!bkbhit()) {
       // Try to make hangups happen faster.
-      if (incom && ok_modem_stuff && !session()->remoteIO()->connected()) {
+      if (incom && ok_modem_stuff && !a()->remoteIO()->connected()) {
         Hangup();
       }
       CheckForHangup();
@@ -369,7 +369,7 @@ static int pd_getkey() {
 }
 
 int bgetch_event(numlock_status_t numlock_mode) {
-  session()->tleft(true);
+  a()->tleft(true);
   time_t time1 = time(nullptr);
 
   while (true) {
@@ -383,10 +383,10 @@ int bgetch_event(numlock_status_t numlock_mode) {
       return 0;
     }
 
-    if (bkbhitraw() || session()->localIO()->KeyPressed()) {
-      if (!incom || session()->localIO()->KeyPressed()) {
+    if (bkbhitraw() || a()->localIO()->KeyPressed()) {
+      if (!incom || a()->localIO()->KeyPressed()) {
         // Check for local keys
-        int key = session()->localIO()->GetChar();
+        int key = a()->localIO()->GetChar();
         if (key == CBACKSPACE) {
           return COMMAND_DELETE;
         }
@@ -396,9 +396,9 @@ int bgetch_event(numlock_status_t numlock_mode) {
         if (key == RETURN || key == CL) {
           return EXECUTE;
         }
-        if ((key == 0 || key == 224) && session()->localIO()->KeyPressed()) {
+        if ((key == 0 || key == 224) && a()->localIO()->KeyPressed()) {
           // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
-          return session()->localIO()->GetChar() + 256;
+          return a()->localIO()->GetChar() + 256;
         }
         else {
           if (numlock_mode == numlock_status_t::NOTNUMBERS) {
@@ -495,8 +495,8 @@ int bgetch_event(numlock_status_t numlock_mode) {
         }
         else {
           if (!key) {
-            if (session()->localIO()->KeyPressed()) {
-              key = session()->localIO()->GetChar();
+            if (a()->localIO()->KeyPressed()) {
+              key = a()->localIO()->GetChar();
               return (key + 256);
             }
           }

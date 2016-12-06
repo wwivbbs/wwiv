@@ -25,7 +25,7 @@
 #include "sdk/vardec.h"
 #include "printfile.h"
 
-#define QWK_DIRECTORY (session()->batch_directory().c_str())
+#define QWK_DIRECTORY (a()->batch_directory().c_str())
 
 #define append_block(file, memory, size) write(file, memory, size)
 #define SETREC(f,i)  lseek(f,((long) (i))*((long)sizeof(uploadsrec)),SEEK_SET);
@@ -136,7 +136,7 @@ int _fmsbintoieee(float *src4, float *dest4);
 int _fieeetomsbin(float *src4, float *dest4);
 char* qwk_system_name(char *qwkname);
 void qwk_menu();
-int select_qwk_protocol(struct qwk_junk *qwk_info);
+unsigned short select_qwk_protocol(struct qwk_junk *qwk_info);
 void insert_after_routing(char *text, char *text2insert, long *len);
 void close_qwk_cfg(struct qwk_config *qwk_cfg);
 void read_qwk_cfg(struct qwk_config *qwk_cfg);

@@ -64,14 +64,14 @@ int ExecExternalProgram(const std::string cmdline, int flags) {
   }
 
   if (ok_modem_stuff) {
-    session()->remoteIO()->close(true);
+    a()->remoteIO()->close(true);
   }
 
   int i = UnixSpawn(cmdline, NULL);
 
   // reengage comm stuff
   if (ok_modem_stuff) {
-    session()->remoteIO()->open();
+    a()->remoteIO()->open();
   }
   return i;
 }

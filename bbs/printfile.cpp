@@ -32,7 +32,7 @@
 #include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/wwivport.h"
 #include "core/file.h"
 #include "core/strings.h"
@@ -63,7 +63,7 @@ char *get_file(const string& filename, long *len) {
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
 const string CreateFullPathToPrint(const string& basename) {
-  std::vector<string> dirs { session()->language_dir, session()->config()->gfilesdir()};
+  std::vector<string> dirs { a()->language_dir, a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
     File file(base, basename);
     if (basename.find('.') != string::npos) {
@@ -75,8 +75,8 @@ const string CreateFullPathToPrint(const string& basename) {
       continue;
     }
     const string root_filename = file.full_pathname();
-    if (session()->user()->HasAnsi()) {
-      if (session()->user()->HasColor()) {
+    if (a()->user()->HasAnsi()) {
+      if (a()->user()->HasColor()) {
         // ANSI and color
         string candidate = StringPrintf("%s.ans", root_filename.c_str());
         if (File::Exists(candidate)) {

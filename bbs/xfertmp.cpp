@@ -391,14 +391,14 @@ static bool check_for_files(const char *file_name) {
 }
 
 static bool download_temp_arc(const char *file_name, bool count_against_xfer_ratio) {
-  bout << "Downloading " << file_name << "." << session()->arcs[ARC_NUMBER].extension << ":\r\n\r\n";
+  bout << "Downloading " << file_name << "." << a()->arcs[ARC_NUMBER].extension << ":\r\n\r\n";
   if (count_against_xfer_ratio && !ratio_ok()) {
     bout << "Ratio too low.\r\n";
     return false;
   }
   char szDownloadFileName[MAX_PATH];
-  sprintf(szDownloadFileName, "%s%s.%s", session()->temp_directory().c_str(),
-    file_name, session()->arcs[ARC_NUMBER].extension);
+  sprintf(szDownloadFileName, "%s%s.%s", a()->temp_directory().c_str(),
+    file_name, a()->arcs[ARC_NUMBER].extension);
   File file(szDownloadFileName);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
@@ -416,18 +416,18 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bool sent = false;
     bool abort = false;
     char szFileToSend[81];
-    sprintf(szFileToSend, "%s.%s", file_name, session()->arcs[ARC_NUMBER].extension);
+    sprintf(szFileToSend, "%s.%s", file_name, a()->arcs[ARC_NUMBER].extension);
     send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, lFileSize);
     if (sent) {
       if (count_against_xfer_ratio) {
-        session()->user()->SetFilesDownloaded(session()->user()->GetFilesDownloaded() + 1);
-        session()->user()->SetDownloadK(session()->user()->GetDownloadK() + bytes_to_k(lFileSize));
+        a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
+        a()->user()->SetDownloadK(a()->user()->GetDownloadK() + bytes_to_k(lFileSize));
         bout.nl(2);
         bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
       sysoplog() << StringPrintf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
-      if (session()->IsUserOnline()) {
-        session()->UpdateTopScreen();
+      if (a()->IsUserOnline()) {
+        a()->UpdateTopScreen();
       }
       return true;
     }
@@ -441,7 +441,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
 void add_arc(const char *arc, const char *file_name, int dos) {
   char szAddArchiveCommand[MAX_PATH], szArchiveFileName[MAX_PATH];
 
-  sprintf(szArchiveFileName, "%s.%s", arc, session()->arcs[ARC_NUMBER].extension);
+  sprintf(szArchiveFileName, "%s.%s", arc, a()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
   if (IsEqualsIgnoreCase(file_name, "chain.txt") ||
       IsEqualsIgnoreCase(file_name, "door.sys") ||
@@ -452,16 +452,16 @@ void add_arc(const char *arc, const char *file_name, int dos) {
 
   get_arc_cmd(szAddArchiveCommand, szArchiveFileName, 2, file_name);
   if (szAddArchiveCommand[0]) {
-    File::set_current_directory(session()->temp_directory());
-    session()->localIO()->Puts(szAddArchiveCommand);
-    session()->localIO()->Puts("\r\n");
+    File::set_current_directory(a()->temp_directory());
+    a()->localIO()->Puts(szAddArchiveCommand);
+    a()->localIO()->Puts("\r\n");
     if (dos) {
-      ExecuteExternalProgram(szAddArchiveCommand, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+      ExecuteExternalProgram(szAddArchiveCommand, a()->GetSpawnOptions(SPAWNOPT_ARCH_A));
     } else {
       ExecuteExternalProgram(szAddArchiveCommand, EFLAG_NONE);
-      session()->UpdateTopScreen();
+      a()->UpdateTopScreen();
     }
-    session()->CdHome();
+    a()->CdHome();
     sysoplog() << StringPrintf("Added \"%s\" to %s", file_name, szArchiveFileName);
 
   } else {
@@ -509,14 +509,14 @@ void del_temp() {
     if (strchr(szFileName, '.') == nullptr) {
       strcat(szFileName, ".*");
     }
-    remove_from_temp(szFileName, session()->temp_directory(), true);
+    remove_from_temp(szFileName, a()->temp_directory(), true);
   }
 }
 
 void list_temp_dir() {
   char szFileMask[MAX_PATH];
 
-  sprintf(szFileMask, "%s*.*", session()->temp_directory().c_str());
+  sprintf(szFileMask, "%s*.*", a()->temp_directory().c_str());
   WFindFile fnd;
   bool bFound = fnd.open(szFileMask, 0);
   bout.nl();
@@ -542,7 +542,7 @@ void list_temp_dir() {
   }
   bout.nl();
   if (!abort && !hangup) {
-    bout << "Free space: " << File::GetFreeSpaceForPath(session()->temp_directory()) << wwiv::endl;
+    bout << "Free space: " << File::GetFreeSpaceForPath(a()->temp_directory()) << wwiv::endl;
     bout.nl();
   }
 }
@@ -568,16 +568,16 @@ void temp_extract() {
   i = recno(s);
   bool ok = true;
   while ((i > 0) && ok && !hangup) {
-    File fileDownload(session()->download_filename_);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    sprintf(s2, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
+    sprintf(s2, "%s%s", a()->directories[a()->current_user_dir().subnum].path, u.filename);
     StringRemoveWhitespace(s2);
-    if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
-      sprintf(s1, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
-      sprintf(s2, "%s%s", session()->temp_directory().c_str(), u.filename);
+    if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
+      sprintf(s1, "%s%s", a()->directories[a()->current_user_dir().subnum].path, u.filename);
+      sprintf(s2, "%s%s", a()->temp_directory().c_str(), u.filename);
       StringRemoveWhitespace(s1);
       if (!File::Exists(s2)) {
         copyfile(s1, s2, false);
@@ -589,13 +589,13 @@ void temp_extract() {
       bool abort = false;
       printinfo(&u, &abort);
       bout.nl();
-      if (session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) {
-        File::set_current_directory(session()->temp_directory());
+      if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
+        File::set_current_directory(a()->temp_directory());
       } else {
-        File::set_current_directory(session()->directories[session()->current_user_dir().subnum].path);
+        File::set_current_directory(a()->directories[a()->current_user_dir().subnum].path);
       }
       File file(File::current_directory(), stripfn(u.filename));
-      session()->CdHome();
+      a()->CdHome();
       if (check_for_files(file.full_pathname().c_str())) {
         bool ok1 = false;
         do {
@@ -606,7 +606,7 @@ void temp_extract() {
             ok1 = false;
           }
           if (IsEquals(s1, "?")) {
-            list_arc_out(stripfn(u.filename), session()->directories[session()->current_user_dir().subnum].path);
+            list_arc_out(stripfn(u.filename), a()->directories[a()->current_user_dir().subnum].path);
             s1[0] = '\0';
           }
           if (IsEquals(s1, "Q")) {
@@ -627,17 +627,17 @@ void temp_extract() {
               strcat(s1, ".*");
             }
             get_arc_cmd(s3, file.full_pathname().c_str(), 1, stripfn(s1));
-            File::set_current_directory(session()->temp_directory());
+            File::set_current_directory(a()->temp_directory());
             if (!okfn(s1)) {
               s3[0] = '\0';
             }
             if (s3[0]) {
-              ExecuteExternalProgram(s3, session()->GetSpawnOptions(SPAWNOPT_ARCH_E));
+              ExecuteExternalProgram(s3, a()->GetSpawnOptions(SPAWNOPT_ARCH_E));
               sprintf(s2, "Extracted out \"%s\" from \"%s\"", s1, u.filename);
             } else {
               s2[0] = '\0';
             }
-            session()->CdHome();
+            a()->CdHome();
             if (s2[0]) {
               sysoplog() << s2;
             }
@@ -670,14 +670,14 @@ void list_temp_text() {
     if (strchr(s, '.') == nullptr) {
       strcat(s, ".*");
     }
-    sprintf(s1, "%s%s", session()->temp_directory().c_str(), stripfn(s));
+    sprintf(s1, "%s%s", a()->temp_directory().c_str(), stripfn(s));
     WFindFile fnd;
     bool bFound = fnd.open(s1, 0);
     int ok = 1;
     bout.nl();
     while (bFound && ok) {
       strcpy(szFileName, fnd.GetFileName());
-      sprintf(s, "%s%s", session()->temp_directory().c_str(), szFileName);
+      sprintf(s, "%s%s", a()->temp_directory().c_str(), szFileName);
       if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
           !IsEqualsIgnoreCase(szFileName, "door.sys")) {
         bout.nl();
@@ -701,8 +701,8 @@ void list_temp_text() {
 void list_temp_arc() {
   char szFileName[MAX_PATH];
 
-  sprintf(szFileName, "temp.%s", session()->arcs[ARC_NUMBER].extension);
-  list_arc_out(szFileName, session()->temp_directory().c_str());
+  sprintf(szFileName, "temp.%s", a()->arcs[ARC_NUMBER].extension);
+  list_arc_out(szFileName, a()->temp_directory().c_str());
   bout.nl();
 }
 
@@ -750,18 +750,18 @@ void move_file_t() {
   tmp_disable_conf(true);
 
   bout.nl();
-  if (session()->batch().entry.empty()) {
+  if (a()->batch().entry.empty()) {
     bout.nl();
     bout << "|#6No files have been tagged for movement.\r\n";
     pausescr();
   }
   // TODO(rushfan): rewrite using iterators.
-  for (int nCurBatchPos = session()->batch().entry.size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
+  for (int nCurBatchPos = a()->batch().entry.size() - 1; nCurBatchPos >= 0; nCurBatchPos--) {
     bool ok = false;
     char szCurBatchFileName[MAX_PATH];
-    strcpy(szCurBatchFileName, session()->batch().entry[nCurBatchPos].filename);
+    strcpy(szCurBatchFileName, a()->batch().entry[nCurBatchPos].filename);
     align(szCurBatchFileName);
-    dliscan1(session()->batch().entry[nCurBatchPos].dir);
+    dliscan1(a()->batch().entry[nCurBatchPos].dir);
     int nTempRecordNum = recno(szCurBatchFileName);
     if (nTempRecordNum < 0) {
       bout << "File not found.\r\n";
@@ -771,12 +771,12 @@ void move_file_t() {
     int nCurPos = 0;
     while (!hangup && (nTempRecordNum > 0) && !done) {
       nCurPos = nTempRecordNum;
-      File fileDownload(session()->download_filename_);
+      File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeReadOnly | File::modeBinary);
       FileAreaSetRecord(fileDownload, nTempRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
-      printfileinfo(&u, session()->batch().entry[nCurBatchPos].dir);
+      printfileinfo(&u, a()->batch().entry[nCurBatchPos].dir);
       bout << "|#5Move this (Y/N/Q)? ";
       char ch = ynq();
       if (ch == 'Q') {
@@ -785,7 +785,7 @@ void move_file_t() {
         dliscan();
         return;
       } else if (ch == 'Y') {
-        sprintf(s1, "%s%s", session()->directories[session()->batch().entry[nCurBatchPos].dir].path, u.filename);
+        sprintf(s1, "%s%s", a()->directories[a()->batch().entry[nCurBatchPos].dir].path, u.filename);
         StringRemoveWhitespace(s1);
         char *pszDirectoryNum = nullptr;
         do {
@@ -793,30 +793,30 @@ void move_file_t() {
           pszDirectoryNum = mmkey(1);
           if (pszDirectoryNum[0] == '?') {
             dirlist(1);
-            dliscan1(session()->batch().entry[nCurBatchPos].dir);
+            dliscan1(a()->batch().entry[nCurBatchPos].dir);
           }
         } while (!hangup && (pszDirectoryNum[0] == '?'));
         d1 = -1;
         if (pszDirectoryNum[0]) {
-          for (size_t i1 = 0; (i1 < session()->directories.size()) && (session()->udir[i1].subnum != -1); i1++) {
-            if (IsEquals(session()->udir[i1].keys, pszDirectoryNum)) {
+          for (size_t i1 = 0; (i1 < a()->directories.size()) && (a()->udir[i1].subnum != -1); i1++) {
+            if (IsEquals(a()->udir[i1].keys, pszDirectoryNum)) {
               d1 = i1;
             }
           }
         }
         if (d1 != -1) {
           ok = true;
-          d1 = session()->udir[d1].subnum;
+          d1 = a()->udir[d1].subnum;
           dliscan1(d1);
           if (recno(u.filename) > 0) {
             ok = false;
             bout << "Filename already in use in that directory.\r\n";
           }
-          if (session()->numf >= session()->directories[d1].maxfiles) {
+          if (a()->numf >= a()->directories[d1].maxfiles) {
             ok = false;
             bout << "Too many files in that directory.\r\n";
           }
-          if (File::GetFreeSpaceForPath(session()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
+          if (File::GetFreeSpaceForPath(a()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
             ok = false;
             bout << "Not enough disk space to move it.\r\n";
           }
@@ -834,16 +834,16 @@ void move_file_t() {
         }
         --nCurPos;
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        for (int i1 = nTempRecordNum; i1 < session()->numf; i1++) {
+        for (int i1 = nTempRecordNum; i1 < a()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u1, sizeof(uploadsrec));
           FileAreaSetRecord(fileDownload, i1);
           fileDownload.Write(&u1, sizeof(uploadsrec));
         }
-        --session()->numf;
+        --a()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Read(&u1, sizeof(uploadsrec));
-        u1.numbytes = session()->numf;
+        u1.numbytes = a()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u1, sizeof(uploadsrec));
         fileDownload.Close();
@@ -852,11 +852,11 @@ void move_file_t() {
           delete_extended_description(u.filename);
         }
 
-        sprintf(s2, "%s%s", session()->directories[d1].path, u.filename);
+        sprintf(s2, "%s%s", a()->directories[d1].path, u.filename);
         StringRemoveWhitespace(s2);
         dliscan1(d1);
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        for (int i = session()->numf; i >= 1; i--) {
+        for (int i = a()->numf; i >= 1; i--) {
           FileAreaSetRecord(fileDownload, i);
           fileDownload.Read(&u1, sizeof(uploadsrec));
           FileAreaSetRecord(fileDownload, i + 1);
@@ -864,10 +864,10 @@ void move_file_t() {
         }
         FileAreaSetRecord(fileDownload, 1);
         fileDownload.Write(&u, sizeof(uploadsrec));
-        ++session()->numf;
+        ++a()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Read(&u1, sizeof(uploadsrec));
-        u1.numbytes = session()->numf;
+        u1.numbytes = a()->numf;
         if (u.daten > u1.daten) {
           u1.daten = u.daten;
         }
@@ -899,8 +899,8 @@ void move_file_t() {
             copyfile(s1, s2, false);
             File::Remove(s1);
           }
-          remlist(session()->batch().entry[nCurBatchPos].filename);
-          didnt_upload(session()->batch().entry[nCurBatchPos]);
+          remlist(a()->batch().entry[nCurBatchPos].filename);
+          didnt_upload(a()->batch().entry[nCurBatchPos]);
           delbatch(nCurBatchPos);
         }
         bout << "File moved.\r\n";
@@ -931,17 +931,17 @@ void removefile() {
   int i = recno(szFileToRemove);
   bool abort = false;
   while (!hangup && (i > 0) && !abort) {
-    File fileDownload(session()->download_filename_);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    if ((dcs()) || ((u.ownersys == 0) && (u.ownerusr == session()->usernum))) {
+    if ((dcs()) || ((u.ownersys == 0) && (u.ownerusr == a()->usernum))) {
       bout.nl();
       if (check_batch_queue(u.filename)) {
         bout << "|#6That file is in the batch queue; remove it from there.\r\n\n";
       } else {
-        printfileinfo(&u, session()->current_user_dir().subnum);
+        printfileinfo(&u, a()->current_user_dir().subnum);
         bout << "|#9Remove (|#2Y/N/Q|#9) |#0: |#2";
         char ch = ynq();
         if (ch == 'Q') {
@@ -956,7 +956,7 @@ void removefile() {
               bout << "|#5Remove DL points? ";
               bRemoveDlPoints = yesno();
             }
-            if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+            if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
               bout.nl();
               bout << "|#5Remove from ALLOW.DAT? ";
               if (yesno()) {
@@ -969,16 +969,16 @@ void removefile() {
           }
           if (bDeleteFileToo) {
             char szFileNameToDelete[MAX_PATH];
-            sprintf(szFileNameToDelete, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
+            sprintf(szFileNameToDelete, "%s%s", a()->directories[a()->current_user_dir().subnum].path, u.filename);
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
-              session()->users()->ReadUser(&uu, u.ownerusr);
+              a()->users()->ReadUser(&uu, u.ownerusr);
               if (!uu.IsUserDeleted()) {
                 if (date_to_daten(uu.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
                   uu.SetUploadK(uu.GetUploadK() - bytes_to_k(u.numbytes));
-                  session()->users()->WriteUser(&uu, u.ownerusr);
+                  a()->users()->WriteUser(&uu, u.ownerusr);
                 }
               }
             }
@@ -986,19 +986,19 @@ void removefile() {
           if (u.mask & mask_extended) {
             delete_extended_description(u.filename);
           }
-          sysoplog() << StringPrintf("- \"%s\" removed off of %s", u.filename, session()->directories[session()->current_user_dir().subnum].name);
+          sysoplog() << StringPrintf("- \"%s\" removed off of %s", u.filename, a()->directories[a()->current_user_dir().subnum].name);
           fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-          for (int i1 = i; i1 < session()->numf; i1++) {
+          for (int i1 = i; i1 < a()->numf; i1++) {
             FileAreaSetRecord(fileDownload, i1 + 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
             FileAreaSetRecord(fileDownload, i1);
             fileDownload.Write(&u, sizeof(uploadsrec));
           }
           --i;
-          --session()->numf;
+          --a()->numf;
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Read(&u, sizeof(uploadsrec));
-          u.numbytes = session()->numf;
+          u.numbytes = a()->numf;
           FileAreaSetRecord(fileDownload, 0);
           fileDownload.Write(&u, sizeof(uploadsrec));
           fileDownload.Close();

@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if !defined ( __INCLUDED_BBS_WSESSION_H__ )
-#define __INCLUDED_BBS_WSESSION_H__
+#if !defined ( __INCLUDED_BBS_APPLICATION_H__ )
+#define __INCLUDED_BBS_APPLICATION_H__
 
 #include <chrono>
 #include <iostream>
@@ -45,7 +45,7 @@
 #include "sdk/msgapi/message_api_wwiv.h"
 
 //
-// WSession - Holds information and status data about the current user
+// Application - Holds information and status data about the current user
 // session on the BBS. (i.e. user record, and all data/variables
 // associated with the current logon)
 //
@@ -84,7 +84,7 @@ namespace core {
 ///////////////////////////////////////////////////////////////////////////////
 // Per-user session data
 //
-class WSession: public Runnable {
+class Application: public Runnable {
   friend class BbsHelper;
 
 public:
@@ -93,8 +93,8 @@ public:
   static const int exitLevelNotOK = 1;
   static const int exitLevelQuit = 2;
 
-  WSession(LocalIO* localIO);
-  virtual ~WSession();
+  Application(LocalIO* localIO);
+  virtual ~Application();
 
   wwiv::sdk::User* user() { return &thisuser_; }
 
@@ -163,7 +163,7 @@ public:
   void SetNewScanAtLogin(bool b) { m_bNewScanAtLogin = b; }
 
   // This is the current user's dir number they are sitting on.
-  // This is a user dir number (session()->udir[b], not directories[b]).
+  // This is a user dir number (a()->udir[b], not directories[b]).
   int  current_user_dir_num() const { return m_nCurrentFileArea; }
   void set_current_user_dir_num(int n) { m_nCurrentFileArea = n; }
 
@@ -179,8 +179,8 @@ public:
   // currently scanning/reading.  Note. this is the subnumber from subboards
   // not usub.
   // The most common usage pattern is:
-  // iscan(session()->current_user_sub_num());
-  // if (session()->GetCurrentReadMessageArea() < 0) { ... }
+  // iscan(a()->current_user_sub_num());
+  // if (a()->GetCurrentReadMessageArea() < 0) { ... }
 
   // Note: This may be set to -1 to mean no area.
   int  GetCurrentReadMessageArea() const { return current_read_message_area; }
@@ -452,5 +452,5 @@ private:
   std::chrono::system_clock::time_point time_event_time_;
 };
 
-#endif  // #if !defined (__INCLUDED_BBS_WSESSION_H__)
+#endif  // #if !defined (__INCLUDED_BBS_APPLICATION_H__)
 

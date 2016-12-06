@@ -21,7 +21,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "sdk/user.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 
 using namespace wwiv::sdk;
 

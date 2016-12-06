@@ -71,7 +71,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
   do {
     if (ii) {
       bout.nl();
-      if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
+      if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
         bout << "|#5Modify the extended description? ";
       } else {
         bout << "|#5Enter a new extended description? ";
@@ -86,24 +86,24 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
         return;
       }
     }
-    if (okfsed() && session()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
+    if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(session()->temp_directory(), "extended.dsc", "w");
+        TextFile file(a()->temp_directory(), "extended.dsc", "w");
         file.Write(*sss);
       } else {
-        File::Remove(StrCat(session()->temp_directory(), "extended.dsc"));
+        File::Remove(StrCat(a()->temp_directory(), "extended.dsc"));
       }
 
-      const int saved_screen_chars = session()->user()->GetScreenChars();
-      if (session()->user()->GetScreenChars() > (76 - INDENTION)) {
-        session()->user()->SetScreenChars(76 - INDENTION);
+      const int saved_screen_chars = a()->user()->GetScreenChars();
+      if (a()->user()->GetScreenChars() > (76 - INDENTION)) {
+        a()->user()->SetScreenChars(76 - INDENTION);
       }
 
-      bool bEditOK = external_text_edit("extended.dsc", session()->temp_directory(),
-          session()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
-      session()->user()->SetScreenChars(saved_screen_chars);
+      bool bEditOK = external_text_edit("extended.dsc", a()->temp_directory(),
+          a()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
+      a()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        TextFile file(session()->temp_directory(), "extended.dsc", "r");
+        TextFile file(a()->temp_directory(), "extended.dsc", "r");
         *sss = file.ReadFileIntoString();
 
         for (int i3 = sss->size() - 1; i3 >= 0; i3--) {
@@ -116,13 +116,13 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
       sss->clear();
       i = 1;
       bout.nl();
-      bout << "Enter up to  " << session()->max_extend_lines << " lines, "
+      bout << "Enter up to  " << a()->max_extend_lines << " lines, "
            << 78 - INDENTION << " chars each.\r\n";
       bout.nl();
       s[0] = '\0';
-      int nSavedScreenSize = session()->user()->GetScreenChars();
-      if (session()->user()->GetScreenChars() > (76 - INDENTION)) {
-        session()->user()->SetScreenChars(76 - INDENTION);
+      int nSavedScreenSize = a()->user()->GetScreenChars();
+      if (a()->user()->GetScreenChars() > (76 - INDENTION)) {
+        a()->user()->SetScreenChars(76 - INDENTION);
       }
       do {
         bout << "|#2" << i << ": |#0";
@@ -147,8 +147,8 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           sss->resize(i4);
           s[i2] = 0;
           strrev(s);
-          if (strlen(s) > static_cast<unsigned int>(session()->user()->GetScreenChars() - 1)) {
-            s[ session()->user()->GetScreenChars() - 2 ] = '\0';
+          if (strlen(s) > static_cast<unsigned int>(a()->user()->GetScreenChars() - 1)) {
+            s[ a()->user()->GetScreenChars() - 2 ] = '\0';
           }
         }
         i2 = strlen(s1);
@@ -160,8 +160,8 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           *sss += s1;
           i4 += strlen(s1);
         }
-      } while ((i++ < session()->max_extend_lines) && (s1[0]));
-      session()->user()->SetScreenChars(nSavedScreenSize);
+      } while ((i++ < a()->max_extend_lines) && (s1[0]));
+      a()->user()->SetScreenChars(nSavedScreenSize);
     }
     bout << "|#5Is this what you want? ";
     i = !yesno();
@@ -186,10 +186,10 @@ bool valid_desc(const string& description) {
 bool get_file_idz(uploadsrec * u, int dn) {
   char *b, cmd[MAX_PATH], s[81];
 
-  if (session()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (session()->directories[dn].mask & mask_cdrom)) {
+  if (a()->HasConfigFlag(OP_FLAGS_READ_CD_IDZ) && (a()->directories[dn].mask & mask_cdrom)) {
     return false;
   }
-  sprintf(s, "%s%s", session()->directories[dn].path, stripfn(u->filename));
+  sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
   filedate(s, u->actualdate);
   {
     char* ss = strchr(stripfn(u->filename), '.');
@@ -200,7 +200,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     bool ok = false;
     for (auto i = 0; i < MAX_ARCS; i++) {
       if (!ok) {
-        ok = IsEqualsIgnoreCase(ss, session()->arcs[i].extension);
+        ok = IsEqualsIgnoreCase(ss, a()->arcs[i].extension);
       }
     }
     if (!ok) {
@@ -208,21 +208,21 @@ bool get_file_idz(uploadsrec * u, int dn) {
     }
   }
 
-  File::Remove(session()->temp_directory(), FILE_ID_DIZ);
-  File::Remove(session()->temp_directory(), DESC_SDI);
+  File::Remove(a()->temp_directory(), FILE_ID_DIZ);
+  File::Remove(a()->temp_directory(), DESC_SDI);
 
-  File::set_current_directory(session()->directories[dn].path);
+  File::set_current_directory(a()->directories[dn].path);
   {
 	  File file(File::current_directory(), stripfn(u->filename));
-	  session()->CdHome();
+	  a()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
-  File::set_current_directory(session()->temp_directory());
+  File::set_current_directory(a()->temp_directory());
   ExecuteExternalProgram(cmd, EFLAG_NOHUP);
-  session()->CdHome();
-  sprintf(s, "%s%s", session()->temp_directory().c_str(), FILE_ID_DIZ);
+  a()->CdHome();
+  sprintf(s, "%s%s", a()->temp_directory().c_str(), FILE_ID_DIZ);
   if (!File::Exists(s)) {
-    sprintf(s, "%s%s", session()->temp_directory().c_str(), DESC_SDI);
+    sprintf(s, "%s%s", a()->temp_directory().c_str(), DESC_SDI);
   }
   if (File::Exists(s)) {
     bout.nl();
@@ -231,21 +231,21 @@ bool get_file_idz(uploadsrec * u, int dn) {
     if (!ss.empty()) {
       delete_extended_description(u->filename);
     }
-    if ((b = static_cast<char *>(BbsAllocA(session()->max_extend_lines * 256 + 1))) == nullptr) {
+    if ((b = static_cast<char *>(BbsAllocA(a()->max_extend_lines * 256 + 1))) == nullptr) {
       return false;
     }
     File file(s);
     file.Open(File::modeBinary | File::modeReadOnly);
-    if (file.GetLength() < (session()->max_extend_lines * 256)) {
+    if (file.GetLength() < (a()->max_extend_lines * 256)) {
       long lFileLen = file.GetLength();
       file.Read(b, lFileLen);
       b[ lFileLen ] = 0;
     } else {
-      file.Read(b, session()->max_extend_lines * 256);
-      b[session()->max_extend_lines * 256] = 0;
+      file.Read(b, a()->max_extend_lines * 256);
+      b[a()->max_extend_lines * 256] = 0;
     }
     file.Close();
-    if (session()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
+    if (a()->HasConfigFlag(OP_FLAGS_IDZ_DESC)) {
       ss = strtok(b, "\n");
       if (!ss.empty()) {
         for (size_t i = 0; i < ss.size(); i++) {
@@ -277,8 +277,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     free(b);
     bout << "Done!\r\n";
   }
-  File::Remove(session()->temp_directory(), FILE_ID_DIZ);
-  File::Remove(session()->temp_directory(), DESC_SDI);
+  File::Remove(a()->temp_directory(), FILE_ID_DIZ);
+  File::Remove(a()->temp_directory(), DESC_SDI);
   return true;
 }
 
@@ -287,13 +287,13 @@ int read_idz_all() {
 
   tmp_disable_conf(true);
   TempDisablePause disable_pause;
-  session()->ClearTopScreenProtection();
-  for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
-       (!session()->localIO()->KeyPressed()); i++) {
+  a()->ClearTopScreenProtection();
+  for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) &&
+       (!a()->localIO()->KeyPressed()); i++) {
     count += read_idz(0, i);
   }
   tmp_disable_conf(false);
-  session()->UpdateTopScreen();
+  a()->UpdateTopScreen();
   return count;
 }
 
@@ -306,29 +306,29 @@ int read_idz(int mode, int tempdir) {
   std::string s = "*.*";
   if (mode) {
     disable_pause.reset(new TempDisablePause);
-    session()->ClearTopScreenProtection();
+    a()->ClearTopScreenProtection();
     dliscan();
     s = file_mask();
   } else {
     align(&s);
-    dliscan1(session()->udir[tempdir].subnum);
+    dliscan1(a()->udir[tempdir].subnum);
   }
   bout.bprintf("|#9Checking for external description files in |#2%-25.25s #%s...\r\n",
-                                    session()->directories[session()->udir[tempdir].subnum].name,
-                                    session()->udir[tempdir].keys);
-  File fileDownload(session()->download_filename_);
+                                    a()->directories[a()->udir[tempdir].subnum].name,
+                                    a()->udir[tempdir].keys);
+  File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (i = 1; (i <= session()->numf) && (!hangup) && !abort; i++) {
+  for (i = 1; (i <= a()->numf) && (!hangup) && !abort; i++) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     if ((compare(s.c_str(), u.filename)) &&
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
-      File::set_current_directory(session()->directories[session()->udir[tempdir].subnum].path);
+      File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
       File file(File::current_directory(), stripfn(u.filename));
-      session()->CdHome();
+      a()->CdHome();
       if (file.Exists()) {
-        if (get_file_idz(&u, session()->udir[tempdir].subnum)) {
+        if (get_file_idz(&u, a()->udir[tempdir].subnum)) {
           count++;
         }
         FileAreaSetRecord(fileDownload, i);
@@ -339,7 +339,7 @@ int read_idz(int mode, int tempdir) {
   }
   fileDownload.Close();
   if (mode) {
-    session()->UpdateTopScreen();
+    a()->UpdateTopScreen();
   }
   return count;
 }
@@ -350,17 +350,17 @@ void tag_it() {
   char s[255], s1[255], s2[81], s3[400];
   long fs = 0;
 
-  if (session()->batch().entry.size() >= session()->max_batch) {
+  if (a()->batch().entry.size() >= a()->max_batch) {
     bout << "|#6No room left in batch queue.";
     bout.getkey();
     return;
   }
-  bout << "|#2Which file(s) (1-" << session()->filelist.size() 
+  bout << "|#2Which file(s) (1-" << a()->filelist.size() 
        << ", *=All, 0=Quit)? ";
   input(s3, 30, true);
   if (s3[0] == '*') {
     s3[0] = '\0';
-    for (size_t i2 = 0; i2 < session()->filelist.size() && i2 < 78; i2++) {
+    for (size_t i2 = 0; i2 < a()->filelist.size() && i2 < 78; i2++) {
       sprintf(s2, "%u ", i2 + 1);
       strcat(s3, s2);
       if (strlen(s3) > sizeof(s3) - 10) {
@@ -388,29 +388,29 @@ void tag_it() {
       break;
     }
     i--;
-    if (s1[0] && i >= 0 && i < size_int(session()->filelist)) {
-    auto& f = session()->filelist[i];
+    if (s1[0] && i >= 0 && i < size_int(a()->filelist)) {
+    auto& f = a()->filelist[i];
       if (check_batch_queue(f.u.filename)) {
         bout << "|#6" << f.u.filename << " is already in the batch queue.\r\n";
         bad = true;
       }
-      if (session()->batch().entry.size() >= session()->max_batch) {
-        bout << "|#6Batch file limit of " << session()->max_batch << " has been reached.\r\n";
+      if (a()->batch().entry.size() >= a()->max_batch) {
+        bout << "|#6Batch file limit of " << a()->max_batch << " has been reached.\r\n";
         bad = true;
       }
       if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio) &&
-          !session()->user()->IsExemptRatio() && !bad) {
+          !a()->user()->IsExemptRatio() && !bad) {
         bout.bprintf("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
                                           ratio(), syscfg.req_ratio);
         bad = true;
       }
       if (!bad) {
-        sprintf(s, "%s%s", session()->directories[f.directory].path,
+        sprintf(s, "%s%s", a()->directories[f.directory].path,
                 stripfn(f.u.filename));
         if (f.dir_mask & mask_cdrom) {
-          sprintf(s2, "%s%s", session()->directories[f.directory].path,
+          sprintf(s2, "%s%s", a()->directories[f.directory].path,
                   stripfn(f.u.filename));
-          sprintf(s, "%s%s", session()->temp_directory().c_str(), stripfn(f.u.filename));
+          sprintf(s, "%s%s", a()->temp_directory().c_str(), stripfn(f.u.filename));
           if (!File::Exists(s)) {
             copyfile(s2, s, true);
           }
@@ -426,7 +426,7 @@ void tag_it() {
       }
       if (!bad) {
         t = 12.656 / static_cast<double>(modem_speed) * static_cast<double>(fs);
-        if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
+        if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
           bout << "|#6Not enough time left in queue for " << f.u.filename << ".\r\n";
           bad = true;
         }
@@ -438,7 +438,7 @@ void tag_it() {
         b.time = (float) t;
         b.sending = true;
         b.len = fs;
-        session()->batch().entry.emplace_back(b);
+        a()->batch().entry.emplace_back(b);
         bout << "|#1" << f.u.filename << " added to batch queue.\r\n";
       }
     } else {
@@ -452,12 +452,12 @@ static char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
   char s1[81], s2[81], s3[81];
   char ch = 0;
 
-  session()->tleft(true);
+  a()->tleft(true);
   sprintf(s1, "\r|#2%s (|#1%s|#2)? |#0", pszPrompt, pszAcceptChars);
   sprintf(s2, "%s (%s)? ", pszPrompt, pszAcceptChars);
   int i1 = strlen(s2);
   sprintf(s3, "%s%s", pszAcceptChars, " \r");
-  session()->tleft(true);
+  a()->tleft(true);
   if (okansi()) {
     bout << s1;
     ch = onek_ncr(s3);
@@ -486,7 +486,7 @@ void tag_files(bool& need_title) {
     return;
   }
   bool abort = false;
-  session()->tleft(true);
+  a()->tleft(true);
   if (hangup) {
     return;
   }
@@ -510,7 +510,7 @@ void tag_files(bool& need_title) {
     case SPACE:
     case RETURN:
       bout.clear_lines_listed();
-      session()->filelist.clear();
+      a()->filelist.clear();
       need_title = true;
       bout.cls();
       done = true;
@@ -527,46 +527,46 @@ void tag_files(bool& need_title) {
     case 'E':
     {
       bout.clear_lines_listed();
-      bout << "|#9Which file (1-" << session()->filelist.size() << ")? ";
+      bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if (s[0] && i >= 0 && i < size_int(session()->filelist)) {
-        auto& f = session()->filelist[i];
+      if (s[0] && i >= 0 && i < size_int(a()->filelist)) {
+        auto& f = a()->filelist[i];
         d = XFER_TIME(f.u.numbytes);
         bout.nl();
         size_t i2;
-        for (i2 = 0; i2 < session()->directories.size(); i2++) {
-          if (session()->udir[i2].subnum == f.directory) {
+        for (i2 = 0; i2 < a()->directories.size(); i2++) {
+          if (a()->udir[i2].subnum == f.directory) {
             break;
           }
         }
-        if (i2 < session()->directories.size()) {
-          bout << "|#1Directory  : |#2#" << session()->udir[i2].keys << ", " << session()->directories[f.directory].name <<
+        if (i2 < a()->directories.size()) {
+          bout << "|#1Directory  : |#2#" << a()->udir[i2].keys << ", " << a()->directories[f.directory].name <<
             wwiv::endl;
         } else {
-          bout << "|#1Directory  : |#2#" << "??" << ", " << session()->directories[f.directory].name << wwiv::endl;
+          bout << "|#1Directory  : |#2#" << "??" << ", " << a()->directories[f.directory].name << wwiv::endl;
         }
         bout << "|#1Filename   : |#2" << f.u.filename << wwiv::endl;
         bout << "|#1Description: |#2" << f.u.description << wwiv::endl;
         if (f.u.mask & mask_extended) {
-          to_char_array(s1, session()->extended_description_filename_);
-          session()->extended_description_filename_ = StrCat(syscfg.datadir, session()->directories[f.directory].filename, ".ext");
+          to_char_array(s1, a()->extended_description_filename_);
+          a()->extended_description_filename_ = StrCat(syscfg.datadir, a()->directories[f.directory].filename, ".ext");
           zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
-          print_extended(f.u.filename, &abort, session()->max_extend_lines, 2);
+          print_extended(f.u.filename, &abort, a()->max_extend_lines, 2);
           zap_ed_info();
-          session()->extended_description_filename_ = s1;
+          a()->extended_description_filename_ = s1;
         }
         bout << "|#1File size  : |#2" << bytes_to_k(f.u.numbytes) << wwiv::endl;
         bout << "|#1Apprx. time: |#2" << ctim(d) << wwiv::endl;
         bout << "|#1Uploaded on: |#2" << f.u.date << wwiv::endl;
         bout << "|#1Uploaded by: |#2" << f.u.upby << wwiv::endl;
         bout << "|#1Times D/L'd: |#2" << f.u.numdloads << wwiv::endl;
-        if (session()->directories[f.directory].mask & mask_cdrom) {
+        if (a()->directories[f.directory].mask & mask_cdrom) {
           bout.nl();
           bout << "|#3CD ROM DRIVE\r\n";
         } else {
-          sprintf(s, "|#7%s%s", session()->directories[f.directory].path, f.u.filename);
+          sprintf(s, "|#7%s%s", a()->directories[f.directory].path, f.u.filename);
           if (!File::Exists(s)) {
             bout.nl();
             bout << "|#6-=>FILE NOT THERE<=-\r\n";
@@ -581,7 +581,7 @@ void tag_files(bool& need_title) {
     case 'M':
       if (dcs()) {
         move_file_t();
-        if (session()->filelist.empty()) {
+        if (a()->filelist.empty()) {
           done = true;
           return;
         }
@@ -589,7 +589,7 @@ void tag_files(bool& need_title) {
       }
       break;
     case 'Q':
-      session()->filelist.clear();
+      a()->filelist.clear();
       bout.clear_lines_listed();
       need_title = false;
       done = true;
@@ -601,17 +601,17 @@ void tag_files(bool& need_title) {
       tag_it();
       break;
     case 'V':
-      bout << "|#2Which file (1-|#2" << session()->filelist.size() << ")? ";
+      bout << "|#2Which file (1-|#2" << a()->filelist.size() << ")? ";
       input(s, 2, true);
       i = atoi(s) - 1;
-      if ((s[0]) && (i >= 0) && (i < size_int(session()->filelist))) {
-        auto& f = session()->filelist[i];
-        sprintf(s1, "%s%s", session()->directories[f.directory].path,
+      if ((s[0]) && (i >= 0) && (i < size_int(a()->filelist))) {
+        auto& f = a()->filelist[i];
+        sprintf(s1, "%s%s", a()->directories[f.directory].path,
                 stripfn(f.u.filename));
-        if (session()->directories[f.directory].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", session()->directories[f.directory].path,
+        if (a()->directories[f.directory].mask & mask_cdrom) {
+          sprintf(s2, "%s%s", a()->directories[f.directory].path,
                   stripfn(f.u.filename));
-          sprintf(s1, "%s%s", session()->temp_directory().c_str(),
+          sprintf(s1, "%s%s", a()->temp_directory().c_str(),
                   stripfn(f.u.filename));
           if (!File::Exists(s1)) {
             copyfile(s2, s1, true);
@@ -628,10 +628,10 @@ void tag_files(bool& need_title) {
         }
         if (s[0] != 0) {
           bout.nl();
-          ExecuteExternalProgram(s, session()->GetSpawnOptions(SPAWNOPT_ARCH_L));
+          ExecuteExternalProgram(s, a()->GetSpawnOptions(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
-          session()->UpdateTopScreen();
+          a()->UpdateTopScreen();
           bout.cls();
           relist();
         } else {
@@ -647,7 +647,7 @@ void tag_files(bool& need_title) {
       break;
     }
   }
-  session()->filelist.clear();
+  a()->filelist.clear();
   bout.clear_lines_listed();
 }
 
@@ -666,7 +666,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
     t = (12.656) / ((double)(modem_speed)) * ((double)(fs));
   }
 
-  if (nsl() <= (session()->batch().dl_time_in_secs() + t)) {
+  if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
     bout << "|#6 Insufficient time remaining... press any key.";
     bout.getkey();
   } else {
@@ -684,9 +684,9 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
       ch = onek_ncr("QYN\r");
       bout.backline();
       if (wwiv::UpperCase<char>(ch) == 'Y') {
-        if (session()->directories[dn].mask & mask_cdrom) {
-          sprintf(s2, "%s%s", session()->directories[dn].path, file_name);
-          sprintf(s1, "%s%s", session()->temp_directory().c_str(), file_name);
+        if (a()->directories[dn].mask & mask_cdrom) {
+          sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
+          sprintf(s1, "%s%s", a()->temp_directory().c_str(), file_name);
           if (!File::Exists(s1)) {
             if (!copyfile(s2, s1, true)) {
               bout << "|#6 file unavailable... press any key.";
@@ -696,7 +696,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
             bout.clreol();
           }
         } else {
-          sprintf(s2, "%s%s", session()->directories[dn].path, file_name);
+          sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
           StringRemoveWhitespace(s2);
           if ((!File::Exists(s2)) && (!so())) {
             bout << "\r";
@@ -716,10 +716,10 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
         b.len = fs;
         bout << "\r";
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
-                     session()->batch().entry.size() + 1, b.filename, b.len,
+                     a()->batch().entry.size() + 1, b.filename, b.len,
                      ctim(b.time),
-                     session()->directories[b.dir].name);
-        session()->batch().entry.emplace_back(b);
+                     a()->directories[b.dir].name);
+        a()->batch().entry.emplace_back(b);
         bout << "\r";
         bout << "|#5    Continue search? ";
         ch = onek_ncr("YN\r");
@@ -755,8 +755,8 @@ int try_to_download(const char *file_mask, int dn) {
   ok = true;
   foundany = 1;
   do {
-    session()->tleft(true);
-    File fileDownload(session()->download_filename_);
+    a()->tleft(true);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -766,8 +766,8 @@ int try_to_download(const char *file_mask, int dn) {
       return -2;
     }
 
-    write_inst(INST_LOC_DOWNLOAD, session()->current_user_dir().subnum, INST_FLAGS_ONLINE);
-    sprintf(s1, "%s%s", session()->directories[dn].path, u.filename);
+    write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
+    sprintf(s1, "%s%s", a()->directories[dn].path, u.filename);
     sprintf(s3, "%-40.40s", u.description);
     abort = false;
     rtn = add_batch(s3, u.filename, dn, u.numbytes);
@@ -809,20 +809,20 @@ void download() {
       bout <<
                          "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
     }
-    if (i < size_int(session()->batch().entry)) {
-      const auto& b = session()->batch().entry[i];
+    if (i < size_int(a()->batch().entry)) {
+      const auto& b = a()->batch().entry[i];
       if (b.sending) {
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
           i + 1, b.filename,
           b.len, ctim(std::lround(b.time)), 
-          session()->directories[b.dir].name);
+          a()->directories[b.dir].name);
       }
     } else {
       do {
         count = 0;
         ok = true;
         bout.backline();
-        bout.bprintf("|#2%3d ", session()->batch().entry.size() + 1);
+        bout.bprintf("|#2%3d ", a()->batch().entry.size() + 1);
         bout.Color(1);
         bool onl = newline;
         newline = false;
@@ -833,9 +833,9 @@ void download() {
             strcat(s, ".*");
           }
           align(s);
-          rtn = try_to_download(s, session()->current_user_dir().subnum);
+          rtn = try_to_download(s, a()->current_user_dir().subnum);
           if (rtn == 0) {
-            if (uconfdir[1].confnum != -10 && okconf(session()->user())) {
+            if (uconfdir[1].confnum != -10 && okconf(a()->user())) {
               bout.backline();
               bout << " |#5Search all conferences? ";
               ch = onek_ncr("YN\r");
@@ -845,12 +845,12 @@ void download() {
               }
             }
             bout.backline();
-            sprintf(s1, "%3d %s", session()->batch().entry.size() + 1, s);
+            sprintf(s1, "%3d %s", a()->batch().entry.size() + 1, s);
             bout.Color(1);
             bout << s1;
             foundany = 0;
             size_t dn = 0;
-            while ((dn < session()->directories.size()) && (session()->udir[dn].subnum != -1)) {
+            while ((dn < a()->directories.size()) && (a()->udir[dn].subnum != -1)) {
               count++;
               bout << "|#" << color;
               if (count == NUM_DOTS) {
@@ -866,7 +866,7 @@ void download() {
                   color = 0;
                 }
               }
-              rtn = try_to_download(s, session()->udir[dn].subnum);
+              rtn = try_to_download(s, a()->udir[dn].subnum);
               if (rtn < 0) {
                 break;
               } else {
@@ -894,9 +894,9 @@ void download() {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !hangup && (i <= size_int(session()->batch().entry)));
+  } while (!done && !hangup && (i <= size_int(a()->batch().entry)));
 
-  if (!session()->batch().numbatchdl()) {
+  if (!a()->batch().numbatchdl()) {
     return;
   }
 
@@ -907,15 +907,15 @@ void download() {
     return;
   }
   bout.nl();
-  bout << "|#1Files in Batch Queue   : |#2" << session()->batch().entry.size() << wwiv::endl;
-  bout << "|#1Estimated Download Time: |#2" << ctim(session()->batch().dl_time_in_secs()) << wwiv::endl;
+  bout << "|#1Files in Batch Queue   : |#2" << a()->batch().entry.size() << wwiv::endl;
+  bout << "|#1Estimated Download Time: |#2" << ctim(a()->batch().dl_time_in_secs()) << wwiv::endl;
   bout.nl();
   rtn = batchdl(3);
   if (rtn) {
     return;
   }
   bout.nl();
-  if (session()->batch().entry.empty()) {
+  if (a()->batch().entry.empty()) {
     return;
   }
   bout << "|#5Hang up after transfer? ";
@@ -924,10 +924,10 @@ void download() {
   if (ip > 0) {
     switch (ip) {
     case WWIV_INTERNAL_PROT_YMODEM: {
-      if (session()->over_intern.size() > 0
-          && (session()->over_intern[2].othr & othr_override_internal)
-          && (session()->over_intern[2].sendbatchfn[0])) {
-        dszbatchdl(had, session()->over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
+      if (a()->over_intern.size() > 0
+          && (a()->over_intern[2].othr & othr_override_internal)
+          && (a()->over_intern[2].sendbatchfn[0])) {
+        dszbatchdl(had, a()->over_intern[2].sendbatchfn, prot_name(WWIV_INTERNAL_PROT_YMODEM));
       } else {
         ymbatchdl(had);
       }
@@ -937,8 +937,8 @@ void download() {
       zmbatchdl(had);
     } break;
     default: {
-      dszbatchdl(had, session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
-        session()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].description);
+      dszbatchdl(had, a()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].sendbatchfn,
+        a()->externs[ip - WWIV_NUM_INTERNAL_PROTOCOLS].description);
     }
     }
     if (!had) {
@@ -951,7 +951,7 @@ void download() {
 void endlist(int mode) {
   // if mode == 1, list files
   // if mode == 2, new files
-  if (session()->filelist.empty()) {
+  if (a()->filelist.empty()) {
     bout << "\r";
     if (mode == 1) {
       bout << "|#3No matching files found.\r\n\n";
@@ -961,13 +961,13 @@ void endlist(int mode) {
     return;
   }
   bool need_title = false;
-  if (!session()->filelist.empty()) {
+  if (!a()->filelist.empty()) {
     tag_files(need_title);
     return;
   }
   bout.Color(FRAME_COLOR);
   bout << "\r" << std::string(78, '-') << wwiv::endl;
-  bout << "\r|#9Files listed: |#2 " << session()->filelist.size();
+  bout << "\r|#9Files listed: |#2 " << a()->filelist.size();
 }
 
 void SetNewFileScanDate() {
@@ -1092,12 +1092,12 @@ void removefilesnotthere(int dn, int *autodel) {
   bool abort = false;
   while (!hangup && i > 0 && !abort) {
     char szCandidateFileName[MAX_PATH];
-    File fileDownload(session()->download_filename_);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    sprintf(szCandidateFileName, "%s%s", session()->directories[dn].path, u.filename);
+    sprintf(szCandidateFileName, "%s%s", a()->directories[dn].path, u.filename);
     StringRemoveWhitespace(szCandidateFileName);
     if (!File::Exists(szCandidateFileName)) {
       StringTrim(u.description);
@@ -1121,19 +1121,19 @@ void removefilesnotthere(int dn, int *autodel) {
         if (u.mask & mask_extended) {
           delete_extended_description(u.filename);
         }
-        sysoplog() << "- '" << u.filename << "' Removed from " << session()->directories[dn].name;
+        sysoplog() << "- '" << u.filename << "' Removed from " << a()->directories[dn].name;
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-        for (int i1 = i; i1 < session()->numf; i1++) {
+        for (int i1 = i; i1 < a()->numf; i1++) {
           FileAreaSetRecord(fileDownload, i1 + 1);
           fileDownload.Read(&u, sizeof(uploadsrec));
           FileAreaSetRecord(fileDownload, i1);
           fileDownload.Write(&u, sizeof(uploadsrec));
         }
         --i;
-        --session()->numf;
+        --a()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Read(&u, sizeof(uploadsrec));
-        u.numbytes = session()->numf;
+        u.numbytes = a()->numf;
         FileAreaSetRecord(fileDownload, 0);
         fileDownload.Write(&u, sizeof(uploadsrec));
         fileDownload.Close();
@@ -1159,28 +1159,28 @@ void removenotthere() {
   TempDisablePause disable_pause;
   int autodel = 0;
   bout.nl();
-  bout << "|#5Remove N/A files in all session()->directories? ";
+  bout << "|#5Remove N/A files in all a()->directories? ";
   if (yesno()) {
-    for (size_t i = 0; ((i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
-                     (!session()->localIO()->KeyPressed())); i++) {
+    for (size_t i = 0; ((i < a()->directories.size()) && (a()->udir[i].subnum != -1) &&
+                     (!a()->localIO()->KeyPressed())); i++) {
       bout.nl();
-      bout << "|#1Removing N/A|#0 in " << session()->directories[session()->udir[i].subnum].name;
+      bout << "|#1Removing N/A|#0 in " << a()->directories[a()->udir[i].subnum].name;
       bout.nl(2);
-      removefilesnotthere(session()->udir[i].subnum, &autodel);
+      removefilesnotthere(a()->udir[i].subnum, &autodel);
     }
   } else {
     bout.nl();
-    bout << "Removing N/A|#0 in " << session()->directories[session()->current_user_dir().subnum].name;
+    bout << "Removing N/A|#0 in " << a()->directories[a()->current_user_dir().subnum].name;
     bout.nl(2);
-    removefilesnotthere(session()->current_user_dir().subnum, &autodel);
+    removefilesnotthere(a()->current_user_dir().subnum, &autodel);
   }
   tmp_disable_conf(false);
-  session()->UpdateTopScreen();
+  a()->UpdateTopScreen();
 }
 
 int find_batch_queue(const char *file_name) {
-  for (size_t i = 0; i < session()->batch().entry.size(); i++) {
-    if (IsEquals(file_name, session()->batch().entry[i].filename)) {
+  for (size_t i = 0; i < a()->batch().entry.size(); i++) {
+    if (IsEquals(file_name, a()->batch().entry[i].filename)) {
       return i;
     }
   }

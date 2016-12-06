@@ -31,7 +31,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/utility.h"
 #include "bbs/wconstants.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/vars.h"
 
 using std::string;
@@ -261,24 +261,24 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
     strcpy(out_text, szTemp);
     return;
   }
-  int nTopDataSaved = session()->topdata;
-  if (session()->topdata != LocalIO::topdataNone) {
-    session()->topdata = LocalIO::topdataNone;
-    session()->UpdateTopScreen();
+  int nTopDataSaved = a()->topdata;
+  if (a()->topdata != LocalIO::topdataNone) {
+    a()->topdata = LocalIO::topdataNone;
+    a()->UpdateTopScreen();
   }
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
     bInsert = false;
   }
-  int nTopLineSaved = session()->localIO()->GetTopLine();
-  session()->localIO()->SetTopLine(0);
+  int nTopLineSaved = a()->localIO()->GetTopLine();
+  a()->localIO()->SetTopLine(0);
   int pos = 0;
   int nLength = 0;
   szTemp[0] = '\0';
 
   max_length = std::min<int>(max_length, 80);
   bout.Color(4);
-  int x = session()->localIO()->WhereX() + 1;
-  int y = session()->localIO()->WhereY() + 1;
+  int x = a()->localIO()->WhereX() + 1;
+  int y = a()->localIO()->WhereY() + 1;
 
   bout.GotoXY(x, y);
   for (int i = 0; i < max_length; i++) {
@@ -291,7 +291,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
     bout.GotoXY(x, y);
     pos = nLength = strlen(szTemp);
   }
-  x = session()->localIO()->WhereX() + 1;
+  x = a()->localIO()->WhereX() + 1;
 
   bool done = false;
   do {
@@ -459,8 +459,8 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
     out_text[0] = '\0';
   }
 
-  session()->topdata = nTopDataSaved;
-  session()->localIO()->SetTopLine(nTopLineSaved);
+  a()->topdata = nTopDataSaved;
+  a()->localIO()->SetTopLine(nTopLineSaved);
 
   bout.Color(0);
   return;

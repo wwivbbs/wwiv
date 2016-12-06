@@ -46,23 +46,23 @@ static unsigned char translate_table[] = {
 };
 
 void get_user_ppp_addr() {
-  session()->internetFullEmailAddress = "";
+  a()->internetFullEmailAddress = "";
   int network_number = getnetnum_by_type(network_type_t::internet);
   if (network_number == -1) {
     return;
   }
   set_net_num(network_number);
-  session()->internetFullEmailAddress = StringPrintf("%s@%s",
-      session()->internetEmailName.c_str(),
-      session()->internetEmailDomain.c_str());
-  TextFile acctFile(session()->network_directory(), ACCT_INI, "rt");
+  a()->internetFullEmailAddress = StringPrintf("%s@%s",
+      a()->internetEmailName.c_str(),
+      a()->internetEmailDomain.c_str());
+  TextFile acctFile(a()->network_directory(), ACCT_INI, "rt");
   char szLine[260];
   bool found = false;
   if (acctFile.IsOpen()) {
     while (acctFile.ReadLine(szLine, 255) && !found) {
       if (strncasecmp(szLine, "USER", 4) == 0) {
         int nUserNum = atoi(&szLine[4]);
-        if (nUserNum == session()->usernum) {
+        if (nUserNum == a()->usernum) {
           char* ss = strtok(szLine, "=");
           ss = strtok(nullptr, "\r\n");
           if (ss) {
@@ -71,7 +71,7 @@ void get_user_ppp_addr() {
             }
             StringTrimEnd(ss);
             if (ss) {
-              session()->internetFullEmailAddress = ss;
+              a()->internetFullEmailAddress = ss;
               found = true;
             }
           }
@@ -80,42 +80,42 @@ void get_user_ppp_addr() {
     }
     acctFile.Close();
   }
-  if (!found && !session()->internetPopDomain.empty()) {
+  if (!found && !a()->internetPopDomain.empty()) {
     int j = 0;
     char szLocalUserName[255];
-    strcpy(szLocalUserName, session()->user()->GetName());
+    strcpy(szLocalUserName, a()->user()->GetName());
     for (int i = 0; (i < GetStringLength(szLocalUserName)) && (i < 61); i++) {
       if (szLocalUserName[i] != '.') {
         szLine[ j++ ] = translate_table[(int)szLocalUserName[i] ];
       }
     }
     szLine[ j ] = '\0';
-    session()->internetFullEmailAddress = StringPrintf("%s@%s", szLine,
-        session()->internetPopDomain.c_str());
+    a()->internetFullEmailAddress = StringPrintf("%s@%s", szLine,
+        a()->internetPopDomain.c_str());
   }
 }
 
 void send_inet_email() {
-  if (session()->user()->GetNumEmailSentToday() > getslrec(session()->GetEffectiveSl()).emails) {
+  if (a()->user()->GetNumEmailSentToday() > getslrec(a()->GetEffectiveSl()).emails) {
     bout.nl();
     bout << "|#6Too much mail sent today.\r\n";
     return;
   }
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   int network_number = getnetnum_by_type(network_type_t::internet);
-  session()->set_net_num(network_number);
+  a()->set_net_num(network_number);
   if (network_number == -1) {
     return;
   }
-  set_net_num(session()->net_num());
+  set_net_num(a()->net_num());
   bout.nl();
   bout << "|#9Your Internet Address:|#1 "
-       << (session()->IsInternetUseRealNames() ? session()->user()->GetRealName() : session()->user()->GetName())
-       << " <" << session()->internetFullEmailAddress << ">";
+       << (a()->IsInternetUseRealNames() ? a()->user()->GetRealName() : a()->user()->GetName())
+       << " <" << a()->internetFullEmailAddress << ">";
   bout.nl(2);
   bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
-  session()->net_email_name = inputl(75, true);
-  if (check_inet_addr(session()->net_email_name)) {
+  a()->net_email_name = inputl(75, true);
+  if (check_inet_addr(a()->net_email_name)) {
     unsigned short user_number = 0;
     unsigned short system_number = 32767;
     irt[0] = 0;
@@ -126,7 +126,7 @@ void send_inet_email() {
     }
   } else {
     bout.nl();
-    if (!session()->net_email_name.empty()) {
+    if (!a()->net_email_name.empty()) {
       bout << "|#6Invalid address format!\r\n";
     } else {
       bout << "|#6Aborted.\r\n";
@@ -144,10 +144,10 @@ void read_inet_addr(std::string& internet_address, int user_number) {
     return ;
   }
 
-  if (user_number == session()->usernum && check_inet_addr(session()->user()->GetEmailAddress())) {
-    internet_address = session()->user()->GetEmailAddress();
+  if (user_number == a()->usernum && check_inet_addr(a()->user()->GetEmailAddress())) {
+    internet_address = a()->user()->GetEmailAddress();
   } else {
-    File file(session()->config()->datadir(), INETADDR_DAT);
+    File file(a()->config()->datadir(), INETADDR_DAT);
     if (!file.Exists()) {
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       auto size = syscfg.maxusers * 80;
@@ -163,9 +163,9 @@ void read_inet_addr(std::string& internet_address, int user_number) {
       } else {
         internet_address = StrCat("User #", user_number);
         User user;
-        session()->users()->ReadUser(&user, user_number);
+        a()->users()->ReadUser(&user, user_number);
         user.SetEmailAddress("");
-        session()->users()->WriteUser(&user, user_number);
+        a()->users()->WriteUser(&user, user_number);
       }
     }
     file.Close();
@@ -177,7 +177,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     return; /*nullptr;*/
   }
 
-  File inetAddrFile(session()->config()->datadir(), INETADDR_DAT);
+  File inetAddrFile(a()->config()->datadir(), INETADDR_DAT);
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(user_number);
   inetAddrFile.Seek(lCurPos, File::Whence::begin);
@@ -185,11 +185,11 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   inetAddrFile.Close();
   char szDefaultUserAddr[255];
   sprintf(szDefaultUserAddr, "USER%d", user_number);
-  session()->set_net_num(getnetnum_by_type(network_type_t::internet));
-  if (session()->net_num() != -1) {
-    set_net_num(session()->net_num());
-    TextFile in(session()->network_directory(), ACCT_INI, "rt");
-    TextFile out(session()->temp_directory(), ACCT_INI, "wt+");
+  a()->set_net_num(getnetnum_by_type(network_type_t::internet));
+  if (a()->net_num() != -1) {
+    set_net_num(a()->net_num());
+    TextFile in(a()->network_directory(), ACCT_INI, "rt");
+    TextFile out(a()->temp_directory(), ACCT_INI, "wt+");
     if (in.IsOpen() && out.IsOpen()) {
       char szLine[260];
       while (in.ReadLine(szLine, 255)) {

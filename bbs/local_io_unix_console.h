@@ -25,7 +25,7 @@
 #include "bbs/local_io.h"
 
 class WStatus;
-class WSession;
+class Application;
 
 class UnixConsoleIO : public LocalIO {
  public:
@@ -55,7 +55,7 @@ class UnixConsoleIO : public LocalIO {
   virtual void restorescreen() override;
   virtual void skey(char ch) override;
   virtual void tleft(bool bCheckForTimeOut) override;
-  virtual void UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) override;
+  virtual void UpdateTopScreen(WStatus* pStatus, Application *pSession, int nInstanceNumber) override;
   virtual bool LocalKeyPressed() override;
   virtual unsigned char LocalGetChar() override;
   virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;

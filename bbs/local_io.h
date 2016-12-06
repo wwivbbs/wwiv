@@ -27,7 +27,7 @@
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 
-class WSession;
+class Application;
 
 #define NUM_ONLY            1
 #define UPPER_ONLY          2
@@ -71,7 +71,7 @@ class LocalIO {
   virtual int  Printf(const char *formatted_text, ...) = 0;
   virtual int  PrintfXY(int x, int y, const char *formatted_text, ...) = 0;
   virtual int  PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) = 0;
-  virtual void set_protect(WSession* session, int l) = 0;
+  virtual void set_protect(Application* session, int l) = 0;
   virtual void savescreen() = 0;
   virtual void restorescreen() = 0;
   virtual bool KeyPressed() = 0;
@@ -85,7 +85,7 @@ class LocalIO {
   virtual void WriteScreenBuffer(const char *buffer) = 0;
   virtual size_t GetDefaultScreenBottom() = 0;
   virtual void EditLine(char *s, int len, int status, int *returncode, const char *ss) = 0;
-  virtual void UpdateNativeTitleBar(WSession* session) = 0;
+  virtual void UpdateNativeTitleBar(Application* session) = 0;
 
   int  GetTopScreenColor() const { return top_screen_color_; }
   void SetTopScreenColor(int n) { top_screen_color_ = n; }

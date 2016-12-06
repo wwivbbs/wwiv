@@ -50,7 +50,7 @@ string GetSysopLogFileName(const string& d) {
 * Returns instance (temporary) sysoplog filename in s.
 */
 void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
-  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", session()->instance_number());
+  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", a()->instance_number());
 }
 
 /*
@@ -60,11 +60,11 @@ void catsl() {
   char szInstanceBaseName[MAX_PATH];
 
   GetTemporaryInstanceLogFileName(szInstanceBaseName);
-  string instance_logfilename = StrCat(session()->config()->gfilesdir(), szInstanceBaseName);
+  string instance_logfilename = StrCat(a()->config()->gfilesdir(), szInstanceBaseName);
 
   if (File::Exists(instance_logfilename)) {
     string basename = GetSysopLogFileName(date());
-    File wholeLogFile(session()->config()->gfilesdir(), basename);
+    File wholeLogFile(a()->config()->gfilesdir(), basename);
 
     auto buffer = std::make_unique<char[]>(CAT_BUFSIZE);
     if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -96,13 +96,13 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
   static string::size_type midline = 0;
   static char s_szLogFileName[MAX_PATH];
   
-  if (session()->config()->gfilesdir().empty()) {
+  if (a()->config()->gfilesdir().empty()) {
     LOG(ERROR) << "gfilesdir empty, can't write to sysop log";
     return;
   }
 
   if (!s_szLogFileName[0]) {
-    to_char_array(s_szLogFileName, session()->config()->gfilesdir());
+    to_char_array(s_szLogFileName, a()->config()->gfilesdir());
     GetTemporaryInstanceLogFileName(s_szLogFileName + strlen(s_szLogFileName));
   }
   switch (cmd) {

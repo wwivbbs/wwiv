@@ -46,7 +46,7 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 
 /**
- * Finds session()->usernum and system number from emailAddress, sets network number as
+ * Finds a()->usernum and system number from emailAddress, sets network number as
  * appropriate.
  * @param emailAddress The text of the email address.
  * @param pUserNumber OUT The User Number
@@ -63,7 +63,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
 
   *pUserNumber = 0;
   *pSystemNumber = 0;
-  session()->net_email_name.clear();
+  a()->net_email_name.clear();
   char *ss = strrchr(szEmailAddress, '@');
   if (ss == nullptr) {
     user_number = finduser1(szEmailAddress);
@@ -76,20 +76,20 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
     }
   } else if (atoi(ss + 1) == 0) {
     int i = 0;
-    for (i = 0; i < session()->max_net_num(); i++) {
+    for (i = 0; i < a()->max_net_num(); i++) {
       set_net_num(i);
-      if (session()->current_net().type == network_type_t::internet) {
+      if (a()->current_net().type == network_type_t::internet) {
         for (ss1 = szEmailAddress; *ss1; ss1++) {
           if ((*ss1 >= 'A') && (*ss1 <= 'Z')) {
             *ss1 += 'a' - 'A';
           }
-          session()->net_email_name = szEmailAddress;
+          a()->net_email_name = szEmailAddress;
         }
         *pSystemNumber = 1;
         break;
       }
     }
-    if (i >= session()->max_net_num()) {
+    if (i >= a()->max_net_num()) {
       bout << "Unknown user.\r\n";
     }
   } else {
@@ -109,9 +109,9 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       ss1++;
     }
     if (user_number == 0) {
-      session()->net_email_name = szEmailAddress;
-      StringTrimEnd(&session()->net_email_name);
-      if (!session()->net_email_name.empty()) {
+      a()->net_email_name = szEmailAddress;
+      StringTrimEnd(&a()->net_email_name);
+      if (!a()->net_email_name.empty()) {
         *pSystemNumber = static_cast<uint16_t>(system_number);
       } else {
         bout << "Unknown user.\r\n";
@@ -122,18 +122,18 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
     }
     if (*pSystemNumber && ss1) {
       int i = 0;
-      for (i = 0; i < session()->max_net_num(); i++) {
+      for (i = 0; i < a()->max_net_num(); i++) {
         set_net_num(i);
-        if (IsEqualsIgnoreCase(ss1, session()->network_name())) {
+        if (IsEqualsIgnoreCase(ss1, a()->network_name())) {
           if (!valid_system(*pSystemNumber)) {
             bout.nl();
             bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";
             *pSystemNumber = *pUserNumber = 0;
           } else {
-            if (*pSystemNumber == session()->current_net().sysnum) {
+            if (*pSystemNumber == a()->current_net().sysnum) {
               *pSystemNumber = 0;
               if (*pUserNumber == 0) {
-                *pUserNumber = static_cast<uint16_t>(finduser(session()->net_email_name));
+                *pUserNumber = static_cast<uint16_t>(finduser(a()->net_email_name));
               }
               if (*pUserNumber == 0 || *pUserNumber > 32767) {
                 *pUserNumber = 0;
@@ -144,24 +144,24 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           break;
         }
       }
-      if (i >= session()->max_net_num()) {
+      if (i >= a()->max_net_num()) {
         bout.nl();
         bout << "This system isn't connected to " << ss1 << "\r\n";
         *pSystemNumber = *pUserNumber = 0;
       }
-    } else if (*pSystemNumber && session()->max_net_num() > 1) {
+    } else if (*pSystemNumber && a()->max_net_num() > 1) {
       odci = 0;
       onx[0] = 'Q';
       onx[1] = '\0';
       onxi = 1;
       nv = 0;
-      on = session()->net_num();
-      ss = static_cast<char *>(calloc(session()->max_net_num() + 1, 1));
+      on = a()->net_num();
+      ss = static_cast<char *>(calloc(a()->max_net_num() + 1, 1));
       WWIV_ASSERT(ss != nullptr);
       xx = -1;
-      for (int i = 0; i < session()->max_net_num(); i++) {
+      for (int i = 0; i < a()->max_net_num(); i++) {
         set_net_num(i);
-        if (session()->current_net().sysnum == *pSystemNumber) {
+        if (a()->current_net().sysnum == *pSystemNumber) {
           xx = i;
         } else if (valid_system(*pSystemNumber)) {
           ss[nv++] = static_cast<char>(i);
@@ -173,7 +173,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
           set_net_num(xx);
           *pSystemNumber = 0;
           if (*pUserNumber == 0) {
-            *pUserNumber = static_cast<uint16_t>(finduser(session()->net_email_name));
+            *pUserNumber = static_cast<uint16_t>(finduser(a()->net_email_name));
             if (*pUserNumber == 0 || *pUserNumber > 32767) {
               *pUserNumber = 0;
               bout << "Unknown user.\r\n";
@@ -198,7 +198,7 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
             } else {
               odc.insert(static_cast<char>((i + 1) / 10));
             }
-            bout << i + 1 << ". " << session()->network_name() << " (" << csne->name << ")\r\n";
+            bout << i + 1 << ". " << a()->network_name() << " (" << csne->name << ")\r\n";
           }
         }
         bout << "Q. Quit\r\n\n";
@@ -228,10 +228,10 @@ void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystem
       }
       free(ss);
     } else {
-      if (*pSystemNumber == session()->current_net().sysnum) {
+      if (*pSystemNumber == a()->current_net().sysnum) {
         *pSystemNumber = 0;
         if (*pUserNumber == 0) {
-          *pUserNumber = static_cast<uint16_t>(finduser(session()->net_email_name));
+          *pUserNumber = static_cast<uint16_t>(finduser(a()->net_email_name));
         }
         if (*pUserNumber == 0 || *pUserNumber > 32767) {
           *pUserNumber = 0;
@@ -269,7 +269,7 @@ void hang_it_up() {
   if (!ok_modem_stuff) {
     return;
   }
-  session()->remoteIO()->disconnect();
+  a()->remoteIO()->disconnect();
   Hangup();
 }
 
@@ -292,7 +292,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
   string fullPathName;
   // append gfilesdir if no path specified
   if (soundFileName.find(File::pathSeparatorChar) == string::npos) {
-    fullPathName = StrCat(session()->config()->gfilesdir(), soundFileName);
+    fullPathName = StrCat(a()->config()->gfilesdir(), soundFileName);
   } else {
     fullPathName = soundFileName;
   }
@@ -350,7 +350,7 @@ bool play_sdf(const string& soundFileName, bool abortable) {
  *        area code.
  */
 string describe_area_code(int nAreaCode) {
-  TextFile file(session()->config()->datadir(), REGIONS_DAT, "rt");
+  TextFile file(a()->config()->datadir(), REGIONS_DAT, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

@@ -25,7 +25,7 @@
 #include "bbs/finduser.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "sdk/status.h"
@@ -53,7 +53,7 @@ int finduser(const string& searchString) {
   User user;
 
   guest_user = false;
-  session()->users()->SetUserWritesAllowed(true);
+  a()->users()->SetUserWritesAllowed(true);
   if (searchString == "NEW") {
     return -1;
   }
@@ -62,23 +62,23 @@ int finduser(const string& searchString) {
   }
   int user_number = StringToInt(searchString);
   if (user_number > 0) {
-    session()->users()->ReadUser(&user, user_number);
+    a()->users()->ReadUser(&user, user_number);
     if (user.IsUserDeleted()) {
       return 0;
     }
     return user_number;
   }
-  user_number = session()->names()->FindUser(searchString);
+  user_number = a()->names()->FindUser(searchString);
   if (user_number == 0) {
     return 0;
   } 
-  session()->users()->ReadUser(&user, user_number);
+  a()->users()->ReadUser(&user, user_number);
   if (user.IsUserDeleted()) {
     return 0;
   }
   if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
     guest_user = true;
-    session()->users()->SetUserWritesAllowed(false);
+    a()->users()->SetUserWritesAllowed(false);
   }
   return user_number;
 }
@@ -97,12 +97,12 @@ int finduser1(const string& searchString) {
 
   string userNamePart = searchString;
   StringUpperCase(&userNamePart);
-  for (const auto& n : session()->names()->names_vector()) {
+  for (const auto& n : a()->names()->names_vector()) {
     if (strstr(reinterpret_cast<const char*>(n.name), userNamePart.c_str()) == nullptr) {
       continue;
     }
 
-    bout << "|#5Do you mean " << session()->names()->UserName(n.number) << " (Y/N/Q)? ";
+    bout << "|#5Do you mean " << a()->names()->UserName(n.number) << " (Y/N/Q)? ";
     char ch = ynq();
     if (ch == 'Y') {
       return n.number;

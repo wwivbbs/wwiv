@@ -274,9 +274,6 @@
     <ClCompile Include="wqscn.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="WSession.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="xfer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -368,6 +365,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="gfileedit.cpp" />
+    <ClCompile Include="application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -440,9 +440,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="utility.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wsession.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wstatus.h">
@@ -713,6 +710,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xferovl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="application.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

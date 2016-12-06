@@ -47,12 +47,12 @@ gfilerec *read_sec(int sn, int *nf) {
   gfilerec *pRecord;
   *nf = 0;
 
-  int nSectionSize = sizeof(gfilerec) * session()->gfilesec[sn].maxfiles;
+  int nSectionSize = sizeof(gfilerec) * a()->gfilesec[sn].maxfiles;
   if ((pRecord = static_cast<gfilerec *>(BbsAllocA(nSectionSize))) == nullptr) {
     return nullptr;
   }
 
-  const string filename = StrCat(session()->config()->datadir(), session()->gfilesec[sn].filename, ".gfl");
+  const string filename = StrCat(a()->config()->datadir(), a()->gfilesec[sn].filename, ".gfl");
   File file(filename);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     *nf = file.Read(pRecord, nSectionSize) / sizeof(gfilerec);
@@ -145,7 +145,7 @@ void list_sec(int *map, int nmap) {
   gfl_hdr(0);
   for (int i = 0; i < nmap && !abort && !hangup; i++) {
     sprintf(lnum, "%d", i + 1);
-    strncpy(s4, session()->gfilesec[map[i]].name, 34);
+    strncpy(s4, a()->gfilesec[map[i]].name, 34);
     s4[34] = '\0';
     if (i + 1 >= nmap) {
       if (okansi()) {
@@ -157,7 +157,7 @@ void list_sec(int *map, int nmap) {
       }
     } else {
       sprintf(rnum, "%d", i + 2);
-      strncpy(s5, session()->gfilesec[map[i + 1]].name, 29);
+      strncpy(s5, a()->gfilesec[map[i + 1]].name, 29);
       s5[29] = '\0';
     }
     if (okansi()) {
@@ -234,7 +234,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
 
   bool abort = false;
   bout.cls();
-  bout.litebar(session()->gfilesec[sn].name);
+  bout.litebar(a()->gfilesec[sn].name);
   i2 = 0;
   if (okansi()) {
     strcpy(s2, charstr(29, '\xC4'));
@@ -244,14 +244,14 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     strcpy(s3, charstr(12, '-'));
   }
   gfl_hdr(1);
-  string gfilesdir = session()->config()->gfilesdir();
+  string gfilesdir = a()->config()->gfilesdir();
   for (i = 0; i < nf && !abort && !hangup; i++) {
     i2++;
     sprintf(lnum, "%d", i + 1);
     strncpy(s4, g[i].description, 29);
     s4[29] = '\0';
     sprintf(path_name, "%s%s%c%s", 
-      gfilesdir.c_str(), session()->gfilesec[sn].filename, 
+      gfilesdir.c_str(), a()->gfilesec[sn].filename, 
       File::pathSeparatorChar, g[i].filename);
     if (File::Exists(path_name)) {
       File handle(path_name);
@@ -273,7 +273,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       sprintf(rnum, "%d", i + 2);
       strncpy(s5, g[i + 1].description, 29);
       s5[29] = '\0';
-      sprintf(path_name, "%s%s%c%s", gfilesdir.c_str(), session()->gfilesec[sn].filename,
+      sprintf(path_name, "%s%s%c%s", gfilesdir.c_str(), a()->gfilesec[sn].filename,
               File::pathSeparatorChar, g[i + 1].filename);
       if (File::Exists(path_name)) {
         File handle(path_name);
@@ -363,8 +363,8 @@ void gfile_sec(int sn) {
   bool done = false;
   string file_name;
   while (!done && !hangup) {
-    session()->tleft(true);
-    bout << "|#9Current G|#1-|#9File Section |#1: |#5" << session()->gfilesec[sn].name << "|#0\r\n";
+    a()->tleft(true);
+    bout << "|#9Current G|#1-|#9File Section |#1: |#5" << a()->gfilesec[sn].name << "|#0\r\n";
     bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
     string ss = mmkey(odc);
@@ -396,16 +396,16 @@ void gfile_sec(int sn) {
         if (yesno()) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
-            string gfilesdir = session()->config()->gfilesdir();
+            string gfilesdir = a()->config()->gfilesdir();
             file_name = StrCat(gfilesdir,
-                    session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+                    a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
             File::Remove(file_name);
           }
           for (i1 = i; i1 < nf; i1++) {
             g[i1 - 1] = g[i1];
           }
           --nf;
-          file_name = StrCat(syscfg.datadir, session()->gfilesec[sn].filename, ".gfl");
+          file_name = StrCat(syscfg.datadir, a()->gfilesec[sn].filename, ".gfl");
           File file(file_name);
           file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
@@ -418,9 +418,9 @@ void gfile_sec(int sn) {
     } else if (ss == "Q") {
       done = true;
     } else if (i > 0 && i <= nf) {
-      file_name = StrCat(session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+      file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
       i1 = printfile(file_name);
-      session()->user()->SetNumGFilesRead(session()->user()->GetNumGFilesRead() + 1);
+      a()->user()->SetNumGFilesRead(a()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
         sysoplog() << "Read G-file '" << g[i - 1].filename << "'";
       }
@@ -433,13 +433,13 @@ void gfile_sec(int sn) {
         abort = false;
         if (ss == "?") {
           list_gfiles(g, nf, sn);
-          bout << "|#9Current G|#1-|#9File Section |#1: |#5" << session()->gfilesec[sn].name << wwiv::endl;
+          bout << "|#9Current G|#1-|#9File Section |#1: |#5" << a()->gfilesec[sn].name << wwiv::endl;
         } else if (ss == "Q") {
           list_gfiles(g, nf, sn);
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            file_name = StrCat(session()->config()->gfilesdir(), session()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
+            file_name = StrCat(a()->config()->gfilesdir(), a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
             File file(file_name);
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
@@ -487,21 +487,21 @@ void gfiles3(int n) {
 }
 
 void gfiles() {
-  int* map = static_cast<int *>(BbsAllocA(session()->max_gfilesec * sizeof(int)));
+  int* map = static_cast<int *>(BbsAllocA(a()->max_gfilesec * sizeof(int)));
 
   bool done = false;
   int nmap = 0;
   int current_section = 0;
   std::set<char> odc;
-  for (const auto& r : session()->gfilesec) {
+  for (const auto& r : a()->gfilesec) {
     bool ok = true;
-    if (session()->user()->GetAge() < r.age) {
+    if (a()->user()->GetAge() < r.age) {
       ok = false;
     }
-    if (session()->GetEffectiveSl() < r.sl) {
+    if (a()->GetEffectiveSl() < r.sl) {
       ok = false;
     }
-    if (!session()->user()->HasArFlag(r.ar) && r.ar) {
+    if (!a()->user()->HasArFlag(r.ar) && r.ar) {
       ok = false;
     }
     if (ok) {
@@ -519,7 +519,7 @@ void gfiles() {
   }
   list_sec(map, nmap);
   while (!done && !hangup) {
-    session()->tleft(true);
+    a()->tleft(true);
     bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
     bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
@@ -533,7 +533,7 @@ void gfiles() {
       bool bIsSectionFull = false;
       for (int i = 0; i < nmap && !bIsSectionFull; i++) {
         bout.nl();
-        bout << "Now loading files for " << session()->gfilesec[map[i]].name << "\r\n\n";
+        bout << "Now loading files for " << a()->gfilesec[map[i]].name << "\r\n\n";
         bIsSectionFull = fill_sec(map[i]);
       }
     } else {

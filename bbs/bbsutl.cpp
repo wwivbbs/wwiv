@@ -75,7 +75,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
 
   int cm = chatting;
 
-  size_t begx = session()->localIO()->WhereX();
+  size_t begx = a()->localIO()->WhereX();
   if (rollover[0] != 0) {
     char* ss = szRollOver;
     for (int i = 0; rollover[i]; i++) {
@@ -116,14 +116,14 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
       }
     }
     if (ch >= SPACE) {
-      if ((session()->localIO()->WhereX() < (session()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {
+      if ((a()->localIO()->WhereX() < (a()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {
         buffer[cp++] = ch;
         bout.bputch(ch);
-        if (session()->localIO()->WhereX() == (session()->user()->GetScreenChars() - 1)) {
+        if (a()->localIO()->WhereX() == (a()->user()->GetScreenChars() - 1)) {
           done = true;
         }
       } else {
-        if (session()->localIO()->WhereX() >= (session()->user()->GetScreenChars() - 1)) {
+        if (a()->localIO()->WhereX() >= (a()->user()->GetScreenChars() - 1)) {
           done = true;
         }
       }
@@ -173,7 +173,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
         }
         break;
       case CX:                            // Ctrl-X
-        while (session()->localIO()->WhereX() > begx) {
+        while (a()->localIO()->WhereX() > begx) {
           bout.bs();
           cp = 0;
         }
@@ -196,7 +196,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
         }
         break;
       case CN:                            // Ctrl-N
-        if (session()->localIO()->WhereX() && cp < nMaxLen) {
+        if (a()->localIO()->WhereX() && cp < nMaxLen) {
           bout.bputch(BACKSPACE);
           buffer[cp++] = BACKSPACE;
         }
@@ -224,8 +224,8 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
       case TAB: {                           // Tab
         int charsNeeded = 5 - (cp % 5);
         if ((cp + charsNeeded) < nMaxLen
-            && (session()->localIO()->WhereX() + charsNeeded) < session()->user()->GetScreenChars()) {
-          charsNeeded = 5 - ((session()->localIO()->WhereX() + 1) % 5);
+            && (a()->localIO()->WhereX() + charsNeeded) < a()->user()->GetScreenChars()) {
+          charsNeeded = 5 - ((a()->localIO()->WhereX() + 1) % 5);
           for (int j = 0; j < charsNeeded; j++) {
             buffer[cp++] = SPACE;
             bout.bputch(SPACE);
@@ -246,7 +246,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
     while (lastwordstart > 0 && buffer[lastwordstart] != SPACE && buffer[lastwordstart] != BACKSPACE) {
       lastwordstart--;
     }
-    if (lastwordstart > static_cast<string::size_type>(session()->localIO()->WhereX() / 2)
+    if (lastwordstart > static_cast<string::size_type>(a()->localIO()->WhereX() / 2)
         && lastwordstart != (cp - 1)) {
       string::size_type lastwordlen = cp - lastwordstart - 1;
       for (string::size_type j = 0; j < lastwordlen; j++) {
@@ -274,7 +274,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
 // Returns 1 if current user has sysop access (permanent or temporary), else
 // returns 0.
 bool so() {
-  return (session()->GetEffectiveSl() == 255);
+  return (a()->GetEffectiveSl() == 255);
 }
 
 /**
@@ -286,7 +286,7 @@ bool cs() {
     return true;
   }
 
-  return (getslrec(session()->GetEffectiveSl()).ability & ability_cosysop) ? true : false;
+  return (getslrec(a()->GetEffectiveSl()).ability & ability_cosysop) ? true : false;
 }
 
 
@@ -301,11 +301,11 @@ bool lcs() {
     return true;
   }
 
-  if (getslrec(session()->GetEffectiveSl()).ability & ability_limited_cosysop) {
+  if (getslrec(a()->GetEffectiveSl()).ability & ability_limited_cosysop) {
     if (*qsc == 999) {
       return true;
     }
-    return (*qsc == static_cast<uint32_t>(session()->current_user_sub().subnum)) ? true : false;
+    return (*qsc == static_cast<uint32_t>(a()->current_user_sub().subnum)) ? true : false;
   }
   return false;
 }
@@ -418,7 +418,7 @@ bool sysop2() {
   if (!sysop1()) {
     return false;
   }
-  if (session()->user()->IsRestrictionChat()) {
+  if (a()->user()->IsRestrictionChat()) {
     return false;
   }
   if (syscfg.sysoplowtime != syscfg.sysophightime) {
@@ -478,21 +478,21 @@ int check_ansi() {
 // else returns true.
 bool set_language_1(int n) {
   size_t idx = 0;
-  for (idx = 0; idx < session()->languages.size(); idx++) {
-    if (session()->languages[idx].num == n) {
+  for (idx = 0; idx < a()->languages.size(); idx++) {
+    if (a()->languages[idx].num == n) {
       break;
     }
   }
 
-  if (idx >= session()->languages.size() && n == 0) {
+  if (idx >= a()->languages.size() && n == 0) {
     idx = 0;
   }
 
-  if (idx >= session()->languages.size()) {
+  if (idx >= a()->languages.size()) {
     return false;
   }
 
-  session()->set_language_number(n);
+  a()->set_language_number(n);
 
   strncpy(str_yes, "Yes", sizeof(str_yes) - 1);
   strncpy(str_no, "No", sizeof(str_no) - 1);
@@ -507,11 +507,11 @@ bool set_language_1(int n) {
 
 // Sets language to language #n, returns false if a problem, else returns true.
 bool set_language(int n) {
-  if (session()->language_number() == n) {
+  if (a()->language_number() == n) {
     return true;
   }
 
-  int nOldCurLang = session()->language_number();
+  int nOldCurLang = a()->language_number();
 
   if (!set_language_1(n)) {
     if (nOldCurLang >= 0) {

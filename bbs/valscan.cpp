@@ -41,48 +41,48 @@ void valscan() {
   }
 
   int ac = 0;
-  int os = session()->current_user_sub_num();
+  int os = a()->current_user_sub_num();
 
-  if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
+  if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = 1;
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (size_t sn = 0; sn < session()->subs().subs().size() && !hangup && !done; sn++) {
+  for (size_t sn = 0; sn < a()->subs().subs().size() && !hangup && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }
-    if (session()->GetCurrentReadMessageArea() < 0) {
+    if (a()->GetCurrentReadMessageArea() < 0) {
       return;
     }
 
     uint32_t sq = qsc_p[sn];
 
     // Must be sub with validation "on"
-    if (session()->current_sub().nets.empty()
-        || !(session()->current_sub().anony & anony_val_net)) {
+    if (a()->current_sub().nets.empty()
+        || !(a()->current_sub().anony & anony_val_net)) {
       continue;
     }
 
     bout.nl();
     bout.Color(2);
     bout.clreol();
-    bout << "{{ ValScanning " << session()->current_sub().name << " }}\r\n";
+    bout << "{{ ValScanning " << a()->current_sub().name << " }}\r\n";
     bout.clear_lines_listed();
     bout.clreol();
     if (okansi() && !newline) {
       bout << "\r\x1b[2A";
     }
 
-    for (int i = 1; i <= session()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
+    for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
       if (get_post(i)->status & status_pending_net) {
         CheckForHangup();
-        session()->tleft(true);
-        if (i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea()) {
+        a()->tleft(true);
+        if (i > 0 && i <= a()->GetNumMessagesInCurrentMessageArea()) {
           bool next;
           int val;
           read_post(i, &next, &val);
-          bout << "|#4[|#4Subboard: " << session()->current_sub().name << "|#1]\r\n";
+          bout << "|#4[|#4Subboard: " << a()->current_sub().name << "|#1]\r\n";
           bout <<  "|#1D|#9)elete, |#1R|#9)eread |#1V|#9)alidate, |#1M|#9)ark Validated, |#1Q|#9)uit: |#2";
           char ch = onek("QDVMR");
           switch (ch) {
@@ -99,15 +99,15 @@ void valscan() {
             p1->status &= ~status_pending_net;
             write_post(i, p1);
             close_sub();
-            send_net_post(p1, session()->current_sub());
+            send_net_post(p1, a()->current_sub());
             bout.nl();
             bout << "|#7Message sent.\r\n\n";
           }
           break;
           case 'M':
-            if (lcs() && i > 0 && i <= session()->GetNumMessagesInCurrentMessageArea() &&
-                session()->current_sub().anony & anony_val_net &&
-                !session()->current_sub().nets.empty()) {
+            if (lcs() && i > 0 && i <= a()->GetNumMessagesInCurrentMessageArea() &&
+                a()->current_sub().anony & anony_val_net &&
+                !a()->current_sub().nets.empty()) {
               wwiv::bbs::OpenSub opened_sub(true);
               resynch(&i, nullptr);
               postrec *p1 = get_post(i);
@@ -127,7 +127,7 @@ void valscan() {
                 close_sub();
                 if (p2.ownersys == 0) {
                   User tu;
-                  session()->users()->ReadUser(&tu, p2.owneruser);
+                  a()->users()->ReadUser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
                     if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
                       bout.nl();
@@ -145,8 +145,8 @@ void valscan() {
                       bout.nl();
                       bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
                       tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
-                      session()->users()->WriteUser(&tu, p2.owneruser);
-                      session()->UpdateTopScreen();
+                      a()->users()->WriteUser(&tu, p2.owneruser);
+                      a()->UpdateTopScreen();
                     }
                   }
                 }
@@ -165,6 +165,6 @@ void valscan() {
     tmp_disable_conf(false);
   }
 
-  session()->set_current_user_sub_num(os);
+  a()->set_current_user_sub_num(os);
   bout.nl(2);
 }

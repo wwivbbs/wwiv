@@ -36,33 +36,33 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   create_chain_file();
 
   // get ready to run it
-  if (session()->IsUserOnline()) {
-    session()->WriteCurrentUser();
-    write_qscn(session()->usernum, qsc, false);
+  if (a()->IsUserOnline()) {
+    a()->WriteCurrentUser();
+    write_qscn(a()->usernum, qsc, false);
   }
 
   // extra processing for net programs
   if (nFlags & EFLAG_NETPROG) {
-    write_inst(INST_LOC_NET, session()->net_num() + 1, INST_FLAGS_NONE);
+    write_inst(INST_LOC_NET, a()->net_num() + 1, INST_FLAGS_NONE);
   }
 
   // Make sure our working dir is back to the BBS dir.
-  session()->CdHome();
+  a()->CdHome();
 
   // Some LocalIO implementations (Curses) needs to disable itself before
   // we fork some other process.
-  session()->localIO()->DisableLocalIO();
+  a()->localIO()->DisableLocalIO();
   int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
 
   // Re-engage the local IO engine if needed.
-  session()->localIO()->ReenableLocalIO();
-  session()->CdHome();
+  a()->localIO()->ReenableLocalIO();
+  a()->CdHome();
 
   // Reread the user record.
-  if (session()->IsUserOnline()) {
-    session()->ReadCurrentUser();
-    read_qscn(session()->usernum, qsc, false, true);
-    session()->UpdateTopScreen();
+  if (a()->IsUserOnline()) {
+    a()->ReadCurrentUser();
+    read_qscn(a()->usernum, qsc, false, true);
+    a()->UpdateTopScreen();
   }
 
   // return to caller

@@ -64,7 +64,7 @@ static void showsec() {
   pla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
   pla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
   int current_section = 0;
-  for (const auto& r : session()->gfilesec) {
+  for (const auto& r : a()->gfilesec) {
     pla(gfiledata(r, current_section++), &abort);
     if (abort) {
       break;
@@ -84,7 +84,7 @@ static string GetArString(gfiledirrec r) {
 }
 
 void modify_sec(int n) {
-  gfiledirrec& r = session()->gfilesec[n];
+  gfiledirrec& r = a()->gfilesec[n];
   bool done = false;
   char s[81];
   do {
@@ -104,18 +104,18 @@ void modify_sec(int n) {
       done = true;
       break;
     case '[':
-      session()->gfilesec[n] = r;
+      a()->gfilesec[n] = r;
       if (--n < 0) {
-        n = session()->gfilesec.size() - 1;
+        n = a()->gfilesec.size() - 1;
       }
-      r = session()->gfilesec[n];
+      r = a()->gfilesec[n];
       break;
     case ']':
-      session()->gfilesec[n] = r;
-      if (++n >= size_int(session()->gfilesec)) {
+      a()->gfilesec[n] = r;
+      if (++n >= size_int(a()->gfilesec)) {
         n = 0;
       }
-      r = session()->gfilesec[n];
+      r = a()->gfilesec[n];
       break;
     case 'A':
       bout.nl();
@@ -127,7 +127,7 @@ void modify_sec(int n) {
       break;
     case 'B': {
       bout.nl();
-      if (File::Exists(session()->config()->gfilesdir(), r.filename)) {
+      if (File::Exists(a()->config()->gfilesdir(), r.filename)) {
         bout << "\r\nThere is currently a directory for this g-file section.\r\n";
         bout << "If you change the filename, the directory will still be there.\r\n\n";
       }
@@ -136,11 +136,11 @@ void modify_sec(int n) {
       input(s, 8);
       if ((s[0] != 0) && (strchr(s, '.') == 0)) {
         strcpy(r.filename, s);
-        if (!File::Exists(session()->config()->gfilesdir(), r.filename)) {
+        if (!File::Exists(a()->config()->gfilesdir(), r.filename)) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
           if (yesno()) {
-            File dir(session()->config()->gfilesdir(), r.filename);
+            File dir(a()->config()->gfilesdir(), r.filename);
             File::mkdirs(dir);
           } else {
             bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
@@ -194,7 +194,7 @@ void modify_sec(int n) {
       break;
     }
   } while (!done && !hangup);
-  session()->gfilesec[n] = r;
+  a()->gfilesec[n] = r;
 }
 
 
@@ -208,13 +208,13 @@ void insert_sec(int n) {
   r.maxfiles  = 99;
   r.ar    = 0;
 
-  insert_at(session()->gfilesec, n, r);
+  insert_at(a()->gfilesec, n, r);
   modify_sec(n);
 }
 
 
 void delete_sec(int n) {
-  erase_at(session()->gfilesec, n);
+  erase_at(a()->gfilesec, n);
 }
 
 
@@ -243,17 +243,17 @@ void gfileedit() {
       bout << "|#2Section number? ";
       input(s, 2);
       i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < size_int(session()->gfilesec)) {
+      if (s[0] != 0 && i >= 0 && i < size_int(a()->gfilesec)) {
         modify_sec(i);
       }
       break;
     case 'I':
-      if (size_int(session()->gfilesec) < session()->max_gfilesec) {
+      if (size_int(a()->gfilesec) < a()->max_gfilesec) {
         bout.nl();
         bout << "|#2Insert before which section? ";
         input(s, 2);
         i = atoi(s);
-        if (s[0] != 0 && i >= 0 && i <= size_int(session()->gfilesec)) {
+        if (s[0] != 0 && i >= 0 && i <= size_int(a()->gfilesec)) {
           insert_sec(i);
         }
       }
@@ -263,9 +263,9 @@ void gfileedit() {
       bout << "|#2Delete which section? ";
       input(s, 2);
       i = atoi(s);
-      if (s[0] != 0 && i >= 0 && i < size_int(session()->gfilesec)) {
+      if (s[0] != 0 && i >= 0 && i < size_int(a()->gfilesec)) {
         bout.nl();
-        bout << "|#5Delete " << session()->gfilesec[i].name << "?";
+        bout << "|#5Delete " << a()->gfilesec[i].name << "?";
         if (yesno()) {
           delete_sec(i);
         }
@@ -274,10 +274,10 @@ void gfileedit() {
     }
   } while (!done && !hangup);
 
-  DataFile<gfiledirrec> file(session()->config()->datadir(), GFILE_DAT,
+  DataFile<gfiledirrec> file(a()->config()->datadir(), GFILE_DAT,
 	File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
   if (file) {
-    file.WriteVector(session()->gfilesec);
+    file.WriteVector(a()->gfilesec);
   }
 }
 
@@ -289,12 +289,12 @@ bool fill_sec(int sn) {
   bool bFound = false;
 
   gfilerec *g = read_sec(sn, &n1);
-  string gfilesdir = session()->config()->gfilesdir();
-  sprintf(s1, "%s%s%c*.*", gfilesdir.c_str(), session()->gfilesec[sn].filename, File::pathSeparatorChar);
+  string gfilesdir = a()->config()->gfilesdir();
+  sprintf(s1, "%s%s%c*.*", gfilesdir.c_str(), a()->gfilesec[sn].filename, File::pathSeparatorChar);
   bFound = fnd.open(s1, 0);
   bool ok = true;
   int chd = 0;
-  while ((bFound) && (!hangup) && (nf < session()->gfilesec[sn].maxfiles) && (ok)) {
+  while ((bFound) && (!hangup) && (nf < a()->gfilesec[sn].maxfiles) && (ok)) {
     if (fnd.GetFileName()[0] == '.') {
       bFound = fnd.next();
       continue;
@@ -334,18 +334,18 @@ bool fill_sec(int sn) {
   if (!ok) {
     bout << "|#6Aborted.\r\n";
   }
-  if (nf >= session()->gfilesec[sn].maxfiles) {
+  if (nf >= a()->gfilesec[sn].maxfiles) {
     bout << "Section full.\r\n";
   }
   if (chd) {
-    string file_name = StrCat(syscfg.datadir, session()->gfilesec[sn].filename, ".gfl");
+    string file_name = StrCat(syscfg.datadir, a()->gfilesec[sn].filename, ".gfl");
     File gflFile(file_name);
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();
-    WStatus *pStatus = session()->status_manager()->BeginTransaction();
+    WStatus *pStatus = a()->status_manager()->BeginTransaction();
     pStatus->SetGFileDate(date());
-    session()->status_manager()->CommitTransaction(pStatus);
+    a()->status_manager()->CommitTransaction(pStatus);
   }
   free(g);
   return !ok;

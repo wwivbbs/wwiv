@@ -28,13 +28,13 @@
 #include <string>
 
 #include "bbs/remote_io.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 
 // Function Prototypes
-WSession* CreateSession(LocalIO* localIO);
-WSession* session();
+Application* CreateSession(LocalIO* localIO);
+Application* a();
 
 #endif // __INCLUDED_BBS_H__
 

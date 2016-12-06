@@ -98,7 +98,7 @@ static void input_phone() {
   do {
     bout.nl();
     bout << "|#3Enter your VOICE phone no. in the form:\r\n|#3 ###-###-####\r\n|#2:";
-    phoneNumber = Input1(session()->user()->GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
+    phoneNumber = Input1(a()->user()->GetVoicePhoneNumber(), 12, true, InputMode::PHONE);
 
     ok = valid_phone(phoneNumber.c_str());
     if (!ok) {
@@ -107,7 +107,7 @@ static void input_phone() {
     }
   } while (!ok && !hangup);
   if (!hangup) {
-    session()->user()->SetVoicePhoneNumber(phoneNumber.c_str());
+    a()->user()->SetVoicePhoneNumber(phoneNumber.c_str());
   }
 }
 
@@ -116,16 +116,16 @@ void input_dataphone() {
   do {
     bout.nl();
     bout << "|#3Enter your DATA phone no. in the form. \r\n";
-    bout << "|#3 ###-###-#### - Press Enter to use [" << session()->user()->GetVoicePhoneNumber()
+    bout << "|#3 ###-###-#### - Press Enter to use [" << a()->user()->GetVoicePhoneNumber()
          << "].\r\n";
-    string data_phone_number = Input1(session()->user()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
+    string data_phone_number = Input1(a()->user()->GetDataPhoneNumber(), 12, true, InputMode::PHONE);
     if (data_phone_number[0] == '\0') {
-      data_phone_number = session()->user()->GetVoicePhoneNumber();
+      data_phone_number = a()->user()->GetVoicePhoneNumber();
     }
     ok = valid_phone(data_phone_number);
 
     if (ok) {
-      session()->user()->SetDataPhoneNumber(data_phone_number.c_str());
+      a()->user()->SetDataPhoneNumber(data_phone_number.c_str());
     } else {
       bout.nl();
       bout << "|#6Please enter a valid phone number in the correct format.\r\n";
@@ -134,37 +134,37 @@ void input_dataphone() {
 }
 
 void input_language() {
-  if (session()->languages.size() > 1) {
-    session()->user()->SetLanguage(255);
+  if (a()->languages.size() > 1) {
+    a()->user()->SetLanguage(255);
     do {
       char ch = 0, onx[20];
       bout.nl(2);
-      for (size_t i = 0; i < session()->languages.size(); i++) {
-        bout << (i + 1) << ". " << session()->languages[i].name << wwiv::endl;
+      for (size_t i = 0; i < a()->languages.size(); i++) {
+        bout << (i + 1) << ". " << a()->languages[i].name << wwiv::endl;
         if (i < 9) {
           onx[i] = static_cast<char>('1' + i);
         }
       }
       bout.nl();
       bout << "|#2Which language? ";
-      if (session()->languages.size() < 10) {
-        onx[session()->languages.size()] = 0;
+      if (a()->languages.size() < 10) {
+        onx[a()->languages.size()] = 0;
         ch = onek(onx);
         ch -= '1';
       } else {
         std::set<char> odc;
-        for (size_t i = 1; i <= session()->languages.size() / 10; i++) {
+        for (size_t i = 1; i <= a()->languages.size() / 10; i++) {
           odc.insert(static_cast<char>('0' + i));
         }
         string ss = mmkey(odc);
         ch = ss.front() - 1;
       }
-      if (ch >= 0 && ch < size_int(session()->languages)) {
-        session()->user()->SetLanguage(session()->languages[ch].num);
+      if (ch >= 0 && ch < size_int(a()->languages)) {
+        a()->user()->SetLanguage(a()->languages[ch].num);
       }
-    } while ((session()->user()->GetLanguage() == 255) && (!hangup));
+    } while ((a()->user()->GetLanguage() == 255) && (!hangup));
 
-    set_language(session()->user()->GetLanguage());
+    set_language(a()->user()->GetLanguage());
   }
 }
 
@@ -178,9 +178,9 @@ static bool check_name(const string& user_name) {
     return false;
   }
 
-  Trashcan trashcan(*session()->config());
+  Trashcan trashcan(*a()->config());
   if (trashcan.IsTrashName(user_name)) {
-    LOG(INFO) << "Trashcan name entered from IP: " << session()->remoteIO()->remote_info().address
+    LOG(INFO) << "Trashcan name entered from IP: " << a()->remoteIO()->remote_info().address
               << "; name: " << user_name;
     hang_it_up();
     Hangup();
@@ -199,10 +199,10 @@ void input_name() {
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
     }
-    string temp_local_name = Input1(session()->user()->GetName(), 30, true, InputMode::UPPER);
+    string temp_local_name = Input1(a()->user()->GetName(), 30, true, InputMode::UPPER);
     ok = check_name(temp_local_name);
     if (ok) {
-      session()->user()->SetName(temp_local_name.c_str());
+      a()->user()->SetName(temp_local_name.c_str());
     } else {
       bout.nl();
       bout << "|#6I'm sorry, you can't use that name.\r\n";
@@ -220,16 +220,16 @@ void input_realname() {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
-      string temp_local_name = Input1(session()->user()->GetRealName(), 30, true, InputMode::PROPER);
+      string temp_local_name = Input1(a()->user()->GetRealName(), 30, true, InputMode::PROPER);
       if (temp_local_name.empty()) {
         bout.nl();
         bout << "|#6Sorry, you must enter your FULL real name.\r\n";
       } else {
-        session()->user()->SetRealName(temp_local_name.c_str());
+        a()->user()->SetRealName(temp_local_name.c_str());
       }
-    } while ((session()->user()->GetRealName()[0] == '\0') && !hangup);
+    } while ((a()->user()->GetRealName()[0] == '\0') && !hangup);
   } else {
-    session()->user()->SetRealName(session()->user()->GetName());
+    a()->user()->SetRealName(a()->user()->GetName());
   }
 }
 
@@ -237,7 +237,7 @@ static void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
   string s = input(6, true);
-  session()->user()->SetCallsign(s.c_str());
+  a()->user()->SetCallsign(s.c_str());
 }
 
 bool valid_phone(const string& phoneNumber) {
@@ -246,7 +246,7 @@ bool valid_phone(const string& phoneNumber) {
   }
 
   if (syscfg.sysconfig & sysconfig_extended_info) {
-    if (!IsPhoneNumberUSAFormat(session()->user()) && session()->user()->GetCountry()[0]) {
+    if (!IsPhoneNumberUSAFormat(a()->user()) && a()->user()->GetCountry()[0]) {
       return true;
     }
   }
@@ -271,7 +271,7 @@ void input_street() {
   do {
     bout.nl();
     bout << "|#3Enter your street address.\r\n";
-    street = Input1(session()->user()->GetStreet(), 30, true, InputMode::PROPER);
+    street = Input1(a()->user()->GetStreet(), 30, true, InputMode::PROPER);
 
     if (street.empty()) {
       bout.nl();
@@ -279,7 +279,7 @@ void input_street() {
     }
   } while (street.empty() && !hangup);
   if (!hangup) {
-    session()->user()->SetStreet(street.c_str());
+    a()->user()->SetStreet(street.c_str());
   }
 }
 
@@ -288,21 +288,21 @@ void input_city() {
   do {
     bout.nl();
     bout << "|#3Enter your city (i.e San Francisco). \r\n";
-    city = Input1(session()->user()->GetCity(), 30, false, InputMode::PROPER);
+    city = Input1(a()->user()->GetCity(), 30, false, InputMode::PROPER);
 
     if (city.empty()) {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your city.\r\n";
     }
   } while (city.empty() && !hangup);
-  session()->user()->SetCity(city.c_str());
+  a()->user()->SetCity(city.c_str());
 }
 
 void input_state() {
   string state;
   do {
     bout.nl();
-    if (IsEquals(session()->user()->GetCountry(), "CAN")) {
+    if (IsEquals(a()->user()->GetCountry(), "CAN")) {
       bout << "|#3Enter your province (i.e. QC).\r\n";
     } else {
       bout << "|#3Enter your state (i.e. CA). \r\n";
@@ -315,7 +315,7 @@ void input_state() {
       bout << "|#6I'm sorry, you must enter your state or province.\r\n";
     }
   } while (state.empty() && (!hangup));
-  session()->user()->SetState(state.c_str());
+  a()->user()->SetState(state.c_str());
 }
 
 void input_country() {
@@ -330,7 +330,7 @@ void input_country() {
       country = "USA";
     }
   } while (country.empty() && (!hangup));
-  session()->user()->SetCountry(country.c_str());
+  a()->user()->SetCountry(country.c_str());
 }
 
 void input_zipcode() {
@@ -338,7 +338,7 @@ void input_zipcode() {
   do {
     int len = 7;
     bout.nl();
-    if (IsEquals(session()->user()->GetCountry(), "USA")) {
+    if (IsEquals(a()->user()->GetCountry(), "USA")) {
       bout << "|#3Enter your zipcode as #####-#### \r\n";
       len = 10;
     } else {
@@ -353,13 +353,13 @@ void input_zipcode() {
       bout << "|#6I'm sorry, you must enter your zipcode.\r\n";
     }
   } while (zipcode.empty() && (!hangup));
-  session()->user()->SetZipcode(zipcode.c_str());
+  a()->user()->SetZipcode(zipcode.c_str());
 }
 
 void input_sex() {
   bout.nl();
   bout << "|#2Your gender (M,F) :";
-  session()->user()->SetGender(onek("MF"));
+  a()->user()->SetGender(onek("MF"));
 }
 
 void input_age(User *pUser) {
@@ -454,9 +454,9 @@ void input_comptype() {
     }
   } while (!ok && !hangup);
 
-  session()->user()->SetComputerType(ct);
+  a()->user()->SetComputerType(ct);
   if (hangup) {
-    session()->user()->SetComputerType(-1);
+    a()->user()->SetComputerType(-1);
   }
 }
 
@@ -489,9 +489,9 @@ void input_screensize() {
     ok = (y < 8 || y > 60) ? false : true;
   } while (!ok && !hangup);
 
-  session()->user()->SetScreenChars(x);
-  session()->user()->SetScreenLines(y);
-  session()->screenlinest = y;
+  a()->user()->SetScreenChars(x);
+  a()->user()->SetScreenLines(y);
+  a()->screenlinest = y;
 }
 
 
@@ -514,7 +514,7 @@ void input_pw(User *pUser) {
     password.clear();
     password = Input1("", 8, false, InputMode::UPPER);
 
-    string realName = session()->user()->GetRealName();
+    string realName = a()->user()->GetRealName();
     StringUpperCase(&realName);
     if (!CheckPasswordComplexity(pUser, password)) {
       ok = false;
@@ -532,8 +532,8 @@ void input_pw(User *pUser) {
 
 
 void input_ansistat() {
-  session()->user()->ClearStatusFlag(User::ansi);
-  session()->user()->ClearStatusFlag(User::color);
+  a()->user()->ClearStatusFlag(User::ansi);
+  a()->user()->ClearStatusFlag(User::color);
   bout.nl();
   if (check_ansi() == 1) {
     bout << "ANSI graphics support detected.  Use it? ";
@@ -547,12 +547,12 @@ void input_ansistat() {
     bout << "Is the above line colored, italicized, bold, inversed, or blinking? ";
   }
   if (noyes()) {
-    session()->user()->SetStatusFlag(User::ansi);
+    a()->user()->SetStatusFlag(User::ansi);
     bout.nl();
     bout << "|#5Do you want color? ";
     if (noyes()) {
-      session()->user()->SetStatusFlag(User::color);
-      session()->user()->SetStatusFlag(User::extraColor);
+      a()->user()->SetStatusFlag(User::color);
+      a()->user()->SetStatusFlag(User::extraColor);
     } else {
       color_list();
       bout.nl();
@@ -564,10 +564,10 @@ void input_ansistat() {
       int c  = ch - '0';
       int c2 = c << 4;
       for (int i = 0; i < 10; i++) {
-        if ((session()->user()->GetBWColor(i) & 0x70) == 0) {
-          session()->user()->SetBWColor(i, (session()->user()->GetBWColor(i) & 0x88) | c);
+        if ((a()->user()->GetBWColor(i) & 0x70) == 0) {
+          a()->user()->SetBWColor(i, (a()->user()->GetBWColor(i) & 0x88) | c);
         } else {
-          session()->user()->SetBWColor(i, (session()->user()->GetBWColor(i) & 0x88) | c2);
+          a()->user()->SetBWColor(i, (a()->user()->GetBWColor(i) & 0x88) | c2);
         }
       }
     }
@@ -575,7 +575,7 @@ void input_ansistat() {
 }
 
 static int find_new_usernum(const User* pUser, uint32_t* qscn) {
-  File userFile(session()->config()->datadir(), USER_LST);
+  File userFile(a()->config()->datadir(), USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       sleep_for(milliseconds(100));
@@ -589,7 +589,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   userFile.Seek(syscfg.userreclen, File::Whence::begin);
   int user_number = 1;
 
-  if (nNewUserNumber == session()->status_manager()->GetUserCount()) {
+  if (nNewUserNumber == a()->status_manager()->GetUserCount()) {
     user_number = nNewUserNumber + 1;
   } else {
     while (user_number <= nNewUserNumber) {
@@ -635,7 +635,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   }
 }
 
-// Clears session()->user()'s data and makes it ready to be a new user, also
+// Clears a()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
 static bool CreateNewUserRecord() {
   memset(qsc, 0, syscfg.qscn_len);
@@ -643,12 +643,12 @@ static bool CreateNewUserRecord() {
   memset(qsc_n, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
   memset(qsc_q, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
 
-  auto u = session()->user();
-  session()->ResetEffectiveSl();
+  auto u = a()->user();
+  a()->ResetEffectiveSl();
   
   return User::CreateNewUserRecord(u, syscfg.newusersl, syscfg.newuserdsl, 
     syscfg.newuser_restrict, syscfg.newusergold,
-    session()->newuser_colors, session()->newuser_bwcolors);
+    a()->newuser_colors, a()->newuser_bwcolors);
 }
 
 
@@ -656,7 +656,7 @@ static bool CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (session()->status_manager()->GetUserCount() >= syscfg.maxusers) {
+  if (a()->status_manager()->GetUserCount() >= syscfg.maxusers) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n";
     return false;
@@ -690,7 +690,7 @@ bool CanCreateNewUserAccountHere() {
 
 
 bool UseMinimalNewUserInfo() {
-  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+  IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     return ini.value<bool>("NEWUSER_MIN");
   }
@@ -698,25 +698,25 @@ bool UseMinimalNewUserInfo() {
 }
 
 static void DefaultToWWIVEditIfPossible() {
-  for (size_t nEditor = 0; nEditor < session()->editors.size(); nEditor++) {
+  for (size_t nEditor = 0; nEditor < a()->editors.size(); nEditor++) {
     // TODO(rushfan): Should we get rid of this favoring of WWIVEDIT?
-    string editor_desc(session()->editors[nEditor].description);
+    string editor_desc(a()->editors[nEditor].description);
     StringUpperCase(&editor_desc);
     if (editor_desc.find("WWIVEDIT") != string::npos) {
-      session()->user()->SetDefaultEditor(nEditor + 1);
+      a()->user()->SetDefaultEditor(nEditor + 1);
       return;
     }
   }
 }
 void DoFullNewUser() {
-  const auto u = session()->user();
+  const auto u = a()->user();
 
   input_name();
   input_realname();
   input_phone();
-  if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+  if (a()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
     if (check_dupes(u->GetVoicePhoneNumber())) {
-      if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+      if (a()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
         hang_it_up();
         return;
       }
@@ -748,9 +748,9 @@ void DoFullNewUser() {
     }
     input_dataphone();
 
-    if (session()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
+    if (a()->HasConfigFlag(OP_FLAGS_CHECK_DUPE_PHONENUM)) {
       if (check_dupes(u->GetDataPhoneNumber())) {
-        if (session()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
+        if (a()->HasConfigFlag(OP_FLAGS_HANGUP_DUPE_PHONENUM)) {
           Hangup();
           return;
         }
@@ -762,7 +762,7 @@ void DoFullNewUser() {
   input_age(u);
   input_comptype();
 
-  if (session()->editors.size() && u->HasAnsi()) {
+  if (a()->editors.size() && u->HasAnsi()) {
     bout.nl();
     bout << "|#5Select a fullscreen editor? ";
     if (yesno()) {
@@ -784,21 +784,21 @@ void DoFullNewUser() {
 }
 
 void DoNewUserASV() {
-  if (session()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
-      session()->asv.sl > syscfg.newusersl && session()->asv.sl < 90) {
+  if (a()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
+      a()->asv.sl > syscfg.newusersl && a()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
     if (yesno()) {
       bout.nl();
       bout << "|#5Please enter your BBS name and number.\r\n";
       string note = inputl(60, true);
-      session()->user()->SetNote(note.c_str());
-      session()->user()->SetSl(session()->asv.sl);
-      session()->user()->SetDsl(session()->asv.dsl);
-      session()->user()->SetAr(session()->asv.ar);
-      session()->user()->SetDar(session()->asv.dar);
-      session()->user()->SetExempt(session()->asv.exempt);
-      session()->user()->SetRestriction(session()->asv.restrict);
+      a()->user()->SetNote(note.c_str());
+      a()->user()->SetSl(a()->asv.sl);
+      a()->user()->SetDsl(a()->asv.dsl);
+      a()->user()->SetAr(a()->asv.ar);
+      a()->user()->SetDar(a()->asv.dar);
+      a()->user()->SetExempt(a()->asv.exempt);
+      a()->user()->SetRestriction(a()->asv.restrict);
       bout.nl();
       printfile(ASV_NOEXT);
       bout.nl();
@@ -810,7 +810,7 @@ void DoNewUserASV() {
 
 void VerifyNewUserFullInfo() {
   bool ok = false;
-  const auto u = session()->user();
+  const auto u = a()->user();
 
   do {
     bout.nl(2);
@@ -909,9 +909,9 @@ void VerifyNewUserFullInfo() {
 
 
 void WriteNewUserInfoToSysopLog() {
-  const auto u = session()->user();
+  const auto u = a()->user();
   sysoplog() << "** New User Information **";
-  sysoplog() << StringPrintf("-> %s #%ld (%s)", u->GetName(), session()->usernum,
+  sysoplog() << StringPrintf("-> %s #%ld (%s)", u->GetName(), a()->usernum,
             u->GetRealName());
   if (syscfg.sysconfig & sysconfig_extended_info) {
     sysoplog() << "-> " << u->GetStreet();
@@ -935,10 +935,10 @@ void WriteNewUserInfoToSysopLog() {
 
 
   if (u->GetVoicePhoneNumber()[0]) {
-    add_phone_number(session()->usernum, u->GetVoicePhoneNumber());
+    add_phone_number(a()->usernum, u->GetVoicePhoneNumber());
   }
   if (u->GetDataPhoneNumber()[0]) {
-    add_phone_number(session()->usernum, u->GetDataPhoneNumber());
+    add_phone_number(a()->usernum, u->GetDataPhoneNumber());
   }
 }
 
@@ -947,13 +947,13 @@ void VerifyNewUserPassword() {
   bool ok = false;
   do {
     bout.nl(2);
-    bout << "|#9Your User Number: |#2" << session()->usernum << wwiv::endl;
-    bout << "|#9Your Password:    |#2" << session()->user()->GetPassword() << wwiv::endl;
+    bout << "|#9Your User Number: |#2" << a()->usernum << wwiv::endl;
+    bout << "|#9Your Password:    |#2" << a()->user()->GetPassword() << wwiv::endl;
     bout.nl(1);
     bout << "|#9Please write down this information, and enter your password for verification.\r\n";
     bout << "|#9You will need to know this password in order to change it to something else.\r\n\n";
     string password = input_password("|#9PW: ", 8);
-    if (password == session()->user()->GetPassword()) {
+    if (password == a()->user()->GetPassword()) {
       ok = true;
     }
   } while (!ok && !hangup);
@@ -970,16 +970,16 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
-  if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+  if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     noabort(FEEDBACK_NOEXT);
   } else if (printfile(FEEDBACK_NOEXT)) {
     sysoplog(false) << "";
   }
   feedback(true);
-  if (session()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
-    if (!session()->user()->GetNumEmailSent() && !session()->user()->GetNumFeedbackSent()) {
+  if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
+    if (!a()->user()->GetNumEmailSent() && !a()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
-      deluser(session()->usernum);
+      deluser(a()->usernum);
       Hangup();
       return;
     }
@@ -995,21 +995,21 @@ void ExecNewUserCommand() {
     sysoplog(false) << "Executing New User Event: ";
     sysoplog() << commandLine;
 
-    session()->WriteCurrentUser();
-    ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_NEWUSER));
-    session()->ReadCurrentUser();
+    a()->WriteCurrentUser();
+    ExecuteExternalProgram(commandLine, a()->GetSpawnOptions(SPAWNOPT_NEWUSER));
+    a()->ReadCurrentUser();
   }
 }
 
 void newuser() {
   sysoplog(false);
-  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), session()->GetCurrentSpeed().c_str(),
-             session()->instance_number());
+  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), a()->GetCurrentSpeed().c_str(),
+             a()->instance_number());
 
-  LOG(INFO) << "New User Attempt from IP Address: " << session()->remoteIO()->remote_info().address;
+  LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
 
   get_colordata();
-  session()->screenlinest = 25;
+  a()->screenlinest = 25;
 
   if (!CreateNewUserRecord()) {
     return;
@@ -1024,9 +1024,9 @@ void newuser() {
   }
 
   if (check_ansi()) {
-    session()->user()->SetStatusFlag(User::ansi);
-    session()->user()->SetStatusFlag(User::color);
-    session()->user()->SetStatusFlag(User::extraColor);
+    a()->user()->SetStatusFlag(User::ansi);
+    a()->user()->SetStatusFlag(User::color);
+    a()->user()->SetStatusFlag(User::extraColor);
   }
   printfile(SYSTEM_NOEXT);
   bout.nl();
@@ -1053,10 +1053,10 @@ void newuser() {
 
 
   bout.nl(4);
-  bout << "Random password: " << session()->user()->GetPassword() << wwiv::endl << wwiv::endl;
+  bout << "Random password: " << a()->user()->GetPassword() << wwiv::endl << wwiv::endl;
   bout << "|#5Do you want a different password (Y/N)? ";
   if (yesno()) {
-    input_pw(session()->user());
+    input_pw(a()->user());
   }
 
   DoNewUserASV();
@@ -1075,33 +1075,33 @@ void newuser() {
 
   bout.nl();
   bout << "Please wait...\r\n\n";
-  session()->usernum = find_new_usernum(session()->user(), qsc);
-  if (session()->usernum <= 0) {
+  a()->usernum = find_new_usernum(a()->user(), qsc);
+  if (a()->usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";
     Hangup();
     return;
-  } else if (session()->usernum == 1) {
+  } else if (a()->usernum == 1) {
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
     ssm(1, 0) << "Thank you for installing WWIV! - The WWIV Development Team.";
-    User* user = session()->user();
+    User* user = a()->user();
     user->SetSl(255);
     user->SetDsl(255);
     user->SetRestriction(0);
   }
 
   WriteNewUserInfoToSysopLog();
-  ssm(1, 0) << "You have a new user: " << session()->user()->GetName() << " #" << session()->usernum;
+  ssm(1, 0) << "You have a new user: " << a()->user()->GetName() << " #" << a()->usernum;
 
-  LOG(INFO) << "New User Created: '" << session()->user()->GetName() << "' "
-            << "IP Address: " << session()->remoteIO()->remote_info().address;
+  LOG(INFO) << "New User Created: '" << a()->user()->GetName() << "' "
+            << "IP Address: " << a()->remoteIO()->remote_info().address;
 
-  session()->UpdateTopScreen();
+  a()->UpdateTopScreen();
   VerifyNewUserPassword();
   SendNewUserFeedbackIfRequired();
   ExecNewUserCommand();
-  session()->ResetEffectiveSl();
+  a()->ResetEffectiveSl();
   changedsl();
   new_mail();
 }
@@ -1189,18 +1189,18 @@ bool check_zip(const char *pszZipCode, int mode) {
     if (mode != 2) {
       bout << "\r\n|#2" << city << ", " << state << "  USA? (y/N): ";
       if (yesno()) {
-        session()->user()->SetCity(city);
-        session()->user()->SetState(state);
-        session()->user()->SetCountry("USA");
+        a()->user()->SetCity(city);
+        a()->user()->SetState(state);
+        a()->user()->SetCountry("USA");
       } else {
         bout.nl();
         bout << "|#6My records show differently.\r\n\n";
         ok = false;
       }
     } else {
-      session()->user()->SetCity(city);
-      session()->user()->SetState(state);
-      session()->user()->SetCountry("USA");
+      a()->user()->SetCity(city);
+      a()->user()->SetState(state);
+      a()->user()->SetCountry("USA");
     }
   }
   return ok;
@@ -1209,13 +1209,13 @@ bool check_zip(const char *pszZipCode, int mode) {
 
 bool check_dupes(const char *pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);
-  if (user_number && user_number != session()->usernum) {
-    string s = StringPrintf("    %s entered phone # %s", session()->user()->GetName(), pszPhoneNumber);
+  if (user_number && user_number != a()->usernum) {
+    string s = StringPrintf("    %s entered phone # %s", a()->user()->GetName(), pszPhoneNumber);
     sysoplog(false) << s;
     ssm(1, 0) << s;
 
     User user;
-    session()->users()->ReadUser(&user, user_number);
+    a()->users()->ReadUser(&user, user_number);
     s = StringPrintf("      also entered by %s", user.GetName());
     sysoplog(false) << s;
     ssm(1, 0) << s;
@@ -1229,13 +1229,13 @@ bool check_dupes(const char *pszPhoneNumber) {
 void noabort(const char *file_name) {
   bool oic = false;
 
-  if (session()->using_modem) {
+  if (a()->using_modem) {
     oic   = incom;
     incom = false;
     bout.dump();
   }
   printfile(file_name);
-  if (session()->using_modem) {
+  if (a()->using_modem) {
     bout.dump();
     incom = oic;
   }
@@ -1243,7 +1243,7 @@ void noabort(const char *file_name) {
 
 static void cln_nu() {
   bout.Color(0);
-  int i1 = session()->localIO()->WhereX();
+  int i1 = a()->localIO()->WhereX();
   if (i1 > 28) {
     for (int i = i1; i > 28; i--) {
       bout.bs();
@@ -1254,7 +1254,7 @@ static void cln_nu() {
 
 
 void DoMinimalNewUser() {
-  const auto u = session()->user();
+  const auto u = a()->user();
 
   int m =  1, d =  1, y = 2000, ch =  0;
   char s[101], s1[81], m1[3], d1[3], y1[5];
@@ -1276,9 +1276,9 @@ void DoMinimalNewUser() {
   newline = false;
   s1[0] = 0;
   bool done = false;
-  int nSaveTopData = session()->topdata;
-  session()->topdata = LocalIO::topdataNone;
-  session()->UpdateTopScreen();
+  int nSaveTopData = a()->topdata;
+  a()->topdata = LocalIO::topdataNone;
+  a()->UpdateTopScreen();
   do {
     bout.cls();
     bout.litebar("%s New User Registration", syscfg.systemname);
@@ -1459,22 +1459,22 @@ void DoMinimalNewUser() {
   u->SetVoicePhoneNumber("999-999-9999");
   u->SetDataPhoneNumber(u->GetVoicePhoneNumber());
   u->SetStreet("None Requested");
-  if (session()->editors.size() && u->HasAnsi()) {
+  if (a()->editors.size() && u->HasAnsi()) {
     u->SetDefaultEditor(1);
   }
-  session()->topdata = nSaveTopData;
-  session()->UpdateTopScreen();
+  a()->topdata = nSaveTopData;
+  a()->UpdateTopScreen();
   newline = true;
 }
 
 
 void new_mail() {
-  File file(session()->config()->gfilesdir(), (session()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(a()->config()->gfilesdir(), (a()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
   if (!file.Exists()) {
     return;
   }
-  int save_ed = session()->user()->GetDefaultEditor();
-  session()->user()->SetDefaultEditor(0);
+  int save_ed = a()->user()->GetDefaultEditor();
+  a()->user()->SetDefaultEditor(0);
   LoadFileIntoWorkspace(file.full_pathname(), true, true);
   use_workspace = true;
 
@@ -1484,7 +1484,7 @@ void new_mail() {
   data.anonymous_flag = 0;
   data.aux = "email";
   data.fsed_flags = FsedFlags::NOFSED;
-  data.to_name = session()->names()->UserName(session()->usernum);
+  data.to_name = a()->names()->UserName(a()->usernum);
   data.msged_flags = MSGED_FLAG_NONE;
   data.silent_mode = true;
   messagerec msg;
@@ -1495,7 +1495,7 @@ void new_mail() {
     EmailData email(data);
     email.msg = &msg;
     email.anony = 0;
-    email.user_number = session()->usernum;
+    email.user_number = a()->usernum;
     email.system_number = 0;
     email.an = true;
     email.from_user = 1;
@@ -1505,7 +1505,7 @@ void new_mail() {
     email.silent_mode = true;
     sendout_email(email);
   }
-  session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() + 1);
-  session()->user()->SetDefaultEditor(save_ed);
+  a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() + 1);
+  a()->user()->SetDefaultEditor(save_ed);
 }
 

@@ -28,7 +28,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/vars.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/wwivport.h"
 #include "core/file.h"
 #include "sdk/config.h"
@@ -76,13 +76,13 @@ void BbsHelper::SetUp() {
   strcpy(sysconfig->datadir, dir_data_.c_str());
   strcpy(sysconfig->gfilesdir, dir_gfiles_.c_str());
 
-  session()->language_dir = dir_en_gfiles_;
+  a()->language_dir = dir_en_gfiles_;
   unique_ptr<Config> config = make_unique<Config>(temp);
   config->set_initialized_for_test(true);
   config->set_config(sysconfig.release());
-  session()->set_config_for_test(move(config));
-  user_ = session()->user();
-  session()->instance_number_ = 42;
+  a()->set_config_for_test(move(config));
+  user_ = a()->user();
+  a()->instance_number_ = 42;
 }
 
 void BbsHelper::TearDown() {

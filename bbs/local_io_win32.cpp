@@ -29,7 +29,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/fcns.h"
 #include "bbs/vars.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/os.h"
 #include "core/strings.h"
 
@@ -338,7 +338,7 @@ int  Win32ConsoleIO::PrintfXYA(int x, int y, int nAttribute, const char *formatt
   return nNumWritten;
 }
 
-void Win32ConsoleIO::set_protect(WSession* session, int l) {
+void Win32ConsoleIO::set_protect(Application* session, int l) {
 // set_protect sets the number of lines protected at the top of the screen.
   if (static_cast<size_t>(l) != GetTopLine()) {
     COORD coord;
@@ -820,7 +820,7 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, int editor_status,
   GotoXY(cx, cy);
 }
 
-void Win32ConsoleIO::UpdateNativeTitleBar(WSession* session) {
+void Win32ConsoleIO::UpdateNativeTitleBar(Application* session) {
   // Set console title
   std::stringstream consoleTitleStream;
   consoleTitleStream << "WWIV Node " << session->instance_number() << " (" << syscfg.systemname << ")";

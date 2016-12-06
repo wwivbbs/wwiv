@@ -51,13 +51,13 @@ static void compress_file(const string& orig_filename, const string& directory) 
     fileName += ".msg";
   }
 
-  string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + session()->arcs[0].extension;
+  string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + a()->arcs[0].extension;
   string arcName = StrCat(directory, baseFileName);
 
-  const string command = stuff_in(session()->arcs[0].arca, arcName, orig_filename, "", "", "");
-  ExecuteExternalProgram(command, session()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+  const string command = stuff_in(a()->arcs[0].arca, arcName, orig_filename, "", "", "");
+  ExecuteExternalProgram(command, a()->GetSpawnOptions(SPAWNOPT_ARCH_A));
   File::Remove(orig_filename);
-  session()->UpdateTopScreen();
+  a()->UpdateTopScreen();
 }
 
 /* Passes a specific filename to the upload function */
@@ -66,11 +66,11 @@ static bool upload_mod(int directory_number, const char *file_name, const char *
 
   WWIV_ASSERT(file_name);
 
-  dliscan1(session()->udir[directory_number].subnum);
+  dliscan1(a()->udir[directory_number].subnum);
   bout.nl(2);
   strcpy(s, file_name);
-  strcpy(s1, session()->directories[session()->udir[directory_number].subnum].path);
-  int maxf = session()->directories[session()->udir[directory_number].subnum].maxfiles;
+  strcpy(s1, a()->directories[a()->udir[directory_number].subnum].path);
+  int maxf = a()->directories[a()->udir[directory_number].subnum].maxfiles;
   strcat(s1, s);
   WFindFile fnd;
   bool bDone = fnd.open(s1, 0);
@@ -84,7 +84,7 @@ static bool upload_mod(int directory_number, const char *file_name, const char *
   if (!ok) {
     bout << "|#6Aborted.\r\n";
   }
-  if (session()->numf >= maxf) {
+  if (a()->numf >= maxf) {
     bout << "directory full.\r\n";
   }
   return false;
@@ -128,8 +128,8 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
   } while (!hangup && ss1[0] == '?');
 
   mod_dir = -1;
-  for (size_t i1 = 0; i1 < session()->directories.size() && session()->udir[i1].subnum != -1; i1++) {
-    if (wwiv::strings::IsEquals(session()->udir[i1].keys, ss1)) {
+  for (size_t i1 = 0; i1 < a()->directories.size() && a()->udir[i1].subnum != -1; i1++) {
+    if (wwiv::strings::IsEquals(a()->udir[i1].keys, ss1)) {
       mod_dir = i1;
     }
   }
@@ -141,7 +141,7 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
     goto go_away;
   }
 
-  strcpy(s1, session()->directories[session()->udir[mod_dir].subnum].path);
+  strcpy(s1, a()->directories[a()->udir[mod_dir].subnum].path);
   do {
     if (*irt) {
       bout << "|#2Press |#7[|#9Enter|#7]|#2 for |#1" << StringRemoveChar(irt, '.') << ".mod.\r\n";
@@ -196,10 +196,10 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
     bout.nl(2);
     bout << "|#2//UPLOAD the file? ";
     if (noyes()) {
-      sprintf(compressed_fn, "%s.%s", StringRemoveChar(s2, '.'), session()->arcs[0].extension);
+      sprintf(compressed_fn, "%s.%s", StringRemoveChar(s2, '.'), a()->arcs[0].extension);
       bout << "|#2Now //UPLOAD'ing the file...";
       strcpy(szDescription, stripcolors(irt));
-      strcpy(author, stripcolors(StringRemoveChar(session()->net_email_name.c_str(), '#')));
+      strcpy(author, stripcolors(StringRemoveChar(a()->net_email_name.c_str(), '#')));
 
       if (author[0] == '`') {
         i3 = 0;
@@ -273,8 +273,8 @@ static void extract_mod(const char *b, long len, time_t tDateTime) {
       bout.nl(2);
       bout << "|#9Add a |#1FILE_ID.DIZ|#9 to archive? ";
       if (noyes()) {
-        sprintf(idz_fn, "%s%s", session()->temp_directory().c_str(), FILE_ID_DIZ);
-        sprintf(dir_path, "%s%s", session()->directories[session()->udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
+        sprintf(idz_fn, "%s%s", a()->temp_directory().c_str(), FILE_ID_DIZ);
+        sprintf(dir_path, "%s%s", a()->directories[a()->udir[mod_dir].subnum].path, StringRemoveChar(s2, '.'));
         TextFile file(idz_fn, "w");
         file.WriteFormatted("%.58s\n", szDescription);
         const string datetime = W_DateString(tDateTime, "Y", "");
@@ -314,13 +314,13 @@ void extract_out(char *b, long len, const char *title, time_t tDateTime) {
       extract_mod(b, len, tDateTime);
       break;
     case '2':
-      to_char_array(s2, session()->config()->gfilesdir());
+      to_char_array(s2, a()->config()->gfilesdir());
       break;
     case '3':
-      to_char_array(s2, session()->config()->datadir());
+      to_char_array(s2, a()->config()->datadir());
       break;
     case '4':
-      to_char_array(s2, session()->temp_directory());
+      to_char_array(s2, a()->temp_directory());
       break;
     case '?':
       printfile(MEXTRACT_NOEXT);

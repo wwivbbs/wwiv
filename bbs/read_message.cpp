@@ -59,19 +59,19 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   string* outLocation) {
   string netName;
 
-  if (session()->max_net_num() > 1) {
-    netName = StrCat(session()->current_net().name, "- ");
+  if (a()->max_net_num() > 1) {
+    netName = StrCat(a()->current_net().name, "- ");
   }
 
   outNetworkName->clear();
   outLocation->clear();
 
-  if (session()->current_net().type == network_type_t::internet) {
+  if (a()->current_net().type == network_type_t::internet) {
     outNetworkName->assign("Internet Mail and Newsgroups");
     return;
   }
 
-  if (system_number && session()->current_net().type == network_type_t::wwivnet) {
+  if (system_number && a()->current_net().type == network_type_t::wwivnet) {
     net_system_list_rec *csne = next_system(system_number);
     if (csne) {
       string netstatus;
@@ -86,7 +86,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
       }
       const string filename = StringPrintf(
         "%s%s%c%s.%-3u",
-        session()->config()->datadir().c_str(),
+        a()->config()->datadir().c_str(),
         REGIONS_DIR,
         File::pathSeparatorChar,
         REGIONS_DIR,
@@ -146,10 +146,10 @@ void display_message_text(const std::string& text, bool *next) {
             if (ch == '0') {
               ctrld = -1; // don't display
             } else {
-              if (session()->user()->GetOptionalVal() == 0) {
+              if (a()->user()->GetOptionalVal() == 0) {
                 ctrld = 0; // display
               } else {
-                if (10 - (session()->user()->GetOptionalVal()) < static_cast<unsigned>(ch - '0')) {
+                if (10 - (a()->user()->GetOptionalVal()) < static_cast<unsigned>(ch - '0')) {
                   ctrld = -1; // don't display
                 } else {
                   ctrld = 0; // display
@@ -166,8 +166,8 @@ void display_message_text(const std::string& text, bool *next) {
           if (g_flags & g_flag_ansi_movement) {
             g_flags &= ~g_flag_ansi_movement;
             bout.clear_lines_listed();
-            if (session()->localIO()->GetTopLine() && session()->localIO()->GetScreenBottom() == 24) {
-              session()->ClearTopScreenProtection();
+            if (a()->localIO()->GetTopLine() && a()->localIO()->GetScreenBottom() == 24) {
+              a()->ClearTopScreenProtection();
             }
           }
           s[nNumCharsPtr++] = ch;
@@ -180,20 +180,20 @@ void display_message_text(const std::string& text, bool *next) {
 
         if (printit || ansi || nLineLenPtr >= 80) {
           if (centre && (ctrld != -1)) {
-            int nSpacesToCenter = (session()->user()->GetScreenChars() - session()->localIO()->WhereX() -
+            int nSpacesToCenter = (a()->user()->GetScreenChars() - a()->localIO()->WhereX() -
               nLineLenPtr) / 2;
             osan(charstr(nSpacesToCenter, ' '), &abort, next);
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
-              if ((session()->localIO()->WhereX() + nLineLenPtr >= session()->user()->GetScreenChars())
+              if ((a()->localIO()->WhereX() + nLineLenPtr >= a()->user()->GetScreenChars())
                 && !centre && !ansi) {
                 bout.nl();
               }
               s[nNumCharsPtr] = '\0';
               osan(s, &abort, next);
               if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
-                if (session()->localIO()->WhereX() < session()->user()->GetScreenChars() - 1) {
+                if (a()->localIO()->WhereX() < a()->user()->GetScreenChars() - 1) {
                   bout.bputch(SPACE);
                   bout.nl();
                 } else {
@@ -238,8 +238,8 @@ void display_message_text(const std::string& text, bool *next) {
   if (express && abort && !*next) {
     expressabort = true;
   }
-  if (ansi && session()->topdata && session()->IsUserOnline()) {
-    session()->UpdateTopScreen();
+  if (ansi && a()->topdata && a()->IsUserOnline()) {
+    a()->UpdateTopScreen();
   }
   g_flags &= ~g_flag_disable_mci;
 }
@@ -343,8 +343,8 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     string msgarea = msg.message_area;
     if (msgarea.size() > 35) { msgarea = msgarea.substr(0, 35); }
-    bout << "|#9 Sub|#7: |#" << session()->GetMessageColor() << msgarea;
-    if (session()->user()->GetScreenChars() >= 78) {
+    bout << "|#9 Sub|#7: |#" << a()->GetMessageColor() << msgarea;
+    if (a()->user()->GetScreenChars() >= 78) {
       int used = 6 + msgarea.size();
       auto pad = COLUMN2 - used;
       bout << string(pad, ' ');
@@ -355,8 +355,8 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     }
     bout << "|#9Msg#|#7: ";
     if (msg.message_number > 0 && msg.total_messages > 0) {
-      bout << "[|#" << session()->GetMessageColor() << msg.message_number
-        << "|#7 of |#" << session()->GetMessageColor()
+      bout << "[|#" << a()->GetMessageColor() << msg.message_number
+        << "|#7 of |#" << a()->GetMessageColor()
         << msg.total_messages << "|#7]";
     }
     bout.nl();
@@ -368,7 +368,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     from = from.substr(0, 35);
   }
   bout << "|#9From|#7: |#1" << from;
-  if (session()->user()->GetScreenChars() >= 78) {
+  if (a()->user()->GetScreenChars() >= 78) {
     int used = 6 + from.size();
     auto pad = COLUMN2 - used;
     bout << string(pad, ' ');
@@ -383,7 +383,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
     info.num_lines++;
   }
-  bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << msg.title << wwiv::endl;
+  bout << "|#9Subj|#7: |#" << a()->GetMessageColor() << msg.title << wwiv::endl;
   info.num_lines++;
 
   auto sysname = msg.from_sys_name;
@@ -392,7 +392,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
       sysname = sysname.substr(0, 35);
     }
     bout << "|#9 Sys|#7: |#1" << sysname;
-    if (session()->user()->GetScreenChars() >= 78) {
+    if (a()->user()->GetScreenChars() >= 78) {
       int used = 6 + sysname.size();
       auto pad = COLUMN2 - used;
       bout << string(pad, ' ');
@@ -403,7 +403,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     }
     if (!msg.from_sys_loc.empty()) {
       auto loc = msg.from_sys_loc;
-      int maxlen = session()->user()->GetScreenChars() - 7 - COLUMN2;
+      int maxlen = a()->user()->GetScreenChars() - 7 - COLUMN2;
       if (size_int(loc) > maxlen) {
         loc = loc.substr(0, maxlen);
       }
@@ -487,8 +487,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
   bout.cls();
   const auto info = display_type2_message_header(msg);
-  const int screen_width = session()->user()->GetScreenChars();
-  const int screen_length = session()->user()->GetScreenLines() - 1;
+  const int screen_width = a()->user()->GetScreenChars();
+  const int screen_length = a()->user()->GetScreenLines() - 1;
   const int message_height = screen_length - info.num_lines - 2 - 1;
   const int lines_start = info.num_lines + 2;
   const int lines_end = lines_start + message_height;
@@ -613,7 +613,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 }
 
 ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* next) {
-  if (session()->experimental_read_prompt() && session()->user()->HasStatusFlag(User::fullScreenReader)) {
+  if (a()->experimental_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader)) {
     return display_type2_message_new(msg, an, next);
   }
 
@@ -633,25 +633,25 @@ ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* ne
 
   ReadMessageResult result{};
   result.lines_start = 1;
-  result.lines_end = session()->user()->GetScreenLines() - 1;
+  result.lines_end = a()->user()->GetScreenLines() - 1;
   result.option = ReadMessageOption::NONE;
   return result;
 }
 
 static void update_qscan(uint32_t qscan) {
-  if (qscan > qsc_p[session()->GetCurrentReadMessageArea()]) {
-    qsc_p[session()->GetCurrentReadMessageArea()] = qscan;
+  if (qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
+    qsc_p[a()->GetCurrentReadMessageArea()] = qscan;
   }
 
   uint32_t current_qscan_pointer = 0;
   {
-    std::unique_ptr<WStatus> wwiv_status(session()->status_manager()->GetStatus());
+    std::unique_ptr<WStatus> wwiv_status(a()->status_manager()->GetStatus());
     // not sure why we check this twice...
     // maybe we need a getCachedQScanPointer?
     current_qscan_pointer = wwiv_status->GetQScanPointer();
   }
   if (qscan >= current_qscan_pointer) {
-    session()->status_manager()->Run([&](WStatus& s) {
+    a()->status_manager()->Run([&](WStatus& s) {
       if (qscan >= s.GetQScanPointer()) {
         s.SetQScanPointer(qscan + 1);
       }
@@ -660,7 +660,7 @@ static void update_qscan(uint32_t qscan) {
 }
 
 ReadMessageResult read_post(int n, bool *next, int *val) {
-  if (session()->user()->IsUseClearScreen()) {
+  if (a()->user()->IsUseClearScreen()) {
     bout.cls();
   } else {
     bout.nl();
@@ -669,23 +669,23 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
   *next = false;
 
   postrec p = *get_post(n);
-  bool bReadit = (lcs() || (getslrec(session()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
+  bool bReadit = (lcs() || (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
   auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
-    session()->current_sub().filename.c_str(), p.ownersys, p.owneruser);
+    a()->current_sub().filename.c_str(), p.ownersys, p.owneruser);
 
   if (forcescansub) {
     m.flags.insert(MessageFlags::FORCED);
   }
 
   m.message_number = n;
-  m.total_messages = session()->GetNumMessagesInCurrentMessageArea();
-  m.message_area = session()->current_sub().name;
+  m.total_messages = a()->GetNumMessagesInCurrentMessageArea();
+  m.message_area = a()->current_sub().name;
 
-  if (session()->current_sub().nets.empty()) {
+  if (a()->current_sub().nets.empty()) {
     m.flags.insert(MessageFlags::LOCAL);
   }
-  for (const auto& nets : session()->current_sub().nets) {
-    const auto& net = session()->net_networks[nets.net_num];
+  for (const auto& nets : a()->current_sub().nets) {
+    const auto& net = a()->net_networks[nets.net_num];
     if (net.type == network_type_t::ftn) {
       m.flags.insert(MessageFlags::FTN);
     }
@@ -708,25 +708,25 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
   if ((p.status & status_no_delete) && lcs()) {
     m.flags.insert(MessageFlags::PERMANENT);
   }
-  if ((p.status & status_pending_net) && session()->user()->GetSl() > syscfg.newusersl) {
+  if ((p.status & status_pending_net) && a()->user()->GetSl() > syscfg.newusersl) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }
   ReadMessageResult result{};
   if (!abort) {
-    int saved_net_num = session()->net_num();
+    int saved_net_num = a()->net_num();
 
     if (p.status & status_post_new_net) {
       set_net_num(network_number_from(&p));
     }
     result = display_type2_message(m, static_cast<char>(p.anony & 0x0f), next);
 
-    if (saved_net_num != session()->net_num()) {
+    if (saved_net_num != a()->net_num()) {
       set_net_num(saved_net_num);
     }
 
-    session()->user()->SetNumMessagesRead(session()->user()->GetNumMessagesRead() + 1);
-    session()->SetNumMessagesReadThisLogon(session()->GetNumMessagesReadThisLogon() + 1);
+    a()->user()->SetNumMessagesRead(a()->user()->GetNumMessagesRead() + 1);
+    a()->SetNumMessagesReadThisLogon(a()->GetNumMessagesReadThisLogon() + 1);
   } else if (express && !*next) {
     expressabort = true;
   }

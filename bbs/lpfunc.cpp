@@ -74,7 +74,7 @@ static void prep_menu_items(vector<string>* menu_items) {
   menu_items->push_back("Info");
   menu_items->push_back("ViewZip");
 
-  if (session()->using_modem != 0) {
+  if (a()->using_modem != 0) {
     menu_items->push_back("Dload");
   } else {
     menu_items->push_back("Move");
@@ -91,12 +91,12 @@ static void prep_menu_items(vector<string>* menu_items) {
 }
 
 static void load_listing() {
-  session()->user()->data.lp_options |= cfl_fname;
-  session()->user()->data.lp_options |= cfl_description;
+  a()->user()->data.lp_options |= cfl_fname;
+  a()->user()->data.lp_options |= cfl_description;
 
   for (int i = 0; i < 32; i++) {
-    if (session()->user()->data.lp_colors[i] == 0) {
-      session()->user()->data.lp_colors[i] = 7;
+    if (a()->user()->data.lp_colors[i] == 0) {
+      a()->user()->data.lp_colors[i] = 7;
     }
   }
 }
@@ -106,7 +106,7 @@ int listfiles_plus_function(int type) {
   int file_handle[51];
   char vert_pos[51];
   int file_pos = 0, save_file_pos = 0, menu_pos = 0;
-  size_t save_dir = session()->current_user_dir_num();
+  size_t save_dir = a()->current_user_dir_num();
   bool sysop_mode = false;
   side_menu_colors smc{};
   search_record search_rec = {};
@@ -123,7 +123,7 @@ int listfiles_plus_function(int type) {
   vector<string> menu_items;
   prep_menu_items(&menu_items);
 
-  file_recs = (uploadsrec(*)[1])(BbsAllocA((session()->user()->GetScreenLines() + 20) * sizeof(uploadsrec)));
+  file_recs = (uploadsrec(*)[1])(BbsAllocA((a()->user()->GetScreenLines() + 20) * sizeof(uploadsrec)));
   WWIV_ASSERT(file_recs);
   if (!file_recs) {
     return 0;
@@ -135,9 +135,9 @@ int listfiles_plus_function(int type) {
   int max_lines = calc_max_lines();
 
   bool all_done = false;
-  for (size_t this_dir = 0; (this_dir < session()->directories.size()) && (!hangup) && (session()->udir[this_dir].subnum != -1)
+  for (size_t this_dir = 0; (this_dir < a()->directories.size()) && (!hangup) && (a()->udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
-    int also_this_dir = session()->udir[this_dir].subnum;
+    int also_this_dir = a()->udir[this_dir].subnum;
     bool scan_dir = false;
     checka(&all_done);
 
@@ -157,7 +157,7 @@ int listfiles_plus_function(int type) {
 
     int save_first_file = 0;
     if (scan_dir) {
-      session()->set_current_user_dir_num(this_dir);
+      a()->set_current_user_dir_num(this_dir);
       dliscan();
       int first_file = save_first_file = 1;
       int amount = 0;
@@ -166,7 +166,7 @@ int listfiles_plus_function(int type) {
       int lines = 0;
       int changedir = 0;
 
-      File fileDownload(session()->download_filename_);
+      File fileDownload(a()->download_filename_);
       while (!done && !hangup && !all_done) {
         checka(&all_done);
         if (!amount) {
@@ -176,7 +176,7 @@ int listfiles_plus_function(int type) {
           }
           print_searching(&search_rec);
         }
-        if (session()->numf) {
+        if (a()->numf) {
           changedir = 0;
           bool force_menu = false;
           FileAreaSetRecord(fileDownload, first_file + amount);
@@ -206,7 +206,7 @@ int listfiles_plus_function(int type) {
             ++amount;
           }
 
-          if (lines >= max_lines || session()->numf < first_file + amount || force_menu) {
+          if (lines >= max_lines || a()->numf < first_file + amount || force_menu) {
             fileDownload.Close();
             if (matches) {
               file_pos = save_file_pos;
@@ -271,7 +271,7 @@ int listfiles_plus_function(int type) {
                   case 0:
                     save_first_file = first_file;
                     first_file += amount;
-                    if (first_file > session()->numf) {
+                    if (first_file > a()->numf) {
                       done = true;
                     }
                     menu_done = true;
@@ -310,12 +310,12 @@ ADD_OR_REMOVE_BATCH:
                       } else {
                         char szTempFile[MAX_PATH];
                         redraw = false;
-                        if (!(session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
-                          strcpy(szTempFile, session()->directories[session()->current_user_dir().subnum].path);
+                        if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
+                          strcpy(szTempFile, a()->directories[a()->current_user_dir().subnum].path);
                           strcat(szTempFile, file_recs[file_pos]->filename);
                           unalign(szTempFile);
-                          if (sysop_mode || !session()->using_modem || File::Exists(szTempFile)) {
-                            lp_add_batch(file_recs[file_pos]->filename, session()->current_user_dir().subnum,
+                          if (sysop_mode || !a()->using_modem || File::Exists(szTempFile)) {
+                            lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                          file_recs[file_pos]->numbytes);
                           } else if (lp_config.request_file) {
                             menu_done = true;
@@ -323,7 +323,7 @@ ADD_OR_REMOVE_BATCH:
                             request_file(file_recs[file_pos]->filename);
                           }
                         } else {
-                          lp_add_batch(file_recs[file_pos]->filename, session()->current_user_dir().subnum,
+                          lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                        file_recs[file_pos]->numbytes);
                         }
                       }
@@ -368,7 +368,7 @@ ADD_OR_REMOVE_BATCH:
                     menu_pos = 0;
                     break;
                   case 5:
-                    if (!sysop_mode && session()->using_modem) {
+                    if (!sysop_mode && a()->using_modem) {
                       bout.cls();
                       menu_done = true;
                       save_file_pos = file_pos;
@@ -384,12 +384,12 @@ ADD_OR_REMOVE_BATCH:
                         } else {
                           char szTempFile[MAX_PATH];
                           redraw = false;
-                          if (!(session()->directories[session()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
-                            strcpy(szTempFile, session()->directories[session()->current_user_dir().subnum].path);
+                          if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
+                            strcpy(szTempFile, a()->directories[a()->current_user_dir().subnum].path);
                             strcat(szTempFile, file_recs[file_pos]->filename);
                             unalign(szTempFile);
-                            if (sysop_mode || !session()->using_modem || File::Exists(szTempFile)) {
-                              lp_add_batch(file_recs[file_pos]->filename, session()->current_user_dir().subnum,
+                            if (sysop_mode || !a()->using_modem || File::Exists(szTempFile)) {
+                              lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                            file_recs[file_pos]->numbytes);
                             } else if (lp_config.request_file) {
                               menu_done = true;
@@ -397,7 +397,7 @@ ADD_OR_REMOVE_BATCH:
                               request_file(file_recs[file_pos]->filename);
                             }
                           } else {
-                            lp_add_batch(file_recs[file_pos]->filename, session()->current_user_dir().subnum,
+                            lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                          file_recs[file_pos]->numbytes);
                           }
                           download_plus(file_recs[file_pos]->filename);
@@ -426,16 +426,16 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = 1;
-                    if ((session()->current_user_dir_num() < size_int(session()->directories) - 1)
-                        && (session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)) {
-                      session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
+                    if ((a()->current_user_dir_num() < size_int(a()->directories) - 1)
+                        && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
+                      a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                       ++this_dir;
                     } else {
-                      session()->set_current_user_dir_num(0);
+                      a()->set_current_user_dir_num(0);
                       this_dir = 0;
                     }
                     if (!type) {
-                      save_dir = session()->current_user_dir_num();
+                      save_dir = a()->current_user_dir_num();
                     }
                     dliscan();
                     menu_pos = 0;
@@ -445,18 +445,18 @@ ADD_OR_REMOVE_BATCH:
                     amount = lines = matches = 0;
                     first_file = 1;
                     changedir = -1;
-                    if (session()->current_user_dir_num() > 0) {
-                      session()->set_current_user_dir_num(session()->current_user_dir_num() - 1);
+                    if (a()->current_user_dir_num() > 0) {
+                      a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
                       --this_dir;
                     } else {
-                      while ((session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)
-                             && (session()->current_user_dir_num() < size_int(session()->directories) - 1)) {
-                        session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
+                      while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
+                             && (a()->current_user_dir_num() < size_int(a()->directories) - 1)) {
+                        a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                       }
-                      this_dir = session()->current_user_dir_num();
+                      this_dir = a()->current_user_dir_num();
                     }
                     if (!type) {
-                      save_dir = session()->current_user_dir_num();
+                      save_dir = a()->current_user_dir_num();
                     }
                     dliscan();
                     menu_pos = 0;
@@ -464,7 +464,7 @@ ADD_OR_REMOVE_BATCH:
                   case 8:
 TOGGLE_EXTENDED:
                     ext_is_on = !ext_is_on;
-                    session()->user()->SetFullFileDescriptions(!session()->user()->GetFullFileDescriptions());
+                    a()->user()->SetFullFileDescriptions(!a()->user()->GetFullFileDescriptions());
                     menu_done = true;
                     amount = lines = matches = 0;
                     file_pos = 0;
@@ -516,20 +516,20 @@ TOGGLE_EXTENDED:
               if (!changedir) {
                 done = true;
               } else if (changedir == 1) {
-                if ((session()->current_user_dir_num() < size_int(session()->directories) - 1)
-                    && (session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)) {
-                  session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
+                if ((a()->current_user_dir_num() < size_int(a()->directories) - 1)
+                    && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
+                  a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                 } else {
-                  session()->set_current_user_dir_num(0);
+                  a()->set_current_user_dir_num(0);
                 }
                 dliscan();
               } else {
-                if (session()->current_user_dir_num() > 0) {
-                  session()->set_current_user_dir_num(session()->current_user_dir_num() - 1);
+                if (a()->current_user_dir_num() > 0) {
+                  a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
                 } else {
-                  while ((session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)
-                         && (session()->current_user_dir_num() < size_int(session()->directories) - 1)) {
-                    session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
+                  while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
+                         && (a()->current_user_dir_num() < size_int(a()->directories) - 1)) {
+                    a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
                   }
                 }
                 dliscan();
@@ -541,20 +541,20 @@ TOGGLE_EXTENDED:
           if (!changedir) {
             done = true;
           } else if (changedir == 1) {
-            if ((session()->current_user_dir_num() < size_int(session()->directories) - 1)
-                && (session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)) {
-              session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
+            if ((a()->current_user_dir_num() < size_int(a()->directories) - 1)
+                && (a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)) {
+              a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
             } else {
-              session()->set_current_user_dir_num(0);
+              a()->set_current_user_dir_num(0);
             }
             dliscan();
           } else {
-            if (session()->current_user_dir_num() > 0) {
-              session()->set_current_user_dir_num(session()->current_user_dir_num() - 1);
+            if (a()->current_user_dir_num() > 0) {
+              a()->set_current_user_dir_num(a()->current_user_dir_num() - 1);
             } else {
-              while ((session()->udir[session()->current_user_dir_num() + 1].subnum >= 0)
-                     && (session()->current_user_dir_num() < size_int(session()->directories) - 1)) {
-                session()->set_current_user_dir_num(session()->current_user_dir_num() + 1);
+              while ((a()->udir[a()->current_user_dir_num() + 1].subnum >= 0)
+                     && (a()->current_user_dir_num() < size_int(a()->directories) - 1)) {
+                a()->set_current_user_dir_num(a()->current_user_dir_num() + 1);
               }
             }
             dliscan();

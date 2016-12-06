@@ -43,7 +43,7 @@ using namespace wwiv::strings;
 bool external_edit_internal(const string& edit_filename, const string& new_directory, const editorrec& editor, int numlines);
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  File file(session()->temp_directory(), filename);
+  File file(a()->temp_directory(), filename);
   file.SetFilePermissions(File::permReadWrite);
   file.Delete();
 }
@@ -68,8 +68,8 @@ static void RemoveControlFiles(const editorrec& editor) {
 }
 
 static void ReadWWIVResultFiles(string* title, int* anon) {
-  if (File::Exists(session()->temp_directory(), RESULT_ED)) {
-    TextFile file(session()->temp_directory(), RESULT_ED, "rt");
+  if (File::Exists(a()->temp_directory(), RESULT_ED)) {
+    TextFile file(a()->temp_directory(), RESULT_ED, "rt");
     string anon_string;
     if (file.ReadLine(&anon_string)) {
       *anon = atoi(anon_string.c_str());
@@ -79,10 +79,10 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
       }
     }
     file.Close();
-  } else if (File::Exists(session()->temp_directory(), FEDIT_INF)) {
+  } else if (File::Exists(a()->temp_directory(), FEDIT_INF)) {
     fedit_data_rec fedit_data;
     memset(&fedit_data, '\0', sizeof(fedit_data_rec));
-    File file(session()->temp_directory(), FEDIT_INF);
+    File file(a()->temp_directory(), FEDIT_INF);
     file.Open(File::modeBinary | File::modeReadOnly);
       if (file.Read(&fedit_data, sizeof(fedit_data))) {
         title->assign(fedit_data.ttl);
@@ -93,12 +93,12 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
 }
 
 static bool WriteMsgInf(const string& title, const string& destination, const string& aux) {
-  TextFile file(session()->temp_directory(), MSGINF, "wt");
+  TextFile file(a()->temp_directory(), MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
   }
 
-  file.WriteLine(session()->user()->GetName());
+  file.WriteLine(a()->user()->GetName());
   if (aux == "email") {
     // destination == to address for email
     file.WriteLine(destination);
@@ -126,7 +126,7 @@ static bool WriteMsgInf(const string& title, const string& destination, const st
 }
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& destination, int flags) {
-  TextFile fileEditorInf(session()->temp_directory(), EDITOR_INF, "wt");
+  TextFile fileEditorInf(a()->temp_directory(), EDITOR_INF, "wt");
   if (fileEditorInf.IsOpen()) {
     if (irt_name[0]) {
       flags |= MSGED_FLAG_HAS_REPLY_NAME;
@@ -138,13 +138,13 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
       "%s\n%s\n%lu\n%s\n%s\n%u\n%u\n%lu\n%u\n",
       title.c_str(),
       destination.c_str(),
-      session()->usernum,
-      session()->user()->GetName(),
-      session()->user()->GetRealName(),
-      session()->user()->GetSl(),
+      a()->usernum,
+      a()->user()->GetName(),
+      a()->user()->GetRealName(),
+      a()->user()->GetSl(),
       flags,
-      session()->localIO()->GetTopLine(),
-      session()->user()->GetLanguage());
+      a()->localIO()->GetTopLine(),
+      a()->user()->GetLanguage());
     fileEditorInf.Close();
   }
   if (flags & MSGED_FLAG_NO_TAGLINE) {
@@ -165,7 +165,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   strcpy(fedit_data.ttl, title.c_str());
   fedit_data.anon = 0;
 
-  File fileFEditInf(session()->temp_directory(), FEDIT_INF);
+  File fileFEditInf(a()->temp_directory(), FEDIT_INF);
   if (fileFEditInf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyRead)) {
     fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
     fileFEditInf.Close();
@@ -174,10 +174,10 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
 
 bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, const string& aux) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
-    if (File::Exists(session()->temp_directory(), QUOTES_TXT)) {
+    if (File::Exists(a()->temp_directory(), QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
-      File source(session()->temp_directory(), QUOTES_TXT);
-      File dest(session()->temp_directory(), MSGTMP);
+      File source(a()->temp_directory(), QUOTES_TXT);
+      File dest(a()->temp_directory(), MSGTMP);
       File::Copy(source.full_pathname(), dest.full_pathname());
     }
     return WriteMsgInf(title, destination, aux);
@@ -188,20 +188,20 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
 }
 
 bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const string& aux) {
-  const size_t editor_number = session()->user()->GetDefaultEditor() - 1;
-  if (editor_number >= session()->editors.size() || !okansi()) {
+  const size_t editor_number = a()->user()->GetDefaultEditor() - 1;
+  if (editor_number >= a()->editors.size() || !okansi()) {
     bout << "\r\nYou can't use that full screen editor (EME).\r\n\n";
     return false;
   }
 
-  const editorrec& editor = session()->editors[editor_number];
+  const editorrec& editor = a()->editors[editor_number];
   RemoveControlFiles(editor);
   ScopeExit on_exit([=] { RemoveControlFiles(editor); });
 
   const string editor_filenme = (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
 
   WriteExternalEditorControlFiles(editor, *title, destination, flags, aux);
-  bool save_message = external_edit_internal(editor_filenme, session()->temp_directory(), editor, maxli);
+  bool save_message = external_edit_internal(editor_filenme, a()->temp_directory(), editor, maxli);
 
   if (!save_message) {
     return false;
@@ -211,8 +211,8 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
     // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
     // TODO(rushfan): Let this function return an object with result and filename and anything
     // else that needs to be passed back.
-    File source(session()->temp_directory(), MSGTMP);
-    File dest(session()->temp_directory(), INPUT_MSG);
+    File source(a()->temp_directory(), MSGTMP);
+    File dest(a()->temp_directory(), INPUT_MSG);
     File::Copy(source.full_pathname(), dest.full_pathname());
 
     // TODO(rushfan): Do we need to re-read MSGINF to look for changes to title or setanon?
@@ -225,15 +225,15 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
 bool external_text_edit(const string& edit_filename, const string& new_directory, int numlines,
                         const string& destination, int flags) {
   bout.nl();
-  const size_t editor_number = session()->user()->GetDefaultEditor() - 1;
-  if (editor_number >= session()->editors.size() || !okansi()) {
+  const size_t editor_number = a()->user()->GetDefaultEditor() - 1;
+  if (editor_number >= a()->editors.size() || !okansi()) {
     bout << "You can't use that full screen editor. (ete1)" << wwiv::endl << wwiv::endl;
     pausescr();
     return false;
   }
 
   RemoveWWIVControlFiles();
-  const editorrec& editor = session()->editors[editor_number];
+  const editorrec& editor = a()->editors[editor_number];
   WriteExternalEditorControlFiles(editor, edit_filename, destination, flags, "");
   bool result = external_edit_internal(edit_filename, new_directory, editor, numlines);
   RemoveWWIVControlFiles();
@@ -261,7 +261,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
     }
   }
 
-  WWIV_make_abs_cmd(session()->GetHomeDir(), &editorCommand);
+  WWIV_make_abs_cmd(a()->GetHomeDir(), &editorCommand);
   const string original_directory = File::current_directory();
 
   string strippedFileName(stripfn(edit_filename.c_str()));
@@ -276,11 +276,11 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
     tFileTime = fileTempForTime.last_write_time();
   }
 
-  const string sx1 = StringPrintf("%d", session()->user()->GetScreenChars());
-  int num_screen_lines = session()->user()->GetScreenLines();
-  if (!session()->using_modem) {
-    int newtl = (session()->screenlinest > defscreenbottom - session()->localIO()->GetTopLine()) ? 0 :
-                session()->localIO()->GetTopLine();
+  const string sx1 = StringPrintf("%d", a()->user()->GetScreenChars());
+  int num_screen_lines = a()->user()->GetScreenLines();
+  if (!a()->using_modem) {
+    int newtl = (a()->screenlinest > defscreenbottom - a()->localIO()->GetTopLine()) ? 0 :
+                a()->localIO()->GetTopLine();
     num_screen_lines = defscreenbottom + 1 - newtl;
   }
   const string sx2 = StringPrintf("%d", num_screen_lines);

@@ -77,33 +77,33 @@ void YourInfo() {
   }
   bout.nl();
   bout << "|#9Your name      : |#2" 
-       << session()->names()->UserName(session()->usernum) << wwiv::endl;
-  bout << "|#9Phone number   : |#2" << session()->user()->GetVoicePhoneNumber() << wwiv::endl;
-  if (session()->user()->GetNumMailWaiting() > 0) {
-    bout << "|#9Mail Waiting   : |#2" << session()->user()->GetNumMailWaiting() << wwiv::endl;
+       << a()->names()->UserName(a()->usernum) << wwiv::endl;
+  bout << "|#9Phone number   : |#2" << a()->user()->GetVoicePhoneNumber() << wwiv::endl;
+  if (a()->user()->GetNumMailWaiting() > 0) {
+    bout << "|#9Mail Waiting   : |#2" << a()->user()->GetNumMailWaiting() << wwiv::endl;
   }
-  bout << "|#9Security Level : |#2" << session()->user()->GetSl() << wwiv::endl;
-  if (session()->GetEffectiveSl() != session()->user()->GetSl()) {
-    bout << "|#1 (temporarily |#2" << session()->GetEffectiveSl() << "|#1)";
+  bout << "|#9Security Level : |#2" << a()->user()->GetSl() << wwiv::endl;
+  if (a()->GetEffectiveSl() != a()->user()->GetSl()) {
+    bout << "|#1 (temporarily |#2" << a()->GetEffectiveSl() << "|#1)";
   }
   bout.nl();
-  bout << "|#9Transfer SL    : |#2" << session()->user()->GetDsl() << wwiv::endl;
-  bout << "|#9Date Last On   : |#2" << session()->user()->GetLastOn() << wwiv::endl;
-  bout << "|#9Times on       : |#2" << session()->user()->GetNumLogons() << wwiv::endl;
-  bout << "|#9On today       : |#2" << session()->user()->GetTimesOnToday() << wwiv::endl;
-  bout << "|#9Messages posted: |#2" << session()->user()->GetNumMessagesPosted() << wwiv::endl;
-  auto total_mail_sent = session()->user()->GetNumEmailSent() + session()->user()->GetNumFeedbackSent() + session()->user()->GetNumNetEmailSent();
+  bout << "|#9Transfer SL    : |#2" << a()->user()->GetDsl() << wwiv::endl;
+  bout << "|#9Date Last On   : |#2" << a()->user()->GetLastOn() << wwiv::endl;
+  bout << "|#9Times on       : |#2" << a()->user()->GetNumLogons() << wwiv::endl;
+  bout << "|#9On today       : |#2" << a()->user()->GetTimesOnToday() << wwiv::endl;
+  bout << "|#9Messages posted: |#2" << a()->user()->GetNumMessagesPosted() << wwiv::endl;
+  auto total_mail_sent = a()->user()->GetNumEmailSent() + a()->user()->GetNumFeedbackSent() + a()->user()->GetNumNetEmailSent();
   bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
-  auto seconds_used = static_cast<int>(session()->user()->GetTimeOn());
+  auto seconds_used = static_cast<int>(a()->user()->GetTimeOn());
   auto minutes_used = seconds_used / SECONDS_PER_MINUTE;
-  minutes_used += std::chrono::duration_cast<std::chrono::minutes>(session()->duration_used_this_session()).count();
+  minutes_used += std::chrono::duration_cast<std::chrono::minutes>(a()->duration_used_this_session()).count();
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
-  bout << "|#9Uploads        : |#2" << session()->user()->GetUploadK() << "|#9k in|#2 "
-    << session()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
-  bout << "|#9Downloads      : |#2" << session()->user()->GetDownloadK() << "|#9k in|#2 "
-    << session()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
+  bout << "|#9Uploads        : |#2" << a()->user()->GetUploadK() << "|#9k in|#2 "
+    << a()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
+  bout << "|#9Downloads      : |#2" << a()->user()->GetDownloadK() << "|#9k in|#2 "
+    << a()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
   bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
   bout.nl();
   pausescr();
@@ -126,7 +126,7 @@ int GetMaxMessageLinesAllowed() {
  * Allows user to upload a post.
  */
 void upload_post() {
-  File file(session()->temp_directory(), INPUT_MSG);
+  File file(a()->temp_directory(), INPUT_MSG);
   long lMaxBytes = 250 * static_cast<long>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
@@ -209,7 +209,7 @@ void edit_confs() {
  * Sends Feedback to the SysOp.  If  bNewUserFeedback is true then this is
  * newuser feedback, otherwise it is "normal" feedback.
  * The user can choose to email anyone listed.
- * Users with session()->usernum < 10 who have sysop privs will be listed, so
+ * Users with a()->usernum < 10 who have sysop privs will be listed, so
  * this user can select which sysop to leave feedback to.
  */
 void feedback(bool bNewUserFeedback) {
@@ -221,25 +221,25 @@ void feedback(bool bNewUserFeedback) {
 
   if (bNewUserFeedback) {
     sprintf(irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-            syscfg.maxusers - session()->status_manager()->GetUserCount());
+            syscfg.maxusers - a()->status_manager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
     email(irt, 1, 0, true, 0, false);
     return;
   }
   if (guest_user) {
-    session()->status_manager()->RefreshStatusCache();
+    a()->status_manager()->RefreshStatusCache();
     strcpy(irt, "Guest Account Feedback");
     email(irt, 1, 0, true, 0, true);
     return;
   }
   strcpy(irt, "|#1Feedback");
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
   int i1 = 0;
 
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
     User user;
-    session()->users()->ReadUser(&user, i);
+    a()->users()->ReadUser(&user, i);
     if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
       i1++;
@@ -254,10 +254,10 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       User user;
-      session()->users()->ReadUser(&user, i);
+      a()->users()->ReadUser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
-        bout << "|#2" << i << "|#7)|#1 " << session()->names()->UserName(i) << wwiv::endl;
+        bout << "|#2" << i << "|#7)|#1 " << a()->names()->UserName(i) << wwiv::endl;
         onek_str[i1++] = static_cast<char>('0' + i);
       }
     }
@@ -288,8 +288,8 @@ void text_edit() {
   }
   sysoplog() << "@ Edited: " << filename;
   if (okfsed()) {
-    external_text_edit(filename, session()->config()->gfilesdir(), 500, 
-      session()->config()->gfilesdir(), MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(filename, a()->config()->gfilesdir(), 500, 
+      a()->config()->gfilesdir(), MSGED_FLAG_NO_TAGLINE);
   }
 }
 

@@ -72,9 +72,9 @@ static int try_to_ul_wh(const string& orig_file_name) {
   bout.nl(3);
 
   bool done = false;
-  if (session()->user()->IsRestrictionValidate() || session()->user()->IsRestrictionUpload() ||
+  if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
       (syscfg.sysconfig & sysconfig_all_sysop)) {
-    dn = (syscfg.newuploads < session()->directories.size()) ? syscfg.newuploads : 0;
+    dn = (syscfg.newuploads < a()->directories.size()) ? syscfg.newuploads : 0;
   } else {
     char temp[10];
 
@@ -82,7 +82,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     done = false;
     while (!done) {
       if (hangup) {
-        if (syscfg.newuploads < session()->directories.size()) {
+        if (syscfg.newuploads < a()->directories.size()) {
           dn = syscfg.newuploads;
         } else {
           dn = 0;
@@ -101,14 +101,14 @@ static int try_to_ul_wh(const string& orig_file_name) {
           done = true;
         } else {
           int x = atoi(temp);
-          if (session()->udir[x].subnum >= 0) {
-            dliscan1(session()->udir[x].subnum);
-            d = session()->directories[dn];
+          if (a()->udir[x].subnum >= 0) {
+            dliscan1(a()->udir[x].subnum);
+            d = a()->directories[dn];
             if ((d.mask & mask_no_uploads) && (!dcs())) {
               bout << "Can't upload there...\r\n";
               pausescr();
             } else {
-              dn = session()->udir[x].subnum;
+              dn = a()->udir[x].subnum;
               done = true;
             }
           }
@@ -118,8 +118,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
   }
 
   dliscan1(dn);
-  d = session()->directories[dn];
-  if (session()->numf >= d.maxfiles) {
+  d = a()->directories[dn];
+  if (a()->numf >= d.maxfiles) {
     t2u_error(file_name, "This directory is currently full.");
     return 1;
   }
@@ -150,10 +150,10 @@ static int try_to_ul_wh(const string& orig_file_name) {
     ok = 0;
     string s1;
     for (size_t i = 0; i < MAX_ARCS; i++) {
-      if (session()->arcs[i].extension[0] && session()->arcs[i].extension[0] != ' ') {
+      if (a()->arcs[i].extension[0] && a()->arcs[i].extension[0] != ' ') {
         if (!s1.empty()) s1 += ", ";
-        s1 += session()->arcs[i].extension;
-        if (wwiv::strings::IsEquals(s.c_str() + 9, session()->arcs[i].extension)) {
+        s1 += a()->arcs[i].extension;
+        if (wwiv::strings::IsEquals(s.c_str() + 9, a()->arcs[i].extension)) {
           ok = 1;
         }
       }
@@ -169,12 +169,12 @@ static int try_to_ul_wh(const string& orig_file_name) {
     }
   }
   strcpy(u.filename, s.c_str());
-  u.ownerusr = static_cast<uint16_t>(session()->usernum);
+  u.ownerusr = static_cast<uint16_t>(a()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;
   u.mask = 0;
-  const string unn = session()->names()->UserName(session()->usernum);
+  const string unn = a()->names()->UserName(a()->usernum);
   strncpy(u.upby, unn.c_str(), sizeof(u.upby));
   u.upby[36]  = '\0';
   strcpy(u.date, date());
@@ -192,13 +192,13 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  if (ok && (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
+  if (ok && (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH))) {
     bout.nl();
-    bout << "Checking for same file in other session()->directories...\r\n\n";
+    bout << "Checking for same file in other a()->directories...\r\n\n";
     i2 = 0;
 
-    for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1); i++) {
-      string s1 = StrCat("Scanning ", session()->directories[session()->udir[i].subnum].name);
+    for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1); i++) {
+      string s1 = StrCat("Scanning ", a()->directories[a()->udir[i].subnum].name);
 
       i4 = s1.size();
       //s1 += string(i3 - i2, ' ');
@@ -207,11 +207,11 @@ static int try_to_ul_wh(const string& orig_file_name) {
       bout << s1;
       bout.bputch('\r');
 
-      dliscan1(session()->udir[i].subnum);
+      dliscan1(a()->udir[i].subnum);
       i1 = recno(u.filename);
       if (i1 >= 0) {
         bout.nl();
-        bout << "Same file found on " << session()->directories[session()->udir[i].subnum].name << wwiv::endl;
+        bout << "Same file found on " << a()->directories[a()->udir[i].subnum].name << wwiv::endl;
 
         if (dcs()) {
           bout.nl();
@@ -233,7 +233,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     dliscan1(dn);
     bout.nl();
   }
-  const string src = StrCat(session()->batch_directory(), file_name);
+  const string src = StrCat(a()->batch_directory(), file_name);
   const string dest = StrCat(d.path, file_name);
 
   if (File::Exists(dest)) {
@@ -289,14 +289,14 @@ static int try_to_ul_wh(const string& orig_file_name) {
             u.mask &= ~mask_extended;
           } else {
             u.mask |= mask_extended;
-            modify_extended_description(&ss, session()->directories[session()->current_user_dir().subnum].name);
+            modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
             if (!ss.empty()) {
               delete_extended_description(u.filename);
               add_extended_description(u.filename, ss);
             }
           }
         } else {
-          modify_extended_description(&ss, session()->directories[session()->current_user_dir().subnum].name);
+          modify_extended_description(&ss, a()->directories[a()->current_user_dir().subnum].name);
           if (!ss.empty()) {
             add_extended_description(u.filename, ss);
             u.mask |= mask_extended;
@@ -344,13 +344,13 @@ static int try_to_ul_wh(const string& orig_file_name) {
   auto lFileLength = file.GetLength();
   u.numbytes = lFileLength;
   file.Close();
-  session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
+  a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
 
   time_t tCurrentDate = time(nullptr);
   u.daten = static_cast<uint32_t>(tCurrentDate);
-  File fileDownload(session()->download_filename_);
+  File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (int i = session()->numf; i >= 1; i--) {
+  for (int i = a()->numf; i >= 1; i--) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u1, sizeof(uploadsrec));
     FileAreaSetRecord(fileDownload, i + 1);
@@ -359,10 +359,10 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   FileAreaSetRecord(fileDownload, 1);
   fileDownload.Write(&u, sizeof(uploadsrec));
-  ++session()->numf;
+  ++a()->numf;
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Read(&u1, sizeof(uploadsrec));
-  u1.numbytes = session()->numf;
+  u1.numbytes = a()->numf;
   u1.daten = static_cast<uint32_t>(tCurrentDate);
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Write(&u1, sizeof(uploadsrec));
@@ -370,20 +370,20 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   modify_database(u.filename, true);
 
-  session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(u.numbytes));
+  a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(u.numbytes));
 
-  WStatus *pStatus = session()->status_manager()->BeginTransaction();
+  WStatus *pStatus = a()->status_manager()->BeginTransaction();
   pStatus->IncrementNumUploadsToday();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-  session()->status_manager()->CommitTransaction(pStatus);
-  sysoplog() << StringPrintf("+ \"%s\" uploaded on %s", u.filename, session()->directories[dn].name);
+  a()->status_manager()->CommitTransaction(pStatus);
+  sysoplog() << StringPrintf("+ \"%s\" uploaded on %s", u.filename, a()->directories[dn].name);
   return 0;                                 // This means success
 }
 
 int try_to_ul(const string& file_name) {
   bool ac = false;
 
-  if (uconfsub[1].confnum != -1 && okconf(session()->user())) {
+  if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = true;
     tmp_disable_conf(true);
   }
@@ -394,16 +394,16 @@ int try_to_ul(const string& file_name) {
     return 0;  // success
   }
 
-  const string dest_dir = StrCat(session()->config()->dloadsdir(), "TRY2UL");
+  const string dest_dir = StrCat(a()->config()->dloadsdir(), "TRY2UL");
   File::mkdirs(dest_dir);
-  session()->CdHome();   // ensure we are in the correct directory
+  a()->CdHome();   // ensure we are in the correct directory
 
   bout << "|#2Your file had problems, it is being moved to a special dir for sysop review\r\n";
 
   sysoplog() << StringPrintf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
 
-  const string src = StrCat(session()->batch_directory(), file_name);
-  const string dest = StrCat(session()->config()->dloadsdir(), "TRY2UL", File::pathSeparatorChar, file_name);
+  const string src = StrCat(a()->batch_directory(), file_name);
+  const string dest = StrCat(a()->config()->dloadsdir(), "TRY2UL", File::pathSeparatorChar, file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to
     File::Remove(dest);                           // remove duplicates in try2ul dir, so keep
@@ -411,8 +411,8 @@ int try_to_ul(const string& file_name) {
   // it clean and up to date
   copyfile(src, dest, true);                   // copy file from batch dir,to try2ul dir */
 
-  if (session()->IsUserOnline()) {
-    session()->UpdateTopScreen();
+  if (a()->IsUserOnline()) {
+    a()->UpdateTopScreen();
   }
 
   if (ac) {

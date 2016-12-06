@@ -21,6 +21,7 @@
 #include "bbs/wwiv_windows.h"
 #include <io.h>
 #endif  // WIN32
+#include "bbs/application.h"
 
 #include <algorithm>
 #include <chrono>
@@ -69,7 +70,7 @@
 #include "bbs/subedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "bbs/workspace.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
@@ -106,7 +107,7 @@ using namespace wwiv::strings;
 
 Output bout;
 
-WSession::WSession(LocalIO* localIO)
+Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_() {
   ::bout.SetLocalIO(localIO);
 
@@ -123,7 +124,7 @@ WSession::WSession(LocalIO* localIO)
   current_dir_ = File::current_directory();
 }
 
-WSession::~WSession() {
+Application::~Application() {
   if (comm_ && ok_modem_stuff) {
     comm_->close(false);
     comm_.reset(nullptr);
@@ -138,7 +139,7 @@ WSession::~WSession() {
   }
 }
 
-bool WSession::reset_local_io(LocalIO* wlocal_io) {
+bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
 
   const int screen_bottom = localIO()->GetDefaultScreenBottom();
@@ -151,7 +152,7 @@ bool WSession::reset_local_io(LocalIO* wlocal_io) {
   return true;
 }
 
-void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
+void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
     const File key_file(config_->datadir(), "wwiv.key");
@@ -182,7 +183,7 @@ void WSession::CreateComm(unsigned int nHandle, CommunicationType type) {
   bout.SetComm(comm_.get());
 }
 
-bool WSession::ReadCurrentUser(int user_number) {
+bool Application::ReadCurrentUser(int user_number) {
   if (!users()->ReadUser(&thisuser_, user_number)) {
     return false;
   }
@@ -192,7 +193,7 @@ bool WSession::ReadCurrentUser(int user_number) {
   return true;
 }
 
-bool WSession::WriteCurrentUser(int user_number) {
+bool Application::WriteCurrentUser(int user_number) {
 
   if (user_number == 0) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number 0";
@@ -204,9 +205,9 @@ bool WSession::WriteCurrentUser(int user_number) {
   return users()->WriteUser(&thisuser_, user_number);
 }
 
-void WSession::tleft(bool check_for_timeout) {
+void Application::tleft(bool check_for_timeout) {
   long nsln = nsl();
-  bool temp_sysop = session()->user()->GetSl() != 255 && session()->GetEffectiveSl() == 255;
+  bool temp_sysop = a()->user()->GetSl() != 255 && a()->GetEffectiveSl() == 255;
   bool sysop_available = sysop1();
 
   int cx = localIO()->WhereX();
@@ -262,7 +263,7 @@ void WSession::tleft(bool check_for_timeout) {
   }
 }
 
-void WSession::handle_sysop_key(uint8_t key) {
+void Application::handle_sysop_key(uint8_t key) {
   int i, i1;
 
   if (okskey) {
@@ -366,7 +367,7 @@ void WSession::handle_sysop_key(uint8_t key) {
   }
 }
 
-void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
+void Application::DisplaySysopWorkingIndicator(bool displayWait) {
   const string waitString = "-=[WAIT]=-";
   auto nNumPrintableChars = waitString.length();
   for (std::string::const_iterator iter = waitString.begin(); iter != waitString.end(); ++iter) {
@@ -398,7 +399,7 @@ void WSession::DisplaySysopWorkingIndicator(bool displayWait) {
   }
 }
 
-void WSession::UpdateTopScreen() {
+void Application::UpdateTopScreen() {
   if (at_wfc()) {
     return;
   }
@@ -468,7 +469,7 @@ void WSession::UpdateTopScreen() {
 
     User sysop { };
     int feedback_waiting = 0;
-    if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+    if (a()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PrintfXY(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
@@ -515,7 +516,7 @@ void WSession::UpdateTopScreen() {
     } else {
       strcpy(szCallSignOrRegNum, user()->GetCallsign());
     }
-    auto used_this_session = (system_clock::now() - session()->system_logon_time());
+    auto used_this_session = (system_clock::now() - a()->system_logon_time());
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
@@ -530,7 +531,7 @@ void WSession::UpdateTopScreen() {
 
     User sysop { };
     int feedback_waiting = 0;
-    if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+    if (a()->users()->ReadUserNoCache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", user()->GetNote(), user()->GetGender(),
@@ -553,25 +554,25 @@ void WSession::UpdateTopScreen() {
   bout.lines_listed_ = lll;
 }
 
-void WSession::ClearTopScreenProtection() {
+void Application::ClearTopScreenProtection() {
   localIO()->set_protect(this, 0);
 }
 
-const char* WSession::network_name() const {
+const char* Application::network_name() const {
   if (net_networks.empty()) {
     return "";
   }
   return net_networks[network_num_].name;
 }
 
-const std::string WSession::network_directory() const {
+const std::string Application::network_directory() const {
   if (net_networks.empty()) {
     return "";
   }
   return std::string(net_networks[network_num_].dir);
 }
 
-void WSession::GetCaller() {
+void Application::GetCaller() {
   wwiv::bbs::WFC wfc(this);
   remoteIO()->remote_info().clear();
   frequent_init();
@@ -616,9 +617,9 @@ void WSession::GetCaller() {
 }
 
 
-void WSession::GotCaller(unsigned int ms, unsigned long cs) {
+void Application::GotCaller(unsigned int ms, unsigned long cs) {
   frequent_init();
-  wfc_cls(session());
+  wfc_cls(a());
   com_speed = cs;
   modem_speed = ms;
   ReadCurrentUser(1);
@@ -642,29 +643,29 @@ void WSession::GotCaller(unsigned int ms, unsigned long cs) {
   }
 }
 
-void WSession::CdHome() {
+void Application::CdHome() {
   File::set_current_directory(current_dir_);
 }
 
-const string WSession::GetHomeDir() {
+const string Application::GetHomeDir() {
   string dir = current_dir_;
   File::EnsureTrailingSlash(&dir);
   return dir;
 }
 
-void WSession::AbortBBS(bool bSkipShutdown) {
+void Application::AbortBBS(bool bSkipShutdown) {
   clog.flush();
   ExitBBSImpl(errorlevel_, !bSkipShutdown);
 }
 
-void WSession::QuitBBS() {
-  ExitBBSImpl(WSession::exitLevelQuit, true);
+void Application::QuitBBS() {
+  ExitBBSImpl(Application::exitLevelQuit, true);
 }
 
-void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
+void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
   if (perform_shutdown) {
-    if (exit_level != WSession::exitLevelOK && exit_level != WSession::exitLevelQuit) {
+    if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probers, etc).
       sysoplog(false);
@@ -685,7 +686,7 @@ void WSession::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   exit(exit_level);
 }
 
-void WSession::ShowUsage() {
+void Application::ShowUsage() {
   cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" << "Usage:\r\n\n"
       << "bbs -N<inst> [options] \r\n\n" << "Options:\r\n\n"
       << "  -?         - Display command line options (This screen)\r\n\n"
@@ -708,7 +709,7 @@ void WSession::ShowUsage() {
       << "  -Z         - Do not hang up on user when at log off\r\n" << endl;
 }
 
-int WSession::Run(int argc, char *argv[]) {
+int Application::Run(int argc, char *argv[]) {
   int num_min = 0;
   unsigned int ui = 0;
   unsigned long us = 0;
@@ -728,7 +729,7 @@ int WSession::Run(int argc, char *argv[]) {
   if (!bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
       LOG(ERROR)<< "You are already in the BBS, type 'EXIT' instead.\n\n";
-      session()->ExitBBSImpl(255, false);
+      a()->ExitBBSImpl(255, false);
     }
   }
   const string wwiv_dir = environment_variable("WWIV_DIR");
@@ -780,7 +781,7 @@ int WSession::Run(int argc, char *argv[]) {
         instance_number_ = stoi(argument);
         if (instance_number_ <= 0 || instance_number_ > 999) {
           clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_ << endl;
-          session()->ExitBBSImpl(errorlevel_, false);
+          a()->ExitBBSImpl(errorlevel_, false);
         }
       }
         break;
@@ -939,7 +940,7 @@ int WSession::Run(int argc, char *argv[]) {
 
   if (num_min > 0) {
     syscfg.executetime = static_cast<uint16_t>((minutes_since_midnight() + num_min * 60) / 60) % 1440;
-    session()->set_time_event_time(minutes_after_midnight(syscfg.executetime));
+    a()->set_time_event_time(minutes_after_midnight(syscfg.executetime));
   }
 
   if (event_only) {
@@ -978,7 +979,7 @@ int WSession::Run(int argc, char *argv[]) {
     try {
       // Try setting this at the top of the try loop. It's currently only
       // set in logon() which could cause problems if we get hung up before then.
-      session()->SetLogonTime();
+      a()->SetLogonTime();
 
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
@@ -1021,21 +1022,21 @@ int WSession::Run(int argc, char *argv[]) {
     logoff();
     {
       // post_logoff_cleanup
-      remove_from_temp("*.*", session()->temp_directory(), false);
-      remove_from_temp("*.*", session()->batch_directory(), false);
-      if (!session()->batch().entry.empty() && (session()->batch().entry.size() != session()->batch().numbatchdl())) {
-        for (const auto& b : session()->batch().entry) {
+      remove_from_temp("*.*", a()->temp_directory(), false);
+      remove_from_temp("*.*", a()->batch_directory(), false);
+      if (!a()->batch().entry.empty() && (a()->batch().entry.size() != a()->batch().numbatchdl())) {
+        for (const auto& b : a()->batch().entry) {
           if (!b.sending) { didnt_upload(b); }
         }
       }
-      session()->batch().clear();
+      a()->batch().clear();
     }
     if (!no_hangup && using_modem && ok_modem_stuff) {
       hang_it_up();
     }
     catsl();
     frequent_init();
-    wfc_cls(session());
+    wfc_cls(a());
     cleanup_net();
 
     if (!no_hangup && ok_modem_stuff) {

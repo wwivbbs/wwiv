@@ -25,7 +25,7 @@
 #include "bbs/input.h"
 #include "bbs/menu.h"
 #include "bbs/vars.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wfndfile.h"
@@ -378,7 +378,7 @@ static bool EditMenuItem(MenuRec* menu, File &fileEditMenu, int& nAmount, int& n
 }
 
 static bool GetMenuDir(string* menuName) {
-  wwiv::core::ScopeExit on_exit([] { session()->CdHome(); });
+  wwiv::core::ScopeExit on_exit([] { a()->CdHome(); });
   ListMenuDirs();
   while (!hangup) {
     bout.nl();
@@ -399,7 +399,7 @@ static bool GetMenuDir(string* menuName) {
       return false;
     }
 
-    session()->CdHome(); // go to the wwiv dir
+    a()->CdHome(); // go to the wwiv dir
     File::mkdirs(dir);  // Create the new path
     if (dir.Exists()) {
       bout << "Created\r\n";
@@ -432,7 +432,7 @@ static bool CreateNewMenu(File& file, MenuHeader* header) {
 }
 
 void EditMenus() {
-  wwiv::core::ScopeExit on_exit([] {session()->CdHome(); } );
+  wwiv::core::ScopeExit on_exit([] {a()->CdHome(); } );
   bout.cls();
   bout.litebar("WWIV Menu Editor");
 

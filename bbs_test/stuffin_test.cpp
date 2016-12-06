@@ -43,7 +43,7 @@ protected:
 
 public:
     const std::string t(const std::string name) {
-      return StrCat(session()->temp_directory(), name);
+      return StrCat(a()->temp_directory(), name);
     }
 
     BbsHelper helper;

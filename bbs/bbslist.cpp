@@ -29,7 +29,7 @@
 #include "bbs/printfile.h"
 #include "bbs/sysopf.h"
 #include "bbs/vars.h"
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -51,7 +51,7 @@ static char ShowBBSListMenuAndGetChoice() {
 
 static bool IsBBSPhoneNumberUnique(const string& phoneNumber) {
   bool ok = true;
-  File file(session()->config()->gfilesdir(), BBSLIST_MSG);
+  File file(a()->config()->gfilesdir(), BBSLIST_MSG);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     file.Seek(0L, File::Whence::begin);
     auto lBbsListLength = file.GetLength();
@@ -106,7 +106,7 @@ static bool IsBBSPhoneNumberValid(const string& phoneNumber) {
 }
 
 static void AddBBSListLine(const string bbsListLine) {
-  File file(session()->config()->gfilesdir(), BBSLIST_MSG);
+  File file(a()->config()->gfilesdir(), BBSLIST_MSG);
   bool bOpen = file.Open(File::modeReadWrite | File::modeCreateFile | File::modeBinary);
   if (bOpen && file.GetLength() > 0) {
     file.Seek(-1L, File::Whence::end);
@@ -159,9 +159,9 @@ static void AddBBSListEntryImpl() {
 }
 
 static void AddBBSListEntry() {
-  if (session()->GetEffectiveSl() <= 10) {
+  if (a()->GetEffectiveSl() <= 10) {
     bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
-  } else if (session()->user()->IsRestrictionAutomessage()) {
+  } else if (a()->user()->IsRestrictionAutomessage()) {
     bout << "\r\n\nYou can not add to the BBS list.\r\n\n\n";
   } else {
     AddBBSListEntryImpl();
@@ -179,8 +179,8 @@ static void DeleteBBSListEntry() {
   }
 
   bool ok = false;
-  TextFile fi(session()->config()->gfilesdir(), BBSLIST_MSG, "r");
-  TextFile fo(session()->config()->gfilesdir(), BBSLIST_TMP, "w");
+  TextFile fi(a()->config()->gfilesdir(), BBSLIST_MSG, "r");
+  TextFile fo(a()->config()->gfilesdir(), BBSLIST_TMP, "w");
   if (fi.IsOpen()) {
     if (fo.IsOpen()) {
       string line;

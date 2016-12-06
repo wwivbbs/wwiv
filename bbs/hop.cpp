@@ -55,17 +55,17 @@ void HopSub() {
   }
 
   int c = 0;
-  int oc = session()->GetCurrentConferenceMessageArea();
-  int os = session()->current_user_sub().subnum;
+  int oc = a()->GetCurrentConferenceMessageArea();
+  int os = a()->current_user_sub().subnum;
 
   while ((c < nc) && !abort) {
-    if (okconf(session()->user())) {
+    if (okconf(a()->user())) {
       setuconf(ConferenceType::CONF_SUBS, c, -1);
     }
     size_t i = 0;
-    while ((i < session()->subs().subs().size())
-            && (session()->usub[i].subnum != -1) && !abort) {
-      to_char_array(s2, session()->subs().sub(session()->usub[i].subnum).name);
+    while ((i < a()->subs().subs().size())
+            && (a()->usub[i].subnum != -1) && !abort) {
+      to_char_array(s2, a()->subs().sub(a()->usub[i].subnum).name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
       if (strstr(s2, s1) != nullptr) {
@@ -75,15 +75,15 @@ void HopSub() {
         if (!okansi()) {
           bout.nl();
         }
-        bout << "|#5Do you mean \"" << session()->subs().sub(session()->usub[i].subnum).name << "\" (Y/N/Q)? ";
+        bout << "|#5Do you mean \"" << a()->subs().sub(a()->usub[i].subnum).name << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          session()->set_current_user_sub_num(i);
+          a()->set_current_user_sub_num(i);
           break;
         } else if (ch == 'Q') {
           abort = true;
-          if (okconf(session()->user())) {
+          if (okconf(a()->user())) {
             setuconf(ConferenceType::CONF_SUBS, oc, os);
           }
           break;
@@ -92,11 +92,11 @@ void HopSub() {
       ++i;
     }
     c++;
-    if (!okconf(session()->user())) {
+    if (!okconf(a()->user())) {
       break;
     }
   }
-  if (okconf(session()->user()) && !abort) {
+  if (okconf(a()->user()) && !abort) {
     setuconf(ConferenceType::CONF_SUBS, oc, os);
   }
 }
@@ -129,16 +129,16 @@ void HopDir() {
   }
 
   int c = 0;
-  int oc = session()->GetCurrentConferenceFileArea();
-  int os = session()->current_user_dir().subnum;
+  int oc = a()->GetCurrentConferenceFileArea();
+  int os = a()->current_user_dir().subnum;
 
   while (c < nc && !abort) {
-    if (okconf(session()->user())) {
+    if (okconf(a()->user())) {
       setuconf(ConferenceType::CONF_DIRS, c, -1);
     }
     size_t i = 0;
-    while ((i < session()->directories.size()) && (session()->udir[i].subnum != -1) && (!abort)) {
-      strcpy(s2, session()->directories[session()->udir[i].subnum].name);
+    while ((i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort)) {
+      strcpy(s2, a()->directories[a()->udir[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
         ;
       if (strstr(s2, s1) != nullptr) {
@@ -148,16 +148,16 @@ void HopDir() {
           bout.nl();
         }
         bout << "|#5Do you mean \""
-             << session()->directories[session()->udir[i].subnum].name
+             << a()->directories[a()->udir[i].subnum].name
              << "\" (Y/N/Q)? ";
         char ch = onek_ncr("QYN\r");
         if (ch == 'Y') {
           abort = true;
-          session()->set_current_user_dir_num(i);
+          a()->set_current_user_dir_num(i);
           break;
         } else if (ch == 'Q') {
           abort = true;
-          if (okconf(session()->user())) {
+          if (okconf(a()->user())) {
             setuconf(ConferenceType::CONF_DIRS, oc, os);
           }
           break;
@@ -166,11 +166,11 @@ void HopDir() {
       ++i;
     }
     c++;
-    if (!okconf(session()->user())) {
+    if (!okconf(a()->user())) {
       break;
     }
   }
-  if (okconf(session()->user()) && !abort) {
+  if (okconf(a()->user()) && !abort) {
     setuconf(ConferenceType::CONF_DIRS, oc, os);
   }
 }

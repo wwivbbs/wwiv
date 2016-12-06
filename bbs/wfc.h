@@ -19,19 +19,19 @@
 #define __INCLUDED_BBS_WFC_H__
 
 #include <memory>
-#include "bbs/wsession.h"
+#include "bbs/application.h"
 
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 
-void wfc_cls(WSession* a);
+void wfc_cls(Application* a);
 
 namespace wwiv {
 namespace bbs {
 
 class WFC {
 public:
-  WFC(WSession* a);
+  WFC(Application* a);
   virtual ~WFC();
 
   int doWFCEvents();
@@ -43,7 +43,7 @@ private:
   void DrawScreen();
   void Clear();
 
-  WSession* a_ = nullptr;
+  Application* a_ = nullptr;
   int status_ = 0;
 };
 

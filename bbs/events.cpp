@@ -73,57 +73,57 @@ static char *ttc(int d) {
 }
 
 static void write_events() {
-  if (session()->events.empty()) {
-    File eventsFile(session()->config()->datadir(), EVENTS_DAT);
+  if (a()->events.empty()) {
+    File eventsFile(a()->config()->datadir(), EVENTS_DAT);
     eventsFile.Delete();
     return;
   }
-  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT,
+  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT,
     File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-  file.WriteVector(session()->events);
+  file.WriteVector(a()->events);
 }
 
 static void write_event(int n) {
-  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT,
+  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT,
     File::modeBinary | File::modeReadWrite | File::modeCreateFile);
-  file.Write(n, &session()->events[n]);
+  file.Write(n, &a()->events[n]);
 }
 
 static void read_events() {
-  session()->events.clear();
+  a()->events.clear();
 
-  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT);
+  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT);
   if (!file) {
     return;
   }
-  file.ReadVector(session()->events);
-  if (!session()->events.empty()) {
+  file.ReadVector(a()->events);
+  if (!a()->events.empty()) {
     get_next_forced_event();
   }
 }
 
 static void read_event(int n) {
-  DataFile<eventsrec> file(session()->config()->datadir(), EVENTS_DAT);
+  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT);
   if (!file) {
     return;
   }
-  file.Read(n, &session()->events[n]);
+  file.Read(n, &a()->events[n]);
 }
 
 void sort_events() {
-  if (session()->events.size() <= 1) {
+  if (a()->events.size() <= 1) {
     return;
   }
   // keeping events sorted in time order makes things easier.
-  for (size_t i = 0; i < (session()->events.size() - 1); i++) {
+  for (size_t i = 0; i < (a()->events.size() - 1); i++) {
     size_t z = i;
-    for (size_t j = (i + 1); j < session()->events.size(); j++) {
-      if (session()->events[j].time < session()->events[z].time) {
+    for (size_t j = (i + 1); j < a()->events.size(); j++) {
+      if (a()->events[j].time < a()->events[z].time) {
         z = j;
       }
     }
     if (z != i) {
-      std::swap(session()->events[i], session()->events[z]);
+      std::swap(a()->events[i], a()->events[z]);
     }
   }
 }
@@ -134,20 +134,20 @@ void init_events() {
 
 void get_next_forced_event() {
   syscfg.executetime = 0;
-  session()->clear_time_event_time();
+  a()->clear_time_event_time();
   int first = -1;
   int16_t tl = t_now();
   int day = dow() + 1;
   if (day == 7) {
     day = 0;
   }
-  for (const auto& e : session()->events) {
-    if ((e.instance == session()->instance_number() || e.instance == 0) && e.status & EVENT_FORCED) {
+  for (const auto& e : a()->events) {
+    if ((e.instance == a()->instance_number() || e.instance == 0) && e.status & EVENT_FORCED) {
       if (first < 0 && e.time < tl && ((e.days & (1 << day)) > 0)) {
         first = e.time;
       }
       if ((e.status & EVENT_RUNTODAY) == 0 && (e.days & (1 << dow())) > 0 && !syscfg.executetime) {
-        session()->set_time_event_time(minutes_after_midnight(e.time));
+        a()->set_time_event_time(minutes_after_midnight(e.time));
         syscfg.executetime = e.time;
         if (!syscfg.executetime) {
           ++syscfg.executetime;
@@ -157,7 +157,7 @@ void get_next_forced_event() {
   }
   if (first >= 0 && !syscfg.executetime) {
     // all of todays events are
-    session()->set_time_event_time(minutes_after_midnight(first));
+    a()->set_time_event_time(minutes_after_midnight(first));
     syscfg.executetime = static_cast<uint16_t>(first);                // event to first one
     if (!syscfg.executetime) {                                              // scheduled for tomorrow
       ++syscfg.executetime;
@@ -166,7 +166,7 @@ void get_next_forced_event() {
 }
 
 void cleanup_events() {
-  if (session()->events.empty()) {
+  if (a()->events.empty()) {
     return;
   }
 
@@ -178,15 +178,15 @@ void cleanup_events() {
     day = 6;
   }
 
-  for (size_t i = 0; i < session()->events.size(); i++) {
-    auto& e = session()->events[i];
+  for (size_t i = 0; i < a()->events.size(); i++) {
+    auto& e = a()->events[i];
 
     if (((e.status & EVENT_RUNTODAY) == 0) &&
         ((e.days & (1 << day)) > 0)) {
       run_event(i);
     }
   }
-  for (auto& e : session()->events) {
+  for (auto& e : a()->events) {
     e.status &= ~EVENT_RUNTODAY;
     // zero out last run in case this is a periodic event
     e.lastrun = 0;
@@ -197,11 +197,11 @@ void cleanup_events() {
 
 void check_event() {
   int16_t tl = t_now();
-  for (size_t i = 0; i < session()->events.size() && !do_event; i++) {
-    auto& e = session()->events[i];
+  for (size_t i = 0; i < a()->events.size() && !do_event; i++) {
+    auto& e = a()->events[i];
     if (((e.status & EVENT_RUNTODAY) == 0) && (e.time <= tl) &&
         ((e.days & (1 << dow())) > 0) &&
-        ((e.instance == session()->instance_number()) ||
+        ((e.instance == a()->instance_number()) ||
          (e.instance == 0))) {
       // make sure the event hasn't already been executed on another node,then mark it as run
       read_event(i);
@@ -213,7 +213,7 @@ void check_event() {
       }
     } else if ((e.status & EVENT_PERIODIC) &&
                ((e.days & (1 << dow())) > 0) &&
-               ((e.instance == session()->instance_number()) ||
+               ((e.instance == a()->instance_number()) ||
                 (e.instance == 0))) {
       // periodic events run after N minutes from last execution.
       int16_t nextrun = ((e.lastrun == 0) ? e.time : e.lastrun) + e.period;
@@ -238,20 +238,20 @@ void check_event() {
 }
 
 void run_event(int evnt) {
-  auto& e = session()->events[evnt];
+  auto& e = a()->events[evnt];
 
   write_inst(INST_LOC_EVENT, 0, INST_FLAGS_NONE);
-  session()->localIO()->SetCursor(LocalIO::cursorNormal);
+  a()->localIO()->SetCursor(LocalIO::cursorNormal);
   bout.cls();
   bout << "\r\nNow running external event.\r\n\n";
-  if (session()->events[evnt].status & EVENT_EXIT) {
+  if (a()->events[evnt].status & EVENT_EXIT) {
     int exitlevel = static_cast<int>(e.cmd[0]);
-    if (ok_modem_stuff && session()->remoteIO() != nullptr) {
-      session()->remoteIO()->close(false);
+    if (ok_modem_stuff && a()->remoteIO() != nullptr) {
+      a()->remoteIO()->close(false);
     }
-    session()->ExitBBSImpl(exitlevel, true);
+    a()->ExitBBSImpl(exitlevel, true);
   }
-  ExecuteExternalProgram(session()->events[evnt].cmd, EFLAG_NONE);
+  ExecuteExternalProgram(a()->events[evnt].cmd, EFLAG_NONE);
   do_event = 0;
   get_next_forced_event();
   cleanup_net();
@@ -270,8 +270,8 @@ void show_events() {
   pla("|#1                                         Hold   Force   Run            Run", &abort);
   pla("|#1Evnt Time  Command                 Node  Phone  Event  Today   Freq    Days", &abort);
   pla("|#7=============================================================================", &abort);
-  for (size_t i = 0; (i < session()->events.size()) && !abort; i++) {
-    auto& e = session()->events[i];
+  for (size_t i = 0; (i < a()->events.size()) && !abort; i++) {
+    auto& e = a()->events[i];
     if (e.status & EVENT_EXIT) {
       sprintf(s1, "Exit Level = %d", e.cmd[0]);
     } else {
@@ -319,7 +319,7 @@ void select_event_days(int evnt) {
   bout.nl();
   strcpy(days, "SMTWTFS");
   for (int i = 0; i <= 6; i++) {
-    if (session()->events[evnt].days & (1 << i)) {
+    if (a()->events[evnt].days & (1 << i)) {
       daystr[i] = days[i];
     } else {
       daystr[i] = ' ';
@@ -334,8 +334,8 @@ void select_event_days(int evnt) {
     ch = onek_ncr("1234567Q");
     if ((ch >= '1') && (ch <= '7')) {
       int i = ch - '1';
-      session()->events[evnt].days ^= (1 << i);
-      if (session()->events[evnt].days & (1 << i)) {
+      a()->events[evnt].days ^= (1 << i);
+      if (a()->events[evnt].days & (1 << i)) {
         daystr[i] = days[i];
       } else {
         daystr[i] = ' ';
@@ -354,7 +354,7 @@ void modify_event(int evnt) {
   int i       = evnt;
   do {
     bout.cls();
-    auto& e = session()->events[i];
+    auto& e = a()->events[i];
 
     bout << "A) Event Time......: " << ttc(e.time) << wwiv::endl;
     if (e.status & EVENT_EXIT) {
@@ -388,14 +388,14 @@ void modify_event(int evnt) {
       break;
     case ']':
       i++;
-      if (i >= size_int(session()->events)) {
+      if (i >= size_int(a()->events)) {
         i = 0;
       }
       break;
     case '[':
       i--;
       if (i < 0) {
-        i = session()->events.size() - 1;
+        i = a()->events.size() - 1;
       }
       break;
     case 'A':
@@ -541,12 +541,12 @@ void insert_event() {
   e.status = 0;
   e.instance = 0;
   e.days = 127;                // Default to all 7 days
-  session()->events.emplace_back(e);
-  modify_event(session()->events.size() - 1);
+  a()->events.emplace_back(e);
+  modify_event(a()->events.size() - 1);
 }
 
 void delete_event(int n) {
-  erase_at(session()->events, n);
+  erase_at(a()->events, n);
 }
 
 void eventedit() {
@@ -579,7 +579,7 @@ void eventedit() {
       bout << "|#2Run which Event? ";
       input(s, 2);
       unsigned int nEventNum = StringToUnsignedInt(s);
-      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->events.size()) {
+      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < a()->events.size()) {
         run_event(nEventNum);
       }
     }
@@ -589,13 +589,13 @@ void eventedit() {
       bout << "|#2Modify which Event? ";
       input(s, 2);
       unsigned int nEventNum = StringToUnsignedInt(s);
-      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < session()->events.size()) {
+      if (s[0] != '\0' && nEventNum >= 0 && nEventNum < a()->events.size()) {
         modify_event(nEventNum);
       }
     }
     break;
     case 'I':
-      if (session()->events.size() < MAX_EVENT) {
+      if (a()->events.size() < MAX_EVENT) {
         insert_event();
       } else {
         bout << "\r\n|#6Can't add any more events!\r\n\n";
@@ -603,17 +603,17 @@ void eventedit() {
       }
       break;
     case 'D':
-      if (!session()->events.empty()) {
+      if (!a()->events.empty()) {
         bout.nl();
         bout << "|#2Delete which Event? ";
         input(s, 2);
         unsigned int nEventNum = StringToUnsignedInt(s);
-        if (s[0] && nEventNum >= 0 && nEventNum < session()->events.size()) {
+        if (s[0] && nEventNum >= 0 && nEventNum < a()->events.size()) {
           bout.nl();
-          if (session()->events[nEventNum].status & EVENT_EXIT) {
-            sprintf(s, "Exit Level = %d", session()->events[nEventNum].cmd[0]);
+          if (a()->events[nEventNum].status & EVENT_EXIT) {
+            sprintf(s, "Exit Level = %d", a()->events[nEventNum].cmd[0]);
           } else {
-            strcpy(s, session()->events[nEventNum].cmd);
+            strcpy(s, a()->events[nEventNum].cmd);
           }
           bout << "|#5Delete " << s << "?";
           if (yesno()) {

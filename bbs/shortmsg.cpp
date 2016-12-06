@@ -39,7 +39,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   bool bShownAnyMessage = false;
   int bShownAllMessages = true;
   if (pUser->HasShortMessage()) {
-    File file(session()->config()->datadir(), SMW_DAT);
+    File file(a()->config()->datadir(), SMW_DAT);
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
@@ -57,7 +57,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
         if (!so() || !bAskToSaveMsgs) {
           bHandledMessage = true;
         } else {
-          if (session()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
+          if (a()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
             if (!bHandledMessage && bAskToSaveMsgs) {
               bout << "|#5Would you like to save this notification? ";
               bHandledMessage = !yesno();
@@ -91,9 +91,9 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
 
 static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText) {
   User user;
-  session()->users()->ReadUser(&user, nUserNum);
+  a()->users()->ReadUser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
-    File file(session()->config()->datadir(), SMW_DAT);
+    File file(a()->config()->datadir(), SMW_DAT);
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
@@ -122,7 +122,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
     user.SetStatusFlag(User::SMW);
-    session()->users()->WriteUser(&user, nUserNum);
+    a()->users()->WriteUser(&user, nUserNum);
   }
 }
 
@@ -130,8 +130,8 @@ static void SendRemoteShortMessage(int nUserNum, int nSystemNum, const char *mes
   net_header_rec nh;
   nh.tosys = static_cast<uint16_t>(nSystemNum);
   nh.touser = static_cast<uint16_t>(nUserNum);
-  nh.fromsys = session()->current_net().sysnum;
-  nh.fromuser = static_cast<uint16_t>(session()->usernum);
+  nh.fromsys = a()->current_net().sysnum;
+  nh.fromuser = static_cast<uint16_t>(a()->usernum);
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;
@@ -143,8 +143,8 @@ static void SendRemoteShortMessage(int nUserNum, int nSystemNum, const char *mes
   nh.length = msg.size();
   nh.method = 0;
   const string packet_filename = StringPrintf("%sp0%s", 
-    session()->network_directory().c_str(),
-    session()->network_extension().c_str());
+    a()->network_directory().c_str(),
+    a()->network_extension().c_str());
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::Whence::end);

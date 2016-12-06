@@ -19,6 +19,7 @@
 
 #include <string>
 
+#include "bbs/application.h"
 #include "bbs/batch.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl2.h"
@@ -88,20 +89,20 @@ void move_file() {
 
   while (!hangup && nCurRecNum > 0 && !done) {
     int nCurrentPos = nCurRecNum;
-    File fileDownload(session()->download_filename_);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, nCurRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
     bout.nl();
-    printfileinfo(&u, session()->current_user_dir().subnum);
+    printfileinfo(&u, a()->current_user_dir().subnum);
     bout.nl();
     bout << "|#5Move this (Y/N/Q)? ";
     char ch = ynq();
     if (ch == 'Q') {
       done = true;
     } else if (ch == 'Y') {
-      sprintf(s1, "%s%s", session()->directories[session()->current_user_dir().subnum].path, u.filename);
+      sprintf(s1, "%s%s", a()->directories[a()->current_user_dir().subnum].path, u.filename);
       char *ss = nullptr;
       do {
         bout.nl(2);
@@ -114,25 +115,25 @@ void move_file() {
       } while ((!hangup) && (ss[0] == '?'));
       d1 = -1;
       if (ss[0]) {
-        for (size_t i1 = 0; (i1 < session()->directories.size()) && (session()->udir[i1].subnum != -1); i1++) {
-          if (IsEquals(session()->udir[i1].keys, ss)) {
+        for (size_t i1 = 0; (i1 < a()->directories.size()) && (a()->udir[i1].subnum != -1); i1++) {
+          if (IsEquals(a()->udir[i1].keys, ss)) {
             d1 = i1;
           }
         }
       }
       if (d1 != -1) {
         ok = true;
-        d1 = session()->udir[d1].subnum;
+        d1 = a()->udir[d1].subnum;
         dliscan1(d1);
         if (recno(u.filename) > 0) {
           ok = false;
           bout << "\r\nFilename already in use in that directory.\r\n";
         }
-        if (session()->numf >= session()->directories[d1].maxfiles) {
+        if (a()->numf >= a()->directories[d1].maxfiles) {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (File::GetFreeSpaceForPath(session()->directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
+        if (File::GetFreeSpaceForPath(a()->directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }
@@ -150,16 +151,16 @@ void move_file() {
       }
       --nCurrentPos;
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-      for (int i1 = nCurRecNum; i1 < session()->numf; i1++) {
+      for (int i1 = nCurRecNum; i1 < a()->numf; i1++) {
         FileAreaSetRecord(fileDownload, i1 + 1);
         fileDownload.Read(&u1, sizeof(uploadsrec));
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Write(&u1, sizeof(uploadsrec));
       }
-      --session()->numf;
+      --a()->numf;
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Read(&u1, sizeof(uploadsrec));
-      u1.numbytes = session()->numf;
+      u1.numbytes = a()->numf;
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Write(&u1, sizeof(uploadsrec));
       fileDownload.Close();
@@ -168,10 +169,10 @@ void move_file() {
         delete_extended_description(u.filename);
       }
 
-      sprintf(s2, "%s%s", session()->directories[d1].path, u.filename);
+      sprintf(s2, "%s%s", a()->directories[d1].path, u.filename);
       dliscan1(d1);
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-      for (int i = session()->numf; i >= 1; i--) {
+      for (int i = a()->numf; i >= 1; i--) {
         FileAreaSetRecord(fileDownload, i);
         fileDownload.Read(&u1, sizeof(uploadsrec));
         FileAreaSetRecord(fileDownload, i + 1);
@@ -179,10 +180,10 @@ void move_file() {
       }
       FileAreaSetRecord(fileDownload, 1);
       fileDownload.Write(&u, sizeof(uploadsrec));
-      ++session()->numf;
+      ++a()->numf;
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Read(&u1, sizeof(uploadsrec));
-      u1.numbytes = session()->numf;
+      u1.numbytes = a()->numf;
       if (u.daten > u1.daten) {
         u1.daten = u.daten;
       }
@@ -245,21 +246,21 @@ int comparedl(uploadsrec * x, uploadsrec * y, int type) {
 
 
 void quicksort(int l, int r, int type) {
-  uploadsrec a, a2, x;
+  uploadsrec ua, a2, x;
 
   int i = l;
   int j = r;
-  File fileDownload(session()->download_filename_);
+  File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
 
   FileAreaSetRecord(fileDownload, ((l + r) / 2));
   fileDownload.Read(&x, sizeof(uploadsrec));
   do {
     FileAreaSetRecord(fileDownload, i);
-    fileDownload.Read(&a, sizeof(uploadsrec));
-    while (comparedl(&a, &x, type) < 0) {
+    fileDownload.Read(&ua, sizeof(uploadsrec));
+    while (comparedl(&ua, &x, type) < 0) {
       FileAreaSetRecord(fileDownload, ++i);
-      fileDownload.Read(&a, sizeof(uploadsrec));
+      fileDownload.Read(&ua, sizeof(uploadsrec));
     }
     FileAreaSetRecord(fileDownload, j);
     fileDownload.Read(&a2, sizeof(uploadsrec));
@@ -290,17 +291,17 @@ void quicksort(int l, int r, int type) {
 
 void sortdir(int directory_num, int type) {
   dliscan1(directory_num);
-  if (session()->numf > 1) {
-    quicksort(1, session()->numf, type);
+  if (a()->numf > 1) {
+    quicksort(1, a()->numf, type);
   }
 }
 
 
 void sort_all(int type) {
   tmp_disable_conf(true);
-  for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) &&
-       (!session()->localIO()->KeyPressed()); i++) {
-    bout << "\r\n|#1Sorting " << session()->directories[session()->udir[i].subnum].name << wwiv::endl;
+  for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) &&
+       (!a()->localIO()->KeyPressed()); i++) {
+    bout << "\r\n|#1Sorting " << a()->directories[a()->udir[i].subnum].name << wwiv::endl;
     sortdir(i, type);
   }
   tmp_disable_conf(false);
@@ -326,14 +327,14 @@ void rename_file() {
   strcpy(s3, s);
   int nRecNum = recno(s);
   while (nRecNum > 0 && !hangup) {
-    File fileDownload(session()->download_filename_);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     int nCurRecNum = nRecNum;
     FileAreaSetRecord(fileDownload, nRecNum);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
     bout.nl();
-    printfileinfo(&u, session()->current_user_dir().subnum);
+    printfileinfo(&u, a()->current_user_dir().subnum);
     bout.nl();
     bout << "|#5Change info for this file (Y/N/Q)? ";
     char ch = ynq();
@@ -352,7 +353,7 @@ void rename_file() {
     if (s[0]) {
       align(s);
       if (!IsEquals(s, "        .   ")) {
-        strcpy(s1, session()->directories[session()->current_user_dir().subnum].path);
+        strcpy(s1, a()->directories[a()->current_user_dir().subnum].path);
         strcpy(s2, s1);
         strcat(s1, s);
         StringRemoveWhitespace(s1);
@@ -393,7 +394,7 @@ void rename_file() {
         } else {
           u.mask |= mask_extended;
           modify_extended_description(&ss,
-              session()->directories[session()->current_user_dir().subnum].name);
+              a()->directories[a()->current_user_dir().subnum].name);
           if (!ss.empty()) {
             delete_extended_description(u.filename);
             add_extended_description(u.filename, ss);
@@ -401,7 +402,7 @@ void rename_file() {
         }
       } else {
         modify_extended_description(&ss,
-            session()->directories[session()->current_user_dir().subnum].name);
+            a()->directories[a()->current_user_dir().subnum].name);
         if (!ss.empty()) {
           add_extended_description(u.filename, ss);
           u.mask |= mask_extended;
@@ -426,12 +427,12 @@ void rename_file() {
 bool upload_file(const char *file_name, int directory_num, const char *description) {
   uploadsrec u, u1;
 
-  directoryrec d = session()->directories[directory_num];
+  directoryrec d = a()->directories[directory_num];
   char szTempFileName[255];
   strcpy(szTempFileName, file_name);
   align(szTempFileName);
   strcpy(u.filename, szTempFileName);
-  u.ownerusr = static_cast<uint16_t>(session()->usernum);
+  u.ownerusr = static_cast<uint16_t>(a()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;
@@ -458,7 +459,7 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     long lFileSize = fileUpload.GetLength();
     u.numbytes = lFileSize;
     fileUpload.Close();
-    const string unn = session()->names()->UserName(session()->usernum);
+    const string unn = a()->names()->UserName(a()->usernum);
     strcpy(u.upby, unn.c_str());
     strcpy(u.date, date());
     filedate(szFullPathName, u.actualdate);
@@ -484,16 +485,16 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
       return false;
     }
     get_file_idz(&u, directory_num);
-    session()->user()->SetFilesUploaded(session()->user()->GetFilesUploaded() + 1);
+    a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
     if (!(d.mask & mask_cdrom)) {
       modify_database(u.filename, true);
     }
-    session()->user()->SetUploadK(session()->user()->GetUploadK() + bytes_to_k(lFileSize));
+    a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(lFileSize));
     time_t tCurrentTime = time(nullptr);
     u.daten = static_cast<uint32_t>(tCurrentTime);
-    File fileDownload(session()->download_filename_);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    for (int i = session()->numf; i >= 1; i--) {
+    for (int i = a()->numf; i >= 1; i--) {
       FileAreaSetRecord(fileDownload, i);
       fileDownload.Read(&u1, sizeof(uploadsrec));
       FileAreaSetRecord(fileDownload, i + 1);
@@ -501,20 +502,20 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     }
     FileAreaSetRecord(fileDownload, 1);
     fileDownload.Write(&u, sizeof(uploadsrec));
-    ++session()->numf;
+    ++a()->numf;
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Read(&u1, sizeof(uploadsrec));
-    u1.numbytes = session()->numf;
+    u1.numbytes = a()->numf;
     u1.daten = static_cast<uint32_t>(tCurrentTime);
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u1, sizeof(uploadsrec));
     fileDownload.Close();
-    WStatus *pStatus = session()->status_manager()->BeginTransaction();
+    WStatus *pStatus = a()->status_manager()->BeginTransaction();
     pStatus->IncrementNumUploadsToday();
     pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-    session()->status_manager()->CommitTransaction(pStatus);
+    a()->status_manager()->CommitTransaction(pStatus);
     sysoplog() << "+ '" << u.filename << "' uploaded on " << d.name;
-    session()->UpdateTopScreen();
+    a()->UpdateTopScreen();
   }
   return true;
 }
@@ -531,7 +532,7 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
   int i = recno(s);
 
   if (i == -1) {
-    if (session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(file_name) && dcs())) {
+    if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(file_name) && dcs())) {
       bout.bprintf("|#2%-12s: ", file_name);
       bout << "|#5In filename database - add anyway? ";
       ch = ynq();
@@ -541,7 +542,7 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
         if (ch == *(YesNoString(false))) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            sprintf(s1, "%s%s", session()->directories[directory_num].path, file_name);
+            sprintf(s1, "%s%s", a()->directories[directory_num].path, file_name);
             File::Remove(s1);
             bout.nl();
             return true;
@@ -551,19 +552,19 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
         }
       }
     }
-    if (!upload_file(s, session()->udir[directory_num].subnum, description)) {
+    if (!upload_file(s, a()->udir[directory_num].subnum, description)) {
       ok = false;
     }
   } else {
-    File fileDownload(session()->download_filename_);
+    File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    int ocd = session()->current_user_dir_num();
-    session()->set_current_user_dir_num(directory_num);
+    int ocd = a()->current_user_dir_num();
+    a()->set_current_user_dir_num(directory_num);
     printinfo(&u, &abort);
-    session()->set_current_user_dir_num(ocd);
+    a()->set_current_user_dir_num(ocd);
     if (abort) {
       ok = false;
     }
@@ -588,12 +589,12 @@ void upload_files(const char *file_name, int directory_num, int type) {
   uploadsrec u;
 
   last_fn[0] = 0;
-  dliscan1(session()->udir[directory_num].subnum);
+  dliscan1(a()->udir[directory_num].subnum);
 
   TextFile file(file_name, "r");
   if (!file.IsOpen()) {
     char szDefaultFileName[MAX_PATH];
-    sprintf(szDefaultFileName, "%s%s", session()->directories[session()->udir[directory_num].subnum].path, file_name);
+    sprintf(szDefaultFileName, "%s%s", a()->directories[a()->udir[directory_num].subnum].path, file_name);
     file.Open(szDefaultFileName, "r");
   }
   if (!file.IsOpen()) {
@@ -640,7 +641,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
         }
         if (ok1) {
           if (last_fn[0] && ext && *ext) {
-            File fileDownload(session()->download_filename_);
+            File fileDownload(a()->download_filename_);
             fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
             FileAreaSetRecord(fileDownload, 1);
             fileDownload.Read(&u, sizeof(uploadsrec));
@@ -674,7 +675,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
     }
     file.Close();
     if (ok && last_fn[0] && ext && *ext) {
-      File fileDownload(session()->download_filename_);
+      File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
       FileAreaSetRecord(fileDownload, 1);
       fileDownload.Read(&u, sizeof(uploadsrec));
@@ -696,20 +697,20 @@ void upload_files(const char *file_name, int directory_num, int type) {
 
 // returns false on abort
 bool uploadall(int directory_num) {
-  dliscan1(session()->udir[directory_num].subnum);
+  dliscan1(a()->udir[directory_num].subnum);
 
   char szDefaultFileSpec[MAX_PATH];
   strcpy(szDefaultFileSpec, "*.*");
 
   char szPathName[MAX_PATH];
-  sprintf(szPathName, "%s%s", session()->directories[session()->udir[directory_num].subnum].path, szDefaultFileSpec);
-  int maxf = session()->directories[session()->udir[directory_num].subnum].maxfiles;
+  sprintf(szPathName, "%s%s", a()->directories[a()->udir[directory_num].subnum].path, szDefaultFileSpec);
+  int maxf = a()->directories[a()->udir[directory_num].subnum].maxfiles;
 
   WFindFile fnd;
   bool bFound = fnd.open(szPathName, 0);
   bool ok = true;
   bool abort = false;
-  while (bFound && !hangup && (session()->numf < maxf) && ok && !abort) {
+  while (bFound && !hangup && (a()->numf < maxf) && ok && !abort) {
     const char *pszCurrentFile = fnd.GetFileName();
     if (pszCurrentFile &&
         *pszCurrentFile &&
@@ -724,7 +725,7 @@ bool uploadall(int directory_num) {
     bout << "|#6Aborted.\r\n";
     ok = false;
   }
-  if (session()->numf >= maxf) {
+  if (a()->numf >= maxf) {
     bout << "directory full.\r\n";
   }
   return ok;
@@ -735,18 +736,18 @@ void relist() {
   bool next, abort = 0;
   int16_t tcd = -1;
 
-  if (session()->filelist.empty()) {
+  if (a()->filelist.empty()) {
     return;
   }
   bout.cls();
   bout.clear_lines_listed();
-  if (session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
+  if (a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
     bout.Color(FRAME_COLOR);
     bout << string(78, '-') << wwiv::endl;
   }
-  for (size_t i = 0; i < session()->filelist.size(); i++) {
-    auto& f = session()->filelist[i];
-    if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
+  for (size_t i = 0; i < a()->filelist.size(); i++) {
+    auto& f = a()->filelist[i];
+    if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
       if (tcd != f.directory) {
         bout.Color(FRAME_COLOR);
         if (tcd != -1) {
@@ -754,17 +755,17 @@ void relist() {
         }
         tcd = f.directory;
         int tcdi = -1;
-        for (size_t i1 = 0; i1 < session()->directories.size(); i1++) {
-          if (session()->udir[i1].subnum == tcd) {
+        for (size_t i1 = 0; i1 < a()->directories.size(); i1++) {
+          if (a()->udir[i1].subnum == tcd) {
             tcdi = i1;
             break;
           }
         }
         bout.Color(2);
         if (tcdi == -1) {
-          bout << session()->directories[tcd].name << "." << wwiv::endl;
+          bout << a()->directories[tcd].name << "." << wwiv::endl;
         } else {
-          bout << session()->directories[tcd].name << " - #" << session()->udir[tcdi].keys << ".\r\n";
+          bout << a()->directories[tcd].name << " - #" << a()->udir[tcdi].keys << ".\r\n";
         }
         bout.Color(FRAME_COLOR);
         bout << string(78, '-') << wwiv::endl;
@@ -790,9 +791,9 @@ void relist() {
     osan((okansi() ? "\xBA" : ":"), &abort, &next);
 
     sprintf(s1, "%ld""k", bytes_to_k(f.u.numbytes));
-    if (!session()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
-      if (!(session()->directories[tcd].mask & mask_cdrom)) {
-        sprintf(s2, "%s%s", session()->directories[tcd].path, f.u.filename);
+    if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
+      if (!(a()->directories[tcd].mask & mask_cdrom)) {
+        sprintf(s2, "%s%s", a()->directories[tcd].path, f.u.filename);
         StringRemoveWhitespace(s2);
         if (!File::Exists(s2)) {
           strcpy(s1, "N/A");
@@ -829,7 +830,7 @@ void relist() {
             0x03,
             (f.u.mask & mask_extended) ? 1 : 2,
       f.u.description);
-    plal(s, session()->user()->GetScreenChars() - 28, &abort);
+    plal(s, a()->user()->GetScreenChars() - 28, &abort);
   }
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
@@ -844,7 +845,7 @@ void edit_database()
   char ch, s[20];
   bool done = false;
 
-  if (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+  if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return;
   }
 
@@ -942,11 +943,11 @@ void modify_database(const char *file_name, bool add) {
   unsigned int nb;
   long l, l1, cp;
 
-  if (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+  if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return;
   }
 
-  File fileAllow(session()->config()->datadir(), ALLOW_DAT);
+  File fileAllow(a()->config()->datadir(), ALLOW_DAT);
   if (!fileAllow.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     return;
   }
@@ -1022,11 +1023,11 @@ void modify_database(const char *file_name, bool add) {
  */
 
 bool is_uploadable(const char *file_name) {
-  if (!session()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
+  if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return true;
   }
 
-  File fileAllow(session()->config()->datadir(), ALLOW_DAT);
+  File fileAllow(a()->config()->datadir(), ALLOW_DAT);
   if (!fileAllow.Open(File::modeBinary | File::modeReadOnly)) {
     return true;
   }
@@ -1041,14 +1042,14 @@ void l_config_nscan() {
   bool abort = false;
   bout.nl();
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
-  for (size_t i = 0; (i < session()->directories.size()) && (session()->udir[i].subnum != -1) && (!abort); i++) {
-    size_t i1 = session()->udir[i].subnum;
+  for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort); i++) {
+    size_t i1 = a()->udir[i].subnum;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       strcpy(s, "* ");
     } else {
       strcpy(s, "  ");
     }
-    sprintf(s2, "%s%s. %s", s, session()->udir[i].keys, session()->directories[i1].name);
+    sprintf(s2, "%s%s. %s", s, a()->udir[i].keys, a()->directories[i1].name);
     pla(s2, &abort);
   }
   bout.nl(2);
@@ -1067,11 +1068,11 @@ void config_nscan() {
   }                 // ZU - SCONFIG
 
   done = done1 = false;
-  oc = session()->GetCurrentConferenceFileArea();
-  os = session()->current_user_dir().subnum;
+  oc = a()->GetCurrentConferenceFileArea();
+  os = a()->current_user_dir().subnum;
 
   do {
-    if (okconf(session()->user()) && uconfdir[1].confnum != -1) {
+    if (okconf(a()->user()) && uconfdir[1].confnum != -1) {
       abort = false;
       strcpy(s1, " ");
       bout.nl();
@@ -1096,7 +1097,7 @@ void config_nscan() {
       done1 = true;
       break;
     default:
-      if (okconf(session()->user()) && dirconfnum > 1) {
+      if (okconf(a()->user()) && dirconfnum > 1) {
         size_t i = 0;
         while ((ch != dirconfs[uconfdir[i].confnum].designator) && (i < static_cast<size_t>(dirconfnum))) {
           i++;
@@ -1114,9 +1115,9 @@ void config_nscan() {
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
         s = mmkey(1);
         if (s[0]) {
-          for (size_t i = 0; i < session()->directories.size(); i++) {
-            i1 = session()->udir[i].subnum;
-            if (IsEquals(session()->udir[i].keys, s)) {
+          for (size_t i = 0; i < a()->directories.size(); i++) {
+            i1 = a()->udir[i].subnum;
+            if (IsEquals(a()->udir[i].keys, s)) {
               qsc_n[i1 / 32] ^= 1L << (i1 % 32);
             }
             if (IsEquals(s, "S")) {
@@ -1136,12 +1137,12 @@ void config_nscan() {
       } while (!done && !hangup);
       break;
     }
-    if (!okconf(session()->user()) || uconfdir[1].confnum == -1) {
+    if (!okconf(a()->user()) || uconfdir[1].confnum == -1) {
       done1 = true;
     }
   } while (!done1 && !hangup);
 
-  if (okconf(session()->user())) {
+  if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_DIRS, oc, os);
   }
 }
@@ -1157,9 +1158,9 @@ void xfer_defaults() {
     bout << "|#7[|#21|#7]|#1 Set New-Scan Directories.\r\n";
     bout << "|#7[|#22|#7]|#1 Set Default Protocol.\r\n";
     bout << "|#7[|#23|#7]|#1 New-Scan Transfer after Message Base (" <<
-                       YesNoString(session()->user()->IsNewScanFiles()) << ").\r\n";
+                       YesNoString(a()->user()->IsNewScanFiles()) << ").\r\n";
     bout << "|#7[|#24|#7]|#1 Number of lines of extended description to print [" <<
-                       session()->user()->GetNumExtended() << " line(s)].\r\n";
+                       a()->user()->GetNumExtended() << " line(s)].\r\n";
     const std::string onek_options = "Q12345";
     bout << "|#7[|#2Q|#7]|#1 Quit.\r\n\n";
     bout << "|#5Which? ";
@@ -1176,23 +1177,23 @@ void xfer_defaults() {
       bout << "|#9Enter your default protocol, |#20|#9 for none.\r\n\n";
       i = get_protocol(xf_down);
       if (i >= 0) {
-        session()->user()->SetDefaultProtocol(i);
+        a()->user()->SetDefaultProtocol(i);
       }
       break;
     case '3':
-      session()->user()->ToggleStatusFlag(User::nscanFileSystem);
+      a()->user()->ToggleStatusFlag(User::nscanFileSystem);
       break;
     case '4':
       bout.nl(2);
       bout << "|#9How many lines of an extended description\r\n";
-      bout << "|#9do you want to see when listing files (|#20-" << session()->max_extend_lines << "|#7)\r\n";
-      bout << "|#9Current # lines: |#2" << session()->user()->GetNumExtended() << wwiv::endl;
+      bout << "|#9do you want to see when listing files (|#20-" << a()->max_extend_lines << "|#7)\r\n";
+      bout << "|#9Current # lines: |#2" << a()->user()->GetNumExtended() << wwiv::endl;
       bout << "|#7: ";
       input(s, 3);
       if (s[0]) {
         i = atoi(s);
-        if ((i >= 0) && (i <= session()->max_extend_lines)) {
-          session()->user()->SetNumExtended(i);
+        if ((i >= 0) && (i <= a()->max_extend_lines)) {
+          a()->user()->SetNumExtended(i);
         }
       }
       break;
@@ -1212,7 +1213,7 @@ void finddescription() {
 
   bout.nl();
   bool ac = false;
-  if (uconfdir[1].confnum != -1 && okconf(session()->user())) {
+  if (uconfdir[1].confnum != -1 && okconf(a()->user())) {
     bout << "|#5All conferences? ";
     ac = yesno();
     if (ac) {
@@ -1226,22 +1227,22 @@ void finddescription() {
     tmp_disable_conf(false);
     return;
   }
-  int ocd = session()->current_user_dir_num();
+  int ocd = a()->current_user_dir_num();
   bool abort = false;
   count = 0;
   color = 3;
   bout << "\r|#2Searching ";
   bout.clear_lines_listed();
-  for (size_t i = 0; (i < session()->directories.size()) && !abort && !hangup
-       && (session()->udir[i].subnum != -1); i++) {
-    size_t i1 = session()->udir[i].subnum;
+  for (size_t i = 0; (i < a()->directories.size()) && !abort && !hangup
+       && (a()->udir[i].subnum != -1); i++) {
+    size_t i1 = a()->udir[i].subnum;
     pts = 0;
     bool need_title = true;
     if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       pts = 1;
     }
     pts = 1;
-    // remove pts=1 to search only marked session()->directories
+    // remove pts=1 to search only marked a()->directories
     if (pts && !abort) {
       count++;
       bout << static_cast<char>(3) << color << ".";
@@ -1256,11 +1257,11 @@ void finddescription() {
           color = 0;
         }
       }
-      session()->set_current_user_dir_num(i);
+      a()->set_current_user_dir_num(i);
       dliscan();
-      File fileDownload(session()->download_filename_);
+      File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
-      for (i1 = 1; i1 <= static_cast<size_t>(session()->numf) 
+      for (i1 = 1; i1 <= static_cast<size_t>(a()->numf) 
            && !abort && !hangup; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
@@ -1272,7 +1273,7 @@ void finddescription() {
           fileDownload.Close();
 
           if (need_title) {
-            if (bout.lines_listed() >= session()->screenlinest - 7 && !session()->filelist.empty()) {
+            if (bout.lines_listed() >= a()->screenlinest - 7 && !a()->filelist.empty()) {
               tag_files(need_title);
             }
             if (need_title) {
@@ -1293,7 +1294,7 @@ void finddescription() {
   if (ac) {
     tmp_disable_conf(false);
   }
-  session()->set_current_user_dir_num(ocd);
+  a()->set_current_user_dir_num(ocd);
   endlist(1);
 }
 
@@ -1317,12 +1318,12 @@ void arc_l() {
   int nRecordNum = recno(szFileSpec);
   do {
     if (nRecordNum > 0) {
-      File fileDownload(session()->download_filename_);
+      File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
       FileAreaSetRecord(fileDownload, nRecordNum);
       fileDownload.Read(&u, sizeof(uploadsrec));
       fileDownload.Close();
-      int i1 = list_arc_out(stripfn(u.filename), session()->directories[session()->current_user_dir().subnum].path);
+      int i1 = list_arc_out(stripfn(u.filename), a()->directories[a()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }

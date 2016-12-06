@@ -87,7 +87,7 @@ bool do_sysop_command(int nCommandID) {
       bout.cls();
     }
 
-    session()->handle_sysop_key(static_cast<uint8_t>(nKeyStroke));
+    a()->handle_sysop_key(static_cast<uint8_t>(nKeyStroke));
 
     if (bNeedToRedraw) {
       bout.cls();

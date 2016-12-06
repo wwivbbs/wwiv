@@ -48,7 +48,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void save_subs() {
-  session()->subs().Save();
+  a()->subs().Save();
 }
 
 static string GetAr(const subboard_t& r, const string& default_value) {
@@ -81,7 +81,7 @@ static void showsubs() {
   pla("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE", &abort);
   pla("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
   int subnum = 0;
-  for (const auto& r : session()->subs().subs()) {
+  for (const auto& r : a()->subs().subs()) {
     const string subdata = StrCat(r.name, " ", r.filename);
     if (strcasestr(subdata.c_str(), substring.c_str())) {
       const string line = boarddata(subnum, r);
@@ -114,14 +114,14 @@ static string GetAnon(const subboard_t& r) {
 }
 
 static void DisplayNetInfo(size_t nSubNum) {
-  if (session()->subs().sub(nSubNum).nets.empty()) {
+  if (a()->subs().sub(nSubNum).nets.empty()) {
     bout << "|#2Not networked.\r\n";
     return;
   }
 
   bout << "\r\n|#9      Network      Type                 Host    Scrb   Flags\r\n";
   int i = 0;
-  const auto& nets = session()->subs().sub(nSubNum).nets;
+  const auto& nets = a()->subs().sub(nSubNum).nets;
   for (auto it = nets.begin(); it != nets.end(); i++, it++) {
     char szBuffer[255], szBuffer2[255];
     if ((*it).host == 0) {
@@ -135,14 +135,14 @@ static void DisplayNetInfo(size_t nSubNum) {
       strcpy(szBuffer2, " Auto-Info");
     }
     if ((*it).host == 0) {
-      const auto dir = session()->net_networks[(*it).net_num].dir;
+      const auto dir = a()->net_networks[(*it).net_num].dir;
       const string net_file_name = StrCat(dir, "n", (*it).stype, ".net");
       std::set<uint16_t> subscribers;
       ReadSubcriberFile(dir, StrCat("n", (*it).stype, ".net"), subscribers);
       int num = size_int(subscribers);
       bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %-4d  %s%s\r\n",
                     i + 'a',
-                    session()->net_networks[(*it).net_num].name,
+                    a()->net_networks[(*it).net_num].name,
                     (*it).stype.c_str(),
                     szBuffer,
                     num,
@@ -151,7 +151,7 @@ static void DisplayNetInfo(size_t nSubNum) {
     } else {
       bout.bprintf("   |#9%c) |#2%-12.12s %-20.20s %-6.6s  %s%s\r\n",
                     i + 'a',
-                    session()->net_networks[(*it).net_num].name,
+                    a()->net_networks[(*it).net_num].name,
                     (*it).stype.c_str(),
                     szBuffer,
                     ((*it).flags & XTRA_NET_AUTO_ADDDROP) ? " Auto-Req" : "",
@@ -162,7 +162,7 @@ static void DisplayNetInfo(size_t nSubNum) {
 
 // returns the sub name using the file filename or empty string.
 static string subname_using(const string& filename) {
-  for (const auto& sub : session()->subs().subs()) {
+  for (const auto& sub : a()->subs().subs()) {
     if (IsEqualsIgnoreCase(filename.c_str(), sub.filename.c_str())) {
       return sub.name;
     }
@@ -170,7 +170,7 @@ static string subname_using(const string& filename) {
   return "";
 }
 static void modify_sub(int n) {
-  auto r = session()->subs().sub(n);
+  auto r = a()->subs().sub(n);
   bool done = false;
   do {
     bout.cls();
@@ -191,7 +191,7 @@ static void modify_sub(int n) {
     bout << "|#9L) Val network: |#2" << YesNoString((r.anony & anony_val_net) ? true : false) << wwiv::endl;
     bout << "|#9M) Req ANSI   : |#2" << YesNoString((r.anony & anony_ansi_only) ? true : false) << wwiv::endl;
     bout << "|#9N) Disable tag: |#2" << YesNoString((r.anony & anony_no_tag) ? true : false) << wwiv::endl;
-    bout << "|#9O) Description: |#2" << ((!session()->subs().sub(n).desc.empty()) ? session()->subs().sub(n).desc : "None.") << wwiv::endl;
+    bout << "|#9O) Description: |#2" << ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None.") << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
     char ch = onek("QABCDEFGHIJKLMNO[]", true);
@@ -201,18 +201,18 @@ static void modify_sub(int n) {
       done = true;
       break;
     case '[':
-      session()->subs().set_sub(n, r);
+      a()->subs().set_sub(n, r);
       if (--n < 0) {
-        n = size_int(session()->subs().subs()) - 1;
+        n = size_int(a()->subs().subs()) - 1;
       }
-      r = session()->subs().sub(n);
+      r = a()->subs().sub(n);
       break;
     case ']':
-      session()->subs().set_sub(n, r);
-      if (++n >= size_int(session()->subs().subs())) {
+      a()->subs().set_sub(n, r);
+      if (++n >= size_int(a()->subs().subs())) {
         n = 0;
       }
-      r = session()->subs().sub(n);
+      r = a()->subs().sub(n);
       break;
     case 'A': {
       bout << "|#2New name? ";
@@ -228,7 +228,7 @@ static void modify_sub(int n) {
       if (new_fn.empty() || contains(new_fn, '.')) {
         break;
       }
-      string new_sub_fullpath = StrCat(session()->config()->datadir(), new_fn, ".sub");
+      string new_sub_fullpath = StrCat(a()->config()->datadir(), new_fn, ".sub");
       if (File::Exists(new_sub_fullpath)) {
         // Find out which sub was using it.
         bout.nl();
@@ -248,9 +248,9 @@ static void modify_sub(int n) {
         break;
       }
 
-      string old_sub_fullpath = StrCat(session()->config()->datadir(), old_subname, ".sub");
-      string old_msg_fullpath = StrCat(session()->config()->msgsdir(), old_subname, ".dat");
-      string new_msg_fullpath = StrCat(session()->config()->msgsdir(), new_fn, ".dat");
+      string old_sub_fullpath = StrCat(a()->config()->datadir(), old_subname, ".sub");
+      string old_msg_fullpath = StrCat(a()->config()->msgsdir(), old_subname, ".dat");
+      string new_msg_fullpath = StrCat(a()->config()->msgsdir(), new_fn, ".dat");
 
       if (!File::Exists(new_sub_fullpath) && !File::Exists(new_msg_fullpath)
         && new_fn != "NONAME" && old_subname != "NONAME") {
@@ -339,7 +339,7 @@ static void modify_sub(int n) {
     }
     break;
     case 'J': {
-      session()->subs().set_sub(n, r);
+      a()->subs().set_sub(n, r);
       char ch2 = 'A';
       if (!r.nets.empty()) {
         bout.nl();
@@ -349,11 +349,11 @@ static void modify_sub(int n) {
 
       if (ch2 == 'A') {
         sub_xtr_add(n, -1);
-        if (session()->subs().sub(n).name == "** New WWIV Message Sub **") {
-          session()->subs().sub(n).name = session()->subs().sub(n).desc;
+        if (a()->subs().sub(n).name == "** New WWIV Message Sub **") {
+          a()->subs().sub(n).name = a()->subs().sub(n).desc;
         }
-        if (session()->subs().sub(n).filename == "NONAME") {
-          session()->subs().sub(n).filename = session()->subs().sub(n).nets[0].stype;
+        if (a()->subs().sub(n).filename == "NONAME") {
+          a()->subs().sub(n).filename = a()->subs().sub(n).nets[0].stype;
         }
       } else if (ch2 == 'D' || ch2 == 'M') {
         bout.nl();
@@ -362,17 +362,17 @@ static void modify_sub(int n) {
         } else {
           bout << "|#2Modify which (a-";
         }
-        bout << static_cast<char>('a' + session()->subs().sub(n).nets.size() - 1) 
+        bout << static_cast<char>('a' + a()->subs().sub(n).nets.size() - 1) 
              << "), <space>=Quit? ";
         string charstring;
-        for (size_t i = 0; i < session()->subs().sub(n).nets.size(); i++) {
+        for (size_t i = 0; i < a()->subs().sub(n).nets.size(); i++) {
           charstring.push_back(static_cast<char>('A' + i));
         }
         bout.Color(0);
         char ch3 = onek(charstring.c_str());
         if (ch3 != ' ') {
           int i = ch3 - 'A';
-          if (i >= 0 && i < size_int(session()->subs().sub(n).nets)) {
+          if (i >= 0 && i < size_int(a()->subs().sub(n).nets)) {
             if (ch2 == 'D') {
               sub_xtr_del(n, i, 1);
             } else {
@@ -382,7 +382,7 @@ static void modify_sub(int n) {
           }
         }
       }
-      r = session()->subs().sub(n);
+      r = a()->subs().sub(n);
     }
     break;
     case 'K': {
@@ -421,35 +421,35 @@ static void modify_sub(int n) {
     case 'O': {
       bout.nl();
       bout << "|#2Enter new Description : \r\n|#7:";
-      string description = Input1(session()->subs().sub(n).desc, 60, true, InputMode::MIXED);
+      string description = Input1(a()->subs().sub(n).desc, 60, true, InputMode::MIXED);
       if (!description.empty()) {
-        session()->subs().sub(n).desc = description;
+        a()->subs().sub(n).desc = description;
       } else {
         bout.nl();
         bout << "|#2Delete Description? ";
         if (yesno()) {
-          session()->subs().sub(n).desc[0] = 0;
+          a()->subs().sub(n).desc[0] = 0;
         }
       }
     }
     break;
     }
   } while (!done && !hangup);
-  session()->subs().set_sub(n, r);
+  a()->subs().set_sub(n, r);
 }
 
 static void swap_subs(int sub1, int sub2) {
   subconf_t sub1conv = (subconf_t) sub1;
   subconf_t sub2conv = (subconf_t) sub2;
 
-  if (sub1 < 0 || sub1 >= size_int(session()->subs().subs()) || sub2 < 0 || sub2 >= size_int(session()->subs().subs())) {
+  if (sub1 < 0 || sub1 >= size_int(a()->subs().subs()) || sub2 < 0 || sub2 >= size_int(a()->subs().subs())) {
     return;
   }
 
   update_conf(ConferenceType::CONF_SUBS, &sub1conv, &sub2conv, CONF_UPDATE_SWAP);
   sub1 = static_cast<int>(sub1conv);
   sub2 = static_cast<int>(sub2conv);
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(syscfg.qscn_len);
   for (int i = 1; i <= nNumUserRecords; i++) {
@@ -482,9 +482,9 @@ static void swap_subs(int sub1, int sub2) {
   }
   close_qscn();
 
-  subboard_t sbt = session()->subs().sub(sub1);
-  session()->subs().set_sub(sub1, session()->subs().sub(sub2));
-  session()->subs().set_sub(sub2, sbt);
+  subboard_t sbt = a()->subs().sub(sub1);
+  a()->subs().set_sub(sub1, a()->subs().sub(sub2));
+  a()->subs().set_sub(sub2, sbt);
 
   save_subs();
 }
@@ -494,7 +494,7 @@ static void insert_sub(int n) {
   uint32_t m1, m2, m3;
   subconf_t nconv = (subconf_t) n;
 
-  if (n < 0 || n > size_int(session()->subs().subs())) {
+  if (n < 0 || n > size_int(a()->subs().subs())) {
     return;
   }
 
@@ -515,9 +515,9 @@ static void insert_sub(int n) {
   r.storage_type = 2;
 
   // Insert new item.
-  session()->subs().insert(n, r);
+  a()->subs().insert(n, r);
 
-  int nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(syscfg.qscn_len);
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
@@ -535,12 +535,12 @@ static void insert_sub(int n) {
       (pTempQScan[0])++;
     }
 
-    for (i1 = size_int(session()->subs().subs()) - 1; i1 > n; i1--) {
+    for (i1 = size_int(a()->subs().subs()) - 1; i1 > n; i1--) {
       pTempQScan_p[i1] = pTempQScan_p[i1 - 1];
     }
     pTempQScan_p[n] = 0;
 
-    for (i2 = size_int(session()->subs().subs()) / 32; i2 > n / 32; i2--) {
+    for (i2 = size_int(a()->subs().subs()) / 32; i2 > n / 32; i2--) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] << 1) | (pTempQScan_q[i2 - 1] >> 31);
     }
     pTempQScan_q[i2] = m1 | (m2 & (pTempQScan_q[i2] << 1)) | (m3 & pTempQScan_q[i2]);
@@ -550,8 +550,8 @@ static void insert_sub(int n) {
   close_qscn();
   save_subs();
 
-  if (session()->GetCurrentReadMessageArea() >= n) {
-    session()->SetCurrentReadMessageArea(session()->GetCurrentReadMessageArea() + 1);
+  if (a()->GetCurrentReadMessageArea() >= n) {
+    a()->SetCurrentReadMessageArea(a()->GetCurrentReadMessageArea() + 1);
   }
 }
 
@@ -559,7 +559,7 @@ static void delete_sub(int n) {
   int i, i1, i2, nNumUserRecords;
   subconf_t nconv = static_cast<subconf_t>(n);
 
-  if (n < 0 || n >= size_int(session()->subs().subs())) {
+  if (n < 0 || n >= size_int(a()->subs().subs())) {
     return;
   }
 
@@ -567,11 +567,11 @@ static void delete_sub(int n) {
 
   n = static_cast<int>(nconv);
 
-  while (size_int(session()->subs().subs()) > n && !session()->subs().sub(n).nets.empty()) {
+  while (size_int(a()->subs().subs()) > n && !a()->subs().sub(n).nets.empty()) {
     sub_xtr_del(n, 0, 1);
   }
-  session()->subs().erase(n);
-  nNumUserRecords = session()->users()->GetNumberOfUserRecords();
+  a()->subs().erase(n);
+  nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(syscfg.qscn_len+1);
@@ -592,14 +592,14 @@ static void delete_sub(int n) {
         pTempQScan[0]--;
       }
     }
-    for (i1 = n; i1 < size_int(session()->subs().subs()); i1++) {
+    for (i1 = n; i1 < size_int(a()->subs().subs()); i1++) {
       pTempQScan_p[i1] = pTempQScan_p[i1 + 1];
     }
 
     pTempQScan_q[n / 32] = (pTempQScan_q[n / 32] & m3) | ((pTempQScan_q[n / 32] >> 1) & m2) |
                             (pTempQScan_q[(n / 32) + 1] << 31);
 
-    for (i2 = (n / 32) + 1; i2 <= (size_int(session()->subs().subs()) / 32); i2++) {
+    for (i2 = (n / 32) + 1; i2 <= (size_int(a()->subs().subs()) / 32); i2++) {
       pTempQScan_q[i2] = (pTempQScan_q[i2] >> 1) | (pTempQScan_q[i2 + 1] << 31);
     }
 
@@ -608,10 +608,10 @@ static void delete_sub(int n) {
   close_qscn();
   save_subs();
 
-  if (session()->GetCurrentReadMessageArea() == n) {
-    session()->SetCurrentReadMessageArea(-1);
-  } else if (session()->GetCurrentReadMessageArea() > n) {
-    session()->SetCurrentReadMessageArea(session()->GetCurrentReadMessageArea() - 1);
+  if (a()->GetCurrentReadMessageArea() == n) {
+    a()->SetCurrentReadMessageArea(-1);
+  } else if (a()->GetCurrentReadMessageArea() > n) {
+    a()->SetCurrentReadMessageArea(a()->GetCurrentReadMessageArea() - 1);
   }
 }
 
@@ -624,7 +624,7 @@ void boardedit() {
   }
   showsubs();
   bool done = false;
-  session()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->RefreshStatusCache();
   do {
     bout.nl();
     bout << "|#7(Q=Quit) (D)elete, (I)nsert, (M)odify, (S)wapSubs : ";
@@ -640,23 +640,23 @@ void boardedit() {
     {
       bout.nl();
       bout << "|#2Sub number? ";
-      int subnum = input_number(-1, 0, size_int(session()->subs().subs()) - 1, false);
+      int subnum = input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         modify_sub(subnum);
       }
     } break;
     case 'S':
     {
-      if (session()->subs().subs().size() < syscfg.max_subs) {
+      if (a()->subs().subs().size() < syscfg.max_subs) {
         bout.nl();
         bout << "|#2Take sub number? ";
-        int subnum1 = input_number(-1, 0, size_int(session()->subs().subs()) - 1, false);
+        int subnum1 = input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
         if (subnum1 <= 0) {
           break;
         }
         bout.nl();
         bout << "|#2And move before sub number? ";
-        int subnum2 = input_number(-1, 1, size_int(session()->subs().subs()) - 1, false);
+        int subnum2 = input_number(-1, 1, size_int(a()->subs().subs()) - 1, false);
         if (subnum2 <= 0) {
           break;
         }
@@ -664,7 +664,7 @@ void boardedit() {
         if (subnum2 < subnum1) {
           subnum1++;
         }
-        write_qscn(session()->usernum, qsc, true);
+        write_qscn(a()->usernum, qsc, true);
         bout << "|#1Moving sub now...Please wait...";
         insert_sub(subnum2);
         swap_subs(subnum1, subnum2);
@@ -677,7 +677,7 @@ void boardedit() {
     } break;
     case 'I':
     {
-      if (session()->subs().subs().size() >= syscfg.max_subs) {
+      if (a()->subs().subs().size() >= syscfg.max_subs) {
         break;
       }
       bout.nl();
@@ -685,11 +685,11 @@ void boardedit() {
       string s = input(4);
       int subnum = 0;
       if (s[0] == '$') {
-        subnum = size_int(session()->subs().subs());
+        subnum = size_int(a()->subs().subs());
       } else {
         subnum = StringToInt(s);
       }
-      if (!s.empty() && subnum >= 0 && subnum <= size_int(session()->subs().subs())) {
+      if (!s.empty() && subnum >= 0 && subnum <= size_int(a()->subs().subs())) {
         insert_sub(subnum);
         modify_sub(subnum);
         confchg = true;
@@ -717,19 +717,19 @@ void boardedit() {
     {
       bout.nl();
       bout << "|#2Delete which sub? ";
-      int subnum = input_number(-1, 1, size_int(session()->subs().subs()) - 1, false);
+      int subnum = input_number(-1, 1, size_int(a()->subs().subs()) - 1, false);
       if (subnum >= 0) {
         bout.nl();
-        bout << "|#5Delete " << session()->subs().sub(subnum).name << "? ";
+        bout << "|#5Delete " << a()->subs().sub(subnum).name << "? ";
         if (yesno()) {
-          auto fn = session()->subs().sub(subnum).filename;
+          auto fn = a()->subs().sub(subnum).filename;
           delete_sub(subnum);
           confchg = true;
           bout.nl();
           bout << "|#5Delete data files (including messages) for sub also? ";
           if (yesno()) {
-            File::Remove(StrCat(session()->config()->datadir(), fn, ".sub"));
-            File::Remove(StrCat(session()->config()->msgsdir(), fn, ".dat"));
+            File::Remove(StrCat(a()->config()->datadir(), fn, ".sub"));
+            File::Remove(StrCat(a()->config()->msgsdir(), fn, ".dat"));
           }
         }
       }
@@ -737,10 +737,10 @@ void boardedit() {
     }
   } while (!done && !hangup);
   save_subs();
-  if (!session()->at_wfc()) {
+  if (!a()->at_wfc()) {
     changedsl();
   }
-  session()->subchg = 1;
+  a()->subchg = 1;
   if (confchg) {
     save_confs(ConferenceType::CONF_SUBS, -1, nullptr);
   }

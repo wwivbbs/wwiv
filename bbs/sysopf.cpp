@@ -66,14 +66,14 @@ using namespace wwiv::strings;
 using namespace wwiv::sdk::msgapi;
 
 void prstatus() {
-  session()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->RefreshStatusCache();
   bout.cls();
   if (syscfg.newuserpw[0] != '\0') {
     bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
   }
   bout << "|#9Board is        : " << (syscfg.closedsystem ? "Closed" : "Open") << wwiv::endl;
 
-  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
   bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
   bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
   bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
@@ -89,7 +89,7 @@ void prstatus() {
 
   User sysop{};
   int feedback_waiting = 0;
-  if (session()->users()->ReadUserNoCache(&sysop, 1)) {
+  if (a()->users()->ReadUserNoCache(&sysop, 1)) {
     feedback_waiting = sysop.GetNumMailWaiting();
   }
   bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;
@@ -105,10 +105,10 @@ void valuser(int user_number) {
   char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];
 
   User user;
-  session()->users()->ReadUser(&user, user_number);
+  a()->users()->ReadUser(&user, user_number);
   if (!user.IsUserDeleted()) {
     bout.nl();
-    const string unn = session()->names()->UserName(user_number);
+    const string unn = a()->names()->UserName(user_number);
     bout << "|#9Name: |#2" << unn << wwiv::endl;
     bout << "|#9RN  : |#2" << user.GetRealName() << wwiv::endl;
     bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
@@ -118,12 +118,12 @@ void valuser(int user_number) {
       bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
     }
     bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
-    if (user.GetSl() != 255 && user.GetSl() < session()->GetEffectiveSl()) {
+    if (user.GetSl() != 255 && user.GetSl() < a()->GetEffectiveSl()) {
       bout << "|#9New : ";
       input(s, 3, true);
       if (s[0]) {
         int nSl = StringToUnsignedInt(s);
-        if (!session()->at_wfc() && nSl >= static_cast<int>(session()->GetEffectiveSl())) {
+        if (!a()->at_wfc() && nSl >= static_cast<int>(a()->GetEffectiveSl())) {
           nSl = -2;
         }
         if (nSl >= 0 && nSl < 255) {
@@ -146,12 +146,12 @@ void valuser(int user_number) {
     }
     bout.nl();
     bout << "|#9DSL : |#2" << user.GetDsl() << wwiv::endl;
-    if (user.GetDsl() != 255 && user.GetDsl() < session()->user()->GetDsl()) {
+    if (user.GetDsl() != 255 && user.GetDsl() < a()->user()->GetDsl()) {
       bout << "|#9New ? ";
       input(s, 3, true);
       if (s[0]) {
         int nDsl = StringToUnsignedInt(s);
-        if (!session()->at_wfc() && nDsl >= static_cast<int>(session()->user()->GetDsl())) {
+        if (!a()->at_wfc() && nDsl >= static_cast<int>(a()->user()->GetDsl())) {
           nDsl = -1;
         }
         if (nDsl >= 0 && nDsl < 255) {
@@ -170,7 +170,7 @@ void valuser(int user_number) {
       } else {
         s[i] = SPACE;
       }
-      if (session()->user()->HasArFlag(1 << i)) {
+      if (a()->user()->HasArFlag(1 << i)) {
         ar1[ar2++] = static_cast<char>('A' + i);
       }
       if (user.HasDarFlag(1 << i)) {
@@ -178,7 +178,7 @@ void valuser(int user_number) {
       } else {
         s1[i] = SPACE;
       }
-      if (session()->user()->HasDarFlag(1 << i)) {
+      if (a()->user()->HasDarFlag(1 << i)) {
         dar1[dar2++] = static_cast<char>('A' + i);
       }
       if (user.HasRestrictionFlag(1 << i)) {
@@ -262,7 +262,7 @@ void valuser(int user_number) {
         printfile(SRESTRCT_NOEXT);
       }
     } while (!hangup && ch1 == 0);
-    session()->users()->WriteUser(&user, user_number);
+    a()->users()->WriteUser(&user, user_number);
     bout.nl();
   } else {
     bout << "\r\n|#6No Such User.\r\n\n";
@@ -291,30 +291,30 @@ void print_net_listing(bool bForcePause) {
   char s[255], s1[101], s2[101], bbstype;
   bool bHadPause = false;
 
-  session()->status_manager()->RefreshStatusCache();
+  a()->status_manager()->RefreshStatusCache();
 
-  if (!session()->max_net_num()) {
+  if (!a()->max_net_num()) {
     return;
   }
 
   write_inst(INST_LOC_NETLIST, 0, INST_FLAGS_NONE);
 
   if (bForcePause) {
-    bHadPause  = session()->user()->HasPause();
+    bHadPause  = a()->user()->HasPause();
     if (bHadPause) {
-      session()->user()->ToggleStatusFlag(User::pauseOnPage);
+      a()->user()->ToggleStatusFlag(User::pauseOnPage);
     }
   }
   bool done = false;
   while (!done && !hangup) {
     bout.cls();
-    if (session()->max_net_num() > 1) {
+    if (a()->max_net_num() > 1) {
       std::set<char> odc;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
       bout.nl();
-      for (i = 0; i < session()->max_net_num(); i++) {
+      for (i = 0; i < a()->max_net_num(); i++) {
         if (i < 9) {
           onx[onxi++] = static_cast<char>(i + '1');
           onx[onxi] = 0;
@@ -322,11 +322,11 @@ void print_net_listing(bool bForcePause) {
           int odci = (i + 1) / 10;
           odc.insert(static_cast<char>(odci + '0'));
         }
-        bout << "|#2" << i + 1 << "|#9)|#1 " << session()->net_networks[i].name << wwiv::endl;
+        bout << "|#2" << i + 1 << "|#9)|#1 " << a()->net_networks[i].name << wwiv::endl;
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
-      if (session()->max_net_num() < 9) {
+      if (a()->max_net_num() < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
           done = true;
@@ -346,7 +346,7 @@ void print_net_listing(bool bForcePause) {
         break;
       }
 
-      if ((i < 0) || (i > session()->max_net_num())) {
+      if ((i < 0) || (i > a()->max_net_num())) {
         continue;
       }
     } else {
@@ -369,7 +369,7 @@ void print_net_listing(bool bForcePause) {
 
       bout.cls();
       bout.nl();
-      bout << "|#9Network|#2: |#1" << session()->network_name() << wwiv::endl;
+      bout << "|#9Network|#2: |#1" << a()->network_name() << wwiv::endl;
       bout.nl();
 
       bout << "|#21|#9) = |#1List All\r\n";
@@ -389,7 +389,7 @@ void print_net_listing(bool bForcePause) {
 
       switch (cmd) {
       case 'Q':
-        if (session()->max_net_num() < 2) {
+        if (a()->max_net_num() < 2) {
           done = true;
         }
         done1 = true;
@@ -482,9 +482,9 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      BbsListNet bbslist = BbsListNet::ReadBbsDataNet(session()->current_net().dir);
+      BbsListNet bbslist = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
       if (bbslist.empty()) {
-        bout << "|#6Error opening BBSDATA.NET in " << session()->current_net().dir << wwiv::endl;
+        bout << "|#6Error opening BBSDATA.NET in " << a()->current_net().dir << wwiv::endl;
         pausescr();
         continue;
       }
@@ -616,12 +616,12 @@ void print_net_listing(bool bForcePause) {
     }
   }
   if (bForcePause && bHadPause) {
-    session()->user()->ToggleStatusFlag(User::pauseOnPage);
+    a()->user()->ToggleStatusFlag(User::pauseOnPage);
   }
 }
 
 void read_new_stuff() {
-  set_language_1(session()->language_number());
+  set_language_1(a()->language_number());
 }
 
 
@@ -640,13 +640,13 @@ void mailr() {
         pFileEmail->Close();
         do {
           User user;
-          session()->users()->ReadUser(&user, m.touser);
-          const string unn = session()->names()->UserName(m.touser);
-          bout << "|#9  To|#7: |#" << session()->GetMessageColor() << unn << wwiv::endl;
+          a()->users()->ReadUser(&user, m.touser);
+          const string unn = a()->names()->UserName(m.touser);
+          bout << "|#9  To|#7: |#" << a()->GetMessageColor() << unn << wwiv::endl;
           set_net_num(network_number_from(&m));
-          bout << "|#9Subj|#7: |#" << session()->GetMessageColor() << m.title << wwiv::endl;
+          bout << "|#9Subj|#7: |#" << a()->GetMessageColor() << m.title << wwiv::endl;
           if (m.status & status_file) {
-            File attachDat(session()->config()->datadir(), ATTACH_DAT);
+            File attachDat(a()->config()->datadir(), ATTACH_DAT);
             if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
               bool found = false;
               auto lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
@@ -684,7 +684,7 @@ void mailr() {
               delmail(pFileEmail.get(), nRecordNumber);
               bool found = false;
               if (m.status & status_file) {
-                File attachFile(session()->config()->datadir(), ATTACH_DAT);
+                File attachFile(a()->config()->datadir(), ATTACH_DAT);
                 if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                   auto lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
                   while (lAttachFileSize > 0 && !found) {
@@ -693,7 +693,7 @@ void mailr() {
                       fsr.id = 0;
                       attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                       attachFile.Write(&fsr, sizeof(filestatusrec));
-                      File::Remove(session()->GetAttachmentDirectory().c_str(), fsr.filename);
+                      File::Remove(a()->GetAttachmentDirectory().c_str(), fsr.filename);
                     } else {
                       attachFile.Read(&fsr, sizeof(filestatusrec));
                     }
@@ -705,8 +705,8 @@ void mailr() {
               bout << "Mail file changed; try again.\r\n";
             }
             pFileEmail->Close();
-            if (!session()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
-              session()->user()->SetNumMailWaiting(session()->user()->GetNumMailWaiting() - 1);
+            if (!a()->IsUserOnline() && m.touser == 1 && m.tosys == 0) {
+              a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
             }
           }
           bout.nl(2);
@@ -732,23 +732,23 @@ void chuser() {
   std::string userName = input(30, true);
   int user_number = finduser1(userName);
   if (user_number > 0) {
-    session()->WriteCurrentUser();
-    write_qscn(session()->usernum, qsc, false);
-    session()->ReadCurrentUser(user_number);
+    a()->WriteCurrentUser();
+    write_qscn(a()->usernum, qsc, false);
+    a()->ReadCurrentUser(user_number);
     read_qscn(user_number, qsc, false);
-    session()->usernum = static_cast<uint16_t>(user_number);
-    session()->SetEffectiveSl(255);
-    const string unn = session()->names()->UserName(session()->usernum);
+    a()->usernum = static_cast<uint16_t>(user_number);
+    a()->SetEffectiveSl(255);
+    const string unn = a()->names()->UserName(a()->usernum);
     sysoplog() << StringPrintf("#*#*#* Changed to %s", unn.c_str());
     changedsl();
-    session()->UpdateTopScreen();
+    a()->UpdateTopScreen();
   } else {
     bout << "|#6Unknown user.\r\n";
   }
 }
 
 void zlog() {
-  File file(session()->config()->datadir(), ZLOG_DAT);
+  File file(a()->config()->datadir(), ZLOG_DAT);
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -788,15 +788,15 @@ void zlog() {
 
 
 void set_user_age() {
-  std::unique_ptr<WStatus> pStatus(session()->status_manager()->GetStatus());
+  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
   int user_number = 1;
   do {
     User user;
-    session()->users()->ReadUser(&user, user_number);
+    a()->users()->ReadUser(&user, user_number);
     unsigned int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
     if (nAge != user.GetAge()) {
       user.SetAge(nAge);
-      session()->users()->WriteUser(&user, user_number);
+      a()->users()->WriteUser(&user, user_number);
     }
     ++user_number;
   } while (user_number <= pStatus->GetNumUsers());
@@ -807,7 +807,7 @@ void auto_purge() {
   unsigned int days = 0;
   unsigned int skipsl = 0;
 
-  IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
+  IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
     days = ini.value<unsigned int>("AUTO_USER_PURGE");
     skipsl = ini.value<int>("NO_PURGE_SL");
@@ -828,7 +828,7 @@ void auto_purge() {
 
   do {
     User user;
-    session()->users()->ReadUser(&user, user_number);
+    a()->users()->ReadUser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
       unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
@@ -839,22 +839,22 @@ void auto_purge() {
       }
     }
     ++user_number;
-  } while (user_number <= session()->status_manager()->GetUserCount());
+  } while (user_number <= a()->status_manager()->GetUserCount());
 }
 
 
 void beginday(bool displayStatus) {
-  if ((session()->GetBeginDayNodeNumber() > 0)
-      && (session()->instance_number() != session()->GetBeginDayNodeNumber())) {
+  if ((a()->GetBeginDayNodeNumber() > 0)
+      && (a()->instance_number() != a()->GetBeginDayNodeNumber())) {
     // If BEGINDAYNODENUMBER is > 0 or defined in WWIV.INI only handle beginday events on that node number
-    session()->status_manager()->RefreshStatusCache();
+    a()->status_manager()->RefreshStatusCache();
     return;
   }
-  WStatus *pStatus = session()->status_manager()->BeginTransaction();
+  WStatus *pStatus = a()->status_manager()->BeginTransaction();
   pStatus->ValidateAndFixDates();
 
   if (wwiv::strings::IsEquals(date(), pStatus->GetLastDate())) {
-    session()->status_manager()->CommitTransaction(pStatus);
+    a()->status_manager()->CommitTransaction(pStatus);
     return;
   }
   if (displayStatus) {
@@ -875,12 +875,12 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
-  File::Remove(session()->config()->gfilesdir(), pStatus->GetLogFileName(2));
+  File::Remove(a()->config()->gfilesdir(), pStatus->GetLogFileName(2));
 
   if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
   }
-  File fileZLog(session()->config()->datadir(), ZLOG_DAT);
+  File fileZLog(a()->config()->datadir(), ZLOG_DAT);
   zlogrec z1;
   if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
     fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
@@ -911,12 +911,12 @@ void beginday(bool displayStatus) {
   }
   int nus = syscfg.maxusers - pStatus->GetNumUsers();
 
-  session()->status_manager()->CommitTransaction(pStatus);
+  a()->status_manager()->CommitTransaction(pStatus);
   if (displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }
 
-  long fk = File::GetFreeSpaceForPath(session()->config()->datadir());
+  long fk = File::GetFreeSpaceForPath(a()->config()->datadir());
 
   if (fk < 512) {
     ssm(1, 0) << "Only " << fk << "k free in data directory.";
@@ -926,7 +926,7 @@ void beginday(bool displayStatus) {
   }
   if (!syscfg.beginday_cmd.empty()) {
     const std::string commandLine = stuff_in(syscfg.beginday_cmd, create_chain_file(), "", "", "", "");
-    ExecuteExternalProgram(commandLine, session()->GetSpawnOptions(SPAWNOPT_BEGINDAY));
+    ExecuteExternalProgram(commandLine, a()->GetSpawnOptions(SPAWNOPT_BEGINDAY));
   }
   if (displayStatus) {
     bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";

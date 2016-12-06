@@ -217,7 +217,7 @@ int CursesLocalIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted
   return nNumWritten;
 }
 
-void CursesLocalIO::set_protect(WSession* session, int l) {
+void CursesLocalIO::set_protect(Application* session, int l) {
   SetTopLine(l);
   if (!session->using_modem) {
     session->screenlinest = defscreenbottom + 1 - GetTopLine();
@@ -565,7 +565,7 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   GotoXY(xx, yy);
 }
 
-void CursesLocalIO::UpdateNativeTitleBar(WSession* session) {
+void CursesLocalIO::UpdateNativeTitleBar(Application* session) {
 #ifdef _WIN32
 	// Set console title
 	std::stringstream consoleTitleStream;

@@ -73,12 +73,12 @@ void tmp_disable_conf(bool disable) {
 
   if (disable) {
     disable_conf_cnt++;
-    if (okconf(session()->user())) {
+    if (okconf(a()->user())) {
       g_flags |= g_flag_disable_conf;
-      ocs = session()->GetCurrentConferenceMessageArea();
-      oss = session()->current_user_sub().subnum;
-      ocd = session()->GetCurrentConferenceFileArea();
-      osd = session()->current_user_dir().subnum;
+      ocs = a()->GetCurrentConferenceMessageArea();
+      oss = a()->current_user_sub().subnum;
+      ocd = a()->GetCurrentConferenceFileArea();
+      osd = a()->current_user_dir().subnum;
       setuconf(ConferenceType::CONF_SUBS, -1, oss);
       setuconf(ConferenceType::CONF_DIRS, -1, osd);
     }
@@ -113,7 +113,7 @@ int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
       sprintf(file_name, "%s%s", syscfg.datadir, SUBS_CNF);
     }
     if (num_s) {
-      *num_s = session()->subs().subs().size();
+      *num_s = a()->subs().subs().size();
     }
     if (uc) {
       *uc = uconfsub;
@@ -130,7 +130,7 @@ int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
       sprintf(file_name, "%s%s", syscfg.datadir, DIRS_CNF);
     }
     if (num_s) {
-      *num_s = session()->directories.size();
+      *num_s = a()->directories.size();
     }
     if (uc) {
       *uc = uconfdir;
@@ -395,11 +395,11 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
     switch (conftype) {
     case ConferenceType::CONF_SUBS:
       sprintf(s, "|#1%3d |#2%-39.39s |#7%4.4s %s", i, 
-        stripcolors(session()->subs().sub(i).name.c_str()),
+        stripcolors(a()->subs().sub(i).name.c_str()),
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     case ConferenceType::CONF_DIRS:
-      sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(session()->directories[i].name),
+      sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(a()->directories[i].name),
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     }
@@ -1034,7 +1034,7 @@ void conf_edit(ConferenceType conftype) {
       break;
     }
   } while (!done && !hangup);
-  if (!session()->at_wfc()) {
+  if (!a()->at_wfc()) {
     changedsl();
   }
 }
@@ -1070,7 +1070,7 @@ void list_confs(ConferenceType conftype, int ssc) {
     strcat(s, s1);
     bout.Color(7);
     pla(s, &abort);
-    if (session()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
+    if (a()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
       if ((cp[i].num > 0) && (cp[i].subs != nullptr) && (ssc)) {
         for (i2 = 0; ((i2 < cp[i].num) && !abort); i2++) {
           if (cp[i].subs[i2] < num_s) {
@@ -1081,11 +1081,11 @@ void list_confs(ConferenceType conftype, int ssc) {
             switch (conftype) {
             case ConferenceType::CONF_SUBS:
               sprintf(s1, "%s%-3d : %s", "Sub #", subconfs[i].subs[i2],
-                      stripcolors(session()->subs().sub(cp[i].subs[i2]).name.c_str()));
+                      stripcolors(a()->subs().sub(cp[i].subs[i2]).name.c_str()));
               break;
             case ConferenceType::CONF_DIRS:
               sprintf(s1, "%s%-3d : %s", "Dir #", dirconfs[i].subs[i2],
-                      stripcolors(session()->directories[cp[i].subs[i2]].name));
+                      stripcolors(a()->directories[cp[i].subs[i2]].name));
               break;
             }
             strcat(s, s1);
@@ -1381,13 +1381,13 @@ void read_in_conferences(ConferenceType conftype) {
   if (!File::Exists(s)) {
     if (!create_conf_file(conftype)) {
       LOG(FATAL) << "Problem creating conferences.";
-      session()->AbortBBS();
+      a()->AbortBBS();
     }
   }
   *cpp = read_conferences(s, np, max);
   if (!(*cpp)) {
     LOG(FATAL) << "Problem reading conferences.";
-    session()->AbortBBS();
+    a()->AbortBBS();
   }
 }
 

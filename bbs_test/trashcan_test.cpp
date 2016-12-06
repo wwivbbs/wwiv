@@ -44,7 +44,7 @@ public:
 };
 
 TEST_F(TrashcanTest, SimpleCase) {
-    Trashcan t(*session()->config());
+    Trashcan t(*a()->config());
     EXPECT_TRUE(t.IsTrashName("all"));
     EXPECT_FALSE(t.IsTrashName("al"));
     EXPECT_FALSE(t.IsTrashName("a"));

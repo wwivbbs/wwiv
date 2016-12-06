@@ -48,14 +48,14 @@ int doIO( ZModem *info );
 #endif
 
 static void ProcessLocalKeyDuringZmodem() {
-  if (!session()->localIO()->KeyPressed()) {
+  if (!a()->localIO()->KeyPressed()) {
     return;
   }
-  char localChar = session()->localIO()->GetChar();
+  char localChar = a()->localIO()->GetChar();
   bout.SetLastKeyLocal(true);
   if (!(g_flags & g_flag_allow_extended)) {
     if (!localChar) {
-      session()->handle_sysop_key(session()->localIO()->GetChar());
+      a()->handle_sysop_key(a()->localIO()->GetChar());
     }
   }
 }
@@ -142,7 +142,7 @@ bool NewZModemReceiveFile( const char *file_name ) {
 		strcpy( szNewFileName, file_name );
 		StringRemoveWhitespace( szNewFileName );
 
-		sprintf(szOldFileName, "%s%s", session()->temp_directory().c_str(), stripfn(file_name));
+		sprintf(szOldFileName, "%s%s", a()->temp_directory().c_str(), stripfn(file_name));
 		StringRemoveWhitespace(szOldFileName);
 		movefile( szOldFileName, szNewFileName, false );
 	}
@@ -162,10 +162,10 @@ int ZModemWindowStatus(const char *fmt,...) {
 	va_start( ap, fmt );
 	vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
 	va_end( ap );
-	int oldX = session()->localIO()->WhereX();
-	int oldY = session()->localIO()->WhereY();
-	session()->localIO()->PrintfXY( 1, 10, "%s                           ", szBuffer );
-	session()->localIO()->GotoXY( oldX, oldY );
+	int oldX = a()->localIO()->WhereX();
+	int oldY = a()->localIO()->WhereY();
+	a()->localIO()->PrintfXY( 1, 10, "%s                           ", szBuffer );
+	a()->localIO()->GotoXY( oldX, oldY );
 	return 0;
 }
 
@@ -181,10 +181,10 @@ int ZModemWindowXferStatus(const char *fmt,...) {
 	va_start( ap, fmt );
 	vsnprintf( szBuffer, sizeof( szBuffer ), fmt, ap );
 	va_end( ap );
-	int oldX = session()->localIO()->WhereX();
-	int oldY = session()->localIO()->WhereY();
-	session()->localIO()->PrintfXY( 1, 1, "%s                           ", szBuffer );
-	session()->localIO()->GotoXY( oldX, oldY );
+	int oldX = a()->localIO()->WhereX();
+	int oldY = a()->localIO()->WhereY();
+	a()->localIO()->PrintfXY( 1, 1, "%s                           ", szBuffer );
+	a()->localIO()->GotoXY( oldX, oldY );
 	return 0;
 }
 
@@ -211,7 +211,7 @@ int doIO( ZModem *info ) {
 #endif
 		// Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
 		// performance < 1k/second vs. 8-9k/second locally
-		while ( ( info->timeout > 0 ) && !session()->remoteIO()->incoming() && !hangup ) {
+		while ( ( info->timeout > 0 ) && !a()->remoteIO()->incoming() && !hangup ) {
 			sleep_for(milliseconds(100));
 			time_t tNow = time( nullptr );
 			if ( ( tNow - tThen ) > info->timeout ) {
@@ -235,12 +235,12 @@ int doIO( ZModem *info ) {
 			//%%TODO: signal parent we aborted.
 			return 1;
 		}
-		bool bIncomming = session()->remoteIO()->incoming();
+		bool bIncomming = a()->remoteIO()->incoming();
 		if( !bIncomming ) {
 			done = ZmodemTimeout(info);
 			//puts( "ZmodemTimeout\r\n" );
 		} else {
-			int len = session()->remoteIO()->read( reinterpret_cast<char*>( buffer ), ZMODEM_RECEIVE_BUFFER_SIZE );
+			int len = a()->remoteIO()->read( reinterpret_cast<char*>( buffer ), ZMODEM_RECEIVE_BUFFER_SIZE );
 			done = ZmodemRcv( buffer, len, info );
 #if defined(_DEBUG)
 			zmodemlog( "ZmodemRcv [%d chars] [done:%d]\r\n", len, done );
@@ -256,7 +256,7 @@ int ZXmitStr(u_char *str, int len, ZModem *info) {
 #if defined(_DEBUG)
 	zmodemlog( "ZXmitStr Size=[%d]\r\n", len );
 #endif
-	session()->remoteIO()->write( reinterpret_cast<const char*>( str ),  len );
+	a()->remoteIO()->write( reinterpret_cast<const char*>( str ),  len );
 	return 0;
 }
 
@@ -366,7 +366,7 @@ void ZStatus(int type, int value, char *msg) {
 
 FILE * ZOpenFile(char *file_name, u_long crc, ZModem *info) {
 	char szTempFileName[MAX_PATH];
-	sprintf( szTempFileName, "%s%s", session()->temp_directory().c_str(), file_name );
+	sprintf( szTempFileName, "%s%s", a()->temp_directory().c_str(), file_name );
 #if defined(_DEBUG)
 	zmodemlog( "ZOpenFile filename=%s %s\r\n", file_name, szTempFileName );
 #endif
