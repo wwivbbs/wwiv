@@ -273,7 +273,7 @@ void quicksort(int l, int r, int type) {
         FileAreaSetRecord(fileDownload, i);
         fileDownload.Write(&a2, sizeof(uploadsrec));
         FileAreaSetRecord(fileDownload, j);
-        fileDownload.Write(&a, sizeof(uploadsrec));
+        fileDownload.Write(&a2, sizeof(uploadsrec));
       }
       i++;
       j--;
