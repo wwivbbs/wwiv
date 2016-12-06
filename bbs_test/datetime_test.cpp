@@ -18,8 +18,11 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include <chrono>
 #include <ctime>
 #include "bbs/datetime.h"
+
+using namespace std::chrono;
 
 static const time_t t20140704 = 1404460800; // 1404457200;
 

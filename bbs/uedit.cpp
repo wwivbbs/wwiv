@@ -475,7 +475,7 @@ void uedit(int usern, int other) {
       bout.nl();
       bout << "|#9(|#2Q|#9=|#1Quit, |#2?|#9=|#1Help|#9) User Editor Command: ";
       char ch = 0;
-      if (session()->user()->GetSl() == 255 || session()->GetWfcStatus()) {
+      if (session()->user()->GetSl() == 255 || session()->at_wfc()) {
         ch = onek("ACDEFGHILMNOPQRSTUWXYZ0123456789[]{}/,.?~%:", true);
       } else {
         ch = onek("ACDEFGHILMNOPQRSTUWYZ0123456789[]{}/,.?%", true);
@@ -487,7 +487,7 @@ void uedit(int usern, int other) {
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
-          if (session()->GetWfcStatus() || (session()->user()->HasArFlag(1 << ch1))) {
+          if (session()->at_wfc() || (session()->user()->HasArFlag(1 << ch1))) {
             user.ToggleArFlag(1 << ch1);
             session()->users()->WriteUser(&user, user_number);
           }
@@ -582,7 +582,7 @@ void uedit(int usern, int other) {
         char ch1 = onek("\rABCDEFGHIJKLMNOP");
         if (ch1 != RETURN) {
           ch1 -= 'A';
-          if (session()->GetWfcStatus() || (session()->user()->HasDarFlag(1 << ch1))) {
+          if (session()->at_wfc() || (session()->user()->HasDarFlag(1 << ch1))) {
             user.ToggleDarFlag(1 << ch1);
             session()->users()->WriteUser(&user, user_number);
           }
@@ -704,7 +704,7 @@ void uedit(int usern, int other) {
         bout << "|#7New SL? ";
         string sl = input(3);
         uint8_t nNewSL = StringToUnsignedChar(sl);
-        if (!session()->GetWfcStatus() && nNewSL >= session()->GetEffectiveSl() && user_number != 1) {
+        if (!session()->at_wfc() && nNewSL >= session()->GetEffectiveSl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
         } else  if (nNewSL < 255 && sl[0]) {
@@ -724,7 +724,7 @@ void uedit(int usern, int other) {
         bout << "|#7New DSL? ";
         string dsl = input(3);
         uint8_t nNewDSL = StringToUnsignedChar(dsl);
-        if (!session()->GetWfcStatus() && nNewDSL >= session()->user()->GetDsl() && user_number != 1) {
+        if (!session()->at_wfc() && nNewDSL >= session()->user()->GetDsl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
         } else  if (nNewDSL < 255 && dsl[0]) {

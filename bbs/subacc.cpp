@@ -35,6 +35,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 

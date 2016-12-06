@@ -32,26 +32,8 @@
 #include "sdk/status.h"
 #include "sdk/user.h"
 
-/*!
- * @class WApplication  Main Application object for WWIV.
- */
-class WApplication {
- public:
-  WApplication();
-  WApplication(const WApplication& copy) = delete;
-  virtual ~WApplication();
-
- public:
-  /*!
-   * @function BBSMainLoop - Main BBS loop.. (old main functon)
-   */
-  int BBSMainLoop(int argc, char *argv[]);
-};
-
 // Function Prototypes
-WApplication* application();
-WSession* CreateSession(WApplication* app, LocalIO* localIO);
-
+WSession* CreateSession(LocalIO* localIO);
 WSession* session();
 
 #endif // __INCLUDED_BBS_H__

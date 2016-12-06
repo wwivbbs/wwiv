@@ -173,7 +173,7 @@ static void ShowHelp(CommandLine& cmdline) {
 }
 
 static string get_echomail_areaname(const std::string& text) {
-  vector<string> lines = split_message(text);
+  auto lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, "AREA:")) {
       return line.substr(5);
@@ -326,7 +326,7 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   File::set_current_directory(tempdir);
 
   // were in the temp dir now.
-  vector<arcrec> arcs = read_arcs(config.datadir());
+  auto arcs = read_arcs(config.datadir());
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
     return false;
@@ -367,8 +367,7 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
       continue;
     }
     const auto& name = files.GetFileName();
-    string lname = name;
-    StringLowerCase(&lname);
+    string lname = ToStringLowerCase(name);
     if (ends_with(lname, ".pkt")) {
       if (import_packet_file(config, callout, net, dir, name)) {
         LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
@@ -387,7 +386,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     const FidoAddress& route_to, const net_networks_rec& net, const string& fido_packet_name, 
     std::string& out_bundle_name) {
   // were in the temp dir now.
-  vector<arcrec> arcs = read_arcs(config.datadir());
+ auto arcs = read_arcs(config.datadir());
   if (arcs.empty()) {
     LOG(ERROR) << "No archivers defined!";
     return false;

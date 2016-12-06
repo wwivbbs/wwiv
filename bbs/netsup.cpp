@@ -56,9 +56,7 @@
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 
-time_t last_time_c;
-
-using std::chrono::seconds;
+using namespace std::chrono;
 using std::string;
 using std::to_string;
 using std::unique_ptr;
@@ -70,6 +68,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 constexpr int MAX_CONNECTS = 1000;
+std::chrono::steady_clock::time_point last_time_c_;
 
 /** Returns a full path to exe under the WWIV_DIR */
 static string CreateNetworkBinary(const std::string exe) {
@@ -187,12 +186,7 @@ static int cleanup_net1() {
             ok = fnd_net.open(StrCat(session()->network_directory(), "p*.net"), 0);
           }
           if (ok) {
-            if (session()->wfc_status == 0) {
-              // WFC addition
-              session()->localIO()->Cls();
-            } else {
-              wfc_cls();
-            }
+            wfc_cls(session());
             ++i;
             hangup = false;
             session()->using_modem = 0;
@@ -212,12 +206,7 @@ static int cleanup_net1() {
             ok2 = 1;
           }
           if (File::Exists(session()->network_directory(), LOCAL_NET)) {
-            if (session()->wfc_status == 0) {
-              // WFC addition
-              session()->localIO()->Cls();
-            } else {
-              wfc_cls();
-            }
+            wfc_cls(session());
             ++i;
             any = true;
             ok = 1;
@@ -253,9 +242,7 @@ static int cleanup_net1() {
 
 void cleanup_net() {
   if (cleanup_net1() && session()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
-    if (session()->wfc_status == 0) {
-      session()->localIO()->Cls();
-    }
+    wfc_cls(session());
 
     IniFile ini(FilePath(session()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", session()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
@@ -275,8 +262,6 @@ void cleanup_net() {
 }
 
 void do_callout(uint16_t sn) {
-  time_t tCurrentTime = time(nullptr);
-  
   Callout callout(session()->current_net());
   Contact contact(session()->current_net(), false);
   Binkp binkp(session()->current_net().dir);
@@ -319,7 +304,7 @@ void do_callout(uint16_t sn) {
          << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
     ExecuteExternalProgram(cmd, EFLAG_NETPROG);
     session()->status_manager()->RefreshStatusCache();
-    last_time_c = static_cast<int>(tCurrentTime);
+    last_time_c_ = steady_clock::now();
     cleanup_net();
     run_exp();
     send_inst_cleannet();
@@ -392,22 +377,22 @@ public:
  * is ok to call and does not violate any constraints.
  */
 static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_call_out_rec& con) {
-  time_t tCurrentTime = time(nullptr);
+  time_t now = time(nullptr);
   if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
     return false;
   }
   int min_minutes = std::max<int>(con.call_anyway, 1);
   time_t next_contact_time = ncn.lastcontact() + SECONDS_PER_MINUTE * min_minutes;
-  if (tCurrentTime < next_contact_time) {
+  if (now < next_contact_time) {
     return false;
   }
   if ((con.options & options_once_per_day)
-    && std::abs(tCurrentTime - ncn.lastcontactsent()) <
+    && std::abs(now - ncn.lastcontactsent()) <
     (20L * SECONDS_PER_HOUR / con.times_per_day)) {
     return false;
   }
   if ((bytes_to_k(ncn.bytes_waiting()) < con.min_k)
-    && (std::abs(tCurrentTime - ncn.lastcontact()) < SECONDS_PER_DAY)) {
+    && (std::abs(now - ncn.lastcontact()) < SECONDS_PER_DAY)) {
     return false;
   }
   return true;
@@ -416,24 +401,22 @@ static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_cal
 bool attempt_callout() {
   session()->status_manager()->RefreshStatusCache();
 
-  time_t tCurrentTime = time(nullptr);
-  if (last_time_c > tCurrentTime || last_time_c == 0) {
-    last_time_c = tCurrentTime;
+  auto now = steady_clock::now();
+  if (last_time_c_ == steady_clock::time_point::min()) {
+    last_time_c_ = now;
     return false;
   }
-  if (std::abs(last_time_c - tCurrentTime) < 10) {
+  if (now - last_time_c_ < seconds(10)) {
     return false;
   }
-
-  bool any = false;
 
   // Set the last connect time to now since we are attempting to connect.
-  last_time_c = tCurrentTime;
+  last_time_c_ = now;
   wwiv::core::ScopeExit set_net_num_zero([&]() { set_net_num(0); });
   vector<NodeAndWeight> to_call(session()->max_net_num());
 
-  for (int nNetNumber = 0; nNetNumber < session()->max_net_num(); nNetNumber++) {
-    set_net_num(nNetNumber);
+  for (int nn = 0; nn < session()->max_net_num(); nn++) {
+    set_net_num(nn);
     if (!session()->current_net().sysnum) {
       continue;
     }
@@ -455,27 +438,27 @@ bool attempt_callout() {
       ok = ok_to_call_from_contact_rec(*ncr, *ncor);
 
       if (ok) {
-        uint64_t time_weight = tCurrentTime - ncr->lasttry();
+        auto diff = time(nullptr) - ncr->lasttry();
+        uint64_t time_weight = std::max<int64_t>(diff, 0);
 
         if (ncr->bytes_waiting() == 0L) {
-          if (to_call.at(nNetNumber).weight_ < time_weight) {
-            to_call[nNetNumber] = NodeAndWeight(
-              nNetNumber, ncor->sysnum, time_weight);
+          if (to_call.at(nn).weight_ < time_weight) {
+            to_call[nn] = NodeAndWeight(
+              nn, ncor->sysnum, time_weight);
           }
         } else {
           uint64_t bytes_weight = ncr->bytes_waiting() * 60 + time_weight;
-          if (to_call.at(nNetNumber).weight_ < bytes_weight) {
-            to_call[nNetNumber] = NodeAndWeight(
-              nNetNumber, ncor->sysnum, bytes_weight);
+          if (to_call.at(nn).weight_ < bytes_weight) {
+            to_call[nn] = NodeAndWeight(
+              nn, ncor->sysnum, bytes_weight);
           }
         }
-        any = true;
       }
 
     }
   }
 
-  if (!any) {
+  if (to_call.empty()) {
     return false;
   }
   for (const auto& node : to_call) {
@@ -1172,4 +1155,8 @@ void run_exp() {
 
   set_net_num(nOldNetworkNumber);
   session()->localIO()->Cls();
+}
+
+std::chrono::steady_clock::time_point last_network_attempt() {
+  return last_time_c_;
 }

@@ -53,7 +53,6 @@
 // associated with this instance of WWIV globally (not tied to a user)
 //
 
-class WApplication;
 ///////////////////////////////////////////////////////////////////////////////
 // ASV Settings (populated by INI file
 //
@@ -94,7 +93,7 @@ public:
   static const int exitLevelNotOK = 1;
   static const int exitLevelQuit = 2;
 
-  WSession(WApplication* app, LocalIO* localIO);
+  WSession(LocalIO* localIO);
   virtual ~WSession();
 
   wwiv::sdk::User* user() { return &thisuser_; }
@@ -250,8 +249,8 @@ public:
   bool IsCleanNetNeeded() const { return need_to_clean_net_; }
   void SetCleanNetNeeded(bool b) { need_to_clean_net_ = b; }
 
-  void SetWfcStatus(int nStatus) { wfc_status_ = nStatus; }
-  int  GetWfcStatus() const { return wfc_status_; }
+  void set_at_wfc(bool b) { at_wfc_ = b; }
+  bool at_wfc() const { return at_wfc_; }
 
   bool experimental_read_prompt() const { return experimental_read_prompt_; }
 
@@ -294,8 +293,6 @@ public:
   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
   bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
   bool ReadConfig();
-
-  int LocalLogon();
 
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
@@ -349,7 +346,6 @@ public:
   std::string dsz_logfile_name_;
   std::string download_filename_;
 
-  int wfc_status;
   int usernum;
 
   asv_rec asv;
@@ -388,13 +384,16 @@ public:
   std::vector<eventsrec> events;
   std::vector<tagrec_t> filelist;
 
+
+public:
+  // TODO(rushfan): Make this private. This is needed by WFC
+  uint16_t  unx_;
+
 protected:
   /*!
   * @function GetCaller WFC Screen loop
   */
   void GetCaller();
-
-  int doWFCEvents();
 
   /*!
   * @function GotCaller login routines
@@ -402,7 +401,7 @@ protected:
   * @param cs Connect Speed (real speed)
   */
   void GotCaller(unsigned int ms, unsigned long cs);
-
+  
 private:
   void read_nextern();
   void read_arcs();
@@ -418,7 +417,6 @@ private:
   void check_phonenum();
   void create_phone_file();
 
-  uint16_t  unx_;
   /*! The current working directory.*/
   std::string current_dir_;
   int oklevel_;
@@ -427,12 +425,11 @@ private:
   std::string network_extension_;
   bool user_already_on_ = false;
   bool need_to_clean_net_ = false;
-  int wfc_status_ = 0;
+  bool at_wfc_ = 0;
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string attach_dir_;
-  WApplication* application_;
   wwiv::sdk::User thisuser_;
   int effective_sl_ = 0;
   std::unique_ptr<RemoteIO> comm_;

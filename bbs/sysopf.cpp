@@ -123,7 +123,7 @@ void valuser(int user_number) {
       input(s, 3, true);
       if (s[0]) {
         int nSl = StringToUnsignedInt(s);
-        if (!session()->GetWfcStatus() && nSl >= static_cast<int>(session()->GetEffectiveSl())) {
+        if (!session()->at_wfc() && nSl >= static_cast<int>(session()->GetEffectiveSl())) {
           nSl = -2;
         }
         if (nSl >= 0 && nSl < 255) {
@@ -151,7 +151,7 @@ void valuser(int user_number) {
       input(s, 3, true);
       if (s[0]) {
         int nDsl = StringToUnsignedInt(s);
-        if (!session()->GetWfcStatus() && nDsl >= static_cast<int>(session()->user()->GetDsl())) {
+        if (!session()->at_wfc() && nDsl >= static_cast<int>(session()->user()->GetDsl())) {
           nDsl = -1;
         }
         if (nDsl >= 0 && nDsl < 255) {

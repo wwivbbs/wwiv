@@ -52,6 +52,7 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
+#include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
 

@@ -33,6 +33,7 @@
 #include "sdk/status.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "core/version.h"
 
 using std::string;
 using namespace wwiv::sdk;
@@ -502,9 +503,9 @@ const string create_chain_file() {
 
   create_drop_files();
   auto start_duration = duration_since_midnight(session()->system_logon_time());
-  int start_second = std::chrono::duration_cast<std::chrono::seconds>(start_duration).count();
+  int start_second = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(start_duration).count());
   auto used_duration = std::chrono::system_clock::now() - session()->system_logon_time();
-  int seconds_used = std::chrono::duration_cast<std::chrono::seconds>(used_duration).count();
+  int seconds_used = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(used_duration).count());
 
   const string fileName = create_filename(CHAINFILE_CHAIN);
   File::Remove(fileName);

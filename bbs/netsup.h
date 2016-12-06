@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_BBS_NETSUP_H__
 #define __INCLUDED_BBS_NETSUP_H__
 
+#include <chrono>
 #include <cstdint>
 #include <string>
 #include "sdk/net.h"
@@ -32,6 +33,8 @@ void gate_msg(
 void force_callout(int dw);
 void run_exp();
 bool attempt_callout();
+
+std::chrono::steady_clock::time_point last_network_attempt();
 
 
 #endif  // __INCLUDED_BBS_NETSUP_H__

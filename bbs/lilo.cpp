@@ -60,6 +60,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
@@ -1006,7 +1007,6 @@ void logoff() {
   session()->remoteIO()->disconnect();
   // Don't need to hangup here, but *do* want to ensure that hangup is true.
   hangup = true;
-  // Hangup();
   if (session()->usernum < 1) {
     return;
   }
@@ -1047,10 +1047,10 @@ void logoff() {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       session()->user()->SetNumMailWaiting(0);
-      auto t = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
+      auto num_records = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
       int r = 0;
       int w = 0;
-      while (r < t) {
+      while (r < num_records) {
         pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * static_cast<long>(r), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
         if (m.tosys != 0 || m.touser != 0) {
@@ -1085,10 +1085,10 @@ void logoff() {
   if (smwcheck) {
     File smwFile(session()->config()->datadir(), SMW_DAT);
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      auto t = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
+      auto num_records = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
       int r = 0;
       int w = 0;
-      while (r < t) {
+      while (r < num_records) {
         shortmsgrec sm;
         smwFile.Seek(r * sizeof(shortmsgrec), File::Whence::begin);
         smwFile.Read(&sm, sizeof(shortmsgrec));

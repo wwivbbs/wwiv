@@ -11,7 +11,7 @@
 /*                                                                        */
 /*    Unless  required  by  applicable  law  or agreed to  in  writing,   */
 /*    software  distributed  under  the  License  is  distributed on an   */
-/*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
+/*    "AS IS"  BASIS, WIT`OUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
@@ -59,9 +59,7 @@ void BbsHelper::SetUp() {
   io_.reset(new TestIO());
   // Without local_echo, we won't capture anything.
   local_echo = true;
-  // hack - this crashes
-  //app_.reset(new WApplication());
-  sess_.reset(CreateSession(new WApplication(), io_->local_io()));
+  sess_.reset(CreateSession(io_->local_io()));
 
   dir_data_ = files_.DirName("data");
   dir_gfiles_ = files_.DirName("gfiles");

@@ -60,7 +60,7 @@ int finduser(const string& searchString) {
   if (searchString == "!-@NETWORK@-!") {
     return -2;
   }
-  int user_number = atoi(searchString.c_str());
+  int user_number = StringToInt(searchString);
   if (user_number > 0) {
     session()->users()->ReadUser(&user, user_number);
     if (user.IsUserDeleted()) {

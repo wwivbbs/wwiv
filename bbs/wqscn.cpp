@@ -45,7 +45,7 @@ void close_qscn() {
 void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead) {
   if (!bForceRead) {
     if ((session()->IsUserOnline() && user_number == session()->usernum) ||
-        (session()->GetWfcStatus() && user_number == 1)) {
+        (session()->at_wfc() && user_number == 1)) {
       if (qscn != qsc) {
         for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
           qscn[i] = qsc[i];
@@ -82,7 +82,7 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
   }
 
   if ((session()->IsUserOnline() && (user_number == session()->usernum)) ||
-      (session()->GetWfcStatus() && user_number == 1)) {
+      (session()->at_wfc() && user_number == 1)) {
     if (qsc != qscn) {
       for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
         qsc[i] = qscn[i];

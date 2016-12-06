@@ -587,7 +587,9 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
             bout.clreol();
           }
           bout.GotoXY(1, lines_start);
-          printfile(MBFSED_NOEXT);
+          if (!printfile(MBFSED_NOEXT)) {
+            bout << "|#6Unable to find file: " << MBFSED_NOEXT;
+          }
           bout.GotoXY(1, command_line);
           bout.clreol();
           pausescr();

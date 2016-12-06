@@ -60,7 +60,6 @@
 // Uncomment this line to use curses on Win32
 #define WWIV_WIN32_CURSES_IO
 
-static WApplication *app_;
 static WSession* sess_;
 
 using std::cout;
@@ -70,43 +69,28 @@ using std::string;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-WApplication* application() { return app_; }
 WSession* session() { return sess_; }
 
-int WApplication::BBSMainLoop(int argc, char *argv[]) {
-  // CursesIO
-  out = nullptr;
-
-  CreateSession(app_, new StdioLocalIO());
-  int return_code = session()->Run(argc, argv);
-  session()->ExitBBSImpl(return_code, false);
-  return return_code;
-}
-
-WApplication::WApplication() {
-  if (syscfg.userreclen == 0) {
-    syscfg.userreclen = sizeof(userrec);
-  }
-  tzset();
-}
-
-WApplication::~WApplication() {
-  if (sess_ != nullptr) {
-    delete sess_;
-    sess_ = nullptr;
-  }
-}
-
-WSession* CreateSession(WApplication* app, LocalIO* localIO) {
-  sess_ = new WSession(app, localIO);
+// [ VisibleForTesting ]
+WSession* CreateSession(LocalIO* localIO) {
+  sess_ = new WSession(localIO);
   return sess_;
 }
 
 int bbsmain(int argc, char *argv[]) {
   try {
+    // Initialize the Logger.
     wwiv::core::Logger::Init(argc, argv);
-    app_ = new WApplication();
-    return app_->BBSMainLoop(argc, argv);
+
+    // CursesIO
+    out = nullptr;
+
+    // Create a default session using stdio, we'll reset the LocalIO
+    // later once we know what type to use.
+    auto bbs = CreateSession(new StdioLocalIO());
+    int return_code = bbs->Run(argc, argv);
+    bbs->ExitBBSImpl(return_code, false);
+    return return_code;
   } catch (const exception& e) {
     LOG(FATAL) << "BBS Terminated by exception: " << e.what();
     return 1;

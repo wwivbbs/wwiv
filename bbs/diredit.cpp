@@ -526,7 +526,7 @@ void dlboardedit() {
   if (confchg) {
     save_confs(ConferenceType::CONF_DIRS, -1, nullptr);
   }
-  if (!session()->GetWfcStatus()) {
+  if (!session()->at_wfc()) {
     changedsl();
   }
 }

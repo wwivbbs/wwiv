@@ -22,7 +22,6 @@
 #include <ctime>
 
 #include "bbs/conf.h"
-#include "core/version.h"
 #include "sdk/vardec.h"
 #include "sdk/net.h"
 
@@ -34,10 +33,8 @@
 #define __EXTRN__ extern
 #endif
 
-
 ///////////////////////////////////////////////////////////////////////////////
 
-static constexpr int MAX_FILENAME_LENGTH = 260;
 __EXTRN__ char  ansistr[81],
           charbuffer[255],
           irt[81],
@@ -45,7 +42,7 @@ __EXTRN__ char  ansistr[81],
           irt_sub[81],
           *quotes_ind;
 
-__EXTRN__ unsigned char  checksum;
+__EXTRN__ unsigned char checksum;
 
 __EXTRN__ int ansiptr,
 bquote,
@@ -76,7 +73,7 @@ __EXTRN__ bool  bChatLine,
           ok_modem_stuff;
 
 // Chatroom additions
-__EXTRN__ bool  in_chatroom;
+__EXTRN__ bool in_chatroom;
 
 __EXTRN__ int modem_speed;
 

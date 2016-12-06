@@ -1034,7 +1034,7 @@ void conf_edit(ConferenceType conftype) {
       break;
     }
   } while (!done && !hangup);
-  if (!session()->GetWfcStatus()) {
+  if (!session()->at_wfc()) {
     changedsl();
   }
 }

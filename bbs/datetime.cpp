@@ -201,3 +201,4 @@ int minutes_since_midnight() {
   auto d = duration_since_midnight(system_clock::now());
   return duration_cast<minutes>(d).count();
 }
+

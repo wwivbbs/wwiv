@@ -255,7 +255,6 @@ void run_event(int evnt) {
   do_event = 0;
   get_next_forced_event();
   cleanup_net();
-  wfc_cls();
 
   e.lastrun = t_now();
   write_event(evnt);

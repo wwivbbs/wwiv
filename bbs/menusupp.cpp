@@ -75,6 +75,7 @@
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 

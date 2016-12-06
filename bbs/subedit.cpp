@@ -737,7 +737,7 @@ void boardedit() {
     }
   } while (!done && !hangup);
   save_subs();
-  if (!session()->GetWfcStatus()) {
+  if (!session()->at_wfc()) {
     changedsl();
   }
   session()->subchg = 1;

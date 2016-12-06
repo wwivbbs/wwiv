@@ -53,7 +53,6 @@ public:
     std::string dir_gfiles_;
     std::string dir_en_gfiles_;
     std::string dir_menus_;
-    std::unique_ptr<WApplication> app_;
     std::unique_ptr<WSession> sess_;
     std::unique_ptr<TestIO> io_;
     wwiv::sdk::User* user_;
