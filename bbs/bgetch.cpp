@@ -324,7 +324,7 @@ char Output::getkey() {
   bout.clear_lines_listed();
   char ch = 0;
   do {
-    while (!bkbhit()) {
+    while (!bkbhit() && !hangup) {
       // Try to make hangups happen faster.
       if (incom && ok_modem_stuff && !a()->remoteIO()->connected()) {
         Hangup();
@@ -373,6 +373,7 @@ int bgetch_event(numlock_status_t numlock_mode) {
   time_t time1 = time(nullptr);
 
   while (true) {
+    CheckForHangup();
     time_t time2 = time(nullptr);
     if (difftime(time2, time1) > 180) {
       // greater than 3 minutes

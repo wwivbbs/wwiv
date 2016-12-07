@@ -19,6 +19,7 @@
 #define __INCLUDED_SDK_MESSAGE_AREA_WWIV_H__
 
 #include <cstdint>
+#include <limits>
 #include <string>
 #include <vector>
 
@@ -84,6 +85,7 @@ public:
   WWIVMessage* CreateMessage() override;
 
 private:
+  int DeleteExcess();
   bool add_post(const postrec& post);
   bool ParseMessageText(
     const postrec& header,
@@ -100,6 +102,8 @@ private:
   const std::string sub_filename_;
   bool open_ = false;
   subfile_header_t header_;
+  // TODO(rushfan): We should load this from the sub description.
+  int max_messages_ = std::numeric_limits<int>::max();
 
   static constexpr uint8_t STORAGE_TYPE = 2;
 };

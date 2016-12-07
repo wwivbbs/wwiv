@@ -314,6 +314,35 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
   return next_qscan;
 }
 
+// TODO(rushfan): Need to change this to delete all excess.
+// Also should add an option to the msgapi that sets how
+// we handle overflow (ignore, delete_one, delete_all).
+int WWIVMessageArea::DeleteExcess() {
+  auto num = number_of_messages();
+  if (num < max_messages_) {
+    return 0;
+  }
+  int i = 1;
+  int dm = 0;
+  while (i <= number_of_messages()) {
+    auto pp = ReadMessageHeader(i);
+    if (!pp) {
+      break;
+    }
+    else if (((pp->data().status & status_no_delete) == 0) ||
+      pp->data().msg.storage_type != STORAGE_TYPE) {
+      dm = i;
+      break;
+    }
+    ++i;
+  }
+  if (dm == 0) {
+    dm = 1;
+  }
+  auto success = DeleteMessage(dm);
+  return success ? 1 : 0;
+}
+
 bool WWIVMessageArea::AddMessage(const Message& message) {
   messagerec m{STORAGE_TYPE, 0xffffff};
 
