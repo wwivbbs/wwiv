@@ -663,8 +663,8 @@ void Application::QuitBBS() {
 }
 
 void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
-  write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
   if (perform_shutdown) {
+    write_inst(INST_LOC_DOWN, 0, INST_FLAGS_NONE);
     if (exit_level != Application::exitLevelOK && exit_level != Application::exitLevelQuit) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probers, etc).
