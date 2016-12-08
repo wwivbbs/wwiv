@@ -81,7 +81,17 @@ public:
   bool Save();
 
   const subboard_t& sub(std::size_t n) const { return subs_.at(n); }
+  const subboard_t& sub(const std::string& filename) const;
   subboard_t& sub(std::size_t n) { return subs_[n]; }
+  subboard_t& sub(const std::string& filename);
+
+  const subboard_t& operator[](std::size_t n) const { return sub(n); }
+  const subboard_t& operator[](const std::string& filename) const { return sub(filename); }
+  subboard_t& operator[](std::size_t n) { return sub(n); }
+  subboard_t& operator[](const std::string& filename) { return sub(filename); }
+
+  bool exists(const std::string& filename) const;
+
   void set_sub(std::size_t n, subboard_t s) { subs_[n] = s; }
   const std::vector<subboard_t> subs() const { return subs_; }
   bool insert(std::size_t n, subboard_t r);

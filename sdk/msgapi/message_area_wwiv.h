@@ -98,14 +98,11 @@ private:
   bool HasSubChanged();
   bool ResyncMessageImpl(int& message_number, Message& message);
 
+  static constexpr uint8_t STORAGE_TYPE = 2;
 
   const std::string sub_filename_;
   bool open_ = false;
   subfile_header_t header_;
-  // TODO(rushfan): We should load this from the sub description.
-  int max_messages_ = std::numeric_limits<int>::max();
-
-  static constexpr uint8_t STORAGE_TYPE = 2;
 };
 
 }  // namespace msgapi

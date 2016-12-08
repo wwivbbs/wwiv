@@ -55,6 +55,20 @@ constexpr char CD = 4;
 namespace wwiv {
 namespace wwivutil {
 
+OverflowStrategy overflow_strategy_from(const std::string& v) {
+  string flag = ToStringLowerCase(v);
+  if (flag == "one") {
+    return OverflowStrategy::delete_one;
+  }
+  else if (flag == "all") {
+    return OverflowStrategy::delete_all;
+  }
+  else if (flag == "none") {
+    return OverflowStrategy::delete_none;
+  }
+  return OverflowStrategy::delete_none;
+}
+
 class DeleteMessageCommand: public UtilCommand {
 public:
   DeleteMessageCommand() 
@@ -78,7 +92,9 @@ public:
 
     const string basename(remaining().front());
     // TODO(rushfan): Create the right API type for the right message area.
+    wwiv::sdk::msgapi::MessageApiOptions options;
     unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(
+        options,
         config()->bbsdir(),
         config()->config()->datadir(), 
         config()->config()->msgsdir(), 
@@ -134,13 +150,15 @@ public:
     add_argument({"to", "message sub name to post on", ""});
     add_argument({"date", "message sub name to post on", ""});
     add_argument({"in_reply_to", "message sub name to post on", ""});
+    add_argument({ "delete_overflow", "Strategy for deleting excess messages when adding new ones. (none|one|all)", "none" });
+
     return true;
   }
 
   std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>" << endl;
-    ss << "Example: post --num=10 general mymessage.txt" << endl;
+    ss << "Example: post general mymessage.txt" << endl;
     return ss.str();
   }
 
@@ -152,8 +170,24 @@ public:
     }
 
     const string basename(remaining().front());
+    const auto& datadir = config()->config()->datadir();
+    const auto& nets = config()->networks().networks();
+    Subs subs(datadir, nets);
+    if (!subs.Load()) {
+      LOG(ERROR) << "Unable to open subs. ";
+      return 1;
+    }
+    if (!subs.exists(basename)) {
+      LOG(ERROR) << "No sub exists with filename: " << basename;
+      return 1;
+    }
+
+    // TODO(rushfan): Load sub data here;
     // TODO(rushfan): Create the right API type for the right message area.
-    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(*config()->config(), config()->networks().networks());
+    wwiv::sdk::msgapi::MessageApiOptions options;
+    options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
+    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
+      options, *config()->config(), config()->networks().networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
@@ -171,6 +205,9 @@ public:
       clog << "Error opening message area: '" << basename << "'." << endl;
       return 1;
     }
+    const auto& sub = subs[basename];
+    area->set_storage_type(sub.storage_type);
+    area->set_max_messages(sub.maxmsgs);
 
     const string filename = remaining().at(1);
     string from = arg("from").as_string();
@@ -221,6 +258,7 @@ public:
 
   bool AddSubCommands() override final {
     add_argument(BooleanCommandLineArgument{"backup", "make a backup of the subs", true});
+    add_argument({ "delete_overflow", "Strategy for deleting excess messages when adding new ones. (none|one|all)", "none" });
     return true;
   }
 
@@ -251,9 +289,24 @@ public:
       return 2;
     }
 
+    const auto& datadir = config()->config()->datadir();
+    const auto& nets = config()->networks().networks();
+    Subs subs(datadir, nets);
+    if (!subs.Load()) {
+      LOG(ERROR) << "Unable to open subs. ";
+      return 1;
+    }
+
     const string basename(remaining().front());
+    if (!subs.exists(basename)) {
+      LOG(ERROR) << "No sub exists with filename: " << basename;
+      return 1;
+    }
+
+    wwiv::sdk::msgapi::MessageApiOptions options;
+    options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
     // TODO(rushfan): Create the right API type for the right message area.
-    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(*config()->config(), config()->networks().networks());
+    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(options, *config()->config(), config()->networks().networks());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
@@ -273,6 +326,9 @@ public:
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
       }
+      const auto& sub = subs[basename];
+      area->set_storage_type(sub.storage_type);
+      area->set_max_messages(sub.maxmsgs);
     }
 
     if (barg("backup")) {
@@ -348,8 +404,18 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   const string& basename,
   int start, int end, bool all) {
 
+  const auto& datadir = config()->config()->datadir();
+  const auto& nets = config()->networks().networks();
+
+  Subs subs(datadir, nets);
+  if (!subs.exists(basename)) {
+    LOG(ERROR) << "No sub exists with filename: " << basename;
+    return 1;
+  }
+
   // TODO(rushfan): Create the right API type for the right message area.
-  unique_ptr<MessageApi> api(new WWIVMessageApi(*config()->config(), config()->networks().networks()));
+  const wwiv::sdk::msgapi::MessageApiOptions options;
+  unique_ptr<MessageApi> api(new WWIVMessageApi(options, *config()->config(), config()->networks().networks()));
   if (!api->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;
     return 1;
@@ -360,6 +426,9 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     clog << "Error opening message area: '" << basename << "'." << endl;
     return 1;
   }
+  const auto& sub = subs[basename];
+  area->set_storage_type(sub.storage_type);
+  area->set_max_messages(sub.maxmsgs);
 
   int num_messages = (end >= 0) ? end : area->number_of_messages();
   cout << "Message Sub: '" << basename << "' has "

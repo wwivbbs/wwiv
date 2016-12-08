@@ -314,33 +314,52 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
   return next_qscan;
 }
 
-// TODO(rushfan): Need to change this to delete all excess.
-// Also should add an option to the msgapi that sets how
-// we handle overflow (ignore, delete_one, delete_all).
+/**
+ * Deletes all excess messages in an area, depending on the
+ * overflow strategy set on the API.
+ * 
+ * Note: This should be called by AddMessage *after* posting a new
+ * message successfull, since there's no sense in deleting a post if
+ * adding a new one hasn't succeeded.
+ */
 int WWIVMessageArea::DeleteExcess() {
-  auto num = number_of_messages();
-  if (num < max_messages_) {
+  if (api_->options().overflow_strategy == OverflowStrategy::delete_none) {
     return 0;
   }
-  int i = 1;
-  int dm = 0;
-  while (i <= number_of_messages()) {
-    auto pp = ReadMessageHeader(i);
-    if (!pp) {
-      break;
+
+  int result = 0;
+  bool done = false;
+  while (!done) {
+    if (api_->options().overflow_strategy == OverflowStrategy::delete_one) {
+      done = true;
     }
-    else if (((pp->data().status & status_no_delete) == 0) ||
-      pp->data().msg.storage_type != STORAGE_TYPE) {
-      dm = i;
-      break;
+    auto num = number_of_messages();
+    if (num <= max_messages_) {
+      return result;
     }
-    ++i;
+    int i = 1;
+    int dm = 0;
+    while (i <= number_of_messages()) {
+      auto pp = ReadMessageHeader(i);
+      if (!pp) {
+        break;
+      }
+      else if (((pp->data().status & status_no_delete) == 0) ||
+        pp->data().msg.storage_type != storage_type_) {
+        dm = i;
+        break;
+      }
+      ++i;
+    }
+    if (dm == 0) {
+      return result;
+    }
+    if (!DeleteMessage(dm))  {
+      return result;
+    }
+    ++result;
   }
-  if (dm == 0) {
-    dm = 1;
-  }
-  auto success = DeleteMessage(dm);
-  return success ? 1 : 0;
+  return result;
 }
 
 bool WWIVMessageArea::AddMessage(const Message& message) {
@@ -376,7 +395,11 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   if (!savefile(text, &p.msg)) {
     return false;
   }
-  return add_post(p);
+  bool result = add_post(p);
+  if (result) {
+    DeleteExcess();
+  }
+  return result;
 }
 
 bool WWIVMessageArea::DeleteMessage(int message_number) {

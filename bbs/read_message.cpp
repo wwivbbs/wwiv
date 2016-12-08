@@ -467,7 +467,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
 static void display_message_text_new(const std::vector<std::string>& lines, int start, 
   int message_height, int screen_width, int lines_start) {
   for (int i = start; i < start + message_height; i++) {
-    if (i >= lines.size()) {
+    if (i >= size_int(lines)) {
       break;
     }
     bout.GotoXY(1, i - start + lines_start);
