@@ -274,6 +274,11 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     text.append(daten_to_wwivnet_time(dt));
     text.append("\r\n");
 
+    if (!is_email) {
+      // Add ^D0FidoAddr
+      static const string kFidoAddr = "\x04""0FidoAddr: ";
+      text.append(kFidoAddr).append(msg.vh.to_user_name).append("\r\n");
+    }
     text.append(FidoToWWIVText(msg.vh.text));
 
     nh.length = text.size();

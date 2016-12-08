@@ -191,6 +191,8 @@ std::vector<std::string> split_message(const std::string& s) {
   return SplitString(temp, "\r");
 }
 
+// TODO(rushfan): split text into lines and process one at a time
+// this will be easier to handle control lines, etc.
 std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
   std::string wt;
   bool newline = true;

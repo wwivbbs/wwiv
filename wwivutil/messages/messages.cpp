@@ -408,6 +408,10 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   const auto& nets = config()->networks().networks();
 
   Subs subs(datadir, nets);
+  if (!subs.Load()) {
+    LOG(ERROR) << "Unable to open subs. ";
+    return 1;
+  }
   if (!subs.exists(basename)) {
     LOG(ERROR) << "No sub exists with filename: " << basename;
     return 1;
