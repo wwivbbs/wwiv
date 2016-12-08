@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_MESSAGE_AREA_H__
 #define __INCLUDED_SDK_MESSAGE_AREA_H__
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>

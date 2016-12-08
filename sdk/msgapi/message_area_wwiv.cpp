@@ -376,11 +376,11 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
     VLOG(3) << "AddMessage needs a qscan";
     p.qscan = next_qscan_value_and_increment_post(api_->root_directory());
     if (p.qscan == 0) {
-      // TODO(rushfan): Fail here?
+      LOG(ERROR) << "Failed to get qscan value!";
+      return false;
     }
   } else {
-    // TODO(rushfan): Make this a VLOG(2)
-    VLOG(3) << "AddMessage called with existing qscan ptr: title: " << message.header()->title()
+    VLOG(2) << "AddMessage called with existing qscan ptr: title: " << message.header()->title()
             << "; qscan: " << header.data().qscan;
   }
   p.daten = header.daten();
@@ -393,6 +393,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
     daten_to_wwivnet_time(header.daten()), "\r\n",
     message.text()->text());
   if (!savefile(text, &p.msg)) {
+    LOG(ERROR) << "Failed to save message text.";
     return false;
   }
   bool result = add_post(p);
