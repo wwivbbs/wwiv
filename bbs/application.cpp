@@ -1007,7 +1007,7 @@ int Application::Run(int argc, char *argv[]) {
       logon();
       setiia(seconds(5));
       set_net_num(0);
-      while (true) {
+      while (!hangup && a()->usernum > 0) {
         CheckForHangup();
         filelist.clear();
         zap_ed_info();

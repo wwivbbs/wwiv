@@ -325,7 +325,7 @@ IOSSH::IOSSH(SOCKET ssh_socket, Key& key)
     return;
   }
   if (!session_.initialized()) {
-    LOG(ERROR) << "ERROR INITIALIZING SSH (SSHSession::initialized)";
+    //LOG(ERROR) << "ERROR INITIALIZING SSH (SSHSession::initialized)";
     closesocket(ssh_socket_);
     ssh_socket_ = INVALID_SOCKET;
     return;

@@ -324,6 +324,7 @@ char Output::getkey() {
   bout.clear_lines_listed();
   char ch = 0;
   do {
+    CheckForHangup();
     while (!bkbhit() && !hangup) {
       // Try to make hangups happen faster.
       if (incom && ok_modem_stuff && !a()->remoteIO()->connected()) {
