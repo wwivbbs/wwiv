@@ -282,6 +282,8 @@ static int CursesToWin32KeyCodes(int curses_code) {
   case KEY_HOME: return HOME;
   case KEY_LEFT: return LARROW;
   case KEY_RIGHT: return RARROW;
+  case KEY_DELETE: return BACKSPACE;
+  case KEY_BACKSPACE: return BACKSPACE;
   // TODO: implement the rest.
   default: return 0;
   }
@@ -292,8 +294,16 @@ unsigned char CursesLocalIO::GetChar() {
     int ch = last_key_pressed;
     if (ch > 255) {
       // special key
-      last_key_pressed = CursesToWin32KeyCodes(ch);
-      return 0;
+      switch (ch) {
+      case KEY_DELETE:
+      case KEY_BACKSPACE:
+        last_key_pressed = ERR;
+        return static_cast<unsigned char>(BACKSPACE);
+
+      default:
+        last_key_pressed = CursesToWin32KeyCodes(ch);
+        return 0;
+      }
     }
     last_key_pressed = ERR;
     return static_cast<unsigned char>(ch);
