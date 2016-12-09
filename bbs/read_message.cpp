@@ -532,6 +532,9 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         start = first;
       }
     } break;
+    case COMMAND_HOME: {
+      start = first;
+    } break;
     case COMMAND_DOWN: {
       if (start < last) {
         ++start;
@@ -544,6 +547,9 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         start = last;
       }
     } break;
+    case COMMAND_END: { 
+      start = last;
+    } break;
     case COMMAND_RIGHT: {
       result.option = ReadMessageOption::NEXT_MSG;
       return result;
@@ -552,25 +558,27 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       result.option = ReadMessageOption::PREV_MSG;
       return result;
     } break;
+    case SOFTRETURN: {
+      // Do nothing. SyncTerm sends CRLF on enter, not just CR
+      // like we get from the local terminal. So we'll ignore the
+      // SOFTRETURN (10, aka LF).
+    } break;
+    case RETURN: {
+      if (start == last) {
+        result.option = ReadMessageOption::NEXT_MSG;
+        return result;
+      }
+      else if (start + message_height < last) {
+        start += message_height;
+      }
+      else {
+        start = last;
+      }
+    } break;
     default: {
       if ((key & 0xff) == key) {
         key = toupper(key & 0xff);
-        if (key == RETURN) {
-          if (start == last) {
-            result.option = ReadMessageOption::NEXT_MSG;
-          }
-          else {
-            if (start + message_height < last) {
-              start += message_height;
-            }
-            else {
-              start = last;
-            }
-            // Continue here so we don't return below.
-            continue;
-          }
-        }
-        else if (key == ']') {
+        if (key == ']') {
           result.option = ReadMessageOption::NEXT_MSG;
         }
         else if (key == '[') {

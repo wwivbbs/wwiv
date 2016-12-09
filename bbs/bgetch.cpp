@@ -359,6 +359,8 @@ char Output::getkey() {
 #define A_UP ('A')
 #define A_DOWN ('B')
 #define A_RIGHT ('C')
+#define A_PAGEUP ('V')
+#define A_PAGEDOWN ('U')
 #define A_INSERT ('r')
 #define A_DELETE ('s')
 
@@ -465,24 +467,17 @@ int bgetch_event(numlock_status_t numlock_mode) {
                 }
 
                 switch (key) {
-                case A_UP:
-                  return COMMAND_UP;
-                case A_LEFT:
-                  return COMMAND_LEFT;
-                case A_DOWN:
-                  return COMMAND_DOWN;
-                case A_RIGHT:
-                  return COMMAND_RIGHT;
-                case A_INSERT:
-                  return COMMAND_INSERT;
-                case A_DELETE:
-                  return COMMAND_DELETE;
-                case A_HOME:
-                  return COMMAND_HOME;
-                case A_END:
-                  return COMMAND_END;
-                default:
-                  return key;
+                case A_UP: return COMMAND_UP;
+                case A_LEFT: return COMMAND_LEFT;
+                case A_DOWN: return COMMAND_DOWN;
+                case A_RIGHT: return COMMAND_RIGHT;
+                case A_INSERT: return COMMAND_INSERT;
+                case A_DELETE: return COMMAND_DELETE;
+                case A_HOME: return COMMAND_HOME;
+                case A_END: return COMMAND_END;
+                case A_PAGEUP: return COMMAND_PAGEUP;
+                case A_PAGEDOWN: return COMMAND_PAGEDN;
+                default: return key;
                 }
               }
               else {
