@@ -42,17 +42,20 @@ static constexpr int GAT_SECTION_SIZE = 4096;
 static constexpr int MSG_BLOCK_SIZE = 512;
 
 WWIVMessageApi::WWIVMessageApi(
+  const wwiv::sdk::msgapi::MessageApiOptions& options,
   const wwiv::sdk::Config& config,
   const std::vector<net_networks_rec>& net_networks)
-  : WWIVMessageApi(config.root_directory(), config.datadir(), config.msgsdir(), net_networks) {}
+  : WWIVMessageApi(options, config.root_directory(), 
+    config.datadir(), config.msgsdir(), net_networks) {}
 
 
 WWIVMessageApi::WWIVMessageApi(
+  const wwiv::sdk::msgapi::MessageApiOptions& options,
   const std::string& bbs_directory,
   const std::string& data_directory,
   const std::string& messages_directory,
   const std::vector<net_networks_rec>& net_networks)
-  : MessageApi(bbs_directory, data_directory, messages_directory, net_networks) {}
+  : MessageApi(options, bbs_directory, data_directory, messages_directory, net_networks) {}
 WWIVMessageApi::~WWIVMessageApi() {}
 
 bool WWIVMessageApi::Exist(const std::string& name) const {
@@ -63,6 +66,14 @@ bool WWIVMessageApi::Exist(const std::string& name) const {
 
 WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
   return Create(name, ".sub", ".dat");
+}
+
+WWIVMessageArea* WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub) {
+  const string name = sub.name;
+  auto area = Create(name, ".sub", ".dat");
+  area->set_max_messages(sub.maxmsgs);
+  area->set_storage_type(sub.storage_type);
+  return area;
 }
 
 // todo(rushfan): should this be create *OR* open instead?
@@ -120,6 +131,14 @@ bool WWIVMessageApi::Remove(const std::string& name) {
 
 WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
   return Open(name, ".sub", ".dat");
+}
+
+WWIVMessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub) {
+  const string name = sub.name;
+  auto area = Open(name, ".sub", ".dat");
+  area->set_max_messages(sub.maxmsgs);
+  area->set_storage_type(sub.storage_type);
+  return area;
 }
 
 WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext) {

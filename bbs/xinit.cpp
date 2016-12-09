@@ -578,8 +578,15 @@ bool Application::read_subs() {
 }
 
 bool Application::create_message_api() {
+  // TODO(rushfan): Create the right API type for the right message area.
+
+  wwiv::sdk::msgapi::MessageApiOptions options;
+  // Delete ONE matches classic WWIV behavior.
+  options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_one;
+
   // We only support type-2
-  msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(*config_.get(), net_networks);
+  msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(
+    options, *config_.get(), net_networks);
 
   return true;
 }

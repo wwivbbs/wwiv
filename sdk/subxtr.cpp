@@ -435,5 +435,33 @@ bool Subs::erase(std::size_t n) {
   return erase_at(subs_, n);
 }
 
+const subboard_t& Subs::sub(const std::string& filename) const {
+  for (auto& n : subs_) {
+    if (iequals(filename, n.filename)) {
+      return n;
+    }
+  }
+  throw std::out_of_range(StrCat("Unable to find sub of filename: ", filename));
+}
+
+subboard_t& Subs::sub(const std::string& filename) {
+  for (auto& n : subs_) {
+    if (iequals(filename, n.filename)) {
+      return n;
+    }
+  }
+  throw std::out_of_range(StrCat("Unable to find sub of filename: ", filename));
+}
+
+bool Subs::exists(const std::string& filename) const {
+  for (auto& n : subs_) {
+    if (iequals(filename, n.filename)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 }
 }

@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "sdk/net.h"
+#include "sdk/subxtr.h"
 #include "sdk/msgapi/message_area.h"
 
 namespace wwiv {
@@ -31,9 +32,18 @@ namespace msgapi {
 
 class MessageArea;
 
+enum class OverflowStrategy {
+  delete_one, delete_all, delete_none
+};
+
+struct MessageApiOptions {
+  wwiv::sdk::msgapi::OverflowStrategy overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
+};
+
 class MessageApi {
 public:
   MessageApi(
+    const MessageApiOptions& options,
     const std::string& root_directory,
     const std::string& subs_directory,
     const std::string& messages_directory,
@@ -42,13 +52,17 @@ public:
 
   virtual bool Exist(const std::string& name) const = 0;
   virtual MessageArea* Create(const std::string& name) = 0;
+  virtual MessageArea* Create(const wwiv::sdk::subboard_t& sub) = 0;
   virtual bool Remove(const std::string& name) = 0;
   virtual MessageArea* Open(const std::string& name) = 0;
+  virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub) = 0;
 
   const std::vector<net_networks_rec>& network() const { return net_networks_; }
   const std::string root_directory() const { return root_directory_; }
-
+  const MessageApiOptions options() const { return options_; }
 protected:
+  const MessageApiOptions options_;
+
   std::string root_directory_;
   std::string subs_directory_;
   std::string messages_directory_;

@@ -364,3 +364,19 @@ TEST(StringsTest, StringRemoveWhitespace_str) {
 TEST(StringsTest, StringRemoveChar) {
   EXPECT_STREQ("he", StringRemoveChar("hello world", 'l'));
 }
+
+TEST(StringsTest, IEQuals_charstar) {
+  EXPECT_TRUE(iequals("foo", "foo"));
+  EXPECT_FALSE(iequals("foo", "fo"));
+  EXPECT_FALSE(iequals("fo", "foo"));
+  EXPECT_FALSE(iequals("", "foo"));
+  EXPECT_FALSE(iequals("foo", ""));
+}
+
+TEST(StringsTest, IEQuals) {
+  EXPECT_TRUE(iequals(string("foo"), string("foo")));
+  EXPECT_FALSE(iequals(string("foo"), string("fo")));
+  EXPECT_FALSE(iequals(string("fo"), string("foo")));
+  EXPECT_FALSE(iequals(string(""), string("foo")));
+  EXPECT_FALSE(iequals(string("foo"), string("")));
+}

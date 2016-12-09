@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_SDK_MESSAGE_AREA_H__
 #define __INCLUDED_SDK_MESSAGE_AREA_H__
 
+#include <limits>
 #include <memory>
 #include <string>
 #include <vector>
@@ -62,8 +63,23 @@ public:
   /** Creates a new empty message for this area. */
   virtual Message* CreateMessage() = 0;
 
+  int max_messages() const { 
+    if (max_messages_ == 0) {
+      return std::numeric_limits<int>::max();
+    }
+    return max_messages_; 
+  }
+  void set_max_messages(int m) { max_messages_ = m; }
+
+  uint8_t storage_type() const { return storage_type_; }
+  void set_storage_type(uint8_t t) { storage_type_ = t; }
+
 protected:
+  static constexpr uint8_t DEFAULT_WWIV_STORAGE_TYPE = 2;
+
   MessageApi* api_;
+  int max_messages_ = std::numeric_limits<int>::max();
+  uint8_t storage_type_ = DEFAULT_WWIV_STORAGE_TYPE;
 };
 
 

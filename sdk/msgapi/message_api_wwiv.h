@@ -37,9 +37,11 @@ class WWIVMessageArea;
 class WWIVMessageApi: public MessageApi {
 public:
   WWIVMessageApi(
+    const wwiv::sdk::msgapi::MessageApiOptions& options,
     const wwiv::sdk::Config& config,
     const std::vector<net_networks_rec>& net_networks);
   WWIVMessageApi(
+    const wwiv::sdk::msgapi::MessageApiOptions& options,
     const std::string& bbs_directory,
     const std::string& subs_directory,
     const std::string& messages_directory,
@@ -48,9 +50,11 @@ public:
   bool Exist(const std::string& name) const override;
   virtual WWIVMessageArea* Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext);
   WWIVMessageArea* Create(const std::string& name) override;
+  WWIVMessageArea* Create(const wwiv::sdk::subboard_t& sub) override;
   bool Remove(const std::string& name) override;
   virtual WWIVMessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext);
   WWIVMessageArea* Open(const std::string& name) override;
+  WWIVMessageArea* Open(const wwiv::sdk::subboard_t& sub) override;
   WWIVEmail* OpenEmail();
 };
 

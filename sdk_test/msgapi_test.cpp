@@ -39,8 +39,10 @@ using namespace wwiv::strings;
 class MsgApiTest: public testing::Test {
 public:
   void SetUp() override {
+    wwiv::sdk::msgapi::MessageApiOptions options;
+    options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
     config = make_unique<Config>(helper.root());
-    api.reset(new WWIVMessageApi(*config, {}));
+    api.reset(new WWIVMessageApi(options, *config, {}));
   }
 
   unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname, const string& title, const string& text) {

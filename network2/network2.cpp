@@ -305,8 +305,13 @@ int main(int argc, char** argv) {
     const auto& bbsdir = net_cmdline.bbsdir();
     const auto& config = net_cmdline.config();
     const auto& networks = net_cmdline.networks();
+    // TODO(rushfan): Load sub data here;
+    // TODO(rushfan): Create the right API type for the right message area.
+    wwiv::sdk::msgapi::MessageApiOptions options;
+    options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
+
     unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
-      config, networks.networks());
+      options, config, networks.networks());
     unique_ptr<UserManager> user_manager = make_unique<UserManager>(
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
     Context context(config, net, *user_manager.get(), *api.get(), networks.networks());
