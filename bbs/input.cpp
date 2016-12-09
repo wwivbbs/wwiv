@@ -277,25 +277,27 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
 
   max_length = std::min<int>(max_length, 80);
   bout.Color(4);
-  int x = a()->localIO()->WhereX() + 1;
-  int y = a()->localIO()->WhereY() + 1;
 
-  bout.GotoXY(x, y);
+  bout.SavePosition();
   for (int i = 0; i < max_length; i++) {
     bout << input_background_char;
   }
-  bout.GotoXY(x, y);
+  bout.RestorePosition();
+  bout.SavePosition();
   if (!orig_text.empty()) {
     strcpy(szTemp, orig_text.c_str());
     bout << szTemp;
-    bout.GotoXY(x, y);
+    bout.RestorePosition();
+    bout.SavePosition();
     pos = nLength = strlen(szTemp);
   }
-  x = a()->localIO()->WhereX() + 1;
+  //x = a()->localIO()->WhereX() + 1;
 
   bool done = false;
   do {
-    bout.GotoXY(pos + x, y);
+    bout.RestorePosition();
+    bout.SavePosition();
+    bout.Right(pos);
 
     int c = bgetch_event(numlock_status_t::NUMBERS);
 
@@ -303,9 +305,13 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
     case CX:                // Control-X
     case ESC:               // ESC
       if (nLength) {
-        bout.GotoXY(nLength + x, y);
+        bout.RestorePosition();
+        bout.SavePosition();
+        bout.Right(nLength);
         while (nLength--) {
-          bout.GotoXY(nLength + x, y);
+          bout.RestorePosition();
+          bout.SavePosition();
+          bout.Right(nLength);
           bout.bputch(input_background_char);
         }
         nLength = pos = szTemp[0] = 0;
@@ -365,19 +371,25 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
             }
             pos--;
             nLength--;
-            bout.GotoXY(pos + x, y);
+            bout.RestorePosition();
+            bout.SavePosition();
+            bout.Right(pos);
             for (int i = pos; i < nLength; i++) {
               bout.bputch(szTemp[i]);
             }
             bout << input_background_char;
           }
         } else {
-          bout.GotoXY(pos - 1 + x, y);
+          bout.RestorePosition();
+          bout.SavePosition();
+          bout.Right(pos - 1);
           bout << input_background_char;
           pos = --nLength;
           if (((mode == InputMode::DATE) && ((pos == 2) || (pos == 5))) ||
               ((mode == InputMode::PHONE) && ((pos == 3) || (pos == 7)))) {
-            bout.GotoXY(pos - 1 + x, y);
+            bout.RestorePosition();
+            bout.SavePosition();
+            bout.Right(pos - 1);
             bout << input_background_char;
             pos = --nLength;
           }
@@ -416,7 +428,9 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = slash;
-          bout.GotoXY(pos + x, y);
+          bout.RestorePosition();
+          bout.SavePosition();
+          bout.Right(pos);
           bout << &szTemp[pos];
         }
         if (mode == InputMode::PHONE && (pos == 3 || pos == 7)) {
@@ -425,7 +439,9 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
             szTemp[i + 1] = szTemp[i];
           }
           szTemp[pos++] = dash;
-          bout.GotoXY(pos + x, y);
+          bout.RestorePosition();
+          bout.SavePosition();
+          bout.Right(pos);
           bout << &szTemp[pos];
         }
         if (((mode == InputMode::DATE && c != slash) ||
@@ -443,7 +459,9 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
               szTemp[i + 1] = szTemp[i];
             }
             szTemp[pos++] = (char) c;
-            bout.GotoXY(pos + x, y);
+            bout.RestorePosition();
+            bout.SavePosition();
+            bout.Right(pos);
             bout << &szTemp[pos];
           }
         }

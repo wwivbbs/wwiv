@@ -107,7 +107,11 @@ void Output::GotoXY(int x, int y) {
 }
 
 void Output::Left(int num) {
-  std::ostringstream ss("\x1b[");
+  if (num == 0) {
+    return;
+  }
+  std::ostringstream ss;
+  ss << "\x1b[";
   if (num > 1) {
     ss << num;
   }
@@ -116,12 +120,17 @@ void Output::Left(int num) {
 }
 
 void Output::Right(int num) {
-  std::ostringstream ss("\x1b[");
+  if (num == 0) {
+    return;
+  }
+  std::ostringstream ss;
+  ss << "\x1b[";
   if (num > 1) {
     ss << num;
   }
   ss << "C";
-  bputs(ss.str());
+  string s = ss.str();
+  bputs(s);
 }
 
 void Output::SavePosition() {
