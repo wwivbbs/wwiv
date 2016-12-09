@@ -135,13 +135,10 @@ void Output::Right(int num) {
 
 void Output::SavePosition() {
   bputs("\x1b[s");
-  saved_x_ = localIO()->WhereX();
-  saved_y_ = localIO()->WhereY();
 }
 
 void Output::RestorePosition() {
   bputs("\x1b[u");
-  //localIO()->GotoXY(saved_x_, saved_y_);
 }
 
 void Output::nl(int nNumLines) {

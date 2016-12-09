@@ -138,10 +138,6 @@ private:
   std::string endofline_;
   int x_ = 0;
   bool last_key_local_ = true;
-
-  int saved_x_ = 0;
-  int saved_y_ = 0;
-
   void execute_ansi();
 
 };
