@@ -73,6 +73,10 @@ class Output : public std::ostream {
   void Color(int wwivColor);
   void ResetColors();
   void GotoXY(int x, int y);
+  void Left(int num);
+  void Right(int num);
+  void SavePosition();
+  void RestorePosition();
   void nl(int nNumLines = 1);
   void bs();
   /* This sets the current color (both locally and remotely) to that
@@ -134,6 +138,9 @@ private:
   std::string endofline_;
   int x_ = 0;
   bool last_key_local_ = true;
+
+  int saved_x_ = 0;
+  int saved_y_ = 0;
 
   void execute_ansi();
 

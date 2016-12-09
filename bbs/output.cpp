@@ -106,6 +106,35 @@ void Output::GotoXY(int x, int y) {
   }
 }
 
+void Output::Left(int num) {
+  std::ostringstream ss("\x1b[");
+  if (num > 1) {
+    ss << num;
+  }
+  ss << "D";
+  bputs(ss.str());
+}
+
+void Output::Right(int num) {
+  std::ostringstream ss("\x1b[");
+  if (num > 1) {
+    ss << num;
+  }
+  ss << "C";
+  bputs(ss.str());
+}
+
+void Output::SavePosition() {
+  bputs("\x1b[s");
+  saved_x_ = localIO()->WhereX();
+  saved_y_ = localIO()->WhereY();
+}
+
+void Output::RestorePosition() {
+  bputs("\x1b[u");
+  //localIO()->GotoXY(saved_x_, saved_y_);
+}
+
 void Output::nl(int nNumLines) {
   for (int i = 0; i < nNumLines; i++) {
     if (!endofline_.empty()) {
