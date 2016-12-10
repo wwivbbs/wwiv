@@ -31,6 +31,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/application.h"
 #include "bbs/local_io.h"
+#include "core/log.h"
 
 #define BPUTCH_LITERAL_PIPE_CODE -1
 #define BPUTCH_NO_CODE 0
@@ -262,7 +263,14 @@ int Output::bputch(char c, bool use_buffer) {
   if (outcom && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
       char x = okansi() ? '\xFE' : 'X';
-      rputch(local_echo ? c : x, use_buffer);
+      if (c == SOFTRETURN) {
+#ifdef __unix__
+        rputch('\r', use_buffer);
+#endif  // __unix__
+        rputch('\n', use_buffer);
+      } else {
+        rputch(local_echo ? c : x, use_buffer);
+      }
       displayed = 1;
     }
   }
@@ -322,7 +330,7 @@ int Output::bputch(char c, bool use_buffer) {
 }
 
 
-/* This function ouputs a string to the com port.  This is mainly used
+/* This function outputs a string to the com port.  This is mainly used
  * for modem commands
  */
 void Output::rputs(const char *text) {
