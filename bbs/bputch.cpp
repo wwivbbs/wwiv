@@ -288,7 +288,7 @@ int Output::bputch(char c, bool use_buffer) {
     ansistr[ansiptr] = '\0';
   } else {
     if (c == TAB) {
-      int nScreenPos = localIO()->WhereX();
+      int nScreenPos = wherex();
       for (int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++) {
         displayed += bputch(SPACE);
       }
