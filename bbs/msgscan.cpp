@@ -630,6 +630,70 @@ static void HandleMessageHelp() {
   }
 }
 
+static void HandleValUser(int nMessageNumber) {
+  if (cs() && (get_post(nMessageNumber)->ownersys == 0) && (nMessageNumber > 0)
+    && (nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea())) {
+    valuser(get_post(nMessageNumber)->owneruser);
+  }
+  else if (cs() && (nMessageNumber > 0) && (nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea())) {
+    bout.nl();
+    bout << "|#6Post from another system.\r\n\n";
+  }
+}
+
+static void HandleToggleAutoPurge(int nMessageNumber) {
+  if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea())) {
+    wwiv::bbs::OpenSub opened_sub(true);
+    resynch(&nMessageNumber, nullptr);
+    postrec *p3 = get_post(nMessageNumber);
+    p3->status ^= status_no_delete;
+    write_post(nMessageNumber, p3);
+    bout.nl();
+    if (p3->status & status_no_delete) {
+      bout << "|#9Message will |#6NOT|#9 be auto-purged.\r\n";
+    }
+    else {
+      bout << "|#9Message |#2CAN|#9 now be auto-purged.\r\n";
+    }
+    bout.nl();
+  }
+}
+
+
+static void HandleTogglePendingNet(int nMessageNumber, int& val) {
+  if (lcs() && nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea() &&
+    a()->current_sub().anony & anony_val_net &&
+    !a()->current_sub().nets.empty()) {
+    wwiv::bbs::OpenSub opened_sub(true);
+    resynch(&nMessageNumber, nullptr);
+    postrec *p3 = get_post(nMessageNumber);
+    p3->status ^= status_pending_net;
+    write_post(nMessageNumber, p3);
+    close_sub();
+    bout.nl();
+    if (p3->status & status_pending_net) {
+      val |= 2;
+      bout << "|#9Will be sent out on net now.\r\n";
+    }
+    else {
+      bout << "|#9Not set for net pending now.\r\n";
+    }
+    bout.nl();
+  }
+}
+
+static void HandleToggleUnAnonymous(int nMessageNumber) {
+  if (lcs() && nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
+    wwiv::bbs::OpenSub opened_sub(true);
+    resynch(&nMessageNumber, nullptr);
+    postrec *p3 = get_post(nMessageNumber);
+    p3->anony = 0;
+    write_post(nMessageNumber, p3);
+    bout.nl();
+    bout << "|#9Message is not anonymous now.\r\n";
+  }
+}
+
 static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
   bool &quit, int &val) {
   resetnsp();
@@ -765,62 +829,10 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
       nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       break;
 
-    case 'V':
-      if (cs() && (get_post(nMessageNumber)->ownersys == 0) && (nMessageNumber > 0)
-        && (nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea())) {
-        valuser(get_post(nMessageNumber)->owneruser);
-      } else if (cs() && (nMessageNumber > 0) && (nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea())) {
-        bout.nl();
-        bout << "|#6Post from another system.\r\n\n";
-      }
-      break;
-    case 'N':
-      if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea())) {
-        wwiv::bbs::OpenSub opened_sub(true);
-        resynch(&nMessageNumber, nullptr);
-        postrec *p3 = get_post(nMessageNumber);
-        p3->status ^= status_no_delete;
-        write_post(nMessageNumber, p3);
-        bout.nl();
-        if (p3->status & status_no_delete) {
-          bout << "|#9Message will |#6NOT|#9 be auto-purged.\r\n";
-        } else {
-          bout << "|#9Message |#2CAN|#9 now be auto-purged.\r\n";
-        }
-        bout.nl();
-      }
-      break;
-    case 'X':
-      if (lcs() && nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea() &&
-        a()->current_sub().anony & anony_val_net &&
-        !a()->current_sub().nets.empty()) {
-        wwiv::bbs::OpenSub opened_sub(true);
-        resynch(&nMessageNumber, nullptr);
-        postrec *p3 = get_post(nMessageNumber);
-        p3->status ^= status_pending_net;
-        write_post(nMessageNumber, p3);
-        close_sub();
-        bout.nl();
-        if (p3->status & status_pending_net) {
-          val |= 2;
-          bout << "|#9Will be sent out on net now.\r\n";
-        } else {
-          bout << "|#9Not set for net pending now.\r\n";
-        }
-        bout.nl();
-      }
-      break;
-    case 'U':
-      if (lcs() && nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
-        wwiv::bbs::OpenSub opened_sub(true);
-        resynch(&nMessageNumber, nullptr);
-        postrec *p3 = get_post(nMessageNumber);
-        p3->anony = 0;
-        write_post(nMessageNumber, p3);
-        bout.nl();
-        bout << "|#9Message is not anonymous now.\r\n";
-      }
-      break;
+    case 'V': HandleValUser(nMessageNumber); break;
+    case 'N': HandleToggleAutoPurge(nMessageNumber); break;
+    case 'X': HandleTogglePendingNet(nMessageNumber, val); break;
+    case 'U': HandleToggleUnAnonymous(nMessageNumber); break;
     case 'D':
       HandleMessageDelete(nMessageNumber);
       break;
@@ -898,19 +910,18 @@ static void query_post() {
 
 static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool title_scan) {
   bool done = false;
+  int val = 0;
   while (!done) {
     CheckForHangup();
     ReadMessageResult result{};
     if (scan_option == MsgScanOption::SCAN_OPTION_READ_MESSAGE) {
       bool next = true;
-      int val = 0;
       result = read_post(msgnum, &next, &val);
     }
     else if (scan_option == MsgScanOption::SCAN_OPTION_LIST_TITLES) {
       HandleListTitles(msgnum, scan_option);
     } else if (scan_option == MsgScanOption::SCAN_OPTION_READ_PROMPT) {
       bool quit = false;
-      int val = 0;
       HandleScanReadPrompt(msgnum, scan_option, nextsub, title_scan, done, quit, val);
       if (quit) { done = true; }
     }
@@ -941,7 +952,10 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
       case 'E': HandleMessageExtract(msgnum); break;
       case 'L': HandleMessageLoad(); break;
       case 'M': HandleMessageMove(msgnum); break;
-      // add N, X, U, V
+      case 'N': HandleToggleAutoPurge(msgnum); break;
+      case 'X': HandleTogglePendingNet(msgnum, val); break;
+      case 'U': HandleToggleUnAnonymous(msgnum); break;
+      case 'V': HandleValUser(msgnum); break;
       case 'P':
         irt[0] = '\0';
         irt_name[0] = '\0';
@@ -953,6 +967,12 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
       }
     } break;
     }
+  }
+  if ((val & 1) && lcs()) {
+    validate();
+  }
+  if ((val & 2) && lcs()) {
+    network_validate();
   }
   query_post();
 }
