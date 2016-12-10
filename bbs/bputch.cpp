@@ -264,7 +264,9 @@ int Output::bputch(char c, bool use_buffer) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
       char x = okansi() ? '\xFE' : 'X';
       if (c == SOFTRETURN) {
+#ifdef __unix__
         rputch('\r', use_buffer);
+#endif  // __unix__
         rputch('\n', use_buffer);
       } else {
         rputch(local_echo ? c : x, use_buffer);
