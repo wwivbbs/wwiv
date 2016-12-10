@@ -606,10 +606,22 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
           }
           bout.GotoXY(1, lines_start);
           if (!printfile(MBFSED_NOEXT)) {
+            bout.GotoXY(1, command_line);
+            bout.clreol();
             bout << "|#6Unable to find file: " << MBFSED_NOEXT;
           }
-          bout.GotoXY(1, command_line);
-          bout.clreol();
+          else {
+            bout.GotoXY(1, command_line);
+            bout.clreol();
+          }
+          if (lcs()) {
+            pausescr();
+            if (!printfile(MBFSED_SYSOP_NOEXT)) {
+              bout.GotoXY(1, command_line);
+              bout.clreol();
+              bout << "|#6Unable to find file: " << MBFSED_SYSOP_NOEXT;
+            }
+          }
           pausescr();
           bout.GotoXY(1, command_line);
           bout.clreol();

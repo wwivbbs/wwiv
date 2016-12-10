@@ -430,7 +430,7 @@ void HandleMessageMove(int &nMessageNumber) {
     tmp_disable_conf(true);
     bout.nl();
     do {
-      bout << "|#5Move to which sub? ";
+      bout << "|#5(|#2Q|#5=|#2Quit|#5) Move to which sub? ";
       ss1 = mmkey(0);
       if (ss1[0] == '?') {
         old_sublist();
@@ -561,41 +561,49 @@ void HandleMessageReply(int &nMessageNumber) {
 }
 
 static void HandleMessageDelete(int &nMessageNumber) {
-  if (lcs()) {
-    if (nMessageNumber) {
-      open_sub(true);
-      resynch(&nMessageNumber, nullptr);
-      postrec p2 = *get_post(nMessageNumber);
-      delete_message(nMessageNumber);
-      close_sub();
-      if (p2.ownersys == 0) {
-        User tu;
-        a()->users()->ReadUser(&tu, p2.owneruser);
-        if (!tu.IsUserDeleted()) {
-          if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
-            bout.nl();
-            bout << "|#2Remove how many posts credit? ";
-            char szNumCredits[ 10 ];
-            input(szNumCredits, 3, true);
-            int nNumCredits = 1;
-            if (szNumCredits[0]) {
-              nNumCredits = (atoi(szNumCredits));
-            }
-            nNumCredits = std::min<int>(nNumCredits, tu.GetNumMessagesPosted());
-            if (nNumCredits) {
-              tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(nNumCredits));
-            }
-            bout.nl();
-            bout << "|#7Post credit removed = " << nNumCredits << endl;
-            tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() - 1);
-            a()->users()->WriteUser(&tu, p2.owneruser);
-            a()->UpdateTopScreen();
-          }
+  if (!lcs()) { 
+    return; 
+  }
+  if (!nMessageNumber) { 
+    return; 
+  }
+
+  bout << "|#5Delete message #" << nMessageNumber << ". Are you sure?";
+  if (!noyes()) {
+    return;
+  }
+
+  open_sub(true);
+  resynch(&nMessageNumber, nullptr);
+  postrec p2 = *get_post(nMessageNumber);
+  delete_message(nMessageNumber);
+  close_sub();
+  if (p2.ownersys == 0) {
+    User tu;
+    a()->users()->ReadUser(&tu, p2.owneruser);
+    if (!tu.IsUserDeleted()) {
+      if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
+        bout.nl();
+        bout << "|#2Remove how many posts credit? ";
+        char szNumCredits[ 10 ];
+        input(szNumCredits, 3, true);
+        int nNumCredits = 1;
+        if (szNumCredits[0]) {
+          nNumCredits = (atoi(szNumCredits));
         }
+        nNumCredits = std::min<int>(nNumCredits, tu.GetNumMessagesPosted());
+        if (nNumCredits) {
+          tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(nNumCredits));
+        }
+        bout.nl();
+        bout << "|#7Post credit removed = " << nNumCredits << endl;
+        tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() - 1);
+        a()->users()->WriteUser(&tu, p2.owneruser);
+        a()->UpdateTopScreen();
       }
-      resynch(&nMessageNumber, &p2);
     }
   }
+  resynch(&nMessageNumber, &p2);
 }
 
 static void HandleMessageExtract(int &nMessageNumber) {
@@ -928,8 +936,12 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
       case 'Q': done = true; break;
-      case 'A': HandleScanReadAutoReply(msgnum, "A", scan_option);
-        break;
+      case 'A': HandleScanReadAutoReply(msgnum, "A", scan_option); break;
+      case 'D': HandleMessageDelete(msgnum); break;
+      case 'E': HandleMessageExtract(msgnum); break;
+      case 'L': HandleMessageLoad(); break;
+      case 'M': HandleMessageMove(msgnum); break;
+      // add N, X, U, V
       case 'P':
         irt[0] = '\0';
         irt_name[0] = '\0';
