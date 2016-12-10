@@ -21,6 +21,7 @@
 #include <iostream>
 #include <iterator>
 #include <memory>
+#include <stdexcept>
 #include <string>
 
 #include "bbs/bbs.h"
@@ -299,7 +300,12 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     while (ptr + 1 < data.message_text.size() && (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
       ptr++;
     }
-    data.message_text = data.message_text.substr(ptr);
+    try {
+      data.message_text = data.message_text.substr(ptr);
+    }
+    catch (const std::out_of_range& e) {
+      LOG(ERROR) << "Error getting message_text: " << e.what();
+    }
     ptr = 0;
   }
   
@@ -307,7 +313,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   for (auto line : lines) {
     StringTrim(&line);
     if (line.empty()) continue;
-    if (starts_with(line, "\004""0FidoAddr:")) {
+    if (starts_with(line, "\004""0FidoAddr: ") && line.size() > 12) {
       string cl = line.substr(12);
       if (!cl.empty()) {
         data.to_user_name = cl;
@@ -332,8 +338,24 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   return data;
 }
 
-struct MessageHeaderInfo {
+class MessageHeaderInfo {
+public:
+  void initialize() {
+    screen_width = a()->user()->GetScreenChars();
+    screen_length = a()->user()->GetScreenLines() - 1;
+    message_height = screen_length - num_lines - 2 - 1;
+    lines_start = num_lines + 2;
+    lines_end = lines_start + message_height;
+    command_line = screen_length;
+  }
+
   int num_lines = 0;
+  int screen_width = 0;
+  int screen_length = 0;
+  int message_height = 0;
+  int lines_start = 0;
+  int lines_end = 0;
+  int command_line = 0;
 };
 
 static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
@@ -430,6 +452,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     info.num_lines++;
   }
 
+  info.initialize();
   return info;
 }
 
@@ -462,6 +485,19 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
     }
   }
   return lines;
+}
+
+static void ClearCommandLine(const MessageHeaderInfo& info) {
+  bout.GotoXY(1, info.command_line);
+  bout.clreol();
+}
+
+static void ClearMessageArea(const MessageHeaderInfo& info) {
+  for (int y = info.lines_start; y < info.lines_end; y++) {
+    bout.GotoXY(1, y);
+    bout.clreol();
+  }
+  bout.GotoXY(1, info.lines_start);
 }
 
 static void display_message_text_new(const std::vector<std::string>& lines, int start, 
@@ -497,35 +533,29 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
   bout.cls();
   const auto info = display_type2_message_header(msg);
-  const int screen_width = a()->user()->GetScreenChars();
-  const int screen_length = a()->user()->GetScreenLines() - 1;
-  const int message_height = screen_length - info.num_lines - 2 - 1;
-  const int lines_start = info.num_lines + 2;
-  const int lines_end = lines_start + message_height;
-  const int command_line = screen_length;
 
   auto lines = split_wwiv_message(msg.message_text);
 
   bout.GotoXY(1, info.num_lines + 1);
-  bout << "|#7" << static_cast<char>(198) << string(screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
-  bout.GotoXY(1, screen_length - 1);
-  bout << "|#7" << static_cast<char>(198) << string(screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
+  bout << "|#7" << static_cast<char>(198) << string(info.screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
+  bout.GotoXY(1, info.screen_length - 1);
+  bout << "|#7" << static_cast<char>(198) << string(info.screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
 
   bout.GotoXY(1, info.num_lines + 2);
   const int first = 0;
-  const int last = std::max<int>(0, lines.size() - message_height);
+  const int last = std::max<int>(0, lines.size() - info.message_height);
 
   int start = first;
   bool done = false;
   bout.Color(0);
   ReadMessageResult result{};
-  result.lines_start = lines_start;
-  result.lines_end = lines_end;
+  result.lines_start = info.lines_start;
+  result.lines_end = info.lines_end;
   while (!done) {
     CheckForHangup();
     
-    display_message_text_new(lines, start, message_height, screen_width, lines_start);
-    bout.GotoXY(1, command_line);
+    display_message_text_new(lines, start, info.message_height, info.screen_width, info.lines_start);
+    ClearCommandLine(info);
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
 
     int key = bgetch_event(numlock_status_t::NOTNUMBERS);
@@ -536,8 +566,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       }
     } break;
     case COMMAND_PAGEUP: {
-      if (start - message_height > first) {
-        start -= message_height;
+      if (start - info.message_height > first) {
+        start -= info.message_height;
       } else {
         start = first;
       }
@@ -551,8 +581,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       }
     } break;
     case COMMAND_PAGEDN: {
-      if (start + message_height < last) {
-        start += message_height;
+      if (start + info.message_height < last) {
+        start += info.message_height;
       } else {
         start = last;
       }
@@ -578,8 +608,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         result.option = ReadMessageOption::NEXT_MSG;
         return result;
       }
-      else if (start + message_height < last) {
-        start += message_height;
+      else if (start + info.message_height < last) {
+        start += info.message_height;
       }
       else {
         start = last;
@@ -600,45 +630,37 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         else if (key == 'T') {
           result.option = ReadMessageOption::LIST_TITLES;
         } else if (key == '?') {
-          for (int y = lines_start; y < lines_end; y++) {
-            bout.GotoXY(1, y);
-            bout.clreol();
-          }
-          bout.GotoXY(1, lines_start);
+          ClearMessageArea(info);
           if (!printfile(MBFSED_NOEXT)) {
-            bout.GotoXY(1, command_line);
-            bout.clreol();
+            ClearCommandLine(info);
             bout << "|#6Unable to find file: " << MBFSED_NOEXT;
           }
           else {
-            bout.GotoXY(1, command_line);
-            bout.clreol();
+            ClearCommandLine(info);
           }
           if (lcs()) {
             pausescr();
+            ClearMessageArea(info);
             if (!printfile(MBFSED_SYSOP_NOEXT)) {
-              bout.GotoXY(1, command_line);
-              bout.clreol();
+              ClearCommandLine(info);
               bout << "|#6Unable to find file: " << MBFSED_SYSOP_NOEXT;
             }
           }
+          ClearCommandLine(info);
           pausescr();
-          bout.GotoXY(1, command_line);
-          bout.clreol();
+          ClearCommandLine(info);
         } else {
           result.option = ReadMessageOption::COMMAND;
           result.command = static_cast<char>(key);
         }
-        bout.GotoXY(1, command_line);
-        bout.clreol();
+        ClearCommandLine(info);
         return result;
       }
     }
     }
   }
 
-  bout.GotoXY(1, command_line);
-  bout.clreol();
+  ClearCommandLine(info);
   return result;
 }
 
