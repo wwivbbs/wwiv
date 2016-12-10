@@ -73,7 +73,15 @@ What's New in WWIV 5.2 (2016)
 * Fixed the cram-md5 implementation, it's not correct and can talk to 
   other binkp servers (tested against MIS) using cram-md5.  This happened
   in build 2304.
-* 
+* The new user flow on Linux now works as expected (the screen
+  positioning is not off).
+* New experimental full screen reader. Enable it with
+  "EXPERIMENTAL_READ_PROMPT = Y" in wwiv.ini.  Once enabled it's
+  a per-user option in Defaults.
+* New file "gfiles/mbfsed.msg" is the help screen for user
+  commands for the fill screen message reader.
+* New file "gfiles/mbfsed-sysop.msg" is the help screen for sysop
+  commands for the fill screen message reader.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
