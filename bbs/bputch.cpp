@@ -115,7 +115,6 @@ void Output::execute_ansi() {
     case 'u':
       local_io_->GotoXY(oldx, oldy);
       x_ = oldx;
-      oldx = oldy = 0;
       g_flags |= g_flag_ansi_movement;
       break;
     case 'J':
