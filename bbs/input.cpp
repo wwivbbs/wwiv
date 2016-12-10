@@ -251,11 +251,11 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
   const char dash = '-';
   const char slash = '/';
 
-#if defined( __unix__ )
-  input1(szTemp, max_length, mode, true, false);
-  strcpy(out_text, szTemp);
-  return;
-#endif  // __unix__
+//#if defined( __unix__ )
+//  input1(szTemp, max_length, mode, true, false);
+//  strcpy(out_text, szTemp);
+//  return;
+//#endif  // __unix__
   if (!okansi()) {
     input1(szTemp, max_length, mode, true, false);
     strcpy(out_text, szTemp);
