@@ -956,14 +956,12 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
       case 'X': HandleTogglePendingNet(msgnum, val); break;
       case 'U': HandleToggleUnAnonymous(msgnum); break;
       case 'V': HandleValUser(msgnum); break;
-      case 'P':
+      case 'P': {
         irt[0] = '\0';
         irt_name[0] = '\0';
         post();
-        break;
-      case 'W':
-        HandleMessageReply(msgnum);
-        break;
+      } break;
+      case 'W': HandleMessageReply(msgnum); break;
       }
     } break;
     }
