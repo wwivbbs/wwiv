@@ -26,10 +26,13 @@
 #include <algorithm>
 #include <chrono>
 #include <cmath>
+#include <cstdarg>
 #include <exception>
 #include <iostream>
 #include <memory>
-#include <cstdarg>
+#include <stdexcept>
+#include <string>
+
 #include "bbs/asv.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl2.h"
@@ -1012,10 +1015,16 @@ int Application::Run(int argc, char *argv[]) {
         filelist.clear();
         zap_ed_info();
         write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
-        wwiv::menus::mainmenu();
+        try {
+          wwiv::menus::mainmenu();
+        }
+        catch (const std::logic_error& le) {
+          std::cerr << "Caught std::logic_error: " << le.what() << "\r\n";
+          sysoplog() << le.what();
+        }
       }
     }
-    catch (wwiv::bbs::hangup_error& h) {
+    catch (const wwiv::bbs::hangup_error& h) {
       std::cerr << h.what() << "\r\n";
       sysoplog() << h.what();
     }
