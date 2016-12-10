@@ -471,7 +471,17 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
       break;
     }
     bout.GotoXY(1, i - start + lines_start);
-    const auto& l = lines.at(i);
+    auto l = lines.at(i);
+    if (!l.empty()) {
+      if (l.back() == CA) {
+        // A line ending in ^A means it soft-wrapped.
+        l.pop_back();
+      }
+      if (l.front() == CB) {
+        // Line starting with ^B is centered.
+        l = StrCat(std::string((screen_width - l.size()) / 2, ' '), l);
+      }
+    }
     bout << "|#0" << l << pad(screen_width, l.size());
   }
 
