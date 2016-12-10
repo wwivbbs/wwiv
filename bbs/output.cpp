@@ -206,7 +206,7 @@ void Output::litebar(const char *formatText, ...) {
 void Output::backline() {
   Color(0);
   bputch(SPACE);
-  for (int i = localIO()->WhereX() + 1; i >= 0; i--) {
+  for (int i = wherex() + 1; i >= 0; i--) {
     this->bs();
   }
 }

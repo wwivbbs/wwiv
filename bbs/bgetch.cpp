@@ -272,7 +272,7 @@ bool bkbhit() {
 
 
 bool Output::RestoreCurrentLine(const SavedLine& line) {
-  if (a()->localIO()->WhereX()) {
+  if (bout.wherex()) {
     bout.nl();
   }
   for (const auto& c : line.line) {
