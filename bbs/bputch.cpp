@@ -263,7 +263,12 @@ int Output::bputch(char c, bool use_buffer) {
   if (outcom && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
       char x = okansi() ? '\xFE' : 'X';
-      rputch(local_echo ? c : x, use_buffer);
+      if (c == SOFTRETURN) {
+        rputch('\r', use_buffer);
+        rputch('\n', use_buffer);
+      } else {
+        rputch(local_echo ? c : x, use_buffer);
+      }
       displayed = 1;
     }
   }
@@ -296,12 +301,6 @@ int Output::bputch(char c, bool use_buffer) {
     } else if (local_echo) {
       displayed = 1;
       auto display_char = local_echo ? c : '\xFE';
-      if (display_char == SOFTRETURN) {
-        bputch('!');
-        bputch(RETURN);
-      } else if (display_char == RETURN) {
-        rputch(RETURN);
-      }
       localIO()->Putch(display_char);
 
       current_line_.push_back({display_char, curatr});
@@ -309,9 +308,6 @@ int Output::bputch(char c, bool use_buffer) {
 
       if (c == SOFTRETURN) {
         current_line_.clear();
-#ifdef __unix__
-        bputch(RETURN);
-#endif  // __unix__
         x_ = 0;
         bout.lines_listed_++;
         // change Build3 + 5.0 to fix message read.
