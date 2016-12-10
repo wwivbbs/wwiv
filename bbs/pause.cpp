@@ -109,7 +109,8 @@ void pausescr() {
     i = curatr;
     bout.SystemColor(a()->user()->HasColor() ? a()->user()->GetColor(3) 
       : a()->user()->GetBWColor(3));
-    bout << ss << "\x1b[" << i1 << "D";
+    bout << ss;
+    bout.Left(i1);
     bout.SystemColor(i);
 
     time(&tstart);
@@ -133,7 +134,7 @@ void pausescr() {
                 i1 -= 2;
               }
             }
-            bout << "\x1b[" << i1 << "D";
+            bout.Left(i1);
             bout.SystemColor(i);
           }
         } else {
@@ -142,7 +143,7 @@ void pausescr() {
             for (int i3 = 0; i3 < i1; i3++) {
               bout.bputch(' ');
             }
-            bout << "\x1b[" << i1 << "D";
+            bout.Left(i1);
             bout.SystemColor(i);
             setiia(oiia);
             return;
@@ -156,7 +157,7 @@ void pausescr() {
     for (int i3 = 0; i3 < i1; i3++) {
       bout.bputch(' ');
     }
-    bout << "\x1b[" << i1 << "D";
+    bout.Left(i1);
     bout.SystemColor(i);
     setiia(oiia);
 

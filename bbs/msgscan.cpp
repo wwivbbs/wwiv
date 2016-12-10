@@ -990,12 +990,13 @@ void scan(int nMessageNumber, MsgScanOption nScanOptionType, int *nextsub, bool 
     { // Read Message
       bool next = false;
       if (nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
+        bool old_incom = incom;
         if (forcescansub) {
           incom = false;
         }
         read_post(nMessageNumber, &next, &val);
         if (forcescansub) {
-          incom = true;
+          incom = old_incom;
         }
       }
       bout.Color(0);
