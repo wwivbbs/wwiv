@@ -116,7 +116,6 @@ void Output::execute_ansi() {
     case 'u':
       local_io_->GotoXY(oldx, oldy);
       x_ = oldx;
-      oldx = oldy = 0;
       g_flags |= g_flag_ansi_movement;
       break;
     case 'J':
@@ -290,7 +289,7 @@ int Output::bputch(char c, bool use_buffer) {
     ansistr[ansiptr] = '\0';
   } else {
     if (c == TAB) {
-      int nScreenPos = localIO()->WhereX();
+      int nScreenPos = wherex();
       for (int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++) {
         displayed += bputch(SPACE);
       }

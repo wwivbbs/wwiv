@@ -1242,13 +1242,8 @@ void noabort(const char *file_name) {
 }
 
 static void cln_nu() {
+  bout.RestorePosition();
   bout.Color(0);
-  int i1 = a()->localIO()->WhereX();
-  if (i1 > 28) {
-    for (int i = i1; i > 28; i--) {
-      bout.bs();
-    }
-  }
   bout.clreol();
 }
 
@@ -1287,6 +1282,7 @@ void DoMinimalNewUser() {
       bool ok = true;
       char szTempName[ 81 ];
       do {
+        bout.SavePosition();
         Input1(szTempName, s1, 30, true, InputMode::UPPER);
         ok = check_name(szTempName);
         if (!ok) {
@@ -1303,6 +1299,7 @@ void DoMinimalNewUser() {
     bout << "|#1[B] Birth Date (MM/DD/YYYY) : ";
     if (u->GetAge() == 0) {
       bool ok = false;
+      bout.SavePosition();
       do {
         ok = false;
         cln_nu();
@@ -1346,6 +1343,7 @@ void DoMinimalNewUser() {
          << u->GetBirthdayYear()
          << " (" << u->GetAge() << " years old)\r\n"
          << "|#1[C] Sex (Gender)            : ";
+    bout.SavePosition();
     if (u->GetGender() != 'M' && u->GetGender()  != 'F') {
       bout.mpl(1);
       u->SetGender(onek_ncr("MF"));
@@ -1354,6 +1352,7 @@ void DoMinimalNewUser() {
     cln_nu();
     bout << "|#2" << (u->GetGender() == 'M' ? "Male" : "Female") << wwiv::endl;
     bout <<  "|#1[D] Country                 : " ;
+    bout.SavePosition();
     if (u->GetCountry()[0] == '\0') {
       Input1(reinterpret_cast<char*>(u->data.country), "", 3, false, InputMode::UPPER);
       if (u->GetCountry()[0] == '\0') {
@@ -1364,6 +1363,7 @@ void DoMinimalNewUser() {
     cln_nu();
     bout << "|#2" << u->GetCountry() << wwiv::endl;
     bout << "|#1[E] ZIP or Postal Code      : ";
+    bout.SavePosition();
     if (u->GetZipcode()[0] == 0) {
       bool ok = false;
       do {
@@ -1382,6 +1382,7 @@ void DoMinimalNewUser() {
     cln_nu();
     bout << "|#2" << u->GetZipcode() << wwiv::endl;
     bout << "|#1[F] City/State/Province     : ";
+    bout.SavePosition();
     if (u->GetCity()[0] == 0) {
       bool ok = false;
       do {
@@ -1407,6 +1408,7 @@ void DoMinimalNewUser() {
     bout << "|#2" << u->GetCity() << ", " <<
                        u->GetState() << wwiv::endl;
     bout << "|#1[G] Internet Mail Address   : ";
+    bout.SavePosition();
     if (u->GetEmailAddress()[0] == 0) {
       string emailAddress = Input1(s1, 44, true, InputMode::MIXED);
       u->SetEmailAddress(emailAddress.c_str());

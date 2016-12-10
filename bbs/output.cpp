@@ -135,13 +135,10 @@ void Output::Right(int num) {
 
 void Output::SavePosition() {
   bputs("\x1b[s");
-  saved_x_ = localIO()->WhereX();
-  saved_y_ = localIO()->WhereY();
 }
 
 void Output::RestorePosition() {
   bputs("\x1b[u");
-  //localIO()->GotoXY(saved_x_, saved_y_);
 }
 
 void Output::nl(int nNumLines) {
@@ -209,7 +206,7 @@ void Output::litebar(const char *formatText, ...) {
 void Output::backline() {
   Color(0);
   bputch(SPACE);
-  for (int i = localIO()->WhereX() + 1; i >= 0; i--) {
+  for (int i = wherex() + 1; i >= 0; i--) {
     this->bs();
   }
 }

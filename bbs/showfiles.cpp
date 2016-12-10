@@ -65,7 +65,7 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
     strncpy(s, fnd.GetFileName(), MAX_PATH);
     align(s);
     full_pathname = StrCat("|#7[|#2", s, "|#7]|#1 ");
-    if (a()->localIO()->WhereX() > (a()->user()->GetScreenChars() - 15)) {
+    if (bout.wherex() > (a()->user()->GetScreenChars() - 15)) {
       bout.nl();
     }
     bout << full_pathname;

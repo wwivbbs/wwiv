@@ -27,9 +27,11 @@ General Cleanup
 * Change parameters to use strings so Runnable can use a vector of strings vs, argc, argv
 * TopScreen doesn't work with CursesIO
 * use daten_t everywhere we have a daten date.
-* stop checking while (!hangup) since we throw now. Maybe make the hangup
-  variable a static in the Hangup class.
+* Maybe make the hangup variable a static in the Application class.
 * redo ctim and ctim2
+* use chrono in bgetch and bgetch_event
+* stop using localIO()->WhereX to determine remote position
+* Fix use of wherex in cln_nu (this is awful on linux)
 
 General Improvements
 ====================

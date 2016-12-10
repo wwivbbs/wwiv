@@ -291,7 +291,6 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
     bout.SavePosition();
     pos = nLength = strlen(szTemp);
   }
-  //x = a()->localIO()->WhereX() + 1;
 
   bool done = false;
   do {

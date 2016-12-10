@@ -180,20 +180,20 @@ void display_message_text(const std::string& text, bool *next) {
 
         if (printit || ansi || nLineLenPtr >= 80) {
           if (centre && (ctrld != -1)) {
-            int nSpacesToCenter = (a()->user()->GetScreenChars() - a()->localIO()->WhereX() -
-              nLineLenPtr) / 2;
+            int nSpacesToCenter = 
+              (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
             osan(charstr(nSpacesToCenter, ' '), &abort, next);
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
-              if ((a()->localIO()->WhereX() + nLineLenPtr >= a()->user()->GetScreenChars())
+              if ((bout.wherex() + nLineLenPtr >= a()->user()->GetScreenChars())
                 && !centre && !ansi) {
                 bout.nl();
               }
               s[nNumCharsPtr] = '\0';
               osan(s, &abort, next);
               if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
-                if (a()->localIO()->WhereX() < a()->user()->GetScreenChars() - 1) {
+                if (bout.wherex() < a()->user()->GetScreenChars() - 1) {
                   bout.bputch(SPACE);
                   bout.nl();
                 } else {
