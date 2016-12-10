@@ -651,17 +651,29 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     if (!msgid.empty()) {
       text << "\001MSGID: " << msgid << "\r";
     }
+    // Implement FTS-5003. [http://ftsc.org/docs/fts-5003.001]
+    // All outbound WWIV messages are always CP437.
+    text << "\001CHRS: CP437 2\r";
+
+    // Add the text from the message (as entered from the BBS).
+    text << bbs_text;
+
+    // Now we need tear + origin lines
     auto origin_line = net.fido.origin_line;
     if (origin_line.empty()) {
       // default origin line to system name if it doesn't exist.
       origin_line = config.config()->systemname;
     }
 
-    text << bbs_text << "\r"
+    text << "\r"
       << "--- WWIV " << wwiv_version << beta_version << "\r"
       << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r";
+
+    // Finally we need SEEN-BY and PATH lines for routing.
     if (!is_email) {
+      // TODO(rushfan): Add the nodes we are exporting this to.
       text << "SEEN-BY: " << to_net_node(from_address) << "\r\r";
+      // Also we need to add a ^APATH: line here, starting with us.
     }
 
     vh.text = text.str();
