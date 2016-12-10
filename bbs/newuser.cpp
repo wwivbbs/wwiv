@@ -364,71 +364,53 @@ void input_sex() {
 
 void input_age(User *pUser) {
   int y = 2000, m = 1, d = 1;
-  char ag[10], s[81];
-  time_t t;
-  time(&t);
+  time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
 
-  bool ok = false;
+  bout.nl();
   do {
     bout.nl();
-    do {
-      bout.nl();
-      bout << "|#2Month you were born (1-12) : ";
-      input(ag, 2, true);
-      m = atoi(ag);
-    } while (!hangup && (m > 12 || m < 1));
+    y = static_cast<int>(pTm->tm_year + 1900 - 30) / 100;
+    bout << "|#2Year you were born: ";
+    y = input_number<int>(y, 1900, pTm->tm_year + 1900 - 30);
+  } while (!hangup && y < 1905);
 
-    do {
-      bout.nl();
-      bout << "|#2Day of month you were born (1-31) : ";
-      input(ag, 2, true);
-      d = atoi(ag);
-    } while (!hangup && (d > 31 || d < 1));
+  do {
+    bout.nl();
+    bout << "|#2Month you were born (1-12) : ";
+    m = input_number<int>(pUser->GetBirthdayMonth(), 1, 12);
+  } while (!hangup && (m > 12 || m < 1));
 
-    do {
-      bout.nl();
-      y = static_cast<int>(pTm->tm_year + 1900 - 10) / 100;
-      bout << "|#2Year you were born: ";
-      sprintf(s, "%2d", y);
-      Input1(ag, s, 4, true, InputMode::MIXED);
-      y = atoi(ag);
-      if (y == 1919) {
-        bout.nl();
-        bout << "|#5Were you really born in 1919? ";
-        if (!yesno()) {
-          y = 0;
-        }
-      }
-    } while (!hangup && y < 1905);
-
-    ok = true;
-    if (((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) {
-      ok = false;
+  do {
+    std::map<int, int> days_in_month = {
+      { 1, 31 },
+      { 3, 31 },
+      { 4, 30 },
+      { 5, 31 },
+      { 6, 30 },
+      { 7, 31 },
+      { 8, 31 },
+      { 9, 30 },
+      { 10, 31 },
+      { 11, 30 },
+      { 12, 31 },
+    };
+    if (isleap(y)) {
+      days_in_month[2] = 29;
     }
-    if ((m == 2) && (((y % 4 != 0) && (d == 29)) || (d == 30))) {
-      ok = false;
+    else {
+      days_in_month[2] = 28;
     }
-    if (d > 31) {
-      ok = false;
-    }
-    if (!ok) {
-      bout.nl();
-      bout << "|#6There aren't that many days in that month.\r\n";
-    }
-    if (years_old(m, d, y) < 5) {
-      bout.nl();
-      bout << "Not likely\r\n";
-      ok = false;
-    }
-  } while (!ok && !hangup);
+    bout.nl();
+    bout << "|#2Day of month you were born (1-31) : ";
+    d = input_number<int>(pUser->GetBirthdayDay(), 1, days_in_month.at(m));
+  } while (!hangup && (d > 31 || d < 1));
   pUser->SetBirthdayMonth(m);
   pUser->SetBirthdayDay(d);
   pUser->SetBirthdayYear(y);
   pUser->SetAge(years_old(pUser->GetBirthdayMonth(), pUser->GetBirthdayDay(), pUser->GetBirthdayYear()));
   bout.nl();
 }
-
 
 void input_comptype() {
   int ct = -1;

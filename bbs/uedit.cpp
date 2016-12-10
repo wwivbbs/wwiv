@@ -564,7 +564,7 @@ void uedit(int usern, int other) {
         if (yesno()) {
           bout.nl();
           bout.bprintf("Current birthdate: %02d/%02d/%02d\r\n",
-                                            user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
+            user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
           input_age(&user);
           a()->users()->WriteUser(&user, user_number);
         }
