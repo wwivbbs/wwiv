@@ -31,6 +31,7 @@
 #include "bbs/wconstants.h"
 #include "bbs/application.h"
 #include "bbs/local_io.h"
+#include "core/log.h"
 
 #define BPUTCH_LITERAL_PIPE_CODE -1
 #define BPUTCH_NO_CODE 0
@@ -296,6 +297,12 @@ int Output::bputch(char c, bool use_buffer) {
     } else if (local_echo) {
       displayed = 1;
       auto display_char = local_echo ? c : '\xFE';
+      if (display_char == SOFTRETURN) {
+        bputch('!');
+        bputch(RETURN);
+      } else if (display_char == RETURN) {
+        rputch(RETURN);
+      }
       localIO()->Putch(display_char);
 
       current_line_.push_back({display_char, curatr});
@@ -303,6 +310,9 @@ int Output::bputch(char c, bool use_buffer) {
 
       if (c == SOFTRETURN) {
         current_line_.clear();
+#ifdef __unix__
+        bputch(RETURN);
+#endif  // __unix__
         x_ = 0;
         bout.lines_listed_++;
         // change Build3 + 5.0 to fix message read.
@@ -323,7 +333,7 @@ int Output::bputch(char c, bool use_buffer) {
 }
 
 
-/* This function ouputs a string to the com port.  This is mainly used
+/* This function outputs a string to the com port.  This is mainly used
  * for modem commands
  */
 void Output::rputs(const char *text) {
