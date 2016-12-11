@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include <algorithm>
+#include <iomanip>
 #include <memory>
 #include <string>
 #include <vector>
@@ -29,6 +30,7 @@
 #include "bbs/datetime.h"
 #include "bbs/email.h"
 #include "bbs/extract.h"
+#include "bbs/full_screen.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
@@ -311,13 +313,90 @@ static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) 
   }
 }
 
+static FullScreenView CreateFullScreenListTitlesView() {
+  auto screen_width = a()->user()->GetScreenChars();
+  auto screen_length = a()->user()->GetScreenLines() - 1;
+  int num_header_lines = 1;
+  bout << "|14      Num" << " " << std::left << std::setw(43) 
+       << "Title" << std::left << std::setw(15) << "From\r\n";
+  bout.clear_lines_listed();
+  return FullScreenView(num_header_lines, screen_width, screen_length);
+}
+
+static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg, const int msgnum) {
+
+  char szPrompt[255];
+  char szTempBuffer[255];
+  const auto h = msg->header();
+  if (h->is_local() && h->from_usernum() == a()->usernum) {
+    sprintf(szTempBuffer, "|#7[|#1%d|#7]", msgnum);
+  }
+  else if (!h->is_local()) {
+    sprintf(szTempBuffer, "|#7<|#1%d|#7>", msgnum);
+  }
+  else {
+    sprintf(szTempBuffer, "|#7(|#1%d|#7)", msgnum);
+  }
+  for (int i1 = 0; i1 < 7; i1++) {
+    szPrompt[i1] = SPACE;
+  }
+  // HACK: Need to undo this before supporting JAM
+  WWIVMessageHeader* wh = reinterpret_cast<WWIVMessageHeader*>(h);
+  if (wh->data().qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
+    szPrompt[0] = '*';
+  }
+  if (h->status() & (status_pending_net | status_unvalidated)) {
+    szPrompt[0] = '+';
+  }
+  strcpy(&szPrompt[9 - strlen(stripcolors(szTempBuffer))], szTempBuffer);
+  strcat(szPrompt, "|#1 ");
+  if ((h->status() & (status_unvalidated | status_delete)) && (!lcs())) {
+    strcat(szPrompt, "<<< NOT VALIDATED YET >>>");
+  }
+  else {
+    // Need the StringTrim on post title since some FSEDs
+    // added \r in the title string, also gets rid of extra spaces
+    auto title = h->title();
+    StringTrim(&title);
+    strncat(szPrompt, stripcolors(title).c_str(), 60);
+  }
+
+  if (a()->user()->GetScreenChars() >= 80) {
+    if (strlen(stripcolors(szPrompt)) > 50) {
+      while (strlen(stripcolors(szPrompt)) > 50) {
+        szPrompt[strlen(szPrompt) - 1] = 0;
+      }
+    }
+    strcat(szPrompt, charstr(51 - strlen(stripcolors(szPrompt)), ' '));
+    if (okansi()) {
+      strcat(szPrompt, "|#7\xB3|#1");
+    }
+    else {
+      strcat(szPrompt, "|");
+    }
+    strcat(szPrompt, " ");
+    if ((h->anony() & 0x0f) &&
+      ((getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) == 0)) {
+      strcat(szPrompt, ">UNKNOWN<");
+    }
+    else {
+      char from[81];
+      to_char_array(from, h->from());
+      strcat(szPrompt, from);
+    }
+  }
+  return szPrompt;
+}
+
 static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
+  bout.cls();
   auto api = a()->msgapi();
   std::unique_ptr<wwiv::sdk::msgapi::MessageArea> area(api->Open(a()->current_sub().filename));
   if (!area) {
     return;
   }
   scan_option_type = MsgScanOption::SCAN_OPTION_READ_PROMPT;
+  auto fs = CreateFullScreenListTitlesView();
 
   auto num_msgs_in_area = area->number_of_messages();
   bool abort = false;
@@ -330,65 +409,9 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   int i = 0;
   while (!abort && ++i <= nNumTitleLines) {
     ++msgnum;
-    std::unique_ptr<wwiv::sdk::msgapi::Message> msg(area->ReadMessage(msgnum));
-
-    char szPrompt[255];
-    char szTempBuffer[255];
-    const auto h = msg->header();
-    if (h->is_local() && h->from_usernum() == a()->usernum) {
-      sprintf(szTempBuffer, "|#7[|#1%d|#7]", msgnum);
-    } else if (!h->is_local()) {
-      sprintf(szTempBuffer, "|#7<|#1%d|#7>", msgnum);
-    } else {
-      sprintf(szTempBuffer, "|#7(|#1%d|#7)", msgnum);
-    }
-    for (int i1 = 0; i1 < 7; i1++) {
-      szPrompt[i1] = SPACE;
-    }
-    // HACK: Need to undo this before supporting JAM
-    WWIVMessageHeader* wh = reinterpret_cast<WWIVMessageHeader*>(h);
-    if (wh->data().qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
-      szPrompt[0] = '*';
-    }
-    if (h->status() & (status_pending_net | status_unvalidated)) {
-      szPrompt[0] = '+';
-    }
-    strcpy(&szPrompt[9 - strlen(stripcolors(szTempBuffer))], szTempBuffer);
-    strcat(szPrompt, "|#1 ");
-    if ((h->status() & (status_unvalidated | status_delete)) && (!lcs())) {
-      strcat(szPrompt, "<<< NOT VALIDATED YET >>>");
-    } else {
-      // Need the StringTrim on post title since some FSEDs
-      // added \r in the title string, also gets rid of extra spaces
-      auto title = h->title();
-      StringTrim(&title);
-      strncat(szPrompt, stripcolors(title).c_str(), 60);
-    }
-
-    if (a()->user()->GetScreenChars() >= 80) {
-      if (strlen(stripcolors(szPrompt)) > 50) {
-        while (strlen(stripcolors(szPrompt)) > 50) {
-          szPrompt[strlen(szPrompt) - 1] = 0;
-        }
-      }
-      strcat(szPrompt, charstr(51 - strlen(stripcolors(szPrompt)), ' '));
-      if (okansi()) {
-        strcat(szPrompt, "|#7\xB3|#1");
-      } else {
-        strcat(szPrompt, "|");
-      }
-      strcat(szPrompt, " ");
-      if ((h->anony() & 0x0f) &&
-          ((getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) == 0)) {
-        strcat(szPrompt, ">UNKNOWN<");
-      } else {
-        char from[81];
-        to_char_array(from, h->from());
-        strcat(szPrompt, from);
-      }
-    }
+    const string line = CreateLine(unique_ptr<Message>(area->ReadMessage(msgnum)), msgnum);
     bout.Color(2);
-    pla(szPrompt, &abort);
+    pla(line, &abort);
     if (msgnum >= num_msgs_in_area) {
       abort = true;
     }

@@ -493,41 +493,41 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   }
 
   bout.cls();
-  auto info = display_type2_message_header(msg);
+  auto fs = display_type2_message_header(msg);
 
   auto lines = split_wwiv_message(msg.message_text);
 
-  info.DrawTopBar();
-  info.DrawBottomBar("");
+  fs.DrawTopBar();
+  fs.DrawBottomBar("");
 
-  info.GotoContentAreaTop();
+  fs.GotoContentAreaTop();
   const int first = 0;
-  const int last = std::max<int>(0, lines.size() - info.message_height());
+  const int last = std::max<int>(0, lines.size() - fs.message_height());
 
   int start = first;
   bool done = false;
   bout.Color(0);
   ReadMessageResult result{};
-  result.lines_start = info.lines_start();
-  result.lines_end = info.lines_end();
+  result.lines_start = fs.lines_start();
+  result.lines_end = fs.lines_end();
   while (!done) {
     CheckForHangup();
     
     display_message_text_new(
       lines, start, 
-      info.message_height(), info.screen_width(), info.lines_start());
+      fs.message_height(), fs.screen_width(), fs.lines_start());
 
     if (start == last) {
-      info.DrawBottomBar("END");
+      fs.DrawBottomBar("END");
     }
     else {
-      info.DrawBottomBar("");
+      fs.DrawBottomBar("");
     }
 
-    info.ClearCommandLine();
-    bout.GotoXY(1, info.command_line_y());
+    fs.ClearCommandLine();
+    bout.GotoXY(1, fs.command_line_y());
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
-    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](int s) { info.PrintTimeoutWarning(s); });
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](int s) { fs.PrintTimeoutWarning(s); });
     switch (key) {
     case COMMAND_UP: {
       if (start > first) {
@@ -535,8 +535,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       }
     } break;
     case COMMAND_PAGEUP: {
-      if (start - info.message_height() > first) {
-        start -= info.message_height();
+      if (start - fs.message_height() > first) {
+        start -= fs.message_height();
       } else {
         start = first;
       }
@@ -550,8 +550,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       }
     } break;
     case COMMAND_PAGEDN: {
-      if (start + info.message_height() < last) {
-        start += info.message_height();
+      if (start + fs.message_height() < last) {
+        start += fs.message_height();
       } else {
         start = last;
       }
@@ -577,8 +577,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         result.option = ReadMessageOption::NEXT_MSG;
         return result;
       }
-      else if (start + info.message_height() < last) {
-        start += info.message_height();
+      else if (start + fs.message_height() < last) {
+        start += fs.message_height();
       }
       else {
         start = last;
@@ -599,37 +599,37 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         else if (key == 'T') {
           result.option = ReadMessageOption::LIST_TITLES;
         } else if (key == '?') {
-          info.ClearMessageArea();
+          fs.ClearMessageArea();
           if (!printfile(MBFSED_NOEXT)) {
-            info.ClearCommandLine();
+            fs.ClearCommandLine();
             bout << "|#6Unable to find file: " << MBFSED_NOEXT;
           }
           else {
-            info.ClearCommandLine();
+            fs.ClearCommandLine();
           }
           if (lcs()) {
             pausescr();
-            info.ClearMessageArea();
+            fs.ClearMessageArea();
             if (!printfile(MBFSED_SYSOP_NOEXT)) {
-              info.ClearCommandLine();
+              fs.ClearCommandLine();
               bout << "|#6Unable to find file: " << MBFSED_SYSOP_NOEXT;
             }
           }
-          info.ClearCommandLine();
+          fs.ClearCommandLine();
           pausescr();
-          info.ClearCommandLine();
+          fs.ClearCommandLine();
         } else {
           result.option = ReadMessageOption::COMMAND;
           result.command = static_cast<char>(key);
         }
-        info.ClearCommandLine();
+        fs.ClearCommandLine();
         return result;
       }
     }
     }
   }
 
-  info.ClearCommandLine();
+  fs.ClearCommandLine();
   return result;
 }
 
