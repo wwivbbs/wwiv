@@ -391,6 +391,23 @@ static int GetNumPadCommand(int key) {
   return 0;
 }
 
+
+static int GetCommandForAnsiKey(int key) {
+  switch (key) {
+  case A_UP: return COMMAND_UP;
+  case A_LEFT: return COMMAND_LEFT;
+  case A_DOWN: return COMMAND_DOWN;
+  case A_RIGHT: return COMMAND_RIGHT;
+  case A_INSERT: return COMMAND_INSERT;
+  case A_DELETE: return COMMAND_DELETE;
+  case A_HOME: return COMMAND_HOME;
+  case A_END: return COMMAND_END;
+  case A_PAGEUP: return COMMAND_PAGEUP;
+  case A_PAGEDOWN: return COMMAND_PAGEDN;
+  default: return key;
+  }
+}
+
 int bgetch_event(numlock_status_t numlock_mode) {
   return bgetch_event(numlock_mode, [](int) {});
 }
@@ -444,7 +461,8 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
       }
       else {
         if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-          return GetNumPadCommand(key);
+          auto ret = GetNumPadCommand(key);
+          if (ret) return ret;
         }
         switch (key) {
         case TAB: return TAB;
@@ -452,6 +470,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
         default: return key;
         }
       }
+      return key;
     }
     else if (bkbhitraw()) {
       int key = pd_getkey();
@@ -479,20 +498,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
               if (key == OB || key == O) {
                 key = pd_getkey();
               }
-
-              switch (key) {
-              case A_UP: return COMMAND_UP;
-              case A_LEFT: return COMMAND_LEFT;
-              case A_DOWN: return COMMAND_DOWN;
-              case A_RIGHT: return COMMAND_RIGHT;
-              case A_INSERT: return COMMAND_INSERT;
-              case A_DELETE: return COMMAND_DELETE;
-              case A_HOME: return COMMAND_HOME;
-              case A_END: return COMMAND_END;
-              case A_PAGEUP: return COMMAND_PAGEUP;
-              case A_PAGEDOWN: return COMMAND_PAGEDN;
-              default: return key;
-              }
+              return GetCommandForAnsiKey(key);
             }
             else {
               return GET_OUT;
@@ -503,6 +509,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
         if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
           return GET_OUT;
         }
+        return key;
       }
       else {
         if (!key) {
@@ -512,10 +519,11 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
           }
         }
         if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-          return GetNumPadCommand(key);
+          auto ret = GetNumPadCommand(key);
+          if (ret) return ret;
         }
-        return key;
       }
+      return key;
     }
   }
   return 0;                                 // must have hung up

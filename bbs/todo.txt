@@ -29,9 +29,7 @@ General Cleanup
 * use daten_t everywhere we have a daten date.
 * Maybe make the hangup variable a static in the Application class.
 * redo ctim and ctim2
-* use chrono in bgetch and bgetch_event
 * stop using localIO()->WhereX to determine remote position
-* Fix use of wherex in cln_nu (this is awful on linux)
 
 General Improvements
 ====================
@@ -42,6 +40,7 @@ General Improvements
 Net52
 =====
 * update routing information in network1.
+* Figure out why it takes 3 seconds to post a message in network2.
 
 Message Areas
 =============
@@ -52,3 +51,4 @@ Message Areas
 * Make the emailmessage extend the message so most things are common between them.
 * Load subs.json too, and use it as source of truth if it exists.
 * load one msgapi per type in wwivutil like we do in the bbs now.
+

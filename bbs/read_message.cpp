@@ -367,7 +367,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     if (msgarea.size() > 35) { msgarea = msgarea.substr(0, 35); }
     bout << "|#9 Sub|#7: |#" << a()->GetMessageColor() << msgarea;
     if (a()->user()->GetScreenChars() >= 78) {
-      auto pad = COLUMN2 - 6 + msgarea.size();
+      auto pad = COLUMN2 - (6 + msgarea.size());
       bout << string(pad, ' ');
     }
     else {
