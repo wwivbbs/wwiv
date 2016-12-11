@@ -275,8 +275,15 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     text.append("\r\n");
 
     if (!is_email) {
-      // Add ^D0FidoAddr
+      // Add ^D0FidoAddr for the "To:" name of the post.
       static const string kFidoAddr = "\x04""0FidoAddr: ";
+      string to_name = msg.vh.to_user_name;
+      if (to_name.empty()) {
+        // If for some screwy reason we don't have a to name, address
+        // it to 'All'.
+        LOG(WARNING) << "Somehow have empty msg.vh.to_user_name";
+        to_name = "All";
+      }
       text.append(kFidoAddr).append(msg.vh.to_user_name).append("\r\n");
     }
     text.append(FidoToWWIVText(msg.vh.text));
@@ -606,6 +613,10 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+
+    // TODO(rushfan: These next 2 here should be done differently. We should
+    // split the message here and look for these in all lines.  For the By:
+    // line we just want to remove it since it's useless.
     if (!is_email) {
       to_user_name = get_fido_addr(raw_text, iter, {'\0', '\r', '\n'}, 80);
     }
