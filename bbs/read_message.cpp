@@ -516,8 +516,6 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     display_message_text_new(
       lines, start, 
       info.message_height(), info.screen_width(), info.lines_start());
-    info.ClearCommandLine();
-    bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
 
     if (start == last) {
       info.DrawBottomBar("END");
@@ -526,7 +524,9 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       info.DrawBottomBar("");
     }
 
+    info.ClearCommandLine();
     bout.GotoXY(1, info.command_line_y());
+    bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
     int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](int s) { info.PrintTimeoutWarning(s); });
     switch (key) {
     case COMMAND_UP: {

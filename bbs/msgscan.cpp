@@ -355,7 +355,7 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
     }
     strcpy(&szPrompt[9 - strlen(stripcolors(szTempBuffer))], szTempBuffer);
     strcat(szPrompt, "|#1 ");
-    if ((get_post(msgnum)->status & (status_unvalidated | status_delete)) && (!lcs())) {
+    if ((h->status() & (status_unvalidated | status_delete)) && (!lcs())) {
       strcat(szPrompt, "<<< NOT VALIDATED YET >>>");
     } else {
       // Need the StringTrim on post title since some FSEDs
@@ -389,7 +389,7 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
     }
     bout.Color(2);
     pla(szPrompt, &abort);
-    if (msgnum >= a()->GetNumMessagesInCurrentMessageArea()) {
+    if (msgnum >= num_msgs_in_area) {
       abort = true;
     }
   }
