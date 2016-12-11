@@ -62,7 +62,8 @@ enum class ReadMessageOption {
   NEXT_SUB,
   PREV_SUB,
   LIST_TITLES,
-  COMMAND
+  COMMAND,
+  READ_MESSAGE
 };
 
 struct ReadMessageResult {

@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bgetch.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
@@ -48,6 +49,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/workspace.h"
 #include "sdk/status.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
@@ -58,6 +60,7 @@ using std::vector;
 using wwiv::endl;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static char s_szFindString[21];
@@ -324,18 +327,20 @@ static FullScreenView CreateFullScreenListTitlesView() {
 }
 
 static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg, const int msgnum) {
-
+  if (!msg) {
+    return "";
+  }
   char szPrompt[255];
   char szTempBuffer[255];
   const auto h = msg->header();
   if (h->is_local() && h->from_usernum() == a()->usernum) {
-    sprintf(szTempBuffer, "|#7[|#1%d|#7]", msgnum);
+    sprintf(szTempBuffer, "|09[|11%d|09]", msgnum);
   }
   else if (!h->is_local()) {
-    sprintf(szTempBuffer, "|#7<|#1%d|#7>", msgnum);
+    sprintf(szTempBuffer, "|09<|11%d|09>", msgnum);
   }
   else {
-    sprintf(szTempBuffer, "|#7(|#1%d|#7)", msgnum);
+    sprintf(szTempBuffer, "|09(|11%d|09)", msgnum);
   }
   for (int i1 = 0; i1 < 7; i1++) {
     szPrompt[i1] = SPACE;
@@ -349,7 +354,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     szPrompt[0] = '+';
   }
   strcpy(&szPrompt[9 - strlen(stripcolors(szTempBuffer))], szTempBuffer);
-  strcat(szPrompt, "|#1 ");
+  strcat(szPrompt, "|11 ");
   if ((h->status() & (status_unvalidated | status_delete)) && (!lcs())) {
     strcat(szPrompt, "<<< NOT VALIDATED YET >>>");
   }
@@ -369,7 +374,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     }
     strcat(szPrompt, charstr(51 - strlen(stripcolors(szPrompt)), ' '));
     if (okansi()) {
-      strcat(szPrompt, "|#7\xB3|#1");
+      strcat(szPrompt, "|09\xB3|11");
     }
     else {
       strcat(szPrompt, "|");
@@ -388,10 +393,159 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   return szPrompt;
 }
 
+static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int start, int num) {
+  vector<string> lines;
+  for (int i = start; i < (start + num); i++) {
+    auto line = CreateLine(unique_ptr<Message>(area->ReadMessage(i)), i);
+    if (!line.empty()) {
+      lines.push_back(line);
+    }
+  }
+  return lines;
+}
+
+
+static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,
+  int start, int selected) {
+  for (int i = 0; i < fs.message_height(); i++) {
+    if (i >= size_int(lines)) {
+      break;
+    }
+    bout.GotoXY(1, i + fs.lines_start());
+    const auto l = lines.at(i);
+    if (i == (selected - start)) {
+      bout << "|17|12>";
+    }
+    else {
+      bout << "|16|#0 ";
+    }
+    bout << l << pad(fs.screen_width() - 2, stripcolors(l).size()) << "|#0";
+  }
+}
+
+static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& scan_option_type) {
+  bout.cls();
+  auto api = a()->msgapi();
+  unique_ptr<MessageArea> area(api->Open(a()->current_sub().filename));
+  if (!area) {
+    ReadMessageResult result;
+    result.command = 0;
+    return result;
+  }
+  // Want to start the list after the one we just read.
+  ++msgnum;
+  scan_option_type = MsgScanOption::SCAN_OPTION_READ_PROMPT;
+
+  auto num_msgs_in_area = area->number_of_messages();
+  if (msgnum >= num_msgs_in_area) {
+    ReadMessageResult result;
+    result.command = 0;
+    return result;
+  }
+
+  auto fs = CreateFullScreenListTitlesView();
+  fs.DrawTopBar();
+  fs.DrawBottomBar("");
+  fs.GotoContentAreaTop();
+
+  const int window_top_min = 1;
+  int window_top = msgnum;
+  int selected = msgnum;
+
+  const int first = 1;
+  const int last = std::max<int>(0, area->number_of_messages() - fs.message_height());
+
+  bool done = false;
+  while (!done) {
+    CheckForHangup();
+    auto lines = CreateMessageTitleVector(area.get(), window_top, fs.message_height());
+    display_titles_new(lines, fs, window_top, selected);
+
+    bout.GotoXY(1, fs.lines_start() + selected - (window_top - window_top_min) + window_top_min);
+    fs.DrawBottomBar(StrCat("Selected: ", selected));
+
+    fs.ClearCommandLine();
+    bout.GotoXY(1, fs.command_line_y());
+    bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](int s) { fs.PrintTimeoutWarning(s); });
+    switch (key) {
+    case COMMAND_UP: {
+      if (selected + window_top_min - 1 == window_top) {
+        // At the top of the window, move the window up one.
+        if (window_top > window_top_min) {
+          window_top--;
+          selected--;
+        }
+      }
+      else {
+        selected--;
+      }
+    } break;
+    case COMMAND_PAGEUP: {
+      window_top -= fs.message_height();
+      selected -= fs.message_height();
+      window_top = std::max<int>(window_top, window_top_min);
+      selected = std::max<int>(selected, 1);
+    } break;
+    case COMMAND_HOME: {
+      selected = 1;
+      window_top = window_top_min;
+    } break;
+    case COMMAND_DOWN: {
+      int window_bottom = window_top + fs.message_height() - window_top_min - 1;
+      if (selected <= window_bottom) {
+        selected++;
+      }
+      else if (window_top < num_msgs_in_area - fs.message_height() + window_top_min) {
+        selected++;
+        window_top++;
+      }
+    } break;
+    case COMMAND_PAGEDN: {
+      window_top += fs.message_height();
+      selected += fs.message_height();
+      window_top = std::min<int>(window_top, num_msgs_in_area - fs.message_height() + window_top_min);
+      selected = std::min<int>(selected, num_msgs_in_area);
+    } break;
+    case COMMAND_END: {
+      window_top = num_msgs_in_area - fs.message_height() + window_top_min;
+      selected = window_top;
+    } break;
+    case SOFTRETURN: {
+      // Do nothing. SyncTerm sends CRLF on enter, not just CR
+      // like we get from the local terminal. So we'll ignore the
+      // SOFTRETURN (10, aka LF).
+    } break;
+    case RETURN: {
+      ReadMessageResult result;
+      result.option = ReadMessageOption::READ_MESSAGE;
+      msgnum = selected;
+      fs.ClearCommandLine();
+      return result;
+    } break;
+    default: {
+      if ((key & 0xff) == key) {
+        key = toupper(key & 0xff);
+        switch (key) {
+        case 'Q': {
+          ReadMessageResult result;
+          result.option = ReadMessageOption::COMMAND;
+          result.command = 'Q';
+          fs.ClearCommandLine();
+          return result;
+        } break;
+        } // default switch
+      }
+    } break;
+    }  // switch
+  }
+  return{};
+}
+
 static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
-  std::unique_ptr<wwiv::sdk::msgapi::MessageArea> area(api->Open(a()->current_sub().filename));
+  unique_ptr<MessageArea> area(api->Open(a()->current_sub().filename));
   if (!area) {
     return;
   }
@@ -940,13 +1094,20 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
       result = read_post(msgnum, &next, &val);
     }
     else if (scan_option == MsgScanOption::SCAN_OPTION_LIST_TITLES) {
-      HandleListTitles(msgnum, scan_option);
+      result = HandleListTitlesFullScreen(msgnum, scan_option);
     } else if (scan_option == MsgScanOption::SCAN_OPTION_READ_PROMPT) {
       bool quit = false;
       HandleScanReadPrompt(msgnum, scan_option, nextsub, title_scan, done, quit, val);
       if (quit) { done = true; }
     }
+
     switch (result.option) {
+    case ReadMessageOption::READ_MESSAGE: {
+      if (msgnum > a()->GetNumMessagesInCurrentMessageArea()) {
+        done = true;
+      }
+      scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
+    } break;
     case ReadMessageOption::NEXT_MSG: {
       if (++msgnum > a()->GetNumMessagesInCurrentMessageArea()) {
         done = true;
