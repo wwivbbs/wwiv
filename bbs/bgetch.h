@@ -18,6 +18,8 @@
 #ifndef __INCLUDED_BBS_BGETCH_H__
 #define __INCLUDED_BBS_BGETCH_H__
 
+#include <functional>
+
 char bgetch();
 char bgetchraw();
 bool bkbhitraw();
@@ -29,6 +31,8 @@ enum class numlock_status_t {
   NOTNUMBERS
 };
 
+typedef std::function<void(int)> bgetch_timeout_callback_fn;
+int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb);
 int bgetch_event(numlock_status_t numlock_mode);
 
 

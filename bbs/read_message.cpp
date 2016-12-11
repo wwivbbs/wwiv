@@ -486,6 +486,12 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
   return lines;
 }
 
+static void PrintTimeoutWarning(const MessageHeaderInfo& info, int seconds_left) {
+  bout.GotoXY(1, info.command_line);
+  bout.clreol();
+  bout << "|12Are you there? ";
+}
+
 static void ClearCommandLine(const MessageHeaderInfo& info) {
   bout.GotoXY(1, info.command_line);
   bout.clreol();
@@ -579,7 +585,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       DrawBottomBar(info, "");
     }
 
-    int key = bgetch_event(numlock_status_t::NOTNUMBERS);
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [=](int s) { PrintTimeoutWarning(info, s); });
     switch (key) {
     case COMMAND_UP: {
       if (start > first) {

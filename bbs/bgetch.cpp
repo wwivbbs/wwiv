@@ -304,6 +304,14 @@ int Output::wherex() {
   return x_; 
 }
 
+static std::chrono::duration<double> GetKeyboardTimeout() {
+  // TODO(rushfan): Make this configurable in init.
+  if (so()) {
+    return std::chrono::minutes(10);
+  }
+  return std::chrono::minutes(5);
+}
+
 /* This function returns one character from either the local keyboard or
 * remote com port (if applicable).  After 1.5 minutes of inactivity, a
 * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
@@ -313,11 +321,7 @@ char Output::getkey() {
   bool beepyet = false;
   lastchar_pressed();
 
-  auto tv = std::chrono::minutes(3);
-  if (so() || a()->GetCurrentSpeed() == "TELNET") {
-    tv = std::chrono::minutes(10);
-  }
-  // change 4.31 Build3
+  auto tv = GetKeyboardTimeout();
   auto tv1 = tv - std::chrono::minutes(1);
 
   // Since were waitig for a key, reset the # of lines we've displayed since a pause.
@@ -371,165 +375,148 @@ static int pd_getkey() {
   return x;
 }
 
+static int GetNumPadCommand(int key) {
+  switch (key) {
+  case '8': return COMMAND_UP;
+  case '4': return COMMAND_LEFT;
+  case '2': return COMMAND_DOWN;
+  case '6': return COMMAND_RIGHT;
+  case '0': return COMMAND_INSERT;
+  case '.': return COMMAND_DELETE;
+  case '9': return COMMAND_PAGEUP;
+  case '3': return COMMAND_PAGEDN;
+  case '7': return COMMAND_HOME;
+  case '1': return COMMAND_END;
+  }
+  return 0;
+}
+
 int bgetch_event(numlock_status_t numlock_mode) {
+  return bgetch_event(numlock_mode, [](int) {});
+}
+
+int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
   a()->tleft(true);
-  time_t time1 = time(nullptr);
+  bool beepyet = false;
+
+  auto tv = GetKeyboardTimeout();
+  auto tv1 = tv - std::chrono::minutes(1);
 
   while (true) {
     CheckForHangup();
-    time_t time2 = time(nullptr);
-    if (difftime(time2, time1) > 180) {
-      // greater than 3 minutes
-      Hangup();
-      return 0;
-    }
     if (hangup) {
       return 0;
     }
+    auto dd = steady_clock::now();
+    auto diff = dd - time_lastchar_pressed;
+    if (diff > tv1 && !beepyet) {
+      beepyet = true;
+      bout.bputch(CG);
+      cb(60);
+    }
+    if (diff > tv) {
+      bout.nl();
+      bout << "Call back later when you are there.\r\n";
+      Hangup();
+      return 0;
+    }
 
-    if (bkbhitraw() || a()->localIO()->KeyPressed()) {
-      if (!incom || a()->localIO()->KeyPressed()) {
-        // Check for local keys
-        int key = a()->localIO()->GetChar();
-        if (key == CBACKSPACE) {
-          return COMMAND_DELETE;
+    if (!bkbhitraw() && !a()->localIO()->KeyPressed()) {
+      giveup_timeslice();
+      continue;
+    }
+
+    if (!incom || a()->localIO()->KeyPressed()) {
+      // Check for local keys
+      int key = a()->localIO()->GetChar();
+      if (key == CBACKSPACE) {
+        return COMMAND_DELETE;
+      }
+      if (key == CV) {
+        return COMMAND_INSERT;
+      }
+      if (key == RETURN || key == CL) {
+        return EXECUTE;
+      }
+      if ((key == 0 || key == 224) && a()->localIO()->KeyPressed()) {
+        // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
+        return a()->localIO()->GetChar() + 256;
+      }
+      else {
+        if (numlock_mode == numlock_status_t::NOTNUMBERS) {
+          return GetNumPadCommand(key);
         }
-        if (key == CV) {
-          return COMMAND_INSERT;
-        }
-        if (key == RETURN || key == CL) {
-          return EXECUTE;
-        }
-        if ((key == 0 || key == 224) && a()->localIO()->KeyPressed()) {
-          // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
-          return a()->localIO()->GetChar() + 256;
-        }
-        else {
-          if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-            switch (key) {
-            case '8':
-              return COMMAND_UP;
-            case '4':
-              return COMMAND_LEFT;
-            case '2':
-              return COMMAND_DOWN;
-            case '6':
-              return COMMAND_RIGHT;
-            case '0':
-              return COMMAND_INSERT;
-            case '.':
-              return COMMAND_DELETE;
-            case '9':
-              return COMMAND_PAGEUP;
-            case '3':
-              return COMMAND_PAGEDN;
-            case '7':
-              return COMMAND_HOME;
-            case '1':
-              return COMMAND_END;
-            }
-          }
-          switch (key) {
-          case TAB:
-            return TAB;
-          case ESC:
-            return GET_OUT;
-          default:
-            return key;
-          }
+        switch (key) {
+        case TAB: return TAB;
+        case ESC: return GET_OUT;
+        default: return key;
         }
       }
-      else if (bkbhitraw()) {
-        int key = pd_getkey();
+    }
+    else if (bkbhitraw()) {
+      int key = pd_getkey();
 
-        if (key == CBACKSPACE) {
-          return COMMAND_DELETE;
-        }
-        if (key == CV) {
-          return COMMAND_INSERT;
-        }
-        if (key == RETURN || key == CL) {
-          return EXECUTE;
-        }
-        else if (key == ESC) {
-          time_t esc_time1 = time(nullptr);
-          time_t esc_time2 = time(nullptr);
-          do {
-            esc_time2 = time(nullptr);
-            if (bkbhitraw()) {
+      if (key == CBACKSPACE) {
+        return COMMAND_DELETE;
+      }
+      if (key == CV) {
+        return COMMAND_INSERT;
+      }
+      if (key == RETURN || key == CL) {
+        return EXECUTE;
+      }
+      else if (key == ESC) {
+        time_t esc_time1 = time(nullptr);
+        time_t esc_time2 = time(nullptr);
+        do {
+          esc_time2 = time(nullptr);
+          if (bkbhitraw()) {
+            key = pd_getkey();
+            if (key == OB || key == O) {
               key = pd_getkey();
+
+              // Check for a second set of brackets
               if (key == OB || key == O) {
                 key = pd_getkey();
-
-                // Check for a second set of brackets
-                if (key == OB || key == O) {
-                  key = pd_getkey();
-                }
-
-                switch (key) {
-                case A_UP: return COMMAND_UP;
-                case A_LEFT: return COMMAND_LEFT;
-                case A_DOWN: return COMMAND_DOWN;
-                case A_RIGHT: return COMMAND_RIGHT;
-                case A_INSERT: return COMMAND_INSERT;
-                case A_DELETE: return COMMAND_DELETE;
-                case A_HOME: return COMMAND_HOME;
-                case A_END: return COMMAND_END;
-                case A_PAGEUP: return COMMAND_PAGEUP;
-                case A_PAGEDOWN: return COMMAND_PAGEDN;
-                default: return key;
-                }
               }
-              else {
-                return GET_OUT;
+
+              switch (key) {
+              case A_UP: return COMMAND_UP;
+              case A_LEFT: return COMMAND_LEFT;
+              case A_DOWN: return COMMAND_DOWN;
+              case A_RIGHT: return COMMAND_RIGHT;
+              case A_INSERT: return COMMAND_INSERT;
+              case A_DELETE: return COMMAND_DELETE;
+              case A_HOME: return COMMAND_HOME;
+              case A_END: return COMMAND_END;
+              case A_PAGEUP: return COMMAND_PAGEUP;
+              case A_PAGEDOWN: return COMMAND_PAGEDN;
+              default: return key;
               }
             }
-          } while (difftime(esc_time2, esc_time1) < 1);
+            else {
+              return GET_OUT;
+            }
+          }
+        } while (difftime(esc_time2, esc_time1) < 1);
 
-          if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
-            return GET_OUT;
-          }
-        }
-        else {
-          if (!key) {
-            if (a()->localIO()->KeyPressed()) {
-              key = a()->localIO()->GetChar();
-              return (key + 256);
-            }
-          }
-          if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-            switch (key) {
-            case '8':
-              return COMMAND_UP;
-            case '4':
-              return COMMAND_LEFT;
-            case '2':
-              return COMMAND_DOWN;
-            case '6':
-              return COMMAND_RIGHT;
-            case '0':
-              return COMMAND_INSERT;
-            case '.':
-              return COMMAND_DELETE;
-            case '9':
-              return COMMAND_PAGEUP;
-            case '3':
-              return COMMAND_PAGEDN;
-            case '7':
-              return COMMAND_HOME;
-            case '1':
-              return COMMAND_END;
-            }
-          }
-          return key;
+        if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
+          return GET_OUT;
         }
       }
-      time1 = time(nullptr);                           // reset timer
+      else {
+        if (!key) {
+          if (a()->localIO()->KeyPressed()) {
+            key = a()->localIO()->GetChar();
+            return (key + 256);
+          }
+        }
+        if (numlock_mode == numlock_status_t::NOTNUMBERS) {
+          return GetNumPadCommand(key);
+        }
+        return key;
+      }
     }
-    else {
-      giveup_timeslice();
-    }
-
-  };
+  }
   return 0;                                 // must have hung up
 }
