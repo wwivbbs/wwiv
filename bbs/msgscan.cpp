@@ -453,12 +453,13 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
   int selected = msgnum;
 
   const int first = 1;
-  const int last = std::max<int>(0, area->number_of_messages() - fs.message_height());
+  const int last = std::max<int>(first, area->number_of_messages() - fs.message_height());
+  const int height = std::min<int>(num_msgs_in_area, fs.message_height());
 
   bool done = false;
   while (!done) {
     CheckForHangup();
-    auto lines = CreateMessageTitleVector(area.get(), window_top, fs.message_height());
+    auto lines = CreateMessageTitleVector(area.get(), window_top, height);
     display_titles_new(lines, fs, window_top, selected);
 
     bout.GotoXY(1, fs.lines_start() + selected - (window_top - window_top_min) + window_top_min);
@@ -482,8 +483,8 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       }
     } break;
     case COMMAND_PAGEUP: {
-      window_top -= fs.message_height();
-      selected -= fs.message_height();
+      window_top -= height;
+      selected -= height;
       window_top = std::max<int>(window_top, window_top_min);
       selected = std::max<int>(selected, 1);
     } break;
@@ -492,23 +493,23 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       window_top = window_top_min;
     } break;
     case COMMAND_DOWN: {
-      int window_bottom = window_top + fs.message_height() - window_top_min - 1;
+      int window_bottom = window_top + height - window_top_min - 1;
       if (selected <= window_bottom) {
         selected++;
       }
-      else if (window_top < num_msgs_in_area - fs.message_height() + window_top_min) {
+      else if (window_top < num_msgs_in_area - height + window_top_min) {
         selected++;
         window_top++;
       }
     } break;
     case COMMAND_PAGEDN: {
-      window_top += fs.message_height();
-      selected += fs.message_height();
-      window_top = std::min<int>(window_top, num_msgs_in_area - fs.message_height() + window_top_min);
+      window_top += height;
+      selected += height;
+      window_top = std::min<int>(window_top, num_msgs_in_area - height + window_top_min);
       selected = std::min<int>(selected, num_msgs_in_area);
     } break;
     case COMMAND_END: {
-      window_top = num_msgs_in_area - fs.message_height() + window_top_min;
+      window_top = num_msgs_in_area - height + window_top_min;
       selected = window_top;
     } break;
     case SOFTRETURN: {
