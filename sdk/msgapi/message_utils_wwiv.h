@@ -28,7 +28,11 @@ namespace msgapi {
 template<typename M>
 uint8_t network_number_from(const M* m) {
   if (!(m->status & status_new_net)) {
-    return 255;
+    // Some bits in wwiv, like forwarded mail will not have the network
+    // status set on the original message.  It's also not clear if this
+    // is right, however returning 255 here (no net found), seems to
+    // break things.
+    return 0;
   }
   if (m->status & status_source_verified) {
     return m->network.src_verified_msg.net_number;
