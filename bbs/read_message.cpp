@@ -187,14 +187,14 @@ void display_message_text(const std::string& text, bool *next) {
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
-              if ((bout.wherex() + nLineLenPtr >= a()->user()->GetScreenChars())
+              if ((bout.wherex() + nLineLenPtr >= static_cast<int>(a()->user()->GetScreenChars()))
                 && !centre && !ansi) {
                 bout.nl();
               }
               s[nNumCharsPtr] = '\0';
               osan(s, &abort, next);
               if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
-                if (bout.wherex() < a()->user()->GetScreenChars() - 1) {
+                if (bout.wherex() < static_cast<int>(a()->user()->GetScreenChars()) - 1) {
                   bout.bputch(SPACE);
                   bout.nl();
                 } else {
@@ -486,7 +486,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
   return lines;
 }
 
-static void PrintTimeoutWarning(const MessageHeaderInfo& info, int seconds_left) {
+static void PrintTimeoutWarning(const MessageHeaderInfo& info, int) {
   bout.GotoXY(1, info.command_line);
   bout.clreol();
   bout << "|12Are you there? ";
@@ -530,9 +530,9 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
 static void DrawBottomBar(const MessageHeaderInfo& info, const std::string& text) {
   auto y = info.screen_length - 1;
   bout.GotoXY(1, y);
-  bout << "|09" << static_cast<char>(198)
-       << string(info.screen_width - 3, static_cast<char>(205))
-       << static_cast<char>(181);
+  bout << "|09" << static_cast<unsigned char>(198)
+       << string(info.screen_width - 3, static_cast<unsigned char>(205))
+       << static_cast<unsigned char>(181);
 
   if (text.empty()) {
     return;
@@ -540,8 +540,8 @@ static void DrawBottomBar(const MessageHeaderInfo& info, const std::string& text
 
   int x = info.screen_width - 10 - text.size();
   bout.GotoXY(x, y);
-  bout << "|09" << static_cast<char>(181) << "|17|14 " << text 
-       << " |16|09" << static_cast<char>(198);
+  bout << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text
+       << " |16|09" << static_cast<unsigned char>(198);
 }
 
 static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
@@ -558,7 +558,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   auto lines = split_wwiv_message(msg.message_text);
 
   bout.GotoXY(1, info.num_lines + 1);
-  bout << "|#7" << static_cast<char>(198) << string(info.screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
+  bout << "|#7" << static_cast<unsigned char>(198) << string(info.screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
   DrawBottomBar(info, "");
 
   bout.GotoXY(1, info.num_lines + 2);
@@ -585,7 +585,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       DrawBottomBar(info, "");
     }
 
-    bout.GotoXY(1, info.num_lines + 2);
+    bout.GotoXY(1, info.command_line);
     int key = bgetch_event(numlock_status_t::NOTNUMBERS, [=](int s) { PrintTimeoutWarning(info, s); });
     switch (key) {
     case COMMAND_UP: {

@@ -946,7 +946,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
     } break;
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
-      case 'Q': done = true; break;
+      case 'Q': done = true; *nextsub = 0; break;
       case 'A': HandleScanReadAutoReply(msgnum, "A", scan_option); break;
       case 'D': HandleMessageDelete(msgnum); break;
       case 'E': HandleMessageExtract(msgnum); break;

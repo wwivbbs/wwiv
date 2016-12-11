@@ -1007,7 +1007,7 @@ void logoff() {
   a()->remoteIO()->disconnect();
   // Don't need to hangup here, but *do* want to ensure that hangup is true.
   hangup = true;
-  LOG(ERROR) << "Debug: Setting hangup=true in logoff";
+  LOG(INFO) << "Debug: Setting hangup=true in logoff";
   if (a()->usernum < 1) {
     return;
   }
