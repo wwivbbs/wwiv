@@ -662,7 +662,7 @@ void chat1(const char *chat_line, bool two_way) {
   bout << "|#7Chat mode over...\r\n\n";
   chatting = 0;
   auto tc_used = steady_clock::now() - tc_start;
-  extratimecall += duration_cast<seconds>(tc_used).count();
+  extratimecall += static_cast<long>(duration_cast<seconds>(tc_used).count());
   a()->topdata = nSaveTopData;
   if (a()->IsUserOnline()) {
     a()->UpdateTopScreen();

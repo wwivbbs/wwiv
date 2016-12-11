@@ -55,6 +55,7 @@ using std::unique_ptr;
 using std::vector;
 using wwiv::endl;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
 
 static char s_szFindString[21];
@@ -310,45 +311,56 @@ static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) 
   }
 }
 
-static void HandleListTitles(int &nMessageNumber, MsgScanOption& nScanOptionType) {
-  int i = 0;
-  bool abort = false;
-  if (nMessageNumber >= a()->GetNumMessagesInCurrentMessageArea()) {
-    abort = true;
-  } else {
-    bout.nl();
+static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
+  auto api = a()->msgapi();
+  std::unique_ptr<wwiv::sdk::msgapi::MessageArea> area(api->Open(a()->current_sub().filename));
+  if (!area) {
+    return;
   }
+  scan_option_type = MsgScanOption::SCAN_OPTION_READ_PROMPT;
+
+  auto num_msgs_in_area = area->number_of_messages();
+  bool abort = false;
+  if (msgnum >= num_msgs_in_area) {
+    return;
+  }
+
+  bout.nl();
   int nNumTitleLines = std::max<int>(a()->screenlinest - 6, 1);
+  int i = 0;
   while (!abort && ++i <= nNumTitleLines) {
-    ++nMessageNumber;
-    postrec *p3 = get_post(nMessageNumber);
+    ++msgnum;
+    std::unique_ptr<wwiv::sdk::msgapi::Message> msg(area->ReadMessage(msgnum));
 
     char szPrompt[255];
     char szTempBuffer[255];
-    if (p3->ownersys == 0 && p3->owneruser == a()->usernum) {
-      sprintf(szTempBuffer, "|#7[|#1%d|#7]", nMessageNumber);
-    } else if (p3->ownersys != 0) {
-      sprintf(szTempBuffer, "|#7<|#1%d|#7>", nMessageNumber);
+    const auto h = msg->header();
+    if (h->is_local() && h->from_usernum() == a()->usernum) {
+      sprintf(szTempBuffer, "|#7[|#1%d|#7]", msgnum);
+    } else if (!h->is_local()) {
+      sprintf(szTempBuffer, "|#7<|#1%d|#7>", msgnum);
     } else {
-      sprintf(szTempBuffer, "|#7(|#1%d|#7)", nMessageNumber);
+      sprintf(szTempBuffer, "|#7(|#1%d|#7)", msgnum);
     }
     for (int i1 = 0; i1 < 7; i1++) {
       szPrompt[i1] = SPACE;
     }
-    if (p3->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
+    // HACK: Need to undo this before supporting JAM
+    WWIVMessageHeader* wh = reinterpret_cast<WWIVMessageHeader*>(h);
+    if (wh->data().qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
       szPrompt[0] = '*';
     }
-    if (p3->status & (status_pending_net | status_unvalidated)) {
+    if (h->status() & (status_pending_net | status_unvalidated)) {
       szPrompt[0] = '+';
     }
     strcpy(&szPrompt[9 - strlen(stripcolors(szTempBuffer))], szTempBuffer);
     strcat(szPrompt, "|#1 ");
-    if ((get_post(nMessageNumber)->status & (status_unvalidated | status_delete)) && (!lcs())) {
+    if ((get_post(msgnum)->status & (status_unvalidated | status_delete)) && (!lcs())) {
       strcat(szPrompt, "<<< NOT VALIDATED YET >>>");
     } else {
       // Need the StringTrim on post title since some FSEDs
       // added \r in the title string, also gets rid of extra spaces
-      string title(get_post(nMessageNumber)->title);
+      auto title = h->title();
       StringTrim(&title);
       strncat(szPrompt, stripcolors(title).c_str(), 60);
     }
@@ -366,35 +378,21 @@ static void HandleListTitles(int &nMessageNumber, MsgScanOption& nScanOptionType
         strcat(szPrompt, "|");
       }
       strcat(szPrompt, " ");
-      if ((p3->anony & 0x0f) &&
+      if ((h->anony() & 0x0f) &&
           ((getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) == 0)) {
         strcat(szPrompt, ">UNKNOWN<");
       } else {
-        string b;
-        if (readfile(&(p3->msg), (a()->current_sub().filename), &b)) {
-          strncpy(szTempBuffer, b.c_str(), sizeof(szTempBuffer) - 1);
-          szTempBuffer[sizeof(szTempBuffer) - 1] = 0;
-          b += stripcolors(szTempBuffer);
-          size_t lTempBufferPos = 0;
-          strcpy(szTempBuffer, "");
-          while (b[lTempBufferPos] != RETURN
-                 && b[lTempBufferPos] && lTempBufferPos < b.length()
-                 && lTempBufferPos < static_cast<size_t>(a()->user()->GetScreenChars() - 54)) {
-            szTempBuffer[lTempBufferPos] = b[lTempBufferPos];
-            lTempBufferPos++;
-          }
-          szTempBuffer[lTempBufferPos] = 0;
-          strcat(szPrompt, szTempBuffer);
-        }
+        char from[81];
+        to_char_array(from, h->from());
+        strcat(szPrompt, from);
       }
     }
     bout.Color(2);
     pla(szPrompt, &abort);
-    if (nMessageNumber >= a()->GetNumMessagesInCurrentMessageArea()) {
+    if (msgnum >= a()->GetNumMessagesInCurrentMessageArea()) {
       abort = true;
     }
   }
-  nScanOptionType = MsgScanOption::SCAN_OPTION_READ_PROMPT;
 }
 
 static void HandleMessageDownload(int nMessageNumber) {

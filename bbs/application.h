@@ -186,7 +186,7 @@ public:
   int  GetCurrentReadMessageArea() const { return current_read_message_area; }
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
-  const wwiv::sdk::subboard_t& current_sub() { return subs().sub(GetCurrentReadMessageArea()); }
+  const wwiv::sdk::subboard_t& current_sub() const { return subs().sub(GetCurrentReadMessageArea()); }
   net_networks_rec& current_net() { return net_networks[net_num()]; }
 
   size_t GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
@@ -261,7 +261,9 @@ public:
   void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) { config_ = std::move(config); }
   /** Returns the WWIV Names.LST Config Object. */
   wwiv::sdk::Names* names() const { return names_.get(); }
+
   wwiv::sdk::msgapi::MessageApi* msgapi(int type) const { return msgapis_.at(type).get(); }
+  wwiv::sdk::msgapi::MessageApi* msgapi() const { return msgapis_.at(current_sub().storage_type).get(); }
 
   bool read_subs();
   bool create_message_api();
@@ -366,6 +368,7 @@ public:
   // Public subsystems
   Batch& batch() { return batch_; }
   wwiv::sdk::Subs& subs() { return *subs_.get(); }
+  const wwiv::sdk::Subs& subs() const { return *subs_.get(); }
 
   // public data structures
   std::vector<editorrec> editors;
