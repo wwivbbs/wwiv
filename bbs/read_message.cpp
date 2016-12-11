@@ -519,7 +519,23 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     }
     bout << "|#0" << l << pad(screen_width, l.size());
   }
+}
 
+static void DrawBottomBar(const MessageHeaderInfo& info, const std::string& text) {
+  auto y = info.screen_length - 1;
+  bout.GotoXY(1, y);
+  bout << "|09" << static_cast<char>(198)
+       << string(info.screen_width - 3, static_cast<char>(205))
+       << static_cast<char>(181);
+
+  if (text.empty()) {
+    return;
+  }
+
+  int x = info.screen_width - 10 - text.size();
+  bout.GotoXY(x, y);
+  bout << "|09" << static_cast<char>(181) << "|17|14 " << text 
+       << " |16|09" << static_cast<char>(198);
 }
 
 static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
@@ -537,8 +553,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
   bout.GotoXY(1, info.num_lines + 1);
   bout << "|#7" << static_cast<char>(198) << string(info.screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
-  bout.GotoXY(1, info.screen_length - 1);
-  bout << "|#7" << static_cast<char>(198) << string(info.screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
+  DrawBottomBar(info, "");
 
   bout.GotoXY(1, info.num_lines + 2);
   const int first = 0;
@@ -556,6 +571,13 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     display_message_text_new(lines, start, info.message_height, info.screen_width, info.lines_start);
     ClearCommandLine(info);
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
+
+    if (start == last) {
+      DrawBottomBar(info, "END");
+    }
+    else {
+      DrawBottomBar(info, "");
+    }
 
     int key = bgetch_event(numlock_status_t::NOTNUMBERS);
     switch (key) {
