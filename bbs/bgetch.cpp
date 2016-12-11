@@ -48,7 +48,6 @@ static void lastchar_pressed() {
   time_lastchar_pressed = steady_clock::now();
 }
 
-
 extern int nsp;
 static void resetnsp() {
   if (nsp == 1 && !(a()->user()->HasPause())) {

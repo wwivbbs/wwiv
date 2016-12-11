@@ -154,6 +154,13 @@ bool handle_post(Context& context, Packet& p) {
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
+  if (area->Exists(p.nh.daten, title, p.nh.fromsys, p.nh.fromuser)) {
+    LOG(INFO) << "    - Discarding Duplicate Message on sub: " << subtype 
+              << "; title: " << title << ".";
+    // Returning true since we properly handled this by discarding it.
+    return true;
+  }
+
   unique_ptr<Message> msg(area->CreateMessage());
   msg->header()->set_from_system(p.nh.fromsys);
   msg->header()->set_from_usernum(p.nh.fromuser);
@@ -161,29 +168,6 @@ bool handle_post(Context& context, Packet& p) {
   msg->header()->set_from(sender_name);
   msg->header()->set_daten(p.nh.daten);
   msg->text()->set_text(text);
-
-  const int num_messages = area->number_of_messages();
-  for (int current = 1; current <= num_messages; current++) {
-    unique_ptr<MessageHeader> header(area->ReadMessageHeader(current));
-    if (!header) {
-      continue;
-    }
-    // Skip deleted messages.
-    if (header->is_deleted()) {
-      continue;
-    }
-
-    // Since we don't have a global message id, use the combination of
-    // date + title + from system + from user.
-    if (header->daten() == p.nh.daten
-      && header->title() == title
-      && header->from_system() == p.nh.fromsys
-      && header->from_usernum() == p.nh.fromuser) {
-      LOG(INFO) << "    - Discarding Duplicate Message on sub: " << subtype << "; title: " << title << ".";
-      // Returning true since we properly handled this by discarding it.
-      return true;
-    }
-  }
 
   if (!area->AddMessage(*msg)) {
     LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";

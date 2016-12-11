@@ -585,6 +585,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       DrawBottomBar(info, "");
     }
 
+    bout.GotoXY(1, info.num_lines + 2);
     int key = bgetch_event(numlock_status_t::NOTNUMBERS, [=](int s) { PrintTimeoutWarning(info, s); });
     switch (key) {
     case COMMAND_UP: {

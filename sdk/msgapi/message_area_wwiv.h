@@ -83,6 +83,7 @@ public:
   bool ResyncMessage(int& message_number, Message& message) override;
 
   WWIVMessage* CreateMessage() override;
+  bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) override;
 
 private:
   int DeleteExcess();

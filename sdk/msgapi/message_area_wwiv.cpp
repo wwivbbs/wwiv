@@ -555,6 +555,30 @@ WWIVMessage* WWIVMessageArea::CreateMessage() {
     make_unique<WWIVMessageText>());
 }
 
+bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) {
+  DataFile<postrec> sub(sub_filename_);
+  if (!sub) {
+    return false;
+  }
+  std::vector<postrec> headers;
+  if (!sub.ReadVector(headers)) {
+    return false;
+  }
+
+  for (const auto& h : headers) {
+    if (h.status & status_delete) {
+      continue;
+    }
+    // Since we don't have a global message id, use the combination of
+    // date + title + from system + from user.
+    if (h.daten == d && iequals(h.title, title) && h.ownersys == from_system && h.owneruser == from_user) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 // Implementation Details
 
 bool WWIVMessageArea::add_post(const postrec& post) {

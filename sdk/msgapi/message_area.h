@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "core/wwivport.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message.h"
 
@@ -62,6 +63,7 @@ public:
 
   /** Creates a new empty message for this area. */
   virtual Message* CreateMessage() = 0;
+  virtual bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) = 0;
 
   int max_messages() const { 
     if (max_messages_ == 0) {
