@@ -44,6 +44,7 @@ set(COMMON_SOURCES
  external_edit.cpp
  extract.cpp
  finduser.cpp
+ full_screen.cpp
  gfiles.cpp
  gfileedit.cpp
  hop.cpp

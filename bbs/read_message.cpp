@@ -31,6 +31,7 @@
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/connect1.h"
+#include "bbs/full_screen.h"
 #include "bbs/message_file.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
@@ -338,29 +339,9 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
   return data;
 }
 
-class MessageHeaderInfo {
-public:
-  void initialize() {
-    screen_width = a()->user()->GetScreenChars();
-    screen_length = a()->user()->GetScreenLines() - 1;
-    message_height = screen_length - num_lines - 2 - 1;
-    lines_start = num_lines + 2;
-    lines_end = lines_start + message_height;
-    command_line = screen_length;
-  }
-
-  int num_lines = 0;
-  int screen_width = 0;
-  int screen_length = 0;
-  int message_height = 0;
-  int lines_start = 0;
-  int lines_end = 0;
-  int command_line = 0;
-};
-
-static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
+static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   static constexpr int COLUMN2 = 42;
-  MessageHeaderInfo info{};
+  int num_header_lines = 0;
 
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     string msgarea = msg.message_area;
@@ -372,7 +353,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     }
     else {
       bout.nl();
-      info.num_lines++;
+      num_header_lines++;
     }
     bout << "|#9Msg#|#7: ";
     if (msg.message_number > 0 && msg.total_messages > 0) {
@@ -381,7 +362,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
         << msg.total_messages << "|#7]";
     }
     bout.nl();
-    info.num_lines++;
+    num_header_lines++;
   }
 
   string from = msg.from_user_name;
@@ -396,16 +377,16 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
   }
   else {
     bout.nl();
-    info.num_lines++;
+    num_header_lines++;
   }
   bout << "|#9Date|#7: |#1" << msg.date << wwiv::endl;
-  info.num_lines++;
+  num_header_lines++;
   if (!msg.to_user_name.empty()) {
     bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
-    info.num_lines++;
+    num_header_lines++;
   }
   bout << "|#9Subj|#7: |#" << a()->GetMessageColor() << msg.title << wwiv::endl;
-  info.num_lines++;
+  num_header_lines++;
 
   auto sysname = msg.from_sys_name;
   if (!msg.from_sys_name.empty()) {
@@ -420,7 +401,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
     }
     else {
       bout.nl();
-      info.num_lines++;
+      num_header_lines++;
     }
     if (!msg.from_sys_loc.empty()) {
       auto loc = msg.from_sys_loc;
@@ -429,7 +410,7 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
         loc = loc.substr(0, maxlen);
       }
       bout << "|#9Loc|#7:  |#1" << loc << wwiv::endl;
-      info.num_lines++;
+      num_header_lines++;
     }
   }
 
@@ -448,18 +429,13 @@ static MessageHeaderInfo display_type2_message_header(Type2MessageData& msg) {
       }
     }
     bout.nl();
-    info.num_lines++;
+    num_header_lines++;
   }
 
-  info.initialize();
-  return info;
-}
+  auto screen_width = a()->user()->GetScreenChars();
+  auto screen_length = a()->user()->GetScreenLines() - 1;
 
-static std::string pad(int screen_width, std::string::size_type line_len) {
-  if (static_cast<int>(line_len) >= screen_width) {
-    return{};
-  }
-  return std::string(screen_width - line_len, ' ');
+  return FullScreenView(num_header_lines, screen_width, screen_length);
 }
 
 static std::vector<std::string> split_wwiv_message(const std::string& text) {
@@ -486,25 +462,6 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
   return lines;
 }
 
-static void PrintTimeoutWarning(const MessageHeaderInfo& info, int) {
-  bout.GotoXY(1, info.command_line);
-  bout.clreol();
-  bout << "|12Are you there? ";
-}
-
-static void ClearCommandLine(const MessageHeaderInfo& info) {
-  bout.GotoXY(1, info.command_line);
-  bout.clreol();
-}
-
-static void ClearMessageArea(const MessageHeaderInfo& info) {
-  for (int y = info.lines_start; y < info.lines_end; y++) {
-    bout.GotoXY(1, y);
-    bout.clreol();
-  }
-  bout.GotoXY(1, info.lines_start);
-}
-
 static void display_message_text_new(const std::vector<std::string>& lines, int start, 
   int message_height, int screen_width, int lines_start) {
   for (int i = start; i < start + message_height; i++) {
@@ -527,23 +484,6 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
   }
 }
 
-static void DrawBottomBar(const MessageHeaderInfo& info, const std::string& text) {
-  auto y = info.screen_length - 1;
-  bout.GotoXY(1, y);
-  bout << "|09" << static_cast<unsigned char>(198)
-       << string(info.screen_width - 3, static_cast<unsigned char>(205))
-       << static_cast<unsigned char>(181);
-
-  if (text.empty()) {
-    return;
-  }
-
-  int x = info.screen_width - 10 - text.size();
-  bout.GotoXY(x, y);
-  bout << "|09" << static_cast<unsigned char>(181) << "|17|14 " << text
-       << " |16|09" << static_cast<unsigned char>(198);
-}
-
 static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
   g_flags &= ~g_flag_ansi_movement;
   *next = false;
@@ -553,40 +493,41 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   }
 
   bout.cls();
-  const auto info = display_type2_message_header(msg);
+  auto info = display_type2_message_header(msg);
 
   auto lines = split_wwiv_message(msg.message_text);
 
-  bout.GotoXY(1, info.num_lines + 1);
-  bout << "|#7" << static_cast<unsigned char>(198) << string(info.screen_width - 3, static_cast<char>(205)) << static_cast<char>(181);
-  DrawBottomBar(info, "");
+  info.DrawTopBar();
+  info.DrawBottomBar("");
 
-  bout.GotoXY(1, info.num_lines + 2);
+  info.GotoContentAreaTop();
   const int first = 0;
-  const int last = std::max<int>(0, lines.size() - info.message_height);
+  const int last = std::max<int>(0, lines.size() - info.message_height());
 
   int start = first;
   bool done = false;
   bout.Color(0);
   ReadMessageResult result{};
-  result.lines_start = info.lines_start;
-  result.lines_end = info.lines_end;
+  result.lines_start = info.lines_start();
+  result.lines_end = info.lines_end();
   while (!done) {
     CheckForHangup();
     
-    display_message_text_new(lines, start, info.message_height, info.screen_width, info.lines_start);
-    ClearCommandLine(info);
+    display_message_text_new(
+      lines, start, 
+      info.message_height(), info.screen_width(), info.lines_start());
+    info.ClearCommandLine();
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
 
     if (start == last) {
-      DrawBottomBar(info, "END");
+      info.DrawBottomBar("END");
     }
     else {
-      DrawBottomBar(info, "");
+      info.DrawBottomBar("");
     }
 
-    bout.GotoXY(1, info.command_line);
-    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [=](int s) { PrintTimeoutWarning(info, s); });
+    bout.GotoXY(1, info.command_line_y());
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](int s) { info.PrintTimeoutWarning(s); });
     switch (key) {
     case COMMAND_UP: {
       if (start > first) {
@@ -594,8 +535,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       }
     } break;
     case COMMAND_PAGEUP: {
-      if (start - info.message_height > first) {
-        start -= info.message_height;
+      if (start - info.message_height() > first) {
+        start -= info.message_height();
       } else {
         start = first;
       }
@@ -609,8 +550,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
       }
     } break;
     case COMMAND_PAGEDN: {
-      if (start + info.message_height < last) {
-        start += info.message_height;
+      if (start + info.message_height() < last) {
+        start += info.message_height();
       } else {
         start = last;
       }
@@ -636,8 +577,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         result.option = ReadMessageOption::NEXT_MSG;
         return result;
       }
-      else if (start + info.message_height < last) {
-        start += info.message_height;
+      else if (start + info.message_height() < last) {
+        start += info.message_height();
       }
       else {
         start = last;
@@ -658,37 +599,37 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         else if (key == 'T') {
           result.option = ReadMessageOption::LIST_TITLES;
         } else if (key == '?') {
-          ClearMessageArea(info);
+          info.ClearMessageArea();
           if (!printfile(MBFSED_NOEXT)) {
-            ClearCommandLine(info);
+            info.ClearCommandLine();
             bout << "|#6Unable to find file: " << MBFSED_NOEXT;
           }
           else {
-            ClearCommandLine(info);
+            info.ClearCommandLine();
           }
           if (lcs()) {
             pausescr();
-            ClearMessageArea(info);
+            info.ClearMessageArea();
             if (!printfile(MBFSED_SYSOP_NOEXT)) {
-              ClearCommandLine(info);
+              info.ClearCommandLine();
               bout << "|#6Unable to find file: " << MBFSED_SYSOP_NOEXT;
             }
           }
-          ClearCommandLine(info);
+          info.ClearCommandLine();
           pausescr();
-          ClearCommandLine(info);
+          info.ClearCommandLine();
         } else {
           result.option = ReadMessageOption::COMMAND;
           result.command = static_cast<char>(key);
         }
-        ClearCommandLine(info);
+        info.ClearCommandLine();
         return result;
       }
     }
     }
   }
 
-  ClearCommandLine(info);
+  info.ClearCommandLine();
   return result;
 }
 
@@ -706,7 +647,7 @@ ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* ne
 
 
   auto info = display_type2_message_header(msg);
-  bout.lines_listed_ = info.num_lines;
+  bout.lines_listed_ = info.num_header_lines();
 
   display_message_text(msg.message_text, next);
   g_flags &= ~g_flag_disable_mci;

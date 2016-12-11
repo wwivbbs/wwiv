@@ -134,6 +134,7 @@
     <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="finduser.h" />
+    <ClInclude Include="full_screen.h" />
     <ClInclude Include="gfileedit.h" />
     <ClInclude Include="gfiles.h" />
     <ClInclude Include="hop.h" />
@@ -248,6 +249,7 @@
     <ClCompile Include="external_edit.cpp" />
     <ClCompile Include="extract.cpp" />
     <ClCompile Include="finduser.cpp" />
+    <ClCompile Include="full_screen.cpp" />
     <ClCompile Include="gfileedit.cpp" />
     <ClCompile Include="gfiles.cpp" />
     <ClCompile Include="hop.cpp" />
