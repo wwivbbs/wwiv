@@ -237,9 +237,6 @@ void display_message_text(const std::string& text, bool *next) {
   }
   bout.Color(0);
   bout.nl();
-  if (express && abort && !*next) {
-    expressabort = true;
-  }
   if (ansi && a()->topdata && a()->IsUserOnline()) {
     a()->UpdateTopScreen();
   }
@@ -748,8 +745,6 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
 
     a()->user()->SetNumMessagesRead(a()->user()->GetNumMessagesRead() + 1);
     a()->SetNumMessagesReadThisLogon(a()->GetNumMessagesReadThisLogon() + 1);
-  } else if (express && !*next) {
-    expressabort = true;
   }
 
   update_qscan(p.qscan);

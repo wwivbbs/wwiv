@@ -876,19 +876,13 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
   string read_prompt = GetScanReadPrompts(nMessageNumber);
   bout.nl();
   char szUserInput[81];
-  if (express) {
-    szUserInput[0] = '\0';
-    read_prompt.clear();
-    bout.nl(2);
-  } else {
-    bout << read_prompt;
-    input(szUserInput, 5, true);
-    resynch(&nMessageNumber, nullptr);
-    while (szUserInput[0] == 32) {
-      char szTempBuffer[255];
-      strcpy(szTempBuffer, &(szUserInput[1]));
-      strcpy(szUserInput, szTempBuffer);
-    }
+  bout << read_prompt;
+  input(szUserInput, 5, true);
+  resynch(&nMessageNumber, nullptr);
+  while (szUserInput[0] == 32) {
+    char szTempBuffer[255];
+    strcpy(szTempBuffer, &(szUserInput[1]));
+    strcpy(szUserInput, szTempBuffer);
   }
   if (bTitleScan && szUserInput[0] == 0 && nMessageNumber < a()->GetNumMessagesInCurrentMessageArea()) {
     nScanOptionType = MsgScanOption::SCAN_OPTION_LIST_TITLES;
@@ -987,9 +981,6 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
         --nMessageNumber;
         nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       }
-      break;
-    case 'C':
-      express = true;
       break;
     case '*':
       // This used to be threaded code.
@@ -1163,7 +1154,6 @@ void scan(int nMessageNumber, MsgScanOption nScanOptionType, int *nextsub, bool 
   irt_name[0] = '\0';
 
   int val = 0;
-  bool realexpress = express;
   iscan(a()->current_user_sub_num());
   if (a()->GetCurrentReadMessageArea() < 0) {
     bout.nl();
@@ -1223,30 +1213,11 @@ void scan(int nMessageNumber, MsgScanOption nScanOptionType, int *nextsub, bool 
       } else {
         nScanOptionType = MsgScanOption::SCAN_OPTION_READ_PROMPT;
       }
-      if (expressabort) {
-        if (realexpress) {
-          done = true;
-          quit = true;
-          *nextsub = 0;
-        } else {
-          expressabort = false;
-          express = false;
-          nScanOptionType = MsgScanOption::SCAN_OPTION_READ_PROMPT;
-        }
-      }
     }
     break;
     }
   } while (!done);
-  if (!realexpress) {
-    express = false;
-    expressabort = false;
-  }
-  // Express is true when we are just ripping through all
-  // messages, probably to screen capture them all.
-  if (express) {
-    return;
-  }
+
   if ((val & 1) && lcs()) {
     validate();
   }

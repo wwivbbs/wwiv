@@ -291,9 +291,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "YourInfo", [](MenuItemContext& context) {
       YourInfo();
     } },
-    { "ExpressScan", [](MenuItemContext& context) {
-      ExpressScan();
-    } },
     { "WWIVVer", [](MenuItemContext& context) {
       WWIVVersion();
     } },

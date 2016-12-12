@@ -1175,8 +1175,6 @@ void config_scan_plus(int type) {
           break;
         case 5:
           if (type == 0) {
-            express = false;
-            expressabort = false;
             qscan(top + pos, &i);
           } else {
             i = a()->current_user_dir_num();

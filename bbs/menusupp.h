@@ -48,7 +48,6 @@ void TitleScan();
 void ListUsers();
 void Vote();
 void ToggleExpert();
-void ExpressScan();
 void WWIVVersion();
 void JumpEdit();
 void BoardEdit();

@@ -273,8 +273,6 @@ void NewMessageScan() {
     }
   }
   write_inst(INST_LOC_SUBS, 65535, INST_FLAGS_NONE);
-  express = false;
-  expressabort = false;
   newline = false;
   nscan();
   newline = true;
@@ -372,7 +370,6 @@ void ScanSub() {
   if (a()->usub[0].subnum != -1) {
     write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
     int i = 0;
-    express = expressabort = false;
     qscan(a()->current_user_sub_num(), &i);
   }
 }
@@ -387,8 +384,6 @@ void RemovePost() {
 void TitleScan() {
   if (a()->usub[0].subnum != -1) {
     write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
-    express = false;
-    expressabort = false;
     ScanMessageTitles();
   }
 }
@@ -406,17 +401,6 @@ void Vote() {
 
 void ToggleExpert() {
   a()->user()->ToggleStatusFlag(User::expert);
-}
-
-void ExpressScan() {
-  express = true;
-  expressabort = false;
-  TempDisablePause disable_pause;
-  newline = false;
-  nscan();
-  newline = true;
-  express = false;
-  expressabort = false;
 }
 
 void WWIVVersion() {
@@ -674,8 +658,6 @@ void NewMsgsAllConfs() {
   bool ac = false;
 
   write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
-  express = false;
-  expressabort = false;
   newline = false;
   if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = true;

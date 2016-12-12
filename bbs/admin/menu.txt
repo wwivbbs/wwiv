@@ -279,10 +279,6 @@ YourInfo
 
   Display the yourinfo screen
 
-ExpressScan
-
-  I think this will scan all new messages without pausing.
-
 WWIVVer
 
   Get the wwiv version
