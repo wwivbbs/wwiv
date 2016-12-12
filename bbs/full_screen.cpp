@@ -81,7 +81,7 @@ void FullScreenView::ClearMessageArea() {
 void FullScreenView::DrawTopBar() {
   bout.GotoXY(1, num_header_lines_ + 1);
   bout << "|#7" << static_cast<unsigned char>(198) 
-       << string(screen_width_ - 3, static_cast<unsigned char>(205))
+       << string(screen_width_ - 2, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181);
 }
 
@@ -89,7 +89,7 @@ void FullScreenView::DrawBottomBar(const std::string& text) {
   auto y = screen_length_ - 1;
   bout.GotoXY(1, y);
   bout << "|09" << static_cast<unsigned char>(198)
-       << string(screen_width_ - 3, static_cast<unsigned char>(205))
+       << string(screen_width_ - 2, static_cast<unsigned char>(205))
        << static_cast<unsigned char>(181);
 
   if (text.empty()) {

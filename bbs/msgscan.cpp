@@ -321,7 +321,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
   auto screen_length = a()->user()->GetScreenLines() - 1;
   int num_header_lines = 1;
   bout << "|14      Num" << " " << std::left << std::setw(43) 
-       << "Title" << std::left << std::setw(15) << "From\r\n";
+       << "Title" << std::left << "From\r\n";
   bout.clear_lines_listed();
   return FullScreenView(num_header_lines, screen_width, screen_length);
 }
@@ -374,12 +374,11 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     }
     strcat(szPrompt, charstr(51 - strlen(stripcolors(szPrompt)), ' '));
     if (okansi()) {
-      strcat(szPrompt, "|09\xB3|11");
+      strcat(szPrompt, "|09\xB3|10 ");
     }
     else {
-      strcat(szPrompt, "|");
+      strcat(szPrompt, "| ");
     }
-    strcat(szPrompt, " ");
     if ((h->anony() & 0x0f) &&
       ((getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) == 0)) {
       strcat(szPrompt, ">UNKNOWN<");
@@ -419,7 +418,7 @@ static void display_titles_new(const std::vector<std::string>& lines, const Full
     else {
       bout << "|16|#0 ";
     }
-    bout << l << pad(fs.screen_width() - 2, stripcolors(l).size()) << "|#0";
+    bout << l << pad(fs.screen_width() - 1, stripcolors(l).size()) << "|#0";
   }
 }
 
@@ -559,13 +558,14 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
     return;
   }
 
-  bout.nl();
+  bout << "|#7" << static_cast<unsigned char>(198)
+    << string(a()->user()->GetScreenChars() - 2, static_cast<unsigned char>(205))
+    << static_cast<unsigned char>(181) << "\r\n";
   int nNumTitleLines = std::max<int>(a()->screenlinest - 6, 1);
   int i = 0;
   while (!abort && ++i <= nNumTitleLines) {
     ++msgnum;
     const string line = CreateLine(unique_ptr<Message>(area->ReadMessage(msgnum)), msgnum);
-    bout.Color(2);
     pla(line, &abort);
     if (msgnum >= num_msgs_in_area) {
       abort = true;
