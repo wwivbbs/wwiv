@@ -22,18 +22,17 @@ straight from the main and xfer menus.  Additional commands are added to
 manage the menu system as well as a few commands which will help you to
 emulate other BBSes.
 
+ =============================================================================
 
 MENU <menu>
 
   Loads up and starts running a new menu set, where <menu> equals the name of
   the menu to load.
 
-
 ReturnFromMenu
 
   Unloads the current menu and goes back to the menu that loaded the current
   one.  If you try to return from the very first menu, it will just be reloaded
-
 
 EditMenuSet
 
@@ -41,15 +40,11 @@ EditMenuSet
   command tied down as anyone with access to the menu editor will have 100%
   access to your system.
 
-
-
 DLFreeFile <dirfname> <filename>
 
   This will download a file, but not check ratios or charge a download charge.
   You must specify the dirfilename, which is the name of the data file in
   the transfer editor.  filename is the name of the file being downloaded.
-
-
 
 DLFile
 
@@ -58,12 +53,10 @@ DLFile
   You must specify the dirfilename, which is the name of the data file in
   the transfer editor.  filename is the name of the file being downloaded.
 
-
 RunDoor <doorname>
 
   Runs a door (chain) with doorname matching, exactly, the description you have
   given the door in //CHEDIT
-
 
 RunDoorFree <doorname>
 
@@ -90,8 +83,6 @@ PrintFile <filename>
 PrintFileNA <filename>
 
   Just like PrintFile, but the user can not abort it with the space bar.
-
-
 
 SetSubNumber <key>
 
@@ -144,16 +135,13 @@ SelectDir
 
   Like SelectSub, but for the xfer section.
 
-
 SubList
 
   List the subs available
 
-
 UpSubConf
 
   Increment ()) to the previous conference number
-
 
 DownSubConf
 
@@ -175,11 +163,9 @@ Doors
 
   Enter the doors, or chains section.  Like '.'
 
-
 TimeBank
 
   Enter the time bank
-
 
 AutoMessage
 
@@ -189,7 +175,6 @@ BBSList
 
   Read the bbslist
 
-
 RequestChat
 
   Request chat from the sysop
@@ -197,7 +182,6 @@ RequestChat
 Defaults
 
   Enter the normal 'defaults' section
-
 
 SendEMail
 
@@ -211,11 +195,9 @@ Bulletins
 
   Enter the bulletins (or 'gfiles') section.  'G'
 
-
 HopSub
 
   Hop to another sub.  'H'
-
 
 SystemInfo
 
@@ -228,7 +210,6 @@ JumpSubConf
 KillEMail
 
   Kill email that you have sent 'K'
-
 
 LastCallers
 
@@ -338,10 +319,6 @@ ResetUserIndex
 ResetQScan
 
   Set all messages to read (I think)
-
-MemStat
-
-  Show memory stats. //STAT
 
 PackMsgs
 
@@ -589,10 +566,6 @@ SetNewScanMsg
 
   Enter the menu so that a user can set which subs he want to scan when doing
   a new message scan
-
-RUN
-
-  In a future version, this will run a script file
 
 EventEdit
 

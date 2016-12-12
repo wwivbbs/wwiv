@@ -324,9 +324,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "ReadAllMail", [](MenuItemContext& context) {
       ReadAllMail();
     } },
-    { "Reboot", [](MenuItemContext& context) {
-      RebootComputer();
-    } },
     { "ReloadMenus", [](MenuItemContext& context) {
       ReloadMenus();
     } },
@@ -379,7 +376,7 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       bout.cls();
     } },
     { "NetListing", [](MenuItemContext& context) {
-      NetListing();
+      print_net_listing(false);
     } },
     { "WHO", [](MenuItemContext& context) {
       WhoIsOnline();

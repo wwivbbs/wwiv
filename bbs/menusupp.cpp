@@ -520,10 +520,6 @@ void ReadAllMail() {
   mailr();
 }
 
-void RebootComputer() {
-  // Does nothing.
-}
-
 void ReloadMenus() {
   write_inst(INST_LOC_RELOAD, 0, INST_FLAGS_NONE);
   read_new_stuff();
@@ -638,10 +634,6 @@ void ViewNetDataLog() {
 
 void UploadPost() {
   upload_post();
-}
-
-void NetListing() {
-  print_net_listing(false);
 }
 
 void WhoIsOnline() {
