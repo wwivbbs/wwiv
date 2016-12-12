@@ -307,10 +307,6 @@ ChangeUser
 
   Sysop command equal to //CHUSER, to change into another users
 
-CLOUT
-
-  Who knows, sopposed to do a callout
-
 DirEdit
 
   Sysop command to edit the directory records

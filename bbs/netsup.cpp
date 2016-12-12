@@ -1072,7 +1072,7 @@ static int FindNetworkNumberForNode(int sn) {
   }
   return -1;
 }
-void force_callout(int dw) {
+void force_callout(bool prompt_for_retries) {
   bool abort = false;
   unsigned int total_attempts = 1, current_attempt = 0;
   char ch, s[101];
@@ -1098,22 +1098,13 @@ void force_callout(int dw) {
     return;
   }
 
-  if (dw) {
+  if (prompt_for_retries) {
     bout.nl();
     bout << "|#2Num Retries : ";
     input(s, 5, true);
     total_attempts = atoi(s);
   }
-  if (dw == 2) {
-    if (a()->IsUserOnline()) {
-      a()->WriteCurrentUser();
-      write_qscn(a()->usernum, qsc, false);
-      a()->SetUserOnline(false);
-    }
-    hang_it_up();
-    sleep_for(seconds(5));
-  }
-  if (!dw || total_attempts < 1) {
+  if (!prompt_for_retries || total_attempts < 1) {
     total_attempts = 1;
   }
 

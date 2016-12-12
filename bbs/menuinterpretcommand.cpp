@@ -309,9 +309,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "ChangeUser", [](MenuItemContext& context) {
       ChangeUser();
     } },
-    { "CLOUT", [](MenuItemContext& context) {
-      CallOut();
-    } },
     { "DirEdit", [](MenuItemContext& context) {
       DirEdit();
     } },

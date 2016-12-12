@@ -30,7 +30,7 @@ void gate_msg(
   net_header_rec* nh, char *messageText, int net_number,
   const std::string& author_name, std::vector<uint16_t> list,
   int nFromNetworkNumber);
-void force_callout(int dw);
+void force_callout(bool prompt_for_retries);
 void run_exp();
 bool attempt_callout();
 

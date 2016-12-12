@@ -469,10 +469,6 @@ void ChangeUser() {
   chuser();
 }
 
-void CallOut() {
-  force_callout(2);
-}
-
 void DirEdit() {
   write_inst(INST_LOC_DIREDIT, 0, INST_FLAGS_NONE);
   sysoplog() << "@ Ran Directory Edit";
