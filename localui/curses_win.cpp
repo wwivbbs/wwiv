@@ -117,7 +117,7 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
 }
 
 /**
- * Printf sytle output function.  Most init output code should use this.
+ * Printf style output function.  Most init output code should use this.
  */
 void CursesWindow::Printf(const char* format, ...) {
   va_list ap;

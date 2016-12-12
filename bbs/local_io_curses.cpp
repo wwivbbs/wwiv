@@ -114,6 +114,7 @@ size_t CursesLocalIO::WhereY() {
 }
 
 void CursesLocalIO::Lf() {
+  Cr();
   y_ = WhereY();
   x_ = WhereX();
   y_++;
