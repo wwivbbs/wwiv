@@ -436,7 +436,8 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
   scan_option_type = MsgScanOption::SCAN_OPTION_READ_PROMPT;
 
   auto num_msgs_in_area = area->number_of_messages();
-  if (msgnum >= num_msgs_in_area) {
+  msgnum = std::min(msgnum, num_msgs_in_area);
+  if (msgnum > num_msgs_in_area) {
     ReadMessageResult result;
     result.command = 0;
     return result;
@@ -448,12 +449,15 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
   fs.GotoContentAreaTop();
 
   const int window_top_min = 1;
-  int window_top = msgnum;
-  int selected = msgnum;
-
   const int first = 1;
   const int last = std::max<int>(first, area->number_of_messages() - fs.message_height());
   const int height = std::min<int>(num_msgs_in_area, fs.message_height());
+
+  int selected = msgnum;
+  int window_top = std::min(msgnum, last);
+  int window_bottom = window_top + height - window_top_min - 1;
+  // When starting mid-range, sometimes the selected is past the bottom.
+  if (selected > window_bottom) selected = window_bottom;
 
   bool done = false;
   while (!done) {
@@ -527,6 +531,17 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       if ((key & 0xff) == key) {
         key = toupper(key & 0xff);
         switch (key) {
+        case 'J': {
+          fs.ClearCommandLine();
+          bout << "Enter Message Number (1-" << num_msgs_in_area << ") :";
+          msgnum = input_number(msgnum, 1, num_msgs_in_area);
+
+          ReadMessageResult result;
+          result.option = ReadMessageOption::READ_MESSAGE;
+          fs.ClearCommandLine();
+          return result;
+
+        } break;
         case 'Q': {
           ReadMessageResult result;
           result.option = ReadMessageOption::COMMAND;
