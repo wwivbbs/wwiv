@@ -436,25 +436,31 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
 }
 
 static std::vector<std::string> split_wwiv_message(const std::string& text) {
-  std::vector<std::string> orig_lines = SplitString(text, "\n");
+  std::vector<std::string> orig_lines = SplitString(text, "\r");
   std::vector<std::string> lines;
   for (auto line : orig_lines) {
     StringTrim(&line);
-    //if (line.empty()) { continue; }
-    if (contains(line, '\r')) {
-      for (auto l : SplitString(line, "\r")) {
-        StringTrim(&l);
-        if (line.front() == '\x04') { continue; }
-        lines.emplace_back(l);
+    line.erase(std::remove(line.begin(), line.end(), 10), line.end());
+    if (!line.empty()) {
+      const auto optional_lines = a()->user()->GetOptionalVal();
+      if (line.front() == CD) {
+        auto level = (line.size() > 1) ? static_cast<int>(line.at(1) - '0') : 0;
+        if (level == 0) {
+          // ^D0 lines are always skipped.
+          continue;
+        }
+        else {
+          line = line.substr(2);
+        }
+        if (optional_lines != 0 && line.size() >= 2) {
+          if ((10 - optional_lines) < level) {
+            // This is too high of a level, so skip it.
+            continue;
+          }
+        }
       }
     }
-    else {
-      if (!line.empty() && line.front() == '\x04') {
-        // skip contril lines.
-        continue;
-      }
-      lines.emplace_back(line);
-    }
+    lines.emplace_back(line);
   }
   return lines;
 }
@@ -467,15 +473,13 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     }
     bout.GotoXY(1, i - start + lines_start);
     auto l = lines.at(i);
-    if (!l.empty()) {
-      if (l.back() == CA) {
-        // A line ending in ^A means it soft-wrapped.
-        l.pop_back();
-      }
-      if (l.front() == CB) {
-        // Line starting with ^B is centered.
-        l = StrCat(std::string((screen_width - l.size()) / 2, ' '), l);
-      }
+    if (!l.empty() && l.back() == CA) {
+      // A line ending in ^A means it soft-wrapped.
+      l.pop_back();
+    }
+    if (!l.empty() && l.front() == CB) {
+      // Line starting with ^B is centered.
+      l = StrCat(std::string((screen_width - l.size()) / 2, ' '), l);
     }
     bout << "|#0" << l << pad(screen_width, l.size());
   }
