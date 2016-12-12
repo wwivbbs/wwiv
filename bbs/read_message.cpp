@@ -479,7 +479,12 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     }
     if (!l.empty() && l.front() == CB) {
       // Line starting with ^B is centered.
-      l = StrCat(std::string((screen_width - l.size()) / 2, ' '), l);
+      if (l.size() >= screen_width) {
+        l = l.substr(0, screen_width);
+      }
+      else {
+        l = StrCat(std::string((screen_width - l.size()) / 2, ' '), l);
+      }
     }
     bout << "|#0" << l << pad(screen_width, l.size());
   }
