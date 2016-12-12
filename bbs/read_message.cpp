@@ -479,14 +479,15 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     }
     if (!l.empty() && l.front() == CB) {
       // Line starting with ^B is centered.
-      if (l.size() >= screen_width) {
-        l = l.substr(0, screen_width);
+      if (stripcolors(l).size() >= screen_width) {
+        // TODO(rushfan): This should be stripped size
+        l = l.substr(1, screen_width);
       }
       else {
-        l = StrCat(std::string((screen_width - l.size()) / 2, ' '), l);
+        l = StrCat(std::string((screen_width - stripcolors(l).size()) / 2, ' '), l.substr(1));
       }
     }
-    bout << "|#0" << l << pad(screen_width, l.size());
+    bout << "|#0" << l << pad(screen_width, stripcolors(l).size());
   }
 }
 
