@@ -553,8 +553,12 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
           if (!printfile(TITLE_FSED_NOEXT)) {
             fs.ClearCommandLine();
             bout << "|#6Unable to find file: " << TITLE_FSED_NOEXT;
+            pausescr();
+            fs.ClearCommandLine();
           }
           else {
+            fs.ClearCommandLine();
+            pausescr();
             fs.ClearCommandLine();
           }
         } break;
