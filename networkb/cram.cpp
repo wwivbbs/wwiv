@@ -26,8 +26,10 @@
 
 #include "core/md5.h"
 #include "core/log.h"
+#include "core/strings.h"
 
 using std::string;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace net {
@@ -50,7 +52,8 @@ bool Cram::ValidatePassword(const std::string& challenge,
  
 static std::string FromHex(const std::string& hex) {
   if ((hex.length() % 2) != 0) {
-    throw std::logic_error("FromHex needs length of size a multiple of 2");
+    throw std::logic_error(
+      StrCat("FromHex needs length of size a multiple of 2.  hex: '", hex, "'"));
   }
 
   if (hex.length() > 256) {
