@@ -261,7 +261,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  File::Rename("wwivini.510", WWIV_INI);
+  File::Rename("wwivini.txt", WWIV_INI);
   File::Rename("menucmds.dat", StringPrintf("data%cmenucmds.dat", File::pathSeparatorChar));
   File::Rename("regions.dat", StringPrintf("data%cregions.dat", File::pathSeparatorChar));
   File::Rename("wfc.dat", StringPrintf("data%cwfc.dat", File::pathSeparatorChar));

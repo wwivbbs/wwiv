@@ -203,8 +203,6 @@ void WFC::DrawScreen() {
       a()->localIO()->PrintfXYA(58, 10, 14, "N/A");
     }
     a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
-    a()->localIO()->PrintfXYA(58, 12, 14, "Local Mode");
-    a()->localIO()->PrintfXYA(58, 13, 14, "Waiting For Command");
 
     get_inst_info(a()->instance_number(), &ir);
     if (ir.user < syscfg.maxusers && ir.user > 0) {

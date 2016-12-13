@@ -84,6 +84,8 @@ What's New in WWIV 5.2 (2016)
   commands for the full screen message reader.
 * New file "gfiles/title-fsed.msg" is the help screen for title
   scan in hte full screen message reader.
+* readme.510 is now readme-wwiv.txt.
+* wwivini.510 is now wwivini.txt
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
