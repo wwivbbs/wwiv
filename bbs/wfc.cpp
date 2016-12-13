@@ -124,8 +124,7 @@ static void wfc_update() {
     a()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", "Nobody");
   }
 
-  string activity_string;
-  make_inst_str(inst_num, &activity_string, INST_FORMAT_WFC);
+  string activity_string = make_inst_str(inst_num, INST_FORMAT_WFC);
   a()->localIO()->PrintfXYA(42, 20, 14, "%-25.25s", activity_string.c_str());
   if (num_instances() > 1) {
     do {

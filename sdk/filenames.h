@@ -186,6 +186,7 @@
 #define TARCHIVE_NOEXT "tarchive"
 #define TBATCH_NOEXT "tbatch"
 #define TEMP_ION "temp.ion"
+#define TITLE_FSED_NOEXT "title-fsed"
 #define TRASHCAN_TXT "trashcan.txt"
 #define TRY2UL_NOEXT "try2ul"
 #define TTAGGING_NOEXT "ttagging"

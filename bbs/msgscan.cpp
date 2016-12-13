@@ -540,7 +540,6 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
           result.option = ReadMessageOption::READ_MESSAGE;
           fs.ClearCommandLine();
           return result;
-
         } break;
         case 'Q': {
           ReadMessageResult result;
@@ -548,6 +547,16 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
           result.command = 'Q';
           fs.ClearCommandLine();
           return result;
+        } break;
+        case '?': {
+          fs.ClearMessageArea();
+          if (!printfile(TITLE_FSED_NOEXT)) {
+            fs.ClearCommandLine();
+            bout << "|#6Unable to find file: " << TITLE_FSED_NOEXT;
+          }
+          else {
+            fs.ClearCommandLine();
+          }
         } break;
         } // default switch
       }
