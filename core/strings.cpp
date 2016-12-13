@@ -424,6 +424,20 @@ std::string put_time(const struct tm *tm_info, const std::string& fmt_arg) {
   }
   return string(buffer);
 }
+
+std::string::size_type size_without_colors(const std::string& s) {
+  const string stripped = stripcolors(s);
+  return stripped.size();
+}
+
+std::string trim_to_size_ignore_colors(const std::string& orig, std::string::size_type size) {
+  string s(orig);
+  while (size_without_colors(s) > size) {
+    s.pop_back();
+  }
+  return s;
+}
+
 }  // namespace strings
 }  // namespace wwiv
 

@@ -110,6 +110,11 @@ std::string JoinStrings(const std::vector<std::string> lines, const std::string 
 
 std::string put_time(const struct tm *tm_info, const std::string& fmt_arg);
 
+// String length without colors
+std::string::size_type size_without_colors(const std::string& s);
+// returns a copy of orig trimmed to size.
+std::string trim_to_size_ignore_colors(const std::string& orig, std::string::size_type size);
+
 }  // namespace strings
 
 template<class T>

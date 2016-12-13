@@ -20,7 +20,7 @@
 
 #include <string>
 
-void make_inst_str(int nInstanceNum, std::string *result, int nInstanceFormat);
+std::string make_inst_str(int nInstanceNum, int nInstanceFormat);
 void multi_instance();
 int  inst_ok(int loc, int subloc);
 

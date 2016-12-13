@@ -380,3 +380,18 @@ TEST(StringsTest, IEQuals) {
   EXPECT_FALSE(iequals(string(""), string("foo")));
   EXPECT_FALSE(iequals(string("foo"), string("")));
 }
+
+TEST(StringsTest, SizeWithoutColors) {
+  EXPECT_EQ(1, size_without_colors("a"));
+  EXPECT_EQ(1, size_without_colors("|#1a"));
+  EXPECT_EQ(1, size_without_colors("|09a"));
+  EXPECT_EQ(1, size_without_colors("|17|10a"));
+}
+
+TEST(StringsTest, TrimToSizeIgnoreColors) {
+  EXPECT_EQ("a", trim_to_size_ignore_colors("a", 1));
+  EXPECT_EQ("|#5a", trim_to_size_ignore_colors("|#5a", 1));
+  EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16a", 1));
+  EXPECT_EQ("|09|16a|09", trim_to_size_ignore_colors("|09|16a|09", 1));
+  EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16aa|09", 1));
+}

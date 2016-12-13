@@ -116,7 +116,7 @@ string GetInstanceActivityString(instancerec &ir) {
 }
 
 /*
- * Builds a string (in out) like:
+ * Returns a string (in out) like:
  *
  * Instance   1: Offline
  *     LastUser: Sysop #1
@@ -126,21 +126,21 @@ string GetInstanceActivityString(instancerec &ir) {
  * Instance  22: Network transmission
  *     CurrUser: Sysop #1
  */
-void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
-  const string s = StringPrintf("|#1Instance %-3d: |#2", nInstanceNum);
+std::string make_inst_str(int instance_num, int format) {
+  const string s = StringPrintf("|#1Instance %-3d: |#2", instance_num);
 
   instancerec ir;
-  get_inst_info(nInstanceNum, &ir);
+  get_inst_info(instance_num, &ir);
 
   const string activity_string = GetInstanceActivityString(ir);
 
-  switch (nInstanceFormat) {
+  switch (format) {
   case INST_FORMAT_WFC:
-    out->assign(activity_string); // WFC addition
+    return activity_string;
     break;
   case INST_FORMAT_OLD:
     // Not used anymore.
-    out->assign(s);
+    return s;
     break;
   case INST_FORMAT_LIST: {
     std::string userName;
@@ -155,63 +155,55 @@ void make_inst_str(int nInstanceNum, std::string *out, int nInstanceFormat) {
     } else {
       userName = "(Nobody)";
     }
-    out->assign(StringPrintf("|#5%-4d |#2%-35.35s |#1%-37.37s", nInstanceNum, userName.c_str(), activity_string.c_str()));
+    return StringPrintf("|#5%-4d |#2%-35.35s |#1%-37.37s", instance_num, userName.c_str(), activity_string.c_str());
   }
   break;
   default:
-    out->assign(StringPrintf("** INVALID INSTANCE FORMAT PASSED [%d] **", nInstanceFormat));
+    return StringPrintf("** INVALID INSTANCE FORMAT PASSED [%d] **", format);
     break;
   }
 }
 
 void multi_instance() {
   bout.nl();
-  int nNumInstances = num_instances();
-  if (nNumInstances < 1) {
+  int num = num_instances();
+  if (num < 1) {
     bout << "|#6Couldn't find instance data file.\r\n";
     return;
   }
 
   bout.bprintf("|#5Node |#1%-35.35s |#2%-37.37s\r\n", "User Name", "Activity");
-  char s1[81], s2[81], s3[81];
-  strcpy(s1, charstr(4, '='));
-  strcpy(s2, charstr(35, '='));
-  strcpy(s3, charstr(37, '='));
-  bout.bprintf("|#7%-4.4s %-35.35s %-37.37s\r\n", s1, s2, s3);
+  bout << "==== " << string(35, '=') << " " << string(37, '=');
 
-  for (int nInstance = 1; nInstance <= nNumInstances; nInstance++) {
-    string activity;
-    make_inst_str(nInstance, &activity, INST_FORMAT_LIST);
-    bout << activity;
-    bout.nl();
+  for (int inst = 1; inst <= num; inst++) {
+    bout << make_inst_str(inst, INST_FORMAT_LIST) << "\r\n";
   }
 }
 
 int inst_ok(int loc, int subloc) {
-  instancerec instance_temp;
-
   if (loc == INST_LOC_FSED) {
     return 0;
   }
 
-  int nInstNum = 0;
-  File instFile(a()->config()->datadir(), INSTANCE_DAT);
-  if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
+  int num = 0;
+  File f(a()->config()->datadir(), INSTANCE_DAT);
+  if (!f.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
-  auto nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec));
-  instFile.Close();
-  for (int nInstance = 1; nInstance < nNumInstances; nInstance++) {
-    if (instFile.Open(File::modeReadOnly | File::modeBinary)) {
-      instFile.Seek(nInstance * sizeof(instancerec), File::Whence::begin);
-      instFile.Read(&instance_temp, sizeof(instancerec));
-      instFile.Close();
-      if (instance_temp.loc == loc &&
-          instance_temp.subloc == subloc &&
-          instance_temp.number != a()->instance_number()) {
-        nInstNum = instance_temp.number;
+  auto num_instances = static_cast<int>(f.GetLength() / sizeof(instancerec));
+  f.Close();
+  for (int i = 1; i < num_instances; i++) {
+    if (f.Open(File::modeReadOnly | File::modeBinary)) {
+      f.Seek(i * sizeof(instancerec), File::Whence::begin);
+      instancerec in{};
+      f.Read(&in, sizeof(instancerec));
+      f.Close();
+      if (in.loc == loc &&
+          in.subloc == subloc &&
+          in.number != a()->instance_number()) {
+        num = in.number;
       }
     }
   }
-  return nInstNum;
+  return num;
 }
