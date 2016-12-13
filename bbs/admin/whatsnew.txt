@@ -79,9 +79,11 @@ What's New in WWIV 5.2 (2016)
   "EXPERIMENTAL_READ_PROMPT = Y" in wwiv.ini.  Once enabled it's
   a per-user option in Defaults.
 * New file "gfiles/mbfsed.msg" is the help screen for user
-  commands for the fill screen message reader.
+  commands for the full screen message reader.
 * New file "gfiles/mbfsed-sysop.msg" is the help screen for sysop
-  commands for the fill screen message reader.
+  commands for the full screen message reader.
+* New file "gfiles/title-fsed.msg" is the help screen for title
+  scan in hte full screen message reader.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
