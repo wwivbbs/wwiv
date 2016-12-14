@@ -193,6 +193,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
     HandleFileRequest(s);
   } break;
   case BinkpCommands::M_ERR: {
+    LOG(ERROR) << "M_ERR: " << s;
     error_received_ = true;
   } break;
   default: {
