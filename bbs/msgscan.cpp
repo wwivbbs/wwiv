@@ -496,7 +496,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       window_top = window_top_min;
     } break;
     case COMMAND_DOWN: {
-      int window_bottom = window_top + height - window_top_min - 1;
+      //int window_bottom = window_top + height - window_top_min - 1;
       if (selected <= window_bottom) {
         selected++;
       }
@@ -534,7 +534,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
         case 'J': {
           fs.ClearCommandLine();
           bout << "Enter Message Number (1-" << num_msgs_in_area << ") :";
-          msgnum = input_number(msgnum, 1, num_msgs_in_area);
+          msgnum = input_number(msgnum, 1, num_msgs_in_area, false);
 
           ReadMessageResult result;
           result.option = ReadMessageOption::READ_MESSAGE;
@@ -1141,7 +1141,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
     case ReadMessageOption::JUMP_TO_MSG: {
       const auto maxnum = a()->GetNumMessagesInCurrentMessageArea();
       bout << "Enter Message Number (1-" << maxnum << ") :";
-      msgnum = input_number(msgnum, 1, maxnum);
+      msgnum = input_number(msgnum, 1, maxnum, false);
     } break;
     case ReadMessageOption::LIST_TITLES: {
       scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES;
