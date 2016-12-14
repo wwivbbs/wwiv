@@ -53,7 +53,7 @@ bool Cram::ValidatePassword(const std::string& challenge,
 static std::string FromHex(const std::string& hex) {
   if ((hex.length() % 2) != 0) {
     throw std::logic_error(
-      StrCat("FromHex needs length of size a multiple of 2.  hex: '", hex, "'"));
+      StrCat("FromHex needs length of size a multiple of 2.  hex: '", hex, "' len:", hex.size()));
   }
 
   if (hex.length() > 256) {
@@ -99,8 +99,14 @@ std::string Cram::CreateHashedSecret(
       // TODO: Go Boom
     }
   }
-
-  string original_challenge = FromHex(original_challenge_hex);
+  
+  string c = original_challenge_hex;
+  StringTrim(&c);
+  while (c.back() == '\0') {
+    // Radius adds a trailing null character here.
+    c.pop_back();
+  }
+  string original_challenge = FromHex(c);
 
   string challenge = SecretOrHash(original_challenge);
   unsigned char ipad[65];
