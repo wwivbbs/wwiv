@@ -408,7 +408,7 @@ static int GetCommandForAnsiKey(int key) {
 }
 
 int bgetch_event(numlock_status_t numlock_mode) {
-  return bgetch_event(numlock_mode, [](int) {});
+  return bgetch_event(numlock_mode, [](bgetch_timeout_status_t, int) {});
 }
 
 int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
@@ -428,7 +428,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
     if (diff > tv1 && !beepyet) {
       beepyet = true;
       bout.bputch(CG);
-      cb(60);
+      cb(bgetch_timeout_status_t::WARNING, 60);
     }
     if (diff > tv) {
       bout.nl();
@@ -440,6 +440,9 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
     if (!bkbhitraw() && !a()->localIO()->KeyPressed()) {
       giveup_timeslice();
       continue;
+    }
+    else if (beepyet) {
+      cb(bgetch_timeout_status_t::CLEAR, 0);
     }
 
     if (!incom || a()->localIO()->KeyPressed()) {

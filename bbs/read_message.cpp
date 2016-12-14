@@ -453,7 +453,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
           line = line.substr(2);
         }
         if (optional_lines != 0 && line.size() >= 2) {
-          if ((10 - optional_lines) < level) {
+          if (static_cast<int>(10 - optional_lines) < level) {
             // This is too high of a level, so skip it.
             continue;
           }
@@ -479,7 +479,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
     }
     if (!l.empty() && l.front() == CB) {
       // Line starting with ^B is centered.
-      if (stripcolors(l).size() >= screen_width) {
+      if (size_int(stripcolors(l)) >= screen_width) {
         // TODO(rushfan): This should be stripped size
         l = l.substr(1, screen_width);
       }
@@ -534,7 +534,14 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     fs.ClearCommandLine();
     bout.GotoXY(1, fs.command_line_y());
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
-    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](int s) { fs.PrintTimeoutWarning(s); });
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t st, int s) { 
+      if (st == bgetch_timeout_status_t::WARNING) {
+        fs.PrintTimeoutWarning(s);
+      }
+      else if (st == bgetch_timeout_status_t::CLEAR) {
+        fs.ClearCommandLine();
+      }
+    });
     switch (key) {
     case COMMAND_UP: {
       if (start > first) {

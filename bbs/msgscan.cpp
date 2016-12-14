@@ -471,7 +471,14 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
     fs.ClearCommandLine();
     bout.GotoXY(1, fs.command_line_y());
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
-    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](int s) { fs.PrintTimeoutWarning(s); });
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t status, int s)  { 
+      if (status == bgetch_timeout_status_t::WARNING) {
+        fs.PrintTimeoutWarning(s);
+      }
+      else if (status == bgetch_timeout_status_t::CLEAR) {
+        fs.ClearCommandLine();
+      }
+    });
     switch (key) {
     case COMMAND_UP: {
       if (selected + window_top_min - 1 == window_top) {

@@ -94,7 +94,7 @@ static bool GetMessageToName(const char *aux) {
           strcpy(irt_name, to_name.c_str());
         }
         // WTF???
-        strcpy(irt, "\xAB");
+        //strcpy(irt, "\xAB");
       }
     }
   }
