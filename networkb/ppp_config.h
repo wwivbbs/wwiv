@@ -44,7 +44,7 @@ class PPPConfig {
   // For Testing
   PPPConfig(int node_number, const std::string& system_name, const std::string& network_dir);
   virtual ~PPPConfig();
-  const PPPNodeConfig* node_config_for(int node) const;
+  const PPPNodeConfig* ppp_node_config_for(int node) const;
 
   uint16_t callout_node_number() const { return node_; }
   const std::string& system_name() const { return system_name_; }

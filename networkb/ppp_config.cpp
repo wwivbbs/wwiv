@@ -100,7 +100,7 @@ PPPConfig::PPPConfig(int node_number, const string& system_name, const string& n
 
 PPPConfig::~PPPConfig() {}
 
-const PPPNodeConfig* PPPConfig::node_config_for(int node) const {
+const PPPNodeConfig* PPPConfig::ppp_node_config_for(int node) const {
   auto iter = node_config_.find(node);
   if (iter != end(node_config_)) {
     return &iter->second;

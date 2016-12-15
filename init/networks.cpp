@@ -386,7 +386,7 @@ public:
         } else if (result.type == ListBoxResultType::SELECTION) {
           const string address_string = items.at(result.selected).text();
           FidoAddress address(address_string);
-          fido_node_config_t c = callout.node_config_for(address);
+          fido_node_config_t c = callout.fido_node_config_for(address);
           edit_fido_node_config(config_, address, c);
           callout.insert(address, c);
         } else if (result.type == ListBoxResultType::NO_SELECTION) {

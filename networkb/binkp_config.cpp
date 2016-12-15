@@ -114,7 +114,7 @@ BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
 
 BinkConfig::~BinkConfig() {}
 
-const binkp_session_config_t* BinkConfig::node_config_for(const std::string& node) const {
+const binkp_session_config_t* BinkConfig::binkp_session_config_for(const std::string& node) const {
   if (!binkp_) { return nullptr; }
 
   static binkp_session_config_t static_session{};
@@ -127,7 +127,7 @@ const binkp_session_config_t* BinkConfig::node_config_for(const std::string& nod
       FidoCallout fc(config_, callout_network());
       if (!fc.IsInitialized()) return nullptr;
 
-      auto fido_node = fc.node_config_for(address);
+      auto fido_node = fc.fido_node_config_for(address);
       static_session = fido_node.binkp_config;
 
       if (static_session.port == 0 && static_session.host.empty()) {
@@ -142,8 +142,8 @@ const binkp_session_config_t* BinkConfig::node_config_for(const std::string& nod
   return nullptr;
 }
 
-const binkp_session_config_t* BinkConfig::node_config_for(uint16_t node) const {
-  return node_config_for(std::to_string(node));
+const binkp_session_config_t* BinkConfig::binkp_session_config_for(uint16_t node) const {
+  return binkp_session_config_for(std::to_string(node));
 }
 
 bool BinkConfig::ProcessIniFile(const IniFile& ini) {

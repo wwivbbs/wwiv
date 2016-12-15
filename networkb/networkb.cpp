@@ -123,7 +123,7 @@ static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, const 
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
 
-  const binkp_session_config_t* node_config = bink_config.node_config_for(sendto_node);
+  const binkp_session_config_t* node_config = bink_config.binkp_session_config_for(sendto_node);
   if (node_config == nullptr) {
     LOG(ERROR) << "Unable to find node config for node: " << sendto_node;
     return false;

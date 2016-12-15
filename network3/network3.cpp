@@ -185,7 +185,7 @@ static bool check_binkp_net(
   const BinkConfig& bink_config,
   std::ostringstream& text) {
   for (const auto& entry : b.node_config()) {
-    const auto binkp_entry = bink_config.node_config_for(entry.first);
+    const auto binkp_entry = bink_config.binkp_session_config_for(entry.first);
     if (binkp_entry == nullptr) {
       text << "binkp.net entry missing for node @" << entry.first << "\r\n";
     }

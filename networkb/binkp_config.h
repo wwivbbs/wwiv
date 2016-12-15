@@ -40,8 +40,8 @@ class BinkConfig {
   BinkConfig(const std::string& callout_network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
   BinkConfig(int node_number, const wwiv::sdk::Config& config, const std::string& network_dir);
   virtual ~BinkConfig();
-  const binkp_session_config_t* node_config_for(const std::string& node) const;
-  const binkp_session_config_t* node_config_for(uint16_t node) const;
+  const binkp_session_config_t* binkp_session_config_for(const std::string& node) const;
+  const binkp_session_config_t* binkp_session_config_for(uint16_t node) const;
 
   uint16_t callout_node_number() const { return callout_wwivnet_node_; }
   const std::string callout_fido_address() const { return callout_fido_node_; }

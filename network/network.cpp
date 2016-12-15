@@ -118,7 +118,7 @@ int main(int argc, char** argv) {
     }
 
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
-    const binkp_session_config_t* node_config = bink_config.node_config_for(node);
+    const binkp_session_config_t* node_config = bink_config.binkp_session_config_for(node);
     if (node_config != nullptr) {
       // We have a node configuration for this one, or it is a FTN
       // network, so we will use networkb.
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
       return 1;
     }
     PPPConfig ppp_config(network_name, net_cmdline.config(), net_cmdline.networks());
-    const PPPNodeConfig* ppp_node_config = ppp_config.node_config_for(nodeint);
+    const PPPNodeConfig* ppp_node_config = ppp_config.ppp_node_config_for(nodeint);
     if (ppp_node_config != nullptr) {
       LOG(INFO) << "USE PPP Project to send to: " << ppp_node_config->email_address;
       return LaunchOldNetworkingStack("networkp", argc, argv);

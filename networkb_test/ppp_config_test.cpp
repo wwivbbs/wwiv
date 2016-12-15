@@ -54,7 +54,7 @@ TEST(PPPConfigTest, NodeConfig) {
   files.CreateTempFile("network/address.net", line);
   const string network_dir = files.DirName("network");
   PPPConfig config(1, "mybbs", network_dir);
-  const PPPNodeConfig* node_config = config.node_config_for(2);
+  const PPPNodeConfig* node_config = config.ppp_node_config_for(2);
   ASSERT_TRUE(node_config != nullptr);
   EXPECT_EQ("foo@example.com", node_config->email_address);
 }

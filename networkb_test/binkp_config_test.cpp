@@ -69,7 +69,7 @@ TEST(BinkConfigTest, NodeConfig) {
   const string network_dir = files.DirName("network");
   Config wwiv_config;
   BinkConfig config(1, wwiv_config, network_dir);
-  const binkp_session_config_t* node_config = config.node_config_for(2);
+  const binkp_session_config_t* node_config = config.binkp_session_config_for(2);
   ASSERT_TRUE(node_config != nullptr);
   EXPECT_EQ("example.com", node_config->host);
   EXPECT_EQ(24554, node_config->port);

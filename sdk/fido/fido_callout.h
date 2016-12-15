@@ -41,7 +41,7 @@ public:
 
   bool IsInitialized() const { return initialized_; }
 
-  fido_node_config_t node_config_for(const FidoAddress& a) const;
+  fido_node_config_t fido_node_config_for(const FidoAddress& a) const;
   fido_packet_config_t packet_config_for(const FidoAddress& a) const;
   fido_packet_config_t packet_override_for(const FidoAddress& a) const;
 

@@ -100,7 +100,7 @@ const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) c
   VLOG(2) << "FidoCallout::net_call_out_for(" << node << ")";
 
   try {
-    auto node_config = node_config_for(FidoAddress(node));
+    auto node_config = fido_node_config_for(FidoAddress(node));
     memset(&nc, 0, sizeof(net_call_out_rec));
     to_char_array(nc.password, node_config.binkp_config.password);
     return &nc;
@@ -109,11 +109,11 @@ const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) c
   return nullptr;
 }
 
-fido_node_config_t FidoCallout::node_config_for(const FidoAddress& address) const {
+fido_node_config_t FidoCallout::fido_node_config_for(const FidoAddress& address) const {
   FidoAddress a = address;
   if (!contains(node_configs_, a)) {
     // Try 4D addressing if we don't have 5D.
-    VLOG(2) << "FidoCallout::node_config_for: Trying address without zone";
+    VLOG(2) << "FidoCallout::fido_node_config_for: Trying address without zone";
     a = FidoAddress(address.zone(), address.net(), address.node(), address.point(), "");
   }
 
