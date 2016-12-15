@@ -38,7 +38,7 @@ class Callout {
   virtual const net_call_out_rec* net_call_out_for(const std::string& node) const;
   Callout& operator=(const Callout& rhs) { node_config_ = rhs.node_config_; return *this; }
 
-  const std::map<uint16_t, net_call_out_rec>& node_config() const { return node_config_; }
+  const std::map<uint16_t, net_call_out_rec>& callout_config() const { return node_config_; }
   std::string ToString() const;
 
  private:

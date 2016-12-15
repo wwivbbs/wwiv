@@ -194,7 +194,8 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
         bink_config.callouts()[lower_case_network_name] = std::unique_ptr<Callout>(new Callout(n));
       } else if (n.type == network_type_t::ftn) {
         LOG(INFO) << "Adding FidoCallout for " << n.name;
-        bink_config.callouts()[lower_case_network_name] = std::unique_ptr<Callout>(new FidoCallout(net_cmdline.config(), n));
+        bink_config.callouts()[lower_case_network_name] = 
+          std::unique_ptr<Callout>(new FidoCallout(net_cmdline.config(), n));
       }
     }
 

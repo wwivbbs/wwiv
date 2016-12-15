@@ -424,7 +424,7 @@ bool attempt_callout() {
     Callout callout(a()->current_net());
     Contact contact(a()->current_net(), false);
 
-    for (const auto& p : callout.node_config()) {
+    for (const auto& p : callout.callout_config()) {
       bool ok = ok_to_call(&p.second);
       if (!ok) {
         continue;
@@ -503,7 +503,7 @@ void print_pending_list() {
     Callout callout(a()->current_net());
     Contact contact(a()->current_net(), false);
 
-    for (const auto& p : callout.node_config()) {
+    for (const auto& p : callout.callout_config()) {
       const NetworkContact* r = contact.contact_rec_for(p.first);
       NetworkContact empty_contact;
       if (!r) {
@@ -884,7 +884,7 @@ static std::pair<uint16_t, int> ansicallout() {
     Callout callout(a()->current_net());
     Contact contact(a()->current_net(), false);
 
-    const auto& nodemap = callout.node_config();
+    const auto& nodemap = callout.callout_config();
     for (const auto& p : nodemap) {
       auto con = contact.contact_rec_for(p.first);
       if (!con) continue;

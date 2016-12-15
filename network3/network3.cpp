@@ -392,7 +392,7 @@ static void rename_pending_files(const string& dir) {
 
 static void ensure_contact_net_entries(const Callout& callout, const net_networks_rec& net) {
   Contact contact(net, true);
-  for (const auto& entry : callout.node_config()) {
+  for (const auto& entry : callout.callout_config()) {
     // Ensure we have a contact entry for each node in CALLOUT.NET
     contact.ensure_rec_for(entry.first);
   }
