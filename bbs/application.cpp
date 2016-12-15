@@ -1025,8 +1025,11 @@ int Application::Run(int argc, char *argv[]) {
       }
     }
     catch (const wwiv::bbs::hangup_error& h) {
-      std::cerr << h.what() << "\r\n";
-      sysoplog() << h.what();
+      if (a()->IsUserOnline()) {
+        // Don't need to log this unless the user actually made it online.
+        std::cerr << h.what() << "\r\n";
+        sysoplog() << h.what();
+      }
     }
     logoff();
     {

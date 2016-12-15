@@ -178,7 +178,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
     User sysop{};
     int feedback_waiting = 0;
-    if (a()->users()->ReadUserNoCache(&sysop, 1)) {
+    if (a()->users()->ReadUserNoCache(&sysop, sysop_usernum)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     a()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
@@ -303,7 +303,7 @@ int WFC::doWFCEvents() {
     okskey = false;
     if (io->KeyPressed()) {
       a_->set_at_wfc(false);
-      a_->ReadCurrentUser(1);
+      a_->ReadCurrentUser(sysop_usernum);
       read_qscn(1, qsc, false);
       a_->set_at_wfc(true);
       ch = wwiv::UpperCase<char>(io->GetChar());
@@ -434,7 +434,7 @@ int WFC::doWFCEvents() {
         get_user_ppp_addr();
         send_inet_email();
         a_->SetUserOnline(false);
-        a_->WriteCurrentUser(1);
+        a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
       }
       break;

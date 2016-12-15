@@ -58,7 +58,7 @@ bool CheckForHangup() {
 void Hangup() {
   if (hangup) { return; }
   hangup = true;
-  LOG(INFO) << "Debug: Invoked Hangup()";
+  VLOG(1) << "Invoked Hangup()";
   throw wwiv::bbs::hangup_error(a()->user()->GetName());
 }
 
