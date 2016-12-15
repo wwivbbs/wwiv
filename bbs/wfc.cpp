@@ -89,6 +89,8 @@ using namespace wwiv::strings;
 // Local Functions
 static char* pszScreenBuffer = nullptr;
 static int inst_num;
+static constexpr int sysop_usernum = 1;
+
 
 void wfc_cls(Application* a) {
   if (a->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
@@ -151,7 +153,7 @@ void WFC::DrawScreen() {
     return;
   }
 
-  int nNumNewMessages = check_new_mail(a()->usernum);
+  int nNumNewMessages = check_new_mail(sysop_usernum);
   std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
   if (status_ == 0) {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
@@ -411,7 +413,7 @@ int WFC::doWFCEvents() {
         a_->usernum = 1;
         bout.bputs("|#1Send Email:");
         send_email();
-        a_->WriteCurrentUser(1);
+        a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
         break;
         // GfileEdit
@@ -449,7 +451,7 @@ int WFC::doWFCEvents() {
         string buffer = input(50);
         LoadFileIntoWorkspace(buffer, false);
         send_email();
-        a_->WriteCurrentUser(1);
+        a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
       }
       break;
@@ -463,9 +465,9 @@ int WFC::doWFCEvents() {
       // Read User Mail
       case 'M': {
         Clear();
-        a_->usernum = 1;
+        a_->usernum = sysop_usernum;
         readmail(0);
-        a_->WriteCurrentUser(1);
+        a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
       }
       break;
@@ -558,10 +560,10 @@ int WFC::doWFCEvents() {
       Clear();  // moved from after getch
       if (!incom && !lokb) {
         frequent_init();
-        a_->ReadCurrentUser(1);
+        a_->ReadCurrentUser(sysop_usernum);
         read_qscn(1, qsc, false);
         a_->ResetEffectiveSl();
-        a_->usernum = 1;
+        a_->usernum = sysop_usernum;
       }
       catsl();
       write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
