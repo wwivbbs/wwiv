@@ -34,28 +34,45 @@ namespace msgapi {
 
 class WWIVMessageArea;
 
+class WWIVLastReadImpl {
+public:
+  virtual uint32_t last_read(int area) const = 0;
+  virtual void set_last_read(int area, uint32_t last_read) = 0;
+};
+
+class NullLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
+  uint32_t last_read(int area) const { return 0; }
+  void set_last_read(int area, uint32_t last_read) {}
+};
+
 class WWIVMessageApi: public MessageApi {
 public:
   WWIVMessageApi(
     const wwiv::sdk::msgapi::MessageApiOptions& options,
     const wwiv::sdk::Config& config,
-    const std::vector<net_networks_rec>& net_networks);
+    const std::vector<net_networks_rec>& net_networks,
+    WWIVLastReadImpl* last_read);
   WWIVMessageApi(
     const wwiv::sdk::msgapi::MessageApiOptions& options,
     const std::string& bbs_directory,
     const std::string& subs_directory,
     const std::string& messages_directory,
-    const std::vector<net_networks_rec>& net_networks);
+    const std::vector<net_networks_rec>& net_networks,
+    WWIVLastReadImpl* last_read);
   virtual ~WWIVMessageApi();
   bool Exist(const std::string& name) const override;
-  virtual WWIVMessageArea* Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext);
-  WWIVMessageArea* Create(const std::string& name) override;
-  WWIVMessageArea* Create(const wwiv::sdk::subboard_t& sub) override;
+  virtual WWIVMessageArea* Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
+  WWIVMessageArea* Create(const std::string& name, int subnum) override;
+  WWIVMessageArea* Create(const wwiv::sdk::subboard_t& sub, int subnum) override;
   bool Remove(const std::string& name) override;
-  virtual WWIVMessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext);
-  WWIVMessageArea* Open(const std::string& name) override;
-  WWIVMessageArea* Open(const wwiv::sdk::subboard_t& sub) override;
+  virtual WWIVMessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
+  WWIVMessageArea* Open(const std::string& name, int subnum) override;
+  WWIVMessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) override;
   WWIVEmail* OpenEmail();
+  uint32_t last_read(int area) const;
+  void set_last_read(int area, uint32_t last_read);
+private:
+  std::unique_ptr<WWIVLastReadImpl> last_read_;
 };
 
 }  // namespace msgapi

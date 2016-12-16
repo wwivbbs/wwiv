@@ -44,9 +44,10 @@ static constexpr int MSG_BLOCK_SIZE = 512;
 WWIVMessageApi::WWIVMessageApi(
   const wwiv::sdk::msgapi::MessageApiOptions& options,
   const wwiv::sdk::Config& config,
-  const std::vector<net_networks_rec>& net_networks)
+  const std::vector<net_networks_rec>& net_networks,
+  WWIVLastReadImpl* last_read)
   : WWIVMessageApi(options, config.root_directory(), 
-    config.datadir(), config.msgsdir(), net_networks) {}
+    config.datadir(), config.msgsdir(), net_networks, last_read) {}
 
 
 WWIVMessageApi::WWIVMessageApi(
@@ -54,8 +55,10 @@ WWIVMessageApi::WWIVMessageApi(
   const std::string& bbs_directory,
   const std::string& data_directory,
   const std::string& messages_directory,
-  const std::vector<net_networks_rec>& net_networks)
-  : MessageApi(options, bbs_directory, data_directory, messages_directory, net_networks) {}
+  const std::vector<net_networks_rec>& net_networks,
+  WWIVLastReadImpl* last_read)
+  : MessageApi(options, bbs_directory, data_directory, messages_directory, net_networks),
+  last_read_(last_read) {}
 WWIVMessageApi::~WWIVMessageApi() {}
 
 bool WWIVMessageApi::Exist(const std::string& name) const {
@@ -64,20 +67,20 @@ bool WWIVMessageApi::Exist(const std::string& name) const {
   return subs.Exists();
 }
 
-WWIVMessageArea* WWIVMessageApi::Create(const std::string& name) {
-  return Create(name, ".sub", ".dat");
+WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, int subnum) {
+  return Create(name, ".sub", ".dat", subnum);
 }
 
-WWIVMessageArea* WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub) {
+WWIVMessageArea* WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
   const string name = sub.name;
-  auto area = Create(name, ".sub", ".dat");
+  auto area = Create(name, ".sub", ".dat", subnum);
   area->set_max_messages(sub.maxmsgs);
   area->set_storage_type(sub.storage_type);
   return area;
 }
 
 // todo(rushfan): should this be create *OR* open instead?
-WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext) {
+WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
   const std::string sub_filename = StrCat(name, sub_ext);
   File fileSub(subs_directory_, sub_filename);
   if (fileSub.Exists()) {
@@ -119,7 +122,7 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::stri
   // have thm locked for write, and we need to open it in the constructor. 
   fileSub.Close();
   msgs_file.Close();
-  return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname());
+  return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname(), subnum);
 }
 
 bool WWIVMessageApi::Remove(const std::string& name) {
@@ -129,19 +132,19 @@ bool WWIVMessageApi::Remove(const std::string& name) {
   return false;
 }
 
-WWIVMessageArea* WWIVMessageApi::Open(const std::string& name) {
-  return Open(name, ".sub", ".dat");
+WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, int subnum) {
+  return Open(name, ".sub", ".dat", subnum);
 }
 
-WWIVMessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub) {
+WWIVMessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
   const string name = sub.name;
-  auto area = Open(name, ".sub", ".dat");
+  auto area = Open(name, ".sub", ".dat", subnum);
   area->set_max_messages(sub.maxmsgs);
   area->set_storage_type(sub.storage_type);
   return area;
 }
 
-WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext) {
+WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
     const std::string sub_filename = StrCat(name, sub_ext);
   const string msgs_filename = StrCat(name, text_ext);
   string sub;
@@ -172,7 +175,7 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, const std::string
 
   // We have to return this after the last block exited so that
   // fileSub and msgs_file will both be closed.
-  return new WWIVMessageArea(this, sub, msgs);
+  return new WWIVMessageArea(this, sub, msgs, subnum);
 }
 
 WWIVEmail* WWIVMessageApi::OpenEmail() {
@@ -198,6 +201,19 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
   }
 
   return new WWIVEmail(root_directory_, data, text, net_networks_.size());
+}
+
+uint32_t WWIVMessageApi::last_read(int area) const {
+  if (last_read_) {
+    return last_read_->last_read(area);
+  }
+  return 0;
+}
+
+void WWIVMessageApi::set_last_read(int area, uint32_t last_read) {
+  if (last_read_) {
+    return last_read_->set_last_read(area, last_read);
+  }
 }
 
 }  // namespace msgapi

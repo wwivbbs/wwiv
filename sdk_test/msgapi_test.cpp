@@ -42,7 +42,7 @@ public:
     wwiv::sdk::msgapi::MessageApiOptions options;
     options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
     config = make_unique<Config>(helper.root());
-    api.reset(new WWIVMessageApi(options, *config, {}));
+    api.reset(new WWIVMessageApi(options, *config, {}, new NullLastReadImpl()));
   }
 
   unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname, const string& title, const string& text) {
@@ -69,7 +69,7 @@ public:
 };
 
 TEST_F(MsgApiTest, CreateArea) {
-  unique_ptr<MessageArea> a1(api->Create("a1"));
+  unique_ptr<MessageArea> a1(api->Create("a1", -1));
   EXPECT_TRUE(a1->Close());
 
   EXPECT_TRUE(File::Exists(wwiv::core::FilePath(helper.data(), "a1.sub")));
@@ -78,19 +78,19 @@ TEST_F(MsgApiTest, CreateArea) {
 
 TEST_F(MsgApiTest, SmokeTest) {
   {
-    unique_ptr<MessageArea> area(api->Create("a1"));
+    unique_ptr<MessageArea> area(api->Create("a1", -1));
     unique_ptr<Message> msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*msg));
   }
 
-  unique_ptr<MessageArea> a2(api->Open("a1"));
+  unique_ptr<MessageArea> a2(api->Open("a1", -1));
   EXPECT_EQ(1, a2->number_of_messages());
   unique_ptr<Message> m1(a2->ReadMessage(1));
   EXPECT_EQ("From", m1->header()->from());
 }
 
 TEST_F(MsgApiTest, Resynch) {
-  unique_ptr<MessageArea> area(api->Create("a1"));
+  unique_ptr<MessageArea> area(api->Create("a1", -1));
   {
     unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m));
@@ -102,7 +102,7 @@ TEST_F(MsgApiTest, Resynch) {
   
   // Re open the area, ensure that we read back the same first
   // two messages.
-  unique_ptr<MessageArea> a2(api->Open("a1"));
+  unique_ptr<MessageArea> a2(api->Open("a1", -1));
   unique_ptr<Message> m1(a2->ReadMessage(1));
   EXPECT_EQ("From", m1->header()->from());
   unique_ptr<Message> m2(a2->ReadMessage(2));
@@ -121,7 +121,7 @@ TEST_F(MsgApiTest, Resynch) {
 
 TEST_F(MsgApiTest, Resynch_MessageNumber) {
   {
-    unique_ptr<MessageArea> area(api->Create("a1"));
+    unique_ptr<MessageArea> area(api->Create("a1", -1));
     unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m));
     m->header()->set_from("From2");
@@ -130,7 +130,7 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
 
   // Re open the area, ensure that we read back the same first
   // two messages.
-  unique_ptr<MessageArea> a2(api->Open("a1"));
+  unique_ptr<MessageArea> a2(api->Open("a1", -1));
 
   // Delete message #1, now we should just have 1 message.
   EXPECT_TRUE(a2->DeleteMessage(1));

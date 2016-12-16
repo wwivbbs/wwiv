@@ -51,15 +51,19 @@ public:
   virtual ~MessageApi();
 
   virtual bool Exist(const std::string& name) const = 0;
-  virtual MessageArea* Create(const std::string& name) = 0;
-  virtual MessageArea* Create(const wwiv::sdk::subboard_t& sub) = 0;
+  virtual MessageArea* Create(const std::string& name, int subnum) = 0;
+  virtual MessageArea* Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
   virtual bool Remove(const std::string& name) = 0;
-  virtual MessageArea* Open(const std::string& name) = 0;
-  virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub) = 0;
+  virtual MessageArea* Open(const std::string& name, int subnum) = 0;
+  virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
 
   const std::vector<net_networks_rec>& network() const { return net_networks_; }
   const std::string root_directory() const { return root_directory_; }
   const MessageApiOptions options() const { return options_; }
+
+  // TODO(rushfan): Here's where we add hooks to the lastread system
+  // so that messageapi's created inside the bbs will share *qsc with
+  // the legacy code until it's all removed.
 protected:
   const MessageApiOptions options_;
 

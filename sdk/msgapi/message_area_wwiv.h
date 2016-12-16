@@ -57,9 +57,22 @@ private:
   bool initialized_ = true;
 };
 
+class WWIVMessageAreaLastRead : public MessageAreaLastRead {
+public:
+  WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number);
+  virtual ~WWIVMessageAreaLastRead();
+
+  uint32_t GetLastRead(int user_number) override;
+  bool SetLastRead(int user_number, uint32_t last_read, uint32_t highest_read) override;
+  bool Close() override;
+private:
+  int message_area_number_;
+  WWIVMessageApi* wapi_;
+};
+
 class WWIVMessageArea: public MessageArea, private Type2Text {
 public:
-  WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename);
+  WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename, int subnum);
   virtual ~WWIVMessageArea();
 
   // Message Sub Specific Operations
@@ -84,6 +97,8 @@ public:
 
   WWIVMessage* CreateMessage() override;
   bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) override;
+  MessageAreaLastRead& last_read() override;
+
 
 private:
   int DeleteExcess();
@@ -104,6 +119,8 @@ private:
   const std::string sub_filename_;
   bool open_ = false;
   subfile_header_t header_;
+  int subnum_ = -1;
+  std::unique_ptr<MessageAreaLastRead> last_read_;
 };
 
 }  // namespace msgapi

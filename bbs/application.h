@@ -169,8 +169,8 @@ public:
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
-  size_t current_user_sub_num() const { return current_sub_num_; }
-  void set_current_user_sub_num(size_t n) { current_sub_num_ = n; }
+  size_t current_user_sub_num() const { return current_user_sub_num_; }
+  void set_current_user_sub_num(size_t n) { current_user_sub_num_ = n; }
 
   const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
   const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
@@ -314,7 +314,7 @@ public:
   int m_nNumMessagesReadThisLogon = 0,
     m_nCurrentLanguageNumber = 0,
     m_nCurrentFileArea = 0,
-    current_sub_num_ = 0,
+    current_user_sub_num_ = 0,
     current_read_message_area = 0,
     m_nCurrentConferenceMessageArea = 0,
     m_nCurrentConferenceFileArea = 0,

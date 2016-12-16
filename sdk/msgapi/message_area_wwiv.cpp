@@ -51,6 +51,13 @@ using namespace wwiv::strings;
 constexpr char CD = 4;
 constexpr char CZ = 26;
 
+static bool WriteHeader(DataFile<postrec>& file, const WWIVMessageAreaHeader& header) {
+  auto p = header.header();
+  // Increment the mod_count every time we write the header.
+  p.mod_count++;
+  return file.Write(0, reinterpret_cast<const postrec*>(&p));
+}
+
 static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
   subfile_header_t raw_header;
   if (!file.Read(0, reinterpret_cast<postrec*>(&raw_header))) {
@@ -76,16 +83,40 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     raw_header.revision = 1;
     raw_header.wwiv_version = wwiv_num_version;
     raw_header.daten_created = static_cast<uint32_t>(time(nullptr));
+
+    // Write the header here?
+    if (!WriteHeader(file, WWIVMessageAreaHeader(raw_header))) {
+      LOG(ERROR) << "Unable to write 5.2 header to file: " << file.file().GetName();
+    }
   }
 
   return WWIVMessageAreaHeader(raw_header);
 }
 
-static bool WriteHeader(DataFile<postrec>& file, const WWIVMessageAreaHeader& header) {
-  auto p = header.header();
-  // Increment the mod_count every time we write the header.
-  p.mod_count++;
-  return file.Write(0, reinterpret_cast<const postrec*>(&p));
+
+WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number) 
+  :MessageAreaLastRead(api), wapi_(api), message_area_number_(message_area_number) {}
+
+WWIVMessageAreaLastRead::~WWIVMessageAreaLastRead() {}
+
+uint32_t WWIVMessageAreaLastRead::GetLastRead(int user_number) {
+  if (message_area_number_ < 0) {
+    return 0;
+  }
+  return wapi_->last_read(message_area_number_);
+}
+
+bool WWIVMessageAreaLastRead::SetLastRead(int user_number, uint32_t last_read, uint32_t highest_read) {
+  if (message_area_number_ < 0) {
+    // Fake area - nothing to do.
+    return true;
+  }
+  wapi_->set_last_read(message_area_number_, std::max<uint32_t>(last_read, highest_read));
+  return true;
+}
+
+bool WWIVMessageAreaLastRead::Close() {
+  return false;
 }
 
 WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t num_messages)
@@ -97,8 +128,8 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t
   header_.active_message_count = num_messages;
 }
 
-WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename)
-  : MessageArea(api), Type2Text(text_filename), sub_filename_(sub_filename), header_{} {
+WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename, int subnum)
+  : MessageArea(api), Type2Text(text_filename), sub_filename_(sub_filename), header_{}, subnum_(subnum) {
   DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
   if (!sub) {
     // TODO: throw exception
@@ -107,6 +138,7 @@ WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_fil
     header_ = h.raw_header();
   }
   open_ = true;
+  last_read_.reset(new WWIVMessageAreaLastRead(api, subnum));
 }
 
 WWIVMessageArea::~WWIVMessageArea() {
@@ -577,6 +609,11 @@ bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_
   }
 
   return false;
+}
+
+
+MessageAreaLastRead& WWIVMessageArea::last_read() {
+  return *last_read_;
 }
 
 // Implementation Details

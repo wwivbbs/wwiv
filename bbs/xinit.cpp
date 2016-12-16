@@ -577,6 +577,18 @@ bool Application::read_subs() {
   return subs_->Load();
 }
 
+class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
+  uint32_t last_read(int area) const {
+    return qsc_p[area];
+  }
+
+  void set_last_read(int area, uint32_t last_read) {
+    if (area >= 0) {
+      qsc_p[area] = last_read;
+    }
+  }
+};
+
 bool Application::create_message_api() {
   // TODO(rushfan): Create the right API type for the right message area.
 
@@ -586,7 +598,7 @@ bool Application::create_message_api() {
 
   // We only support type-2
   msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(
-    options, *config_.get(), net_networks);
+    options, *config_.get(), net_networks, new BBSLastReadImpl());
 
   return true;
 }

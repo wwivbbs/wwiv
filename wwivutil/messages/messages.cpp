@@ -98,17 +98,18 @@ public:
         config()->bbsdir(),
         config()->config()->datadir(), 
         config()->config()->msgsdir(), 
-        config()->networks().networks());
+        config()->networks().networks(),
+      new NullLastReadImpl());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
       // Since the area does not exist, let's create it automatically
       // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(api->Create(basename));
+      unique_ptr<MessageArea> creator(api->Create(basename, -1));
       return 1;
     }
 
-    unique_ptr<MessageArea> area(api->Open(basename));
+    unique_ptr<MessageArea> area(api->Open(basename, -1));
     if (!area) {
       clog << "Unable to Open message area: '" << basename << "'." << endl;
       return 1;
@@ -187,20 +188,20 @@ public:
     wwiv::sdk::msgapi::MessageApiOptions options;
     options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
     unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
-      options, *config()->config(), config()->networks().networks());
+      options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
       // Since the area does not exist, let's create it automatically
       // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(api->Create(basename));
+      unique_ptr<MessageArea> creator(api->Create(basename, -1));
       if (!creator) {
         clog << "Failed to create message area: " << basename << ". Exiting." << endl;
         return 1;
       }
     }
 
-    unique_ptr<MessageArea> area(api->Open(basename));
+    unique_ptr<MessageArea> area(api->Open(basename, -1));
     if (!area) {
       clog << "Error opening message area: '" << basename << "'." << endl;
       return 1;
@@ -306,13 +307,14 @@ public:
     wwiv::sdk::msgapi::MessageApiOptions options;
     options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
     // TODO(rushfan): Create the right API type for the right message area.
-    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(options, *config()->config(), config()->networks().networks());
+    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
+      options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
       // Since the area does not exist, let's create it automatically
       // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(api->Create(basename));
+      unique_ptr<MessageArea> creator(api->Create(basename, -1));
       if (!creator) {
         clog << "Failed to create message area: " << basename << ". Exiting." << endl;
         return 1;
@@ -321,7 +323,7 @@ public:
 
     // Ensure we can open it.
     {
-      unique_ptr<WWIVMessageArea> area(api->Open(basename));
+      unique_ptr<WWIVMessageArea> area(api->Open(basename, -1));
       if (!area) {
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
@@ -337,8 +339,8 @@ public:
 
     string newbasename = StrCat(basename, ".new");
     {
-      unique_ptr<WWIVMessageArea> area(api->Open(basename));
-      unique_ptr<WWIVMessageArea> newarea(api->Create(newbasename));
+      unique_ptr<WWIVMessageArea> area(api->Open(basename, -1));
+      unique_ptr<WWIVMessageArea> newarea(api->Create(newbasename, -1));
       if (!newarea) {
         clog << "Unable to create new area: " << newbasename;
         return 1;
@@ -419,13 +421,14 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
 
   // TODO(rushfan): Create the right API type for the right message area.
   const wwiv::sdk::msgapi::MessageApiOptions options;
-  unique_ptr<MessageApi> api(new WWIVMessageApi(options, *config()->config(), config()->networks().networks()));
+  auto x = new NullLastReadImpl();
+  unique_ptr<MessageApi> api(new WWIVMessageApi(options, *config()->config(), config()->networks().networks(), x));
   if (!api->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;
     return 1;
   }
 
-  unique_ptr<MessageArea> area(api->Open(basename));
+  unique_ptr<MessageArea> area(api->Open(basename, -1));
   if (!area) {
     clog << "Error opening message area: '" << basename << "'." << endl;
     return 1;

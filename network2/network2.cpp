@@ -311,7 +311,7 @@ int main(int argc, char** argv) {
     options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
 
     unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
-      options, config, networks.networks());
+      options, config, networks.networks(), new NullLastReadImpl());
     unique_ptr<UserManager> user_manager = make_unique<UserManager>(
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
     Context context(config, net, *user_manager.get(), *api.get(), networks.networks());

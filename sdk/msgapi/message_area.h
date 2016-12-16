@@ -35,7 +35,20 @@ class MessageAreaHeader {
 public:
 };
 
+// Since message_api.h includes us, we must forward declare.
 class MessageApi;
+
+class MessageAreaLastRead {
+public:
+  MessageAreaLastRead(MessageApi* api);
+  virtual ~MessageAreaLastRead();
+  virtual uint32_t GetLastRead(int user_number) = 0;
+  virtual bool SetLastRead(int user_number, uint32_t last_read, uint32_t highest_read) = 0;
+  virtual bool Close() = 0;
+
+protected:
+  MessageApi* api_;
+};
 
 class MessageArea {
 public:
@@ -75,6 +88,8 @@ public:
 
   uint8_t storage_type() const { return storage_type_; }
   void set_storage_type(uint8_t t) { storage_type_ = t; }
+
+  virtual MessageAreaLastRead& last_read() = 0;
 
 protected:
   static constexpr uint8_t DEFAULT_WWIV_STORAGE_TYPE = 2;

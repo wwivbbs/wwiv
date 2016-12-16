@@ -25,6 +25,10 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
+  MessageAreaLastRead::MessageAreaLastRead(MessageApi* api) : api_(api) {}
+MessageAreaLastRead::~MessageAreaLastRead() {}
+
+
 MessageArea::MessageArea(MessageApi* api): api_(api) {}
 MessageArea::~MessageArea() {}
 
