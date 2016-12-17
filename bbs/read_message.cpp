@@ -435,6 +435,25 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   return FullScreenView(num_header_lines, screen_width, screen_length);
 }
 
+static std::vector<std::string> split_long_line(const std::string& text) {
+  std::vector<std::string> lines;
+  const auto screen_width = a()->user()->GetScreenChars();
+  string s = text;
+  while (s.size() > screen_width) {
+    std::string::size_type pos = screen_width;
+    while (pos >= 0 && s[pos] > 32) {
+      pos--;
+    }
+    if (pos == 0) { pos = screen_width; }
+    lines.emplace_back(s.substr(0, pos));
+    s = s.substr(pos + 1);
+  }
+  if (!s.empty()) {
+    lines.emplace_back(s);
+  }
+  return lines;
+}
+
 static std::vector<std::string> split_wwiv_message(const std::string& text) {
   std::vector<std::string> orig_lines = SplitString(text, "\r");
   std::vector<std::string> lines;
@@ -460,7 +479,16 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
         }
       }
     }
-    lines.emplace_back(line);
+
+    // Ok, here we also need to split long lines.
+    const auto screen_width = a()->user()->GetScreenChars();
+    if (line.size() > screen_width) {
+      const auto sl = split_long_line(line);
+      for (const auto& l : sl) { lines.emplace_back(l); }
+    }
+    else {
+      lines.emplace_back(line);
+    }
   }
   return lines;
 }

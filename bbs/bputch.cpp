@@ -307,6 +307,11 @@ int Output::bputch(char c, bool use_buffer) {
 
       current_line_.push_back({display_char, curatr});
       x_++;
+      const auto screen_width = a()->user()->GetScreenChars();
+      // Wrap at screen_width
+      if (x_ >= screen_width) {
+        x_ %= screen_width;
+      }
 
       if (c == SOFTRETURN) {
         current_line_.clear();
