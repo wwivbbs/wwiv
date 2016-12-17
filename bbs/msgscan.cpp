@@ -347,7 +347,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   }
   // HACK: Need to undo this before supporting JAM
   WWIVMessageHeader* wh = reinterpret_cast<WWIVMessageHeader*>(h);
-  if (wh->data().qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
+  if (wh->last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
     szPrompt[0] = '*';
   }
   if (h->status() & (status_pending_net | status_unvalidated)) {

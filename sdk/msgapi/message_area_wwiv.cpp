@@ -99,14 +99,14 @@ WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int messag
 
 WWIVMessageAreaLastRead::~WWIVMessageAreaLastRead() {}
 
-uint32_t WWIVMessageAreaLastRead::GetLastRead(int user_number) {
+uint32_t WWIVMessageAreaLastRead::last_read(int user_number) {
   if (message_area_number_ < 0) {
     return 0;
   }
   return wapi_->last_read(message_area_number_);
 }
 
-bool WWIVMessageAreaLastRead::SetLastRead(int user_number, uint32_t last_read, uint32_t highest_read) {
+bool WWIVMessageAreaLastRead::set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) {
   if (message_area_number_ < 0) {
     // Fake area - nothing to do.
     return true;
@@ -376,8 +376,7 @@ int WWIVMessageArea::DeleteExcess() {
       if (!pp) {
         break;
       }
-      else if (((pp->data().status & status_no_delete) == 0) ||
-        pp->data().msg.storage_type != storage_type_) {
+      else if (!pp->is_locked()) {
         dm = i;
         break;
       }
@@ -413,7 +412,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
     }
   } else {
     VLOG(2) << "AddMessage called with existing qscan ptr: title: " << message.header()->title()
-            << "; qscan: " << header.data().qscan;
+            << "; qscan: " << header.last_read();
   }
   p.daten = header.daten();
   p.status = header.status();

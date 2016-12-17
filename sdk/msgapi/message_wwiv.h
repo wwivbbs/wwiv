@@ -70,6 +70,11 @@ public:
 
   const postrec& data() const { return header_;  }
 
+  // Read only methods
+  // In WWIV last_read == highest_read.
+  uint32_t last_read() const override { return header_.qscan; }
+  uint8_t storage_type() const override { return header_.msg.storage_type; }
+
   // Allow access to constructor that takes a postrec.
   friend class WWIVMessageArea;
 protected:

@@ -34,6 +34,10 @@ namespace msgapi {
 
 class WWIVMessageArea;
 
+// Can't merge with MessageAreaLastRead since that knows the area
+// Yet this one knows the user since it's used in the context
+// of a user session, otherwise we ignore the last_read values
+// when used from tools.
 class WWIVLastReadImpl {
 public:
   virtual uint32_t last_read(int area) const = 0;
@@ -41,8 +45,8 @@ public:
 };
 
 class NullLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
-  uint32_t last_read(int area) const { return 0; }
-  void set_last_read(int area, uint32_t last_read) {}
+  uint32_t last_read(int ) const override { return 0; }
+  void set_last_read(int , uint32_t ) override {}
 };
 
 class WWIVMessageApi: public MessageApi {

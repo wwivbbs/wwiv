@@ -61,6 +61,11 @@ public:
   virtual bool is_deleted() const = 0;
   virtual void set_deleted(bool b) = 0;
 
+  // Read only methods
+  virtual uint32_t last_read() const = 0;
+  virtual uint8_t storage_type() const = 0;
+
+
 protected:
   MessageHeader() {}
 };

@@ -63,7 +63,7 @@ struct subboard_t {
   // AR for sub-board
   uint16_t ar = 0;
   // how it is stored (type, 1 or 2)
-  uint16_t storage_type = 0;
+  uint8_t storage_type = 0;
   // per-network data type for networked subs.
   std::vector<subboard_network_data_t> nets;
 };

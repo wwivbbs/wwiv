@@ -463,7 +463,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     }
     cout << endl;
     if (all) {
-      cout << "qscan: " << ((WWIVMessageHeader*)header.get())->data().qscan << endl;
+      cout << "qscan: " <<  header.get()->last_read() << endl;
     }
     if (header->is_deleted()) {
       // Don't try to read the text of deleted messages.

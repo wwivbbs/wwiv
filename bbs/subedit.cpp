@@ -388,7 +388,7 @@ static void modify_sub(int n) {
     case 'K': {
       bout.nl();
       bout << "|#2New Storage Type ( 2 ) ? ";
-      uint16_t new_type = input_number<uint16_t>(r.storage_type, 2, 2);
+      auto new_type = input_number<uint8_t>(r.storage_type, 2, 2);
       if (new_type == 2) {
         r.storage_type = new_type;
       }

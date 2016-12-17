@@ -42,8 +42,8 @@ class MessageAreaLastRead {
 public:
   MessageAreaLastRead(MessageApi* api);
   virtual ~MessageAreaLastRead();
-  virtual uint32_t GetLastRead(int user_number) = 0;
-  virtual bool SetLastRead(int user_number, uint32_t last_read, uint32_t highest_read) = 0;
+  virtual uint32_t last_read(int user_number) = 0;
+  virtual bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) = 0;
   virtual bool Close() = 0;
 
 protected:
