@@ -63,7 +63,7 @@ std::string os_version_string() {
   return "Windows";
 }
 
-bool set_environment_variable(const std::string& variable_name, const std::string value) {
+bool set_environment_variable(const std::string& variable_name, const std::string& value) {
   return ::SetEnvironmentVariable(variable_name.c_str(), value.c_str()) ? true : false;
 }
 

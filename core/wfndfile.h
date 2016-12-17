@@ -49,10 +49,10 @@ class WFindFile {
   }
 
 #if defined (_WIN32)
-  WIN32_FIND_DATA ffdata;
-  HANDLE  hFind;
+  WIN32_FIND_DATA ffdata{};
+  HANDLE  hFind = 0;
 #elif defined ( __unix__ )
-  struct dirent **entries;
+  struct dirent **entries = nullptr;
   int nMatches = 0;
   int nCurrentEntry = 0;
 #endif

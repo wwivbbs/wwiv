@@ -406,7 +406,7 @@ char *StringRemoveChar(const char *str, char ch) {
   return s_strip_string;
 }
 
-std::string JoinStrings(const std::vector<std::string> lines, const std::string end_of_line) {
+std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line) {
   string out;
   for (const auto& line : lines) {
     out += line;
