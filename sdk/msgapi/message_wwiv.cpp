@@ -42,7 +42,7 @@ WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, co
 
 WWIVMessageHeader::~WWIVMessageHeader() {}
 
-bool WWIVMessageHeader::is_local() const {
+bool WWIVMessageHeader::local() const {
   uint8_t net_num = header_.network.network_msg.net_number;
   if (net_num >= api_->network().size()) {
     // not a valid network number.
@@ -56,20 +56,29 @@ bool WWIVMessageHeader::is_local() const {
   return local_net == header_.ownersys;
 }
 
-void WWIVMessageHeader::set_locked(bool b) {
+static void ToggleBit(uint8_t& word, uint8_t bit, bool b) {
   if (b) {
-    header_.status |= status_no_delete;
-  } else {
-    header_.status &= ~status_no_delete;
+    word |= bit;
+  }
+  else {
+    word &= ~bit;
   }
 }
 
+void WWIVMessageHeader::set_locked(bool b) {
+  ToggleBit(header_.status, status_no_delete, b);
+}
+
+void WWIVMessageHeader::set_unvalidated(bool b) {
+  ToggleBit(header_.status, status_unvalidated, b);
+}
+
 void WWIVMessageHeader::set_deleted(bool b) {
-  if (b) {
-    header_.status |= status_delete;
-  } else {
-    header_.status &= ~status_delete;
-  }
+  ToggleBit(header_.status, status_delete, b);
+}
+
+void WWIVMessageHeader::set_pending_network(bool b) {
+  ToggleBit(header_.status, status_pending_net, b);
 }
 
 void WWIVMessageHeader::set_title(const std::string& t) {

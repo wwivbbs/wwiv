@@ -53,13 +53,22 @@ public:
   virtual std::string in_reply_to() const = 0;
   virtual void set_in_reply_to(const std::string&) = 0;
 
-  virtual bool is_local() const = 0;
-  virtual bool is_private() const = 0;
-  virtual void set_private(bool b) = 0;
-  virtual bool is_locked() const = 0;
+  virtual bool local() const = 0;
+  virtual bool private_msg() const = 0;
+  virtual void set_private_msg(bool b) = 0;
+
+  virtual bool unvalidated() const = 0;
+  virtual void set_unvalidated(bool b) = 0;
+
+  virtual bool locked() const = 0;
   virtual void set_locked(bool b) = 0;
-  virtual bool is_deleted() const = 0;
+  virtual bool deleted() const = 0;
   virtual void set_deleted(bool b) = 0;
+
+  virtual bool pending_network() const = 0;
+  virtual void set_pending_network(bool b) = 0;
+  virtual bool source_verified() const = 0;
+  virtual bool net_network_post() const = 0;
 
   // Read only methods
   virtual uint32_t last_read() const = 0;

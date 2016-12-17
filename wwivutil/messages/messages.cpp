@@ -449,23 +449,23 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
          << " From: " << setw(20) << header->from()
          << "date: " << daten_to_wwivnet_time(header->daten()) << endl
          << "title: " << header->title();
-    if (header->is_local()) {
+    if (header->local()) {
       cout << "[LOCAL]";
     }
-    if (header->is_deleted()) {
+    if (header->deleted()) {
       cout << "[DELETED]";
     }
-    if (header->is_locked()) {
+    if (header->locked()) {
       cout << "[LOCKED]";
     }
-    if (header->is_private()) {
+    if (header->private_msg()) {
       cout << "[PRIVATE]";
     }
     cout << endl;
     if (all) {
       cout << "qscan: " <<  header.get()->last_read() << endl;
     }
-    if (header->is_deleted()) {
+    if (header->deleted()) {
       // Don't try to read the text of deleted messages.
       continue;
     }

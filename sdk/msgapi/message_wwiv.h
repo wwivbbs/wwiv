@@ -60,13 +60,22 @@ public:
   std::string in_reply_to() const override { return in_reply_to_; }
   void set_in_reply_to(const std::string& t) override { in_reply_to_ = t; }
 
-  bool is_local() const override;
-  bool is_private() const override { return false;  } // we don't support private subs
-  void set_private(bool b) override { private_ = b; }
-  bool is_locked() const override { return (header_.status & status_no_delete) != 0; } // 
+  bool local() const override;
+  bool private_msg() const override { return false;  } // we don't support private subs
+  void set_private_msg(bool b) override { private_ = b; }
+
+  bool unvalidated() const override { return (header_.status & status_unvalidated) != 0; }
+  void set_unvalidated(bool b) override;
+  bool locked() const override { return (header_.status & status_no_delete) != 0; } // 
   void set_locked(bool b) override;
-  bool is_deleted() const override { return (header_.status & status_delete) != 0; }
+  bool deleted() const override { return (header_.status & status_delete) != 0; }
   void set_deleted(bool b) override;
+
+  bool pending_network() const override { return (header_.status & status_pending_net) != 0; }
+  void set_pending_network(bool b) override;
+  bool source_verified() const override { return (header_.status & status_post_source_verified) != 0; }
+  bool net_network_post() const override { return (header_.status & status_post_new_net) != 0; }
+
 
   const postrec& data() const { return header_;  }
 

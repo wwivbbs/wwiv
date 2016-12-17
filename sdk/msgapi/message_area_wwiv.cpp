@@ -376,7 +376,7 @@ int WWIVMessageArea::DeleteExcess() {
       if (!pp) {
         break;
       }
-      else if (!pp->is_locked()) {
+      else if (!pp->locked()) {
         dm = i;
         break;
       }

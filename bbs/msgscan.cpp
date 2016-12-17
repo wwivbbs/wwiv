@@ -333,10 +333,10 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   char szPrompt[255];
   char szTempBuffer[255];
   const auto h = msg->header();
-  if (h->is_local() && h->from_usernum() == a()->usernum) {
+  if (h->local() && h->from_usernum() == a()->usernum) {
     sprintf(szTempBuffer, "|09[|11%d|09]", msgnum);
   }
-  else if (!h->is_local()) {
+  else if (!h->local()) {
     sprintf(szTempBuffer, "|09<|11%d|09>", msgnum);
   }
   else {
@@ -350,12 +350,12 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   if (wh->last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
     szPrompt[0] = '*';
   }
-  if (h->status() & (status_pending_net | status_unvalidated)) {
+  if (h->pending_network() || h->unvalidated()) {
     szPrompt[0] = '+';
   }
   strcpy(&szPrompt[9 - strlen(stripcolors(szTempBuffer))], szTempBuffer);
   strcat(szPrompt, "|11 ");
-  if ((h->status() & (status_unvalidated | status_delete)) && (!lcs())) {
+  if ((h->unvalidated() || h->deleted()) && !lcs()) {
     strcat(szPrompt, "<<< NOT VALIDATED YET >>>");
   }
   else {
