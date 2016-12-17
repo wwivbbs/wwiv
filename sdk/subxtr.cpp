@@ -354,7 +354,7 @@ bool Subs::Load() {
     sub.age = olds.age;
     sub.maxmsgs = olds.maxmsgs;
     sub.ar = olds.ar;
-    sub.storage_type = olds.storage_type;
+    sub.storage_type = static_cast<uint8_t>(olds.storage_type);
     for (const auto& n : oldx.nets) {
       subboard_network_data_t netdata = {};
       netdata.stype = n.stype_str;

@@ -82,7 +82,7 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     raw_header.active_message_count = saved_count;
     raw_header.revision = 1;
     raw_header.wwiv_version = wwiv_num_version;
-    raw_header.daten_created = static_cast<uint32_t>(time(nullptr));
+    raw_header.daten_created = time(nullptr);
 
     // Write the header here?
     if (!WriteHeader(file, WWIVMessageAreaHeader(raw_header))) {

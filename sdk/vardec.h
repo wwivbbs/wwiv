@@ -516,16 +516,24 @@ struct messagerec {
 };
 
 // Union types used by postrec/mailrec network settings.
+// Used when it is source verified.
 struct source_verified_message_t {
-  uint8_t net_number;               // network number for the message
+  // network number for the message
+  uint8_t net_number;
+  // Type for a verified message. (same as minor type)
   uint16_t source_verified_type;
 };
+
+// Union types used by postrec/mailrec network settings.
+// Used when it's not source verified.
 struct network_message_t {
   uint16_t unused;
-  uint8_t net_number;               // network number for the message
+  // network number for the message
+  uint8_t net_number;
 };
 
 struct subfile_header_t {
+  // "WWIV^Z\000"
   char signature[6];
   // WWIV version used to create this sub.
   uint16_t wwiv_version;
@@ -533,17 +541,13 @@ struct subfile_header_t {
   // Currently only value is 1.
   uint32_t revision;
   // 32-bit time_t value for when this sub was created.
-  uint32_t daten_created;
-  // Extra padding to be used when we switch to 64 bit time_t values.
-  uint32_t unused_padding_for_64bit_time_t;
+  int64_t daten_created;
   // Modification count for this sub.  Every write to this file should
   // Increase the mod count.  This can be used for caching.
-  uint32_t mod_count;
-  // Extra padding to be used when we switch to 64 bit mod count values.
-  uint32_t unused_padding_for_64bit_mod_count;
+  uint64_t mod_count;
   // For future expansion: 32-bit CRC password to access this sub.
   uint32_t password_crc32;
-  // ????
+  // in WWIV type-2 message bases, this is always 0.
   uint32_t base_message_num;
   // UNUSED
   uint8_t padding_1[49];

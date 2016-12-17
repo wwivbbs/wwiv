@@ -234,7 +234,7 @@ void add_post(postrec * pp) {
       p.active_message_count = saved_count;
       p.revision = 1;
       p.wwiv_version = wwiv_num_version;
-      p.daten_created = static_cast<uint32_t>(time(nullptr));
+      p.daten_created = time(nullptr);
     }
 
     // one more post
