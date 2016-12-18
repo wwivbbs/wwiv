@@ -280,7 +280,12 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
         continue;
       }
     }
-    if (result == 0) {
+    if (result <= 0 && total_read == 0) {
+      VLOG(3) << "result == 0 && total_read == 0";
+      sleep_for(SLEEP_MS);
+      continue;
+    }
+    if (result <= 0 && total_read > 0) {
       return total_read;
     }
     total_read += result;

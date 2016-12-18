@@ -116,16 +116,63 @@ BinkP::~BinkP() {
   files_to_send_.clear();
 }
 
+bool BinkP::process_opt(const std::string& opt) {
+  LOG(INFO) << "OPT line: '" << opt << "'";
+
+  const auto opts = SplitString(opt, " ");
+  for (auto s : opts) {
+    if (starts_with(s, "CRAM")) {
+      LOG(INFO) << "       CRAM Requested by Remote Side.";
+      // CRAM Support http://ftsc.org/docs/fts-1027.001
+      string::size_type last_dash = s.find_last_of('-');
+      if (last_dash != string::npos) {
+        // we really have CRAM-MD5
+        string challenge = s.substr(last_dash + 1);
+        VLOG(1) << "        challenge: '" << challenge << "'";
+        cram_.set_challenge_data(challenge);
+        if (config_->cram_md5()) {
+          auth_type_ = AuthType::CRAM_MD5;
+        }
+        else {
+          LOG(INFO) << "       CRAM-MD5 disabled in net.ini; Using plain text passwords.";
+        }
+      }
+    }
+    else if (s == "CRC") {
+      if (config_->crc()) {
+        LOG(INFO) << "       Enabling CRC support";
+        // If we support crc. Let's use it at receiving time now.
+        crc_ = true;
+      }
+      else {
+        LOG(INFO) << "       Not enabling CRC support (disabled in net.ini).";
+      }
+    }
+    else {
+      LOG(INFO) << "       Unknown OPT: '" << s << "'";
+    }
+  }
+  return true;
+}
+
 bool BinkP::process_command(int16_t length, milliseconds d) {
   if (!conn_->is_open()) {
+    LOG(INFO) << "       process_frames(returning false, connection is not open.)";
     return false;
   }
   const uint8_t command_id = conn_->read_uint8(d);
+  VLOG(3) << "       process_frames(command_id: '" << static_cast<int>(command_id) << "')";
+
   // In the header, SIZE should be set to the total length of "Data string"
   // plus one for the octet to store the command number.
   // So we read one less than the original length as that
-  // included the command number.
-  string s = conn_->receive(length - 1, d);
+  // included the command number.  If the length is 1, we shouldn't read 0
+  // and just let the log_line and command data be the empty string.  Argus likes
+  // to not put data after M_EOB and M_OK commands.
+  string s;
+  if (length > 1) {
+    s = conn_->receive(length - 1, d);
+  }
 
   string log_line = s;
   if (command_id == BinkpCommands::M_PWD) {
@@ -139,29 +186,8 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
     if (starts_with(s, "OPT")) {
       s = s.substr(3);
       StringTrimBegin(&s);
-      LOG(INFO) << "OPT:   " << s;
-      if (starts_with(s, "CRAM")) {
-        // CRAM Support
-        // http://ftsc.org/docs/fts-1027.001
-        string::size_type last_dash = s.find_last_of('-');
-        if (last_dash != string::npos) {
-          // we really have CRAM-MD5
-          string challenge = s.substr(last_dash + 1);
-          VLOG(1) << "        challenge: '" << challenge << "'";
-          cram_.set_challenge_data(challenge);
-          if (config_->cram_md5()) {
-            auth_type_ = AuthType::CRAM_MD5;
-          } else {
-            LOG(INFO) << "       CRAM-MD5 disabled in net.ini; Using plain text passwords.";
-          }
-        }
-      } else if (starts_with(s, "CRC")) {
-        if (config_->crc()) {
-          LOG(INFO) << "Enabling CRC support";
-          // If we support crc. Let's use it at receiving time now.
-          crc_ = true;
-        }
-      }
+
+      process_opt(s);
     } else if (starts_with(s, "SYS ")) {
       LOG(INFO) << "Remote Side: " << s.substr(4);
       remote_.set_system_name(s.substr(4));
@@ -208,7 +234,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
     return false;
   }
   string s = conn_->receive(length, d);
-  VLOG(1) << "RECV:  DATA PACKET; len: " << s.size()
+  LOG_IF(length != s.size(), ERROR) << "RECV:  DATA PACKET; ** unexpected size** len: " << s.size()
       << "; expected: " << length
       << " duration:" << d.count();
   if (!current_receive_file_) {
@@ -259,8 +285,8 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
     current_receive_file_.release();
     send_command_packet(BinkpCommands::M_GOT, data_line);
   } else {
-    VLOG(1) << "       file still transferring; bytes_received: " << current_receive_file_->length()
-        << " and: " << current_receive_file_->expected_length() << " bytes expected.";
+//    VLOG(1) << "       file still transferring; bytes_received: " << current_receive_file_->length()
+//        << " and: " << current_receive_file_->expected_length() << " bytes expected.";
   }
 
   return true;
@@ -294,7 +320,8 @@ bool BinkP::process_frames(function<bool()> predicate, milliseconds d) {
         }
       }
     }
-  } catch (const timeout_error&) {
+  } catch (const timeout_error& e) {
+    VLOG(3) << "timeout in process_frames: " << e.what();
   }
   return true;
 }
@@ -344,7 +371,7 @@ bool BinkP::send_data_packet(const char* data, size_t packet_length) {
   memcpy(p, data, packet_length);
 
   conn_->send(packet.get(), packet_length + 2, seconds(10));
-  VLOG(1) << "SEND:  data packet: packet_length: " << (int) packet_length;
+  VLOG(3) << "SEND:  data packet: packet_length: " << (int) packet_length;
   return true;
 }
 
@@ -857,9 +884,9 @@ void BinkP::Run() {
       }
       process_frames(milliseconds(100));
     }
-  } catch (const socket_closed_error&) {
+  } catch (const socket_closed_error& e) {
     // The other end closed the socket before we did.
-    LOG(INFO) << "       connection was closed by the other side.";
+    LOG(INFO) << "       connection was closed by the other side. details: " << e.what();
   } catch (const socket_error& e) {
     LOG(ERROR) << "STATE: BinkP::RunOriginatingLoop() socket_error: " << e.what();
   }

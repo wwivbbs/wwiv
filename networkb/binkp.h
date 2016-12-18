@@ -89,6 +89,7 @@ private:
   // for a new frame.
   bool process_frames(std::function<bool()> predicate, std::chrono::milliseconds d);
  
+  bool process_opt(const std::string& opt);
   bool process_command(int16_t length, std::chrono::milliseconds d);
   bool process_data(int16_t length, std::chrono::milliseconds d);
 
