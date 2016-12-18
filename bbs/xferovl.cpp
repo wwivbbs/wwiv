@@ -778,17 +778,17 @@ void relist() {
             0x03,
             FRAME_COLOR,
             okansi() ? '\xBA' : ' '); // was |
-    osan(s, &abort, &next);
+    bout.bputs(s, &abort, &next);
     bout.Color(1);
     strncpy(s, f.u.filename, 8);
     s[8] = 0;
-    osan(s, &abort, &next);
+    bout.bputs(s, &abort, &next);
     strncpy(s, &((f.u.filename)[8]), 4);
     s[4] = 0;
     bout.Color(1);
-    osan(s, &abort, &next);
+    bout.bputs(s, &abort, &next);
     bout.Color(FRAME_COLOR);
-    osan((okansi() ? "\xBA" : ":"), &abort, &next);
+    bout.bputs((okansi() ? "\xBA" : ":"), &abort, &next);
 
     sprintf(s1, "%ld""k", bytes_to_k(f.u.numbytes));
     if (!a()->HasConfigFlag(OP_FLAGS_FAST_TAG_RELIST)) {
@@ -809,10 +809,10 @@ void relist() {
     }
     strcat(s, s1);
     bout.Color(2);
-    osan(s, &abort, &next);
+    bout.bputs(s, &abort, &next);
 
     bout.Color(FRAME_COLOR);
-    osan((okansi() ? "\xBA" : "|"), &abort, &next);
+    bout.bputs((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s1, "%d", f.u.numdloads);
     
     size_t i1 = 0;
@@ -822,15 +822,15 @@ void relist() {
     s[i1] = 0;
     strcat(s, s1);
     bout.Color(2);
-    osan(s, &abort, &next);
+    bout.bputs(s, &abort, &next);
 
     bout.Color(FRAME_COLOR);
-    osan((okansi() ? "\xBA" : "|"), &abort, &next);
+    bout.bputs((okansi() ? "\xBA" : "|"), &abort, &next);
     sprintf(s, "%c%d%s",
             0x03,
             (f.u.mask & mask_extended) ? 1 : 2,
       f.u.description);
-    plal(s, a()->user()->GetScreenChars() - 28, &abort);
+    bout.bputs(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), &abort);
   }
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
@@ -1050,7 +1050,7 @@ void l_config_nscan() {
       strcpy(s, "  ");
     }
     sprintf(s2, "%s%s. %s", s, a()->udir[i].keys, a()->directories[i1].name);
-    pla(s2, &abort);
+    bout.bputs(s2, &abort);
   }
   bout.nl(2);
 }
@@ -1081,7 +1081,7 @@ void config_nscan() {
       while (i < static_cast<size_t>(dirconfnum) && uconfdir[i].confnum != -1 && !abort) {
         sprintf(s2, "%c) %s", dirconfs[uconfdir[i].confnum].designator,
                 stripcolors(reinterpret_cast<char*>(dirconfs[uconfdir[i].confnum].name)));
-        pla(s2, &abort);
+        bout.bputs(s2, &abort);
         s1[i + 1] = dirconfs[uconfdir[i].confnum].designator;
         s1[i + 2] = 0;
         i++;

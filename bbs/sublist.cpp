@@ -64,7 +64,7 @@ void old_sublist() {
   }
 
   bout.nl();
-  pla("|#9Sub-Conferences Available: ", &abort);
+  bout.bputs("|#9Sub-Conferences Available: ", &abort);
   bout.nl();
   int i = sn;
   while (i <= en && uconfsub[i].confnum != -1 && !abort) {
@@ -73,7 +73,7 @@ void old_sublist() {
       sprintf(s, "|#1%s %c|#0:|#2 %s", "Conference",
               subconfs[uconfsub[i].confnum].designator,
               stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
-      pla(s, &abort);
+      bout.bputs(s, &abort);
     }
     size_t i1 = 0;
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
@@ -105,7 +105,7 @@ void old_sublist() {
         strcat(s, "|#9");
       }
       strcat(s, stripcolors(a()->subs().sub(a()->usub[i1].subnum).name.c_str()));
-      pla(s, &abort);
+      bout.bputs(s, &abort);
       i1++;
     }
     i++;
@@ -116,7 +116,7 @@ void old_sublist() {
   }
 
   if (i == 0) {
-    pla("|#6None.", &abort);
+    bout.bputs("|#6None.", &abort);
     bout.nl();
   }
 
@@ -236,9 +236,9 @@ void SubList() {
                   newTally ? '6' : '3', newTally);
         }
         if (okansi()) {
-          osan(sdf, &abort, &next);
+          bout.bputs(sdf, &abort, &next);
         } else {
-          osan(stripcolors(sdf), &abort, &next);
+          bout.bputs(stripcolors(sdf), &abort, &next);
         }
         size_t lastp = i1++;
         bout.nl();
@@ -331,7 +331,7 @@ void SubList() {
       }
     }
     if (i == 0) {
-      pla("None.", &abort);
+      bout.bputs("None.", &abort);
       bout.nl();
     }
   } while (!hangup && !done);

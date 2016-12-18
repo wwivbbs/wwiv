@@ -184,7 +184,7 @@ void display_message_text(const std::string& text, bool *next) {
           if (centre && (ctrld != -1)) {
             int nSpacesToCenter = 
               (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
-            osan(charstr(nSpacesToCenter, ' '), &abort, next);
+            bout.bputs(charstr(nSpacesToCenter, ' '), &abort, next);
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
@@ -193,7 +193,7 @@ void display_message_text(const std::string& text, bool *next) {
                 bout.nl();
               }
               s[nNumCharsPtr] = '\0';
-              osan(s, &abort, next);
+              bout.bputs(s, &abort, next);
               if (ctrla && s[nNumCharsPtr - 1] != SPACE && !ansi) {
                 if (bout.wherex() < static_cast<int>(a()->user()->GetScreenChars()) - 1) {
                   bout.bputch(SPACE);

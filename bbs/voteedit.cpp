@@ -41,7 +41,7 @@ static void print_quests() {
     file.Read(&v, sizeof(votingrec));
     char szBuffer[255];
     sprintf(szBuffer, "|#2%2d|#7) |#1%s", i, v.numanswers ? v.question : ">>> NO QUESTION <<<");
-    pla(szBuffer, &abort);
+    bout.bputs(szBuffer, &abort);
   }
   bout.nl();
   if (abort) {

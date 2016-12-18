@@ -368,49 +368,6 @@ bool checka(bool *abort, bool *next) {
   return *abort;
 }
 
-// Prints an abortable string (contained in *text). Returns 1 in *abort if the
-// string was aborted, else *abort should be zero.
-void pla(const string& text, bool *abort) {
-  if (CheckForHangup()) {
-    *abort = true;
-  }
-
-  for (const auto& c : text) {
-    if (checka(abort)) {
-      break;
-    }
-    bout.bputch(c, true);
-  }
-  bout.flush();
-  if (!*abort) {
-    bout.nl();
-  }
-}
-
-void plal(const string& text, string::size_type limit, bool *abort) {
-  CheckForHangup();
-  if (hangup) {
-    *abort = true;
-  }
-
-  checka(abort);
-
-  limit += text.length() - stripcolors(text).length();
-  string::size_type nCharsDisplayed = 0;
-  for (auto iter = text.begin(); iter != text.end() && nCharsDisplayed++ < limit
-       && !*abort; ++iter) {
-    if (*iter != '\r' && *iter != '\n') {
-      bout.bputch(*iter, true);
-    }
-    checka(abort);
-  }
-
-  bout.flush();
-  if (!*abort) {
-    bout.nl();
-  }
-}
-
 // Returns 1 if sysop is "chattable", else returns 0. Takes into account
 // current user's chat restriction (if any) and sysop high and low times,
 // if any, as well as status of scroll-lock key.

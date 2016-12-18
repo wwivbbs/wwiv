@@ -66,11 +66,11 @@ static string chaindata(int nCurrentChainum) {
 static void showchains() {
   bout.cls();
   bool abort = false;
-  pla("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
-  pla("|#7== ----------------------------  ============================== --- ==== --", &abort);
+  bout.bputs("|#2NN Description                   Path Name                      SL  ANSI AR", &abort);
+  bout.bputs("|#7== ----------------------------  ============================== --- ==== --", &abort);
   for (size_t nChainNum = 0; nChainNum < a()->chains.size() && !abort; nChainNum++) {
     const string s = chaindata(nChainNum);
-    pla(s, &abort);
+    bout.bputs(s, &abort);
   }
 }
 

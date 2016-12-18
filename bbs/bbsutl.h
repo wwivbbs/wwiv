@@ -29,8 +29,6 @@ bool lcs();
 bool checka();
 bool checka(bool *abort);
 bool checka(bool *abort, bool *next);
-void pla(const std::string& text, bool *abort);
-void plal(const std::string& text, std::string::size_type limit, bool *abort);
 bool sysop2();
 int  check_ansi();
 bool set_language_1(int n);

@@ -390,7 +390,7 @@ void readmail(int mode) {
       strcat(s, charstr(a()->mail_who_field_len - 4, s1[2]));
       strcat(s, charstr(1, s1[1]));
       strcat(s, charstr(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]));
-      pla(s, &abort);
+      bout.bputs(s, &abort);
     }
     for (i = 0; (i < mw && !abort); i++) {
       if (!read_same_email(mloc, mw, i, &m, 0, 0)) {
@@ -475,7 +475,7 @@ void readmail(int mode) {
           s[strlen(s) - 1] = '\0';
         }
       }
-      pla(s, &abort);
+      bout.bputs(s, &abort);
       if ((i == (mw - 1)) && (a()->user()->GetScreenChars() >= 80) && (!abort)
           && (a()->mail_who_field_len)) {
         (okansi()) ? strcpy(s1, "\xC1\xC3\xC4") : strcpy(s1, "++-");
@@ -483,7 +483,7 @@ void readmail(int mode) {
         strcat(s, charstr(a()->mail_who_field_len - 4, s1[2]));
         strcat(s, charstr(1, s1[0]));
         strcat(s, charstr(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]));
-        pla(s, &abort);
+        bout.bputs(s, &abort);
       }
     }
     bout.nl();

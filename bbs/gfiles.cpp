@@ -89,7 +89,7 @@ void gfl_hdr(int which) {
       sprintf(s, "+---+%s-----+---+%s----+", s2, s2);
     }
   }
-  pla(s, &abort);
+  bout.bputs(s, &abort);
   bout.Color(0);
   if (okansi()) {
     if (which) {
@@ -105,7 +105,7 @@ void gfl_hdr(int which) {
       sprintf(s, "| # |%s Name     %s| # |%s Name    %s|", s1, s1, s1, s1);
     }
   }
-  pla(s, &abort);
+  bout.bputs(s, &abort);
   bout.Color(0);
   if (okansi()) {
     if (which) {
@@ -120,7 +120,7 @@ void gfl_hdr(int which) {
       sprintf(s, "+---+%s-----+---+%s----+", s2, s2);
     }
   }
-  pla(s, &abort);
+  bout.bputs(s, &abort);
   bout.Color(0);
 }
 
@@ -165,7 +165,7 @@ void list_sec(int *map, int nmap) {
     } else {
       sprintf(s, "|%3s|%-34s|%3s|%-33s|", lnum, s4, rnum, s5);
     }
-    pla(s, &abort);
+    bout.bputs(s, &abort);
     bout.Color(0);
     i++;
     if (i2 > 10) {
@@ -178,7 +178,7 @@ void list_sec(int *map, int nmap) {
         sprintf(s1, "+---+%s-----+--------+%s-o-%s-o---+",
                 s2, s3, times());
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
       bout.nl();
       pausescr();
@@ -192,7 +192,7 @@ void list_sec(int *map, int nmap) {
       } else {
         sprintf(s1, "+---+%s-----+---+%s----+", s2, s2);
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
 
       if (okansi()) {
@@ -200,7 +200,7 @@ void list_sec(int *map, int nmap) {
       } else {
         sprintf(s1, "|  G)G-File Edit%s|", charstr(61, ' '));
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
       if (okansi()) {
         sprintf(s1,
@@ -209,7 +209,7 @@ void list_sec(int *map, int nmap) {
       } else {
         sprintf(s1, "+----%s----------------%so-%s-o---+", s2, s7, times());
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
     } else {
       if (okansi()) {
@@ -219,7 +219,7 @@ void list_sec(int *map, int nmap) {
       } else {
         sprintf(s1, "+---+%s-----+---------------------+%so-%s-o---+", s2, s3, times());
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
     }
   }
@@ -289,7 +289,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     } else {
       sprintf(s, "|%3s|%-29s|%4s|%3s|%-29s|%4s|", lnum, s4, lsize, rnum, s5, rsize);
     }
-    pla(s, &abort);
+    bout.bputs(s, &abort);
     bout.Color(0);
     i++;
     if (i2 > 10) {
@@ -301,7 +301,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       } else {
         sprintf(s1, "+---+%s+----+---+%s-o-%s-o-+----+", s2, s3, times());
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
       bout.nl();
       pausescr();
@@ -314,7 +314,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
     } else {
       sprintf(s, "+---+%s+----+---+%s+----+", s2, s2);
     }
-    pla(s, &abort);
+    bout.bputs(s, &abort);
     bout.Color(0);
     if (so()) {
       if (okansi()) {
@@ -323,7 +323,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       } else {
         sprintf(s1, "| A)Add a G-File  D)Download a G-file  E)Edit this section  R)Remove a G-File |");
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
     } else {
       if (okansi()) {
@@ -331,7 +331,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       } else {
         sprintf(s1, "|  D  Download a G-file%s|", charstr(55, ' '));
       }
-      pla(s1, &abort);
+      bout.bputs(s1, &abort);
       bout.Color(0);
     }
   }
@@ -342,7 +342,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   } else {
     sprintf(s1, "+----%s----------------%so-%s-o----+", s2, s3, times());
   }
-  pla(s1, &abort);
+  bout.bputs(s1, &abort);
   bout.Color(0);
   bout.nl();
 }

@@ -77,13 +77,13 @@ void showdirs() {
   bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
   input(s1, 20, true);
   bool abort = false;
-  pla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
-  pla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
+  bout.bputs("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
+  bout.bputs("|#7==== --- ======================================= -------- === --- === ---------", &abort);
   for (size_t i = 0; i < a()->directories.size() && !abort; i++) {
     sprintf(s, "%s %s", a()->directories[i].name, a()->directories[i].filename);
     if (strcasestr(s, s1)) {
       dirdata(i, s);
-      pla(s, &abort);
+      bout.bputs(s, &abort);
     }
   }
 }

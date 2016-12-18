@@ -254,6 +254,24 @@ int Output::bputs(const string& text) {
   return text.size();
 }
 
+int Output::bputs(const std::string& text, bool *abort) {
+  bool dummy;
+  return bputs(text, abort, &dummy);
+}
+
+int Output::bputs(const std::string& text, bool *abort, bool *next) {
+  CheckForHangup();
+  checka(abort, next);
+  int ret = 0;
+  if (!checka(abort, next)) {
+    ret = bputs(text);
+  }
+  if (!checka(abort, next)) {
+    nl();
+  }
+  return ret;
+}
+
 int Output::bprintf(const char *formatText, ...) {
   va_list ap;
   char szBuffer[4096];

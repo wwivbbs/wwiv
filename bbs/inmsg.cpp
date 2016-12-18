@@ -243,10 +243,10 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
               }
             }
             for (size_t i4 = 0; (i4 < (a()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
-              osan(" ", &abort, &next);
+              bout.bputs(" ", &abort, &next);
             }
           }
-          pla(line, &abort);
+          bout.bputs(line, &abort);
         }
         if (!okansi() || next) {
           bout.nl();

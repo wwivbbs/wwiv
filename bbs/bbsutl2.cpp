@@ -70,32 +70,6 @@ std::string ctypes(int num) {
   return default_ctypes[num];
 }
 
-
-/**
- * Displays s which checking for abort and next
- * @see checka
- * <em>Note: osan means Output String And Next</em>
- *
- * @param text The text to display
- * @param abort The abort flag (Output Parameter)
- * @param next The next flag (Output Parameter)
- */
-void osan(const string& text, bool *abort, bool *next) {
-  CheckForHangup();
-  checka(abort, next);
-
-  for (auto ch : text) {
-    bout.bputch(ch, true);     // RF20020927 use buffered bputch
-    if (checka(abort, next) || hangup) {
-      break;
-    }
-  }
-  bout.flush();
-}
-
-/**
- * @todo Document this
- */
 string strip_to_node(const string& txt) {
   std::ostringstream os;
   if (txt.find("@") != string::npos) {

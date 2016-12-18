@@ -112,6 +112,21 @@ class Output : public std::ostream {
    * user has hung up
    */
   int bputs(const std::string& text);
+  
+  // Prints an abortable string (contained in *text). Returns 1 in *abort if the
+  // string was aborted, else *abort should be zero.
+  int bputs(const std::string& text, bool *abort);
+  
+  /**
+  * Displays s which checking for abort and next
+  * @see checka
+  * <em>Note: bout.bputs means Output String And Next</em>
+  *
+  * @param text The text to display
+  * @param abort The abort flag (Output Parameter)
+  * @param next The next flag (Output Parameter)
+  */
+  int bputs(const std::string& text, bool *abort, bool *next);
   int bprintf(const char *fmt, ...);
 
   int bputch(char c, bool use_buffer = false);

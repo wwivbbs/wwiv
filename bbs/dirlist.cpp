@@ -96,9 +96,9 @@ void dirlist(int mode) {
                   a()->directories[ directory_number ].name, a()->numf);
         }
         if (okansi()) {
-          osan(s, &abort, &next);
+          bout.bputs(s, &abort, &next);
         } else {
-          osan(stripcolors(s), &abort, &next);
+          bout.bputs(stripcolors(s), &abort, &next);
         }
         tally += a()->numf;
         int lastp = i1++;
@@ -143,7 +143,7 @@ void dirlist(int mode) {
       }
     }
     if (i == 0) {
-      pla("None.", &abort);
+      bout.bputs("None.", &abort);
       bout.nl();
     }
     if (!abort && mode == 0) {

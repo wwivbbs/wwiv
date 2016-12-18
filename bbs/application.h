@@ -44,15 +44,6 @@
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 
-//
-// Application - Holds information and status data about the current user
-// session on the BBS. (i.e. user record, and all data/variables
-// associated with the current logon)
-//
-// This is different from the BbsApp which holds global BBS information
-// associated with this instance of WWIV globally (not tied to a user)
-//
-
 ///////////////////////////////////////////////////////////////////////////////
 // ASV Settings (populated by INI file
 //
@@ -81,9 +72,15 @@ namespace core {
   class IniFile;
 }
 }
-///////////////////////////////////////////////////////////////////////////////
-// Per-user session data
-//
+
+/**
+ * Application - Holds information and status data about the current user
+ * session on the BBS. (i.e. user record, and all data/variables
+ * associated with the current logon)
+ *
+ * This is different from the BbsApp which holds global BBS information
+ * associated with this instance of WWIV globally (not tied to a user)
+ */
 class Application: public Runnable {
   friend class BbsHelper;
 

@@ -428,8 +428,8 @@ void get_quote(int fsed) {
             s[i3] = 0;
           }
           sprintf(s1, "%3d", i++);
-          osan(s1, &abort, &next);
-          pla(s, &abort);
+          bout.bputs(s1, &abort, &next);
+          bout.bputs(s, &abort);
         }
       } while (l2 < quotes_ind_l);
       --i;

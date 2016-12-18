@@ -419,7 +419,7 @@ bool display_sub_categories() {
   string s;
   while (!abort && ff.ReadLine(&s)) {
     StringTrim(&s); 
-    pla(s, &abort);
+    bout.bputs(s, &abort);
   }
   ff.Close();
   return true;

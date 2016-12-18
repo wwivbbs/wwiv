@@ -159,7 +159,7 @@ void jump_conf(ConferenceType conftype) {
   for (i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
     sprintf(s1, "|#2%c|#7)|#1 %s", cp[uc[i].confnum].designator,
             stripcolors(reinterpret_cast<char*>(cp[uc[i].confnum].name)));
-    pla(s1, &abort);
+    bout.bputs(s1, &abort);
     s[i + 1] = cp[uc[i].confnum].designator;
     s[i + 2] = '\0';
   }
@@ -374,8 +374,8 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
   }
 
   bool abort = false;
-  pla("|#2NN  Name                                    Indx ConfList", &abort);
-  pla("|#7--- ======================================= ---- ==========================", &abort);
+  bout.bputs("|#2NN  Name                                    Indx ConfList", &abort);
+  bout.bputs("|#7--- ======================================= ---- ==========================", &abort);
 
   for (int i = 0; i < num && !abort; i++) {
     int test = in_conference(i, c);
@@ -402,7 +402,7 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
               (test > -1) ? szIndex : charstr(4, '-'), confstr);
       break;
     }
-    pla(s, &abort);
+    bout.bputs(s, &abort);
   }
 }
 
@@ -1053,8 +1053,8 @@ void list_confs(ConferenceType conftype, int ssc) {
     return;
   }
 
-  pla("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W", &abort);
-  pla("|#7\xC9\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
+  bout.bputs("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W", &abort);
+  bout.bputs("|#7\xC9\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
 
   for (i = 0; (i < num && !abort); i++) {
     sprintf(s, "%c\xCD|B1|15 %c |B0|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
@@ -1068,7 +1068,7 @@ void list_confs(ConferenceType conftype, int ssc) {
             YesNoString((cp[i].status & conf_status_wwivreg)  ? true : false));
     strcat(s, s1);
     bout.Color(7);
-    pla(s, &abort);
+    bout.bputs(s, &abort);
     if (a()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
       if ((cp[i].num > 0) && (cp[i].subs != nullptr) && (ssc)) {
         for (i2 = 0; ((i2 < cp[i].num) && !abort); i2++) {
@@ -1088,7 +1088,7 @@ void list_confs(ConferenceType conftype, int ssc) {
               break;
             }
             strcat(s, s1);
-            pla(s, &abort);
+            bout.bputs(s, &abort);
           }
         }
       }

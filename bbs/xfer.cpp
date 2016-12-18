@@ -478,7 +478,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
           }
           s[INDENTION] = '\0';
           bout.Color(FRAME_COLOR);
-          osan(s, abort, &next);
+          bout.bputs(s, abort, &next);
           bout.Color(1);
         } else {
           if (indent == 2) {
@@ -486,7 +486,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
               s[i] = SPACE;
             }
             s[13] = '\0';
-            osan(s, abort, &next);
+            bout.bputs(s, abort, &next);
             bout.Color(2);
           }
         }
@@ -496,7 +496,7 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
       if (ch == SOFTRETURN) {
         ++numl;
       } else if (ch != RETURN && a()->localIO()->WhereX() >= 78) {
-        osan("\r\n", abort, &next);
+        bout.bputs("\r\n", abort, &next);
         ch = SOFTRETURN;
       }
     }
@@ -617,18 +617,18 @@ void printinfo(uploadsrec * u, bool *abort) {
     sprintf(s, "\r|#%d%2d|#%d%c",
             (check_batch_queue(u->filename)) ? 6 : 0,
             a()->filelist.size(), FRAME_COLOR, okansi() ? '\xBA' : ' '); // was |
-    osan(s, abort, &next);
+    bout.bputs(s, abort, &next);
   }
   bout.Color(1);
   strncpy(s, u->filename, 8);
   s[8] = '\0';
-  osan(s, abort, &next);
+  bout.bputs(s, abort, &next);
   strncpy(s, &((u->filename)[8]), 4);
   s[4] = '\0';
   bout.Color(1);
-  osan(s, abort, &next);
+  bout.bputs(s, abort, &next);
   bout.Color(FRAME_COLOR);
-  osan((okansi() ? "\xBA" : " "), abort, &next); // was |
+  bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
 
   sprintf(s1, "%ld""k", bytes_to_k(u->numbytes));
 
@@ -645,11 +645,11 @@ void printinfo(uploadsrec * u, bool *abort) {
   s[i] = '\0';
   strcat(s, s1);
   bout.Color(2);
-  osan(s, abort, &next);
+  bout.bputs(s, abort, &next);
 
   {
     bout.Color(FRAME_COLOR);
-    osan((okansi() ? "\xBA" : " "), abort, &next); // was |
+    bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
     sprintf(s1, "%d", u->numdloads);
 
     for (i = 0; i < 4 - GetStringLength(s1); i++) {
@@ -658,12 +658,12 @@ void printinfo(uploadsrec * u, bool *abort) {
     s[i] = '\0';
     strcat(s, s1);
     bout.Color(2);
-    osan(s, abort, &next);
+    bout.bputs(s, abort, &next);
   }
   bout.Color(FRAME_COLOR);
-  osan((okansi() ? "\xBA" : " "), abort, &next); // was |
+  bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
   sprintf(s, "|#%d%s", (u->mask & mask_extended) ? 1 : 2, u->description);
-  plal(s, a()->user()->GetScreenChars() - 28, abort);
+  bout.bputs(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), abort);
 
   if (*abort) {
     a()->filelist.clear();

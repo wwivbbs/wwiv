@@ -55,7 +55,7 @@ static void print_quest(int mapp, int map[21]) {
     char szBuffer[255];
     snprintf(szBuffer, sizeof(szBuffer), "|#6%c |#2%2d|#7) |#1%s",
              a()->user()->GetVote(map[i]) ? ' ' : '*', i, v.question);
-    pla(szBuffer, &abort);
+    bout.bputs(szBuffer, &abort);
   }
   voteFile.Close();
   bout.nl();
@@ -83,9 +83,9 @@ static bool print_question(int i, int ii) {
   bout.cls();
   char szBuffer[255];
   sprintf(szBuffer, "%s%d", "|#5Voting question #", i);
-  pla(szBuffer, &abort);
+  bout.bputs(szBuffer, &abort);
   bout.Color(1);
-  pla(v.question, &abort);
+  bout.bputs(v.question, &abort);
   bout.nl();
   int t = 0;
   voting_response vr;
@@ -97,9 +97,9 @@ static bool print_question(int i, int ii) {
   a()->status_manager()->RefreshStatusCache();
   sprintf(szBuffer , "|#9Users voting: |#2%4.1f%%\r\n",
           static_cast<double>(t) / static_cast<double>(a()->status_manager()->GetUserCount()) * 100.0);
-  pla(szBuffer, &abort);
+  bout.bputs(szBuffer, &abort);
   int t1 = (t) ? t : 1;
-  pla(" |#20|#9) |#9No Comment", &abort);
+  bout.bputs(" |#20|#9) |#9No Comment", &abort);
   std::set<char> odc;
   for (int i3 = 0; i3 < v.numanswers && !abort; i3++) {
     vr = v.responses[ i3 ];
@@ -109,7 +109,7 @@ static bool print_question(int i, int ii) {
     sprintf(szBuffer, "|#2%2d|#9) |#9%-60s   |#3%4d  |#1%5.1f%%",
             i3 + 1, vr.response, vr.numresponses,
             static_cast<float>(vr.numresponses) / static_cast<float>(t1) * 100.0);
-    pla(szBuffer , &abort);
+    bout.bputs(szBuffer , &abort);
   }
   bout.nl();
   if (abort) {
