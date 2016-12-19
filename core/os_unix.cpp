@@ -90,7 +90,7 @@ std::string os_version_string() {
   return string("UNKNOWN OS");
 }
 
-bool set_environment_variable(const std::string& variable_name, const std::string value) {
+bool set_environment_variable(const std::string& variable_name, const std::string& value) {
   return setenv(variable_name.c_str(), value.c_str(), 1) == 0;
 }
 
