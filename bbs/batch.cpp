@@ -99,7 +99,7 @@ static void listbatch() {
       buffer = StringPrintf("%d. %s %s             %s", current_num, "(U)",
           b.filename, a()->directories[b.dir].name);
     }
-    bout.bputs(buffer, &abort);
+    bout.bpla(buffer, &abort);
   }
   bout.nl();
 }

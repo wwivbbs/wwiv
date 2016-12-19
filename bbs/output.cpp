@@ -254,20 +254,23 @@ int Output::bputs(const string& text) {
   return text.size();
 }
 
-int Output::bputs(const std::string& text, bool *abort) {
+// This one does a newline.  Since it used to be pla. Should make
+// it consistent.
+int Output::bpla(const std::string& text, bool *abort) {
   bool dummy;
   return bputs(text, abort, &dummy);
+  if (!checka(abort, &dummy)) {
+    nl();
+  }
 }
 
+// This one doesn't do a newline. (used to be osan)
 int Output::bputs(const std::string& text, bool *abort, bool *next) {
   CheckForHangup();
   checka(abort, next);
   int ret = 0;
   if (!checka(abort, next)) {
     ret = bputs(text);
-  }
-  if (!checka(abort, next)) {
-    nl();
   }
   return ret;
 }

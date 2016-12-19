@@ -429,7 +429,7 @@ void get_quote(int fsed) {
           }
           sprintf(s1, "%3d", i++);
           bout.bputs(s1, &abort, &next);
-          bout.bputs(s, &abort);
+          bout.bpla(s, &abort);
         }
       } while (l2 < quotes_ind_l);
       --i;

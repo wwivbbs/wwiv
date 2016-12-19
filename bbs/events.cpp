@@ -267,9 +267,9 @@ void show_events() {
   bool abort = false;
   char y = "Yes"[0];
   char n = "No"[0];
-  bout.bputs("|#1                                         Hold   Force   Run            Run", &abort);
-  bout.bputs("|#1Evnt Time  Command                 Node  Phone  Event  Today   Freq    Days", &abort);
-  bout.bputs("|#7=============================================================================", &abort);
+  bout.bpla("|#1                                         Hold   Force   Run            Run", &abort);
+  bout.bpla("|#1Evnt Time  Command                 Node  Phone  Event  Today   Freq    Days", &abort);
+  bout.bpla("|#7=============================================================================", &abort);
   for (size_t i = 0; (i < a()->events.size()) && !abort; i++) {
     auto& e = a()->events[i];
     if (e.status & EVENT_EXIT) {
@@ -309,7 +309,7 @@ void show_events() {
               e.status & EVENT_RUNTODAY ? y : n,
               daystr);
     }
-    bout.bputs(s, &abort);
+    bout.bpla(s, &abort);
   }
 }
 

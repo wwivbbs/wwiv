@@ -830,7 +830,7 @@ void relist() {
             0x03,
             (f.u.mask & mask_extended) ? 1 : 2,
       f.u.description);
-    bout.bputs(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), &abort);
+    bout.bpla(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), &abort);
   }
   bout.Color(FRAME_COLOR);
   bout << "\r" << string(78, '-') << wwiv::endl;
@@ -1050,7 +1050,7 @@ void l_config_nscan() {
       strcpy(s, "  ");
     }
     sprintf(s2, "%s%s. %s", s, a()->udir[i].keys, a()->directories[i1].name);
-    bout.bputs(s2, &abort);
+    bout.bpla(s2, &abort);
   }
   bout.nl(2);
 }
@@ -1081,7 +1081,7 @@ void config_nscan() {
       while (i < static_cast<size_t>(dirconfnum) && uconfdir[i].confnum != -1 && !abort) {
         sprintf(s2, "%c) %s", dirconfs[uconfdir[i].confnum].designator,
                 stripcolors(reinterpret_cast<char*>(dirconfs[uconfdir[i].confnum].name)));
-        bout.bputs(s2, &abort);
+        bout.bpla(s2, &abort);
         s1[i + 1] = dirconfs[uconfdir[i].confnum].designator;
         s1[i + 2] = 0;
         i++;

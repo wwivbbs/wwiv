@@ -78,14 +78,14 @@ static void showsubs() {
   bool abort = false;
   bout << "|#7(|#1Message Areas Editor|#7) Enter Substring: ";
   string substring = input(20, true);
-  bout.bputs("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE", &abort);
-  bout.bputs("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
+  bout.bpla("|#2NN   AR Name                                  FN       RSL PSL AG MSGS  SUBTYPE", &abort);
+  bout.bpla("|#7==== == ------------------------------------- ======== --- === -- ===== -------", &abort);
   int subnum = 0;
   for (const auto& r : a()->subs().subs()) {
     const string subdata = StrCat(r.name, " ", r.filename);
     if (strcasestr(subdata.c_str(), substring.c_str())) {
       const string line = boarddata(subnum, r);
-      bout.bputs(line, &abort);
+      bout.bpla(line, &abort);
       if (abort) break;
     }
     ++subnum;

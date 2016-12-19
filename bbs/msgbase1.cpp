@@ -479,7 +479,7 @@ void remove_post() {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->usernum) {
       any = true;
       string buffer = StringPrintf("%u: %60.60s", j, get_post(j)->title);
-      bout.bputs(buffer.c_str(), &abort);
+      bout.bpla(buffer.c_str(), &abort);
     }
   }
   if (!any) {

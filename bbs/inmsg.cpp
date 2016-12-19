@@ -246,7 +246,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
               bout.bputs(" ", &abort, &next);
             }
           }
-          bout.bputs(line, &abort);
+          bout.bpla(line, &abort);
         }
         if (!okansi() || next) {
           bout.nl();

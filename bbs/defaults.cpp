@@ -384,7 +384,7 @@ void l_config_qscan() {
   bool abort = false;
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
   for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1) && !abort; i++) {
-    bout.bputs(StringPrintf("%c %s. %s",
+    bout.bpla(StringPrintf("%c %s. %s",
             (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) ? '*' : ' ',
             a()->usub[i].keys,
             a()->subs().sub(a()->usub[i].subnum).name.c_str()), &abort);
@@ -412,7 +412,7 @@ void config_qscan() {
       bout << "\r\nSelect Conference: \r\n\n";
       size_t i = 0;
       while (i < subconfnum && uconfsub[i].confnum != -1 && !abort) {
-        bout.bputs(StringPrintf("%c) %s", subconfs[uconfsub[i].confnum].designator,
+        bout.bpla(StringPrintf("%c) %s", subconfs[uconfsub[i].confnum].designator,
                 stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name))), &abort);
         szConfList[i + 1] = subconfs[uconfsub[i].confnum].designator;
         szConfList[i + 2] = 0;

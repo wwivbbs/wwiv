@@ -115,7 +115,7 @@ class Output : public std::ostream {
   
   // Prints an abortable string (contained in *text). Returns 1 in *abort if the
   // string was aborted, else *abort should be zero.
-  int bputs(const std::string& text, bool *abort);
+  int bpla(const std::string& text, bool *abort);
   
   /**
   * Displays s which checking for abort and next

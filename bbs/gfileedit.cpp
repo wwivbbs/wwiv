@@ -61,11 +61,11 @@ static string gfiledata(const gfiledirrec& r, int nSectionNum) {
 static void showsec() {
   bout.cls();
   bool abort = false;
-  bout.bputs("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
-  bout.bputs("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
+  bout.bpla("|#2NN AR Name                                      FN       SL  AGE MAX", &abort);
+  bout.bpla("|#7-- == ----------------------------------------  ======== --- === ---", &abort);
   int current_section = 0;
   for (const auto& r : a()->gfilesec) {
-    bout.bputs(gfiledata(r, current_section++), &abort);
+    bout.bpla(gfiledata(r, current_section++), &abort);
     if (abort) {
       break;
     }

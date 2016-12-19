@@ -601,7 +601,7 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   while (!abort && ++i <= nNumTitleLines) {
     ++msgnum;
     const string line = CreateLine(unique_ptr<Message>(area->ReadMessage(msgnum)), msgnum);
-    bout.bputs(line, &abort);
+    bout.bpla(line, &abort);
     if (msgnum >= num_msgs_in_area) {
       abort = true;
     }

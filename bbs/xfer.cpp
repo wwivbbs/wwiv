@@ -663,7 +663,7 @@ void printinfo(uploadsrec * u, bool *abort) {
   bout.Color(FRAME_COLOR);
   bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
   sprintf(s, "|#%d%s", (u->mask & mask_extended) ? 1 : 2, u->description);
-  bout.bputs(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), abort);
+  bout.bpla(trim_to_size_ignore_colors(s, a()->user()->GetScreenChars() - 28), abort);
 
   if (*abort) {
     a()->filelist.clear();

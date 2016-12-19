@@ -64,7 +64,7 @@ void old_sublist() {
   }
 
   bout.nl();
-  bout.bputs("|#9Sub-Conferences Available: ", &abort);
+  bout.bpla("|#9Sub-Conferences Available: ", &abort);
   bout.nl();
   int i = sn;
   while (i <= en && uconfsub[i].confnum != -1 && !abort) {
@@ -73,7 +73,7 @@ void old_sublist() {
       sprintf(s, "|#1%s %c|#0:|#2 %s", "Conference",
               subconfs[uconfsub[i].confnum].designator,
               stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
-      bout.bputs(s, &abort);
+      bout.bpla(s, &abort);
     }
     size_t i1 = 0;
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
@@ -105,7 +105,7 @@ void old_sublist() {
         strcat(s, "|#9");
       }
       strcat(s, stripcolors(a()->subs().sub(a()->usub[i1].subnum).name.c_str()));
-      bout.bputs(s, &abort);
+      bout.bpla(s, &abort);
       i1++;
     }
     i++;
@@ -116,7 +116,7 @@ void old_sublist() {
   }
 
   if (i == 0) {
-    bout.bputs("|#6None.", &abort);
+    bout.bpla("|#6None.", &abort);
     bout.nl();
   }
 
@@ -235,13 +235,9 @@ void SubList() {
                   a()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);
         }
-        if (okansi()) {
-          bout.bputs(sdf, &abort, &next);
-        } else {
-          bout.bputs(stripcolors(sdf), &abort, &next);
-        }
-        size_t lastp = i1++;
+        bout.bputs(sdf, &abort, &next);
         bout.nl();
+        size_t lastp = i1++;
         if (bout.lines_listed() >= a()->screenlinest - 2) {
           p = 1;
           bout.clear_lines_listed();
@@ -331,7 +327,7 @@ void SubList() {
       }
     }
     if (i == 0) {
-      bout.bputs("None.", &abort);
+      bout.bpla("None.", &abort);
       bout.nl();
     }
   } while (!hangup && !done);

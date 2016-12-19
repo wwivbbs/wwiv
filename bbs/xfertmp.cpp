@@ -532,7 +532,7 @@ void list_temp_dir() {
       align(szFileName);
       char buffer[255];
       sprintf(buffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
-      bout.bputs(buffer, &abort);
+      bout.bpla(buffer, &abort);
       i1 = 1;
     }
     bFound = fnd.next();

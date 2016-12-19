@@ -57,19 +57,19 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   bool next = false;
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
       && a()->chains_reg.size() > 0) {
-    bout.bputs(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
+    bout.bpla(StringPrintf("|#5  Num |#1%-42.42s|#2%-22.22s|#1%-5.5s", "Description", "Sponsored by", "Usage"), &abort);
 
     if (okansi()) {
-      bout.bputs(StringPrintf("|#%d %s", FRAME_COLOR,
+      bout.bpla(StringPrintf("|#%d %s", FRAME_COLOR,
               "\xDA\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xBF"), &abort);
     } else {
-      bout.bputs(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
+      bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       User user;
       if (okansi()) {
         a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[0]);
-        bout.bputs(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
+        bout.bpla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
                 FRAME_COLOR,
                 i + 1,
                 FRAME_COLOR,
@@ -84,14 +84,14 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
           for (int i1 = 1; i1 < 5 && !abort; i1++) {
             if (a()->chains_reg[map[i]].regby[i1] != 0) {
               a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[i1]);
-              bout.bputs(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
+              bout.bpla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
                       FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
             }
           }
         }
       } else {
         a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[0]);
-        bout.bputs(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
+        bout.bpla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
                 i + 1, a()->chains[map[i]].description,
                 (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
                 a()->chains_reg[map[i]].usage), &abort);
@@ -99,7 +99,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
           for (int i1 = 1; i1 < 5; i1++) {
             if (a()->chains_reg[map[i]].regby[i1] != 0) {
               a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[i1]);
-              bout.bputs(StringPrintf(" |   |                                         |%-21.21s|     |",
+              bout.bpla(StringPrintf(" |   |                                         |%-21.21s|     |",
                       (a()->chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
             }
           }
@@ -107,9 +107,9 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
       }
     }
     if (okansi()) {
-      bout.bputs(StringPrintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
+      bout.bpla(StringPrintf("|#%d %s", FRAME_COLOR, "\xC0\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xD9"), &abort);
     } else {
-      bout.bputs(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
+      bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
   } else {
     bout.litebar(" %s Online Programs ", syscfg.systemname);
@@ -119,9 +119,9 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
       i++;
       if (!abort && !hangup) {
         if (i >= *mapp) {
-          bout.bputs(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
+          bout.bpla(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
-          bout.bputs(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort);
+          bout.bpla(StringPrintf("|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort);
         }
       }
     }

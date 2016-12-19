@@ -143,7 +143,7 @@ void dirlist(int mode) {
       }
     }
     if (i == 0) {
-      bout.bputs("None.", &abort);
+      bout.bpla("None.", &abort);
       bout.nl();
     }
     if (!abort && mode == 0) {

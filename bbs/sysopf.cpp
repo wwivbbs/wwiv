@@ -576,8 +576,8 @@ void print_net_listing(bool bForcePause) {
         if (matched) {
           slist++;
           if (!useregion && slist == 1) {
-            bout.bputs("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
-            bout.bputs("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
+            bout.bpla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
+            bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
           } else {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
@@ -590,9 +590,9 @@ void print_net_listing(bool bForcePause) {
                 areacode = describe_area_code(atoi(csne.phone));
               }
               const string line = StringPrintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode.c_str());
-              bout.bputs(line, &abort);
-              bout.bputs("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
-              bout.bputs("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
+              bout.bpla(line, &abort);
+              bout.bpla("|#1 Node  Phone         BBS Name                                 Hop  Next Gr", &abort);
+              bout.bpla("|#7-----  ============  ---------------------------------------- === ----- --", &abort);
             }
           }
           string line;
@@ -604,7 +604,7 @@ void print_net_listing(bool bForcePause) {
             line = StringPrintf("%5u%c %12s  %-40s%s%2d",
                     csne.sysnum, bbstype, csne.phone, csne.name, " |B1|15--- ----- |#0", csne.group);
           }
-          bout.bputs(line, &abort);
+          bout.bpla(line, &abort);
         }
       }
       if (!abort && slist) {
@@ -759,8 +759,8 @@ void zlog() {
   bout.nl();
   bout.cls();
   bout.nl(2);
-  bout.bputs("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
-  bout.bputs("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);
+  bout.bpla("|#2  Date     Calls  Active   Posts   Email   Fback    U/L    %Act   T/user", &abort);
+  bout.bpla("|#7--------   -----  ------   -----   -----   -----    ---    ----   ------", &abort);
   while (i < 97 && !abort && !hangup && z.date[0] != 0) {
     int nTimePerUser = 0;
     if (z.calls) {
@@ -772,10 +772,10 @@ void zlog() {
     // alternate colors to make it easier to read across the lines
     if (i % 2) {
       bout << "|#1";
-      bout.bputs(szBuffer, &abort);
+      bout.bpla(szBuffer, &abort);
     } else {
       bout << "|#3";
-      bout.bputs(szBuffer, &abort);
+      bout.bpla(szBuffer, &abort);
     }
     ++i;
     if (i < 97) {
