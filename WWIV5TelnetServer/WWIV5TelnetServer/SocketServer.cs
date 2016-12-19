@@ -38,7 +38,12 @@ namespace WWIV5TelnetServer
     private string name;
     private NodeType nodeType;
     private Blacklist bl;
-    private Dictionary<String, List<DateTime>> connections;
+    // All recent connections. Used to keep track of multiple connections within
+    // a specified period.
+    private Dictionary<string, List<DateTime>> recentConnections;
+
+    // All concurrent connections. Used to keep track of concurrent connections.
+    private Dictionary<string, Int32> activeConnections;
 
     public delegate void StatusMessageEventHandler(object sender, StatusMessageEventArgs e);
     public event StatusMessageEventHandler StatusMessageChanged;
@@ -63,7 +68,16 @@ namespace WWIV5TelnetServer
         rbl.Add(Properties.Settings.Default.dnsRbl);
       }
       this.bl = new Blacklist(badip_file, goodip_file, rbl);
-      this.connections = new Dictionary<string, List<DateTime>>();
+      this.recentConnections = new Dictionary<string, List<DateTime>>();
+      this.activeConnections = new Dictionary<string, Int32>();
+    }
+
+    private void DecrementConnection(string ip)
+    {
+      // Decrement the # active sessions.
+      Int32 count = 0;
+      activeConnections.TryGetValue(ip, out count);
+      activeConnections[ip] = count - 1;
     }
 
     public void Start()
@@ -94,6 +108,30 @@ namespace WWIV5TelnetServer
       Log(String.Format("{0} Server Stopped", this.name));
     }
 
+    bool IncrementConcurrentSession(string ip)
+    {
+      // todo - make this common and shared across connections and activeconnections
+      Int32 value;
+      if (activeConnections.TryGetValue(ip, out value))
+      {
+
+        var c = "Current Sessions: " + value;
+        OnStatusMessageUpdated(c, StatusMessageEventArgs.MessageType.Status);
+
+        // We should ban if we still have more connections than allowed.
+        if (value < Properties.Settings.Default.concurrentSessions)
+        {
+          // Only increment the active count if we are not banning;
+          activeConnections[ip] = ++value;
+          return false;
+        }
+        return true;
+      }
+      OnStatusMessageUpdated("No current sessions.", StatusMessageEventArgs.MessageType.Status);
+      activeConnections[ip] = 1;
+      return false;
+    }
+
     /** Updates the banned state. */
     bool ShouldBeBanned(String ip)
     {
@@ -111,13 +149,14 @@ namespace WWIV5TelnetServer
         return false;
       }
 
+      // todo - make this common and shared across connections and activeconnections
       List<DateTime> value;
-      if (connections.TryGetValue(ip, out value))
+      if (recentConnections.TryGetValue(ip, out value))
       {
         var s = TimeSpan.FromSeconds(Properties.Settings.Default.banSeconds);
         value.RemoveAll(x => DateTime.Now.Subtract(x) > s);
         value.Add(DateTime.Now);
-        connections[ip] = value;
+        recentConnections[ip] = value;
 
         var c = "Current Sessions: " + value.Count +
                 ": {" + string.Join(",", value.ToArray()) + "}";
@@ -131,7 +170,7 @@ namespace WWIV5TelnetServer
       {
         value = new List<DateTime>();
         value.Add(DateTime.Now);
-        connections[ip] = value;
+        recentConnections[ip] = value;
         return false;
       }
     }
@@ -269,7 +308,9 @@ namespace WWIV5TelnetServer
           return false;
         }
       }
-      return true;
+      // If they never pressed escape twice, return false so the
+      // connect will get dropped.
+      return false;
     }
 
     private bool CanConnect(Socket socket)
@@ -361,8 +402,15 @@ namespace WWIV5TelnetServer
           Debug.WriteLine("After accept from IP: " + ip);
           OnStatusMessageUpdated(this.name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
 
+          if (IncrementConcurrentSession(ip))
+          {
+            SendBusyAndCloseSocket(socket);
+            continue;
+          }
+
           if (!CanConnect(socket))
           {
+            DecrementConnection(ip);
             continue;
           }
 
@@ -445,6 +493,9 @@ namespace WWIV5TelnetServer
         {
           nodeManager.freeNode(node);
           OnNodeUpdated(node);
+
+          // Decrement the # active sessions.
+          DecrementConnection(node.RemoteAddress);
         }
       }
     }
