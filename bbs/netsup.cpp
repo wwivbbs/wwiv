@@ -1030,7 +1030,7 @@ static std::pair<uint16_t, int> ansicallout() {
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos += 10 * (5 - y);
           y = 5;
-          if (pos >= size_int(entries)) {
+          while (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }
