@@ -74,10 +74,14 @@ namespace WWIV5TelnetServer
 
     private void DecrementConnection(string ip)
     {
+      if (ip.Length == 0)
+      {
+        return;
+      }
       // Decrement the # active sessions.
       Int32 count = 0;
       activeConnections.TryGetValue(ip, out count);
-      activeConnections[ip] = count - 1;
+      activeConnections[ip] = Math.Max(0, count - 1);
     }
 
     public void Start()
@@ -395,10 +399,11 @@ namespace WWIV5TelnetServer
       while (true)
       {
         Debug.WriteLine("Waiting for connection.");
+        string ip = "";
         try
         {
           Socket socket = server.Accept();
-          string ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
+          ip = ((System.Net.IPEndPoint)socket.RemoteEndPoint).Address.ToString();
           Debug.WriteLine("After accept from IP: " + ip);
           OnStatusMessageUpdated(this.name + " from " + ip, StatusMessageEventArgs.MessageType.Connect);
 
@@ -421,6 +426,7 @@ namespace WWIV5TelnetServer
             // NO node available.
             Log("No node available.");
             SendBusyAndCloseSocket(socket);
+            DecrementConnection(ip);
             continue;
           }
 
@@ -440,15 +446,18 @@ namespace WWIV5TelnetServer
         }
         catch (SocketException e)
         {
+          DecrementConnection(ip);
           DebugLog("Exception" + e.ToString());
         }
         catch (ThreadAbortException)
         {
+          DecrementConnection(ip);
           Debug.WriteLine("Server Exiting normally...");
           return;
         }
         catch (Exception e)
         {
+          DecrementConnection(ip);
           DebugLog("Exception" + e.ToString());
         }
       }
