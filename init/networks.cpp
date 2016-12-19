@@ -379,6 +379,7 @@ public:
             if (address_string.empty()) { break; }
             wwiv::sdk::fido::FidoAddress address(address_string);
             fido_node_config_t config{};
+            config.binkp_config.port = 24554;
             edit_fido_node_config(config_, address, config);
             callout.insert(address, config);
           } break;
