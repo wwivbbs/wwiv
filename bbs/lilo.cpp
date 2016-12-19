@@ -385,8 +385,12 @@ static void logon_guest() {
 }
 
 void getuser() {
+  // Reset the key timeout to 30 seconds while trying to log in a user.
+  ScopeExit at_exit([] { okmacro = true; bout.reset_key_timeout(); });
+
   okmacro = false;
-  ScopeExit at_exit([] { okmacro = true; });
+  bout.set_logon_key_timeout();
+
   // Let's set this to 0 here since we don't have a user yet.
   a()->usernum = 0;
   a()->SetCurrentConferenceMessageArea(0);

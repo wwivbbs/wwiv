@@ -37,6 +37,8 @@
 #include "core/log.h"
 #include "core/strings.h"
 
+using std::chrono::minutes;
+using std::chrono::seconds;
 using std::chrono::steady_clock;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -303,12 +305,11 @@ int Output::wherex() {
   return x_; 
 }
 
-static std::chrono::duration<double> GetKeyboardTimeout() {
-  // TODO(rushfan): Make this configurable in init.
+std::chrono::duration<double> Output::key_timeout() const { 
   if (so()) {
-    return std::chrono::minutes(10);
+    return sysop_key_timeout_;
   }
-  return std::chrono::minutes(5);
+  return non_sysop_key_timeout_; 
 }
 
 /* This function returns one character from either the local keyboard or
@@ -320,8 +321,11 @@ char Output::getkey() {
   bool beepyet = false;
   lastchar_pressed();
 
-  auto tv = GetKeyboardTimeout();
-  auto tv1 = tv - std::chrono::minutes(1);
+  auto tv = key_timeout();
+  auto tv1 = tv - minutes(1);
+  if (tv1 < seconds(10)) {
+    tv1 = seconds(10);
+  }
 
   // Since were waitig for a key, reset the # of lines we've displayed since a pause.
   bout.clear_lines_listed();
@@ -415,7 +419,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
   a()->tleft(true);
   bool beepyet = false;
 
-  auto tv = GetKeyboardTimeout();
+  auto tv = bout.key_timeout();
   auto tv1 = tv - std::chrono::minutes(1);
 
   while (true) {

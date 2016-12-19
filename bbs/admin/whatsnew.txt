@@ -86,6 +86,15 @@ What's New in WWIV 5.2 (2016)
   scan in hte full screen message reader.
 * readme.510 is now readme-wwiv.txt.
 * wwivini.510 is now wwivini.txt
+* Keyboard timeouts are now configurable in WWIV.INI.  Also
+  you can configure a different timeout value for connections
+  still at the logon phase, before a user is logged in. That
+  defaults to 30 second (vs. 10 minutes before)
+  The keys with defaults are are:
+    USER_KEY_TIMEOUT  = 180 ; Timeout in seconds for non-sysops.
+    SYSOP_KEY_TIMEOUT = 600 ; Timeout in seconds for sysops.
+    LOGON_KEY_TIMEOUT = 130 ; Timeout in second for users logging in 
+                            ; (i.e. They are at the NN: prompt.)
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

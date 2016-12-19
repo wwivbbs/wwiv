@@ -1007,6 +1007,7 @@ int Application::Run(int argc, char *argv[]) {
       }
       this_usernum_from_commandline = 0;
       CheckForHangup();
+      // Set new timeout
       logon();
       setiia(seconds(5));
       set_net_num(0);

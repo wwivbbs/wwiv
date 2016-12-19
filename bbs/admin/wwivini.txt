@@ -246,7 +246,14 @@ EXEC_CHILDWAITTIME     = 500                ; Time to wait for the DOOR to load
                                             ; (used under Win9X)
 NEW_SCAN_AT_LOGIN      = Y                  ; Ask the user to scan for new 
                                             ; messages when they log in.
-EXPERIMENTAL_READ_PROMPT = Y
+
+EXPERIMENTAL_READ_PROMPT = Y                ; Enable the full screen message reader.
+
+USER_KEY_TIMEOUT  = 180                     ; Timeout in seconds for non-sysops.
+SYSOP_KEY_TIMEOUT = 600                     ; Timeout in seconds for sysops.
+LOGON_KEY_TIMEOUT = 130                     ; Timeout in second for users logging in 
+                                            ; (i.e. They are at the NN: prompt.)
+
 ;
 ;=============================================================================
 ;                        TEMPORARY DIRECTORY SETTING

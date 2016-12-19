@@ -73,6 +73,7 @@ struct ini_flags_type {
   uint32_t value;
 };
 
+using std::chrono::seconds;
 using std::string;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::core;
@@ -380,12 +381,15 @@ void Application::ReadINIFile(IniFile& ini) {
 
   screen_saver_time = ini.value<uint16_t>(get_key_str(INI_STR_SCREEN_SAVER_TIME), screen_saver_time);
 
-  max_extend_lines    = std::min<uint16_t>(max_extend_lines, 99);
-  max_batch           = std::min<uint16_t>(max_batch , 999);
-  max_chains          = std::min<uint16_t>(max_chains, 999);
-  max_gfilesec        = std::min<uint16_t>(max_gfilesec, 999);
+  max_extend_lines = std::min<uint16_t>(max_extend_lines, 99);
+  max_batch  = std::min<uint16_t>(max_batch , 999);
+  max_chains = std::min<uint16_t>(max_chains, 999);
+  max_gfilesec = std::min<uint16_t>(max_gfilesec, 999);
 
   experimental_read_prompt_ = ini.value<bool>("EXPERIMENTAL_READ_PROMPT", false);
+  bout.set_logon_key_timeout(seconds(std::max<int>(10, ini.value<int>("LOGON_KEY_TIMEOUT", 30))));
+  bout.set_default_key_timeout(seconds(std::max<int>(30, ini.value<int>("USER_KEY_TIMEOUT", 180))));
+  bout.set_sysop_key_timeout(seconds(std::max<int>(30, ini.value<int>("SYSOP_KEY_TIMEOUT", 600))));
 }
 
 bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {

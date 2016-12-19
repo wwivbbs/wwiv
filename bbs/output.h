@@ -20,6 +20,7 @@
 #ifndef __INCLUDED_WSTREAMBUFFER_H__
 #define __INCLUDED_WSTREAMBUFFER_H__
 
+#include <chrono>
 #include <iostream>
 #include <streambuf>
 #include <ios>
@@ -144,6 +145,17 @@ class Output : public std::ostream {
   bool IsLastKeyLocal() const { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
 
+  // Key Timeouts
+  std::chrono::duration<double> key_timeout() const;
+  void set_key_timeout(std::chrono::duration<double> k) { non_sysop_key_timeout_ = k; }
+  void set_sysop_key_timeout(std::chrono::duration<double> k) { sysop_key_timeout_ = k; }
+  void set_default_key_timeout(std::chrono::duration<double> k) { default_key_timeout_ = k; }
+  void set_logon_key_timeout(std::chrono::duration<double> k) { logon_key_timeout_ = k; }
+
+  // Key Timeout manipulators.
+  void set_logon_key_timeout() { non_sysop_key_timeout_ = logon_key_timeout_; };
+  void reset_key_timeout() { non_sysop_key_timeout_ = default_key_timeout_; }
+
 public:
   unsigned int lines_listed_;
 
@@ -154,7 +166,10 @@ private:
   int x_ = 0;
   bool last_key_local_ = true;
   void execute_ansi();
-
+  std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
+  std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);
+  std::chrono::duration<double> sysop_key_timeout_ = std::chrono::minutes(10);
+  std::chrono::duration<double> logon_key_timeout_ = std::chrono::minutes(3);
 };
 
 namespace wwiv {
