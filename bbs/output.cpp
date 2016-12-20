@@ -258,10 +258,11 @@ int Output::bputs(const string& text) {
 // it consistent.
 int Output::bpla(const std::string& text, bool *abort) {
   bool dummy;
-  return bputs(text, abort, &dummy);
+  int ret = bputs(text, abort, &dummy);
   if (!checka(abort, &dummy)) {
     nl();
   }
+  return ret;
 }
 
 // This one doesn't do a newline. (used to be osan)
