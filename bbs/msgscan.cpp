@@ -455,7 +455,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
 
   int selected = msgnum;
   int window_top = std::min(msgnum, last);
-  int window_bottom = window_top + height - window_top_min - 1;
+  int window_bottom = window_top + height - window_top_min + 1;
   // When starting mid-range, sometimes the selected is past the bottom.
   if (selected > window_bottom) selected = window_bottom;
 
@@ -503,11 +503,12 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       window_top = window_top_min;
     } break;
     case COMMAND_DOWN: {
-      int current_window_bottom = window_top + height - window_top_min - 1;
-      if (selected <= current_window_bottom) {
+      int current_window_bottom = window_top + height - window_top_min;
+      auto d = num_msgs_in_area - height + window_top_min;
+      if (selected < current_window_bottom) {
         selected++;
       }
-      else if (window_top < num_msgs_in_area - height + window_top_min) {
+      else if (window_top < d) {
         selected++;
         window_top++;
       }
