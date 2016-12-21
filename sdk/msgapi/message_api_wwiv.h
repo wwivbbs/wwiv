@@ -42,6 +42,7 @@ class WWIVLastReadImpl {
 public:
   virtual uint32_t last_read(int area) const = 0;
   virtual void set_last_read(int area, uint32_t last_read) = 0;
+  void Save();
 };
 
 class NullLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {

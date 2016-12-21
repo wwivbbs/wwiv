@@ -184,7 +184,13 @@ public:
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
   const wwiv::sdk::subboard_t& current_sub() const { return subs().sub(GetCurrentReadMessageArea()); }
-  net_networks_rec& current_net() { return net_networks[net_num()]; }
+  
+  const net_networks_rec& current_net() const { 
+    if (net_networks.empty()) { 
+      return net_networks_rec{};
+    } 
+    return net_networks[net_num()];
+  }
 
   size_t GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
   void SetCurrentConferenceMessageArea(size_t n) { m_nCurrentConferenceMessageArea = n; }

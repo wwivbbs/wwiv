@@ -64,8 +64,6 @@ static string date() {
   return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
 }
 
-static uint32_t *qsc;
-
 static void write_qscn(unsigned int un, uint32_t *qscn) {
   File file(syscfg.datadir, USER_QSC);
   if (file.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile)) {
@@ -195,18 +193,17 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   statusrec.net_bias = 0.001f;
   statusrec.net_req_free = 3.0;
 
-  qsc = (uint32_t *)malloc(syscfg.qscn_len);
-  memset(qsc, 0, syscfg.qscn_len);
+  auto qsc = std::make_unique<uint32_t[]>(syscfg.qscn_len / sizeof(uint32_t));
 
   save_status();
   userrec u = {};
   memset(&u, 0, sizeof(u));
   write_user(0, &u);
-  write_qscn(0, qsc);
+  write_qscn(0, qsc.get());
   u.inact = inact_deleted;
   // Note: this is where init makes a user record #1 that is deleted for new installs.
   write_user(1, &u);
-  write_qscn(1, qsc);
+  write_qscn(1, qsc.get());
   {
     File namesfile(StrCat("data/", NAMES_LST));
     namesfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile);

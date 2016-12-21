@@ -398,9 +398,12 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
     LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
     return false;
   }
+
+  File::FixPathSeparators(&temp_directory);
   // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to 
   // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
   string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
+  File::FixPathSeparators(&batch_directory);
 
   // Replace %n with instance number value.
   string instance_num_string = std::to_string(instance_number);
@@ -907,7 +910,7 @@ void Application::InitializeBBS() {
   udir.resize(syscfg.max_dirs);
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
-  qsc = static_cast<uint32_t *>(BbsAllocA(syscfg.qscn_len));
+  qsc = new uint32_t[(syscfg.qscn_len / sizeof(uint32_t))];
   qsc_n = qsc + 1;
   qsc_q = qsc_n + (syscfg.max_dirs + 31) / 32;
   qsc_p = qsc_q + (syscfg.max_subs + 31) / 32;
