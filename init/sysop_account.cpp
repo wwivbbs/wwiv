@@ -45,6 +45,7 @@
 #include "init/wwivinit.h"
 #include "init/subacc.h"
 #include "sdk/filenames.h"
+#include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/networks.h"
@@ -116,6 +117,13 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   u.SetStatusFlag(User::ansi);
   u.SetStatusFlag(User::color);
   usermanager.WriteUser(&u, 1);
+
+  {
+    wwiv::sdk::Names names(config);
+    names.Load();
+    names.Add(u.GetName(), 1);
+    names.Save();
+  }
 
   if (read_status()) {
     statusrec.users++;
