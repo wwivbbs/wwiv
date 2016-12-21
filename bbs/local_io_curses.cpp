@@ -45,6 +45,7 @@
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "localui/curses_io.h"
@@ -288,7 +289,10 @@ static int CursesToWin32KeyCodes(int curses_code) {
   case KEY_PPAGE: return PAGEUP;
   case KEY_NPAGE: return PAGEDOWN;
   // TODO: implement the rest.
-  default: return 0;
+  default: {
+    LOG(INFO) << "unknown key:"  << curses_code;
+    return 0;
+  }
   }
 }
 
