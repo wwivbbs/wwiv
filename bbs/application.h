@@ -186,8 +186,9 @@ public:
   const wwiv::sdk::subboard_t& current_sub() const { return subs().sub(GetCurrentReadMessageArea()); }
   
   const net_networks_rec& current_net() const { 
+    const static net_networks_rec empty_rec{};
     if (net_networks.empty()) { 
-      return net_networks_rec{};
+      return empty_rec;
     } 
     return net_networks[net_num()];
   }
