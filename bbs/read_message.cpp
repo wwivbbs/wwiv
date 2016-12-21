@@ -482,7 +482,8 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
 
     // Ok, here we also need to split long lines.
     const auto screen_width = a()->user()->GetScreenChars();
-    if (line.size() > screen_width) {
+    auto line_size = size_without_colors(line);
+    if (line_size > screen_width) {
       const auto sl = split_long_line(line);
       for (const auto& l : sl) { lines.emplace_back(l); }
     }
