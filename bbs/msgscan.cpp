@@ -385,7 +385,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     }
     else {
       char from[81];
-      to_char_array(from, h->from());
+      to_char_array(from, trim_to_size_ignore_colors(h->from(), 25));
       strcat(szPrompt, from);
     }
   }
@@ -607,6 +607,9 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
       abort = true;
     }
   }
+  bout << "|#7" << static_cast<unsigned char>(198)
+    << string(a()->user()->GetScreenChars() - 2, static_cast<unsigned char>(205))
+    << static_cast<unsigned char>(181) << "\r\n";
 }
 
 static void HandleMessageDownload(int nMessageNumber) {
