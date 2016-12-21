@@ -42,12 +42,15 @@ class WWIVLastReadImpl {
 public:
   virtual uint32_t last_read(int area) const = 0;
   virtual void set_last_read(int area, uint32_t last_read) = 0;
-  void Save();
+  virtual void Load() = 0;
+  virtual void Save() = 0;
 };
 
-class NullLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
+class NullLastReadImpl : public WWIVLastReadImpl {
   uint32_t last_read(int ) const override { return 0; }
-  void set_last_read(int , uint32_t ) override {}
+  void set_last_read(int, uint32_t ) override {}
+  void Load() override {}
+  void Save() override {}
 };
 
 class WWIVMessageApi: public MessageApi {

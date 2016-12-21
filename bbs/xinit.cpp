@@ -594,6 +594,15 @@ class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
       qsc_p[area] = last_read;
     }
   }
+
+  void Load() {
+    // Handled by the BBS in read_qscn(a()->usernum, qsc, false);
+  }
+
+  void Save() {
+    // Handled by the BBS in write_qscn(a()->usernum, qsc, false);
+  }
+
 };
 
 bool Application::create_message_api() {
