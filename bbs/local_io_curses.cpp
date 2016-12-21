@@ -285,6 +285,8 @@ static int CursesToWin32KeyCodes(int curses_code) {
   case KEY_RIGHT: return RARROW;
   case KEY_DELETE: return BACKSPACE;
   case KEY_BACKSPACE: return BACKSPACE;
+  case KEY_PPAGE: return PAGEUP;
+  case KEY_NPAGE: return PAGEDOWN;
   // TODO: implement the rest.
   default: return 0;
   }
