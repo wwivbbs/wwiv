@@ -595,7 +595,7 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   }
 
   bout << "|#7" << static_cast<unsigned char>(198)
-    << string(a()->user()->GetScreenChars() - 2, static_cast<unsigned char>(205))
+    << string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
     << static_cast<unsigned char>(181) << "\r\n";
   int nNumTitleLines = std::max<int>(a()->screenlinest - 6, 1);
   int i = 0;
@@ -608,7 +608,7 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
     }
   }
   bout << "|#7" << static_cast<unsigned char>(198)
-    << string(a()->user()->GetScreenChars() - 2, static_cast<unsigned char>(205))
+    << string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
     << static_cast<unsigned char>(181) << "\r\n";
 }
 
