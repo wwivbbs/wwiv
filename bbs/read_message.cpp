@@ -439,7 +439,7 @@ static std::vector<std::string> split_long_line(const std::string& text) {
   std::vector<std::string> lines;
   const auto screen_width = a()->user()->GetScreenChars();
   string s = text;
-  while (s.size() > screen_width) {
+  while (size_without_colors(s) > screen_width) {
     std::string::size_type pos = screen_width;
     while (pos >= 0 && s[pos] > 32) {
       pos--;
