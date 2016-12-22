@@ -386,7 +386,7 @@ void Application::ReadINIFile(IniFile& ini) {
   max_chains = std::min<uint16_t>(max_chains, 999);
   max_gfilesec = std::min<uint16_t>(max_gfilesec, 999);
 
-  experimental_read_prompt_ = ini.value<bool>("EXPERIMENTAL_READ_PROMPT", false);
+  full_screen_read_prompt_ = ini.value<bool>("FULL_SCREEN_READER", true);
   bout.set_logon_key_timeout(seconds(std::max<int>(10, ini.value<int>("LOGON_KEY_TIMEOUT", 30))));
   bout.set_default_key_timeout(seconds(std::max<int>(30, ini.value<int>("USER_KEY_TIMEOUT", 180))));
   bout.set_sysop_key_timeout(seconds(std::max<int>(30, ini.value<int>("SYSOP_KEY_TIMEOUT", 600))));

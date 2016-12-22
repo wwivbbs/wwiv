@@ -564,7 +564,7 @@ void readmail(int mode) {
           // a()->net_email_name
           a()->net_email_name = msg.from_user_name;
         }
-        display_type2_message(msg, (m.anony & 0x0f), &next);
+        display_type2_message(msg, &next);
         if (!(m.status & status_seen)) {
           read_same_email(mloc, mw, curmail, &m, 0, status_seen);
         }

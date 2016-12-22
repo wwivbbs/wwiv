@@ -348,7 +348,7 @@ void attach_file(int mode) {
           bool next;
           Type2MessageData msg = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0);
           msg.title = m.title;
-          display_type2_message(msg, static_cast<char>(m.anony & 0x0f), &next);
+          display_type2_message(msg, &next);
           if (m.status & status_file) {
             File f(a()->config()->datadir(), ATTACH_DAT);
             if (f.Open(File::modeReadOnly | File::modeBinary)) {

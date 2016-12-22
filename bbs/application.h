@@ -256,7 +256,7 @@ public:
   void set_at_wfc(bool b) { at_wfc_ = b; }
   bool at_wfc() const { return at_wfc_; }
 
-  bool experimental_read_prompt() const { return experimental_read_prompt_; }
+  bool fullscreen_read_prompt() const { return full_screen_read_prompt_; }
 
   void SetChatReason(const std::string& chat_reason) { chat_reason_ = chat_reason; }
 
@@ -452,7 +452,7 @@ private:
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags = 0;
   uint16_t spawn_opts[20];
-  bool experimental_read_prompt_ = false;
+  bool full_screen_read_prompt_ = true;
   int last_read_user_number_ = 0;
   std::chrono::system_clock::time_point system_logon_time_;
   std::chrono::steady_clock::time_point steady_logon_time_;

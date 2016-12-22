@@ -95,6 +95,10 @@ What's New in WWIV 5.2 (2016)
     SYSOP_KEY_TIMEOUT = 600 ; Timeout in seconds for sysops.
     LOGON_KEY_TIMEOUT = 130 ; Timeout in second for users logging in 
                             ; (i.e. They are at the NN: prompt.)
+* EXPERIMENTAL_READ_PROMPT is now FULL_SCREEN_READER and defaults
+  to being on.
+* New Subboard flag (P) to disable the full screen reader for a 
+  specific subboard. This is needed for ansi art subs.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

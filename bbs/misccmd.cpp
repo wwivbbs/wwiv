@@ -201,8 +201,8 @@ void kill_old_email() {
           Type2MessageData msg = read_type2_message(&m.msg, m.anony & 0x0f, false, "email", 0, 0);
           msg.title = m.title;
           msg.message_area = "Personal E-Mail";
-          bool next;
-          display_type2_message(msg, static_cast<char>(m.anony & 0x0f), &next);
+          bool next = false;
+          display_type2_message(msg, &next);
         }
         break;
         }
