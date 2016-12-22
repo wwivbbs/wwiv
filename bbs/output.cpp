@@ -197,9 +197,7 @@ void Output::litebar(const char *formatText, ...) {
   }
 #else
   const string header = StringPrintf("|B1|15 %-78s", s);
-  bout << header;
-  Color(0);
-  nl(2);
+  bout << header << "|#0\r\n\n";
 #endif
 }
 

@@ -319,7 +319,12 @@ static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) 
 static FullScreenView CreateFullScreenListTitlesView() {
   auto screen_width = a()->user()->GetScreenChars();
   auto screen_length = a()->user()->GetScreenLines() - 1;
-  int num_header_lines = 1;
+
+  int num_header_lines = 2;
+  bout.litebar("Sub #%d - %s  (%d messages.)", 
+    a()->current_user_sub_num(), 
+    a()->current_sub().name.c_str(), 
+    a()->GetNumMessagesInCurrentMessageArea());
   bout << "|14      Num" << " " << std::left << std::setw(43) 
        << "Title" << std::left << "From\r\n";
   bout.clear_lines_listed();
