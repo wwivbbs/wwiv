@@ -160,6 +160,7 @@
     <ClInclude Include="misccmd.h" />
     <ClInclude Include="mmkey.h" />
     <ClInclude Include="msgbase1.h" />
+    <ClInclude Include="msgscan.h" />
     <ClInclude Include="multinst.h" />
     <ClInclude Include="netsup.h" />
     <ClInclude Include="newuser.h" />

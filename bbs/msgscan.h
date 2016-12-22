@@ -15,18 +15,15 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_MSGBASE1_H__
-#define __INCLUDED_BBS_MSGBASE1_H__
+#ifndef __INCLUDED_BBS_MSGSCAN_H__
+#define __INCLUDED_BBS_MSGSCAN_H__
 
-#include "sdk/vardec.h"
-#include "sdk/subxtr.h"
+enum class MsgScanOption {
+  SCAN_OPTION_READ_PROMPT,
+  SCAN_OPTION_LIST_TITLES,
+  SCAN_OPTION_READ_MESSAGE
+};
 
-void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);
-void post();
-void grab_user_name(messagerec*m, const std::string& file_name, int network_number);
-void qscan(int start_subnum, bool &next_sub);
-void nscan(int start_subnum = 0);
-void ScanMessageTitles();
-void remove_post();
+void scan(int msgnum, MsgScanOption scan_option, bool &next_sub, bool title_scan);
 
-#endif  // __INCLUDED_BBS_MSGBASE1_H__
+#endif  // __INCLUDED_BBS_MSGSCAN_H__

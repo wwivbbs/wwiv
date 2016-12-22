@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/msgscan.h"
+
 #include <algorithm>
 #include <iomanip>
 #include <memory>

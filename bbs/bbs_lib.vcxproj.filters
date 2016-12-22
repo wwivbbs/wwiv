@@ -721,6 +721,9 @@
     <ClInclude Include="full_screen.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="msgscan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">
