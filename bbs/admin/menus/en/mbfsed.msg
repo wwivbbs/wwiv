@@ -5,8 +5,10 @@
 
 |#5Commands:
 |#9(|#2A|#9) E-Mail Author of Last Message        
+|#9(|#2B|#9) Bypass (Skip) Current Sub (For N-Scan) 
 |#9(|#2T|#9) List Message Titles
 |#9(|#2P|#9) Post a Public Message in Current Sub   
 |#9(|#2Q|#9) Quit to Main Menu                      
 |#9(|#2W|#9) Reply with "Regards" to Last Message 
+|#9(|#2Y|#9) Download Last Message                
 

@@ -571,7 +571,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         fs.ClearCommandLine();
       }
     });
-    switch (key) {
+      switch (key) {
     case COMMAND_UP: {
       if (start > first) {
         --start;

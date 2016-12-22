@@ -617,10 +617,10 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
     << static_cast<unsigned char>(181) << "\r\n";
 }
 
-static void HandleMessageDownload(int nMessageNumber) {
-  if (nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
+static void HandleMessageDownload(int msgnum) {
+  if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
     string b;
-    readfile(&(get_post(nMessageNumber)->msg), (a()->current_sub().filename), &b);
+    readfile(&(get_post(msgnum)->msg), (a()->current_sub().filename), &b);
     bout << "|#1Message Download -\r\n\n";
     bout << "|#2Filename to use? ";
     string filename = input(12);
@@ -930,21 +930,21 @@ static void HandleToggleUnAnonymous(int nMessageNumber) {
   }
 }
 
-static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOptionType, bool nextsub, bool &bTitleScan, bool &done,
+static void HandleScanReadPrompt(int &msgnum, MsgScanOption& nScanOptionType, bool nextsub, bool &bTitleScan, bool &done,
   bool &quit, int &val) {
   resetnsp();
-  string read_prompt = GetScanReadPrompts(nMessageNumber);
+  string read_prompt = GetScanReadPrompts(msgnum);
   bout.nl();
   char szUserInput[81];
   bout << read_prompt;
   input(szUserInput, 5, true);
-  resynch(&nMessageNumber, nullptr);
+  resynch(&msgnum, nullptr);
   while (szUserInput[0] == 32) {
     char szTempBuffer[255];
     strcpy(szTempBuffer, &(szUserInput[1]));
     strcpy(szUserInput, szTempBuffer);
   }
-  if (bTitleScan && szUserInput[0] == 0 && nMessageNumber < a()->GetNumMessagesInCurrentMessageArea()) {
+  if (bTitleScan && szUserInput[0] == 0 && msgnum < a()->GetNumMessagesInCurrentMessageArea()) {
     nScanOptionType = MsgScanOption::SCAN_OPTION_LIST_TITLES;
     szUserInput[0] = 'T';
     szUserInput[1] = '\0';
@@ -954,7 +954,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
   }
   int nUserInput = atoi(szUserInput);
   if (szUserInput[0] == '\0') {
-    nUserInput = nMessageNumber + 1;
+    nUserInput = msgnum + 1;
     if (nUserInput >= a()->GetNumMessagesInCurrentMessageArea() + 1) {
       done = true;
     }
@@ -962,7 +962,7 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
 
   if (nUserInput != 0 && nUserInput <= a()->GetNumMessagesInCurrentMessageArea() && nUserInput >= 1) {
     nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
-    nMessageNumber = nUserInput;
+    msgnum = nUserInput;
   } else if (szUserInput[1] == '\0') {
     if (forcescansub) {
       return;
@@ -971,15 +971,10 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
     case '$':
     { // Last message in area.
       nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
-      nMessageNumber = a()->GetNumMessagesInCurrentMessageArea();
+      msgnum = a()->GetNumMessagesInCurrentMessageArea();
     }
     break;
-    case 'F':
-    { // Find addition
-      HandleScanReadFind(nMessageNumber, nScanOptionType);
-    }
-    break;
-    // End of find addition
+    case 'F': HandleScanReadFind(msgnum, nScanOptionType); break;
 
     case 'Q':
       quit = true;
@@ -987,10 +982,9 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
       nextsub = false;
       break;
     case 'B': {
-      if (!nextsub) {
-        break;
+      if (nextsub) {
+        HandleRemoveFromNewScan();
       }
-      HandleRemoveFromNewScan();
       nextsub = true;
       done = true;
       quit = true;
@@ -1002,65 +996,33 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
     case 'R':
       nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       break;
-    case '@':
-      to_char_array(irt_sub, a()->subs().sub(a()->current_user_sub().subnum).name);
+    case '?': HandleMessageHelp(); break;
+    case '@': to_char_array(irt_sub, a()->subs().sub(a()->current_user_sub().subnum).name); 
     case 'O':
-    case 'A':
-      HandleScanReadAutoReply(nMessageNumber, szUserInput, nScanOptionType);
-    break;
-    case 'P':
-      irt[0] = '\0';
-      irt_name[0] = '\0';
-      post();
-      break;
-    case 'W':
-      HandleMessageReply(nMessageNumber);
-      break;
-    case 'Y':
-      HandleMessageDownload(nMessageNumber);
-      break;
-    case '?':
-      HandleMessageHelp();
-      break;
+    case 'A': HandleScanReadAutoReply(msgnum, szUserInput, nScanOptionType); break;
+    case 'D': HandleMessageDelete(msgnum); break;
+    case 'E': HandleMessageExtract(msgnum); break;
+    case 'L': HandleMessageLoad(); break;
+    case 'M': HandleMessageMove(msgnum); break;
+    case 'N': HandleToggleAutoPurge(msgnum); break;
+    case 'P': irt[0] = '\0'; irt_name[0] = '\0'; post(); break;
+    case 'U': HandleToggleUnAnonymous(msgnum); break;
+    case 'V': HandleValUser(msgnum); break;
+    case 'W': HandleMessageReply(msgnum); break;
+    case 'X': HandleTogglePendingNet(msgnum, val); break;
+    case 'Y': HandleMessageDownload(msgnum); break;
+    case '>': nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE; break;
     case '-':
-      if (nMessageNumber > 1 && (nMessageNumber - 1 < a()->GetNumMessagesInCurrentMessageArea())) {
-        --nMessageNumber;
+      if (msgnum > 1 && (msgnum - 1 < a()->GetNumMessagesInCurrentMessageArea())) {
+        --msgnum;
         nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       }
       break;
-    case '*':
-      // This used to be threaded code.
-      break;
-    case '[':
-      // This used to be threaded code.
-      break;
-    case ']':
-      // This used to be threaded code.
-      break;
-    case '>':
-      // This used to be threaded code.
-      nScanOptionType = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
-      break;
-
-    case 'V': HandleValUser(nMessageNumber); break;
-    case 'N': HandleToggleAutoPurge(nMessageNumber); break;
-    case 'X': HandleTogglePendingNet(nMessageNumber, val); break;
-    case 'U': HandleToggleUnAnonymous(nMessageNumber); break;
-    case 'D':
-      HandleMessageDelete(nMessageNumber);
-      break;
-    case 'E':
-      HandleMessageExtract(nMessageNumber);
-      break;
-    case 'M':
-      HandleMessageMove(nMessageNumber);
-      break;
-    case 'L':
-      HandleMessageLoad();
-      break;
+      // These used to be threaded code.
+    case '*': break;
+    case '[': break;
+    case ']': break;
     }
-  } else if (IsEquals(szUserInput, "cls")) {
-    bout.bputch('\x0c');
   }
 }
 
@@ -1141,10 +1103,10 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
 
     switch (result.option) {
     case ReadMessageOption::READ_MESSAGE: {
+      scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
       if (msgnum > a()->GetNumMessagesInCurrentMessageArea()) {
         done = true;
       }
-      scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
     } break;
     case ReadMessageOption::NEXT_MSG: {
       if (++msgnum > a()->GetNumMessagesInCurrentMessageArea()) {
@@ -1157,9 +1119,9 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
       }
     } break;
     case ReadMessageOption::JUMP_TO_MSG: {
-      const auto maxnum = a()->GetNumMessagesInCurrentMessageArea();
-      bout << "Enter Message Number (1-" << maxnum << ") :";
-      msgnum = input_number(msgnum, 1, maxnum, false);
+      const auto max_msgnum = a()->GetNumMessagesInCurrentMessageArea();
+      bout << "Enter Message Number (1-" << max_msgnum << ") :";
+      msgnum = input_number(msgnum, 1, max_msgnum, false);
     } break;
     case ReadMessageOption::LIST_TITLES: {
       scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES;
@@ -1167,21 +1129,20 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
       case 'Q': done = true; nextsub = false; break;
+      case '@': to_char_array(irt_sub, a()->subs().sub(a()->current_user_sub().subnum).name);
       case 'A': HandleScanReadAutoReply(msgnum, "A", scan_option); break;
+      case 'B': if (nextsub) { HandleRemoveFromNewScan(); } nextsub = true; done = true; break;
       case 'D': HandleMessageDelete(msgnum); break;
       case 'E': HandleMessageExtract(msgnum); break;
       case 'L': HandleMessageLoad(); break;
       case 'M': HandleMessageMove(msgnum); break;
       case 'N': HandleToggleAutoPurge(msgnum); break;
-      case 'X': HandleTogglePendingNet(msgnum, val); break;
+      case 'P': { irt[0] = '\0'; irt_name[0] = '\0'; post(); } break;
       case 'U': HandleToggleUnAnonymous(msgnum); break;
       case 'V': HandleValUser(msgnum); break;
-      case 'P': {
-        irt[0] = '\0';
-        irt_name[0] = '\0';
-        post();
-      } break;
       case 'W': HandleMessageReply(msgnum); break;
+      case 'X': HandleTogglePendingNet(msgnum, val); break;
+      case 'Y': HandleMessageDownload(msgnum); break;
       }
     } break;
     }
