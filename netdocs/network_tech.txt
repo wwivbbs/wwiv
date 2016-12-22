@@ -104,7 +104,7 @@
   suggestions for additional information to include,
   things that could be explained more fully, and so
   forth. For comments please log a bug on github at 
-  http://github.com/wwivbbs/wwiv 
+  http://github.com/wwivbbs/wwiv/issues
 
  C.   Relevant Copyrights and Acknowledgements
   This document is Copyright 1994 by Wayne Heyward (aka
@@ -126,7 +126,7 @@
   networks and network software.
 
   I would like to thank Wayne Bell, not only for creating a
-  top- notch BBS program that is both powerful and easy to
+  top notch BBS program that is both powerful and easy to
   use, but creating a networking scheme that is more
   painless to set up and operate than any other out there.
   He has said often that if he knew then what he does now,
@@ -179,13 +179,18 @@
  WSS, distributed in netXX.zip by WSS.  Since NET51, the
  network software is a new implementation of a subset of
  this technical specification.  It is not related at all
- in either code or complete functionality to NEW38 and
+ in either code or complete functionality to NET38 and
  earlier.
 
  The basic NETXX software distributed as part of the
- BBS software.  It consists of five programs: NETWORK.EXE, 
- NETWORKB.EXE, NETWORKC.EXE, NETWORKF.EXE, NETWORK1.EXE, 
- NETWORK2.EXE and NETWORK3.EXE.
+ BBS software.  It consists of the following programs: 
+  * network
+  * networkb
+  * networkc
+  * networkf
+  * network1
+  * network2
+  * network3
 
  NETWORK.EXE is a shim to invoke networkb.exe using the
  same arguments as the legacy networking software.
@@ -197,21 +202,21 @@
  Cerebrum Software.  It runs the other network{1,2,3} 
  commands as needed.
 
- NETWORK1.EXE is the first of the two mail tossers.  This
+ network1 is the first of the two mail tossers.  This
  one takes the incoming packet received by NETWORK.EXE and
  distributed the messages within to their rightful places.
  Local mail goes into LOCAL.NET, while mail passing through
  to other systems is tossed into packet files for the next
  hop.
 
- NETWORK2.EXE tosses the local messages in LOCAL.NET.  Most
+ network2 tosses the local messages in LOCAL.NET.  Most
  are messages for email or local subboards, but there are
  also network updates, sub REQuests, software "pings," and
  other special purpose message types.  It also has the
  ability to call on third-party preprocessors for special
  handling of certain types of messages.
 
- NETWORK3.EXE processes all the network updates that come
+ network3 processes all the network updates that come
  in.  This helps determine what routing off-system mail
  will take.
 
@@ -220,7 +225,7 @@
  from the Network Coordinator and Group Coordinators.
  These are the DEmmm.EXE files (mmm corresponding to the
  message type).  The DEmmm.EXE cannot be replaced, so any
- NETWORK2.EXE replacement must be able to recognize the
+ network2 replacement must be able to recognize the
  need for calling the appropriate DEmmm.EXE, as described
  below.
 
@@ -228,11 +233,11 @@
 3. MAKING CONNECTIONS
 ======================================================
 
- A.   With Net51 connections happen outside of the network
- software. You use networkb to call out to another node
- or use networkb to listen on BinkP, or use another
- proxy like wwiv-server or wwivd to invoke networkb
- when receiving a BinkP request.
+ Starting with With Net51, connections happen outside 
+ of the network software. You use networkb to call out
+ to another node or use networkb directly or use a
+ proxy like wwivserver or wwivd to listen on BinkP and
+ spawn networkb on demand.
                
 ======================================================
 4.  MESSAGE PACKETS
@@ -441,7 +446,7 @@ struct net_header_rec {
        in the list, substituting that entry for "tosys"
 
   3.   If tosys is this system, process the file locally
-       (in the case of NETWORK1.EXE, the message is copied
+       (in the case of network1, the message is copied
        to LOCAL.NET for processing by the local packet
        processor).
 
@@ -499,14 +504,14 @@ struct net_header_rec {
   mail file analyzer should place these into an interim
   mail file that will be processed by the netmail file
   analyzer after local mail processing has been completed.
-  The NETXX local mail analyzer (NETWORK2.EXE) puts these
-  messages into P1.001 or P2.001.  Then NETWORK1.EXE
+  The NETXX local mail analyzer (network2) puts these
+  messages into P1.001 or P2.001.  Then network1
   analyzes this file and places them into outgoing netmail
   files for the system's connections.
 
   Some types of messages that contain network related files
   such as updates to the nodelists and connect lists and
-  email to all sysops from the NC or GC.  For the sake of
+  email to all sysops from the NC.  For the sake of
   network security, these messages have a
   source-verification signature at the beginning (using,
   for example, RSA or a similar algorithm). There are
@@ -514,7 +519,7 @@ struct net_header_rec {
   requires a decryption program, or DEmmm.EXE (where "mmm"
   is the encryption method, as listed in the 'method. field
   of the net header).  These DEmmm.EXE files MUST be
-  supplied by the NC or GC of each network, and each
+  supplied by the NC of each network, and each
   network's DEmmm.EXE are unique to that network.  That is,
   NETXX's DE1.EXE will not handle method 1 messages from
   WWIVLink, nor vice versa.
@@ -1108,7 +1113,7 @@ discuss figuring out the routing.
        of this system's connections, who the NC and GC and
        AC are, and so forth).
 
-  The data structure NETxx's NETWORK3.EXE uses for the
+  The data structure NETxx's network3 uses for the
   network data file is:
 
   struct net_system_list_rec {
@@ -1209,7 +1214,7 @@ discuss figuring out the routing.
   platform (such as Hermes for Macintosh), there is no need
   to rewrite all of the software to interface a PC-based
   BBS to a WWIV network.  Since the local mail processor
-  (NETWORK2.EXE) is the only program that writes to BBS
+  (network2) is the only program that writes to BBS
   message bases, that is really the only one needing
   replace ment.  If any of the NETxx programs are used, it
   is essential that all of the supporting data files used
@@ -1232,11 +1237,11 @@ discuss figuring out the routing.
 
   2.   Check for the incoming netmail file (P*.NET).  If
        there isn't one, end processing.  If there is one,
-       run the netmail packet analyzer (NETWORK1.EXE).
+       run the netmail packet analyzer (network1).
 
   3.   Check for the local mail file packet (LOCAL.NET).
        If there is none, end processing.  If there is one,
-       run the local mail packet analyzer (NETWORK2.EXE).
+       run the local mail packet analyzer (network2).
 
   4.   Check again for a netmail packet (outgoing messages
        result ing from local mail processing).  If there is
@@ -1249,7 +1254,7 @@ discuss figuring out the routing.
        filedate of the database file created last time the
        routing analyzer ran.  If one or more of the files
        is new (or there is a partial BBSLIST update), run
-       the routing analyzer (NETWORK3.EXE).
+       the routing analyzer (network3).
 
   If the software cannot be modified to handle these steps,
   it is probably best to use a front-end such as Front Door
@@ -1288,7 +1293,7 @@ discuss figuring out the routing.
   middle indicates that NETWORK.EXE created the file (think
   of it as NETWORK0).  When other NETXX programs generate
   pending netmail files, the middle number indicates which
-  program created it (NETWORK2.EXE, the local mail
+  program created it (network2, the local mail
   processor, would create a pending netmail file named
   P1-2-1.NET).  The main reason for this naming system
   is so that we can tell the source of a P*.NET file being
@@ -1301,7 +1306,7 @@ discuss figuring out the routing.
   user is online, but they are renamed to P*.NET after the
   user logs off.
 
-  The NETWORK1.EXE processes all of the P*.NET files, until
+  The network1 processes all of the P*.NET files, until
   none are left.  It is important that an alternate
   netmail file analyzer be able to recognize and handle any
   P*.NET file, not just Pn.NET.
@@ -1333,5 +1338,5 @@ discuss figuring out the routing.
 
   Naturally, any external message processor or preprocessor
   that generates new outgoing network messages must put
-  them into a P*.NET file so that NETWORK1.EXE can find it
+  them into a P*.NET file so that network1 can find it
   and process it.
