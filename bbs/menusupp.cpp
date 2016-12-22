@@ -369,8 +369,8 @@ void WWIV_PostMessage() {
 void ScanSub() {
   if (a()->usub[0].subnum != -1) {
     write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
-    int i = 0;
-    qscan(a()->current_user_sub_num(), &i);
+    bool nextsub = false;
+    qscan(a()->current_user_sub_num(), nextsub);
   }
 }
 

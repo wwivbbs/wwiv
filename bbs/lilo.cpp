@@ -983,13 +983,13 @@ void logon() {
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
-    int nNextSubNumber = 0;
+    bool nextsub = false;
     if (a()->user()->GetSl() < 255) {
       forcescansub = true;
-      qscan(a()->GetForcedReadSubNumber(), &nNextSubNumber);
+      qscan(a()->GetForcedReadSubNumber(), nextsub);
       forcescansub = false;
     } else {
-      qscan(a()->GetForcedReadSubNumber(), &nNextSubNumber);
+      qscan(a()->GetForcedReadSubNumber(), nextsub);
     }
   }
   CleanUserInfo();

@@ -1174,7 +1174,8 @@ void config_scan_plus(int type) {
           break;
         case 5:
           if (type == 0) {
-            qscan(top + pos, &i);
+            bool nextsub = false;
+            qscan(top + pos, nextsub);
           } else {
             i = a()->current_user_dir_num();
             a()->set_current_user_dir_num(top + pos);

@@ -145,7 +145,6 @@ int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
  * conference.
  */
 void jump_conf(ConferenceType conftype) {
-  int i;
   char s[81], s1[101];
   confrec *cp = nullptr;
   userconfrec *uc = nullptr;
@@ -156,7 +155,7 @@ void jump_conf(ConferenceType conftype) {
   bool abort = false;
   strcpy(s, " ");
   bout.nl();
-  for (i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
+  for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
     sprintf(s1, "|#2%c|#7)|#1 %s", cp[uc[i].confnum].designator,
             stripcolors(reinterpret_cast<char*>(cp[uc[i].confnum].name)));
     bout.bpla(s1, &abort);
@@ -168,7 +167,7 @@ void jump_conf(ConferenceType conftype) {
   bout << "|#2Select [" << &s[1] << ", <space> to quit]: ";
   char ch = onek(s);
   if (ch != ' ') {
-    for (i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
+    for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
       if (ch == cp[uc[i].confnum].designator) {
         setuconf(conftype, i, -1);
         break;

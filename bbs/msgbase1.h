@@ -30,10 +30,12 @@ enum class MsgScanOption {
 void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);
 void post();
 void grab_user_name(messagerec*m, const std::string& file_name, int network_number);
-void scan(int msgnum, MsgScanOption scan_option, int *nextsub, bool title_scan);
-void qscan(int start_subnum, int *next_subnum);
+void qscan(int start_subnum, bool &next_sub);
 void nscan(int start_subnum = 0);
 void ScanMessageTitles();
 void remove_post();
+
+// in msgscan.cpp
+void scan(int msgnum, MsgScanOption scan_option, bool &next_sub, bool title_scan);
 
 #endif  // __INCLUDED_BBS_MSGBASE1_H__

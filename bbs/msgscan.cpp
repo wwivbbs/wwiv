@@ -902,6 +902,22 @@ static void HandleTogglePendingNet(int nMessageNumber, int& val) {
   }
 }
 
+static void HandleRemoveFromNewScan() {
+  const auto subname = a()->subs().sub(a()->current_user_sub().subnum).name;
+  bout << "\r\n|#5Remove '" << subname << "' from your Q-Scan? ";
+  if (yesno()) {
+    qsc_q[a()->current_user_sub().subnum / 32] ^= 
+      (1L << (a()->current_user_sub().subnum % 32));
+    return;
+  }
+
+  bout << "\r\n|#9Mark messages in '" << subname << "' as read? ";
+  if (yesno()) {
+    unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+    qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
+  }
+}
+
 static void HandleToggleUnAnonymous(int nMessageNumber) {
   if (lcs() && nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
     wwiv::bbs::OpenSub opened_sub(true);
@@ -914,7 +930,7 @@ static void HandleToggleUnAnonymous(int nMessageNumber) {
   }
 }
 
-static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOptionType, int *nextsub, bool &bTitleScan, bool &done,
+static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOptionType, bool nextsub, bool &bTitleScan, bool &done,
   bool &quit, int &val) {
   resetnsp();
   string read_prompt = GetScanReadPrompts(nMessageNumber);
@@ -968,31 +984,17 @@ static void HandleScanReadPrompt(int &nMessageNumber, MsgScanOption& nScanOption
     case 'Q':
       quit = true;
       done = true;
-      *nextsub = 0;
+      nextsub = false;
       break;
-    case 'B':
-      if (*nextsub != 0) {
-        bout.nl();
-        bout << "|#5Remove this sub from your Q-Scan? ";
-        if (yesno()) {
-          qsc_q[a()->current_user_sub().subnum / 32] ^= (1L <<
-            (a()->current_user_sub().subnum % 32));
-        } else {
-          bout.nl();
-          bout << "|#9Mark messages in "
-            << a()->subs().sub(a()->current_user_sub().subnum).name
-            << " as read? ";
-          if (yesno()) {
-            unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-            qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
-          }
-        }
-
-        *nextsub = 1;
-        done = true;
-        quit = true;
+    case 'B': {
+      if (!nextsub) {
+        break;
       }
-      break;
+      HandleRemoveFromNewScan();
+      nextsub = true;
+      done = true;
+      quit = true;
+    } break;
     case 'T':
       bTitleScan = true;
       nScanOptionType = MsgScanOption::SCAN_OPTION_LIST_TITLES;
@@ -1119,7 +1121,7 @@ static void query_post() {
   }
 }
 
-static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool title_scan) {
+static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool title_scan) {
   bool done = false;
   int val = 0;
   while (!done) {
@@ -1164,7 +1166,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
     } break;
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
-      case 'Q': done = true; *nextsub = 0; break;
+      case 'Q': done = true; nextsub = false; break;
       case 'A': HandleScanReadAutoReply(msgnum, "A", scan_option); break;
       case 'D': HandleMessageDelete(msgnum); break;
       case 'E': HandleMessageExtract(msgnum); break;
@@ -1193,7 +1195,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, int *nextsub, bool t
   query_post();
 }
 
-void scan(int nMessageNumber, MsgScanOption nScanOptionType, int *nextsub, bool bTitleScan) {
+void scan(int nMessageNumber, MsgScanOption nScanOptionType, bool &nextsub, bool bTitleScan) {
   irt[0] = '\0';
   irt_name[0] = '\0';
 

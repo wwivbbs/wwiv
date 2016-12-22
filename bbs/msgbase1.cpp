@@ -323,7 +323,7 @@ void grab_user_name(messagerec* msg, const std::string& file_name, int network_n
   }
 }
 
-void qscan(int start_subnum, int *next_subnum) {
+void qscan(int start_subnum, bool &nextsub) {
   int sub_number = a()->usub[start_subnum].subnum;
   g_flags &= ~g_flag_made_find_str;
 
@@ -337,7 +337,6 @@ void qscan(int start_subnum, int *next_subnum) {
 
   uint32_t on_disk_last_post = WWIVReadLastRead(sub_number);
   if (!on_disk_last_post || on_disk_last_post > memory_last_read) {
-    int next_netnum = *next_subnum;
     int old_subnum = a()->current_user_sub_num();
     a()->set_current_user_sub_num(start_subnum);
 
@@ -360,14 +359,13 @@ void qscan(int start_subnum, int *next_subnum) {
     if (a()->GetNumMessagesInCurrentMessageArea() > 0
         && i <= a()->GetNumMessagesInCurrentMessageArea()
         && get_post(i)->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
-      scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, &next_netnum, false);
+      scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, nextsub, false);
     } else {
       unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
       qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 
     a()->set_current_user_sub_num(old_subnum);
-    *next_subnum = next_netnum;
     bout << "|#1< " << a()->current_sub().name << " Q-Scan Done >";
     bout.clreol();
     bout.nl();
@@ -391,7 +389,7 @@ void qscan(int start_subnum, int *next_subnum) {
 }
 
 void nscan(int start_subnum) {
-  int next_subnum = 1;
+  bool nextsub = true;
 
   if (start_subnum < 0) {
     // TODO(rushfan): Log error?
@@ -399,21 +397,21 @@ void nscan(int start_subnum) {
   }
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
   for (size_t i = start_subnum; 
-       a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && next_subnum && !hangup;
+       a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && nextsub && !hangup;
        i++) {
     if (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
-      qscan(i, &next_subnum);
+      qscan(i, nextsub);
     }
     bool abort = false;
     checka(&abort);
     if (abort) {
-      next_subnum = 0;
+      nextsub = 0;
     }
   }
   bout.nl();
   bout.clreol();
   bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
-  if (next_subnum && a()->user()->IsNewScanFiles() &&
+  if (nextsub && a()->user()->IsNewScanFiles() &&
       (syscfg.sysconfig & sysconfig_no_xfer) == 0 &&
       (!(g_flags & g_flag_scanned_files))) {
     bout.clear_lines_listed();
@@ -450,12 +448,12 @@ void ScanMessageTitles() {
   } else {
     msgnum--;
   }
-  int next_subnum = 0;
+  bool nextsub = false;
   // 'S' means start reading at the 1st message.
   if (smsgnum == "S") {
-    scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, &next_subnum, true);
+    scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, nextsub, true);
   } else if (msgnum >= 0) {
-    scan(msgnum, MsgScanOption::SCAN_OPTION_LIST_TITLES, &next_subnum, true);
+    scan(msgnum, MsgScanOption::SCAN_OPTION_LIST_TITLES, nextsub, true);
   }
 }
 
