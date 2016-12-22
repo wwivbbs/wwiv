@@ -25,9 +25,7 @@
 
 constexpr uint8_t EMAIL_STORAGE = 2;
 
-extern uint16_t *gat;
-
-void remove_link(messagerec* msg, const std::string fileName);
+void remove_link(const messagerec* msg, const std::string& fileName);
 void savefile(const std::string& text, messagerec* msg, const std::string& fileName);
 bool readfile(messagerec* msg, const std::string& fileName, std::string* out);
 void lineadd(messagerec* msg, const std::string& sx, const std::string fileName);

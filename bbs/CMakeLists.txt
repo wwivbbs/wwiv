@@ -14,7 +14,6 @@ set(COMMON_SOURCES
  automsg.cpp
  batch.cpp
  bbs.cpp
- bbslist.cpp
  bbsovl1.cpp
  bbsovl2.cpp
  bbsovl3.cpp

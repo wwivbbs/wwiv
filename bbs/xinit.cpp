@@ -853,8 +853,6 @@ void Application::InitializeBBS() {
   pStatus->EnsureCallerNumberIsValid();
   statusMgr->CommitTransaction(pStatus);
 
-  gat = static_cast<unsigned short*>(BbsAllocA(2048 * sizeof(uint16_t)));
-
   VLOG(1) << "Reading Gfiles.";
   read_gfile();
 

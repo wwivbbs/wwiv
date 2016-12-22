@@ -21,7 +21,6 @@
 #include <memory>
 #include <string>
 
-#include "bbs/bbslist.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/colors.h"
@@ -65,14 +64,6 @@ public:
 };
 
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
-
-bool UseNewBBSList() {
-  IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
-  if (ini.IsOpen()) {
-    return ini.value<bool>("USE_NEW_BBSLIST", true);
-  }
-  return false;
-}
 
 void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
   static map<string, std::function<void(MenuItemContext& context)>, wwiv::stl::ci_less> functions = CreateCommandMap();
@@ -222,11 +213,7 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       AutoMessage();
     } },
     { "BBSList", [](MenuItemContext& context) {
-      if (UseNewBBSList()) {
-        NewBBSList();
-      } else {
-        LegacyBBSList();
-      }
+      NewBBSList();
     } },
     { "RequestChat", [](MenuItemContext& context) {
       RequestChat();

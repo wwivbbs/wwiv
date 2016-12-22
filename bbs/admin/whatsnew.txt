@@ -99,6 +99,8 @@ What's New in WWIV 5.2 (2016)
   to being on.
 * New Subboard flag (P) to disable the full screen reader for a 
   specific subboard. This is needed for ansi art subs.
+* USE_NEW_BBSLIST is removed from WWIV.INI. All BBS List is the
+  new JSON format.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

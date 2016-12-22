@@ -48,10 +48,8 @@ using namespace wwiv::strings;
 static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
 #define MSG_STARTING (gat_section * GATSECLEN + GAT_SECTION_SIZE)
 
-static long gat_section;
-// this is initialized in xinit, otherwise we can make it static.
-// TODO(rushfan): make it static
-uint16_t *gat = nullptr;
+static long gat_section = -1;
+static uint16_t *gat = new uint16_t[2048]();
 
 /**
 * Opens the message area file {messageAreaFileName} and returns the file handle.
@@ -114,7 +112,7 @@ static void save_gat(File& file) {
 * Deletes a message
 * This is a public function.
 */
-void remove_link(messagerec* msg, string fileName) {
+void remove_link(const messagerec* msg, const string& fileName) {
   switch (msg->storage_type) {
   case 0:
   case 1:
