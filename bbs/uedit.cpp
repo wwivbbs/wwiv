@@ -533,9 +533,8 @@ void uedit(int usern, int other) {
       break;
       case 'F': {
         int network_number = getnetnum_by_type(network_type_t::internet);
-        a()->set_net_num(network_number);
         if (network_number != -1) {
-          set_net_num(a()->net_num());
+          a()->set_net_num(network_number);
           bout << "Current Internet Address\r\n:" << user.GetEmailAddress() << wwiv::endl;
           bout << "New Address\r\n:";
           inputl(s, 75);
@@ -543,7 +542,7 @@ void uedit(int usern, int other) {
             if (check_inet_addr(s)) {
               user.SetEmailAddress(s);
               write_inet_addr(s, user_number);
-              user.SetForwardNetNumber(a()->net_num());
+              user.SetForwardNetNumber(network_number);
             } else {
               bout.nl();
               bout << "Invalid format.\r\n";

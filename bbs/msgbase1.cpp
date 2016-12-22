@@ -86,10 +86,6 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     message_length = nhorig.length - strlen(pPostRecord->title) - 1;
   }
   unique_ptr<char[]> b1(new char[nhorig.length + 100]);
-  if (!b1) {
-    set_net_num(orig_netnum);
-    return;
-  }
   strcpy(b1.get(), pPostRecord->title);
   memmove(&(b1[strlen(pPostRecord->title) + 1]), text.c_str(), message_length);
 

@@ -107,6 +107,7 @@ void send_inet_email() {
   if (network_number == -1) {
     return;
   }
+  // TODO(rushfan): I can't see why this line is needed since it's done 3 lines above too.
   set_net_num(a()->net_num());
   bout.nl();
   bout << "|#9Your Internet Address:|#1 "
@@ -185,34 +186,35 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   inetAddrFile.Close();
   char szDefaultUserAddr[255];
   sprintf(szDefaultUserAddr, "USER%d", user_number);
-  a()->set_net_num(getnetnum_by_type(network_type_t::internet));
-  if (a()->net_num() != -1) {
-    set_net_num(a()->net_num());
-    TextFile in(a()->network_directory(), ACCT_INI, "rt");
-    TextFile out(a()->temp_directory(), ACCT_INI, "wt+");
-    if (in.IsOpen() && out.IsOpen()) {
-      char szLine[260];
-      while (in.ReadLine(szLine, 255)) {
-        char szSavedLine[260];
-        bool match = false;
-        strcpy(szSavedLine, szLine);
-        char* ss = strtok(szLine, "=");
-        if (ss) {
-          StringTrim(ss);
-          if (IsEqualsIgnoreCase(szLine, szDefaultUserAddr)) {
-            match = true;
-          }
-        }
-        if (!match) {
-          out.WriteFormatted(szSavedLine);
+  auto inet_net_num = getnetnum_by_type(network_type_t::internet);
+  if (inet_net_num < 0) {
+    return;
+  }
+  a()->set_net_num(inet_net_num);
+  TextFile in(a()->network_directory(), ACCT_INI, "rt");
+  TextFile out(a()->temp_directory(), ACCT_INI, "wt+");
+  if (in.IsOpen() && out.IsOpen()) {
+    char szLine[260];
+    while (in.ReadLine(szLine, 255)) {
+      char szSavedLine[260];
+      bool match = false;
+      strcpy(szSavedLine, szLine);
+      char* ss = strtok(szLine, "=");
+      if (ss) {
+        StringTrim(ss);
+        if (IsEqualsIgnoreCase(szLine, szDefaultUserAddr)) {
+          match = true;
         }
       }
-      out.WriteFormatted("\nUSER%d = %s", user_number, internet_address.c_str());
-      in.Close();
-      out.Close();
+      if (!match) {
+        out.WriteFormatted(szSavedLine);
+      }
     }
-    File::Remove(in.full_pathname());
-    copyfile(out.full_pathname(), in.full_pathname(), false);
-    File::Remove(out.full_pathname());
+    out.WriteFormatted("\nUSER%d = %s", user_number, internet_address.c_str());
+    in.Close();
+    out.Close();
   }
+  File::Remove(in.full_pathname());
+  copyfile(out.full_pathname(), in.full_pathname(), false);
+  File::Remove(out.full_pathname());
 }

@@ -663,9 +663,8 @@ static void modify_mailbox() {
   }
   if (a()->user()->GetSl() >= syscfg.newusersl) {
     int network_number = getnetnum_by_type(network_type_t::internet);
-    a()->set_net_num(network_number);
     if (network_number != -1) {
-      set_net_num(a()->net_num());
+      a()->set_net_num(network_number);
       bout << "|#5Do you want to forward to your Internet address? ";
       if (yesno()) {
         bout << "|#3Enter the Internet E-Mail Address.\r\n|#9:";
@@ -673,7 +672,7 @@ static void modify_mailbox() {
         if (check_inet_addr(entered_address)) {
           a()->user()->SetEmailAddress(entered_address.c_str());
           write_inet_addr(entered_address, a()->usernum);
-          a()->user()->SetForwardNetNumber(a()->net_num());
+          a()->user()->SetForwardNetNumber(network_number);
           a()->user()->SetForwardToInternet();
           bout << "\r\nSaved.\r\n\n";
         }
