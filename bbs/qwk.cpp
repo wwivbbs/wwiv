@@ -1348,9 +1348,15 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         nfile[0] = 0;
       }
 
+      if (File::Exists(nfile)) {
+        bout << "|#5File Exists. Would you like to overrite it?";
+        if (yesno()) {
+          File::Remove(nfile);
+        }
+      }
+
       if (!replacefile(parem1, nfile)) {
-        bout.Color(7);
-        bout.bprintf("Try again?");
+        bout << "|#6Unable to copy file\r\n|#5Would you like to try again?";
         if (!noyes()) {
           qwk_info->abort = 1;
           done = 1;

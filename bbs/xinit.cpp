@@ -379,7 +379,7 @@ void Application::ReadINIFile(IniFile& ini) {
     attach_dir_.push_back(File::pathSeparatorChar);
   }
 
-  screen_saver_time = ini.value<uint16_t>(get_key_str(INI_STR_SCREEN_SAVER_TIME), screen_saver_time);
+  screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
 
   max_extend_lines = std::min<uint16_t>(max_extend_lines, 99);
   max_batch  = std::min<uint16_t>(max_batch , 999);
