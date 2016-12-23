@@ -29,7 +29,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "networkb/wfile_transfer_file.h"
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/fido/fido_address.h"
 
 using std::string;
@@ -37,7 +37,6 @@ using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::strings;
-using namespace wwiv::net::fido;
 using namespace wwiv::sdk::fido;
 
 namespace wwiv {

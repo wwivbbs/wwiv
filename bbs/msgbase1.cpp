@@ -38,6 +38,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/datetime.h"
+#include "sdk/ftn_msgdupe.h"
 #include "sdk/status.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/subscribers.h"
@@ -130,7 +131,7 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   set_net_num(orig_netnum);
 }
 
-void post() {
+void post(const PostData& post_data) {
   if (!iscan(a()->current_user_sub_num())) {
     bout << "\r\n|#6A file required is in use by another instance. Try again later.\r\n";
     return;
@@ -155,7 +156,7 @@ void post() {
   }
 
   MessageEditorData data;
-  messagerec m;
+  messagerec m{};
   m.storage_type = static_cast<unsigned char>(a()->current_sub().storage_type);
   data.anonymous_flag = a()->subs().sub(a()->GetCurrentReadMessageArea()).anony & 0x0f;
   if (data.anonymous_flag == 0 && getslrec(a()->GetEffectiveSl()).ability & ability_post_anony) {
@@ -199,14 +200,25 @@ void post() {
   if (strlen(irt_name) > 0) {
     data.to_name = irt_name;
   }
-  if (strlen(irt) > 0) {
-    //data.title = irt;
-  }
   data.need_title = true;
 
   if (!inmsg(data)) {
     m.stored_as = 0xffffffff;
     return;
+  }
+
+  // Additions for MSGID reply.
+  if (!post_data.reply.text.empty()) {
+    // We're handling a reply.
+    const auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(post_data.reply.text);
+    if (!msgid.empty()) {
+      // Remove 
+      if (!data.text.empty() && data.text.back() == CZ) {
+        data.text.pop_back();
+      }
+      data.text += StrCat("\004", "0REPLY: ", msgid);
+      data.text.push_back(CZ);
+    }
   }
   savefile(data.text, &m, data.aux);
 

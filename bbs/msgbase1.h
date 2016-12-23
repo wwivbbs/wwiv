@@ -18,11 +18,27 @@
 #ifndef __INCLUDED_BBS_MSGBASE1_H__
 #define __INCLUDED_BBS_MSGBASE1_H__
 
+#include <string>
+
 #include "sdk/vardec.h"
 #include "sdk/subxtr.h"
 
+class PostReplyInfo {
+public:
+  std::string text;
+  std::string name;
+  std::string title;
+};
+
+class PostData {
+public:
+  explicit PostData(const PostReplyInfo& i) : reply(i) {}
+  PostData() : PostData(PostReplyInfo()) {}
+  PostReplyInfo reply;
+};
+
 void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);
-void post();
+void post(const PostData& data);
 void grab_user_name(messagerec*m, const std::string& file_name, int network_number);
 void qscan(int start_subnum, bool &next_sub);
 void nscan(int start_subnum = 0);

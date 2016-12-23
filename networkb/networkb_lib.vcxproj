@@ -120,7 +120,6 @@
     <ClCompile Include="binkp_commands.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="cram.cpp" />
-    <ClCompile Include="fido_util.cpp" />
     <ClCompile Include="file_manager.cpp" />
     <ClCompile Include="net_log.cpp" />
     <ClCompile Include="net_util.cpp" />

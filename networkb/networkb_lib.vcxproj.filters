@@ -50,9 +50,6 @@
     <ClCompile Include="packets.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="fido_util.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="file_manager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

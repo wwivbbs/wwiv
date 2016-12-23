@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 
 #include <chrono>
 #include <iostream>
@@ -43,7 +43,7 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv {
-namespace net {
+namespace sdk {
 namespace fido {
 
 // We use DDHHMMSS like SBBSECHO does.

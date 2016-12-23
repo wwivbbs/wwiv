@@ -112,6 +112,9 @@
     <ClInclude Include="msgapi\message_utils_wwiv.h">
       <Filter>Header Files\msgapi</Filter>
     </ClInclude>
+    <ClInclude Include="fido\fido_util.h">
+      <Filter>Header Files\fido</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -128,6 +131,9 @@
     </Filter>
     <Filter Include="Source Files\fido">
       <UniqueIdentifier>{7ae92491-f7c7-44d1-85d0-a81eb681a841}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\fido">
+      <UniqueIdentifier>{69a20933-7e0e-4e42-b7e7-a3bcf5d6bd64}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -210,6 +216,9 @@
       <Filter>Source Files\fido</Filter>
     </ClCompile>
     <ClCompile Include="fido\nodelist.cpp">
+      <Filter>Source Files\fido</Filter>
+    </ClCompile>
+    <ClCompile Include="fido\fido_util.cpp">
       <Filter>Source Files\fido</Filter>
     </ClCompile>
   </ItemGroup>

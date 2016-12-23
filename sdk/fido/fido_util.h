@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_NETWORKB_FIDO_UTIL_H__
-#define __INCLUDED_NETWORKB_FIDO_UTIL_H__
+#ifndef __INCLUDED_SDK_FIDO_FIDO_UTIL_H__
+#define __INCLUDED_SDK_FIDO_FIDO_UTIL_H__
 
 #include <ctime>
 #include <set>
@@ -30,7 +30,7 @@
 #include "sdk/fido/fido_packets.h"
 
 namespace wwiv {
-namespace net {
+namespace sdk {
 namespace fido {
 
 std::string packet_name(time_t now);
@@ -107,4 +107,4 @@ private:
 }  // namespace net
 }  // namespace wwiv
 
-#endif  // __INCLUDED_NETWORKB_FIDO_UTIL_H__
+#endif  // __INCLUDED_SDK_FIDO_FIDO_UTIL_H__

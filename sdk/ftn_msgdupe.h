@@ -20,6 +20,7 @@
 
 #include <string>
 #include <set>
+#include <vector>
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/fido/fido_address.h"
@@ -40,6 +41,14 @@ public:
   bool remove(uint32_t header_crc32, uint32_t msgid_crc32);
   bool is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const;
   bool is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const;
+
+  /** Returns the MSGID from this message or an empty string. */
+  static std::string GetMessageIDFromText(const std::string& text);
+  /**
+   * Returns the MSGID from this message in WWIV format 
+   * (^D0MSGID vs. ^AMSGID) or an empty string.
+   */
+  static std::string GetMessageIDFromWWIVText(const std::string& text);
 
 private:
   bool Load();

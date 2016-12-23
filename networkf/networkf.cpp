@@ -44,7 +44,7 @@
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
 #include "networkb/net_util.h"
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 #include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 
@@ -71,9 +71,9 @@ using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
-using namespace wwiv::net::fido;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;

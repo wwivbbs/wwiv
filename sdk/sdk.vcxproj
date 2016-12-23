@@ -21,6 +21,7 @@
     <ClInclude Include="fido\fido_address.h" />
     <ClInclude Include="fido\fido_callout.h" />
     <ClInclude Include="fido\fido_packets.h" />
+    <ClInclude Include="fido\fido_util.h" />
     <ClInclude Include="fido\nodelist.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="msdos_stdint.h" />
@@ -60,6 +61,7 @@
     <ClCompile Include="fido\fido_address.cpp" />
     <ClCompile Include="fido\fido_callout.cpp" />
     <ClCompile Include="fido\fido_packets.cpp" />
+    <ClCompile Include="fido\fido_util.cpp" />
     <ClCompile Include="fido\nodelist.cpp" />
     <ClCompile Include="msgapi\email_wwiv.cpp" />
     <ClCompile Include="msgapi\message_api.cpp" />

@@ -29,7 +29,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 
 using std::chrono::seconds;
 using std::chrono::system_clock;
@@ -37,7 +37,7 @@ using std::clog;
 using std::endl;
 using std::string;
 using namespace wwiv::core;
-using namespace wwiv::net::fido;
+using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
 namespace wwiv {

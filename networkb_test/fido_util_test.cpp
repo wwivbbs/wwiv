@@ -20,7 +20,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/fido/fido_address.h"
 
 #include <cstdint>
@@ -31,8 +31,6 @@ using std::endl;
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::strings;
-using namespace wwiv::net;
-using namespace wwiv::net::fido;
 using namespace wwiv::sdk::fido;
 
 class FidoUtilTest: public testing::Test {

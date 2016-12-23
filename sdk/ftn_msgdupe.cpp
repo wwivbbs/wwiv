@@ -30,12 +30,11 @@
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 #include "sdk/fido/fido_packets.h"
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::stl;
-using namespace wwiv::net::fido;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
@@ -104,17 +103,37 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
   return StringPrintf("%s %08X", address_string.c_str(), msg_num);
 }
 
-static string GetMessageIDFromText(const std::string& text) {
+//static 
+std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
   static const string kMSGID = "MSGID: ";
-  std::vector<std::string> lines = wwiv::net::fido::split_message(text);
+  std::vector<std::string> lines = wwiv::sdk::fido::split_message(text);
   for (const auto& line : lines) {
     if (line.empty() || line.front() != '\001' || line.size() < 2) {
       continue;
     }
-    string s = line.substr(1);
+    auto s = line.substr(1);
     if (starts_with(s, kMSGID)) {
       // Found the message ID, mail here.
-      string msgid = s.substr(kMSGID.size());
+      auto msgid = s.substr(kMSGID.size());
+      StringTrim(&msgid);
+      return msgid;
+    }
+  }
+  return "";
+}
+
+//static 
+std::string FtnMessageDupe::GetMessageIDFromWWIVText(const std::string& text) {
+  static const string kMSGID = "0MSGID: ";
+  std::vector<std::string> lines = wwiv::sdk::fido::split_message(text);
+  for (const auto& line : lines) {
+    if (line.empty() || line.front() != '\004' || line.size() < 2) {
+      continue;
+    }
+    auto s = line.substr(1);
+    if (starts_with(s, kMSGID)) {
+      // Found the message ID, mail here.
+      auto msgid = s.substr(kMSGID.size());
       StringTrim(&msgid);
       return msgid;
     }
@@ -132,7 +151,7 @@ static bool crc32(const FidoPackedMessage& msg, uint32_t& header_crc32, uint32_t
   s << msg.vh.to_user_name << "\r\n";
 
   header_crc32 = crc32string(s.str());
-  string msgid = GetMessageIDFromText(msg.vh.text);
+  string msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
   msgid_crc32 = crc32string(msgid);
   return true;
 }

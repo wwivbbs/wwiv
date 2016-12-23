@@ -24,7 +24,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
 #include "sdk/net.h"
@@ -34,7 +34,6 @@ using std::cout;
 using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
-using namespace wwiv::net::fido;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 

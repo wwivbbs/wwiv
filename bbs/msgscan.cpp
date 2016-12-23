@@ -786,7 +786,11 @@ void HandleMessageReply(int &nMessageNumber) {
   if (!m.title.empty()) {
     to_char_array(irt, m.title);
   }
-  post();
+  PostReplyInfo r;
+  r.name = m.from_user_name;
+  r.title = m.title;
+  r.text = m.message_text;
+  post(PostData(r));
   resynch(&nMessageNumber, &p2);
   grab_quotes(nullptr, nullptr);
 }
@@ -1016,7 +1020,7 @@ static void HandleScanReadPrompt(int &msgnum, MsgScanOption& nScanOptionType, bo
     case 'L': HandleMessageLoad(); break;
     case 'M': HandleMessageMove(msgnum); break;
     case 'N': HandleToggleAutoPurge(msgnum); break;
-    case 'P': irt[0] = '\0'; irt_name[0] = '\0'; post(); break;
+    case 'P': irt[0] = '\0'; irt_name[0] = '\0'; post(PostData()); break;
     case 'U': HandleToggleUnAnonymous(msgnum); break;
     case 'V': HandleValUser(msgnum); break;
     case 'W': HandleMessageReply(msgnum); break;
@@ -1089,7 +1093,7 @@ static void query_post() {
     irt_name[0] = '\0';
     grab_quotes(nullptr, nullptr);
     if (yesno()) {
-      post();
+      post(PostData());
     }
   }
 }
@@ -1148,7 +1152,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
       case 'L': HandleMessageLoad(); break;
       case 'M': HandleMessageMove(msgnum); break;
       case 'N': HandleToggleAutoPurge(msgnum); break;
-      case 'P': { irt[0] = '\0'; irt_name[0] = '\0'; post(); } break;
+      case 'P': { irt[0] = '\0'; irt_name[0] = '\0'; post(PostData()); } break;
       case 'U': HandleToggleUnAnonymous(msgnum); break;
       case 'V': HandleValUser(msgnum); break;
       case 'W': HandleMessageReply(msgnum); break;

@@ -28,7 +28,7 @@
 
 #include <core/file.h>
 
-#include "networkb/fido_util.h"
+#include "sdk/fido/fido_util.h"
 #include "networkb/transfer_file.h"
 
 namespace wwiv {
@@ -44,11 +44,11 @@ public:
   bool GetChunk(char* chunk, std::size_t start, std::size_t size) override final;
   bool WriteChunk(const char* chunk, std::size_t size) override final;
   virtual bool Close() override final;
-  void set_flo_file(std::unique_ptr<wwiv::net::fido::FloFile>&& f) { flo_file_ = std::move(f); }
+  void set_flo_file(std::unique_ptr<wwiv::sdk::fido::FloFile>&& f) { flo_file_ = std::move(f); }
 
  private:
   std::unique_ptr<File> file_; 
-  std::unique_ptr<wwiv::net::fido::FloFile> flo_file_;
+  std::unique_ptr<wwiv::sdk::fido::FloFile> flo_file_;
 };
 
 

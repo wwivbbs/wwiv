@@ -362,7 +362,7 @@ void WWIV_PostMessage() {
   irt_name[0] = 0;
   grab_quotes(nullptr, nullptr);
   if (a()->usub[0].subnum != -1) {
-    post();
+    post(PostData());
   }
 }
 

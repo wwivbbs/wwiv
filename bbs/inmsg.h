@@ -32,6 +32,7 @@ public:
   MessageEditorData() {}
   ~MessageEditorData() {}
 
+  // Title to use. If set it will be used without prompting the user.
   std::string title;
   std::string to_name;  // szDestination (to or sub name)
 
