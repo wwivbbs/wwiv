@@ -234,7 +234,33 @@ std::string WWIVToFidoText(const std::string& wt) {
   if (!temp.empty() && temp.back() == '\x1a') {
     temp.pop_back();
   }
-  return temp;
+
+  // Split this into lines, then we'll handle converting of
+  // WWIV style control codes to FTN style kludges as needed.
+  const auto lines = SplitString(temp, "\r");
+  std::ostringstream out;
+  for (auto line : lines) {
+    if (!line.empty() && line.front() == 0x04 && line.size() > 2) {
+      // WWIV style control code.
+      char code = line.at(1);
+      if (code < '0' || code > '9') {
+        // Bogus control-D line, let's skip.
+        VLOG(1) << "Invalid control-D line: '" << line << "'";
+        continue;
+      }
+      // Strip WWIV control off.
+      line = line.substr(2);
+      if (code == '0') {
+        if (starts_with(line, "MSGID:") || starts_with(line, "REPLY:") || starts_with(line, "PID:")) {
+          out << "\001" << line << "\r";
+        }
+        // Skip all ^D0 lines other than ones we know.
+        continue;
+      }
+    }
+    out << line << "\r";
+  }
+  return out.str();
 }
 
 FidoAddress get_address_from_single_line(const std::string& line) {
