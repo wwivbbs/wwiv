@@ -103,7 +103,6 @@
     <ClInclude Include="automsg.h" />
     <ClInclude Include="batch.h" />
     <ClInclude Include="bbs.h" />
-    <ClInclude Include="bbslist.h" />
     <ClInclude Include="bbsovl1.h" />
     <ClInclude Include="bbsovl2.h" />
     <ClInclude Include="bbsovl3.h" />

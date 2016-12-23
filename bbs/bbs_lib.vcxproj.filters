@@ -508,9 +508,6 @@
     <ClInclude Include="automsg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bbslist.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="menu_parser.h">
       <Filter>Header Files</Filter>
     </ClInclude>
