@@ -221,7 +221,6 @@
     <ClCompile Include="automsg.cpp" />
     <ClCompile Include="batch.cpp" />
     <ClCompile Include="bbs.cpp" />
-    <ClCompile Include="bbslist.cpp" />
     <ClCompile Include="bbsovl1.cpp" />
     <ClCompile Include="bbsovl2.cpp" />
     <ClCompile Include="bbsovl3.cpp" />

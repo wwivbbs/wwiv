@@ -19,9 +19,6 @@
     <ClCompile Include="bbs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bbslist.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="bbsovl1.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
