@@ -558,6 +558,9 @@ void readmail(int mode) {
         msg.title = m.title;
         msg.message_number = curmail + 1;
         msg.total_messages = mw;
+        // We set this to false since we do *not* want to use the
+        // command handling from the full screen reader.
+        msg.use_msg_command_handler = false;
         if (a()->current_net().type == network_type_t::ftn) {
           // Set email name to be the to address.
           // This is also done above in grab_user_name, but we should stop using

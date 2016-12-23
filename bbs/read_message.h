@@ -52,6 +52,7 @@ struct Type2MessageData {
   uint8_t message_anony = 0;
   // Any special flags from the subboad. So far only anony.no_fulscreen
   uint8_t subboard_flags = 0;
+  bool use_msg_command_handler = true;
 };
 
 Type2MessageData read_type2_message(

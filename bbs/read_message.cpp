@@ -563,6 +563,10 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
     fs.ClearCommandLine();
     bout.GotoXY(1, fs.command_line_y());
+    if (!msg.use_msg_command_handler) {
+      result.option = ReadMessageOption::NEXT_MSG;
+      return result;
+    }
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
     int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t st, int s) { 
       if (st == bgetch_timeout_status_t::WARNING) {
