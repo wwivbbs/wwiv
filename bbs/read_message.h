@@ -47,6 +47,11 @@ struct Type2MessageData {
   int message_number = 0;
   int total_messages = 0;
   std::string message_area;
+
+  // mailrec.anony flag.
+  uint8_t message_anony = 0;
+  // Any special flags from the subboad. So far only anony.no_fulscreen
+  uint8_t subboard_flags = 0;
 };
 
 Type2MessageData read_type2_message(
@@ -74,7 +79,7 @@ struct ReadMessageResult {
   int lines_end = 20;
 };
 
-ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* next);
+ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next);
 
 ReadMessageResult read_post(int n, bool *next, int *val);
 

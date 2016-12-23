@@ -333,6 +333,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     to_char_array(irt_name, data.from_user_name);
   }
 
+  data.message_anony = an;
   return data;
 }
 
@@ -676,24 +677,27 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   return result;
 }
 
-ReadMessageResult display_type2_message(Type2MessageData& msg, char an, bool* next) {
-  if (a()->experimental_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader)) {
-    return display_type2_message_new(msg, an, next);
-  }
-
+void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
+  auto info = display_type2_message_header(msg);
+  bout.lines_listed_ = info.num_header_lines();
   g_flags &= ~g_flag_ansi_movement;
   *next = false;
   g_flags |= g_flag_disable_mci;
-  if (an == 0) {
+  if (msg.message_anony == 0) {
     g_flags &= ~g_flag_disable_mci;
   }
-
-
-  auto info = display_type2_message_header(msg);
-  bout.lines_listed_ = info.num_header_lines();
-
   display_message_text(msg.message_text, next);
   g_flags &= ~g_flag_disable_mci;
+}
+
+ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
+  auto fsreader_enabled = a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
+  auto skip_fs_reader_per_sub = (msg.subboard_flags & anony_no_fullscreen) != 0;
+  if (fsreader_enabled && !skip_fs_reader_per_sub) {
+    return display_type2_message_new(msg, static_cast<char>(msg.message_anony), next);
+  }
+
+  display_type2_message_old_impl(msg, next);
 
   ReadMessageResult result{};
   result.lines_start = 1;
@@ -734,21 +738,22 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
 
   postrec p = *get_post(n);
   bool bReadit = (lcs() || (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
+  const auto& cs = a()->current_sub();
   auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
-    a()->current_sub().filename.c_str(), p.ownersys, p.owneruser);
-
+    cs.filename.c_str(), p.ownersys, p.owneruser);
+  m.subboard_flags = cs.anony;
   if (forcescansub) {
     m.flags.insert(MessageFlags::FORCED);
   }
 
   m.message_number = n;
   m.total_messages = a()->GetNumMessagesInCurrentMessageArea();
-  m.message_area = a()->current_sub().name;
+  m.message_area = cs.name;
 
-  if (a()->current_sub().nets.empty()) {
+  if (cs.nets.empty()) {
     m.flags.insert(MessageFlags::LOCAL);
   }
-  for (const auto& nets : a()->current_sub().nets) {
+  for (const auto& nets : cs.nets) {
     const auto& net = a()->net_networks[nets.net_num];
     if (net.type == network_type_t::ftn) {
       m.flags.insert(MessageFlags::FTN);
@@ -783,7 +788,7 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
     if (p.status & status_post_new_net) {
       set_net_num(network_number_from(&p));
     }
-    result = display_type2_message(m, static_cast<char>(p.anony & 0x0f), next);
+    result = display_type2_message(m, next);
 
     if (saved_net_num != a()->net_num()) {
       set_net_num(saved_net_num);

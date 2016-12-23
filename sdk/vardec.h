@@ -833,7 +833,9 @@ struct batchrec {
 #define anony_val_net               0x10
 #define anony_ansi_only             0x20
 #define anony_no_tag                0x40
-#define unused_anony_require_sv     0x80
+// Don't use the full screen reader for displaying message text.
+// This is used for ANSI art subs.
+#define anony_no_fullscreen         0x80
 
 // postrec.anony, mailrec.anony
 #define anony_sender                0x01
@@ -920,6 +922,7 @@ struct batchrec {
 //#define g_flag_pipe_colors        0x00000010
 #define g_flag_allow_extended       0x00000020
 #define g_flag_disable_mci          0x00000040
+// Used to tell the message reader that ANSI movement has occurred.
 #define g_flag_ansi_movement        0x00000080
 
 struct ext_desc_type {

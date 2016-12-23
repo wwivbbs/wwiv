@@ -192,9 +192,10 @@ static void modify_sub(int n) {
     bout << "|#9M) Req ANSI   : |#2" << YesNoString((r.anony & anony_ansi_only) ? true : false) << wwiv::endl;
     bout << "|#9N) Disable tag: |#2" << YesNoString((r.anony & anony_no_tag) ? true : false) << wwiv::endl;
     bout << "|#9O) Description: |#2" << ((!a()->subs().sub(n).desc.empty()) ? a()->subs().sub(n).desc : "None.") << wwiv::endl;
+    bout << "|#9P) Disable FS:  |#2" << YesNoString((r.anony & anony_no_fullscreen) ? true : false) << wwiv::endl;
     bout.nl();
     bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1O|#7,|#1[|#7=|#1Prev|#7,|#1]|#7=|#1Next|#7) : ";
-    char ch = onek("QABCDEFGHIJKLMNO[]", true);
+    char ch = onek("QABCDEFGHIJKLMNOP[]", true);
     bout.nl();
     switch (ch) {
     case 'Q':
@@ -421,18 +422,17 @@ static void modify_sub(int n) {
     case 'O': {
       bout.nl();
       bout << "|#2Enter new Description : \r\n|#7:";
-      string description = Input1(a()->subs().sub(n).desc, 60, true, InputMode::MIXED);
-      if (!description.empty()) {
-        a()->subs().sub(n).desc = description;
-      } else {
-        bout.nl();
-        bout << "|#2Delete Description? ";
-        if (yesno()) {
-          a()->subs().sub(n).desc[0] = 0;
-        }
-      }
+      a()->subs().sub(n).desc = Input1(a()->subs().sub(n).desc, 60, true, InputMode::MIXED);
     }
     break;
+    case 'P':
+      bout.nl();
+      bout << "|#5Disable the Full Screen Reader for this sub? ";
+      r.anony &= ~anony_no_fullscreen;
+      if (yesno()) {
+        r.anony |= anony_no_fullscreen;
+      }
+      break;
     }
   } while (!done && !hangup);
   a()->subs().set_sub(n, r);

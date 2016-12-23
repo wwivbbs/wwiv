@@ -164,7 +164,7 @@ static void print_cur_stat() {
       ((a()->user()->GetEmailAddress()[0] == '\0') ? "None." : a()->user()->GetEmailAddress());
   bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << a()->user()->GetOptionalVal() << " "
        << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
-  if (a()->experimental_read_prompt()) {
+  if (a()->fullscreen_read_prompt()) {
     bout << "|#1G|#9) Message Reader    : |#2" << (a()->user()->HasStatusFlag(User::fullScreenReader) ? "Full-Screen" : "Traditional") << wwiv::endl;;
   }
   bout << "|#1I|#9) Internet Address  : |#2" << internet_email_address << wwiv::endl;
@@ -747,7 +747,7 @@ void defaults(wwiv::menus::MenuInstanceData* menudata) {
     if (okansi()) {
       bout << "|#9Defaults: ";
       string allowable = "Q?123456789ABCIKLMSTUW";
-      if (a()->experimental_read_prompt()) {
+      if (a()->fullscreen_read_prompt()) {
         allowable.push_back('G');
       }
       ch = onek(allowable, true);

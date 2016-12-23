@@ -247,8 +247,7 @@ SUBS.XTR FILE.
                                                             
     You can now gate subboards among networks your system   
 is a member of.  This is done in //BOARDEDIT, simply by     
-entering net info for multiple networks.  In order to       
-support sub gating, you need to be using net32 or later.    
+entering net info for multiple networks.    
 Do not try listing different sub types in the same network, 
 as it probably won't work. Gating DOES work with            
 net-validation.  You can gate subs as either the host or    
@@ -257,18 +256,9 @@ you really have a good reason, and know what you're doing.
 Additionally, you need the permission of the original sub   
 host in order to gate messages.                             
                                                             
-   You can now net subboards by sub name (instead of just   
-sub type).  A sub name is 1-7 chars of upper-case letters   
-and numbers, and doesn't start with a number.  Note that in 
-order to use sub-by-name, the host AND all subscribers      
-need to be using v4.22 (or later) AND net32 (or later).     
-Other than that, subs-by-name works the same as subs-by-    
-number.  Because of changes being made by the telephone     
-companies (see Section 10 - Future Directions), it may soon 
-be necessary to run v4.22 or better in order to be able to  
-use the sub-by-name feature in almost all networks.  There  
-may even be a MANDATORY UPGRADE of both WWIV software and   
-NET VERSION in the near future as a result of these changes.
+   You must now net subboards by sub name (instead of just   
+sub type). A sub name is 1-7 chars of upper-case letters   
+and numbers, and doesn't start with a number.
                                                             
 If you connect to the same system number in multiple        
 networks, you can now force a callout to either one (you    
@@ -307,24 +297,10 @@ NETWORKS.LST file included with this documentation to
 determine if a "contact person" has been designated for the 
 network you are interested in.
 
-    The node number should be entered in INIT under Option  
-N.  You may wish to enter information in INIT for a "Net
-low time" and "Net high time".  If you do this, it means    
-that beginning at the low time and ending with the high     
-time, a user who attempts to log in will receive a message  
-indicating that your board is only accepting network calls  
-during that time period.  For example,                      
-                                                            
-                 Net low time     : 03:00                   
-                 Net high time    : 05:00                   
-                                                            
-would indicate that the network time period is from 3am to  
-5am.  Military times are used to indicate time periods in   
-the network.                                                
-    Also, in INIT option 1, you should insure that your     
+    The node number should be entered in INIT under the
+network settings. You should also insure that your     
 board name and telephone number are entered exactly as they 
-are shown in the BBSLIST.### or the BBSLIST.NET file which  
-are also discussed later.                                   
+are shown in the BBSLIST.NET file which are also discussed later.                                   
                                                             
 =============                                               
  CALLOUT.NET                                               
@@ -341,23 +317,6 @@ the following format:
                                                             
    Each of these options is discussed in turn.  The node is 
 the node number of the board you are connecting with.       
-
-========                                                    
- Macros                                                     
-========                                                    
-    Macros are often used to achieve special purposes.      
-These purposes include (a) connecting with another board    
-in your area code where it is necessary to dial 1 before    
-dialing the board number, (b) using a telephone service     
-such as PcPursuit where special numbers, passwords, etc.,   
-must be sent, (c) connecting with another board that is     
-running WWIV as some form of door (i.e., WWIV is not        
-answering the phone--instead some other software answers).  
-                                                            
-   The macro to use is designated in the CALLOUT.NET by %x  
-where x is an integer number.  The macro should then be     
-provided in the DATA directory under the name Mx.NET where  
-x is the same number.                                       
                                                             
 ==================
  Transmit Options
@@ -444,9 +403,7 @@ parameters are illustrated below:
 am and 5 am.  Times are specified in 24 hour time.  Mid-    
 night is specified as 0.
 
-                                    
-                                                            
-     These parameters are useful if you are having a        
+  These parameters are useful if you are having a        
 connection with a board that runs a NET TIME PERIOD or to   
 insure that local connections take place during non-busy    
 hours.  If none of these time delimiting parameters are     
@@ -460,20 +417,17 @@ used for local connections if desired.
 ===========
  Passwords                                                  
 ===========
-   You should not enter a password in your CALLOUT.NET.     
-The network software will generate a password between the   
-two systems once there is a successful connection.  This    
-is one way that you can tell whether or not your system     
-has connected with the other. If there is a password        
-present, there has been a connection. For more              
-information on passwords, see the section on Trouble        
+   You should enter the password in your CALLOUT.NET that
+you and your connection agreed upon.     
+For more information on passwords, see the section on Trouble        
 Shooting NetWork Connections.  Also note that the password  
 will be in quotation marks as the last item on each line    
 of CALLOUT.NET.  If you lose your password for some reason  
 such as corrupt files or hard disk failure, you will need   
 to contact the other sysop to have the password removed     
 from his CALLOUT.NET file so that a new one may be          
-established.                                                
+established.     
+
 ==================
  Network Software                                          
 ==================
@@ -514,79 +468,13 @@ create this file.  All that is necessary is to create a
 file name of BBSLIST.NET and put a single space inside of   
 it and save it.                                             
                                                             
-   BBSLIST.0 - This contains the numbers of valid groups in 
-the network.  It will look like an N*.NET file, sort of.    
-All systems in the network will have a copy of this file.   
-Let us say that a particular network has groups 1,2,3,      
-and 60.  In that event, the BBSLIST.0 file would appear     
-as follows:                                                 
-                                                            
-  ~754648789   A number such as the one given would appear  
-               on the first line following a tilde.  This   
-               number is a time/date stamp and will change  
-               from time to time.                           
-  :A           This lets the software know that the infor-  
-               mation for each group will be found in       
-               separate files rather than in the            
-               BBSLIST.NET and CONNECT.NET.                 
-  1                                                         
-  2                                                         
-  3                                                         
-  60           Observe that the group numbers are shown one 
-               per line.                                    
-                                                            
-  BBSLIST.xxx - This file will have a number in the place of
-                xxx.  The number will be the group number   
-                and the file will have all of the           
-                BBSLIST.NET entries for that group.  All    
-                systems will have a BBSLIST.1-255 for all   
-                groups listed in BBSLIST.0.  However, the   
-                information in the file will pertain only   
-                to that group.  You may note, at times,     
-                information in your network logs regarding  
-                bbslists ending in 5xx.  Depending upon the 
-                type of software being used by your network 
-                for updates, these probably indicate that a 
-                "partial" update was received and           
-                processed.  Normally after processing these 
-                files (the BBSLIST.5xx and CONNECT.5xx) are 
-                removed from the hard disk.                 
-                                                            
-  CONNECT.NET -- For small networks, this file will reflect 
-                 the connections of all nodes in the        
-                 network.  For a large network, this will   
-                 be a time/date stamp type file similar to  
-                 that discussed for the BBSLIST.NET.  If    
-                 things do not work right and the           
-                 CONNECT.NET file is missing, try creating  
-                 it with a space inside.                    
-                                                            
-  CONNECT.0 - This file will exist on all systems for a     
-              large network and will show  connections      
-              between systems in different groups.  For     
-              example, if area codes 512 and 502 are part   
-              of the same group (group 4), a connection     
-              between boards in those groups is not between 
-              groups, even though it is long distance, and  
-              the connection would not be shown in the      
-              connect.0 file (it would be shown in the      
-              connect.4 file).  However, a connection       
-              between 512 and 213 which are in different    
-              groups would be shown in the connect.0 file.  
-              Note that systems with connections listed     
-              in the connect.0 file will almost certainly   
-              also have connections listed in their local   
-              (group) connection file also.  Some networks  
-              refer to groups as zones or regions so be     
-              alert for this difference in terminology      
-              in the respective network policy documents.   
-                                                            
-                                                            
-   CONNECT.xxx - This file will exist on all systems and    
-                 will show connections between systems in   
-                 that group.  This will not show connec-    
-                 tions to systems in other groups.          
-                                                            
+  CONNECT.NET -- This file will reflect the connections of
+    all nodes in the network.  For a large network, this will   
+    be a time/date stamp type file similar to that discussed 
+    for the BBSLIST.NET.  If things do not work right and the           
+    CONNECT.NET file is missing, try creating it with a space
+    inside.                    
+
      If your connection within the group will be calling    
 you, then you need only wait until you receive the files.   
 Thus, once this update arrives at the board which will be   
@@ -671,24 +559,9 @@ Coordinators are often identified with a %.
                                                             
 FIDONET INSTALLATION                                        
                                                             
-     Beginning with Net34 and v4.24 of the WWIV BBS         
-software, sysops may be FidoNet compatible if they chose to 
-do be.  Thirdparty add-ons are required to interface with
-FidoNet networks.  Installation instructions are included
-with those non WSS products
+     Use networkf to interface with FidoNet or other FTN
+based networks.
 
-PPP PROJECT INSTALLATION
-
-  In 1997, a group of sysops headed by Frank Reid developed
-a freeware, open source add-on to allow for the transmission
-of network packets via the Internet.  While WSS had some
-input and influence in the development of this product, it
-is not a WSS product nor is the software itself supported by
-WSS.  There have been many hooks placed in both the network
-software and the BBS to allow this add-on to be used to its
-fullest capacity.  See the PPP Project documentation for
-installation and operational instructions.
-                                                            
 
 7.  USING THE NETWORK
 ======================================================
@@ -751,59 +624,13 @@ For those who care, Random is Wayne Bell's handle.
 =============================
  Subscribing to a Netted Sub                                
 =============================
-   The method of subscribing to a networked message base    
-depends upon the version of NETxx that you are using.  To   
-subscribe to a message base hosted by another system (i.e., 
-a netted sub) while using NET30 or earlier, there are 3     
-things which you must do.  First, you should send netmail   
-to the host of the sub requesting that she place you on     
-the distribution list for that sub.  It is a good idea to   
-name the sub and sub-type in that letter as many people     
-host more than one netted sub and it will prevent them from 
-getting confused.  Second (for versions prior to NET32),    
-you should enter your DATA directory and create a file.     
-The name of the file should be NNsub-type.NET and it        
-                                                            
-should have the host's node number in it.  Although you     
-can do this with an ascii text editor, it may be easiest    
-to do this from the DOS level with the copy con command.    
-To accomplish this, type in the following (note information 
-beginning with -- is commentary and should not be typed)    
-assuming that you are subscribing to  the WWIV New Sysop's  
-sub (sub-type 22050; hosted by 2050):                       
-                                                            
-                                                            
-  copy con NN22050.NET   --followed by an ENTER or          
-                           RETURN                           
-  2050 F6                --the F6 means press Function key  
-                         6 or you can hold control down     
-                         and press Z.                       
-                                                            
-    A successful result will result in the message "One     
-file copied" being seen on your screen.  Please be sure to  
-put two N's in the NNxxxx.net file.  One N is used for a    
-host system, so if you put a file  with one N into your     
-data directory, it will result in messages being doubled,   
-most disconcerting to the host and other systems which      
-subscribe to that sub.                                      
-                                                            
-    Starting with NET29, it was possible to auto-request a  
-sub.  This meant that if the sysop had listed the sub in a  
-file called ALLOW.NET in DATA, then the subscriber/sysop    
-could automatically request the sub.                        
-                                                            
-    This method has been further refined under NET32        
-and v4.22 of WWIV so that the ALLOW.NET is not used and the 
-NNALL.NET is not used either.  SUBS.XTR contains all of the 
-pertinent information regarding the sub and the networks    
-that it is on.                                              
-                                                            
-   The third step is to either use B (for boardedit) when   
+                                                           
+   Use B (for boardedit) when
 you are at  W-F-C or type //boardedit when you are logged   
 onto your BBS and then set up the message base.  Be sure    
 to indicate the sub-type number in the option for that:     
 Completed result for the New Sysop's Sub might look like    
-the following under v4.22 :                                 
+the following :                                 
                                                             
                                                             
   A. Name       : WWIV New Sysop's Forum                    

@@ -1170,7 +1170,10 @@ void scan(int nMessageNumber, MsgScanOption nScanOptionType, bool &nextsub, bool
     return;
   }
 
-  if (a()->experimental_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader)) {
+  const auto& cs = a()->current_sub();
+  auto fsreader_enabled = a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
+  bool skip_fs_reader_per_sub = (cs.anony & anony_no_fullscreen);
+  if (fsreader_enabled && !skip_fs_reader_per_sub) {
     scan_new(nMessageNumber, nScanOptionType, nextsub, bTitleScan);
     return;
   }
