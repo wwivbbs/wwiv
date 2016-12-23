@@ -298,6 +298,16 @@ rd update-temp /S /Q
     private void buttonLaunch_Click(object sender, EventArgs e)
     {
       cleanupAfterWWIVUpdate();
+
+      try
+      {
+        ProcessStartInfo telNet = new ProcessStartInfo("WWIVServer.exe");
+        Process.Start(telNet);
+      }
+      catch (Win32Exception ex)
+      {
+        Debug.WriteLine(ex.ToString());
+      }
       // Exit Application
       Application.Exit();
     }
