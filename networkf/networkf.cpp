@@ -666,6 +666,8 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     // All outbound WWIV messages are always CP437.
     text << "\001CHRS: CP437 2\r";
 
+    // TODO(rushfan): We should rip through the bbs_text here.
+    // and add in any special kludges like ^AREPLY here.
     // Add the text from the message (as entered from the BBS).
     text << bbs_text;
 

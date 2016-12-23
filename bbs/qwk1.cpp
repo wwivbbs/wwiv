@@ -1212,7 +1212,7 @@ void config_qwk_bw() {
       memset(&qj, 0, sizeof(struct qwk_junk));
       bout.cls();
 
-      unsigned short arcno = select_qwk_archiver(&qj, 1);
+      unsigned short arcno = static_cast<unsigned short>(select_qwk_archiver(&qj, 1));
       if (!qj.abort) {
         a()->user()->data.qwk_archive = arcno;
       }

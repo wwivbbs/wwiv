@@ -315,6 +315,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
       string cl = line.substr(12);
       if (!cl.empty()) {
         data.to_user_name = cl;
+        break;
       }
     }
   }

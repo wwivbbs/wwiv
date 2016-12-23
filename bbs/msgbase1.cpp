@@ -196,7 +196,12 @@ void post() {
   data.fsed_flags = FsedFlags::FSED;
   data.msged_flags = (a()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
   data.aux = a()->current_sub().filename;
-  data.to_name = a()->current_sub().name;
+  if (strlen(irt_name) > 0) {
+    data.to_name = irt_name;
+  }
+  if (strlen(irt) > 0) {
+    //data.title = irt;
+  }
   data.need_title = true;
 
   if (!inmsg(data)) {

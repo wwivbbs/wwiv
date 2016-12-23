@@ -762,21 +762,30 @@ static void HandleMessageLoad() {
 
 void HandleMessageReply(int &nMessageNumber) {
   irt_sub[0] = 0;
-  if ((!lcs()) && (get_post(nMessageNumber)->status & (status_unvalidated | status_delete))) {
+
+  postrec p2 = *get_post(nMessageNumber);
+  if (!lcs() && (p2.status & (status_unvalidated | status_delete))) {
     return;
   }
-  postrec p2 = *get_post(nMessageNumber);
-  grab_quotes(&(p2.msg), a()->current_sub().filename.c_str());
+  const auto& cs = a()->current_sub();
+  auto m = read_type2_message(&p2.msg, static_cast<char>(p2.anony & 0x0f), true,
+    cs.filename.c_str(), p2.ownersys, p2.owneruser);
+  m.title = p2.title;
+
+  grab_quotes(&p2.msg, a()->current_sub().filename.c_str());
 
   if (okfsed() && a()->user()->IsUseAutoQuote() &&
       nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
-    string b;
-    if (readfile(&(get_post(nMessageNumber)->msg),
-      a()->current_sub().filename, &b)) {
-      auto_quote(&b[0], b.size(), 1, get_post(nMessageNumber)->daten);
-    }
+    auto_quote(&m.message_text[0], m.message_text.size(), 1, p2.daten);
   }
 
+  if (!m.from_user_name.empty()) {
+    // Set the irt_name
+    to_char_array(irt_name, m.from_user_name);
+  }
+  if (!m.title.empty()) {
+    to_char_array(irt, m.title);
+  }
   post();
   resynch(&nMessageNumber, &p2);
   grab_quotes(nullptr, nullptr);

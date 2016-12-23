@@ -109,6 +109,7 @@ static void GetMessageTitle(MessageEditorData& data) {
       bout.mpl(60);
     }
     if (!data.title.empty()) {
+      bout << data.title;
       return;
     }
     if (irt[0] != '\xAB' && irt[0]) {
@@ -563,6 +564,11 @@ bool inmsg(MessageEditorData& data) {
     if (GetMessageToName(data.aux.c_str())) {
       bout.nl();
     }
+  }
+  else {
+    bout << "|#2To   : ";
+    bout.mpl(40);
+    bout << irt_name << "\r\n";
   }
 
   GetMessageTitle(data);
