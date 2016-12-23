@@ -21,6 +21,7 @@
 
 #include <chrono>
 #include <string>
+#include "core/wwivport.h"
 #include "sdk/vardec.h"
 
 constexpr int INST_MSG_STRING = 1;  // A string to print out to the user
@@ -111,16 +112,23 @@ constexpr int INST_LOC_WFC = 65535;
  * using the following structure, followed by the "message" (if any).
  */
 struct inst_msg_header {
-  unsigned short
-  main,                    // Message main type
-  minor,                   // Message minor type
-  from_inst,               // Originating instance
-  from_user,               // Originating sess->usernum
-  dest_inst;               // Destination instance
-  unsigned long
-  daten,                   // Secs-since-1970 Unix datetime
-  msg_size,                // Length of the "message"
-  flags;                   // Bit-mapped flags
+  // Message main type
+  uint16_t main;
+  // Message minor type
+  uint16_t minor;
+  // Originating instance
+  uint16_t from_inst;
+  // Originating sess->usernum
+  uint16_t from_user;
+  // Destination instance
+  uint16_t dest_inst;
+
+  // Secs-since-1970 Unix datetime
+  daten_t daten;
+  // Length of the "message"
+  int32_t msg_size;
+  // Bit-mapped flags
+  uint32_t flags;
 };
 
 void send_inst_str(int whichinst, const std::string& send_string);
