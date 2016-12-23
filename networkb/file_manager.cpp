@@ -21,8 +21,10 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <sstream>
 #include <string>
+#include <vector>
 
 #include "core/file.h"
 #include "core/md5.h"
@@ -32,6 +34,7 @@
 #include "sdk/fido/fido_util.h"
 #include "sdk/fido/fido_address.h"
 
+using std::map;
 using std::string;
 using std::vector;
 
@@ -65,7 +68,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
     fido_bundle_status_t::direct
   };
 
-  vector<TransferFile*> result;
+  map<string, TransferFile*> result_map;
 
   FidoAddress dest(address);
   const auto dir = net_.fido.outbound_dir;
@@ -80,11 +83,16 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
         const auto basename = f.GetName();
         auto w = new WFileTransferFile(basename, std::make_unique<File>(e.first));
         w->set_flo_file(std::make_unique<FloFile>(net_, dir, name));
-        result.push_back(w);
+        // emplace won't add another entry if one exists already.
+        result_map.emplace(basename, w);
       }
-
     }
-
+  }
+  // Return a vector of the transfer files.  This way we don't
+  // have duplicate entries.
+  vector<TransferFile*> result;
+  for (const auto& e : result_map) {
+    result.push_back(e.second);
   }
   return result;
 }
