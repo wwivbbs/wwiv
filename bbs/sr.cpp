@@ -26,6 +26,7 @@
 
 #include "core/strings.h"
 
+#include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/crc.h"
@@ -36,9 +37,11 @@
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
 #include "bbs/srsend.h"
+#include "bbs/srrcv.h"
 #include "bbs/sysoplog.h"
-#include "bbs/fcns.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
+#include "bbs/xfer.h"
 
 #include "core/stl.h"
 #include "core/strings.h"

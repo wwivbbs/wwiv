@@ -26,8 +26,10 @@
 #include "bbs/remote_io.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
+#include "bbs/sr.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
+#include "bbs/xfer.h"
 #include "core/os.h"
 #include "core/strings.h"
 

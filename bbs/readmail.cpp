@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/readmail.h"
+
 #include <cstdint>
 #include <memory>
 #include <string>
@@ -27,25 +29,34 @@
 #include "bbs/conf.h"
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/extract.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
 #include "bbs/mmkey.h"
 #include "bbs/msgbase1.h"
+#include "bbs/multmail.h"
 #include "bbs/pause.h"
 #include "bbs/quote.h"
 #include "bbs/read_message.h"
+#include "bbs/showfiles.h"
+#include "bbs/sublist.h"
 #include "bbs/wconstants.h"
 #include "bbs/printfile.h"
+#include "bbs/shortmsg.h"
+#include "bbs/subacc.h"
+#include "bbs/sysopf.h"
+#include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
+#include "bbs/utility.h"
+#include "bbs/xfer.h"
 #include "sdk/status.h"
 #include "bbs/workspace.h"
 #include "core/stl.h"

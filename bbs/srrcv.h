@@ -15,13 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_WQSCN_H__
-#define __INCLUDED_BBS_WQSCN_H__
+#ifndef __INCLUDED_BBS_SRRCV_H__
+#define __INCLUDED_BBS_SRRCV_H__
 
-#include <cstdint>
+#include <string>
 
-void close_qscn();
-void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead = false);
-void write_qscn(int user_number, uint32_t* qscn, bool stay_open);
+void xymodem_receive(const char *file_name, bool *received, bool use_crc);
+void zmodem_receive(const std::string& filename, bool *received);
 
-#endif  // __INCLUDED_BBS_WQSCN_H__
+#endif  // __INCLUDED_BBS_SRRCV_H__

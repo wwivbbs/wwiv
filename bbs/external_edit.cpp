@@ -23,7 +23,8 @@
 
 #include "bbs/bbs.h"
 #include "bbs/execexternal.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/pause.h"
 #include "bbs/platform/platformfcns.h"

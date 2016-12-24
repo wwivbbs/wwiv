@@ -24,17 +24,12 @@
 #include "bbs/application.h"
 #include "bbs/local_io.h"
 #include "bbs/utility.h"
+#include "bbs/xfer.h"
 #include "core/wwivport.h"
 #include "core/wfndfile.h"
 #include "core/strings.h"
 
 using namespace wwiv::strings;
-
-// prototype from utility.cpp
-char *stripfn(const char *file_name);
-
-// from xfer.cpp
-void align(char *file_name);
 
 // Displays list of files matching filespec file_name in directory pszDirectoryName.
 void show_files(const char *file_name, const char *pszDirectoryName) {

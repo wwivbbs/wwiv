@@ -20,10 +20,10 @@
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/dropfile.h"
 #include "bbs/instmsg.h"
+#include "bbs/wqscn.h"
 #include "bbs/platform/platformfcns.h"
 
 int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {

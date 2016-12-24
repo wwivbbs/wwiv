@@ -20,8 +20,8 @@
 #include "bbs/multinst.h"
 
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
+#include "bbs/bbsutl.h"
 #include "bbs/instmsg.h"
 #include "bbs/wconstants.h"
 

@@ -136,9 +136,6 @@
     <ClCompile Include="lpfunc.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="memory.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -248,9 +245,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="uedit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="user.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="platform\win32\utility2.cpp">
@@ -716,6 +710,30 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="msgscan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="showfiles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="srrcv.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="subedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sublist.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="syschat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="wqscn.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="xfertmp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

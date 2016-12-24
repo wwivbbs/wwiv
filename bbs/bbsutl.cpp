@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/bbsutl.h"
+
 #include <chrono>
 #include <string>
 
@@ -26,13 +28,14 @@
 #include "bbs/interpret.h"
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/keycodes.h"
 #include "bbs/pause.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/stl.h"
 #include "core/wwivassert.h"
+#include "sdk/user.h"
 
 using std::string;
 using std::chrono::seconds;
@@ -48,27 +51,27 @@ char  str_pause[81],
 // in pause.cpp
 extern int nsp; 
 
-bool inli(string* outBuffer, string* rollOver, string::size_type nMaxLen, bool bAddCRLF,
-          bool bAllowPrevious, bool bTwoColorChatMode, bool clear_previous_line) {
-  char szBuffer[4096] = {0}, szRollover[4096] = {0};
-  to_char_array(szBuffer, *outBuffer);
-  if (rollOver) {
-    to_char_array(szRollover, *rollOver);
+bool inli(string* outBuffer, string* rollover, string::size_type maxlen, bool add_crlf,
+          bool allow_previous, bool two_color, bool clear_previous_line) {
+  char buffer[4096] = {0}, rollover_buffer[4096] = {0};
+  to_char_array(buffer, *outBuffer);
+  if (rollover) {
+    to_char_array(rollover_buffer, *rollover);
   } else {
-    memset(szRollover, 0, sizeof(szRollover));
+    memset(rollover_buffer, 0, sizeof(rollover_buffer));
   }
-  bool ret = inli(szBuffer, szRollover, nMaxLen, bAddCRLF, bAllowPrevious, bTwoColorChatMode, clear_previous_line);
-  outBuffer->assign(szBuffer);
-  if (rollOver) {
-    rollOver->assign(szRollover);
+  bool ret = inli(buffer, rollover_buffer, maxlen, add_crlf, allow_previous, two_color, clear_previous_line);
+  outBuffer->assign(buffer);
+  if (rollover) {
+    rollover->assign(rollover_buffer);
   }
   return ret;
 }
 
 // returns true if needs to keep inputting this line
-bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF, bool bAllowPrevious,
-          bool bTwoColorChatMode, bool clear_previous_line) {
-  char szRollOver[255];
+bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf, bool allow_previous,
+          bool two_color, bool clear_previous_line) {
+  char rollover_buffer[255];
 
   WWIV_ASSERT(buffer);
   WWIV_ASSERT(rollover);
@@ -77,7 +80,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
 
   size_t begx = a()->localIO()->WhereX();
   if (rollover[0] != 0) {
-    char* ss = szRollOver;
+    char* ss = rollover_buffer;
     for (int i = 0; rollover[i]; i++) {
       if (rollover[i] == CC || rollover[i] == CO) {
         *ss++ = 'P' - '@';
@@ -92,12 +95,12 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
     *ss = '\0';
     if (charbufferpointer) {
       char szTempBuffer[255];
-      strcpy(szTempBuffer, szRollOver);
+      strcpy(szTempBuffer, rollover_buffer);
       strcat(szTempBuffer, &charbuffer[charbufferpointer]);
       strcpy(&charbuffer[1], szTempBuffer);
       charbufferpointer = 1;
     } else {
-      strcpy(&charbuffer[1], szRollOver);
+      strcpy(&charbuffer[1], rollover_buffer);
       charbufferpointer = 1;
     }
     rollover[0] = '\0';
@@ -107,7 +110,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
   unsigned char ch = '\0';
   do {
     ch = bout.getkey();
-    if (bTwoColorChatMode) {
+    if (two_color) {
       bout.Color(bout.IsLastKeyLocal() ? 1 : 0);
     }
     if (cm) {
@@ -160,7 +163,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
               bout.bs();
             }
           }
-        } else if (bAllowPrevious) {
+        } else if (allow_previous) {
           if (okansi()) {
             if (clear_previous_line) {
               bout << "\r\x1b[K";
@@ -264,7 +267,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool bAddCRLF
     buffer[cp++] = CA;
     buffer[cp] = '\0';
   }
-  if (bAddCRLF) {
+  if (add_crlf) {
     bout.nl();
   }
   return false;
@@ -485,3 +488,19 @@ const char *YesNoString(bool bYesNo) {
   return (bYesNo) ? str_yes : str_no;
 }
 
+/*
+* Checks status of given userrec to see if conferencing is turned on.
+*/
+bool okconf(wwiv::sdk::User *pUser) {
+  if (g_flags & g_flag_disable_conf) {
+    return false;
+  }
+
+  return pUser->HasStatusFlag(wwiv::sdk::User::conference);
+}
+
+void *BbsAllocA(size_t size) {
+  void* p = calloc(size + 1, 1);
+  CHECK_NOTNULL(p);
+  return p;
+}

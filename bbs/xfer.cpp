@@ -21,9 +21,9 @@
 #include <vector>
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
 #include "bbs/execexternal.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl2.h"
@@ -36,6 +36,11 @@
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/keycodes.h"
+#include "bbs/utility.h"
+#include "bbs/xfer.h"
+#include "bbs/xferovl.h"
+#include "bbs/xferovl1.h"
+#include "bbs/xfertmp.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
 #include "bbs/platform/platformfcns.h"

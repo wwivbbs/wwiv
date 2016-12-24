@@ -20,7 +20,8 @@
 
 #include "bbs/bbs.h"
 #include "bbs/conf.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "core/log.h"

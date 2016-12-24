@@ -15,13 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_WQSCN_H__
-#define __INCLUDED_BBS_WQSCN_H__
+#ifndef __INCLUDED_BBS_MENUEDIT_H__
+#define __INCLUDED_BBS_MENUEDIT_H__
 
-#include <cstdint>
+void EditMenus();
+void ListMenuDirs();
 
-void close_qscn();
-void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead = false);
-void write_qscn(int user_number, uint32_t* qscn, bool stay_open);
-
-#endif  // __INCLUDED_BBS_WQSCN_H__
+#endif  // __INCLUDED_BBS_MENUEDIT_H__

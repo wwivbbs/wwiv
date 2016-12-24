@@ -27,7 +27,6 @@
 #include "bbs/datetime.h"
 #include "sdk/status.h"
 #include "bbs/wconstants.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/application.h"
 #include "core/os.h"

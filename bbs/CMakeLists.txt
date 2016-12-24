@@ -57,7 +57,6 @@ set(COMMON_SOURCES
  local_io.cpp
  local_io_curses.cpp
  lpfunc.cpp
- memory.cpp
  menu.cpp
  menuedit.cpp
  menuinterpretcommand.cpp
@@ -104,7 +103,6 @@ set(COMMON_SOURCES
  trashcan.cpp
  trytoul.cpp
  uedit.cpp
- user.cpp
  utility.cpp
  valscan.cpp
  vote.cpp

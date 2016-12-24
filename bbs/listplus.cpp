@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "bbs/batch.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
@@ -39,7 +40,12 @@
 #include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
+#include "bbs/shortmsg.h"
+#include "bbs/utility.h"
+#include "bbs/xfer.h"
+#include "bbs/xferovl.h"
+#include "bbs/xferovl1.h"
+#include "bbs/xfertmp.h"
 #include "bbs/vars.h"
 
 #include "core/stl.h"

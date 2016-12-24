@@ -19,8 +19,8 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
 #include "bbs/finduser.h"
 #include "bbs/vars.h"
 #include "bbs/input.h"
@@ -30,6 +30,7 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
+#include "bbs/utility.h"
 #include "bbs/wconstants.h"
 #include "core/inifile.h"
 #include "core/strings.h"

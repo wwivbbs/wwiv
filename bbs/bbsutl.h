@@ -18,11 +18,13 @@
 #ifndef __INCLUDED_BBS_BBSUTL_H__
 #define __INCLUDED_BBS_BBSUTL_H__
 
+#include <string>
+#include "sdk/user.h"
 
-bool inli(std::string* outBuffer, std::string* rollOver, std::string::size_type nMaxLen, bool bAddCRLF = true,
-  bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
-bool inli(char *buffer, char *rollover, std::string::size_type nMaxLen, bool bAddCRLF = true,
-  bool bAllowPrevious = false, bool bTwoColorChatMode = false, bool clear_previous_line = false);
+bool inli(std::string* outBuffer, std::string* rollover, std::string::size_type maxlen, bool add_crlf = true,
+  bool bAllowPrevious = false, bool two_color_chatmode = false, bool clear_previous_line = false);
+bool inli(char *buffer, char *rollover, std::string::size_type maxlen, bool add_crlf = true,
+  bool allow_previous = false, bool two_color = false, bool clear_previous_line = false);
 bool so();
 bool cs();
 bool lcs();
@@ -34,6 +36,7 @@ int  check_ansi();
 bool set_language_1(int n);
 bool set_language(int n);
 const char *YesNoString(bool bYesNo);
-
+bool okconf(wwiv::sdk::User *pUser);
+void* BbsAllocA(size_t num_bytes);
 
 #endif  // __INCLUDED_BBS_BBSUTL_H__

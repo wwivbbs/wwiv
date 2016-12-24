@@ -24,7 +24,6 @@
 #include "bbs/input.h"
 #include "core/log.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/keycodes.h"
 #include "bbs/vars.h"
 #include "core/strings.h"

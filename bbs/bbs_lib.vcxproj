@@ -127,6 +127,7 @@
     <ClInclude Include="dropfile.h" />
     <ClInclude Include="dupphone.h" />
     <ClInclude Include="events.h" />
+    <ClInclude Include="exceptions.h" />
     <ClInclude Include="execexternal.h" />
     <ClInclude Include="external_edit.h" />
     <ClInclude Include="extract.h" />
@@ -179,14 +180,19 @@
     <ClInclude Include="read_message.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
+    <ClInclude Include="showfiles.h" />
     <ClInclude Include="smallrecord.h" />
     <ClInclude Include="sr.h" />
+    <ClInclude Include="srrcv.h" />
     <ClInclude Include="srsend.h" />
     <ClInclude Include="ssh.h" />
     <ClInclude Include="stdio_local_io.h" />
     <ClInclude Include="stuffin.h" />
     <ClInclude Include="subacc.h" />
+    <ClInclude Include="subedit.h" />
+    <ClInclude Include="sublist.h" />
     <ClInclude Include="subxtr.h" />
+    <ClInclude Include="syschat.h" />
     <ClInclude Include="sysopf.h" />
     <ClInclude Include="sysoplog.h" />
     <ClInclude Include="template.h" />
@@ -203,12 +209,14 @@
     <ClInclude Include="remote_socket_io.h" />
     <ClInclude Include="workspace.h" />
     <ClInclude Include="output.h" />
+    <ClInclude Include="wqscn.h" />
     <ClInclude Include="wstatus.h" />
     <ClInclude Include="wwivcolors.h" />
     <ClInclude Include="wwiv_windows.h" />
     <ClInclude Include="xfer.h" />
     <ClInclude Include="xferovl.h" />
     <ClInclude Include="xferovl1.h" />
+    <ClInclude Include="xfertmp.h" />
     <ClInclude Include="xfer_common.h" />
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
@@ -263,7 +271,6 @@
     <ClCompile Include="local_io_curses.cpp" />
     <ClCompile Include="local_io_win32.cpp" />
     <ClCompile Include="lpfunc.cpp" />
-    <ClCompile Include="memory.cpp" />
     <ClCompile Include="menu.cpp" />
     <ClCompile Include="menuedit.cpp" />
     <ClCompile Include="menuinterpretcommand.cpp" />
@@ -320,7 +327,6 @@
     <ClCompile Include="trashcan.cpp" />
     <ClCompile Include="trytoul.cpp" />
     <ClCompile Include="uedit.cpp" />
-    <ClCompile Include="user.cpp" />
     <ClCompile Include="utility.cpp" />
     <ClCompile Include="valscan.cpp" />
     <ClCompile Include="vote.cpp" />
