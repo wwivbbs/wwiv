@@ -254,30 +254,36 @@ void CreateCallInfoBbsDropFile() {
   File::Remove(fileName);
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
-    file.WriteFormatted("%s\n", a()->user()->GetRealName());
+    file.WriteLine(a()->user()->GetRealName());
     switch (modem_speed) {
     case 300:
-      file.WriteFormatted("1\n");
+      file.WriteLine("1");
     case 1200:
-      file.WriteFormatted("2\n");
+      file.WriteLine("2");
     case 2400:
-      file.WriteFormatted("0\n");
+      file.WriteLine("0");
     case 19200:
-      file.WriteFormatted("4\n");
+      file.WriteLine("4");
     default:
-      file.WriteFormatted("3\n");
+      file.WriteLine("3");
     }
     string t = times();
     auto start_duration = duration_since_midnight(a()->system_logon_time());
     auto start_minute = std::chrono::duration_cast<std::chrono::minutes>(start_duration).count();
-    file.WriteFormatted(" \n%d\n%ld\n%s\n%s\n%d\n%d\n%.5s\n0\nABCD\n0\n0\n0\n0\n",
-      a()->user()->GetSl(),
-			GetMinutesRemainingForDropFile(),
-      a()->user()->HasAnsi() ? "COLOR" : "MONO",
-      "X" /* a()->user()->GetPassword() */,
-			a()->usernum,
-      start_minute,
-      t.c_str());
+    file.WriteLine(" ");
+    file.WriteLine(a()->user()->GetSl());
+    file.WriteLine(GetMinutesRemainingForDropFile());
+    file.WriteLine(a()->user()->HasAnsi() ? "COLOR" : "MONO");
+    file.WriteLine("X");
+    file.WriteLine(a()->usernum);
+    file.WriteLine(start_minute);
+    file.WriteLine(t.substr(0, 5));
+    file.WriteLine("0");
+    file.WriteLine("ABCD");
+    file.WriteLine("0");
+    file.WriteLine("0");
+    file.WriteLine("0");
+    file.WriteLine("0");
     file.WriteFormatted("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
                         a()->user()->GetVoicePhoneNumber(),
                         a()->user()->GetLastOn(),
