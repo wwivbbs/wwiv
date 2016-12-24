@@ -160,7 +160,7 @@ time_t fido_to_daten(std::string d) {
     stream >> year;
     // tm_year is since 1900.
     year -= 1900;
-    t->tm_year;
+    t->tm_year = year;
 
     string hms;
     stream >> hms;
