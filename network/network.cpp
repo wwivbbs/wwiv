@@ -64,9 +64,9 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
-static int LaunchOldNetworkingStack(const std::string exe, int argc, char** argv) {
+static int LaunchOldNetworkingStack(const NetworkCommandLine& net_cmdline, const std::string exe, int argc, char** argv) {
   std::ostringstream os;
-  os << exe;
+  os << FilePath(net_cmdline.bbsdir(), exe);
   for (int i = 1; i < argc; i++) {
     const string s(argv[1]);
     if (starts_with(s, "/")) {
@@ -113,7 +113,7 @@ int main(int argc, char** argv) {
         // 32767 is the PPP project address for "send everything". Some people use this
         // "magic" node number.
         LOG(INFO) << "USE PPP Project to send to: Internet Email (@32767)";
-        return LaunchOldNetworkingStack("networkp", argc, argv);
+        return LaunchOldNetworkingStack(net_cmdline, "networkp", argc, argv);
       }
     }
 
@@ -123,15 +123,17 @@ int main(int argc, char** argv) {
       // We have a node configuration for this one, or it is a FTN
       // network, so we will use networkb.
       LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;
-      string command_line = StringPrintf("networkb --send --net=%u --node=%s",
-        net_cmdline.network_number(), node.c_str());
+      std::ostringstream ss;
+      ss << FilePath(net_cmdline.bbsdir(), "networkb");
+      ss << " --send --net=" << net_cmdline.network_number() << " --node=" << node;
       if (cmdline.barg("skip_net")) {
-        command_line += " --skip_net";
+        ss << " --skip_net";
       }
       int verbose = cmdline.iarg("v");
       if (verbose > 0) {
-        command_line += StringPrintf(" --v=%d", verbose);
+        ss << " --v=" << verbose;
       }
+      const auto command_line = ss.str();
       LOG(INFO) << "Executing Command: '" << command_line << "'";
       return system(command_line.c_str());
     }
@@ -145,11 +147,11 @@ int main(int argc, char** argv) {
     const PPPNodeConfig* ppp_node_config = ppp_config.ppp_node_config_for(nodeint);
     if (ppp_node_config != nullptr) {
       LOG(INFO) << "USE PPP Project to send to: " << ppp_node_config->email_address;
-      return LaunchOldNetworkingStack("networkp", argc, argv);
+      return LaunchOldNetworkingStack(net_cmdline, "networkp", argc, argv);
     }
 
     // Use legacy networking.
-    return LaunchOldNetworkingStack("network0", argc, argv);
+    return LaunchOldNetworkingStack(net_cmdline, "network0", argc, argv);
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
