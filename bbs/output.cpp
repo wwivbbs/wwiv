@@ -22,12 +22,13 @@
 #include <cstdarg>
 #include <string>
 
+#include "bbs/bbsutl.h"
 #include "bbs/keycodes.h"
 #include "bbs/com.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/instmsg.h"
 #include "bbs/output.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
 

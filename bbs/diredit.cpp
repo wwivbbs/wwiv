@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include <string>
 
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
@@ -25,10 +26,10 @@
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/pause.h"
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
+#include "bbs/wqscn.h"
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"

@@ -28,7 +28,8 @@
 #include "bbs/wconstants.h"
 #include "bbs/application.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "sdk/filenames.h"
 

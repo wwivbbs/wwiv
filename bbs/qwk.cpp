@@ -32,6 +32,7 @@
 #endif
 #include <sys/stat.h>
 
+#include "bbs/bbsutl.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/utility.h"
 #include "bbs/com.h"
@@ -42,21 +43,26 @@
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"
+#include "bbs/multmail.h"
 #include "bbs/pause.h"
 #include "bbs/qscan.h"
 #include "bbs/stuffin.h"
-#include "sdk/subxtr.h"
+#include "bbs/subacc.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
-#include "sdk/status.h"
+#include "bbs/utility.h"
+#include "bbs/sr.h"
+#include "bbs/xfer.h"
+#include "bbs/xfertmp.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
+#include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))

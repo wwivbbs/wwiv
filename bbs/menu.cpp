@@ -16,14 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/menu.h"
 #include <cstdint>
 #include <memory>
+#include <string>
 
 #include "bbs/input.h"
 #include "bbs/com.h"
 #include "bbs/common.h"
 #include "bbs/instmsg.h"
-#include "bbs/menu.h"
+#include "bbs/menuedit.h"
 #include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"
 #include "bbs/mmkey.h"
@@ -32,7 +34,8 @@
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "core/stl.h"
 #include "core/strings.h"

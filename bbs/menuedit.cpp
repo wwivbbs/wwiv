@@ -16,12 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/menuedit.h"
+
 #include <cstdint>
 #include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/input.h"
 #include "bbs/menu.h"
 #include "bbs/vars.h"

@@ -21,12 +21,13 @@
 #include <algorithm>
 #include <vector>
 #include <string>
+
 #include "bbs/arword.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/vars.h"

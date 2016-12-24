@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/subreq.h"
+
 #include <string>
 
 #include "bbs/input.h"
@@ -25,7 +27,8 @@
 #include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/mmkey.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "core/stl.h"

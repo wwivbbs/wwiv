@@ -16,17 +16,18 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/bbsutl1.h"
+
 #include <chrono>
 #include <memory>
 #include <string>
 
 #include "bbs/bbs.h"
 #include "bbs/bgetch.h"
-#include "bbs/bbsutl1.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
-#include "bbs/fcns.h"
 #include "bbs/finduser.h"
 #include "bbs/input.h"
 #include "bbs/mmkey.h"

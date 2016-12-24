@@ -16,9 +16,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/wqscn.h"
 
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "sdk/filenames.h"
 

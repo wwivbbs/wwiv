@@ -101,6 +101,7 @@ What's New in WWIV 5.2 (2016)
   specific subboard. This is needed for ansi art subs.
 * USE_NEW_BBSLIST is removed from WWIV.INI. All BBS List is the
   new JSON format.
+* fcns.h is finally gone.
 
 What's New in WWIV 5.1 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

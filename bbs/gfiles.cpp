@@ -20,8 +20,8 @@
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
 #include "bbs/gfileedit.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
@@ -30,6 +30,9 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
+#include "bbs/sr.h"
+#include "bbs/utility.h"
+#include "bbs/xfer.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 

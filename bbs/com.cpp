@@ -19,6 +19,7 @@
 #include <algorithm>
 #include <cmath>
 
+#include "bbs/bbsutl.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/datetime.h"
 #include "bbs/exceptions.h"
@@ -28,9 +29,9 @@
 #include "bbs/wconstants.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
 #include "bbs/sysoplog.h"
 #include "bbs/vars.h"
+#include "bbs/utility.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"

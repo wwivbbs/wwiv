@@ -14,18 +14,11 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#include <cstdlib>
-#include <cstring>
-#include "core/wwivassert.h"
+#ifndef __INCLUDED_BBS_SUBLIST_H__
+#define __INCLUDED_BBS_SUBLIST_H__
 
-/**
- * Attempts to allocate nbytes (+1) bytes on the heap, returns ptr to memory if successful.
- * @param lNumBytes Number of bytes to allocate
- */
-void *BbsAllocA(size_t lNumBytes) {
-  void* pBuffer = calloc(lNumBytes + 1, 1);
-  WWIV_ASSERT(pBuffer);
-  return pBuffer;
-}
+void old_sublist();
+void SubList();
+
+#endif  // __INCLUDED_BBS_SUBLIST_H__

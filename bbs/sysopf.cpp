@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/sysopf.h"
 
 #include <memory>
 #include <string>
@@ -25,7 +26,8 @@
 #include "bbs/bbsutl2.h"
 #include "bbs/com.h"
 #include "bbs/execexternal.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/finduser.h"
 #include "bbs/vars.h"
 #include "bbs/confutil.h"
@@ -45,6 +47,8 @@
 #include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
 #include "bbs/wconstants.h"
+#include "bbs/shortmsg.h"
+#include "bbs/wqscn.h"
 #include "sdk/status.h"
 #include "core/inifile.h"
 #include "core/file.h"

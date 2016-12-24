@@ -16,13 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/multmail.h"
 
 #include <string>
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/email.h"
-#include "bbs/fcns.h"
 #include "bbs/finduser.h"
 #include "bbs/vars.h"
 #include "bbs/inmsg.h"
@@ -30,6 +31,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/message_file.h"
 #include "bbs/printfile.h"
+#include "bbs/utility.h"
 #include "bbs/wconstants.h"
 #include "core/wfndfile.h"
 #include "core/strings.h"

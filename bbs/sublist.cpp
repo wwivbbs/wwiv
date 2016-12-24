@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/sublist.h"
 
 #include <algorithm>
 #include <string>
@@ -25,8 +26,10 @@
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/bbs.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/mmkey.h"
+#include "bbs/subacc.h"
 #include "bbs/vars.h"
 #include "bbs/confutil.h"
 #include "sdk/subxtr.h"

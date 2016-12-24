@@ -16,14 +16,17 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/syschat.h"
+
 #include <algorithm>
 #include <chrono>
 #include <string>
 
 #include "bbs/batch.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/fcns.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/email.h"
@@ -139,7 +142,7 @@ void RequestChat() {
 // Allows selection of a name to "chat as". Returns selected string in *s.
 //
 
-void select_chat_name(char *sysop_name) {
+static void select_chat_name(char *sysop_name) {
   a()->DisplaySysopWorkingIndicator(true);
   a()->localIO()->savescreen();
   strcpy(sysop_name, syscfg.sysopname);
@@ -172,7 +175,7 @@ void select_chat_name(char *sysop_name) {
 
 // Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
-void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) {
+static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) {
   char s2[100], temp1[100];
   int i, i1;
 

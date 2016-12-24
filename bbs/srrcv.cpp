@@ -27,8 +27,10 @@
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
 #include "bbs/keycodes.h"
-#include "bbs/fcns.h"
+#include "bbs/sr.h"
+#include "bbs/utility.h"
 #include "bbs/vars.h"
+#include "bbs/xfer.h"
 
 #include "core/strings.h"
 

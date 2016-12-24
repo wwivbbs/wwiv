@@ -20,16 +20,17 @@
 #include <memory>
 #include <string>
 
+#include "bbs/bbsutl.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl2.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
 #include "bbs/message_file.h"
 #include "bbs/pause.h"
 #include "bbs/vars.h"
+#include "bbs/utility.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"

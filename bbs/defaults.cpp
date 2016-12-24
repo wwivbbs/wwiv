@@ -30,7 +30,8 @@
 #include "bbs/common.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
-#include "bbs/fcns.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/instmsg.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"
@@ -45,6 +46,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
 #include "bbs/vars.h"
+#include "bbs/xfer.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 

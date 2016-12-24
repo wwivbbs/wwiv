@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
@@ -30,8 +31,9 @@
 #include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/fcns.h"
+#include "bbs/subreq.h"
 #include "bbs/vars.h"
+#include "bbs/wqscn.h"
 #include "core/file.h"
 #include "core/datafile.h"
 #include "core/textfile.h"

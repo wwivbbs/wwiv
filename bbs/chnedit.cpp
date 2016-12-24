@@ -18,11 +18,12 @@
 /**************************************************************************/
 
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
+#include "bbs/utility.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/finduser.h"
 #include "bbs/input.h"
-#include "bbs/fcns.h"
 #include "bbs/vars.h"
 #include "bbs/keycodes.h"
 #include "core/datafile.h"
