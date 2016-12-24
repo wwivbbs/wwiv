@@ -22,6 +22,7 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <type_traits>
 
 
 class TextFile {
@@ -38,13 +39,23 @@ public:
   int Write(const std::string& text) { return (fputs(text.c_str(), file_) >= 0) ? text.size() : 0; }
   
   // Writes a line of text including \r\n
-  template<typename T>
-  int WriteLine(const T& t) {
-    return WriteLine(std::to_string(t));
-  }
-
   int WriteLine(const char* text) {
     return WriteLine(std::string(text));
+  }
+
+  // Writes a line of text including \r\n
+  int WriteLine(char* text) {
+    return WriteLine(std::string(text));
+  }
+
+  template<size_t N>
+  int WriteLine(const char t[N]) {
+    return WriteLine(std::string(t));
+  }
+
+  template<typename T>
+  int WriteLine(T t) {
+    return WriteLine(std::to_string(t));
   }
 
   int WriteLine(const std::string& text);
