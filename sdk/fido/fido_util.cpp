@@ -158,9 +158,9 @@ time_t fido_to_daten(std::string d) {
     t->tm_mon = std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str));
     int year;
     stream >> year;
-    // tm_year is since 1900.
-    year -= 1900;
-    t->tm_year = year;
+    year %= 100;
+    // This will work until 2099.
+    t->tm_year = 100 + year;
 
     string hms;
     stream >> hms;
@@ -169,7 +169,12 @@ time_t fido_to_daten(std::string d) {
     t->tm_min = StringToInt(parts.at(1));
     t->tm_sec = StringToInt(parts.at(2));
 
-    return mktime(t);
+    auto result = mktime(t);
+    if (result < 0) {
+      // Error.. return now so we don't blow stuff up.
+      result =  time(nullptr);
+    }
+    return result;
   } catch (const std::exception& e) {
     LOG(ERROR) << "exception in fido_to_daten('" << d << "'): " << e.what();
     return time(nullptr);
