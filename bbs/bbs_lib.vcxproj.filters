@@ -376,9 +376,6 @@
     <ClInclude Include="datetime.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="fcns.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="filenames.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -734,6 +731,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xfertmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="menuedit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="multmail.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="readmail.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="subreq.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

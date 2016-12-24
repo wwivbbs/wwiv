@@ -82,6 +82,10 @@ void BbsHelper::SetUp() {
   config->set_config(sysconfig.release());
   a()->set_config_for_test(move(config));
   user_ = a()->user();
+  // Default the screen size to a reasonable value.  Some tests (bputch tests)
+  // Require the size to be non-zero.
+  user_->SetScreenChars(80);
+  user_->SetScreenLines(25);
   a()->instance_number_ = 42;
 }
 

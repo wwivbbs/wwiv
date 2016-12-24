@@ -131,7 +131,6 @@
     <ClInclude Include="execexternal.h" />
     <ClInclude Include="external_edit.h" />
     <ClInclude Include="extract.h" />
-    <ClInclude Include="fcns.h" />
     <ClInclude Include="filenames.h" />
     <ClInclude Include="finduser.h" />
     <ClInclude Include="full_screen.h" />
@@ -152,6 +151,7 @@
     <ClInclude Include="local_io_win32.h" />
     <ClInclude Include="lpfunc.h" />
     <ClInclude Include="menu.h" />
+    <ClInclude Include="menuedit.h" />
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
@@ -162,6 +162,7 @@
     <ClInclude Include="msgbase1.h" />
     <ClInclude Include="msgscan.h" />
     <ClInclude Include="multinst.h" />
+    <ClInclude Include="multmail.h" />
     <ClInclude Include="netsup.h" />
     <ClInclude Include="newuser.h" />
     <ClInclude Include="new_bbslist.h" />
@@ -177,6 +178,7 @@
     <ClInclude Include="qscan.h" />
     <ClInclude Include="quote.h" />
     <ClInclude Include="qwk.h" />
+    <ClInclude Include="readmail.h" />
     <ClInclude Include="read_message.h" />
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
@@ -191,6 +193,7 @@
     <ClInclude Include="subacc.h" />
     <ClInclude Include="subedit.h" />
     <ClInclude Include="sublist.h" />
+    <ClInclude Include="subreq.h" />
     <ClInclude Include="subxtr.h" />
     <ClInclude Include="syschat.h" />
     <ClInclude Include="sysopf.h" />
