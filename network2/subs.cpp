@@ -156,7 +156,8 @@ static string SubTypeFromText(const std::string& text) {
 static bool send_sub_add_drop_resp(Context& context, 
   net_header_rec orig,
   uint8_t main_type, uint8_t code,
-  const std::string& subtype) {
+  const std::string& subtype,
+  const std::string& response_file_text) {
   net_header_rec nh = {};
   nh.daten = time_t_to_daten(time(nullptr));
   nh.fromsys = orig.tosys;
@@ -169,6 +170,18 @@ static bool send_sub_add_drop_resp(Context& context,
   string text = subtype;
   text.push_back(0); // null after subtype.
   text.push_back(code);
+
+  // Add "Sub type 'subtype' ('subname') + #0
+  text.append(StrCat("Sub Type ", subtype));
+  text.push_back(0); // null after title.
+
+  // Add from Name + \r\n + date + \r\n + \r\n
+  text.append(StrCat(context.config.config()->sysopname, " #1\r\n"));
+  text.append(StrCat(daten_to_wwivnet_time(time(nullptr)), "\r\n\r\n"));
+
+  // TODO: Add SA or SR  + subtype + .net file text
+  text.append(response_file_text);
+
   nh.length = text.size();  // should be subtype.size() + 2
   const string pendfile = create_pend(context.net.dir, false, '2');
   Packet packet(nh, {}, std::move(text));
@@ -190,7 +203,18 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
 
 bool handle_sub_add_req(Context& context, Packet& p) {
   const string subtype = SubTypeFromText(p.text);
-  auto resp = [&](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_add_resp, code, subtype); };
+  auto resp = [&](int code) -> bool { 
+    string base = (code == sub_adddrop_ok) ? "sa" : "sr";
+    string response_file = StrCat(base, subtype, ".net");
+    string text;
+    LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file);
+    if (File::Exists(context.net.dir, response_file)) {
+      TextFile tf(context.net.dir, response_file, "r");
+      LOG(INFO) << "Sending SA file: " << tf.full_pathname();
+      text = tf.ReadFileIntoString();
+    }
+    return send_sub_add_drop_resp(context, p.nh, main_type_sub_add_resp, code, subtype, text);
+  };
   if (subtype.empty()) {
     return resp(sub_adddrop_error);
   }
@@ -219,7 +243,9 @@ bool handle_sub_add_req(Context& context, Packet& p) {
 
 bool handle_sub_drop_req(Context& context, Packet& p) {
   const string subtype = SubTypeFromText(p.text);
-  auto resp = [&](int code) -> bool { return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype); };
+  auto resp = [&](int code) -> bool { 
+    return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype, ""); 
+  };
   if (subtype.empty()) {
     return resp(sub_adddrop_error);
   }
@@ -281,13 +307,19 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
 
   char code = *b++;
   string code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
+
+  string orig_title = get_message_field(p.text, b, { '\0', '\r', '\n' }, 80);
+  string sender_date = get_message_field(p.text, b, { '\0', '\r', '\n' }, 80);
+  string orig_date = get_message_field(p.text, b, { '\0', '\r', '\n' }, 80);
+
   string message_text = string(b, p.text.end());
   net_header_rec nh = {};
 
   string title = StringPrintf("WWIV AreaFix (%s) Response for subtype '%s'", context.net.name, subname.c_str());
   string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net.name, p.nh.fromsys);
-  string body = StringPrintf("SubType '%s', (%s) Response: '%s'\r\n%s\r\n", 
-    subname.c_str(), add_or_drop.c_str(), code_string.c_str(), message_text.c_str());
+  string body = StringPrintf("SubType '%s', (%s) Response: '%s'\r\n", 
+    subname.c_str(), add_or_drop.c_str(), code_string.c_str());
+  body.append(message_text);
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
