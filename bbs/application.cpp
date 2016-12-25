@@ -686,6 +686,7 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
     clog << "\r\n";
     clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << exit_level
         << endl << endl;
+    clog.flush();
   }
 
   // We just delete the session class, not the application class

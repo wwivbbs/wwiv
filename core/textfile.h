@@ -23,7 +23,15 @@
 #include <cstring>
 #include <string>
 
+/**
+ Class representing a text file.
 
+ Example:
+ \code{.cpp}
+   TextFile f("/tmp/foo.txt", "wt");
+   f.WriteLine("Hello World");
+ \endcode
+ */
 class TextFile {
 public:
   TextFile(const std::string& file_name, const std::string& file_mode);

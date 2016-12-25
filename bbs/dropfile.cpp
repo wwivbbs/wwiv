@@ -130,7 +130,7 @@ static void GetNamePartForDropFile(bool lastName, char *name) {
   }
 }
 
-long GetMinutesRemainingForDropFile() {
+static long GetMinutesRemainingForDropFile() {
   long time_left = std::max<long>((static_cast<long>(nsl() / 60)) - 1L, 0);
   bool using_modem = a()->using_modem != 0;
   if (!using_modem) {
@@ -248,6 +248,8 @@ void CreatePCBoardSysDropFile() {
   }
 }
 
+// See https://github.com/jquast/x84/blob/master/x84/bbs/door.py#L290
+// Also https://github.com/sdudley/maximus/blob/1cc413a28df645aeb7170ac7524a05abf501e6ab/mec/misc/callinfo.mec
 void CreateCallInfoBbsDropFile() {
   // make CALLINFO.BBS (WildCat!)
   string fileName = create_filename(CHAINFILE_CALLINFO);

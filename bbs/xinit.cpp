@@ -442,6 +442,7 @@ bool Application::ReadConfig() {
   }
 
   if (!config_->versioned_config_dat()) {
+    std::cerr << "Please run INIT to upgrade " << CONFIG_DAT << " to the most recent version.\r\n";
     LOG(ERROR) << "Please run INIT to upgrade " << CONFIG_DAT << " to the most recent version.";
     return false;
   }
