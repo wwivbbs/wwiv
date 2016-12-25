@@ -63,12 +63,8 @@ public:
    * file name`file_name` and mode of `file_mode`.
    */
   TextFile(const std::string& directory_name, const std::string& file_name, const std::string& file_mode);
-  /**
-   * Opens an existing TextFile instance with a new `file_mode`.
-   *
-   * Normally this isn't needed since the constructor opens the file.
-   */
-  bool Open(const std::string& file_name, const std::string& file_mode);
+
+  ~TextFile();
 
   /**
    * Explicitly closes an existing TextFile.
@@ -149,8 +145,13 @@ public:
   explicit operator bool() const { return IsOpen(); }
   friend std::ostream& operator<< (std::ostream &os, const TextFile &f);
 
-public:
-  ~TextFile();
+private:
+  /**
+  * Opens an existing TextFile instance with a new `file_mode`.
+  *
+  * Normally this isn't needed since the constructor opens the file.
+  */
+  bool Open(const std::string& file_name, const std::string& file_mode);
 
  private:
   std::string file_name_;

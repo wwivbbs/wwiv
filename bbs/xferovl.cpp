@@ -597,16 +597,16 @@ void upload_files(const char *file_name, int directory_num, int type) {
   last_fn[0] = 0;
   dliscan1(a()->udir[directory_num].subnum);
 
-  TextFile file(file_name, "r");
-  if (!file.IsOpen()) {
+  auto file = std::make_unique<TextFile>(file_name, "r");
+  if (!file->IsOpen()) {
     char szDefaultFileName[MAX_PATH];
     sprintf(szDefaultFileName, "%s%s", a()->directories[a()->udir[directory_num].subnum].path, file_name);
-    file.Open(szDefaultFileName, "r");
+    file.reset(new TextFile(szDefaultFileName, "r"));
   }
-  if (!file.IsOpen()) {
+  if (!file->IsOpen()) {
     bout << file_name << ": not found.\r\n";
   } else {
-    while (ok && file.ReadLine(s, 250)) {
+    while (ok && file->ReadLine(s, 250)) {
       if (s[0] < SPACE) {
         continue;
       } else if (s[0] == SPACE) {
@@ -679,7 +679,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
         }
       }
     }
-    file.Close();
+    file->Close();
     if (ok && last_fn[0] && ext && *ext) {
       File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
