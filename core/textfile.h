@@ -25,9 +25,26 @@
 #include <type_traits>
 
 /**
- Class representing a text file.
+ \class TextFile textfile.h "core/textfile.h"
+ \brief A class that represents a text file.
 
- Example:
+ Used to read and write text files.
+
+ When creating a `TextFile` You should specify the following
+ subset of the POSIX file modes. 
+
+ - - -
+ ### File Modes ###
+ mode | Description
+ -----|-----------------------------
+    r | Read
+    w | Write, Truncate if exists
+    a | Append/Write.
+    t | Text Mode (default)
+    b | Binary Mode
+    + | Read and Write
+
+ ### Example: ###
  \code{.cpp}
    TextFile f("/tmp/foo.txt", "wt");
    f.WriteLine("Hello World");
@@ -35,23 +52,48 @@
  */
 class TextFile {
 public:
+  /** 
+   * Constructs a TextFile.
+   * Constructs a TextFile using the full path `file_name` and mode of `file_mode`.
+   */
   TextFile(const std::string& file_name, const std::string& file_mode);
+  /**
+   * Constructs a TextFile.
+   * Constructs a TextFile using the directory `directory_name`, 
+   * file name`file_name` and mode of `file_mode`.
+   */
   TextFile(const std::string& directory_name, const std::string& file_name, const std::string& file_mode);
+  /**
+   * Opens an existing TextFile instance with a new `file_mode`.
+   *
+   * Normally this isn't needed since the constructor opens the file.
+   */
   bool Open(const std::string& file_name, const std::string& file_mode);
+
+  /**
+   * Explicitly closes an existing TextFile.
+   *
+   * Normally this isn't needed since it will be invoked by the destructor.
+   */
   bool Close();
 
+  /** 
+   Used to check if the file has been sucessfully open. 
+   
+   Usually code should use `operator bool()` vs. this method.
+   */
   bool IsOpen() const { return file_ != nullptr; }
   bool IsEndOfFile() { return feof(file_) ? true : false; }
 
-  // Writes a line of text without \r\n
+  /** Writes a line of text without `\r\n` */
   int Write(const std::string& text) { return (fputs(text.c_str(), file_) >= 0) ? text.size() : 0; }
   
-  // Writes a line of text including \r\n
+  /** Writes a line of text including `\r\n`. */
   int WriteLine(const char* text) {
     return WriteLine(std::string(text));
   }
 
-  // Writes a line of text including \r\n
+  /** Writes a line of text including `\r\n`. */
   int WriteLine(char* text) {
     return WriteLine(std::string(text));
   }
@@ -68,33 +110,42 @@ public:
 
   int WriteLine(const std::string& text);
 
-  // Writes a single character to a text file.
+  /** Writes a single character to a text file. */
   int WriteChar(char ch) { return fputc(ch, file_); }
   
-  // Writes a line of formatText like printf
+  /** Writes a line of formatText like printf. */
   int WriteFormatted(const char *formatText, ...);
   
-  // Writes a binary blob as binary data
+  /** Writes a binary blob as binary data. */
   int WriteBinary(const void *pBuffer, size_t nSize) {
     return (int)fwrite(pBuffer, nSize, 1, file_);
   }
   
-  // Reads one line of text, removing the \r\n in the end of the line.
+  /** Reads one line of text, removing the `\r\n` in the end of the line. */
   bool ReadLine(char *buffer, int nBufferSize) {
     return (fgets(buffer, nBufferSize, file_) != nullptr) ? true : false;
   }
 
-  // Reads one line of text, removing the \r\n in the end of the line.
+  /** Reads one line of text, removing the `\r\n` in the end of the line. */
   bool ReadLine(std::string *buffer);
   long GetPosition() { return ftell(file_); }
   const std::string full_pathname() const { return file_name_; }
   FILE* GetFILE() { return file_; } 
 
-  // Reads the entire contents of the file into the returned string.
-  // The file position will be at the end of the file after returning.
+  /**
+    Reads the entire contents of the file into the returned string.
+
+    Note: The file position will be at the end of the file after returning.
+   */
   std::string ReadFileIntoString();
 
   // operators
+
+  /**
+  Used to check if the file has been sucessfully open.
+
+  Usually code should use `operator bool()` vs. this method.
+  */
   explicit operator bool() const { return IsOpen(); }
   friend std::ostream& operator<< (std::ostream &os, const TextFile &f);
 

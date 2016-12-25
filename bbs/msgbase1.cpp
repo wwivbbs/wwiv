@@ -427,7 +427,7 @@ void nscan(int start_subnum) {
     bool abort = false;
     checka(&abort);
     if (abort) {
-      nextsub = 0;
+      nextsub = false;
     }
   }
   bout.nl();
