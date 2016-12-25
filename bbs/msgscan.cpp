@@ -953,7 +953,7 @@ static void HandleToggleUnAnonymous(int nMessageNumber) {
   }
 }
 
-static void HandleScanReadPrompt(int &msgnum, MsgScanOption& nScanOptionType, bool nextsub, bool &bTitleScan, bool &done,
+static void HandleScanReadPrompt(int &msgnum, MsgScanOption& nScanOptionType, bool& nextsub, bool &bTitleScan, bool &done,
   bool &quit, int &val) {
   resetnsp();
   string read_prompt = GetScanReadPrompts(msgnum);

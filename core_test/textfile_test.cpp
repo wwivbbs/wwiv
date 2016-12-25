@@ -175,12 +175,12 @@ TEST_F(TextFileTest, IsEOF) {
 TEST_F(TextFileTest, GetPosition) {
   const string path = helper_.CreateTempFile(test_name_, "a\nb\nc\n");
   TextFile file(path, "rt");
-  ASSERT_EQ(0, file.GetPosition());
+  ASSERT_EQ(0, file.position());
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("a", s);
 #ifdef _WIN32
-  EXPECT_EQ(3, file.GetPosition());
+  EXPECT_EQ(3, file.position());
 #else  // _WIN32
   EXPECT_EQ(2, file.GetPosition());
 #endif  // _WIN32
