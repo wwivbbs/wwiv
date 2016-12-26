@@ -2,23 +2,25 @@ readme.510
 
                 *** Attention Windows 10 ***
 
-    You need to download the Visual Studio 2015 Updte 1 redistributable
+    You need to download the Visual Studio 2015 Update 1 redistributable
     files from:
     https://www.microsoft.com/en-us/download/details.aspx?id=49984
     and install this package before using WWIV (or any other software
     compiled with Visual Studio 2015).
 
 
-WWIV 5.1 Getting Started
+WWIV 5.2 Getting Started
 ~~~~~~~~~~~~~~~~~~~~~~~~
-If you already have WWIV 4.3 or 5.0 installed, just copy the EXE and DLL 
-files over your existing 4.3/5.0 installation. Please backup your previous binaries and configuration files.
+If you already have WWIV 4.3 or 5.x installed, just copy the EXE and DLL 
+files over your existing 4.3/5.x installation. Please backup your previous
+binaries and configuration files.
 
 The command line parameters have changed quite a bit, I suggest running
 "bbs -? | more" to see the list of changes.
 
-So far, WWIV 5.1 is still fully compatable with your existing WWIV 4.30
-and 5.0 installations (Just drop it in and go).
+So far, WWIV 5.2 is still fully compatable with your existing WWIV 4.30
+and 5.x installations (Just drop it in and run init to upgrade the 
+data files and go).
 
 Run WWIVServer.exe and then select the menu Edit > Preferences and setup
 the information for your configuration (paths, and the starting and ending
@@ -40,7 +42,7 @@ DEVELOPMENT INFORMATION
 
     WWIV is compiled with the following compilers:
         MS Visual C++ 2015 Community Edition.
-        GCC 4.9 on Debian8 Linux
+        GCC 4.9 on Debian 8 Linux
 
     I recommend using MSVC 2015 Community Edition on Windows.
     It is available for free.
@@ -313,3 +315,27 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
 ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+===============================================================================
+* My-Basic https://github.com/paladin-t/my_basic
+
+The MIT License
+
+Copyright (C) 2011 - 2016 Wang Renxin
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.

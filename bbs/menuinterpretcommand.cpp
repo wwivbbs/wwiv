@@ -21,6 +21,7 @@
 #include <memory>
 #include <string>
 
+#include "bbs/basic.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
@@ -151,6 +152,10 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "RunDoorNumberFree", [](MenuItemContext& context) {
       int nTemp = atoi(context.param1.c_str());
       MenuRunDoorNumber(nTemp, true);
+    } },
+    { "RunBasic", [](MenuItemContext& context) {
+      // Runs a basic script from GFILES/
+      wwiv::bbs::RunBasicScript(context.param1);
     } },
     { "PrintFile", [](MenuItemContext& context) {
       printfile(context.param1, true);

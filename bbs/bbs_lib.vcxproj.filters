@@ -362,6 +362,12 @@
     <ClCompile Include="full_screen.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="basic.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\deps\my_basic-master\core\my_basic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs.h">
@@ -743,6 +749,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="subreq.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="basic.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -199,6 +199,15 @@ std::string TextFile::ReadFileIntoString() {
   return contents;
 }
 
+std::vector<std::string> TextFile::ReadFileIntoVector() {
+  std::vector<std::string> result;
+  string line;
+  while (ReadLine(&line)) {
+    result.push_back(line);
+  }
+  return result;
+}
+
 std::ostream& operator<<(std::ostream& os, const TextFile& file) {
   os << file.full_pathname();
   return os;

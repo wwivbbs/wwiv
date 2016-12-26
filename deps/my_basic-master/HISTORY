@@ -1,0 +1,889 @@
+Dec. 23 2016
+Added memory allocation failure check to the shell
+
+Dec. 22 2016
+Improved shell prompting when removing a non-exist file
+
+Dec. 21 2016
+Improved parsing context maintaining
+
+Dec. 20 2016
+Narrowed array structure
+Narrowed bool_t
+
+Dec. 16 2016
+Improved INPUT statement
+
+Dec. 5 2016
+Added a REM statement
+
+Nov. 1 2016
+Fixed a file importing bug
+Removed the SET_IMPORTING_DIRS statement
+
+Oct. 23 2016
+Fixed a percent symbol printing bug, thanks to Philip Bister for pointing it out
+
+Aug. 9 2016
+Added function overriding support for class instance
+Fixed a multiple disposing bug with GC
+
+Aug. 7 2016
+Refactored to return UNKNOWN when trying to access a not exist member in a class instance
+
+Aug. 6 2016
+Refactored to return UNKNOWN when trying to access a not exist key in a dictionary
+Added reflection accessing ability to the SET statement
+
+Aug. 4 2016
+Improved locale processing
+
+Jul. 26 2016
+Fixed a multiple disposing bug with class member
+
+Jul. 20 2016
+Added a program too long error
+Fixed a memory comparison issue
+
+Jul. 19 2016
+Added a too many routines error
+Added a reference count overflow error
+Added a weak reference count overflow error
+
+Jul. 18 2016
+Fixed a wrong interpretation bug in the TYPE statement
+
+Jul. 16 2016
+Added class format support with the STR statement
+
+Jul. 14 2016
+Fixed a boolean operation bug with the NOT statement on float number
+Improved boolean operation
+
+Jul. 13 2016
+Refactored error prompting
+
+Jul. 12 2016
+Fixed some memory issues with GC
+Fixed a crash when met invalid lambda arguments
+
+Jul. 11 2016
+Added a HASH and COMPARE must come together error
+Fixed a meta function missing issue for class
+Fixed a source file information missing issue for routine
+Fixed a garbage collection issue of outer scope 
+Fixed a stack tracing issue
+
+Jul. 7 2016
+Added function overriding support for referenced usertype
+Improved error prompting for collection manipulation
+
+Jul. 6 2016
+Fixed a memory leak with the PRINT statement
+Fixed a stack memory issue with stack tracing
+
+Jul. 5 2016
+Improved error handling
+
+Jun. 30 2016
+Fixed a buffer overflow issue when formatting real number with the STR statement
+
+Jun. 29 2016
+Added a dynamic buffer helper for temporary string manipulation
+
+Jun. 28 2016
+Fixed a type detection bug with string
+Refactored formatting functor of a referenced usertype
+
+Jun. 27 2016
+Added a context parameter to stepped handler
+
+Jun. 23 2016
+Added unary negative meta function overriding support for referenced usertype
+Fixed a memory leak with variable arguments
+
+Jun. 21 2016
+Added lambda tracing
+Improved error prompting for wrong function reaching
+Improved variable argument list processing with lambda
+Improved UTF8 string input/output on Windows for the shell
+Fixed a wrong variable argument list processing issue
+Fixed a referenced usertype operation bug
+
+Jun. 17 2016
+Improved UTF8 string input/output on Windows
+
+Jun. 15 2016
+Added endian determination for object comparison
+Improved bytes comparison with different endian
+
+Jun. 14 2016
+Fixed some bugs with meta method calling
+
+Jun. 7 2016
+Simplified double precision float number redefinition
+
+May. 24 2016
+Refactored error raising of string manipulation
+
+May. 20 2016
+Added an assertion when buffer overflow in the STR statement
+
+May. 19 2016
+Added UTF8 BOM detection even with MB_ENABLE_UNICODE disabled
+Fixed a bug in ASC with UTF8 character
+
+May. 17 2016
+Fixed an evaluation bug when accessing a collection by brackets
+Fixed a memory leak with expression calculation
+
+May. 13 2016
+Added an error type
+
+May. 5 2016
+Fixed a column counting bug with UTF8
+
+Apr. 29 2016
+Fixed a loading bug when importing a UTF8 file
+
+Apr. 26 2016
+Added an invalid operation usage error when met an unexpected expression
+
+Apr. 22 2016
+Added UTF8 token support
+
+Apr. 19 2016
+Fixed an error raising issue with incomplete IF structure
+
+Apr. 18 2016
+Fixed an invalid iterator issue with ranged list
+
+Apr. 15 2016
+Added some error raising when met incomplete routine or class
+
+Apr. 13 2016
+Fixed a negative calculation issue with brackets
+
+Apr. 11 2016
+Fixed a calculation issue with the NOT statement
+
+Apr. 5 2016
+Added a warning when a "tostring" meta method didn't return a string
+
+Mar. 29 2016
+Added a help option to the shell
+
+Mar. 16 2016
+Fixed an execution issue after a lambda
+Fixed a cannot RETURN bug from a FOR loop in a sub routine
+Fixed a memory leak with referenced data in a variable argument list
+
+Mar. 15 2016
+Improved error prompting of array manipulation
+
+Mar. 11 2016
+Improved error prompting
+
+Mar. 9 2016
+Improved overridden function invoking
+Fixed a memory leak
+Moved overriding information from stack to heap
+
+Mar. 8 2016
+Fixed a memory overflow bug with the ASC statement
+
+Mar. 4 2016
+Fixed a memory leak with sub routine parameter
+Improved inputer
+
+Mar. 2 2016
+Added a new YARD sample
+Fixed a crash bug when unreferencing a garbage
+Fixed a multiple disposing bug when an error occurs in an expression
+
+Mar. 1 2016
+Added an OS statement
+Fixed a variable pathing bug in lambda
+Fixed a class type detection bug with the IS statement
+Refactored platform dependent macros
+
+Feb. 29 2016
+Added multi-line comment support
+Fixed a crash bug with an invalid expression
+
+Feb. 26 2016
+Added a ME keyword to represent a class instance itself
+Added shallow cloning support
+Fixed an overridden function copying issue
+Fixed a multiple disposing bug with outer scopes of lambda
+
+Feb. 25 2016
+Improved importing directory detection
+Fixed a bug with the END and RETURN statement with FOR loop
+Fixed an array index calculation bug
+Fixed a wrong variable manipulation bug with the PRINT statement
+
+Feb. 24 2016
+Added a TO_ARRAY statement
+Added support to apply the LEN statement to an array assigned from another
+
+Feb. 23 2016
+Added an mb_override_value function
+Added meta function overriding support for referenced usertype
+
+Feb. 22 2016
+Added array cloning support
+Added array accessing support of a class instance
+Added a RAISE statement to the shell
+Fixed an iterator disposing issue caused by referencing a collection weakly
+
+Feb. 19 2016
+Added source tracing for sub routine invoking
+Added member accessing support following a routine of a class instance
+Fixed a lexical object conversion issue
+
+Feb. 18 2016
+Added a generic iterator type
+Added a SYS statement to the shell
+Fixed a wrong list linkage bug with list sorting
+
+Feb. 16 2016
+Fixed a bug with the EXIT statement with FOR loop
+
+Feb. 15 2016
+Fixed some compile issues with Xcode
+
+Feb. 11 2016
+Fixed a bug with the EXIT statement with multiple line IF statement
+
+Feb. 10 2016
+Fixed a wrong loop bug with WHILE and DO statements
+
+Feb. 4 2016
+Avoided warnings with some compilers
+Fixed a member assignment bug when cloning a class instance
+
+Feb. 3 2016
+Added an INDEX_OF statement
+Fixed a wrong parameter variable accessing bug
+Fixed some memory leaks with collection GC
+Fixed a wrong garbage collection bug with members of a class instance
+Fixed a wrong dereferencing bug with referenced type hashing and comparison
+Fixed an invalid lambda bug with GC
+Fixed a memory leak with sub routine when assigning it as an upvalue
+
+Feb. 2 2016
+Optimized list sorting function by using merge sorting
+
+Jan. 31 2016
+Ignored first frame name with the TRACE command
+
+Jan. 30 2016
+Added a TRACE command to the shell
+Fixed an infinity loop bug in the mb_debug_get_stack_trace function
+
+Jan. 29 2016
+Fixed lookup bugs with member sub routine of a class instance
+Fixed a member accessing bug with class instance
+
+Jan. 28 2016
+Fixed a routine retrieving bug
+Fixed a crash bug when skipping a struct
+
+Jan. 27 2016
+Removed the MB_ENABLE_GC macro
+Refactored initial reference count
+
+Jan. 26 2016
+Added an mb_gc function
+Added a SET_IMPORTING_DIRS statement to the shell
+Added friendly error prompting when memory overflow
+Added source file information to stepped handler
+Fixed a wrong argument processing bug with a variable argument list
+Fixed a wrong hash bug with string object
+Fixed a memory corruption bug with importing directory setting
+Optimized cached list accessing
+
+Jan. 25 2016
+Fixed a memory leak when printing a referenced usertype
+Fixed a bug with nested IF statement
+Fixed a bug with WHILE and DO statements when returning from a sub routine
+Fixed an indexing bug with list
+Added a new sample script source file
+
+Jan. 23 2016
+Added lazy evaluation for ranged list
+
+Jan. 22 2016
+Added an IN keyword
+Added support to loop on collections by using FOR-IN statement
+Added a "hash" meta method to calculate the hash code of a class instance
+Added a "compare" meta method to compare two class instances
+
+Jan. 21 2016
+Fixed a referenced usertype comparison bug
+Fixed a wrong memory copy bug with the PRINT statement
+Added a "tostring" meta method to serialize a class instance
+Improved type handling
+
+Jan. 20 2016
+Fixed an unknown type handling bug
+
+Jan. 19 2016
+Added support to apply the LEN statement to a variable argument list as LEN(...)
+
+Jan. 18 2016
+Added a variable argument list support
+Added a NOW statement to the shell
+Improved shell implementation code
+
+Jan. 17 2016
+Added source file information to error handling
+Fixed a memory leak with sub routine which returns a string
+
+Jan. 16 2016
+Added a range of integer syntax for the LIST statement, eg. LIST(m TO n)
+Added extra importing directories support to shell
+
+Jan. 15 2016
+Added a REFLECT statement
+Added an MB_ENABLE_USERTYPE_REF macro
+Added an MB_ENABLE_ARRAY_REF macro
+Fixed some crash bugs with invalid syntax
+Fixed some memory leak with invalid syntax
+Fixed an invalid GC table iteration bug
+
+Jan. 14 2016
+Fixed a collection accessing bug in an assignment statement
+Fixed a lambda unreferencing issue
+Fixed a lambda evaluation bug with upvalues from meta class
+Fixed a routine disposing issue
+Fixed a variable assignment bug when it was holding a routine
+Fixed a missing assignment bug with class field accessor
+Fixed an issue with lambda when a class instance went out of use
+Removed support of storing a literal instance in a variable
+Simplified variable creation
+
+Jan. 13 2016
+Optimized hash table algorithm
+
+Jan. 12 2016
+Improved sub routine by unreference objects which were out of scope
+Fixed a routine evaluation bug when it's stored in a variable
+Fixed a disposing issue with collection iterators
+Fixed some memory leak with lambda
+Fixed a multiple disposing bug with string expression calculation
+Improved GC with outer scopes of lambda
+Fixed some other minor bugs with lambda
+Fixed a wrong disposing bug when accessing a collection by brackets
+Optimized memory occupation with lambda
+
+Jan. 11 2016
+Fixed a crash bug when a DO-UNTIL statement is the end of a program
+Fixed a memory leak with string manipulation
+
+Jan. 9 2016
+Developing lambda, improved error handling
+Developing lambda, fixed an issue with only a PRINT statement
+
+Jan. 8 2016
+Developing lambda, fixed a lambda scope linkage issue
+Developing lambda, fixed an upvalue passing issue
+
+Jan. 7 2016
+Developing lambda, added parameter and upvalue processing
+Developing lambda, added closure maintenance
+Developing lambda, added lambda evaluation
+Developing lambda, added lambda unreferencing functions
+
+Jan. 6 2016
+Developing lambda, added cloning support
+Added support to use TYPE("NUMBER") to represent both integer and real
+Improved IS statement
+
+Jan. 5 2016
+Developing lambda, added data structure
+Developing lambda, added a LAMBDA statement
+Developing lambda, added a _core_lambda function 
+Developing lambda, added an MB_ENABLE_LAMBDA macro
+
+Jan. 4 2016
+Added stack tracing
+Added an mb_debug_get_stack_trace function and an MB_ENABLE_STACK_TRACE macro
+Added support to duplicate a class instance by NEW statement with an identifier string
+Fixed a string value copy issue in mb_pop_value
+
+Jan. 2 2016
+Added support to apply GET statement to a class instance
+Added support to access a collection by brackets
+Fixed a wrong scope bug caused by cloned class instance
+Fixed a GC issue by adding reference count when cloning a collection or a referenced usertype
+Fixed a mistake in VAR statement
+
+Jan. 1 2016 Version 1.2
+Added a new sample script source file
+Added case-insensitive type name string comparison support
+Fixed an invalid execution point bug when a program begins with a label
+
+Dec. 30 2015
+Improved error handling with sub routine and class
+Implemented DIR command
+
+Dec. 29 2015
+Fixed a multiple disposing bug with expression calculation
+Fixed a memory leak with GC caused by meta class
+Improved GC with array and string
+Improved string duplication
+Improved array handling
+Improved array manipulation code
+
+Dec. 28 2015
+Fixed a GC bug
+Fixed a wrong routine evaluation bug
+Improved threshold algorithm for the memory pool
+
+Dec. 25 2015
+Added support to put a class instance into a variable
+Improved error handling with sub routine and class
+Fixed an unary calculation issue
+Fixed a memory leak in class definition
+
+Dec. 24 2015
+Improved defining a class in C
+Added a pair of mb_get_class_userdata/mb_set_class_userdata functions
+Added a pair of mb_get_userdata/mb_set_userdata functions
+Refactored memory layout of the _routine_t struct
+
+Dec. 21 2015
+Fixed a class GC bug
+
+Dec. 19 2015
+Improved error handling when defining a class in C
+
+Dec. 18 2015
+Avoided compiling issues
+Improved compatibility with Arduino
+
+Dec. 17 2015
+Added support to evaluate a sub routine by an accessor in a PRINT statement
+Added support to get a value by an accessor in a PRINT statement
+Fixed a method invoking issue when met from meta class
+
+Dec. 15 2015
+Added a pair of mb_begin_class/mb_end_class functions
+Added an mb_get_value_by_name function
+Added an mb_add_var function
+Added an mb_set_routine function
+Added native sub routine support
+
+Dec. 13 2015
+Avoided warnings
+
+Dec. 11 2015
+Added an IS statement to detect type equality of a value
+Added support to store a routine in a variable by CALL statement
+Added GC accessing to fields of a class instance
+Fixed a memory leak with GC caused by reference cycle
+Finished internal class development
+
+Dec. 10 2015
+Developing class, added a NEW statement to duplicate a class instance
+
+Dec. 9 2015
+Developing class, added accessing by identifier
+Developing class, added a VAR statement to declare a member variable
+Developing class, added routine evaluation in a class
+Developing class, added reference count for class
+Fixed a crash bug when exiting with a parsing error
+Fixed a multiple disposing bug when doing GC
+
+Dec. 8 2015
+Developing class, added reference struct, added meta class linking
+Improved stability for sub routine
+
+Dec. 7 2015
+Improved TICKS function
+Initialized random number seed on start up
+
+Dec. 4 2015
+Updated icon
+Added structures for class development
+
+Nov. 30 2015
+Improved stability for sub routine
+Improved error handling with shell
+
+Nov. 26 2015
+Raised error for invalid routine usage
+Fixed a memory corruption bug when met an invalid routine usage
+
+Nov. 4 2015
+Added an mb_raise_error function
+
+Nov. 3 2015
+Fixed a memory leak with string manipulation
+
+Oct. 31 2015
+Added some mb_value_t initialization helper macros
+
+Oct. 29 2015
+Added an mb_get_ref_value function
+Improved mb_set_coll
+
+Oct. 28 2015
+Added module (namespace) support
+
+Oct. 27 2015
+Added an mb_set_import_handler function
+Added an mb_init_coll function
+Fixed a collection referencing by iterator bug during GC
+Fixed an argument detection issue with nil value
+Improved stability
+
+Oct. 23 2015
+Added public collection manipulation interfaces: mb_get_coll, mb_set_coll, mb_remove_coll, mb_count_coll
+Improved usertype by adding size customizable mb_val_bytes_t to the value union
+Improved referenced usertype
+Fixed a dictionary iterator validation bug
+Fixed a wrong identifier parsing bug, thanks to Julien for pointing it out
+Added threshold to the memory pool
+
+Oct. 22 2015
+Fixed a memory issue in GC, thanks to John and Cybermonkey342 for pointing it out
+
+Oct. 21 2015
+Fixed a reference count manipulation bug
+Fixed some uninitialized value issues
+
+Oct. 20 2015
+Added a SRND statement
+Added range support for RND statement
+Fixed a wrong processing bug when return in an IF statement chunk
+Fixed a scope manipulation bug when evaluating a none parameter routine, thanks to Cybermonkey342 and John for pointing it out
+Improved error handling
+
+Oct. 19 2015
+Added a sub routine invoking function
+Added an mb_get_routine function
+Added an mb_eval_routine function
+Renamed old mb_ref_value to mb_make_ref_value
+Added a new mb_ref_value function
+Added an mb_unref_value function
+
+Oct. 15 2015
+Added referenced usertype support
+
+Oct. 14 2015
+Added GC (Garbage Collection) for referenced objects
+
+Oct. 13 2015
+Changed array to referenced type
+Fixed a memory pool sorting issue
+
+Oct. 12 2015
+Avoided cycle importing
+Improved memory pool
+
+Oct. 11 2015
+Added a CLONE statement/function for collections
+Optimized list indexing
+Optimized list counting
+
+Oct. 10 2015
+Improved stability for nested IF statement
+
+Oct. 8 2015
+Fixed an iterator validation bug
+Fixed an iterator assignment issue
+Improved stability, refused nested array inside other collections, and vice versa
+
+Oct. 7 2015
+Added non number data comparison
+Improved collection stability
+Accepted dictionary iterator for VAL statement
+
+Oct. 5 2015
+Added a LIST collection
+Added a DICT collection
+Added TYPE statement
+Added an mb_get_type_string function
+Fixed a wrong evaluation bug in nested IF statements, thanks to Julien Krief for pointing it out
+
+Sep. 30 2015
+Improved UTF8 string manipulation
+
+Sep. 29 2015
+Added UTF8 support for string manipulation
+
+Sep. 28 2015
+Fixed a compatibility bug with scope meta info, thanks to Cybermonkey342 and John for pointing it out
+Improved compatibility with TCC
+
+Sep. 24 2015
+Fixed bugs in a recursive sub routine, thanks to John for pointing it out
+Fixed identifier lookup bugs
+Fixed a memory leak when pushing string arguments
+
+Sep. 22 2015
+Added IMPORT statement
+Added mb_get_var, mb_get_var_value and mb_set_var_value
+
+Sep. 21 2015
+Implemented tail recursion optimization in sub routine
+Added array length gain in LEN function
+Fixed a crash bug when returning nothing in a sub routine
+
+Sep. 20 2015
+Added array manipulation ability to script, it's able to assign an array to a variable or use it as a scripting interface argument
+Added recursive sub routine support
+Fixed a wrong argument detection bug in mb_has_arg
+
+Sep. 18 2015
+Fixed a float number parsing bug, thanks to Cybermonkey342 for pointing it out
+Added directly expression evaluation shell command
+
+Sep. 17 2015
+Allowed string in a boolean expression
+Added support for sub routine in PRINT
+Fixed a repeated disposing bug when using sub routine
+
+Sep. 16 2015
+Added Nil type handling, including assignment, boolean operation, serialization, etc.
+Added an MB_CONVERT_TO_INT_LEVEL macro, would convert float to integer as much as possible if this macro was enabled
+
+Sep. 11 2015
+Added a duplicate sub routine error handling
+Added optional argument support for INPUT statement
+Fixed a repeated disposing bug of a variable in sub routine
+
+Sep. 8 2015
+Fixed a type parsing of sub routine bug
+Fixed a scope processing bug
+Fixed a sub routine invoking bug without leading CALL statement or result receiver
+Added a makefile
+
+Sep. 6 2015
+Improved sub routine
+
+Sep. 2 2015
+Added sub routine type insurance
+Prompted more friendly dummy function message
+
+Sep. 1 2015
+Added support for user customized sub routine by DEF/ENDDEF
+
+Aug. 26 2015
+Added a memory pool to interpreter shell in main.c
+
+Aug. 25 2015
+Allowed a user to define the memory tag data type, unsigned short as default
+Added an mb_set_memory_manager function, allows user defined memory management
+Added referencable data type size constants
+
+Aug. 11 2015
+Fixed a wrong IF trunk processing bug, thanks to irony for pointing it out
+Fixed a crash bug with an invalid IF statement
+
+Jul. 27 2015
+Fixed a memory leak with mb_pop_xxx, thanks to Daniel Haensse for pointing it out
+
+Jul. 20 2015
+Fixed a string manipulation bug
+
+Jul. 12 2015
+Added array manipulation functions
+
+Jun. 19 2015
+Added an mb_schedule_suspend interface to schedule to suspend the execution
+
+Jun. 15 2015
+Fixed a wrong token position marking issue with interactive mode, thanks to Daniel Haensse for pointing it out
+
+May. 6 2015
+Removed redundant EOS tokens
+Improved data precision related macros
+
+May. 5 2015
+Added string type support for non-simple array
+Fixed a memory leak when storing strings to a non-string array
+Improved data precision related macros
+
+Apr. 27 2015
+Added code line inserting/removing to interpreter shell
+Changed mb_dispose_value as public
+
+Apr. 23 2015 Version 1.1
+Added debug APIs
+Added (nestable) multiple line IF statement support
+
+Apr. 15 2015
+Added mb_pop_usertype, mb_push_usertype to support user defined type
+
+Apr. 13 2015
+Added mixed integer/float array support
+Added warning prompt when passing strings to maths functions
+Fixed a memory leak when storing strings in an array
+Improved the interpreter commands
+
+Apr. 11 2015
+Moved struct mb_interpreter_t from my_basic.h to my_basic.c
+Added an mb_has_arg interface to tell whether there is any more argument
+Added an MB_ENABLE_SOURCE_TRACE macro to enable or disable source tracing
+Disposed parsing context at runtime to reduce memory occupation
+
+Apr. 10 2015
+Improved compatibility with PellesC
+Fixed a double precision float parsing bug on all 32bit systems, thanks to Pito for pointing it out
+Fixed an exponential number parsing bug, thanks to Pito for pointing it out
+Fixed a crash bug when a script begins with a meaningless negtive number
+
+Mar. 25 2015
+Changed _strupr macro to mb_strupr function
+Added an mb_memdup function
+Fixed a repeated disposing bug of an intermediate value
+
+Dec. 17 2014
+Fixed a calculation crash bug
+Fixed a memory leak with intermediate value
+
+Dec. 16 2014
+Fixed a negative calculation bug in a function argument
+
+Dec. 9 2014
+Improved compatibility with BCB
+
+May. 25 2014
+Added an mb_set_inputer function which allows a user to specify an INPUT reader, thanks to Michael P. Welch for suggestion
+Added an mb_remove_reserved_func function which allows a user to disable/remove a reserved statement
+
+May. 22 2014
+Fixed a crash bug when missing colon in a combined line, thanks to Michael P. Welch for pointing it out
+Fixed a missing lexical cursor stepping bug in INPUT statement
+
+Mar. 17 2014
+Added an Xcode project
+Added a safe stdin reader function mb_gets
+Fixed a crash bug in INPUT statement
+
+Feb. 17 2014
+Added mod by zero processing
+
+Feb. 16 2014
+Fixed a crash bug in _core_for, thanks to mummylauncher for pointing it out
+
+Jul. 19 2013
+Fixed a crash bug in _execute_statement, thanks to Jon Mayo for pointing it out
+
+Feb. 25 2013
+Fixed a cross routine multiple statement execution bug, thanks to Bruce Kendall for pointing it out
+Fixed a memory corruption bug when loading a script file
+
+Jan. 9 2013
+Fixed a crash bug when using EDIT command
+
+Dec. 14 2012
+Added an invalid expression error handling
+Added an out of memory error handling
+
+Dec. 5 2012
+Fixed a minus calculation bug, thanks to Bill Walker for pointing it out
+
+Nov. 14 2012
+Fixed a cross routine RETURN bug, thanks to Bruce Kendall for pointing it out
+
+Sep. 12 2012
+Fixed a bug in ASC
+Fixed a label parsing, jumping bug, thanks to Ahmad Hawwash for pointing above two issues out
+Fixed a crash bug in IF statement
+Added divide by zero processing
+Added calculation error raising
+
+Sep. 1 2012
+Fixed a redisposing bug when retrieving a string argument, thanks to Ahmad Hawwash for pointing it out
+Fixed a memory leak after retrieving a composited string argument
+
+Aug. 29 2012
+Modified an odd string comparison behavior, thanks to Matthias Nott for testing it out
+Added a warning system, disabled warning as default
+Improved compatibility with GCC
+
+Aug. 3 2012
+Implemented memory occupation statistics
+Improved compatibility on 64bit systems
+Fixed some warnings under a stricter mode
+
+Jul. 21 2012
+Added a compatibility macro for PRINT a newline
+Added an mb_attempt_func_end C API
+Fixed a unary minus symbol parsing bug
+
+Jul. 19 2012
+Fixed a crash bug caused by a mistake in calculation priority table, thanks to Bruce Kendall for pointing it out
+
+Jul. 10 2012
+Implemented KILL command
+Fixed a negative calculation bug
+Added an invalid identifier usage error handling
+Avoided some warnings on gcc
+
+Jul. 5 2012
+Implemented LIST, EDIT, LOAD, SAVE commands
+
+Jul. 4 2012
+Fixed some crash bugs
+Fixed some memory leaks
+
+Jul. 3 2012
+Modified/added math functions: FLOOR, CEIL, FIX
+Fixed an INPUT type issue
+Changed float number formatting from using "%f" to "%g" in PRINT, thanks to Bruce Kendall for pointing above three issues out
+Refactored the way to load a script file
+Done several small improvements
+
+Jun. 29 2012
+Fixed a newline mistake in PRINT
+
+Jun. 29 2012
+Implemented customizable print functor
+Improved PRINT statement
+Fixed an infinity loop bug in RND function
+Fixed some crash bugs
+
+Jun. 28 2012
+Fixed a cross routine RETURN bug, thanks to Bruce Kendall for pointing it out
+Fixed some memory leaks
+Refactored error position informing
+
+Jun. 18 2012
+Implemented user extended abort, thanks to Bruce Kendall for giving suggestion
+
+Apr. 30 2012
+Compress number to integer if necessary
+
+Apr. 27 2012
+Fixed a string connecting crash bug, thanks to Ahmad Hawwash for pointing it out
+Improved portability on gcc
+
+Aug. 3 2011
+Fixed hashtable removing bug
+
+Jun. 18 2011
+Fixed some mistakes
+Allowed underline character appear in an identifier
+
+Apr. 15 2011
+Fixed garbage collection and _label_t disposing bugs
+
+Apr. 14 2011
+Fixed some list/comparison operator bugs
+
+Feb. 15 2011
+Improved portability with Xcode
+Improved portability with VC++ 6.0
+Fixed a suspend/resume bug
+
+Feb. 9 2011
+Fixed struct mb_interpreter_t declaration warnings on gcc
+
+Feb. 1 2011 Version 1.0
+First release.

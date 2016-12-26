@@ -35,6 +35,10 @@ license: MIT
 
 Cereal
 dir cereal
-url: https://github.com/USCiLab/cereal/ (BSD License)
+url: https://github.com/USCiLab/cereal/
 license: New BSD
 
+My-Basic
+dir my_basic_master
+url: https://github.com/paladin-t/my_basic/commit/144d39285198222da8d55e612c51bf39be600a8f
+License: MIT

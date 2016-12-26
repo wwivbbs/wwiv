@@ -101,6 +101,7 @@
     <ClInclude Include="asv.h" />
     <ClInclude Include="attach.h" />
     <ClInclude Include="automsg.h" />
+    <ClInclude Include="basic.h" />
     <ClInclude Include="batch.h" />
     <ClInclude Include="bbs.h" />
     <ClInclude Include="bbsovl1.h" />
@@ -224,12 +225,14 @@
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\deps\my_basic-master\core\my_basic.c" />
     <ClCompile Include="application.cpp" />
     <ClCompile Include="archivers.cpp" />
     <ClCompile Include="arword.cpp" />
     <ClCompile Include="asv.cpp" />
     <ClCompile Include="attach.cpp" />
     <ClCompile Include="automsg.cpp" />
+    <ClCompile Include="basic.cpp" />
     <ClCompile Include="batch.cpp" />
     <ClCompile Include="bbs.cpp" />
     <ClCompile Include="bbsovl1.cpp" />

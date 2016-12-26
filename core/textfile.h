@@ -23,6 +23,7 @@
 #include <cstring>
 #include <string>
 #include <type_traits>
+#include <vector>
 
 /**
  \class TextFile textfile.h "core/textfile.h"
@@ -134,6 +135,14 @@ public:
     Note: The file position will be at the end of the file after returning.
    */
   std::string ReadFileIntoString();
+
+  /**
+    Reads the entire contents of the file into a vector of strings.
+
+    Note: The file position will be at the end of the file after returning.
+  */
+  std::vector<std::string> ReadFileIntoVector();
+
 
   // operators
 
