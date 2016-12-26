@@ -182,7 +182,7 @@ TEST_F(TextFileTest, GetPosition) {
 #ifdef _WIN32
   EXPECT_EQ(3, file.position());
 #else  // _WIN32
-  EXPECT_EQ(2, file.GetPosition());
+  EXPECT_EQ(2, file.position());
 #endif  // _WIN32
 }
 
