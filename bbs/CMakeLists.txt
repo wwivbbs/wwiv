@@ -12,6 +12,7 @@ set(COMMON_SOURCES
  asv.cpp
  attach.cpp
  automsg.cpp
+ basic.cpp
  batch.cpp
  bbs.cpp
  bbsovl1.cpp
@@ -117,6 +118,7 @@ set(COMMON_SOURCES
  xinit.cpp
  wfc.cpp
  workspace.cpp
+ ../deps/my_basic-master/core/my_basic.c
 )
 
 set(BBS_MAIN bbs_main.cpp)
