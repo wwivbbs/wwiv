@@ -418,6 +418,18 @@ static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int 
   return lines;
 }
 
+static void display_title_new(const std::vector<std::string>& lines, const FullScreenView& fs,
+  int i, bool selected) {
+  bout.GotoXY(1, i + fs.lines_start());
+  const auto l = lines.at(i);
+  if (selected) {
+    bout << "|17|12>";
+  }
+  else {
+    bout << "|16|#0 ";
+  }
+  bout << l << pad(fs.screen_width() - 1, stripcolors(l).size()) << "|#0";
+}
 
 static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,
   int start, int selected) {
@@ -425,15 +437,8 @@ static void display_titles_new(const std::vector<std::string>& lines, const Full
     if (i >= size_int(lines)) {
       break;
     }
-    bout.GotoXY(1, i + fs.lines_start());
-    const auto l = lines.at(i);
-    if (i == (selected - start)) {
-      bout << "|17|12>";
-    }
-    else {
-      bout << "|16|#0 ";
-    }
-    bout << l << pad(fs.screen_width() - 1, stripcolors(l).size()) << "|#0";
+    bool is_selected = i == (selected - start);
+    display_title_new(lines, fs, i, is_selected);
   }
 }
 
@@ -475,13 +480,24 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
   if (selected > window_bottom) selected = window_bottom;
 
   bool done = false;
+  bool need_redraw = true;
+  int last_selected = selected;
   while (!done) {
     CheckForHangup();
     auto lines = CreateMessageTitleVector(area.get(), window_top, height);
-    display_titles_new(lines, fs, window_top, selected);
+    if (need_redraw) {
+      display_titles_new(lines, fs, window_top, selected);
+      need_redraw = false;
+    }
+    else if (last_selected != selected) {
+      display_title_new(lines, fs, (last_selected - window_top), false);
+      display_title_new(lines, fs, (selected - window_top), true);
+      need_redraw = false;
+    }
 
     bout.GotoXY(1, fs.lines_start() + selected - (window_top - window_top_min) + window_top_min);
     fs.DrawBottomBar(StrCat("Selected: ", selected));
+    last_selected = selected;
 
     fs.ClearCommandLine();
     bout.GotoXY(1, fs.command_line_y());
@@ -501,6 +517,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
         if (window_top > window_top_min) {
           window_top--;
           selected--;
+          need_redraw = true;
         }
       }
       else {
@@ -512,8 +529,10 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       selected -= height;
       window_top = std::max<int>(window_top, window_top_min);
       selected = std::max<int>(selected, 1);
+      need_redraw = true;
     } break;
     case COMMAND_HOME: {
+      need_redraw = true;
       selected = 1;
       window_top = window_top_min;
     } break;
@@ -526,6 +545,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       else if (window_top < d) {
         selected++;
         window_top++;
+        need_redraw = true;
       }
     } break;
     case COMMAND_PAGEDN: {
@@ -533,10 +553,12 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
       selected += height;
       window_top = std::min<int>(window_top, num_msgs_in_area - height + window_top_min);
       selected = std::min<int>(selected, num_msgs_in_area);
+      need_redraw = true;
     } break;
     case COMMAND_END: {
       window_top = num_msgs_in_area - height + window_top_min;
       selected = window_top;
+      need_redraw = true;
     } break;
     case SOFTRETURN: {
       // Do nothing. SyncTerm sends CRLF on enter, not just CR
@@ -572,6 +594,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
           return result;
         } break;
         case '?': {
+          need_redraw = true;
           fs.ClearMessageArea();
           if (!printfile(TITLE_FSED_NOEXT)) {
             fs.ClearCommandLine();
