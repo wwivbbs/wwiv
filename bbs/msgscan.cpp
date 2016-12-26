@@ -465,7 +465,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
 
   const int window_top_min = 1;
   const int first = 1;
-  const int last = std::max<int>(first, area->number_of_messages() - fs.message_height());
+  const int last = std::max<int>(first, area->number_of_messages() - fs.message_height() + window_top_min);
   const int height = std::min<int>(num_msgs_in_area, fs.message_height());
 
   int selected = msgnum;

@@ -315,10 +315,9 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   string message_text = string(b, p.text.end());
   net_header_rec nh = {};
 
-  string title = StringPrintf("WWIV AreaFix (%s) Response for subtype '%s'", context.net.name, subname.c_str());
-  string byname = StringPrintf("WWIV AreaFix (%s) @%u", context.net.name, p.nh.fromsys);
-  string body = StringPrintf("SubType '%s', (%s) Response: '%s'\r\n", 
-    subname.c_str(), add_or_drop.c_str(), code_string.c_str());
+  string title = StringPrintf("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
+  string byname = StrCat("WWIV AreaFix (", context.net.name, ") @", p.nh.fromsys);
+  string body = StrCat("SubType '", subname, "', (", add_or_drop, ") Response: '", code_string, "'\r\n");
   body.append(message_text);
 
   nh.touser = 1;
