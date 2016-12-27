@@ -29,6 +29,7 @@
 #include "core/log.h"
 #include "core/textfile.h"
 #include "core/strings.h"
+#include "core/version.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -51,15 +52,17 @@ int my_print(const char* fmt, ...) {
 }
 
 int my_input(char* buf, int size) {
-  auto v = Input1("", size, false, wwiv::bbs::InputMode::MIXED);
+  auto v = inputl(size, false);
   strcpy(buf, v.c_str());
   return v.size();
 }
 
 static bool RegisterMyBasicGlobals() {
-  mb_check(mb_init());
+  mb_init();
   return true;
 }
+
+// bobby
 
 static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
   const auto path = FilePath(a()->config()->gfilesdir(), script_name);
@@ -75,8 +78,76 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   }
 
   auto lines = file.ReadFileIntoString();
+  // We always want to initialize our variables first.
+  mb_load_string(bas, "__initvars()\r\n", false);
+
+  // auto ret = mb_load_file(bas, path.c_str());
   auto ret = mb_load_string(bas, lines.c_str(), true);
   return ret == MB_FUNC_OK;
+}
+
+static void _on_error(struct mb_interpreter_t* s, mb_error_e e, char* m, char* f, int p, unsigned short row, unsigned short col, int abort_code) {
+  mb_unrefvar(s);
+  mb_unrefvar(p);
+
+  if (e != SE_NO_ERR) {
+    if (f) {
+      if (e == SE_RN_WRONG_FUNCTION_REACHED) {
+        printf(
+          "Error:\n    Line %d, Col %d in Func: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
+          row, col, f,
+          e, abort_code,
+          m
+        );
+      }
+      else {
+        printf(
+          "Error:\n    Line %d, Col %d in File: %s\n    Code %d, Abort Code %d\n    Message: %s.\n",
+          row, col, f,
+          e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
+          m
+        );
+      }
+    }
+    else {
+      printf(
+        "Error:\n    Line %d, Col %d\n    Code %d, Abort Code %d\n    Message: %s.\n",
+        row, col,
+        e, e == SE_EA_EXTENDED_ABORT ? abort_code - MB_EXTENDED_ABORT : abort_code,
+        m
+      );
+    }
+  }
+}
+
+static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, unsigned short row, unsigned short col) {
+  string file = (f) ? f : "(null)";
+  VLOG(2) << "p: " << p << "; f: " << file << "; row: " << row << "; col: " << col;
+
+  mb_unrefvar(s);
+  mb_unrefvar(l);
+  mb_unrefvar(f);
+  mb_unrefvar(p);
+  mb_unrefvar(row);
+  mb_unrefvar(col);
+}
+
+static int initvars(struct mb_interpreter_t* bas, void** l) {
+  VLOG(1) << "initvars";
+  mb_check(mb_attempt_open_bracket(bas, l));
+  mb_check(mb_attempt_close_bracket(bas, l));
+
+  mb_value_t w{};
+  w.type = MB_DT_STRING;
+  w.value.string = strdup(wwiv_version);
+  mb_add_var(bas, l, "WWIV", w, true);
+
+  LOG(INFO) << "initvars: " << mb_get_type_string(w.type);
+  mb_value_t val;
+  mb_get_value_by_name(bas, l, "WWIV", &val);
+  LOG(INFO) << "val: " << val.value.string;
+
+  return MB_FUNC_OK;
 }
 
 bool RunBasicScript(const std::string& script_name) {
@@ -84,9 +155,14 @@ bool RunBasicScript(const std::string& script_name) {
 
   struct mb_interpreter_t* bas = nullptr;
   mb_open(&bas);
+  mb_debug_set_stepped_handler(bas, _on_stepped);
+  mb_set_error_handler(bas, _on_error);
+
   mb_set_printer(bas, my_print);
   mb_set_inputer(bas, my_input);
+  mb_register_func(bas, "__INITVARS", initvars);
 
+  auto path = FilePath(a()->config()->gfilesdir(), script_name);
   if (!LoadBasicFile(bas, script_name)) {
     bout << "|#6Unable to load script: " << script_name;
     return false;
