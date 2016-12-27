@@ -39,6 +39,10 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace bbs {
 
+static char* BasicStrDup(const std::string& s) {
+  return mb_memdup(s.c_str(), s.size() + 1);
+}
+
 int my_print(const char* fmt, ...) {
   char buf[1024];
 
@@ -136,7 +140,7 @@ static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, un
 static int _version(struct mb_interpreter_t* bas, void** l) {
   mb_check(mb_attempt_open_bracket(bas, l));
   mb_check(mb_attempt_close_bracket(bas, l));
-  mb_push_string(bas, l, mb_memdup(wwiv_version, strlen(wwiv_version) + 1));
+  mb_push_string(bas, l, BasicStrDup(wwiv_version));
   return MB_FUNC_OK;
 }
 
@@ -179,7 +183,7 @@ bool RunBasicScript(const std::string& script_name) {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
     bout << "World\r\n";
-    //mb_push_string(bas, l, mb_memdup("World", 6));
+    //mb_push_string(bas, l, BasicStrDup("World"));
     return MB_FUNC_OK;
   });
   mb_register_func(bas, "RUNMENU", [](struct mb_interpreter_t* bas, void** l) -> int {
@@ -194,6 +198,31 @@ bool RunBasicScript(const std::string& script_name) {
     }
     return MB_FUNC_OK;
   });
+  mb_register_func(bas, "PUTS", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    while (mb_has_arg(bas, l)) {
+      char* arg = nullptr;
+      mb_check(mb_pop_string(bas, l, &arg));
+      bout.bputs(arg);
+    }
+    mb_check(mb_attempt_close_bracket(bas, l));
+    return MB_FUNC_OK;
+  });
+  mb_register_func(bas, "GETS", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    int arg = 0;
+    if (mb_has_arg(bas, l)) {
+      mb_check(mb_pop_int(bas, l, &arg));
+    }
+    mb_check(mb_attempt_close_bracket(bas, l));
+    if (arg > 0) {
+      string s = inputl(arg, true);
+      mb_push_string(bas, l, BasicStrDup(s));
+    }
+    return MB_FUNC_OK;
+  });
+
+
   mb_end_module(bas);
 
 
