@@ -186,6 +186,13 @@ void MenuSysopLog(const std::string& pszMsg);
 void TurnMCIOff();
 void TurnMCIOn();
 
+// In menuinterpretcommand.cpp
+/**
+ * Executes a menu command ```script``` using the menudata for the context of
+ * the MENU, or nullptr if not invoked from an actual menu.
+ */
+void InterpretCommand(MenuInstanceData* menudata, const std::string& script);
+
 }  // namespace menus
 }  // namespace wwiv
 

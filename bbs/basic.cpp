@@ -25,6 +25,7 @@
 #include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/input.h"
+#include "bbs/menu.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/textfile.h"
@@ -179,6 +180,18 @@ bool RunBasicScript(const std::string& script_name) {
     mb_check(mb_attempt_close_bracket(bas, l));
     bout << "World\r\n";
     //mb_push_string(bas, l, mb_memdup("World", 6));
+    return MB_FUNC_OK;
+  });
+  mb_register_func(bas, "RUNMENU", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    char* arg = nullptr;
+    if (mb_has_arg(bas, l)) {
+      mb_check(mb_pop_string(bas, l, &arg));
+    }    
+    mb_check(mb_attempt_close_bracket(bas, l));
+    if (arg) {
+      wwiv::menus::InterpretCommand(nullptr, arg);
+    }
     return MB_FUNC_OK;
   });
   mb_end_module(bas);

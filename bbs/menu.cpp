@@ -62,7 +62,7 @@ void LogUserFunction(const MenuInstanceData* menu_data, const string& command, M
 void PrintMenuPrompt(MenuInstanceData* menu_data);
 const string GetCommand(const MenuInstanceData* menu_data);
 bool CheckMenuItemSecurity(MenuRec* pMenu, bool bCheckPassword);
-void InterpretCommand(MenuInstanceData* menu_data, const char *pszScript);
+void InterpretCommand(MenuInstanceData* menu_data, const std::string& script);
 
 static bool CheckMenuPassword(const string& original_password) {
   const string expected_password = (original_password == "*SYSTEM") ? syscfg.systempw : original_password;

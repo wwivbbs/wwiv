@@ -84,39 +84,40 @@ public:
 
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
 
-void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
+void InterpretCommand(MenuInstanceData* menudata, const std::string& script) {
   static map<string, std::function<void(MenuItemContext& context)>, wwiv::stl::ci_less> functions = CreateCommandMap();
 
-  char szCmd[31], szParam1[51], szParam2[51];
-  char szTempScript[255];
-  memset(szTempScript, 0, sizeof(szTempScript));
-  strncpy(szTempScript, pszScript, 250);
-
-  if (pszScript[0] == 0) {
+  if (script.empty()) {
     return;
   }
 
-  const char* pszScriptPointer = szTempScript;
-  while (pszScriptPointer) {
-    pszScriptPointer = MenuParseLine(pszScriptPointer, szCmd, szParam1, szParam2);
+  char temp_script[255];
+  to_char_array(temp_script, script);
 
-    if (szCmd[0] == 0) { 
+  const char* p = temp_script;
+  while (p) {
+    char scmd[31], param1[51], param2[51];
+    p = MenuParseLine(p, scmd, param1, param2);
+
+    if (scmd[0] == 0) { 
       break;
     }
 
-    string cmd(szCmd);
+    string cmd(scmd);
     if (contains(functions, cmd)) {
-      MenuItemContext context(pMenuData, szParam1, szParam2);
+      MenuItemContext context(menudata, param1, param2);
       functions.at(cmd)(context);
-      pMenuData->reload = context.need_reload;
-      pMenuData->finished = (context.finished || context.need_reload);
+      if (menudata) {
+        menudata->reload = context.need_reload;
+        menudata->finished = (context.finished || context.need_reload);
+      }
     }
   }
 }
 
 #if defined( _MSC_VER )
 #pragma warning( push )
-#pragma warning( disable : 4100 )  // unreferenced formal parameter for pMenuData, param1, param2
+#pragma warning( disable : 4100 )  // unreferenced formal parameter for menudata, param1, param2
 #endif
 
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap() {
