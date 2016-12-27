@@ -132,20 +132,29 @@ static void _on_stepped(struct mb_interpreter_t* s, void** l, char* f, int p, un
   mb_unrefvar(col);
 }
 
+static int _version(struct mb_interpreter_t* bas, void** l) {
+  mb_check(mb_attempt_open_bracket(bas, l));
+  mb_check(mb_attempt_close_bracket(bas, l));
+  mb_push_string(bas, l, mb_memdup(wwiv_version, strlen(wwiv_version) + 1));
+  return MB_FUNC_OK;
+}
+
 static int initvars(struct mb_interpreter_t* bas, void** l) {
   VLOG(1) << "initvars";
   mb_check(mb_attempt_open_bracket(bas, l));
   mb_check(mb_attempt_close_bracket(bas, l));
 
+/*
   mb_value_t w{};
   w.type = MB_DT_STRING;
   w.value.string = strdup(wwiv_version);
-  mb_add_var(bas, l, "WWIV", w, true);
+  mb_add_var(bas, l, "VER", w, true);
 
   LOG(INFO) << "initvars: " << mb_get_type_string(w.type);
   mb_value_t val;
-  mb_get_value_by_name(bas, l, "WWIV", &val);
+  mb_get_value_by_name(bas, l, "VER", &val);
   LOG(INFO) << "val: " << val.value.string;
+*/
 
   return MB_FUNC_OK;
 }
@@ -161,6 +170,12 @@ bool RunBasicScript(const std::string& script_name) {
   mb_set_printer(bas, my_print);
   mb_set_inputer(bas, my_input);
   mb_register_func(bas, "__INITVARS", initvars);
+
+  mb_register_func(bas, "VERSION", _version);
+  mb_begin_module(bas, "WWIV");
+  mb_register_func(bas, "VERSION", _version);
+  mb_end_module(bas);
+
 
   auto path = FilePath(a()->config()->gfilesdir(), script_name);
   if (!LoadBasicFile(bas, script_name)) {
