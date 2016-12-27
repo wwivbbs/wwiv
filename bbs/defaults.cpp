@@ -736,7 +736,7 @@ void enter_regnum() {
   }
 }
 
-void defaults(wwiv::menus::MenuInstanceData* menudata) {
+void defaults(bool& need_menu_reload) {
   bool done = false;
   do {
     print_cur_stat();
@@ -826,8 +826,7 @@ void defaults(wwiv::menus::MenuInstanceData* menudata) {
     break;
     case 'K':
       wwiv::menus::ConfigUserMenuSet();
-      menudata->finished = true;
-      menudata->reload = true;
+      need_menu_reload = true;
       break;
     case 'L':
       if (a()->languages.size() > 1) {

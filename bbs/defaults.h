@@ -27,7 +27,7 @@ const std::string DescribeColorCode(int nColorCode);
 void color_list();
 void config_qscan();
 void enter_regnum();
-void defaults(wwiv::menus::MenuInstanceData * MenuData);
+void defaults(bool& need_menu_reload);
 void config_scan_plus(int type);
 
 #endif  // __INCLUDED_BBS_DEFAULTS_H__

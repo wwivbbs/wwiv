@@ -72,9 +72,14 @@ namespace menus {
 
 struct MenuItemContext {
 public:
+  MenuItemContext(MenuInstanceData* m, const string& p1, const string& p2)
+    : pMenuData(m), param1(p1), param2(p2) {}
+  // May be null if not invoked from an actual menu.
   MenuInstanceData* pMenuData;
   string param1;
   string param2;
+  bool finished = false;
+  bool need_reload = false;
 };
 
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
@@ -101,8 +106,10 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
 
     string cmd(szCmd);
     if (contains(functions, cmd)) {
-      MenuItemContext context{ pMenuData, szParam1, szParam2 };
+      MenuItemContext context(pMenuData, szParam1, szParam2);
       functions.at(cmd)(context);
+      pMenuData->reload = context.need_reload;
+      pMenuData->finished = (context.finished || context.need_reload);
     }
   }
 }
@@ -115,17 +122,20 @@ void InterpretCommand(MenuInstanceData* pMenuData, const char *pszScript) {
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap() {
   return {
     { "MENU", [](MenuItemContext& context) {
-      unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData());
-      new_menu->Menus(context.pMenuData->path_, context.param1);
+      if (context.pMenuData) {
+        unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData());
+        new_menu->Menus(context.pMenuData->path_, context.param1);
+      }
     } },
     { "ReturnFromMenu", [](MenuItemContext& context) {
-      InterpretCommand(context.pMenuData, context.pMenuData->header.szExitScript);
-      context.pMenuData->finished = true;
+      if (context.pMenuData) {
+        InterpretCommand(context.pMenuData, context.pMenuData->header.szExitScript);
+        context.finished = true;
+      }
     } },
     { "EditMenuSet", [](MenuItemContext& context) {
-      EditMenus();           // flag if we are editing this menu
-      context.pMenuData->finished = true;
-      context.pMenuData->reload = true;
+      EditMenus();
+      context.need_reload = true;
     } },
     { "DLFreeFile", [](MenuItemContext& context) {
       char s[MAX_PATH];
@@ -189,11 +199,10 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     } },
     { "ConfigUserMenuSet", [](MenuItemContext& context) {
       ConfigUserMenuSet();
-      context.pMenuData->finished = true;
-      context.pMenuData->reload = true;
+      context.need_reload = true;
     } },
     { "DisplayHelp", [](MenuItemContext& context) {
-      if (a()->user()->IsExpert()) {
+      if (context.pMenuData && a()->user()->IsExpert()) {
         context.pMenuData->DisplayHelp();
       }
     } },
@@ -237,7 +246,7 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       RequestChat();
     } },
     { "Defaults", [](MenuItemContext& context) {
-      Defaults(context.pMenuData);
+      Defaults(context.need_reload);
     } },
     { "SendEMail", [](MenuItemContext& context) {
       SendEMail();

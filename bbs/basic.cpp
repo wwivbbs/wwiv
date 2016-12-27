@@ -174,6 +174,13 @@ bool RunBasicScript(const std::string& script_name) {
   mb_register_func(bas, "VERSION", _version);
   mb_begin_module(bas, "WWIV");
   mb_register_func(bas, "VERSION", _version);
+  mb_register_func(bas, "TEST", [](struct mb_interpreter_t* bas, void** l) -> int { 
+    mb_check(mb_attempt_open_bracket(bas, l));
+    mb_check(mb_attempt_close_bracket(bas, l));
+    bout << "World\r\n";
+    //mb_push_string(bas, l, mb_memdup("World", 6));
+    return MB_FUNC_OK;
+  });
   mb_end_module(bas);
 
 

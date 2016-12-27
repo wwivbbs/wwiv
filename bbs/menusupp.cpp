@@ -208,13 +208,13 @@ void AutoMessage() {
   do_automessage();
 }
 
-void Defaults(MenuInstanceData * pMenuData) {
+void Defaults(bool& need_menu_reload) {
   if (GuestCheck()) {
     write_inst(INST_LOC_DEFAULTS, 0, INST_FLAGS_NONE);
     if (printfile(DEFAULTS_NOEXT)) {
       pausescr();
     }
-    defaults(pMenuData);
+    defaults(need_menu_reload);
   }
 }
 
