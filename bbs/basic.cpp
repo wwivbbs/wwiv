@@ -26,6 +26,8 @@
 #include "bbs/bbs.h"
 #include "bbs/input.h"
 #include "bbs/menu.h"
+#include "bbs/pause.h"
+#include "bbs/printfile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/textfile.h"
@@ -164,40 +166,16 @@ static int initvars(struct mb_interpreter_t* bas, void** l) {
   return MB_FUNC_OK;
 }
 
-bool RunBasicScript(const std::string& script_name) {
-  static bool pnce = RegisterMyBasicGlobals();
+static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
+  mb_begin_module(bas, "WWIV.IO");
 
-  struct mb_interpreter_t* bas = nullptr;
-  mb_open(&bas);
-  mb_debug_set_stepped_handler(bas, _on_stepped);
-  mb_set_error_handler(bas, _on_error);
-
-  mb_set_printer(bas, my_print);
-  mb_set_inputer(bas, my_input);
-  mb_register_func(bas, "__INITVARS", initvars);
-
-  mb_register_func(bas, "VERSION", _version);
-  mb_begin_module(bas, "WWIV");
-  mb_register_func(bas, "VERSION", _version);
-  mb_register_func(bas, "TEST", [](struct mb_interpreter_t* bas, void** l) -> int { 
+  mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
-    bout << "World\r\n";
-    //mb_push_string(bas, l, BasicStrDup("World"));
+    bout << "wwiv.io.test\r\n";
     return MB_FUNC_OK;
   });
-  mb_register_func(bas, "RUNMENU", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_attempt_open_bracket(bas, l));
-    char* arg = nullptr;
-    if (mb_has_arg(bas, l)) {
-      mb_check(mb_pop_string(bas, l, &arg));
-    }    
-    mb_check(mb_attempt_close_bracket(bas, l));
-    if (arg) {
-      wwiv::menus::InterpretCommand(nullptr, arg);
-    }
-    return MB_FUNC_OK;
-  });
+
   mb_register_func(bas, "PUTS", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     while (mb_has_arg(bas, l)) {
@@ -208,6 +186,7 @@ bool RunBasicScript(const std::string& script_name) {
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
+
   mb_register_func(bas, "GETS", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     int arg = 0;
@@ -222,9 +201,87 @@ bool RunBasicScript(const std::string& script_name) {
     return MB_FUNC_OK;
   });
 
+  mb_register_func(bas, "GETKEY", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    mb_check(mb_attempt_close_bracket(bas, l));
+    char ch = bout.getkey();
+    char s[2] = { ch, 0 };
+    mb_push_string(bas, l, BasicStrDup(s));
+    return MB_FUNC_OK;
+  });
 
-  mb_end_module(bas);
+  mb_register_func(bas, "NL", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    int num_lines = 1;
+    if (mb_has_arg(bas, l)) {
+      mb_check(mb_pop_int(bas, l, &num_lines));
+    }
+    bout.nl(num_lines);
+    mb_check(mb_attempt_close_bracket(bas, l));
+    return MB_FUNC_OK;
+  });
 
+  mb_register_func(bas, "PAUSE", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    mb_check(mb_attempt_close_bracket(bas, l));
+    pausescr();
+    return MB_FUNC_OK;
+  });
+
+  return mb_end_module(bas) == MB_FUNC_OK;
+}
+
+static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
+  mb_begin_module(bas, "WWIV");
+  mb_register_func(bas, "VERSION", _version);
+  mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    mb_check(mb_attempt_close_bracket(bas, l));
+    bout << "wwiv.test\r\n";
+    return MB_FUNC_OK;
+  });
+  mb_register_func(bas, "RUNMENU", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    char* arg = nullptr;
+    if (mb_has_arg(bas, l)) {
+      mb_check(mb_pop_string(bas, l, &arg));
+    }
+    mb_check(mb_attempt_close_bracket(bas, l));
+    if (arg) {
+      wwiv::menus::InterpretCommand(nullptr, arg);
+    }
+    return MB_FUNC_OK;
+  });
+
+  mb_register_func(bas, "PRINTFILE", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    if (mb_has_arg(bas, l)) {
+      char* arg = nullptr;
+      mb_check(mb_pop_string(bas, l, &arg));
+      printfile(arg);
+    }
+    mb_check(mb_attempt_close_bracket(bas, l));
+    return MB_FUNC_OK;
+  });
+
+
+  return mb_end_module(bas) == MB_FUNC_OK;
+}
+
+bool RunBasicScript(const std::string& script_name) {
+  static bool pnce = RegisterMyBasicGlobals();
+
+  struct mb_interpreter_t* bas = nullptr;
+  mb_open(&bas);
+  mb_debug_set_stepped_handler(bas, _on_stepped);
+  mb_set_error_handler(bas, _on_error);
+
+  mb_set_printer(bas, my_print);
+  mb_set_inputer(bas, my_input);
+  mb_register_func(bas, "__INITVARS", initvars);
+
+  RegisterNamespaceWWIV(bas);
+  RegisterNamespaceWWIVIO(bas);
 
   auto path = FilePath(a()->config()->gfilesdir(), script_name);
   if (!LoadBasicFile(bas, script_name)) {
