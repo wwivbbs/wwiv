@@ -104,7 +104,7 @@ class File {
   virtual ssize_t Write(const void * pBuffer, size_t nCount);
 
   virtual ssize_t Write(const std::string& s) {
-    return this->Write(s.c_str(), s.length());
+    return this->Write(s.data(), s.length());
   }
   
   virtual ssize_t Writeln(const void *pBuffer, size_t nCount) {
