@@ -92,6 +92,8 @@ void Config::update_paths() {
   gfilesdir_ = to_abs_path(config_->gfilesdir);
   menudir_ = to_abs_path(config_->menudir);
   dloadsdir_ = to_abs_path(config_->dloadsdir);
+  // TODO(rushfan): Make scripts have their own dir.
+  script_dir_ = to_abs_path(config_->datadir);
 }
 
 }
