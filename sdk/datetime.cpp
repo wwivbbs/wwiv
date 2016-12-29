@@ -73,5 +73,26 @@ std::string daten_to_wwivnet_time(time_t t) {
 uint32_t time_t_to_daten(time_t t) {
   return static_cast<uint32_t>(t);
 }
+
+std::string date() {
+  time_t t = time(nullptr);
+  struct tm * pTm = localtime(&t);
+  return wwiv::strings::StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+}
+
+std::string fulldate() {
+  time_t t = time(nullptr);
+  struct tm * pTm = localtime(&t);
+
+  return wwiv::strings::StringPrintf("%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
+}
+
+string times() {
+  time_t tim = time(nullptr);
+  struct tm* t = localtime(&tim);
+  return wwiv::strings::StringPrintf("%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
+}
+
+
 }
 }

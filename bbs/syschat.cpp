@@ -37,12 +37,14 @@
 #include "bbs/wconstants.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using std::chrono::duration_cast;
 using namespace std::chrono;
 using namespace wwiv::os;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // module private functions

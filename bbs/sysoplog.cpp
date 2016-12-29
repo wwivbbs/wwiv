@@ -29,8 +29,10 @@
 #include "bbs/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "sdk/datetime.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Local function prototypes

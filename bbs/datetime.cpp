@@ -31,34 +31,10 @@
 using std::string;
 using namespace std::chrono;
 
-// TODO(rushfan): Move these next 3 to sdk.
-std::string date() {
-  time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
-  return wwiv::strings::StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
-}
-
-std::string fulldate() {
-  time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
-
-  return wwiv::strings::StringPrintf("%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
-}
-
-string times() {
-  time_t tim = time(nullptr);
-  struct tm* t = localtime(&tim);
-  return wwiv::strings::StringPrintf("%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
-}
-
 //
 // This kludge will get us through 2019 and should not interfere anywhere
 // else.
 //
-
-time_t date_to_daten(const char *datet) {
-  return wwiv::sdk::date_to_daten(datet);
-}
 
 /*
  * Returns the date a file was last modified as a string

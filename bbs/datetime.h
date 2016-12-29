@@ -23,10 +23,8 @@
 #include <ctime>
 #include <string>
 
-std::string date();
-std::string fulldate();
-std::string times();
-time_t date_to_daten(const char *datet);
+#include "sdk/datetime.h"
+
 void filedate(const char *fpath, char *rtn);
 bool isleap(int nYear);
 int dow();

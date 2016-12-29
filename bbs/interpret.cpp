@@ -27,10 +27,12 @@
 #include "bbs/datetime.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"
+#include "sdk/datetime.h"
 
-using namespace wwiv::strings;
 using std::string;
 using std::to_string;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 std::string interpret(char ch, const MacroContext& context) {
   if (g_flags & g_flag_disable_mci) {

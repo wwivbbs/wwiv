@@ -29,6 +29,9 @@ uint32_t date_to_daten(std::string datet);
 std::string daten_to_mmddyy(time_t date);
 std::string daten_to_wwivnet_time(time_t t);
 uint32_t time_t_to_daten(time_t t);
+std::string date();
+std::string fulldate();
+std::string times();
 
 }
 }

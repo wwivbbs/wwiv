@@ -25,7 +25,6 @@
 #include "bbs/gfileedit.h"
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
-#include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
@@ -35,8 +34,10 @@
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/datetime.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 void gfl_hdr(int which);
