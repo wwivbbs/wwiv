@@ -380,9 +380,9 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas, const std::string& ba
   });
 
   mb_register_func(bas, "CLS", [](struct mb_interpreter_t* bas, void** l) -> int {
-    mb_check(mb_attempt_func_begin(bas, l));
+    mb_check(mb_attempt_open_bracket(bas, l));
     bout.cls();
-    mb_check(mb_attempt_func_end(bas, l));
+    mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
   });
 
