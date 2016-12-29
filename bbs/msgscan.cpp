@@ -1109,8 +1109,14 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
     CheckForHangup();
     ReadMessageResult result{};
     if (scan_option == MsgScanOption::SCAN_OPTION_READ_MESSAGE) {
-      bool next = true;
-      result = read_post(msgnum, &next, &val);
+      if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
+        // Only try to read messages we can.
+        bool next = true;
+        result = read_post(msgnum, &next, &val);
+      }
+      else {
+        result.option = ReadMessageOption::NEXT_MSG;
+      }
     }
     else if (scan_option == MsgScanOption::SCAN_OPTION_LIST_TITLES) {
       result = HandleListTitlesFullScreen(msgnum, scan_option);
