@@ -146,6 +146,7 @@ void list_sec(int *map, int nmap) {
   bout.cls();
   bout.litebar("%s G-Files Section", syscfg.systemname);
   gfl_hdr(0);
+  string t = times();
   for (int i = 0; i < nmap && !abort && !hangup; i++) {
     sprintf(lnum, "%d", i + 1);
     strncpy(s4, a()->gfilesec[map[i]].name, 34);
@@ -176,10 +177,10 @@ void list_sec(int *map, int nmap) {
       if (okansi()) {
         sprintf(s1,
                 "|#7\xC3\xC4\xC4\xC4X%s\xC4\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#2\xFE|#7\xC4\xC4\xC4X",
-                s2, s3, times());
+                s2, s3, t.c_str());
       } else {
         sprintf(s1, "+---+%s-----+--------+%s-o-%s-o---+",
-                s2, s3, times());
+                s2, s3, t.c_str());
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
@@ -208,9 +209,9 @@ void list_sec(int *map, int nmap) {
       if (okansi()) {
         sprintf(s1,
                 "|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9",
-                s2, s7, times());
+                s2, s7, t.c_str());
       } else {
-        sprintf(s1, "+----%s----------------%so-%s-o---+", s2, s7, times());
+        sprintf(s1, "+----%s----------------%so-%s-o---+", s2, s7, t.c_str());
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
@@ -218,9 +219,9 @@ void list_sec(int *map, int nmap) {
       if (okansi()) {
         sprintf(s1,
                 "|#7\xC0\xC4\xC4\xC4\xC1%s\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xD9",
-                s2, s3, times());
+                s2, s3, t.c_str());
       } else {
-        sprintf(s1, "+---+%s-----+---------------------+%so-%s-o---+", s2, s3, times());
+        sprintf(s1, "+---+%s-----+---------------------+%so-%s-o---+", s2, s3, t.c_str());
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
@@ -234,6 +235,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   int i, i2;
   char s[255], s1[255], s2[81], s3[81], s4[30], s5[30];
   char lnum[5], rnum[5], lsize[5], rsize[5], path_name[255];
+  const string t = times();
 
   bool abort = false;
   bout.cls();
@@ -300,9 +302,9 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       if (okansi()) {
         sprintf(s1,
                 "|#7\xC3\xC4\xC4\xC4X%sX\xC4\xC4\xC4\xC4X\xC4\xC4\xC4X\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xFE\xC4\xC4\xC4\xC4\xD9",
-                s2, s3, times());
+                s2, s3, t.c_str());
       } else {
-        sprintf(s1, "+---+%s+----+---+%s-o-%s-o-+----+", s2, s3, times());
+        sprintf(s1, "+---+%s+----+---+%s-o-%s-o-+----+", s2, s3, t.c_str());
       }
       bout.bpla(s1, &abort);
       bout.Color(0);
@@ -341,9 +343,9 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   if (okansi()) {
     sprintf(s1,
             "|#7\xC0\xC4\xC4\xC4\xC4%s\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4%s|#1\xFE|#7\xC4|#2%s|#7\xC4|#1\xFE|#7\xC4\xC4\xC4\xC4\xD9",
-            s2, s3, times());
+            s2, s3, t.c_str());
   } else {
-    sprintf(s1, "+----%s----------------%so-%s-o----+", s2, s3, times());
+    sprintf(s1, "+----%s----------------%so-%s-o----+", s2, s3, t.c_str());
   }
   bout.bpla(s1, &abort);
   bout.Color(0);

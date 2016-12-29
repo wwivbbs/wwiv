@@ -357,18 +357,19 @@ void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScree
     bout.nl();
 
     bout << "|#9   First/Last On: |#9(Last: |#1" << pUser->GetLastOn() << "|#9)   (First: |#1" <<
-                       pUser->GetFirstOn() << "|#9)\r\n";
+      pUser->GetFirstOn() << "|#9)\r\n";
 
     bout.bprintf("|#9   Message Stats: |#9(Post:|#1%u|#9) (Email:|#1%u|#9) (Fd:|#1%u|#9) (Wt:|#1%u|#9) (Net:|#1%u|#9) (Del:|#1%u|#9)\r\n",
-                                      pUser->GetNumMessagesPosted(), pUser->GetNumEmailSent(),
-                                      pUser->GetNumFeedbackSent(), pUser->GetNumMailWaiting(), pUser->GetNumNetEmailSent(), pUser->GetNumDeletedPosts());
+      pUser->GetNumMessagesPosted(), pUser->GetNumEmailSent(),
+      pUser->GetNumFeedbackSent(), pUser->GetNumMailWaiting(), pUser->GetNumNetEmailSent(), pUser->GetNumDeletedPosts());
 
+    const string d = date();
     bout.bprintf("|#9   Call Stats   : |#9(Total: |#1%u|#9) (Today: |#1%d|#9) (Illegal: |#6%d|#9)\r\n",
-                                      pUser->GetNumLogons(), (!IsEquals(pUser->GetLastOn(), date())) ? 0 : pUser->GetTimesOnToday(),
-                                      pUser->GetNumIllegalLogons());
+      pUser->GetNumLogons(), (!IsEquals(pUser->GetLastOn(), d.c_str())) ? 0 : pUser->GetTimesOnToday(),
+      pUser->GetNumIllegalLogons());
 
     bout.bprintf("|#9   Up/Dnld Stats: |#9(Up: |#1%u |#9files in |#1%lu|#9k)  (Dn: |#1%u |#9files in |#1%lu|#9k)\r\n",
-                                      pUser->GetFilesUploaded(), pUser->GetUploadK(), pUser->GetFilesDownloaded(), pUser->GetDownloadK());
+      pUser->GetFilesUploaded(), pUser->GetUploadK(), pUser->GetFilesDownloaded(), pUser->GetDownloadK());
 
     bout << "|#9   Last Baud    : |#1" << pUser->GetLastBaudRate() << wwiv::endl;
   }

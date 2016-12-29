@@ -175,7 +175,8 @@ void WFC::DrawScreen() {
     a()->localIO()->WriteScreenBuffer(pszScreenBuffer);
     const string title = StringPrintf("Activity and Statistics of %s Node %d", syscfg.systemname, a()->instance_number());
     a()->localIO()->PrintfXYA(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
-    a()->localIO()->PrintfXYA(8, 1, 14, fulldate());
+    const string f = fulldate();
+    a()->localIO()->PrintfXYA(8, 1, 14, f.c_str());
     std::string osVersion = wwiv::os::os_version_string();
     a()->localIO()->PrintfXYA(40, 1, 3, "OS: ");
     a()->localIO()->PrintfXYA(44, 1, 14, osVersion.c_str());
@@ -225,7 +226,8 @@ void WFC::DrawScreen() {
     auto screen_saver_time = seconds(a()->screen_saver_time);
     if ((a()->screen_saver_time == 0) 
         || (steady_clock::now() - wfc_time < screen_saver_time)) {
-      a()->localIO()->PrintfXYA(28, 1, 14, times());
+      string t = times();
+      a()->localIO()->PrintfXYA(28, 1, 14, t.c_str());
       a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
       if (steady_clock::now() - poll_time > seconds(10)) {
         wfc_update();
@@ -270,7 +272,7 @@ int WFC::doWFCEvents() {
     a_->set_at_wfc(true);
 
     // If the date has changed since we last checked, then then run the beginday event.
-    if (!IsEquals(date(), last_date_status->GetLastDate())) {
+    if (date() != last_date_status->GetLastDate()) {
       if ((a_->GetBeginDayNodeNumber() == 0) || (a_->instance_number() == a_->GetBeginDayNodeNumber())) {
         cleanup_events();
         beginday(true);

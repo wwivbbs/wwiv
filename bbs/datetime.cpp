@@ -31,32 +31,24 @@
 using std::string;
 using namespace std::chrono;
 
-char *date() {
-  static char date_string[11];
+// TODO(rushfan): Move these next 3 to sdk.
+std::string date() {
+  time_t t = time(nullptr);
+  struct tm * pTm = localtime(&t);
+  return wwiv::strings::StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+}
+
+std::string fulldate() {
   time_t t = time(nullptr);
   struct tm * pTm = localtime(&t);
 
-  snprintf(date_string, sizeof(date_string), "%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
-  return date_string;
+  return wwiv::strings::StringPrintf("%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
 }
 
-
-char *fulldate() {
-  static char date_string[11];
-  time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
-
-  snprintf(date_string, sizeof(date_string), "%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
-  return date_string;
-}
-
-char *times() {
-  static char time_string[9];
-
+string times() {
   time_t tim = time(nullptr);
-  struct tm *t = localtime(&tim);
-  snprintf(time_string, sizeof(time_string), "%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
-  return time_string;
+  struct tm* t = localtime(&tim);
+  return wwiv::strings::StringPrintf("%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
 }
 
 //

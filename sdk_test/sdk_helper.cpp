@@ -44,13 +44,13 @@ static string date() {
 static statusrec_t create_status() {
   statusrec_t s = {};
   memset(&s, 0, sizeof(statusrec_t));
-  string now(date());
-  strcpy(s.date1, now.c_str());
+  const string now(date());
+  to_char_array(s.date1, now);
   strcpy(s.date2, "00/00/00");
   strcpy(s.date3, "00/00/00");
   strcpy(s.log1, "000000.log");
   strcpy(s.log2, "000000.log");
-  strcpy(s.gfiledate, now.c_str());
+  to_char_array(s.gfiledate, now);
   s.callernum = 65535;
   s.qscanptr = 2;
   s.net_bias = 0.001f;

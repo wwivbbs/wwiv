@@ -181,7 +181,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   const string unn = a()->names()->UserName(a()->usernum);
   strncpy(u.upby, unn.c_str(), sizeof(u.upby));
   u.upby[36]  = '\0';
-  strcpy(u.date, date());
+  to_char_array(u.date, date());
 
   if (File::Exists(StrCat(d.path, s))) {
     if (dcs()) {

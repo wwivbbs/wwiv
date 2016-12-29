@@ -78,10 +78,11 @@ void prstatus() {
   bout << "|#9Board is        : " << (syscfg.closedsystem ? "Closed" : "Open") << wwiv::endl;
 
   std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+  string t = times();
   bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
   bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
   bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
-  bout << "|#9Time            : |#2" << times() << wwiv::endl;
+  bout << "|#9Time            : |#2" << t.c_str() << wwiv::endl;
   bout << "|#9Active Today    : |#2" << pStatus->GetMinutesActiveToday() << wwiv::endl;
   bout << "|#9Calls Today     : |#2" << pStatus->GetNumCallsToday() << wwiv::endl;
   bout << "|#9Net Posts Today : |#2" << (pStatus->GetNumMessagesPostedToday() - pStatus->GetNumLocalPosts())
@@ -857,7 +858,7 @@ void beginday(bool displayStatus) {
   WStatus *pStatus = a()->status_manager()->BeginTransaction();
   pStatus->ValidateAndFixDates();
 
-  if (wwiv::strings::IsEquals(date(), pStatus->GetLastDate())) {
+  if (date() == pStatus->GetLastDate()) {
     a()->status_manager()->CommitTransaction(pStatus);
     return;
   }

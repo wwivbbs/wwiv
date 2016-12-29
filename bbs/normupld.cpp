@@ -116,7 +116,7 @@ void normalupload(int dn) {
   u.mask = 0;
   const string unn = a()->names()->UserName(a()->usernum);
   strcpy(u.upby, unn.c_str());
-  strcpy(u.date, date());
+  to_char_array(u.date, date());
   bout.nl();
   ok = 1;
   bool xfer = true;

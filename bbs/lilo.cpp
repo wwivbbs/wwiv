@@ -350,7 +350,7 @@ static void LeaveBadPasswordFeedback(int ans) {
 
 static void CheckCallRestrictions() {
   if (a()->usernum > 0 && a()->user()->IsRestrictionLogon() &&
-      IsEquals(date(), a()->user()->GetLastOn()) &&
+      date() == a()->user()->GetLastOn() &&
       a()->user()->GetTimesOnToday() > 0) {
     bout.nl();
     bout << "|#6Sorry, you can only logon once per day.\r\n";
@@ -496,7 +496,7 @@ static void FixUserLinesAndColors() {
 }
 
 static void UpdateUserStatsForLogin() {
-  strcpy(g_szLastLoginDate, date());
+  to_char_array(g_szLastLoginDate, date());
   if (IsEquals(g_szLastLoginDate, a()->user()->GetLastOn())) {
     a()->user()->SetTimesOnToday(a()->user()->GetTimesOnToday() + 1);
   } else {
@@ -557,12 +557,14 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
     (syscfg.sysconfig & sysconfig_extended_info)) {
     const string username_num = a()->names()->UserName(a()->usernum);
+    const string t = times();
+    const string f = fulldate();
     log_line = StringPrintf(
       "|#1%-6ld %-25.25s %-5.5s %-5.5s %-15.15s %-2.2s %-3.3s %-8.8s %2d\r\n",
       status.GetCallerNumber(),
       username_num.c_str(),
-      times(),
-      fulldate(),
+      t.c_str(),
+      f.c_str(),
       a()->user()->GetCity(),
       a()->user()->GetState(),
       a()->user()->GetCountry(),
@@ -570,13 +572,15 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
       a()->user()->GetTimesOnToday());
   } else {
     const string username_num = a()->names()->UserName(a()->usernum);
+    const string t = times();
+    const string f = fulldate();
     log_line = StringPrintf(
       "|#1%-6ld %-25.25s %-10.10s %-5.5s %-5.5s %-20.20s %2d\r\n",
       status.GetCallerNumber(),
       username_num.c_str(),
       a()->cur_lang_name.c_str(),
-      times(),
-      fulldate(),
+      t.c_str(),
+      f.c_str(),
       a()->GetCurrentSpeed().c_str(),
       a()->user()->GetTimesOnToday());
   }
@@ -622,11 +626,13 @@ static void UpdateLastOnFile() {
   unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
   {
     const string username_num = a()->names()->UserName(a()->usernum);
+    string t = times();
+    string f = fulldate();
     const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
       pStatus->GetCallerNumber(),
       username_num.c_str(),
-      times(),
-      fulldate(),
+      t.c_str(),
+      f.c_str(),
       a()->GetCurrentSpeed().c_str(),
       a()->user()->GetTimesOnToday(),
       a()->instance_number());

@@ -23,9 +23,9 @@
 #include <ctime>
 #include <string>
 
-char *date();
-char *fulldate();
-char *times();
+std::string date();
+std::string fulldate();
+std::string times();
 time_t date_to_daten(const char *datet);
 void filedate(const char *fpath, char *rtn);
 bool isleap(int nYear);

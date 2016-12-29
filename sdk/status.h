@@ -24,6 +24,7 @@
 
 #include "sdk/vardec.h"
 #include "core/file.h"
+#include "core/strings.h"
 
 namespace wwiv {
 namespace sdk {
@@ -59,8 +60,8 @@ public:
   const char* GetGFileDate() const {
     return status_->gfiledate;
   }
-  void SetGFileDate(const char *s) {
-    strcpy(status_->gfiledate, s);
+  void SetGFileDate(const std::string& s) {
+    wwiv::strings::to_char_array(status_->gfiledate, s);
   }
   const char  GetFileChangedFlag(int nFlag) const {
     return status_->filechange[nFlag];

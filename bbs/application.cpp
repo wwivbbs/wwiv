@@ -508,7 +508,7 @@ void Application::UpdateTopScreen() {
     dar[16] = '\0';
     ar[16] = '\0';
     restrict[16] = '\0';
-    if (!wwiv::strings::IsEquals(user()->GetLastOn(), date())) {
+    if (date() != user()->GetLastOn()) {
       strcpy(lo, user()->GetLastOn());
     } else {
       snprintf(lo, sizeof(lo), "Today:%2d", user()->GetTimesOnToday());
@@ -956,7 +956,7 @@ int Application::Run(int argc, char *argv[]) {
   if (event_only) {
     unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
     cleanup_events();
-    if (!IsEquals(date(), pStatus->GetLastDate())) {
+    if (date() != pStatus->GetLastDate()) {
       // This may be another node, but the user explicitly wanted to run the beginday
       // event from the commandline, so we'll just check the date.
       beginday(true);

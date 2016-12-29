@@ -988,7 +988,9 @@ void ExecNewUserCommand() {
 
 void newuser() {
   sysoplog(false);
-  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", fulldate(), times(), a()->GetCurrentSpeed().c_str(),
+  string t = times();
+  string f = fulldate();
+  sysoplog(false) << StringPrintf("*** NEW USER %s   %s    %s (%ld)", f.c_str(), t.c_str(), a()->GetCurrentSpeed().c_str(),
              a()->instance_number());
 
   LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;

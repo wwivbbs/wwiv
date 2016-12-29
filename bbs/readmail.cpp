@@ -727,19 +727,19 @@ void readmail(int mode) {
               static_cast<long>(a()->user()->GetNumNetEmailSent());
             if (num_mail != num_mail1) {
               const string userandnet = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+              string msg;
               if (m.fromsys != 0) {
-                sprintf(s, "%s: %s", a()->network_name(),
-                  userandnet.c_str());
+                msg = StrCat(a()->network_name(), ": ", userandnet);
               } else {
-                strcpy(s, userandnet.c_str());
+                msg = userandnet;
               }
               if (m.anony & anony_receiver) {
-                strcpy(s, ">UNKNOWN<");
+                msg += ">UNKNOWN<";
               }
-              strcat(s, " read your mail on ");
-              strcat(s, fulldate());
+              msg  += " read your mail on ";
+              msg += fulldate();
               if (!(m.status & status_source_verified)) {
-                ssm(m.fromuser, m.fromsys) << s;
+                ssm(m.fromuser, m.fromsys) << msg;
               }
               read_same_email(mloc, mw, curmail, &m, 1, 0);
               ++curmail;

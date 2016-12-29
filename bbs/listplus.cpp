@@ -1067,7 +1067,7 @@ void config_file_list() {
 
   strcpy(u.filename, "WWIV52.ZIP");
   strcpy(u.description, "This is a sample description!");
-  strcpy(u.date, date());
+  to_char_array(u.date, date());
   const string username_num = a()->names()->UserName(a()->usernum);
   to_char_array(u.upby, username_num);
   u.numdloads = 50;

@@ -432,6 +432,7 @@ void CreateDoorSysDropFile() {
     memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
     szDate[9] = '\0';
     string gfilesdir = a()->config()->gfilesdir();
+    string t = times();
     sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n",
         szDate,
         a()->config()->datadir().c_str(),
@@ -445,7 +446,7 @@ void CreateDoorSysDropFile() {
         a()->user()->GetColor(0),
         a()->user()->GetTimeBankMinutes(),
         a()->user()->GetLastOn(),                // last n-scan date
-        times(),
+        t.c_str(),
         "00:01");                       // time last call
     file.WriteFormatted(szLine);
     sprintf(szLine, "%u\n%u\n%ld\n%ld\n%s\n%u\n%d\n",

@@ -467,7 +467,7 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     fileUpload.Close();
     const string unn = a()->names()->UserName(a()->usernum);
     strcpy(u.upby, unn.c_str());
-    strcpy(u.date, date());
+    to_char_array(u.date, date());
     filedate(szFullPathName, u.actualdate);
     if (d.mask & mask_PD) {
       d.mask = mask_PD;

@@ -628,7 +628,9 @@ void chat1(const char *chat_line, bool two_way) {
         a()->localIO()->Puts("-] Chat file opened.\r\n");
         if (chatFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
           chatFile.Seek(0L, File::Whence::end);
-          sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", fulldate(), times());
+          string t = times();
+          string f = fulldate();
+          sprintf(s2, "\r\n\r\nChat file opened %s %s\r\n", f.c_str(), t.c_str());
           chatFile.Write(s2, strlen(s2));
           strcpy(s2, "----------------------------------\r\n\r\n");
           chatFile.Write(s2, strlen(s2));
