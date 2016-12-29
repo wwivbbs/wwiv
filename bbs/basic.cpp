@@ -178,10 +178,6 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   }
 
   auto lines = file.ReadFileIntoString();
-  // We always want to initialize our variables first.
-  mb_load_string(bas, "__initvars()\r\n", false);
-
-  // auto ret = mb_load_file(bas, path.c_str());
   auto ret = mb_load_string(bas, lines.c_str(), true);
   return ret == MB_FUNC_OK;
 }
@@ -236,26 +232,6 @@ static int _version(struct mb_interpreter_t* bas, void** l) {
   mb_check(mb_attempt_open_bracket(bas, l));
   mb_check(mb_attempt_close_bracket(bas, l));
   mb_push_string(bas, l, BasicStrDup(wwiv_version));
-  return MB_FUNC_OK;
-}
-
-static int initvars(struct mb_interpreter_t* bas, void** l) {
-  VLOG(1) << "initvars";
-  mb_check(mb_attempt_open_bracket(bas, l));
-  mb_check(mb_attempt_close_bracket(bas, l));
-
-/*
-  mb_value_t w{};
-  w.type = MB_DT_STRING;
-  w.value.string = strdup(wwiv_version);
-  mb_add_var(bas, l, "VER", w, true);
-
-  LOG(INFO) << "initvars: " << mb_get_type_string(w.type);
-  mb_value_t val;
-  mb_get_value_by_name(bas, l, "VER", &val);
-  LOG(INFO) << "val: " << val.value.string;
-*/
-
   return MB_FUNC_OK;
 }
 
@@ -403,6 +379,13 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas, const std::string& ba
     return MB_FUNC_OK;
   });
 
+  mb_register_func(bas, "CLS", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_func_begin(bas, l));
+    bout.cls();
+    mb_check(mb_attempt_func_end(bas, l));
+    return MB_FUNC_OK;
+  });
+
   mb_register_func(bas, "NL", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     int num_lines = 1;
@@ -455,13 +438,14 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas, const std::string& ba
 static bool RegisterNamespaceWWIV(mb_interpreter_t* bas, const std::string& basename) {
   mb_begin_module(bas, "WWIV");
   mb_register_func(bas, "VERSION", _version);
+
   mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     mb_check(mb_attempt_close_bracket(bas, l));
     bout << "wwiv.test\r\n";
     return MB_FUNC_OK;
   }); 
-// https://gist.github.com/wwiv/bc2f5c1585fe000816b70198d648bf7a
+
   mb_register_func(bas, "COMMAND", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     char* arg = nullptr;
@@ -513,7 +497,6 @@ bool RunBasicScript(const std::string& script_name) {
 
   mb_set_printer(bas, my_print);
   mb_set_inputer(bas, my_input);
-  mb_register_func(bas, "__INITVARS", initvars);
 
   RegisterNamespaceWWIV(bas, basename);
   RegisterNamespaceWWIVIO(bas, basename);
