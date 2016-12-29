@@ -32,17 +32,17 @@ using namespace wwiv::strings;
 using std::string;
 using std::to_string;
 
-std::string interpret(char ch) {
+std::string interpret(char ch, const MacroContext& context) {
   if (g_flags & g_flag_disable_mci) {
     return "";
   }
 
   switch (ch) {
   case '@':                               // Dir name
-    return a()->directories[a()->current_user_dir().subnum].name;
+    return context.dir().name;
   case '~':                               // Total mails/feedbacks sent
-    return to_string(a()->user()->GetNumEmailSent() +
-             a()->user()->GetNumFeedbackSent() + a()->user()->GetNumNetEmailSent());
+    return to_string(context.u().GetNumEmailSent() +
+             context.u().GetNumFeedbackSent() + context.u().GetNumNetEmailSent());
   case '/':                               // Today's date
     return fulldate();
   case '%':                               // Time left today
@@ -51,11 +51,11 @@ std::string interpret(char ch) {
   case '#':                               // User's number
     return to_string(a()->usernum);
   case '$':                               // File points
-    return to_string(a()->user()->GetFilePoints());
+    return to_string(context.u().GetFilePoints());
   case '*':                               // User reg num
-    return to_string(a()->user()->GetWWIVRegNumber());
+    return to_string(context.u().GetWWIVRegNumber());
   case '-':                               // Aggravation points
-    return to_string(a()->user()->GetAssPoints());
+    return to_string(context.u().GetAssPoints());
   case ':':                               // Sub number
     return a()->current_user_sub().keys;
   case ';':                               // Directory number
@@ -64,98 +64,98 @@ std::string interpret(char ch) {
     pausescr();
     return "";
   case '&':
-    return a()->user()->HasAnsi() ? "ANSI" : "ASCII";
+    return context.u().HasAnsi() ? "ANSI" : "ASCII";
   case 'A':                               // User's age
-    return to_string(a()->user()->GetAge());
+    return to_string(context.u().GetAge());
   case 'a':                               // User's language
     return a()->cur_lang_name;
   case 'B':                               // User's birthday
-    return StringPrintf("%d/%d/%d", a()->user()->GetBirthdayMonth(),
-             a()->user()->GetBirthdayDay(), a()->user()->GetBirthdayYear());
+    return StringPrintf("%d/%d/%d", context.u().GetBirthdayMonth(),
+             context.u().GetBirthdayDay(), context.u().GetBirthdayYear());
   case 'b':                               // Minutes in bank
-    return to_string(a()->user()->GetTimeBankMinutes());
+    return to_string(context.u().GetTimeBankMinutes());
   case 'C':                               // User's city
-    return a()->user()->GetCity();
+    return context.u().GetCity();
   case 'c':                               // User's country
-    return a()->user()->GetCountry();
+    return context.u().GetCountry();
   case 'D':                               // Files downloaded
-    return to_string(a()->user()->GetFilesDownloaded());
+    return to_string(context.u().GetFilesDownloaded());
   case 'd':                               // User's DSL
-    return to_string(a()->user()->GetDsl());
+    return to_string(context.u().GetDsl());
   case 'E':                               // E-mails sent
-    return to_string(a()->user()->GetNumEmailSent());
+    return to_string(context.u().GetNumEmailSent());
   case 'e':                               // Net E-mails sent
-    return to_string(a()->user()->GetNumNetEmailSent());
+    return to_string(context.u().GetNumNetEmailSent());
   case 'F':
-    return to_string(a()->user()->GetNumFeedbackSent());
+    return to_string(context.u().GetNumFeedbackSent());
   case 'f':                               // First time user called
-    return a()->user()->GetFirstOn();
+    return context.u().GetFirstOn();
   case 'G':                               // MessaGes read
-    return to_string(a()->user()->GetNumMessagesRead());
+    return to_string(context.u().GetNumMessagesRead());
   case 'g':                               // Gold
-    return to_string(a()->user()->GetGold());
+    return to_string(context.u().GetGold());
   case 'I':                               // User's call sIgn
-    return a()->user()->GetCallsign();
+    return context.u().GetCallsign();
   case 'i':                               // Illegal log-ons
-    return to_string(a()->user()->GetNumIllegalLogons());
+    return to_string(context.u().GetNumIllegalLogons());
   case 'J':                               // Message conference
     return reinterpret_cast<char*>(subconfs[uconfsub[a()->GetCurrentConferenceMessageArea()].confnum].name);
   case 'j':                               // Transfer conference
     return reinterpret_cast<char*>(dirconfs[uconfdir[a()->GetCurrentConferenceFileArea()].confnum].name);
   case 'K':                               // Kb uploaded
-    return to_string(a()->user()->GetUploadK());
+    return to_string(context.u().GetUploadK());
   case 'k':                               // Kb downloaded
-    return to_string(a()->user()->GetDownloadK());
+    return to_string(context.u().GetDownloadK());
   case 'L':                               // Last call
-    return a()->user()->GetLastOn();
+    return context.u().GetLastOn();
   case 'l':                               // Number of logons
-    return to_string(a()->user()->GetNumLogons());
+    return to_string(context.u().GetNumLogons());
   case 'M':                               // Mail waiting
-    return to_string(a()->user()->GetNumMailWaiting());
+    return to_string(context.u().GetNumMailWaiting());
   case 'm':                               // Messages posted
-    return to_string(a()->user()->GetNumMessagesPosted());
+    return to_string(context.u().GetNumMessagesPosted());
   case 'N':                               // User's name
-    return a()->user()->GetName();
+    return context.u().GetName();
   case 'n':                               // Sysop's note
-    return a()->user()->GetNote();
+    return context.u().GetNote();
   case 'O':                               // Times on today
-    return to_string(a()->user()->GetTimesOnToday());
+    return to_string(context.u().GetTimesOnToday());
   case 'o': {
     // Time on today
     auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
-    auto min_used = a()->user()->timeon() + used_this_session;
+    auto min_used = context.u().timeon() + used_this_session;
     return to_string(std::chrono::duration_cast<std::chrono::minutes>(min_used).count());
   }
   case 'P':                               // BBS phone
     return reinterpret_cast<char*>(syscfg.systemphone);
   case 'p':                               // User's phone
-    return a()->user()->GetDataPhoneNumber();
+    return context.u().GetDataPhoneNumber();
   case 'R':                               // User's real name
-    return a()->user()->GetRealName();
+    return context.u().GetRealName();
   case 'r':                               // Last baud rate
-    return to_string(a()->user()->GetLastBaudRate());
+    return to_string(context.u().GetLastBaudRate());
   case 'S':                               // User's SL
-    return to_string(a()->user()->GetSl());
+    return to_string(context.u().GetSl());
   case 's':                               // User's street address
-    return a()->user()->GetStreet();
+    return context.u().GetStreet();
   case 'T':                               // User's sTate
-    return a()->user()->GetState();
+    return context.u().GetState();
   case 't':                               // Current time
     return times();
   case 'U':                               // Files uploaded
-    return to_string(a()->user()->GetFilesUploaded());
+    return to_string(context.u().GetFilesUploaded());
   case 'u':                               // Current sub
     return a()->subs().sub(a()->current_user_sub().subnum).name;
   case 'W':                               // Total # of messages in sub
     return to_string(a()->GetNumMessagesInCurrentMessageArea());
   case 'X':                               // User's sex
-    return StringPrintf("%c", a()->user()->GetGender());
+    return StringPrintf("%c", context.u().GetGender());
   case 'Y':                               // Your BBS name
     return syscfg.systemname;
   case 'y':                               // Computer type
-    return ctypes(a()->user()->GetComputerType());
+    return ctypes(context.u().GetComputerType());
   case 'Z':                               // User's zip code
-    return a()->user()->GetZipcode();
+    return context.u().GetZipcode();
   default:
     return "";
   }

@@ -493,7 +493,8 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas, const std::string& base
     }
     char* arg = nullptr;
     mb_check(mb_pop_string(bas, l, &arg));
-    string s = interpret(*arg);
+    BbsMacroContext ctx(a()->user());
+    string s = interpret(*arg, ctx);
     mb_check(mb_attempt_close_bracket(bas, l));
     mb_push_string(bas, l, BasicStrDup(s));
     return MB_FUNC_OK;

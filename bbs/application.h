@@ -184,6 +184,7 @@ public:
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
   const wwiv::sdk::subboard_t& current_sub() const { return subs().sub(GetCurrentReadMessageArea()); }
+  const directoryrec& current_dir() const { return directories[current_user_dir().subnum]; }
   
   const net_networks_rec& current_net() const { 
     const static net_networks_rec empty_rec{};

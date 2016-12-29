@@ -20,7 +20,29 @@
 
 #include <string>
 
-std::string interpret(char chKey);
+#include "sdk/user.h"
+#include "sdk/vardec.h"
+
+// for a()
+#include "bbs/bbs.h"
+
+class MacroContext {
+public:
+  virtual const wwiv::sdk::User& u() const = 0;
+  virtual const directoryrec& dir() const = 0;
+};
+
+class BbsMacroContext : public MacroContext {
+public:
+  BbsMacroContext(wwiv::sdk::User* u) : u_(u) {}
+  const wwiv::sdk::User& u() const override { return *u_; }
+  const directoryrec& dir() const { return a()->current_dir(); }
+
+private:
+  wwiv::sdk::User* u_ = nullptr;
+};
+
+std::string interpret(char chKey, const MacroContext& context);
 
 
 #endif  // __INCLUDED_BBS_INTERPRET_H__

@@ -181,7 +181,8 @@ int Output::bputch(char c, bool use_buffer) {
 
   if (change_color == BPUTCH_MACRO_CHAR_CODE) {
     change_color = BPUTCH_NO_CODE;
-    return bputs(interpret(c));
+    BbsMacroContext ctx(a()->user());
+    return bputs(interpret(c, ctx));
   } else if (change_color == BPUTCH_CTRLO_CODE) {
     if (c == CO) {
       change_color = BPUTCH_MACRO_CHAR_CODE;
