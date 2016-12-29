@@ -278,7 +278,9 @@ struct configrec {
        tempdir[81],                            // path for temporary directory
        xmark,                                  // 0xff
        // former reg code + modem config.
-       unused1[323],
+       // Script base directory.  Typically C:\wwiv\scripts
+       scriptdir[81],                           
+       unused1[242],
        systemname[51],                         // BBS system name
        systemphone[13],                        // BBS system phone number
        sysopname[51],                          // sysop's name

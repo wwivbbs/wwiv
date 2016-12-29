@@ -32,6 +32,7 @@
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/input.h"
+#include "bbs/interpret.h"
 #include "bbs/menu.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
@@ -267,8 +268,9 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas, const std::string& base
       // bout << " with size: " << count;
       std::vector<script_data_t> data;
       for (int i = 0; i < count; i++) {
+        mb_value_t idx{};
+        mb_make_int(idx, i);
         mb_value_t val{};
-        mb_value_t idx{}; idx.type = MB_DT_INT; idx.value.integer = i;
         if (mb_get_coll(bas, l, arg, idx, &val) == MB_FUNC_OK) {
           data.emplace_back(to_script_data(val));
         }
@@ -316,7 +318,8 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas, const std::string& base
       std::vector<script_data_t> data = LoadData(wwiv_userdata->module);
       for (const auto& d : data) {
         mb_value_t val = to_mb_value(d);
-        mb_value_t idx{}; idx.type = MB_DT_INT; idx.value.integer = current_count++;
+        mb_value_t idx{};
+        mb_make_int(idx, current_count++);
         auto ret = mb_set_coll(bas, l, arg, idx, val);
         if (ret != MB_FUNC_OK) {
           bout << "[oops] ";
@@ -351,6 +354,18 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas, const std::string& ba
       char* arg = nullptr;
       mb_check(mb_pop_string(bas, l, &arg));
       bout.bputs(arg);
+    }
+    mb_check(mb_attempt_close_bracket(bas, l));
+    return MB_FUNC_OK;
+  });
+
+  mb_register_func(bas, "PL", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    while (mb_has_arg(bas, l)) {
+      char* arg = nullptr;
+      mb_check(mb_pop_string(bas, l, &arg));
+      bout.bputs(arg);
+      bout.nl();
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     return MB_FUNC_OK;
@@ -470,6 +485,19 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas, const std::string& base
     return MB_FUNC_OK;
   });
 
+  // Crappy, awful API way to get data out of WWIVs' macros.
+  mb_register_func(bas, "INTERPRET", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    if (!mb_has_arg(bas, l)) {
+      return MB_FUNC_ERR;
+    }
+    char* arg = nullptr;
+    mb_check(mb_pop_string(bas, l, &arg));
+    string s = interpret(*arg);
+    mb_check(mb_attempt_close_bracket(bas, l));
+    mb_push_string(bas, l, BasicStrDup(s));
+    return MB_FUNC_OK;
+  });
 
   return mb_end_module(bas) == MB_FUNC_OK;
 }

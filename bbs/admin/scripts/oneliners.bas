@@ -1,6 +1,15 @@
-PRINT "|14Welcome to WWIV 5.2 OneLiners"
-PRINT "|16|11Written in WWIVBasic for Eli!"
+'
+' Reinterpretation of the classic OneLiners originally
+' written by Σ└¡ (Eli).
+'
+' This version is written in WWIVbasic v5.3 as a sample
+' application.
+'
+import "@wwiv.io"
 
+'
+' Prints the list to the screen, one row at a time.
+'
 def PrintList(l)
   i = iterator(l)
   while move_next(i)
@@ -20,7 +29,7 @@ def PipeColor(c)
   elseif c = 4 then
     return "|12"
   elseif c = 5 then
-    return "|03"
+    return "|13"
   elseif c = 6 then
     return "|07"
   elseif c = 7 then
@@ -34,45 +43,45 @@ def PipeColor(c)
   return "|07"
 enddef
 
-wwiv.io.nl(2)
-l = list()
-wwiv.data.load("GLOBAL", l)
-
 def EnterOneLiner() 
-  wwiv.io.puts("1:White 2:DkBlue 3:Green 4:Red 5:Purple 6:Gray 7:Cyan 8:Yellow 9:Blue")
-  wwiv.io.nl()
-  wwiv.io.puts("What Color? ")
+  puts("1:White 2:DkBlue 3:Green 4:Red 5:Purple 6:Gray 7:Cyan 8:Yellow 9:Blue")
+  nl()
+  puts("What Color? ")
 
-  color = wwiv.io.getkey()
-  wwiv.io.nl()
-  'colorcode = 
+  color = getkey()
+  nl()
   colorcode = ASC(LEFT(color, 1)) - ASC("0")
   pipecode = PipeColor(colorcode)
-  wwiv.io.puts("|10Enter Your One Liner:")
-  wwiv.io.nl()
-  wwiv.io.puts("|#9: ")
-  s = wwiv.io.gets(72)
+  puts("|10Enter Your One Liner:")
+  nl()
+  puts("|#9: ")
+  s = gets(72)
   return pipecode + s
 enddef
 
-def MainLoop(l)
+def Main()
+  PRINT "|14Welcome to WWIV 5.2 OneLiners"
+  PRINT "|16|11Written in WWIVBasic for Eli!"
+  nl(2)
+  l = list()
+  wwiv.data.load("GLOBAL", l)
   done = FALSE
+  cls()
   wwiv.printfile("oneliners");
-  while not done
+  while TRUE
 	PrintList(l)
-	wwiv.io.puts("|#9Would you like to add an oneliner?")
+	puts("|#9Would you like to add an oneliner?")
 
-	if wwiv.io.yn() then
-	  s = EnterOneLiner()
-	  if len(l) > 10 then
-	    remove(l, 0)
-	  endif
-      push(l, s)
-	  wwiv.data.save("GLOBAL", l) 
-	else
-	  done = TRUE
+	if not yn() then
+	  return
 	endif
+    s = EnterOneLiner()
+    if len(l) > 10 then
+      remove(l, 0)
+    endif
+    push(l, s)
+    wwiv.data.save("GLOBAL", l) 
   wend
 enddef
 
-MainLoop(l)
+Main()
