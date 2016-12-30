@@ -173,7 +173,7 @@ void multi_instance() {
   }
 
   bout.bprintf("|#5Node |#1%-35.35s |#2%-37.37s\r\n", "User Name", "Activity");
-  bout << "==== " << string(35, '=') << " " << string(37, '=');
+  bout << "==== " << string(35, '=') << " " << string(37, '=') << "\r\n";
 
   for (int inst = 1; inst <= num; inst++) {
     bout << make_inst_str(inst, INST_FORMAT_LIST) << "\r\n";
