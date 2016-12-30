@@ -23,6 +23,7 @@
 #include <string>
 
 #include "bbs/automsg.h"
+#include "bbs/basic.h"
 #include "bbs/batch.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
@@ -936,9 +937,20 @@ void logon() {
   bout.nl(2);
   pausescr();
   if (!syscfg.logon_cmd.empty()) {
-    bout.nl();
-    const string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
-    ExecuteExternalProgram(command, a()->GetSpawnOptions(SPAWNOPT_LOGON));
+    if (syscfg.logon_cmd.front() == '@') {
+      // Let's see if we need to run a basic script.
+      if (starts_with(syscfg.logon_cmd, "@basic:")) {
+        string cmd = syscfg.logon_cmd;
+        cmd = cmd.substr(7);
+        LOG(INFO) << "Running basic script: " << cmd;
+        wwiv::bbs::RunBasicScript(cmd);
+      }
+    }
+    else {
+      bout.nl();
+      const string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
+      ExecuteExternalProgram(command, a()->GetSpawnOptions(SPAWNOPT_LOGON));
+    }
     bout.nl(2);
   }
 

@@ -3,6 +3,14 @@
                  Copyright 1999-2016 WWIV Software Services
 ==============================================================================
 
+What's New in WWIV 5.3
+~~~~~~~~~~~~~~~~~~~~~~
+* WWIVbasic interpreter is available.  The menu command is
+  "RUNBASIC".  Also you can run a script from the logon event
+  by using @basic:[scriptname.bas] for the LOGON_CMD in wwiv.ini
+  (eventually many other commands will allow you to specify a
+  script to run instead of an external command).
+
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 * Added "WWIVUTIL FILES" subcommand to list files, file areas and also
