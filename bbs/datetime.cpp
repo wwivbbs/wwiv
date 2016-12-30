@@ -90,15 +90,10 @@ int dow() {
   return newtime->tm_wday;
 }
 
-char *ctim(float f) { return ctim(std::lround(f)); }
-char *ctim(double f) { return ctim(std::lround(f)); }
-
 /*
  * Returns current time as string formatted like HH:MM:SS (01:13:00).
  */
-char *ctim(long d) {
-  static char szCurrentTime[10];
-
+std::string ctim(long d) {
   if (d < 0) {
     d += SECONDS_PER_DAY;
   }
@@ -107,9 +102,7 @@ char *ctim(long d) {
   auto minute = static_cast<long>(d / MINUTES_PER_HOUR);
   d -= (minute * MINUTES_PER_HOUR);
   auto second = static_cast<long>(d);
-  snprintf(szCurrentTime, sizeof(szCurrentTime), "%2.2ld:%2.2ld:%2.2ld", hour, minute, second);
-
-  return szCurrentTime;
+  return wwiv::strings::StringPrintf("%2.2ld:%2.2ld:%2.2ld", hour, minute, second);
 }
 
 int years_old(int nMonth, int nDay, int nYear) {

@@ -564,7 +564,7 @@ void tag_files(bool& need_title) {
           a()->extended_description_filename_ = s1;
         }
         bout << "|#1File size  : |#2" << bytes_to_k(f.u.numbytes) << wwiv::endl;
-        bout << "|#1Apprx. time: |#2" << ctim(d) << wwiv::endl;
+        bout << "|#1Apprx. time: |#2" << ctim(std::lround(d)) << wwiv::endl;
         bout << "|#1Uploaded on: |#2" << f.u.date << wwiv::endl;
         bout << "|#1Uploaded by: |#2" << f.u.upby << wwiv::endl;
         bout << "|#1Times D/L'd: |#2" << f.u.numdloads << wwiv::endl;
@@ -721,9 +721,10 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
         b.sending = true;
         b.len = fs;
         bout << "\r";
+        const string t = ctim(std::lround(b.time));
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
                      a()->batch().entry.size() + 1, b.filename, b.len,
-                     ctim(b.time),
+                     t.c_str(),
                      a()->directories[b.dir].name);
         a()->batch().entry.emplace_back(b);
         bout << "\r";
@@ -818,9 +819,10 @@ void download() {
     if (i < size_int(a()->batch().entry)) {
       const auto& b = a()->batch().entry[i];
       if (b.sending) {
+        const string t = ctim(std::lround(b.time));
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
           i + 1, b.filename,
-          b.len, ctim(std::lround(b.time)), 
+          b.len, t.c_str(), 
           a()->directories[b.dir].name);
       }
     } else {

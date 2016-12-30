@@ -957,7 +957,7 @@ int printfileinfo(uploadsrec * u, int directory_num) {
   bout << "Filename   : " << stripfn(u->filename) << wwiv::endl;
   bout << "Description: " << u->description << wwiv::endl;
   bout << "File size  : " << bytes_to_k(u->numbytes) << wwiv::endl;
-  bout << "Apprx. time: " << ctim(d) << wwiv::endl;
+  bout << "Apprx. time: " << ctim(std::lround(d)) << wwiv::endl;
   bout << "Uploaded on: " << u->date << wwiv::endl;
   if (u->actualdate[2] == '/' && u->actualdate[5] == '/') {
     bout << "File date  : " << u->actualdate << wwiv::endl;

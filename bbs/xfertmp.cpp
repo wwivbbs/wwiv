@@ -417,7 +417,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
   }
   double d = XFER_TIME(lFileSize);
   if (d <= nsl()) {
-    bout << "Approx. time: " << ctim(d) << wwiv::endl;
+    bout << "Approx. time: " << ctim(std::lround(d)) << wwiv::endl;
     bool sent = false;
     bool abort = false;
     char szFileToSend[81];

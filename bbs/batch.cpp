@@ -92,9 +92,9 @@ static void listbatch() {
     string buffer;
     ++current_num;
     if (b.sending) {
+      const string t = ctim(std::lround(b.time));
       buffer = StringPrintf("%d. %s %s   %s  %s", current_num, "(D)",
-          b.filename, ctim(std::lround(b.time)),
-          a()->directories[b.dir].name);
+          b.filename, t.c_str(), a()->directories[b.dir].name);
     } else {
       buffer = StringPrintf("%d. %s %s             %s", current_num, "(U)",
           b.filename, a()->directories[b.dir].name);
@@ -337,8 +337,8 @@ void zmbatchdl(bool bHangupAfterDl) {
     return;
   }
 
-  string message = StringPrintf("ZModem Download: Files - %d Time - %s", 
-    a()->batch().entry.size(), ctim(a()->batch().dl_time_in_secs()));
+  string message = StrCat("ZModem Download: Files - ", a()->batch().entry.size(), 
+    " Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     message += ", HAD";
   }
@@ -369,8 +369,8 @@ void zmbatchdl(bool bHangupAfterDl) {
         delbatch(cur);
       } else {
         a()->localIO()->Puts(
-            StringPrintf("Files left - %d, Time left - %s\r\n", 
-              a()->batch().entry.size(), ctim(a()->batch().dl_time_in_secs())));
+            StrCat("Files left - ", a()->batch().entry.size(), ", Time left - ",
+              ctim(a()->batch().dl_time_in_secs()), "\r\n"));
         File file(a()->download_filename_);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
@@ -416,8 +416,8 @@ void ymbatchdl(bool bHangupAfterDl) {
   if (!incom) {
     return;
   }
-  string message = StringPrintf("Ymodem Download: Files - %d, Time - %s", 
-    a()->batch().entry.size(), ctim(a()->batch().dl_time_in_secs()));
+  string message = StrCat("Ymodem Download: Files - ", a()->batch().entry.size(),
+    ", Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     message += ", HAD";
   }
@@ -448,8 +448,8 @@ void ymbatchdl(bool bHangupAfterDl) {
         delbatch(cur);
       } else {
         a()->localIO()->Puts(
-			      StringPrintf("Files left - %d, Time left - %s\r\n", 
-              a()->batch().entry.size(), ctim(a()->batch().dl_time_in_secs())));
+			      StrCat("Files left - ", a()->batch().entry.size(),
+              ", Time left - ", ctim(a()->batch().dl_time_in_secs()),"\r\n"));
         File file(a()->download_filename_);
         file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
         FileAreaSetRecord(file, nRecordNumber);
@@ -698,9 +698,9 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 
 
 void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description) {
-  string download_log_entry = StringPrintf(
-      "%s BATCH Download: Files - %d, Time - %s", description, 
-    a()->batch().entry.size(), ctim(a()->batch().dl_time_in_secs()));
+  string download_log_entry = StrCat(description,
+      "%s BATCH Download: Files - ", a()->batch().entry.size(), 
+      ", Time - ", ctim(a()->batch().dl_time_in_secs()));
   if (bHangupAfterDl) {
     download_log_entry += ", HAD";
   }
