@@ -26,7 +26,7 @@ del wwiv-*.zip
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set RELEASE_ZIP=%WORKSPACE%\wwiv-win-5.2.%BUILD_NUMBER%.zip
+set RELEASE_ZIP=%WORKSPACE%\wwiv-win-5.3.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
 echo TextTransform: %TEXT_TRANSFORM%
 echo Workspace:     %WORKSPACE%         
@@ -135,7 +135,7 @@ copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %STAGE_DIR%\zip.
 echo:
 echo * Creating build.nfo file
 echo Build URL %BUILD_URL% > release\build.nfo
-echo Build: 5.1.0.%BUILD_NUMBER% >> release\build.nfo
+echo Build: 5.3.0.%BUILD_NUMBER% >> release\build.nfo
 
 echo:
 echo * Creating release archive: %RELEASE_ZIP%
