@@ -60,17 +60,14 @@ def EnterOneLiner()
 enddef
 
 def Main()
-  PRINT "|14Welcome to WWIV 5.2 OneLiners"
-  PRINT "|16|11Written in WWIVBasic for Eli!"
-  nl(2)
   l = list()
   wwiv.data.load("GLOBAL", l)
   done = FALSE
   cls()
-  wwiv.printfile("oneliners");
   while TRUE
+    wwiv.printfile("oneliner");
 	PrintList(l)
-	puts("|#9Would you like to add an oneliner?")
+	puts("|#9Would you like to add an oneliner? ")
 
 	if not yn() then
 	  return
