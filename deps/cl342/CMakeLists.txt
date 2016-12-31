@@ -16,4 +16,6 @@ set_property(TARGET cl342_lib APPEND PROPERTY IMPORTED_CONFIGURATIONS NOCONFIG)
 set_target_properties(cl342_lib PROPERTIES IMPORTED_LOCATION_NOCONFIG "${cryptlib_lib}")
 add_dependencies(cl342_lib build_cryptlib_lib)
 
-
+# This is needed to put it in to the root CMakeCache.txt
+# but only works if it's been built... sigh
+find_library(CL342_LIB libcl.a PATHS .) 
