@@ -4,12 +4,12 @@
 @rem Required Variables:
 @rem WORKSPACE - git root directory
 @rem BUILD_NUMBER - Jenkins Build number
-@rem TEXT_TRANSFORM - path to text transform tool from visual studio
 @rem
 @rem Installed Software:
 @rem   7-Zip [C:\Program Files\7-Zip\7z.exe]
 @rem   VS 2013 [C:\Program Files (x86)\Microsoft Visual Studio 12.0]
 @rem   msbuild [in PATH, set by vcvarsall.bat]
+@rem   sed [in PATH]
 @rem 
 @rem **************************************************************************
 
@@ -28,7 +28,6 @@ del wwiv-*.zip
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-5.3.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
-echo TextTransform: %TEXT_TRANSFORM%
 echo Workspace:     %WORKSPACE%         
 echo Build Number:  %BUILD_NUMBER%
 echo Archive:       %RELEASE_ZIP%
@@ -78,9 +77,19 @@ del /q %STAGE_DIR%
 del wwiv-*.zip
 
 echo:
-echo * Creating Menus (EN)
-cd %WORKSPACE%\bbs\admin\menus\en
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\en-menus.zip *
+echo * Creating data.zip
+cd %WORKSPACE%\bbs\admin\data
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\data.zip *
+
+echo:
+echo * Creating gfiles.zip
+cd %WORKSPACE%\bbs\admin\gfiles
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\gfiles.zip *
+
+echo:
+echo * Creating scripts.zip
+cd %WORKSPACE%\bbs\admin\scripts
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\scripts.zip *
 
 echo:
 echo * Creating Regions

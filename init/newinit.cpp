@@ -48,6 +48,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -71,6 +72,18 @@ static void write_qscn(unsigned int un, uint32_t *qscn) {
     file.Write(qscn, syscfg.qscn_len);
     file.Close();
   }
+}
+
+static bool unzip_file(const std::string& zipfile, const std::string& dir) {
+  if (File::Exists(zipfile)) {
+    const auto unzip_cmd = StrCat("unzip -qq -o ", zipfile, " -d", dir);
+    system(unzip_cmd.c_str());
+
+    const auto sysop_dir = FilePath("dloads", "sysop");
+    File::Rename(zipfile, FilePath(sysop_dir, zipfile));
+    return true;
+  }
+  return false;
 }
 
 static void init_files(CursesWindow* window, const string& bbsdir) {
@@ -259,7 +272,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
 
   File::Rename("wwivini.txt", WWIV_INI);
-  File::Rename("menucmds.dat", StringPrintf("data%cmenucmds.dat", File::pathSeparatorChar));
   File::Rename("regions.dat", StringPrintf("data%cregions.dat", File::pathSeparatorChar));
   File::Rename("wfc.dat", StringPrintf("data%cwfc.dat", File::pathSeparatorChar));
   // Create the sample files.
@@ -277,25 +289,14 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);
-  if (File::Exists("en-menus.zip")) {
-    system("unzip -qq -o en-menus.zip -dgfiles ");
-    File::Rename("en-menus.zip", 
-                 StringPrintf("dloads%csysop%cen-menus.zip",
-                              File::pathSeparatorChar,
-                              File::pathSeparatorChar));
-  }
-  if (File::Exists("regions.zip")) {
-    system("unzip -qq -o regions.zip -ddata");
-    const string destination = StringPrintf("dloads%csysop%cregions.zip",
-        File::pathSeparatorChar, File::pathSeparatorChar);
-    File::Rename("regions.zip", destination);
-  }
-  if (File::Exists("zip-city.zip")) {
-    system("unzip -qq -o zip-city.zip -ddata");
-    const string destination = StringPrintf("dloads%csysop%czip-city.zip",
-        File::pathSeparatorChar, File::pathSeparatorChar);
-    File::Rename("zip-city.zip", destination);
-  }
+  const auto sysop_dir = FilePath("dloads", "sysop");
+  unzip_file("gfiles.zip", "gfiles");
+  unzip_file("scripts.zip", "scripts");
+
+  unzip_file("data.zip", "data");
+  unzip_file("regions.zip", "data");
+  unzip_file("zip-city.zip", "data");
+
   window->SetColor(SchemeId::NORMAL);
 }
 
@@ -311,6 +312,16 @@ bool new_init(CursesWindow* window, const string& bbsdir) {
     "dloads",
     "dloads/misc",
     "dloads/sysop",
+    "temp",
+    "temp/1",
+    "temp/2",
+    "temp/3",
+    "temp/4",
+    "batch",
+    "batch/1",
+    "batch/2",
+    "batch/3",
+    "batch/4"
   };
   window->SetColor(SchemeId::PROMPT);
   window->Puts("\n\nNow performing installation.  Please wait...\n\n");

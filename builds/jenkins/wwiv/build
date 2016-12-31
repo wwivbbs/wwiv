@@ -3,9 +3,8 @@
 # WWIV Build Script.
 #
 # Required Variables:
-# WORKSPACE - Jenkins workspace
-# BUILD_NUMBER - Jenkins Build number
-
+#   WORKSPACE - Jenkins workspace
+#   BUILD_NUMBER - Jenkins Build number
 
 rm ${WORKSPACE}/wwiv-*.tar.gz
 
@@ -52,9 +51,17 @@ cp  ${WORKSPACE}/bbs/bbs \
     ${WORKSPACE}/wwivutil/wwivutil \
     ${WORKSPACE}/release
 
-echo "Creating Menus"
-cd ${WORKSPACE}/bbs/admin/menus/en
-zip -r ${WORKSPACE}/release/en-menus.zip *
+echo "Creating data.zip"
+cd ${WORKSPACE}/bbs/admin/data
+zip -r ${WORKSPACE}/release/data.zip *
+
+echo "Creating gfiles.zip"
+cd ${WORKSPACE}/bbs/admin/gfiles
+zip -r ${WORKSPACE}/release/gfiles.zip *
+
+echo "Creating scripts.zip"
+cd ${WORKSPACE}/bbs/admin/scripts
+zip -r ${WORKSPACE}/release/scripts.zip *
 
 echo "Creating zip-city"
 cd ${WORKSPACE}/bbs/admin
