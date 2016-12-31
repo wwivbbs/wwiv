@@ -289,7 +289,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);
-  const auto sysop_dir = FilePath("dloads", "sysop");
+
   unzip_file("gfiles.zip", "gfiles");
   unzip_file("scripts.zip", "scripts");
 

@@ -166,16 +166,21 @@ static bool RegisterMyBasicGlobals() {
 // bobby
 
 static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name) {
+  if (script_name.find("..") != std::string::npos) {
+    LOG(ERROR) << "Invalid script name: " << script_name;
+    bout << "|#6Invalid script name: " << script_name << "\r\n";
+  }
+
   const auto path = FilePath(a()->config()->scriptdir(), script_name);
   if (!File::Exists(path)) {
-    LOG(ERROR) << "|#6Unable to locate script: " << path;
-    bout << "|#6Unable to locate script: " << script_name;
+    LOG(ERROR) << "Unable to locate script: " << path;
+    bout << "|#6Unable to locate script: " << script_name << "\r\n";
     return false;
   }
   TextFile file(path, "r");
   if (!file) {
-    LOG(ERROR) << "|#6Unable to read script: " << path;
-    bout << "|#6Unable to read script: " << script_name;
+    LOG(ERROR) << "Unable to read script: " << path;
+    bout << "|#6Unable to read script: " << script_name << "\r\n";
   }
 
   auto lines = file.ReadFileIntoString();
@@ -523,6 +528,9 @@ bool RunBasicScript(const std::string& script_name) {
   mb_set_userdata(bas, &wwiv_userdata);
   mb_debug_set_stepped_handler(bas, _on_stepped);
   mb_set_error_handler(bas, _on_error);
+  mb_set_import_handler(bas, [](struct mb_interpreter_t* bas, const char* p) -> int {
+    return (LoadBasicFile(bas, p)) ? MB_FUNC_OK : MB_FUNC_ERR;
+  });
 
   mb_set_printer(bas, my_print);
   mb_set_inputer(bas, my_input);

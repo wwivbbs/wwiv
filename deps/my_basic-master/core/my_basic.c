@@ -3,7 +3,7 @@
 **
 ** For the latest info, see https://github.com/paladin-t/my_basic/
 **
-** Copyright (C) 2011 - 2016 Wang Renxin
+** Copyright (C) 2011 - 2017 Wang Renxin
 **
 ** Permission is hereby granted, free of charge, to any person obtaining a copy of
 ** this software and associated documentation files (the "Software"), to deal in
@@ -32,6 +32,7 @@
 #include "my_basic.h"
 #if defined ARDUINO && !defined MB_CP_ARDUINO
 #	define MB_CP_ARDUINO
+# define MB_DISABLE_LOAD_FILE
 #endif /* ARDUINO && !MB_CP_ARDUINO */
 #ifdef MB_CP_VC
 #	include <conio.h>
@@ -1394,7 +1395,7 @@ static bool_t _is_numeric_char(char c);
 static bool_t _is_identifier_char(char c);
 static bool_t _is_operator_char(char c);
 static bool_t _is_exponential_char(char c);
-static bool_t _is_using_char(char c);
+static bool_t _is_using_at_char(char c);
 static bool_t _is_exponent_prefix(char* s, int begin, int end);
 
 static int _append_char_to_symbol(mb_interpreter_t* s, char c);
@@ -4606,7 +4607,7 @@ static void _print_string(mb_interpreter_t* s, _object_t* obj) {
 
 /* Read all content of a file into a buffer */
 static char* _load_file(mb_interpreter_t* s, const char* f, const char* prefix) {
-#ifndef MB_CP_ARDUINO
+#ifndef MB_DISABLE_LOAD_FILE
 	FILE* fp = 0;
 	char* buf = 0;
 	long curpos = 0;
@@ -4737,7 +4738,7 @@ static bool_t _is_exponential_char(char c) {
 }
 
 /* Determine whether a character is module using char */
-static bool_t _is_using_char(char c) {
+static bool_t _is_using_at_char(char c) {
 	return (c == '@');
 }
 
@@ -5186,7 +5187,7 @@ static _data_e _get_symbol_type(mb_interpreter_t* s, char* sym, _raw_t* value) {
 			sym[_sl - 1] = _ZERO_CHAR;
 			context->parsing_state = _PS_NORMAL;
 			/* Using a module */
-			if(_is_using_char(*(sym + 1))) {
+			if(_is_using_at_char(*(sym + 1))) {
 #ifdef MB_ENABLE_MODULE
 				char* ns = mb_strdup(sym + 2, strlen(sym + 2) + 1);
 				mb_strupr(ns);
@@ -10845,7 +10846,7 @@ static int _close_coll_lib(mb_interpreter_t* s) {
 */
 
 /* Get the version number of this MY-BASIC system */
-unsigned mb_ver(void) {
+unsigned long mb_ver(void) {
 	return _MB_VERSION;
 }
 
@@ -10856,9 +10857,9 @@ const char* mb_ver_string(void) {
 
 /* Initialize the MY-BASIC system */
 int mb_init(void) {
-	int result = MB_FUNC_OK;
+	if(_exp_assign)
+		return MB_FUNC_ERR;
 
-	mb_assert(!_exp_assign);
 	_exp_assign = _create_object();
 	_exp_assign->type = _DT_FUNC;
 	_exp_assign->data.func = (_func_t*)mb_malloc(sizeof(_func_t));
@@ -10880,14 +10881,14 @@ int mb_init(void) {
 		bvar->data->data.integer = 0;
 	}
 
-	return result;
+	return MB_FUNC_OK;
 }
 
 /* Close the MY-BASIC system */
 int mb_dispose(void) {
-	int result = MB_FUNC_OK;
+	if(!_exp_assign)
+		return MB_FUNC_ERR;
 
-	mb_assert(_exp_assign);
 	safe_free(_exp_assign->data.func->name);
 	safe_free(_exp_assign->data.func);
 	safe_free(_exp_assign);
@@ -10910,7 +10911,7 @@ int mb_dispose(void) {
 		_OBJ_BOOL_FALSE = 0;
 	}
 
-	return result;
+	return MB_FUNC_OK;
 }
 
 /* Open a MY-BASIC environment */
@@ -10920,7 +10921,8 @@ int mb_open(struct mb_interpreter_t** s) {
 	_ht_node_t* global_scope = 0;
 	_running_context_t* running = 0;
 
-	mb_assert(s);
+	if(!s)
+		return MB_FUNC_ERR;
 
 	*s = (mb_interpreter_t*)mb_malloc(sizeof(mb_interpreter_t));
 	memset(*s, 0, sizeof(mb_interpreter_t));
@@ -10977,12 +10979,12 @@ int mb_open(struct mb_interpreter_t** s) {
 
 /* Close a MY-BASIC environment */
 int mb_close(struct mb_interpreter_t** s) {
-	int result = MB_FUNC_OK;
 	_ht_node_t* local_scope = 0;
 	_ht_node_t* global_scope = 0;
 	_ls_node_t* ast;
 
-	mb_assert(s);
+	if(!s || !(*s))
+		return MB_FUNC_ERR;
 
 	(*s)->valid = false;
 
@@ -11042,7 +11044,7 @@ int mb_close(struct mb_interpreter_t** s) {
 
 	safe_free(*s);
 
-	return result;
+	return MB_FUNC_OK;
 }
 
 /* Reset a MY-BASIC environment */
@@ -11053,7 +11055,8 @@ int mb_reset(struct mb_interpreter_t** s, bool_t clrf) {
 	_parsing_context_t* context = 0;
 	_running_context_t* running = 0;
 
-	mb_assert(s);
+	if(!s || !(*s))
+		return MB_FUNC_ERR;
 
 	(*s)->jump_set = _JMP_NIL;
 	(*s)->last_routine = 0;
@@ -12947,7 +12950,7 @@ _exit:
 	return result;
 }
 
-/* Operator - */
+/* Operator - (minus) */
 static int _core_min(mb_interpreter_t* s, void** l) {
 	int result = MB_FUNC_OK;
 
