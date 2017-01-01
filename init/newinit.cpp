@@ -100,6 +100,7 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), File::pathSeparatorChar, File::pathSeparatorChar);
+  sprintf(syscfg.scriptdir, "%sscripts%c", bbsdir.c_str(), File::pathSeparatorChar);
   strcpy(syscfg.systemname, "My WWIV BBS");
   strcpy(syscfg.systemphone, "   -   -    ");
   strcpy(syscfg.sysopname, "The New Sysop");
