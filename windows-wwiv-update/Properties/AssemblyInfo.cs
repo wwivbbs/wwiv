@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("WWIV Software Services")]
 [assembly: AssemblyProduct("windows-wwiv-update")]
-[assembly: AssemblyCopyright("Copyright © 2016 WWIV Software Services")]
+[assembly: AssemblyCopyright("Copyright © 2016-2017, WWIV Software Services")]
 [assembly: AssemblyTrademark("WWIV")]
 [assembly: AssemblyCulture("")]
 
