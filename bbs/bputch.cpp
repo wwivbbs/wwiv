@@ -203,8 +203,6 @@ int Output::bputch(char c, bool use_buffer) {
       }
     } else if (pipe_color[0] == ' ' && isdigit(pipe_color[1])) {
       nc = atoi(pipe_color + 1);
-    } else if (pipe_color[0] == 'b' || pipe_color[0] == 'B') {
-      nc = 16 + atoi(pipe_color + 1);
     } else if (pipe_color[0] == '#') {
       Color(atoi(pipe_color + 1));
       return 0;
