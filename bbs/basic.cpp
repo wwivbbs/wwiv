@@ -376,6 +376,17 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas, const std::string& ba
     return MB_FUNC_OK;
   });
 
+  mb_register_func(bas, "PRINTFILE", [](struct mb_interpreter_t* bas, void** l) -> int {
+    mb_check(mb_attempt_open_bracket(bas, l));
+    if (mb_has_arg(bas, l)) {
+      char* arg = nullptr;
+      mb_check(mb_pop_string(bas, l, &arg));
+      printfile(arg);
+    }
+    mb_check(mb_attempt_close_bracket(bas, l));
+    return MB_FUNC_OK;
+  });
+
   mb_register_func(bas, "GETS", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     int arg = 0;
@@ -479,6 +490,7 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas, const std::string& base
     return MB_FUNC_OK;
   });
 
+  // TODO(rushfan): Remove this, it's in wwiv.io now.
   mb_register_func(bas, "PRINTFILE", [](struct mb_interpreter_t* bas, void** l) -> int {
     mb_check(mb_attempt_open_bracket(bas, l));
     if (mb_has_arg(bas, l)) {
