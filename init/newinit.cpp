@@ -36,6 +36,7 @@
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/textfile.h"
+#include "core/version.h"
 #include "core/wwivport.h"
 #include "init/archivers.h"
 #include "init/init.h"
@@ -46,6 +47,8 @@
 #include "sdk/datetime.h"
 #include "sdk/subxtr.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/wwivcolors.h"
 
 using std::string;
 using std::vector;
@@ -80,6 +83,13 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   window->SetColor(SchemeId::NORMAL);
 
   memset(&syscfg, 0, sizeof(configrec));
+
+  // Set header
+  syscfg.header.header.config_revision_number = 1;
+  syscfg.header.header.config_size = sizeof(configrec);
+  syscfg.header.header.written_by_wwiv_num_version = wwiv_num_version;
+  strcpy(syscfg.header.header.signature, "WWIV");
+
   const string datadir = StrCat(bbsdir, "data", File::pathSeparatorString);
 
   strcpy(syscfg.systempw, "SYSOP");
@@ -203,8 +213,27 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   memset(&u, 0, sizeof(u));
   write_user(datadir, 0, &u);
   write_qscn(datadir, 0, qsc.get());
-  u.inact = inact_deleted;
+
+
   // Note: this is where init makes a user record #1 that is deleted for new installs.
+  // TODO(rushfan): We should use User::CreateNewUserRecord here.
+  u.inact = inact_deleted;
+  memset(u.lp_colors, static_cast<uint8_t>(Color::CYAN), sizeof(u.lp_colors));
+  u.lp_colors[0] = static_cast<uint8_t>(Color::LIGHTGREEN);
+  u.lp_colors[1] = static_cast<uint8_t>(Color::LIGHTGREEN);
+  u.lp_colors[2] = static_cast<uint8_t>(Color::CYAN);
+  u.lp_colors[3] = static_cast<uint8_t>(Color::CYAN);
+  u.lp_colors[4] = static_cast<uint8_t>(Color::LIGHTCYAN);
+  u.lp_colors[5] = static_cast<uint8_t>(Color::LIGHTCYAN);
+  u.lp_colors[6] = static_cast<uint8_t>(Color::CYAN);
+  u.lp_colors[7] = static_cast<uint8_t>(Color::CYAN);
+  u.lp_colors[8] = static_cast<uint8_t>(Color::CYAN);
+  u.lp_colors[9] = static_cast<uint8_t>(Color::CYAN);
+  u.lp_colors[10] = static_cast<uint8_t>(Color::LIGHTCYAN);
+  u.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
+  u.cHotKeys = 0;
+  strcpy(u.szMenuSet, "wwiv");
+
   write_user(datadir, 1, &u);
   write_qscn(datadir, 1, qsc.get());
   {
