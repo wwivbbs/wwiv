@@ -487,7 +487,7 @@ void Application::UpdateTopScreen() {
   }
     break;
   case LocalIO::topdataUser: {
-    strcpy(rst, restrict_string);
+    to_char_array(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
       if (user()->HasArFlag(1 << i)) {
         ar[i] = static_cast<char>('A' + i);

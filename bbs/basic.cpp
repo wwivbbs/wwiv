@@ -241,7 +241,7 @@ static int _version(struct mb_interpreter_t* bas, void** l) {
   return MB_FUNC_OK;
 }
 
-static bool RegisterNamespaceData(mb_interpreter_t* bas, const std::string& basename) {
+static bool RegisterNamespaceData(mb_interpreter_t* bas) {
   mb_begin_module(bas, "WWIV.DATA");
 
   mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
@@ -343,7 +343,7 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas, const std::string& base
   return mb_end_module(bas) == MB_FUNC_OK;
 }
 
-static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas, const std::string& basename) {
+static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
   mb_begin_module(bas, "WWIV.IO");
 
   mb_register_func(bas, "MODULE_NAME", [](struct mb_interpreter_t* bas, void** l) -> int {
@@ -466,7 +466,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas, const std::string& ba
   return mb_end_module(bas) == MB_FUNC_OK;
 }
 
-static bool RegisterNamespaceWWIV(mb_interpreter_t* bas, const std::string& basename) {
+static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
   mb_begin_module(bas, "WWIV");
   mb_register_func(bas, "VERSION", _version);
 
@@ -547,9 +547,9 @@ bool RunBasicScript(const std::string& script_name) {
   mb_set_printer(bas, my_print);
   mb_set_inputer(bas, my_input);
 
-  RegisterNamespaceWWIV(bas, basename);
-  RegisterNamespaceWWIVIO(bas, basename);
-  RegisterNamespaceData(bas, basename);
+  RegisterNamespaceWWIV(bas);
+  RegisterNamespaceWWIVIO(bas);
+  RegisterNamespaceData(bas);
 
   if (!LoadBasicFile(bas, script_name)) {
     bout << "|#6Unable to load script: " << script_name;

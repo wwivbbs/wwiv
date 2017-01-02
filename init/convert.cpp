@@ -90,7 +90,7 @@ bool convert_config_to_52(CursesWindow* window, const wwiv::sdk::Config& config)
   h.config_revision_number = 0;
   h.config_size = sizeof(configrec);
   h.written_by_wwiv_num_version = wwiv_num_version;
-  strcpy(h.signature, "WWIV");
+  to_char_array(h.signature, "WWIV");
 
   // Save old newuser password.
   string newuserpw = syscfg.header.newuserpw;
@@ -153,7 +153,7 @@ static bool convert_to_52_1(CursesWindow* window, const wwiv::sdk::Config& confi
     u.lp_colors[10] = static_cast<uint8_t>(Color::LIGHTCYAN);
     u.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
     u.cHotKeys = 0;
-    strcpy(u.szMenuSet, "wwiv");
+    to_char_array(u.szMenuSet, "wwiv");
   }
 
   // Save where we are.

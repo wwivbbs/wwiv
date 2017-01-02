@@ -229,11 +229,11 @@ void feedback(bool bNewUserFeedback) {
   }
   if (guest_user) {
     a()->status_manager()->RefreshStatusCache();
-    strcpy(irt, "Guest Account Feedback");
+    to_char_array(irt, "Guest Account Feedback");
     email(irt, 1, 0, true, 0, true);
     return;
   }
-  strcpy(irt, "|#1Feedback");
+  to_char_array(irt, "|#1Feedback");
   int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
   int i1 = 0;
 

@@ -154,9 +154,9 @@ void edit_languages(const wwiv::sdk::Config& config) {
         
         languagerec l;
         memset(&l, 0, sizeof(languagerec));
-        strcpy(l.name, "English");
-        strcpy(l.dir, syscfg.gfilesdir);
-        strcpy(l.mdir, syscfg.gfilesdir);
+        to_char_array(l.name, "English");
+        to_char_array(l.dir, syscfg.gfilesdir);
+        to_char_array(l.mdir, syscfg.gfilesdir);
         l.num = get_next_langauge_num(languages);
 
         if (i > languages.size()) {

@@ -163,7 +163,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   fedit_data_rec fedit_data;
   memset(&fedit_data, '\0', sizeof(fedit_data_rec));
   fedit_data.tlen = 60;
-  strcpy(fedit_data.ttl, title.c_str());
+  to_char_array(fedit_data.ttl, title);
   fedit_data.anon = 0;
 
   File fileFEditInf(a()->temp_directory(), FEDIT_INF);

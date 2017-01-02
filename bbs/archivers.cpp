@@ -29,9 +29,9 @@
 #include "core/file.h"
 
 using std::string;
+using namespace wwiv::strings;
 
-static int check_arc(const char* filename)
-{
+static int check_arc(const char* filename) {
   File f(filename);
   if (!f.Open(File::modeReadOnly)) {
     return COMPRESSION_UNKNOWN;
@@ -111,25 +111,25 @@ int match_archiver(const char *filename) {
   }
   switch (x) {
     case COMPRESSION_ZIP:
-      strcpy(type, "ZIP");
+      to_char_array(type, "ZIP");
       break;
     case COMPRESSION_LHA:
-      strcpy(type, "LHA");
+      to_char_array(type, "LHA");
       break;
     case COMPRESSION_ARJ:
-      strcpy(type, "ARJ");
+      to_char_array(type, "ARJ");
       break;
     case COMPRESSION_PAK:
-      strcpy(type, "PAK");
+      to_char_array(type, "PAK");
       break;
     case COMPRESSION_ZOO:
-      strcpy(type, "ZOO");
+      to_char_array(type, "ZOO");
       break;
     case COMPRESSION_RAR:
-      strcpy(type, "RAR");
+      to_char_array(type, "RAR");
       break;
     default:
-      strcpy(type, "ZIP");
+      to_char_array(type, "ZIP");
       break;
   }
 

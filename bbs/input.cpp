@@ -36,6 +36,7 @@
 
 using std::string;
 using wwiv::bbs::InputMode;
+using namespace wwiv::strings;
 
 static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
 static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
@@ -285,7 +286,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
   bout.RestorePosition();
   bout.SavePosition();
   if (!orig_text.empty()) {
-    strcpy(szTemp, orig_text.c_str());
+    to_char_array(szTemp, orig_text);
     bout << szTemp;
     bout.RestorePosition();
     bout.SavePosition();

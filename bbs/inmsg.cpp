@@ -92,7 +92,7 @@ static bool GetMessageToName(const char *aux) {
           bout << "|#4All\r\n";
           bout.Color(0);
         } else {
-          strcpy(irt_name, to_name.c_str());
+          to_char_array(irt_name, to_name);
         }
         // WTF???
         //strcpy(irt, "\xAB");

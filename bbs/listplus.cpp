@@ -93,7 +93,7 @@ static void colorize_foundtext(char *text, search_record* search_rec, int color)
   sprintf(normal_color, "|16|%02d", color);
 
   if (lp_config.colorize_found_text) {
-    strcpy(find, search_rec->search.c_str());
+    to_char_array(find, search_rec->search);
     tok = strtok(find, "&|!()");
 
     while (tok) {

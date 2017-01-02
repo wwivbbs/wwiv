@@ -184,7 +184,7 @@ void sendout_email(EmailData& data) {
   int i;
 
   memset(&m, 0, sizeof(mailrec));
-  strcpy(m.title, data.title.c_str());
+  to_char_array(m.title, data.title);
   m.msg = *data.msg;
   m.anony = static_cast<unsigned char>(data.anony);
   if (data.from_system == a()->current_net().sysnum) {
