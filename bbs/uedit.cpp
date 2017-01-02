@@ -704,7 +704,7 @@ void uedit(int usern, int other) {
         bout << "|#7New SL? ";
         string sl = input(3);
         uint8_t nNewSL = StringToUnsignedChar(sl);
-        if (!a()->at_wfc() && nNewSL >= a()->GetEffectiveSl() && user_number != 1) {
+        if (!a()->at_wfc() && nNewSL > a()->GetEffectiveSl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
         } else  if (nNewSL < 255 && sl[0]) {
@@ -724,7 +724,7 @@ void uedit(int usern, int other) {
         bout << "|#7New DSL? ";
         string dsl = input(3);
         uint8_t nNewDSL = StringToUnsignedChar(dsl);
-        if (!a()->at_wfc() && nNewDSL >= a()->user()->GetDsl() && user_number != 1) {
+        if (!a()->at_wfc() && nNewDSL > a()->user()->GetDsl() && user_number != 1) {
           bout << "|#6You can not assign a Security Level to a user that is higher than your own.\r\n";
           pausescr();
         } else  if (nNewDSL < 255 && dsl[0]) {

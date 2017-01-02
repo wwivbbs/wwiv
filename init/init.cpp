@@ -34,6 +34,7 @@
 
 #include "bbs/wconstants.h"
 
+#include "core/command_line.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/datafile.h"
@@ -157,39 +158,35 @@ int main(int argc, char* argv[]) {
   }
 }
 
-int WInitApp::main(int, char **) {
-  setlocale (LC_ALL,"");
-
-  const string wwiv_dir = wwiv::os::environment_variable("WWIV_DIR");
-  if (!wwiv_dir.empty()) {
-    File::set_current_directory(wwiv_dir);
-  }
-
-  string current_dir = File::current_directory();
-  File::EnsureTrailingSlash(&current_dir);
-  const string bbsdir(current_dir);
-
+static bool do_new_bbs(const std::string& bbsdir, const std::string& expected_password) {
   out->Cls(ACS_CKBOARD);
-  out->window()->SetColor(SchemeId::NORMAL);
-
-  bool newbbs = false;
-  if (!File::Exists(CONFIG_DAT)) {
-    vector<string> lines = { StringPrintf("%s NOT FOUND.", CONFIG_DAT), "", "Perform initial installation?" };
-    if (dialog_yn(out->window(), lines)) {
-      // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
-      out->window()->Bkgd(' ');
-      if (!new_init(out->window(), bbsdir)) {
-        return 2;
-      }
-      newbbs = true;
-      if (!File::Exists(CONFIG_DAT)) {
-        messagebox(out->window(), "Unable to open config.dat");
-      }
-    } else {
-      return 1;
+  bool pwok = false;
+  while (!pwok) {
+    vector<string> lines{ "Please enter the System Password. " };
+    lines.insert(lines.begin(), "");
+    lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
+    string given_password;
+    input_password(out->window(), "SY:", lines, &given_password, 20);
+    if (given_password != expected_password) {
+      out->Cls(ACS_CKBOARD);
+      messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
+    }
+    else {
+      pwok = true;
     }
   }
 
+  if (!dialog_yn(out->window(), "Would you like to create a sysop account now?")) {
+    messagebox(out->window(), "You will need to log in locally and manually create one");
+  }
+  else {
+    Config config(bbsdir);
+    create_sysop_account(config);
+  }
+  return true;
+}
+
+void upgrade_datafiles_if_needed() {
   // Convert 4.2X to 4.3 format if needed.
   File configfile(CONFIG_DAT);
   if (configfile.GetLength() != sizeof(configrec)) {
@@ -198,7 +195,7 @@ int WInitApp::main(int, char **) {
     convert_config_424_to_430(out->window(), CONFIG_DAT);
   }
 
-  if (configfile.Open(File::modeBinary|File::modeReadOnly)) {
+  if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
     configfile.Read(&syscfg, sizeof(configrec));
   }
   configfile.Close();
@@ -220,7 +217,56 @@ int WInitApp::main(int, char **) {
 
     ensure_latest_5x_config(out->window(), CONFIG_DAT);
   }
+}
 
+static void ShowHelp(CommandLine& cmdline) {
+  std::cout << cmdline.GetHelp() << std::endl;
+  exit(1);
+}
+
+
+int WInitApp::main(int argc, char** argv) {
+  setlocale (LC_ALL,"");
+
+  CommandLine cmdline(argc, argv, "net");
+  cmdline.AddStandardArgs();
+  cmdline.set_no_args_allowed(true);
+  cmdline.add_argument(BooleanCommandLineArgument("initialize", "Initialize the datafiles for the 1st time and exit.", false));
+
+  if (!cmdline.Parse() || cmdline.help_requested()) {
+    ShowHelp(cmdline);
+    return 0;
+  }
+
+  const string wwiv_dir = cmdline.sarg("bbsdir");
+  if (!wwiv_dir.empty()) {
+    File::set_current_directory(wwiv_dir);
+  }
+  string current_dir = File::current_directory();
+  File::EnsureTrailingSlash(&current_dir);
+  const string bbsdir(current_dir);
+
+
+  if (cmdline.barg("initialize") && File::Exists(CONFIG_DAT)) {
+    messagebox(out->window(), "Unable to use --initialize when CONFIG.DAT exists.");
+    return 1;
+  }
+  bool need_to_initialize = !File::Exists(CONFIG_DAT) || cmdline.barg("initialize");
+
+  out->Cls(ACS_CKBOARD);
+  out->window()->SetColor(SchemeId::NORMAL);
+
+
+  bool newbbs = false;
+  if (need_to_initialize) {
+    newbbs = true;
+    out->window()->Bkgd(' ');
+    if (!new_init(out->window(), bbsdir)) {
+      return 2;
+    }
+  }
+
+  upgrade_datafiles_if_needed();
   CreateConfigOvr(bbsdir);
 
   {
@@ -229,33 +275,14 @@ int WInitApp::main(int, char **) {
       create_arcs(out->window());
     }
   }
-  bool bDataDirectoryOk = read_status();
-  if (bDataDirectoryOk) {
-  }
+  read_status();
 
   if (newbbs) {
-    out->Cls(ACS_CKBOARD);
-    bool pwok = false;
-    while (!pwok) {
-      vector<string> lines { "Please enter the System Password. "};
-      lines.insert(lines.begin(), "");
-      lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
-      string given_password;
-      input_password(out->window(), "SY:", lines, &given_password, 20);
-      if (given_password != syscfg.systempw) {
-        out->Cls(ACS_CKBOARD);
-        messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
-      } else {
-        pwok = true;
-      }
-    }
+    do_new_bbs(bbsdir, syscfg.systempw);
+  }
 
-    if (!dialog_yn(out->window(), "Would you like to create a sysop account now?")) {
-      messagebox(out->window(), "You will need to log in locally and manually create one");
-    } else {
-      Config config(bbsdir);
-      create_sysop_account(config);
-    }
+  if (cmdline.barg("initialize")) {
+    return 0;
   }
 
   bool done = false;

@@ -43,6 +43,7 @@
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
+#include "sdk/datetime.h"
 #include "sdk/subxtr.h"
 #include "sdk/filenames.h"
 
@@ -51,19 +52,6 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
-
-static void create_text(const char *file_name) {
-  TextFile file("gfiles", file_name, "wt");
-  file.WriteLine(StringPrintf("This is %s.", file_name));
-  file.WriteLine("Edit to suit your needs.");
-  file.Close();
-}
-
-static string date() {
-  time_t t = time(nullptr);
-  struct tm* pTm = localtime(&t);
-  return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
-}
 
 static void write_qscn(unsigned int un, uint32_t *qscn) {
   File file(syscfg.datadir, USER_QSC);
@@ -273,17 +261,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->SetColor(SchemeId::NORMAL);
 
   File::Rename("wwivini.txt", WWIV_INI);
-  File::Rename("regions.dat", StringPrintf("data%cregions.dat", File::pathSeparatorChar));
-  File::Rename("wfc.dat", StringPrintf("data%cwfc.dat", File::pathSeparatorChar));
-  // Create the sample files.
-  create_text("welcome.msg");
-  create_text("newuser.msg");
-  create_text("feedback.msg");
-  create_text("system.msg");
-  create_text("logon.msg");
-  create_text("logoff.msg");
-  create_text("logoff.mtr");
-  create_text("comment.txt");
   window->Printf(".\n");
 
   ////////////////////////////////////////////////////////////////////////////
@@ -293,7 +270,6 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
 
   unzip_file("gfiles.zip", "gfiles");
   unzip_file("scripts.zip", "scripts");
-
   unzip_file("data.zip", "data");
   unzip_file("regions.zip", "data");
   unzip_file("zip-city.zip", "data");
