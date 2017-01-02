@@ -641,26 +641,26 @@ static bool CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (a()->status_manager()->GetUserCount() >= syscfg.maxusers) {
+  if (a()->status_manager()->GetUserCount() >= a()->config()->config()->maxusers) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it can\r\nhandle.\r\n\n";
     return false;
   }
 
-  if (syscfg.closedsystem) {
+  if (a()->config()->config()->closedsystem) {
     bout.nl(2);
     bout << "I'm sorry, but the system is currently closed, and not accepting new users.\r\n\n";
     return false;
   }
 
-  if ((syscfg.newuserpw[0] != 0) && incom) {
+  if ((a()->config()->config()->newuserpw[0] != 0) && incom) {
     bout.nl(2);
     bool ok = false;
     int nPasswordAttempt = 0;
     do {
       bout << "New User Password :";
       string password = input(20);
-      if (password == syscfg.newuserpw) {
+      if (password == a()->config()->config()->newuserpw) {
         ok = true;
       } else {
         sysoplog() << "Wrong newuser password: " << password;
@@ -1130,14 +1130,14 @@ bool check_zip(const char *pszZipCode, int mode) {
   bool ok = true;
   bool found = false;
 
-  char szFileName[MAX_PATH];
-  sprintf(szFileName, "%s%s%czip%c.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar, pszZipCode[0]);
+  const auto zipcity_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
+  const auto fn = StringPrintf("zip%c.dat", pszZipCode[0]);
 
-  TextFile zip_file(szFileName, "r");
+  TextFile zip_file(zipcity_dir, fn, "r");
   if (!zip_file.IsOpen()) {
     ok = false;
     if (mode != 2) {
-      bout << "\r\n|#6" << szFileName << " not found\r\n";
+      bout << "\r\n|#6" << FilePath(zipcity_dir, fn) << " not found\r\n";
     }
   } else {
     char zip_buf[81];

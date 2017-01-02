@@ -72,7 +72,6 @@ void BbsHelper::SetUp() {
   // We have to set syscfg too until everything in the bbs moves to 
   // using the Config class internally.
   unique_ptr<configrec> sysconfig = make_unique<configrec>();
-  syscfg.datadir = const_cast<char*>(dir_data_.c_str());
   strcpy(sysconfig->datadir, dir_data_.c_str());
   strcpy(sysconfig->gfilesdir, dir_gfiles_.c_str());
 

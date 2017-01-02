@@ -370,7 +370,7 @@ int WInitApp::main(int argc, char** argv) {
       messagebox(out->window(), lines);
     } break;
     case 'X':
-      up_subs_dirs();
+      up_subs_dirs(config.datadir());
       break;
     }
     out->SetIndicatorMode(IndicatorMode::NONE);

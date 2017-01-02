@@ -72,10 +72,10 @@ using namespace wwiv::sdk::msgapi;
 void prstatus() {
   a()->status_manager()->RefreshStatusCache();
   bout.cls();
-  if (syscfg.newuserpw[0] != '\0') {
-    bout << "|#9New User Pass   : " << syscfg.newuserpw << wwiv::endl;
+  if (a()->config()->config()->newuserpw[0] != '\0') {
+    bout << "|#9New User Pass   : " << a()->config()->config()->newuserpw << wwiv::endl;
   }
-  bout << "|#9Board is        : " << (syscfg.closedsystem ? "Closed" : "Open") << wwiv::endl;
+  bout << "|#9Board is        : " << (a()->config()->config()->closedsystem ? "Closed" : "Open") << wwiv::endl;
 
   std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
   string t = times();
@@ -927,7 +927,7 @@ void beginday(bool displayStatus) {
   if (fk < 512) {
     ssm(1, 0) << "Only " << fk << "k free in data directory.";
   }
-  if (!syscfg.closedsystem && nus < 15) {
+  if (!a()->config()->config()->closedsystem && nus < 15) {
     ssm(1, 0) << "Only " << nus << " new user slots left.";
   }
   if (!syscfg.beginday_cmd.empty()) {

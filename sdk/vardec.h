@@ -352,29 +352,20 @@ struct configrec {
 
 
 struct small_configrec {
-  char          * newuserpw,          // new user password
-                * systempw,           // system password
+  char* systemname;         // BBS system name
+  char* systemphone;        // BBS system phone number
+  char* sysopname;          // sysop's name
 
-                * datadir,            // path for data directory
-                * batchdir,
-                * menudir,            // path for menu dir
-                * ansidir,            // path for ansi dir
-
-                * systemname,         // BBS system name
-                * systemphone,        // BBS system phone number
-                * sysopname;          // sysop's name
-
-                std::string beginday_cmd; // beginday event
-                std::string logon_cmd;            // logon event
-                std::string newuser_cmd;          // newuser event
-                std::string upload_cmd;           // upload event
-                std::string terminal_command;     // Terminal command
+  std::string beginday_cmd; // beginday event
+  std::string logon_cmd;            // logon event
+  std::string newuser_cmd;          // newuser event
+  std::string upload_cmd;           // upload event
+  std::string terminal_command;     // Terminal command
 
   uint8_t  newusersl,          // new user SL
            newuserdsl,         // new user DSL
            maxwaiting,         // max mail waiting
-           newuploads,         // file dir new uploads go
-           closedsystem;       // if system is closed
+           newuploads;         // file dir new uploads go
 
 
   uint16_t systemnumber,       // BBS system number
@@ -389,14 +380,11 @@ struct small_configrec {
            qscn_len,
            userreclen;
 
-  float           post_call_ratio,
-                  req_ratio,
-                  newusergold;
+  float post_call_ratio;
+  float req_ratio;
+  float newusergold;
 
   valrec          autoval[10];        // sysop quik-validation dat
-
-
-  uint32_t wwiv_reg_number;   // user's reg number
 };
 
 

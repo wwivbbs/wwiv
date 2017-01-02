@@ -259,7 +259,7 @@ bool ValidateSysopPassword() {
     return true;
   }
   string password = input_password("|#7SY: ", 20);
-  return (password == syscfg.systempw);
+  return (password == a()->config()->config()->systempw);
 }
 
 /**

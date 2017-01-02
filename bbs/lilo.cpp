@@ -264,7 +264,7 @@ static bool VerifyPassword(string remote_password) {
 
 static bool VerifySysopPassword() {
   string password = input_password("SY: ", 20);
-  return (password == syscfg.systempw) ? true : false;
+  return (password == a()->config()->config()->systempw) ? true : false;
 }
 
 static void DoFailedLoginAttempt() {

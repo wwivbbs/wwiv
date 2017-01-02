@@ -111,7 +111,8 @@ int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
       *num = subconfnum;
     }
     if (file_name) {
-      sprintf(file_name, "%s%s", syscfg.datadir, SUBS_CNF);
+      auto fn = StrCat(a()->config()->datadir(), SUBS_CNF);
+      strcpy(file_name, fn.c_str());
     }
     if (num_s) {
       *num_s = a()->subs().subs().size();
@@ -128,7 +129,8 @@ int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
       *num = dirconfnum;
     }
     if (file_name) {
-      sprintf(file_name, "%s%s", syscfg.datadir, DIRS_CNF);
+      auto fn = StrCat(a()->config()->datadir(), DIRS_CNF);
+      strcpy(file_name, fn.c_str());
     }
     if (num_s) {
       *num_s = a()->directories.size();

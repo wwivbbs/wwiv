@@ -244,7 +244,7 @@ void process_inst_msgs() {
 
 // Gets instancerec for specified instance, returns in ir.
 bool get_inst_info(int nInstanceNum, instancerec * ir) {
-  if (!ir || syscfg.datadir == nullptr) {
+  if (!ir || a()->config()->datadir().empty()) {
     return false;
   }
 

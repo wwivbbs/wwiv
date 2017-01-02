@@ -488,11 +488,6 @@ bool Application::ReadConfig() {
     config_->config()->fnoffset        = fnoffset;
   }
 
-  syscfg.newuserpw        = strdup(config_->config()->newuserpw);
-  syscfg.systempw         = strdup(config_->config()->systempw);
-
-  syscfg.datadir          = DuplicatePath(config_->config()->datadir);
-  
   syscfg.systemname       = strdup(config_->config()->systemname);
   syscfg.systemphone      = strdup(config_->config()->systemphone);
   syscfg.sysopname        = strdup(config_->config()->sysopname);
@@ -501,7 +496,6 @@ bool Application::ReadConfig() {
   syscfg.newuserdsl       = config_->config()->newuserdsl;
   syscfg.maxwaiting       = config_->config()->maxwaiting;
   syscfg.newuploads       = config_->config()->newuploads;
-  syscfg.closedsystem     = config_->config()->closedsystem;
 
   syscfg.systemnumber     = config_->config()->systemnumber;
   syscfg.maxusers         = config_->config()->maxusers;
@@ -529,10 +523,6 @@ bool Application::ReadConfig() {
   syscfg.autoval[7]       = config_->config()->autoval[7];
   syscfg.autoval[8]       = config_->config()->autoval[8];
   syscfg.autoval[9]       = config_->config()->autoval[9];
-
-  syscfg.wwiv_reg_number  = config_->config()->wwiv_reg_number;
-
-  make_abs_path(syscfg.datadir);
 
   char temp_dir[MAX_PATH];
   to_char_array(temp_dir, temp_directory());

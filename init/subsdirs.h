@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_SUBSDIRS_H__
 #define __INCLUDED_SUBSDIRS_H__
 
-void up_subs_dirs();
+#include <string>
+
+void up_subs_dirs(const std::string& datadir);
 
 #endif // __INCLUDED_SUBSDIRS_H__

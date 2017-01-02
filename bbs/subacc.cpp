@@ -139,8 +139,8 @@ bool iscan1(int sub_index) {
   }
 
   // set sub filename
-  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", 
-      syscfg.datadir, a()->subs().sub(sub_index).filename.c_str());
+  const auto subfn = StrCat(a()->subs().sub(sub_index).filename, ".sub");
+  to_char_array(subdat_fn, FilePath(a()->config()->datadir(), subfn));
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {

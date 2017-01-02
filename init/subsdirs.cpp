@@ -59,7 +59,7 @@ static T input_number(CursesWindow* window, int max_digits) {
   }
 }
 
-static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dirs) {
+static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dirs, const std::string& datadir) {
   int l1, l2, l3;
 
   if (num_subs % 32) {
@@ -124,12 +124,12 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     l3 = syscfg.max_subs * 4;
   }
 
-  File oqf(syscfg.datadir, USER_QSC);
+  File oqf(datadir, USER_QSC);
   if (!oqf.Open(File::modeBinary|File::modeReadWrite)) {
     messagebox(window, "Could not open user.qsc");
     return;
   }
-  File nqf(syscfg.datadir, "userqsc.new");
+  File nqf(datadir, "userqsc.new");
   if (!nqf.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
     messagebox(window, "Could not open userqsc.new");
     return;
@@ -161,7 +161,7 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   window->Printf("Done\n");
 }
 
-void up_subs_dirs() {
+void up_subs_dirs(const std::string& datadir) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Update Sub/Directory Maximums", 16, 76));
 
@@ -216,7 +216,7 @@ void up_subs_dirs() {
       if (dialog_yn(window.get(), text)) {
         window->SetColor(SchemeId::INFO);
         window->Printf("Please wait...\n");
-        convert_to(window.get(), num_subs, num_dirs);
+        convert_to(window.get(), num_subs, num_dirs, datadir);
       }
     }
   }
