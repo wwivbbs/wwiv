@@ -74,7 +74,7 @@ static bool unzip_file(const std::string& zipfile, const std::string& dir) {
   return false;
 }
 
-static void init_files(CursesWindow* window, const string& bbsdir) {
+static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
@@ -268,16 +268,18 @@ static void init_files(CursesWindow* window, const string& bbsdir) {
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);
 
-  unzip_file("gfiles.zip", "gfiles");
-  unzip_file("scripts.zip", "scripts");
-  unzip_file("data.zip", "data");
-  unzip_file("regions.zip", "data");
-  unzip_file("zip-city.zip", "data");
+  if (unzip_files) {
+    unzip_file("gfiles.zip", "gfiles");
+    unzip_file("scripts.zip", "scripts");
+    unzip_file("data.zip", "data");
+    unzip_file("regions.zip", "data");
+    unzip_file("zip-city.zip", "data");
+  }
 
   window->SetColor(SchemeId::NORMAL);
 }
 
-bool new_init(CursesWindow* window, const string& bbsdir) {
+bool new_init(CursesWindow* window, const string& bbsdir, bool unzip_files) {
   static const vector<string> dirnames = {
     "attach",
     "data",
@@ -318,6 +320,6 @@ bool new_init(CursesWindow* window, const string& bbsdir) {
     }
   }
 
-  init_files(window, bbsdir);
+  init_files(window, bbsdir, unzip_files);
   return true;
 }

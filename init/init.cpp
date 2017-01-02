@@ -71,6 +71,7 @@
 
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/usermanager.h"
 
 // Make sure it's after windows.h
 #include <curses.h>
@@ -158,31 +159,32 @@ int main(int argc, char* argv[]) {
   }
 }
 
-static bool do_new_bbs(const std::string& bbsdir, const std::string& expected_password) {
-  out->Cls(ACS_CKBOARD);
-  bool pwok = false;
-  while (!pwok) {
-    vector<string> lines{ "Please enter the System Password. " };
-    lines.insert(lines.begin(), "");
-    lines.insert(lines.begin(), "Note: Your system password defaults to 'SYSOP'.");
-    string given_password;
-    input_password(out->window(), "SY:", lines, &given_password, 20);
-    if (given_password != expected_password) {
-      out->Cls(ACS_CKBOARD);
-      messagebox(out->window(), "I'm sorry, that isn't the correct system password.");
-    }
-    else {
-      pwok = true;
+static bool IsUserDeleted(const User& user) {
+  return user.data.inact & inact_deleted;
+}
+
+static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
+  Config config(bbsdir);
+  {
+    UserManager usermanager(config.datadir(), sizeof(userrec), config.config()->maxusers);
+    auto num_users = usermanager.GetNumberOfUserRecords();
+    for (int n = 1; n <= num_users; n++) {
+      User u{};
+      usermanager.ReadUser(&u, n);
+      if (!IsUserDeleted(u)) {
+        return true;
+      }
     }
   }
 
+
+  out->Cls(ACS_CKBOARD);
   if (!dialog_yn(out->window(), "Would you like to create a sysop account now?")) {
     messagebox(out->window(), "You will need to log in locally and manually create one");
+    return true;
   }
-  else {
-    Config config(bbsdir);
-    create_sysop_account(config);
-  }
+
+  create_sysop_account(config);
   return true;
 }
 
@@ -246,22 +248,19 @@ int WInitApp::main(int argc, char** argv) {
   File::EnsureTrailingSlash(&current_dir);
   const string bbsdir(current_dir);
 
-
-  if (cmdline.barg("initialize") && File::Exists(CONFIG_DAT)) {
+  const bool forced_initialize = cmdline.barg("initialize");
+  if (forced_initialize && File::Exists(CONFIG_DAT)) {
     messagebox(out->window(), "Unable to use --initialize when CONFIG.DAT exists.");
     return 1;
   }
-  bool need_to_initialize = !File::Exists(CONFIG_DAT) || cmdline.barg("initialize");
+  bool need_to_initialize = !File::Exists(CONFIG_DAT) || forced_initialize;
 
   out->Cls(ACS_CKBOARD);
   out->window()->SetColor(SchemeId::NORMAL);
 
-
-  bool newbbs = false;
   if (need_to_initialize) {
-    newbbs = true;
     out->window()->Bkgd(' ');
-    if (!new_init(out->window(), bbsdir)) {
+    if (!new_init(out->window(), bbsdir, !forced_initialize)) {
       return 2;
     }
   }
@@ -277,13 +276,13 @@ int WInitApp::main(int argc, char** argv) {
   }
   read_status();
 
-  if (newbbs) {
-    do_new_bbs(bbsdir, syscfg.systempw);
-  }
-
-  if (cmdline.barg("initialize")) {
+  if (forced_initialize) {
     return 0;
   }
+
+  // GP - We can move this up to after "read_status" if the
+  // init --initialize flow should query the user to make an account.
+  CreateSysopAccountIfNeeded(bbsdir);
 
   bool done = false;
   do {

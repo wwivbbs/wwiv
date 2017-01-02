@@ -23,6 +23,6 @@
 
 class CursesWindow;
 
-bool new_init(CursesWindow* window, const std::string& bbsdir);
+bool new_init(CursesWindow* window, const std::string& bbsdir, bool unzip_files);
 
 #endif // __INCLUDED_NEWINIT_H__
