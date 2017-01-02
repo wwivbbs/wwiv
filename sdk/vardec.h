@@ -421,40 +421,50 @@ struct statusrec_t {
        gfiledate[9],                           // date gfiles last updated
        filechange[7];                          // flags for files changing
 
-  uint16_t localposts,                             // how many local posts today
-           users,                                  // Current number of users
-           callernum,                              // Current caller number
-           callstoday,                             // Number of calls today
-           msgposttoday,                           // Messages posted today
-           emailtoday,                             // Email sent today
-           fbacktoday,                             // Feedback sent today
-           uptoday,                                // files uploaded today
-           activetoday;                            // Minutes active today
-
-  uint32_t qscanptr;                          // Q-scan pointer value
-
-  char amsganon;                              // auto-message anony stat
-
-  uint16_t amsguser;                          // user who wrote a-msg
-
-  uint32_t callernum1;                        // caller number
-
-  uint16_t unused_net_edit_stuff;             // word for net editor
-
-  uint16_t wwiv_version;                      // tell what version it is
-
-  uint16_t net_version;                       // tell what version of net
-
-  float net_bias;                             // network bias factor
-
-  int32_t last_connect,                          // date last connect.net
-          last_bbslist;                            // date last bbslist.net
-
-  float net_req_free;                         // net free factor def 3
-
-  uint16_t days;                        // # days BBS active
-
-  char res[29];                               // RESERVED
+  // how many local posts today
+  uint16_t localposts;
+  // Current number of users
+  uint16_t users;
+  // Current caller number
+  uint16_t callernum;
+  // Number of calls today
+  uint16_t callstoday;
+  // Messages posted today
+  uint16_t msgposttoday;
+  // Email sent today
+  uint16_t emailtoday;
+  // Feedback sent today
+  uint16_t fbacktoday;
+  // files uploaded today
+  uint16_t uptoday;
+  // Minutes active today
+  uint16_t activetoday;
+  // Q-scan pointer value
+  uint32_t qscanptr;
+  // auto-message anony stat
+  char amsganon;
+  // user who wrote a-msg
+  uint16_t amsguser;
+  // caller number
+  uint32_t callernum1;
+  // word for net editor
+  uint16_t unused_net_edit_stuff;
+  // tell what version it is
+  uint16_t wwiv_version;
+  // tell what version of net
+  uint16_t net_version;
+  // network bias factor
+  float net_bias;
+  // date last connect.net
+  int32_t last_connect;
+  // date last bbslist.net
+  int32_t last_bbslist;
+  // net free factor def 3
+  float net_req_free;
+  // # days BBS active
+  uint16_t days;
+  // RESERVED
+  char res[29];
 };
 
 
