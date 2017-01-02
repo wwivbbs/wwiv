@@ -256,7 +256,7 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   }
 
   window->Printf(".\n");
-  ////////////////////////////////////////////////////////////////////////////
+
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
@@ -264,7 +264,7 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   File::Rename("wwivini.txt", WWIV_INI);
   window->Printf(".\n");
 
-  ////////////////////////////////////////////////////////////////////////////
+
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);

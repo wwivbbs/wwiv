@@ -84,7 +84,7 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i, subs);
+      iscan1(i, subs, config);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);
@@ -480,7 +480,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
       }
     }
     if (i2 >= i) {
-      iscan1(i, subs);
+      iscan1(i, subs, config);
       open_sub(true);
       for (int i1 = 1; i1 <= GetNumMessagesInCurrentMessageArea(); i1++) {
         postrec* p = get_post(i1);

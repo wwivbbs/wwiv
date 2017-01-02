@@ -20,14 +20,16 @@
 #define __INCLUDED_SUBACC_H__
 
 #include <vector>
+
+#include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 
-void    close_sub();
-bool    open_sub(bool wr);
-bool    iscan1(int si, const wwiv::sdk::Subs& subs);
+void close_sub();
+bool open_sub(bool wr);
+bool iscan1(int si, const wwiv::sdk::Subs&, const wwiv::sdk::Config&);
 postrec *get_post(int mn);
-void    write_post(int mn, postrec * pp);
+void write_post(int mn, postrec * pp);
 
 int GetNumMessagesInCurrentMessageArea();
 
