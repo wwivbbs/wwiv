@@ -47,6 +47,8 @@ public:
   const std::string dloadsdir() const { return dloadsdir_; }
   const std::string scriptdir() const { return script_dir_; }
 
+  const std::string config_filename() const;
+
 private:
   std::string to_abs_path(const char* dir);
   void update_paths();

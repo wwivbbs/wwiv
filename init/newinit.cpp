@@ -198,14 +198,14 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
 
   auto qsc = std::make_unique<uint32_t[]>(syscfg.qscn_len / sizeof(uint32_t));
 
-  save_status();
+  save_status(datadir);
   userrec u = {};
   memset(&u, 0, sizeof(u));
-  write_user(0, &u);
+  write_user(datadir, 0, &u);
   write_qscn(datadir, 0, qsc.get());
   u.inact = inact_deleted;
   // Note: this is where init makes a user record #1 that is deleted for new installs.
-  write_user(1, &u);
+  write_user(datadir, 1, &u);
   write_qscn(datadir, 1, qsc.get());
   {
     File namesfile(StrCat("data/", NAMES_LST));

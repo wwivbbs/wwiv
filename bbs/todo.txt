@@ -42,7 +42,6 @@ General Improvements
 Net52
 =====
 * update routing information in network1.
-* Figure out why it takes 3 seconds to post a message in network2.
 
 Message Areas
 =============

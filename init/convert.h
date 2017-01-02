@@ -22,10 +22,11 @@
 #include <string>
 
 #include "localui/curses_win.h"
+#include "sdk/config.h"
 
-void convert_config_424_to_430(CursesWindow* window, const std::string& config_filename);
-bool convert_config_to_52(CursesWindow* window, const std::string& config_filename);
-bool ensure_latest_5x_config(CursesWindow* window, const std::string& config_filename);
+void convert_config_424_to_430(CursesWindow* window, const wwiv::sdk::Config&);
+bool convert_config_to_52(CursesWindow* window, const wwiv::sdk::Config&);
+bool ensure_latest_5x_config(CursesWindow* window, const wwiv::sdk::Config&);
 
 
 #endif

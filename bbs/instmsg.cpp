@@ -45,6 +45,7 @@
 using std::chrono::steady_clock;
 using std::chrono::seconds;
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -80,7 +81,7 @@ static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
     file.Close();
 
     for (int i = 0; i < 1000; i++) {
-      string dest = StringPrintf("%smsg%5.5d.%3.3d", syscfg.datadir, i, ih->dest_inst);
+      string dest = FilePath(a()->config()->datadir(), StringPrintf("msg%5.5d.%3.3d", i, ih->dest_inst));
       if (!File::Rename(file.full_pathname(), dest) || (errno != EACCES)) {
         break;
       }

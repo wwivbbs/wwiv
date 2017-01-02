@@ -358,7 +358,7 @@ void dliscan1(int directory_num) {
   this_date = u.daten;
 
   a()->extended_description_filename_ = 
-      FilePath(syscfg.datadir, StrCat(a()->directories[directory_num].filename, ".ext"));
+      FilePath(a()->config()->datadir(), StrCat(a()->directories[directory_num].filename, ".ext"));
   zap_ed_info();
 }
 

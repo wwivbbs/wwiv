@@ -285,10 +285,9 @@ void do_callout(uint16_t sn) {
     // TODO(rushfan): Figure out a better way to see if we need to call WINS exp.exe
     run_exp();
     bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn << wwiv::endl;
-    const string regions_filename = StringPrintf("%s%s%c%s.%-3u", syscfg.datadir,
-            REGIONS_DAT, File::pathSeparatorChar, REGIONS_DAT, atoi(csne->phone));
+    const string regions_filename = StringPrintf("%s.%-3u", REGIONS_DAT, StringToUnsignedInt(csne->phone));
     string region = "Unknown Region";
-    if (File::Exists(regions_filename)) {
+    if (File::Exists(FilePath(a()->config()->datadir(), REGIONS_DAT), regions_filename)) {
       const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
       region = describe_area_code_prefix(atoi(csne->phone), StringToInt(town));
     } else {

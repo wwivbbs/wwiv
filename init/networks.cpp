@@ -137,17 +137,17 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 
   // Update the user 
   unique_ptr<char[]> u(new char[syscfg.userreclen]);
-  read_user(1, reinterpret_cast<userrec*>(u.get()));
-  int nu = number_userrecs();
+  read_user(config.datadir(), 1, reinterpret_cast<userrec*>(u.get()));
+  int nu = number_userrecs(config.datadir());
   for (int i = 1; i <= nu; i++) {
-    read_user(i, reinterpret_cast<userrec*>(u.get()));
+    read_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
     if (UINT(u.get(), syscfg.fsoffset)) {
       if (UCHAR(u.get(), syscfg.fnoffset) == nn) {
         UINT(u.get(), syscfg.fsoffset) = UINT(u.get(), syscfg.fuoffset) = UCHAR(u.get(), syscfg.fnoffset) = 0;
-        write_user(i, reinterpret_cast<userrec*>(u.get()));
+        write_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
       } else if (UCHAR(u.get(), syscfg.fnoffset) > nn) {
         UCHAR(u.get(), syscfg.fnoffset)--;
-        write_user(i, reinterpret_cast<userrec*>(u.get()));
+        write_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
       }
     }
   }
@@ -274,7 +274,7 @@ private:
   int dy_start_ = 0;
 };
 
-static void edit_fido_node_config(const Config& config, const FidoAddress& a, fido_node_config_t& n) {
+static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   constexpr int LBL1_POSITION = 2;
   constexpr int COL1_POSITION = 17;
   int y = 1;
@@ -379,7 +379,7 @@ public:
             wwiv::sdk::fido::FidoAddress address(address_string);
             fido_node_config_t config{};
             config.binkp_config.port = 24554;
-            edit_fido_node_config(config_, address, config);
+            edit_fido_node_config(address, config);
             callout.insert(address, config);
           } break;
           }
@@ -387,7 +387,7 @@ public:
           const string address_string = items.at(result.selected).text();
           FidoAddress address(address_string);
           fido_node_config_t c = callout.fido_node_config_for(address);
-          edit_fido_node_config(config_, address, c);
+          edit_fido_node_config(address, c);
           callout.insert(address, c);
         } else if (result.type == ListBoxResultType::NO_SELECTION) {
           done = true;
@@ -526,14 +526,14 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   }
 
   unique_ptr<char[]> u(new char[syscfg.userreclen]);
-  read_user(1, reinterpret_cast<userrec*>(u.get()));
-  int nu = number_userrecs();
+  read_user(config.datadir(), 1, reinterpret_cast<userrec*>(u.get()));
+  int nu = number_userrecs(config.datadir());
   for (int i = 1; i <= nu; i++) {
-    read_user(i, reinterpret_cast<userrec*>(u.get()));
+    read_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
     if (UINT(u.get(), syscfg.fsoffset)) {
       if (UCHAR(u.get(), syscfg.fnoffset) >= nn) {
         UCHAR(u.get(), syscfg.fnoffset)++;
-        write_user(i, reinterpret_cast<userrec*>(u.get()));
+        write_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
       }
     }
   }

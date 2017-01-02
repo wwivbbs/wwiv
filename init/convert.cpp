@@ -77,8 +77,8 @@ static void ShowBanner(CursesWindow* window, const std::string& m) {
   window->SetColor(SchemeId::NORMAL);
 }
 
-bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
-  File file(config_filename);
+bool convert_config_to_52(CursesWindow* window, const wwiv::sdk::Config& config) {
+  File file(config.config_filename());
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
   }
@@ -106,16 +106,16 @@ bool convert_config_to_52(CursesWindow* window, const string& config_filename) {
   return true;
 }
 
-static bool convert_to_52_1(CursesWindow* window, const std::string& config_filename) {
+static bool convert_to_52_1(CursesWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
-  string users_lst = StrCat(syscfg.datadir, USER_LST);
+  string users_lst = StrCat(config.datadir(), USER_LST);
   string backup_file = StrCat(users_lst, ".backup.pre-init-upgrade");
 
   // Make a backup file.
   File::Copy(users_lst, backup_file);
 
-  DataFile<userrec> usersFile(syscfg.datadir, USER_LST,
+  DataFile<userrec> usersFile(config.datadir(), USER_LST,
     File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!usersFile) {
     messagebox(window, "Unable to open user.lst.");
@@ -163,7 +163,7 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
   // Update config.dat with new version to consider this "successful"
   // enough of an upgrade at this point.
   {
-    File file(config_filename);
+    File file(config.config_filename());
     if (!file.Open(File::modeBinary | File::modeReadWrite)) {
       return false;
     }
@@ -187,7 +187,7 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
     file.Close();
   }
 
-  DataFile<user_config> configUsrFile(syscfg.datadir, "config.usr",
+  DataFile<user_config> configUsrFile(config.datadir(), "config.usr",
     File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
   if (!configUsrFile) {
     return false;
@@ -222,17 +222,17 @@ static bool convert_to_52_1(CursesWindow* window, const std::string& config_file
   configUsrFile.file().Delete();
 
   // 2nd version of config.usr that INIT was mistakenly creating.
-  File userDatFile(syscfg.datadir, "user.dat");
+  File userDatFile(config.datadir(), "user.dat");
   userDatFile.Delete();
 
   messagebox(window, "Converted to config version #1");
   return true;
 }
 
-bool ensure_latest_5x_config(CursesWindow* window, const std::string& config_filename) {
+bool ensure_latest_5x_config(CursesWindow* window, const wwiv::sdk::Config& config) {
   const auto v = syscfg.header.header.config_revision_number;
   if (v < 1) {
-    if (!convert_to_52_1(window, config_filename)) {
+    if (!convert_to_52_1(window, config)) {
       return false;
     }
   }
@@ -242,8 +242,8 @@ bool ensure_latest_5x_config(CursesWindow* window, const std::string& config_fil
   return true;
 }
 
-void convert_config_424_to_430(CursesWindow* window, const string& config_filename) {
-  File file(config_filename);
+void convert_config_424_to_430(CursesWindow* window, const wwiv::sdk::Config& config) {
+  File file(config.config_filename());
   if (!file.Open(File::modeBinary|File::modeReadWrite)) {
     return;
   }
@@ -273,11 +273,11 @@ void convert_config_424_to_430(CursesWindow* window, const string& config_filena
   file.Write(&syscfg, sizeof(configrec));
   file.Close();
 
-  File archiver(syscfg.datadir, ARCHIVER_DAT);
+  File archiver(config.datadir(), ARCHIVER_DAT);
   if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
     window->Printf("Couldn't open 'ARCHIVER_DAT' for writing.\n");
     window->Printf("Creating new file....\n");
-    create_arcs(window, syscfg.datadir);
+    create_arcs(window, config.datadir());
     window->Printf("\n");
     if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
       messagebox(window, "Still unable to open archiver.dat. Something is really wrong.");

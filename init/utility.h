@@ -19,15 +19,18 @@
 #ifndef __INCLUDED_UTILITY_H__
 #define __INCLUDED_UTILITY_H__
 
+#include <string>
+
+#include "sdk/config.h"
 #include "sdk/vardec.h"
 
 extern statusrec_t statusrec;
 
-int number_userrecs();
-void save_status();
-bool read_status();
+int number_userrecs(const std::string& datadir);
+void save_status(const std::string& datadir);
+bool read_status(const std::string& datadir);
 void save_config();
-void read_user(unsigned int un, userrec *u);
-void write_user(unsigned int un, userrec *u);
+void read_user(const std::string& datadir, unsigned int un, userrec *u);
+void write_user(const std::string& datadir, unsigned int un, userrec *u);
 
 #endif // __INCLUDED_UTILITY_H__

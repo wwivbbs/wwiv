@@ -188,13 +188,13 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   return true;
 }
 
-void upgrade_datafiles_if_needed() {
+void upgrade_datafiles_if_needed(const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
-  File configfile(CONFIG_DAT);
+  File configfile(config.config_filename());
   if (configfile.GetLength() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
     out->window()->Bkgd(' ');
-    convert_config_424_to_430(out->window(), CONFIG_DAT);
+    convert_config_424_to_430(out->window(), config);
   }
 
   if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
@@ -208,7 +208,7 @@ void upgrade_datafiles_if_needed() {
     if (!wwiv::strings::IsEquals(expected_sig, syscfg.header.header.signature)) {
       // We don't have a 5.2 header, let's convert.
 
-      convert_config_to_52(out->window(), CONFIG_DAT);
+      convert_config_to_52(out->window(), config);
       {
         if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
           configfile.Read(&syscfg, sizeof(configrec));
@@ -217,7 +217,7 @@ void upgrade_datafiles_if_needed() {
       }
     }
 
-    ensure_latest_5x_config(out->window(), CONFIG_DAT);
+    ensure_latest_5x_config(out->window(), config);
   }
 }
 
@@ -265,7 +265,7 @@ int WInitApp::main(int argc, char** argv) {
     }
   }
 
-  upgrade_datafiles_if_needed();
+  upgrade_datafiles_if_needed(config);
   CreateConfigOvr(bbsdir);
 
   {
@@ -274,7 +274,7 @@ int WInitApp::main(int argc, char** argv) {
       create_arcs(out->window(), config.datadir());
     }
   }
-  read_status();
+  read_status(config.datadir());
 
   if (forced_initialize) {
     return 0;
@@ -328,7 +328,7 @@ int WInitApp::main(int argc, char** argv) {
       done = true;
       break;
     case 'G':
-      sysinfo1();
+      sysinfo1(config.datadir());
       break;
     case 'P':
       setpaths(bbsdir);
@@ -361,7 +361,7 @@ int WInitApp::main(int argc, char** argv) {
       edit_registration_code();
       break;
     case 'U':
-      user_editor();
+      user_editor(config);
       break;
     case '$': {
       vector<string> lines;

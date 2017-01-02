@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_SYSTEM_INFO_H__
 #define __INCLUDED_SYSTEM_INFO_H__
 
-void sysinfo1();
+#include <string>
+
+void sysinfo1(const std::string& datadir);
 
 #endif // __INCLUDED_SYSTEM_INFO_H__

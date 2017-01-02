@@ -79,12 +79,15 @@ void Config::set_config(configrec* config) {
 
 Config::~Config() {}
 
+const std::string Config::config_filename() const {
+  return FilePath(root_directory(), CONFIG_DAT);
+}
+
 std::string Config::to_abs_path(const char* dir) {
   std::string directory = dir;
   File::MakeAbsolutePath(root_directory_, &directory);
   return directory;
 }
-
 
 void Config::update_paths() {
   datadir_ = to_abs_path(config_->datadir);

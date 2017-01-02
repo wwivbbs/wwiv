@@ -33,6 +33,7 @@
 #include "localui/input.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+#include "sdk/config.h"
 #include "sdk/filenames.h"
 
 static const int COL1_POSITION = 17;
@@ -90,10 +91,10 @@ static vector<HelpItem> create_extra_help_items() {
   return help_items;
 }
 
-static const int JumpToUser(CursesWindow* window) {
+static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
   vector<ListBoxItem> items;
   {
-    DataFile<smalrec> file(syscfg.datadir, NAMES_LST, File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
+    DataFile<smalrec> file(datadir, NAMES_LST, File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
     if (!file) {
       show_error_no_users(window);
       return -1;
@@ -119,8 +120,8 @@ static const int JumpToUser(CursesWindow* window) {
   return -1;
 }
 
-void user_editor() {
-  int number_users = number_userrecs();
+void user_editor(const wwiv::sdk::Config& config) {
+  int number_users = number_userrecs(config.datadir());
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("User Editor", 18, 76));
 
@@ -150,7 +151,7 @@ void user_editor() {
 
   int current_usernum = 1;
   userrec user;
-  read_user(current_usernum, &user);
+  read_user(config.datadir(), current_usernum, &user);
 
   auto user_name_field = new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, true);
   user_name_field->set_displayfn([&]() -> string {
@@ -213,13 +214,13 @@ void user_editor() {
       } else {
         items.Run();
         if (dialog_yn(window.get(), "Save User?")) {
-          write_user(current_usernum, &user);
+          write_user(config.datadir(), current_usernum, &user);
         }
       }
       window->Refresh();
     } break;
     case 'J': {
-      int user_number = JumpToUser(window.get());
+      int user_number = JumpToUser(window.get(), config.datadir());
       if (user_number >= 1) {
         current_usernum = user_number;
       }
@@ -251,7 +252,7 @@ void user_editor() {
       break;
     }
 
-    read_user(current_usernum, &user);
+    read_user(config.datadir(), current_usernum, &user);
     show_user(&items, &user);
   }
 }

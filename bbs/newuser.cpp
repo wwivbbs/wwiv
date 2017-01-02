@@ -709,9 +709,8 @@ void DoFullNewUser() {
   }
   if (syscfg.sysconfig & sysconfig_extended_info) {
     input_street();
-    char szZipFileName[MAX_PATH];
-    sprintf(szZipFileName, "%s%s%czip1.dat", syscfg.datadir, ZIPCITY_DIR, File::pathSeparatorChar);
-    if (File::Exists(szZipFileName)) {
+    const auto zip_city_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
+    if (File::Exists(zip_city_dir, "zip1.dat")) {
       input_zipcode();
       if (!check_zip(u->GetZipcode(), 1)) {
         u->SetCity("");

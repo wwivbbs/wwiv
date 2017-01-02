@@ -586,9 +586,10 @@ void print_net_listing(bool bForcePause) {
           } else {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
-              sprintf(s2, "%s%s%c%s.%-3u", syscfg.datadir, REGIONS_DIR, File::pathSeparatorChar, REGIONS_DIR, atoi(csne.phone));
+              const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
+              const auto town_fn = StringPrintf("%s.%-3u", REGIONS_DIR, StringToUnsignedInt(csne.phone));
               string areacode;
-              if (File::Exists(s2)) {
+              if (File::Exists(regions_dir, town_fn)) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
                 areacode = describe_area_code_prefix(atoi(csne.phone), atoi(town));
               } else {

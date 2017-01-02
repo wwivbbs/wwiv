@@ -58,8 +58,8 @@ static void fix_user_rec(userrec *u) {
   u->macros[2][sizeof(u->macros[2]) - 1] = 0;
 }
 
-int number_userrecs() {
-  DataFile<userrec> file(syscfg.datadir, USER_LST,
+int number_userrecs(const std::string& datadir) {
+  DataFile<userrec> file(datadir, USER_LST,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (file) {
     return file.number_of_records() - 1;
@@ -67,8 +67,8 @@ int number_userrecs() {
   return -1;
 }
 
-void read_user(unsigned int un, userrec *u) {
-  DataFile<userrec> file(syscfg.datadir, USER_LST,
+void read_user(const std::string& datadir, unsigned int un, userrec *u) {
+  DataFile<userrec> file(datadir, USER_LST,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!file) {
     u->inact = inact_deleted;
@@ -87,12 +87,12 @@ void read_user(unsigned int un, userrec *u) {
   fix_user_rec(u);
 }
 
-void write_user(unsigned int un, userrec *u) {
+void write_user(const std::string& datadir, unsigned int un, userrec *u) {
   if (un < 1 || un > syscfg.maxusers) {
     return;
   }
 
-  DataFile<userrec> file(syscfg.datadir, USER_LST,
+  DataFile<userrec> file(datadir, USER_LST,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (file) {
     file.Seek(un);
@@ -100,16 +100,16 @@ void write_user(unsigned int un, userrec *u) {
   }
 }
 
-void save_status() {
-  DataFile<statusrec_t> file(syscfg.datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite|File::modeCreateFile);
+void save_status(const std::string& datadir) {
+  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite|File::modeCreateFile);
   if (file) {
     file.Write(&statusrec);
   }
 }
 
 /** returns true if statusrec.dat is read correctly */
-bool read_status() {
-  DataFile<statusrec_t> file(syscfg.datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite);
+bool read_status(const std::string& datadir) {
+  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite);
   if (file) {
     return file.Read(&statusrec);
   }

@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_USER_EDITOR_H__
 #define __INCLUDED_USER_EDITOR_H__
 
-void user_editor();
+#include "sdk/config.h"
+
+void user_editor(const wwiv::sdk::Config&);
 
 #endif // __INCLUDED_USER_EDITOR_H__

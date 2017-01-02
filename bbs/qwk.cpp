@@ -1002,11 +1002,10 @@ void close_qwk_cfg(struct qwk_config *qwk_cfg) {
 }
 
 void read_qwk_cfg(struct qwk_config *qwk_cfg) {
-  char s[201];
-  sprintf(s, "%s%s", syscfg.datadir, "QWK.CFG");
   memset(qwk_cfg, 0, sizeof(struct qwk_config));
 
-  int f = open(s, O_BINARY | O_RDONLY);
+  const auto filename = StrCat(a()->config()->datadir(), "QWK.CFG");
+  int f = open(filename.c_str(), O_BINARY | O_RDONLY);
   if (f < 0) {
     return;
   }
@@ -1034,11 +1033,8 @@ void read_qwk_cfg(struct qwk_config *qwk_cfg) {
 }
 
 void write_qwk_cfg(struct qwk_config *qwk_cfg) {
-  char s[201];
-
-  sprintf(s, "%s%s", syscfg.datadir, "QWK.CFG");
-
-  int f = open(s, O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+  const auto filename = StrCat(a()->config()->datadir(), "QWK.CFG");
+  int f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   if (f < 0) {
     return;
   }

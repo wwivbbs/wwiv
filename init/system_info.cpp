@@ -110,13 +110,13 @@ protected:
   }
 };
 
-void sysinfo1() {
-  read_status();
+void sysinfo1(const std::string& datadir) {
+  read_status(datadir);
 
   if (statusrec.callernum != 65535) {
     statusrec.callernum1 = static_cast<long>(statusrec.callernum);
     statusrec.callernum = 65535;
-    save_status();
+    save_status(datadir);
   }
 
   out->Cls(ACS_CKBOARD);

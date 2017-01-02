@@ -45,6 +45,7 @@ int  oneuser();
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -336,8 +337,7 @@ void slash_e() {
       add_list(user_number, &numu, MAX_LIST, so());
       break;
     case 'M': {
-      sprintf(s, "%s*.MML", syscfg.datadir);
-      bFound = fnd.open(s, 0);
+      bFound = fnd.open(FilePath(a()->config()->datadir(), "*.mml"), WFINDFILE_ANY);
       if (bFound) {
         bout.nl();
         bout << "No mailing lists available.\r\n\n";

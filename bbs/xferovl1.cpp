@@ -558,7 +558,7 @@ void tag_files(bool& need_title) {
         if (f.u.mask & mask_extended) {
           to_char_array(s1, a()->extended_description_filename_);
           a()->extended_description_filename_ = 
-              FilePath(syscfg.datadir, StrCat(a()->directories[f.directory].filename, ".ext"));
+              FilePath(a()->config()->datadir(), StrCat(a()->directories[f.directory].filename, ".ext"));
           zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
           print_extended(f.u.filename, &abort, a()->max_extend_lines, 2);

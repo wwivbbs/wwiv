@@ -125,9 +125,9 @@ void create_sysop_account(wwiv::sdk::Config& config) {
     names.Save();
   }
 
-  if (read_status()) {
+  if (read_status(config.datadir())) {
     statusrec.users++;
-    save_status();
+    save_status(config.datadir());
   }
 
 }
