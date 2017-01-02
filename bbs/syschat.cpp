@@ -208,7 +208,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           s2[screencount] = '\xCD';
         }
         const string unn = a()->names()->UserName(a()->usernum);
-        sprintf(temp1, "|B1|#2 %s chatting with %s |B0|#1", sysop_name, unn.c_str());
+        sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name, unn.c_str());
         int nNumCharsToMove = (((a()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));

@@ -220,8 +220,8 @@ void print_searching(search_record* search_rec) {
   }
   bout << "|#9<Space> aborts  : ";
   bout.cls();
-  bout.bprintf(" |B1|15%-40.40s|B0|#0\r",
-                                    a()->directories[a()->current_user_dir().subnum].name);
+  bout.bprintf(" |17|15%-40.40s|16|#0\r",
+    a()->directories[a()->current_user_dir().subnum].name);
 }
 
 static void catch_divide_by_zero(int signum) {

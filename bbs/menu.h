@@ -90,13 +90,13 @@ struct MenuHeader {
            nItemSelectedColor, nItemSelectedHLColor;
 
   char   szMenuTitle[21];
-  char   MISC2[60];
+  char   misc2[60];
   char   szPassWord[21];     /* required for entry of menu */
   uint16_t nMinSL, nMinDSL;    /* required for entry of menu */
   uint16_t uAR, uDAR;          /* required for entry of menu */
   uint16_t uRestrict;          /* not allowed restrictions   */
   uint8_t  nSysop, nCoSysop;   /* Must be either sysop or co */
-  char   MISC3[30];
+  char   misc3[30];
   char   szScript[101];      /* Gets executed on entry     */
   char   szExitScript[101];  /* Executed on rtn from menu  */
 };

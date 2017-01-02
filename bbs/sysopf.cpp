@@ -608,7 +608,7 @@ void print_net_listing(bool bForcePause) {
                     csne.numhops, csne.forsys, csne.group);
           } else {
             line = StringPrintf("%5u%c %12s  %-40s%s%2d",
-                    csne.sysnum, bbstype, csne.phone, csne.name, " |B1|15--- ----- |#0", csne.group);
+                    csne.sysnum, bbstype, csne.phone, csne.name, " |17|15--- ----- |#0", csne.group);
           }
           bout.bpla(line, &abort);
         }

@@ -47,7 +47,7 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   strcpy(ext, "");
 #endif
 
-  snprintf(s, sizeof(s), "|#7[|B1|15 FileSpec: %s    Dir: %s%s |B0|#7]", strupr(stripfn(file_name)), drive, direc);
+  snprintf(s, sizeof(s), "|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", strupr(stripfn(file_name)), drive, direc);
   int i = (a()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
   bout << "|#7" << std::string(i, c) << s;
   i = a()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));

@@ -109,7 +109,7 @@ void modify_chain(int nCurrentChainum) {
   bool done = false;
   do {
     bout.cls();
-    const string header = StringPrintf("|B1|15Editing Chain # %d", nCurrentChainum);
+    const string header = StringPrintf("|16|15Editing Chain # %d", nCurrentChainum);
     bout << header;
     bout.nl(2);
     bout.Color(0);

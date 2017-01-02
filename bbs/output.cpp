@@ -197,7 +197,7 @@ void Output::litebar(const char *formatText, ...) {
     *this << std::string(i, ' ') << s << wwiv::endl;
   }
 #else
-  const string header = StringPrintf("|B1|15 %-78s", s);
+  const string header = StringPrintf("|17|15 %-78s", s);
   bout << header << "|#0\r\n\n";
 #endif
 }

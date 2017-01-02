@@ -319,7 +319,6 @@ static bool RegisterNamespaceData(mb_interpreter_t* bas) {
 
       int current_count = 0;
       mb_check(mb_count_coll(bas, l, arg, &current_count));
-      //bout << " with existing size: " << current_count;
       std::vector<script_data_t> data = LoadData(wwiv_userdata->module);
       for (const auto& d : data) {
         mb_value_t val = to_mb_value(d);

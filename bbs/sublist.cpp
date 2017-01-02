@@ -97,9 +97,9 @@ void old_sublist() {
 
           char s1[80];
           if (a()->subs().sub(a()->usub[i1].subnum).anony & anony_val_net) {
-            sprintf(s1, "|B1|15[%-8.8s]|#9 ", ss);
+            sprintf(s1, "|17|15[%-8.8s]|#9 ", ss);
           } else {
-            sprintf(s1, "|B1|15<%-8.8s>|#9 ", ss);
+            sprintf(s1, "|17|15<%-8.8s>|#9 ", ss);
           }
           strcat(s, s1);
         } else {
@@ -228,7 +228,7 @@ void SubList() {
         }
         newTally = a()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;
         if (a()->current_user_sub().subnum == a()->usub[i1].subnum) {
-          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |B1|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
+          sprintf(sdf, " |#9%-3.3d |#9\xB3 %3s |#9\xB3 %6s |#9\xB3 |17|15%-36.36s |#9\xB3 |#9%5d |#9\xB3 |#%c%5u |#9",
                   i1 + 1, s2, s3, a()->subs().sub(a()->usub[i1].subnum).name.c_str(), 
                   a()->GetNumMessagesInCurrentMessageArea(),
                   newTally ? '6' : '3', newTally);

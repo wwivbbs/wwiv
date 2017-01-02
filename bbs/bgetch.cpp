@@ -418,6 +418,8 @@ int bgetch_event(numlock_status_t numlock_mode) {
 int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
   a()->tleft(true);
   bool beepyet = false;
+  resetnsp();
+  lastchar_pressed();
 
   auto tv = bout.key_timeout();
   auto tv1 = tv - std::chrono::minutes(1);
