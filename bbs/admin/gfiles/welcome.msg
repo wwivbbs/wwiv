@@ -1,8 +1,2 @@
-==============================
-
-   ** Mystic Rhythms BBS **
-
- telnet://bbs.robsite.org
-
-==============================
-
+This is welcome.msg.
+Edit to suit your needs.
