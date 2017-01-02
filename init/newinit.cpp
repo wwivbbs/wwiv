@@ -53,8 +53,8 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static void write_qscn(unsigned int un, uint32_t *qscn) {
-  File file(syscfg.datadir, USER_QSC);
+static void write_qscn(const std::string datadir, unsigned int un, uint32_t *qscn) {
+  File file(datadir, USER_QSC);
   if (file.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile)) {
     file.Seek(syscfg.qscn_len * un, File::Whence::begin);
     file.Write(qscn, syscfg.qscn_len);
@@ -80,11 +80,12 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   window->SetColor(SchemeId::NORMAL);
 
   memset(&syscfg, 0, sizeof(configrec));
+  const string datadir = StrCat(bbsdir, "data", File::pathSeparatorString);
 
   strcpy(syscfg.systempw, "SYSOP");
   sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir.c_str(), File::pathSeparatorChar);
-  sprintf(syscfg.datadir, "%sdata%c", bbsdir.c_str(), File::pathSeparatorChar);
+  to_char_array(syscfg.datadir, datadir);
   sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), File::pathSeparatorChar);
   sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), File::pathSeparatorChar, File::pathSeparatorChar);
@@ -181,7 +182,7 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   syscfg.post_call_ratio = 0.0;
   save_config();
 
-  create_arcs(out->window());
+  create_arcs(out->window(), datadir);
   memset(&statusrec, 0, sizeof(statusrec_t));
   string now(date());
   strcpy(statusrec.date1, now.c_str());
@@ -201,11 +202,11 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   userrec u = {};
   memset(&u, 0, sizeof(u));
   write_user(0, &u);
-  write_qscn(0, qsc.get());
+  write_qscn(datadir, 0, qsc.get());
   u.inact = inact_deleted;
   // Note: this is where init makes a user record #1 that is deleted for new installs.
   write_user(1, &u);
-  write_qscn(1, qsc.get());
+  write_qscn(datadir, 1, qsc.get());
   {
     File namesfile(StrCat("data/", NAMES_LST));
     namesfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile);

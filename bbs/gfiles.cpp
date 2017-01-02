@@ -367,7 +367,6 @@ void gfile_sec(int sn) {
   }
   list_gfiles(g, nf, sn);
   bool done = false;
-  string file_name;
   while (!done && !hangup) {
     a()->tleft(true);
     bout << "|#9Current G|#1-|#9File Section |#1: |#5" << a()->gfilesec[sn].name << "|#0\r\n";
@@ -403,16 +402,15 @@ void gfile_sec(int sn) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
             string gfilesdir = a()->config()->gfilesdir();
-            file_name = StrCat(gfilesdir,
-                    a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
-            File::Remove(file_name);
+            auto file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+            File::Remove(a()->config()->datadir(), file_name);
           }
           for (i1 = i; i1 < nf; i1++) {
             g[i1 - 1] = g[i1];
           }
           --nf;
-          file_name = StrCat(syscfg.datadir, a()->gfilesec[sn].filename, ".gfl");
-          File file(file_name);
+          auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
+          File file(a()->config()->datadir(), file_name);
           file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
           file.Close();
@@ -424,7 +422,7 @@ void gfile_sec(int sn) {
     } else if (ss == "Q") {
       done = true;
     } else if (i > 0 && i <= nf) {
-      file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+      auto file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
       i1 = printfile(file_name);
       a()->user()->SetNumGFilesRead(a()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {
@@ -445,8 +443,8 @@ void gfile_sec(int sn) {
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            file_name = StrCat(a()->config()->gfilesdir(), a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
-            File file(file_name);
+            auto file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
+            File file(a()->config()->datadir(), file_name);
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {

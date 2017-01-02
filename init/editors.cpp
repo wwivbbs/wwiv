@@ -89,9 +89,9 @@ static void edit_editor(editorrec& e) {
   items.Run();
 }
 
-void extrn_editors() {
+void extrn_editors(const wwiv::sdk::Config& config) {
   vector<editorrec> editors;
-  DataFile<editorrec> file (syscfg.datadir, EDITORS_DAT);
+  DataFile<editorrec> file (config.datadir(), EDITORS_DAT);
   if (file) {
     file.ReadVector(editors, 10);
     file.Close();
@@ -154,7 +154,7 @@ void extrn_editors() {
     }
   } while (!done);
 
-  DataFile<editorrec> editors_dat(syscfg.datadir, EDITORS_DAT,
+  DataFile<editorrec> editors_dat(config.datadir(), EDITORS_DAT,
     File::modeReadWrite|File::modeBinary|File::modeCreateFile|File::modeTruncate,
     File::shareDenyReadWrite);
   if (editors_dat) {

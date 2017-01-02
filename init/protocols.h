@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_PROTOCOLS_H__
 #define __INCLUDED_PROTOCOLS_H__
 
-void extrn_prots();
+#include <string>
+
+void extrn_prots(const std::string& datadir);
 
 #endif // __INCLUDED_PROTOCOLS_H__

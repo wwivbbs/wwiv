@@ -21,6 +21,8 @@
 
 #include <string>
 
-void edit_languages(const std::string& bbsdir);
+#include "sdk/config.h"
+
+void edit_languages(const wwiv::sdk::Config&);
 
 #endif // __INCLUDED_LANGUAGES_H__

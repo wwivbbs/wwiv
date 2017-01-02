@@ -213,8 +213,6 @@ void chat_room() {
   bChatLine = false;
   in_chatroom = true;
   auto oiia = setiia(std::chrono::milliseconds(500));
-  char szFileName[MAX_PATH];
-  sprintf(szFileName, "%sEXTCHAT", syscfg.datadir);
 
   bool bActionMode = true;
   while (!hangup) {

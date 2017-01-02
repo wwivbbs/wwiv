@@ -48,6 +48,7 @@
 #include "core/strings.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -324,7 +325,7 @@ bool dcs() {
 }
 
 void dliscan1(int directory_num) {
-  a()->download_filename_ = StrCat(syscfg.datadir, a()->directories[directory_num].filename, ".dir");
+  a()->download_filename_ = FilePath(a()->config()->datadir(), StrCat(a()->directories[directory_num].filename, ".dir"));
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
@@ -356,7 +357,8 @@ void dliscan1(int directory_num) {
   a()->numf = u.numbytes;
   this_date = u.daten;
 
-  a()->extended_description_filename_ = StrCat(syscfg.datadir, a()->directories[directory_num].filename, ".ext");
+  a()->extended_description_filename_ = 
+      FilePath(syscfg.datadir, StrCat(a()->directories[directory_num].filename, ".ext"));
   zap_ed_info();
 }
 

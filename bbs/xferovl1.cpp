@@ -64,7 +64,8 @@ static const unsigned char *invalid_chars =
   (unsigned char *)"Ú¿ÀÙÄ³Ã´ÁÂÉ»È¼ÍºÌ¹ÊËÕ¸Ô¾Í³ÆµÏÑÖ·Ó½ÄºÇ¶ĞÒÅÎØ×°±²ÛßÜİŞ";
 
 using std::string;
-using wwiv::bbs::TempDisablePause;
+using namespace wwiv::bbs;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -556,7 +557,8 @@ void tag_files(bool& need_title) {
         bout << "|#1Description: |#2" << f.u.description << wwiv::endl;
         if (f.u.mask & mask_extended) {
           to_char_array(s1, a()->extended_description_filename_);
-          a()->extended_description_filename_ = StrCat(syscfg.datadir, a()->directories[f.directory].filename, ".ext");
+          a()->extended_description_filename_ = 
+              FilePath(syscfg.datadir, StrCat(a()->directories[f.directory].filename, ".ext"));
           zap_ed_info();
           bout << "|#1Ext. Desc. : |#2";
           print_extended(f.u.filename, &abort, a()->max_extend_lines, 2);
@@ -721,10 +723,10 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
         b.sending = true;
         b.len = fs;
         bout << "\r";
-        const string t = ctim(std::lround(b.time));
+        const string bt = ctim(std::lround(b.time));
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n",
                      a()->batch().entry.size() + 1, b.filename, b.len,
-                     t.c_str(),
+                     bt.c_str(),
                      a()->directories[b.dir].name);
         a()->batch().entry.emplace_back(b);
         bout << "\r";

@@ -19,9 +19,11 @@
 #ifndef __INCLUDED_ARCHIVERS_H__
 #define __INCLUDED_ARCHIVERS_H__
 
+#include "sdk/config.h"
+
 class CursesWindow;
 
-bool edit_archivers();
-bool create_arcs(CursesWindow* window);
+bool edit_archivers(const wwiv::sdk::Config&);
+bool create_arcs(CursesWindow* window, const std::string& datadir);
 
 #endif // __INCLUDED_ARCHIVERS_H__

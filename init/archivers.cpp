@@ -85,7 +85,7 @@ static void edit_arc(int arc_number, arcrec* a) {
   items.Run();
 }
 
-bool create_arcs(CursesWindow* window) {
+bool create_arcs(CursesWindow* window, const std::string& datadir) {
   vector<arcrec> arc;
   arc.emplace_back(arcrec{"Zip", "ZIP", 
     "zip -j %1 %2", "unzip -j -C %1 %2", 
@@ -115,7 +115,7 @@ bool create_arcs(CursesWindow* window) {
       "archive comment command", "archive test command" });
   }
 
-  File file(syscfg.datadir, ARCHIVER_DAT);
+  File file(datadir, ARCHIVER_DAT);
   if (!file.Open(File::modeWriteOnly|File::modeBinary|File::modeCreateFile)) {
     messagebox(window, StringPrintf("Couldn't open '%s' for writing.\n", file.full_pathname().c_str()));
     return false;
@@ -124,12 +124,12 @@ bool create_arcs(CursesWindow* window) {
   return true;
 }
 
-bool edit_archivers() {
+bool edit_archivers(const wwiv::sdk::Config& config) {
   arcrec arc[MAX_ARCS];
 
-  File file(syscfg.datadir, ARCHIVER_DAT);
+  File file(config.datadir(), ARCHIVER_DAT);
   if (!file.Open(File::modeReadWrite|File::modeBinary)) {
-    if (!create_arcs(out->window())) {
+    if (!create_arcs(out->window(), config.datadir())) {
       return false;
     }
     file.Open(File::modeReadWrite|File::modeBinary);
@@ -165,9 +165,9 @@ bool edit_archivers() {
   // the new archivers record.
   for (int j = 0; j < 4; j++) {
     strncpy(syscfg.arcs[j].extension, arc[j].extension, 4);
-    strncpy(syscfg.arcs[j].arca, arc[j].arca     , 32);
-    strncpy(syscfg.arcs[j].arce, arc[j].arce     , 32);
-    strncpy(syscfg.arcs[j].arcl, arc[j].arcl     , 32);
+    strncpy(syscfg.arcs[j].arca, arc[j].arca, 32);
+    strncpy(syscfg.arcs[j].arce, arc[j].arce, 32);
+    strncpy(syscfg.arcs[j].arcl, arc[j].arcl, 32);
   }
 
   // seek to beginning of file, write arcrecs, close file

@@ -66,9 +66,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
-static bool del_net(
-    Networks& networks, int nn) {
-  wwiv::sdk::Subs subs(syscfg.datadir, networks.networks());
+static bool del_net(const Config& config, Networks& networks, int nn) {
+  wwiv::sdk::Subs subs(config.datadir(), networks.networks());
   if (!subs.Load()) {
     return false;
   }
@@ -104,7 +103,7 @@ static bool del_net(
   }
 
   // Now we update the email.
-  File emailfile(syscfg.datadir, EMAIL_DAT);
+  File emailfile(config.datadir(), EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     auto t = emailfile.GetLength() / sizeof(mailrec);
     for (size_t r = 0; r < t; r++) {
@@ -422,7 +421,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     {network_type_t::internet, "Internet"}
   };
 
-  Subs subs(syscfg.datadir, networks.networks());
+  Subs subs(config.datadir(), networks.networks());
   bool subs_loaded = subs.Load();
 
   net_networks_rec& n = networks.at(nn);
@@ -465,7 +464,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
 }
 
 static bool insert_net(const Config& config, Networks& networks, int nn) {
-  wwiv::sdk::Subs subs(syscfg.datadir, networks.networks());
+  wwiv::sdk::Subs subs(config.datadir(), networks.networks());
   if (!subs.Load()) {
     return false;
   }
@@ -497,8 +496,8 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   }
 
   // same as del_net, don't think we need to do this here.
-  // wwiv::sdk::write_subs(syscfg.datadir, subboards);
-  File emailfile(syscfg.datadir, EMAIL_DAT);
+  // wwiv::sdk::write_subs(config.datadir(), subboards);
+  File emailfile(config.datadir(), EMAIL_DAT);
   if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
     auto t = emailfile.GetLength() / sizeof(mailrec);
     for (size_t r = 0; r < t; r++) {
@@ -586,7 +585,7 @@ void networks(wwiv::sdk::Config& config) {
             if (yn) {
               yn = dialog_yn(window, "Are you REALLY sure? ");
               if (yn) {
-                del_net(networks, result.selected);
+                del_net(config, networks, result.selected);
               }
             }
           } else {

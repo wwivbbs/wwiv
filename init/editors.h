@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_EDITORS_H__
 #define __INCLUDED_EDITORS_H__
 
-void extrn_editors();
+#include "sdk/config.h"
+
+void extrn_editors(const wwiv::sdk::Config&);
 
 #endif // __INCLUDED_EDITORS_H__

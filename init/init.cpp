@@ -244,9 +244,9 @@ int WInitApp::main(int argc, char** argv) {
   if (!wwiv_dir.empty()) {
     File::set_current_directory(wwiv_dir);
   }
-  string current_dir = File::current_directory();
-  File::EnsureTrailingSlash(&current_dir);
-  const string bbsdir(current_dir);
+  string bbsdir = File::current_directory();
+  File::EnsureTrailingSlash(&bbsdir);
+  Config config(bbsdir);
 
   const bool forced_initialize = cmdline.barg("initialize");
   if (forced_initialize && File::Exists(CONFIG_DAT)) {
@@ -269,9 +269,9 @@ int WInitApp::main(int argc, char** argv) {
   CreateConfigOvr(bbsdir);
 
   {
-    File archiverfile(syscfg.datadir, ARCHIVER_DAT);
+    File archiverfile(config.datadir(), ARCHIVER_DAT);
     if (!archiverfile.Open(File::modeBinary|File::modeReadOnly)) {
-      create_arcs(out->window());
+      create_arcs(out->window(), config.datadir());
     }
   }
   read_status();
@@ -321,7 +321,6 @@ int WInitApp::main(int argc, char** argv) {
     }
     out->footer()->SetDefaultFooter();
 
-    Config config(bbsdir);
     // It's easier to use the hotkey for this case statement so it's simple to know
     // which case statement matches which item.
     switch (selected_hotkey) {
@@ -335,10 +334,10 @@ int WInitApp::main(int argc, char** argv) {
       setpaths(bbsdir);
       break;
     case 'T':
-      extrn_prots();
+      extrn_prots(config.datadir());
       break;
     case 'E':
-      extrn_editors();
+      extrn_editors(config);
       break;
     case 'S':
       sec_levs();
@@ -347,13 +346,13 @@ int WInitApp::main(int argc, char** argv) {
       autoval_levs();
       break;
     case 'A':
-      edit_archivers();
+      edit_archivers(config);
       break;
     case 'I':
       instance_editor();
       break;
     case 'L':
-      edit_languages(bbsdir);
+      edit_languages(config);
       break;
     case 'N':
       networks(config);

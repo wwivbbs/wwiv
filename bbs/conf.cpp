@@ -1304,8 +1304,8 @@ static confrec *read_conferences(const char *file_name, unsigned int *nc, int ma
           if (ok) {
             memset(conferences[cc].subs, 0, l);
           } else {
-            LOG(ERROR) << "Out of memory on conference file #" << cc + 1 << ", " <<
-                          syscfg.datadir << file_name << ".";
+            LOG(ERROR) << "Out of memory on conference file #" << cc + 1 << ", "
+                       << a()->config()->datadir() << file_name << ".";
             for (i2 = 0; i2 < cc; i2++) {
               free(conferences[i2].subs);
             }

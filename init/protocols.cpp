@@ -72,17 +72,17 @@ static const char *prot_name(const vector<newexternalrec>& externs, int pn) {
   return ">NONE<";
 }
 
-static void load_protocols(vector<newexternalrec>& externs, vector<newexternalrec>& over_intern) {
+static void load_protocols(const std::string& datadir, vector<newexternalrec>& externs, vector<newexternalrec>& over_intern) {
   externs.clear();
   over_intern.clear();
   {
-    DataFile<newexternalrec> file(syscfg.datadir, NEXTERN_DAT, File::modeBinary | File::modeReadWrite);
+    DataFile<newexternalrec> file(datadir, NEXTERN_DAT, File::modeBinary | File::modeReadWrite);
     if (file) {
       file.ReadVector(externs, 15);
     }
   }
   {
-    DataFile<newexternalrec> file(syscfg.datadir, NINTERN_DAT, File::modeBinary | File::modeReadWrite);
+    DataFile<newexternalrec> file(datadir, NINTERN_DAT, File::modeBinary | File::modeReadWrite);
     if (file) {
       file.ReadVector(over_intern, 3);
     } else {
@@ -167,10 +167,10 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
   }
 }
 
-void extrn_prots() {
+void extrn_prots(const std::string& datadir) {
   vector<newexternalrec> externs;
   vector<newexternalrec> over_interns;
-  load_protocols(externs, over_interns);
+  load_protocols(datadir, externs, over_interns);
 
   bool done = false;
   do {
@@ -238,7 +238,7 @@ void extrn_prots() {
     }
   } while (!done);
 
-  DataFile<newexternalrec> newexternfile(syscfg.datadir, NEXTERN_DAT,
+  DataFile<newexternalrec> newexternfile(datadir, NEXTERN_DAT,
     File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
   if (newexternfile) {
     newexternfile.WriteVector(externs);
@@ -246,13 +246,13 @@ void extrn_prots() {
   newexternfile.Close();
 
   if ((over_interns[0].othr | over_interns[1].othr | over_interns[2].othr)&othr_override_internal) {
-    DataFile<newexternalrec>  internfile(syscfg.datadir, NINTERN_DAT,
+    DataFile<newexternalrec>  internfile(datadir, NINTERN_DAT,
       File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
     if (internfile) {
       internfile.WriteVector(over_interns);
     }
   } else {
-    File::Remove(syscfg.datadir, NINTERN_DAT);
+    File::Remove(datadir, NINTERN_DAT);
   }
 }
 

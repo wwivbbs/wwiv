@@ -378,13 +378,9 @@ string describe_area_code(int nAreaCode) {
  * @return the description for the specified area code.
  */
 string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
-  const string filename = StringPrintf("%s%s%c%s.%-3d",
-          syscfg.datadir,
-          REGIONS_DIR,
-          File::pathSeparatorChar,
-          REGIONS_DIR,
-          nAreaCode);
-  TextFile file(filename, "rt");
+  const auto regions_dir = wwiv::core::FilePath(a()->config()->datadir(), REGIONS_DIR);
+  const auto filename = StringPrintf("%s.%-3d", REGIONS_DIR, nAreaCode);
+  TextFile file(regions_dir, filename, "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

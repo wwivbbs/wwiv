@@ -98,10 +98,10 @@ static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
   return 255;
 }
 
-void edit_languages(const std::string& bbsdir) {
+void edit_languages(const wwiv::sdk::Config& config) {
   vector<languagerec> languages;
   {
-    DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT);
+    DataFile<languagerec> file(config.datadir(), LANGUAGE_DAT);
     if (file) {
       file.ReadVector(languages, MAX_LANGUAGES);
     }
@@ -161,24 +161,24 @@ void edit_languages(const std::string& bbsdir) {
 
         if (i > languages.size()) {
           languages.push_back(l);
-          edit_lang(bbsdir, languages.back());
+          edit_lang(config.root_directory(), languages.back());
         } else {
           auto it = languages.begin();
           std::advance(it, i - 1);
           auto new_lang = languages.insert(it, l);
-          edit_lang(bbsdir, *new_lang);
+          edit_lang(config.root_directory(), *new_lang);
         }
         break;
       }
     } else if (result.type == ListBoxResultType::SELECTION) {
-      edit_lang(bbsdir, languages[result.selected]);
+      edit_lang(config.root_directory(), languages[result.selected]);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }
   } while (!done);
 
   {
-    DataFile<languagerec> file(syscfg.datadir, LANGUAGE_DAT,
+    DataFile<languagerec> file(config.datadir(), LANGUAGE_DAT,
       File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
     if (file) {
       file.WriteVector(languages, MAX_LANGUAGES);

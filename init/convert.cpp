@@ -277,7 +277,7 @@ void convert_config_424_to_430(CursesWindow* window, const string& config_filena
   if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
     window->Printf("Couldn't open 'ARCHIVER_DAT' for writing.\n");
     window->Printf("Creating new file....\n");
-    create_arcs(window);
+    create_arcs(window, syscfg.datadir);
     window->Printf("\n");
     if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
       messagebox(window, "Still unable to open archiver.dat. Something is really wrong.");
