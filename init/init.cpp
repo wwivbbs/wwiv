@@ -246,7 +246,6 @@ int WInitApp::main(int argc, char** argv) {
   }
   string bbsdir = File::current_directory();
   File::EnsureTrailingSlash(&bbsdir);
-  Config config(bbsdir);
 
   const bool forced_initialize = cmdline.barg("initialize");
   if (forced_initialize && File::Exists(CONFIG_DAT)) {
@@ -265,6 +264,7 @@ int WInitApp::main(int argc, char** argv) {
     }
   }
 
+  Config config(bbsdir);
   upgrade_datafiles_if_needed(config);
   CreateConfigOvr(bbsdir);
 

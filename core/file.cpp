@@ -110,6 +110,10 @@ namespace wwiv {
 namespace core {
 
 string FilePath(const string& directoryName, const string& fileName) {
+
+  if (directoryName.empty()) {
+    return fileName;
+  }
   string fullPathName(directoryName);
   char last_char = directoryName.back();
   if (last_char != File::pathSeparatorChar) {
