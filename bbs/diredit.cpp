@@ -182,9 +182,7 @@ void modify_dir(int n) {
           }
         }
         if (!s.empty()) {
-          if (s.back() != File::pathSeparatorChar) {
-            s.push_back(File::pathSeparatorChar);
-          }
+          File::EnsureTrailingSlash(&s);
           to_char_array(r.path, s);
           bout.nl(2);
           bout << "|#3The path for this directory is changed.\r\n";

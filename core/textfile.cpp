@@ -56,15 +56,9 @@ TextFile::TextFile(const string& fileName, const string& fileMode) {
   Open(fileName, fileMode);
 }
 
-TextFile::TextFile(const string& directoryName, const string& fileName, const string& fileMode) {
-  string fullPathName(directoryName);
-  char last_char = directoryName.back();
-  if (last_char != File::pathSeparatorChar) {
-    fullPathName.push_back(File::pathSeparatorChar);
-  }
-  fullPathName.append(fileName);
-
-  Open(fullPathName, fileMode);
+TextFile::TextFile(const string& dir, const string& filename, const string& filemode) {
+  string full_pathname = wwiv::core::FilePath(dir, filename);
+  Open(full_pathname, filemode);
 }
 
 bool TextFile::Open(const string& file_name, const string& file_mode) {

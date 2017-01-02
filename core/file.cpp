@@ -109,18 +109,16 @@ static constexpr int TRIES = 100;
 namespace wwiv {
 namespace core {
 
-string FilePath(const string& directoryName, const string& fileName) {
+string FilePath(const string& dirname, const string& filename) {
 
-  if (directoryName.empty()) {
-    return fileName;
+  if (dirname.empty()) {
+    return filename;
   }
-  string fullPathName(directoryName);
-  char last_char = directoryName.back();
-  if (last_char != File::pathSeparatorChar) {
-    fullPathName.push_back(File::pathSeparatorChar);
-  }
-  fullPathName.append(fileName);
-  return fullPathName;
+
+  string result = dirname;
+  File::EnsureTrailingSlash(&result);
+  result.append(filename);
+  return result;
 }
 
 }  // namespace core
@@ -145,35 +143,35 @@ File::~File() {
   }
 }
 
-bool File::Open(int nFileMode, int nShareMode) {
+bool File::Open(int file_mode, int share_mode) {
   DCHECK_EQ(this->IsOpen(), false) << "File " << full_path_name_ << " is already open.";
 
   // Set default share mode
-  if (nShareMode == File::shareUnknown) {
-    nShareMode = shareDenyWrite;
-    if ((nFileMode & File::modeReadWrite) ||
-        (nFileMode & File::modeWriteOnly)) {
-      nShareMode = File::shareDenyReadWrite;
+  if (share_mode == File::shareUnknown) {
+    share_mode = shareDenyWrite;
+    if ((file_mode & File::modeReadWrite) ||
+        (file_mode & File::modeWriteOnly)) {
+      share_mode = File::shareDenyReadWrite;
     }
   }
 
-  CHECK_NE(nShareMode, File::shareUnknown);
-  CHECK_NE(nFileMode, File::modeUnknown);
+  CHECK_NE(share_mode, File::shareUnknown);
+  CHECK_NE(file_mode, File::modeUnknown);
 
-  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode;
+  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << file_mode;
 
-  handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
+  handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
   if (handle_ < 0) {
     VLOG(3) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
     int count = 1;
     if (access(full_path_name_.c_str(), 0) != -1) {
       sleep_for(milliseconds(WAIT_TIME_MILLIS));
-      handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
+      handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
         sleep_for(milliseconds((count % 2) ? WAIT_TIME_MILLIS : 0));
         VLOG(3) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
         count++;
-        handle_ = _sopen(full_path_name_.c_str(), nFileMode, nShareMode, _S_IREAD | _S_IWRITE);
+        handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       }
 
       if (handle_ < 0) {
@@ -182,10 +180,10 @@ bool File::Open(int nFileMode, int nShareMode) {
     }
   }
 
-  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << nFileMode << ", handle=" << handle_;
+  VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << file_mode << ", handle=" << handle_;
 
   if (File::IsFileHandleValid(handle_)) {
-    flock(handle_, (nShareMode == shareDenyReadWrite || nShareMode == shareDenyWrite) ? LOCK_EX : LOCK_SH);
+    flock(handle_, (share_mode == shareDenyReadWrite || share_mode == shareDenyWrite) ? LOCK_EX : LOCK_SH);
   }
 
   if (handle_ == File::invalid_handle) {
@@ -207,24 +205,24 @@ void File::Close() {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-bool File::SetName(const string& fileName) {
-  full_path_name_ = fileName;
+bool File::SetName(const string& filename) {
+  full_path_name_ = filename;
   return true;
 }
 
-bool File::SetName(const string& dirName, const string& fileName) {
+bool File::SetName(const string& dirname, const string& filename) {
   std::stringstream full_path_name;
-  full_path_name << dirName;
-  if (!dirName.empty() && dirName[dirName.length() - 1] == pathSeparatorChar) {
-    full_path_name << fileName;
+  full_path_name << dirname;
+  if (!dirname.empty() && dirname[dirname.length() - 1] == pathSeparatorChar) {
+    full_path_name << filename;
   } else {
-    full_path_name << pathSeparatorChar << fileName;
+    full_path_name << pathSeparatorChar << filename;
   }
   return SetName(full_path_name.str());
 }
 
-ssize_t File::Read(void* pBuffer, size_t size) {
-  ssize_t ret = read(handle_, pBuffer, size);
+ssize_t File::Read(void* buffer, size_t size) {
+  ssize_t ret = read(handle_, buffer, size);
   if (ret == -1) {
     LOG(ERROR) << "[DEBUG: Read errno: " << errno
       << " filename: " << full_path_name_ << " size: " << size;
@@ -234,8 +232,8 @@ ssize_t File::Read(void* pBuffer, size_t size) {
   return ret;
 }
 
-ssize_t File::Write(const void* pBuffer, size_t size) {
-  ssize_t nRet = write(handle_, pBuffer, size);
+ssize_t File::Write(const void* buffer, size_t size) {
+  ssize_t nRet = write(handle_, buffer, size);
   if (nRet == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno
       << " filename: " << full_path_name_ << " size: " << size;
@@ -276,19 +274,19 @@ bool File::IsFile() const {
   return !this->IsDirectory();
 }
 
-bool File::SetFilePermissions(int nPermissions) {
-  return chmod(full_path_name_.c_str(), nPermissions) == 0;
+bool File::SetFilePermissions(int perm) {
+  return chmod(full_path_name_.c_str(), perm) == 0;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool File::Rename(const string& origFileName, const string& newFileName) {
-  return rename(origFileName.c_str(), newFileName.c_str()) == 0;
+bool File::Rename(const string& orig_fn, const string& new_fn) {
+  return rename(orig_fn.c_str(), new_fn.c_str()) == 0;
 }
 
-bool File::Remove(const string& fileName) {
-  return (unlink(fileName.c_str()) ? false : true);
+bool File::Remove(const string& filename) {
+  return (unlink(filename.c_str()) ? false : true);
 }
 
 bool File::Remove(const string& dir, const string& file) {
@@ -315,18 +313,18 @@ bool File::Exists(const string& dir, const string& file) {
   return Exists(wwiv::core::FilePath(dir, file));
 }
 
-bool File::ExistsWildcard(const string& wildCard) {
+bool File::ExistsWildcard(const string& wildcard) {
   WFindFile fnd;
-  return fnd.open(wildCard.c_str(), 0);
+  return fnd.open(wildcard.c_str(), 0);
 }
 
-bool File::SetFilePermissions(const string& fileName, int nPermissions) {
-  CHECK(!fileName.empty());
-  return chmod(fileName.c_str(), nPermissions) == 0;
+bool File::SetFilePermissions(const string& filename, int perm) {
+  CHECK(!filename.empty());
+  return chmod(filename.c_str(), perm) == 0;
 }
 
-bool File::IsFileHandleValid(int hFile) {
-  return hFile != File::invalid_handle;
+bool File::IsFileHandleValid(int handle) {
+  return handle != File::invalid_handle;
 }
 
 // static
@@ -334,7 +332,7 @@ void File::EnsureTrailingSlash(string* path) {
   if (path->empty()) {
     return;
   }
-  char last_char = path->back();
+  auto last_char = path->back();
   if (last_char != File::pathSeparatorChar) {
     path->push_back(File::pathSeparatorChar);
   }
@@ -363,7 +361,7 @@ void File::FixPathSeparators(std::string* name) {
 
 // static 
 std::string File::FixPathSeparators(const std::string& path) {
-  string s = path;
+  auto s = path;
   FixPathSeparators(&s);
   return s;
 }

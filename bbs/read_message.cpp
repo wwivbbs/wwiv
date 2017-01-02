@@ -47,6 +47,7 @@
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
@@ -86,13 +87,9 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
           netstatus = "{AC}";
         }
       }
-      const string filename = StringPrintf(
-        "%s%s%c%s.%-3u",
-        a()->config()->datadir().c_str(),
-        REGIONS_DIR,
-        File::pathSeparatorChar,
-        REGIONS_DIR,
-        atoi(csne->phone));
+      const auto phone_fn = StringPrintf("%s.%-3u", REGIONS_DIR, StringToUnsignedInt(csne->phone));
+      const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
+      const string filename = FilePath(regions_dir, phone_fn);
 
       string description;
       if (File::Exists(filename)) {

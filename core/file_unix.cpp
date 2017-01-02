@@ -101,19 +101,19 @@ time_t File::last_write_time() {
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 
-bool File::Copy(const std::string& sourceFileName, const std::string& destFileName) {
-  if (sourceFileName != destFileName && File::Exists(sourceFileName) && !File::Exists(destFileName)) {
+bool File::Copy(const std::string& source_filename, const std::string& dest_filename) {
+  if (source_filename != dest_filename && File::Exists(source_filename) && !File::Exists(dest_filename)) {
     char *pBuffer = static_cast<char *>(malloc(16400));
     if (pBuffer == nullptr) {
       return false;
     }
-    int hSourceFile = open(sourceFileName.c_str(), O_RDONLY | O_BINARY);
+    int hSourceFile = open(source_filename.c_str(), O_RDONLY | O_BINARY);
     if (!hSourceFile) {
       free(pBuffer);
       return false;
     }
 
-    int hDestFile = open(destFileName.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+    int hDestFile = open(dest_filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     if (!hDestFile) {
       free(pBuffer);
       close(hSourceFile);
@@ -137,9 +137,9 @@ bool File::Copy(const std::string& sourceFileName, const std::string& destFileNa
   return true;
 }
 
-bool File::Move(const std::string& sourceFileName, const std::string& destFileName) {
-  if (Copy(sourceFileName, destFileName)) {
-    return Remove(sourceFileName);
+bool File::Move(const std::string& source_filename, const std::string& dest_filename) {
+  if (Copy(source_filename, dest_filename)) {
+    return Remove(source_filename);
   }
   return false;
 }

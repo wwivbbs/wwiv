@@ -287,29 +287,29 @@ void hang_it_up() {
  * Returns 1 if sucessful, else returns 0. The pause_delay is optional and
  * is used to insert silences between tones.
  */
-bool play_sdf(const string& soundFileName, bool abortable) {
-  WWIV_ASSERT(!soundFileName.empty());
+bool play_sdf(const string& sound_filename, bool abortable) {
+  WWIV_ASSERT(!sound_filename.empty());
 
-  string fullPathName;
+  string full_pathname;
   // append gfilesdir if no path specified
-  if (soundFileName.find(File::pathSeparatorChar) == string::npos) {
-    fullPathName = StrCat(a()->config()->gfilesdir(), soundFileName);
+  if (sound_filename.find(File::pathSeparatorChar) == string::npos) {
+    full_pathname = StrCat(a()->config()->gfilesdir(), sound_filename);
   } else {
-    fullPathName = soundFileName;
+    full_pathname = sound_filename;
   }
 
   // append .SDF if no extension specified
-  if (fullPathName.find('.') == string::npos) {
-    fullPathName += ".sdf";
+  if (full_pathname.find('.') == string::npos) {
+    full_pathname += ".sdf";
   }
 
   // Must Exist
-  if (!File::Exists(fullPathName)) {
+  if (!File::Exists(full_pathname)) {
     return false;
   }
 
   // must be able to open read-only
-  TextFile soundFile(fullPathName, "rt");
+  TextFile soundFile(full_pathname, "rt");
   if (!soundFile.IsOpen()) {
     return false;
   }

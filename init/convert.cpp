@@ -251,7 +251,8 @@ void convert_config_424_to_430(CursesWindow* window, const wwiv::sdk::Config& co
   window->Printf("Converting config.dat to 4.3/5.x format...\n");
   window->SetColor(SchemeId::NORMAL);
   file.Read(&syscfg, sizeof(configrec));
-  sprintf(syscfg.menudir, "%smenus%c", syscfg.gfilesdir, File::pathSeparatorChar);
+  auto menus_dir = StrCat("menus", File::pathSeparatorString);
+  to_char_array(syscfg.menudir, FilePath(syscfg.gfilesdir, menus_dir));
 
   arcrec arc[MAX_ARCS];
   for (int i = 0; i < MAX_ARCS; i++) {

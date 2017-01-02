@@ -77,6 +77,13 @@ static bool unzip_file(const std::string& zipfile, const std::string& dir) {
   return false;
 }
 
+static void AssignSubDir(char* path, const std::string& bbsdir, const std::string subdir) {
+  const auto np = StrCat(bbsdir, subdir, File::pathSeparatorString);
+
+  // Since we have a char* and not char[], to_char_array won't work here.
+  strcpy(path, np.c_str());
+}
+
 static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
@@ -88,21 +95,22 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   syscfg.header.header.config_revision_number = 1;
   syscfg.header.header.config_size = sizeof(configrec);
   syscfg.header.header.written_by_wwiv_num_version = wwiv_num_version;
-  strcpy(syscfg.header.header.signature, "WWIV");
+  to_char_array(syscfg.header.header.signature, "WWIV");
 
   const string datadir = StrCat(bbsdir, "data", File::pathSeparatorString);
-
-  strcpy(syscfg.systempw, "SYSOP");
-  sprintf(syscfg.msgsdir, "%smsgs%c", bbsdir.c_str(), File::pathSeparatorChar);
-  sprintf(syscfg.gfilesdir, "%sgfiles%c", bbsdir.c_str(), File::pathSeparatorChar);
   to_char_array(syscfg.datadir, datadir);
-  sprintf(syscfg.dloadsdir, "%sdloads%c", bbsdir.c_str(), File::pathSeparatorChar);
-  sprintf(syscfg.tempdir, "%stemp1%c", bbsdir.c_str(), File::pathSeparatorChar);
-  sprintf(syscfg.menudir, "%sgfiles%cmenus%c", bbsdir.c_str(), File::pathSeparatorChar, File::pathSeparatorChar);
-  sprintf(syscfg.scriptdir, "%sscripts%c", bbsdir.c_str(), File::pathSeparatorChar);
-  strcpy(syscfg.systemname, "My WWIV BBS");
-  strcpy(syscfg.systemphone, "   -   -    ");
-  strcpy(syscfg.sysopname, "The New Sysop");
+
+  to_char_array(syscfg.systempw, "SYSOP");
+  to_char_array(syscfg.systemname, "My WWIV BBS");
+  to_char_array(syscfg.systemphone, "   -   -    ");
+  to_char_array(syscfg.sysopname, "The New Sysop");
+
+  AssignSubDir(syscfg.msgsdir, bbsdir, "msgs");
+  AssignSubDir(syscfg.gfilesdir, bbsdir, "gfiles");
+  AssignSubDir(syscfg.dloadsdir, bbsdir, "dloads");
+  AssignSubDir(syscfg.tempdir, bbsdir, "temp1");
+  AssignSubDir(syscfg.menudir, bbsdir, FilePath("gfiles", "menus"));
+  AssignSubDir(syscfg.scriptdir, bbsdir, "scripts");
 
   syscfg.newusersl = 10;
   syscfg.newuserdsl = 0;
@@ -195,12 +203,12 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   create_arcs(out->window(), datadir);
   memset(&statusrec, 0, sizeof(statusrec_t));
   string now(date());
-  strcpy(statusrec.date1, now.c_str());
-  strcpy(statusrec.date2, "00/00/00");
-  strcpy(statusrec.date3, "00/00/00");
-  strcpy(statusrec.log1, "000000.LOG");
-  strcpy(statusrec.log2, "000000.LOG");
-  strcpy(statusrec.gfiledate, now.c_str());
+  to_char_array(statusrec.date1, now);
+  to_char_array(statusrec.date2, "00/00/00");
+  to_char_array(statusrec.date3, "00/00/00");
+  to_char_array(statusrec.log1, "000000.LOG");
+  to_char_array(statusrec.log2, "000000.LOG");
+  to_char_array(statusrec.gfiledate, now);
   statusrec.callernum = 65535;
   statusrec.qscanptr = 2;
   statusrec.net_bias = 0.001f;
@@ -232,7 +240,7 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   u.lp_colors[10] = static_cast<uint8_t>(Color::LIGHTCYAN);
   u.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
   u.cHotKeys = 0;
-  strcpy(u.szMenuSet, "wwiv");
+  to_char_array(u.szMenuSet, "wwiv");
 
   write_user(datadir, 1, &u);
   write_qscn(datadir, 1, qsc.get());
@@ -258,9 +266,9 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   {
     directoryrec d1;
     memset(&d1, 0, sizeof(directoryrec));
-    strcpy(d1.name, "Sysop");
-    strcpy(d1.filename, "SYSOP");
-    sprintf(d1.path, "dloads%csysop%c", File::pathSeparatorChar, File::pathSeparatorChar);
+    to_char_array(d1.name, "Sysop");
+    to_char_array(d1.filename, "SYSOP");
+    to_char_array(d1.path, FilePath("dloads", StrCat("sysop", File::pathSeparatorString)));
     File::mkdir(d1.path);
     d1.dsl = 100;
     d1.maxfiles = 50;
@@ -270,9 +278,10 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
     dirsfile.Write(&d1, sizeof(directoryrec));
 
     memset(&d1, 0, sizeof(directoryrec));
-    strcpy(d1.name, "Miscellaneous");
-    strcpy(d1.filename, "misc");
-    sprintf(d1.path, "dloads%cmisc%c", File::pathSeparatorChar, File::pathSeparatorChar);
+    to_char_array(d1.name, "Miscellaneous");
+    to_char_array(d1.filename, "misc");
+    auto last = StrCat("misc", File::pathSeparatorString);
+    to_char_array(d1.path, FilePath("dloads", last));
     File::mkdir(d1.path);
     d1.dsl = 10;
     d1.age = 0;

@@ -112,7 +112,7 @@ bool NetworkLog::Log(
 
 
 std::string NetworkLog::ToString() const {
-  return StringPrintf("%s%cnet.log", gfiles_directory_.c_str(), File::pathSeparatorChar);
+  return wwiv::core::FilePath(gfiles_directory_, "net.log");
 }
 
 }  // namespace net

@@ -523,8 +523,8 @@ public:
     window->GotoXY(this->x_, this->y_);
     int return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
-    if (!data_.empty() && data_.back() != File::pathSeparatorChar) {
-      data_.push_back(File::pathSeparatorChar);
+    if (!data_.empty()) {
+      File::EnsureTrailingSlash(&data_);
     }
     // Update what we display in case it changed.
     DefaultDisplay(window);

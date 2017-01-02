@@ -372,13 +372,8 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
-  if (!attach_dir.empty()) {
-    attach_dir_ = attach_dir;
-    File::EnsureTrailingSlash(&attach_dir_);
-  } else {
-    attach_dir_ = StrCat(GetHomeDir(), ATTACH_DIR);
-    attach_dir_.push_back(File::pathSeparatorChar);
-  }
+  attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(GetHomeDir(), ATTACH_DIR);
+  File::EnsureTrailingSlash(&attach_dir_);
 
   screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
 
@@ -426,12 +421,6 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
     return false;
   }
   return true;
-}
-
-static char* DuplicatePath(const char* path) {
-  char* out = new char[MAX_PATH + 1];
-  strncpy(out, path, MAX_PATH);
-  return out;
 }
 
 bool Application::ReadConfig() {
