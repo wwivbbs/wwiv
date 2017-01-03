@@ -650,8 +650,10 @@ void build_control_dat(struct qwk_junk *qwk_info) {
 
   fprintf(fp, "%s.qwk\r\n", system_name);
   fprintf(fp, "%s\r\n", "");   // System City and State
-  fprintf(fp, "%s\r\n", syscfg.systemphone);
-  fprintf(fp, "%s\r\n", syscfg.sysopname);
+  const string systemphone = a()->config()->config()->systemphone;
+  fprintf(fp, "%s\r\n", systemphone.c_str());
+  const string sysopname = a()->config()->config()->sysopname;
+  fprintf(fp, "%s\r\n", sysopname.c_str());
   fprintf(fp, "%s,%s\r\n", "00000", system_name);
   fprintf(fp, "%s\r\n", date_time);
   fprintf(fp, "%s\r\n", a()->user()->data.name);

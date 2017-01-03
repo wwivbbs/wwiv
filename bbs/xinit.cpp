@@ -478,7 +478,6 @@ bool Application::ReadConfig() {
   }
 
   syscfg.systemname       = strdup(config_->config()->systemname);
-  syscfg.systemphone      = strdup(config_->config()->systemphone);
   syscfg.sysopname        = strdup(config_->config()->sysopname);
 
   syscfg.newusersl        = config_->config()->newusersl;

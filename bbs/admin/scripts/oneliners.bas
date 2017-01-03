@@ -12,31 +12,31 @@ import "@wwiv.io"
 '
 def PrintList(l)
   i = iterator(l)
-  while move_next(i)
-    print get(i)
-  wend
+  While move_next(i)
+    Print get(i)
+  Wend
 enddef
 
 ' Returns the WWIV Pipe Color Code for
 ' the color name displayed in onliners
 def PipeColor(c)
-  if c = 1 then
+  If c = 1 then
     return "|15"
-  elseif c = 2 then
+  ElseIf c = 2 then
     return "|01"
-  elseif c = 3 then
+  ElseIf c = 3 then
     return "|10"
-  elseif c = 4 then
+  ElseIf c = 4 then
     return "|12"
-  elseif c = 5 then
+  ElseIf c = 5 then
     return "|13"
-  elseif c = 6 then
+  ElseIf c = 6 then
     return "|07"
-  elseif c = 7 then
+  ElseIf c = 7 then
     return "|11"
-  elseif c = 8 then
+  ElseIf c = 8 then
     return "|14"
-  elseif c = 9 then
+  ElseIf c = 9 then
     return "|09"
   endif
   ' Default color.
@@ -44,7 +44,7 @@ def PipeColor(c)
 enddef
 
 def EnterOneLiner() 
-  puts("1:White 2:DkBlue 3:Green 4:Red 5:Purple 6:Gray 7:Cyan 8:Yellow 9:Blue")
+  puts("|15 1:White|01 2:DkBlue|10 3:Green|12 4:Red|13 5:Purple|07 6:Gray|11 7:Cyan|14 8:Yellow|09 9:Blue")
   nl()
   puts("What Color? ")
 
@@ -56,27 +56,37 @@ def EnterOneLiner()
   nl()
   puts("|#9: ")
   s = gets(72)
-  return pipecode + s
-enddef
+
+  wwiv.io.puts("|10Anonymous? ")
+  an = wwiv.io.ny()
+  If an Then
+    name = "Anonymous"
+  Else
+    namepart = wwiv.interpret("N")
+    number = wwiv.interpret("#")
+    name = namepart + " #" + number
+  EndIf
+  Return pipecode + name + " - " + s
+Enddef
 
 def Main()
   l = list()
   wwiv.data.load("GLOBAL", l)
-  done = FALSE
+  done = False
   cls()
-  while TRUE
-    wwiv.printfile("oneliner");
+  While True
+    wwiv.io.printfile("oneliner");
 	PrintList(l)
 	puts("|#9Would you like to add an oneliner? ")
 
-	if not yn() then
-	  return
-	endif
+	If Not yn() Then
+	  Return
+	EndIf
     s = EnterOneLiner()
-    if len(l) > 10 then
-      remove(l, 0)
-    endif
-    push(l, s)
+    If len(l) > 10 Then
+      Remove(l, 0)
+    EndIf
+    Push(l, s)
     wwiv.data.save("GLOBAL", l) 
   wend
 enddef

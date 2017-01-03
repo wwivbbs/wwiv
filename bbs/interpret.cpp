@@ -129,7 +129,7 @@ std::string interpret(char ch, const MacroContext& context) {
     return to_string(std::chrono::duration_cast<std::chrono::minutes>(min_used).count());
   }
   case 'P':                               // BBS phone
-    return reinterpret_cast<char*>(syscfg.systemphone);
+    return reinterpret_cast<char*>(a()->config()->config()->systemphone);
   case 'p':                               // User's phone
     return context.u().GetDataPhoneNumber();
   case 'R':                               // User's real name
@@ -153,7 +153,7 @@ std::string interpret(char ch, const MacroContext& context) {
   case 'X':                               // User's sex
     return StringPrintf("%c", context.u().GetGender());
   case 'Y':                               // Your BBS name
-    return syscfg.systemname;
+    return a()->config()->config()->systemname;
   case 'y':                               // Computer type
     return ctypes(context.u().GetComputerType());
   case 'Z':                               // User's zip code

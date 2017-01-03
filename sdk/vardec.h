@@ -353,7 +353,6 @@ struct configrec {
 
 struct small_configrec {
   char* systemname;         // BBS system name
-  char* systemphone;        // BBS system phone number
   char* sysopname;          // sysop's name
 
   std::string beginday_cmd; // beginday event
