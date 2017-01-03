@@ -65,6 +65,30 @@ printerr() {
   echo `date "+%Y-%m-%d_%H-%M-%S"`: ERROR: $1 >> ${LOGFILE}
 }
 
+filearch() {
+  file -be elf $1 | awk -F, '{print $2}' | sed 's/[- _]//g'
+}
+
+checkcrit() {
+  if which $1 > /dev/null 2>&1
+  then
+    printok "$1 is installed"
+  else
+    printerr "$1 is not installed"
+    MISSING_CRIT=true
+  fi
+}
+
+checkopt() {
+  if which $1 > /dev/null 2>&1
+  then
+    printok "$1 is installed"
+  else
+    printwarn "$1 is not installed"
+    MISSING_OPT=true
+  fi
+}
+
 ### Install header ###
 cat <<HEADER
 
@@ -85,6 +109,16 @@ cat <<HEADER
 
 HEADER
 
+# make sure we are root.
+ID=$(id -u)
+if [[ $ID -ne 0 ]]
+then
+  say "Looks like you are not root.  Please re-run as root."
+  echo "There are tasks that require root to complete."
+  echo
+  exit 20
+fi
+
 if ! confirm "Welcome to the WWIV installer. Continue?"
 then
   say "Sorry you don't want to continue.  Hope you come back soon."
@@ -92,10 +126,12 @@ then
   exit 3
 fi
 
-say ""
+echo
 say "Starting the install process."
 say ""
-
+echo "The install details will be captured in"
+echo "${LOGFILE}"
+sleep 3
 
 
 ### parse our CLI options ###
@@ -104,65 +140,16 @@ say ""
 # script for our expected WWIV user, etc.
 
 
-say "Doing some basic sanity checks"
-echo
-
-if [[ -e ${WWIV_DIR}/config.dat ]]
-then
-  say "Looks like there's already a WWIV install in ${WWIV_DIR}."
-  say "If you really meant to install, please check the target directory"
-  say "before trying again.  Aborting the install."
-  say ""
-  exit 2
-else
-  say "No config.dat found, continuing."
-fi
-
-if [[ -f "${WWIV_DIR}/init" ]]
-then
-  say "found init, continuing."
-else
-  say "init is missing. Please verify your BBS tarball is complete"
-  say "and run install.sh again."
-  say ""
-  say "If you are running on a system that requires compiling the binaries"
-  say "manually, please do so and copy them all into ${WWIV_DIR}"
-  say "and run install.sh again."
-  say ""
-  exit 2
-fi
-say "Basic Checks passed"
-echo
-
+### check for pre-reqs ###
 say "Checking for needed OS tools"
 echo
-### check for pre-reqs ###
+
 #Critical
 MISSING_CRIT=false
-
-if which sudo > /dev/null 2>&1
-then
-  printok "sudo is installed"
-else
-  printerr "sudo is not installed"
-  MISSING_CRIT=true
-fi
-
-if which zip > /dev/null 2>&1
-then
-  printok "zip is installed"
-else
-  printerr "zip is not installed"
-  MISSING_CRIT=true
-fi
-
-if which unzip > /dev/null 2>&1
-then
-  printok "unzip is installed"
-else
-  printerr "unzip is not installed"
-  MISSING_CRIT=true
-fi
+checkcrit sudo
+checkcrit zip
+checkcrit unzip
+checkcrit awk
 
 if [[ ${MISSING_CRIT} == "true" ]]
 then
@@ -176,12 +163,84 @@ else
 fi
 
 #Optional
-which dos2unix > /dev/null 2>&1; D2U=$?
-which unix2dos > /dev/null 2>&1; U2D=$?
-which dosemu > /dev/null 2>&1; DOSEMU=$?
-which screen > /dev/null 2>&1; SCREEN=$?
+MISSING_OPT=false
+checkopt dos2unix
+checkopt unix2dos
+checkopt dosemu
+checkopt screen
+
+if [[ ${MISSING_OPT} == "true" ]]
+then
+  echo
+  say "You are missing some optional tools (listed as WARNING above)"
+  say "These are not necessary for a basic system, but you may want"
+  say "to install the missing tools later; continuing."
+  echo
+else
+  echo
+  say "All optional tools checks passed, continuing with the install."
+  echo
+fi
+sleep 3
 
 # ncurses
+
+
+echo
+say "Doing some basic sanity checks"
+echo
+
+if [[ -e ${WWIV_DIR}/config.dat ]]
+then
+  printerr "Looks like there's already a WWIV install in ${WWIV_DIR}."
+  say "If you really meant to install, please check the target directory"
+  say "before trying again.  Aborting the install."
+  say ""
+  exit 2
+else
+  printok "No config.dat found, continuing."
+fi
+
+if [[ -f "${WWIV_DIR}/init" ]]
+then
+  typeset -l SYSTYPE
+  typeset -l INIT_TYPE
+  SYSTYPE=$(uname -m|sed 's/[- _]//g')
+  INIT_TYPE=$(filearch init)
+  if [[ $SYSTYPE =~ $INIT_TYPE ]]
+  then
+    printok "Found init and architectures appear to match, continuing."
+  else
+    printwarn "Found init, continuing.  But..."
+    say "Your system type does not match the filetype of init."
+    say "System type is ${SYSTYPE} and file reports ${INIT_TYPE}."
+    say "If things are too different, it might not work"
+    say "Please refer to the documentation about compiling yourself"
+    say "if things don't look right or init doesn't run."
+    echo
+    if ! confirm "Should we continue the install?"
+    then
+      echo
+      say "Aborting the install.  Please verify your binaries and re-run the installer."
+      exit 2
+    fi
+  fi
+else
+  printerr "Did not find init; aborting"
+  say "init is missing. Please verify your BBS tarball is complete"
+  say "and run install.sh again."
+  say ""
+  say "If you are running on a system that requires compiling the binaries"
+  say "manually, please do so and copy them all into ${WWIV_DIR}"
+  say "and run install.sh again."
+  say ""
+  exit 2
+fi
+
+echo
+say "Basic Checks completed"
+echo
+
 
 
 # Making sure the values are what we want
@@ -189,8 +248,8 @@ cat <<VARCHECK
 
 Creating the WWIV user, group and directory with the following values:
 
-WWIV_DIR = ${WWIV_DIR}
-WWIV_USER = ${WWIV_USER}
+WWIV_DIR   = ${WWIV_DIR}
+WWIV_USER  = ${WWIV_USER}
 WWIV_GROUP = ${WWIV_GROUP}
 
 VARCHECK
@@ -281,11 +340,12 @@ chown -R ${WWIV_USER}:${WWIV_GROUP} ${WWIV_DIR} >> ${LOGFILE} 2>&1
 
 
 # prompt for userid that should be set up in sudo to have access to the WWIV user
+echo
 read -r -p "Please enter the userid that will have sudo access to ${WWIV_USER}: " SUDOUSER
 say "Adding ${SUDOUSER} to the sudoers file"
 echo "${SUDOUSER}   ALL=(${WWIV_USER}) ALL" >> /etc/sudoers
 say "The user ${SUDOUSER} can now run all commands as ${WWIV_USER} via sudo"
-
+sleep 5
 
 ### configure scripts and helper binaries. ###
 echo 
@@ -341,21 +401,25 @@ else
 fi
 
 #Final permissions setting of the WWIV directory files before running init
+echo
+say "Making sure ${WWIV_USER} owns all the files"
 chown -R ${WWIV_USER}:${WWIV_GROUP} ${WWIV_DIR} >> ${LOGFILE} 2>&1
-
-### Final init steps ###
 echo
 echo "Your BBS basic systemd service configuration "
 echo "and helper scripts are complete."
 echo
 
+### Final init steps ###
+echo "Please wait while we initialize the WWIV BBS data files"
+sleep 10
+
 say "Initializing data files"
 su -c "${WWIV_DIR}/init --initialize" -s /bin/bash ${WWIV_USER}
-sleep 3
+sleep 2
 say "Installation complete"
 
 echo
-echo "Please log in as your new WWIV user (eg, sudo -u wwiv -s)"
+echo "Please log in as your new WWIV user (eg, sudo -u ${WWIV_USER} -s)"
 echo "and run the ./init command to create the SysOp account and"
 echo "customize the BBS information."
 echo
