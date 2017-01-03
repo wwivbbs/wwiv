@@ -51,6 +51,10 @@ cp  ${WORKSPACE}/bbs/bbs \
     ${WORKSPACE}/wwivutil/wwivutil \
     ${WORKSPACE}/release
 
+echo "Creating inifiles.zip"
+cd ${WORKSPACE}/bbs/admin/inifiles
+zip -r ${WORKSPACE}/release/inifiles.zip *
+
 echo "Creating data.zip"
 cd ${WORKSPACE}/bbs/admin/data
 zip -r ${WORKSPACE}/release/data.zip *

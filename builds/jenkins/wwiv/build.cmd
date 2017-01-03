@@ -77,6 +77,11 @@ del /q %STAGE_DIR%
 del wwiv-*.zip
 
 echo:
+echo * Creating inifiles.zip
+cd %WORKSPACE%\bbs\admin\inifiles
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\inifiles.zip *
+
+echo:
 echo * Creating data.zip
 cd %WORKSPACE%\bbs\admin\data
 %ZIP_EXE% a -tzip -r %STAGE_DIR%\data.zip *
