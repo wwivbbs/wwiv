@@ -299,7 +299,6 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  File::Rename("wwivini.txt", WWIV_INI);
   window->Printf(".\n");
 
 
@@ -308,6 +307,7 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   window->SetColor(SchemeId::NORMAL);
 
   if (unzip_files) {
+    unzip_file("inifiles.zip", bbsdir);
     unzip_file("gfiles.zip", "gfiles");
     unzip_file("scripts.zip", "scripts");
     unzip_file("data.zip", "data");
