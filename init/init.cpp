@@ -259,7 +259,7 @@ int WInitApp::main(int argc, char** argv) {
 
   if (need_to_initialize) {
     out->window()->Bkgd(' ');
-    if (!new_init(out->window(), bbsdir, !forced_initialize)) {
+    if (!new_init(out->window(), bbsdir, forced_initialize)) {
       return 2;
     }
   }
