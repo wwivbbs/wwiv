@@ -397,6 +397,10 @@ else
   else
     cp ${RUNDIR}/systemd/wwivd.service /etc/systemd/system/wwivd.service
     say "/etc/systemd/system/wwivd.service file copied"
+    say "enabling the wwivd service"
+    systemctl daemon-reload
+    systemctl enable wwivd.service
+    say "systemd wwivd service enabled"
   fi
 fi
 
