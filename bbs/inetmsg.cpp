@@ -152,7 +152,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
     File file(a()->config()->datadir(), INETADDR_DAT);
     if (!file.Exists()) {
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-      auto size = syscfg.maxusers * 80;
+      auto size = a()->config()->config()->maxusers * 80;
       auto zero = std::make_unique<char[]>(size);
       file.Write(zero.get(), size);
     } else {

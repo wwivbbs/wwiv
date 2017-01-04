@@ -352,38 +352,13 @@ struct configrec {
 
 
 struct small_configrec {
-  char* systemname;         // BBS system name
-  char* sysopname;          // sysop's name
-
   std::string beginday_cmd; // beginday event
   std::string logon_cmd;            // logon event
   std::string newuser_cmd;          // newuser event
   std::string upload_cmd;           // upload event
   std::string terminal_command;     // Terminal command
 
-  uint8_t  newusersl,          // new user SL
-           newuserdsl,         // new user DSL
-           maxwaiting,         // max mail waiting
-           newuploads;         // file dir new uploads go
-
-
-  uint16_t systemnumber,       // BBS system number
-           maxusers,           // max users on system
-           newuser_restrict,   // new user restrictions
-           sysconfig,          // System configuration
-           sysoplowtime,       // Chat time on
-           sysophightime,      // Chat time off
-           executetime,        // time to run mail router
-           max_subs,
-           max_dirs,
-           qscn_len,
-           userreclen;
-
-  float post_call_ratio;
-  float req_ratio;
-  float newusergold;
-
-  valrec          autoval[10];        // sysop quik-validation dat
+  valrec autoval[10];        // sysop quik-validation dat
 };
 
 

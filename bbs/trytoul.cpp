@@ -79,8 +79,9 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   bool done = false;
   if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
-      (syscfg.sysconfig & sysconfig_all_sysop)) {
-    dn = (syscfg.newuploads < a()->directories.size()) ? syscfg.newuploads : 0;
+      (a()->config()->config()->sysconfig & sysconfig_all_sysop)) {
+    dn = (a()->config()->config()->newuploads < a()->directories.size()) 
+      ? a()->config()->config()->newuploads : 0;
   } else {
     char temp[10];
 
@@ -88,8 +89,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
     done = false;
     while (!done) {
       if (hangup) {
-        if (syscfg.newuploads < a()->directories.size()) {
-          dn = syscfg.newuploads;
+        if (a()->config()->config()->newuploads < a()->directories.size()) {
+          dn = a()->config()->config()->newuploads;
         } else {
           dn = 0;
         }

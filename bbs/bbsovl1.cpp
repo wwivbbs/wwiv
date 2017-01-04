@@ -221,7 +221,7 @@ void feedback(bool bNewUserFeedback) {
 
   if (bNewUserFeedback) {
     sprintf(irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-            syscfg.maxusers - a()->status_manager()->GetUserCount());
+      a()->config()->config()->maxusers - a()->status_manager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
     email(irt, 1, 0, true, 0, false);

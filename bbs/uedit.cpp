@@ -453,7 +453,7 @@ void uedit(int usern, int other) {
   bool bClearScreen = true;
   User user;
 
-  u_qsc = new uint32_t[(syscfg.qscn_len / sizeof(uint32_t))];
+  u_qsc = new uint32_t[(a()->config()->config()->qscn_len / sizeof(uint32_t))];
 
   bool full = (incom) ? false : true;
   if (other & 1) {

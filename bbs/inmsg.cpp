@@ -618,7 +618,7 @@ bool inmsg(MessageEditorData& data) {
   if (real_name) {
     b << a()->user()->GetRealName() << crlf;
   } else if (data.silent_mode) {
-    b << syscfg.sysopname << " #1" << crlf;
+    b << a()->config()->config()->sysopname << " #1" << crlf;
   } else {
     const string name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
     b << name << crlf;

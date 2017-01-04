@@ -359,8 +359,8 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   // sysconfig flags
-  syscfg.sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
-                      NEL(sysconfig_flags), syscfg.sysconfig));
+  a()->config()->config()->sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
+    NEL(sysconfig_flags), a()->config()->config()->sysconfig));
 
   // misc stuff
   auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
@@ -368,7 +368,7 @@ void Application::ReadINIFile(IniFile& ini) {
 
   const auto ratio_str = ini.value<string>(get_key_str(INI_STR_RATIO));
   if (!ratio_str.empty()) {
-    syscfg.req_ratio = StringToFloat(ratio_str);
+    a()->config()->config()->req_ratio = StringToFloat(ratio_str);
   }
 
   const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
@@ -453,6 +453,8 @@ bool Application::ReadConfig() {
   }
 
   // update user info data
+  // TODO(rushfan): Move this to INIT now that init is open sourced.  The
+  // values in INIT should always match reality now too.
   int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
   int16_t waitingoffset = offsetof(userrec, waiting);
   int16_t inactoffset = offsetof(userrec, inact);
@@ -476,30 +478,6 @@ bool Application::ReadConfig() {
     config_->config()->fsoffset        = fsoffset;
     config_->config()->fnoffset        = fnoffset;
   }
-
-  syscfg.systemname       = strdup(config_->config()->systemname);
-  syscfg.sysopname        = strdup(config_->config()->sysopname);
-
-  syscfg.newusersl        = config_->config()->newusersl;
-  syscfg.newuserdsl       = config_->config()->newuserdsl;
-  syscfg.maxwaiting       = config_->config()->maxwaiting;
-  syscfg.newuploads       = config_->config()->newuploads;
-
-  syscfg.systemnumber     = config_->config()->systemnumber;
-  syscfg.maxusers         = config_->config()->maxusers;
-  syscfg.newuser_restrict = config_->config()->newuser_restrict;
-  syscfg.sysconfig        = config_->config()->sysconfig;
-  syscfg.sysoplowtime     = config_->config()->sysoplowtime;
-  syscfg.sysophightime    = config_->config()->sysophightime;
-  syscfg.executetime      = config_->config()->executetime;
-  syscfg.max_subs         = config_->config()->max_subs;
-  syscfg.max_dirs         = config_->config()->max_dirs;
-  syscfg.qscn_len         = config_->config()->qscn_len;
-  syscfg.userreclen       = config_->config()->userreclen;
-
-  syscfg.post_call_ratio  = config_->config()->post_call_ratio;
-  syscfg.req_ratio        = config_->config()->req_ratio;
-  syscfg.newusergold      = config_->config()->newusergold;
 
   syscfg.autoval[0]       = config_->config()->autoval[0];
   syscfg.autoval[1]       = config_->config()->autoval[1];
@@ -637,7 +615,7 @@ void Application::read_networks() {
     net_networks_rec n{};
     strcpy(n.name, "WWIVnet");
     n.dir = config()->datadir();
-    n.sysnum = syscfg.systemnumber;
+    n.sysnum = a()->config()->config()->systemnumber;
   }
 }
 
@@ -654,7 +632,7 @@ bool Application::read_dirs() {
     LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return false;
   }
-  file.ReadVector(directories, syscfg.max_dirs);
+  file.ReadVector(directories, a()->config()->config()->max_dirs);
   return true;
 }
 
@@ -740,12 +718,6 @@ static bool SaveConfig() {
   file.Read(&full_syscfg, sizeof(configrec));
   // These are set by WWIV.INI, set them back so that changes
   // will be propagated to config.dat
-  full_syscfg.sysconfig = syscfg.sysconfig;
-  full_syscfg.qscn_len = syscfg.qscn_len;
-  full_syscfg.userreclen = syscfg.userreclen;
-
-  full_syscfg.req_ratio = syscfg.req_ratio;
-
   full_syscfg.autoval[0] = syscfg.autoval[0];
   full_syscfg.autoval[1] = syscfg.autoval[1];
   full_syscfg.autoval[2] = syscfg.autoval[2];
@@ -893,14 +865,14 @@ void Application::InitializeBBS() {
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
   do_event = 0;
-  usub.resize(syscfg.max_subs);
-  udir.resize(syscfg.max_dirs);
+  usub.resize(config()->config()->max_subs);
+  udir.resize(config()->config()->max_dirs);
   uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
   uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
-  qsc = new uint32_t[(syscfg.qscn_len / sizeof(uint32_t))];
+  qsc = new uint32_t[(config()->config()->qscn_len / sizeof(uint32_t))];
   qsc_n = qsc + 1;
-  qsc_q = qsc_n + (syscfg.max_dirs + 31) / 32;
-  qsc_p = qsc_q + (syscfg.max_subs + 31) / 32;
+  qsc_q = qsc_n + (config()->config()->max_dirs + 31) / 32;
+  qsc_p = qsc_q + (config()->config()->max_subs + 31) / 32;
 
   network_extension_ = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));

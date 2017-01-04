@@ -292,7 +292,7 @@ void list_users(int mode) {
     if (p == 0 && found) {
       bout.cls();
       char szTitleLine[255];
-      sprintf(szTitleLine, "%s User Listing", syscfg.systemname);
+      sprintf(szTitleLine, "%s User Listing", a()->config()->config()->systemname);
       if (okansi()) {
         bout.litebar(szTitleLine);
       } else {
@@ -432,7 +432,7 @@ void time_bank() {
   long nsln;
 
   bout.nl();
-  if (a()->user()->GetSl() <= syscfg.newusersl) {
+  if (a()->user()->GetSl() <= a()->config()->config()->newusersl) {
     bout << "|#6You must be validated to access the timebank.\r\n";
     return;
   }

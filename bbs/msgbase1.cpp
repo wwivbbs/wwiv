@@ -434,7 +434,7 @@ void nscan(int start_subnum) {
   bout.clreol();
   bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
   if (nextsub && a()->user()->IsNewScanFiles() &&
-      (syscfg.sysconfig & sysconfig_no_xfer) == 0 &&
+      (a()->config()->config()->sysconfig & sysconfig_no_xfer) == 0 &&
       (!(g_flags & g_flag_scanned_files))) {
     bout.clear_lines_listed();
     tmp_disable_conf(true);

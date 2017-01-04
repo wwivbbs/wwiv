@@ -129,7 +129,7 @@ void RequestChat() {
       }
     }
   } else {
-    bout << "|#6" << syscfg.sysopname
+    bout << "|#6" << a()->config()->config()->sysopname
          << " is not available.\r\n\n|#5Try sending feedback instead.\r\n";
     strcpy(irt, "|#1Tried Chatting");
     irt_name[0] = '\0';
@@ -147,7 +147,7 @@ void RequestChat() {
 static void select_chat_name(char *sysop_name) {
   a()->DisplaySysopWorkingIndicator(true);
   a()->localIO()->savescreen();
-  strcpy(sysop_name, syscfg.sysopname);
+  strcpy(sysop_name, a()->config()->config()->sysopname);
   curatr = a()->GetChatNameSelectionColor();
   a()->localIO()->MakeLocalWindow(20, 5, 43, 3);
   a()->localIO()->PutsXY(22, 6, "Chat As: ");
@@ -160,12 +160,12 @@ static void select_chat_name(char *sysop_name) {
   if (rc != ABORTED) {
     StringTrimEnd(sysop_name);
     int user_number = atoi(sysop_name);
-    if (user_number > 0 && user_number <= syscfg.maxusers) {
+    if (user_number > 0 && user_number <= a()->config()->config()->maxusers) {
       const string unn = a()->names()->UserName(user_number);
       strcpy(sysop_name, unn.c_str());
     } else {
       if (!sysop_name[0]) {
-        strcpy(sysop_name, syscfg.sysopname);
+        strcpy(sysop_name, a()->config()->config()->sysopname);
       }
     }
   } else {

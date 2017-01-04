@@ -184,7 +184,7 @@ void SubList() {
                     subconfs[uconfsub[i].confnum].designator,
                     stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
           } else {
-            sprintf(s, "%s Message Areas", syscfg.systemname);
+            sprintf(s, "%s Message Areas", a()->config()->config()->systemname);
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);

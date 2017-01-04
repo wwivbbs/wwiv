@@ -96,8 +96,8 @@ void multimail(int *pnUserNumber, int numu) {
       continue;
     }
     a()->users()->ReadUser(&user, pnUserNumber[cv]);
-    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > static_cast<unsigned int>(syscfg.maxwaiting * 5))) ||
-        ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
+    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->config()->maxwaiting * 5))) ||
+        ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->config()->maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
       bout << a()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
       pnUserNumber[cv] = -1;
@@ -241,8 +241,8 @@ int oneuser() {
     return 0;
   }
   a()->users()->ReadUser(&user, user_number);
-  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > static_cast<unsigned int>(syscfg.maxwaiting * 5))) ||
-      ((user.GetSl() != 255) && (user.GetNumMailWaiting() > syscfg.maxwaiting)) ||
+  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->config()->maxwaiting * 5))) ||
+      ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->config()->maxwaiting)) ||
       (user.GetNumMailWaiting() > 200)) {
     bout.nl();
     bout << "Mailbox full.\r\n\n";

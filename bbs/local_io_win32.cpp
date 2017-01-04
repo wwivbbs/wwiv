@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbs.h"
 #include "bbs/datetime.h"
 #include "sdk/status.h"
 #include "bbs/wconstants.h"
@@ -821,7 +822,7 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, int editor_status,
 
 void Win32ConsoleIO::UpdateNativeTitleBar(Application* session) {
   // Set console title
-  std::stringstream consoleTitleStream;
-  consoleTitleStream << "WWIV Node " << session->instance_number() << " (" << syscfg.systemname << ")";
-  SetConsoleTitle(consoleTitleStream.str().c_str());
+  std::stringstream ss;
+  ss << "WWIV Node " << session->instance_number() << " (" << a()->config()->config()->systemname << ")";
+  SetConsoleTitle(ss.str().c_str());
 }

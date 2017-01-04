@@ -139,7 +139,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
 
         sysoplog() << "Downloaded '" << u.filename << "'.";
 
-        if (syscfg.sysconfig & sysconfig_log_dl) {
+        if (a()->config()->config()->sysconfig & sysconfig_log_dl) {
           a()->users()->ReadUser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {

@@ -114,7 +114,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
     }
     return false;
   }
-  std::unique_ptr<bool[]> ss(new bool[syscfg.maxusers + 300]);
+  std::unique_ptr<bool[]> ss(new bool[a()->config()->config()->maxusers + 300]);
 
   ss[*pUserNumber] = true;
   a()->users()->ReadUser(&userRecord, nCurrentUser);
@@ -313,7 +313,7 @@ void sendout_email(EmailData& data) {
       logMessage += ">UNKNOWN<";
     }
     if (data.system_number == 0 
-        && a()->GetEffectiveSl() > syscfg.newusersl
+        && a()->GetEffectiveSl() > a()->config()->config()->newusersl
         && userRecord.GetForwardSystemNumber() == 0
         && !data.silent_mode) {
       bout << "|#5Attach a file to this message? ";
@@ -379,8 +379,8 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
     }
     User userRecord;
     a()->users()->ReadUser(&userRecord, user_number);
-    if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (static_cast<unsigned>(syscfg.maxwaiting) * 5)) ||
-        (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > syscfg.maxwaiting) ||
+    if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (static_cast<unsigned>(a()->config()->config()->maxwaiting) * 5)) ||
+        (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > a()->config()->config()->maxwaiting) ||
         userRecord.GetNumMailWaiting() > 200) {
       if (!bForceit) {
         bout << "\r\nMailbox full.\r\n";

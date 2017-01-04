@@ -197,7 +197,7 @@ void input_name() {
   bool ok = true;
   do {
     bout.nl();
-    if (syscfg.sysconfig & sysconfig_no_alias) {
+    if (a()->config()->config()->sysconfig & sysconfig_no_alias) {
       bout << "|#3Enter your FULL REAL name.\r\n";
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
@@ -219,7 +219,7 @@ void input_name() {
 }
 
 void input_realname() {
-  if (!(syscfg.sysconfig & sysconfig_no_alias)) {
+  if (!(a()->config()->config()->sysconfig & sysconfig_no_alias)) {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
@@ -244,11 +244,11 @@ static void input_callsign() {
 }
 
 bool valid_phone(const string& phoneNumber) {
-  if (syscfg.sysconfig & sysconfig_free_phone) {
+  if (a()->config()->config()->sysconfig & sysconfig_free_phone) {
     return true;
   }
 
-  if (syscfg.sysconfig & sysconfig_extended_info) {
+  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
     if (!IsPhoneNumberUSAFormat(a()->user()) && a()->user()->GetCountry()[0]) {
       return true;
     }
@@ -570,8 +570,8 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
     return -1;
   }
 
-  int nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
-  userFile.Seek(syscfg.userreclen, File::Whence::begin);
+  int nNewUserNumber = static_cast<int>((userFile.GetLength() / a()->config()->config()->userreclen) - 1);
+  userFile.Seek(a()->config()->config()->userreclen, File::Whence::begin);
   int user_number = 1;
 
   if (nNewUserNumber == a()->status_manager()->GetUserCount()) {
@@ -588,15 +588,15 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
         if (!userFile.IsOpen()) {
           return -1;
         }
-        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::Whence::begin);
-        nNewUserNumber = static_cast<int>((userFile.GetLength() / syscfg.userreclen) - 1);
+        userFile.Seek(static_cast<long>(user_number * a()->config()->config()->userreclen), File::Whence::begin);
+        nNewUserNumber = static_cast<int>((userFile.GetLength() / a()->config()->config()->userreclen) - 1);
       }
       User tu;
-      userFile.Read(&tu.data, syscfg.userreclen);
+      userFile.Read(&tu.data, a()->config()->config()->userreclen);
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
-        userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::Whence::begin);
-        userFile.Write(&pUser->data, syscfg.userreclen);
+        userFile.Seek(static_cast<long>(user_number * a()->config()->config()->userreclen), File::Whence::begin);
+        userFile.Write(&pUser->data, a()->config()->config()->userreclen);
         userFile.Close();
         write_qscn(user_number, qscn, false);
         InsertSmallRecord(user_number, pUser->GetName());
@@ -607,9 +607,9 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
     }
   }
 
-  if (user_number <= syscfg.maxusers) {
-    userFile.Seek(static_cast<long>(user_number * syscfg.userreclen), File::Whence::begin);
-    userFile.Write(&pUser->data, syscfg.userreclen);
+  if (user_number <= a()->config()->config()->maxusers) {
+    userFile.Seek(static_cast<long>(user_number * a()->config()->config()->userreclen), File::Whence::begin);
+    userFile.Write(&pUser->data, a()->config()->config()->userreclen);
     userFile.Close();
     write_qscn(user_number, qscn, false);
     InsertSmallRecord(user_number, pUser->GetName());
@@ -623,17 +623,21 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
 // Clears a()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
 static bool CreateNewUserRecord() {
-  memset(qsc, 0, syscfg.qscn_len);
+  memset(qsc, 0, a()->config()->config()->qscn_len);
   *qsc = 999;
-  memset(qsc_n, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
-  memset(qsc_q, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
+  memset(qsc_n, 0xff, ((a()->config()->config()->max_dirs + 31) / 32) * 4);
+  memset(qsc_q, 0xff, ((a()->config()->config()->max_subs + 31) / 32) * 4);
 
   auto u = a()->user();
   a()->ResetEffectiveSl();
   
-  return User::CreateNewUserRecord(u, syscfg.newusersl, syscfg.newuserdsl, 
-    syscfg.newuser_restrict, syscfg.newusergold,
-    a()->newuser_colors, a()->newuser_bwcolors);
+  return User::CreateNewUserRecord(u,
+    a()->config()->config()->newusersl, 
+    a()->config()->config()->newuserdsl,
+    a()->config()->config()->newuser_restrict,
+    a()->config()->config()->newusergold,
+    a()->newuser_colors, 
+    a()->newuser_bwcolors);
 }
 
 
@@ -707,7 +711,7 @@ void DoFullNewUser() {
       }
     }
   }
-  if (syscfg.sysconfig & sysconfig_extended_info) {
+  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
     input_street();
     const auto zip_city_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
     if (File::Exists(zip_city_dir, "zip1.dat")) {
@@ -769,7 +773,7 @@ void DoFullNewUser() {
 
 void DoNewUserASV() {
   if (a()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
-      a()->asv.sl > syscfg.newusersl && a()->asv.sl < 90) {
+      a()->asv.sl > a()->config()->config()->newusersl && a()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
     if (yesno()) {
@@ -799,7 +803,7 @@ void VerifyNewUserFullInfo() {
   do {
     bout.nl(2);
     bout << "|#91) Name          : |#2" << u->GetName() << wwiv::endl;
-    if (!(syscfg.sysconfig & sysconfig_no_alias)) {
+    if (!(a()->config()->config()->sysconfig & sysconfig_no_alias)) {
       bout << "|#92) Real Name     : |#2" << u->GetRealName() << wwiv::endl;
     }
     bout << "|#93) Callsign      : |#2" << u->GetCallsign() << wwiv::endl;
@@ -816,7 +820,7 @@ void VerifyNewUserFullInfo() {
                        u->GetScreenChars() << " X " <<
                        u->GetScreenLines() << wwiv::endl;
     bout << "|#99) Password      : |#2" << u->GetPassword() << wwiv::endl;
-    if (syscfg.sysconfig & sysconfig_extended_info) {
+    if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
       bout << "|#9A) Street Address: |#2" << u->GetStreet() << wwiv::endl;
       bout << "|#9B) City          : |#2" << u->GetCity() << wwiv::endl;
       bout << "|#9C) State         : |#2" << u->GetState() << wwiv::endl;
@@ -828,7 +832,7 @@ void VerifyNewUserFullInfo() {
     bout << "Q) No changes.\r\n";
     bout.nl(2);
     char ch = 0;
-    if (syscfg.sysconfig & sysconfig_extended_info) {
+    if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
       bout << "|#9Which (1-9,A-F,Q) : ";
       ch = onek("Q123456789ABCDEF");
     } else {
@@ -844,7 +848,7 @@ void VerifyNewUserFullInfo() {
       input_name();
       break;
     case '2':
-      if (!(syscfg.sysconfig & sysconfig_no_alias)) {
+      if (!(a()->config()->config()->sysconfig & sysconfig_no_alias)) {
         input_realname();
       }
       break;
@@ -897,14 +901,14 @@ void WriteNewUserInfoToSysopLog() {
   sysoplog() << "** New User Information **";
   sysoplog() << StringPrintf("-> %s #%ld (%s)", u->GetName(), a()->usernum,
             u->GetRealName());
-  if (syscfg.sysconfig & sysconfig_extended_info) {
+  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
     sysoplog() << "-> " << u->GetStreet();
     sysoplog() << "-> " << u->GetCity() << ", " << u->GetState() << " " << u->GetZipcode()
       << "  (" << u->GetCountry() << " )";
               
   }
   sysoplog() << StringPrintf("-> %s (Voice)", u->GetVoicePhoneNumber());
-  if (syscfg.sysconfig & sysconfig_extended_info) {
+  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
     sysoplog() << StringPrintf("-> %s (Data)", u->GetDataPhoneNumber());
   }
   sysoplog() << StringPrintf("-> %02d/%02d/%02d (%d yr old %s)",
@@ -949,7 +953,7 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
-  if (syscfg.sysconfig & sysconfig_no_newuser_feedback) {
+  if (a()->config()->config()->sysconfig & sysconfig_no_newuser_feedback) {
     // If NEWUSER_FEEDBACK=N don't attempt to send newuser feedback.
     return;
   }
@@ -1021,7 +1025,7 @@ void newuser() {
   bout.nl();
   pausescr();
   bout.cls();
-  bout << "|#5Create a new user account on " << syscfg.systemname << "? ";
+  bout << "|#5Create a new user account on " << a()->config()->config()->systemname << "? ";
   if (!noyes()) {
     bout << "|#6Sorry the system does not meet your needs!\r\n";
     Hangup();
@@ -1262,7 +1266,7 @@ void DoMinimalNewUser() {
   a()->UpdateTopScreen();
   do {
     bout.cls();
-    bout.litebar("%s New User Registration", syscfg.systemname);
+    bout.litebar("%s New User Registration", a()->config()->config()->systemname);
     bout << "|#1[A] Name (real or alias)    : ";
     if (u->GetName()[0] == '\0') {
       bool ok = true;
@@ -1457,7 +1461,7 @@ void DoMinimalNewUser() {
 
 
 void new_mail() {
-  File file(a()->config()->gfilesdir(), (a()->user()->GetSl() > syscfg.newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(a()->config()->gfilesdir(), (a()->user()->GetSl() > a()->config()->config()->newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
   if (!file.Exists()) {
     return;
   }
@@ -1467,7 +1471,7 @@ void new_mail() {
   use_workspace = true;
 
   MessageEditorData data;
-  data.title = StringPrintf("Welcome to %s!", syscfg.systemname);
+  data.title = StringPrintf("Welcome to %s!", a()->config()->config()->systemname);
   data.need_title = true;
   data.anonymous_flag = 0;
   data.aux = "email";

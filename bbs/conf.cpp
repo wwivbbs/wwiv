@@ -46,7 +46,7 @@ static int disable_conf_cnt = 0;
 #define MAX_CONF_LINE 4096
 
 /* To prevent heap fragmentation, allocate confrec.subs in multiples. */
-#define CONF_MULTIPLE ( syscfg.max_subs / 5 )
+#define CONF_MULTIPLE ( a()->config()->config()->max_subs / 5 )
 
 // Locals
 char* GetGenderAllowed(int nGender, char *pszGenderAllowed);
@@ -153,7 +153,7 @@ void jump_conf(ConferenceType conftype) {
   userconfrec *uc = nullptr;
   int nc;
 
-  bout.litebar("%s Conference Selection", syscfg.systemname);
+  bout.litebar("%s Conference Selection", a()->config()->config()->systemname);
   get_conf_info(conftype, &nc, &cp, nullptr, nullptr, &uc);
   bool abort = false;
   strcpy(s, " ");

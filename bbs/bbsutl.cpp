@@ -382,13 +382,13 @@ bool sysop2() {
   if (a()->user()->IsRestrictionChat()) {
     return false;
   }
-  if (syscfg.sysoplowtime != syscfg.sysophightime) {
+  if (a()->config()->config()->sysoplowtime != a()->config()->config()->sysophightime) {
     const auto m = minutes_since_midnight();
-    if (syscfg.sysophightime > syscfg.sysoplowtime) {
-      if (m <= syscfg.sysoplowtime || m >= syscfg.sysophightime) {
+    if (a()->config()->config()->sysophightime > a()->config()->config()->sysoplowtime) {
+      if (m <= a()->config()->config()->sysoplowtime || m >= a()->config()->config()->sysophightime) {
         return false;
       }
-    } else if (m <= syscfg.sysoplowtime && m >= syscfg.sysophightime) {
+    } else if (m <= a()->config()->config()->sysoplowtime && m >= a()->config()->config()->sysophightime) {
       return false;
     }
   }

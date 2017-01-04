@@ -405,10 +405,10 @@ void tag_it() {
         bout << "|#6Batch file limit of " << a()->max_batch << " has been reached.\r\n";
         bad = true;
       }
-      if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio) &&
+      if ((a()->config()->config()->req_ratio > 0.0001) && (ratio() < a()->config()->config()->req_ratio) &&
           !a()->user()->IsExemptRatio() && !bad) {
         bout.bprintf("|#2Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n",
-                                          ratio(), syscfg.req_ratio);
+                                          ratio(), a()->config()->config()->req_ratio);
         bad = true;
       }
       if (!bad) {
@@ -808,7 +808,7 @@ void download() {
   useconf = 0;
 
   bout.cls();
-  bout.litebar("%s Batch Downloads", syscfg.systemname);
+  bout.litebar("%s Batch Downloads", a()->config()->config()->systemname);
   bout.nl();
   do {
     if (!i) {

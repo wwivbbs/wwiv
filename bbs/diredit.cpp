@@ -279,7 +279,7 @@ void swap_dirs(int dir1, int dir2) {
 
   int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
-  uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
+  uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->config()->qscn_len));
   if (pTempQScan) {
     for (int i = 1; i <= nNumUserRecords; i++) {
       read_qscn(i, pTempQScan, true);
@@ -334,7 +334,7 @@ void insert_dir(int n) {
   }
   int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
 
-  uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
+  uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->config()->qscn_len));
   if (pTempQScan) {
    uint32_t* pTempQScan_n = pTempQScan + 1;
 
@@ -376,7 +376,7 @@ void delete_dir(int n) {
 
   size_t num_users = a()->users()->GetNumberOfUserRecords();
 
-  pTempQScan = static_cast<uint32_t*>(BbsAllocA(syscfg.qscn_len));
+  pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->config()->qscn_len));
   if (pTempQScan) {
     pTempQScan_n = pTempQScan + 1;
 
@@ -431,7 +431,7 @@ void dlboardedit() {
       }
       break;
     case 'S':
-      if (a()->directories.size() < syscfg.max_dirs) {
+      if (a()->directories.size() < a()->config()->config()->max_dirs) {
         bout.nl();
         bout << "|#2Take dir number? ";
         input(s, 4);
@@ -462,7 +462,7 @@ void dlboardedit() {
       }
       break;
     case 'I':
-      if (a()->directories.size() < syscfg.max_dirs) {
+      if (a()->directories.size() < a()->config()->config()->max_dirs) {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);

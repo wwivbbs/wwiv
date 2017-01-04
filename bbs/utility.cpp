@@ -195,7 +195,7 @@ long nsl() {
   a()->SetTimeOnlineLimited(false);
 /*
  TODO(rushfan): Do we really need to limit based on event time anymore?
-if (syscfg.executetime) {
+if (a()->config()->config()->executetime) {
     auto tlt = a()->time_event_time() - dd;
     if (tlt < 0) {
       tlt += SECONDS_PER_DAY;

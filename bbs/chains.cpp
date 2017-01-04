@@ -112,7 +112,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
       bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
   } else {
-    bout.litebar(" %s Online Programs ", syscfg.systemname);
+    bout.litebar(" %s Online Programs ", a()->config()->config()->systemname);
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       bout.bputs(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort, &next);

@@ -47,7 +47,7 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
     if ((a()->IsUserOnline() && user_number == a()->usernum) ||
         (a()->at_wfc() && user_number == 1)) {
       if (qscn != qsc) {
-        for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
+        for (int i = (a()->config()->config()->qscn_len / 4) - 1; i >= 0; i--) {
           qscn[i] = qsc[i];
         }
       }
@@ -55,10 +55,10 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
     }
   }
   if (open_qscn()) {
-    long lPos = static_cast<long>(syscfg.qscn_len) * static_cast<long>(user_number);
-    if (lPos + static_cast<long>(syscfg.qscn_len) <= qscanFile.GetLength()) {
+    long lPos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
+    if (lPos + static_cast<long>(a()->config()->config()->qscn_len) <= qscanFile.GetLength()) {
       qscanFile.Seek(lPos, File::Whence::begin);
-      qscanFile.Read(qscn, syscfg.qscn_len);
+      qscanFile.Read(qscn, a()->config()->config()->qscn_len);
       if (!stay_open) {
         close_qscn();
       }
@@ -69,30 +69,30 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
     close_qscn();
   }
 
-  memset(qsc, 0, syscfg.qscn_len);
+  memset(qsc, 0, a()->config()->config()->qscn_len);
   *qsc = 999;
-  memset(qsc + 1, 0xff, ((syscfg.max_dirs + 31) / 32) * 4);
-  memset(qsc + 1 + (syscfg.max_subs + 31) / 32, 0xff, ((syscfg.max_subs + 31) / 32) * 4);
+  memset(qsc + 1, 0xff, ((a()->config()->config()->max_dirs + 31) / 32) * 4);
+  memset(qsc + 1 + (a()->config()->config()->max_subs + 31) / 32, 0xff, ((a()->config()->config()->max_subs + 31) / 32) * 4);
 }
 
 
 void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
-  if ((user_number < 1) || (user_number > syscfg.maxusers) || guest_user) {
+  if ((user_number < 1) || (user_number > a()->config()->config()->maxusers) || guest_user) {
     return;
   }
 
   if ((a()->IsUserOnline() && (user_number == a()->usernum)) ||
       (a()->at_wfc() && user_number == 1)) {
     if (qsc != qscn) {
-      for (int i = (syscfg.qscn_len / 4) - 1; i >= 0; i--) {
+      for (int i = (a()->config()->config()->qscn_len / 4) - 1; i >= 0; i--) {
         qsc[i] = qscn[i];
       }
     }
   }
   if (open_qscn()) {
-    long lPos = static_cast<long>(syscfg.qscn_len) * static_cast<long>(user_number);
+    long lPos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
     qscanFile.Seek(lPos, File::Whence::begin);
-    qscanFile.Write(qscn, syscfg.qscn_len);
+    qscanFile.Write(qscn, a()->config()->config()->qscn_len);
     if (!stay_open) {
       close_qscn();
     }

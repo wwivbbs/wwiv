@@ -788,7 +788,7 @@ char* qwk_system_name(char *qwkname) {
   close_qwk_cfg(&qwk_cfg);
 
   if (!qwkname[0]) {
-    strncpy(qwkname, syscfg.systemname, 8);
+    strncpy(qwkname, a()->config()->config()->systemname, 8);
   }
 
   qwkname[8] = 0;

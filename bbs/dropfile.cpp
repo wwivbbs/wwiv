@@ -148,11 +148,12 @@ void CreateDoorInfoDropFile() {
   File::Remove(fileName);
   TextFile fileDorInfoSys(fileName, "wt");
   if (fileDorInfoSys.IsOpen()) {
-    fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", syscfg.systemname, syscfg.sysopname,
-                                  incom ? a()->primary_port() : 0);
+    fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", 
+      a()->config()->config()->systemname, a()->config()->config()->sysopname,
+      incom ? a()->primary_port() : 0);
     fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? com_speed : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
-    if (syscfg.sysconfig & sysconfig_no_alias) {
+    if (a()->config()->config()->sysconfig & sysconfig_no_alias) {
       char szTemp[81];
       strcpy(szTemp, a()->user()->GetRealName());
       GetNamePartForDropFile(false, szTemp);
@@ -163,7 +164,7 @@ void CreateDoorInfoDropFile() {
     } else {
       fileDorInfoSys.WriteFormatted("%s\n\n", a()->user()->GetName());
     }
-    if (syscfg.sysconfig & sysconfig_extended_info) {
+    if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
       fileDorInfoSys.WriteFormatted("%s, %s\n", a()->user()->GetCity(),
                                     a()->user()->GetState());
     } else {
@@ -437,7 +438,7 @@ void CreateDoorSysDropFile() {
         szDate,
         a()->config()->datadir().c_str(),
         gfilesdir.c_str(),
-        syscfg.sysopname,
+        a()->config()->config()->sysopname,
         a()->user()->GetName(),
         "00:01",                        // event time
         'Y',
@@ -546,8 +547,8 @@ const string create_chain_file() {
     }
     file.WriteFormatted("%d\n%s\n%s\n%d\n%d\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n",
         a()->primary_port(),
-        syscfg.systemname,
-        syscfg.sysopname,
+        a()->config()->config()->systemname,
+        a()->config()->config()->sysopname,
         start_second,
         seconds_used,
         a()->user()->GetUploadK(),

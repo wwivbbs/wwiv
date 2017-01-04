@@ -108,7 +108,7 @@ void UnQScan() {
   case RETURN:
     break;
   case 'A': {
-    for (int i = 0; i < syscfg.max_subs; i++) {
+    for (int i = 0; i < a()->config()->config()->max_subs; i++) {
       qsc_p[i] = 0;
     }
     bout << "\r\nQ-Scan pointers reset.\r\n\n";
@@ -261,7 +261,7 @@ void KillEMail() {
 
 void LastCallers() {
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-      (syscfg.sysconfig & sysconfig_extended_info)) {
+      (a()->config()->config()->sysconfig & sysconfig_extended_info)) {
     bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
   } else {
     bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
@@ -424,7 +424,7 @@ void WWIVVersion() {
   bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information"
        << wwiv::endl << wwiv::endl;
   bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
-  bout << "|#9SysOp Name    : |#2" << syscfg.sysopname << wwiv::endl;
+  bout << "|#9SysOp Name    : |#2" << a()->config()->config()->sysopname << wwiv::endl;
   bout << "|#9OS            : |#2" << wwiv::os::os_version_string() << wwiv::endl;
   bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;
 
@@ -543,8 +543,8 @@ void ResetQscan() {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= a()->users()->GetNumberOfUserRecords(); i++) {
       read_qscn(i, qsc, true);
-      memset(qsc_p, 0, syscfg.qscn_len - 4 * (1 + ((syscfg.max_dirs + 31) / 32) + ((
-          syscfg.max_subs + 31) / 32)));
+      memset(qsc_p, 0, a()->config()->config()->qscn_len - 4 * (1 + ((a()->config()->config()->max_dirs + 31) / 32) + ((
+        a()->config()->config()->max_subs + 31) / 32)));
       write_qscn(i, qsc, true);
     }
     read_qscn(1, qsc, false);
@@ -705,7 +705,7 @@ void ClearQScan() {
     break;
   case 'A': {
     std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-    for (int i = 0; i < syscfg.max_subs; i++) {
+    for (int i = 0; i < a()->config()->config()->max_subs; i++) {
       qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
     bout.nl();
@@ -999,9 +999,9 @@ void Upload() {
   play_sdf(UPLOAD_NOEXT, false);
   printfile(UPLOAD_NOEXT);
   if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
-      (syscfg.sysconfig & sysconfig_all_sysop)) {
-    if (syscfg.newuploads < a()->directories.size()) {
-      upload(static_cast<int>(syscfg.newuploads));
+      (a()->config()->config()->sysconfig & sysconfig_all_sysop)) {
+    if (a()->config()->config()->newuploads < a()->directories.size()) {
+      upload(static_cast<int>(a()->config()->config()->newuploads));
     } else {
       upload(0);
     }

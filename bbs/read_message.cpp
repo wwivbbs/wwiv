@@ -779,7 +779,7 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
   if ((p.status & status_no_delete) && lcs()) {
     m.flags.insert(MessageFlags::PERMANENT);
   }
-  if ((p.status & status_pending_net) && a()->user()->GetSl() > syscfg.newusersl) {
+  if ((p.status & status_pending_net) && a()->user()->GetSl() > a()->config()->config()->newusersl) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }

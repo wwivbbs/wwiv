@@ -414,7 +414,7 @@ void write_inst(int loc, int subloc, int flags) {
     if (a()->IsUserOnline()) {
       if (ti.user != a()->usernum) {
         re_write = true;
-        if (a()->usernum > 0 && a()->usernum <= syscfg.maxusers) {
+        if (a()->usernum > 0 && a()->usernum <= a()->config()->config()->maxusers) {
           ti.user = static_cast<int16_t>(a()->usernum);
         }
       }

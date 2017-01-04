@@ -90,10 +90,10 @@ static void CleanUserInfo() {
     setuconf(ConferenceType::CONF_SUBS, a()->user()->GetLastSubConf(), 0);
     setuconf(ConferenceType::CONF_DIRS, a()->user()->GetLastDirConf(), 0);
   }
-  if (a()->user()->GetLastSubNum() > syscfg.max_subs) {
+  if (a()->user()->GetLastSubNum() > a()->config()->config()->max_subs) {
     a()->user()->SetLastSubNum(0);
   }
-  if (a()->user()->GetLastDirNum() > syscfg.max_dirs) {
+  if (a()->user()->GetLastDirNum() > a()->config()->config()->max_dirs) {
     a()->user()->SetLastDirNum(0);
   }
   if (a()->usub[a()->user()->GetLastSubNum()].subnum != -1) {
@@ -315,7 +315,7 @@ static void LeaveBadPasswordFeedback(int ans) {
     a()->user()->ClearStatusFlag(User::ansi);
   }
   bout << "|#6Too many logon attempts!!\r\n\n";
-  bout << "|#9Would you like to leave Feedback to " << syscfg.sysopname << "? ";
+  bout << "|#9Would you like to leave Feedback to " << a()->config()->config()->sysopname << "? ";
   if (!yesno()) {
     return;
   }
@@ -332,7 +332,7 @@ static void LeaveBadPasswordFeedback(int ans) {
   a()->user()->SetMacro(0, "");
   a()->user()->SetMacro(1, "");
   a()->user()->SetMacro(2, "");
-  a()->user()->SetSl(syscfg.newusersl);
+  a()->user()->SetSl(a()->config()->config()->newusersl);
   a()->user()->SetScreenChars(80);
   if (ans > 0) {
     select_editor();
@@ -400,7 +400,7 @@ void getuser() {
   a()->usernum = 0;
   a()->SetCurrentConferenceMessageArea(0);
   a()->SetCurrentConferenceFileArea(0);
-  a()->SetEffectiveSl(syscfg.newusersl);
+  a()->SetEffectiveSl(a()->config()->config()->newusersl);
   a()->user()->SetStatus(0);
 
   const auto& ip = a()->remoteIO()->remote_info().address;
@@ -441,12 +441,12 @@ void getuser() {
       if (guest_user) {
         logon_guest();
       } else {
-        a()->SetEffectiveSl(syscfg.newusersl);
+        a()->SetEffectiveSl(a()->config()->config()->newusersl);
         if (!VerifyPassword(remote_password)) {
           ok = false;
         }
 
-        if ((syscfg.sysconfig & sysconfig_free_phone) == 0 && IsPhoneRequired()) {
+        if ((a()->config()->config()->sysconfig & sysconfig_free_phone) == 0 && IsPhoneRequired()) {
           if (!VerifyPhoneNumber()) {
             ok = false;
           }
@@ -556,7 +556,7 @@ static void PrintUserSpecificFiles() {
 static std::string CreateLastOnLogLine(const WStatus& status) {
   string log_line;
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-    (syscfg.sysconfig & sysconfig_extended_info)) {
+    (a()->config()->config()->sysconfig & sysconfig_extended_info)) {
     const string username_num = a()->names()->UserName(a()->usernum);
     const string t = times();
     const string f = fulldate();
@@ -609,7 +609,7 @@ static void UpdateLastOnFile() {
         bout << "|#1Last few callers|#7: |#0";
         bout.nl(2);
         if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-            (syscfg.sysconfig & sysconfig_extended_info)) {
+            (a()->config()->config()->sysconfig & sysconfig_extended_info)) {
           bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##" << wwiv::endl;
         } else {
           bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
@@ -689,7 +689,7 @@ static void CheckAndUpdateUserInfo() {
   if (!a()->user()->GetRealName()[0]) {
     input_realname();
   }
-  if (!(syscfg.sysconfig & sysconfig_extended_info)) {
+  if (!(a()->config()->config()->sysconfig & sysconfig_extended_info)) {
     return;
   }
   if (!a()->user()->GetStreet()[0]) {
@@ -745,10 +745,10 @@ static void CheckAndUpdateUserInfo() {
   }
   if (a()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime)) {
     if (!so()) {
-      if (a()->user()->GetSl() > syscfg.newusersl ||
-          a()->user()->GetDsl() > syscfg.newuserdsl) {
-        a()->user()->SetSl(syscfg.newusersl);
-        a()->user()->SetDsl(syscfg.newuserdsl);
+      if (a()->user()->GetSl() > a()->config()->config()->newusersl ||
+          a()->user()->GetDsl() > a()->config()->config()->newuserdsl) {
+        a()->user()->SetSl(a()->config()->config()->newusersl);
+        a()->user()->SetDsl(a()->config()->config()->newuserdsl);
         a()->user()->SetExempt(0);
         const string username_num = a()->names()->UserName(a()->usernum);
         ssm(1, 0) << username_num << "'s registration has expired.";
@@ -901,7 +901,7 @@ static vector<bool> read_voting() {
 
 static void CheckUserForVotingBooth() {
   vector<bool> questused = read_voting();
-  if (!a()->user()->IsRestrictionVote() && a()->GetEffectiveSl() > syscfg.newusersl) {
+  if (!a()->user()->IsRestrictionVote() && a()->GetEffectiveSl() > a()->config()->config()->newusersl) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->GetVote(i) == 0) {
         bout.nl();

@@ -144,7 +144,7 @@ std::string make_inst_str(int instance_num, int format) {
     break;
   case INST_FORMAT_LIST: {
     std::string userName;
-    if (ir.user < syscfg.maxusers && ir.user > 0) {
+    if (ir.user < a()->config()->config()->maxusers && ir.user > 0) {
       User user;
       a()->users()->ReadUser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {

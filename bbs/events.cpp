@@ -133,7 +133,7 @@ void init_events() {
 }
 
 void get_next_forced_event() {
-  syscfg.executetime = 0;
+  a()->config()->config()->executetime = 0;
   a()->clear_time_event_time();
   int first = -1;
   int16_t tl = t_now();
@@ -146,21 +146,21 @@ void get_next_forced_event() {
       if (first < 0 && e.time < tl && ((e.days & (1 << day)) > 0)) {
         first = e.time;
       }
-      if ((e.status & EVENT_RUNTODAY) == 0 && (e.days & (1 << dow())) > 0 && !syscfg.executetime) {
+      if ((e.status & EVENT_RUNTODAY) == 0 && (e.days & (1 << dow())) > 0 && !a()->config()->config()->executetime) {
         a()->set_time_event_time(minutes_after_midnight(e.time));
-        syscfg.executetime = e.time;
-        if (!syscfg.executetime) {
-          ++syscfg.executetime;
+        a()->config()->config()->executetime = e.time;
+        if (!a()->config()->config()->executetime) {
+          a()->config()->config()->executetime++;
         }
       }
     }
   }
-  if (first >= 0 && !syscfg.executetime) {
+  if (first >= 0 && !a()->config()->config()->executetime) {
     // all of todays events are
     a()->set_time_event_time(minutes_after_midnight(first));
-    syscfg.executetime = static_cast<uint16_t>(first);                // event to first one
-    if (!syscfg.executetime) {                                              // scheduled for tomorrow
-      ++syscfg.executetime;
+    a()->config()->config()->executetime = static_cast<uint16_t>(first);                // event to first one
+    if (!a()->config()->config()->executetime) {                                              // scheduled for tomorrow
+      a()->config()->config()->executetime++;
     }
   }
 }

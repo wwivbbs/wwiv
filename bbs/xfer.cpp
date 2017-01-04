@@ -298,22 +298,22 @@ bool ratio_ok() {
   bool bRetValue = true;
 
   if (!a()->user()->IsExemptRatio()) {
-    if ((syscfg.req_ratio > 0.0001) && (ratio() < syscfg.req_ratio)) {
+    if ((a()->config()->config()->req_ratio > 0.0001) && (ratio() < a()->config()->config()->req_ratio)) {
       bRetValue = false;
       bout.cls();
       bout.nl();
       bout.bprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
-                                        ratio(), syscfg.req_ratio);
+                                        ratio(), a()->config()->config()->req_ratio);
     }
   }
   if (!a()->user()->IsExemptPost()) {
-    if ((syscfg.post_call_ratio > 0.0001) && (post_ratio() < syscfg.post_call_ratio)) {
+    if ((a()->config()->config()->post_call_ratio > 0.0001) && (post_ratio() < a()->config()->config()->post_call_ratio)) {
       bRetValue = false;
       bout.cls();
       bout.nl();
       bout.bprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n",
                                         "Your post/call ratio is", post_ratio(),
-                                        "You need a ratio of", syscfg.post_call_ratio,
+                                        "You need a ratio of", a()->config()->config()->post_call_ratio,
                                         "to download.");
     }
   }

@@ -585,9 +585,10 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
 void CursesLocalIO::UpdateNativeTitleBar(Application* session) {
 #ifdef _WIN32
 	// Set console title
-	std::stringstream consoleTitleStream;
-	consoleTitleStream << "WWIV Node " << session->instance_number() << " (" << syscfg.systemname << ")";
-	SetConsoleTitle(consoleTitleStream.str().c_str());
+	std::stringstream ss;
+	ss << "WWIV Node " << session->instance_number() 
+    << " (" << a()->config()->config()->systemname << ")";
+	SetConsoleTitle(ss.str().c_str());
 #endif  // _WIN32
 }
 

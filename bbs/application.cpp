@@ -120,8 +120,8 @@ Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_() {
   ::bout.SetLocalIO(localIO);
 
-  if (syscfg.userreclen == 0) {
-    syscfg.userreclen = sizeof(userrec);
+  if (a()->config()->config()->userreclen == 0) {
+    a()->config()->config()->userreclen = sizeof(userrec);
   }
   tzset();
 
@@ -350,7 +350,7 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case F10: /* F10 */
         if (chatting == 0) {
-          if (syscfg.sysconfig & sysconfig_2_way) {
+          if (a()->config()->config()->sysconfig & sysconfig_2_way) {
             chat1("", true);
           } else {
             chat1("", false);
@@ -424,7 +424,7 @@ void Application::UpdateTopScreen() {
   }
 
 #ifdef _WIN32
-  if (syscfg.sysconfig & sysconfig_titlebar) {
+  if (a()->config()->config()->sysconfig & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
     string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(),
@@ -466,7 +466,8 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
-    localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ", syscfg.systemname, pStatus->GetLastDate());
+    localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ",
+      a()->config()->config()->systemname, pStatus->GetLastDate());
 
     localIO()->PrintfXY(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
         pStatus->GetNumUsers(), pStatus->GetCallerNumber(), pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
@@ -949,8 +950,8 @@ int Application::Run(int argc, char *argv[]) {
   }
 
   if (num_min > 0) {
-    syscfg.executetime = static_cast<uint16_t>((minutes_since_midnight() + num_min * 60) / 60) % 1440;
-    a()->set_time_event_time(minutes_after_midnight(syscfg.executetime));
+    a()->config()->config()->executetime = static_cast<uint16_t>((minutes_since_midnight() + num_min * 60) / 60) % 1440;
+    a()->set_time_event_time(minutes_after_midnight(a()->config()->config()->executetime));
   }
 
   if (event_only) {

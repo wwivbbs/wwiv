@@ -173,7 +173,8 @@ void WFC::DrawScreen() {
       wfcFile.Read(pszScreenBuffer, 4000);
     }
     a()->localIO()->WriteScreenBuffer(pszScreenBuffer);
-    const string title = StringPrintf("Activity and Statistics of %s Node %d", syscfg.systemname, a()->instance_number());
+    const string title = StringPrintf("Activity and Statistics of %s Node %d", 
+      a()->config()->config()->systemname, a()->instance_number());
     a()->localIO()->PrintfXYA(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
     const string f = fulldate();
     a()->localIO()->PrintfXYA(8, 1, 14, f.c_str());
@@ -212,7 +213,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
     get_inst_info(a()->instance_number(), &ir);
-    if (ir.user < syscfg.maxusers && ir.user > 0) {
+    if (ir.user < a()->config()->config()->maxusers && ir.user > 0) {
       const string unn = a()->names()->UserName(ir.user);
       a()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", unn.c_str());
     } else {

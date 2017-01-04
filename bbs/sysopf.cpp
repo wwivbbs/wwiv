@@ -915,7 +915,7 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
   }
-  int nus = syscfg.maxusers - pStatus->GetNumUsers();
+  int nus = a()->config()->config()->maxusers - pStatus->GetNumUsers();
 
   a()->status_manager()->CommitTransaction(pStatus);
   if (displayStatus) {
