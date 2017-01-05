@@ -156,7 +156,7 @@ bool handle_email(Context& context,
   d.text = string(iter, p.text.end());
   LOG(INFO) << "  Title: '" << d.title << "'";
 
-  std::unique_ptr<WWIVEmail> email(context.api.OpenEmail());
+  std::unique_ptr<WWIVEmail> email(context.email_api().OpenEmail());
   bool added = email->AddMessage(d);
   if (!added) {
     LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";

@@ -21,6 +21,7 @@
 #include <ctime>
 #include <iomanip>
 #include <iostream>
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
@@ -54,6 +55,18 @@ constexpr char CD = 4;
 
 namespace wwiv {
 namespace wwivutil {
+
+// TODO(rushfan): This was copied from post.cpp. Let's share it.
+static bool find_sub(wwiv::sdk::Subs& subs, const string& filename, subboard_t& sub) {
+  for (const auto& x : subs.subs()) {
+    if (iequals(filename, x.filename)) {
+      sub = x;
+      return true;
+    }
+  }
+  return false;
+}
+
 
 OverflowStrategy overflow_strategy_from(const std::string& v) {
   string flag = ToStringLowerCase(v);
@@ -91,25 +104,38 @@ public:
     }
 
     const string basename(remaining().front());
+    std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
+
     // TODO(rushfan): Create the right API type for the right message area.
     wwiv::sdk::msgapi::MessageApiOptions options;
-    unique_ptr<MessageApi> api = make_unique<WWIVMessageApi>(
+    apis[2] = make_unique<WWIVMessageApi>(
         options,
         config()->bbsdir(),
         config()->config()->datadir(), 
         config()->config()->msgsdir(), 
         config()->networks().networks(),
       new NullLastReadImpl());
-    if (!api->Exist(basename)) {
+
+    subboard_t sub{};
+    const auto& datadir = config()->config()->datadir();
+    const auto& nets = config()->networks().networks();
+    Subs subs(datadir, nets);
+    if (!find_sub(subs, basename, sub)) {
+      // set default.
+      sub.storage_type = 2;
+      sub.filename = basename;
+    }
+
+    if (!apis[sub.storage_type]->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
       // Since the area does not exist, let's create it automatically
-      // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(api->Create(basename, -1));
+      // like WWIV always does.
+      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(basename, -1));
       return 1;
     }
 
-    unique_ptr<MessageArea> area(api->Open(basename, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
     if (!area) {
       clog << "Unable to Open message area: '" << basename << "'." << endl;
       return 1;
@@ -187,26 +213,34 @@ public:
     // TODO(rushfan): Create the right API type for the right message area.
     wwiv::sdk::msgapi::MessageApiOptions options;
     options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
-    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
+
+    subboard_t sub{};
+    if (!find_sub(subs, basename, sub)) {
+      // set default.
+      sub.storage_type = 2;
+      sub.filename = basename;
+    }
+    std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
+
+    apis[2] = make_unique<WWIVMessageApi>(
       options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
-    if (!api->Exist(basename)) {
+    if (!apis[sub.storage_type]->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
       clog << "Attempting to create it." << endl;
       // Since the area does not exist, let's create it automatically
       // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(api->Create(basename, -1));
+      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(basename, -1));
       if (!creator) {
         clog << "Failed to create message area: " << basename << ". Exiting." << endl;
         return 1;
       }
     }
 
-    unique_ptr<MessageArea> area(api->Open(basename, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
     if (!area) {
       clog << "Error opening message area: '" << basename << "'." << endl;
       return 1;
     }
-    const auto& sub = subs[basename];
     area->set_storage_type(sub.storage_type);
     area->set_max_messages(sub.maxmsgs);
 
@@ -306,8 +340,17 @@ public:
 
     wwiv::sdk::msgapi::MessageApiOptions options;
     options.overflow_strategy = overflow_strategy_from(sarg("delete_overflow"));
-    // TODO(rushfan): Create the right API type for the right message area.
-    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
+    subboard_t sub{};
+    if (!find_sub(subs, basename, sub)) {
+      LOG(ERROR) << "Unable to find sub.";
+      // set default.
+    }
+
+    if (sub.storage_type != 2) {
+      LOG(ERROR) << "Can only pack type 2";
+    }
+
+    auto api = make_unique<WWIVMessageApi>(
       options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
     if (!api->Exist(basename)) {
       clog << "Message area: '" << basename << "' does not exist." << endl;
@@ -328,7 +371,6 @@ public:
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
       }
-      const auto& sub = subs[basename];
       area->set_storage_type(sub.storage_type);
       area->set_max_messages(sub.maxmsgs);
     }
@@ -419,21 +461,27 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     return 1;
   }
 
-  // TODO(rushfan): Create the right API type for the right message area.
   const wwiv::sdk::msgapi::MessageApiOptions options;
   auto x = new NullLastReadImpl();
-  unique_ptr<MessageApi> api(new WWIVMessageApi(options, *config()->config(), config()->networks().networks(), x));
-  if (!api->Exist(basename)) {
+  subboard_t sub{};
+  if (!find_sub(subs, basename, sub)) {
+    // set default.
+    sub.storage_type = 2;
+    sub.filename = basename;
+  }
+  std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
+
+  apis[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(), config()->networks().networks(), x);
+  if (!apis[sub.storage_type]->Exist(basename)) {
     clog << "Message area: '" << basename << "' does not exist." << endl;
     return 1;
   }
 
-  unique_ptr<MessageArea> area(api->Open(basename, -1));
+  unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
   if (!area) {
     clog << "Error opening message area: '" << basename << "'." << endl;
     return 1;
   }
-  const auto& sub = subs[basename];
   area->set_storage_type(sub.storage_type);
   area->set_max_messages(sub.maxmsgs);
 

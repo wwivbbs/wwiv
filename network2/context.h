@@ -38,18 +38,29 @@ public:
     const wwiv::sdk::Config& c,
     const net_networks_rec& n,
     wwiv::sdk::UserManager& u,
-    wwiv::sdk::msgapi::WWIVMessageApi& a,
     const std::vector<net_networks_rec>& networks)
-        : config(c), net(n), user_manager(u), api(a),
-          subs(c.datadir(), networks)
-  {
+        : config(c), net(n), user_manager(u), subs(c.datadir(), networks) {
     subs_initialized = subs.Load();
   }
+
+  void set_api(int type, std::unique_ptr<wwiv::sdk::msgapi::MessageApi> a) {
+    msgapis_[type] = std::move(a);
+  }
+
+  void set_email_api(wwiv::sdk::msgapi::WWIVMessageApi* a) {
+    email_api_ = a;
+  }
+
+
+  wwiv::sdk::msgapi::MessageApi& api(int type) { return *msgapis_.at(type).get(); }
+  wwiv::sdk::msgapi::WWIVMessageApi& email_api() { return *email_api_; }
 
   const wwiv::sdk::Config& config;
   const net_networks_rec& net;
   wwiv::sdk::UserManager& user_manager;
-  wwiv::sdk::msgapi::WWIVMessageApi& api;
+  std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> msgapis_;
+  // This is the type-2 entry in msgapis_. It's owned there.
+  wwiv::sdk::msgapi::WWIVMessageApi* email_api_;
   int network_number = 0;
   wwiv::sdk::Subs subs;
   bool verbose = false;

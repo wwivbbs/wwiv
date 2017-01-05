@@ -83,15 +83,15 @@ namespace net {
 namespace network2 {
 
 
-static bool find_basename(Context& context, const string& netname, string& basename) {
+static bool find_sub(Context& context, const string& netname, subboard_t& sub) {
   int current = 0;
   for (const auto& x : context.subs.subs()) {
     for (const auto& n : x.nets) {
       if (n.net_num == context.network_number) {
-        if (IsEqualsIgnoreCase(netname.c_str(), n.stype.c_str())) {
+        if (iequals(netname, n.stype)) {
           // Since the subtype matches, we need to find the subboard base filename.
           // and return that.
-          basename.assign(context.subs.sub(current).filename);
+          sub = context.subs.sub(current);
           return true;
         }
       }
@@ -129,28 +129,28 @@ bool handle_post(Context& context, Packet& p) {
     VLOG(1) << "  Date:    " << date_string;
   }
 
-  string basename;
-  if (!find_basename(context, subtype, basename)) {
+  subboard_t sub;
+  if (!find_sub(context, subtype, sub)) {
     LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << subtype;
     LOG(INFO) << "      title: " << title << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
-  if (!context.api.Exist(basename)) {
-    LOG(INFO) << "WARNING Message area: '" << basename << "' does not exist.";;
+  if (!context.api(sub.storage_type).Exist(sub.filename)) {
+    LOG(INFO) << "WARNING Message area: '" << sub.filename << "' does not exist.";;
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV always does.
-    unique_ptr<MessageArea> creator(context.api.Create(basename, -1));
+    unique_ptr<MessageArea> creator(context.api(sub.storage_type).Create(sub.filename, -1));
     if (!creator) {
-      LOG(INFO) << "    ! ERROR: Failed to create message area: " << basename << "; writing to dead.net.";
+      LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename << "; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
     }
   }
 
-  unique_ptr<MessageArea> area(context.api.Open(basename, -1));
+  unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub.filename, -1));
   if (!area) {
-    LOG(INFO) << "    ! ERROR Unable to open message area: " << basename << "; writing to dead.net.";
+    LOG(INFO) << "    ! ERROR Unable to open message area: " << sub.filename << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 

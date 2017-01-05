@@ -310,12 +310,15 @@ int main(int argc, char** argv) {
     wwiv::sdk::msgapi::MessageApiOptions options;
     options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
 
-    unique_ptr<WWIVMessageApi> api = make_unique<WWIVMessageApi>(
+    auto type2_api = make_unique<WWIVMessageApi>(
       options, config, networks.networks(), new NullLastReadImpl());
-    unique_ptr<UserManager> user_manager = make_unique<UserManager>(
+    auto user_manager = make_unique<UserManager>(
       config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
-    Context context(config, net, *user_manager.get(), *api.get(), networks.networks());
+
+    Context context(config, net, *user_manager.get(), networks.networks());
     context.network_number = net_cmdline.network_number();
+    context.set_api(2, std::move(type2_api));
+    context.set_email_api(type2_api.get());
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
