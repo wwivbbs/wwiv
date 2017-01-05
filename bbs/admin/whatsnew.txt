@@ -1,15 +1,24 @@
 ==============================================================================
                            WWIV BBS What's New List
-                 Copyright 1999-2016 WWIV Software Services
+                 Copyright 1999-2017 WWIV Software Services
 ==============================================================================
+Legend (starting with 5.3)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+! Breaking change (you may need to do something)
++ New feature
+- Feature removed
+* Change or cleanup
+
 
 What's New in WWIV 5.3
 ~~~~~~~~~~~~~~~~~~~~~~
-* WWIVbasic interpreter is available.  The menu command is
++ WWIVbasic interpreter is available.  The menu command is
   "RUNBASIC".  Also you can run a script from the logon event
   by using @basic:[scriptname.bas] for the LOGON_CMD in wwiv.ini
   (eventually many other commands will allow you to specify a
   script to run instead of an external command).
++ New install.sh on Linux to do the entire installation.
+* Init is now responsible for handling
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
