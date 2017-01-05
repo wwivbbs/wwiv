@@ -433,11 +433,12 @@ bool Application::ReadConfig() {
   if (!config_->versioned_config_dat()) {
     std::cerr << "Please run INIT to upgrade " << CONFIG_DAT << " to the most recent version.\r\n";
     LOG(ERROR) << "Please run INIT to upgrade " << CONFIG_DAT << " to the most recent version.";
+    wwiv::os::sleep_for(seconds(2));
     return false;
   }
 
   // initialize the user manager
-  const configrec* config = config_->config();
+  const auto config = config_->config();
   user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
   
@@ -452,42 +453,8 @@ bool Application::ReadConfig() {
     return false;
   }
 
-  // update user info data
-  // TODO(rushfan): Move this to INIT now that init is open sourced.  The
-  // values in INIT should always match reality now too.
-  int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
-  int16_t waitingoffset = offsetof(userrec, waiting);
-  int16_t inactoffset = offsetof(userrec, inact);
-  int16_t sysstatusoffset = offsetof(userrec, sysstatus);
-  int16_t fuoffset = offsetof(userrec, forwardusr);
-  int16_t fsoffset = offsetof(userrec, forwardsys);
-  int16_t fnoffset = offsetof(userrec, net_num);
-
-  if (userreclen != config_->config()->userreclen           ||
-      waitingoffset != config_->config()->waitingoffset     ||
-      inactoffset != config_->config()->inactoffset         ||
-      sysstatusoffset != config_->config()->sysstatusoffset ||
-      fuoffset != config_->config()->fuoffset               ||
-      fsoffset != config_->config()->fsoffset               ||
-      fnoffset != config_->config()->fnoffset) {
-    config_->config()->userreclen      = userreclen;
-    config_->config()->waitingoffset   = waitingoffset;
-    config_->config()->inactoffset     = inactoffset;
-    config_->config()->sysstatusoffset = sysstatusoffset;
-    config_->config()->fuoffset        = fuoffset;
-    config_->config()->fsoffset        = fsoffset;
-    config_->config()->fnoffset        = fnoffset;
-  }
-
-  char temp_dir[MAX_PATH];
-  to_char_array(temp_dir, temp_directory());
-  make_abs_path(temp_dir);
-  temp_directory_ = temp_dir;
-
-  char batch_dir[MAX_PATH];
-  to_char_array(batch_dir, batch_directory());
-  make_abs_path(batch_dir);
-  batch_directory_ = batch_dir;
+  temp_directory_ = File::MakeAbsolutePath(GetHomeDir(), temp_directory());
+  batch_directory_ = File::MakeAbsolutePath(GetHomeDir(), batch_directory());
 
   return true;
 }

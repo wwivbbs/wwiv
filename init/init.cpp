@@ -219,6 +219,9 @@ void upgrade_datafiles_if_needed(const wwiv::sdk::Config& config) {
 
     ensure_latest_5x_config(out->window(), config);
   }
+
+  ensure_offsets_are_updated(out->window(), config);
+
 }
 
 static void ShowHelp(CommandLine& cmdline) {

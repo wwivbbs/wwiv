@@ -77,6 +77,46 @@ static void ShowBanner(CursesWindow* window, const std::string& m) {
   window->SetColor(SchemeId::NORMAL);
 }
 
+bool ensure_offsets_are_updated(CursesWindow* window, const wwiv::sdk::Config& config) {
+  File file(config.config_filename());
+  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
+    return false;
+  }
+
+  // update user info data
+  int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
+  int16_t waitingoffset = offsetof(userrec, waiting);
+  int16_t inactoffset = offsetof(userrec, inact);
+  int16_t sysstatusoffset = offsetof(userrec, sysstatus);
+  int16_t fuoffset = offsetof(userrec, forwardusr);
+  int16_t fsoffset = offsetof(userrec, forwardsys);
+  int16_t fnoffset = offsetof(userrec, net_num);
+
+  if (userreclen != syscfg.userreclen ||
+      waitingoffset != syscfg.waitingoffset ||
+      inactoffset != syscfg.inactoffset ||
+      sysstatusoffset != syscfg.sysstatusoffset ||
+      fuoffset != syscfg.fuoffset ||
+      fsoffset != syscfg.fsoffset ||
+      fnoffset != syscfg.fnoffset) {
+
+    ShowBanner(window, "Updating OFfsets...");
+    syscfg.userreclen = userreclen;
+    syscfg.waitingoffset = waitingoffset;
+    syscfg.inactoffset = inactoffset;
+    syscfg.sysstatusoffset = sysstatusoffset;
+    syscfg.fuoffset = fuoffset;
+    syscfg.fsoffset = fsoffset;
+    syscfg.fnoffset = fnoffset;
+
+    // Write it all back.
+    file.Seek(0, File::Whence::begin);
+    file.Write(&syscfg, sizeof(configrec));
+    file.Close();
+  }
+  return true;
+}
+
 bool convert_config_to_52(CursesWindow* window, const wwiv::sdk::Config& config) {
   File file(config.config_filename());
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {

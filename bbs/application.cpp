@@ -120,9 +120,6 @@ Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_() {
   ::bout.SetLocalIO(localIO);
 
-  if (a()->config()->config()->userreclen == 0) {
-    a()->config()->config()->userreclen = sizeof(userrec);
-  }
   tzset();
 
   memset(&newuser_colors, 0, sizeof(newuser_colors));

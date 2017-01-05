@@ -16,7 +16,6 @@ Ini Files and Configuration
 
 General Cleanup
 ===============
-* move rest of small_configrec to application
 * move logic of offset variables into init
 * move File to namespace wwiv::core
 * get rid of more char[] variables from vars.h, move to wsession as strings.
