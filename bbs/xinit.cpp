@@ -329,11 +329,11 @@ void Application::ReadINIFile(IniFile& ini) {
   max_gfilesec = ini.value<uint16_t>(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
 
   // pull out strings
-  ini_init_str(ini, INI_STR_UPLOAD_CMD, syscfg.upload_cmd);
-  ini_init_str(ini, INI_STR_BEGINDAY_CMD, syscfg.beginday_cmd);
-  ini_init_str(ini, INI_STR_NEWUSER_CMD, syscfg.newuser_cmd);
-  ini_init_str(ini, INI_STR_LOGON_CMD, syscfg.logon_cmd);
-  ini_init_str(ini, INI_STR_TERMINAL_CMD, syscfg.terminal_command);
+  ini_init_str(ini, INI_STR_UPLOAD_CMD, upload_cmd);
+  ini_init_str(ini, INI_STR_BEGINDAY_CMD, beginday_cmd);
+  ini_init_str(ini, INI_STR_NEWUSER_CMD, newuser_cmd);
+  ini_init_str(ini, INI_STR_LOGON_CMD, logon_cmd);
+  ini_init_str(ini, INI_STR_TERMINAL_CMD, terminal_command);
 
   m_nForcedReadSubNumber = ini.value<int>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), m_nForcedReadSubNumber);
   m_bInternalZmodem = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), true);
@@ -350,12 +350,12 @@ void Application::ReadINIFile(IniFile& ini) {
 
   // get asv values
   if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
-    INI_GET_ASV("SL", sl, StringToUnsignedChar, syscfg.autoval[9].sl);
-    INI_GET_ASV("DSL", dsl, StringToUnsignedChar, syscfg.autoval[9].dsl);
-    INI_GET_ASV("EXEMPT", exempt, StringToUnsignedChar, 0);
-    INI_GET_ASV("AR", ar, str_to_arword, syscfg.autoval[9].ar);
-    INI_GET_ASV("DAR", dar, str_to_arword, syscfg.autoval[9].dar);
-    INI_GET_ASV("RESTRICT", restrict, str2restrict, 0);
+    INI_GET_ASV("SL", sl, StringToUnsignedChar, a()->asv.sl);
+    INI_GET_ASV("DSL", dsl, StringToUnsignedChar, a()->asv.dsl);
+    INI_GET_ASV("EXEMPT", exempt, StringToUnsignedChar, a()->asv.exempt);
+    INI_GET_ASV("AR", ar, str_to_arword, a()->asv.ar);
+    INI_GET_ASV("DAR", dar, str_to_arword, a()->asv.dar);
+    INI_GET_ASV("RESTRICT", restrict, str2restrict, a()->asv.restrict);
   }
 
   // sysconfig flags
@@ -478,17 +478,6 @@ bool Application::ReadConfig() {
     config_->config()->fsoffset        = fsoffset;
     config_->config()->fnoffset        = fnoffset;
   }
-
-  syscfg.autoval[0]       = config_->config()->autoval[0];
-  syscfg.autoval[1]       = config_->config()->autoval[1];
-  syscfg.autoval[2]       = config_->config()->autoval[2];
-  syscfg.autoval[3]       = config_->config()->autoval[3];
-  syscfg.autoval[4]       = config_->config()->autoval[4];
-  syscfg.autoval[5]       = config_->config()->autoval[5];
-  syscfg.autoval[6]       = config_->config()->autoval[6];
-  syscfg.autoval[7]       = config_->config()->autoval[7];
-  syscfg.autoval[8]       = config_->config()->autoval[8];
-  syscfg.autoval[9]       = config_->config()->autoval[9];
 
   char temp_dir[MAX_PATH];
   to_char_array(temp_dir, temp_directory());
@@ -709,31 +698,6 @@ void Application::make_abs_path(char *pszDirectory) {
   strcpy(pszDirectory, dir.c_str());
 }
 
-static bool SaveConfig() {
-  File file(CONFIG_DAT);
-  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
-    return false;
-  }
-  configrec full_syscfg;
-  file.Read(&full_syscfg, sizeof(configrec));
-  // These are set by WWIV.INI, set them back so that changes
-  // will be propagated to config.dat
-  full_syscfg.autoval[0] = syscfg.autoval[0];
-  full_syscfg.autoval[1] = syscfg.autoval[1];
-  full_syscfg.autoval[2] = syscfg.autoval[2];
-  full_syscfg.autoval[3] = syscfg.autoval[3];
-  full_syscfg.autoval[4] = syscfg.autoval[4];
-  full_syscfg.autoval[5] = syscfg.autoval[5];
-  full_syscfg.autoval[6] = syscfg.autoval[6];
-  full_syscfg.autoval[7] = syscfg.autoval[7];
-  full_syscfg.autoval[8] = syscfg.autoval[8];
-  full_syscfg.autoval[9] = syscfg.autoval[9];
-
-  file.Seek(0, File::Whence::begin);
-  file.Write(&full_syscfg, sizeof(configrec));
-  return true;
-}
-
 void Application::InitializeBBS() {
   localIO()->Cls();
 #if !defined( __unix__ )
@@ -832,7 +796,6 @@ void Application::InitializeBBS() {
 
   VLOG(1) << "Reading File Archivers.";
   read_arcs();
-  SaveConfig();
 
   VLOG(1) << "Reading Full Screen Message Editors.";
   read_editors();

@@ -936,11 +936,11 @@ void logon() {
   a()->UpdateTopScreen();
   bout.nl(2);
   pausescr();
-  if (!syscfg.logon_cmd.empty()) {
-    if (syscfg.logon_cmd.front() == '@') {
+  if (!a()->logon_cmd.empty()) {
+    if (a()->logon_cmd.front() == '@') {
       // Let's see if we need to run a basic script.
-      if (starts_with(syscfg.logon_cmd, "@basic:")) {
-        string cmd = syscfg.logon_cmd;
+      if (starts_with(a()->logon_cmd, "@basic:")) {
+        string cmd = a()->logon_cmd;
         cmd = cmd.substr(7);
         LOG(INFO) << "Running basic script: " << cmd;
         wwiv::bbs::RunBasicScript(cmd);
@@ -948,7 +948,7 @@ void logon() {
     }
     else {
       bout.nl();
-      const string command = stuff_in(syscfg.logon_cmd, create_chain_file(), "", "", "", "");
+      const string command = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
       ExecuteExternalProgram(command, a()->GetSpawnOptions(SPAWNOPT_LOGON));
     }
     bout.nl(2);

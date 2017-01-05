@@ -132,11 +132,11 @@ int check_batch_queue(const char *file_name) {
  * returns true if everything is ok, false if the file
  */
 bool check_ul_event(int directory_num, uploadsrec * u) {
-  if (syscfg.upload_cmd.empty()) {
+  if (a()->upload_cmd.empty()) {
     return true;
   }
   const string comport = StringPrintf("%d", incom ? a()->primary_port() : 0);
-  const string cmdLine = stuff_in(syscfg.upload_cmd, create_chain_file(),
+  const string cmdLine = stuff_in(a()->upload_cmd, create_chain_file(),
                                   a()->directories[directory_num].path,
                                   stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, a()->GetSpawnOptions(SPAWNOPT_ULCHK));

@@ -95,8 +95,6 @@ __EXTRN__ uint32_t
 
 __EXTRN__ long extratimecall;
 
-__EXTRN__ small_configrec syscfg;
-
 __EXTRN__ colorrec rescolor;
 __EXTRN__ userconfrec *uconfsub, *uconfdir;
 __EXTRN__ confrec *subconfs, *dirconfs;

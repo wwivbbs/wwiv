@@ -245,7 +245,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
           }
           File file(dest_filename);
           if (file.Open(File::modeBinary | File::modeReadOnly)) {
-            if (!syscfg.upload_cmd.empty()) {
+            if (!a()->upload_cmd.empty()) {
               file.Close();
               if (!check_ul_event(b.dir, &u)) {
                 didnt_upload(b);

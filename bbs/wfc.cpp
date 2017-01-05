@@ -520,13 +520,13 @@ int WFC::doWFCEvents() {
         break;
         // UserEdit
       case 'T':
-        if (syscfg.terminal_command.empty()) {
+        if (a()->terminal_command.empty()) {
           bout << "Terminal Command not specified. " << wwiv::endl << " Please set TERMINAL_CMD in WWIV.INI"
             << wwiv::endl;
           bout.getkey();
           break;
         }
-        ExecExternalProgram(syscfg.terminal_command, INST_FLAGS_NONE);
+        ExecExternalProgram(a()->terminal_command, INST_FLAGS_NONE);
         break;
       case 'U':
         write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);

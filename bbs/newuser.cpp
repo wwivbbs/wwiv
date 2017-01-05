@@ -772,6 +772,9 @@ void DoFullNewUser() {
 }
 
 void DoNewUserASV() {
+  IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), { StrCat("WWIV-", a()->instance_number()), INI_TAG });
+  if (!ini.IsOpen()) { return; }
+  const auto asv_num = ini.value<int>("SIMPLE_ASV_NUM", 0);
   if (a()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) &&
       a()->asv.sl > a()->config()->config()->newusersl && a()->asv.sl < 90) {
     bout.nl();
@@ -976,8 +979,8 @@ void SendNewUserFeedbackIfRequired() {
 
 
 void ExecNewUserCommand() {
-  if (!hangup && !syscfg.newuser_cmd.empty()) {
-    const string commandLine = stuff_in(syscfg.newuser_cmd, create_chain_file(), "", "", "", "");
+  if (!hangup && !a()->newuser_cmd.empty()) {
+    const string commandLine = stuff_in(a()->newuser_cmd, create_chain_file(), "", "", "", "");
 
     // Log what is happening here.
     sysoplog(false) << "Executing New User Event: ";

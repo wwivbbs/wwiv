@@ -34,6 +34,7 @@
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "bbs/wconstants.h"
+#include "bbs/bbs.h"
 #include "init/wwivinit.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

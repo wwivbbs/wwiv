@@ -930,8 +930,8 @@ void beginday(bool displayStatus) {
   if (!a()->config()->config()->closedsystem && nus < 15) {
     ssm(1, 0) << "Only " << nus << " new user slots left.";
   }
-  if (!syscfg.beginday_cmd.empty()) {
-    const std::string commandLine = stuff_in(syscfg.beginday_cmd, create_chain_file(), "", "", "", "");
+  if (!a()->beginday_cmd.empty()) {
+    const std::string commandLine = stuff_in(a()->beginday_cmd, create_chain_file(), "", "", "", "");
     ExecuteExternalProgram(commandLine, a()->GetSpawnOptions(SPAWNOPT_BEGINDAY));
   }
   if (displayStatus) {

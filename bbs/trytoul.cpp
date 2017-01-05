@@ -335,7 +335,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     t2u_error(file_name, "DOS error - File not found.");
     return 1;
   }
-  if (!syscfg.upload_cmd.empty()) {
+  if (!a()->upload_cmd.empty()) {
     file.Close();
     bout << "Please wait...\r\n";
     if (!check_ul_event(dn, &u)) {

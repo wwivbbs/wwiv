@@ -240,7 +240,7 @@ void normalupload(int dn) {
               delete_extended_description(u.filename);
             }
           }
-          if (ok && !syscfg.upload_cmd.empty()) {
+          if (ok && !a()->upload_cmd.empty()) {
             file.Close();
             bout << "Please wait...\r\n";
             if (!check_ul_event(dn, &u)) {

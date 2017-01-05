@@ -351,17 +351,6 @@ struct configrec {
 };
 
 
-struct small_configrec {
-  std::string beginday_cmd; // beginday event
-  std::string logon_cmd;            // logon event
-  std::string newuser_cmd;          // newuser event
-  std::string upload_cmd;           // upload event
-  std::string terminal_command;     // Terminal command
-
-  valrec autoval[10];        // sysop quik-validation dat
-};
-
-
 // overlay information per instance
 struct legacy_configovrrec_424_t {
   uint8_t unused1[9];

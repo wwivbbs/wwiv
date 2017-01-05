@@ -434,11 +434,11 @@ void auto_val(int n, User *pUser) {
   if (pUser->GetSl() == 255) {
     return;
   }
-  pUser->SetSl(syscfg.autoval[n].sl);
-  pUser->SetDsl(syscfg.autoval[n].dsl);
-  pUser->SetAr(syscfg.autoval[n].ar);
-  pUser->SetDar(syscfg.autoval[n].dar);
-  pUser->SetRestriction(syscfg.autoval[n].restrict);
+  pUser->SetSl(a()->config()->config()->autoval[n].sl);
+  pUser->SetDsl(a()->config()->config()->autoval[n].dsl);
+  pUser->SetAr(a()->config()->config()->autoval[n].ar);
+  pUser->SetDar(a()->config()->config()->autoval[n].dar);
+  pUser->SetRestriction(a()->config()->config()->autoval[n].restrict);
 }
 
 
@@ -854,10 +854,10 @@ void uedit(int usern, int other) {
         if (ch != '0') {
           nAutoValNum = ch - '1';
         }
-        if ((a()->GetEffectiveSl() >= syscfg.autoval[nAutoValNum].sl) &&
-            (a()->user()->GetDsl() >= syscfg.autoval[nAutoValNum].dsl) &&
-            (((~a()->user()->GetAr()) & syscfg.autoval[nAutoValNum].ar) == 0) &&
-            (((~a()->user()->GetDar()) & syscfg.autoval[nAutoValNum].dar) == 0)) {
+        if ((a()->GetEffectiveSl() >= a()->config()->config()->autoval[nAutoValNum].sl) &&
+            (a()->user()->GetDsl() >= a()->config()->config()->autoval[nAutoValNum].dsl) &&
+            (((~a()->user()->GetAr()) & a()->config()->config()->autoval[nAutoValNum].ar) == 0) &&
+            (((~a()->user()->GetDar()) & a()->config()->config()->autoval[nAutoValNum].dar) == 0)) {
           auto_val(nAutoValNum, &user);
           a()->users()->WriteUser(&user, user_number);
         }
