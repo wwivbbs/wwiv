@@ -36,27 +36,6 @@ using namespace std::chrono;
 // else.
 //
 
-/*
- * Returns the date a file was last modified as a string
- *
- * The following line would show the date that your BBS.EXE was last changed:
- * char date[81];
- * filedate("bbs.exe", &date);
- * bout.bputs("BBS was last modified on %s at %s\r\n", date,
- *     filetime("BBS.EXE"));
- */
-void filedate(const char *file_name, char *out) {
-  File file(file_name);
-  if (!file.Exists() && !file.Open(File::modeReadOnly)) {
-    return;
-  }
-  time_t file_time = file.last_write_time();
-  struct tm *pTm = localtime(&file_time);
-
-  // We use 9 here since that is the size of the date format MM/DD/YY + nullptr
-  snprintf(out, 9, "%02d/%02d/%02d", pTm->tm_mon, pTm->tm_mday, (pTm->tm_year % 100));
-}
-
 void ToggleScrollLockKey() {
 #if defined( _WIN32 )
   // Simulate a key press

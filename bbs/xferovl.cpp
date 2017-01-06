@@ -58,17 +58,6 @@ using namespace wwiv::strings;
 
 extern char str_quit[];
 
-//
-// private functions
-//
-int  comparedl(uploadsrec * x, uploadsrec * y, int type);
-void quicksort(int l, int r, int type);
-bool upload_file(const char *file_name, int directory_num, const char *description);
-long db_index(File &fileAllow, const char *file_name);
-void l_config_nscan();
-void config_nscan();
-
-
 void move_file() {
   char s1[81], s2[81];
   int d1 = 0, d2 = 0;
@@ -231,8 +220,7 @@ void move_file() {
   tmp_disable_conf(false);
 }
 
-
-int comparedl(uploadsrec * x, uploadsrec * y, int type) {
+static int comparedl(uploadsrec * x, uploadsrec * y, int type) {
   switch (type) {
   case 0:
     return StringCompare(x->filename, y->filename);
@@ -250,8 +238,7 @@ int comparedl(uploadsrec * x, uploadsrec * y, int type) {
   return 0;
 }
 
-
-void quicksort(int l, int r, int type) {
+static void quicksort(int l, int r, int type) {
   uploadsrec ua, a2, x;
 
   int i = l;
@@ -429,8 +416,7 @@ void rename_file() {
   }
 }
 
-
-bool upload_file(const char *file_name, int directory_num, const char *description) {
+static bool upload_file(const char *file_name, int directory_num, const char *description) {
   uploadsrec u, u1;
 
   directoryrec d = a()->directories[directory_num];
@@ -468,7 +454,11 @@ bool upload_file(const char *file_name, int directory_num, const char *descripti
     const string unn = a()->names()->UserName(a()->usernum);
     strcpy(u.upby, unn.c_str());
     to_char_array(u.date, date());
-    filedate(szFullPathName, u.actualdate);
+
+    File f(szFullPathName);
+    auto t = wwiv::sdk::daten_to_mmddyy(f.creation_time());
+    to_char_array(u.actualdate, t);
+
     if (d.mask & mask_PD) {
       d.mask = mask_PD;
     }
@@ -895,7 +885,7 @@ void edit_database()
  * is no record #0 ambiguity.
  *
  */
-long db_index(File &fileAllow, const char *file_name) {
+static long db_index(File &fileAllow, const char *file_name) {
   char cfn[18], tfn[81], tfn1[81];
   int i = 0;
   long hirec, lorec, currec, ocurrec = -1;
@@ -1042,7 +1032,7 @@ bool is_uploadable(const char *file_name) {
   return (rc < 0) ? true : false;
 }
 
-void l_config_nscan() {
+static void l_config_nscan() {
   char s[81], s2[81];
 
   bool abort = false;
@@ -1061,7 +1051,7 @@ void l_config_nscan() {
   bout.nl(2);
 }
 
-void config_nscan() {
+static void config_nscan() {
   char *s, s1[MAX_CONFERENCES + 2], s2[120], ch;
   int i1, oc, os;
   bool abort = false;

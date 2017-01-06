@@ -25,11 +25,8 @@
 
 #include "sdk/datetime.h"
 
-void filedate(const char *fpath, char *rtn);
 bool isleap(int nYear);
 int dow();
-std::string ctim(float f);
-std::string ctim(double f);
 std::string ctim(long d);
 int years_old(int nMonth, int nDay, int nYear);
 

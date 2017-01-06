@@ -197,7 +197,9 @@ bool get_file_idz(uploadsrec * u, int dn) {
     return false;
   }
   sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
-  filedate(s, u->actualdate);
+  File f(s);
+  auto t = wwiv::sdk::daten_to_mmddyy(f.creation_time());
+  to_char_array(u->actualdate, t);
   {
     char* ss = strchr(stripfn(u->filename), '.');
     if (ss == nullptr) {
