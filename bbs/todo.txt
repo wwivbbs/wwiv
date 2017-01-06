@@ -20,7 +20,6 @@ General Cleanup
 * get rid of more char[] variables from vars.h, move to wsession as strings.
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
-* remove extra include statements from user.cpp
 * Finish wrappering Application
 * TopScreen doesn't work with CursesIO
 * use daten_t everywhere we have a daten date.

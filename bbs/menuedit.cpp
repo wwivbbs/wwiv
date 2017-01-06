@@ -209,7 +209,7 @@ static bool EditHeader(MenuHeader* header, File &fileEditMenu, const string& men
     if (incom && header->szPassWord[0]) {
       bout << "Current PW: ";
       string pw = input(20);
-      if (!IsEqualsIgnoreCase(pw.c_str(), header->szPassWord)) {
+      if (!iequals(pw, header->szPassWord)) {
         MenuSysopLog("Unable to change PW");
         break;
       }
@@ -565,9 +565,12 @@ void DisplayItem(MenuRec * menu, int nCur, int nAmount) {
     bout << "|#9S) Sysop          : |#2" << (menu->nSysop ? "Yes" : "No")  << wwiv::endl;
     bout << "|#9T) Co-Sysop       : |#2" << (menu->nCoSysop ? "Yes" : "No") << wwiv::endl;
     bout << "|#9U) Password       : |#2" << (incom ? "<Remote>" : menu->szPassWord) << wwiv::endl;
-    bout << "|#9V) Hide text from : |#2" << (menu->nHide == MENU_HIDE_NONE ? "None" : menu->nHide ==
-                       MENU_HIDE_PULLDOWN ? "Pulldown Menus" : menu->nHide == MENU_HIDE_REGULAR ? "Regular Menus" : menu->nHide ==
-                       MENU_HIDE_BOTH ? "Both Menus" : "Out of Range") << wwiv::endl;
+    bout << "|#9V) Hide text from : |#2" 
+         << (menu->nHide == MENU_HIDE_NONE 
+            ? "None" : menu->nHide ==MENU_HIDE_PULLDOWN 
+            ? "Pulldown Menus" : menu->nHide == MENU_HIDE_REGULAR 
+            ? "Regular Menus" : menu->nHide == MENU_HIDE_BOTH 
+            ? "Both Menus" : "Out of Range") << wwiv::endl;
   }
   bout.nl(2);
   bout << "|101,A-F,K-U, Z=Add new record, [=Prev, ]=Next, Q=Quit : ";

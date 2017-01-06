@@ -429,37 +429,52 @@ struct colorrec {
  * This has been the same since *at least* 4.22.
  */
 struct subboardrec_422_t {
-  char name[41],                              // board name
-       filename[9],                            // board database filename
-       key;                                    // board special key
+  // board name
+  char name[41];
+  // board database filename
+  char filename[9];
+  // board special key
+  char key;
 
-  uint8_t readsl,                       // sl required to read
-          postsl,                                 // sl required to post
-          anony,                                  // anonymous board?
-          age;                                    // minimum age for sub
-
-  uint16_t maxmsgs,                     // max # of msgs
-           ar,                                     // AR for sub-board
-           storage_type,                           // how messages are stored
-           unused_legacy_type;                                   // 4 digit board type
+  // sl required to read
+  uint8_t readsl;
+  // sl required to post
+  uint8_t postsl;
+  // anonymous board?
+  uint8_t anony;
+  // minimum age for sub
+  uint8_t age;
+  // max # of msgs
+  uint16_t maxmsgs;
+  // AR for sub-board
+  uint16_t ar;
+  // how messages are stored
+  uint16_t storage_type;
+  // 4 digit board type
+  uint16_t unused_legacy_type;
 };
-
 
 // UPLOAD DIRECTORY INFORMATION
 struct directoryrec {
-  char name[41],                              // directory name
-       filename[9],                            // direct database filename
-       path[81];                               // filename path
-
-  uint8_t dsl,                          // DSL for directory
-           age;                                    // minimum age for directory
-
-  uint16_t dar,                         // DAR for directory
-           maxfiles,                               // max files for directory
-           mask,                                   // file type mask
-           type;                                   // 4 digit directory type
+  // directory name
+  char name[41];
+  // direct database filename
+  char filename[9];
+  // filename path
+  char  path[81];
+  // DSL for directory
+  uint8_t dsl;
+  // minimum age for directory
+  uint8_t age;
+  // DAR for directory
+  uint16_t dar;
+  // max files for directory
+  uint16_t maxfiles;
+  // file type mask
+  uint16_t mask;
+  // 4 digit directory type
+  uint16_t type;
 };
-
 
 // QUICK REFERNCE TO FIND USER NUMBER FROM NAME
 struct smalrec {
@@ -468,7 +483,6 @@ struct smalrec {
   // User number.
   uint16_t number;
 };
-
 
 // TYPE-1 and TYPE-2 locator to find the message text.
 struct messagerec {
