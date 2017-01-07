@@ -19,11 +19,13 @@
 #include "bbs/output.h"
 
 #include <algorithm>
+#include <cctype>
 #include <cstdarg>
 #include <string>
 
 #include "bbs/bbsutl.h"
 #include "bbs/keycodes.h"
+#include "bbs/interpret.h"
 #include "bbs/com.h"
 #include "bbs/bbs.h"
 #include "bbs/instmsg.h"
@@ -34,7 +36,7 @@
 
 using std::ostream;
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 outputstreambuf::outputstreambuf() {}
 outputstreambuf::~outputstreambuf() {}
@@ -238,12 +240,61 @@ void Output::mpl(int length) {
   bputs(StringPrintf("\x1b[%dD", length));
 }
 
+template <typename T>
+static int pipecode_int(T& it, const T end) {
+  std::string s;
+  while (it != end && std::isdigit(static_cast<uint8_t>(*it))) {
+    s.push_back(*it);
+    it++; 
+  }
+  return StringToInt(s);
+}
+
 int Output::bputs(const string& text) {
   CheckForHangup();
   if (text.empty() || hangup) { return 0; }
 
-  for (char c : text) {
-    bputch(c, true);
+  auto it = std::begin(text);
+  auto end = std::end(text);
+  while (it != end) {
+    // pipe codes.
+    if (*it == '|') {
+      it++;
+      if (it == end) { bputch('|');  break; }
+      if (std::isdigit(*it)) {
+        int color = pipecode_int(it, end);
+        bout.SystemColor(color);
+      }
+      else if (*it == '@') {
+        it++;
+        BbsMacroContext ctx(a()->user());
+        auto s = interpret(*it++, ctx);
+        bout.bputs(s);
+      }
+      else if (*it == '#') {
+        it++;
+        int color = pipecode_int(it, end);
+        bout.Color(color);
+      }
+    }
+    else if (*it == CC) {
+      it++;
+      if (it == end) { bputch(CC);  break; }
+      int color = pipecode_int(it, end);
+      bout.Color(color);
+    }
+    else if (*it == CO) {
+      it++;
+      if (it == end) { bputch(CO);  break; }
+      BbsMacroContext ctx(a()->user());
+      auto s = interpret(*it++, ctx);
+      bout.bputs(s);
+    } else if (it == end) { 
+      break; 
+    }
+    else { 
+      bputch(*it++, true);
+    }
   }
 
   flush();
