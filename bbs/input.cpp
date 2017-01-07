@@ -45,6 +45,65 @@ static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
 static const unsigned char *valid_letters =
   (unsigned char *) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+static std::string input_password_minimal(int max_length) {
+  const bool auto_mpl = false;
+  const char mask_char = okansi() ? '\xFE' : 'X';
+  std::string pw;
+  if (auto_mpl) {
+    // change this one local_echo is dead.
+    bout.mpl(max_length);
+  }
+
+  static unsigned char last_char;
+
+  while (!hangup) {
+    unsigned char ch = bout.getkey();
+
+    if (ch > 31) {
+      ch = upcase(ch);
+      if (pw.length() < max_length && ch) {
+        pw.push_back(ch);
+        bout.bputch(mask_char);
+      }
+      continue;
+    }
+    switch (ch) {
+    case SOFTRETURN:
+      // Handle the case where some telnet clients only return \n vs \r\n
+      if (last_char != RETURN) {
+        bout.nl();
+        return pw;
+      }
+      break;
+    case CN:
+    case RETURN:
+      bout.nl();
+      return pw;
+      break;
+    case CW:  // Ctrl-W
+      while (!pw.empty() && pw.back() != SPACE) {
+        pw.pop_back();
+        bout.bs();
+      }
+      break;
+    case BACKSPACE:
+      if (!pw.empty()) {
+        pw.pop_back();
+        bout.bs();
+      }
+      break;
+    case CU:
+    case CX:
+      while (!pw.empty()) {
+        pw.pop_back();
+        bout.bs();
+      }
+      break;
+    }
+    last_char = ch;
+  }
+  return "";
+}
 
 /**
  * This will input a line of data, maximum max_length characters long, terminated
@@ -224,10 +283,7 @@ std::string inputl(int max_length, bool auto_mpl) {
 std::string input_password(const string& prompt_text, int max_length) {
   bout << prompt_text;
   bout.mpl(max_length);
-  local_echo = false;
-  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
-  input1(line.get(), max_length, InputMode::UPPER, true, false);
-  return string(line.get());
+  return input_password_minimal(max_length);
 }
 
 // TODO(rushfan): Make this a WWIV ini setting.
