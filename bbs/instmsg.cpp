@@ -451,7 +451,7 @@ void write_inst(int loc, int subloc, int flags) {
 * Returns 1 if a message waiting for this instance, 0 otherwise.
 */
 bool inst_msg_waiting() {
-  if (iia.count() == 0 || !local_echo) return false;
+  if (iia.count() == 0) return false;
 
   auto l = steady_clock::now();
   if ((l - last_iia) < iia) {

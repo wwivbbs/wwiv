@@ -298,8 +298,6 @@ void OnlineUserEditor() {
  * @param nStringDelay Delay between completion of string and backspacing
  */
 void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
-  bool oecho = local_echo;
-  local_echo = true;
   bout.Color(nColorCode);
   sleep_for(milliseconds(nCharDelay));
   for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
@@ -312,7 +310,6 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
     bout.bs();
     sleep_for(milliseconds(5));
   }
-  local_echo = oecho;
 }
 
 /**
@@ -335,9 +332,6 @@ void MoveLeft(int numOfChars) {
  * @param
  */
 void SpinPuts(const string& strText, int nColorCode) {
-  bool oecho  = local_echo;
-  local_echo    = true;
-
   if (okansi()) {
     bout.Color(nColorCode);
     const int dly = 30;
@@ -360,5 +354,4 @@ void SpinPuts(const string& strText, int nColorCode) {
   } else {
     bout << strText;
   }
-  local_echo = oecho;
 }

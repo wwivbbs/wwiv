@@ -158,10 +158,7 @@ void Output::nl(int nNumLines) {
 }
 
 void Output::bs() {
-  bool bSavedEcho = local_echo;
-  local_echo = true;
   bputs("\b \b");
-  local_echo = bSavedEcho;
 }
 
 void Output::SystemColor(wwiv::sdk::Color color) {

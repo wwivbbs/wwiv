@@ -46,13 +46,9 @@ static const unsigned char *valid_letters =
   (unsigned char *) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 static std::string input_password_minimal(int max_length) {
-  const bool auto_mpl = false;
   const char mask_char = okansi() ? '\xFE' : 'X';
   std::string pw;
-  if (auto_mpl) {
-    // change this one local_echo is dead.
-    bout.mpl(max_length);
-  }
+  bout.mpl(max_length);
 
   static unsigned char last_char;
 
@@ -193,7 +189,6 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
             //
             out_text[curpos] = '\0';
             done = true;
-            local_echo = true;
             if (newline || crend) {
               bout.nl();
             }
@@ -203,7 +198,6 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
         case RETURN:
           out_text[curpos] = '\0';
           done = true;
-          local_echo = true;
           if (newline || crend) {
             bout.nl();
           }
@@ -282,7 +276,6 @@ std::string inputl(int max_length, bool auto_mpl) {
 
 std::string input_password(const string& prompt_text, int max_length) {
   bout << prompt_text;
-  bout.mpl(max_length);
   return input_password_minimal(max_length);
 }
 

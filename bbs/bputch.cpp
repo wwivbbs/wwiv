@@ -261,14 +261,13 @@ int Output::bputch(char c, bool use_buffer) {
   }
   if (outcom && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
-      char x = okansi() ? '\xFE' : 'X';
       if (c == SOFTRETURN) {
 #ifdef __unix__
         rputch('\r', use_buffer);
 #endif  // __unix__
         rputch('\n', use_buffer);
       } else {
-        rputch(local_echo ? c : x, use_buffer);
+        rputch(c, use_buffer);
       }
       displayed = 1;
     }
@@ -299,16 +298,14 @@ int Output::bputch(char c, bool use_buffer) {
       for (int i = nScreenPos; i < (((nScreenPos / 8) + 1) * 8); i++) {
         displayed += bputch(SPACE);
       }
-    } else if (local_echo) {
+    } else {
       displayed = 1;
-      auto display_char = local_echo ? c : '\xFE';
-      localIO()->Putch(display_char);
-
-      current_line_.push_back({display_char, curatr});
+      localIO()->Putch(c);
+      current_line_.push_back({c, curatr});
       x_++;
       const auto screen_width = a()->user()->GetScreenChars();
       // Wrap at screen_width
-      if (x_ >= screen_width) {
+      if (x_ >= static_cast<int>(screen_width)) {
         x_ %= screen_width;
       }
 
@@ -324,9 +321,6 @@ int Output::bputch(char c, bool use_buffer) {
           bout.clear_lines_listed();   // change Build3
         }
       }
-    } else {
-      localIO()->Putch('X');
-      displayed = 1;
     }
   }
 

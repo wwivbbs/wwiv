@@ -57,8 +57,6 @@ void BbsHelper::SetUp() {
   ASSERT_TRUE(files_.Mkdir("en/gfiles"));
   // Use our own local IO class that will capture the output.
   io_.reset(new TestIO());
-  // Without local_echo, we won't capture anything.
-  local_echo = true;
   sess_.reset(CreateSession(io_->local_io()));
 
   dir_data_ = files_.DirName("data");

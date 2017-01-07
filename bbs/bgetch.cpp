@@ -119,24 +119,18 @@ static void HandleControlKey(char *ch) {
       }
       break;
     case CT:  // CTRL - T
-      if (local_echo) {
-        PrintTime();
-      }
+      PrintTime();
       break;
-    case CU:  // CTRL-U
-      if (local_echo) {
-        SavedLine line = bout.SaveCurrentLine();
-        bout.Color(0);
-        bout.nl(2);
-        multi_instance();
-        bout.nl();
-        bout.RestoreCurrentLine(line);
-      }
-      break;
+    case CU: {  // CTRL-U
+      SavedLine line = bout.SaveCurrentLine();
+      bout.Color(0);
+      bout.nl(2);
+      multi_instance();
+      bout.nl();
+      bout.RestoreCurrentLine(line);
+    } break;
     case 18: // CR
-      if (local_echo) {
-        RedrawCurrentLine();
-      }
+      RedrawCurrentLine();
       break;
     case CL:  // CTRL - L
       if (so()) {

@@ -125,7 +125,6 @@ void frequent_init() {
   a()->SetUserOnline(false);
   change_color = 0;
   chatting = 0;
-  local_echo = true;
   irt[0] = '\0';
   irt_name[0] = '\0';
   bout.clear_lines_listed();

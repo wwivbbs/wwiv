@@ -56,7 +56,6 @@ equote;
 __EXTRN__ bool  bChatLine,
           newline,
           forcescansub,
-          local_echo,
           guest_user,
           no_hangup,
           smwcheck,

@@ -576,8 +576,6 @@ void chat1(const char *chat_line, bool two_way) {
   SavedLine line = bout.SaveCurrentLine();
   s1[0] = '\0';
 
-  bool oe = local_echo;
-  local_echo = true;
   bout.nl(2);
   int nSaveTopData = a()->topdata;
   if (two_way) {
@@ -674,7 +672,6 @@ void chat1(const char *chat_line, bool two_way) {
   if (a()->IsUserOnline()) {
     a()->UpdateTopScreen();
   }
-  local_echo = oe;
   bout.RestoreCurrentLine(line);
 
   if (okansi()) {
