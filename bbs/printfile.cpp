@@ -35,11 +35,14 @@
 #include "bbs/application.h"
 #include "core/wwivport.h"
 #include "core/file.h"
+#include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "core/wwivassert.h"
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 char *get_file(const string& filename, long *len) {
@@ -111,59 +114,40 @@ const string CreateFullPathToPrint(const string& basename) {
  * @return true if the file exists and is not zero length
  */
 bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
-  string full_path_name = CreateFullPathToPrint(filename);
-  File f(full_path_name);
-  if (!f.Exists()) {
-	  // No need to print a file that does not exist.
-	  return false;
+  const string full_path_name = CreateFullPathToPrint(filename);
+  {
+    File f(full_path_name);
+    if (!f.Exists()) {
+      // No need to print a file that does not exist.
+      return false;
+    }
+    if (!f.IsFile()) {
+      // Not a file, no need to print a file that is not a file.
+      return false;
+    }
   }
-  if (!f.IsFile()) {
-	  // Not a file, no need to print a file that is not a file.
-	  return false;
-  }
-  long file_size;
-  unique_ptr<char[], void (*)(void*)> ss(get_file(full_path_name.c_str(), &file_size), &std::free);
-  if (!ss) {
-    return false;
-  }
-  long curpos = 0;
-  bool has_ansi = false;
-  while (curpos < file_size) {
-    if (ss[curpos] == ESC) {
-      // if we have an ESC, then this file probably contains
-      // an ansi sequence
-      has_ansi = true;
-    } else if (ss[curpos] == CZ) {
+
+  TextFile tf(full_path_name, "rb");
+  auto v = tf.ReadFileIntoVector();
+  for (const auto& s : v) {
+    bout.bputs(s);
+    bout.nl();
+    bool has_ansi = contains(s, ESC);
+    // If this is an ANSI file, then don't pause
+    // (since we may be moving around
+    // on the screen, unless the caller tells us to pause anyway)
+    if (has_ansi && !bForcePause) bout.clear_lines_listed();
+    if (contains(s, CZ)) {
       // We are done here on a control-Z since that's DOS EOF.  Also ANSI
       // files created with PabloDraw expect that anything after a Control-Z
       // is fair game for metadata and includes SAUCE metadata after it which
       // we do not want to render in the bbs.
       break;
     }
-    if (has_ansi && !bForcePause) {
-      // If this is an ANSI file, then don't pause
-      // (since we may be moving around
-      // on the screen, unless the caller tells us to pause anyway)
-      bout.clear_lines_listed();
-    }
-    bout.bputch(ss[curpos++], true);
-    if (bAbortable) {
-      bool abort = false;
-      checka(&abort);
-      if (abort) {
-        break;
-      }
-      if (bkbhit()) {
-        char ch = bgetch();
-        if (ch == ' ') {
-          break;
-        }
-      }
-    }
+    if (bAbortable && checka()) break;
   }
   bout.flush();
-  // If the file is empty, lets' return false here since nothing was displayed.
-  return file_size > 0;
+  return !v.empty();
 }
 
 /**
