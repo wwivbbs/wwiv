@@ -342,7 +342,9 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     string msgarea = msg.message_area;
     if (msgarea.size() > 35) { msgarea = msgarea.substr(0, 35); }
-    bout << "|#9 Sub|#7: |#" << a()->GetMessageColor() << msgarea;
+    bout << "|#9 Sub|#7: ";
+    bout.Color(a()->GetMessageColor());
+    bout << msgarea;
     if (a()->user()->GetScreenChars() >= 78) {
       auto pad = COLUMN2 - (6 + msgarea.size());
       bout << string(pad, ' ');
@@ -353,9 +355,11 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     }
     bout << "|#9Msg#|#7: ";
     if (msg.message_number > 0 && msg.total_messages > 0) {
-      bout << "[|#" << a()->GetMessageColor() << msg.message_number
-        << "|#7 of |#" << a()->GetMessageColor()
-        << msg.total_messages << "|#7]";
+      bout << "[";
+      bout.Color(a()->GetMessageColor());
+      bout << msg.message_number << "|#7 of ";
+      bout.Color(a()->GetMessageColor());
+      bout << msg.total_messages << "|#7]";
     }
     bout.nl();
     num_header_lines++;
@@ -381,7 +385,9 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     bout << "  |#9To|#7: |#1" << msg.to_user_name << wwiv::endl;
     num_header_lines++;
   }
-  bout << "|#9Subj|#7: |#" << a()->GetMessageColor() << msg.title << wwiv::endl;
+  bout << "|#9Subj|#7: ";
+  bout.Color(a()->GetMessageColor());
+  bout << msg.title << wwiv::endl;
   num_header_lines++;
 
   auto sysname = msg.from_sys_name;

@@ -98,7 +98,8 @@ void kill_old_email() {
       bool done1 = false;
       do {
         bout.nl();
-        bout << "|#1  To|#9: |#" << a()->GetMessageColor();
+        bout << "|#1  To|#9: ";
+        bout.Color(a()->GetMessageColor());
 
         if (m.tosys == 0) {
           a()->users()->ReadUser(&user, m.touser);
@@ -115,7 +116,9 @@ void kill_old_email() {
         bout.bprintf("|#1Subj|#9: |#%d%60.60s\r\n", a()->GetMessageColor(), m.title);
         time_t lCurrentTime = time(nullptr);
         int nDaysAgo = static_cast<int>((lCurrentTime - m.daten) / SECONDS_PER_DAY);
-        bout << "|#1Sent|#9: |#" << a()->GetMessageColor() << nDaysAgo << " days ago" << wwiv::endl;
+        bout << "|#1Sent|#9: ";
+        bout.Color(a()->GetMessageColor());
+        bout << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
           File fileAttach(a()->config()->datadir(), ATTACH_DAT);
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
@@ -275,7 +278,8 @@ void list_users(int mode) {
     a()->usernum = 0;
     if (ncnm > 5) {
       count++;
-      bout << "|#" << color << ".";
+      bout.Color(color);
+      bout << ".";
       if (count == NUM_DOTS) {
         bout.bputs("\r", &abort, &next);
         bout.bputs("|#2Searching ", &abort, &next);

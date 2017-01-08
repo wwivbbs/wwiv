@@ -821,7 +821,8 @@ void nscanall() {
   bout << "\r" << "|#2Searching ";
   for (size_t i = 0; i < a()->directories.size() && !abort && a()->udir[i].subnum != -1; i++) {
     count++;
-    bout << "|#" << color << ".";
+    bout.Color(color);
+    bout << ".";
     if (count >= NUM_DOTS) {
       bout << "\r" << "|#2Searching ";
       color++;
@@ -882,7 +883,8 @@ void searchall() {
     // remove bIsDirMarked=true to search only marked a()->directories
     if (bIsDirMarked) {
       count++;
-      bout << "|#" << color << ".";
+      bout.Color(color);
+      bout << ".";
       if (count >= NUM_DOTS) {
         bout << "\r" << "|#2Searching ";
         color++;

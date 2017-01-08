@@ -33,14 +33,6 @@
 #include "bbs/local_io.h"
 #include "core/log.h"
 
-#define BPUTCH_LITERAL_PIPE_CODE -1
-#define BPUTCH_NO_CODE 0
-#define BPUTCH_HEART_CODE 1
-#define BPUTCH_AT_MACRO_CODE 2
-#define BPUTCH_PIPE_CODE 3
-#define BPUTCH_CTRLO_CODE 4
-#define BPUTCH_MACRO_CHAR_CODE 5
-
 /**
  * This function executes an ANSI string to change color, position the cursor, etc
  */
@@ -176,88 +168,11 @@ void Output::execute_ansi() {
  * ANSI codes
  */
 int Output::bputch(char c, bool use_buffer) {
-  int nc = 0, displayed = 0;
-  static char pipe_color[3];
+  int displayed = 0;
 
-  if (change_color == BPUTCH_MACRO_CHAR_CODE) {
-    change_color = BPUTCH_NO_CODE;
-    BbsMacroContext ctx(a()->user());
-    return bputs(interpret(c, ctx));
-  } else if (change_color == BPUTCH_CTRLO_CODE) {
-    if (c == CO) {
-      change_color = BPUTCH_MACRO_CHAR_CODE;
-    } else {
-      change_color = BPUTCH_NO_CODE;
-    }
-    return 0;
-  } else if (change_color == BPUTCH_PIPE_CODE) {
-    change_color = BPUTCH_NO_CODE;
-    pipe_color[1] = c;
-    pipe_color[2] = '\0';
-
-    if (isdigit(static_cast<unsigned char>(pipe_color[0]))) {
-      if (isdigit(pipe_color[1]) || (pipe_color[1] == ' ')) {
-        nc = atoi(pipe_color);
-      } else {
-        change_color = BPUTCH_LITERAL_PIPE_CODE;
-      }
-    } else if (pipe_color[0] == ' ' && isdigit(pipe_color[1])) {
-      nc = atoi(pipe_color + 1);
-    } else if (pipe_color[0] == '#') {
-      Color(atoi(pipe_color + 1));
-      return 0;
-    } else {
-      change_color = BPUTCH_LITERAL_PIPE_CODE;
-    }
-    if (nc >= SPACE) {
-      change_color = BPUTCH_LITERAL_PIPE_CODE;
-    }
-
-
-    if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
-      bout << "|" ;
-      return bputs(pipe_color) + 1;
-    } else {
-      char szAnsiColorCode[20];
-      if (nc < 16) {
-        makeansi((curatr & 0xf0) | nc, szAnsiColorCode, false);
-      } else {
-        makeansi((curatr & 0x0f) | (nc << 4), szAnsiColorCode, false);
-      }
-      bputs(szAnsiColorCode);
-    }
-    return 0; // color was printed, no chars displayed
-  } else if (change_color == BPUTCH_AT_MACRO_CODE) {
-    // RF20020908 - Mod to allow |@<macro char> macros in WWIV
-    if (c == '@') {
-      change_color = BPUTCH_MACRO_CHAR_CODE;
-      return 0;
-    }
-    pipe_color[0] = c;
-    change_color = BPUTCH_PIPE_CODE;
-    return 0;
-  } else if (change_color == BPUTCH_HEART_CODE) {
-    change_color = BPUTCH_NO_CODE;
-    if ((c >= SPACE) && (static_cast<unsigned char>(c) <= 126)) {
-      Color(static_cast<unsigned char>(c) - 48);
-    }
-    return 0;
-  }
-
-  if (c == CC) {
-    change_color = BPUTCH_HEART_CODE;
-    return 0;
-  } else if (c == CO) {
-    change_color = BPUTCH_CTRLO_CODE;
-    return 0;
-  } else if (c == '|' && change_color != BPUTCH_LITERAL_PIPE_CODE) {
-    change_color = BPUTCH_AT_MACRO_CODE;
-    return 0;
-  } else if (c == SOFTRETURN && !endofline_.empty()) {
+  if (c == SOFTRETURN && !endofline_.empty()) {
     displayed = bputs(endofline_);
     endofline_.clear();
-  } else if (change_color == BPUTCH_LITERAL_PIPE_CODE) {
-    change_color = BPUTCH_NO_CODE;
   }
   if (outcom && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {

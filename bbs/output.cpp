@@ -58,14 +58,10 @@ std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize num_ch
     // is not what we want, so pretend that we emitted all of the characters.
     return num_chars;
   }
-  for (int i = 0; i < num_chars; i++) {
-    if (text[i] == 0) {
-      // Hit an embedded \0, stop early.
-      break;
-    }
-    bout.bputch(text[i], true);
-  }
-  bout.flush();
+  bout.bputs(string(text, static_cast<unsigned int>(num_chars)));
+
+  // From a stream, we want to return the number of chars, including
+  // color codes.
   return num_chars;
 }
 
@@ -105,7 +101,7 @@ void Output::ResetColors() {
 void Output::GotoXY(int x, int y) {
   if (okansi()) {
     y = std::min<int>(y, a()->screenlinest);    // Don't get Y get too big or mTelnet will not be happy
-    *this << "\x1b[" << y << ";" << x << "H";
+    bputs(StrCat("\x1b[", y, ";", x, "H"));
   }
 }
 
@@ -192,12 +188,11 @@ void Output::litebar(const char *formatText, ...) {
     *this << "\x1B[0;1;37m" << string(strlen(s1) + 4, '\xDC') << wwiv::endl;
     *this << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
     *this << "\x1B[0;1;30m" << string(strlen(s1) + 4, '\xDF') << wwiv::endl;
-  } else {
+  }` else {
     *this << std::string(i, ' ') << s << wwiv::endl;
   }
 #else
-  const string header = StringPrintf("|17|15 %-78s", s);
-  bout << header << "|#0\r\n\n";
+  bputs(StrCat(StringPrintf("|17|15 %-78s", s), "|#0\r\n\n"));
 #endif
 }
 
@@ -241,9 +236,9 @@ void Output::mpl(int length) {
 }
 
 template <typename T>
-static int pipecode_int(T& it, const T end) {
+static int pipecode_int(T& it, const T end, int num_chars) {
   std::string s;
-  while (it != end && std::isdigit(static_cast<uint8_t>(*it))) {
+  while (it != end && num_chars-- > 0 && std::isdigit(static_cast<uint8_t>(*it))) {
     s.push_back(*it);
     it++; 
   }
@@ -262,8 +257,15 @@ int Output::bputs(const string& text) {
       it++;
       if (it == end) { bputch('|');  break; }
       if (std::isdigit(*it)) {
-        int color = pipecode_int(it, end);
-        bout.SystemColor(color);
+        int color = pipecode_int(it, end, 2);
+        if (color < 16) {
+          bout.SystemColor(color | (curatr & 0xf0));
+        }
+        else {
+          uint8_t bg = static_cast<uint8_t>(color) << 4;
+          uint8_t fg = curatr & 0x0f;
+          bout.SystemColor(bg | fg);
+        }
       }
       else if (*it == '@') {
         it++;
@@ -273,17 +275,21 @@ int Output::bputs(const string& text) {
       }
       else if (*it == '#') {
         it++;
-        int color = pipecode_int(it, end);
+        int color = pipecode_int(it, end, 1);
         bout.Color(color);
       }
     }
     else if (*it == CC) {
       it++;
       if (it == end) { bputch(CC);  break; }
-      int color = pipecode_int(it, end);
-      bout.Color(color);
+      unsigned char c = *it++;
+      if (c >= SPACE && c <= 126) {
+        Color(c - '0');
+      }
     }
     else if (*it == CO) {
+      it++;
+      if (it == end) { bputch(CO);  break; }
       it++;
       if (it == end) { bputch(CO);  break; }
       BbsMacroContext ctx(a()->user());

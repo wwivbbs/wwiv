@@ -1059,7 +1059,7 @@ void list_confs(ConferenceType conftype, int ssc) {
   bout.bpla("|#7\xC9\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
 
   for (i = 0; (i < num && !abort); i++) {
-    sprintf(s, "%c\xCD|17|15 %c |B0|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
+    sprintf(s, "%c\xCD|17|15 %c |16|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
             (i == (num - 1)) ? '\xC8' : '\xCC', cp[i].designator, cp[i].name, cp[i].minsl,
             cp[i].maxsl, cp[i].mindsl, cp[i].maxdsl, cp[i].minage, cp[i].maxage,
             cp[i].minbps, word_to_arstr(cp[i].ar));

@@ -864,7 +864,7 @@ void download() {
             size_t dn = 0;
             while ((dn < a()->directories.size()) && (a()->udir[dn].subnum != -1)) {
               count++;
-              bout << "|#" << color;
+              bout.Color(color);
               if (count == NUM_DOTS) {
                 bout << "\r";
                 bout.Color(color);

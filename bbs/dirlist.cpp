@@ -88,7 +88,7 @@ void dirlist(int mode) {
         }
         dliscan1(directory_number);
         if (a()->current_user_dir().subnum == a()->udir[i1].subnum) {
-          sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|17|15 %-40.40s |#9\xB3 |#9%4d|B0",
+          sprintf(s, " |#9%3s |#9\xB3 |#6%3s |#9\xB3|17|15 %-40.40s |#9\xB3 |#9%4d|16",
                   a()->udir[i1].keys, scanme.c_str(), a()->directories[directory_number].name,
                   a()->numf);
         } else {

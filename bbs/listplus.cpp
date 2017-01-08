@@ -401,35 +401,10 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
     extdesc_pos = -1;
   }
 
-  file_information += "\r\n";
-  cpos = 0;
-  while (file_information[cpos] && numl < LinesLeft) {
-    do {
-      ch = file_information[cpos];
-      if (!ch) {
-        continue;
-      }
-      ++cpos;
-    } while (ch == '\r' && ch);
-
-    if (!ch) {
-      break;
-    }
-
-    if (ch == SOFTRETURN) {
-      bout.nl();
-      chars_this_line = 0;
-      char_printed = 0;
-      ++numl;
-    } else if (chars_this_line > will_fit && ch) {
-      do {
-        ch = file_information[cpos++];
-      } while (ch != '\n' && ch != 0);
-      --cpos;
-    } else if (ch) {
-      chars_this_line += bout.bputch(ch);
-    }
-  }
+  string fi = trim_to_size_ignore_colors(file_information, will_fit);
+  fi += "\r\n";
+  bout.bputs(fi);
+  numl++;
 
   if (extdesc_pos > 0) {
     int num_extended, lines_left;
@@ -1885,7 +1860,8 @@ void download_plus(const char *file_name) {
     bout << "\r|#2Searching ";
     while ((dn < a()->directories.size()) && (a()->udir[dn].subnum != -1)) {
       count++;
-      bout << "|#" << color << ".";
+      bout.Color(color);
+      bout << ".";
       if (count == NUM_DOTS) {
         bout << "\r";
         bout << "|#2Searching ";

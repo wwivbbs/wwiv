@@ -648,9 +648,13 @@ void mailr() {
           User user;
           a()->users()->ReadUser(&user, m.touser);
           const string unn = a()->names()->UserName(m.touser);
-          bout << "|#9  To|#7: |#" << a()->GetMessageColor() << unn << wwiv::endl;
+          bout << "|#9  To|#7: ";
+          bout.Color(a()->GetMessageColor());
+          bout << unn << wwiv::endl;
           set_net_num(network_number_from(&m));
-          bout << "|#9Subj|#7: |#" << a()->GetMessageColor() << m.title << wwiv::endl;
+          bout << "|#9Subj|#7: ";
+          bout.Color(a()->GetMessageColor());
+          bout << m.title << wwiv::endl;
           if (m.status & status_file) {
             File attachDat(a()->config()->datadir(), ATTACH_DAT);
             if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
@@ -773,7 +777,7 @@ void zlog() {
       nTimePerUser = z.active / z.calls;
     }
     char szBuffer[255];
-    sprintf(szBuffer, "%s    %4d    %4d     %3d     %3d     %3d    %3d     %3d      %3d|B0",
+    sprintf(szBuffer, "%s    %4d    %4d     %3d     %3d     %3d    %3d     %3d      %3d|16",
             z.date, z.calls, z.active, z.posts, z.email, z.fback, z.up, 10 * z.active / 144, nTimePerUser);
     // alternate colors to make it easier to read across the lines
     if (i % 2) {
