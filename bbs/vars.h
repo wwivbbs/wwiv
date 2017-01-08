@@ -35,23 +35,19 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-__EXTRN__ char  ansistr[81],
-          charbuffer[255],
-          irt[81],
-          irt_name[205],
-          irt_sub[81],
-          *quotes_ind;
+__EXTRN__ char charbuffer[255];
+__EXTRN__ char irt[81];
+__EXTRN__ char irt_name[205];
+__EXTRN__ char irt_sub[81];
+__EXTRN__ char* quotes_ind;
 
 __EXTRN__ unsigned char checksum;
 
-__EXTRN__ int ansiptr,
-bquote,
-change_color,
-charbufferpointer,
-chatting,
-defscreenbottom,
-do_event,
-equote;
+__EXTRN__ int bquote;
+__EXTRN__ int charbufferpointer;
+__EXTRN__ int chatting;
+__EXTRN__ int do_event;
+__EXTRN__ int equote;
 
 __EXTRN__ bool  bChatLine,
           newline,

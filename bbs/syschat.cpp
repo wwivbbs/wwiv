@@ -581,7 +581,7 @@ void chat1(const char *chat_line, bool two_way) {
   if (two_way) {
     a()->localIO()->Cls();
     cp0 = cp1 = 0;
-    if (defscreenbottom == 24) {
+    if (a()->defscreenbottom == 24) {
       a()->topdata = LocalIO::topdataNone;
       a()->UpdateTopScreen();
     }

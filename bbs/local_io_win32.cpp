@@ -373,7 +373,7 @@ void Win32ConsoleIO::set_protect(Application* session, int l) {
   }
   SetTopLine(l);
   if (!session->using_modem) {
-    session->screenlinest = defscreenbottom + 1 - GetTopLine();
+    session->screenlinest = session->defscreenbottom + 1 - GetTopLine();
   }
 }
 

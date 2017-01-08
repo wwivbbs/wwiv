@@ -81,7 +81,7 @@ static void PrintTime() {
   bout.RestoreCurrentLine(line);
 }
 
-static void RedrawCurrentLine() {
+void Output::RedrawCurrentLine() {
   char ansistr_1[81];
 
   int ansiptr_1 = ansiptr;
@@ -130,7 +130,7 @@ static void HandleControlKey(char *ch) {
       bout.RestoreCurrentLine(line);
     } break;
     case 18: // CR
-      RedrawCurrentLine();
+      bout.RedrawCurrentLine();
       break;
     case CL:  // CTRL - L
       if (so()) {

@@ -280,9 +280,9 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   const string sx1 = StringPrintf("%d", a()->user()->GetScreenChars());
   int num_screen_lines = a()->user()->GetScreenLines();
   if (!a()->using_modem) {
-    int newtl = (a()->screenlinest > defscreenbottom - a()->localIO()->GetTopLine()) ? 0 :
+    int newtl = (a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine()) ? 0 :
                 a()->localIO()->GetTopLine();
-    num_screen_lines = defscreenbottom + 1 - newtl;
+    num_screen_lines = a()->defscreenbottom + 1 - newtl;
   }
   const string sx2 = StringPrintf("%d", num_screen_lines);
   const string sx3 = StringPrintf("%d", numlines);

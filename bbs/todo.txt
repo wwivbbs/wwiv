@@ -32,7 +32,6 @@ General Improvements
 * Create wwivutil print command to print files in ANSI with heart and pipe codes
 * make a common ACS system (like TG, vs. having separate SL DSL AR fields everywhere for menus)
 * cleanup menu system. It's awful.
-* move macro interpreting code outside of bputch
 
 Net52
 =====

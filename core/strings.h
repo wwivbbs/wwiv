@@ -66,12 +66,12 @@ bool IsEquals(const char *str1, const char *str2);
 bool IsEqualsIgnoreCase(const char *str1, const char *str2);
 bool iequals(const char* s1, const char* s2);
 bool iequals(const std::string& s1, const std::string& s2);
-int  StringCompareIgnoreCase(const char *str1, const char *str2);
-int  StringCompare(const char *str1, const char *str2);
+int StringCompareIgnoreCase(const char *str1, const char *str2);
+int StringCompare(const char *str1, const char *str2);
 
 int16_t StringToShort(const std::string& s);
 uint16_t StringToUnsignedShort(const std::string& s);
-char StringToChar(const std::string& s);
+int8_t StringToChar(const std::string& s);
 uint8_t StringToUnsignedChar(const std::string& s);
 unsigned int StringToUnsignedInt(const std::string& s);
 int StringToInt(const std::string& s);

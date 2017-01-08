@@ -172,8 +172,8 @@ uint16_t StringToUnsignedShort(const string& s) {
       [](const string& s) { return std::stoul(s); }, s);
 }
 
-char StringToChar(const string& s) {
-  return StringToT<char, int>(
+int8_t StringToChar(const string& s) {
+  return StringToT<int8_t, int>(
       [](const string& s) { return std::stoi(s); }, s);
 }
 

@@ -335,6 +335,7 @@ public:
     topdata = 0,
     using_modem = 0;
   unsigned int screenlinest = 0;
+  int defscreenbottom = 24;
 
   std::string internetPopDomain;
   std::string internetEmailDomain;

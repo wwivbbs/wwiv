@@ -144,6 +144,7 @@ class Output : public std::ostream {
   int wherex();
   bool IsLastKeyLocal() const { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
+  void RedrawCurrentLine();
 
   // Key Timeouts
   std::chrono::duration<double> key_timeout() const;
@@ -158,6 +159,8 @@ class Output : public std::ostream {
 
 public:
   unsigned int lines_listed_;
+  char ansistr[81];
+  int ansiptr = 0;
 
 private:
   std::string bputch_buffer_;

@@ -221,7 +221,7 @@ int CursesLocalIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted
 void CursesLocalIO::set_protect(Application* session, int l) {
   SetTopLine(l);
   if (!session->using_modem) {
-    session->screenlinest = defscreenbottom + 1 - GetTopLine();
+    session->screenlinest = session->defscreenbottom + 1 - GetTopLine();
   }
 }
 
