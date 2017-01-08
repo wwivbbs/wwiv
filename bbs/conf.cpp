@@ -32,12 +32,14 @@
 #include "bbs/pause.h"
 #include "bbs/vars.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static int disable_conf_cnt = 0;
@@ -97,50 +99,28 @@ void reset_disable_conf() {
   disable_conf_cnt = 0;
 }
 
-/*
- * Returns info on conference types
- */
-int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
-                  char *file_name, int *num_s, userconfrec ** uc) {
-  switch (conftype) {
-  case ConferenceType::CONF_SUBS:
-    if (cpp) {
-      *cpp = subconfs;
-    }
-    if (num) {
-      *num = subconfnum;
-    }
-    if (file_name) {
-      auto fn = StrCat(a()->config()->datadir(), SUBS_CNF);
-      strcpy(file_name, fn.c_str());
-    }
-    if (num_s) {
-      *num_s = a()->subs().subs().size();
-    }
-    if (uc) {
-      *uc = uconfsub;
-    }
-    return 0;
-  case ConferenceType::CONF_DIRS:
-    if (cpp) {
-      *cpp = dirconfs;
-    }
-    if (num) {
-      *num = dirconfnum;
-    }
-    if (file_name) {
-      auto fn = StrCat(a()->config()->datadir(), DIRS_CNF);
-      strcpy(file_name, fn.c_str());
-    }
-    if (num_s) {
-      *num_s = a()->directories.size();
-    }
-    if (uc) {
-      *uc = uconfdir;
-    }
-    return 0;
+conf_info_t get_conf_info(ConferenceType conftype) {
+  if (conftype == ConferenceType::CONF_DIRS) {
+    conf_info_t ret(a()->dirconfs, a()->uconfdir);
+    ret.file_name = StrCat(a()->config()->datadir(), DIRS_CNF);
+    ret.num_subs_or_dirs = a()->directories.size();
+    return ret;
   }
-  return 1;
+
+  conf_info_t ret(a()->subconfs, a()->uconfsub);
+  ret.file_name = StrCat(a()->config()->datadir(), SUBS_CNF);
+  ret.num_subs_or_dirs = a()->subs().subs().size();
+  return ret;
+}
+
+static string get_conf_filename(ConferenceType conftype) {
+  if (conftype == ConferenceType::CONF_SUBS) {
+    return StrCat(a()->config()->datadir(), SUBS_CNF);
+  }
+  else if (conftype == ConferenceType::CONF_DIRS) {
+    auto fn = StrCat(a()->config()->datadir(), DIRS_CNF);
+  }
+  return{};
 }
 
 /*
@@ -148,33 +128,30 @@ int get_conf_info(ConferenceType conftype, int *num, confrec ** cpp,
  * conference.
  */
 void jump_conf(ConferenceType conftype) {
-  char s[81], s1[101];
-  confrec *cp = nullptr;
-  userconfrec *uc = nullptr;
-  int nc;
-
   bout.litebar("%s Conference Selection", a()->config()->config()->systemname);
-  get_conf_info(conftype, &nc, &cp, nullptr, nullptr, &uc);
+  conf_info_t info = get_conf_info(conftype);
   bool abort = false;
-  strcpy(s, " ");
+  string allowable = " ";
   bout.nl();
-  for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
-    sprintf(s1, "|#2%c|#7)|#1 %s", cp[uc[i].confnum].designator,
-            stripcolors(reinterpret_cast<char*>(cp[uc[i].confnum].name)));
-    bout.bpla(s1, &abort);
-    s[i + 1] = cp[uc[i].confnum].designator;
-    s[i + 2] = '\0';
+  for (const auto& uc : info.uc) {
+    if (uc.confnum == -1 || abort) break;
+    const auto d = StringPrintf("|#2%c|#7)|#1 %s", 
+      info.confs[uc.confnum].designator,
+      stripcolors(reinterpret_cast<char*>(info.confs[uc.confnum].name)));
+    bout.bpla(d, &abort);
+    allowable.push_back(info.confs[uc.confnum].designator);
   }
 
   bout.nl();
-  bout << "|#2Select [" << &s[1] << ", <space> to quit]: ";
-  char ch = onek(s);
-  if (ch != ' ') {
-    for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
-      if (ch == cp[uc[i].confnum].designator) {
-        setuconf(conftype, i, -1);
-        break;
-      }
+  bout << "|#2Select [" << allowable.substr(1) << ", <space> to quit]: ";
+  char ch = onek(allowable);
+  if (ch == ' ') {
+    return;
+  }
+  for (size_t i = 0; i < info.uc.size() && info.uc[i].confnum != -1; i++) {
+    if (ch == info.confs[info.uc[i].confnum].designator) {
+      setuconf(conftype, i, -1);
+      break;
     }
   }
 }
@@ -184,35 +161,19 @@ void jump_conf(ConferenceType conftype) {
  * type.
  */
 void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, int action) {
-  confrec *cp = nullptr;
-  int nc, num_s;
   int pos1, pos2;
   int i, i1;
   confrec c;
 
-  if (get_conf_info(conftype, &nc, &cp, nullptr, &num_s, nullptr)) {
-    return;
-  }
-
-  if (!nc || !cp) {
-    return;
-  }
+  auto info = get_conf_info(conftype);
 
   switch (action) {
   case CONF_UPDATE_INSERT:
     if (!sub1) {
       return;
     }
-    for (i = 0; i < nc; i++) {
-      c = cp[i];
-      if ((c.num) && (c.subs)) {
-        for (i1 = 0; i1 < c.num; i1++) {
-          if (c.subs[i1] >= *sub1) {
-            c.subs[i1] = c.subs[i1] + 1;
-          }
-        }
-      }
-      cp[i] = c;
+    for (auto& c : info.confs) {
+      c.subs.insert(*sub1);
     }
     save_confs(conftype, -1, nullptr);
     break;
@@ -220,37 +181,26 @@ void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, in
     if (!sub1) {
       return;
     }
-    for (i = 0; i < nc; i++) {
-      c = cp[i];
-      if ((c.num) && (c.subs)) {
-        if (in_conference(*sub1, &c) != -1) {
-          delsubconf(conftype, &c, sub1);
-        }
-      }
-      for (i1 = 0; i1 < c.num; i1++) {
-        if (c.subs[i1] >= *sub1) {
-          c.subs[i1] = c.subs[i1] - 1;
-        }
-      }
-      cp[i] = c;
+    for (auto& c : info.confs) {
+      c.subs.erase(*sub1);
     }
     save_confs(conftype, -1, nullptr);
     break;
   case CONF_UPDATE_SWAP:
-    if ((!sub1) || (!sub2)) {
+    if (!sub1 || !sub2) {
       return;
     }
-    for (i = 0; i < nc; i++) {
-      c = cp[i];
-      pos1 = in_conference(*sub1, &c);
-      pos2 = in_conference(*sub2, &c);
-      if (pos1 != -1) {
-        c.subs[pos1] = *sub2;
+    for (auto& c : info.confs) {
+      bool has1 = in_conference(*sub1, &c);
+      bool has2 = in_conference(*sub2, &c);
+      if (has1) {
+        c.subs.erase(*sub1);
+        c.subs.insert(*sub2);
       }
-      if (pos2 != -1) {
-        c.subs[pos2] = *sub1;
+      if (has2) {
+        c.subs.erase(*sub2);
+        c.subs.insert(*sub1);
       }
-      cp[i] = c;
     }
     save_confs(conftype, -1, nullptr);
     break;
@@ -262,44 +212,29 @@ void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, in
  * type.
  */
 char first_available_designator(ConferenceType conftype) {
-  confrec *cp = nullptr;
-  int nc;
-
-  if (get_conf_info(conftype, &nc, &cp, nullptr, nullptr, nullptr)  || nc == MAX_CONFERENCES) {
+  auto info = get_conf_info(conftype);
+  if (info.confs.size() == MAX_CONFERENCES) {
     return 0;
   }
-
-  for (int i = 0; i < MAX_CONFERENCES; i++) {
-    int i1;
-    for (i1 = 0; i1 < nc; i1++) {
-      if (cp[i1].designator == ('A' + i)) {
-        break;
-      }
-    }
-    if (i1 >= nc) {
-      return static_cast<char>(i + 'A');
-    }
+  if (info.confs.empty()) {
+    return 'A';
   }
-
-  return 0;
+  auto last = info.confs.back();
+  return last.designator + 1;
 }
 
 /*
  * Returns 1 if subnum is allocated to conference c, 0 otherwise.
  */
-int in_conference(int subnum, confrec * c) {
-  int nInit = -1;
-
-  if (!c || !c->subs || c->num == 0) {
-    return -1;
+bool in_conference(subconf_t subnum, confrec * c) {
+  if (!c) {
+    return false;
   }
-  for (unsigned short i = 0; i < c->num; i++) {
-    if (nInit == -1 && c->subs[i] == subnum) {
-      nInit = i;
+  for (const auto& s : c->subs) {
+    if (s == subnum) {
+      return true;
     }
   }
-
-  return nInit;
 }
 
 /*
@@ -359,49 +294,50 @@ void save_confs(ConferenceType conftype, int whichnum, confrec * c) {
   f.Close();
 }
 
+static std::string create_conf_str(std::set<char> chars) {
+  std::string s;
+  for (const auto& c : chars) {
+    s.push_back(c);
+  }
+  return s;
+}
+
 /*
  * Lists subs/dirs/whatever allocated to a specific conference.
  */
 void showsubconfs(ConferenceType conftype, confrec * c) {
-  char s[120], szIndex[5], confstr[MAX_CONFERENCES + 1], ts[2];
+  char s[120], szIndex[5], ts[2];
 
   if (!c) {
     return;
   }
 
-  int num, nc;
-  confrec *cp;
-  if (get_conf_info(conftype, &nc, &cp, nullptr, &num, nullptr)) {
-    return;
-  }
+  auto info = get_conf_info(conftype);
 
   bool abort = false;
-  bout.bpla("|#2NN  Name                                    Indx ConfList", &abort);
-  bout.bpla("|#7--- ======================================= ---- ==========================", &abort);
+  bout.bpla("|#2NN  Name                                    ConfList", &abort);
+  bout.bpla("|#7--- ======================================= ==========================", &abort);
 
-  for (int i = 0; i < num && !abort; i++) {
-    int test = in_conference(i, c);
-    sprintf(szIndex, "%d", test);
-
+  int i = 0;
+  for (const auto& c : info.confs)
+  for (int i = 0; i < info.num_subs_or_dirs && !abort; i++) {
     // build conf list string
-    strcpy(confstr, "");
-    for (int i1 = 0; i1 < nc; i1++) {
-      if (in_conference(i, &cp[i1]) != -1) {
-        sprintf(ts, "%c", cp[i1].designator);
-        strcat(confstr, ts);
+    std::set<char> confs;
+    for (int i1 = 0; i1 < info.num_confs; i1++) {
+      if (in_conference(i, &info.confs[i1])) {
+        confs.insert(info.confs[i1].designator);
       }
     }
-    sort_conf_str(confstr);
+    auto confstr = create_conf_str(confs);
 
     switch (conftype) {
     case ConferenceType::CONF_SUBS:
-      sprintf(s, "|#1%3d |#2%-39.39s |#7%4.4s %s", i, 
-        stripcolors(a()->subs().sub(i).name.c_str()),
-              (test > -1) ? szIndex : charstr(4, '-'), confstr);
+      sprintf(s, "|#2%3d |#9%-39.39s |#1%s", i, 
+        stripcolors(a()->subs().sub(i).name.c_str()), confstr.c_str());
       break;
     case ConferenceType::CONF_DIRS:
-      sprintf(s, "|#1%3d |#2%-39.39s |#9%4.4s %s", i, stripcolors(a()->directories[i].name),
-              (test > -1) ? szIndex : charstr(4, '-'), confstr);
+      sprintf(s, "|#2%3d |#9%-39.39s |#1%s", i, stripcolors(a()->directories[i].name),
+              confstr.c_str());
       break;
     }
     bout.bpla(s, &abort);
@@ -484,12 +420,9 @@ void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
     return;
   }
 
-  int num;
-  if (get_conf_info(conftype, nullptr, nullptr, nullptr, &num, nullptr)) {
-    return;
-  }
+  auto info = get_conf_info(conftype);
 
-  if (num < 1) {
+  if (info.num_subs_or_dirs < 1) {
     return;
   }
 
@@ -511,27 +444,15 @@ void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
   }
 
   // add the subconfs now
-  for (auto nConference : intlist) {
-    if (nConference >= num) {
+  for (auto cn : intlist) {
+    if (cn >= info.num_subs_or_dirs) {
       break;
     }
-    if (in_conference(nConference, c) > -1) {
+    if (in_conference(cn, c)) {
       continue;
     }
-    if (c->num >= c->maxnum) {
-      c->maxnum = c->maxnum + static_cast<uint16_t>(CONF_MULTIPLE);
-      subconf_t *tptr = static_cast<subconf_t *>(BbsAllocA(c->maxnum * sizeof(subconf_t)));
-      if (tptr) {
-        memmove(tptr, c->subs, (c->maxnum - CONF_MULTIPLE) * sizeof(subconf_t));
-        free(c->subs);
-        c->subs = tptr;
-      } else {
-        bout << "|#6Not enough memory left to insert anything.\r\n";
-        return;
-      }
-    }
-    c->subs[c->num] = static_cast<uint16_t>(nConference);
-    c->num++;
+    c->subs.insert(cn);
+    c->num = c->subs.size();
   }
 }
 
@@ -540,12 +461,7 @@ void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
  * Function to delete one subconf (sub/dir/whatever) from a conference.
  */
 void delsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
-  if (!c || !c->subs || c->num < 1) {
-    return;
-  }
-
-  int num;
-  if (get_conf_info(conftype, nullptr, nullptr, nullptr, &num, nullptr)) {
+  if (!c || c->subs.empty()) {
     return;
   }
 
@@ -562,18 +478,11 @@ void delsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
     intlist.push_back(*which);
   }
 
-  for (auto nConference : intlist) {
-    if (nConference >= num) {
-      break;
+  for (auto cn : intlist) {
+    if (in_conference(cn, c)) {
+      c->subs.erase(cn);
+      c->num = c->subs.size();
     }
-    int pos = in_conference(nConference, c);
-    if (pos < 0) {
-      continue;
-    }
-    for (int i2 = pos; i2 < c->num; i2++) {
-      c->subs[i2] = c->subs[i2 + 1];
-    }
-    c->num--;
   }
 }
 
@@ -601,18 +510,13 @@ int modify_conf(ConferenceType conftype,  int which) {
   int  changed = 0;
   bool ok   = false;
   bool done = false;
-  int num, ns;
   subconf_t i;
   char ch, ch1, s[81];
 
   int n = which;
 
-  confrec *cp;
-  if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= static_cast<int>(num))) {
-    return 0;
-  }
-
-  confrec c = cp[n];
+  auto info = get_conf_info(conftype);
+  confrec& c = info.confs[n];
 
   do {
     char szGenderAllowed[ 21 ];
@@ -644,49 +548,32 @@ int modify_conf(ConferenceType conftype,  int which) {
     ch = onek("QSABCDEFGHIJKLMNO[]", true);
 
     switch (ch) {
-    case '[':
-      cp[n] = c;
+    case '[': {
       save_confs(conftype, n, nullptr);
-      if (n == 0) {
-        for (n = MAX_CONFERENCES; get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num); n--)
-          ;
-      } else {
-        --n;
+      n--;
+      if (n < 1) {
+        n = std::max<int>(0, info.confs.size() - 1);
       }
-      if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num)) {
-        n = 0;
-        if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= static_cast<int>(num))) {
-          return 0;
-        }
-      }
-      c = cp[n];
-      continue;
+      c = info.confs[n];
+    } break;
     case ']':
-      cp[n] = c;
       save_confs(conftype, n, nullptr);
-      if (n == num) {
+      n++;
+      if (n >= info.confs.size()) {
         n = 0;
-      } else {
-        ++n;
       }
-      if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num)) {
-        n = 0;
-        if (get_conf_info(conftype, &num, &cp, nullptr, &ns, nullptr) || (n >= num)) {
-          return 0;
-        }
-      }
-      c = cp[n];
+      c = info.confs[n];
       continue;
     case 'A':
       bout.nl();
       bout << "|#2New Designator: ";
       ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
       ok = true;
-      for (i = 0; i < num; i++) {
+      for (i = 0; i < info.confs.size(); i++) {
         if (i == n) {
           i++;
         }
-        if (ok && cp && (cp[i].designator == ch1)) {
+        if (ok && (info.confs[i].designator == ch1)) {
           ok = false;
         }
       }
@@ -873,19 +760,14 @@ int modify_conf(ConferenceType conftype,  int which) {
           changed = 1;
           break;
         case 'C':
-          for (i = 0; i < ns; i++) {
-            if (in_conference(i, &c) > -1) {
-              delsubconf(conftype, &c, &i);
-              changed = 1;
-            }
-          }
+          c.subs.clear();
+          changed = 1;
           break;
         case 'F':
-          for (i = 0; i < ns; i++) {
-            if (in_conference(i, &c) < 0) {
-              addsubconf(conftype, &c, &i);
-              changed = 1;
-            }
+          for (i = 0; i < info.num_subs_or_dirs; i++) {
+            c.subs.insert(i);
+            c.num = c.subs.size();
+            changed = 1;
           }
           break;
         case 'Q':
@@ -897,12 +779,6 @@ int modify_conf(ConferenceType conftype,  int which) {
           break;
         }
       } while (!ok);
-      for (i = 0; i < ns; i++) {
-        if (in_conference(i, &c) > -1) {
-          delsubconf(conftype, &c, &i);
-          addsubconf(conftype, &c, &i);
-        }
-      }
       break;
     case 'Q':
       done = true;
@@ -910,7 +786,6 @@ int modify_conf(ConferenceType conftype,  int which) {
     }
   } while (!done && !hangup);
 
-  cp[n] = c;
   return changed;
 }
 
@@ -919,12 +794,9 @@ int modify_conf(ConferenceType conftype,  int which) {
  * Function for inserting one conference.
  */
 void insert_conf(ConferenceType conftype,  int n) {
-  confrec c;
-  int num;
 
-  if (get_conf_info(conftype, &num, nullptr, nullptr, nullptr, nullptr) || (n > num)) {
-    return;
-  }
+  auto info = get_conf_info(conftype);
+  confrec c{};
 
   c.designator = first_available_designator(conftype);
 
@@ -946,6 +818,10 @@ void insert_conf(ConferenceType conftype,  int n) {
   c.dar = 0;
   c.num = 0;
   c.subs = nullptr;
+
+  if (!insert_at(info.confs, n, c)) {
+    LOG(ERROR) << "Error inserting conference.";
+  }
 
   save_confs(conftype, n, &c);
 
@@ -1048,45 +924,44 @@ void conf_edit(ConferenceType conftype) {
 void list_confs(ConferenceType conftype, int ssc) {
   char s[121], s1[121];
   bool abort = false;
-  int i, i2, num, num_s;
-  confrec *cp;
+  int i, i2;
 
-  if (get_conf_info(conftype, &num, &cp, nullptr, &num_s, nullptr)) {
-    return;
-  }
+  auto ret = get_conf_info(conftype);
 
   bout.bpla("|#2  Des Name                    LSL HSL LDSL HDSL LAge HAge LoBPS AR  DAR S A W", &abort);
   bout.bpla("|#7\xC9\xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD \xCD\xCD\xCD\xCD\xCD \xCD\xCD\xCD \xCD\xCD\xCD \xCD \xCD \xCD", &abort);
 
-  for (i = 0; (i < num && !abort); i++) {
+  for (const auto& cp : ret.confs) {
+    if (abort) break;
     sprintf(s, "%c\xCD|17|15 %c |16|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
-            (i == (num - 1)) ? '\xC8' : '\xCC', cp[i].designator, cp[i].name, cp[i].minsl,
-            cp[i].maxsl, cp[i].mindsl, cp[i].maxdsl, cp[i].minage, cp[i].maxage,
-            cp[i].minbps, word_to_arstr(cp[i].ar));
+            '\xCC', 
+            cp.designator, cp.name, cp.minsl,
+            cp.maxsl, cp.mindsl, cp.maxdsl, cp.minage, cp.maxage,
+            cp.minbps, word_to_arstr(cp.ar));
     sprintf(s1, "%-3.3s %c %1.1s %1.1s",
-            word_to_arstr(cp[i].dar),
-            (cp[i].sex) ? ((cp[i].sex == 2) ? 'A' : 'F') : 'M',
-            YesNoString((cp[i].status & conf_status_ansi) ? true : false),
-            YesNoString((cp[i].status & conf_status_wwivreg)  ? true : false));
+            word_to_arstr(cp.dar),
+            (cp.sex) ? ((cp.sex == 2) ? 'A' : 'F') : 'M',
+            YesNoString((cp.status & conf_status_ansi) ? true : false),
+            YesNoString((cp.status & conf_status_wwivreg)  ? true : false));
     strcat(s, s1);
     bout.Color(7);
     bout.bpla(s, &abort);
     if (a()->HasConfigFlag(OP_FLAGS_SHOW_HIER)) {
-      if ((cp[i].num > 0) && (cp[i].subs != nullptr) && (ssc)) {
-        for (i2 = 0; ((i2 < cp[i].num) && !abort); i2++) {
-          if (cp[i].subs[i2] < num_s) {
+      if ((cp.num > 0) && (cp.subs != nullptr) && (ssc)) {
+        for (i2 = 0; ((i2 < cp.num) && !abort); i2++) {
+          if (cp.subs[i2] < ret.num_subs_or_dirs) {
             bout.Color(7);
             sprintf(s, "%c  %c\xC4\xC4\xC4 |#9",
-                    (i != (num - 1)) ? '\xBA' : ' ',
-                    (i2 == (cp[i].num - 1)) ? '\xC0' : '\xC3');
+                    ' ',
+                    (i2 == (cp.num - 1)) ? '\xC0' : '\xC3');
             switch (conftype) {
             case ConferenceType::CONF_SUBS:
-              sprintf(s1, "%s%-3d : %s", "Sub #", subconfs[i].subs[i2],
-                      stripcolors(a()->subs().sub(cp[i].subs[i2]).name.c_str()));
+              sprintf(s1, "%s%-3d : %s", "Sub #", a()->subconfs[i].subs[i2],
+                      stripcolors(a()->subs().sub(cp.subs[i2]).name.c_str()));
               break;
             case ConferenceType::CONF_DIRS:
               sprintf(s1, "%s%-3d : %s", "Dir #", dirconfs[i].subs[i2],
-                      stripcolors(a()->directories[cp[i].subs[i2]].name));
+                      stripcolors(a()->directories[cp.subs[i2]].name));
               break;
             }
             strcat(s, s1);
@@ -1168,245 +1043,29 @@ int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs)
  * file for that conference type already exists.
  */
 bool create_conf_file(ConferenceType conftype) {
-  char szFileName[MAX_PATH];
-  int num;
-
-  if (get_conf_info(conftype, nullptr, nullptr, szFileName, &num, nullptr)) {
-    return false;
-  }
-
-  TextFile f(szFileName, "wt");
+  conf_info_t info = get_conf_info(conftype);
+  TextFile f(info.file_name, "wt");
   if (!f.IsOpen()) {
     return false;
   }
 
-  f.WriteFormatted("%s\n\n", "/* !!!-!!! Do not edit this file - use WWIV's conf editor! !!!-!!! */");
-  f.WriteFormatted("~A General\n!0 0 255 0 255 0 255 0 2 - -\n@");
-  for (int i = 0; i < num; i++) {
-    f.WriteFormatted("%d ", i);
+  f.WriteLine("/* !!!-!!! Do not edit this file - use WWIV's conf editor! !!!-!!! */");
+  f.WriteLine("");
+  std::ostringstream ss;
+  ss << "~A General\n!0 0 255 0 255 0 255 0 2 - -\n@";
+  for (int i = 0; i < info.num_subs_or_dirs; i++) {
+    ss << i << " ";
   }
-  f.WriteFormatted("\n\n");
-
+  f.WriteLine(ss.str());
+  f.WriteLine("");
   f.Close();
   return true;
 }
 
-
 /*
- * Reads in conferences and returns pointer to conference data. Out-of-memory
- * messages are shown if applicable.
- */
-static confrec *read_conferences(const char *file_name, unsigned int *nc, int max) {
-  char ts[128], *ss;
-  int i, i1, i2, i3, cc = 0;
-  bool ok = true;
-
-  *nc = get_num_conferences(file_name);
-  if (*nc < 1) {
-    return nullptr;
-  }
-
-  if (!File::Exists(file_name)) {
-    return nullptr;
-  }
-
-  TextFile f(file_name, "rt");
-  if (!f.IsOpen()) {
-    return nullptr;
-  }
-
-  unsigned long l = static_cast<long>(*nc) * sizeof(confrec);
-  confrec *conferences = static_cast<confrec *>(BbsAllocA(l));
-  WWIV_ASSERT(conferences != nullptr);
-  if (!conferences) {
-    LOG(ERROR) << "Out of memory reading file [" << file_name << "].";
-    f.Close();
-    return nullptr;
-  }
-  memset(conferences, 0, l);
-  char* ls = static_cast<char*>(BbsAllocA(MAX_CONF_LINE));
-  if (!ls) {
-    f.Close();
-    return nullptr;
-  }
-  while (f.ReadLine(ls, MAX_CONF_LINE) && cc < MAX_CONFERENCES) {
-    int nw = wordcount(ls, DELIMS_WHITE);
-    if (nw) {
-      strncpy(ts, extractword(1, ls, DELIMS_WHITE), sizeof(ts));
-      if (ts[0]) {
-        switch (ts[0]) {
-        case '~':
-          if ((nw > 1) && (strlen(ts) > 1) && (strlen(ls) > 3)) {
-            char * bs = strtok(&ls[3], "\r\n");
-            if (bs) {
-              conferences[cc].designator = ts[1];
-              strncpy(reinterpret_cast<char*>(conferences[cc].name), bs, sizeof(conferences[cc].name));
-            }
-          }
-          break;
-        case '!':
-          if ((!conferences[cc].designator) || (nw != 11)) {
-            break;
-          }
-          for (i = 1; i <= nw; i++) {
-            strncpy(ts, extractword(i, ls, DELIMS_WHITE), sizeof(ts));
-            switch (i) {
-            case 1:
-              if (strlen(ts) >= 2) {
-                conferences[cc].status = StringToUnsignedShort(&ts[1]);
-              }
-              break;
-            case 2:
-              conferences[cc].minsl = StringToUnsignedChar(ts);
-              break;
-            case 3:
-              conferences[cc].maxsl = StringToUnsignedChar(ts);
-              break;
-            case 4:
-              conferences[cc].mindsl = StringToUnsignedChar(ts);
-              break;
-            case 5:
-              conferences[cc].maxdsl = StringToUnsignedChar(ts);
-              break;
-            case 6:
-              conferences[cc].minage = StringToUnsignedChar(ts);
-              break;
-            case 7:
-              conferences[cc].maxage = StringToUnsignedChar(ts);
-              break;
-            case 8:
-              conferences[cc].minbps = StringToUnsignedShort(ts);
-              break;
-            case 9:
-              conferences[cc].sex = StringToUnsignedChar(ts);
-              break;
-            case 10:
-              conferences[cc].ar = static_cast<uint16_t>(str_to_arword(ts));
-              break;
-            case 11:
-              conferences[cc].dar = static_cast<uint16_t>(str_to_arword(ts));
-              break;
-            }
-          }
-          break;
-        case '@':
-          if (!conferences[cc].designator) {
-            break;
-          }
-          if (strlen(extractword(1, ls, DELIMS_WHITE)) < 2) {
-            conferences[cc].num = 0;
-          } else {
-            conferences[cc].num = static_cast<uint16_t>(nw);
-          }
-          conferences[cc].maxnum = conferences[cc].num;
-          l = static_cast<long>(conferences[cc].num * sizeof(unsigned int) + 1);
-          conferences[cc].subs = static_cast<unsigned short *>(BbsAllocA(l));
-          WWIV_ASSERT(conferences[cc].subs != nullptr);
-          ok = (conferences[cc].subs != nullptr) ? true : false;
-          if (ok) {
-            memset(conferences[cc].subs, 0, l);
-          } else {
-            LOG(ERROR) << "Out of memory on conference file #" << cc + 1 << ", "
-                       << a()->config()->datadir() << file_name << ".";
-            for (i2 = 0; i2 < cc; i2++) {
-              free(conferences[i2].subs);
-            }
-            free(conferences);
-            free(ls);
-            f.Close();
-            return nullptr;
-          }
-          i = 0;
-          i1 = 0;
-          for (ss = strtok(ls, DELIMS_WHITE); ((ss) && (i++ < nw)); ss = strtok(nullptr, DELIMS_WHITE)) {
-            if (i == 1) {
-              if (strlen(ss) >= 2) {
-                i3 = atoi(ss + 1);
-              } else {
-                i3 = -1;
-              }
-            } else {
-              i3 = atoi(ss);
-            }
-            if ((i3 >= 0) && (i3 < max)) {
-              conferences[cc].subs[i1++] = static_cast<uint16_t>(i3);
-            }
-          }
-          conferences[cc].num = static_cast<uint16_t>(i1);
-          cc++;
-          break;
-        }
-      }
-    }
-  }
-  f.Close();
-  free(ls);
-  return conferences;
-}
-
-/*
- * Reads in a conference type. Creates default conference file if it is
- * necessary. If conferences cannot be read, then BBS aborts.
- */
-void read_in_conferences(ConferenceType conftype) {
-  unsigned *np = nullptr;
-  char s[81];
-  confrec **cpp = nullptr;
-
-  int max;
-  if (get_conf_info(conftype, nullptr, nullptr, s, &max, nullptr)) {
-    return;
-  }
-
-  switch (conftype) {
-  case ConferenceType::CONF_SUBS:
-    cpp = &subconfs;
-    np = &subconfnum;
-    break;
-  case ConferenceType::CONF_DIRS:
-    cpp = &dirconfs;
-    np = &dirconfnum;
-    break;
-  }
-
-  // free up any old memory
-  if (*cpp) {
-    for (size_t i = 0; i < *np; i++) {
-      if ((*cpp)[i].subs) {
-        free((*cpp)[i].subs);
-      }
-    }
-    free(*cpp);
-    *cpp = nullptr;
-  }
-  if (!File::Exists(s)) {
-    if (!create_conf_file(conftype)) {
-      LOG(FATAL) << "Problem creating conferences.";
-      a()->AbortBBS();
-    }
-  }
-  *cpp = read_conferences(s, np, max);
-  if (!(*cpp)) {
-    LOG(FATAL) << "Problem reading conferences.";
-    a()->AbortBBS();
-  }
-}
-
-
-/*
- * Reads all conferences into memory. Creates default conference files if
- * none exist. If called when conferences already in memory, then memory
- * for "old" conference data is deallocated first.
- */
-void read_all_conferences() {
-  read_in_conferences(ConferenceType::CONF_SUBS);
-  read_in_conferences(ConferenceType::CONF_DIRS);
-}
-
-/*
- * Returns number of conferences in a specified conference file.
- */
-int get_num_conferences(const char *file_name) {
+* Returns number of conferences in a specified conference file.
+*/
+static int get_num_conferences(const char *file_name) {
   char ls[MAX_CONF_LINE];
   int i = 0;
 
@@ -1426,6 +1085,112 @@ int get_num_conferences(const char *file_name) {
 
   f.Close();
   return i;
+}
+
+/*
+ * Reads in conferences and returns pointer to conference data. Out-of-memory
+ * messages are shown if applicable.
+ */
+static std::vector<confrec> read_conferences(const std::string& file_name) {
+  if (!File::Exists(file_name)) {
+    return{};
+  }
+
+  TextFile f(file_name, "rt");
+  if (!f.IsOpen()) {
+    return{};
+  }
+
+  std::vector<confrec> result;
+  string ls;
+  confrec c{};
+  while (f.ReadLine(&ls) && result.size() < MAX_CONFERENCES) {
+    StringTrim(&ls);
+    if (ls.size() < 2) continue;
+    const char id = ls.front();
+    ls = ls.substr(1);
+    switch (id) {
+    case '~': {
+      if (ls.size() > 2 && ls[1] == ' ') {
+        c.designator = ls.front();
+        auto name = ls.substr(2);
+        StringTrim(&name);
+        strncpy(reinterpret_cast<char*>(c.name), name.c_str(), sizeof(c.name));
+      }
+    } break;
+    case '!': {
+      // data about the conference
+      if ((!c.designator) || (nw != 11)) {
+        break;
+      }
+      std::vector<string> words = SplitString(ls, DELIMS_WHITE);
+      auto it = words.begin();
+      c.status = StringToUnsignedShort(it->substr(1));
+      it++;
+      if (it != std::end(words)) c.minsl = StringToUnsignedChar(*it++);
+      if (it != std::end(words)) c.mindsl = StringToUnsignedChar(*it++);
+      if (it != std::end(words)) c.maxdsl = StringToUnsignedChar(*it++);
+      if (it != std::end(words)) c.minage = StringToUnsignedChar(*it++);
+      if (it != std::end(words)) c.maxage = StringToUnsignedChar(*it++);
+      if (it != std::end(words)) c.minbps = StringToUnsignedShort(*it++);
+      if (it != std::end(words)) c.sex = StringToUnsignedChar(*it++);
+      if (it != std::end(words)) c.ar = static_cast<uint16_t>(str_to_arword(*it++));
+      if (it != std::end(words)) c.dar = static_cast<uint16_t>(str_to_arword(*it++));
+    } break;
+    case '@':
+      // Sub numbers.
+      if (!c.designator) {
+        break;
+      }
+      std::vector<string> words = SplitString(ls, DELIMS_WHITE);
+      for (auto& word : words) {
+        StringTrim(&word);
+        if (word.empty()) continue;
+        c.subs.push_back(StringToUnsignedShort(word));
+      }
+      c.num = c.subs.size();
+      c.maxnum = c.num;
+      result.push_back(c);
+      c = {};
+      break;
+    }
+  }
+  f.Close();
+  return result;
+}
+
+/*
+ * Reads in a conference type. Creates default conference file if it is
+ * necessary. If conferences cannot be read, then BBS aborts.
+ */
+void read_in_conferences(ConferenceType conftype) {
+  const auto fn = get_conf_filename(conftype);
+  if (!File::Exists(fn)) {
+    if (!create_conf_file(conftype)) {
+      LOG(FATAL) << "Problem creating conferences.";
+    }
+  }
+
+  switch (conftype) {
+  case ConferenceType::CONF_SUBS: {
+    a()->subconfs = read_conferences(fn);
+    subconfnum = a()->subconfs.size();
+  } break;
+  case ConferenceType::CONF_DIRS: {
+    a()->dirconfs = read_conferences(fn);
+    dirconfnum = a()->dirconfs.size();
+  } break;
+}
+
+
+/*
+ * Reads all conferences into memory. Creates default conference files if
+ * none exist. If called when conferences already in memory, then memory
+ * for "old" conference data is deallocated first.
+ */
+void read_all_conferences() {
+  read_in_conferences(ConferenceType::CONF_SUBS);
+  read_in_conferences(ConferenceType::CONF_DIRS);
 }
 
 /*
@@ -1467,17 +1232,3 @@ const char *extractword(int ww, const string& instr, const char *delimstr) {
   return "";
 }
 
-void sort_conf_str(char *conference_string) {
-  char s1[81], s2[81];
-
-  strncpy(s1, conference_string, sizeof(s1));
-  strncpy(s2, charstr(MAX_CONFERENCES, 32), sizeof(s2));
-
-  for (char i = 'A'; i <= 'Z'; i++) {
-    if (strchr(s1, i) != nullptr) {
-      s2[i - 'A'] = i;
-    }
-  }
-  StringTrimEnd(s2);
-  strcpy(conference_string, s2);
-}

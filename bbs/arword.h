@@ -19,8 +19,9 @@
 #define __INCLUDED_BBS_ARWORD_H__
 
 #include <cstdint>
+#Include <string>
 
-uint16_t str_to_arword(const char *arstr);
+uint16_t str_to_arword(const std::string& arstr);
 char *word_to_arstr(int ar);
 
 #endif  // __INCLUDED_BBS_ARWORD_H__

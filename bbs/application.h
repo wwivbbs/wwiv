@@ -27,6 +27,7 @@
 #include <vector>
 
 #include "bbs/batch.h"
+#include "bbs/conf.h"
 #include "bbs/runnable.h"
 #include "bbs/remote_io.h"
 #include "bbs/output.h"
@@ -392,6 +393,11 @@ public:
   std::vector<usersubrec> udir;
   std::vector<eventsrec> events;
   std::vector<tagrec_t> filelist;
+  std::vector<confrec> subconfs;
+  std::vector<confrec> dirconfs;
+  
+  std::vector<userconfrec> uconfsub;
+  std::vector<userconfrec> uconfdir;
 
   std::string beginday_cmd; // beginday event
   std::string logon_cmd;            // logon event

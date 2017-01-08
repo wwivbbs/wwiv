@@ -291,38 +291,25 @@ void ChangeDirNumber() {
 }
 
 
+static void SetConf(ConferenceType t, int d) {
+  conf_info_t info = get_conf_info(t);
+
+  for (size_t i = 0; i < info.uc.size() && info.uc[i].confnum != -1; i++) {
+    if (d == info.confs[info.uc[i].confnum].designator) {
+      setuconf(t, i, -1);
+      break;
+    }
+  }
+}
+
 // have a little conference ability...
-void SetMsgConf(int iConf) {
-  int nc;
-  confrec *cp = nullptr;
-  userconfrec *uc = nullptr;
-
-  get_conf_info(ConferenceType::CONF_SUBS, &nc, &cp, nullptr, nullptr, &uc);
-
-  for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
-    if (iConf == cp[uc[i].confnum].designator) {
-      setuconf(ConferenceType::CONF_SUBS, i, -1);
-      break;
-    }
-  }
+void SetMsgConf(int conf_designator) {
+  SetConf(ConferenceType::CONF_SUBS, conf_designator);
 }
 
-
-void SetDirConf(int iConf) {
-  int nc;
-  confrec *cp = nullptr;
-  userconfrec *uc = nullptr;
-
-  get_conf_info(ConferenceType::CONF_DIRS, &nc, &cp, nullptr, nullptr, &uc);
-
-  for (int i = 0; (i < MAX_CONFERENCES) && (uc[i].confnum != -1); i++) {
-    if (iConf == cp[uc[i].confnum].designator) {
-      setuconf(ConferenceType::CONF_DIRS, i, -1);
-      break;
-    }
-  }
+void SetDirConf(int conf_designator) {
+  SetConf(ConferenceType::CONF_DIRS, conf_designator);
 }
-
 
 void EnableConf() {
   tmp_disable_conf(false);

@@ -20,6 +20,8 @@
 
 #include <memory>
 #include <string>
+#include <vector>
+#include <set>
 #include "bbs/confutil.h"
 #include "core/transaction.h"
 #include "sdk/vardec.h"
@@ -42,43 +44,68 @@ static constexpr int CONF_UPDATE_DELETE = 2;
 static constexpr int CONF_UPDATE_SWAP = 3;
 
 struct confrec {
-  unsigned char designator,                 // A to Z?
-    name[61],                                // Name of conference
-    minsl,                                   // Minimum SL needed for access
-    maxsl,                                   // Maximum SL allowed for access
-    mindsl,                                  // Minimum DSL needed for access
-    maxdsl,                                  // Maximum DSL allowed for acces
-    minage,                                  // Minimum age needed for access
-    maxage,                                  // Maximum age allowed for acces
-    sex;                                     // Gender: 0=male, 1=female 2=all
-  subconf_t status,                      // Bit-mapped stuff
-    minbps,                                  // Minimum bps rate for access
-    ar,                                      // ARs necessary for access
-    dar,                                     // DARs necessary for access
-    num,                                     // Num "subs" in this conference
-    maxnum,                                  // max num subs allocated in 'subs'
-    *subs;                                    // "Sub" numbers in the conference
+  // A to Z?
+  uint8_t designator;
+  // Name of conference                                          
+  unsigned char name[61];
+  // Minimum SL needed for access
+  uint8_t minsl;
+  // Maximum SL allowed for access
+  uint8_t maxsl;
+  // Minimum DSL needed for access
+  uint8_t mindsl;
+  // Maximum DSL allowed for acces
+  uint8_t maxdsl;
+  // Minimum age needed for access
+  uint8_t minage;
+  // Maximum age allowed for acces
+  uint8_t maxage;
+  // Gender: 0=male, 1=female 2=all
+  uint8_t sex;
+  // Bit-mapped stuff
+  subconf_t status;
+  // Minimum bps rate for access
+  subconf_t minbps;
+  // ARs necessary for access
+  subconf_t ar;
+  // DARs necessary for access
+  subconf_t dar;
+  // Num "subs" in this conference
+  subconf_t num;
+  // max num subs allocated in 'subs'
+  subconf_t maxnum;
+  // "Sub" numbers in the conference
+  std::set<subconf_t> subs;
+};
+
+class conf_info_t {
+public:
+  conf_info_t(std::vector<confrec>& c, std::vector<userconfrec>& u)
+    : confs(c), uc(u), num_confs(c.size()) {}
+  
+  int num_confs;
+  std::vector<confrec>& confs;
+  std::vector<userconfrec>& uc;
+  std::string file_name;
+  int num_subs_or_dirs = 0;
 };
 
 void tmp_disable_conf(bool disable);
 void reset_disable_conf();
-int  get_conf_info(ConferenceType conftype, int *num, confrec ** cpp, char *file_name, int *num_s, userconfrec ** uc);
+conf_info_t get_conf_info(ConferenceType conftype);
+
 void jump_conf(ConferenceType conftype);
 void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, int action);
 char first_available_designator(ConferenceType conftype);
-int  in_conference(int subnum, confrec * c);
 void save_confs(ConferenceType conftype, int whichnum, confrec * c);
-void showsubconfs(ConferenceType conftype, confrec * c);
 void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which);
-void delsubconf(ConferenceType conftype, confrec * c, subconf_t * which);
 void conf_edit(ConferenceType conftype);
 void list_confs(ConferenceType conftype, int ssc);
 int  select_conf(const char *prompt_text, ConferenceType conftype, int listconfs);
+// static
 void read_in_conferences(ConferenceType conftype);
 void read_all_conferences();
-int get_num_conferences(const char *file_name);
 int wordcount(const std::string& instr, const char *delimstr);
 const char *extractword(int ww, const std::string& instr, const char *delimstr);
-void sort_conf_str(char *conference_string);
 
 #endif  // __INCLUDED_BBS_CONF_H__

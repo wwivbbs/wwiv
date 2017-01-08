@@ -313,8 +313,7 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
 int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, search_record * search_rec) {
   char szFileName[MAX_PATH], szFileExt[MAX_PATH];
   char element[150];
-  int chars_this_line = 0, numl = 0, cpos = 0, will_fit = 78;
-  char ch = 0;
+  int chars_this_line = 0, numl = 0, will_fit = 78;
   int char_printed = 0, extdesc_pos;
 
   strcpy(szFileName, u->filename);

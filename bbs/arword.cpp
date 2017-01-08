@@ -35,15 +35,12 @@ using namespace wwiv::strings;
 /*
  * Returns bitmapped word representing an AR or DAR string.
  */
-uint16_t str_to_arword(const char *arstr) {
+uint16_t str_to_arword(const std::string& arstr) {
   uint16_t rar = 0;
-  char s[81];
-
-  strcpy(s, arstr);
-  strupr(s);
+  auto s = ToStringUpperCase(arstr);
 
   for (int i = 0; i < 16; i++) {
-    if (strchr(s, i + 'A') != nullptr) {
+    if (s.find(i + 'A') != std::string::npos) {
       rar |= (1 << i);
     }
   }
