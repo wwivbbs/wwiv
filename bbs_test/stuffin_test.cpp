@@ -37,7 +37,6 @@ protected:
     virtual void SetUp() {
       helper.SetUp();
       incom = false;
-      com_speed = 0;
       modem_speed = 0;
     }
 
@@ -124,12 +123,7 @@ TEST_F(StuffInTest, Speeds) {
 
   modem_speed = 38400;
   EXPECT_EQ(string("38400"), stuff_in("%M", "", "", "", "", ""));
-
-  com_speed = 38400;
   EXPECT_EQ(string("38400"), stuff_in("%S", "", "", "", "", ""));
-
-  com_speed = 115200;
-  EXPECT_EQ(string("115200"), stuff_in("%S", "", "", "", "", ""));
 }
 
 

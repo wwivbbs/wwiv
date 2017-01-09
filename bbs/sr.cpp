@@ -109,14 +109,10 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     }
   }
   strcpy(szFileName, pszFileNameToSend);
-  // TODO(rushfan): Why do we do this, we are not guaranteed to be in the right dir.
-  //stripfn_inplace(szFileName);
-  int nEffectiveXferSpeed = std::min<int>(com_speed, 57600);
-  sprintf(sx1, "%d", nEffectiveXferSpeed);
-  strcpy(sx1, "115200");
   // Use this since fdsz doesn't like 115200
-  nEffectiveXferSpeed = std::min<int>(modem_speed, 57600);
-  sprintf(sx3, "%d", nEffectiveXferSpeed);
+  auto xfer_speed = std::min<int>(modem_speed, 57600);
+  sprintf(sx1, "%d", xfer_speed);
+  sprintf(sx3, "%d", xfer_speed);
   sx2[0] = '0' + a()->primary_port();
   sx2[1] = '\0';
   const string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");

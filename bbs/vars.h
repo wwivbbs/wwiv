@@ -78,9 +78,7 @@ __EXTRN__ unsigned int
 __EXTRN__ time_t nscandate;
 
 
-__EXTRN__ int
-g_flags,
-com_speed;
+__EXTRN__ int32_t g_flags;
 
 __EXTRN__ uint32_t
 *qsc,

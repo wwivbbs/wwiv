@@ -151,7 +151,7 @@ void CreateDoorInfoDropFile() {
     fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", 
       a()->config()->config()->systemname, a()->config()->config()->sysopname,
       incom ? a()->primary_port() : 0);
-    fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? com_speed : 0));
+    fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? modem_speed : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
     if (a()->config()->config()->sysconfig & sysconfig_no_alias) {
       char szTemp[81];
@@ -197,8 +197,8 @@ void CreatePCBoardSysDropFile() {
       pcb.ansi = '0';
     }
     pcb.nodechat = 32;
-    string com_speed_str = std::to_string(com_speed);
-    sprintf(pcb.openbps, "%-5.5s", com_speed_str.c_str());
+    auto modem_speed_str = std::to_string(modem_speed);
+    sprintf(pcb.openbps, "%-5.5s", modem_speed_str.c_str());
     if (!incom) {
       memcpy(pcb.connectbps, "Local", 5);
     } else {
@@ -310,7 +310,7 @@ void CreateCallInfoBbsDropFile() {
     szTemp[2] = '\0';
     memmove(&(szDate[ 8 - strlen(szTemp) ]), &(szTemp[0]), strlen(szTemp));
     file.WriteFormatted("%s\n", szDate);
-    string cspeed = std::to_string(com_speed);
+    string cspeed = std::to_string(modem_speed);
     file.WriteFormatted("%s\n", (incom) ? cspeed.c_str() : "38400");
     file.Close();
   }
@@ -358,7 +358,7 @@ void CreateDoor32SysDropFile() {
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n", GetDoor32CommType());
     file.WriteFormatted("%u\n", GetDoorHandle());
-    string cspeed = std::to_string(com_speed);
+    string cspeed = std::to_string(modem_speed);
     file.WriteFormatted("%s\n", cspeed.c_str());
     file.WriteFormatted("WWIV %s\n", wwiv_version);
     file.WriteFormatted("%d\n", a()->usernum);
@@ -380,7 +380,7 @@ void CreateDoorSysDropFile() {
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     char szLine[255];
-    string cspeed = std::to_string(com_speed);
+    string cspeed = std::to_string(modem_speed);
     sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (a()->using_modem) ? a()->primary_port() : 0,
             cspeed.c_str(),
@@ -510,7 +510,7 @@ MrBill             System SysOp
 const string create_chain_file() {
   string cspeed;
 
-  cspeed = std::to_string(com_speed);
+  cspeed = std::to_string(modem_speed);
 
   create_drop_files();
   auto start_duration = duration_since_midnight(a()->system_logon_time());

@@ -418,9 +418,8 @@ protected:
   /*!
   * @function GotCaller login routines
   * @param ms Modem Speed (may be a locked speed)
-  * @param cs Connect Speed (real speed)
   */
-  void GotCaller(unsigned int ms, unsigned long cs);
+  void GotCaller(unsigned int ms);
   
 private:
   void read_nextern();

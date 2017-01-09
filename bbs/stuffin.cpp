@@ -129,7 +129,9 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << create_filename(CHAINFILE_DOOR);
         break;
       case 'S':
-        os << com_speed;
+        // TODO(rushfan): Should we deprecate this?
+        // Use modem speed for now.
+        os << modem_speed;
         break;
       case 'T':
         os << GetTimeLeft();

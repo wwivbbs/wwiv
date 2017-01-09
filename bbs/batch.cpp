@@ -657,7 +657,7 @@ void ProcessDSZLogFile() {
 
 static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist, const string& dl, bool bHangupAfterDl) {
   string commandLine = stuff_in(orig_commandline,
-      std::to_string(std::min<int>(com_speed, 57600)), 
+      std::to_string(std::min<int>(modem_speed, 57600)), 
       std::to_string(a()->primary_port()),
       downlist, 
       std::to_string(std::min<int>(modem_speed, 57600)), 

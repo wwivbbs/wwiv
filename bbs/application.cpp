@@ -624,10 +624,9 @@ void Application::GetCaller() {
 }
 
 
-void Application::GotCaller(unsigned int ms, unsigned long cs) {
+void Application::GotCaller(unsigned int ms) {
   frequent_init();
   wfc_cls(a());
-  com_speed = cs;
   modem_speed = ms;
   ReadCurrentUser(1);
   read_qscn(1, qsc, false);
@@ -707,7 +706,6 @@ void Application::ShowUsage() {
       << "  -N<inst>   - Designate instance number <inst>\r\n"
       << "  -Q<level>  - Normal exit level\r\n"
       << "  -R<min>    - Specify max # minutes until event\r\n"
-      << "  -S<rate>   - Used only with -B, indicates com port speed\r\n"
       << "  -U<user#>  - Pass usernumber <user#> online\r\n"
       << "  -V         - Display WWIV Version\r\n"
       << "  -XT        - Someone already logged on via telnet (socket handle)\r\n"
@@ -720,7 +718,6 @@ void Application::ShowUsage() {
 int Application::Run(int argc, char *argv[]) {
   int num_min = 0;
   unsigned int ui = 0;
-  unsigned long us = 0;
   unsigned short this_usernum_from_commandline = 0;
   bool ooneuser = false;
   bool event_only = false;
@@ -756,9 +753,6 @@ int Application::Run(int argc, char *argv[]) {
         ui = static_cast<unsigned int>(atol(argument.c_str()));
         const string current_speed_string = std::to_string(ui);
         SetCurrentSpeed(current_speed_string.c_str());
-        if (!us) {
-          us = ui;
-        }
         user_already_on_ = true;
       }
         break;
@@ -766,12 +760,6 @@ int Application::Run(int argc, char *argv[]) {
         break;
       case 'E':
         event_only = true;
-        break;
-      case 'S':
-        us = static_cast<unsigned int>(stol(argument));
-        if ((us % 300) && us != 115200) {
-          us = ui;
-        }
         break;
       case 'Q':
         oklevel_ = stoi(argument);
@@ -821,8 +809,7 @@ int Application::Run(int argc, char *argv[]) {
 
           // These are needed for both Telnet or SSH
           SetUserOnline(false);
-          us = 115200;
-          ui = us;
+          ui = 115200;
           user_already_on_ = true;
           ooneuser = true;
           using_modem = 0;
@@ -972,7 +959,7 @@ int Application::Run(int argc, char *argv[]) {
       usernum = this_usernum_from_commandline;
       ReadCurrentUser();
       if (!user()->IsUserDeleted()) {
-        GotCaller(ui, us);
+        GotCaller(ui);
         usernum = this_usernum_from_commandline;
         ReadCurrentUser();
         read_qscn(usernum, qsc, false);
@@ -991,7 +978,7 @@ int Application::Run(int argc, char *argv[]) {
 
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
-          GotCaller(ui, us);
+          GotCaller(ui);
         }
         else {
           GetCaller();

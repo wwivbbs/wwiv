@@ -45,3 +45,8 @@ Message Areas
 * AddMessage should delete messages to keep total number of posts at the right number.
 * Make the emailmessage extend the message so most things are common between them.
 * Load subs.json too, and use it as source of truth if it exists.
+
+Open Questions
+==============
+1) Extended colors ^C > 9, should we nuke them since we have pipes now?
+2) Guest user account. Is it useful?

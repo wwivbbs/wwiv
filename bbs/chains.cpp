@@ -156,7 +156,7 @@ void run_chain(int nChainum) {
   }
   const string chainCmdLine = stuff_in(
     a()->chains[nChainum].filename, create_chain_file(), 
-    std::to_string(com_speed),
+    std::to_string(modem_speed),
     std::to_string(a()->primary_port()),
     std::to_string(modem_speed), "");
 
