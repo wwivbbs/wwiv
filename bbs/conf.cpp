@@ -477,7 +477,7 @@ char* GetGenderAllowed(int nGender, char *pszGenderAllowed) {
  * Function for editing the data for one conference.
  */
 int modify_conf(ConferenceType conftype,  int which) {
-  int  changed = 0;
+  bool changed = false;
   bool ok   = false;
   bool done = false;
   subconf_t i;
@@ -550,82 +550,53 @@ int modify_conf(ConferenceType conftype,  int which) {
         break;
       }
       c.designator = ch1;
-      changed = 1;
+      changed = true;
       break;
     case 'B': {
       bout.nl();
       bout << "|#2Conference Name: ";
-      string conferenceName = inputl(60);
-      if (!conferenceName.empty()) {
-        strcpy(reinterpret_cast<char*>(c.name), conferenceName.c_str());
-        changed = 1;
+      string cname = inputl(60);
+      if (!cname.empty()) {
+        strcpy(reinterpret_cast<char*>(c.name), cname.c_str());
+        changed = true;
       }
     }
     break;
     case 'C': {
       bout.nl();
       bout << "|#2Min SL: ";
-      string minSl = input(3);
-      if (!minSl.empty()) {
-        if (atoi(minSl.c_str()) >= 0 && atoi(minSl.c_str()) <= 255) {
-          c.minsl = StringToUnsignedChar(minSl.c_str());
-          changed = 1;
-        }
-      }
-    }
-    break;
+      c.minsl = input_number<uint8_t>(c.minsl, 0, 255, true);
+      changed = true;
+    } break;
     case 'D':
       bout.nl();
       bout << "|#2Max SL: ";
-      input(s, 3);
-      if (s[0]) {
-        if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-          c.maxsl = StringToUnsignedChar(s);
-          changed = 1;
-        }
-      }
+      c.maxsl = input_number<uint8_t>(c.maxsl, 0, 255, true);
+      changed = true;
       break;
     case 'E':
       bout.nl();
       bout << "|#2Min DSL: ";
-      input(s, 3);
-      if (s[0]) {
-        if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-          c.mindsl = StringToUnsignedChar(s);
-          changed = 1;
-        }
-      }
+      c.mindsl = input_number<uint8_t>(c.mindsl, 0, 255, true);
+      changed = true;
       break;
     case 'F':
       bout.nl();
       bout << "|#2Max DSL";
-      input(s, 3);
-      if (s[0]) {
-        if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-          c.maxdsl = StringToUnsignedChar(s);
-          changed = 1;
-        }
-      }
+      c.maxdsl = input_number<uint8_t>(c.maxdsl, 0, 255, true);
+      changed = true;
       break;
     case 'G':
       bout.nl();
       bout << "|#2Min Age: ";
-      input(s, 2);
-      if (s[0]) {
-        c.minage = StringToUnsignedChar(s);
-        changed = 1;
-      }
+      c.minage = input_number<uint8_t>(c.minage, 0, 255, true);
+      changed = true;
       break;
     case 'H':
       bout.nl();
       bout << "|#2Max Age: ";
-      input(s, 3);
-      if (s[0]) {
-        if ((atoi(s) >= 0) && (atoi(s) <= 255)) {
-          c.maxage = StringToUnsignedChar(s);
-          changed = 1;
-        }
-      }
+      c.maxage = input_number<uint8_t>(c.maxage, 0, 255, true);
+      changed = true;
       break;
     case 'I':
       bout.nl();
@@ -637,7 +608,7 @@ int modify_conf(ConferenceType conftype,  int which) {
         break;
       default:
         c.ar ^= (1 << (ch1 - 'A'));
-        changed = 1;
+        changed = true;
         break;
       }
       break;
@@ -651,22 +622,19 @@ int modify_conf(ConferenceType conftype,  int which) {
         break;
       default:
         c.dar ^= (1 << (ch1 - 'A'));
-        changed = 1;
+        changed = true;
         break;
       }
       break;
     case 'K':
       bout.nl();
       bout << "|#2Min BPS Rate: ";
-      input(s, 5);
-      if (s[0]) {
-        c.minbps = (subconf_t)(atol(s));
-        changed = 1;
-      }
+      c.minbps = input_number<uint8_t>(c.minbps, 0, 255, true);
+      changed = true;
       break;
     case 'L':
       bout.nl();
-      changed = 1;
+      changed = true;
       bout << "|#5(Q=Quit) Gender Allowed: (M)ale, (F)emale, (A)ll: ";
       ch1 = onek("MFAQ");
       switch (ch1) {
@@ -685,7 +653,7 @@ int modify_conf(ConferenceType conftype,  int which) {
       break;
     case 'M':
       bout.nl();
-      changed = 1;
+      changed = true;
       c.status &= ~conf_status_ansi;
       bout << "|#5Require ANSI for this conference? ";
       if (yesno()) {
@@ -694,7 +662,7 @@ int modify_conf(ConferenceType conftype,  int which) {
       break;
     case 'N':
       bout.nl();
-      changed = 1;
+      changed = true;
       c.status &= ~conf_status_wwivreg;
       bout << "|#5Require WWIV RegNum for this conference? ";
       if (yesno()) {
@@ -703,7 +671,7 @@ int modify_conf(ConferenceType conftype,  int which) {
       break;
     case 'O':
       bout.nl();
-      changed = 1;
+      changed = true;
       c.status &= ~conf_status_offline;
       bout << "|#5Make this conference available to users? ";
       if (!noyes()) {
@@ -719,21 +687,21 @@ int modify_conf(ConferenceType conftype,  int which) {
         switch (ch1) {
         case 'A':
           addsubconf(conftype, &c, nullptr);
-          changed = 1;
+          changed = true;
           break;
         case 'R':
           delsubconf(conftype, &c, nullptr);
-          changed = 1;
+          changed = true;
           break;
         case 'C':
           c.subs.clear();
-          changed = 1;
+          changed = true;
           break;
         case 'F':
           for (i = 0; i < info.num_subs_or_dirs; i++) {
             c.subs.insert(i);
             c.num = c.subs.size();
-            changed = 1;
+            changed = true;
           }
           break;
         case 'Q':

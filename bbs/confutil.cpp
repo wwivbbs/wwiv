@@ -318,8 +318,7 @@ void changedsl() {
   int ocurconfdir = a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum;
   a()->UpdateTopScreen();
 
-  userconfrec c1{};
-  c1.confnum = 0;
+  userconfrec c1{ -1 };
 
   a()->uconfsub.clear();
   a()->uconfdir.clear();
