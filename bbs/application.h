@@ -157,8 +157,8 @@ public:
   int  GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
   void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
 
-  bool IsNewScanAtLogin() const { return m_bNewScanAtLogin; }
-  void SetNewScanAtLogin(bool b) { m_bNewScanAtLogin = b; }
+  bool IsNewScanAtLogin() const { return newscan_at_login_; }
+  void SetNewScanAtLogin(bool b) { newscan_at_login_ = b; }
 
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (a()->udir[b], not directories[b]).
@@ -201,7 +201,7 @@ public:
   size_t GetCurrentConferenceFileArea() const { return m_nCurrentConferenceFileArea; }
   void SetCurrentConferenceFileArea(size_t n) { m_nCurrentConferenceFileArea = n; }
 
-  bool IsUseInternalZmodem() const { return m_bInternalZmodem; }
+  bool IsUseInternalZmodem() const { return internal_zmodem_; }
   
   int  GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
   void SetNumMessagesInCurrentMessageArea(int n) { m_nNumMsgsInCurrentSub = n; }
@@ -314,8 +314,8 @@ public:
   bool m_bQuoting = false;
   bool m_bTimeOnlineLimited = false;
 
-  bool  m_bNewScanAtLogin = false,
-    m_bInternalZmodem = true,
+  bool  newscan_at_login_ = false,
+    internal_zmodem_ = true,
     m_bExecLogSyncFoss = true;
   int m_nNumMessagesReadThisLogon = 0,
     m_nCurrentLanguageNumber = 0,

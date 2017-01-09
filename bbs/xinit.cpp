@@ -336,9 +336,9 @@ void Application::ReadINIFile(IniFile& ini) {
   ini_init_str(ini, INI_STR_TERMINAL_CMD, terminal_command);
 
   m_nForcedReadSubNumber = ini.value<int>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), m_nForcedReadSubNumber);
-  m_bInternalZmodem = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), true);
-  m_bNewScanAtLogin = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), true);
-  m_bExecLogSyncFoss = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), true);
+  internal_zmodem_ = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), true);
+  newscan_at_login_ = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), true);
+  m_bExecLogSyncFoss = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), false);
   m_nExecChildProcessWaitTime = ini.value<int>(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), 500);
   m_nBeginDayNodeNumber = ini.value<int>(get_key_str(INI_STR_BEGINDAYNODENUMBER), 1);
 

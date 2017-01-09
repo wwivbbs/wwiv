@@ -112,7 +112,9 @@ static bool CreateSyncTempFile(string *out, const string commandLine) {
 }
 
 bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadSlot, int nSyncMode) {
-  fprintf(hLogFile, "Starting DoSyncFosLoopNT()\r\n");
+  if (a()->IsExecLogSyncFoss()) {
+    fprintf(hLogFile, "Starting DoSyncFosLoopNT()\r\n");
+  }
   HANDLE hSyncWriteSlot   = INVALID_HANDLE_VALUE;     // Mailslot for writing
 
   char szReadBuffer[ CONST_SBBSFOS_BUFFER_SIZE + CONST_SBBSFOS_BUFFER_PADDING ];
@@ -124,7 +126,9 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
     nCounter++;
     if (a()->using_modem && (!a()->remoteIO()->connected())) {
       SetEvent(hSyncHangupEvent);
-      fprintf(hLogFile, "Setting Hangup Event and Sleeping\r\n");
+      if (a()->IsExecLogSyncFoss()) {
+        fprintf(hLogFile, "Setting Hangup Event and Sleeping\r\n");
+      }
       ::Sleep(1000);
     }
 
@@ -134,7 +138,9 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       if (GetExitCodeProcess(hProcess, &dwExitCode)) {
         if (dwExitCode != STILL_ACTIVE) {
           // process is done and so are we.
-          fprintf(hLogFile, "Process finished, exiting\r\n");
+          if (a()->IsExecLogSyncFoss()) {
+            fprintf(hLogFile, "Process finished, exiting\r\n");
+          }
           SYNC_LOOP_CLEANUP();
           return true;
         }
@@ -145,17 +151,21 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       nCounter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
       int nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
-      fprintf(hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm);
+      if (a()->IsExecLogSyncFoss()) {
+        fprintf(hLogFile, "Read [%d] from comm\r\n", nNumReadFromComm);
+      }
 
       int nLp = 0;
-      for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
-        fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
+      if (a()->IsExecLogSyncFoss()) {
+        for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
+          fprintf(hLogFile, "[%u]", static_cast<unsigned char>(szReadBuffer[nLp]));
+        }
+        fprintf(hLogFile, "   ");
+        for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
+          fprintf(hLogFile, "[%c]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
+        }
+        fprintf(hLogFile, "\r\n");
       }
-      fprintf(hLogFile, "   ");
-      for (nLp = 0; nLp < nNumReadFromComm; nLp++) {
-        fprintf(hLogFile, "[%c]", static_cast<unsigned char>(szReadBuffer[ nLp ]));
-      }
-      fprintf(hLogFile, "\r\n");
 
       if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
         // Create Write handle.
@@ -163,7 +173,9 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         ::Sleep(500);
         _snprintf(szWriteSlotName, sizeof(szWriteSlotName), "\\\\.\\mailslot\\sbbsexec\\wr%d",
                   a()->instance_number());
-        fprintf(hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName);
+        if (a()->IsExecLogSyncFoss()) {
+          fprintf(hLogFile, "Creating Mail Slot [%s]\r\n", szWriteSlotName);
+        }
 
         hSyncWriteSlot = CreateFile(szWriteSlotName,
                                     GENERIC_WRITE,
@@ -174,17 +186,23 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
                                     (HANDLE) nullptr);
         if (hSyncWriteSlot == INVALID_HANDLE_VALUE) {
           sysoplog() << "!!! Unable to create mail slot for writing for SyncFoss External program: " << GetLastError();
-          fprintf(hLogFile, "!!! Unable to create mail slot for writing for SyncFoss External program [%ld]", GetLastError());
+          if (a()->IsExecLogSyncFoss()) {
+            fprintf(hLogFile, "!!! Unable to create mail slot for writing for SyncFoss External program [%ld]", GetLastError());
+          }
           SYNC_LOOP_CLEANUP();
           return false;
         }
-        fprintf(hLogFile, "Created MailSlot\r\n");
+        if (a()->IsExecLogSyncFoss()) {
+          fprintf(hLogFile, "Created MailSlot\r\n");
+        }
 
       }
 
       DWORD dwNumWrittenToSlot = 0;
       WriteFile(hSyncWriteSlot, szReadBuffer, nNumReadFromComm, &dwNumWrittenToSlot, nullptr);
-      fprintf(hLogFile, "Wrote [%ld] to MailSlot\r\n", dwNumWrittenToSlot);
+      if (a()->IsExecLogSyncFoss()) {
+        fprintf(hLogFile, "Wrote [%ld] to MailSlot\r\n", dwNumWrittenToSlot);
+      }
     }
 
     int nBufferPtr      = 0;    // BufPtr
@@ -194,8 +212,10 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
 
     if (GetMailslotInfo(hSyncReadSlot, nullptr, &dwNextSize, &dwNumMessages, &dwReadTimeOut)) {
       if (dwNumMessages > 0) {
-        fprintf(hLogFile, "[%ld/%ld] slot messages\r\n", dwNumMessages, std::min<DWORD>(dwNumMessages,
-                CONST_SBBSFOS_BUFFER_SIZE - 1000));
+        if (a()->IsExecLogSyncFoss()) {
+          fprintf(hLogFile, "[%ld/%ld] slot messages\r\n", dwNumMessages, std::min<DWORD>(dwNumMessages,
+            CONST_SBBSFOS_BUFFER_SIZE - 1000));
+        }
         dwNumMessages = std::min<DWORD>(dwNumMessages, CONST_SBBSFOS_BUFFER_SIZE - 1000);
         dwNextSize = 0;
 
@@ -206,10 +226,14 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
                        &dwNextSize,
                        nullptr)) {
             if (dwNextSize > 1) {
-              fprintf(hLogFile, "[%ld] bytes read   \r\n", dwNextSize);
+              if (a()->IsExecLogSyncFoss()) {
+                fprintf(hLogFile, "[%ld] bytes read   \r\n", dwNextSize);
+              }
             }
             if (dwNextSize == MAILSLOT_NO_MESSAGE) {
-              fprintf(hLogFile, "** MAILSLOT thinks it's empty!\r\n");
+              if (a()->IsExecLogSyncFoss()) {
+                fprintf(hLogFile, "** MAILSLOT thinks it's empty!\r\n");
+              }
             } else {
               nBufferPtr += dwNextSize;   // was just ++.. oops
             }
@@ -228,20 +252,26 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         if (nSyncMode & CONST_SBBSFOS_DOSOUT_MODE) {
           // For some reason this doesn't write twice locally, so it works pretty well.
           szReadBuffer[ nBufferPtr ] = '\0';
-          fprintf(hLogFile, "{%s}\r\n", szReadBuffer);
+          if (a()->IsExecLogSyncFoss()) {
+            fprintf(hLogFile, "{%s}\r\n", szReadBuffer);
+          }
           bout << szReadBuffer;
 
           //ExpandWWIVHeartCodes( szReadBuffer );
           //int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
           //fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
         } else {
-          int nNumWritten = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
-          fprintf(hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten);
+          if (a()->IsExecLogSyncFoss()) {
+            int nNumWritten = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
+            fprintf(hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten);
+          }
         }
 
       }
-      if (szReadBuffer[ CONST_SBBSFOS_BUFFER_SIZE + 1 ] != '\xFE') {
-        fprintf(hLogFile, "!!!!!! MEMORY CORRUPTION ON szReadBuffer !!!!!!!!\r\n\r\n\n\n");
+      if (a()->IsExecLogSyncFoss()) {
+        if (szReadBuffer[CONST_SBBSFOS_BUFFER_SIZE + 1] != '\xFE') {
+          fprintf(hLogFile, "!!!!!! MEMORY CORRUPTION ON szReadBuffer !!!!!!!!\r\n\r\n\n\n");
+        }
       }
     }
     if (nCounter > 0) {
@@ -313,9 +343,10 @@ int ExecExternalProgram(const string commandLine, int flags) {
 
     const string logfile_name = StrCat(a()->GetHomeDir(), "wwivsync.log");
     hLogFile = fopen(logfile_name.c_str(), "at");
-    fprintf(hLogFile, charstr(78, '='));
-    fprintf(hLogFile, "\r\n\r\n");
-    fprintf(hLogFile, "Cmdline = [%s]\r\n\n", workingCommandLine.c_str());
+    if (a()->IsExecLogSyncFoss()) {
+      fprintf(hLogFile, charstr(78, '='));
+      fprintf(hLogFile, "\r\n\r\n");
+    }
   } else {
     workingCommandLine = commandLine;
   }
@@ -343,7 +374,9 @@ int ExecExternalProgram(const string commandLine, int flags) {
     const string event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
     hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
     if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
-      fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
+      if (a()->IsExecLogSyncFoss()) {
+        fprintf(hLogFile, "!!! Unable to create Hangup Event for SyncFoss External program [%ld]", GetLastError());
+      }
       sysoplog() << "!!! Unable to create Hangup Event for SyncFoss External program: " << GetLastError();
       return false;
     }
@@ -352,7 +385,9 @@ int ExecExternalProgram(const string commandLine, int flags) {
     const string readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", a()->instance_number());
     hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
     if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
-      fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
+      if (a()->IsExecLogSyncFoss()) {
+        fprintf(hLogFile, "!!! Unable to create mail slot for reading for SyncFoss External program [%ld]", GetLastError());
+      }
       sysoplog() << "!!! Unable to create mail slot for reading for SyncFoss External program: " << GetLastError();
       CloseHandle(hSyncHangupEvent);
       hSyncHangupEvent = INVALID_HANDLE_VALUE;
@@ -381,9 +416,9 @@ int ExecExternalProgram(const string commandLine, int flags) {
   if (!bRetCP) {
     delete[] title;
     sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Code: " << GetLastError();
-    if (bUsingSync) {
+    if (bUsingSync && a()->IsExecLogSyncFoss()) {
       fprintf(hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(),
-              GetLastError());
+        GetLastError());
     }
 
     // If we return here, we may have to reopen the communications port.
@@ -405,10 +440,12 @@ int ExecExternalProgram(const string commandLine, int flags) {
     bool bSavedBinaryMode = a()->remoteIO()->binary_mode();
     a()->remoteIO()->set_binary_mode(true);
     bool bSyncLoopStatus = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
-    fprintf(hLogFile,  "DoSyncFosLoopNT: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
+    if (a()->IsExecLogSyncFoss()) {
+      fprintf(hLogFile, "DoSyncFosLoopNT: Returning %s\r\n", (bSyncLoopStatus) ? "TRUE" : "FALSE");
 
-    fprintf(hLogFile, charstr(78, '='));
-    fprintf(hLogFile, "\r\n\r\n\r\n");
+      fprintf(hLogFile, charstr(78, '='));
+      fprintf(hLogFile, "\r\n\r\n\r\n");
+    }
     fclose(hLogFile);
 
     if (!bSyncLoopStatus) {
