@@ -100,8 +100,11 @@ std::string interpret(char ch, const MacroContext& context) {
     return context.u().GetCallsign();
   case 'i':                               // Illegal log-ons
     return to_string(context.u().GetNumIllegalLogons());
-  case 'J':                               // Message conference
-    return reinterpret_cast<char*>(a()->subconfs[a()->uconfsub[a()->GetCurrentConferenceMessageArea()].confnum].name);
+  case 'J': {                             // Message conference
+    auto x = a()->GetCurrentConferenceMessageArea();
+    auto cnum = a()->uconfsub[x].confnum;
+    return reinterpret_cast<char*>(a()->subconfs[cnum].name);
+  }
   case 'j':                               // Transfer conference
     return reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].name);
   case 'K':                               // Kb uploaded

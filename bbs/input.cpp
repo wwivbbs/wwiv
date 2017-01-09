@@ -21,6 +21,7 @@
 #include <algorithm>
 #include <string>
 
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
@@ -36,6 +37,7 @@
 
 using std::string;
 using wwiv::bbs::InputMode;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
@@ -57,7 +59,7 @@ static std::string input_password_minimal(int max_length) {
 
     if (ch > 31) {
       ch = upcase(ch);
-      if (pw.length() < max_length && ch) {
+      if (size_int(pw) < max_length && ch) {
         pw.push_back(ch);
         bout.bputch(mask_char);
       }

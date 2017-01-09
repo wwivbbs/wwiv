@@ -476,14 +476,14 @@ void dlboardedit() {
             list_confs(ConferenceType::CONF_DIRS, 0);
             i2 = select_conf("Put in which conference? ", ConferenceType::CONF_DIRS, 0);
             if (i2 >= 0) {
-              if (in_conference(i, &a()->dirconfs[i2]) < 0) {
+              if (!in_conference(i, &a()->dirconfs[i2])) {
                 iconv = (subconf_t) i;
                 addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
-            if (in_conference(i, &a()->dirconfs[0]) < 0) {
+            if (!in_conference(i, &a()->dirconfs[0])) {
               iconv = (subconf_t) i;
               addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[0], &iconv);
               i = static_cast<int>(iconv);
