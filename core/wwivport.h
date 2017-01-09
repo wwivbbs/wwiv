@@ -24,6 +24,7 @@
 #define __unix__
 #endif
 
+// TODO(rushfan): This whole thing probably needs to be redone.
 #if __GNUC__ >= 3
 #define __noinline     __attribute__ ((noinline))
 #define __pure         __attribute__ ((pure))
@@ -33,7 +34,9 @@
 #define __must_check   __attribute__ ((warn_unused_result))
 #define __deprecated   __attribute__ ((deprecated))
 #define __used         __attribute__ ((used))
-#define __unused       __attribute__ ((unused))
+// This causes some compile errors on CentOS and others.
+// See https://bugzilla.novell.com/show_bug.cgi?id=895495
+//#define __unused       __attribute__ ((unused))
 #define __packed       __attribute__ ((packed))
 #define __align(x)     __attribute__ ((aligned (x)))
 #define __align_max    __attribute__ ((aligned))
