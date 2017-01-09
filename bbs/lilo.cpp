@@ -991,7 +991,7 @@ void logon() {
   if (a()->usub[0].subnum == -1 && okconf(a()->user())) {
     for (a()->SetCurrentConferenceMessageArea(0); 
          (a()->GetCurrentConferenceMessageArea() < static_cast<unsigned int>(subconfnum))
-         && (uconfsub[a()->GetCurrentConferenceMessageArea()].confnum != -1);
+         && (a()->uconfsub[a()->GetCurrentConferenceMessageArea()].confnum != -1);
          a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1)) {
       setuconf(ConferenceType::CONF_SUBS, a()->GetCurrentConferenceMessageArea(), -1);
       if (a()->usub[0].subnum != -1) {

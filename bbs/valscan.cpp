@@ -45,7 +45,7 @@ void valscan() {
   int ac = 0;
   int os = a()->current_user_sub_num();
 
-  if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = 1;
     tmp_disable_conf(true);
   }

@@ -1636,7 +1636,7 @@ int search_criteria(search_record * sr) {
   int all_conf = 1, useconf;
   char s1[81];
 
-  useconf = (uconfdir[1].confnum != -1 && okconf(a()->user()));
+  useconf = (a()->uconfdir[1].confnum != -1 && okconf(a()->user()));
 
 
 LP_SEARCH_HELP:
@@ -1663,8 +1663,9 @@ LP_SEARCH_HELP:
     }
     bout << "|#9C)|#2 Which Directories    :|#2 " << (sr->alldirs == THIS_DIR ? s1 : sr->alldirs == ALL_DIRS ?
                        "All dirs" : "Dirs in NSCAN") << wwiv::endl;
-    sprintf(s1, "%s", stripcolors(reinterpret_cast<char*>
-                                  (dirconfs[uconfdir[a()->GetCurrentConferenceFileArea()].confnum].name)));
+    sprintf(s1, "%s", 
+      stripcolors(reinterpret_cast<char*>(
+        a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].name)));
     bout << "|#9D)|#2 Which Conferences    :|#2 " << (all_conf ? "All Conferences" : s1) << wwiv::endl;
     bout << "|#9E)|#2 Extended Description :|#2 " << (sr->search_extended ? "Yes" : "No ") << wwiv::endl;
     bout.nl();

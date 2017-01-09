@@ -847,7 +847,7 @@ void download() {
           align(s);
           rtn = try_to_download(s, a()->current_user_dir().subnum);
           if (rtn == 0) {
-            if (uconfdir[1].confnum != -10 && okconf(a()->user())) {
+            if (a()->uconfdir[1].confnum != -10 && okconf(a()->user())) {
               bout.backline();
               bout << " |#5Search all conferences? ";
               ch = onek_ncr("YN\r");

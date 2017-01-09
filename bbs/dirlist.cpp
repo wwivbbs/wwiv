@@ -56,7 +56,7 @@ void dirlist(int mode) {
     int i = sn;
     char *ss = nullptr;
 
-    while (i <= en && uconfdir[i].confnum != -1 && !abort) {
+    while (i <= en && a()->uconfdir[i].confnum != -1 && !abort) {
       size_t i1 = 0;
       while (i1 < a()->directories.size() && a()->udir[i1].subnum != -1 && !abort) {
         char s[255];
@@ -65,10 +65,10 @@ void dirlist(int mode) {
           p = 0;
           firstp = i1;
           bout.cls();
-          if (uconfdir[1].confnum != -1 && okconf(a()->user())) {
+          if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
             sprintf(s, " [ %s %c ] [ %s ] ", "Conference",
-                    dirconfs[uconfdir[i].confnum].designator,
-                    stripcolors(reinterpret_cast<char*>(dirconfs[uconfdir[i].confnum].name)));
+              a()->dirconfs[a()->uconfdir[i].confnum].designator,
+              stripcolors(reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[i].confnum].name)));
           } else {
             sprintf(s, " [ %s File Areas ] ", a()->config()->config()->systemname);
           }
@@ -152,7 +152,7 @@ void dirlist(int mode) {
       p = 1;
       DisplayHorizontalBar(78, 7);
       if (okconf(a()->user())) {
-        if (uconfdir[1].confnum != -1) {
+        if (a()->uconfdir[1].confnum != -1) {
           bout.bprintf("|#1Select |#9[|#2%d-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ",
                                             is ? 0 : 1, is ? nd - 1 : nd);
         } else {

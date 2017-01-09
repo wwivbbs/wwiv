@@ -797,8 +797,8 @@ void Application::InitializeBBS() {
   do_event = 0;
   usub.resize(config()->config()->max_subs);
   udir.resize(config()->config()->max_dirs);
-  uconfsub = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
-  uconfdir = static_cast<userconfrec *>(BbsAllocA(MAX_CONFERENCES * sizeof(userconfrec)));
+  uconfsub.resize(MAX_CONFERENCES);
+  uconfdir.resize(MAX_CONFERENCES);
   qsc = new uint32_t[(config()->config()->qscn_len / sizeof(uint32_t))];
   qsc_n = qsc + 1;
   qsc_q = qsc_n + (config()->config()->max_dirs + 31) / 32;

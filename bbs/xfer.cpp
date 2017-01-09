@@ -797,7 +797,7 @@ void nscanall() {
   bool bScanAllConfs = false;
   g_flags |= g_flag_scanned_files;
 
-  if (uconfdir[1].confnum != -1 && okconf(a()->user())) {
+  if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
     bout.nl();
     bout << "|#5All conferences? ";
     bScanAllConfs = yesno();
@@ -853,7 +853,7 @@ void searchall() {
   }
 
   bool bScanAllConfs = false;
-  if (uconfdir[1].confnum != -1 && okconf(a()->user())) {
+  if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
     bout.nl();
     bout << "|#5All conferences? ";
     bScanAllConfs = yesno();

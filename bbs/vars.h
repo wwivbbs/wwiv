@@ -91,8 +91,6 @@ __EXTRN__ uint32_t
 __EXTRN__ long extratimecall;
 
 __EXTRN__ colorrec rescolor;
-__EXTRN__ userconfrec *uconfsub, *uconfdir;
-__EXTRN__ confrec *subconfs, *dirconfs;
 
 #endif // __INCLUDED_VARS_H__
 

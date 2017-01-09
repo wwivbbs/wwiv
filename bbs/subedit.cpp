@@ -685,11 +685,11 @@ void boardedit() {
       bout.nl();
       bout << "|#2Insert before which sub ('$' for end) : ";
       string s = input(4);
-      int subnum = 0;
+      subconf_t subnum = 0;
       if (s[0] == '$') {
         subnum = size_int(a()->subs().subs());
       } else {
-        subnum = StringToInt(s);
+        subnum = StringToUnsignedShort(s);
       }
       if (!s.empty() && subnum >= 0 && subnum <= size_int(a()->subs().subs())) {
         insert_sub(subnum);
@@ -700,16 +700,16 @@ void boardedit() {
           list_confs(ConferenceType::CONF_SUBS, 0);
           int i2 = select_conf("Put in which conference? ", ConferenceType::CONF_SUBS, 0);
           if (i2 >= 0) {
-            if (in_conference(subnum, &subconfs[i2]) < 0) {
+            if (!in_conference(subnum, &(a()->subconfs[i2]))) {
               iconv = (subconf_t)subnum;
-              addsubconf(ConferenceType::CONF_SUBS, &subconfs[i2], &iconv);
+              addsubconf(ConferenceType::CONF_SUBS, &a()->subconfs[i2], &iconv);
               subnum = static_cast<int>(iconv);
             }
           }
         } else {
-          if (in_conference(subnum, &subconfs[0]) < 0) {
+          if (!in_conference(subnum, &a()->subconfs[0])) {
             iconv = static_cast<subconf_t>(subnum);
-            addsubconf(ConferenceType::CONF_SUBS, &subconfs[0], &iconv);
+            addsubconf(ConferenceType::CONF_SUBS, &a()->subconfs[0], &iconv);
             subnum = static_cast<int>(iconv);
           }
         }
@@ -744,6 +744,6 @@ void boardedit() {
   }
   a()->subchg = 1;
   if (confchg) {
-    save_confs(ConferenceType::CONF_SUBS, -1, nullptr);
+    save_confs(ConferenceType::CONF_SUBS);
   }
 }

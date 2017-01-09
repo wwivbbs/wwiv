@@ -90,6 +90,8 @@ public:
   int num_subs_or_dirs = 0;
 };
 
+bool in_conference(subconf_t subnum, confrec* c);
+
 void tmp_disable_conf(bool disable);
 void reset_disable_conf();
 conf_info_t get_conf_info(ConferenceType conftype);
@@ -97,7 +99,7 @@ conf_info_t get_conf_info(ConferenceType conftype);
 void jump_conf(ConferenceType conftype);
 void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, int action);
 char first_available_designator(ConferenceType conftype);
-void save_confs(ConferenceType conftype, int whichnum, confrec * c);
+void save_confs(ConferenceType conftype);
 void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which);
 void conf_edit(ConferenceType conftype);
 void list_confs(ConferenceType conftype, int ssc);

@@ -19,7 +19,7 @@
 #define __INCLUDED_BBS_ARWORD_H__
 
 #include <cstdint>
-#Include <string>
+#include <string>
 
 uint16_t str_to_arword(const std::string& arstr);
 char *word_to_arstr(int ar);

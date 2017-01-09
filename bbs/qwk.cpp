@@ -99,7 +99,7 @@ void build_qwk_packet() {
 
   remove_from_temp("*.*", QWK_DIRECTORY, 0);
 
-  if ((uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
+  if ((a()->uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
     save_conf = true;
     tmp_disable_conf(true);
   }

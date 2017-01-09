@@ -390,7 +390,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 int try_to_ul(const string& file_name) {
   bool ac = false;
 
-  if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = true;
     tmp_disable_conf(true);
   }

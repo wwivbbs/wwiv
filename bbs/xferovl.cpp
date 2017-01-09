@@ -1068,17 +1068,17 @@ static void config_nscan() {
   os = a()->current_user_dir().subnum;
 
   do {
-    if (okconf(a()->user()) && uconfdir[1].confnum != -1) {
+    if (okconf(a()->user()) && a()->uconfdir[1].confnum != -1) {
       abort = false;
       strcpy(s1, " ");
       bout.nl();
       bout << "Select Conference: \r\n\n";
       size_t i = 0;
-      while (i < static_cast<size_t>(dirconfnum) && uconfdir[i].confnum != -1 && !abort) {
-        sprintf(s2, "%c) %s", dirconfs[uconfdir[i].confnum].designator,
-                stripcolors(reinterpret_cast<char*>(dirconfs[uconfdir[i].confnum].name)));
+      while (i < a()->dirconfs.size() && a()->uconfdir[i].confnum != -1 && !abort) {
+        sprintf(s2, "%c) %s", a()->dirconfs[a()->uconfdir[i].confnum].designator,
+                stripcolors(reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[i].confnum].name)));
         bout.bpla(s2, &abort);
-        s1[i + 1] = dirconfs[uconfdir[i].confnum].designator;
+        s1[i + 1] = a()->dirconfs[a()->uconfdir[i].confnum].designator;
         s1[i + 2] = 0;
         i++;
       }
@@ -1095,10 +1095,10 @@ static void config_nscan() {
     default:
       if (okconf(a()->user()) && dirconfnum > 1) {
         size_t i = 0;
-        while ((ch != dirconfs[uconfdir[i].confnum].designator) && (i < static_cast<size_t>(dirconfnum))) {
+        while ((ch != a()->dirconfs[a()->uconfdir[i].confnum].designator) && (i < static_cast<size_t>(dirconfnum))) {
           i++;
         }
-        if (i >= static_cast<size_t>(dirconfnum)) {
+        if (i >= a()->dirconfs.size()) {
           break;
         }
 
@@ -1133,7 +1133,7 @@ static void config_nscan() {
       } while (!done && !hangup);
       break;
     }
-    if (!okconf(a()->user()) || uconfdir[1].confnum == -1) {
+    if (!okconf(a()->user()) || a()->uconfdir[1].confnum == -1) {
       done1 = true;
     }
   } while (!done1 && !hangup);
@@ -1209,7 +1209,7 @@ void finddescription() {
 
   bout.nl();
   bool ac = false;
-  if (uconfdir[1].confnum != -1 && okconf(a()->user())) {
+  if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
     bout << "|#5All conferences? ";
     ac = yesno();
     if (ac) {

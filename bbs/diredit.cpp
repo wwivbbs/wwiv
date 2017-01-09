@@ -476,16 +476,16 @@ void dlboardedit() {
             list_confs(ConferenceType::CONF_DIRS, 0);
             i2 = select_conf("Put in which conference? ", ConferenceType::CONF_DIRS, 0);
             if (i2 >= 0) {
-              if (in_conference(i, &dirconfs[i2]) < 0) {
+              if (in_conference(i, &a()->dirconfs[i2]) < 0) {
                 iconv = (subconf_t) i;
-                addsubconf(ConferenceType::CONF_DIRS, &dirconfs[i2], &iconv);
+                addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[i2], &iconv);
                 i = static_cast<int>(iconv);
               }
             }
           } else {
-            if (in_conference(i, &dirconfs[0]) < 0) {
+            if (in_conference(i, &a()->dirconfs[0]) < 0) {
               iconv = (subconf_t) i;
-              addsubconf(ConferenceType::CONF_DIRS, &dirconfs[0], &iconv);
+              addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[0], &iconv);
               i = static_cast<int>(iconv);
             }
           }
@@ -523,7 +523,7 @@ void dlboardedit() {
     dirsFile.WriteVector(a()->directories);
   }
   if (confchg) {
-    save_confs(ConferenceType::CONF_DIRS, -1, nullptr);
+    save_confs(ConferenceType::CONF_DIRS);
   }
   if (!a()->at_wfc()) {
     changedsl();

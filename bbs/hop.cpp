@@ -34,7 +34,7 @@ void HopSub() {
 
   bool abort = false;
   int nc = 0;
-  while (uconfsub[nc].confnum != -1) {
+  while (a()->uconfsub[nc].confnum != -1) {
     nc++;
   }
 
@@ -108,7 +108,7 @@ void HopDir() {
   bool abort = false;
 
   int nc = 0;
-  while (uconfdir[nc].confnum != -1) {
+  while (a()->uconfdir[nc].confnum != -1) {
     nc++;
   }
 

@@ -48,7 +48,7 @@ void old_sublist() {
   int sn = 0;
   int en = subconfnum - 1;
   if (okconf(a()->user())) {
-    if (uconfsub[1].confnum != -1) {
+    if (a()->uconfsub[1].confnum != -1) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
       char ch = onek("Q A");
@@ -70,12 +70,12 @@ void old_sublist() {
   bout.bpla("|#9Sub-Conferences Available: ", &abort);
   bout.nl();
   int i = sn;
-  while (i <= en && uconfsub[i].confnum != -1 && !abort) {
-    if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
+  while (i <= en && a()->uconfsub[i].confnum != -1 && !abort) {
+    if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
       setuconf(ConferenceType::CONF_SUBS, i, -1);
       sprintf(s, "|#1%s %c|#0:|#2 %s", "Conference",
-              subconfs[uconfsub[i].confnum].designator,
-              stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
+        a()->subconfs[a()->uconfsub[i].confnum].designator,
+        stripcolors(reinterpret_cast<char*>(a()->subconfs[a()->uconfsub[i].confnum].name)));
       bout.bpla(s, &abort);
     }
     size_t i1 = 0;
@@ -143,7 +143,7 @@ void SubList() {
   size_t en = std::max<size_t>(0, subconfnum - 1);
 
   if (okconf(a()->user())) {
-    if (uconfsub[1].confnum != -1) {
+    if (a()->uconfsub[1].confnum != -1) {
       bout.nl();
       bout << "|#2A)ll conferences, Q)uit, <space> for current conference: ";
       ch = onek("Q A");
@@ -167,9 +167,9 @@ void SubList() {
     p = 1;
     size_t i = sn;
     size_t i1 = 0;
-    while (i <= en && uconfsub[i].confnum != -1 && !abort) {
+    while (i <= en && a()->uconfsub[i].confnum != -1 && !abort) {
       int ns = 0;
-      if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
+      if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
         setuconf(ConferenceType::CONF_SUBS, i, -1);
         i1 = 0;
       }
@@ -179,10 +179,10 @@ void SubList() {
           p = 0;
           firstp = i1;
           bout.cls();
-          if (uconfsub[1].confnum != -1 && okconf(a()->user())) {
+          if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
             sprintf(s, "Conference %c: %s",
-                    subconfs[uconfsub[i].confnum].designator,
-                    stripcolors(reinterpret_cast<char*>(subconfs[uconfsub[i].confnum].name)));
+              a()->subconfs[a()->uconfsub[i].confnum].designator,
+              stripcolors(reinterpret_cast<char*>(a()->subconfs[a()->uconfsub[i].confnum].name)));
           } else {
             sprintf(s, "%s Message Areas", a()->config()->config()->systemname);
           }
@@ -281,7 +281,7 @@ void SubList() {
         p = 1;
         DisplayHorizontalBar(78, 7);
         if (okconf(a()->user())) {
-          if (uconfsub[1].confnum != -1) {
+          if (a()->uconfsub[1].confnum != -1) {
             bout.bprintf("|#1Select |#9[|#21-%d, J=Join Conference, ?=List Again, Q=Quit|#9]|#0 : ", ns);
           } else {
             bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
