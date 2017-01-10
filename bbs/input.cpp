@@ -71,12 +71,14 @@ static std::string input_password_minimal(int max_length) {
       // Handle the case where some telnet clients only return \n vs \r\n
       if (last_input_char != RETURN) {
         bout.nl();
+        last_input_char = ch;
         return pw;
       }
       break;
     case CN:
     case RETURN:
       bout.nl();
+      last_input_char = ch;
       return pw;
       break;
     case CW:  // Ctrl-W
