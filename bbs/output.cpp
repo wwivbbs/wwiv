@@ -278,6 +278,9 @@ int Output::bputs(const string& text) {
         int color = pipecode_int(it, end, 1);
         bout.Color(color);
       }
+      else {
+        bputch('|');
+      }
     }
     else if (*it == CC) {
       it++;

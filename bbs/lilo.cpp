@@ -394,7 +394,8 @@ void getuser() {
   ScopeExit at_exit([] { okmacro = true; bout.reset_key_timeout(); });
 
   okmacro = false;
-  bout.set_logon_key_timeout();
+  // TODO(rushfan): uncomment this
+  //bout.set_logon_key_timeout();
 
   // Let's set this to 0 here since we don't have a user yet.
   a()->usernum = 0;

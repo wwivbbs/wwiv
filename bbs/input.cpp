@@ -47,12 +47,13 @@ static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
 static const unsigned char *valid_letters =
   (unsigned char *) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
+// This needs to work across input1 and input_password
+static unsigned char last_input_char;
+
 static std::string input_password_minimal(int max_length) {
   const char mask_char = okansi() ? '\xFE' : 'X';
   std::string pw;
   bout.mpl(max_length);
-
-  static unsigned char last_char;
 
   while (!hangup) {
     unsigned char ch = bout.getkey();
@@ -68,7 +69,7 @@ static std::string input_password_minimal(int max_length) {
     switch (ch) {
     case SOFTRETURN:
       // Handle the case where some telnet clients only return \n vs \r\n
-      if (last_char != RETURN) {
+      if (last_input_char != RETURN) {
         bout.nl();
         return pw;
       }
@@ -98,7 +99,7 @@ static std::string input_password_minimal(int max_length) {
       }
       break;
     }
-    last_char = ch;
+    last_input_char = ch;
   }
   return "";
 }
@@ -119,7 +120,6 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
   }
 
   int curpos = 0, in_ansi = 0;
-  static unsigned char chLastChar;
   bool done = false;
 
   while (!done && !hangup) {
@@ -184,7 +184,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
       } else {
         switch (chCurrent) {
         case SOFTRETURN:
-          if (chLastChar != RETURN) {
+          if (last_input_char != RETURN) {
             //
             // Handle the "one-off" case where UNIX telnet clients only return
             // '\n' (#10) instead of '\r' (#13).
@@ -240,7 +240,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
           in_ansi = 1;
           break;
         }
-        chLastChar = chCurrent;
+        last_input_char = chCurrent;
       }
     }
     if (in_ansi == 3) {
