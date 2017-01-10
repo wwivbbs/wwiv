@@ -125,8 +125,8 @@ public:
 
   int GetMessageColor() const { return message_color_; }
 
-  int GetForcedReadSubNumber() const { return m_nForcedReadSubNumber; }
-  void SetForcedReadSubNumber(int n) { m_nForcedReadSubNumber = n; }
+  int GetForcedReadSubNumber() const { return forced_read_subnum_; }
+  void SetForcedReadSubNumber(int n) { forced_read_subnum_ = n; }
 
   const std::string GetCurrentSpeed() const { return current_speed_; }
   void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
@@ -162,13 +162,13 @@ public:
 
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (a()->udir[b], not directories[b]).
-  int  current_user_dir_num() const { return m_nCurrentFileArea; }
-  void set_current_user_dir_num(int n) { m_nCurrentFileArea = n; }
+  int  current_user_dir_num() const { return user_dir_num_; }
+  void set_current_user_dir_num(int n) { user_dir_num_ = n; }
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
-  size_t current_user_sub_num() const { return current_user_sub_num_; }
-  void set_current_user_sub_num(size_t n) { current_user_sub_num_ = n; }
+  size_t current_user_sub_num() const { return user_sub_num_; }
+  void set_current_user_sub_num(size_t n) { user_sub_num_ = n; }
 
   const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
   const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
@@ -195,24 +195,24 @@ public:
     return net_networks[net_num()];
   }
 
-  size_t GetCurrentConferenceMessageArea() const { return m_nCurrentConferenceMessageArea; }
-  void SetCurrentConferenceMessageArea(size_t n) { m_nCurrentConferenceMessageArea = n; }
+  size_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
+  void SetCurrentConferenceMessageArea(size_t n) { current_conf_msgarea_ = n; }
 
-  size_t GetCurrentConferenceFileArea() const { return m_nCurrentConferenceFileArea; }
-  void SetCurrentConferenceFileArea(size_t n) { m_nCurrentConferenceFileArea = n; }
+  size_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
+  void SetCurrentConferenceFileArea(size_t n) { current_conf_filearea_ = n; }
 
   bool IsUseInternalZmodem() const { return internal_zmodem_; }
   
   int  GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
   void SetNumMessagesInCurrentMessageArea(int n) { m_nNumMsgsInCurrentSub = n; }
 
-  int  GetBeginDayNodeNumber() const { return m_nBeginDayNodeNumber; }
-  void SetBeginDayNodeNumber(int n) { m_nBeginDayNodeNumber = n; }
+  int  GetBeginDayNodeNumber() const { return beginday_node_number_; }
+  void SetBeginDayNodeNumber(int n) { beginday_node_number_ = n; }
 
-  int  GetExecChildProcessWaitTime() const { return m_nExecChildProcessWaitTime; }
-  void SetExecChildProcessWaitTime(int n) { m_nExecChildProcessWaitTime = n; }
+  int  GetExecChildProcessWaitTime() const { return exec_child_process_wait_time_; }
+  void SetExecChildProcessWaitTime(int n) { exec_child_process_wait_time_ = n; }
 
-  bool IsExecLogSyncFoss() const { return m_bExecLogSyncFoss; }
+  bool IsExecLogSyncFoss() const { return exec_log_syncfoss_; }
   
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
@@ -308,25 +308,25 @@ public:
   int chatname_color_ = 0;
   int message_color_ = 0;
 
-  int m_nForcedReadSubNumber = 0;
+  int forced_read_subnum_ = 0;
   bool allow_cc_ = false;
   bool user_online_ = false;
-  bool m_bQuoting = false;
+  bool quoting_ = false;
   bool m_bTimeOnlineLimited = false;
 
   bool  newscan_at_login_ = false,
     internal_zmodem_ = true,
-    m_bExecLogSyncFoss = true;
+    exec_log_syncfoss_ = true;
   int m_nNumMessagesReadThisLogon = 0,
     m_nCurrentLanguageNumber = 0,
-    m_nCurrentFileArea = 0,
-    current_user_sub_num_ = 0,
+    user_dir_num_ = 0,
+    user_sub_num_ = 0,
     current_read_message_area = 0,
-    m_nCurrentConferenceMessageArea = 0,
-    m_nCurrentConferenceFileArea = 0,
+    current_conf_msgarea_ = 0,
+    current_conf_filearea_ = 0,
     m_nNumMsgsInCurrentSub = 0,
-    m_nBeginDayNodeNumber = 1,
-    m_nExecChildProcessWaitTime = 500,
+    beginday_node_number_ = 1,
+    exec_child_process_wait_time_ = 500,
     m_nMaxNumberMessageAreas = 0,
     m_nMaxNumberFileAreas = 0,
     network_num_ = 0,

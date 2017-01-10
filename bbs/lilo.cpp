@@ -939,17 +939,17 @@ void logon() {
   if (!a()->logon_cmd.empty()) {
     if (a()->logon_cmd.front() == '@') {
       // Let's see if we need to run a basic script.
-      if (starts_with(a()->logon_cmd, "@basic:")) {
-        string cmd = a()->logon_cmd;
-        cmd = cmd.substr(7);
+      const string BASIC_PREFIX = "@basic:";
+      if (starts_with(a()->logon_cmd, BASIC_PREFIX)) {
+        const string cmd = a()->logon_cmd.substr(BASIC_PREFIX.size());
         LOG(INFO) << "Running basic script: " << cmd;
         wwiv::bbs::RunBasicScript(cmd);
       }
     }
     else {
       bout.nl();
-      const string command = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
-      ExecuteExternalProgram(command, a()->GetSpawnOptions(SPAWNOPT_LOGON));
+      const string cmd = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
+      ExecuteExternalProgram(cmd, a()->GetSpawnOptions(SPAWNOPT_LOGON));
     }
     bout.nl(2);
   }
@@ -960,6 +960,7 @@ void logon() {
 
   a()->UpdateTopScreen();
   a()->read_subs();
+  // Is this needed? Doesn't read_subs do it?
   a()->subs().Load();
   rsm(a()->usernum, a()->user(), true);
 
