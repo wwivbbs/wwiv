@@ -22,7 +22,7 @@
 
 bool CheckForHangup();
 void Hangup();
-void makeansi(int attr, char *out_buffer, bool forceit);
+std::string makeansi(int attr, bool forceit);
 bool yesno();
 bool noyes();
 char ynq();

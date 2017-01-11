@@ -63,48 +63,53 @@ void Hangup() {
   throw wwiv::bbs::hangup_error(a()->user()->GetName());
 }
 
-static void addto(char *ansi_str, int num) {
-  strcat(ansi_str, (ansi_str[0]) ? ";" : "\x1b[");
-  std::string s = std::to_string(num);
-  strcat(ansi_str, s.c_str());
+static void addto(std::string *ansi_str, int num) {
+  if (ansi_str->empty()) {
+    ansi_str->append("\x1b[");
+  }
+  else {
+    ansi_str->append(";");
+  }
+  ansi_str->append(std::to_string(num));
 }
 
 /* Passed to this function is a one-byte attribute as defined for IBM type
 * screens.  Returned is a string which, when printed, will change the
 * display to the color desired, from the current function.
 */
-void makeansi(int attr, char *out_buffer, bool forceit) {
+std::string makeansi(int attr, bool forceit) {
   static const char *temp = "04261537";
 
   int catr = curatr;
-  out_buffer[0] = '\0';
+  std::string out;
   if (attr != catr) {
     if ((catr & 0x88) ^ (attr & 0x88)) {
-      addto(out_buffer, 0);
-      addto(out_buffer, 30 + temp[attr & 0x07] - '0');
-      addto(out_buffer, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(&out, 0);
+      addto(&out, 30 + temp[attr & 0x07] - '0');
+      addto(&out, 40 + temp[(attr & 0x70) >> 4] - '0');
       catr = (attr & 0x77);
     }
     if ((catr & 0x07) != (attr & 0x07)) {
-      addto(out_buffer, 30 + temp[attr & 0x07] - '0');
+      addto(&out, 30 + temp[attr & 0x07] - '0');
     }
     if ((catr & 0x70) != (attr & 0x70)) {
-      addto(out_buffer, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(&out, 40 + temp[(attr & 0x70) >> 4] - '0');
     }
     if ((catr & 0x08) ^ (attr & 0x08)) {
-      addto(out_buffer, 1);
+      addto(&out, 1);
     }
     if ((catr & 0x80) ^ (attr & 0x80)) {
       // Italics will be generated
-      addto(out_buffer, 5);
+      addto(&out, 5);
     }
   }
-  if (out_buffer[0]) {
-    strcat(out_buffer, "m");
+  if (!out.empty()) {
+    out += "m";
   }
   if (!okansi() && !forceit) {
-    out_buffer[0] = '\0';
+    out.clear();
   }
+  return out;
 }
 
 static void print_yn(bool yes) {

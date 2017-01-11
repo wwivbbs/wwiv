@@ -150,22 +150,20 @@ void Output::bs() {
   bputs("\b \b");
 }
 
-void Output::SystemColor(wwiv::sdk::Color color) {
-  SystemColor(static_cast<uint8_t>(color));
+void Output::SystemColor(wwiv::sdk::Color c) {
+  SystemColor(static_cast<uint8_t>(c));
 }
 
-void Output::SystemColor(int nColor) {
-  char szBuffer[255];
-  makeansi(nColor, szBuffer, false);
-  bputs(szBuffer);
+void Output::SystemColor(int c) {
+  bputs(makeansi(c, false));
 }
 
-void Output::litebar(const char *formatText, ...) {
+void Output::litebar(const char *fmt, ...) {
   va_list ap;
   char s[1024];
 
-  va_start(ap, formatText);
-  vsnprintf(s, sizeof(s), formatText, ap);
+  va_start(ap, fmt);
+  vsnprintf(s, sizeof(s), fmt, ap);
   va_end(ap);
 
 #ifdef OLD_LITEBAR

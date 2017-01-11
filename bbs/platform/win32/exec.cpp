@@ -34,11 +34,6 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 
-
-// from com.cpp.
-// this is only used in the 9x support and will be remvoed shortly
-void makeansi(int attr, char *out_buffer, bool forceit);
-
 static FILE* hLogFile;
 
 const int   CONST_SBBSFOS_FOSSIL_MODE           = 0;
@@ -259,7 +254,6 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
 
           //ExpandWWIVHeartCodes( szReadBuffer );
           //int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
-          //fprintf( hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten );
         } else {
           if (a()->IsExecLogSyncFoss()) {
             int nNumWritten = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
@@ -278,35 +272,6 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       ::Sleep(0);
     }
   }
-}
-
-bool ExpandWWIVHeartCodes(char *buffer) {
-  curatr = 0;
-  char szTempBuffer[ CONST_SBBSFOS_BUFFER_SIZE + 100 ];
-  char *pIn = buffer;
-  char *pOut = szTempBuffer;
-  int n = 0;
-  while (*pIn && n++ < (CONST_SBBSFOS_BUFFER_SIZE)) {
-    if (*pIn == '\x03') {
-      pIn++;
-      if (*pIn >= '0' && *pIn <= '9') {
-        char szTempColor[ 81 ];
-        int nColor = *pIn - '0';
-        makeansi(a()->user()->GetColor(nColor), szTempColor, false);
-        char *pColor = szTempColor;
-        while (*pColor) {
-          *pOut++ = *pColor++;
-        }
-        pIn++;
-      } else {
-        *pOut++ = '\x03';
-      }
-    }
-    *pOut++ = *pIn++;
-  }
-  *pOut++ = '\0';
-  strcpy(buffer, szTempBuffer);
-  return true;
 }
 
 //  Main code that launches external programs and handle sbbsexec support
