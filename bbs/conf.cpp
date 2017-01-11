@@ -56,8 +56,6 @@ int  modify_conf(ConferenceType conftype, int which);
 void insert_conf(ConferenceType conftype, int n);
 void delete_conf(ConferenceType conftype, int n);
 bool create_conf_file(ConferenceType conftype);
-bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list);
-
 
 namespace wwiv {
 namespace bbs {
@@ -160,10 +158,6 @@ void jump_conf(ConferenceType conftype) {
  * type.
  */
 void update_conf(ConferenceType conftype, subconf_t * sub1, subconf_t * sub2, int action) {
-  int pos1, pos2;
-  int i, i1;
-  confrec c;
-
   auto info = get_conf_info(conftype);
 
   switch (action) {
@@ -234,6 +228,7 @@ bool in_conference(subconf_t subnum, confrec* c) {
       return true;
     }
   }
+  return false;
 }
 
 /*
@@ -278,7 +273,7 @@ static std::string create_conf_str(std::set<char> chars) {
  * Lists subs/dirs/whatever allocated to a specific conference.
  */
 void showsubconfs(ConferenceType conftype, confrec * c) {
-  char s[120], szIndex[5], ts[2];
+  char s[120];
 
   if (!c) {
     return;
@@ -290,7 +285,7 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
   bout.bpla("|#2NN  Name                                    ConfList", &abort);
   bout.bpla("|#7--- ======================================= ==========================", &abort);
 
-  for (int i = 0; i < info.num_subs_or_dirs && !abort; i++) {
+  for (subconf_t i = 0; i < info.num_subs_or_dirs && !abort; i++) {
     // build conf list string
     std::set<char> confs;
     for (int i1 = 0; i1 < info.num_confs; i1++) {
@@ -318,7 +313,7 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
  * Takes a string like "100-150,201,333" and returns pointer to list of
  * numbers. Number of numbers in the list is returned in numinlist.
  */
-bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
+bool str_to_numrange(const char *pszNumbersText, std::vector<subconf_t>& list) {
   subconf_t intarray[1024];
 
   // init vars
@@ -371,7 +366,7 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
 
   // allocate memory for list
   list.clear();
-  for (int loop = 0; loop < 1024; loop++) {
+  for (subconf_t loop = 0; loop < 1024; loop++) {
     if (intarray[loop]) {
       list.push_back(loop);
     }
@@ -384,7 +379,7 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<int>& list) {
  * Function to add one subconf (sub/dir/whatever) to a conference.
  */
 void addsubconf(ConferenceType conftype, confrec* c, subconf_t* which) {
-  std::vector<int> intlist;
+  std::vector<subconf_t> intlist;
 
   if (!c) {
     return;
@@ -420,21 +415,20 @@ void addsubconf(ConferenceType conftype, confrec* c, subconf_t* which) {
     }
     if (!in_conference(cn, c)) {
       c->subs.insert(cn);
-      c->num = c->subs.size();
+      c->num = static_cast<subconf_t>(c->subs.size());
     }
   }
 }
 
-
 /*
  * Function to delete one subconf (sub/dir/whatever) from a conference.
  */
-void delsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
+static void delsubconf(confrec* c, subconf_t* which) {
   if (!c || c->subs.empty()) {
     return;
   }
 
-  std::vector<int> intlist;
+  std::vector<subconf_t> intlist;
   if (which == nullptr) {
     bout.nl();
     bout << "|#2Remove: ";
@@ -450,7 +444,7 @@ void delsubconf(ConferenceType conftype, confrec * c, subconf_t * which) {
   for (auto cn : intlist) {
     if (in_conference(cn, c)) {
       c->subs.erase(cn);
-      c->num = c->subs.size();
+      c->num = static_cast<subconf_t>(c->subs.size());
     }
   }
 }
@@ -479,8 +473,6 @@ int modify_conf(ConferenceType conftype,  int which) {
   bool changed = false;
   bool ok   = false;
   bool done = false;
-  subconf_t i;
-  char ch, ch1, s[81];
 
   int n = which;
 
@@ -514,7 +506,7 @@ int modify_conf(ConferenceType conftype,  int which) {
     bout.nl();
 
     bout << "|#7(|#2Q|#7=|#1Quit|#7) ConfEdit [|#1A|#7-|#1O|#7,|#1S|#7,|#1[|#7,|#1]|#7] : ";
-    ch = onek("QSABCDEFGHIJKLMNO[]", true);
+    char ch = onek("QSABCDEFGHIJKLMNO[]", true);
 
     switch (ch) {
     case '[': {
@@ -525,16 +517,16 @@ int modify_conf(ConferenceType conftype,  int which) {
     } break;
     case ']':
       n++;
-      if (n >= info.confs.size()) {
+      if (n >= size_int(info.confs)) {
         n = 0;
       }
       break;
-    case 'A':
+    case 'A': {
       bout.nl();
       bout << "|#2New Designator: ";
-      ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
+      char ch1 = onek("ABCDEFGHIJKLMNOPQRSTUVWXYZ");
       ok = true;
-      for (i = 0; i < info.confs.size(); i++) {
+      for (int i = 0; i < size_int(info.confs); i++) {
         if (i == n) {
           i++;
         }
@@ -550,7 +542,7 @@ int modify_conf(ConferenceType conftype,  int which) {
       }
       c.designator = ch1;
       changed = true;
-      break;
+    } break;
     case 'B': {
       bout.nl();
       bout << "|#2Conference Name: ";
@@ -597,10 +589,10 @@ int modify_conf(ConferenceType conftype,  int which) {
       c.maxage = input_number<uint8_t>(c.maxage, 0, 255, true);
       changed = true;
       break;
-    case 'I':
+    case 'I': {
       bout.nl();
       bout << "|#2Toggle which AR requirement? ";
-      ch1 = onek("\rABCDEFGHIJKLMNOP ");
+      char ch1 = onek("\rABCDEFGHIJKLMNOP ");
       switch (ch1) {
       case ' ':
       case '\r':
@@ -610,11 +602,11 @@ int modify_conf(ConferenceType conftype,  int which) {
         changed = true;
         break;
       }
-      break;
-    case 'J':
+    } break;
+    case 'J': {
       bout.nl();
       bout << "|#2Toggle which DAR requirement? ";
-      ch1 = onek("\rABCDEFGHIJKLMNOP ");
+      char ch1 = onek("\rABCDEFGHIJKLMNOP ");
       switch (ch1) {
       case ' ':
       case '\r':
@@ -624,18 +616,18 @@ int modify_conf(ConferenceType conftype,  int which) {
         changed = true;
         break;
       }
-      break;
+    } break;
     case 'K':
       bout.nl();
       bout << "|#2Min BPS Rate: ";
-      c.minbps = input_number<uint8_t>(c.minbps, 0, 255, true);
+      c.minbps = input_number<subconf_t>(c.minbps, 0, 255, true);
       changed = true;
       break;
-    case 'L':
+    case 'L': {
       bout.nl();
       changed = true;
       bout << "|#5(Q=Quit) Gender Allowed: (M)ale, (F)emale, (A)ll: ";
-      ch1 = onek("MFAQ");
+      char ch1 = onek("MFAQ");
       switch (ch1) {
       case 'M':
         c.sex = 0;
@@ -649,7 +641,7 @@ int modify_conf(ConferenceType conftype,  int which) {
       case 'Q':
         break;
       }
-      break;
+    } break;
     case 'M':
       bout.nl();
       changed = true;
@@ -682,14 +674,14 @@ int modify_conf(ConferenceType conftype,  int which) {
       do {
         bout.nl();
         bout << "|#2A)dd, R)emove, C)lear, F)ill, Q)uit, S)tatus: ";
-        ch1 = onek("QARCFS");
+        char ch1 = onek("QARCFS");
         switch (ch1) {
         case 'A':
           addsubconf(conftype, &c, nullptr);
           changed = true;
           break;
         case 'R':
-          delsubconf(conftype, &c, nullptr);
+          delsubconf(&c, nullptr);
           changed = true;
           break;
         case 'C':
@@ -697,9 +689,9 @@ int modify_conf(ConferenceType conftype,  int which) {
           changed = true;
           break;
         case 'F':
-          for (i = 0; i < info.num_subs_or_dirs; i++) {
+          for (subconf_t i = 0; i < info.num_subs_or_dirs; i++) {
             c.subs.insert(i);
-            c.num = c.subs.size();
+            c.num = static_cast<subconf_t>(c.subs.size());
             changed = true;
           }
           break;
@@ -985,31 +977,6 @@ bool create_conf_file(ConferenceType conftype) {
 }
 
 /*
-* Returns number of conferences in a specified conference file.
-*/
-static int get_num_conferences(const char *file_name) {
-  char ls[MAX_CONF_LINE];
-  int i = 0;
-
-  if (!File::Exists(file_name)) {
-    return 0;
-  }
-  TextFile f(file_name, "rt");
-  if (!f.IsOpen()) {
-    return 0;
-  }
-
-  while (f.ReadLine(ls, sizeof(ls))) {
-    if (ls[0] == '~') {
-      i++;
-    }
-  }
-
-  f.Close();
-  return i;
-}
-
-/*
  * Reads in conferences and returns pointer to conference data. Out-of-memory
  * messages are shown if applicable.
  */
@@ -1074,7 +1041,7 @@ static std::vector<confrec> read_conferences(const std::string& file_name) {
         if (word.empty()) continue;
         c.subs.insert(StringToUnsignedShort(word));
       }
-      c.num = c.subs.size();
+      c.num = static_cast<subconf_t>(c.subs.size());
       c.maxnum = c.num;
       result.push_back(c);
       c = {};

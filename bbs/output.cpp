@@ -241,14 +241,14 @@ int Output::bputs(const string& text) {
   if (text.empty() || hangup) { return 0; }
 
   auto it = std::begin(text);
-  auto end = std::end(text);
-  while (it != end) {
+  auto fin = std::end(text);
+  while (it != fin) {
     // pipe codes.
     if (*it == '|') {
       it++;
-      if (it == end) { bputch('|', true);  break; }
+      if (it == fin) { bputch('|', true);  break; }
       if (std::isdigit(*it)) {
-        int color = pipecode_int(it, end, 2);
+        int color = pipecode_int(it, fin, 2);
         if (color < 16) {
           bout.SystemColor(color | (curatr & 0xf0));
         }
@@ -266,7 +266,7 @@ int Output::bputs(const string& text) {
       }
       else if (*it == '#') {
         it++;
-        int color = pipecode_int(it, end, 1);
+        int color = pipecode_int(it, fin, 1);
         bout.Color(color);
       }
       else {
@@ -275,7 +275,7 @@ int Output::bputs(const string& text) {
     }
     else if (*it == CC) {
       it++;
-      if (it == end) { bputch(CC, true);  break; }
+      if (it == fin) { bputch(CC, true);  break; }
       unsigned char c = *it++;
       if (c >= SPACE && c <= 126) {
         Color(c - '0');
@@ -283,13 +283,13 @@ int Output::bputs(const string& text) {
     }
     else if (*it == CO) {
       it++;
-      if (it == end) { bputch(CO, true);  break; }
+      if (it == fin) { bputch(CO, true);  break; }
       it++;
-      if (it == end) { bputch(CO, true);  break; }
+      if (it == fin) { bputch(CO, true);  break; }
       BbsMacroContext ctx(a()->user());
       auto s = interpret(*it++, ctx);
       bout.bputs(s);
-    } else if (it == end) { 
+    } else if (it == fin) { 
       break; 
     }
     else { 
