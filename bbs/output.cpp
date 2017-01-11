@@ -85,12 +85,7 @@ void Output::Color(int wwivColor) {
   }
 
   SystemColor(c);
-
-  char buffer[81];
-  memset(buffer, 0, sizeof(buffer));
-  makeansi(a()->user()->HasColor() ?
-           a()->user()->GetColor(0) : a()->user()->GetBWColor(0), buffer, false);
-  endofline_ = buffer;
+  needs_color_reset_at_newline_ = true;
 }
 
 void Output::ResetColors() {
@@ -142,10 +137,6 @@ void Output::RestorePosition() {
 
 void Output::nl(int nNumLines) {
   for (int i = 0; i < nNumLines; i++) {
-    if (!endofline_.empty()) {
-      bputs(endofline_);
-      endofline_.clear();
-    }
     bputs("\r\n");
     // TODO Change this to fire a notification to a Subject
     // that we should process instant messages now.

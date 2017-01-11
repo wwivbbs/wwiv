@@ -43,10 +43,9 @@ class LocalIO;
 
 class SavedLine {
 public:
-  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c, const std::string& e): line(l), color(c), endofline(e) {}
+  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c): line(l), color(c) {}
   std::vector<std::pair<char, uint8_t>> line;
   int color;
-  std::string endofline;
 };
 
 class Output : public std::ostream {
@@ -138,7 +137,6 @@ class Output : public std::ostream {
   bool RestoreCurrentLine(const SavedLine& line);
   SavedLine SaveCurrentLine();
   void dump();
-  void clear_endofline() { endofline_.clear(); }
   void clear_lines_listed() { lines_listed_ = 0; }
   unsigned int lines_listed() const { return lines_listed_; }
   int wherex();
@@ -165,9 +163,11 @@ public:
 private:
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
-  std::string endofline_;
   int x_ = 0;
   bool last_key_local_ = true;
+  // Means we need to reset the color before displaying our
+  // next newline character.
+  bool needs_color_reset_at_newline_ = false;
   void execute_ansi();
   std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);

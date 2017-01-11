@@ -135,7 +135,7 @@ void jump_conf(ConferenceType conftype) {
   for (const auto& uc : info.uc) {
     if (uc.confnum == -1 || checka()) break;
     const auto ac = static_cast<char>(info.confs[uc.confnum].designator);
-    bout << "|#2" << ac << "#7)|#1 "
+    bout << "|#2" << ac << "|#7)|#1 "
       << stripcolors(reinterpret_cast<char*>(info.confs[uc.confnum].name))
       << "\r\n";
     allowable.push_back(ac);

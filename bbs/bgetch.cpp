@@ -276,13 +276,12 @@ bool Output::RestoreCurrentLine(const SavedLine& line) {
   }
   bout.flush();
   bout.SystemColor(line.color);
-  endofline_ = line.endofline;
 
   return true;
 }
 
 SavedLine Output::SaveCurrentLine() {
-  return {current_line_, curatr, endofline_};
+  return {current_line_, curatr};
 }
 
 void Output::dump() {

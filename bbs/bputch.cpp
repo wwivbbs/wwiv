@@ -170,10 +170,11 @@ void Output::execute_ansi() {
 int Output::bputch(char c, bool use_buffer) {
   int displayed = 0;
 
-  if (c == SOFTRETURN && !endofline_.empty()) {
-    displayed = bputs(endofline_);
-    endofline_.clear();
+  if (c == SOFTRETURN && needs_color_reset_at_newline_) {
+    Color(0);
+    needs_color_reset_at_newline_ = false;
   }
+
   if (outcom && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
       if (c == SOFTRETURN) {
