@@ -77,6 +77,7 @@ def Main()
   While True
     wwiv.io.printfile("oneliner");
 	PrintList(l)
+	nl()
 	puts("|#9Would you like to add an oneliner? ")
 
 	If Not yn() Then
