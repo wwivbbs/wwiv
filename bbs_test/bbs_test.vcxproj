@@ -87,6 +87,7 @@
     <ClCompile Include="bbs_helper.cpp" />
     <ClCompile Include="bbs_test_main.cpp" />
     <ClCompile Include="bputch_test.cpp" />
+    <ClCompile Include="bputs_test.cpp" />
     <ClCompile Include="datetime_test.cpp" />
     <ClCompile Include="make_abs_test.cpp" />
     <ClCompile Include="new_bbslist_test.cpp" />

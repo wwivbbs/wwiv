@@ -298,7 +298,7 @@ int Output::bputs(const string& text) {
   }
 
   flush();
-  return text.size();
+  return stripcolors(text).size();
 }
 
 // This one does a newline.  Since it used to be pla. Should make

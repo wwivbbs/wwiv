@@ -32,30 +32,33 @@ using std::cout;
 using std::endl;
 using std::string;
 
-class BPutchTest : public ::testing::Test {
+class BPutsTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
         helper.SetUp();
     }
 
-    virtual int Puts(string s) {
-      int count = 0;
-      for (const auto& c : s) {
-        count += bout.bputch(c);
-      }
-      return count;
+    virtual int Puts(const string& s) {
+      return bout.bputs(s);
     }
 
     BbsHelper helper;
 };
 
-TEST_F(BPutchTest, SingleLetter) {
-  EXPECT_EQ(1, bout.bputch('A'));
+TEST_F(BPutsTest, SingleLetter) {
+  EXPECT_EQ(1, bout.bputs("A"));
   EXPECT_STREQ("A", helper.io()->captured().c_str());
 }
 
-TEST_F(BPutchTest, MultipleLetters) {
+TEST_F(BPutsTest, MultipleLetters) {
   const string kHelloWorld = "Hello World\r\n";
   EXPECT_EQ(kHelloWorld.size(), Puts(kHelloWorld));
+  EXPECT_EQ(kHelloWorld, helper.io()->captured());
+}
+
+TEST_F(BPutsTest, SinglePipe) {
+  const string kHelloWorld = "Hello World\r\n";
+  const string s = "|#1Hello World\r\n";
+  EXPECT_EQ(kHelloWorld.size(), Puts(s));
   EXPECT_EQ(kHelloWorld, helper.io()->captured());
 }

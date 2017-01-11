@@ -40,6 +40,9 @@
     <ClCompile Include="trashcan_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="bputs_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tests">

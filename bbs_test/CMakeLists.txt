@@ -7,6 +7,7 @@ include_directories(../deps/cereal/include)
 
 set(test_sources
   bbs_helper.cpp
+  bputs_test.cpp
   bputch_test.cpp
   datetime_test.cpp
   make_abs_test.cpp
