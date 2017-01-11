@@ -255,7 +255,7 @@ int Output::bputs(const string& text) {
     // pipe codes.
     if (*it == '|') {
       it++;
-      if (it == end) { bputch('|');  break; }
+      if (it == end) { bputch('|', true);  break; }
       if (std::isdigit(*it)) {
         int color = pipecode_int(it, end, 2);
         if (color < 16) {
@@ -279,12 +279,12 @@ int Output::bputs(const string& text) {
         bout.Color(color);
       }
       else {
-        bputch('|');
+        bputch('|', true);
       }
     }
     else if (*it == CC) {
       it++;
-      if (it == end) { bputch(CC);  break; }
+      if (it == end) { bputch(CC, true);  break; }
       unsigned char c = *it++;
       if (c >= SPACE && c <= 126) {
         Color(c - '0');
@@ -292,9 +292,9 @@ int Output::bputs(const string& text) {
     }
     else if (*it == CO) {
       it++;
-      if (it == end) { bputch(CO);  break; }
+      if (it == end) { bputch(CO, true);  break; }
       it++;
-      if (it == end) { bputch(CO);  break; }
+      if (it == end) { bputch(CO, true);  break; }
       BbsMacroContext ctx(a()->user());
       auto s = interpret(*it++, ctx);
       bout.bputs(s);

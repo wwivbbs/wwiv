@@ -262,14 +262,21 @@ void Output::flush() {
   bputch_buffer_.clear();
 }
 
-void Output::rputch(char ch, bool bUseInternalBuffer) {
+void Output::rputch(char ch, bool use_buffer_) {
   if (ok_modem_stuff && nullptr != a()->remoteIO()) {
-    if (bUseInternalBuffer) {
+    if (use_buffer_) {
       if (bputch_buffer_.size() > 1024) {
         flush();
       }
       bputch_buffer_.push_back(ch);
-    } else {
+    } else if (!bputch_buffer_.empty()) {
+      // If we have stuff in the buffer, and now are asked
+      // to send an unbuffered character, we must send the
+      // contents of the buffer 1st.
+      bputch_buffer_.push_back(ch);
+      flush();
+    }
+    else {
       a()->remoteIO()->put(ch);
     }
   }
