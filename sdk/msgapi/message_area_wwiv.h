@@ -66,8 +66,8 @@ public:
   bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) override;
   bool Close() override;
 private:
-  int message_area_number_;
   WWIVMessageApi* wapi_;
+  int message_area_number_;
 };
 
 class WWIVMessageArea: public MessageArea, private Type2Text {

@@ -382,10 +382,10 @@ TEST(StringsTest, IEQuals) {
 }
 
 TEST(StringsTest, SizeWithoutColors) {
-  EXPECT_EQ(1, size_without_colors("a"));
-  EXPECT_EQ(1, size_without_colors("|#1a"));
-  EXPECT_EQ(1, size_without_colors("|09a"));
-  EXPECT_EQ(1, size_without_colors("|17|10a"));
+  EXPECT_EQ(1u, size_without_colors("a"));
+  EXPECT_EQ(1u, size_without_colors("|#1a"));
+  EXPECT_EQ(1u, size_without_colors("|09a"));
+  EXPECT_EQ(1u, size_without_colors("|17|10a"));
 }
 
 TEST(StringsTest, TrimToSizeIgnoreColors) {

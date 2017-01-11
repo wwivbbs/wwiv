@@ -83,9 +83,9 @@ public:
   conf_info_t(std::vector<confrec>& c, std::vector<userconfrec>& u)
     : confs(c), uc(u), num_confs(c.size()) {}
   
-  int num_confs;
   std::vector<confrec>& confs;
   std::vector<userconfrec>& uc;
+  int num_confs;
   std::string file_name;
   int num_subs_or_dirs = 0;
 };

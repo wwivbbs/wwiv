@@ -38,7 +38,8 @@ TEST(Crc32Test, Simple) {
   ASSERT_TRUE(File::Exists(path));
 
   uint32_t crc = crc32file(path);
+  uint32_t expected = 0x4a17b156;
 
   // use wwiv/scripts/crc32.py to generate golden values as needed.
-  EXPECT_EQ(0x4a17b156, crc) << " was " << std::hex << crc;
+  EXPECT_EQ(expected, crc) << " was " << std::hex << crc;
 }
