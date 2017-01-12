@@ -77,37 +77,34 @@ static void addto(std::string *ansi_str, int num) {
 * screens.  Returned is a string which, when printed, will change the
 * display to the color desired, from the current function.
 */
-std::string makeansi(int attr, bool forceit) {
-  static const char *temp = "04261537";
+std::string makeansi(int attr, int current_attr) {
+  static const std::vector<int> kAnsiColorMap = { '0', '4', '2', '6', '1', '5', '3', '7' };
 
-  int catr = curatr;
+  int catr = current_attr;
   std::string out;
   if (attr != catr) {
     if ((catr & 0x88) ^ (attr & 0x88)) {
       addto(&out, 0);
-      addto(&out, 30 + temp[attr & 0x07] - '0');
-      addto(&out, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
+      addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
       catr = (attr & 0x77);
     }
     if ((catr & 0x07) != (attr & 0x07)) {
-      addto(&out, 30 + temp[attr & 0x07] - '0');
+      addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
     }
     if ((catr & 0x70) != (attr & 0x70)) {
-      addto(&out, 40 + temp[(attr & 0x70) >> 4] - '0');
+      addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
     }
-    if ((catr & 0x08) ^ (attr & 0x08)) {
+    if ((catr & 0x08) != (attr & 0x08)) {
       addto(&out, 1);
     }
-    if ((catr & 0x80) ^ (attr & 0x80)) {
+    if ((catr & 0x80) != (attr & 0x80)) {
       // Italics will be generated
-      addto(&out, 5);
+      addto(&out, 3);
     }
   }
   if (!out.empty()) {
     out += "m";
-  }
-  if (!okansi() && !forceit) {
-    out.clear();
   }
   return out;
 }

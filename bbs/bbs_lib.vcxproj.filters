@@ -355,7 +355,6 @@
     <ClCompile Include="trashcan.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="gfileedit.cpp" />
     <ClCompile Include="application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -366,6 +365,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\deps\my_basic-master\core\my_basic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gfileedit.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

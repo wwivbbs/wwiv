@@ -164,7 +164,10 @@ std::string Output::MakeColor(int wwivcolor) {
 }
 
 std::string Output::MakeSystemColor(int c) {
-  return makeansi(c, false);
+  if (!okansi()) {
+    return "";
+  }
+  return makeansi(c, curatr);
 }
 
 std::string Output::MakeSystemColor(wwiv::sdk::Color c) {

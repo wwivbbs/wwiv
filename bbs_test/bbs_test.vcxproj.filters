@@ -43,6 +43,9 @@
     <ClCompile Include="bputs_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="makeansi_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tests">

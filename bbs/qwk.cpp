@@ -575,7 +575,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
       // Only convert to ansi if we have memory for it, but still strip heart
       // code even if we don't have the memory.
       if (new_pos + 10 < new_size) {
-        const string ansi_string = makeansi(text[pos + 1], true);
+        const string ansi_string = makeansi(text[pos + 1], curatr);
         temp[new_pos] = 0;
         strcat(temp, ansi_string.c_str());
         new_pos = strlen(temp);

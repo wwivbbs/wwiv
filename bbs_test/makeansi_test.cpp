@@ -22,8 +22,8 @@
 #include <memory>
 #include <string>
 
-#include "bbs/output.h"
-#include "bbs/bbs.h"
+#include "bbs/com.h"
+#include "bbs/vars.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
@@ -32,47 +32,47 @@ using std::cout;
 using std::endl;
 using std::string;
 
-class BPutsTest : public ::testing::Test {
+class MakeAnsiTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
         helper.SetUp();
     }
 
-    virtual int Puts(const string& s) {
-      auto size = bout.bputs(s);
-      std::cerr << "Puts: [" << s << "]; size: " << size << "\r\n";
-      return size;
-
-    }
-
     BbsHelper helper;
 };
 
-TEST_F(BPutsTest, SingleLetter) {
-  EXPECT_EQ(1, bout.bputs("A"));
-  EXPECT_STREQ("A", helper.io()->captured().c_str());
+TEST_F(MakeAnsiTest, NOOP) {
+  EXPECT_EQ("", makeansi(7, 7));
 }
 
-TEST_F(BPutsTest, MultipleLetters) {
-  const string kHelloWorld = "Hello World\r\n";
-  EXPECT_EQ(kHelloWorld.size(), Puts(kHelloWorld));
-  EXPECT_EQ(kHelloWorld, helper.io()->captured());
+TEST_F(MakeAnsiTest, Foreground) {
+  EXPECT_EQ("\x1B[30m", makeansi(0, 7));
+  EXPECT_EQ("\x1B[34m", makeansi(1, 7));
+  EXPECT_EQ("\x1B[32m", makeansi(2, 7));
+  EXPECT_EQ("\x1B[36m", makeansi(3, 7));
+  EXPECT_EQ("\x1B[31m", makeansi(4, 7));
+  EXPECT_EQ("\x1B[35m", makeansi(5, 7));
+  EXPECT_EQ("\x1B[33m", makeansi(6, 7));
+  EXPECT_EQ("\x1B[37m", makeansi(7, 0));
+  EXPECT_EQ("\x1B[0;30;40;1m", makeansi(8, 7));
+  EXPECT_EQ("\x1B[34m", makeansi(9, 8));
+  EXPECT_EQ("\x1B[32m", makeansi(10, 8));
+  EXPECT_EQ("\x1B[36m", makeansi(11, 8));
+  EXPECT_EQ("\x1B[31m", makeansi(12, 8));
+  EXPECT_EQ("\x1B[35m", makeansi(13, 8));
+  EXPECT_EQ("\x1B[33m", makeansi(14, 8));
+  EXPECT_EQ("\x1B[37m", makeansi(15, 8));
 }
 
-TEST_F(BPutsTest, SinglePipe) {
-  const string kPlainHelloWorld = "Hello World\r\n";
-  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
-  const string s = "|#1Hello World\r\n";
-  Puts(s);
-  EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
-  EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
+TEST_F(MakeAnsiTest, Foreground_BrightToDim) {
+  EXPECT_EQ("\x1B[0;37;40m", makeansi(7, 9));
 }
 
-TEST_F(BPutsTest, RepeatedPipe) {
-  const string kPlainHelloWorld = "Hello World\r\n";
-  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
-  const string s = "|#1Hello |#1World\r\n";
-  Puts(s);
-  EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
-  EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
+TEST_F(MakeAnsiTest, Foreground_DimToBright) {
+  EXPECT_EQ("\x1B[0;34;40;1m", makeansi(9, 7));
+}
+
+TEST_F(MakeAnsiTest, Background) {
+  EXPECT_EQ("\x1B[0;37;44m", makeansi(23, 9));
+  EXPECT_EQ("\x1B[0;33;44;1m", makeansi(30, 23));
 }
