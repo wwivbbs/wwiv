@@ -53,7 +53,7 @@ public:
     std::string dir_gfiles_;
     std::string dir_en_gfiles_;
     std::string dir_menus_;
-    std::unique_ptr<Application> sess_;
+    std::unique_ptr<Application> app_;
     std::unique_ptr<TestIO> io_;
     wwiv::sdk::User* user_;
 };
@@ -61,12 +61,16 @@ public:
 class TestIO {
 public:
   TestIO();
-  void Clear() { captured_.clear(); } 
+  void Clear() { captured_.clear(); rcaptured_.clear(); }
   std::string captured();
+  std::string rcaptured();
   LocalIO* local_io() const { return local_io_; }
+  RemoteIO* remote_io() const { return remote_io_; }
 private:
   LocalIO* local_io_;
+  RemoteIO* remote_io_;
   std::string captured_;
+  std::string rcaptured_;
 };
 
 class TestLocalIO : public LocalIO {
@@ -100,6 +104,27 @@ public:
   void EditLine(char *s, int len, int status, int *returncode, const char *ss) override {}
   void UpdateNativeTitleBar(Application* session) override {}
 
+  std::string* captured_;
+};
+
+class TestRemoteIO : public RemoteIO {
+public:
+  TestRemoteIO(std::string* captured);
+  virtual ~TestRemoteIO() {}
+
+  bool open() override { return true; }
+  void close(bool temporary) override {}
+  unsigned char getW() override { return 0; }
+  bool disconnect() override { return true; }
+  void purgeIn() override {}
+  unsigned int put(unsigned char ch) override;
+  unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
+  unsigned int read(char *buffer, unsigned int count) override { return 0; }
+  bool connected() override { return true; }
+  bool incoming() override { return false; }
+  unsigned int GetHandle() const override { return 0; }
+
+private:
   std::string* captured_;
 };
 

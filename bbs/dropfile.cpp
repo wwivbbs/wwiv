@@ -372,7 +372,10 @@ void CreateDoor32SysDropFile() {
   }
 }
 
-/** Create generic DOOR.SYS dropfile */
+/** Create generic DOOR.SYS dropfile.
+ * See https://github.com/wwivbbs/wwiv/wiki/DOOR.SYS-format
+ * or http://files.mpoli.fi/unpacked/software/dos/bbs/drwy231.zip/doorsys.doc
+ */
 void CreateDoorSysDropFile() {
   string fileName = create_filename(CHAINFILE_DOOR);
   File::Remove(fileName);

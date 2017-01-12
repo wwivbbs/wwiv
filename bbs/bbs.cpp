@@ -60,7 +60,7 @@
 // Uncomment this line to use curses on Win32
 #define WWIV_WIN32_CURSES_IO
 
-static Application* sess_;
+static Application* app_;
 
 using std::cout;
 using std::endl;
@@ -69,12 +69,12 @@ using std::string;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-Application* a() { return sess_; }
+Application* a() { return app_; }
 
 // [ VisibleForTesting ]
 Application* CreateSession(LocalIO* localIO) {
-  sess_ = new Application(localIO);
-  return sess_;
+  app_ = new Application(localIO);
+  return app_;
 }
 
 int bbsmain(int argc, char *argv[]) {

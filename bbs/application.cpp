@@ -189,6 +189,12 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   bout.SetComm(comm_.get());
 }
 
+void Application::SetCommForTest(RemoteIO* remote_io) {
+  comm_.reset(remote_io);
+  bout.SetComm(remote_io);
+}
+
+
 bool Application::ReadCurrentUser(int user_number) {
   if (!users()->ReadUser(&thisuser_, user_number)) {
     return false;

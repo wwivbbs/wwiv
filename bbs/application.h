@@ -111,6 +111,11 @@ public:
 
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle, CommunicationType type);
+  /** 
+   * Sets the RemoteIO handle for testing. 
+   * NOTE: This should only be used in unit tests.
+   */
+  void SetCommForTest(RemoteIO* remote_io);
 
   bool ReadCurrentUser() { return ReadCurrentUser(usernum); }
   bool ReadCurrentUser(int user_number);

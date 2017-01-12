@@ -39,7 +39,10 @@ protected:
     }
 
     virtual int Puts(const string& s) {
-      return bout.bputs(s);
+      auto size = bout.bputs(s);
+      std::cerr << "Puts: [" << s << "]; size: " << size << "\r\n";
+      return size;
+
     }
 
     BbsHelper helper;
@@ -57,8 +60,10 @@ TEST_F(BPutsTest, MultipleLetters) {
 }
 
 TEST_F(BPutsTest, SinglePipe) {
-  const string kHelloWorld = "Hello World\r\n";
+  const string kPlainHelloWorld = "Hello World\r\n";
+  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
   const string s = "|#1Hello World\r\n";
-  EXPECT_EQ(kHelloWorld.size(), Puts(s));
-  EXPECT_EQ(kHelloWorld, helper.io()->captured());
+  Puts(s);
+  EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
+  EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
 }

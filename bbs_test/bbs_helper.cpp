@@ -57,7 +57,8 @@ void BbsHelper::SetUp() {
   ASSERT_TRUE(files_.Mkdir("en/gfiles"));
   // Use our own local IO class that will capture the output.
   io_.reset(new TestIO());
-  sess_.reset(CreateSession(io_->local_io()));
+  app_.reset(CreateSession(io_->local_io()));
+  a()->SetCommForTest(io_->remote_io());
 
   dir_data_ = files_.DirName("data");
   dir_gfiles_ = files_.DirName("gfiles");
@@ -79,11 +80,20 @@ void BbsHelper::SetUp() {
   config->set_config(sysconfig.release());
   a()->set_config_for_test(move(config));
   user_ = a()->user();
-  // Default the screen size to a reasonable value.  Some tests (bputch tests)
-  // Require the size to be non-zero.
-  user_->SetScreenChars(80);
-  user_->SetScreenLines(25);
+
+  // Create a reasonable default user.  Some tests (bputch/bputs tests)
+  // Require a properly constructed user.
+  uint8_t newuser_colors[10] = { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 };
+  uint8_t newuser_bwcolors[10] = { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 };
+  User::CreateNewUserRecord(user_, 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
+  user_->SetStatusFlag(User::ansi);
+  user_->SetStatusFlag(User::color);
+
   a()->instance_number_ = 42;
+
+  // We need this true so our bputch tests can capture remote.
+  outcom = true;
+  ok_modem_stuff = true;
 }
 
 void BbsHelper::TearDown() {
@@ -91,6 +101,7 @@ void BbsHelper::TearDown() {
 
 TestIO::TestIO() {
   local_io_ = new TestLocalIO(&this->captured_);
+  remote_io_ = new TestRemoteIO(&this->rcaptured_);
 }
 
 string TestIO::captured() {
@@ -99,8 +110,27 @@ string TestIO::captured() {
   return captured;
 }
 
+string TestIO::rcaptured() {
+  string captured(rcaptured_);
+  rcaptured_.clear();
+  return captured;
+}
+
 TestLocalIO::TestLocalIO(string* captured) : LocalIO(), captured_(captured) {}
 
 void TestLocalIO::Putch(unsigned char ch) {
   captured_->push_back(ch);
 }
+
+TestRemoteIO::TestRemoteIO(std::string* captured) : RemoteIO(), captured_(captured) {}
+
+unsigned int TestRemoteIO::put(unsigned char ch) {
+  captured_->push_back(ch);
+  return 1;
+}
+
+unsigned int TestRemoteIO::write(const char *buffer, unsigned int count, bool bNoTranslation) {
+  captured_->append(string(buffer, count));
+  return count;
+}
+

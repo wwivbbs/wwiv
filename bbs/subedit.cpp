@@ -687,7 +687,7 @@ void boardedit() {
       string s = input(4);
       subconf_t subnum = 0;
       if (s[0] == '$') {
-        subnum = size_int(a()->subs().subs());
+        subnum = static_cast<subconf_t>(size_int(a()->subs().subs()));
       } else {
         subnum = StringToUnsignedShort(s);
       }

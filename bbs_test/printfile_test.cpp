@@ -54,6 +54,7 @@ TEST_F(PrintFileTest, LanguageDir) {
     CreateTempFile("gfiles/one.b&w");
     CreateTempFile("gfiles/one.msg");
 
+    helper.user()->SetStatus(0);
     string actual_msg = CreateFullPathToPrint("one");
     EXPECT_EQ(expected_msg, actual_msg);
 
@@ -71,6 +72,7 @@ TEST_F(PrintFileTest, GFilesOnly_NoExt) {
     const string expected_bw = CreateTempFile("gfiles/one.b&w");
     const string expected_msg = CreateTempFile("gfiles/one.msg");
 
+    helper.user()->SetStatus(0);
     string actual_msg = CreateFullPathToPrint("one");
     EXPECT_EQ(expected_msg, actual_msg);
 

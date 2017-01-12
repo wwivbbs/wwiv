@@ -70,7 +70,7 @@ class Output : public std::ostream {
   void SetComm(RemoteIO *comm) { comm_ = comm; }
   RemoteIO* remoteIO() const { return comm_; }
 
-  void Color(int wwivColor);
+  void Color(int wwiv_color);
   void ResetColors();
   void GotoXY(int x, int y);
   void Left(int num);
@@ -84,6 +84,9 @@ class Output : public std::ostream {
    */
   void SystemColor(int nColor);
   void SystemColor(wwiv::sdk::Color color);
+  std::string MakeColor(int wwiv_color);
+  std::string MakeSystemColor(int nColor);
+  std::string MakeSystemColor(wwiv::sdk::Color color);
   void litebar(const char *fmt, ...);
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();

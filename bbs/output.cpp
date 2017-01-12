@@ -65,27 +65,8 @@ std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize num_ch
   return num_chars;
 }
 
-void Output::Color(int wwivColor) {
-  int c = '\0';
-
-  if (wwivColor <= -1 && wwivColor >= -16) {
-    c = (a()->user()->HasColor() ?
-         rescolor.resx[207 + std::abs(wwivColor)] : a()->user()->GetBWColor(0));
-  }
-  if (wwivColor >= 0 && wwivColor <= 9) {
-    c = (a()->user()->HasColor() ?
-         a()->user()->GetColor(wwivColor) : a()->user()->GetBWColor(wwivColor));
-  }
-  if (wwivColor >= 10 && wwivColor <= 207) {
-    c = (a()->user()->HasColor() ?
-         rescolor.resx[wwivColor - 10] : a()->user()->GetBWColor(0));
-  }
-  if (c == curatr) {
-    return;
-  }
-
-  SystemColor(c);
-  needs_color_reset_at_newline_ = true;
+void Output::Color(int wwivcolor) {
+  bputs(MakeColor(wwivcolor));
 }
 
 void Output::ResetColors() {
@@ -150,12 +131,44 @@ void Output::bs() {
   bputs("\b \b");
 }
 
+
 void Output::SystemColor(wwiv::sdk::Color c) {
   SystemColor(static_cast<uint8_t>(c));
 }
 
 void Output::SystemColor(int c) {
-  bputs(makeansi(c, false));
+  bputs(MakeSystemColor(c));
+}
+
+std::string Output::MakeColor(int wwivcolor) {
+  int c = '\0';
+
+  if (wwivcolor <= -1 && wwivcolor >= -16) {
+    c = (a()->user()->HasColor() ?
+      rescolor.resx[207 + std::abs(wwivcolor)] : a()->user()->GetBWColor(0));
+  }
+  if (wwivcolor >= 0 && wwivcolor <= 9) {
+    c = (a()->user()->HasColor() ?
+      a()->user()->GetColor(wwivcolor) : a()->user()->GetBWColor(wwivcolor));
+  }
+  if (wwivcolor >= 10 && wwivcolor <= 207) {
+    c = (a()->user()->HasColor() ?
+      rescolor.resx[wwivcolor - 10] : a()->user()->GetBWColor(0));
+  }
+  if (c == curatr) {
+    return "";
+  }
+
+  needs_color_reset_at_newline_ = true;
+  return MakeSystemColor(c);
+}
+
+std::string Output::MakeSystemColor(int c) {
+  return makeansi(c, false);
+}
+
+std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
+  return MakeSystemColor(static_cast<uint8_t>(c));
 }
 
 void Output::litebar(const char *fmt, ...) {
@@ -248,12 +261,12 @@ int Output::bputs(const string& text) {
       if (std::isdigit(*it)) {
         int color = pipecode_int(it, fin, 2);
         if (color < 16) {
-          bout.SystemColor(color | (curatr & 0xf0));
+          bputs(MakeSystemColor(color | (curatr & 0xf0)));
         }
         else {
           uint8_t bg = static_cast<uint8_t>(color) << 4;
           uint8_t fg = curatr & 0x0f;
-          bout.SystemColor(bg | fg);
+          bputs(MakeSystemColor(bg | fg));
         }
       }
       else if (*it == '@') {
@@ -265,7 +278,7 @@ int Output::bputs(const string& text) {
       else if (*it == '#') {
         it++;
         int color = pipecode_int(it, fin, 1);
-        bout.Color(color);
+        bputs(MakeColor(color));
       }
       else {
         bputch('|', true);
@@ -276,7 +289,7 @@ int Output::bputs(const string& text) {
       if (it == fin) { bputch(CC, true);  break; }
       unsigned char c = *it++;
       if (c >= SPACE && c <= 126) {
-        Color(c - '0');
+        bputs(MakeColor(c - '0'));
       }
     }
     else if (*it == CO) {
