@@ -333,6 +333,16 @@ Subs::Subs(const std::string& datadir,
 Subs::~Subs() {}
 
 bool Subs::Load() {
+  subs_t s;
+  if (!LoadFromJSON(datadir_, SUBS_JSON, s)) {
+    return LoadLegacy();
+  }
+  // Assign the subs.
+  subs_ = s.subs;
+  return true;
+}
+
+bool Subs::LoadLegacy() {
   auto old_subs = read_subs(datadir_);
   std::vector<xtrasubsrec> xsubs;
   if (!read_subs_xtr(datadir_, net_networks_, old_subs, xsubs)) {

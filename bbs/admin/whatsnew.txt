@@ -18,7 +18,12 @@ What's New in WWIV 5.3
   (eventually many other commands will allow you to specify a
   script to run instead of an external command).
 + New install.sh on Linux to do the entire installation.
-* Init is now responsible for handling
+* Init no longer prompts for system password.
+* subs.json is now the source of truth for subs data (before, subs.dat
+  and subs.xtr were both used as source of truth, although subs.json has
+  been written on save since 5.2)
+- pipe code '|Bn' where n in [0,9] (deprecated in 5.2) has been removed.
+
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

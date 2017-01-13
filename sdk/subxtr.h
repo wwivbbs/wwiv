@@ -77,6 +77,7 @@ public:
   Subs(const std::string& datadir, const std::vector<net_networks_rec>& net_networks);
   virtual ~Subs();
 
+  bool LoadLegacy();
   bool Load();
   bool Save();
 
