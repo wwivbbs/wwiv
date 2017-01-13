@@ -81,7 +81,7 @@ void Logger::Init(int argc, char** argv) {
 
   el::Loggers::reconfigureAllLoggers(conf);
 
-  // Fork a 2nd configuation to use for the startup logger.
+  // Fork a 2nd configuration to use for the startup logger.
   el::Configurations confStartup = conf;
   confStartup.set(Level::Info, ConfigurationType::ToStandardOutput, "false");
   startup->configure(confStartup);
@@ -109,6 +109,15 @@ void Logger::Init(int argc, char** argv) {
 el::base::type::StoragePointer Logger::getLoggerStorage() {
         return el::Helpers::storage();
 }
+
+void Logger::DisableFileLoging() {
+  el::Configurations conf;
+  conf.setToDefault();
+  conf.setGlobally(ConfigurationType::ToFile, "false");
+  conf.setGlobally(ConfigurationType::ToStandardOutput, "false");
+  el::Loggers::reconfigureAllLoggers(conf);
+}
+
 
 }
 }

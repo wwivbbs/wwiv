@@ -98,7 +98,7 @@ public:
   static void Init(int argc, char** argv);
   static void ExitLogger();
   static el::base::type::StoragePointer getLoggerStorage();
-
+  static void DisableFileLoging();
 };
 
 }
