@@ -54,8 +54,6 @@
 
 #define CMDPARAM_NOEXT "cmdparam"
 
-#define COLOR_DAT "color.dat"
-
 #define CONFIG_DAT "config.dat"
 #define CONFIG_OVR "config.ovr"
 

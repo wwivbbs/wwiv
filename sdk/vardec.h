@@ -418,12 +418,6 @@ struct statusrec_t {
   char res[29];
 };
 
-
-struct colorrec {
-  uint8_t resx[240];
-};
-
-
 /**
  * ON DISK format for MESSAGE BASE INFORMATION (SUBS.DAT)
  * This has been the same since *at least* 4.22.
@@ -1096,7 +1090,6 @@ static_assert(sizeof(arcrec) == 336, "arcrec == 336");
 static_assert(sizeof(configrec) == 6228, "configrec == 6228");
 static_assert(sizeof(legacy_configovrrec_424_t) == 512, "legacy_configovrrec_424_t == 512");
 static_assert(sizeof(statusrec_t) == 151, "statusrec == 151");
-static_assert(sizeof(colorrec) == 240, "colorrec == 240");
 static_assert(sizeof(subboardrec_422_t) == 63, "subboardrec_422_t == 63");
 static_assert(sizeof(directoryrec) == 141, "directoryrec == 141");
 static_assert(sizeof(smalrec) == 33, "smalrec == 33");

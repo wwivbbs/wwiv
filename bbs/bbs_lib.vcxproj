@@ -114,7 +114,6 @@
     <ClInclude Include="chains.h" />
     <ClInclude Include="chat.h" />
     <ClInclude Include="chnedit.h" />
-    <ClInclude Include="colors.h" />
     <ClInclude Include="com.h" />
     <ClInclude Include="common.h" />
     <ClInclude Include="conf.h" />
@@ -246,7 +245,6 @@
     <ClCompile Include="chains.cpp" />
     <ClCompile Include="chat.cpp" />
     <ClCompile Include="chnedit.cpp" />
-    <ClCompile Include="colors.cpp" />
     <ClCompile Include="com.cpp" />
     <ClCompile Include="conf.cpp" />
     <ClCompile Include="confutil.cpp" />

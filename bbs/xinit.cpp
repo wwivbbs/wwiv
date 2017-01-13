@@ -31,7 +31,6 @@
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/colors.h"
 #include "bbs/connect1.h"
 #include "bbs/events.h"
 #include "bbs/execexternal.h"
@@ -716,13 +715,6 @@ void Application::InitializeBBS() {
     LOG(ERROR) << "Unable to return statusrec.dat.";
     AbortBBS();
   }
-
-  VLOG(1) << "Reading color information.";
-  File fileColor(config()->datadir(), COLOR_DAT);
-  if (!fileColor.Exists()) {
-    buildcolorfile();
-  }
-  get_colordata();
 
   pStatus->SetWWIVVersion(wwiv_num_version);
   pStatus->EnsureCallerNumberIsValid();

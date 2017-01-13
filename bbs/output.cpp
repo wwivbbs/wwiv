@@ -141,19 +141,11 @@ void Output::SystemColor(int c) {
 }
 
 std::string Output::MakeColor(int wwivcolor) {
-  int c = '\0';
+  int c = 0;
 
-  if (wwivcolor <= -1 && wwivcolor >= -16) {
-    c = (a()->user()->HasColor() ?
-      rescolor.resx[207 + std::abs(wwivcolor)] : a()->user()->GetBWColor(0));
-  }
   if (wwivcolor >= 0 && wwivcolor <= 9) {
     c = (a()->user()->HasColor() ?
       a()->user()->GetColor(wwivcolor) : a()->user()->GetBWColor(wwivcolor));
-  }
-  if (wwivcolor >= 10 && wwivcolor <= 207) {
-    c = (a()->user()->HasColor() ?
-      rescolor.resx[wwivcolor - 10] : a()->user()->GetBWColor(0));
   }
   if (c == curatr) {
     return "";

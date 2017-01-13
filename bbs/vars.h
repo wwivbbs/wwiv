@@ -88,7 +88,5 @@ __EXTRN__ uint32_t
 
 __EXTRN__ long extratimecall;
 
-__EXTRN__ colorrec rescolor;
-
 #endif // __INCLUDED_VARS_H__
 

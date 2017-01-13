@@ -34,7 +34,6 @@
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
 #include "bbs/dupphone.h"
-#include "bbs/colors.h"
 #include "bbs/defaults.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
@@ -1005,8 +1004,6 @@ void newuser() {
              a()->instance_number());
 
   LOG(INFO) << "New User Attempt from IP Address: " << a()->remoteIO()->remote_info().address;
-
-  get_colordata();
   a()->screenlinest = 25;
 
   if (!CreateNewUserRecord()) {
@@ -1014,8 +1011,6 @@ void newuser() {
   }
 
   input_language();
-
-
   if (!CanCreateNewUserAccountHere() || hangup) {
     Hangup();
     return;

@@ -26,7 +26,6 @@
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
-#include "bbs/colors.h"
 #include "bbs/hop.h"
 #include "bbs/menu.h"
 #include "bbs/menuedit.h"
@@ -562,9 +561,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     } },
     { "Packers", [](MenuItemContext& context) {
       Packers();
-    } },
-    { "ColorConfig", [](MenuItemContext& context) {
-      color_config();
     } },
     { "InitVotes", [](MenuItemContext& context) {
       InitVotes();

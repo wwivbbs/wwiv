@@ -26,7 +26,6 @@ set(COMMON_SOURCES
  chains.cpp
  chat.cpp
  chnedit.cpp
- colors.cpp
  com.cpp
  conf.cpp
  confutil.cpp

@@ -174,10 +174,9 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
 
   bout.nl(2);
   bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
-  bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""AA\003""BB\003""CC\003""DD\003""EE\003""FF\003""GG\003""HH\003""II\003""JJ\003""KK\003""LL\003""MM\003""NN\003""OO\003""PP\003""QQ\003""RR\003""SS\003""""\003""0";
-  bout << "\003""TT\003""UU\003""VV\003""WW\003""XX\003""YY\003""ZZ\003""aa\003""bb\003""cc\003""dd\003""ee\003""ff\003""gg\003""hh\003""ii\003""jj\003""kk\003""ll\003""mm\003""nn\003""oo\003""pp\003""qq\003""rr\003""ss\003""tt\003""uu\003""vv\003""ww\003""xx\003""yy\003""zz\r\n";
+  bout << "|#9Colors: ^P-0\003""11\003""22\003""33\003""44\003""55\003""66\003""77\003""88\003""99\003""0";
   bout.nl();
-  bout << "|#1Enter |#2/Q|#1 to quote previous message, |#2/HELP|#1 for other editor commands.\r\n";
+  bout << "|#9Enter |#2/Q|#9 to quote previous message, |#2/HELP|#9 for other editor commands.\r\n";
 
   bout.Color(7);
   string header = "[---=----=----=----=----=----=----=----]----=----=----=----=----=----=----=----]";
