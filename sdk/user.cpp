@@ -81,12 +81,29 @@ void User::ZeroUserData() {
   memset(&data, 0, sizeof(userrec));
 }
 
-// static
-bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
-  const uint8_t* colors, const uint8_t* bwcolors) {
+bool User::CreateRandomPassword() {
+  std::string password;
+  for (int i = 0; i < 6; i++) {
+    char ch = static_cast<char>(rand() % 36);
+    if (ch < 10) {
+      ch += '0';
+    }
+    else {
+      ch += 'A' - 10;
+    }
+    password.push_back(ch);
+  }
+  SetPassword(password);
+  return true;
+}
+
+// static 
+bool User::CreateNewUserRecord(User* u,
+  uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
+  const std::vector<uint8_t>& colors, const std::vector<uint8_t>& bwcolors) {
   u->ZeroUserData();
 
-  std::string date = daten_to_mmddyy(system_clock::to_time_t(system_clock::now()));
+  const std::string date = daten_to_mmddyy(system_clock::to_time_t(system_clock::now()));
   u->SetFirstOn(date.c_str());
   u->SetLastOn("Never.");
   u->SetMacro(0, "Wow! This is a GREAT BBS!");
@@ -113,17 +130,6 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
     u->SetBWColor(i, bwcolors[i]);
   }
 
-  std::string password;
-  for (int i = 0; i < 6; i++) {
-    char ch = static_cast<char>(rand() % 36);
-    if (ch < 10) {
-      ch += '0';
-    } else {
-      ch += 'A' - 10;
-    }
-    password.push_back(ch);
-  }
-  u->SetPassword(password);
   u->SetEmailAddress("");
 
   // Set default menu set abd listplus colors.

@@ -22,8 +22,10 @@
 
 #include <chrono>
 #include <sstream>
+#include <cstdint>
 #include <cstring>
 #include <string>
+#include <vector>
 #include "core/strings.h"
 #include "sdk/vardec.h"
 
@@ -855,11 +857,19 @@ class User {
     SetForwardUserNumber(0);
   }
 
+
+  /**
+   * Creates a random password.
+   */
+  bool CreateRandomPassword();
+
   ///////////////////////////////////////////////////////////////////////////
   // Static Helper Methods
 
-  static bool CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
-    const uint8_t* newuser_colors, const uint8_t* newuser_bwcolors);
+  static bool CreateNewUserRecord(User* u,
+    uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
+    const std::vector<uint8_t>& newuser_colors,
+    const std::vector<uint8_t>& newuser_bwcolors);
 };
 
 }  // namespace sdk

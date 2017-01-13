@@ -65,8 +65,8 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 8, 54));
 
-  uint8_t newuser_colors[10];
-  uint8_t newuser_bwcolors[10];
+  std::vector<uint8_t> newuser_colors;
+  std::vector<uint8_t> newuser_bwcolors;
 
   IniFile ini(FilePath(config.root_directory(), "wwiv.ini"), {"WWIV"});
   if (ini.IsOpen()) {

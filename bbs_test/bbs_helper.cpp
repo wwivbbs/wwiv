@@ -83,9 +83,8 @@ void BbsHelper::SetUp() {
 
   // Create a reasonable default user.  Some tests (bputch/bputs tests)
   // Require a properly constructed user.
-  uint8_t newuser_colors[10] = { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 };
-  uint8_t newuser_bwcolors[10] = { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 };
-  User::CreateNewUserRecord(user_, 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
+  User::CreateNewUserRecord(user_, 50, 20, 0, 0.1234f, 
+  { 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 }, { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 });
   user_->SetStatusFlag(User::ansi);
   user_->SetStatusFlag(User::color);
 

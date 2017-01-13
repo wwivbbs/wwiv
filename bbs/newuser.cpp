@@ -80,6 +80,9 @@ using namespace wwiv::strings;
 
 // Local function prototypes
 
+static bool CreateNewUserRecord();
+bool CreateRandomPassword();
+
 bool CanCreateNewUserAccountHere();
 bool UseMinimalNewUserInfo();
 void noabort(const char *file_name);
@@ -631,13 +634,15 @@ static bool CreateNewUserRecord() {
   auto u = a()->user();
   a()->ResetEffectiveSl();
   
-  return User::CreateNewUserRecord(u,
+  bool ok = User::CreateNewUserRecord(u,
     a()->config()->config()->newusersl, 
     a()->config()->config()->newuserdsl,
     a()->config()->config()->newuser_restrict,
     a()->config()->config()->newusergold,
     a()->newuser_colors, 
     a()->newuser_bwcolors);
+  u->CreateRandomPassword();
+  return ok;
 }
 
 

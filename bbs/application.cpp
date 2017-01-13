@@ -122,9 +122,10 @@ Application::Application(LocalIO* localIO)
 
   tzset();
 
-  memset(&newuser_colors, 0, sizeof(newuser_colors));
-  memset(&newuser_bwcolors, 0, sizeof(newuser_bwcolors));
   memset(&asv, 0, sizeof(asv_rec));
+  newuser_colors = { 7, 11, 14, 5, 31, 2, 12, 9, 6, 3 };
+  newuser_bwcolors = { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 };
+  User::CreateNewUserRecord(&thisuser_, 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
 
   // Set the home directory
   current_dir_ = File::current_directory();

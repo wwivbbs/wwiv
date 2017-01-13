@@ -372,9 +372,8 @@ public:
     max_gfilesec = 0,
     screen_saver_time = 0;
 
-  unsigned char
-    newuser_colors[10],         // skip for now
-    newuser_bwcolors[10];       // skip for now
+  std::vector<uint8_t> newuser_colors;
+  std::vector<uint8_t> newuser_bwcolors;
 
 public:
   // Public subsystems

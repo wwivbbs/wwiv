@@ -155,9 +155,6 @@ static uint16_t str2restrict(const char *s) {
 // tries to read settings from [WWIV-<instnum>] subsection - this overrides
 // those in [WWIV] subsection.
 
-static unsigned char nucol[] = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
-static unsigned char nucolbw[] = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
-
 struct eventinfo_t {
   const char *name;
   unsigned short eflags;
@@ -258,11 +255,6 @@ static ini_flags_type sysconfig_flags[] = {
 
 void Application::ReadINIFile(IniFile& ini) {
   // Setup default  data
-  for (int i = 0; i < 10; i++) {
-    newuser_colors[ i ] = nucol[ i ];
-    newuser_bwcolors[ i ] = nucolbw[ i ];
-  }
-
   chatname_color_ = 95;
   message_color_ = 2;
   max_batch = 50;
