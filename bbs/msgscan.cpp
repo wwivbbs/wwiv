@@ -679,7 +679,7 @@ static void HandleMessageDownload(int msgnum) {
 
 void HandleMessageMove(int &nMessageNumber) {
   if ((lcs()) && (nMessageNumber > 0) && (nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea())) {
-    char *ss1 = nullptr;
+    string ss1;
     tmp_disable_conf(true);
     bout.nl();
     do {
@@ -696,7 +696,7 @@ void HandleMessageMove(int &nMessageNumber) {
     }
     bool ok = false;
     for (size_t i1 = 0; (i1 < a()->subs().subs().size() && a()->usub[i1].subnum != -1 && !ok); i1++) {
-      if (IsEquals(a()->usub[i1].keys, ss1)) {
+      if (ss1 == a()->usub[i1].keys) {
         nTempSubNum = i1;
         bout.nl();
         bout << "|#9Copying to " << a()->subs().sub(a()->usub[nTempSubNum].subnum).name << endl;

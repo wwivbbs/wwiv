@@ -797,7 +797,7 @@ void readmail(int mode) {
           }
           tmp_disable_conf(true);
           bout.nl();
-          char *ss1;
+          string ss1;
           do {
             bout << "|#2Move to which sub? ";
             ss1 = mmkey(0);
@@ -814,7 +814,7 @@ void readmail(int mode) {
           }
           for (i1 = 0; (i1 < size_int(a()->subs().subs())) 
                && (a()->usub[i1].subnum != -1); i1++) {
-            if (IsEquals(a()->usub[i1].keys, ss1)) {
+            if (ss1 == a()->usub[i1].keys) {
               i = i1;
             }
           }

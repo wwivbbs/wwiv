@@ -894,7 +894,7 @@ void list_confs(ConferenceType conftype, int ssc) {
 int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs) {
   int i = 0, sl = 0;
   bool ok = false;
-  char *mmk;
+  string mmk;
 
   do {
     if (listconfs || sl) {
@@ -907,11 +907,11 @@ int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs)
       bout <<  "|#1" << prompt_text;
     }
     mmk = mmkey(0);
-    if (!mmk[0]) {
+    if (mmk.empty()) {
       i = -1;
       ok = true;
     } else {
-      switch (mmk[0]) {
+      switch (mmk.front()) {
       case '?':
         sl = 1;
         break;

@@ -23,8 +23,7 @@
 
 std::string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption);
 std::string mmkey(std::set<char>& x);
-
-char *mmkey(int dl, bool bListOption = false);
+std::string mmkey(int dl, bool bListOption = false);
 
 
 #endif  // __INCLUDED_BBS_MMKEY_H__

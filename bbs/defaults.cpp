@@ -448,23 +448,23 @@ void config_qscan() {
       do {
         bout.nl();
         bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
-        char* s = mmkey(0);
-        if (s[0]) {
+        string s = mmkey(0);
+        if (!s.empty()) {
           for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
-            if (IsEquals(a()->usub[i].keys, s)) {
+            if (s == a()->usub[i].keys) {
               qsc_q[a()->usub[i].subnum / 32] ^= (1L << (a()->usub[i].subnum % 32));
             }
-            if (IsEquals(s, "S")) {
+            if (s == "S") {
               qsc_q[a()->usub[i].subnum / 32] |= (1L << (a()->usub[i].subnum % 32));
             }
-            if (IsEquals(s, "C")) {
+            if (s == "C") {
               qsc_q[a()->usub[i].subnum / 32] &= ~(1L << (a()->usub[i].subnum % 32));
             }
           }
-          if (IsEquals(s, "Q")) {
+          if (s == "Q") {
             done = true;
           }
-          if (IsEquals(s, "?")) {
+          if (s == "?") {
             l_config_qscan();
           }
         }

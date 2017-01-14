@@ -115,7 +115,7 @@ static int max_sub_key(std::vector<usersubrec>& container) {
   return key;
 }
  
-char *mmkey(int dl, bool bListOption) {
+std::string mmkey(int dl, bool bListOption) {
   std::set<char> x = {'/'};
   std::set<char> xx{};
   switch (dl) {
@@ -142,8 +142,5 @@ char *mmkey(int dl, bool bListOption) {
   }
   }
 
-  static char s[81];
-  string s1 = mmkey(x, xx, bListOption);
-  strcpy(s, s1.c_str());
-  return s;
+  return mmkey(x, xx, bListOption);
 }

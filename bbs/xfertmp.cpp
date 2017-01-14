@@ -792,19 +792,19 @@ void move_file_t() {
       } else if (ch == 'Y') {
         sprintf(s1, "%s%s", a()->directories[a()->batch().entry[nCurBatchPos].dir].path, u.filename);
         StringRemoveWhitespace(s1);
-        char *pszDirectoryNum = nullptr;
+        string dirnum;
         do {
           bout << "|#2To which directory? ";
-          pszDirectoryNum = mmkey(1);
-          if (pszDirectoryNum[0] == '?') {
+          dirnum = mmkey(1);
+          if (dirnum.front() == '?') {
             dirlist(1);
             dliscan1(a()->batch().entry[nCurBatchPos].dir);
           }
-        } while (!hangup && (pszDirectoryNum[0] == '?'));
+        } while (!hangup && (dirnum.front() == '?'));
         d1 = -1;
-        if (pszDirectoryNum[0]) {
+        if (!dirnum.empty()) {
           for (size_t i1 = 0; (i1 < a()->directories.size()) && (a()->udir[i1].subnum != -1); i1++) {
-            if (IsEquals(a()->udir[i1].keys, pszDirectoryNum)) {
+            if (dirnum == a()->udir[i1].keys) {
               d1 = i1;
             }
           }

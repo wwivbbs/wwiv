@@ -1437,7 +1437,7 @@ static int move_filename(const char *file_name, int dn) {
     } else if (ch == 'Y') {
       sprintf(szSourceFileName, "%s%s", a()->directories[dn].path, u.filename);
       if (!bulk_move) {
-        char* ss = nullptr;
+        string ss;
         do {
           bout.nl(2);
           bout << "|#2To which directory? ";
@@ -1451,7 +1451,7 @@ static int move_filename(const char *file_name, int dn) {
         nDestDirNum = -1;
         if (ss[0]) {
           for (size_t i1 = 0; (i1 < a()->directories.size()) && (a()->udir[i1].subnum != -1); i1++) {
-            if (IsEquals(a()->udir[i1].keys, ss)) {
+            if (ss == a()->udir[i1].keys) {
               nDestDirNum = i1;
             }
           }

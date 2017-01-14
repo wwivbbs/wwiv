@@ -246,10 +246,10 @@ void SubList() {
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
-          const char* ss = mmkey(0, true);
+          const std::string ss = mmkey(0, true);
           if (isdigit(ss[0])) {
             for (size_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
-              if (IsEquals(a()->usub[i2].keys, ss)) {
+              if (ss == a()->usub[i2].keys) {
                 a()->set_current_user_sub_num(i2);
                 oldSub = a()->current_user_sub().subnum;
                 done = true;
@@ -289,32 +289,30 @@ void SubList() {
         } else {
           bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
         }
-        const char* ss = mmkey(0, true);
+        const std::string ss = mmkey(0, true);
 
-        if (IsEquals(ss, "?")) {
+        if (ss == "?") {
           p = 1;
           ns = i = i1 = 0;
         }
 
-        if (IsEquals(ss, " ") ||
-            IsEquals(ss, "Q") ||
-            IsEquals(ss, "\r")) {
+        if (ss == " " || ss == "Q" || ss == "\r") {
           bout.nl(2);
           done = true;
           if (!okconf(a()->user())) {
             abort = true;
           }
         }
-        if (IsEquals(ss, "J")) {
+        if (ss == "J") {
           if (okconf(a()->user())) {
             jump_conf(ConferenceType::CONF_SUBS);
           }
           sn = en = oldConf = a()->GetCurrentConferenceMessageArea();
           ns = i = 0;
         }
-        if (isdigit(ss[0])) {
+        if (isdigit(ss.front())) {
           for (size_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
-            if (IsEquals(a()->usub[i2].keys, ss)) {
+            if (ss == a()->usub[i2].keys) {
               a()->set_current_user_sub_num(i2);
               oldSub = a()->current_user_sub().subnum;
               done = true;

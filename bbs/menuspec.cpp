@@ -259,22 +259,21 @@ bool ValidateDoorAccess(int nDoorNumber) {
 void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
-  char* s = mmkey(0);
+  string s = mmkey(0);
   for (size_t i = 0; (i < a()->subs().subs().size())
        && (a()->usub[i].subnum != -1); i++) {
-    if (wwiv::strings::IsEquals(a()->usub[i].keys, s)) {
+    if (s == a()->usub[i].keys) {
       a()->set_current_user_sub_num(i);
     }
   }
 }
-
 
 void ChangeDirNumber() {
   bool done = false;
   while (!done && !hangup) {
     bout << "|#7Select Dir number : |#0";
 
-    char* s = mmkey(1);
+    string s = mmkey(1);
 
     if (s[0] == '?') {
       DirList();
@@ -282,7 +281,7 @@ void ChangeDirNumber() {
       continue;
     }
     for (size_t i = 0; i < a()->directories.size(); i++) {
-      if (wwiv::strings::IsEquals(a()->udir[i].keys, s)) {
+      if (s == a()->udir[i].keys) {
         a()->set_current_user_dir_num(i);
         done = true;
       }

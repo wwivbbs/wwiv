@@ -98,7 +98,7 @@ void move_file() {
       done = true;
     } else if (ch == 'Y') {
       sprintf(s1, "%s%s", a()->directories[a()->current_user_dir().subnum].path, u.filename);
-      char *ss = nullptr;
+      string ss;
       do {
         bout.nl(2);
         bout << "|#2To which directory? ";
@@ -109,9 +109,9 @@ void move_file() {
         }
       } while ((!hangup) && (ss[0] == '?'));
       d1 = -1;
-      if (ss[0]) {
+      if (!ss.empty()) {
         for (size_t i1 = 0; (i1 < a()->directories.size()) && (a()->udir[i1].subnum != -1); i1++) {
-          if (IsEquals(a()->udir[i1].keys, ss)) {
+          if (ss == a()->udir[i1].keys) {
             d1 = i1;
           }
         }
@@ -1052,7 +1052,7 @@ static void l_config_nscan() {
 }
 
 static void config_nscan() {
-  char *s, s1[MAX_CONFERENCES + 2], s2[120], ch;
+  char s1[MAX_CONFERENCES + 2], s2[120], ch;
   int i1, oc, os;
   bool abort = false;
   bool done, done1;
@@ -1109,24 +1109,24 @@ static void config_nscan() {
       do {
         bout.nl();
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
-        s = mmkey(1);
+        string s = mmkey(1);
         if (s[0]) {
           for (size_t i = 0; i < a()->directories.size(); i++) {
             i1 = a()->udir[i].subnum;
-            if (IsEquals(a()->udir[i].keys, s)) {
+            if (s == a()->udir[i].keys) {
               qsc_n[i1 / 32] ^= 1L << (i1 % 32);
             }
-            if (IsEquals(s, "S")) {
+            if (s == "S") {
               qsc_n[i1 / 32] |= 1L << (i1 % 32);
             }
-            if (IsEquals(s, "C")) {
+            if (s == "C") {
               qsc_n[i1 / 32] &= ~(1L << (i1 % 32));
             }
           }
-          if (IsEquals(s, "Q")) {
+          if (s == "Q") {
             done = true;
           }
-          if (IsEquals(s, "?")) {
+          if (s == "?") {
             l_config_nscan();
           }
         }

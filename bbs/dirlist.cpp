@@ -54,7 +54,6 @@ void dirlist(int mode) {
     bool abort = false;
     int p = 1;
     int i = sn;
-    char *ss = nullptr;
 
     while (i <= en && a()->uconfdir[i].confnum != -1 && !abort) {
       size_t i1 = 0;
@@ -111,18 +110,18 @@ void dirlist(int mode) {
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
-          ss = mmkey(1, true);
+          std::string ss = mmkey(1, true);
           if (isdigit(ss[0])) {
             for (size_t i3 = 0; i3 < a()->directories.size(); i3++) {
-              if (wwiv::strings::IsEquals(a()->udir[i3].keys, ss)) {
+              if (ss == a()->udir[i3].keys) {
                 a()->set_current_user_dir_num(i3);
-                os      = a()->current_user_dir().subnum;
-                done    = true;
-                abort   = true;
+                os = a()->current_user_dir().subnum;
+                done = true;
+                abort = true;
               }
             }
           } else {
-            switch (ss[0]) {
+            switch (ss.front()) {
             case 'Q':
               if (okconf(a()->user())) {
                 setuconf(ConferenceType::CONF_DIRS, oc, os);
@@ -163,16 +162,14 @@ void dirlist(int mode) {
         bout.bprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                           is ? nd - 1 : nd);
       }
-      ss = mmkey(0, true);
-      if (wwiv::strings::IsEquals(ss, "") ||
-          wwiv::strings::IsEquals(ss, "Q") ||
-          wwiv::strings::IsEquals(ss, "\r")) {
+      std::string ss = mmkey(0, true);
+      if (ss.empty() || ss == "Q" || ss == "\r") {
         if (okconf(a()->user())) {
           setuconf(ConferenceType::CONF_DIRS, oc, os);
         }
         done = true;
       }
-      if (wwiv::strings::IsEquals(ss, "J")) {
+      if (ss == "J") {
         if (okconf(a()->user())) {
           jump_conf(ConferenceType::CONF_DIRS);
         }
@@ -180,9 +177,9 @@ void dirlist(int mode) {
         nd = i = 0;
         is = false;
       }
-      if (isdigit(ss[0])) {
+      if (isdigit(ss.front())) {
         for (size_t i3 = 0; i3 < a()->directories.size(); i3++) {
-          if (wwiv::strings::IsEquals(a()->udir[i3].keys, ss)) {
+          if (ss == a()->udir[i3].keys) {
             a()->set_current_user_dir_num(i3);
             os = a()->current_user_dir().subnum;
             done = true;
