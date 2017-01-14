@@ -317,8 +317,8 @@ int main(int argc, char** argv) {
 
     Context context(config, net, *user_manager.get(), networks.networks());
     context.network_number = net_cmdline.network_number();
-    context.set_api(2, std::move(type2_api));
     context.set_email_api(type2_api.get());
+    context.set_api(2, std::move(type2_api));
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
