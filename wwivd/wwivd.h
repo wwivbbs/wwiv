@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*               Copyright (C)2014-2017, WWIV Software Services           */
+/*                  Copyright (C)2017, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,49 +16,36 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_CORE_OS_H__
-#define __INCLUDED_WWIV_CORE_OS_H__
-#pragma once
+#ifndef __INCLUDED_WWIV_WWIV_WWIVD_H__
+#define __INCLUDED_WWIV_WWIV_WWIVD_H__
 
-#include <chrono>
-#include <cstdint>
-#include <functional>
 #include <string>
+#include "core/net.h"
+#include "sdk/config.h"
 
-#include "core/wwivport.h"
+struct wwivd_config_t {
+  std::string bbsdir;
 
-namespace wwiv {
-namespace os {
+  int telnet_port = 2323;
+  std::string telnet_cmd;
 
-// Sleeps for a duration of time d, or until predicate returns true.
-// returns the value of predicate.
-bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds d);
+  int ssh_port = -1;
+  std::string ssh_cmd;
 
-// Sleeps for a duration of time d
-void sleep_for(std::chrono::milliseconds d);
+  int binkp_port = -1;
+  std::string binkp_cmd;
 
-// Yields the CPU to other threads or processes.
-void yield();
+  int start_node;
+  int end_node;
+  int local_node;
+};
 
-// Gets the OS Version Number.
-std::string os_version_string();
+enum class ConnectionType { SSH, TELNET, BINKP };
 
-// plays a sound at frequency for duration
-void sound(uint32_t frequency, std::chrono::milliseconds d);
+void SetupSignalHandlers();
 
-// returns a random number.
-int random_number(int max_value);
+void SwitchToNonRootUser(const std::string& wwiv_user);
+bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number);
 
-std::string environment_variable(const std::string& variable_name);
-bool set_environment_variable(const std::string& variable_name, const std::string& value);
 
-// Prints a stacktrace to stderr.
-std::string stacktrace();
-
-// Gets the PID
-pid_t get_pid();
-
-}  // namespace os
-}  // namespace wwiv
-
-#endif  // __INCLUDED_WWIV_CORE_OS_H__
+#endif  // __INCLUDED_WWIV_WWIV_WWIVD_H__

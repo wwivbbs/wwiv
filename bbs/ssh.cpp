@@ -30,10 +30,6 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-typedef int HANDLE;
-typedef int SOCKET;
-constexpr int SOCKET_ERROR = -1;
-#define closesocket(s) close(s)
 #endif  // _WIN32
 
 #include <cstring>

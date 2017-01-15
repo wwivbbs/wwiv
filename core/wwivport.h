@@ -91,10 +91,23 @@ typedef uint32_t daten_t;
 
 #ifdef _MSC_VER
 #ifdef _WIN64
-  typedef int64_t ssize_t;
+
+typedef int64_t ssize_t;
+
 #else 
+
 typedef int32_t ssize_t;
+
 #endif  // _WIN64
 #endif  // MSVC
+
+#ifdef _WIN32
+
+typedef int pid_t;
+
+#else  // !_WIN32
+
+
+#endif  // _WIN32
 
 #endif // __INCLUDED_PLATFORM_WWIVPORT_H__

@@ -18,10 +18,10 @@
 /**************************************************************************/
 #include "core/net.h"
 #ifdef _WIN32
+
 #pragma comment(lib, "Ws2_32.lib")
 #include "WS2tcpip.h"
-// Really windows?
-typedef int socklen_t;
+
 #else
 
 #include <arpa/inet.h>
@@ -30,10 +30,6 @@ typedef int socklen_t;
 #include <unistd.h>
 #include <netdb.h>
 
-typedef int HANDLE;
-typedef int SOCKET;
-constexpr int SOCKET_ERROR = -1;
-#define closesocket(s) close(s)
 #endif  // _WIN32
 
 using std::string;

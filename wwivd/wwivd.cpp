@@ -20,29 +20,41 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <thread>
 
 #include <signal.h>
 #include <string>
+#include <sys/types.h>
+
+#ifdef _WIN32
+
+#include <process.h>
+#include <WS2tcpip.h>
+
+#else  // _WIN32
+
+#include <spawn.h>
 #include <unistd.h>
-#include <resolv.h>
-#include <pwd.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/wait.h>
- 
+#endif  // __linux__
+
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/log.h"
+#include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
+#include "wwivd/wwivd.h"
 
 using std::cerr;
 using std::clog;
@@ -55,27 +67,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-static pid_t bbs_pid = 0;
-
-
-struct wwivd_config_t {
-  string bbsdir;
-
-  int telnet_port = 2323;
-  string telnet_cmd;
-
-  int ssh_port = -1;
-  string ssh_cmd;
-
-  int binkp_port = -1;
-  string binkp_cmd;
-
-  int start_node;
-  int end_node;
-  int local_node;
-};
-
-enum class ConnectionType { SSH, TELNET, BINKP };
+pid_t bbs_pid = 0;
 
 static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
@@ -89,7 +81,7 @@ static string CreateCommandLine(const std::string& tmpl, std::map<char, std::str
       }
       try {
         out.append(params.at(*it));
-      } catch (const std::out_of_range& e) {
+      } catch (const std::out_of_range&) {
         out.push_back(*it);
       }
     } else {
@@ -137,18 +129,6 @@ static const File node_file(const Config& config, ConnectionType ct, int node_nu
   return File(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
-static void huphandler(int mysignal) {
-  cerr << endl;
-  cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
-  kill(bbs_pid, SIGHUP); // send SIGHUP to process group
-}
-
-static void sigint_handler(int mysignal) {
-  cerr << endl;
-  cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
-  kill(bbs_pid, SIGINT); // send SIGINT to process group
-}
-
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
   for(int i = start_node; i <= end_node; i++) {
@@ -182,9 +162,13 @@ static bool launchNode(
     const Config& config, const wwivd_config_t& c,
     int node_number, int sock, ConnectionType connection_type,
     const string& remote_peer) {
+  ScopeExit at_exit([=] {
+    closesocket(sock);
+  });
 
-  const string pid = StringPrintf("[%d] ", getpid());
+  string pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launchNode(" << node_number << ")";
+
   File semaphore_file(node_file(config, connection_type, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << semaphore_file
@@ -208,39 +192,9 @@ static bool launchNode(
   } else if (connection_type == ConnectionType::BINKP) {
     raw_cmd = c.binkp_cmd;
   }
+
   const string cmd = CreateCommandLine(raw_cmd, params);
-
-  LOG(INFO) << pid << "Invoking Command Line:" << cmd;
-  pid_t child_pid = fork();
-  if (child_pid == -1) {
-    // fork failed.
-    LOG(ERROR) << pid << "Error forking WWIV.";
-    return false;
-  } else if (child_pid == 0) {
-    // child process.
-    execl("/bin/sh", "sh", "-c", cmd.c_str(), nullptr);
-    LOG(ERROR) << "Unable to exec: '" << cmd << "' errno: " << errno;
-    // Should not happen unless we can't exec /bin/sh
-    _exit(127);
-  }
-  bbs_pid = child_pid;
-  int status = 0;
-  VLOG(2) << pid << "before waitpid";
-  while (waitpid(child_pid, &status, 0) == -1) {
-    if (errno != EINTR) {
-      break;
-    }
-  }
-  VLOG(2) << pid << "after waitpid";
-
-  if (WIFEXITED(status)) {
-    // Process exited.
-    LOG(INFO) << pid << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
-  } else if (WIFSIGNALED(status)) {
-    LOG(INFO) << pid << "Node #" << node_number << " killed by signal: " << WTERMSIG(status);
-  } else if (WIFSTOPPED(status)) {
-    LOG(INFO) << pid << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
-  }
+  ExecCommandAndWait(cmd, pid, node_number);
 
   VLOG(2) << "About to delete semaphore file: "<< semaphore_file.full_pathname();
   bool delete_ok = semaphore_file.Delete();
@@ -255,44 +209,57 @@ static bool launchNode(
   return true;
 }
 
-void setup_sighup_handlers() {
-  struct sigaction sa;
-  sa.sa_handler = huphandler;
-  sa.sa_flags = SA_RESETHAND;
-  sigfillset(&sa.sa_mask);
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGHUP";
+bool HandleAccept(
+    const wwiv::sdk::Config& config, const wwivd_config_t& c,
+    SOCKET sock, ConnectionType connection_type) {
+    
+  string remote_peer;
+  if (GetRemotePeerAddress(sock, remote_peer)) {
+    LOG(INFO) << "Connection from: " << remote_peer;
   }
-}
+  if (connection_type == ConnectionType::BINKP) {
+    // BINKP Connection.
+    if (!node_file(config, connection_type, 0)) {
+      launchNode(config, c, 0, sock, connection_type, remote_peer);
+      return true;
+    }
 
-void setup_sigint_handlers() {
-  struct sigaction sa;
-  sa.sa_handler = sigint_handler;
-  sa.sa_flags = SA_RESETHAND;
-  sigfillset(&sa.sa_mask);
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGINT";
+  } else {
+    // Telnet or SSH connection.  Find open node number and launch the child.
+    for (int node = c.start_node; node <= c.end_node; node++) {
+      if (!node_file(config, connection_type, node).Exists()) {
+        launchNode(config, c, node, sock, connection_type, remote_peer);
+        return true;
+      }
+    }
+    LOG(INFO) << "Sending BUSY. No available node to handle connection.";
+    send(sock, "BUSY\r\n", 6, 0);
+    closesocket(sock);
+    return true;
   }
+
+  closesocket(sock);
+  return false;
 }
 
 int CreateListenSocket(int port) {
   struct sockaddr_in my_addr;
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1) {
-    LOG(ERROR) << "Unable to create socket";
+    LOG(ERROR) << "Unable to create socket (1)";
     return -1;
   }
   int optval = 1;
-  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket";
+  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
+    LOG(ERROR) << "Unable to create socket (2)";
     return -1;
   }
-  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket";
+  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
+    LOG(ERROR) << "Unable to create socket (3)";
     return -1;
   }
   // Try to set nodelay.
-  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
+  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&optval), sizeof(optval));
 
   my_addr.sin_family = AF_INET ;
   my_addr.sin_port = htons(port);
@@ -312,15 +279,6 @@ int CreateListenSocket(int port) {
   return sock;
 }
 
-uid_t GetWWIVUserId(const string& username) {
-  passwd* pw = getpwnam(username.c_str());
-  if (pw == nullptr) {
-    // Unable to find user, let's return our current uid.
-    LOG(ERROR) << "Unable to find uid for username: " << username;
-    return getuid();
-  }
-  return pw->pw_uid;
-}
 /**
  *  This program is the manager of the nodes for the WWIV BBS software
  *  on UNIX platforms.
@@ -347,8 +305,7 @@ int Main(CommandLine& cmdline) {
   wwivd_config_t c = LoadIniConfig(config);
   File::set_current_directory(c.bbsdir);
 
-  setup_sighup_handlers();
-  setup_sigint_handlers();
+  SetupSignalHandlers();
 
   if (!DeleteAllSemaphores(config, c.start_node, c.end_node)) {
     LOG(ERROR) << "Unable to clear semaphores.";
@@ -374,14 +331,7 @@ int Main(CommandLine& cmdline) {
   int max_fd = std::max<int>(std::max<int>(telnet_socket, ssh_socket), binkp_socket);
   socklen_t addr_size = sizeof(sockaddr_in);
 
-  uid_t current_uid = getuid();
-  uid_t wwiv_uid = GetWWIVUserId(wwiv_user);
-  if (wwiv_uid != current_uid) {
-    if (setuid(wwiv_uid) != 0) {
-      LOG(ERROR) << "Unable to call setuid(" << wwiv_uid << "); errno: " << errno;
-      // TODO(rushfan): Should we exit or continue here?
-    }
-  }
+  SwitchToNonRootUser(wwiv_user);
 
   while (true) {
     const int num_instances = (c.end_node - c.start_node + 1);
@@ -423,46 +373,34 @@ int Main(CommandLine& cmdline) {
       continue;
     }
 
-    char ntop_buffer[255];
-    const string remote_peer = inet_ntop(saddr.sin_family, &saddr.sin_addr, ntop_buffer, sizeof(ntop_buffer));
-    LOG(INFO) << "Connection from: " << remote_peer << endl;
     if (client_sock == -1) {
       LOG(INFO)<< "Error accepting client socket. " << errno;
       continue;
     }
 
+#if defined (WWIVD_USE_LINUX_FORK) && defined(__unix__)
     int childpid = fork();
     if (childpid == -1) {
       LOG(ERROR) << "Error spawning child process. " << errno;
-      continue;
+      continue ;
     } else if (childpid == 0) {
+      // The rest of this needs to now be in a new thread
       VLOG(2) << "In child process.";
-      // We're in the child process now.
-
-      if (connection_type == ConnectionType::BINKP) {
-        // BINKP Connection.
-        if (!node_file(config, connection_type, 0)) {
-          launchNode(config, c, 0, client_sock, connection_type, remote_peer);
-          return 0;
-        }
-
-      } else {
-        // Telnet or SSH connection.  Find open node number and launch the child.
-        for (int node = c.start_node; node <= c.end_node; node++) {
-          if (!node_file(config, connection_type, node).Exists()) {
-            launchNode(config, c, node, client_sock, connection_type, remote_peer);
-            return 0;
-          }
-        }
-        LOG(INFO) << "Sending BUSY. No available node to handle connection.";
-        send(client_sock, "BUSY\r\n", 6, 0);
-        close(client_sock);
-      }
-      return 0;
+      return HandleAccept(config, c, client_sock, connection_type) ? 0 : 1;
+      // [ End of child process ]
     } else {
       // we're in the parent still.
-      close(client_sock);
+      // N.B.: We won't close this when using threads since we're still in
+      // the same process.
+      closesocket(client_sock);
     }
+#else
+    auto f = [&]{
+      HandleAccept(config, c, client_sock, connection_type);
+    };
+    std::thread client(f);
+    client.detach();
+#endif
   }
 
   return 1;
@@ -485,9 +423,10 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
-
+  LOG(INFO) << "wwivd - WWIV Daemon.";
+#ifdef __unix__
   signal(SIGCHLD, SIG_IGN);
+#endif  // __unix__
 
   try {
     return Main(cmdline);

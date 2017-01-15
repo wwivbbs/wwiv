@@ -66,6 +66,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkf", "networkf\networ
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkc", "networkc\networkc.vcxproj", "{45D9B81E-DE3B-438C-9BC2-0F8CDD00389F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wwivd", "wwivd\wwivd.vcxproj", "{8DC4E578-7568-49B1-91D8-207CB5887DD9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -331,6 +333,15 @@ Global
 		{45D9B81E-DE3B-438C-9BC2-0F8CDD00389F}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{45D9B81E-DE3B-438C-9BC2-0F8CDD00389F}.Release|Win32.ActiveCfg = Release|Win32
 		{45D9B81E-DE3B-438C-9BC2-0F8CDD00389F}.Release|Win32.Build.0 = Release|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Debug|Win32.Build.0 = Debug|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Release|Any CPU.ActiveCfg = Release|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Release|Win32.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
