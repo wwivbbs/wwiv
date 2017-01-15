@@ -20,6 +20,7 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <thread>
 
 #include <signal.h>
 #include <spawn.h>
@@ -172,6 +173,7 @@ static bool launchNode(
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << semaphore_file
                << "; errno: " << errno;
+    close(sock);
     return false;
   }
   semaphore_file.Write(StringPrintf("Created by pid: %s\nremote peer: %s",
@@ -206,6 +208,7 @@ static bool launchNode(
   if (ret != 0) {
     // fork failed.
     LOG(ERROR) << pid << "Error forking WWIV.";
+    close(sock);
     return false;
   }
   bbs_pid = child_pid;
@@ -237,6 +240,7 @@ static bool launchNode(
     VLOG(2) << "Deleted semaphore file: " << semaphore_file.full_pathname();
   }
 
+  close(sock);
   return true;
 }
 
@@ -269,6 +273,7 @@ bool HandleAccept(
     return true;
   }
 
+  close(sock);
   return false;
 }
 
@@ -408,10 +413,11 @@ int Main(CommandLine& cmdline) {
       continue;
     }
 
+#if defined( WWIVD_USE_LINUX_FORK) && defined(__unix__)
     int childpid = fork();
     if (childpid == -1) {
       LOG(ERROR) << "Error spawning child process. " << errno;
-      continue;
+      continue ;
     } else if (childpid == 0) {
       // The rest of this needs to now be in a new thread
       VLOG(2) << "In child process.";
@@ -423,6 +429,13 @@ int Main(CommandLine& cmdline) {
       // the same process.
       close(client_sock);
     }
+#else
+    auto f = [&]{
+      HandleAccept(config, c, client_sock, connection_type);
+    };
+    std::thread client(f);
+    client.detach();
+#endif
   }
 
   return 1;

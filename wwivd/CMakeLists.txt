@@ -4,6 +4,9 @@ project (wwivd)
 include_directories(..)
 
 set(WWIVD_SOURCES wwivd.cpp wwivd_unix.cpp)
+if (UNIX)
+  find_package (Threads)
+endif()
 
 add_executable(wwivd ${WWIVD_SOURCES})
-target_link_libraries(wwivd sdk core)
+target_link_libraries(wwivd sdk core ${CMAKE_THREAD_LIBS_INIT})
