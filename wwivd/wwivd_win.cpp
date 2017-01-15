@@ -52,6 +52,7 @@ bool InitializeSockets() {
 }
 
 void SetupSignalHandlers() {
+  // Not the best place, but this works.
   static bool initialized = InitializeSockets();
 }
 
