@@ -22,6 +22,7 @@
 #include <string>
 
 #include <signal.h>
+#include <spawn.h>
 #include <string>
 #include <sys/types.h>
 
@@ -67,6 +68,7 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 pid_t bbs_pid = 0;
+extern char **environ;
 
 
 struct wwivd_config_t {
@@ -208,19 +210,21 @@ static bool launchNode(
     raw_cmd = c.binkp_cmd;
   }
   const string cmd = CreateCommandLine(raw_cmd, params);
+  char sh[21];
+  char dc[21];
+  char cmdstr[4000];
+  strcpy(sh, "sh");
+  strcpy(dc, "-c");
+  strcpy(cmdstr, cmd.c_str());
+  char* argv[] = {sh, dc, cmdstr, NULL};
 
-  LOG(INFO) << pid << "Invoking Command Line:" << cmd;
-  pid_t child_pid = fork();
-  if (child_pid == -1) {
+  LOG(INFO) << pid << "Invoking Command Line (posix_spawn):" << cmd;
+  pid_t child_pid = 0;
+  int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
+  if (ret != 0) {
     // fork failed.
     LOG(ERROR) << pid << "Error forking WWIV.";
     return false;
-  } else if (child_pid == 0) {
-    // child process.
-    execl("/bin/sh", "sh", "-c", cmd.c_str(), nullptr);
-    LOG(ERROR) << "Unable to exec: '" << cmd << "' errno: " << errno;
-    // Should not happen unless we can't exec /bin/sh
-    _exit(127);
   }
   bbs_pid = child_pid;
   int status = 0;
