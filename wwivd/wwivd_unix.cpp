@@ -54,6 +54,7 @@ using namespace wwiv::os;
 // From wwivd.cpp
 
 extern pid_t bbs_pid;
+extern char **environ;
 
 static void huphandler(int mysignal) {
   cerr << endl;
@@ -111,5 +112,46 @@ void SwitchToNonRootUser(const std::string& wwiv_user) {
       // TODO(rushfan): Should we exit or continue here?
     }
   }
+}
+
+bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number) {
+  char sh[21];
+  char dc[21];
+  char cmdstr[4000];
+  to_char_array(sh, "sh");
+  to_char_array(dc, "-c");
+  to_char_array(cmdstr, cmd.c_str());
+  char* argv[] = { sh, dc, cmdstr, NULL };
+
+  LOG(INFO) << pid << "Invoking Command Line (posix_spawn):" << cmd;
+  pid_t child_pid = 0;
+  int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
+  if (ret != 0) {
+    // fork failed.
+    LOG(ERROR) << pid << "Error forking WWIV.";
+    return false;
+  }
+  bbs_pid = child_pid;
+  int status = 0;
+  VLOG(2) << pid << "before waitpid";
+  while (waitpid(child_pid, &status, 0) == -1) {
+    if (errno != EINTR) {
+      break;
+    }
+  }
+  VLOG(2) << pid << "after waitpid";
+
+  if (WIFEXITED(status)) {
+    // Process exited.
+    LOG(INFO) << pid << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
+  }
+  else if (WIFSIGNALED(status)) {
+    LOG(INFO) << pid << "Node #" << node_number << " killed by signal: " << WTERMSIG(status);
+  }
+  else if (WIFSTOPPED(status)) {
+    LOG(INFO) << pid << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
+  }
+
+  return true;
 }
 

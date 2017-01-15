@@ -33,6 +33,8 @@
 
 #endif  // _WIN32
 
+#include <process.h>
+
 #include "core/strings.h"
 #include "core/file.h"
 
@@ -103,6 +105,14 @@ string stacktrace() {
   }
   free(symbol);
   return out.str();
+}
+
+pid_t get_pid() {
+#ifdef _MSC_VER
+  return _getpid();
+#else 
+  return getpid();
+#endif
 }
 
 

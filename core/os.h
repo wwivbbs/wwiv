@@ -25,6 +25,8 @@
 #include <functional>
 #include <string>
 
+#include "core/wwivport.h"
+
 namespace wwiv {
 namespace os {
 
@@ -53,6 +55,8 @@ bool set_environment_variable(const std::string& variable_name, const std::strin
 // Prints a stacktrace to stderr.
 std::string stacktrace();
 
+// Gets the PID
+pid_t get_pid();
 
 }  // namespace os
 }  // namespace wwiv

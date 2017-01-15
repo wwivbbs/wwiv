@@ -55,7 +55,6 @@
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
 #include "wwivd/wwivd.h"
-#include "wwivd/wwivd_config.h"
 
 using std::cerr;
 using std::clog;
@@ -69,8 +68,6 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 pid_t bbs_pid = 0;
-extern char **environ;
-
 
 static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
@@ -165,14 +162,17 @@ static bool launchNode(
     const Config& config, const wwivd_config_t& c,
     int node_number, int sock, ConnectionType connection_type,
     const string& remote_peer) {
+  ScopeExit at_exit([=] {
+    closesocket(sock);
+  });
 
-  const string pid = StringPrintf("[%d] ", getpid());
+  string pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launchNode(" << node_number << ")";
+
   File semaphore_file(node_file(config, connection_type, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << semaphore_file
                << "; errno: " << errno;
-    close(sock);
     return false;
   }
   semaphore_file.Write(StringPrintf("Created by pid: %s\nremote peer: %s",
@@ -192,42 +192,9 @@ static bool launchNode(
   } else if (connection_type == ConnectionType::BINKP) {
     raw_cmd = c.binkp_cmd;
   }
+
   const string cmd = CreateCommandLine(raw_cmd, params);
-  char sh[21];
-  char dc[21];
-  char cmdstr[4000];
-  strcpy(sh, "sh");
-  strcpy(dc, "-c");
-  strcpy(cmdstr, cmd.c_str());
-  char* argv[] = {sh, dc, cmdstr, NULL};
-
-  LOG(INFO) << pid << "Invoking Command Line (posix_spawn):" << cmd;
-  pid_t child_pid = 0;
-  int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
-  if (ret != 0) {
-    // fork failed.
-    LOG(ERROR) << pid << "Error forking WWIV.";
-    close(sock);
-    return false;
-  }
-  bbs_pid = child_pid;
-  int status = 0;
-  VLOG(2) << pid << "before waitpid";
-  while (waitpid(child_pid, &status, 0) == -1) {
-    if (errno != EINTR) {
-      break;
-    }
-  }
-  VLOG(2) << pid << "after waitpid";
-
-  if (WIFEXITED(status)) {
-    // Process exited.
-    LOG(INFO) << pid << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
-  } else if (WIFSIGNALED(status)) {
-    LOG(INFO) << pid << "Node #" << node_number << " killed by signal: " << WTERMSIG(status);
-  } else if (WIFSTOPPED(status)) {
-    LOG(INFO) << pid << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
-  }
+  ExecCommandAndWait(cmd, pid, node_number);
 
   VLOG(2) << "About to delete semaphore file: "<< semaphore_file.full_pathname();
   bool delete_ok = semaphore_file.Delete();
@@ -239,14 +206,13 @@ static bool launchNode(
     VLOG(2) << "Deleted semaphore file: " << semaphore_file.full_pathname();
   }
 
-  close(sock);
   return true;
 }
 
 bool HandleAccept(
     const wwiv::sdk::Config& config, const wwivd_config_t& c,
     SOCKET sock, ConnectionType connection_type) {
-
+    
   string remote_peer;
   if (GetRemotePeerAddress(sock, remote_peer)) {
     LOG(INFO) << "Connection from: " << remote_peer;
@@ -268,11 +234,11 @@ bool HandleAccept(
     }
     LOG(INFO) << "Sending BUSY. No available node to handle connection.";
     send(sock, "BUSY\r\n", 6, 0);
-    close(sock);
+    closesocket(sock);
     return true;
   }
 
-  close(sock);
+  closesocket(sock);
   return false;
 }
 
@@ -280,20 +246,20 @@ int CreateListenSocket(int port) {
   struct sockaddr_in my_addr;
   int sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1) {
-    LOG(ERROR) << "Unable to create socket";
+    LOG(ERROR) << "Unable to create socket (1)";
     return -1;
   }
   int optval = 1;
-  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket";
+  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
+    LOG(ERROR) << "Unable to create socket (2)";
     return -1;
   }
-  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, &optval, sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket";
+  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
+    LOG(ERROR) << "Unable to create socket (3)";
     return -1;
   }
   // Try to set nodelay.
-  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, &optval, sizeof(optval));
+  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&optval), sizeof(optval));
 
   my_addr.sin_family = AF_INET ;
   my_addr.sin_port = htons(port);
@@ -412,7 +378,7 @@ int Main(CommandLine& cmdline) {
       continue;
     }
 
-#if defined( WWIVD_USE_LINUX_FORK) && defined(__unix__)
+#if defined (WWIVD_USE_LINUX_FORK) && defined(__unix__)
     int childpid = fork();
     if (childpid == -1) {
       LOG(ERROR) << "Error spawning child process. " << errno;
@@ -426,7 +392,7 @@ int Main(CommandLine& cmdline) {
       // we're in the parent still.
       // N.B.: We won't close this when using threads since we're still in
       // the same process.
-      close(client_sock);
+      closesocket(client_sock);
     }
 #else
     auto f = [&]{

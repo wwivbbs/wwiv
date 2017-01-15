@@ -42,5 +42,10 @@ struct wwivd_config_t {
 
 enum class ConnectionType { SSH, TELNET, BINKP };
 
+void SetupSignalHandlers();
+
+void SwitchToNonRootUser(const std::string& wwiv_user);
+bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number);
+
 
 #endif  // __INCLUDED_WWIV_WWIV_WWIVD_H__
