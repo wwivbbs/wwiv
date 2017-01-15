@@ -23,15 +23,24 @@
 
 #include <signal.h>
 #include <string>
+#include <sys/types.h>
+
+#ifdef _WIN32
+
+#include <process.h>
+#include <WS2tcpip.h>
+
+#else  // _WIN32
+
 #include <unistd.h>
 #include <resolv.h>
 #include <pwd.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <sys/wait.h>
- 
+#endif  // __linux__
+
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/inifile.h"
@@ -40,6 +49,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
@@ -89,7 +99,7 @@ static string CreateCommandLine(const std::string& tmpl, std::map<char, std::str
       }
       try {
         out.append(params.at(*it));
-      } catch (const std::out_of_range& e) {
+      } catch (const std::out_of_range&) {
         out.push_back(*it);
       }
     } else {
