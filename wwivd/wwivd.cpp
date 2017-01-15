@@ -467,9 +467,10 @@ int main(int argc, char* argv[]) {
     return 0;
   }
 
-  LOG(INFO) << "wwivd - WWIV UNIX Daemon.";
-
+  LOG(INFO) << "wwivd - WWIV Daemon.";
+#ifdef __unix__
   signal(SIGCHLD, SIG_IGN);
+#endif  // __unix__
 
   try {
     return Main(cmdline);
