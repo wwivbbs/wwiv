@@ -35,7 +35,6 @@
 #else  // _WIN32
 
 #include <unistd.h>
-#include <resolv.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
