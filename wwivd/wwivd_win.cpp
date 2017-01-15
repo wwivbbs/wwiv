@@ -68,13 +68,15 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   char cmdstr[4000];
   to_char_array(cmdstr, cmd);
 
+  DWORD creation_flags = CREATE_NEW_CONSOLE;
+
   BOOL ok = CreateProcess(
     NULL, 
     cmdstr,
     NULL,
     NULL,
     TRUE,
-    0,  // creation_flags
+    creation_flags,
     NULL,
     NULL,
     &si,
