@@ -17,10 +17,10 @@ Ini Files and Configuration
 General Cleanup
 ===============
 * move File to namespace wwiv::core
-* get rid of more char[] variables from vars.h, move to wsession as strings.
+* get rid of more char[] variables from vars.h, move to wsession 
+  as strings.
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
-* Finish wrappering Application
 * TopScreen doesn't work with CursesIO
 * use daten_t everywhere we have a daten date.
 * Maybe make the hangup variable a static in the Application class.
@@ -29,8 +29,10 @@ General Cleanup
 
 General Improvements
 ====================
-* Create wwivutil print command to print files in ANSI with heart and pipe codes
-* make a common ACS system (like TG, vs. having separate SL DSL AR fields everywhere for menus)
+* Create wwivutil print command to print files in ANSI with 
+  heart and pipe codes
+* make a common ACS system (like TG, vs. having separate 
+  SL DSL AR fields everywhere for menus)
 * cleanup menu system. It's awful.
 
 Net52
@@ -39,13 +41,15 @@ Net52
 
 Message Areas
 =============
-* to try strip down all message base code in wwiv to have no external
-  dependencies so it can get moved into sdk.
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
-* AddMessage should delete messages to keep total number of posts at the right number.
-* Make the emailmessage extend the message so most things are common between them.
+* Make the emailmessage extend the message so most things are common
+  between them.
 
 Open Questions
 ==============
-1) Extended colors ^C > 9, should we nuke them since we have pipes now?
-2) Guest user account. Is it useful?
+
+Closed Questions
+==============
+
+1) Guest user account. Is it useful?   - Yes, it just needs to be improved
+   and documented.
