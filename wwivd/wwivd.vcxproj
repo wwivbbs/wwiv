@@ -92,7 +92,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wwivd.cpp" />
-    <ClCompile Include="wwivd_unix.cpp" />
     <ClCompile Include="wwivd_win.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

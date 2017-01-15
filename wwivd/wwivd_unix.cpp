@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "wwivd/wwivd.h"
 
 #include <iostream>
 #include <map>

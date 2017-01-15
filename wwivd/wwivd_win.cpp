@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "wwivd/wwivd.h"
 
 #include <iostream>
 #include <map>
@@ -24,4 +25,11 @@
 #include <signal.h>
 #include <string>
 #include <sys/types.h>
+
+
+void SetupSignalHandlers() {
+}
+
+void SwitchToNonRootUser(const std::string& wwiv_user) {
+}
 

@@ -23,7 +23,6 @@
 #include <thread>
 
 #include <signal.h>
-#include <spawn.h>
 #include <string>
 #include <sys/types.h>
 
@@ -34,6 +33,7 @@
 
 #else  // _WIN32
 
+#include <spawn.h>
 #include <unistd.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
@@ -54,8 +54,8 @@
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
+#include "wwivd/wwivd.h"
 #include "wwivd/wwivd_config.h"
-#include "wwivd/wwivd_unix.h"
 
 using std::cerr;
 using std::clog;

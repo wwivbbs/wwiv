@@ -10,9 +10,6 @@
     <ClCompile Include="wwivd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="wwivd_unix.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="wwivd_win.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

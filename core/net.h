@@ -23,13 +23,18 @@
 #include <string>
 
 #if defined( _WIN32 )
+
 #define NOCRYPT // Disable include of wincrypt.h
 #include <winsock2.h>
+// Really windows?
+typedef int socklen_t;
+
 #else 
 
 typedef int HANDLE;
 typedef int SOCKET;
 constexpr int INVALID_SOCKET = -1;
+#define closesocket(s) close(s)
 #endif // _WIN32
 
 namespace wwiv {

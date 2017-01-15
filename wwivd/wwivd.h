@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_WWIV_WWIVD_CONFIG_H__
-#define __INCLUDED_WWIV_WWIV_WWIVD_CONFIG_H__
+#ifndef __INCLUDED_WWIV_WWIV_WWIVD_H__
+#define __INCLUDED_WWIV_WWIV_WWIVD_H__
 
 #include <string>
 #include "core/net.h"
@@ -43,4 +43,4 @@ struct wwivd_config_t {
 enum class ConnectionType { SSH, TELNET, BINKP };
 
 
-#endif  // __INCLUDED_WWIV_WWIV_WWIVD_CONFIG_H__
+#endif  // __INCLUDED_WWIV_WWIV_WWIVD_H__
