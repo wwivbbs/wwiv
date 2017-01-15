@@ -108,11 +108,7 @@ string stacktrace() {
 }
 
 pid_t get_pid() {
-#ifdef _MSC_VER
   return _getpid();
-#else 
-  return getpid();
-#endif
 }
 
 

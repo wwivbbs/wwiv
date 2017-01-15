@@ -34,7 +34,9 @@ typedef int socklen_t;
 typedef int HANDLE;
 typedef int SOCKET;
 constexpr int INVALID_SOCKET = -1;
-#define closesocket(s) close(s)
+constexpr int SOCKET_ERROR = -1;
+constexpr int NO_ERROR = -1;
+#define closesocket(s) ::close(s)
 #endif // _WIN32
 
 namespace wwiv {

@@ -24,8 +24,10 @@
 
 #include <pwd.h>
 #include <signal.h>
+#include <spawn.h>
 #include <string>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 #include "core/file.h"

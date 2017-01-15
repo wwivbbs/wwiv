@@ -104,6 +104,10 @@ std::string environment_variable(const std::string& variable_name) {
 
 string stacktrace() { return string(); }
 
+pid_t get_pid() {
+  return getpid();
+}
+
 
 }  // namespace os
 }  // namespace wwiv
