@@ -113,7 +113,14 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
     m.network.network_msg.net_number = static_cast<int8_t>(data.from_network_number);
   }
 
-  if (!savefile(data.text, &m.msg)) {
+  string text = data.text;
+  // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
+  // does not, and removes it on read.
+  if (text.back() != CZ) {
+    text.push_back(CZ);
+  }
+
+  if (!savefile(text, &m.msg)) {
     return false;
   }
   increment_email_counters(root_directory_, m.touser);

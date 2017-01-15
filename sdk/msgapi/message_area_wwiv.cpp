@@ -420,9 +420,16 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   //  p.status |= status_unvalidated;
   //}
 
-  const string text = StrCat(header.from(), "\r\n",
+  string text = StrCat(header.from(), "\r\n",
     daten_to_wwivnet_time(header.daten()), "\r\n",
     message.text()->text());
+
+  // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
+  // does not, and removes it on read.
+  if (text.back() != CZ) {
+    text.push_back(CZ);
+  }
+
   if (!savefile(text, &p.msg)) {
     LOG(ERROR) << "Failed to save message text.";
     return false;
