@@ -53,6 +53,7 @@
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
+#include "wwivd/wwivd_unix.h"
 
 using std::cerr;
 using std::clog;
@@ -65,7 +66,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-static pid_t bbs_pid = 0;
+pid_t bbs_pid = 0;
 
 
 struct wwivd_config_t {
@@ -145,18 +146,6 @@ static const File node_file(const Config& config, ConnectionType ct, int node_nu
     return File(config.datadir(), "binkpinuse");
   }
   return File(config.datadir(), StrCat("nodeinuse.", node_number));
-}
-
-static void huphandler(int mysignal) {
-  cerr << endl;
-  cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
-  kill(bbs_pid, SIGHUP); // send SIGHUP to process group
-}
-
-static void sigint_handler(int mysignal) {
-  cerr << endl;
-  cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
-  kill(bbs_pid, SIGINT); // send SIGINT to process group
 }
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
@@ -265,26 +254,6 @@ static bool launchNode(
   return true;
 }
 
-void setup_sighup_handlers() {
-  struct sigaction sa;
-  sa.sa_handler = huphandler;
-  sa.sa_flags = SA_RESETHAND;
-  sigfillset(&sa.sa_mask);
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGHUP";
-  }
-}
-
-void setup_sigint_handlers() {
-  struct sigaction sa;
-  sa.sa_handler = sigint_handler;
-  sa.sa_flags = SA_RESETHAND;
-  sigfillset(&sa.sa_mask);
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGINT";
-  }
-}
-
 int CreateListenSocket(int port) {
   struct sockaddr_in my_addr;
   int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -357,8 +326,7 @@ int Main(CommandLine& cmdline) {
   wwivd_config_t c = LoadIniConfig(config);
   File::set_current_directory(c.bbsdir);
 
-  setup_sighup_handlers();
-  setup_sigint_handlers();
+  SetupSignalHandlers();
 
   if (!DeleteAllSemaphores(config, c.start_node, c.end_node)) {
     LOG(ERROR) << "Unable to clear semaphores.";

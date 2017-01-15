@@ -25,3 +25,67 @@
 #include <string>
 #include <sys/types.h>
 
+#include "core/file.h"
+#include "core/inifile.h"
+#include "core/log.h"
+#include "core/os.h"
+#include "core/scope_exit.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "core/wwivport.h"
+#include "sdk/config.h"
+#include "sdk/vardec.h"
+#include "sdk/filenames.h"
+
+using std::cerr;
+using std::clog;
+using std::cout;
+using std::endl;
+using std::map;
+using std::string;
+using namespace wwiv::core;
+using namespace wwiv::sdk;
+using namespace wwiv::strings;
+using namespace wwiv::os;
+
+// From wwivd.cpp
+
+extern pid_t bbs_pid;
+
+static void huphandler(int mysignal) {
+  cerr << endl;
+  cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
+  kill(bbs_pid, SIGHUP); // send SIGHUP to process group
+}
+
+static void sigint_handler(int mysignal) {
+  cerr << endl;
+  cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
+  kill(bbs_pid, SIGINT); // send SIGINT to process group
+}
+
+static void setup_sighup_handlers() {
+  struct sigaction sa;
+  sa.sa_handler = huphandler;
+  sa.sa_flags = SA_RESETHAND;
+  sigfillset(&sa.sa_mask);
+  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGHUP";
+  }
+}
+
+static void setup_sigint_handlers() {
+  struct sigaction sa;
+  sa.sa_handler = sigint_handler;
+  sa.sa_flags = SA_RESETHAND;
+  sigfillset(&sa.sa_mask);
+  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGINT";
+  }
+}
+
+void SetupSignalHandlers() {
+  setup_sighup_handlers();
+  setup_sigint_handlers();
+}
+
