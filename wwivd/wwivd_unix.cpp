@@ -21,9 +21,11 @@
 #include <map>
 #include <string>
 
+#include <pwd.h>
 #include <signal.h>
 #include <string>
 #include <sys/types.h>
+#include <unistd.h>
 
 #include "core/file.h"
 #include "core/inifile.h"
@@ -87,5 +89,26 @@ static void setup_sigint_handlers() {
 void SetupSignalHandlers() {
   setup_sighup_handlers();
   setup_sigint_handlers();
+}
+
+static uid_t GetWWIVUserId(const string& username) {
+  passwd* pw = getpwnam(username.c_str());
+  if (pw == nullptr) {
+    // Unable to find user, let's return our current uid.
+    LOG(ERROR) << "Unable to find uid for username: " << username;
+    return getuid();
+  }
+  return pw->pw_uid;
+}
+
+void SwitchToNonRootUser(const std::string& wwiv_user) {
+  uid_t current_uid = getuid();
+  uid_t wwiv_uid = GetWWIVUserId(wwiv_user);
+  if (wwiv_uid != current_uid) {
+    if (setuid(wwiv_uid) != 0) {
+      LOG(ERROR) << "Unable to call setuid(" << wwiv_uid << "); errno: " << errno;
+      // TODO(rushfan): Should we exit or continue here?
+    }
+  }
 }
 

@@ -35,7 +35,6 @@
 
 #include <unistd.h>
 #include <resolv.h>
-#include <pwd.h>
 #include <arpa/inet.h>
 #include <netinet/tcp.h>
 #include <sys/socket.h>
@@ -46,6 +45,7 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/log.h"
+#include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -54,6 +54,7 @@
 #include "sdk/config.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
+#include "wwivd/wwivd_config.h"
 #include "wwivd/wwivd_unix.h"
 
 using std::cerr;
@@ -70,25 +71,6 @@ using namespace wwiv::os;
 pid_t bbs_pid = 0;
 extern char **environ;
 
-
-struct wwivd_config_t {
-  string bbsdir;
-
-  int telnet_port = 2323;
-  string telnet_cmd;
-
-  int ssh_port = -1;
-  string ssh_cmd;
-
-  int binkp_port = -1;
-  string binkp_cmd;
-
-  int start_node;
-  int end_node;
-  int local_node;
-};
-
-enum class ConnectionType { SSH, TELNET, BINKP };
 
 static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
@@ -258,6 +240,38 @@ static bool launchNode(
   return true;
 }
 
+bool HandleAccept(
+    const wwiv::sdk::Config& config, const wwivd_config_t& c,
+    SOCKET sock, ConnectionType connection_type) {
+
+  string remote_peer;
+  if (GetRemotePeerAddress(sock, remote_peer)) {
+    LOG(INFO) << "Connection from: " << remote_peer;
+  }
+  if (connection_type == ConnectionType::BINKP) {
+    // BINKP Connection.
+    if (!node_file(config, connection_type, 0)) {
+      launchNode(config, c, 0, sock, connection_type, remote_peer);
+      return true;
+    }
+
+  } else {
+    // Telnet or SSH connection.  Find open node number and launch the child.
+    for (int node = c.start_node; node <= c.end_node; node++) {
+      if (!node_file(config, connection_type, node).Exists()) {
+        launchNode(config, c, node, sock, connection_type, remote_peer);
+        return true;
+      }
+    }
+    LOG(INFO) << "Sending BUSY. No available node to handle connection.";
+    send(sock, "BUSY\r\n", 6, 0);
+    close(sock);
+    return true;
+  }
+
+  return false;
+}
+
 int CreateListenSocket(int port) {
   struct sockaddr_in my_addr;
   int sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -295,15 +309,6 @@ int CreateListenSocket(int port) {
   return sock;
 }
 
-uid_t GetWWIVUserId(const string& username) {
-  passwd* pw = getpwnam(username.c_str());
-  if (pw == nullptr) {
-    // Unable to find user, let's return our current uid.
-    LOG(ERROR) << "Unable to find uid for username: " << username;
-    return getuid();
-  }
-  return pw->pw_uid;
-}
 /**
  *  This program is the manager of the nodes for the WWIV BBS software
  *  on UNIX platforms.
@@ -356,14 +361,7 @@ int Main(CommandLine& cmdline) {
   int max_fd = std::max<int>(std::max<int>(telnet_socket, ssh_socket), binkp_socket);
   socklen_t addr_size = sizeof(sockaddr_in);
 
-  uid_t current_uid = getuid();
-  uid_t wwiv_uid = GetWWIVUserId(wwiv_user);
-  if (wwiv_uid != current_uid) {
-    if (setuid(wwiv_uid) != 0) {
-      LOG(ERROR) << "Unable to call setuid(" << wwiv_uid << "); errno: " << errno;
-      // TODO(rushfan): Should we exit or continue here?
-    }
-  }
+  SwitchToNonRootUser(wwiv_user);
 
   while (true) {
     const int num_instances = (c.end_node - c.start_node + 1);
@@ -405,9 +403,6 @@ int Main(CommandLine& cmdline) {
       continue;
     }
 
-    char ntop_buffer[255];
-    const string remote_peer = inet_ntop(saddr.sin_family, &saddr.sin_addr, ntop_buffer, sizeof(ntop_buffer));
-    LOG(INFO) << "Connection from: " << remote_peer << endl;
     if (client_sock == -1) {
       LOG(INFO)<< "Error accepting client socket. " << errno;
       continue;
@@ -418,31 +413,14 @@ int Main(CommandLine& cmdline) {
       LOG(ERROR) << "Error spawning child process. " << errno;
       continue;
     } else if (childpid == 0) {
+      // The rest of this needs to now be in a new thread
       VLOG(2) << "In child process.";
-      // We're in the child process now.
-
-      if (connection_type == ConnectionType::BINKP) {
-        // BINKP Connection.
-        if (!node_file(config, connection_type, 0)) {
-          launchNode(config, c, 0, client_sock, connection_type, remote_peer);
-          return 0;
-        }
-
-      } else {
-        // Telnet or SSH connection.  Find open node number and launch the child.
-        for (int node = c.start_node; node <= c.end_node; node++) {
-          if (!node_file(config, connection_type, node).Exists()) {
-            launchNode(config, c, node, client_sock, connection_type, remote_peer);
-            return 0;
-          }
-        }
-        LOG(INFO) << "Sending BUSY. No available node to handle connection.";
-        send(client_sock, "BUSY\r\n", 6, 0);
-        close(client_sock);
-      }
-      return 0;
+      return HandleAccept(config, c, client_sock, connection_type) ? 0 : 1;
+      // [ End of child process ]
     } else {
       // we're in the parent still.
+      // N.B.: We won't close this when using threads since we're still in
+      // the same process.
       close(client_sock);
     }
   }
