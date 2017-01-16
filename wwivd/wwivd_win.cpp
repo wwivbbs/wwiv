@@ -51,7 +51,7 @@ bool InitializeSockets() {
   return true;
 }
 
-void SetupSignalHandlers() {
+void BeforeStartServer() {
   // Not the best place, but this works.
   static bool initialized = InitializeSockets();
 }

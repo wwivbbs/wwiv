@@ -30,6 +30,9 @@
 
 #include <process.h>
 #include <WS2tcpip.h>
+#ifdef max
+#undef max
+#endif  // max
 
 #else  // _WIN32
 
@@ -242,9 +245,9 @@ bool HandleAccept(
   return false;
 }
 
-int CreateListenSocket(int port) {
+SOCKET CreateListenSocket(int port) {
   struct sockaddr_in my_addr;
-  int sock = socket(AF_INET, SOCK_STREAM, 0);
+  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1) {
     LOG(ERROR) << "Unable to create socket (1)";
     return -1;
@@ -305,16 +308,16 @@ int Main(CommandLine& cmdline) {
   wwivd_config_t c = LoadIniConfig(config);
   File::set_current_directory(c.bbsdir);
 
-  SetupSignalHandlers();
+  BeforeStartServer();
 
   if (!DeleteAllSemaphores(config, c.start_node, c.end_node)) {
     LOG(ERROR) << "Unable to clear semaphores.";
   }
 
-  fd_set fds;
-  int telnet_socket = -1;
-  int ssh_socket = -1;
-  int binkp_socket = -1;
+  fd_set fds{};
+  SOCKET telnet_socket = -1;
+  SOCKET ssh_socket = -1;
+  SOCKET binkp_socket = -1;
   if (c.telnet_port > 0) {
     LOG(INFO) << "Listening to telnet on port: " << c.telnet_port;
     telnet_socket = CreateListenSocket(c.telnet_port);

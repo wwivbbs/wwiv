@@ -255,8 +255,8 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
           //ExpandWWIVHeartCodes( szReadBuffer );
           //int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
         } else {
+          int nNumWritten = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
           if (a()->IsExecLogSyncFoss()) {
-            int nNumWritten = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
             fprintf(hLogFile, "Wrote [%d] bytes to comm.\r\n", nNumWritten);
           }
         }
