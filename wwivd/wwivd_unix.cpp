@@ -90,7 +90,7 @@ static void setup_sigint_handlers() {
   }
 }
 
-void SetupSignalHandlers() {
+void BeforeStartServer() {
   setup_sighup_handlers();
   setup_sigint_handlers();
 }
