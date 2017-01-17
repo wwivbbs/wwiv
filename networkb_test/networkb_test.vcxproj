@@ -114,6 +114,7 @@
     <ClCompile Include="networkb_test_main.cpp" />
     <ClCompile Include="net_log_test.cpp" />
     <ClCompile Include="net_util_test.cpp" />
+    <ClCompile Include="packets_test.cpp" />
     <ClCompile Include="ppp_config_test.cpp" />
     <ClCompile Include="transfer_file_test.cpp" />
   </ItemGroup>

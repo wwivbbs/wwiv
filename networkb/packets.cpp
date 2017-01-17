@@ -153,6 +153,66 @@ bool write_wwivnet_packet(
   return true;
 }
 
+static string NetInfoFileName(uint16_t type) {
+  switch (type) {
+  case net_info_bbslist: return BBSLIST_NET;
+  case net_info_connect: return CONNECT_NET;
+  case net_info_sub_lst: return SUBS_LST;
+  case net_info_wwivnews: return "wwivnews.net";
+  case net_info_more_wwivnews: return "wwivnews.net";
+  case net_info_categ_net: return CATEG_NET;
+  case net_info_network_lst: return "networks.lst";
+  case net_info_file: return "";
+  case net_info_binkp: return BINKP_NET;
+  }
+  return "";
+}
+
+NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
+  NetInfoFileInfo info{};
+  if (p.nh.minor_type != net_info_file) {
+    info.filename = NetInfoFileName(p.nh.minor_type);
+    info.data = p.text;
+    info.valid = true;
+    info.overwrite = true;
+    return info;
+  }
+  auto text = p.text;
+  if (text.size() < 4) {
+    return info;
+  }
+  uint16_t flags = (text.at(1) << 8) | text.at(0);
+  VLOG(2) << "flags: " << flags;
+  char* fn = &text[2];
+  size_t len = strlen(fn);
+  if (len == 0 || len > 8) {
+    // still BAD.
+    LOG(ERROR) << "filename length not right; must be at [0,8]; was: " << len;
+    return info;
+  }
+  VLOG(2) << "fn: " << fn;
+  VLOG(2) << "len: " << len;
+  auto pos = len + sizeof(uint16_t) + 1;
+  if (text.size() < pos) {
+    // still bad
+    LOG(ERROR) << "text length too short; must be at least: " << pos;
+    return info;
+  }
+  info.data = text.substr(pos);
+#ifdef __linux__
+  strlwr(fn);
+#endif  // __linux__
+  bool zip = (flags & 0x02) != 0;
+  if (flags & 2) {
+    info.filename = StrCat(fn, ".zip");
+  }
+  else {
+    info.filename = StrCat(fn, ".net");
+  }
+  info.overwrite = (flags & 1) != 0;
+  info.valid = true;
+  return info;
+}
 
 }  // namespace net
 }  // namespace wwiv

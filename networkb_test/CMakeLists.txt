@@ -13,6 +13,7 @@ set(test_sources
   transfer_file_test.cpp
   net_log_test.cpp
   net_util_test.cpp
+  packets_test.cpp
   ppp_config_test.cpp
   networkb_test_main.cpp
 )

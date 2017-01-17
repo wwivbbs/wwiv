@@ -62,7 +62,14 @@ bool send_network_email(
   const net_networks_rec& network, net_header_rec& nh,
   std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
 
+struct NetInfoFileInfo {
+  std::string filename;
+  std::string data;
+  bool overwrite = false;
+  bool valid = false;
+};
 
+NetInfoFileInfo GetNetInfoFileInfo(Packet& p);
 
 }  // namespace net
 }  // namespace wwiv
