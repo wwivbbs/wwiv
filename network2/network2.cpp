@@ -19,6 +19,7 @@
 // WWIV5 Network2
 #include <cctype>
 #include <cstdlib>
+#include <cstring>
 #include <ctime>
 #include <fcntl.h>
 #include <iostream>
@@ -141,29 +142,85 @@ static string NetInfoFileName(uint16_t type) {
   return "";
 }
 
-static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
+struct NetInfoFileInfo {
+  string filename;
+  string data;
+  bool overwrite = false;
+  bool valid = false;
+};
 
-  string filename = NetInfoFileName(p.nh.minor_type);
-  if (p.nh.minor_type == net_info_file) {
-    // we don't know the filename
-    LOG(ERROR) << "ERROR: net_info_file not supported; writing to dead.net";
-    return write_wwivnet_packet(DEAD_NET, net, p);
-  } else if (!filename.empty()) {
-    // we know the name.
-    File file(net.dir, filename);
-    if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, 
-      File::shareDenyReadWrite)) {
-      // We couldn't create or open the file.
-      LOG(ERROR) << "ERROR: Unable to create or open file: " << filename << " writing to dead.net";
-      return write_wwivnet_packet(DEAD_NET, net, p);
-    }
-    file.Write(p.text);
-    LOG(INFO) << "  + Got " << filename;
-    return true;
+static NetInfoFileInfo GetNetInfoFileInfo(const net_networks_rec& net, Packet& p) {
+  NetInfoFileInfo info{};
+  if (p.nh.minor_type != net_info_file) {
+    info.filename = NetInfoFileName(p.nh.minor_type);
+    info.data = p.text;
+    info.valid = true;
+    info.overwrite = true;
+    return info;
   }
-  // error.
-  LOG(ERROR) << "ERROR: Fell through handle_net_info_file; writing to dead.net";
-  return write_wwivnet_packet(DEAD_NET, net, p);
+  auto text = p.text;
+  if (text.size() < 4) {
+    return info;
+  }
+  uint16_t flags = (text.at(1) << 8) | text.at(0);
+  VLOG(2) << "flags: " << flags;
+  char* fn = &text[2];
+  size_t len = strlen(fn);
+  if (len == 0 || len > 8) {
+    // still BAD.
+    LOG(ERROR) << "filename length not right; must be at [0,8]; was: " << len;
+    return info;
+  }
+  VLOG(2) << "fn: " << fn;
+  VLOG(2) << "len: " << len;
+  auto pos = len + sizeof(uint16_t) + 1;
+  if (text.size() < pos) {
+    // still bad
+    LOG(ERROR) << "text length too short; must be at least: " << pos;
+    return info;
+  }
+  info.data = text.substr(pos);
+#ifdef __linux__
+  strlwr(fn);
+#endif  // __linux__
+  bool zip = (flags & 0x02) != 0;
+  if (flags & 2) {
+    info.filename = StrCat(fn, ".zip");
+  }
+  else {
+    info.filename = StrCat(fn, ".net");
+  }
+  info.overwrite = (flags & 1) != 0;
+  info.valid = true;
+  return info;
+}
+
+static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
+  auto info = GetNetInfoFileInfo(net, p);
+  if (!info.valid) {
+    LOG(ERROR) << "NetInfoFileInfo is not valid";
+    return write_wwivnet_packet(DEAD_NET, net, p);
+    return false;
+  }
+
+  if (info.filename.empty()) {
+    LOG(ERROR) << "ERROR: Fell through handle_net_info_file; writing to dead.net";
+    return write_wwivnet_packet(DEAD_NET, net, p);
+  }
+  // we know the name.
+  File file(net.dir, info.filename);
+  if (!info.overwrite && file.Exists()) {
+    LOG(ERROR) << "File [" << file << "] already exists, and packet not set to overwrite.";
+    return write_wwivnet_packet(DEAD_NET, net, p);
+  }
+  if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
+    // We couldn't create or open the file.
+    LOG(ERROR) << "ERROR: Unable to create or open file: " << info.filename << " writing to dead.net";
+    return write_wwivnet_packet(DEAD_NET, net, p);
+  }
+  file.Write(info.data);
+  LOG(INFO) << "  + Got " << info.filename;
+  return true;
 }
 
 static bool handle_packet(

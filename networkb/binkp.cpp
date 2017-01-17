@@ -601,13 +601,13 @@ BinkState BinkP::AuthRemote() {
     return BinkState::WAIT_PWD;
   }
 
-  VLOG(1) << "       expected_ftn: " << expected_remote_node_;
+  VLOG(1) << "       expected_ftn: '" << expected_remote_node_ << "'";
   if (remote_.address_list().find(expected_remote_node_) != string::npos) {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
     send_command_packet(BinkpCommands::M_ERR, 
-      StrCat("Error (NETWORKB-0001): Unexpected Addresses: ", remote_.address_list()));
+      StrCat("Error (NETWORKB-0001): Unexpected Addresses: '", remote_.address_list(), "'"));
     return BinkState::FATAL_ERROR;
   }
 }
