@@ -398,6 +398,10 @@ int Main(CommandLine& cmdline) {
       closesocket(client_sock);
     }
 #else
+    // Changed the lambda to explicitly use the value for connection_type
+    // rather than by reference because linux is using ConnectionType::TELNET
+    // for ALL incoming connections when calling HandleAccept even though they
+    // are correct at initial connection time. issue992
     auto f = [&config,&c,&client_sock,connection_type]{
       HandleAccept(config, c, client_sock, connection_type);
     };
