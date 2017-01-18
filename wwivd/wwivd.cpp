@@ -398,7 +398,7 @@ int Main(CommandLine& cmdline) {
       closesocket(client_sock);
     }
 #else
-    auto f = [&]{
+    auto f = [&config,&c,&client_sock,connection_type]{
       HandleAccept(config, c, client_sock, connection_type);
     };
     std::thread client(f);
