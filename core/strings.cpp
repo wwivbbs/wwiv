@@ -54,8 +54,7 @@ unsigned char *translate_letters[] = {
   0L,
 };
 const char *DELIMS_WHITE = " \t\r\n";
-
-bool IsColorCode(char c);
+const char *DELIMS_CRLF = "\r\n";
 
 using std::ostringstream;
 using std::string;
@@ -281,15 +280,28 @@ void StringTrim(char *str) {
 }
 
 /**
- * Removes spaces from the beginning and the end of the string s.
- * @param s the string from which to remove spaces
- * @return s with spaces removed.
- */
+* Removes spaces from the beginning and the end of the string s.
+* @param s the string from which to remove spaces
+* @return s with spaces removed.
+*/
 void StringTrim(string* s) {
   string::size_type pos = s->find_first_not_of(DELIMS_WHITE);
   s->erase(0, pos);
 
   pos = s->find_last_not_of(DELIMS_WHITE);
+  s->erase(pos + 1);
+}
+
+/**
+* Removes spaces from the beginning and the end of the string s.
+* @param s the string from which to remove spaces
+* @return s with spaces removed.
+*/
+void StringTrimCRLF(string* s) {
+  string::size_type pos = s->find_first_not_of(DELIMS_CRLF);
+  s->erase(0, pos);
+
+  pos = s->find_last_not_of(DELIMS_CRLF);
   s->erase(pos + 1);
 }
 
@@ -446,11 +458,11 @@ std::string trim_to_size_ignore_colors(const std::string& orig, std::string::siz
  * Is the character c a possible color code. (is it #, B, or a digit)
  * @param c The Character to test.
  */
-bool IsColorCode(char c) {
+static bool IsColorCode(char c) {
   if (!c) {
     return false;
   }
-  return (c == '#' || c == 'B' || isdigit(c));
+  return (c == '#' || isdigit(c));
 }
 
 char *stripcolors(const char *str) {
@@ -459,6 +471,21 @@ char *stripcolors(const char *str) {
   const string result = stripcolors(string(str));
   strcpy(s, result.c_str());
   return s;
+}
+
+template<typename I>
+static bool is_ansi_seq_start(I& i, const std::string& orig) {
+  auto left = string(i, end(orig));
+  if (left.size() < 3) {
+    return false;
+  }
+  if (left.at(1) != '[') {
+    return false;
+  }
+  if (left.find('m') == std::string::npos) {
+    return false;
+  }
+  return true;
 }
 
 /**
@@ -470,10 +497,32 @@ char *stripcolors(const char *str) {
 string stripcolors(const string& orig) {
   string out;
   for (auto i = begin(orig); i != end(orig); i++) {
-    if (*i == '|' && (i + 1) != end(orig) && (i + 2) != end(orig) && IsColorCode(*(i + 1)) && IsColorCode(*(i + 2))) {
+    if (*i == 27 && (i + 1) != end(orig)) {
+      auto left = string(i, end(orig));
+      if (!is_ansi_seq_start(i, orig)) {
+        out.push_back(*i);
+        continue;
+      }
+      // skip everything until we have the end of the ansi sequence.
+      while (i != end(orig) && *i != 'm') {
+        i++;
+      }
+      if (i != end(orig)) {
+        i++;
+      }
+    }
+    if (i == end(orig)) {
+      break;
+    } else if ((i + 1) != end(orig) 
+                && (i + 2) != end(orig) 
+                && *i == '|'
+                && IsColorCode(*(i + 1)) 
+                && IsColorCode(*(i + 2))) {
       ++i;
       ++i;
-    } else if (*i == 3 && i + 1 != end(orig) && isdigit(*(i + 1))) {
+    } else if ((i + 1 ) != end(orig) 
+               && *i == 3 
+               && isdigit(*(i + 1))) {
       ++i;
     } else {
       out.push_back(*i);

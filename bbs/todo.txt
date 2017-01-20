@@ -34,6 +34,7 @@ General Improvements
 * make a common ACS system (like TG, vs. having separate 
   SL DSL AR fields everywhere for menus)
 * cleanup menu system. It's awful.
+* use std::chrono::duration<double> vs. milliseconds in core/ for timing.
 
 Net52
 =====

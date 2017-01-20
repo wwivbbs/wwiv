@@ -33,14 +33,22 @@ using namespace wwiv::strings;
 
 
 TEST(StringsTest, StripColors) {
-    EXPECT_EQ( string(""), stripcolors(string("")) );
-    EXPECT_EQ( string("|"), stripcolors(string("|")) );
-    EXPECT_EQ( string("|0"), stripcolors(string("|0")) );
-    EXPECT_EQ( string("12345"), stripcolors(string("12345")) );
-    EXPECT_EQ( string("abc"), stripcolors(string("abc")) );
-    EXPECT_EQ( string("1 abc"), stripcolors(string("\x031 abc")) );
-    EXPECT_EQ( string("\x03 abc"), stripcolors(string("\x03 abc")) );
-    EXPECT_EQ( string("abc"), stripcolors(string("|15abc")) );
+  EXPECT_EQ(string(""), stripcolors(string("")));
+  EXPECT_EQ(string("|"), stripcolors(string("|")));
+  EXPECT_EQ(string("|0"), stripcolors(string("|0")));
+  EXPECT_EQ(string("12345"), stripcolors(string("12345")));
+  EXPECT_EQ(string("abc"), stripcolors(string("abc")));
+  EXPECT_EQ(string("1 abc"), stripcolors(string("\x031 abc")));
+  EXPECT_EQ(string("\x03 abc"), stripcolors(string("\x03 abc")));
+  EXPECT_EQ(string("abc"), stripcolors(string("|15abc")));
+}
+
+TEST(StringsTest, StripColors_AnsiSeq) {
+  EXPECT_EQ(string(""), stripcolors(string("\x1b[0m")));
+  EXPECT_EQ(string(""), stripcolors(string("\x1b[0;33;46;1m")));
+  EXPECT_EQ(string("|"), stripcolors(string("|\x1b[0;33;46;1m")));
+  EXPECT_EQ(string("abc"), stripcolors(string("|15\x1b[0;33;46;1mabc")));
+  EXPECT_EQ(string("abc"), stripcolors(string("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m")));
 }
 
 TEST(StringsTest, StringColors_CharStarVersion) {
@@ -386,6 +394,14 @@ TEST(StringsTest, SizeWithoutColors) {
   EXPECT_EQ(1u, size_without_colors("|#1a"));
   EXPECT_EQ(1u, size_without_colors("|09a"));
   EXPECT_EQ(1u, size_without_colors("|17|10a"));
+}
+
+TEST(StringsTest, SizeWithoutColors_AnsiStr) {
+  EXPECT_EQ(0u, size_without_colors("\x1b[0m"));
+  EXPECT_EQ(0u, size_without_colors("\x1b[0;33;46;1m"));
+  EXPECT_EQ(1u, size_without_colors("|\x1b[0;33;46;1m"));
+  EXPECT_EQ(3u, size_without_colors("|15\x1b[0;33;46;1mabc"));
+  EXPECT_EQ(3u, size_without_colors("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m"));
 }
 
 TEST(StringsTest, TrimToSizeIgnoreColors) {

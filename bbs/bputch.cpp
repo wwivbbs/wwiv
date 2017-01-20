@@ -93,14 +93,20 @@ void Output::execute_ansi() {
       local_io_->GotoXY(local_io_->WhereX(), local_io_->WhereY() + args[0]);
       g_flags |= g_flag_ansi_movement;
       break;
-    case 'C':
+    case 'C': {
       x_ += args[0];
-      local_io_->GotoXY(local_io_->WhereX() + args[0], local_io_->WhereY());
-      break;
-    case 'D':
+      x_ = std::min(x_, 79); // HACK: we should use screen size, not 79 like we also
+      // do in Win32ConsoleIO
+      auto wx = local_io_->WhereX();
+      local_io_->GotoXY(wx + args[0], local_io_->WhereY());
+    } break;
+    case 'D': {
       x_ -= args[0];
-      local_io_->GotoXY(local_io_->WhereX() - args[0], local_io_->WhereY());
-      break;
+      x_ = std::max<int>(0, x_);
+      auto x = static_cast<int>(local_io_->WhereX()) - args[0];
+      x = std::max<int>(0, x);
+      local_io_->GotoXY(x, local_io_->WhereY());
+    } break;
     case 's':
       oldx = local_io_->WhereX();
       oldy = local_io_->WhereY();

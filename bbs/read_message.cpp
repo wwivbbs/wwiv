@@ -336,6 +336,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 }
 
 static FullScreenView display_type2_message_header(Type2MessageData& msg) {
+  auto oldcuratr = curatr;
   static constexpr int COLUMN2 = 42;
   int num_header_lines = 0;
 
@@ -437,6 +438,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   auto screen_width = a()->user()->GetScreenChars();
   auto screen_length = a()->user()->GetScreenLines() - 1;
 
+  curatr = oldcuratr;
   return FullScreenView(num_header_lines, screen_width, screen_length);
 }
 
@@ -446,7 +448,7 @@ static std::vector<std::string> split_long_line(const std::string& text) {
   string s = text;
   while (size_without_colors(s) > screen_width) {
     std::string::size_type pos = screen_width;
-    while (pos >= 0 && s[pos] > 32) {
+    while (pos > 0 && s[pos] >=27) {
       pos--;
     }
     if (pos == 0) { pos = screen_width; }
@@ -459,11 +461,18 @@ static std::vector<std::string> split_long_line(const std::string& text) {
   return lines;
 }
 
-static std::vector<std::string> split_wwiv_message(const std::string& text) {
+static std::vector<std::string> split_wwiv_message(const std::string& orig_text) {
+  auto text(orig_text);
+  auto cz_pos = text.find(CZ);
+  if (cz_pos != string::npos) {
+    // We stop the message at control-Z if it exists.
+    text = text.substr(0, cz_pos);
+  }
+
   std::vector<std::string> orig_lines = SplitString(text, "\r");
   std::vector<std::string> lines;
   for (auto line : orig_lines) {
-    StringTrim(&line);
+    StringTrimCRLF(&line);
     line.erase(std::remove(line.begin(), line.end(), 10), line.end());
     if (!line.empty()) {
       const auto optional_lines = a()->user()->GetOptionalVal();
@@ -490,7 +499,9 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
     auto line_size = size_without_colors(line);
     if (line_size > screen_width) {
       const auto sl = split_long_line(line);
-      for (const auto& l : sl) { lines.emplace_back(l); }
+      for (const auto& l : sl) { 
+        lines.emplace_back(l); 
+      }
     }
     else {
       lines.emplace_back(line);
@@ -501,12 +512,16 @@ static std::vector<std::string> split_wwiv_message(const std::string& text) {
 
 static void display_message_text_new(const std::vector<std::string>& lines, int start, 
   int message_height, int screen_width, int lines_start) {
+  bool had_ansi = false;
   for (int i = start; i < start + message_height; i++) {
     if (i >= size_int(lines)) {
       break;
     }
     bout.GotoXY(1, i - start + lines_start);
     auto l = lines.at(i);
+    if (l.find("\x1b[") != string::npos) {
+      had_ansi = true;
+    }
     if (!l.empty() && l.back() == CA) {
       // A line ending in ^A means it soft-wrapped.
       l.pop_back();
@@ -521,11 +536,13 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
         l = StrCat(std::string((screen_width - stripcolors(l).size()) / 2, ' '), l.substr(1));
       }
     }
-    bout << "|#0" << l << pad(screen_width, stripcolors(l).size());
+    bout << (had_ansi ? "|16" : "|#0") << l; bout.clreol();
   }
 }
 
 static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
+  // Reset the color before displaying a message.
+  curatr = 7;
   g_flags &= ~g_flag_ansi_movement;
   *next = false;
   g_flags |= g_flag_disable_mci;
@@ -547,13 +564,13 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
   int start = first;
   bool done = false;
-  bout.Color(0);
   ReadMessageResult result{};
   result.lines_start = fs.lines_start();
   result.lines_end = fs.lines_end();
   while (!done) {
     CheckForHangup();
     
+    bout.Color(0);
     display_message_text_new(
       lines, start, 
       fs.message_height(), fs.screen_width(), fs.lines_start());

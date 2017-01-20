@@ -40,7 +40,7 @@ uint16_t str_to_arword(const std::string& arstr) {
   auto s = ToStringUpperCase(arstr);
 
   for (int i = 0; i < 16; i++) {
-    if (s.find(i + 'A') != std::string::npos) {
+    if (s.find(static_cast<char>(i + 'A')) != std::string::npos) {
       rar |= (1 << i);
     }
   }

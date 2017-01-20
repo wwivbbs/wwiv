@@ -214,8 +214,7 @@ void Output::cls() {
 }
 
 /**
- * Moves the cursor to the end of the line using ANSI sequences.  If the user
- * does not have ansi, this this function does nothing.
+ * Clears the current line to the end.
  */
 void Output::clreol() {
   if (okansi()) {
