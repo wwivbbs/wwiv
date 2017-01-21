@@ -23,6 +23,7 @@
 #include <vector>
 
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "bbs/subacc.h"
@@ -184,20 +185,36 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
   {
     File datafile(subs_directory_, EMAIL_DAT);
     File textfile(messages_directory_, EMAIL_DAT);
+    data = datafile.full_pathname();
+    text = textfile.full_pathname();
+
     if (!datafile.Exists()) {
-      return nullptr;
+      // Create it if it doesn't exist.  We still can have an odd case
+      // where 1 file exists, but that's not ever normal. so we'll 
+      // complain later about not being able to create this.
+      auto unused_sub = Create("email", ".dat", ".dat", 0);
+      if (!unused_sub) {
+        return nullptr;
+      }
+      // We don't want a sub for it, but we wanted to create it, so we'll
+      // just nuke the one it made for us.
+      delete unused_sub;
+      // Return the newly created WWIVEmail object.
+      return new WWIVEmail(root_directory_, data, text, net_networks_.size());
     }
+
     if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
+      LOG(ERROR) << "Unable to open datafile: " << data;
       return nullptr;
     }
     if (!textfile.Exists()) {
+      LOG(ERROR) << "'" << data << "' exists, but '" << text << "' does not! ";
       return nullptr;
     }
     if (!textfile.Open(File::modeReadOnly | File::modeBinary)) {
+      LOG(ERROR) << "Unable to open msgsfile: " << data;
       return nullptr;
     }
-    data = datafile.full_pathname();
-    text = textfile.full_pathname();
   }
 
   return new WWIVEmail(root_directory_, data, text, net_networks_.size());
