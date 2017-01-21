@@ -500,7 +500,9 @@ public:
     if (!File::Exists(dir)) {
       const std::string s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
-        File::mkdirs(dir);
+        if (!File::mkdirs(dir)) {
+          messagebox(window, { "Unable to create directory: ", dir });
+        }
       }
     }
     return return_code;
@@ -533,7 +535,9 @@ public:
     if (!File::Exists(dir)) {
       const std::string s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
-        File::mkdirs(dir);
+        if (!File::mkdirs(dir)) {
+          messagebox(window, { "Unable to create directory: ", dir });
+        }
       }
     }
     return return_code;
