@@ -30,21 +30,6 @@
 using std::string;
 using wwiv::strings::StringPrintf;
 
-int StdioWindow::AddCh(chtype ch) {
-  Putch(ch & 0xff);
-  return 0;
-}
-
-int StdioWindow::AddStr(const std::string s) {
-  Puts(s);
-  return 0;
-}
-
-int StdioWindow::MvAddStr(int y, int x, const std::string s) {
-  PutsXY(x, y, s);
-  return 0;
-}
-
 int StdioWindow::GetChar() const {
   return std::cin.get();
 }

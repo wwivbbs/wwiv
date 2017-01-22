@@ -53,11 +53,11 @@ void CursesFooter::ShowHelpItems(int line, const std::vector<HelpItem>& help_ite
   window_->ClrtoEol();
   for (const auto& h : help_items) {
     window_->SetColor(SchemeId::FOOTER_KEY);
-    window_->AddStr(h.key);
+    window_->Puts(h.key);
     window_->SetColor(SchemeId::FOOTER_TEXT);
-    window_->AddStr("-");
-    window_->AddStr(h.description);
-    window_->AddStr(" ");
+    window_->Puts("-");
+    window_->Puts(h.description);
+    window_->Puts(" ");
   }
   window_->Refresh();
 }
@@ -65,16 +65,16 @@ void CursesFooter::ShowHelpItems(int line, const std::vector<HelpItem>& help_ite
 void CursesFooter::ShowContextHelp(const std::string& help_text) const {
   window_->Move(0, 0);
   window_->ClrtoEol();
-  window_->AddStr(help_text);
+  window_->Puts(help_text);
 }
 
 void CursesFooter::SetDefaultFooter() const {
   window_->Erase();
   window_->Move(0, 0);
   window_->SetColor(SchemeId::FOOTER_KEY);
-  window_->MvAddStr(0, 0, "Esc");
+  window_->PutsXY(0, 0, "Esc");
   window_->SetColor(SchemeId::FOOTER_TEXT);
-  window_->AddStr("-Exit ");
+  window_->Puts("-Exit ");
   window_->Refresh();
 }
 
@@ -131,9 +131,9 @@ CursesIO::CursesIO(const string& title)
     color_scheme_.get()));
   header_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   header_->SetColor(SchemeId::HEADER);
-  header_->MvAddStr(0, 0, title);
+  header_->PutsXY(0, 0, title);
   header_->SetColor(SchemeId::HEADER_COPYRIGHT);
-  header_->MvAddStr(1, 0, copyrightString);
+  header_->PutsXY(0, 1, copyrightString);
   footer_->window()->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::HEADER));
   header_->Refresh();
   footer_->window()->Refresh();
@@ -183,7 +183,7 @@ void CursesIO::SetIndicatorMode(IndicatorMode mode) {
     s = "OVR";
     break;
   }
-  header_->MvAddStr(1, x, s.c_str());
+  header_->PutsXY(x, 1, s.c_str());
   header_->Refresh();
   indicator_mode_ = mode;
 }

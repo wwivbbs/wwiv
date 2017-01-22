@@ -39,9 +39,6 @@ class UIWindow {
 
   virtual void SetColor(SchemeId) {}
   virtual void SetTitle(const std::string&) {}
-  virtual int AddCh(chtype) { return 0; }
-  virtual int AddStr(const std::string) { return 0; }
-  virtual int MvAddStr(int, int, const std::string) { return 0; }
   virtual void Bkgd(chtype) {}
   virtual int RedrawWin() { return 0; }
   virtual int TouchWin() { return 0; }

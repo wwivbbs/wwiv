@@ -161,7 +161,7 @@ bool dialog_yn(CursesWindow* window, const vector<string>& text) {
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
-    dialog->MvAddStr(curline++, 2, s);
+    dialog->PutsXY(2, curline++, s);
   }
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
   dialog->Refresh();
@@ -198,9 +198,9 @@ static void winput_password(CursesWindow* dialog, string *output, int max_length
       if (curpos) {
         do {
           curpos--;
-          dialog->AddStr("\b \b");
+          dialog->Puts("\b \b");
           if (s[curpos] == 26) {
-            dialog->AddStr("\b \b");
+            dialog->Puts("\b \b");
           }
         } while (curpos && (s[curpos - 1] != 32));
       }
@@ -216,9 +216,9 @@ static void winput_password(CursesWindow* dialog, string *output, int max_length
     case KEY_BACKSPACE:
       if (curpos) {
         curpos--;
-        dialog->AddStr("\b \b");
+        dialog->Puts("\b \b");
         if (s[curpos] == 26) {
-          dialog->AddStr("\b \b");
+          dialog->Puts("\b \b");
         }
       }
       break;
@@ -226,16 +226,16 @@ static void winput_password(CursesWindow* dialog, string *output, int max_length
     case 24: // control X
       while (curpos) {
         curpos--;
-        dialog->AddStr("\b \b");
+        dialog->Puts("\b \b");
         if (s[curpos] == 26) {
-         dialog->AddStr("\b \b");
+         dialog->Puts("\b \b");
         }
       }
       break;
     default:
       if (ch > 31 && curpos < max_length) {
         s[curpos++] = toupper(ch);
-        dialog->AddCh(ACS_DIAMOND);
+        dialog->Putch(ACS_DIAMOND);
       }
       break;
     }
@@ -254,10 +254,10 @@ void input_password(CursesWindow* window, const string& prompt, const vector<str
 
   int curline = 1;
   for (const auto& s : text) {
-    dialog->MvAddStr(curline++, 2, s);
+    dialog->PutsXY(2, curline++, s);
   }
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
-  dialog->MvAddStr(text.size() + 2, 2, prompt);
+  dialog->PutsXY(2, text.size() + 2, prompt);
   dialog->Refresh();
   winput_password(dialog.get(), output, max_length);
 }
@@ -277,11 +277,11 @@ int messagebox(UIWindow* window, const vector<string>& text) {
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
-    dialog->MvAddStr(curline++, 2, s);
+    dialog->PutsXY(2, curline++, s);
   }
   dialog->SetColor( SchemeId::DIALOG_PROMPT);
   int x = (maxlen - prompt.length()) / 2;
-  dialog->MvAddStr(text.size() + 2, x + 2, prompt);
+  dialog->PutsXY(x + 2, text.size() + 2, prompt);
   dialog->Refresh();
   return dialog->GetChar();
 }

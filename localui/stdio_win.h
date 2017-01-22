@@ -41,9 +41,6 @@ class StdioWindow : public UIWindow {
   virtual void GotoXY(int, int) {}
 
   // Still used by some curses code
-  virtual int AddCh(chtype) override;
-  virtual int AddStr(const std::string) override;
-  virtual int MvAddStr(int, int, const std::string) override;
 
   virtual int GetChar() const;
   virtual void Putch(unsigned char ch);

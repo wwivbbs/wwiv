@@ -104,18 +104,17 @@ void CursesWindow::GotoXY(int x, int y) {
 }
 
 void CursesWindow::Putch(unsigned char ch) {
-  AddCh(ch);
+  waddch(window_, ch);
   Refresh();
 }
 
 void CursesWindow::Puts(const std::string& text) {
-  AddStr(text.c_str());
+  waddstr(window_, text.c_str());
   Refresh();
 }
 
 void CursesWindow::PutsXY(int x, int y, const std::string& text) {
-  GotoXY(x, y);
-  Puts(text.c_str());
+  mvwaddstr(window_, y, x, text.c_str());
 }
 
 /**

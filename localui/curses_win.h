@@ -40,9 +40,6 @@ class CursesWindow : public UIWindow {
 
   void SetTitle(const std::string& title);
 
-  int AddCh(chtype ch) override { return waddch(window_, ch); }
-  int AddStr(const std::string s) override { return waddstr(window_, s.c_str()); }
-  int MvAddStr(int y, int x, const std::string s) override { return mvwaddstr(window_, y, x, s.c_str()); }
   void Bkgd(chtype ch) override { wbkgd(window_, ch); }
   int RedrawWin() override { return redrawwin(window_); }
   int TouchWin() override { return touchwin(window_); }

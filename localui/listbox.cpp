@@ -86,7 +86,7 @@ void ListBox::DrawAllItems() {
     }
     line.insert(line.begin(), 1, ' ');
     line.push_back(' ');
-    window_->MvAddStr(y + window_top_min_, 1, line.c_str());
+    window_->PutsXY(1, y + window_top_min_, line.c_str());
   }
 }
 
