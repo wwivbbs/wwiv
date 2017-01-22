@@ -59,8 +59,6 @@ CursesWindow::~CursesWindow() {
     parent_->Refresh();
     doupdate();
   }
-
-  UIWindow::~UIWindow();
 }
 
 void CursesWindow::SetTitle(const std::string& title) {
