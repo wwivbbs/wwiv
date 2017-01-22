@@ -22,14 +22,15 @@
 #include <map>
 #include <string>
 #include <curses.h>
-#include "colors.h"
+#include "localui/colors.h"
+#include "localui/ui_win.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
 #endif  // INSERT
 
 // Curses implementation of screen display routines for Init.
-class CursesWindow {
+class CursesWindow : public UIWindow {
  public:
   // Constructor/Destructor
   CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
@@ -39,40 +40,43 @@ class CursesWindow {
 
   void SetTitle(const std::string& title);
 
-  int AddCh(chtype ch) { return waddch(window_, ch); }
-  int AddStr(const std::string s) { return waddstr(window_, s.c_str()); }
-  int MvAddStr(int y, int x, const std::string s) { return mvwaddstr(window_, y, x, s.c_str()); }
-  void Bkgd(chtype ch) { wbkgd(window_, ch); }
-  int RedrawWin() { return redrawwin(window_); } 
-  int TouchWin() { return touchwin(window_); }
-  int Refresh() { return wrefresh(window_); }
-  int Move(int y, int x) { return wmove(window_, y, x); }
-  int GetcurX() const { return getcurx(window_); }
-  int GetcurY() const { return getcury(window_); }
-  int Clear() { return wclear(window_); }
-  int Erase() { return werase(window_); }
-  int GetChar() const;
-  int AttrSet(chtype attrs) { return wattrset(window_, attrs); }
-  int Keypad(bool b) { return keypad(window_, b); }
-  int GetMaxX() const { return getmaxx(window_); }
-  int GetMaxY() const { return getmaxy(window_); }
-  int ClrtoEol() { return wclrtoeol(window_); }
-  int AttrGet(attr_t* a, short* c) const { return wattr_get(window_, a, c, nullptr); }
-  int Box(chtype vert_ch, chtype horiz_ch) { return box(window_, vert_ch, horiz_ch); }
+  int AddCh(chtype ch) override { return waddch(window_, ch); }
+  int AddStr(const std::string s) override { return waddstr(window_, s.c_str()); }
+  int MvAddStr(int y, int x, const std::string s) override { return mvwaddstr(window_, y, x, s.c_str()); }
+  void Bkgd(chtype ch) override { wbkgd(window_, ch); }
+  int RedrawWin() override { return redrawwin(window_); }
+  int TouchWin() override { return touchwin(window_); }
+  int Refresh() override { return wrefresh(window_); }
+  int Move(int y, int x) override { return wmove(window_, y, x); }
+  int GetcurX() const override { return getcurx(window_); }
+  int GetcurY() const override { return getcury(window_); }
+  int Clear() override { return wclear(window_); }
+  int Erase() override { return werase(window_); }
+  int GetChar() const override;
+  int AttrSet(chtype attrs) override { return wattrset(window_, attrs); }
+  int Keypad(bool b) override { return keypad(window_, b); }
+  int GetMaxX() const override { return getmaxx(window_); }
+  int GetMaxY() const override { return getmaxy(window_); }
+  int ClrtoEol() override { return wclrtoeol(window_); }
+  int AttrGet(attr_t* a, short* c) const override { return wattr_get(window_, a, c, nullptr); }
+  int Box(chtype vert_ch, chtype horiz_ch) override { return box(window_, vert_ch, horiz_ch); }
 
-  void GotoXY(int x, int y);
-  void Putch(unsigned char ch);
-  void Puts(const std::string& text);
-  void PutsXY(int x, int y, const std::string& text);
-  void Printf(const char* format, ...);
-  void PrintfXY(int x, int y, const char* format, ...);
+  void GotoXY(int x, int y) override;
+  void Putch(unsigned char ch) override;
+  void Puts(const std::string& text) override;
+  void PutsXY(int x, int y, const std::string& text) override;
+  void Printf(const char* format, ...) override;
+  void PrintfXY(int x, int y, const char* format, ...) override;
 
-  void SetColor(SchemeId id);
+  void SetColor(SchemeId id) override;
 
   WINDOW* window() const { return window_; }
   CursesWindow* parent() const { return parent_; }
   ColorScheme* color_scheme() const { return color_scheme_; }
   SchemeId current_scheme_id() const { return current_scheme_id_; }
+
+  virtual bool IsGUI() const override { return true; }
+
 
 private:
   WINDOW* window_;

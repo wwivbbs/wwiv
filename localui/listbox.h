@@ -60,7 +60,7 @@ struct ListBoxResult {
 class ListBox {
  public:
   // Constructor/Destructor
-  ListBox(CursesIO* io, CursesWindow* parent, const std::string& title, int max_x, int max_y, 
+  ListBox(CursesIO* io, UIWindow* parent, const std::string& title, int max_x, int max_y, 
           std::vector<ListBoxItem>& items, ColorScheme* scheme);
   ListBox(const ListBox& copy) = delete;
   virtual ~ListBox() {}

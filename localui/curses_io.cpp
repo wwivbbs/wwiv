@@ -43,7 +43,7 @@ static HANDLE hConOut;
 static COORD originalConsoleSize;
 #endif
 
-CursesIO* out;
+CursesIO* out = nullptr;
 
 void CursesFooter::ShowHelpItems(int line, const std::vector<HelpItem>& help_items) const {
   if (line < 0 || line > 1) {

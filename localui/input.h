@@ -65,8 +65,8 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
 std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector<std::string>::size_type value, const std::vector<std::string>& strings, int *returncode);
 
 void input_password(CursesWindow* window, const std::string& prompt, const std::vector<std::string>& text, std::string *output, int max_length);
-int messagebox(CursesWindow* window, const std::string& text);
-int messagebox(CursesWindow* window, const std::vector<std::string>& text);
+int messagebox(UIWindow* window, const std::string& text);
+int messagebox(UIWindow* window, const std::vector<std::string>& text);
 
 void trimstrpath(char *s);
 

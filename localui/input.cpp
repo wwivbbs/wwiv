@@ -37,6 +37,9 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "localui/curses_io.h"
+#include "localui/ui_win.h"
+#include "localui/curses_win.h"
+#include "localui/stdio_win.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -130,13 +133,20 @@ EditItems::~EditItems() {
   io_->SetIndicatorMode(IndicatorMode::NONE);
 }
 
-static CursesWindow* CreateDialogWindow(CursesWindow* parent, int height, int width) {
+static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   const int maxx = parent->GetMaxX();
   const int maxy = parent->GetMaxY();
   const int startx = (maxx - width - 4) / 2;
   const int starty = (maxy - height - 2) / 2;
-  CursesWindow *dialog = new CursesWindow(parent, parent->color_scheme(), height + 2, width + 4, starty, startx);
-  dialog->Bkgd(out->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
+  UIWindow* dialog;
+  if (parent->IsGUI()) {
+    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), parent->color_scheme(), 
+      height + 2, width + 4, starty, startx);
+  }
+  else {
+    dialog = new StdioWindow(parent, parent->color_scheme());
+  }
+  dialog->Bkgd(parent->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
   dialog->SetColor(SchemeId::DIALOG_BOX);
   dialog->Box(0, 0);
   return dialog;
@@ -147,7 +157,7 @@ bool dialog_yn(CursesWindow* window, const vector<string>& text) {
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
-  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size(), maxlen));
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, text.size(), maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
@@ -237,7 +247,9 @@ void input_password(CursesWindow* window, const string& prompt, const vector<str
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
-  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size() + 2, maxlen));
+  CHECK(window->IsGUI()) << "input_password needs a GUI.";
+  unique_ptr<CursesWindow> dialog(
+      static_cast<CursesWindow*>(CreateDialogWindow(window, text.size() + 2, maxlen)));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
 
   int curline = 1;
@@ -250,18 +262,18 @@ void input_password(CursesWindow* window, const string& prompt, const vector<str
   winput_password(dialog.get(), output, max_length);
 }
 
-int messagebox(CursesWindow* window, const string& text) {
+int messagebox(UIWindow* window, const string& text) {
   const vector<string> vector = { text };
   return messagebox(window, vector);
 }
 
-int messagebox(CursesWindow* window, const vector<string>& text) {
+int messagebox(UIWindow* window, const vector<string>& text) {
   const string prompt = "Press Any Key";
   int maxlen = prompt.length() + 2;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
   }
-  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, text.size() + 2, maxlen));
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, text.size() + 2, maxlen));
   dialog->SetColor(SchemeId::DIALOG_TEXT);
   int curline = 1;
   for (const auto& s : text) {
@@ -275,18 +287,21 @@ int messagebox(CursesWindow* window, const vector<string>& text) {
 }
 
 std::string dialog_input_string(CursesWindow* window, const std::string& prompt, size_t max_length) {
-  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, 3, prompt.size() + 4 + max_length));
+  unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, prompt.size() + 4 + max_length));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 
+  CHECK(window->IsGUI()) << "dialog_input_string needs a GUI.";
   string s;
-  int return_code = editline(dialog.get(), &s, max_length, EditLineMode::ALL, "");
+  int return_code = editline(static_cast<CursesWindow*>(dialog.get()), &s, max_length, EditLineMode::ALL, "");
   return s;
 }
 
 int dialog_input_number(CursesWindow* window, const string& prompt, int min_value, int max_value) {
   int num_digits = max_value > 0 ? static_cast<int>(floor(log10(max_value))) + 1 : 1;
-  unique_ptr<CursesWindow> dialog(CreateDialogWindow(window, 3, prompt.size() + 4 + num_digits));
+  CHECK(window->IsGUI()) << "dialog_input_number needs a GUI.";
+  unique_ptr<CursesWindow> dialog(static_cast<CursesWindow*>(
+      CreateDialogWindow(window, 3, prompt.size() + 4 + num_digits)));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 

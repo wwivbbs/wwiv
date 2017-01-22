@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                  WWIV Initialization Utility Version 5                 */
-/*               Copyright (C)2014-2017, WWIV Software Services           */
+/*             Copyright (C)1998-2017, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,13 +16,67 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_NEWINIT_H__
-#define __INCLUDED_NEWINIT_H__
 
+#include <algorithm>
+#include <cstring>
+#include <iostream>
+#include <sstream>
 #include <string>
 
-class UIWindow;
+#include "curses.h"
+#include "core/strings.h"
+#include "localui/stdio_win.h"
 
-bool new_init(UIWindow* window, const std::string& bbsdir, bool unzip_files);
+using std::string;
+using wwiv::strings::StringPrintf;
 
-#endif // __INCLUDED_NEWINIT_H__
+int StdioWindow::AddCh(chtype ch) {
+  Putch(ch & 0xff);
+  return 0;
+}
+
+int StdioWindow::AddStr(const std::string s) {
+  Puts(s);
+  return 0;
+}
+
+int StdioWindow::MvAddStr(int y, int x, const std::string s) {
+  PutsXY(x, y, s);
+  return 0;
+}
+
+int StdioWindow::GetChar() const {
+  return std::cin.get();
+}
+
+void StdioWindow::Putch(unsigned char ch) {
+  std::cout << ch;
+}
+
+void StdioWindow::Puts(const std::string& text) {
+  std::cout << text;
+}
+
+void StdioWindow::PutsXY(int x, int y, const std::string& text) {
+  Puts(text);
+}
+
+void StdioWindow::Printf(const char* format, ...) {
+  va_list ap;
+  char buffer[1024];
+
+  va_start(ap, format);
+  vsnprintf(buffer, sizeof(buffer), format, ap);
+  va_end(ap);
+  Puts(buffer);
+}
+
+void StdioWindow::PrintfXY(int x, int y, const char* format, ...) {
+  va_list ap;
+  char buffer[1024];
+
+  va_start(ap, format);
+  vsnprintf(buffer, sizeof(buffer), format, ap);
+  va_end(ap);
+  Puts(buffer);
+}

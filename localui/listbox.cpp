@@ -23,6 +23,7 @@
 #include <iostream>
 #include <sstream>
 
+#include "core/log.h"
 #include "core/strings.h"
 #include "localui/colors.h"
 
@@ -33,7 +34,7 @@ static std::vector<HelpItem> StandardHelpItems() {
   return { {"Esc", "Exit"} };
 }
 
-ListBox::ListBox(CursesIO* io, CursesWindow* parent, const string& title, int max_x, int max_y, 
+ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x, int max_y, 
                  std::vector<ListBoxItem>& items, ColorScheme* scheme) 
     : io_(io), title_(title), selected_(-1), items_(items), window_top_(0), width_(4), 
       height_(2), color_scheme_(scheme), 
@@ -54,7 +55,10 @@ ListBox::ListBox(CursesIO* io, CursesWindow* parent, const string& title, int ma
   int begin_x = ((maxx - window_width) / 2);
   int begin_y = ((maxy - window_height) / 2);
 
-  window_.reset(new CursesWindow(parent, parent->color_scheme(), window_height, window_width, begin_y, begin_x));
+  CHECK(parent->IsGUI()) << "ListBox constructor needs a GUI.";
+
+  window_.reset(new CursesWindow(static_cast<CursesWindow*>(parent), 
+    parent->color_scheme(), window_height, window_width, begin_y, begin_x));
   window_->SetColor(SchemeId::WINDOW_BOX);
   window_->Box(0, 0);
   window_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::WINDOW_TEXT));

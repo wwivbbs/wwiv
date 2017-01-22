@@ -31,7 +31,7 @@ using std::string;
 using wwiv::strings::StringPrintf;
 
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
-    : parent_(parent), color_scheme_(color_scheme), current_scheme_id_(SchemeId::UNKNOWN) {
+  : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme), current_scheme_id_(SchemeId::UNKNOWN) {
   if (parent != nullptr) {
     if (begin_x == -1) {
       begin_x = (parent->GetMaxX() - ncols) / 2;
@@ -59,6 +59,8 @@ CursesWindow::~CursesWindow() {
     parent_->Refresh();
     doupdate();
   }
+
+  UIWindow::~UIWindow();
 }
 
 void CursesWindow::SetTitle(const std::string& title) {

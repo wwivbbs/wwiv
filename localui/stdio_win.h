@@ -16,13 +16,46 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_NEWINIT_H__
-#define __INCLUDED_NEWINIT_H__
+#ifndef __INCLUDED_LOCALUI_STDIO_WIN_H__
+#define __INCLUDED_LOCALUI_STDIO_WIN_H__
 
+#include <map>
 #include <string>
+#include <curses.h>
+#include "localui/colors.h"
+#include "localui/ui_win.h"
 
-class UIWindow;
+#ifdef INSERT // defined in wconstants.h
+#undef INSERT
+#endif  // INSERT
 
-bool new_init(UIWindow* window, const std::string& bbsdir, bool unzip_files);
+// Generic implementation of screen display routines for Init.
+class StdioWindow : public UIWindow {
+ public:
+  // Constructor/Destructor
+  StdioWindow(UIWindow* parent,
+              ColorScheme* color_scheme) : UIWindow(parent, color_scheme) {}
+  StdioWindow(const UIWindow& copy) = delete;
+  virtual ~StdioWindow() {}
 
-#endif // __INCLUDED_NEWINIT_H__
+  virtual void GotoXY(int, int) {}
+
+  // Still used by some curses code
+  virtual int AddCh(chtype) override;
+  virtual int AddStr(const std::string) override;
+  virtual int MvAddStr(int, int, const std::string) override;
+
+  virtual int GetChar() const;
+  virtual void Putch(unsigned char ch);
+  virtual void Puts(const std::string& text);
+  virtual void PutsXY(int x, int y, const std::string& text);
+  virtual void Printf(const char* format, ...);
+  virtual void PrintfXY(int x, int y, const char* format, ...);
+
+  /**
+   * Returns true if this is a GUI mode UI vs. stdio based UI.
+   */
+  virtual bool IsGUI() const { return false; }
+};
+
+#endif // __INCLUDED_LOCALUI_STDIO_WIN_H__

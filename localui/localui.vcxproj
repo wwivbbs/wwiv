@@ -91,6 +91,8 @@
     <ClInclude Include="curses_win.h" />
     <ClInclude Include="input.h" />
     <ClInclude Include="listbox.h" />
+    <ClInclude Include="stdio_win.h" />
+    <ClInclude Include="ui_win.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="colors.cpp" />
@@ -98,6 +100,7 @@
     <ClCompile Include="curses_win.cpp" />
     <ClCompile Include="input.cpp" />
     <ClCompile Include="listbox.cpp" />
+    <ClCompile Include="stdio_win.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">

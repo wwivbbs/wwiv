@@ -85,7 +85,7 @@ static void edit_arc(int arc_number, arcrec* a) {
   items.Run();
 }
 
-bool create_arcs(CursesWindow* window, const std::string& datadir) {
+bool create_arcs(UIWindow* window, const std::string& datadir) {
   vector<arcrec> arc;
   arc.emplace_back(arcrec{"Zip", "ZIP", 
     "zip -j %1 %2", "unzip -j -C %1 %2", 

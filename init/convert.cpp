@@ -69,7 +69,7 @@ struct user_config {
   char junk[119];   // AMENU took 11 bytes from here
 };
 
-static void ShowBanner(CursesWindow* window, const std::string& m) {
+static void ShowBanner(UIWindow* window, const std::string& m) {
   // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
   out->window()->Bkgd(' ');
   window->SetColor(SchemeId::INFO);
@@ -77,7 +77,7 @@ static void ShowBanner(CursesWindow* window, const std::string& m) {
   window->SetColor(SchemeId::NORMAL);
 }
 
-bool ensure_offsets_are_updated(CursesWindow* window, const wwiv::sdk::Config& config) {
+bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& config) {
   File file(config.config_filename());
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
@@ -117,7 +117,7 @@ bool ensure_offsets_are_updated(CursesWindow* window, const wwiv::sdk::Config& c
   return true;
 }
 
-bool convert_config_to_52(CursesWindow* window, const wwiv::sdk::Config& config) {
+bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
   File file(config.config_filename());
   if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return false;
@@ -146,7 +146,7 @@ bool convert_config_to_52(CursesWindow* window, const wwiv::sdk::Config& config)
   return true;
 }
 
-static bool convert_to_52_1(CursesWindow* window, const wwiv::sdk::Config& config) {
+static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
   string users_lst = StrCat(config.datadir(), USER_LST);
@@ -269,7 +269,7 @@ static bool convert_to_52_1(CursesWindow* window, const wwiv::sdk::Config& confi
   return true;
 }
 
-bool ensure_latest_5x_config(CursesWindow* window, const wwiv::sdk::Config& config) {
+bool ensure_latest_5x_config(UIWindow* window, const wwiv::sdk::Config& config) {
   const auto v = syscfg.header.header.config_revision_number;
   if (v < 1) {
     if (!convert_to_52_1(window, config)) {
@@ -282,7 +282,7 @@ bool ensure_latest_5x_config(CursesWindow* window, const wwiv::sdk::Config& conf
   return true;
 }
 
-void convert_config_424_to_430(CursesWindow* window, const wwiv::sdk::Config& config) {
+void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config) {
   File file(config.config_filename());
   if (!file.Open(File::modeBinary|File::modeReadWrite)) {
     return;

@@ -67,7 +67,10 @@
 
 #include "localui/input.h"
 #include "localui/curses_io.h"
+#include "localui/curses_win.h"
+#include "localui/ui_win.h"
 #include "localui/listbox.h"
+#include "localui/stdio_win.h"
 
 #include "sdk/config.h"
 #include "sdk/filenames.h"
@@ -139,8 +142,6 @@ static bool CreateConfigOvr(const string& bbsdir) {
 }
 
 WInitApp::WInitApp() {
-  const string title = StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version);
-  CursesIO::Init(title);
 }
 
 WInitApp::~WInitApp() {
@@ -188,13 +189,13 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   return true;
 }
 
-void upgrade_datafiles_if_needed(const wwiv::sdk::Config& config) {
+static void upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
   File configfile(config.config_filename());
   if (configfile.GetLength() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
-    out->window()->Bkgd(' ');
-    convert_config_424_to_430(out->window(), config);
+    window->Bkgd(' ');
+    convert_config_424_to_430(window, config);
   }
 
   if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
@@ -208,7 +209,7 @@ void upgrade_datafiles_if_needed(const wwiv::sdk::Config& config) {
     if (!wwiv::strings::IsEquals(expected_sig, syscfg.header.header.signature)) {
       // We don't have a 5.2 header, let's convert.
 
-      convert_config_to_52(out->window(), config);
+      convert_config_to_52(window, config);
       {
         if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
           configfile.Read(&syscfg, sizeof(configrec));
@@ -217,10 +218,10 @@ void upgrade_datafiles_if_needed(const wwiv::sdk::Config& config) {
       }
     }
 
-    ensure_latest_5x_config(out->window(), config);
+    ensure_latest_5x_config(window, config);
   }
 
-  ensure_offsets_are_updated(out->window(), config);
+  ensure_offsets_are_updated(window, config);
 
 }
 
@@ -251,30 +252,39 @@ int WInitApp::main(int argc, char** argv) {
   File::EnsureTrailingSlash(&bbsdir);
 
   const bool forced_initialize = cmdline.barg("initialize");
+  UIWindow* window;
+  if (forced_initialize) {
+    window = new StdioWindow(nullptr, new ColorScheme());
+  }
+  else {
+    CursesIO::Init(StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version));
+    window = out->window();
+    out->Cls(ACS_CKBOARD);
+    window->SetColor(SchemeId::NORMAL);
+  }
+
   if (forced_initialize && File::Exists(CONFIG_DAT)) {
-    messagebox(out->window(), "Unable to use --initialize when CONFIG.DAT exists.");
+    messagebox(window, "Unable to use --initialize when CONFIG.DAT exists.");
     return 1;
   }
   bool need_to_initialize = !File::Exists(CONFIG_DAT) || forced_initialize;
 
-  out->Cls(ACS_CKBOARD);
-  out->window()->SetColor(SchemeId::NORMAL);
 
   if (need_to_initialize) {
-    out->window()->Bkgd(' ');
-    if (!new_init(out->window(), bbsdir, need_to_initialize)) {
+    window->Bkgd(' ');
+    if (!new_init(window, bbsdir, need_to_initialize)) {
       return 2;
     }
   }
 
   Config config(bbsdir);
-  upgrade_datafiles_if_needed(config);
+  upgrade_datafiles_if_needed(window, config);
   CreateConfigOvr(bbsdir);
 
   {
     File archiverfile(config.datadir(), ARCHIVER_DAT);
     if (!archiverfile.Open(File::modeBinary|File::modeReadOnly)) {
-      create_arcs(out->window(), config.datadir());
+      create_arcs(window, config.datadir());
     }
   }
   read_status(config.datadir());
@@ -311,8 +321,8 @@ int WInitApp::main(int argc, char** argv) {
 
     int selected_hotkey = -1;
     {
-      ListBox list(out, out->window(), "Main Menu", static_cast<int>(floor(out->window()->GetMaxX() * 0.8)), 
-          static_cast<int>(floor(out->window()->GetMaxY() * 0.8)), items, out->color_scheme());
+      ListBox list(out, window, "Main Menu", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
+          static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("$");
       ListBoxResult result = list.Run();
@@ -370,7 +380,7 @@ int WInitApp::main(int argc, char** argv) {
       vector<string> lines;
       lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
       lines.push_back(StringPrintf("WWIV %s%s INIT compiled %s", wwiv_version, beta_version, const_cast<char*>(wwiv_date)));
-      messagebox(out->window(), lines);
+      messagebox(window, lines);
     } break;
     case 'X':
       up_subs_dirs(config.datadir());

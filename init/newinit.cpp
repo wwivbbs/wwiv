@@ -41,6 +41,7 @@
 #include "init/archivers.h"
 #include "init/init.h"
 #include "localui/input.h"
+#include "localui/ui_win.h"
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
@@ -84,7 +85,7 @@ static void AssignSubDir(char* path, const std::string& bbsdir, const std::strin
   strcpy(path, np.c_str());
 }
 
-static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_files) {
+static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
@@ -200,7 +201,7 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   syscfg.post_call_ratio = 0.0;
   save_config();
 
-  create_arcs(out->window(), datadir);
+  create_arcs(window, datadir);
   memset(&statusrec, 0, sizeof(statusrec_t));
   string now(date());
   to_char_array(statusrec.date1, now);
@@ -318,7 +319,7 @@ static void init_files(CursesWindow* window, const string& bbsdir, bool unzip_fi
   window->SetColor(SchemeId::NORMAL);
 }
 
-bool new_init(CursesWindow* window, const string& bbsdir, bool unzip_files) {
+bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
   static const vector<string> dirnames = {
     "attach",
     "data",
