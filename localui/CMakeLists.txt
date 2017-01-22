@@ -9,6 +9,7 @@ set(COMMON_SOURCES
   curses_win.cpp
   input.cpp
   listbox.cpp
+  stdio_win.cpp
   )
 
 if(UNIX) 
