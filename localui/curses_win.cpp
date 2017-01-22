@@ -30,6 +30,8 @@
 using std::string;
 using wwiv::strings::StringPrintf;
 
+static constexpr size_t VSN_BUFFER_SIZE = 1024;
+
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
   : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme), current_scheme_id_(SchemeId::UNKNOWN) {
   if (parent != nullptr) {
@@ -122,7 +124,7 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
  */
 void CursesWindow::Printf(const char* format, ...) {
   va_list ap;
-  char buffer[1024];
+  char buffer[VSN_BUFFER_SIZE];
 
   va_start(ap, format);
   vsnprintf(buffer, sizeof(buffer), format, ap);
@@ -132,7 +134,7 @@ void CursesWindow::Printf(const char* format, ...) {
 
 void CursesWindow::PrintfXY(int x, int y, const char* format, ...) {
   va_list ap;
-  char buffer[1024];
+  char buffer[VSN_BUFFER_SIZE];
 
   va_start(ap, format);
   vsnprintf(buffer, sizeof(buffer), format, ap);
