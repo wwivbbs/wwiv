@@ -95,6 +95,7 @@
   <ItemGroup>
     <ClCompile Include="command_line.cpp" />
     <ClCompile Include="crc32.cpp" />
+    <ClCompile Include="findfiles.cpp" />
     <ClCompile Include="graphs.cpp" />
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="log.cpp" />

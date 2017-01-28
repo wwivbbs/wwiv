@@ -53,6 +53,7 @@
 #include "init/instance_settings.h"
 #include "init/languages.h"
 #include "init/levels.h"
+#include "init/menus.h"
 #include "init/networks.h"
 #include "init/newinit.h"
 #include "init/paths.h"
@@ -312,6 +313,7 @@ int WInitApp::main(int argc, char** argv) {
         { "A. Archiver Configuration", 'A' },
         { "I. Instance Configuration", 'I' },
         { "L. Language Configuration", 'L' },
+        { "M. Menu Editor", 'M' },
         { "N. Network Configuration", 'N' },
         { "R. Registration Information", 'R' },
         { "U. User Editor", 'U' },
@@ -369,6 +371,9 @@ int WInitApp::main(int argc, char** argv) {
       break;
     case 'N':
       networks(config);
+      break;
+    case 'M':
+      menus(config);
       break;
     case 'R':
       edit_registration_code();

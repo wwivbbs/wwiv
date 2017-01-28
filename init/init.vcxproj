@@ -117,6 +117,7 @@
     <ClCompile Include="instance_settings.cpp" />
     <ClCompile Include="languages.cpp" />
     <ClCompile Include="levels.cpp" />
+    <ClCompile Include="menus.cpp" />
     <ClCompile Include="networks.cpp" />
     <ClCompile Include="newinit.cpp" />
     <ClCompile Include="paths.cpp" />

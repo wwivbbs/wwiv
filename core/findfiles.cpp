@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2017, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,50 +16,54 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "core/findfiles.h"
 
-#ifndef __INCLUDED_FINDFILES_H__
-#define __INCLUDED_FINDFILES_H__
-
-#include <cstring>
-#include <string>
-#include <vector>
-#include "core/wwivport.h"
-#include "core/wfndfile.h"
+#include <iostream>
+#include "core/file.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
 
 namespace wwiv {
 namespace core {
 
-enum class FindFilesType { directories, files, any };
+FindFiles::FindFiles(const std::string& dir, const std::string& mask, const FindFilesType type) 
+  : FindFiles(FilePath(dir, mask), type) {}
 
-struct FileEntry {
-  const std::string name;
-  long size;
-};
+static int FindFilesTypeToInt(FindFilesType type) {
+  switch (type) {
+  case FindFilesType::any: return WFINDFILE_ANY;
+  case FindFilesType::directories: return WFINDFILE_DIRS;
+  case FindFilesType::files: return WFINDFILE_FILES;
+  default: 
+    LOG(FATAL) << "Invalid FindFilesType: " << static_cast<int>(type);
+    // Make Compiler happy
+    return WFINDFILE_ANY;
+  }
+}
 
-class FindFiles {
-public:
-  typedef typename std::vector<FileEntry>::iterator iterator;
-  typedef typename std::vector<FileEntry>::const_iterator const_iterator;
+FindFiles::FindFiles(const std::string& mask, const FindFilesType type) {
+  WFindFile fnd;
+  if (!fnd.open(mask, FindFilesTypeToInt(type))) {
+    VLOG(1) << "Unable to open mask: " << mask;
+    return;
+  }
+  do {
+    // file_mask_ doesn't work on windows... sigh.
+    // good thing WFindFiles will go away.
+    if (fnd.IsDirectory() && type == FindFilesType::files) {
+      continue;
+    }
+    if (fnd.IsFile() && type == FindFilesType::directories) {
+      continue;
+    }
+    entries_.push_back({ fnd.GetFileName(), fnd.GetFileSize() });
+  } while (fnd.next());
+}
 
-  FindFiles(const std::string& dir, const std::string& mask, const FindFilesType type);
-  FindFiles(const std::string& mask, const FindFilesType type);
-  virtual ~FindFiles();
+FindFiles::~FindFiles() {
+}
 
-  iterator begin() { return entries_.begin(); }
-  const_iterator begin() const { return entries_.begin(); }
-  const_iterator cbegin() const { return entries_.cbegin(); }
-  iterator end() { return entries_.end(); }
-  const_iterator end() const { return entries_.end(); }
-  const_iterator cend() const { return entries_.cend(); }
-
-private:
-  std::vector<FileEntry> entries_; //we wish to iterate over this
-                            //container implementation code
-
-};
 
 }
 }
-
-
-#endif  // __INCLUDED_FINDFILES_H__

@@ -8,6 +8,7 @@ set(COMMON_SOURCES
   command_line.cpp
   file.cpp
   file_unix.cpp
+  findfiles.cpp
   graphs.cpp
   inifile.cpp
   log.cpp

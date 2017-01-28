@@ -142,5 +142,8 @@
     <ClCompile Include="sysop_account.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="menus.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
