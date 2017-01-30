@@ -13,6 +13,7 @@ set(COMMON_SOURCES
   instance_settings.cpp
   languages.cpp
   levels.cpp
+  menus.cpp
   networks.cpp
   newinit.cpp
   paths.cpp
