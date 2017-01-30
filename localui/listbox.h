@@ -75,6 +75,7 @@ class ListBox {
 
   // Returns the index of the selected item.
   int selected() const { return selected_; }
+  void set_selected(int s) { selected_ = s; }
 
   // List of additionally allowed hotkeys.
   void set_additional_hotkeys(const std::string& hotkeys) { hotkeys_.append(hotkeys); }
@@ -89,18 +90,18 @@ class ListBox {
   void DisplayFooter();
 
   CursesIO* io_;
-  int selected_;
+  int selected_ = -1;
   const std::string title_;
   std::vector<ListBoxItem> items_;
   std::vector<HelpItem> help_items_;
-  int window_top_;
-  int width_;
-  int height_;
+  int window_top_ = 0;
+  int width_ = 4;
+  int height_ = 2;
   std::unique_ptr<CursesWindow> window_;
   ColorScheme* color_scheme_;
   const int window_top_min_;
   std::string hotkeys_;
-  bool selection_returns_hotkey_;
+  bool selection_returns_hotkey_ = false;
 };
 
 #endif // __INCLUDED_PLATFORM_LISTBOX_H__

@@ -36,8 +36,7 @@ static std::vector<HelpItem> StandardHelpItems() {
 
 ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x, int max_y, 
                  std::vector<ListBoxItem>& items, ColorScheme* scheme) 
-    : io_(io), title_(title), selected_(-1), items_(items), window_top_(0), width_(4), 
-      height_(2), color_scheme_(scheme), 
+    : io_(io), title_(title), items_(items), color_scheme_(scheme), 
       window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
   height_ = std::min<int>(items.size(), max_y);
   int window_height = 2 + height_ + window_top_min_ - 1;
@@ -91,8 +90,16 @@ void ListBox::DrawAllItems() {
 }
 
 ListBoxResult ListBox::RunDialog() {
-  window_top_ = window_top_min_;
-  selected_ = 0;
+  if (selected_ < 0) {
+    selected_ = 0;
+  } else if (selected_ >= items_.size()) {
+    selected_ = items_.size();
+  }
+  // Move window top to furthest possible spot.
+  auto temp_top = std::max<int>(window_top_min_, selected_);
+  // Pull it back to the top of the window.
+  window_top_ = std::min<int>(temp_top, items_.size() - height_ + window_top_min_);
+  selected_ = std::min<int>(selected_, items_.size() - 1);
 
   while (true) {
     DrawAllItems();
@@ -162,6 +169,14 @@ ListBoxResult ListBox::RunDialog() {
     default:
       ch = toupper(ch);
       if (hotkeys_.find(ch) != string::npos) {
+        // Since a hotkey was pressed, update selected_ to match the index
+        // of the item containing the hotkey.
+        for (size_t i = 0; i < items_.size(); i++) {
+          if (items_.at(i).hotkey() == ch) {
+            selected_ = i;
+            break;
+          }
+        }
         return ListBoxResult{ ListBoxResultType::HOTKEY, selected_, ch};
       }
     }

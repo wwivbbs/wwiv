@@ -299,6 +299,7 @@ int WInitApp::main(int argc, char** argv) {
   CreateSysopAccountIfNeeded(bbsdir);
 
   bool done = false;
+  int selected = -1;
   do {
     out->Cls(ACS_CKBOARD);
     out->footer()->SetDefaultFooter();
@@ -327,7 +328,9 @@ int WInitApp::main(int argc, char** argv) {
           static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("$");
+      list.set_selected(selected);
       ListBoxResult result = list.Run();
+      selected = list.selected();
       if (result.type == ListBoxResultType::HOTKEY) {
         selected_hotkey = result.hotkey;
       } else if (result.type == ListBoxResultType::NO_SELECTION) {

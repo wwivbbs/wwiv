@@ -424,8 +424,6 @@ static bool CreateNewMenu(File& file, MenuHeader* header) {
   strcpy(header->szSig, "WWIV430");
   header->nVersion = MENU_VERSION;
   header->nFlags = MENU_FLAG_MAINMENU;
-  header->nHeadBytes = sizeof(MenuHeader);
-  header->nBodyBytes = sizeof(MenuRec);
 
   // Copy header into menu and write the menu  to ensure the record is 0 100% 0 filled.
   memmove(&menu, header, sizeof(MenuHeader));
@@ -584,9 +582,11 @@ void DisplayHeader(MenuHeader* pHeader, int nCur, const string& dirname) {
     bout << "|#90) Menu Description     :|#2 " << descriptions.description(dirname) << wwiv::endl;
     bout << "|#91) Deleted              :|#2 " << ((pHeader->nFlags & MENU_FLAG_DELETED) ? "Yes" : "No") << wwiv::endl;
     bout << "|#92) Main Menu            :|#2 " << ((pHeader->nFlags & MENU_FLAG_MAINMENU) ? "Yes" : "No") << wwiv::endl;;
-    bout << "|#9A) What do Numbers do   :|#2 " << (pHeader->nums == MENU_NUMFLAG_NOTHING ? "Nothing" :
-                       pHeader->nums == MENU_NUMFLAG_SUBNUMBER ? "Set sub number" : pHeader->nums == MENU_NUMFLAG_DIRNUMBER ?
-                       "Set dir number" : "Out of range") << wwiv::endl;
+    bout << "|#9A) What do Numbers do   :|#2 " 
+      << (pHeader->nums == MENU_NUMFLAG_NOTHING 
+        ? "Nothing" : pHeader->nums == MENU_NUMFLAG_SUBNUMBER 
+          ? "Set sub number" : pHeader->nums == MENU_NUMFLAG_DIRNUMBER 
+            ? "Set dir number" : "Out of range") << wwiv::endl;
     bout << "|#9B) What type of logging :|#2 " << (pHeader->nLogging == MENU_LOGTYPE_KEY ? "Key entered" :
                        pHeader->nLogging == MENU_LOGTYPE_NONE ? "No logging" : pHeader->nLogging == MENU_LOGTYPE_COMMAND ?
                        "Command being executeed" : pHeader->nLogging == MENU_LOGTYPE_DESC ? "Desc of Command" : "Out of range") << wwiv::endl;
