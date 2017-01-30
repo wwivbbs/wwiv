@@ -24,6 +24,9 @@ What's New in WWIV 5.3
   been written on save since 5.2)
 - pipe code '|Bn' where n in [0,9] (deprecated in 5.2) has been removed.
 - extented ^P codes > 9 are removed.
++ New experimental menu editor in INIT.
+* Most lists in INIT will now keep their selected index when returning
+  to the list.
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -68,8 +68,12 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void edit_menu_item(MenuRec& m) {
-  const int COL1_LINE = 2;
-  const int COL2_LINE = COL1_LINE + 12;
+  constexpr int LABEL_WIDTH = 12;
+  constexpr int PADDING = 2;
+  constexpr int COL1_LINE = PADDING;
+  constexpr int COL2_LINE = COL1_LINE + LABEL_WIDTH;
+  constexpr int COL3_LINE = COL2_LINE + PADDING + 16 + 6;
+  constexpr int COL4_LINE = COL3_LINE + LABEL_WIDTH;
 
   static const vector<pair<uint8_t, string>> numbers_action = {
     { MENU_NUMFLAG_NOTHING, "Nothing" },
@@ -92,7 +96,7 @@ static void edit_menu_item(MenuRec& m) {
 
   EditItems items{};
   const string title = StrCat("Menu: ", m.szKey);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, 17, 76));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, 14, 76));
   items.set_curses_io(out, window.get());
   int y = 1;
   window->PrintfXY(COL1_LINE, y, "Menu Key  : ");
@@ -107,22 +111,29 @@ static void edit_menu_item(MenuRec& m) {
   items.add(new StringEditItem<char*>(COL2_LINE, y++, 50, m.szSysopLog, false));
   window->PrintfXY(COL1_LINE, y, "Instance  : ");
   items.add(new StringEditItem<char*>(COL2_LINE, y++, 60, m.szInstanceMessage, false));
+  int col2y = y;
   window->PrintfXY(COL1_LINE, y, "Min SL    : ");
   items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.nMinSL));
+  window->PrintfXY(COL1_LINE, y, "Max SL    : ");
+  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.iMaxSL));
   window->PrintfXY(COL1_LINE, y, "Min DSL   : ");
   items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.nMinDSL));
+  window->PrintfXY(COL1_LINE, y, "Max DSL   : ");
+  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.iMaxDSL));
   window->PrintfXY(COL1_LINE, y, "AR        : ");
   items.add(new ArEditItem(COL2_LINE, y++, &m.uAR));
   window->PrintfXY(COL1_LINE, y, "DAR       : ");
   items.add(new ArEditItem(COL2_LINE, y++, &m.uDAR));
-  window->PrintfXY(COL1_LINE, y, "Restr     : ");
-  items.add(new RestrictionsEditItem(COL2_LINE, y++, &m.uRestrict));
-  window->PrintfXY(COL1_LINE, y, "Sysop     : ");
-  items.add(new BooleanEditItem(out, COL2_LINE, y++, &m.nSysop));
-  window->PrintfXY(COL1_LINE, y, "CoSysop   : ");
-  items.add(new BooleanEditItem(out, COL2_LINE, y++, &m.nCoSysop));
-  window->PrintfXY(COL1_LINE, y, "Password  : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 20, m.szPassWord, true));
+  
+  y = col2y;
+  window->PrintfXY(COL3_LINE, y, "Restr     : ");
+  items.add(new RestrictionsEditItem(COL4_LINE, y++, &m.uRestrict));
+  window->PrintfXY(COL3_LINE, y, "Sysop     : ");
+  items.add(new BooleanEditItem(out, COL4_LINE, y++, &m.nSysop));
+  window->PrintfXY(COL3_LINE, y, "CoSysop   : ");
+  items.add(new BooleanEditItem(out, COL4_LINE, y++, &m.nCoSysop));
+  window->PrintfXY(COL3_LINE, y, "Password  : ");
+  items.add(new StringEditItem<char*>(COL4_LINE, y++, 20, m.szPassWord, true));
 
   items.Run();
 }
