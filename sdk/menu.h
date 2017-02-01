@@ -60,7 +60,7 @@ constexpr uint16_t MENU_VERSION = 0x0100;
 
 struct MenuHeader {
   char szSig[10];      /* Menu Signature */
-  char MISC[54];
+  char unused[54];
 
   uint16_t  nVersion;
   uint16_t  nEmpty;
@@ -115,8 +115,7 @@ struct MenuRec {
   uint16_t nHide;            /* Hide text from PD/Regular/both or no menus */
   uint16_t unused_nPDFlags;  /* special characteristis for pulldowns       */
 
-  char szExtendedHelp[13];   /* filename for detailed help on this item (not used) */
-  char unused_data[79];
+  char unused_data[92];
 };
 
 #pragma pack(pop)
