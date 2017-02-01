@@ -99,6 +99,7 @@
     <ClCompile Include="net\dump_packet.cpp" />
     <ClCompile Include="net\net.cpp" />
     <ClCompile Include="net\req.cpp" />
+    <ClCompile Include="status\status.cpp" />
     <ClCompile Include="wwivutil.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -119,6 +120,7 @@
     <ClInclude Include="net\dump_packet.h" />
     <ClInclude Include="net\net.h" />
     <ClInclude Include="net\req.h" />
+    <ClInclude Include="status\status.h" />
     <ClInclude Include="template.h" />
     <ClInclude Include="wwivutil.h" />
   </ItemGroup>

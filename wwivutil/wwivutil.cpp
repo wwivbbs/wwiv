@@ -38,6 +38,7 @@
 #include "wwivutil/fix/fix.h"
 #include "wwivutil/messages/messages.h"
 #include "wwivutil/net/net.h"
+#include "wwivutil/status/status.h"
 
 using std::map;
 using std::string;
@@ -45,6 +46,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using wwiv::wwivutil::fido::FidoCommand;
 
 namespace wwiv {
 namespace wwivutil {
@@ -65,7 +67,8 @@ public:
       Add(std::make_unique<MessagesCommand>());
       Add(std::make_unique<NetCommand>());
       Add(std::make_unique<FixCommand>());
-      Add(std::make_unique<wwiv::wwivutil::fido::FidoCommand>());
+      Add(std::make_unique<FidoCommand>());
+      Add(std::make_unique<StatusCommand>());
 
       if (!cmdline_.Parse()) { return 1; }
       const std::string bbsdir(cmdline_.arg("bbsdir").as_string());

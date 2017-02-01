@@ -28,8 +28,6 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
-statusrec_t statusrec;
-
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::core;
@@ -38,6 +36,10 @@ using namespace wwiv::strings;
 
 namespace wwiv {
 namespace sdk {
+
+namespace {
+static statusrec_t statusrec;
+}
 
 
 static string GetSysopLogFileName(const string& d) {

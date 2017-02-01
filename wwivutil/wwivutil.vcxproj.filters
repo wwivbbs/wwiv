@@ -46,6 +46,9 @@
     <Filter Include="Source Files\config">
       <UniqueIdentifier>{89cb50aa-5cfe-41d2-b017-f6f222bb4f5b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\status">
+      <UniqueIdentifier>{bf2723b1-bcbe-419e-8da6-d6a3362ff4a9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="wwivutil.cpp">
@@ -101,6 +104,9 @@
     </ClCompile>
     <ClCompile Include="fido\dump_nodelist.cpp">
       <Filter>Source Files\fido</Filter>
+    </ClCompile>
+    <ClCompile Include="status\status.cpp">
+      <Filter>Source Files\status</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -160,6 +166,9 @@
     </ClInclude>
     <ClInclude Include="fido\dump_nodelist.h">
       <Filter>Source Files\fido</Filter>
+    </ClInclude>
+    <ClInclude Include="status\status.h">
+      <Filter>Source Files\status</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -27,6 +27,9 @@ What's New in WWIV 5.3
 + New experimental menu editor in INIT.
 * Most lists in INIT will now keep their selected index when returning
   to the list.
++ Added wwivutil status command. 1st operation is 
+  "wwivutil status qscan [set|get]". You can set or get the qscan value
+  in status.dat.
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
