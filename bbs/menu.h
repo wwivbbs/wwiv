@@ -34,22 +34,19 @@
 namespace wwiv {
 namespace menus {
 
-class MenuInstanceData {
+class MenuInstance {
 public:
-  MenuInstanceData();
-  ~MenuInstanceData();
-  bool Open();
-  void Close();
+  MenuInstance(const std::string& menuDirectory, const std::string& menuName);
+  ~MenuInstance();
   void DisplayHelp() const;
-  const std::string create_menu_filename(const std::string& extension) const;
   static const std::string create_menu_filename(
       const std::string& path, const std::string& menu, const std::string& extension);
-  void Menus(const std::string& menuDirectory, const std::string& menuName);
-  bool LoadMenuRecord(const std::string& command, MenuRec* pMenu);
+  void RunMenu();
+  std::vector<MenuRec> LoadMenuRecord(const std::string& command);
   void GenerateMenu() const;
 
-  std::string menu_;
-  std::string path_;
+  const std::string menu_directory() { return menu_directory_; }
+
   bool finished=false;
   bool reload=false;  /* true if we are going to reload the menus */
 
@@ -57,8 +54,21 @@ public:
   std::vector<std::string> insertion_order_;
   MenuHeader header;   /* Holds the header info for current menu set in memory */
 private:
+  const std::string menu_directory_;
+  const std::string menu_name_;
+  bool open_ = false;
+
+  bool Open();
+  void Close();
+  std::string GetHelpFileName() const;
+  std::string create_menu_filename(const std::string& extension) const;
+
+  void MenuExecuteCommand(const std::string& command);
   bool CreateMenuMap(File* menu_file);
-  std::map<std::string, MenuRec> menu_command_map_;
+  void PrintMenuPrompt() const;
+  std::string GetCommand() const;
+
+  std::multimap<std::string, MenuRec> menu_command_map_;
 };
 
 class MenuDescriptions {
@@ -91,7 +101,7 @@ void TurnMCIOn();
  * Executes a menu command ```script``` using the menudata for the context of
  * the MENU, or nullptr if not invoked from an actual menu.
  */
-void InterpretCommand(MenuInstanceData* menudata, const std::string& script);
+void InterpretCommand(MenuInstance* menudata, const std::string& script);
 
 }  // namespace menus
 }  // namespace wwiv

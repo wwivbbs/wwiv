@@ -52,24 +52,157 @@ using namespace wwiv::stl;
 namespace wwiv {
 namespace menus {
 
-
-// Local function prototypes
-bool ValidateMenuSet(const char *pszMenuDir);
-void StartMenus();
-bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword);
-void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command);
-void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu);
-void PrintMenuPrompt(MenuInstanceData* menu_data);
-const string GetCommand(const MenuInstanceData* menu_data);
-bool CheckMenuItemSecurity(MenuRec* pMenu, bool bCheckPassword);
-void InterpretCommand(MenuInstanceData* menu_data, const std::string& script);
+static bool ValidateMenuSet(const char *pszMenuDir) {
+  // ensure the entry point exists
+  return File::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
+}
 
 static bool CheckMenuPassword(const string& original_password) {
   const string expected_password = (original_password == "*SYSTEM") 
       ? a()->config()->config()->systempw : original_password;
   bout.nl();
-  string actual_password = input_password("|#2SY: ", 20);
+  const auto actual_password = input_password("|#2SY: ", 20);
   return actual_password == expected_password;
+}
+
+static void StartMenus() {
+  while (true) {
+    CheckForHangup();
+    if (!ValidateMenuSet(a()->user()->data.szMenuSet)) {
+      ConfigUserMenuSet();
+    }
+    const auto& dir = a()->user()->data.szMenuSet;
+    MenuInstance menu_data(dir, "main");
+    menu_data.RunMenu(); // default starting menu
+    if (!menu_data.reload) {
+      return;
+    }
+  }
+}
+
+static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
+  if ((pHeader->nFlags & MENU_FLAG_DELETED) ||
+    (a()->GetEffectiveSl() < pHeader->nMinSL) ||
+    (a()->user()->GetDsl() < pHeader->nMinDSL)) {
+    return false;
+  }
+
+  // All AR bits specified must match
+  for (short int x = 0; x < 16; x++) {
+    if (pHeader->uAR & (1 << x)) {
+      if (!a()->user()->HasArFlag(1 << x)) {
+        return false;
+      }
+    }
+  }
+
+  // All DAR bits specified must match
+  for (short int x = 0; x < 16; x++) {
+    if (pHeader->uDAR & (1 << x)) {
+      if (!a()->user()->HasDarFlag(1 << x)) {
+        return (a()->user()->GetDsl() < pHeader->nMinDSL);
+      }
+    }
+  }
+
+  // If any restrictions match, then they arn't allowed
+  for (short int x = 0; x < 16; x++) {
+    if (pHeader->uRestrict & (1 << x)) {
+      if (a()->user()->HasRestrictionFlag(1 << x)) {
+        return (a()->user()->GetDsl() < pHeader->nMinDSL);
+      }
+    }
+  }
+
+  if ((pHeader->nSysop && !so()) ||
+    (pHeader->nCoSysop && !cs())) {
+    return false;
+  }
+
+  if (pHeader->szPassWord[0] && bCheckPassword) {
+    if (!CheckMenuPassword(pHeader->szPassWord)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
+  // if deleted, return as failed
+  if ((pMenu->nFlags & MENU_FLAG_DELETED) ||
+    (a()->GetEffectiveSl() < pMenu->nMinSL) ||
+    (a()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
+    (a()->user()->GetDsl() < pMenu->nMinDSL) ||
+    (a()->user()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
+    return false;
+  }
+
+  // All AR bits specified must match
+  for (int x = 0; x < 16; x++) {
+    if (pMenu->uAR & (1 << x)) {
+      if (!a()->user()->HasArFlag(1 << x)) {
+        return false;
+      }
+    }
+  }
+
+  // All DAR bits specified must match
+  for (int x = 0; x < 16; x++) {
+    if (pMenu->uDAR & (1 << x)) {
+      if (!a()->user()->HasDarFlag(1 << x)) {
+        return false;
+      }
+    }
+  }
+
+  // If any restrictions match, then they arn't allowed
+  for (int x = 0; x < 16; x++) {
+    if (pMenu->uRestrict & (1 << x)) {
+      if (a()->user()->HasRestrictionFlag(1 << x)) {
+        return false;
+      }
+    }
+  }
+
+  if ((pMenu->nSysop && !so()) ||
+    (pMenu->nCoSysop && !cs())) {
+    return false;
+  }
+
+  if (pMenu->szPassWord[0] && bCheckPassword) {
+    if (!CheckMenuPassword(pMenu->szPassWord)) {
+      return false;
+    }
+  }
+
+  // If you made it past all of the checks
+  // then you may execute the menu record
+  return true;
+}
+
+static void LogUserFunction(
+  const MenuInstance* menu_data,
+  const string& command, 
+  const MenuRec* pMenu /* Nullable */) {
+  if (pMenu == nullptr) {
+    sysopchar(command);
+    return;
+  }
+
+  switch (menu_data->header.nLogging) {
+  case MENU_LOGTYPE_KEY:
+    sysopchar(command);
+    break;
+  case MENU_LOGTYPE_COMMAND:
+    sysoplog() << pMenu->szExecute;
+    break;
+  case MENU_LOGTYPE_DESC:
+    sysoplog() << (pMenu->szMenuText[0] ? pMenu->szMenuText : pMenu->szExecute);
+    break;
+  case MENU_LOGTYPE_NONE:
+  default:
+    break;
+  }
 }
 
 void mainmenu() {
@@ -78,67 +211,54 @@ void mainmenu() {
   }
 }
 
-void StartMenus() {
-  unique_ptr<MenuInstanceData> menu_data(new MenuInstanceData());
-  menu_data->reload = true;                    // force loading of menu
-  while (menu_data->reload) {
-    CheckForHangup();
-    menu_data->finished = false;
-    menu_data->reload = false;
-    if (!ValidateMenuSet(a()->user()->data.szMenuSet)) {
-      ConfigUserMenuSet();
-    }
-    menu_data->Menus(a()->user()->data.szMenuSet, "main"); // default starting menu
-  }
-}
-
-void MenuInstanceData::Menus(const string& menuDirectory, const string& menuName) {
-  path_ = menuDirectory;
-  menu_ = menuName;
-
-  if (Open()) {
-    if (header.nums == MENU_NUMFLAG_DIRNUMBER && a()->udir[0].subnum == -1) {
-      bout << "\r\nYou cannot currently access the file section.\r\n\n";
-      Close();
-      return;
-    }
-    // if flagged to display help on entrance, then do so
-    if (a()->user()->IsExpert() && header.nForceHelp == MENU_HELP_ONENTRANCE) {
-      DisplayHelp();
-    }
-
-    while (!finished) {
-      PrintMenuPrompt(this);
-      MenuExecuteCommand(this, GetCommand(this));
-    }
-  } else if (IsEqualsIgnoreCase(menuName.c_str(), "main")) {     // default menu name
+void MenuInstance::RunMenu() {
+  if (!open_ && iequals(menu_name_, "main")) {
     Hangup();
+    return;
   }
+
+  if (header.nums == MENU_NUMFLAG_DIRNUMBER && a()->udir[0].subnum == -1) {
+    bout << "\r\nYou cannot currently access the file section.\r\n\n";
+    return;
+  }
+
+  // if flagged to display help on entrance, then do so
+  if (a()->user()->IsExpert() && header.nForceHelp == MENU_HELP_ONENTRANCE) {
+    DisplayHelp();
+  }
+
+  while (!finished) {
+    PrintMenuPrompt();
+    const auto cmd = GetCommand();
+    MenuExecuteCommand(cmd);
+  }
+}
+
+MenuInstance::MenuInstance(const std::string& menu_directory, const std::string& menu_name)
+: menu_directory_(menu_directory), menu_name_(menu_name) {
+  open_ = Open();
+}
+
+MenuInstance::~MenuInstance() {
   Close();
 }
 
-MenuInstanceData::MenuInstanceData() {}
-
-MenuInstanceData::~MenuInstanceData() {
-  Close();
-}
-
-void MenuInstanceData::Close() {
+void MenuInstance::Close() {
   insertion_order_.clear();
   menu_command_map_.clear();
 }
 
 //static
-const std::string MenuInstanceData::create_menu_filename(
+const std::string MenuInstance::create_menu_filename(
     const std::string& path, const std::string& menu, const std::string& extension) {
   return StrCat(GetMenuDirectory(), path, File::pathSeparatorString, menu, ".", extension);
 }
 
-const string MenuInstanceData::create_menu_filename(const string& extension) const {
-  return MenuInstanceData::create_menu_filename(path_, menu_, extension);
+std::string MenuInstance::create_menu_filename(const string& extension) const {
+  return MenuInstance::create_menu_filename(menu_directory_, menu_name_, extension);
 }
 
-bool MenuInstanceData::CreateMenuMap(File* menu_file) {
+bool MenuInstance::CreateMenuMap(File* menu_file) {
   insertion_order_.clear();
   auto nAmount = menu_file->GetLength() / sizeof(MenuRec);
 
@@ -155,7 +275,7 @@ bool MenuInstanceData::CreateMenuMap(File* menu_file) {
   return true;
 }
 
-bool MenuInstanceData::Open() {
+bool MenuInstance::Open() {
   Close();
 
   // Open up the main data file
@@ -201,74 +321,27 @@ bool MenuInstanceData::Open() {
   return true;
 }
 
-static const string GetHelpFileName(const MenuInstanceData* menu_data) {
+string MenuInstance::GetHelpFileName() const {
   if (a()->user()->HasAnsi()) {
     if (a()->user()->HasColor()) {
-      const string filename = menu_data->create_menu_filename("ans");
+      const string filename = create_menu_filename("ans");
       if (File::Exists(filename)) {
         return filename;
       }
     }
-    const string filename = menu_data->create_menu_filename("b&w");
+    const string filename = create_menu_filename("b&w");
     if (File::Exists(filename)) {
       return filename;
     }
   }
-  return menu_data->create_menu_filename("msg");
+  return create_menu_filename("msg");
 }
 
-void MenuInstanceData::DisplayHelp() const {
-  const string filename = GetHelpFileName(this);
+void MenuInstance::DisplayHelp() const {
+  const auto filename = GetHelpFileName();
   if (!printfile(filename, true)) {
     GenerateMenu();
   }
-}
-
-bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
-  if ((pHeader->nFlags & MENU_FLAG_DELETED) ||
-      (a()->GetEffectiveSl() < pHeader->nMinSL) ||
-      (a()->user()->GetDsl() < pHeader->nMinDSL)) {
-    return false;
-  }
-
-  // All AR bits specified must match
-  for (short int x = 0; x < 16; x++) {
-    if (pHeader->uAR & (1 << x)) {
-      if (!a()->user()->HasArFlag(1 << x)) {
-        return false;
-      }
-    }
-  }
-
-  // All DAR bits specified must match
-  for (short int x = 0; x < 16; x++) {
-    if (pHeader->uDAR & (1 << x)) {
-      if (!a()->user()->HasDarFlag(1 << x)) {
-        return (a()->user()->GetDsl() < pHeader->nMinDSL);
-      }
-    }
-  }
-
-  // If any restrictions match, then they arn't allowed
-  for (short int x = 0; x < 16; x++) {
-    if (pHeader->uRestrict & (1 << x)) {
-      if (a()->user()->HasRestrictionFlag(1 << x)) {
-        return (a()->user()->GetDsl() < pHeader->nMinDSL);
-      }
-    }
-  }
-
-  if ((pHeader->nSysop && !so()) ||
-      (pHeader->nCoSysop && !cs())) {
-    return false;
-  }
-
-  if (pHeader->szPassWord[0] && bCheckPassword) {
-    if (!CheckMenuPassword(pHeader->szPassWord)) {
-      return false;
-    }
-  }
-  return true;
 }
 
 static bool IsNumber(const string& command) {
@@ -283,54 +356,48 @@ static bool IsNumber(const string& command) {
   return true;
 }
 
-bool MenuInstanceData::LoadMenuRecord(const std::string& command, MenuRec* pMenu) {
+std::vector<MenuRec> MenuInstance::LoadMenuRecord(const std::string& command) {
+  std::vector<MenuRec> result;
   // If we have 'numbers set the sub #' turned on then create a command to do so if a # is entered.
   if (IsNumber(command)) {
     if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
-      memset(pMenu, 0, sizeof(MenuRec));
-      sprintf(pMenu->szExecute, "SetSubNumber %d", atoi(command.c_str()));
-      return true;
+      MenuRec r{};
+      sprintf(r.szExecute, "SetSubNumber %d", atoi(command.c_str()));
+      result.push_back(std::move(r));
+      return result;
     } else if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
-      memset(pMenu, 0, sizeof(MenuRec));
-      sprintf(pMenu->szExecute, "SetDirNumber %d", atoi(command.c_str()));
-      return true;
+      MenuRec r{};
+      sprintf(r.szExecute, "SetDirNumber %d", atoi(command.c_str()));
+      result.push_back(std::move(r));
+      return result;
     }
   }
 
-  if (contains(menu_command_map_, command)) {
-    *pMenu = menu_command_map_.at(command);
-    if (CheckMenuItemSecurity(pMenu, true)) {
-      return true;
+  if (menu_command_map_.count(command) > 0) {
+    auto range = menu_command_map_.equal_range(command);
+    for (auto i = range.first; i != range.second; ++i) {
+      auto& m = i->second;
+      if (CheckMenuItemSecurity(&m, true)) {
+        result.push_back(m);
+      }
+      else {
+        MenuSysopLog(StrCat("|06< item security : ", command));
+      }
     }
-    MenuSysopLog(StrCat("|06< item security : ", command));
   }
-  return false;
+  return result;
 }
 
-void MenuExecuteCommand(MenuInstanceData* menu_data, const string& command) {
-  MenuRec menu;
-  if (menu_data->LoadMenuRecord(command, &menu)) {
-    LogUserFunction(menu_data, command, &menu);
-    InterpretCommand(menu_data, menu.szExecute);
-  } else {
-    LogUserFunction(menu_data, command, &menu);
+void MenuInstance::MenuExecuteCommand(const string& command) {
+  const auto menus = LoadMenuRecord(command);
+  if (menus.empty()) {
+    LogUserFunction(this, command, nullptr);
+    return;
   }
-}
 
-void LogUserFunction(const MenuInstanceData* menu_data, const string& command, MenuRec* pMenu) {
-  switch (menu_data->header.nLogging) {
-  case MENU_LOGTYPE_KEY:
-    sysopchar(command);
-    break;
-  case MENU_LOGTYPE_COMMAND:
-    sysoplog() << pMenu->szExecute;
-    break;
-  case MENU_LOGTYPE_DESC:
-    sysoplog() << (pMenu->szMenuText[0] ? pMenu->szMenuText : pMenu->szExecute);
-    break;
-  case MENU_LOGTYPE_NONE:
-  default:
-    break;
+  for (const auto& menu : menus) {
+    LogUserFunction(this, command, &menu);
+    InterpretCommand(this, menu.szExecute);
   }
 }
 
@@ -340,13 +407,13 @@ void MenuSysopLog(const string& msg) {
   bout << log_message << wwiv::endl;
 }
 
-void PrintMenuPrompt(MenuInstanceData* menu_data) {
-  if (!a()->user()->IsExpert() || menu_data->header.nForceHelp == MENU_HELP_FORCE) {
-    menu_data->DisplayHelp();
+void MenuInstance::PrintMenuPrompt() const {
+  if (!a()->user()->IsExpert() || header.nForceHelp == MENU_HELP_FORCE) {
+    DisplayHelp();
   }
   TurnMCIOn();
-  if (!menu_data->prompt.empty()) {
-    bout << menu_data->prompt;
+  if (!prompt.empty()) {
+    bout << prompt;
   }
 }
 
@@ -426,79 +493,21 @@ void ConfigUserMenuSet() {
   bout.nl(2);
 }
 
-bool ValidateMenuSet(const char *pszMenuDir) {
-  // ensure the entry point exists
-  return File::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
-}
-
-const string GetCommand(const MenuInstanceData* menu_data) {
+string MenuInstance::GetCommand() const {
   if (a()->user()->data.cHotKeys == HOTKEYS_ON) {
-    if (menu_data->header.nums == MENU_NUMFLAG_DIRNUMBER) {
+    if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
       write_inst(INST_LOC_XFER, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      return string(mmkey(1));
-    } else if (menu_data->header.nums == MENU_NUMFLAG_SUBNUMBER) {
+      return mmkey(1);
+    } else if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
       write_inst(INST_LOC_MAIN, a()->current_user_sub().subnum, INST_FLAGS_NONE);
-      return string(mmkey(0));
+      return mmkey(0);
     } else {
-      std::set<char> odc = {'/'};
-      return string(mmkey(odc));
+      std::set<char> x = { '/' };
+      return mmkey(x);
     }
   } else {
     return input(50);
   }
-}
-
-bool CheckMenuItemSecurity(MenuRec * pMenu, bool bCheckPassword) {
-  // if deleted, return as failed
-  if ((pMenu->nFlags & MENU_FLAG_DELETED) ||
-      (a()->GetEffectiveSl() < pMenu->nMinSL) ||
-      (a()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
-      (a()->user()->GetDsl() < pMenu->nMinDSL) ||
-      (a()->user()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
-    return false;
-  }
-
-  // All AR bits specified must match
-  for (int x = 0; x < 16; x++) {
-    if (pMenu->uAR & (1 << x)) {
-      if (!a()->user()->HasArFlag(1 << x)) {
-        return false;
-      }
-    }
-  }
-
-  // All DAR bits specified must match
-  for (int x = 0; x < 16; x++) {
-    if (pMenu->uDAR & (1 << x)) {
-      if (!a()->user()->HasDarFlag(1 << x)) {
-        return false;
-      }
-    }
-  }
-
-  // If any restrictions match, then they arn't allowed
-  for (int x = 0; x < 16; x++) {
-    if (pMenu->uRestrict & (1 << x)) {
-      if (a()->user()->HasRestrictionFlag(1 << x)) {
-        return false;
-      }
-    }
-  }
-
-  if ((pMenu->nSysop && !so()) ||
-      (pMenu->nCoSysop && !cs())) {
-    return false;
-  }
-
-  if (pMenu->szPassWord[0] && bCheckPassword) {
-    if (!CheckMenuPassword(pMenu->szPassWord)) {
-      return false;
-    }
-  }
-
-  // If you made it past all of the checks
-  // then you may execute the menu record
-  return true;
 }
 
 MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menupath) {
@@ -554,20 +563,20 @@ const string GetMenuDirectory(const string menuPath) {
   return StrCat(GetMenuDirectory(), menuPath, File::pathSeparatorString);
 }
 
-void MenuInstanceData::GenerateMenu() const {
+void MenuInstance::GenerateMenu() const {
   bout.Color(0);
   bout.nl();
 
-  int iDisplayed = 0;
+  int lines_displayed = 0;
   if (header.nums != MENU_NUMFLAG_NOTHING) {
     bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", "[#]", "Change Sub/Dir #");
-    ++iDisplayed;
+    ++lines_displayed;
   }
   for (const auto& key : insertion_order_) {
-    if (!contains(menu_command_map_, key)) {
+    if (menu_command_map_.count(key) == 0) {
       continue;
     }
-    MenuRec menu = menu_command_map_.at(key);
+    const MenuRec& menu = menu_command_map_.find(key)->second;
     if (CheckMenuItemSecurity(&menu, false) &&
         menu.nHide != MENU_HIDE_REGULAR &&
         menu.nHide != MENU_HIDE_BOTH) {
@@ -579,20 +588,20 @@ void MenuInstanceData::GenerateMenu() const {
       }
       bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", szKey,
                     menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
-      if (iDisplayed % 2) {
+      if (lines_displayed % 2) {
         bout.nl();
       }
-      ++iDisplayed;
+      ++lines_displayed;
     }
   }
   if (IsEquals(a()->user()->GetName(), "GUEST")) {
-    if (iDisplayed % 2) {
+    if (lines_displayed % 2) {
       bout.nl();
     }
     bout.bprintf("|#1%-8.8s  |#2%-25.25s  ",
       a()->user()->data.cHotKeys == HOTKEYS_ON ? "//APPLY" : "[APPLY]",
       "Guest Account Application");
-    ++iDisplayed;
+    ++lines_displayed;
   }
   bout.nl(2);
   return;

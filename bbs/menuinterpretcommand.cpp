@@ -71,10 +71,10 @@ namespace menus {
 
 struct MenuItemContext {
 public:
-  MenuItemContext(MenuInstanceData* m, const string& p1, const string& p2)
+  MenuItemContext(MenuInstance* m, const string& p1, const string& p2)
     : pMenuData(m), param1(p1), param2(p2) {}
   // May be null if not invoked from an actual menu.
-  MenuInstanceData* pMenuData;
+  MenuInstance* pMenuData;
   string param1;
   string param2;
   bool finished = false;
@@ -83,7 +83,7 @@ public:
 
 map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCommandMap();
 
-void InterpretCommand(MenuInstanceData* menudata, const std::string& script) {
+void InterpretCommand(MenuInstance* menudata, const std::string& script) {
   static map<string, std::function<void(MenuItemContext& context)>, wwiv::stl::ci_less> functions = CreateCommandMap();
 
   if (script.empty()) {
@@ -123,8 +123,8 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
   return {
     { "MENU", [](MenuItemContext& context) {
       if (context.pMenuData) {
-        unique_ptr<MenuInstanceData> new_menu(new MenuInstanceData());
-        new_menu->Menus(context.pMenuData->path_, context.param1);
+        MenuInstance new_menu(context.pMenuData->menu_directory(), context.param1);
+        new_menu.RunMenu();
       }
     } },
     { "ReturnFromMenu", [](MenuItemContext& context) {

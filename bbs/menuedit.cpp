@@ -454,7 +454,7 @@ void EditMenus() {
     int nAmount = 0;
     MenuHeader header{};
     MenuRec menu{};
-    File fileEditMenu(MenuInstanceData::create_menu_filename(menuDir, menuName, "mnu"));
+    File fileEditMenu(MenuInstance::create_menu_filename(menuDir, menuName, "mnu"));
     if (!fileEditMenu.Exists()) {
       bout << "Creating menu...\r\n";
       if (!CreateNewMenu(fileEditMenu, &header)) {
