@@ -370,14 +370,6 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   if (p->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
     qsc_p[a()->GetCurrentReadMessageArea()] = p->qscan;  // And here
   }
-  WStatus* pStatus1 = a()->status_manager()->GetStatus();
-  uint32_t lQScanPtr = pStatus1->GetQScanPointer();
-  delete pStatus1;
-  if (p->qscan >= lQScanPtr) {
-    a()->status_manager()->Run([p](WStatus& s) {
-      s.SetQScanPointer(p->qscan + 1);
-    });
-  }
 }
 
 void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_info) {
