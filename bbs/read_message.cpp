@@ -54,6 +54,13 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 
+// N.B: I can't imagine any good reason for this, but I ifdef'ed
+// out the old behavior that's been here since forever 
+// with this guard.  I'll probably remove it later unless
+// I hear some good reason to leave it.  Also note that the 
+// Message SDK doesn't have this logic.
+// #define UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
+
 /**
 * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
 * Note: This is a private function
@@ -736,6 +743,7 @@ static void update_qscan(uint32_t qscan) {
     qsc_p[a()->GetCurrentReadMessageArea()] = qscan;
   }
 
+#ifdef UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
   uint32_t current_qscan_pointer = 0;
   {
     std::unique_ptr<WStatus> wwiv_status(a()->status_manager()->GetStatus());
@@ -750,6 +758,7 @@ static void update_qscan(uint32_t qscan) {
       }
     });
   }
+#endif  // UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
 }
 
 ReadMessageResult read_post(int n, bool *next, int *val) {
