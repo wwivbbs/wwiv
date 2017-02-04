@@ -180,10 +180,10 @@ public:
         }
         else if (result.type == ListBoxResultType::HOTKEY) {
           const auto key = static_cast<char>(result.hotkey);
-          const auto num = items[result.selected].data();
-          const auto& item = menu_items_[items[result.selected].data()];
+          const auto num = result.selected > 0 ? items[result.selected].data() : 0;
           switch (key) {
           case 'D': {
+            const auto& item = menu_items_[items[result.selected].data()];
             dialog_yn(window, StrCat("Do you want to delete #", num, "[", item.szKey, "]"));
             wwiv::stl::erase_at(menu_items_, num);
           } break;

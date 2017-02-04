@@ -313,6 +313,9 @@ bool MenuInstance::Open() {
       prompt = tmp;
     }
   }
+  else {
+    prompt = "|09Command? ";
+  }
 
   // Execute command to use on entering the menu (if any).
   if (header.szScript[0]) {
