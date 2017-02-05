@@ -33,7 +33,7 @@ TEST(FindFiles, Suffix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
   FindFiles ff(FilePath(helper.TempDir(), "msg*"), FindFilesType::any);
-  auto& f = ff.begin();
+  auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
   f++;
   EXPECT_EQ(f, ff.end());
@@ -43,7 +43,7 @@ TEST(FindFiles, Prefix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
   FindFiles ff(FilePath(helper.TempDir(), "*001"), FindFilesType::files);
-  auto& f = ff.begin();
+  auto f = ff.begin();
   EXPECT_EQ("msg00000.001", f->name);
   f++;
   EXPECT_EQ(f, ff.end());

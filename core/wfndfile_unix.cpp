@@ -30,7 +30,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
-static long lTypeMask;
+static WFindFileTypeMask s_typemask;
 static const char* filespec_ptr;
 
 #define TYPE_DIRECTORY  DT_DIR
@@ -49,10 +49,10 @@ static int fname_ok(const struct dirent *ent) {
     return 0;
   }
 
-  if (lTypeMask) {
-    if ((ent->d_type & TYPE_DIRECTORY) && !(lTypeMask & WFINDFILE_DIRS)) {
+  if (s_typemask != WFindFileTypeMask::WFINDFILE_ANY) {
+    if ((ent->d_type & TYPE_DIRECTORY) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
       return 0;
-    } else if ((ent->d_type & TYPE_FILE) && !(lTypeMask & WFINDFILE_FILES)) {
+    } else if ((ent->d_type & TYPE_FILE) && !(s_typemask == WFindFileTypeMask::WFINDFILE_FILES)) {
       return 0;
     }
   }
@@ -85,6 +85,7 @@ bool WFindFile::open(const string& filespec, WFindFileTypeMask nTypeMask) {
     filespec_ptr = filespec_.c_str();
   }
 
+  s_typemask = type_mask_;
   nMatches = scandir(dir.c_str(), &entries, fname_ok, alphasort);
   if (nMatches < 0) {
     perror("scandir");

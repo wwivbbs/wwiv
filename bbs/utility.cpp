@@ -308,8 +308,8 @@ char *get_wildlist(char *file_mask) {
     file_mask[0] = '\0';
     return file_mask;
   } 
-  auto& f = ff.begin();
-  bout.bprintf("%12.12s ", f->name);
+  auto f = ff.begin();
+  bout.bprintf("%12.12s ", f->name.c_str());
 
   if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
     file_mask[0] = '\0';
@@ -335,7 +335,7 @@ char *get_wildlist(char *file_mask) {
       break;
     }
     f++;
-    bout.bprintf("%12.12s ", f->name);
+    bout.bprintf("%12.12s ", f->name.c_str());
     if (bgetch() == SPACE) {
       bout.nl();
       break;
