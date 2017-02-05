@@ -364,12 +364,8 @@ int WFC::doWFCEvents() {
         io->Cls();
         do_callout(32767);
       } break;
-        // Run MenuEditor
-      case '!':
-        EditMenus();
-        break;
-        // Print NetLogs
       case ',':
+        // Print NetLogs
         if (a_->current_net().sysnum > 0 || !a_->net_networks.empty()) {
           io->GotoXY(2, 23);
           bout << "|#7(|#2Q|#7=|#2Quit|#7) Display Which NETDAT Log File (|#10|#7-|#12|#7): ";

@@ -7,16 +7,6 @@ command with one parameter  : menucmd "xyz"
 command with two parameters : menucmd 123, "abc def"
 command with two parameters : menucmd(456,"abc")
 
-You can stack multiple menu commands by seperating them with the ~ key.
-
-The following code ...
-
-menucmd1 ~ menucmd2("abc") ~ menucmd3 "abc", 123
-
-... will execute menucmd1 (without any parameters), menucmd2 with abc as a
-parameter, and finally, menucmd3 with "abc" and 123 as parameters.
-
-
 Most menu commands run without any parameters at all, and most are taken
 straight from the main and xfer menus.  Additional commands are added to
 manage the menu system as well as a few commands which will help you to
@@ -33,12 +23,6 @@ ReturnFromMenu
 
   Unloads the current menu and goes back to the menu that loaded the current
   one.  If you try to return from the very first menu, it will just be reloaded
-
-EditMenuSet
-
-  This command will take you into the menu editor.  Keep carefull to keep this
-  command tied down as anyone with access to the menu editor will have 100%
-  access to your system.
 
 DLFreeFile <dirfname> <filename>
 
@@ -101,7 +85,6 @@ SetMsgConf <key>
 SetDirConf <key>
 
   Sets the xfer section conference to key
-
 
 EnableConf
 
@@ -578,7 +561,6 @@ LoadTextFile
 GuestApply
 
   Allows a guest to apply for access
-
 
 ConfigFileList
 

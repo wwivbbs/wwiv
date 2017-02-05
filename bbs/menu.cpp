@@ -359,6 +359,37 @@ static bool IsNumber(const string& command) {
   return true;
 }
 
+static std::map<int, std::string> ListMenuDirs() {
+  std::map<int, std::string> result;
+  const string menu_directory = GetMenuDirectory();
+  wwiv::menus::MenuDescriptions descriptions(menu_directory);
+
+  bout.nl();
+  bout << "|#1Available Menus Sets" << wwiv::endl
+    << "|#9============================" << wwiv::endl;
+
+  int num = 1;
+  WFindFile fnd;
+  const string search_path = StrCat(menu_directory, "*");
+  bool bFound = fnd.open(search_path, 0);
+  while (bFound && !hangup) {
+    if (fnd.IsDirectory()) {
+      const string filename = fnd.GetFileName();
+      if (!starts_with(filename, ".")) {
+        // Skip the . and .. dir entries.
+        const string description = descriptions.description(filename);
+        bout.bprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename.c_str(), description.c_str());
+        result.emplace(num, filename);
+        ++num;
+      }
+    }
+    bFound = fnd.next();
+  }
+  bout.nl();
+  bout.Color(0);
+  return result;
+}
+
 std::vector<MenuRec> MenuInstance::LoadMenuRecord(const std::string& command) {
   std::vector<MenuRec> result;
   // If we have 'numbers set the sub #' turned on then create a command to do so if a # is entered.
@@ -447,10 +478,11 @@ void ConfigUserMenuSet() {
       done = true;
       break;
     case '1': {
-      ListMenuDirs();
+      auto r = ListMenuDirs();
       bout.nl(2);
       bout << "|#9Enter the menu set to use : ";
-      string menuSetName = inputl(8);
+      int sel = input_number<int>(1, 1, r.size(), false);
+      const string menuSetName = r.at(sel);
       if (ValidateMenuSet(menuSetName.c_str())) {
         wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
         bout.nl();

@@ -13,7 +13,7 @@
 |#5н |#2//|#1CE    |#3=|#5 Chain (Door) Editor    он |#2//|#1EDIT       |#3=|#5 Edit Any Text File   о
 |#5н |#2//|#1DE    |#3=|#5 Directory Editor       он |#2//|#1LOAD       |#3=|#5 Load File in Editor  о
 |#5н |#2//|#1EE    |#3=|#5 Event Editor           он |#2//|#1MAILR      |#3=|#5 Read All Mail Sent   о
-|#5н |#2//|#1EM    |#3=|#5 Menu Editor            он |#2//|#1PACK       |#3=|#5 Pack Msg Base        о
+|#5н                                  он |#2//|#1PACK       |#3=|#5 Pack Msg Base        о
 |#5н |#2//|#1GE    |#3=|#5 G-File Editor          он |#2//|#1REBOOT     |#3=|#5 Reboot WWIV Computer о
 |#5н |#2//|#1IE    |#3=|#5 Instance Editor        он |#2//|#1RELOAD     |#3=|#5 Reload All Menu File о
 |#5н |#2//|#1JE    |#3=|#5 Conference Editor      он |#2//|#1RESETF     |#3=|#5 Reset User Files     о

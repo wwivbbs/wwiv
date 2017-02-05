@@ -133,10 +133,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
         context.finished = true;
       }
     } },
-    { "EditMenuSet", [](MenuItemContext& context) {
-      EditMenus();
-      context.need_reload = true;
-    } },
     { "DLFreeFile", [](MenuItemContext& context) {
       char s[MAX_PATH];
       strcpy(s, context.param2.c_str());

@@ -58,7 +58,6 @@ set(COMMON_SOURCES
  local_io_curses.cpp
  lpfunc.cpp
  menu.cpp
- menuedit.cpp
  menuinterpretcommand.cpp
  menu_parser.cpp
  menuspec.cpp
