@@ -235,7 +235,10 @@ void MenuInstance::RunMenu() {
 }
 
 MenuInstance::MenuInstance(const std::string& menu_directory, const std::string& menu_name)
-: menu_directory_(menu_directory), menu_name_(menu_name), open_(OpenImpl()) {
+: menu_directory_(menu_directory), menu_name_(menu_name) {
+// OpenImpl needs the class contructed, so this must happen in the constructor
+// and not in the initializer list.
+open_ = OpenImpl();
 }
 
 MenuInstance::~MenuInstance() {}
@@ -259,7 +262,8 @@ bool MenuInstance::CreateMenuMap(File& menu_file) {
     menu_file.Seek(nRec * sizeof(MenuRec), File::Whence::begin);
     menu_file.Read(&menu, sizeof(MenuRec));
 
-    menu_command_map_.emplace(menu.szKey, menu);
+    string key = menu.szKey;
+    menu_command_map_.insert(std::make_pair(key, menu));
     if (nRec != 0 && !(menu.nFlags & MENU_FLAG_DELETED)) {
       insertion_order_.push_back(menu.szKey);
     }

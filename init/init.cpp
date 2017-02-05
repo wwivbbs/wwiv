@@ -42,7 +42,6 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/version.cpp"
-#include "core/wfndfile.h"
 #include "core/wwivport.h"
 
 #include "init/archivers.h"

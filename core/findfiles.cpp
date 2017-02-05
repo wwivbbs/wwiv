@@ -23,6 +23,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "core/wfndfile.h"
 
 namespace wwiv {
 namespace core {

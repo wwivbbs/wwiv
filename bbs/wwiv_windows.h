@@ -29,6 +29,10 @@
 #undef MOUSE_MOVED
 #endif  // MOUSE_MOVED
 
+#ifdef CY
+#undef CY
+#endif
+
 #define NOGDICAPMASKS
 #define NOSYSMETRICS
 #define NOMENUS

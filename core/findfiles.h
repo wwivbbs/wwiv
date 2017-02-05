@@ -24,7 +24,6 @@
 #include <string>
 #include <vector>
 #include "core/wwivport.h"
-#include "core/wfndfile.h"
 
 namespace wwiv {
 namespace core {
@@ -51,6 +50,7 @@ public:
   iterator end() { return entries_.end(); }
   const_iterator end() const { return entries_.end(); }
   const_iterator cend() const { return entries_.cend(); }
+  bool empty() const { return entries_.empty(); }
 
 private:
   std::vector<FileEntry> entries_; //we wish to iterate over this

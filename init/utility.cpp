@@ -30,7 +30,6 @@
 #include "core/wwivport.h"
 #include "core/datafile.h"
 #include "core/file.h"
-#include "core/wfndfile.h"
 #include "init/archivers.h"
 #include "localui/input.h"
 #include "init/init.h"

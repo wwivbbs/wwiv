@@ -39,12 +39,13 @@
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "core/strings.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/textfile.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 // Compresses file *file_name to directory *pszDirectoryName.
@@ -63,37 +64,6 @@ static void compress_file(const string& orig_filename, const string& directory) 
   File::Remove(orig_filename);
   a()->UpdateTopScreen();
 }
-
-/* Passes a specific filename to the upload function */
-static bool upload_mod(int directory_number, const char *file_name, const char *description) {
-  char s[81], s1[81];
-
-  WWIV_ASSERT(file_name);
-
-  dliscan1(a()->udir[directory_number].subnum);
-  bout.nl(2);
-  strcpy(s, file_name);
-  strcpy(s1, a()->directories[a()->udir[directory_number].subnum].path);
-  int maxf = a()->directories[a()->udir[directory_number].subnum].maxfiles;
-  strcat(s1, s);
-  WFindFile fnd;
-  bool bDone = fnd.open(s1, 0);
-  bool ok = false;
-  if (!bDone) {
-    ok = maybe_upload(fnd.GetFileName(), directory_number, description);
-  }
-  if (ok) {
-    bout << "Uploaded " << file_name << "....\r\n";
-  }
-  if (!ok) {
-    bout << "|#6Aborted.\r\n";
-  }
-  if (a()->numf >= maxf) {
-    bout << "directory full.\r\n";
-  }
-  return false;
-}
-
 
 void extract_out(char *b, long len, const char *title, time_t tDateTime) {
   // TODO Fix platform specific path issues...

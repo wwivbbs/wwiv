@@ -48,11 +48,12 @@
 #include "bbs/wconstants.h"
 #include "sdk/status.h" 
 #include "core/strings.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -702,20 +703,12 @@ bool uploadall(int directory_num) {
   sprintf(szPathName, "%s%s", a()->directories[a()->udir[directory_num].subnum].path, szDefaultFileSpec);
   int maxf = a()->directories[a()->udir[directory_num].subnum].maxfiles;
 
-  WFindFile fnd;
-  bool bFound = fnd.open(szPathName, 0);
   bool ok = true;
   bool abort = false;
-  while (bFound && !hangup && (a()->numf < maxf) && ok && !abort) {
-    const char *pszCurrentFile = fnd.GetFileName();
-    if (pszCurrentFile &&
-        *pszCurrentFile &&
-        !IsEquals(pszCurrentFile, ".") &&
-        !IsEquals(pszCurrentFile, "..")) {
-      ok = maybe_upload(pszCurrentFile, directory_num, nullptr);
-    }
-    bFound = fnd.next();
-    checka(&abort);
+  FindFiles ff(szPathName, FindFilesType::files);
+  for (const auto& f : ff) {
+    if (checka() || hangup || a()->numf >= maxf) { break; }
+    if (!maybe_upload(f.name.c_str(), directory_num, nullptr)) { break; }
   }
   if (!ok || abort) {
     bout << "|#6Aborted.\r\n";

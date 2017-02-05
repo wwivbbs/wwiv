@@ -38,7 +38,6 @@
 #include <sys/vfs.h> 
 #endif  // __linux
 
-#include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
 using std::string;

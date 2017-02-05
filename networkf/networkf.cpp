@@ -38,7 +38,7 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/version.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
@@ -307,18 +307,15 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
 
 static bool import_packets(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   VLOG(1) << "Importing packets from: " << dir;
-  WFindFile files;
-  bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
-  if (!has_next) {
+  FindFiles files(FilePath(dir, mask), FindFilesType::files);
+  if (files.empty()) {
     LOG(INFO) << "No packets to import in: " << dir;
   }
-  while (has_next) {
-    const auto& name = files.GetFileName();
-    if (import_packet_file(config, callout, net, dir, name)) {
-      LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
-      File::Remove(dir, name);
+  for (const auto& f : files) {
+    if (import_packet_file(config, callout, net, dir, f.name)) {
+      LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
+      File::Remove(dir, f.name);
     }
-    has_next = files.next();
   }
   return true;
 }
@@ -371,25 +368,22 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
 static bool import_bundles(const Config& config, const FidoCallout& callout,
   const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   VLOG(1) << "import_bundles: mask: " << mask;
-  WFindFile files;
-  bool has_next = files.open(FilePath(dir, mask), WFINDFILE_FILES);
-  while (has_next) {
-    if (files.GetFileSize() == 0) {
+  FindFiles files(FilePath(dir, mask), FindFilesType::files);
+  for (const auto& f : files) {
+    if (f.size == 0) {
       // skip zero byte files.
       continue;
     }
-    const auto& name = files.GetFileName();
-    string lname = ToStringLowerCase(name);
+    string lname = ToStringLowerCase(f.name);
     if (ends_with(lname, ".pkt")) {
-      if (import_packet_file(config, callout, net, dir, name)) {
-        LOG(INFO) << "Successfully imported packet: " << FilePath(dir, name);
-        File::Remove(dir, name);
+      if (import_packet_file(config, callout, net, dir, f.name)) {
+        LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
+        File::Remove(dir, f.name);
       }
-    } else if (import_bundle_file(config, callout, net, dir, name)) {
-      LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, name);
-      File::Remove(dir, name);
+    } else if (import_bundle_file(config, callout, net, dir, f.name)) {
+      LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, f.name);
+      File::Remove(dir, f.name);
     }
-    has_next = files.next();
   }
   return true;
 }

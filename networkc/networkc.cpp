@@ -38,7 +38,6 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
-#include "core/wfndfile.h"
 #include "core/version.h"
 #include "networkb/net_util.h"
 #include "sdk/fido/fido_util.h"

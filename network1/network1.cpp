@@ -38,7 +38,7 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
@@ -183,16 +183,13 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    WFindFile s_files;
-    bool has_next = s_files.open(StrCat(net.dir, "p*.net"), WFINDFILE_FILES);
-    while (has_next) {
-      const string name = s_files.GetFileName();
-      LOG(INFO) << "Processing: " << net.dir << name;
-      if (handle_file(b, net, name)) {
-        LOG(INFO) << "Deleting: " << net.dir << name;
-        File::Remove(net.dir, name);
+    FindFiles ff(net.dir, "p*.net", FindFilesType::files);
+    for (const auto& f : ff) {
+      LOG(INFO) << "Processing: " << net.dir << f.name;
+      if (handle_file(b, net, f.name)) {
+        LOG(INFO) << "Deleting: " << net.dir << f.name;
+        File::Remove(net.dir, f.name);
       }
-      has_next = s_files.next();
     }
 
     return 0;

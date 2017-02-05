@@ -36,7 +36,7 @@
 #include "core/datafile.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -285,25 +285,22 @@ void gfileedit() {
 bool fill_sec(int sn) {
   int nf = 0, i, i1, n1;
   char s[81], s1[81];
-  WFindFile fnd;
-  bool bFound = false;
 
   gfilerec *g = read_sec(sn, &n1);
   string gfilesdir = a()->config()->gfilesdir();
   sprintf(s1, "%s%s%c*.*", gfilesdir.c_str(), a()->gfilesec[sn].filename, File::pathSeparatorChar);
-  bFound = fnd.open(s1, 0);
+  FindFiles ff(s1, FindFilesType::files);
   bool ok = true;
   int chd = 0;
-  while ((bFound) && (!hangup) && (nf < a()->gfilesec[sn].maxfiles) && (ok)) {
-    if (fnd.GetFileName()[0] == '.') {
-      bFound = fnd.next();
-      continue;
+  for (const auto& f : ff) {
+    if (nf >= a()->gfilesec[sn].maxfiles || hangup || !ok) {
+      break;
     }
-    strcpy(s, fnd.GetFileName());
+    to_char_array(s, f.name);
     align(s);
     i = 1;
     for (i1 = 0; i1 < nf; i1++) {
-      if (compare(fnd.GetFileName(), g[i1].filename)) {
+      if (compare(f.name.c_str(), g[i1].filename)) {
         i = 0;
       }
     }
@@ -321,7 +318,7 @@ bool fill_sec(int sn) {
         }
         ++nf;
         gfilerec g1;
-        strcpy(g1.filename, fnd.GetFileName());
+        to_char_array(g1.filename, f.name);
         strcpy(g1.description, s1);
         g1.daten = static_cast<long>(time(nullptr));
         g[i] = g1;
@@ -329,7 +326,6 @@ bool fill_sec(int sn) {
         ok = false;
       }
     }
-    bFound = fnd.next();
   }
   if (!ok) {
     bout << "|#6Aborted.\r\n";

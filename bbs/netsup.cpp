@@ -47,7 +47,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/wwivport.h"
 #include "sdk/bbslist.h"
 #include "sdk/binkp.h"
@@ -168,22 +168,19 @@ static int cleanup_net1() {
       while (ok2 && !abort) {
         ok2 = 0;
         ok = 0;
-        WFindFile fnd;
         string s = StrCat(a()->network_directory(), "p*", a()->network_extension());
-        bool bFound = fnd.open(s, 0);
-        while (bFound) {
+        FindFiles ff(s, FindFilesType::files);
+        for (const auto& f : ff) {
           ok = 1;
           ++i;
-          rename_pend(a()->network_directory(), fnd.GetFileName());
+          rename_pend(a()->network_directory(), f.name);
           anynew = 1;
-          bFound = fnd.next();
         }
 
         bool supports_process_net = a()->HasConfigFlag(OP_FLAGS_NET_PROCESS);
         if (supports_process_net) {
           if (!ok) {
-            WFindFile fnd_net;
-            ok = fnd_net.open(StrCat(a()->network_directory(), "p*.net"), 0);
+            ok = File::ExistsWildcard(FilePath(a()->network_directory(), "p*.net"));
           }
           if (ok) {
             wfc_cls(a());

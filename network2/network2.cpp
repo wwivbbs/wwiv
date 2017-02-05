@@ -39,7 +39,6 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
-#include "core/wfndfile.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"

@@ -36,7 +36,7 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/wwivassert.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
@@ -212,10 +212,10 @@ void process_inst_msgs() {
   auto oiia = setiia(std::chrono::milliseconds(0));
 
   string fndspec = StringPrintf("%smsg*.%3.3u", a()->config()->datadir().c_str(), a()->instance_number());
-  WFindFile fnd;
-  bool found = fnd.open(fndspec, 0);
-  while (found && !hangup) {
-    File file(a()->config()->datadir(), fnd.GetFileName());
+  FindFiles ff(fndspec, FindFilesType::files);
+  for (const auto& f : ff) {
+    if (hangup) { break; }
+    File file(a()->config()->datadir(), f.name);
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
       LOG(ERROR) << "Unable to open file: " << file.full_pathname();
       continue;
@@ -237,7 +237,6 @@ void process_inst_msgs() {
     }
     file.Close();
     file.Delete();
-    found = fnd.next();
   }
   setiia(oiia);
 }

@@ -33,7 +33,7 @@
 #include "bbs/printfile.h"
 #include "bbs/utility.h"
 #include "bbs/wconstants.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/strings.h"
 #include "sdk/status.h"
 #include "sdk/filenames.h"
@@ -290,15 +290,12 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
   }
 }
 
-
 #define MAX_LIST 40
-
 
 void slash_e() {
   int user_number[MAX_LIST], numu, i, i1;
   char s[81], ch, *sss;
   bool bFound = false;
-  WFindFile fnd;
 
   mml_s = nullptr;
   mml_started = 0;
@@ -337,24 +334,22 @@ void slash_e() {
       add_list(user_number, &numu, MAX_LIST, so());
       break;
     case 'M': {
-      bFound = fnd.open(FilePath(a()->config()->datadir(), "*.mml"), WFINDFILE_ANY);
-      if (bFound) {
+      FindFiles ff(FilePath(a()->config()->datadir(), "*.mml"), FindFilesType::any);
+      if (ff.empty()) {
         bout.nl();
         bout << "No mailing lists available.\r\n\n";
         break;
       }
       bout.nl();
       bout << "Available mailing lists:\r\n\n";
-      while (bFound) {
-        strcpy(s, fnd.GetFileName());
+      for (const auto& f : ff) {
+        to_char_array(s, f.name);
         sss = strchr(s, '.');
         if (sss) {
           *sss = 0;
         }
         bout << s;
         bout.nl();
-
-        bFound = fnd.next();
       }
 
       bout.nl();

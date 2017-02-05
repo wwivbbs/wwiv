@@ -27,6 +27,7 @@
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/dirlist.h"
 #include "bbs/sr.h"
@@ -38,9 +39,10 @@
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
 #include "bbs/vars.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "bbs/sysoplog.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "bbs/printfile.h"
 #include "bbs/xfer_common.h"
 #include "sdk/filenames.h"
@@ -51,7 +53,9 @@
 using std::function;
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 bool bad_filename(const char *file_name) {
@@ -519,39 +523,26 @@ void del_temp() {
 }
 
 void list_temp_dir() {
-  char szFileMask[MAX_PATH];
-
-  sprintf(szFileMask, "%s*.*", a()->temp_directory().c_str());
-  WFindFile fnd;
-  bool bFound = fnd.open(szFileMask, 0);
+  FindFiles ff(a()->temp_directory(), "*", FindFilesType::any);
   bout.nl();
   bout << "Files in temporary directory:\r\n\n";
-  int i1 = 0;
-  bool abort = false;
-  while (bFound && !hangup && !abort) {
-    char szFileName[MAX_PATH];
-    strcpy(szFileName, fnd.GetFileName());
-
-    if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
-        !IsEqualsIgnoreCase(szFileName, "door.sys")) {
-      align(szFileName);
-      char buffer[255];
-      sprintf(buffer, "%12s  %-8ld", szFileName, fnd.GetFileSize());
-      bout.bpla(buffer, &abort);
-      i1 = 1;
+  for (const auto& f : ff) {
+    CheckForHangup();
+    if (checka()) { break; }
+    if (iequals(f.name, "chain.txt") || iequals(f.name, "door.sys")) {
+      continue;
     }
-    bFound = fnd.next();
+    string filename = f.name;
+    align(&filename);
+    bout.bputs(StringPrintf("%12s  %-8ld", filename.c_str(), f.size));
   }
-  if (!i1) {
+  if (ff.empty()) {
     bout << "None.\r\n";
   }
   bout.nl();
-  if (!abort && !hangup) {
-    bout << "Free space: " << File::GetFreeSpaceForPath(a()->temp_directory()) << wwiv::endl;
-    bout.nl();
-  }
+  bout << "Free space: " << File::GetFreeSpaceForPath(a()->temp_directory()) << wwiv::endl;
+  bout.nl();
 }
-
 
 void temp_extract() {
   int i, i1, i2;
@@ -659,45 +650,36 @@ void temp_extract() {
   }
 }
 
-
 void list_temp_text() {
-  char s[81], s1[MAX_PATH];
-  double percent;
-  char szFileName[MAX_PATH];
-
   bout.nl();
   bout << "|#2List what file(s) : ";
-  input(s, 12, true);
-  if (!okfn(s)) {
+  auto fn = input(12, true);
+  if (!okfn(fn)) {
     return;
   }
-  if (s[0]) {
-    if (strchr(s, '.') == nullptr) {
-      strcat(s, ".*");
+  if (!fn.empty()) {
+    if (!contains(fn, '.')) {
+      fn += ".*";
     }
-    sprintf(s1, "%s%s", a()->temp_directory().c_str(), stripfn(s));
-    WFindFile fnd;
-    bool bFound = fnd.open(s1, 0);
-    int ok = 1;
+    const auto fmask = FilePath(a()->temp_directory(), stripfn(fn.c_str()));
+    FindFiles ff(fmask, FindFilesType::any);
     bout.nl();
-    while (bFound && ok) {
-      strcpy(szFileName, fnd.GetFileName());
-      sprintf(s, "%s%s", a()->temp_directory().c_str(), szFileName);
-      if (!IsEqualsIgnoreCase(szFileName, "chain.txt") &&
-          !IsEqualsIgnoreCase(szFileName, "door.sys")) {
-        bout.nl();
-        bout << "Listing " << szFileName << wwiv::endl;
-        bout.nl();
-        bool sent;
-        ascii_send(s, &sent, &percent);
-        if (sent) {
-          sysoplog() << StringPrintf("Temp text D/L \"%s\"", szFileName);
-        } else {
-          sysoplog() << StringPrintf("Temp Tried text D/L \"%s\" %3.2f%%", szFileName, percent * 100.0);
-          ok = 0;
-        }
+    for (const auto& f : ff) {
+      const auto s = FilePath(a()->temp_directory(), f.name);
+      if (iequals(f.name, "door.sys") || iequals(f.name, "chain.txt")) {
+        continue;
       }
-      bFound = fnd.next();
+      bout.nl();
+      bout << "Listing " << f.name << "\r\n\n";
+      bool sent;
+      double percent;
+      ascii_send(s.c_str(), &sent, &percent);
+      if (sent) {
+        sysoplog() << "Temp text D/L \"" << f.name << "\"";
+      } else {
+        sysoplog() << "Temp Tried text D/L \"" << f.name << "\"" << (percent * 100.0) << "%";
+        break;
+      }
     }
   }
 }

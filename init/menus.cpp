@@ -227,7 +227,7 @@ private:
   int y_ = 0;
 };
 
-static void edit_menu(const Config& config, const std::string& menu_dir, const std::string& menu_name) {
+static void edit_menu(const std::string& menu_dir, const std::string& menu_name) {
   const int COL1_LINE = 2;
   const int COL2_LINE = COL1_LINE + 22;
 
@@ -354,7 +354,7 @@ static void select_menu(Config& config, const std::string& dir) {
 
       if (result.type == ListBoxResultType::SELECTION) {
         const auto& menu_name = items[result.selected].text();
-        edit_menu(config, full_dir_path, menu_name);
+        edit_menu(full_dir_path, menu_name);
       }
       else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;

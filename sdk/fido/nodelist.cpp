@@ -25,7 +25,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 
 using std::string;
 using std::vector;
@@ -343,12 +343,10 @@ static std::string latest_extension(const std::map<int, int>& ey) {
 std::string Nodelist::FindLatestNodelist(const std::string& dir, const std::string& base) {
   const string filespec = StrCat(FilePath(dir, base), ".*");
   std::map<int, int> extension_year;
-  WFindFile fnd;
-  bool next = fnd.open(filespec, WFINDFILE_FILES);
-  while (next) {
-    File f(dir, fnd.GetFileName());
+  FindFiles fnd(filespec, FindFilesType::files);
+  for (const auto& ff : fnd) {
+    File f(dir, ff.name);
     extension_year.emplace(extension_number(f.GetName()), year_of(f.creation_time()));
-    next = fnd.next();
   }
 
   string ext = latest_extension(extension_year);

@@ -38,7 +38,7 @@
 #include "core/os.h"
 #include "core/textfile.h"
 #include "core/version.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"
@@ -381,12 +381,9 @@ static void rename_pending_files(const string& dir) {
     rename_pend(dir, DEAD_NET, 3);
   }
 
-  WFindFile s_files;
-  bool has_next = s_files.open(StrCat(dir, "s*.net"), WFINDFILE_FILES);
-  while (has_next) {
-    const string name = s_files.GetFileName();
-    rename_pend(dir, name, 3);
-    has_next = s_files.next();
+  FindFiles ff(dir, "s*.net", FindFilesType::files);
+  for (const auto& f : ff) {
+    rename_pend(dir, f.name, 3);
   }
 }
 

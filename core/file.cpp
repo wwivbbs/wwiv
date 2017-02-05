@@ -41,7 +41,6 @@
 #include <sys/types.h>
 
 #include "core/log.h"
-#include "core/wfndfile.h"
 
 #ifndef _WIN32
 #include <sys/file.h>

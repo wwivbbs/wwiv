@@ -24,6 +24,7 @@
 #include <string>
 #include <vector>
 
+// If this is gone, we get errors on CY and other things in wtypes.h
 #include "core/stl.h"
 
 #include "bbs/asv.h"

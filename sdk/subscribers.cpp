@@ -36,7 +36,6 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
-#include "core/wfndfile.h"
 #include "sdk/fido/fido_address.h"
 
 using std::set;

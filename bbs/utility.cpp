@@ -49,13 +49,14 @@
 #include "bbs/vars.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/wwivassert.h"
 #include "sdk/config.h"
 
 using std::string;
 using std::vector;
 using namespace std::chrono;
+using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
@@ -72,21 +73,15 @@ template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& m
  * @param bPrintStatus      Print out locally as files are deleted
  */
 void remove_from_temp(const std::string& file_name, const std::string& directory_name, bool bPrintStatus) {
-
   const string filespec = StrCat(directory_name, stripfn(file_name.c_str()));
-  WFindFile fnd;
-  bool bFound = fnd.open(filespec, 0);
+  FindFiles ff(filespec, FindFilesType::any);
   bout.nl();
-  while (bFound) {
-    const string filename = fnd.GetFileName();
+  for (const auto& f : ff) {
     // We don't want to delete ".", "..".
-    if (filename != "." && filename != "..") {
-      if (bPrintStatus) {
-        std::clog << "Deleting TEMP file: " << directory_name << filename << std::endl;
-      }
-      File::Remove(directory_name, filename);
+    if (bPrintStatus) {
+      std::clog << "Deleting TEMP file: " << directory_name << f.name << std::endl;
     }
-    bFound = fnd.next();
+    File::Remove(directory_name, f.name);
   }
 }
 
@@ -304,17 +299,17 @@ void stripfn_inplace(char *file_name) {
 char *get_wildlist(char *file_mask) {
   int mark = 0;
   char *pszPath, t;
-  WFindFile fnd;
 
   WWIV_ASSERT(file_mask);
 
-  if (!fnd.open(file_mask, 0)) {
+  FindFiles ff(file_mask, FindFilesType::any);
+  if (ff.empty()) {
     bout << "No files found\r\n";
     file_mask[0] = '\0';
     return file_mask;
-  } else {
-    bout.bprintf("%12.12s ", fnd.GetFileName());
-  }
+  } 
+  auto& f = ff.begin();
+  bout.bprintf("%12.12s ", f->name);
 
   if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
     file_mask[0] = '\0';
@@ -330,16 +325,17 @@ char *get_wildlist(char *file_mask) {
   pszPath = file_mask;
   file_mask[mark] = t;
   t = static_cast<char>(wwiv::strings::GetStringLength(pszPath));
-  strcat(pszPath, fnd.GetFileName());
+  strcat(pszPath, f->name.c_str());
   int i = 1;
   for (i = 1;; i++) {
     if (i % 5 == 0) {
       bout.nl();
     }
-    if (!fnd.next()) {
+    if (f == ff.end()) {
       break;
     }
-    bout.bprintf("%12.12s ", fnd.GetFileName());
+    f++;
+    bout.bprintf("%12.12s ", f->name);
     if (bgetch() == SPACE) {
       bout.nl();
       break;
@@ -347,7 +343,7 @@ char *get_wildlist(char *file_mask) {
   }
   bout.nl();
   if (i == 1) {
-    bout << "One file found: " << fnd.GetFileName() << wwiv::endl;
+    bout << "One file found: " << f->name << wwiv::endl;
     bout << "Use this file? ";
     if (yesno()) {
       return pszPath;

@@ -26,7 +26,6 @@
 #endif
 
 #include "core/strings.h"
-#include "core/wfndfile.h"
 #include "core/wwivport.h"
 #include "init/init.h"
 #include "localui/input.h"

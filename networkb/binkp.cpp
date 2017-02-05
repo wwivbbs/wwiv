@@ -36,7 +36,6 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/version.h"
-#include "core/wfndfile.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
 #include "networkb/connection.h"

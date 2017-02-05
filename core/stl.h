@@ -30,7 +30,6 @@
 
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/wwivassert.h"
 
 namespace wwiv {
 namespace stl {

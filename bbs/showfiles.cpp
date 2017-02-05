@@ -26,9 +26,10 @@
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/wwivport.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/strings.h"
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 // Displays list of files matching filespec file_name in directory pszDirectoryName.
@@ -54,17 +55,15 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   bout << "|#7" << std::string(i, c);
 
   std::string full_pathname = StrCat(pszDirectoryName, strupr(stripfn(file_name)));
-  WFindFile fnd;
-  bool bFound = fnd.open(full_pathname, 0);
-  while (bFound) {
-    strncpy(s, fnd.GetFileName(), MAX_PATH);
+  FindFiles ff(full_pathname, FindFilesType::files);
+  for (const auto& f : ff) {
+    to_char_array(s, f.name);
     align(s);
     full_pathname = StrCat("|#7[|#2", s, "|#7]|#1 ");
     if (bout.wherex() > static_cast<int>(a()->user()->GetScreenChars() - 15)) {
       bout.nl();
     }
     bout << full_pathname;
-    bFound = fnd.next();
   }
 
   bout.nl();
