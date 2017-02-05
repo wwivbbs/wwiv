@@ -314,7 +314,7 @@ bool File::Exists(const string& dir, const string& file) {
 
 bool File::ExistsWildcard(const string& wildcard) {
   WFindFile fnd;
-  return fnd.open(wildcard.c_str(), 0);
+  return fnd.open(wildcard.c_str(), WFindFileTypeMask::WFINDFILE_ANY);
 }
 
 bool File::SetFilePermissions(const string& filename, int perm) {

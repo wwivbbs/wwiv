@@ -31,15 +31,15 @@ namespace core {
 FindFiles::FindFiles(const std::string& dir, const std::string& mask, const FindFilesType type) 
   : FindFiles(FilePath(dir, mask), type) {}
 
-static int FindFilesTypeToInt(FindFilesType type) {
+static WFindFileTypeMask FindFilesTypeToInt(FindFilesType type) {
   switch (type) {
-  case FindFilesType::any: return WFINDFILE_ANY;
-  case FindFilesType::directories: return WFINDFILE_DIRS;
-  case FindFilesType::files: return WFINDFILE_FILES;
+  case FindFilesType::any: return WFindFileTypeMask::WFINDFILE_ANY;
+  case FindFilesType::directories: return WFindFileTypeMask::WFINDFILE_DIRS;
+  case FindFilesType::files: return WFindFileTypeMask::WFINDFILE_FILES;
   default: 
     LOG(FATAL) << "Invalid FindFilesType: " << static_cast<int>(type);
     // Make Compiler happy
-    return WFINDFILE_ANY;
+    return WFindFileTypeMask::WFINDFILE_ANY;
   }
 }
 

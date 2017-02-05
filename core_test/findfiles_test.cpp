@@ -19,7 +19,7 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
 #include "core/file.h"
-#include "core/wfndfile.h"
+#include "core/findfiles.h"
 #include "core/strings.h"
 
 #include <iostream>
@@ -32,44 +32,49 @@ using namespace wwiv::strings;
 TEST(FindFiles, Suffix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  WFindFile fnd;
-  ASSERT_TRUE(fnd.open(FilePath(helper.TempDir(), "msg*"), 0));
-  EXPECT_STREQ("msg00000.001", fnd.GetFileName());
-  EXPECT_FALSE(fnd.next());
+  FindFiles ff(FilePath(helper.TempDir(), "msg*"), FindFilesType::any);
+  auto& f = ff.begin();
+  EXPECT_EQ("msg00000.001", f->name);
+  f++;
+  EXPECT_EQ(f, ff.end());
 }
 
 TEST(FindFiles, Prefix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  WFindFile fnd;
-  ASSERT_TRUE(fnd.open(FilePath(helper.TempDir(), "*001"), 0));
-  EXPECT_STREQ("msg00000.001", fnd.GetFileName());
-  EXPECT_FALSE(fnd.next());
+  FindFiles ff(FilePath(helper.TempDir(), "*001"), FindFilesType::files);
+  auto& f = ff.begin();
+  EXPECT_EQ("msg00000.001", f->name);
+  f++;
+  EXPECT_EQ(f, ff.end());
 }
 
 TEST(FindFiles, SingleCharSuffix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  WFindFile fnd;
-  ASSERT_TRUE(fnd.open(FilePath(helper.TempDir(), "msg00000.00?"), 0));
-  EXPECT_STREQ("msg00000.001", fnd.GetFileName());
-  EXPECT_FALSE(fnd.next());
+  FindFiles ff(FilePath(helper.TempDir(), "msg00000.00?"), FindFilesType::files);
+  auto f = ff.begin();
+  EXPECT_EQ("msg00000.001", f->name);
+  f++;
+  EXPECT_EQ(f, ff.end());
 }
 
 TEST(FindFiles, SingleCharPrefix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  WFindFile fnd;
-  ASSERT_TRUE(fnd.open(FilePath(helper.TempDir(), "?sg00000.001"), 0));
-  EXPECT_STREQ("msg00000.001", fnd.GetFileName());
-  EXPECT_FALSE(fnd.next());
+  FindFiles ff(FilePath(helper.TempDir(), "?sg00000.001"), FindFilesType::files);
+  auto f = ff.begin();
+  EXPECT_EQ("msg00000.001", f->name);
+  f++;
+  EXPECT_EQ(f, ff.end());
 }
 
 TEST(FindFiles, SingleCharExtensionPrefix) {
   FileHelper helper;
   helper.CreateTempFile("msg00000.001", "");
-  WFindFile fnd;
-  ASSERT_TRUE(fnd.open(FilePath(helper.TempDir(), "msg00000.?01"), 0));
-  EXPECT_STREQ("msg00000.001", fnd.GetFileName());
-  EXPECT_FALSE(fnd.next());
+  FindFiles ff(FilePath(helper.TempDir(), "msg00000.?01"), FindFilesType::files);
+  auto f = ff.begin();
+  EXPECT_EQ("msg00000.001", f->name);
+  f++;
+  EXPECT_EQ(f, ff.end());
 }

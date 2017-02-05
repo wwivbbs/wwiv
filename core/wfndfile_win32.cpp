@@ -22,7 +22,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
-bool WFindFile::open(const std::string& file_spec, unsigned int nTypeMask) {
+bool WFindFile::open(const std::string& file_spec, WFindFileTypeMask nTypeMask) {
   __open(file_spec, nTypeMask);
 
   hFind = FindFirstFile(file_spec.c_str(), &ffdata);

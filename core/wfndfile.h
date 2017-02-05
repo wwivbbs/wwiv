@@ -25,17 +25,25 @@
 #include "bbs/wwiv_windows.h"
 #include "core/wwivport.h"
 
+/**
+ * Values for what WFindFile is searching
+ */
+enum class WFindFileTypeMask {
+  WFINDFILE_ANY = 0x00,
+  WFINDFILE_FILES = 0x01,
+  WFINDFILE_DIRS = 0x02
+};
 
 class WFindFile {
  protected:
   std::string filename_;
   std::string filespec_;
   long file_size_ = 0;
-  unsigned int type_mask_ = 0;
-  unsigned char nFileType = 0;
+  WFindFileTypeMask type_mask_ = WFindFileTypeMask::WFINDFILE_ANY;
+  unsigned char file_type_ = 0;
   bool open_ = false;
 
-  void __open(const std::string& file_spec, unsigned int type_mask) {
+  void __open(const std::string& file_spec, WFindFileTypeMask type_mask) {
     filespec_ = file_spec;
     type_mask_ = type_mask;
   }
@@ -44,7 +52,7 @@ class WFindFile {
     filespec_.clear();
     filename_.clear();
     file_size_ = 0;
-    type_mask_ = 0;
+    type_mask_ = WFindFileTypeMask::WFINDFILE_ANY;
     open_ = false;
   }
 
@@ -59,7 +67,7 @@ class WFindFile {
 
  public:
   WFindFile() { this->__close(); }
-  bool open(const std::string& filespec, unsigned int nTypeMask);
+  bool open(const std::string& filespec, WFindFileTypeMask nTypeMask);
   bool next();
   bool close();
   virtual ~WFindFile() { close(); }
@@ -68,16 +76,6 @@ class WFindFile {
   long GetFileSize() { return file_size_; }
   bool IsDirectory();
   bool IsFile();
-};
-
-
-/**
- * Bit-mapped values for what WFindFile is searching
- */
-enum WFindFileTypeMask {
-  WFINDFILE_ANY = 0x00,
-  WFINDFILE_FILES = 0x01,
-  WFINDFILE_DIRS  = 0x02
 };
 
 

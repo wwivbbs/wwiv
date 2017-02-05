@@ -67,7 +67,7 @@ static int fname_ok(const struct dirent *ent) {
   return 0;
 }
 
-bool WFindFile::open(const string& filespec, unsigned int nTypeMask) {
+bool WFindFile::open(const string& filespec, WFindFileTypeMask nTypeMask) {
   string dir;
 
   __open(filespec, nTypeMask);
@@ -104,7 +104,7 @@ bool WFindFile::next() {
 
   filename_ = entry->d_name;
   file_size_ = entry->d_reclen;
-  nFileType = entry->d_type;
+  file_type_ = entry->d_type;
 
   return true;
 }
@@ -119,7 +119,7 @@ bool WFindFile::IsDirectory() {
     return false;
   }
 
-  return (nFileType & DT_DIR);
+  return (file_type_ & DT_DIR);
 }
 
 bool WFindFile::IsFile() {
@@ -127,7 +127,7 @@ bool WFindFile::IsFile() {
     return false;
   }
 
-  return (nFileType & DT_REG);
+  return (file_type_ & DT_REG);
 }
 
 
