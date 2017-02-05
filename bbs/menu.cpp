@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/menu.h"
 #include <cstdint>
+#include <iomanip>
 #include <memory>
 #include <string>
 
@@ -596,14 +597,16 @@ void MenuInstance::GenerateMenu() const {
     if (CheckMenuItemSecurity(&menu, false) &&
         menu.nHide != MENU_HIDE_REGULAR &&
         menu.nHide != MENU_HIDE_BOTH) {
-      char szKey[30];
+      string keystr;
       if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && a()->user()->hotkeys()) {
-        sprintf(szKey, "//%s", menu.szKey);
+        keystr = StrCat("//", menu.szKey);
       } else {
-        sprintf(szKey, "[%s]", menu.szKey);
+        keystr = StrCat("[", menu.szKey, "]");
       }
-      bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", szKey,
-                    menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
+      bout.Color(1);
+      bout << std::left << std::setw(8) << keystr << "  ";
+      bout.Color(9);
+      bout << std::left << std::setw(25) << (menu.szMenuText[0] ? menu.szMenuText : menu.szExecute);
       if (lines_displayed % 2) {
         bout.nl();
       }
