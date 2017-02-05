@@ -39,11 +39,13 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "core/findfiles.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
@@ -365,24 +367,17 @@ static std::map<int, std::string> ListMenuDirs() {
 
   bout.nl();
   bout << "|#1Available Menus Sets" << wwiv::endl
-    << "|#9============================" << wwiv::endl;
+       << "|#9============================" << wwiv::endl;
 
   int num = 1;
-  WFindFile fnd;
-  const string search_path = StrCat(menu_directory, "*");
-  bool bFound = fnd.open(search_path, 0);
-  while (bFound && !hangup) {
-    if (fnd.IsDirectory()) {
-      const string filename = fnd.GetFileName();
-      if (!starts_with(filename, ".")) {
-        // Skip the . and .. dir entries.
-        const string description = descriptions.description(filename);
-        bout.bprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename.c_str(), description.c_str());
-        result.emplace(num, filename);
-        ++num;
-      }
-    }
-    bFound = fnd.next();
+  auto menus = FindFiles(menu_directory, "*", FindFilesType::directories);
+
+  for (const auto& m : menus) {
+    const auto& filename = m.name;
+    const string description = descriptions.description(filename);
+    bout.bprintf("|#2#%d |#1%-8.8s |#9%-60.60s\r\n", num, filename.c_str(), description.c_str());
+    result.emplace(num, filename);
+    ++num;
   }
   bout.nl();
   bout.Color(0);
