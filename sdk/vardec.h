@@ -104,9 +104,9 @@ struct userrec {
   uint32_t lp_options;
   uint8_t lp_colors[32];
   // Selected AMENU set to use
-  char szMenuSet[9];
+  char menu_set[9];
   // Use hot keys in AMENU
-  uint8_t cHotKeys;
+  uint8_t hot_keys;
 
   char res_byte[3];
 

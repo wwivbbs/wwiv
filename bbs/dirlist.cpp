@@ -110,7 +110,7 @@ void dirlist(int mode) {
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ",
                                             is ? firstp : firstp + 1, lastp);
-          std::string ss = mmkey(1, true);
+          std::string ss = mmkey(MMKeyAreaType::dirs, true);
           if (isdigit(ss[0])) {
             for (size_t i3 = 0; i3 < a()->directories.size(); i3++) {
               if (ss == a()->udir[i3].keys) {
@@ -162,7 +162,7 @@ void dirlist(int mode) {
         bout.bprintf("|#1Select |#9[|#2%d-%d, ?=List Again, Q=Quit|#9]|#0 : ", is ? 0 : 1,
                                           is ? nd - 1 : nd);
       }
-      std::string ss = mmkey(0, true);
+      std::string ss = mmkey(MMKeyAreaType::subs, true);
       if (ss.empty() || ss == "Q" || ss == "\r") {
         if (okconf(a()->user())) {
           setuconf(ConferenceType::CONF_DIRS, oc, os);

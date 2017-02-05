@@ -97,6 +97,22 @@ bool User::CreateRandomPassword() {
   return true;
 }
 
+bool User::hotkeys() const {
+  return data.hot_keys != HOTKEYS_OFF;
+}
+
+void User::set_hotkeys(bool enabled) {
+  data.hot_keys = enabled ? HOTKEYS_ON : HOTKEYS_OFF;
+}
+
+std::string User::menu_set() const {
+  return data.menu_set;
+}
+
+void User::set_menu_set(const std::string& menu_set) {
+  to_char_array(data.menu_set, menu_set);
+}
+
 // static 
 bool User::CreateNewUserRecord(User* u,
   uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
@@ -133,8 +149,8 @@ bool User::CreateNewUserRecord(User* u,
   u->SetEmailAddress("");
 
   // Set default menu set abd listplus colors.
-  strcpy(u->data.szMenuSet, "wwiv");
-  u->data.cHotKeys = 0;
+  strcpy(u->data.menu_set, "wwiv");
+  u->data.hot_keys = HOTKEYS_ON;
   u->data.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
   memset(u->data.lp_colors, static_cast<uint8_t>(Color::CYAN), sizeof(u->data.lp_colors));
   u->data.lp_colors[0] = static_cast<uint8_t>(Color::LIGHTGREEN);

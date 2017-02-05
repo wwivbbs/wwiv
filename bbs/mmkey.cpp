@@ -17,9 +17,9 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/mmkey.h"
+
 #include <set>
 #include <string>
-
 
 #include "bbs/input.h"
 #include "core/log.h"
@@ -115,11 +115,11 @@ static int max_sub_key(std::vector<usersubrec>& container) {
   return key;
 }
  
-std::string mmkey(int dl, bool bListOption) {
+std::string mmkey(MMKeyAreaType dl, bool bListOption) {
   std::set<char> x = {'/'};
   std::set<char> xx{};
   switch (dl) {
-  case 0: {
+  case MMKeyAreaType::subs: {
     int max_key = max_sub_key(a()->usub);
     for (char i = 1; i <= max_key / 10; i++) {
       x.insert(i + '0');
@@ -128,7 +128,7 @@ std::string mmkey(int dl, bool bListOption) {
       xx.insert(i + '0');
     }
   } break;
-  case 1: {
+  case MMKeyAreaType::dirs: {
     int max_key = max_sub_key(a()->udir);
     for (char i = 1; i <= max_key / 10; i++) {
       x.insert(i);
@@ -138,7 +138,7 @@ std::string mmkey(int dl, bool bListOption) {
     }
   } break;
   default: {
-    DLOG(FATAL) << "invalid mmkey dl: " << dl;
+    DLOG(FATAL) << "invalid mmkey dl: " << static_cast<int>(dl);
   }
   }
 

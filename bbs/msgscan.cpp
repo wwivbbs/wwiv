@@ -684,7 +684,7 @@ void HandleMessageMove(int &nMessageNumber) {
     bout.nl();
     do {
       bout << "|#5(|#2Q|#5=|#2Quit|#5) Move to which sub? ";
-      ss1 = mmkey(0);
+      ss1 = mmkey(MMKeyAreaType::subs);
       if (ss1[0] == '?') {
         old_sublist();
       }

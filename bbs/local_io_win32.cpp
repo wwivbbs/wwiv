@@ -15,6 +15,9 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "bbs/wwiv_windows.h"
+
 #include "bbs/local_io_win32.h"
 
 #include <algorithm>
@@ -77,7 +80,8 @@ Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
   }
   CONSOLE_SCREEN_BUFFER_INFO csbi{};
   GetConsoleScreenBufferInfo(out_, &csbi);
-  original_size_ = csbi.dwSize;
+  original_size_.X = csbi.dwSize.X;
+  original_size_.Y = csbi.dwSize.Y;
   SMALL_RECT rect = csbi.srWindow;
   COORD bufSize{};
   bufSize.X = static_cast<SHORT>(rect.Right - rect.Left + 1);
@@ -97,7 +101,8 @@ Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
 }
 
 Win32ConsoleIO::~Win32ConsoleIO() {
-  SetConsoleScreenBufferSize(out_, original_size_);
+  COORD x{ original_size_.X, original_size_.Y };
+  SetConsoleScreenBufferSize(out_, x);
   SetConsoleTextAttribute(out_, 0x07);
   SetConsoleMode(in_, saved_input_mode_);
 }
@@ -114,7 +119,8 @@ void Win32ConsoleIO::GotoXY(int x, int y) {
 
   cursor_pos_.X = static_cast<int16_t>(x);
   cursor_pos_.Y = static_cast<int16_t>(y);
-  SetConsoleCursorPosition(out_, cursor_pos_);
+  COORD c{ cursor_pos_.X, cursor_pos_.Y };
+  SetConsoleCursorPosition(out_, c);
 }
 
 /* This function returns the current X cursor position, as the number of
@@ -166,7 +172,8 @@ void Win32ConsoleIO::Lf() {
     ScrollConsoleScreenBuffer(out_, &scrollRect, nullptr, dest, &fill);
   } else {
     cursor_pos_.Y++;
-    SetConsoleCursorPosition(out_, cursor_pos_);
+    COORD c{ cursor_pos_.X, cursor_pos_.Y };
+    SetConsoleCursorPosition(out_, c);
   }
 }
 
@@ -175,7 +182,8 @@ void Win32ConsoleIO::Lf() {
  */
 void Win32ConsoleIO::Cr() {
   cursor_pos_.X = 0;
-  SetConsoleCursorPosition(out_, cursor_pos_);
+  COORD c{ cursor_pos_.X, cursor_pos_.Y };
+  SetConsoleCursorPosition(out_, c);
 }
 
 /**
@@ -207,7 +215,8 @@ void Win32ConsoleIO::Backspace() {
     cursor_pos_.Y--;
     cursor_pos_.X = 79;
   }
-  SetConsoleCursorPosition(out_, cursor_pos_);
+  COORD c{ cursor_pos_.X, cursor_pos_.Y };
+  SetConsoleCursorPosition(out_, c);
 }
 
 void Win32ConsoleIO::PutchRaw(unsigned char ch) {

@@ -24,6 +24,8 @@
 #include <string>
 #include <vector>
 
+#include "core/stl.h"
+
 #include "bbs/asv.h"
 #include "bbs/bbsovl1.h"
 #include "bbs/bbsovl2.h"
@@ -53,7 +55,6 @@
 #include "bbs/null_local_io.h"
 #include "bbs/null_remote_io.h"
 #include "bbs/netsup.h"
-#include "bbs/menu.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/readmail.h"
@@ -64,6 +65,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/uedit.h"
 #include "bbs/utility.h"
+#include "bbs/vars.h"
 #include "bbs/voteedit.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
@@ -71,8 +73,12 @@
 #include "bbs/application.h"
 #include "bbs/workspace.h"
 #include "bbs/platform/platformfcns.h"
+#include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/os.h"
+#include "core/stl.h"
+#include "core/strings.h"
 #include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"

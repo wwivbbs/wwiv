@@ -21,9 +21,14 @@
 #include <string>
 #include <set>
 
+enum class MMKeyAreaType {
+  subs,
+  dirs
+};
+
 std::string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption);
 std::string mmkey(std::set<char>& x);
-std::string mmkey(int dl, bool bListOption = false);
+std::string mmkey(MMKeyAreaType dl, bool bListOption = false);
 
 
 #endif  // __INCLUDED_BBS_MMKEY_H__

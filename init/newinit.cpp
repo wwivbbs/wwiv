@@ -240,8 +240,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   u.lp_colors[9] = static_cast<uint8_t>(Color::CYAN);
   u.lp_colors[10] = static_cast<uint8_t>(Color::LIGHTCYAN);
   u.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
-  u.cHotKeys = 0;
-  to_char_array(u.szMenuSet, "wwiv");
+  u.hot_keys = 0;
+  to_char_array(u.menu_set, "wwiv");
 
   write_user(datadir, 1, &u);
   write_qscn(datadir, 1, qsc.get());

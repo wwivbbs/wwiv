@@ -53,9 +53,9 @@ using namespace wwiv::stl;
 namespace wwiv {
 namespace menus {
 
-static bool ValidateMenuSet(const char *pszMenuDir) {
+static bool ValidateMenuSet(const std::string& menu_dir) {
   // ensure the entry point exists
-  return File::Exists(GetMenuDirectory(pszMenuDir), "main.mnu");
+  return File::Exists(GetMenuDirectory(menu_dir), "main.mnu");
 }
 
 static bool CheckMenuPassword(const string& original_password) {
@@ -69,11 +69,10 @@ static bool CheckMenuPassword(const string& original_password) {
 static void StartMenus() {
   while (true) {
     CheckForHangup();
-    if (!ValidateMenuSet(a()->user()->data.szMenuSet)) {
+    if (!ValidateMenuSet(a()->user()->menu_set())) {
       ConfigUserMenuSet();
     }
-    const auto& dir = a()->user()->data.szMenuSet;
-    MenuInstance menu_data(dir, "main");
+    MenuInstance menu_data(a()->user()->menu_set(), "main");
     menu_data.RunMenu(); // default starting menu
     if (!menu_data.reload) {
       return;
@@ -236,18 +235,10 @@ void MenuInstance::RunMenu() {
 }
 
 MenuInstance::MenuInstance(const std::string& menu_directory, const std::string& menu_name)
-: menu_directory_(menu_directory), menu_name_(menu_name) {
-  open_ = Open();
+: menu_directory_(menu_directory), menu_name_(menu_name), open_(OpenImpl()) {
 }
 
-MenuInstance::~MenuInstance() {
-  Close();
-}
-
-void MenuInstance::Close() {
-  insertion_order_.clear();
-  menu_command_map_.clear();
-}
+MenuInstance::~MenuInstance() {}
 
 //static
 const std::string MenuInstance::create_menu_filename(
@@ -259,14 +250,14 @@ std::string MenuInstance::create_menu_filename(const string& extension) const {
   return MenuInstance::create_menu_filename(menu_directory_, menu_name_, extension);
 }
 
-bool MenuInstance::CreateMenuMap(File* menu_file) {
+bool MenuInstance::CreateMenuMap(File& menu_file) {
   insertion_order_.clear();
-  auto nAmount = menu_file->GetLength() / sizeof(MenuRec);
+  auto nAmount = menu_file.GetLength() / sizeof(MenuRec);
 
   for (size_t nRec = 1; nRec < nAmount; nRec++) {
-    MenuRec menu;
-    menu_file->Seek(nRec * sizeof(MenuRec), File::Whence::begin);
-    menu_file->Read(&menu, sizeof(MenuRec));
+    MenuRec menu{};
+    menu_file.Seek(nRec * sizeof(MenuRec), File::Whence::begin);
+    menu_file.Read(&menu, sizeof(MenuRec));
 
     menu_command_map_.emplace(menu.szKey, menu);
     if (nRec != 0 && !(menu.nFlags & MENU_FLAG_DELETED)) {
@@ -276,23 +267,21 @@ bool MenuInstance::CreateMenuMap(File* menu_file) {
   return true;
 }
 
-bool MenuInstance::Open() {
-  Close();
-
+bool MenuInstance::OpenImpl() {
   // Open up the main data file
-  unique_ptr<File> menu_file(new File(create_menu_filename("mnu")));
-  if (!menu_file->Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone))  {
+  File menu_file(create_menu_filename("mnu"));
+  if (!menu_file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone))  {
     // Unable to open menu
     MenuSysopLog("Unable to open Menu");
     return false;
   }
 
   // Read the header (control) record into memory
-  menu_file->Seek(0L, File::Whence::begin);
-  menu_file->Read(&header, sizeof(MenuHeader));
+  menu_file.Seek(0L, File::Whence::begin);
+  menu_file.Read(&header, sizeof(MenuHeader));
 
   // Version numbers can be checked here.
-  if (!CreateMenuMap(menu_file.get())) {
+  if (!CreateMenuMap(menu_file)) {
     MenuSysopLog("Unable to create menu index.");
     return false;
   }
@@ -460,8 +449,8 @@ void ConfigUserMenuSet() {
   bool done = false;
   while (!done) {
     bout.nl();
-    bout << "|#11|#9) Menuset      :|#2 " << a()->user()->data.szMenuSet << wwiv::endl;
-    bout << "|#12|#9) Use hot keys :|#2 " << (a()->user()->data.cHotKeys == HOTKEYS_ON ? "Yes" : "No ")
+    bout << "|#11|#9) Menuset      :|#2 " << a()->user()->menu_set() << wwiv::endl;
+    bout << "|#12|#9) Use hot keys :|#2 " << (a()->user()->hotkeys() ? "Yes" : "No ")
          << wwiv::endl;
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) : ";
@@ -480,23 +469,23 @@ void ConfigUserMenuSet() {
       if (ValidateMenuSet(menuSetName.c_str())) {
         wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
         bout.nl();
-        bout << "|#9Menu Set : |#2" <<  menuSetName.c_str() << " :  |#1" << descriptions.description(menuSetName) << wwiv::endl;
+        bout << "|#9Menu Set : |#2" <<  menuSetName << " :  |#1" << descriptions.description(menuSetName) << wwiv::endl;
         bout << "|#5Use this menu set? ";
         if (noyes()) {
-          strcpy(a()->user()->data.szMenuSet, menuSetName.c_str());
+          a()->user()->set_menu_set(menuSetName);
           break;
         }
       }
       bout.nl();
       bout << "|#6That menu set does not exists, resetting to the default menu set" << wwiv::endl;
       pausescr();
-      if (a()->user()->data.szMenuSet[0] == '\0') {
-        strcpy(a()->user()->data.szMenuSet, "wwiv");
+      if (a()->user()->menu_set().empty()) {
+        a()->user()->set_menu_set("wwiv");
       }
     }
     break;
     case '2':
-      a()->user()->data.cHotKeys = !a()->user()->data.cHotKeys;
+      a()->user()->set_hotkeys(!a()->user()->hotkeys());
       break;
     case '?':
       printfile(MENUWEL_NOEXT);
@@ -506,7 +495,7 @@ void ConfigUserMenuSet() {
   }
 
   // If menu is invalid, it picks the first one it finds
-  if (!ValidateMenuSet(a()->user()->data.szMenuSet)) {
+  if (!ValidateMenuSet(a()->user()->menu_set())) {
     if (a()->languages.size() > 1 && a()->user()->GetLanguage() != 0) {
       bout << "|#6No menus for " << a()->languages[a()->user()->GetLanguage()].name
            << " language.";
@@ -517,25 +506,25 @@ void ConfigUserMenuSet() {
   // Save current menu setup.
   a()->WriteCurrentUser();
 
-  MenuSysopLog(StringPrintf("Menu in use : %s - %s", a()->user()->data.szMenuSet,
-          a()->user()->data.cHotKeys == HOTKEYS_ON ? "Hot" : "Off"));
+  MenuSysopLog(StringPrintf("Menu in use : %s - %s",
+    a()->user()->menu_set().c_str(),
+    a()->user()->hotkeys() ? "Hot" : "Off"));
   bout.nl(2);
 }
 
 string MenuInstance::GetCommand() const {
-  if (a()->user()->data.cHotKeys == HOTKEYS_ON) {
-    if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
-      write_inst(INST_LOC_XFER, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      return mmkey(1);
-    } else if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
-      write_inst(INST_LOC_MAIN, a()->current_user_sub().subnum, INST_FLAGS_NONE);
-      return mmkey(0);
-    } else {
-      std::set<char> x = { '/' };
-      return mmkey(x);
-    }
-  } else {
+  if (!a()->user()->hotkeys()) {
     return input(50);
+  }
+  if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
+    write_inst(INST_LOC_XFER, a()->current_user_dir().subnum, INST_FLAGS_NONE);
+    return mmkey(MMKeyAreaType::dirs);
+  } else if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
+    write_inst(INST_LOC_MAIN, a()->current_user_sub().subnum, INST_FLAGS_NONE);
+    return mmkey(MMKeyAreaType::subs);
+  } else {
+    std::set<char> x = { '/' };
+    return mmkey(x);
   }
 }
 
@@ -545,18 +534,12 @@ MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menup
     string s;
     while (file.ReadLine(&s)) {
       StringTrim(&s);
-      if (s.empty()) {
-        continue;
-      }
       string::size_type space = s.find(' ');
-      if (space == string::npos) {
+      if (s.empty() || space == string::npos) {
         continue;
       }
-      string menu_name = s.substr(0, space);
-      string description = s.substr(space + 1);
-      StringLowerCase(&menu_name);
-      StringLowerCase(&description);
-      descriptions_.emplace(menu_name, description);
+      descriptions_.emplace(ToStringLowerCase(s.substr(0, space)), 
+          ToStringLowerCase(s.substr(space + 1)));
     }
   }
 }
@@ -610,7 +593,7 @@ void MenuInstance::GenerateMenu() const {
         menu.nHide != MENU_HIDE_REGULAR &&
         menu.nHide != MENU_HIDE_BOTH) {
       char szKey[30];
-      if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && a()->user()->data.cHotKeys == HOTKEYS_ON) {
+      if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && a()->user()->hotkeys()) {
         sprintf(szKey, "//%s", menu.szKey);
       } else {
         sprintf(szKey, "[%s]", menu.szKey);
@@ -628,7 +611,7 @@ void MenuInstance::GenerateMenu() const {
       bout.nl();
     }
     bout.bprintf("|#1%-8.8s  |#2%-25.25s  ",
-      a()->user()->data.cHotKeys == HOTKEYS_ON ? "//APPLY" : "[APPLY]",
+      a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
       "Guest Account Application");
     ++lines_displayed;
   }

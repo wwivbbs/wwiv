@@ -1441,7 +1441,7 @@ static int move_filename(const char *file_name, int dn) {
         do {
           bout.nl(2);
           bout << "|#2To which directory? ";
-          ss = mmkey(1);
+          ss = mmkey(MMKeyAreaType::dirs);
           if (ss[0] == '?') {
             dirlist(1);
             dliscan1(dn);

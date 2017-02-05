@@ -59,7 +59,4 @@ struct search_record {
   bool search_extended = false;
 };
 
-constexpr int HOTKEYS_ON = 0;
-constexpr int HOTKEYS_OFF = 1;
-
 #endif // __INCLUDED_COMMON_H__

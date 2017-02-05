@@ -795,7 +795,7 @@ void move_file_t() {
         string dirnum;
         do {
           bout << "|#2To which directory? ";
-          dirnum = mmkey(1);
+          dirnum = mmkey(MMKeyAreaType::dirs);
           if (dirnum.front() == '?') {
             dirlist(1);
             dliscan1(a()->batch().entry[nCurBatchPos].dir);

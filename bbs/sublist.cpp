@@ -246,7 +246,7 @@ void SubList() {
           bout.clear_lines_listed();
           DisplayHorizontalBar(78, 7);
           bout.bprintf("|#1Select |#9[|#2%d-%d, [N]ext Page, [Q]uit|#9]|#0 : ", firstp + 1, lastp + 1);
-          const std::string ss = mmkey(0, true);
+          const std::string ss = mmkey(MMKeyAreaType::subs, true);
           if (isdigit(ss[0])) {
             for (size_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
               if (ss == a()->usub[i2].keys) {
@@ -289,7 +289,7 @@ void SubList() {
         } else {
           bout.bprintf("|#1Select |#9[|#21-%d, ?=List Again, Q=Quit|#9]|#0 : ", ns);
         }
-        const std::string ss = mmkey(0, true);
+        const std::string ss = mmkey(MMKeyAreaType::subs, true);
 
         if (ss == "?") {
           p = 1;

@@ -155,7 +155,7 @@ static void vote_question(int i, int ii) {
 
   bout << "|#5Which (0-" << static_cast<int>(v.numanswers) << ")? ";
   bout.mpl(2);
-  string ans = mmkey({});
+  string ans = mmkey(std::set<char>());
   int i1 = StringToInt(ans);
   if (i1 > v.numanswers) {
     i1 = 0;

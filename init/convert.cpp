@@ -63,8 +63,8 @@ struct user_config {
   unsigned long lp_options;
   unsigned char lp_colors[32];
 
-  char szMenuSet[9];   // Selected AMENU set to use
-  char cHotKeys;       // Use hot keys in AMENU
+  char menu_set[9];   // Selected AMENU set to use
+  char hot_keys;       // Use hot keys in AMENU
 
   char junk[119];   // AMENU took 11 bytes from here
 };
@@ -176,7 +176,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
     memset(u.res_gp, 0, sizeof(u.res_gp));
     memset(u.res_long, 0, sizeof(u.res_long));
     memset(u.res_short, 0, sizeof(u.res_short));
-    memset(u.szMenuSet, 0, sizeof(u.szMenuSet));
+    memset(u.menu_set, 0, sizeof(u.menu_set));
 
     // Set new defaults.
     memset(u.lp_colors, static_cast<uint8_t>(Color::CYAN), sizeof(u.lp_colors));
@@ -192,8 +192,8 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
     u.lp_colors[9] = static_cast<uint8_t>(Color::CYAN);
     u.lp_colors[10] = static_cast<uint8_t>(Color::LIGHTCYAN);
     u.lp_options = cfl_fname | cfl_extension | cfl_dloads | cfl_kbytes | cfl_description;
-    u.cHotKeys = 0;
-    to_char_array(u.szMenuSet, "wwiv");
+    u.hot_keys = 0;
+    to_char_array(u.menu_set, "wwiv");
   }
 
   // Save where we are.
@@ -245,7 +245,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
       continue;
     }
     const auto& c = second_config.at(i);
-    u.cHotKeys = c.cHotKeys;
+    u.hot_keys = c.hot_keys;
     u.lp_options = c.lp_options;
     memcpy(u.lp_colors, c.lp_colors, sizeof(u.lp_colors));
   }

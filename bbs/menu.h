@@ -47,8 +47,8 @@ public:
 
   const std::string menu_directory() { return menu_directory_; }
 
-  bool finished=false;
-  bool reload=false;  /* true if we are going to reload the menus */
+  bool finished = false;
+  bool reload = false;  /* true if we are going to reload the menus */
 
   std::string prompt;
   std::vector<std::string> insertion_order_;
@@ -58,13 +58,12 @@ private:
   const std::string menu_name_;
   bool open_ = false;
 
-  bool Open();
-  void Close();
+  bool OpenImpl();
   std::string GetHelpFileName() const;
   std::string create_menu_filename(const std::string& extension) const;
 
   void MenuExecuteCommand(const std::string& command);
-  bool CreateMenuMap(File* menu_file);
+  bool CreateMenuMap(File& menu_file);
   void PrintMenuPrompt() const;
   std::string GetCommand() const;
 

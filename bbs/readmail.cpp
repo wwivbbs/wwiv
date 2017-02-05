@@ -800,7 +800,7 @@ void readmail(int mode) {
           string ss1;
           do {
             bout << "|#2Move to which sub? ";
-            ss1 = mmkey(0);
+            ss1 = mmkey(MMKeyAreaType::subs);
             if (ss1[0] == '?') {
               old_sublist();
             }

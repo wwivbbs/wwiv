@@ -26,6 +26,7 @@ General Cleanup
 * Maybe make the hangup variable a static in the Application class.
 * stop using localIO()->WhereX to determine remote position
 * Try to remove a()->current_net(), pass in the net as much as possible.
+* don't include wwiv_windows.h from any header file.
 
 General Improvements
 ====================

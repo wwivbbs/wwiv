@@ -102,7 +102,7 @@ void move_file() {
       do {
         bout.nl(2);
         bout << "|#2To which directory? ";
-        ss = mmkey(1);
+        ss = mmkey(MMKeyAreaType::dirs);
         if (ss[0] == '?') {
           dirlist(1);
           dliscan();
@@ -1109,7 +1109,7 @@ static void config_nscan() {
       do {
         bout.nl();
         bout << "|#9Enter directory number (|#1C=Clr All, Q=Quit, S=Set All|#9): |#0";
-        string s = mmkey(1);
+        string s = mmkey(MMKeyAreaType::dirs);
         if (s[0]) {
           for (size_t i = 0; i < a()->directories.size(); i++) {
             i1 = a()->udir[i].subnum;

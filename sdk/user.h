@@ -45,6 +45,9 @@ static constexpr uint32_t unused_cfl_days_between_dloads = 0x00000200;
 static constexpr uint32_t cfl_description = 0x00000400;
 static constexpr uint32_t cfl_header = 0x80000000;
 
+constexpr int HOTKEYS_ON = 0;
+constexpr int HOTKEYS_OFF = 1;
+
 namespace wwiv {
 namespace sdk {
 
@@ -862,6 +865,14 @@ class User {
    * Creates a random password.
    */
   bool CreateRandomPassword();
+
+  /** Should this user use hotkeys? */
+  bool hotkeys() const;
+  void set_hotkeys(bool enabled);
+
+  /** Menu Item */
+  std::string menu_set() const;
+  void set_menu_set(const std::string& menu_set);
 
   ///////////////////////////////////////////////////////////////////////////
   // Static Helper Methods

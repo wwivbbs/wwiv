@@ -59,7 +59,7 @@ constexpr uint16_t MENU_VERSION = 0x0100;
 #pragma pack(push, 1)
 
 struct MenuHeader {
-  char szSig[10];      /* Menu Signature */
+  char szSig[10];      /* Menu Signature WWIV431\x1a */
   char unused[54];
 
   uint16_t  nVersion;

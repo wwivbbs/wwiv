@@ -18,8 +18,6 @@
 /**************************************************************************/
 #ifndef __INCLUDED_LOCAL_IO_WIN32_H__
 #define __INCLUDED_LOCAL_IO_WIN32_H__
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "bbs/wwiv_windows.h"
 
 #include <string>
 
@@ -31,6 +29,13 @@
 // You should use a routine in here instead of using printf, puts, etc.
 
 class Application;
+
+struct coord_t {
+  int16_t X;
+  int16_t Y;
+};
+
+typedef void* HANDLE;
 
 class Win32ConsoleIO : public LocalIO {
  public:
@@ -72,15 +77,14 @@ private:
   void FastPuts(const std::string &text) override;
 
 private:
-  bool extended_key_waiting_ = false;
-
-  COORD cursor_pos_{};
-  HANDLE out_ = INVALID_HANDLE_VALUE;
-  HANDLE in_ = INVALID_HANDLE_VALUE;
-  DWORD saved_input_mode_ = 0;
-
   void set_attr_xy(int x, int y, int a);
-  COORD original_size_;
+
+  bool extended_key_waiting_ = false;
+  coord_t cursor_pos_{};
+  HANDLE out_ = (void*) -1;
+  HANDLE in_ = (void*) -1;
+  DWORD saved_input_mode_ = 0;
+  coord_t original_size_{};
 };
 
 

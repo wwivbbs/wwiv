@@ -259,7 +259,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
 void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
-  string s = mmkey(0);
+  string s = mmkey(MMKeyAreaType::subs);
   for (size_t i = 0; (i < a()->subs().subs().size())
        && (a()->usub[i].subnum != -1); i++) {
     if (s == a()->usub[i].keys) {
@@ -273,7 +273,7 @@ void ChangeDirNumber() {
   while (!done && !hangup) {
     bout << "|#7Select Dir number : |#0";
 
-    string s = mmkey(1);
+    string s = mmkey(MMKeyAreaType::dirs);
 
     if (s[0] == '?') {
       DirList();

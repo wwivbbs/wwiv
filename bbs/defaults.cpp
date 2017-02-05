@@ -448,7 +448,7 @@ void config_qscan() {
       do {
         bout.nl();
         bout << "|#2Enter message base number (|#1C=Clr All, Q=Quit, S=Set All|#2): ";
-        string s = mmkey(0);
+        string s = mmkey(MMKeyAreaType::subs);
         if (!s.empty()) {
           for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
             if (s == a()->usub[i].keys) {

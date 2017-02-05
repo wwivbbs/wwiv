@@ -906,7 +906,7 @@ int select_conf(const char *prompt_text, ConferenceType conftype, int listconfs)
       bout.nl();
       bout <<  "|#1" << prompt_text;
     }
-    mmk = mmkey(0);
+    mmk = mmkey(MMKeyAreaType::subs);
     if (mmk.empty()) {
       i = -1;
       ok = true;
