@@ -25,7 +25,6 @@
 #include "bbs/com.h"
 #include "bbs/common.h"
 #include "bbs/instmsg.h"
-#include "bbs/menuedit.h"
 #include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"
 #include "bbs/mmkey.h"

@@ -28,7 +28,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/hop.h"
 #include "bbs/menu.h"
-#include "bbs/menuedit.h"
 #include "bbs/menuspec.h"
 #include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"

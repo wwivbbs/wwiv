@@ -54,7 +54,6 @@
 #include "bbs/null_remote_io.h"
 #include "bbs/netsup.h"
 #include "bbs/menu.h"
-#include "bbs/menuedit.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/readmail.h"

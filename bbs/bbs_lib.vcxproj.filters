@@ -136,9 +136,6 @@
     <ClCompile Include="menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="menuedit.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="menuinterpretcommand.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -733,9 +730,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xfertmp.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="menuedit.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="multmail.h">

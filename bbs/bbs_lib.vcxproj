@@ -151,7 +151,6 @@
     <ClInclude Include="local_io_win32.h" />
     <ClInclude Include="lpfunc.h" />
     <ClInclude Include="menu.h" />
-    <ClInclude Include="menuedit.h" />
     <ClInclude Include="menuspec.h" />
     <ClInclude Include="menusupp.h" />
     <ClInclude Include="menu_parser.h" />
@@ -276,7 +275,6 @@
     <ClCompile Include="local_io_win32.cpp" />
     <ClCompile Include="lpfunc.cpp" />
     <ClCompile Include="menu.cpp" />
-    <ClCompile Include="menuedit.cpp" />
     <ClCompile Include="menuinterpretcommand.cpp" />
     <ClCompile Include="menuspec.cpp" />
     <ClCompile Include="menusupp.cpp" />
