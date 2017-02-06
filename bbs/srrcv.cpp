@@ -337,7 +337,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
 
 void zmodem_receive(const string& filename, bool *received) {
   string local_filename(filename);
-  wwiv::strings::RemoveWhitespace(&local_filename);
+  wwiv::strings::StringRemoveWhitespace(&local_filename);
 
   bool bOldBinaryMode = a()->remoteIO()->binary_mode();
   a()->remoteIO()->set_binary_mode(true);

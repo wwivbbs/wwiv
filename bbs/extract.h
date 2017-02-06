@@ -20,6 +20,6 @@
 
 #include <ctime>
 
-void extract_out(char *b, long nLength, const char *title, time_t tDateTime);
+void extract_out(char *b, long nLength, const char *title);
 
 #endif  // __INCLUDED_BBS_EXTRACT_H__

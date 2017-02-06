@@ -223,10 +223,6 @@ void SplitString(const string& original_string, const string& delims, vector<str
   }
 }
 
-void RemoveWhitespace(string* s) {
-  s->erase(std::remove_if(std::begin(*s), std::end(*s), ::isspace), std::end(*s));
-}
-
 bool starts_with(const std::string& input, const std::string& match) {
   return input.size() >= match.size()
       && std::equal(std::begin(match), std::end(match), std::begin(input));
@@ -373,7 +369,6 @@ const char *charstr(string::size_type length, char fill) {
   return result.c_str();
 }
 
-// TODO(rushfan): Delete RemoveWhitespace, and keep this one
 void StringRemoveWhitespace(string* str) {
   str->erase(std::remove_if(str->begin(), str->end(), isspace), str->end());
 }
@@ -449,6 +444,15 @@ std::string trim_to_size_ignore_colors(const std::string& orig, std::string::siz
   }
   return s;
 }
+
+std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size) {
+  auto len = size_without_colors(orig);
+  if (size <= len) {
+    return orig;
+  }
+  return orig + std::string(size - len, ' ');
+}
+
 
 }  // namespace strings
 }  // namespace wwiv

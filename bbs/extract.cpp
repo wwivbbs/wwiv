@@ -48,24 +48,7 @@ using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-// Compresses file *file_name to directory *pszDirectoryName.
-static void compress_file(const string& orig_filename, const string& directory) {
-  bout << "|#2Now compressing " << orig_filename << wwiv::endl;
-  string fileName(orig_filename);
-  if (fileName.find_first_of(".") == string::npos) {
-    fileName += ".msg";
-  }
-
-  string baseFileName = fileName.substr(0, fileName.find_last_of(".")) + a()->arcs[0].extension;
-  string arcName = StrCat(directory, baseFileName);
-
-  const string command = stuff_in(a()->arcs[0].arca, arcName, orig_filename, "", "", "");
-  ExecuteExternalProgram(command, a()->GetSpawnOptions(SPAWNOPT_ARCH_A));
-  File::Remove(orig_filename);
-  a()->UpdateTopScreen();
-}
-
-void extract_out(char *b, long len, const char *title, time_t tDateTime) {
+void extract_out(char *b, long len, const char *title) {
   // TODO Fix platform specific path issues...
 
   WWIV_ASSERT(b);

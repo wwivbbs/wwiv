@@ -219,31 +219,31 @@ TEST(StringsTest, StringToUnsignedChar) {
   EXPECT_EQ(0, StringToUnsignedChar("ASDF"));
 }
 
-TEST(StringsTest, RemoveWhitespace_NoSpace) {
+TEST(StringsTest, StringRemoveWhitespace_NoSpace) {
   string s("HelloWorld");
   string expected(s);
-  RemoveWhitespace(&s);
+  StringRemoveWhitespace(&s);
   EXPECT_EQ(expected, s);
 }
 
-TEST(StringsTest, RemoveWhitespace_InnerSpace) {
+TEST(StringsTest, StringRemoveWhitespace_InnerSpace) {
   string expected("HelloWorld");
   string s("Hello World");
-  RemoveWhitespace(&s);
+  StringRemoveWhitespace(&s);
   EXPECT_EQ(expected, s);
 }
 
-TEST(StringsTest, RemoveWhitespace_Trailing) {
+TEST(StringsTest, StringRemoveWhitespace_Trailing) {
   string expected("HelloWorld");
   string s("Hello World  ");
-  RemoveWhitespace(&s);
+  StringRemoveWhitespace(&s);
   EXPECT_EQ(expected, s);
 }
 
-TEST(StringsTest, RemoveWhitespace_Leading) {
+TEST(StringsTest, StringRemoveWhitespace_Leading) {
   string expected("HelloWorld");
   string s("  Hello World");
-  RemoveWhitespace(&s);
+  StringRemoveWhitespace(&s);
   EXPECT_EQ(expected, s);
 }
 

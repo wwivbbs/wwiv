@@ -692,7 +692,7 @@ void readmail(int mode) {
         if (so() && okmail) {
           string b;
           if (readfile(&(m.msg), "email", &b)) {
-            extract_out(&b[0], b.length(), m.title, m.daten);
+            extract_out(&b[0], b.length(), m.title);
           }
         }
         i1 = 0;

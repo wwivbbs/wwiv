@@ -82,7 +82,6 @@ const std::string& StringReplace(std::string* orig, const std::string& old_strin
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
 void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
 
-void RemoveWhitespace(std::string* s);
 bool starts_with(const std::string& input, const std::string& match);
 bool ends_with(const std::string& input, const std::string& match);
 
@@ -103,18 +102,31 @@ void StringRemoveWhitespace(std::string* s);
 const char *charstr(std::string::size_type length, char fill);
 char *StringRemoveWhitespace(char *str);
 // Strips the string from the first occurence of ch
+// Doesn't seem to be used anywhere. Maybe it should be removed.
 char *StringRemoveChar(const char *str, char ch);
 
+/**
+ * Joints the strings in lines, using end_of_line in between each line.
+ */
 std::string JoinStrings(const std::vector<std::string>& lines, const std::string& end_of_line);
 
 // Time and STL things to come in C++14 or GCC5
 
+/** 
+ * Like std::put_time.  GCC 4.x doesn't support it.
+ */
 std::string put_time(const struct tm *tm_info, const std::string& fmt_arg);
 
 // String length without colors
 std::string::size_type size_without_colors(const std::string& s);
-// returns a copy of orig trimmed to size.
+
+/** returns a copy of orig trimmed to size, excluding colors. */
 std::string trim_to_size_ignore_colors(const std::string& orig, std::string::size_type size);
+
+/**
+ * Returns orig padded to size, excluding color codes.
+ */
+std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size);
 
 }  // namespace strings
 
