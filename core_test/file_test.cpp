@@ -383,6 +383,6 @@ TEST(FileTest, CurrentPosition) {
   EXPECT_EQ(3, file.Seek(3, File::Whence::begin));
   EXPECT_EQ(3, file.current_position());
 
-  EXPECT_EQ(kContents.size(), file.Seek(0, File::Whence::end));
-  EXPECT_EQ(kContents.size(), file.current_position());
+  EXPECT_EQ(static_cast<int>(kContents.size()), file.Seek(0, File::Whence::end));
+  EXPECT_EQ(static_cast<int>(kContents.size()), file.current_position());
 }

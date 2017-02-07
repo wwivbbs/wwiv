@@ -144,7 +144,7 @@ bool File::Move(const std::string& source_filename, const std::string& dest_file
 }
 
 bool File::realpath(const std::string& path, std::string* resolved) {
-  char* result = realpath(path.c_str(), NULL);
+  char* result = ::realpath(path.c_str(), NULL);
   if (resolved == NULL) {
     resolved->assign(path);
     return false;
