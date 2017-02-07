@@ -270,7 +270,7 @@ void grab_quotes(messagerec * m, const char *aux) {
 #ifdef SAVE_IN_MEM
         File ff(quotes_ind_fn);
         if (ff.Open(File::modeBinary | File::modeReadOnly)) {
-          quotes_ind_l = ff.GetLength();
+          quotes_ind_l = ff.length();
           quotes_ind = static_cast<char*>(BbsAllocA(quotes_ind_l));
           if (quotes_ind) {
             ff.Read(quotes_ind, quotes_ind_l);

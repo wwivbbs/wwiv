@@ -43,24 +43,24 @@ UserManager::UserManager(std::string data_directory, int userrec_length, int max
 
 UserManager::~UserManager() { }
 
-int  UserManager::GetNumberOfUserRecords() const {
+int  UserManager::num_user_records() const {
   File userList(data_directory_, USER_LST);
   if (userList.Open(File::modeReadOnly | File::modeBinary)) {
-    auto nSize = userList.GetLength();
+    auto nSize = userList.length();
     auto nNumRecords = static_cast<int>(nSize / userrec_length_) - 1;
     return nNumRecords;
   }
   return 0;
 }
 
-bool UserManager::ReadUserNoCache(User *pUser, int user_number) {
+bool UserManager::readuser_nocache(User *pUser, int user_number) {
   File userList(data_directory_, USER_LST);
   if (!userList.Open(File::modeReadOnly | File::modeBinary)) {
     pUser->data.inact = inact_deleted;
     pUser->FixUp();
     return false;
   }
-  auto nSize = userList.GetLength();
+  auto nSize = userList.length();
   int nNumUserRecords = static_cast<int>(nSize / userrec_length_) - 1;
 
   if (user_number > nNumUserRecords) {
@@ -75,11 +75,11 @@ bool UserManager::ReadUserNoCache(User *pUser, int user_number) {
   return true;
 }
 
-bool UserManager::ReadUser(User *pUser, int user_number) {
-  return this->ReadUserNoCache(pUser, user_number);
+bool UserManager::readuser(User *pUser, int user_number) {
+  return this->readuser_nocache(pUser, user_number);
 }
 
-bool UserManager::WriteUserNoCache(User *pUser, int user_number) {
+bool UserManager::writeuser_nocache(User *pUser, int user_number) {
   File userList(data_directory_, USER_LST);
   if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     long pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
@@ -90,12 +90,12 @@ bool UserManager::WriteUserNoCache(User *pUser, int user_number) {
   return false;
 }
 
-bool UserManager::WriteUser(User *pUser, int user_number) {
-  if (user_number < 1 || user_number > max_number_users_ || !IsUserWritesAllowed()) {
+bool UserManager::writeuser(User *pUser, int user_number) {
+  if (user_number < 1 || user_number > max_number_users_ || !user_writes_allowed()) {
     return true;
   }
 
-  return this->WriteUserNoCache(pUser, user_number);
+  return this->writeuser_nocache(pUser, user_number);
 }
 
 }  // namespace sdk

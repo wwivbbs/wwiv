@@ -145,7 +145,7 @@ void post(const PostData& post_data) {
     return;
   }
 
-  if (File::GetFreeSpaceForPath(a()->config()->msgsdir()) < 10) {
+  if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
     bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }
@@ -512,12 +512,12 @@ void remove_post() {
     if (((get_post(postnum)->ownersys == 0) && (get_post(postnum)->owneruser == a()->usernum)) || lcs()) {
       if ((get_post(postnum)->owneruser == a()->usernum) && (get_post(postnum)->ownersys == 0)) {
         User tu;
-        a()->users()->ReadUser(&tu, get_post(postnum)->owneruser);
+        a()->users()->readuser(&tu, get_post(postnum)->owneruser);
         if (!tu.IsUserDeleted()) {
           if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(postnum)->daten)) {
             if (tu.GetNumMessagesPosted()) {
               tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - 1);
-              a()->users()->WriteUser(&tu, get_post(postnum)->owneruser);
+              a()->users()->writeuser(&tu, get_post(postnum)->owneruser);
             }
           }
         }

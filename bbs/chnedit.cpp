@@ -138,12 +138,12 @@ void modify_chain(int nCurrentChainum) {
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       User regUser;
       if (r.regby[0]) {
-        a()->users()->ReadUser(&regUser, r.regby[0]);
+        a()->users()->readuser(&regUser, r.regby[0]);
       }
       bout << "|#9L) Registered by: |#2" << ((r.regby[0]) ? regUser.GetName() : "AVAILABLE") << wwiv::endl;
       for (int i = 1; i < 5; i++) {
         if (r.regby[i] != 0) {
-          a()->users()->ReadUser(&regUser, r.regby[i]);
+          a()->users()->readuser(&regUser, r.regby[i]);
           bout << string(18, ' ') << regUser.GetName() << wwiv::endl;
         }
       }
@@ -287,7 +287,7 @@ void modify_chain(int nCurrentChainum) {
             int user_number = finduser1(s1);
             if (user_number > 0) {
               User regUser;
-              a()->users()->ReadUser(&regUser, user_number);
+              a()->users()->readuser(&regUser, user_number);
               r.regby[i] = static_cast<int16_t>(user_number);
               bout.nl();
               bout << "|#1Registered by       |#2" << user_number << " " 

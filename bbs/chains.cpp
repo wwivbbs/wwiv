@@ -68,7 +68,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     for (int i = 0; i < *mapp && !abort && !hangup; i++) {
       User user;
       if (okansi()) {
-        a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[0]);
+        a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[0]);
         bout.bpla(StringPrintf(" |#%d\xB3|#5%3d|#%d\xB3|#1%-41s|#%d\xB3|%2.2d%-21s|#%d\xB3|#1%5d|#%d\xB3",
                 FRAME_COLOR,
                 i + 1,
@@ -83,14 +83,14 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
         if (a()->chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5 && !abort; i1++) {
             if (a()->chains_reg[map[i]].regby[i1] != 0) {
-              a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[i1]);
+              a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[i1]);
               bout.bpla(StringPrintf(" |#%d\xB3   \xBA%-41s\xB3|#2%-21s|#%d\xB3%5.5s\xB3",
                       FRAME_COLOR, " ", user.GetName(), FRAME_COLOR, " "), &abort);
             }
           }
         }
       } else {
-        a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[0]);
+        a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[0]);
         bout.bpla(StringPrintf(" |%3d|%-41.41s|%-21.21s|%5d|",
                 i + 1, a()->chains[map[i]].description,
                 (a()->chains_reg[map[i]].regby[0]) ? user.GetName() : "Available",
@@ -98,7 +98,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
         if (a()->chains_reg[map[i]].regby[0] != 0) {
           for (int i1 = 1; i1 < 5; i1++) {
             if (a()->chains_reg[map[i]].regby[i1] != 0) {
-              a()->users()->ReadUser(&user, a()->chains_reg[map[i]].regby[i1]);
+              a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[i1]);
               bout.bpla(StringPrintf(" |   |                                         |%-21.21s|     |",
                       (a()->chains_reg[map[i]].regby[i1]) ? user.GetName() : "Available"), &abort);
             }

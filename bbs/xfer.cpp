@@ -88,7 +88,7 @@ void get_ed_info() {
   long lCurFilePos = 0;
   File fileExtDescr(a()->extended_description_filename_);
   if (fileExtDescr.Open(File::modeReadOnly | File::modeBinary)) {
-    auto lFileSize = fileExtDescr.GetLength();
+    auto lFileSize = fileExtDescr.length();
     if (lFileSize > 0) {
       ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(a()->numf) * sizeof(ext_desc_rec)));
       if (ed_info == nullptr) {
@@ -328,7 +328,7 @@ void dliscan1(int directory_num) {
   a()->download_filename_ = FilePath(a()->config()->datadir(), StrCat(a()->directories[directory_num].filename, ".dir"));
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  int nNumRecords = fileDownload.GetLength() / sizeof(uploadsrec);
+  int nNumRecords = fileDownload.length() / sizeof(uploadsrec);
   uploadsrec u;
   if (nNumRecords == 0) {
     memset(&u, 0, sizeof(uploadsrec));
@@ -387,7 +387,7 @@ void delete_extended_description(const string& file_name) {
 
   File fileExtDescr(a()->extended_description_filename_);
   fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  auto lFileSize = fileExtDescr.GetLength();
+  auto lFileSize = fileExtDescr.length();
   long r = 0, w = 0;
   while (r < lFileSize) {
     fileExtDescr.Seek(r, File::Whence::begin);
@@ -406,7 +406,7 @@ void delete_extended_description(const string& file_name) {
     }
     r += sizeof(ext_desc_type) + ed.len;
   }
-  fileExtDescr.SetLength(w);
+  fileExtDescr.set_length(w);
   fileExtDescr.Close();
   zap_ed_info();
 }
@@ -441,7 +441,7 @@ string read_extended_description(const string& file_name) {
   if (ed_got != 1) {
     File fileExtDescr(a()->extended_description_filename_);
     if (fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
-      auto lFileSize = fileExtDescr.GetLength();
+      auto lFileSize = fileExtDescr.length();
       long lCurPos = 0;
       while (lCurPos < lFileSize) {
         fileExtDescr.Seek(lCurPos, File::Whence::begin);

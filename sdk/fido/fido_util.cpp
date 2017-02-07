@@ -521,7 +521,7 @@ bool FloFile::Load() {
     return false;
   }
   
-  poll_ = f.GetLength() == 0;
+  poll_ = f.length() == 0;
   entries_ = ParseFloFile(FilePath(dir_, filename_));
   return true;
 }

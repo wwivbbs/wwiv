@@ -168,10 +168,10 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   Config config(bbsdir);
   {
     UserManager usermanager(config.datadir(), sizeof(userrec), config.config()->maxusers);
-    auto num_users = usermanager.GetNumberOfUserRecords();
+    auto num_users = usermanager.num_user_records();
     for (int n = 1; n <= num_users; n++) {
       User u{};
-      usermanager.ReadUser(&u, n);
+      usermanager.readuser(&u, n);
       if (!IsUserDeleted(u)) {
         return true;
       }
@@ -192,7 +192,7 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
 static void upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
   File configfile(config.config_filename());
-  if (configfile.GetLength() != sizeof(configrec)) {
+  if (configfile.length() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
     window->Bkgd(' ');
     convert_config_424_to_430(window, config);

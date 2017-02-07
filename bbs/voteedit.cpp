@@ -96,12 +96,12 @@ static void set_question(int ii) {
   votingDat.Close();
 
   User u;
-  a()->users()->ReadUser(&u, 1);
-  int nNumUsers = a()->users()->GetNumberOfUserRecords();
+  a()->users()->readuser(&u, 1);
+  int nNumUsers = a()->users()->num_user_records();
   for (int i1 = 1; i1 <= nNumUsers; i1++) {
-    a()->users()->ReadUser(&u, i1);
+    a()->users()->readuser(&u, i1);
     u.SetVote(nNumUsers, 0);
-    a()->users()->WriteUser(&u, i1);
+    a()->users()->writeuser(&u, i1);
   }
 }
 
@@ -111,7 +111,7 @@ void ivotes() {
 
   File votingDat(a()->config()->datadir(), VOTING_DAT);
   votingDat.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-  int n = static_cast<int>((votingDat.GetLength() / sizeof(votingrec)) - 1);
+  int n = static_cast<int>((votingDat.length() / sizeof(votingrec)) - 1);
   if (n < 20) {
     v.question[0] = '\0';
     v.numanswers = 0;
@@ -140,14 +140,14 @@ void ivotes() {
 void voteprint() {
   votingrec v;
 
-  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->num_user_records();
   char *x = static_cast<char *>(BbsAllocA(20 * (2 + nNumUserRecords)));
   if (x == nullptr) {
     return;
   }
   for (int i = 0; i <= nNumUserRecords; i++) {
     User u;
-    a()->users()->ReadUser(&u, i);
+    a()->users()->readuser(&u, i);
     for (int i1 = 0; i1 < 20; i1++) {
       x[ i1 + i * 20 ] = static_cast<char>(u.GetVote(i1));
     }

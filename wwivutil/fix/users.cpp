@@ -63,7 +63,7 @@ static bool checkFileSize(File &file, unsigned long len) {
     int nFileMode = File::modeReadOnly | File::modeBinary;
     file.Open(nFileMode);
   }
-  unsigned long actual = file.GetLength();
+  unsigned long actual = file.length();
   file.Close();
   if (actual < len) {
     LOG(INFO) << file.full_pathname() << " too short (" << actual << "<"
@@ -189,9 +189,9 @@ int FixUsersCommand::Execute() {
 
 	UserManager userMgr(config()->config()->datadir(), sizeof(userrec), 
       config()->config()->config()->maxusers);
-  LOG(INFO) << "Checking USER.LST... found " << userMgr.GetNumberOfUserRecords() << " user records.";
+  LOG(INFO) << "Checking USER.LST... found " << userMgr.num_user_records() << " user records.";
   LOG(INFO) << "TBD: Check for trashed user recs.";
-	if (userMgr.GetNumberOfUserRecords() > config()->config()->config()->maxusers) {
+	if (userMgr.num_user_records() > config()->config()->config()->maxusers) {
     LOG(INFO) << "Might be too many.";
     if (!arg("exp").as_bool()) {
       return 1;
@@ -203,12 +203,12 @@ int FixUsersCommand::Execute() {
 	std::vector<smalrec> smallrecords;
 	std::set<std::string> names;
 
-  const int num_user_records = userMgr.GetNumberOfUserRecords();
+  const int num_user_records = userMgr.num_user_records();
 	for(int i = 1; i <= num_user_records; i++) {
 		User user;
-		userMgr.ReadUser(&user, i);
+		userMgr.readuser(&user, i);
 		user.FixUp();
-		userMgr.WriteUser(&user, i);
+		userMgr.writeuser(&user, i);
 		if (!user.IsUserDeleted() && !user.IsUserInactive()) {
 			smalrec sr = { 0 };
 			strcpy((char*) sr.name, user.GetName());
@@ -249,7 +249,7 @@ int FixUsersCommand::Execute() {
 		nameFile.Close();
 	} else {
 		if (nameFile.Open(File::modeReadOnly | File::modeBinary)) {
-			long size = nameFile.GetLength();
+			long size = nameFile.length();
       uint16_t recs = static_cast<uint16_t>(size / sizeof(smalrec));
 			if (recs != st.users) {
 				st.users = recs;

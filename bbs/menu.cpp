@@ -256,7 +256,7 @@ std::string MenuInstance::create_menu_filename(const string& extension) const {
 
 bool MenuInstance::CreateMenuMap(File& menu_file) {
   insertion_order_.clear();
-  auto nAmount = menu_file.GetLength() / sizeof(MenuRec);
+  auto nAmount = menu_file.length() / sizeof(MenuRec);
 
   for (size_t nRec = 1; nRec < nAmount; nRec++) {
     MenuRec menu{};

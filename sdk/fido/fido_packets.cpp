@@ -44,7 +44,7 @@ static char ReadCharFromFile(File& f) {
 
 static std::string ReadRestOfFile(File& f, int max_size) {
   auto current = f.current_position();
-  auto size = f.GetLength();
+  auto size = f.length();
   string s;
 
   auto to_read = std::min<size_t>(max_size, size - current);

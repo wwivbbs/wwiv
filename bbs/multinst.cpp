@@ -146,7 +146,7 @@ std::string make_inst_str(int instance_num, int format) {
     std::string userName;
     if (ir.user < a()->config()->config()->maxusers && ir.user > 0) {
       User user;
-      a()->users()->ReadUser(&user, ir.user);
+      a()->users()->readuser(&user, ir.user);
       if (ir.flags & INST_FLAGS_ONLINE) {
         userName = a()->names()->UserName(ir.user);
       } else {
@@ -190,7 +190,7 @@ int inst_ok(int loc, int subloc) {
   if (!f.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
-  auto num_instances = static_cast<int>(f.GetLength() / sizeof(instancerec));
+  auto num_instances = static_cast<int>(f.length() / sizeof(instancerec));
   f.Close();
   for (int i = 1; i < num_instances; i++) {
     if (f.Open(File::modeReadOnly | File::modeBinary)) {

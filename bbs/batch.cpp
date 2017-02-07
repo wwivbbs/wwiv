@@ -143,7 +143,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
         }
         if (a()->config()->config()->sysconfig & sysconfig_log_dl) {
           User user;
-          a()->users()->ReadUser(&user, u.ownerusr);
+          a()->users()->readuser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
               const string user_name_number = a()->names()->UserName(a()->usernum);
@@ -254,7 +254,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               }
             }
             if (file.IsOpen()) {
-              u.numbytes = file.GetLength();
+              u.numbytes = file.length();
               file.Close();
               get_file_idz(&u, b.dir);
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
@@ -632,7 +632,7 @@ void ProcessDSZLogFile() {
 
   File fileDszLog(a()->dsz_logfile_name_);
   if (fileDszLog.Open(File::modeBinary | File::modeReadOnly)) {
-    auto nFileSize = fileDszLog.GetLength();
+    auto nFileSize = fileDszLog.length();
     char *ss = static_cast<char *>(calloc(nFileSize + 1, 1));
     WWIV_ASSERT(ss != nullptr);
     if (ss) {
@@ -866,7 +866,7 @@ int batchdl(int mode) {
 void upload(int dn) {
   dliscan1(dn);
   auto d = a()->directories[dn];
-  long free_space = File::GetFreeSpaceForPath(d.path);
+  long free_space = File::freespace_for_path(d.path);
   if (free_space < 100) {
     bout << "\r\nNot enough disk space to upload here.\r\n\n";
     return;

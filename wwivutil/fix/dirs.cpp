@@ -108,7 +108,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
             LOG(INFO) << "Unable to open:" << recordFile.full_pathname();
           } else {
-            unsigned int numFiles = recordFile.GetLength() / sizeof(uploadsrec);
+            unsigned int numFiles = recordFile.length() / sizeof(uploadsrec);
             uploadsrec upload;
             recordFile.Read(&upload, sizeof(uploadsrec));
             if (upload.numbytes != numFiles) {
@@ -127,7 +127,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                 if (extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
                   extDesc = (ext_desc_rec *)malloc(numFiles * sizeof(ext_desc_rec));
                   size_t offs = 0;
-                  while (offs < (unsigned long)extDescFile.GetLength() && recNo < numFiles) {
+                  while (offs < (unsigned long)extDescFile.length() && recNo < numFiles) {
                     ext_desc_type ed;
                     extDescFile.Seek(offs, File::Whence::begin);
                     if (extDescFile.Read(&ed, sizeof(ext_desc_type)) == sizeof(ext_desc_type)) {
@@ -165,15 +165,15 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                     if (verbose) {
                       LOG(INFO) << "Checking file: " << file.full_pathname();
                     }
-                    if (upload.numbytes != (unsigned long)file.GetLength()) {
-                      upload.numbytes = file.GetLength();
+                    if (upload.numbytes != (unsigned long)file.length()) {
+                      upload.numbytes = file.length();
                       modified = true;
                       LOG(INFO) << "Fixed file size for: " << upload.filename;
                     }
                     file.Close();
                   } else {
                     LOG(INFO) << "Unable to open file '" << file.full_pathname()
-                      << "', error:" << file.GetLastError();
+                      << "', error:" << file.last_error();
                   }
 								}
 								if (modified) {

@@ -55,7 +55,7 @@ void multimail(int *pnUserNumber, int numu) {
   User user;
   memset(&m, 0, sizeof(mailrec));
 
-  if (File::GetFreeSpaceForPath(a()->config()->msgsdir()) < 10) {
+  if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
     bout.nl();
     bout << "Sorry, not enough disk space left.\r\n\n";
     return;
@@ -95,7 +95,7 @@ void multimail(int *pnUserNumber, int numu) {
     if (pnUserNumber[cv] < 0) {
       continue;
     }
-    a()->users()->ReadUser(&user, pnUserNumber[cv]);
+    a()->users()->readuser(&user, pnUserNumber[cv]);
     if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->config()->maxwaiting * 5))) ||
         ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->config()->maxwaiting)) ||
         user.GetNumMailWaiting() > 200) {
@@ -110,7 +110,7 @@ void multimail(int *pnUserNumber, int numu) {
     }
     strcpy(s, "  ");
     user.SetNumMailWaiting(user.GetNumMailWaiting() + 1);
-    a()->users()->WriteUser(&user, pnUserNumber[cv]);
+    a()->users()->writeuser(&user, pnUserNumber[cv]);
     const string pnunn = a()->names()->UserName(pnUserNumber[cv]);
     strcat(s, pnunn.c_str());
     WStatus* pStatus = a()->status_manager()->BeginTransaction();
@@ -157,7 +157,7 @@ void multimail(int *pnUserNumber, int numu) {
   m.daten = static_cast<uint32_t>(time(nullptr));
 
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
-  auto len = pFileEmail->GetLength() / sizeof(mailrec);
+  auto len = pFileEmail->length() / sizeof(mailrec);
   int i = 0;
   if (len != 0) {
     i = len - 1;
@@ -240,7 +240,7 @@ int oneuser() {
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  a()->users()->ReadUser(&user, user_number);
+  a()->users()->readuser(&user, user_number);
   if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->config()->maxwaiting * 5))) ||
       ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->config()->maxwaiting)) ||
       (user.GetNumMailWaiting() > 200)) {
@@ -299,7 +299,7 @@ void slash_e() {
 
   mml_s = nullptr;
   mml_started = 0;
-  if (File::GetFreeSpaceForPath(a()->config()->msgsdir()) < 10) {
+  if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
     bout.nl();
     bout << "Sorry, not enough disk space left.\r\n\n";
     return;
@@ -361,7 +361,7 @@ void slash_e() {
         bout.nl();
         bout << "Unknown mailing list.\r\n\n";
       } else {
-        i1 = fileMailList.GetLength();
+        i1 = fileMailList.length();
         mml_s = static_cast<char *>(BbsAllocA(i1 + 10L));
         fileMailList.Read(mml_s, i1);
         mml_s[i1] = '\n';
@@ -402,7 +402,7 @@ void slash_e() {
     case 'L':
       for (i = 0; i < numu; i++) {
         User user;
-        a()->users()->ReadUser(&user, user_number[i]);
+        a()->users()->readuser(&user, user_number[i]);
         bout << i + 1 << ". " << a()->names()->UserName(user_number[i]) << wwiv::endl;
       }
       break;

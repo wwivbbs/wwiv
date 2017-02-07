@@ -68,7 +68,7 @@ static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
       gat[i] = 0;
     }
     file->Write(gat, GAT_SECTION_SIZE);
-    file->SetLength(GAT_SECTION_SIZE + (75L * 1024L));
+    file->set_length(GAT_SECTION_SIZE + (75L * 1024L));
     gat_section = 0;
   }
   file->Seek(0L, File::Whence::begin);
@@ -80,10 +80,10 @@ static std::unique_ptr<File> OpenMessageFile(const string messageAreaFileName) {
 
 static void set_gat_section(File& file, int section) {
   if (gat_section != section) {
-    auto file_size = file.GetLength();
+    auto file_size = file.length();
     auto section_pos = static_cast<off_t>(section) * GATSECLEN;
     if (file_size < section_pos) {
-      file.SetLength(section_pos);
+      file.set_length(section_pos);
       file_size = section_pos;
     }
     file.Seek(section_pos, File::Whence::begin);

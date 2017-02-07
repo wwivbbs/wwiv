@@ -60,7 +60,7 @@ bool File::IsDirectory() const {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-long File::GetLength() {
+long File::length() {
   if (IsOpen()) {
     LARGE_INTEGER size;
 
@@ -143,7 +143,7 @@ bool File::Move(const std::string& sourceFileName, const std::string& destFileNa
   return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
 }
 
-bool File::RealPath(const std::string& path, std::string* resolved) {
+bool File::realpath(const std::string& path, std::string* resolved) {
   const int BUFSIZE = 4096;
   CHAR buffer[BUFSIZE];
   CHAR** lppPart = { nullptr };
@@ -159,7 +159,7 @@ bool File::RealPath(const std::string& path, std::string* resolved) {
 }
 
 // static
-long File::GetFreeSpaceForPath(const string& path) {
+long File::freespace_for_path(const string& path) {
   uint64_t i64FreeBytesToCaller, i64TotalBytes, i64FreeBytes;
   BOOL result = GetDiskFreeSpaceEx(path.c_str(),
       reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytesToCaller),

@@ -43,7 +43,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
-    int nTotalMsgsInFile = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
+    int nTotalMsgsInFile = static_cast<int>(file.length() / sizeof(shortmsgrec));
     for (int nCurrentMsg = 0; nCurrentMsg < nTotalMsgsInFile; nCurrentMsg++) {
       shortmsgrec sm;
       file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::Whence::begin);
@@ -91,13 +91,13 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
 
 static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText) {
   User user;
-  a()->users()->ReadUser(&user, nUserNum);
+  a()->users()->readuser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
     File file(a()->config()->datadir(), SMW_DAT);
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
-    int nTotalMsgsInFile = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
+    int nTotalMsgsInFile = static_cast<int>(file.length() / sizeof(shortmsgrec));
     int nNewMsgPos = nTotalMsgsInFile - 1;
     shortmsgrec sm;
     if (nNewMsgPos >= 0) {
@@ -122,7 +122,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
     file.Write(&sm, sizeof(shortmsgrec));
     file.Close();
     user.SetStatusFlag(User::SMW);
-    a()->users()->WriteUser(&user, nUserNum);
+    a()->users()->writeuser(&user, nUserNum);
   }
 }
 

@@ -405,7 +405,7 @@ void ascii_send(const char *file_name, bool *sent, double *percent) {
 
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    auto lFileSize = file.GetLength();
+    auto lFileSize = file.length();
     lFileSize = std::max<off_t>(lFileSize, 1);
     auto nNumRead = file.Read(b, 1024);
     long lTotalBytes = 0L;

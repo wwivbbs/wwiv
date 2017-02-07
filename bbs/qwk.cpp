@@ -1286,7 +1286,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
       qwk_info->abort = 1;
       return;
     }
-    numbytes = qwk_file_to_send_file.GetLength();
+    numbytes = qwk_file_to_send_file.length();
 
     if (numbytes == 0L) {
       bout.bputs("File has nothing in it.");

@@ -328,7 +328,7 @@ static void LeaveBadPasswordFeedback(int ans) {
   bout.nl();
   a()->usernum = 1;
   sprintf(irt, "** Illegal logon feedback from %s", tempName.c_str());
-  a()->user()->SetName(tempName.c_str());
+  a()->user()->set_name(tempName.c_str());
   a()->user()->SetMacro(0, "");
   a()->user()->SetMacro(1, "");
   a()->user()->SetMacro(2, "");
@@ -1076,7 +1076,7 @@ void logoff() {
     unique_ptr<File> pFileEmail(OpenEmailFile(true));
     if (pFileEmail->IsOpen()) {
       a()->user()->SetNumMailWaiting(0);
-      auto num_records = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
+      auto num_records = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
       int r = 0;
       int w = 0;
       while (r < num_records) {
@@ -1104,7 +1104,7 @@ void logoff() {
           pFileEmail->Write(&m, sizeof(mailrec));
         }
       }
-      pFileEmail->SetLength(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
+      pFileEmail->set_length(static_cast<long>(sizeof(mailrec)) * static_cast<long>(w));
       a()->status_manager()->Run([](WStatus& s) {
         s.IncrementFileChangedFlag(WStatus::fileChangeEmail);
       });
@@ -1114,7 +1114,7 @@ void logoff() {
   if (smwcheck) {
     File smwFile(a()->config()->datadir(), SMW_DAT);
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      auto num_records = static_cast<int>(smwFile.GetLength() / sizeof(shortmsgrec));
+      auto num_records = static_cast<int>(smwFile.length() / sizeof(shortmsgrec));
       int r = 0;
       int w = 0;
       while (r < num_records) {
@@ -1133,7 +1133,7 @@ void logoff() {
         }
         ++r;
       }
-      smwFile.SetLength(w * sizeof(shortmsgrec));
+      smwFile.set_length(w * sizeof(shortmsgrec));
       smwFile.Close();
     }
   }

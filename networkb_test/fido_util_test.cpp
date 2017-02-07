@@ -239,7 +239,7 @@ TEST_F(FidoUtilTest, FloFile) {
   net_networks_rec net{};
   net.dir = helper_.TempDir();
   net.fido.fido_address = "11:1/211";
-  FloFile flo(net, f.GetParent(), f.GetName());
+  FloFile flo(net, f.parent(), f.GetName());
   EXPECT_FALSE(flo.poll());
   EXPECT_EQ(1, flo.flo_entries().size());
 

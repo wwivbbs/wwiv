@@ -253,7 +253,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
   if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
-  auto i = instFile.GetLength() / sizeof(instancerec);
+  auto i = instFile.length() / sizeof(instancerec);
   if (i < static_cast<size_t>(nInstanceNum + 1)) {
     instFile.Close();
     return false;
@@ -299,7 +299,7 @@ int num_instances() {
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
-  auto nNumInstances = static_cast<int>(instFile.GetLength() / sizeof(instancerec)) - 1;
+  auto nNumInstances = static_cast<int>(instFile.length() / sizeof(instancerec)) - 1;
   instFile.Close();
   return nNumInstances;
 }

@@ -339,7 +339,7 @@ class User {
   const char *GetName() const {
     return reinterpret_cast<const char*>(data.name);
   }
-  void SetName(const char *s) {
+  void set_name(const char *s) {
     strcpy(reinterpret_cast<char*>(data.name), s);
   }
   const char *GetRealName() const {

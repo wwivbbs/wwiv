@@ -101,7 +101,7 @@ int check_for_files_arc(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     arch a;
-    long lFileSize = file.GetLength();
+    long lFileSize = file.length();
     long lFilePos = 1;
     file.Seek(0, File::Whence::begin);
     file.Read(&a, 1);
@@ -212,7 +212,7 @@ int check_for_files_zip(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     long l = 0;
-    long len = file.GetLength();
+    long len = file.length();
     while (l < len) {
       long sig = 0;
       file.Seek(l, File::Whence::begin);
@@ -278,7 +278,7 @@ int check_for_files_lzh(const char *file_name) {
     bout << "File not found: " << stripfn(file_name) << wwiv::endl;
     return 1;
   }
-  long lFileSize = file.GetLength();
+  long lFileSize = file.length();
   unsigned short nCrc;
   int err = 0;
   for (long l = 0; l < lFileSize;
@@ -317,7 +317,7 @@ int check_for_files_lzh(const char *file_name) {
 int check_for_files_arj(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    long lFileSize = file.GetLength();
+    long lFileSize = file.length();
     long lCurPos = 0;
     file.Seek(0L, File::Whence::begin);
     while (lCurPos < lFileSize) {
@@ -413,7 +413,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "No such file.\r\n\n";
     return false;
   }
-  long lFileSize = file.GetLength();
+  long lFileSize = file.length();
   file.Close();
   if (lFileSize == 0L) {
     bout << "File has nothing in it.\r\n\n";
@@ -540,7 +540,7 @@ void list_temp_dir() {
     bout << "None.\r\n";
   }
   bout.nl();
-  bout << "Free space: " << File::GetFreeSpaceForPath(a()->temp_directory()) << wwiv::endl;
+  bout << "Free space: " << File::freespace_for_path(a()->temp_directory()) << wwiv::endl;
   bout.nl();
 }
 
@@ -803,7 +803,7 @@ void move_file_t() {
             ok = false;
             bout << "Too many files in that directory.\r\n";
           }
-          if (File::GetFreeSpaceForPath(a()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
+          if (File::freespace_for_path(a()->directories[d1].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
             ok = false;
             bout << "Not enough disk space to move it.\r\n";
           }
@@ -960,12 +960,12 @@ void removefile() {
             StringRemoveWhitespace(szFileNameToDelete);
             File::Remove(szFileNameToDelete);
             if (bRemoveDlPoints && u.ownersys == 0) {
-              a()->users()->ReadUser(&uu, u.ownerusr);
+              a()->users()->readuser(&uu, u.ownerusr);
               if (!uu.IsUserDeleted()) {
                 if (date_to_daten(uu.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
                   uu.SetUploadK(uu.GetUploadK() - bytes_to_k(u.numbytes));
-                  a()->users()->WriteUser(&uu, u.ownerusr);
+                  a()->users()->writeuser(&uu, u.ownerusr);
                 }
               }
             }

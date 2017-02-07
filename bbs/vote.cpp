@@ -196,7 +196,7 @@ void vote() {
     return;
   }
 
-  int n = static_cast<int>(voteFile.GetLength() / sizeof(votingrec)) - 1;
+  int n = static_cast<int>(voteFile.length() / sizeof(votingrec)) - 1;
   if (n < 20) {
     v.question[0] = 0;
     v.numanswers = 0;

@@ -93,8 +93,8 @@ class File {
   virtual ~File();
 
   // Public Member functions
-  virtual bool SetName(const std::string& fileName);
-  virtual bool SetName(const std::string& dirName, const std::string& fileName);
+  virtual bool set_name(const std::string& fileName);
+  virtual bool set_name(const std::string& dirName, const std::string& fileName);
   virtual bool Open(int nFileMode = File::modeDefault,
                     int nShareMode = File::shareUnknown);
   virtual void Close();
@@ -117,9 +117,9 @@ class File {
     return this->Writeln(s.c_str(), s.length());
   }
 
-  virtual off_t GetLength();
+  virtual off_t length();
   virtual off_t Seek(off_t lOffset, Whence whence);
-  virtual void SetLength(off_t lNewLength);
+  virtual void set_length(off_t lNewLength);
   virtual off_t current_position() const;
 
   virtual bool Exists() const;
@@ -133,7 +133,7 @@ class File {
   virtual time_t last_write_time();
   virtual bool set_last_write_time(time_t last_write_time);
 
-  virtual const std::string GetParent() const {
+  virtual const std::string parent() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return std::string("");
@@ -150,7 +150,7 @@ class File {
   }
 
   virtual const std::string full_pathname() const { return full_path_name_; }
-  virtual const std::string GetLastError() const { return error_text_; }
+  virtual const std::string last_error() const { return error_text_; }
 
   // operators
   explicit operator bool() const { return IsOpen(); }
@@ -179,14 +179,14 @@ class File {
   static bool IsAbsolutePath(const std::string& path);
   static bool IsRelativePath(const std::string& path) { return !IsAbsolutePath(path); }
 
-  static bool RealPath(const std::string& path, std::string* resolved);
+  static bool realpath(const std::string& path, std::string* resolved);
   static bool mkdir(const std::string& path);
   static bool mkdirs(const std::string& path);
 
   static bool mkdir(const File& dir) { return File::mkdir(dir.full_pathname()); }
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
-  static long GetFreeSpaceForPath(const std::string& path);
+  static long freespace_for_path(const std::string& path);
 
  private:
    int handle_;

@@ -129,7 +129,7 @@ void move_file() {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (File::GetFreeSpaceForPath(a()->directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
+        if (File::freespace_for_path(a()->directories[d1].path) < ((double)(u.numbytes / 1024L) + 3)) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }
@@ -449,7 +449,7 @@ static bool upload_file(const char *file_name, int directory_num, const char *de
       }
       return true;
     }
-    long lFileSize = fileUpload.GetLength();
+    long lFileSize = fileUpload.length();
     u.numbytes = lFileSize;
     fileUpload.Close();
     const string unn = a()->names()->UserName(a()->usernum);
@@ -887,7 +887,7 @@ static long db_index(File &fileAllow, const char *file_name) {
   align(tfn1);
   strcpy(tfn, stripfn(tfn1));
 
-  hirec = fileAllow.GetLength() / 13;
+  hirec = fileAllow.length() / 13;
   lorec = 0;
 
   if (hirec == 0) {
@@ -952,7 +952,7 @@ void modify_database(const char *file_name, bool add) {
     fileAllow.Close();
     return;
   }
-  long len = fileAllow.GetLength();
+  long len = fileAllow.length();
 
   if (add) {
     cp = (-1 - rec) * 13;
@@ -1000,7 +1000,7 @@ void modify_database(const char *file_name, bool add) {
     } while (nb == ALLOW_BUFSIZE);
 
     // truncate the file
-    fileAllow.SetLength(len - 13);
+    fileAllow.set_length(len - 13);
   }
 
   free(bfr);

@@ -113,7 +113,7 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::stri
     uint16_t gat[GAT_NUMBER_ELEMENTS] = {0};
     msgs_file.Write(gat, GAT_SECTION_SIZE);
 
-    msgs_file.SetLength(GAT_SECTION_SIZE + (75L * 1024L));
+    msgs_file.set_length(GAT_SECTION_SIZE + (75L * 1024L));
   }
 
   // Create 5.1 style sub header.

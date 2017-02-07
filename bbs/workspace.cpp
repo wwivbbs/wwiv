@@ -40,7 +40,7 @@ void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, boo
     return;
   }
 
-  long lOrigSize = fileOrig.GetLength();
+  long lOrigSize = fileOrig.length();
   unique_ptr<char[]> b(new char[lOrigSize + 1024]);
   fileOrig.Read(b.get(), lOrigSize);
   fileOrig.Close();

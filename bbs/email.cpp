@@ -71,7 +71,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   }
 
   User userRecord;
-  a()->users()->ReadUser(&userRecord, *pUserNumber);
+  a()->users()->readuser(&userRecord, *pUserNumber);
   if (userRecord.IsUserDeleted()) {
     return false;
   }
@@ -117,7 +117,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
   std::unique_ptr<bool[]> ss(new bool[a()->config()->config()->maxusers + 300]);
 
   ss[*pUserNumber] = true;
-  a()->users()->ReadUser(&userRecord, nCurrentUser);
+  a()->users()->readuser(&userRecord, nCurrentUser);
   while (userRecord.GetForwardUserNumber() || userRecord.GetForwardSystemNumber()) {
     if (userRecord.GetForwardSystemNumber()) {
       if (!valid_system(userRecord.GetForwardSystemNumber())) {
@@ -145,7 +145,7 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       return false;
     }
     nCurrentUser = userRecord.GetForwardUserNumber() ;
-    a()->users()->ReadUser(&userRecord, nCurrentUser);
+    a()->users()->readuser(&userRecord, nCurrentUser);
   }
   *pSystemNumber = 0;
   *pUserNumber = nCurrentUser;
@@ -210,7 +210,7 @@ void sendout_email(EmailData& data) {
     if (!pFileEmail->IsOpen()) {
       return;
     }
-    auto nEmailFileLen = pFileEmail->GetLength() / sizeof(mailrec);
+    auto nEmailFileLen = pFileEmail->length() / sizeof(mailrec);
     if (nEmailFileLen == 0) {
       i = 0;
     } else {
@@ -298,9 +298,9 @@ void sendout_email(EmailData& data) {
   string logMessage = "Mail sent to ";
   if (data.system_number == 0) {
     User userRecord;
-    a()->users()->ReadUser(&userRecord, data.user_number);
+    a()->users()->readuser(&userRecord, data.user_number);
     userRecord.SetNumMailWaiting(userRecord.GetNumMailWaiting() + 1);
-    a()->users()->WriteUser(&userRecord, data.user_number);
+    a()->users()->writeuser(&userRecord, data.user_number);
     if (user_online(data.user_number, &i)) {
       send_inst_sysstr(i, "You just received email.");
     }
@@ -378,7 +378,7 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
       return false;
     }
     User userRecord;
-    a()->users()->ReadUser(&userRecord, user_number);
+    a()->users()->readuser(&userRecord, user_number);
     if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (static_cast<unsigned>(a()->config()->config()->maxwaiting) * 5)) ||
         (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > a()->config()->config()->maxwaiting) ||
         userRecord.GetNumMailWaiting() > 200) {
@@ -430,7 +430,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
 
   bool cc = false, bcc = false;
 
-  if (File::GetFreeSpaceForPath(a()->config()->msgsdir()) < 10) {
+  if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
     bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }
@@ -684,7 +684,7 @@ void imail(int user_number, int system_number) {
   int i = 1;
   if (system_number == 0) {
     User userRecord;
-    a()->users()->ReadUser(&userRecord, user_number);
+    a()->users()->readuser(&userRecord, user_number);
     if (!userRecord.IsUserDeleted()) {
       bout << "|#5E-mail " << a()->names()->UserName(user_number) << "? ";
       if (!yesno()) {
@@ -708,13 +708,13 @@ void imail(int user_number, int system_number) {
     email("", user_number, system_number, false, 0);
   }
 }
-
-void delmail(File *pFile, size_t loc) {
+// TODO(rushfan): Change this ti File&
+void delmail(File& f, size_t loc) {
   mailrec m{};
   User user;
 
-  pFile->Seek(loc * sizeof(mailrec), File::Whence::begin);
-  pFile->Read(&m, sizeof(mailrec));
+  f.Seek(loc * sizeof(mailrec), File::Whence::begin);
+  f.Read(&m, sizeof(mailrec));
 
   if (m.touser == 0 && m.tosys == 0) {
     return;
@@ -722,13 +722,13 @@ void delmail(File *pFile, size_t loc) {
 
   bool rm = true;
   if (m.status & status_multimail) {
-    auto t = pFile->GetLength() / sizeof(mailrec);
+    auto t = f.length() / sizeof(mailrec);
     bool otf = false;
     for (size_t i = 0; i < t; i++) {
       if (i != loc) {
         mailrec m1{};
-        pFile->Seek(static_cast<long>(i * sizeof(mailrec)), File::Whence::begin);
-        pFile->Read(&m1, sizeof(mailrec));
+        f.Seek(static_cast<long>(i * sizeof(mailrec)), File::Whence::begin);
+        f.Read(&m1, sizeof(mailrec));
         if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {
           otf = true;
         }
@@ -743,17 +743,17 @@ void delmail(File *pFile, size_t loc) {
   }
 
   if (m.tosys == 0) {
-    a()->users()->ReadUser(&user, m.touser);
+    a()->users()->readuser(&user, m.touser);
     if (user.GetNumMailWaiting()) {
       user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
-      a()->users()->WriteUser(&user, m.touser);
+      a()->users()->writeuser(&user, m.touser);
     }
   }
-  pFile->Seek(static_cast<long>(loc * sizeof(mailrec)), File::Whence::begin);
+  f.Seek(static_cast<long>(loc * sizeof(mailrec)), File::Whence::begin);
   m.touser = 0;
   m.tosys = 0;
   m.daten = 0xffffffff;
   m.msg.storage_type = 0;
   m.msg.stored_as = 0xffffffff;
-  pFile->Write(&m, sizeof(mailrec));
+  f.Write(&m, sizeof(mailrec));
 }

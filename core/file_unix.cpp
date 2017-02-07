@@ -64,7 +64,7 @@ bool File::IsDirectory() const {
   return S_ISDIR(statbuf.st_mode);
 }
 
-long File::GetLength() {
+long File::length() {
   // stat/fstat is the 32 bit version on WIN32
   struct stat fileinfo;
 
@@ -143,7 +143,7 @@ bool File::Move(const std::string& source_filename, const std::string& dest_file
   return false;
 }
 
-bool File::RealPath(const std::string& path, std::string* resolved) {
+bool File::realpath(const std::string& path, std::string* resolved) {
   char* result = realpath(path.c_str(), NULL);
   if (resolved == NULL) {
     resolved->assign(path);
@@ -154,7 +154,7 @@ bool File::RealPath(const std::string& path, std::string* resolved) {
   free(result);
   return true;
 }
-long File::GetFreeSpaceForPath(const string& path) {
+long File::freespace_for_path(const string& path) {
   struct statfs fs;
   if (statfs(path.c_str(), &fs)) {
     perror("statfs()");

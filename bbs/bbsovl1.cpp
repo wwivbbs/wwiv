@@ -133,7 +133,7 @@ void upload_post() {
   int i = 0;
   receive_file(file.full_pathname().c_str(), &i, INPUT_MSG, -1);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
-    auto lFileSize = file.GetLength();
+    auto lFileSize = file.length();
     if (lFileSize > lMaxBytes) {
       bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
       file.Close();
@@ -234,12 +234,12 @@ void feedback(bool bNewUserFeedback) {
     return;
   }
   to_char_array(irt, "|#1Feedback");
-  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->num_user_records();
   int i1 = 0;
 
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
     User user;
-    a()->users()->ReadUser(&user, i);
+    a()->users()->readuser(&user, i);
     if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
       i1++;
@@ -254,7 +254,7 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       User user;
-      a()->users()->ReadUser(&user, i);
+      a()->users()->readuser(&user, i);
       if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
         bout << "|#2" << i << "|#7)|#1 " << a()->names()->UserName(i) << wwiv::endl;

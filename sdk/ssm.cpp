@@ -72,7 +72,7 @@ bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint3
 
 bool SSM::send_local(uint32_t user_number, const std::string& text) {
   User user;
-  user_manager_.ReadUser(&user, user_number);
+  user_manager_.readuser(&user, user_number);
   if (user.IsUserDeleted()) {
     return false;
   }
@@ -80,7 +80,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }
-  int size = static_cast<int>(file.GetLength() / sizeof(shortmsgrec));
+  int size = static_cast<int>(file.length() / sizeof(shortmsgrec));
   int pos = size - 1;
   shortmsgrec sm;
   if (pos >= 0) {
@@ -105,7 +105,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   file.Write(&sm, sizeof(shortmsgrec));
   file.Close();
   user.SetStatusFlag(User::SMW);
-  user_manager_.WriteUser(&user, user_number);
+  user_manager_.writeuser(&user, user_number);
   return true;
 }
 

@@ -205,7 +205,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     *percent = 0.0;
     return;
   }
-  auto lFileSize = file.GetLength();
+  auto lFileSize = file.length();
   if (!lFileSize) {
     lFileSize = 1;
   }

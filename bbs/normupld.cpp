@@ -255,7 +255,7 @@ void normalupload(int dn) {
         }
         if (ok) {
           if (ok == 1) {
-            u.numbytes = file.GetLength();
+            u.numbytes = file.length();
             file.Close();
             a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
             modify_database(u.filename, true);

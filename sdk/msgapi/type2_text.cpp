@@ -105,10 +105,10 @@ std::unique_ptr<File> Type2Text::OpenMessageFile() {
 
 std::vector<uint16_t> Type2Text::load_gat(File& file, size_t section) {
   std::vector<uint16_t> gat(GAT_NUMBER_ELEMENTS);
-  auto file_size = file.GetLength();
+  auto file_size = file.length();
   auto section_pos = section * GATSECLEN;
   if (file_size < static_cast<long>(section_pos)) {
-    file.SetLength(section_pos);
+    file.set_length(section_pos);
     file_size = section_pos;
   }
   file.Seek(section_pos, File::Whence::begin);

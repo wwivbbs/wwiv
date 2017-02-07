@@ -245,8 +245,8 @@ bool get_file_idz(uploadsrec * u, int dn) {
     }
     File file(s);
     file.Open(File::modeBinary | File::modeReadOnly);
-    if (file.GetLength() < (a()->max_extend_lines * 256)) {
-      long lFileLen = file.GetLength();
+    if (file.length() < (a()->max_extend_lines * 256)) {
+      long lFileLen = file.length();
       file.Read(b, lFileLen);
       b[ lFileLen ] = 0;
     } else {
@@ -429,7 +429,7 @@ void tag_it() {
           bout << "|#6The file " << stripfn(f.u.filename) << " is not there.\r\n";
           bad = true;
         } else {
-          fs = fp.GetLength();
+          fs = fp.length();
           fp.Close();
         }
       }

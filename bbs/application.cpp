@@ -197,7 +197,7 @@ void Application::SetCommForTest(RemoteIO* remote_io) {
 
 
 bool Application::ReadCurrentUser(int user_number) {
-  if (!users()->ReadUser(&thisuser_, user_number)) {
+  if (!users()->readuser(&thisuser_, user_number)) {
     return false;
   }
   last_read_user_number_ = user_number;
@@ -215,7 +215,7 @@ bool Application::WriteCurrentUser(int user_number) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
       << "; last_read_user_number_: " << last_read_user_number_;
   }
-  return users()->WriteUser(&thisuser_, user_number);
+  return users()->writeuser(&thisuser_, user_number);
 }
 
 void Application::tleft(bool check_for_timeout) {
@@ -483,7 +483,7 @@ void Application::UpdateTopScreen() {
 
     User sysop { };
     int feedback_waiting = 0;
-    if (a()->users()->ReadUserNoCache(&sysop, 1)) {
+    if (a()->users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PrintfXY(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
@@ -545,7 +545,7 @@ void Application::UpdateTopScreen() {
 
     User sysop { };
     int feedback_waiting = 0;
-    if (a()->users()->ReadUserNoCache(&sysop, 1)) {
+    if (a()->users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", user()->GetNote(), user()->GetGender(),

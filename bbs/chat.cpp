@@ -137,7 +137,7 @@ static int grabname(const std::string& orig, int channel) {
         if (channel && (ir.loc != channel)) {
           continue;
         }
-        a()->users()->ReadUser(&u, ir.user);
+        a()->users()->readuser(&u, ir.user);
         if (name == u.GetName()) {
           node = i;
           break;
@@ -373,7 +373,7 @@ int main_loop(char *raw_message, char *from_message, char *color_string, char *m
     bout.nl();
     int nTempUserNum = finduser1(szText);
     if (nTempUserNum > 0) {
-      a()->users()->ReadUser(&u, nTempUserNum);
+      a()->users()->readuser(&u, nTempUserNum);
       print_data(nTempUserNum, &u, true, false);
     } else {
       bout << "|#6Unknown user.\r\n";
@@ -447,7 +447,7 @@ void intro(int loc) {
   if (nodes[0]) {
     for (int i = 1; i <= nodes[0]; i++) {
       User u;
-      a()->users()->ReadUser(&u, nodes[i]);
+      a()->users()->readuser(&u, nodes[i]);
       if (((nodes[0] - i) == 1) && (nodes[0] >= 2)) {
         bout << "|#1" << u.GetName() << " |#7and ";
       } else {
@@ -483,7 +483,7 @@ void ch_direct(const string& message, int loc, char *color_string, int node) {
   get_inst_info(node, &ir);
   if (ir.loc == loc) {
     User u;
-    a()->users()->ReadUser(&u, ir.user);
+    a()->users()->readuser(&u, ir.user);
     const string s = StringPrintf("|#9From %.12s|#6 [to %s]|#1: %s%s",
             a()->user()->GetName(), u.GetName(), color_string,
             message.c_str());
@@ -520,7 +520,7 @@ void ch_whisper(const std::string& message, char *color_string, int node) {
   }
   send_inst_str(node, text);
   User u;
-  a()->users()->ReadUser(&u, ir.user);
+  a()->users()->readuser(&u, ir.user);
   bout << "|#1[|#9Message sent only to " << u.GetName() << "|#1]\r\n";
 }
 
@@ -533,7 +533,7 @@ int wusrinst(char *n) {
     get_inst_info(i, &ir);
     if (ir.flags & INST_FLAGS_ONLINE) {
       User user;
-      a()->users()->ReadUser(&user, ir.user);
+      a()->users()->readuser(&user, ir.user);
       if (IsEqualsIgnoreCase(user.GetName(), n)) {
         return i;
       }
@@ -759,7 +759,7 @@ void exec_action(const char *message, char *color_string, int loc, int nact) {
   }
   if (bOk) {
     get_inst_info(p, &ir);
-    a()->users()->ReadUser(&u, ir.user);
+    a()->users()->readuser(&u, ir.user);
     sprintf(tmsg, actions[nact]->toperson, a()->user()->GetName());
   } else if (actions[nact]->r) {
     bout << "This action requires a recipient.\r\n";
@@ -852,7 +852,7 @@ void list_channels() {
         }
         bout << "    |#9Users in channel: ";
         for (int i2 = 1; i2 <= nodes[0]; i2++) {
-          a()->users()->ReadUser(&u, nodes[i2]);
+          a()->users()->readuser(&u, nodes[i2]);
           if (((nodes[0] - i2) == 1) && (nodes[0] >= 2)) {
             bout << "|#1" << u.GetName() << " |#7and ";
           } else {

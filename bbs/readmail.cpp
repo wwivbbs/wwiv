@@ -79,14 +79,14 @@ using namespace wwiv::strings;
 void add_netsubscriber(int system_number);
 
 // Implementation
-static bool same_email(tmpmailrec& tm, mailrec * m) {
-  if (tm.fromsys != m->fromsys ||
-      tm.fromuser != m->fromuser ||
-      m->tosys != 0 ||
-      m->touser != a()->usernum ||
-      tm.daten != m->daten ||
+static bool same_email(tmpmailrec& tm, const mailrec& m) {
+  if (tm.fromsys != m.fromsys ||
+      tm.fromuser != m.fromuser ||
+      m.tosys != 0 ||
+      m.touser != a()->usernum ||
+      tm.daten != m.daten ||
       tm.index == -1 ||
-      memcmp(&tm.msg, &m->msg, sizeof(messagerec)) != 0) {
+      memcmp(&tm.msg, &m.msg, sizeof(messagerec)) != 0) {
     return false;
   }
   return true;
@@ -118,10 +118,10 @@ static void purgemail(vector<tmpmailrec>& mloc, int mw, int *curmail, mailrec * 
       if (mloc[i].index >= 0) {
         pFileEmail->Seek(mloc[i].index * sizeof(mailrec), File::Whence::begin);
         pFileEmail->Read(&m, sizeof(mailrec));
-        if (same_email(mloc[i], &m)) {
+        if (same_email(mloc[i], m)) {
           if (m.fromuser == m1->fromuser && m.fromsys == m1->fromsys) {
             bout << "Deleting mail msg #" << i + 1 << wwiv::endl;
-            delmail(pFileEmail.get(), mloc[i].index);
+            delmail(*pFileEmail.get(), mloc[i].index);
             mloc[i].index = -1;
             if (*curmail == i) {
               ++(*curmail);
@@ -144,7 +144,7 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m
 
   unique_ptr<File> pFileEmail(OpenEmailFile(del || stat));
   if (pFileEmail->IsOpen()) {
-    int mfl = pFileEmail->GetLength() / sizeof(mailrec);
+    int mfl = pFileEmail->length() / sizeof(mailrec);
 
     for (i = 0; i < mw; i++) {
       if (mloc[i].index >= 0) {
@@ -160,7 +160,7 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m
 
       if (m1.tosys == 0 && m1.touser == a()->usernum) {
         for (i1 = mp; i1 < mw; i1++) {
-          if (same_email(mloc[i1], &m1)) {
+          if (same_email(mloc[i1], m1)) {
             mloc[i1].index = static_cast<int16_t>(i);
             mp = i1 + 1;
             if (i1 == rec) {
@@ -193,7 +193,7 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m
         pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
         pFileEmail->Write(m, sizeof(mailrec));
       } else {
-        delmail(pFileEmail.get(), mloc[rec].index);
+        delmail(*pFileEmail.get(), mloc[rec].index);
       }
       mloc[rec].index = -1;
     }
@@ -203,40 +203,41 @@ static void resynch_email(vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m
   }
 }
 
-bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m, int del, unsigned short stat) {
+// used in qwk1.cpp
+bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del, unsigned short stat) {
   if (mloc[rec].index < 0) {
     return false;
   }
 
   unique_ptr<File> pFileEmail(OpenEmailFile(del || stat));
   pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-  pFileEmail->Read(m, sizeof(mailrec));
+  pFileEmail->Read(&m, sizeof(mailrec));
 
   if (!same_email(mloc[rec], m)) {
     pFileEmail->Close();
     a()->status_manager()->RefreshStatusCache();
     if (emchg) {
-      resynch_email(mloc, mw, rec, m, del, stat);
+      resynch_email(mloc, mw, rec, &m, del, stat);
     } else {
       mloc[rec].index = -1;
     }
   } else {
     if (stat && !del && (mloc[rec].index >= 0)) {
-      m->status |= stat;
+      m.status |= stat;
       pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-      pFileEmail->Write(m, sizeof(mailrec));
+      pFileEmail->Write(&m, sizeof(mailrec));
     }
     if (del) {
       if (del == 2) {
-        m->touser = 0;
-        m->tosys = 0;
-        m->daten = 0xffffffff;
-        m->msg.storage_type = 0;
-        m->msg.stored_as = 0xffffffff;
+        m.touser = 0;
+        m.tosys = 0;
+        m.daten = 0xffffffff;
+        m.msg.storage_type = 0;
+        m.msg.stored_as = 0xffffffff;
         pFileEmail->Seek(mloc[rec].index * sizeof(mailrec), File::Whence::begin);
-        pFileEmail->Write(m, sizeof(mailrec));
+        pFileEmail->Write(&m, sizeof(mailrec));
       } else {
-        delmail(pFileEmail.get(), mloc[rec].index);
+        delmail(*pFileEmail.get(), mloc[rec].index);
       }
       mloc[rec].index = -1;
     }
@@ -364,7 +365,7 @@ void readmail(int mode) {
       bout << "\r\n\nNo mail file exists!\r\n\n";
       return;
     }
-    int mfl = pFileEmail->GetLength() / sizeof(mailrec);
+    int mfl = pFileEmail->length() / sizeof(mailrec);
     for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
       pFileEmail->Seek(i * sizeof(mailrec), File::Whence::begin);
       pFileEmail->Read(&m, sizeof(mailrec));
@@ -404,7 +405,7 @@ void readmail(int mode) {
       bout.bpla(s, &abort);
     }
     for (i = 0; (i < mw && !abort); i++) {
-      if (!read_same_email(mloc, mw, i, &m, 0, 0)) {
+      if (!read_same_email(mloc, mw, i, m, 0, 0)) {
         continue;
       }
       if (mode == 1 && (m.status & status_seen)) {
@@ -523,7 +524,7 @@ void readmail(int mode) {
     string title = m.title;
     s[0] = '\0';
 
-    if (!read_same_email(mloc, mw, curmail, &m, 0, 0)) {
+    if (!read_same_email(mloc, mw, curmail, m, 0, 0)) {
       title += ">>> MAIL DELETED <<<";
       okmail = false;
       bout.nl(3);
@@ -580,7 +581,7 @@ void readmail(int mode) {
         }
         display_type2_message(msg, &next);
         if (!(m.status & status_seen)) {
-          read_same_email(mloc, mw, curmail, &m, 0, status_seen);
+          read_same_email(mloc, mw, curmail, m, 0, status_seen);
         }
       }
       found = false;
@@ -659,7 +660,7 @@ void readmail(int mode) {
         strcat(s, "T");
       }
       ch = onek(s);
-      if (okmail && !read_same_email(mloc, mw, curmail, &m, 0, 0)) {
+      if (okmail && !read_same_email(mloc, mw, curmail, m, 0, 0)) {
         bout << "\r\nMail got deleted.\r\n\n";
         ch = 'R';
       }
@@ -741,7 +742,7 @@ void readmail(int mode) {
               if (!(m.status & status_source_verified)) {
                 ssm(m.fromuser, m.fromsys) << msg;
               }
-              read_same_email(mloc, mw, curmail, &m, 1, 0);
+              read_same_email(mloc, mw, curmail, m, 1, 0);
               ++curmail;
               if (curmail >= mw) {
                 done = true;
@@ -909,7 +910,7 @@ void readmail(int mode) {
         if (!okmail) {
           break;
         }
-        read_same_email(mloc, mw, curmail, &m, 1, 0);
+        read_same_email(mloc, mw, curmail, m, 1, 0);
         ++curmail;
         if (curmail >= mw) {
           done = true;
@@ -995,7 +996,7 @@ void readmail(int mode) {
                 }
                 pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
                 pFileEmail->Read(&m, sizeof(mailrec));
-                if (!same_email(mloc[curmail], &m)) {
+                if (!same_email(mloc[curmail], m)) {
                   bout << "Error, mail moved.\r\n";
                   break;
                 }
@@ -1136,7 +1137,7 @@ void readmail(int mode) {
             if (!(m.status & status_source_verified)) {
               ssm(m.fromuser, m.fromsys) << message;
             }
-            read_same_email(mloc, mw, curmail, &m, 1, 0);
+            read_same_email(mloc, mw, curmail, m, 1, 0);
             ++curmail;
             if (curmail >= mw) {
               done = true;
@@ -1152,7 +1153,7 @@ void readmail(int mode) {
         } else {
           if (num_mail != num_mail1) {
             if (!(m.status & status_replied)) {
-              read_same_email(mloc, mw, curmail, &m, 0, status_replied);
+              read_same_email(mloc, mw, curmail, m, 0, status_replied);
             }
             ++curmail;
             if (curmail >= mw) {
@@ -1234,7 +1235,7 @@ int check_new_mail(int user_number) {
 
   unique_ptr<File> pFileEmail(OpenEmailFile(false));
   if (pFileEmail->Exists() && pFileEmail->IsOpen()) {
-    int mfLength = pFileEmail->GetLength() / sizeof(mailrec);
+    int mfLength = pFileEmail->length() / sizeof(mailrec);
     int mWaiting = 0;   // number of mail waiting
     for (int i = 0; (i < mfLength) && (mWaiting < MAXMAIL); i++) {
       mailrec m;

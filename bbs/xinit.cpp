@@ -847,7 +847,7 @@ void Application::create_phone_file() {
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  auto lFileSize = file.GetLength();
+  auto lFileSize = file.length();
   file.Close();
   int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
@@ -858,7 +858,7 @@ void Application::create_phone_file() {
 
   for (int16_t nTempUserNumber = 1; nTempUserNumber <= numOfRecords; nTempUserNumber++) {
     User user;
-    users()->ReadUser(&user, nTempUserNumber);
+    users()->readuser(&user, nTempUserNumber);
     if (!user.IsUserDeleted()) {
       p.usernum = nTempUserNumber;
       char szTempVoiceNumber[255], szTempDataNumber[255];

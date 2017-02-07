@@ -207,7 +207,7 @@ void input_name() {
     string temp_local_name = Input1(a()->user()->GetName(), 30, true, InputMode::UPPER);
     ok = check_name(temp_local_name);
     if (ok) {
-      a()->user()->SetName(temp_local_name.c_str());
+      a()->user()->set_name(temp_local_name.c_str());
     } else {
       bout.nl();
       bout << "|#6I'm sorry, you can't use that name.\r\n";
@@ -572,7 +572,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
     return -1;
   }
 
-  int nNewUserNumber = static_cast<int>((userFile.GetLength() / a()->config()->config()->userreclen) - 1);
+  int nNewUserNumber = static_cast<int>((userFile.length() / a()->config()->config()->userreclen) - 1);
   userFile.Seek(a()->config()->config()->userreclen, File::Whence::begin);
   int user_number = 1;
 
@@ -591,7 +591,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
           return -1;
         }
         userFile.Seek(static_cast<long>(user_number * a()->config()->config()->userreclen), File::Whence::begin);
-        nNewUserNumber = static_cast<int>((userFile.GetLength() / a()->config()->config()->userreclen) - 1);
+        nNewUserNumber = static_cast<int>((userFile.length() / a()->config()->config()->userreclen) - 1);
       }
       User tu;
       userFile.Read(&tu.data, a()->config()->config()->userreclen);
@@ -1208,7 +1208,7 @@ bool check_dupes(const char *pszPhoneNumber) {
     ssm(1, 0) << s;
 
     User user;
-    a()->users()->ReadUser(&user, user_number);
+    a()->users()->readuser(&user, user_number);
     s = StringPrintf("      also entered by %s", user.GetName());
     sysoplog(false) << s;
     ssm(1, 0) << s;
@@ -1283,7 +1283,7 @@ void DoMinimalNewUser() {
           BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
         }
       } while (!ok && !hangup);
-      u->SetName(szTempName);
+      u->set_name(szTempName);
     }
     s1[0] = '\0';
     cln_nu();
@@ -1425,7 +1425,7 @@ void DoMinimalNewUser() {
       break;
     case 'A':
       strcpy(s1, u->GetName());
-      u->SetName("");
+      u->set_name("");
       break;
     case 'B':
       u->SetAge(0);

@@ -127,7 +127,7 @@ static void wfc_update() {
   User u = {};
 
   get_inst_info(inst_num, &ir);
-  a()->users()->ReadUserNoCache(&u, ir.user);
+  a()->users()->readuser_nocache(&u, ir.user);
   a()->localIO()->PrintfXYA(57, 18, 15, "%-3d", inst_num);
   if (ir.flags & INST_FLAGS_ONLINE) {
     const string unn = a()->names()->UserName(ir.user);
@@ -190,7 +190,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
     User sysop{};
     int feedback_waiting = 0;
-    if (a()->users()->ReadUserNoCache(&sysop, sysop_usernum)) {
+    if (a()->users()->readuser_nocache(&sysop, sysop_usernum)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     a()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
@@ -642,7 +642,7 @@ int WFC::LocalLogon() {
       }
 
       User tu;
-      a_->users()->ReadUserNoCache(&tu, a_->unx_);
+      a_->users()->readuser_nocache(&tu, a_->unx_);
       if (tu.GetSl() != 255 || tu.IsUserDeleted()) {
         return lokb;
       }

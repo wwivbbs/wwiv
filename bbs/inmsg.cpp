@@ -605,7 +605,7 @@ bool inmsg(MessageEditorData& data) {
   }
   if (data.fsed_flags != FsedFlags::NOFSED) {
     File fileExtEd(exted_filename);
-    max_message_size = std::max<int>(fileExtEd.GetLength(), 30000);
+    max_message_size = std::max<int>(fileExtEd.length(), 30000);
   } else {
     for (int i5 = 0; i5 < curli; i5++) {
       max_message_size += lin.at(i5).length() + 2;

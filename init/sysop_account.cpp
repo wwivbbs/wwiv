@@ -116,7 +116,7 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   u.data.restrict = 0;
   u.SetStatusFlag(User::ansi);
   u.SetStatusFlag(User::color);
-  usermanager.WriteUser(&u, 1);
+  usermanager.writeuser(&u, 1);
 
   {
     wwiv::sdk::Names names(config);

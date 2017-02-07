@@ -165,9 +165,9 @@ void read_inet_addr(std::string& internet_address, int user_number) {
       } else {
         internet_address = StrCat("User #", user_number);
         User user;
-        a()->users()->ReadUser(&user, user_number);
+        a()->users()->readuser(&user, user_number);
         user.SetEmailAddress("");
-        a()->users()->WriteUser(&user, user_number);
+        a()->users()->writeuser(&user, user_number);
       }
     }
     file.Close();

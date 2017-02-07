@@ -53,7 +53,7 @@ int finduser(const string& searchString) {
   User user;
 
   guest_user = false;
-  a()->users()->SetUserWritesAllowed(true);
+  a()->users()->set_user_writes_allowed(true);
   if (searchString == "NEW") {
     return -1;
   }
@@ -62,7 +62,7 @@ int finduser(const string& searchString) {
   }
   int user_number = StringToInt(searchString);
   if (user_number > 0) {
-    a()->users()->ReadUser(&user, user_number);
+    a()->users()->readuser(&user, user_number);
     if (user.IsUserDeleted()) {
       return 0;
     }
@@ -72,13 +72,13 @@ int finduser(const string& searchString) {
   if (user_number == 0) {
     return 0;
   } 
-  a()->users()->ReadUser(&user, user_number);
+  a()->users()->readuser(&user, user_number);
   if (user.IsUserDeleted()) {
     return 0;
   }
   if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
     guest_user = true;
-    a()->users()->SetUserWritesAllowed(false);
+    a()->users()->set_user_writes_allowed(false);
   }
   return user_number;
 }

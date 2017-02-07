@@ -44,20 +44,20 @@ class UserManager {
    UserManager() = delete;
    UserManager(std::string data_directory, int userrec_length, int max_number_users);
    virtual ~UserManager();
-   int GetNumberOfUserRecords() const;
-   bool ReadUserNoCache(User *pUser, int user_number);
-   bool ReadUser(User *pUser, int user_number);
-   bool WriteUserNoCache(User *pUser, int user_number);
-   bool WriteUser(User *pUser, int user_number);
+   int num_user_records() const;
+   bool readuser_nocache(User *pUser, int user_number);
+   bool readuser(User *pUser, int user_number);
+   bool writeuser_nocache(User *pUser, int user_number);
+   bool writeuser(User *pUser, int user_number);
 
   /**
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
    * Global guest_user variable is true.
    */
-  void SetUserWritesAllowed(bool bUserWritesAllowed) {
+  void set_user_writes_allowed(bool bUserWritesAllowed) {
     allow_writes_ = bUserWritesAllowed;
   }
-  bool IsUserWritesAllowed() {
+  bool user_writes_allowed() {
     return allow_writes_;
   }
 };

@@ -55,7 +55,7 @@ WFileTransferFile::WFileTransferFile(const string& filename,
 WFileTransferFile::~WFileTransferFile() {}
 
 int WFileTransferFile::file_size() const {
-  return file_->GetLength();
+  return file_->length();
 }
 
 bool WFileTransferFile::Delete() {

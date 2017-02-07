@@ -189,7 +189,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
         if (!fileExtract.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
           bout << "|#6Could not open file for writing.\r\n";
         } else {
-          if (fileExtract.GetLength() > 0) {
+          if (fileExtract.length() > 0) {
             fileExtract.Seek(-1L, File::Whence::end);
             char chLastChar = CZ;
             fileExtract.Read(&chLastChar, 1);
@@ -850,7 +850,7 @@ static void HandleMessageDelete(int &nMessageNumber) {
     return;
   }
   User tu;
-  if (!a()->users()->ReadUser(&tu, p2.owneruser)) {
+  if (!a()->users()->readuser(&tu, p2.owneruser)) {
     return;
   }
   if (tu.IsUserDeleted()) {
@@ -866,7 +866,7 @@ static void HandleMessageDelete(int &nMessageNumber) {
     bout.nl();
     bout << "|#7Post credit removed = " << num_credits << endl;
     tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
-    a()->users()->WriteUser(&tu, p2.owneruser);
+    a()->users()->writeuser(&tu, p2.owneruser);
     a()->UpdateTopScreen();
   }
 }

@@ -26,7 +26,7 @@ static File qscanFile;
 
 static bool open_qscn() {
   if (!qscanFile.IsOpen()) {
-    qscanFile.SetName(a()->config()->datadir(), USER_QSC);
+    qscanFile.set_name(a()->config()->datadir(), USER_QSC);
     if (!qscanFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return false;
     }
@@ -56,7 +56,7 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
   }
   if (open_qscn()) {
     long lPos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
-    if (lPos + static_cast<long>(a()->config()->config()->qscn_len) <= qscanFile.GetLength()) {
+    if (lPos + static_cast<long>(a()->config()->config()->qscn_len) <= qscanFile.length()) {
       qscanFile.Seek(lPos, File::Whence::begin);
       qscanFile.Read(qscn, a()->config()->config()->qscn_len);
       if (!stay_open) {

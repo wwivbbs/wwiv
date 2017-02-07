@@ -277,7 +277,7 @@ void swap_dirs(int dir1, int dir2) {
   dir1 = static_cast<int>(dir1conv);
   dir2 = static_cast<int>(dir2conv);
 
-  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->num_user_records();
 
   uint32_t *pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->config()->qscn_len));
   if (pTempQScan) {
@@ -332,7 +332,7 @@ void insert_dir(int n) {
   {
     insert_at(a()->directories, n, r);
   }
-  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->num_user_records();
 
   uint32_t* pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->config()->qscn_len));
   if (pTempQScan) {
@@ -374,7 +374,7 @@ void delete_dir(int n) {
   n = static_cast<int>(nconv);
   erase_at(a()->directories, n);
 
-  size_t num_users = a()->users()->GetNumberOfUserRecords();
+  size_t num_users = a()->users()->num_user_records();
 
   pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->config()->qscn_len));
   if (pTempQScan) {

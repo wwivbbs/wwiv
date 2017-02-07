@@ -116,7 +116,7 @@ uint32_t crc32file(const std::string& name) {
   if (!file.Open(File::modeReadOnly | File::modeBinary, File::shareDenyWrite)) {
     return false;
   }
-  auto size = file.GetLength();
+  auto size = file.length();
   auto buffer = std::make_unique<uint8_t[]>(size);
   if (!file.Read(buffer.get(), size)) {
     return false;

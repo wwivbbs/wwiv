@@ -123,7 +123,7 @@ static string GetMailBoxStatus() {
   }
 
   User ur;
-  a()->users()->ReadUser(&ur, a()->user()->GetForwardUserNumber());
+  a()->users()->readuser(&ur, a()->user()->GetForwardUserNumber());
   if (ur.IsUserDeleted()) {
     a()->user()->SetForwardUserNumber(0);
     return string("Normal");

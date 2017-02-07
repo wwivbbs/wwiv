@@ -49,7 +49,7 @@ void delete_phone_number(int usernum, const char *phone) {
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
     return;
   }
-  long lFileSize = phoneFile.GetLength();
+  long lFileSize = phoneFile.length();
   int nNumRecords = static_cast<int>(lFileSize / sizeof(phonerec));
   phonerec *p = static_cast<phonerec *>(BbsAllocA(lFileSize));
   phoneFile.Read(p, lFileSize);
@@ -79,7 +79,7 @@ int find_phone_number(const char *phone) {
   if (!phoneFile.Open(File::modeReadWrite | File::modeBinary)) {
     return 0;
   }
-  auto lFileSize = phoneFile.GetLength();
+  auto lFileSize = phoneFile.length();
   int nNumRecords = static_cast<int>(lFileSize / sizeof(phonerec));
   phonerec *p = static_cast<phonerec *>(BbsAllocA(lFileSize));
   WWIV_ASSERT(p);
@@ -92,7 +92,7 @@ int find_phone_number(const char *phone) {
   for (i = 0; i < nNumRecords; i++) {
     if (wwiv::strings::IsEquals(reinterpret_cast<char*>(p[i].phone), phone)) {
       User user;
-      a()->users()->ReadUser(&user, p[i].usernum);
+      a()->users()->readuser(&user, p[i].usernum);
       if (!user.IsUserDeleted()) {
         break;
       }

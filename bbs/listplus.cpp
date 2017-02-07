@@ -1352,12 +1352,12 @@ static int remove_filename(const char *file_name, int dn) {
           File::Remove(a()->directories[dn].path, u.filename);
           if (rdlp && u.ownersys == 0) {
             User user;
-            a()->users()->ReadUser(&user, u.ownerusr);
+            a()->users()->readuser(&user, u.ownerusr);
             if (!user.IsUserDeleted()) {
               if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
                 user.SetFilesUploaded(user.GetFilesUploaded() - 1);
                 user.SetUploadK(user.GetUploadK() - bytes_to_k(u.numbytes));
-                a()->users()->WriteUser(&user, u.ownerusr);
+                a()->users()->writeuser(&user, u.ownerusr);
               }
             }
           }
@@ -1481,7 +1481,7 @@ static int move_filename(const char *file_name, int dn) {
           ok = false;
           bout << "\r\nToo many files in that directory.\r\n";
         }
-        if (File::GetFreeSpaceForPath(a()->directories[nDestDirNum].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
+        if (File::freespace_for_path(a()->directories[nDestDirNum].path) < static_cast<long>(u.numbytes / 1024L) + 3) {
           ok = false;
           bout << "\r\nNot enough disk space to move it.\r\n";
         }

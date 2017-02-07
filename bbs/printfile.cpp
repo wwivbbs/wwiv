@@ -52,7 +52,7 @@ char *get_file(const string& filename, long *len) {
     return nullptr;
   }
 
-  auto lFileSize = file.GetLength();
+  auto lFileSize = file.length();
   char* pszFileText = static_cast<char *>(malloc(lFileSize + 50));
   if (pszFileText == nullptr) {
     *len = 0L;

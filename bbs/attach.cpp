@@ -60,7 +60,7 @@ void attach_file(int mode) {
     pFileEmail->Close();
     return;
   }
-  auto max = pFileEmail->GetLength() / sizeof(mailrec);
+  auto max = pFileEmail->length() / sizeof(mailrec);
   auto cur = (bDirectionForward) ? max - 1 : 0;
 
   int ok = 0;
@@ -180,7 +180,7 @@ void attach_file(int mode) {
             }
             }
           }
-          if (File::GetFreeSpaceForPath(a()->GetAttachmentDirectory()) < 500) {
+          if (File::freespace_for_path(a()->GetAttachmentDirectory()) < 500) {
             bout << "Not enough free space to attach a file.\r\n";
           } else {
             if (!done2) {
@@ -283,7 +283,7 @@ void attach_file(int mode) {
                     ok = 0;
                     bout << "\r\n\nDOS error - File not bFound.\r\n\n";
                   } else {
-                    fsr.numbytes = attachmentFile.GetLength();
+                    fsr.numbytes = attachmentFile.length();
                     attachmentFile.Close();
                     if (newname) {
                       strcpy(fsr.filename, stripfn(szNewFileName));

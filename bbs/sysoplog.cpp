@@ -114,7 +114,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
     if (!logFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
-    if (logFile.GetLength()) {
+    if (logFile.length()) {
       logFile.Seek(0L, File::Whence::end);
     }
     string logLine;
@@ -135,7 +135,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
       // sysop log ?
       return;
     }
-    if (logFile.GetLength()) {
+    if (logFile.length()) {
       logFile.Seek(0L, File::Whence::end);
     }
     string logLine;

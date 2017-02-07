@@ -70,7 +70,7 @@ bool open_sub(bool wr) {
   close_sub();
 
   if (wr) {
-    fileSub.SetName(subdat_fn);
+    fileSub.set_name(subdat_fn);
     fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (fileSub.IsOpen()) {
       // re-read info from file, to be safe
@@ -80,7 +80,7 @@ bool open_sub(bool wr) {
       a()->SetNumMessagesInCurrentMessageArea(p.owneruser);
     }
   } else {
-    fileSub.SetName(subdat_fn);
+    fileSub.set_name(subdat_fn);
     fileSub.Open(File::modeReadOnly | File::modeBinary);
   }
 

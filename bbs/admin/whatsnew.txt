@@ -30,6 +30,8 @@ What's New in WWIV 5.3
 + Added wwivutil status command. 1st operation is 
   "wwivutil status qscan [set|get]". You can set or get the qscan value
   in status.dat.
+- Removed internal menueditor, use the one in init if needed.
+
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

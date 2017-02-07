@@ -129,11 +129,11 @@ string FilePath(const string& dirname, const string& filename) {
 File::File() : handle_(File::invalid_handle) {}
 
 File::File(const string& full_file_name) : File() {
-  this->SetName(full_file_name);
+  this->set_name(full_file_name);
 }
 
 File::File(const string& dir, const string& filename) : File() {
-  this->SetName(dir, filename);
+  this->set_name(dir, filename);
 }
 
 File::~File() {
@@ -204,12 +204,12 @@ void File::Close() {
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
 
-bool File::SetName(const string& filename) {
+bool File::set_name(const string& filename) {
   full_path_name_ = filename;
   return true;
 }
 
-bool File::SetName(const string& dirname, const string& filename) {
+bool File::set_name(const string& dirname, const string& filename) {
   std::stringstream full_path_name;
   full_path_name << dirname;
   if (!dirname.empty() && dirname[dirname.length() - 1] == pathSeparatorChar) {
@@ -217,7 +217,7 @@ bool File::SetName(const string& dirname, const string& filename) {
   } else {
     full_path_name << pathSeparatorChar << filename;
   }
-  return SetName(full_path_name.str());
+  return set_name(full_path_name.str());
 }
 
 ssize_t File::Read(void* buffer, size_t size) {
@@ -264,7 +264,7 @@ bool File::Delete() {
   return unlink(full_path_name_.c_str()) == 0;
 }
 
-void File::SetLength(off_t lNewLength) {
+void File::set_length(off_t lNewLength) {
   WWIV_ASSERT(File::IsFileHandleValid(handle_));
   ftruncate(handle_, lNewLength);
 }

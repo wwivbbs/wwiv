@@ -541,7 +541,7 @@ void ResetQscan() {
   bout << "|#5Reset all QScan/NScan pointers (For All Users)? ";
   if (yesno()) {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
-    for (int i = 0; i <= a()->users()->GetNumberOfUserRecords(); i++) {
+    for (int i = 0; i <= a()->users()->num_user_records(); i++) {
       read_qscn(i, qsc, true);
       memset(qsc_p, 0, a()->config()->config()->qscn_len - 4 * (1 + ((a()->config()->config()->max_dirs + 31) / 32) + ((
         a()->config()->config()->max_subs + 31) / 32)));

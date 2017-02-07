@@ -94,7 +94,7 @@ void prstatus() {
 
   User sysop{};
   int feedback_waiting = 0;
-  if (a()->users()->ReadUserNoCache(&sysop, 1)) {
+  if (a()->users()->readuser_nocache(&sysop, 1)) {
     feedback_waiting = sysop.GetNumMailWaiting();
   }
   bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;
@@ -110,7 +110,7 @@ void valuser(int user_number) {
   char s[81], s1[81], s2[81], s3[81], ar1[20], dar1[20];
 
   User user;
-  a()->users()->ReadUser(&user, user_number);
+  a()->users()->readuser(&user, user_number);
   if (!user.IsUserDeleted()) {
     bout.nl();
     const string unn = a()->names()->UserName(user_number);
@@ -267,7 +267,7 @@ void valuser(int user_number) {
         printfile(SRESTRCT_NOEXT);
       }
     } while (!hangup && ch1 == 0);
-    a()->users()->WriteUser(&user, user_number);
+    a()->users()->writeuser(&user, user_number);
     bout.nl();
   } else {
     bout << "\r\n|#6No Such User.\r\n\n";
@@ -637,7 +637,7 @@ void mailr() {
 
   unique_ptr<File> pFileEmail(OpenEmailFile(false));
   if (pFileEmail->IsOpen()) {
-    int nRecordNumber = pFileEmail->GetLength() / sizeof(mailrec) - 1;
+    int nRecordNumber = pFileEmail->length() / sizeof(mailrec) - 1;
     char c = ' ';
     while (nRecordNumber >= 0 && c != 'Q' && !hangup) {
       pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
@@ -646,7 +646,7 @@ void mailr() {
         pFileEmail->Close();
         do {
           User user;
-          a()->users()->ReadUser(&user, m.touser);
+          a()->users()->readuser(&user, m.touser);
           const string unn = a()->names()->UserName(m.touser);
           bout << "|#9  To|#7: ";
           bout.Color(a()->GetMessageColor());
@@ -691,7 +691,7 @@ void mailr() {
             pFileEmail->Seek(nRecordNumber * sizeof(mailrec), File::Whence::begin);
             pFileEmail->Read(&m1, sizeof(mailrec));
             if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-              delmail(pFileEmail.get(), nRecordNumber);
+              delmail(*pFileEmail.get(), nRecordNumber);
               bool found = false;
               if (m.status & status_file) {
                 File attachFile(a()->config()->datadir(), ATTACH_DAT);
@@ -802,11 +802,11 @@ void set_user_age() {
   int user_number = 1;
   do {
     User user;
-    a()->users()->ReadUser(&user, user_number);
+    a()->users()->readuser(&user, user_number);
     unsigned int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
     if (nAge != user.GetAge()) {
       user.SetAge(nAge);
-      a()->users()->WriteUser(&user, user_number);
+      a()->users()->writeuser(&user, user_number);
     }
     ++user_number;
   } while (user_number <= pStatus->GetNumUsers());
@@ -838,7 +838,7 @@ void auto_purge() {
 
   do {
     User user;
-    a()->users()->ReadUser(&user, user_number);
+    a()->users()->readuser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
       unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
@@ -926,7 +926,7 @@ void beginday(bool displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }
 
-  long fk = File::GetFreeSpaceForPath(a()->config()->datadir());
+  long fk = File::freespace_for_path(a()->config()->datadir());
 
   if (fk < 512) {
     ssm(1, 0) << "Only " << fk << "k free in data directory.";

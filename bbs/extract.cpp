@@ -143,7 +143,7 @@ void extract_out(char *b, long len, const char *title) {
         if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
           bout << "|#6Could not open file for writing.\r\n";
         } else {
-          if (file.GetLength() > 0) {
+          if (file.length() > 0) {
             file.Seek(-1L, File::Whence::end);
             file.Read(&ch1, 1);
             if (ch1 == CZ) {

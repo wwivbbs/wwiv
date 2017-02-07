@@ -451,7 +451,7 @@ static void swap_subs(int sub1, int sub2) {
   update_conf(ConferenceType::CONF_SUBS, &sub1conv, &sub2conv, CONF_UPDATE_SWAP);
   sub1 = static_cast<int>(sub1conv);
   sub2 = static_cast<int>(sub2conv);
-  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->num_user_records();
 
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len);
   for (int i = 1; i <= nNumUserRecords; i++) {
@@ -519,7 +519,7 @@ static void insert_sub(int n) {
   // Insert new item.
   a()->subs().insert(n, r);
 
-  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->num_user_records();
 
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len);
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
@@ -573,7 +573,7 @@ static void delete_sub(int n) {
     sub_xtr_del(n, 0, 1);
   }
   a()->subs().erase(n);
-  nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  nNumUserRecords = a()->users()->num_user_records();
 
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
   std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len+1);

@@ -19,6 +19,7 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/packets.h"
+#include "sdk/datetime.h"
 
 #include <cstdint>
 #include <string>
@@ -27,6 +28,7 @@ using std::endl;
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::net;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 
@@ -47,7 +49,7 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
   ASSERT_EQ(19, text.size());
 
   net_header_rec nh{};
-  nh.daten = time(nullptr);
+  nh.daten = time_t_to_daten(time(nullptr));
   nh.method = 0;
   nh.main_type = main_type_file;
   nh.minor_type = net_info_file;

@@ -194,7 +194,7 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
   }
   File x(tmp, "WriteVector_MaxRecords");
   ASSERT_TRUE(x.Open(File::modeBinary | File::modeReadOnly));
-  ASSERT_EQ(static_cast<long>(2 * sizeof(T)), x.GetLength());
+  ASSERT_EQ(static_cast<long>(2 * sizeof(T)), x.length());
   x.Read(&t1, sizeof(T));
   EXPECT_EQ(1, t1.a);
   EXPECT_EQ(2, t1.b);

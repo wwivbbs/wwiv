@@ -90,7 +90,7 @@ extern const char *QWKFrom;
 extern int qwk_percent;
 
 // from readmail.cpp
-bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec * m, int del, unsigned short stat);
+bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del, unsigned short stat);
 
 void qwk_remove_email() {
   emchg = false;
@@ -108,7 +108,7 @@ void qwk_remove_email() {
     return;
   }
 
-  int mfl = f->GetLength() / sizeof(mailrec);
+  int mfl = f->length() / sizeof(mailrec);
   uint8_t mw = 0;
 
   mailrec m;
@@ -134,7 +134,7 @@ void qwk_remove_email() {
   int curmail = 0;
   bool done = false;
   do {
-    delmail(f.get(), mloc[curmail].index);
+    delmail(*f.get(), mloc[curmail].index);
 
     ++curmail;
     if (curmail >= mw) {
@@ -162,7 +162,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
     bout.nl();
     return;
   }
-  mfl = f->GetLength() / sizeof(mailrec);
+  mfl = f->length() / sizeof(mailrec);
   uint8_t mw = 0;
   for (i = 0; (i < mfl) && (mw < MAXMAIL); i++) {
     f->Seek(((long)(i)) * (sizeof(mailrec)), File::Whence::begin);
@@ -206,7 +206,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   qwk_info->zero = open(filename, O_RDWR | O_APPEND | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   do {
-    read_same_email(mloc, mw, curmail, &m, 0, 0);
+    read_same_email(mloc, mw, curmail, m, 0, 0);
 
     strupr(m.title);
     strncpy(qwk_info->email_title, stripcolors(m.title), 25);
@@ -457,7 +457,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     char s2[81];
     net_system_list_rec *csne = nullptr;
 
-    if (File::GetFreeSpaceForPath(a()->config()->msgsdir()) < 10) {
+    if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
       bout.nl();
       bout.bputs("Sorry, not enough disk space left.");
       bout.nl();
@@ -695,7 +695,7 @@ void process_reply_dat(char *name) {
             
       if (to_email) {
         qwk_email_text(text.get(), title, to);
-      } else if (File::GetFreeSpaceForPath(a()->config()->msgsdir()) < 10) {
+      } else if (File::freespace_for_path(a()->config()->msgsdir()) < 10) {
         // Not enough disk space
         bout.nl();
         bout.bputs("Sorry, not enough disk space left.");

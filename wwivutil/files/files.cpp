@@ -237,7 +237,7 @@ public:
       return 1;
     }
     // TODO(rushfan): Push this into the DataFile class.
-    file.file().SetLength(files.size() * sizeof(uploadsrec));
+    file.file().set_length(files.size() * sizeof(uploadsrec));
 
     // TODO(rushfan): Set the # files in record 0.
 

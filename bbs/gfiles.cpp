@@ -261,7 +261,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
       File::pathSeparatorChar, g[i].filename);
     if (File::Exists(path_name)) {
       File handle(path_name);
-      sprintf(lsize, "%ld""k", bytes_to_k(handle.GetLength()));
+      sprintf(lsize, "%ld""k", bytes_to_k(handle.length()));
     } else {
       sprintf(lsize, "OFL");
     }
@@ -283,7 +283,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
               File::pathSeparatorChar, g[i + 1].filename);
       if (File::Exists(path_name)) {
         File handle(path_name);
-        sprintf(rsize, "%ld", bytes_to_k(handle.GetLength()));
+        sprintf(rsize, "%ld", bytes_to_k(handle.length()));
         strcat(rsize, "k");
       } else {
         sprintf(rsize, "OFL");
@@ -448,7 +448,7 @@ void gfile_sec(int sn) {
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {
-              auto lFileSize = file.GetLength();
+              auto lFileSize = file.length();
               file.Close();
               bool sent = false;
               abort = false;

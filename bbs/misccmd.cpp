@@ -69,7 +69,7 @@ void kill_old_email() {
     bout << "\r\nNo mail.\r\n";
     return;
   }
-  auto max = static_cast<int>(pFileEmail->GetLength() / sizeof(mailrec));
+  auto max = static_cast<int>(pFileEmail->length() / sizeof(mailrec));
   int cur = 0;
   if (forward) {
     cur = max - 1;
@@ -102,7 +102,7 @@ void kill_old_email() {
         bout.Color(a()->GetMessageColor());
 
         if (m.tosys == 0) {
-          a()->users()->ReadUser(&user, m.touser);
+          a()->users()->readuser(&user, m.touser);
           string tempName = a()->names()->UserName(a()->usernum);
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
               && ((getslrec(a()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
@@ -166,7 +166,7 @@ void kill_old_email() {
           delete_email_file->Seek(cur * sizeof(mailrec), File::Whence::begin);
           delete_email_file->Read(&m1, sizeof(mailrec));
           if (memcmp(&m, &m1, sizeof(mailrec)) == 0) {
-            delmail(delete_email_file.get(), cur);
+            delmail(*delete_email_file.get(), cur);
             bool found = false;
             if (m.status & status_file) {
               File fileAttach(a()->config()->datadir(), ATTACH_DAT);
@@ -272,7 +272,7 @@ void list_users(int mode) {
   a()->status_manager()->RefreshStatusCache();
 
   File userList(a()->config()->datadir(), USER_LST);
-  int nNumUserRecords = a()->users()->GetNumberOfUserRecords();
+  int nNumUserRecords = a()->users()->num_user_records();
 
   for (int i = 0; (i < nNumUserRecords) && !abort && !hangup; i++) {
     a()->usernum = 0;
@@ -319,7 +319,7 @@ void list_users(int mode) {
     }
 
     int user_number = (bSortByUserNumber) ? i + 1 : a()->names()->names_vector()[i].number;
-    a()->users()->ReadUser(&user, user_number);
+    a()->users()->readuser(&user, user_number);
     read_qscn(user_number, qsc, false);
     changedsl();
     bool in_qscan = (qsc_q[a()->current_user_sub().subnum / 32] & (1L <<

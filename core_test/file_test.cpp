@@ -105,7 +105,7 @@ TEST(FileTest, Length_Open) {
     File file(path);
     ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
     ASSERT_EQ(static_cast<long>(kHelloWorld.size()),
-    		  file.GetLength());
+    		  file.length());
 }
 
 TEST(FileTest, Length_NotOpen) {
@@ -114,7 +114,7 @@ TEST(FileTest, Length_NotOpen) {
     string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     File file(path);
     ASSERT_EQ(static_cast<long>(kHelloWorld.size()),
-    		  file.GetLength());
+    		  file.length());
 }
 
 TEST(FileTest, IsDirectory_NotOpen) {
@@ -176,12 +176,12 @@ TEST(FileTest, GetName) {
   ASSERT_EQ(kFileName, file.GetName());
 }
 
-TEST(FileTest, GetParent) {
+TEST(FileTest, parent) {
   static const string kFileName = this->test_info_->name();
   FileHelper helper;
   string path = helper.CreateTempFile(kFileName, "Hello World");
   File file(path);
-  ASSERT_EQ(helper.TempDir(), file.GetParent());
+  ASSERT_EQ(helper.TempDir(), file.parent());
 }
 
 TEST(FileTest, EnsureTrailingSlash) {
@@ -284,7 +284,7 @@ TEST(FileTest, RealPath_Same) {
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
   string realpath;
-  ASSERT_TRUE(File::RealPath(path, &realpath));
+  ASSERT_TRUE(File::realpath(path, &realpath));
   EXPECT_EQ(path, realpath);
 }
 
@@ -295,7 +295,7 @@ TEST(FileTest, RealPath_Different) {
 
   string realpath;
   // Add an extra ./ into the path.
-  ASSERT_TRUE(File::RealPath(StrCat(helper.TempDir(), File::pathSeparatorString, ".", File::pathSeparatorString, kFileName), &realpath));
+  ASSERT_TRUE(File::realpath(StrCat(helper.TempDir(), File::pathSeparatorString, ".", File::pathSeparatorString, kFileName), &realpath));
   EXPECT_EQ(path, realpath);
 }
 
