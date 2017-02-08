@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "init/user_editor.h"
 
-#include <curses.h>
 #include <cmath>
 #include <cstdint>
 #include <ctime>
@@ -28,11 +27,12 @@
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
-#include "localui/listbox.h"
 #include "init/init.h"
-#include "localui/input.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+#include "localui/wwiv_curses.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 

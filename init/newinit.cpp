@@ -31,8 +31,6 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include <curses.h>
-
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/textfile.h"
@@ -40,10 +38,11 @@
 #include "core/wwivport.h"
 #include "init/archivers.h"
 #include "init/init.h"
-#include "localui/input.h"
-#include "localui/ui_win.h"
 #include "init/wwivinit.h"
 #include "init/utility.h"
+#include "localui/wwiv_curses.h"
+#include "localui/input.h"
+#include "localui/ui_win.h"
 
 #include "sdk/datetime.h"
 #include "sdk/subxtr.h"

@@ -26,11 +26,10 @@
 
 #include "core/strings.h"
 #include "init/init.h"
+#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
-
-#include <curses.h>
 
 using std::unique_ptr;
 using std::string;

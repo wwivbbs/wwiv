@@ -33,12 +33,8 @@
 #include <io.h>
 #endif
 #include <sys/stat.h>
-#include <curses.h>
 
 #include "bbs/keycodes.h"
-#include "init/init.h"
-#include "localui/input.h"
-#include "localui/listbox.h"
 #include "core/log.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
@@ -47,10 +43,14 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/wwivport.h"
+#include "init/init.h"
 #include "init/subacc.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
 #include "init/subacc.h"
+#include "localui/wwiv_curses.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 #include "sdk/filenames.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/networks.h"

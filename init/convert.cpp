@@ -22,7 +22,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <curses.h>
+#include "localui/wwiv_curses.h"
 #include <fcntl.h>
 #include <memory>
 #ifdef _WIN32

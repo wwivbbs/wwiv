@@ -19,7 +19,7 @@
 #include "init/archivers.h"
 
 #include <cmath>
-#include <curses.h>
+#include "localui/wwiv_curses.h"
 #include <cstdint>
 #include <cstring>
 #include <fcntl.h>

@@ -28,12 +28,10 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "init/init.h"
-#include "localui/input.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
-
-// Make sure it's after windows.h
-#include <curses.h>
+#include "localui/wwiv_curses.h"
+#include "localui/input.h"
 
 using std::unique_ptr;
 using std::string;

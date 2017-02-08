@@ -16,75 +16,14 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_BBS_WWIV_WINDOWS_H__
-#define __INCLUDED_BBS_WWIV_WINDOWS_H__
-
-// Wrapper header file for includibng windows.h from wwiv.  This sets all of
-// the numerous #defines to remove much of the windows header files since the
-// surface area used by wwiv is tiny.
-
-#ifdef _WIN32
+#ifndef __INCLUDED_LOCALUI_CURSES_H__
+#define __INCLUDED_LOCALUI_CURSES_H__
 
 #ifdef MOUSE_MOVED
 #undef MOUSE_MOVED
 #endif  // MOUSE_MOVED
 
-#ifdef CY
-#undef CY
-#endif
 
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define NOATOM
-#define NOCLIPBOARD
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#define NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOCRYPT
-#define WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-#include <windows.h>
+#include <curses.h>
 
-#ifdef min
-#undef min
-#endif  // min
-
-#ifdef max
-#undef max
-#endif  // max
-
-#ifdef CopyFile
-#undef CopyFile
-#endif  // CopyFile
-
-#ifdef MOUSE_MOVED
-#undef MOUSE_MOVED
-#endif  // MOUSE_MOVED
-
-#ifdef CY
-#undef CY
-#endif
-
-#endif // _WIN32
-
-#endif  // __INCLUDED_BBS_WWIV_WINDOWS_H__
+#endif  // __INCLUDED_LOCALUI_CURSES_H__

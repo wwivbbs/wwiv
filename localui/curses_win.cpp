@@ -23,8 +23,8 @@
 #include <sstream>
 #include <string>
 
-#include <curses.h>
 #include "core/strings.h"
+#include "localui/wwiv_curses.h"
 #include "localui/curses_win.h"
 
 using std::string;

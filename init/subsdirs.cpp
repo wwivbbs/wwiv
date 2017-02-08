@@ -17,7 +17,6 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdlib>
-#include <curses.h>
 #include <fcntl.h>
 #include <memory>
 #include <string>
@@ -32,9 +31,10 @@
 #include "core/file.h"
 #include "init/wwivinit.h"
 #include "init/init.h"
-#include "localui/input.h"
 #include "init/subacc.h"
 #include "init/utility.h"
+#include "localui/wwiv_curses.h"
+#include "localui/input.h"
 #include "sdk/filenames.h"
 
 static const int MAX_SUBS_DIRS = 4096;

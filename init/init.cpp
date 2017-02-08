@@ -65,6 +65,7 @@
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
+#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"

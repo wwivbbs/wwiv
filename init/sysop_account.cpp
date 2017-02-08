@@ -44,14 +44,13 @@
 #include "init/utility.h"
 #include "init/wwivinit.h"
 #include "init/subacc.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
-
-#include <curses.h>
 
 using std::string;
 using std::unique_ptr;

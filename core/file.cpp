@@ -19,7 +19,7 @@
 #include "core/file.h"
 #ifdef _WIN32
 // Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "bbs/wwiv_windows.h"
+#include "core/wwiv_windows.h"
 
 #include "Shlwapi.h"
 #endif  // _WIN32

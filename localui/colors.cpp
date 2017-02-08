@@ -24,8 +24,7 @@
 #include <sstream>
 
 #include "core/strings.h"
-
-#include <curses.h>
+#include "localui/wwiv_curses.h"
 
 SchemeDescription::SchemeDescription(SchemeId scheme, int f, int b, bool bold)
   : scheme_(scheme), f_(f), b_(b), bold_(bold) {}

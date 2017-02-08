@@ -19,7 +19,6 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <curses.h>
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
@@ -30,14 +29,15 @@
 #include <string>
 #include <sys/stat.h>
 
-#include "init/init.h"
-#include "localui/input.h"
-#include "localui/listbox.h"
 #include "bbs/wconstants.h"
-#include "init/wwivinit.h"
+#include "init/init.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "init/utility.h"
+#include "init/wwivinit.h"
+#include "localui/wwiv_curses.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 
 using std::string;
 using std::vector;

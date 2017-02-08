@@ -22,7 +22,7 @@
 
 #include <cstring>
 #include <string>
-#include "bbs/wwiv_windows.h"
+#include "core/wwiv_windows.h"
 #include "core/wwivport.h"
 
 /**

@@ -141,6 +141,7 @@
     <ClInclude Include="wfndfile.h" />
     <ClInclude Include="wwivassert.h" />
     <ClInclude Include="wwivport.h" />
+    <ClInclude Include="wwiv_windows.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\deps\cl342\crypt32.vcxproj">

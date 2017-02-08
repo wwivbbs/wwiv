@@ -19,7 +19,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <curses.h>
+#include "localui/wwiv_curses.h"
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>

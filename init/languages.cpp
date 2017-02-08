@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "init/languages.h"
 
-#include <curses.h>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
@@ -41,6 +40,7 @@
 #include "init/init.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/filenames.h"

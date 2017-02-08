@@ -93,6 +93,7 @@
     <ClInclude Include="listbox.h" />
     <ClInclude Include="stdio_win.h" />
     <ClInclude Include="ui_win.h" />
+    <ClInclude Include="wwiv_curses.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="colors.cpp" />

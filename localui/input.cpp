@@ -21,7 +21,6 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
-#include <curses.h>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
@@ -36,6 +35,7 @@
 #include "bbs/wconstants.h" 
 #include "core/file.h"
 #include "core/strings.h"
+#include "localui/wwiv_curses.h"
 #include "localui/curses_io.h"
 #include "localui/ui_win.h"
 #include "localui/curses_win.h"

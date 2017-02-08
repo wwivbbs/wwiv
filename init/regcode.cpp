@@ -20,8 +20,7 @@
 
 #include <memory>
 
-#include <curses.h>
-
+#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "init/init.h"
 #include "init/utility.h"

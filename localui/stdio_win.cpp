@@ -18,15 +18,15 @@
 /**************************************************************************/
 
 #include <algorithm>
+#include <cstdarg>
 #include <cstring>
 #include <iostream>
 #include <sstream>
 #include <string>
 
 #include "core/strings.h"
+#include "localui/wwiv_curses.h"
 #include "localui/stdio_win.h"
-
-#include <curses.h>
 
 using std::string;
 using wwiv::strings::StringPrintf;

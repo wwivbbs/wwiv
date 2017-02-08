@@ -16,7 +16,7 @@
 /*                                                                        */
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "bbs/wwiv_windows.h"
+#include "core/wwiv_windows.h"
 
 #include "bbs/local_io_win32.h"
 

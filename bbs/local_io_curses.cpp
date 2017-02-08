@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "bbs/wwiv_windows.h"
+#include "core/wwiv_windows.h"
 
 #include "bbs/local_io_curses.h"
 
@@ -30,8 +30,6 @@
 #ifdef __unix__
 #include <unistd.h>
 #endif
-
-#include <curses.h>
 
 #include "bbs/asv.h"
 #include "bbs/bbsovl1.h"
@@ -47,6 +45,7 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "localui/wwiv_curses.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 

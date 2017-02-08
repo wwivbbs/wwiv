@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2017, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,40 +16,75 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
-#include "bbs/remote_io.h"
+#ifndef __INCLUDED_CORE_WWIV_WINDOWS_H__
+#define __INCLUDED_CORE_WWIV_WINDOWS_H__
 
-#include <string>
+// Wrapper header file for includibng windows.h from wwiv.  This sets all of
+// the numerous #defines to remove much of the windows header files since the
+// surface area used by wwiv is tiny.
 
-#include "core/scope_exit.h"
-#include "core/strings.h"
-#include "core/wwivport.h"
-#include "bbs/remote_socket_io.h"
-#include "bbs/ssh.h"
+#ifdef _WIN32
 
-// static
-std::string RemoteIO::error_text_;
+#ifdef MOUSE_MOVED
+#undef MOUSE_MOVED
+#endif  // MOUSE_MOVED
 
-const std::string RemoteIO::GetLastErrorText() {
-#if defined ( _WIN32 )
-  char* error_text;
-  wwiv::core::ScopeExit on_exit([&error_text] {LocalFree(error_text);});
-  
-  FormatMessage(
-    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-    FORMAT_MESSAGE_FROM_SYSTEM |
-    FORMAT_MESSAGE_IGNORE_INSERTS,
-    nullptr,
-    GetLastError(),
-    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-    (LPTSTR) &error_text,
-    0,
-    nullptr
-  );
-  error_text_.assign(error_text);
-#else
-  return wwiv::strings::StringPrintf("errno: %d", errno);
+#ifdef CY
+#undef CY
 #endif
-  return error_text_;
-}
+
+#define NOGDICAPMASKS
+#define NOSYSMETRICS
+#define NOMENUS
+#define NOICONS
+#define NOKEYSTATES
+#define NOSYSCOMMANDS
+#define NORASTEROPS
+#define NOATOM
+#define NOCLIPBOARD
+#define NODRAWTEXT
+#define NOKERNEL
+#define NONLS
+#define NOMEMMGR
+#define NOMETAFILE
+#define NOMINMAX
+#define NOOPENFILE
+#define NOSCROLL
+#define NOSERVICE
+#define NOSOUND
+#define NOTEXTMETRIC
+#define NOWH
+#define NOCOMM
+#define NOKANJI
+#define NOHELP
+#define NOPROFILER
+#define NODEFERWINDOWPOS
+#define NOMCX
+#define NOCRYPT
+#define WIN32_LEAN_AND_MEAN
+#define VC_EXTRALEAN
+#include <windows.h>
+
+#ifdef min
+#undef min
+#endif  // min
+
+#ifdef max
+#undef max
+#endif  // max
+
+#ifdef CopyFile
+#undef CopyFile
+#endif  // CopyFile
+
+#ifdef MOUSE_MOVED
+#undef MOUSE_MOVED
+#endif  // MOUSE_MOVED
+
+#ifdef CY
+#undef CY
+#endif
+
+#endif // _WIN32
+
+#endif  // __INCLUDED_CORE_WWIV_WINDOWS_H__

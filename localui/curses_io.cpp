@@ -17,7 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 // Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "bbs/wwiv_windows.h"
+#include "core/wwiv_windows.h"
 
 #include <algorithm>
 #include <cstring>
@@ -29,9 +29,8 @@
 
 #include "core/strings.h"
 #include "core/version.h"
+#include "localui/wwiv_curses.h"
 #include "localui/curses_io.h"
-
-#include <curses.h>
 
 using std::unique_ptr;
 using std::string;

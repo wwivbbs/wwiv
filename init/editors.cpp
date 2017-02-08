@@ -18,7 +18,6 @@
 /**************************************************************************/
 #include "init/editors.h"
 
-#include <curses.h>
 #include <cmath>
 #include <cstdint>
 #include <fcntl.h>
@@ -39,6 +38,7 @@
 #include "core/wwivport.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/filenames.h"

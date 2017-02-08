@@ -20,7 +20,6 @@
 
 #include <memory>
 
-#include <curses.h>
 #include <cstdint>
 #include <cstring>
 #include <fcntl.h>
@@ -37,6 +36,7 @@
 #include "core/wwivport.h"
 #include "init/init.h"
 #include "init/wwivinit.h"
+#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 
 #include "sdk/filenames.h"

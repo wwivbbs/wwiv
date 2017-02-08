@@ -27,8 +27,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "localui/colors.h"
-
-#include <curses.h>
+#include "localui/wwiv_curses.h"
 
 using std::string;
 using namespace wwiv::stl;
