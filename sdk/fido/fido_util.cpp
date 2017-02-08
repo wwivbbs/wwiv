@@ -408,8 +408,8 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
 }
 
 bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net) {
-  auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
-  auto inbounddir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
+  auto net_dir = File::absolute(config.root_directory(), net.dir);
+  auto inbounddir = File::absolute(net_dir, net.fido.inbound_dir);
   return exists_bundle(inbounddir);
 }
 

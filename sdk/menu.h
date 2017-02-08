@@ -120,5 +120,7 @@ struct MenuRec {
 
 #pragma pack(pop)
 
+static_assert(sizeof(MenuRec) == sizeof(MenuHeader), "sizeof(MenuRec) == sizeof(MenuHeader)");
+
 
 #endif  // __INCLUDED_SDK_MENU_H__

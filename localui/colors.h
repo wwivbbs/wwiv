@@ -25,7 +25,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <curses.h>
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
@@ -47,11 +46,10 @@ enum class SchemeId {
 // Describes a color scheme.
 class SchemeDescription {
 public:
-  SchemeDescription(SchemeId scheme, int f, int b, bool bold) 
-    : scheme_(scheme), f_(f), b_(b), bold_(bold) {}
+  SchemeDescription(SchemeId scheme, int f, int b, bool bold);
 
   // Make the unknown scheme magenta on a red background to make it easy to spot.
-  SchemeDescription(): scheme_(SchemeId::UNKNOWN), f_(COLOR_MAGENTA), b_(COLOR_RED), bold_(true) {}
+  SchemeDescription();
 
   // Don't provide a user defined destructor since that will block move semantics
 
@@ -73,7 +71,7 @@ class ColorScheme {
  public:
   ColorScheme();
   virtual ~ColorScheme() {}
-  virtual attr_t GetAttributesForScheme(SchemeId id) const;
+  virtual uint32_t GetAttributesForScheme(SchemeId id) const;
   ColorScheme& operator=(const ColorScheme&) = delete;
   virtual void InitPairs();
 private:

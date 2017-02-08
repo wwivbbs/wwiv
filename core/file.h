@@ -174,12 +174,12 @@ class File {
   static bool set_current_directory(const std::string& dir);
   static void FixPathSeparators(std::string* path);
   static std::string FixPathSeparators(const std::string& path);
-  static void MakeAbsolutePath(const std::string& base, std::string* relative);
-  static std::string MakeAbsolutePath(const std::string& base, const std::string& relative);
-  static bool IsAbsolutePath(const std::string& path);
-  static bool IsRelativePath(const std::string& path) { return !IsAbsolutePath(path); }
+  static void absolute(const std::string& base, std::string* relative);
+  static std::string absolute(const std::string& base, const std::string& relative);
+  static bool is_absolute(const std::string& path);
+  static bool is_relative(const std::string& path) { return !is_absolute(path); }
 
-  static bool realpath(const std::string& path, std::string* resolved);
+  static bool canonical(const std::string& path, std::string* resolved);
   static bool mkdir(const std::string& path);
   static bool mkdirs(const std::string& path);
 

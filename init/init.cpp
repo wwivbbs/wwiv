@@ -112,8 +112,8 @@ static bool CreateConfigOvr(const string& bbsdir) {
     StringReplace(&temp_directory, "%n", instance_num_string);
     StringReplace(&batch_directory, "%n", instance_num_string);
 
-    File::MakeAbsolutePath(bbsdir, &temp_directory);
-    File::MakeAbsolutePath(bbsdir, &batch_directory);
+    File::absolute(bbsdir, &temp_directory);
+    File::absolute(bbsdir, &batch_directory);
 
     File::EnsureTrailingSlash(&temp_directory);
     File::EnsureTrailingSlash(&batch_directory);

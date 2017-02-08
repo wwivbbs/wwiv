@@ -436,7 +436,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir)
   };
   if (n.type == network_type_t::ftn) {
-    auto net_dir = File::MakeAbsolutePath(config.root_directory(), n.dir);
+    auto net_dir = File::absolute(config.root_directory(), n.dir);
     items.add(new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", 76, n));
     items.add(new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", 76, config, n));
   }

@@ -366,16 +366,16 @@ std::string File::FixPathSeparators(const std::string& path) {
 }
 
 // static
-void File::MakeAbsolutePath(const string& base, string* relative) {
-  if (!File::IsAbsolutePath(*relative)) {
+void File::absolute(const string& base, string* relative) {
+  if (!File::is_absolute(*relative)) {
     File dir(base, *relative);
     relative->assign(dir.full_pathname());
   }
 }
 
 // static 
-string File::MakeAbsolutePath(const std::string& base, const std::string& relative) {
-  if (File::IsAbsolutePath(relative)) {
+string File::absolute(const std::string& base, const std::string& relative) {
+  if (File::is_absolute(relative)) {
     return relative;
   }
   File dir(base, relative);
@@ -383,7 +383,7 @@ string File::MakeAbsolutePath(const std::string& base, const std::string& relati
 }
 
 // static
-bool File::IsAbsolutePath(const string& path) {
+bool File::is_absolute(const string& path) {
   if (path.empty()) {
     return false;
   }

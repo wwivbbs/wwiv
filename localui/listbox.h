@@ -25,7 +25,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-#include <curses.h>
 
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"

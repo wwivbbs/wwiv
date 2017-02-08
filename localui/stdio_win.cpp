@@ -23,9 +23,10 @@
 #include <sstream>
 #include <string>
 
-#include "curses.h"
 #include "core/strings.h"
 #include "localui/stdio_win.h"
+
+#include <curses.h>
 
 using std::string;
 using wwiv::strings::StringPrintf;
@@ -34,7 +35,7 @@ int StdioWindow::GetChar() const {
   return std::cin.get();
 }
 
-void StdioWindow::Putch(unsigned char ch) {
+void StdioWindow::Putch(uint32_t ch) {
   std::cout << ch;
 }
 

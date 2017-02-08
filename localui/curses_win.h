@@ -21,7 +21,6 @@
 
 #include <map>
 #include <string>
-#include <curses.h>
 #include "localui/colors.h"
 #include "localui/ui_win.h"
 
@@ -40,26 +39,26 @@ class CursesWindow : public UIWindow {
 
   void SetTitle(const std::string& title);
 
-  void Bkgd(chtype ch) override { wbkgd(window_, ch); }
-  int RedrawWin() override { return redrawwin(window_); }
-  int TouchWin() override { return touchwin(window_); }
-  int Refresh() override { return wrefresh(window_); }
-  int Move(int y, int x) override { return wmove(window_, y, x); }
-  int GetcurX() const override { return getcurx(window_); }
-  int GetcurY() const override { return getcury(window_); }
-  int Clear() override { return wclear(window_); }
-  int Erase() override { return werase(window_); }
-  int GetChar() const override;
-  int AttrSet(chtype attrs) override { return wattrset(window_, attrs); }
-  int Keypad(bool b) override { return keypad(window_, b); }
-  int GetMaxX() const override { return getmaxx(window_); }
-  int GetMaxY() const override { return getmaxy(window_); }
-  int ClrtoEol() override { return wclrtoeol(window_); }
-  int AttrGet(attr_t* a, short* c) const override { return wattr_get(window_, a, c, nullptr); }
-  int Box(chtype vert_ch, chtype horiz_ch) override { return box(window_, vert_ch, horiz_ch); }
+  void Bkgd(uint32_t ch) override;
+  int RedrawWin() override;
+  int TouchWin() override;
+  int Refresh() override;
+  int Move(int y, int x) override;
+  int GetcurX() const override;
+  int GetcurY() const override;
+  int Clear() override;
+  int Erase() override;
+  int AttrSet(uint32_t attrs) override;
+  int Keypad(bool b) override;
+  int GetMaxX() const override;
+  int GetMaxY() const override;
+  int ClrtoEol() override;
+  int AttrGet(uint32_t* a, short* c) const override;
+  int Box(uint32_t vert_ch, uint32_t horiz_ch) override;
 
+  int GetChar() const override;
   void GotoXY(int x, int y) override;
-  void Putch(unsigned char ch) override;
+  void Putch(uint32_t ch) override;
   void Puts(const std::string& text) override;
   void PutsXY(int x, int y, const std::string& text) override;
   void Printf(const char* format, ...) override;
@@ -67,7 +66,7 @@ class CursesWindow : public UIWindow {
 
   void SetColor(SchemeId id) override;
 
-  WINDOW* window() const { return window_; }
+  void* window() const { return window_; }
   CursesWindow* parent() const { return parent_; }
   ColorScheme* color_scheme() const { return color_scheme_; }
   SchemeId current_scheme_id() const { return current_scheme_id_; }
@@ -76,7 +75,7 @@ class CursesWindow : public UIWindow {
 
 
 private:
-  WINDOW* window_;
+  void* window_;
   CursesWindow* parent_;
   ColorScheme* color_scheme_;
   SchemeId current_scheme_id_;

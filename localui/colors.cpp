@@ -25,11 +25,20 @@
 
 #include "core/strings.h"
 
+#include <curses.h>
+
+SchemeDescription::SchemeDescription(SchemeId scheme, int f, int b, bool bold)
+  : scheme_(scheme), f_(f), b_(b), bold_(bold) {}
+
+SchemeDescription::SchemeDescription() 
+  : scheme_(SchemeId::UNKNOWN), f_(COLOR_MAGENTA), b_(COLOR_RED), bold_(true) {
+}
+
 ColorScheme::ColorScheme() : scheme_(LoadColorSchemes()) {
   InitPairs();
 }
 
-attr_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
+uint32_t ColorScheme::GetAttributesForScheme(SchemeId id) const {
   const SchemeDescription& s = scheme_.at(id);
   attr_t attr = COLOR_PAIR(s.color_pair());
   if (s.bold()) {

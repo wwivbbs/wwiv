@@ -295,7 +295,6 @@ void add_list(int *pnUserNumber, int *numu, int maxu, int allowdup) {
 void slash_e() {
   int user_number[MAX_LIST], numu, i, i1;
   char s[81], ch, *sss;
-  bool bFound = false;
 
   mml_s = nullptr;
   mml_started = 0;

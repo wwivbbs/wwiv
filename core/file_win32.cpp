@@ -143,7 +143,7 @@ bool File::Move(const std::string& sourceFileName, const std::string& destFileNa
   return ::MoveFileA(sourceFileName.c_str(), destFileName.c_str()) ? true : false;
 }
 
-bool File::realpath(const std::string& path, std::string* resolved) {
+bool File::canonical(const std::string& path, std::string* resolved) {
   const int BUFSIZE = 4096;
   CHAR buffer[BUFSIZE];
   CHAR** lppPart = { nullptr };

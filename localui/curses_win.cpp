@@ -23,7 +23,7 @@
 #include <sstream>
 #include <string>
 
-#include "curses.h"
+#include <curses.h>
 #include "core/strings.h"
 #include "localui/curses_win.h"
 
@@ -34,6 +34,7 @@ static constexpr size_t VSN_BUFFER_SIZE = 1024;
 
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
   : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme), current_scheme_id_(SchemeId::UNKNOWN) {
+  WINDOW* window = nullptr;
   if (parent != nullptr) {
     if (begin_x == -1) {
       begin_x = (parent->GetMaxX() - ncols) / 2;
@@ -41,21 +42,25 @@ CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int 
     if (begin_y == -1) {
       begin_y = (parent->GetMaxY() - nlines) / 2;
     }
-    window_ =  newwin(nlines, ncols, begin_y + getbegy(parent->window()), 
-      begin_x + getbegx(parent->window()));
+    auto* pw = reinterpret_cast<WINDOW*>(parent->window());
+    window =  newwin(nlines, ncols, begin_y + getbegy(pw),
+      begin_x + getbegx(pw));
   } else {
     if (begin_x == -1) { begin_x = 0; }
     if (begin_y == -1) { begin_y = 0; }
-    window_ = newwin(nlines, ncols, begin_y, begin_x);
+    window = newwin(nlines, ncols, begin_y, begin_x);
   }
-  keypad(window_, true);
-  werase(window_);
-  touchwin(window_);
+  window_ = window;
+
+  keypad(window, true);
+  werase(window);
+  touchwin(window);
   Refresh();
 }
 
 CursesWindow::~CursesWindow() {
-  delwin(window_);
+  auto* w = reinterpret_cast<WINDOW*>(window_);
+  delwin(w);
   if (parent_) {
     parent_->RedrawWin();
     parent_->Refresh();
@@ -79,9 +84,28 @@ void CursesWindow::SetTitle(const std::string& title) {
   SetColor(saved_scheme);
 }
 
+void CursesWindow::Bkgd(uint32_t ch) { wbkgd(reinterpret_cast<WINDOW*>(window_), ch); }
+int CursesWindow::RedrawWin() { return redrawwin(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::TouchWin() { return touchwin(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::Refresh() { return wrefresh(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::Move(int y, int x) { return wmove(reinterpret_cast<WINDOW*>(window_), y, x); }
+int CursesWindow::GetcurX() const { return getcurx(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::GetcurY() const { return getcury(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::Clear() { return wclear(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::Erase() { return werase(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::AttrSet(uint32_t attrs) { return wattrset(reinterpret_cast<WINDOW*>(window_), attrs); }
+int CursesWindow::Keypad(bool b) { return keypad(reinterpret_cast<WINDOW*>(window_), b); }
+int CursesWindow::GetMaxX() const { return getmaxx(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::GetMaxY() const { return getmaxy(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::ClrtoEol() { return wclrtoeol(reinterpret_cast<WINDOW*>(window_)); }
+int CursesWindow::AttrGet(uint32_t* a, short* c) const { 
+  return wattr_get(reinterpret_cast<WINDOW*>(window_), (attr_t*)a, c, nullptr); 
+}
+int CursesWindow::Box(uint32_t vert_ch, uint32_t horiz_ch) { return box(reinterpret_cast<WINDOW*>(window_), vert_ch, horiz_ch); }
+
 int CursesWindow::GetChar() const {
   for (;;) {
-    int ch = wgetch(window_);
+    int ch = wgetch(reinterpret_cast<WINDOW*>(window_));
     if (ch == KEY_RESIZE) {
       // Since we don't support online window resizing just ignore this
       // but don't return it as a key for the application to (badly) handle.
@@ -103,18 +127,18 @@ void CursesWindow::GotoXY(int x, int y) {
   Refresh();
 }
 
-void CursesWindow::Putch(unsigned char ch) {
-  waddch(window_, ch);
+void CursesWindow::Putch(uint32_t ch) {
+  waddch(reinterpret_cast<WINDOW*>(window_), ch);
   Refresh();
 }
 
 void CursesWindow::Puts(const std::string& text) {
-  waddstr(window_, text.c_str());
+  waddstr(reinterpret_cast<WINDOW*>(window_), text.c_str());
   Refresh();
 }
 
 void CursesWindow::PutsXY(int x, int y, const std::string& text) {
-  mvwaddstr(window_, y, x, text.c_str());
+  mvwaddstr(reinterpret_cast<WINDOW*>(window_), y, x, text.c_str());
 }
 
 /**

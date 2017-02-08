@@ -27,6 +27,7 @@ General Cleanup
 * stop using localIO()->WhereX to determine remote position
 * Try to remove a()->current_net(), pass in the net as much as possible.
 * don't include wwiv_windows.h from any header file.
+* start migrating core::File towards fs::filesystem and fs::path naming.
 
 General Improvements
 ====================
@@ -55,3 +56,37 @@ Closed Questions
 
 1) Guest user account. Is it useful?   - Yes, it just needs to be improved
    and documented.
+
+
+ WWIV ACS System
+ ===============
+ We'll use something like:
+ "SL=100 & AR=A" 
+ "SL>=100|AR=A" 
+ "SL>=50 | R != M"
+ "(SL >= 50 & DSL >= 50) | AR=A"
+
+Non-TG Style Attributes
+=======================
+SL
+DSL
+RESTRICT
+AR
+DAR
+AGE
+USER
+ 
+ Operators
+ =========
+ ^ true
+ % false
+ & and
+ | or
+ != not equals
+ < less than
+ <= less than or equals
+ > greater than
+ >= greater than or equals
+ ( start group
+ ) end group
+

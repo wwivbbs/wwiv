@@ -398,8 +398,8 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   StringReplace(&batch_directory, "%n", instance_num_string);
 
   const string base_dir = GetHomeDir();
-  File::MakeAbsolutePath(base_dir, &batch_directory);
-  File::MakeAbsolutePath(base_dir, &temp_directory);
+  File::absolute(base_dir, &batch_directory);
+  File::absolute(base_dir, &temp_directory);
   File::EnsureTrailingSlash(&temp_directory);
   File::EnsureTrailingSlash(&batch_directory);
 
@@ -444,8 +444,8 @@ bool Application::ReadConfig() {
     return false;
   }
 
-  temp_directory_ = File::MakeAbsolutePath(GetHomeDir(), temp_directory());
-  batch_directory_ = File::MakeAbsolutePath(GetHomeDir(), batch_directory());
+  temp_directory_ = File::absolute(GetHomeDir(), temp_directory());
+  batch_directory_ = File::absolute(GetHomeDir(), batch_directory());
 
   return true;
 }
@@ -652,7 +652,7 @@ void Application::read_gfile() {
 void Application::make_abs_path(char *pszDirectory) {
   string base(GetHomeDir());
   string dir(pszDirectory);
-  File::MakeAbsolutePath(base, &dir);
+  File::absolute(base, &dir);
   strcpy(pszDirectory, dir.c_str());
 }
 

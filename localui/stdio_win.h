@@ -21,7 +21,6 @@
 
 #include <map>
 #include <string>
-#include <curses.h>
 #include "localui/colors.h"
 #include "localui/ui_win.h"
 
@@ -43,7 +42,7 @@ class StdioWindow : public UIWindow {
   // Still used by some curses code
 
   virtual int GetChar() const;
-  virtual void Putch(unsigned char ch);
+  virtual void Putch(uint32_t ch);
   virtual void Puts(const std::string& text);
   virtual void PutsXY(int x, int y, const std::string& text);
   virtual void Printf(const char* format, ...);

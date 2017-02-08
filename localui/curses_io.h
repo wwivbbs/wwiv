@@ -22,7 +22,6 @@
 #include <map>
 #include <memory>
 #include <utility>
-#include <curses.h>
 #include "curses_win.h"
 #include "colors.h"
 
@@ -61,7 +60,7 @@ class CursesIO {
   CursesIO(const CursesIO& copy) = delete;
   virtual ~CursesIO();
 
-  virtual void Cls(chtype background_char = ' ');
+  virtual void Cls(uint32_t background_char = ' ');
   virtual CursesWindow* window() const { return window_.get(); }
   virtual CursesFooter* footer() const { return footer_.get(); }
   virtual CursesWindow* header() const { return header_.get(); }

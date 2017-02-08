@@ -31,7 +31,7 @@
 #include <unistd.h>
 #endif
 
-#include "curses.h"
+#include <curses.h>
 
 #include "bbs/asv.h"
 #include "bbs/bbsovl1.h"
@@ -80,7 +80,8 @@ CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 CursesLocalIO::CursesLocalIO(int num_lines) {
   InitPairs();
   window_.reset(new CursesWindow(nullptr, out->color_scheme(), num_lines, 80, 0, 0));
-  scrollok(window_->window(), true);
+  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  scrollok(w, true);
   window_->Clear();
 }
 
@@ -119,8 +120,9 @@ void CursesLocalIO::Lf() {
   x_ = WhereX();
   y_++;
 
-  if (y_ > GetScreenBottom()) { // GetScreenBottom()) {
-    scroll(window_->window());
+  if (y_ > GetScreenBottom()) {
+    auto* w = reinterpret_cast<WINDOW*>(window_->window());
+    scroll(w);
     y_ = GetScreenBottom();
   }
   window_->GotoXY(x_, y_);
@@ -235,7 +237,8 @@ void CursesLocalIO::savescreen() {
 
   for (int line = 0; line < height; line++) {
     chtype* buf = new chtype[width];
-    mvwinchnstr(window_->window(), line, 0, buf, width);
+    auto* w = reinterpret_cast<WINDOW*>(window_->window());
+    mvwinchnstr(w, line, 0, buf, width);
     saved_screen.push_back(buf);
   }
 }
@@ -243,8 +246,9 @@ void CursesLocalIO::savescreen() {
 void CursesLocalIO::restorescreen() {
   int width = window_->GetMaxX();
   int y = 0;
+  auto* w = reinterpret_cast<WINDOW*>(window_->window());
   for (auto line : saved_screen) {
-    mvwaddchnstr(window_->window(), y++, 0, line, width);
+    mvwaddchnstr(w, y++, 0, line, width);
   }
   window_->Refresh();
 }
@@ -260,7 +264,8 @@ bool CursesLocalIO::KeyPressed() {
   if (last_key_pressed != ERR) {
     return true;
   }
-  nodelay(window_->window(), TRUE);
+  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  nodelay(w, TRUE);
   last_key_pressed = window_->GetChar();
   return last_key_pressed != ERR;
 }
@@ -315,7 +320,8 @@ unsigned char CursesLocalIO::GetChar() {
     last_key_pressed = ERR;
     return static_cast<unsigned char>(ch);
   }
-  nodelay(window_->window(), FALSE);
+  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  nodelay(w, FALSE);
   last_key_pressed = ERR;
   return static_cast<unsigned char>(window_->GetChar());
 }
@@ -332,7 +338,8 @@ void CursesLocalIO::ClrEol() {
 void CursesLocalIO::WriteScreenBuffer(const char *buffer) {
   // TODO(rushfan): Optimize me.
   const char *p = buffer;
-  scrollok(window_->window(), false);
+  auto* w = reinterpret_cast<WINDOW*>(window_->window());
+  scrollok(w, false);
 
   char s[2];
   s[1] = 0;
@@ -343,7 +350,7 @@ void CursesLocalIO::WriteScreenBuffer(const char *buffer) {
 	  PutsXY(x, y, s);
     }
   }
-  scrollok(window_->window(), true);
+  scrollok(w, true);
 }
 
 size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }

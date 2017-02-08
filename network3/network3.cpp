@@ -493,7 +493,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     text << " ** Please fix it.\r\n\n";
   } else {
     text << " [" << daten_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
-    auto nl_path = File::MakeAbsolutePath(net.dir, nodelist);
+    auto nl_path = File::absolute(net.dir, nodelist);
     Nodelist nl(nl_path);
     if (!nl.initialized()) {
       text << " ** Unable to parse nodelist.\r\n";

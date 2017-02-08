@@ -85,7 +85,7 @@ const std::string Config::config_filename() const {
 
 std::string Config::to_abs_path(const char* dir) {
   std::string directory = dir;
-  File::MakeAbsolutePath(root_directory_, &directory);
+  File::absolute(root_directory_, &directory);
   return directory;
 }
 

@@ -347,7 +347,7 @@ int editline(CursesWindow* window, string* s, int len, EditLineMode status, cons
 
 /* editline edits a string, doing I/O to the screen only. */
 int editline(CursesWindow* window, char *s, int len, EditLineMode status, const char *ss) {
-  attr_t old_attr;
+  uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
   int cx = window->GetcurX();
@@ -536,7 +536,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
     max_size = std::max<std::size_t>(max_size, item.size());
   }
 
-  attr_t old_attr;
+  uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
   int cx = window->GetcurX();

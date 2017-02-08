@@ -212,7 +212,7 @@ TEST(FileTest, CurrentDirectory) {
 TEST(FileTest, SetCurrentDirectory) {
   char expected[MAX_PATH];
   getcwd(expected, MAX_PATH);
-  string original_dir = File::current_directory();
+  auto original_dir = File::current_directory();
   ASSERT_STREQ(expected, original_dir.c_str());
 
   FileHelper helper;
@@ -228,7 +228,7 @@ TEST(FileTest, MakeAbsolutePath_Relative) {
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
   string relative(kFileName);
-  File::MakeAbsolutePath(helper.TempDir(), &relative);
+  File::absolute(helper.TempDir(), &relative);
   EXPECT_EQ(path, relative);
 }
 
@@ -237,7 +237,7 @@ TEST(FileTest, MakeAbsolutePath_Relative_Returning) {
   FileHelper helper;
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
-  string relative = File::MakeAbsolutePath(helper.TempDir(), kFileName);
+  string relative = File::absolute(helper.TempDir(), kFileName);
   EXPECT_EQ(path, relative);
 }
 
@@ -247,7 +247,7 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute) {
   const string expected = helper.CreateTempFile(kFileName, "Hello World");
 
   string path(expected);
-  File::MakeAbsolutePath(helper.TempDir(), &path);
+  File::absolute(helper.TempDir(), &path);
   EXPECT_EQ(expected, path);
 }
 
@@ -256,7 +256,7 @@ TEST(FileTest, MakeAbsolutePath_AlreadyAbsolute_Returning) {
   FileHelper helper;
   const string expected = helper.CreateTempFile(kFileName, "Hello World");
 
-  string path = File::MakeAbsolutePath(helper.TempDir(), expected);
+  string path = File::absolute(helper.TempDir(), expected);
   EXPECT_EQ(expected, path);
 }
 
@@ -265,8 +265,8 @@ TEST(FileTest, IsAbsolute) {
   FileHelper helper;
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
-  EXPECT_TRUE(File::IsAbsolutePath(path));
-  EXPECT_FALSE(File::IsAbsolutePath(kFileName));
+  EXPECT_TRUE(File::is_absolute(path));
+  EXPECT_FALSE(File::is_absolute(kFileName));
 }
 
 TEST(FileTest, IsRelative) {
@@ -274,8 +274,8 @@ TEST(FileTest, IsRelative) {
   FileHelper helper;
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
-  EXPECT_TRUE(File::IsRelativePath(kFileName));
-  EXPECT_FALSE(File::IsRelativePath(path));
+  EXPECT_TRUE(File::is_relative(kFileName));
+  EXPECT_FALSE(File::is_relative(path));
 }
 
 TEST(FileTest, RealPath_Same) {
@@ -283,9 +283,9 @@ TEST(FileTest, RealPath_Same) {
   FileHelper helper;
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
-  string realpath;
-  ASSERT_TRUE(File::realpath(path, &realpath));
-  EXPECT_EQ(path, realpath);
+  string canonical;
+  ASSERT_TRUE(File::canonical(path, &canonical));
+  EXPECT_EQ(path, canonical);
 }
 
 TEST(FileTest, RealPath_Different) {
@@ -293,10 +293,10 @@ TEST(FileTest, RealPath_Different) {
   FileHelper helper;
   const string path = helper.CreateTempFile(kFileName, "Hello World");
 
-  string realpath;
+  string canonical;
   // Add an extra ./ into the path.
-  ASSERT_TRUE(File::realpath(StrCat(helper.TempDir(), File::pathSeparatorString, ".", File::pathSeparatorString, kFileName), &realpath));
-  EXPECT_EQ(path, realpath);
+  ASSERT_TRUE(File::canonical(StrCat(helper.TempDir(), File::pathSeparatorString, ".", File::pathSeparatorString, kFileName), &canonical));
+  EXPECT_EQ(path, canonical);
 }
 
 TEST(FileTest, mkdir) {

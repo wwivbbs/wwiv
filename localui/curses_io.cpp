@@ -27,10 +27,11 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "curses.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "localui/curses_io.h"
+
+#include <curses.h>
 
 using std::unique_ptr;
 using std::string;
@@ -161,7 +162,7 @@ CursesIO::~CursesIO() {
 /**
  * Clears the local logical screen
  */
-void CursesIO::Cls(chtype background_char) {
+void CursesIO::Cls(uint32_t background_char) {
   window_->SetColor(SchemeId::NORMAL);
   window_->Bkgd(background_char);
   window_->Clear();

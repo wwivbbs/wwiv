@@ -208,8 +208,8 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
       << "; actual: '" << actual << "; expected: " << expected << "'";
     // Move to BADMSGS
     f.Close();
-    auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
-    string badmsgs_path = File::MakeAbsolutePath(net_dir, net.fido.bad_packets_dir);
+    auto net_dir = File::absolute(config.root_directory(), net.dir);
+    string badmsgs_path = File::absolute(net_dir, net.fido.bad_packets_dir);
     const string dest = FilePath(badmsgs_path, f.GetName());
 
     if (!File::Move(f.full_pathname(), dest)) {
@@ -330,8 +330,8 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
 
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
-  auto net_dir = File::MakeAbsolutePath(config.root_directory(), net.dir);
-  auto tempdir = File::MakeAbsolutePath(net_dir, net.fido.temp_inbound_dir);
+  auto net_dir = File::absolute(config.root_directory(), net.dir);
+  auto tempdir = File::absolute(net_dir, net.fido.temp_inbound_dir);
   File::set_current_directory(tempdir);
 
   // were in the temp dir now.
@@ -405,9 +405,9 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
 
-  string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
-  string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
-  string temp_dir(File::MakeAbsolutePath(net_dir, net.fido.temp_outbound_dir));
+  string net_dir(File::absolute(config.root_directory(), net.dir));
+  string out_dir(File::absolute(net_dir, net.fido.outbound_dir));
+  string temp_dir(File::absolute(net_dir, net.fido.temp_outbound_dir));
   const string ctype = fido_callout.packet_config_for(route_to).compression_type;
 
   if (ctype == "PKT") {
@@ -565,8 +565,8 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
   string temp_dir(net.fido.temp_outbound_dir);
   {
-    string net_dir(File::MakeAbsolutePath(config.root_directory(), net.dir));
-    File::MakeAbsolutePath(net_dir, &temp_dir);
+    string net_dir(File::absolute(config.root_directory(), net.dir));
+    File::absolute(net_dir, &temp_dir);
   }
 
   FidoAddress from_address(net.fido.fido_address);
@@ -812,8 +812,8 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
 
 bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, const fido_packet_config_t& packet_config) {
   FidoAddress orig(net.fido.fido_address);
-  string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
-  string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
+  string net_dir(File::absolute(net_cmdline.config().root_directory(), net.dir));
+  string out_dir(File::absolute(net_dir, net.fido.outbound_dir));
 
   const string floname = flo_name(dest, packet_config.netmail_status);
   const string bsyname = net_node_name(dest, "bsy");
@@ -841,9 +841,9 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
 }
 
 bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline,const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, const fido_packet_config_t& packet_config) {
-  string net_dir(File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir));
-  string out_dir(File::MakeAbsolutePath(net_dir, net.fido.outbound_dir));
-  string netmail_dir(File::MakeAbsolutePath(net_dir, net.fido.netmail_dir));
+  string net_dir(File::absolute(net_cmdline.config().root_directory(), net.dir));
+  string out_dir(File::absolute(net_dir, net.fido.outbound_dir));
+  string netmail_dir(File::absolute(net_dir, net.fido.netmail_dir));
   
   string netmail_filepath = NextNetmailFilePath(netmail_dir);
 
@@ -891,7 +891,7 @@ static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, con
   string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
-  auto net_dir = File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir);
+  auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);
   std::set<FidoAddress> subscribers = ReadFidoSubcriberFile(net_dir, StrCat("n", subtype, ".net"));
   if (subscribers.empty()) {
     LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
@@ -999,8 +999,8 @@ int main(int argc, char** argv) {
 
     if (cmd == "import") {
       const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
-      auto net_dir = File::MakeAbsolutePath(net_cmdline.config().root_directory(), net.dir);
-      auto inbounddir = File::MakeAbsolutePath(net_dir, net.fido.inbound_dir);
+      auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);
+      auto inbounddir = File::absolute(net_dir, net.fido.inbound_dir);
       for (const auto& ext : extensions) {
         import_bundles(net_cmdline.config(), fido_callout, net, inbounddir, StrCat("*.", ext));
 #ifndef _WIN32

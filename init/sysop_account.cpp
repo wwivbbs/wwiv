@@ -51,6 +51,8 @@
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
 
+#include <curses.h>
+
 using std::string;
 using std::unique_ptr;
 using std::vector;

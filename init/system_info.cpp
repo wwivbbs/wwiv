@@ -30,6 +30,8 @@
 #include "init/utility.h"
 #include "init/wwivinit.h"
 
+#include <curses.h>
+
 using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;

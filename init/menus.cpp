@@ -262,7 +262,6 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
   };
 
   auto item0 = menu_items.at(0);
-  CHECK_EQ(sizeof(MenuRec), sizeof(MenuHeader));
   MenuHeader h{};
   memcpy(&h, &item0, sizeof(MenuRec));
   if (!IsEquals(h.szSig, "WWIV430")) {

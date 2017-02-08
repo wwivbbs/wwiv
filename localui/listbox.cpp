@@ -24,11 +24,15 @@
 #include <sstream>
 
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "localui/colors.h"
 
+#include <curses.h>
+
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::stl;
+using namespace wwiv::strings;
 
 static std::vector<HelpItem> StandardHelpItems() {
   return { {"Esc", "Exit"} };
@@ -92,7 +96,7 @@ void ListBox::DrawAllItems() {
 ListBoxResult ListBox::RunDialog() {
   if (selected_ < 0) {
     selected_ = 0;
-  } else if (selected_ >= items_.size()) {
+  } else if (selected_ >= size_int(items_)) {
     selected_ = items_.size();
   }
   // Move window top to furthest possible spot.
