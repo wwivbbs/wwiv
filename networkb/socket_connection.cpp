@@ -64,7 +64,7 @@ namespace net {
 
 namespace {
 
-static const auto SLEEP_MS = milliseconds(100);;
+static const auto SLEEP_MS = milliseconds(100);
 
 bool InitializeSockets() {
 #ifdef _WIN32
@@ -260,7 +260,7 @@ SocketConnection::~SocketConnection() {
 }
 
 template<typename TYPE, std::size_t SIZE = sizeof(TYPE)>
-static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::size_t size = SIZE) {
+static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, std::size_t size = SIZE) {
   auto end = system_clock::now() + d;
   char *p = reinterpret_cast<char*>(data);
   std::size_t total_read = 0;
@@ -295,7 +295,7 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const milliseconds d, std::s
   throw socket_error("unknown error reading from socket.");
 }
 
-int SocketConnection::receive(void* data, const int size, milliseconds d) {
+int SocketConnection::receive(void* data, const int size, duration<double> d) {
   int num_read = read_TYPE<void, 0>(sock_, data, d, size);
   if (open_ && num_read == 0) {
     throw socket_closed_error(StringPrintf("receive: got zero read from socket. expected: ", size));
@@ -303,13 +303,13 @@ int SocketConnection::receive(void* data, const int size, milliseconds d) {
   return num_read;
 }
 
-string SocketConnection::receive(int size, milliseconds d) {
+string SocketConnection::receive(int size, duration<double> d) {
   std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
   int num_read = receive(data.get(), size, d);
   return string(data.get(), num_read);
 }
 
-int SocketConnection::send(const void* data, int size, milliseconds d) {
+int SocketConnection::send(const void* data, int size, duration<double> d) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
   if (open_ && sent != size) {
     LOG(ERROR) << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
@@ -317,7 +317,7 @@ int SocketConnection::send(const void* data, int size, milliseconds d) {
   return size;
 }
 
-uint16_t SocketConnection::read_uint16(milliseconds d) {
+uint16_t SocketConnection::read_uint16(duration<double> d) {
   uint16_t data = 0;
   int num_read = read_TYPE<uint16_t>(sock_, &data, d);
   if (open_ && num_read == 0) {
@@ -326,7 +326,7 @@ uint16_t SocketConnection::read_uint16(milliseconds d) {
   return ntohs(data);
 }
 
-uint8_t SocketConnection::read_uint8(milliseconds d) {
+uint8_t SocketConnection::read_uint8(duration<double> d) {
   uint8_t data = 0;
   int num_read = read_TYPE<uint8_t>(sock_, &data, d);
   if (open_ && num_read == 0) {

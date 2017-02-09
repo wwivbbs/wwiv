@@ -84,14 +84,14 @@ public:
 
 private:
   // Process frames until we time out waiting for a new frame.
-  bool process_frames(std::chrono::milliseconds d);
+  bool process_frames(std::chrono::duration<double> d);
   // Process frames until predicate is satisfied (returns true) or we time out waiting
   // for a new frame.
-  bool process_frames(std::function<bool()> predicate, std::chrono::milliseconds d);
+  bool process_frames(std::function<bool()> predicate, std::chrono::duration<double> d);
  
   bool process_opt(const std::string& opt);
-  bool process_command(int16_t length, std::chrono::milliseconds d);
-  bool process_data(int16_t length, std::chrono::milliseconds d);
+  bool process_command(int16_t length, std::chrono::duration<double> d);
+  bool process_data(int16_t length, std::chrono::duration<double> d);
 
   bool send_command_packet(uint8_t command_id, const std::string& data);
   bool send_data_packet(const char* data, std::size_t size);

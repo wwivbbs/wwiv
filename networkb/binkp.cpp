@@ -47,6 +47,7 @@
 #include "networkb/wfile_transfer_file.h"
 #include "sdk/callout.h"
 #include "sdk/contact.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/fido/fido_address.h"
 
@@ -154,7 +155,7 @@ bool BinkP::process_opt(const std::string& opt) {
   return true;
 }
 
-bool BinkP::process_command(int16_t length, milliseconds d) {
+bool BinkP::process_command(int16_t length, duration<double> d) {
   if (!conn_->is_open()) {
     LOG(INFO) << "       process_frames(returning false, connection is not open.)";
     return false;
@@ -228,7 +229,7 @@ bool BinkP::process_command(int16_t length, milliseconds d) {
   return true;
 }
 
-bool BinkP::process_data(int16_t length, milliseconds d) {
+bool BinkP::process_data(int16_t length, duration<double> d) {
   if (!conn_->is_open()) {
     return false;
   }
@@ -237,7 +238,7 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
       << "RECV:  DATA PACKET; ** unexpected size** len: " 
       << s.size()
       << "; expected: " << length
-      << " duration:" << d.count();
+      << " duration:" << wwiv::sdk::to_string(d);
   if (!current_receive_file_) {
     LOG(ERROR) << "ERROR: Received M_DATA with no current file.";
     return false;
@@ -293,12 +294,12 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
   return true;
 }
 
-bool BinkP::process_frames(milliseconds d) {
-  VLOG(3) << "       process_frames(" << d.count() << ")";
+bool BinkP::process_frames(duration<double> d) {
+  VLOG(3) << "       process_frames(" << wwiv::sdk::to_string(d) << ")";
   return process_frames([&]() -> bool { return false; }, d);
 }
 
-bool BinkP::process_frames(function<bool()> predicate, milliseconds d) {
+bool BinkP::process_frames(function<bool()> predicate, duration<double> d) {
   if (!conn_->is_open()) {
     return false;
   }

@@ -18,11 +18,26 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
+#include <chrono>
 #include <ctime>
+
 #include "sdk/datetime.h"
+
+using namespace std::chrono;
+using namespace wwiv::sdk;
 
 static const time_t t20140704 = 1404460800; // 1404457200;
 
+TEST(DateTime, ToString) {
+  EXPECT_EQ("1ms", to_string(milliseconds(1)));
+  EXPECT_EQ("2ms", to_string(milliseconds(2)));
+
+  EXPECT_EQ("1s 498ms", to_string(milliseconds(1498)));
+
+  EXPECT_EQ("2m 1s 498ms", to_string(milliseconds(121498)));
+
+  EXPECT_EQ("3h 2m 1s 498ms", to_string(milliseconds(10921498)));
+}
 
 // TODO(rushfan): Fix this now that the VM runs in PDT
 #if 0

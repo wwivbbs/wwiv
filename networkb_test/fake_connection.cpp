@@ -80,7 +80,7 @@ std::string FakeBinkpPacket::debug_string() const {
 FakeConnection::FakeConnection() {}
 FakeConnection::~FakeConnection() {}
 
-uint16_t FakeConnection::read_uint16(std::chrono::milliseconds d) {
+uint16_t FakeConnection::read_uint16(std::chrono::duration<double> d) {
   auto predicate = [&]() { 
     std::lock_guard<std::mutex> lock(mu_);
     return !receive_queue_.empty();
@@ -97,7 +97,7 @@ uint16_t FakeConnection::read_uint16(std::chrono::milliseconds d) {
   return header;
 }
 
-uint8_t FakeConnection::read_uint8(std::chrono::milliseconds d) {
+uint8_t FakeConnection::read_uint8(std::chrono::duration<double> d) {
   auto predicate = [&]() { 
     std::lock_guard<std::mutex> lock(mu_);
     return !receive_queue_.empty();
@@ -114,13 +114,13 @@ uint8_t FakeConnection::read_uint8(std::chrono::milliseconds d) {
   return front.command();
 }
 
-int FakeConnection::receive(void* data, int size, milliseconds d) {
+int FakeConnection::receive(void* data, int size, duration<double> d) {
   string s = receive(size, d);
   memcpy(data, s.data(), size);
   return size;
 }
 
-string FakeConnection::receive(int size, milliseconds d) {
+string FakeConnection::receive(int size, duration<double> d) {
   auto predicate = [&]() {
     std::lock_guard<std::mutex> lock(mu_);
     return !receive_queue_.empty();
@@ -135,7 +135,7 @@ string FakeConnection::receive(int size, milliseconds d) {
   return front.data();
 }
 
-int FakeConnection::send(const void* data, int size, std::chrono::milliseconds d) {
+int FakeConnection::send(const void* data, int size, std::chrono::duration<double> d) {
   std::lock_guard<std::mutex> lock(mu_);
   send_queue_.push(FakeBinkpPacket(data, size));
   return size;

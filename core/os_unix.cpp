@@ -23,16 +23,17 @@
 #include "core/strings.h"
 #include "core/file.h"
 
-using std::chrono::milliseconds;
+using namespace std::chrono;
 using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv {
 namespace os {
 
-void sleep_for(milliseconds d) {
+void sleep_for(duration<double> d) {
   // usleep is nanoseconds.
-  usleep (d.count() * 1000);
+  auto ns = duration_cast<nanoseconds>(d);
+  usleep (ns.count());
 }
 
 void sound(uint32_t frequency, std::chrono::milliseconds d) {

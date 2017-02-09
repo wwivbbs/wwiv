@@ -32,12 +32,12 @@ public:
   Connection();
   virtual ~Connection();
 
-  virtual int receive(void* data, int size, std::chrono::milliseconds d) = 0;
-  virtual std::string receive(int size, std::chrono::milliseconds d) = 0;
-  virtual int send(const void* data, int size, std::chrono::milliseconds d) = 0;
+  virtual int receive(void* data, int size, std::chrono::duration<double> d) = 0;
+  virtual std::string receive(int size, std::chrono::duration<double> d) = 0;
+  virtual int send(const void* data, int size, std::chrono::duration<double> d) = 0;
 
-  virtual uint16_t read_uint16(std::chrono::milliseconds d) = 0;
-  virtual uint8_t read_uint8(std::chrono::milliseconds d) = 0;
+  virtual uint16_t read_uint16(std::chrono::duration<double> d) = 0;
+  virtual uint8_t read_uint8(std::chrono::duration<double> d) = 0;
   virtual bool is_open() const = 0;
   virtual bool close() = 0;
 };

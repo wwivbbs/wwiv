@@ -19,6 +19,7 @@
 #ifndef __INCLUDED_SDK_DATETIME_H__
 #define __INCLUDED_SDK_DATETIME_H__
 
+#include <chrono>
 #include <ctime>
 #include <string>
 
@@ -32,6 +33,9 @@ uint32_t time_t_to_daten(time_t t);
 std::string date();
 std::string fulldate();
 std::string times();
+
+/** Displays dd as a human readable time */
+std::string to_string(std::chrono::duration<double> dd);
 
 }
 }

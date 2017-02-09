@@ -828,7 +828,7 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
     } else {
       LOG(ERROR) << "Unable to create BSY file: '" << bsy.full_pathname() << "'. Will try again...";
     }
-    sleep_for(std::chrono::milliseconds((i ^ 2) * 50));
+    wwiv::os::sleep_for(std::chrono::milliseconds((i ^ 2) * 50));
   }
   ScopeExit at_exit([=] { File::Remove(out_dir, bsyname); });
   TextFile flo_file(out_dir, floname, "a+");

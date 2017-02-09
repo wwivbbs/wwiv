@@ -199,7 +199,8 @@ void Contact::ensure_rec_for(const std::string& node) {
   }
 }
 
-void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
+void Contact::add_connect(int n, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
+  auto node = static_cast<uint16_t>(n);
   NetworkContact* c = contact_rec_for(node);
   if (c == nullptr) {
     ensure_rec_for(node);

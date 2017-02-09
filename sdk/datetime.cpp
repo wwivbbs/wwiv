@@ -16,16 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-// Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "sdk/datetime.h"
 
+#include <chrono>
 #include <cstring>
+#include <iomanip>
 #include <ctime>
 #include <string>
+#include <sstream>
 
 #include "core/strings.h"
 
 using std::string;
+
+using namespace std::chrono;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -93,6 +97,43 @@ string times() {
   return wwiv::strings::StringPrintf("%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
 }
 
+std::string to_string(std::chrono::duration<double> dd) {
+  auto ns = duration_cast<nanoseconds>(dd);
+  typedef duration<int, std::ratio<86400>> days;
+  std::ostringstream os;
+  auto d = duration_cast<days>(ns);
+  ns -= d;
+  auto h = duration_cast<hours>(ns);
+  ns -= h;
+  auto m = duration_cast<minutes>(ns);
+  ns -= m;
+  auto s = duration_cast<seconds>(ns);
+  ns -= s;
+  auto ms = duration_cast<milliseconds>(ns);
+  ns -= ms;
+  bool has_one = false;
+  if (d.count() > 0) {
+    os << d.count() << "d";
+    has_one = true;
+  }
+  if (h.count() > 0) {
+    if (has_one) { os << " "; } else { has_one = true; }
+    os << h.count() << "h";
+  }
+  if (m.count() > 0) {
+    if (has_one) { os << " "; } else { has_one = true; }
+    os << m.count() << "m";
+  }
+  if (s.count() > 0) {
+    if (has_one) { os << " "; } else { has_one = true; }
+    os << s.count() << "s";
+  }
+  if (ms.count() > 0) {
+    if (has_one) { os << " "; } else { has_one = true; }
+    os << ms.count() << "ms";
+  }
+  return os.str();
+};
 
 }
 }

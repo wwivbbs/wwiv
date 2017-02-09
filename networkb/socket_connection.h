@@ -52,12 +52,12 @@ public:
   SocketConnection(SOCKET sock, const std::string& host, int port);
   virtual ~SocketConnection();
 
-  int receive(void* data, int size, std::chrono::milliseconds d) override;
-  std::string receive(int size, std::chrono::milliseconds d) override;
-  int send(const void* data, int size, std::chrono::milliseconds d) override;
+  int receive(void* data, int size, std::chrono::duration<double> d) override;
+  std::string receive(int size, std::chrono::duration<double> d) override;
+  int send(const void* data, int size, std::chrono::duration<double> d) override;
 
-  uint16_t read_uint16(std::chrono::milliseconds d) override;
-  uint8_t read_uint8(std::chrono::milliseconds d) override;
+  uint16_t read_uint16(std::chrono::duration<double> d) override;
+  uint8_t read_uint8(std::chrono::duration<double> d) override;
 
   bool is_open() const { return open_; }
   bool close() override;

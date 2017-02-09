@@ -38,6 +38,8 @@ General Improvements
 * use std::chrono::duration<double> vs. milliseconds in core/ for timing.
 * Make sure we compile with /W4 everywhere - that is
   not the case for all network libs
+* Create templatized version of StringToInt(string) that takes the return type.
+  i.e. to_number<uint16_t>(const string&)
 
 Net52
 =====
