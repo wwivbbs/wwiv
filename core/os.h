@@ -32,10 +32,10 @@ namespace os {
 
 // Sleeps for a duration of time d, or until predicate returns true.
 // returns the value of predicate.
-bool wait_for(std::function<bool()> predicate, std::chrono::milliseconds d);
+bool wait_for(std::function<bool()> predicate, std::chrono::duration<double> d);
 
 // Sleeps for a duration of time d
-void sleep_for(std::chrono::milliseconds d);
+void sleep_for(std::chrono::duration<double> d);
 
 // Yields the CPU to other threads or processes.
 void yield();
@@ -44,7 +44,7 @@ void yield();
 std::string os_version_string();
 
 // plays a sound at frequency for duration
-void sound(uint32_t frequency, std::chrono::milliseconds d);
+void sound(uint32_t frequency, std::chrono::duration<double> d);
 
 // returns a random number.
 int random_number(int max_value);

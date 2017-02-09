@@ -41,24 +41,25 @@
 #pragma comment (lib, "DbgHelp.lib")
 
 using std::numeric_limits;
-using std::chrono::milliseconds;
 using std::string;
 using std::stringstream;
+using namespace std::chrono;
 using namespace wwiv::strings;
 
 namespace wwiv {
 namespace os {
 
-void sleep_for(milliseconds d) {
-  int64_t count = d.count();
+void sleep_for(duration<double> d) {
+  auto count = duration_cast<milliseconds>(d).count();
   if (count > numeric_limits<uint32_t>::max()) {
     count = numeric_limits<uint32_t>::max();
   }
   ::Sleep(static_cast<uint32_t>(count));
 }
 
-void sound(uint32_t frequency, std::chrono::milliseconds d) {
-  ::Beep(frequency, static_cast<uint32_t>(d.count()));
+void sound(uint32_t frequency, duration<double> d) {
+  auto count = duration_cast<milliseconds>(d).count();
+  ::Beep(frequency, static_cast<uint32_t>(count));
 }
 
 std::string os_version_string() {

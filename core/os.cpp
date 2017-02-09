@@ -30,13 +30,13 @@
 
 using std::function;
 using std::string;
-using std::chrono::milliseconds;
+using namespace std::chrono;
 using namespace wwiv::strings;
 
 namespace wwiv {
 namespace os {
 
-bool wait_for(function<bool()> predicate, milliseconds d) {
+bool wait_for(function<bool()> predicate, duration<double> d) {
   auto now = std::chrono::steady_clock::now();
   auto end = now + d;
   while (!predicate() && now < end) {

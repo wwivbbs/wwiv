@@ -131,7 +131,7 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
   
   const string port_string = std::to_string(port);
   struct addrinfo* address = nullptr;
-  int result = getaddrinfo(host.c_str(), port_string.c_str(), &hints, &address);
+  int result_addrinfo = getaddrinfo(host.c_str(), port_string.c_str(), &hints, &address);
   for (struct addrinfo* res = address; res != nullptr; res = res->ai_next) {
     SOCKET s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (s == INVALID_SOCKET) {

@@ -233,7 +233,9 @@ bool BinkP::process_data(int16_t length, milliseconds d) {
     return false;
   }
   string s = conn_->receive(length, d);
-  LOG_IF(length != s.size(), ERROR) << "RECV:  DATA PACKET; ** unexpected size** len: " << s.size()
+  LOG_IF(length != static_cast<int16_t>(s.size()), ERROR) 
+      << "RECV:  DATA PACKET; ** unexpected size** len: " 
+      << s.size()
       << "; expected: " << length
       << " duration:" << d.count();
   if (!current_receive_file_) {
@@ -711,7 +713,6 @@ bool BinkP::SendFileData(TransferFile* file) {
   LOG(INFO) << "       SendFileData: " << file->filename();
   long file_length = file->file_size();
   const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
-  long start = 0;
   unique_ptr<char[]> chunk(new char[chunk_size]);
   for (long start = 0; start < file_length; start+=chunk_size) {
     int size = min<int>(chunk_size, file_length - start);
