@@ -33,7 +33,7 @@ TEST(DateTime, ToString) {
   EXPECT_EQ("2ms", to_string(milliseconds(2)));
 
   EXPECT_EQ("1s 498ms", to_string(milliseconds(1498)));
-
+    
   EXPECT_EQ("2m 1s 498ms", to_string(milliseconds(121498)));
 
   EXPECT_EQ("3h 2m 1s 498ms", to_string(milliseconds(10921498)));

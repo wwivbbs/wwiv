@@ -457,7 +457,6 @@ std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type
 }  // namespace strings
 }  // namespace wwiv
 
-
 /**
  * Is the character c a possible color code. (is it #, B, or a digit)
  * @param c The Character to test.
@@ -608,7 +607,7 @@ char *strcasestr(const char *haystack, const char *needle) {
 /** Converts string to uppercase */
 char *strupr(char *s) {
   for (int i = 0; s[i] != 0; i++) {
-    s[i] = to_upper_case<char>(s[i]);
+    s[i] = wwiv::strings::to_upper_case<char>(s[i]);
   }
 
   return s;
@@ -617,7 +616,7 @@ char *strupr(char *s) {
 /** Converts string to lowercase */
 char *strlwr(char *s) {
   for (int i = 0; s[i] != 0; i++) {
-    s[i] = to_lower_case(s[i]);
+    s[i] = wwiv::strings::to_lower_case(s[i]);
   }
 
   return s;
