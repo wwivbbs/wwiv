@@ -753,7 +753,7 @@ int Application::Run(int argc, char *argv[]) {
     string argumentRaw = argv[i];
     if (argumentRaw.length() > 1 && (argumentRaw[0] == '-' || argumentRaw[0] == '/')) {
       string argument = argumentRaw.substr(2);
-      char ch = wwiv::UpperCase<char>(argumentRaw[1]);
+      char ch = to_upper_case<char>(argumentRaw[1]);
       switch (ch) {
       case 'B': {
         // I think this roundtrip here is just to ensure argument is really a number.
@@ -808,7 +808,7 @@ int Application::Run(int argc, char *argv[]) {
         ExitBBSImpl(0, false);
         break;
       case 'X': {
-        char argument2Char = wwiv::UpperCase<char>(argument.at(0));
+        char argument2Char = to_upper_case<char>(argument.at(0));
         if (argument2Char == 'T' || argument2Char == 'S' || argument2Char == 'U') {
           // This more of a hack to make sure the WWIV
           // Server's -Bxxx parameter doesn't hose us.

@@ -460,7 +460,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
         if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
 #ifdef _WIN32
           // Only uppercase filenames on Win32.
-          c = wwiv::UpperCase<unsigned char> (static_cast<unsigned char>(c)); 
+          c = to_upper_case<unsigned char> (static_cast<unsigned char>(c)); 
 #endif  // _WIN32
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
             c = 0;

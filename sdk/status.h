@@ -44,7 +44,6 @@ private:
 
 public:
   WStatus(const std::string& datadir, statusrec_t* pStatusRecord);
-  WStatus(const std::string& datadir);
   ~WStatus();
 
   /** If the caller number variable is using the old (pre 4.2) location, move it to the new location */

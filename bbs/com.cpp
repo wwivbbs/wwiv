@@ -122,7 +122,7 @@ bool yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!hangup) && ((ch = wwiv::UpperCase<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!hangup) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -141,7 +141,7 @@ bool noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!hangup) && ((ch = wwiv::UpperCase<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!hangup) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -158,7 +158,7 @@ char ynq() {
 
   bout.Color(1);
   while (!hangup &&
-         (ch = wwiv::UpperCase<char>(bout.getkey())) != *(YesNoString(true)) &&
+         (ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true)) &&
          ch != *(YesNoString(false)) &&
          ch != *str_quit && ch != RETURN) {
     // NOP
@@ -192,7 +192,7 @@ char onek(const std::string& allowable, bool auto_mpl) {
 char onek_ncr(const std::string& allowable) {
   while (true) {
     CheckForHangup();
-    auto ch = wwiv::UpperCase(bout.getkey());
+    auto ch = to_upper_case(bout.getkey());
     if (contains(allowable, ch)) {
       return ch;
     }

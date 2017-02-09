@@ -32,8 +32,7 @@
 using std::string;
 using std::vector;
 
-using wwiv::UpperCase;
-using wwiv::strings::StrCat;
+using namespace wwiv::strings;
 
 void WWIV_make_abs_cmd(const std::string root, std::string* out) {
   
@@ -53,7 +52,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
 
   if (s1[1] == ':') {
     if (s1[2] != '\\') {
-      _getdcwd(wwiv::UpperCase<char>(s1[0]) - 'A' + 1, s, MAX_PATH);
+      _getdcwd(to_upper_case<char>(s1[0]) - 'A' + 1, s, MAX_PATH);
       if (s[0]) {
         _snprintf(s1, sizeof(s1), "%c:\\%s\\%s", s1[0], s, out->substr(2).c_str());
       } else {

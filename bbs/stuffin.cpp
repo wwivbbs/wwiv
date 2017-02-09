@@ -35,6 +35,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::strings;
 
 const unsigned int GetTimeLeft();
 
@@ -80,7 +81,7 @@ const string stuff_in(const string& commandline, const string& arg1,
   while (iter != end(commandline)) {
     if (*iter == '%') {
       ++iter;
-      char ch = wwiv::UpperCase<char>(*iter);
+      char ch = to_upper_case<char>(*iter);
       switch (ch) {
       // fixed strings
       case '%':

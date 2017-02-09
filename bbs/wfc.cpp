@@ -319,7 +319,7 @@ int WFC::doWFCEvents() {
       a_->ReadCurrentUser(sysop_usernum);
       read_qscn(1, qsc, false);
       a_->set_at_wfc(true);
-      ch = wwiv::UpperCase<char>(io->GetChar());
+      ch = to_upper_case<char>(io->GetChar());
       if (ch == 0) {
         ch = io->GetChar();
         a_->handle_sysop_key(ch);
@@ -604,7 +604,7 @@ int WFC::LocalLogon() {
     ;
 
   if (a_->localIO()->KeyPressed()) {
-    char ch = wwiv::UpperCase<char>(a_->localIO()->GetChar());
+    char ch = to_upper_case<char>(a_->localIO()->GetChar());
     if (ch == 'Y') {
       a_->localIO()->Puts(YesNoString(true));
       bout << wwiv::endl;

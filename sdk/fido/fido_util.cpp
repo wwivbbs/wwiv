@@ -482,7 +482,7 @@ FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std:
     // malformed flo file
     return;
   }
-  char st = tolower(ext.front());
+  char st = to_lower_case(ext.front());
   status_ = static_cast<fido_bundle_status_t>(st);
 
   auto netstr = basename.substr(0, 4);

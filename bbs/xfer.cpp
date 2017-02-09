@@ -596,7 +596,7 @@ void align(char *file_name) {
   strcpy(&(buffer[9]), szExtension);
   strcpy(file_name, buffer);
   for (int i5 = 0; i5 < 12; i5++) {
-    file_name[ i5 ] = wwiv::UpperCase<char>(file_name[ i5 ]);
+    file_name[ i5 ] = to_upper_case<char>(file_name[ i5 ]);
   }
 }
 

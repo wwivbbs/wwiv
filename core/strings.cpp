@@ -569,9 +569,9 @@ void properize(char *text) {
   for (int i = 0; i < wwiv::strings::GetStringLength(text); i++) {
     if ((i == 0) || ((i > 0) && ((text[i - 1] == ' ') || (text[i - 1] == '-') ||
                                  (text[i - 1] == '.')))) {
-      text[i] = wwiv::UpperCase<char>(text[i]);
+      text[i] = wwiv::strings::to_upper_case<char>(text[i]);
     } else {
-      text[i] = wwiv::LowerCase(text[i]);
+      text[i] = wwiv::strings::to_lower_case(text[i]);
     }
   }
 }
@@ -585,9 +585,9 @@ string properize(const string& text) {
   ostringstream os;
   for (auto ch : text) {
     if (last == ' ' || last == '-' || last == '.') {
-      os << wwiv::UpperCase<char>(ch);
+      os << wwiv::strings::to_upper_case<char>(ch);
     } else {
-      os << wwiv::LowerCase<char>(ch);
+      os << wwiv::strings::to_lower_case<char>(ch);
     }
     last = ch;
   }
@@ -608,7 +608,7 @@ char *strcasestr(const char *haystack, const char *needle) {
 /** Converts string to uppercase */
 char *strupr(char *s) {
   for (int i = 0; s[i] != 0; i++) {
-    s[i] = wwiv::UpperCase<char>(s[i]);
+    s[i] = to_upper_case<char>(s[i]);
   }
 
   return s;
@@ -617,7 +617,7 @@ char *strupr(char *s) {
 /** Converts string to lowercase */
 char *strlwr(char *s) {
   for (int i = 0; s[i] != 0; i++) {
-    s[i] = wwiv::LowerCase(s[i]);
+    s[i] = to_lower_case(s[i]);
   }
 
   return s;

@@ -113,8 +113,6 @@ int CursesWindow::GetChar() const {
     }
     return ch;
   }
-  // should never happen.
-  return 0;
 }
 
 void CursesWindow::GotoXY(int x, int y) {

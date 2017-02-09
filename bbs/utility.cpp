@@ -405,7 +405,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     if (event < 128) {
       int x = 0;
       for (const string& menu_item : menu_items) {
-        if (event == wwiv::UpperCase<int>(menu_item[0]) || event == wwiv::LowerCase<int>(menu_item[0])) {
+        if (event == to_upper_case<int>(menu_item[0]) || event == to_lower_case<int>(menu_item[0])) {
           bout.GotoXY(positions[*menu_pos], ypos);
           bout.SystemColor(smc->normal_highlight);
           bout.bputch(menu_items[*menu_pos][0]);

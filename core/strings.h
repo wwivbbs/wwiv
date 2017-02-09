@@ -128,19 +128,19 @@ std::string trim_to_size_ignore_colors(const std::string& orig, std::string::siz
  */
 std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size);
 
+/** Typesafe version of toupper */
+template<class T>
+const T to_upper_case(const T a) {
+  return static_cast<T>(::toupper(a));
+}
+
+/** Typesafe version of tolower */
+template<class T>
+const T to_lower_case(const T a) {
+  return static_cast<T>(::tolower(a));
+}
+
 }  // namespace strings
-
-template<class T>
-const T UpperCase(const T a) {
-  int nRet = ::toupper(a);
-  return static_cast<T>(nRet);
-}
-
-template<class T>
-const T LowerCase(const T a) {
-  int nRet = ::tolower(a);
-  return static_cast<T>(nRet);
-}
 
 }  // namespace wwiv
 

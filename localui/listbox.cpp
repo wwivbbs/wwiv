@@ -47,7 +47,7 @@ ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x,
   for (const auto& item : items) {
     longest_line = std::max<int>(longest_line, item.text().size());
     if (item.hotkey() > 0) {
-      hotkeys_.push_back(toupper(item.hotkey()));
+      hotkeys_.push_back(to_upper_case<char>(item.hotkey()));
     }
   }
   width_ = std::min<int>(max_x, longest_line);

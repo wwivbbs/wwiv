@@ -440,10 +440,10 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, int editor_status,
     } else {
       if (ch > 31) {
         if (editor_status == UPPER_ONLY) {
-          ch = wwiv::UpperCase<unsigned char>(ch);
+          ch = to_upper_case<unsigned char>(ch);
         }
         if (editor_status == SET) {
-          ch = wwiv::UpperCase<unsigned char>(ch);
+          ch = to_upper_case<unsigned char>(ch);
           if (ch != SPACE) {
             bool bLookingForSpace = true;
             for (int i = 0; i < len; i++) {

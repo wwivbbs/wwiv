@@ -37,6 +37,8 @@ General Improvements
   SL DSL AR fields everywhere for menus)
 * cleanup menu system. It's awful.
 * use std::chrono::duration<double> vs. milliseconds in core/ for timing.
+* Make sure we compile with /W4 everywhere - that is
+  not the case for all network libs
 
 Net52
 =====
@@ -58,35 +60,4 @@ Closed Questions
    and documented.
 
 
- WWIV ACS System
- ===============
- We'll use something like:
- "SL=100 & AR=A" 
- "SL>=100|AR=A" 
- "SL>=50 | R != M"
- "(SL >= 50 & DSL >= 50) | AR=A"
-
-Non-TG Style Attributes
-=======================
-SL
-DSL
-RESTRICT
-AR
-DAR
-AGE
-USER
  
- Operators
- =========
- ^ true
- % false
- & and
- | or
- != not equals
- < less than
- <= less than or equals
- > greater than
- >= greater than or equals
- ( start group
- ) end group
-

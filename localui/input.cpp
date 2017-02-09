@@ -234,7 +234,7 @@ static void winput_password(CursesWindow* dialog, string *output, int max_length
       break;
     default:
       if (ch > 31 && curpos < max_length) {
-        s[curpos++] = toupper(ch);
+        s[curpos++] = to_upper_case<char>(ch);
         dialog->Putch(ACS_DIAMOND);
       }
       break;
@@ -293,7 +293,7 @@ std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
 
   CHECK(window->IsGUI()) << "dialog_input_string needs a GUI.";
   string s;
-  int return_code = editline(static_cast<CursesWindow*>(dialog.get()), &s, max_length, EditLineMode::ALL, "");
+  editline(static_cast<CursesWindow*>(dialog.get()), &s, max_length, EditLineMode::ALL, "");
   return s;
 }
 
@@ -306,22 +306,26 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
   dialog->Refresh();
 
   string s;
-  int return_code = editline(dialog.get(), &s, num_digits, EditLineMode::NUM_ONLY, "");
+  editline(dialog.get(), &s, num_digits, EditLineMode::NUM_ONLY, "");
   if (s.empty()) {
-    return 0;
+    return min_value;
   }
   try {
-    return std::stoi(s);
+    auto v = std::stoi(s);
+    if (v < min_value) {
+      return min_value;
+    }
+    return v;
   } catch (std::invalid_argument&) { 
     // No conversion possible.
-    return 0;
+    return min_value;
   }
 }
 
 char onek(CursesWindow* window, const char *pszKeys) {
   char ch = 0;
 
-  while (!strchr(pszKeys, ch = toupper(window->GetChar()))) {
+  while (!strchr(pszKeys, ch = to_upper_case<char>(window->GetChar()))) {
     // NOP
   }
   return ch;
@@ -430,10 +434,10 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
     default:
       if (ch > 31) {
         if (status == EditLineMode::UPPER_ONLY) {
-          ch = toupper(ch);
+          ch = to_upper_case<char>(ch);
         }
         if (status == EditLineMode::SET) {
-          ch = toupper(ch);
+          ch = to_upper_case<char>(ch);
           if (ch != ' ')  {
             bool bLookingForSpace = true;
             for (int i = 0; i < len; i++) {
@@ -461,11 +465,11 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
             for (int i = len - 1; i > pos; i--) {
               s[i] = s[i - 1];
             }
-            s[pos++] = ch;
+            s[pos++] = static_cast<char>(ch);
             window->PutsXY(cx, cy, s);
             window->GotoXY(cx + pos, cy);
           }  else  {
-            s[pos++] = ch;
+            s[pos++] = static_cast<char>(ch);
             window->Putch(ch);
           }
         }
@@ -541,7 +545,6 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
   window->AttrGet(&old_attr, &old_pair);
   int cx = window->GetcurX();
   int cy = window->GetcurY();
-  int curatr = 0x1f;
   window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
   bool done = false;

@@ -106,7 +106,7 @@ uint32_t WWIVMessageAreaLastRead::last_read(int user_number) {
   return wapi_->last_read(message_area_number_);
 }
 
-bool WWIVMessageAreaLastRead::set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) {
+bool WWIVMessageAreaLastRead::set_last_read(int, uint32_t last_read, uint32_t highest_read) {
   if (message_area_number_ < 0) {
     // Fake area - nothing to do.
     return true;
@@ -119,13 +119,13 @@ bool WWIVMessageAreaLastRead::Close() {
   return false;
 }
 
-WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t wwiv_num_version, uint32_t num_messages)
+WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version, uint32_t num_messages)
   : header_(subfile_header_t()) {
   strcpy(header_.signature, "WWIV\x1A");
   header_.revision = 1;
-  header_.wwiv_version = wwiv_num_version;
+  header_.wwiv_version = expected_wwiv_num_version;
   header_.daten_created = static_cast<uint32_t>(time(nullptr));
-  header_.active_message_count = num_messages;
+  header_.active_message_count = static_cast<uint16_t>(num_messages);
 }
 
 WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename, int subnum)
@@ -169,7 +169,7 @@ void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader& header) {
   // Not implemented on wwiv.
 }
 
-int WWIVMessageArea::FindUserMessages(const std::string& user_name) {
+int WWIVMessageArea::FindUserMessages(const std::string&) {
   // Not implemented on wwiv.
   return 0;
 }
@@ -477,7 +477,7 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
   // decrement number of posts.
   // TODO(rushfan): Should we check these?
   --header.owneruser;
-  header.owneruser = num_messages - 1;
+  header.owneruser = static_cast<uint16_t>(std::max(0, num_messages - 1));
   sub.Write(0, &header);
 
   return true;

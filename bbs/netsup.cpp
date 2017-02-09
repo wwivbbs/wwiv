@@ -923,7 +923,7 @@ static std::pair<uint16_t, int> ansicallout() {
 
   bool done = false;
   do {
-    ch = wwiv::UpperCase<char>(static_cast<char>(a()->localIO()->GetChar()));
+    ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
     switch (ch) {
     case ' ':
     case RETURN:
@@ -939,7 +939,7 @@ static std::pair<uint16_t, int> ansicallout() {
       break;
     case -32: // (224) I don't know MS's CRT returns this on arrow keys....
     case 0:
-      ch = wwiv::UpperCase<char>(static_cast<char>(a()->localIO()->GetChar()));
+      ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
       switch (ch) {
       case RARROW:                        // right arrow
         if ((pos < size_int(entries) - 1) && (x < 63)) {
@@ -1107,7 +1107,7 @@ void force_callout(bool prompt_for_retries) {
   Contact contact(a()->current_net(), false);
   while (current_attempt < total_attempts && !abort) {
     while (a()->localIO()->KeyPressed()) {
-      ch = wwiv::UpperCase<char>(a()->localIO()->GetChar());
+      ch = to_upper_case<char>(a()->localIO()->GetChar());
       if (!abort) {
         abort = (ch == ESC) ? true : false;
       }

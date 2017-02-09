@@ -35,6 +35,7 @@ extern char str_pause[];
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 int nsp;
 
@@ -63,7 +64,7 @@ static char GetKeyForPause() {
     sleep_for(milliseconds(50));
     CheckForHangup();
   }
-  int nKey = wwiv::UpperCase<int>(ch);
+  int nKey = to_upper_case<int>(ch);
   switch (nKey) {
   case ESC:
   case 'Q':

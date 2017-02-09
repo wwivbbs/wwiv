@@ -126,7 +126,7 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::stri
   return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname(), subnum);
 }
 
-bool WWIVMessageApi::Remove(const std::string& name) {
+bool WWIVMessageApi::Remove(const std::string&) {
   // todo: delete lastread/qscan
   // todo: delete sub files.
   // todo: delete from conf

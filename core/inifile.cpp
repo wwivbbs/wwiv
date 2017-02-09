@@ -46,7 +46,7 @@ static bool StringToBoolean(const char *p) {
   if (!p) {
     return false;
   }
-  char ch = wwiv::UpperCase<char>(*p);
+  char ch = to_upper_case<char>(*p);
   return (ch == 'Y' || ch == 'T' || ch == '1');
 }
 }  // namespace {}

@@ -50,10 +50,6 @@ WStatus::WStatus(const std::string& datadir, statusrec_t* pStatusRecord) : datad
   status_ = pStatusRecord;
 }
 
-WStatus::WStatus(const std::string& datadir) {
-  status_ = &statusrec;
-}
-
 WStatus::~WStatus() {};
 
 const char* WStatus::GetLastDate(int days_ago) const {

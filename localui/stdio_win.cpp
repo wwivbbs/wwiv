@@ -43,7 +43,7 @@ void StdioWindow::Puts(const std::string& text) {
   std::cout << text;
 }
 
-void StdioWindow::PutsXY(int x, int y, const std::string& text) {
+void StdioWindow::PutsXY(int, int, const std::string& text) {
   Puts(text);
 }
 
@@ -57,7 +57,7 @@ void StdioWindow::Printf(const char* format, ...) {
   Puts(buffer);
 }
 
-void StdioWindow::PrintfXY(int x, int y, const char* format, ...) {
+void StdioWindow::PrintfXY(int, int, const char* format, ...) {
   va_list ap;
   char buffer[1024];
 

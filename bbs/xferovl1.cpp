@@ -693,7 +693,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
                                         bytes_to_k(fs), stripcolors(description));
       ch = onek_ncr("QYN\r");
       bout.backline();
-      if (wwiv::UpperCase<char>(ch) == 'Y') {
+      if (to_upper_case<char>(ch) == 'Y') {
         if (a()->directories[dn].mask & mask_cdrom) {
           sprintf(s2, "%s%s", a()->directories[dn].path, file_name);
           sprintf(s1, "%s%s", a()->temp_directory().c_str(), file_name);
@@ -734,7 +734,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
         bout << "\r";
         bout << "|#5    Continue search? ";
         ch = onek_ncr("YN\r");
-        if (wwiv::UpperCase<char>(ch) == 'N') {
+        if (to_upper_case<char>(ch) == 'N') {
           return -3;
         } else {
           return 1;
@@ -851,7 +851,7 @@ void download() {
               bout.backline();
               bout << " |#5Search all conferences? ";
               ch = onek_ncr("YN\r");
-              if (ch == '\r' || wwiv::UpperCase<char>(ch) == 'Y') {
+              if (ch == '\r' || to_upper_case<char>(ch) == 'Y') {
                 tmp_disable_conf(true);
                 useconf = 1;
               }
