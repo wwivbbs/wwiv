@@ -36,7 +36,7 @@ void sleep_for(duration<double> d) {
   usleep (ns.count());
 }
 
-void sound(uint32_t frequency, std::chrono::milliseconds d) {
+void sound(uint32_t frequency, std::chrono::duration<double> d) {
   // NOP
 }
 
