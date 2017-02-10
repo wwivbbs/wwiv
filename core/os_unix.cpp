@@ -31,8 +31,8 @@ namespace wwiv {
 namespace os {
 
 void sleep_for(duration<double> d) {
-  // usleep is nanoseconds.
-  auto ns = duration_cast<nanoseconds>(d);
+  // usleep is microseconds.
+  auto ns = duration_cast<microseconds>(d);
   usleep (ns.count());
 }
 
