@@ -77,7 +77,7 @@ class TestLocalIO : public LocalIO {
 public:
   TestLocalIO(std::string* captured);
   void Putch(unsigned char ch) override;
-  void GotoXY(int x, int y) override {}
+  void GotoXY(int, int) override {}
   size_t WhereX() override { return 0; }
   size_t WhereY() override { return 0; }
   void Lf() override {}
@@ -85,24 +85,24 @@ public:
   void Cls() override {}
   void Backspace() override {}
   void PutchRaw(unsigned char ch) override {}
-  void Puts(const std::string& s) override {}
-  void PutsXY(int x, int y, const std::string& text) override {}
-  void FastPuts(const std::string& text) override {}
-  int Printf(const char *formatted_text, ...) override { return 0; }
-  int PrintfXY(int x, int y, const char *formatted_text, ...) override { return 0; }
-  int PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override { return 0; }
-  void set_protect(Application* session, int l) override {}
+  void Puts(const std::string& ) override {}
+  void PutsXY(int, int, const std::string&) override {}
+  void FastPuts(const std::string&) override {}
+  int Printf(const char *, ...) override { return 0; }
+  int PrintfXY(int , int, const char *, ...) override { return 0; }
+  int PrintfXYA(int, int, int, const char *, ...) override { return 0; }
+  void set_protect(Application*, int) override {}
   void savescreen() override {}
   void restorescreen() override {}
   bool KeyPressed() override { return false; }
-  unsigned char GetChar() override { return getchar(); }
-  void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
-  void SetCursor(int cursorStyle) override {}
+  unsigned char GetChar() override { return static_cast<unsigned char>(getchar()); }
+  void MakeLocalWindow(int, int, int, int) override {}
+  void SetCursor(int) override {}
   void ClrEol() override {}
-  void WriteScreenBuffer(const char *buffer) override {}
+  void WriteScreenBuffer(const char *) override {}
   size_t GetDefaultScreenBottom() override { return 25; }
-  void EditLine(char *s, int len, int status, int *returncode, const char *ss) override {}
-  void UpdateNativeTitleBar(Application* session) override {}
+  void EditLine(char *, int, int, int *, const char *) override {}
+  void UpdateNativeTitleBar(Application*) override {}
 
   std::string* captured_;
 };
@@ -119,7 +119,7 @@ public:
   void purgeIn() override {}
   unsigned int put(unsigned char ch) override;
   unsigned int write(const char *buffer, unsigned int count, bool bNoTranslation = false) override;
-  unsigned int read(char *buffer, unsigned int count) override { return 0; }
+  unsigned int read(char *, unsigned int) override { return 0; }
   bool connected() override { return true; }
   bool incoming() override { return false; }
   unsigned int GetHandle() const override { return 0; }
