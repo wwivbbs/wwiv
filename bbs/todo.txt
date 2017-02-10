@@ -14,21 +14,21 @@ Ini Files and Configuration
 ===========================
 * Add net.ini support into network{1,2,3}
 
-General Cleanup
-===============
-* move File to namespace wwiv::core
-* get rid of more char[] variables from vars.h, move to wsession 
-  as strings.
+Infrastructure Cleanup
+======================
+* get rid of more char[] variables from vars.h, move to wsession as strings.
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
-* TopScreen doesn't work with CursesIO
 * use daten_t everywhere we have a daten date.
 * Maybe make the hangup variable a static in the Application class.
-* stop using localIO()->WhereX to determine remote position
 * Try to remove a()->current_net(), pass in the net as much as possible.
+
+core::File Improvements
+=======================
+* move File to namespace wwiv::core
 * start migrating core::File towards fs::filesystem and fs::path naming.
 
-General Improvements
+Feature Improvements
 ====================
 * Create wwivutil print command to print files in ANSI with 
   heart and pipe codes
@@ -37,6 +37,11 @@ General Improvements
 * cleanup menu system. It's awful.
 * Create templatized version of StringToInt(string) that takes the return type.
   i.e. to_number<uint16_t>(const 	string&)
+
+Linux Work
+==========
+* TopScreen doesn't work with CursesIO
+* stop using localIO()->WhereX to determine remote position
 
 Net52
 =====

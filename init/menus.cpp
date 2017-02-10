@@ -184,8 +184,9 @@ public:
           switch (key) {
           case 'D': {
             const auto& item = menu_items_[items[result.selected].data()];
-            dialog_yn(window, StrCat("Do you want to delete #", num, "[", item.szKey, "]"));
-            wwiv::stl::erase_at(menu_items_, num);
+            if (dialog_yn(window, StrCat("Do you want to delete #", num, "[", item.szKey, "]"))) {
+              wwiv::stl::erase_at(menu_items_, num);
+            }
           } break;
           case 'I': {
             if (num <= 0 || num >= size_int(items)) {

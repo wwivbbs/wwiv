@@ -220,6 +220,22 @@ bool Application::WriteCurrentUser(int user_number) {
 
 void Application::tleft(bool check_for_timeout) {
   long nsln = nsl();
+
+  // Check for tineout 1st.
+  if (check_for_timeout && IsUserOnline()) {
+    if (nsln == 0.0) {
+      bout << "\r\nTime expired.\r\n\n";
+      Hangup();
+    }
+    return;
+  }
+
+  // If we're not displaying the time left or password on the
+  // topdata display, leave now.
+  if (topdata == LocalIO::topdataNone) {
+    return;
+  }
+
   bool temp_sysop = a()->user()->GetSl() != 255 && a()->GetEffectiveSl() == 255;
   bool sysop_available = sysop1();
 
@@ -231,49 +247,40 @@ void Application::tleft(bool check_for_timeout) {
   localIO()->SetTopLine(0);
   int line_number = (chatcall && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
-  if (topdata) {
-    localIO()->PutsXY(1, line_number, GetCurrentSpeed());
-    for (int i = localIO()->WhereX(); i < 23; i++) {
-      localIO()->Putch(static_cast<unsigned char>('\xCD'));
-    }
+  localIO()->PutsXY(1, line_number, GetCurrentSpeed());
+  for (int i = localIO()->WhereX(); i < 23; i++) {
+    localIO()->Putch(static_cast<unsigned char>('\xCD'));
+  }
 
-    if (temp_sysop) {
-      localIO()->PutsXY(23, line_number, "Temp Sysop");
-    }
+  if (temp_sysop) {
+    localIO()->PutsXY(23, line_number, "Temp Sysop");
+  }
 
-    if (sysop_available) {
-      localIO()->PutsXY(64, line_number, "Available");
-    }
+  if (sysop_available) {
+    localIO()->PutsXY(64, line_number, "Available");
   }
 
   auto min_left = nsln / SECONDS_PER_MINUTE;
   auto secs_left = nsln % SECONDS_PER_MINUTE;
   string tleft_display = wwiv::strings::StringPrintf("T-%4ldm %2lds", min_left, secs_left);
   switch (topdata) {
-  case LocalIO::topdataSystem:
+  case LocalIO::topdataSystem: {
     if (IsUserOnline()) {
       localIO()->PutsXY(18, 3, tleft_display);
     }
-    break;
+  } break;
   case LocalIO::topdataUser: {
     if (IsUserOnline()) {
       localIO()->PutsXY(18, 3, tleft_display);
-    } else {
+    }
+    else {
       localIO()->PrintfXY(18, 3, user()->GetPassword());
     }
-  }
-    break;
+  } break;
   }
   localIO()->SetTopLine(ctl);
   curatr = cc;
   localIO()->GotoXY(cx, cy);
-
-  if (check_for_timeout && IsUserOnline()) {
-    if (nsln == 0.0) {
-      bout << "\r\nTime expired.\r\n\n";
-      Hangup();
-    }
-  }
 }
 
 void Application::handle_sysop_key(uint8_t key) {
