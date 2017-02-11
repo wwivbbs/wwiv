@@ -245,42 +245,6 @@ bool HandleAccept(
   return false;
 }
 
-SOCKET CreateListenSocket(int port) {
-  struct sockaddr_in my_addr;
-  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-  if (sock == -1) {
-    LOG(ERROR) << "Unable to create socket (1)";
-    return INVALID_SOCKET;
-  }
-  int optval = 1;
-  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket (2)";
-    return INVALID_SOCKET;
-  }
-  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
-    LOG(ERROR) << "Unable to create socket (3)";
-    return INVALID_SOCKET;
-  }
-  // Try to set nodelay.
-  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&optval), sizeof(optval));
-
-  my_addr.sin_family = AF_INET ;
-  my_addr.sin_port = htons(port);
-  memset(&(my_addr.sin_zero), 0, 8);
-  my_addr.sin_addr.s_addr = INADDR_ANY ;
-
-  if (bind(sock, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
-    LOG(ERROR)  << "Error binding to socket, make sure nothing else is listening "
-        << "on this port: " << errno;
-    return INVALID_SOCKET;
-  }
-  if (listen(sock, 10) == -1) {
-    LOG(ERROR) << "Error listening " << errno;
-    return INVALID_SOCKET;
-  }
-
-  return sock;
-}
 
 /**
  *  This program is the manager of the nodes for the WWIV BBS software

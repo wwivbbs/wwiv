@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "core/net.h"
+
 #ifdef _WIN32
 
 #pragma comment(lib, "Ws2_32.lib")
@@ -33,8 +34,11 @@
 #endif  // _WIN32
 
 #include "core/log.h"
+#include "core/socket_exceptions.h"
+#include "core/strings.h"
 
 using std::string;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace core {
@@ -96,6 +100,39 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
   return true;
 }
 
+SOCKET CreateListenSocket(int port) {
+  struct sockaddr_in my_addr;
+  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+  if (sock == INVALID_SOCKET) {
+    throw socket_error("Unable to create socket [socket]");
+  }
+  int optval = 1;
+  if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
+    throw socket_error("Unable to create socket [SO_REUSEADDR]");
+  }
+  if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
+    throw socket_error("Unable to create socket [SO_KEEPALIVE]");
+  }
+  // Try to set nodelay.
+  setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&optval), sizeof(optval));
+
+  my_addr.sin_family = AF_INET;
+  my_addr.sin_port = htons(static_cast<decltype(my_addr.sin_port)>(port));
+  memset(&(my_addr.sin_zero), 0, 8);
+  my_addr.sin_addr.s_addr = INADDR_ANY;
+
+  if (bind(sock, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
+    const string msg = StrCat(
+      "Error binding to socket, make sure nothing else is listening on port: ", 
+      port, "; errno: ", errno);
+    throw socket_error(msg);
+  }
+  if (listen(sock, 10) == -1) {
+    throw socket_error(StrCat("Error listening. errno: ", errno));
+  }
+
+  return sock;
+}
 
 }  // namespace os
 }  // namespace wwiv

@@ -47,6 +47,7 @@ bool InitializeSockets();
 bool GetRemotePeerAddress(SOCKET socket, std::string& ip);
 bool GetRemotePeerHostname(SOCKET socket, std::string& hostname);
 
+SOCKET CreateListenSocket(int port);
 
 }  // namespace core
 }  // namespace wwiv

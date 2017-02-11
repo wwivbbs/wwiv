@@ -80,30 +80,6 @@ static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp() << endl;
 }
 
-static SOCKET Listen(int port) {
-  static bool initialized = wwiv::core::InitializeSockets();
-  if (!initialized) {
-    throw socket_error("Unable to initialize sockets.");
-  }
-
-  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-
-  sockaddr_in saddr = {};
-  saddr.sin_addr.s_addr = INADDR_ANY;
-  saddr.sin_family = AF_INET;
-  saddr.sin_port = htons(static_cast<decltype(saddr.sin_port)>(port));
-  memset(&saddr.sin_zero, 0, sizeof(saddr.sin_zero));
-  int ret = bind(sock, reinterpret_cast<const struct sockaddr *>(&saddr), sizeof(sockaddr_in));
-  if (ret == SOCKET_ERROR) {
-    throw socket_error("Unable to bind to socket.");
-  }
-  ret = listen(sock, 1);
-  if (ret == SOCKET_ERROR) {
-    throw socket_error("Unable to listen to socket.");
-  }
-  return sock;
-}
-
 static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
   BinkSide side = BinkSide::ANSWERING;
   bool loop = false;
@@ -114,7 +90,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
     LOG(INFO) << "BinkP receive; existing socket; handle: " << sock;
     socket_connected = true;
   } else {
-    sock = Listen(port);
+    sock = CreateListenSocket(port);
     loop = true;
   }
 
@@ -151,7 +127,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
   return true;
 }
 
-static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, const string& sendto_node, const std::string& network_name) {
+static bool Send(BinkConfig& bink_config, const string& sendto_node, const std::string& network_name) {
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
 
@@ -190,13 +166,14 @@ static bool Send(CommandLine& cmdline, BinkConfig& bink_config, int port, const 
 
 static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
   try {
+    static bool initialized = wwiv::core::InitializeSockets();
+
     int port = cmdline.arg("port").as_int();
     bool skip_net = cmdline.arg("skip_net").as_bool();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     std::unique_ptr<WStatus> status(sm.GetStatus());
 
-    const auto& net = net_cmdline.network();
     const auto& network_name = net_cmdline.network_name();
 
     const string sendto_node = cmdline.sarg("node");
@@ -234,7 +211,7 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     if (cmdline.arg("receive").as_bool()) {
       Receive(cmdline, bink_config, port);
     } else if (cmdline.arg("send").as_bool()) {
-      if (Send(cmdline, bink_config, port, sendto_node, network_name)) {
+      if (Send(bink_config, sendto_node, network_name)) {
         return 0;
       }
       return 1;

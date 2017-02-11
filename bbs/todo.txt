@@ -23,6 +23,9 @@ Infrastructure Cleanup
 * Maybe make the hangup variable a static in the Application class.
 * Try to remove a()->current_net(), pass in the net as much as possible.
 
+Networking Cleanup
+==================
+
 core::File Improvements
 =======================
 * move File to namespace wwiv::core
