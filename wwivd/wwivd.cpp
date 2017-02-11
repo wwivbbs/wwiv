@@ -134,7 +134,7 @@ static const File node_file(const Config& config, ConnectionType ct, int node_nu
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
-  for(int i = start_node; i <= end_node; i++) {
+  for (int i = start_node; i <= end_node; i++) {
     File semaphore_file(node_file(config, ConnectionType::TELNET, i));
     if (semaphore_file.Exists()) {
       semaphore_file.Delete();
@@ -150,7 +150,7 @@ static bool DeleteAllSemaphores(const Config& config, int start_node, int end_no
   return true;
 }
 
-static int loadUsedNodeData(const Config& config, int start_node, int end_node) {
+static int load_used_nodedata(const Config& config, int start_node, int end_node) {
   int used_nodes = 0;
   for(int counter = start_node; counter <= end_node; counter++) {
     File semaphore_file(node_file(config, ConnectionType::TELNET, counter));
@@ -161,7 +161,7 @@ static int loadUsedNodeData(const Config& config, int start_node, int end_node) 
   return used_nodes;
 }
 
-static bool launchNode(
+static bool launch_node(
     const Config& config, const wwivd_config_t& c,
     int node_number, int sock, ConnectionType connection_type,
     const string& remote_peer) {
@@ -170,7 +170,7 @@ static bool launchNode(
   });
 
   string pid = StringPrintf("[%d] ", get_pid());
-  VLOG(1) << pid << "launchNode(" << node_number << ")";
+  VLOG(1) << pid << "launch_node(" << node_number << ")";
 
   File semaphore_file(node_file(config, connection_type, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
@@ -223,7 +223,7 @@ bool HandleAccept(
   if (connection_type == ConnectionType::BINKP) {
     // BINKP Connection.
     if (!node_file(config, connection_type, 0)) {
-      launchNode(config, c, 0, sock, connection_type, remote_peer);
+      launch_node(config, c, 0, sock, connection_type, remote_peer);
       return true;
     }
 
@@ -231,7 +231,7 @@ bool HandleAccept(
     // Telnet or SSH connection.  Find open node number and launch the child.
     for (int node = c.start_node; node <= c.end_node; node++) {
       if (!node_file(config, connection_type, node).Exists()) {
-        launchNode(config, c, node, sock, connection_type, remote_peer);
+        launch_node(config, c, node, sock, connection_type, remote_peer);
         return true;
       }
     }
@@ -302,7 +302,7 @@ int Main(CommandLine& cmdline) {
 
   while (true) {
     const int num_instances = (c.end_node - c.start_node + 1);
-    const int used_nodes = loadUsedNodeData(config, c.start_node, c.end_node);
+    const int used_nodes = load_used_nodedata(config, c.start_node, c.end_node);
     LOG(INFO) << "Nodes in use: (" << used_nodes << "/" << num_instances << ")";
 
     FD_ZERO(&fds);
@@ -325,7 +325,7 @@ int Main(CommandLine& cmdline) {
     }
 
     struct sockaddr_in saddr = {};
-    int client_sock = -1;
+    int client_sock = INVALID_SOCKET;
     if (c.telnet_port > 0 && FD_ISSET(telnet_socket, &fds)) {
       client_sock = accept(telnet_socket, (sockaddr*)&saddr, &addr_size);
       connection_type = ConnectionType::TELNET;
@@ -340,7 +340,7 @@ int Main(CommandLine& cmdline) {
       continue;
     }
 
-    if (client_sock == -1) {
+    if (client_sock == INVALID_SOCKET) {
       LOG(INFO)<< "Error accepting client socket. " << errno;
       continue;
     }
