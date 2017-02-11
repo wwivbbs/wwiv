@@ -122,12 +122,13 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   char cmdstr[4000];
   to_char_array(sh, "sh");
   to_char_array(dc, "-c");
-  to_char_array(cmdstr, cmd.c_str());
+  to_char_array(cmdstr, cmd);
   char* argv[] = { sh, dc, cmdstr, NULL };
 
   LOG(INFO) << pid << "Invoking Command Line (posix_spawn):" << cmd;
   pid_t child_pid = 0;
   int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
+  VLOG(2) << "after posix_spawn; ret: " << ret;
   if (ret != 0) {
     // fork failed.
     LOG(ERROR) << pid << "Error forking WWIV.";
