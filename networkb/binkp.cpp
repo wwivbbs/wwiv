@@ -38,11 +38,11 @@
 #include "core/version.h"
 #include "networkb/binkp_commands.h"
 #include "networkb/binkp_config.h"
-#include "networkb/connection.h"
+#include "core/connection.h"
 #include "networkb/cram.h"
 #include "networkb/file_manager.h"
 #include "networkb/net_log.h"
-#include "networkb/socket_exceptions.h"
+#include "core/socket_exceptions.h"
 #include "networkb/transfer_file.h"
 #include "networkb/wfile_transfer_file.h"
 #include "sdk/callout.h"
@@ -95,7 +95,7 @@ string expected_password_for(const net_call_out_rec* con) {
   return password;
 }
 
-BinkP::BinkP(Connection* conn, BinkConfig* config, BinkSide side,
+BinkP::BinkP(wwiv::core::Connection* conn, BinkConfig* config, BinkSide side,
         const std::string& expected_remote_node,
         received_transfer_file_factory_t& received_transfer_file_factory)
   : conn_(conn),

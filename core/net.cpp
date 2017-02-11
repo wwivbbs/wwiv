@@ -32,10 +32,24 @@
 
 #endif  // _WIN32
 
+#include "core/log.h"
+
 using std::string;
 
 namespace wwiv {
 namespace core {
+
+bool InitializeSockets() {
+#ifdef _WIN32
+  WSADATA wsadata;
+  int result = WSAStartup(MAKEWORD(2, 2), &wsadata);
+  if (result != 0) {
+    LOG(ERROR) << "WSAStartup failed with error: " << result;
+    return false;
+  }
+#endif  // _WIN32
+  return true;
+}
 
 bool GetRemotePeerAddress(SOCKET socket, std::string& ip) {
   sockaddr_in addr = {};

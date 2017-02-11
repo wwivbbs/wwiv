@@ -34,6 +34,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "core/socket_connection.h"
 #include "sdk/config.h"
 
 using namespace wwiv::core;
@@ -41,19 +42,9 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-bool InitializeSockets() {
-  WSADATA wsadata;
-  int result = WSAStartup(MAKEWORD(2, 2), &wsadata);
-  if (result != 0) {
-    LOG(ERROR) << "WSAStartup failed with error: " << result;
-    return false;
-  }
-  return true;
-}
-
 void BeforeStartServer() {
   // Not the best place, but this works.
-  static bool initialized = InitializeSockets();
+  static bool initialized = wwiv::core::InitializeSockets();
 }
 
 void SwitchToNonRootUser(const std::string& wwiv_user) {

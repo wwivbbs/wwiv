@@ -15,19 +15,35 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/socket_exceptions.h"
+#pragma once
+#ifndef __INCLUDED_NETWORKB_CONNECTION_H__
+#define __INCLUDED_NETWORKB_CONNECTION_H__
 
-#include <stdexcept>
-#include "core/strings.h"
-
-using std::string;
-using wwiv::strings::StringPrintf;
+#include <chrono>
+#include <cstdint>
+#include <string>
 
 namespace wwiv {
-namespace net {
+namespace core {
 
-connection_error::connection_error(const string& host, int port) 
-  : socket_error(StringPrintf("Error connecting to: %s:%d", host.c_str(), port)) {}
+class Connection
+{
+public:
+  Connection();
+  virtual ~Connection();
+
+  virtual int receive(void* data, int size, std::chrono::duration<double> d) = 0;
+  virtual std::string receive(int size, std::chrono::duration<double> d) = 0;
+  virtual int send(const void* data, int size, std::chrono::duration<double> d) = 0;
+  virtual int send(const std::string& s, std::chrono::duration<double> d) = 0;
+
+  virtual uint16_t read_uint16(std::chrono::duration<double> d) = 0;
+  virtual uint8_t read_uint8(std::chrono::duration<double> d) = 0;
+  virtual bool is_open() const = 0;
+  virtual bool close() = 0;
+};
 
 }  // namespace net
-} // namespace wwiv
+}  // namespace wwiv
+
+#endif  // __INCLUDED_NETWORKB_CONNECTION_H__

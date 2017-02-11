@@ -9,7 +9,6 @@ set(SOURCES
  binkp.cpp
  binkp_commands.cpp
  binkp_config.cpp
- connection.cpp
  cram.cpp
  file_manager.cpp
  net_log.cpp
@@ -17,8 +16,6 @@ set(SOURCES
  packets.cpp
  ppp_config.cpp
  remote.cpp
- socket_connection.cpp
- socket_exceptions.cpp
  transfer_file.cpp
  wfile_transfer_file.cpp
 )

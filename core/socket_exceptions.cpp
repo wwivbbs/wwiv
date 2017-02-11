@@ -15,13 +15,19 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/connection.h"
+#include "core/socket_exceptions.h"
+
+#include <stdexcept>
+#include "core/strings.h"
+
+using std::string;
+using wwiv::strings::StringPrintf;
 
 namespace wwiv {
-namespace net {
+namespace core {
 
-Connection::Connection() {}
-Connection::~Connection() {}
+connection_error::connection_error(const string& host, int port) 
+  : socket_error(StringPrintf("Error connecting to: %s:%d", host.c_str(), port)) {}
 
 }  // namespace net
 } // namespace wwiv

@@ -26,7 +26,7 @@
 #include <thread>
 #include <queue>
 
-#include "networkb/connection.h"
+#include "core/connection.h"
 
 class FakeBinkpPacket {
 public:
@@ -48,7 +48,7 @@ private:
   std::string data_;
 };
 
-class FakeConnection : public wwiv::net::Connection
+class FakeConnection : public wwiv::core::Connection
 {
 public:
   // Connection implementation.
@@ -58,6 +58,8 @@ public:
   int receive(void* data, int size, std::chrono::duration<double> d) override;
   std::string receive(int size, std::chrono::duration<double> d) override;
   int send(const void* data, int size, std::chrono::duration<double> d) override;
+  int send(const std::string& s, std::chrono::duration<double> d) override;
+
   uint16_t read_uint16(std::chrono::duration<double> d) override;
   uint8_t read_uint8(std::chrono::duration<double> d) override;
   bool is_open() const override;

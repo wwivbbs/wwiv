@@ -15,34 +15,13 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#pragma once
-#ifndef __INCLUDED_NETWORKB_CONNECTION_H__
-#define __INCLUDED_NETWORKB_CONNECTION_H__
-
-#include <chrono>
-#include <cstdint>
-#include <string>
+#include "core/connection.h"
 
 namespace wwiv {
-namespace net {
+namespace core {
 
-class Connection
-{
-public:
-  Connection();
-  virtual ~Connection();
-
-  virtual int receive(void* data, int size, std::chrono::duration<double> d) = 0;
-  virtual std::string receive(int size, std::chrono::duration<double> d) = 0;
-  virtual int send(const void* data, int size, std::chrono::duration<double> d) = 0;
-
-  virtual uint16_t read_uint16(std::chrono::duration<double> d) = 0;
-  virtual uint8_t read_uint8(std::chrono::duration<double> d) = 0;
-  virtual bool is_open() const = 0;
-  virtual bool close() = 0;
-};
+Connection::Connection() {}
+Connection::~Connection() {}
 
 }  // namespace net
-}  // namespace wwiv
-
-#endif  // __INCLUDED_NETWORKB_CONNECTION_H__
+} // namespace wwiv

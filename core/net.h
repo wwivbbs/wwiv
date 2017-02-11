@@ -42,6 +42,8 @@ constexpr int NO_ERROR = -1;
 namespace wwiv {
 namespace core {
 
+bool InitializeSockets();
+
 bool GetRemotePeerAddress(SOCKET socket, std::string& ip);
 bool GetRemotePeerHostname(SOCKET socket, std::string& hostname);
 

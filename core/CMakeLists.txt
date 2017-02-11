@@ -6,6 +6,7 @@ include_directories(..)
 set(COMMON_SOURCES
   crc32.cpp
   command_line.cpp
+  connection.cpp
   file.cpp
   file_unix.cpp
   findfiles.cpp
@@ -16,6 +17,8 @@ set(COMMON_SOURCES
   net.cpp
   os.cpp
   os_unix.cpp
+  socket_connection.cpp
+  socket_exceptions.cpp
   strings.cpp
   textfile.cpp
   version.cpp

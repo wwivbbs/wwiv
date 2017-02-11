@@ -24,7 +24,7 @@
 #include <string>
 
 namespace wwiv {
-namespace net {
+namespace core {
 
 struct socket_error : public std::runtime_error {
 socket_error(const std::string& message) : std::runtime_error(message) {}

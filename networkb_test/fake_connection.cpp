@@ -36,14 +36,14 @@
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "networkb/binkp_commands.h"
-#include "networkb/socket_exceptions.h"
+#include "core/socket_exceptions.h"
 
-using namespace std::chrono;
 using std::string;
 using std::make_unique;
 using std::unique_ptr;
-using wwiv::os::sleep_for;
-using wwiv::os::wait_for;
+using namespace std::chrono;
+using namespace wwiv::core;
+using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::net;
 
@@ -120,7 +120,7 @@ int FakeConnection::receive(void* data, int size, duration<double> d) {
   return size;
 }
 
-string FakeConnection::receive(int size, duration<double> d) {
+string FakeConnection::receive(int, duration<double> d) {
   auto predicate = [&]() {
     std::lock_guard<std::mutex> lock(mu_);
     return !receive_queue_.empty();
@@ -135,10 +135,15 @@ string FakeConnection::receive(int size, duration<double> d) {
   return front.data();
 }
 
-int FakeConnection::send(const void* data, int size, std::chrono::duration<double> d) {
+int FakeConnection::send(const void* data, int size, std::chrono::duration<double>) {
   std::lock_guard<std::mutex> lock(mu_);
   send_queue_.push(FakeBinkpPacket(data, size));
   return size;
+}
+
+
+int FakeConnection::send(const std::string& s, std::chrono::duration<double> d) {
+  return send(s.data(), s.length(), d);
 }
 
 bool FakeConnection::has_sent_packets() const {

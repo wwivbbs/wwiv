@@ -27,7 +27,7 @@
 #include <string>
 
 #include "core/net.h"
-#include "networkb/connection.h"
+#include "core/connection.h"
 
 #ifdef _WIN32
 #include <WinSock2.h>
@@ -36,15 +36,11 @@
 #endif  // _WIN32
 
 namespace wwiv {
-namespace net {
+namespace core {
 
 class SocketConnection;
 
 std::unique_ptr<SocketConnection> Connect(const std::string& host, int port);
-// Accepts a single connection, used for testing.
-SOCKET Listen(int port);
-std::unique_ptr<SocketConnection> Accept(SOCKET sock, int port);
-std::unique_ptr<SocketConnection> Wrap(SOCKET socket);
 
 class SocketConnection : public Connection
 {
@@ -55,6 +51,7 @@ public:
   int receive(void* data, int size, std::chrono::duration<double> d) override;
   std::string receive(int size, std::chrono::duration<double> d) override;
   int send(const void* data, int size, std::chrono::duration<double> d) override;
+  int send(const std::string& s, std::chrono::duration<double> d) override;
 
   uint16_t read_uint16(std::chrono::duration<double> d) override;
   uint8_t read_uint8(std::chrono::duration<double> d) override;

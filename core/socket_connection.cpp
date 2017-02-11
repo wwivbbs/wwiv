@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/socket_connection.h"
+#include "core/socket_connection.h"
 
 #include <stdexcept>
 #include <chrono>
@@ -45,7 +45,7 @@
 #include "core/net.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "networkb/socket_exceptions.h"
+#include "core/socket_exceptions.h"
 
 using std::chrono::milliseconds;
 using std::chrono::seconds;
@@ -60,23 +60,11 @@ using wwiv::os::sleep_for;
 using namespace wwiv::strings;
 
 namespace wwiv {
-namespace net {
+namespace core {
 
 namespace {
 
 static const auto SLEEP_MS = milliseconds(100);
-
-bool InitializeSockets() {
-#ifdef _WIN32
-WSADATA wsadata;
-int result = WSAStartup(MAKEWORD(2,2), &wsadata);
-  if (result != 0) {
-    LOG(ERROR) << "WSAStartup failed with error: " << result;
-    return false;
-  }
-#endif  // _WIN32
-  return true;
-}
 
 static bool SetNonBlockingMode(SOCKET sock) {
   if (sock == INVALID_SOCKET) {
@@ -150,6 +138,10 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
   const string port_string = std::to_string(port);
   struct addrinfo* address = nullptr;
   int result_addrinfo = getaddrinfo(host.c_str(), port_string.c_str(), &hints, &address);
+  if (result_addrinfo != 0) {
+    LOG(ERROR) << "ERROR calling getaddrinfo: " << result_addrinfo;
+    // TODO(rushfan): Throw connection error here?
+  }
   for (struct addrinfo* res = address; res != nullptr; res = res->ai_next) {
     SOCKET s = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
     if (s == INVALID_SOCKET) {
@@ -164,13 +156,15 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
       try {
         return std::make_unique<SocketConnection>(s);
       }
-      catch (const socket_error& e) {
+      catch (const socket_error&) {
       }
     }
   }
   throw connection_error(host, port);
 }
 
+/*
+ ** Leaving here inc ase I need it again
 // From: http://stackoverflow.com/questions/2493136/how-can-i-obtain-the-ipv4-address-of-the-client
 // get sockaddr, IPv4 or IPv6:
 static void *get_in_addr(struct sockaddr* sa) {
@@ -180,52 +174,7 @@ static void *get_in_addr(struct sockaddr* sa) {
 
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
-
-unique_ptr<SocketConnection> Wrap(SOCKET socket) {
-  string ip;
-  if (!wwiv::core::GetRemotePeerAddress(socket, ip)) {
-    ip = "*UNKNOWN*";
-  }
-  LOG(INFO) << "Received connection from: " << ip;
-
-  return std::make_unique<SocketConnection>(socket);
-}
-
-SOCKET Listen(int port) {
-  static bool initialized = InitializeSockets();
-  if (!initialized) {
-    throw socket_error("Unable to initialize sockets.");
-  }
-
-  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
-
-  sockaddr_in saddr = {};
-  saddr.sin_addr.s_addr = INADDR_ANY;
-  saddr.sin_family = AF_INET;
-  saddr.sin_port = htons(port);
-  memset(&saddr.sin_zero, 0, sizeof(saddr.sin_zero));
-  int ret = bind(sock, reinterpret_cast<const struct sockaddr *>(&saddr), sizeof(sockaddr_in));
-  if (ret == SOCKET_ERROR) {
-    throw socket_error("Unable to bind to socket.");
-  }
-  ret = listen(sock, 1);
-  if (ret == SOCKET_ERROR) {
-    throw socket_error("Unable to listen to socket.");
-  }
-  return sock;
-}
-
-unique_ptr<SocketConnection> Accept(SOCKET sock, int port) {
-  sockaddr_in saddr = {};
-  socklen_t addr_length = sizeof(saddr);
-  SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
-
-  string ip;
-  if (wwiv::core::GetRemotePeerAddress(s, ip)) {
-    LOG(INFO) << "Received connection from: " << ip;
-  }
-  return std::make_unique<SocketConnection>(s);
-}
+*/
 
 SocketConnection::~SocketConnection() {
   if (sock_ != INVALID_SOCKET) {
@@ -284,12 +233,16 @@ string SocketConnection::receive(int size, duration<double> d) {
   return string(data.get(), num_read);
 }
 
-int SocketConnection::send(const void* data, int size, duration<double> d) {
+int SocketConnection::send(const void* data, int size, duration<double>) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
   if (open_ && sent != size) {
     LOG(ERROR) << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
   }
   return size;
+}
+
+int SocketConnection::send(const std::string& s, std::chrono::duration<double> d) {
+  return send(s.data(), s.size(), d);
 }
 
 uint16_t SocketConnection::read_uint16(duration<double> d) {

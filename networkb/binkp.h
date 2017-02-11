@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 
+#include "core/connection.h"
 #include "sdk/callout.h"
 #include "networkb/cram.h"
 #include "networkb/file_manager.h"
@@ -73,7 +74,7 @@ public:
   typedef std::function<TransferFile*(
       const std::string& network_name, const std::string& filename)>
       received_transfer_file_factory_t;
-  BinkP(Connection* conn,
+  BinkP(wwiv::core::Connection* conn,
         BinkConfig* config,
 	      BinkSide side, 
 	      const std::string& expected_remote_node,
@@ -120,7 +121,7 @@ private:
   bool HandleFileRequest(const std::string& request_line);
 
   BinkConfig* config_ = nullptr;
-  Connection* conn_ = nullptr;
+  wwiv::core::Connection* conn_ = nullptr;
   bool ok_received_ = false;
   bool eob_received_ = false;
   std::map<std::string, std::unique_ptr<TransferFile>> files_to_send_;

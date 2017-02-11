@@ -35,7 +35,7 @@
 #include "core/os.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "networkb/connection.h"
+#include "core/connection.h"
 #include "networkb/net_util.h"
 #include "networkb/ppp_config.h"
 

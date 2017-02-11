@@ -42,7 +42,7 @@
 #include "core/version.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "networkb/connection.h"
+#include "core/connection.h"
 #include "networkb/net_util.h"
 #include "sdk/fido/fido_util.h"
 #include "networkb/packets.h"

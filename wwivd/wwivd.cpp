@@ -250,16 +250,16 @@ SOCKET CreateListenSocket(int port) {
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == -1) {
     LOG(ERROR) << "Unable to create socket (1)";
-    return -1;
+    return INVALID_SOCKET;
   }
   int optval = 1;
   if (setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
     LOG(ERROR) << "Unable to create socket (2)";
-    return -1;
+    return INVALID_SOCKET;
   }
   if (setsockopt(sock, SOL_SOCKET, SO_KEEPALIVE, reinterpret_cast<char*>(&optval), sizeof(optval)) == -1) {
     LOG(ERROR) << "Unable to create socket (3)";
-    return -1;
+    return INVALID_SOCKET;
   }
   // Try to set nodelay.
   setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&optval), sizeof(optval));
@@ -272,11 +272,11 @@ SOCKET CreateListenSocket(int port) {
   if (bind(sock, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
     LOG(ERROR)  << "Error binding to socket, make sure nothing else is listening "
         << "on this port: " << errno;
-    return -1;
+    return INVALID_SOCKET;
   }
   if (listen(sock, 10) == -1) {
     LOG(ERROR) << "Error listening " << errno;
-    return -1;
+    return INVALID_SOCKET;
   }
 
   return sock;
@@ -315,9 +315,9 @@ int Main(CommandLine& cmdline) {
   }
 
   fd_set fds{};
-  SOCKET telnet_socket = -1;
-  SOCKET ssh_socket = -1;
-  SOCKET binkp_socket = -1;
+  SOCKET telnet_socket = INVALID_SOCKET;
+  SOCKET ssh_socket = INVALID_SOCKET;
+  SOCKET binkp_socket = INVALID_SOCKET;
   if (c.telnet_port > 0) {
     LOG(INFO) << "Listening to telnet on port: " << c.telnet_port;
     telnet_socket = CreateListenSocket(c.telnet_port);

@@ -29,6 +29,7 @@
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/net.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -37,10 +38,10 @@
 
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "networkb/connection.h"
+#include "core/connection.h"
 #include "networkb/net_util.h"
-#include "networkb/socket_connection.h"
-#include "networkb/socket_exceptions.h"
+#include "core/socket_connection.h"
+#include "core/socket_exceptions.h"
 #include "networkb/wfile_transfer_file.h"
 
 #include "sdk/callout.h"
@@ -79,10 +80,34 @@ static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp() << endl;
 }
 
+static SOCKET Listen(int port) {
+  static bool initialized = wwiv::core::InitializeSockets();
+  if (!initialized) {
+    throw socket_error("Unable to initialize sockets.");
+  }
+
+  SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
+
+  sockaddr_in saddr = {};
+  saddr.sin_addr.s_addr = INADDR_ANY;
+  saddr.sin_family = AF_INET;
+  saddr.sin_port = htons(static_cast<decltype(saddr.sin_port)>(port));
+  memset(&saddr.sin_zero, 0, sizeof(saddr.sin_zero));
+  int ret = bind(sock, reinterpret_cast<const struct sockaddr *>(&saddr), sizeof(sockaddr_in));
+  if (ret == SOCKET_ERROR) {
+    throw socket_error("Unable to bind to socket.");
+  }
+  ret = listen(sock, 1);
+  if (ret == SOCKET_ERROR) {
+    throw socket_error("Unable to listen to socket.");
+  }
+  return sock;
+}
+
 static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
   BinkSide side = BinkSide::ANSWERING;
   bool loop = false;
-  SOCKET sock = -1;
+  SOCKET sock = INVALID_SOCKET;
   bool socket_connected = false;
   if (cmdline.arg("handle").as_int()) {
     sock = static_cast<SOCKET>(cmdline.arg("handle").as_int());
@@ -95,12 +120,19 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
 
   do {
     try {
+      string ip;
+      if (wwiv::core::GetRemotePeerAddress(sock, ip)) {
+        LOG(INFO) << "Received connection from: " << ip;
+      }
       unique_ptr<SocketConnection> c;
       if (socket_connected) {
-        c = Wrap(sock);
+        c = std::make_unique<SocketConnection>(sock);
       } else {
         LOG(INFO) << "BinkP receive; listening on port: " << port;
-        c = Accept(sock, port);
+        sockaddr_in saddr = {};
+        socklen_t addr_length = sizeof(saddr);
+        SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
+        c = std::make_unique<SocketConnection>(s);
       }
       BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
         const net_networks_rec& net = bink_config.networks()[network_name];

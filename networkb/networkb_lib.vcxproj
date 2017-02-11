@@ -99,7 +99,6 @@
     <ClInclude Include="binkp_config.h" />
     <ClInclude Include="binkp_commands.h" />
     <ClInclude Include="callout.h" />
-    <ClInclude Include="connection.h" />
     <ClInclude Include="config_exceptions.h" />
     <ClInclude Include="contact.h" />
     <ClInclude Include="cram.h" />
@@ -111,8 +110,6 @@
     <ClInclude Include="ppp_config.h" />
     <ClInclude Include="receive_file.h" />
     <ClInclude Include="remote.h" />
-    <ClInclude Include="socket_connection.h" />
-    <ClInclude Include="socket_exceptions.h" />
     <ClInclude Include="transfer_file.h" />
     <ClInclude Include="wfile_transfer_file.h" />
   </ItemGroup>
@@ -120,7 +117,6 @@
     <ClCompile Include="binkp.cpp" />
     <ClCompile Include="binkp_config.cpp" />
     <ClCompile Include="binkp_commands.cpp" />
-    <ClCompile Include="connection.cpp" />
     <ClCompile Include="cram.cpp" />
     <ClCompile Include="file_manager.cpp" />
     <ClCompile Include="net_log.cpp" />
@@ -128,8 +124,6 @@
     <ClCompile Include="packets.cpp" />
     <ClCompile Include="ppp_config.cpp" />
     <ClCompile Include="remote.cpp" />
-    <ClCompile Include="socket_connection.cpp" />
-    <ClCompile Include="socket_exceptions.cpp" />
     <ClCompile Include="transfer_file.cpp" />
     <ClCompile Include="wfile_transfer_file.cpp" />
   </ItemGroup>
