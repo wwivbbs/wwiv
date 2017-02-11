@@ -26,10 +26,20 @@
 
 #define NOCRYPT // Disable include of wincrypt.h
 #include <winsock2.h>
+#include <WS2tcpip.h>
+
 // Really windows?
 typedef int socklen_t;
 
 #else 
+
+#include <netdb.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 
 typedef int HANDLE;
 typedef int SOCKET;

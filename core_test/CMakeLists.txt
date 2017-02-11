@@ -12,7 +12,6 @@ set(test_sources
   crc32_test.cpp
   command_line_test.cpp
   datafile_test.cpp
-  fake_connection.cpp
   findfiles_test.cpp
   file_test.cpp
   inifile_test.cpp

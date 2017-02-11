@@ -21,15 +21,8 @@
 #ifdef _WIN32
 
 #pragma comment(lib, "Ws2_32.lib")
-#include "WS2tcpip.h"
-
-#else
-
-#include <arpa/inet.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
-#include <netdb.h>
+#pragma comment (lib, "Mswsock.lib")
+#pragma comment (lib, "AdvApi32.lib")
 
 #endif  // _WIN32
 
