@@ -114,8 +114,27 @@ static bool WouldSocketBlock() {
 
 }  // namespace
 
-SocketConnection::SocketConnection(SOCKET sock, const string& host, int port)
-  : sock_(sock), host_(host), port_(port), open_(true) {}
+SocketConnection::SocketConnection(SOCKET sock)
+  : sock_(sock), open_(true) {
+  static bool initialized = InitializeSockets();
+  if (!initialized) {
+    throw socket_error("Unable to initialize sockets.");
+  }
+
+  if (!SetNonBlockingMode(sock_)) {
+    LOG(ERROR) << "Unable to put socket into nonblocking mode.";
+    closesocket(sock_);
+    sock_ = INVALID_SOCKET;
+    throw socket_error("Unable to set nonblocking mode on the socket.");
+  }
+  if (!SetNoDelayMode(sock_)) {
+    LOG(ERROR) << "Unable to put socket into nodelay mode.";
+    closesocket(sock_);
+    sock_ = INVALID_SOCKET;
+    throw socket_error("Unable to set nodelay mode on the socket.");
+  }
+
+}
 
 unique_ptr<SocketConnection> Connect(const string& host, int port) {
   static bool initialized = InitializeSockets();
@@ -145,19 +164,13 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
     } else {
       // success;
       freeaddrinfo(address);
-      if (!SetNonBlockingMode(s)) {
-        LOG(ERROR) << "Unable to put socket into nonblocking mode.";
-        closesocket(s);
+      try {
+        return std::make_unique<SocketConnection>(s);
+      }
+      catch (const socket_error& e) {
         s = INVALID_SOCKET;
         continue;
       }
-      if (!SetNoDelayMode(s)) {
-        LOG(ERROR) << "Unable to put socket into nodelay mode.";
-        closesocket(s);
-        s = INVALID_SOCKET;
-        continue;
-      }
-      return unique_ptr<SocketConnection>(new SocketConnection(s, host, port));
     }
   }
   throw connection_error(host, port);
@@ -179,26 +192,13 @@ unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
     throw socket_error("Unable to initialize sockets.");
   }
 
-  if (!SetNonBlockingMode(socket)) {
-    LOG(ERROR) << "Unable to put socket into nonblocking mode.";
-    closesocket(socket);
-    socket = INVALID_SOCKET;
-    throw socket_error("Unable to set nonblocking mode on the socket.");
-  }
-  if (!SetNoDelayMode(socket)) {
-    LOG(ERROR) << "Unable to put socket into nodelay mode.";
-    closesocket(socket);
-    socket = INVALID_SOCKET;
-    throw socket_error("Unable to set nodelay mode on the socket.");
-  }
-
   string ip;
   if (!wwiv::core::GetRemotePeerAddress(socket, ip)) {
     ip = "*UNKNOWN*";
   }
   LOG(INFO) << "Received connection from: " << ip;
 
-  return unique_ptr<SocketConnection>(new SocketConnection(socket, ip, port));
+  return std::make_unique<SocketConnection>(socket);
 }
 
 SOCKET Listen(int port) {
@@ -230,26 +230,11 @@ unique_ptr<SocketConnection> Accept(SOCKET sock, int port) {
   socklen_t addr_length = sizeof(saddr);
   SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
 
-  if (!SetNonBlockingMode(s)) {
-    LOG(ERROR) << "Unable to put socket into nonblocking mode.";
-    closesocket(s);
-    s = INVALID_SOCKET;
-    throw socket_error("Unable to set nonblocking mode on the socket.");
-  }
-  if (!SetNoDelayMode(s)) {
-    LOG(ERROR) << "Unable to put socket into nodelay mode.";
-    closesocket(s);
-    s = INVALID_SOCKET;
-    throw socket_error("Unable to set nodelay mode on the socket.");
-  }
-
   string ip;
-  if (!wwiv::core::GetRemotePeerAddress(s, ip)) {
-    ip = "*UNKNOWN*";
+  if (wwiv::core::GetRemotePeerAddress(s, ip)) {
+    LOG(INFO) << "Received connection from: " << ip;
   }
-  LOG(INFO) << "Received connection from: " << ip;
-
-  return unique_ptr<SocketConnection>(new SocketConnection(s, "", port));
+  return std::make_unique<SocketConnection>(s);
 }
 
 SocketConnection::~SocketConnection() {

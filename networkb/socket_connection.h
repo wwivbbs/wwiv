@@ -49,7 +49,7 @@ std::unique_ptr<SocketConnection> Wrap(SOCKET socket, int port);
 class SocketConnection : public Connection
 {
 public:
-  SocketConnection(SOCKET sock, const std::string& host, int port);
+  SocketConnection(SOCKET sock);
   virtual ~SocketConnection();
 
   int receive(void* data, int size, std::chrono::duration<double> d) override;
@@ -63,8 +63,6 @@ public:
   bool close() override;
 
 private:
-  const std::string host_;
-  const int port_;
   SOCKET sock_;
   bool open_;
 };
