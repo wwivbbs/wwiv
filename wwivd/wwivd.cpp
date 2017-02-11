@@ -227,14 +227,11 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
 }
 
 static void HandleAccept(
-    const wwiv::sdk::Config& config, const wwivd_config_t& c, const accepted_socket_t& r) {
+    const wwiv::sdk::Config& config, const wwivd_config_t& c, const accepted_socket_t r,
+    const std::string& remote_peer) {
   auto sock = r.client_socket;
   auto connection_type = connection_type_for(c, r.port);
   try {
-    string remote_peer;
-    if (GetRemotePeerAddress(sock, remote_peer)) {
-      LOG(INFO) << "Connection from: " << remote_peer;
-    }
     if (connection_type == ConnectionType::BINKP) {
       // BINKP Connection.
       if (!node_file(config, connection_type, 0)) {
@@ -279,13 +276,13 @@ int Main(CommandLine& cmdline) {
     wwiv_user = cmdline.arg("wwiv_user").as_string();
   }
   VLOG(2) << "Using WWIV_USER: " << wwiv_user;
-  Config config(wwiv_dir);
+  const Config config(wwiv_dir);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT";
     return 1;
   }
 
-  wwivd_config_t c = LoadIniConfig(config);
+  const wwivd_config_t c = LoadIniConfig(config);
   File::set_current_directory(c.bbsdir);
 
   BeforeStartServer();
@@ -316,8 +313,11 @@ int Main(CommandLine& cmdline) {
       LOG(INFO) << "Error accepting client socket. " << errno;
       return 2;
     }
-
-    std::thread client(HandleAccept, std::ref(config), std::ref(c), std::ref(r));
+    string remote_peer;
+    if (GetRemotePeerAddress(r.client_socket, remote_peer)) {
+      LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer;
+    }
+    std::thread client(HandleAccept, std::ref(config), std::ref(c), r, std::ref(remote_peer));
     client.detach();
   }
 
