@@ -97,7 +97,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
     try {
       unique_ptr<SocketConnection> c;
       if (socket_connected) {
-        c = Wrap(sock, port);
+        c = Wrap(sock);
       } else {
         LOG(INFO) << "BinkP receive; listening on port: " << port;
         c = Accept(sock, port);

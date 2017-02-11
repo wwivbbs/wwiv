@@ -133,7 +133,6 @@ SocketConnection::SocketConnection(SOCKET sock)
     sock_ = INVALID_SOCKET;
     throw socket_error("Unable to set nodelay mode on the socket.");
   }
-
 }
 
 unique_ptr<SocketConnection> Connect(const string& host, int port) {
@@ -156,11 +155,9 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
     if (s == INVALID_SOCKET) {
       continue;
     }
-    int result = connect(s, res->ai_addr, static_cast<int>(res->ai_addrlen));
+    auto result = connect(s, res->ai_addr, static_cast<int>(res->ai_addrlen));
     if (result == SOCKET_ERROR) {
       closesocket(s);
-      s = INVALID_SOCKET;
-      continue;
     } else {
       // success;
       freeaddrinfo(address);
@@ -168,8 +165,6 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
         return std::make_unique<SocketConnection>(s);
       }
       catch (const socket_error& e) {
-        s = INVALID_SOCKET;
-        continue;
       }
     }
   }
@@ -186,12 +181,7 @@ static void *get_in_addr(struct sockaddr* sa) {
   return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-unique_ptr<SocketConnection> Wrap(SOCKET socket, int port) {
-  static bool initialized = InitializeSockets();
-  if (!initialized) {
-    throw socket_error("Unable to initialize sockets.");
-  }
-
+unique_ptr<SocketConnection> Wrap(SOCKET socket) {
   string ip;
   if (!wwiv::core::GetRemotePeerAddress(socket, ip)) {
     ip = "*UNKNOWN*";
