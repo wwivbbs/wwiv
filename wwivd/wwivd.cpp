@@ -215,19 +215,22 @@ static bool launch_node(
 bool HandleAccept(
     const wwiv::sdk::Config& config, const wwivd_config_t& c,
     SOCKET sock, ConnectionType connection_type) {
-    
-  string remote_peer;
-  if (GetRemotePeerAddress(sock, remote_peer)) {
-    LOG(INFO) << "Connection from: " << remote_peer;
-  }
-  if (connection_type == ConnectionType::BINKP) {
-    // BINKP Connection.
-    if (!node_file(config, connection_type, 0)) {
-      launch_node(config, c, 0, sock, connection_type, remote_peer);
-      return true;
+
+  try {
+    string remote_peer;
+    if (GetRemotePeerAddress(sock, remote_peer)) {
+      LOG(INFO) << "Connection from: " << remote_peer;
+    }
+    if (connection_type == ConnectionType::BINKP) {
+      // BINKP Connection.
+      if (!node_file(config, connection_type, 0)) {
+        launch_node(config, c, 0, sock, connection_type, remote_peer);
+        return true;
+      }
+      closesocket(sock);
+      return false;
     }
 
-  } else {
     // Telnet or SSH connection.  Find open node number and launch the child.
     for (int node = c.start_node; node <= c.end_node; node++) {
       if (!node_file(config, connection_type, node).Exists()) {
@@ -240,8 +243,10 @@ bool HandleAccept(
     closesocket(sock);
     return true;
   }
-
-  closesocket(sock);
+  catch (const std::exception& e) {
+    closesocket(sock);
+    LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
+  }
   return false;
 }
 
@@ -296,6 +301,12 @@ int Main(CommandLine& cmdline) {
   }
 
   int max_fd = std::max<int>(std::max<int>(telnet_socket, ssh_socket), binkp_socket);
+
+  if (max_fd == INVALID_SOCKET) {
+    LOG(ERROR) << "Nothing to do!";
+    return 1;
+  }
+
   socklen_t addr_size = sizeof(sockaddr_in);
 
   SwitchToNonRootUser(wwiv_user);
