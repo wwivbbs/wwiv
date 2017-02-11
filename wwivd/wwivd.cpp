@@ -212,10 +212,24 @@ static bool launch_node(
   return true;
 }
 
-bool HandleAccept(
-    const wwiv::sdk::Config& config, const wwivd_config_t& c,
-    SOCKET sock, ConnectionType connection_type) {
+static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
+  if (port == c.telnet_port) {
+    return ConnectionType::TELNET;
+  }
+  else if (port == c.binkp_port) {
+    return ConnectionType::BINKP;
+  }
+  else if (port == c.ssh_port) {
+    return ConnectionType::SSH;
+  }
+  // TODO(rushfan) ???
+  return ConnectionType::TELNET;
+}
 
+static void HandleAccept(
+    const wwiv::sdk::Config& config, const wwivd_config_t& c, const accepted_socket_t& r) {
+  auto sock = r.client_socket;
+  auto connection_type = connection_type_for(c, r.port);
   try {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
@@ -225,31 +239,28 @@ bool HandleAccept(
       // BINKP Connection.
       if (!node_file(config, connection_type, 0)) {
         launch_node(config, c, 0, sock, connection_type, remote_peer);
-        return true;
+        return;
       }
       closesocket(sock);
-      return false;
+      return;
     }
 
     // Telnet or SSH connection.  Find open node number and launch the child.
     for (int node = c.start_node; node <= c.end_node; node++) {
       if (!node_file(config, connection_type, node).Exists()) {
         launch_node(config, c, node, sock, connection_type, remote_peer);
-        return true;
+        return;
       }
     }
     LOG(INFO) << "Sending BUSY. No available node to handle connection.";
     send(sock, "BUSY\r\n", 6, 0);
     closesocket(sock);
-    return true;
   }
   catch (const std::exception& e) {
     closesocket(sock);
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
-  return false;
 }
-
 
 /**
  *  This program is the manager of the nodes for the WWIV BBS software
@@ -283,31 +294,16 @@ int Main(CommandLine& cmdline) {
     LOG(ERROR) << "Unable to clear semaphores.";
   }
 
-  fd_set fds{};
-  SOCKET telnet_socket = INVALID_SOCKET;
-  SOCKET ssh_socket = INVALID_SOCKET;
-  SOCKET binkp_socket = INVALID_SOCKET;
+  SocketSet sockets;
   if (c.telnet_port > 0) {
-    LOG(INFO) << "Listening to telnet on port: " << c.telnet_port;
-    telnet_socket = CreateListenSocket(c.telnet_port);
+    sockets.add(c.telnet_port, "TELNET");
   }
   if (c.ssh_port > 0) {
-    LOG(INFO) << "Listening to SSH on port: " << c.ssh_port;
-    ssh_socket = CreateListenSocket(c.ssh_port);
+    sockets.add(c.ssh_port, "SSH");
   }
   if (c.binkp_port > 0) {
-    LOG(INFO) << "Listening to BINKP on port: " << c.binkp_port;
-    binkp_socket = CreateListenSocket(c.binkp_port);
+    sockets.add(c.binkp_port, "BINKP");
   }
-
-  int max_fd = std::max<int>(std::max<int>(telnet_socket, ssh_socket), binkp_socket);
-
-  if (max_fd == INVALID_SOCKET) {
-    LOG(ERROR) << "Nothing to do!";
-    return 1;
-  }
-
-  socklen_t addr_size = sizeof(sockaddr_in);
 
   SwitchToNonRootUser(wwiv_user);
 
@@ -315,74 +311,14 @@ int Main(CommandLine& cmdline) {
     const int num_instances = (c.end_node - c.start_node + 1);
     const int used_nodes = load_used_nodedata(config, c.start_node, c.end_node);
     LOG(INFO) << "Nodes in use: (" << used_nodes << "/" << num_instances << ")";
-
-    FD_ZERO(&fds);
-    if (c.telnet_port > 0) {
-      FD_SET(telnet_socket, &fds);
-    }
-    if (c.ssh_port > 0) {
-      FD_SET(ssh_socket, &fds);
-    }
-    if (c.binkp_port > 0) {
-      FD_SET(binkp_socket, &fds);
-    }
-    ConnectionType connection_type = ConnectionType::TELNET;
-    VLOG(1) << "About to call select. (" << max_fd << ")";
-    int status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
-    VLOG(1) << "After select.";
-    if (status < 0) {
-      LOG(ERROR) << "Error calling select; errno: " << errno;
+    auto r = sockets.Run();
+    if (r.client_socket == INVALID_SOCKET) {
+      LOG(INFO) << "Error accepting client socket. " << errno;
       return 2;
     }
 
-    struct sockaddr_in saddr = {};
-    int client_sock = INVALID_SOCKET;
-    if (c.telnet_port > 0 && FD_ISSET(telnet_socket, &fds)) {
-      client_sock = accept(telnet_socket, (sockaddr*)&saddr, &addr_size);
-      connection_type = ConnectionType::TELNET;
-    } else if (c.ssh_port > 0 && FD_ISSET(ssh_socket, &fds)) {
-      client_sock = accept(ssh_socket, (sockaddr*)&saddr, &addr_size);
-      connection_type = ConnectionType::SSH;
-    } else if (c.binkp_port > 0 && FD_ISSET(binkp_socket, &fds)) {
-      client_sock = accept(binkp_socket, (sockaddr*)&saddr, &addr_size);
-      connection_type = ConnectionType::BINKP;
-    } else {
-      LOG(ERROR) << "Unable to determine which socket triggered select!";
-      continue;
-    }
-
-    if (client_sock == INVALID_SOCKET) {
-      LOG(INFO)<< "Error accepting client socket. " << errno;
-      continue;
-    }
-
-#if defined (WWIVD_USE_LINUX_FORK) && defined(__unix__)
-    int childpid = fork();
-    if (childpid == -1) {
-      LOG(ERROR) << "Error spawning child process. " << errno;
-      continue ;
-    } else if (childpid == 0) {
-      // The rest of this needs to now be in a new thread
-      VLOG(2) << "In child process.";
-      return HandleAccept(config, c, client_sock, connection_type) ? 0 : 1;
-      // [ End of child process ]
-    } else {
-      // we're in the parent still.
-      // N.B.: We won't close this when using threads since we're still in
-      // the same process.
-      closesocket(client_sock);
-    }
-#else
-    // Changed the lambda to explicitly use the value for connection_type
-    // rather than by reference because linux is using ConnectionType::TELNET
-    // for ALL incoming connections when calling HandleAccept even though they
-    // are correct at initial connection time. issue992
-    auto f = [&config,&c,&client_sock,connection_type]{
-      HandleAccept(config, c, client_sock, connection_type);
-    };
-    std::thread client(f);
+    std::thread client(HandleAccept, std::ref(config), std::ref(c), std::ref(r));
     client.detach();
-#endif
   }
 
   return 1;

@@ -127,5 +127,51 @@ SOCKET CreateListenSocket(int port) {
   return sock;
 }
 
+SocketSet::SocketSet() {}
+SocketSet::~SocketSet() {}
+
+bool SocketSet::add(int port, const std::string& description) {
+  SOCKET s = CreateListenSocket(port);
+  if (s == INVALID_SOCKET) {
+    return false;
+  }
+  LOG(INFO) << "Listening to " << description << " on port: " << port;
+  socket_port_map_.emplace(s, port);
+  return true;
+}
+
+accepted_socket_t SocketSet::Run() {
+  SOCKET max_fd = 0;
+  fd_set fds{};
+  FD_ZERO(&fds);
+  for (const auto& e : socket_port_map_) {
+    if (e.first > max_fd) { max_fd = e.first; }
+    FD_SET(e.first, &fds);
+  }
+
+  if (max_fd == INVALID_SOCKET) {
+    LOG(ERROR) << "Nothing to do!";
+    return{ INVALID_SOCKET, -1 };
+  }
+
+  VLOG(1) << "About to call select. (" << max_fd << ")";
+  int status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
+  VLOG(1) << "After select.";
+  if (status < 0) {
+    LOG(ERROR) << "Error calling select; errno: " << errno;
+    return{ INVALID_SOCKET, -1 };
+  }
+
+  for (const auto& e : socket_port_map_) {
+    if (FD_ISSET(e.first, &fds)) {
+      socklen_t addr_size = sizeof(sockaddr_in);
+      struct sockaddr_in saddr = {};
+      SOCKET client_sock = accept(e.first, (sockaddr*)&saddr, &addr_size);
+      return{ client_sock, e.second };
+    }
+  }
+  return{ INVALID_SOCKET, -1 };
+}
+
 }  // namespace os
 }  // namespace wwiv

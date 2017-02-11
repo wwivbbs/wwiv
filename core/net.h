@@ -20,6 +20,7 @@
 #define __INCLUDED_WWIV_CORE_NET_H__
 #pragma once
 
+#include <map>
 #include <string>
 
 #if defined( _WIN32 )
@@ -58,6 +59,39 @@ bool GetRemotePeerAddress(SOCKET socket, std::string& ip);
 bool GetRemotePeerHostname(SOCKET socket, std::string& hostname);
 
 SOCKET CreateListenSocket(int port);
+
+/** 
+ * Once a socket is accepted from the remote system.  Return
+ * the socket and also the port that it was accepted from.
+ */
+struct accepted_socket_t {
+  SOCKET client_socket;
+  int port;
+};
+
+/**
+ * Handles select over a set of sockets.
+ */
+class SocketSet {
+public:
+  SocketSet();
+  virtual ~SocketSet();
+
+  /** 
+   * Adds a port that the SocketSet will listen to.
+   */
+  bool add(int port, const std::string& description);
+
+  /** 
+   * Runs the select/accept loop, returning the socket/port pair that was accepted.
+   * If no socket was accepted, port and socket are both -1.
+   */
+  accepted_socket_t Run();
+
+private:
+  std::map<SOCKET, int> socket_port_map_;
+
+};
 
 }  // namespace core
 }  // namespace wwiv
