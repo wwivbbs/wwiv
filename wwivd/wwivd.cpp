@@ -192,6 +192,8 @@ static std::vector<std::string> read_lines(SocketConnection& conn) {
     auto s = conn.read_line(1024, std::chrono::milliseconds(10));
     if (!s.empty()) {
       lines.push_back(s);
+    } else {
+      break;
     }
   }
   return lines;
