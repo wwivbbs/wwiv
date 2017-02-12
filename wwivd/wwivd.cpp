@@ -190,9 +190,9 @@ static std::vector<std::string> read_lines(SocketConnection& conn) {
   std::vector<std::string> lines;
   while (true) {
     auto s = conn.read_line(1024, std::chrono::milliseconds(10));
-    if (s.empty()) break;
-    LOG(INFO) << s;
-    lines.push_back(s);
+    if (!s.empty()) {
+      lines.push_back(s);
+    }
   }
   return lines;
 }
