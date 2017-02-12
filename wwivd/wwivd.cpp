@@ -56,6 +56,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/datetime.h"
@@ -175,7 +176,7 @@ private:
 static std::vector<std::string> read_lines(SocketConnection& conn) {
   std::vector<std::string> lines;
   while (true) {
-    auto s = conn.read_line(1024, std::chrono::seconds(1));
+    auto s = conn.read_line(1024, std::chrono::milliseconds(10));
     if (s.empty()) break;
     LOG(INFO) << s;
     lines.push_back(s);
@@ -219,10 +220,11 @@ public:
   }
 
   void SendResponse(HttpResponse& r) {
+    LOG(INFO) << "SendResponse()";
     const auto d = std::chrono::seconds(1);
     conn_.send_line(StrCat("HTTP/1.1 ", r.status, " OK"), d);
     conn_.send_line(StrCat("Date: ", wwiv::sdk::daten_to_wwivnet_time(time(nullptr))), d);
-    conn_.send_line("Server: wwivd", d);
+    conn_.send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
     if (!r.text.empty()) {
       auto content_length = r.text.size();
       conn_.send_line(StrCat("Content-Length: ", content_length), d);
@@ -233,11 +235,13 @@ public:
       conn_.send_line("Connection: close", d);
       conn_.send("\r\n", d);
     }
+    LOG(INFO) << "SendResponse(done)";
   }
 
   bool Run() {
+    LOG(INFO) << "HttpServer::Run()";
     const auto d = std::chrono::seconds(1);
-    auto inital_requestline = conn_.read_line(1024, std::chrono::seconds(1));
+    auto inital_requestline = conn_.read_line(1024, std::chrono::milliseconds(10));
     if (inital_requestline.empty()) {
       return false;
     }
@@ -396,10 +400,7 @@ static bool launch_node(
     NodeManager* nodes,
     int node_number, int sock, ConnectionType connection_type,
     const string& remote_peer) {
-  ScopeExit at_exit([=] {
-    closesocket(sock);
-  });
-
+  
   string pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launch_node(" << node_number << ")";
 
@@ -465,15 +466,15 @@ static void HandleAccept(
     const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
     const accepted_socket_t r, const std::string& remote_peer) {
   auto sock = r.client_socket;
+  ScopeExit at_exit([=] { closesocket(sock); });
   auto connection_type = connection_type_for(c, r.port);
+
   try {
     if (connection_type == ConnectionType::BINKP) {
       // BINKP Connection.
       if (!node_file(config, connection_type, 0)) {
         launch_node(config, c, nodes, 0, sock, connection_type, remote_peer);
-        return;
       }
-      closesocket(sock);
       return;
     }
 
@@ -486,10 +487,8 @@ static void HandleAccept(
     }
     LOG(INFO) << "Sending BUSY. No available node to handle connection.";
     send(sock, "BUSY\r\n", 6, 0);
-    closesocket(sock);
   }
   catch (const std::exception& e) {
-    closesocket(sock);
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
 }
@@ -505,16 +504,20 @@ int Main(CommandLine& cmdline) {
     wwiv_dir = cmdline.arg("bbsdir").as_string();
   }
   VLOG(2) << "Using WWIV_DIR: " << wwiv_dir;
+
   string wwiv_user = environment_variable("WWIV_USER");
-  VLOG(2) << "Using WWIV_USER(1): " << wwiv_user;
   if (wwiv_user.empty()) {
     wwiv_user = cmdline.arg("wwiv_user").as_string();
+    VLOG(2) << "Using WWIV_USER(cmdline): " << wwiv_user;
   }
-  VLOG(2) << "Using WWIV_USER: " << wwiv_user;
+  else {
+    VLOG(2) << "Using WWIV_USER(env): " << wwiv_user;
+  }
+
   const Config config(wwiv_dir);
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT";
-    return 1;
+    return EXIT_FAILURE;
   }
 
   const wwivd_config_t c = LoadIniConfig(config);
@@ -576,7 +579,7 @@ int Main(CommandLine& cmdline) {
     }
   }
 
-  return 1;
+  return EXIT_FAILURE;
 }
 
 int main(int argc, char* argv[]) {
@@ -589,11 +592,11 @@ int main(int argc, char* argv[]) {
 
   if (!cmdline.Parse()) {
     cout << cmdline.GetHelp() << endl;
-    return 1;
+    return EXIT_FAILURE;
   }
   if (cmdline.help_requested()) {
     cout << cmdline.GetHelp() << endl;
-    return 0;
+    return EXIT_SUCCESS;
   }
 
   LOG(INFO) << "wwivd - WWIV Daemon.";
