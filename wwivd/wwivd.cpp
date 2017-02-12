@@ -557,7 +557,7 @@ int Main(CommandLine& cmdline) {
     }
     string remote_peer;
     if (GetRemotePeerAddress(r.client_socket, remote_peer)) {
-      auto cc = get_dns_cc("50.185.66.24" /*remote_peer*/, "zz.countries.nerd.dk");
+      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
       LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
         << "; coutry code: " << cc;
     }
