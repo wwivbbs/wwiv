@@ -27,6 +27,7 @@
 #endif  // _WIN32
 
 #include "core/log.h"
+#include "core/scope_exit.h"
 #include "core/socket_exceptions.h"
 #include "core/strings.h"
 
@@ -125,6 +126,42 @@ SOCKET CreateListenSocket(int port) {
   }
 
   return sock;
+}
+
+std::string dns_rbl_name(const std::string& address, const std::string& rbl_address) {
+  string out;
+  auto v = SplitString(address, ".");
+  for (auto it = v.rbegin(); it != v.rend(); it++) {
+    out.append(*it);
+    out.push_back('.');
+  }
+  out.append(rbl_address);
+  return out;
+}
+
+bool on_dns_dbl(const std::string address, const std::string& rbl_address) {
+  string s = dns_rbl_name(address, rbl_address);
+  struct addrinfo *res = nullptr;
+  auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
+  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
+  return result == 0;
+}
+
+int get_dns_cc(const std::string address, const std::string& rbl_address) {
+  string s = dns_rbl_name(address, rbl_address);
+  struct addrinfo *res = nullptr;
+  auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
+  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
+  if (result != 0) {
+    return 0;
+  }
+
+  if (res->ai_family == AF_INET) {
+    struct sockaddr_in *ipv4 = (struct sockaddr_in *) res->ai_addr;
+    uint32_t b = htonl(ipv4->sin_addr.s_addr) & 0x0000ffff;
+    return b;
+  }
+  return 0;
 }
 
 SocketSet::SocketSet() {}

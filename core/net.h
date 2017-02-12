@@ -60,6 +60,11 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname);
 
 SOCKET CreateListenSocket(int port);
 
+/**
+ * Gets the DNS country code using rbl_address
+ */
+int get_dns_cc(const std::string address, const std::string& rbl_address);
+
 /** 
  * Once a socket is accepted from the remote system.  Return
  * the socket and also the port that it was accepted from.

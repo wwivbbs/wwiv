@@ -43,7 +43,7 @@ struct wwivd_config_t {
   int local_node;
 };
 
-enum class ConnectionType { SSH, TELNET, BINKP };
+enum class ConnectionType { UNKNOWN, SSH, TELNET, BINKP, HTTP };
 
 void BeforeStartServer();
 

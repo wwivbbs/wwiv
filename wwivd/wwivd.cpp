@@ -19,12 +19,14 @@
 
 #include <iostream>
 #include <map>
+#include <mutex>
 #include <string>
 #include <thread>
 
 #include <signal.h>
 #include <string>
 #include <sys/types.h>
+#include <vector>
 
 #ifdef _WIN32
 
@@ -77,6 +79,98 @@ pid_t bbs_pid = 0;
 #ifdef DELETE
 #undef DELETE
 #endif  // DELETE
+
+static std::string to_string(ConnectionType t) {
+  switch (t) {
+  case ConnectionType::BINKP: return "BinkP";
+  case ConnectionType::HTTP: return "HTTP";
+  case ConnectionType::SSH: return "SSH";
+  case ConnectionType::TELNET: return "Telnet";
+  case ConnectionType::UNKNOWN: return "*UNKNOWN*";
+  }
+  return "*UNKNOWN*";
+}
+
+struct NodeStatus {
+public:
+  ConnectionType type = ConnectionType::UNKNOWN;
+  int node = 0;
+  std::string description;
+  bool connected = false;
+};
+
+class NodeManager {
+public:
+  NodeManager(int start, int end) : start_(start), end_(end) {
+    for (int i = start; i <= end; i++) {
+      clear_node(i, ConnectionType::UNKNOWN);
+    }
+    clear_node(0, ConnectionType::BINKP);
+    clear_node(0, ConnectionType::HTTP);
+  }
+  virtual ~NodeManager() {}
+
+  std::string status_string(const NodeStatus& n) {
+    std::string s = n.description;
+    if (n.connected) {
+      s += " [";
+      s += to_string(n.type);
+      s += "]";
+    }
+    return s;
+  }
+
+  std::vector<std::string> status_lines() {
+    std::lock_guard<std::mutex> lock(mu_);
+    std::vector<std::string> v;
+    for (const auto& n : nodes_) {
+      v.push_back(StrCat("Node #", n.first, " ", status_string(n.second)));
+    }
+    v.push_back(StrCat("BinkP ", binkp_.description));
+    v.push_back(StrCat("HTTP ", http_.description));
+
+    return v;
+  }
+
+  NodeStatus& status_for_unlocked(int node, ConnectionType type) {
+    if (node == 0) {
+      if (type == ConnectionType::HTTP) {
+        return http_;
+      }
+      else if (type == ConnectionType::BINKP) {
+        return binkp_;
+      }
+    }
+    return nodes_[node];
+  }
+
+  void set_node(int node, ConnectionType type, const std::string& description) {
+    std::lock_guard<std::mutex> lock(mu_);
+    auto& n = status_for_unlocked(node, type);
+    n.node = node;
+    n.type = type;
+    n.description = description;
+    n.connected = true;
+  }
+
+  void clear_node(int node, ConnectionType type) {
+    std::lock_guard<std::mutex> lock(mu_);
+    auto& n = status_for_unlocked(node, type);
+    n.node = node;
+    n.type = type;
+    n.connected = false;
+    n.description = "Waiting for Call";
+  }
+
+private:
+  int start_ = 0;
+  int end_ = 0;
+  std::map<int, NodeStatus> nodes_;
+  NodeStatus binkp_;
+  NodeStatus http_;
+
+  mutable std::mutex mu_;
+};
 
 static std::vector<std::string> read_lines(SocketConnection& conn) {
   std::vector<std::string> lines;
@@ -176,7 +270,7 @@ private:
 
 class StatusHandler : public HttpHandler {
 public:
-  StatusHandler(int num, int used) : num_(num), used_(used) {}
+  StatusHandler(NodeManager* nodes, int num, int used) : nodes_(nodes), num_(num), used_(used) {}
 
   HttpResponse Handle(HttpMethod method, const std::string& path, std::vector<std::string> headers) override {
     // We only handle status
@@ -184,12 +278,22 @@ public:
     response.status = 200;
     response.headers.emplace("Content-Type: ", "text/json");
     std::ostringstream ss;
-    ss << "{ \"status\": [ { \"num_instances\" : " << num_ << " }, { \"used_instances\": " << used_ << " } ] }";
+    ss << "{\r\n";
+    ss << "  \"num_instances\" : " << num_ << "," << "\r\n";
+    ss << "  \"used_instances\": " << used_ << ", " << "\r\n";
+    ss << "  \"status\": [" << "\r\n";
+    const auto v = nodes_->status_lines();
+    for (const auto& l : v) {
+      ss << "    { \"" << l << "\" }, \r\n";
+    }
+    ss << "  ]" << "\r\n";
+    ss << "}" << "\r\n";
     response.text = ss.str();
     return response;
   }
 
 private:
+  NodeManager* nodes_;
   int num_ = 0;
   int used_ = 0;
 };
@@ -289,6 +393,7 @@ static int load_used_nodedata(const Config& config, int start_node, int end_node
 
 static bool launch_node(
     const Config& config, const wwivd_config_t& c,
+    NodeManager* nodes,
     int node_number, int sock, ConnectionType connection_type,
     const string& remote_peer) {
   ScopeExit at_exit([=] {
@@ -307,6 +412,7 @@ static bool launch_node(
   semaphore_file.Write(StringPrintf("Created by pid: %s\nremote peer: %s",
       pid.c_str(), remote_peer.c_str()));
   semaphore_file.Close();
+  nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
   map<char, string> params = {
       {'N', std::to_string(node_number) },
@@ -334,7 +440,7 @@ static bool launch_node(
   } else {
     VLOG(2) << "Deleted semaphore file: " << semaphore_file.full_pathname();
   }
-
+  nodes->clear_node(node_number, connection_type);
   return true;
 }
 
@@ -348,20 +454,23 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
   else if (port == c.ssh_port) {
     return ConnectionType::SSH;
   }
+  else if (port == c.http_port) {
+    return ConnectionType::HTTP;
+  }
   // TODO(rushfan) ???
   return ConnectionType::TELNET;
 }
 
 static void HandleAccept(
-    const wwiv::sdk::Config& config, const wwivd_config_t& c, const accepted_socket_t r,
-    const std::string& remote_peer) {
+    const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
+    const accepted_socket_t r, const std::string& remote_peer) {
   auto sock = r.client_socket;
   auto connection_type = connection_type_for(c, r.port);
   try {
     if (connection_type == ConnectionType::BINKP) {
       // BINKP Connection.
       if (!node_file(config, connection_type, 0)) {
-        launch_node(config, c, 0, sock, connection_type, remote_peer);
+        launch_node(config, c, nodes, 0, sock, connection_type, remote_peer);
         return;
       }
       closesocket(sock);
@@ -371,7 +480,7 @@ static void HandleAccept(
     // Telnet or SSH connection.  Find open node number and launch the child.
     for (int node = c.start_node; node <= c.end_node; node++) {
       if (!node_file(config, connection_type, node).Exists()) {
-        launch_node(config, c, node, sock, connection_type, remote_peer);
+        launch_node(config, c, nodes, node, sock, connection_type, remote_peer);
         return;
       }
     }
@@ -417,6 +526,8 @@ int Main(CommandLine& cmdline) {
     LOG(ERROR) << "Unable to clear semaphores.";
   }
 
+  NodeManager nodes(c.start_node, c.end_node);
+
   SocketSet sockets;
   if (c.telnet_port > 0) {
     sockets.add(c.telnet_port, "TELNET");
@@ -446,19 +557,21 @@ int Main(CommandLine& cmdline) {
     }
     string remote_peer;
     if (GetRemotePeerAddress(r.client_socket, remote_peer)) {
-      LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer;
+      auto cc = get_dns_cc("50.185.66.24" /*remote_peer*/, "zz.countries.nerd.dk");
+      LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
+        << "; coutry code: " << cc;
     }
     if (r.port == c.http_port) {
       // HTTP Request
       SocketConnection conn(r.client_socket);
       HttpServer h(conn);
-      StatusHandler status(num_instances, used_nodes);
+      StatusHandler status(&nodes, num_instances, used_nodes);
       h.add(HttpMethod::GET, "/status", &status);
       h.Run();
     }
     else {
       // BBS or BinkP Request
-      std::thread client(HandleAccept, std::ref(config), std::ref(c), r, std::ref(remote_peer));
+      std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r, std::ref(remote_peer));
       client.detach();
     }
   }
