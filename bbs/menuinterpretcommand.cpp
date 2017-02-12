@@ -363,9 +363,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "TextEdit", [](MenuItemContext& context) {
       TextEdit();
     } },
-    { "UserEdit", [](MenuItemContext& context) {
-      UserEdit();
-    } },
     { "VotePrint", [](MenuItemContext& context) {
       VotePrint();
     } },

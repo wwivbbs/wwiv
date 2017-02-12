@@ -23,8 +23,6 @@
 void deluser(int user_number);
 void print_data(int user_number, wwiv::sdk::User* pUser, bool bLongFormat, bool bClearScreen);
 void auto_val(int n, wwiv::sdk::User* pUser);
-void uedit(int usern, int other);
-void print_affil(wwiv::sdk::User* pUser);
 
 
 #endif  // __INCLUDED_BBS_UEDIT_H__

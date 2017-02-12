@@ -69,7 +69,6 @@
 #include "bbs/subacc.h"
 #include "bbs/syschat.h"
 #include "bbs/sysoplog.h"
-#include "bbs/uedit.h"
 #include "bbs/utility.h"
 #include "bbs/voteedit.h"
 #include "bbs/remote_io.h"

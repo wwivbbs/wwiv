@@ -1171,10 +1171,6 @@ void readmail(int mode) {
         if (m.fromsys == 0 && cs() && m.fromuser != 65535) {
           if (ch == 'V') {
             valuser(m.fromuser);
-          } else if (ch == 'U') {
-            uedit(m.fromuser, UEDIT_NONE);
-          } else {
-            uedit(m.fromuser, UEDIT_FULLINFO | UEDIT_CLEARSCREEN);
           }
         } else if (cs()) {
           bout << "\r\nMail from another system.\r\n\n";

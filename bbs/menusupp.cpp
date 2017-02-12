@@ -63,7 +63,6 @@
 #include "bbs/readmail.h"
 #include "bbs/subedit.h"
 #include "bbs/sysoplog.h"
-#include "bbs/uedit.h"
 #include "bbs/valscan.h"
 #include "bbs/vote.h"
 #include "bbs/voteedit.h"
@@ -598,12 +597,6 @@ void TextEdit() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   sysoplog() << "@ Ran Text Edit";
   text_edit();
-}
-
-void UserEdit() {
-  write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
-  sysoplog() << "@ Ran User Edit";
-  uedit(a()->usernum, UEDIT_NONE);
 }
 
 void VotePrint() {

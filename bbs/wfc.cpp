@@ -64,7 +64,6 @@
 #include "bbs/ssh.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
-#include "bbs/uedit.h"
 #include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/voteedit.h"
@@ -520,7 +519,6 @@ int WFC::doWFCEvents() {
         prstatus();
         bout.getkey();
         break;
-        // UserEdit
       case 'T':
         if (a()->terminal_command.empty()) {
           bout << "Terminal Command not specified. " << wwiv::endl << " Please set TERMINAL_CMD in WWIV.INI"
@@ -530,12 +528,8 @@ int WFC::doWFCEvents() {
         }
         ExecExternalProgram(a()->terminal_command, INST_FLAGS_NONE);
         break;
-      case 'U':
-        write_inst(INST_LOC_UEDIT, 0, INST_FLAGS_NONE);
-        uedit(1, UEDIT_NONE);
-        break;
-        // InitVotes
       case 'V': {
+        // InitVotes
         Clear();
         write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
         ivotes();

@@ -70,7 +70,6 @@ void ReadNetLog();
 void PrintPending();
 void PrintStatus();
 void TextEdit();
-void UserEdit();
 void VotePrint();
 void YesterdaysLog();
 void ZLog();
