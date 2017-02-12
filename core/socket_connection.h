@@ -50,8 +50,11 @@ public:
 
   int receive(void* data, int size, std::chrono::duration<double> d) override;
   std::string receive(int size, std::chrono::duration<double> d) override;
+  std::string read_line(int max_size, std::chrono::duration<double> d);
   int send(const void* data, int size, std::chrono::duration<double> d) override;
   int send(const std::string& s, std::chrono::duration<double> d) override;
+  /** Sends a line s and \r\n */
+  int send_line(const std::string& s, std::chrono::duration<double> d);
 
   uint16_t read_uint16(std::chrono::duration<double> d) override;
   uint8_t read_uint8(std::chrono::duration<double> d) override;

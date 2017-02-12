@@ -50,11 +50,13 @@
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
+#include "core/socket_connection.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
+#include "sdk/datetime.h"
 #include "sdk/vardec.h"
 #include "sdk/filenames.h"
 #include "wwivd/wwivd.h"
@@ -71,6 +73,127 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 pid_t bbs_pid = 0;
+
+#ifdef DELETE
+#undef DELETE
+#endif  // DELETE
+
+static std::vector<std::string> read_lines(SocketConnection& conn) {
+  std::vector<std::string> lines;
+  while (true) {
+    auto s = conn.read_line(1024, std::chrono::seconds(1));
+    if (s.empty()) break;
+    LOG(INFO) << s;
+    lines.push_back(s);
+  }
+  return lines;
+}
+
+enum class HttpMethod {
+  OPTIONS,
+  GET,
+  HEAD,
+  POST,
+  PUT,
+  DELETE,
+  TRACE,
+  CONNECT
+};
+
+class HttpResponse {
+public:
+  int status;
+  std::map<std::string, std::string> headers;
+  std::string text;
+};
+
+class HttpHandler {
+public:
+  virtual HttpResponse Handle(HttpMethod method, const std::string& path, std::vector<std::string> headers) = 0;
+};
+
+class HttpServer {
+public:
+  HttpServer(SocketConnection& conn) : conn_(conn) {}
+  virtual ~HttpServer() {}
+  bool add(HttpMethod method, const std::string& root, HttpHandler* handler) {
+    if (method != HttpMethod::GET) {
+      return false;
+    }
+    get_.emplace(root, handler);
+    return true;
+  }
+
+  void SendResponse(HttpResponse& r) {
+    const auto d = std::chrono::seconds(1);
+    conn_.send_line(StrCat("HTTP1.1 ", r.status, " OK"), d);
+    conn_.send_line(StrCat("Date: ", wwiv::sdk::daten_to_wwivnet_time(time(nullptr))), d);
+    conn_.send_line("Server: wwivd", d);
+    if (!r.text.empty()) {
+      auto content_length = r.text.size();
+      conn_.send_line(StrCat("Content-Length: ", content_length), d);
+      conn_.send("\r\n", d);
+      conn_.send(r.text, d);
+    }
+    else {
+      conn_.send_line("Connection: close", d);
+      conn_.send("\r\n", d);
+    }
+  }
+
+  bool Run() {
+    const auto d = std::chrono::seconds(1);
+    auto inital_requestline = conn_.read_line(1024, std::chrono::seconds(1));
+    if (inital_requestline.empty()) {
+      return false;
+    }
+    auto cmd_parts = SplitString(inital_requestline, " ");
+    if (cmd_parts.size() < 3) {
+      return false;
+    }
+    auto path = cmd_parts.at(1);
+    auto headers = read_lines(conn_);
+    auto cmd = cmd_parts.at(0);
+    if (cmd == "GET") {
+      // handle get.  Read headers
+      for (const auto& e : get_) {
+        if (starts_with(path, e.first)) {
+          auto r = e.second->Handle(HttpMethod::GET, path, headers);
+          SendResponse(r);
+          return true;
+        }
+      }
+    }
+    HttpResponse r500{ 500,{}, "" };
+    SendResponse(r500);
+    return false;
+  }
+
+private:
+  SocketConnection conn_;
+  std::map<std::string, HttpHandler*> get_;
+};
+
+class StatusHandler : public HttpHandler {
+public:
+  StatusHandler(int num, int used) : num_(num), used_(used) {}
+
+  HttpResponse Handle(HttpMethod method, const std::string& path, std::vector<std::string> headers) override {
+    // We only handle status
+    HttpResponse response;
+    response.status = 200;
+    response.headers.emplace("Content-Type: ", "text/json");
+    std::ostringstream ss;
+    ss << "{ \"status\": [ { \"num_instances\" : " << num_ << " }, { \"used_instances\": " << used_ << " } ] }";
+    response.text = ss.str();
+    return response;
+  }
+
+private:
+  int num_ = 0;
+  int used_ = 0;
+};
+
 
 static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
@@ -116,6 +239,9 @@ static wwivd_config_t LoadIniConfig(const Config& config) {
 
     c.binkp_port = ini.value<int>("binkp_port", -1);
     c.binkp_cmd = ini.value<string>("binkp_command", "./networkb --receive --handle=@H");
+
+    c.http_port = ini.value<int>("http_port", -1);
+    c.http_address = ini.value<string>("http_address", "127.0.0.1");
 
     c.local_node = ini.value<int>("local_node", 1);
     c.start_node = ini.value<int>("start_node", 2);
@@ -301,6 +427,11 @@ int Main(CommandLine& cmdline) {
   if (c.binkp_port > 0) {
     sockets.add(c.binkp_port, "BINKP");
   }
+  if (c.http_port > 0) {
+    sockets.add(c.http_port, "HTTP");
+    // TODO(rushfan):   
+    // http_address;
+  }
 
   SwitchToNonRootUser(wwiv_user);
 
@@ -317,8 +448,19 @@ int Main(CommandLine& cmdline) {
     if (GetRemotePeerAddress(r.client_socket, remote_peer)) {
       LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer;
     }
-    std::thread client(HandleAccept, std::ref(config), std::ref(c), r, std::ref(remote_peer));
-    client.detach();
+    if (r.port == c.http_port) {
+      // HTTP Request
+      SocketConnection conn(r.client_socket);
+      HttpServer h(conn);
+      StatusHandler status(num_instances, used_nodes);
+      h.add(HttpMethod::GET, "/status", &status);
+      h.Run();
+    }
+    else {
+      // BBS or BinkP Request
+      std::thread client(HandleAccept, std::ref(config), std::ref(c), r, std::ref(remote_peer));
+      client.detach();
+    }
   }
 
   return 1;

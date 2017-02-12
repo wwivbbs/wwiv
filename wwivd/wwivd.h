@@ -35,6 +35,9 @@ struct wwivd_config_t {
   int binkp_port = -1;
   std::string binkp_cmd;
 
+  int http_port = -1;
+  std::string http_address;
+
   int start_node;
   int end_node;
   int local_node;

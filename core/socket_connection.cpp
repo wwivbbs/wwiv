@@ -233,6 +233,29 @@ string SocketConnection::receive(int size, duration<double> d) {
   return string(data.get(), num_read);
 }
 
+std::string SocketConnection::read_line(int max_size, std::chrono::duration<double> d) {
+  string s;
+  try {
+    while (true) {
+      char data = 0;
+      int num_read = read_TYPE<char>(sock_, &data, d);
+      if (!open_) {
+        throw socket_closed_error("read_line: socket not open");
+      }
+      if (num_read == 0) {
+        break;
+      }
+      s.push_back(data);
+      if (data == '\n') {
+        break;
+      }
+    }
+  }
+  catch (const timeout_error&) {
+  }
+  return s;
+}
+
 int SocketConnection::send(const void* data, int size, duration<double>) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
   if (open_ && sent != size) {
@@ -243,6 +266,10 @@ int SocketConnection::send(const void* data, int size, duration<double>) {
 
 int SocketConnection::send(const std::string& s, std::chrono::duration<double> d) {
   return send(s.data(), s.size(), d);
+}
+
+int SocketConnection::send_line(const std::string& s, std::chrono::duration<double> d) {
+  return send(s + "\r\n", d);
 }
 
 uint16_t SocketConnection::read_uint16(duration<double> d) {
