@@ -61,6 +61,11 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname);
 SOCKET CreateListenSocket(int port);
 
 /**
+ * Returns true if address is contained in the DNSRBL rbl_address.
+ */
+bool on_dns_dbl(const std::string address, const std::string& rbl_address);
+
+/**
  * Gets the DNS country code using rbl_address
  */
 int get_dns_cc(const std::string address, const std::string& rbl_address);

@@ -128,7 +128,12 @@ SOCKET CreateListenSocket(int port) {
   return sock;
 }
 
-std::string dns_rbl_name(const std::string& address, const std::string& rbl_address) {
+/**
+ * DBSRBL uses a special format for the IP addresses, so this function
+ * maps the FQDN a.b.c.d to d.c.b.a.rbl_address so it may be used to
+ * lookup against a DNSRBL.
+ */
+static std::string dns_rbl_name(const std::string& address, const std::string& rbl_address) {
   string out;
   auto v = SplitString(address, ".");
   for (auto it = v.rbegin(); it != v.rend(); it++) {
