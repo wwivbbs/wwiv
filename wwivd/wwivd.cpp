@@ -126,7 +126,7 @@ public:
 
   void SendResponse(HttpResponse& r) {
     const auto d = std::chrono::seconds(1);
-    conn_.send_line(StrCat("HTTP1.1 ", r.status, " OK"), d);
+    conn_.send_line(StrCat("HTTP/1.1 ", r.status, " OK"), d);
     conn_.send_line(StrCat("Date: ", wwiv::sdk::daten_to_wwivnet_time(time(nullptr))), d);
     conn_.send_line("Server: wwivd", d);
     if (!r.text.empty()) {
