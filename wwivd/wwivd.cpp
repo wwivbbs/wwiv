@@ -46,6 +46,14 @@
 #include <sys/wait.h>
 #endif  // __linux__
 
+#include <cereal/cereal.hpp>
+#include <cereal/access.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/vector.hpp>
+#include <cereal/archives/json.hpp>
+
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/inifile.h"
@@ -319,26 +327,48 @@ private:
   std::map<std::string, HttpHandler*> get_;
 };
 
+struct status_reponse_t {
+  int num_instances;
+  int used_instances;
+  std::vector<std::string> lines;
+
+  template <class Archive>
+  void serialize(Archive & ar) {
+    ar(cereal::make_nvp("num_instances", num_instances), 
+       cereal::make_nvp("used_instances", used_instances), 
+       cereal::make_nvp("lines", lines));
+  }
+};
+
+std::string ToJson(status_reponse_t r) {
+  std::ostringstream ss;
+  try {
+    cereal::JSONOutputArchive save(ss);
+    save(cereal::make_nvp("status", r));
+  }
+  catch (const cereal::RapidJSONException& e) {
+    LOG(ERROR) << e.what();
+  }
+  return ss.str();
+}
+
 class StatusHandler : public HttpHandler {
 public:
   StatusHandler(NodeManager* nodes, int num, int used) : nodes_(nodes), num_(num), used_(used) {}
 
-  HttpResponse Handle(HttpMethod method, const std::string& path, std::vector<std::string> headers) override {
+  HttpResponse Handle(HttpMethod, const std::string&, std::vector<std::string> headers) override {
     // We only handle status
     HttpResponse response(200);
     response.headers.emplace("Content-Type: ", "text/json");
-    std::ostringstream ss;
-    ss << "{\r\n";
-    ss << "  \"num_instances\" : " << num_ << "," << "\r\n";
-    ss << "  \"used_instances\": " << used_ << ", " << "\r\n";
-    ss << "  \"status\": [" << "\r\n";
+
+    status_reponse_t r{};
+    r.num_instances = num_;
+    r.used_instances = used_;
     const auto v = nodes_->status_lines();
     for (const auto& l : v) {
-      ss << "    { \"" << l << "\" }, \r\n";
+      r.lines.push_back(l);
     }
-    ss << "  ]" << "\r\n";
-    ss << "}" << "\r\n";
-    response.text = ss.str();
+    response.text = ToJson(r);
     return response;
   }
 

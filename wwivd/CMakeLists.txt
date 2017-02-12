@@ -2,6 +2,7 @@
 cmake_minimum_required (VERSION 2.6)
 project (wwivd)
 include_directories(..)
+include_directories(../deps/cereal/include)
 
 set(WWIVD_SOURCES wwivd.cpp wwivd_unix.cpp)
 if (UNIX)
