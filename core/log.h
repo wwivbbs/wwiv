@@ -60,6 +60,10 @@
 #define ELPP_CUSTOM_COUT std::cerr
 #define ELPP_WINSOCK2
 #define ELPP_DISABLE_DEFAULT_CRASH_HANDLING
+// We need the thread safe logger.
+#define ELPP_THREAD_SAFE
+#define ELPP_FORCE_USE_STD_THREAD
+
 
 #include "deps/easylogging/easylogging++.h"
 

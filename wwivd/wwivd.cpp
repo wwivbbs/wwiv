@@ -80,6 +80,7 @@ using std::map;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
@@ -184,6 +185,46 @@ public:
     n.description = "Waiting for Call";
   }
 
+  int nodes_used() const {
+    std::lock_guard<std::mutex> lock(mu_);
+    int count = 0;
+    for (const auto& e : nodes_) {
+      if (e.second.connected) {
+        count++;
+      }
+    }
+    return count;
+  }
+
+  int AquireNode(ConnectionType type) {
+    std::lock_guard<std::mutex> lock(mu_);
+    for (auto& e : nodes_) {
+      if (!e.second.connected) {
+        e.second.connected = true;
+        e.second.type = type;
+        e.second.description = "Connecting...";
+        return e.second.node;
+      }
+    }
+    // None
+    return 0;
+  }
+
+  bool ReleaseNode(int node) {
+    std::lock_guard<std::mutex> lock(mu_);
+    if (!contains(nodes_, node)) {
+      return false;
+    }
+    auto& n = nodes_.at(node);
+    if (!n.connected) {
+      return false;
+    }
+    n.connected = false;
+    n.type = ConnectionType::UNKNOWN;
+    n.description = "Waiting For Call";
+    return true;
+  }
+
 private:
   int start_ = 0;
   int end_ = 0;
@@ -271,7 +312,6 @@ public:
   }
 
   void SendResponse(HttpResponse& r) {
-    LOG(INFO) << "SendResponse()";
     static const auto statuses = CreateHttpStatusMap();
     const auto d = std::chrono::seconds(1);
     conn_.send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);
@@ -287,11 +327,9 @@ public:
       conn_.send_line("Connection: close", d);
       conn_.send("\r\n", d);
     }
-    LOG(INFO) << "SendResponse(done)";
   }
 
   bool Run() {
-    LOG(INFO) << "HttpServer::Run()";
     const auto d = std::chrono::seconds(1);
     auto inital_requestline = conn_.read_line(1024, std::chrono::milliseconds(10));
     if (inital_requestline.empty()) {
@@ -476,7 +514,11 @@ static bool launch_node(
     NodeManager* nodes,
     int node_number, int sock, ConnectionType connection_type,
     const string& remote_peer) {
-  
+  ScopeExit at_exit([=] { 
+    LOG(INFO) << "closing socket: " << sock;
+    closesocket(sock);
+  });
+
   string pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launch_node(" << node_number << ")";
 
@@ -507,6 +549,8 @@ static bool launch_node(
 
   const string cmd = CreateCommandLine(raw_cmd, params);
   ExecCommandAndWait(cmd, pid, node_number);
+  closesocket(sock);
+  VLOG(2) << "socket closed";
 
   VLOG(2) << "About to delete semaphore file: "<< semaphore_file.full_pathname();
   bool delete_ok = semaphore_file.Delete();
@@ -518,6 +562,7 @@ static bool launch_node(
     VLOG(2) << "Deleted semaphore file: " << semaphore_file.full_pathname();
   }
   nodes->clear_node(node_number, connection_type);
+  nodes->ReleaseNode(node_number);
   return true;
 }
 
@@ -540,12 +585,10 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
 
 static void HandleAccept(
     const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
-    const accepted_socket_t r, const std::string& remote_peer) {
+    const accepted_socket_t r, const std::string remote_peer) {
   auto sock = r.client_socket;
-  ScopeExit at_exit([=] { closesocket(sock); });
-  auto connection_type = connection_type_for(c, r.port);
-
   try {
+    auto connection_type = connection_type_for(c, r.port);
     if (connection_type == ConnectionType::BINKP) {
       // BINKP Connection.
       if (!node_file(config, connection_type, 0)) {
@@ -555,18 +598,21 @@ static void HandleAccept(
     }
 
     // Telnet or SSH connection.  Find open node number and launch the child.
-    for (int node = c.start_node; node <= c.end_node; node++) {
-      if (!node_file(config, connection_type, node).Exists()) {
-        launch_node(config, c, nodes, node, sock, connection_type, remote_peer);
-        return;
-      }
+    int node = nodes->AquireNode(connection_type);
+    if (node > 0) {
+      launch_node(config, c, nodes, node, sock, connection_type, remote_peer);
+      VLOG(1) << "Exiting HandleAccept (launch_node)";
+      return;
     }
     LOG(INFO) << "Sending BUSY. No available node to handle connection.";
     send(sock, "BUSY\r\n", 6, 0);
+    VLOG(1) << "Exiting HandleAccept (busy)";
   }
   catch (const std::exception& e) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
+  closesocket(sock);
+  VLOG(1) << "Exiting HandleAccept (exception)";
 }
 
 /**
@@ -650,8 +696,9 @@ int Main(CommandLine& cmdline) {
     }
     else {
       // BBS or BinkP Request
-      std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r, std::ref(remote_peer));
+      std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r, remote_peer);
       client.detach();
+      VLOG(2) << "after client.detach()";
     }
   }
 

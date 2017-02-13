@@ -82,12 +82,12 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   // Wait until child process exits.
   DWORD dwExitCode = WaitForSingleObject(pi.hProcess, INFINITE);
   GetExitCodeProcess(pi.hProcess, &dwExitCode);
-  LOG(INFO) << "Node #" << node_number << " exited with error code: " << dwExitCode;
 
   // Close process and thread handles. 
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
 
+  LOG(INFO) << "Node #" << node_number << " exited with error code: " << dwExitCode;
   return true;
 }
 
