@@ -50,7 +50,7 @@ void BeforeStartServer() {
 void SwitchToNonRootUser(const std::string& wwiv_user) {
 }
 
-bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number) {
+bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock) {
 
   LOG(INFO) << pid << "Invoking Command Line (Win32):" << cmd;
 
@@ -78,6 +78,10 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
     LOG(ERROR) << "Error invoking CreateProcess.";
     return false;
   }
+
+  // We're done with this socket and the child has another reference count
+  // to it.
+  closesocket(sock);
 
   // Wait until child process exits.
   DWORD dwExitCode = WaitForSingleObject(pi.hProcess, INFINITE);

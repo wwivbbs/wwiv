@@ -32,6 +32,9 @@
 
 #include <process.h>
 #include <WS2tcpip.h>
+#ifdef min
+#undef min
+#endif
 #ifdef max
 #undef max
 #endif  // max
@@ -45,6 +48,7 @@
 #include <sys/socket.h>
 #include <sys/wait.h>
 #endif  // __linux__
+
 
 #include <cereal/cereal.hpp>
 #include <cereal/access.hpp>
@@ -334,21 +338,20 @@ public:
     if (cmd_parts.size() < 3) {
       return false;
     }
-    auto path = cmd_parts.at(1);
-    auto headers = read_lines(conn_);
-    auto cmd = cmd_parts.at(0);
+    const auto& path = cmd_parts.at(1);
+    const auto headers = read_lines(conn_);
+    const auto& cmd = cmd_parts.at(0);
     if (cmd == "GET") {
-      // handle get.  Read headers
       for (const auto& e : get_) {
         if (starts_with(path, e.first)) {
           auto r = e.second->Handle(HttpMethod::GET, path, headers);
           SendResponse(r);
           return true;
         }
-        HttpResponse r404(404);
-        SendResponse(r404);
-        return true;
       }
+      HttpResponse r404(404);
+      SendResponse(r404);
+      return true;
     }
     HttpResponse r405(405);
     SendResponse(r405);
@@ -499,7 +502,6 @@ static bool launch_node(
     int node_number, int sock, ConnectionType connection_type,
     const string remote_peer) {
   ScopeExit at_exit([=] { 
-    LOG(INFO) << "closing socket: " << sock;
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
   });
@@ -533,9 +535,7 @@ static bool launch_node(
   }
 
   const string cmd = CreateCommandLine(raw_cmd, params);
-  ExecCommandAndWait(cmd, pid, node_number);
-  closesocket(sock);
-  VLOG(2) << "socket closed";
+  ExecCommandAndWait(cmd, pid, node_number, sock);
 
   VLOG(2) << "About to delete semaphore file: "<< semaphore_file.full_pathname();
   bool delete_ok = semaphore_file.Delete();
@@ -560,7 +560,7 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
     return ConnectionType::BINKP;
   }
   else if (port == c.ssh_port) {
-    return ConnectionType::SSH;
+    return ConnectionType::SSH; 
   }
   else if (port == c.http_port) {
     return ConnectionType::HTTP;
@@ -571,9 +571,16 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
 
 static void HandleAccept(
     const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
-    const accepted_socket_t r, const std::string remote_peer) {
+    const accepted_socket_t r) {
   auto sock = r.client_socket;
   try {
+    string remote_peer;
+    if (GetRemotePeerAddress(sock, remote_peer)) {
+      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
+      LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
+        << "; coutry code: " << cc;
+    }
+
     auto connection_type = connection_type_for(c, r.port);
     if (connection_type == ConnectionType::BINKP) {
       // BINKP Connection.
@@ -606,7 +613,6 @@ static void HandleAccept(
   catch (const std::exception& e) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
-  closesocket(sock);
   VLOG(1) << "Exiting HandleAccept (exception)";
 }
 
@@ -673,14 +679,8 @@ int Main(CommandLine& cmdline) {
       LOG(INFO) << "Error accepting client socket. " << errno;
       return 2;
     }
-    string remote_peer;
-    if (GetRemotePeerAddress(r.client_socket, remote_peer)) {
-      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
-        << "; coutry code: " << cc;
-    }
     // BBS or BinkP Request
-    std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r, remote_peer);
+    std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r);
     client.detach();
     VLOG(2) << "after client.detach()";
   }

@@ -94,6 +94,9 @@
     <ClCompile Include="wwivd.cpp" />
     <ClCompile Include="wwivd_win.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="wwivd.h" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

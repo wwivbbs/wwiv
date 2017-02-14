@@ -48,7 +48,7 @@ enum class ConnectionType { UNKNOWN, SSH, TELNET, BINKP, HTTP };
 void BeforeStartServer();
 
 void SwitchToNonRootUser(const std::string& wwiv_user);
-bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number);
+bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock);
 
 
 #endif  // __INCLUDED_WWIV_WWIV_WWIVD_H__

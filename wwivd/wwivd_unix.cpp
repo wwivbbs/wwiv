@@ -33,6 +33,7 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/log.h"
+#include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -116,7 +117,7 @@ void SwitchToNonRootUser(const std::string& wwiv_user) {
   }
 }
 
-bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number) {
+bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock) {
   char sh[21];
   char dc[21];
   char cmdstr[4000];
@@ -128,6 +129,8 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   LOG(INFO) << pid << "Invoking Command Line (posix_spawn):" << cmd;
   pid_t child_pid = 0;
   int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
+  // close the socket since we've forked.
+  closesocket(sock);
   VLOG(2) << "after posix_spawn; ret: " << ret;
   if (ret != 0) {
     // fork failed.
