@@ -682,7 +682,6 @@ int Main(CommandLine& cmdline) {
     // BBS or BinkP Request
     std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r);
     client.detach();
-    VLOG(2) << "after client.detach()";
   }
 
   return EXIT_FAILURE;
