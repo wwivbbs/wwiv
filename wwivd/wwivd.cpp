@@ -493,17 +493,6 @@ static bool DeleteAllSemaphores(const Config& config, int start_node, int end_no
   return true;
 }
 
-static int load_used_nodedata(const Config& config, int start_node, int end_node) {
-  int used_nodes = 0;
-  for(int counter = start_node; counter <= end_node; counter++) {
-    File semaphore_file(node_file(config, ConnectionType::TELNET, counter));
-    if (semaphore_file.Exists()) {
-      ++used_nodes;
-    }
-  }
-  return used_nodes;
-}
-
 static bool launch_node(
     const Config& config, const wwivd_config_t& c,
     NodeManager* nodes,
@@ -678,9 +667,7 @@ int Main(CommandLine& cmdline) {
   SwitchToNonRootUser(wwiv_user);
 
   while (true) {
-    const int num_instances = (c.end_node - c.start_node + 1);
-    const int used_nodes = load_used_nodedata(config, c.start_node, c.end_node);
-    LOG(INFO) << "Nodes in use: (" << used_nodes << "/" << num_instances << ")";
+    LOG(INFO) << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
     auto r = sockets.Run();
     if (r.client_socket == INVALID_SOCKET) {
       LOG(INFO) << "Error accepting client socket. " << errno;
