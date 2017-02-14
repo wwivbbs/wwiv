@@ -156,15 +156,8 @@ public:
 
   NodeStatus status_for_copy(int node, ConnectionType type) {
     std::lock_guard<std::mutex> lock(mu_);
-    if (node == 0) {
-      if (type == ConnectionType::HTTP) {
-        return http_;
-      }
-      else if (type == ConnectionType::BINKP) {
-        return binkp_;
-      }
-    }
-    return nodes_.at(node);
+    NodeStatus n = status_for_unlocked(node, type);
+    return n;
   }
 
   void set_node(int node, ConnectionType type, const std::string& description) {
@@ -195,6 +188,8 @@ public:
     }
     return count;
   }
+
+  int total_nodes() const { return end_ - start_ + 1; }
 
   int AquireNode(ConnectionType type) {
     std::lock_guard<std::mutex> lock(mu_);
@@ -513,10 +508,11 @@ static bool launch_node(
     const Config& config, const wwivd_config_t& c,
     NodeManager* nodes,
     int node_number, int sock, ConnectionType connection_type,
-    const string& remote_peer) {
+    const string remote_peer) {
   ScopeExit at_exit([=] { 
     LOG(INFO) << "closing socket: " << sock;
     closesocket(sock);
+    VLOG(2) << "closed socket: " << sock;
   });
 
   string pid = StringPrintf("[%d] ", get_pid());
@@ -563,6 +559,7 @@ static bool launch_node(
   }
   nodes->clear_node(node_number, connection_type);
   nodes->ReleaseNode(node_number);
+  VLOG(2) << "After NodeManager::ReleaseNode(" << node_number << ")";
   return true;
 }
 
@@ -594,6 +591,15 @@ static void HandleAccept(
       if (!node_file(config, connection_type, 0)) {
         launch_node(config, c, nodes, 0, sock, connection_type, remote_peer);
       }
+      return;
+    }
+    else if (connection_type == ConnectionType::HTTP) {
+      // HTTP Request
+      SocketConnection conn(r.client_socket);
+      HttpServer h(conn);
+      StatusHandler status(nodes, nodes->total_nodes(), nodes->nodes_used());
+      h.add(HttpMethod::GET, "/status", &status);
+      h.Run();
       return;
     }
 
@@ -686,20 +692,10 @@ int Main(CommandLine& cmdline) {
       LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
         << "; coutry code: " << cc;
     }
-    if (r.port == c.http_port) {
-      // HTTP Request
-      SocketConnection conn(r.client_socket);
-      HttpServer h(conn);
-      StatusHandler status(&nodes, num_instances, used_nodes);
-      h.add(HttpMethod::GET, "/status", &status);
-      h.Run();
-    }
-    else {
-      // BBS or BinkP Request
-      std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r, remote_peer);
-      client.detach();
-      VLOG(2) << "after client.detach()";
-    }
+    // BBS or BinkP Request
+    std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r, remote_peer);
+    client.detach();
+    VLOG(2) << "after client.detach()";
   }
 
   return EXIT_FAILURE;
