@@ -20,6 +20,7 @@
 #define __INCLUDED_WWIV_CORE_NET_H__
 #pragma once
 
+#include <functional>
 #include <map>
 #include <string>
 
@@ -87,19 +88,27 @@ public:
   SocketSet();
   virtual ~SocketSet();
 
-  /** 
-   * Adds a port that the SocketSet will listen to.
-   */
-  bool add(int port, const std::string& description);
+  typedef std::function<void(accepted_socket_t)> socketset_accept_fn;
 
   /** 
-   * Runs the select/accept loop, returning the socket/port pair that was accepted.
-   * If no socket was accepted, port and socket are both -1.
+   * Adds a port that the SocketSet will listen to and the function (fn)
+   * that will be invoked on the current thread when a connection is
+   * accepted.  If fn should be handled asynchronously, then it should
+   * dispatch to a worker thread.
    */
-  accepted_socket_t Run();
+  bool add(int port, socketset_accept_fn fn, const std::string& description);
+
+  /** 
+   * Runs the select/accept/execute loop, returning false on error.
+   */
+  bool Run();
 
 private:
+  /** Runs the select/accept/execute loops once, returning false on error. */
+  bool RunOnce();
+
   std::map<SOCKET, int> socket_port_map_;
+  std::map<SOCKET, socketset_accept_fn> socket_fn_map_;
 
 };
 

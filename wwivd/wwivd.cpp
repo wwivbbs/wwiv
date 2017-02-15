@@ -234,6 +234,12 @@ private:
   mutable std::mutex mu_;
 };
 
+static std::string to_string(const NodeManager& nodes) {
+  std::ostringstream ss;
+  ss << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
+  return ss.str();
+}
+
 static std::vector<std::string> read_lines(SocketConnection& conn) {
   std::vector<std::string> lines;
   while (true) {
@@ -569,51 +575,60 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
   return ConnectionType::TELNET;
 }
 
-static void HandleAccept(
-    const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
-    const accepted_socket_t r) {
-  auto sock = r.client_socket;
+struct ConnectionData {
+  ConnectionData(const wwiv::sdk::Config* g, const wwivd_config_t* t, NodeManager* n,
+    const accepted_socket_t a) : config(g), c(t), nodes(n), r(a) {}
+  const wwiv::sdk::Config* config;
+  const wwivd_config_t* c;
+  NodeManager* nodes;
+  const accepted_socket_t r;
+};
+
+static void HandleConnection(ConnectionData data) {
+  /*const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
+    const accepted_socket_t r) {*/
+  auto sock = data.r.client_socket;
   try {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
       auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
+      LOG(INFO) << "Accepted connection on port: " << data.r.port << "; from: " << remote_peer
         << "; coutry code: " << cc;
     }
 
-    auto connection_type = connection_type_for(c, r.port);
+    auto connection_type = connection_type_for(*data.c, data.r.port);
     if (connection_type == ConnectionType::BINKP) {
       // BINKP Connection.
-      if (!node_file(config, connection_type, 0)) {
-        launch_node(config, c, nodes, 0, sock, connection_type, remote_peer);
+      if (!node_file(*data.config, connection_type, 0)) {
+        launch_node(*data.config, *data.c, data.nodes, 0, sock, connection_type, remote_peer);
       }
       return;
     }
     else if (connection_type == ConnectionType::HTTP) {
       // HTTP Request
-      SocketConnection conn(r.client_socket);
+      SocketConnection conn(data.r.client_socket);
       HttpServer h(conn);
-      StatusHandler status(nodes, nodes->total_nodes(), nodes->nodes_used());
+      StatusHandler status(data.nodes, data.nodes->total_nodes(), data.nodes->nodes_used());
       h.add(HttpMethod::GET, "/status", &status);
       h.Run();
       return;
     }
 
     // Telnet or SSH connection.  Find open node number and launch the child.
-    int node = nodes->AquireNode(connection_type);
+    int node = data.nodes->AquireNode(connection_type);
     if (node > 0) {
-      launch_node(config, c, nodes, node, sock, connection_type, remote_peer);
-      VLOG(1) << "Exiting HandleAccept (launch_node)";
+      launch_node(*data.config, *data.c, data.nodes, node, sock, connection_type, remote_peer);
+      VLOG(1) << "Exiting HandleConnection (launch_node)";
       return;
     }
     LOG(INFO) << "Sending BUSY. No available node to handle connection.";
     send(sock, "BUSY\r\n", 6, 0);
-    VLOG(1) << "Exiting HandleAccept (busy)";
+    VLOG(1) << "Exiting HandleConnection (busy)";
   }
   catch (const std::exception& e) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
-  VLOG(1) << "Exiting HandleAccept (exception)";
+  VLOG(1) << "Exiting HandleConnection (exception)";
 }
 
 /**
@@ -653,35 +668,32 @@ int Main(CommandLine& cmdline) {
   }
 
   NodeManager nodes(c.start_node, c.end_node);
+  auto fn = [&](accepted_socket_t r) {
+    std::thread client(HandleConnection, ConnectionData(&config, &c, &nodes, r));
+    client.detach();
+  };
 
   SocketSet sockets;
   if (c.telnet_port > 0) {
-    sockets.add(c.telnet_port, "TELNET");
+    sockets.add(c.telnet_port, fn, "TELNET");
   }
   if (c.ssh_port > 0) {
-    sockets.add(c.ssh_port, "SSH");
+    sockets.add(c.ssh_port, fn, "SSH");
   }
   if (c.binkp_port > 0) {
-    sockets.add(c.binkp_port, "BINKP");
+    sockets.add(c.binkp_port, fn, "BINKP");
   }
   if (c.http_port > 0) {
-    sockets.add(c.http_port, "HTTP");
+    sockets.add(c.http_port, fn, "HTTP");
     // TODO(rushfan):   
     // http_address;
   }
 
   SwitchToNonRootUser(wwiv_user);
 
-  while (true) {
-    LOG(INFO) << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
-    auto r = sockets.Run();
-    if (r.client_socket == INVALID_SOCKET) {
-      LOG(INFO) << "Error accepting client socket. " << errno;
-      return 2;
-    }
-    // BBS or BinkP Request
-    std::thread client(HandleAccept, std::ref(config), std::ref(c), &nodes, r);
-    client.detach();
+  if (!sockets.Run()) {
+    LOG(INFO) << "Error accepting client socket. " << errno;
+    return 2;
   }
 
   return EXIT_FAILURE;

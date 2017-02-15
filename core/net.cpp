@@ -167,28 +167,37 @@ int get_dns_cc(const std::string address, const std::string& rbl_address) {
 SocketSet::SocketSet() {}
 SocketSet::~SocketSet() {}
 
-bool SocketSet::add(int port, const std::string& description) {
+bool SocketSet::add(int port, socketset_accept_fn fn, const std::string& description) {
   SOCKET s = CreateListenSocket(port);
   if (s == INVALID_SOCKET) {
     return false;
   }
   LOG(INFO) << "Listening to " << description << " on port: " << port;
+  socket_fn_map_.emplace(s, fn);
   socket_port_map_.emplace(s, port);
   return true;
 }
 
-accepted_socket_t SocketSet::Run() {
+bool SocketSet::Run() {
+  while (true) {
+    if (!RunOnce()) {
+      return false;
+    }
+  }
+}
+
+bool SocketSet::RunOnce() {
   SOCKET max_fd = 0;
   fd_set fds{};
   FD_ZERO(&fds);
-  for (const auto& e : socket_port_map_) {
+  for (const auto& e : socket_fn_map_) {
     if (e.first > max_fd) { max_fd = e.first; }
     FD_SET(e.first, &fds);
   }
 
   if (max_fd == INVALID_SOCKET) {
     LOG(ERROR) << "Nothing to do!";
-    return{ INVALID_SOCKET, -1 };
+    return false;
   }
 
   VLOG(1) << "About to call select. (" << max_fd << ")";
@@ -196,18 +205,18 @@ accepted_socket_t SocketSet::Run() {
   VLOG(1) << "After select.";
   if (status < 0) {
     LOG(ERROR) << "Error calling select; errno: " << errno;
-    return{ INVALID_SOCKET, -1 };
+    return false;
   }
 
-  for (const auto& e : socket_port_map_) {
+  for (const auto& e : socket_fn_map_) {
     if (FD_ISSET(e.first, &fds)) {
       socklen_t addr_size = sizeof(sockaddr_in);
       struct sockaddr_in saddr = {};
       SOCKET client_sock = accept(e.first, (sockaddr*)&saddr, &addr_size);
-      return{ client_sock, e.second };
+      e.second({ client_sock, socket_port_map_.at(e.first) });
     }
   }
-  return{ INVALID_SOCKET, -1 };
+  return true;
 }
 
 }  // namespace os
