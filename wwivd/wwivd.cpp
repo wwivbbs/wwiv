@@ -60,7 +60,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/htto_server.h"
+#include "core/http_server.h"
 #include "core/inifile.h"
 #include "core/log.h"
 #include "core/net.h"
