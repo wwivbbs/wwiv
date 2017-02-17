@@ -239,6 +239,8 @@ int WInitApp::main(int argc, char** argv) {
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
   cmdline.add_argument(BooleanCommandLineArgument("initialize", "Initialize the datafiles for the 1st time and exit.", false));
+  cmdline.add_argument(BooleanCommandLineArgument("user_editor", "Run the user editor and then exit.", false));
+  cmdline.add_argument(BooleanCommandLineArgument("menu_editor", "Run the menu editor and then exit.", false));
 
   if (!cmdline.Parse() || cmdline.help_requested()) {
     ShowHelp(cmdline);
@@ -297,6 +299,19 @@ int WInitApp::main(int argc, char** argv) {
   // GP - We can move this up to after "read_status" if the
   // init --initialize flow should query the user to make an account.
   CreateSysopAccountIfNeeded(bbsdir);
+
+  if (cmdline.barg("menu_editor")) {
+    out->Cls(ACS_CKBOARD);
+    out->footer()->SetDefaultFooter();
+    menus(config);
+    return 0;
+  }
+  else if (cmdline.barg("user_editor")) {
+    out->Cls(ACS_CKBOARD);
+    out->footer()->SetDefaultFooter();
+    user_editor(config);
+    return 0;
+  }
 
   bool done = false;
   int selected = -1;
