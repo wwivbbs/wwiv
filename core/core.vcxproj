@@ -98,6 +98,7 @@
     <ClCompile Include="crc32.cpp" />
     <ClCompile Include="findfiles.cpp" />
     <ClCompile Include="graphs.cpp" />
+    <ClCompile Include="http_server.cpp" />
     <ClCompile Include="inifile.cpp" />
     <ClCompile Include="log.cpp" />
     <ClCompile Include="md5.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="datafile.h" />
     <ClInclude Include="findfiles.h" />
     <ClInclude Include="graphs.h" />
+    <ClInclude Include="http_server.h" />
     <ClInclude Include="inifile.h" />
     <ClInclude Include="jsonfile.h" />
     <ClInclude Include="log.h" />

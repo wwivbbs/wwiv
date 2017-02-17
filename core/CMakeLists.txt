@@ -11,6 +11,7 @@ set(COMMON_SOURCES
   file_unix.cpp
   findfiles.cpp
   graphs.cpp
+  http_server.cpp
   inifile.cpp
   log.cpp
   md5.cpp

@@ -60,6 +60,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/htto_server.h"
 #include "core/inifile.h"
 #include "core/log.h"
 #include "core/net.h"
@@ -239,135 +240,6 @@ static std::string to_string(const NodeManager& nodes) {
   ss << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
   return ss.str();
 }
-
-static std::vector<std::string> read_lines(SocketConnection& conn) {
-  std::vector<std::string> lines;
-  while (true) {
-    auto s = conn.read_line(1024, std::chrono::milliseconds(10));
-    if (!s.empty()) {
-      lines.push_back(s);
-    } else {
-      break;
-    }
-  }
-  return lines;
-}
-
-// Subset from https://www.w3.org/Protocols/rfc2616/rfc2616-sec6.html#sec6.1.1
-static std::map<int, std::string> CreateHttpStatusMap() {
-  std::map<int, std::string> m = {
-    { 200, "OK" },
-    { 204, "No Content" },
-    { 301, "Moved Permanently" },
-    { 302, "Found" },
-    { 304, "Not Modified" },
-    { 307, "Temporary Redirect" },
-    { 400, "Bad Request" },
-    { 401, "Unauthorized" },
-    { 403, "Forbidden" },
-    { 404, "Not Found" },
-    { 405, "Method Not Allowed" },
-    { 406, "Not Acceptable" },
-    { 408, "Request Time-out" },
-    { 412, "Precondition Failed" },
-    { 500, "Internal Server Error" },
-    { 501, "Not Implemented" },
-    { 503, "Service Unavailable" }
-  };
-  return m;
-}
-
-enum class HttpMethod {
-  OPTIONS,
-  GET,
-  HEAD,
-  POST,
-  PUT,
-  DELETE,
-  TRACE,
-  CONNECT
-};
-
-class HttpResponse {
-public:
-  HttpResponse(int s) : status(s) {};
-  HttpResponse(int s, const std::string& t) : status(s), text(t) {};
-  HttpResponse(int s, std::map<std::string, std::string>& h, const std::string& t) : status(s), headers(h), text(t) {};
-
-  int status;
-  std::map<std::string, std::string> headers;
-  std::string text;
-};
-
-class HttpHandler {
-public:
-  virtual HttpResponse Handle(HttpMethod method, const std::string& path, std::vector<std::string> headers) = 0;
-};
-
-class HttpServer {
-public:
-  HttpServer(SocketConnection& conn) : conn_(conn) {}
-  virtual ~HttpServer() {}
-  bool add(HttpMethod method, const std::string& root, HttpHandler* handler) {
-    if (method != HttpMethod::GET) {
-      return false;
-    }
-    get_.emplace(root, handler);
-    return true;
-  }
-
-  void SendResponse(HttpResponse& r) {
-    static const auto statuses = CreateHttpStatusMap();
-    const auto d = std::chrono::seconds(1);
-    conn_.send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);
-    conn_.send_line(StrCat("Date: ", wwiv::sdk::daten_to_wwivnet_time(time(nullptr))), d);
-    conn_.send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
-    if (!r.text.empty()) {
-      auto content_length = r.text.size();
-      conn_.send_line(StrCat("Content-Length: ", content_length), d);
-      conn_.send("\r\n", d);
-      conn_.send(r.text, d);
-    }
-    else {
-      conn_.send_line("Connection: close", d);
-      conn_.send("\r\n", d);
-    }
-  }
-
-  bool Run() {
-    const auto d = std::chrono::seconds(1);
-    auto inital_requestline = conn_.read_line(1024, std::chrono::milliseconds(10));
-    if (inital_requestline.empty()) {
-      return false;
-    }
-    auto cmd_parts = SplitString(inital_requestline, " ");
-    if (cmd_parts.size() < 3) {
-      return false;
-    }
-    const auto& path = cmd_parts.at(1);
-    const auto headers = read_lines(conn_);
-    const auto& cmd = cmd_parts.at(0);
-    if (cmd == "GET") {
-      for (const auto& e : get_) {
-        if (starts_with(path, e.first)) {
-          auto r = e.second->Handle(HttpMethod::GET, path, headers);
-          SendResponse(r);
-          return true;
-        }
-      }
-      HttpResponse r404(404);
-      SendResponse(r404);
-      return true;
-    }
-    HttpResponse r405(405);
-    SendResponse(r405);
-    return false;
-  }
-
-private:
-  SocketConnection conn_;
-  std::map<std::string, HttpHandler*> get_;
-};
 
 struct status_reponse_t {
   int num_instances;
