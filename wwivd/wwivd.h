@@ -20,17 +20,56 @@
 #define __INCLUDED_WWIV_WWIV_WWIVD_H__
 
 #include <string>
+#include <vector>
 #include "core/net.h"
 #include "sdk/config.h"
 
-struct wwivd_config_t {
-  std::string bbsdir;
+struct wwivd_blocking_t {
+  bool mailer_mode = false;
 
-  int telnet_port = 2323;
+  bool use_badip_txt = true;
+  bool use_goodip_txt = true;
+  int max_concurrent_sessions = 1;
+  bool auto_blacklist = true;
+  int auto_bl_sessions = 3;
+  int auto_bl_seconds = 30;
+
+  bool use_dns_rbl = true;
+  // xbl.spamhaus.org
+  std::string dns_rbl_server;
+
+  bool use_dns_cc = true;
+  // zz.countries.nerd.dk
+  std::string dns_cc_server;
+  std::vector<int> block_cc_countries;
+};
+
+struct wwivd_matrix_entry_t {
+  /** Key to use when displaying this BBS in the matrix logon. */
+  char key;
+  /** 
+   * Used for semaphore names and also short-hand way to call the bbs.
+   * It should be not more than 8-12 characters in length.
+   */
+  std::string name;
+  /** Description to use to display this BBS in the matrix logon. */
+  std::string description;
+  /** Command to launch this BBS over Telnet */
   std::string telnet_cmd;
-
-  int ssh_port = -1;
+  /** Command to launch this BBS over SSH */
   std::string ssh_cmd;
+  /** Does using this BBS require ANSI? */
+  bool require_ansi = false;
+  /** Start node for this bbs */
+  int start_node;
+  /** End node for this bbs */
+  int end_node;
+  /** Local node for this bbs */
+  int local_node;
+};
+
+struct wwivd_config_t {
+  /** Configuration for non-bbs invocations. */
 
   int binkp_port = -1;
   std::string binkp_cmd;
@@ -38,9 +77,19 @@ struct wwivd_config_t {
   int http_port = -1;
   std::string http_address;
 
-  int start_node;
-  int end_node;
-  int local_node;
+  /** Blocking configuration */
+  wwivd_blocking_t blocking;
+
+  /** 
+   * Matrix Logon Settings
+   */
+
+  int telnet_port = 2323;
+  int ssh_port = -1;
+  /** Filename (under WWIV/GFILES) to display before showing the shuttle logon menu */
+  std::string matrix_filename;
+  /** Vector of BBS'es to display in the matrix logon. */
+  std::vector<wwivd_matrix_entry_t> bbses;
 };
 
 enum class ConnectionType { UNKNOWN, SSH, TELNET, BINKP, HTTP };

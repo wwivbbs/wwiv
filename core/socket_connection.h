@@ -45,7 +45,8 @@ std::unique_ptr<SocketConnection> Connect(const std::string& host, int port);
 class SocketConnection : public Connection
 {
 public:
-  SocketConnection(SOCKET sock);
+  explicit SocketConnection(SOCKET sock);
+  SocketConnection(SOCKET sock, bool close_socket);
   virtual ~SocketConnection();
 
   int receive(void* data, int size, std::chrono::duration<double> d) override;
@@ -65,6 +66,7 @@ public:
 private:
   SOCKET sock_;
   bool open_;
+  bool close_socket_ = true;
 };
 
 

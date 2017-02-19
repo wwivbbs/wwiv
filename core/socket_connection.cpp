@@ -102,8 +102,10 @@ static bool WouldSocketBlock() {
 
 }  // namespace
 
-SocketConnection::SocketConnection(SOCKET sock)
-  : sock_(sock), open_(true) {
+SocketConnection::SocketConnection(SOCKET sock) : SocketConnection(sock, true) {}
+
+SocketConnection::SocketConnection(SOCKET sock, bool close_socket)
+  : sock_(sock), open_(true), close_socket_(close_socket) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
@@ -177,7 +179,8 @@ static void *get_in_addr(struct sockaddr* sa) {
 */
 
 SocketConnection::~SocketConnection() {
-  if (sock_ != INVALID_SOCKET) {
+
+  if (close_socket_ &&  sock_ != INVALID_SOCKET) {
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
   }

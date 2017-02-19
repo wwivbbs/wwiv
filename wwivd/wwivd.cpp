@@ -19,8 +19,10 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <mutex>
 #include <string>
+#include <utility>
 #include <thread>
 
 #include <signal.h>
@@ -62,6 +64,7 @@
 #include "core/file.h"
 #include "core/http_server.h"
 #include "core/inifile.h"
+#include "core/jsonfile.h"
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
@@ -95,6 +98,40 @@ pid_t bbs_pid = 0;
 #undef DELETE
 #endif  // DELETE
 
+#define SERIALIZE(field) { try { ar(cereal::make_nvp(#field, field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+
+template <class Archive>
+void serialize(Archive& ar, wwivd_blocking_t &a) {
+}
+
+template <class Archive>
+void serialize(Archive& ar, wwivd_matrix_entry_t &a) {
+  ar(cereal::make_nvp("description", a.description));
+  ar(cereal::make_nvp("end_node", a.end_node));
+  ar(cereal::make_nvp("key", a.key));
+  ar(cereal::make_nvp("local_node", a.local_node));
+  ar(cereal::make_nvp("name", a.name));
+  ar(cereal::make_nvp("require_ansi", a.require_ansi));
+  ar(cereal::make_nvp("ssh_cmd", a.ssh_cmd));
+  ar(cereal::make_nvp("start_node", a.start_node));
+  ar(cereal::make_nvp("telnet_cmd", a.telnet_cmd));
+}
+
+template <class Archive>
+void serialize(Archive & ar, wwivd_config_t &a) {
+  ar(cereal::make_nvp("telnet_port", a.telnet_port));
+  ar(cereal::make_nvp("ssh_port", a.ssh_port));
+  ar(cereal::make_nvp("binkp_port", a.binkp_port));
+
+  ar(cereal::make_nvp("binkp_cmd", a.binkp_cmd));
+
+
+  ar(cereal::make_nvp("http_address", a.http_address));
+  ar(cereal::make_nvp("http_port", a.http_port));
+
+  ar(cereal::make_nvp("bbses", a.bbses));
+}
+
 static std::string to_string(ConnectionType t) {
   switch (t) {
   case ConnectionType::BINKP: return "BinkP";
@@ -116,16 +153,15 @@ public:
 
 class NodeManager {
 public:
-  NodeManager(int start, int end) : start_(start), end_(end) {
+  NodeManager(const std::string& name, ConnectionType type, int start, int end) 
+    : name_(name), type_(type), start_(start), end_(end) {
     for (int i = start; i <= end; i++) {
-      clear_node(i, ConnectionType::UNKNOWN);
+      clear_node(i);
     }
-    clear_node(0, ConnectionType::BINKP);
-    clear_node(0, ConnectionType::HTTP);
   }
   virtual ~NodeManager() {}
 
-  std::string status_string(const NodeStatus& n) {
+  std::string status_string(const NodeStatus& n) const {
     std::string s = n.description;
     if (n.connected) {
       s += " [";
@@ -135,50 +171,46 @@ public:
     return s;
   }
 
-  std::vector<std::string> status_lines() {
+  std::vector<std::string> status_lines() const {
     std::lock_guard<std::mutex> lock(mu_);
     std::vector<std::string> v;
     for (const auto& n : nodes_) {
-      v.push_back(StrCat("Node #", n.first, " ", status_string(n.second)));
+      std::ostringstream ss;
+      ss << this->name_ << " ";
+      if (n.first > 0) {
+        ss << "Node #" << n.first << " ";
+      }
+      ss << status_string(n.second);
+      v.push_back(ss.str());
     }
-    v.push_back(StrCat("BinkP ", binkp_.description));
-    v.push_back(StrCat("HTTP ", http_.description));
 
     return v;
   }
 
-  NodeStatus& status_for_unlocked(int node, ConnectionType type) {
-    if (node == 0) {
-      if (type == ConnectionType::HTTP) {
-        return http_;
-      }
-      else if (type == ConnectionType::BINKP) {
-        return binkp_;
-      }
-    }
+  NodeStatus& status_for_unlocked(int node) {
     return nodes_[node];
   }
 
-  NodeStatus status_for_copy(int node, ConnectionType type) {
+  NodeStatus status_for_copy(int node) {
     std::lock_guard<std::mutex> lock(mu_);
-    NodeStatus n = status_for_unlocked(node, type);
+    NodeStatus n = status_for_unlocked(node);
     return n;
   }
 
   void set_node(int node, ConnectionType type, const std::string& description) {
     std::lock_guard<std::mutex> lock(mu_);
-    auto& n = status_for_unlocked(node, type);
+    auto& n = status_for_unlocked(node);
     n.node = node;
     n.type = type;
     n.description = description;
     n.connected = true;
   }
 
-  void clear_node(int node, ConnectionType type) {
+  void clear_node(int node) {
     std::lock_guard<std::mutex> lock(mu_);
-    auto& n = status_for_unlocked(node, type);
+    auto& n = status_for_unlocked(node);
     n.node = node;
-    n.type = type;
+    n.type = type_;
     n.connected = false;
     n.description = "Waiting for Call";
   }
@@ -196,18 +228,20 @@ public:
 
   int total_nodes() const { return end_ - start_ + 1; }
 
-  int AquireNode(ConnectionType type) {
+  bool AcquireNode(int& node) {
     std::lock_guard<std::mutex> lock(mu_);
     for (auto& e : nodes_) {
       if (!e.second.connected) {
         e.second.connected = true;
-        e.second.type = type;
+        e.second.type = type_;
         e.second.description = "Connecting...";
-        return e.second.node;
+        node = e.second.node;
+        return true;
       }
     }
     // None
-    return 0;
+    node = -1;
+    return false;
   }
 
   bool ReleaseNode(int node) {
@@ -220,17 +254,19 @@ public:
       return false;
     }
     n.connected = false;
-    n.type = ConnectionType::UNKNOWN;
+    n.type = type_;
     n.description = "Waiting For Call";
     return true;
   }
+  int start_node() const { return start_; }
+  int end_node() const { return end_; }
 
 private:
+  const std::string name_;
+  const ConnectionType type_;
   int start_ = 0;
   int end_ = 0;
   std::map<int, NodeStatus> nodes_;
-  NodeStatus binkp_;
-  NodeStatus http_;
 
   mutable std::mutex mu_;
 };
@@ -268,7 +304,7 @@ std::string ToJson(status_reponse_t r) {
 
 class StatusHandler : public HttpHandler {
 public:
-  StatusHandler(NodeManager* nodes, int num, int used) : nodes_(nodes), num_(num), used_(used) {}
+  StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes) : nodes_(nodes) {}
 
   HttpResponse Handle(HttpMethod, const std::string&, std::vector<std::string> headers) override {
     // We only handle status
@@ -276,20 +312,20 @@ public:
     response.headers.emplace("Content-Type: ", "text/json");
 
     status_reponse_t r{};
-    r.num_instances = num_;
-    r.used_instances = used_;
-    const auto v = nodes_->status_lines();
-    for (const auto& l : v) {
-      r.lines.push_back(l);
+    for (const auto& n : *nodes_) {
+      const auto v = n.second->status_lines();
+      r.num_instances += n.second->total_nodes();
+      r.used_instances += n.second->nodes_used();
+      for (const auto& l : v) {
+        r.lines.push_back(l);
+      }
     }
     response.text = ToJson(r);
     return response;
   }
 
 private:
-  NodeManager* nodes_;
-  int num_ = 0;
-  int used_ = 0;
+  std::map<const std::string, std::shared_ptr<NodeManager>>* nodes_;
 };
 
 
@@ -317,35 +353,29 @@ static string CreateCommandLine(const std::string& tmpl, std::map<char, std::str
 }
 
 static wwivd_config_t LoadIniConfig(const Config& config) {
-  File wwiv_ini_fn(config.root_directory(), "wwiv.ini");
-  File wwivd_ini_fn(config.root_directory(), "wwivd.ini");
-
   wwivd_config_t c{};
+  JsonFile<wwivd_config_t> file(config.datadir(), "wwivd.json", "wwivd", c);
+  if (!file.Load()) {
+    c.binkp_port = -1;
+    c.telnet_port = 2323;
+    c.http_port = 8080;
+    c.http_address = "127.0.0.1";
+    c.binkp_cmd = "binkp_command", "./networkb --receive --handle=@H";
 
-  {
-    IniFile ini(wwivd_ini_fn.full_pathname(), {"WWIVD"});
-    if (!ini.IsOpen()) {
-      LOG(ERROR) << "Unable to open INI file: " << wwivd_ini_fn.full_pathname();
-    }
-    c.bbsdir = config.root_directory();
-
-    c.telnet_port = ini.value<int>("telnet_port", -1);
-    c.telnet_cmd = ini.value<string>("telnet_command", "./bbs -XT -H@H -N@N");
-
-    c.ssh_port = ini.value<int>("ssh_port", -1);
-    c.ssh_cmd = ini.value<string>("ssh_command", "./bbs -XS -H@H -N@N");
-
-    c.binkp_port = ini.value<int>("binkp_port", -1);
-    c.binkp_cmd = ini.value<string>("binkp_command", "./networkb --receive --handle=@H");
-
-    c.http_port = ini.value<int>("http_port", -1);
-    c.http_address = ini.value<string>("http_address", "127.0.0.1");
-
-    c.local_node = ini.value<int>("local_node", 1);
-    c.start_node = ini.value<int>("start_node", 2);
-    c.end_node = ini.value<int>("end_node", 4);
+    wwivd_matrix_entry_t e{};
+    e.key = 'W';
+    e.description = "WWIV";
+    e.name = "WWIV";
+    e.local_node = 1;
+    e.require_ansi = false;
+    e.start_node = 2;
+    e.end_node = 4;
+    e.telnet_cmd = "./bbs -XT -H@H -N@N";
+    e.ssh_cmd = "./bbs -XS -H@H -N@N";
+    
+    c.bbses.push_back(e);
+    file.Save();
   }
-
   return c;
 }
 
@@ -374,9 +404,28 @@ static bool DeleteAllSemaphores(const Config& config, int start_node, int end_no
   return true;
 }
 
+static bool launch_cmd(
+  const std::string& raw_cmd, std::shared_ptr<NodeManager> nodes, int node_number, int sock,
+  ConnectionType connection_type, const string remote_peer) {
+  string pid = StringPrintf("[%d] ", get_pid());
+  nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
+
+  map<char, string> params = {
+    { 'N', std::to_string(node_number) },
+    { 'H', std::to_string(sock) }
+  };
+
+  const string cmd = CreateCommandLine(raw_cmd, params);
+  bool result = ExecCommandAndWait(cmd, pid, node_number, sock);
+
+  nodes->ReleaseNode(node_number);
+
+  return result;
+}
+
 static bool launch_node(
-    const Config& config, const wwivd_config_t& c,
-    NodeManager* nodes,
+    const Config& config, const std::string& raw_cmd,
+    std::shared_ptr<NodeManager> nodes,
     int node_number, int sock, ConnectionType connection_type,
     const string remote_peer) {
   ScopeExit at_exit([=] { 
@@ -385,7 +434,7 @@ static bool launch_node(
   });
 
   string pid = StringPrintf("[%d] ", get_pid());
-  VLOG(1) << pid << "launch_node(" << node_number << ")";
+  VLOG(1) << pid << "launching node(" << node_number << ")";
 
   File semaphore_file(node_file(config, connection_type, node_number));
   if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
@@ -396,24 +445,7 @@ static bool launch_node(
   semaphore_file.Write(StringPrintf("Created by pid: %s\nremote peer: %s",
       pid.c_str(), remote_peer.c_str()));
   semaphore_file.Close();
-  nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
-
-  map<char, string> params = {
-      {'N', std::to_string(node_number) },
-      {'H', std::to_string(sock) }
-  };
-
-  string raw_cmd;
-  if (connection_type == ConnectionType::TELNET) {
-    raw_cmd = c.telnet_cmd;
-  } else if (connection_type == ConnectionType::SSH) {
-    raw_cmd = c.ssh_cmd;
-  } else if (connection_type == ConnectionType::BINKP) {
-    raw_cmd = c.binkp_cmd;
-  }
-
-  const string cmd = CreateCommandLine(raw_cmd, params);
-  ExecCommandAndWait(cmd, pid, node_number, sock);
+  launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
 
   VLOG(2) << "About to delete semaphore file: "<< semaphore_file.full_pathname();
   bool delete_ok = semaphore_file.Delete();
@@ -424,8 +456,6 @@ static bool launch_node(
   } else {
     VLOG(2) << "Deleted semaphore file: " << semaphore_file.full_pathname();
   }
-  nodes->clear_node(node_number, connection_type);
-  nodes->ReleaseNode(node_number);
   VLOG(2) << "After NodeManager::ReleaseNode(" << node_number << ")";
   return true;
 }
@@ -448,13 +478,50 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
 }
 
 struct ConnectionData {
-  ConnectionData(const wwiv::sdk::Config* g, const wwivd_config_t* t, NodeManager* n,
+  ConnectionData(const wwiv::sdk::Config* g, const wwivd_config_t* t, 
+    std::map<const std::string, std::shared_ptr<NodeManager>>* n,
     const accepted_socket_t a) : config(g), c(t), nodes(n), r(a) {}
   const wwiv::sdk::Config* config;
   const wwivd_config_t* c;
-  NodeManager* nodes;
+  std::map<const std::string, std::shared_ptr<NodeManager>>* nodes;
   const accepted_socket_t r;
 };
+
+static const wwivd_matrix_entry_t& DoMatrixLogon(const Config& config, SocketConnection conn, const wwivd_config_t& c) {
+  if (c.bbses.empty()) {
+    // TODO(rushfan): Throw exception here?
+    conn.close();
+    return{};
+  }
+  if (c.bbses.size() == 1) {
+    // Only have 1 entry, that's the one to display.
+    return c.bbses.front();
+  }
+
+  auto d = std::chrono::seconds(1);
+  for (int tries = 0; tries < 3; tries++) {
+    conn.send_line("Matrix Logon Menu", d);
+    conn.send_line("\r\n", d);
+    for (const auto& b : c.bbses) {
+      conn.send_line(StrCat(b.key, ") ", b.description), d);
+    }
+
+    conn.send_line("\r\n", d);
+    conn.send_line("Enter Selection: ", d);
+    string key_str = conn.receive(1, std::chrono::seconds(15));
+    if (key_str.empty()) { continue; }
+    char key = key_str.front();
+    for (const auto& b : c.bbses) {
+      if (b.key == key) {
+        return b;
+      }
+    }
+  }
+
+  conn.close();
+  return{};
+
+}
 
 static void HandleConnection(ConnectionData data) {
   /*const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
@@ -471,8 +538,14 @@ static void HandleConnection(ConnectionData data) {
     auto connection_type = connection_type_for(*data.c, data.r.port);
     if (connection_type == ConnectionType::BINKP) {
       // BINKP Connection.
-      if (!node_file(*data.config, connection_type, 0)) {
-        launch_node(*data.config, *data.c, data.nodes, 0, sock, connection_type, remote_peer);
+      auto& nodemgr = data.nodes->at("BINKP");
+      int node = -1;
+      if (nodemgr->AcquireNode(node)) {
+        ScopeExit at_exit([=] {
+          closesocket(sock);
+          VLOG(2) << "closed socket: " << sock;
+        });
+        launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, connection_type, remote_peer);
       }
       return;
     }
@@ -480,16 +553,32 @@ static void HandleConnection(ConnectionData data) {
       // HTTP Request
       SocketConnection conn(data.r.client_socket);
       HttpServer h(conn);
-      StatusHandler status(data.nodes, data.nodes->total_nodes(), data.nodes->nodes_used());
+      StatusHandler status(data.nodes);
       h.add(HttpMethod::GET, "/status", &status);
       h.Run();
       return;
     }
 
+    // TODO(rushfan): Do matrix logon here.
+    const auto& bbs = DoMatrixLogon(
+      *data.config, SocketConnection(data.r.client_socket, false), *data.c);
+
+    if (!contains(*data.nodes, bbs.name)) {
+      // HOW???
+      SocketConnection conn(data.r.client_socket);
+      conn.send_line(StrCat("Can't find config for bbs: ", bbs.name), std::chrono::seconds(1));
+      return;
+    }
+    auto& nodemgr = data.nodes->at(bbs.name);
+
     // Telnet or SSH connection.  Find open node number and launch the child.
-    int node = data.nodes->AquireNode(connection_type);
-    if (node > 0) {
-      launch_node(*data.config, *data.c, data.nodes, node, sock, connection_type, remote_peer);
+    int node = -1;
+    if (nodemgr->AcquireNode(node)) {
+      string raw_cmd = bbs.telnet_cmd;
+      if (connection_type == ConnectionType::SSH) {
+        raw_cmd = bbs.ssh_cmd;
+      }
+      launch_node(*data.config, raw_cmd, nodemgr, node, sock, connection_type, remote_peer);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
       return;
     }
@@ -531,15 +620,23 @@ int Main(CommandLine& cmdline) {
   }
 
   const wwivd_config_t c = LoadIniConfig(config);
-  File::set_current_directory(c.bbsdir);
+  File::set_current_directory(config.root_directory());
 
   BeforeStartServer();
 
-  if (!DeleteAllSemaphores(config, c.start_node, c.end_node)) {
-    LOG(ERROR) << "Unable to clear semaphores.";
+  std::map<const std::string, std::shared_ptr<NodeManager>> nodes;
+  for (const auto& b : c.bbses) {
+    nodes[b.name] = std::make_shared<NodeManager>(b.name, ConnectionType::TELNET, b.start_node, b.end_node);
+  }
+  // Add node manager for binkp.
+  nodes["BINKP"] = std::make_shared<NodeManager>("BINKP", ConnectionType::BINKP, 0, 0);
+
+  for (const auto& n : nodes) {
+    if (!DeleteAllSemaphores(config, n.second->start_node(), n.second->end_node())) {
+      LOG(ERROR) << "Unable to clear semaphores.";
+    }
   }
 
-  NodeManager nodes(c.start_node, c.end_node);
   auto fn = [&](accepted_socket_t r) {
     std::thread client(HandleConnection, ConnectionData(&config, &c, &nodes, r));
     client.detach();
