@@ -187,14 +187,19 @@ SocketConnection::~SocketConnection() {
 }
 
 template<typename TYPE, std::size_t SIZE = sizeof(TYPE)>
-static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, std::size_t size = SIZE) {
+static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bool throw_on_timeout, std::size_t size = SIZE) {
   auto end = system_clock::now() + d;
   char *p = reinterpret_cast<char*>(data);
   std::size_t total_read = 0;
   int remaining = size;
   while (true) {
     if (system_clock::now() > end) {
-      throw timeout_error("timeout error reading from socket.");
+      if (throw_on_timeout) {
+        throw timeout_error("timeout error reading from socket.");
+      }
+      else {
+        return total_read;
+      }
     }
     int result = ::recv(sock, p, remaining, 0);
     if (result == SOCKET_ERROR) {
@@ -223,7 +228,15 @@ static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, st
 }
 
 int SocketConnection::receive(void* data, const int size, duration<double> d) {
-  int num_read = read_TYPE<void, 0>(sock_, data, d, size);
+  int num_read = read_TYPE<void, 0>(sock_, data, d, true, size);
+  if (open_ && num_read == 0) {
+    throw socket_closed_error(StringPrintf("receive: got zero read from socket. expected: ", size));
+  }
+  return num_read;
+}
+
+int SocketConnection::receive_upto(void* data, const int size, duration<double> d) {
+  int num_read = read_TYPE<void, 0>(sock_, data, d, false, size);
   if (open_ && num_read == 0) {
     throw socket_closed_error(StringPrintf("receive: got zero read from socket. expected: ", size));
   }
@@ -236,12 +249,18 @@ string SocketConnection::receive(int size, duration<double> d) {
   return string(data.get(), num_read);
 }
 
+string SocketConnection::receive_upto(int size, duration<double> d) {
+  std::unique_ptr<char[]> data = std::make_unique<char[]>(size);
+  int num_read = receive_upto(data.get(), size, d);
+  return string(data.get(), num_read);
+}
+
 std::string SocketConnection::read_line(int max_size, std::chrono::duration<double> d) {
   string s;
   try {
     while (true) {
       char data = 0;
-      int num_read = read_TYPE<char>(sock_, &data, d);
+      int num_read = read_TYPE<char>(sock_, &data, d, true);
       if (!open_) {
         throw socket_closed_error("read_line: socket not open");
       }
@@ -277,7 +296,7 @@ int SocketConnection::send_line(const std::string& s, std::chrono::duration<doub
 
 uint16_t SocketConnection::read_uint16(duration<double> d) {
   uint16_t data = 0;
-  int num_read = read_TYPE<uint16_t>(sock_, &data, d);
+  int num_read = read_TYPE<uint16_t>(sock_, &data, d, true);
   if (open_ && num_read == 0) {
     throw socket_closed_error(StrCat("read_uint16: got zero read from socket. expected: ", sizeof(uint16_t)));
   }
@@ -286,7 +305,7 @@ uint16_t SocketConnection::read_uint16(duration<double> d) {
 
 uint8_t SocketConnection::read_uint8(duration<double> d) {
   uint8_t data = 0;
-  int num_read = read_TYPE<uint8_t>(sock_, &data, d);
+  int num_read = read_TYPE<uint8_t>(sock_, &data, d, true);
   if (open_ && num_read == 0) {
     throw socket_closed_error(StrCat("receive: got zero read from socket. expected: ", sizeof(uint8_t)));
   }

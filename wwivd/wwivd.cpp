@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <cctype>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -97,40 +98,6 @@ pid_t bbs_pid = 0;
 #ifdef DELETE
 #undef DELETE
 #endif  // DELETE
-
-#define SERIALIZE(field) { try { ar(cereal::make_nvp(#field, field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
-
-template <class Archive>
-void serialize(Archive& ar, wwivd_blocking_t &a) {
-}
-
-template <class Archive>
-void serialize(Archive& ar, wwivd_matrix_entry_t &a) {
-  ar(cereal::make_nvp("description", a.description));
-  ar(cereal::make_nvp("end_node", a.end_node));
-  ar(cereal::make_nvp("key", a.key));
-  ar(cereal::make_nvp("local_node", a.local_node));
-  ar(cereal::make_nvp("name", a.name));
-  ar(cereal::make_nvp("require_ansi", a.require_ansi));
-  ar(cereal::make_nvp("ssh_cmd", a.ssh_cmd));
-  ar(cereal::make_nvp("start_node", a.start_node));
-  ar(cereal::make_nvp("telnet_cmd", a.telnet_cmd));
-}
-
-template <class Archive>
-void serialize(Archive & ar, wwivd_config_t &a) {
-  ar(cereal::make_nvp("telnet_port", a.telnet_port));
-  ar(cereal::make_nvp("ssh_port", a.ssh_port));
-  ar(cereal::make_nvp("binkp_port", a.binkp_port));
-
-  ar(cereal::make_nvp("binkp_cmd", a.binkp_cmd));
-
-
-  ar(cereal::make_nvp("http_address", a.http_address));
-  ar(cereal::make_nvp("http_port", a.http_port));
-
-  ar(cereal::make_nvp("bbses", a.bbses));
-}
 
 static std::string to_string(ConnectionType t) {
   switch (t) {
@@ -352,33 +319,6 @@ static string CreateCommandLine(const std::string& tmpl, std::map<char, std::str
   return out;
 }
 
-static wwivd_config_t LoadIniConfig(const Config& config) {
-  wwivd_config_t c{};
-  JsonFile<wwivd_config_t> file(config.datadir(), "wwivd.json", "wwivd", c);
-  if (!file.Load()) {
-    c.binkp_port = -1;
-    c.telnet_port = 2323;
-    c.http_port = 8080;
-    c.http_address = "127.0.0.1";
-    c.binkp_cmd = "binkp_command", "./networkb --receive --handle=@H";
-
-    wwivd_matrix_entry_t e{};
-    e.key = 'W';
-    e.description = "WWIV";
-    e.name = "WWIV";
-    e.local_node = 1;
-    e.require_ansi = false;
-    e.start_node = 2;
-    e.end_node = 4;
-    e.telnet_cmd = "./bbs -XT -H@H -N@N";
-    e.ssh_cmd = "./bbs -XS -H@H -N@N";
-    
-    c.bbses.push_back(e);
-    file.Save();
-  }
-  return c;
-}
-
 static const File node_file(const Config& config, ConnectionType ct, int node_number) {
   if (ct == ConnectionType::BINKP) {
     return File(config.datadir(), "binkpinuse");
@@ -487,7 +427,21 @@ struct ConnectionData {
   const accepted_socket_t r;
 };
 
-static const wwivd_matrix_entry_t& DoMatrixLogon(const Config& config, SocketConnection conn, const wwivd_config_t& c) {
+static bool check_ansi(SocketConnection& conn) {
+  auto d = std::chrono::seconds(3);
+  conn.send_line("Checking for ANSI Graphics...", d);
+  conn.send("\x1b[6n", d);
+  auto res = conn.receive_upto(10, d);
+  if (res.empty()) {
+    return false;
+  }
+  if (res.front() == 27) {
+    return true;
+  }
+  return false;
+}
+
+static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConnection conn, const wwivd_config_t& c) {
   if (c.bbses.empty()) {
     // TODO(rushfan): Throw exception here?
     conn.close();
@@ -500,6 +454,13 @@ static const wwivd_matrix_entry_t& DoMatrixLogon(const Config& config, SocketCon
 
   auto d = std::chrono::seconds(1);
   for (int tries = 0; tries < 3; tries++) {
+    bool ansi = check_ansi(conn);
+    if (ansi) {
+      conn.send_line("ANSI!", d);
+    }
+    else {
+      conn.send_line("NO ANSI!", d);
+    }
     conn.send_line("Matrix Logon Menu", d);
     conn.send_line("\r\n", d);
     for (const auto& b : c.bbses) {
@@ -507,12 +468,13 @@ static const wwivd_matrix_entry_t& DoMatrixLogon(const Config& config, SocketCon
     }
 
     conn.send_line("\r\n", d);
-    conn.send_line("Enter Selection: ", d);
+    conn.send("Enter Selection: ", d);
     string key_str = conn.receive(1, std::chrono::seconds(15));
     if (key_str.empty()) { continue; }
     char key = key_str.front();
     for (const auto& b : c.bbses) {
-      if (b.key == key) {
+      if (std::toupper(b.key) == std::toupper(key)) {
+        conn.send_line("\r\n", d);
         return b;
       }
     }
@@ -619,7 +581,8 @@ int Main(CommandLine& cmdline) {
     return EXIT_FAILURE;
   }
 
-  const wwivd_config_t c = LoadIniConfig(config);
+  wwivd_config_t c{};
+  c.Load(config);
   File::set_current_directory(config.root_directory());
 
   BeforeStartServer();

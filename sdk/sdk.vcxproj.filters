@@ -115,6 +115,9 @@
     <ClInclude Include="fido\fido_util.h">
       <Filter>Header Files\fido</Filter>
     </ClInclude>
+    <ClInclude Include="wwivd_config.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -220,6 +223,9 @@
     </ClCompile>
     <ClCompile Include="fido\fido_util.cpp">
       <Filter>Source Files\fido</Filter>
+    </ClCompile>
+    <ClCompile Include="wwivd_config.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

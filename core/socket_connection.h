@@ -51,6 +51,11 @@ public:
 
   int receive(void* data, int size, std::chrono::duration<double> d) override;
   std::string receive(int size, std::chrono::duration<double> d) override;
+
+  /** Receives up to size bytes and will return partial reads. */
+  int receive_upto(void* data, int size, std::chrono::duration<double> d);
+  std::string receive_upto(int size, std::chrono::duration<double> d);
+
   std::string read_line(int max_size, std::chrono::duration<double> d);
   int send(const void* data, int size, std::chrono::duration<double> d) override;
   int send(const std::string& s, std::chrono::duration<double> d) override;
