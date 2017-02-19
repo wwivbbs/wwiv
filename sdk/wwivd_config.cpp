@@ -86,7 +86,7 @@ bool wwivd_config_t::Load(const Config & config) {
     telnet_port = 2323;
     http_port = 8080;
     http_address = "127.0.0.1";
-    binkp_cmd = "binkp_command", "./networkb --receive --handle=@H";
+    binkp_cmd = "./networkb --receive --handle=@H";
 
     wwivd_matrix_entry_t e{};
     e.key = 'W';
