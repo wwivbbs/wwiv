@@ -18,12 +18,13 @@
 /**************************************************************************/
 #include "core/http_server.h"
 
+#include <string>
 #include <vector>
 
 #include "core/strings.h"
 #include "core/version.h"
-#include "sdk/datetime.h"
 
+using std::string;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -40,11 +41,17 @@ bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* ha
   return true;
 }
 
+std::string daten_to_wwivnet_time(time_t t) {
+  string human_date = string(asctime(localtime(&t)));
+  StringTrimEnd(&human_date);
+  return human_date;
+}
+
 void HttpServer::SendResponse(HttpResponse& r) {
   static const auto statuses = CreateHttpStatusMap();
   const auto d = std::chrono::seconds(1);
   conn_.send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);
-  conn_.send_line(StrCat("Date: ", wwiv::sdk::daten_to_wwivnet_time(time(nullptr))), d);
+  conn_.send_line(StrCat("Date: ", daten_to_wwivnet_time(time(nullptr))), d);
   conn_.send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
   if (!r.text.empty()) {
     auto content_length = r.text.size();

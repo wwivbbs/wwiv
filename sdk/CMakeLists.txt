@@ -33,6 +33,7 @@ set(COMMON_SOURCES
   subxtr.cpp
   user.cpp
   usermanager.cpp
+  wwivd_config.cpp
   )
 
 if(UNIX) 
