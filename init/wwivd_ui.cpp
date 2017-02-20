@@ -167,8 +167,24 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
 
   wwivd_config_t c{};
   if (!c.Load(config)) {
-    messagebox(out->window(), "Unable to load or create wwivd.json");
-    return;
+    c.binkp_port = -1;
+    c.telnet_port = 2323;
+    c.http_port = 8080;
+    c.http_address = "127.0.0.1";
+    c.binkp_cmd = "./networkb --receive --handle=@H";
+
+    wwivd_matrix_entry_t e{};
+    e.key = 'W';
+    e.description = "WWIV";
+    e.name = "WWIV";
+    e.local_node = 1;
+    e.require_ansi = false;
+    e.start_node = 2;
+    e.end_node = 4;
+    e.telnet_cmd = "./bbs -XT -H@H -N@N";
+    e.ssh_cmd = "./bbs -XS -H@H -N@N";
+
+    c.bbses.push_back(e);
   }
 
   EditItems items{};

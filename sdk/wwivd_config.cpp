@@ -81,28 +81,7 @@ void serialize(Archive & ar, wwivd_config_t &a) {
 
 bool wwivd_config_t::Load(const Config & config) {
   JsonFile<wwivd_config_t> file(config.datadir(), "wwivd.json", "wwivd", *this);
-  if (!file.Load()) {
-    binkp_port = -1;
-    telnet_port = 2323;
-    http_port = 8080;
-    http_address = "127.0.0.1";
-    binkp_cmd = "./networkb --receive --handle=@H";
-
-    wwivd_matrix_entry_t e{};
-    e.key = 'W';
-    e.description = "WWIV";
-    e.name = "WWIV";
-    e.local_node = 1;
-    e.require_ansi = false;
-    e.start_node = 2;
-    e.end_node = 4;
-    e.telnet_cmd = "./bbs -XT -H@H -N@N";
-    e.ssh_cmd = "./bbs -XS -H@H -N@N";
-
-    bbses.push_back(e);
-    return file.Save();
-  }
-  return true;
+  return file.Load();
 }
 
 bool wwivd_config_t::Save(const Config & config) {
