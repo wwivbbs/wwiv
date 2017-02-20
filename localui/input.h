@@ -148,6 +148,8 @@ template<typename T> class StringEditItem: public EditItem<T> {
 public:
   StringEditItem(int x, int y, int maxsize, T data, bool uppercase)
     : EditItem<T>(x, y, maxsize, data), uppercase_(uppercase) {}
+  StringEditItem(int x, int y, int maxsize, T data)
+    : StringEditItem(x, y, maxsize, data, false) {}
   virtual ~StringEditItem() {}
 
   int Run(CursesWindow* window) override {
@@ -196,7 +198,7 @@ public:
 
   virtual int Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
-    std::string s = wwiv::strings::StringPrintf("%-7u", *this->data_);
+    std::string s = std::to_string(*this->data_);
     int return_code = editline(window, &s, MAXLEN + 1, EditLineMode::NUM_ONLY, "");
     *this->data_ = static_cast<T>(atoi(s.c_str()));
     return return_code;

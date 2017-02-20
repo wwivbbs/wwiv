@@ -21,9 +21,6 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-#ifdef _WIN32
-#include <direct.h>
-#endif
 
 #include "core/strings.h"
 #include "core/wwivport.h"

@@ -94,7 +94,6 @@
     <ClInclude Include="editors.h" />
     <ClInclude Include="init.h" />
     <ClInclude Include="instance_settings.h" />
-    <ClInclude Include="ivardec.h" />
     <ClInclude Include="languages.h" />
     <ClInclude Include="levels.h" />
     <ClInclude Include="networks.h" />
@@ -108,6 +107,7 @@
     <ClInclude Include="system_info.h" />
     <ClInclude Include="user_editor.h" />
     <ClInclude Include="utility.h" />
+    <ClInclude Include="wwivd_ui.h" />
     <ClInclude Include="wwivinit.h" />
   </ItemGroup>
   <ItemGroup>
@@ -131,6 +131,7 @@
     <ClCompile Include="system_info.cpp" />
     <ClCompile Include="user_editor.cpp" />
     <ClCompile Include="utility.cpp" />
+    <ClCompile Include="wwivd_ui.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\core\core.vcxproj">

@@ -62,6 +62,7 @@
 #include "init/system_info.h"
 #include "init/sysop_account.h"
 #include "init/user_editor.h"
+#include "init/wwivd_ui.h"
 #include "init/wwivinit.h"
 #include "init/utility.h"
 
@@ -334,6 +335,7 @@ int WInitApp::main(int argc, char** argv) {
         { "R. Registration Information", 'R' },
         { "U. User Editor", 'U' },
         { "X. Update Sub/Directory Maximums", 'X' },
+        { "W. wwivd Configuration", 'W' },
         { "Q. Quit", 'Q' }
     };
 
@@ -399,15 +401,14 @@ int WInitApp::main(int argc, char** argv) {
     case 'U':
       user_editor(config);
       break;
+    case 'W': wwivd_ui(config); break;
+    case 'X': up_subs_dirs(config.datadir()); break;
     case '$': {
       vector<string> lines;
       lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
       lines.push_back(StringPrintf("WWIV %s%s INIT compiled %s", wwiv_version, beta_version, const_cast<char*>(wwiv_date)));
       messagebox(window, lines);
     } break;
-    case 'X':
-      up_subs_dirs(config.datadir());
-      break;
     }
     out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);

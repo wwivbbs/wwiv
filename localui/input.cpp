@@ -460,7 +460,8 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
         if ((pos < len) && 
           (status == EditLineMode::ALL || (status == EditLineMode::UPPER_ONLY) 
             || (status == EditLineMode::SET) 
-            || ((status == EditLineMode::NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == ' '))))) {
+            || ((status == EditLineMode::NUM_ONLY) 
+                && (((ch >= '0') && (ch <= '9')) || (ch == ' ') || (pos == 0) && (ch == '-') ) ))) {
           if (bInsert)  {
             for (int i = len - 1; i > pos; i--) {
               s[i] = s[i - 1];

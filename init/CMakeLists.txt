@@ -25,6 +25,7 @@ set(COMMON_SOURCES
   sysop_account.cpp
   user_editor.cpp 
   utility.cpp 
+  wwivd_ui.cpp
   )
 
 if(UNIX) 

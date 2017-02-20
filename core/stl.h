@@ -105,8 +105,8 @@ const signed int size_int(C c) {
 }
 
 template <typename C, typename S = std::size_t, typename R>
-bool insert_at(C& c, S on, R r) {
-  std::size_t n = static_cast<decltype(c.size())>(on);
+bool insert_at(C& c, S pos, R r) {
+  std::size_t n = static_cast<decltype(c.size())>(pos);
 
   if (n < 0 || n > c.size()) {
     return false;
