@@ -62,7 +62,8 @@ static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
   }
 
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Paths", items.size() + 2, 76));
+  const auto title = StrCat("Matrix Config: ", b.name);
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, items.size() + 2, 76));
   items.set_curses_io(out, window.get());
   {
     int y = 1;
@@ -184,7 +185,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   }
 
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Paths", items.size() + 2, 76));
+  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("wwivd Configuration", items.size() + 2, 76));
   items.set_curses_io(out, window.get());
   {
     int y = 1;
@@ -199,5 +200,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   }
 
   items.Run();
-  c.Save(config);
+  if (!c.Save(config)) {
+    messagebox(window.get(), "Error saving wwivd.json");
+  }
 }
