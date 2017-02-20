@@ -429,16 +429,67 @@ struct ConnectionData {
 
 static bool check_ansi(SocketConnection& conn) {
   auto d = std::chrono::seconds(3);
-  conn.send_line("Checking for ANSI Graphics...", d);
+  conn.send("Checking for ANSI Graphics... ", d);
   conn.send("\x1b[6n", d);
   auto res = conn.receive_upto(10, d);
-  if (res.empty()) {
-    return false;
-  }
-  if (res.front() == 27) {
+  if (!res.empty() && res.front() == 27) {
+    conn.send_line("ANSI detected.", d);
     return true;
   }
+  conn.send_line("No ANSI detected.", d);
   return false;
+}
+
+
+static void addto(std::string *ansi_str, int num) {
+  if (ansi_str->empty()) {
+    ansi_str->append("\x1b[");
+  }
+  else {
+    ansi_str->append(";");
+  }
+  ansi_str->append(std::to_string(num));
+}
+
+/* Ripped from com.cpp -- maybe this should all move to core? */
+static std::string makeansi(int attr, int current_attr) {
+  static const std::vector<int> kAnsiColorMap = { '0', '4', '2', '6', '1', '5', '3', '7' };
+
+  int catr = current_attr;
+  std::string out;
+//  if ((catr & 0x88) ^ (attr & 0x88)) {
+    addto(&out, 0);
+    addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
+    addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
+    catr = (attr & 0x77);
+//  }
+  if ((catr & 0x07) != (attr & 0x07)) {
+    addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
+  }
+  if ((catr & 0x70) != (attr & 0x70)) {
+    addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
+  }
+  if ((catr & 0x08) != (attr & 0x08)) {
+    addto(&out, 1);
+  }
+  if ((catr & 0x80) != (attr & 0x80)) {
+    // Italics will be generated
+    addto(&out, 3);
+  }
+  if (!out.empty()) {
+    out += "m";
+  }
+  return out;
+}
+
+std::string Color(int c, bool ansi) {
+  static int curatr = 7;
+  if (!ansi) {
+    return "";
+  }
+  auto s = makeansi(c, curatr);
+  curatr = 0;
+  return s;
 }
 
 static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConnection conn, const wwivd_config_t& c) {
@@ -452,32 +503,42 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConn
     return c.bbses.front();
   }
 
+  bool ansi = check_ansi(conn);
   auto d = std::chrono::seconds(1);
   for (int tries = 0; tries < 3; tries++) {
-    bool ansi = check_ansi(conn);
-    if (ansi) {
-      conn.send_line("ANSI!", d);
-    }
-    else {
-      conn.send_line("NO ANSI!", d);
-    }
-    conn.send_line("Matrix Logon Menu", d);
+    conn.send_line(StrCat(Color(10, ansi), "Matrix Logon Menu"), d);
     conn.send_line("\r\n", d);
     for (const auto& b : c.bbses) {
-      conn.send_line(StrCat(b.key, ") ", b.description), d);
+      // Skip ones that require ANSI.
+      if (b.require_ansi && !ansi) { continue; }
+      std::ostringstream ss;
+      ss << Color(14, ansi) << b.key << Color(3, ansi) << ") " << Color(11, ansi) << b.description;
+      conn.send_line(ss.str(), d);
     }
+    std::ostringstream ss;
+    ss << Color(14, ansi) << '!' << Color(3, ansi) << ") " << Color(11, ansi) << " Logoff/Quit.";
+    conn.send_line(ss.str(), d);
 
     conn.send_line("\r\n", d);
-    conn.send("Enter Selection: ", d);
-    string key_str = conn.receive(1, std::chrono::seconds(15));
+    conn.send(StrCat(Color(3, ansi), "Enter Selection: "), d);
+    string key_str = conn.receive_upto(1, std::chrono::seconds(15));
+    // dump left overs
+    conn.receive_upto(1024, std::chrono::milliseconds(1));
     if (key_str.empty()) { continue; }
     char key = key_str.front();
+
     for (const auto& b : c.bbses) {
       if (std::toupper(b.key) == std::toupper(key)) {
         conn.send_line("\r\n", d);
         return b;
       }
     }
+    // Hangup
+    if (key == '!') {
+      conn.close();
+      return{};
+    }
+
   }
 
   conn.close();
