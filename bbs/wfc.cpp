@@ -524,6 +524,12 @@ int WFC::doWFCEvents() {
         }
         ExecExternalProgram(a()->terminal_command, INST_FLAGS_NONE);
         break;
+      case 'U': {
+        // User edit
+        const auto exe = FilePath(a()->config()->root_directory(), "init");
+        const auto cmd = StrCat(exe, " --user_editor");
+        ExecExternalProgram(cmd, INST_FLAGS_NONE);
+      } break;
       case 'V': {
         // InitVotes
         Clear();
