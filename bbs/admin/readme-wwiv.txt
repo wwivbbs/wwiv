@@ -1,4 +1,4 @@
-readme.510
+readme-wwiv.txt
 
                 *** Attention Windows 10 ***
 
@@ -9,7 +9,7 @@ readme.510
     compiled with Visual Studio 2015).
 
 
-WWIV 5.2 Getting Started
+WWIV 5.3 Getting Started
 ~~~~~~~~~~~~~~~~~~~~~~~~
 If you already have WWIV 4.3 or 5.x installed, just copy the EXE and DLL 
 files over your existing 4.3/5.x installation. Please backup your previous
@@ -18,7 +18,7 @@ binaries and configuration files.
 The command line parameters have changed quite a bit, I suggest running
 "bbs -? | more" to see the list of changes.
 
-So far, WWIV 5.2 is still fully compatable with your existing WWIV 4.30
+So far, WWIV 5.3 is still fully compatable with your existing WWIV 4.30
 and 5.x installations (Just drop it in and run init to upgrade the 
 data files and go).
 

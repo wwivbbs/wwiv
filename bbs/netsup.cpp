@@ -1068,11 +1068,8 @@ static int FindNetworkNumberForNode(int sn) {
   }
   return -1;
 }
-void force_callout(bool prompt_for_retries) {
-  bool abort = false;
-  unsigned int total_attempts = 1, current_attempt = 0;
-  char ch, s[101];
 
+void force_callout() {
   auto sn = ansicallout();
   if (sn.first <= 0) {
     return;
@@ -1081,48 +1078,20 @@ void force_callout(bool prompt_for_retries) {
   int network_number = sn.second;
   if (network_number < 0) {
     network_number = FindNetworkNumberForNode(sn.first);
-  }
-  if (network_number < 0) {
-    return;
+    if (network_number < 0) {
+      return;
+    }
   }
 
   set_net_num(network_number);
   Callout callout(a()->current_net());
 
-  bool ok = ok_to_call(callout.net_call_out_for(sn.first));
-  if (!ok) {
+  if (!ok_to_call(callout.net_call_out_for(sn.first))) {
     return;
   }
 
-  if (prompt_for_retries) {
-    bout.nl();
-    bout << "|#2Num Retries : ";
-    input(s, 5, true);
-    total_attempts = atoi(s);
-  }
-  if (!prompt_for_retries || total_attempts < 1) {
-    total_attempts = 1;
-  }
-
-  Contact contact(a()->current_net(), false);
-  while (current_attempt < total_attempts && !abort) {
-    while (a()->localIO()->KeyPressed()) {
-      ch = to_upper_case<char>(a()->localIO()->GetChar());
-      if (!abort) {
-        abort = (ch == ESC) ? true : false;
-      }
-    }
-    ++current_attempt;
-    if (abort) {
-      break;
-    } 
-    a()->localIO()->Cls();
-    bout << "|#9Retries |#0= |#2" << total_attempts 
-          << "|#9, Current |#0= |#2" << current_attempt
-          << "|#9, Remaining |#0= |#2" << total_attempts - current_attempt
-          << "|#9. ESC to abort.\r\n";
-    do_callout(sn.first);
-  }
+  a()->localIO()->Cls();
+  do_callout(sn.first);
 }
 
 void run_exp() {

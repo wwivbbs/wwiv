@@ -356,14 +356,10 @@ int WFC::doWFCEvents() {
       // Force Network Callout
       case '/':
         if (a_->current_net().sysnum) {
-          force_callout(0);
+          force_callout();
         }
         break;
         // War Dial Connect
-      case '.':
-        if (a_->current_net().sysnum) {
-          force_callout(1);
-        } break;
         // Fast Net Callout from WFC
       case '*': {
         io->Cls();
