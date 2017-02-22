@@ -24,6 +24,11 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
+#else
+
+#include <unistd.h>
+#include <fcntl.h>
+
 #endif  // _WIN32
 
 #include "core/log.h"
