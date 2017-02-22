@@ -71,6 +71,9 @@ bool on_dns_dbl(const std::string address, const std::string& rbl_address);
  */
 int get_dns_cc(const std::string address, const std::string& rbl_address);
 
+/** Sets the socket to blocking mode. */
+bool SetBlockingMode(SOCKET sock);
+
 /** 
  * Once a socket is accepted from the remote system.  Return
  * the socket and also the port that it was accepted from.

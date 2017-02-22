@@ -355,6 +355,12 @@ static bool launch_cmd(
     { 'H', std::to_string(sock) }
   };
 
+  // Reset the socket back to blocking mode
+  VLOG(2) << "Setting blocking mode.";
+  if (!SetBlockingMode(sock)) {
+    LOG(ERROR) << "Failed to reset the socket to blocking mode.";
+  }
+
   const string cmd = CreateCommandLine(raw_cmd, params);
   bool result = ExecCommandAndWait(cmd, pid, node_number, sock);
 
@@ -583,8 +589,16 @@ static void HandleConnection(ConnectionData data) {
     }
 
     // TODO(rushfan): Do matrix logon here.
-    const auto& bbs = DoMatrixLogon(
-      *data.config, SocketConnection(data.r.client_socket, false), *data.c);
+    wwivd_matrix_entry_t bbs;
+    if (connection_type == ConnectionType::TELNET) {
+      bbs = DoMatrixLogon(
+        *data.config, SocketConnection(data.r.client_socket, false), *data.c);
+    }
+    else if (connection_type == ConnectionType::SSH) {
+      bbs = data.c->bbses.front();
+    }
+
+    VLOG(2) << "BBS is: " << bbs.name;
 
     if (!contains(*data.nodes, bbs.name)) {
       // HOW???

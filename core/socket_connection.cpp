@@ -238,7 +238,7 @@ int SocketConnection::receive(void* data, const int size, duration<double> d) {
 int SocketConnection::receive_upto(void* data, const int size, duration<double> d) {
   int num_read = read_TYPE<void, 0>(sock_, data, d, false, size);
   if (open_ && num_read == 0) {
-    throw socket_closed_error(StringPrintf("receive: got zero read from socket. expected: ", size));
+    throw socket_closed_error(StringPrintf("receive_upto: got zero read from socket. expected: ", size));
   }
   return num_read;
 }
@@ -307,7 +307,7 @@ uint8_t SocketConnection::read_uint8(duration<double> d) {
   uint8_t data = 0;
   int num_read = read_TYPE<uint8_t>(sock_, &data, d, true);
   if (open_ && num_read == 0) {
-    throw socket_closed_error(StrCat("receive: got zero read from socket. expected: ", sizeof(uint8_t)));
+    throw socket_closed_error(StrCat("read_uint8: got zero read from socket. expected: ", sizeof(uint8_t)));
   }
   return data;
 }

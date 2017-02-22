@@ -164,6 +164,21 @@ int get_dns_cc(const std::string address, const std::string& rbl_address) {
   return 0;
 }
 
+bool SetBlockingMode(SOCKET sock) {
+  if (sock == INVALID_SOCKET) {
+    return false;
+  }
+
+#ifdef _WIN32
+  u_long blocking = 1;
+  return ioctlsocket(sock, FIONBIO, &blocking) == NO_ERROR;
+#else  // _WIN32
+  int flags = fcntl(sock, F_GETFL, 0 /* ignored */);
+  flags &= ~O_NONBLOCK;
+  return fcntl(sock, F_SETFL, flags) != -1;
+#endif  // _WIN32
+}
+
 SocketSet::SocketSet() {}
 SocketSet::~SocketSet() {}
 
