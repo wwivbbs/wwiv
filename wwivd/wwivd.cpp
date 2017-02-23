@@ -711,7 +711,8 @@ int main(int argc, char* argv[]) {
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
-  cmdline.add_argument({"wwiv_user", "WWIV User to use.", "wwiv2"});
+  cmdline.add_argument({ "wwiv_user", "WWIV User to use.", "wwiv2" });
+  cmdline.add_argument(BooleanCommandLineArgument{ "version", 'V', "Display version.", false });
   cmdline.set_no_args_allowed(true);
 
   if (!cmdline.Parse()) {
@@ -721,6 +722,10 @@ int main(int argc, char* argv[]) {
   if (cmdline.help_requested()) {
     cout << cmdline.GetHelp() << endl;
     return EXIT_SUCCESS;
+  }
+  if (cmdline.barg("version")) {
+    cout << wwiv_version << beta_version << std::endl;
+    return 0;
   }
 
   LOG(INFO) << "wwivd - WWIV Daemon.";
