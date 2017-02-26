@@ -46,6 +46,15 @@ TEST_F(CalloutTest, WithPassword) {
   EXPECT_STREQ("pass", con.password);
 }
 
+TEST_F(CalloutTest, WithPassword_Bang) {
+  net_call_out_rec con;
+  const string line = "@1 & \"pass!\"";
+  ASSERT_TRUE(ParseCalloutNetLine(line, &con));
+  EXPECT_EQ(1, con.sysnum);
+  EXPECT_NE(0, con.options & options_sendback);
+  EXPECT_STREQ("pass!", con.password);
+}
+
 TEST_F(CalloutTest, OncePerDay) {
   net_call_out_rec con;
   const string line = "@1234 &!24* \"pass\"";
