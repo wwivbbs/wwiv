@@ -46,7 +46,25 @@ Logger::Logger() {}
 
 Logger::~Logger() {}
 
-static std::string exit_filename;
+std::string Logger::exit_filename;
+
+//static 
+void Logger::StartupLog(int argc, char* argv[]) {
+  time_t t = time(nullptr);
+  string l(asctime(localtime(&t)));
+  StringTrim(&l);
+  CLOG(INFO, "startup") << exit_filename << " version " << wwiv_version << beta_version
+    << " (" << wwiv_date << ")";
+  CLOG(INFO, "startup") << exit_filename << " starting at " << l;
+  if (argc > 1) {
+    string cmdline;
+    for (int i = 1; i < argc; i++) {
+      cmdline += argv[i];
+      cmdline += " ";
+    }
+    CLOG(INFO, "startup") << "command line: " << cmdline;
+  }
+}
 
 //static
 void Logger::ExitLogger() {
@@ -55,7 +73,7 @@ void Logger::ExitLogger() {
 }
 
 // static
-void Logger::Init(int argc, char** argv) {
+void Logger::Init(int argc, char** argv, bool startup_log) {
   string filename(argv[0]);
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);
@@ -88,22 +106,10 @@ void Logger::Init(int argc, char** argv) {
 
   START_EASYLOGGINGPP(argc, argv);
 
-  time_t t = time(nullptr);
-  string l(asctime(localtime(&t)));
-  StringTrim(&l);
-  CLOG(INFO, "startup") << filename << " version " << wwiv_version << beta_version
-            << " (" << wwiv_date << ")";
-  CLOG(INFO, "startup") << filename << " starting at " << l;
-  if (argc > 1) {
-    string cmdline;
-    for (int i = 1; i < argc; i++) {
-      cmdline += argv[i];
-      cmdline += " ";
-    }
-    CLOG(INFO, "startup") << "command line: " << cmdline;
-  }
-
   exit_filename = filename;
+  if (startup_log) {
+    StartupLog(argc, argv);
+  }
 }
 
 el::base::type::StoragePointer Logger::getLoggerStorage() {

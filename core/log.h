@@ -99,10 +99,15 @@ public:
   ~Logger();
 
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
-  static void Init(int argc, char** argv);
+  static void Init(int argc, char** argv, bool startup_log);
+  static void Init(int argc, char** argv) { Init(argc, argv, true); };
+  static void StartupLog(int argc, char* argv[]);
   static void ExitLogger();
   static el::base::type::StoragePointer getLoggerStorage();
   static void DisableFileLoging();
+
+private:
+  static std::string exit_filename;
 };
 
 }
