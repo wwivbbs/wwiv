@@ -219,7 +219,7 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
     HandleFileRequest(s);
   } break;
   case BinkpCommands::M_ERR: {
-    LOG(ERROR) << "M_ERR: " << s;
+    LOG(ERROR) << "RECV:  M_ERR: " << s;
     error_received_ = true;
   } break;
   default: {
@@ -560,7 +560,7 @@ BinkState BinkP::WaitOk() {
   }
 
   LOG(ERROR) << "       after WaitOk: M_OK never received.";
-  send_command_packet(BinkpCommands::M_ERR, "M_OK never received. Timeed out waiting for it.");
+  send_command_packet(BinkpCommands::M_ERR, "M_OK never received. Timed out waiting for it.");
   return BinkState::DONE;
 }
 
@@ -589,16 +589,22 @@ BinkState BinkP::AuthRemote() {
       auto caller = remote_.wwivnet_node();
       LOG(INFO) << "       remote_network_name: " << network_name << "; caller_node: " << caller;
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
+      if (callout_record == nullptr) {
+        // We don't have a callout.net entry for this caller. Fail the connection
+        send_command_packet(BinkpCommands::M_ERR,
+          StrCat("Error (NETWORKB-0002): Unable to find caller in WWIVnet callout.net. caller: ", caller));
+        return BinkState::FATAL_ERROR;
+      }
     } else {
       auto caller = remote_.ftn_address();
       LOG(INFO) << "       remote_network_name: " << network_name << "; caller_address: " << caller;
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
-    }
-    if (callout_record == nullptr) {
-      // We don't have a callout.net entry for this caller. Fail the connection
-      send_command_packet(BinkpCommands::M_ERR, 
-          StrCat("Error (NETWORKB-0002): Unexpected Address: ", remote_.address_list()));
-      return BinkState::FATAL_ERROR;
+      if (callout_record == nullptr) {
+        // We don't have a callout.net entry for this caller. Fail the connection
+        send_command_packet(BinkpCommands::M_ERR,
+          StrCat("Error (NETWORKB-0002): Unable to find FTN address in remote list. caller: ", caller));
+        return BinkState::FATAL_ERROR;
+      }
     }
     return BinkState::WAIT_PWD;
   }
@@ -608,8 +614,9 @@ BinkState BinkP::AuthRemote() {
     return (side_ == BinkSide::ORIGINATING) ?
       BinkState::IF_SECURE : BinkState::WAIT_PWD;
   } else {
-    send_command_packet(BinkpCommands::M_ERR, 
-      StrCat("Error (NETWORKB-0001): Unexpected Addresses: '", remote_.address_list(), "'"));
+    send_command_packet(BinkpCommands::M_ERR,
+      StrCat("Error (NETWORKB-0001): Unexpected Addresses: '", remote_.address_list(),
+        "'; expected: '", expected_remote_node_, "'"));
     return BinkState::FATAL_ERROR;
   }
 }
