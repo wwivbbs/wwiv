@@ -812,7 +812,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]"; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
-  long length = stol(s.at(1));
+  int length = StringToInt(s.at(1));
 
   auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {
@@ -824,6 +824,11 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   // Increment the number of bytes sent.
   // Also don't increment with -1 if there's an error with the file.
   bytes_sent_ += max(0, file->file_size());
+  
+  if (length != file->file_size()) {
+    LOG(ERROR) << "NON-FATAL ERROR: Size didn't match M_GOT. Please log a bug. M_GOT: "
+      << length << "; file_size: " << file->file_size();
+  }
 
   if (!file->Delete()) {
     LOG(ERROR) << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
