@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <memory>
 #include <string>
-
+#include <math.h>
 #include "bbs/keycodes.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"

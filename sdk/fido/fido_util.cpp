@@ -189,6 +189,10 @@ std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a) {
   return StrCat(a.zone(), ":", to_net_node(a));
 }
 
+std::string to_zone_net_node_point(const wwiv::sdk::fido::FidoAddress& a) {
+  return StrCat(to_zone_net_node(a),  ".", a.point());
+}
+
 std::vector<std::string> split_message(const std::string& s) {
   string temp(s);
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
