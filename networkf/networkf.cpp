@@ -322,10 +322,14 @@ static bool import_packets(const Config& config, const FidoCallout& callout, con
 
 static bool import_bundle_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   VLOG(1) << "import_bundle_file: name: " << name;
-  File f(dir, name);
-  if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-    LOG(INFO) << "Unable to open file: " << dir << name;
-    return false;
+
+  {
+    // Check to make sure the file is readable.
+    File f(dir, name);
+    if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+      LOG(INFO) << "Unable to open file: " << dir << name;
+      return false;
+    }
   }
 
   const std::string saved_dir = File::current_directory();
