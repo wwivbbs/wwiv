@@ -533,12 +533,12 @@ static packet_header_2p_t CreateType2PlusPacketHeader(
   header.dest_point = dest.point();
 
   auto tm = localtime(&now);
-  header.year = tm->tm_year;
-  header.month = tm->tm_mon;
-  header.day = tm->tm_mday;
-  header.hour = tm->tm_hour;
-  header.minute = tm->tm_min;
-  header.second = tm->tm_sec;
+  header.year = static_cast<uint16_t>(tm->tm_year);
+  header.month = static_cast<uint16_t>(tm->tm_mon);
+  header.day = static_cast<uint16_t>(tm->tm_mday);
+  header.hour = static_cast<uint16_t>(tm->tm_hour);
+  header.minute = static_cast<uint16_t>(tm->tm_min);
+  header.second = static_cast<uint16_t>(tm->tm_sec);
   header.baud = 33600;
   header.packet_ver = 2;
   header.product_code_high = 0x1d;
@@ -546,10 +546,11 @@ static packet_header_2p_t CreateType2PlusPacketHeader(
   header.qm_dest_zone = dest.zone();
   header.qm_orig_zone = from_address.zone();
   header.capabilities = 0x0001;
+  // Ideally we'd just use bswap_16 if it was available everywhere.
   header.capabilities_valid =
-    ((header.capabilities_valid & 0x7f00) >> 8) | ((header.capabilities_valid & 0xff) << 8);
+    ((header.capabilities & 0xff00) >> 8) | ((header.capabilities & 0xff) << 8);
   header.product_code_high = 0;
-  header.product_code_low = wwiv_net_version;
+  header.product_code_low = static_cast<uint8_t>(wwiv_net_version & 0xff);
   // Add in packet password.
   to_char_array(header.password, packet_password);
 
