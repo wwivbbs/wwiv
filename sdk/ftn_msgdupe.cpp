@@ -99,7 +99,13 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
   file.file().Seek(0, File::Whence::begin);
   file.Write(0, &msg_num);
 
-  string address_string = to_zone_net_node(a);
+  string address_string;
+
+  if (a.point() != 0) {
+    address_string = to_zone_net_node_point(a);
+  } else {
+    address_string = to_zone_net_node(a);
+  }
   return StringPrintf("%s %08X", address_string.c_str(), msg_num);
 }
 

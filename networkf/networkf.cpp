@@ -673,10 +673,15 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
       origin_line = config.config()->systemname;
     }
 
-    text << "\r"
-      << "--- WWIV " << wwiv_version << beta_version << "\r"
-      << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r";
-
+    if (from_address.point() == 0) {
+      text << "\r"
+        << "--- WWIV " << wwiv_version << beta_version << "\r"
+        << " * Origin: " << origin_line << " (" << to_zone_net_node(from_address) << ")\r";
+    } else {
+      text << "\r"
+        << "--- WWIV " << wwiv_version << beta_version << "\r"
+        << " * Origin: " << origin_line << " (" << to_zone_net_node_point(from_address) << ")\r";
+    }
     // Finally we need SEEN-BY and PATH lines for routing.
     if (!is_email) {
       // TODO(rushfan): Add the nodes we are exporting this to.
