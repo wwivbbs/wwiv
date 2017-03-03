@@ -31,6 +31,7 @@
 #include "bbs/application.h"
 #include "bbs/vars.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 
@@ -297,6 +298,21 @@ int ExecExternalProgram(const string commandLine, int flags) {
       bShouldUseSync = true;
     }
   }
+  if (flags & EFLAG_STDIO) {
+    if (bShouldUseSync) {
+      // Not allowed.
+      sysoplog() << "Tried to execute command with sync and stdio: " << commandLine;
+      LOG(ERROR) << "Tried to execute command with sync and stdio: " << commandLine;
+      return false;
+    }
+
+    // Set the socket to be std{in,out}
+    auto sock = a()->remoteIO()->GetDoorHandle();
+    si.hStdInput = (HANDLE) sock;
+    si.hStdOutput = (HANDLE)sock;
+    si.hStdError = (HANDLE)sock;
+    si.dwFlags |= STARTF_USESTDHANDLES;
+  }
 
   if (bShouldUseSync) {
     string syncFosTempFile;
@@ -317,15 +333,14 @@ int ExecExternalProgram(const string commandLine, int flags) {
   }
 
   DWORD dwCreationFlags = 0;
-  char * title = new char[255];
-  memset(title, 0, sizeof(title));
+  auto title = std::make_unique<char[]>(500);
   if (flags & EFLAG_NETPROG) {
-    strcpy(title, "NETWORK");
+    strcpy(title.get(), "NETWORK");
   } else {
-    _snprintf(title, sizeof(title), "%s in door on node %d",
-              a()->user()->GetName(), a()->instance_number());
+    sprintf(title.get(), "%s in door on node %d",
+        a()->user()->GetName(), a()->instance_number());
   }
-  si.lpTitle = title;
+  si.lpTitle = title.get();
 
   if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
     a()->remoteIO()->close(true);
@@ -335,6 +350,9 @@ int ExecExternalProgram(const string commandLine, int flags) {
   HANDLE hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
     
   if (bUsingSync) {
+    // Create each syncfoss window in it's own WOW VDM.
+    dwCreationFlags |= CREATE_SEPARATE_WOW_VDM;
+
     // Create Hangup Event.
     const string event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
     hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
@@ -379,7 +397,6 @@ int ExecExternalProgram(const string commandLine, int flags) {
                   &pi);
 
   if (!bRetCP) {
-    delete[] title;
     sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Code: " << GetLastError();
     if (bUsingSync && a()->IsExecLogSyncFoss()) {
       fprintf(hLogFile, "!!! CreateProcess failed for command: [%s] with Error Code %ld", workingCommandLine.c_str(),
@@ -433,8 +450,6 @@ int ExecExternalProgram(const string commandLine, int flags) {
 
   // Close process and thread handles.
   CloseHandle(pi.hProcess);
-
-  delete[] title;
 
   // reengage comm stuff
   if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
