@@ -237,9 +237,6 @@ int SocketConnection::receive(void* data, const int size, duration<double> d) {
 
 int SocketConnection::receive_upto(void* data, const int size, duration<double> d) {
   int num_read = read_TYPE<void, 0>(sock_, data, d, false, size);
-  if (open_ && num_read == 0) {
-    throw socket_closed_error(StringPrintf("receive_upto: got zero read from socket. expected: ", size));
-  }
   return num_read;
 }
 

@@ -24,6 +24,8 @@
 #pragma comment (lib, "Mswsock.lib")
 #pragma comment (lib, "AdvApi32.lib")
 
+#include <MSWSock.h>
+
 #else
 
 #include <unistd.h>
@@ -233,6 +235,12 @@ bool SocketSet::RunOnce() {
       socklen_t addr_size = sizeof(sockaddr_in);
       struct sockaddr_in saddr = {};
       SOCKET client_sock = accept(e.first, (sockaddr*)&saddr, &addr_size);
+
+#ifdef _WIN32
+      int newvalue = SO_SYNCHRONOUS_NONALERT;
+      setsockopt(client_sock, SOL_SOCKET, SO_OPENTYPE,
+        (char *)&newvalue, sizeof(newvalue));
+#endif
       e.second({ client_sock, socket_port_map_.at(e.first) });
     }
   }
