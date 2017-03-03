@@ -25,21 +25,30 @@
 
 #include "core/log.h"
 
-static int UnixSpawn(const std::string& cmd, char* environ[]) {
+static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
   if (cmd.empty()) {
     return 1;
   }
+  const int sock = a()->remoteIO()->GetDoorHandle();
   int pid = fork();
   if (pid == -1) {
+    // Fork failed.
     return -1;
   }
   if (pid == 0) {
+    // Were' in the child.
+    if (flags & EFLAG_STDIO) {
+      // Duplicate the std{in,out} handles.
+      dup2(sock, STDIN_FILENO);
+      dup2(sock, STDOUT_FILENO);
+    }
     const char* argv[4] = { "/bin/sh", "-c", cmd.c_str(), 0 };
     execv("/bin/sh", const_cast<char ** const>(argv));
     exit(127);
   }
 
   for (;;) {
+    // In the parent, wait for the child to terminate.
     int nStatusCode = 1;
     if (waitpid(pid, &nStatusCode, 0) == -1) {
       if (errno != EINTR) {
@@ -66,7 +75,7 @@ int ExecExternalProgram(const std::string cmdline, int flags) {
     a()->remoteIO()->close(true);
   }
 
-  int i = UnixSpawn(cmdline, NULL);
+  int i = UnixSpawn(cmdline, nullptr, flags);
 
   // reengage comm stuff
   if (ok_modem_stuff) {

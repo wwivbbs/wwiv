@@ -30,7 +30,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/application.h"
 #include "bbs/vars.h"
-#include "core/File.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 

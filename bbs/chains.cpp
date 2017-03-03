@@ -164,11 +164,15 @@ void run_chain(int nChainum) {
   a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);
 
   int flags = 0;
-  if (!(a()->chains[nChainum].ansir & ansir_no_DOS)) {
+  auto& c = a()->chains[nChainum];
+  if (!(c.ansir & ansir_no_DOS)) {
     flags |= EFLAG_COMIO;
   }
-  if (a()->chains[nChainum].ansir & ansir_emulate_fossil) {
+  if (c.ansir & ansir_emulate_fossil) {
     flags |= EFLAG_FOSSIL;
+  }
+  if (c.ansir & ansir_stdio) {
+    flags |= EFLAG_STDIO;
   }
 
   ExecuteExternalProgram(chainCmdLine, flags);

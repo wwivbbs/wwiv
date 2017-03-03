@@ -131,6 +131,7 @@ void modify_chain(int nCurrentChainum) {
     bout << "|#9F) DOS Interrupt: |#2" << ((c.ansir & ansir_no_DOS) ? "NOT Used" : "Used") << wwiv::endl;
     bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) <<
                        wwiv::endl;
+    bout << "|#9H) Native STDIO : |#2" << YesNoString((c.ansir & ansir_stdio) ? true : false) << wwiv::endl;
     bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false) <<
                        wwiv::endl;
     bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) <<
@@ -155,11 +156,11 @@ void modify_chain(int nCurrentChainum) {
                          (r.maxage) << wwiv::endl;
       bout.nl();
       bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
-      ch = onek("QABCDEFGJKLMN[]", true);     // removed i
+      ch = onek("QABCDEFGHJKLMN[]", true);     // removed i
     } else {
       bout.nl();
       bout << "|#9Which (A-K,R,[,],Q) ? ";
-      ch = onek("QABCDEFGJK[]", true);   // removed i
+      ch = onek("QABCDEFGJJK[]", true);   // removed i
     }
     switch (ch) {
     case 'Q':
@@ -227,51 +228,12 @@ void modify_chain(int nCurrentChainum) {
         c.ar = static_cast<uint16_t>(1 << (ch2 - 'A'));
       }
       break;
-    case 'E':
-      bout.nl();
-      bout << "|#5Require ANSI? ";
-      if (yesno()) {
-        c.ansir |= ansir_ansi;
-      } else {
-        c.ansir &= ~ansir_ansi;
-      }
-      break;
-    case 'F':
-      bout.nl();
-      bout << "|#5Have BBS intercept DOS calls? ";
-      if (noyes()) {
-        c.ansir &= ~ansir_no_DOS;
-      } else {
-        c.ansir |= ansir_no_DOS;
-      }
-      break;
-    case 'G':
-      bout.nl();
-      bout << "|#5Under Windows Use Emulated FOSSIL Support? ";
-      if (noyes()) {
-        c.ansir |= ansir_emulate_fossil;
-      } else {
-        c.ansir &= ~ansir_emulate_fossil;
-      }
-      break;
-    case 'J':
-      bout.nl();
-      bout << "|#5Allow program to be run locally only? ";
-      if (yesno()) {
-        c.ansir |= ansir_local_only;
-      } else {
-        c.ansir &= ~ansir_local_only;
-      }
-      break;
-    case 'K':
-      bout.nl();
-      bout << "|#5Chain is multi-user? ";
-      if (yesno()) {
-        c.ansir |= ansir_multi_user;
-      } else {
-        c.ansir &= ~ansir_multi_user;
-      }
-      break;
+    case 'E': c.ansir ^= ansir_ansi; break;
+    case 'F': c.ansir ^= ansir_no_DOS; break;
+    case 'G': c.ansir ^= ansir_emulate_fossil; break;
+    case 'H': c.ansir ^= ansir_stdio; break;
+    case 'J': c.ansir ^= ansir_local_only; break;
+    case 'K':c.ansir ^= ansir_multi_user; break;
     case 'L':
       if (!a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
         break;
@@ -342,7 +304,7 @@ void modify_chain(int nCurrentChainum) {
 
 void insert_chain(int nCurrentChainum) {
   {
-    chainfilerec c;
+    chainfilerec c{};
     strcpy(c.description, "** NEW CHAIN **");
     strcpy(c.filename, "REM");
     c.sl = 10;
@@ -353,7 +315,7 @@ void insert_chain(int nCurrentChainum) {
     insert_at(a()->chains, nCurrentChainum, c);
   }
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    chainregrec r;
+    chainregrec r{};
     memset(&r, 0, sizeof(r));
     r.maxage = 255;
 

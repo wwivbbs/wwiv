@@ -868,7 +868,7 @@ struct batchrec {
 #define ansir_ansi                  0x01
 #define ansir_no_DOS                0x02
 #define ansir_emulate_fossil        0x04
-#define ansir_shrink                0x08
+#define ansir_stdio                 0x08
 #define ansir_no_pause              0x10
 #define ansir_local_only            0x20
 #define ansir_multi_user            0x40
@@ -953,16 +953,21 @@ struct filestatusrec {
 };
 
 ///////////////////////////////////////////////////////////////////////////////
+// Execute Flags.  Used when spawning chains and external programs.
 
-#define EFLAG_NONE            0x0000        // nothing.
-//#define UNUSED_EFLAG_ABORT           0x0001        // UNUSED check for a ^C to abort program
-//#define UNUSED_EFLAG_INTERNAL        0x0002        // UNUSED make it look internal to BBS
-#define EFLAG_NOHUP           0x0004        // don't check for hangup (UL event)
-#define EFLAG_COMIO           0x0008        // redirect IO to com port
-//#define UNUSED_EFLAG_NOPAUSE         0x0040        // UNUSED disable pause in remote
-#define EFLAG_NETPROG         0x0080        // try running out of net dir first
-//#define UNUSED_EFLAG_TOPSCREEN       0x0100        // UNUSED leave topscreen as-is
-#define EFLAG_FOSSIL          0x0200        // Use Win32 Emulated FOSSIL
+// Default option, do nothing.
+#define EFLAG_NONE            0x0000
+// don't check for hangup (typically used for the upload event)
+#define EFLAG_NOHUP           0x0004
+// redirect DOS IO to com port
+#define EFLAG_COMIO           0x0008
+// try running out of net dir first
+#define EFLAG_NETPROG         0x0080
+// Use Win32 Emulated FOSSIL
+#define EFLAG_FOSSIL          0x0200
+// Use STDIO based doors for Window/Linux.  This will set the stdin/stdout
+// file descriptors to the socket before spawning the chain.
+#define EFLAG_STDIO           0x0400
 
 ///////////////////////////////////////////////////////////////////////////////
 

@@ -126,8 +126,11 @@ static uint16_t str2spawnopt(const std::string& s) {
   if (ts.find("FOSSIL") != std::string::npos) {
     return_val |= EFLAG_FOSSIL; // RF20020929
   }
-    if (ts.find("NETPROG") != std::string::npos) {
+  if (ts.find("NETPROG") != std::string::npos) {
     return_val |= EFLAG_NETPROG;
+  }
+  if (ts.find("STDIO") != std::string::npos) {
+    return_val |= EFLAG_STDIO;
   }
   return return_val;
 }
