@@ -160,7 +160,7 @@ void modify_chain(int nCurrentChainum) {
     } else {
       bout.nl();
       bout << "|#9Which (A-K,R,[,],Q) ? ";
-      ch = onek("QABCDEFGJJK[]", true);   // removed i
+      ch = onek("QABCDEFGHJK[]", true);   // removed i
     }
     switch (ch) {
     case 'Q':
