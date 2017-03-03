@@ -109,9 +109,7 @@ void modify_chain(int nCurrentChainum) {
   bool done = false;
   do {
     bout.cls();
-    const string header = StringPrintf("|16|15Editing Chain # %d", nCurrentChainum);
-    bout << header;
-    bout.nl(2);
+    bout.litebar("Editing Chain # %d", nCurrentChainum);
     bout.Color(0);
     bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
