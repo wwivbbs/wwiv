@@ -41,25 +41,29 @@ using namespace wwiv::strings;
 //
 // Local functions
 //
+
 static int fname_ok(const struct dirent *ent) {
-  struct stat s;
-  if (wwiv::strings::IsEquals(ent->d_name, ".") ||
-      wwiv::strings::IsEquals(ent->d_name, "..")) {
+  if (IsEquals(ent->d_name, ".") || IsEquals(ent->d_name, "..")) {
     return 0;
   }
 
   if (s_typemask != WFindFileTypeMask::WFINDFILE_ANY) {
-
+    mode_t mode = 0;
+#ifdef _DIRENT_HAVE_D_TYPE
+    mode = DTTOIF(ent->d_type);
+#else
+    struct stat s;
     stat(ent->d_name, &s);
-
-    if ((S_ISDIR(s.st_mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
+    mode = s.st_mode;
+#endif  // _DIRENT_HAVE_D_TYPE
+    if ((S_ISDIR(mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
       return 0;
-    } else if ((S_ISREG(s.st_mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_FILES)) {
+    } else if ((S_ISREG(mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_FILES)) {
       return 0;
     }
   }
 
-  int result = fnmatch(filespec_ptr, ent->d_name, FNM_PATHNAME|FNM_CASEFOLD);
+  int result = fnmatch(filespec_ptr, ent->d_name, FNM_PATHNAME | FNM_CASEFOLD);
   VLOG(3) << "fnmatch: " << filespec_ptr << ";" << ent->d_name << "; " << result << "\r\n";
 
   if (result == 0) {
@@ -107,7 +111,18 @@ bool WFindFile::next() {
 
   filename_ = entry->d_name;
   file_size_ = entry->d_reclen;
+
+#ifdef _DIRENT_HAVE_D_TYPE
   file_type_ = entry->d_type;
+
+#else
+  struct stat s{};
+  if (stat(entry->d_name, &s) != -1) {
+    file_type = IFTODT(s.st_mode);
+  } else {
+    file_type_ = DT_UNKNOWN;
+  }
+#endif  // _DIRENT_HAVE_D_TYPE
 
   return true;
 }
