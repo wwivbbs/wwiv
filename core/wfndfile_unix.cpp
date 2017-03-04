@@ -42,6 +42,22 @@ using namespace wwiv::strings;
 // Local functions
 //
 
+#ifndef IFTODT
+#define IFTODT(type) (((type) & S_IFMT) >> 12)
+#endif
+#ifndef DTTOIF
+#define DTTOIF(dirtype) ((dirtype) << 12)
+#endif
+#ifndef DT_UNKNOWN
+#define DT_UNKNOWN 0
+#endif
+#ifndef DT_DIR
+#define DT_DIR 4
+#endif
+#ifndef DT_REG
+#define DT_REG 8
+#endif
+
 static int fname_ok(const struct dirent *ent) {
   if (IsEquals(ent->d_name, ".") || IsEquals(ent->d_name, "..")) {
     return 0;
@@ -62,8 +78,11 @@ static int fname_ok(const struct dirent *ent) {
       return 0;
     }
   }
-
+#if defined(__sun)
+  int result = fnmatch(filespec_ptr, ent->d_name, FNM_PATHNAME | FNM_IGNORECASE);
+#else
   int result = fnmatch(filespec_ptr, ent->d_name, FNM_PATHNAME | FNM_CASEFOLD);
+#endif
   VLOG(3) << "fnmatch: " << filespec_ptr << ";" << ent->d_name << "; " << result << "\r\n";
 
   if (result == 0) {
@@ -118,7 +137,7 @@ bool WFindFile::next() {
 #else
   struct stat s{};
   if (stat(entry->d_name, &s) != -1) {
-    file_type = IFTODT(s.st_mode);
+    file_type_ = IFTODT(s.st_mode);
   } else {
     file_type_ = DT_UNKNOWN;
   }

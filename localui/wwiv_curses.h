@@ -23,7 +23,9 @@
 #undef MOUSE_MOVED
 #endif  // MOUSE_MOVED
 
-
+#if defined(__sun)
+#include <ncurses/curses.h>
+#else
 #include <curses.h>
-
+#endif
 #endif  // __INCLUDED_LOCALUI_CURSES_H__

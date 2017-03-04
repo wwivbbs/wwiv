@@ -26,6 +26,9 @@ if(UNIX)
   if(APPLE)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
   endif()
+  if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")
+  endif()
 endif()
 
 
