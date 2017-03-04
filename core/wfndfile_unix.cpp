@@ -26,15 +26,13 @@
 #include <libgen.h>
 #include <limits.h>
 #include <iostream>
+#include <sys/stat.h>
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
 static WFindFileTypeMask s_typemask;
 static const char* filespec_ptr;
-
-#define TYPE_DIRECTORY  DT_DIR
-#define TYPE_FILE DT_BLK
 
 using std::string;
 using namespace wwiv::strings;
@@ -44,15 +42,19 @@ using namespace wwiv::strings;
 // Local functions
 //
 static int fname_ok(const struct dirent *ent) {
+  struct stat s;
   if (wwiv::strings::IsEquals(ent->d_name, ".") ||
       wwiv::strings::IsEquals(ent->d_name, "..")) {
     return 0;
   }
 
   if (s_typemask != WFindFileTypeMask::WFINDFILE_ANY) {
-    if ((ent->d_type & TYPE_DIRECTORY) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
+
+    stat(ent->d_name, &s);
+
+    if ((S_ISDIR(s.st_mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
       return 0;
-    } else if ((ent->d_type & TYPE_FILE) && !(s_typemask == WFindFileTypeMask::WFINDFILE_FILES)) {
+    } else if ((S_ISREG(s.st_mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_FILES)) {
       return 0;
     }
   }
