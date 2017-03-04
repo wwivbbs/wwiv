@@ -264,6 +264,35 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   }
 }
 
+static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HANDLE& hSyncReadSlot) {
+  hSyncHangupEvent = INVALID_HANDLE_VALUE;
+  hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
+
+  // Create each syncfoss window in it's own WOW VDM.
+  dwCreationFlags |= CREATE_SEPARATE_WOW_VDM;
+
+  // Create Hangup Event.
+  const string event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
+  hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
+  if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
+    LogToSync(StrCat("!!! Unable to create Hangup Event for SyncFoss External program: ", GetLastError()));
+    sysoplog() << "!!! Unable to create Hangup Event for SyncFoss External program: " << GetLastError();
+    return false;
+  }
+
+  // Create Read Mail Slot
+  const string readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", a()->instance_number());
+  hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
+  if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
+    LogToSync(StrCat("!!! Unable to create mail slot for reading for SyncFoss External program: ", GetLastError()));
+    sysoplog() << "!!! Unable to create mail slot for reading for SyncFoss External program: " << GetLastError();
+    CloseHandle(hSyncHangupEvent);
+    hSyncHangupEvent = INVALID_HANDLE_VALUE;
+    return false;
+  }
+  return true;
+}
+
 //  Main code that launches external programs and handle sbbsexec support
 
 int ExecExternalProgram(const string commandLine, int flags) {
@@ -337,32 +366,11 @@ int ExecExternalProgram(const string commandLine, int flags) {
   HANDLE hSyncReadSlot = INVALID_HANDLE_VALUE;     // Mailslot for reading
     
   if (bUsingSync) {
-    // Create each syncfoss window in it's own WOW VDM.
-    dwCreationFlags |= CREATE_SEPARATE_WOW_VDM;
-
-    // Create Hangup Event.
-    const string event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
-    hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
-    if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
-      LogToSync(StrCat("!!! Unable to create Hangup Event for SyncFoss External program: ", GetLastError()));
-      sysoplog() << "!!! Unable to create Hangup Event for SyncFoss External program: " << GetLastError();
-      return false;
-    }
-
-    // Create Read Mail Slot
-    const string readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", a()->instance_number());
-    hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
-    if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
-      LogToSync(StrCat("!!! Unable to create mail slot for reading for SyncFoss External program: ", GetLastError()));
-      sysoplog() << "!!! Unable to create mail slot for reading for SyncFoss External program: " << GetLastError();
-      CloseHandle(hSyncHangupEvent);
-      hSyncHangupEvent = INVALID_HANDLE_VALUE;
-      return false;
-    }
+    SetupSyncFoss(dwCreationFlags, hSyncHangupEvent, hSyncReadSlot);
+    ::Sleep(250);
   }
 
   const string current_directory = File::current_directory();
-  ::Sleep(250);
 
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];
@@ -389,11 +397,13 @@ int ExecExternalProgram(const string commandLine, int flags) {
     return -1;
   }
 
-  // Kinda hacky but WaitForInputIdle doesn't work on console application.
-  ::Sleep(a()->GetExecChildProcessWaitTime());
-  const int sleep_zero_times = 5;
-  for (int iter = 0; iter < sleep_zero_times; iter++) {
-    ::Sleep(0);
+  if (bUsingSync) {
+    // Kinda hacky but WaitForInputIdle doesn't work on console application.
+    ::Sleep(a()->GetExecChildProcessWaitTime());
+    const int sleep_zero_times = 5;
+    for (int iter = 0; iter < sleep_zero_times; iter++) {
+      ::Sleep(0);
+    }
   }
   CloseHandle(pi.hThread);
 
