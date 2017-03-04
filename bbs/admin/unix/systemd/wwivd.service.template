@@ -1,6 +1,7 @@
 [Unit]
 Description=wwivd: WWIV UNIX Daemon
 [Service]
+WorkingDirectory=${WWIV_DIR}
 ExecStart=${WWIV_DIR}/wwivd
 EnvironmentFile=/etc/wwiv/config
 [Install]
