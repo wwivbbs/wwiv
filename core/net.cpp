@@ -150,19 +150,22 @@ bool on_dns_dbl(const std::string address, const std::string& rbl_address) {
   string s = dns_rbl_name(address, rbl_address);
   struct addrinfo *res = nullptr;
   auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
-  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
-  return result == 0;
+  if (result != 0) {
+    return false;
+  }
+  freeaddrinfo(res);
+  return true;
 }
 
 int get_dns_cc(const std::string address, const std::string& rbl_address) {
   string s = dns_rbl_name(address, rbl_address);
   struct addrinfo *res = nullptr;
   auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
-  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
   if (result != 0) {
     return 0;
   }
-
+  
+  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
   if (res->ai_family == AF_INET) {
     struct sockaddr_in *ipv4 = (struct sockaddr_in *) res->ai_addr;
     uint32_t b = htonl(ipv4->sin_addr.s_addr) & 0x0000ffff;
