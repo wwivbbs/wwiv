@@ -165,7 +165,7 @@ int get_dns_cc(const std::string address, const std::string& rbl_address) {
     return 0;
   }
   
-  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
+  wwiv::core::ScopeExit at_exit([res] { freeaddrinfo(res); });
   if (res->ai_family == AF_INET) {
     struct sockaddr_in *ipv4 = (struct sockaddr_in *) res->ai_addr;
     uint32_t b = htonl(ipv4->sin_addr.s_addr) & 0x0000ffff;
