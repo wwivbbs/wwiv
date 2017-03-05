@@ -33,6 +33,7 @@
 
 static WFindFileTypeMask s_typemask;
 static const char* filespec_ptr;
+static std::string s_path;
 
 using std::string;
 using namespace wwiv::strings;
@@ -59,7 +60,8 @@ static int fname_ok(const struct dirent *ent) {
     mode = DTTOIF(ent->d_type);
 #else
     struct stat s;
-    stat(ent->d_name, &s);
+    std::string fullpath = s_path + "/" + ent->d_name;
+    stat(fullpath.c_str(), &s);
     mode = s.st_mode;
 #endif  // _DIRENT_HAVE_D_TYPE
     if ((S_ISDIR(mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
@@ -99,6 +101,7 @@ bool WFindFile::open(const string& filespec, WFindFileTypeMask nTypeMask) {
   }
 
   s_typemask = type_mask_;
+  s_path = dir_;
   nMatches = scandir(dir_.c_str(), &entries, fname_ok, alphasort);
   if (nMatches < 0) {
     perror("scandir");
