@@ -36,6 +36,7 @@ enum class WFindFileTypeMask {
 
 class WFindFile {
  protected:
+  std::string dir_;
   std::string filename_;
   std::string filespec_;
   long file_size_ = 0;
