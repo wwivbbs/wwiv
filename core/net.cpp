@@ -150,7 +150,8 @@ bool on_dns_dbl(const std::string address, const std::string& rbl_address) {
   string s = dns_rbl_name(address, rbl_address);
   struct addrinfo *res = nullptr;
   auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
-  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
+  if (result == 0)
+    wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
   return result == 0;
 }
 
@@ -158,7 +159,8 @@ int get_dns_cc(const std::string address, const std::string& rbl_address) {
   string s = dns_rbl_name(address, rbl_address);
   struct addrinfo *res = nullptr;
   auto result = getaddrinfo(s.c_str(), nullptr, nullptr, &res);
-  wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
+  if (result == 0) 
+    wwiv::core::ScopeExit([res] { freeaddrinfo(res); });
   if (result != 0) {
     return 0;
   }
