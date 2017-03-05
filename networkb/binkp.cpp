@@ -526,9 +526,10 @@ BinkState BinkP::PasswordAck() {
   }
 
   // Passwords do not match, send error.
-  send_command_packet(BinkpCommands::M_ERR,
-      StringPrintf("Password doen't match.  Received '%s' expected '%s'.",
-       remote_password_.c_str(), expected_password.c_str()));
+  send_command_packet(BinkpCommands::M_ERR, "Incorrect password received.  Please check your configuration.");
+  // Log it if we're in debug logging mode.
+  VLOG(1) << "Password doesn't match.  Received '" << remote_password_
+          << "' expected '", expected_password, "'.";
   return BinkState::DONE;
 }
 
