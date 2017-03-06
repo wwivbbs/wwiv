@@ -37,7 +37,7 @@
 #include "sdk/filenames.h"
 
 // Make sure it's after windows.h
-#include <curses.h>
+#include "localui/wwiv_curses.h"
 
 using namespace wwiv::core;
 using namespace wwiv::strings;

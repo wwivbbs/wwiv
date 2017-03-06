@@ -27,6 +27,7 @@
 #include <limits.h>
 #include <iostream>
 #include <sys/stat.h>
+#include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
@@ -36,18 +37,13 @@ static const char* filespec_ptr;
 static std::string s_path;
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 //////////////////////////////////////////////////////////////////////////////
 //
 // Local functions
 //
-
-#if defined(__sun)
-#define TYPE_UNKNOWN   0
-#define TYPE_DIRECTORY 1
-#define TYPE_FILE      2
-#endif
 
 static int fname_ok(const struct dirent *ent) {
   if (IsEquals(ent->d_name, ".") || IsEquals(ent->d_name, "..")) {
@@ -60,7 +56,7 @@ static int fname_ok(const struct dirent *ent) {
     mode = DTTOIF(ent->d_type);
 #else
     struct stat s;
-    std::string fullpath = s_path + "/" + ent->d_name;
+    std::string fullpath = FilePath(s_path, ent->d_name);
     stat(fullpath.c_str(), &s);
     mode = s.st_mode;
 #endif  // _DIRENT_HAVE_D_TYPE
@@ -123,29 +119,16 @@ bool WFindFile::next() {
   file_size_ = entry->d_reclen;
 
 #ifdef _DIRENT_HAVE_D_TYPE
-  file_type_ = entry->d_type;
+  file_type_ = DTTOIF(entry->d_type);
 
 #else
   struct stat s;
-  string fullpath = dir_ + "/" + entry->d_name;
+  string fullpath = FilePath(dir_, entry->d_name);
   if (stat(fullpath.c_str(), &s) == 0) {
-#if defined(__sun)
-    if (S_ISDIR(s.st_mode)) {
-      file_type_ = TYPE_DIRECTORY;
-    } else if (S_ISREG(s.st_mode)) {
-      file_type_ = TYPE_FILE;
-    } else {
-      file_type_ = TYPE_UNKNOWN;
-    }
+    file_type_ = s.st_mode;
   } else {
-    file_type_ = TYPE_UNKNOWN;
+    file_type_ = 0;
   }
-#else
-    file_type_ = IFTODT(s.st_mode);
-  } else {
-    file_type_ = DT_UNKNOWN;
-  }
-#endif // __sun
 #endif  // _DIRENT_HAVE_D_TYPE
 
   return true;
@@ -160,22 +143,14 @@ bool WFindFile::IsDirectory() {
   if (nCurrentEntry > nMatches) {
     return false;
   }
-#if defined(__sun)
-  return (file_type_ == TYPE_DIRECTORY);
-#else
-  return (file_type_ & DT_DIR);
-#endif
+  return S_ISDIR(file_type_);
 }
 
 bool WFindFile::IsFile() {
   if (nCurrentEntry > nMatches) {
     return false;
   }
-#if defined(__sun)
-  return (file_type_ == TYPE_FILE);
-#else
-  return (file_type_ & DT_REG);
-#endif
+  return S_ISREG(file_type_);
 }
 
 

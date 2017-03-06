@@ -32,11 +32,8 @@
 #include <unistd.h>
 #include <sys/param.h>
 #include <sys/mount.h>
-
-#if defined(__linux) || defined(__sun)
 #include <sys/statfs.h>
 #include <sys/vfs.h> 
-#endif  // __linux
 
 #include "core/wwivassert.h"
 
@@ -154,21 +151,12 @@ bool File::canonical(const std::string& path, std::string* resolved) {
   free(result);
   return true;
 }
+
 long File::freespace_for_path(const string& path) {
-#if defined(__sun)
   struct statvfs fs;
   if (statvfs(path.c_str(), &fs)) {
     perror("statfs()");
     return 0;
   }
   return ((long) fs.f_frsize * (double) fs.f_bavail) / 1024;
-
-#else
-  struct statfs fs;
-  if(statfs(path.c_str(), &fs)) {
-    perror("statfs()");
-    return 0;
-  }
-  return ((long) fs.f_bsize * (double) fs.f_bavail) / 1024;
-#endif
 }
