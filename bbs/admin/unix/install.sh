@@ -206,15 +206,10 @@ then
   typeset -l SYSTYPE
   typeset -l INIT_TYPE
   SYSTYPE=$(uname -m|sed 's/[- _]//g')
-  OSTYPE=$(uname -s)
   INIT_TYPE=$(filearch init)
   if [[ $SYSTYPE =~ $INIT_TYPE ]]
   then
     printok "Found init and architectures appear to match, continuing."
-  elif [[ $OSTYPE =~ "SunOS" ]]
-  then
-    printok "SunOS detected, skipping architecture check."
-
   else
     printwarn "Found init, continuing.  But..."
     say "Your system type does not match the filetype of init."
@@ -332,21 +327,13 @@ then
 else
   say "User ${WWIV_USER} not found; creating it."
   useradd -g ${WWIV_GROUP} -c "WWIV BBS Service Account" -d ${WWIV_DIR} \
-          -m ${WWIV_USER} >> ${LOGFILE} 2>&1
-  if [[ $OSTYPE =~ "SunOS" ]]
-  then
-    usermod -s /usr/bin/false wwiv
-  else
-    usermod -s /sbin/nologin wwiv
-  fi
+	  -s /sbin/nologin -m ${WWIV_USER} >> ${LOGFILE} 2>&1
   say "User ${WWIV_USER} created."
 fi
 
-if [[ $OSTYPE == "Linux" ]]
-then
-  say "locking ${WWIV_USER} user account (we don't want direct access to it)."
-  usermod -L ${WWIV_USER}
-fi
+say "locking ${WWIV_USER} user account (we don't want direct access to it)."
+usermod -L ${WWIV_USER}
+
 
 # Change ownership of WWIV_DIR so our WWIV user can write to it
 chown -R ${WWIV_USER}:${WWIV_GROUP} ${WWIV_DIR} >> ${LOGFILE} 2>&1
@@ -431,13 +418,7 @@ echo "Please wait while we initialize the WWIV BBS data files"
 sleep 10
 
 say "Initializing data files"
-
-if [[ $OSTYPE == "Linux" ]]
-then
-  su -c "${WWIV_DIR}/init --initialize" -s /bin/bash ${WWIV_USER}
-else
-  su ${WWIV_USER} -c "${WWIV_DIR}/init --initialize"
-fi
+su -c "${WWIV_DIR}/init --initialize" -s /bin/bash ${WWIV_USER}
 sleep 2
 say "Installation complete"
 
