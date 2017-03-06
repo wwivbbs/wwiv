@@ -123,29 +123,16 @@ bool WFindFile::next() {
   file_size_ = entry->d_reclen;
 
 #ifdef _DIRENT_HAVE_D_TYPE
-  file_type_ = entry->d_type;
+  file_type_ = DTTOIF(entry->d_type);
 
 #else
   struct stat s;
   string fullpath = dir_ + "/" + entry->d_name;
   if (stat(fullpath.c_str(), &s) == 0) {
-#if defined(__sun)
-    if (S_ISDIR(s.st_mode)) {
-      file_type_ = TYPE_DIRECTORY;
-    } else if (S_ISREG(s.st_mode)) {
-      file_type_ = TYPE_FILE;
-    } else {
-      file_type_ = TYPE_UNKNOWN;
-    }
+    file_type_ = s.st_mode;
   } else {
-    file_type_ = TYPE_UNKNOWN;
+    file_type_ = 0;
   }
-#else
-    file_type_ = IFTODT(s.st_mode);
-  } else {
-    file_type_ = DT_UNKNOWN;
-  }
-#endif // __sun
 #endif  // _DIRENT_HAVE_D_TYPE
 
   return true;
@@ -160,22 +147,14 @@ bool WFindFile::IsDirectory() {
   if (nCurrentEntry > nMatches) {
     return false;
   }
-#if defined(__sun)
-  return (file_type_ == TYPE_DIRECTORY);
-#else
-  return (file_type_ & DT_DIR);
-#endif
+  return S_ISDIR(file_type_);
 }
 
 bool WFindFile::IsFile() {
   if (nCurrentEntry > nMatches) {
     return false;
   }
-#if defined(__sun)
-  return (file_type_ == TYPE_FILE);
-#else
-  return (file_type_ & DT_REG);
-#endif
+  return S_ISREG(file_type_);
 }
 
 
