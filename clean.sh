@@ -1,1 +1,1 @@
-rm -r CMakeCache.txt CMakeFiles 
+rm -rf CMakeCache.txt CMakeFiles 

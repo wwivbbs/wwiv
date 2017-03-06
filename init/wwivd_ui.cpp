@@ -19,9 +19,9 @@
 #include "init/wwivd_ui.h"
 
 #include <cstdint>
+#include <cmath>
 #include <memory>
 #include <string>
-#include <math.h>
 #include "bbs/keycodes.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"

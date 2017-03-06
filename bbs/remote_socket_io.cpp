@@ -51,15 +51,15 @@ typedef int socklen_t;
 using std::chrono::milliseconds;
 using std::lock_guard;
 using std::make_unique;
-//using std::mutex;
 using std::string;
 using std::thread;
 using std::unique_ptr;
 using wwiv::core::ScopeExit;
 using wwiv::os::sleep_for;
-//using wwiv::os::yield;
 using namespace wwiv::core;
 using namespace wwiv::strings;
+
+// N.B. mutex and yield are defines in Solaris.
 
 struct socket_error: public std::runtime_error {
   socket_error(const string& message): std::runtime_error(message) {}
