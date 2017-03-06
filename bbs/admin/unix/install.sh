@@ -438,16 +438,16 @@ then
   then
     say "/var/svc/manifest/application/wwivd.xml already exists, aborting svcadm install"
   else
-    if [[ -e ${RUNDIR}/start_wwiv.sh ]]
+    if [[ -e ${WWIV_DIR}/start_wwiv.sh ]]
     then
-      say "${RUNDIR}/start_wwiv.sh exists, not overwriting."
+      say "${WWIV_DIR}/start_wwiv.sh exists, not overwriting."
     else
-      say "Installing ${RUNDIR}/start_wwiv.sh"
-      cp ${RUNDIR}/start_wwiv.sh ${WWIV_DIR}
+      say "Installing ${RUNDIR}/svcadm/start_wwiv.sh"
+      cp ${RUNDIR}/svc_adm/start_wwiv.sh ${WWIV_DIR}
       chmod +x ${WWIV_DIR}/start_wwiv.sh
     fi
     say "Installing service manifest."
-    cp ${RUNDIR}/svcadm/wwivd.xml /var/svc/manifest/applications/wwivd.xml
+    cp ${RUNDIR}/svcadm/wwivd.xml /var/svc/manifest/application/wwivd.xml
     svcadm restart svc:/system/manifest-import
     say "service manifest installed, to enable run : \"svcadm enable wwivd\""
   fi
