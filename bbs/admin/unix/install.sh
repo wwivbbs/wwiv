@@ -443,7 +443,7 @@ then
       say "${WWIV_DIR}/start_wwiv.sh exists, not overwriting."
     else
       say "Installing ${RUNDIR}/svcadm/start_wwiv.sh"
-      cp ${RUNDIR}/svc_adm/start_wwiv.sh ${WWIV_DIR}
+      cp ${RUNDIR}/svcadm/start_wwiv.sh ${WWIV_DIR}
       chmod +x ${WWIV_DIR}/start_wwiv.sh
     fi
     say "Installing service manifest."
