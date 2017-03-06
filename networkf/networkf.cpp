@@ -561,6 +561,18 @@ static packet_header_2p_t CreateType2PlusPacketHeader(
   return header;
 }
 
+static string remove_fido_addr(string to_user) {
+  string to_user_new = "";
+
+  for (int i=0;i<to_user.length();i++) {
+    if (to_user[i] == '(') {
+      break;
+    }
+    to_user_new += to_user[i];
+  }
+  return to_user_new;
+}
+
 static bool create_ftn_packet(const Config& config, const FidoCallout& fido_callout, 
   const FidoAddress& dest, const FidoAddress& route_to, const net_networks_rec& net,
   const Packet& wwivnet_packet, string& fido_packet_name) {
@@ -634,7 +646,8 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     vh.from_user_name = sender_name;
     vh.subject = title;
     if (!to_user_name.empty()) {
-      vh.to_user_name = properize(to_user_name);
+      std::string username_only = remove_fido_addr(to_user_name);
+      vh.to_user_name = properize(username_only);
     } else {
       vh.to_user_name = "All";
     }

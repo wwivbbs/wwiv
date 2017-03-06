@@ -12,7 +12,8 @@ set(COMMON_SOURCES
   stdio_win.cpp
   )
 
-if(UNIX) 
+if(UNIX)
+  set(CURSES_NEED_NCURSES TRUE)
   find_package(Curses REQUIRED)
   message("Curses Library: ${CURSES_LIBRARIES}") 
 endif()

@@ -79,7 +79,11 @@
 #include "sdk/usermanager.h"
 
 // Make sure it's after windows.h
+#if defined(__sun)
+#include <ncurses/curses.h>
+#else
 #include <curses.h>
+#endif
 
 using std::string;
 using std::vector;

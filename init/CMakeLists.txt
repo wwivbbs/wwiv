@@ -28,7 +28,8 @@ set(COMMON_SOURCES
   wwivd_ui.cpp
   )
 
-if(UNIX) 
+if(UNIX)
+  set(CURSES_NEED_NCURSES TRUE)
   find_package(Curses REQUIRED)
 endif()
 

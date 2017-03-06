@@ -33,6 +33,7 @@
 
 static WFindFileTypeMask s_typemask;
 static const char* filespec_ptr;
+static std::string s_path;
 
 using std::string;
 using namespace wwiv::strings;
@@ -41,6 +42,12 @@ using namespace wwiv::strings;
 //
 // Local functions
 //
+
+#if defined(__sun)
+#define TYPE_UNKNOWN   0
+#define TYPE_DIRECTORY 1
+#define TYPE_FILE      2
+#endif
 
 static int fname_ok(const struct dirent *ent) {
   if (IsEquals(ent->d_name, ".") || IsEquals(ent->d_name, "..")) {
@@ -53,7 +60,8 @@ static int fname_ok(const struct dirent *ent) {
     mode = DTTOIF(ent->d_type);
 #else
     struct stat s;
-    stat(ent->d_name, &s);
+    std::string fullpath = s_path + "/" + ent->d_name;
+    stat(fullpath.c_str(), &s);
     mode = s.st_mode;
 #endif  // _DIRENT_HAVE_D_TYPE
     if ((S_ISDIR(mode)) && !(s_typemask == WFindFileTypeMask::WFINDFILE_DIRS)) {
@@ -62,8 +70,11 @@ static int fname_ok(const struct dirent *ent) {
       return 0;
     }
   }
-
+#if defined(__sun)
+  int result = fnmatch(filespec_ptr, ent->d_name, FNM_PATHNAME | FNM_IGNORECASE);
+#else
   int result = fnmatch(filespec_ptr, ent->d_name, FNM_PATHNAME | FNM_CASEFOLD);
+#endif
   VLOG(3) << "fnmatch: " << filespec_ptr << ";" << ent->d_name << "; " << result << "\r\n";
 
   if (result == 0) {
@@ -74,15 +85,13 @@ static int fname_ok(const struct dirent *ent) {
 }
 
 bool WFindFile::open(const string& filespec, WFindFileTypeMask nTypeMask) {
-  string dir;
-
   __open(filespec, nTypeMask);
   filename_.clear();
 
   {
     char path[FILENAME_MAX];
     to_char_array(path, filespec);
-    dir = dirname(path);
+    dir_ = dirname(path);
   }
   {
     char path[FILENAME_MAX];
@@ -92,7 +101,8 @@ bool WFindFile::open(const string& filespec, WFindFileTypeMask nTypeMask) {
   }
 
   s_typemask = type_mask_;
-  nMatches = scandir(dir.c_str(), &entries, fname_ok, alphasort);
+  s_path = dir_;
+  nMatches = scandir(dir_.c_str(), &entries, fname_ok, alphasort);
   if (nMatches < 0) {
     perror("scandir");
     return false;
@@ -116,12 +126,26 @@ bool WFindFile::next() {
   file_type_ = entry->d_type;
 
 #else
-  struct stat s{};
-  if (stat(entry->d_name, &s) != -1) {
-    file_type = IFTODT(s.st_mode);
+  struct stat s;
+  string fullpath = dir_ + "/" + entry->d_name;
+  if (stat(fullpath.c_str(), &s) == 0) {
+#if defined(__sun)
+    if (S_ISDIR(s.st_mode)) {
+      file_type_ = TYPE_DIRECTORY;
+    } else if (S_ISREG(s.st_mode)) {
+      file_type_ = TYPE_FILE;
+    } else {
+      file_type_ = TYPE_UNKNOWN;
+    }
+  } else {
+    file_type_ = TYPE_UNKNOWN;
+  }
+#else
+    file_type_ = IFTODT(s.st_mode);
   } else {
     file_type_ = DT_UNKNOWN;
   }
+#endif // __sun
 #endif  // _DIRENT_HAVE_D_TYPE
 
   return true;
@@ -136,16 +160,22 @@ bool WFindFile::IsDirectory() {
   if (nCurrentEntry > nMatches) {
     return false;
   }
-
+#if defined(__sun)
+  return (file_type_ == TYPE_DIRECTORY);
+#else
   return (file_type_ & DT_DIR);
+#endif
 }
 
 bool WFindFile::IsFile() {
   if (nCurrentEntry > nMatches) {
     return false;
   }
-
+#if defined(__sun)
+  return (file_type_ == TYPE_FILE);
+#else
   return (file_type_ & DT_REG);
+#endif
 }
 
 

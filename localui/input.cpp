@@ -298,7 +298,7 @@ std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
 }
 
 int dialog_input_number(CursesWindow* window, const string& prompt, int min_value, int max_value) {
-  int num_digits = max_value > 0 ? static_cast<int>(floor(log10(max_value))) + 1 : 1;
+  int num_digits = max_value > 0 ? static_cast<int>(floor(log10((double)max_value))) + 1 : 1;
   CHECK(window->IsGUI()) << "dialog_input_number needs a GUI.";
   unique_ptr<CursesWindow> dialog(static_cast<CursesWindow*>(
       CreateDialogWindow(window, 3, prompt.size() + 4 + num_digits)));

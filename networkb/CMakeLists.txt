@@ -23,4 +23,8 @@ set(SOURCES
 add_library(networkb_lib ${SOURCES})
 add_executable(networkb ${NETWORKB_MAIN})
 target_link_libraries(networkb networkb_lib core sdk)
-
+if(UNIX)
+  if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")
+  endif()
+endif()
