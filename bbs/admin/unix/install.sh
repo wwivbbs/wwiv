@@ -331,18 +331,18 @@ then
   fi
 else
   say "User ${WWIV_USER} not found; creating it."
+  useradd -g ${WWIV_GROUP} -c "WWIV BBS Service Account" -d ${WWIV_DIR} \
+          -m ${WWIV_USER} >> ${LOGFILE} 2>&1
   if [[ $OSTYPE =~ "SunOS" ]]
   then
-    useradd -g ${WWIV_GROUP} -c "WWIV BBS Service Account" -d ${WWIV_DIR} \
-            -s /usr/bin/false -m ${WWIV_USER} >> ${LOGFILE} 2>&1
+    usermod -s /usr/bin/false wwiv
   else
-    useradd -g ${WWIV_GROUP} -c "WWIV BBS Service Account" -d ${WWIV_DIR} \
-	    -s /sbin/nologin -m ${WWIV_USER} >> ${LOGFILE} 2>&1
+    usermod -s /sbin/nologin wwiv
   fi
   say "User ${WWIV_USER} created."
 fi
 
-if [[ $OSTYPE != "SunOS" ]]
+if [[ $OSTYPE == "Linux" ]]
 then
   say "locking ${WWIV_USER} user account (we don't want direct access to it)."
   usermod -L ${WWIV_USER}
@@ -432,7 +432,7 @@ sleep 10
 
 say "Initializing data files"
 
-if [[ $OSTYPE != "SunOS" ]]
+if [[ $OSTYPE == "Linux" ]]
 then
   su -c "${WWIV_DIR}/init --initialize" -s /bin/bash ${WWIV_USER}
 else
