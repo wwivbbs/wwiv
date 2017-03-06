@@ -1,0 +1,38 @@
+<?xml version='1.0'?>
+
+<!DOCTYPE service_bundle SYSTEM '/usr/share/lib/xml/dtd/service_bundle.dtd.1'>
+
+<service_bundle type="manifest" name="wwivd">
+    <service name="application/wwivd" type="service" version="1">
+       <create_default_instance enabled="false"/>
+       <single_instance/>
+
+       <method_context>
+           <method_credential user='${WWIV_USER}' group='${WWIV_GROUP}'/>
+
+           <method_environment>
+               <envvar name='PATH' value='/usr/bin:/usr/local/bin:${WWIV_DIR}'/>
+           </method_environment>
+       </method_context>
+
+       <exec_method type="method" name="start" exec="${WWIV_DIR}/start_wwiv.sh" timeout_seconds="0"/>
+
+       <exec_method type="method" name="stop" exec=":kill -TERM" timeout_seconds="30"/>
+
+       <property_group name='startd' type='framework'>
+           <propval name='duration' type='astring' value='child'/>
+       </property_group>
+
+       <stability value="Evolving"/>
+
+       <template>
+           <common_name>
+               <loctext xml:lang='C'>WWIV Bulletin Board System</loctext>
+           </common_name>
+
+           <documentation>
+               <doc_link name='www.wwivbbs.org' uri='http://www.wwivbbs.org/'/>
+           </documentation>
+       </template>
+    </service>
+</service_bundle>

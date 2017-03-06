@@ -1,0 +1,4 @@
+#!/bin/sh
+
+cd ${WWIV_DIR}
+./wwivd --wwiv_user=${WWIV_USER} --bbsdir=${WWIV_DIR}

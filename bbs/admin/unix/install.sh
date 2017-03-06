@@ -367,53 +367,89 @@ say "Configuring scripts to use the following settings:"
 
 say "WWIV_DIR:  ${WWIV_DIR}"
 say "WWIV_USER: ${WWIV_USER}"
+say "WWIV_GROUP: ${WWIV_GROUP}"
 echo
 echo
 
-for i in systemd/*.template
-do
-  out=${i%%.template}
-  say "Processing: $i > ${out}"
-  sed -e "s|\${WWIV_DIR}|${WWIV_DIR}|g" -e "s|\${WWIV_USER}|${WWIV_USER}|g" $i > ${out}
-done
-
-say "Copying the wwiv config file to /etc/wwiv"
-if [[ ! -d /etc/wwiv ]]
+if [[ $OSTYPE == "Linux" ]]
 then
-  mkdir /etc/wwiv
-  cp ${RUNDIR}/systemd/config /etc/wwiv/config
-  say "/etc/wwiv/config file copied"
-else
-  if [[ -e /etc/wwiv/config ]]
+
+  for i in systemd/*.template
+  do
+    out=${i%%.template}
+    say "Processing: $i > ${out}"
+    sed -e "s|\${WWIV_DIR}|${WWIV_DIR}|g" -e "s|\${WWIV_USER}|${WWIV_USER}|g" $i > ${out}
+  done
+
+  say "Copying the wwiv config file to /etc/wwiv"
+  if [[ ! -d /etc/wwiv ]]
   then
-    say "/etc/wwiv/config already exists, saving as /etc/wwiv/config.new"
-    cp ${RUNDIR}/systemd/config /etc/wwiv/config.new
-    say "/etc/wwiv/config.new file copied"
-  else
+    mkdir /etc/wwiv
     cp ${RUNDIR}/systemd/config /etc/wwiv/config
     say "/etc/wwiv/config file copied"
+  else
+    if [[ -e /etc/wwiv/config ]]
+    then
+      say "/etc/wwiv/config already exists, saving as /etc/wwiv/config.new"
+      cp ${RUNDIR}/systemd/config /etc/wwiv/config.new
+      say "/etc/wwiv/config.new file copied"
+    else
+      cp ${RUNDIR}/systemd/config /etc/wwiv/config
+      say "/etc/wwiv/config file copied"
+    fi
   fi
+
+elif [[ $OSTYPE == "SunOS" ]]
+then
+  for i in svcadm/*.template
+  do
+    out=${i%%.template}
+    say "Processing: $i > ${out}"
+    sed -e "s|\${WWIV_DIR}|${WWIV_DIR}|g" -e "s|\${WWIV_USER}|${WWIV_USER}|g"  -e "s|\${WWIV_GROUP}|${WWIV_GROUP}|g" $i > ${out}
+  done
 fi
 
 #are we using systemd?
-if [[ ! -d /etc/systemd ]]
+if [[ $OSTYPE == "Linux" ]]
 then
-  say "You don't appear to be using systemd. You may need some more customization"
-  say "to run the wwivd service on a non-systemd setup.  Please check the docs"
-  say "or the IRC channel for additional help."
-else
-  if [[ -e /etc/systemd/system/wwivd.service ]]
+  if [[ ! -d /etc/systemd ]]
   then
-    say "/etc/systemd/system/wwivd.service already exists, saving as wwivd.service.new"
-    cp ${RUNDIR}/systemd/wwivd.service /etc/systemd/system/wwivd.service.new
-    say "/etc/systemd/system/wwivd.service.new file copied"
+    say "You don't appear to be using systemd. You may need some more customization"
+    say "to run the wwivd service on a non-systemd setup.  Please check the docs"
+    say "or the IRC channel for additional help."
   else
-    cp ${RUNDIR}/systemd/wwivd.service /etc/systemd/system/wwivd.service
-    say "/etc/systemd/system/wwivd.service file copied"
-    say "enabling the wwivd service"
-    systemctl daemon-reload
-    systemctl enable wwivd.service
-    say "systemd wwivd service enabled"
+    if [[ -e /etc/systemd/system/wwivd.service ]]
+    then
+      say "/etc/systemd/system/wwivd.service already exists, saving as wwivd.service.new"
+      cp ${RUNDIR}/systemd/wwivd.service /etc/systemd/system/wwivd.service.new
+      say "/etc/systemd/system/wwivd.service.new file copied"
+    else
+      cp ${RUNDIR}/systemd/wwivd.service /etc/systemd/system/wwivd.service
+      say "/etc/systemd/system/wwivd.service file copied"
+      say "enabling the wwivd service"
+      systemctl daemon-reload
+      systemctl enable wwivd.service
+      say "systemd wwivd service enabled"
+    fi
+  fi
+elif [[ $OSTYPE == "SunOS" ]]
+then
+  if [[ -e /var/svc/manifest/application/wwivd.xml ]]
+  then
+    say "/var/svc/manifest/application/wwivd.xml already exists, aborting svcadm install"
+  else
+    if [[ -e ${RUNDIR}/start_wwiv.sh ]]
+    then
+      say "${RUNDIR}/start_wwiv.sh exists, not overwriting."
+    else
+      say "Installing ${RUNDIR}/start_wwiv.sh"
+      cp ${RUNDIR}/start_wwiv.sh ${WWIV_DIR}
+      chmod +x ${WWIV_DIR}/start_wwiv.sh
+    fi
+    say "Installing service manifest."
+    cp ${RUNDIR}/svcadm/wwivd.xml /var/svc/manifest/applications/wwivd.xml
+    svcadm restart svc:/system/manifest-import
+    say "service manifest installed, to enable run : \"svcadm enable wwivd\""
   fi
 fi
 
