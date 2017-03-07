@@ -937,22 +937,27 @@ void logon() {
   a()->UpdateTopScreen();
   bout.nl(2);
   pausescr();
+
   if (!a()->logon_cmd.empty()) {
-    if (a()->logon_cmd.front() == '@') {
-      // Let's see if we need to run a basic script.
-      const string BASIC_PREFIX = "@basic:";
-      if (starts_with(a()->logon_cmd, BASIC_PREFIX)) {
-        const string cmd = a()->logon_cmd.substr(BASIC_PREFIX.size());
-        LOG(INFO) << "Running basic script: " << cmd;
-        wwiv::bbs::RunBasicScript(cmd);
+    vector<string> logon_cmds = SplitString(a()->logon_cmd, ",");
+
+    for (auto logon_cmd : logon_cmds) {
+      if (logon_cmd.front() == '@') {
+        // Let's see if we need to run a basic script.
+        const string BASIC_PREFIX = "@basic:";
+        if (starts_with(logon_cmd, BASIC_PREFIX)) {
+          const string cmd = logon_cmd.substr(BASIC_PREFIX.size());
+          LOG(INFO) << "Running basic script: " << cmd;
+          wwiv::bbs::RunBasicScript(cmd);
+        }
       }
+      else {
+        bout.nl();
+        const string cmd = stuff_in(logon_cmd, create_chain_file(), "", "", "", "");
+        ExecuteExternalProgram(cmd, a()->GetSpawnOptions(SPAWNOPT_LOGON));
+      }
+      bout.nl(2);
     }
-    else {
-      bout.nl();
-      const string cmd = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
-      ExecuteExternalProgram(cmd, a()->GetSpawnOptions(SPAWNOPT_LOGON));
-    }
-    bout.nl(2);
   }
 
   DisplayUserLoginInformation();
