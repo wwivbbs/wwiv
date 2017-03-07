@@ -33,7 +33,11 @@
 #include <sys/param.h>
 #include <sys/mount.h>
 #include <sys/statfs.h>
-#include <sys/vfs.h> 
+#include <sys/vfs.h>
+
+#ifdef __linux__
+#include <sys/statvfs.h>
+#endif  // __linux__
 
 #include "core/wwivassert.h"
 
