@@ -267,7 +267,16 @@ std::string WWIVToFidoText(const std::string& wt) {
         continue;
       }
     }
-    out << line << "\r";
+    if (!line.empty()) {
+      for (unsigned int i = 0; i < line.length(); i++) {
+        if (line[i] == 0x03) {
+          i++;
+          continue;
+        }
+        out << line[i];
+      }
+    }
+    out << "\r";
   }
   return out.str();
 }
