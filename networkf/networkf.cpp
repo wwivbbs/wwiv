@@ -567,6 +567,8 @@ static string remove_fido_addr(string to_user) {
   for (int i=0;i<to_user.length();i++) {
     if (to_user[i] == '(') {
       break;
+    } else if (to_user[i] == ' ' && to_user[i+1] == '#') {
+      break;
     }
     to_user_new += to_user[i];
   }
