@@ -110,7 +110,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
       f.Read(header, 146);
     }
     packet.text.resize(length);
-    int num_read = f.Read(&packet.text[0], packet.nh.length);
+    num_read = f.Read(&packet.text[0], packet.nh.length);
     packet.text.resize(num_read);
   }
   return ReadPacketResponse::OK;

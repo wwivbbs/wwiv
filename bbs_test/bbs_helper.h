@@ -84,7 +84,7 @@ public:
   void Cr() override {}
   void Cls() override {}
   void Backspace() override {}
-  void PutchRaw(unsigned char ch) override {}
+  void PutchRaw(unsigned char) override {}
   void Puts(const std::string& ) override {}
   void PutsXY(int, int, const std::string&) override {}
   void FastPuts(const std::string&) override {}
@@ -113,7 +113,7 @@ public:
   virtual ~TestRemoteIO() {}
 
   bool open() override { return true; }
-  void close(bool temporary) override {}
+  void close(bool) override {}
   unsigned char getW() override { return 0; }
   bool disconnect() override { return true; }
   void purgeIn() override {}

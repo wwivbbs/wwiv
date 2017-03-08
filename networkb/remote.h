@@ -68,7 +68,7 @@ std::string ftn_address_from_address_list(const std::string& network_list, const
 
 // Returns just the node number (such as "1") from a FTN address like
 // (such as "20000:20000/1@wwivnet")
-int wwivnet_node_number_from_ftn_address(const std::string& address);
+uint16_t wwivnet_node_number_from_ftn_address(const std::string& address);
 
 // Returns a FTN address like "20000:20000/1@wwivnet".
 std::string ftn_address_from_address_list(const std::string& address_list, const std::string& network_name);
