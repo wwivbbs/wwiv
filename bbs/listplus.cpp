@@ -335,7 +335,7 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   long lDiffTime = static_cast<long>(difftime(tTimeNow, u->daten));
   int nDaysOld = lDiffTime / SECONDS_PER_DAY;
 
-  string file_information = StringPrintf("|%2d %c |%2d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
+  string file_information = StringPrintf("|%02d %c |%02d%3d ", lp_config.tagged_color, marked ? '\xFE' : ' ', lp_config.file_num_color, filenum);
   int width = 7;
   bout.clear_lines_listed();
 
