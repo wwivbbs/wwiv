@@ -203,7 +203,7 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   strlwr(fn);
 #endif  // __linux__
   bool zip = (flags & 0x02) != 0;
-  if (flags & 2) {
+  if (zip) {
     info.filename = StrCat(fn, ".zip");
   }
   else {
