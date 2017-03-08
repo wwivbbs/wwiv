@@ -479,6 +479,11 @@ typedef struct _dict_it_t {
 } _dict_it_t;
 #endif /* MB_ENABLE_COLLECTION_LIB */
 
+#if defined(__sun)
+// Solaris defines _label_t in machtypes.h. Move the old one away.
+#define _label_t _my_label_t
+#endif
+
 typedef struct _label_t {
 	char* name;
 	_ls_node_t* node;

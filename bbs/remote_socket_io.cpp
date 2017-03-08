@@ -51,15 +51,15 @@ typedef int socklen_t;
 using std::chrono::milliseconds;
 using std::lock_guard;
 using std::make_unique;
-using std::mutex;
 using std::string;
 using std::thread;
 using std::unique_ptr;
 using wwiv::core::ScopeExit;
 using wwiv::os::sleep_for;
-using wwiv::os::yield;
 using namespace wwiv::core;
 using namespace wwiv::strings;
+
+// N.B. mutex and yield are defines in Solaris.
 
 struct socket_error: public std::runtime_error {
   socket_error(const string& message): std::runtime_error(message) {}
@@ -281,20 +281,20 @@ bool RemoteSocketIO::incoming() {
   // Early return on invalid sockets.
   if (!valid_socket()) { return false; }
 
-  lock_guard<mutex> lock(mu_);
+  lock_guard<std::mutex> lock(mu_);
   return !queue_.empty();
 }
 
 void RemoteSocketIO::StopThreads() {
   {
-    lock_guard<mutex> lock(threads_started_mu_);
+    lock_guard<std::mutex> lock(threads_started_mu_);
     if (!threads_started_) {
       return;
     }
     stop_.store(true);
     threads_started_ = false;
   }
-  yield();
+  wwiv::os::yield();
 
   // Wait for read thread to exit.
   if (!read_thread_.joinable()) {
@@ -312,7 +312,7 @@ void RemoteSocketIO::StopThreads() {
 
 void RemoteSocketIO::StartThreads() {
   {
-    lock_guard<mutex> lock(threads_started_mu_);
+    lock_guard<std::mutex> lock(threads_started_mu_);
     if (threads_started_) {
       return;
     }
@@ -453,7 +453,7 @@ void RemoteSocketIO::AddStringToInputBuffer(int nStart, int nEnd, char *buffer) 
     sleep_for(milliseconds(100));
   }
 
-  lock_guard<mutex> lock(mu_);
+  lock_guard<std::mutex> lock(mu_);
 
   bool bBinaryMode = binary_mode();
   for (int i = nStart; i < nEnd; i++) {

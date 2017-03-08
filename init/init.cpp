@@ -78,8 +78,6 @@
 #include "sdk/filenames.h"
 #include "sdk/usermanager.h"
 
-// Make sure it's after windows.h
-#include <curses.h>
 
 using std::string;
 using std::vector;
