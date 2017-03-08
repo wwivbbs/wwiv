@@ -55,14 +55,11 @@ using std::boolalpha;
 using std::end;
 using std::endl;
 using std::function;
-using std::make_unique;
 using std::map;
 using std::max;
 using std::min;
 using std::string;
 using std::size_t;
-using std::stoi;
-using std::stoul;
 using std::unique_ptr;
 using std::vector;
 
