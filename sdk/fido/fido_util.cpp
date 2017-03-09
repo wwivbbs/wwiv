@@ -246,7 +246,7 @@ std::string WWIVToFidoText(const std::string& wt) {
 
   // Split this into lines, then we'll handle converting of
   // WWIV style control codes to FTN style kludges as needed.
-  const auto lines = SplitString(temp, "\r");
+  const auto lines = SplitString(temp, "\r", false);
   std::ostringstream out;
   for (auto line : lines) {
     if (!line.empty() && line.front() == 0x04 && line.size() > 2) {
