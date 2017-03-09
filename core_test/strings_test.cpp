@@ -137,6 +137,14 @@ TEST(StringsTest, SplitString_ExtraSingleDelim) {
   EXPECT_EQ(expected, actual);
 }
 
+TEST(StringsTest, SplitString_ExtraSingleDelim_NoSkipEmpty) {
+  const string s = "Hello   World";
+  vector<string> expected = { "Hello", "", "", "World" };
+  vector<string> actual;
+  SplitString(s, " ", &actual, false);
+  EXPECT_EQ(expected, actual);
+}
+
 TEST(StringsTest, SplitString_TwoDelims) {
   const string s = "Hello\tWorld Everyone";
   vector<string> expected = { "Hello", "World", "Everyone" };
