@@ -1378,8 +1378,14 @@ public:
     /// @brief Converts string to uppercase
     /// @param str String to convert
     /// @return Uppercase string
+
+    // RushFan Addition to silence warning from toUpper about ::toupper
+    static char toupper_char(int c) {
+      return static_cast<char>(::toupper(c));
+    }
+
     static inline std::string& toUpper(std::string& str) {
-        std::transform(str.begin(), str.end(), str.begin(), ::toupper);
+        std::transform(str.begin(), str.end(), str.begin(), toupper_char);
         return str;
     }
 
