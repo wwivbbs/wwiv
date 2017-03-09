@@ -155,7 +155,8 @@ static T StringToT(std::function<R(const string&)> f, const string& s) {
       return numeric_limits<T>::min();
     }
     return static_cast<T>(ret);
-  } catch (std::logic_error&) {
+  }
+  catch (const std::logic_error&) {
     // Handle invalid_argument and out_of_range.
     return 0;
   }
@@ -206,12 +207,20 @@ const string& StringReplace(string* orig, const string& old_string, const string
 }
 
 vector<string> SplitString(const string& original_string, const string& delims) {
+  return SplitString(original_string, delims, true);
+}
+
+vector<string> SplitString(const string& original_string, const string& delims, bool skip_empty) {
   vector<string> v;
-  SplitString(original_string, delims, &v);
+  SplitString(original_string, delims, &v, skip_empty);
   return v;
 }
 
 void SplitString(const string& original_string, const string& delims, vector<string>* out) {
+  SplitString(original_string, delims, out, true);
+}
+
+void SplitString(const string& original_string, const string& delims, vector<string>* out, bool skip_empty) {
   string s(original_string);
   for (string::size_type found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
     if (found) {
@@ -337,8 +346,12 @@ void StringTrimEnd(char *str) {
   strcpy(str, s.c_str());
 }
 
+static char toupper_char(int c) {
+  return static_cast<char>(::toupper(c));
+}
+
 void StringUpperCase(string* s) {
-  std::transform(std::begin(*s), std::end(*s), std::begin(*s), (int(*)(int)) toupper);
+  std::transform(std::begin(*s), std::end(*s), std::begin(*s), toupper_char);
 }
 
 string ToStringUpperCase(const string& orig) {
@@ -347,8 +360,12 @@ string ToStringUpperCase(const string& orig) {
   return s;
 }
 
+static char tolower_char(int c) {
+  return static_cast<char>(::tolower(c));
+}
+
 void StringLowerCase(string* s) {
-  std::transform(std::begin(*s), std::end(*s), std::begin(*s), (int(*)(int)) tolower);
+  std::transform(std::begin(*s), std::end(*s), std::begin(*s), tolower_char);
 }
 
 string ToStringLowerCase(const string& orig) {

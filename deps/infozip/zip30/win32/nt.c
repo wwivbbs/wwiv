@@ -41,6 +41,9 @@ Author:
 #include "../zip.h"
 
 #define WIN32_LEAN_AND_MEAN
+#ifdef CR
+#undef CR
+#endif
 #include <windows.h>
 #ifdef __RSXNT__
 #  include "../win32/rsxntwin.h"

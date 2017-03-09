@@ -80,7 +80,9 @@ float StringToFloat(const std::string& s);
 
 const std::string& StringReplace(std::string* orig, const std::string& old_string, const std::string& new_string);
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
+std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims, bool skip_empty);
 void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out);
+void SplitString(const std::string& original_string, const std::string& delims, std::vector<std::string>* out, bool skip_empty);
 
 bool starts_with(const std::string& input, const std::string& match);
 bool ends_with(const std::string& input, const std::string& match);

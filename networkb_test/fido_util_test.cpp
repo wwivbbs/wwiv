@@ -126,19 +126,19 @@ TEST_F(FidoUtilTest, WWIVToFido_Basic) {
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MalformedControlLine) {
-  string wwiv = "a\r\nb\r\n\0040Foo:\r\n";
+  string wwiv = "a\r\nb\r\n\004""0Foo:\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MsgId) {
-  string wwiv = "a\r\nb\r\n\0040MSGID: 1234 5678\r\n";
+  string wwiv = "a\r\nb\r\n\004""0MSGID: 1234 5678\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r\001MSGID: 1234 5678\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_Reply) {
-  string wwiv = "a\r\nb\r\n\0040REPLY: 1234 5678\r\n";
+  string wwiv = "a\r\nb\r\n\004""0REPLY: 1234 5678\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r\001REPLY: 1234 5678\r", fido);
 }

@@ -822,7 +822,7 @@ void ga(const char *message, char *color_string, int loc, int type) {
 
 // Lists the chat channels
 void list_channels() {
-  int tl = 0, nodes[20], secure[10], check[10];
+  int tl = 0, nodes[21], secure[11], check[11];
   char s[12];
   User u;
   instancerec ir;

@@ -32,6 +32,7 @@ EasyLogging
 dir easylogging
 url: https://github.com/easylogging/easyloggingpp
 license: MIT
+version: 9.94.1
 
 Cereal
 dir cereal

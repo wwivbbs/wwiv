@@ -17,6 +17,9 @@
 #include <time.h>       /* for tzset() declaration */
 #if defined(WIN32) || defined(WINDLL)
 #  define WIN32_LEAN_AND_MEAN
+#ifdef CR
+#undef CR
+#endif
 #  include <windows.h>
 #endif
 #ifdef WINDLL

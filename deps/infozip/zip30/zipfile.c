@@ -35,6 +35,11 @@
 
 #ifdef WIN32
 #  define WIN32_LEAN_AND_MEAN
+
+#ifdef CR
+#undef CR
+#endif
+
 #  include <windows.h>
 #endif
 
