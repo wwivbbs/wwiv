@@ -16,6 +16,9 @@
 #include <limits.h>
 #include <time.h>
 #include <ctype.h>
+#ifdef CR
+#undef CR
+#endif
 #include <windows.h>
 /* for LARGE_FILE_SUPPORT but may not be needed */
 #include <io.h>

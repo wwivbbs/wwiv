@@ -38,6 +38,11 @@
 #define WIN32_LEAN_AND_MEAN
 #define UNZIP_INTERNAL
 #include "../unzip.h"
+
+#ifdef CR
+#undef CR
+#endif
+
 #include <windows.h>
 #ifdef __RSXNT__
 #  include "../win32/rsxntwin.h"
