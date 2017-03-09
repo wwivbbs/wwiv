@@ -212,12 +212,12 @@ vector<string> SplitString(const string& original_string, const string& delims) 
 
 vector<string> SplitString(const string& original_string, const string& delims, bool skip_empty) {
   vector<string> v;
-  SplitString(original_string, delims, &v, skip_empty);
+  SplitString(original_string, delims, skip_empty, &v);
   return v;
 }
 
 void SplitString(const string& original_string, const string& delims, vector<string>* out) {
-  SplitString(original_string, delims, out, true);
+  SplitString(original_string, delims, true, out);
 }
 
 void SplitString(const string& original_string, const string& delims, bool skip_empty, vector<string>* out) {
