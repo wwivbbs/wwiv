@@ -23,6 +23,7 @@ set(COMMON_SOURCES
   strings.cpp
   textfile.cpp
   version.cpp
+  ../deps/easylogging/easylogging++.cc
   )
 
 if(UNIX) 
