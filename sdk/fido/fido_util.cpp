@@ -235,7 +235,7 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
 std::string WWIVToFidoText(const std::string& wt) {
   string temp(wt);
   // Fido Text is CR, not CRLF, so remove the LFs
-  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
+  //temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
   // Also remove the soft CRs since WWIV has no concept.
   // TODO(rushfan): Is this really needed.
   temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
@@ -249,6 +249,7 @@ std::string WWIVToFidoText(const std::string& wt) {
   const auto lines = SplitString(temp, "\r");
   std::ostringstream out;
   for (auto line : lines) {
+    line.erase(std::remove(line.begin(), line.end(), 10), line.end());
     if (!line.empty() && line.front() == 0x04 && line.size() > 2) {
       // WWIV style control code.
       char code = line.at(1);
