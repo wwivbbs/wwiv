@@ -128,7 +128,7 @@ unsigned int TestRemoteIO::put(unsigned char ch) {
   return 1;
 }
 
-unsigned int TestRemoteIO::write(const char *buffer, unsigned int count, bool bNoTranslation) {
+unsigned int TestRemoteIO::write(const char *buffer, unsigned int count, bool) {
   captured_->append(string(buffer, count));
   return count;
 }

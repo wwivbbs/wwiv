@@ -25,6 +25,9 @@
 #include <time.h>
 #include <ctype.h>
 #define WIN32_LEAN_AND_MEAN
+#ifdef CR
+#undef CR
+#endif
 #include <windows.h>
 /* for LARGE_FILE_SUPPORT but may not be needed */
 #include <io.h>

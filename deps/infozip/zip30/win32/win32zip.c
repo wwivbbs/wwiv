@@ -24,6 +24,9 @@
 #include <utime.h>
 #endif
 #define WIN32_LEAN_AND_MEAN
+#ifdef CR
+#undef CR
+#endif
 #include <windows.h> /* for findfirst/findnext stuff */
 #ifdef __RSXNT__
 #  include "../win32/rsxntwin.h"

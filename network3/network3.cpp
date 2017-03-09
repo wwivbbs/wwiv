@@ -242,23 +242,23 @@ static bool add_feedback_general_info(
   map<int, int> hops_to_count;
   map<int, int> system_to_route_count;
   int total_hops = 0;
-  for (const auto& b : bbsdata_data) {
-    if (b.other & other_net_coord) {
-      nc = b.sysnum;
-    } else if (b.other & other_group_coord) {
-      gc = b.sysnum;
-    } else if (b.other & other_area_coord) {
-      ac = b.sysnum;
+  for (const auto& d : bbsdata_data) {
+    if (d.other & other_net_coord) {
+      nc = d.sysnum;
+    } else if (d.other & other_group_coord) {
+      gc = d.sysnum;
+    } else if (d.other & other_area_coord) {
+      ac = d.sysnum;
     }
 
     // Make num hops map.
-    int hops = hops_to_count[b.numhops];
-    hops_to_count[b.numhops] = hops + 1;
+    int hops = hops_to_count[d.numhops];
+    hops_to_count[d.numhops] = hops + 1;
 
-    total_hops += b.numhops;
-    if (b.forsys != 65535) {
-      int num_route = system_to_route_count[b.forsys];
-      system_to_route_count[b.forsys] = num_route + 1;
+    total_hops += d.numhops;
+    if (d.forsys != 65535) {
+      int num_route = system_to_route_count[d.forsys];
+      system_to_route_count[d.forsys] = num_route + 1;
     }
   }
 
@@ -360,7 +360,7 @@ static void update_net_ver_status_dat(const string& datadir) {
   }
   statusrec.net_bias = 0;
   statusrec.net_req_free = 0;
-  statusrec.net_version = wwiv_net_version;
+  statusrec.net_version = static_cast<uint16_t>(wwiv_net_version);
   file.Write(0, &statusrec);
 }
 

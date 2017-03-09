@@ -21,7 +21,6 @@
 #include <cstdint>
 #include <set>
 #include <string>
-#include <vector>
 
 #include "core/file.h"
 #include "sdk/config.h"

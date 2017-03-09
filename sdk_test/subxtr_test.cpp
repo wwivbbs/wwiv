@@ -48,17 +48,17 @@ class SubXtrTest: public testing::Test {
 protected:
   virtual void SetUp() { 
     helper.SetUp(); 
-    net_networks.emplace_back(net_networks_rec{network_type_t::wwivnet, "testnet", "testnet/", 2});
-    subs.emplace_back(subboardrec_422_t{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
-    subs.emplace_back(subboardrec_422_t{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
+    net_networks_.emplace_back(net_networks_rec{network_type_t::wwivnet, "testnet", "testnet/", 2});
+    subs_.emplace_back(subboardrec_422_t{"Sub1", "S1", '1', 10, 10, 0, 0, 500, 0, 2, 0});
+    subs_.emplace_back(subboardrec_422_t{"Sub2", "S2", '2', 10, 10, 0, 0, 500, 0, 2, 0});
   }
   const string dir() { return helper.files_.TempDir(); }
   string CreateTempFile(const string& name, const string& contents) {
     return helper.files().CreateTempFile(name, contents);
   }
   SdkHelper helper;
-  vector<net_networks_rec> net_networks;
-  vector<subboardrec_422_t> subs;
+  vector<net_networks_rec> net_networks_;
+  vector<subboardrec_422_t> subs_;
 };
 
 TEST_F(SubXtrTest, Write) {
@@ -68,7 +68,7 @@ TEST_F(SubXtrTest, Write) {
   s2.nets.emplace_back(xtrasubsnetrec{0, 0, 1, 1, "S2"});
   xsubs.emplace_back(s2);
 
-  write_subs_xtr(helper.data(), net_networks, xsubs);
+  write_subs_xtr(helper.data(), net_networks_, xsubs);
   TextFile subs_xtr_file(helper.data(), "subs.xtr", "r");
   vector<string> actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4, actual.size());
@@ -122,10 +122,10 @@ TEST_F(SubXtrTest, Read) {
     }
   }
   vector<xtrasubsrec> actual;
-  read_subs_xtr(helper.data(), net_networks, subs, actual);
-  ASSERT_EQ(subs.size(), actual.size());
+  read_subs_xtr(helper.data(), net_networks_, subs_, actual);
+  ASSERT_EQ(subs_.size(), actual.size());
   ASSERT_EQ(expected.size(), actual.size());
-  for (std::size_t i = 0; i < subs.size(); i++) {
+  for (std::size_t i = 0; i < subs_.size(); i++) {
     EXPECT_TRUE(equal(expected.at(i), actual.at(i)));
   }
 }

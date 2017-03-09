@@ -868,7 +868,7 @@ static std::pair<uint16_t, int> ansicallout() {
   if (!callout_ansi) {
     bout.nl();
     bout << "|#2Which system: ";
-    int sn = input_number<int>(0, 0, 32767);
+    int sn = input_number<uint16_t>(0, 0, 32767);
     a()->localIO()->SetCursor(LocalIO::cursorNormal);
     return std::make_pair(sn, -1);
 

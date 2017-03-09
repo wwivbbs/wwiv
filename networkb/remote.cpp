@@ -70,7 +70,7 @@ string network_name_from_single_address(const string& network_list) {
   return s.substr(index + 1);
 }
 
-int wwivnet_node_number_from_ftn_address(const string& address) {
+uint16_t wwivnet_node_number_from_ftn_address(const string& address) {
   string s = address;
   LOG(INFO) << "wwivnet_node_number_from_ftn_address: '" << s << "'";
   if (starts_with(s, "20000:20000/")) {
