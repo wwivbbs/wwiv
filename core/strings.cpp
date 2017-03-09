@@ -212,22 +212,26 @@ vector<string> SplitString(const string& original_string, const string& delims) 
 
 vector<string> SplitString(const string& original_string, const string& delims, bool skip_empty) {
   vector<string> v;
-  SplitString(original_string, delims, &v, skip_empty);
+  SplitString(original_string, delims, skip_empty, &v);
   return v;
 }
 
 void SplitString(const string& original_string, const string& delims, vector<string>* out) {
-  SplitString(original_string, delims, out, true);
+  SplitString(original_string, delims, true, out);
 }
 
-void SplitString(const string& original_string, const string& delims, vector<string>* out, bool skip_empty) {
+void SplitString(const string& original_string, const string& delims, bool skip_empty, vector<string>* out) {
   string s(original_string);
   for (string::size_type found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
-    if (found) {
+    if (found != std::string::npos && found > 0) {
       out->push_back(s.substr(0, found));
     }
+    else if (!skip_empty && found == 0) {
+      // Add empty lines.
+      out->push_back({});
+    }
   }
-  if (!s.empty()){
+  if (!s.empty()) {
     out->push_back(s);
   }
 }
