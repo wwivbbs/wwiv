@@ -168,6 +168,30 @@ struct net_system_list_rec {
   } xx;
 };
 
+
+/**
+* Contains the metadata for each network.
+*
+* On disk format for networks.dat
+*/
+struct net_networks_rec_disk {
+  /* type of network */
+  uint8_t type;
+  /* network name */
+  char name[16];
+  /* directory for net data */
+  char dir[69];
+  /* system number */
+  uint16_t  sysnum;
+  uint8_t padding[12];
+};
+
+#pragma pack(pop)
+
+
+
+
+
 // This data is all read in from a text file which holds info about all of
 // the systems in the network.  This text file doesn't hold connection info
 // between the systems.  The purpose of all records should be obvious.
@@ -397,23 +421,5 @@ struct net_networks_rec {
 
 #endif  // __MSDOS__
 
-/**
- * Contains the metadata for each network.
- * 
- * On disk format for networks.dat
- */
-struct net_networks_rec_disk {
-  /* type of network */
-  uint8_t type;
-  /* network name */
-  char name[16];
-  /* directory for net data */
-  char dir[69];
-  /* system number */
-  uint16_t  sysnum;
-  uint8_t padding[12];
-};
-
-#pragma pack(pop)
 
 #endif // __INCLUDED_NET_H__

@@ -2060,6 +2060,10 @@ bool Storage::uninstallCustomFormatSpecifier(const char* formatSpecifier) {
   return false;
 }
 
+// Not sure why, this is causing visual studio 2017 to barf on vector(478)
+// with an error about memcpy and too small of a buffer (C4789)
+// Probably related to the fact that we set the filename already.
+#define ELPP_DISABLE_LOG_FILE_FROM_ARG
 void Storage::setApplicationArguments(int argc, char** argv) {
   m_commandLineArgs.setArgs(argc, argv);
   m_vRegistry->setFromArgs(commandLineArgs());

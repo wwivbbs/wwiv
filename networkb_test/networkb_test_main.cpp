@@ -21,6 +21,15 @@
 
 int main(int argc, char* argv[]) {
   testing::InitGoogleTest(&argc, argv);
+  //#ifdef _MSC_VER
+#pragma strict_gs_check(push, off)
+#pragma warning( push, 0 )
+#pragma warning( disable: 4789 )
+  //#endif
   wwiv::core::Logger::Init(argc, argv);
+  //#ifdef _MSC_VER
+#pragma warning( pop )
+#pragma strict_gs_check(pop)
+  //#endif
   return RUN_ALL_TESTS();
 } 

@@ -57,7 +57,6 @@ using std::endl;
 using std::map;
 using std::string;
 using std::unique_ptr;
-using std::vector;
 
 using namespace wwiv::core;
 using namespace wwiv::net;
