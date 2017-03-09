@@ -207,12 +207,20 @@ const string& StringReplace(string* orig, const string& old_string, const string
 }
 
 vector<string> SplitString(const string& original_string, const string& delims) {
+  return SplitString(original_string, delims, true);
+}
+
+vector<string> SplitString(const string& original_string, const string& delims, bool skip_empty) {
   vector<string> v;
-  SplitString(original_string, delims, &v);
+  SplitString(original_string, delims, &v, skip_empty);
   return v;
 }
 
 void SplitString(const string& original_string, const string& delims, vector<string>* out) {
+  SplitString(original_string, delims, out, true);
+}
+
+void SplitString(const string& original_string, const string& delims, vector<string>* out, bool skip_empty) {
   string s(original_string);
   for (string::size_type found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
     if (found) {
