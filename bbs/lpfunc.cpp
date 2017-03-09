@@ -67,7 +67,7 @@ static void drawfile(int filepos, int filenum) {
 static void undrawfile(int filepos, int filenum) {
   bout.clear_lines_listed();
   bout.GotoXY(4, filepos + first_file_pos());
-  bout.bprintf("|%2d%3d|#0", lp_config.file_num_color, filenum);
+  bout.bprintf("|%02d%3d|#0", lp_config.file_num_color, filenum);
 }
 
 static void prep_menu_items(vector<string>* menu_items) {
