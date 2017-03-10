@@ -141,7 +141,7 @@ TEST(StringsTest, SplitString_ExtraSingleDelim_NoSkipEmpty) {
   const string s = "Hello   World";
   vector<string> expected = { "Hello", "", "", "World" };
   vector<string> actual;
-  SplitString(s, " ", &actual, false);
+  SplitString(s, " ", false, &actual);
   EXPECT_EQ(expected, actual);
 }
 
