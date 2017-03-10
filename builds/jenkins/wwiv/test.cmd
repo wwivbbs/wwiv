@@ -1,7 +1,14 @@
-call "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86
 echo "Subversion revision: %SVN_REVISION%"
 echo "Workpace: %WORKSPACE%"
 echo "WWIV_TEST_TEMPDIR: %WWIV_TEST_TEMPDIR%"
+
+@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+)
+
+@if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
+  call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+)
 
 cd %WORKSPACE%
 msbuild WWIV.sln /t:Build /p:Configuration=Debug /p:Platform=Win32 || exit /b
