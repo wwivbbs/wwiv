@@ -226,7 +226,7 @@ static uint16_t get_network_cordinator(const BbsListNet& b) {
       return entry.second.sysnum;
     }
   }
-  return 65535;
+  return WWIVNET_NO_NODE;
 }
 
 static bool add_feedback_general_info(
@@ -256,7 +256,7 @@ static bool add_feedback_general_info(
     hops_to_count[d.numhops] = hops + 1;
 
     total_hops += d.numhops;
-    if (d.forsys != 65535) {
+    if (d.forsys != WWIVNET_NO_NODE) {
       int num_route = system_to_route_count[d.forsys];
       system_to_route_count[d.forsys] = num_route + 1;
     }
@@ -330,7 +330,7 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
     LOG(INFO) << "Writing BBSDATA.IND...";
     vector<uint16_t> bbsdata_ind_data;
     for (const auto& n : bbsdata_data) {
-      bbsdata_ind_data.push_back((n.forsys == 65535) ? 0 : n.sysnum);
+      bbsdata_ind_data.push_back((n.forsys == WWIVNET_NO_NODE) ? 0 : n.sysnum);
     }
     DataFile<uint16_t> bbsdata_ind_file(dir, BBSDATA_IND, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_ind_file.WriteVector(bbsdata_ind_data);

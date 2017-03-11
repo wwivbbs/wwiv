@@ -626,7 +626,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
 
     qn[0] = on[0] = '\0';
 
-    if (nFromNetworkNumber == 65535 || nh->fromsys == a()->net_networks[nFromNetworkNumber].sysnum) {
+    if (nFromNetworkNumber == WWIVNET_NO_NODE || nh->fromsys == a()->net_networks[nFromNetworkNumber].sysnum) {
 
       strcpy(newname, nm);
       ss = strrchr(newname, '@');

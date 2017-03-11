@@ -499,7 +499,7 @@ void print_net_listing(bool bForcePause) {
       for (const auto& b : bbslist.node_config()) {
         bool matched = false;
         const auto& csne = b.second;
-        if ((csne.forsys == 65535) && (cmdbit != NET_SEARCH_NOCONNECT)) {
+        if ((csne.forsys == WWIVNET_NO_NODE) && (cmdbit != NET_SEARCH_NOCONNECT)) {
           continue;
         }
         strcpy(s1, csne.phone);
@@ -572,7 +572,7 @@ void print_net_listing(bool bForcePause) {
           }
           break;
         case NET_SEARCH_NOCONNECT:
-          if (csne.forsys == 65535) {
+          if (csne.forsys == WWIVNET_NO_NODE) {
             matched = true;
           }
           break;

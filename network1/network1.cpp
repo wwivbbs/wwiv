@@ -82,8 +82,8 @@ static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
   if (node == 0) {
     return 0;
   }
-  if (n == nullptr || n->forsys == 65535) {
-    return 65535;
+  if (n == nullptr || n->forsys == WWIVNET_NO_NODE) {
+    return WWIVNET_NO_NODE;
   }
   return n->forsys;
 }
@@ -92,7 +92,7 @@ static string wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
   if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return LOCAL_NET;
-  } else if (node == 65535) {
+  } else if (node == WWIVNET_NO_NODE) {
     return DEAD_NET;
   } else {
     return StringPrintf("s%u.net", node);

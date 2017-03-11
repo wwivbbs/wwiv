@@ -300,7 +300,17 @@ struct net_call_out_rec {
 
 #ifndef __MSDOS__
 
+/** 
+ * Indicates this is the fake FTN outbound node.  This should
+ * not be exposed to users unless required. It's an implementation detail.
+ */
 static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 32675;
+
+/**
+ * Used to indicate no node number in functions that return -1 when no
+ * wwivnet node number is found.
+ */
+static constexpr uint16_t WWIVNET_NO_NODE = 65535;
 
 enum class fido_packet_t { unset, type2_plus };
 enum class fido_transport_t { unset, directory, binkp };

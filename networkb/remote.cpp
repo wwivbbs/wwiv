@@ -83,7 +83,7 @@ uint16_t wwivnet_node_number_from_ftn_address(const string& address) {
     return StringToInt(s);
   }
 
-  return -1;
+  return WWIVNET_NO_NODE;
 }
 
 Remote::Remote(BinkConfig* config, bool caller, const std::string& expected_remote_node)
