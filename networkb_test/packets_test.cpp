@@ -57,7 +57,7 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
 
   auto info = GetNetInfoFileInfo(p);
   ASSERT_TRUE(info.valid);
-  EXPECT_EQ("BINKP.net", info.filename);
+  EXPECT_EQ("binkp.net", info.filename);
   EXPECT_TRUE(info.overwrite);
   EXPECT_EQ("Hello World", info.data);
 }

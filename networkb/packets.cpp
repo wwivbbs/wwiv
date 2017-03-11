@@ -183,25 +183,24 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   }
   uint16_t flags = (text.at(1) << 8) | text.at(0);
   VLOG(2) << "flags: " << flags;
-  char* fn = &text[2];
-  size_t len = strlen(fn);
-  if (len == 0 || len > 8) {
+  const char* fntemp = &text[2];
+  string fn(fntemp);
+  if (fn.size() == 0 || fn.size() > 8) {
     // still BAD.
-    LOG(ERROR) << "filename length not right; must be at [0,8]; was: " << len;
+    LOG(ERROR) << "filename length not right; must be at [0,8]; was: " << fn.size();
     return info;
   }
-  VLOG(2) << "fn: " << fn;
-  VLOG(2) << "len: " << len;
-  auto pos = len + sizeof(uint16_t) + 1;
+  VLOG(2) << "fn: '" << fn << "'; " << "len: " << fn.size();
+  auto pos = fn.size() + sizeof(uint16_t) + 1;
   if (text.size() < pos) {
     // still bad
     LOG(ERROR) << "text length too short; must be at least: " << pos;
     return info;
   }
   info.data = text.substr(pos);
-#ifdef __linux__
-  strlwr(fn);
-#endif  // __linux__
+  // Since Windows is case sensitive, this is fine.  Since we want lower
+  // case filenames on Linux, this is also fine.
+  StringLowerCase(&fn);
   bool zip = (flags & 0x02) != 0;
   if (zip) {
     info.filename = StrCat(fn, ".zip");
