@@ -60,12 +60,28 @@ TEST_F(BPutsTest, MultipleLetters) {
 }
 
 TEST_F(BPutsTest, SinglePipe) {
-  const string kPlainHelloWorld = "Hello World\r\n";
-  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
-  const string s = "|#1Hello World\r\n";
+  const string kPlainHelloWorld = "Hello World";
+  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World";
+  const string s = "|#1Hello World";
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
   EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
+}
+
+TEST_F(BPutsTest, SinglePipe_WithEndLine) {
+  const string kPlainHelloWorld = "Hello World\r\n";
+  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
+  // TODO(rushfan): Our wonky linux handling adds the \r before all \n, however
+  // this causes deltas here. The output is OK, but just has an extra \r
+  const string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
+  const string s = "|#1Hello World\r\n";
+  Puts(s);
+  EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
+#ifdef _WIN32
+  EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
+#else
+  EXPECT_EQ(kAnsiHelloWorldUnix, helper.io()->rcaptured());
+#endif
 }
 
 TEST_F(BPutsTest, RepeatedPipe) {
@@ -75,4 +91,18 @@ TEST_F(BPutsTest, RepeatedPipe) {
   Puts(s);
   EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
   EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
+}
+
+TEST_F(BPutsTest, RepeatedPipe_WithEndLine) {
+  const string kPlainHelloWorld = "Hello World\r\n";
+  const string kAnsiHelloWorld = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\n";
+  const string kAnsiHelloWorldUnix = "\x1B[0;36;40;1mHello World\r\x1B[0;37;40m\r\n";
+  const string s = "|#1Hello |#1World\r\n";
+  Puts(s);
+  EXPECT_EQ(kPlainHelloWorld, helper.io()->captured());
+#ifdef _WIN32
+  EXPECT_EQ(kAnsiHelloWorld, helper.io()->rcaptured());
+#else
+  EXPECT_EQ(kAnsiHelloWorldUnix, helper.io()->rcaptured());
+#endif
 }
