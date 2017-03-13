@@ -195,7 +195,7 @@ bool BinkP::process_command(int16_t length, duration<double> d) {
   } break;
   case BinkpCommands::M_ADR: {
     remote_.set_address_list(s);
-    file_manager_.reset(new FileManager(remote_.network()));
+    file_manager_.reset(new FileManager(config_->config().root_directory(), remote_.network()));
   } break;
   case BinkpCommands::M_OK: {
     ok_received_ = true;

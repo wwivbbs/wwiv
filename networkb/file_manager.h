@@ -36,7 +36,8 @@ namespace net {
   
 class FileManager {
 public:
-  explicit FileManager(const net_networks_rec& net): net_(net) {}
+  explicit FileManager(const std::string root_directory, net_networks_rec& net)
+    : root_directory_(root_directory), net_(net) {}
   virtual ~FileManager() {}
 
   std::vector<TransferFile*> CreateTransferFileList(const Remote& remote);
@@ -50,6 +51,7 @@ private:
   std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address);
 
   const net_networks_rec net_;
+  const std::string root_directory_;
   const std::string network_directory_;
   std::vector<std::string> received_files_;
 };

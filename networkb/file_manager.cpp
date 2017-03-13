@@ -71,9 +71,11 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   map<string, TransferFile*> result_map;
 
   FidoAddress dest(address);
-  const auto dir = net_.fido.outbound_dir;
+  string net_dir(File::absolute(root_directory_, net_.dir));
+  const string dir(File::absolute(net_dir, net_.fido.outbound_dir));
   for (const auto& st : statuses) {
     const auto name = flo_name(dest, st);
+    VLOG(1) << "Looking for FLO file named: " << FilePath(dir, name);
     if (File::Exists(dir, name)) {
       LOG(INFO) << "Found file file: " << dir << "; name: " << name;
       FloFile flo(net_, dir, name);

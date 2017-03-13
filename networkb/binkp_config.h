@@ -63,6 +63,7 @@ class BinkConfig {
   int network_version() const { return network_version_; }
   bool crc() const { return crc_; }
   bool cram_md5() const { return cram_md5_; }
+  const wwiv::sdk::Config& config() const { return config_; }
 
   /** 
    * Sets defaults from the INI file. This should be called before setting any
