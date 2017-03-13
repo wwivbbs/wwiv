@@ -38,10 +38,6 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-static constexpr int  GAT_NUMBER_ELEMENTS = 2048;
-static constexpr int GAT_SECTION_SIZE = 4096;
-static constexpr int MSG_BLOCK_SIZE = 512;
-
 WWIVMessageApi::WWIVMessageApi(
   const wwiv::sdk::msgapi::MessageApiOptions& options,
   const wwiv::sdk::Config& config,

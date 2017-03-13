@@ -36,7 +36,7 @@ namespace net {
   
 class FileManager {
 public:
-  explicit FileManager(const std::string root_directory, net_networks_rec& net)
+  explicit FileManager(const std::string& root_directory, const net_networks_rec& net)
     : root_directory_(root_directory), net_(net) {}
   virtual ~FileManager() {}
 

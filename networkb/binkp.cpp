@@ -918,8 +918,12 @@ void BinkP::Run() {
     // Update WWIVnet net.log and contact.net for WWIVnet connections.
     NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
     NetworkLog net_log(config_->gfiles_directory());
-    net_log.Log(system_clock::to_time_t(start_time), network_log_side,
-      remote_.wwivnet_node(), bytes_sent_, bytes_received_, sec, remote_.network_name());
+    net_log.Log(system_clock::to_time_t(start_time), 
+      network_log_side,
+      remote_.wwivnet_node(), 
+      bytes_sent_, 
+      bytes_received_, 
+      sec, remote_.network_name());
 
     // Update CONTACT.NET
     Contact c(config_->network(remote_.network_name()), true);
