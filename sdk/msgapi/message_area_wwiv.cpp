@@ -99,7 +99,7 @@ WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int messag
 
 WWIVMessageAreaLastRead::~WWIVMessageAreaLastRead() {}
 
-uint32_t WWIVMessageAreaLastRead::last_read(int user_number) {
+uint32_t WWIVMessageAreaLastRead::last_read(int) {
   if (message_area_number_ < 0) {
     return 0;
   }
@@ -165,7 +165,7 @@ void WWIVMessageArea::ReadMessageAreaHeader(MessageAreaHeader& header) {
   header = h;
 }
 
-void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader& header) {
+void WWIVMessageArea::WriteMessageAreaHeader(const MessageAreaHeader&) {
   // Not implemented on wwiv.
 }
 

@@ -254,6 +254,7 @@ string SocketConnection::receive_upto(int size, duration<double> d) {
 
 std::string SocketConnection::read_line(int max_size, std::chrono::duration<double> d) {
   string s;
+  int size = 0;
   try {
     while (true) {
       char data = 0;
@@ -265,7 +266,11 @@ std::string SocketConnection::read_line(int max_size, std::chrono::duration<doub
         break;
       }
       s.push_back(data);
+      size++;
       if (data == '\n') {
+        break;
+      }
+      if (size > max_size) {
         break;
       }
     }

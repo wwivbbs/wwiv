@@ -29,13 +29,21 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
+typedef uint16_t gati_t;
+static constexpr int GAT_NUMBER_ELEMENTS = 2048;
+static constexpr int GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(gati_t);
+static constexpr int MSG_BLOCK_SIZE = 512;
+static constexpr int GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
+#define MSG_STARTING(section__) (section__ * GATSECLEN + GAT_SECTION_SIZE)
+
+
 class Type2Text {
 public:
   Type2Text(const std::string& text_filename);
   virtual ~Type2Text();
 
-  std::vector<uint16_t> load_gat(File& file, size_t section);
-  void save_gat(File& f, size_t section, const std::vector<uint16_t>& gat);
+  std::vector<gati_t> load_gat(File& file, size_t section);
+  void save_gat(File& f, size_t section, const std::vector<gati_t>& gat);
   bool readfile(const messagerec* msg, std::string* out);
   bool savefile(const std::string& text, messagerec* pMessageRecord);
   bool remove_link(messagerec& msg);

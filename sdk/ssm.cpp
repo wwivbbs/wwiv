@@ -48,7 +48,8 @@ bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint3
   net_header_rec nh;
   nh.tosys = static_cast<uint16_t>(system_number);
   nh.touser = static_cast<uint16_t>(user_number);
-  nh.fromsys = user_number;
+  // This was user_number, but that seems really wrong.  Changing to net.sysnum.
+  nh.fromsys = net.sysnum;
   nh.fromuser = static_cast<uint16_t>(from_user_number);
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;

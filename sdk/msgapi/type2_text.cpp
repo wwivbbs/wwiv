@@ -47,13 +47,6 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 constexpr char CZ = 26;
-static constexpr int GAT_NUMBER_ELEMENTS = 2048;
-static constexpr int GAT_SECTION_SIZE = GAT_NUMBER_ELEMENTS * sizeof(uint16_t);
-static constexpr int MSG_BLOCK_SIZE = 512;
-
-static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
-#define MSG_STARTING(section__) (section__ * GATSECLEN + GAT_SECTION_SIZE)
-
 
 Type2Text::Type2Text(const std::string& text_filename)
   : filename_(text_filename) {
@@ -70,7 +63,7 @@ bool Type2Text::remove_link(messagerec& msg) {
     return false;
   }
   size_t section = static_cast<int>(msg.stored_as / GAT_NUMBER_ELEMENTS);
-  vector<uint16_t> gat = load_gat(*file, section);
+  vector<gati_t> gat = load_gat(*file, section);
   uint32_t current_section = msg.stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
     uint32_t next_section = static_cast<long>(gat[current_section]);
@@ -103,8 +96,8 @@ std::unique_ptr<File> Type2Text::OpenMessageFile() {
   return std::move(message_file);
 }
 
-std::vector<uint16_t> Type2Text::load_gat(File& file, size_t section) {
-  std::vector<uint16_t> gat(GAT_NUMBER_ELEMENTS);
+std::vector<gati_t> Type2Text::load_gat(File& file, size_t section) {
+  std::vector<gati_t> gat(GAT_NUMBER_ELEMENTS);
   auto file_size = file.length();
   auto section_pos = section * GATSECLEN;
   if (file_size < static_cast<long>(section_pos)) {
@@ -122,7 +115,7 @@ std::vector<uint16_t> Type2Text::load_gat(File& file, size_t section) {
   return gat;
 }
 
-void Type2Text::save_gat(File& file, size_t section, const std::vector<uint16_t>& gat) {
+void Type2Text::save_gat(File& file, size_t section, const std::vector<gati_t>& gat) {
   long section_pos = static_cast<long>(section * GATSECLEN);
   file.Seek(section_pos, File::Whence::begin);
   file.Write(&gat[0], GAT_SECTION_SIZE);
@@ -144,7 +137,7 @@ bool Type2Text::readfile(const messagerec* msg, string* out) {
     return false;
   }
   const size_t gat_section = msg->stored_as / GAT_NUMBER_ELEMENTS;
-  vector<uint16_t> gat = load_gat(*file, gat_section);
+  vector<gati_t> gat = load_gat(*file, gat_section);
 
   uint32_t current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
@@ -166,7 +159,7 @@ bool Type2Text::readfile(const messagerec* msg, string* out) {
 }
 
 bool Type2Text::savefile(const string& text, messagerec* msg) {
-  vector<uint16_t> gati;
+  vector<gati_t> gati;
   unique_ptr<File> msgfile(OpenMessageFile());
   if (!msgfile->IsOpen()) {
     // Unable to write to the message file.
@@ -175,9 +168,9 @@ bool Type2Text::savefile(const string& text, messagerec* msg) {
   }
   size_t section = 0;
   for (section = 0; section < 1024; section++) {
-    vector<uint16_t> gat = load_gat(*msgfile, section);
+    vector<gati_t> gat = load_gat(*msgfile, section);
     int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
-    int i4 = 1;
+    gati_t i4 = 1;
     gati.clear();
     while (size_int(gati) < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
       if (gat[i4] == 0) {
@@ -190,7 +183,7 @@ bool Type2Text::savefile(const string& text, messagerec* msg) {
       for (int i = 0; i < nNumBlocksRequired; i++) {
         msgfile->Seek(MSG_STARTING(section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
         msgfile->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
-        gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
+        gat[gati[i]] = gati[i + 1];
       }
       save_gat(*msgfile, section, gat);
       break;

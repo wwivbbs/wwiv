@@ -33,7 +33,7 @@ namespace sdk {
 namespace msgapi {
 
 WWIVMessageHeader::WWIVMessageHeader(const MessageApi* api)
-  : header_(postrec{}) {}
+  : header_(postrec{}), api_(api) {}
 
 WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
   const std::string& in_reply_to, const MessageApi* api)

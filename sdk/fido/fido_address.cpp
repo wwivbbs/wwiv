@@ -43,8 +43,8 @@ namespace wwiv {
 namespace sdk {
 namespace fido {
 
-template <typename C, typename I>
-int next_int(C& c, I& it, std::set<char> stop) {
+template <typename T, typename C, typename I>
+static T next_int(C& c, I& it, std::set<char> stop) {
   string s;
   while (it != std::end(c) && !contains(stop, *it)) {
     if (!std::isdigit(*it)) {
@@ -56,7 +56,7 @@ int next_int(C& c, I& it, std::set<char> stop) {
     // skip over last
     it++;
   }
-  return StringToInt(s);
+  return static_cast<T>(StringToInt(s));
 }
 
 FidoAddress::FidoAddress(const std::string& address) {
@@ -70,16 +70,16 @@ FidoAddress::FidoAddress(const std::string& address) {
   }
   auto it = std::begin(address);
   if (has_zone) {
-    zone_ = next_int(address, it, {':'});
+    zone_ = next_int<int16_t>(address, it, {':'});
   } else {
     // per FSL-1002: "If 'ZZ:' is missing then assume 1 as the zone."
     // TODO(rushfan): Not sure if this is really what we expect though...
     zone_ = 1;
   }
-  net_ = next_int(address, it, {'/'});
-  node_ = next_int(address, it, {'@', '.'});
+  net_ = next_int<int16_t>(address, it, {'/'});
+  node_ = next_int<int16_t>(address, it, {'@', '.'});
   if (has_point) {
-    point_ = next_int(address, it, {'@'});
+    point_ = next_int<int16_t>(address, it, {'@'});
   }
   if (has_domain) {
     domain_ = string(it, std::end(address));

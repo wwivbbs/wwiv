@@ -28,28 +28,18 @@
 #include "sdk/net.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// NOTE: This file containts wwiv message base specific code and should move to SDK
-//
-
-static constexpr int  GAT_NUMBER_ELEMENTS = 2048;
-static constexpr int GAT_SECTION_SIZE = 4096;
-static constexpr int MSG_BLOCK_SIZE = 512;
+#include "sdk/msgapi/type2_text.h"
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
 
 
-static constexpr int  GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BLOCK_SIZE;
-#define MSG_STARTING (gat_section * GATSECLEN + GAT_SECTION_SIZE)
-
 static long gat_section = -1;
-static uint16_t *gat = new uint16_t[2048]();
+static gati_t *gat = new gati_t[2048]();
 
 /**
 * Opens the message area file {messageAreaFileName} and returns the file handle.
@@ -165,9 +155,9 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
         if (gatp >= nNumBlocksRequired) {
           gati[gatp] = -1;
           for (int i = 0; i < nNumBlocksRequired; i++) {
-            file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
+            file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
             file->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);
-            gat[gati[i]] = static_cast<uint16_t>(gati[i + 1]);
+            gat[gati[i]] = gati[i + 1];
           }
           save_gat(*file.get());
           break;
@@ -207,7 +197,7 @@ bool readfile(messagerec* msg, const string& fileName, string* out) {
 
   current_section = msg->stored_as % GAT_NUMBER_ELEMENTS;
   while (current_section > 0 && current_section < GAT_NUMBER_ELEMENTS) {
-    file->Seek(MSG_STARTING + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::Whence::begin);
+    file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<uint32_t>(current_section), File::Whence::begin);
     char b[MSG_BLOCK_SIZE + 1];
     file->Read(b, MSG_BLOCK_SIZE);
     b[MSG_BLOCK_SIZE] = 0;
@@ -249,20 +239,20 @@ void lineadd(messagerec* msg, const string& sx, string fileName) {
       message_file->Close();
       return;
     }
-    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
+    message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
     message_file->Read(b, MSG_BLOCK_SIZE);
     int j = 0;
     while (j < MSG_BLOCK_SIZE && b[j] != CZ) {
       ++j;
     }
     strcpy(&(b[j]), line.c_str());
-    message_file->Seek(MSG_STARTING + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
+    message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(i) * MSG_BLOCK_SIZE, File::Whence::begin);
     message_file->Write(b, MSG_BLOCK_SIZE);
     if (((j + line.size()) > MSG_BLOCK_SIZE) && (new1 != GAT_NUMBER_ELEMENTS)) {
-      message_file->Seek(MSG_STARTING + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::Whence::begin);
+      message_file->Seek(MSG_STARTING(gat_section) + static_cast<long>(new1)  * MSG_BLOCK_SIZE, File::Whence::begin);
       message_file->Write(b + MSG_BLOCK_SIZE, MSG_BLOCK_SIZE);
       gat[new1] = 65535;
-      gat[i] = static_cast<uint16_t>(new1);
+      gat[i] = static_cast<gati_t>(new1);
       save_gat(*message_file.get());
     }
     free(b);
