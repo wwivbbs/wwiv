@@ -346,7 +346,7 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   string extension = determine_arc_extension(FilePath(dir, name));
   if (extension.empty()) {
     LOG(INFO) << "Unable to determine archiver type for packet: " << name;
-    extension = net.packet_config.compression_type;
+    extension = net.fido.packet_config.compression_type;
   }
   const auto& arc = find_arc(arcs, extension);
   // We have no parameter 2 since we're extracting everything.
