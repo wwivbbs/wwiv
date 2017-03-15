@@ -974,6 +974,7 @@ int main(int argc, char** argv) {
 
     if (net.type != network_type_t::ftn) {
       LOG(ERROR) << "NETWORKF is only for use on FTN type networks.";
+      ShowHelp(cmdline);
       return 1;
     }
 
@@ -1001,15 +1002,16 @@ int main(int argc, char** argv) {
     auto cmds = cmdline.remaining();
     if (cmds.empty()) {
       LOG(ERROR) << "No command specified. Exiting.";
+      ShowHelp(cmdline);
       return 1;
     }
 
     const string cmd = cmds.front();
     cmds.erase(cmds.begin());
-    LOG(INFO) << "Command: " << cmd;
-    LOG(INFO) << "Args: ";
+    VLOG(1) << "Command: " << cmd;
+    VLOG(1) << "Args: ";
     for (const auto& r : cmds) {
-      LOG(INFO) << r << endl;
+      VLOG(1) << r << endl;
     }
 
     wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
@@ -1068,6 +1070,7 @@ int main(int argc, char** argv) {
 
     } else {
       LOG(ERROR) << "Unknown command: " << cmd;
+      ShowHelp(cmdline);
       return 1;
     }
     return 0;

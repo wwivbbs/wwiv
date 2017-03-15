@@ -535,7 +535,7 @@ public:
 
     auto dir = File::absolute(this->base_, this->data_);
     if (!File::Exists(dir)) {
-      const std::string s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
+      const std::string s1 = wwiv::strings::StrCat("The path '", dir, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
         if (!File::mkdirs(dir)) {
           messagebox(window, { "Unable to create directory: ", dir });
