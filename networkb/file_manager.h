@@ -30,6 +30,7 @@
 #include "networkb/transfer_file.h"
 #include "networkb/remote.h"
 #include "sdk/net.h"
+#include "sdk/fido/fido_util.h"
 
 namespace wwiv {
 namespace net {
@@ -37,7 +38,7 @@ namespace net {
 class FileManager {
 public:
   explicit FileManager(const std::string& root_directory, const net_networks_rec& net)
-    : root_directory_(root_directory), net_(net) {}
+    : root_directory_(root_directory), net_(net), dirs_(root_directory, net) {}
   virtual ~FileManager() {}
 
   std::vector<TransferFile*> CreateTransferFileList(const Remote& remote);
@@ -50,8 +51,9 @@ private:
   std::vector<TransferFile*> CreateWWIVnetTransferFileList(uint16_t destination_node);
   std::vector<TransferFile*> CreateFtnTransferFileList(const std::string& address);
 
-  const net_networks_rec net_;
   const std::string root_directory_;
+  const net_networks_rec net_;
+  const wwiv::sdk::fido::FtnDirectories dirs_;
   const std::string network_directory_;
   std::vector<std::string> received_files_;
 };

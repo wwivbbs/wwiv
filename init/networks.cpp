@@ -184,12 +184,12 @@ public:
       
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->nodelist_base, false));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->temp_inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->temp_outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->netmail_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, bbsdir_, n->bad_packets_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->temp_inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->temp_outbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->outbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->netmail_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->bad_packets_dir));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line, false));
 
       dy_start_ = y;

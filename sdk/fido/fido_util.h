@@ -104,6 +104,30 @@ private:
   std::vector<std::pair<std::string, flo_directive>> entries_;
 };
 
+class FtnDirectories {
+public:
+	FtnDirectories(const std::string& bbsdir, const net_networks_rec& net);
+	virtual ~FtnDirectories();
+
+  const std::string& net_dir() const;
+  const std::string& inbound_dir() const;
+  const std::string& temp_inbound_dir() const;
+  const std::string& temp_outbound_dir() const;
+  const std::string& outbound_dir() const;
+  const std::string& netmail_dir() const;
+  const std::string& bad_packets_dir() const;
+
+private:
+	const std::string bbsdir_;
+	const net_networks_rec net_;
+	const std::string net_dir_;
+  const std::string inbound_dir_;
+  const std::string temp_inbound_dir_;
+  const std::string temp_outbound_dir_;
+  const std::string outbound_dir_;
+  const std::string netmail_dir_;
+  const std::string bad_packets_dir_;
+};
 }  // namespace fido
 }  // namespace net
 }  // namespace wwiv

@@ -290,7 +290,6 @@ int main(int argc, char** argv) {
       return 0;
     }
 
-    const auto& bbsdir = net_cmdline.bbsdir();
     const auto& config = net_cmdline.config();
     const auto& networks = net_cmdline.networks();
     // TODO(rushfan): Load sub data here;

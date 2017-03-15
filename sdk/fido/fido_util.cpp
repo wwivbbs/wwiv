@@ -421,9 +421,8 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
 }
 
 bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net) {
-  auto net_dir = File::absolute(config.root_directory(), net.dir);
-  auto inbounddir = File::absolute(net_dir, net.fido.inbound_dir);
-  return exists_bundle(inbounddir);
+  FtnDirectories dirs(config.root_directory(), net);
+  return exists_bundle(dirs.inbound_dir());
 }
 
 bool exists_bundle(const std::string& dir) {
@@ -557,9 +556,31 @@ bool FloFile::Save() {
   return true;
 }
 
+
 FidoAddress FloFile::destination_address() const {
   return *dest_.get();
 }
+
+FtnDirectories::FtnDirectories(const std::string& bbsdir, const net_networks_rec& net)
+	: bbsdir_(bbsdir), 
+    net_(net),
+    net_dir_(File::absolute(bbsdir, net.dir)),
+    inbound_dir_(File::absolute(net_dir_, net_.fido.inbound_dir)),
+    temp_inbound_dir_(File::absolute(net_dir_, net_.fido.temp_inbound_dir)),
+    temp_outbound_dir_(File::absolute(net_dir_, net_.fido.temp_outbound_dir)),
+    outbound_dir_(File::absolute(net_dir_, net_.fido.outbound_dir)),
+    netmail_dir_(File::absolute(net_dir_, net_.fido.netmail_dir)),
+    bad_packets_dir_(File::absolute(net_dir_, net_.fido.bad_packets_dir)) {}
+
+FtnDirectories::~FtnDirectories() {}
+
+const std::string& FtnDirectories::net_dir() const { return net_dir_; }
+const std::string& FtnDirectories::inbound_dir() const { return inbound_dir_; }
+const std::string& FtnDirectories::temp_inbound_dir() const { return temp_inbound_dir_; }
+const std::string& FtnDirectories::temp_outbound_dir() const { return temp_outbound_dir_; }
+const std::string&FtnDirectories::outbound_dir() const { return outbound_dir_; }
+const std::string&FtnDirectories::netmail_dir() const { return netmail_dir_; }
+const std::string&FtnDirectories::bad_packets_dir() const { return bad_packets_dir_; }
 
 
 }  // namespace fido

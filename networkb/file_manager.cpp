@@ -48,12 +48,12 @@ namespace net {
 vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) {
   vector<TransferFile*> result;
   const string s_node_net = StringPrintf("s%d.net", destination_node);
-  const string search_path = FilePath(net_.dir, s_node_net);
+  const string search_path = FilePath(dirs_.net_dir(), s_node_net);
   VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
   if (File::Exists(search_path)) {
     File file(search_path);
     const string basename = file.GetName();
-    result.push_back(new WFileTransferFile(basename, std::make_unique<File>(net_.dir, basename)));
+    result.push_back(new WFileTransferFile(basename, std::make_unique<File>(dirs_.net_dir(), basename)));
     LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << basename;
   }
   return result;
@@ -71,21 +71,19 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   map<string, TransferFile*> result_map;
 
   FidoAddress dest(address);
-  string net_dir(File::absolute(root_directory_, net_.dir));
-  const string dir(File::absolute(net_dir, net_.fido.outbound_dir));
-  VLOG(1) << "CreateFtnTransferFileList: " << dir;
+  VLOG(1) << "CreateFtnTransferFileList: " << dirs_.outbound_dir();
   for (const auto& st : statuses) {
     const auto name = flo_name(dest, st);
-    VLOG(1) << "Looking for FLO file named: " << FilePath(dir, name);
-    if (File::Exists(dir, name)) {
-      LOG(INFO) << "Found file file: " << dir << "; name: " << name;
-      FloFile flo(net_, dir, name);
+    VLOG(1) << "Looking for FLO file named: " << FilePath(dirs_.outbound_dir(), name);
+    if (File::Exists(dirs_.outbound_dir(), name)) {
+      LOG(INFO) << "Found file file: " << dirs_.outbound_dir() << "; name: " << name;
+      FloFile flo(net_, dirs_.outbound_dir(), name);
       if (!flo.Load()) { continue; }
       for (const auto& e : flo.flo_entries()) {
         File f(e.first);
         const auto basename = f.GetName();
         auto w = new WFileTransferFile(basename, std::make_unique<File>(e.first));
-        w->set_flo_file(std::make_unique<FloFile>(net_, dir, name));
+        w->set_flo_file(std::make_unique<FloFile>(net_, dirs_.outbound_dir(), name));
         // emplace won't add another entry if one exists already.
         result_map.emplace(basename, w);
       }
@@ -137,8 +135,8 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
 void FileManager::rename_wwivnet_pending_files() {
   VLOG(1) << "STATE: rename_wwivnet_pending_files";
   for (const auto& file : received_files()) {
-    LOG(INFO) << "       renaming_pending_file: dir: " << net_.dir << "; file: " << file;
-    rename_wwivnet_pend(net_.dir, file);
+    LOG(INFO) << "       renaming_pending_file: dir: " << dirs_.net_dir() << "; file: " << file;
+    rename_wwivnet_pend(dirs_.net_dir(), file);
   }
 }
 
@@ -146,9 +144,9 @@ void FileManager::rename_ftn_pending_files() {
   VLOG(1) << "STATE: rename_ftn_pending_files";
   for (const auto& file : received_files()) {
     if (is_bundle_file(file)) {
-      LOG(INFO) << "       renaming_pending_file: dir: " << net_.dir << "; file: " << file;
-      if (!File::Exists(net_.fido.inbound_dir, file)) {
-        File::Move(FilePath(net_.dir, file), FilePath(net_.fido.inbound_dir, file));
+      LOG(INFO) << "       renaming_pending_file: dir: " << dirs_.net_dir() << "; file: " << file;
+      if (!File::Exists(dirs_.inbound_dir(), file)) {
+        File::Move(FilePath(dirs_.net_dir(), file), FilePath(dirs_.inbound_dir(), file));
       } else {
         LOG(ERROR) << "File: " << file << " already exists in fido inbound dir. Please move manually.";
       }

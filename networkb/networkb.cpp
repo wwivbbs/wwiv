@@ -147,7 +147,7 @@ static bool Send(BinkConfig& bink_config, const string& sendto_node, const std::
   }
 
   const net_networks_rec& net = bink_config.networks()[network_name];
-  BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
+  BinkP::received_transfer_file_factory_t factory = [&](const string&, const string& filename) {
     return new WFileTransferFile(filename, std::make_unique<File>(net.dir, filename));
   };
 

@@ -467,14 +467,15 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     text << "Unable to parse your address of: " << net.fido.fido_address << "\r\n";
     text << " ** Please fix it.\r\n\n";
   }
-  text << "Inbound dir:            " << net.fido.inbound_dir << "\r\n";
-  text << "Outbound dir:           " << net.fido.outbound_dir << "\r\n";
-  text << "Temporary Inbound dir:  " << net.fido.temp_inbound_dir << "\r\n";
-  text << "Temporary Outbound dir: " << net.fido.temp_outbound_dir << "\r\n";
-  text << "Bad Packets dir:        " << net.fido.bad_packets_dir << "\r\n";
+  wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
+  text << "Inbound dir:            " << dirs.inbound_dir() << "\r\n";
+  text << "Outbound dir:           " << dirs.outbound_dir() << "\r\n";
+  text << "Temporary Inbound dir:  " << dirs.temp_inbound_dir() << "\r\n";
+  text << "Temporary Outbound dir: " << dirs.temp_outbound_dir() << "\r\n";
+  text << "Bad Packets dir:        " << dirs.bad_packets_dir() << "\r\n";
   text << "\r\n";
 
-  if (!File::Exists(net.dir, FIDO_CALLOUT_JSON)) {
+  if (!File::Exists(dirs.net_dir(), FIDO_CALLOUT_JSON)) {
     text << " ** fido_callout.json file DOES NOT EXIST.\r\n\n";
   }
   FidoCallout callout(net_cmdline.config(), net);
@@ -485,15 +486,15 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
   }
 
   text << "Using nodelist base:    " << net.fido.nodelist_base << "\r\n";
-  std::string nodelist = Nodelist::FindLatestNodelist(net.dir, net.fido.nodelist_base);
-  File nlfile(net.dir, nodelist);
+  std::string nodelist = Nodelist::FindLatestNodelist(dirs.net_dir(), net.fido.nodelist_base);
+  File nlfile(dirs.net_dir(), nodelist);
   text << "Latest FTN is:          " << nodelist;
   if (!nlfile.Exists()) {
     text << " (DOES NOT EXIST)\r\n";
     text << " ** Please fix it.\r\n\n";
   } else {
     text << " [" << daten_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
-    auto nl_path = File::absolute(net.dir, nodelist);
+    auto nl_path = File::absolute(dirs.net_dir(), nodelist);
     Nodelist nl(nl_path);
     if (!nl.initialized()) {
       text << " ** Unable to parse nodelist.\r\n";
@@ -507,7 +508,6 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
           text << " ** Callout address: '" << address << "' does not exist in the nodelist.\r\n";
         }
       }
-
     }
   }
   

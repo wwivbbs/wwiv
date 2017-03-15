@@ -208,9 +208,8 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
       << "; actual: '" << actual << "; expected: " << expected << "'";
     // Move to BADMSGS
     f.Close();
-    auto net_dir = File::absolute(config.root_directory(), net.dir);
-    string badmsgs_path = File::absolute(net_dir, net.fido.bad_packets_dir);
-    const string dest = FilePath(badmsgs_path, f.GetName());
+    wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
+    const string dest = FilePath(dirs.bad_packets_dir(), f.GetName());
 
     if (!File::Move(f.full_pathname(), dest)) {
       LOG(ERROR) << "Error moving file to BADMSGS; file: " << f;
@@ -334,9 +333,8 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
 
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
-  auto net_dir = File::absolute(config.root_directory(), net.dir);
-  auto tempdir = File::absolute(net_dir, net.fido.temp_inbound_dir);
-  File::set_current_directory(tempdir);
+  wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
+  File::set_current_directory(dirs.temp_inbound_dir());
 
   // were in the temp dir now.
   auto arcs = read_arcs(config.datadir());
@@ -348,7 +346,7 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   string extension = determine_arc_extension(FilePath(dir, name));
   if (extension.empty()) {
     LOG(INFO) << "Unable to determine archiver type for packet: " << name;
-    extension = net.fido.packet_config.compression_type;
+    extension = net.packet_config.compression_type;
   }
   const auto& arc = find_arc(arcs, extension);
   // We have no parameter 2 since we're extracting everything.
@@ -362,9 +360,9 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   // Need to be back home.
   File::set_current_directory(saved_dir);
 
-  import_packets(config, callout, net, tempdir, "*.pkt");
+  import_packets(config, callout, net, dirs.temp_inbound_dir(), "*.pkt");
 #ifndef _WIN32
-  import_packets(config, callout, net, tempdir, "*.PKT");
+  import_packets(config, callout, net, dirs.temp_inbound_dir(), "*.PKT");
 #endif  // _WIN32
   return true;
 }
@@ -409,20 +407,18 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   const std::string saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
 
-  string net_dir(File::absolute(config.root_directory(), net.dir));
-  string out_dir(File::absolute(net_dir, net.fido.outbound_dir));
-  string temp_dir(File::absolute(net_dir, net.fido.temp_outbound_dir));
+  wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
   const string ctype = fido_callout.packet_config_for(route_to).compression_type;
 
   if (ctype == "PKT") {
     // No bundles, only packet files.
-    string in = FilePath(temp_dir, fido_packet_name);
-    string out = FilePath(out_dir, fido_packet_name);
+    string in = FilePath(dirs.temp_outbound_dir(), fido_packet_name);
+    string out = FilePath(dirs.outbound_dir(), fido_packet_name);
     if (!File::Move(in, out)) {
       LOG(ERROR) << "Unable to move packet file into outbound dir. file: " << fido_packet_name;
       return false;
     }
-    LOG(INFO) << "Created bundle(packet): " << FilePath(out_dir, fido_packet_name);
+    LOG(INFO) << "Created bundle(packet): " << FilePath(dirs.outbound_dir(), fido_packet_name);
     out_bundle_name = fido_packet_name;
     return true;
   }
@@ -430,15 +426,16 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
   FidoAddress orig(net.fido.fido_address);
   for (int i = 0; i < 35; i++) {
     string bname = bundle_name(orig, route_to, dow, i);
-    if (File::Exists(out_dir, bname)) {
-      VLOG(1) << "Skipping candidate bundle: " << FilePath(out_dir, bname);
+    if (File::Exists(dirs.outbound_dir(), bname)) {
+      VLOG(1) << "Skipping candidate bundle: " << FilePath(dirs.outbound_dir(), bname);
       // Already exists.
       continue;
     }
-    File::set_current_directory(out_dir);
+    File::set_current_directory(dirs.outbound_dir());
     const auto& arc = find_arc(arcs, ctype);
     // We have no parameter 2 since we're extracting everything.
-    string zip_cmd = arc_stuff_in(arc.arca, FilePath(out_dir, bname), FilePath(temp_dir, fido_packet_name));
+    string zip_cmd = arc_stuff_in(arc.arca, FilePath(dirs.outbound_dir(), bname), 
+      FilePath(dirs.temp_outbound_dir(), fido_packet_name));
     // Execute the command
     LOG(INFO) << "Command: " << zip_cmd;
     if (0 != system(zip_cmd.c_str())) {
@@ -449,9 +446,9 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     File::set_current_directory(saved_dir);
     out_bundle_name = bname;
 
-    LOG(INFO) << "Created bundle: " << FilePath(out_dir, bname);
-    if (!File::Remove(temp_dir, fido_packet_name)) {
-      LOG(ERROR) << "Error removing packet: " << FilePath(temp_dir, fido_packet_name);
+    LOG(INFO) << "Created bundle: " << FilePath(dirs.outbound_dir(), bname);
+    if (!File::Remove(dirs.temp_outbound_dir(), fido_packet_name)) {
+      LOG(ERROR) << "Error removing packet: " << FilePath(dirs.temp_outbound_dir(), fido_packet_name);
     }
     return true;
   }
@@ -582,16 +579,12 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
   VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
   using wwiv::net::ReadPacketResponse;
 
-  string temp_dir(net.fido.temp_outbound_dir);
-  {
-    string net_dir(File::absolute(config.root_directory(), net.dir));
-    File::absolute(net_dir, &temp_dir);
-  }
+  wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
 
   FidoAddress from_address(net.fido.fido_address);
   for (int tries = 0; tries < 10; tries++) {
     time_t now = time(nullptr);
-    File file(temp_dir, packet_name(now));
+    File file(dirs.temp_outbound_dir(), packet_name(now));
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite | File::modeBinary, File::shareDenyReadWrite)) {
       LOG(INFO) << "Will try again: Unable to create packet file: " << file.full_pathname();
       wwiv::os::sleep_for(std::chrono::seconds(1));
@@ -743,13 +736,14 @@ static bool create_ftn_packet_and_bundle(
     const NetworkCommandLine& net_cmdline, const FidoCallout& fido_callout, const FidoAddress& dest,
     const FidoAddress& route_to, const net_networks_rec& net, const Packet& p, string& bundlename) {
   LOG(INFO) << "Creating packet for subscriber: " << dest << "; route_to: " << route_to;
+  wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
   string fido_packet_name;
   if (!create_ftn_packet(net_cmdline.config(), fido_callout, dest, route_to, net, p, fido_packet_name)) {
     LOG(ERROR) << "Failed to create FTN packet.";
     write_wwivnet_packet(DEAD_NET, net, p);
     return false;
   }
-  LOG(INFO) << "Created packet: " << FilePath(net.fido.temp_outbound_dir, fido_packet_name);
+  LOG(INFO) << "Created packet: " << FilePath(dirs.temp_outbound_dir(), fido_packet_name);
 
   if (!create_ftn_bundle(net_cmdline.config(), fido_callout, dest, route_to, net, fido_packet_name, bundlename)) {
     LOG(ERROR) << "Failed to create FTN bundle.";
@@ -837,14 +831,13 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
 
 bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, const fido_packet_config_t& packet_config) {
   FidoAddress orig(net.fido.fido_address);
-  string net_dir(File::absolute(net_cmdline.config().root_directory(), net.dir));
-  string out_dir(File::absolute(net_dir, net.fido.outbound_dir));
+  wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
 
   const string floname = flo_name(dest, packet_config.netmail_status);
   const string bsyname = net_node_name(dest, "bsy");
 
   for (int i = 1; i < 7; i++) {
-    File bsy(out_dir, bsyname);
+    File bsy(dirs.outbound_dir(), bsyname);
     if (bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly, File::shareDenyReadWrite)) {
       break;
     }
@@ -855,28 +848,25 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
     }
     wwiv::os::sleep_for(std::chrono::milliseconds((i ^ 2) * 50));
   }
-  ScopeExit at_exit([=] { File::Remove(out_dir, bsyname); });
-  TextFile flo_file(out_dir, floname, "a+");
+  ScopeExit at_exit([=] { File::Remove(dirs.outbound_dir(), bsyname); });
+  TextFile flo_file(dirs.outbound_dir(), floname, "a+");
   if (!flo_file.IsOpen()) {
     LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
     return false;
   }
-  int num_written = flo_file.WriteLine(StrCat("^", FilePath(out_dir, bundlename)));
+  int num_written = flo_file.WriteLine(StrCat("^", FilePath(dirs.outbound_dir(), bundlename)));
   return num_written > 0;
 }
 
 bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline,const FidoAddress& dest, const net_networks_rec& net, const string& bundlename, const fido_packet_config_t& packet_config) {
-  string net_dir(File::absolute(net_cmdline.config().root_directory(), net.dir));
-  string out_dir(File::absolute(net_dir, net.fido.outbound_dir));
-  string netmail_dir(File::absolute(net_dir, net.fido.netmail_dir));
-  
-  string netmail_filepath = NextNetmailFilePath(netmail_dir);
+  wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
+  string netmail_filepath = NextNetmailFilePath(dirs.netmail_dir());
 
   if (netmail_filepath.empty()) {
-    LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << net.fido.netmail_dir << "'";
+    LOG(ERROR) << "Unable to figure out netmail filename in dir: '" << dirs.netmail_dir() << "'";
     return false;
   }
-  const string bundlepath = FilePath(out_dir, bundlename);
+  const string bundlepath = FilePath(dirs.outbound_dir(), bundlename);
   if (!CreateFidoNetAttachNetMail(FidoAddress(net.fido.fido_address), dest, netmail_filepath, bundlepath, packet_config)) {
     LOG(ERROR) << "Unable to create netmail: " << netmail_filepath;
     return false;
@@ -1022,14 +1012,13 @@ int main(int argc, char** argv) {
       LOG(INFO) << r << endl;
     }
 
+    wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
     if (cmd == "import") {
       const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
-      auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);
-      auto inbounddir = File::absolute(net_dir, net.fido.inbound_dir);
       for (const auto& ext : extensions) {
-        import_bundles(net_cmdline.config(), fido_callout, net, inbounddir, StrCat("*.", ext));
+        import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(), StrCat("*.", ext));
 #ifndef _WIN32
-        import_bundles(net_cmdline.config(), fido_callout, net, inbounddir, StrCat("*.", ToStringUpperCase(ext)));
+        import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(), StrCat("*.", ToStringUpperCase(ext)));
 #endif
       }
     } else if (cmd == "export") {
