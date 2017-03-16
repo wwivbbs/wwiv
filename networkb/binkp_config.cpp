@@ -125,8 +125,15 @@ const binkp_session_config_t* BinkConfig::binkp_session_config_for(const std::st
       FidoAddress address(node);
       FidoCallout fc(config_, callout_network());
       if (!fc.IsInitialized()) return nullptr;
-
       auto fido_node = fc.fido_node_config_for(address);
+
+      if (fido_node.binkp_config.host.empty()) {
+        // We must have a host at least, otherwise we know this
+        // is a completely empty record and we must return nullptr
+        // since the node config is not found.
+        return nullptr;
+      }
+
       static_session = fido_node.binkp_config;
       if (static_session.port == 0) {
         // Set to default port.
@@ -139,8 +146,8 @@ const binkp_session_config_t* BinkConfig::binkp_session_config_for(const std::st
 
       return &static_session;
     } catch (const std::exception&) {
+      return nullptr;
     }
-    return nullptr;
   }
   return nullptr;
 }
