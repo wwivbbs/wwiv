@@ -97,9 +97,6 @@
     <ClCompile Include="user_editor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="instance_settings.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="system_info.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

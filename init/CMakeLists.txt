@@ -10,7 +10,6 @@ set(COMMON_SOURCES
   convert.cpp
   editors.cpp
   init.cpp 
-  instance_settings.cpp
   languages.cpp
   levels.cpp
   menus.cpp

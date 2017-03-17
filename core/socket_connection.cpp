@@ -112,23 +112,23 @@ SocketConnection::SocketConnection(SOCKET sock, bool close_socket)
   }
 
   if (!SetNonBlockingMode(sock_)) {
-    LOG(ERROR) << "Unable to put socket into nonblocking mode.";
+    LOG(ERROR) << "SocketConnection: Unable to put socket into nonblocking mode.";
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
-    throw socket_error("Unable to set nonblocking mode on the socket.");
+    throw socket_error("SocketConnection: Unable to set nonblocking mode on the socket.");
   }
   if (!SetNoDelayMode(sock_)) {
-    LOG(ERROR) << "Unable to put socket into nodelay mode.";
+    LOG(ERROR) << "SocketConnection: Unable to put socket into nodelay mode.";
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
-    throw socket_error("Unable to set nodelay mode on the socket.");
+    throw socket_error("SocketConnection: Unable to set nodelay mode on the socket.");
   }
 }
 
 unique_ptr<SocketConnection> Connect(const string& host, int port) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
-    throw socket_error("Unable to initialize sockets.");
+    throw socket_error("SocketConnection::Connect Unable to initialize sockets.");
   }
 
   struct addrinfo hints;

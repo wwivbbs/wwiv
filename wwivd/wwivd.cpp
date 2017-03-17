@@ -588,6 +588,14 @@ static void HandleConnection(ConnectionData data) {
       return;
     }
 
+    if (data.c->bbses.empty()) {
+      // If no bbses are defined, bail early and let someone know.
+      SocketConnection conn(data.r.client_socket);
+      LOG(ERROR) << "No BBSes defined in INIT for the Matrix.";
+      conn.send_line("No BBSes defined in INIT for the Matrix.  Please tell the SysOp.", std::chrono::seconds(1));
+      return;
+    }
+
     // TODO(rushfan): Do matrix logon here.
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {

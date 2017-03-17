@@ -116,7 +116,6 @@
     <ClCompile Include="convert.cpp" />
     <ClCompile Include="editors.cpp" />
     <ClCompile Include="init.cpp" />
-    <ClCompile Include="instance_settings.cpp" />
     <ClCompile Include="languages.cpp" />
     <ClCompile Include="levels.cpp" />
     <ClCompile Include="menus.cpp" />

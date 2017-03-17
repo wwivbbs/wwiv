@@ -49,7 +49,6 @@
 #include "init/convert.h"
 #include "init/editors.h"
 #include "init/init.h"
-#include "init/instance_settings.h"
 #include "init/languages.h"
 #include "init/levels.h"
 #include "init/menus.h"
@@ -326,7 +325,6 @@ int WInitApp::main(int argc, char** argv) {
         { "S. Security Level Configuration", 'S' },
         { "V. Auto-Validation Level Configuration", 'V' },
         { "A. Archiver Configuration", 'A' },
-        { "I. Instance Configuration", 'I' },
         { "L. Language Configuration", 'L' },
         { "M. Menu Editor", 'M' },
         { "N. Network Configuration", 'N' },
@@ -380,9 +378,6 @@ int WInitApp::main(int argc, char** argv) {
       break;
     case 'A':
       edit_archivers(config);
-      break;
-    case 'I':
-      instance_editor();
       break;
     case 'L':
       edit_languages(config);

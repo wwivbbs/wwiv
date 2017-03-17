@@ -163,6 +163,20 @@ private:
 };
 
 
+static wwivd_matrix_entry_t CreateWWIVMatrixEntry() {
+  wwivd_matrix_entry_t e{};
+  e.key = 'W';
+  e.description = "WWIV";
+  e.name = "WWIV";
+  e.local_node = 1;
+  e.require_ansi = false;
+  e.start_node = 2;
+  e.end_node = 4;
+  e.telnet_cmd = "./bbs -XT -H@H -N@N";
+  e.ssh_cmd = "./bbs -XS -H@H -N@N";
+  return e;
+}
+
 void wwivd_ui(const wwiv::sdk::Config& config) {
 
   wwivd_config_t c{};
@@ -173,17 +187,14 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
     c.http_address = "127.0.0.1";
     c.binkp_cmd = "./networkb --receive --handle=@H";
 
-    wwivd_matrix_entry_t e{};
-    e.key = 'W';
-    e.description = "WWIV";
-    e.name = "WWIV";
-    e.local_node = 1;
-    e.require_ansi = false;
-    e.start_node = 2;
-    e.end_node = 4;
-    e.telnet_cmd = "./bbs -XT -H@H -N@N";
-    e.ssh_cmd = "./bbs -XS -H@H -N@N";
+    wwivd_matrix_entry_t e = CreateWWIVMatrixEntry();
+    c.bbses.push_back(e);
+  }
 
+  if (c.bbses.empty()) {
+    // If we have no entries in the Matrix, then let's add
+    // a default entry for WWIV.
+    wwivd_matrix_entry_t e = CreateWWIVMatrixEntry();
     c.bbses.push_back(e);
   }
 
