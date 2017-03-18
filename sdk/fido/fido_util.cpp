@@ -209,12 +209,10 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
     unsigned char c = static_cast<unsigned char>(sc);
     if (c == 13) {
       wt.push_back(13);
-      wt.push_back(10);
       newline = true;
     } else if (c == 0x8d) {
       // FIDOnet style Soft CR
       wt.push_back(13);
-      wt.push_back(10);
       newline = true;
     } else if (c == 10) {
       // NOP
@@ -229,6 +227,24 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
       wt.push_back(c);
     }
   }
+
+  auto lines = SplitString(wt, "\r");
+  wt.clear();
+
+  for (const auto& line : lines) {
+    if (convert_control_codes) {
+      // According to FSC-0068. Kludge lines are not normally displayed
+      // when reading messages.
+      if (starts_with(line, "AREA:") || starts_with(line, "SEEN-BY: ")) {
+        wt.push_back(4);
+        wt.push_back('0');
+      }
+    }
+    wt.append(line);
+    wt.push_back(13);
+    wt.push_back(10);
+  }
+
   return wt;
 }
 
@@ -261,7 +277,12 @@ std::string WWIVToFidoText(const std::string& wt) {
       line = line.substr(2);
       if (code == '0') {
         if (starts_with(line, "MSGID:") || starts_with(line, "REPLY:") || starts_with(line, "PID:")) {
+          // Handle ^A Control Lines
           out << "\001" << line << "\r";
+        }
+        else if (starts_with(line, "AREA:") || starts_with(line, "SEEN-BY: ")) {
+          // Handle kludge lines that do not start with ^A
+          out << line << "\r";
         }
         // Skip all ^D0 lines other than ones we know.
         continue;

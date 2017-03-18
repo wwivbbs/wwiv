@@ -113,6 +113,12 @@ TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine) {
   EXPECT_EQ("\004""0PID\r\nWorld\r\n", wwiv);
 }
 
+TEST_F(FidoUtilTest, FidoToWWIVText_SeenBy) {
+  string fido = "Hello\rSEEN-BY: 1/1\rWorld\r";
+  string wwiv = FidoToWWIVText(fido);
+  EXPECT_EQ("Hello\r\n\004""0SEEN-BY: 1/1\r\nWorld\r\n", wwiv);
+}
+
 TEST_F(FidoUtilTest, FidoToWWIVText_ControlLine_DoNotConvert) {
   string fido = "\001""PID\rWorld\r";
   string wwiv = FidoToWWIVText(fido, false);
@@ -135,6 +141,12 @@ TEST_F(FidoUtilTest, WWIVToFido_MsgId) {
   string wwiv = "a\r\nb\r\n\004""0MSGID: 1234 5678\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r\001MSGID: 1234 5678\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_SeenBy) {
+  string wwiv = "a\r\nb\r\n\004""0SEEN-BY: 1/1\r\n";
+  string fido = WWIVToFidoText(wwiv);
+  EXPECT_EQ("a\rb\rSEEN-BY: 1/1\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_Reply) {
