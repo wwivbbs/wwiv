@@ -126,8 +126,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   return true;
 }
 
-static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
-  auto info = GetNetInfoFileInfo(p);
+static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetInfoFileInfo info) {
   if (!info.valid) {
     LOG(ERROR) << "NetInfoFileInfo is not valid";
     return write_wwivnet_packet(DEAD_NET, net, p);
@@ -152,6 +151,21 @@ static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
   file.Write(info.data);
   LOG(INFO) << "  + Got " << info.filename;
   return true;
+}
+
+static bool handle_net_info_file(const net_networks_rec& net, Packet& p) {
+  auto info = GetNetInfoFileInfo(p);
+  return write_net_received_file(net, p, info);
+}
+
+static bool handle_sub_list(const net_networks_rec& net, Packet& p) {
+  // Handle legacy type 9 main_type_sub_list (SUBS.LST)
+  NetInfoFileInfo info{};
+  info.filename = SUBS_LST;
+  info.data = p.text;
+  info.valid = true;
+  info.overwrite = true;
+  return write_net_received_file(net, p, info);
 }
 
 static bool handle_packet(
@@ -222,6 +236,9 @@ static bool handle_packet(
       return handle_sub_list_info_response(context, p);
     }
 
+  case main_type_sub_list:
+    return handle_sub_list(context.net, p);
+
   // Legacy numeric only post types.
   case main_type_post:
   case main_type_pre_post:
@@ -234,7 +251,6 @@ static bool handle_packet(
   case main_type_net_edit:
 
   // *.### support
-  case main_type_sub_list:
   case main_type_group_bbslist:
   case main_type_group_connect:
   case main_type_group_info:

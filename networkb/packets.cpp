@@ -23,6 +23,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "networkb/net_util.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
@@ -170,7 +171,16 @@ static string NetInfoFileName(uint16_t type) {
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   NetInfoFileInfo info{};
+  if (p.nh.main_type != main_type_net_info) {
+    // Everything else here should be a main_type_net_info
+    LOG(ERROR) << "GetNetInfoFileInfo can't handle type: "
+      << main_type_name(p.nh.main_type) << " (" << p.nh.main_type << ")";
+    info.valid = false;
+    return info;
+  }
+
   if (p.nh.minor_type != net_info_file) {
+    // Handle the file types we know about using minor_type
     info.filename = NetInfoFileName(p.nh.minor_type);
     info.data = p.text;
     info.valid = true;
