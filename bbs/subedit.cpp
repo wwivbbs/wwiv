@@ -500,7 +500,9 @@ static void insert_sub(int n) {
     return;
   }
 
-  update_conf(ConferenceType::CONF_SUBS, &nconv, nullptr, CONF_UPDATE_INSERT);
+  // Don't insert the sub into all conferences. Not sure why wwiv used
+  // to do this here.
+  // update_conf(ConferenceType::CONF_SUBS, &nconv, nullptr, CONF_UPDATE_INSERT);
 
   n = static_cast<int>(nconv);
 
