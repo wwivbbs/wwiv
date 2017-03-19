@@ -1,12 +1,14 @@
 readme-wwiv.txt
 
-                *** Attention Windows 10 ***
+                *** Attention Windows Users ***
 
-    You need to download the Visual Studio 2015 Update 1 redistributable
-    files from:
-    https://www.microsoft.com/en-us/download/details.aspx?id=49984
-    and install this package before using WWIV (or any other software
-    compiled with Visual Studio 2015).
+    You may need to download the Visual Studio 2017 redistributable
+    files. Since these are ~15M in size, instead of bundling these
+    into every binary, we're putting them here:
+    https://storage.googleapis.com/build-iv/redist/vc2017/vcredist_x86.exe
+    
+    If you see errors about missing DLL files, you may need to install this
+    package before using WWIV (init.exe, bbs.exe, everything).
 
 
 WWIV 5.3 Getting Started
@@ -41,10 +43,10 @@ DEVELOPMENT INFORMATION
 ~~~~~~~~~~~~~~~~~~~~~~~
 
     WWIV is compiled with the following compilers:
-        MS Visual C++ 2015 Community Edition.
-        GCC 4.9 on Debian 8 Linux
+        MS Visual C++ 2017 Community Edition.
+        GCC 6.3 on Debian 9 Linux
 
-    I recommend using MSVC 2015 Community Edition on Windows.
+    I recommend using MSVC 2017 Community Edition on Windows.
     It is available for free.
 
 

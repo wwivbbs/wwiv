@@ -31,6 +31,24 @@ What's New in WWIV 5.3
   "wwivutil status qscan [set|get]". You can set or get the qscan value
   in status.dat.
 - Removed internal menueditor, use the one in init if needed.
+* Upgraded compilers to MSVC 2017 and GCC 6.2.
++ handling type main_type_sub_list is implemented now, so receiving
+  SUBS.LST from netup for WWIVnet type networks should work in net53.
+* FTN KLUDGE lines are now hidden for FTN networks.
+* Heart codes are stripped on outbound FTN messages now.
++ WWIV now compiles and runs on OpenIndiana (an Open Solaris fork)
+  Thanks to apam for the code!
+* Many FTN fixes. Also points may now work.
++ WWIVD now runs on Windows.  It has an initial version of a shuttle
+  or matrix logon support.
+- Removed internal usereditor, use the one in init if needed.
++ WWIVd now exports connection information to HTTP as a JSON object.
+  on the http port defined on init, URL: "/status"
+  Example output:
+    { "status": [ { "num_instances" : 3 }, { "used_instances": 0 } ] }
+
+
+
 
 
 What's New in WWIV 5.2 (2016)
