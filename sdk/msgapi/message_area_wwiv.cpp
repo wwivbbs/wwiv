@@ -217,7 +217,8 @@ bool WWIVMessageArea::ParseMessageText(
     return false;
   }
 
-  vector<string> lines = SplitString(raw_text, "\n");
+  // Use the 3 arg form of split string so we don't strip blank lines.
+  vector<string> lines = SplitString(raw_text, "\n", false);
   auto it = lines.begin();
   if (it == std::end(lines)) {
     VLOG(1) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;

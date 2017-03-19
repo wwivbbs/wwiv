@@ -270,7 +270,7 @@ public:
 
     TextFile text_file(filename, "r");
     string raw_text = text_file.ReadFileIntoString();
-    vector<string> lines = wwiv::strings::SplitString(raw_text, "\n");
+    vector<string> lines = wwiv::strings::SplitString(raw_text, "\n", false);
 
     unique_ptr<Message> msg(area->CreateMessage());
     msg->header()->set_from_system(0);
@@ -522,7 +522,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
       continue;
     }
     cout << string(72, '-') << endl;
-    std::vector<string> lines = wwiv::strings::SplitString(text->text(), "\n");
+    std::vector<string> lines = wwiv::strings::SplitString(text->text(), "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
         continue;

@@ -47,6 +47,8 @@ time_t fido_to_daten(std::string d);
 std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a);
 std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a);
 std::string to_zone_net_node_point(const wwiv::sdk::fido::FidoAddress& a);
+
+/** Splits a message to find a specific line. This will strip blank lines. */
 std::vector<std::string> split_message(const std::string& string);
 
 std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes = true);

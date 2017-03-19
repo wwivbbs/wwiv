@@ -101,6 +101,12 @@ TEST_F(FidoUtilTest, FidoToWWIVText_Basic) {
   EXPECT_EQ("Hello\r\nWorld\r\n", wwiv);
 }
 
+TEST_F(FidoUtilTest, FidoToWWIVText_BlankLines) {
+  string fido = "Hello\r\r\rWorld\r";
+  string wwiv = FidoToWWIVText(fido);
+  EXPECT_EQ("Hello\r\n\r\n\r\nWorld\r\n", wwiv);
+}
+
 TEST_F(FidoUtilTest, FidoToWWIVText_SoftCr) {
   string fido = "a\x8d""b\r";
   string wwiv = FidoToWWIVText(fido);
@@ -129,6 +135,12 @@ TEST_F(FidoUtilTest, WWIVToFido_Basic) {
   string wwiv = "a\r\nb\r\n";
   string fido = WWIVToFidoText(wwiv);
   EXPECT_EQ("a\rb\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_BlankLines) {
+  string wwiv = "a\r\n\r\n\r\nb\r\n";
+  string fido = WWIVToFidoText(wwiv);
+  EXPECT_EQ("a\r\r\rb\r", fido);
 }
 
 TEST_F(FidoUtilTest, WWIVToFido_MalformedControlLine) {

@@ -228,7 +228,7 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
     }
   }
 
-  auto lines = SplitString(wt, "\r");
+  auto lines = SplitString(wt, "\r", false);
   wt.clear();
 
   for (const auto& line : lines) {
