@@ -156,10 +156,14 @@ public:
     }
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+  void set_curses_io(CursesIO* io) {
+    io_ = io;
+  }
 private:
   wwivd_config_t& c_;
   int x_ = 0;
   int y_ = 0;
+  CursesIO* io_ = nullptr;
 };
 
 

@@ -83,7 +83,12 @@ void EditItems::Run() {
   const int size = static_cast<int>(items_.size());
   Display();
   for (;;) {
+    const auto* item = items_[cp];
+    if (!item->help_text().empty()) {
+      io_->footer()->ShowContextHelp(item->help_text());
+    }
     int i1 = items_[cp]->Run(window_);
+    io_->footer()->SetDefaultFooter();
     if (i1 == PREV) {
       if (--cp < 0) {
         cp = size - 1;
@@ -98,6 +103,15 @@ void EditItems::Run() {
       Display();
       return;
     }
+  }
+}
+
+void EditItems::set_curses_io(CursesIO* io, CursesWindow* window) { 
+  io_ = io; 
+  window_ = window; 
+
+  for (const auto& item : items_) {
+    item->set_curses_io(io);
   }
 }
 

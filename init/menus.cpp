@@ -221,11 +221,14 @@ public:
     window->PutsXY(x_, y_, "[Enter to Edit]");
   }
 
+  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
+
 private:
   vector<MenuRec>& menu_items_;
   const std::string title_;
   int x_ = 0;
   int y_ = 0;
+  CursesIO* io_;
 };
 
 static void edit_menu(const std::string& menu_dir, const std::string& menu_name) {

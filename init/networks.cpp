@@ -161,7 +161,7 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 class FidoNetworkConfigSubDialog : public BaseEditItem {
 public:
   FidoNetworkConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width, net_networks_rec& d)
-      : BaseEditItem(x, y, 1), bbsdir_(bbsdir), title_(title), width_(width), d_(d), x_(x), y_(y) {};
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), d_(d), x_(x), y_(y) {};
   virtual ~FidoNetworkConfigSubDialog() {}
 
   virtual int Run(CursesWindow* window) {
@@ -181,15 +181,15 @@ public:
       constexpr int MAX_STRING_LEN = 56;
       fido_network_config_t* n = &d_.fido;
       int y = 1;
-      
+
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->nodelist_base, false));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->temp_inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->temp_outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->netmail_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, d_.dir, n->bad_packets_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->temp_inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->temp_outbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->outbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->netmail_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line, false));
 
       dy_start_ = y;
@@ -264,14 +264,17 @@ public:
     return 2;
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
+
 private:
-  const std::string bbsdir_;
+  const std::string netdir_;
   const std::string title_;
   int width_ = 40;
   net_networks_rec& d_;
   int x_ = 0;
   int y_ = 0;
   int dy_start_ = 0;
+  CursesIO* io_ = nullptr;
 };
 
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
@@ -331,7 +334,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 class FidoPacketConfigSubDialog: public BaseEditItem {
 public:
   FidoPacketConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width, const Config& config, net_networks_rec& d)
-    : BaseEditItem(x, y, 1), bbsdir_(bbsdir), title_(title), width_(width), config_(config), d_(d), x_(x), y_(y) {};
+    : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), config_(config), d_(d), x_(x), y_(y) {};
   virtual ~FidoPacketConfigSubDialog() {}
 
   virtual int Run(CursesWindow* window) {
@@ -403,14 +406,17 @@ public:
     }
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
+
 private:
-  const std::string bbsdir_;
+  const std::string netdir_;
   const std::string title_;
   int width_ = 40;
   const Config& config_;
   net_networks_rec& d_;
   int x_ = 0;
   int y_ = 0;
+  CursesIO* io_;
 };
 
 

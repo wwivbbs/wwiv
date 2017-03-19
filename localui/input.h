@@ -92,11 +92,15 @@ public:
 
   virtual int Run(CursesWindow* window) = 0;
   virtual void Display(CursesWindow* window) const = 0;
+  virtual void set_curses_io(CursesIO* io) = 0;
+  void set_help_text(const std::string& help_text) { help_text_ = help_text; }
+  const std::string& help_text() const { return help_text_; }
 
 protected:
   int x_;
   int y_;
   int maxsize_;
+  std::string help_text_;
 };
 
 
@@ -140,6 +144,11 @@ protected:
 
   const T data() const { return data_; }
   void set_data(T data) { data_ = data; }
+  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
+
+  CursesIO* io() const { return io_; }
+
+  CursesIO* io_ = nullptr;
   T data_;
   displayfn display_;
 };
@@ -477,17 +486,21 @@ public:
   virtual int Run(CursesWindow* window);
   virtual void Display(CursesWindow* window) const;
   void set_displayfn(CustomEditItem::displayfn f) { display_ = f; }
+  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
 
 private:
   prefn to_field_;
   postfn from_field_;
   displayfn display_;
+  CursesIO* io_ = nullptr;
 };
 
 class FilePathItem : public EditItem<char*> {
 public:
   FilePathItem(int x, int y, int maxsize, const std::string& base, char* data) 
-    : EditItem<char*>(x, y, maxsize, data), base_(base) {}
+    : EditItem<char*>(x, y, maxsize, data), base_(base) {
+    help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
+  }
   virtual ~FilePathItem() {}
 
   virtual int Run(CursesWindow* window) override {
@@ -520,7 +533,9 @@ private:
 class StringFilePathItem: public EditItem<std::string&> {
 public:
   StringFilePathItem(int x, int y, int maxsize, const std::string& base, std::string& data)
-    : EditItem<std::string&>(x, y, maxsize, data), base_(base) {}
+    : EditItem<std::string&>(x, y, maxsize, data), base_(base) {
+    help_text_ = wwiv::strings::StrCat("Enter an absolute path or path relative to: '", base, "'");
+  }
   virtual ~StringFilePathItem() {}
 
   virtual int Run(CursesWindow* window) override {
@@ -593,7 +608,7 @@ public:
     return item;
   }
 
-  void set_curses_io(CursesIO* io, CursesWindow* window) { io_ = io; window_ = window; }
+  void set_curses_io(CursesIO* io, CursesWindow* window);
   CursesWindow* window() const { return window_; }
   size_t size() const { return items_.size(); }
 
