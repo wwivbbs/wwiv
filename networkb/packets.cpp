@@ -171,8 +171,8 @@ static string NetInfoFileName(uint16_t type) {
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   NetInfoFileInfo info{};
-  if (p.nh.main_type != main_type_net_info) {
-    // Everything else here should be a main_type_net_info
+  if (p.nh.main_type != main_type_net_info && p.nh.minor_type != net_info_file) {
+    // Everything  here should be a main_type_net_info or net_info_file
     LOG(ERROR) << "GetNetInfoFileInfo can't handle type: "
       << main_type_name(p.nh.main_type) << " (" << p.nh.main_type << ")";
     info.valid = false;

@@ -65,7 +65,7 @@ protected:
     net.sysnum = 0;
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, config, network_dir);
     std::unique_ptr<Callout> dummy_callout = std::make_unique<Callout>(net);
-    BinkP::received_transfer_file_factory_t null_factory = [](const string& network_name, const string& filename) { 
+    BinkP::received_transfer_file_factory_t null_factory = [](const string&, const string& filename) { 
       return new InMemoryTransferFile(filename, "");
     };
     dummy_config->callouts()["wwivnet"] = std::move(dummy_callout);
@@ -107,10 +107,16 @@ TEST(NodeFromAddressTest, SingleAddress) {
 
 TEST(NodeFromAddressTest, MultipleAddresses) {
   const string address = "1:369/23@fidonet 20000:20000/1234@foonet 20000:369/24@dorknet";
+  EXPECT_EQ("20000:20000/1234@foonet", ftn_address_from_address_list(address, "foonet"));
   EXPECT_EQ(1234, node_number_from_address_list(address, "foonet"));
   EXPECT_EQ(WWIVNET_NO_NODE, node_number_from_address_list(address, "wwivnet"));
   EXPECT_EQ(WWIVNET_NO_NODE, node_number_from_address_list(address, "fidonet"));
   EXPECT_EQ(WWIVNET_NO_NODE, node_number_from_address_list(address, "dorknet"));
+}
+
+TEST(NodeFromAddressTest, MultipleAddresses_SameNetwork) {
+  const string address = "1:369/0@coolnet 1:369/23@coolnet";
+  EXPECT_EQ("1:369/23@coolnet", ftn_address_from_address_list(address, "coolnet"));
 }
 
 TEST(NetworkNameFromAddressTest, SingleAddress) {

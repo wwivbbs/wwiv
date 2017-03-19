@@ -29,7 +29,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-
+#include "sdk/fido/fido_address.h"
 
 using std::string;
 using std::vector;
@@ -44,14 +44,25 @@ namespace net {
 std::string ftn_address_from_address_list(const string& network_list, const string& network_name) {
   VLOG(1) << "       ftn_address_from_address_list: '" << network_list << "'; network_name: " << network_name;
   vector<string> v = SplitString(network_list, " ");
+  string first;
   for (auto s : v) {
     StringTrim(&s);
     VLOG(1) << "       ftn_address_from_address_list(s): '" << s << "'";
     if (ends_with(s, StrCat("@", network_name))) {
+      if (first.empty()) { first = s; }
+      try {
+        // Let's ensure we have a well formed FidoAddress.
+        wwiv::sdk::fido::FidoAddress a(s);
+        // Check for zero zone, node or net.
+        if (a.net() == 0 || a.node() == 0 || a.zone() == 0) { continue; }
+      }
+      catch (const wwiv::sdk::fido::bad_fidonet_address& e) {
+        LOG(WARNING) << "Caught bad_fidonet_address: " << e.what();
+      }
       return s;
     }
   }
-  return "";
+  return first;
 }
 
 // Returns the single network name from the address list (only used when we
