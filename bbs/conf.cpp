@@ -645,29 +645,17 @@ int modify_conf(ConferenceType conftype,  int which) {
     case 'M':
       bout.nl();
       changed = true;
-      c.status &= ~conf_status_ansi;
-      bout << "|#5Require ANSI for this conference? ";
-      if (yesno()) {
-        c.status |= conf_status_ansi;
-      }
+      c.status ^= conf_status_ansi;
       break;
     case 'N':
       bout.nl();
       changed = true;
-      c.status &= ~conf_status_wwivreg;
-      bout << "|#5Require WWIV RegNum for this conference? ";
-      if (yesno()) {
-        c.status |= conf_status_wwivreg;
-      }
+      c.status ^= conf_status_wwivreg;
       break;
     case 'O':
       bout.nl();
       changed = true;
-      c.status &= ~conf_status_offline;
-      bout << "|#5Make this conference available to users? ";
-      if (!noyes()) {
-        c.status |= conf_status_offline;
-      }
+      c.status ^= conf_status_offline;
       break;
     case 'S':
       ok = false;
