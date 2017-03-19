@@ -138,12 +138,15 @@ bool write_wwivnet_packet(
   }
   File file(net.dir, filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+    LOG(ERROR) << "Error while writing packet: " << net.dir << filename << "Unable to open file.";
     return false;
   }
   file.Seek(0L, File::Whence::end);
   auto num = file.Write(&p.nh, sizeof(net_header_rec));
   if (num != sizeof(net_header_rec)) {
     // Let's fail now since we didn't write this right.
+    LOG(ERROR) << "Error while writing packet: " << net.dir << filename 
+      << " num written (" << num << ") != net_header_rec size.";
     return false;
   }
   if (p.nh.list_len) {
