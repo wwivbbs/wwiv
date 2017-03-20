@@ -29,6 +29,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/stl.h"
+#include "core/version.h"
 
 using std::clog;
 using std::cout;
@@ -279,6 +280,7 @@ bool CommandLine::AddStandardArgs() {
 
 std::string CommandLine::GetHelp() const {
   std::ostringstream ss;
+  ss << program_name_ << " [" << wwiv_version << beta_version << "]" << endl << endl;
   ss << "Usage:" << endl;
   ss << program_name_ << " [args]";
   if (!commands_allowed_.empty()) {
