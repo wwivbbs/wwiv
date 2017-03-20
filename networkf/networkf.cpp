@@ -942,8 +942,8 @@ bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const ne
     return false;
   }
 
-  // todo - actually we need a new way of making hte ftn packet that works right
-  // with netmaol
+  // todo - actually we need a new way of making the ftn packet that works right
+  // with netmail
   auto packet_config = fido_callout.packet_config_for(dest);
   FidoAddress route_to = find_route_to(dest, fido_callout, packet_config);
   if (create_ftn_packet_and_bundle(net_cmdline, fido_callout, dest, route_to, net, p, bundlename)) {
