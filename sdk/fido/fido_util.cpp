@@ -265,7 +265,12 @@ std::string WWIVToFidoText(const std::string& wt) {
   const auto lines = SplitString(temp, "\r", false);
   std::ostringstream out;
   for (auto line : lines) {
-    if (!line.empty() && line.front() == 0x04 && line.size() > 2) {
+    if (line.empty()) {
+      // Handle the empty line case first. Everything else can assume non-empty now.
+      out << "\r";
+      continue;
+    }
+    if (line.front() == 0x04 && line.size() > 2) {
       // WWIV style control code.
       char code = line.at(1);
       if (code < '0' || code > '9') {
@@ -288,14 +293,22 @@ std::string WWIVToFidoText(const std::string& wt) {
         continue;
       }
     }
-    if (!line.empty()) {
-      for (unsigned int i = 0; i < line.length(); i++) {
-        if (line[i] == 0x03) {
-          i++;
-          continue;
-        }
-        out << line[i];
+    if (line.back() == 0x01 /* CA */) {
+      // A line ending in ^A means it soft-wrapped.
+      line.pop_back();
+    }
+    if (line.front() == 0x02 /* CB */) {
+      // Starting with CB is centered. Let's just strip it.
+      line = line.substr(1);
+    }
+
+    // Strip out WWIV color codes.
+    for (unsigned int i = 0; i < line.length(); i++) {
+      if (line[i] == 0x03) {
+        i++;
+        continue;
       }
+      out << line[i];
     }
     out << "\r";
   }

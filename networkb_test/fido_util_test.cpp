@@ -173,6 +173,18 @@ TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZ) {
   EXPECT_EQ("a\r", fido);
 }
 
+TEST_F(FidoUtilTest, WWIVToFido_RemovesControlA) {
+  string wwiv = "a\r\nb\001\r\n";
+  string fido = WWIVToFidoText(wwiv);
+  EXPECT_EQ("a\rb\r", fido);
+}
+
+TEST_F(FidoUtilTest, WWIVToFido_RemovesControlB) {
+  string wwiv = "a\r\n\002b\r\n";
+  string fido = WWIVToFidoText(wwiv);
+  EXPECT_EQ("a\rb\r", fido);
+}
+
 TEST_F(FidoUtilTest, MkTime) {
   auto now = time(nullptr);
   auto tm = localtime(&now);
