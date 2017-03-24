@@ -291,8 +291,8 @@ void post(const PostData& post_data) {
       FtnMessageDupe dupe(*a()->config());
       if (dupe.IsInitialized()) {
         try {
-          wwiv::sdk::fido::FidoAddress a(a()->current_net().fido.fido_address);
-          auto new_msgid = dupe.CreateMessageID(a);
+          wwiv::sdk::fido::FidoAddress addr(a()->current_net().fido.fido_address);
+          auto new_msgid = dupe.CreateMessageID(addr);
           ParsedMessageText pmt("\004""0", data.text);
           const auto reply_control_line = StrCat("\004", "0REPLY: ", msgid);
           pmt.add_control_line(StrCat("\004""0MSGID: ", new_msgid));
