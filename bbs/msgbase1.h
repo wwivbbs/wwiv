@@ -23,7 +23,7 @@
 #include "sdk/vardec.h"
 #include "sdk/subxtr.h"
 
-class PostReplyInfo {
+class PostReplyToData {
 public:
   std::string text;
   std::string name;
@@ -32,9 +32,21 @@ public:
 
 class PostData {
 public:
-  explicit PostData(const PostReplyInfo& i) : reply(i) {}
-  PostData() : PostData(PostReplyInfo()) {}
-  PostReplyInfo reply;
+  explicit PostData(const PostReplyToData& i) : reply_to(i) {}
+  PostData() : PostData(PostReplyToData()) {}
+  PostReplyToData reply_to;
+};
+
+// TODO(rushfan): Move this to sdk/
+class ParsedMessageText {
+public:
+  ParsedMessageText(const std::string& control_char, const std::string& text);
+  bool add_control_line_after(const std::string& near_line, const std::string& line);
+  bool add_control_line(const std::string& line);
+  std::string to_string() const;
+private:
+  const std::string control_char_;
+  std::vector<std::string> lines_;
 };
 
 void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);

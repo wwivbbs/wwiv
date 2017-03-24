@@ -46,6 +46,9 @@
     <ClCompile Include="makeansi_test.cpp">
       <Filter>Tests</Filter>
     </ClCompile>
+    <ClCompile Include="msgbase1_test.cpp">
+      <Filter>Tests</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Tests">

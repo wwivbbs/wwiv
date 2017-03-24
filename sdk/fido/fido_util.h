@@ -64,6 +64,7 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
 
 bool exists_bundle(const wwiv::sdk::Config& config, const net_networks_rec& net);
 bool exists_bundle(const std::string& dir);
+std::string tz_offset_from_utc();
 
 enum class flo_directive : char {
   truncate_file = '#',

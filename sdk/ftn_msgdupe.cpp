@@ -54,6 +54,7 @@ bool FtnMessageDupe::Load() {
   DataFile<uint64_t> file(datadir_, MSGDUPE_DAT,
       File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
+    LOG(ERROR) << "Unable to initialize FtnDupe: Unable to create file.";
     return false;
   }
 
@@ -64,6 +65,7 @@ bool FtnMessageDupe::Load() {
   }
   std::vector<uint64_t> dupes(num_records);
   if (!file.Read(&dupes[0], num_records)) {
+    LOG(ERROR) << "Unable to initialize FtnDupe: Read Failed";
     return false;
   }
   for (const auto& dupe : dupes) {
@@ -86,6 +88,17 @@ bool FtnMessageDupe::Save() {
 }
 
 const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& a) {
+  if (!initialized_) {
+    string address_string;
+    if (a.point() != 0) {
+      address_string = to_zone_net_node_point(a);
+    }
+    else {
+      address_string = to_zone_net_node(a);
+    }
+    return StrCat(address_string, " DEADBEEF");
+  }
+
   DataFile<uint64_t> file(datadir_, MSGID_DAT,
     File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!file) {

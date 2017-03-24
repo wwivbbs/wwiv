@@ -108,6 +108,7 @@
     <ClCompile Include="datetime_test.cpp" />
     <ClCompile Include="fido\fido_address_test.cpp" />
     <ClCompile Include="fido\nodelist_test.cpp" />
+    <ClCompile Include="fido_util_test.cpp" />
     <ClCompile Include="msgapi_test.cpp" />
     <ClCompile Include="names_test.cpp" />
     <ClCompile Include="network_test.cpp" />

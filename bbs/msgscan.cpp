@@ -817,7 +817,7 @@ void HandleMessageReply(int &nMessageNumber) {
   if (!m.title.empty()) {
     to_char_array(irt, m.title);
   }
-  PostReplyInfo r;
+  PostReplyToData r;
   r.name = m.from_user_name;
   r.title = m.title;
   r.text = m.message_text;

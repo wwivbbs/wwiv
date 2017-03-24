@@ -647,13 +647,13 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
       vh.to_user_name = "All";
     }
 
-    string msgid;
     FtnMessageDupe dupe(config);
-    if (!dupe.IsInitialized()) {
-      LOG(ERROR) << "Unable to initialize FtnDupe";
-      msgid = StrCat(to_zone_net_node(from_address), " DEADBEEF");
-    } else {
+    auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(raw_text);
+    bool needs_msgid = false;
+    if (msgid.empty()) {
+      // Create a new MSGID if the BBS didn't put one in there already.
       msgid = dupe.CreateMessageID(from_address);
+      needs_msgid = true;
     }
 
     // TODO(rushfan): need to add in INTL for netmails, and all that nonsense.
@@ -666,12 +666,15 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     }
     text << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
       << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
-    if (!msgid.empty()) {
+    if (needs_msgid) {
       text << "\001MSGID: " << msgid << "\r";
     }
     // Implement FTS-5003. [http://ftsc.org/docs/fts-5003.001]
     // All outbound WWIV messages are always CP437.
     text << "\001CHRS: CP437 2\r";
+    
+    // Implement FRL-1004. [http://ftsc.org/docs/frl-1004.002]
+    text << "\001TZUTC: " << tz_offset_from_utc() << "\r";
 
     // TODO(rushfan): We should rip through the bbs_text here.
     // and add in any special kludges like ^AREPLY here.

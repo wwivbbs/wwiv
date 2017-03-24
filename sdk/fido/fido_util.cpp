@@ -478,6 +478,24 @@ bool exists_bundle(const std::string& dir) {
   return false;
 }
 
+/** 
+ * Display ISO 8601 offset from UTC in timezone
+ * (1 minute=1, 1 hour=100)
+ * If timezone cannot be determined, no characters.
+ */
+std::string tz_offset_from_utc() {
+  auto now = time(nullptr);
+  auto tm = localtime(&now);
+
+  char buf[1024];
+  auto res = strftime(buf, sizeof(buf), "%z", tm);
+  if (res <= 0) {
+    LOG(ERROR) << "Unable to create packet name from strftime";
+    to_char_array(buf, "-0800");
+  }
+  return buf;
+}
+
 static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std::string path) {
   TextFile file(path, "r");
   if (!file.IsOpen()) {

@@ -9,6 +9,7 @@ set(test_sources
   config_test.cpp
   contact_test.cpp
   datetime_test.cpp
+  fido_util_test.cpp
   msgapi_test.cpp
   names_test.cpp
   network_test.cpp

@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <string>
 #include "core/file.h"
+#include "core/log.h"
 #include "core/os.h"
 #include "gtest/gtest.h"
 
@@ -8,6 +9,9 @@ using std::string;
 
 int main(int argc, char* argv[]) {
   testing::InitGoogleTest(&argc, argv);
+  wwiv::core::Logger::Init(argc, argv);
+
+  tzset();
 
   const string tmpdir = wwiv::os::environment_variable("WWIV_TEST_TEMPDIR");
   if (tmpdir.empty()) {

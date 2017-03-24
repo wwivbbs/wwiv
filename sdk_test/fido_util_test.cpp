@@ -24,6 +24,7 @@
 #include "sdk/fido/fido_address.h"
 
 #include <cstdint>
+#include <ctime>
 #include <memory>
 #include <string>
 
@@ -315,4 +316,17 @@ TEST_F(FidoUtilTest, FloFile) {
 TEST_F(FidoUtilTest, FidoToDaten) {
   auto t = fido_to_daten("23 Dec 16  20:53:38");
   EXPECT_GT(t, 0);
+}
+
+#if (_MSC_VER >= 1900)
+#define timezone _timezone
+#endif  // MSV_VER && !timezone
+
+TEST_F(FidoUtilTest, TzOffsetFromUTC) {
+  char s[100];
+  auto t = time(nullptr);
+  auto tm = localtime(&t);
+  ASSERT_NE(0UL, strftime(s, sizeof(s), "%z", tm));
+  string ss(s);
+  EXPECT_EQ(ss, tz_offset_from_utc());
 }
