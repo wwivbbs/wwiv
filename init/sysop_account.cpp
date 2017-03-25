@@ -89,7 +89,7 @@ void create_sysop_account(wwiv::sdk::Config& config) {
     }
 
   }
-  UserManager usermanager(config.datadir(), sizeof(userrec), config.config()->maxusers);
+  UserManager usermanager(config);
 
   int y = 1;
 

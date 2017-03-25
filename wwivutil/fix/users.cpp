@@ -187,8 +187,7 @@ int FixUsersCommand::Execute() {
     return 1;
 	}
 
-	UserManager userMgr(config()->config()->datadir(), sizeof(userrec), 
-      config()->config()->config()->maxusers);
+	UserManager userMgr(*config()->config());
   LOG(INFO) << "Checking USER.LST... found " << userMgr.num_user_records() << " user records.";
   LOG(INFO) << "TBD: Check for trashed user recs.";
 	if (userMgr.num_user_records() > config()->config()->config()->maxusers) {

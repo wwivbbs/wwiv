@@ -114,7 +114,7 @@ bool handle_email_byname(Context& context, Packet& p) {
   }
   
   p.text = text;
-  return handle_email(context, user_number, p);
+  return handle_email(context, static_cast<uint16_t>(user_number), p);
 }
 
 

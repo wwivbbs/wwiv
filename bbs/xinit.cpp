@@ -432,8 +432,7 @@ bool Application::ReadConfig() {
   }
 
   // initialize the user manager
-  const auto config = config_->config();
-  user_manager_.reset(new UserManager(config->datadir, config->userreclen, config->maxusers));
+  user_manager_.reset(new UserManager(*config_));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
   
   IniFile ini(FilePath(GetHomeDir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});

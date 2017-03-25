@@ -23,6 +23,7 @@
 #include <sstream>
 #include <cstring>
 #include <string>
+#include "sdk/config.h"
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 
@@ -43,6 +44,7 @@ class UserManager {
  public:
    UserManager() = delete;
    UserManager(std::string data_directory, int userrec_length, int max_number_users);
+   UserManager(const wwiv::sdk::Config& config);
    virtual ~UserManager();
    int num_user_records() const;
    bool readuser_nocache(User *pUser, int user_number);

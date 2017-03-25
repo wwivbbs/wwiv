@@ -166,7 +166,7 @@ static bool IsUserDeleted(const User& user) {
 static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   Config config(bbsdir);
   {
-    UserManager usermanager(config.datadir(), sizeof(userrec), config.config()->maxusers);
+    UserManager usermanager(config);
     auto num_users = usermanager.num_user_records();
     for (int n = 1; n <= num_users; n++) {
       User u{};

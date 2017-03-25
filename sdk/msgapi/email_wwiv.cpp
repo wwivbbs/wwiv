@@ -32,6 +32,7 @@
 #include "sdk/filenames.h"
 #include "sdk/datetime.h"
 #include "sdk/user.h"
+#include "sdk/usermanager.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 
@@ -69,6 +70,22 @@ bool WWIVEmail::Close() {
   return true;
 }
 
+static bool modify_email_waiting(const Config& config, uint16_t email_usernum, int delta) {
+  UserManager um(config);
+  User u{};
+  if (!um.readuser(&u, email_usernum)) {
+    return false;
+  }
+  int newval = u.GetNumMailWaiting();
+  newval += delta;
+  if (newval < 0) { newval = 0; }
+  u.SetNumMailWaiting(newval);
+  if (!um.writeuser(&u, email_usernum)) {
+    return false;
+  }
+  return true;
+}
+
 static bool increment_email_counters(const string& root_directory, uint16_t email_usernum) {
   statusrec_t statusrec{};
   Config config(root_directory);
@@ -92,7 +109,8 @@ static bool increment_email_counters(const string& root_directory, uint16_t emai
   if (!file.Write(0, &statusrec)) {
     return false;
   }
-  return true;
+
+  return modify_email_waiting(config, email_usernum, 1);
 }
 
 bool WWIVEmail::AddMessage(const EmailData& data) {
@@ -149,6 +167,13 @@ int WWIVEmail::number_of_messages() {
     }
   }
   return count;
+}
+
+int WWIVEmail::number_of_email_records() {
+  if (!open_ || !mail_file_) {
+    return 0;
+  }
+  return mail_file_.number_of_records();
 }
 
 /** Temporary API to read the header from an email message. */
@@ -214,15 +239,12 @@ bool WWIVEmail::DeleteMessage(int email_number) {
     remove_link(m.msg);
   }
 
-  // TODO(rushfan): Needs to decide who's responsible for updating stats.
-  //if (m.tosys == 0) {
-  //  wwiv::sdk::User user;
-  //  a()->users()->readuser(&user, m.touser);
-  //  if (user.GetNumMailWaiting()) {
-  //    user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
-  //    a()->users()->writeuser(&user, m.touser);
-  //  }
-  //}
+  if (m.tosys == 0) {
+    Config config(root_directory_);
+    if (config.IsInitialized()) {
+      modify_email_waiting(config, m.touser, -1);
+    }
+  }
 
   // Clear out the email record and write it back to EMAIL.DAT
   // so the slot may be reused later.

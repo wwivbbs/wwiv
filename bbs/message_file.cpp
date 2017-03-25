@@ -137,7 +137,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
     break;
   case 2:
   {
-    int gati[128];
+    gati_t gati[128];
     memset(&gati, 0, sizeof(gati));
     unique_ptr<File> file(OpenMessageFile(fileName));
     if (file->IsOpen()) {
@@ -145,7 +145,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
         set_gat_section(*file.get(), section);
         int gatp = 0;
         int nNumBlocksRequired = static_cast<int>((text.length() + 511L) / MSG_BLOCK_SIZE);
-        int i4 = 1;
+        gati_t i4 = 1;
         while (gatp < nNumBlocksRequired && i4 < GAT_NUMBER_ELEMENTS) {
           if (gat[i4] == 0) {
             gati[gatp++] = i4;
@@ -153,7 +153,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
           ++i4;
         }
         if (gatp >= nNumBlocksRequired) {
-          gati[gatp] = -1;
+          gati[gatp] = static_cast<gati_t>(-1);
           for (int i = 0; i < nNumBlocksRequired; i++) {
             file->Seek(MSG_STARTING(gat_section) + MSG_BLOCK_SIZE * static_cast<long>(gati[i]), File::Whence::begin);
             file->Write((&text[i * MSG_BLOCK_SIZE]), MSG_BLOCK_SIZE);

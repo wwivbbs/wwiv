@@ -259,8 +259,6 @@ static bool handle_packet(
     LOG(ERROR) << "Writing message to dead.net for unhandled type: " << main_type_name(p.nh.main_type);
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
-
-  return false;
 }
 
 static bool handle_file(Context& context, const string& name) {

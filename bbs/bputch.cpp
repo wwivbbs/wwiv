@@ -223,7 +223,7 @@ int Output::bputch(char c, bool use_buffer) {
     } else {
       displayed = 1;
       localIO()->Putch(c);
-      current_line_.push_back({c, curatr});
+      current_line_.push_back({c, static_cast<uint8_t>(curatr)});
       x_++;
       const auto screen_width = a()->user()->GetScreenChars();
       // Wrap at screen_width

@@ -25,6 +25,8 @@
 #include <memory>
 #include "core/strings.h"
 #include "core/file.h"
+#include "core/log.h"
+#include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
@@ -40,6 +42,17 @@ namespace sdk {
 UserManager::UserManager(std::string data_directory, int userrec_length, int max_number_users)
   : data_directory_(data_directory), userrec_length_(userrec_length),
     max_number_users_(max_number_users), allow_writes_(true) {}
+
+UserManager::UserManager(const wwiv::sdk::Config& config)
+  : UserManager(config.config()->datadir, config.config()->userreclen, config.config()->maxusers) {
+  if (config.versioned_config_dat()) {
+    CHECK_EQ(config.config()->userreclen, sizeof(userrec)) 
+      << "For WWIV 5.2 or later, we expect the userrec length to match what's written\r\n"
+      << " in config.dat.\r\n"
+      << "Please use a version of this tool compiled with your WWIV BBS.\r\n"
+      << "If you see this message running against a WWIV 4.x instance, it is a bug.";
+  }
+}
 
 UserManager::~UserManager() { }
 

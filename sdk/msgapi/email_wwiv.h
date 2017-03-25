@@ -72,9 +72,11 @@ public:
 
   bool AddMessage(const EmailData& data);
 
-  /** Total number of email messages in the system. */
+  /** Total number of active email messages in the system. */
   int number_of_messages();
-  
+  /** Total number of email records in the system. This includes any deleted messages. */
+  int number_of_email_records();
+
   /** Temporary API to read the header from an email message. */
   bool read_email_header(int email_number, mailrec& m);
   /** Temporary API to read the header and text from an email message. */
