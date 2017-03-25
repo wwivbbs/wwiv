@@ -36,7 +36,6 @@ set(COMMON_SOURCES
  diredit.cpp
  dirlist.cpp
  dropfile.cpp
- dupphone.cpp
  email.cpp
  events.cpp
  execexternal.cpp
@@ -85,7 +84,6 @@ set(COMMON_SOURCES
  remote_socket_io.cpp
  shortmsg.cpp
  showfiles.cpp
- smallrecord.cpp
  sr.cpp
  srrcv.cpp
  srsend.cpp

@@ -19,8 +19,6 @@
 #ifndef __INCLUDED_WCONSTANTS_H__
 #define __INCLUDED_WCONSTANTS_H__
 
-#include <cstdint>
-
 // Defines for Q/Nscan Plus
 constexpr int QSCAN = 0;
 constexpr int NSCAN = 1;
@@ -28,14 +26,6 @@ constexpr int NSCAN = 1;
 constexpr int INST_FORMAT_OLD = 0;
 constexpr int INST_FORMAT_WFC = 1;
 constexpr int INST_FORMAT_LIST = 2;
-
-// Defines for UEDIT
-constexpr int UEDIT_NONE = 0;
-constexpr int UEDIT_FULLINFO = 1;
-constexpr int UEDIT_CLEARSCREEN = 2;
-
-
-constexpr int MAX_NUM_ACT = 100;
 
 constexpr int NUM_DOTS = 5;
 constexpr int FRAME_COLOR = 7;

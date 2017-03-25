@@ -843,6 +843,7 @@ void Application::check_phonenum() {
   }
 }
 
+// TODO(rushfan): maybe move this to SDK, but pass in a vector of numbers.
 void Application::create_phone_file() {
   phonerec p;
 

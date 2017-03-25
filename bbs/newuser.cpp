@@ -33,7 +33,6 @@
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/defaults.h"
-#include "bbs/dupphone.h"
 #include "bbs/defaults.h"
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
@@ -52,7 +51,6 @@
 #include "bbs/sr.h"
 #include "bbs/shortmsg.h"
 #include "bbs/stuffin.h"
-#include "bbs/smallrecord.h"
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
 #include "bbs/uedit.h"
@@ -67,6 +65,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
+#include "sdk/phone_numbers.h"
 
 using std::chrono::milliseconds;
 using std::string;
@@ -561,6 +560,18 @@ void input_ansistat() {
   }
 }
 
+// Inserts a record into NAMES.LST
+static void InsertSmallRecord(int user_number, const char *name) {
+  WStatus *pStatus = a()->status_manager()->BeginTransaction();
+  a()->names()->Add(name, user_number);
+  a()->names()->Save();
+
+  pStatus->IncrementNumUsers();
+  pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
+  a()->status_manager()->CommitTransaction(pStatus);
+}
+
+
 static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   File userFile(a()->config()->datadir(), USER_LST);
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
@@ -902,6 +913,18 @@ void VerifyNewUserFullInfo() {
   } while (!ok && !hangup);
 }
 
+static void add_phone_number(int usernum, const char *phone) {
+  if (strstr(phone, "000-")) {
+    return;
+  }
+
+  PhoneNumbers pn(*a()->config());
+  if (!pn.IsInitialized()) {
+    return;
+  }
+
+  pn.insert(usernum, phone);
+}
 
 void WriteNewUserInfoToSysopLog() {
   const auto u = a()->user();
@@ -1199,6 +1222,22 @@ bool check_zip(const char *pszZipCode, int mode) {
   return ok;
 }
 
+static int find_phone_number(const char *phone) {
+  PhoneNumbers pn(*a()->config());
+  if (!pn.IsInitialized()) {
+    return 0;
+  }
+
+  auto user_number = pn.find(phone);
+  User user{};
+  if (!a()->users()->readuser(&user, user_number)) {
+    return 0;
+  }
+  if (user.IsUserDeleted()) {
+    return 0;
+  }
+  return user_number;
+}
 
 bool check_dupes(const char *pszPhoneNumber) {
   int user_number = find_phone_number(pszPhoneNumber);

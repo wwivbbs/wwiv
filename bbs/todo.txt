@@ -3,6 +3,14 @@
                  Copyright 2002-2017, WWIV Software Services
 ==============================================================================
 
+SDK
+===
+* Need to move code to delete all emails from a user (delmail) to
+  msgapi.
+* Need code to delete a user in the SDK, so it can be added to INIT.
+* Need voting booth support in the SDK, so deluser can use it.
+* 
+
 FTN
 ===
 * improve addressing for outbound netmail

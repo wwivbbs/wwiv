@@ -125,7 +125,6 @@
     <ClInclude Include="diredit.h" />
     <ClInclude Include="dirlist.h" />
     <ClInclude Include="dropfile.h" />
-    <ClInclude Include="dupphone.h" />
     <ClInclude Include="events.h" />
     <ClInclude Include="exceptions.h" />
     <ClInclude Include="execexternal.h" />
@@ -182,7 +181,6 @@
     <ClInclude Include="runnable.h" />
     <ClInclude Include="shortmsg.h" />
     <ClInclude Include="showfiles.h" />
-    <ClInclude Include="smallrecord.h" />
     <ClInclude Include="sr.h" />
     <ClInclude Include="srrcv.h" />
     <ClInclude Include="srsend.h" />
@@ -253,7 +251,6 @@
     <ClCompile Include="diredit.cpp" />
     <ClCompile Include="dirlist.cpp" />
     <ClCompile Include="dropfile.cpp" />
-    <ClCompile Include="dupphone.cpp" />
     <ClCompile Include="events.cpp" />
     <ClCompile Include="execexternal.cpp" />
     <ClCompile Include="external_edit.cpp" />
@@ -312,7 +309,6 @@
     <ClCompile Include="read_message.cpp" />
     <ClCompile Include="shortmsg.cpp" />
     <ClCompile Include="showfiles.cpp" />
-    <ClCompile Include="SmallRecord.cpp" />
     <ClCompile Include="sr.cpp" />
     <ClCompile Include="srrcv.cpp" />
     <ClCompile Include="srsend.cpp" />

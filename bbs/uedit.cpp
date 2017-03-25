@@ -27,14 +27,13 @@
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/email.h"
-#include "bbs/dupphone.h"
 #include "bbs/finduser.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/misccmd.h"
 #include "bbs/newuser.h"
-#include "bbs/smallrecord.h"
+#include "bbs/sysoplog.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/shortmsg.h"
@@ -45,6 +44,7 @@
 #include "core/wwivassert.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/phone_numbers.h"
 
 using std::string;
 using std::unique_ptr;
@@ -56,56 +56,81 @@ static uint32_t *u_qsc = nullptr;
 static char *sp = nullptr;
 static char search_pattern[81];
 
+static void delete_phone_number(int usernum, const char *phone) {
+  PhoneNumbers pn(*a()->config());
+  if (!pn.IsInitialized()) {
+    return;
+  }
+  pn.erase(usernum, phone);
+}
+// Deletes a record from NAMES.LST (DeleteSmallRec)
+static  void DeleteSmallRecord(const char *name) {
+  WStatus *pStatus = a()->status_manager()->BeginTransaction();
+  int found_user = a()->names()->FindUser(name);
+  if (found_user < 1) {
+    a()->status_manager()->AbortTransaction(pStatus);
+    sysoplog(false) << "#*#*#*#*#*#*#*# '" << name << "' NOT ABLE TO BE DELETED";
+    sysoplog(false) << "#*#*#*#*#*#*#*# Run //RESETF to fix it.";
+    return;
+  }
+  a()->names()->Remove(found_user);
+  pStatus->DecrementNumUsers();
+  pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
+  a()->names()->Save();
+  a()->status_manager()->CommitTransaction(pStatus);
+}
+
 void deluser(int user_number) {
   User user;
   a()->users()->readuser(&user, user_number);
 
-  if (!user.IsUserDeleted()) {
-    rsm(user_number, &user, false);
-    DeleteSmallRecord(user.GetName());
-    user.SetInactFlag(User::userDeleted);
-    user.SetNumMailWaiting(0);
-    a()->users()->writeuser(&user, user_number);
-    unique_ptr<File> pFileEmail(OpenEmailFile(true));
-    if (pFileEmail->IsOpen()) {
-      long lEmailFileLen = pFileEmail->length() / sizeof(mailrec);
-      for (int nMailRecord = 0; nMailRecord < lEmailFileLen; nMailRecord++) {
-        mailrec m;
-
-        pFileEmail->Seek(nMailRecord * sizeof(mailrec), File::Whence::begin);
-        pFileEmail->Read(&m, sizeof(mailrec));
-        if ((m.tosys == 0 && m.touser == user_number) ||
-            (m.fromsys == 0 && m.fromuser == user_number)) {
-          delmail(*pFileEmail.get(), nMailRecord);
-        }
-      }
-      pFileEmail->Close();
-    }
-    File voteFile(a()->config()->datadir(), VOTING_DAT);
-    voteFile.Open(File::modeReadWrite | File::modeBinary);
-    long nNumVoteRecords = static_cast<int>(voteFile.length() / sizeof(votingrec)) - 1;
-    for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {
-      if (user.GetVote(lCurVoteRecord)) {
-        if (lCurVoteRecord <= nNumVoteRecords) {
-          votingrec v;
-          voting_response vr;
-
-          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
-          voteFile.Read(&v, sizeof(votingrec));
-          vr = v.responses[ user.GetVote(lCurVoteRecord) - 1 ];
-          vr.numresponses--;
-          v.responses[ user.GetVote(lCurVoteRecord) - 1 ] = vr;
-          voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
-          voteFile.Write(&v, sizeof(votingrec));
-        }
-        user.SetVote(lCurVoteRecord, 0);
-      }
-    }
-    voteFile.Close();
-    a()->users()->writeuser(&user, user_number);
-    delete_phone_number(user_number, user.GetVoicePhoneNumber());   // dupphone addition
-    delete_phone_number(user_number, user.GetDataPhoneNumber());    // dupphone addition
+  if (user.IsUserDeleted()) {
+    return;
   }
+  rsm(user_number, &user, false);
+  DeleteSmallRecord(user.GetName());
+  user.SetInactFlag(User::userDeleted);
+  user.SetNumMailWaiting(0);
+  a()->users()->writeuser(&user, user_number);
+  unique_ptr<File> pFileEmail(OpenEmailFile(true));
+  if (pFileEmail->IsOpen()) {
+    long lEmailFileLen = pFileEmail->length() / sizeof(mailrec);
+    for (int nMailRecord = 0; nMailRecord < lEmailFileLen; nMailRecord++) {
+      mailrec m;
+
+      pFileEmail->Seek(nMailRecord * sizeof(mailrec), File::Whence::begin);
+      pFileEmail->Read(&m, sizeof(mailrec));
+      if ((m.tosys == 0 && m.touser == user_number) ||
+          (m.fromsys == 0 && m.fromuser == user_number)) {
+        delmail(*pFileEmail.get(), nMailRecord);
+      }
+    }
+    pFileEmail->Close();
+  }
+  File voteFile(a()->config()->datadir(), VOTING_DAT);
+  voteFile.Open(File::modeReadWrite | File::modeBinary);
+  long nNumVoteRecords = static_cast<int>(voteFile.length() / sizeof(votingrec)) - 1;
+  for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {
+    if (user.GetVote(lCurVoteRecord)) {
+      if (lCurVoteRecord <= nNumVoteRecords) {
+        votingrec v;
+        voting_response vr;
+
+        voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
+        voteFile.Read(&v, sizeof(votingrec));
+        vr = v.responses[ user.GetVote(lCurVoteRecord) - 1 ];
+        vr.numresponses--;
+        v.responses[ user.GetVote(lCurVoteRecord) - 1 ] = vr;
+        voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
+        voteFile.Write(&v, sizeof(votingrec));
+      }
+      user.SetVote(lCurVoteRecord, 0);
+    }
+  }
+  voteFile.Close();
+  a()->users()->writeuser(&user, user_number);
+  delete_phone_number(user_number, user.GetVoicePhoneNumber());   // dupphone addition
+  delete_phone_number(user_number, user.GetDataPhoneNumber());    // dupphone addition
 }
 
 void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScreen) {

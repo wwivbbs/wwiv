@@ -708,7 +708,6 @@ void imail(int user_number, int system_number) {
     email("", user_number, system_number, false, 0);
   }
 }
-// TODO(rushfan): Change this ti File&
 void delmail(File& f, size_t loc) {
   mailrec m{};
   User user;

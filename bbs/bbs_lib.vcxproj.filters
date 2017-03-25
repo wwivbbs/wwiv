@@ -85,9 +85,6 @@
     <ClCompile Include="dropfile.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="dupphone.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="events.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -197,9 +194,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="showfiles.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="SmallRecord.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="sr.cpp">
@@ -663,9 +657,6 @@
     <ClInclude Include="dirlist.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="dupphone.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="execexternal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -691,9 +682,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="misccmd.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="smallrecord.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="xferovl.h">
