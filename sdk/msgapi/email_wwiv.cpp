@@ -31,6 +31,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/datetime.h"
+#include "sdk/user.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 
@@ -54,9 +55,9 @@ WWIVEmail::WWIVEmail(
   const std::string& root_directory,
   const std::string& data_filename, const std::string& text_filename, int max_net_num)
   : Type2Text(text_filename), root_directory_(root_directory), data_filename_(data_filename),
+    mail_file_(data_filename_, File::modeBinary | File::modeReadWrite, File::shareDenyReadWrite),
     max_net_num_(max_net_num) {
-  DataFile<mailrec> data(data_filename_, File::modeBinary | File::modeReadOnly);
-  open_ = data.file().Exists();
+  open_ = mail_file_ && mail_file_.file().Exists();
 }
 
 WWIVEmail::~WWIVEmail() {
@@ -127,30 +128,134 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
   return add_email(m);
 }
 
+static bool is_mailrec_deleted(const mailrec& h) {
+  return h.tosys == 0 && h.touser == 0 && h.daten == 0xffffffff;
+}
+
+/** Total number of email messages in the system. */
+int WWIVEmail::number_of_messages() {
+  auto num = mail_file_.number_of_records();
+  if (num == 0) { return 0; }
+  std::vector<mailrec> headers;
+  mail_file_.Seek(0);
+  if (!mail_file_.ReadVector(headers)) {
+    // WTF
+    return false;
+  }
+  int count = 0;
+  for (const auto& h : headers) {
+    if (!is_mailrec_deleted(h)) {
+      ++count;
+    }
+  }
+  return count;
+}
+
+/** Temporary API to read the header from an email message. */
+bool WWIVEmail::read_email_header(int email_number, mailrec& m) {
+  if (!open_) {
+    return false;
+  }
+  if (mail_file_.number_of_records() == 0) {
+    return false;
+  }
+  if (!mail_file_.Read(email_number, &m)) {
+    return false;
+  }
+  if (is_mailrec_deleted(m)) {
+    return false;
+  }
+  return true;
+}
+
+/** Temporary API to read the header and text from an email message. */
+bool WWIVEmail::read_email_header_and_text(int email_number, mailrec& m, std::string& text) {
+  if (!read_email_header(email_number, m)) {
+    return false;
+  }
+  return readfile(&m.msg, &text);
+}
+
+/** Deletes an email by number */
+bool WWIVEmail::DeleteMessage(int email_number) {
+  if (!open_) { return false; }
+  auto num_records = static_cast<decltype(email_number)>(mail_file_.number_of_records());
+  if (num_records == 0 || email_number > num_records) {
+    return false;
+  }
+
+  mailrec m{};
+  if (!mail_file_.Read(email_number, &m)) {
+    return false;
+  }
+
+  if (m.touser == 0 && m.tosys == 0) {
+    // Already deleted.
+    return true;
+  }
+
+  bool rm = true;
+  if (m.status & status_multimail) {
+    bool others_found = false;
+    for (auto i = 0; i < num_records; i++) {
+      if (i != email_number) {
+        mailrec m1{};
+        if (!mail_file_.Read(i, &m1)) { continue; }
+        if ((m.msg.stored_as == m1.msg.stored_as) && (m.msg.storage_type == m1.msg.storage_type) && (m1.daten != 0xffffffff)) {
+          others_found = true;
+        }
+      }
+    }
+    if (others_found) {
+      rm = false;
+    }
+  }
+  if (rm) {
+    remove_link(m.msg);
+  }
+
+  // TODO(rushfan): Needs to decide who's responsible for updating stats.
+  //if (m.tosys == 0) {
+  //  wwiv::sdk::User user;
+  //  a()->users()->readuser(&user, m.touser);
+  //  if (user.GetNumMailWaiting()) {
+  //    user.SetNumMailWaiting(user.GetNumMailWaiting() - 1);
+  //    a()->users()->writeuser(&user, m.touser);
+  //  }
+  //}
+
+  // Clear out the email record and write it back to EMAIL.DAT
+  // so the slot may be reused later.
+  m.touser = 0;
+  m.tosys = 0;
+  m.daten = 0xffffffff;
+  m.msg.storage_type = 0;
+  m.msg.stored_as = 0xffffffff;
+  return mail_file_.Write(email_number, &m);
+}
+
 // Implementation Details
 
 bool WWIVEmail::add_email(const mailrec& m) {
-  DataFile<mailrec> mail_file(data_filename_, File::modeBinary|File::modeReadWrite);
-  if (!mail_file) {
+  if (!open_) {
     return false;
   }
   int recno = 0;
-  int max_size = mail_file.number_of_records();
+  int max_size = mail_file_.number_of_records();
   if (max_size > 0) {
-    mailrec temprec;
+    mailrec temprec{};
     recno = max_size - 1;
-    mail_file.Seek(recno);
-    mail_file.Read(recno, &temprec);
+    mail_file_.Read(recno, &temprec);
     while (recno > 0 && temprec.tosys == 0 && temprec.touser == 0) {
       --recno;
-      mail_file.Read(recno, &temprec);
+      mail_file_.Read(recno, &temprec);
     }
     if (temprec.tosys || temprec.touser) {
       ++recno;
     }
   }
 
-  return mail_file.Write(recno, &m);
+  return mail_file_.Write(recno, &m);
 }
 
 }  // namespace msgapi

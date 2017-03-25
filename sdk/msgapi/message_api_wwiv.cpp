@@ -112,9 +112,11 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::stri
     msgs_file.set_length(GAT_SECTION_SIZE + (75L * 1024L));
   }
 
-  // Create 5.1 style sub header.
-  WWIVMessageAreaHeader header(wwiv_num_version, 0);
-  fileSub.Write(&header.header(), sizeof(subfile_header_t));
+  if (name != EMAIL_NOEXT) {
+    // Create 5.1 style sub header for subs, but not for email.
+    WWIVMessageAreaHeader header(wwiv_num_version, 0);
+    fileSub.Write(&header.header(), sizeof(subfile_header_t));
+  }
   // Need to close the files before creating a new WWIVMessageArea since we
   // have thm locked for write, and we need to open it in the constructor. 
   fileSub.Close();

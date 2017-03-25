@@ -22,6 +22,7 @@
 #include <string>
 #include <vector>
 
+#include "core/datafile.h"
 #include "core/file.h"
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
@@ -39,14 +40,23 @@ public:
   EmailData() {}
   ~EmailData() {}
 
+  /** The title for this email */
   std::string title;
+  /** The full text of this email */
   std::string text;
+  /** Anonymous settings for this email. 0 for normal */
   int anony = 0;
+  /** The user this email should be sent to (to username) */
   int user_number = 0;
+  /** The system to send this email. 0 for local. (to system) */
   int system_number = 0;
+  /** The user this email should be sent from. */
   int from_user = 0;
+  /** The system that sent this email. 0 for local. */
   int from_system = 0;
+  /** The network number that sent this email.*/
   int from_network_number = 0;
+  /** The time stamp for this email. */
   uint32_t daten = 0;
 };
 
@@ -62,10 +72,21 @@ public:
 
   bool AddMessage(const EmailData& data);
 
+  /** Total number of email messages in the system. */
+  int number_of_messages();
+  
+  /** Temporary API to read the header from an email message. */
+  bool read_email_header(int email_number, mailrec& m);
+  /** Temporary API to read the header and text from an email message. */
+  bool read_email_header_and_text(int email_number, mailrec& m, std::string& text);
+  /** Deletes an email by number */
+  bool DeleteMessage(int email_number);
+
 private:
   bool add_email(const mailrec& m);
   const std::string root_directory_;
   const std::string data_filename_;
+  wwiv::core::DataFile<mailrec> mail_file_;
   bool open_ = false;
   const int max_net_num_;
 

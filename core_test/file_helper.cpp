@@ -77,9 +77,10 @@ string FileHelper::CreateTempDir(const string base) {
     string template_ = StrCat(temp_path, "/fileXXXXXX");
 #ifdef _WIN32
     time_t now = time(nullptr);
-    const string local_dir_template = StringPrintf("%s%s.%lx", temp_path.c_str(), base.c_str(), now);
+    const auto fn_template = StringPrintf("%s.%lx", base.c_str(), now);
+    const auto local_dir_template = wwiv::core::FilePath(temp_path, fn_template);
     if (CreateDirectory(local_dir_template.c_str(), nullptr)) {
-      return string(local_dir_template);
+      return local_dir_template;
     }
 #else
     char local_dir_template[MAX_PATH];
@@ -89,7 +90,7 @@ string FileHelper::CreateTempDir(const string base) {
       return string(result);
     }
 #endif
-    return string("");
+    return "";
 }
 
 string FileHelper::CreateTempFilePath(const string& orig_name) {
