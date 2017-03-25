@@ -256,6 +256,25 @@ bool WWIVEmail::DeleteMessage(int email_number) {
   return mail_file_.Write(email_number, &m);
 }
 
+bool WWIVEmail::DeleteAllMailToOrFrom(int user_number) {
+  if (user_number <= 1) {
+    // You can not take command.
+    return false;
+  }
+  std::vector<mailrec> headers;
+  mail_file_.Seek(0);
+  if (!mail_file_.ReadVector(headers)) {
+    // WTF
+    return false;
+  }
+  for (auto i = 0; i < headers.size(); i++) {
+    const auto& m = headers.at(i);
+    if ((m.tosys == 0 && m.touser == user_number) || (m.fromsys == 0 && m.fromuser == user_number)) {
+      DeleteMessage(i);
+    }
+  }
+}
+
 // Implementation Details
 
 bool WWIVEmail::add_email(const mailrec& m) {

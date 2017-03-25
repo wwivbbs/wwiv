@@ -50,6 +50,7 @@ using std::string;
 using std::unique_ptr;
 using namespace wwiv::bbs;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
 
 static uint32_t *u_qsc = nullptr;
@@ -64,7 +65,7 @@ static void delete_phone_number(int usernum, const char *phone) {
   pn.erase(usernum, phone);
 }
 // Deletes a record from NAMES.LST (DeleteSmallRec)
-static  void DeleteSmallRecord(const char *name) {
+static void DeleteSmallRecord(const char *name) {
   WStatus *pStatus = a()->status_manager()->BeginTransaction();
   int found_user = a()->names()->FindUser(name);
   if (found_user < 1) {
@@ -80,9 +81,9 @@ static  void DeleteSmallRecord(const char *name) {
   a()->status_manager()->CommitTransaction(pStatus);
 }
 
-void deluser(int user_number) {
+static void deluser(int user_number, Config& config, UserManager& um, WWIVMessageApi& api) {
   User user;
-  a()->users()->readuser(&user, user_number);
+  um.readuser(&user, user_number);
 
   if (user.IsUserDeleted()) {
     return;
@@ -91,23 +92,13 @@ void deluser(int user_number) {
   DeleteSmallRecord(user.GetName());
   user.SetInactFlag(User::userDeleted);
   user.SetNumMailWaiting(0);
-  a()->users()->writeuser(&user, user_number);
-  unique_ptr<File> pFileEmail(OpenEmailFile(true));
-  if (pFileEmail->IsOpen()) {
-    long lEmailFileLen = pFileEmail->length() / sizeof(mailrec);
-    for (int nMailRecord = 0; nMailRecord < lEmailFileLen; nMailRecord++) {
-      mailrec m;
-
-      pFileEmail->Seek(nMailRecord * sizeof(mailrec), File::Whence::begin);
-      pFileEmail->Read(&m, sizeof(mailrec));
-      if ((m.tosys == 0 && m.touser == user_number) ||
-          (m.fromsys == 0 && m.fromuser == user_number)) {
-        delmail(*pFileEmail.get(), nMailRecord);
-      }
-    }
-    pFileEmail->Close();
+  um.writeuser(&user, user_number);
+  {
+    std::unique_ptr<wwiv::sdk::msgapi::WWIVEmail> email(api.OpenEmail());
+    email->DeleteAllMailToOrFrom(user_number);
   }
-  File voteFile(a()->config()->datadir(), VOTING_DAT);
+
+  File voteFile(config.datadir(), VOTING_DAT);
   voteFile.Open(File::modeReadWrite | File::modeBinary);
   long nNumVoteRecords = static_cast<int>(voteFile.length() / sizeof(votingrec)) - 1;
   for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {
@@ -128,9 +119,14 @@ void deluser(int user_number) {
     }
   }
   voteFile.Close();
-  a()->users()->writeuser(&user, user_number);
+
+  um.writeuser(&user, user_number);
   delete_phone_number(user_number, user.GetVoicePhoneNumber());   // dupphone addition
   delete_phone_number(user_number, user.GetDataPhoneNumber());    // dupphone addition
+}
+
+void deluser(int user_number) {
+  deluser(user_number, *a()->config(), *a()->users(), *a()->msgapi_email());
 }
 
 void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScreen) {

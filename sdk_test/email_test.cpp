@@ -91,86 +91,13 @@ TEST_F(EmailTest, Create) {
 TEST_F(EmailTest, Delete) {
   ASSERT_TRUE(Add(1, 2, "Title", "Text"));
   ASSERT_TRUE(Add(1, 2, "Title2", "Text2"));
-  EXPECT_EQ(2, email->number_of_messages()) << wwiv::core::FilePath(helper.data(), EMAIL_DAT);
+  ASSERT_TRUE(Add(1, 3, "Title3", "Text3"));
+  EXPECT_EQ(3, email->number_of_messages()) << wwiv::core::FilePath(helper.data(), EMAIL_DAT);
 
-  email->DeleteMessage(0);
+  email->DeleteAllMailToOrFrom(2);
   EXPECT_EQ(1, email->number_of_messages()) << wwiv::core::FilePath(helper.data(), EMAIL_DAT);
-
-  // Read it back and make sure.
   mailrec nm{};
-  ASSERT_TRUE(email->read_email_header(1, nm));
-  EXPECT_STREQ("Title2", nm.title);
-
   EXPECT_FALSE(email->read_email_header(0, nm));
+  EXPECT_FALSE(email->read_email_header(1, nm));
+  EXPECT_TRUE(email->read_email_header(2, nm));
 }
-
-
-#if 0
-TEST_F(MsgApiTest, SmokeTest) {
-  {
-    unique_ptr<MessageArea> area(api->Create("a1", -1));
-    unique_ptr<Message> msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
-    EXPECT_TRUE(area->AddMessage(*msg));
-  }
-
-  unique_ptr<MessageArea> a2(api->Open("a1", -1));
-  EXPECT_EQ(1, a2->number_of_messages());
-  unique_ptr<Message> m1(a2->ReadMessage(1));
-  EXPECT_EQ("From", m1->header()->from());
-}
-
-TEST_F(MsgApiTest, Resynch) {
-  unique_ptr<MessageArea> area(api->Create("a1", -1));
-  {
-    unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
-    EXPECT_TRUE(area->AddMessage(*m));
-    m->header()->set_from("From2");
-    EXPECT_TRUE(area->AddMessage(*m));
-    m->header()->set_from("From3");
-    EXPECT_TRUE(area->AddMessage(*m));
-  }
-  
-  // Re open the area, ensure that we read back the same first
-  // two messages.
-  unique_ptr<MessageArea> a2(api->Open("a1", -1));
-  unique_ptr<Message> m1(a2->ReadMessage(1));
-  EXPECT_EQ("From", m1->header()->from());
-  unique_ptr<Message> m2(a2->ReadMessage(2));
-  EXPECT_EQ("From2", m2->header()->from());
-
-  // Delete message #1, now we should just have 1 message.
-  EXPECT_TRUE(a2->DeleteMessage(1));
-  EXPECT_EQ(2, a2->number_of_messages());
-
-  // ResyncMessage should move this to message 1 since
-  // we deleted the old 1.
-  int msgnum = 2;
-  a2->ResyncMessage(msgnum, *m2);
-  EXPECT_EQ(1, msgnum);
-}
-
-TEST_F(MsgApiTest, Resynch_MessageNumber) {
-  {
-    unique_ptr<MessageArea> area(api->Create("a1", -1));
-    unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
-    EXPECT_TRUE(area->AddMessage(*m));
-    m->header()->set_from("From2");
-    EXPECT_TRUE(area->AddMessage(*m));
-  }
-
-  // Re open the area, ensure that we read back the same first
-  // two messages.
-  unique_ptr<MessageArea> a2(api->Open("a1", -1));
-
-  // Delete message #1, now we should just have 1 message.
-  EXPECT_TRUE(a2->DeleteMessage(1));
-  EXPECT_EQ(1, a2->number_of_messages());
-
-  // ResyncMessage should move this to message 1 since
-  // we deleted the old 1.
-  int msgnum = 2;
-  a2->ResyncMessage(msgnum);
-  EXPECT_EQ(1, msgnum);
-}
-
-#endif  // 0

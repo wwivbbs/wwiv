@@ -83,6 +83,8 @@ public:
   bool read_email_header_and_text(int email_number, mailrec& m, std::string& text);
   /** Deletes an email by number */
   bool DeleteMessage(int email_number);
+  /** Delete all email to a specified user */
+  bool DeleteAllMailToOrFrom(int user_number);
 
 private:
   bool add_email(const mailrec& m);

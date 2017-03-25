@@ -275,6 +275,9 @@ public:
 
   wwiv::sdk::msgapi::MessageApi* msgapi(int type) const { return msgapis_.at(type).get(); }
   wwiv::sdk::msgapi::MessageApi* msgapi() const { return msgapis_.at(current_sub().storage_type).get(); }
+  wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const {
+    return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
+  }
 
   bool read_subs();
   bool create_message_api();
