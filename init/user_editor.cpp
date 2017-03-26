@@ -55,15 +55,15 @@ static void show_user(EditItems* items, userrec* user) {
 
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   for (int i=1; i<13; i++) {
-    string blank(24, ' ');
-    items->window()->PutsXY(COL2_POSITION, i, blank.c_str());
+    const string blank(24, ' ');
+    items->window()->PutsXY(COL2_POSITION, i, blank);
   }
   if (user->inact & inact_deleted) {
     items->window()->SetColor(SchemeId::ERROR_TEXT);
-    items->window()->PutsXY(COL2_POSITION, 0, "[[ DELETED USER ]]");
+    items->window()->PutsXY(COL2_POSITION, 1, "[[ DELETED USER ]] ");
   } else if (user->inact & inact_inactive) {
     items->window()->SetColor(SchemeId::ERROR_TEXT);
-    items->window()->PutsXY(COL2_POSITION, 0, "[[ INACTIVE USER ]]");
+    items->window()->PutsXY(COL2_POSITION, 1, "[[ INACTIVE USER ]]");
   }
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   int y = 2;
@@ -87,7 +87,7 @@ static void show_error_no_users(CursesWindow* window) {
 }
 
 static vector<HelpItem> create_extra_help_items() {
-  vector<HelpItem> help_items = { { "A", "Add" }, { "J", "Jump" } };
+  vector<HelpItem> help_items = { { "D", "Delete" }, { "J", "Jump" }, { "R", "Restore" } };
   return help_items;
 }
 
@@ -205,7 +205,7 @@ void user_editor(const wwiv::sdk::Config& config) {
   show_user(&items, &user);
 
   for (;;)  {
-    char ch = onek(window.get(), "\033JQ[]{}\r");
+    char ch = onek(window.get(), "\033DJRQ[]{}\r");
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
@@ -219,11 +219,17 @@ void user_editor(const wwiv::sdk::Config& config) {
       }
       window->Refresh();
     } break;
+    case 'D': {
+      // Delete user.
+    } break;
     case 'J': {
       int user_number = JumpToUser(window.get(), config.datadir());
       if (user_number >= 1) {
         current_usernum = user_number;
       }
+    } break;
+    case 'R': {
+      // Restore Deleted User.
     } break;
     case 'Q':
     case '\033':
