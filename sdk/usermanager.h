@@ -60,6 +60,7 @@ class UserManager {
   }
 
 private:
+
   // ICK.
   const wwiv::sdk::Config& config_;
   const std::string data_directory_;

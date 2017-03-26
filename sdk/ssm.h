@@ -36,6 +36,7 @@ public:
 
   bool send_local(uint32_t user_number, const std::string& text);
   bool send_remote(const net_networks_rec& net, uint16_t system_number, uint32_t from_user_number, uint32_t user_number, const std::string& text);
+  bool delete_local_to_user(uint32_t user_number);
 private:
   const std::string data_directory_;
   wwiv::sdk::UserManager& user_manager_;

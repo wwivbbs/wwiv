@@ -33,6 +33,7 @@
 #include "sdk/names.h"
 #include "sdk/filenames.h"
 #include "sdk/phone_numbers.h"
+#include "sdk/ssm.h"
 #include "sdk/status.h"
 #include "sdk/user.h"
 #include "sdk/msgapi/email_wwiv.h"
@@ -173,8 +174,8 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
   if (user.IsUserDeleted()) {
     return true;
   }
-  // TODO(rushfan): Need SSM class method to remove SSMs.
-  //rsm(user_number, &user, false);
+  SSM ssm(config, um);
+  ssm.delete_local_to_user(user_number);
   DeleteSmallRecord(sm, names, user.GetName());
   user.SetInactFlag(User::userDeleted);
   user.SetNumMailWaiting(0);

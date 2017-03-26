@@ -20,8 +20,6 @@
 
 #include "sdk/user.h"
 
-void deluser(int user_number);
-void print_data(int user_number, wwiv::sdk::User* pUser, bool bLongFormat, bool bClearScreen);
 void auto_val(int n, wwiv::sdk::User* pUser);
 
 

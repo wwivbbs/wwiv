@@ -367,19 +367,6 @@ int main_loop(char *raw_message, char *from_message, char *color_string, char *m
     } else {
       bout << "|#1[|#9Channel not secured!|#1]\r\n";
     }
-  } else if (IsEqualsIgnoreCase(raw_message, "/l") &&
-             a()->user()->GetSl() >= g_nChatOpSecLvl) {
-    bout << "\r\n|#9Username: ";
-    input(szText, 30);
-    bout.nl();
-    int nTempUserNum = finduser1(szText);
-    if (nTempUserNum > 0) {
-      a()->users()->readuser(&u, nTempUserNum);
-      print_data(nTempUserNum, &u, true, false);
-    } else {
-      bout << "|#6Unknown user.\r\n";
-    }
-    bActionHandled = 0;
   } else if (IsEqualsIgnoreCase(raw_message, "/p")) {
     bActionHandled = 0;
     page_user(loc);

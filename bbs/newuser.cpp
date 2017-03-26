@@ -997,7 +997,7 @@ void SendNewUserFeedbackIfRequired() {
   if (a()->HasConfigFlag(OP_FLAGS_FORCE_NEWUSER_FEEDBACK)) {
     if (!a()->user()->GetNumEmailSent() && !a()->user()->GetNumFeedbackSent()) {
       printfile(NOFBACK_NOEXT);
-      deluser(a()->usernum);
+      a()->users()->delete_user(a()->usernum);
       Hangup();
       return;
     }

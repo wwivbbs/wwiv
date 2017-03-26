@@ -138,7 +138,7 @@ void valuser(int user_number) {
           bout.nl();
           bout << "|#9Delete? ";
           if (yesno()) {
-            deluser(user_number);
+            a()->users()->delete_user(user_number);
             bout.nl();
             bout << "|#6Deleted.\r\n\n";
           } else {
@@ -845,7 +845,7 @@ void auto_purge() {
       // greater than AUTO_USER_PURGE days ago
       if (!user.IsUserDeleted() && user.GetSl() < skipsl && d > days) {
         sysoplog(false) << "*** AUTOPURGE: Deleted User: #" << user_number << " " << user.GetName();
-        deluser(user_number);
+        a()->users()->delete_user(user_number);
       }
     }
     ++user_number;

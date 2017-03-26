@@ -24,10 +24,13 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/vars.h"
+#include "core/datafile.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
-using std::string;
+using std::string;;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -36,56 +39,53 @@ using namespace wwiv::strings;
  * plug in, if such are used.
  */
 void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
+  if (!pUser->HasShortMessage()) {
+    return;
+  }
+  DataFile<shortmsgrec> file(a()->config()->datadir(), SMW_DAT, File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  if (!file) {
+    return;
+  }
   bool bShownAnyMessage = false;
   int bShownAllMessages = true;
-  if (pUser->HasShortMessage()) {
-    File file(a()->config()->datadir(), SMW_DAT);
-    if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-      return;
-    }
-    int nTotalMsgsInFile = static_cast<int>(file.length() / sizeof(shortmsgrec));
-    for (int nCurrentMsg = 0; nCurrentMsg < nTotalMsgsInFile; nCurrentMsg++) {
-      shortmsgrec sm;
-      file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::Whence::begin);
-      file.Read(&sm, sizeof(shortmsgrec));
-      if (sm.touser == nUserNum && sm.tosys == 0) {
-        bout.Color(9);
-        bout << sm.message;
-        bout.nl();
-        bool bHandledMessage = false;
-        bShownAnyMessage = true;
-        if (!so() || !bAskToSaveMsgs) {
-          bHandledMessage = true;
-        } else {
-          if (a()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
-            if (!bHandledMessage && bAskToSaveMsgs) {
-              bout << "|#5Would you like to save this notification? ";
-              bHandledMessage = !yesno();
-            }
-          } else {
-            bHandledMessage = true;
+  int number_of_records = file.number_of_records();
+  shortmsgrec sm{};
+  for (int cur = 0; cur < number_of_records; cur++) {
+    file.Read(cur, &sm);
+    if (sm.touser == nUserNum && sm.tosys == 0) {
+      bout << "|#9" << sm.message << "\r\n";
+      bool bHandledMessage = false;
+      bShownAnyMessage = true;
+      if (!so() || !bAskToSaveMsgs) {
+        bHandledMessage = true;
+      } else {
+        if (a()->HasConfigFlag(OP_FLAGS_CAN_SAVE_SSM)) {
+          if (!bHandledMessage && bAskToSaveMsgs) {
+            bout << "|#5Would you like to save this notification? ";
+            bHandledMessage = !yesno();
           }
-
-        }
-        if (bHandledMessage) {
-          sm.touser = 0;
-          sm.tosys = 0;
-          sm.message[0] = 0;
-          file.Seek(nCurrentMsg * sizeof(shortmsgrec), File::Whence::begin);
-          file.Write(&sm, sizeof(shortmsgrec));
         } else {
-          bShownAllMessages = false;
+          bHandledMessage = true;
         }
+
+      }
+      if (bHandledMessage) {
+        sm.touser = 0;
+        sm.tosys = 0;
+        memset(&sm.message, 0, sizeof(sm.message));
+        file.Write(cur, &sm);
+      } else {
+        bShownAllMessages = false;
       }
     }
-    file.Close();
-    smwcheck = true;
   }
+  file.Close();
+  smwcheck = true;
   if (bShownAnyMessage) {
     bout.nl();
   }
   if (bShownAllMessages) {
-    pUser->SetStatusFlag(User::SMW);
+    pUser->ClearStatusFlag(User::SMW);
   }
 }
 
