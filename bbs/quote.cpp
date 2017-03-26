@@ -40,9 +40,7 @@
 //
 char *GetQuoteInitials();
 
-
 #define LINELEN 79
-#define SAVE_IN_MEM
 #define PFXCOL 2
 #define QUOTECOL 0
 
@@ -111,7 +109,7 @@ char *GetQuoteInitials() {
   return s_szQuoteInitials;
 }
 
-void grab_quotes(messagerec * m, const char *aux) {
+void grab_quotes(messagerec* m, const char *aux) {
   char *ss1, temp[255];
   long l2, l3;
   char *pfx;
@@ -267,7 +265,7 @@ void grab_quotes(messagerec * m, const char *aux) {
           file.WriteBinary("\r\n", 2);
         }
         file.Close();
-#ifdef SAVE_IN_MEM
+
         File ff(quotes_ind_fn);
         if (ff.Open(File::modeBinary | File::modeReadOnly)) {
           quotes_ind_l = ff.length();
@@ -279,9 +277,7 @@ void grab_quotes(messagerec * m, const char *aux) {
           }
           ff.Close();
         }
-#else
-        quotes_nrm_l = 0;
-#endif
+
       }
     }
   }

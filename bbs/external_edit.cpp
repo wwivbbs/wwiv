@@ -93,33 +93,54 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
   }
 }
 
+/**
+ * Creates a MSGINF file for QBBS style editors.
+ *
+ * MSGINF. - A text file containing message information:
+ * 
+ * line 1: Who the message is FROM
+ * line 2: Who the message is TO
+ * line 3: Message subject
+ * line 4: Message number }   Where message is being
+ * line 5: Message area   }   posted. (not used in editor)
+ * line 6: Private flag ("YES" or "NO")
+ */
 static bool WriteMsgInf(const string& title, const string& destination, const string& aux) {
   TextFile file(a()->temp_directory(), MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
   }
 
+  // line 1: Who the message is FROM
   file.WriteLine(a()->user()->GetName());
   if (aux == "email") {
     // destination == to address for email
+    // line 2: Who the message is TO
     file.WriteLine(destination);
   } else {
     if (strlen(irt_name) > 0) {
+      // line 2: Who the message is TO
       file.WriteLine(irt_name);
     } else {
       // Since we don't know who this is to, make it all.
-      file.WriteLine("All"); 
+      // line 2: Who the message is TO
+      file.WriteLine("All");
     }
   }
+  // line 3: Message subject
   file.WriteLine(title);
-  file.WriteLine("0"); // Message area # - We are not QBBS
+  // Message area # - We are not QBBS
+  // line 4: Message number
+  file.WriteLine("0"); 
   if (aux == "email") {
+    // line 5: Message area
     file.WriteLine("E-mail");
-    // Is the message private [YES|NO]
+    // line 6: Private flag ("YES" or "NO")
     file.WriteLine("YES");
   } else {
+    // line 5: Message area
     file.WriteLine(destination);
-    // Is the message private [YES|NO]
+    // line 6: Private flag ("YES" or "NO")
     file.WriteLine("NO");
   }
   file.Close();
