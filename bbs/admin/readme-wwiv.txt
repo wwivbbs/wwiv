@@ -3,8 +3,12 @@ readme-wwiv.txt
                 *** Attention Windows Users ***
 
     You may need to download the Visual Studio 2017 redistributable
-    files. Since these are ~15M in size, instead of bundling these
-    into every binary, we're putting them here:
+    files. 
+    
+    Here's the official link: 
+    https://go.microsoft.com/fwlink/?LinkId=746571
+    
+    If you have trouble with that link, it's also available here:
     https://storage.googleapis.com/build-iv/redist/vc2017/vcredist_x86.exe
     
     If you see errors about missing DLL files, you may need to install this
