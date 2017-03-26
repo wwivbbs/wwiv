@@ -435,12 +435,14 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
 
   const int COL1_POSITION = 14;
   int y = 1;
-  EditItems items{
-    new ToggleEditItem<network_type_t>(out, COL1_POSITION, y++, nettypes, &n.type),
-    new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false),
-    new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum),
-    new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir)
-  };
+  EditItems items{};
+  items.add(new ToggleEditItem<network_type_t>(out, COL1_POSITION, y++, nettypes, &n.type))->
+    set_help_text("If changing network types, exit and reenter this dialog for more options.");
+  items.add(new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false));
+  items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))->
+    set_help_text("WWIVnet node number, or 1 for FTN networks");
+  items.add(new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
+
   if (n.type == network_type_t::ftn) {
     auto net_dir = File::absolute(config.root_directory(), n.dir);
     items.add(new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", 76, n));
@@ -562,8 +564,9 @@ void networks(wwiv::sdk::Config& config) {
     bool done = false;
     do {
       vector<ListBoxItem> items;
+      int num = 0;
       for (const auto& n : networks.networks()) {
-        items.emplace_back(StringPrintf("@%u %s", n.sysnum, n.name));
+        items.emplace_back(StringPrintf("@%-5u %-16s [.%d]", n.sysnum, n.name, num++));
       }
       CursesWindow* window = out->window();
       ListBox list(out, window, "Select Network", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
