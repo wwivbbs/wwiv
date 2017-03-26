@@ -36,14 +36,8 @@ namespace sdk {
  * Responsible for loading and saving users.
  */
 class UserManager {
- private:
-  const std::string data_directory_;
-  int userrec_length_;
-  int max_number_users_;
-  bool allow_writes_ = false;
  public:
    UserManager() = delete;
-   UserManager(std::string data_directory, int userrec_length, int max_number_users);
    UserManager(const wwiv::sdk::Config& config);
    virtual ~UserManager();
    int num_user_records() const;
@@ -51,6 +45,8 @@ class UserManager {
    bool readuser(User *pUser, int user_number);
    bool writeuser_nocache(User *pUser, int user_number);
    bool writeuser(User *pUser, int user_number);
+
+   bool delete_user(int user_number);
 
   /**
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the
@@ -62,6 +58,14 @@ class UserManager {
   bool user_writes_allowed() {
     return allow_writes_;
   }
+
+private:
+  // ICK.
+  const wwiv::sdk::Config& config_;
+  const std::string data_directory_;
+  int userrec_length_;
+  int max_number_users_;
+  bool allow_writes_ = false;
 };
 
 }  // namespace sdk

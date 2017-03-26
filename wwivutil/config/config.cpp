@@ -51,7 +51,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace wwivutil {
 
-static int show_version(Config& config) {
+static int show_version(const Config& config) {
   cout << "5.2 Versioned Config    : " << std::boolalpha << config.versioned_config_dat() << std::endl;
   cout << "Written By WWIV Version : " << config.written_by_wwiv_num_version() << std::endl;
   cout << "Config Revision #       : " << config.config_revision_number() << std::endl;

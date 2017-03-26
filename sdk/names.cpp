@@ -37,7 +37,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
-Names::Names(wwiv::sdk::Config& config) : data_directory_(config.datadir()) {
+Names::Names(const wwiv::sdk::Config& config) : data_directory_(config.datadir()) {
   loaded_ = Load();
 }
 

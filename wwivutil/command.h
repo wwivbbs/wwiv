@@ -40,7 +40,7 @@ public:
   }
   ~Configuration() {}
 
-  wwiv::sdk::Config* config() const { return config_; }
+  const wwiv::sdk::Config* config() const { return config_; }
   const std::string bbsdir() const { return bbsdir_;  }
   bool initialized() const { return initialized_; }
   wwiv::sdk::Networks networks() const { return networks_; }

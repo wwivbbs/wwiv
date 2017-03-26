@@ -40,6 +40,7 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wqscn.h"
+#include "core/datafile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/datetime.h"
@@ -49,6 +50,7 @@
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::bbs;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
@@ -57,31 +59,53 @@ static uint32_t *u_qsc = nullptr;
 static char *sp = nullptr;
 static char search_pattern[81];
 
-static void delete_phone_number(int usernum, const char *phone) {
-  PhoneNumbers pn(*a()->config());
+static void delete_phone_number(const Config& config, int usernum, const char *phone) {
+  PhoneNumbers pn(config);
   if (!pn.IsInitialized()) {
     return;
   }
   pn.erase(usernum, phone);
 }
 // Deletes a record from NAMES.LST (DeleteSmallRec)
-static void DeleteSmallRecord(const char *name) {
-  WStatus *pStatus = a()->status_manager()->BeginTransaction();
-  int found_user = a()->names()->FindUser(name);
+static void DeleteSmallRecord(StatusMgr& status_manager, Names& names, const char *name) {
+  WStatus *pStatus = status_manager.BeginTransaction();
+  int found_user = names.FindUser(name);
   if (found_user < 1) {
-    a()->status_manager()->AbortTransaction(pStatus);
+    status_manager.AbortTransaction(pStatus);
     sysoplog(false) << "#*#*#*#*#*#*#*# '" << name << "' NOT ABLE TO BE DELETED";
     sysoplog(false) << "#*#*#*#*#*#*#*# Run //RESETF to fix it.";
     return;
   }
-  a()->names()->Remove(found_user);
+  names.Remove(found_user);
   pStatus->DecrementNumUsers();
   pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  a()->names()->Save();
-  a()->status_manager()->CommitTransaction(pStatus);
+  names.Save();
+  status_manager.CommitTransaction(pStatus);
 }
 
-static void deluser(int user_number, Config& config, UserManager& um, WWIVMessageApi& api) {
+static bool delete_votes(const std::string datadir, User& user) {
+  DataFile<votingrec> voteFile(datadir, VOTING_DAT, File::modeReadWrite | File::modeBinary);
+  if (voteFile) {
+    std::vector<votingrec> votes;
+    voteFile.ReadVector(votes);
+    long nNumVoteRecords = voteFile.number_of_records();
+    for (long cur_vote = 0; cur_vote < 20; cur_vote++) {
+      if (user.GetVote(cur_vote)) {
+        if (cur_vote <= nNumVoteRecords) {
+          auto &v = votes.at(cur_vote);
+          v.responses[user.GetVote(cur_vote) - 1].numresponses--;
+        }
+        user.SetVote(cur_vote, 0);
+      }
+    }
+    voteFile.Seek(0);
+    voteFile.WriteVector(votes);
+    voteFile.Close();
+  }
+  return true;
+}
+
+static void deluser(int user_number, Config& config, UserManager& um, StatusMgr& sm, Names& names, WWIVMessageApi& api) {
   User user;
   um.readuser(&user, user_number);
 
@@ -89,7 +113,7 @@ static void deluser(int user_number, Config& config, UserManager& um, WWIVMessag
     return;
   }
   rsm(user_number, &user, false);
-  DeleteSmallRecord(user.GetName());
+  DeleteSmallRecord(sm, names, user.GetName());
   user.SetInactFlag(User::userDeleted);
   user.SetNumMailWaiting(0);
   um.writeuser(&user, user_number);
@@ -98,35 +122,14 @@ static void deluser(int user_number, Config& config, UserManager& um, WWIVMessag
     email->DeleteAllMailToOrFrom(user_number);
   }
 
-  File voteFile(config.datadir(), VOTING_DAT);
-  voteFile.Open(File::modeReadWrite | File::modeBinary);
-  long nNumVoteRecords = static_cast<int>(voteFile.length() / sizeof(votingrec)) - 1;
-  for (long lCurVoteRecord = 0; lCurVoteRecord < 20; lCurVoteRecord++) {
-    if (user.GetVote(lCurVoteRecord)) {
-      if (lCurVoteRecord <= nNumVoteRecords) {
-        votingrec v;
-        voting_response vr;
-
-        voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
-        voteFile.Read(&v, sizeof(votingrec));
-        vr = v.responses[ user.GetVote(lCurVoteRecord) - 1 ];
-        vr.numresponses--;
-        v.responses[ user.GetVote(lCurVoteRecord) - 1 ] = vr;
-        voteFile.Seek(static_cast<long>(lCurVoteRecord * sizeof(votingrec)), File::Whence::begin);
-        voteFile.Write(&v, sizeof(votingrec));
-      }
-      user.SetVote(lCurVoteRecord, 0);
-    }
-  }
-  voteFile.Close();
-
+  delete_votes(config.datadir(), user);
   um.writeuser(&user, user_number);
-  delete_phone_number(user_number, user.GetVoicePhoneNumber());   // dupphone addition
-  delete_phone_number(user_number, user.GetDataPhoneNumber());    // dupphone addition
+  delete_phone_number(config, user_number, user.GetVoicePhoneNumber());   // dupphone addition
+  delete_phone_number(config, user_number, user.GetDataPhoneNumber());    // dupphone addition
 }
 
 void deluser(int user_number) {
-  deluser(user_number, *a()->config(), *a()->users(), *a()->msgapi_email());
+  deluser(user_number, *a()->config(), *a()->users(), *a()->status_manager(), *a()->names(), *a()->msgapi_email());
 }
 
 void print_data(int user_number, User *pUser, bool bLongFormat, bool bClearScreen) {

@@ -304,7 +304,7 @@ public:
     return ss.str();
   }
 
-  bool backup(Config& config, const string& name) {
+  static bool backup(const Config& config, const string& name) {
     string sub_filename = StrCat(config.datadir(), name, ".sub");
     string dat_filename = StrCat(config.msgsdir(), name, ".dat");
 

@@ -315,8 +315,7 @@ int main(int argc, char** argv) {
       options, config, networks.networks(), new NullLastReadImpl());
     auto email_api = make_unique<WWIVMessageApi>(
       options, config, networks.networks(), new NullLastReadImpl());
-    auto user_manager = make_unique<UserManager>(
-      config.config()->datadir, config.config()->userreclen, config.config()->maxusers);
+    auto user_manager = make_unique<UserManager>(config);
 
     Context context(config, net, *user_manager.get(), networks.networks());
     context.network_number = net_cmdline.network_number();

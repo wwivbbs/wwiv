@@ -53,7 +53,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace wwivutil {
 
-static int show_qscan(Config& config) {
+static int show_qscan(const Config& config) {
   StatusMgr mgr(config.datadir(), [](int) {});
   auto status = mgr.GetStatus();
 
@@ -63,7 +63,7 @@ static int show_qscan(Config& config) {
   return 0;
 }
 
-static int set_qscan(Config& config, uint32_t qscan) {
+static int set_qscan(const Config& config, uint32_t qscan) {
   StatusMgr mgr(config.datadir(), [](int) {});
   mgr.Run([=](WStatus& s) {
     s.SetQScanPointer(qscan);

@@ -23,15 +23,24 @@
 #include <cstdlib>
 #include <iostream>
 #include <memory>
+#include <vector>
+
 #include "core/strings.h"
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "sdk/config.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
+#include "sdk/phone_numbers.h"
+#include "sdk/status.h"
 #include "sdk/user.h"
+#include "sdk/msgapi/email_wwiv.h"
+#include "sdk/msgapi/message_api_wwiv.h"
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::msgapi;
 
 namespace wwiv {
 namespace sdk {
@@ -39,12 +48,12 @@ namespace sdk {
 /////////////////////////////////////////////////////////////////////////////
 // class UserManager
 
-UserManager::UserManager(std::string data_directory, int userrec_length, int max_number_users)
-  : data_directory_(data_directory), userrec_length_(userrec_length),
-    max_number_users_(max_number_users), allow_writes_(true) {}
-
 UserManager::UserManager(const wwiv::sdk::Config& config)
-  : UserManager(config.config()->datadir, config.config()->userreclen, config.config()->maxusers) {
+  : config_(config),
+    data_directory_(config.config()->datadir), 
+    userrec_length_(config.config()->userreclen), 
+    max_number_users_(config.config()->maxusers),
+    allow_writes_(true){
   if (config.versioned_config_dat()) {
     CHECK_EQ(config.config()->userreclen, sizeof(userrec)) 
       << "For WWIV 5.2 or later, we expect the userrec length to match what's written\r\n"
@@ -109,6 +118,88 @@ bool UserManager::writeuser(User *pUser, int user_number) {
   }
 
   return this->writeuser_nocache(pUser, user_number);
+}
+
+static void delete_phone_number(const Config& config, int usernum, const char *phone) {
+  PhoneNumbers pn(config);
+  if (!pn.IsInitialized()) {
+    return;
+  }
+  pn.erase(usernum, phone);
+}
+// Deletes a record from NAMES.LST (DeleteSmallRec)
+static void DeleteSmallRecord(StatusMgr& status_manager, Names& names, const char *name) {
+  WStatus *pStatus = status_manager.BeginTransaction();
+  int found_user = names.FindUser(name);
+  if (found_user < 1) {
+    status_manager.AbortTransaction(pStatus);
+    LOG(ERROR) << "#*#*#*#*#*#*#*# '" << name << "' NOT ABLE TO BE DELETED";
+    LOG(ERROR) << "#*#*#*#*#*#*#*# Run //RESETF to fix it.";
+    return;
+  }
+  names.Remove(found_user);
+  pStatus->DecrementNumUsers();
+  pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
+  names.Save();
+  status_manager.CommitTransaction(pStatus);
+}
+
+static bool delete_votes(const std::string datadir, User& user) {
+  DataFile<votingrec> voteFile(datadir, VOTING_DAT, File::modeReadWrite | File::modeBinary);
+  if (!voteFile) {
+    return false;
+  }
+  std::vector<votingrec> votes;
+  voteFile.ReadVector(votes);
+  auto num_vote_records = voteFile.number_of_records();
+  for (size_t cur_vote = 0; cur_vote < 20; cur_vote++) {
+    if (user.GetVote(cur_vote)) {
+      if (cur_vote <= num_vote_records) {
+        auto &v = votes.at(cur_vote);
+        v.responses[user.GetVote(cur_vote) - 1].numresponses--;
+      }
+      user.SetVote(cur_vote, 0);
+    }
+  }
+  voteFile.Seek(0);
+  return voteFile.WriteVector(votes);
+}
+
+static bool deluser(int user_number, const Config& config, UserManager& um, 
+  StatusMgr& sm, Names& names, WWIVMessageApi& api) {
+  User user;
+  um.readuser(&user, user_number);
+
+  if (user.IsUserDeleted()) {
+    return true;
+  }
+  // TODO(rushfan): Need SSM class method to remove SSMs.
+  //rsm(user_number, &user, false);
+  DeleteSmallRecord(sm, names, user.GetName());
+  user.SetInactFlag(User::userDeleted);
+  user.SetNumMailWaiting(0);
+  um.writeuser(&user, user_number);
+  {
+    std::unique_ptr<WWIVEmail> email(api.OpenEmail());
+    email->DeleteAllMailToOrFrom(user_number);
+  }
+
+  delete_votes(config.datadir(), user);
+  um.writeuser(&user, user_number);
+  delete_phone_number(config, user_number, user.GetVoicePhoneNumber());   // dupphone addition
+  delete_phone_number(config, user_number, user.GetDataPhoneNumber());    // dupphone addition
+  return true;
+}
+
+
+bool UserManager::delete_user(int user_number) {
+  StatusMgr sm(config_.datadir(), [](int) {});
+  Names names(config_);
+  MessageApiOptions options;
+  WWIVMessageApi api(options, config_, {}, new NullLastReadImpl());
+
+  deluser(user_number, config_, *this, sm, names, api);
+  return true;
 }
 
 }  // namespace sdk

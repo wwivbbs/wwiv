@@ -30,7 +30,7 @@ namespace sdk {
 
 class Names {
 public:
-  explicit Names(wwiv::sdk::Config& config);
+  explicit Names(const wwiv::sdk::Config& config);
   virtual ~Names();
 
   std::string UserName(uint32_t user_number) const;
