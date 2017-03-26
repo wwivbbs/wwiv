@@ -121,28 +121,31 @@ bool UserManager::writeuser(User *pUser, int user_number) {
   return this->writeuser_nocache(pUser, user_number);
 }
 
-static void delete_phone_number(const Config& config, int usernum, const char *phone) {
-  PhoneNumbers pn(config);
-  if (!pn.IsInitialized()) {
-    return;
-  }
-  pn.erase(usernum, phone);
-}
 // Deletes a record from NAMES.LST (DeleteSmallRec)
-static void DeleteSmallRecord(StatusMgr& status_manager, Names& names, const char *name) {
-  WStatus *pStatus = status_manager.BeginTransaction();
+static void DeleteSmallRecord(StatusMgr& sm, Names& names, const char *name) {
   int found_user = names.FindUser(name);
   if (found_user < 1) {
-    status_manager.AbortTransaction(pStatus);
     LOG(ERROR) << "#*#*#*#*#*#*#*# '" << name << "' NOT ABLE TO BE DELETED";
     LOG(ERROR) << "#*#*#*#*#*#*#*# Run //RESETF to fix it.";
     return;
   }
-  names.Remove(found_user);
-  pStatus->DecrementNumUsers();
-  pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  names.Save();
-  status_manager.CommitTransaction(pStatus);
+
+  sm.Run([&](WStatus& s) {
+    names.Remove(found_user);
+    s.DecrementNumUsers();
+    s.IncrementFileChangedFlag(WStatus::fileChangeNames);
+    names.Save();
+  });
+}
+
+// Inserts a record into NAMES.LST
+static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, const char *name) {
+  sm.Run([&](WStatus& s) {
+    names.Add(name, user_number);
+    names.Save();
+    s.IncrementNumUsers();
+    s.IncrementFileChangedFlag(WStatus::fileChangeNames);
+  });
 }
 
 static bool delete_votes(const std::string datadir, User& user) {
@@ -187,11 +190,18 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
 
   delete_votes(config.datadir(), user);
   um.writeuser(&user, user_number);
-  delete_phone_number(config, user_number, user.GetVoicePhoneNumber());   // dupphone addition
-  delete_phone_number(config, user_number, user.GetDataPhoneNumber());    // dupphone addition
+
+  // TODO(rushfan): It's unclear if this is really the right place
+  // to do this.  We could go either wya on this, let the caller handle
+  // the other things (like phone numbers), or 
+  PhoneNumbers pn(config);
+  if (!pn.IsInitialized()) {
+    return false;
+  }
+  pn.erase(user_number, user.GetVoicePhoneNumber());
+  pn.erase(user_number, user.GetDataPhoneNumber());
   return true;
 }
-
 
 bool UserManager::delete_user(int user_number) {
   StatusMgr sm(config_.datadir(), [](int) {});

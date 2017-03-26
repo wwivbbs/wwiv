@@ -561,16 +561,14 @@ void input_ansistat() {
 }
 
 // Inserts a record into NAMES.LST
-static void InsertSmallRecord(int user_number, const char *name) {
-  WStatus *pStatus = a()->status_manager()->BeginTransaction();
-  a()->names()->Add(name, user_number);
-  a()->names()->Save();
-
-  pStatus->IncrementNumUsers();
-  pStatus->IncrementFileChangedFlag(WStatus::fileChangeNames);
-  a()->status_manager()->CommitTransaction(pStatus);
+static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, const char *name) {
+  sm.Run([&](WStatus& s) {
+    names.Add(name, user_number);
+    names.Save();
+    s.IncrementNumUsers();
+    s.IncrementFileChangedFlag(WStatus::fileChangeNames);
+  });
 }
-
 
 static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   File userFile(a()->config()->datadir(), USER_LST);
@@ -612,7 +610,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
         userFile.Write(&pUser->data, a()->config()->config()->userreclen);
         userFile.Close();
         write_qscn(user_number, qscn, false);
-        InsertSmallRecord(user_number, pUser->GetName());
+        InsertSmallRecord(*a()->status_manager(), *a()->names(), user_number, pUser->GetName());
         return user_number;
       } else {
         user_number++;
@@ -625,7 +623,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
     userFile.Write(&pUser->data, a()->config()->config()->userreclen);
     userFile.Close();
     write_qscn(user_number, qscn, false);
-    InsertSmallRecord(user_number, pUser->GetName());
+    InsertSmallRecord(*a()->status_manager(), *a()->names(), user_number, pUser->GetName());
     return user_number;
   } else {
     userFile.Close();
