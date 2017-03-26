@@ -118,6 +118,7 @@ class User {
   ~User();
 
   User(const User& w);
+  User(const userrec& data);
   User& operator=(const User& rhs);
 
   //

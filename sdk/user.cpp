@@ -47,6 +47,10 @@ User::User(const User& w) {
   memcpy(&data, &w.data, sizeof(userrec));
 }
 
+User::User(const userrec& rhs) {
+  memcpy(&data, &rhs, sizeof(userrec));
+}
+
 User& User::operator=(const User& rhs) {
   if (this == &rhs) {
     return *this;

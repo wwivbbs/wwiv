@@ -47,6 +47,7 @@ class UserManager {
    bool writeuser(User *pUser, int user_number);
 
    bool delete_user(int user_number);
+   bool restore_user(int user_number);
 
   /**
    * Setting this to false will disable writing the userrecord to disk.  This should ONLY be false when the

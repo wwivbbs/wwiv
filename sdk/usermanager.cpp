@@ -182,7 +182,6 @@ static bool deluser(int user_number, const Config& config, UserManager& um,
   DeleteSmallRecord(sm, names, user.GetName());
   user.SetInactFlag(User::userDeleted);
   user.SetNumMailWaiting(0);
-  um.writeuser(&user, user_number);
   {
     std::unique_ptr<WWIVEmail> email(api.OpenEmail());
     email->DeleteAllMailToOrFrom(user_number);
@@ -212,6 +211,31 @@ bool UserManager::delete_user(int user_number) {
   deluser(user_number, config_, *this, sm, names, api);
   return true;
 }
+
+bool UserManager::restore_user(int user_number) {
+  User user;
+  this->readuser(&user, user_number);
+
+  if (!user.IsUserDeleted()) {
+    // Not deleted. Nothing to do.
+    return true;
+  }
+
+  StatusMgr sm(config_.datadir(), [](int) {});
+  Names names(config_);
+  InsertSmallRecord(sm, names, user_number, user.GetName());
+  user.ClearInactFlag(User::userDeleted);
+  this->writeuser(&user, user_number);
+
+  PhoneNumbers pn(config_);
+  if (!pn.IsInitialized()) {
+    return false;
+  }
+  pn.insert(user_number, user.GetVoicePhoneNumber());
+  pn.insert(user_number, user.GetDataPhoneNumber());
+  return true;
+}
+
 
 }  // namespace sdk
 }  // namespace wwiv

@@ -35,6 +35,8 @@
 #include "localui/listbox.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
 
 static const int COL1_POSITION = 17;
 static const int COL2_POSITION = 50;
@@ -54,8 +56,11 @@ static void show_user(EditItems* items, userrec* user) {
   items->Display();
 
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
-  for (int i=1; i<13; i++) {
-    const string blank(24, ' ');
+  auto height = items->window()->GetMaxY() - 2;
+  auto width = items->window()->GetMaxX() - 2;
+  const string blank(width - COL2_POSITION, ' ');
+  items->window()->SetColor(SchemeId::WINDOW_TEXT);
+  for (int i = 1; i < height; i++) {
     items->window()->PutsXY(COL2_POSITION, i, blank);
   }
   if (user->inact & inact_deleted) {
@@ -221,6 +226,17 @@ void user_editor(const wwiv::sdk::Config& config) {
     } break;
     case 'D': {
       // Delete user.
+      wwiv::sdk::User u(user);
+      if (u.IsUserDeleted()) {
+        break;
+      }
+      if (!dialog_yn(window.get(), StrCat("Are you sure you want to delete ", u.GetName(), "? "))) {
+        break;
+      }
+      wwiv::sdk::UserManager um(config);
+      if (!um.delete_user(current_usernum)) {
+        messagebox(window.get(), "Error trying to restore user.");
+      }
     } break;
     case 'J': {
       int user_number = JumpToUser(window.get(), config.datadir());
@@ -230,6 +246,14 @@ void user_editor(const wwiv::sdk::Config& config) {
     } break;
     case 'R': {
       // Restore Deleted User.
+      wwiv::sdk::User u(user);
+      if (!u.IsUserDeleted()) {
+        break;
+      }
+      wwiv::sdk::UserManager um(config);
+      if (!um.restore_user(current_usernum)) {
+        messagebox(window.get(), "Error trying to restore user.");
+      }
     } break;
     case 'Q':
     case '\033':
