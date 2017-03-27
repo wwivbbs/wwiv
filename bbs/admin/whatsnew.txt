@@ -46,9 +46,10 @@ What's New in WWIV 5.3
   on the http port defined on init, URL: "/status"
   Example output:
     { "status": [ { "num_instances" : 3 }, { "used_instances": 0 } ] }
-
-
-
++ New option to set the working directory to the temp directory vs. 
+  bbs directory. It's available for both chains and editors.
++ Added %I when running commands to point to the path to the temporary
+  directory.
 
 
 What's New in WWIV 5.2 (2016)
