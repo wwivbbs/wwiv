@@ -124,16 +124,13 @@ void modify_chain(int nCurrentChainum) {
       s[1] = 0;
     }
     bout << "|#9D) AR           : |#2" << s << wwiv::endl;
-    bout << "|#9E) ANSI         : |#2" << ((c.ansir & ansir_ansi) ? "|#6Required" : "|#1Optional") <<
-                       wwiv::endl;
+    bout << "|#9E) ANSI         : |#2" << ((c.ansir & ansir_ansi) ? "|#6Required" : "|#1Optional") << wwiv::endl;
     bout << "|#9F) DOS Interrupt: |#2" << ((c.ansir & ansir_no_DOS) ? "NOT Used" : "Used") << wwiv::endl;
-    bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) <<
-                       wwiv::endl;
+    bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) << wwiv::endl;
     bout << "|#9H) Native STDIO : |#2" << YesNoString((c.ansir & ansir_stdio) ? true : false) << wwiv::endl;
-    bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false) <<
-                       wwiv::endl;
-    bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) <<
-                       wwiv::endl;
+    bout << "|#9I) TEMP dir CWD : |#2" << YesNoString((c.ansir & ansir_temp_dir) ? true : false) << wwiv::endl;
+    bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false) << wwiv::endl;
+    bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) << wwiv::endl;
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
       User regUser;
       if (r.regby[0]) {
@@ -150,20 +147,20 @@ void modify_chain(int nCurrentChainum) {
       if (r.maxage == 0 && r.minage == 0) {
         r.maxage = 255;
       }
-      bout << "|#9N) Age limit    : |#2" << static_cast<int>(r.minage) << " - " << static_cast<int>
-                         (r.maxage) << wwiv::endl;
+      bout << "|#9N) Age limit    : |#2" << static_cast<int>(r.minage) << " - " 
+        << static_cast<int>(r.maxage) << wwiv::endl;
       bout.nl();
       bout << "|#7(|#2Q|#7=|#1Quit|#7) Which (|#1A|#7-|#1N|#7,|#1R|#7,|#1[|#7,|#1]|#7) : ";
-      ch = onek("QABCDEFGHJKLMN[]", true);     // removed i
+      ch = onek("QABCDEFGHIJKLMN[]", true);     // removed i
     } else {
       bout.nl();
       bout << "|#9Which (A-K,R,[,],Q) ? ";
-      ch = onek("QABCDEFGHJK[]", true);   // removed i
+      ch = onek("QABCDEFGHIJK[]", true);   // removed i
     }
     switch (ch) {
-    case 'Q':
+    case 'Q': {
       done = true;
-      break;
+    } break;
     case '[':
       a()->chains[ nCurrentChainum ] = c;
       if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
@@ -230,6 +227,7 @@ void modify_chain(int nCurrentChainum) {
     case 'F': c.ansir ^= ansir_no_DOS; break;
     case 'G': c.ansir ^= ansir_emulate_fossil; break;
     case 'H': c.ansir ^= ansir_stdio; break;
+    case 'I': c.ansir ^= ansir_temp_dir; break;
     case 'J': c.ansir ^= ansir_local_only; break;
     case 'K':c.ansir ^= ansir_multi_user; break;
     case 'L':
@@ -300,7 +298,7 @@ void modify_chain(int nCurrentChainum) {
   }
 }
 
-void insert_chain(int nCurrentChainum) {
+void insert_chain(int pos) {
   {
     chainfilerec c{};
     strcpy(c.description, "** NEW CHAIN **");
@@ -310,16 +308,16 @@ void insert_chain(int nCurrentChainum) {
     c.ansir = 0;
     c.ansir |= ansir_no_DOS;
 
-    insert_at(a()->chains, nCurrentChainum, c);
+    insert_at(a()->chains, pos, c);
   }
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     chainregrec r{};
     memset(&r, 0, sizeof(r));
     r.maxage = 255;
 
-    insert_at(a()->chains_reg, nCurrentChainum, r);
+    insert_at(a()->chains_reg, pos, r);
   }
-  modify_chain(nCurrentChainum);
+  modify_chain(pos);
 }
 
 void delete_chain(int nCurrentChainum) {

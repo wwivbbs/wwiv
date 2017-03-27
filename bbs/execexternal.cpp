@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/execexternal.h"
 
+
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/vars.h"
@@ -25,6 +26,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/wqscn.h"
 #include "bbs/platform/platformfcns.h"
+#include "core/log.h"
 
 int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // forget it if the user has hung up
@@ -48,6 +50,14 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
 
   // Make sure our working dir is back to the BBS dir.
   a()->CdHome();
+  
+  if (nFlags & EFLAG_TEMP_DIR) {
+    // If EFLAG_TEMP_DIR is specified, we should set the working directory
+    // to the TEMP directory for the instance instead of the BBS directory.
+    if (!File::set_current_directory(a()->temp_directory())) {
+      LOG(ERROR) << "Unable to set working directory to: " << a()->temp_directory();
+    }
+  }
 
   // Some LocalIO implementations (Curses) needs to disable itself before
   // we fork some other process.

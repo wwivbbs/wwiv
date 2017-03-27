@@ -42,7 +42,7 @@ class NamesTest : public testing::Test {
 public:
   NamesTest() : config(helper.root()) {
     EXPECT_TRUE(config.IsInitialized());
-    EXPECT_TRUE(CreateNames(config));
+    EXPECT_TRUE(CreateNames());
     names_.reset(new Names(config));
   }
 
@@ -50,7 +50,7 @@ public:
     config.IsInitialized();
   }
 
-  bool CreateNames(const Config& config) {
+  bool CreateNames() {
     File file(config.datadir(), NAMES_LST);
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {

@@ -174,6 +174,9 @@ void run_chain(int nChainum) {
   if (c.ansir & ansir_stdio) {
     flags |= EFLAG_STDIO;
   }
+  if (c.ansir & ansir_temp_dir) {
+    flags |= EFLAG_TEMP_DIR;
+  }
 
   ExecuteExternalProgram(chainCmdLine, flags);
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);

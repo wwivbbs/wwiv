@@ -869,7 +869,9 @@ struct batchrec {
 #define ansir_no_DOS                0x02
 #define ansir_emulate_fossil        0x04
 #define ansir_stdio                 0x08
-#define ansir_no_pause              0x10
+// Execute this command from the instance temp directory
+// instead of the main BBS directory.
+#define ansir_temp_dir              0x10
 #define ansir_local_only            0x20
 #define ansir_multi_user            0x40
 
@@ -968,6 +970,8 @@ struct filestatusrec {
 // Use STDIO based doors for Window/Linux.  This will set the stdin/stdout
 // file descriptors to the socket before spawning the chain.
 #define EFLAG_STDIO           0x0400
+// Run out of the TEMP directory instead of the BBS directory
+#define EFLAG_TEMP_DIR        0x0800
 
 ///////////////////////////////////////////////////////////////////////////////
 

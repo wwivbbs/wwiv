@@ -55,37 +55,42 @@ static void edit_editor(editorrec& e) {
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("External Editor Configuration", 17, 78));
 
   const vector<std::pair<uint8_t, string>> bbs_types = {{0, "WWIV"}, {1,"QuickBBS"}};
-  const int COL1_POSITION = 22;
+  const int COL1_POSITION = 32;
 
   if (!(e.ansir & ansir_ansi)) {
     e.ansir |= ansir_emulate_fossil;
     e.ansir |= ansir_no_DOS;
     e.ansir |= ansir_ansi;
+    e.ansir |= ansir_temp_dir;
   }
 
-  EditItems items{
-    new StringEditItem<char*>(COL1_POSITION, 1, 35, e.description, false),
-    new ToggleEditItem<uint8_t>(out, COL1_POSITION, 2, bbs_types, &e.bbs_type),
-    new FlagEditItem<uint8_t>(out, COL1_POSITION, 3, ansir_no_DOS, "No ", "Yes", &e.ansir),
-    new FlagEditItem<uint8_t>(out, COL1_POSITION, 4, ansir_emulate_fossil, "Yes", "No ", &e.ansir),
-    new CommandLineItem(2, 6, 75, e.filename),
-    new CommandLineItem(2, 9, 75, e.filenamecon)
-  };
+  int y = 1;
+  EditItems items{};
+  items.add(new StringEditItem<char*>(COL1_POSITION, y++, 35, e.description, false));
+  items.add(new ToggleEditItem<uint8_t>(out, COL1_POSITION, y++, bbs_types, &e.bbs_type));
+  items.add(new FlagEditItem<uint8_t>(out, COL1_POSITION, y++, ansir_no_DOS, "No ", "Yes", &e.ansir));
+  items.add(new FlagEditItem<uint8_t>(out, COL1_POSITION, y++, ansir_emulate_fossil, "Yes", "No ", &e.ansir));
+  items.add(new FlagEditItem<uint8_t>(out, COL1_POSITION, y++, ansir_temp_dir, "Yes", "No ", &e.ansir));
+  y++;
+  items.add(new CommandLineItem(2, y++, 75, e.filename));
+  y += 2;
+  items.add(new CommandLineItem(2, y++, 75, e.filenamecon));
   items.set_curses_io(out, window.get());
 
-  int y = 1;
-  window->PutsXY(2, y++, "Description       : ");
-  window->PutsXY(2, y++, "BBS Type          : ");
-  window->PutsXY(2, y++, "Use DOS Interrupts: ");
-  window->PutsXY(2, y++, "Emulate FOSSIL    : ");
+  y = 1;
+  window->PutsXY(2, y++, "Description                 : ");
+  window->PutsXY(2, y++, "BBS Type                    : ");
+  window->PutsXY(2, y++, "Use DOS Interrupts          : ");
+  window->PutsXY(2, y++, "Emulate FOSSIL              : ");
+  window->PutsXY(2, y++, "Temp Directory Working Dir  : ");
   window->PutsXY(2, y++, "Filename to run remotely:");
   y+=2;
   window->PutsXY(2, y++, "Filename to run locally:");
   y+=2;
-  window->PutsXY(2, y++, "%1 = filename to edit");
-  window->PutsXY(2, y++, "%2 = chars per line");
-  window->PutsXY(2, y++, "%3 = lines per page");
-  window->PutsXY(2, y++, "%4 = max lines");
+  window->PutsXY(2, y++, "%1 = filename to edit   %N = Node Number ");
+  window->PutsXY(2, y++, "%2 = chars per line     %H = Socket Handle");
+  window->PutsXY(2, y++, "%3 = lines per page     ");
+  window->PutsXY(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed.");
   items.Run();
 }
 
@@ -131,7 +136,7 @@ void extrn_editors(const wwiv::sdk::Config& config) {
           }
           string prompt = StringPrintf("Insert before which (1-%d) : ", editors.size() + 1);
           size_t i = dialog_input_number(out->window(), prompt, 1, editors.size() + 1);
-          editorrec e;
+          editorrec e{};
           memset(&e, 0, sizeof(editorrec));
           // N.B. i is one based, result.selected is 0 based.
           if (i <= 0 || i > editors.size() + 1) {

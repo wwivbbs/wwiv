@@ -43,7 +43,7 @@ class NetworkTest : public testing::Test {
 public:
   NetworkTest() : config(helper.root()) {
     EXPECT_TRUE(config.IsInitialized());
-    EXPECT_TRUE(CreateNetworksDat(config, { "one", "two" }));
+    EXPECT_TRUE(CreateNetworksDat({ "one", "two" }));
     networks.reset(new Networks(config));
     EXPECT_TRUE(networks->IsInitialized());
   }
@@ -52,7 +52,7 @@ public:
     config.IsInitialized();
   }
 
-  bool CreateNetworksDat(const Config& config, std::vector<std::string> names) {
+  bool CreateNetworksDat(std::vector<std::string> names) {
     std::clog << "Writing NETWORK.DAT to: " << config.datadir() << std::endl;
     File file(config.datadir(), NETWORKS_DAT);
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);

@@ -298,15 +298,15 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
     tFileTime = fileTempForTime.last_write_time();
   }
 
-  const string sx1 = StringPrintf("%d", a()->user()->GetScreenChars());
+  const string sx1 = std::to_string(a()->user()->GetScreenChars());
   int num_screen_lines = a()->user()->GetScreenLines();
   if (!a()->using_modem) {
     int newtl = (a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine()) ? 0 :
                 a()->localIO()->GetTopLine();
     num_screen_lines = a()->defscreenbottom + 1 - newtl;
   }
-  const string sx2 = StringPrintf("%d", num_screen_lines);
-  const string sx3 = StringPrintf("%d", numlines);
+  const string sx2 = std::to_string(num_screen_lines);
+  const string sx3 = std::to_string(numlines);
   const string cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(), sx1, sx2, sx3, "");
 
   // TODO(rushfan): Make this a common function shared between here and chains.
@@ -316,6 +316,9 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   }
   if (editor.ansir & ansir_emulate_fossil) {
     flags |= EFLAG_FOSSIL;
+  }
+  if (editor.ansir & ansir_temp_dir) {
+    flags |= EFLAG_TEMP_DIR;
   }
 
   ExecuteExternalProgram(cmdLine, flags);
