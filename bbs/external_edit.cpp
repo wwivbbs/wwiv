@@ -188,7 +188,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   fedit_data.anon = 0;
 
   File fileFEditInf(a()->temp_directory(), FEDIT_INF);
-  if (fileFEditInf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyRead)) {
+  if (fileFEditInf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
     fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
     fileFEditInf.Close();
   }
