@@ -69,12 +69,7 @@ const unsigned int GetTimeLeft();
 const string stuff_in(const string& commandline, const string& arg1,
                       const string& arg2, const string& arg3,
                       const string& arg4, const string& arg5) {
-  vector<string> flags;
-  flags.push_back(arg1);
-  flags.push_back(arg2);
-  flags.push_back(arg3);
-  flags.push_back(arg4);
-  flags.push_back(arg5);
+  vector<string> flags = { arg1, arg2, arg3, arg4, arg5 };
 
   auto iter = begin(commandline);
   std::ostringstream os;
@@ -84,9 +79,7 @@ const string stuff_in(const string& commandline, const string& arg1,
       char ch = to_upper_case<char>(*iter);
       switch (ch) {
       // fixed strings
-      case '%':
-        os << "%";
-        break;
+      case '%': os << "%"; break;
       // replacable parameters
       case '1':
       case '2':
@@ -96,58 +89,29 @@ const string stuff_in(const string& commandline, const string& arg1,
         os << flags.at(ch - '1');
         break;
       // call-specific numbers
-      case 'A':
-        os << create_filename(CHAINFILE_CALLINFO);
-        break;
-      case 'C':
-        os << create_filename(CHAINFILE_CHAIN);
-        break;
-      case 'D':
-        os << create_filename(CHAINFILE_DORINFO);
-        break;
-      case 'E':
-        os << create_filename(CHAINFILE_DOOR32);
-        break;
-      case 'H':
-        os << a()->remoteIO()->GetDoorHandle();
-        break;
+      case 'A': os << create_filename(CHAINFILE_CALLINFO); break;
+      case 'C': os << create_filename(CHAINFILE_CHAIN); break;
+      case 'D': os << create_filename(CHAINFILE_DORINFO); break;
+      case 'E': os << create_filename(CHAINFILE_DOOR32); break;
+      case 'H': os << a()->remoteIO()->GetDoorHandle(); break;
       case 'I': os << a()->temp_directory(); break;
-      case 'K':
-        os << a()->config()->gfilesdir() << COMMENT_TXT;
-        break;
-      case 'M':
-        os << modem_speed;
-        break;
-      case 'N':
-        os << a()->instance_number();
-        break;
-      case 'O':
-        os << create_filename(CHAINFILE_PCBOARD);
-        break;
-      case 'P':
-        os << ((incom) ? a()->primary_port() : 0);
-        break;
-      case 'R':
-        os << create_filename(CHAINFILE_DOOR);
-        break;
-      case 'S':
-        // TODO(rushfan): Should we deprecate this?
-        // Use modem speed for now.
-        os << modem_speed;
-        break;
-      case 'T':
-        os << GetTimeLeft();
-        break;
-      case 'U':
-        os << a()->user()->GetName();
-        break;
+      case 'K': os << a()->config()->gfilesdir() << COMMENT_TXT; break;
+      case 'M': os << modem_speed; break;
+      case 'N': os << a()->instance_number(); break;
+      case 'O': os << create_filename(CHAINFILE_PCBOARD); break;
+      case 'P': os << ((incom) ? a()->primary_port() : 0); break;
+      case 'R': os << create_filename(CHAINFILE_DOOR); break;
+      // TODO(rushfan): Should we deprecate this? Use modem speed for now.
+      case 'S': os << modem_speed; break;
+      case 'T': os << GetTimeLeft(); break;
+      case 'U': os << a()->user()->GetName(); break;
       }
       ++iter;
     } else {
       os << *iter++;
     }
   }
-  return string(os.str());
+  return os.str();
 }
 
 const unsigned int GetTimeLeft() {
