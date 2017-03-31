@@ -446,3 +446,22 @@ bool File::set_last_write_time(time_t last_write_time) {
   ut.actime = ut.modtime = last_write_time;
   return utime(full_path_name_.c_str(), &ut) != -1;
 }
+
+std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_type) {
+#ifdef _WIN32
+  HANDLE h = reinterpret_cast<HANDLE>(_get_osfhandle(handle_));
+  OVERLAPPED overlapped = { 0 };
+  DWORD dwLockType = 0;
+  if (lock_type == wwiv::core::FileLockType::write_lock) {
+    dwLockType = LOCKFILE_EXCLUSIVE_LOCK;
+  }
+  if (!::LockFileEx(h, dwLockType, 0, MAXDWORD, MAXDWORD, &overlapped)) {
+    LOG(ERROR) << "Error Locking file: " << full_path_name_;
+  }
+#else
+
+  // TODO: unlock here
+
+#endif  // _WIN32
+  return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_, lock_type);
+}

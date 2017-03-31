@@ -8,6 +8,7 @@ set(COMMON_SOURCES
   command_line.cpp
   connection.cpp
   file.cpp
+  file_lock.cpp
   file_unix.cpp
   findfiles.cpp
   graphs.cpp
@@ -18,6 +19,7 @@ set(COMMON_SOURCES
   net.cpp
   os.cpp
   os_unix.cpp
+  semaphore_file.cpp
   socket_connection.cpp
   socket_exceptions.cpp
   strings.cpp

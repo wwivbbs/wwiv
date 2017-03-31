@@ -17,15 +17,17 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_PLATFORM_WFILLE_H__
-#define __INCLUDED_PLATFORM_WFILLE_H__
+#ifndef __INCLUDED_CORE_FILE_H__
+#define __INCLUDED_CORE_FILE_H__
 
 #include <cstring>
 #include <ctime>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <sys/types.h>
 
+#include "core/file_lock.h"
 #include "core/wwivport.h"
 
 #ifndef MAX_PATH
@@ -126,7 +128,7 @@ class File {
   virtual bool Delete();
 
   virtual bool IsDirectory() const;
-  virtual bool IsFile() const ;
+  virtual bool IsFile() const;
 
   virtual bool SetFilePermissions(int nPermissions);
   virtual time_t creation_time();
@@ -144,10 +146,12 @@ class File {
   virtual std::string GetName() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
-      return std::string("");
+      return {};
     }
     return full_path_name_.substr(found + 1);
   }
+
+  virtual std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
   virtual const std::string full_pathname() const { return full_path_name_; }
   virtual const std::string last_error() const { return error_text_; }
@@ -195,4 +199,4 @@ class File {
 };
 
 
-#endif // __INCLUDED_PLATFORM_WFILLE_H__
+#endif // __INCLUDED_CORE_FILE_H__

@@ -127,6 +127,7 @@ bool SSM::delete_local_to_user(uint32_t user_number) {
       file.Write(i, &sm);
     }
   }
+  return true;
 }
 
 }

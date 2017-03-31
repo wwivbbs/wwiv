@@ -97,6 +97,7 @@
     <ClCompile Include="command_line.cpp" />
     <ClCompile Include="connection.cpp" />
     <ClCompile Include="crc32.cpp" />
+    <ClCompile Include="file_lock.cpp" />
     <ClCompile Include="findfiles.cpp" />
     <ClCompile Include="graphs.cpp" />
     <ClCompile Include="http_server.cpp" />
@@ -106,6 +107,7 @@
     <ClCompile Include="net.cpp" />
     <ClCompile Include="os.cpp" />
     <ClCompile Include="os_win.cpp" />
+    <ClCompile Include="semaphore_file.cpp" />
     <ClCompile Include="socket_connection.cpp" />
     <ClCompile Include="socket_exceptions.cpp" />
     <ClCompile Include="stl.cpp" />
@@ -129,6 +131,7 @@
     <ClInclude Include="connection.h" />
     <ClInclude Include="crc32.h" />
     <ClInclude Include="datafile.h" />
+    <ClInclude Include="file_lock.h" />
     <ClInclude Include="findfiles.h" />
     <ClInclude Include="graphs.h" />
     <ClInclude Include="http_server.h" />
@@ -139,6 +142,7 @@
     <ClInclude Include="net.h" />
     <ClInclude Include="os.h" />
     <ClInclude Include="scope_exit.h" />
+    <ClInclude Include="semaphore_file.h" />
     <ClInclude Include="socket_connection.h" />
     <ClInclude Include="socket_exceptions.h" />
     <ClInclude Include="stl.h" />

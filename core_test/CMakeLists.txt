@@ -18,6 +18,7 @@ set(test_sources
   md5_test.cpp
   os_test.cpp
   scope_exit_test.cpp
+  semaphore_file_test.cpp
   stl_test.cpp
   strings_test.cpp
   textfile_test.cpp
