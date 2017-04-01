@@ -3,7 +3,7 @@ WWIV BBS
 
 WWIV is compiled with the following compilers:
   
-- MS Visual C++ 2015 Community Edition.
+- MS Visual C++ 2017 Community Edition.
 - GCC 4.9.2 (or later) on Linux 
   (Debian8 or Ubuntu, but not required)
 
