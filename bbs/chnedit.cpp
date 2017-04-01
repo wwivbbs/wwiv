@@ -97,6 +97,11 @@ void ShowChainCommandLineHelp() {
   bout.nl();
 }
 
+static std::string YesNoStringList(bool b, const std::string& yes, const std::string& no) {
+  if (b) return yes;
+  return no;
+}
+
 void modify_chain(int nCurrentChainum) {
   chainregrec r;
   char s[255], s1[255], ch, ch2;
@@ -128,7 +133,7 @@ void modify_chain(int nCurrentChainum) {
     bout << "|#9F) DOS Interrupt: |#2" << ((c.ansir & ansir_no_DOS) ? "NOT Used" : "Used") << wwiv::endl;
     bout << "|#9G) Win32 FOSSIL : |#2" << YesNoString((c.ansir & ansir_emulate_fossil) ? true : false) << wwiv::endl;
     bout << "|#9H) Native STDIO : |#2" << YesNoString((c.ansir & ansir_stdio) ? true : false) << wwiv::endl;
-    bout << "|#9I) TEMP dir CWD : |#2" << YesNoString((c.ansir & ansir_temp_dir) ? true : false) << wwiv::endl;
+    bout << "|#9I) Launch From  : |#2" << YesNoStringList(c.ansir & ansir_temp_dir, "Temp/Node Directory", "BBS Root Directory") << wwiv::endl;
     bout << "|#9J) Local only   : |#2" << YesNoString((c.ansir & ansir_local_only) ? true : false) << wwiv::endl;
     bout << "|#9K) Multi user   : |#2" << YesNoString((c.ansir & ansir_multi_user) ? true : false) << wwiv::endl;
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
