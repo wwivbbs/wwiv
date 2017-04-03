@@ -147,6 +147,10 @@ std::string Output::MakeColor(int wwivcolor) {
     c = (a()->user()->HasColor() ?
       a()->user()->GetColor(wwivcolor) : a()->user()->GetBWColor(wwivcolor));
   }
+  else {
+    // Invalid color, let's use 7 vs. 0 so it's not black-on-black.
+    c = 7;
+  }
   if (c == curatr) {
     return "";
   }
