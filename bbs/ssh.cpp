@@ -143,21 +143,21 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 
   status = cryptCreateSession(&session_, CRYPT_UNUSED, CRYPT_SESSION_SSH_SERVER);
   if (!OK(status)) {
-    LOG(INFO) << "ERROR: Unable to create SSH session.";
+    VLOG(1) << "ERROR: Unable to create SSH session.";
     return;
   }
   
   VLOG(1) << "setting private key.";
   status = cryptSetAttribute(session_, CRYPT_SESSINFO_PRIVATEKEY, key.context());
   if (!OK(status)) {
-    LOG(INFO) << "ERROR: Failed to set private key";
+    VLOG(1) << "ERROR: Failed to set private key";
     return;
   }
 
   VLOG(1) << "setting socket handle.";
   status = cryptSetAttribute(session_, CRYPT_SESSINFO_NETWORKSOCKET, socket_handle_);
   if (!OK(status)) {
-    LOG(ERROR) << "ERROR adding socket handle!";
+    VLOG(1) << "ERROR adding socket handle!";
     return;
   }
 
@@ -166,7 +166,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
     VLOG(1) << "Looping to activate SSH Session" << status;
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_AUTHRESPONSE, 1);
     if (!OK(status)) {
-      LOG(INFO) << "Error setting CRYPT_SESSINFO_AUTHRESPONSE " << status;
+      VLOG(1) << "Error setting CRYPT_SESSINFO_AUTHRESPONSE " << status;
       continue;
     }
     status = cryptSetAttribute(session_, CRYPT_SESSINFO_ACTIVE, 1);
@@ -175,7 +175,7 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
       success = true;
       break;
     } else {
-      LOG(INFO) << "Error setting CRYPT_SESSINFO_ACTIVE " << status;
+      VLOG(1) << "Error setting CRYPT_SESSINFO_ACTIVE " << status;
     }
   }
 
@@ -185,14 +185,14 @@ SSHSession::SSHSession(int socket_handle, const Key& key) : socket_handle_(socke
 #endif  // PAUSE_ON_SSH_CONNECT_FOR_DEBUGGER
 
   if (!success) {
-    LOG(INFO) << "We don't have a valid SSH connection here!";
+    VLOG(1) << "We don't have a valid SSH connection here!";
   } else {
     // Clear out any remaining control messages.
     int bytes_received = 0;
     char buffer[4096];
     status = cryptPopData(session_, buffer, 4096, &bytes_received);
     if (!OK(status)) {
-    	LOG(ERROR) << "error clearing buffer (but that is ok). status: "
+    	VLOG(1) << "ERROR clearing buffer (but that is ok). status: "
     	     << status;
     }
 
@@ -281,7 +281,7 @@ static void reader_thread(SSHSession& session, SOCKET socket) {
       VLOG(1) << "reader_thread: sent " << num_sent;
     }
   } catch (const socket_error& e) {
-    LOG(ERROR) << e.what();
+    VLOG(1) << e.what();
   }
   closesocket(socket);
 }
@@ -306,7 +306,7 @@ static void writer_thread(SSHSession& session, SOCKET socket) {
       }
     }
   } catch (const socket_error& e) {
-    LOG(ERROR) << e.what();
+    VLOG(1) << e.what();
   }
   closesocket(socket);
 }
@@ -315,7 +315,7 @@ IOSSH::IOSSH(SOCKET ssh_socket, Key& key)
   : ssh_socket_(ssh_socket), session_(ssh_socket, key) {
   static bool initialized = RemoteSocketIO::Initialize();
   if (!ssh_initalize()) {
-    LOG(ERROR) << "ERROR INITIALIZING SSH (ssh_initalize)";
+    VLOG(1) << "ERROR INITIALIZING SSH (ssh_initalize)";
     closesocket(ssh_socket_);
     ssh_socket_ = INVALID_SOCKET;
     return;
@@ -358,7 +358,7 @@ bool IOSSH::ssh_initalize() {
 #else
     int last_error = errno;
 #endif
-    LOG(ERROR) << "WSAGetLastError: " << last_error;
+    VLOG(1) << "WSAGetLastError: " << last_error;
     return false;
   }
 
