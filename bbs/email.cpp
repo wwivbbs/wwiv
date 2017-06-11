@@ -52,10 +52,6 @@
 #define NUM_ATTEMPTS_TO_OPEN_EMAIL 5
 #define DELAY_BETWEEN_EMAIL_ATTEMPTS 9
 
-#define GAT_NUMBER_ELEMENTS 2048
-#define GAT_SECTION_SIZE    4096
-#define MSG_BLOCK_SIZE      512
-
 using std::string;
 using std::stringstream;
 using std::unique_ptr;

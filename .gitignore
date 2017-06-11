@@ -206,3 +206,9 @@ CMakeCache.txt
 Makefile
 *.a
 deps/cl342/*.o
+
+# CLion files
+.idea/
+*.cbp
+
+

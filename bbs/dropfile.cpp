@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 #include "bbs/dropfile.h"
+
 #include <algorithm>
 #include <memory>
 #include <sstream>
@@ -27,12 +28,8 @@
 #include "bbs/bbs.h"
 #include "bbs/instmsg.h"
 #include "bbs/vars.h"
-#include "bbs/remote_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
-#include "sdk/status.h"
-#include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
 
@@ -131,7 +128,7 @@ static void GetNamePartForDropFile(bool lastName, char *name) {
 }
 
 static long GetMinutesRemainingForDropFile() {
-  long time_left = std::max<long>((static_cast<long>(nsl() / 60)) - 1L, 0);
+  long time_left = std::max<long>((nsl() / 60) - 1L, 0);
   bool using_modem = a()->using_modem != 0;
   if (!using_modem) {
     // When we generate a dropfile from the WFC, give it a suitable amount
