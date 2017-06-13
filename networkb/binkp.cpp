@@ -59,7 +59,6 @@ using std::map;
 using std::max;
 using std::min;
 using std::string;
-using std::size_t;
 using std::unique_ptr;
 using std::vector;
 
@@ -329,7 +328,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   if (!conn_->is_open()) {
     return false;
   }
-  const size_t size = 3 + data.size(); /* header + command + data + null*/
+  const std::size_t size = 3 + data.size(); /* header + command + data + null*/
   unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
   // And for sending a commmand this will be 2 less than our actual packet size.
@@ -355,7 +354,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   return true;
 }
 
-bool BinkP::send_data_packet(const char* data, size_t packet_length) {
+bool BinkP::send_data_packet(const char* data, std::size_t packet_length) {
   if (!conn_->is_open()) {
     return false;
   }

@@ -99,10 +99,10 @@ public:
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
   void DisplaySysopWorkingIndicator(bool displayWait);
-  RemoteIO* remoteIO() { return comm_.get(); }
-  LocalIO* localIO() { return local_io_.get(); }
+  RemoteIO* remoteIO() const { return comm_.get(); }
+  LocalIO* localIO() const { return local_io_.get(); }
   bool reset_local_io(LocalIO* wlocal_io);
-  const std::string& GetAttachmentDirectory() { return attach_dir_; }
+  const std::string& GetAttachmentDirectory() const { return attach_dir_; }
   int  instance_number() const { return instance_number_; }
   const std::string& network_extension() const { return network_extension_; }
 
@@ -133,7 +133,7 @@ public:
   int GetForcedReadSubNumber() const { return forced_read_subnum_; }
   void SetForcedReadSubNumber(int n) { forced_read_subnum_ = n; }
 
-  const std::string GetCurrentSpeed() const { return current_speed_; }
+  std::string GetCurrentSpeed() const { return current_speed_; }
   void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
 
   // This is used in sprintf in many places, so we return a char*
@@ -451,7 +451,7 @@ private:
   std::string network_extension_;
   bool user_already_on_ = false;
   bool need_to_clean_net_ = false;
-  bool at_wfc_ = 0;
+  bool at_wfc_ = false;
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;

@@ -20,7 +20,6 @@
 #define __INCLUDED_PLATFORM_LISTBOX_H__
 
 #include <algorithm>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -40,8 +39,8 @@ struct ListBoxItem {
   ~ListBoxItem() {}
 
   const std::string& text() const { return text_; }
-  const int hotkey() const { return hotkey_; }
-  const int data() const { return data_; }
+  int hotkey() const { return hotkey_; }
+  int data() const { return data_; }
 
   std::string text_;
   int hotkey_;

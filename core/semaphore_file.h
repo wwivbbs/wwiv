@@ -48,6 +48,7 @@ public:
   ~SemaphoreFile();
 
   const std::string& filename() const { return filename_; }
+  int fd() const { return fd_; }
 
 private:
   SemaphoreFile(const std::string& filepath, int fd);

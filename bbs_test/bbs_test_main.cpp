@@ -1,4 +1,3 @@
-#include <cstdio>
 #include "gtest/gtest.h"
 #include "core/log.h"
 

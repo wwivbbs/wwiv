@@ -48,7 +48,7 @@
 #include "bbs/lilo.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
-#include "bbs/null_local_io.h"
+#include "bbs/null_local_io.h"  // Used for Linux build.
 #include "bbs/null_remote_io.h"
 #include "bbs/netsup.h"
 #include "bbs/menu.h"

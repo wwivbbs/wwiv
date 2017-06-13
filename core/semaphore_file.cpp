@@ -78,11 +78,6 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, std::chron
   while (true) {
     int fd = open(filepath.c_str(), mode, pmode);
     if (fd >= 0) { 
-#ifndef _WIN32
-      // Since we don't have O_TEMPORARY on POSIX, we unlink the file
-      // which will delete it once the last file handle is closed.
-      ::unlink(filepath.c_str());
-#endif  // _WIN32
       return { filepath, fd };
     }
     if (std::chrono::steady_clock::now() > end) {

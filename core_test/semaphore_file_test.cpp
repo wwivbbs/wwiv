@@ -19,6 +19,7 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/semaphore_file.h"
 #include "core/strings.h"
 
@@ -37,6 +38,8 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
     {
       SemaphoreFile ok = SemaphoreFile::try_acquire(
         FilePath(tmp, "x.sem"), std::chrono::milliseconds(100));
+
+      LOG(ERROR) << "fd: " << ok.fd();
       fn = ok.filename();
 
       EXPECT_TRUE(File::Exists(fn));
