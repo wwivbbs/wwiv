@@ -39,10 +39,10 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
       auto ok = SemaphoreFile::try_acquire(
         FilePath(tmp, "x.sem"), std::chrono::milliseconds(100));
 
-      LOG(ERROR) << "fd: " << ok.fd();
       fn = ok.filename();
+      LOG(ERROR) << "fd: " << ok.fd() << "; fn: " << fn;
 
-      EXPECT_TRUE(File::Exists(fn));
+      EXPECT_TRUE(File::Exists(fn)) << fn;
 
       try {
         auto nok = SemaphoreFile::try_acquire(
@@ -51,7 +51,8 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
       }
       catch (const wwiv::core::semaphore_not_acquired&) {
         // expected to happen.
+        LOG(ERROR) << "caught wwiv::core::semaphore_not_acquired.";
       }
     }
-    EXPECT_FALSE(File::Exists(fn));
+    EXPECT_FALSE(File::Exists(fn)) << fn;
 }

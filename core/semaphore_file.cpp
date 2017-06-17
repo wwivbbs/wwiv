@@ -96,10 +96,19 @@ SemaphoreFile::SemaphoreFile(const std::string& filepath, int fd)
   : filename_(filepath), fd_(fd) {}
 
 SemaphoreFile::~SemaphoreFile() {
+  LOG(ERROR) << "~SemaphoreFile(): " << filename_ << "; fd: " << fd_;
   if (fd_ >= 0) {
     if (close(fd_) == -1) {
       LOG(ERROR) << "Failed to close file: " << filename_ << "; error: " << errno;
     }
+#ifndef _WIN32
+    // Since we don't have O_TEMPORARY on POSIX, we unlink the file
+    // which will delete it once the last file handle is closed.
+    ::unlink(filename_.c_str());
+#endif  // _WIN32
+
+  } else {
+    LOG(ERROR) << "Skipping closing since file already closed: " << filename_;
   }
   fd_ = -1;
 }
