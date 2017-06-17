@@ -26,7 +26,7 @@
 #include <cereal/archives/json.hpp>
 #include <cereal/types/vector.hpp>
 
-#include "deps/my_basic-master/core/my_basic.h"
+#include "deps/my_basic/core/my_basic.h"
 
 #include "bbs/application.h"
 #include "bbs/bbs.h"
