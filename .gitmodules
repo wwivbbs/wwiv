@@ -1,0 +1,3 @@
+[submodule "deps/my_basic"]
+	path = deps/my_basic
+	url = https://github.com/wwiv/my_basic.git
