@@ -25,6 +25,8 @@ Infrastructure Cleanup
 
 Networking Cleanup
 ==================
+* Add in the version that processed the message like net38 does.
+* Figure out why new networking stack doesn't work for mark.
 
 core::File Improvements
 =======================
