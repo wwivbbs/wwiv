@@ -1,16 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.26430.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbs", "bbs\bbs.vcxproj", "{DE1021F3-98A3-4468-A6D9-57B4D83D0165}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pdcurses", "deps\pdcurses-3.4\pdcurses.vcxproj", "{EC52CEDA-4F35-469A-8975-98776EA8EA93}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93} = {EC52CEDA-4F35-469A-8975-98776EA8EA93}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "init", "init\init.vcxproj", "{0C6A0F55-D818-43D5-ACE4-848D6AD1C297}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93} = {EC52CEDA-4F35-469A-8975-98776EA8EA93}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbs_test", "bbs_test\bbs_test.vcxproj", "{EB828D24-C453-4059-A484-2B6BFB96E1C4}"
 	ProjectSection(ProjectDependencies) = postProject
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93} = {EC52CEDA-4F35-469A-8975-98776EA8EA93}
 		{BCF878F6-1997-4C3D-864E-12F0C1B5EB5E} = {BCF878F6-1997-4C3D-864E-12F0C1B5EB5E}
 	EndProjectSection
 EndProject
@@ -19,6 +24,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bbs_lib", "bbs\bbs_lib.vcxproj", "{BCF878F6-1997-4C3D-864E-12F0C1B5EB5E}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "localui", "localui\localui.vcxproj", "{8EBD5A9A-E149-4E24-B5CA-7EBE0CC45A08}"
+	ProjectSection(ProjectDependencies) = postProject
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93} = {EC52CEDA-4F35-469A-8975-98776EA8EA93}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "core", "core\core.vcxproj", "{160CA888-2434-48A8-AD4E-02140E3B2C52}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -68,6 +76,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "networkc", "networkc\networ
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "wwivd", "wwivd\wwivd.vcxproj", "{8DC4E578-7568-49B1-91D8-207CB5887DD9}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pdcurses", "deps\pdcurses\pdcurses.vcxproj", "{EC52CEDA-4F35-469A-8975-98776EA8EA93}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -88,16 +98,6 @@ Global
 		{DE1021F3-98A3-4468-A6D9-57B4D83D0165}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{DE1021F3-98A3-4468-A6D9-57B4D83D0165}.Release|Win32.ActiveCfg = Release|Win32
 		{DE1021F3-98A3-4468-A6D9-57B4D83D0165}.Release|Win32.Build.0 = Release|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Win32.Build.0 = Debug|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Any CPU.ActiveCfg = Release|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Win32.ActiveCfg = Release|Win32
-		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Win32.Build.0 = Release|Win32
 		{0C6A0F55-D818-43D5-ACE4-848D6AD1C297}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{0C6A0F55-D818-43D5-ACE4-848D6AD1C297}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{0C6A0F55-D818-43D5-ACE4-848D6AD1C297}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -343,6 +343,16 @@ Global
 		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Release|Mixed Platforms.Build.0 = Release|Win32
 		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Release|Win32.ActiveCfg = Release|Win32
 		{8DC4E578-7568-49B1-91D8-207CB5887DD9}.Release|Win32.Build.0 = Release|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Win32.ActiveCfg = Debug|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Debug|Win32.Build.0 = Debug|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Any CPU.ActiveCfg = Release|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Win32.ActiveCfg = Release|Win32
+		{EC52CEDA-4F35-469A-8975-98776EA8EA93}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -114,7 +114,7 @@ set(COMMON_SOURCES
  xinit.cpp
  wfc.cpp
  workspace.cpp
- ../deps/my_basic-master/core/my_basic.c
+ ../deps/my_basic/core/my_basic.c
 )
 
 set(BBS_MAIN bbs_main.cpp)

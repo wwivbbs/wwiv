@@ -91,6 +91,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ProjectReference Include="..\deps\pdcurses\pdcurses.vcxproj">
+      <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\localui\localui.vcxproj">
       <Project>{8ebd5a9a-e149-4e24-b5ca-7ebe0cc45a08}</Project>
     </ProjectReference>

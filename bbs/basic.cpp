@@ -537,7 +537,8 @@ bool RunBasicScript(const std::string& script_name) {
   struct mb_interpreter_t* bas = nullptr;
   mb_open(&bas);
   mb_set_userdata(bas, &wwiv_userdata);
-  mb_debug_set_stepped_handler(bas, _on_stepped);
+  // TODO(rushfan): Update to new syntax
+  // mb_debug_set_stepped_handler(bas, _on_stepped);
   mb_set_error_handler(bas, _on_error);
   mb_set_import_handler(bas, [](struct mb_interpreter_t* bas, const char* p) -> int {
     return (LoadBasicFile(bas, p)) ? MB_FUNC_OK : MB_FUNC_ERR;
@@ -555,7 +556,7 @@ bool RunBasicScript(const std::string& script_name) {
     return false;
   }
 
-  auto ret = mb_run(bas);
+  auto ret = mb_run(bas, false);
 
   mb_close(&bas);
   return ret == MB_FUNC_OK;

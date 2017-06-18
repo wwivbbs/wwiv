@@ -42,14 +42,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\;$(UniversalCRT_IncludePath);$(IncludePath);$(ProjectDir)..\deps\pdcurses-3.4\include;$(ProjectDir)..\deps\cl342;$(ProjectDir)..\deps\cereal\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\;$(ProjectDir)..\deps\cl342;$(ProjectDir)..\deps\cereal\include;$(ProjectDir)..\deps\pdcurses;$(IncludePath)</IncludePath>
     <IntDir>lib\$(Configuration)\</IntDir>
     <CodeAnalysisRuleSet>C:\Program Files\Microsoft Visual Studio 14.0\Team Tools\Static Analysis Tools\Rule Sets\NativeRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <RunCodeAnalysis>false</RunCodeAnalysis>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir)..\;$(UniversalCRT_IncludePath);$(IncludePath);$(ProjectDir)..\deps\pdcurses-3.4\include;$(ProjectDir)..\deps\cl342;$(ProjectDir)..\deps\cereal\include</IncludePath>
+    <IncludePath>$(ProjectDir)..\;$(ProjectDir)..\deps\cl342;$(ProjectDir)..\deps\cereal\include;$(ProjectDir)..\deps\pdcurses;$(IncludePath)</IncludePath>
     <IntDir>lib\$(Configuration)\</IntDir>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -221,7 +221,7 @@
     <ClInclude Include="xinitini.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\deps\my_basic-master\core\my_basic.c" />
+    <ClCompile Include="..\deps\my_basic\core\my_basic.c" />
     <ClCompile Include="application.cpp" />
     <ClCompile Include="archivers.cpp" />
     <ClCompile Include="arword.cpp" />
@@ -347,6 +347,9 @@
     </ProjectReference>
     <ProjectReference Include="..\deps\cl342\crypt32.vcxproj">
       <Project>{d0793ab4-c236-4105-ad9e-7e8b1716037b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\deps\pdcurses\pdcurses.vcxproj">
+      <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
     </ProjectReference>
     <ProjectReference Include="..\localui\localui.vcxproj">
       <Project>{8ebd5a9a-e149-4e24-b5ca-7ebe0cc45a08}</Project>

@@ -116,6 +116,9 @@
     <ProjectReference Include="..\deps\googletest-master\googletest\msvc\gtest-md.vcxproj">
       <Project>{c8f6c172-56f2-4e76-b5fa-c3b423b31be8}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\deps\pdcurses\pdcurses.vcxproj">
+      <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="bbs_helper.h" />

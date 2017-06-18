@@ -42,11 +42,11 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)..\localui\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)..\deps\pdcurses;$(ProjectDir)..\localui\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)\..\deps\pdcurses-3.4\include\;$(ProjectDir)..\localui\;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir);$(ProjectDir)\..\;$(ProjectDir)..\deps\pdcurses;$(ProjectDir)..\localui\;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -136,7 +136,7 @@
     <ProjectReference Include="..\core\core.vcxproj">
       <Project>{160ca888-2434-48a8-ad4e-02140e3b2c52}</Project>
     </ProjectReference>
-    <ProjectReference Include="..\deps\pdcurses-3.4\pdcurses.vcxproj">
+    <ProjectReference Include="..\deps\pdcurses\pdcurses.vcxproj">
       <Project>{ec52ceda-4f35-469a-8975-98776ea8ea93}</Project>
     </ProjectReference>
     <ProjectReference Include="..\localui\localui.vcxproj">
