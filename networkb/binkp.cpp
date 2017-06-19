@@ -342,7 +342,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   *p++ = command_id;
   memcpy(p, data.data(), data.size());
 
-  int sent = conn_->send(packet.get(), size, seconds(3));
+  conn_->send(packet.get(), size, seconds(3));
   if (command_id != BinkpCommands::M_PWD) {
     LOG(INFO) << "SEND:  " << BinkpCommands::command_id_to_name(command_id)
          << ": " << data;

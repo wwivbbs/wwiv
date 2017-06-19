@@ -83,7 +83,7 @@ static bool SetNonBlockingMode(SOCKET sock) {
 static bool SetNoDelayMode(SOCKET sock) {
 #ifdef _WIN32
       int one = 1;
-      return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, (char*) &one, sizeof(one)) != SOCKET_ERROR;
+      return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&one), sizeof(one)) != SOCKET_ERROR;
 
 #else  // _WIN32
   // TODO(rushfan): set TCP_NODELAY

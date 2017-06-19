@@ -135,7 +135,7 @@ class File {
   virtual time_t last_write_time();
   virtual bool set_last_write_time(time_t last_write_time);
 
-  virtual const std::string parent() const {
+  virtual std::string parent() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return std::string("");
@@ -153,8 +153,8 @@ class File {
 
   virtual std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
-  virtual const std::string full_pathname() const { return full_path_name_; }
-  virtual const std::string last_error() const { return error_text_; }
+  virtual std::string full_pathname() const { return full_path_name_; }
+  virtual std::string last_error() const { return error_text_; }
 
   // operators
   explicit operator bool() const { return IsOpen(); }

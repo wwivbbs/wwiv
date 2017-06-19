@@ -39,11 +39,11 @@ class IniFile {
   bool IsOpen() const { return open_; }
 
   template<typename T>
-  const T value(const std::string& key, const T& default_value) const {
+  T value(const std::string& key, const T& default_value) const {
     return static_cast<T>(GetNumericValueT(key, default_value));
   }
   template<typename T>
-  const T value(const std::string& key) const {
+  T value(const std::string& key) const {
     return static_cast<T>(GetNumericValueT(key, T()));
   }
 
@@ -54,9 +54,9 @@ class IniFile {
   IniFile& operator=(const IniFile& other) = delete;
   const char* GetValue(const std::string& key, const char *default_value = nullptr) const;
 
-  const std::string GetStringValue(const std::string& key, const std::string& default_value) const;
-  const long GetNumericValueT(const std::string& key, long default_value = 0) const;
-  const bool GetBooleanValue(const std::string& key, bool default_value = false) const;
+  std::string GetStringValue(const std::string& key, const std::string& default_value) const;
+  long GetNumericValueT(const std::string& key, long default_value = 0) const;
+  bool GetBooleanValue(const std::string& key, bool default_value = false) const;
 
   const std::string file_name_;
   bool open_;
@@ -65,15 +65,15 @@ class IniFile {
 };
 
 template<>
-const std::string IniFile::value<std::string>(const std::string& key, const std::string& default_value) const;
+std::string IniFile::value<std::string>(const std::string& key, const std::string& default_value) const;
 
 template<>
-const std::string IniFile::value<std::string>(const std::string& key) const;
+std::string IniFile::value<std::string>(const std::string& key) const;
 
 template<>
-const bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
+bool IniFile::value<bool>(const std::string& key, const bool& default_value) const;
 template<>
-const bool IniFile::value<bool>(const std::string& key) const;
+bool IniFile::value<bool>(const std::string& key) const;
 
 
 

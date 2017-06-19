@@ -146,7 +146,7 @@ bool File::Move(const std::string& source_filename, const std::string& dest_file
 
 bool File::canonical(const std::string& path, std::string* resolved) {
   char* result = ::realpath(path.c_str(), NULL);
-  if (resolved == NULL) {
+  if (resolved == nullptr) {
     resolved->assign(path);
     return false;
   }

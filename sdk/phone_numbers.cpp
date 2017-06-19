@@ -56,7 +56,7 @@ bool PhoneNumbers::insert(int user_number, const std::string& phone_number) {
 
 bool PhoneNumbers::erase(int user_number, const std::string& phone_number) {
   auto predicate = [=](const phonerec& p) {
-    return phone_number == p.phone;
+    return phone_number == p.phone && p.usernum == user_number;
   };
   phones_.erase(std::remove_if(std::begin(phones_), std::end(phones_), predicate));
   return Save();

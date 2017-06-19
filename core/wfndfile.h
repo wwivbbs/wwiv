@@ -59,7 +59,7 @@ class WFindFile {
 
 #if defined (_WIN32)
   WIN32_FIND_DATA ffdata{};
-  HANDLE  hFind = 0;
+  HANDLE  hFind = nullptr;
 #elif defined ( __unix__ )
   struct dirent **entries = nullptr;
   int nMatches = 0;
@@ -73,8 +73,8 @@ class WFindFile {
   bool close();
   virtual ~WFindFile() { close(); }
 
-  const char* GetFileName() { return filename_.c_str(); }
-  long GetFileSize() { return file_size_; }
+  const char* GetFileName() const { return filename_.c_str(); }
+  long GetFileSize() const { return file_size_; }
   bool IsDirectory();
   bool IsFile();
 };

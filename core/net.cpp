@@ -117,7 +117,7 @@ SOCKET CreateListenSocket(int port) {
   memset(&(my_addr.sin_zero), 0, 8);
   my_addr.sin_addr.s_addr = INADDR_ANY;
 
-  if (bind(sock, (sockaddr*)&my_addr, sizeof(my_addr)) == -1) {
+  if (bind(sock, reinterpret_cast<sockaddr*>(&my_addr), sizeof(my_addr)) == -1) {
     const string msg = StrCat(
       "Error binding to socket, make sure nothing else is listening on port: ", 
       port, "; errno: ", errno);
@@ -167,7 +167,7 @@ int get_dns_cc(const std::string address, const std::string& rbl_address) {
   
   wwiv::core::ScopeExit at_exit([res] { freeaddrinfo(res); });
   if (res->ai_family == AF_INET) {
-    struct sockaddr_in *ipv4 = (struct sockaddr_in *) res->ai_addr;
+    auto ipv4 = reinterpret_cast<struct sockaddr_in *>(res->ai_addr);
     uint32_t b = htonl(ipv4->sin_addr.s_addr) & 0x0000ffff;
     return b;
   }
@@ -237,12 +237,12 @@ bool SocketSet::RunOnce() {
     if (FD_ISSET(e.first, &fds)) {
       socklen_t addr_size = sizeof(sockaddr_in);
       struct sockaddr_in saddr = {};
-      SOCKET client_sock = accept(e.first, (sockaddr*)&saddr, &addr_size);
+      auto client_sock = accept(e.first, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
 
 #ifdef _WIN32
       int newvalue = SO_SYNCHRONOUS_NONALERT;
       setsockopt(client_sock, SOL_SOCKET, SO_OPENTYPE,
-        (char *)&newvalue, sizeof(newvalue));
+          reinterpret_cast<char *>(&newvalue), sizeof(newvalue));
 #endif
       e.second({ client_sock, socket_port_map_.at(e.first) });
     }

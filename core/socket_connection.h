@@ -65,7 +65,7 @@ public:
   uint16_t read_uint16(std::chrono::duration<double> d) override;
   uint8_t read_uint8(std::chrono::duration<double> d) override;
 
-  bool is_open() const { return open_; }
+  bool is_open() const override { return open_; }
   bool close() override;
 
 private:

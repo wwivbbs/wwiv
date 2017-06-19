@@ -51,7 +51,7 @@ using std::out_of_range;
 unsigned char *translate_letters[] = {
   (unsigned char *)"abcdefghijklmnopqrstuvwxyz�������",
   (unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ�������",
-  0L,
+  nullptr,
 };
 const char *DELIMS_WHITE = " \t\r\n";
 const char *DELIMS_CRLF = "\r\n";

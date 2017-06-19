@@ -130,38 +130,38 @@ const char* IniFile::GetValue(const string& raw_key, const char *default_value) 
   return default_value;
 }
 
-const std::string IniFile::GetStringValue(const std::string& key, const std::string& default_value) const {
+std::string IniFile::GetStringValue(const std::string& key, const std::string& default_value) const {
   const char *s = GetValue(key);
   return (s != nullptr) ? s : default_value;
 }
 
-const bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
+bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
   const char *s = GetValue(key);
   return (s != nullptr) ? StringToBoolean(s) : defaultValue;
 }
 
-const long IniFile::GetNumericValueT(const string& key, long default_value) const {
+long IniFile::GetNumericValueT(const string& key, long default_value) const {
   const char *s = GetValue(key);
   return (s != nullptr) ? atoi(s) : default_value;
 }
 
 template<>
-const std::string IniFile::value<std::string>(const std::string& key, const std::string& default_value) const {
+std::string IniFile::value<std::string>(const std::string& key, const std::string& default_value) const {
   return GetStringValue(key, default_value);
 }
 
 template<>
-const std::string IniFile::value<std::string>(const std::string& key) const {
+std::string IniFile::value<std::string>(const std::string& key) const {
   return GetStringValue(key, "");
 }
 
 template<>
-const bool IniFile::value<bool>(const std::string& key, const bool& default_value) const {
+bool IniFile::value<bool>(const std::string& key, const bool& default_value) const {
   return GetBooleanValue(key, default_value);
 }
 
 template<>
-const bool IniFile::value<bool>(const std::string& key) const {
+bool IniFile::value<bool>(const std::string& key) const {
   return GetBooleanValue(key, false);
 }
 

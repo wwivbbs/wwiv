@@ -69,15 +69,15 @@ public:
   CommandLineValue(const std::string& s, bool default_value)
     : value_(s), default_(default_value) {}
 
-  const std::string as_string() const { return value_; }
-  const int as_int() const {
+  std::string as_string() const { return value_; }
+  int as_int() const {
     try {
       return std::stoi(value_); 
     } catch (std::logic_error&) {
         return 0;
     }
   }
-  const bool as_bool() const {
+  bool as_bool() const {
     return value_ == "true";
   }
 private:
@@ -150,20 +150,20 @@ public:
   virtual bool AddStandardArgs();
 
   bool subcommand_selected() const { return command_ != nullptr; }
-  const std::string name() const { return name_; }
-  const std::string help_text() const { return help_text_; }
+  std::string name() const { return name_; }
+  std::string help_text() const { return help_text_; }
 
   const CommandLineValue arg(const std::string name) const;
-  const std::string sarg(const std::string name) const { return arg(name).as_string(); }
-  const int iarg(const std::string name) const { return arg(name).as_int(); }
-  const bool barg(const std::string name) const { return arg(name).as_bool(); }
-  const bool help_requested() const { return barg("help"); }
+  std::string sarg(const std::string name) const { return arg(name).as_string(); }
+  int iarg(const std::string name) const { return arg(name).as_int(); }
+  bool barg(const std::string name) const { return arg(name).as_bool(); }
+  bool help_requested() const { return barg("help"); }
   const CommandLineCommand* command() const { return command_; }
   std::vector<std::string> remaining() const { return remaining_; }
   std::string ToString() const;
-  virtual int Execute();
-  virtual std::string GetHelp() const;
-  virtual std::string GetUsage() const { return ""; }
+  virtual int Execute() override;
+  virtual std::string GetHelp() const override;
+  virtual std::string GetUsage() const override { return ""; }
 
 protected:
 
