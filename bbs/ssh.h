@@ -26,28 +26,24 @@
 #include "bbs/remote_io.h"
 #include "bbs/remote_socket_io.h"
 
+#include <libssh/libssh.h>
+#include <libssh/server.h>
+
 namespace wwiv {
 namespace bbs {
 
-class Key {
+class Keys {
 public:
-  explicit Key(const std::string& filename, const std::string& password) 
-    : filename_(filename), password_(password) {}
-  virtual ~Key() {};
-  bool Open();
-  bool Create();
-  int context() const { return context_; }
-
-private:
-  const std::string password_;
-  const std::string filename_;
-  int context_ = 0;
-  bool open_ = false;
+  Keys();
+  virtual ~Keys() {};
+  bool Validate();
+  bool Generate();
+  bool Exist();
 };
 
 class SSHSession {
 public:
-  SSHSession(int socket_handle, const Key& key);
+  SSHSession(int socket_handle);
   virtual ~SSHSession() { close();  }
   int PushData(const char* data, size_t size);
   int PopData(char* data, size_t buffer_size);
@@ -60,9 +56,12 @@ public:
 
 private:
   mutable std::mutex mu_;
+  bool SSHAuthenticate(ssh_session session);
   int session_ = 0;
   int socket_handle_ = -1;
   bool initialized_ = false;
+  ssh_session session;
+  ssh_channel chan = 0;
   std::atomic<bool> closed_;
   std::string remote_username_;
   std::string remote_password_;
@@ -70,10 +69,10 @@ private:
 
 class IOSSH: public RemoteIO {
 public:
-  IOSSH(SOCKET socket, Key& key);
+  IOSSH(SOCKET socket);
   virtual ~IOSSH();
 
-  bool ssh_initalize();
+  bool ssh_initialize();
 
   bool open() override;
   void close(bool temporary) override;
