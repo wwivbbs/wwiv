@@ -141,23 +141,21 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
 void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
-    const File key_file(config_->datadir(), "wwiv.key");
-    const string system_password = config()->config()->systempw;
-    wwiv::bbs::Key key(key_file.full_pathname(), system_password);
-    if (!key_file.Exists()) {
-      LOG(ERROR)<< "Key file doesn't exist. Will try to create it.";
-      if (!key.Create()) {
-        LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
-        type = CommunicationType::TELNET;
+    wwiv::bbs::Keys mykeys;
+
+    if (mykeys.Exist()) {
+      if (mykeys.Validate()) {
+	comm_.reset(new wwiv::bbs::IOSSH(nHandle));
+      } else {
+	LOG(ERROR)<< "Unable to open a valid SSH key file! SSH Disabled";
+	type = CommunicationType::TELNET;
+      }
+    } else {
+      LOG(ERROR)<< "SSH Key files do not exist. Trying to create.";
+      if (mykeys.Generate()) {
+	comm_.reset(new wwiv::bbs::IOSSH(nHandle));
       }
     }
-    if (!key.Open()) {
-      LOG(ERROR)<< "Unable to open key file!. Did you change your sytem pw?" << endl;
-      LOG(ERROR) << "If so, delete " << key_file.full_pathname();
-      LOG(ERROR) << "SSH will be disabled!";
-      type = CommunicationType::TELNET;
-    }
-    comm_.reset(new wwiv::bbs::IOSSH(nHandle, key));
   } break;
   case CommunicationType::TELNET: {
     comm_.reset(new RemoteSocketIO(nHandle, true));
