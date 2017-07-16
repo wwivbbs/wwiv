@@ -430,7 +430,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
   if (file.IsOpen()) {
     int j = 0;
     string s;
-    while (!file.IsEndOfFile()) {
+    do {
       s.clear();
       file.ReadLine(&s);
       if (s.length() > 1 && s[s.length() - 2] == RETURN) {
@@ -449,7 +449,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
       if (j < 7) {
         j++;
       }
-    }
+    } while (!file.IsEndOfFile());
     file.Close();
   }
 }

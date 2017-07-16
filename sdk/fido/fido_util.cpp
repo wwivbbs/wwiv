@@ -50,7 +50,7 @@ namespace fido {
 std::string packet_name(time_t now) {
   auto tm = localtime(&now);
 
-  string fmt = "%d%H%M%S";
+  const string fmt = "%d%H%M%S";
 
   char buf[1024];
   auto res = strftime(buf, sizeof(buf), fmt.c_str(), tm);
@@ -200,30 +200,18 @@ std::vector<std::string> split_message(const std::string& s) {
   return SplitString(temp, "\r");
 }
 
-// TODO(rushfan): split text into lines and process one at a time
-// this will be easier to handle control lines, etc.
 std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
+  // Split text into lines and process one at a time
+  // this is easier to handle control lines, etc.
   std::string wt;
-  bool newline = true;
-  for (auto& sc : ft) {
-    unsigned char c = static_cast<unsigned char>(sc);
-    if (c == 13) {
+  for (const auto& sc : ft) {
+    auto c = static_cast<unsigned char>(sc);
+    if (c == 0x8d) {
+      // FIDOnet style Soft CR. Convert to CR
       wt.push_back(13);
-      newline = true;
-    } else if (c == 0x8d) {
-      // FIDOnet style Soft CR
-      wt.push_back(13);
-      newline = true;
     } else if (c == 10) {
-      // NOP
-    } else if (c == 1 && newline && convert_control_codes) {
-      // Control-A on a newline.  Since FidoNet uses control-A as a control
-      // code, WWIV uses control-D + '0', we'll change it to control-D + '0'
-      wt.push_back(4);  // control-D
-      wt.push_back('0');
-      newline = false;
+      // NOP. We're skipping LF's so we can split on CR
     } else {
-      newline = false;
       wt.push_back(c);
     }
   }
@@ -232,24 +220,26 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
   wt.clear();
 
   for (const auto& line : lines) {
-    if (convert_control_codes) {
-      // According to FSC-0068. Kludge lines are not normally displayed
-      // when reading messages.
-      if (starts_with(line, "AREA:") || starts_with(line, "SEEN-BY: ")) {
-        wt.push_back(4);
-        wt.push_back('0');
+    if (!line.empty()) {
+      if (convert_control_codes) {
+        // According to FSC-0068. Kludge lines are not normally displayed
+        // when reading messages.
+        if (line.front() == 1
+            || starts_with(line, "AREA:")
+            || starts_with(line, "SEEN-BY: ")) {
+          wt.push_back(4);
+          wt.push_back('0');
+        }
       }
     }
-    wt.append(line);
-    wt.push_back(13);
-    wt.push_back(10);
+    wt.append(line).append("\r\n");
   }
 
   return wt;
 }
 
 std::string WWIVToFidoText(const std::string& wt) {
-  string temp(wt);
+  auto temp = wt;
   // Fido Text is CR, not CRLF, so remove the LFs
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
   // Also remove the soft CRs since WWIV has no concept.
@@ -272,7 +262,7 @@ std::string WWIVToFidoText(const std::string& wt) {
     }
     if (line.front() == 0x04 && line.size() > 2) {
       // WWIV style control code.
-      char code = line.at(1);
+      auto code = line.at(1);
       if (code < '0' || code > '9') {
         // Bogus control-D line, let's skip.
         VLOG(1) << "Invalid control-D line: '" << line << "'";
@@ -303,7 +293,7 @@ std::string WWIVToFidoText(const std::string& wt) {
     }
 
     // Strip out WWIV color codes.
-    for (unsigned int i = 0; i < line.length(); i++) {
+    for (std::size_t i = 0; i < line.length(); i++) {
       if (line[i] == 0x03) {
         i++;
         continue;
@@ -331,7 +321,7 @@ FidoAddress get_address_from_single_line(const std::string& line) {
 }
 
 FidoAddress get_address_from_origin(const std::string& text) {
-  vector<string> lines = split_message(text);
+  auto lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, " * Origin:")) {
       return get_address_from_single_line(line);
@@ -344,7 +334,7 @@ FidoAddress get_address_from_origin(const std::string& text) {
 // A valid route is Zone:*, Zone:Net/*
 static std::vector<std::string> parse_routes(const std::string& routes) {
   std::vector<std::string> result;
-  std::vector<std::string> raw = SplitString(routes, " ");
+  auto raw = SplitString(routes, " ");
   for (const auto& rr : raw) {
     string r(rr);
     StringTrim(&r);
@@ -394,7 +384,7 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
   if (contains(r, ':') && ends_with(r, "/")) {
     // We have a ZONE:NET/*
     r.pop_back();
-    vector<string> parts = SplitString(r, ":");
+    auto parts = SplitString(r, ":");
     if (parts.size() != 2) {
       VLOG(2) << "Malformed route: " << route;
       return RouteMatch::no;
@@ -420,7 +410,7 @@ bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::stri
   if (routes.empty()) {
     return false;
   }
-  const std::vector<std::string> rs = parse_routes(routes);
+  const auto rs = parse_routes(routes);
   bool ok = false;
   for (const auto& rr : rs) {
     RouteMatch m = matches_route(a, rr);
