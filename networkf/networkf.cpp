@@ -579,7 +579,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
   VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
   using wwiv::net::ReadPacketResponse;
 
-  wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
+  FtnDirectories dirs(config.root_directory(), net);
 
   FidoAddress from_address(net.fido.fido_address);
   for (int tries = 0; tries < 10; tries++) {
@@ -587,12 +587,12 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     File file(dirs.temp_outbound_dir(), packet_name(now));
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite | File::modeBinary, File::shareDenyReadWrite)) {
       LOG(INFO) << "Will try again: Unable to create packet file: " << file.full_pathname();
-      wwiv::os::sleep_for(std::chrono::seconds(1));
+      sleep_for(std::chrono::seconds(1));
       continue;
     }
 
     auto pw = fido_callout.packet_config_for(route_to).packet_password;
-    packet_header_2p_t header = CreateType2PlusPacketHeader(from_address, route_to, now, pw);
+    auto header = CreateType2PlusPacketHeader(from_address, route_to, now, pw);
 
     if (!write_fido_packet_header(file, header)) {
       LOG(ERROR) << "Error writing packet header.";
@@ -600,13 +600,10 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     }
 
     bool is_email = (wwivnet_packet.nh.main_type == main_type_email || wwivnet_packet.nh.main_type == main_type_email_name);
-    const string raw_text = wwivnet_packet.text;
+    const auto raw_text = wwivnet_packet.text;
     auto iter = raw_text.cbegin();
 
     string subtype;
-    string title;
-    string sender_name;
-    string date_string;
     string to_user_name;
     // or we can put code in for email here??
 
@@ -616,9 +613,9 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     } else {
       subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     }
-    title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    auto title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    auto sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    auto date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
 
     // TODO(rushfan: These next 2 here should be done differently. We should
     // split the message here and look for these in all lines.  For the By:
@@ -634,14 +631,14 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
     // Clean up sender name.
     CleanupWWIVName(sender_name);
-    string bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
+    auto bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
     
     fido_variable_length_header_t vh{};
     vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
     vh.from_user_name = sender_name;
     vh.subject = title;
     if (!to_user_name.empty()) {
-      std::string username_only = remove_fido_addr(to_user_name);
+      auto username_only = remove_fido_addr(to_user_name);
       vh.to_user_name = properize(username_only);
     } else {
       vh.to_user_name = "All";
@@ -910,14 +907,14 @@ static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, con
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
   auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);
-  std::set<FidoAddress> subscribers = ReadFidoSubcriberFile(net_dir, StrCat("n", subtype, ".net"));
+  auto subscribers = ReadFidoSubcriberFile(net_dir, StrCat("n", subtype, ".net"));
   if (subscribers.empty()) {
     LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
   }
   for (const auto& sub : subscribers) {
     string bundlename;
     auto packet_config = fido_callout.packet_config_for(sub);
-    FidoAddress route_to = find_route_to(sub, fido_callout, packet_config);
+    auto route_to = find_route_to(sub, fido_callout, packet_config);
     if (!create_ftn_packet_and_bundle(net_cmdline, fido_callout, sub, route_to, net, p, bundlename)) {
       continue;
     }
