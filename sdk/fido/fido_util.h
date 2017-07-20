@@ -53,6 +53,7 @@ std::vector<std::string> split_message(const std::string& string);
 
 std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes = true);
 std::string WWIVToFidoText(const std::string& wt);
+std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_include);
 
 wwiv::sdk::fido::FidoAddress get_address_from_single_line(const std::string& line);
 wwiv::sdk::fido::FidoAddress get_address_from_origin(const std::string& text);

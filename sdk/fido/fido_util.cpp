@@ -239,6 +239,11 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
 }
 
 std::string WWIVToFidoText(const std::string& wt) {
+  return WWIVToFidoText(wt, 9);
+
+}
+
+std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_include) {
   auto temp = wt;
   // Fido Text is CR, not CRLF, so remove the LFs
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
@@ -270,6 +275,7 @@ std::string WWIVToFidoText(const std::string& wt) {
       }
       // Strip WWIV control off.
       line = line.substr(2);
+      int8_t code_num = code - '0';
       if (code == '0') {
         if (starts_with(line, "MSGID:") || starts_with(line, "REPLY:") || starts_with(line, "PID:")) {
           // Handle ^A Control Lines
@@ -281,7 +287,15 @@ std::string WWIVToFidoText(const std::string& wt) {
         }
         // Skip all ^D0 lines other than ones we know.
         continue;
+      } else if (code_num > max_optional_val_to_include) {
+        // Skip values higher than we want.
+        continue;
       }
+    } else {
+      // skip ^D line that's not well formed (i.e. more than 2 characters lone)
+      // TODO(rushfan): Open question should we emit a blank line for a ^DN line that
+      //                is exactly 2 chars long?
+      continue;
     }
     if (line.back() == 0x01 /* CA */) {
       // A line ending in ^A means it soft-wrapped.
