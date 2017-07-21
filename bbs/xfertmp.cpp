@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <cstdio>
 #include <functional>
 #include <string>
 #include <vector>
@@ -34,7 +35,6 @@
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
-#include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
@@ -723,7 +723,7 @@ void temporary_stuff() {
       list_temp_text();
       break;
     case '?':
-      printfile(TARCHIVE_NOEXT);
+      print_help_file(TARCHIVE_NOEXT);
       break;
     }
   } while (!hangup);

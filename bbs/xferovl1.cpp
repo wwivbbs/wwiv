@@ -511,7 +511,7 @@ void tag_files(bool& need_title) {
     switch (ch) {
     case '?':
     {
-      printfile(TTAGGING_NOEXT);
+      print_help_file(TTAGGING_NOEXT);
       pausescr();
       relist();
     } break;

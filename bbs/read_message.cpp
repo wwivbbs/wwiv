@@ -676,7 +676,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
           result.option = ReadMessageOption::LIST_TITLES;
         } else if (key == '?') {
           fs.ClearMessageArea();
-          if (!printfile(MBFSED_NOEXT)) {
+          if (!print_help_file(MBFSED_NOEXT)) {
             fs.ClearCommandLine();
             bout << "|#6Unable to find file: " << MBFSED_NOEXT;
           }
@@ -686,7 +686,7 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
           if (lcs()) {
             pausescr();
             fs.ClearMessageArea();
-            if (!printfile(MBFSED_SYSOP_NOEXT)) {
+            if (!print_help_file(MBFSED_SYSOP_NOEXT)) {
               fs.ClearCommandLine();
               bout << "|#6Unable to find file: " << MBFSED_SYSOP_NOEXT;
             }

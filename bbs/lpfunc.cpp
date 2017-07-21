@@ -242,7 +242,7 @@ int listfiles_plus_function(int type) {
                 case '?':
                 case CO:
                   bout.cls();
-                  printfile(LISTPLUS_HLP);
+                  print_help_file(LISTPLUS_HLP);
                   pausescr();
                   menu_done = true;
                   amount = lines = matches = 0;
@@ -483,7 +483,7 @@ TOGGLE_EXTENDED:
                     break;
                   case 10:
                     bout.cls();
-                    printfile(LISTPLUS_HLP);
+                    print_help_file(LISTPLUS_HLP);
                     pausescr();
                     menu_done = true;
                     amount = lines = matches = 0;

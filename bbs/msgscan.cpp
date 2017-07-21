@@ -887,9 +887,9 @@ static void HandleMessageHelp() {
   if (forcescansub) {
     printfile(MUSTREAD_NOEXT);
   } else if (lcs()) {
-    printfile(SMBMAIN_NOEXT);
+    print_help_file(SMBMAIN_NOEXT);
   } else {
-    printfile(MBMAIN_NOEXT);
+    print_help_file(MBMAIN_NOEXT);
   }
 }
 

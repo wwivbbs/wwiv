@@ -1038,7 +1038,7 @@ void config_scan_plus(int type) {
       case '?':
       case CO:
         bout.cls();
-        printfile(SCONFIG_HLP);
+        print_help_file(SCONFIG_HLP);
         pausescr();
         menu_done = true;
         amount = 0;
@@ -1246,7 +1246,7 @@ void config_scan_plus(int type) {
           break;
         case 9:
           bout.cls();
-          printfile(SCONFIG_HLP);
+          print_help_file(SCONFIG_HLP);
           pausescr();
           menu_done = true;
           amount = 0;

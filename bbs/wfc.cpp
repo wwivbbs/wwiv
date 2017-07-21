@@ -331,7 +331,7 @@ int WFC::doWFCEvents() {
         do {
           io->Cls();
           bout.nl();
-          printfile(helpFileName);
+          print_help_file(helpFileName);
           chHelp = bout.getkey();
           helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
         } while (chHelp != SPACE && chHelp != ESC);

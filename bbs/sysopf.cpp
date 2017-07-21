@@ -264,7 +264,7 @@ void valuser(int user_number) {
       }
       if (ch1 == '?') {
         ch1 = 0;
-        printfile(SRESTRCT_NOEXT);
+        print_help_file(SRESTRCT_NOEXT);
       }
     } while (!hangup && ch1 == 0);
     a()->users()->writeuser(&user, user_number);

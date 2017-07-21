@@ -377,7 +377,7 @@ int main_loop(char *raw_message, char *from_message, char *color_string, char *m
   } else if (IsEqualsIgnoreCase(raw_message, "?") ||
              IsEqualsIgnoreCase(raw_message, "/?")) {
     bActionHandled = 0;
-    printfile(CHAT_NOEXT);
+    print_help_file(CHAT_NOEXT);
   } else if (bActionHandled && raw_message[0] == '>') {
     bActionHandled = 0;
     int nUserNum = grabname(raw_message + 1, loc);

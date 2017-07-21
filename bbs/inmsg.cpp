@@ -217,7 +217,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
           ((cmd == "/H")) ||
           ((cmd == "/?"))) {
         bCheckMessageSize = false;
-        printfile(EDITOR_NOEXT);
+        print_help_file(EDITOR_NOEXT);
       } else if ((cmd == "/QUOTE") ||
                  (cmd == "/Q")) {
         bCheckMessageSize = false;
