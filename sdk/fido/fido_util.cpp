@@ -291,7 +291,7 @@ std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_inc
         // Skip values higher than we want.
         continue;
       }
-    } else {
+    } else if (line.front() == 0x04) {
       // skip ^D line that's not well formed (i.e. more than 2 characters lone)
       // TODO(rushfan): Open question should we emit a blank line for a ^DN line that
       //                is exactly 2 chars long?
