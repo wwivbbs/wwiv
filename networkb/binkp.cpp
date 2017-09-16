@@ -413,17 +413,17 @@ BinkState BinkP::WaitConn() {
     // Present all addresses on answering side.
     for (const auto net : config_->networks().networks()) {    
       if (net.type == network_type_t::wwivnet) {
-        string lower_case_network_name(net.name);
+        string lower_case_network_name = net.name;
         StringLowerCase(&lower_case_network_name);		  
         send_command_packet(BinkpCommands::M_NUL,
-          StringPrintf("WWIV @%u.%s", net.sysnum, lower_case_network_name.c_str()));
+            StringPrintf("WWIV @%u.%s", net.sysnum, lower_case_network_name.c_str()));
         if (!network_addresses.empty()) {
-          network_addresses.append(" ");
+          network_addresses.push_back(' ');
         }
-		network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
+		    network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
       } else {
         if (!network_addresses.empty()) {
-          network_addresses.append(" ");
+          network_addresses.push_back(' ');
         }
         FidoAddress address(net.fido.fido_address);
         network_addresses += address.as_string();
