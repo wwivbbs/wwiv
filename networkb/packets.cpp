@@ -103,12 +103,15 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
 
   if (packet.nh.length > 0) {
     int length = packet.nh.length;
-    if (packet.nh.method > 0 && process_de) {
+    if (packet.nh.method > 0 
+        && process_de 
+        && packet.nh.length > 146 /* Make sure we have enough for a header */) {
       // HACK - this should do this in a shim DE
       // 146 is the sizeof EN/DE header.
       packet.nh.length -= 146;
       char header[147];
       f.Read(header, 146);
+      LOG(INFO) << header;
     }
     packet.text.resize(length);
     num_read = f.Read(&packet.text[0], packet.nh.length);
