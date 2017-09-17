@@ -7,8 +7,17 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(Common)
 include(FindASan)
 
+if(MSVC)
+  message("Using MSVC, Setting warnings to match UNIX.")
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS)
+endif()
+
+
 add_subdirectory(deps/cl342)
+# Workaround gtest really wanting to compile with /Mtd vs /MD
+set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(deps/googletest-master/googletest)
+
 add_subdirectory(core)
 add_subdirectory(core_test)
 add_subdirectory(bbs)

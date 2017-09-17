@@ -31,7 +31,14 @@ endif()
 
 add_library(core_fixtures ${fixture_sources}) 
 
-add_executable(core_tests ${test_sources})
 target_link_libraries(core_fixtures core)
-target_link_libraries(core_tests core_fixtures core gtest_main)
+if(MSVC)
+  list(APPEND test_sources core_test_main.cpp)
+endif()
+add_executable(core_tests ${test_sources})
 
+if(UNIX)
+  target_link_libraries(core_tests core_fixtures core gtest_main)
+else()
+  target_link_libraries(core_tests core_fixtures core gtest)
+endif()

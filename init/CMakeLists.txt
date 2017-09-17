@@ -32,5 +32,10 @@ if(UNIX)
   find_package(Curses REQUIRED)
 endif()
 
+if(WIN32)
+  message("Including deps/pdcurses")
+  include_directories(../deps/pdcurses)
+endif()
+
 add_executable(init ${COMMON_SOURCES})
 target_link_libraries(init localui core sdk ${CURSES_LIBRARIES})

@@ -21,7 +21,14 @@ set(test_sources
   fido/fido_address_test.cpp
   fido/nodelist_test.cpp
 )
+if (WIN32)
+  list(APPEND test_sources sdk_test_main.cpp)
+endif()
 
 add_executable(sdk_tests ${test_sources})
-target_link_libraries(sdk_tests core core_fixtures gtest_main sdk)
 
+if (UNIX)
+target_link_libraries(sdk_tests core core_fixtures gtest_main sdk)
+elseif(WIN32)
+target_link_libraries(sdk_tests core core_fixtures gtest sdk)
+endif()

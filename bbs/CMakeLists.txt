@@ -1,4 +1,4 @@
-# CMake for WWIV 5.0
+# CMake for WWIV
 cmake_minimum_required (VERSION 2.6)
 project (BBS)
 include_directories(..)
@@ -143,10 +143,20 @@ if(UNIX)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
     include_directories(platform/osx)
   endif()
+
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")
   endif()
 endif()
+
+if(WIN32)
+  message("Including deps/pdcurses")
+  include_directories(../deps/pdcurses)
+
+set(PLATFORM_SOURCES local_io_win32.cpp)
+ 
+endif()
+
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
 target_link_libraries(bbs_lib localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})
