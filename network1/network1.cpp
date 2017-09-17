@@ -19,18 +19,14 @@
 // WWIV5 Network1
 #include <cctype>
 #include <cstdlib>
-#include <ctime>
-#include <fcntl.h>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
 #include "core/command_line.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
@@ -39,25 +35,16 @@
 #include "core/os.h"
 #include "core/textfile.h"
 #include "core/findfiles.h"
-#include "networkb/binkp.h"
-#include "networkb/binkp_config.h"
-#include "core/connection.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
-#include "networkb/ppp_config.h"
 
 #include "sdk/bbslist.h"
-#include "sdk/callout.h"
-#include "sdk/connect.h"
-#include "sdk/config.h"
-#include "sdk/contact.h"
-#include "sdk/datetime.h"
 #include "sdk/filenames.h"
-#include "sdk/networks.h"
 
 using std::cout;
 using std::endl;
 using std::map;
+using std::set;
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -92,11 +79,11 @@ static string wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
   if (node == net.sysnum || node == 0) {
     // Messages to us to into local.net.
     return LOCAL_NET;
-  } else if (node == WWIVNET_NO_NODE) {
-    return DEAD_NET;
-  } else {
-    return StringPrintf("s%u.net", node);
   }
+  if (node == WWIVNET_NO_NODE) {
+    return DEAD_NET;
+  }
+  return StringPrintf("s%u.net", node);
 }
 
 static bool handle_packet(
@@ -106,36 +93,34 @@ static bool handle_packet(
   if (p.nh.tosys == net.sysnum) {
     // Local Packet.
     return write_wwivnet_packet(LOCAL_NET, net, p);
-  } else if (p.list.empty()) {
+  } 
+  if (p.list.empty()) {
     // Network packet, single destination
     return write_wwivnet_packet(wwivnet_packet_name(net, get_forsys(b, p.nh.tosys)), net, p);
-  } else {
-    // Network packet, multiple destinations.
-    std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
-    for (const auto& node : p.list) {
-      uint16_t forsys = get_forsys(b, node);
-      forsys_to_all[forsys].insert(node);
-    }
-
-    bool result = true;
-    for (const auto& fa : forsys_to_all) {
-      const auto forsys = fa.first;
-      Packet np(p.nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), p.text);
-      np.nh.list_len = static_cast<uint16_t>(np.list.size());
-      if (np.list.size() == 1) {
-        // If we only have 1, move it out of list into tosys.
-        np.nh.tosys = *np.list.begin();
-        np.nh.list_len = 0;
-        np.list.clear();
-      }
-      if (!write_wwivnet_packet(wwivnet_packet_name(net, forsys), net, np)) {
-        result = false;
-      }
-    }
-    return result;
+  } 
+  // Network packet, multiple destinations.
+  map<uint16_t, set<uint16_t>> forsys_to_all;
+  for (const auto& node : p.list) {
+    auto forsys = get_forsys(b, node);
+    forsys_to_all[forsys].insert(node);
   }
 
-  return false;
+  auto result = true;
+  for (const auto& fa : forsys_to_all) {
+    const auto forsys = fa.first;
+    Packet np(p.nh, vector<uint16_t>(fa.second.begin(), fa.second.end()), p.text);
+    np.nh.list_len = static_cast<uint16_t>(np.list.size());
+    if (np.list.size() == 1) {
+      // If we only have 1, move it out of list into tosys.
+      np.nh.tosys = *np.list.begin();
+      np.nh.list_len = 0;
+      np.list.clear();
+    }
+    if (!write_wwivnet_packet(wwivnet_packet_name(net, forsys), net, np)) {
+      result = false;
+    }
+  }
+  return result;
 }
 
 static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {
@@ -145,20 +130,19 @@ static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const 
     return false;
   }
 
-  bool done = false;
-  while (!done) {
+  for (;;) {
     Packet packet;
-    ReadPacketResponse response = read_packet(f, packet, false);
+    const auto response = read_packet(f, packet, false);
     if (response == ReadPacketResponse::END_OF_FILE) {
       return true;
-    } else if (response == ReadPacketResponse::ERROR) {
+    }
+    if (response == ReadPacketResponse::ERROR) {
       return false;
     }
     if (!handle_packet(b, net, packet)) {
       LOG(INFO) << "error handing packet: type: " << packet.nh.main_type;
     }
   }
-  return true;
 }
 
 int main(int argc, char** argv) {

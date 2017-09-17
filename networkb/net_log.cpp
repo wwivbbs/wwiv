@@ -17,9 +17,7 @@
 /**************************************************************************/
 #include "networkb/net_log.h"
 
-#include <algorithm>
 #include <chrono>
-#include <iostream>
 #include <memory>
 #include <map>
 #include <sstream>
@@ -29,7 +27,6 @@
 #include "core/inifile.h"
 #include "core/file.h"
 #include "core/textfile.h"
-#include "sdk/filenames.h"
 #include "sdk/networks.h"
 
 using std::endl;

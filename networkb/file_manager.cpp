@@ -47,12 +47,12 @@ namespace net {
 
 vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) {
   vector<TransferFile*> result;
-  const string s_node_net = StringPrintf("s%d.net", destination_node);
-  const string search_path = FilePath(dirs_.net_dir(), s_node_net);
+  const auto s_node_net = StringPrintf("s%d.net", destination_node);
+  const auto search_path = FilePath(dirs_.net_dir(), s_node_net);
   VLOG(2) << "       CreateWWIVnetTransferFileList: search_path: " << search_path;
   if (File::Exists(search_path)) {
     File file(search_path);
-    const string basename = file.GetName();
+    const auto basename = file.GetName();
     result.push_back(new WFileTransferFile(basename, std::make_unique<File>(dirs_.net_dir(), basename)));
     LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << basename;
   }

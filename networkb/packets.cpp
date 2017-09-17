@@ -19,7 +19,6 @@
 
 #include <string>
 
-#include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -171,8 +170,8 @@ static string NetInfoFileName(uint16_t type) {
   case net_info_network_lst: return "networks.lst";
   case net_info_file: return "";
   case net_info_binkp: return BINKP_NET;
+  default: return "";
   }
-  return "";
 }
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
