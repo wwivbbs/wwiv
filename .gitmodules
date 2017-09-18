@@ -4,3 +4,5 @@
 [submodule "deps/pdcurses"]
 	path = deps/pdcurses
 	url = https://github.com/wwivbbs/PDCurses.git
+	branch = master
+
