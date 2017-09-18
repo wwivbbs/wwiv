@@ -4,6 +4,7 @@ project (BBS)
 include_directories(..)
 include_directories(../deps/cl342)
 include_directories(../deps/cereal/include)
+Include(FindWWIVCurses)
 
 set(COMMON_SOURCES 
  application.cpp
@@ -150,13 +151,11 @@ if(UNIX)
 endif()
 
 if(WIN32)
-  message("Including deps/pdcurses")
-  include_directories(../deps/pdcurses)
-
-set(PLATFORM_SOURCES local_io_win32.cpp)
- 
+  set(PLATFORM_SOURCES
+      local_io_win32.cpp
+      platform/win32/exec.cpp
+      platform/win32/utility2.cpp)
 endif()
-
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
 target_link_libraries(bbs_lib localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})

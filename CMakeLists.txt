@@ -18,6 +18,10 @@ add_subdirectory(deps/cl342)
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(deps/googletest-master/googletest)
 
+if(WIN32)
+add_subdirectory(deps/pdcurses)
+endif()
+
 add_subdirectory(core)
 add_subdirectory(core_test)
 add_subdirectory(bbs)
