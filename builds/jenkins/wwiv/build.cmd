@@ -28,10 +28,12 @@ del wwiv-*.zip
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-5.3.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
-echo Workspace:     %WORKSPACE%         
-echo Build Number:  %BUILD_NUMBER%
-echo Archive:       %RELEASE_ZIP%
-echo Staging Dir:   %STAGE_DIR%
+set WWIV_CMAKE_DIR=%WORKSPACE%\cmake-bin-root
+echo Workspace:       %WORKSPACE%         
+echo Build Number:    %BUILD_NUMBER%
+echo Archive:         %RELEASE_ZIP%
+echo Staging Dir:     %STAGE_DIR%
+echo WWIV CMake Root: %WWIV_CMAKE_DIR%
 
 @rem Build BBS, init, telnetserver
 echo:
@@ -42,22 +44,23 @@ cd %WORKSPACE%\core
 
 echo:
 echo * Building WWIV
-cd %WORKSPACE%
-msbuild WWIV.sln /t:Build /p:Configuration=Release /p:Platform=Win32|| exit /b
+cd %WWIV_CMAKE_DIR%
+cmake -G "Ninja" %WORKSPACE%
+cmake --build . 
 
 @rem build WINS
 echo:
 echo * Building WINS
 cd %WORKSPACE%\wins
 
-msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild networkp\networkp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild news\news.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild networkp\networkp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild news\news.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+rem msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
 
 @rem build InfoZIP Zip/UnZip
@@ -105,7 +108,7 @@ cd %WORKSPACE%\bbs\admin
 cd %WORKSPACE%\
 echo:
 echo * Copying BBS files to staging directory.
-copy /v/y %WORKSPACE%\Release\cl32.dll %STAGE_DIR%\cl32.dll || exit /b
+copy /v/y %WORKSPACE%\deps\cl342\Release\cl32.dll %STAGE_DIR%\cl32.dll || exit /b
 copy /v/y %WORKSPACE%\Release\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\Release\WWIVServer.exe %STAGE_DIR%\WWIVServer.exe || exit /b
 copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %STAGE_DIR%\wwiv-update.exe || exit /b
