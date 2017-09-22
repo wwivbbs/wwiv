@@ -57,8 +57,8 @@ cd %WORKSPACE%\core
 echo:
 echo * Building WWIV
 cd %WWIV_CMAKE_DIR%
-cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=MinSizeRel %WORKSPACE% 
-cmake --build . 
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=MinSizeRel %WORKSPACE%   || exit /b
+cmake --build .   || exit /b
 
 @rem Build .NET Components
 echo:
