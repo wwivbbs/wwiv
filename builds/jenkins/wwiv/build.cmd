@@ -28,12 +28,24 @@ del wwiv-*.zip
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-5.3.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
-set WWIV_CMAKE_DIR=%WORKSPACE%\cmake-bin-root
+set WWIV_CMAKE_DIR=%WORKSPACE%\_build
 echo Workspace:       %WORKSPACE%         
 echo Build Number:    %BUILD_NUMBER%
 echo Archive:         %RELEASE_ZIP%
 echo Staging Dir:     %STAGE_DIR%
 echo WWIV CMake Root: %WWIV_CMAKE_DIR%
+
+if not exist %WWIV_CMAKE_DIR% (
+  echo Creating %WWIV_CMAKE_DIR%
+  mkdir %WWIV_CMAKE_DIR%
+)
+
+
+@rem build Cryptlib 1st.
+echo:
+echo * Building Cryptlib (zip/unzip)
+cd %WORKSPACE%\deps\cl342
+msbuild crypt32.vcxproj  /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
 @rem Build BBS, init, telnetserver
 echo:
@@ -45,24 +57,33 @@ cd %WORKSPACE%\core
 echo:
 echo * Building WWIV
 cd %WWIV_CMAKE_DIR%
-cmake -G "Ninja" %WORKSPACE%
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=MinSizeRel %WORKSPACE% 
 cmake --build . 
+
+@rem Build .NET Components
+echo:
+echo: * Building .NET Components
+cd %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer
+msbuild wwiv-server.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
+cd %WORKSPACE%\windows-wwiv-update
+msbuild windows-wwiv-update.csproj /t:Build /p:Configuration=Release /p:Platform=AnyCPU
+
 
 @rem build WINS
 echo:
 echo * Building WINS
 cd %WORKSPACE%\wins
 
-rem msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-rem msbuild networkp\networkp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-rem msbuild news\news.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-rem msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-rem msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-rem msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-rem msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
-rem msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild exp\exp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild networkp\networkp.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild news\news.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild pop\pop.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild pppurge\pppurge.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild ppputil\ppputil.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild qotd\qotd.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+msbuild uu\uu.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
-
+@rem Building bits from the build tree.
 @rem build InfoZIP Zip/UnZip
 echo:
 echo * Building INFOZIP (zip/unzip)
@@ -94,38 +115,28 @@ echo * Creating gfiles.zip
 cd %WORKSPACE%\bbs\admin\gfiles
 %ZIP_EXE% a -tzip -r %STAGE_DIR%\gfiles.zip *
 
-echo:
-echo * Creating scripts.zip
-cd %WORKSPACE%\bbs\admin\scripts
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\scripts.zip *
-
-echo:
-echo * Creating Regions
-cd %WORKSPACE%\bbs\admin
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\zip-city.zip zip-city\*
-%ZIP_EXE% a -tzip -r %STAGE_DIR%\regions.zip regions\*
-
 cd %WORKSPACE%\
 echo:
 echo * Copying BBS files to staging directory.
 copy /v/y %WORKSPACE%\deps\cl342\Release\cl32.dll %STAGE_DIR%\cl32.dll || exit /b
-copy /v/y %WORKSPACE%\Release\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\bbs\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
+@rem TODO: Make a workspace with these.
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\Release\WWIVServer.exe %STAGE_DIR%\WWIVServer.exe || exit /b
 copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %STAGE_DIR%\wwiv-update.exe || exit /b
-copy /v/y %WORKSPACE%\Release\init.exe %STAGE_DIR%\init.exe || exit /b
-copy /v/y %WORKSPACE%\Release\network.exe %STAGE_DIR%\network.exe || exit /b
-copy /v/y %WORKSPACE%\Release\network1.exe %STAGE_DIR%\network1.exe || exit /b
-copy /v/y %WORKSPACE%\Release\network2.exe %STAGE_DIR%\network2.exe || exit /b
-copy /v/y %WORKSPACE%\Release\network3.exe %STAGE_DIR%\network3.exe || exit /b
-copy /v/y %WORKSPACE%\Release\networkb.exe %STAGE_DIR%\networkb.exe || exit /b
-copy /v/y %WORKSPACE%\Release\networkc.exe %STAGE_DIR%\networkc.exe || exit /b
-copy /v/y %WORKSPACE%\Release\networkf.exe %STAGE_DIR%\networkf.exe || exit /b
-copy /v/y %WORKSPACE%\Release\wwivutil.exe %STAGE_DIR%\wwivutil.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\init\init.exe %STAGE_DIR%\init.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\network\network.exe %STAGE_DIR%\network.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\network1\network1.exe %STAGE_DIR%\network1.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\network2\network2.exe %STAGE_DIR%\network2.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\network3\network3.exe %STAGE_DIR%\network3.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\networkb\networkb.exe %STAGE_DIR%\networkb.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\networkc\networkc.exe %STAGE_DIR%\networkc.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\networkf\networkf.exe %STAGE_DIR%\networkf.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\wwivutil\wwivutil.exe %STAGE_DIR%\wwivutil.exe || exit /b
 copy /v/y %WORKSPACE%\bbs\admin\* %STAGE_DIR%\
 copy /v/y %WORKSPACE%\bbs\admin\win32\* %STAGE_DIR%\
 
-echo:
-echo * Copying WINS files to staging area
+rem echo:
+rem echo * Copying WINS files to staging area
 set WINS=%WORKSPACE%\wins
 copy /v/y %WINS%\exp\Release\exp.exe %STAGE_DIR%\exp.exe || exit /b
 copy /v/y %WINS%\networkp\Release\networkp.exe %STAGE_DIR%\networkp.exe || exit /b
@@ -148,6 +159,17 @@ dir %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe
 copy /v/y %INFOZIP%\unzip60\win32\vc8\unzip__Win32_Release\unzip.exe %STAGE_DIR%\unzip.exe
 copy /v/y %INFOZIP%\zip30\win32\vc6\zip___Win32_Release\zip.exe %STAGE_DIR%\zip.exe
 
+
+echo:
+echo * Creating scripts.zip
+cd %WORKSPACE%\bbs\admin\scripts
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\scripts.zip *
+
+echo:
+echo * Creating Regions
+cd %WORKSPACE%\bbs\admin
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\zip-city.zip zip-city\*
+%ZIP_EXE% a -tzip -r %STAGE_DIR%\regions.zip regions\*
 
 echo:
 echo * Creating build.nfo file
