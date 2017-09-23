@@ -69,7 +69,7 @@ popd > /dev/null
 
 echo "Compiling Everything"
 cmake -DCMAKE_BUILD_TYPE:STRING=Debug
-make -j12 
+cmake --build .
 
 run_test "${WORKSPACE}/core_test" core_tests
 run_test "${WORKSPACE}/sdk_test" sdk_tests
