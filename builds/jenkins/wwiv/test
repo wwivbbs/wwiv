@@ -53,6 +53,10 @@ if [[ -z "${WWIV_TEST_TEMPDIR}" ]]; then
     exit 1
 fi
 
+if [[ ! -d "${WWIV_TEST_TEMPDIR}" ]]; then
+    mkdir ${WWIV_TEST_TEMPDIR}
+    echo "Created directory: ${WWIV_TEST_TEMPDIR}"
+fi
 
 echo "Building binaries"
 cd ${WORKSPACE}
