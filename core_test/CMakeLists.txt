@@ -32,7 +32,7 @@ endif()
 add_library(core_fixtures ${fixture_sources}) 
 
 target_link_libraries(core_fixtures core)
-if(MSVC)
+if(NOT UNIX)
   list(APPEND test_sources core_test_main.cpp)
 endif()
 add_executable(core_tests ${test_sources})
