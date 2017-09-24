@@ -53,6 +53,10 @@ if [[ -z "${WWIV_TEST_TEMPDIR}" ]]; then
     exit 1
 fi
 
+if [[ ! -d "${WWIV_TEST_TEMPDIR}" ]]; then
+    mkdir ${WWIV_TEST_TEMPDIR}
+    echo "Created directory: ${WWIV_TEST_TEMPDIR}"
+fi
 
 echo "Building binaries"
 cd ${WORKSPACE}
@@ -65,7 +69,7 @@ popd > /dev/null
 
 echo "Compiling Everything"
 cmake -DCMAKE_BUILD_TYPE:STRING=Debug
-make -j12 
+cmake --build .
 
 run_test "${WORKSPACE}/core_test" core_tests
 run_test "${WORKSPACE}/sdk_test" sdk_tests

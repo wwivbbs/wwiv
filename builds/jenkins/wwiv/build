@@ -34,8 +34,8 @@ make -j12
 popd > /dev/null
 
 echo "Compiling Everything"
-cmake .
-make -j12 
+cmake -DCMAKE_BUILD_TYPE:STRING=Release
+cmake --build .
 
 echo "Populating built binaries"
 cp  ${WORKSPACE}/bbs/bbs \
