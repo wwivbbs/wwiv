@@ -3,17 +3,6 @@
 @rem
 @rem **************************************************************************
 
-set WWIV_CMAKE_DIR=%WORKSPACE%\_build
-if not exist %WWIV_CMAKE_DIR% (
-  echo Creating %WWIV_CMAKE_DIR%
-  mkdir %WWIV_CMAKE_DIR%
-)
-
-if not exist %WWIV_TEST_TEMPDIR% (
-  echo Creating %WWIV_TEST_TEMPDIR%
-  mkdir %WWIV_TEST_TEMPDIR%
-)
-
 echo "Build Number:    %BUILD_NUMBER%"
 echo "Workpace: %WORKSPACE%"
 echo "WWIV_TEST_TEMPDIR: %WWIV_TEST_TEMPDIR%"
@@ -26,6 +15,18 @@ echo "WWIV CMake Root: %WWIV_CMAKE_DIR%"
 @if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
   call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
 )
+
+set WWIV_CMAKE_DIR=%WORKSPACE%\_build
+if not exist %WWIV_CMAKE_DIR% (
+  echo Creating %WWIV_CMAKE_DIR%
+  mkdir %WWIV_CMAKE_DIR%
+)
+
+if not exist %WWIV_TEST_TEMPDIR% (
+  echo Creating %WWIV_TEST_TEMPDIR%
+  mkdir %WWIV_TEST_TEMPDIR%
+)
+
 
 @rem build Cryptlib 1st.
 echo:
