@@ -31,8 +31,6 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/findfiles.h"
-#include "sdk/datetime.h"
-#include "sdk/filenames.h"
 #include "sdk/fido/fido_address.h"
 
 using std::string;
@@ -200,12 +198,35 @@ std::vector<std::string> split_message(const std::string& s) {
   return SplitString(temp, "\r");
 }
 
-std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
+/**
+ * \brief Type of control line. Control-A Kludge or non-control-a like AREA, or none.
+ */
+enum class FtnControlLineType {
+  control_a,
+  plain_control_line,
+  none
+};
+
+static FtnControlLineType determine_kludge_line_type(const std::string& line) {
+  if (line.empty()) {
+    return FtnControlLineType::none;
+  }
+  if (line.front() == 0x01) {
+    return line.size() > 1 ? FtnControlLineType::control_a : FtnControlLineType::none;
+  }
+  if (starts_with(line, "AREA:")
+    || starts_with(line, "SEEN-BY: ")) {
+    return FtnControlLineType::plain_control_line;
+  }
+  return FtnControlLineType::none;
+}
+
+string FidoToWWIVText(const string& ft, bool convert_control_codes) {
   // Split text into lines and process one at a time
   // this is easier to handle control lines, etc.
-  std::string wt;
+  string wt;
   for (const auto& sc : ft) {
-    auto c = static_cast<unsigned char>(sc);
+    const auto c = static_cast<unsigned char>(sc);
     if (c == 0x8d) {
       // FIDOnet style Soft CR. Convert to CR
       wt.push_back(13);
@@ -219,31 +240,46 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
   auto lines = SplitString(wt, "\r", false);
   wt.clear();
 
-  for (const auto& line : lines) {
-    if (!line.empty()) {
-      if (convert_control_codes) {
-        // According to FSC-0068. Kludge lines are not normally displayed
-        // when reading messages.
-        if (line.front() == 1
-            || starts_with(line, "AREA:")
-            || starts_with(line, "SEEN-BY: ")) {
-          wt.push_back(4);
-          wt.push_back('0');
-        }
-      }
+  if (!convert_control_codes) {
+    for (const auto& line : lines) {
+      wt.append(line).append("\r\n");
+    }
+    return wt;
+  }
+
+  for (auto line : lines) {
+    if (line.empty()) {
+      wt.append("\r\n");
+      continue;
+    }
+
+    // According to FSC-0068. Kludge lines are not normally displayed
+    // when reading messages.
+    switch (determine_kludge_line_type(line)) {
+    case FtnControlLineType::control_a: {
+      line = line.substr(1);
+      wt.push_back(4);
+      wt.push_back('0');
+    } break;
+    case FtnControlLineType::plain_control_line: {
+      wt.push_back(4);
+      wt.push_back('0');
+    } break;
+    case FtnControlLineType::none:
+    default:
+    break;
     }
     wt.append(line).append("\r\n");
   }
-
   return wt;
 }
 
-std::string WWIVToFidoText(const std::string& wt) {
+string WWIVToFidoText(const string& wt) {
   return WWIVToFidoText(wt, 9);
 
 }
 
-std::string WWIVToFidoText(const std::string& wt, int8_t max_optional_val_to_include) {
+string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
   auto temp = wt;
   // Fido Text is CR, not CRLF, so remove the LFs
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
