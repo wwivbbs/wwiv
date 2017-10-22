@@ -375,11 +375,10 @@ std::string Color(int c, bool ansi) {
   return s;
 }
 
-static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConnection conn, const wwivd_config_t& c) {
+static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConnection& conn, const wwivd_config_t& c) {
   if (c.bbses.empty()) {
-    // TODO(rushfan): Throw exception here?
-    conn.close();
-    return{};
+    // This should be checked before calling this method.
+    throw std::runtime_error("c.bbses.empty()");
   }
   if (c.bbses.size() == 1) {
     // Only have 1 entry, that's the one to display.
@@ -442,8 +441,7 @@ static void HandleHttpConnection(ConnectionData data) {
     }
 
     // HTTP Request
-    SocketConnection conn(data.r.client_socket);
-    HttpServer h(conn);
+    HttpServer h(std::make_unique<SocketConnection>(data.r.client_socket));
     StatusHandler status(data.nodes);
     h.add(HttpMethod::GET, "/status", &status);
     h.Run();

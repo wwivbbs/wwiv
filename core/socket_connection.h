@@ -47,6 +47,9 @@ class SocketConnection : public Connection
 public:
   explicit SocketConnection(SOCKET sock);
   SocketConnection(SOCKET sock, bool close_socket);
+  SocketConnection(const SocketConnection& other) = delete;
+  SocketConnection& operator=(const SocketConnection& other) = delete;
+
   virtual ~SocketConnection();
 
   int receive(void* data, int size, std::chrono::duration<double> d) override;
