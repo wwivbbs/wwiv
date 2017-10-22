@@ -4,7 +4,11 @@ project (wwivd)
 include_directories(..)
 include_directories(../deps/cereal/include)
 
-set(WWIVD_SOURCES wwivd.cpp)
+set(WWIVD_SOURCES 
+    node_manager.cpp
+    wwivd.cpp
+    )
+
 if (UNIX)
   find_package (Threads)
   list(APPEND WWIVD_SOURCES wwivd_unix.cpp)

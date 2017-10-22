@@ -25,8 +25,6 @@
 #include "sdk/config.h"
 #include "sdk/wwivd_config.h"
 
-enum class ConnectionType { UNKNOWN, SSH, TELNET, BINKP, HTTP };
-
 void BeforeStartServer();
 
 void SwitchToNonRootUser(const std::string& wwiv_user);

@@ -77,8 +77,7 @@
 #include "core/wwivport.h"
 #include "sdk/config.h"
 #include "sdk/datetime.h"
-#include "sdk/vardec.h"
-#include "sdk/filenames.h"
+#include "wwivd/node_manager.h"
 #include "wwivd/wwivd.h"
 
 using std::cerr;
@@ -99,155 +98,33 @@ pid_t bbs_pid = 0;
 #undef DELETE
 #endif  // DELETE
 
-static std::string to_string(ConnectionType t) {
-  switch (t) {
-  case ConnectionType::BINKP: return "BinkP";
-  case ConnectionType::HTTP: return "HTTP";
-  case ConnectionType::SSH: return "SSH";
-  case ConnectionType::TELNET: return "Telnet";
-  case ConnectionType::UNKNOWN: return "*UNKNOWN*";
-  }
-  return "*UNKNOWN*";
-}
+namespace wwiv {
+namespace wwivd {
 
-struct NodeStatus {
-public:
-  ConnectionType type = ConnectionType::UNKNOWN;
-  int node = 0;
-  std::string description;
-  bool connected = false;
-};
-
-class NodeManager {
-public:
-  NodeManager(const std::string& name, ConnectionType type, int start, int end) 
-    : name_(name), type_(type), start_(start), end_(end) {
-    for (int i = start; i <= end; i++) {
-      clear_node(i);
-    }
-  }
-  virtual ~NodeManager() {}
-
-  std::string status_string(const NodeStatus& n) const {
-    std::string s = n.description;
-    if (n.connected) {
-      s += " [";
-      s += to_string(n.type);
-      s += "]";
-    }
-    return s;
-  }
-
-  std::vector<std::string> status_lines() const {
-    std::lock_guard<std::mutex> lock(mu_);
-    std::vector<std::string> v;
-    for (const auto& n : nodes_) {
-      std::ostringstream ss;
-      ss << this->name_ << " ";
-      if (n.first > 0) {
-        ss << "Node #" << n.first << " ";
-      }
-      ss << status_string(n.second);
-      v.push_back(ss.str());
-    }
-
-    return v;
-  }
-
-  NodeStatus& status_for_unlocked(int node) {
-    return nodes_[node];
-  }
-
-  NodeStatus status_for_copy(int node) {
-    std::lock_guard<std::mutex> lock(mu_);
-    NodeStatus n = status_for_unlocked(node);
-    return n;
-  }
-
-  void set_node(int node, ConnectionType type, const std::string& description) {
-    std::lock_guard<std::mutex> lock(mu_);
-    auto& n = status_for_unlocked(node);
-    n.node = node;
-    n.type = type;
-    n.description = description;
-    n.connected = true;
-  }
-
-  void clear_node(int node) {
-    std::lock_guard<std::mutex> lock(mu_);
-    auto& n = status_for_unlocked(node);
-    n.node = node;
-    n.type = type_;
-    n.connected = false;
-    n.description = "Waiting for Call";
-  }
-
-  int nodes_used() const {
-    std::lock_guard<std::mutex> lock(mu_);
-    int count = 0;
-    for (const auto& e : nodes_) {
-      if (e.second.connected) {
-        count++;
-      }
-    }
-    return count;
-  }
-
-  int total_nodes() const { return end_ - start_ + 1; }
-
-  bool AcquireNode(int& node) {
-    std::lock_guard<std::mutex> lock(mu_);
-    for (auto& e : nodes_) {
-      if (!e.second.connected) {
-        e.second.connected = true;
-        e.second.type = type_;
-        e.second.description = "Connecting...";
-        node = e.second.node;
-        return true;
-      }
-    }
-    // None
-    node = -1;
-    return false;
-  }
-
-  bool ReleaseNode(int node) {
-    std::lock_guard<std::mutex> lock(mu_);
-    if (!contains(nodes_, node)) {
-      return false;
-    }
-    auto& n = nodes_.at(node);
-    if (!n.connected) {
-      return false;
-    }
-    n.connected = false;
-    n.type = type_;
-    n.description = "Waiting For Call";
-    return true;
-  }
-  int start_node() const { return start_; }
-  int end_node() const { return end_; }
-
-private:
-  const std::string name_;
-  const ConnectionType type_;
-  int start_ = 0;
-  int end_ = 0;
-  std::map<int, NodeStatus> nodes_;
-
-  mutable std::mutex mu_;
-};
-
-static std::string to_string(const NodeManager& nodes) {
+static string to_string(const NodeManager& nodes) {
   std::ostringstream ss;
   ss << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
+  return ss.str();
+}
+
+static string to_string(const wwivd_matrix_entry_t& e) {
+  std::ostringstream ss;
+  ss << "[" << e.key << "] " << e.name << " (" << e.description << ")";
+  return ss.str();
+}
+
+static string to_string(const std::vector<wwivd_matrix_entry_t>& elements) {
+  std::ostringstream ss;
+  for (const auto& e : elements) {
+    ss << "{" << to_string(e) << "}" << std::endl;
+  }
   return ss.str();
 }
 
 struct status_reponse_t {
   int num_instances;
   int used_instances;
-  std::vector<std::string> lines;
+  std::vector<string> lines;
 
   template <class Archive>
   void serialize(Archive & ar) {
@@ -257,7 +134,7 @@ struct status_reponse_t {
   }
 };
 
-std::string ToJson(status_reponse_t r) {
+string ToJson(status_reponse_t r) {
   std::ostringstream ss;
   try {
     cereal::JSONOutputArchive save(ss);
@@ -292,7 +169,7 @@ public:
   }
 
 private:
-  std::map<const std::string, std::shared_ptr<NodeManager>>* nodes_;
+  map<const string, std::shared_ptr<NodeManager>>* nodes_;
 };
 
 
@@ -518,7 +395,10 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConn
       // Skip ones that require ANSI.
       if (b.require_ansi && !ansi) { continue; }
       std::ostringstream ss;
-      ss << Color(14, ansi) << b.key << Color(3, ansi) << ") " << Color(11, ansi) << b.description;
+      ss << Color(14, ansi) << b.key << Color(3, ansi) << ") " << Color(10, ansi) << b.name;
+      if (!b.description.empty()) {
+        ss << Color(11, ansi) << "  (" << b.description << ")";
+      }
       conn.send_line(ss.str(), d);
     }
     std::ostringstream ss;
@@ -549,12 +429,61 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConn
 
   conn.close();
   return{};
-
 }
 
+static void HandleHttpConnection(ConnectionData data) {
+  auto sock = data.r.client_socket;
+  try {
+    string remote_peer;
+    if (GetRemotePeerAddress(sock, remote_peer)) {
+      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
+      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
+        << "; coutry code: " << cc;
+    }
+
+    // HTTP Request
+    SocketConnection conn(data.r.client_socket);
+    HttpServer h(conn);
+    StatusHandler status(data.nodes);
+    h.add(HttpMethod::GET, "/status", &status);
+    h.Run();
+
+  }
+  catch (const std::exception& e) {
+    LOG(ERROR) << "HandleHttpConnection: Handled Uncaught Exception: " << e.what();
+  }
+  VLOG(1) << "Exiting HandleHttpConnection (exception)";
+}
+
+static void HandleBinkPConnection(ConnectionData data) {
+  auto sock = data.r.client_socket;
+  try {
+    string remote_peer;
+    if (GetRemotePeerAddress(sock, remote_peer)) {
+      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
+      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
+        << "; coutry code: " << cc;
+    }
+
+    auto& nodemgr = data.nodes->at("BINKP");
+    int node = -1;
+    if (nodemgr->AcquireNode(node)) {
+      ScopeExit at_exit([=] {
+        closesocket(sock);
+        VLOG(2) << "closed socket: " << sock;
+      });
+      launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, ConnectionType::BINKP, remote_peer);
+    }
+
+  }
+  catch (const std::exception& e) {
+    LOG(ERROR) << "HandleHttpConnection: Handled Uncaught Exception: " << e.what();
+  }
+  VLOG(1) << "Exiting HandleHttpConnection (exception)";
+}
+
+
 static void HandleConnection(ConnectionData data) {
-  /*const wwiv::sdk::Config& config, const wwivd_config_t& c, NodeManager* nodes,
-    const accepted_socket_t r) {*/
   auto sock = data.r.client_socket;
   try {
     string remote_peer;
@@ -562,30 +491,6 @@ static void HandleConnection(ConnectionData data) {
       auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
       LOG(INFO) << "Accepted connection on port: " << data.r.port << "; from: " << remote_peer
         << "; coutry code: " << cc;
-    }
-
-    auto connection_type = connection_type_for(*data.c, data.r.port);
-    if (connection_type == ConnectionType::BINKP) {
-      // BINKP Connection.
-      auto& nodemgr = data.nodes->at("BINKP");
-      int node = -1;
-      if (nodemgr->AcquireNode(node)) {
-        ScopeExit at_exit([=] {
-          closesocket(sock);
-          VLOG(2) << "closed socket: " << sock;
-        });
-        launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, connection_type, remote_peer);
-      }
-      return;
-    }
-    else if (connection_type == ConnectionType::HTTP) {
-      // HTTP Request
-      SocketConnection conn(data.r.client_socket);
-      HttpServer h(conn);
-      StatusHandler status(data.nodes);
-      h.add(HttpMethod::GET, "/status", &status);
-      h.Run();
-      return;
     }
 
     if (data.c->bbses.empty()) {
@@ -596,7 +501,8 @@ static void HandleConnection(ConnectionData data) {
       return;
     }
 
-    // TODO(rushfan): Do matrix logon here.
+    auto connection_type = connection_type_for(*data.c, data.r.port);
+
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
       bbs = DoMatrixLogon(
@@ -667,6 +573,7 @@ int Main(CommandLine& cmdline) {
   wwivd_config_t c{};
   c.Load(config);
   File::set_current_directory(config.root_directory());
+  LOG(INFO) << "Loaded BBSES:\r\n" << to_string(c.bbses);
 
   BeforeStartServer();
 
@@ -683,23 +590,31 @@ int Main(CommandLine& cmdline) {
     }
   }
 
-  auto fn = [&](accepted_socket_t r) {
+  auto telnet_or_ssh_fn = [&](accepted_socket_t r) {
     std::thread client(HandleConnection, ConnectionData(&config, &c, &nodes, r));
     client.detach();
   };
 
   SocketSet sockets;
   if (c.telnet_port > 0) {
-    sockets.add(c.telnet_port, fn, "TELNET");
+    sockets.add(c.telnet_port, telnet_or_ssh_fn, "TELNET");
   }
   if (c.ssh_port > 0) {
-    sockets.add(c.ssh_port, fn, "SSH");
+    sockets.add(c.ssh_port, telnet_or_ssh_fn, "SSH");
   }
   if (c.binkp_port > 0) {
-    sockets.add(c.binkp_port, fn, "BINKP");
+    auto binkp_fn = [&](accepted_socket_t r) {
+      std::thread client(HandleBinkPConnection, ConnectionData(&config, &c, &nodes, r));
+      client.detach();
+    };
+    sockets.add(c.binkp_port, binkp_fn, "BINKP");
   }
   if (c.http_port > 0) {
-    sockets.add(c.http_port, fn, "HTTP");
+    auto http_fn = [&](accepted_socket_t r) {
+      std::thread client(HandleHttpConnection, ConnectionData(&config, &c, &nodes, r));
+      client.detach();
+    };
+    sockets.add(c.http_port, http_fn, "HTTP");
     // TODO(rushfan):   
     // http_address;
   }
@@ -713,6 +628,10 @@ int Main(CommandLine& cmdline) {
 
   return EXIT_FAILURE;
 }
+
+}  // namespace wwivd
+}  // namespace wwiv
+
 
 int main(int argc, char* argv[]) {
   Logger::Init(argc, argv);
@@ -742,7 +661,7 @@ int main(int argc, char* argv[]) {
 #endif  // __unix__
 
   try {
-    return Main(cmdline);
+    return wwiv::wwivd::Main(cmdline);
   } catch (const std::exception& e) {
     LOG(ERROR) << "Caught top level exception: " << e.what();
     return EXIT_FAILURE;
