@@ -36,15 +36,26 @@ struct semaphore_not_acquired : public std::runtime_error {
   semaphore_not_acquired(const std::string& filename) : std::runtime_error(filename) {}
 };
 
-class SemaphoreFile {
+class SemaphoreFile final {
 public:
 
   /** 
    * Tries to create the semaphore file, waiting up to timeout and then
    * failing by throwing an exception.
    */
-  static SemaphoreFile try_acquire(const std::string& filepath, std::chrono::duration<double> timeout);
-  static SemaphoreFile acquire(const std::string& filepath);
+  static SemaphoreFile try_acquire(const std::string& filepath, 
+                                   const std::string& text,
+                                   std::chrono::duration<double> timeout);
+  static SemaphoreFile try_acquire(const std::string& filepath,
+    std::chrono::duration<double> timeout) {
+    return try_acquire(filepath, timeout);
+  }
+
+  static SemaphoreFile acquire(const std::string& filepath, const std::string& text);
+  static SemaphoreFile acquire(const std::string& filepath) {
+    return acquire(filepath, "");
+  }
+
   ~SemaphoreFile();
 
   const std::string& filename() const { return filename_; }

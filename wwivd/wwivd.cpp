@@ -71,6 +71,7 @@
 #include "core/os.h"
 #include "core/socket_connection.h"
 #include "core/scope_exit.h"
+#include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -196,11 +197,11 @@ static string CreateCommandLine(const std::string& tmpl, std::map<char, std::str
   return out;
 }
 
-static const File node_file(const Config& config, ConnectionType ct, int node_number) {
+static const string node_file(const Config& config, ConnectionType ct, int node_number) {
   if (ct == ConnectionType::BINKP) {
-    return File(config.datadir(), "binkpinuse");
+    return FilePath(config.datadir(), "binkpinuse");
   }
-  return File(config.datadir(), StrCat("nodeinuse.", node_number));
+  return FilePath(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
@@ -258,29 +259,18 @@ static bool launch_node(
 
   string pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launching node(" << node_number << ")";
+  const auto sem_text = StringPrintf("Created by pid: %s\nremote peer: %s", pid.c_str(), remote_peer.c_str());
+  const auto sem_path = node_file(config, connection_type, node_number);
 
-  File semaphore_file(node_file(config, connection_type, node_number));
-  if (!semaphore_file.Open(File::modeCreateFile|File::modeText|File::modeReadWrite|File::modeTruncate, File::shareDenyNone)) {
-    LOG(ERROR) << pid << "Unable to create semaphore file: " << semaphore_file
-               << "; errno: " << errno;
+  try {
+    SemaphoreFile semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
+    return launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
+  }
+  catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path
+               << "; errno: " << errno << "; what: " << e.what();
     return false;
   }
-  semaphore_file.Write(StringPrintf("Created by pid: %s\nremote peer: %s",
-      pid.c_str(), remote_peer.c_str()));
-  semaphore_file.Close();
-  launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
-
-  VLOG(2) << "About to delete semaphore file: "<< semaphore_file.full_pathname();
-  bool delete_ok = semaphore_file.Delete();
-  if (!delete_ok) {
-    LOG(ERROR) << pid << "Unable to delete semaphore file: "
-        << semaphore_file.full_pathname()
-        << "; errno: " << errno;
-  } else {
-    VLOG(2) << "Deleted semaphore file: " << semaphore_file.full_pathname();
-  }
-  VLOG(2) << "After NodeManager::ReleaseNode(" << node_number << ")";
-  return true;
 }
 
 static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
@@ -523,22 +513,21 @@ static void HandleConnection(ConnectionData data) {
     // Telnet or SSH connection.  Find open node number and launch the child.
     int node = -1;
     if (nodemgr->AcquireNode(node)) {
-      string raw_cmd = bbs.telnet_cmd;
-      if (connection_type == ConnectionType::SSH) {
-        raw_cmd = bbs.ssh_cmd;
-      }
-      launch_node(*data.config, raw_cmd, nodemgr, node, sock, connection_type, remote_peer);
+      const auto& cmd = (connection_type == ConnectionType::SSH) ? bbs.ssh_cmd : bbs.telnet_cmd;
+      launch_node(*data.config, cmd, nodemgr, node, sock, connection_type, remote_peer);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
-      return;
     }
-    LOG(INFO) << "Sending BUSY. No available node to handle connection.";
-    send(sock, "BUSY\r\n", 6, 0);
-    VLOG(1) << "Exiting HandleConnection (busy)";
+    else {
+      using namespace std::chrono_literals;
+      LOG(INFO) << "Sending BUSY. No available node to handle connection.";
+      SocketConnection conn(data.r.client_socket);
+      conn.send_line("BUSY\r\n", 10s);
+      VLOG(1) << "Exiting HandleConnection (busy)";
+    }
   }
   catch (const std::exception& e) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
-  VLOG(1) << "Exiting HandleConnection (exception)";
 }
 
 /**
