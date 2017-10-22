@@ -47,7 +47,7 @@ std::string daten_to_wwivnet_time(time_t t) {
   return human_date;
 }
 
-void HttpServer::SendResponse(HttpResponse& r) {
+void HttpServer::SendResponse(const HttpResponse& r) {
   static const auto statuses = CreateHttpStatusMap();
   const auto d = std::chrono::seconds(1);
   conn_->send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);

@@ -46,9 +46,10 @@ public:
   static SemaphoreFile try_acquire(const std::string& filepath, 
                                    const std::string& text,
                                    std::chrono::duration<double> timeout);
+
   static SemaphoreFile try_acquire(const std::string& filepath,
     std::chrono::duration<double> timeout) {
-    return try_acquire(filepath, timeout);
+    return std::move<SemaphoreFile>(try_acquire(filepath, "", timeout));
   }
 
   static SemaphoreFile acquire(const std::string& filepath, const std::string& text);
@@ -60,6 +61,10 @@ public:
 
   const std::string& filename() const { return filename_; }
   int fd() const { return fd_; }
+
+  SemaphoreFile(SemaphoreFile&&) = default;
+  SemaphoreFile(const SemaphoreFile&) = delete;
+  SemaphoreFile& operator= (const SemaphoreFile&) = delete;
 
 private:
   SemaphoreFile(const std::string& filepath, int fd);
