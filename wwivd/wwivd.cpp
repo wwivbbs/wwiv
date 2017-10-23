@@ -365,7 +365,10 @@ std::string Color(int c, bool ansi) {
   return s;
 }
 
-static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConnection& conn, const wwivd_config_t& c) {
+static const wwivd_matrix_entry_t DoMatrixLogon(
+        const Config& config,
+        std::unique_ptr<SocketConnection> conn,
+        const wwivd_config_t& c) {
   if (c.bbses.empty()) {
     // This should be checked before calling this method.
     throw std::runtime_error("c.bbses.empty()");
@@ -375,11 +378,11 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConn
     return c.bbses.front();
   }
 
-  bool ansi = check_ansi(conn);
+  bool ansi = check_ansi(*conn.get());
   auto d = std::chrono::seconds(1);
   for (int tries = 0; tries < 3; tries++) {
-    conn.send_line(StrCat(Color(10, ansi), "Matrix Logon Menu"), d);
-    conn.send_line("\r\n", d);
+    conn->send_line(StrCat(Color(10, ansi), "Matrix Logon Menu"), d);
+    conn->send_line("\r\n", d);
     for (const auto& b : c.bbses) {
       // Skip ones that require ANSI.
       if (b.require_ansi && !ansi) { continue; }
@@ -388,35 +391,35 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config, SocketConn
       if (!b.description.empty()) {
         ss << Color(11, ansi) << "  (" << b.description << ")";
       }
-      conn.send_line(ss.str(), d);
+      conn->send_line(ss.str(), d);
     }
     std::ostringstream ss;
     ss << Color(14, ansi) << '!' << Color(3, ansi) << ") " << Color(11, ansi) << " Logoff/Quit.";
-    conn.send_line(ss.str(), d);
+    conn->send_line(ss.str(), d);
 
-    conn.send_line("\r\n", d);
-    conn.send(StrCat(Color(3, ansi), "Enter Selection: "), d);
-    string key_str = conn.receive_upto(1, std::chrono::seconds(15));
+    conn->send_line("\r\n", d);
+    conn->send(StrCat(Color(3, ansi), "Enter Selection: "), d);
+    string key_str = conn->receive_upto(1, std::chrono::seconds(15));
     // dump left overs
-    conn.receive_upto(1024, std::chrono::milliseconds(1));
+    conn->receive_upto(1024, std::chrono::milliseconds(1));
     if (key_str.empty()) { continue; }
     char key = key_str.front();
 
     for (const auto& b : c.bbses) {
       if (std::toupper(b.key) == std::toupper(key)) {
-        conn.send_line("\r\n", d);
+        conn->send_line("\r\n", d);
         return b;
       }
     }
     // Hangup
     if (key == '!') {
-      conn.close();
+      conn->close();
       return{};
     }
 
   }
 
-  conn.close();
+  conn->close();
   return{};
 }
 
@@ -494,7 +497,7 @@ static void HandleConnection(ConnectionData data) {
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
       bbs = DoMatrixLogon(
-        *data.config, SocketConnection(data.r.client_socket, false), *data.c);
+        *data.config, std::make_unique<SocketConnection>(data.r.client_socket, false), *data.c);
     }
     else if (connection_type == ConnectionType::SSH) {
       bbs = data.c->bbses.front();
