@@ -74,6 +74,7 @@ static void RegisterNetworkBCommands(CommandLine& cmdline) {
   cmdline.add_argument({"node", "Node number (only used when sending)", "0"});
   cmdline.add_argument({"handle", "Existing socket handle (only used when receiving)", "0"});
   cmdline.add_argument({"port", "Port number to use (receiving only)", "24554"});
+  cmdline.add_argument(BooleanCommandLineArgument("daemon", "Run continually as a daemon until stopped  (only used when receiving)", true));
 }
   
 static void ShowHelp(CommandLine& cmdline) {
@@ -91,7 +92,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
     socket_connected = true;
   } else {
     sock = CreateListenSocket(port);
-    loop = true;
+    loop = cmdline.barg("daemon");
   }
 
   do {
