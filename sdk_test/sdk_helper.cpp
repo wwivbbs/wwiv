@@ -25,6 +25,7 @@
 
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "core/wwivport.h"
 #include "core_test/file_helper.h"
 
@@ -73,6 +74,18 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
     to_char_array(c.datadir, data_);
     to_char_array(c.dloadsdir, dloads);
 
+    // Add header version.
+    // TODO(rushfan): This really should all be done in the Config class and also used
+    // by INIT from there.
+    configrec_header_t h = {};
+    h.config_revision_number = 0;
+    h.config_size = sizeof(configrec);
+    c.userreclen = sizeof(userrec);
+    h.written_by_wwiv_num_version = wwiv_num_version;
+    to_char_array(h.signature, "WWIV");
+    c.header.header = h;
+
+    
     File cfile(root_, CONFIG_DAT);
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
       throw std::runtime_error("failed to create config.dat");

@@ -56,11 +56,13 @@ UserManager::UserManager(const wwiv::sdk::Config& config)
     max_number_users_(config.config()->maxusers),
     allow_writes_(true){
   if (config.versioned_config_dat()) {
-    CHECK_EQ(config.config()->userreclen, sizeof(userrec)) 
+    CHECK_EQ(config.config()->userreclen, sizeof(userrec))
       << "For WWIV 5.2 or later, we expect the userrec length to match what's written\r\n"
       << " in config.dat.\r\n"
       << "Please use a version of this tool compiled with your WWIV BBS.\r\n"
-      << "If you see this message running against a WWIV 4.x instance, it is a bug.";
+      << "If you see this message running against a WWIV 4.x instance, it is a bug.\r\n"
+      << "config.config()->userreclen: " << config.config()->userreclen
+      << "; sizeof(userrec): " << sizeof(userrec) << "\r\n";
   }
 }
 

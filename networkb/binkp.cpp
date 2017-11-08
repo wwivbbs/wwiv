@@ -421,27 +421,42 @@ BinkState BinkP::WaitConn() {
           network_addresses.push_back(' ');
         }
 		    network_addresses += StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
-      } else {
+      } else if (config_->config().is_5xx_or_later()) {
         if (!network_addresses.empty()) {
           network_addresses.push_back(' ');
         }
-        FidoAddress address(net.fido.fido_address);
-        network_addresses += address.as_string();
+        try {
+          FidoAddress address(net.fido.fido_address);
+          network_addresses += address.as_string();
+        }
+        catch (const bad_fidonet_address& e) {
+          LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address
+            << "' for network: '" << net.name << "'.";
+        }
       }
     }
   } else {
     // Sending side: 
     const auto net = config_->networks()[config_->callout_network_name()];
-    if (config_->network(config_->callout_network_name()).type == network_type_t::wwivnet) {
+    if (net.type == network_type_t::wwivnet) {
       // Present single primary WWIVnet address.
       send_command_packet(BinkpCommands::M_NUL,
         StringPrintf("WWIV @%u.%s", config_->callout_node_number(), config_->callout_network_name().c_str()));
       const string lower_case_network_name = ToStringLowerCase(net.name);
       network_addresses = StringPrintf("20000:20000/%d@%s", net.sysnum, lower_case_network_name.c_str());
-    } else {
-      // Present single FTN address.
-      FidoAddress address(net.fido.fido_address);
-      network_addresses = address.as_string();
+    } else if (config_->config().is_5xx_or_later()) {
+      try {
+        // Present single FTN address.
+        FidoAddress address(net.fido.fido_address);
+        network_addresses = address.as_string();
+      } catch (const bad_fidonet_address& e) {
+          LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address
+            << "' for network: '" << net.name << "'.";
+          // We should terminate here, so rethrow the exception after
+          // letting the user know the network name that is borked.
+          throw e;
+      }
+
     }
   }
   send_command_packet(BinkpCommands::M_ADR, network_addresses);
