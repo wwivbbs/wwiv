@@ -37,7 +37,7 @@ enum class OverflowStrategy {
 };
 
 struct MessageApiOptions {
-  wwiv::sdk::msgapi::OverflowStrategy overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
+  wwiv::sdk::msgapi::OverflowStrategy overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_one;
 };
 
 class MessageApi {
