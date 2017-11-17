@@ -125,7 +125,7 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
     const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
     VLOG(2) << new_filename;
     if (File::Rename(pend_filename, new_filename)) {
-      LOG(INFO) << "renamed file to: " << new_filename;
+      LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
       return;
     }
   }
