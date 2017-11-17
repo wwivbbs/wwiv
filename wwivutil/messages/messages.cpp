@@ -482,11 +482,12 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   area->set_storage_type(sub.storage_type);
   area->set_max_messages(sub.maxmsgs);
 
-  int num_messages = (end >= 0) ? end : area->number_of_messages();
+  const auto num_messages = (end >= 0) ? end : area->number_of_messages();
   cout << "Message Sub: '" << basename << "' has "
        << num_messages << " messages." << endl;
-  for (int current = start; current <= num_messages; current++) {
-    unique_ptr<MessageHeader> header(area->ReadMessageHeader(current));
+  for (auto current = start; current <= num_messages; current++) {
+    unique_ptr<Message> message(area->ReadMessage(current));
+    const auto header = message->header();
     if (!header) {
       continue;
     }
@@ -508,18 +509,18 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     }
     cout << endl;
     if (all) {
-      cout << "qscan: " <<  header.get()->last_read() << endl;
+      cout << "qscan: " <<  header->last_read() << endl;
     }
     if (header->deleted()) {
       // Don't try to read the text of deleted messages.
       continue;
     }
-    unique_ptr<MessageText> text(area->ReadMessageText(current));
+    const auto text = message->text();
     if (!text) {
       continue;
     }
     cout << string(72, '-') << endl;
-    std::vector<string> lines = wwiv::strings::SplitString(text->text(), "\n", false);
+    auto lines = wwiv::strings::SplitString(text->text(), "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
         continue;
@@ -542,9 +543,9 @@ int MessagesDumpHeaderCommand::Execute() {
   }
 
   const string basename(remaining().front());
-  const int start = arg("start").as_int();
-  int end = arg("end").as_int();
-  const bool all = arg("all").as_bool();
+  const auto start = arg("start").as_int();
+  auto end = arg("end").as_int();
+  const auto all = arg("all").as_bool();
   return ExecuteImpl(basename, start, end, all);
 }
 
