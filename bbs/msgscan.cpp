@@ -445,7 +445,7 @@ static void display_titles_new(const std::vector<std::string>& lines, const Full
 static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
-  unique_ptr<MessageArea> area(api->Open(a()->current_sub().filename, a()->GetCurrentReadMessageArea()));
+  unique_ptr<MessageArea> area(api->Open(a()->current_sub(), a()->GetCurrentReadMessageArea()));
   if (!area) {
     ReadMessageResult result;
     result.command = 0;
@@ -619,7 +619,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
 static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
-  unique_ptr<MessageArea> area(api->Open(a()->current_sub().filename, a()->GetCurrentReadMessageArea()));
+  unique_ptr<MessageArea> area(api->Open(a()->current_sub(), a()->GetCurrentReadMessageArea()));
   if (!area) {
     return;
   }

@@ -136,7 +136,7 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, int subnum) {
 }
 
 WWIVMessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
-  const string name = sub.name;
+  const string name = sub.filename;
   auto area = Open(name, ".sub", ".dat", subnum);
   area->set_max_messages(sub.maxmsgs);
   area->set_storage_type(sub.storage_type);

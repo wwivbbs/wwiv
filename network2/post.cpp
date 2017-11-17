@@ -140,14 +140,14 @@ bool handle_post(Context& context, Packet& p) {
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV always does.
-    unique_ptr<MessageArea> creator(context.api(sub.storage_type).Create(sub.filename, -1));
+    unique_ptr<MessageArea> creator(context.api(sub.storage_type).Create(sub, -1));
     if (!creator) {
       LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename << "; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
     }
   }
 
-  unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub.filename, -1));
+  unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub, -1));
   if (!area) {
     LOG(INFO) << "    ! ERROR Unable to open message area: " << sub.filename << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);

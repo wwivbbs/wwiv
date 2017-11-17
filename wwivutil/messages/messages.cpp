@@ -131,11 +131,11 @@ public:
       clog << "Attempting to create it." << endl;
       // Since the area does not exist, let's create it automatically
       // like WWIV always does.
-      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(basename, -1));
+      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(sub, -1));
       return 1;
     }
 
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
     if (!area) {
       clog << "Unable to Open message area: '" << basename << "'." << endl;
       return 1;
@@ -236,13 +236,11 @@ public:
       }
     }
 
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
     if (!area) {
       clog << "Error opening message area: '" << basename << "'." << endl;
       return 1;
     }
-    area->set_storage_type(sub.storage_type);
-    area->set_max_messages(sub.maxmsgs);
 
     const string filename = remaining().at(1);
     string from = arg("from").as_string();
@@ -366,30 +364,29 @@ public:
 
     // Ensure we can open it.
     {
-      unique_ptr<WWIVMessageArea> area(api->Open(basename, -1));
+      unique_ptr<MessageArea> area(api->Open(sub, -1));
       if (!area) {
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
       }
-      area->set_storage_type(sub.storage_type);
-      area->set_max_messages(sub.maxmsgs);
     }
 
     if (barg("backup")) {
       backup(*config()->config(), basename);
     }
 
-    string newbasename = StrCat(basename, ".new");
+    subboard_t newsub = sub;
+    sub.filename = StrCat(basename, ".new");
     {
-      unique_ptr<WWIVMessageArea> area(api->Open(basename, -1));
-      unique_ptr<WWIVMessageArea> newarea(api->Create(newbasename, -1));
+      unique_ptr<MessageArea> area(api->Open(sub, -1));
+      unique_ptr<MessageArea> newarea(api->Create(newsub, -1));
       if (!newarea) {
-        clog << "Unable to create new area: " << newbasename;
+        clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
-      int total = area->number_of_messages();
-      for (int i = 1; i <= total; i++) {
-        unique_ptr<WWIVMessage> message(area->ReadMessage(i));
+      auto total = area->number_of_messages();
+      for (auto i = 1; i <= total; i++) {
+        unique_ptr<Message> message(area->ReadMessage(i));
         if (!message) { 
           LOG(ERROR) << "Unable to load message #" << i;
           continue; 
@@ -405,12 +402,12 @@ public:
     // Copy "new" versions back to sub and dat
     const string orig_sub_fn = StrCat(config()->config()->datadir(), basename, ".sub");
     File::Remove(orig_sub_fn);
-    if (!File::Rename(StrCat(config()->config()->datadir(), newbasename, ".sub"), orig_sub_fn)) {
+    if (!File::Rename(StrCat(config()->config()->datadir(), newsub.filename, ".sub"), orig_sub_fn)) {
       clog << "Unable to move sub";
     }
     const string orig_dat_fn = StrCat(config()->config()->msgsdir(), basename, ".dat");
     File::Remove(orig_dat_fn);
-    if (!File::Rename(StrCat(config()->config()->msgsdir(), newbasename, ".dat"), orig_dat_fn)) {
+    if (!File::Rename(StrCat(config()->config()->msgsdir(), newsub.filename, ".dat"), orig_dat_fn)) {
       clog << "Unable to move dat";
     }
 
@@ -477,7 +474,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     return 1;
   }
 
-  unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
+  unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
   if (!area) {
     clog << "Error opening message area: '" << basename << "'." << endl;
     return 1;

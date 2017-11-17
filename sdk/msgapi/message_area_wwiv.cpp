@@ -354,9 +354,12 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
  * Note: This should be called by AddMessage *after* posting a new
  * message successfull, since there's no sense in deleting a post if
  * adding a new one hasn't succeeded.
+ * 
+ * Returns the number of messages deleted.
  */
 int WWIVMessageArea::DeleteExcess() {
   if (api_->options().overflow_strategy == OverflowStrategy::delete_none) {
+    LOG(INFO) << "overflow_strategy is delete_none. Not deleting overflow messages";
     return 0;
   }
 
@@ -364,10 +367,12 @@ int WWIVMessageArea::DeleteExcess() {
   bool done = false;
   while (!done) {
     if (api_->options().overflow_strategy == OverflowStrategy::delete_one) {
+      LOG(INFO) << "overflow_strategy is delete_one.";
       done = true;
     }
     auto num = number_of_messages();
     if (num <= max_messages_) {
+      LOG(INFO) << "No overflow messages. " << num << " <= " << max_messages_;
       return result;
     }
     int i = 1;
@@ -384,10 +389,15 @@ int WWIVMessageArea::DeleteExcess() {
       ++i;
     }
     if (dm == 0) {
+      LOG(INFO) << "DeleteExcess: No message to delete.";
       return result;
     }
     if (!DeleteMessage(dm))  {
+      LOG(INFO) << "DeleteExcess: Failed to delete message #" << dm;
       return result;
+    }
+    else {
+      LOG(INFO) << "DeleteExcess: Deleted message #" << dm;
     }
     ++result;
   }
