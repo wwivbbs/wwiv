@@ -126,18 +126,9 @@ public:
       sub.filename = basename;
     }
 
-    if (!apis[sub.storage_type]->Exist(basename)) {
-      clog << "Message area: '" << basename << "' does not exist." << endl;
-      clog << "Attempting to create it." << endl;
-      // Since the area does not exist, let's create it automatically
-      // like WWIV always does.
-      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(sub, -1));
-      return 1;
-    }
-
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
     if (!area) {
-      clog << "Unable to Open message area: '" << basename << "'." << endl;
+      clog << "Unable to Open message area: '" << sub .filename << "'." << endl;
       return 1;
     }
 
@@ -224,19 +215,8 @@ public:
 
     apis[2] = make_unique<WWIVMessageApi>(
       options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
-    if (!apis[sub.storage_type]->Exist(basename)) {
-      clog << "Message area: '" << basename << "' does not exist." << endl;
-      clog << "Attempting to create it." << endl;
-      // Since the area does not exist, let's create it automatically
-      // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(basename, -1));
-      if (!creator) {
-        clog << "Failed to create message area: " << basename << ". Exiting." << endl;
-        return 1;
-      }
-    }
 
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
     if (!area) {
       clog << "Error opening message area: '" << basename << "'." << endl;
       return 1;
@@ -342,6 +322,7 @@ public:
     if (!find_sub(subs, basename, sub)) {
       LOG(ERROR) << "Unable to find sub.";
       // set default.
+      sub.filename = basename;
     }
 
     if (sub.storage_type != 2) {
@@ -350,21 +331,10 @@ public:
 
     auto api = make_unique<WWIVMessageApi>(
       options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
-    if (!api->Exist(basename)) {
-      clog << "Message area: '" << basename << "' does not exist." << endl;
-      clog << "Attempting to create it." << endl;
-      // Since the area does not exist, let's create it automatically
-      // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(api->Create(basename, -1));
-      if (!creator) {
-        clog << "Failed to create message area: " << basename << ". Exiting." << endl;
-        return 1;
-      }
-    }
 
     // Ensure we can open it.
     {
-      unique_ptr<MessageArea> area(api->Open(sub, -1));
+      unique_ptr<MessageArea> area(api->CreateOrOpen(sub, -1));
       if (!area) {
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
@@ -469,14 +439,14 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
 
   apis[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(), config()->networks().networks(), x);
-  if (!apis[sub.storage_type]->Exist(basename)) {
-    clog << "Message area: '" << basename << "' does not exist." << endl;
+  if (!apis[sub.storage_type]->Exist(sub)) {
+    clog << "Message area: '" << sub.filename << "' does not exist." << endl;
     return 1;
   }
 
   unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
   if (!area) {
-    clog << "Error opening message area: '" << basename << "'." << endl;
+    clog << "Error opening message area: '" << sub.filename << "'." << endl;
     return 1;
   }
   area->set_storage_type(sub.storage_type);

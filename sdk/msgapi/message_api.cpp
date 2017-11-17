@@ -21,6 +21,8 @@
 #include <string>
 #include <utility>
 
+#include "core/log.h"
+
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
@@ -43,6 +45,15 @@ MessageApi::MessageApi(
     net_networks_(net_networks) {}
 
 MessageApi::~MessageApi() {}
+
+MessageArea* MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum) {
+  if (!Exist(sub)) {
+    LOG(INFO) << "Message area: '" << sub.filename << "' does not exist. Attempting to create it.";
+    // Since the area does not exist, let's create it automatically like WWIV always does.
+    std::unique_ptr<MessageArea> creator(Create(sub, -1));
+  }
+  return Open(sub, subnum);
+}
 
 }  // namespace msgapi
 }  // namespace sdk

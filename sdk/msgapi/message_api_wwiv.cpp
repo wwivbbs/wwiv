@@ -58,14 +58,10 @@ WWIVMessageApi::WWIVMessageApi(
   last_read_(last_read) {}
 WWIVMessageApi::~WWIVMessageApi() {}
 
-bool WWIVMessageApi::Exist(const std::string& name) const {
-  const std::string sub_filename = StrCat(name, ".sub");
+bool WWIVMessageApi::Exist(const wwiv::sdk::subboard_t& sub) const {
+  const std::string sub_filename = StrCat(sub.filename, ".sub");
   File subs(subs_directory_, sub_filename);
   return subs.Exists();
-}
-
-WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, int subnum) {
-  return Create(name, ".sub", ".dat", subnum);
 }
 
 WWIVMessageArea* WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
@@ -76,7 +72,6 @@ WWIVMessageArea* WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int su
   return area;
 }
 
-// todo(rushfan): should this be create *OR* open instead?
 WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
   const std::string sub_filename = StrCat(name, sub_ext);
   File fileSub(subs_directory_, sub_filename);
@@ -131,9 +126,6 @@ bool WWIVMessageApi::Remove(const std::string&) {
   return false;
 }
 
-WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, int subnum) {
-  return Open(name, ".sub", ".dat", subnum);
-}
 
 WWIVMessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
   const string name = sub.filename;

@@ -68,13 +68,11 @@ public:
     const std::vector<net_networks_rec>& net_networks,
     WWIVLastReadImpl* last_read);
   virtual ~WWIVMessageApi();
-  bool Exist(const std::string& name) const override;
+  bool Exist(const wwiv::sdk::subboard_t& sub) const override;
   virtual WWIVMessageArea* Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
-  WWIVMessageArea* Create(const std::string& name, int subnum) override;
   WWIVMessageArea* Create(const wwiv::sdk::subboard_t& sub, int subnum) override;
   bool Remove(const std::string& name) override;
   virtual WWIVMessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
-  WWIVMessageArea* Open(const std::string& name, int subnum) override;
   WWIVMessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) override;
   WWIVEmail* OpenEmail();
   uint32_t last_read(int area) const;
