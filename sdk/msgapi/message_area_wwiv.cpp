@@ -378,7 +378,7 @@ int WWIVMessageArea::DeleteExcess() {
     int i = 1;
     int dm = 0;
     while (i <= number_of_messages()) {
-      auto pp = ReadMessageHeader(i);
+      unique_ptr<WWIVMessageHeader> pp(ReadMessageHeader(i));
       if (!pp) {
         break;
       }

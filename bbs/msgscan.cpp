@@ -361,10 +361,12 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   for (int i1 = 0; i1 < 7; i1++) {
     line[i1] = SPACE;
   }
-  // HACK: Need to undo this before supporting JAM
-  WWIVMessageHeader* wh = reinterpret_cast<WWIVMessageHeader*>(h);
-  if (wh->last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
-    line[0] = '*';
+  if (h->storage_type() == 2) {
+    // HACK: Need to undo this before supporting JAM
+    WWIVMessageHeader* wh = reinterpret_cast<WWIVMessageHeader*>(h);
+    if (wh->last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
+      line[0] = '*';
+    }
   }
   if (h->pending_network() || h->unvalidated()) {
     line[0] = '+';
