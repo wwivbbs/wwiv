@@ -461,14 +461,6 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     bbsdata_reg_file.WriteVector(bbsdata_reg_data);
   }
 
-  //
-  // If we are running a 4.x, stop here.
-  //
-  if (!net_cmdline.config().is_5xx_or_later()) {
-    LOG(INFO) << " ** FYI: Skipping the FTN checks since WWIV is 4.xx.";
-    return 0;
-  }
-
   FidoAddress address;
   try {
     FidoAddress a(net.fido.fido_address);
@@ -606,28 +598,11 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    switch (net.type) {
-    case network_type_t::wwivnet:
-    {
-      return network3_wwivnet(cmdline, net_cmdline);
-    } break;
-    case network_type_t::ftn:
-    {
+    // Only run the net fido type network3 for 5.x
+    if (net_cmdline.config().is_5xx_or_later() && net.type == network_type_t::ftn) {
       return network3_fido(cmdline, net_cmdline);
-    } break;
-    case network_type_t::internet:
-    {
-      LOG(INFO) << "Treating network type internet like wwivnet until native internet support is added.";
-      return network3_wwivnet(cmdline, net_cmdline);
-    } break;
-    default:
-    {
-      LOG(ERROR) << "Unknown network type for network: " << net.name;
-      return 3;
     }
-    }
-    LOG(FATAL) << "Should not reach here.";
-    return 4;
+    return network3_wwivnet(cmdline, net_cmdline);
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
   }
