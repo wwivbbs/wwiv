@@ -334,8 +334,9 @@ public:
 
     // Ensure we can open it.
     {
-      unique_ptr<MessageArea> area(api->CreateOrOpen(sub, -1));
-      if (!area) {
+      try {
+        unique_ptr<MessageArea> area(api->CreateOrOpen(sub, -1));
+      } catch (const bad_message_area&) {
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
       }
@@ -349,11 +350,12 @@ public:
     sub.filename = StrCat(basename, ".new");
     {
       unique_ptr<MessageArea> area(api->Open(sub, -1));
-      unique_ptr<MessageArea> newarea(api->Create(newsub, -1));
-      if (!newarea) {
+      auto created_newarea = api->Create(newsub, -1);
+      if (!created_newarea) {
         clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
+      unique_ptr<MessageArea> newarea(api->Open(newsub, -1));
       auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
         unique_ptr<Message> message(area->ReadMessage(i));

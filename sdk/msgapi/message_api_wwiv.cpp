@@ -64,36 +64,33 @@ bool WWIVMessageApi::Exist(const wwiv::sdk::subboard_t& sub) const {
   return subs.Exists();
 }
 
-WWIVMessageArea* WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
-  const string name = sub.name;
-  auto area = Create(name, ".sub", ".dat", subnum);
-  area->set_max_messages(sub.maxmsgs);
-  area->set_storage_type(sub.storage_type);
-  return area;
+bool WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
+  return Create(sub.filename, ".sub", ".dat", subnum);
 }
 
-WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
+bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
+  LOG(INFO) << "Creating: " << name;
   const std::string sub_filename = StrCat(name, sub_ext);
   File fileSub(subs_directory_, sub_filename);
   if (fileSub.Exists()) {
     // Don't create if it already exists.
-    return nullptr;
+    return false;
   }
   if (fileSub.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create if we can open it.
-    return nullptr;
+    return false;
   }
 
   if (!fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     // Don't create if we fail to write it.
-    return nullptr;
+    return false;
   }
 
   const std::string text_filename = StrCat(name, text_ext);
   File msgs_file(messages_directory_, text_filename);
   if (msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create since we have this file already.
-    return nullptr;
+    return false;
   }
 
   {
@@ -112,11 +109,7 @@ WWIVMessageArea* WWIVMessageApi::Create(const std::string& name, const std::stri
     WWIVMessageAreaHeader header(wwiv_num_version, 0);
     fileSub.Write(&header.header(), sizeof(subfile_header_t));
   }
-  // Need to close the files before creating a new WWIVMessageArea since we
-  // have thm locked for write, and we need to open it in the constructor. 
-  fileSub.Close();
-  msgs_file.Close();
-  return new WWIVMessageArea(this, fileSub.full_pathname(), msgs_file.full_pathname(), subnum);
+  return true;
 }
 
 bool WWIVMessageApi::Remove(const std::string&) {
@@ -144,20 +137,20 @@ WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, const std::string
     File fileSub(subs_directory_, sub_filename);
     File msgs_file(messages_directory_, msgs_filename);
     if (!fileSub.Exists()) {
-      return nullptr;
+      throw bad_message_area(name);
     }
     if (!fileSub.Open(File::modeReadOnly | File::modeBinary)) {
-      return nullptr;
+      throw bad_message_area(name);
     }
 
     if (!msgs_file.Exists()) {
       File create_msgs_file(messages_directory_, msgs_filename);
       if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
-        return nullptr;
+        throw bad_message_area(name);
       }
     }
     if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
-      return nullptr;
+      throw bad_message_area(name);
     }
 
     sub = fileSub.full_pathname();
@@ -182,13 +175,10 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
       // Create it if it doesn't exist.  We still can have an odd case
       // where 1 file exists, but that's not ever normal. so we'll 
       // complain later about not being able to create this.
-      auto unused_sub = Create("email", ".dat", ".dat", 0);
-      if (!unused_sub) {
+      auto created = Create("email", ".dat", ".dat", 0);
+      if (!created) {
         return nullptr;
       }
-      // We don't want a sub for it, but we wanted to create it, so we'll
-      // just nuke the one it made for us.
-      delete unused_sub;
       // Return the newly created WWIVEmail object.
       return new WWIVEmail(root_directory_, data, text, net_networks_.size());
     }

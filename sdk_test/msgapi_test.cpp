@@ -71,7 +71,8 @@ public:
 TEST_F(MsgApiTest, CreateArea) {
   subboard_t sub{};
   sub.filename = "a1";
-  unique_ptr<MessageArea> a1(api->Create(sub, -1));
+  ASSERT_TRUE(api->Create(sub, -1));
+  unique_ptr<MessageArea> a1(api->Open(sub, -1));
   EXPECT_TRUE(a1->Close());
 
   EXPECT_TRUE(File::Exists(wwiv::core::FilePath(helper.data(), "a1.sub")));
@@ -82,7 +83,8 @@ TEST_F(MsgApiTest, SmokeTest) {
   {
     subboard_t sub{};
     sub.filename = "a1";
-    unique_ptr<MessageArea> area(api->Create(sub, -1));
+    ASSERT_TRUE(api->Create(sub, -1));
+    unique_ptr<MessageArea> area(api->Open(sub, -1));
     unique_ptr<Message> msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*msg));
   }
@@ -98,7 +100,8 @@ TEST_F(MsgApiTest, SmokeTest) {
 TEST_F(MsgApiTest, Resynch) {
   subboard_t sub{};
   sub.filename = "a1";
-  unique_ptr<MessageArea> area(api->Create(sub, -1));
+  ASSERT_TRUE(api->Create(sub, -1));
+  unique_ptr<MessageArea> area(api->Open(sub, -1));
   {
     unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m));
@@ -131,7 +134,8 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
   {
     subboard_t sub{};
     sub.filename = "a1";
-    unique_ptr<MessageArea> area(api->Create(sub, -1));
+    ASSERT_TRUE(api->Create(sub, -1));
+    unique_ptr<MessageArea> area(api->Open(sub, -1));
     unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m));
     m->header()->set_from("From2");

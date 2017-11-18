@@ -58,7 +58,7 @@ public:
   /** Checks to see if the files for a subboard exist. */
   virtual bool Exist(const wwiv::sdk::subboard_t& sub) const = 0;
   /** Opens a message area, throwing bad_message_area if it does not exist. */
-  virtual MessageArea* Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
+  virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
   /** Opens a message area, throwing bad_message_area if it does not exist. */
   virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
   /** Creates or Opens a message area. throwing bad_message_area if it exists but can not be opened.*/

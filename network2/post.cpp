@@ -140,8 +140,8 @@ bool handle_post(Context& context, Packet& p) {
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV always does.
-    unique_ptr<MessageArea> creator(context.api(sub.storage_type).Create(sub, -1));
-    if (!creator) {
+    bool created = context.api(sub.storage_type).Create(sub, -1);
+    if (!created) {
       LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename << "; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
     }

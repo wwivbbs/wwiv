@@ -50,7 +50,9 @@ MessageArea* MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subn
   if (!Exist(sub)) {
     LOG(INFO) << "Message area: '" << sub.filename << "' does not exist. Attempting to create it.";
     // Since the area does not exist, let's create it automatically like WWIV always does.
-    std::unique_ptr<MessageArea> creator(Create(sub, -1));
+    if (!Create(sub, -1)) {
+      LOG(ERROR) << "Failed to create area: " << sub.filename << " let's try to open it anyway.";
+    }
   }
   return Open(sub, subnum);
 }
