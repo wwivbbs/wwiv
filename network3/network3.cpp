@@ -150,7 +150,7 @@ static bool check_fido_host_networks(
       if (n.host != 0) {
         continue;
       }
-      const string filename = StrCat("n", n.stype, ".net");
+      const auto filename = StrCat("n", n.stype, ".net");
       if (!File::Exists(net.dir, filename)) {
         text << "subscriber file '" << filename << "' for echotag: '" << n.stype << "' is missing.\r\n";
         text << " ** Please fix it.\r\n\n";
@@ -163,6 +163,7 @@ static bool check_fido_host_networks(
       }
     }
   }
+
   return true;
 }
 
@@ -460,6 +461,14 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     bbsdata_reg_file.WriteVector(bbsdata_reg_data);
   }
 
+  //
+  // If we are running a 4.x, stop here.
+  //
+  if (!net_cmdline.config().is_5xx_or_later()) {
+    LOG(INFO) << " ** FYI: Skipping the FTN checks since WWIV is 4.xx.";
+    return 0;
+  }
+
   FidoAddress address;
   try {
     FidoAddress a(net.fido.fido_address);
@@ -511,7 +520,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
       }
     }
   }
-  
+
   text << "\r\n";
 
   if (net.fido.origin_line.empty()) {
