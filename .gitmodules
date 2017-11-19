@@ -6,6 +6,3 @@
 	url = https://github.com/wwivbbs/PDCurses.git
 	branch = master
 
-[submodule "deps/cereal"]
-	path = deps/cereal
-	url = https://github.com/wwivbbs/cereal.git
