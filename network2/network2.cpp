@@ -309,7 +309,8 @@ int main(int argc, char** argv) {
     // TODO(rushfan): Load sub data here;
     // TODO(rushfan): Create the right API type for the right message area.
     wwiv::sdk::msgapi::MessageApiOptions options;
-    options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
+    // By defaukt, delete excess messages like net37 did.
+    options.overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_all;
 
     auto type2_api = make_unique<WWIVMessageApi>(
       options, config, networks.networks(), new NullLastReadImpl());

@@ -48,7 +48,7 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
     const auto new_filename =
       StringPrintf("%sp%s-%u-%u.net", directory.c_str(), prefix.c_str(), network_app_num, i);
     if (File::Rename(pend_filename, new_filename)) {
-      LOG(INFO) << "renamed file to: " << new_filename;
+      LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
       return;
     }
   }

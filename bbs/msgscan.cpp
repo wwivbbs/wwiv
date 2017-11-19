@@ -348,11 +348,11 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   }
   char line[255];
   char tmpbuf[255];
-  const auto h = msg->header();
-  if (h->local() && h->from_usernum() == a()->usernum) {
+  const auto& h = msg->header();
+  if (h.local() && h.from_usernum() == a()->usernum) {
     sprintf(tmpbuf, "|09[|11%d|09]", msgnum);
   }
-  else if (!h->local()) {
+  else if (!h.local()) {
     sprintf(tmpbuf, "|09<|11%d|09>", msgnum);
   }
   else {
@@ -361,23 +361,26 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   for (int i1 = 0; i1 < 7; i1++) {
     line[i1] = SPACE;
   }
-  // HACK: Need to undo this before supporting JAM
-  WWIVMessageHeader* wh = reinterpret_cast<WWIVMessageHeader*>(h);
-  if (wh->last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
-    line[0] = '*';
+  if (h.storage_type() == 2) {
+    // HACK: Need to make this generic. this before supporting JAM.
+    // N.B. If for some reason dynamic_cast fails, a std::bad_cast is thrown.
+    const WWIVMessageHeader& wh = dynamic_cast<const WWIVMessageHeader&>(h);
+    if (wh.last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
+      line[0] = '*';
+    }
   }
-  if (h->pending_network() || h->unvalidated()) {
+  if (h.pending_network() || h.unvalidated()) {
     line[0] = '+';
   }
   strcpy(&line[9 - strlen(stripcolors(tmpbuf))], tmpbuf);
   strcat(line, "|11 ");
-  if ((h->unvalidated() || h->deleted()) && !lcs()) {
+  if ((h.unvalidated() || h.deleted()) && !lcs()) {
     strcat(line, "<<< NOT VALIDATED YET >>>");
   }
   else {
     // Need the StringTrim on post title since some FSEDs
     // added \r in the title string, also gets rid of extra spaces
-    auto title = h->title();
+    auto title = h.title();
     StringTrim(&title);
     strncat(line, stripcolors(title).c_str(), 60);
   }
@@ -395,12 +398,12 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     else {
       strcat(line, "| ");
     }
-    if ((h->anony() & 0x0f) &&
+    if ((h.anony() & 0x0f) &&
       ((getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) == 0)) {
       strcat(line, ">UNKNOWN<");
     }
     else {
-      auto from = trim_to_size_ignore_colors(h->from(), 25);
+      auto from = trim_to_size_ignore_colors(h.from(), 25);
       strcat(line, from.c_str());
     }
   }
@@ -409,8 +412,8 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
 
 static std::vector<std::string> CreateMessageTitleVector(MessageArea* area, int start, int num) {
   vector<string> lines;
-  for (int i = start; i < (start + num); i++) {
-    auto line = CreateLine(unique_ptr<Message>(area->ReadMessage(i)), i);
+  for (auto i = start; i < (start + num); i++) {
+    auto line = CreateLine(area->ReadMessage(i), i);
     if (!line.empty()) {
       lines.push_back(line);
     }
@@ -445,7 +448,7 @@ static void display_titles_new(const std::vector<std::string>& lines, const Full
 static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
-  unique_ptr<MessageArea> area(api->Open(a()->current_sub().filename, a()->GetCurrentReadMessageArea()));
+  unique_ptr<MessageArea> area(api->Open(a()->current_sub(), a()->GetCurrentReadMessageArea()));
   if (!area) {
     ReadMessageResult result;
     result.command = 0;
@@ -619,7 +622,7 @@ static ReadMessageResult HandleListTitlesFullScreen(int &msgnum, MsgScanOption& 
 static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   bout.cls();
   auto api = a()->msgapi();
-  unique_ptr<MessageArea> area(api->Open(a()->current_sub().filename, a()->GetCurrentReadMessageArea()));
+  unique_ptr<MessageArea> area(api->Open(a()->current_sub(), a()->GetCurrentReadMessageArea()));
   if (!area) {
     return;
   }
@@ -639,7 +642,7 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   int i = 0;
   while (!abort && ++i <= nNumTitleLines) {
     ++msgnum;
-    const string line = CreateLine(unique_ptr<Message>(area->ReadMessage(msgnum)), msgnum);
+    const string line = CreateLine(area->ReadMessage(msgnum), msgnum);
     bout.bpla(line, &abort);
     if (msgnum >= num_msgs_in_area) {
       abort = true;

@@ -126,18 +126,9 @@ public:
       sub.filename = basename;
     }
 
-    if (!apis[sub.storage_type]->Exist(basename)) {
-      clog << "Message area: '" << basename << "' does not exist." << endl;
-      clog << "Attempting to create it." << endl;
-      // Since the area does not exist, let's create it automatically
-      // like WWIV always does.
-      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(basename, -1));
-      return 1;
-    }
-
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
     if (!area) {
-      clog << "Unable to Open message area: '" << basename << "'." << endl;
+      clog << "Unable to Open message area: '" << sub .filename << "'." << endl;
       return 1;
     }
 
@@ -224,25 +215,12 @@ public:
 
     apis[2] = make_unique<WWIVMessageApi>(
       options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
-    if (!apis[sub.storage_type]->Exist(basename)) {
-      clog << "Message area: '" << basename << "' does not exist." << endl;
-      clog << "Attempting to create it." << endl;
-      // Since the area does not exist, let's create it automatically
-      // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(apis[sub.storage_type]->Create(basename, -1));
-      if (!creator) {
-        clog << "Failed to create message area: " << basename << ". Exiting." << endl;
-        return 1;
-      }
-    }
 
-    unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
+    unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
     if (!area) {
       clog << "Error opening message area: '" << basename << "'." << endl;
       return 1;
     }
-    area->set_storage_type(sub.storage_type);
-    area->set_max_messages(sub.maxmsgs);
 
     const string filename = remaining().at(1);
     string from = arg("from").as_string();
@@ -273,14 +251,14 @@ public:
     vector<string> lines = wwiv::strings::SplitString(raw_text, "\n", false);
 
     unique_ptr<Message> msg(area->CreateMessage());
-    msg->header()->set_from_system(0);
-    msg->header()->set_from_usernum(static_cast<uint16_t>(from_usernum));
-    msg->header()->set_title(title);
-    msg->header()->set_from(from);
-    msg->header()->set_to(to);
-    msg->header()->set_daten(static_cast<uint32_t>(daten));
-    msg->header()->set_in_reply_to(in_reply_to);
-    msg->text()->set_text(JoinStrings(lines, "\r\n"));
+    msg->header().set_from_system(0);
+    msg->header().set_from_usernum(static_cast<uint16_t>(from_usernum));
+    msg->header().set_title(title);
+    msg->header().set_from(from);
+    msg->header().set_to(to);
+    msg->header().set_daten(static_cast<uint32_t>(daten));
+    msg->header().set_in_reply_to(in_reply_to);
+    msg->text().set_text(JoinStrings(lines, "\r\n"));
 
     return area->AddMessage(*msg) ? 0 : 1;
   }
@@ -344,6 +322,7 @@ public:
     if (!find_sub(subs, basename, sub)) {
       LOG(ERROR) << "Unable to find sub.";
       // set default.
+      sub.filename = basename;
     }
 
     if (sub.storage_type != 2) {
@@ -352,50 +331,40 @@ public:
 
     auto api = make_unique<WWIVMessageApi>(
       options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
-    if (!api->Exist(basename)) {
-      clog << "Message area: '" << basename << "' does not exist." << endl;
-      clog << "Attempting to create it." << endl;
-      // Since the area does not exist, let's create it automatically
-      // like WWIV alwyas does.
-      unique_ptr<MessageArea> creator(api->Create(basename, -1));
-      if (!creator) {
-        clog << "Failed to create message area: " << basename << ". Exiting." << endl;
-        return 1;
-      }
-    }
 
     // Ensure we can open it.
     {
-      unique_ptr<WWIVMessageArea> area(api->Open(basename, -1));
-      if (!area) {
+      try {
+        unique_ptr<MessageArea> area(api->CreateOrOpen(sub, -1));
+      } catch (const bad_message_area&) {
         clog << "Error opening message area: '" << basename << "'." << endl;
         return 1;
       }
-      area->set_storage_type(sub.storage_type);
-      area->set_max_messages(sub.maxmsgs);
     }
 
     if (barg("backup")) {
       backup(*config()->config(), basename);
     }
 
-    string newbasename = StrCat(basename, ".new");
+    subboard_t newsub = sub;
+    sub.filename = StrCat(basename, ".new");
     {
-      unique_ptr<WWIVMessageArea> area(api->Open(basename, -1));
-      unique_ptr<WWIVMessageArea> newarea(api->Create(newbasename, -1));
-      if (!newarea) {
-        clog << "Unable to create new area: " << newbasename;
+      unique_ptr<MessageArea> area(api->Open(sub, -1));
+      auto created_newarea = api->Create(newsub, -1);
+      if (!created_newarea) {
+        clog << "Unable to create new area: " << newsub.filename;
         return 1;
       }
-      int total = area->number_of_messages();
-      for (int i = 1; i <= total; i++) {
-        unique_ptr<WWIVMessage> message(area->ReadMessage(i));
+      unique_ptr<MessageArea> newarea(api->Open(newsub, -1));
+      auto total = area->number_of_messages();
+      for (auto i = 1; i <= total; i++) {
+        unique_ptr<Message> message(area->ReadMessage(i));
         if (!message) { 
           LOG(ERROR) << "Unable to load message #" << i;
           continue; 
         }
         if (!newarea->AddMessage(*message.get())) {
-          LOG(ERROR) << "Error adding message: " << message->header()->title();
+          LOG(ERROR) << "Error adding message: " << message->header().title();
         } else {
           cout << "[" << i << "]";
         }
@@ -405,12 +374,12 @@ public:
     // Copy "new" versions back to sub and dat
     const string orig_sub_fn = StrCat(config()->config()->datadir(), basename, ".sub");
     File::Remove(orig_sub_fn);
-    if (!File::Rename(StrCat(config()->config()->datadir(), newbasename, ".sub"), orig_sub_fn)) {
+    if (!File::Rename(StrCat(config()->config()->datadir(), newsub.filename, ".sub"), orig_sub_fn)) {
       clog << "Unable to move sub";
     }
     const string orig_dat_fn = StrCat(config()->config()->msgsdir(), basename, ".dat");
     File::Remove(orig_dat_fn);
-    if (!File::Rename(StrCat(config()->config()->msgsdir(), newbasename, ".dat"), orig_dat_fn)) {
+    if (!File::Rename(StrCat(config()->config()->msgsdir(), newsub.filename, ".dat"), orig_dat_fn)) {
       clog << "Unable to move dat";
     }
 
@@ -472,57 +441,52 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
 
   apis[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(), config()->networks().networks(), x);
-  if (!apis[sub.storage_type]->Exist(basename)) {
-    clog << "Message area: '" << basename << "' does not exist." << endl;
+  if (!apis[sub.storage_type]->Exist(sub)) {
+    clog << "Message area: '" << sub.filename << "' does not exist." << endl;
     return 1;
   }
 
-  unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(basename, -1));
+  unique_ptr<MessageArea> area(apis[sub.storage_type]->Open(sub, -1));
   if (!area) {
-    clog << "Error opening message area: '" << basename << "'." << endl;
+    clog << "Error opening message area: '" << sub.filename << "'." << endl;
     return 1;
   }
   area->set_storage_type(sub.storage_type);
   area->set_max_messages(sub.maxmsgs);
 
-  int num_messages = (end >= 0) ? end : area->number_of_messages();
+  const auto num_messages = (end >= 0) ? end : area->number_of_messages();
   cout << "Message Sub: '" << basename << "' has "
        << num_messages << " messages." << endl;
-  for (int current = start; current <= num_messages; current++) {
-    unique_ptr<MessageHeader> header(area->ReadMessageHeader(current));
-    if (!header) {
-      continue;
-    }
+  for (auto current = start; current <= num_messages; current++) {
+    auto message = area->ReadMessage(current);
+    const auto& header = message->header();
     cout << "#" << setw(5) << std::left << current
-         << " From: " << setw(20) << header->from()
-         << "date: " << daten_to_wwivnet_time(header->daten()) << endl
-         << "title: " << header->title();
-    if (header->local()) {
+         << " From: " << setw(20) << header.from()
+         << "date: " << daten_to_wwivnet_time(header.daten()) << endl
+         << "title: " << header.title();
+    if (header.local()) {
       cout << "[LOCAL]";
     }
-    if (header->deleted()) {
+    if (header.deleted()) {
       cout << "[DELETED]";
     }
-    if (header->locked()) {
+    if (header.locked()) {
       cout << "[LOCKED]";
     }
-    if (header->private_msg()) {
+    if (header.private_msg()) {
       cout << "[PRIVATE]";
     }
     cout << endl;
     if (all) {
-      cout << "qscan: " <<  header.get()->last_read() << endl;
+      cout << "qscan: " <<  header.last_read() << endl;
     }
-    if (header->deleted()) {
+    if (header.deleted()) {
       // Don't try to read the text of deleted messages.
       continue;
     }
-    unique_ptr<MessageText> text(area->ReadMessageText(current));
-    if (!text) {
-      continue;
-    }
+    const auto& text = message->text();
     cout << string(72, '-') << endl;
-    std::vector<string> lines = wwiv::strings::SplitString(text->text(), "\n", false);
+    auto lines = wwiv::strings::SplitString(text.text(), "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
         continue;
@@ -545,9 +509,9 @@ int MessagesDumpHeaderCommand::Execute() {
   }
 
   const string basename(remaining().front());
-  const int start = arg("start").as_int();
-  int end = arg("end").as_int();
-  const bool all = arg("all").as_bool();
+  const auto start = arg("start").as_int();
+  auto end = arg("end").as_int();
+  const auto all = arg("all").as_bool();
   return ExecuteImpl(basename, start, end, all);
 }
 

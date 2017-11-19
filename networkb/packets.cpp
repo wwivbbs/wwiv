@@ -101,7 +101,13 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
   }
 
   if (packet.nh.length > 0) {
-    int length = packet.nh.length;
+    auto length = packet.nh.length;
+
+    if (length > std::numeric_limits<int32_t>::max() || length < 0) {
+      LOG(INFO) << "error reading header, got length too big (underflow?): " << length;
+      return ReadPacketResponse::ERROR;
+    }
+
     if (packet.nh.method > 0 
         && process_de 
         && packet.nh.length > 146 /* Make sure we have enough for a header */) {

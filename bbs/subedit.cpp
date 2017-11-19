@@ -327,7 +327,7 @@ static void modify_sub(int n) {
     case 'H': {
       bout.nl();
       bout << "|#2New Max Msgs? ";
-      r.maxmsgs = input_number<uint16_t>(r.maxmsgs, 0, 16384);
+      r.maxmsgs = input_number<uint16_t>(r.maxmsgs, 0, std::numeric_limits<uint16_t>::max());
     }
     break;
     case 'I': {

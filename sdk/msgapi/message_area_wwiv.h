@@ -87,15 +87,15 @@ public:
   // message specific.
   // I would return a unique_ptr here but that doesn't work with
   // covariant return types for subclasses.
-  WWIVMessage* ReadMessage(int message_number) override;
-  WWIVMessageHeader* ReadMessageHeader(int message_number) override;
-  WWIVMessageText*  ReadMessageText(int message_number) override;
+  std::unique_ptr<Message> ReadMessage(int message_number) override;
+  std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) override;
+  std::unique_ptr<MessageText>  ReadMessageText(int message_number) override;
   bool AddMessage(const Message& message) override;
   bool DeleteMessage(int message_number) override;
   bool ResyncMessage(int& message_number) override;
   bool ResyncMessage(int& message_number, Message& message) override;
 
-  WWIVMessage* CreateMessage() override;
+  std::unique_ptr<Message> CreateMessage() override;
   bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) override;
   MessageAreaLastRead& last_read() override;
 
