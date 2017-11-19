@@ -47,6 +47,7 @@ public:
   virtual bool Close() = 0;
 
 protected:
+  // Not owned.
   MessageApi* api_;
 };
 
@@ -65,9 +66,9 @@ public:
   virtual int number_of_messages() = 0;
 
   // message specific
-  virtual Message* ReadMessage(int message_number) = 0;
-  virtual MessageHeader* ReadMessageHeader(int message_number) = 0;
-  virtual MessageText* ReadMessageText(int message_number) = 0;
+  virtual std::unique_ptr<Message> ReadMessage(int message_number) = 0;
+  virtual std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) = 0;
+  virtual std::unique_ptr<MessageText> ReadMessageText(int message_number) = 0;
   virtual bool AddMessage(const Message& message) = 0;
   virtual bool DeleteMessage(int message_number) = 0;
   /** Updates message_number to point to the */
@@ -75,7 +76,7 @@ public:
   virtual bool ResyncMessage(int& message_number, Message& message) = 0;
 
   /** Creates a new empty message for this area. */
-  virtual Message* CreateMessage() = 0;
+  virtual std::unique_ptr<Message> CreateMessage() = 0;
   virtual bool Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) = 0;
 
   int max_messages() const { 
@@ -94,6 +95,7 @@ public:
 protected:
   static constexpr uint8_t DEFAULT_WWIV_STORAGE_TYPE = 2;
 
+  // Not owned.
   MessageApi* api_;
   int max_messages_ = std::numeric_limits<int>::max();
   uint8_t storage_type_ = DEFAULT_WWIV_STORAGE_TYPE;

@@ -35,6 +35,12 @@ namespace msgapi {
 class WWIVMessageHeader: public MessageHeader {
 public:
   explicit WWIVMessageHeader(const MessageApi* api);
+
+  // Should only be used when reading a message from a type-2 message file.
+  // Needs to be public so make_unique will work on it.
+  WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
+    const std::string& in_reply_to, const MessageApi* api);
+
   virtual ~WWIVMessageHeader();
 
   std::string title() const override { return header_.title;  }
@@ -84,12 +90,7 @@ public:
   uint32_t last_read() const override { return header_.qscan; }
   uint8_t storage_type() const override { return header_.msg.storage_type; }
 
-  // Allow access to constructor that takes a postrec.
   friend class WWIVMessageArea;
-protected:
-  // Should only be used when reading a message from a type-2 message file.
-  WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
-    const std::string& in_reply_to, const MessageApi* api);
 
 private:
   postrec header_ = {};
@@ -109,7 +110,7 @@ public:
   explicit WWIVMessageText(const std::string& text);
   virtual ~WWIVMessageText();
 
-  const std::string text() const override;
+  const std::string& text() const override;
   void set_text(const std::string&) override;
 
 private:
@@ -122,10 +123,10 @@ public:
     std::unique_ptr<WWIVMessageText> text);
   ~WWIVMessage();
 
-  WWIVMessageHeader* header() const override { return header_.get(); }
-  WWIVMessageText* text() const override { return text_.get(); }
-  WWIVMessageHeader* release_header() { return header_.release(); }
-  WWIVMessageText* release_text() { return text_.release(); }
+  MessageHeader& header() const override { return *header_.get(); }
+  MessageText& text() const override { return *text_.get(); }
+  std::unique_ptr<MessageHeader> release_header() { return std::move(header_); }
+  std::unique_ptr<MessageText> release_text() { return std::move(text_); }
 
 private:
   std::unique_ptr<WWIVMessageHeader> header_;

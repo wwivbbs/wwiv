@@ -120,7 +120,7 @@ bool WWIVMessageApi::Remove(const std::string&) {
 }
 
 
-WWIVMessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
+MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
   const string name = sub.filename;
   auto area = Open(name, ".sub", ".dat", subnum);
   area->set_max_messages(sub.maxmsgs);
@@ -128,7 +128,7 @@ WWIVMessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subn
   return area;
 }
 
-WWIVMessageArea* WWIVMessageApi::Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
+MessageArea* WWIVMessageApi::Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
     const std::string sub_filename = StrCat(name, sub_ext);
   const string msgs_filename = StrCat(name, text_ext);
   string sub;

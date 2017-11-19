@@ -48,17 +48,17 @@ public:
   unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname, const string& title, const string& text) {
     unique_ptr<Message> msg(area.CreateMessage());
 
-    auto* h = msg->header();
+    auto& h = msg->header();
     static uint32_t daten = 915192000;
 
-    h->set_from_system(0);
-    h->set_from_usernum(static_cast<uint16_t>(from));
-    h->set_title(title);
-    h->set_from(fromname);
-    h->set_to("To");
-    h->set_daten(daten++);
-    h->set_in_reply_to("IRT");
-    msg->text()->set_text(text);
+    h.set_from_system(0);
+    h.set_from_usernum(static_cast<uint16_t>(from));
+    h.set_title(title);
+    h.set_from(fromname);
+    h.set_to("To");
+    h.set_daten(daten++);
+    h.set_in_reply_to("IRT");
+    msg->text().set_text(text);
     
     return msg;
   }
@@ -93,8 +93,8 @@ TEST_F(MsgApiTest, SmokeTest) {
   sub.filename = "a1";
   unique_ptr<MessageArea> a2(api->Open(sub, -1));
   EXPECT_EQ(1, a2->number_of_messages());
-  unique_ptr<Message> m1(a2->ReadMessage(1));
-  EXPECT_EQ("From", m1->header()->from());
+  auto m1 = a2->ReadMessage(1);
+  EXPECT_EQ("From", m1->header().from());
 }
 
 TEST_F(MsgApiTest, Resynch) {
@@ -103,21 +103,25 @@ TEST_F(MsgApiTest, Resynch) {
   ASSERT_TRUE(api->Create(sub, -1));
   unique_ptr<MessageArea> area(api->Open(sub, -1));
   {
-    unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
+    unique_ptr<Message> m(CreateMessage(*area, 1, "From1", "Title1", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m));
-    m->header()->set_from("From2");
+    m->header().set_from_usernum(2);
+    m->header().set_from("From2");
+    m->header().set_title("Title2");
     EXPECT_TRUE(area->AddMessage(*m));
-    m->header()->set_from("From3");
+    m->header().set_from_usernum(3);
+    m->header().set_from("From3");
+    m->header().set_title("Title3");
     EXPECT_TRUE(area->AddMessage(*m));
   }
   
   // Re open the area, ensure that we read back the same first
   // two messages.
   unique_ptr<MessageArea> a2(api->Open(sub, -1));
-  unique_ptr<Message> m1(a2->ReadMessage(1));
-  EXPECT_EQ("From", m1->header()->from());
-  unique_ptr<Message> m2(a2->ReadMessage(2));
-  EXPECT_EQ("From2", m2->header()->from());
+  auto m1 = a2->ReadMessage(1);
+  EXPECT_EQ("From1", m1->header().from());
+  auto m2 = a2->ReadMessage(2);
+  EXPECT_EQ("From2", m2->header().from());
 
   // Delete message #1, now we should just have 1 message.
   EXPECT_TRUE(a2->DeleteMessage(1));
@@ -138,7 +142,7 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
     unique_ptr<MessageArea> area(api->Open(sub, -1));
     unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
     EXPECT_TRUE(area->AddMessage(*m));
-    m->header()->set_from("From2");
+    m->header().set_from("From2");
     EXPECT_TRUE(area->AddMessage(*m));
   }
 

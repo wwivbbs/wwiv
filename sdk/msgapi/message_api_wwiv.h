@@ -72,8 +72,8 @@ public:
   virtual bool Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
   virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) override;
   virtual bool Remove(const std::string& name) override;
-  virtual WWIVMessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
-  virtual WWIVMessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) override;
+  virtual MessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
+  virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) override;
   virtual WWIVEmail* OpenEmail();
   uint32_t last_read(int area) const;
   void set_last_read(int area, uint32_t last_read);

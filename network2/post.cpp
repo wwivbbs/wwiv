@@ -161,12 +161,12 @@ bool handle_post(Context& context, Packet& p) {
   }
 
   unique_ptr<Message> msg(area->CreateMessage());
-  msg->header()->set_from_system(p.nh.fromsys);
-  msg->header()->set_from_usernum(p.nh.fromuser);
-  msg->header()->set_title(title);
-  msg->header()->set_from(sender_name);
-  msg->header()->set_daten(p.nh.daten);
-  msg->text()->set_text(text);
+  msg->header().set_from_system(p.nh.fromsys);
+  msg->header().set_from_usernum(p.nh.fromuser);
+  msg->header().set_title(title);
+  msg->header().set_from(sender_name);
+  msg->header().set_daten(p.nh.daten);
+  msg->text().set_text(text);
 
   if (!area->AddMessage(*msg)) {
     LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";

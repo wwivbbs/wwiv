@@ -251,14 +251,14 @@ public:
     vector<string> lines = wwiv::strings::SplitString(raw_text, "\n", false);
 
     unique_ptr<Message> msg(area->CreateMessage());
-    msg->header()->set_from_system(0);
-    msg->header()->set_from_usernum(static_cast<uint16_t>(from_usernum));
-    msg->header()->set_title(title);
-    msg->header()->set_from(from);
-    msg->header()->set_to(to);
-    msg->header()->set_daten(static_cast<uint32_t>(daten));
-    msg->header()->set_in_reply_to(in_reply_to);
-    msg->text()->set_text(JoinStrings(lines, "\r\n"));
+    msg->header().set_from_system(0);
+    msg->header().set_from_usernum(static_cast<uint16_t>(from_usernum));
+    msg->header().set_title(title);
+    msg->header().set_from(from);
+    msg->header().set_to(to);
+    msg->header().set_daten(static_cast<uint32_t>(daten));
+    msg->header().set_in_reply_to(in_reply_to);
+    msg->text().set_text(JoinStrings(lines, "\r\n"));
 
     return area->AddMessage(*msg) ? 0 : 1;
   }
@@ -364,7 +364,7 @@ public:
           continue; 
         }
         if (!newarea->AddMessage(*message.get())) {
-          LOG(ERROR) << "Error adding message: " << message->header()->title();
+          LOG(ERROR) << "Error adding message: " << message->header().title();
         } else {
           cout << "[" << i << "]";
         }
@@ -458,41 +458,35 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   cout << "Message Sub: '" << basename << "' has "
        << num_messages << " messages." << endl;
   for (auto current = start; current <= num_messages; current++) {
-    unique_ptr<Message> message(area->ReadMessage(current));
-    const auto header = message->header();
-    if (!header) {
-      continue;
-    }
+    auto message = area->ReadMessage(current);
+    const auto& header = message->header();
     cout << "#" << setw(5) << std::left << current
-         << " From: " << setw(20) << header->from()
-         << "date: " << daten_to_wwivnet_time(header->daten()) << endl
-         << "title: " << header->title();
-    if (header->local()) {
+         << " From: " << setw(20) << header.from()
+         << "date: " << daten_to_wwivnet_time(header.daten()) << endl
+         << "title: " << header.title();
+    if (header.local()) {
       cout << "[LOCAL]";
     }
-    if (header->deleted()) {
+    if (header.deleted()) {
       cout << "[DELETED]";
     }
-    if (header->locked()) {
+    if (header.locked()) {
       cout << "[LOCKED]";
     }
-    if (header->private_msg()) {
+    if (header.private_msg()) {
       cout << "[PRIVATE]";
     }
     cout << endl;
     if (all) {
-      cout << "qscan: " <<  header->last_read() << endl;
+      cout << "qscan: " <<  header.last_read() << endl;
     }
-    if (header->deleted()) {
+    if (header.deleted()) {
       // Don't try to read the text of deleted messages.
       continue;
     }
-    const auto text = message->text();
-    if (!text) {
-      continue;
-    }
+    const auto& text = message->text();
     cout << string(72, '-') << endl;
-    auto lines = wwiv::strings::SplitString(text->text(), "\n", false);
+    auto lines = wwiv::strings::SplitString(text.text(), "\n", false);
     for (const auto& line : lines) {
       if (line.empty()) {
         continue;

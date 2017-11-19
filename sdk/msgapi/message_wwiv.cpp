@@ -101,7 +101,7 @@ void WWIVMessageText::set_text(const std::string& text) {
   text_ = text;
 }
 
-const std::string WWIVMessageText::text() const {
+const std::string& WWIVMessageText::text() const {
   return text_;
 }
 
