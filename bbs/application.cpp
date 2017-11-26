@@ -744,10 +744,9 @@ int Application::Run(int argc, char *argv[]) {
       case 'B': {
         // I think this roundtrip here is just to ensure argument is really a number.
         ui = static_cast<unsigned int>(atol(argument.c_str()));
-        const string current_speed_string = std::to_string(ui);
-        SetCurrentSpeed(current_speed_string.c_str());
+        SetCurrentSpeed(std::to_string(ui));
         user_already_on_ = true;
-      }
+        }
         break;
       case 'C':
         break;
@@ -788,6 +787,7 @@ int Application::Run(int argc, char *argv[]) {
           SetCurrentSpeed("KB");
         }
         user_already_on_ = true;
+        ooneuser = true;
         break;
       case 'V':
         cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;
