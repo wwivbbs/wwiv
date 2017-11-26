@@ -661,8 +661,9 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     } else {
       text << "AREA:" << subtype << "\r";
     }
-    text << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
-      << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
+    // As of 5.3, the PID is added by the BBS software.
+    // text << "\001PID: WWIV " << wwiv_version << beta_version << "\r";
+    text << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
     if (needs_msgid) {
       text << "\001MSGID: " << msgid << "\r";
     }
