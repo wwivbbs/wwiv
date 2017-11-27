@@ -103,8 +103,7 @@ namespace wwivd {
 
 static string to_string(const NodeManager& nodes) {
   std::ostringstream ss;
-  ss << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes()
-     << ")";
+  ss << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
   return ss.str();
 }
 
@@ -129,8 +128,7 @@ struct status_reponse_t {
 
   template <class Archive> void serialize(Archive& ar) {
     ar(cereal::make_nvp("num_instances", num_instances),
-       cereal::make_nvp("used_instances", used_instances),
-       cereal::make_nvp("lines", lines));
+       cereal::make_nvp("used_instances", used_instances), cereal::make_nvp("lines", lines));
   }
 };
 
@@ -147,12 +145,9 @@ string ToJson(status_reponse_t r) {
 
 class StatusHandler : public HttpHandler {
 public:
-  StatusHandler(
-      std::map<const std::string, std::shared_ptr<NodeManager>>* nodes)
-      : nodes_(nodes) {}
+  StatusHandler(std::map<const std::string, std::shared_ptr<NodeManager>>* nodes) : nodes_(nodes) {}
 
-  HttpResponse Handle(HttpMethod, const std::string&,
-                      std::vector<std::string> headers) override {
+  HttpResponse Handle(HttpMethod, const std::string&, std::vector<std::string> headers) override {
     // We only handle status
     HttpResponse response(200);
     response.headers.emplace("Content-Type: ", "text/json");
@@ -174,8 +169,7 @@ private:
   map<const string, std::shared_ptr<NodeManager>>* nodes_;
 };
 
-static string CreateCommandLine(const std::string& tmpl,
-                                std::map<char, std::string> params) {
+static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
 
   for (auto it = tmpl.begin(); it != tmpl.end(); it++) {
@@ -198,16 +192,14 @@ static string CreateCommandLine(const std::string& tmpl,
   return out;
 }
 
-static const string node_file(const Config& config, ConnectionType ct,
-                              int node_number) {
+static const string node_file(const Config& config, ConnectionType ct, int node_number) {
   if (ct == ConnectionType::BINKP) {
     return FilePath(config.datadir(), "binkpinuse");
   }
   return FilePath(config.datadir(), StrCat("nodeinuse.", node_number));
 }
 
-static bool DeleteAllSemaphores(const Config& config, int start_node,
-                                int end_node) {
+static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
   for (int i = start_node; i <= end_node; i++) {
     File semaphore_file(node_file(config, ConnectionType::TELNET, i));
@@ -225,16 +217,13 @@ static bool DeleteAllSemaphores(const Config& config, int start_node,
   return true;
 }
 
-static bool launch_cmd(const std::string& raw_cmd,
-                       std::shared_ptr<NodeManager> nodes, int node_number,
-                       int sock, ConnectionType connection_type,
+static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> nodes,
+                       int node_number, int sock, ConnectionType connection_type,
                        const string remote_peer) {
   string pid = StringPrintf("[%d] ", get_pid());
-  nodes->set_node(node_number, connection_type,
-                  StrCat("Connected: ", remote_peer));
+  nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
-  map<char, string> params = {{'N', std::to_string(node_number)},
-                              {'H', std::to_string(sock)}};
+  map<char, string> params = {{'N', std::to_string(node_number)}, {'H', std::to_string(sock)}};
 
   // Reset the socket back to blocking mode
   VLOG(2) << "Setting blocking mode.";
@@ -251,9 +240,8 @@ static bool launch_cmd(const std::string& raw_cmd,
 }
 
 static bool launch_node(const Config& config, const std::string& raw_cmd,
-                        std::shared_ptr<NodeManager> nodes, int node_number,
-                        int sock, ConnectionType connection_type,
-                        const string remote_peer) {
+                        std::shared_ptr<NodeManager> nodes, int node_number, int sock,
+                        ConnectionType connection_type, const string remote_peer) {
   ScopeExit at_exit([=] {
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
@@ -261,18 +249,17 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
 
   string pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launching node(" << node_number << ")";
-  const auto sem_text = StringPrintf("Created by pid: %s\nremote peer: %s",
-                                     pid.c_str(), remote_peer.c_str());
+  const auto sem_text =
+      StringPrintf("Created by pid: %s\nremote peer: %s", pid.c_str(), remote_peer.c_str());
   const auto sem_path = node_file(config, connection_type, node_number);
 
   try {
-    SemaphoreFile semaphore_file = SemaphoreFile::try_acquire(
-        sem_path, sem_text, std::chrono::seconds(60));
-    return launch_cmd(raw_cmd, nodes, node_number, sock, connection_type,
-                      remote_peer);
+    SemaphoreFile semaphore_file =
+        SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
+    return launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
   } catch (const semaphore_not_acquired& e) {
-    LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path
-               << "; errno: " << errno << "; what: " << e.what();
+    LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
+               << "; what: " << e.what();
     return false;
   }
 }
@@ -326,8 +313,7 @@ static void addto(std::string* ansi_str, int num) {
 
 /* Ripped from com.cpp -- maybe this should all move to core? */
 static std::string makeansi(int attr, int current_attr) {
-  static const std::vector<int> kAnsiColorMap = {'0', '4', '2', '6',
-                                                 '1', '5', '3', '7'};
+  static const std::vector<int> kAnsiColorMap = {'0', '4', '2', '6', '1', '5', '3', '7'};
 
   int catr = current_attr;
   std::string out;
@@ -366,9 +352,9 @@ std::string Color(int c, bool ansi) {
   return s;
 }
 
-static const wwivd_matrix_entry_t
-DoMatrixLogon(const Config& config, std::unique_ptr<SocketConnection> conn,
-              const wwivd_config_t& c) {
+static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
+                                                std::unique_ptr<SocketConnection> conn,
+                                                const wwivd_config_t& c) {
   using namespace std::chrono_literals;
   if (c.bbses.empty()) {
     // This should be checked before calling this method.
@@ -390,16 +376,14 @@ DoMatrixLogon(const Config& config, std::unique_ptr<SocketConnection> conn,
         continue;
       }
       std::ostringstream ss;
-      ss << Color(14, ansi) << b.key << Color(3, ansi) << ") "
-         << Color(10, ansi) << b.name;
+      ss << Color(14, ansi) << b.key << Color(3, ansi) << ") " << Color(10, ansi) << b.name;
       if (!b.description.empty()) {
         ss << Color(11, ansi) << "  (" << b.description << ")";
       }
       conn->send_line(ss.str(), d);
     }
     std::ostringstream ss;
-    ss << Color(14, ansi) << '!' << Color(3, ansi) << ") " << Color(11, ansi)
-       << " Logoff/Quit.";
+    ss << Color(14, ansi) << '!' << Color(3, ansi) << ") " << Color(11, ansi) << " Logoff/Quit.";
     conn->send_line(ss.str(), d);
 
     conn->send_line("\r\n", d);
@@ -435,8 +419,8 @@ static void HandleHttpConnection(ConnectionData data) {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
       auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port
-                << "; from: " << remote_peer << "; coutry code: " << cc;
+      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
+                << "; coutry code: " << cc;
     }
 
     // HTTP Request
@@ -446,8 +430,7 @@ static void HandleHttpConnection(ConnectionData data) {
     h.Run();
 
   } catch (const std::exception& e) {
-    LOG(ERROR) << "HandleHttpConnection: Handled Uncaught Exception: "
-               << e.what();
+    LOG(ERROR) << "HandleHttpConnection: Handled Uncaught Exception: " << e.what();
   }
   VLOG(1) << "Exiting HandleHttpConnection (exception)";
 }
@@ -458,8 +441,8 @@ static void HandleBinkPConnection(ConnectionData data) {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
       auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port
-                << "; from: " << remote_peer << "; coutry code: " << cc;
+      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
+                << "; coutry code: " << cc;
     }
 
     auto& nodemgr = data.nodes->at("BINKP");
@@ -469,13 +452,11 @@ static void HandleBinkPConnection(ConnectionData data) {
         closesocket(sock);
         VLOG(2) << "closed socket: " << sock;
       });
-      launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, ConnectionType::BINKP,
-                 remote_peer);
+      launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, ConnectionType::BINKP, remote_peer);
     }
 
   } catch (const std::exception& e) {
-    LOG(ERROR) << "HandleHttpConnection: Handled Uncaught Exception: "
-               << e.what();
+    LOG(ERROR) << "HandleHttpConnection: Handled Uncaught Exception: " << e.what();
   }
   VLOG(1) << "Exiting HandleHttpConnection (exception)";
 }
@@ -486,17 +467,16 @@ static void HandleConnection(ConnectionData data) {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
       auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted connection on port: " << data.r.port
-                << "; from: " << remote_peer << "; coutry code: " << cc;
+      LOG(INFO) << "Accepted connection on port: " << data.r.port << "; from: " << remote_peer
+                << "; coutry code: " << cc;
     }
 
     if (data.c->bbses.empty()) {
       // If no bbses are defined, bail early and let someone know.
       SocketConnection conn(data.r.client_socket);
       LOG(ERROR) << "No BBSes defined in INIT for the Matrix.";
-      conn.send_line(
-          "No BBSes defined in INIT for the Matrix.  Please tell the SysOp.",
-          std::chrono::seconds(1));
+      conn.send_line("No BBSes defined in INIT for the Matrix.  Please tell the SysOp.",
+                     std::chrono::seconds(1));
       return;
     }
 
@@ -504,10 +484,8 @@ static void HandleConnection(ConnectionData data) {
 
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
-      bbs = DoMatrixLogon(
-          *data.config,
-          std::make_unique<SocketConnection>(data.r.client_socket, false),
-          *data.c);
+      bbs = DoMatrixLogon(*data.config,
+                          std::make_unique<SocketConnection>(data.r.client_socket, false), *data.c);
     } else if (connection_type == ConnectionType::SSH) {
       bbs = data.c->bbses.front();
     }
@@ -517,8 +495,7 @@ static void HandleConnection(ConnectionData data) {
     if (!contains(*data.nodes, bbs.name)) {
       // HOW???
       SocketConnection conn(data.r.client_socket);
-      conn.send_line(StrCat("Can't find config for bbs: ", bbs.name),
-                     std::chrono::seconds(1));
+      conn.send_line(StrCat("Can't find config for bbs: ", bbs.name), std::chrono::seconds(1));
       return;
     }
     auto& nodemgr = data.nodes->at(bbs.name);
@@ -526,11 +503,8 @@ static void HandleConnection(ConnectionData data) {
     // Telnet or SSH connection.  Find open node number and launch the child.
     int node = -1;
     if (nodemgr->AcquireNode(node)) {
-      const auto& cmd = (connection_type == ConnectionType::SSH)
-                            ? bbs.ssh_cmd
-                            : bbs.telnet_cmd;
-      launch_node(*data.config, cmd, nodemgr, node, sock, connection_type,
-                  remote_peer);
+      const auto& cmd = (connection_type == ConnectionType::SSH) ? bbs.ssh_cmd : bbs.telnet_cmd;
+      launch_node(*data.config, cmd, nodemgr, node, sock, connection_type, remote_peer);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
     } else {
       using namespace std::chrono_literals;
@@ -578,23 +552,20 @@ int Main(CommandLine& cmdline) {
 
   std::map<const std::string, std::shared_ptr<NodeManager>> nodes;
   for (const auto& b : c.bbses) {
-    nodes[b.name] = std::make_shared<NodeManager>(
-        b.name, ConnectionType::TELNET, b.start_node, b.end_node);
+    nodes[b.name] =
+        std::make_shared<NodeManager>(b.name, ConnectionType::TELNET, b.start_node, b.end_node);
   }
   // Add node manager for binkp.
-  nodes["BINKP"] =
-      std::make_shared<NodeManager>("BINKP", ConnectionType::BINKP, 0, 0);
+  nodes["BINKP"] = std::make_shared<NodeManager>("BINKP", ConnectionType::BINKP, 0, 0);
 
   for (const auto& n : nodes) {
-    if (!DeleteAllSemaphores(config, n.second->start_node(),
-                             n.second->end_node())) {
+    if (!DeleteAllSemaphores(config, n.second->start_node(), n.second->end_node())) {
       LOG(ERROR) << "Unable to clear semaphores.";
     }
   }
 
   auto telnet_or_ssh_fn = [&](accepted_socket_t r) {
-    std::thread client(HandleConnection,
-                       ConnectionData(&config, &c, &nodes, r));
+    std::thread client(HandleConnection, ConnectionData(&config, &c, &nodes, r));
     client.detach();
   };
 
@@ -607,16 +578,14 @@ int Main(CommandLine& cmdline) {
   }
   if (c.binkp_port > 0) {
     auto binkp_fn = [&](accepted_socket_t r) {
-      std::thread client(HandleBinkPConnection,
-                         ConnectionData(&config, &c, &nodes, r));
+      std::thread client(HandleBinkPConnection, ConnectionData(&config, &c, &nodes, r));
       client.detach();
     };
     sockets.add(c.binkp_port, binkp_fn, "BINKP");
   }
   if (c.http_port > 0) {
     auto http_fn = [&](accepted_socket_t r) {
-      std::thread client(HandleHttpConnection,
-                         ConnectionData(&config, &c, &nodes, r));
+      std::thread client(HandleHttpConnection, ConnectionData(&config, &c, &nodes, r));
       client.detach();
     };
     sockets.add(c.http_port, http_fn, "HTTP");
@@ -643,8 +612,7 @@ int main(int argc, char* argv[]) {
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
   cmdline.add_argument({"wwiv_user", "WWIV User to use.", "wwiv2"});
-  cmdline.add_argument(
-      BooleanCommandLineArgument{"version", 'V', "Display version.", false});
+  cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
   cmdline.set_no_args_allowed(true);
 
   if (!cmdline.Parse()) {
