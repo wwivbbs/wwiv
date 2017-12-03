@@ -7,6 +7,8 @@ include_directories(../deps/cereal/include)
 set(WWIVD_SOURCES 
     node_manager.cpp
     wwivd.cpp
+    wwivd_http.cpp
+    wwivd_non_http.cpp
     )
 
 if (UNIX)

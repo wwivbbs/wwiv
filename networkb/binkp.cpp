@@ -429,7 +429,7 @@ BinkState BinkP::WaitConn() {
           FidoAddress address(net.fido.fido_address);
           network_addresses += address.as_string();
         }
-        catch (const bad_fidonet_address& e) {
+        catch (const bad_fidonet_address&) {
           LOG(WARNING) << "Bad FTN Address: '" << net.fido.fido_address
             << "' for network: '" << net.name << "'.";
         }

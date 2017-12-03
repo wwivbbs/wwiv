@@ -561,7 +561,7 @@ static packet_header_2p_t CreateType2PlusPacketHeader(
 static string remove_fido_addr(string to_user) {
   string to_user_new = "";
 
-  for (int i=0;i<to_user.length();i++) {
+  for (auto i=0; i < size_int(to_user); i++) {
     if (to_user[i] == '(') {
       break;
     } else if (to_user[i] == ' ' && to_user[i+1] == '#') {
