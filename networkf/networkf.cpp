@@ -182,7 +182,7 @@ static string get_echomail_areaname(const std::string& text) {
   return "";
 }
 
-static bool import_packet_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
+static bool import_packet_file(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   VLOG(1) << "import_packet_file: " << dir << name;
   using wwiv::sdk::fido::ReadPacketResponse;
 
@@ -216,9 +216,6 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     }
     return false;
   }
-
-  // TODO(rushfan): move this outside do we only load it once.
-  FtnMessageDupe dupe(config);
 
   while (!done) {
     FidoPackedMessage msg;
@@ -304,14 +301,14 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
   return true;
 }
 
-static bool import_packets(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+static bool import_packets(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   VLOG(1) << "Importing packets from: " << dir;
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
   if (files.empty()) {
     LOG(INFO) << "No packets to import in: " << dir;
   }
   for (const auto& f : files) {
-    if (import_packet_file(config, callout, net, dir, f.name)) {
+    if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
       LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
       File::Remove(dir, f.name);
     }
@@ -319,7 +316,7 @@ static bool import_packets(const Config& config, const FidoCallout& callout, con
   return true;
 }
 
-static bool import_bundle_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
+static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   VLOG(1) << "import_bundle_file: name: " << name;
 
   {
@@ -360,15 +357,18 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   // Need to be back home.
   File::set_current_directory(saved_dir);
 
-  import_packets(config, callout, net, dirs.temp_inbound_dir(), "*.pkt");
+  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.pkt");
 #ifndef _WIN32
-  import_packets(config, callout, net, dirs.temp_inbound_dir(), "*.PKT");
+  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.PKT");
 #endif  // _WIN32
   return true;
 }
 
 static bool import_bundles(const Config& config, const FidoCallout& callout,
   const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+
+  FtnMessageDupe dupe(config);
+
   VLOG(1) << "import_bundles: mask: " << mask;
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
   for (const auto& f : files) {
@@ -378,11 +378,11 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
     }
     string lname = ToStringLowerCase(f.name);
     if (ends_with(lname, ".pkt")) {
-      if (import_packet_file(config, callout, net, dir, f.name)) {
+      if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
         LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
         File::Remove(dir, f.name);
       }
-    } else if (import_bundle_file(config, callout, net, dir, f.name)) {
+    } else if (import_bundle_file(config, dupe, callout, net, dir, f.name)) {
       LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, f.name);
       File::Remove(dir, f.name);
     }

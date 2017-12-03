@@ -110,13 +110,13 @@ bool handle_post(Context& context, Packet& p) {
 
   ScopeExit at_exit;
   
-  string raw_text = p.text;
+  auto raw_text = p.text;
   auto iter = raw_text.begin();
-  string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string text = string(iter, raw_text.end());
+  auto subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto text = string(iter, raw_text.end());
   if (VLOG_IS_ON(1)) {
     at_exit.swap([] {
       LOG(INFO) << "==============================================================";
@@ -140,7 +140,7 @@ bool handle_post(Context& context, Packet& p) {
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV always does.
-    bool created = context.api(sub.storage_type).Create(sub, -1);
+    auto created = context.api(sub.storage_type).Create(sub, -1);
     if (!created) {
       LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename << "; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
@@ -160,7 +160,7 @@ bool handle_post(Context& context, Packet& p) {
     return true;
   }
 
-  unique_ptr<Message> msg(area->CreateMessage());
+  auto msg = area->CreateMessage();
   msg->header().set_from_system(p.nh.fromsys);
   msg->header().set_from_usernum(p.nh.fromuser);
   msg->header().set_title(title);
