@@ -1,0 +1,30 @@
+
+                     Old style configuration commands
+
+      To: QMAIL (or whatever)
+
+      Subject contains one of the following commands:
+
+      ADD                   Add current conference
+      ADD -20               Add current conference and set lastread pointer
+                            20 below the end
+      ADD 9876              Add current conference and set lastread pointer
+                            to message number 9876
+      DROP                  Drop current conference
+      RESET                 Reset current conference lastread pointer to
+                            the end
+      RESET -20             Reset current conference lastread pointer to
+                            20 below the end
+      RESET 9876            Reset current conference lastread pointer to
+                            message number 9876
+      BLTS ON               Turn bulletins on
+      BLTS OFF              Turn bulletins off
+      FILES ON              Turn new files list on
+      FILES OFF             Turn new files list off
+      WELCOME ON            Turn welcome screen on
+      WELCOME OFF           Turn welcome screen off
+      GOODBYE ON            Turn goodbye screen on
+      GOODBYE OFF           Turn goodbye screen off
+
+      If the subject is CONFIG, see the new format in COMMAND.TXT
+      for an explanation.

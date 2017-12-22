@@ -1,0 +1,27 @@
+
+
+                 New (04/91) format for configuration messages
+
+        To: QMAIL (or whatever)
+        Subject: CONFIG
+
+        Text has one command per line with the following options:
+
+        ADD <conf>                  adds a conference
+        DROP <conf>                 drops a conference
+        RESET <conf> <value>        resets message pointer to value or
+                                    can use HIGH-xxx
+        CITY <string>               changes bbs user city
+        PASSWORD <string>           changes bbs user password
+        BPHONE <string>             changes bbs user business/data phone
+        HPHONE <string>             changes bbs user home/voice phone
+        PCBEXPERT [ON|OFF]          turns bbs user expert mode on or off
+        PCBPROT <char>              sets bbs user protocol to char (A thru Z)
+        PCBCOMMENT <string>         sets bbs user comment
+        PAGELEN <value>             sets bbs use pagelength
+        PROTOCOL <char>             sets QWK door protocol to char (A thru Z)
+        EXPERT [ON|OFF]             sets QWK door expert mode on or off
+        MAXSIZE <value>             sets maximum QWK size in bytes
+        MAXNUMBER <value>           sets maximum msgs per conference
+        AUTOSTART                   QWK door autostart
+

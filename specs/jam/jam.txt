@@ -1,0 +1,619 @@
+Filename....: JAM-001
+Rev.........: 001
+Dated.......: 93-07-01
+Status .....: Released
+Subject.....: JAM message base proposal
+Author......: Joaquim Homrighausen
+Co-Authors..: Andrew Milner, Mats Birch, Mats Wallin
+
+    ---------------------------------------------------------------------
+                                  JAM(mbp)
+                The Joaquim-Andrew-Mats Message Base Proposal
+    ---------------------------------------------------------------------
+            Copyright 1993 Joaquim Homrighausen, Andrew Milner,
+                           Mats Birch, Mats Wallin.
+                             ALL RIGHTS RESERVED.
+    ---------------------------------------------------------------------
+
+
+    =====================================================================
+    Restrictions
+    ---------------------------------------------------------------------
+    JAM may be used by any developer as long as these specifications are
+    followed exactly. JAM may be used free-of-charge by any developer
+    for any purpose, commercially or otherwise.
+
+    This document may be freely copied and distributed, but must NEVER be
+    distributed in a modified form. If you have an enhancement request,
+    please contact the author of this document; do not change it
+    yourself.
+
+    All applications that support JAM must include one of the following
+    notices in their documentation and somewhere in the product's credit
+    section:
+
+    "JAM(mbp) - Copyright 1993 Joaquim Homrighausen, Andrew Milner,
+                               Mats Birch, Mats Wallin.
+                               ALL RIGHTS RESERVED."
+
+    or
+
+    "This product uses the JAM(mbp) API -
+     Copyright 1993 Joaquim Homrighausen, Andrew Milner, Mats Birch,
+                    Mats Wallin. ALL RIGHTS RESERVED."
+
+    No organization, company, person, entity, or other being may impose
+    any fees for any reason for providing this document or the
+    accompanying API. This document and the accompanying API may not be
+    sold or otherwise transferred for personal or company gain under any
+    circumstances.
+
+    =====================================================================
+    Definitions and general notes
+    ---------------------------------------------------------------------
+    CURRENTREV                1
+
+    JAM                       The JAM message base format.
+
+    CRC                       Cyclic Redundancy Check. All CRC values
+                              calculated on strings must assume that the
+                              data within the string has been converted
+                              to lowercase (A-Z = a-z).
+
+    CRC-32                    32-bit CRC (as used in the Zmodem file
+                              transfer protocol) value. The polynom for
+                              a CRC-32 is edb88320H and the CRC-32 seed
+                              is -1L (ffffffffH).
+
+    uchar                     Unsigned 8-bit value
+
+    ushort                    Unsigned 16-bit value
+
+    ulong                     Unsigned 32-bit value
+
+    UNIX date                 An ulong representing the number of seconds
+                              since midnight, January 1, 1970. UNIX-style
+                              dates is the only form of time stamps used
+                              in JAM (1).
+
+    Message #                 The physical record number within the index
+                              file is used as a message number. The
+                              lowest message number is one (1) and the
+                              highest message number is 4294967295
+                              (ffffffffH).
+
+    FTN                       FidoNet Technology Network
+
+    FTS                       FidoNet Technical Standard
+
+    (1) All timestamps created locally (i.e. those not imported from
+        other systems) are stored in local time.
+
+    =====================================================================
+    Files
+    ---------------------------------------------------------------------
+    Each conference is made up from four files. How and where these files
+    are stored and named is implementation dependant. The only file with
+    a fixed minimum size is the .JHR (header data) file. It has a 1024-
+    byte block used to hold information about a specific message area as
+    described later.
+
+    filename.JHR - Message header data
+    filename.JDT - Message text data
+    filename.JDX - Message index
+    filename.JLR - Lastread information
+
+    A future revision of JAM may also include a file that holds the
+    following three items:
+
+      - The highest assigned user number
+      - The last generated message ID
+      - A global conference list with the conference name, description,
+        and physical location of the message base.
+
+    =====================================================================
+    .JHR file header
+    ---------------------------------------------------------------------
+    Below is the format of the 1024-byte record at the beginning of all
+    .JHR files. The first actual message header starts at offset 1024 in
+    the .JHR file.
+
+    FixedHeaderInfoStruct:
+        ulong   Signature;       // <J><A><M> followed by <NUL>
+        ulong   datecreated;     // Creation date
+        ulong   modcounter;      // Update counter
+        ulong   activemsgs;      // Number of active (not deleted) msgs
+        ulong   passwordcrc;     // CRC-32 of password to access
+        ulong   basemsgnum;      // Lowest message number in index file
+        uchar   RESERVED[1000];  // Reserved space
+    end;
+
+    MODCOUNTER must be incremented and updated on disk each time an
+    application modifies the contents of the message base. When it
+    reaches ffffffffH, it wraps to zero.
+
+    ---------------------------------------------------------------------
+    BaseMsgNum                        Lowest message number in index file
+    ---------------------------------------------------------------------
+    This field determines the lowest message number in the index file.
+    The value for this field is one (1) when a message area is first
+    created. By using this field, a message area can be packed (deleted
+    messages are removed) without renumbering it. If BaseMsgNum contains
+    500, the first index record points to message number 500.
+
+    BaseMsgNum has to be taken into account when an application
+    calculates the next available message number (for creating new
+    messages) as well as the highest and lowest message number in a
+    message area.
+
+    ---------------------------------------------------------------------
+    ????????.JHR                                          Message headers
+    ---------------------------------------------------------------------
+    The .JHR file contains none or more Header records. Each record
+    define one message and contains information about the message and its
+    text (if any). The Header record is of variable length. The layout of
+    the Header record follows.
+
+    MessageHeader:
+        MessageFixedHeader:
+            ulong  Signature;    // <J><A><M> followed by <NUL>
+            ushort Revision;     // Revision level of header          (1)
+            ushort ReservedWord; // Reserved for future use
+            ulong  SubfieldLen;  // Length of subfields               (2)
+            ulong  TimesRead;    // Number of times message read
+            ulong  MSGIDcrc;     // CRC-32 of MSGID line              (3)
+            ulong  REPLYcrc;     // CRC-32 of REPLY line              (3)
+            ulong  ReplyTo;      // This msg is a reply to..
+            ulong  Reply1st;     // First reply to this msg
+            ulong  Replynext;    // Next msg in reply chain
+            ulong  DateWritten;  // When msg was written
+            ulong  DateReceived; // When msg was read by recipient
+            ulong  DateProcessed;// When msg was processed by tosser/
+                                 // scanner
+            ulong  MessageNumber;// Message number (1-based)
+            ulong  Attribute;    // Msg attribute, see "Msg Attributes"
+            ulong  Attribute2;   // Reserved for future use
+            ulong  Offset;       // Offset of text in ????????.JDT file
+            ulong  TxtLen;       // Length of message text
+            ulong  PasswordCRC;  // CRC-32 of password to access message
+            ulong  Cost;         // Cost of message
+        end;
+        SubField1                // Extra fields as defined below
+        .
+        .
+        SubFieldXX
+    end;
+
+    (1) This field is intended for future revisions of the specifications
+        to allow the use of a different fixed-length binary message
+        header. The current revision level is one (1).
+
+    (2) The SubfieldLen field is set to zero (0) if the header does not
+        have any subfield data. I.e. the length of the binary header is
+        not included in this field.
+
+    (3) When calculating the CRC-32 of the MSGID and REPLY lines, the
+        text ^aMSGID: and ^aREPLY: should be removed as well as all
+        leading and trailing white space characters.
+
+
+    The SubField structure is made up of an ID, a length specifier, and
+    a block of data. Zero or more subfields may follow the fixed-length
+    binary header. SubFields are not stored in any specific order and
+    are not terminated by any specific character unless otherwise
+    specified.
+
+    SubField:
+        ushort  LoID;            // Field ID, 0-65535
+        ushort  HiID;            // Reserved for future use
+        ulong   datlen;          // Length of buffer that follows
+        uchar   Buffer[datlen];  // DATLEN bytes of data
+    end;
+
+    ---------------------------------------------------------------------
+    Defined LoID codes
+    ---------------------------------------------------------------------
+
+    ID=0, Name=OADDRESS
+
+    A network address. This is used to specify the originating address.
+    More than one OADDRESS field may exist. DATLEN must not exceed 100
+    characters. For a FidoNet-style address, this field must follow the
+    ZONE:NET/NODE.POINT@DOMAIN format where .POINT is excluded if zero
+    and @DOMAIN is excluded if unknown.
+
+
+    ID=1, Name=DADDRESS
+
+    A network address. This is used to specify the destination address.
+    More than one DADDRESS field may exist (e.g. carbon copies). DATLEN
+    must not exceed 100 characters. For a FidoNet-style address, this
+    field must follow the ZONE:NET/NODE.POINT@DOMAIN format where .POINT
+    is excluded if zero and @DOMAIN is excluded if unknown.
+
+
+    ID=2, Name=SENDERNAME
+
+    The sender (author) of the message. DATLEN must not exceed 100
+    characters.
+
+
+    ID=3, Name=RECEIVERNAME
+
+    The recipient of the message. DATLEN must not exceed 100 characters.
+
+
+    ID=4, Name=MSGID
+
+    Used to store the message identification data. All data not relevant
+    to the actual ID string, including leading and trailing white space
+    characters should be removed. DATLEN must not exceed 100 characters.
+
+
+    ID=5, Name=REPLYID
+
+    Used to store the message reply data. All data not relevant to the
+    actual reply string, including leading and trailing white space
+    characters should be removed. DATLEN must not exceed 100 characters.
+
+
+    ID=6, Name=SUBJECT
+
+    The subject of the message. DATLEN must not exceed 100 characters.
+    Note that this field may not be used for FidoNet-style file attaches
+    or file requests.
+
+
+    ID=7, Name=PID
+
+    Used to store the FTN PID kludge line. Only the actual PID data is
+    stored and ^aPID: is stripped along with any leading and trailing
+    white space characters. DATLEN must not exceed 40 characters.
+
+
+    ID=8, Name=TRACE
+
+    This is also referred to as ^aVia information in FTNs. It contains
+    information about a system which the message has travelled through.
+    The format of the field is <YYYYMMDDHHMMSS><Network address> where:
+
+       YYYY is the year (1992-9999)
+         MM is the month (01-12)
+         DD is the day (01-31)
+         HH is the hour (00-23)
+         MM is the minute (00-59)
+         SS is the second (00-59)
+
+    The timestamp is stored in ASCII (0-9) characters. The network
+    address is the address of the system. It is expressed in ASCII
+    notation in the native format of the forwarding system.
+
+
+    ID=9, Name=ENCLOSEDFILE
+
+    A file attached to the message. Only one filename may be specified
+    per subfield. No wildcard characters are allowed. If this subfield
+    is present in a message header, the ATTRIBUTE must include the
+    MSG_FILEATTACH bit.
+
+
+    ID=10, Name=ENCLOSEDFILEWALIAS
+
+    Identical to ENCLOSEDFILE with the exception that the filename is
+    followed by a <NUL> (00H) and an alias filename to be transmited to
+    the remote system in place of the local name of the file.
+
+
+    ID=11, Name=ENCLOSEDFREQ
+
+    A request for one or more files. Only one filemask may be specified
+    per subfield. If the filemask contains a complete path, it is to be
+    regarded as an update file request. If this subfield is present in a
+    message header, the ATTRIBUTE must include the MSG_FILEREQUEST bit.
+    To indicate that a password is to be transmitted along with the
+    request, a <NUL> (00H) character followed by the password is
+    appended. E.g. SECRET*.*<NUL>MYPASSWORD.
+
+
+    ID=12, Name=ENCLOSEDFILEWCARD
+
+    One or more files attached to the message. Only one filename may be
+    specified per subfield. Wildcard characters are allowed. If this
+    subfield is present in a message header, the ATTRIBUTE must include
+    the MSG_FILEATTACH bit.
+
+
+    ID=13, Name=ENCLOSEDINDIRECTFILE
+
+    One or more files attached to the message. The filename points to an
+    ASCII file with one filename entry per line. If alias filenames are
+    to be used, they are specified after the actual filename and
+    separated by a <NUL> (00H) character, e.g. C:\MYFILE.LZH<NUL>NEWS.
+    Wildcard characters are not allowed.
+
+
+    ID=1000, Name=EMBINDAT
+
+    Reserved for future use.
+
+
+    ID=2000, Name=FTSKLUDGE
+
+    An FTS-compliant "kludge" line not otherwise represented here. All
+    data not relevant to the actual kludge line, including leading and
+    trailing white space and ^A (01H) characters should be removed.
+    DATLEN must not exceed 255 characters. The FTS kludges INTL, TOPT,
+    and FMPT must never be stored as separate SubFields. Their data must
+    be extracted and used for the address SubFields.
+
+
+    ID=2001, Name=SEENBY2D
+
+    Used to store two-dimensional (net/node) SEEN-BY information often
+    used in FTN conference environments. Only the actual SEEN-BY data is
+    stored and ^aSEEN-BY: or SEEN-BY: is stripped along with any leading
+    and trailing white space characters.
+
+
+    ID=2002, Name=PATH2D
+
+    Used to store two-dimensional (net/node) PATH information often used
+    in FTN conference environments. Only the actual PATH data is stored
+    and ^aPATH: is stripped along with any leading and trailing white
+    space characters.
+
+
+    ID=2003, Name=FLAGS
+
+    Used to store the FTN FLAGS kludge information. Note that all FLAG
+    options that have binary representation in the JAM message header
+    must be removed from the FLAGS string prior to storing it. Only
+    the actual flags option string is stored and ^aFLAGS is stripped
+    along with any leading and trailing white space characters.
+
+
+    ID=2004, Name=TZUTCINFO
+
+    Time zone information. This subfield consists of four mandatory
+    bytes and one optional. The first character may be a plus (+) or a
+    minus (-) character to indicate a location east (plus) or west
+    (minus) of UTC 0000. The plus character is implied unless the first
+    character is a minus character. The following four bytes must be
+    digits in the range zero through nine and indicates the offset in
+    hours and minutes. E.g. 0100 indicates an offset of one hour east of
+    UTC.
+
+    ---------------------------------------------------------------------
+    Message attributes
+    ---------------------------------------------------------------------
+    MSG_LOCAL       (0x00000001L)   // Msg created locally
+    MSG_INTRANSIT   (0x00000002L)   // Msg is in-transit
+    MSG_PRIVATE     (0x00000004L)   // Private
+    MSG_READ        (0x00000008L)   // Read by addressee
+    MSG_SENT        (0x00000010L)   // Sent to remote
+    MSG_KILLSENT    (0x00000020L)   // Kill when sent
+    MSG_ARCHIVESENT (0x00000040L)   // Archive when sent
+    MSG_HOLD        (0x00000080L)   // Hold for pick-up
+    MSG_CRASH       (0x00000100L)   // Crash
+    MSG_IMMEDIATE   (0x00000200L)   // Send Msg now, ignore restrictions
+    MSG_DIRECT      (0x00000400L)   // Send directly to destination
+    MSG_GATE        (0x00000800L)   // Send via gateway
+    MSG_FILEREQUEST (0x00001000L)   // File request
+    MSG_FILEATTACH  (0x00002000L)   // File(s) attached to Msg
+    MSG_TRUNCFILE   (0x00004000L)   // Truncate file(s) when sent
+    MSG_KILLFILE    (0x00008000L)   // Delete file(s) when sent
+    MSG_RECEIPTREQ  (0x00010000L)   // Return receipt requested
+    MSG_CONFIRMREQ  (0x00020000L)   // Confirmation receipt requested
+    MSG_ORPHAN      (0x00040000L)   // Unknown destination
+    MSG_ENCRYPT     (0x00080000L)   // Msg text is encrypted          (1)
+    MSG_COMPRESS    (0x00100000L)   // Msg text is compressed         (1)
+    MSG_ESCAPED     (0x00200000L)   // Msg text is seven bit ASCII    (1)
+    MSG_FPU         (0x00400000L)   // Force pickup
+    MSG_TYPELOCAL   (0x00800000L)   // Msg is for local use only
+    MSG_TYPEECHO    (0x01000000L)   // Msg is for conference distribution
+    MSG_TYPENET     (0x02000000L)   // Msg is direct network mail
+    MSG_NODISP      (0x20000000L)   // Msg may not be displayed to user
+    MSG_LOCKED      (0x40000000L)   // Msg is locked, no editing possible
+    MSG_DELETED     (0x80000000L)   // Msg is deleted
+
+    (1) This revision of JAM does not include compression, encryption, or
+        escaping. The bits are reserved for future use.
+
+    =====================================================================
+    ????????.JDT                                             Message text
+    ---------------------------------------------------------------------
+    The .JDT file contains the text of messages. The text is stored as an
+    stream of seven or eight bit ASCII data. Allowed characters in the
+    text are 00H through ffH unless the header ATTRIBUTE field has the
+    MSG_ESCAPED bit enabled, in which case the legal range of data is 20H
+    through 7eH.
+
+    An escaped character is stored as \<hex> where <hex> is the two digit
+    hexadecimal ASCII value of the character. A single \ is stored as \\
+    or \5C. The case of the hexadecimal ASCII value is irrelevant, i.e.
+    5c is treated as 5C.
+
+    =====================================================================
+    ????????.JDX                                            Message index
+    ---------------------------------------------------------------------
+    The .JDX file is used to quickly locate messages for any given user
+    name or to locate a message with a specific number. Each record in
+    the file consists of two ulongs. The first ulong holds the CRC-32 of
+    the recipient's name (lowercase), the second ulong holds the
+    physical offset of the message header in the .JHR (header) file.
+
+    The record number (+BaseMsgNum) within the .JDX file determines a
+    message's number.
+
+    If both ulongs are -1 (ffffffffH), there is no corresponding message
+    header.
+
+    =====================================================================
+    ????????.JLR                                         Lastread storage
+    ---------------------------------------------------------------------
+    The .JLR file is used to maintain a user's position within a message
+    area. The layout of the "lastread" record follows. One record per
+    user is required.
+
+    LastRead:
+        ulong   UserCRC;         // CRC-32 of user name (lowercase)   (1)
+        ulong   UserID;          // Unique UserID
+        ulong   LastReadMsg;     // Last read message number
+        ulong   HighReadMsg;     // Highest read message number
+    end;
+
+    (1) The functions to convert a string to lowercase characters that
+        are provided in the API will only convert characters A-Z (into
+        a-z). It is required that this convention is followed by all
+        applications.
+
+    The UserID field is a unique number for each user. If the "lastread"
+    record is deleted, UserCRC and UserID are both set to -1
+    (ffffffffH). An application may not depend on any specific order in
+    the .JLR file. A user's "lastread" record may appear anywhere in the
+    file and must be searched for when retrieving it and when storing an
+    updated record.
+
+    =====================================================================
+    Updating message headers
+    ---------------------------------------------------------------------
+    If a header record grows after is has been retrieved from the .JHR
+    file, it must be appended to the end of the .JHR file since it would
+    overwrite the following header otherwise. The .JDX file must be
+    properly updated to indicate the new location of the header record.
+    The old header record must be changed to indicate that it has been
+    deleted by setting the MSG_DELETED bit in the Attribute field and the
+    TextLen field to zero (to prevent a maintenance program from removing
+    the message text that is now pointed to by another header).
+
+    =====================================================================
+    Message base sharing and locking
+    ---------------------------------------------------------------------
+    To allow several programs to access the message base at any given
+    time, region locking is used to protect the message base from being
+    corrupted during updates.
+
+    When an application needs to write to any of the message base files,
+    it must first attempt to lock the first byte of the .JHR (header)
+    file. If the lock call fails, the application must either fail or
+    attempt to lock the file again. The message base files may under no
+    circumstances be updated if the application cannot successfully lock
+    the .JHR file.
+
+    Note that data acquired (read) from the message base may not be used
+    when writing data to the message base, unless the application has
+    maintained a lock of the message base from the time the data was
+    acquired or the MODCOUNTER field is the same as when the data was
+    acquired.
+
+    The application must open the files in shareable (DENYNONE) read/
+    write or readonly mode. The only exception to this is an application
+    that requires exclusive access to the message base, such as a message
+    base maintenance utility, it should open the files in non-shareable
+    (DENYALL) read/write mode.
+
+    =====================================================================
+    Reply threads and linking
+    ---------------------------------------------------------------------
+    JAM introduces a new reply link pointer, not commonly used today.
+    This section is an attempt to describe how reply threads, reply
+    linking, and this new reply link pointer is implemented in JAM.
+
+    One of the major differences is that reply threads in JAM are not
+    based on similar or identical subjects of messages since this method
+    does not allow for proper reply threads.
+
+    The method used in JAM is based on the immediate relation between any
+    given message and direct replies to it. This is supported by many
+    message editors by using the MSGID and REPLY FTS kludge fields. These
+    are common, although expressed differently, in messages not based on
+    FidoNet technology, such as RFC-822. The obvious advantages include
+    allowing a program to easily find the original message to a reply,
+    and to find all replies to any given message.
+
+    The reply thread information consists of three fields: ReplyTo,
+    Reply1st, and ReplyNext. The reason for three fields, as opposed to
+    just two, is that with two fields, it is only possible to keep track
+    of the original message of a reply (which is sufficient) and one
+    reply to any given message (which is not sufficient). With three
+    fields, it is possible to maintain a thread of any number of replies
+    to any given message.
+
+    In the description of the different fields below, the following
+    messages and message numbers will be referred to:
+
+      1 -> 2 -> 4 -> 5
+      :    :
+      :    +--> 8
+      :
+      +--> 3 -> 7
+      :
+      +--> 6
+
+    Message number two, three, and six are replies to message number one.
+    Message number four and eight are replies to message number two.
+    Message number seven is a reply to message number three.
+    Message number five is a reply to message number four.
+
+    ---------------------------------------------------------------------
+    ReplyTo
+    ---------------------------------------------------------------------
+    This field holds the number of the message that this message is a
+    reply to. In the example above, the ReplyTo field would contain the
+    following values:
+
+    Message number one would contain zero; message number two, three, and
+    six, would contain one; message number four and eight would contain
+    two; message number seven would contain three, and message number
+    five would contain four.
+
+    ---------------------------------------------------------------------
+    Reply1st
+    ---------------------------------------------------------------------
+    This field holds the number of the first message that is a reply to
+    this message. In the example above, the Reply1st field would contain
+    the following values:
+
+    Message number one would contain two, message number three would
+    contain seven, and message number four would contain five. All other
+    messages would contain zero.
+
+    ---------------------------------------------------------------------
+    ReplyNext
+    ---------------------------------------------------------------------
+    This field is used to create the actual message thread or chain. In
+    the event that there is more than one reply to any given message, it
+    is necessary to maintain a thread of all the replies; this is due to
+    the fact that the original message can only hold information about
+    the first reply (the Reply1st field) to it.
+
+    The first reply (which the original message's Reply1st field holds),
+    has its ReplyNext field pointing to the second reply, the second
+    reply's ReplyNext field poinst to the third reply, and so on.
+
+    In the example above, the ReplyNext field would contain the following
+    values:
+
+    Message number two would contain three, message number three would
+    contain six, and message number four would contain eight. All other
+    messages would contain zero.
+
+    =====================================================================
+    Contacts
+    ---------------------------------------------------------------------
+    Joaquim Homrighausen                            Telefax: +352 316 702
+    389, route d'Arlon                                Modem: +352 316 702
+    L-8011 Strassen                               eMail: 2:270/17@fidonet
+    Luxembourg                                                joho@abs.lu
+
+    Andrew Milner                                   Telefax: +352 251 621
+    9a, Boulevard Joseph II                           Modem: +352 251 621
+    L-1840 Belair                                 eMail: 2:270/18@fidonet
+    Luxembourg                                             andrew@fido.lu
+
+    Mats Wallin                                    Telefax: +46 8 6453285
+    F”rskottsv„gen 11                                Modem: +46 8 6453882
+    S-126 44 H„gersten                           eMail: 2:201/329@fidonet
+    Sweden                                                     mw@fido.lu
+
+    // end of file "jam.doc"

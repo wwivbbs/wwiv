@@ -1,0 +1,93 @@
+
+
+              Format of the exported messages in Messages.Dat
+
+
+         This file contains records with a length of 128 bytes.  There
+         are 3 types of these records: (1) Packet Header, (2) Message
+         Header, and (3) Message Text.  All unused fields in the
+         records are normally filled with spaces, although you will
+         sometimes find the final Message text record will be filled
+         with nulls (#0) after the last text.
+
+
+                              Packet Header
+
+         Packet Header - is always the first record in the file and
+         only occurs once.  It contains only normal ascii text
+         (limitted to at most 128 characters) and should always
+         start with "Produced by ".  The remaining text normally
+         includes a product name and copyright message.
+
+
+                              Message Header
+
+         A message header immediately preceeds zero or more message
+         text records.  Each Message header has the following
+         format:
+
+         Start
+          Pos  Length              Description
+        ------ ------ -----------------------------------------
+           1      1   Message status flag (see below)
+           2      7   Message number (ascii left justified)
+           9      8   Date (MM-DD-YY)
+          17      5   Time (HH:MM)
+          22     25   To (left justified space filled - uppercase)
+                      (Be sure to check the to field to spot
+                      configuration type messages)
+          47     25   From (left justified space filled - uppercase)
+          72     25   Subject (left justified space filled - uppercase)
+                      (a subject starting "NE:" should not be
+                      echoed into a network)
+          97     12   Password (not really used leave blank)
+         109      8   Message reference number (ascii left justified)
+         117      6   Number of blocks (ascii left justified - number
+                      of 128 byte blocks including 1 for the message
+                      header)
+         123      1   Message activeÿ(á or #225 = Active,
+                      â or #226 = Inactive)
+         124      2   Conference number (Binary Word) (Lo in 124, Hi
+                      in 125).  Note that some older programs only
+                      supported conferences 0 thru 255 and left byte
+                      125 as a "blank" unused field.  I recommend
+                      checking the word value and if it is over 8191
+                      to only use the lower (0 thru 255) part of it.
+                      I've also seen notes that this field is really
+                      a 4 byte LongInt field, although with the above
+                      limitation (and 8000 conference seeming sufficient
+                      for a while), I documented it this way.
+
+         128      1   Indicates whether the message has a Network
+                      tagline or not.  A value of "*" indicates that
+                      a network tagline is present, a value of " "
+                      indicates there isn't.  Messages sent to readers
+                      (non-net-status) generally leave this as always
+                      blank since only net utils need this info.
+
+         Message Status Flag has the following possibilities:
+
+         '`'  Comment to sysop, read      '~'  Comment to sysop, unread
+         '-'  Public, read                ' '  Public, unread
+         '*'  Private, read               '+'  Private, unread
+         '^'  Password protected, read    '%'  Password protected, unread
+         '#'  Group password, read        '!'  Group password, unread
+         '$'  Group password to all
+
+
+
+                             Message Text Records
+
+         The message text records immediately follow the the message
+         header.  They contain straight ascii text (lines are
+         normally limitted to 72 chars/line although you may see
+         longer lines).  Each line is followed by a "ã" or #227
+         character to mark the end of the line (in place of the normal
+         CR/LF that would exist in a straight text file).  The text
+         continues consecutavly and text lines do continue across
+         block boundaries.  Some systems or readers may have problems
+         with messages longer than 99 lines or 199 lines, although more
+         recently this no longer seems to be a limit.  The last block
+         should be padded with blanks to fill the block, although on
+         input you may find it padded with nulls (#0).
+

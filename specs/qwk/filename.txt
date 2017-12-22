@@ -1,0 +1,50 @@
+
+
+                   Filenames used by the *.QWK format
+
+        BBSID.QWK is an archive containing the files from the
+        message door being sent to the caller.
+
+            MESSAGES.DAT - a file containing the messages themselves
+               in 128 byte records.
+
+            CONTROL.DAT - a file with info on the system, caller, and
+               conference names and numbers.
+
+            999.NDX - one file for each selected conference that
+               contains pointers to the messages in MESSAGES.DAT
+               There are usually several *.NDX files in each
+               QWK file.  (Right justified, padded with leading
+               zeros to make the 3 characters).
+
+            PERSONAL.NDX - an optional file that is in the same
+               format as the other *.NDX files except that it
+               contains index records for all messages to the caller
+               regardless of which conference they were in.
+
+            NEWFILES.DAT - an optional file that contains a list
+               of new files from the Bbs.
+
+            BLT-0.99 - optional files containing ascii or ansi
+               bulletins.  The 99 extension is replaced by the
+               bulletin number (Left justified not padded).
+
+            DOOR.ID - an optional text file that contains info
+               on the capabilities of the door that produced the
+               QWK packet (so that the reader will only send
+               control messages that can be handled).
+
+            SESSION.TXT - an optional ascii/ansi file containing
+               info on the activity occuring in the mail door.
+
+            Optionally it may also contain ascii or ansi screens for
+            Welcome, News, and Goodbye as named in the CONTROL.DAT
+            file.
+
+        BBSID.REP is an archive containing a single file of the
+        messages sent from the caller to the Bbs.
+
+            BBSID.MSG - a file containing the messages themselves
+               in 128 byte records.  The format is similar to
+               MESSAGES.DAT.
+

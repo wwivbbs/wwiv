@@ -1,0 +1,62 @@
+
+
+                        QWK mail format information
+
+                 By Mark May - Mythical Kingdom Software
+
+        While writing a QWK utility, I found that there was no
+        one place where all the necessary info on the QWK format
+        was available.  Thru messages in several network echo
+        conferences (Thanks to Tim Farley, Mark Goodwin, Randy
+        Blackmond, Mark Herring, Patrick Lee, Greg Hewgill, and
+        others), I gradually collected the information enclosed
+        in this archive.
+
+        To save others the time collecting this information, I've
+        put together this set of files by editing the information
+        from the various sources so that it is conveniently
+        available.
+
+        Tim Farley is working on a more rigorous specification and
+        I'm sure all of us would appreciate any help you can give
+        him in this.   If you find any errors or additional
+        information, I'd also appreciate hearing about it so that
+        I can further update this set of files.
+
+        I am working on an Object-Oriented set of TurboPascal routines
+        that I hope to release to make working with QWK/REP files
+        easier.
+
+        Note that this packet of information does not document net-status.
+        QWK packets that are marked as having net-status may be imported
+        by one of the NET utils (QNet, RNet, MKNet, etc) into a Bbs.
+        Because normal users of a QWK door should not be able to hack a
+        packet to give it net-status (and import it into their system),
+        that info has been left out of this set of documents.  You may
+        contact me (or one of the other QWK authors) directly for this
+        info.
+
+
+        You may contact me at:
+
+        Fido - 1:110/290
+        RIME - ->MYTHKING
+        Normal Bbs 513-237-7737 (at 9600 HST/V32)
+
+        You may also contact me in the P/Net (programmers network)
+        Bbs/Utils developers conference.
+
+
+        Changes:
+
+        v1.2 01/01/92 Added info on Personal.Ndx
+                      Cleaned up code appearance on BasicReal conversions
+                      Added note about missing net-status info
+
+        v1.1 08/17/91 Added information on Door.Id
+                      Added info on conferences above 255
+                      Added info on message has tagline field
+                      Corrected info on message status values
+
+        v1.0 05/28/91 Initial release
+

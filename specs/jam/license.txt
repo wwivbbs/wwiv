@@ -1,0 +1,59 @@
+    ---------------------------------------------------------------------
+                                  JAM(mbp)
+                The Joaquim-Andrew-Mats Message Base Proposal
+    ---------------------------------------------------------------------
+            Copyright 1993 Joaquim Homrighausen, Andrew Milner,
+                           Mats Birch, Mats Wallin.
+                             ALL RIGHTS RESERVED.
+    ---------------------------------------------------------------------
+
+
+    =====================================================================
+    LEGAL NOTICE
+    ---------------------------------------------------------------------
+
+    The JAM(mbp) documentation and JAM API and information attached
+    hereto, hereafter referred to as JAM, is protected by applicable
+    copyright laws and international treaty provisions. JAM is provided
+    "as is", without warranty of any kind or fitness for a particular
+    purpose, either expressed or implied, all of are hereby explicitly
+    disclaimed. The authors only guarantees that JAM will occupy disk
+    space.
+
+    The entire risk as to the quality and performance of JAM is with you.
+    Should JAM prove defective or incorrect, you assume the entire cost
+    of all necessary servicing, repair, and/or correction. In no event
+    shall the authors be liable to the you or anyone else for any damages
+    or costs, including, but not limited to, any lost profits, lost
+    savings, lost income, lost information, loss of the right to use JAM,
+    or other incidental or consequential damages arising out of the use
+    or inability to use JAM.
+
+    All information provided in JAM is subject to change without further
+    notice.
+
+    JAM may be published and distributed to other people as long as no
+    part of it is modified by any means, this includes translation to
+    any other language (technical or social), and as long as no charges
+    are applied (including but not limited to trading). This information
+    may not be used to reverse engineer any application developed by the
+    authors.
+
+    All applications that support JAM must include one of the following
+    notices in their documentation and somewhere in the product's credit
+    section:
+
+    "JAM(mbp) - Copyright 1993 Joaquim Homrighausen, Andrew Milner,
+                               Mats Birch, Mats Wallin.
+                               ALL RIGHTS RESERVED."
+
+    or
+
+    "This product uses the JAM(mbp) API -
+     Copyright 1993 Joaquim Homrighausen, Andrew Milner, Mats Birch,
+                    Mats Wallin. ALL RIGHTS RESERVED."
+
+    All trademarks are trademarks or registered trademarks of their
+    respective holders.
+
+// end of file "license.txt"
