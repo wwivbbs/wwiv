@@ -11,7 +11,14 @@ include(FindASan)
 
 if(MSVC)
   message("Using MSVC, Setting warnings to match UNIX.")
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS)
+  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS )
+endif()
+
+# Rushfan addition to fix under latest Visual Studio 2017.
+if (MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 19.11))
+  # VS 2017 : Disable warnings from from gtest code, using deprecated code related to TR1 
+  add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+  message("Add flag to disable warings from gtest -  _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING")
 endif()
 
 
@@ -19,6 +26,7 @@ add_subdirectory(deps/cl342)
 # Workaround gtest really wanting to compile with /Mtd vs /MD
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 add_subdirectory(deps/googletest-master/googletest)
+enable_testing()
 
 if(WIN32)
 add_subdirectory(deps/pdcurses)

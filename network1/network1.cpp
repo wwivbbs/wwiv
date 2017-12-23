@@ -90,6 +90,10 @@ static bool handle_packet(
   const BbsListNet& b,
   const net_networks_rec& net, Packet& p) {
 
+  // Update the routing information on this packet since
+  // we're unpacking it.
+  p.UpdateRouting(net);
+
   if (p.nh.tosys == net.sysnum) {
     // Local Packet.
     return write_wwivnet_packet(LOCAL_NET, net, p);

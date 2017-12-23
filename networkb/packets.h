@@ -40,6 +40,8 @@ public:
   Packet() {}
   virtual ~Packet() {}
 
+  virtual bool UpdateRouting(const net_networks_rec& net);
+
   net_header_rec nh{};
   std::vector<uint16_t> list;
   std::string text;
