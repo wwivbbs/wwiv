@@ -256,7 +256,7 @@ public:
     msg->header().set_title(title);
     msg->header().set_from(from);
     msg->header().set_to(to);
-    msg->header().set_daten(static_cast<uint32_t>(daten));
+    msg->header().set_daten(time_t_to_daten(daten));
     msg->header().set_in_reply_to(in_reply_to);
     msg->text().set_text(JoinStrings(lines, "\r\n"));
 

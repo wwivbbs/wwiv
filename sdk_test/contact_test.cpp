@@ -19,6 +19,7 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/contact.h"
+#include "sdk/datetime.h"
 
 #include <cstdint>
 #include <string>
@@ -30,7 +31,7 @@ using namespace wwiv::strings;
 class ContactTest : public testing::Test {
 protected:
   ContactTest() {
-    now = time(nullptr);
+    now = time_t_now();
     then = now - 100;
   }
   NetworkContact c1{1};

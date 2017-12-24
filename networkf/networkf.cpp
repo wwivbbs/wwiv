@@ -400,7 +400,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     return false;
   }
 
-  time_t now = time(nullptr);
+  auto now = time(nullptr);
   auto tm = localtime(&now);
   auto dow = tm->tm_wday;
 

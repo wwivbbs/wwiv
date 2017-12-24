@@ -32,6 +32,11 @@
 #pragma pack(push, 1)
 #endif  // __MSDOS__
 
+#ifndef DATEN_T_DEFINED
+typedef uint32_t daten_t;
+#define DATEN_T_DEFINED
+#endif
+
 // DATA FOR EVERY USER
 struct userrec {
   // user's name/handle
@@ -155,7 +160,7 @@ struct userrec {
   // number of k downloaded
   uint32_t dk;
   // numerical time last on
-  uint32_t daten;
+  daten_t daten;
   // status/defaults
   uint32_t sysstatus;
   // user's WWIV reg number
@@ -163,11 +168,11 @@ struct userrec {
   // points to spend for files
   uint32_t filepoints;
   // numerical registration date
-  uint32_t registered;
+  daten_t registered;
   // numerical expiration date
-  uint32_t expires;
+  daten_t expires;
   // numerical date of last file scan
-  uint32_t datenscan;
+  daten_t datenscan;
   // bit mapping for name case
   uint32_t unued_nameinfo;
 
@@ -554,7 +559,7 @@ struct postrec {
   // qscan pointer
   uint32_t qscan;
   // 32-bit time_t value for the date posted
-  uint32_t daten;
+  daten_t daten;
 
   // where to find it in the type-2 messagebase.
   messagerec msg;
@@ -577,7 +582,7 @@ struct mailrec {
            tosys,                       // destination system
            touser;                      // destination user
 
-  uint32_t daten;                       // date it was sent
+  daten_t daten;                       // date it was sent
 
   messagerec msg;                       // where to find it
 };
@@ -589,7 +594,7 @@ struct tmpmailrec {
   uint16_t fromsys,                     // originating system
            fromuser;                               // originating user
 
-  uint32_t daten;                        // date it was sent
+  daten_t daten;                        // date it was sent
 
   messagerec msg;                             // where to find it
 };
@@ -638,8 +643,8 @@ struct uploadsrec {
            ownersys, ownerusr,                     // who uploaded it
            mask;                                   // file type mask
 
-  uint32_t daten,                        // date uploaded
-           numbytes;                               // number bytes long file is
+  daten_t daten;                        // date uploaded
+  daten_t numbytes;                               // number bytes long file is
 };
 
 // ZLOG INFORMATION FOR PAST SYSTEM USAGE
@@ -1077,7 +1082,7 @@ struct instancerec {
   number, user;
   uint16_t
   flags, loc, subloc;
-  uint32_t last_update;
+  daten_t last_update;
   uint16_t modem_speed;
   uint32_t inst_started;
   uint8_t

@@ -266,7 +266,7 @@ void post(const PostData& post_data) {
       bout << ".\r\n\n";
     }
   }
-  time_t start_time = time(nullptr);
+  auto start_time = time(nullptr);
 
   write_inst(INST_LOC_POST, a()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
@@ -316,7 +316,7 @@ void post(const PostData& post_data) {
   a()->status_manager()->Run([&](WStatus& s) {
     p.qscan = s.IncrementQScanPointer();
   });
-  p.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+  p.daten = daten_t_now();
   p.status = 0;
   if (a()->user()->IsRestrictionValidate()) {
     p.status |= status_unvalidated;
@@ -594,7 +594,7 @@ void remove_post() {
         User tu;
         a()->users()->readuser(&tu, get_post(postnum)->owneruser);
         if (!tu.IsUserDeleted()) {
-          if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(get_post(postnum)->daten)) {
+          if (date_to_daten(tu.GetFirstOn()) < get_post(postnum)->daten) {
             if (tu.GetNumMessagesPosted()) {
               tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - 1);
               a()->users()->writeuser(&tu, get_post(postnum)->owneruser);

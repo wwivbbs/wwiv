@@ -120,8 +120,8 @@ Contact::~Contact() {
   }
 }
 
-static void fixup_long(uint32_t &f) {
-  auto now = static_cast<uint32_t>(time(nullptr));
+static void fixup_long(daten_t &f) {
+  auto now = daten_t_now();
   if (f > now) {
     f = now;
   }

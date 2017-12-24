@@ -158,7 +158,7 @@ static bool send_sub_add_drop_resp(Context& context,
   const std::string& subtype,
   const std::string& response_file_text) {
   net_header_rec nh = {};
-  nh.daten = time_t_to_daten(time(nullptr));
+  nh.daten = daten_t_now();
   nh.fromsys = orig.tosys;
   nh.fromuser = orig.touser;
   nh.main_type = main_type;
@@ -176,7 +176,7 @@ static bool send_sub_add_drop_resp(Context& context,
 
   // Add from Name + \r\n + date + \r\n + \r\n
   text.append(StrCat(context.config.config()->sysopname, " #1\r\n"));
-  text.append(StrCat(daten_to_wwivnet_time(time(nullptr)), "\r\n\r\n"));
+  text.append(StrCat(daten_to_wwivnet_time(daten_t_now()), "\r\n\r\n"));
 
   // TODO: Add SA or SR  + subtype + .net file text
   text.append(response_file_text);
@@ -322,7 +322,7 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
   nh.main_type = main_type_email;
-  nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+  nh.daten = daten_t_now();
 
   const string filename = create_pend(context.net.dir, true, static_cast<char>('0' + context.network_number));
   return send_network_email(filename, context.net, nh, {}, body, byname, title);
@@ -344,7 +344,7 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   nh.touser = p.nh.fromuser;
   nh.main_type = main_type_sub_list_info;
   nh.minor_type = 1;
-  nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+  nh.daten = daten_t_now();
 
   auto lines = create_sub_info(context);
   string text = JoinStrings(lines, "\r\n");

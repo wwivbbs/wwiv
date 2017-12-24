@@ -53,8 +53,8 @@ public:
   void set_from_usernum(uint16_t n) override { header_.owneruser = n; }
   uint16_t from_system() const override { return header_.ownersys; }
   void set_from_system(uint16_t n) override { header_.ownersys = n;  }
-  uint32_t daten() const override { return header_.daten; }
-  void set_daten(uint32_t d) override { header_.daten = d; }
+  daten_t daten() const override { return header_.daten; }
+  void set_daten(daten_t d) override { header_.daten = d; }
   uint8_t status() const override { return header_.status; }   // TODO(rushfan): This should be generic
   void set_status(uint8_t t) override { header_.status = t; }
   uint8_t anony() const override { return header_.anony;  }      // TODO(rushfan): This should be generic

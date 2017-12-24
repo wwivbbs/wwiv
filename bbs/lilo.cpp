@@ -287,7 +287,7 @@ static void ExecuteWWIVNetworkRequest() {
   }
 
   a()->status_manager()->RefreshStatusCache();
-  time_t lTime = time(nullptr);
+  auto lTime = time_t_now();
   if (a()->usernum == -2) {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
@@ -723,22 +723,21 @@ static void CheckAndUpdateUserInfo() {
     return;
   }
 
-  time_t lTime = time(nullptr);
-  if ((a()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime + 30 * SECS_PER_DAY))
-      && (a()->user()->GetExpiresDateNum() > static_cast<uint32_t>(lTime + 10 * SECS_PER_DAY))) {
+  auto lTime = daten_t_now();
+  if ((a()->user()->GetExpiresDateNum() < (lTime + 30 * SECS_PER_DAY))
+      && (a()->user()->GetExpiresDateNum() > (lTime + 10 * SECS_PER_DAY))) {
     bout << "Your registration expires in " <<
                        static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / SECS_PER_DAY) <<
                        "days";
-  } else if ((a()->user()->GetExpiresDateNum() > static_cast<uint32_t>(lTime)) &&
-             (a()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime + 10 * SECS_PER_DAY))) {
-    if (static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>
-                         (SECS_PER_DAY)) > 1) {
+  } else if ((a()->user()->GetExpiresDateNum() > (lTime)) &&
+             (a()->user()->GetExpiresDateNum() < (lTime + 10 * SECS_PER_DAY))) {
+    if (static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<daten_t>(SECS_PER_DAY)) > 1) {
       bout << "|#6Your registration expires in "
-           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>(SECS_PER_DAY))
+           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<daten_t>(SECS_PER_DAY))
            << " days";
     } else {
       bout << "|#6Your registration expires in "
-           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>(3600L))
+           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<daten_t>(3600L))
            << " hours.";
     }
     bout.nl(2);
@@ -1066,8 +1065,7 @@ void logoff() {
   if (g_flags & g_flag_scanned_files) {
     a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
   }
-  time_t t = time(nullptr);
-  a()->user()->SetLastOnDateNumber(t);
+  a()->user()->SetLastOnDateNumber(time_t_now());
   auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
   auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 

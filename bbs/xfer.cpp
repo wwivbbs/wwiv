@@ -56,7 +56,7 @@ using namespace wwiv::strings;
 static const int INDENTION = 24;
 
 int foundany;
-uint32_t this_date;
+daten_t this_date;
 
 static int ed_num, ed_got;
 static ext_desc_rec *ed_info;
@@ -769,7 +769,7 @@ void nscandir(int nDirNum, bool& need_title, bool *abort) {
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
       fileDownload.Read(&u, sizeof(uploadsrec));
-      if (u.daten >= static_cast<uint32_t>(nscandate)) {
+      if (u.daten >= nscandate) {
         fileDownload.Close();
 
         if (need_title) {

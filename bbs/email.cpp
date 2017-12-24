@@ -46,6 +46,7 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 
@@ -192,7 +193,7 @@ void sendout_email(EmailData& data) {
   m.tosys   = static_cast<uint16_t>(data.system_number);
   m.touser  = static_cast<uint16_t>(data.user_number);
   m.status  = 0;
-  m.daten = static_cast<uint32_t>(time(nullptr));
+  m.daten = daten_t_now();
 
   if (m.fromsys && a()->max_net_num() > 1) {
     m.status |= status_new_net;

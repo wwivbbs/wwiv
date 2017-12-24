@@ -817,7 +817,7 @@ void move_file_t() {
       if (ok && !done) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<uint32_t>(time(nullptr));
+          u.daten = daten_t_now();
         }
         --nCurPos;
         fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -962,7 +962,7 @@ void removefile() {
             if (bRemoveDlPoints && u.ownersys == 0) {
               a()->users()->readuser(&uu, u.ownerusr);
               if (!uu.IsUserDeleted()) {
-                if (date_to_daten(uu.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+                if (date_to_daten(uu.GetFirstOn()) < u.daten) {
                   uu.SetFilesUploaded(uu.GetFilesUploaded() - 1);
                   uu.SetUploadK(uu.GetUploadK() - bytes_to_k(u.numbytes));
                   a()->users()->writeuser(&uu, u.ownerusr);

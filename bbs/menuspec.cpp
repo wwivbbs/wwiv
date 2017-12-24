@@ -142,7 +142,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
         if (a()->config()->config()->sysconfig & sysconfig_log_dl) {
           a()->users()->readuser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
-            if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+            if (date_to_daten(ur.GetFirstOn()) < u.daten) {
               const string username_num = a()->names()->UserName(a()->usernum);
               ssm(u.ownerusr, 0) << username_num << " downloaded '" << u.filename << "' on " << date();
             }

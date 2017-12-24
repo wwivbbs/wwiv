@@ -31,6 +31,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/findfiles.h"
+#include "sdk/datetime.h"
 #include "sdk/fido/fido_address.h"
 
 using std::string;
@@ -140,18 +141,18 @@ std::string daten_to_fido(time_t t) {
 }
 
 // Format: 10 Nov 16  21:15:45
-time_t fido_to_daten(std::string d) {
+daten_t fido_to_daten(std::string d) {
   try {
     vector<string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
-    auto now = time(nullptr);
+    auto now = time_t_now();
     struct tm* t = localtime(&now);
     stream >> t->tm_mday;
     string mon_str;
     stream >> mon_str;
     if (!contains(months, mon_str)) {
       // Unparsable date. return now.
-      return time(nullptr);
+      return daten_t_now();
     }
     t->tm_mon = std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str));
     int year;
@@ -170,12 +171,12 @@ time_t fido_to_daten(std::string d) {
     auto result = mktime(t);
     if (result < 0) {
       // Error.. return now so we don't blow stuff up.
-      result =  time(nullptr);
+      result = time_t_now();
     }
-    return result;
+    return time_t_to_daten(result);
   } catch (const std::exception& e) {
     LOG(ERROR) << "exception in fido_to_daten('" << d << "'): " << e.what();
-    return time(nullptr);
+    return daten_t_now();
   }
 }
 
@@ -524,7 +525,7 @@ bool exists_bundle(const std::string& dir) {
  * If timezone cannot be determined, no characters.
  */
 std::string tz_offset_from_utc() {
-  auto now = time(nullptr);
+  auto now = time_t_now();
   auto tm = localtime(&now);
 
   char buf[1024];

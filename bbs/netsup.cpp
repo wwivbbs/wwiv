@@ -373,7 +373,7 @@ public:
  * is ok to call and does not violate any constraints.
  */
 static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_call_out_rec& con) {
-  time_t now = time(nullptr);
+  auto now = time(nullptr);
   if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
     return false;
   }

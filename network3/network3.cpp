@@ -198,14 +198,14 @@ static bool check_binkp_net(
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
-  string now_mmddyy = wwiv::sdk::daten_to_mmddyy(time(nullptr));
+  string now_mmddyy = wwiv::sdk::daten_to_mmddyy(daten_t_now());
   string title = StringPrintf("%s analysis on %s", net.name, now_mmddyy.c_str());
   string byname = StringPrintf("%s @%u", net.name, net.sysnum);
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
   nh.main_type = main_type_email;
-  nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+  nh.daten = daten_t_now();
 
   return send_local_email(net, nh, text, byname, title);
 }
@@ -495,7 +495,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     text << " (DOES NOT EXIST)\r\n";
     text << " ** Please fix it.\r\n\n";
   } else {
-    text << " [" << daten_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
+    text << " [" << time_t_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
     auto nl_path = File::absolute(dirs.net_dir(), nodelist);
     Nodelist nl(nl_path);
     if (!nl.initialized()) {

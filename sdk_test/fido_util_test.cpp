@@ -315,7 +315,7 @@ TEST_F(FidoUtilTest, FloFile) {
 
 TEST_F(FidoUtilTest, FidoToDaten) {
   auto t = fido_to_daten("23 Dec 16  20:53:38");
-  EXPECT_GT(t, 0);
+  EXPECT_GT(t, 0u);
 }
 
 #if (_MSC_VER >= 1900)

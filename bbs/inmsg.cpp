@@ -616,7 +616,7 @@ bool inmsg(MessageEditorData& data) {
   }
 
   // Add date to message body
-  b << daten_to_wwivnet_time(time(nullptr)) << crlf;
+  b << daten_to_wwivnet_time(daten_t_now()) << crlf;
   UpdateMessageBufferQuotesCtrlLines(b);
 
   if (irt[0]) {

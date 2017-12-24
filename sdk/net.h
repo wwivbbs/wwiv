@@ -27,6 +27,10 @@
 #include <vector>
 #endif  // __MSDOS__
 
+#ifndef DATEN_T_DEFINED
+typedef uint32_t daten_t;
+#define DATEN_T_DEFINED
+#endif
 
 #pragma pack(push, 1)
 
@@ -47,8 +51,8 @@ struct net_header_rec {
            main_type,  /* main message type */
            minor_type, /* minor message type */
            list_len;   /* # of entries in system list */
-  uint32_t   daten,      /* date/time sent */
-             length;     /* # of bytes of msg after header */
+  daten_t  daten;      /* date/time sent */
+  uint32_t length;     /* # of bytes of msg after header */
   uint16_t  method;   /* method of compression */
 };
 

@@ -752,23 +752,23 @@ class User {
   void SetNumMessagesRead(unsigned long l) {
     data.msgread = l;
   }
-  const unsigned long GetUploadK() const {
+  const uint32_t GetUploadK() const {
     return data.uk;
   }
-  void SetUploadK(unsigned long l) {
+  void SetUploadK(uint32_t l) {
     data.uk = l;
   }
-  const unsigned long GetDownloadK() const {
+  const uint32_t GetDownloadK() const {
     return data.dk;
   }
-  void SetDownloadK(unsigned long l) {
+  void SetDownloadK(uint32_t l) {
     data.dk = l;
   }
-  const time_t GetLastOnDateNumber() const {
+  const daten_t GetLastOnDateNumber() const {
     return data.daten;
   }
-  void SetLastOnDateNumber(time_t l) {
-    data.daten = static_cast<uint32_t>(l);
+  void SetLastOnDateNumber(daten_t l) {
+    data.daten = l;
   }
   const unsigned long GetWWIVRegNumber() const {
     return data.wwiv_regnum;
@@ -785,20 +785,20 @@ class User {
   const unsigned long GetRegisteredDateNum() const {
     return data.registered;
   }
-  void SetRegisteredDateNum(time_t l) {
-    data.registered = static_cast<uint32_t>(l);
+  void SetRegisteredDateNum(daten_t l) {
+    data.registered = static_cast<daten_t>(l);
   }
-  const uint32_t GetExpiresDateNum() const {
+  const daten_t GetExpiresDateNum() const {
     return data.expires;
   }
-  void SetExpiresDateNum(time_t l) {
-    data.expires = static_cast<uint32_t>(l);
+  void SetExpiresDateNum(daten_t l) {
+    data.expires = static_cast<daten_t>(l);
   }
-  const time_t GetNewScanDateNumber() const {
+  const daten_t GetNewScanDateNumber() const {
     return data.datenscan;
   }
-  void SetNewScanDateNumber(time_t l) {
-    data.datenscan = static_cast<uint32_t>(l);
+  void SetNewScanDateNumber(daten_t l) {
+    data.datenscan = l;
   }
 
   const float GetTimeOnToday() const {

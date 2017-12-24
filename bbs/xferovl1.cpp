@@ -51,6 +51,7 @@
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/textfile.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 // How far to indent extended descriptions
@@ -66,6 +67,7 @@ static const unsigned char *invalid_chars =
 using std::string;
 using namespace wwiv::bbs;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -198,7 +200,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   }
   sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
   File f(s);
-  auto t = wwiv::sdk::daten_to_mmddyy(f.creation_time());
+  auto t = wwiv::sdk::time_t_to_mmddyy(f.creation_time());
   to_char_array(u->actualdate, t);
   {
     char* ss = strchr(stripfn(u->filename), '.');
@@ -987,7 +989,8 @@ void SetNewFileScanDate() {
   bool ok = true;
 
   bout.nl();
-  struct tm *pTm = localtime(&nscandate);
+  time_t t = nscandate;
+  struct tm *pTm = localtime(&t);
 
   bout.bprintf("|#9Current limiting date: |#2%02d/%02d/%02d\r\n", pTm->tm_mon + 1, pTm->tm_mday,
                                     (pTm->tm_year % 100));
@@ -1076,12 +1079,11 @@ void SetNewFileScanDate() {
       newTime.tm_mon  = m - 1;
     }
     bout.nl();
-    nscandate = mktime(&newTime);
+    nscandate = time_t_to_daten(mktime(&newTime));
 
     // Display the new nscan date
-    struct tm *pNewTime = localtime(&nscandate);
-    bout.bprintf("|#9New Limiting Date: |#2%02d/%02d/%04d\r\n", pNewTime->tm_mon + 1,
-                                      pNewTime->tm_mday, (pNewTime->tm_year + 1900));
+    auto d = daten_to_mmddyyyy(nscandate);
+    bout << "|#9New Limiting Date: |#2" << d << "\r\n";
 
     // Hack to make sure the date covers everythig since we had to increment the hour by one
     // to show the right date on some versions of MSVC

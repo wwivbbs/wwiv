@@ -143,7 +143,7 @@ void move_file() {
     if (ok && !done) {
       bout << "|#5Reset upload time for file? ";
       if (yesno()) {
-        u.daten = static_cast<uint32_t>(time(nullptr));
+        u.daten = daten_t_now();
       }
       --nCurrentPos;
       fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
@@ -457,7 +457,7 @@ static bool upload_file(const char *file_name, int directory_num, const char *de
     to_char_array(u.date, date());
 
     File f(szFullPathName);
-    auto t = wwiv::sdk::daten_to_mmddyy(f.creation_time());
+    auto t = wwiv::sdk::daten_to_mmddyy(time_t_to_daten(f.creation_time()));
     to_char_array(u.actualdate, t);
 
     if (d.mask & mask_PD) {
@@ -487,8 +487,7 @@ static bool upload_file(const char *file_name, int directory_num, const char *de
       modify_database(u.filename, true);
     }
     a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(lFileSize));
-    time_t tCurrentTime = time(nullptr);
-    u.daten = static_cast<uint32_t>(tCurrentTime);
+    u.daten = daten_t_now();
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     for (int i = a()->numf; i >= 1; i--) {
@@ -503,7 +502,7 @@ static bool upload_file(const char *file_name, int directory_num, const char *de
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Read(&u1, sizeof(uploadsrec));
     u1.numbytes = a()->numf;
-    u1.daten = static_cast<uint32_t>(tCurrentTime);
+    u1.daten = daten_t_now();
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u1, sizeof(uploadsrec));
     fileDownload.Close();

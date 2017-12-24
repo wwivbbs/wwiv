@@ -35,6 +35,7 @@
 #include "bbs/wconstants.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
+#include "sdk/datetime.h"
 #include "sdk/status.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
@@ -154,7 +155,7 @@ void multimail(int *pnUserNumber, int numu) {
   m.tosys = 0;
   m.touser = 0;
   m.status = status_multimail;
-  m.daten = static_cast<uint32_t>(time(nullptr));
+  m.daten = daten_t_now();
 
   unique_ptr<File> pFileEmail(OpenEmailFile(true));
   auto len = pFileEmail->length() / sizeof(mailrec);

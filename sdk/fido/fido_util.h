@@ -43,7 +43,7 @@ std::string dow_extension(int dow, int bundle_number);
 bool is_bundle_file(const std::string& name);
 std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status);
 std::string daten_to_fido(time_t t);
-time_t fido_to_daten(std::string d);
+daten_t fido_to_daten(std::string d);
 std::string to_net_node(const wwiv::sdk::fido::FidoAddress& a);
 std::string to_zone_net_node(const wwiv::sdk::fido::FidoAddress& a);
 std::string to_zone_net_node_point(const wwiv::sdk::fido::FidoAddress& a);

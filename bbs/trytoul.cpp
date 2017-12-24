@@ -353,8 +353,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
   file.Close();
   a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
 
-  time_t tCurrentDate = time(nullptr);
-  u.daten = static_cast<uint32_t>(tCurrentDate);
+  auto current_daten = daten_t_now();
+  u.daten = current_daten;
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   for (int i = a()->numf; i >= 1; i--) {
@@ -370,7 +370,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Read(&u1, sizeof(uploadsrec));
   u1.numbytes = a()->numf;
-  u1.daten = static_cast<uint32_t>(tCurrentDate);
+  u1.daten = current_daten;
   FileAreaSetRecord(fileDownload, 0);
   fileDownload.Write(&u1, sizeof(uploadsrec));
   fileDownload.Close();

@@ -608,10 +608,10 @@ int prep_search_rec(search_record* search_rec, int type) {
     }
   } else if (type == LP_NSCAN_DIR) {
     search_rec->alldirs = THIS_DIR;
-    search_rec->nscandate = static_cast<uint32_t>(nscandate);
+    search_rec->nscandate = nscandate;
   } else if (type == LP_NSCAN_NSCAN) {
     g_flags |= g_flag_scanned_files;
-    search_rec->nscandate = static_cast<uint32_t>(nscandate);
+    search_rec->nscandate = nscandate;
     search_rec->alldirs = ALL_DIRS;
   } else {
     sysoplog() << "Undef LP type";
@@ -1046,7 +1046,7 @@ void config_file_list() {
   to_char_array(u.upby, username_num);
   u.numdloads = 50;
   u.numbytes = 655535L;
-  u.daten = static_cast<uint32_t>(time(nullptr) - 10000);
+  u.daten = daten_t_now() - 10000;
 
   load_lp_config();
 
@@ -1354,7 +1354,7 @@ static int remove_filename(const char *file_name, int dn) {
             User user;
             a()->users()->readuser(&user, u.ownerusr);
             if (!user.IsUserDeleted()) {
-              if (date_to_daten(user.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+              if (date_to_daten(user.GetFirstOn()) < u.daten) {
                 user.SetFilesUploaded(user.GetFilesUploaded() - 1);
                 user.SetUploadK(user.GetUploadK() - bytes_to_k(u.numbytes));
                 a()->users()->writeuser(&user, u.ownerusr);
@@ -1496,10 +1496,10 @@ static int move_filename(const char *file_name, int dn) {
       if (!bulk_move) {
         bout << "|#5Reset upload time for file? ";
         if (yesno()) {
-          u.daten = static_cast<uint32_t>(time(nullptr));
+          u.daten = daten_t_now();
         }
       } else {
-        u.daten = static_cast<uint32_t>(time(nullptr));
+        u.daten = daten_t_now();
       }
       --cp;
       if (fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {

@@ -859,7 +859,7 @@ static void HandleMessageDelete(int &nMessageNumber) {
   if (tu.IsUserDeleted()) {
     return;
   }
-  if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
+  if (date_to_daten(tu.GetFirstOn()) < p2.daten) {
     bout.nl();
     bout << "|#2Remove how many posts credit? ";
     uint16_t num_credits = input_number<uint16_t>(0, 0, static_cast<uint16_t>(tu.GetNumMessagesPosted()));

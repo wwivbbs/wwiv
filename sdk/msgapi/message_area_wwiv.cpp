@@ -82,7 +82,7 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     raw_header.active_message_count = saved_count;
     raw_header.revision = 1;
     raw_header.wwiv_version = wwiv_num_version;
-    raw_header.daten_created = time(nullptr);
+    raw_header.daten_created = time_t_now();
 
     // Write the header here?
     if (!WriteHeader(file, WWIVMessageAreaHeader(raw_header))) {
@@ -124,7 +124,7 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
   strcpy(header_.signature, "WWIV\x1A");
   header_.revision = 1;
   header_.wwiv_version = expected_wwiv_num_version;
-  header_.daten_created = static_cast<uint32_t>(time(nullptr));
+  header_.daten_created = time_t_now();
   header_.active_message_count = static_cast<uint16_t>(num_messages);
 }
 

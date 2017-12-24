@@ -69,7 +69,7 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
   ASSERT_EQ(19, text.size());
 
   net_header_rec nh{};
-  nh.daten = time_t_to_daten(time(nullptr));
+  nh.daten = daten_t_now();
   nh.method = 0;
   nh.main_type = main_type_file;
   nh.minor_type = net_info_file;
@@ -84,14 +84,14 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
 
 TEST_F(PacketsTest, UpdateRouting_Smoke) {
   string body = "Hello World";
-  auto now = time(nullptr);
+  auto now = daten_t_now();
   auto date = daten_to_wwivnet_time(now);
 
   auto packet_text = CreateFakePacketText("MYSUB", "This is a title", "Sysop #1", date, body);
   auto orig = packet_text;
 
   net_header_rec nh{};
-  nh.daten = time_t_to_daten(now);
+  nh.daten = now;
   nh.fromsys = 1;
   nh.tosys = 2;
   nh.fromuser = 1;

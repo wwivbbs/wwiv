@@ -22,10 +22,10 @@ Infrastructure Cleanup
 * use daten_t everywhere we have a daten date.
 * Maybe make the hangup variable a static in the Application class.
 * Try to remove a()->current_net(), pass in the net as much as possible.
+* remove registration code, it's not used.
 
 Networking Cleanup
 ==================
-* Add in the version that processed the message like net38 does.
 * Figure out why new networking stack doesn't work for mark.
 
 core::File Improvements

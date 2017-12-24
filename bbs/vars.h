@@ -75,8 +75,7 @@ __EXTRN__ unsigned int
           dirconfnum,
           subconfnum;
 
-__EXTRN__ time_t nscandate;
-
+__EXTRN__ daten_t nscandate;
 
 __EXTRN__ int32_t g_flags;
 

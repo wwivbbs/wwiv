@@ -23,13 +23,23 @@
 #include <ctime>
 #include <string>
 
+#include "core/wwivport.h"
+
 namespace wwiv {
 namespace sdk {
 
-uint32_t date_to_daten(std::string datet);
-std::string daten_to_mmddyy(time_t date);
-std::string daten_to_wwivnet_time(time_t t);
-uint32_t time_t_to_daten(time_t t);
+time_t time_t_now();
+daten_t daten_t_now();
+daten_t date_to_daten(std::string datet);
+std::string daten_to_mmddyy(daten_t date);
+std::string time_t_to_mmddyy(time_t date);
+
+std::string daten_to_mmddyyyy(daten_t date);
+std::string time_t_to_mmddyyyy(time_t date);
+
+std::string daten_to_wwivnet_time(daten_t t);
+std::string time_t_to_wwivnet_time(time_t t);
+daten_t time_t_to_daten(time_t t);
 std::string date();
 std::string fulldate();
 std::string times();
