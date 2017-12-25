@@ -283,13 +283,12 @@ public:
   }
 
   static bool backup(const Config& config, const string& name) {
-    string sub_filename = StrCat(config.datadir(), name, ".sub");
-    string dat_filename = StrCat(config.msgsdir(), name, ".dat");
+    auto sub_filename = StrCat(config.datadir(), name, ".sub");
+    auto dat_filename = StrCat(config.msgsdir(), name, ".dat");
 
-    time_t now = time(nullptr);
-    struct tm* local = localtime(&now);
-
-    string backup_extension = put_time(local, ".backup.%Y%m%d%H%M%S");
+    auto now = DateTime::now();
+    auto date_string = now.to_string("%Y%m%d%H%M%S");
+    auto backup_extension = StrCat(".backup.", date_string);
     File::Copy(sub_filename, StrCat(sub_filename, backup_extension));
     File::Copy(dat_filename, StrCat(dat_filename, backup_extension));
     return true;

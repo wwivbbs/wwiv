@@ -368,15 +368,15 @@ void input_sex() {
 
 void input_age(User *pUser) {
   int y = 2000, m = 1, d = 1;
-  time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
+  auto dt = DateTime::now();
+
 
   bout.nl();
   do {
     bout.nl();
-    y = static_cast<int>(pTm->tm_year + 1900 - 30) / 100;
+    y = static_cast<int>(dt.year() - 30) / 100;
     bout << "|#2Year you were born: ";
-    y = input_number<int>(y, 1900, pTm->tm_year + 1900 - 30);
+    y = input_number<int>(y, 1900, dt.year() - 30);
   } while (!hangup && y < 1905);
 
   do {

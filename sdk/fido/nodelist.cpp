@@ -26,10 +26,12 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core/findfiles.h"
+#include "sdk/datetime.h"
 
 using std::string;
 using std::vector;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
 
@@ -309,9 +311,9 @@ const NodelistEntry* Nodelist::entry(uint16_t zone, uint16_t net, uint16_t node)
   return &entries_.at(a);
 }
 
-static int year_of(time_t c) {
-  struct tm* t = localtime(&c);
-  return t->tm_year;
+static int year_of(time_t t) {
+  auto dt = DateTime::from_time_t(t);
+  return dt.year();
 }
 
 int extension_number(const std::string& fn) {

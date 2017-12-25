@@ -23,6 +23,7 @@ Infrastructure Cleanup
 * Maybe make the hangup variable a static in the Application class.
 * Try to remove a()->current_net(), pass in the net as much as possible.
 * remove registration code, it's not used.
+* Delete W_DateString, it's only used 1 place and super complex.
 
 Networking Cleanup
 ==================

@@ -47,16 +47,9 @@ namespace fido {
 
 // We use DDHHMMSS like SBBSECHO does.
 std::string packet_name(time_t now) {
-  auto tm = localtime(&now);
 
-  const string fmt = "%d%H%M%S";
-
-  char buf[1024];
-  auto res = strftime(buf, sizeof(buf), fmt.c_str(), tm);
-  if (res <= 0) {
-    LOG(ERROR) << "Unable to create packet name from strftime";
-    to_char_array(buf, "DDHHMMSS");
-  }
+  auto dt = DateTime::from_time_t(now);
+  auto buf = dt.to_string("%d%H%M%S");
   return StrCat(buf, ".pkt");
 }
 
@@ -92,8 +85,8 @@ std::string dow_extension(int dow_num, int bundle_number) {
   // TODO(rushfan): Should we assert of bundle_number > 25 (0-9=10, + a-z=26 = 0-35)
 
   static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
-  std::string ext = dow.at(dow_num);
-  char c = static_cast<char>('0' + bundle_number);
+  auto ext = dow.at(dow_num);
+  auto c = static_cast<char>('0' + bundle_number);
   if (bundle_number > 9) {
     c = static_cast<char>('a' + bundle_number - 10);
   }
@@ -103,9 +96,9 @@ std::string dow_extension(int dow_num, int bundle_number) {
 
 bool is_bundle_file(const std::string& name) {
   static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa", "su" };
-  string::size_type dot = name.find_last_of('.');
+  auto dot = name.find_last_of('.');
   if (dot == string::npos) { return false; }
-  string ext = name.substr(dot + 1);
+  auto ext = name.substr(dot + 1);
   if (ext.length() != 3) { return false; }
   ext.pop_back();
   StringLowerCase(&ext);
@@ -119,25 +112,17 @@ static string control_file_extension(fido_bundle_status_t status) {
 }
 
 std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
-  int16_t net = dest.net();
-  int16_t node = dest.node();
+  auto net = dest.net();
+  auto node = dest.node();
 
-  const string ext = control_file_extension(status);
+  const auto ext = control_file_extension(status);
   return StringPrintf("%04.4x%04.4x.%s", net, node, ext.c_str());
 }
 
 // 10 Nov 16  21:15:45
 std::string daten_to_fido(time_t t) {
-  auto tm = localtime(&t);
-  const string fmt = "%d %b %y  %H:%M:%S";
-
-  char buf[1024];
-  auto res = strftime(buf, sizeof(buf), fmt.c_str(), tm);
-  if (res <= 0) {
-    LOG(ERROR) << "Unable to create date format in daten_to_fido from strftime";
-    return "";
-  }
-  return buf;
+  auto dt = DateTime::from_time_t(t);
+  return dt.to_string("%d %b %y  %H:%M:%S");
 }
 
 // Format: 10 Nov 16  21:15:45
@@ -525,16 +510,8 @@ bool exists_bundle(const std::string& dir) {
  * If timezone cannot be determined, no characters.
  */
 std::string tz_offset_from_utc() {
-  auto now = time_t_now();
-  auto tm = localtime(&now);
-
-  char buf[1024];
-  auto res = strftime(buf, sizeof(buf), "%z", tm);
-  if (res <= 0) {
-    LOG(ERROR) << "Unable to create packet name from strftime";
-    to_char_array(buf, "-0800");
-  }
-  return buf;
+  auto dt = DateTime::now();
+  return dt.to_string("%z");
 }
 
 static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std::string path) {
@@ -548,7 +525,7 @@ static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std
   while (file.ReadLine(&line)) {
     StringTrim(&line);
     if (line.empty()) { continue; }
-    char st = line.front();
+    auto st = line.front();
     if (st == '^' || st == '#' || st == '~') {
       const string fn = line.substr(1);
       result.emplace_back(fn, static_cast<flo_directive>(st));
@@ -570,8 +547,8 @@ FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std:
     return;
   }
 
-  string basename = ToStringLowerCase(filename.substr(0, dot));
-  string ext = ToStringLowerCase(filename.substr(dot + 1));
+  auto basename = ToStringLowerCase(filename.substr(0, dot));
+  auto ext = ToStringLowerCase(filename.substr(dot + 1));
 
   if (ext.length() != 3) {
     // malformed flo file
@@ -587,7 +564,7 @@ FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std:
     // malformed flo file
     return;
   }
-  char st = to_lower_case(ext.front());
+  auto st = to_lower_case(ext.front());
   status_ = static_cast<fido_bundle_status_t>(st);
 
   auto netstr = basename.substr(0, 4);

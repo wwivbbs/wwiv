@@ -30,6 +30,7 @@
 #include "core_test/file_helper.h"
 
 #include "gtest/gtest.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
@@ -37,9 +38,7 @@ using namespace std;
 using namespace wwiv::strings;
 
 static string date() {
-  time_t t = time(nullptr);
-  struct tm* pTm = localtime(&t);
-  return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+  return wwiv::sdk::time_t_to_mmddyy(wwiv::sdk::time_t_now());
 }
 
 static statusrec_t create_status() {

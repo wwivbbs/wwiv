@@ -26,7 +26,6 @@
 #include "sdk/datetime.h"
 
 bool isleap(int nYear);
-int dow();
 std::string ctim(long d);
 int years_old(int nMonth, int nDay, int nYear);
 

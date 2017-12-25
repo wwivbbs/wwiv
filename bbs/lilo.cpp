@@ -1065,7 +1065,7 @@ void logoff() {
   if (g_flags & g_flag_scanned_files) {
     a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
   }
-  a()->user()->SetLastOnDateNumber(time_t_now());
+  a()->user()->SetLastOnDateNumber(daten_t_now());
   auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
   auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 

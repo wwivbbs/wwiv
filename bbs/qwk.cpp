@@ -60,6 +60,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
@@ -68,6 +69,7 @@
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 
 using std::unique_ptr;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Also used in qwk1.cpp
@@ -376,7 +378,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   //std::cout << "put_in_qwk: " << m1->title << std::endl;
   char n[205], d[81], temp[101];
   char qwk_address[201];
-  char filename[255], date[10];
+  char filename[255];
 
   postrec* pr = get_post(msgnum);
   if (pr == nullptr) {
@@ -443,11 +445,9 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
   strncpy(qwk_info->qwk_rec.from, strupr(stripcolors(n)), 25);
 
-  time_t message_date = m1->daten;
-  struct tm *time_now = localtime(&message_date);
-
-  strftime(date, 10, "%m-%d-%y", time_now);
-  strncpy(qwk_info->qwk_rec.date, date, 8);
+  auto dt = DateTime::from_daten(m1->daten);
+  auto date = dt.to_string("%m-%d-%y");
+  to_char_array(qwk_info->qwk_rec.date, date);
 
   p = 0;
   p1 = 0;
@@ -621,12 +621,10 @@ void qwk_remove_null(char *memory, int size) {
 void build_control_dat(struct qwk_junk *qwk_info) {
   char file[201];
   char system_name[20];
-  char date_time[51];
-  time_t secs_now = time(nullptr);
-  struct tm* time_now = localtime(&secs_now);
 
+  auto now = DateTime::now();
   // Creates a string like 'mm-dd-yyyy,hh:mm:ss'
-  strftime(date_time, 50, "%m-%d-%Y,%H:%M:%S", time_now);
+  auto date_time = now.to_string("%m-%d-%Y,%H:%M:%S");
 
   sprintf(file, "%sCONTROL.DAT", QWK_DIRECTORY);
   FILE* fp = fopen(file, "wb");
@@ -646,7 +644,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   const string sysopname = a()->config()->config()->sysopname;
   fprintf(fp, "%s\r\n", sysopname.c_str());
   fprintf(fp, "%s,%s\r\n", "00000", system_name);
-  fprintf(fp, "%s\r\n", date_time);
+  fprintf(fp, "%s\r\n", date_time.c_str());
   fprintf(fp, "%s\r\n", a()->user()->data.name);
   fprintf(fp, "%s\r\n", "");
   fprintf(fp, "%s\r\n", "0");
