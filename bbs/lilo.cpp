@@ -714,52 +714,6 @@ static void CheckAndUpdateUserInfo() {
   if (a()->user()->GetComputerType() == -1) {
     input_comptype();
   }
-
-  if (!a()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
-    return;
-  }
-
-  if (a()->user()->GetRegisteredDateNum() == 0) {
-    return;
-  }
-
-  auto lTime = daten_t_now();
-  if ((a()->user()->GetExpiresDateNum() < (lTime + 30 * SECS_PER_DAY))
-      && (a()->user()->GetExpiresDateNum() > (lTime + 10 * SECS_PER_DAY))) {
-    bout << "Your registration expires in " <<
-                       static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / SECS_PER_DAY) <<
-                       "days";
-  } else if ((a()->user()->GetExpiresDateNum() > (lTime)) &&
-             (a()->user()->GetExpiresDateNum() < (lTime + 10 * SECS_PER_DAY))) {
-    if (static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<daten_t>(SECS_PER_DAY)) > 1) {
-      bout << "|#6Your registration expires in "
-           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<daten_t>(SECS_PER_DAY))
-           << " days";
-    } else {
-      bout << "|#6Your registration expires in "
-           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<daten_t>(3600L))
-           << " hours.";
-    }
-    bout.nl(2);
-    pausescr();
-  }
-  if (a()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime)) {
-    if (!so()) {
-      if (a()->user()->GetSl() > a()->config()->config()->newusersl ||
-          a()->user()->GetDsl() > a()->config()->config()->newuserdsl) {
-        a()->user()->SetSl(a()->config()->config()->newusersl);
-        a()->user()->SetDsl(a()->config()->config()->newuserdsl);
-        a()->user()->SetExempt(0);
-        const string username_num = a()->names()->UserName(a()->usernum);
-        ssm(1, 0) << username_num << "'s registration has expired.";
-        a()->WriteCurrentUser();
-        a()->ResetEffectiveSl();
-        changedsl();
-      }
-    }
-    bout << "|#6Your registration has expired.\r\n\n";
-    pausescr();
-  }
 }
 
 static void DisplayUserLoginInformation() {

@@ -782,18 +782,6 @@ class User {
   void SetFilePoints(unsigned long l) {
     data.filepoints = l;
   }
-  const unsigned long GetRegisteredDateNum() const {
-    return data.registered;
-  }
-  void SetRegisteredDateNum(daten_t l) {
-    data.registered = static_cast<daten_t>(l);
-  }
-  const daten_t GetExpiresDateNum() const {
-    return data.expires;
-  }
-  void SetExpiresDateNum(daten_t l) {
-    data.expires = static_cast<daten_t>(l);
-  }
   const daten_t GetNewScanDateNumber() const {
     return data.datenscan;
   }

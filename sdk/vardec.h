@@ -168,9 +168,9 @@ struct userrec {
   // points to spend for files
   uint32_t filepoints;
   // numerical registration date
-  daten_t registered;
+  daten_t unused_registered;
   // numerical expiration date
-  daten_t expires;
+  daten_t unused_expires;
   // numerical date of last file scan
   daten_t datenscan;
   // bit mapping for name case
@@ -1025,7 +1025,7 @@ struct filestatusrec {
 #define OP_FLAGS_NET_CALLOUT              0x00040000
 #define OP_FLAGS_WFC_SCREEN               0x00080000
 #define OP_FLAGS_FIDO_PROCESS             0x00100000
-#define OP_FLAGS_USER_REGISTRATION        0x00200000
+//#define OP_FLAGS_USER_REGISTRATION        0x00200000
 #define OP_FLAGS_MSG_TAG                  0x00400000
 #define OP_FLAGS_CHAIN_REG                0x00800000
 #define OP_FLAGS_CAN_SAVE_SSM             0x01000000

@@ -77,7 +77,7 @@ constexpr int INI_STR_ALL_UL_TO_SYSOP = 56;
 //constexpr int INI_STR_NO_EASY_DL = 57;
 //constexpr int INI_STR_NEW_EXTRACT = 58;
 constexpr int INI_STR_FAST_SEARCH = 59;
-constexpr int INI_STR_USER_REGISTRATION = 60;
+//constexpr int INI_STR_USER_REGISTRATION = 60;
 constexpr int INI_STR_MSG_TAG = 61;
 constexpr int INI_STR_CHAIN_REG = 62;
 constexpr int INI_STR_CAN_SAVE_SSM = 63;
@@ -196,7 +196,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "",  // NO_EASY_DL
   "NEW_EXTRACT",
   "FAST_SEARCH",
-  "USER_REGISTRATION",        // 60
+  "",        // 60 USER_REGISTRATION
   "MSG_TAG",
   "CHAIN_REG",
   "CAN_SAVE_SSM",
