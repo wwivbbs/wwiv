@@ -926,7 +926,7 @@ struct gfilerec {
   char description[81],                       // description of file
        filename[13];                           // filename of file
 
-  int32_t daten;                                 // date added
+  daten_t daten;                                 // date added
 };
 
 
