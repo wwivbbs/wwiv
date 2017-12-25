@@ -43,7 +43,6 @@ char *get_wildlist(char *file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
 bool okfsed();
-std::string W_DateString(time_t tDateTime, const std::string& origMode , const std::string& timeDelim);
 
 #endif  // __INCLUDED_UTILITY_H__
 

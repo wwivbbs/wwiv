@@ -38,21 +38,3 @@ protected:
     BbsHelper helper;
 };
 
-TEST_F(UtilityTest, DateString_Y) {
-    string res = W_DateString(MAY_18_2014, "Y", "");
-    ASSERT_EQ("2014", res);
-
-    string res2 = W_DateString(MAY_18_2014, "YY", "");
-    ASSERT_EQ("2014 2014", res2);
-}
-
-// TODO(rushfan): Fix this dealing with PDT vs. GMT build machine
-#if 0
-TEST_F(UtilityTest, DateString_WDT) {
-    string res = W_DateString(MAY_18_2014, "WDT", "");
-    ASSERT_EQ("Sunday, May 18, 2014 06:00 PM", res);
-
-    string res2 = W_DateString(MAY_18_2014, "WDT", "at");
-    ASSERT_EQ("Sunday, May 18, 2014 at 06:00 PM", res2);
-}
-#endif  // 0
