@@ -24,10 +24,10 @@
 #include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/file.h"
-
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
 #include <Windows.h>
-#undef WIN32_LEAN_AND_MEAN
 
 using std::string;
 using std::vector;

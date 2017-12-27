@@ -3,7 +3,7 @@ project (networkb_test)
 
 enable_testing()
 
-include_directories(../deps/googletest-master/googletest/include)
+include_directories(../deps/googletest/googletest/include)
 include_directories(..)
 
 set(test_sources

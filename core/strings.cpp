@@ -36,10 +36,17 @@
 #include "core/wwivport.h"
 
 #ifdef _WIN32
+
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif  // NOMINMAX
+
 #include "Shlwapi.h"
 #pragma comment(lib, "Shlwapi.lib")
+
+#ifdef StrCat
 #undef StrCat
+#endif  // StrCat
 #endif  // _WIN32
 
 

@@ -38,7 +38,9 @@
 #define NONLS
 #define NOMEMMGR
 #define NOMETAFILE
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif  // NOMINMAX
 #define NOOPENFILE
 #define NOSCROLL
 #define NOSERVICE
@@ -52,7 +54,9 @@
 #define NODEFERWINDOWPOS
 #define NOMCX
 #define NOCRYPT
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
 #define VC_EXTRALEAN
 #endif  // _WIN32
 

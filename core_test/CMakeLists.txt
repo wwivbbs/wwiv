@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.8)
 project (core_test)
 
-include_directories(../deps/googletest-master/googletest/include)
+include_directories(../deps/googletest/googletest/include)
 include_directories(..)
 
 set(fixture_sources
