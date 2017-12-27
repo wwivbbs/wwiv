@@ -24,11 +24,8 @@
 #include "core/strings.h"
 #include "core/version.h"
 
-#include "sdk/datetime.h"
-
 using std::string;
 using namespace wwiv::strings;
-using namespace wwiv::sdk;
 
 namespace wwiv {
 namespace core {
@@ -44,11 +41,20 @@ bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* ha
   return true;
 }
 
+
+static string current_time_as_string() {
+  auto t = time(nullptr);
+  auto tm = localtime(&t);
+  auto s = string(asctime(tm));
+  StringTrimEnd(&s);
+  return s;
+};
+
 void HttpServer::SendResponse(const HttpResponse& r) {
   static const auto statuses = CreateHttpStatusMap();
   const auto d = std::chrono::seconds(1);
   conn_->send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);
-  conn_->send_line(StrCat("Date: ", daten_to_wwivnet_time(daten_t_now())), d);
+  conn_->send_line(StrCat("Date: ", current_time_as_string()), d);
   conn_->send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
   if (!r.text.empty()) {
     auto content_length = r.text.size();
