@@ -6,80 +6,80 @@
 #   WORKSPACE - Jenkins workspace
 #   BUILD_NUMBER - Jenkins Build number
 
+source ${WORKSPACE}/builds/jenkins/wwiv/build.bash
+
 rm ${WORKSPACE}/wwiv-*.tar.gz
 
 set -e
 
+declare -r CMAKE_BUILD="${WORKSPACE}/_build"
+declare -r RELEASE_DIR="${WORKSPACE}/release"
 declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-linux-5.3.${BUILD_NUMBER}.tar.gz
 echo "WWIV BBS Build"
-echo "Workspace: ${WORKSPACE}"
-echo "Version:   ${BUILD_NUMBER}"
-echo "Archive:   ${RELEASE_TGZ}"
+echo "Workspace:   ${WORKSPACE}"
+echo "CMake Build: ${CMAKE_BUILD}"
+echo "Release Dir: ${RELEASE_DIR}"
+echo "Version:     ${BUILD_NUMBER}"
+echo "Archive:     ${RELEASE_TGZ}"
 
-echo "Cleaning up release dir"
-if [[ -d "${WORKSPACE}/release" ]]
-then
-  rm -rf "${WORKSPACE}/release"
+echo "Ensuring CMAKE_BUILD exists: (${CMAKE_BUILD})"
+if [[ ! -d "${CMAKE_BUILD}" ]]; then
+  mkdir -p "${CMAKE_BUILD}"
 fi
-mkdir -p "${WORKSPACE}/release"
-echo "Created release dir: ${WORKSPACE}/release"
+echo "Created release dir: ${RELEASE_DIR}"
 
-echo "Building binaries"
-cd ${WORKSPACE}
-sed -i -e "s@.development@.${BUILD_NUMBER}@" core/version.cpp
+echo "Cleaning up release dir (${RELEASE_DIR})"
+if [[ -d "${RELEASE_DIR}" ]]; then
+  rm -rf "${RELEASE_DIR}"
+fi
+mkdir -p "${RELEASE_DIR}"
+echo "Created release dir: ${RELEASE_DIR}"
 
-echo "Compiling dependencies that are not CMake friendly"
-pushd deps/cl342
-make -j12
-popd > /dev/null
-
-echo "Compiling Everything"
-cmake -DCMAKE_BUILD_TYPE:STRING=Release
-cmake --build .
+build_binaries -j8
 
 echo "Populating built binaries"
-cp  ${WORKSPACE}/bbs/bbs \
-    ${WORKSPACE}/init/init \
-    ${WORKSPACE}/network/network \
-    ${WORKSPACE}/networkb/networkb \
-    ${WORKSPACE}/networkc/networkc \
-    ${WORKSPACE}/networkf/networkf \
-    ${WORKSPACE}/network1/network1 \
-    ${WORKSPACE}/network2/network2 \
-    ${WORKSPACE}/network3/network3 \
-    ${WORKSPACE}/wwivd/wwivd \
-    ${WORKSPACE}/wwivutil/wwivutil \
-    ${WORKSPACE}/release
+cp  ${CMAKE_BUILD}/bbs/bbs \
+    ${CMAKE_BUILD}/init/init \
+    ${CMAKE_BUILD}/network/network \
+    ${CMAKE_BUILD}/networkb/networkb \
+    ${CMAKE_BUILD}/networkc/networkc \
+    ${CMAKE_BUILD}/networkf/networkf \
+    ${CMAKE_BUILD}/network1/network1 \
+    ${CMAKE_BUILD}/network2/network2 \
+    ${CMAKE_BUILD}/network3/network3 \
+    ${CMAKE_BUILD}/wwivd/wwivd \
+    ${CMAKE_BUILD}/wwivutil/wwivutil \
+    ${RELEASE_DIR}
 
 echo "Creating inifiles.zip"
 cd ${WORKSPACE}/bbs/admin/inifiles
-zip -r ${WORKSPACE}/release/inifiles.zip *
+zip -r ${RELEASE_DIR}/inifiles.zip *
 
 echo "Creating data.zip"
 cd ${WORKSPACE}/bbs/admin/data
-zip -r ${WORKSPACE}/release/data.zip *
+zip -r ${RELEASE_DIR}/data.zip *
 
 echo "Creating gfiles.zip"
 cd ${WORKSPACE}/bbs/admin/gfiles
-zip -r ${WORKSPACE}/release/gfiles.zip *
+zip -r ${RELEASE_DIR}/gfiles.zip *
 
 echo "Creating scripts.zip"
 cd ${WORKSPACE}/bbs/admin/scripts
-zip -r ${WORKSPACE}/release/scripts.zip *
+zip -r ${RELEASE_DIR}/scripts.zip *
 
 echo "Creating zip-city"
 cd ${WORKSPACE}/bbs/admin
-zip -r ${WORKSPACE}/release/zip-city.zip zip-city/*
+zip -r ${RELEASE_DIR}/zip-city.zip zip-city/*
 
 echo "Creating regions"
 cd ${WORKSPACE}/bbs/admin
-zip -r ${WORKSPACE}/release/regions.zip regions/*
+zip -r ${RELEASE_DIR}/regions.zip regions/*
 
 echo "adding common files"
 cd ${WORKSPACE}/bbs/admin
 shopt -s extglob
 set +e
-cp -v !(*.bat) ${WORKSPACE}/release
+cp -v !(*.bat) ${RELEASE_DIR}
 RESULT=$?
 set -e
 # cp returns non-zero if we skip directories, so do our own check
@@ -92,15 +92,15 @@ shopt -u extglob
 echo "adding linux-specific files"
 cd ${WORKSPACE}/bbs/admin/unix
 shopt -s dotglob
-cp -a * ${WORKSPACE}/release
+cp -a * ${RELEASE_DIR}
 shopt -u dotglob
 
 echo "Creating build.nfo file"
-echo "Build URL ${BUILD_URL}" > ${WORKSPACE}/release/build.nfo
-echo "Build Version: ${BUILD_NUMBER}" >> ${WORKSPACE}/release/build.nfo
+echo "Build URL ${BUILD_URL}" > ${RELEASE_DIR}/build.nfo
+echo "Build Version: ${BUILD_NUMBER}" >> ${RELEASE_DIR}/build.nfo
 
 echo "Creating release archive: ${RELEASE_TGZ}"
-cd ${WORKSPACE}/release
+cd ${RELEASE_DIR}
 shopt -s dotglob
 tar zcvf ${RELEASE_TGZ} * 
 shopt -u dotglob
