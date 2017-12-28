@@ -1,0 +1,13 @@
+#!/bin/bash
+#
+# WWIV Build Script for RushFan
+#
+
+export WORKSPACE=$(HOME)/git/wwiv
+export BUILD_NUMBER=2112
+export SED=sed
+pushd ${WORKSPACE}
+cp ${WORKSPACE}/core/version.cpp ${WORKSPACE}/core/version.cpp.saved
+./builds/jenkins/wwiv/build "$@" || echo "Build FAILED!"
+cp ${WORKSPACE}/core/version.cpp.saved ${WORKSPACE}/core/version.cpp
+popd >/dev/null
