@@ -45,6 +45,8 @@ if(WIN32)
     wfndfile_win32.cpp
     )
 
+    add_definitions("/W4")
+
 endif()
 
 if(MSVC)

@@ -1221,12 +1221,12 @@ void finddescription() {
   color = 3;
   bout << "\r|#2Searching ";
   bout.clear_lines_listed();
-  for (size_t i = 0; (i < a()->directories.size()) && !abort && !hangup
+  for (uint16_t i = 0; (i < a()->directories.size()) && !abort && !hangup
        && (a()->udir[i].subnum != -1); i++) {
-    size_t i1 = a()->udir[i].subnum;
+    auto ii1 = a()->udir[i].subnum;
     pts = 0;
     bool need_title = true;
-    if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
+    if (qsc_n[ii1 / 32] & (1L << (ii1 % 32))) {
       pts = 1;
     }
     pts = 1;
@@ -1249,8 +1249,7 @@ void finddescription() {
       dliscan();
       File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
-      for (i1 = 1; i1 <= static_cast<size_t>(a()->numf) 
-           && !abort && !hangup; i1++) {
+      for (auto i1 = 1; i1 <= a()->numf && !abort && !hangup; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
         strcpy(s, u.description);

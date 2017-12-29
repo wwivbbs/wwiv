@@ -872,7 +872,7 @@ void searchall() {
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
-  for (size_t i = 0; i < a()->directories.size() && !abort && !hangup
+  for (uint16_t i = 0; i < a()->directories.size() && !abort && !hangup
        && a()->udir[i].subnum != -1; i++) {
     int nDirNum = a()->udir[i].subnum;
     bool bIsDirMarked = false;

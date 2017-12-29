@@ -163,7 +163,7 @@ static void print_cur_stat() {
   }
 
   const string internet_email_address = 
-      ((a()->user()->GetEmailAddress()[0] == '\0') ? "None." : a()->user()->GetEmailAddress());
+      ((a()->user()->GetEmailAddress().empty()) ? "None." : a()->user()->GetEmailAddress());
   bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << a()->user()->GetOptionalVal() << " "
        << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
   if (a()->fullscreen_read_prompt()) {
@@ -482,8 +482,9 @@ void config_qscan() {
   }
 }
 
-static void list_macro(const char *macro_text) {
+static void list_macro(const std::string& s) {
   int i = 0;
+  const char* macro_text = s.c_str();
 
   while ((i < 80) && (macro_text[i] != 0)) {
     if (macro_text[i] >= 32) {

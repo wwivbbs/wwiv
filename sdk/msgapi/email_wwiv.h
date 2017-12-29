@@ -45,19 +45,19 @@ public:
   /** The full text of this email */
   std::string text;
   /** Anonymous settings for this email. 0 for normal */
-  int anony = 0;
+  uint8_t anony = 0;
   /** The user this email should be sent to (to username) */
-  int user_number = 0;
+  uint16_t user_number = 0;
   /** The system to send this email. 0 for local. (to system) */
-  int system_number = 0;
+  uint16_t system_number = 0;
   /** The user this email should be sent from. */
-  int from_user = 0;
+  uint16_t from_user = 0;
   /** The system that sent this email. 0 for local. */
-  int from_system = 0;
+  uint16_t from_system = 0;
   /** The network number that sent this email.*/
   int from_network_number = 0;
   /** The time stamp for this email. */
-  uint32_t daten = 0;
+  daten_t daten = 0;
 };
 
 class WWIVEmail: private Type2Text {

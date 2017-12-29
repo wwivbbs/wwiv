@@ -1439,14 +1439,14 @@ void DoMinimalNewUser() {
                        u->GetState() << wwiv::endl;
     bout << "|#1[G] Internet Mail Address   : ";
     bout.SavePosition();
-    if (u->GetEmailAddress()[0] == 0) {
+    if (u->GetEmailAddress().empty()) {
       string emailAddress = Input1(s1, 44, true, InputMode::MIXED);
       u->SetEmailAddress(emailAddress.c_str());
       if (!check_inet_addr(u->GetEmailAddress())) {
         cln_nu();
         BackPrint("Invalid address!", 6, 20, 1000);
       }
-      if (u->GetEmailAddress()[0] == 0) {
+      if (u->GetEmailAddress().empty()) {
         u->SetEmailAddress("None");
       }
     }
@@ -1461,7 +1461,7 @@ void DoMinimalNewUser() {
       done = true;
       break;
     case 'A':
-      strcpy(s1, u->GetName());
+      to_char_array(s1, u->GetName());
       u->set_name("");
       break;
     case 'B':
@@ -1477,12 +1477,12 @@ void DoMinimalNewUser() {
     case 'E':
       u->SetZipcode("");
     case 'F':
-      strcpy(s1, u->GetCity());
+      to_char_array(s1, u->GetCity());
       u->SetCity("");
       u->SetState("");
       break;
     case 'G':
-      strcpy(s1, u->GetEmailAddress());
+      to_char_array(s1, u->GetEmailAddress());
       u->SetEmailAddress("");
       break;
     }

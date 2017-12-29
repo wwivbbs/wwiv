@@ -119,7 +119,7 @@ void valuser(int user_number) {
     bout << "|#9PH  : |#2" << user.GetVoicePhoneNumber() << wwiv::endl;
     bout << "|#9Age : |#2" << user.GetAge() << " " << user.GetGender() << wwiv::endl;
     bout << "|#9Comp: |#2" << ctypes(user.GetComputerType()) << wwiv::endl;
-    if (user.GetNote()[0]) {
+    if (user.GetNote().empty()) {
       bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
     }
     bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;

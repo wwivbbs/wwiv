@@ -63,7 +63,7 @@ void HopSub() {
     if (okconf(a()->user())) {
       setuconf(ConferenceType::CONF_SUBS, c, -1);
     }
-    size_t i = 0;
+    uint16_t i = 0;
     while ((i < a()->subs().subs().size())
             && (a()->usub[i].subnum != -1) && !abort) {
       to_char_array(s2, a()->subs().sub(a()->usub[i].subnum).name);

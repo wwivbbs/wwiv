@@ -260,7 +260,7 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   string s = mmkey(MMKeyAreaType::subs);
-  for (size_t i = 0; (i < a()->subs().subs().size())
+  for (uint16_t i = 0; (i < a()->subs().subs().size())
        && (a()->usub[i].subnum != -1); i++) {
     if (s == a()->usub[i].keys) {
       a()->set_current_user_sub_num(i);
@@ -280,7 +280,7 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (size_t i = 0; i < a()->directories.size(); i++) {
+    for (uint16_t i = 0; i < a()->directories.size(); i++) {
       if (s == a()->udir[i].keys) {
         a()->set_current_user_dir_num(i);
         done = true;

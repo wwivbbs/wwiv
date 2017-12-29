@@ -32,12 +32,12 @@ public:
 
   std::string title;
   messagerec * msg;
-  int anony = 0;
-  int user_number = 0;
-  int system_number = 0;
+  uint8_t anony = 0;
+  uint16_t user_number = 0;
+  uint16_t system_number = 0;
   bool an = 0;
-  int from_user = 0;
-  int from_system = 0;
+  uint16_t from_user = 0;
+  uint16_t from_system = 0;
   int forwarded_code = 0;
   int from_network_number = 0;
 

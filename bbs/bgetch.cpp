@@ -105,7 +105,7 @@ static void HandleControlKey(char *ch) {
       if (okmacro && (!charbufferpointer)) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         int macroNum = MACRO_KEY_TABLE[(int)c];
-        strncpy(charbuffer, &(a()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
+        to_char_array(charbuffer, a()->user()->GetMacro(macroNum));
         c = charbuffer[0];
         if (c) {
           charbufferpointer = 1;

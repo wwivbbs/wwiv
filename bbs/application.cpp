@@ -500,7 +500,7 @@ void Application::UpdateTopScreen() {
     ar[16] = '\0';
     restrict[16] = '\0';
     if (date() != user()->GetLastOn()) {
-      strcpy(lo, user()->GetLastOn());
+      to_char_array(lo, user()->GetLastOn());
     } else {
       snprintf(lo, sizeof(lo), "Today:%2d", user()->GetTimesOnToday());
     }
@@ -534,8 +534,12 @@ void Application::UpdateTopScreen() {
     if (a()->users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", user()->GetNote(), user()->GetGender(),
-        user()->GetAge(), ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
+    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", 
+        user()->GetNote().c_str(), 
+        user()->GetGender(),
+        user()->GetAge(), 
+        ctypes(user()->GetComputerType()).c_str(),
+        feedback_waiting);
 
     if (chatcall) {
       localIO()->PutsXY(0, 4, chat_reason_);

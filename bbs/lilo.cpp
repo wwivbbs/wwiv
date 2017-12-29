@@ -499,7 +499,7 @@ static void FixUserLinesAndColors() {
 
 static void UpdateUserStatsForLogin() {
   to_char_array(g_szLastLoginDate, date());
-  if (IsEquals(g_szLastLoginDate, a()->user()->GetLastOn())) {
+  if (a()->user()->GetLastOn() == g_szLastLoginDate) {
     a()->user()->SetTimesOnToday(a()->user()->GetTimesOnToday() + 1);
   } else {
     a()->user()->SetTimesOnToday(1);

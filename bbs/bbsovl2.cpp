@@ -119,7 +119,7 @@ void OnlineUserEditor() {
   a()->localIO()->PrintfXYA(wx + 32, wy + 9, 3,   "Files Downloaded: %s", down);
   a()->localIO()->PrintfXYA(wx + 2,  wy + 10, 3,  "   Messages Posted: %s", posts);
   a()->localIO()->PrintfXYA(wx + 32, wy + 10, 3,  "Number of Logons: %s", logons);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 12, 3,  "Note: %s", a()->user()->GetNote());
+  a()->localIO()->PrintfXYA(wx + 2,  wy + 12, 3,  "Note: %s", a()->user()->GetNote().c_str());
   a()->localIO()->PrintfXYA(wx + 1, wy + 14, 31,
                                           "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
   curatr = 3;
@@ -249,7 +249,7 @@ void OnlineUserEditor() {
     case 16: {
       char szNote[ 81 ];
       a()->localIO()->GotoXY(wx + 8, wy + 12);
-      strcpy(szNote, a()->user()->GetNote());
+      to_char_array(szNote, a()->user()->GetNote());
       a()->localIO()->EditLine(szNote, 60, ALL, &rc, "");
       StringTrimEnd(szNote);
       a()->user()->SetNote(szNote);

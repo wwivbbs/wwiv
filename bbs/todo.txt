@@ -51,7 +51,6 @@ Linux Work
 
 Net52
 =====
-* update routing information in network1.
 
 Message Areas
 =============

@@ -167,13 +167,13 @@ public:
 
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (a()->udir[b], not directories[b]).
-  int  current_user_dir_num() const { return user_dir_num_; }
-  void set_current_user_dir_num(int n) { user_dir_num_ = n; }
+  uint16_t  current_user_dir_num() const { return user_dir_num_; }
+  void set_current_user_dir_num(uint16_t n) { user_dir_num_ = n; }
 
   // This is the current user's sub number they are sitting on.
   // This is a user sub number (usub[b], not subboards[b]).
-  size_t current_user_sub_num() const { return user_sub_num_; }
-  void set_current_user_sub_num(size_t n) { user_sub_num_ = n; }
+  uint16_t current_user_sub_num() const { return user_sub_num_; }
+  void set_current_user_sub_num(uint16_t n) { user_sub_num_ = n; }
 
   const usersubrec& current_user_sub() const { return usub[current_user_sub_num()]; }
   const usersubrec& current_user_dir() const { return udir[current_user_dir_num()]; }
@@ -200,11 +200,11 @@ public:
     return net_networks[net_num()];
   }
 
-  size_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
-  void SetCurrentConferenceMessageArea(size_t n) { current_conf_msgarea_ = n; }
+  uint16_t GetCurrentConferenceMessageArea() const { return current_conf_msgarea_; }
+  void SetCurrentConferenceMessageArea(uint16_t n) { current_conf_msgarea_ = n; }
 
-  size_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
-  void SetCurrentConferenceFileArea(size_t n) { current_conf_filearea_ = n; }
+  uint16_t GetCurrentConferenceFileArea() const { return current_conf_filearea_; }
+  void SetCurrentConferenceFileArea(uint16_t n) { current_conf_filearea_ = n; }
 
   bool IsUseInternalZmodem() const { return internal_zmodem_; }
   
@@ -326,13 +326,13 @@ public:
     internal_zmodem_ = true,
     exec_log_syncfoss_ = true;
   int m_nNumMessagesReadThisLogon = 0,
-    m_nCurrentLanguageNumber = 0,
-    user_dir_num_ = 0,
-    user_sub_num_ = 0,
-    current_read_message_area = 0,
-    current_conf_msgarea_ = 0,
-    current_conf_filearea_ = 0,
-    m_nNumMsgsInCurrentSub = 0,
+    m_nCurrentLanguageNumber = 0;
+  uint16_t user_dir_num_ = 0;
+  uint16_t user_sub_num_ = 0;
+  uint16_t current_read_message_area = 0;
+  uint16_t current_conf_msgarea_ = 0;
+  uint16_t current_conf_filearea_ = 0;
+  int m_nNumMsgsInCurrentSub = 0,
     beginday_node_number_ = 1,
     exec_child_process_wait_time_ = 500,
     m_nMaxNumberMessageAreas = 0,

@@ -263,7 +263,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     }
   }
 
-  size_t i1 = (type == ConferenceType::CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
+  uint16_t i1 = (type == ConferenceType::CONF_DIRS && ss1[0].subnum == 0) ? 0 : 1;
 
   for (size_t i = 0; (i < ns) && (ss1[i].keys[0] == 0) && (ss1[i].subnum != -1); i++) {
     snprintf(ss1[i].keys, sizeof(ss1[i].keys), "%d", i1++);

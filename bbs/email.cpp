@@ -183,16 +183,16 @@ void sendout_email(EmailData& data) {
   memset(&m, 0, sizeof(mailrec));
   to_char_array(m.title, data.title);
   m.msg = *data.msg;
-  m.anony = static_cast<unsigned char>(data.anony);
+  m.anony = data.anony;
   if (data.from_system == a()->current_net().sysnum) {
     m.fromsys = 0;
   } else {
-    m.fromsys = static_cast<uint16_t>(data.from_system);
+    m.fromsys = data.from_system;
   }
-  m.fromuser  = static_cast<uint16_t>(data.from_user);
-  m.tosys   = static_cast<uint16_t>(data.system_number);
-  m.touser  = static_cast<uint16_t>(data.user_number);
-  m.status  = 0;
+  m.fromuser = data.from_user;
+  m.tosys = data.system_number;
+  m.touser = data.user_number;
+  m.status = 0;
   m.daten = daten_t_now();
 
   if (m.fromsys && a()->max_net_num() > 1) {
@@ -239,6 +239,7 @@ void sendout_email(EmailData& data) {
       return;
     }
     if (data.forwarded_code == 2) {
+      // Not sure where this is ever set to 2...
       remove_link(&(m.msg), "email");
     }
     nh.tosys  = static_cast<uint16_t>(data.system_number);
