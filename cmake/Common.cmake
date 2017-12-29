@@ -18,7 +18,7 @@ if(CMAKE_SYSTEM_NAME MATCHES "Linux")
 endif()
 
 if (UNIX)
-  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14 -frtti")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -frtti")
 endif(UNIX)
 
 if(MSVC)
