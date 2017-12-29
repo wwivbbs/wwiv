@@ -186,7 +186,7 @@ void OnlineUserEditor() {
     case 7:
       a()->localIO()->GotoXY(wx + 50, wy + 5);
       a()->localIO()->EditLine(banktime, 5, NUM_ONLY, &rc, "");
-      a()->user()->SetTimeBankMinutes(atoi(banktime));
+      a()->user()->SetTimeBankMinutes(StringToUnsignedShort(banktime));
       sprintf(banktime, "%u", a()->user()->GetTimeBankMinutes());
       a()->localIO()->Printf("%-5s", banktime);
       break;

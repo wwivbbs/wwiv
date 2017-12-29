@@ -191,7 +191,7 @@ static int mml_started;
 
 int oneuser() {
   char s[81], *ss;
-  int user_number, system_number, i;
+  int i;
   User user;
 
   if (mml_s) {
@@ -214,19 +214,20 @@ int oneuser() {
     bout << "|#2>";
     input(s, 40);
   }
-  user_number = finduser1(s);
-  if (user_number == 65535) {
+  auto user_number_int = finduser1(s);
+  if (user_number_int == 65535) {
     return -1;
   }
   if (s[0] == 0) {
     return -1;
   }
-  if (user_number <= 0) {
+  if (user_number_int <= 0) {
     bout.nl();
     bout << "Unknown user.\r\n\n";
     return 0;
   }
-  system_number = 0;
+  uint16_t user_number = static_cast<uint16_t>(user_number_int);
+  uint16_t system_number = 0;
   if (ForwardMessage(&user_number, &system_number)) {
     bout.nl();
     bout << "Forwarded.\r\n\n";

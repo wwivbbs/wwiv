@@ -130,8 +130,8 @@ public:
 
   int GetMessageColor() const { return message_color_; }
 
-  int GetForcedReadSubNumber() const { return forced_read_subnum_; }
-  void SetForcedReadSubNumber(int n) { forced_read_subnum_ = n; }
+  uint16_t GetForcedReadSubNumber() const { return forced_read_subnum_; }
+  void SetForcedReadSubNumber(uint16_t n) { forced_read_subnum_ = n; }
 
   std::string GetCurrentSpeed() const { return current_speed_; }
   void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
@@ -316,7 +316,7 @@ public:
   int chatname_color_ = 0;
   int message_color_ = 0;
 
-  int forced_read_subnum_ = 0;
+  uint16_t forced_read_subnum_ = 0;
   bool allow_cc_ = false;
   bool user_online_ = false;
   bool quoting_ = false;
@@ -329,7 +329,8 @@ public:
     m_nCurrentLanguageNumber = 0;
   uint16_t user_dir_num_ = 0;
   uint16_t user_sub_num_ = 0;
-  uint16_t current_read_message_area = 0;
+  // This one should stay in int since -1 is an allowed value.
+  int current_read_message_area = 0;
   uint16_t current_conf_msgarea_ = 0;
   uint16_t current_conf_filearea_ = 0;
   int m_nNumMsgsInCurrentSub = 0,
@@ -363,7 +364,7 @@ public:
   std::string dsz_logfile_name_;
   std::string download_filename_;
 
-  int usernum;
+  uint16_t usernum;
 
   asv_rec asv;
 

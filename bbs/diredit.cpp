@@ -401,9 +401,8 @@ void delete_dir(int n) {
 }
 
 void dlboardedit() {
-  int i, i1, i2, confchg = 0;
+  int i1, i2, confchg = 0;
   char s[81], ch;
-  subconf_t iconv;
 
   if (!ValidateSysopPassword()) {
     return;
@@ -422,14 +421,15 @@ void dlboardedit() {
       done = true;
       break;
     case 'M':
+    {
       bout.nl();
       bout << "|#2Dir number? ";
       input(s, 4);
-      i = atoi(s);
+      auto i = atoi(s);
       if ((s[0] != 0) && (i >= 0) && (i < size_int(a()->directories))) {
         modify_dir(i);
       }
-      break;
+    } break;
     case 'S':
       if (a()->directories.size() < a()->config()->config()->max_dirs) {
         bout.nl();
@@ -466,7 +466,7 @@ void dlboardedit() {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);
-        i = atoi(s);
+        subconf_t i = StringToUnsignedShort(s);
         if ((s[0] != 0) && (i >= 0) && (i <= size_int(a()->directories))) {
           insert_dir(i);
           modify_dir(i);
@@ -477,26 +477,23 @@ void dlboardedit() {
             i2 = select_conf("Put in which conference? ", ConferenceType::CONF_DIRS, 0);
             if (i2 >= 0) {
               if (!in_conference(i, &a()->dirconfs[i2])) {
-                iconv = (subconf_t) i;
-                addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[i2], &iconv);
-                i = static_cast<int>(iconv);
+                addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[i2], &i);
               }
             }
           } else {
             if (!in_conference(i, &a()->dirconfs[0])) {
-              iconv = (subconf_t) i;
-              addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[0], &iconv);
-              i = static_cast<int>(iconv);
+              addsubconf(ConferenceType::CONF_DIRS, &a()->dirconfs[0], &i);
             }
           }
         }
       }
       break;
     case 'D':
+    {
       bout.nl();
       bout << "|#2Delete which dir? ";
       input(s, 4);
-      i = atoi(s);
+      auto i = atoi(s);
       if ((s[0] != 0) && (i >= 0) && (i < size_int(a()->directories))) {
         bout.nl();
         bout << "|#5Delete " << a()->directories[i].name << "? ";
@@ -512,7 +509,7 @@ void dlboardedit() {
           }
         }
       }
-      break;
+    } break;
     }
   } while (!done && !hangup);
   DataFile<directoryrec> dirsFile(a()->config()->datadir(), DIRS_DAT,

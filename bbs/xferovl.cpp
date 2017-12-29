@@ -417,7 +417,7 @@ void rename_file() {
   }
 }
 
-static bool upload_file(const char *file_name, int directory_num, const char *description) {
+static bool upload_file(const char *file_name, uint16_t directory_num, const char *description) {
   uploadsrec u, u1;
 
   directoryrec d = a()->directories[directory_num];
@@ -449,8 +449,8 @@ static bool upload_file(const char *file_name, int directory_num, const char *de
       }
       return true;
     }
-    long lFileSize = fileUpload.length();
-    u.numbytes = lFileSize;
+    auto lFileSize = fileUpload.length();
+    u.numbytes = static_cast<daten_t>(lFileSize);
     fileUpload.Close();
     const string unn = a()->names()->UserName(a()->usernum);
     strcpy(u.upby, unn.c_str());
@@ -517,7 +517,7 @@ static bool upload_file(const char *file_name, int directory_num, const char *de
 }
 
 
-bool maybe_upload(const char *file_name, int directory_num, const char *description) {
+bool maybe_upload(const char *file_name, uint16_t directory_num, const char *description) {
   char s[81], ch, s1[81];
   bool abort = false;
   bool ok = true;
@@ -557,7 +557,7 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     fileDownload.Close();
-    int ocd = a()->current_user_dir_num();
+    auto ocd = a()->current_user_dir_num();
     a()->set_current_user_dir_num(directory_num);
     printinfo(&u, &abort);
     a()->set_current_user_dir_num(ocd);
@@ -577,7 +577,7 @@ bool maybe_upload(const char *file_name, int directory_num, const char *descript
  * the number of optional words between the filename and description.
  * the optional words (size, date/time) are ignored completely.
  */
-void upload_files(const char *file_name, int directory_num, int type) {
+void upload_files(const char *file_name, uint16_t directory_num, int type) {
   char s[255], *fn1 = nullptr, *description = nullptr, last_fn[81], *ext = nullptr;
   bool abort = false;
   int ok1, i;
@@ -692,7 +692,7 @@ void upload_files(const char *file_name, int directory_num, int type) {
 }
 
 // returns false on abort
-bool uploadall(int directory_num) {
+bool uploadall(uint16_t directory_num) {
   dliscan1(a()->udir[directory_num].subnum);
 
   char szDefaultFileSpec[MAX_PATH];
@@ -1215,7 +1215,7 @@ void finddescription() {
     tmp_disable_conf(false);
     return;
   }
-  int ocd = a()->current_user_dir_num();
+  auto ocd = a()->current_user_dir_num();
   bool abort = false;
   count = 0;
   color = 3;

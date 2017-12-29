@@ -232,7 +232,7 @@ static void catch_divide_by_zero(int signum) {
 
 int listfiles_plus(int type) {
   int save_topdata = a()->topdata;
-  int save_dir = a()->current_user_dir_num();
+  auto save_dir = a()->current_user_dir_num();
   long save_status = a()->user()->GetStatus();
 
   ext_is_on = a()->user()->GetFullFileDescriptions();
@@ -1580,7 +1580,7 @@ static int move_filename(const char *file_name, int dn) {
 }
 
 void do_batch_sysop_command(int mode, const char *file_name) {
-  int save_curdir = a()->current_user_dir_num();
+  auto save_curdir = a()->current_user_dir_num();
   bout.cls();
 
   if (a()->batch().numbatchdl() > 0) {

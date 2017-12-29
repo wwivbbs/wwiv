@@ -687,7 +687,7 @@ static void modify_mailbox() {
   bout << "|#2Forward to? ";
   string entered_forward_to = input(40);
 
-  int nTempForwardUser, nTempForwardSystem;
+  uint16_t nTempForwardUser, nTempForwardSystem;
   parse_email_info(entered_forward_to, &nTempForwardUser, &nTempForwardSystem);
   a()->user()->SetForwardUserNumber(nTempForwardUser);
   a()->user()->SetForwardSystemNumber(nTempForwardSystem);
@@ -980,7 +980,7 @@ static long is_inscan(int dir) {
 }
 
 void config_scan_plus(int type) {
-  int i, command;
+  int command;
   unsigned int top = 0;
   int amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc{};
@@ -1177,12 +1177,12 @@ void config_scan_plus(int type) {
         case 5:
           if (type == 0) {
             bool nextsub = false;
-            qscan(top + pos, nextsub);
+            qscan(static_cast<uint16_t>(top + pos), nextsub);
           } else {
-            i = a()->current_user_dir_num();
-            a()->set_current_user_dir_num(top + pos);
+            auto cudn_saved = a()->current_user_dir_num();
+            a()->set_current_user_dir_num(static_cast<uint16_t>(top + pos));
             listfiles();
-            a()->set_current_user_dir_num(i);
+            a()->set_current_user_dir_num(cudn_saved);
           }
           menu_done = true;
           amount = 0;

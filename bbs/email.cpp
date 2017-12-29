@@ -62,7 +62,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // returns true on success (i.e. the message gets forwarded)
-bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
+bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
   if (*pSystemNumber) {
     return false;
   }
@@ -100,8 +100,8 @@ bool ForwardMessage(int *pUserNumber, int *pSystemNumber) {
       return false;
     }
   }
-  int nCurrentUser = userRecord.GetForwardUserNumber();
-  if (nCurrentUser == -1) {
+  auto nCurrentUser = userRecord.GetForwardUserNumber();
+  if (nCurrentUser == -1 || nCurrentUser == std::numeric_limits<decltype(nCurrentUser)>::max()) {
     bout << "Mailbox Closed.\r\n";
     if (so()) {
       bout << "(Forcing)\r\n";
@@ -366,7 +366,7 @@ void sendout_email(EmailData& data) {
   }
 }
 
-bool ok_to_mail(int user_number, int system_number, bool bForceit) {
+bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
   if (system_number != 0 && a()->current_net().sysnum == 0) {
     bout << "\r\nSorry, this system is not a part of WWIVnet.\r\n\n";
     return false;
@@ -416,13 +416,15 @@ bool ok_to_mail(int user_number, int system_number, bool bForceit) {
   return true;
 }
 
-void email(const string& title, int user_number, int system_number, bool forceit, int anony, bool bAllowFSED) {
+void email(const string& title, uint16_t user_number, uint16_t system_number, bool forceit, int anony, bool bAllowFSED) {
   int nNumUsers = 0;
   messagerec msg{};
   string destination;
   net_system_list_rec *csne = nullptr;
   struct {
-    int user_number, system_number, net_num;
+    uint16_t user_number;
+    uint16_t system_number;
+    int net_num;
     char net_name[20], net_email_name[40];
   } carbon_copy[20];
 
@@ -490,7 +492,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
   }
   bout << "|#9E-mailing |#2" << destination;
   bout.nl();
-  int i = (getslrec(a()->GetEffectiveSl()).ability & ability_email_anony) ? anony_enable_anony : anony_none;
+  uint8_t i = (getslrec(a()->GetEffectiveSl()).ability & ability_email_anony) ? anony_enable_anony : anony_none;
 
   if (anony & (anony_receiver_pp | anony_receiver_da)) {
     i = anony_enable_dear_abby;
@@ -557,7 +559,7 @@ void email(const string& title, int user_number, int system_number, bool forceit
           done = true;
           break;
         }
-        int tu, ts;
+        uint16_t tu, ts;
         parse_email_info(emailAddress, &tu, &ts);
         if (tu || ts) {
           carbon_copy[nNumUsers].user_number = tu;
@@ -661,8 +663,8 @@ void email(const string& title, int user_number, int system_number, bool forceit
   }
 }
 
-void imail(int user_number, int system_number) {
-  int fwdu = user_number;
+void imail(uint16_t user_number, uint16_t system_number) {
+  auto fwdu = user_number;
   bool fwdm = false;
 
   if (ForwardMessage(&user_number, &system_number)) {

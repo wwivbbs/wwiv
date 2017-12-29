@@ -478,7 +478,7 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
   copyfile(quotes_filename, msginf_filename, false);
 }
 
-static void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
+static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
   // Changed *anony to anony
   switch (*anony) {
   case 0:

@@ -232,7 +232,7 @@ void build_qwk_packet() {
 }
 
 void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
-  int i, os;
+  int i;
 
   float temp_percent;
   int sn = a()->usub[bn].subnum;
@@ -245,7 +245,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   uint32_t sd = WWIVReadLastRead(sn);
 
   if (qwk_percent || (!sd || sd > qscnptrx)) {
-    os = a()->current_user_sub_num();
+    auto os = a()->current_user_sub_num();
     a()->set_current_user_sub_num(bn);
     i = 1;
 
@@ -291,7 +291,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     a()->set_current_user_sub_num(os);
   } else {
-    os = a()->current_user_sub_num();
+    auto os = a()->current_user_sub_num();
     a()->set_current_user_sub_num(bn);
     i = 1;
 

@@ -329,7 +329,7 @@ void Application::ReadINIFile(IniFile& ini) {
   ini_init_str(ini, INI_STR_LOGON_CMD, logon_cmd);
   ini_init_str(ini, INI_STR_TERMINAL_CMD, terminal_command);
 
-  forced_read_subnum_ = ini.value<int>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), forced_read_subnum_);
+  forced_read_subnum_ = ini.value<uint16_t>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), forced_read_subnum_);
   internal_zmodem_ = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), true);
   newscan_at_login_ = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), true);
   exec_log_syncfoss_ = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), false);

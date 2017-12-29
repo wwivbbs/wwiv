@@ -164,7 +164,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   return ans;
 }
 
-static int FindUserByRealName(const std::string& user_name) {
+static uint16_t FindUserByRealName(const std::string& user_name) {
   if (user_name.empty()) {
     return 0;
   }
@@ -178,7 +178,7 @@ static int FindUserByRealName(const std::string& user_name) {
       // changed from 15 since computers are faster now-a-days
       bout << ".";
     }
-    int current_user = n.number;
+    auto current_user = n.number;
     a()->ReadCurrentUser(current_user);
     string temp_user_name(a()->user()->GetRealName());
     StringUpperCase(&temp_user_name);
@@ -217,7 +217,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
   }
 
 
-  int user_number = finduser(user_name);
+  auto user_number = finduser(user_name);
   if (user_number != 0) {
     return user_number;
   }
@@ -425,8 +425,9 @@ void getuser() {
       remote_password = ToStringUpperCase(a()->remoteIO()->remote_info().password);
       first_time = false;
     }
-    a()->usernum = ShowLoginAndGetUserNumber(remote_username);
-    if (a()->usernum > 0) {
+    auto usernum = ShowLoginAndGetUserNumber(remote_username);
+    if (usernum > 0) {
+      a()->usernum = static_cast<uint16_t>(usernum);
       a()->ReadCurrentUser();
       read_qscn(a()->usernum, qsc, false);
       if (!set_language(a()->user()->GetLanguage())) {
@@ -464,15 +465,16 @@ void getuser() {
       } else {
         DoFailedLoginAttempt();
       }
-    } else if (a()->usernum == 0) {
+    } else if (usernum == 0) {
       bout.nl();
       bout << "|#6Unknown user.\r\n";
-    } else if (a()->usernum == -1) {
+      a()->usernum = static_cast<uint16_t>(usernum);
+    } else if (usernum == -1) {
       write_inst(INST_LOC_NEWUSER, 0, INST_FLAGS_NONE);
       play_sdf(NEWUSER_NOEXT, false);
       newuser();
       ok = true;
-    } else if (a()->usernum == -2) {  // network
+    } else if (usernum == -2) {  // network
       ExecuteWWIVNetworkRequest();
     }
   } while (!ok && ++count < 3);

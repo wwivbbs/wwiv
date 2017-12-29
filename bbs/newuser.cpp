@@ -1089,13 +1089,15 @@ void newuser() {
 
   bout.nl();
   bout << "Please wait...\r\n\n";
-  a()->usernum = find_new_usernum(a()->user(), qsc);
-  if (a()->usernum <= 0) {
+  auto usernum = find_new_usernum(a()->user(), qsc);
+  if (usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";
     Hangup();
     return;
-  } else if (a()->usernum == 1) {
+  } else if (usernum == 1) {
+    a()->usernum = static_cast<uint16_t>(usernum);
+
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
     ssm(1, 0) << "Thank you for installing WWIV! - The WWIV Development Team.";
@@ -1104,6 +1106,7 @@ void newuser() {
     user->SetDsl(255);
     user->SetRestriction(0);
   }
+  a()->usernum = static_cast<uint16_t>(usernum);
 
   WriteNewUserInfoToSysopLog();
   ssm(1, 0) << "You have a new user: " << a()->user()->GetName() << " #" << a()->usernum;

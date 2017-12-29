@@ -892,7 +892,7 @@ static std::pair<uint16_t, int> ansicallout() {
   }
 
   if (entries.empty()) {
-    return std::make_pair(0, -1);
+    return std::make_pair<uint16_t, int>(0, -1);
   }
 
   a()->localIO()->Cls();

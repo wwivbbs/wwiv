@@ -237,7 +237,7 @@ void list_users(int mode) {
     return;
   }
 
-  int snum = a()->usernum;
+  auto snum = a()->usernum;
 
   bout.nl();
   bout << "|#5Sort by user number? ";

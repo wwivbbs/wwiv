@@ -591,23 +591,23 @@ class User {
   void SetHomeUserNumber(int n) {
     data.homeuser = static_cast<uint16_t>(n);
   }
-  const int GetHomeSystemNumber() const {
+  const uint16_t GetHomeSystemNumber() const {
     return data.homesys;
   }
-  void SetHomeSystemNumber(int n) {
-    data.homesys = static_cast<uint16_t>(n);
+  void SetHomeSystemNumber(uint16_t n) {
+    data.homesys = n;
   }
-  const int GetForwardUserNumber() const {
+  const uint16_t GetForwardUserNumber() const {
     return data.forwardusr;
   }
-  void SetForwardUserNumber(int n) {
-    data.forwardusr = static_cast<uint16_t>(n);
+  void SetForwardUserNumber(uint16_t n) {
+    data.forwardusr = n;
   }
-  const int GetForwardSystemNumber() const {
+  const uint16_t GetForwardSystemNumber() const {
     return data.forwardsys;
   }
-  void SetForwardSystemNumber(int n) {
-    data.forwardsys = static_cast<uint16_t>(n);
+  void SetForwardSystemNumber(uint16_t n) {
+    data.forwardsys = n;
   }
   const int GetForwardNetNumber() const {
     return data.net_num;

@@ -169,7 +169,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
           strcat(szUserNameOrNumber, " @32767");
         }
       }
-      int user_number, system_number;
+      uint16_t user_number, system_number;
       parse_email_info(szUserNameOrNumber, &user_number, &system_number);
       if (user_number || system_number) {
         email("", user_number, system_number, false, 0);

@@ -43,7 +43,7 @@ void valscan() {
   }
 
   int ac = 0;
-  int os = a()->current_user_sub_num();
+  auto os = a()->current_user_sub_num();
 
   if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = 1;
