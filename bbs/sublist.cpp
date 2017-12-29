@@ -311,7 +311,7 @@ void SubList() {
           ns = i = 0;
         }
         if (isdigit(ss.front())) {
-          for (size_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
+          for (uint16_t i2 = 0; i2 < a()->subs().subs().size(); i2++) {
             if (ss == a()->usub[i2].keys) {
               a()->set_current_user_sub_num(i2);
               oldSub = a()->current_user_sub().subnum;

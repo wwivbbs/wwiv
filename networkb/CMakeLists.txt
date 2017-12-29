@@ -1,6 +1,4 @@
 # CMake for WWIV 5
-cmake_minimum_required (VERSION 2.6)
-project (NETWORKB)
 include_directories(..)
 
 set(NETWORKB_MAIN networkb.cpp)

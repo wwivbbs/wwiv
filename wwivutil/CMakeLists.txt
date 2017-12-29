@@ -1,6 +1,4 @@
 # CMake for WWIV 5
-cmake_minimum_required (VERSION 2.6)
-project (WWIVUTIL)
 include_directories(..)
 
 set(WWIVUTIL_MAIN wwivutil.cpp)

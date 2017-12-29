@@ -1,6 +1,4 @@
-# CMake for WWIV 5
-cmake_minimum_required (VERSION 2.6)
-project (CORE)
+# CMake for WWIV
 include_directories(..)
 
 set(COMMON_SOURCES
@@ -36,8 +34,7 @@ if(UNIX)
 endif()
 
 if(WIN32)
-  message("Including deps/pdcurses")
-  include_directories(../deps/pdcurses)
+  include(FindWWIVCurses)
 
   set(PLATFORM_SOURCES 
     file_win32.cpp
@@ -45,12 +42,16 @@ if(WIN32)
     wfndfile_win32.cpp
     )
 
-    add_definitions("/W4")
+  if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS)
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+      string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+  endif()
 
 endif()
 
-if(MSVC)
-  add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS)
-endif()
 
 add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})

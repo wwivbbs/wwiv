@@ -137,7 +137,7 @@ void HopDir() {
     if (okconf(a()->user())) {
       setuconf(ConferenceType::CONF_DIRS, c, -1);
     }
-    size_t i = 0;
+    uint16_t i = 0;
     while ((i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort)) {
       strcpy(s2, a()->directories[a()->udir[i].subnum].name);
       for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)

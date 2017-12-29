@@ -1,6 +1,4 @@
 # CMake for WWIV
-cmake_minimum_required (VERSION 2.6)
-project (BBS)
 include_directories(..)
 include_directories(../deps/cl342)
 include_directories(../deps/cereal/include)

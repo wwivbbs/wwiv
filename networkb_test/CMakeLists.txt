@@ -1,6 +1,3 @@
-cmake_minimum_required(VERSION 2.8)
-project (networkb_test)
-
 enable_testing()
 
 include_directories(../deps/googletest/googletest/include)

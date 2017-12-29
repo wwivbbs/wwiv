@@ -1,6 +1,3 @@
-cmake_minimum_required (VERSION 2.6)
-project (CL342)
-
 # This is needed to put it in to the root CMakeCache.txt
 # but only works if it's been built... sigh 
 if (WIN32) 
