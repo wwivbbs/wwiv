@@ -27,6 +27,7 @@
 //#include <cereal/types/memory.hpp>
 //#include <cereal/archives/json.hpp>
 
+#include "core/file.h"  // For FilePath
 #include "core/log.h"
 #include "core/textfile.h"
 

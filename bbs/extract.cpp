@@ -54,7 +54,7 @@ void extract_out(char *b, long len, const char *title) {
   WWIV_ASSERT(b);
   char s1[81], s2[81], s3[81], ch = 26, ch1, s4[81];
 
-  printfile(MEXTRACT_NOEXT);
+  print_help_file(MEXTRACT_NOEXT);
   bool done = false;
   bool uued = false;
   do {
@@ -76,7 +76,7 @@ void extract_out(char *b, long len, const char *title) {
       to_char_array(s2, a()->temp_directory());
       break;
     case '?':
-      printfile(MEXTRACT_NOEXT);
+      print_help_file(MEXTRACT_NOEXT);
       done = false;
       break;
     }

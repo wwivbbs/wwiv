@@ -82,7 +82,7 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
     raw_header.active_message_count = saved_count;
     raw_header.revision = 1;
     raw_header.wwiv_version = wwiv_num_version;
-    raw_header.daten_created = time(nullptr);
+    raw_header.daten_created = time_t_now();
 
     // Write the header here?
     if (!WriteHeader(file, WWIVMessageAreaHeader(raw_header))) {
@@ -124,7 +124,7 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
   strcpy(header_.signature, "WWIV\x1A");
   header_.revision = 1;
   header_.wwiv_version = expected_wwiv_num_version;
-  header_.daten_created = static_cast<uint32_t>(time(nullptr));
+  header_.daten_created = time_t_now();
   header_.active_message_count = static_cast<uint16_t>(num_messages);
 }
 
@@ -277,10 +277,10 @@ bool WWIVMessageArea::ParseMessageText(
   return true;
 }
 
-WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
+unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
   int num_messages = number_of_messages();
   if (message_number < 1) {
-    return nullptr;
+    return unique_ptr<Message>();
   } else if (message_number > num_messages) {
     message_number = num_messages;
   }
@@ -288,37 +288,37 @@ WWIVMessage* WWIVMessageArea::ReadMessage(int message_number) {
   DataFile<postrec> sub(sub_filename_);
   if (!sub) {
     // TODO: throw exception
-    return nullptr;
+    return {};
   }
   postrec header;
   sub.Read(message_number, &header);
   if (header.msg.storage_type != 2) {
     // We only support type-2 on the WWIV API.
-    return nullptr;
+    return {};
   }
 
   string from_username, date, to, in_reply_to, text;
   if (!ParseMessageText(header, message_number, from_username, date, to, in_reply_to, text)) {
-    return nullptr;
+    return {};
   }
 
-  return new WWIVMessage(
-    std::unique_ptr<WWIVMessageHeader>(new WWIVMessageHeader(header, from_username, to, in_reply_to, api_)),
+  return make_unique<WWIVMessage>(
+    make_unique<WWIVMessageHeader>(header, from_username, to, in_reply_to, api_),
     make_unique<WWIVMessageText>(text));
 }
 
-WWIVMessageHeader* WWIVMessageArea::ReadMessageHeader(int message_number) {
-  unique_ptr<WWIVMessage> msg(ReadMessage(message_number));
+unique_ptr<MessageHeader> WWIVMessageArea::ReadMessageHeader(int message_number) {
+  auto msg = ReadMessage(message_number);
   if (!msg) {
-    return nullptr;
+    return {};
   }
   return msg->release_header();
 }
 
-WWIVMessageText* WWIVMessageArea::ReadMessageText(int message_number) {
-  unique_ptr<WWIVMessage> msg(ReadMessage(message_number));
+unique_ptr<MessageText> WWIVMessageArea::ReadMessageText(int message_number) {
+  auto msg = ReadMessage(message_number);
   if (!msg) {
-    return nullptr;
+    return {};
   }
   return msg->release_text();
 }
@@ -354,9 +354,12 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
  * Note: This should be called by AddMessage *after* posting a new
  * message successfull, since there's no sense in deleting a post if
  * adding a new one hasn't succeeded.
+ * 
+ * Returns the number of messages deleted.
  */
 int WWIVMessageArea::DeleteExcess() {
   if (api_->options().overflow_strategy == OverflowStrategy::delete_none) {
+    LOG(INFO) << "overflow_strategy is delete_none. Not deleting overflow messages";
     return 0;
   }
 
@@ -364,10 +367,12 @@ int WWIVMessageArea::DeleteExcess() {
   bool done = false;
   while (!done) {
     if (api_->options().overflow_strategy == OverflowStrategy::delete_one) {
+      LOG(INFO) << "overflow_strategy is delete_one.";
       done = true;
     }
     auto num = number_of_messages();
     if (num <= max_messages_) {
+      LOG(INFO) << "No overflow messages. " << num << " <= " << max_messages_;
       return result;
     }
     int i = 1;
@@ -384,10 +389,15 @@ int WWIVMessageArea::DeleteExcess() {
       ++i;
     }
     if (dm == 0) {
+      LOG(INFO) << "DeleteExcess: No message to delete.";
       return result;
     }
     if (!DeleteMessage(dm))  {
+      LOG(INFO) << "DeleteExcess: Failed to delete message #" << dm;
       return result;
+    }
+    else {
+      LOG(INFO) << "DeleteExcess: Deleted message #" << dm;
     }
     ++result;
   }
@@ -397,7 +407,7 @@ int WWIVMessageArea::DeleteExcess() {
 bool WWIVMessageArea::AddMessage(const Message& message) {
   messagerec m{STORAGE_TYPE, 0xffffff};
 
-  const WWIVMessageHeader& header = *dynamic_cast<const WWIVMessage&>(message).header();
+  const auto& header = dynamic_cast<const WWIVMessageHeader&>(message.header());
   postrec p = header.data();
   p.anony = 0;
   p.msg = m;
@@ -412,7 +422,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
       return false;
     }
   } else {
-    VLOG(2) << "AddMessage called with existing qscan ptr: title: " << message.header()->title()
+    VLOG(2) << "AddMessage called with existing qscan ptr: title: " << message.header().title()
             << "; qscan: " << header.last_read();
   }
   p.daten = header.daten();
@@ -423,7 +433,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
 
   string text = StrCat(header.from(), "\r\n",
     daten_to_wwivnet_time(header.daten()), "\r\n",
-    message.text()->text());
+    message.text().text());
 
   // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
   // does not, and removes it on read.
@@ -485,7 +495,7 @@ bool WWIVMessageArea::DeleteMessage(int message_number) {
 }
 
 bool WWIVMessageArea::ResyncMessage(int& message_number) {
-  unique_ptr<WWIVMessage> m(ReadMessage(message_number));
+  auto m = ReadMessage(message_number);
   if (!m) {
     auto num_messages = number_of_messages();
     if (message_number > num_messages) {
@@ -500,6 +510,7 @@ bool WWIVMessageArea::ResyncMessage(int& message_number) {
     //return true;
   }
 
+  // remember m is destructed after this message call.
   return ResyncMessageImpl(message_number, *m);
 }
 
@@ -525,7 +536,7 @@ bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
   return ResyncMessageImpl(message_number, raw_message);
 }
 
-static bool IsSamePost(postrec& l, postrec& r) {
+static bool IsSamePost(const postrec& l, const postrec& r) {
   return l.qscan == r.qscan 
     && l.anony == r.anony 
     && l.daten == r.daten 
@@ -536,7 +547,8 @@ static bool IsSamePost(postrec& l, postrec& r) {
 
 bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_message) {
   WWIVMessage& message = dynamic_cast<WWIVMessage&>(raw_message);
-  postrec p = message.header()->data();
+  const auto& wwiv_header = dynamic_cast<const WWIVMessageHeader&>(message.header());
+  const auto& p = wwiv_header.data();
 
   auto num_messages = number_of_messages();
   if (message_number > num_messages) {
@@ -544,26 +556,30 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
     return true;
   }
 
-  unique_ptr<WWIVMessageHeader> pp1(ReadMessageHeader(message_number));
+  auto pp1 = ReadMessageHeader(message_number);
   if (!pp1) {
     return true;
   }
 
-  if (IsSamePost(pp1->header_, p)) {
+  auto pp1_header = dynamic_cast<WWIVMessageHeader*>(pp1.get())->header_;
+
+
+  if (IsSamePost(pp1_header, p)) {
     return true;
   }
-  if (p.qscan < pp1->header_.qscan) {
+  if (p.qscan < pp1_header.qscan) {
     // Search from the current message to the first.
     int num_msgs = number_of_messages();
     if (message_number > num_msgs) {
       message_number = num_msgs + 1;
     }
     for (int i = message_number - 1; i > 0; i--) {
-      pp1.reset(ReadMessageHeader(i));
+      pp1 = ReadMessageHeader(i);
+      pp1_header = dynamic_cast<WWIVMessageHeader*>(pp1.get())->header_;
       if (!pp1) {
         continue;
       }
-      if (p.qscan >= pp1->header_.qscan || IsSamePost(p, pp1->header_)) {
+      if (p.qscan >= pp1_header.qscan || IsSamePost(p, pp1_header)) {
         message_number = i;
         return true;
       }
@@ -575,11 +591,11 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
   // Search the full list
   int num_msgs = number_of_messages();
   for (int i = message_number + 1; i <= num_msgs; i++) {
-    pp1.reset(ReadMessageHeader(i));
+    pp1 = ReadMessageHeader(i);
     if (!pp1) {
       continue;
     }
-    if (p.qscan >= pp1->header_.qscan || IsSamePost(p, pp1->header_)) {
+    if (p.qscan >= pp1_header.qscan || IsSamePost(p, pp1_header)) {
       message_number = i;
       return true;
     }
@@ -588,10 +604,10 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
   return true;
 }
 
-WWIVMessage* WWIVMessageArea::CreateMessage() {
-  return new WWIVMessage(
-    make_unique<WWIVMessageHeader>(api_),
-    make_unique<WWIVMessageText>());
+std::unique_ptr<Message> WWIVMessageArea::CreateMessage() {
+  return make_unique<WWIVMessage>(
+      make_unique<WWIVMessageHeader>(api_),
+      make_unique<WWIVMessageText>());
 }
 
 bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) {

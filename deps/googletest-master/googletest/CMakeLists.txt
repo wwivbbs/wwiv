@@ -222,6 +222,13 @@ if (gtest_build_tests)
       test/gtest-param-test_test.cc test/gtest-param-test2_test.cc)
   endif()
 
+  # Rushfan addition to fix under latest Visual Studio 2017.
+  if (MSVC AND (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 19.11))
+    # VS 2017 : Disable warnings from from gtest code, using deprecated code related to TR1 
+    add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
+    message("Add flag to disable warings from gtest -  _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING")
+  endif()
+
   ############################################################
   # Python tests.
 

@@ -21,6 +21,7 @@
 #define __INCLUDED_COMMON_H__
 
 #include <string>
+#include "core/wwivport.h"
 #include "sdk/wwivcolors.h"
 
 // Defines for listplus
@@ -52,7 +53,7 @@ struct side_menu_colors {
 
 struct search_record {
   std::string filemask;
-  uint32_t nscandate = 0;
+  daten_t nscandate = 0;
   std::string search;
 
   int alldirs = 0;

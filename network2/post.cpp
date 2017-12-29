@@ -110,13 +110,13 @@ bool handle_post(Context& context, Packet& p) {
 
   ScopeExit at_exit;
   
-  string raw_text = p.text;
+  auto raw_text = p.text;
   auto iter = raw_text.begin();
-  string subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  string text = string(iter, raw_text.end());
+  auto subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+  auto text = string(iter, raw_text.end());
   if (VLOG_IS_ON(1)) {
     at_exit.swap([] {
       LOG(INFO) << "==============================================================";
@@ -135,19 +135,19 @@ bool handle_post(Context& context, Packet& p) {
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
-  if (!context.api(sub.storage_type).Exist(sub.filename)) {
+  if (!context.api(sub.storage_type).Exist(sub)) {
     LOG(INFO) << "WARNING Message area: '" << sub.filename << "' does not exist.";;
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV always does.
-    unique_ptr<MessageArea> creator(context.api(sub.storage_type).Create(sub.filename, -1));
-    if (!creator) {
+    auto created = context.api(sub.storage_type).Create(sub, -1);
+    if (!created) {
       LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename << "; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
     }
   }
 
-  unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub.filename, -1));
+  unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub, -1));
   if (!area) {
     LOG(INFO) << "    ! ERROR Unable to open message area: " << sub.filename << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
@@ -160,13 +160,13 @@ bool handle_post(Context& context, Packet& p) {
     return true;
   }
 
-  unique_ptr<Message> msg(area->CreateMessage());
-  msg->header()->set_from_system(p.nh.fromsys);
-  msg->header()->set_from_usernum(p.nh.fromuser);
-  msg->header()->set_title(title);
-  msg->header()->set_from(sender_name);
-  msg->header()->set_daten(p.nh.daten);
-  msg->text()->set_text(text);
+  auto msg = area->CreateMessage();
+  msg->header().set_from_system(p.nh.fromsys);
+  msg->header().set_from_usernum(p.nh.fromuser);
+  msg->header().set_title(title);
+  msg->header().set_from(sender_name);
+  msg->header().set_daten(p.nh.daten);
+  msg->text().set_text(text);
 
   if (!area->AddMessage(*msg)) {
     LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";

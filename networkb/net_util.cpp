@@ -25,7 +25,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/datetime.h"
-#include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -41,15 +40,15 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
     LOG(INFO) << " pending file does not exist: " << pend_file;
     return;
   }
-  const string pend_filename(pend_file.full_pathname());
-  const string num = filename.substr(1);
+  const auto pend_filename(pend_file.full_pathname());
+  const auto num = filename.substr(1);
   const string prefix = (atoi(num.c_str())) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
-    const string new_filename =
+    const auto new_filename =
       StringPrintf("%sp%s-%u-%u.net", directory.c_str(), prefix.c_str(), network_app_num, i);
     if (File::Rename(pend_filename, new_filename)) {
-      LOG(INFO) << "renamed file to: " << new_filename;
+      LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
       return;
     }
   }
@@ -57,9 +56,9 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
 }
 
 std::string create_pend(const string& directory, bool local, char network_app_id) {
-  uint8_t prefix = (local) ? 0 : 1;
-  for (int i = 0; i < 1000; i++) {
-    const string filename =
+  const uint8_t prefix = (local) ? 0 : 1;
+  for (auto i = 0; i < 1000; i++) {
+    const auto filename =
       StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
     File f(directory, filename);
     if (f.Exists()) {

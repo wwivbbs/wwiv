@@ -206,9 +206,12 @@ CMakeCache.txt
 Makefile
 *.a
 deps/cl342/*.o
+_build/
 
 # CLion files
 .idea/
 *.cbp
 
+# Used by local build system
+core/version.cpp.saved
 

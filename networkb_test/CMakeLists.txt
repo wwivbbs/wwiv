@@ -1,7 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
-project (networkb_test)
+enable_testing()
 
-include_directories(../deps/googletest-master/googletest/include)
+include_directories(../deps/googletest/googletest/include)
 include_directories(..)
 
 set(test_sources
@@ -19,4 +18,6 @@ set(test_sources
 
 add_executable(networkb_tests ${test_sources})
 target_link_libraries(networkb_tests networkb_lib core core_fixtures gtest sdk)
+
+add_test(networkb_tests networkb_tests)
 

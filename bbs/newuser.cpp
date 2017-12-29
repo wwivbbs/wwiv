@@ -368,15 +368,15 @@ void input_sex() {
 
 void input_age(User *pUser) {
   int y = 2000, m = 1, d = 1;
-  time_t t = time(nullptr);
-  struct tm * pTm = localtime(&t);
+  auto dt = DateTime::now();
+
 
   bout.nl();
   do {
     bout.nl();
-    y = static_cast<int>(pTm->tm_year + 1900 - 30) / 100;
+    y = static_cast<int>(dt.year() - 30) / 100;
     bout << "|#2Year you were born: ";
-    y = input_number<int>(y, 1900, pTm->tm_year + 1900 - 30);
+    y = input_number<int>(y, 1900, dt.year() - 30);
   } while (!hangup && y < 1905);
 
   do {
@@ -1089,13 +1089,15 @@ void newuser() {
 
   bout.nl();
   bout << "Please wait...\r\n\n";
-  a()->usernum = find_new_usernum(a()->user(), qsc);
-  if (a()->usernum <= 0) {
+  auto usernum = find_new_usernum(a()->user(), qsc);
+  if (usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";
     Hangup();
     return;
-  } else if (a()->usernum == 1) {
+  } else if (usernum == 1) {
+    a()->usernum = static_cast<uint16_t>(usernum);
+
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
     ssm(1, 0) << "Thank you for installing WWIV! - The WWIV Development Team.";
@@ -1104,6 +1106,7 @@ void newuser() {
     user->SetDsl(255);
     user->SetRestriction(0);
   }
+  a()->usernum = static_cast<uint16_t>(usernum);
 
   WriteNewUserInfoToSysopLog();
   ssm(1, 0) << "You have a new user: " << a()->user()->GetName() << " #" << a()->usernum;
@@ -1439,14 +1442,14 @@ void DoMinimalNewUser() {
                        u->GetState() << wwiv::endl;
     bout << "|#1[G] Internet Mail Address   : ";
     bout.SavePosition();
-    if (u->GetEmailAddress()[0] == 0) {
+    if (u->GetEmailAddress().empty()) {
       string emailAddress = Input1(s1, 44, true, InputMode::MIXED);
       u->SetEmailAddress(emailAddress.c_str());
       if (!check_inet_addr(u->GetEmailAddress())) {
         cln_nu();
         BackPrint("Invalid address!", 6, 20, 1000);
       }
-      if (u->GetEmailAddress()[0] == 0) {
+      if (u->GetEmailAddress().empty()) {
         u->SetEmailAddress("None");
       }
     }
@@ -1461,7 +1464,7 @@ void DoMinimalNewUser() {
       done = true;
       break;
     case 'A':
-      strcpy(s1, u->GetName());
+      to_char_array(s1, u->GetName());
       u->set_name("");
       break;
     case 'B':
@@ -1477,12 +1480,12 @@ void DoMinimalNewUser() {
     case 'E':
       u->SetZipcode("");
     case 'F':
-      strcpy(s1, u->GetCity());
+      to_char_array(s1, u->GetCity());
       u->SetCity("");
       u->SetState("");
       break;
     case 'G':
-      strcpy(s1, u->GetEmailAddress());
+      to_char_array(s1, u->GetEmailAddress());
       u->SetEmailAddress("");
       break;
     }

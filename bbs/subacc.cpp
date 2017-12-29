@@ -25,12 +25,9 @@
 #include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/message_file.h"
-#include "sdk/subxtr.h"
-#include "sdk/vardec.h"
 #include "bbs/vars.h"
 #include "bbs/output.h"
 #include "bbs/application.h"
-#include "sdk/status.h"
 #include "core/file.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -38,8 +35,13 @@
 #include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+#include "sdk/datetime.h"
+#include "sdk/status.h"
+#include "sdk/subxtr.h"
+#include "sdk/vardec.h"
 
 using std::string;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 /////////////////////////////////////////////////////////////////////////////
@@ -234,7 +236,7 @@ void add_post(postrec * pp) {
       p.active_message_count = saved_count;
       p.revision = 1;
       p.wwiv_version = wwiv_num_version;
-      p.daten_created = time(nullptr);
+      p.daten_created = time_t_now();
     }
 
     // one more post

@@ -267,12 +267,13 @@ bool WWIVEmail::DeleteAllMailToOrFrom(int user_number) {
     // WTF
     return false;
   }
-  for (auto i = 0; i < headers.size(); i++) {
+  for (auto i = 0; i < size_int(headers); i++) {
     const auto& m = headers.at(i);
     if ((m.tosys == 0 && m.touser == user_number) || (m.fromsys == 0 && m.fromuser == user_number)) {
       DeleteMessage(i);
     }
   }
+  return true;
 }
 
 // Implementation Details

@@ -24,6 +24,7 @@
 
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
 #include "sdk/networks.h"
@@ -76,4 +77,16 @@ TEST_F(ConfigTest, SetConfig_Heap) {
   ASSERT_STREQ(c->systemname, config.config()->systemname);
   EXPECT_NE(nullptr, c);
   delete c;
+}
+
+TEST_F(ConfigTest, WrittenByNumVersion) {
+  Config config(helper.root());
+
+  ASSERT_EQ(wwiv_num_version, config.written_by_wwiv_num_version());
+}
+
+TEST_F(ConfigTest, Is5XXOrLater) {
+  Config config(helper.root());
+
+  ASSERT_TRUE(config.is_5xx_or_later());
 }

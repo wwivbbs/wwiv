@@ -403,26 +403,31 @@ class User {
   void SetPassword(const std::string& s) {
     wwiv::strings::to_char_array(data.pw, s);
   }
-  const char *GetLastOn() const {
-    return reinterpret_cast<const char*>(data.laston);
+
+  const std::string GetLastOn() const {
+    return data.laston;
   }
-  void SetLastOn(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.laston), s);
+
+  void SetLastOn(const std::string& s) {
+    wwiv::strings::to_char_array(data.laston, s);
   }
-  const char *GetFirstOn() const {
-    return reinterpret_cast<const char*>(data.firston);
+
+  const std::string GetFirstOn() const {
+    return data.firston;
   }
-  void SetFirstOn(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.firston), s);
+  
+  void SetFirstOn(const std::string& s) {
+    wwiv::strings::to_char_array(data.firston, s);
   }
-  const char *GetNote() const {
+
+  const std::string GetNote() const {
     return reinterpret_cast<const char*>(data.note);
   }
   void SetNote(const std::string& s) {
     strcpy(reinterpret_cast<char*>(data.note), s.c_str());
   }
-  const char *GetMacro(int nLine) const {
-    return reinterpret_cast<const char*>(data.macros[ nLine ]);
+  const std::string GetMacro(int line) const {
+    return std::string(reinterpret_cast<const char*>(data.macros[line]));
   }
   void SetMacro(int nLine, const char *s) {
     memset(&data.macros[ nLine ][0], 0, 80);
@@ -439,23 +444,23 @@ class User {
   void SetGender(const char c) {
     data.sex = static_cast<uint8_t>(c);
   }
-  const char *GetEmailAddress() const {
+  const std::string GetEmailAddress() const {
     return data.email;
   }
   void SetEmailAddress(const char *s) {
     strcpy(reinterpret_cast<char*>(data.email), s);
   }
-  const unsigned int GetAge() const {
+  const uint8_t GetAge() const {
     return data.age;
   }
   void SetAge(int n) {
     data.age = static_cast<uint8_t>(n);
   }
-  const int GetComputerType() const {
+  const int8_t GetComputerType() const {
     return data.comp_type;
   }
   void SetComputerType(int n) {
-    data.comp_type = static_cast<char>(n);
+    data.comp_type = static_cast<int8_t>(n);
   }
 
   const unsigned int GetDefaultProtocol() const {
@@ -586,23 +591,23 @@ class User {
   void SetHomeUserNumber(int n) {
     data.homeuser = static_cast<uint16_t>(n);
   }
-  const int GetHomeSystemNumber() const {
+  const uint16_t GetHomeSystemNumber() const {
     return data.homesys;
   }
-  void SetHomeSystemNumber(int n) {
-    data.homesys = static_cast<uint16_t>(n);
+  void SetHomeSystemNumber(uint16_t n) {
+    data.homesys = n;
   }
-  const int GetForwardUserNumber() const {
+  const uint16_t GetForwardUserNumber() const {
     return data.forwardusr;
   }
-  void SetForwardUserNumber(int n) {
-    data.forwardusr = static_cast<uint16_t>(n);
+  void SetForwardUserNumber(uint16_t n) {
+    data.forwardusr = n;
   }
-  const int GetForwardSystemNumber() const {
+  const uint16_t GetForwardSystemNumber() const {
     return data.forwardsys;
   }
-  void SetForwardSystemNumber(int n) {
-    data.forwardsys = static_cast<uint16_t>(n);
+  void SetForwardSystemNumber(uint16_t n) {
+    data.forwardsys = n;
   }
   const int GetForwardNetNumber() const {
     return data.net_num;
@@ -682,93 +687,93 @@ class User {
   const uint16_t GetNumNetEmailSent() const {
     return data.emailnet;
   }
-  void SetNumNetEmailSent(int n) {
-    data.emailnet = static_cast<uint16_t>(n);
+  void SetNumNetEmailSent(uint16_t n) {
+    data.emailnet = n;
   }
   const uint16_t GetNumNetPosts() const {
     return data.postnet;
   }
-  void SetNumNetPosts(int n) {
-    data.postnet = static_cast<uint16_t>(n);
+  void SetNumNetPosts(uint16_t n) {
+    data.postnet = n;
   }
   const uint16_t GetNumDeletedPosts() const {
     return data.deletedposts;
   }
-  void SetNumDeletedPosts(int n) {
-    data.deletedposts = static_cast<uint16_t>(n);
+  void SetNumDeletedPosts(uint16_t n) {
+    data.deletedposts = n;
   }
   const uint16_t GetNumChainsRun() const {
     return data.chainsrun;
   }
-  void SetNumChainsRun(int n) {
-    data.chainsrun = static_cast<uint16_t>(n);
+  void SetNumChainsRun(uint16_t n) {
+    data.chainsrun = n;
   }
   const uint16_t GetNumGFilesRead() const {
     return data.gfilesread;
   }
-  void SetNumGFilesRead(int n) {
-    data.gfilesread = static_cast<uint16_t>(n);
+  void SetNumGFilesRead(uint16_t n) {
+    data.gfilesread = n;
   }
   const uint16_t GetTimeBankMinutes() const {
     return data.banktime;
   }
-  void SetTimeBankMinutes(int n) {
-    data.banktime = static_cast<uint16_t>(n);
+  void SetTimeBankMinutes(uint16_t n) {
+    data.banktime = n;
   }
   const uint16_t GetHomeNetNumber() const {
     return data.homenet;
   }
-  void SetHomeNetNumber(int n) {
-    data.homenet = static_cast<uint16_t>(n);
+  void SetHomeNetNumber(uint16_t n) {
+    data.homenet = n;
   }
   const uint16_t GetLastSubConf() const {
     return data.subconf;
   }
-  void SetLastSubConf(int n) {
-    data.subconf = static_cast<uint16_t>(n);
+  void SetLastSubConf(uint16_t n) {
+    data.subconf = n;
   }
   const uint16_t GetLastDirConf() const {
     return data.dirconf;
   }
-  void SetLastDirConf(int n) {
-    data.dirconf = static_cast<uint16_t>(n);
+  void SetLastDirConf(uint16_t n) {
+    data.dirconf = n;
   }
   const uint16_t GetLastSubNum() const {
     return data.subnum;
   }
-  void SetLastSubNum(int n) {
-    data.subnum = static_cast<uint16_t>(n);
+  void SetLastSubNum(uint16_t n) {
+    data.subnum = n;
   }
   const uint16_t GetLastDirNum() const {
     return data.dirnum;
   }
-  void SetLastDirNum(int n) {
-    data.dirnum = static_cast<uint16_t>(n);
+  void SetLastDirNum(uint16_t n) {
+    data.dirnum = n;
   }
 
   const uint32_t GetNumMessagesRead() const {
     return data.msgread;
   }
-  void SetNumMessagesRead(unsigned long l) {
+  void SetNumMessagesRead(uint32_t l) {
     data.msgread = l;
   }
-  const unsigned long GetUploadK() const {
+  const uint32_t GetUploadK() const {
     return data.uk;
   }
-  void SetUploadK(unsigned long l) {
+  void SetUploadK(uint32_t l) {
     data.uk = l;
   }
-  const unsigned long GetDownloadK() const {
+  const uint32_t GetDownloadK() const {
     return data.dk;
   }
-  void SetDownloadK(unsigned long l) {
+  void SetDownloadK(uint32_t l) {
     data.dk = l;
   }
-  const time_t GetLastOnDateNumber() const {
+  const daten_t GetLastOnDateNumber() const {
     return data.daten;
   }
-  void SetLastOnDateNumber(time_t l) {
-    data.daten = static_cast<uint32_t>(l);
+  void SetLastOnDateNumber(daten_t l) {
+    data.daten = l;
   }
   const unsigned long GetWWIVRegNumber() const {
     return data.wwiv_regnum;
@@ -782,23 +787,11 @@ class User {
   void SetFilePoints(unsigned long l) {
     data.filepoints = l;
   }
-  const unsigned long GetRegisteredDateNum() const {
-    return data.registered;
-  }
-  void SetRegisteredDateNum(time_t l) {
-    data.registered = static_cast<uint32_t>(l);
-  }
-  const uint32_t GetExpiresDateNum() const {
-    return data.expires;
-  }
-  void SetExpiresDateNum(time_t l) {
-    data.expires = static_cast<uint32_t>(l);
-  }
-  const time_t GetNewScanDateNumber() const {
+  const daten_t GetNewScanDateNumber() const {
     return data.datenscan;
   }
-  void SetNewScanDateNumber(time_t l) {
-    data.datenscan = static_cast<uint32_t>(l);
+  void SetNewScanDateNumber(daten_t l) {
+    data.datenscan = l;
   }
 
   const float GetTimeOnToday() const {

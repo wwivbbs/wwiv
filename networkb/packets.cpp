@@ -19,16 +19,17 @@
 
 #include <string>
 
-#include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "networkb/net_util.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -102,13 +103,22 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
   }
 
   if (packet.nh.length > 0) {
-    int length = packet.nh.length;
-    if (packet.nh.method > 0 && process_de) {
+    auto length = packet.nh.length;
+
+    if (length > static_cast<uint32_t>(std::numeric_limits<int32_t>::max()) || length < 0) {
+      LOG(INFO) << "error reading header, got length too big (underflow?): " << length;
+      return ReadPacketResponse::ERROR;
+    }
+
+    if (packet.nh.method > 0 
+        && process_de 
+        && packet.nh.length > 146 /* Make sure we have enough for a header */) {
       // HACK - this should do this in a shim DE
       // 146 is the sizeof EN/DE header.
       packet.nh.length -= 146;
       char header[147];
       f.Read(header, 146);
+      LOG(INFO) << header;
     }
     packet.text.resize(length);
     num_read = f.Read(&packet.text[0], packet.nh.length);
@@ -168,8 +178,8 @@ static string NetInfoFileName(uint16_t type) {
   case net_info_network_lst: return "networks.lst";
   case net_info_file: return "";
   case net_info_binkp: return BINKP_NET;
+  default: return "";
   }
-  return "";
 }
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
@@ -225,6 +235,65 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   info.valid = true;
   return info;
 }
+
+static bool need_to_update_routing(uint16_t main_type) {
+  switch (main_type) {
+  case main_type_email:
+  case main_type_post:
+  case main_type_pre_post:
+  case main_type_email_name:
+  case main_type_file:
+  case main_type_new_post:
+    return true;
+  }
+  return false;
+}
+
+static int number_of_header_lines(uint16_t main_type) {
+  // either 3 or 4.
+  switch (main_type) {
+  case main_type_email:
+  case main_type_post:
+  case main_type_pre_post:
+    return 3;
+  case main_type_email_name:
+  case main_type_file:
+  case main_type_new_post:
+    return 4;
+  }
+  return 0;
+}
+
+bool Packet::UpdateRouting(const net_networks_rec& net) {
+  if (!need_to_update_routing(nh.main_type)) {
+    return false;
+  }
+
+  std::ostringstream ss;
+  ss << "\004" << "0R " << wwiv_net_version << " - " << date() << " "
+    << times() << " " << net.name << " ->" << net.sysnum << "\r\n";
+
+  const auto routing_information = ss.str();
+
+  if (nh.length + routing_information.size() >= (32*1024)) {
+    LOG(INFO) << "Can't updating routing information, already have 32k of message.";
+    return false;
+  }
+  nh.length += routing_information.size();
+
+  // Need to skip over either 3 or 4 lines 1st depending on the packet type.
+  auto lines = number_of_header_lines(nh.main_type);
+  auto iter = text.begin();
+  for (auto i = 0; i < lines; i++) {
+    // Skip over this line
+    get_message_field(text, iter, { '\0', '\r', '\n' }, 80);
+  }
+
+  auto pos = std::distance(text.begin(), iter);
+  text.insert(pos, routing_information);
+  return true;
+}
+
 
 }  // namespace net
 }  // namespace wwiv

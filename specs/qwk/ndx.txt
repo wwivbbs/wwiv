@@ -1,0 +1,127 @@
+
+
+
+                           Format of Index files
+
+      Index files are named XXX.NDX (where XXX is the conference
+      number padded with leading zeros to make it three characters
+      long.  There is one *.NDX file for each conference chosen that
+      contains messages in the MESSAGES.DAT file.
+
+      The *.NDX file contain records five characters long that point
+      to each message in that conference.
+
+
+      NdxRecord = Record
+        MsgPointer: BasicReal
+        Conference: Byte;
+        End;
+
+      The BasicReal is a four byte number in BASIC MKS$ format.
+
+
+      The following is a sample program unit for TurboPascal that
+      converts between BasicReal format and LongInt format.
+
+------------------------------------------------------------------------------
+
+Unit BasicConvert;
+
+Interface
+  Function BasicReal2Long(InValue: LongInt): LongInt;
+                {Convert Basic Short Reals to LongInts}
+
+  Function Long2BasicReal(InValue: LongInt): LongInt;
+                {Convert LongInts to Basic Short Reals}
+
+Implementation
+
+Function BasicReal2Long(InValue: LongInt): LongInt;
+
+  Var
+  Temp: LongInt;
+  Expon: Integer;
+
+  Begin
+  Expon := ((InValue shr 24) and $ff) - 152;
+  Temp := (InValue and $007FFFFF) or $00800000;
+  If Expon < 0 Then
+    Temp := Temp shr Abs(Expon)
+  Else
+    Temp := Temp shl Expon;
+  If (InValue and $00800000) <> 0 Then
+    BasicReal2Long := -Temp
+  Else
+    BasicReal2Long := Temp;
+  If Expon = 0 Then
+    BasicReal2Long := 0;
+  End;
+
+
+Function Long2BasicReal(InValue: LongInt): LongInt;
+  Var
+  Negative: Boolean;
+  Expon: LongInt;
+
+  Begin
+  If InValue = 0 Then
+    Long2BasicReal := 0
+  Else
+    Begin
+    If InValue < 0 Then
+      Begin
+      Negative := True;
+      InValue := Abs(InValue);
+      End
+    Else
+      Negative := False;
+    Expon := 152;
+    If InValue < $007FFFFF Then
+      While ((InValue and $00800000) = 0) Do
+        Begin
+        InValue := InValue shl 1;
+        Dec(Expon);
+        End
+    Else
+      While ((InValue And $FF000000) <> 0) Do
+        Begin
+        InValue := InValue shr 1;
+        Inc(Expon);
+        End;
+    InValue := InValue And $007FFFFF;
+    If Negative Then
+      InValue := InValue Or $00800000;
+    Long2BasicReal := InValue + (Expon shl 24);
+    End;
+  End;
+
+End.
+
+------------------------------------------------------------------------------
+
+A quick and dirty conversion (handles positive numbers only) is possible
+with the following expression:
+
+MKSToNum := ((x AND NOT $ff000000) OR $00800000)
+             SHR (24 - ((x SHR 24) AND $7f));
+
+------------------------------------------------------------------------------
+
+      The number contained in the MsgPointer is the record number
+      (128 byte records - starting numbering from record 1 not 0)
+      of the message header.  Note that since the 1st record contains
+      packet header, the lowest MsgPointer that can exist is 2.
+
+      Some message readers will reformat the *.NDX files so that the
+      MsgPointer becomes a LongInt fileseek position (using a record
+      size of 1).  To determine which type of index you are reading
+      you should look at the size of the number.  Any BasicReal will
+      appear as a huge number that would unlikely ever be a byte
+      seek positon.
+
+      An additional file PERSONAL.NDX is also optionally added to the
+      QWK archive.  This file has the same record format as the other
+      *.NDX files.  It contains index records pointing to messages to
+      the caller from all conferences (ie it is used by the mail reader
+      to do a quick search for personal mail in all areas).
+

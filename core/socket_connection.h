@@ -47,6 +47,9 @@ class SocketConnection : public Connection
 public:
   explicit SocketConnection(SOCKET sock);
   SocketConnection(SOCKET sock, bool close_socket);
+  SocketConnection(const SocketConnection& other) = delete;
+  SocketConnection& operator=(const SocketConnection& other) = delete;
+
   virtual ~SocketConnection();
 
   int receive(void* data, int size, std::chrono::duration<double> d) override;
@@ -65,7 +68,7 @@ public:
   uint16_t read_uint16(std::chrono::duration<double> d) override;
   uint8_t read_uint8(std::chrono::duration<double> d) override;
 
-  bool is_open() const { return open_; }
+  bool is_open() const override { return open_; }
   bool close() override;
 
 private:

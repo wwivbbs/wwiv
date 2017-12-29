@@ -163,7 +163,7 @@ static void print_cur_stat() {
   }
 
   const string internet_email_address = 
-      ((a()->user()->GetEmailAddress()[0] == '\0') ? "None." : a()->user()->GetEmailAddress());
+      ((a()->user()->GetEmailAddress().empty()) ? "None." : a()->user()->GetEmailAddress());
   bout << "|#1B|#9) Optional lines    : |#2" << setw(16) << a()->user()->GetOptionalVal() << " "
        << "|#1C|#9) Conferencing      : |#2" << YesNoString(a()->user()->IsUseConference()) << wwiv::endl;
   if (a()->fullscreen_read_prompt()) {
@@ -482,8 +482,9 @@ void config_qscan() {
   }
 }
 
-static void list_macro(const char *macro_text) {
+static void list_macro(const std::string& s) {
   int i = 0;
+  const char* macro_text = s.c_str();
 
   while ((i < 80) && (macro_text[i] != 0)) {
     if (macro_text[i] >= 32) {
@@ -686,7 +687,7 @@ static void modify_mailbox() {
   bout << "|#2Forward to? ";
   string entered_forward_to = input(40);
 
-  int nTempForwardUser, nTempForwardSystem;
+  uint16_t nTempForwardUser, nTempForwardSystem;
   parse_email_info(entered_forward_to, &nTempForwardUser, &nTempForwardSystem);
   a()->user()->SetForwardUserNumber(nTempForwardUser);
   a()->user()->SetForwardSystemNumber(nTempForwardSystem);
@@ -979,7 +980,7 @@ static long is_inscan(int dir) {
 }
 
 void config_scan_plus(int type) {
-  int i, command;
+  int command;
   unsigned int top = 0;
   int amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc{};
@@ -1038,7 +1039,7 @@ void config_scan_plus(int type) {
       case '?':
       case CO:
         bout.cls();
-        printfile(SCONFIG_HLP);
+        print_help_file(SCONFIG_HLP);
         pausescr();
         menu_done = true;
         amount = 0;
@@ -1176,12 +1177,12 @@ void config_scan_plus(int type) {
         case 5:
           if (type == 0) {
             bool nextsub = false;
-            qscan(top + pos, nextsub);
+            qscan(static_cast<uint16_t>(top + pos), nextsub);
           } else {
-            i = a()->current_user_dir_num();
-            a()->set_current_user_dir_num(top + pos);
+            auto cudn_saved = a()->current_user_dir_num();
+            a()->set_current_user_dir_num(static_cast<uint16_t>(top + pos));
             listfiles();
-            a()->set_current_user_dir_num(i);
+            a()->set_current_user_dir_num(cudn_saved);
           }
           menu_done = true;
           amount = 0;
@@ -1246,7 +1247,7 @@ void config_scan_plus(int type) {
           break;
         case 9:
           bout.cls();
-          printfile(SCONFIG_HLP);
+          print_help_file(SCONFIG_HLP);
           pausescr();
           menu_done = true;
           amount = 0;

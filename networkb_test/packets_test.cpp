@@ -18,6 +18,7 @@
 #include "gtest/gtest.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
+#include "networkb/net_util.h"
 #include "networkb/packets.h"
 #include "sdk/datetime.h"
 
@@ -31,6 +32,25 @@ using namespace wwiv::net;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
+static string CreateFakePacketText(
+    const string& subtype, 
+    const string& title, 
+    const string& sender, 
+    const string& date, 
+    const string& text) {
+
+  string result;
+  result.append(subtype);
+  result.push_back(0);
+  result.append(title);
+  result.push_back(0);
+  result.append(sender).append("\r\n");
+  result.append(date).append("\r\n");
+  result.append(text);
+  result.push_back(26);
+
+  return result;
+}
 
 class PacketsTest: public testing::Test {
 public:
@@ -49,7 +69,7 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
   ASSERT_EQ(19, text.size());
 
   net_header_rec nh{};
-  nh.daten = time_t_to_daten(time(nullptr));
+  nh.daten = daten_t_now();
   nh.method = 0;
   nh.main_type = main_type_file;
   nh.minor_type = net_info_file;
@@ -60,4 +80,41 @@ TEST_F(PacketsTest, GetNetInfoFileInfo_Smoke) {
   EXPECT_EQ("binkp.net", info.filename);
   EXPECT_TRUE(info.overwrite);
   EXPECT_EQ("Hello World", info.data);
+}
+
+TEST_F(PacketsTest, UpdateRouting_Smoke) {
+  string body = "Hello World";
+  auto now = daten_t_now();
+  auto date = daten_to_wwivnet_time(now);
+
+  auto packet_text = CreateFakePacketText("MYSUB", "This is a title", "Sysop #1", date, body);
+  auto orig = packet_text;
+
+  net_header_rec nh{};
+  nh.daten = now;
+  nh.fromsys = 1;
+  nh.tosys = 2;
+  nh.fromuser = 1;
+  nh.touser = 1;
+  nh.length = packet_text.size();
+  nh.main_type = main_type_new_post;
+  nh.method = 0;
+  nh.list_len = 0;
+  Packet packet(nh, {}, packet_text);
+
+  net_networks_rec net{};
+  net.dir = "Z:\\";
+  to_char_array(net.name, "My Network");
+  net.sysnum = 2;
+  net.type = network_type_t::wwivnet;
+  packet.UpdateRouting(net);
+
+  auto iter = packet.text.begin();
+  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
+  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
+  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
+  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
+  auto actual_route_str = get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
+
+  EXPECT_TRUE(starts_with(actual_route_str, "\004""0R"));
 }

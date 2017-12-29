@@ -22,6 +22,7 @@
 
 #include <functional>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -95,17 +96,17 @@ public:
  */
 class HttpServer {
 public:
-  HttpServer(SocketConnection& conn);
+  HttpServer(std::unique_ptr<SocketConnection> conn);
   virtual ~HttpServer();
   /** Adds a handler (handler) for method method and URL path root {root). */
   bool add(HttpMethod method, const std::string& root, HttpHandler* handler);
   /** Sends an HTTP Response and then terminates the connection. */
-  void SendResponse(HttpResponse& r);
+  void SendResponse(const HttpResponse& r);
   /** Runs the Http Server. It must already have all of the handlers needed added to it. */
   bool Run();
 
 private:
-  SocketConnection conn_;
+  std::unique_ptr<SocketConnection> conn_;
   std::map<std::string, HttpHandler*> get_;
 };
 

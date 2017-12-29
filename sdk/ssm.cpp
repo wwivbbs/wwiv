@@ -25,6 +25,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/net.h"
 #include "sdk/vardec.h"
@@ -32,6 +33,7 @@
 using std::endl;
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -55,7 +57,7 @@ bool SSM::send_remote(const net_networks_rec& net, uint16_t system_number, uint3
   nh.minor_type = 0;
   nh.list_len = 0;
   string text(t);
-  nh.daten = static_cast<uint32_t>(time(nullptr));
+  nh.daten = daten_t_now();
   if (text.size() > 80) {
     text.resize(80);
   }

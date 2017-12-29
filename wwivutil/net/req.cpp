@@ -30,6 +30,7 @@
 #include "sdk/config.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
+#include "sdk/datetime.h"
 #include "sdk/networks.h"
 
 using std::cout;
@@ -87,7 +88,7 @@ int SubReqCommand::Execute() {
   // always use 0 since we use the stype
   nh.minor_type = 0;
   nh.list_len = 0;
-  nh.daten = static_cast<uint32_t>(time(nullptr));
+  nh.daten = daten_t_now();
   nh.method = 0;
   // This is an alphanumeric sub type.
   auto subtype = r.at(1);

@@ -91,7 +91,7 @@ uint16_t wwivnet_node_number_from_ftn_address(const string& address) {
     if (contains(s, '@')) {
       s = s.substr(0, s.find('@'));
     }
-    return StringToInt(s);
+    return StringToUnsignedShort(s);
   }
 
   return WWIVNET_NO_NODE;

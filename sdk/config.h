@@ -36,6 +36,7 @@ public:
   void set_config(configrec* config);
 
   bool versioned_config_dat() const { return versioned_config_dat_; }
+  bool is_5xx_or_later() const { return written_by_wwiv_num_version_ >= 500; }
   uint16_t written_by_wwiv_num_version() const { return written_by_wwiv_num_version_; }
   uint32_t config_revision_number() const { return config_revision_number_; }
 

@@ -1,0 +1,18 @@
+
+
+
+                 Format of the BBSID.REP file for replies
+
+
+      The record format of the BBSID.MSG file in the BBSID.REP file
+      is exactly identical to the MESSAGES.DAT format except the
+      packet header which now is filled with blanks except that it
+      contains the BBSID as the first few characters.
+
+
+      On the Message Headers there is also one change.  The ascii
+      field which normally contains the message number is now filled
+      (in ascii) with the conference number of the message.  Note
+      that some readers which place the conference number here,
+      neglect to fill in the normal Message Header conference
+      number field.

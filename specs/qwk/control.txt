@@ -1,0 +1,62 @@
+
+
+                        Format of Control.Dat file
+
+      Control.Dat is a normal CR/LF style text file with the
+      following lines in exactly the order shown.
+
+BBS name
+BBS City, BBS State
+BBS phone number                     {AAA-EEE-NNNN}
+Sysop name,Sysop                     {Sysop name in upper case followed
+                                      by the literal ',Sysop'}
+Serial number ,BBS ID                {Serial Number, UpperCase BBSID}
+Date of mail packet, time of packet  {MM-DD-YYYY,HH:MM:SS}
+Caller's name                        {Uppercase}
+blank
+0
+0
+Number of conferences (in additon to conference 0 which is main)
+                      (ie use number of conferences minus one)
+Conference number
+Name of Conference    (should be limited to maximum length of 12 characters)
+...
+...
+...
+...
+...
+Conference number
+Name of Conference
+name of BBS welcome file
+name of NEWS file
+name of BBS goodbye file
+
+Other optional data may occur after the Goodbye file line, but the
+trend is to omit this data.  If included it is as follows:
+
+0                                    {Unknown}
+Screen Length
+USER NAME                            {Upper case}
+FirstName                            {Proper case}
+CITY, ST                             {Upper case}
+Data Phone                           {AAA EEE-NNNN}
+Voice Phone                          {AAA EEE-NNNN}
+Security Level
+Expiration Date                      {MM-DD-YY}
+Last On Date                         {MM-DD-YY}
+Last On Time                         {HH:MM}
+Number of calls
+0                                    {Unknown}
+DownLoaded Bytes
+DownLoaded Count
+Uploaded Bytes
+Uploaded Count
+Time Limit Per Day                   {Minutes}
+Time Remaining                       {Minutes}
+Time Used Today                      {Minutes}
+DownLoad Limit/Day                   {Kilobytes}
+DownLoad Bytes Remaining Today       {Bytes}
+DownLoaded Today                     {Bytes}
+Current Time                         {HH:MM}
+Current Date                         {MM-DD-YY}
+System Tag Line

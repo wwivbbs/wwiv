@@ -53,7 +53,7 @@ using namespace wwiv::strings;
  * @param pUserNumber OUT The User Number
  * @param pSystemmNumber OUT The System Number
  */
-void parse_email_info(const string& emailAddress, int *pUserNumber, int *pSystemNumber) {
+void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_t *pSystemNumber) {
   char *ss1, onx[20], ch;
   unsigned user_number, system_number;
   int nv, on, xx, onxi, odci;

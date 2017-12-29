@@ -36,10 +36,17 @@
 #include "core/wwivport.h"
 
 #ifdef _WIN32
+
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif  // NOMINMAX
+
 #include "Shlwapi.h"
 #pragma comment(lib, "Shlwapi.lib")
+
+#ifdef StrCat
 #undef StrCat
+#endif  // StrCat
 #endif  // _WIN32
 
 
@@ -51,7 +58,7 @@ using std::out_of_range;
 unsigned char *translate_letters[] = {
   (unsigned char *)"abcdefghijklmnopqrstuvwxyz�������",
   (unsigned char *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ�������",
-  0L,
+  nullptr,
 };
 const char *DELIMS_WHITE = " \t\r\n";
 const char *DELIMS_CRLF = "\r\n";

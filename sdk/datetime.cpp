@@ -35,17 +35,25 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
+time_t time_t_now() {
+  return time(nullptr);
+}
+
+daten_t daten_t_now() {
+  return time_t_to_daten(time(nullptr));
+}
+
 //
 // This kludge will get us through 2019 and should not interfere anywhere
 // else.
 //
 
-uint32_t date_to_daten(std::string datet) {
+daten_t date_to_daten(const std::string& datet) {
   if (datet.size() != 8) {
     return 0;
   }
 
-  time_t t = time(nullptr);
+  time_t t = time_t_now();
   struct tm* pTm = localtime(&t);
   pTm->tm_mon   = atoi(datet.c_str()) - 1;
   pTm->tm_mday  = atoi(datet.c_str() + 3);
@@ -59,19 +67,37 @@ uint32_t date_to_daten(std::string datet) {
   pTm->tm_sec = 0;
   pTm->tm_isdst = 0;  // Since this is used for arbitrary compare of date strings, this is ok.
 
-  return static_cast<uint32_t>(mktime(pTm));
+  return static_cast<daten_t>(mktime(pTm));
 }
 
-std::string daten_to_mmddyy(time_t t) {
-  struct tm* pTm = localtime(&t);
-  return StringPrintf("%02d/%02d/%02d", 
-    pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+std::string daten_to_mmddyy(daten_t n) {
+  time_t t = n;
+  return time_t_to_mmddyy(t);
 }
 
-std::string daten_to_wwivnet_time(time_t t) {
-  string human_date = string(asctime(localtime(&t)));
-  StringTrimEnd(&human_date);
-  return human_date;
+std::string time_t_to_mmddyy(time_t t) {
+  auto dt = DateTime::from_time_t(t);
+  return dt.to_string("%m/%d/%y");
+}
+
+std::string daten_to_mmddyyyy(daten_t n) {
+  time_t t = n;
+  return time_t_to_mmddyyyy(t);
+}
+
+std::string time_t_to_mmddyyyy(time_t t) {
+  auto dt = DateTime::from_time_t(t);
+  return dt.to_string("%m/%d/%Y");
+}
+
+std::string daten_to_wwivnet_time(daten_t n) {
+  time_t t = n;
+  return time_t_to_wwivnet_time(t);
+}
+
+std::string time_t_to_wwivnet_time(time_t t) {
+  auto dt = DateTime::from_time_t(t);
+  return dt.to_string();
 }
 
 uint32_t time_t_to_daten(time_t t) {
@@ -79,20 +105,21 @@ uint32_t time_t_to_daten(time_t t) {
 }
 
 std::string date() {
-  time_t t = time(nullptr);
+  auto t = time_t_now();
   struct tm * pTm = localtime(&t);
   return wwiv::strings::StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
 }
 
 std::string fulldate() {
-  time_t t = time(nullptr);
+  auto t = time_t_now();
   struct tm * pTm = localtime(&t);
 
   return wwiv::strings::StringPrintf("%02d/%02d/%4d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year + 1900);
 }
 
 string times() {
-  time_t tim = time(nullptr);
+  auto tim = time_t_now();
+
   struct tm* t = localtime(&tim);
   return wwiv::strings::StringPrintf("%02d:%02d:%02d", t->tm_hour, t->tm_min, t->tm_sec);
 }
@@ -134,6 +161,15 @@ std::string to_string(std::chrono::duration<double> dd) {
   }
   return os.str();
 };
+
+std::string DateTime::to_string(const std::string& format)  const {
+  return put_time(&tm_, format);
+}
+std::string DateTime::to_string()  const {
+  auto s = string(asctime(&tm_));
+  StringTrimEnd(&s);
+  return s;
+}
 
 }
 }

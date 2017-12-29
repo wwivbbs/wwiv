@@ -34,6 +34,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -71,7 +72,7 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype) {
   // always use 0 since we use the stype
   nh.minor_type = 0;
   nh.list_len = 0;
-  nh.daten = static_cast<uint32_t>(time(nullptr));
+  nh.daten = daten_t_now();
   nh.method = 0;
   // This is an alphanumeric sub type.
   string text = stype;

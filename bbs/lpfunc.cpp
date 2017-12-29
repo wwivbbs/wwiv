@@ -138,7 +138,7 @@ int listfiles_plus_function(int type) {
   int max_lines = calc_max_lines();
 
   bool all_done = false;
-  for (size_t this_dir = 0; (this_dir < a()->directories.size()) && (!hangup) && (a()->udir[this_dir].subnum != -1)
+  for (uint16_t this_dir = 0; (this_dir < a()->directories.size()) && (!hangup) && (a()->udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
     int also_this_dir = a()->udir[this_dir].subnum;
     bool scan_dir = false;
@@ -242,7 +242,7 @@ int listfiles_plus_function(int type) {
                 case '?':
                 case CO:
                   bout.cls();
-                  printfile(LISTPLUS_HLP);
+                  print_help_file(LISTPLUS_HLP);
                   pausescr();
                   menu_done = true;
                   amount = lines = matches = 0;
@@ -483,7 +483,7 @@ TOGGLE_EXTENDED:
                     break;
                   case 10:
                     bout.cls();
-                    printfile(LISTPLUS_HLP);
+                    print_help_file(LISTPLUS_HLP);
                     pausescr();
                     menu_done = true;
                     amount = lines = matches = 0;

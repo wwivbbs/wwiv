@@ -352,7 +352,7 @@
     <ClCompile Include="basic.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\deps\my_basic-master\core\my_basic.c">
+    <ClCompile Include="..\deps\my_basic\core\my_basic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="gfileedit.cpp">

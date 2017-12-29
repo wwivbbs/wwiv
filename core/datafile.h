@@ -18,8 +18,6 @@
 #ifndef __INCLUDED_CORE_DATAFILE_H__
 #define __INCLUDED_CORE_DATAFILE_H__
 
-#include <cstddef>
-#include <string>
 #include <vector>
 #include "core/file.h"
 #include "core/inifile.h" // for FilePath

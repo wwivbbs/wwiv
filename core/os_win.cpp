@@ -26,8 +26,15 @@
 #include <sstream>
 
 #ifdef _WIN32
+
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif  // WIN32_LEAN_AND_MEAN
+
+#ifndef NOMINMAX
 #define NOMINMAX
+#endif  // NOMINMAX
+
 #include <Windows.h>
 #include <DbgHelp.h>
 
@@ -84,9 +91,9 @@ std::string environment_variable(const std::string& variable_name) {
 
 string stacktrace() {
   HANDLE process = GetCurrentProcess();
-  SymInitialize(process, NULL, TRUE);
+  SymInitialize(process, nullptr, TRUE);
   void* stack[100];
-  uint16_t frames = CaptureStackBackTrace(0, 100, stack, NULL);
+  uint16_t frames = CaptureStackBackTrace(0, 100, stack, nullptr);
   SYMBOL_INFO* symbol = (SYMBOL_INFO *) calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
   symbol->MaxNameLen = 255;
   symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
@@ -94,7 +101,7 @@ string stacktrace() {
   stringstream out;
   // start at one to skip this current frame.
   for(std::size_t i = 1; i < frames; i++) {
-    if (SymFromAddr(process, (DWORD64)(stack[i]), 0, symbol)) {
+    if (SymFromAddr(process, (DWORD64)(stack[i]), nullptr, symbol)) {
       out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address;
     }
     IMAGEHLP_LINE64 line;

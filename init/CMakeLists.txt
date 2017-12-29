@@ -1,7 +1,6 @@
 # CMake for WWIV 5
-cmake_minimum_required (VERSION 2.6)
-project (INIT)
 include_directories(..)
+Include(FindWWIVCurses)
 
 
 set(COMMON_SOURCES
@@ -26,11 +25,6 @@ set(COMMON_SOURCES
   utility.cpp 
   wwivd_ui.cpp
   )
-
-if(UNIX)
-  set(CURSES_NEED_NCURSES TRUE)
-  find_package(Curses REQUIRED)
-endif()
 
 add_executable(init ${COMMON_SOURCES})
 target_link_libraries(init localui core sdk ${CURSES_LIBRARIES})

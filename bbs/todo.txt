@@ -19,12 +19,12 @@ Infrastructure Cleanup
 * get rid of more char[] variables from vars.h, move to wsession as strings.
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
-* use daten_t everywhere we have a daten date.
 * Maybe make the hangup variable a static in the Application class.
 * Try to remove a()->current_net(), pass in the net as much as possible.
 
 Networking Cleanup
 ==================
+* Figure out why new networking stack doesn't work for mark.
 
 core::File Improvements
 =======================
@@ -51,7 +51,6 @@ Linux Work
 
 Net52
 =====
-* update routing information in network1.
 
 Message Areas
 =============

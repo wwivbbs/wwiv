@@ -37,7 +37,7 @@ public:
   std::string to_name;  // szDestination (to or sub name)
 
   bool need_title = true;
-  int anonymous_flag = 0;   // an
+  uint8_t anonymous_flag = 0;   // an
   int msged_flags = MSGED_FLAG_NONE;      // used to be flags
   FsedFlags fsed_flags = FsedFlags::NOFSED;       // fsed
   bool silent_mode = false;     // Used for ASV and newemail emails.  No questions, etc.

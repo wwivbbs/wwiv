@@ -37,7 +37,12 @@ enum class OverflowStrategy {
 };
 
 struct MessageApiOptions {
-  wwiv::sdk::msgapi::OverflowStrategy overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_none;
+  wwiv::sdk::msgapi::OverflowStrategy overflow_strategy = wwiv::sdk::msgapi::OverflowStrategy::delete_one;
+};
+
+class bad_message_area : public ::std::runtime_error {
+public:
+  bad_message_area(const ::std::string& sub_filename) : ::std::runtime_error(sub_filename) {}
 };
 
 class MessageApi {
@@ -50,12 +55,16 @@ public:
     const std::vector<net_networks_rec>& net_networks);
   virtual ~MessageApi();
 
-  virtual bool Exist(const std::string& name) const = 0;
-  virtual MessageArea* Create(const std::string& name, int subnum) = 0;
-  virtual MessageArea* Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
-  virtual bool Remove(const std::string& name) = 0;
-  virtual MessageArea* Open(const std::string& name, int subnum) = 0;
+  /** Checks to see if the files for a subboard exist. */
+  virtual bool Exist(const wwiv::sdk::subboard_t& sub) const = 0;
+  /** Opens a message area, throwing bad_message_area if it does not exist. */
+  virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
+  /** Opens a message area, throwing bad_message_area if it does not exist. */
   virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) = 0;
+  /** Creates or Opens a message area. throwing bad_message_area if it exists but can not be opened.*/
+  virtual MessageArea* CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum);
+  /** Deletes the message area identified by filename: name */
+  virtual bool Remove(const std::string& name) = 0;
 
   const std::vector<net_networks_rec>& network() const { return net_networks_; }
   const std::string root_directory() const { return root_directory_; }

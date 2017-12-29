@@ -33,6 +33,7 @@
 #include "bbs/utility.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
 //
@@ -63,6 +64,7 @@ static int quotes_ind_l;
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static bool ste(int i) {
@@ -283,6 +285,19 @@ void grab_quotes(messagerec* m, const char *aux) {
   }
 }
 
+static string CreateDateString(time_t t) {
+  auto dt = DateTime::from_time_t(t);
+  std::ostringstream ss;
+  ss << dt.to_string("%A,%B %d, %Y") << " at ";
+  if (a()->user()->IsUse24HourClock()) {
+    ss << dt.to_string("%H:%M");
+  }
+  else {
+    ss << dt.to_string("%I:%M %p");
+  }
+  return ss.str();
+}
+
 void auto_quote(char *org, long len, int type, time_t tDateTime) {
   char s1[81], s2[81], buf[255],
        *p, *b,
@@ -310,11 +325,11 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
     p += 2;
     len = len - (p - b);
     b = p;
-    const string datetime = W_DateString(tDateTime, "WDT", "at");
+    const string datetime = CreateDateString(tDateTime);
     strcpy(s2, datetime.c_str());
 
     //    s2[strlen(s2)-1]='\0';
-    string tb = properize(strip_to_node(s1));
+    auto tb = properize(strip_to_node(s1));
     tb1 = GetQuoteInitials();
     switch (type) {
     case 1:

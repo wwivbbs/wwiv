@@ -1,0 +1,43 @@
+
+
+          DOOR.ID
+
+          Many maildoors now produce (and readers use) a file called
+          Door.Id that was developed by Greg Hewgill.  It is intended
+          to give the reader information on the capabilities of the
+          door that produced the packet (and presumably will process
+          the *.REP produced).  It is a straight text file with the
+          following format.  Each line is in the format ControlWord
+          space equals space value.
+
+
+          DOOR = <doorname>
+               This is the name of the door that created the QWK
+               packet, eg.  <doorname> = Tomcat.
+
+          VERSION = <doorversion>
+               This is the version number of the door that created
+               the packet,  eg. <doorversion> = 2.9.
+
+          SYSTEM = <systemtype>
+               This is the underlying BBS system type and version,
+               eg. <systemtype> = Wildcat 2.55.
+
+          CONTROLNAME = <controlname>
+               This is the name to which the reader should send
+               control messages, eg. <controlname> = TOMCAT.
+
+          CONTROLTYPE = <controltype>
+               This can be one of ADD, DROP, or REQUEST (or others).
+               ADD and DROP are pretty obvious (they work as in
+               Markmail), and REQUEST is for use with BBS systems
+               that support file attachments.  Try out SLMR with
+               CONTROLTYPE = REQUEST and use the Q function.
+
+          RECEIPT
+               This flag indicates that the door/BBS is capable of
+               return receipts when a message is received.  If the
+               first three letters of the subject are RRR, then the
+               door should strip the RRR and set the 'return-receipt-
+               requested' flag on the corresponding message.
+

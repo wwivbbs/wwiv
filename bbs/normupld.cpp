@@ -109,7 +109,7 @@ void normalupload(int dn) {
     }
   }
   strcpy(u.filename, szInputFileName);
-  u.ownerusr = static_cast<uint16_t>(a()->usernum);
+  u.ownerusr = a()->usernum;
   u.ownersys = 0;
   u.numdloads = 0;
   u.unused_filetype = 0;

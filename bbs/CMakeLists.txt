@@ -1,9 +1,8 @@
-# CMake for WWIV 5.0
-cmake_minimum_required (VERSION 2.6)
-project (BBS)
+# CMake for WWIV
 include_directories(..)
 include_directories(../deps/cl342)
 include_directories(../deps/cereal/include)
+Include(FindWWIVCurses)
 
 set(COMMON_SOURCES 
  application.cpp
@@ -114,7 +113,7 @@ set(COMMON_SOURCES
  xinit.cpp
  wfc.cpp
  workspace.cpp
- ../deps/my_basic-master/core/my_basic.c
+ ../deps/my_basic/core/my_basic.c
 )
 
 set(BBS_MAIN bbs_main.cpp)
@@ -143,9 +142,26 @@ if(UNIX)
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
     include_directories(platform/osx)
   endif()
+
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")
   endif()
+endif()
+
+if(WIN32)
+  set(PLATFORM_SOURCES
+      local_io_win32.cpp
+      platform/win32/exec.cpp
+      platform/win32/utility2.cpp)
+  if(MSVC)
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS)
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+      string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif()
+  endif()
+
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 

@@ -82,7 +82,7 @@ protected:
 class MessageText {
 public:
   virtual ~MessageText() {}
-  virtual const std::string text() const = 0;
+  virtual const std::string& text() const = 0;
   virtual void set_text(const std::string&) = 0;
 
 protected:
@@ -92,8 +92,10 @@ protected:
 class Message {
 public:
   virtual ~Message() {}
-  virtual MessageHeader* header() const = 0;
-  virtual MessageText* text() const = 0;
+  virtual MessageHeader& header() const = 0;
+  virtual MessageText& text() const = 0;
+  virtual std::unique_ptr<MessageHeader> release_header() = 0;
+  virtual std::unique_ptr<MessageText> release_text() = 0;
 
 protected:
   Message() {}

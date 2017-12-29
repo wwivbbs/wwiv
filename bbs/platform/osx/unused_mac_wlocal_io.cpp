@@ -736,8 +736,8 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
     dar[16] = '\0';
     ar[16] = '\0';
     restrict[16] = '\0';
-    if (!wwiv::strings::IsEquals(pSession->user()->GetLastOn(), date())) {
-      strcpy(lo, pSession->user()->GetLastOn());
+    if (!wwiv::strings::IsEquals(pSession->user()->GetLastOn().c_str(), date())) {
+      to_char_array(lo, pSession->user()->GetLastOn());
     } else {
       snprintf(lo, sizeof(lo), "Today:%2d", pSession->user()->GetTimesOnToday());
     }
@@ -772,7 +772,7 @@ void WLocalIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstan
                   lo, pSession->user()->GetNumFeedbackSent());
 
     LocalXYPrintf(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
-                  pSession->user()->GetNote(),
+                  pSession->user()->GetNote().c_str(),
                   pSession->user()->GetGender(),
                   pSession->user()->GetAge(),
                   ctypes(pSession->user()->GetComputerType()), fwaiting);

@@ -43,7 +43,7 @@ void valscan() {
   }
 
   int ac = 0;
-  int os = a()->current_user_sub_num();
+  auto os = a()->current_user_sub_num();
 
   if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = 1;
@@ -131,7 +131,7 @@ void valscan() {
                   User tu;
                   a()->users()->readuser(&tu, p2.owneruser);
                   if (!tu.IsUserDeleted()) {
-                    if (date_to_daten(tu.GetFirstOn()) < static_cast<time_t>(p2.daten)) {
+                    if (date_to_daten(tu.GetFirstOn()) < p2.daten) {
                       bout.nl();
                       bout << "|#2Remove how many posts credit? ";
                       char szNumCredits[ 11 ];

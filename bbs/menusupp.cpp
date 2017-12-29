@@ -1039,7 +1039,7 @@ bool GuestCheck() {
 }
 
 void SetSubNumber(const char *pszSubKeys) {
-  for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
+  for (uint16_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
     if (wwiv::strings::IsEquals(a()->usub[i].keys, pszSubKeys)) {
       a()->set_current_user_sub_num(i);
     }
@@ -1047,7 +1047,7 @@ void SetSubNumber(const char *pszSubKeys) {
 }
 
 void SetDirNumber(const char *pszDirectoryKeys) {
-  for (size_t i = 0; i < a()->directories.size(); i++) {
+  for (uint16_t i = 0; i < a()->directories.size(); i++) {
     if (IsEquals(a()->udir[i].keys, pszDirectoryKeys)) {
       a()->set_current_user_dir_num(i);
     }

@@ -164,7 +164,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   return ans;
 }
 
-static int FindUserByRealName(const std::string& user_name) {
+static uint16_t FindUserByRealName(const std::string& user_name) {
   if (user_name.empty()) {
     return 0;
   }
@@ -178,7 +178,7 @@ static int FindUserByRealName(const std::string& user_name) {
       // changed from 15 since computers are faster now-a-days
       bout << ".";
     }
-    int current_user = n.number;
+    auto current_user = n.number;
     a()->ReadCurrentUser(current_user);
     string temp_user_name(a()->user()->GetRealName());
     StringUpperCase(&temp_user_name);
@@ -217,7 +217,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
   }
 
 
-  int user_number = finduser(user_name);
+  auto user_number = finduser(user_name);
   if (user_number != 0) {
     return user_number;
   }
@@ -287,7 +287,7 @@ static void ExecuteWWIVNetworkRequest() {
   }
 
   a()->status_manager()->RefreshStatusCache();
-  time_t lTime = time(nullptr);
+  auto lTime = time_t_now();
   if (a()->usernum == -2) {
     std::stringstream networkCommand;
     networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
@@ -425,8 +425,9 @@ void getuser() {
       remote_password = ToStringUpperCase(a()->remoteIO()->remote_info().password);
       first_time = false;
     }
-    a()->usernum = ShowLoginAndGetUserNumber(remote_username);
-    if (a()->usernum > 0) {
+    auto usernum = ShowLoginAndGetUserNumber(remote_username);
+    if (usernum > 0) {
+      a()->usernum = static_cast<uint16_t>(usernum);
       a()->ReadCurrentUser();
       read_qscn(a()->usernum, qsc, false);
       if (!set_language(a()->user()->GetLanguage())) {
@@ -464,15 +465,16 @@ void getuser() {
       } else {
         DoFailedLoginAttempt();
       }
-    } else if (a()->usernum == 0) {
+    } else if (usernum == 0) {
       bout.nl();
       bout << "|#6Unknown user.\r\n";
-    } else if (a()->usernum == -1) {
+      a()->usernum = static_cast<uint16_t>(usernum);
+    } else if (usernum == -1) {
       write_inst(INST_LOC_NEWUSER, 0, INST_FLAGS_NONE);
       play_sdf(NEWUSER_NOEXT, false);
       newuser();
       ok = true;
-    } else if (a()->usernum == -2) {  // network
+    } else if (usernum == -2) {  // network
       ExecuteWWIVNetworkRequest();
     }
   } while (!ok && ++count < 3);
@@ -499,7 +501,7 @@ static void FixUserLinesAndColors() {
 
 static void UpdateUserStatsForLogin() {
   to_char_array(g_szLastLoginDate, date());
-  if (IsEquals(g_szLastLoginDate, a()->user()->GetLastOn())) {
+  if (a()->user()->GetLastOn() == g_szLastLoginDate) {
     a()->user()->SetTimesOnToday(a()->user()->GetTimesOnToday() + 1);
   } else {
     a()->user()->SetTimesOnToday(1);
@@ -713,53 +715,6 @@ static void CheckAndUpdateUserInfo() {
   }
   if (a()->user()->GetComputerType() == -1) {
     input_comptype();
-  }
-
-  if (!a()->HasConfigFlag(OP_FLAGS_USER_REGISTRATION)) {
-    return;
-  }
-
-  if (a()->user()->GetRegisteredDateNum() == 0) {
-    return;
-  }
-
-  time_t lTime = time(nullptr);
-  if ((a()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime + 30 * SECS_PER_DAY))
-      && (a()->user()->GetExpiresDateNum() > static_cast<uint32_t>(lTime + 10 * SECS_PER_DAY))) {
-    bout << "Your registration expires in " <<
-                       static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / SECS_PER_DAY) <<
-                       "days";
-  } else if ((a()->user()->GetExpiresDateNum() > static_cast<uint32_t>(lTime)) &&
-             (a()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime + 10 * SECS_PER_DAY))) {
-    if (static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>
-                         (SECS_PER_DAY)) > 1) {
-      bout << "|#6Your registration expires in "
-           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>(SECS_PER_DAY))
-           << " days";
-    } else {
-      bout << "|#6Your registration expires in "
-           << static_cast<int>((a()->user()->GetExpiresDateNum() - lTime) / static_cast<uint32_t>(3600L))
-           << " hours.";
-    }
-    bout.nl(2);
-    pausescr();
-  }
-  if (a()->user()->GetExpiresDateNum() < static_cast<uint32_t>(lTime)) {
-    if (!so()) {
-      if (a()->user()->GetSl() > a()->config()->config()->newusersl ||
-          a()->user()->GetDsl() > a()->config()->config()->newuserdsl) {
-        a()->user()->SetSl(a()->config()->config()->newusersl);
-        a()->user()->SetDsl(a()->config()->config()->newuserdsl);
-        a()->user()->SetExempt(0);
-        const string username_num = a()->names()->UserName(a()->usernum);
-        ssm(1, 0) << username_num << "'s registration has expired.";
-        a()->WriteCurrentUser();
-        a()->ResetEffectiveSl();
-        changedsl();
-      }
-    }
-    bout << "|#6Your registration has expired.\r\n\n";
-    pausescr();
   }
 }
 
@@ -1066,8 +1021,7 @@ void logoff() {
   if (g_flags & g_flag_scanned_files) {
     a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
   }
-  time_t t = time(nullptr);
-  a()->user()->SetLastOnDateNumber(t);
+  a()->user()->SetLastOnDateNumber(daten_t_now());
   auto used_this_session = (std::chrono::system_clock::now() - a()->system_logon_time());
   auto min_used = std::chrono::duration_cast<std::chrono::minutes>(used_this_session);
   sysoplog(false) << "Read: " << a()->GetNumMessagesReadThisLogon() 

@@ -47,6 +47,7 @@
 
 using wwiv::bbs::InputMode;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -59,10 +60,15 @@ void modify_event(int evnt);
 void insert_event();
 void delete_event(int n);
 
+// returns day of week, 0=Sun, 6=Sat
+static int dow() {
+  auto dt = DateTime::now();
+  return dt.dow();
+}
+
 static int16_t t_now() {
-  time_t t = time(nullptr);
-  struct tm* pTm = localtime(&t);
-  return static_cast<int16_t>((pTm->tm_hour * 60) + pTm->tm_min);
+  auto dt = DateTime::now();
+  return static_cast<int16_t>((dt.hour() * 60) + dt.minute());
 }
 
 static char *ttc(int d) {

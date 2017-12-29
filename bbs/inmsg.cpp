@@ -48,6 +48,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "core/version.h"
 #include "core/wwivassert.h"
 #include "sdk/datetime.h"
 #include "sdk/names.h"
@@ -71,10 +72,10 @@ static bool GetMessageToName(const char *aux) {
   WWIV_ASSERT(aux);
   if (a()->GetCurrentReadMessageArea() == -1 ||
       IsEqualsIgnoreCase(aux, "email")) {
-    return 0;
+    return false;
   }
 
-  bool bHasAddress = false;
+  bool has_address = false;
   bool newlsave = newline;
 
   if (!a()->current_sub().nets.empty()) {
@@ -82,10 +83,10 @@ static bool GetMessageToName(const char *aux) {
       const auto& xnp = a()->current_sub().nets[i];
       if (a()->net_networks[xnp.net_num].type == network_type_t::ftn &&
           !IsEqualsIgnoreCase(aux, "email")) {
-        bHasAddress = true;
+        has_address = true;
         bout << "|#2To   : ";
         newline = false;
-        string to_name = Input1("All", 40, true, InputMode::MIXED);
+        auto to_name = Input1("All", 40, true, InputMode::MIXED);
         newline = newlsave;
         if (to_name.empty()) {
           strcpy(irt_name, "All");
@@ -99,11 +100,11 @@ static bool GetMessageToName(const char *aux) {
       }
     }
   }
-  return bHasAddress;
+  return has_address;
 }
 
 static void GetMessageTitle(MessageEditorData& data) {
-  bool force_title = !data.title.empty();
+  auto force_title = !data.title.empty();
   if (okansi()) {
     if (!data.silent_mode) {
       bout << "|#2Title: ";
@@ -148,7 +149,7 @@ static void GetMessageTitle(MessageEditorData& data) {
         }
         bout << "|#2Title: ";
         bout.mpl(60);
-        string rollover_line = StringPrintf("%c", ch);
+        auto rollover_line = StringPrintf("%c", ch);
         inli(&s1, &rollover_line, 60, true, false);
         data.title.assign(s1);
       } else {
@@ -169,8 +170,9 @@ static void GetMessageTitle(MessageEditorData& data) {
   }
 }
 
-static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, int* setanon, string *title) {
+static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, string *title) {
   bool abort = false, next = false;
+  int curli = 0;
 
   bout.nl(2);
   bout << "|#9Enter message now, you can use |#2" << maxli << "|#9 lines.\r\n";
@@ -187,48 +189,48 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
   bout.nl();
 
   string current_line;
-  bool bCheckMessageSize = true;
-  bool bSaveMessage = false;
+  bool check_message_size = true;
+  bool save_message = false;
   bool done = false;
   string rollover_line;
   while (!done && !hangup) {
-    while (inli(&current_line, &rollover_line, 160, true, (*curli > 0))) {
+    while (inli(&current_line, &rollover_line, 160, true, (curli > 0))) {
       // returning true means we back spaced past the current line.
       // intuitive eh?
-      (*curli)--;
-      if (*curli >= 0) {
+      curli--;
+      if (curli >= 0) {
         // Don't keep retreating past line 0.
-        rollover_line = lin.at(*curli);
+        rollover_line = lin.at(curli);
         if (rollover_line.length() > a()->user()->GetScreenChars() - 1) {
           rollover_line.resize(a()->user()->GetScreenChars() - 2);
         }
       } else {
-        *curli = 0;
+        curli = 0;
       }
     }
     if (hangup) {
       done = true;
     }
-    bCheckMessageSize = true;
+    check_message_size = true;
     if (current_line[0] == '/') {
-      string cmd = current_line;
+      auto cmd = current_line;
       StringUpperCase(&cmd);
       if (((cmd == "/HELP")) ||
           ((cmd == "/H")) ||
           ((cmd == "/?"))) {
-        bCheckMessageSize = false;
-        printfile(EDITOR_NOEXT);
+        check_message_size = false;
+        print_help_file(EDITOR_NOEXT);
       } else if ((cmd == "/QUOTE") ||
                  (cmd == "/Q")) {
-        bCheckMessageSize = false;
+        check_message_size = false;
         if (quotes_ind != nullptr) {
           get_quote(0);
         }
       } else if ((cmd == "/LI")) {
-        bCheckMessageSize = false;
+        check_message_size = false;
         abort = false;
-        for (int i = 0; (i < *curli) && !abort; i++) {
-          string line = lin.at(i);
+        for (int i = 0; (i < curli) && !abort; i++) {
+          auto line = lin.at(i);
           if (!line.empty() && line.back() == CA) {
             line.pop_back();
           }
@@ -255,39 +257,39 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
         }
       } else if ((cmd == "/ES") ||
                  (cmd == "/S")) {
-        bSaveMessage = true;
+        save_message = true;
         done = true;
-        bCheckMessageSize = false;
+        check_message_size = false;
       } else if ((cmd == "/ESY") ||
                  (cmd == "/SY")) {
-        bSaveMessage = true;
+        save_message = true;
         done = true;
-        bCheckMessageSize = false;
+        check_message_size = false;
         *setanon = 1;
       } else if ((cmd == "/ESN") ||
                  (cmd == "/SN")) {
-        bSaveMessage = true;
+        save_message = true;
         done = true;
-        bCheckMessageSize = false;
+        check_message_size = false;
         *setanon = -1;
       } else if ((cmd == "/ABT") ||
                  (cmd == "/A")) {
         done = true;
-        bCheckMessageSize = false;
+        check_message_size = false;
       } else if ((cmd == "/CLR")) {
-        bCheckMessageSize = false;
-        *curli = 0;
+        check_message_size = false;
+        curli = 0;
         bout << "Message cleared... Start over...\r\n\n";
       } else if (cmd == "/RL") {
-        bCheckMessageSize = false;
-        if (*curli) {
-          (*curli)--;
+        check_message_size = false;
+        if (curli) {
+          curli--;
           bout << "Replace:\r\n";
         } else {
           bout << "Nothing to replace.\r\n";
         }
       } else if (cmd == "/TI") {
-        bCheckMessageSize = false;
+        check_message_size = false;
         bout << "|#1Subj|#7: |#2" ;
         *title = inputl(60, true);
         bout << "Continue...\r\n\n";
@@ -296,50 +298,51 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* curli, in
         cmd.resize(3);
       }
       if (cmd == "/C:") {
-        const string centered_text = current_line.substr(3);
+        const auto centered_text = current_line.substr(3);
         current_line = StringPrintf("%c%s", CB, centered_text.c_str());
-      } else if (cmd == "/SU" && current_line[3] == '/' && *curli > 0) {
-        string old_string = current_line.substr(4);
-        string::size_type slash = old_string.find('/');
+      } else if (cmd == "/SU" && current_line[3] == '/' && curli > 0) {
+        auto old_string = current_line.substr(4);
+        auto slash = old_string.find('/');
         if (slash != string::npos) {
-          string new_string = old_string.substr(slash + 1);
+          auto new_string = old_string.substr(slash + 1);
           old_string.resize(slash);
-          // We've already advanced *curli to point to the new row, so we need
+          // We've already advanced curli to point to the new row, so we need
           // to back up one.
-          int last_line = *curli - 1;
-          string temp = lin.at(last_line);
+          auto last_line = curli - 1;
+          auto temp = lin.at(last_line);
           wwiv::strings::StringReplace(&temp, old_string, new_string);
           lin[last_line] = temp;
           bout << "Last line:\r\n" << lin.at(last_line) << "\r\nContinue...\r\n";
         }
-        bCheckMessageSize = false;
+        check_message_size = false;
       }
     }
 
-    if (bCheckMessageSize) {
-      if (*curli == size_int(lin)) {
+    if (check_message_size) {
+      if (curli == size_int(lin)) {
         // we're inserting a new line at the end.
         lin.emplace_back(current_line);
-      } else if (*curli < size_int(lin)) {
+      } else if (curli < size_int(lin)) {
         // replacing an older line.
-        lin.at(*curli).assign(current_line);
+        lin.at(curli).assign(current_line);
       }
       // Since we added the line, let's move forward.
-      (*curli)++;
-      if (*curli == (maxli + 1)) {
+      curli++;
+      if (curli == (maxli + 1)) {
         bout << "\r\n-= No more lines, last line lost =-\r\n/S to save\r\n\n";
-        (*curli)--;
-      } else if (*curli == maxli) {
+        curli--;
+      } else if (curli == maxli) {
         bout << "-= Message limit reached, /S to save =-\r\n";
-      } else if ((*curli + 5) == maxli) {
+      } else if ((curli + 5) == maxli) {
         bout << "-= 5 lines left =-\r\n";
       }
     }
   }
-  if (*curli == 0) {
-    bSaveMessage = false;
+  if (curli == 0) {
+    save_message = false;
   }
-  return bSaveMessage;
+  lin.resize(curli);
+  return save_message;
 }
 
 
@@ -349,7 +352,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
       !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
       if (a()->net_networks[xnp.net_num].type == network_type_t::ftn) {
-        const string buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
+        const auto buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
         ss << buf << crlf;
         break;
       }
@@ -357,7 +360,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
   }
   if (a()->current_net().type == network_type_t::internet) {
     if (a()->usenetReferencesLine.length() > 0) {
-      const string buf = StringPrintf("%c0RReferences: %s", CD, a()->usenetReferencesLine.c_str());
+      const auto buf = StringPrintf("%c0RReferences: %s", CD, a()->usenetReferencesLine.c_str());
       ss << buf << crlf;
       a()->usenetReferencesLine = "";
     }
@@ -383,7 +386,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
 static string FindTagFileName() {
   for (const auto& xnp : a()->current_sub().nets) {
     auto nd = a()->net_networks[xnp.net_num].dir;
-    string filename = StrCat(nd, xnp.stype, ".tag");
+    auto filename = StrCat(nd, xnp.stype, ".tag");
     if (File::Exists(filename)) {
       return filename;
     }
@@ -417,11 +420,11 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
   if (a()->current_sub().anony & anony_no_tag) {
     return;
   }
-  if (IsEqualsIgnoreCase(irt, szMultiMail)) {
+  if (iequals(irt, szMultiMail)) {
     return;
   }
 
-  const string filename = FindTagFileName();
+  const auto filename = FindTagFileName();
   if (filename.empty()) {
     // FindTagFileName returns an empty string if no tagname exists, so
     // just exit here since there is no tag.
@@ -430,7 +433,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
   if (file.IsOpen()) {
     int j = 0;
     string s;
-    while (!file.IsEndOfFile()) {
+    do {
       s.clear();
       file.ReadLine(&s);
       if (s.length() > 1 && s[s.length() - 2] == RETURN) {
@@ -449,18 +452,18 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) 
       if (j < 7) {
         j++;
       }
-    }
+    } while (!file.IsEndOfFile());
     file.Close();
   }
 }
 
 static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
-  const string quotes_filename = StrCat(a()->temp_directory(), QUOTES_TXT);
+  const auto quotes_filename = StrCat(a()->temp_directory(), QUOTES_TXT);
   TextFile file(quotes_filename, "rt");
   if (file.IsOpen()) {
     string quote_text;
     while (file.ReadLine(&quote_text)) {
-      string::size_type slash_n = quote_text.find('\n');
+      auto slash_n = quote_text.find('\n');
       if (slash_n != string::npos) {
         quote_text.resize(slash_n);
       }
@@ -471,11 +474,11 @@ static void UpdateMessageBufferQuotesCtrlLines(std::ostringstream& ss) {
     file.Close();
   }
 
-  const string msginf_filename = StrCat(a()->temp_directory(), "msginf");
+  const auto msginf_filename = StrCat(a()->temp_directory(), "msginf");
   copyfile(quotes_filename, msginf_filename, false);
 }
 
-static void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
+static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
   // Changed *anony to anony
   switch (*anony) {
   case 0:
@@ -528,14 +531,13 @@ static void GetMessageAnonStatus(bool *real_name, int *anony, int setanon) {
 }
 
 bool inmsg(MessageEditorData& data) {
-  vector<string> lin;
 
   auto oiia = setiia(std::chrono::milliseconds(0));
   if (data.fsed_flags != FsedFlags::NOFSED && !okfsed()) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const string exted_filename = StrCat(a()->temp_directory(), INPUT_MSG);
+  const auto exted_filename = StrCat(a()->temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }
@@ -557,7 +559,6 @@ bool inmsg(MessageEditorData& data) {
     }
   });
 
-  int maxli = GetMaxMessageLinesAllowed();
   bout.nl();
 
   if (irt_name[0] == '\0') {
@@ -577,59 +578,60 @@ bool inmsg(MessageEditorData& data) {
     return false;
   }
 
+  vector<string> lin;
   int setanon = 0;
-  int curli = 0;
-  bool bSaveMessage = false;
+  auto save_message = false;
+  auto maxli = GetMaxMessageLinesAllowed();
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
-    bSaveMessage = InternalMessageEditor(lin, maxli, &curli, &setanon, &data.title);
+    save_message = InternalMessageEditor(lin, maxli, &setanon, &data.title);
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
-    bSaveMessage = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.msged_flags, data.aux);
+    save_message = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.msged_flags, data.aux);
   } else if (data.fsed_flags == FsedFlags::WORKSPACE) {   // "auto-send mail message"
-    bSaveMessage = File::Exists(exted_filename);
-    if (bSaveMessage && !data.silent_mode) {
+    save_message = File::Exists(exted_filename);
+    if (save_message && !data.silent_mode) {
       bout << "Reading in file...\r\n";
     }
     use_workspace = false;
   }
 
-  if (!bSaveMessage) {
+  if (!save_message) {
     bout << "|#6Aborted.\r\n";
     return false;
   }
-  int max_message_size = 0;
-  bool real_name = false;
-  GetMessageAnonStatus(&real_name, &data.anonymous_flag, setanon);
   bout.backline();
   if (!data.silent_mode) {
     SpinPuts("Saving...", 2);
   }
-  if (data.fsed_flags != FsedFlags::NOFSED) {
-    File fileExtEd(exted_filename);
-    max_message_size = std::max<int>(fileExtEd.length(), 30000);
-  } else {
-    for (int i5 = 0; i5 < curli; i5++) {
-      max_message_size += lin.at(i5).length() + 2;
-    }
-  }
   std::ostringstream b;
 
+  auto real_name = false;
+  GetMessageAnonStatus(&real_name, &data.anonymous_flag, setanon);
   // Add author name
   if (real_name) {
     b << a()->user()->GetRealName() << crlf;
   } else if (data.silent_mode) {
     b << a()->config()->config()->sysopname << " #1" << crlf;
   } else {
-    const string name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
-    b << name << crlf;
+    b << a()->names()->UserName(a()->usernum, a()->current_net().sysnum) << crlf;
   }
 
   // Add date to message body
-  b << daten_to_wwivnet_time(time(nullptr)) << crlf;
+  b << daten_to_wwivnet_time(daten_t_now()) << crlf;
   UpdateMessageBufferQuotesCtrlLines(b);
 
   if (irt[0]) {
     UpdateMessageBufferInReplyToInfo(b, data.aux.c_str());
   }
+
+  // TODO(rushfan): This and the date above, etc. Will need to be transformed
+  // into structured data when moving to a proper message API.
+  //
+  // New in 5.x. Add PID to all message types. This will be for WWIV messages
+  // as well as FTN messages so we know the Program ID (WWIV) that created
+  // the message.
+  const auto control_d_zero = StringPrintf("%c0", CD);
+  b << control_d_zero << "PID: WWIV " << wwiv_version << beta_version << crlf;
+
   if (data.fsed_flags != FsedFlags::NOFSED) {
     // Read the file produced by the external editor and add it to the message.
     TextFile editor_file(exted_filename, "r");
@@ -639,8 +641,8 @@ bool inmsg(MessageEditorData& data) {
     }
   } else {
     // iterate through the lines in "lin" and append them to 'b'
-    for (int i5 = 0; i5 < curli; i5++) {
-      b << lin.at(i5) << crlf;
+    for (const auto& l : lin) {
+      b << l << crlf;
     }
   }
 
@@ -648,7 +650,7 @@ bool inmsg(MessageEditorData& data) {
     UpdateMessageBufferTagLine(b, data.aux.c_str());
   }
 
-  string text = b.str();
+  auto text = b.str();
   if (text.back() != CZ) {
     text.push_back(CZ);
   }

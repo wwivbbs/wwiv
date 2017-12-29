@@ -30,6 +30,7 @@
 
 using std::string;
 using namespace std::chrono;
+using namespace wwiv::sdk;
 
 //
 // This kludge will get us through 2019 and should not interfere anywhere
@@ -62,13 +63,6 @@ bool isleap(int year) {
   return year % 400 == 0 || (year % 4 == 0 && year % 100 != 0);
 }
 
-/* returns day of week, 0=Sun, 6=Sat */
-int dow() {
-  time_t long_time = time(nullptr);  // Get time as long integer.
-  struct tm* newtime = localtime(&long_time);  // Convert to local time.
-  return newtime->tm_wday;
-}
-
 /*
  * Returns current time as string formatted like HH:MM:SS (01:13:00).
  */
@@ -85,7 +79,7 @@ std::string ctim(long d) {
 }
 
 int years_old(int nMonth, int nDay, int nYear) {
-  time_t t = time(nullptr);
+  auto t = time_t_now();
   struct tm * pTm = localtime(&t);
   nYear = nYear - 1900;
   --nMonth; // Reduce by one because tm_mon is 0-11, not 1-12
@@ -127,7 +121,7 @@ system_clock::duration duration_since_midnight(system_clock::time_point now) {
 }
 
 system_clock::time_point minutes_after_midnight(int minutes) {
-  auto tnow = system_clock::to_time_t(system_clock::now());
+  const auto tnow = time_t_now();
   tm *date = std::localtime(&tnow);
   date->tm_hour = minutes / 60;
   date->tm_min = minutes % 60;

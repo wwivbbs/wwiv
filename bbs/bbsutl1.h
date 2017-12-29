@@ -20,7 +20,7 @@
 
 #include <string>
 
-void parse_email_info(const std::string& emailAddress, int *pUserNumber, int *pSystemNumber);
+void parse_email_info(const std::string& emailAddress, uint16_t *pUserNumber, uint16_t *pSystemNumber);
 bool ValidateSysopPassword();
 void hang_it_up();
 bool play_sdf(const std::string& soundFileName, bool abortable);

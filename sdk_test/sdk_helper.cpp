@@ -25,10 +25,12 @@
 
 #include "core/file.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "core/wwivport.h"
 #include "core_test/file_helper.h"
 
 #include "gtest/gtest.h"
+#include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 
@@ -36,9 +38,7 @@ using namespace std;
 using namespace wwiv::strings;
 
 static string date() {
-  time_t t = time(nullptr);
-  struct tm* pTm = localtime(&t);
-  return StringPrintf("%02d/%02d/%02d", pTm->tm_mon + 1, pTm->tm_mday, pTm->tm_year % 100);
+  return wwiv::sdk::time_t_to_mmddyy(wwiv::sdk::time_t_now());
 }
 
 static statusrec_t create_status() {
@@ -73,6 +73,18 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
     to_char_array(c.datadir, data_);
     to_char_array(c.dloadsdir, dloads);
 
+    // Add header version.
+    // TODO(rushfan): This really should all be done in the Config class and also used
+    // by INIT from there.
+    configrec_header_t h = {};
+    h.config_revision_number = 0;
+    h.config_size = sizeof(configrec);
+    c.userreclen = sizeof(userrec);
+    h.written_by_wwiv_num_version = wwiv_num_version;
+    to_char_array(h.signature, "WWIV");
+    c.header.header = h;
+
+    
     File cfile(root_, CONFIG_DAT);
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
       throw std::runtime_error("failed to create config.dat");

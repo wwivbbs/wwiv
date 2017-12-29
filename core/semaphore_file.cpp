@@ -66,7 +66,9 @@ namespace core {
 #endif  // _WIN32
 
 // static 
-SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, std::chrono::duration<double> timeout) {
+SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, 
+                                         const std::string& text,
+                                         std::chrono::duration<double> timeout) {
   int mode = O_CREAT | O_EXCL | O_TEMPORARY | O_RDWR;
   int pmode = S_IREAD | S_IWRITE;
   auto step = timeout / 10;
@@ -78,6 +80,7 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, std::chron
   while (true) {
     int fd = open(filepath.c_str(), mode, pmode);
     if (fd >= 0) { 
+      write(fd, text.c_str(), text.size());
       return { filepath, fd };
     }
     if (std::chrono::steady_clock::now() > end) {
@@ -88,8 +91,8 @@ SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, std::chron
 }
 
 // static 
-SemaphoreFile SemaphoreFile::acquire(const std::string& filepath) {
-  return try_acquire(filepath, std::chrono::duration<double>::max());
+SemaphoreFile SemaphoreFile::acquire(const std::string& filepath, const std::string& text) {
+  return try_acquire(filepath, text, std::chrono::duration<double>::max());
 }
 
 SemaphoreFile::SemaphoreFile(const std::string& filepath, int fd) 

@@ -30,7 +30,7 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace core {
 
-HttpServer::HttpServer(SocketConnection& conn) : conn_(conn) {}
+HttpServer::HttpServer(std::unique_ptr<SocketConnection> conn) : conn_(std::move(conn)) {}
 HttpServer::~HttpServer() {}
 
 bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* handler) {
@@ -41,34 +41,37 @@ bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* ha
   return true;
 }
 
-std::string daten_to_wwivnet_time(time_t t) {
-  string human_date = string(asctime(localtime(&t)));
-  StringTrimEnd(&human_date);
-  return human_date;
-}
 
-void HttpServer::SendResponse(HttpResponse& r) {
+static string current_time_as_string() {
+  auto t = time(nullptr);
+  auto tm = localtime(&t);
+  auto s = string(asctime(tm));
+  StringTrimEnd(&s);
+  return s;
+};
+
+void HttpServer::SendResponse(const HttpResponse& r) {
   static const auto statuses = CreateHttpStatusMap();
   const auto d = std::chrono::seconds(1);
-  conn_.send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);
-  conn_.send_line(StrCat("Date: ", daten_to_wwivnet_time(time(nullptr))), d);
-  conn_.send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
+  conn_->send_line(StrCat("HTTP/1.1 ", r.status, " ", statuses.at(r.status)), d);
+  conn_->send_line(StrCat("Date: ", current_time_as_string()), d);
+  conn_->send_line(StrCat("Server: wwivd/", wwiv_version, beta_version), d);
   if (!r.text.empty()) {
     auto content_length = r.text.size();
-    conn_.send_line(StrCat("Content-Length: ", content_length), d);
-    conn_.send("\r\n", d);
-    conn_.send(r.text, d);
+    conn_->send_line(StrCat("Content-Length: ", content_length), d);
+    conn_->send("\r\n", d);
+    conn_->send(r.text, d);
   }
   else {
-    conn_.send_line("Connection: close", d);
-    conn_.send("\r\n", d);
+    conn_->send_line("Connection: close", d);
+    conn_->send("\r\n", d);
   }
 }
 
-static std::vector<std::string> read_lines(SocketConnection& conn) {
+static std::vector<std::string> read_lines(SocketConnection* conn) {
   std::vector<std::string> lines;
   while (true) {
-    auto s = conn.read_line(1024, std::chrono::milliseconds(10));
+    auto s = conn->read_line(1024, std::chrono::milliseconds(10));
     if (!s.empty()) {
       lines.push_back(s);
     }
@@ -79,10 +82,9 @@ static std::vector<std::string> read_lines(SocketConnection& conn) {
   return lines;
 }
 
-
 bool HttpServer::Run() {
   const auto d = std::chrono::seconds(1);
-  auto inital_requestline = conn_.read_line(1024, std::chrono::milliseconds(10));
+  auto inital_requestline = conn_->read_line(1024, std::chrono::milliseconds(10));
   if (inital_requestline.empty()) {
     return false;
   }
@@ -91,7 +93,7 @@ bool HttpServer::Run() {
     return false;
   }
   const auto& path = cmd_parts.at(1);
-  const auto headers = read_lines(conn_);
+  const auto headers = read_lines(conn_.get());
   const auto& cmd = cmd_parts.at(0);
   if (cmd == "GET") {
     for (const auto& e : get_) {
@@ -101,12 +103,10 @@ bool HttpServer::Run() {
         return true;
       }
     }
-    HttpResponse r404(404);
-    SendResponse(r404);
+    SendResponse(HttpResponse(404));
     return true;
   }
-  HttpResponse r405(405);
-  SendResponse(r405);
+  SendResponse(HttpResponse(405));
   return false;
 }
 

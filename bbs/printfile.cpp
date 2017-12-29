@@ -18,54 +18,29 @@
 /**************************************************************************/
 #include "bbs/printfile.h"
 
-#include <cstdlib>
-#include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "bbs/bgetch.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/local_io.h"
 #include "bbs/keycodes.h"
 #include "bbs/pause.h"
-#include "bbs/vars.h"
-#include "bbs/wconstants.h"
 #include "bbs/application.h"
-#include "core/wwivport.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
 
 using std::string;
 using std::unique_ptr;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-char *get_file(const string& filename, long *len) {
-  File file(filename);
-  if (!file.Open(File::modeBinary | File::modeReadOnly)) {
-    *len = 0L;
-    return nullptr;
-  }
-
-  auto lFileSize = file.length();
-  char* pszFileText = static_cast<char *>(malloc(lFileSize + 50));
-  if (pszFileText == nullptr) {
-    *len = 0L;
-    return nullptr;
-  }
-  *len = static_cast<long>(file.Read(pszFileText, lFileSize));
-  return pszFileText;
-}
-
 /**
  * Creates the fully qualified filename to display adding extensions and directories as needed.
  */
-const string CreateFullPathToPrint(const string& basename) {
+string CreateFullPathToPrint(const string& basename) {
   std::vector<string> dirs { a()->language_dir, a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
     File file(base, basename);
@@ -77,23 +52,23 @@ const string CreateFullPathToPrint(const string& basename) {
       // Since no wwiv filenames contain embedded dots skip to the next directory.
       continue;
     }
-    const string root_filename = file.full_pathname();
+    const auto root_filename = file.full_pathname();
     if (a()->user()->HasAnsi()) {
       if (a()->user()->HasColor()) {
         // ANSI and color
-        string candidate = StringPrintf("%s.ans", root_filename.c_str());
+        auto candidate = StringPrintf("%s.ans", root_filename.c_str());
         if (File::Exists(candidate)) {
           return candidate;
         }
       }
       // ANSI.
-      string candidate = StringPrintf("%s.b&w", root_filename.c_str());
+      auto candidate = StringPrintf("%s.b&w", root_filename.c_str());
       if (File::Exists(candidate)) {
         return candidate;
       }
     }
     // ANSI/Color optional
-    string candidate = StringPrintf("%s.msg", root_filename.c_str());
+    auto candidate = StringPrintf("%s.msg", root_filename.c_str());
     if (File::Exists(candidate)) {
       return candidate;
     }
@@ -106,15 +81,15 @@ const string CreateFullPathToPrint(const string& basename) {
  * Prints the file file_name.  Returns true if the file exists and is not
  * zero length.  Returns false if the file does not exist or is zero length
  *
- * @param file_name Name of the file to display
- * @param bAbortable If true, a keyboard input may abort the display
- * @param bForcePause Should pauses be used even for ANSI files - Normally
+ * @param filename Name of the file to display
+ * @param abortable If true, a keyboard input may abort the display
+ * @param force_pause Should pauses be used even for ANSI files - Normally
  *        pause on screen is disabled for ANSI files.
  *
  * @return true if the file exists and is not zero length
  */
-bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
-  const string full_path_name = CreateFullPathToPrint(filename);
+bool printfile(const string& filename, bool abortable, bool force_pause) {
+  const auto full_path_name = CreateFullPathToPrint(filename);
   {
     File f(full_path_name);
     if (!f.Exists()) {
@@ -132,11 +107,11 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
   for (const auto& s : v) {
     bout.bputs(s);
     bout.nl();
-    bool has_ansi = contains(s, ESC);
+    auto has_ansi = contains(s, ESC);
     // If this is an ANSI file, then don't pause
     // (since we may be moving around
     // on the screen, unless the caller tells us to pause anyway)
-    if (has_ansi && !bForcePause) bout.clear_lines_listed();
+    if (has_ansi && !force_pause) bout.clear_lines_listed();
     if (contains(s, CZ)) {
       // We are done here on a control-Z since that's DOS EOF.  Also ANSI
       // files created with PabloDraw expect that anything after a Control-Z
@@ -144,18 +119,31 @@ bool printfile(const string& filename, bool bAbortable, bool bForcePause) {
       // we do not want to render in the bbs.
       break;
     }
-    if (bAbortable && checka()) break;
+    if (abortable && checka()) break;
   }
   bout.flush();
   return !v.empty();
 }
 
 /**
+ * Displays a help file or an error that no help is available.
+ * 
+ * A help file is a normal file displayed with printfile.
+ */
+bool print_help_file(const std::string& filename) {
+  if (!printfile(filename)) {
+    bout << "No help available.  File '" << filename << "' does not exist.\r\n";
+    return false;
+  }
+  return true;
+}
+
+/**
  * Displays a file locally, using LIST util if so defined in WWIV.INI,
  * otherwise uses normal TTY output.
  */
-void print_local_file(const string& ss) {
-  printfile(ss);
+void print_local_file(const string& filename) {
+  printfile(filename);
   bout.nl(2);
   pausescr();
 }

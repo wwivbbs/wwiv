@@ -314,43 +314,41 @@ static bool ok_to_call(const net_call_out_rec *con) {
     ok = false;
   }
 
-  time_t t;
-  time(&t);
-  struct tm * pTm = localtime(&t);
+  auto dt = DateTime::now();
 
-  char l = con->min_hr;
-  char h = con->max_hr;
+  auto l = con->min_hr;
+  auto h = con->max_hr;
   if (l > -1 && h > -1 && h != l) {
     if (h == 0 || h == 24) {
-      if (pTm->tm_hour < l) {
+      if (dt.hour() < l) {
         ok = false;
-      } else if (pTm->tm_hour == l && pTm->tm_min < 12) {
+      } else if (dt.hour() == l && dt.minute() < 12) {
         ok = false;
-      } else if (pTm->tm_hour == 23 && pTm->tm_min > 30) {
+      } else if (dt.hour() == 23 && dt.minute() > 30) {
         ok = false;
       }
     } else if (l == 0 || l == 24) {
-      if (pTm->tm_hour >= h) {
+      if (dt.hour() >= h) {
         ok = false;
-      } else if (pTm->tm_hour == (h - 1) && pTm->tm_min > 30) {
+      } else if (dt.hour() == (h - 1) && dt.minute() > 30) {
         ok = false;
-      } else if (pTm->tm_hour == 0 && pTm->tm_min < 12) {
+      } else if (dt.hour() == 0 && dt.minute() < 12) {
         ok = false;
       }
     } else if (h > l) {
-      if (pTm->tm_hour < l || pTm->tm_hour >= h) {
+      if (dt.hour() < l || dt.hour() >= h) {
         ok = false;
-      } else if (pTm->tm_hour == l && pTm->tm_min < 12) {
+      } else if (dt.hour() == l && dt.minute() < 12) {
         ok = false;
-      } else if (pTm->tm_hour == (h - 1) && pTm->tm_min > 30) {
+      } else if (dt.hour() == (h - 1) && dt.minute() > 30) {
         ok = false;
       }
     } else {
-      if (pTm->tm_hour >= h && pTm->tm_hour < l) {
+      if (dt.hour() >= h && dt.hour() < l) {
         ok = false;
-      } else if (pTm->tm_hour == l && pTm->tm_min < 12) {
+      } else if (dt.hour() == l && dt.minute() < 12) {
         ok = false;
-      } else if (pTm->tm_hour == (h - 1) && pTm->tm_min > 30) {
+      } else if (dt.hour() == (h - 1) && dt.minute() > 30) {
         ok = false;
       }
     }
@@ -373,7 +371,7 @@ public:
  * is ok to call and does not violate any constraints.
  */
 static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_call_out_rec& con) {
-  time_t now = time(nullptr);
+  auto now = time(nullptr);
   if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
     return false;
   }
@@ -894,7 +892,7 @@ static std::pair<uint16_t, int> ansicallout() {
   }
 
   if (entries.empty()) {
-    return std::make_pair(0, -1);
+    return std::make_pair<uint16_t, int>(0, -1);
   }
 
   a()->localIO()->Cls();

@@ -32,7 +32,6 @@
 #include "core/textfile.h"
 #include "core/findfiles.h"
 #include "sdk/datetime.h"
-#include "sdk/filenames.h"
 #include "sdk/fido/fido_address.h"
 
 using std::string;
@@ -48,16 +47,9 @@ namespace fido {
 
 // We use DDHHMMSS like SBBSECHO does.
 std::string packet_name(time_t now) {
-  auto tm = localtime(&now);
 
-  string fmt = "%d%H%M%S";
-
-  char buf[1024];
-  auto res = strftime(buf, sizeof(buf), fmt.c_str(), tm);
-  if (res <= 0) {
-    LOG(ERROR) << "Unable to create packet name from strftime";
-    to_char_array(buf, "DDHHMMSS");
-  }
+  auto dt = DateTime::from_time_t(now);
+  auto buf = dt.to_string("%d%H%M%S");
   return StrCat(buf, ".pkt");
 }
 
@@ -93,8 +85,8 @@ std::string dow_extension(int dow_num, int bundle_number) {
   // TODO(rushfan): Should we assert of bundle_number > 25 (0-9=10, + a-z=26 = 0-35)
 
   static const std::vector<string> dow = {"su", "mo", "tu", "we", "th", "fr", "sa", "su"};
-  std::string ext = dow.at(dow_num);
-  char c = static_cast<char>('0' + bundle_number);
+  auto ext = dow.at(dow_num);
+  auto c = static_cast<char>('0' + bundle_number);
   if (bundle_number > 9) {
     c = static_cast<char>('a' + bundle_number - 10);
   }
@@ -104,9 +96,9 @@ std::string dow_extension(int dow_num, int bundle_number) {
 
 bool is_bundle_file(const std::string& name) {
   static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa", "su" };
-  string::size_type dot = name.find_last_of('.');
+  auto dot = name.find_last_of('.');
   if (dot == string::npos) { return false; }
-  string ext = name.substr(dot + 1);
+  auto ext = name.substr(dot + 1);
   if (ext.length() != 3) { return false; }
   ext.pop_back();
   StringLowerCase(&ext);
@@ -120,40 +112,32 @@ static string control_file_extension(fido_bundle_status_t status) {
 }
 
 std::string control_file_name(const wwiv::sdk::fido::FidoAddress& dest, fido_bundle_status_t status) {
-  int16_t net = dest.net();
-  int16_t node = dest.node();
+  auto net = dest.net();
+  auto node = dest.node();
 
-  const string ext = control_file_extension(status);
+  const auto ext = control_file_extension(status);
   return StringPrintf("%04.4x%04.4x.%s", net, node, ext.c_str());
 }
 
 // 10 Nov 16  21:15:45
 std::string daten_to_fido(time_t t) {
-  auto tm = localtime(&t);
-  const string fmt = "%d %b %y  %H:%M:%S";
-
-  char buf[1024];
-  auto res = strftime(buf, sizeof(buf), fmt.c_str(), tm);
-  if (res <= 0) {
-    LOG(ERROR) << "Unable to create date format in daten_to_fido from strftime";
-    return "";
-  }
-  return buf;
+  auto dt = DateTime::from_time_t(t);
+  return dt.to_string("%d %b %y  %H:%M:%S");
 }
 
 // Format: 10 Nov 16  21:15:45
-time_t fido_to_daten(std::string d) {
+daten_t fido_to_daten(std::string d) {
   try {
     vector<string> months = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
     std::stringstream stream(d);
-    auto now = time(nullptr);
+    auto now = time_t_now();
     struct tm* t = localtime(&now);
     stream >> t->tm_mday;
     string mon_str;
     stream >> mon_str;
     if (!contains(months, mon_str)) {
       // Unparsable date. return now.
-      return time(nullptr);
+      return daten_t_now();
     }
     t->tm_mon = std::distance(months.begin(), std::find(months.begin(), months.end(), mon_str));
     int year;
@@ -172,12 +156,12 @@ time_t fido_to_daten(std::string d) {
     auto result = mktime(t);
     if (result < 0) {
       // Error.. return now so we don't blow stuff up.
-      result =  time(nullptr);
+      result = time_t_now();
     }
-    return result;
+    return time_t_to_daten(result);
   } catch (const std::exception& e) {
     LOG(ERROR) << "exception in fido_to_daten('" << d << "'): " << e.what();
-    return time(nullptr);
+    return daten_t_now();
   }
 }
 
@@ -200,30 +184,41 @@ std::vector<std::string> split_message(const std::string& s) {
   return SplitString(temp, "\r");
 }
 
-// TODO(rushfan): split text into lines and process one at a time
-// this will be easier to handle control lines, etc.
-std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
-  std::string wt;
-  bool newline = true;
-  for (auto& sc : ft) {
-    unsigned char c = static_cast<unsigned char>(sc);
-    if (c == 13) {
+/**
+ * \brief Type of control line. Control-A Kludge or non-control-a like AREA, or none.
+ */
+enum class FtnControlLineType {
+  control_a,
+  plain_control_line,
+  none
+};
+
+static FtnControlLineType determine_kludge_line_type(const std::string& line) {
+  if (line.empty()) {
+    return FtnControlLineType::none;
+  }
+  if (line.front() == 0x01) {
+    return line.size() > 1 ? FtnControlLineType::control_a : FtnControlLineType::none;
+  }
+  if (starts_with(line, "AREA:")
+    || starts_with(line, "SEEN-BY: ")) {
+    return FtnControlLineType::plain_control_line;
+  }
+  return FtnControlLineType::none;
+}
+
+string FidoToWWIVText(const string& ft, bool convert_control_codes) {
+  // Split text into lines and process one at a time
+  // this is easier to handle control lines, etc.
+  string wt;
+  for (const auto& sc : ft) {
+    const auto c = static_cast<unsigned char>(sc);
+    if (c == 0x8d) {
+      // FIDOnet style Soft CR. Convert to CR
       wt.push_back(13);
-      newline = true;
-    } else if (c == 0x8d) {
-      // FIDOnet style Soft CR
-      wt.push_back(13);
-      newline = true;
     } else if (c == 10) {
-      // NOP
-    } else if (c == 1 && newline && convert_control_codes) {
-      // Control-A on a newline.  Since FidoNet uses control-A as a control
-      // code, WWIV uses control-D + '0', we'll change it to control-D + '0'
-      wt.push_back(4);  // control-D
-      wt.push_back('0');
-      newline = false;
+      // NOP. We're skipping LF's so we can split on CR
     } else {
-      newline = false;
       wt.push_back(c);
     }
   }
@@ -231,25 +226,47 @@ std::string FidoToWWIVText(const std::string& ft, bool convert_control_codes) {
   auto lines = SplitString(wt, "\r", false);
   wt.clear();
 
-  for (const auto& line : lines) {
-    if (convert_control_codes) {
-      // According to FSC-0068. Kludge lines are not normally displayed
-      // when reading messages.
-      if (starts_with(line, "AREA:") || starts_with(line, "SEEN-BY: ")) {
-        wt.push_back(4);
-        wt.push_back('0');
-      }
+  if (!convert_control_codes) {
+    for (const auto& line : lines) {
+      wt.append(line).append("\r\n");
     }
-    wt.append(line);
-    wt.push_back(13);
-    wt.push_back(10);
+    return wt;
   }
 
+  for (auto line : lines) {
+    if (line.empty()) {
+      wt.append("\r\n");
+      continue;
+    }
+
+    // According to FSC-0068. Kludge lines are not normally displayed
+    // when reading messages.
+    switch (determine_kludge_line_type(line)) {
+    case FtnControlLineType::control_a: {
+      line = line.substr(1);
+      wt.push_back(4);
+      wt.push_back('0');
+    } break;
+    case FtnControlLineType::plain_control_line: {
+      wt.push_back(4);
+      wt.push_back('0');
+    } break;
+    case FtnControlLineType::none:
+    default:
+    break;
+    }
+    wt.append(line).append("\r\n");
+  }
   return wt;
 }
 
-std::string WWIVToFidoText(const std::string& wt) {
-  string temp(wt);
+string WWIVToFidoText(const string& wt) {
+  return WWIVToFidoText(wt, 9);
+
+}
+
+string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
+  auto temp = wt;
   // Fido Text is CR, not CRLF, so remove the LFs
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
   // Also remove the soft CRs since WWIV has no concept.
@@ -272,7 +289,7 @@ std::string WWIVToFidoText(const std::string& wt) {
     }
     if (line.front() == 0x04 && line.size() > 2) {
       // WWIV style control code.
-      char code = line.at(1);
+      auto code = line.at(1);
       if (code < '0' || code > '9') {
         // Bogus control-D line, let's skip.
         VLOG(1) << "Invalid control-D line: '" << line << "'";
@@ -280,6 +297,7 @@ std::string WWIVToFidoText(const std::string& wt) {
       }
       // Strip WWIV control off.
       line = line.substr(2);
+      int8_t code_num = code - '0';
       if (code == '0') {
         if (starts_with(line, "MSGID:") || starts_with(line, "REPLY:") || starts_with(line, "PID:")) {
           // Handle ^A Control Lines
@@ -291,7 +309,15 @@ std::string WWIVToFidoText(const std::string& wt) {
         }
         // Skip all ^D0 lines other than ones we know.
         continue;
+      } else if (code_num > max_optional_val_to_include) {
+        // Skip values higher than we want.
+        continue;
       }
+    } else if (line.front() == 0x04) {
+      // skip ^D line that's not well formed (i.e. more than 2 characters lone)
+      // TODO(rushfan): Open question should we emit a blank line for a ^DN line that
+      //                is exactly 2 chars long?
+      continue;
     }
     if (line.back() == 0x01 /* CA */) {
       // A line ending in ^A means it soft-wrapped.
@@ -303,7 +329,7 @@ std::string WWIVToFidoText(const std::string& wt) {
     }
 
     // Strip out WWIV color codes.
-    for (unsigned int i = 0; i < line.length(); i++) {
+    for (std::size_t i = 0; i < line.length(); i++) {
       if (line[i] == 0x03) {
         i++;
         continue;
@@ -331,7 +357,7 @@ FidoAddress get_address_from_single_line(const std::string& line) {
 }
 
 FidoAddress get_address_from_origin(const std::string& text) {
-  vector<string> lines = split_message(text);
+  auto lines = split_message(text);
   for (const auto& line : lines) {
     if (starts_with(line, " * Origin:")) {
       return get_address_from_single_line(line);
@@ -344,7 +370,7 @@ FidoAddress get_address_from_origin(const std::string& text) {
 // A valid route is Zone:*, Zone:Net/*
 static std::vector<std::string> parse_routes(const std::string& routes) {
   std::vector<std::string> result;
-  std::vector<std::string> raw = SplitString(routes, " ");
+  auto raw = SplitString(routes, " ");
   for (const auto& rr : raw) {
     string r(rr);
     StringTrim(&r);
@@ -394,7 +420,7 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
   if (contains(r, ':') && ends_with(r, "/")) {
     // We have a ZONE:NET/*
     r.pop_back();
-    vector<string> parts = SplitString(r, ":");
+    auto parts = SplitString(r, ":");
     if (parts.size() != 2) {
       VLOG(2) << "Malformed route: " << route;
       return RouteMatch::no;
@@ -420,7 +446,7 @@ bool RoutesThroughAddress(const wwiv::sdk::fido::FidoAddress& a, const std::stri
   if (routes.empty()) {
     return false;
   }
-  const std::vector<std::string> rs = parse_routes(routes);
+  const auto rs = parse_routes(routes);
   bool ok = false;
   for (const auto& rr : rs) {
     RouteMatch m = matches_route(a, rr);
@@ -484,16 +510,8 @@ bool exists_bundle(const std::string& dir) {
  * If timezone cannot be determined, no characters.
  */
 std::string tz_offset_from_utc() {
-  auto now = time(nullptr);
-  auto tm = localtime(&now);
-
-  char buf[1024];
-  auto res = strftime(buf, sizeof(buf), "%z", tm);
-  if (res <= 0) {
-    LOG(ERROR) << "Unable to create packet name from strftime";
-    to_char_array(buf, "-0800");
-  }
-  return buf;
+  auto dt = DateTime::now();
+  return dt.to_string("%z");
 }
 
 static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std::string path) {
@@ -507,7 +525,7 @@ static std::vector<std::pair<std::string, flo_directive>> ParseFloFile(const std
   while (file.ReadLine(&line)) {
     StringTrim(&line);
     if (line.empty()) { continue; }
-    char st = line.front();
+    auto st = line.front();
     if (st == '^' || st == '#' || st == '~') {
       const string fn = line.substr(1);
       result.emplace_back(fn, static_cast<flo_directive>(st));
@@ -529,8 +547,8 @@ FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std:
     return;
   }
 
-  string basename = ToStringLowerCase(filename.substr(0, dot));
-  string ext = ToStringLowerCase(filename.substr(dot + 1));
+  auto basename = ToStringLowerCase(filename.substr(0, dot));
+  auto ext = ToStringLowerCase(filename.substr(dot + 1));
 
   if (ext.length() != 3) {
     // malformed flo file
@@ -546,7 +564,7 @@ FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std:
     // malformed flo file
     return;
   }
-  char st = to_lower_case(ext.front());
+  auto st = to_lower_case(ext.front());
   status_ = static_cast<fido_bundle_status_t>(st);
 
   auto netstr = basename.substr(0, 4);

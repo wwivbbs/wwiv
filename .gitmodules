@@ -1,0 +1,23 @@
+[submodule "deps/my_basic"]
+	path = deps/my_basic
+	url = https://github.com/wwivbbs/my_basic.git
+[submodule "deps/pdcurses"]
+	path = deps/pdcurses
+	url = https://github.com/wwivbbs/PDCurses.git
+	branch = master
+
+[submodule "deps/cereal"]
+	path = deps/cereal
+	url = https://github.com/wwivbbs/cereal.git
+[submodule "deps/cctz"]
+	path = deps/cctz
+	url = https://github.com/wwivbbs/cctz
+[submodule "deps/abseil-cpp"]
+	path = deps/abseil-cpp
+	url = https://github.com/wwivbbs/abseil-cpp.git
+[submodule "deps/googletest"]
+	path = deps/googletest
+	url = https://github.com/google/googletest.git
+[submodule "deps/benchmark"]
+	path = deps/benchmark
+	url = https://github.com/google/benchmark.git

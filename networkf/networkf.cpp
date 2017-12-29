@@ -182,7 +182,7 @@ static string get_echomail_areaname(const std::string& text) {
   return "";
 }
 
-static bool import_packet_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
+static bool import_packet_file(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   VLOG(1) << "import_packet_file: " << dir << name;
   using wwiv::sdk::fido::ReadPacketResponse;
 
@@ -216,9 +216,6 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
     }
     return false;
   }
-
-  // TODO(rushfan): move this outside do we only load it once.
-  FtnMessageDupe dupe(config);
 
   while (!done) {
     FidoPackedMessage msg;
@@ -304,14 +301,14 @@ static bool import_packet_file(const Config& config, const FidoCallout& callout,
   return true;
 }
 
-static bool import_packets(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+static bool import_packets(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const std::string& mask) {
   VLOG(1) << "Importing packets from: " << dir;
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
   if (files.empty()) {
     LOG(INFO) << "No packets to import in: " << dir;
   }
   for (const auto& f : files) {
-    if (import_packet_file(config, callout, net, dir, f.name)) {
+    if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
       LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
       File::Remove(dir, f.name);
     }
@@ -319,7 +316,7 @@ static bool import_packets(const Config& config, const FidoCallout& callout, con
   return true;
 }
 
-static bool import_bundle_file(const Config& config, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
+static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout, const net_networks_rec& net, const std::string& dir, const string& name) {
   VLOG(1) << "import_bundle_file: name: " << name;
 
   {
@@ -360,15 +357,18 @@ static bool import_bundle_file(const Config& config, const FidoCallout& callout,
   // Need to be back home.
   File::set_current_directory(saved_dir);
 
-  import_packets(config, callout, net, dirs.temp_inbound_dir(), "*.pkt");
+  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.pkt");
 #ifndef _WIN32
-  import_packets(config, callout, net, dirs.temp_inbound_dir(), "*.PKT");
+  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.PKT");
 #endif  // _WIN32
   return true;
 }
 
 static bool import_bundles(const Config& config, const FidoCallout& callout,
   const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+
+  FtnMessageDupe dupe(config);
+
   VLOG(1) << "import_bundles: mask: " << mask;
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
   for (const auto& f : files) {
@@ -378,11 +378,11 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
     }
     string lname = ToStringLowerCase(f.name);
     if (ends_with(lname, ".pkt")) {
-      if (import_packet_file(config, callout, net, dir, f.name)) {
+      if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
         LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
         File::Remove(dir, f.name);
       }
-    } else if (import_bundle_file(config, callout, net, dir, f.name)) {
+    } else if (import_bundle_file(config, dupe, callout, net, dir, f.name)) {
       LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, f.name);
       File::Remove(dir, f.name);
     }
@@ -400,7 +400,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     return false;
   }
 
-  time_t now = time(nullptr);
+  auto now = time(nullptr);
   auto tm = localtime(&now);
   auto dow = tm->tm_wday;
 
@@ -561,7 +561,7 @@ static packet_header_2p_t CreateType2PlusPacketHeader(
 static string remove_fido_addr(string to_user) {
   string to_user_new = "";
 
-  for (int i=0;i<to_user.length();i++) {
+  for (auto i=0; i < size_int(to_user); i++) {
     if (to_user[i] == '(') {
       break;
     } else if (to_user[i] == ' ' && to_user[i+1] == '#') {
@@ -579,7 +579,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
   VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
   using wwiv::net::ReadPacketResponse;
 
-  wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);
+  FtnDirectories dirs(config.root_directory(), net);
 
   FidoAddress from_address(net.fido.fido_address);
   for (int tries = 0; tries < 10; tries++) {
@@ -587,12 +587,12 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     File file(dirs.temp_outbound_dir(), packet_name(now));
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite | File::modeBinary, File::shareDenyReadWrite)) {
       LOG(INFO) << "Will try again: Unable to create packet file: " << file.full_pathname();
-      wwiv::os::sleep_for(std::chrono::seconds(1));
+      sleep_for(std::chrono::seconds(1));
       continue;
     }
 
     auto pw = fido_callout.packet_config_for(route_to).packet_password;
-    packet_header_2p_t header = CreateType2PlusPacketHeader(from_address, route_to, now, pw);
+    auto header = CreateType2PlusPacketHeader(from_address, route_to, now, pw);
 
     if (!write_fido_packet_header(file, header)) {
       LOG(ERROR) << "Error writing packet header.";
@@ -600,13 +600,10 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     }
 
     bool is_email = (wwivnet_packet.nh.main_type == main_type_email || wwivnet_packet.nh.main_type == main_type_email_name);
-    const string raw_text = wwivnet_packet.text;
+    const auto raw_text = wwivnet_packet.text;
     auto iter = raw_text.cbegin();
 
     string subtype;
-    string title;
-    string sender_name;
-    string date_string;
     string to_user_name;
     // or we can put code in for email here??
 
@@ -616,9 +613,9 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     } else {
       subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
     }
-    title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-    date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    auto title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    auto sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
+    auto date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
 
     // TODO(rushfan: These next 2 here should be done differently. We should
     // split the message here and look for these in all lines.  For the By:
@@ -634,14 +631,14 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
     // Clean up sender name.
     CleanupWWIVName(sender_name);
-    string bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
+    auto bbs_text = WWIVToFidoText(string(iter, raw_text.end()));
     
     fido_variable_length_header_t vh{};
     vh.date_time = daten_to_fido(wwivnet_packet.nh.daten);
     vh.from_user_name = sender_name;
     vh.subject = title;
     if (!to_user_name.empty()) {
-      std::string username_only = remove_fido_addr(to_user_name);
+      auto username_only = remove_fido_addr(to_user_name);
       vh.to_user_name = properize(username_only);
     } else {
       vh.to_user_name = "All";
@@ -664,8 +661,9 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     } else {
       text << "AREA:" << subtype << "\r";
     }
-    text << "\001PID: WWIV " << wwiv_version << beta_version << "\r"
-      << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
+    // As of 5.3, the PID is added by the BBS software.
+    // text << "\001PID: WWIV " << wwiv_version << beta_version << "\r";
+    text << "\001TID: WWIV NET" << wwiv_net_version << beta_version << "\r";
     if (needs_msgid) {
       text << "\001MSGID: " << msgid << "\r";
     }
@@ -904,20 +902,20 @@ static FidoAddress find_route_to(const FidoAddress& dest, const FidoCallout& cal
 
 static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline, const net_networks_rec& net, const FidoCallout& fido_callout, std::set<string>& bundles, Packet& p) {
   // Lame implementation that creates 1 file per message.
-  string raw_text = p.text;
+  auto raw_text = p.text;
   auto it = p.text.cbegin();
   string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
   auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);
-  std::set<FidoAddress> subscribers = ReadFidoSubcriberFile(net_dir, StrCat("n", subtype, ".net"));
+  auto subscribers = ReadFidoSubcriberFile(net_dir, StrCat("n", subtype, ".net"));
   if (subscribers.empty()) {
     LOG(INFO) << "There are no subscribers on echo: '" << subtype << "'. Nothing to do!";
   }
   for (const auto& sub : subscribers) {
     string bundlename;
     auto packet_config = fido_callout.packet_config_for(sub);
-    FidoAddress route_to = find_route_to(sub, fido_callout, packet_config);
+    auto route_to = find_route_to(sub, fido_callout, packet_config);
     if (!create_ftn_packet_and_bundle(net_cmdline, fido_callout, sub, route_to, net, p, bundlename)) {
       continue;
     }

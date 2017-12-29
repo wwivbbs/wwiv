@@ -56,7 +56,7 @@ using namespace wwiv::strings;
 static const int INDENTION = 24;
 
 int foundany;
-uint32_t this_date;
+daten_t this_date;
 
 static int ed_num, ed_got;
 static ext_desc_rec *ed_info;
@@ -752,8 +752,8 @@ void listfiles() {
   endlist(1);
 }
 
-void nscandir(int nDirNum, bool& need_title, bool *abort) {
-  int nOldCurDir = a()->current_user_dir_num();
+void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
+  auto nOldCurDir = a()->current_user_dir_num();
   a()->set_current_user_dir_num(nDirNum);
   dliscan();
   if (this_date >= nscandate) {
@@ -769,7 +769,7 @@ void nscandir(int nDirNum, bool& need_title, bool *abort) {
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
       fileDownload.Read(&u, sizeof(uploadsrec));
-      if (u.daten >= static_cast<uint32_t>(nscandate)) {
+      if (u.daten >= nscandate) {
         fileDownload.Close();
 
         if (need_title) {
@@ -807,7 +807,7 @@ void nscanall() {
     }
   }
   if (okansi()) {
-    int save_dir = a()->current_user_dir_num();
+    auto save_dir = a()->current_user_dir_num();
     listfiles_plus(LP_NSCAN_NSCAN);
     if (bScanAllConfs) {
       tmp_disable_conf(false);
@@ -819,7 +819,7 @@ void nscanall() {
   int count       = 0;
   int color       = 3;
   bout << "\r" << "|#2Searching ";
-  for (size_t i = 0; i < a()->directories.size() && !abort && a()->udir[i].subnum != -1; i++) {
+  for (uint16_t i = 0; i < a()->directories.size() && !abort && a()->udir[i].subnum != -1; i++) {
     count++;
     bout.Color(color);
     bout << ".";
@@ -863,7 +863,7 @@ void searchall() {
     }
   }
   bool abort = false;
-  int nOldCurDir = a()->current_user_dir_num();
+  auto nOldCurDir = a()->current_user_dir_num();
   bout.nl(2);
   bout << "Search all a()->directories.\r\n";
   string filemask = file_mask();
@@ -872,7 +872,7 @@ void searchall() {
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
-  for (size_t i = 0; i < a()->directories.size() && !abort && !hangup
+  for (uint16_t i = 0; i < a()->directories.size() && !abort && !hangup
        && a()->udir[i].subnum != -1; i++) {
     int nDirNum = a()->udir[i].subnum;
     bool bIsDirMarked = false;

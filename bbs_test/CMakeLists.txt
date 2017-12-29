@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 2.8)
-project (WWIV5)
 
-include_directories(../deps/googletest-master/googletest/include)
+include_directories(../deps/googletest/googletest/include)
 include_directories(..)
 include_directories(../deps/cereal/include)
 
@@ -30,8 +28,14 @@ if(UNIX)
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")
   endif()
+else()
+  list(APPEND test_sources bbs_test_main.cpp)
 endif()
 
 
 add_executable(bbs_tests ${test_sources})
-target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest_main)
+if(UNIX)
+  target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest_main)
+else()
+  target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest)
+endif()

@@ -29,6 +29,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 
+#include "sdk/datetime.h"
 #include "sdk/fido/fido_util.h"
 
 using std::chrono::seconds;
@@ -37,6 +38,7 @@ using std::clog;
 using std::endl;
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::strings;
 
@@ -45,7 +47,7 @@ namespace net {
 
 WFileTransferFile::WFileTransferFile(const string& filename,
 	  std::unique_ptr<File>&& file)
-  : TransferFile(filename, file->Exists() ? file->last_write_time() : time(nullptr), crc32file(file->full_pathname())), file_(std::move(file)) {
+  : TransferFile(filename, file->Exists() ? file->last_write_time() : time_t_now(), crc32file(file->full_pathname())), file_(std::move(file)) {
   if (filename.find(File::pathSeparatorChar) != string::npos) {
     // Don't allow filenames with slashes in it.
     throw std::invalid_argument("filename can not be relative pathed");

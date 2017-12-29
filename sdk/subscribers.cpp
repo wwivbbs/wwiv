@@ -43,6 +43,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
 
@@ -66,7 +67,7 @@ std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& dir, const std::s
     try {
       subscribers.insert(FidoAddress(line));
     } catch (const bad_fidonet_address& e) {
-      LOG(ERROR) << e.what();
+      LOG(ERROR) << "ReadFidoSubcriberFile: [" << FilePath(dir, filename) << "] : " <<  e.what();
     }
   }
   return subscribers;

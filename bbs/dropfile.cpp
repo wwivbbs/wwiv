@@ -286,8 +286,8 @@ void CreateCallInfoBbsDropFile() {
     file.WriteLine("0");
     file.WriteFormatted("%s\n%s 00:01\nEXPERT\nN\n%s\n%d\n%d\n1\n%d\n%d\n%s\n%s\n%d\n",
                         a()->user()->GetVoicePhoneNumber(),
-                        a()->user()->GetLastOn(),
-                        a()->user()->GetLastOn(),
+                        a()->user()->GetLastOn().c_str(),
+                        a()->user()->GetLastOn().c_str(),
                         a()->user()->GetNumLogons(),
                         a()->user()->GetScreenLines(),
                         a()->user()->GetFilesUploaded(),
@@ -401,7 +401,7 @@ void CreateDoorSysDropFile() {
             "X",                            // a()->user()->GetPassword()
             a()->user()->GetSl(),
             a()->user()->GetNumLogons(),
-            a()->user()->GetLastOn(),
+            a()->user()->GetLastOn().c_str(),
             static_cast<uint32_t>(60L * GetMinutesRemainingForDropFile()),
             GetMinutesRemainingForDropFile());
     file.WriteFormatted(szLine);
@@ -446,7 +446,7 @@ void CreateDoorSysDropFile() {
         'N',                            // record-locking
         a()->user()->GetColor(0),
         a()->user()->GetTimeBankMinutes(),
-        a()->user()->GetLastOn(),                // last n-scan date
+        a()->user()->GetLastOn().c_str(),                // last n-scan date
         t.c_str(),
         "00:01");                       // time last call
     file.WriteFormatted(szLine);
@@ -455,7 +455,7 @@ void CreateDoorSysDropFile() {
             0,                              // files dl today so far
             a()->user()->GetUploadK(),
             a()->user()->GetDownloadK(),
-            a()->user()->GetNote(),
+            a()->user()->GetNote().c_str(),
             a()->user()->GetNumChainsRun(),
             a()->user()->GetNumMessagesPosted());
     file.WriteFormatted(szLine);
@@ -530,7 +530,7 @@ const string create_chain_file() {
       a()->user()->GetAge(),
       a()->user()->GetGender(),
       a()->user()->GetGold(),
-      a()->user()->GetLastOn(),
+      a()->user()->GetLastOn().c_str(),
       a()->user()->GetScreenChars(),
       a()->user()->GetScreenLines(),
       a()->user()->GetSl());

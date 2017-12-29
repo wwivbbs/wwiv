@@ -1,0 +1,573 @@
+Synchronet QWK Network Extenstions 03/23/95
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
+
+This document is intended for developers of QWK off-line readers or mail doors
+for non-Synchronet BBS packages.
+
+Synchronet multinode BBS software (by Digital Dynamics) has never had a QWK
+door written for it, because it has had extensive internal QWK off-line reader
+and network support since version 1 (1992). Since QWK networking is such an
+integrated component of Synchronet, it is extremely easy to setup and maintain
+in comparison to other network technologies (Fido, PostLink, Internet, etc.)
+which are also internally supported, but not as easy to setup for novice
+sysops.
+
+Through our (Digital Dynamics) own extensions to the QWKnet pseudo-standard,
+we have filled many of the gaps that left QWK behind when it came to more
+advanced network needs (most notably, routed NetMail).
+
+Not all of the information in this document will be relevant to your
+development, but we would much rather give too much information, than not
+enough. If other BBS program/mail-door authors choose not to implement this
+standard, it WON'T be because we didn't supply enough information!
+
+Our QWKnet extensions are an evolving entity and we're definitely open
+to suggestions for future enhancements/compatibilty issues. See the end of
+this document for ways to contact Digital Dynamics. We encourage other
+developers to contact us directly for questions or notification of
+compatibility or intended compatibility between their product and ours.
+
+Basics
+------
+Synchronet has an entirely separate message area specifically designed for
+local E-mail and NetMail (as opposed to public message areas or "echoes").
+This "e-mail" message area is always conference number 0 in a QWK or REP
+packet. All non-zero conferences are sub-boards (AKA "Echoes", "SIGs",
+"Forums", etc).
+
+QWK IDs (AKA BBSID) consist of between two and eight valid DOS characters and
+the first character must be alphabetic. QWK IDs must not contain the '@'
+character. It is extremely beneficial if all QWK IDs are unique in a given
+network of systems. QWK IDs that do not match this format may work for basic
+QWKnet functions, but many features may not work. QWK IDs are always considered
+case insensitive. The strings "SYSOP" and "NETMAIL" must are not valid QWK IDs.
+
+A QWKnet node on a Synchronet BBS must be created specifically for QWK
+networking. This is done by using the node's QWK ID as the user name on the
+BBS and the sysop must give the account the 'Q' restriction. This restriction
+allows the uploaded REP packets to come from any user name (AKA Net Status)
+and automatically eliminates non-QWK networked sub-boards from the QWK packets.
+The 'Q' restriction causes the QWK menu to immediately come up at logon
+(rather than the normal "user" logon procedure), taglines are added to
+locally created messages being exported to REP packets, as well as other
+behavior differences from normal "user" accounts. Synchronet creates a
+NETFLAGS.DAT file for 'Q' restricted accounts that haven't disabled CONTROL
+files in the QWK packets, though Synchronet itself does not ever use the
+NETFLAGS.DAT - it's created for compatibility with non-Synchronet QWKnet nodes.
+
+Conference Numbers
+------------------
+When calling a Synchronet BBS for QWK packets, conference numbers will start
+at 0 (for E-mail) and then jump to 1001 or 2001 or a similar number.
+The thousands place represents the message Group number and the hundreds place
+represents the Sub-board number within that group. Conference numbers are
+not necessarily consequetive, though they are (at this time) always sequential.
+The CONTROL.DAT file will contain a list of all the conferences (and numbers)
+the current account has access to. Here is an example CONTROL.DAT:
+
+--------------------------------[ Cut Here ]-----------------------------------
+Vertrauen
+Fullerton, CA
+714-529-9525
+Digital Man, Sysop
+0000,VERT
+02-28-1995,03:22:02
+Tmbbs
+
+0
+0
+88
+0
+E-mail
+1001
+Notices
+1002
+General
+1003
+Software
+1004
+Hardware
+1005
+Progrmming
+1006
+R.F.I.M.
+1007
+Opinion
+2001
+DOVE-Net
+2002
+Ads
+2003
+Entertain
+2004
+Debate
+2005
+Computers
+2006
+Programmin
+2007
+Synchronet
+2008
+SBBS Sysop
+2009
+Domain Ent
+2010
+SyncData
+3001
+FidoNet
+3002
+Musicians
+3003
+prog rock
+3004
+Monte Pyth
+3005
+Gaming
+3006
+Flight-Sim
+HELLO
+BBSNEWS
+GOODBYE
+--------------------------------[ Cut Here ]-----------------------------------
+
+When a Synchronet system calls a QWKnet hub, it can use any conference number
+scheme the hub system is using (max conference number 65535), but NetMail is
+always assumed to be sent and received from conference number 0.
+
+REP Packet Control Messages
+---------------------------
+When calling a Synchronet BBS, the following control messages are supported
+when included in an uploaded REP packet:
+
+Subj: DROP [conf#]
+Note: Drop current conference (or specified conference #) from future packets
+
+Subj: ADD [ptr | -msgs | mm/dd/yy]
+Note: Add current conference to future packets and optionally set message ptr
+
+Subj: ADD [YOURS] [ptr | -msgs | mm/dd/yy]
+Note: Add current conference to future packets and optionally set message ptr
+      If "YOURS" is specified, only mail addressed to you will be packed for
+      this conference. Not applicable for QWKnet node accounts.
+
+Subj: YOURS [ptr | -msgs | mm/dd/yy]
+Note: Same as "ADD YOURS"
+
+Subj: RESET [ptr | -msgs | mm/dd/yy]
+Note: Set message pointer for current conference, - indicates offset from last
+
+Subj: RESETALL [ptr | -msgs | mm/dd/yy]
+Note: Set message pointers for all conferences
+
+Subj: FREQ <filename>
+Note: File Request from file transfer database (not attachments)
+
+Subj: FILES [ON | OFF | mm/dd/yy]
+Note: Include files list in packet and/or specify new-scan date
+
+Subj: ATTACH [ON | OFF]
+Note: Include file attachments in packet automatically (e-mail only)
+
+Subj: MAIL [ALL | ON | OFF]
+Note: Include private mail-box (ALL includes previously read mail)
+
+Subj: DELMAIL [ON | OFF]
+Note: Automatically delete mail-box after successful packet download
+
+Subj: CTRL-A [KEEP | EXPAND | STRIP]
+Note: Ctrl-A color/attribute codes - leave-in, expand to ANSI, or remove
+
+Subj: NDX [ON | OFF]
+Note: Include index (.NDX) files (not necessary for Synchronet QWKnet)
+
+Subj: CONTROL [ON | OFF]
+Note: Include control files (DOOR.ID, CONTROL.DAT, NETFLAGS.DAT, etc)
+
+Subj: VIA [ON | OFF]
+Note: Include messge path (@VIA) line in messages
+
+Subj: TZ [ON | OFF]
+Note: Include time zone (@TZ) line in messages
+
+Example DOOR.ID created by Synchronet v2.11:
+
+--------------------------------[ Cut Here ]-----------------------------------
+DOOR = Synchronet
+VERSION = 2.11
+SYSTEM = Synchronet v2.11
+CONTROLNAME = SBBS
+CONTROLTYPE = ADD
+CONTROLTYPE = DROP
+CONTROLTYPE = YOURS
+CONTROLTYPE = RESET
+CONTROLTYPE = RESETALL
+CONTROLTYPE = FILES
+CONTROLTYPE = ATTACH
+CONTROLTYPE = OWN
+CONTROLTYPE = MAIL
+CONTROLTYPE = DELMAIL
+CONTROLTYPE = CTRL-A
+CONTROLTYPE = FREQ
+CONTROLTYPE = NDX
+CONTROLTYPE = TZ
+CONTROLTYPE = VIA
+CONTROLTYPE = CONTROL
+MIXEDCASE = YES
+--------------------------------[ Cut Here ]-----------------------------------
+
+Transferring Files Between Nodes and Hubs
+-----------------------------------------
+Any non-QWK related files included in a QWKnet REP packet uploaded to a
+Synchronet BBS (or QWK packets received from a QWKnet hub) will be
+automatically moved into the DATA\QNET\<QWKID.IN> directory (where QWKID is the
+QWK ID of the node or hub that sent the file) and the sysop will be notified of
+the received file.
+
+If a Synchronet sysop wishes to send a QWKnet node or hub a file, he need only
+create the directory DATA\QNET\<QWKID.OUT> (where QWKID is the QWK ID of the
+destination node) and copy the file(s) into this directory. The next time this
+node calls and downloads a REP packet (or a QWK is packed for the hub), this
+file will be archived in the packet automatically and then deleted from the
+.OUT directory. This is NOT the same as FREQing (File Requesting) a file. It is
+just a simple means of transferring files between QWKnet nodes and hubs.
+
+NetMail
+-------
+When downloading a QWKnet packet from a Synchronet BBS, any e-mail (conf #0)
+waiting for the QWKnet node account will be automatically included in the
+packet. If the TO: name is the node's QWK ID or the word "SYSOP" (not case
+sensitive), the NetMail should be assumed to be intended for the Sysop.
+Otherwise if the TO: name is not "NETMAIL" (not case sensitive), then it is a
+single hop NetMail message intended for a user on the node's system going by
+the TO: name. The same holds true for REP packets sent to hubs containing
+messages in conf #0.
+
+Routed NetMail
+--------------
+Messages sent to "NETMAIL" (not case sensitve) in conference number 0 are
+intended for another system that the current system unpacking the packet
+must forward the message to. The destination user name and address will be
+on the VERY first line of the message text in the following format:
+"name@addr"
+Where "name" is the full user name (25 chars max) and "addr" is EITHER the
+destination node's QWK ID or the complete routing address. Complete routing
+addresses are stored as: "NEXTID/.../DESTID", where NEXTID is the QWK ID of
+next system in the link and DESTID is the inteded destination's QWK ID. The
+"..." portion of the above routed address designates a variable number of
+QWK IDs to pass through before reaching the DESTID.
+
+Synchronet, automatically expands QWK ID's to complete routing addresses
+whenever possible (when the path is known), so expect to find the complete
+routing address more often than just the destination QWK ID.
+
+When a system discovers a routed NetMail message in a QWK or REP packet it
+needs to determine if the next hop is the destination node, and if so, change
+the TO: field to the destination user name and eliminate the "user@addr"
+line from the message.
+
+If the next hop is not the destination node, it needs to leave the TO: field
+as "NETMAIL" and remove itself and the next hop from the "addr" portion of
+the "user@addr" line before creating the QWK or REP packet for the next hop.
+After exporting the NetMail message sucessfully to QWK or REP, it should be
+deleted.
+
+EchoMail
+--------
+So, you're probably asking yourself, how does Synchronet know how to expand
+a QWK ID into a complete routing address? Well, the @VIA: line is the key.
+Every mail message (EchoMail and NetMail) that has passed through at least one
+system to reach the current system will contain a special first line in the
+body text:
+"@VIA: QWKID/.../ORGID"
+Where QWKID is the ID of the system that sent the message to the system that
+created the QWK or REP packet being unpacked and ORGID is the originating
+system's QWK ID.
+
+Mail that originates on a node or hub will not contain an @VIA: line when
+exported to nodes or hub that are directly connected to it. Only when THOSE
+systems then export the message again, is the @VIA: line added.
+
+Synchronet parses the @VIA: line (if it exists) to automatically maintain
+a dynamic "route map" (filename DATA\QNET\ROUTE.DAT). Each line contains
+information about a QWKnet system that is not directly connected. The format
+(though not necessarily relevant to other BBS packages) is:
+"MM/DD/YY DESTID:QWKID/QWKID/QWKID/..."
+Where MM/DD/YY is the date the entry was last updated in the route file, DESTID
+is the QWK ID of the system which we are defining the routing, and QWKID/QWKID
+etc. are the QWK IDs of the systems necessary to reach DESTID.
+
+Synchronet updates entries for existing DESTID, so if the routing changes,
+the route file changes automatically. Old entries (indicating no mail traffic
+from DESTID in X number of days) are automatically deleted. Synchronet uses 90
+days as maximum age to keep old route entries.
+
+Synchronet comes with a utility (QWKNODES.EXE) that can be used to manually
+scan the existing message bases and create a ROUTE.DAT file (mentioned above),
+a USERS.DAT file (for automatically looking up user names on other systems),
+and a NODES.DAT file (not currently used by Synchronet, mainly for human
+consumption - finding a QWKnode near you!). The format of the USERS.DAT file
+is each line:
+"username                   DESTID    MM/DD/YY  (QWKID/.../DESTID)"
+Where username is the user's full name, DESTID is the QWK ID of the system
+the user is on (or last posted from), MM/DD/YY is the date the message was
+imported, and QWKID/.../ is the path to the DESTID (if not direct connection).
+The only parts Synchronet uses at this time are username and DESTID (ROUTE.DAT
+is used to expand to complete routing address if necessary).
+
+When importing mail with an @VIA: line, Synchronet also checks to make
+sure that the current system's QWK ID is not present in the list of QWK IDs.
+If it is present, then the message is assumed to be an erroneous dupe loop and
+is ignored (not imported). This is called "circular path detection" and is
+caused by systems that accidentally hub off of more than one system in the
+same QWK network causing a message "loop".
+
+@VIA: lines can be disabled on a Synchronet hub by sending a message to "SBBS"
+with a title of "VIA OFF".
+
+Synchronet automatically disables @VIA: lines for hubs when "Ctrl-A Codes" are
+not set to "Leave-in" (this is done by the Synchronet sysop in SCFG), assuming
+this indicates the hub BBS is not a Synchronet system. So, if you're receiving
+@VIA: codes from a Synchronet BBS that is a node (not a hub) off of your
+system, expect to receive Synchronet Ctrl-A codes too! :) Synchronet Ctrl-A
+codes are ANSI equivalents (using a more simple escape sequence) defined as:
+
+(All attribute codes are be preceeded by a Ctrl-A character - ASCII 1)
+
+	Foreground  Background
+Black	    K		0
+Red	    R		1
+Green	    G		2
+Yellow	    Y		3
+Blue	    B		4
+Magenta     M		 5
+Cyan	    C		6
+White	    W		7
+
+High	    H	High Intensity
+Blink	    I	Blinking
+Normal      N   No Special Attributes
+Pause       P   Insert a Pause Prompt into message
+CLS         L   Insert a Form Feed into message
+
+
+Time Zone
+---------
+Another missing element of the QWK format is time zone information. Synchronet
+offers time zone information in QWK messages by adding an @TZ: line before the
+message body (below "name@addr" and "@VIA:" lines if they exist). The time
+zone specified is of the originating system. The format is:
+"@TZ: xxxx"
+Where xxxx are four hex digits (16-bit signed value). The value of the hex
+digits is defined in the SMB (Synchronet Message Base) specification, but for
+your convenience, we have included it here:
+
+	If the zone is in the range -720 to +720, it represents the
+	number of minutes east or west of UT. Values in this range
+	should only be used for time zones not otherwise represented
+	here.
+
+	If the zone is greater than 720 or less than -720, then the
+	following bits have special meaning:
+
+	(1<<12) 	// Non-US time zone	(east of UT)
+	(1<<13) 	// Non-US time zone	(west of UT)
+	(1<<14) 	// U.S. time zone
+	(1<<15) 	// Daylight savings
+
+	The lower 12 bits (0 through 11) contain the number of minutes
+	east or west of UT (not accounting for daylight savings).
+
+	If the time zone is one specified in the U.S. Uniform Time Act,
+	the following values represent the zone:
+
+	AST 0x40F0	// Atlantic		(-04:00)
+	EST 0x412C	// Eastern		(-05:00)
+	CST 0x4168	// Central		(-06:00)
+	MST 0x41A4	// Mountain		(-07:00)
+	PST 0x41E0	// Pacific		(-08:00)
+	YST 0x421C	// Yukon		(-09:00)
+	HST 0x4258	// Hawaii/Alaska	(-10:00)
+	BST 0x4294	// Bering		(-11:00)
+
+	With bit 15 set, the following values represent the same zone
+	with the presence of daylight savings:
+
+	ADT 0xC0F0	// Atlantic		(-03:00)
+	EDT 0xC12C	// Eastern		(-04:00)
+	CDT 0xC168	// Central		(-05:00)
+	MDT 0xC1A4	// Mountain		(-06:00)
+	PDT 0xC1E0	// Pacific		(-07:00)
+	YDT 0xC21C	// Yukon		(-08:00)
+	HDT 0xC258	// Hawaii/Alaska	(-09:00)
+	BDT 0xC294	// Bering		(-10:00)
+
+	The following non-standard time zone specifications may also be
+	used:
+
+	MID 0x2294	// Midway		(-11:00)
+	VAN 0x21E0	// Vancouver		(-08:00)
+	EDM 0x21A4	// Edmonton		(-07:00)
+	WIN 0x2168	// Winnipeg		(-06:00)
+	BOG 0x212C	// Bogota		(-05:00)
+	CAR 0x20F0	// Caracas		(-04:00)
+	RIO 0x20B4	// Rio de Janeiro	(-03:00)
+	FER 0x2078	// Fernando de Noronha	(-02:00)
+	AZO 0x203C	// Azores		(-01:00)
+	LON 0x1000	// London		(+00:00)
+	BER 0x103C	// Berlin		(+01:00)
+	ATH 0x1078	// Athens		(+02:00)
+	MOS 0x10B4	// Moscow		(+03:00)
+	DUB 0x10F0	// Dubai		(+04:00)
+	KAB 0x110E	// Kabul		(+04:30)
+	KAR 0x112C	// Karachi		(+05:00)
+	BOM 0x114A	// Bombay		(+05:30)
+	KAT 0x1159	// Kathmandu		(+05:45)
+	DHA 0x1168	// Dhaka		(+06:00)
+	BAN 0x11A4	// Bangkok		(+07:00)
+	HON 0x11E0	// Hong Kong		(+08:00)
+	TOK 0x121C	// Tokyo		(+09:00)
+	SYD 0x1258	// Sydney		(+10:00)
+	NOU 0x1294	// Noumea		(+11:00)
+	WEL 0x12D0	// Wellington		(+12:00)
+
+Examples
+--------
+Examples are usually helpful at understanding concepts, so we are going to
+use a real-life Synchronet extended QWK network (DOVE-Net) to deomonstrate
+how the above extensions work.
+
+First, the network topology (abbreviated for this example):
+
+	   ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄVERTÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+	   ³		    ³	       ³			³
+  ÚÄÄÄÄÄÄPHOUSEÄÄÄÄÄ¿	  DOMAIN    NITEMOVE	       ÚÄÄÄÄÄÄCENTURYÄÄÄÄÄÄ¿
+  ³	   ³	    ³		       ³	       ³	³	   ³
+CIRCLE7  FANTAIR  KRYSTAL      ÚÄÄÄÄÄÄTLOCÄÄÄÄÄÄ¿    TALONBBS  VSS_BBS	PHOENIX
+			       ³		³
+			     BLAZING	   WILDHARE
+
+
+The ROUTE.DAT on VERT (master hub) for the above (in case you were curious):
+
+--------------------------------[ Cut Here ]-----------------------------------
+03/22/95 CIRCLE7:PHOUSE
+03/22/95 TLOC:NITEMOVE
+03/22/95 FANTAIR:PHOUSE
+03/20/95 TALONBBS:CENTURY
+03/17/95 BLAZING:NITEMOVE/TLOC
+03/19/95 KRYSTAL:PHOUSE
+03/19/95 VSS_BBS:CENTURY
+03/20/95 PHOENIX:CENTURY
+03/20/95 WILDHARE:NITEMOVE/TLOC
+--------------------------------[ Cut Here ]-----------------------------------
+
+Mail originating on VERT would NOT contain an @VIA: line when sent to the
+following systems: PHOUSE, DOMAIN, NITEMOVE, and CENTURY. Mail originating on
+VERT would contain "@VIA: VERT" when sent to the systems: CIRCLE7, FANTAIR,
+KRYSTAL, TLOC, TALONBBS, VSS_BBS, and PHOENIX. Mail originating on VERT would
+contain "@VIA: NITEMOVE/VERT" went sent to the following systems: BLAZING and
+WILDHARE.
+
+Mail originating on BLAZING would contain the following @VIA: lines when sent
+to the following systems:
+
+TLOC:	   <none>
+WILDHARE:  "@VIA: BLAZING"
+NITEMOVE:  "@VIA: BLAZING"
+VERT:	   "@VIA: TLOC/BLAZING"
+DOMAIN:    "@VIA: NITEMOVE/TLOC/BLAZING"
+PHOUSE:    "@VIA: NITEMOVE/TLOC/BLAZING"
+CIRCLE7:   "@VIA: VERT/NITEMOVE/TLOC/BLAZING"
+FANTAIR:   "@VIA: VERT/NITEMOVE/TLOC/BLAZING"
+KRYSTAL:   "@VIA: VERT/NITEMOVE/TLOC/BLAZING"
+CENTURY:   "@VIA: NITEMOVE/TLOC/BLAZING"
+TALONBBS:  "@VIA: VERT/NITEMOVE/TLOC/BLAZING"
+VSS_BBS:   "@VIA: VERT/NITEMOVE/TLOC/BLAZING"
+PHOENIX:   "@VIA: VERT/NITEMOVE/TLOC/BLAZING"
+
+Each of the above systems needs to have its own way of storing the QWK ID of
+the system the message last came from, so it can build the entire return
+address. Luckily, all of the above are Synchronet systems, which stores the
+complete route address in the SMB format message header. Different BBS packages
+will need different ways of storing the originating QWK ID or (preferrably)
+the complete route address (built from the above VIA path with the last hop
+QWK prepended to the address).
+
+Using the above example, VERT would store the QWKnet address of mail
+originating from WILDHARE as "NITEMOVE/TLOC/WILDHARE". Synchronet does not
+actually store addresses in its local message bases using @VIA:. This is
+only used for extended the QWK format (which doesn't have a storage area for
+network addresses). The @VIA: portion of the message body is added and removed
+automatically from each message imported from or exported to QWK format (if
+applicable).
+
+Using a Route Map
+-----------------
+If the BBS software or mail door uses a route map, (similar to the ROUTE.DAT
+that Synchronet uses), it should be able to insert routing information on
+the fly.
+
+If for example, a user on VERT sent NetMail to a user on WILDHARE, Synchronet
+would look in the ROUTE.DAT and find an entry for WILDHARE and automatically
+expand the address from "user@WILDHARE" to "user@NITEMOVE/TLOC/WILDHARE".
+If a user on VERT were to send NetMail to "user@WILDHARE/BIGBBS", Synchronet
+would not even look for BIGBBS in the ROUTE.DAT (it only looks for the first
+hop in the routing), so it would still route the message properly to WILDHARE
+by changing the address to NITEMOVE/TLOC/WILDHARE/BIGBBS.
+
+Each system that receives NetMail should compare the destination QWK ID to
+all the QWKnet nodes it feeds and the hubs it calls. If a match is found, it
+should ignore the routing information and send it directly (overriding the
+specified routing). Example, a user on TALONBBS sends NetMail to
+"user@CENTURY/VERT/PHOUSE/NITEMOVE" (an incorrect route, but valid as far as
+CENTURY knows) - it is possible that PHOUSE now feeds NITEMOVE and CENTURY does
+not yet know about it, so it leaves the route address intact and passes the
+message on to VERT. VERT sees that it feeds NITEMOVE directly, so it sends the
+mail directly (removing the routing information).
+
+NetMail (again)
+---------------
+Using the above example network topology, if a user were to send NetMail
+from BLAZING to a user on CIRCLE7:
+
+REP sent from BLAZING to TLOC:
+Conf #0 - To: NETMAIL
+	  1stLine: username@NITEMOVE/VERT/PHOUSE/CIRCLE7
+
+REP sent from TLOC to NITEMOVE:
+Conf #0 - To: NETMAIL
+	  1stLine: username@VERT/PHOUSE/CIRCLE7
+	  2ndLine: @VIA: BLAZING
+
+REP sent from NITEMOVE to VERT:
+Conf #0 - To: NETMAIL
+	  1stLine: username@PHOUSE/CIRCLE7
+	  2ndLine: @VIA: TLOC/BLAZING
+
+QWK sent from VERT to PHOUSE:
+Conf #0 - To: NETMAIL
+	  1stLine: username@CIRCLE7
+	  2ndLine: @VIA: NITEMOVE/TLOC/BLAZING
+
+QWK sent from PHOUSE to CIRCLE7:
+Conf #0 - To: username
+	  1stLine: @VIA: VERT/NITEMOVE/TLOC/BLAZING
+
+
+Contact Information
+-------------------
+Digital Dynamics
+PO Box 501
+Yorba Linda, CA 92686
+714-529-6328 Voice
+714-529-9271 FAX
+714-529-9525 BBS 14.4k V.32bis
+714-529-9547 BBS 28.8k V.FC
+714-529-9721 BBS 19.2k ZyXEL (reserved for networking)
+FidoNet:  1:103/705 V.32bis
+	  1:103/706 V.FC
+RelayNet: 5115
+Internet: sysop@f705.n103.z1.fidonet.org
+DOVE-Net: sysop@vert
+
+/* End of SYNCQNET.DOC */

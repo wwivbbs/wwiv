@@ -1,7 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
-project (core_test)
-
-include_directories(../deps/googletest-master/googletest/include)
+include_directories(../deps/googletest/googletest/include)
 include_directories(..)
 
 set(fixture_sources
@@ -31,7 +28,14 @@ endif()
 
 add_library(core_fixtures ${fixture_sources}) 
 
-add_executable(core_tests ${test_sources})
 target_link_libraries(core_fixtures core)
-target_link_libraries(core_tests core_fixtures core gtest_main)
+if(NOT UNIX)
+  list(APPEND test_sources core_test_main.cpp)
+endif()
+add_executable(core_tests ${test_sources})
 
+if(UNIX)
+  target_link_libraries(core_tests core_fixtures core gtest_main)
+else()
+  target_link_libraries(core_tests core_fixtures core gtest)
+endif()

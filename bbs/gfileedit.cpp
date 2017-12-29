@@ -320,7 +320,7 @@ bool fill_sec(int sn) {
         gfilerec g1;
         to_char_array(g1.filename, f.name);
         strcpy(g1.description, s1);
-        g1.daten = static_cast<long>(time(nullptr));
+        g1.daten = daten_t_now();
         g[i] = g1;
       } else {
         ok = false;

@@ -40,14 +40,14 @@ protected:
 
   virtual void SetUp() {
     expected_list_.push_back("Title");
-    expected_list_.push_back(wwiv::sdk::daten_to_wwivnet_time(time(nullptr)));
+    expected_list_.push_back(wwiv::sdk::daten_to_wwivnet_time(daten_t_now()));
     expected_list_.push_back(ca + "PID");
     expected_list_.push_back(ca + "MSGID");
     expected_list_.push_back(ca + "TZUTC");
     expected_list_.push_back("Line of text");
 
     expected_list_wwiv_.push_back("Title");
-    expected_list_wwiv_.push_back(wwiv::sdk::daten_to_wwivnet_time(time(nullptr)));
+    expected_list_wwiv_.push_back(wwiv::sdk::daten_to_wwivnet_time(daten_t_now()));
     expected_list_wwiv_.push_back(cd + "0PID");
     expected_list_wwiv_.push_back(cd + "0MSGID");
     expected_list_wwiv_.push_back(cd + "0TZUTC");

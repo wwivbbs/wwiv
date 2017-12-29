@@ -150,11 +150,12 @@ static bool check_fido_host_networks(
       if (n.host != 0) {
         continue;
       }
-      const string filename = StrCat("n", n.stype, ".net");
+      const auto filename = StrCat("n", n.stype, ".net");
       if (!File::Exists(net.dir, filename)) {
         text << "subscriber file '" << filename << "' for echotag: '" << n.stype << "' is missing.\r\n";
         text << " ** Please fix it.\r\n\n";
       }
+      LOG(INFO) << "Checking FTN Subscribers in file " << FilePath(net.dir, filename);
       auto subscribers = ReadFidoSubcriberFile(net.dir, filename);
       if (subscribers.empty()) {
         text << "Unable to find any uplinks in subscriber file for echotag: " << n.stype << "\r\n";
@@ -162,6 +163,7 @@ static bool check_fido_host_networks(
       }
     }
   }
+
   return true;
 }
 
@@ -196,14 +198,14 @@ static bool check_binkp_net(
 static bool send_feedback_email(const net_networks_rec& net, const std::string& text) {
   net_header_rec nh = {};
 
-  string now_mmddyy = wwiv::sdk::daten_to_mmddyy(time(nullptr));
+  string now_mmddyy = wwiv::sdk::daten_to_mmddyy(daten_t_now());
   string title = StringPrintf("%s analysis on %s", net.name, now_mmddyy.c_str());
   string byname = StringPrintf("%s @%u", net.name, net.sysnum);
 
   nh.touser = 1;
   nh.fromuser = std::numeric_limits<uint16_t>::max();
   nh.main_type = main_type_email;
-  nh.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+  nh.daten = daten_t_now();
 
   return send_local_email(net, nh, text, byname, title);
 }
@@ -493,7 +495,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     text << " (DOES NOT EXIST)\r\n";
     text << " ** Please fix it.\r\n\n";
   } else {
-    text << " [" << daten_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
+    text << " [" << time_t_to_wwivnet_time(nlfile.creation_time()) << "]\r\n";
     auto nl_path = File::absolute(dirs.net_dir(), nodelist);
     Nodelist nl(nl_path);
     if (!nl.initialized()) {
@@ -510,7 +512,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
       }
     }
   }
-  
+
   text << "\r\n";
 
   if (net.fido.origin_line.empty()) {
@@ -596,28 +598,11 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    switch (net.type) {
-    case network_type_t::wwivnet:
-    {
-      return network3_wwivnet(cmdline, net_cmdline);
-    } break;
-    case network_type_t::ftn:
-    {
+    // Only run the net fido type network3 for 5.x
+    if (net_cmdline.config().is_5xx_or_later() && net.type == network_type_t::ftn) {
       return network3_fido(cmdline, net_cmdline);
-    } break;
-    case network_type_t::internet:
-    {
-      LOG(INFO) << "Treating network type internet like wwivnet until native internet support is added.";
-      return network3_wwivnet(cmdline, net_cmdline);
-    } break;
-    default:
-    {
-      LOG(ERROR) << "Unknown network type for network: " << net.name;
-      return 3;
     }
-    }
-    LOG(FATAL) << "Should not reach here.";
-    return 4;
+    return network3_wwivnet(cmdline, net_cmdline);
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
   }

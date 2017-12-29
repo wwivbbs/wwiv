@@ -47,6 +47,7 @@ using std::chrono::seconds;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::os;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static bool chat_avail;
@@ -99,7 +100,7 @@ static void send_inst_str1(int m, int whichinst, const std::string& send_string)
   ih.from_user = static_cast<uint16_t>(a()->usernum);
   ih.msg_size = tempsendstring.size() + 1;
   ih.dest_inst = static_cast<uint16_t>(whichinst);
-  ih.daten = static_cast<uint32_t>(time(nullptr));
+  ih.daten = daten_t_now();
 
   send_inst_msg(&ih, tempsendstring);
 }
@@ -128,7 +129,7 @@ void send_inst_cleannet() {
     ih.from_user = 1;
     ih.msg_size = 0;
     ih.dest_inst = 1;
-    ih.daten = static_cast<uint32_t>(time(nullptr));
+    ih.daten = daten_t_now();
 
     send_inst_msg(&ih, "");
   }
@@ -345,7 +346,7 @@ void write_inst(int loc, int subloc, int flags) {
     } else {
       ti.user = 1;
     }
-    ti.inst_started = static_cast<uint32_t>(time(nullptr));
+    ti.inst_started = daten_t_now();
     re_write = true;
   }
 
@@ -436,7 +437,7 @@ void write_inst(int loc, int subloc, int flags) {
     re_write = true;
   }
   if (re_write) {
-    ti.last_update = static_cast<uint32_t>(time(nullptr));
+    ti.last_update = daten_t_now();
     File instFile(a()->config()->datadir(), INSTANCE_DAT);
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       instFile.Seek(static_cast<long>(a()->instance_number() * sizeof(instancerec)), File::Whence::begin);

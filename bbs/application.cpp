@@ -500,7 +500,7 @@ void Application::UpdateTopScreen() {
     ar[16] = '\0';
     restrict[16] = '\0';
     if (date() != user()->GetLastOn()) {
-      strcpy(lo, user()->GetLastOn());
+      to_char_array(lo, user()->GetLastOn());
     } else {
       snprintf(lo, sizeof(lo), "Today:%2d", user()->GetTimesOnToday());
     }
@@ -534,8 +534,12 @@ void Application::UpdateTopScreen() {
     if (a()->users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", user()->GetNote(), user()->GetGender(),
-        user()->GetAge(), ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
+    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", 
+        user()->GetNote().c_str(), 
+        user()->GetGender(),
+        user()->GetAge(), 
+        ctypes(user()->GetComputerType()).c_str(),
+        feedback_waiting);
 
     if (chatcall) {
       localIO()->PutsXY(0, 4, chat_reason_);
@@ -744,10 +748,9 @@ int Application::Run(int argc, char *argv[]) {
       case 'B': {
         // I think this roundtrip here is just to ensure argument is really a number.
         ui = static_cast<unsigned int>(atol(argument.c_str()));
-        const string current_speed_string = std::to_string(ui);
-        SetCurrentSpeed(current_speed_string.c_str());
+        SetCurrentSpeed(std::to_string(ui));
         user_already_on_ = true;
-      }
+        }
         break;
       case 'C':
         break;
@@ -788,6 +791,7 @@ int Application::Run(int argc, char *argv[]) {
           SetCurrentSpeed("KB");
         }
         user_already_on_ = true;
+        ooneuser = true;
         break;
       case 'V':
         cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;

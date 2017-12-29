@@ -325,7 +325,7 @@ string qwk_which_protocol() {
 void upload_reply_packet() {
   char name[21], namepath[101];
   bool rec = true;
-  int save_conf = 0, save_sub;
+  int save_conf = 0;
   struct qwk_config qwk_cfg;
 
 
@@ -339,7 +339,7 @@ void upload_reply_packet() {
   write_qwk_cfg(&qwk_cfg);
   close_qwk_cfg(&qwk_cfg);
 
-  save_sub = a()->current_user_sub_num();
+  auto save_sub = a()->current_user_sub_num();
   if ((a()->uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
     save_conf = 1;
     tmp_disable_conf(true);
@@ -426,8 +426,6 @@ std::unique_ptr<char[]> make_text_file(int filenumber, int curpos, int blocks) {
 }
 
 void qwk_email_text(char *text, char *title, char *to) {
-  int sy, un;
-
   strupr(to);
 
   // Remove text name from address, if it doesn't contain " AT " in it
@@ -449,6 +447,7 @@ void qwk_email_text(char *text, char *title, char *to) {
 
   irt[0] = 0;
   irt_name[0] = 0;
+  uint16_t sy, un;
   parse_email_info(to, &un, &sy);
   grab_quotes(nullptr, nullptr);
 

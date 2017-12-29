@@ -142,7 +142,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
         if (a()->config()->config()->sysconfig & sysconfig_log_dl) {
           a()->users()->readuser(&ur, u.ownerusr);
           if (!ur.IsUserDeleted()) {
-            if (date_to_daten(ur.GetFirstOn()) < static_cast<time_t>(u.daten)) {
+            if (date_to_daten(ur.GetFirstOn()) < u.daten) {
               const string username_num = a()->names()->UserName(a()->usernum);
               ssm(u.ownerusr, 0) << username_num << " downloaded '" << u.filename << "' on " << date();
             }
@@ -260,7 +260,7 @@ void ChangeSubNumber() {
   bout << "|#7Select Sub number : |#0";
 
   string s = mmkey(MMKeyAreaType::subs);
-  for (size_t i = 0; (i < a()->subs().subs().size())
+  for (uint16_t i = 0; (i < a()->subs().subs().size())
        && (a()->usub[i].subnum != -1); i++) {
     if (s == a()->usub[i].keys) {
       a()->set_current_user_sub_num(i);
@@ -280,7 +280,7 @@ void ChangeDirNumber() {
       bout.nl();
       continue;
     }
-    for (size_t i = 0; i < a()->directories.size(); i++) {
+    for (uint16_t i = 0; i < a()->directories.size(); i++) {
       if (s == a()->udir[i].keys) {
         a()->set_current_user_dir_num(i);
         done = true;

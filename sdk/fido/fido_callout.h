@@ -35,7 +35,7 @@ class FidoCallout : public wwiv::sdk::Callout {
 public:
   typedef int size_type;
   static const size_type npos = -1;
-  explicit FidoCallout(const wwiv::sdk::Config& config, const net_networks_rec& net);
+  FidoCallout(const wwiv::sdk::Config& config, const net_networks_rec& net);
   // [[ VisibleForTesting ]]
   virtual ~FidoCallout();
 

@@ -26,7 +26,7 @@
 using namespace std::chrono;
 using namespace wwiv::sdk;
 
-static const time_t t20140704 = 1404460800; // 1404457200;
+static const daten_t t20140704 = 1404460800; // 1404457200;
 
 TEST(DateTime, ToString) {
   EXPECT_EQ("1ms", to_string(milliseconds(1)));

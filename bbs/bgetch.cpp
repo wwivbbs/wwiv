@@ -63,13 +63,8 @@ static void PrintTime() {
 
   bout.Color(0);
   bout.nl(2);
-  time_t l = time(nullptr);
-  std::string currentTime = asctime(localtime(&l));
-
-  // Remove the ending \n character.
-  currentTime.erase(currentTime.find_last_of("\r\n"));
-
-  bout << "|#2" << currentTime << wwiv::endl;
+  auto dt = DateTime::now();
+  bout << "|#2" << dt.to_string() << wwiv::endl;
   if (a()->IsUserOnline()) {
     auto time_on = std::chrono::system_clock::now() - a()->system_logon_time();
     auto seconds_on = static_cast<long>(std::chrono::duration_cast<std::chrono::seconds>(time_on).count());
@@ -77,7 +72,6 @@ static void PrintTime() {
     bout << "|#9Time left = |#1" << ctim(nsl()) << wwiv::endl;
   }
   bout.nl();
-
   bout.RestoreCurrentLine(line);
 }
 
@@ -111,7 +105,7 @@ static void HandleControlKey(char *ch) {
       if (okmacro && (!charbufferpointer)) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         int macroNum = MACRO_KEY_TABLE[(int)c];
-        strncpy(charbuffer, &(a()->user()->GetMacro(macroNum)[0]), sizeof(charbuffer) - 1);
+        to_char_array(charbuffer, a()->user()->GetMacro(macroNum));
         c = charbuffer[0];
         if (c) {
           charbufferpointer = 1;

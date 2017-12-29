@@ -1,7 +1,6 @@
 # CMake for WWIV 5
-cmake_minimum_required (VERSION 2.6)
-project (localui)
 include_directories(..)
+Include(FindWWIVCurses)
 
 set(COMMON_SOURCES
   colors.cpp
@@ -12,11 +11,5 @@ set(COMMON_SOURCES
   stdio_win.cpp
   )
 
-if(UNIX)
-  set(CURSES_NEED_NCURSES TRUE)
-  find_package(Curses REQUIRED)
-  message("Curses Library: ${CURSES_LIBRARIES}") 
-endif()
-
-add_library(localui ${COMMON_SOURCES} ${PLATFORM_SOURCES} ${CURSES_LIBRARIES})
+add_library(localui ${COMMON_SOURCES} ${PLATFORM_SOURCES})
 target_link_libraries(localui ${CURSES_LIBRARIES})

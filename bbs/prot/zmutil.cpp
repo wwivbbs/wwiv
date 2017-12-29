@@ -367,8 +367,8 @@ void zmodemlog(const char *fmt, ... ) {
 	}
 
 	if( do_ts ) {
-		time_t t = time( nullptr );
-		tm = localtime( &t );
+		time_t t = time(nullptr);
+		tm = localtime(&t);
 		fprintf( zmodemlogfile, "%2.2d:%2.2d:%2.2d: ", tm->tm_hour, tm->tm_min, tm->tm_sec );
 	}
 	do_ts = strchr( fmt, '\n' ) != nullptr;
