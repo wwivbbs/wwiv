@@ -130,8 +130,6 @@ set(ZMODEM_SOURCES
 )
 
 if(UNIX) 
-  # Enable if you are cleaning them up actively.
-  # add_definitions ("-Wall")
   set(PLATFORM_SOURCES 
     	platform/unix/exec.cpp 
     	platform/unix/utility2.cpp 
@@ -139,12 +137,12 @@ if(UNIX)
   find_package (Threads)
   if(APPLE)
     set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.mm)
-    SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -framework CoreFoundation -framework Foundation")
+    list(APPEND CMAKE_EXE_LINKER_FLAGS "-framework CoreFoundation -framework Foundation")
     include_directories(platform/osx)
   endif()
 
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
-    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")
+    list(APPEND CMAKE_EXE_LINKER_FLAGS "-lsocket -lnsl -lkstat -lssp")
   endif()
 endif()
 
@@ -153,15 +151,8 @@ if(WIN32)
       local_io_win32.cpp
       platform/win32/exec.cpp
       platform/win32/utility2.cpp)
-  if(MSVC)
-    add_definitions(-D_CRT_SECURE_NO_WARNINGS -D_CRT_NONSTDC_NO_DEPRECATE -D_WINSOCK_DEPRECATED_NO_WARNINGS)
-    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-      string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    else()
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-    endif()
-  endif()
 
+    SET_WARNING_LEVEL_4()
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
