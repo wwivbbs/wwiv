@@ -30,7 +30,6 @@
 #include "bbs/inmsg.h"
 #include "bbs/inetmsg.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
 #include "bbs/read_message.h"
