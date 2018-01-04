@@ -42,7 +42,6 @@ public:
 
   FindFiles(const std::string& dir, const std::string& mask, const FindFilesType type);
   FindFiles(const std::string& mask, const FindFilesType type);
-  virtual ~FindFiles();
 
   iterator begin() { return entries_.begin(); }
   const_iterator begin() const { return entries_.begin(); }

@@ -49,11 +49,7 @@ using namespace wwiv::strings;
 constexpr char CZ = 26;
 
 Type2Text::Type2Text(const std::string& text_filename)
-  : filename_(text_filename) {
-}
-
-Type2Text::~Type2Text() {
-}
+  : filename_(text_filename) {}
 
 // Implementation Details
 

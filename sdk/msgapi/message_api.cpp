@@ -44,8 +44,6 @@ MessageApi::MessageApi(
     subs_directory_(subs_directory), messages_directory_(messages_directory),
     net_networks_(net_networks) {}
 
-MessageApi::~MessageApi() {}
-
 MessageArea* MessageApi::CreateOrOpen(const wwiv::sdk::subboard_t& sub, int subnum) {
   if (!Exist(sub)) {
     LOG(INFO) << "Message area: '" << sub.filename << "' does not exist. Attempting to create it.";

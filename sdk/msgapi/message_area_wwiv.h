@@ -60,7 +60,6 @@ private:
 class WWIVMessageAreaLastRead : public MessageAreaLastRead {
 public:
   WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number);
-  virtual ~WWIVMessageAreaLastRead();
 
   uint32_t last_read(int user_number) override;
   bool set_last_read(int user_number, uint32_t last_read, uint32_t highest_read) override;

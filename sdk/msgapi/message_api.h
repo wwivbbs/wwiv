@@ -53,7 +53,6 @@ public:
     const std::string& subs_directory,
     const std::string& messages_directory,
     const std::vector<net_networks_rec>& net_networks);
-  virtual ~MessageApi();
 
   /** Checks to see if the files for a subboard exist. */
   virtual bool Exist(const wwiv::sdk::subboard_t& sub) const = 0;

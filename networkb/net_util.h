@@ -77,7 +77,7 @@ public:
   const int network_number() const { return network_number_; }
   const net_networks_rec& network() const { return network_; }
 
-  std::unique_ptr<wwiv::core::IniFile> LoadNetIni(char net_cmd);
+  std::unique_ptr<wwiv::core::IniFile> LoadNetIni(char net_cmd) const;
 
 private:
   std::string bbsdir_;

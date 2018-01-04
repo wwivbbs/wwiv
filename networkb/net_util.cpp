@@ -161,17 +161,15 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
   StringLowerCase(&network_name_);
 }
 
-std::unique_ptr<wwiv::core::IniFile> NetworkCommandLine::LoadNetIni(char net_cmd) {
-  const string net_tag = StrCat("network", net_cmd);
-  const string net_tag_net = StrCat(net_tag, "-", network_name());
+std::unique_ptr<wwiv::core::IniFile> NetworkCommandLine::LoadNetIni(char net_cmd) const {
+  const auto net_tag = StrCat("network", net_cmd);
+  const auto net_tag_net = StrCat(net_tag, "-", network_name());
 
   File file(config().root_directory(), "net.ini");
   return std::unique_ptr<IniFile>(new IniFile(file.full_pathname(), { net_tag_net, net_tag }));
 }
 
-/*
 
-*/
 }  // namespace net
 }  // namespace wwiv
 

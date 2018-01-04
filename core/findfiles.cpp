@@ -69,9 +69,5 @@ FindFiles::FindFiles(const std::string& mask, const FindFilesType type) {
   } while (fnd.next());
 }
 
-FindFiles::~FindFiles() {
-}
-
-
 }
 }

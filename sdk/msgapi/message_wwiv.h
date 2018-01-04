@@ -41,8 +41,6 @@ public:
   WWIVMessageHeader(postrec header, const std::string& from, const std::string& to,
     const std::string& in_reply_to, const MessageApi* api);
 
-  virtual ~WWIVMessageHeader();
-
   std::string title() const override { return header_.title;  }
   void set_title(const std::string&) override;
   std::string to() const override { return to_.empty() ? to_ : "ALL";  }
@@ -108,7 +106,6 @@ public:
 
   WWIVMessageText();
   explicit WWIVMessageText(const std::string& text);
-  virtual ~WWIVMessageText();
 
   const std::string& text() const override;
   void set_text(const std::string&) override;
@@ -121,7 +118,6 @@ class WWIVMessage: public Message {
 public:
   WWIVMessage(std::unique_ptr<WWIVMessageHeader> header, 
     std::unique_ptr<WWIVMessageText> text);
-  ~WWIVMessage();
 
   MessageHeader& header() const override { return *header_.get(); }
   MessageText& text() const override { return *text_.get(); }

@@ -67,7 +67,7 @@ public:
     const std::string& messages_directory,
     const std::vector<net_networks_rec>& net_networks,
     WWIVLastReadImpl* last_read);
-  virtual ~WWIVMessageApi();
+
   virtual bool Exist(const wwiv::sdk::subboard_t& sub) const override;
   virtual bool Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
   virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) override;

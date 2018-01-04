@@ -47,6 +47,8 @@ class IniFile {
     return static_cast<T>(GetNumericValueT(key, T()));
   }
 
+  std::string full_pathname() const { return file_name_; }
+
  private:
   // This class should not be assigneable via '=' so remove the implicit operator=
   // and Copy constructor.

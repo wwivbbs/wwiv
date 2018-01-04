@@ -61,10 +61,6 @@ WWIVEmail::WWIVEmail(
   open_ = mail_file_ && mail_file_.file().Exists();
 }
 
-WWIVEmail::~WWIVEmail() {
-  Close();
-}
-
 bool WWIVEmail::Close() {
   open_ = false;
   return true;

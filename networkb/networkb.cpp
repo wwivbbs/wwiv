@@ -180,17 +180,9 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     const string sendto_node = cmdline.sarg("node");
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
-    File inifile(net_cmdline.config().root_directory(), "net.ini");
-    if (inifile.Exists()) {
-      const string ini_net_node = StrCat("networkb-", net_cmdline.network_name(), "-", sendto_node);
-      const string ini_net = StrCat("networkb-", net_cmdline.network_name());
-      IniFile ini(inifile.full_pathname(), {ini_net_node, ini_net, "networkb"});
-      if (!bink_config.ProcessIniFile(ini)) {
-        LOG(INFO) << "Unable to open INI file: " << inifile.full_pathname();
-      }
-    } else {
-      // We don't want to warn now until we have usefull stuff in it.
-      VLOG(1) << "FYI: INI file for this command doesn't exist; filename: " << inifile.full_pathname();
+    const auto ini = net_cmdline.LoadNetIni('b');
+    if (!bink_config.ProcessIniFile(*ini)) {
+      LOG(INFO) << "Unable to open INI file: " << ini->full_pathname();
     }
 
     bink_config.set_skip_net(skip_net);
@@ -198,8 +190,7 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     bink_config.set_network_version(status->GetNetworkVersion());
 
     for (const auto& n : bink_config.networks().networks()) {
-      string lower_case_network_name(n.name);
-      StringLowerCase(&lower_case_network_name);
+      auto lower_case_network_name = ToStringLowerCase(n.name);
       if (n.type == network_type_t::wwivnet) {
         bink_config.callouts()[lower_case_network_name] = std::unique_ptr<Callout>(new Callout(n));
       } else if (n.type == network_type_t::ftn) {

@@ -40,8 +40,6 @@ WWIVMessageHeader::WWIVMessageHeader(postrec header, const std::string& from, co
   : header_(header), from_(from), to_(to), in_reply_to_(in_reply_to),
     api_(api) {}
 
-WWIVMessageHeader::~WWIVMessageHeader() {}
-
 bool WWIVMessageHeader::local() const {
   uint8_t net_num = header_.network.network_msg.net_number;
   if (net_num >= api_->network().size()) {
@@ -95,8 +93,6 @@ WWIVMessageText::WWIVMessageText()
 WWIVMessageText::WWIVMessageText(const std::string& text)
   : MessageText(), text_(text) {}
 
-WWIVMessageText::~WWIVMessageText() {}
-
 void WWIVMessageText::set_text(const std::string& text) {
   text_ = text;
 }
@@ -108,8 +104,6 @@ const std::string& WWIVMessageText::text() const {
 WWIVMessage::WWIVMessage(std::unique_ptr<WWIVMessageHeader> header,
   std::unique_ptr<WWIVMessageText> text)
   : Message(), header_(std::move(header)), text_(std::move(text)) {}
-
-WWIVMessage::~WWIVMessage() {}
 
 
 }  // namespace msgapi

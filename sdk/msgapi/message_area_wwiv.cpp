@@ -97,8 +97,6 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
 WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number) 
   :MessageAreaLastRead(api), wapi_(api), message_area_number_(message_area_number) {}
 
-WWIVMessageAreaLastRead::~WWIVMessageAreaLastRead() {}
-
 uint32_t WWIVMessageAreaLastRead::last_read(int) {
   if (message_area_number_ < 0) {
     return 0;

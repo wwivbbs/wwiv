@@ -40,7 +40,6 @@ static constexpr int GATSECLEN = GAT_SECTION_SIZE + GAT_NUMBER_ELEMENTS * MSG_BL
 class Type2Text {
 public:
   Type2Text(const std::string& text_filename);
-  virtual ~Type2Text();
 
   std::vector<gati_t> load_gat(File& file, size_t section);
   void save_gat(File& f, size_t section, const std::vector<gati_t>& gat);

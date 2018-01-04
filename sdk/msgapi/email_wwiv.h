@@ -38,7 +38,6 @@ class WWIVMessageApi;
 class EmailData {
 public:
   EmailData() {}
-  ~EmailData() {}
 
   /** The title for this email */
   std::string title;
@@ -66,7 +65,6 @@ public:
       const std::string& root_directory,
       const std::string& data_filename, const std::string& text_filename,
       int max_net_num);
-  virtual ~WWIVEmail();
 
   bool Close();
 

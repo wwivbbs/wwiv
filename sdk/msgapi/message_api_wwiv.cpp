@@ -56,7 +56,6 @@ WWIVMessageApi::WWIVMessageApi(
   WWIVLastReadImpl* last_read)
   : MessageApi(options, bbs_directory, data_directory, messages_directory, net_networks),
   last_read_(last_read) {}
-WWIVMessageApi::~WWIVMessageApi() {}
 
 bool WWIVMessageApi::Exist(const wwiv::sdk::subboard_t& sub) const {
   const std::string sub_filename = StrCat(sub.filename, ".sub");
