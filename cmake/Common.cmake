@@ -13,7 +13,7 @@ set(CMAKE_COLOR_MAKEFILE   ON)
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
-option(WWIV_BUILD_TESTS "Build WWIV test programs" OFF)
+option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
 
 if (UNIX)
   if (CMAKE_SYSTEM_NAME MATCHES "Linux")

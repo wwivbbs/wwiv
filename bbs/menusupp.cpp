@@ -762,7 +762,7 @@ void RemoveNotThere() {
 void UploadAllDirs() {
   bout.nl(2);
   bool ok = true;
-  for (size_t nDirNum = 0; nDirNum < a()->directories.size() && a()->udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
+  for (uint16_t nDirNum = 0; nDirNum < a()->directories.size() && a()->udir[nDirNum].subnum >= 0 && ok && !hangup; nDirNum++) {
     bout << "|#9Now uploading files for: |#2" << a()->directories[a()->udir[nDirNum].subnum].name << wwiv::endl;
     ok = uploadall(nDirNum);
   }
