@@ -87,7 +87,8 @@ class Output : public std::ostream {
   std::string MakeColor(int wwiv_color);
   std::string MakeSystemColor(int nColor);
   std::string MakeSystemColor(wwiv::sdk::Color color);
-  void litebar(const char *fmt, ...);
+  void litebarf(const char *fmt, ...);
+  void litebar(const std::string& msg);
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();
 

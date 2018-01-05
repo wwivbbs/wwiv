@@ -418,7 +418,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
 }
 
 bool Application::ReadConfig() {
-  config_.reset(new Config());
+  config_.reset(new Config(a()->GetHomeDir()));
   if (!config_->IsInitialized()) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;

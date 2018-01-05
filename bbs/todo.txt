@@ -33,6 +33,7 @@ core::File Improvements
 * Create SemaphoreFile class, initially have it replace what we do
   in wwivd, later on also add support for creating semaphores for network
   and other places in wwiv.
+* Pass sdk::Config into WWIVEmail vs. root_directory
 
 Feature Improvements
 ====================

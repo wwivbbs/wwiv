@@ -46,7 +46,7 @@ TEST_F(ConfigTest, Helper_CreatedBBSRoot) {
 TEST_F(ConfigTest, Config_CurrentDirectory) {
   ASSERT_EQ(0, chdir(helper.root().c_str()));
 
-  Config config;
+  Config config(File::current_directory());
   ASSERT_TRUE(config.IsInitialized());
   EXPECT_EQ(helper.data_, config.datadir());
 }
@@ -63,8 +63,8 @@ TEST_F(ConfigTest, SetConfig_Stack) {
 
   configrec c{};
   strcpy(c.systemname, "mysys");
-  config.set_config(&c);
-  ASSERT_STREQ(c.systemname, config.config()->systemname);
+  config.set_config(&c, true);
+  ASSERT_EQ(c.systemname, config.system_name());
 }
 
 TEST_F(ConfigTest, SetConfig_Heap) {
@@ -73,8 +73,8 @@ TEST_F(ConfigTest, SetConfig_Heap) {
 
   configrec* c = new configrec();
   strcpy(c->systemname, "mysys");
-  config.set_config(c);
-  ASSERT_STREQ(c->systemname, config.config()->systemname);
+  config.set_config(c, true);
+  ASSERT_EQ(c->systemname, config.system_name());
   EXPECT_NE(nullptr, c);
   delete c;
 }

@@ -832,6 +832,7 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, int editor_status,
 void Win32ConsoleIO::UpdateNativeTitleBar(Application* session) {
   // Set console title
   std::stringstream ss;
-  ss << "WWIV Node " << session->instance_number() << " (" << a()->config()->config()->systemname << ")";
+  ss << "WWIV Node " << session->instance_number() 
+     << " (" << a()->config()->system_name() << ")";
   SetConsoleTitle(ss.str().c_str());
 }

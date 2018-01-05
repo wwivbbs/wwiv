@@ -170,7 +170,7 @@ std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
   return MakeSystemColor(static_cast<uint8_t>(c));
 }
 
-void Output::litebar(const char *fmt, ...) {
+void Output::litebarf(const char *fmt, ...) {
   va_list ap;
   char s[1024];
 
@@ -178,23 +178,16 @@ void Output::litebar(const char *fmt, ...) {
   vsnprintf(s, sizeof(s), fmt, ap);
   va_end(ap);
 
-#ifdef OLD_LITEBAR
-  if (strlen(s) % 2 != 0) {
-    strcat(s, " ");
-  }
-  int i = (74 - strlen(s)) / 2;
+  litebar(s);
+}
+
+void Output::litebar(const std::string& msg) {
   if (okansi()) {
-    char s1[1024];
-    snprintf(s1, sizeof(s1), "%s%s%s", charstr(i, ' '), stripcolors(s), charstr(i, ' '));
-    *this << "\x1B[0;1;37m" << string(strlen(s1) + 4, '\xDC') << wwiv::endl;
-    *this << "\x1B[0;34;47m  " << s1 << "  \x1B[40m\r\n";
-    *this << "\x1B[0;1;30m" << string(strlen(s1) + 4, '\xDF') << wwiv::endl;
-  }` else {
-    *this << std::string(i, ' ') << s << wwiv::endl;
+    bputs(StrCat(StringPrintf("|17|15 %-78s", msg.c_str()), "|#0\r\n\n"));
   }
-#else
-  bputs(StrCat(StringPrintf("|17|15 %-78s", s), "|#0\r\n\n"));
-#endif
+  else {
+    bout << "|#5" << msg << "|#0\r\n\n";
+  }
 }
 
 void Output::backline() {

@@ -41,20 +41,20 @@ using namespace wwiv::strings;
 
 class NetworkTest : public testing::Test {
 public:
-  NetworkTest() : config(helper.root()) {
-    EXPECT_TRUE(config.IsInitialized());
+  NetworkTest() : config_(helper.root()) {
+    EXPECT_TRUE(config_.IsInitialized());
     EXPECT_TRUE(CreateNetworksDat({ "one", "two" }));
-    networks.reset(new Networks(config));
+    networks.reset(new Networks(config_));
     EXPECT_TRUE(networks->IsInitialized());
   }
 
   virtual void SetUp() {
-    config.IsInitialized();
+    config_.IsInitialized();
   }
 
   bool CreateNetworksDat(std::vector<std::string> names) {
-    std::clog << "Writing NETWORK.DAT to: " << config.datadir() << std::endl;
-    File file(config.datadir(), NETWORKS_DAT);
+    std::clog << "Writing NETWORK.DAT to: " << config_.datadir() << std::endl;
+    File file(config_.datadir(), NETWORKS_DAT);
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;
@@ -62,7 +62,7 @@ public:
   
     uint16_t sysnum = 1;
     for (const auto& name : names) {
-      const string dir = StrCat(config.root_directory(), File::pathSeparatorString, name);
+      const string dir = StrCat(config_.root_directory(), File::pathSeparatorString, name);
       net_networks_rec_disk rec{};
       strcpy(rec.name, name.c_str());
       strcpy(rec.dir, dir.c_str());
@@ -76,7 +76,7 @@ public:
   Networks& test_networks() const { return *networks.get(); }
 
   SdkHelper helper;
-  Config config;
+  Config config_;
   unique_ptr<Networks> networks;
 };
 
@@ -97,7 +97,7 @@ TEST_F(NetworkTest, Networks_Bracket) {
 TEST_F(NetworkTest, Networks_Dir) {
   const Networks& networks = test_networks();
 
-  const std::string expected_two_dir = StrCat(config.root_directory(), File::pathSeparatorString, "two");
+  const std::string expected_two_dir = StrCat(config_.root_directory(), File::pathSeparatorString, "two");
   EXPECT_EQ(expected_two_dir, networks.at(1).dir);
   EXPECT_EQ(expected_two_dir, networks.at("two").dir);
   EXPECT_EQ(expected_two_dir, networks[1].dir);

@@ -683,7 +683,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
     auto origin_line = net.fido.origin_line;
     if (origin_line.empty()) {
       // default origin line to system name if it doesn't exist.
-      origin_line = config.config()->systemname;
+      origin_line = config.system_name();
     }
 
     if (from_address.point() == 0) {

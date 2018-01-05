@@ -67,7 +67,7 @@ TEST(BinkConfigTest, NodeConfig) {
   const string line("@2 example.com");
   files.CreateTempFile("network/binkp.net", line);
   const string network_dir = files.DirName("network");
-  Config wwiv_config;
+  Config wwiv_config(files.TempDir());
   BinkConfig config(1, wwiv_config, network_dir);
   const binkp_session_config_t* node_config = config.binkp_session_config_for(2);
   ASSERT_TRUE(node_config != nullptr);

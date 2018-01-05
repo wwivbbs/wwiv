@@ -478,13 +478,8 @@ slrec getslrec(int nSl) {
     return CurSlRec;
   }
 
-  wwiv::sdk::Config config;
-  if (!config.IsInitialized()) {
-    // Bad ju ju here.
-    a()->AbortBBS();
-  }
   nCurSl = nSl;
-  CurSlRec = config.config()->sl[nSl];
+  CurSlRec = a()->config()->config()->sl[nSl];
   return CurSlRec;
 }
 

@@ -457,7 +457,7 @@ void Application::UpdateTopScreen() {
     break;
   case LocalIO::topdataSystem: {
     localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ",
-      a()->config()->config()->systemname, pStatus->GetLastDate());
+      a()->config()->system_name().c_str(), pStatus->GetLastDate());
 
     localIO()->PrintfXY(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
         pStatus->GetNumUsers(), pStatus->GetCallerNumber(), pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
@@ -737,6 +737,8 @@ int Application::Run(int argc, char *argv[]) {
   const string wwiv_dir = environment_variable("WWIV_DIR");
   if (!wwiv_dir.empty()) {
     File::set_current_directory(wwiv_dir);
+    // Reset current_dir_ since it was only set in the constructor.
+    current_dir_ = File::current_directory();
   }
 
   for (int i = 1; i < argc; i++) {

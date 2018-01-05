@@ -32,7 +32,7 @@ public:
     FileHelper();
     // Returns a fully qualified path name to "name" under the temporary directory.
     const std::string DirName(const std::string& name) const;
-    // Creates a directory.
+    // Creates a directory under TempDir.
     bool Mkdir(const std::string& name) const;
     std::string CreateTempFilePath(const std::string& name);
     FILE* OpenTempFile(const std::string& name, std::string* path);

@@ -40,18 +40,18 @@ using namespace wwiv::strings;
 
 class NamesTest : public testing::Test {
 public:
-  NamesTest() : config(helper.root()) {
-    EXPECT_TRUE(config.IsInitialized());
+  NamesTest() : config_(helper.root()) {
+    EXPECT_TRUE(config_.IsInitialized());
     EXPECT_TRUE(CreateNames());
-    names_.reset(new Names(config));
+    names_.reset(new Names(config_));
   }
 
   virtual void SetUp() {
-    config.IsInitialized();
+    config_.IsInitialized();
   }
 
   bool CreateNames() {
-    File file(config.datadir(), NAMES_LST);
+    File file(config_.datadir(), NAMES_LST);
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;
@@ -68,7 +68,7 @@ public:
   }
 
   SdkHelper helper;
-  Config config;
+  Config config_;
   unique_ptr<Names> names_;
 };
 
@@ -91,7 +91,7 @@ TEST_F(NamesTest, Remove) {
 
   // Release the old names 1st.
   names_.reset();
-  names_.reset(new Names(config));
+  names_.reset(new Names(config_));
   // Should still have 2.
   EXPECT_EQ(2, names_->size());
 }
@@ -109,7 +109,7 @@ TEST_F(NamesTest, Insert) {
 
   // Release the old names 1st.
   names_.reset();
-  names_.reset(new Names(config));
+  names_.reset(new Names(config_));
   EXPECT_EQ(4, names_->size());
 }
 

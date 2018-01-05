@@ -812,20 +812,18 @@ void download() {
   useconf = 0;
 
   bout.cls();
-  bout.litebar("%s Batch Downloads", a()->config()->config()->systemname);
-  bout.nl();
+  bout.litebar(StrCat(a()->config()->system_name(), " Batch Downloads"));
   do {
     if (!i) {
       bout << "|#2Enter files, one per line, wildcards okay.  [Space] aborts a search.\r\n";
       bout.nl();
       bout << "|#1 #  File Name    Size    Time      Directory\r\n";
-      bout <<
-                         "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
+      bout << "|#7\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4 \xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\r\n";
     }
     if (i < size_int(a()->batch().entry)) {
       const auto& b = a()->batch().entry[i];
       if (b.sending) {
-        const string t = ctim(std::lround(b.time));
+        const auto t = ctim(std::lround(b.time));
         bout.bprintf("|#2%3d |#1%s |#2%-7ld |#1%s  |#2%s\r\n", 
           i + 1, b.filename,
           b.len, t.c_str(), 

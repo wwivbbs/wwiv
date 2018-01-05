@@ -126,7 +126,7 @@ static string get_conf_filename(ConferenceType conftype) {
  * conference.
  */
 void jump_conf(ConferenceType conftype) {
-  bout.litebar("%s Conference Selection", a()->config()->config()->systemname);
+  bout.litebar(StrCat(a()->config()->system_name(), " Conference Selection"));
   conf_info_t info = get_conf_info(conftype);
   string allowable = " ";
   bout.nl();

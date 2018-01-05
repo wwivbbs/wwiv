@@ -79,12 +79,12 @@ static bool ParseAddressesFile(std::map<uint16_t, PPPNodeConfig>* node_config_ma
 
 PPPConfig::PPPConfig(const std::string& callout_network_name, const Config& config, const Networks& networks)
     : callout_network_name_(callout_network_name) {
-  system_name_ = config.config()->systemname;
+  system_name_ = config.system_name();
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";
   }
 
-  const net_networks_rec& net = networks[callout_network_name];
+  const auto& net = networks[callout_network_name];
   node_ = net.sysnum;
   if (node_ == 0) {
     throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));

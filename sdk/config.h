@@ -26,14 +26,17 @@ namespace sdk {
 
 class Config {
 public:
-  Config();
+  explicit Config(const configrec& config);
   explicit Config(const std::string& root_directory);
   virtual ~Config();
 
   bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized;  }
   configrec* config() const { return config_.get(); }
-  void set_config(configrec* config);
+  void set_config(const configrec* config, bool update_paths);
+  void set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
+    const std::string& gfilesdir, const std::string& menudir,
+    const std::string& dloadsdir, const std::string& scriptdir);
 
   bool versioned_config_dat() const { return versioned_config_dat_; }
   bool is_5xx_or_later() const { return written_by_wwiv_num_version_ >= 500; }
@@ -47,6 +50,10 @@ public:
   const std::string menudir() const { return menudir_; }
   const std::string dloadsdir() const { return dloadsdir_; }
   const std::string scriptdir() const { return script_dir_; }
+
+  const std::string system_name() const { return config_->systemname; }
+  const std::string sysop_name() const { return config_->sysopname; }
+  const std::string system_phone() const { return config_->systemphone; }
 
   const std::string config_filename() const;
 

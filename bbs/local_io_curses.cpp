@@ -593,7 +593,7 @@ void CursesLocalIO::UpdateNativeTitleBar(Application* session) {
 	// Set console title
 	std::stringstream ss;
 	ss << "WWIV Node " << session->instance_number() 
-    << " (" << a()->config()->config()->systemname << ")";
+     << " (" << a()->config()->system_name() << ")";
 	SetConsoleTitle(ss.str().c_str());
 #endif  // _WIN32
 }

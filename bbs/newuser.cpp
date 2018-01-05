@@ -1049,7 +1049,7 @@ void newuser() {
   bout.nl();
   pausescr();
   bout.cls();
-  bout << "|#5Create a new user account on " << a()->config()->config()->systemname << "? ";
+  bout << "|#5Create a new user account on " << a()->config()->system_name() << "? ";
   if (!noyes()) {
     bout << "|#6Sorry the system does not meet your needs!\r\n";
     Hangup();
@@ -1309,7 +1309,7 @@ void DoMinimalNewUser() {
   a()->UpdateTopScreen();
   do {
     bout.cls();
-    bout.litebar("%s New User Registration", a()->config()->config()->systemname);
+    bout.litebar(StrCat(a()->config()->system_name(), " New User Registration"));
     bout << "|#1[A] Name (real or alias)    : ";
     if (u->GetName()[0] == '\0') {
       bool ok = true;
@@ -1504,7 +1504,8 @@ void DoMinimalNewUser() {
 
 
 void new_mail() {
-  File file(a()->config()->gfilesdir(), (a()->user()->GetSl() > a()->config()->config()->newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(a()->config()->gfilesdir(), 
+    (a()->user()->GetSl() > a()->config()->config()->newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
   if (!file.Exists()) {
     return;
   }
@@ -1514,7 +1515,7 @@ void new_mail() {
   use_workspace = true;
 
   MessageEditorData data;
-  data.title = StringPrintf("Welcome to %s!", a()->config()->config()->systemname);
+  data.title = StrCat("Welcome to ", a()->config()->system_name(), "!");
   data.need_title = true;
   data.anonymous_flag = 0;
   data.aux = "email";

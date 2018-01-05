@@ -69,7 +69,7 @@ void dirlist(int mode) {
               a()->dirconfs[a()->uconfdir[i].confnum].designator,
               stripcolors(reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[i].confnum].name)));
           } else {
-            sprintf(s, " [ %s File Areas ] ", a()->config()->config()->systemname);
+            sprintf(s, " [ %s File Areas ] ", a()->config()->system_name().c_str());
           }
           bout.litebar(s);
           DisplayHorizontalBar(78, 7);

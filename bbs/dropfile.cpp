@@ -146,7 +146,8 @@ void CreateDoorInfoDropFile() {
   TextFile fileDorInfoSys(fileName, "wt");
   if (fileDorInfoSys.IsOpen()) {
     fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", 
-      a()->config()->config()->systemname, a()->config()->config()->sysopname,
+      a()->config()->system_name().c_str(), 
+      a()->config()->sysop_name().c_str(),
       incom ? a()->primary_port() : 0);
     fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? modem_speed : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
@@ -547,8 +548,8 @@ const string create_chain_file() {
     }
     file.WriteFormatted("%d\n%s\n%s\n%d\n%d\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n",
         a()->primary_port(),
-        a()->config()->config()->systemname,
-        a()->config()->config()->sysopname,
+        a()->config()->system_name().c_str(),
+        a()->config()->sysop_name().c_str(),
         start_second,
         seconds_used,
         a()->user()->GetUploadK(),

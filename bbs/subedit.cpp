@@ -176,7 +176,7 @@ static void modify_sub(int n) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebar("%s %d", "Editing Message Sub #", n);
+    bout.litebar(StrCat("Editing Message Sub #", n));
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) Key        : |#2" << GetKey(r) << wwiv::endl;

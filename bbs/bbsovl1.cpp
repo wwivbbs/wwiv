@@ -70,11 +70,7 @@ void DisplayHorizontalBar(int width, int color) {
  */
 void YourInfo() {
   bout.cls();
-  if (okansi()) {
-    bout.litebar("Your User Information");
-  } else {
-    bout << "|#5Your User Information:\r\n";
-  }
+  bout.litebar("Your User Information");
   bout.nl();
   bout << "|#9Your name      : |#2" 
        << a()->names()->UserName(a()->usernum) << wwiv::endl;

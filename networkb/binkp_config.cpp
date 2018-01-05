@@ -49,15 +49,15 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
     : config_(config), callout_network_name_(callout_network_name), networks_(networks) {
   // network names will alwyas be compared lower case.
   StringLowerCase(&callout_network_name_);
-  system_name_ = config.config()->systemname;
+  system_name_ = config.system_name();
   if (system_name_.empty()) {
     system_name_ = "Unnamed WWIV BBS";
   }
-  sysop_name_ = config.config()->sysopname;
+  sysop_name_ = config.sysop_name();
   if (sysop_name_.empty()) {
     sysop_name_ = "Unknown WWIV SysOp";
   }
-  gfiles_directory_ = config.config()->gfilesdir;
+  gfiles_directory_ = config.gfilesdir();
 
   if (networks.contains(callout_network_name)) {
     const net_networks_rec& net = networks[callout_network_name];
@@ -107,9 +107,9 @@ BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
   : config_(config), callout_network_name_("wwivnet"), callout_wwivnet_node_(callout_node_number), 
     networks_({ test_net(network_dir) }) {
   binkp_.reset(new Binkp(network_dir));
-  system_name_ = config.config()->systemname;
-  sysop_name_ = config.config()->sysopname;
-  gfiles_directory_ = config.config()->gfilesdir;
+  system_name_ = config.system_name();
+  sysop_name_ = config.sysop_name();
+  gfiles_directory_ = config.gfilesdir();
 }
 
 BinkConfig::~BinkConfig() {}

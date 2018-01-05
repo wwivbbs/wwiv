@@ -63,6 +63,9 @@ void BbsHelper::SetUp() {
   dir_data_ = files_.DirName("data");
   dir_gfiles_ = files_.DirName("gfiles");
   dir_en_gfiles_ = files_.DirName("en/gfiles");
+  dir_menus_ = files_.DirName("menus");
+  dir_msgs_ = files_.DirName("msgs");
+  dir_dloads_ = files_.DirName("dloads");
 #ifdef _WIN32
   File::FixPathSeparators(&dir_gfiles_);
   File::FixPathSeparators(&dir_en_gfiles_);
@@ -71,13 +74,14 @@ void BbsHelper::SetUp() {
   // We have to set syscfg too until everything in the bbs moves to 
   // using the Config class internally.
   unique_ptr<configrec> sysconfig = make_unique<configrec>();
-  strcpy(sysconfig->datadir, dir_data_.c_str());
-  strcpy(sysconfig->gfilesdir, dir_gfiles_.c_str());
+  // strcpy(sysconfig->datadir, dir_data_.c_str());
+  // strcpy(sysconfig->gfilesdir, dir_gfiles_.c_str());
 
   a()->language_dir = dir_en_gfiles_;
   unique_ptr<Config> config = make_unique<Config>(temp);
   config->set_initialized_for_test(true);
-  config->set_config(sysconfig.release());
+  config->set_paths_for_test(dir_data_, dir_msgs_, dir_gfiles_, dir_menus_, dir_dloads_, dir_data_);
+  config->set_config(sysconfig.release(), false);
   a()->set_config_for_test(move(config));
   user_ = a()->user();
 

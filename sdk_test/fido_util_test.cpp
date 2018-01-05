@@ -225,14 +225,10 @@ public:
     files_.Mkdir("bbs/net");
     string root = files_.DirName("bbs");
     config_.reset(new wwiv::sdk::Config(root));
-    wwiv::sdk::Config config;
-    memset(&wwiv_config_, 0, sizeof(configrec));
-    config.set_initialized_for_test(true);
   }
 
   FileHelper files_;
   std::unique_ptr<wwiv::sdk::Config> config_;
-  configrec wwiv_config_;
 };
 
 TEST_F(FidoUtilConfigTest, ExistsBundle) {

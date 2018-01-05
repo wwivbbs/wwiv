@@ -51,13 +51,13 @@ protected:
     files_.CreateTempFile("binkp.net", line);
     const string network_dir = files_.DirName("network");
     const string gfiles_dir = files_.DirName("gfiles");
-    wwiv::sdk::Config config;
     memset(&wwiv_config_, 0, sizeof(configrec));
-    config.set_initialized_for_test(true);
     strcpy(wwiv_config_.systemname, "Test System");
     strcpy(wwiv_config_.sysopname, "Test Sysop");
     strcpy(wwiv_config_.gfilesdir, gfiles_dir.c_str());
-    config.set_config(&wwiv_config_);
+    wwiv::sdk::Config config(File::current_directory());
+    config.set_config(&wwiv_config_, true);
+    config.set_initialized_for_test(true);
     net_networks_rec net{};
     net.dir = network_dir;
     strcpy(net.name, "Dummy Network");

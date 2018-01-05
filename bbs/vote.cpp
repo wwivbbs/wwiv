@@ -38,11 +38,7 @@ static void print_quest(int mapp, int map[21]) {
   votingrec v;
 
   bout.cls();
-  if (okansi()) {
-    bout.litebar("%s Voting Questions", a()->config()->config()->systemname);
-  } else {
-    bout << "|#5Voting Questions:\r\n\n";
-  }
+  bout.litebar(StrCat(a()->config()->system_name(), " Voting Questions"));
   bool abort = false;
   File voteFile(a()->config()->datadir(), VOTING_DAT);
   if (!voteFile.Open(File::modeReadOnly | File::modeBinary)) {

@@ -114,8 +114,8 @@ void modify_chain(int nCurrentChainum) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebar("Editing Chain # %d", nCurrentChainum);
-    bout.Color(0);
+    bout.litebarf("Editing Chain # %d", nCurrentChainum);
+
     bout << "|#9A) Description  : |#2" << c.description << wwiv::endl;
     bout << "|#9B) Filename     : |#2" << c.filename << wwiv::endl;
     bout << "|#9C) SL           : |#2" << static_cast<int>(c.sl) << wwiv::endl;

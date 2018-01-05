@@ -22,7 +22,6 @@
 #include <string>
 #include <vector>
 
-//#include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_area.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message.h"

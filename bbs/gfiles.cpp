@@ -145,7 +145,7 @@ void list_sec(int *map, int nmap) {
   }
 
   bout.cls();
-  bout.litebar("%s G-Files Section", a()->config()->config()->systemname);
+  bout.litebar(StrCat(a()->config()->system_name(), " G-Files Section"));
   gfl_hdr(0);
   string t = times();
   for (int i = 0; i < nmap && !abort && !hangup; i++) {

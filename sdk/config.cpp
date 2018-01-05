@@ -32,7 +32,10 @@ namespace sdk {
 
   static const int CONFIG_DAT_SIZE_424 = 5660;
 
-  Config::Config() : Config(File::current_directory()) {}
+  Config::Config(const configrec& config) {
+    set_config(&config, true);
+  }
+
 
 Config::Config(const std::string& root_directory)  : initialized_(false), config_(new configrec{}), root_directory_(root_directory) {
   DataFile<configrec> configFile(root_directory, CONFIG_DAT, File::modeReadOnly | File::modeBinary);
@@ -67,14 +70,16 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
   }
 }
 
-void Config::set_config(configrec* config) {
+void Config::set_config(const configrec* config, bool need_to_update_paths) {
   std::unique_ptr<configrec> temp(new configrec());
   // assign value
   *temp = *config;
   config_.swap(temp);
 
   // Update absolute paths.
-  update_paths();
+  if (need_to_update_paths) {
+    update_paths();
+  }
 }
 
 Config::~Config() {}
@@ -100,6 +105,14 @@ void Config::update_paths() {
   }
   script_dir_ = to_abs_path(config_->scriptdir);
 }
+
+void Config::set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
+  const std::string& gfilesdir, const std::string& menudir, const std::string& dloadsdir,
+  const std::string& scriptdir) {
+  datadir_ = datadir; msgsdir_ = msgsdir; gfilesdir_ = gfilesdir;
+  menudir_ = menudir; dloadsdir_ = dloadsdir; script_dir_ = scriptdir;
+}
+
 
 }
 }

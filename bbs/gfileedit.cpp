@@ -89,7 +89,7 @@ void modify_sec(int n) {
   char s[81];
   do {
     bout.cls();
-    bout.litebar("Editing G-File Area # %d", n);
+    bout.litebar(StrCat("Editing G-File Area # ", n));
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) SL         : |#2" << static_cast<int>(r.sl) << wwiv::endl;

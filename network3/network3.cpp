@@ -417,10 +417,10 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
   LOG(INFO) << "Sending Feedback.";
 
   vector<net_system_list_rec> bbsdata_data;
-  string phone = net_cmdline.config().config()->systemphone;
+  auto phone = net_cmdline.config().system_phone();
   {
     net_system_list_rec n1{};
-    to_char_array(n1.name, net_cmdline.config().config()->systemname);
+    to_char_array(n1.name, net_cmdline.config().system_name());
     to_char_array(n1.phone, phone);
     n1.forsys = FTN_FAKE_OUTBOUND_NODE;
     n1.group = 0;
@@ -431,7 +431,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     bbsdata_data.emplace_back(n1);
   }
   {
-    string fake_phone = phone;
+    auto fake_phone = phone;
     if (fake_phone.size() > 3) {
       fake_phone = fake_phone.substr(0, 3);
     } else {

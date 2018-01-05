@@ -105,7 +105,7 @@ void modify_dir(int n) {
   bool done = false;
   do {
     bout.cls();
-    bout.litebar("%s %d", "Editing File Area #", n);
+    bout.litebar(StrCat("Editing File Area #", n));
     bout << "|#9A) Name       : |#2" << r.name << wwiv::endl;
     bout << "|#9B) Filename   : |#2" << r.filename << wwiv::endl;
     bout << "|#9C) Path       : |#2" << r.path << wwiv::endl;

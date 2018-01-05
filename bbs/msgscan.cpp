@@ -332,7 +332,7 @@ static FullScreenView CreateFullScreenListTitlesView() {
   auto screen_length = a()->user()->GetScreenLines() - 1;
 
   int num_header_lines = 2;
-  bout.litebar("Sub #%d - %s  (%d messages.)", 
+  bout.litebarf("Sub #%d - %s  (%d messages.)", 
     a()->current_user_sub_num(), 
     a()->current_sub().name.c_str(), 
     a()->GetNumMessagesInCurrentMessageArea());

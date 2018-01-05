@@ -51,7 +51,7 @@ namespace sdk {
 
 UserManager::UserManager(const wwiv::sdk::Config& config)
   : config_(config),
-    data_directory_(config.config()->datadir), 
+    data_directory_(config.datadir()), 
     userrec_length_(config.config()->userreclen), 
     max_number_users_(config.config()->maxusers),
     allow_writes_(true){

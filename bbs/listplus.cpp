@@ -191,7 +191,7 @@ void printtitle_plus() {
   } else {
     const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(a()->current_user_dir().keys),
             a()->directories[a()->current_user_dir().subnum].name, a()->numf);
-    bout.litebar("%-54s Space=Tag/?=Help", buf.c_str());
+    bout.litebarf("%-54s Space=Tag/?=Help", buf.c_str());
     bout.Color(0);
   }
 }

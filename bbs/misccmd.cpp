@@ -295,17 +295,16 @@ void list_users(int mode) {
     }
     if (p == 0 && found) {
       bout.cls();
-      char szTitleLine[255];
-      sprintf(szTitleLine, "%s User Listing", a()->config()->config()->systemname);
+      auto title_line = StrCat(a()->config()->system_name(), " User Listing");
       if (okansi()) {
-        bout.litebar(szTitleLine);
+        bout.litebar(title_line);
       } else {
         int i1;
         for (i1 = 0; i1 < 78; i1++) {
           bout.bputch(45);
         }
         bout.nl();
-        bout << "|#5" << szTitleLine;
+        bout << "|#5" << title_line;
         bout.nl();
         for (i1 = 0; i1 < 78; i1++) {
           bout.bputch(45);

@@ -169,7 +169,7 @@ static bool ConvertLegacyList(
 static void ReadBBSList(const vector<BbsListEntry>& entries) {
   int cnt = 0;
   bout.cls();
-  bout.litebar("%s BBS List", a()->config()->config()->systemname);
+  bout.litebar(StrCat(a()->config()->system_name(), " BBS List"));
   for (const auto& entry : entries) {
     bout.Color((++cnt % 2) == 0 ? 1 : 9);
     bout << left << setw(3) << entry.id << " : " << setw(60) << entry.name << " (" << entry.software << ")" << wwiv::endl;

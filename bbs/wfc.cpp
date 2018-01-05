@@ -162,12 +162,12 @@ void WFC::DrawScreen() {
       wfcFile.Read(pszScreenBuffer, 4000);
     }
     a()->localIO()->WriteScreenBuffer(pszScreenBuffer);
-    const string title = StringPrintf("Activity and Statistics of %s Node %d", 
-      a()->config()->config()->systemname, a()->instance_number());
+    const auto title = StringPrintf("Activity and Statistics of %s Node %d", 
+      a()->config()->system_name().c_str(), a()->instance_number());
     a()->localIO()->PrintfXYA(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
-    const string f = fulldate();
+    const auto f = fulldate();
     a()->localIO()->PrintfXYA(8, 1, 14, f.c_str());
-    std::string osVersion = wwiv::os::os_version_string();
+    auto osVersion = wwiv::os::os_version_string();
     a()->localIO()->PrintfXYA(40, 1, 3, "OS: ");
     a()->localIO()->PrintfXYA(44, 1, 14, osVersion.c_str());
     a()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
