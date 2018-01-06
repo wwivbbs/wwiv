@@ -37,26 +37,26 @@ namespace sdk {
   }
 
 
-Config::Config(const std::string& root_directory)  : initialized_(false), config_(new configrec{}), root_directory_(root_directory) {
+Config::Config(const std::string& root_directory)  : initialized_(false), root_directory_(root_directory) {
   DataFile<configrec> configFile(root_directory, CONFIG_DAT, File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return;
   } 
-  initialized_ = configFile.Read(config_.get());
+  initialized_ = configFile.Read(&config_);
   // Handle 4.24 datafile
   if (!initialized_) {
     configFile.Seek(0);
-    auto size_read = configFile.file().Read(config_.get(), CONFIG_DAT_SIZE_424);
+    auto size_read = configFile.file().Read(&config_, CONFIG_DAT_SIZE_424);
     initialized_ = (size_read == CONFIG_DAT_SIZE_424);
     written_by_wwiv_num_version_ = 424;
     config_revision_number_ = 0;
     VLOG(1) << "WWIV 4.24 CONFIG.DAT FOUND with size " << size_read << ".";
   } else {
     // We're in a 4.3x, 5.x format.
-    if (IsEquals("WWIV", config_->header.header.signature)) {
+    if (IsEquals("WWIV", config_.header.header.signature)) {
       // WWIV 5.2 style header.
-      const auto& h = config_->header.header;
+      const auto& h = config_.header.header;
       versioned_config_dat_ = true;
       config_revision_number_ = h.config_revision_number;
       written_by_wwiv_num_version_ = h.written_by_wwiv_num_version;
@@ -71,18 +71,13 @@ Config::Config(const std::string& root_directory)  : initialized_(false), config
 }
 
 void Config::set_config(const configrec* config, bool need_to_update_paths) {
-  std::unique_ptr<configrec> temp(new configrec());
-  // assign value
-  *temp = *config;
-  config_.swap(temp);
+  config_ = *config;
 
   // Update absolute paths.
   if (need_to_update_paths) {
     update_paths();
   }
 }
-
-Config::~Config() {}
 
 const std::string Config::config_filename() const {
   return FilePath(root_directory(), CONFIG_DAT);
@@ -95,15 +90,15 @@ std::string Config::to_abs_path(const char* dir) {
 }
 
 void Config::update_paths() {
-  datadir_ = to_abs_path(config_->datadir);
-  msgsdir_ = to_abs_path(config_->msgsdir);
-  gfilesdir_ = to_abs_path(config_->gfilesdir);
-  menudir_ = to_abs_path(config_->menudir);
-  dloadsdir_ = to_abs_path(config_->dloadsdir);
-  if (!config_->scriptdir[0]) {
-    strcpy(config_->scriptdir, config_->datadir);
+  datadir_ = to_abs_path(config_.datadir);
+  msgsdir_ = to_abs_path(config_.msgsdir);
+  gfilesdir_ = to_abs_path(config_.gfilesdir);
+  menudir_ = to_abs_path(config_.menudir);
+  dloadsdir_ = to_abs_path(config_.dloadsdir);
+  if (!config_.scriptdir[0]) {
+    strcpy(config_.scriptdir, config_.datadir);
   }
-  script_dir_ = to_abs_path(config_->scriptdir);
+  script_dir_ = to_abs_path(config_.scriptdir);
 }
 
 void Config::set_paths_for_test(const std::string& datadir, const std::string& msgsdir,

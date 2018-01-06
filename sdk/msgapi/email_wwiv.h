@@ -24,6 +24,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "sdk/config.h"
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_wwiv.h"
@@ -62,7 +63,7 @@ public:
 class WWIVEmail: private Type2Text {
 public:
   WWIVEmail(
-      const std::string& root_directory,
+      const wwiv::sdk::Config& config,
       const std::string& data_filename, const std::string& text_filename,
       int max_net_num);
 
@@ -86,7 +87,7 @@ public:
 
 private:
   bool add_email(const mailrec& m);
-  const std::string root_directory_;
+  const wwiv::sdk::Config& config_;
   const std::string data_filename_;
   wwiv::core::DataFile<mailrec> mail_file_;
   bool open_ = false;

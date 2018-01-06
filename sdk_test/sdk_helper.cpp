@@ -84,7 +84,6 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
     to_char_array(h.signature, "WWIV");
     c.header.header = h;
 
-    
     File cfile(root_, CONFIG_DAT);
     if (!cfile.Open(File::modeBinary|File::modeCreateFile|File::modeWriteOnly)) {
       throw std::runtime_error("failed to create config.dat");

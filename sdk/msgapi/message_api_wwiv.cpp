@@ -43,19 +43,11 @@ WWIVMessageApi::WWIVMessageApi(
   const wwiv::sdk::Config& config,
   const std::vector<net_networks_rec>& net_networks,
   WWIVLastReadImpl* last_read)
-  : WWIVMessageApi(options, config.root_directory(), 
-    config.datadir(), config.msgsdir(), net_networks, last_read) {}
-
-
-WWIVMessageApi::WWIVMessageApi(
-  const wwiv::sdk::msgapi::MessageApiOptions& options,
-  const std::string& bbs_directory,
-  const std::string& data_directory,
-  const std::string& messages_directory,
-  const std::vector<net_networks_rec>& net_networks,
-  WWIVLastReadImpl* last_read)
-  : MessageApi(options, bbs_directory, data_directory, messages_directory, net_networks),
-  last_read_(last_read) {}
+  : MessageApi(options, config.root_directory(), 
+    config.datadir(), 
+    config.msgsdir(), 
+    net_networks),
+  last_read_(last_read), config_(config) {}
 
 bool WWIVMessageApi::Exist(const wwiv::sdk::subboard_t& sub) const {
   const std::string sub_filename = StrCat(sub.filename, ".sub");
@@ -179,7 +171,7 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
         return nullptr;
       }
       // Return the newly created WWIVEmail object.
-      return new WWIVEmail(root_directory_, data, text, net_networks_.size());
+      return new WWIVEmail(config_, data, text, net_networks_.size());
     }
 
     if (!datafile.Open(File::modeReadOnly | File::modeBinary)) {
@@ -196,7 +188,7 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
     }
   }
 
-  return new WWIVEmail(root_directory_, data, text, net_networks_.size());
+  return new WWIVEmail(config_, data, text, net_networks_.size());
 }
 
 uint32_t WWIVMessageApi::last_read(int area) const {

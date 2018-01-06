@@ -110,11 +110,9 @@ public:
     wwiv::sdk::msgapi::MessageApiOptions options;
     apis[2] = make_unique<WWIVMessageApi>(
         options,
-        config()->bbsdir(),
-        config()->config()->datadir(), 
-        config()->config()->msgsdir(), 
+        *config()->config(),
         config()->networks().networks(),
-      new NullLastReadImpl());
+        new NullLastReadImpl());
 
     subboard_t sub{};
     const auto& datadir = config()->config()->datadir();

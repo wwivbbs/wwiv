@@ -60,13 +60,6 @@ public:
     const wwiv::sdk::Config& config,
     const std::vector<net_networks_rec>& net_networks,
     WWIVLastReadImpl* last_read);
-  WWIVMessageApi(
-    const wwiv::sdk::msgapi::MessageApiOptions& options,
-    const std::string& bbs_directory,
-    const std::string& subs_directory,
-    const std::string& messages_directory,
-    const std::vector<net_networks_rec>& net_networks,
-    WWIVLastReadImpl* last_read);
 
   virtual bool Exist(const wwiv::sdk::subboard_t& sub) const override;
   virtual bool Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
@@ -79,6 +72,7 @@ public:
   void set_last_read(int area, uint32_t last_read);
 private:
   std::unique_ptr<WWIVLastReadImpl> last_read_;
+  const Config config_;
 };
 
 }  // namespace msgapi

@@ -28,11 +28,12 @@ class Config {
 public:
   explicit Config(const configrec& config);
   explicit Config(const std::string& root_directory);
-  virtual ~Config();
 
   bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized;  }
-  configrec* config() const { return config_.get(); }
+  // TODO(rushfan): Need this here since we set the event time
+  // even though we never save this from the BBS.
+  configrec* config() const { return &config_; }
   void set_config(const configrec* config, bool update_paths);
   void set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
     const std::string& gfilesdir, const std::string& menudir,
@@ -51,9 +52,9 @@ public:
   const std::string dloadsdir() const { return dloadsdir_; }
   const std::string scriptdir() const { return script_dir_; }
 
-  const std::string system_name() const { return config_->systemname; }
-  const std::string sysop_name() const { return config_->sysopname; }
-  const std::string system_phone() const { return config_->systemphone; }
+  const std::string system_name() const { return config_.systemname; }
+  const std::string sysop_name() const { return config_.sysopname; }
+  const std::string system_phone() const { return config_.systemphone; }
 
   const std::string config_filename() const;
 
@@ -62,7 +63,8 @@ private:
   void update_paths();
 
   bool initialized_ = false;
-  std::unique_ptr<configrec> config_;
+  // We don't save this, so it's mutable.
+  mutable configrec config_{};
   const std::string root_directory_;
   bool versioned_config_dat_ = false;
   uint32_t config_revision_number_ = 0;

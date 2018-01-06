@@ -53,9 +53,10 @@ constexpr char CD = 4;
 constexpr char CZ = 26;
 
 WWIVEmail::WWIVEmail(
-  const std::string& root_directory,
+  const Config& config,
   const std::string& data_filename, const std::string& text_filename, int max_net_num)
-  : Type2Text(text_filename), root_directory_(root_directory), data_filename_(data_filename),
+  : Type2Text(text_filename), 
+    config_(config), data_filename_(data_filename),
     mail_file_(data_filename_, File::modeBinary | File::modeReadWrite, File::shareDenyReadWrite),
     max_net_num_(max_net_num) {
   open_ = mail_file_ && mail_file_.file().Exists();
@@ -82,13 +83,8 @@ static bool modify_email_waiting(const Config& config, uint16_t email_usernum, i
   return true;
 }
 
-static bool increment_email_counters(const string& root_directory, uint16_t email_usernum) {
+static bool increment_email_counters(const Config& config, uint16_t email_usernum) {
   statusrec_t statusrec{};
-  Config config(root_directory);
-  if (!config.IsInitialized()) {
-    LOG(ERROR) << "Unable to load CONFIG.DAT.";
-    return false;
-  }
   DataFile<statusrec_t> file(config.datadir(), STATUS_DAT,
     File::modeBinary | File::modeReadWrite);
   if (!file) {
@@ -138,7 +134,7 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
   if (!savefile(text, &m.msg)) {
     return false;
   }
-  increment_email_counters(root_directory_, m.touser);
+  increment_email_counters(config_, m.touser);
   return add_email(m);
 }
 
@@ -236,10 +232,7 @@ bool WWIVEmail::DeleteMessage(int email_number) {
   }
 
   if (m.tosys == 0) {
-    Config config(root_directory_);
-    if (config.IsInitialized()) {
-      modify_email_waiting(config, m.touser, -1);
-    }
+    modify_email_waiting(config_, m.touser, -1);
   }
 
   // Clear out the email record and write it back to EMAIL.DAT
