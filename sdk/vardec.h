@@ -303,14 +303,21 @@ struct configrec {
   
   // Former baud rate and comports
   uint8_t  unused4[20];
-  uint16_t maxusers,                           // max users on system
-           newuser_restrict,                   // new user restrictions
-           sysconfig,                          // System configuration
-           sysoplowtime,                       // Chat time on
-           sysophightime,                      // Chat time off
-           executetime;                        // time to run mail router
+  // max users on system
+  uint16_t maxusers;
+  // new user restrictions
+  uint16_t newuser_restrict;
+  // System configuration
+  uint16_t sysconfig;
+  // Chat time on
+  uint16_t sysoplowtime;
+  // Chat time off
+  uint16_t sysophightime;                      
+  // time to run mail router
+  uint16_t unused_executetime;
 
-  float req_ratio,                             // required up/down ratio
+  // Formerly required up/down ratio. This has been moved to wwiv.ini
+  float req_ratio,
         newusergold;                           // new user gold
 
   slrec sl[256];                               // security level data

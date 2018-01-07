@@ -103,9 +103,6 @@ static void read_events() {
     return;
   }
   file.ReadVector(a()->events);
-  if (!a()->events.empty()) {
-    get_next_forced_event();
-  }
 }
 
 static void read_event(int n) {
@@ -136,39 +133,6 @@ void sort_events() {
 
 void init_events() {
   read_events();
-}
-
-void get_next_forced_event() {
-  a()->config()->config()->executetime = 0;
-  a()->clear_time_event_time();
-  int first = -1;
-  int16_t tl = t_now();
-  int day = dow() + 1;
-  if (day == 7) {
-    day = 0;
-  }
-  for (const auto& e : a()->events) {
-    if ((e.instance == a()->instance_number() || e.instance == 0) && e.status & EVENT_FORCED) {
-      if (first < 0 && e.time < tl && ((e.days & (1 << day)) > 0)) {
-        first = e.time;
-      }
-      if ((e.status & EVENT_RUNTODAY) == 0 && (e.days & (1 << dow())) > 0 && !a()->config()->config()->executetime) {
-        a()->set_time_event_time(minutes_after_midnight(e.time));
-        a()->config()->config()->executetime = e.time;
-        if (!a()->config()->config()->executetime) {
-          a()->config()->config()->executetime++;
-        }
-      }
-    }
-  }
-  if (first >= 0 && !a()->config()->config()->executetime) {
-    // all of todays events are
-    a()->set_time_event_time(minutes_after_midnight(first));
-    a()->config()->config()->executetime = static_cast<uint16_t>(first);                // event to first one
-    if (!a()->config()->config()->executetime) {                                              // scheduled for tomorrow
-      a()->config()->config()->executetime++;
-    }
-  }
 }
 
 void cleanup_events() {
@@ -259,7 +223,6 @@ void run_event(int evnt) {
   }
   ExecuteExternalProgram(a()->events[evnt].cmd, EFLAG_NONE);
   do_event = 0;
-  get_next_forced_event();
   cleanup_net();
 
   e.lastrun = t_now();

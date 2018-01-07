@@ -188,7 +188,7 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   return true;
 }
 
-static void upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
+static void read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
   File configfile(config.config_filename());
   if (configfile.length() != sizeof(configrec)) {
@@ -279,7 +279,7 @@ int WInitApp::main(int argc, char** argv) {
   }
 
   Config config(bbsdir);
-  upgrade_datafiles_if_needed(window, config);
+  read_configdat_and_upgrade_datafiles_if_needed(window, config);
   CreateConfigOvr(bbsdir);
 
   {

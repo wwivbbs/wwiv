@@ -932,11 +932,6 @@ int Application::Run(int argc, char *argv[]) {
     ExitBBSImpl(oklevel_, false);
   }
 
-  if (num_min > 0) {
-    a()->config()->config()->executetime = static_cast<uint16_t>((minutes_since_midnight() + num_min * 60) / 60) % 1440;
-    a()->set_time_event_time(minutes_after_midnight(a()->config()->config()->executetime));
-  }
-
   if (event_only) {
     unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
     cleanup_events();

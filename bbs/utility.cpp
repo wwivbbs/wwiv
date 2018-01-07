@@ -185,23 +185,6 @@ long nsl() {
   }
 
   a()->SetTimeOnlineLimited(false);
-/*
- TODO(rushfan): Do we really need to limit based on event time anymore?
-if (a()->config()->config()->executetime) {
-    auto tlt = a()->time_event_time() - dd;
-    if (tlt < 0) {
-      tlt += SECONDS_PER_DAY;
-    }
-    if (rtn > tlt) {
-      rtn = tlt;
-      a()->SetTimeOnlineLimited(true);
-    }
-    check_event();
-    if (do_event) {
-      rtn = 0;
-    }
-  }
-  */
   return static_cast<long>(in_range<int64_t>(0, 32767, rtn));
 }
 

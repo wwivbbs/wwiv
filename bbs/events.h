@@ -19,7 +19,6 @@
 #define __INCLUDED_BBS_EVENTS_H__
 
 void init_events();
-void get_next_forced_event();
 void cleanup_events();
 void check_event();
 void run_event(int evnt);

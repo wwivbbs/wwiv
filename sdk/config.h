@@ -31,9 +31,7 @@ public:
 
   bool IsInitialized() const { return initialized_; }
   void set_initialized_for_test(bool initialized) { initialized_ = initialized;  }
-  // TODO(rushfan): Need this here since we set the event time
-  // even though we never save this from the BBS.
-  configrec* config() const { return &config_; }
+  const configrec* config() const { return &config_; }
   void set_config(const configrec* config, bool update_paths);
   void set_paths_for_test(const std::string& datadir, const std::string& msgsdir,
     const std::string& gfilesdir, const std::string& menudir,
@@ -58,13 +56,24 @@ public:
 
   const std::string config_filename() const;
 
+  // Sets the value for required upload/download ratio. 
+  // This has been moved to the ini file.
+  void set_req_ratio(float req_ratio) {
+    config_.req_ratio = req_ratio;
+  }
+
+  // Sets the value for the sysconfig flags. 
+  // These hava been moved to the ini file.
+  void set_sysconfig(uint16_t sysconfig) {
+    config_.sysconfig = sysconfig;
+  }
+
 private:
   std::string to_abs_path(const char* dir);
   void update_paths();
 
   bool initialized_ = false;
-  // We don't save this, so it's mutable.
-  mutable configrec config_{};
+  configrec config_{};
   const std::string root_directory_;
   bool versioned_config_dat_ = false;
   uint32_t config_revision_number_ = 0;

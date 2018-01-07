@@ -282,9 +282,6 @@ public:
   bool read_subs();
   bool create_message_api();
   void SetLogonTime();
-  std::chrono::system_clock::time_point time_event_time() const { return time_event_time_; }
-  void set_time_event_time(std::chrono::system_clock::time_point t) { time_event_time_ = t; }
-  void clear_time_event_time() { time_event_time_ = std::chrono::system_clock::time_point::min(); }
   std::chrono::steady_clock::time_point steady_logon_time() const { return steady_logon_time_; }
   std::chrono::system_clock::time_point system_logon_time() const { return system_logon_time_; }
   std::chrono::system_clock::duration duration_used_this_session() const;
@@ -476,7 +473,6 @@ private:
   int last_read_user_number_ = 0;
   std::chrono::system_clock::time_point system_logon_time_;
   std::chrono::steady_clock::time_point steady_logon_time_;
-  std::chrono::system_clock::time_point time_event_time_;
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_APPLICATION_H__)

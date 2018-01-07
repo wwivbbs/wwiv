@@ -353,8 +353,8 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   // sysconfig flags
-  a()->config()->config()->sysconfig = static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
-    NEL(sysconfig_flags), a()->config()->config()->sysconfig));
+  a()->config()->set_sysconfig(static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
+      NEL(sysconfig_flags), a()->config()->config()->sysconfig)));
 
   // misc stuff
   auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
@@ -362,7 +362,7 @@ void Application::ReadINIFile(IniFile& ini) {
 
   const auto ratio_str = ini.value<string>(get_key_str(INI_STR_RATIO));
   if (!ratio_str.empty()) {
-    a()->config()->config()->req_ratio = StringToFloat(ratio_str);
+    a()->config()->set_req_ratio(StringToFloat(ratio_str));
   }
 
   const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
