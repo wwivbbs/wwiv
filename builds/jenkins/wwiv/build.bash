@@ -48,6 +48,10 @@ build_binaries() {
     popd > /dev/null
     
     echo "Compiling Everything"
+    if [[ ! -d "${CMAKE_BUILD}" ]]; then
+	mkdir -p ${CMAKE_BUILD}
+    fi
+    
     pushd ${CMAKE_BUILD}
     cmake -DCMAKE_BUILD_TYPE:STRING=Debug ..
     cmake --build . -- ${make_args}

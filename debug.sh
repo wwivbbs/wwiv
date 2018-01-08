@@ -1,5 +1,6 @@
 #!/bin/bash
 declare -r OS=$(uname)
+echo "$(pwd)"
 
 if [[ "${OS}" == "SunOS" ]]; then
     echo "Setting compiler to gcc for SunOS"
@@ -7,4 +8,4 @@ if [[ "${OS}" == "SunOS" ]]; then
     export CC=/usr/bin/gcc
 fi
 
-cmake -DCMAKE_BUILD_TYPE:STRING=Debug
+cmake -DCMAKE_BUILD_TYPE:STRING=Debug $@

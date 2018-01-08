@@ -7,6 +7,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
 include(Common)
 include(FindASan)
 
+MACRO_ENSURE_OUT_OF_SOURCE_BUILD()
+
 if (WWIV_BUILD_TESTS)
   # Workaround gtest really wanting to compile with /Mtd vs /MD
   set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)

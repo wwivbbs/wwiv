@@ -60,4 +60,16 @@ function(SET_WARNING_LEVEL_4)
   endif()
 endfunction()
 
+MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
+  STRING(COMPARE EQUAL "${${PROJECT_NAME}_SOURCE_DIR}"
+    "${${PROJECT_NAME}_BINARY_DIR}" insource)
+  GET_FILENAME_COMPONENT(PARENTDIR ${${PROJECT_NAME}_SOURCE_DIR} PATH)
+  STRING(COMPARE EQUAL "${${PROJECT_NAME}_SOURCE_DIR}"
+    "${PARENTDIR}" insourcesubdir)
+  IF(insource OR insourcesubdir)
+    MESSAGE(FATAL_ERROR "${PROJECT_NAME} requires an out of source build.")
+  ENDIF(insource OR insourcesubdir)
+ENDMACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
+
+  
 message("CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
