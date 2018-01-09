@@ -23,6 +23,7 @@
 #include <cstring> // strncpy
 #include <ctime> // struct tm
 #include <functional>
+#include <limits>
 #include <sstream>
 #include <string>
 #include <type_traits>
