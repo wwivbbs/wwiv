@@ -884,7 +884,7 @@ void qwk_menu() {
       bout.bprintf("Enter percent of all messages in all QSCAN subs to pack:");
       bout.mpl(3);
       input(temp, 3);
-      qwk_percent = atoi(temp);
+      qwk_percent = to_number<int>(temp);
       if (qwk_percent > 100) {
         qwk_percent = 100;
       }
@@ -1076,7 +1076,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
     return 0;
   }
 
-  *qwk_max_msgs = static_cast<uint16_t>(atoi(temp));
+  *qwk_max_msgs = to_number<uint16_t>(temp);
 
   bout.bprintf("Most messages you want per sub? ");
   bout.mpl(5);
@@ -1086,7 +1086,7 @@ int get_qwk_max_msgs(uint16_t *qwk_max_msgs, uint16_t *max_per_sub) {
     return 0;
   }
 
-  *max_per_sub = static_cast<uint16_t>(atoi(temp)); 
+  *max_per_sub = to_number<uint16_t>(temp);
   return 1;
 }
 

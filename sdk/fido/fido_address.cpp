@@ -56,7 +56,7 @@ static T next_int(C& c, I& it, std::set<char> stop) {
     // skip over last
     it++;
   }
-  return static_cast<T>(StringToInt(s));
+  return static_cast<T>(to_number<int>(s));
 }
 
 FidoAddress::FidoAddress(const std::string& address) {

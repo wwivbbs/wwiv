@@ -42,7 +42,7 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
   }
   const auto pend_filename(pend_file.full_pathname());
   const auto num = filename.substr(1);
-  const string prefix = (atoi(num.c_str())) ? "1" : "0";
+  const string prefix = (to_number<int>(num)) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
     const auto new_filename =

@@ -114,7 +114,7 @@ private:
  * Info for each network the sub is on.
  *  flags - bitmask
  *  sess->network_num_ - index into networks.dat
- *  type - numeric sub type = atoi(stype)
+ *  type - numeric sub type = to_number<int>(stype)
  *  host - host system of sub, or 0 if locally hosted
  *  stype - string sub type (up to 7 chars)
  */

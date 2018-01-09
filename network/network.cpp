@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 
     auto node = cmdline.sarg("node");
     if (!contains(node, ':')) {
-      int nodeint = StringToInt(node);
+      int nodeint = to_number<int>(node);
       if (nodeint == 0 || nodeint > 32767) {
         LOG(ERROR) << "Invalid node number: '" << node << "' specified.";
         ShowHelp(cmdline);
@@ -138,7 +138,7 @@ int main(int argc, char** argv) {
       return system(command_line.c_str());
     }
 
-    auto nodeint = StringToInt(node);
+    auto nodeint = to_number<int>(node);
     if (nodeint == 0) {
       LOG(ERROR) << "Not sure how to call out to: " << node;
       return 1;

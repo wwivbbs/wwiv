@@ -394,7 +394,7 @@ void tag_it() {
         }
       }
     }
-    i = atoi(s1);
+    i = to_number<int>(s1);
     if (i == 0) {
       break;
     }
@@ -540,7 +540,7 @@ void tag_files(bool& need_title) {
       bout.clear_lines_listed();
       bout << "|#9Which file (1-" << a()->filelist.size() << ")? ";
       input(s, 2, true);
-      i = atoi(s) - 1;
+      i = to_number<int>(s) - 1;
       if (s[0] && i >= 0 && i < size_int(a()->filelist)) {
         auto& f = a()->filelist[i];
         d = XFER_TIME(f.u.numbytes);
@@ -615,7 +615,7 @@ void tag_files(bool& need_title) {
     case 'V':
       bout << "|#2Which file (1-|#2" << a()->filelist.size() << ")? ";
       input(s, 2, true);
-      i = atoi(s) - 1;
+      i = to_number<int>(s) - 1;
       if ((s[0]) && (i >= 0) && (i < size_int(a()->filelist))) {
         auto& f = a()->filelist[i];
         sprintf(s1, "%s%s", a()->directories[f.directory].path,

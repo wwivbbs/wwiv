@@ -159,7 +159,7 @@ static void select_chat_name(char *sysop_name) {
   a()->localIO()->EditLine(sysop_name, 30, ALL, &rc, sysop_name);
   if (rc != ABORTED) {
     StringTrimEnd(sysop_name);
-    int user_number = atoi(sysop_name);
+    int user_number = to_number<int>(sysop_name);
     if (user_number > 0 && user_number <= a()->config()->config()->maxusers) {
       const string unn = a()->names()->UserName(user_number);
       strcpy(sysop_name, unn.c_str());

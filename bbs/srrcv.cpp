@@ -36,6 +36,7 @@
 
 using std::string;
 using namespace std::chrono;
+using namespace wwiv::strings;
 
 // From zmwwiv.cpp
 bool NewZModemReceiveFile(const char *file_name);
@@ -239,7 +240,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
           i3++;
         }
         x[i3 - i1] = '\0';
-        reallen = atol(x);
+        reallen = to_number<long>(x);
         a()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (reallen + 127) / 128, bytes_to_k(reallen));
         while ((b[i1] != SPACE) && (i1 < 64)) {
           ++i1;

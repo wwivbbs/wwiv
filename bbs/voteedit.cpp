@@ -26,9 +26,11 @@
 #include "bbs/utility.h"
 #include "bbs/com.h"
 #include "bbs/vars.h"
+#include "core/strings.h"
 #include "sdk/filenames.h"
 
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 static void print_quests() {
   File file(a()->config()->datadir(), VOTING_DAT);
@@ -129,7 +131,7 @@ void ivotes() {
     if (questionum == "Q") {
       done = true;
     }
-    int i = atoi(questionum.c_str());
+    int i = to_number<int>(questionum);
     if (i > 0 && i < 21) {
       set_question(i - 1);
     }

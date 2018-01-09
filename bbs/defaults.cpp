@@ -91,7 +91,7 @@ void select_editor() {
   bout << "|#9Which editor (|#31-" << a()->editors.size() << ", <Q>=leave as is|#9) ? ";
   string ss = mmkey(odc);
 
-  int nEditor = StringToInt(ss);
+  int nEditor = to_number<int>(ss);
   if (nEditor >= 1 && nEditor <= size_int(a()->editors)) {
     a()->user()->SetDefaultEditor(nEditor);
   } else if (ss == "0") {
@@ -719,7 +719,7 @@ static void optional_lines() {
   bout << "|#2What value? ";
   string lines = input(2);
 
-  int nNumLines = StringToInt(lines);
+  int nNumLines = to_number<int>(lines);
   if (!lines.empty() && nNumLines >= 0 && nNumLines < 11) {
     a()->user()->SetOptionalVal(nNumLines);
   }
@@ -728,9 +728,9 @@ static void optional_lines() {
 
 void enter_regnum() {
   bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-  string regnum = input(5, true);
+  auto regnum = input(5, true);
 
-  long lRegNum = atol(regnum.c_str());
+  long lRegNum = to_number<long>(regnum);
   if (!regnum.empty() && lRegNum >= 0) {
     a()->user()->SetWWIVRegNumber(lRegNum);
     changedsl();

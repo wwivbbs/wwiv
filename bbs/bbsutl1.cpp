@@ -75,7 +75,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
     } else {
       bout << "Unknown user.\r\n";
     }
-  } else if (atoi(ss + 1) == 0) {
+  } else if (to_number<int>(ss + 1) == 0) {
     int i = 0;
     for (i = 0; i < a()->max_net_num(); i++) {
       set_net_num(i);
@@ -97,14 +97,14 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
     ss[0] = '\0';
     ss = &(ss[1]);
     StringTrimEnd(szEmailAddress);
-    user_number = atoi(szEmailAddress);
+    user_number = to_number<unsigned int>(szEmailAddress);
     if (user_number == 0 && szEmailAddress[0] == '#') {
-      user_number = atoi(szEmailAddress + 1);
+      user_number = to_number<unsigned int>(szEmailAddress + 1);
     }
     if (strchr(szEmailAddress, '@')) {
       user_number = 0;
     }
-    system_number = atoi(ss);
+    system_number = to_number<unsigned int>(ss);
     ss1 = strchr(ss, '.');
     if (ss1) {
       ss1++;
@@ -217,7 +217,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
           if (mmk == "Q") {
             i = -1;
           } else {
-            i = StringToInt(mmk) - 1;
+            i = to_number<decltype(i)>(mmk) - 1;
           }
         }
         if (i >= 0 && i < nv) {
@@ -322,14 +322,14 @@ bool play_sdf(const string& sound_filename, bool abortable) {
     }
     int nw = wordcount(soundLine.c_str(), DELIMS_WHITE);
     if (nw >= 2) {
-      int freq = atoi(extractword(1, soundLine, DELIMS_WHITE));
-      int dur = atoi(extractword(2, soundLine, DELIMS_WHITE));
+      auto freq = to_number<int>(extractword(1, soundLine, DELIMS_WHITE));
+      auto dur = to_number<int>(extractword(2, soundLine, DELIMS_WHITE));
 
       // only play if freq and duration > 0
       if (freq > 0 && dur > 0) {
         int nPauseDelay = 0;
         if (nw > 2) {
-          nPauseDelay = atoi(extractword(3, soundLine, DELIMS_WHITE));
+          nPauseDelay = to_number<int>(extractword(3, soundLine, DELIMS_WHITE));
         }
         sound(freq, milliseconds(dur));
         if (nPauseDelay > 0) {
@@ -360,7 +360,7 @@ string describe_area_code(int nAreaCode) {
   string previous;
   string current;
   while (file.ReadLine(&current)) {
-    int nCurrentTown = atoi(current.c_str()); 
+    auto nCurrentTown = to_number<int>(current.c_str());
     if (nCurrentTown == nAreaCode) {
       return previous;
     } else if (nCurrentTown == 0) {
@@ -389,7 +389,7 @@ string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   string previous;
   string current;
   while (file.ReadLine(&current)) {
-    int nCurrentTown = atoi(current.c_str()); 
+    int nCurrentTown = to_number<int>(current);
     if (nCurrentTown == nTargetTown) {
       return previous;
     } else if (nCurrentTown == 0) {

@@ -425,7 +425,7 @@ void dlboardedit() {
       bout.nl();
       bout << "|#2Dir number? ";
       input(s, 4);
-      auto i = atoi(s);
+      auto i = to_number<int>(s);
       if ((s[0] != 0) && (i >= 0) && (i < size_int(a()->directories))) {
         modify_dir(i);
       }
@@ -435,14 +435,14 @@ void dlboardedit() {
         bout.nl();
         bout << "|#2Take dir number? ";
         input(s, 4);
-        i1 = atoi(s);
+        i1 = to_number<int>(s);
         if (!s[0] || i1 < 0 || i1 >= size_int(a()->directories)) {
           break;
         }
         bout.nl();
         bout << "|#2And put before dir number? ";
         input(s, 4);
-        i2 = atoi(s);
+        i2 = to_number<int>(s);
         if ((!s[0]) || (i2 < 0) || (i2 % 32 == 0) || (i2 > size_int(a()->directories)) || (i1 == i2)) {
           break;
         }
@@ -466,7 +466,7 @@ void dlboardedit() {
         bout.nl();
         bout << "|#2Insert before which dir? ";
         input(s, 4);
-        subconf_t i = StringToUnsignedShort(s);
+        subconf_t i = to_number<uint16_t>(s);
         if ((s[0] != 0) && (i >= 0) && (i <= size_int(a()->directories))) {
           insert_dir(i);
           modify_dir(i);
@@ -493,7 +493,7 @@ void dlboardedit() {
       bout.nl();
       bout << "|#2Delete which dir? ";
       input(s, 4);
-      auto i = atoi(s);
+      auto i = to_number<int>(s);
       if ((s[0] != 0) && (i >= 0) && (i < size_int(a()->directories))) {
         bout.nl();
         bout << "|#5Delete " << a()->directories[i].name << "? ";

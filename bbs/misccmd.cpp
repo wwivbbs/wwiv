@@ -469,7 +469,7 @@ void time_bank() {
       bout.nl();
       bout << "|#1Deposit how many minutes: ";
       input(s, 3, true);
-      i = atoi(s);
+      i = to_number<int>(s);
       if (i > 0) {
         nsln = nsl();
         if ((i + a()->user()->GetTimeBankMinutes()) > getslrec(
@@ -493,7 +493,7 @@ void time_bank() {
       }
       bout << "|#1Withdraw How Many Minutes: ";
       input(s, 3, true);
-      i = atoi(s);
+      i = to_number<int>(s);
       if (i > 0) {
         nsln = nsl();
         if (i > a()->user()->GetTimeBankMinutes()) {

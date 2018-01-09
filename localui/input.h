@@ -209,7 +209,7 @@ public:
     window->GotoXY(this->x_, this->y_);
     std::string s = std::to_string(*this->data_);
     int return_code = editline(window, &s, MAXLEN + 1, EditLineMode::NUM_ONLY, "");
-    *this->data_ = static_cast<T>(atoi(s.c_str()));
+    *this->data_ = wwiv::strings::to_number<T>(s);
     return return_code;
   }
 

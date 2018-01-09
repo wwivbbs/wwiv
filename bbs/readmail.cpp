@@ -278,7 +278,7 @@ void add_netsubscriber(int system_number) {
     if (!s[0]) {
       return;
     }
-    system_number = atoi(s);
+    system_number = to_number<int>(s);
     if (!valid_system(system_number)) {
       bout << "@" << system_number << " is not a valid system in " << a()->network_name() <<
                          ".\r\n\n";
@@ -504,7 +504,7 @@ void readmail(int mode) {
     if (strchr(s, 'Q') != nullptr) {
       return;
     }
-    i = atoi(s);
+    i = to_number<int>(s);
     if (i) {
       if (!mode) {
         if (i <= mw) {
@@ -760,7 +760,7 @@ void readmail(int mode) {
       case 'G':
         bout << "|#2Go to which (1-" << mw << ") ? |#0";
         input(s, 3);
-        i1 = atoi(s);
+        i1 = to_number<int>(s);
         if (i1 > 0 && i1 <= mw) {
           curmail = i1 - 1;
           i1 = 1;

@@ -811,12 +811,12 @@ bool BinkP::HandleFileRequest(const string& request_line) {
 bool BinkP::HandleFileGetRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGetRequest: request_line: [" << request_line << "]"; 
   vector<string> s = SplitString(request_line, " ");
-  const string filename = s.at(0);
-  long length = stol(s.at(1));
-  time_t timestamp = stoul(s.at(2));
+  const auto filename = s.at(0);
+  auto length = to_number<long>(s.at(1));
+  auto timestamp = to_number<time_t>(s.at(2));
   long offset = 0;
   if (s.size() >= 4) {
-    offset = stol(s.at(3));
+    offset = to_number<long>(s.at(3));
   }
 
   auto iter = files_to_send_.find(filename);
@@ -832,7 +832,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]"; 
   vector<string> s = SplitString(request_line, " ");
   const string filename = s.at(0);
-  int length = StringToInt(s.at(1));
+  int length = to_number<int>(s.at(1));
 
   auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {
@@ -1060,14 +1060,14 @@ bool ParseFileRequestLine(const string& request_line,
     return false;
   }
   *filename = s.at(0);
-  *length = stol(s.at(1));
-  *timestamp = stoul(s.at(2));
+  *length = to_number<long>(s.at(1));
+  *timestamp = to_number<time_t>(s.at(2));
   *offset = 0;
   if (s.size() >= 4) {
-    *offset = stol(s.at(3));
+    *offset = to_number<long>(s.at(3));
   }
   if (s.size() >= 5) {
-    *crc = stoul(s.at(4), nullptr, 16);
+    *crc = to_number<uint32_t>(s.at(4), 16);
   }
   return true;
 }

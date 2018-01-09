@@ -81,7 +81,6 @@ using std::cout;
 using std::endl;
 using std::exception;
 using std::stoi;
-using std::stol;
 using std::string;
 using std::min;
 using std::max;
@@ -749,7 +748,7 @@ int Application::Run(int argc, char *argv[]) {
       switch (ch) {
       case 'B': {
         // I think this roundtrip here is just to ensure argument is really a number.
-        ui = static_cast<unsigned int>(atol(argument.c_str()));
+        ui = to_number<unsigned int>(argument);
         SetCurrentSpeed(std::to_string(ui));
         user_already_on_ = true;
         }
@@ -788,7 +787,7 @@ int Application::Run(int argc, char *argv[]) {
         num_min = stoi(argument);
         break;
       case 'U':
-        this_usernum_from_commandline = StringToUnsignedShort(argument);
+        this_usernum_from_commandline = to_number<uint16_t>(argument);
         if (!user_already_on_) {
           SetCurrentSpeed("KB");
         }
@@ -844,7 +843,7 @@ int Application::Run(int argc, char *argv[]) {
           i++;
           bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
           while (i < argc) {
-            int nSubNumToPack = atoi(argv[i]);
+            int nSubNumToPack = to_number<int>(argv[i]);
             pack_sub(nSubNumToPack);
             sysoplog() << "* Packed Message Subboard:" << nSubNumToPack;
             i++;

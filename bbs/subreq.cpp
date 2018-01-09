@@ -122,7 +122,7 @@ int find_hostfor(const std::string& type, short *ui, char *description, short *o
             if (IsEqualsIgnoreCase(ss, type.c_str())) {
               ss = strtok(nullptr, " \r\n\t");
               if (ss) {
-                short h = static_cast<short>(atol(ss));
+                auto h = to_number<short>(ss);
                 short o = 0;
                 ss = strtok(nullptr, "\r\n");
                 if (ss) {
@@ -272,7 +272,7 @@ void sub_xtr_add(int n, int nn) {
       if (mmk == "Q") {
         ii = -1;
       } else {
-        ii = StringToInt(mmk) - 1;
+        ii = to_number<int>(mmk) - 1;
       }
     }
     if (ii >= 0 && ii < a()->max_net_num()) {
@@ -323,11 +323,11 @@ void sub_xtr_add(int n, int nn) {
           bout.nl();
           bout << "|#2Which category is this sub in (0 for unknown/misc)? ";
           input(s, 3);
-          i = StringToUnsignedShort(s);
+          i = to_number<uint16_t>(s);
           if (i || IsEquals(s, "0")) {
             TextFile ff(a()->network_directory(), CATEG_NET, "rt");
             while (ff.ReadLine(s, 100)) {
-              int i1 = StringToUnsignedShort(s);
+              int i1 = to_number<uint16_t>(s);
               if (i1 == i) {
                 gc = 1;
                 xnp.category = i;
@@ -359,7 +359,7 @@ void sub_xtr_add(int n, int nn) {
       bout.nl();
       bout << "|#2Which system (number) is the host? ";
       input(szDescription, 6);
-      xnp.host = static_cast<uint16_t>(atol(szDescription));
+      xnp.host = to_number<uint16_t>(szDescription);
       szDescription[0] = '\0';
     }
     if (!a()->subs().sub(n).desc[0]) {

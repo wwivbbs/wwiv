@@ -384,12 +384,12 @@ std::vector<MenuRec> MenuInstance::LoadMenuRecord(const std::string& command) {
   if (IsNumber(command)) {
     if (header.nums == MENU_NUMFLAG_SUBNUMBER) {
       MenuRec r{};
-      sprintf(r.szExecute, "SetSubNumber %d", atoi(command.c_str()));
+      sprintf(r.szExecute, "SetSubNumber %d", to_number<int>(command));
       result.push_back(std::move(r));
       return result;
     } else if (header.nums == MENU_NUMFLAG_DIRNUMBER) {
       MenuRec r{};
-      sprintf(r.szExecute, "SetDirNumber %d", atoi(command.c_str()));
+      sprintf(r.szExecute, "SetDirNumber %d", to_number<int>(command));
       result.push_back(std::move(r));
       return result;
     }

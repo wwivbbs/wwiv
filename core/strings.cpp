@@ -151,59 +151,6 @@ int StringCompare(const char *str1, const char *str2) {
   return strcmp(str1, str2);
 }
 
-template <typename T, typename R>
-static T StringToT(std::function<R(const string&)> f, const string& s) {
-  try {
-    R ret = f(s);
-    if (ret > numeric_limits<T>::max()) {
-      return numeric_limits<T>::max();
-    }
-    if (ret < numeric_limits<T>::min()) {
-      return numeric_limits<T>::min();
-    }
-    return static_cast<T>(ret);
-  }
-  catch (const std::logic_error&) {
-    // Handle invalid_argument and out_of_range.
-    return 0;
-  }
-}
-
-int16_t StringToShort(const string& s) {
-  return StringToT<int16_t, int>(
-      [](const string& s) { return std::stoi(s); }, s);
-}
-
-uint16_t StringToUnsignedShort(const string& s) {
-  return StringToT<uint16_t, unsigned long>(
-      [](const string& s) { return std::stoul(s); }, s);
-}
-
-int8_t StringToChar(const string& s) {
-  return StringToT<int8_t, int>(
-      [](const string& s) { return std::stoi(s); }, s);
-}
-
-uint8_t StringToUnsignedChar(const string& s) {
-  return StringToT<uint8_t, unsigned long>(
-      [](const string& s) { return std::stoul(s); }, s);
-}
-
-unsigned int StringToUnsignedInt(const string& s) {
-  return StringToT<unsigned, unsigned long>(
-    [](const string& s) { return std::stoul(s); }, s);
-}
-
-int StringToInt(const string& s) {
-  return StringToT<int, int>(
-    [](const string& s) { return std::stoi(s); }, s);
-}
-
-float StringToFloat(const string& s) {
-  return StringToT<float, float>(
-    [](const string& s) { return std::stof(s); }, s);
-}
-
 const string& StringReplace(string* orig, const string& old_string, const string& new_string) {
   string::size_type pos = orig->find(old_string, 0);
   while (pos != string::npos) {

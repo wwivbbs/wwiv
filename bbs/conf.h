@@ -108,6 +108,6 @@ int  select_conf(const char *prompt_text, ConferenceType conftype, int listconfs
 void read_in_conferences(ConferenceType conftype);
 void read_all_conferences();
 int wordcount(const std::string& instr, const char *delimstr);
-const char *extractword(int ww, const std::string& instr, const char *delimstr);
+std::string extractword(int ww, const std::string& instr, const char *delimstr);
 
 #endif  // __INCLUDED_BBS_CONF_H__

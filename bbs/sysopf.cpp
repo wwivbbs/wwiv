@@ -127,7 +127,7 @@ void valuser(int user_number) {
       bout << "|#9New : ";
       input(s, 3, true);
       if (s[0]) {
-        int nSl = StringToUnsignedInt(s);
+        int nSl = to_number<unsigned int>(s);
         if (!a()->at_wfc() && nSl >= static_cast<int>(a()->GetEffectiveSl())) {
           nSl = -2;
         }
@@ -155,7 +155,7 @@ void valuser(int user_number) {
       bout << "|#9New ? ";
       input(s, 3, true);
       if (s[0]) {
-        int nDsl = StringToUnsignedInt(s);
+        int nDsl = to_number<unsigned int>(s);
         if (!a()->at_wfc() && nDsl >= static_cast<int>(a()->user()->GetDsl())) {
           nDsl = -1;
         }
@@ -343,7 +343,7 @@ void print_net_listing(bool bForcePause) {
         if (mmk == "Q") {
           done = true;
         } else {
-          i = StringToInt(mmk) - 1;
+          i = to_number<int>(mmk) - 1;
         }
       }
 
@@ -428,13 +428,13 @@ void print_net_listing(bool bForcePause) {
         bout.nl();
         bout << "|#1Enter group number|#2: |#0";
         input(s, 2);
-        if ((s[0] == 0) || (atoi(s) < 1)) {
+        if ((s[0] == 0) || (to_number<int>(s) < 1)) {
           bout << "|#6Invalid group number!\r\n";
           pausescr();
           cmdbit = 0;
           break;
         }
-        gn = atoi(s);
+        gn = to_number<int>(s);
         break;
       case '4':
         cmdbit = NET_SEARCH_SC;
@@ -587,13 +587,13 @@ void print_net_listing(bool bForcePause) {
             if (useregion && strncmp(s, csne.phone, 3) != 0) {
               strcpy(s, csne.phone);
               const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
-              const auto town_fn = StringPrintf("%s.%-3u", REGIONS_DIR, StringToUnsignedInt(csne.phone));
+              const auto town_fn = StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne.phone));
               string areacode;
               if (File::Exists(regions_dir, town_fn)) {
                 sprintf(town, "%c%c%c", csne.phone[4], csne.phone[5], csne.phone[6]);
-                areacode = describe_area_code_prefix(atoi(csne.phone), atoi(town));
+                areacode = describe_area_code_prefix(to_number<int>(csne.phone), to_number<int>(town));
               } else {
-                areacode = describe_area_code(atoi(csne.phone));
+                areacode = describe_area_code(to_number<int>(csne.phone));
               }
               const string line = StringPrintf("\r\n%s%s\r\n", "|#2Region|#0: |#2", areacode.c_str());
               bout.bpla(line, &abort);

@@ -53,7 +53,7 @@ static uint16_t PopStringToUnsignedShort(I& iter, const C& c) {
   while (iter != std::end(c) && std::isdigit(*iter)) {
     s.push_back(*iter++);
   }
-  return StringToUnsignedShort(s);
+  return to_number<uint16_t>(s);
 }
 
 template <typename I, typename C>
@@ -62,7 +62,7 @@ static float PopStringToFloat(I& iter, const C& c) {
   while (iter != std::end(c) && (std::isdigit(*iter) || *iter == '.')) {
     s.push_back(*iter++);
   }
-  return StringToFloat(s);
+  return to_number<float>(s);
 }
 
 template <typename I, typename C>

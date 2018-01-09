@@ -1179,7 +1179,7 @@ void xfer_defaults() {
       bout << "|#7: ";
       input(s, 3);
       if (s[0]) {
-        i = atoi(s);
+        i = to_number<int>(s);
         if ((i >= 0) && (i <= a()->max_extend_lines)) {
           a()->user()->SetNumExtended(i);
         }

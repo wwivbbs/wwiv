@@ -106,7 +106,7 @@ string mmkey(std::set<char>& x) {
 static int max_sub_key(std::vector<usersubrec>& container) {
   int key = 0;
   for (const auto& r : container) {
-    int current_key = StringToInt(r.keys);
+    int current_key = to_number<int>(r.keys);
     if (current_key == 0) {
       return key;
     }

@@ -47,9 +47,9 @@ static uint16_t get_time(const string& s) {
     return std::numeric_limits<uint16_t>::max();
   }
 
-  uint16_t h = StringToUnsignedShort(s);
+  uint16_t h = to_number<uint16_t>(s);
   string minutes = s.substr(3);
-  uint16_t m = StringToUnsignedShort(minutes);
+  uint16_t m = to_number<uint16_t>(minutes);
   if (h > 23 || m > 59) {
     return std::numeric_limits<uint16_t>::max();
   }

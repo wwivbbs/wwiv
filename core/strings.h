@@ -22,8 +22,10 @@
 #include <cstdint>
 #include <cstring> // strncpy
 #include <ctime> // struct tm
+#include <functional>
 #include <sstream>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace wwiv {
@@ -68,15 +70,6 @@ bool iequals(const char* s1, const char* s2);
 bool iequals(const std::string& s1, const std::string& s2);
 int StringCompareIgnoreCase(const char *str1, const char *str2);
 int StringCompare(const char *str1, const char *str2);
-
-int16_t StringToShort(const std::string& s);
-uint16_t StringToUnsignedShort(const std::string& s);
-int8_t StringToChar(const std::string& s);
-uint8_t StringToUnsignedChar(const std::string& s);
-unsigned int StringToUnsignedInt(const std::string& s);
-int StringToInt(const std::string& s);
-float StringToFloat(const std::string& s);
-
 
 const std::string& StringReplace(std::string* orig, const std::string& old_string, const std::string& new_string);
 std::vector<std::string> SplitString(const std::string& original_string, const std::string& delims);
@@ -141,6 +134,37 @@ template<class T>
 const T to_lower_case(const T a) {
   return static_cast<T>(::tolower(a));
 }
+
+template <typename T, typename R>
+static T StringToT(std::function<R(const std::string&, int)> f, const std::string& s, int b) {
+  try {
+    R ret = f(s, b);
+    if (ret > std::numeric_limits<T>::max()) {
+      return std::numeric_limits<T>::max();
+    }
+    if (ret < std::numeric_limits<T>::min()) {
+      return std::numeric_limits<T>::min();
+    }
+    return static_cast<T>(ret);
+  }
+  catch (const std::logic_error&) {
+    // Handle invalid_argument and out_of_range.
+    return 0;
+  }
+}
+
+template<typename T, typename std::enable_if<std::is_unsigned<T>::value, T>::type* = nullptr>
+T to_number(const std::string& s, int b = 10) {
+  return StringToT<T, unsigned long>(
+    [](const std::string& s, int b) { return std::stoul(s, nullptr, b); }, s, b);
+}
+
+template<typename T, typename std::enable_if<std::is_signed<T>::value, T>::type* = nullptr>
+T to_number(const std::string& s, int b = 10) {
+  return StringToT<T, long>(
+    [](const std::string& s, int b) { return std::stol(s, nullptr, b); }, s, b);
+}
+
 
 }  // namespace strings
 

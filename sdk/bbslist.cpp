@@ -65,7 +65,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
   for (auto iter = ss.begin(); iter != ss.end(); iter++) {
       switch (*iter) {
       case '@': {
-        con->sysnum = StringToUnsignedShort(string(++iter, ss.end()));
+        con->sysnum = to_number<uint16_t>(string(++iter, ss.end()));
       } break;
       case '&':
         con->other |= other_net_coord;
@@ -123,7 +123,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
       }
       break;
       case '#': {
-        con->speed = StringToUnsignedShort(string(++iter, ss.end()));
+        con->speed = to_number<uint16_t>(string(++iter, ss.end()));
       } break;
       // Reg Number.
       case '[': {
@@ -132,7 +132,7 @@ bool ParseBbsListNetLine(const string& ss, net_system_list_rec* con, int32_t* re
         while (iter != ss.end() && *iter != ']') {
           reg_number.push_back(*iter++);
         }
-        *reg_no = StringToInt(reg_number);
+        *reg_no = to_number<int>(reg_number);
       } break;
       case '\"': {
         ++iter;  // skip past first "

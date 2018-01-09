@@ -151,12 +151,12 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       MenuRunDoorName(context.param1.c_str(), true);
     } },
     { "RunDoorNumber", [](MenuItemContext& context) {
-      int nTemp = atoi(context.param1.c_str());
-      MenuRunDoorNumber(nTemp, false);
+      auto t = to_number<int>(context.param1.c_str());
+      MenuRunDoorNumber(t, false);
     } },
     { "RunDoorNumberFree", [](MenuItemContext& context) {
-      int nTemp = atoi(context.param1.c_str());
-      MenuRunDoorNumber(nTemp, true);
+      auto t = to_number<int>(context.param1.c_str());
+      MenuRunDoorNumber(t, true);
     } },
     { "RunBasic", [](MenuItemContext& context) {
       // Runs a basic script from GFILES/

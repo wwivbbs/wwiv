@@ -691,7 +691,7 @@ void boardedit() {
       if (s[0] == '$') {
         subnum = static_cast<subconf_t>(size_int(a()->subs().subs()));
       } else {
-        subnum = StringToUnsignedShort(s);
+        subnum = to_number<uint16_t>(s);
       }
       if (!s.empty() && subnum >= 0 && subnum <= size_int(a()->subs().subs())) {
         insert_sub(subnum);

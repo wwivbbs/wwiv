@@ -457,7 +457,7 @@ void get_quote(int fsed) {
       if (s[0] == 'Q') {
         rl = 0;
       } else if (s[0] != '?') {
-        i1 = atoi(s);
+        i1 = to_number<int>(s);
         if (i1 >= i) {
           i2 = i1 = i;
         }
@@ -475,7 +475,7 @@ void get_quote(int fsed) {
       if (s[0] == 'Q') {
         rl = 0;
       } else if (s[0] != '?') {
-        i2 = atoi(s);
+        i2 = to_number<int>(s);
         if (i2 > i) {
           i2 = i;
         }

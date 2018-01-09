@@ -84,7 +84,7 @@ struct CalloutEntry {
 static void rename_pend(const string& directory, const string& filename) {
   const string pend_filename = StringPrintf("%s%s", directory.c_str(), filename.c_str());
   const string num = filename.substr(1);
-  const string prefix = (atoi(num.c_str())) ? "p1-" : "p0-";
+  const string prefix = (to_number<int>(num)) ? "p1-" : "p0-";
 
   for (int i = 0; i < 1000; i++) {
     const string new_filename = StringPrintf("%s%s%u.net", directory.c_str(), prefix.c_str(), i);
@@ -282,13 +282,13 @@ void do_callout(uint16_t sn) {
     // TODO(rushfan): Figure out a better way to see if we need to call WINS exp.exe
     run_exp();
     bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn << wwiv::endl;
-    const string regions_filename = StringPrintf("%s.%-3u", REGIONS_DAT, StringToUnsignedInt(csne->phone));
+    const string regions_filename = StringPrintf("%s.%-3u", REGIONS_DAT, to_number<unsigned int>(csne->phone));
     string region = "Unknown Region";
     if (File::Exists(FilePath(a()->config()->datadir(), REGIONS_DAT), regions_filename)) {
       const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-      region = describe_area_code_prefix(atoi(csne->phone), StringToInt(town));
+      region = describe_area_code_prefix(to_number<int>(csne->phone), to_number<int>(town));
     } else {
-      region = describe_area_code(atoi(csne->phone));
+      region = describe_area_code(to_number<int>(csne->phone));
     }
     bout << "|#7Sys located in: |#2" << region << wwiv::endl;
     if (contact_rec->bytes_waiting() > 0) {

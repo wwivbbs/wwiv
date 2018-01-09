@@ -79,7 +79,7 @@ int SubReqCommand::Execute() {
   }
 
   net_header_rec nh = {};
-  auto host = StringToUnsignedShort(r.at(2));
+  auto host = to_number<uint16_t>(r.at(2));
   nh.tosys = static_cast<uint16_t>(host);
   nh.touser = 1;
   nh.fromsys = net.sysnum;

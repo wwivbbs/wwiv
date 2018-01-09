@@ -52,7 +52,7 @@ bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* conf
   stringstream stream(line);
   string node_str;
   stream >> node_str;
-  *node = StringToUnsignedShort(node_str.substr(1));
+  *node = to_number<uint16_t>(node_str.substr(1));
   string email_address;
   stream >> config->email_address;
   

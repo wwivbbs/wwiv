@@ -94,7 +94,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
           netstatus = "{AC}";
         }
       }
-      const auto phone_fn = StringPrintf("%s.%-3u", REGIONS_DIR, StringToUnsignedInt(csne->phone));
+      const auto phone_fn = StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne->phone));
       const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
       const string filename = FilePath(regions_dir, phone_fn);
 
@@ -102,11 +102,11 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
       if (File::Exists(filename)) {
         // Try to use the town first.
         const string phone_prefix = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-        description = describe_area_code_prefix(atoi(csne->phone), atoi(phone_prefix.c_str()));
+        description = describe_area_code_prefix(to_number<int>(csne->phone), to_number<int>(phone_prefix.c_str()));
       }
       if (description.empty()) {
         // Try area code if we still don't have a description.
-        description = describe_area_code(atoi(csne->phone));
+        description = describe_area_code(to_number<int>(csne->phone));
       }
 
       *outNetworkName = StrCat(netName, csne->name, " [", csne->phone, "] ", netstatus.c_str());

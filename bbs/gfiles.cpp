@@ -373,7 +373,7 @@ void gfile_sec(int sn) {
     bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf <<
                        "|#1), |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist|#1) : |#5";
     string ss = mmkey(odc);
-    i = StringToInt(ss);
+    i = to_number<int>(ss);
     if (ss == "Q") {
       done = true;
     } else if (ss == "E" && so()) {
@@ -395,7 +395,7 @@ void gfile_sec(int sn) {
       bout.nl();
       bout << "|#2G-file number to delete? ";
       string ss1 = mmkey(odc);
-      i = StringToInt(ss1);
+      i = to_number<int>(ss1);
       if (i > 0 && i <= nf) {
         bout << "|#9Remove " << g[i - 1].description << "|#1? |#5";
         if (yesno()) {
@@ -433,7 +433,7 @@ void gfile_sec(int sn) {
       while (!done1 && !hangup) {
         bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
         ss = mmkey(odc);
-        i2 = StringToInt(ss);
+        i2 = to_number<int>(ss);
         abort = false;
         if (ss == "?") {
           list_gfiles(g, nf, sn);
@@ -541,7 +541,7 @@ void gfiles() {
         bIsSectionFull = fill_sec(map[i]);
       }
     } else {
-      int i = StringToInt(ss);
+      int i = to_number<int>(ss);
       if (i > 0 && i <= nmap) {
         gfile_sec(map[i-1]);
       }

@@ -55,7 +55,7 @@ daten_t date_to_daten(const std::string& datet) {
 
   time_t t = time_t_now();
   struct tm* pTm = localtime(&t);
-  pTm->tm_mon   = atoi(datet.c_str()) - 1;
+  pTm->tm_mon   = to_number<int>(datet) - 1;
   pTm->tm_mday  = atoi(datet.c_str() + 3);
   // N.B. tm_year is years since 1900
   pTm->tm_year  = atoi(datet.c_str() + 6);         // fixed for 1920-2019

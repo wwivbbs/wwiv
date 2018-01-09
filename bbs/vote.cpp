@@ -153,7 +153,7 @@ static void vote_question(int i, int ii) {
   bout.mpl(2);
   auto empty_set = std::set<char>();
   string ans = mmkey(empty_set);
-  int i1 = StringToInt(ans);
+  int i1 = to_number<int>(ans);
   if (i1 > v.numanswers) {
     i1 = 0;
   }
@@ -227,7 +227,7 @@ void vote() {
     bout << "|#9(|#2Q|#9=|#2Quit|#9) Voting: |#2# |#9: ";
     bout.mpl(2);
     string answer= mmkey(odc);
-    int nQuestionNum = StringToInt(answer);
+    int nQuestionNum = to_number<int>(answer);
     if (nQuestionNum > 0 && nQuestionNum <= mapp) {
       vote_question(nQuestionNum, map[ nQuestionNum ]);
     } else if (answer == "Q") {

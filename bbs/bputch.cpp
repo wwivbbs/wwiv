@@ -32,6 +32,9 @@
 #include "bbs/application.h"
 #include "bbs/local_io.h"
 #include "core/log.h"
+#include "core/strings.h"
+
+using namespace wwiv::strings;
 
 /**
  * This function executes an ANSI string to change color, position the cursor, etc
@@ -62,7 +65,7 @@ void Output::execute_ansi() {
       if (ansistr[ptr] == ';') {
         temp[tempptr] = 0;
         tempptr = 0;
-        args[argptr++] = atoi(temp);
+        args[argptr++] = to_number<int>(temp);
       } else {
         temp[tempptr++] = ansistr[ptr];
       }
@@ -70,7 +73,7 @@ void Output::execute_ansi() {
     }
     if (tempptr && (argptr < 10)) {
       temp[tempptr] = 0;
-      args[argptr++] = atoi(temp);
+      args[argptr++] = to_number<int>(temp);
     }
     if ((cmd >= 'A') && (cmd <= 'D') && !args[0]) {
       args[0] = 1;

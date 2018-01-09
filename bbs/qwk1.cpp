@@ -630,7 +630,7 @@ void process_reply_dat(char *name) {
       StringTrim(to);
 
       // If in sub 0 or not public, possibly route into email
-      if (atoi(tosub) == 0) {
+      if (to_number<int>(tosub) == 0) {
         to_email = 1;
       } else if (qwk.status != ' ' && qwk.status != '-') { // if not public
         bout.cls();
@@ -647,9 +647,9 @@ void process_reply_dat(char *name) {
         }
       }
 
-      std::unique_ptr<char[]> text(make_text_file(repfile, curpos, atoi(blocks) - 1));
+      std::unique_ptr<char[]> text(make_text_file(repfile, curpos, to_number<int>(blocks) - 1));
       if (!text) {
-        curpos += atoi(blocks) - 1;
+        curpos += to_number<int>(blocks) - 1;
         continue;
       }
 
@@ -700,9 +700,9 @@ void process_reply_dat(char *name) {
         bout.bputs("Sorry, not enough disk space left.");
         pausescr();
       } else {
-        qwk_post_text(text.get(), title, atoi(tosub) - 1);
+        qwk_post_text(text.get(), title, to_number<int>(tosub) - 1);
       }
-      curpos += atoi(blocks) - 1;
+      curpos += to_number<int>(blocks) - 1;
     }
   }
   repfile = close(repfile);
@@ -727,7 +727,7 @@ void qwk_post_text(char *text, char *title, int sub) {
         input(substr, 3);
 
         StringTrim(substr);
-        sub = a()->usub[atoi(substr) - 1].subnum;
+        sub = a()->usub[to_number<int>(substr) - 1].subnum;
 
         if (substr[0] == 'Q') {
           return;
@@ -1059,7 +1059,7 @@ void qwk_sysop() {
       bout.bprintf("Enter max messages per packet, 0=No Max: ");
       bout.mpl(5);
       string tmp = input(5);
-      qwk_cfg.max_msgs = static_cast<uint16_t>(atoi(tmp.c_str()));
+      qwk_cfg.max_msgs = to_number<uint16_t>(tmp);
     } break;
     case '6':
       modify_bulletins(&qwk_cfg);
@@ -1094,7 +1094,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
       bout.mpl(2);
 
       input(s, 2);
-      int x = atoi(s);
+      int x = to_number<int>(s);
 
       if (x <= qwk_cfg->amount_blts) {
         strcpy(qwk_cfg->blt[x], qwk_cfg->blt[qwk_cfg->amount_blts - 1]);

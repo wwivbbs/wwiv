@@ -63,7 +63,7 @@ bool ParseBinkConfigLine(const string& line, std::string& node, binkp_session_co
   if (host_port_str.find(':') != string::npos) {
     vector<string> host_port = SplitString(host_port_str, ":");
     host = host_port[0];
-    port = StringToUnsignedShort(host_port[1]);
+    port = to_number<uint16_t>(host_port[1]);
   }
   
   config.host = host;

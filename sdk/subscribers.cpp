@@ -84,7 +84,7 @@ bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std:
   string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
-    uint16_t s = StringToUnsignedShort(line);
+    uint16_t s = to_number<uint16_t>(line);
     if (s > 0) {
       subscribers.insert(s);
     }

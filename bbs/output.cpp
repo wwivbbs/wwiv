@@ -235,7 +235,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
     s.push_back(*it);
     it++; 
   }
-  return StringToInt(s);
+  return to_number<int>(s);
 }
 
 int Output::bputs(const string& text) {

@@ -341,7 +341,7 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<subconf_t>& list) {
       break;
     case 1: {
       //This means there is no number in the range, it's just ,###,###
-      int num = atoi(extractword(1, temp, " -\t\r\n"));
+      int num = to_number<int>(extractword(1, temp, " -\t\r\n"));
       if (num < 1024 && num >= 0) {
         intarray[ num ] = 1;
       }
@@ -350,8 +350,8 @@ bool str_to_numrange(const char *pszNumbersText, std::vector<subconf_t>& list) {
     default: {
       // We're dealing with a range here, so it should be "XXX-YYY"
       // convert the left and right strings to numbers
-      int nLowNumber = atoi(extractword(1, temp, " -\t\r\n,"));
-      int nHighNumber = atoi(extractword(2, temp, " -\t\r\n,"));
+      int nLowNumber = to_number<int>(extractword(1, temp, " -\t\r\n,"));
+      int nHighNumber = to_number<int>(extractword(2, temp, " -\t\r\n,"));
       // Switch them around if they were reversed
       if (nLowNumber > nHighNumber) {
         std::swap(nLowNumber, nHighNumber);
@@ -1006,15 +1006,15 @@ static std::vector<confrec> read_conferences(const std::string& file_name) {
       }
       auto it = words.begin();
       auto status = *it++;
-      c.status = StringToUnsignedShort(status.substr(1));
-      c.minsl = StringToUnsignedChar(*it++);
-      c.maxsl = StringToUnsignedChar(*it++);
-      c.mindsl = StringToUnsignedChar(*it++);
-      c.maxdsl = StringToUnsignedChar(*it++);
-      c.minage = StringToUnsignedChar(*it++);
-      c.maxage = StringToUnsignedChar(*it++);
-      c.minbps = StringToUnsignedShort(*it++);
-      c.sex = StringToUnsignedChar(*it++);
+      c.status = to_number<uint16_t>(status.substr(1));
+      c.minsl = to_number<uint8_t>(*it++);
+      c.maxsl = to_number<uint8_t>(*it++);
+      c.mindsl = to_number<uint8_t>(*it++);
+      c.maxdsl = to_number<uint8_t>(*it++);
+      c.minage = to_number<uint8_t>(*it++);
+      c.maxage = to_number<uint8_t>(*it++);
+      c.minbps = to_number<uint16_t>(*it++);
+      c.sex = to_number<uint8_t>(*it++);
       c.ar = static_cast<uint16_t>(str_to_arword(*it++));
       c.dar = static_cast<uint16_t>(str_to_arword(*it++));
     } break;
@@ -1027,7 +1027,7 @@ static std::vector<confrec> read_conferences(const std::string& file_name) {
       for (auto& word : words) {
         StringTrim(&word);
         if (word.empty()) continue;
-        c.subs.insert(StringToUnsignedShort(word));
+        c.subs.insert(to_number<uint16_t>(word));
       }
       c.num = static_cast<subconf_t>(c.subs.size());
       c.maxnum = c.num;
@@ -1095,22 +1095,20 @@ int wordcount(const string& instr, const char *delimstr) {
  * Returns pointer to string representing the nth "word" of a string, using
  * a specified set of characters as delimiters.
  */
-const char *extractword(int ww, const string& instr, const char *delimstr) {
+std::string extractword(int ww, const string& instr, const char *delimstr) {
   char szTempBuffer[MAX_CONF_LINE];
-  static char rs[41];
   int i = 0;
 
   if (!ww) {
-    return "";
+    return {};
   }
 
   strcpy(szTempBuffer, instr.c_str());
   for (char *s = strtok(szTempBuffer, delimstr); s && (i++ < ww); s = strtok(nullptr, delimstr)) {
     if (i == ww) {
-      strcpy(rs, s);
-      return rs;
+      return string(s);
     }
   }
-  return "";
+  return {};
 }
 

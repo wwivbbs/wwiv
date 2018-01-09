@@ -344,9 +344,9 @@ void Application::ReadINIFile(IniFile& ini) {
 
   // get asv values
   if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
-    INI_GET_ASV("SL", sl, StringToUnsignedChar, a()->asv.sl);
-    INI_GET_ASV("DSL", dsl, StringToUnsignedChar, a()->asv.dsl);
-    INI_GET_ASV("EXEMPT", exempt, StringToUnsignedChar, a()->asv.exempt);
+    INI_GET_ASV("SL", sl, to_number<uint8_t>, a()->asv.sl);
+    INI_GET_ASV("DSL", dsl, to_number<uint8_t>, a()->asv.dsl);
+    INI_GET_ASV("EXEMPT", exempt, to_number<uint8_t>, a()->asv.exempt);
     INI_GET_ASV("AR", ar, str_to_arword, a()->asv.ar);
     INI_GET_ASV("DAR", dar, str_to_arword, a()->asv.dar);
     INI_GET_ASV("RESTRICT", restrict, str2restrict, a()->asv.restrict);
@@ -362,7 +362,7 @@ void Application::ReadINIFile(IniFile& ini) {
 
   const auto ratio_str = ini.value<string>(get_key_str(INI_STR_RATIO));
   if (!ratio_str.empty()) {
-    a()->config()->set_req_ratio(StringToFloat(ratio_str));
+    a()->config()->set_req_ratio(to_number<float>(ratio_str));
   }
 
   const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
@@ -793,7 +793,7 @@ void Application::InitializeBBS() {
   network_extension_ = ".net";
   const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
   if (!wwiv_instance.empty()) {
-    int inst_num = atoi(wwiv_instance.c_str());
+    int inst_num = to_number<int>(wwiv_instance);
     if (inst_num > 0) {
       network_extension_ = StringPrintf(".%3.3d", inst_num);
       // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter

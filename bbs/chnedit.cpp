@@ -213,7 +213,7 @@ void modify_chain(int nCurrentChainum) {
       bout.nl();
       bout << "|#7New SL? ";
       input(s, 3, true);
-      int sl = atoi(s);
+      int sl = to_number<int>(s);
       if ((sl >= 0) && (sl < 256) && (s[0])) {
         c.sl = static_cast<unsigned char>(sl);
       }
@@ -268,7 +268,7 @@ void modify_chain(int nCurrentChainum) {
       bout << "|#5Times Run : ";
       input(s, 3);
       if (s[0] != 0) {
-        r.usage = static_cast<int16_t>(atoi(s));
+        r.usage = to_number<int16_t>(s);
       }
       break;
     case 'N':
@@ -276,21 +276,21 @@ void modify_chain(int nCurrentChainum) {
       bout << "|#5New minimum age? ";
       input(s, 3);
       if (s[0]) {
-        if ((atoi(s) > 255) || (atoi(s) < 0)) {
+        if ((to_number<int>(s) > 255) || (to_number<int>(s) < 0)) {
           s[0] = 0;
         } else {
-          r.minage = wwiv::strings::StringToUnsignedChar(s);
+          r.minage = to_number<uint8_t>(s);
         }
         bout << "|#5New maximum age? ";
         input(s, 3);
         if (s[0]) {
-          if (atoi(s) < r.minage) {
+          if (to_number<uint8_t>(s) < r.minage) {
             break;
           }
-          if (atoi(s) > 255) {
+          if (to_number<uint8_t>(s) > 255) {
             r.maxage = 255;
           } else {
-            r.maxage = wwiv::strings::StringToUnsignedChar(s);
+            r.maxage = to_number<uint8_t>(s);
           }
         }
       }
@@ -353,7 +353,7 @@ void chainedit() {
       bout.nl();
       bout << "|#2Chain number? ";
       string s = input(2);
-      int i = atoi(s.c_str());
+      int i = to_number<int>(s);
       if (s[0] != '\0' && i >= 0 && i < size_int(a()->chains)) {
         modify_chain(i);
       }
@@ -367,7 +367,7 @@ void chainedit() {
         if (s[0] == '$') {
           chain =  a()->chains.size();
         } else {
-          chain = atoi(s.c_str());
+          chain = to_number<int>(s);
         }
         if (s[0] != '\0' && chain >= 0 && chain <= size_int(a()->chains)) {
           insert_chain(chain);
@@ -377,8 +377,8 @@ void chainedit() {
     case 'D': {
       bout.nl();
       bout << "|#2Delete which chain? ";
-      string s = input(2);
-      int i = atoi(s.c_str());
+      auto s = input(2);
+      auto i = to_number<int>(s);
       if (s[0] != '\0' && i >= 0 && i < size_int(a()->chains)) {
         bout.nl();
         bout << "|#5Delete " << a()->chains[i].description << "? ";

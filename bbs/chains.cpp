@@ -247,7 +247,7 @@ void do_chains() {
     } else {
       ss = input(3);
     }
-    int chain_num = StringToInt(ss);
+    int chain_num = to_number<int>(ss);
     if (chain_num > 0 && chain_num <= mapp) {
       bout << "\r\n|#6Please wait...\r\n";
       run_chain(map[chain_num - 1]);

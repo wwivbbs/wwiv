@@ -142,7 +142,7 @@ bool IniFile::GetBooleanValue(const string& key, bool defaultValue)  const {
 
 long IniFile::GetNumericValueT(const string& key, long default_value) const {
   const char *s = GetValue(key);
-  return (s != nullptr) ? atoi(s) : default_value;
+  return (s != nullptr) ? wwiv::strings::to_number<long>(s) : default_value;
 }
 
 template<>

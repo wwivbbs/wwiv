@@ -149,9 +149,9 @@ daten_t fido_to_daten(std::string d) {
     string hms;
     stream >> hms;
     vector<string> parts = SplitString(hms, ":");
-    t->tm_hour = StringToInt(parts.at(0)) - 1;
-    t->tm_min = StringToInt(parts.at(1));
-    t->tm_sec = StringToInt(parts.at(2));
+    t->tm_hour = to_number<int>(parts.at(0)) - 1;
+    t->tm_min = to_number<int>(parts.at(1));
+    t->tm_sec = to_number<int>(parts.at(2));
 
     auto result = mktime(t);
     if (result < 0) {
@@ -425,15 +425,15 @@ static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std
       VLOG(2) << "Malformed route: " << route;
       return RouteMatch::no;
     }
-    auto zone = StringToUnsignedShort(parts.at(0));
-    auto net = StringToUnsignedShort(parts.at(1));
+    auto zone = to_number<uint16_t>(parts.at(0));
+    auto net = to_number<uint16_t>(parts.at(1));
     if (a.zone() == zone && a.net() == net) {
       return positive;
     }
   } else if (ends_with(r, ":")) {
     // We have a ZONE:*
     r.pop_back();
-    auto zone = StringToUnsignedShort(r);
+    auto zone = to_number<uint16_t>(r);
     if (a.zone() == zone) {
       return positive;
     }
@@ -568,9 +568,9 @@ FloFile::FloFile(const net_networks_rec& net, const std::string& dir, const std:
   status_ = static_cast<fido_bundle_status_t>(st);
 
   auto netstr = basename.substr(0, 4);
-  auto net_num = static_cast<int16_t>(std::stol(netstr.c_str(), nullptr, 16));
+  auto net_num = to_number<int16_t>(netstr, 16);
   auto nodestr = basename.substr(4);
-  auto node_num = static_cast<int16_t>(std::stol(nodestr.c_str(), nullptr, 16));
+  auto node_num = to_number<int16_t>(nodestr, 16);
 
   FidoAddress source(net_.fido.fido_address);
   dest_.reset(new FidoAddress(source.zone(), net_num, node_num, 0, source.domain()));

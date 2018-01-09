@@ -107,7 +107,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
           dn = 0;
           done = true;
         } else {
-          int x = atoi(temp);
+          int x = to_number<int>(temp);
           if (a()->udir[x].subnum >= 0) {
             dliscan1(a()->udir[x].subnum);
             d = a()->directories[dn];

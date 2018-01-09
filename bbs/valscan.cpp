@@ -30,11 +30,13 @@
 #include "bbs/input.h"
 #include "bbs/msgbase1.h"
 #include "bbs/read_message.h"
+#include "core/strings.h"
 #include "sdk/subxtr.h"
 #include "bbs/vars.h"
 #include "sdk/user.h"
 
 using namespace wwiv::sdk;
+using namespace wwiv::strings;
 
 void valscan() {
   // Must be local cosysop or better
@@ -136,16 +138,16 @@ void valscan() {
                       bout << "|#2Remove how many posts credit? ";
                       char szNumCredits[ 11 ];
                       input(szNumCredits, 3, true);
-                      int nNumPostCredits = 1;
+                      int num_post_credits = 1;
                       if (szNumCredits[0]) {
-                        nNumPostCredits = atoi(szNumCredits);
+                        num_post_credits = to_number<int>(szNumCredits);
                       }
-                      nNumPostCredits = std::min<int>(tu.GetNumMessagesPosted(), nNumPostCredits);
-                      if (nNumPostCredits) {
-                        tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(nNumPostCredits));
+                      num_post_credits = std::min<int>(tu.GetNumMessagesPosted(), num_post_credits);
+                      if (num_post_credits) {
+                        tu.SetNumMessagesPosted(tu.GetNumMessagesPosted() - static_cast<uint16_t>(num_post_credits));
                       }
                       bout.nl();
-                      bout << "|#3Post credit removed = " << nNumPostCredits << wwiv::endl;
+                      bout << "|#3Post credit removed = " << num_post_credits << wwiv::endl;
                       tu.SetNumDeletedPosts(tu.GetNumDeletedPosts() + 1);
                       a()->users()->writeuser(&tu, p2.owneruser);
                       a()->UpdateTopScreen();

@@ -44,8 +44,6 @@ Feature Improvements
 * make a common ACS system (like TG, vs. having separate 
   SL DSL AR fields everywhere for menus)
 * cleanup menu system. It's awful.
-* Create templatized version of StringToInt(string) that takes the return type.
-  i.e. to_number<uint16_t>(const 	string&)
 
 Linux Work
 ==========

@@ -169,7 +169,7 @@ static void build_header() {
 static void printtitle_plus_old() {
   bout << "|16|15" << string(79, '\xDC') << wwiv::endl;
 
-  const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(a()->current_user_dir().keys),
+  const string buf = StringPrintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
           a()->directories[a()->current_user_dir().subnum].name, a()->numf);
   bout.bprintf("|23|01 \xF9 %-56s Space=Tag/?=Help \xF9 \r\n", buf.c_str());
 
@@ -189,7 +189,7 @@ void printtitle_plus() {
   if (a()->user()->data.lp_options & cfl_header) {
     printtitle_plus_old();
   } else {
-    const string buf = StringPrintf("Area %d : %-30.30s (%d files)", atoi(a()->current_user_dir().keys),
+    const string buf = StringPrintf("Area %d : %-30.30s (%d files)", to_number<int>(a()->current_user_dir().keys),
             a()->directories[a()->current_user_dir().subnum].name, a()->numf);
     bout.litebarf("%-54s Space=Tag/?=Help", buf.c_str());
     bout.Color(0);
@@ -829,12 +829,12 @@ void sysop_configure() {
     case 'J':
       bout << "Enter max amount of lines to show (0=disabled) ";
       input(s, 2, true);
-      lp_config.max_screen_lines_to_show = StringToShort(s);
+      lp_config.max_screen_lines_to_show = to_number<int16_t>(s);
       break;
     case 'K':
       bout << "Enter minimum extended description lines to show ";
       input(s, 2, true);
-      lp_config.show_at_least_extended = StringToShort(s);
+      lp_config.show_at_least_extended = to_number<int16_t>(s);
       break;
     case 'L':
       lp_config.no_configuration = !lp_config.no_configuration;

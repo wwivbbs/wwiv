@@ -62,7 +62,7 @@ void get_user_ppp_addr() {
   if (acctFile.IsOpen()) {
     while (acctFile.ReadLine(szLine, 255) && !found) {
       if (strncasecmp(szLine, "USER", 4) == 0) {
-        int nUserNum = atoi(&szLine[4]);
+        int nUserNum = to_number<int>(&szLine[4]);
         if (nUserNum == a()->usernum) {
           char* ss = strtok(szLine, "=");
           ss = strtok(nullptr, "\r\n");

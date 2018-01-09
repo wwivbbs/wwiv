@@ -156,7 +156,7 @@ void modify_sec(int n) {
       bout.nl();
       bout << "|#2New SL? ";
       input(s, 3);
-      int i = atoi(s);
+      int i = to_number<int>(s);
       if (i >= 0 && i < 256 && s[0]) {
         r.sl = static_cast<unsigned char>(i);
       }
@@ -166,7 +166,7 @@ void modify_sec(int n) {
       bout.nl();
       bout << "|#2New Min Age? ";
       input(s, 3);
-      int i = atoi(s);
+      int i = to_number<int>(s);
       if ((i >= 0) && (i < 128) && (s[0])) {
         r.age = static_cast<unsigned char>(i);
       }
@@ -176,7 +176,7 @@ void modify_sec(int n) {
       bout.nl();
       bout << "|#1Max 99 files/section.\r\n|#2New max files? ";
       input(s, 3);
-      int i = atoi(s);
+      int i = to_number<int>(s);
       if ((i >= 0) && (i < 99) && (s[0])) {
         r.maxfiles = static_cast<uint16_t>(i);
       }
@@ -242,7 +242,7 @@ void gfileedit() {
       bout.nl();
       bout << "|#2Section number? ";
       input(s, 2);
-      i = atoi(s);
+      i = to_number<int>(s);
       if (s[0] != 0 && i >= 0 && i < size_int(a()->gfilesec)) {
         modify_sec(i);
       }
@@ -252,7 +252,7 @@ void gfileedit() {
         bout.nl();
         bout << "|#2Insert before which section? ";
         input(s, 2);
-        i = atoi(s);
+        i = to_number<int>(s);
         if (s[0] != 0 && i >= 0 && i <= size_int(a()->gfilesec)) {
           insert_sec(i);
         }
@@ -262,7 +262,7 @@ void gfileedit() {
       bout.nl();
       bout << "|#2Delete which section? ";
       input(s, 2);
-      i = atoi(s);
+      i = to_number<int>(s);
       if (s[0] != 0 && i >= 0 && i < size_int(a()->gfilesec)) {
         bout.nl();
         bout << "|#5Delete " << a()->gfilesec[i].name << "?";

@@ -194,7 +194,7 @@ static void DeleteBbsListEntry() {
   ReadBBSList(entries);
   bout << "|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ";
   string s = input(4, true);
-  int entry_num = atoi(s.c_str());
+  int entry_num = to_number<int>(s);
   if (entry_num <= 0) {
     // atoi returns a 0 on "" too.
     return;

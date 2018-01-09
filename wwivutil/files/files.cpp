@@ -131,7 +131,7 @@ public:
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
     }
-    int area_num = StringToInt(remaining().front());
+    int area_num = to_number<int>(remaining().front());
 
     if (area_num < 0 || area_num >= size_int(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";
@@ -198,7 +198,7 @@ public:
     if (!ReadAreas(config()->config()->datadir(), dirs)) {
       return 2;
     }
-    int area_num = StringToInt(remaining().front());
+    int area_num = to_number<int>(remaining().front());
 
     if (area_num < 0 || area_num >= size_int(dirs)) {
       LOG(ERROR) << "invalid area number '" << area_num << "' specified. ";

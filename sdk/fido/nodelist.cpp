@@ -70,7 +70,7 @@ static bool internet_flag(const std::string& value, const std::string& flag_name
   if (parts.front() == flag_name) {
     f = true;
     if (parts.size() > 1) {
-      port = StringToUnsignedShort(parts.back());
+      port = to_number<uint16_t>(parts.back());
     }
     if (parts.size() == 3) {
       // flag:host:port
@@ -121,13 +121,13 @@ bool NodelistEntry::ParseDataLine(const std::string& data_line, NodelistEntry& e
   } else {
     e.keyword_ = to_keyword(*it++);
   }
-  e.number_ = StringToUnsignedShort(*it++);
+  e.number_ = to_number<uint16_t>(*it++);
   e.name_ = ToSpaces(*it++);
   e.location_ = ToSpaces(*it++);
   e.sysop_name_ = ToSpaces(*it++);
   e.phone_number_ = *it++;
   if (it != parts.end()) {
-    e.baud_rate_ = StringToUnsignedInt(*it++);
+    e.baud_rate_ = to_number<unsigned int>(*it++);
   }
 
   while (it != parts.end()) {
@@ -322,7 +322,7 @@ int extension_number(const std::string& fn) {
   }
 
   string num = fn.substr(fn.find_last_of('.') + 1);
-  return StringToInt(num);
+  return to_number<int>(num);
 }
 
 static std::string latest_extension(const std::map<int, int>& ey) {

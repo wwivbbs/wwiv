@@ -391,7 +391,7 @@ void slash_e() {
         bout.nl();
         bout << "|#2Delete which? ";
         input(s, 2);
-        i = atoi(s);
+        i = to_number<int>(s);
         if ((i > 0) && (i <= numu)) {
           --numu;
           for (i1 = i - 1; i1 < numu; i1++) {

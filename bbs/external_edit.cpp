@@ -73,7 +73,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
     TextFile file(a()->temp_directory(), RESULT_ED, "rt");
     string anon_string;
     if (file.ReadLine(&anon_string)) {
-      *anon = atoi(anon_string.c_str());
+      *anon = to_number<int>(anon_string);
       if (file.ReadLine(title)) {
         // Strip whitespace from title to avoid issues like bug #29
         StringTrim(title);

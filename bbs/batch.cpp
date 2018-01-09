@@ -494,7 +494,7 @@ static void handle_dszline(char *l) {
   for (int i = 0; i < 10 && ss; i++) {
     switch (i) {
     case 4:
-      lCharsPerSecond = atol(ss);
+      lCharsPerSecond = to_number<long>(ss);
       break;
     }
     ss = strtok(nullptr, " \t");
@@ -777,7 +777,7 @@ int batchdl(int mode) {
       bout.nl();
       bout << "|#9Remove which? ";
       string s = input(4);
-      int i = atoi(s.c_str());
+      auto i = to_number<int>(s);
       if (i > 0 && i <= size_int(a()->batch().entry)) {
         didnt_upload(a()->batch().entry[i-1]);
         delbatch(i-1);

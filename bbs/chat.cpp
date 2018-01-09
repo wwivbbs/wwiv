@@ -110,7 +110,7 @@ static int grabname(const std::string& orig, int channel) {
   string::size_type space = orig.find(' ', 1);
   string message = orig.substr(0, space);
 
-  int n = atoi(message.c_str());
+  int n = to_number<int>(message);
   if (n) {
     if (n < 1 || n > num_instances()) {
       bout << StringPrintf("%s%d|#1]\r\n", "|#1[|#9There is no user on instance ", n);
@@ -587,7 +587,7 @@ void page_user(int loc) {
     if (s[0] == 'Q') {
       return;
     }
-    i = atoi(s);
+    i = to_number<int>(s);
   }
   if (i == a()->instance_number()) {
     bout << "|#1[|#9Cannot page the instance you are on|#1]\r\n";
@@ -646,7 +646,7 @@ void load_actions(IniFile *pIniFile) {
       const char* ini_value = s.c_str();
       switch (ca) {
       case 0:
-        act.r = atoi((ini_value != nullptr) ? ini_value : "0");
+        act.r = to_number<int>((ini_value != nullptr) ? ini_value : "0");
         break;
       case 1:
         strcpy(act.aword, (ini_value != nullptr) ? ini_value : "");
@@ -873,7 +873,7 @@ int change_channels(int loc) {
     if (to_upper_case<char>(szMessage[0]) == 'Q') {
       return loc;
     }
-    temploc = atoi(szMessage);
+    temploc = to_number<int>(szMessage);
   }
   if (check_ch(temploc)) {
     sprintf(szMessage, "CHANNEL.%d", temploc);
@@ -1005,7 +1005,7 @@ int userinst(char *user) {
       return p;
     }
   }
-  p = atoi(user);
+  p = to_number<int>(user);
   if (p > 0 && p <= num_instances()) {
     get_inst_info(p, &ir);
     if (((!(ir.flags & INST_FLAGS_INVIS)) || so()) && (ir.flags & INST_FLAGS_ONLINE)) {

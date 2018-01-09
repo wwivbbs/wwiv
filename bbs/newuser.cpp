@@ -432,7 +432,7 @@ void input_comptype() {
     bout << "|#3Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n";
     bout << "|#2:";
     input(c, 2, true);
-    ct = atoi(c);
+    ct = to_number<int>(c);
 
     ok = true;
     if (ct < 1 || ct > i) {
@@ -455,7 +455,7 @@ void input_screensize() {
     bout.nl();
     bout << "|#3How wide is your screen (chars, <CR>=80) ?\r\n|#2:";
     input(s, 2, true);
-    x = atoi(s);
+    x = to_number<int>(s);
     if (s[0] == '\0') {
       x = 80;
     }
@@ -467,7 +467,7 @@ void input_screensize() {
     bout.nl();
     bout << "|#3How tall is your screen (lines, <CR>=24) ?\r\n|#2:";
     input(s, 2, true);
-    y = atoi(s);
+    y = to_number<int>(s);
     if (s[0] == '\0') {
       y = 24;
     }
@@ -1341,9 +1341,9 @@ void DoMinimalNewUser() {
           sprintf(m1, "%c%c", s[0], s[1]);
           sprintf(d1, "%c%c", s[3], s[4]);
           sprintf(y1, "%c%c%c%c", s[6], s[7], s[8], s[9]);
-          m = atoi(m1);
-          d = atoi(d1);
-          y = atoi(y1);
+          m = to_number<int>(m1);
+          d = to_number<int>(d1);
+          y = to_number<int>(y1);
           ok = true;
           if ((((m == 2) || (m == 9) || (m == 4) || (m == 6) || (m == 11)) && (d >= 31)) ||
               ((m == 2) && (((!isleap(y)) && (d == 29)) || (d == 30))) ||

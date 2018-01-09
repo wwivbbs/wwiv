@@ -128,7 +128,7 @@ void OnlineUserEditor() {
     case 0:
       a()->localIO()->GotoXY(wx + 22, wy + 1);
       a()->localIO()->EditLine(sl, 3, NUM_ONLY, &rc, "");
-      a()->user()->SetSl(atoi(sl));
+      a()->user()->SetSl(to_number<unsigned int>(sl));
       sprintf(sl, "%d", a()->user()->GetSl());
       a()->localIO()->Printf("%-3s", sl);
       break;
@@ -145,7 +145,7 @@ void OnlineUserEditor() {
     case 2:
       a()->localIO()->GotoXY(wx + 22, wy + 2);
       a()->localIO()->EditLine(dsl, 3, NUM_ONLY, &rc, "");
-      a()->user()->SetDsl(atoi(dsl));
+      a()->user()->SetDsl(to_number<int>(dsl));
       sprintf(dsl, "%d", a()->user()->GetDsl());
       a()->localIO()->Printf("%-3s", dsl);
       break;
@@ -162,7 +162,7 @@ void OnlineUserEditor() {
     case 4:
       a()->localIO()->GotoXY(wx + 22, wy + 3);
       a()->localIO()->EditLine(exempt, 3, NUM_ONLY, &rc, "");
-      a()->user()->SetExempt(atoi(exempt));
+      a()->user()->SetExempt(to_number<int>(exempt));
       sprintf(exempt, "%u", a()->user()->GetExempt());
       a()->localIO()->Printf("%-3s", exempt);
       break;
@@ -179,21 +179,21 @@ void OnlineUserEditor() {
     case 6:
       a()->localIO()->GotoXY(wx + 22, wy + 5);
       a()->localIO()->EditLine(sysopsub, 3, NUM_ONLY, &rc, "");
-      *qsc = atoi(sysopsub);
+      *qsc = to_number<uint32_t>(sysopsub);
       sprintf(sysopsub, "%lu", *qsc);
       a()->localIO()->Printf("%-3s", sysopsub);
       break;
     case 7:
       a()->localIO()->GotoXY(wx + 50, wy + 5);
       a()->localIO()->EditLine(banktime, 5, NUM_ONLY, &rc, "");
-      a()->user()->SetTimeBankMinutes(StringToUnsignedShort(banktime));
+      a()->user()->SetTimeBankMinutes(to_number<uint16_t>(banktime));
       sprintf(banktime, "%u", a()->user()->GetTimeBankMinutes());
       a()->localIO()->Printf("%-5s", banktime);
       break;
     case 8:
       a()->localIO()->GotoXY(wx + 22, wy + 6);
       a()->localIO()->EditLine(ass, 5, NUM_ONLY, &rc, "");
-      a()->user()->SetAssPoints(atoi(ass));
+      a()->user()->SetAssPoints(to_number<int>(ass));
       sprintf(ass, "%u", a()->user()->GetAssPoints());
       a()->localIO()->Printf("%-5s", ass);
       break;
@@ -207,42 +207,42 @@ void OnlineUserEditor() {
     case 10:
       a()->localIO()->GotoXY(wx + 22, wy + 8);
       a()->localIO()->EditLine(uk, 7, NUM_ONLY, &rc, "");
-      a()->user()->SetUploadK(atol(uk));
+      a()->user()->SetUploadK(to_number<uint32_t>(uk));
       sprintf(uk, "%lu", a()->user()->GetUploadK());
       a()->localIO()->Printf("%-7s", uk);
       break;
     case 11:
       a()->localIO()->GotoXY(wx + 50, wy + 8);
       a()->localIO()->EditLine(dk, 7, NUM_ONLY, &rc, "");
-      a()->user()->SetDownloadK(atol(dk));
+      a()->user()->SetDownloadK(to_number<uint32_t>(dk));
       sprintf(dk, "%lu", a()->user()->GetDownloadK());
       a()->localIO()->Printf("%-7s", dk);
       break;
     case 12:
       a()->localIO()->GotoXY(wx + 22, wy + 9);
       a()->localIO()->EditLine(up, 5, NUM_ONLY, &rc, "");
-      a()->user()->SetFilesUploaded(atoi(up));
+      a()->user()->SetFilesUploaded(to_number<int>(up));
       sprintf(up, "%u", a()->user()->GetFilesUploaded());
       a()->localIO()->Printf("%-5s", up);
       break;
     case 13:
       a()->localIO()->GotoXY(wx + 50, wy + 9);
       a()->localIO()->EditLine(down, 5, NUM_ONLY, &rc, "");
-      a()->user()->SetFilesDownloaded(atoi(down));
+      a()->user()->SetFilesDownloaded(to_number<int>(down));
       sprintf(down, "%u", a()->user()->GetFilesDownloaded());
       a()->localIO()->Printf("%-5s", down);
       break;
     case 14:
       a()->localIO()->GotoXY(wx + 22, wy + 10);
       a()->localIO()->EditLine(posts, 5, NUM_ONLY, &rc, "");
-      a()->user()->SetNumMessagesPosted(atoi(posts));
+      a()->user()->SetNumMessagesPosted(to_number<int>(posts));
       sprintf(posts, "%u", a()->user()->GetNumMessagesPosted());
       a()->localIO()->Printf("%-5s", posts);
       break;
     case 15:
       a()->localIO()->GotoXY(wx + 50, wy + 10);
       a()->localIO()->EditLine(logons, 5, NUM_ONLY, &rc, "");
-      a()->user()->SetNumLogons(atoi(logons));
+      a()->user()->SetNumLogons(to_number<int>(logons));
       sprintf(logons, "%u", a()->user()->GetNumLogons());
       a()->localIO()->Printf("%-5s", logons);
       break;

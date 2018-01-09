@@ -119,7 +119,7 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
   }
   const string pend_filename(pend_file.full_pathname());
   const string num = filename.substr(1);
-  const string prefix = (atoi(num.c_str())) ? "1" : "0";
+  const string prefix = (to_number<int>(num)) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
     const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);

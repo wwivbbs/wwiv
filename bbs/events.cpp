@@ -547,7 +547,7 @@ void eventedit() {
       bout.nl();
       bout << "|#2Run which Event? ";
       input(s, 2);
-      unsigned int nEventNum = StringToUnsignedInt(s);
+      unsigned int nEventNum = to_number<unsigned int>(s);
       if (s[0] != '\0' && nEventNum >= 0 && nEventNum < a()->events.size()) {
         run_event(nEventNum);
       }
@@ -557,7 +557,7 @@ void eventedit() {
       bout.nl();
       bout << "|#2Modify which Event? ";
       input(s, 2);
-      unsigned int nEventNum = StringToUnsignedInt(s);
+      unsigned int nEventNum = to_number<unsigned int>(s);
       if (s[0] != '\0' && nEventNum >= 0 && nEventNum < a()->events.size()) {
         modify_event(nEventNum);
       }
@@ -576,7 +576,7 @@ void eventedit() {
         bout.nl();
         bout << "|#2Delete which Event? ";
         input(s, 2);
-        unsigned int nEventNum = StringToUnsignedInt(s);
+        unsigned int nEventNum = to_number<unsigned int>(s);
         if (s[0] && nEventNum >= 0 && nEventNum < a()->events.size()) {
           bout.nl();
           if (a()->events[nEventNum].status & EVENT_EXIT) {

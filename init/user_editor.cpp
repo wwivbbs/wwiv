@@ -174,11 +174,11 @@ void user_editor(const wwiv::sdk::Config& config) {
         time_t t = time(nullptr);
         struct tm * pTm = localtime(&t);
         int current_year = pTm->tm_year+1900;
-        uint8_t month = StringToUnsignedChar(s.substr(0, 2));
+        uint8_t month = to_number<uint8_t>(s.substr(0, 2));
         if (month < 1 || month > 12) { return; }
-        uint8_t day = StringToUnsignedChar(s.substr(3, 2));
+        uint8_t day = to_number<uint8_t>(s.substr(3, 2));
         if (day < 1 || day > 31) { return; }
-        int year = StringToInt(s.substr(6, 4));
+        int year = to_number<int>(s.substr(6, 4));
         if (year < 1900 || year > current_year) { return ; }
 
         user.month = month;

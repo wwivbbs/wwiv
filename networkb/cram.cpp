@@ -68,7 +68,7 @@ static std::string FromHex(const std::string& hex) {
     s.push_back(*it++);
     s.push_back(*it++);
 
-    unsigned long chl = std::stoul(s.c_str(), nullptr, 16);
+    unsigned long chl = to_number<unsigned long>(s, 16);
     char ch = (chl & 0xff);
     result[len++] = ch;
   }

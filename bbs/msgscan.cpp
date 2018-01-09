@@ -997,7 +997,7 @@ static void HandleScanReadPrompt(int &msgnum, MsgScanOption& scan_option, bool& 
     title_scan = false;
     scan_option = MsgScanOption::SCAN_OPTION_READ_PROMPT;
   }
-  int nUserInput = atoi(szUserInput);
+  int nUserInput = to_number<int>(szUserInput);
   if (szUserInput[0] == '\0') {
     nUserInput = msgnum + 1;
     if (nUserInput >= a()->GetNumMessagesInCurrentMessageArea() + 1) {

@@ -57,7 +57,7 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
   for (auto iter = ss.cbegin(); iter != ss.cend(); iter++) {
       switch (*iter) {
       case '@': {
-        con->sysnum = StringToUnsignedShort(string(++iter, ss.end()));
+        con->sysnum = to_number<uint16_t>(string(++iter, ss.end()));
       } break;
       case '&':
         con->options |= options_sendback;
@@ -76,29 +76,29 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
         break;
       case '!': {
         con->options |= options_once_per_day;
-        con->times_per_day = std::max<uint8_t>(1, StringToUnsignedChar(string(++iter, ss.end())));
+        con->times_per_day = std::max<uint8_t>(1, to_number<uint8_t>(string(++iter, ss.end())));
       } break;
       case '%': {
-        con->macnum = StringToUnsignedChar(string(++iter, ss.end()));
+        con->macnum = to_number<uint8_t>(string(++iter, ss.end()));
       } break;
       case '/': {
-        con->call_anyway = StringToUnsignedChar(string(++iter, ss.end()));
+        con->call_anyway = to_number<uint8_t>(string(++iter, ss.end()));
         if (con->call_anyway > 0) {
           // Let's set a minimum of 10 minutes in between calls.
           con->call_anyway = std::max<uint8_t>(con->call_anyway, 10);
         }
       } break;
       case '#': {
-        con->call_x_days = StringToUnsignedChar(string(++iter, ss.end()));
+        con->call_x_days = to_number<uint8_t>(string(++iter, ss.end()));
       } break;
       case '(': {
-        con->min_hr = StringToChar(string(++iter, ss.end()));
+        con->min_hr = to_number<int8_t>(string(++iter, ss.end()));
       } break;
       case ')': {
-        con->max_hr = StringToChar(string(++iter, ss.end()));
+        con->max_hr = to_number<int8_t>(string(++iter, ss.end()));
       } break;
       case '|': {
-        con->min_k = std::max<uint16_t>(1, StringToUnsignedShort(string(++iter, ss.end())));
+        con->min_k = std::max<uint16_t>(1, to_number<uint16_t>(string(++iter, ss.end())));
       } break;
       case ';':
         con->options |= unused_options_compress;
@@ -180,9 +180,9 @@ const net_call_out_rec* Callout::net_call_out_for(const std::string& node) const
   if (starts_with(node, "20000:20000/")) {
     auto s = node.substr(12);
     s = s.substr(0, s.find('/'));
-    return net_call_out_for(StringToInt(s));
+    return net_call_out_for(to_number<int>(s));
   }
-  return net_call_out_for(StringToInt(node));
+  return net_call_out_for(to_number<int>(node));
 }
 
 static std::string DumpCallout(const net_call_out_rec& n) {
