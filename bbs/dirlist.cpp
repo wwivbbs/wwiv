@@ -65,9 +65,10 @@ void dirlist(int mode) {
           firstp = i1;
           bout.cls();
           if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
+            auto conf_name = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
             sprintf(s, " [ %s %c ] [ %s ] ", "Conference",
               a()->dirconfs[a()->uconfdir[i].confnum].designator,
-              stripcolors(reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[i].confnum].name)));
+              conf_name.c_str());
           } else {
             sprintf(s, " [ %s File Areas ] ", a()->config()->system_name().c_str());
           }

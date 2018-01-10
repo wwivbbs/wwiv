@@ -39,8 +39,6 @@ using std::max;
 using namespace wwiv::strings;
 
 void old_sublist() {
-  char s[255];
-
   int oc = a()->GetCurrentConferenceMessageArea();
   int os = a()->current_user_sub().subnum;
 
@@ -73,18 +71,19 @@ void old_sublist() {
   while (i <= en && a()->uconfsub[i].confnum != -1 && !abort) {
     if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
       setuconf(ConferenceType::CONF_SUBS, i, -1);
-      sprintf(s, "|#1%s %c|#0:|#2 %s", "Conference",
+      auto cn = stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name);
+      auto s = StringPrintf("|#1%s %c|#0:|#2 %s", "Conference",
         a()->subconfs[a()->uconfsub[i].confnum].designator,
-        stripcolors(reinterpret_cast<char*>(a()->subconfs[a()->uconfsub[i].confnum].name)));
+        cn.c_str());
       bout.bpla(s, &abort);
     }
     size_t i1 = 0;
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
-      sprintf(s, "  |#5%4.4s|#2", a()->usub[i1].keys);
+      auto s = StringPrintf("  |#5%4.4s|#2", a()->usub[i1].keys);
       if (qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
-        strcat(s, " - ");
+        s += " - ";
       } else {
-        strcat(s, "  ");
+        s += "  ";
       }
       if (a()->current_net().sysnum || a()->max_net_num() > 1) {
         if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
@@ -101,13 +100,13 @@ void old_sublist() {
           } else {
             sprintf(s1, "|17|15<%-8.8s>|#9 ", ss);
           }
-          strcat(s, s1);
+          s += s1;
         } else {
-          strcat(s, charstr(11, ' '));
+          s += charstr(11, ' ');
         }
-        strcat(s, "|#9");
+        s += "|#9";
       }
-      strcat(s, stripcolors(a()->subs().sub(a()->usub[i1].subnum).name.c_str()));
+      s += stripcolors(a()->subs().sub(a()->usub[i1].subnum).name);
       bout.bpla(s, &abort);
       i1++;
     }
@@ -182,7 +181,7 @@ void SubList() {
           if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
             sprintf(s, "Conference %c: %s",
               a()->subconfs[a()->uconfsub[i].confnum].designator,
-              stripcolors(reinterpret_cast<char*>(a()->subconfs[a()->uconfsub[i].confnum].name)));
+              stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name.c_str()));
           } else {
             sprintf(s, "%s Message Areas", a()->config()->system_name().c_str());
           }

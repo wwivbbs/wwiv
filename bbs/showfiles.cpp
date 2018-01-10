@@ -34,10 +34,9 @@ using namespace wwiv::strings;
 
 // Displays list of files matching filespec file_name in directory pszDirectoryName.
 void show_files(const char *file_name, const char *pszDirectoryName) {
-  char s[MAX_PATH];
   char drive[MAX_PATH], direc[MAX_PATH], file[MAX_PATH], ext[MAX_PATH];
 
-  char c = (okansi()) ? '\xCD' : '=';
+  auto c = (okansi()) ? '\xCD' : '=';
   bout.nl();
 #if defined (_WIN32)
   _splitpath(pszDirectoryName, drive, direc, file, ext);
@@ -48,17 +47,17 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   strcpy(ext, "");
 #endif
 
-  snprintf(s, sizeof(s), "|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", strupr(stripfn(file_name)), drive, direc);
-  int i = (a()->user()->GetScreenChars() - 1) / 2 - strlen(stripcolors(s)) / 2;
+  auto s = StringPrintf("|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", strupr(stripfn(file_name)), drive, direc);
+  int i = (a()->user()->GetScreenChars() - 1) / 2 - stripcolors(s).size() / 2;
   bout << "|#7" << std::string(i, c) << s;
-  i = a()->user()->GetScreenChars() - 1 - i - strlen(stripcolors(s));
+  i = a()->user()->GetScreenChars() - 1 - i - stripcolors(s).size();
   bout << "|#7" << std::string(i, c);
 
-  std::string full_pathname = StrCat(pszDirectoryName, strupr(stripfn(file_name)));
+  auto full_pathname = StrCat(pszDirectoryName, strupr(stripfn(file_name)));
   FindFiles ff(full_pathname, FindFilesType::files);
   for (const auto& f : ff) {
-    to_char_array(s, f.name);
-    align(s);
+    s = f.name;
+    align(&s);
     full_pathname = StrCat("|#7[|#2", s, "|#7]|#1 ");
     if (bout.wherex() > static_cast<int>(a()->user()->GetScreenChars() - 15)) {
       bout.nl();

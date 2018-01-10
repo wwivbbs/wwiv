@@ -1044,7 +1044,7 @@ static void l_config_nscan() {
 }
 
 static void config_nscan() {
-  char s1[MAX_CONFERENCES + 2], s2[120], ch;
+  char s1[MAX_CONFERENCES + 2], ch;
   int i1, oc, os;
   bool abort = false;
   bool done, done1;
@@ -1067,8 +1067,8 @@ static void config_nscan() {
       bout << "Select Conference: \r\n\n";
       size_t i = 0;
       while (i < a()->dirconfs.size() && a()->uconfdir[i].confnum != -1 && !abort) {
-        sprintf(s2, "%c) %s", a()->dirconfs[a()->uconfdir[i].confnum].designator,
-                stripcolors(reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[i].confnum].name)));
+        const auto cn = stripcolors(a()->dirconfs[a()->uconfdir[i].confnum].conf_name);
+        const auto s2 = StrCat(a()->dirconfs[a()->uconfdir[i].confnum].designator, ") ", cn);
         bout.bpla(s2, &abort);
         s1[i + 1] = a()->dirconfs[a()->uconfdir[i].confnum].designator;
         s1[i + 2] = 0;

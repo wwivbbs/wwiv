@@ -35,12 +35,6 @@
 
 #include <WS2tcpip.h>
 #include <process.h>
-#ifdef min
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif // max
 
 #else // _WIN32
 

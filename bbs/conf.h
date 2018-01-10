@@ -43,11 +43,14 @@ static constexpr int CONF_UPDATE_INSERT = 1;
 static constexpr int CONF_UPDATE_DELETE = 2;
 static constexpr int CONF_UPDATE_SWAP = 3;
 
+/** 
+ * Note: This isn't used on disk 
+ */
 struct confrec {
   // A to Z?
   uint8_t designator;
   // Name of conference                                          
-  unsigned char name[61];
+  std::string conf_name;
   // Minimum SL needed for access
   uint8_t minsl;
   // Maximum SL allowed for access

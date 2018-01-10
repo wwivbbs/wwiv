@@ -19,7 +19,7 @@
 #ifndef __INCLUDED_CORE_WWIV_WINDOWS_H__
 #define __INCLUDED_CORE_WWIV_WINDOWS_H__
 
-// Wrapper header file for includibng windows.h from wwiv.  This sets all of
+// Wrapper header file for including windows.h from wwiv.  This sets all of
 // the numerous #defines to remove much of the windows header files since the
 // surface area used by wwiv is tiny.
 

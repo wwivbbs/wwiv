@@ -103,10 +103,10 @@ std::string interpret(char ch, const MacroContext& context) {
   case 'J': {                             // Message conference
     auto x = a()->GetCurrentConferenceMessageArea();
     auto cnum = a()->uconfsub[x].confnum;
-    return reinterpret_cast<char*>(a()->subconfs[cnum].name);
+    return a()->subconfs[cnum].conf_name;
   }
   case 'j':                               // Transfer conference
-    return reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].name);
+    return a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name;
   case 'K':                               // Kb uploaded
     return to_string(context.u().GetUploadK());
   case 'k':                               // Kb downloaded

@@ -404,7 +404,7 @@ void Application::UpdateTopScreen() {
 
   unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
   char i;
-  char sl[82], ar[17], dar[17], restrict[17], rst[17], lo[90];
+  char sl[82], ar[17], dar[17], restrict[17], rst[17];
 
   int lll = bout.lines_listed();
 
@@ -498,10 +498,11 @@ void Application::UpdateTopScreen() {
     dar[16] = '\0';
     ar[16] = '\0';
     restrict[16] = '\0';
+    string lo;
     if (date() != user()->GetLastOn()) {
-      to_char_array(lo, user()->GetLastOn());
+      lo = user()->GetLastOn();
     } else {
-      snprintf(lo, sizeof(lo), "Today:%2d", user()->GetTimesOnToday());
+      lo = StringPrintf("Today:%2d", user()->GetTimesOnToday());
     }
 
     const string username_num = names()->UserName(usernum);
@@ -509,23 +510,22 @@ void Application::UpdateTopScreen() {
         user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->GetUploadK(), user()->GetSl(),
         user()->GetNumLogons(), user()->GetNumMessagesPosted());
 
-    char szCallSignOrRegNum[41];
+    string callsign_or_regnum = user()->GetCallsign();
     if (user()->GetWWIVRegNumber()) {
-      snprintf(szCallSignOrRegNum, sizeof(szCallSignOrRegNum), "%lu", user()->GetWWIVRegNumber());
-    } else {
-      strcpy(szCallSignOrRegNum, user()->GetCallsign());
+      callsign_or_regnum = std::to_string(user()->GetWWIVRegNumber());
     }
     auto used_this_session = (system_clock::now() - a()->system_logon_time());
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
-    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0lu ES=%4u", user()->GetRealName(),
-        user()->GetVoicePhoneNumber(), szCallSignOrRegNum, user()->GetFilesDownloaded(), user()->GetDownloadK(),
-        user()->GetDsl(), 
-        static_cast<long>(minutes_used.count()),
+    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u", 
+        user()->GetRealName(), user()->GetVoicePhoneNumber(), callsign_or_regnum.c_str(), 
+        user()->GetFilesDownloaded(), user()->GetDownloadK(), user()->GetDsl(), 
+        minutes_used.count(),
         user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
 
-    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict, user()->GetExempt(), lo,
+    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, 
+        restrict, user()->GetExempt(), lo.c_str(),
         user()->GetNumFeedbackSent());
 
     User sysop { };

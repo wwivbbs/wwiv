@@ -34,11 +34,6 @@
 namespace wwiv {
 namespace stl {
 
-// windows.h includes this, and causes wanings on using numerical_limits::max()
-#ifdef max
-#undef max
-#endif
-
 template <typename C>
 bool contains(C const& container, typename C::const_reference key) {
   return std::find(std::begin(container), std::end(container), key) != std::end(container);

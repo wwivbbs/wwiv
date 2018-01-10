@@ -23,6 +23,7 @@ Infrastructure Cleanup
 * Try to remove a()->current_net(), pass in the net as much as possible.
 * Update syscfg.{req_ratio, sysconfig} in init and save it back, since
   wwiv never saves config.dat anymore.
+* stop using strncpy, strncat, strcpy, strcasestr.
 
 Networking Cleanup
 ==================

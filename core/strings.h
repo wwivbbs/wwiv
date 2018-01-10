@@ -183,8 +183,6 @@ std::string properize(const std::string& text);
 extern const char *DELIMS_WHITE;
 
 #ifdef _WIN32
-#define vsnprintf _vsnprintf
-#define snprintf _snprintf
 
 #define strcasecmp( a, b ) _stricmp( a, b )
 #define strncasecmp( a, b, c) _strnicmp( a, b, c )

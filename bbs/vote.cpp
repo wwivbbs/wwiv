@@ -49,10 +49,9 @@ static void print_quest(int mapp, int map[21]) {
     voteFile.Seek(map[i] * sizeof(votingrec), File::Whence::begin);
     voteFile.Read(&v, sizeof(votingrec));
 
-    char szBuffer[255];
-    snprintf(szBuffer, sizeof(szBuffer), "|#6%c |#2%2d|#7) |#1%s",
+    auto buffer = StringPrintf("|#6%c |#2%2d|#7) |#1%s",
              a()->user()->GetVote(map[i]) ? ' ' : '*', i, v.question);
-    bout.bpla(szBuffer, &abort);
+    bout.bpla(buffer, &abort);
   }
   voteFile.Close();
   bout.nl();

@@ -414,8 +414,8 @@ void config_qscan() {
       bout << "\r\nSelect Conference: \r\n\n";
       size_t i = 0;
       while (i < subconfnum && a()->uconfsub[i].confnum != -1 && !abort) {
-        bout.bpla(StringPrintf("%c) %s", a()->subconfs[a()->uconfsub[i].confnum].designator,
-                stripcolors(reinterpret_cast<char*>(a()->subconfs[a()->uconfsub[i].confnum].name))), &abort);
+        bout.bpla(StrCat(a()->subconfs[a()->uconfsub[i].confnum].designator, ") ",
+                stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name)), &abort);
         szConfList[i + 1] = a()->subconfs[a()->uconfsub[i].confnum].designator;
         szConfList[i + 2] = 0;
         i++;
@@ -870,7 +870,6 @@ static int GetMaxLinesToShowForScanPlus() {
 }
 
 static void list_config_scan_plus(unsigned int first, int *amount, int type) {
-  char s[101];
 
   bool bUseConf = (subconfnum > 1 && okconf(a()->user())) ? true : false;
 
@@ -878,15 +877,18 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
   bout.clear_lines_listed();
 
   if (bUseConf) {
-    strncpy(s, type == 0 
-      ? stripcolors(reinterpret_cast<char*>(a()->subconfs[a()->uconfsub[a()->GetCurrentConferenceMessageArea()].confnum].name)) 
-      : stripcolors(reinterpret_cast<char*>(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].name)), 26);
-    s[26] = '\0';
+    string s;
+    if (type == 0) {
+      s = trim_to_size_ignore_colors(a()->subconfs[a()->uconfsub[a()->GetCurrentConferenceMessageArea()].confnum].conf_name, 26);
+    }
+    else {
+      s = trim_to_size_ignore_colors(a()->dirconfs[a()->uconfdir[a()->GetCurrentConferenceFileArea()].confnum].conf_name, 26);
+    }
     bout.bprintf("|#1Configure |#2%cSCAN |#9-- |#2%-26s |#9-- |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
-                                      type == 0 ? 'Q' : 'N', s, type == 0 ? "sub" : "dir");
+                 type == 0 ? 'Q' : 'N', s.c_str(), type == 0 ? "sub" : "dir");
   } else {
     bout.bprintf("|#1Configure |#2%cSCAN                                   |#1Press |#7[|#2SPACE|#7]|#1 to toggle a %s\r\n",
-                                      type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
+                 type == 0 ? 'Q' : 'N', type == 0 ? "sub" : "dir");
   }
   bout.Color(7);
   bout << string(79, '\xC4');
@@ -898,7 +900,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
     for (size_t this_sub = first; (this_sub < a()->subs().subs().size()) && (a()->usub[this_sub].subnum != -1) &&
          *amount < max_lines * 2; this_sub++) {
       bout.clear_lines_listed();
-      sprintf(s, "|#7[|#1%c|#7] |#9%s",
+      auto s = StringPrintf("|#7[|#1%c|#7] |#9%s",
               (qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
               a()->subs().sub(a()->usub[this_sub].subnum).name.c_str());
       s[44] = '\0';
@@ -916,7 +918,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
          *amount < max_lines * 2; this_dir++) {
       bout.clear_lines_listed();
       int alias_dir = a()->udir[this_dir].subnum;
-      sprintf(s, "|#7[|#1%c|#7] |#2%s", qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE' : ' ',
+      auto s = StringPrintf("|#7[|#1%c|#7] |#2%s", qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE' : ' ',
         a()->directories[alias_dir].name);
       s[44] = 0;
       if (*amount >= max_lines) {
