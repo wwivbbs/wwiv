@@ -898,7 +898,8 @@ static std::pair<uint16_t, int> ansicallout() {
   a()->localIO()->Cls();
   curatr = color1;
   a()->localIO()->MakeLocalWindow(3, 2, 73, 10);
-  a()->localIO()->PrintfXYA(3, 4, color1, "\xC3%s\xB4", charstr(71, '\xC4'));
+  const auto header = StrCat("\xC3", std::string(71, '\xC4'), "\xB4");
+  a()->localIO()->PrintfXYA(3, 4, color1, header.c_str());
   a()->localIO()->MakeLocalWindow(3, 14, 73, 7);
   a()->localIO()->PrintfXYA(5, 3,   color3, "Network:");
   a()->localIO()->PrintfXYA(31, 3,  color3, "BBS Name:");

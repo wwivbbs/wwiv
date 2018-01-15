@@ -24,7 +24,7 @@ Infrastructure Cleanup
 * Update syscfg.{req_ratio, sysconfig} in init and save it back, since
   wwiv never saves config.dat anymore.
 * stop using strncpy, strncat, strcpy, strcasestr.
-* kill charstr. use string(int, char)
+* Add PutsXYA to all of the LocalIO classes.
 
 Networking Cleanup
 ==================

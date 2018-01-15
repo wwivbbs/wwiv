@@ -97,7 +97,6 @@ std::string ToStringLowerCase(const std::string& s);
 void StringRemoveWhitespace(std::string* s);
 
 
-const char *charstr(std::string::size_type length, char fill);
 char *StringRemoveWhitespace(char *str);
 // Strips the string from the first occurence of ch
 // Doesn't seem to be used anywhere. Maybe it should be removed.

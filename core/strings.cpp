@@ -332,18 +332,6 @@ string ToStringLowerCase(const string& orig) {
   return s;
 }
 
-/**
- * Returns string comprised of char chRepeatChar, nStringLength characters in length
- * @param nStringLength The number of characters to create the string
- * @param fill The character to repeat.
- * @return The string containing rc repeated len times.
- */
-const char *charstr(string::size_type length, char fill) {
-  static string result;
-  result = string(std::min<int>(length, 160), fill);
-  return result.c_str();
-}
-
 void StringRemoveWhitespace(string* str) {
   str->erase(std::remove_if(str->begin(), str->end(), isspace), str->end());
 }
