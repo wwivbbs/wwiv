@@ -92,10 +92,10 @@ static bool same_email(tmpmailrec& tm, const mailrec& m) {
   return true;
 }
 
-static void purgemail(vector<tmpmailrec>& mloc, int mw, int *curmail, mailrec * m1, slrec * ss) {
+static void purgemail(vector<tmpmailrec>& mloc, int mw, int *curmail, mailrec * m1, slrec * sl) {
   mailrec m;
 
-  if ((m1->anony & anony_sender) && ((ss->ability & ability_read_email_anony) == 0)) {
+  if ((m1->anony & anony_sender) && ((sl->ability & ability_read_email_anony) == 0)) {
     bout << "|#5Delete all mail to you from this user? ";
   } else {
     bout << "|#5Delete all mail to you from ";
@@ -338,10 +338,25 @@ void delete_attachment(unsigned long daten, int forceit) {
   }
 }
 
+
+static std::string fixup_user_entered_email(const std::string& s) {
+  auto user_input = s;
+  auto at_pos = user_input.find('@');
+  if (at_pos != std::string::npos
+    && at_pos < user_input.size() - 1
+    && isalpha(user_input.at(at_pos + 1))) {
+    if (user_input.find("@32767") != std::string::npos) {
+      StringLowerCase(&user_input);
+      user_input += "@32767";
+    }
+  }
+  return user_input;
+}
+
 void readmail(int mode) {
   int i, i1, i2, i3, curmail = 0, nn = 0, delme;
   bool done, okmail;
-  char s[201], s1[205], s2[81], *ss2, mnu[81];
+  char s1[205], s2[81], *ss2, mnu[81];
   mailrec m, m1;
   char ch;
   int num_mail, num_mail1;
@@ -357,7 +372,7 @@ void readmail(int mode) {
   bool next = false, abort = false;
   std::vector<tmpmailrec> mloc;
   write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
-  slrec ss = getslrec(a()->GetEffectiveSl());
+  slrec sl = getslrec(a()->GetEffectiveSl());
   int mw = 0;
   {
     unique_ptr<File> pFileEmail(OpenEmailFile(false));
@@ -398,11 +413,12 @@ void readmail(int mode) {
       } else {
         strcpy(s1, "++-");
       }
-      sprintf(s, "|#7%s%c", charstr(4, s1[2]), s1[1]);
-      strcat(s, charstr(a()->mail_who_field_len - 4, s1[2]));
-      strcat(s, charstr(1, s1[1]));
-      strcat(s, charstr(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]));
-      bout.bpla(s, &abort);
+      std::ostringstream ss;
+      ss << "|#7" << std::string(4, s1[2]) << s1[1]
+         << std::string(a()->mail_who_field_len - 4, s1[2])
+         << std::string(1, s1[1])
+         << std::string(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]);
+      bout.bpla(ss.str(), &abort);
     }
     for (i = 0; (i < mw && !abort); i++) {
       if (!read_same_email(mloc, mw, i, m, 0, 0)) {
@@ -414,19 +430,21 @@ void readmail(int mode) {
       }
 
       nn = network_number_from(&m);
-      sprintf(s, "|#2%3d%s|#7%c|#1 ", i + 1, m.status & status_seen ? " " : "|#3*", okansi() ? '\xB3' : '|');
+      std::ostringstream ss(std::ostringstream::ate);
+      ss << "|#2" << StringPrintf("%3d", i + 1)
+         << (m.status & status_seen ? " " : "|#3*")
+         << (okansi() ? '\xB3' : '|') << "|#1 ";
 
-      if ((m.anony & anony_sender) && ((ss.ability & ability_read_email_anony) == 0)) {
-        strcat(s, ">UNKNOWN<");
+      if ((m.anony & anony_sender) && ((sl.ability & ability_read_email_anony) == 0)) {
+        ss << ">UNKNOWN<";
       } else {
         if (m.fromsys == 0) {
           if (m.fromuser == 65535) {
             if (nn != 255) {
-              strcat(s, a()->net_networks[nn].name);
+              ss << a()->net_networks[nn].name;
             }
           } else {
-            const string unn = a()->names()->UserName(m.fromuser);
-            strcat(s, unn.c_str());
+            ss << a()->names()->UserName(m.fromuser);
           }
         } else {
           set_net_num(nn);
@@ -465,46 +483,46 @@ void readmail(int mode) {
               }
             }
           }
-          strcat(s, s1);
+          ss << s1;
         }
       }
-
+      
       if (a()->user()->GetScreenChars() >= 80 && a()->mail_who_field_len) {
-        if (strlen(stripcolors(s)) > a()->mail_who_field_len) {
-          while (strlen(stripcolors(s)) > a()->mail_who_field_len) {
-            s[ strlen(s) - 1 ] = '\0';
-          }
+        const auto current_s = ss.str();
+        if (size_without_colors(current_s) > a()->mail_who_field_len) {
+          // resize ss to trim it since it's larger than mail_who_field_len
+          trim_to_size_ignore_colors(current_s, a()->mail_who_field_len);
+          ss.str(current_s);
         }
-        strcat(s, charstr((a()->mail_who_field_len + 1) - strlen(stripcolors(s)), ' '));
+        ss << std::string(a()->mail_who_field_len + 1 - size_without_colors(current_s), ' ');
         if (okansi()) {
-          strcat(s, "|#7\xB3|#1");
+          ss << "|#7\xB3|#1";
         } else {
-          strcat(s, "|");
+          ss << "|";
         }
-        strcat(s, " ");
-        strcat(s, stripcolors(m.title));
-        while (strlen(stripcolors(s)) > a()->user()->GetScreenChars() - 1) {
-          s[strlen(s) - 1] = '\0';
-        }
+        ss << " " << stripcolors(m.title);
       }
-      bout.bpla(s, &abort);
+      const auto current_line = trim_to_size_ignore_colors(ss.str(), a()->user()->GetScreenChars() - 1);
+      bout.bpla(current_line, &abort);
+
       if ((i == (mw - 1)) && (a()->user()->GetScreenChars() >= 80) && (!abort)
           && (a()->mail_who_field_len)) {
         (okansi()) ? strcpy(s1, "\xC1\xC3\xC4") : strcpy(s1, "++-");
-        sprintf(s, "|#7%s%c", charstr(4, s1[2]), s1[0]);
-        strcat(s, charstr(a()->mail_who_field_len - 4, s1[2]));
-        strcat(s, charstr(1, s1[0]));
-        strcat(s, charstr(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]));
-        bout.bpla(s, &abort);
+        std::ostringstream ss;
+        ss << "|#7" << std::string(4, s1[2]) << s1[0];
+        ss << std::string(a()->mail_who_field_len - 4, s1[2]);
+        ss << std::string(1, s1[0]);
+        ss << std::string(a()->user()->GetScreenChars() - a()->mail_who_field_len - 3, s1[2]);
+        bout.bpla(ss.str(), &abort);
       }
     }
     bout.nl();
     bout << "|#9(|#2Q|#9=|#2Quit|#9, |#2Enter|#9=|#2First Message|#9) \r\n|#9Enter message number: ";
-    input(s, 3, true);
-    if (strchr(s, 'Q') != nullptr) {
+    auto user_selection = input(3, true);
+    if (contains(user_selection, 'Q')) {
       return;
     }
-    i = to_number<int>(s);
+    i = to_number<int>(user_selection);
     if (i) {
       if (!mode) {
         if (i <= mw) {
@@ -522,7 +540,6 @@ void readmail(int mode) {
     bout.nl(2);
     next = false;
     string title = m.title;
-    s[0] = '\0';
 
     if (!read_same_email(mloc, mw, curmail, m, 0, 0)) {
       title += ">>> MAIL DELETED <<<";
@@ -532,7 +549,7 @@ void readmail(int mode) {
       strcpy(irt, m.title);
       irt_name[0] = '\0';
       abort = false;
-      i = ((ability_read_email_anony & ss.ability) != 0);
+      i = ((ability_read_email_anony & sl.ability) != 0);
       okmail = true;
       if (m.fromsys && !m.fromuser) {
         grab_user_name(&(m.msg), "email", network_number_from(&m));
@@ -593,8 +610,7 @@ void readmail(int mode) {
           while (l1 > 0 && !found) {
             if (m.daten == static_cast<uint32_t>(fsr.id)) {
               found = true;
-              sprintf(s, "%s%s", a()->GetAttachmentDirectory().c_str(), fsr.filename);
-              if (File::Exists(s)) {
+              if (File::Exists(a()->GetAttachmentDirectory(), fsr.filename)) {
                 bout << "'T' to download attached file \"" << fsr.filename << "\" (" << fsr.numbytes << " bytes).\r\n";
                 attach_exists = true;
               } else {
@@ -616,6 +632,7 @@ void readmail(int mode) {
     }
 
     do {
+      string allowable;
       write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
       set_net_num(nn);
       i1 = 1;
@@ -629,27 +646,27 @@ void readmail(int mode) {
         if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
           bout << "|#2Mail |#7{|#1QSRIDAF?-+GEMZPVUOLCNY@|#7} |#2: ";
         }
-        strcpy(s, "QSRIDAF?-+GEMZPVUOLCNY@");
+        allowable = "QSRIDAF?-+GEMZPVUOLCNY@";
       } else {
         if (cs()) {
           strcpy(mnu, CS_EMAIL_NOEXT);
           if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
             bout << "|#2Mail |#7{|#1QSRIDAF?-+GZPVUOCY@|#7} |#2: ";
           }
-          strcpy(s, "QSRIDAF?-+GZPVUOCY@");
+          allowable = "QSRIDAF?-+GZPVUOCY@";
         } else {
           if (!okmail) {
             strcpy(mnu, RS_EMAIL_NOEXT);
             if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
               bout << "|#2Mail |#7{|#1QI?-+GY|#7} |#2: ";
             }
-            strcpy(s, "QI?-+G");
+            allowable = "QI?-+G";
           } else {
             strcpy(mnu, EMAIL_NOEXT);
             if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
               bout << "|#2Mail |#7{|#1QSRIDAF?+-GY@|#7} |#2: ";
             }
-            strcpy(s, "QSRIDAF?-+GY@");
+            allowable = "QSRIDAF?-+GY@";
           }
         }
       }
@@ -657,9 +674,9 @@ void readmail(int mode) {
         if (a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
           bout << "\b\b|#7{|#1T|#7} |#2: |#0";
         }
-        strcat(s, "T");
+        allowable += "T";
       }
-      ch = onek(s);
+      ch = onek(allowable);
       if (okmail && !read_same_email(mloc, mw, curmail, m, 0, 0)) {
         bout << "\r\nMail got deleted.\r\n\n";
         ch = 'R';
@@ -706,13 +723,13 @@ void readmail(int mode) {
         if (cs() && okmail && m.fromuser != 65535 && nn != 255) {
           show_files("*.frm", a()->config()->gfilesdir().c_str());
           bout << "|#2Which form letter: ";
-          input(s, 8, true);
-          if (!s[0]) {
+          auto user_input = input(8, true);
+          if (user_input.empty()) {
             break;
           }
-          string fn = StrCat(a()->config()->gfilesdir(), s, ".frm");
+          auto fn = StrCat(a()->config()->gfilesdir(), user_input, ".frm");
           if (!File::Exists(fn)) {
-            fn = StrCat(a()->config()->gfilesdir(), "form", s, ".msg");
+            fn = StrCat(a()->config()->gfilesdir(), "form", user_input, ".msg");
           }
           if (File::Exists(fn)) {
             LoadFileIntoWorkspace(fn, true);
@@ -758,16 +775,18 @@ void readmail(int mode) {
         }
       } break;
       case 'G':
+      {
         bout << "|#2Go to which (1-" << mw << ") ? |#0";
-        input(s, 3);
-        i1 = to_number<int>(s);
+        auto user_input = input(3);
+        i1 = to_number<int>(user_input);
         if (i1 > 0 && i1 <= mw) {
           curmail = i1 - 1;
           i1 = 1;
-        } else {
+        }
+        else {
           i1 = 0;
         }
-        break;
+      } break;
       case 'I':
       case '+':
         ++curmail;
@@ -924,12 +943,13 @@ void readmail(int mode) {
         if (!okmail) {
           break;
         }
-        purgemail(mloc, mw, &curmail, &m, &ss);
+        purgemail(mloc, mw, &curmail, &m, &sl);
         if (curmail >= mw) {
           done = true;
         }
         break;
       case 'F':
+      {
         if (!okmail) {
           break;
         }
@@ -948,14 +968,8 @@ void readmail(int mode) {
         }
 
         bout << "|#2Forward to: ";
-        input(s, 75);
-        if (((i3 = strcspn(s, "@")) != (GetStringLength(s))) && (isalpha(s[i3 + 1]))) {
-          if (strstr(s, "@32767") == nullptr) {
-            strlwr(s);
-            strcat(s, " @32767");
-          }
-        }
-        parse_email_info(s, &user_number, &system_number);
+        auto user_input = fixup_user_entered_email(input(75));
+        parse_email_info(user_input, &user_number, &system_number);
         if (user_number || system_number) {
           if (ForwardMessage(&user_number, &system_number)) {
             bout << "Mail forwarded.\r\n";
@@ -969,20 +983,25 @@ void readmail(int mode) {
               if (system_number == 1 && user_number == 0 &&
                 a()->current_net().type == network_type_t::internet) {
                 strcpy(s1, a()->net_email_name.c_str());
-              } else if (a()->max_net_num() > 1) {
+              }
+              else if (a()->max_net_num() > 1) {
                 if (user_number) {
                   sprintf(s1, "#%d @%d.%s", user_number, system_number, a()->network_name());
-                } else {
+                }
+                else {
                   sprintf(s1, "%s @%d.%s", a()->net_email_name.c_str(), system_number, a()->network_name());
                 }
-              } else {
+              }
+              else {
                 if (user_number) {
                   sprintf(s1, "#%d @%d", user_number, system_number);
-                } else {
+                }
+                else {
                   sprintf(s1, "%s @%d", a()->net_email_name.c_str(), system_number);
                 }
               }
-            } else {
+            }
+            else {
               set_net_num(nn);
               const string name = a()->names()->UserName(user_number, a()->current_net().sysnum);
               strcpy(s1, name.c_str());
@@ -1013,7 +1032,8 @@ void readmail(int mode) {
                   m1.msg.stored_as = 0xffffffff;
                   pFileEmail->Seek(mloc[curmail].index * sizeof(mailrec), File::Whence::begin);
                   pFileEmail->Write(&m1, sizeof(mailrec));
-                } else {
+                }
+                else {
                   string b;
                   if (readfile(&(m.msg), "email", &b)) {
                     savefile(b, &(m.msg), "email");
@@ -1025,17 +1045,16 @@ void readmail(int mode) {
 
                 i = a()->net_num();
                 const string fwd_name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
-                sprintf(s, "\r\nForwarded to %s from %s.", s1, fwd_name.c_str());
+                auto s = StringPrintf("\r\nForwarded to %s from %s.", s1, fwd_name.c_str());
 
                 set_net_num(nn);
                 lineadd(&m.msg, s, "email");
-                sprintf(s, "%s %s %s", fwd_name.c_str(),
-                        "forwarded your mail to", s1);
+                s = StrCat(fwd_name, "forwarded your mail to", s1);
                 if (!(m.status & status_source_verified)) {
                   ssm(m.fromuser, m.fromsys) << s;
                 }
                 set_net_num(i);
-                sprintf(s, "Forwarded mail to %s", s1);
+                s = StrCat("Forwarded mail to ", s1);
                 if (delme) {
                   a()->user()->SetNumMailWaiting(a()->user()->GetNumMailWaiting() - 1);
                 }
@@ -1055,7 +1074,8 @@ void readmail(int mode) {
                   email.from_system = m.fromsys ? m.fromsys : a()->net_networks[nn].sysnum;
                   email.from_network_number = nn;
                   sendout_email(email);
-                } else {
+                }
+                else {
                   email.from_user = a()->usernum;
                   email.from_system = a()->current_net().sysnum;
                   email.from_network_number = a()->net_num();
@@ -1070,7 +1090,7 @@ void readmail(int mode) {
           }
         }
         delme = 0;
-        break;
+      } break;
       case 'A':
       case 'S':
       case '@':
@@ -1088,25 +1108,16 @@ void readmail(int mode) {
           if (okfsed() && a()->user()->IsUseAutoQuote()) {
             string b;
             readfile(&(m.msg), "email", &b);
-            if (s[0] == '@') {
-              auto_quote(&b[0], b.size(), 1, m.daten);
-            } else {
-              auto_quote(&b[0], b.size(), 2, m.daten);
-            }
+            // used to be 1 or 2 depending on s[0] == '@', but
+            // that's allowable now and @ was never in the beginning.
+            auto_quote(&b[0], b.size(), 2, m.daten);
           }
 
           grab_quotes(&(m.msg), "email");
           if (ch == '@') {
             bout << "\r\n|#9Enter user name or number:\r\n:";
-            input(s, 75, true);
-            if (((i = strcspn(s, "@")) != GetStringLength(s))
-                && isalpha(s[i + 1])) {
-              if (strstr(s, "@32767") == nullptr) {
-                strlwr(s);
-                strcat(s, " @32767");
-              }
-            }
-            parse_email_info(s, &user_number, &system_number);
+            auto user_email = fixup_user_entered_email(input(75, true));
+            parse_email_info(user_email, &user_number, &system_number);
             if (user_number || system_number) {
               email("", user_number, system_number, false, 0);
             }

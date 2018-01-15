@@ -52,13 +52,6 @@ FullScreenView::FullScreenView(int numlines, int swidth, int slength)
 
 FullScreenView::~FullScreenView() {}
 
-std::string pad(int screen_width, std::string::size_type line_len) {
-  if (static_cast<int>(line_len) >= screen_width) {
-    return{};
-  }
-  return std::string(screen_width - line_len, ' ');
-}
-
 void FullScreenView::PrintTimeoutWarning(int) {
   bout.GotoXY(1, command_line_);
   bout.clreol();

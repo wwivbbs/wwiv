@@ -124,6 +124,20 @@ std::string trim_to_size_ignore_colors(const std::string& orig, std::string::siz
  */
 std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type size);
 
+// String length without colors
+std::string::size_type size(const std::string& s);
+
+// String length without colors
+std::string::size_type size(const char* s);
+
+/** returns a copy of orig trimmed to size, excluding colors. */
+std::string trim_to_size(const std::string& orig, std::string::size_type size);
+
+/**
+* Returns orig padded to size, excluding color codes.
+*/
+std::string pad_to(const std::string& orig, std::string::size_type size);
+
 /** Typesafe version of toupper */
 template<class T>
 const T to_upper_case(const T a) {

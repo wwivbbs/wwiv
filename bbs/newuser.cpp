@@ -198,7 +198,7 @@ void input_name() {
   bool ok = true;
   do {
     bout.nl();
-    if (a()->config()->config()->sysconfig & sysconfig_no_alias) {
+    if (a()->config()->sysconfig_flags() & sysconfig_no_alias) {
       bout << "|#3Enter your FULL REAL name.\r\n";
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
@@ -220,7 +220,7 @@ void input_name() {
 }
 
 void input_realname() {
-  if (!(a()->config()->config()->sysconfig & sysconfig_no_alias)) {
+  if (!(a()->config()->sysconfig_flags() & sysconfig_no_alias)) {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
@@ -245,11 +245,11 @@ static void input_callsign() {
 }
 
 bool valid_phone(const string& phoneNumber) {
-  if (a()->config()->config()->sysconfig & sysconfig_free_phone) {
+  if (a()->config()->sysconfig_flags() & sysconfig_free_phone) {
     return true;
   }
 
-  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
+  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     if (!IsPhoneNumberUSAFormat(a()->user()) && a()->user()->GetCountry()[0]) {
       return true;
     }
@@ -724,7 +724,7 @@ void DoFullNewUser() {
       }
     }
   }
-  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
+  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     input_street();
     const auto zip_city_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
     if (File::Exists(zip_city_dir, "zip1.dat")) {
@@ -819,7 +819,7 @@ void VerifyNewUserFullInfo() {
   do {
     bout.nl(2);
     bout << "|#91) Name          : |#2" << u->GetName() << wwiv::endl;
-    if (!(a()->config()->config()->sysconfig & sysconfig_no_alias)) {
+    if (!(a()->config()->sysconfig_flags() & sysconfig_no_alias)) {
       bout << "|#92) Real Name     : |#2" << u->GetRealName() << wwiv::endl;
     }
     bout << "|#93) Callsign      : |#2" << u->GetCallsign() << wwiv::endl;
@@ -836,7 +836,7 @@ void VerifyNewUserFullInfo() {
                        u->GetScreenChars() << " X " <<
                        u->GetScreenLines() << wwiv::endl;
     bout << "|#99) Password      : |#2" << u->GetPassword() << wwiv::endl;
-    if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
+    if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
       bout << "|#9A) Street Address: |#2" << u->GetStreet() << wwiv::endl;
       bout << "|#9B) City          : |#2" << u->GetCity() << wwiv::endl;
       bout << "|#9C) State         : |#2" << u->GetState() << wwiv::endl;
@@ -848,7 +848,7 @@ void VerifyNewUserFullInfo() {
     bout << "Q) No changes.\r\n";
     bout.nl(2);
     char ch = 0;
-    if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
+    if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
       bout << "|#9Which (1-9,A-F,Q) : ";
       ch = onek("Q123456789ABCDEF");
     } else {
@@ -864,7 +864,7 @@ void VerifyNewUserFullInfo() {
       input_name();
       break;
     case '2':
-      if (!(a()->config()->config()->sysconfig & sysconfig_no_alias)) {
+      if (!(a()->config()->sysconfig_flags() & sysconfig_no_alias)) {
         input_realname();
       }
       break;
@@ -929,14 +929,14 @@ void WriteNewUserInfoToSysopLog() {
   sysoplog() << "** New User Information **";
   sysoplog() << StringPrintf("-> %s #%ld (%s)", u->GetName(), a()->usernum,
             u->GetRealName());
-  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
+  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     sysoplog() << "-> " << u->GetStreet();
     sysoplog() << "-> " << u->GetCity() << ", " << u->GetState() << " " << u->GetZipcode()
       << "  (" << u->GetCountry() << " )";
               
   }
   sysoplog() << StringPrintf("-> %s (Voice)", u->GetVoicePhoneNumber());
-  if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
+  if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
     sysoplog() << StringPrintf("-> %s (Data)", u->GetDataPhoneNumber());
   }
   sysoplog() << StringPrintf("-> %02d/%02d/%02d (%d yr old %s)",
@@ -981,7 +981,7 @@ void SendNewUserFeedbackIfRequired() {
     return;
   }
 
-  if (a()->config()->config()->sysconfig & sysconfig_no_newuser_feedback) {
+  if (a()->config()->sysconfig_flags() & sysconfig_no_newuser_feedback) {
     // If NEWUSER_FEEDBACK=N don't attempt to send newuser feedback.
     return;
   }

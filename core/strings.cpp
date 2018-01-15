@@ -370,7 +370,7 @@ char *StringRemoveChar(const char *str, char ch) {
   strcpy(s_strip_string, "");
 
   int i1 = 0;
-  for (int i = 0; i < wwiv::strings::GetStringLength(str); i++) {
+  for (auto i = 0; i < strlen(str); i++) {
     if (str[i] != ch) {
       s_strip_string[i1] = str[i];
       i1++;
@@ -426,6 +426,33 @@ std::string pad_to_ignore_colors(const std::string& orig, std::string::size_type
     return orig;
   }
   return orig + std::string(size - len, ' ');
+}
+
+std::string::size_type size(const std::string& s) {
+  return s.size();
+}
+
+std::string::size_type size(const char* s) {
+  if (s == nullptr) {
+    return 0;
+  }
+  return static_cast<std::string::size_type>(strlen(s));
+}
+
+std::string trim_to_size(const std::string& orig, std::string::size_type max_size) {
+  string s(orig);
+  while (size(s) > max_size) {
+    s.pop_back();
+  }
+  return s;
+}
+
+std::string pad_to(const std::string& orig, std::string::size_type max_size) {
+  auto len = size(orig);
+  if (max_size <= len) {
+    return orig;
+  }
+  return StrCat(orig, std::string(max_size - len, ' '));
 }
 
 

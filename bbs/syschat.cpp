@@ -213,7 +213,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
         } else {
-          strcpy(s2, charstr(a()->user()->GetScreenChars() - 1, '\xCD'));
+          to_char_array(s2, std::string(a()->user()->GetScreenChars() - 1, '\xCD'));
         }
         s2[a()->user()->GetScreenChars()] = '\0';
         bout << s2;

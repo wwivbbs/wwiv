@@ -151,7 +151,7 @@ void CreateDoorInfoDropFile() {
       incom ? a()->primary_port() : 0);
     fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? modem_speed : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
-    if (a()->config()->config()->sysconfig & sysconfig_no_alias) {
+    if (a()->config()->sysconfig_flags() & sysconfig_no_alias) {
       char szTemp[81];
       strcpy(szTemp, a()->user()->GetRealName());
       GetNamePartForDropFile(false, szTemp);
@@ -162,7 +162,7 @@ void CreateDoorInfoDropFile() {
     } else {
       fileDorInfoSys.WriteFormatted("%s\n\n", a()->user()->GetName());
     }
-    if (a()->config()->config()->sysconfig & sysconfig_extended_info) {
+    if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
       fileDorInfoSys.WriteFormatted("%s, %s\n", a()->user()->GetCity(),
                                     a()->user()->GetState());
     } else {

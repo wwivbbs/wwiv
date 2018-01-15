@@ -298,12 +298,12 @@ bool ratio_ok() {
   bool bRetValue = true;
 
   if (!a()->user()->IsExemptRatio()) {
-    if ((a()->config()->config()->req_ratio > 0.0001) && (ratio() < a()->config()->config()->req_ratio)) {
+    if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio())) {
       bRetValue = false;
       bout.cls();
       bout.nl();
       bout.bprintf("Your up/download ratio is %-5.3f.  You need a ratio of %-5.3f to download.\r\n\n",
-                                        ratio(), a()->config()->config()->req_ratio);
+                                        ratio(), a()->config()->req_ratio());
     }
   }
   if (!a()->user()->IsExemptPost()) {

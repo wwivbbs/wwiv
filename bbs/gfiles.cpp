@@ -65,63 +65,62 @@ gfilerec *read_sec(int sn, int *nf) {
 }
 
 void gfl_hdr(int which) {
-  char s[255], s1[81], s2[81], s3[81];
-
+  string s, s1, s2, s3;
   if (okansi()) {
-    strcpy(s2, charstr(29, '\xC4'));
+    s2 = charstr(29, '\xC4');
   } else {
-    strcpy(s2, charstr(29, '-'));
+    s2 = charstr(29, '-');
   }
   if (which) {
-    strcpy(s1, charstr(12, ' '));
-    strcpy(s3, charstr(11, ' '));
+    s1 = charstr(12, ' ');
+    s3 = charstr(11, ' ');
   } else {
-    strcpy(s1, charstr(12, ' '));
-    strcpy(s3, charstr(17, ' '));
+    s1 = charstr(12, ' ');
+    s3 = charstr(17, ' ');
   }
   bool abort = false;
   if (okansi()) {
     if (which) {
-      sprintf(s, "|#7\xDA\xC4\xC4\xC4\xC2%s\xC2\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC2%s\xC2\xC4\xC4\xC4\xC4\xBF", s2, s2);
+      s = StrCat("|#7\xDA\xC4\xC4\xC4\xC2", s2, "\xC2\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC2", s2, "\xC2\xC4\xC4\xC4\xC4\xBF");
     } else {
-      sprintf(s, "|#7\xDA\xC4\xC4\xC4\xC2%s\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC2%s\xC4\xC4\xC4\xC4\xBF", s2, s2);
+      s = StrCat("|#7\xDA\xC4\xC4\xC4\xC2", s2, "\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC2", s2, "\xC4\xC4\xC4\xC4\xBF");
     }
   } else {
     if (which) {
-      sprintf(s, "+---+%s+----+---+%s+----+", s2, s2);
+      s = StrCat("+---+", s2, "+----+---+", s2, "+----+");
     } else {
-      sprintf(s, "+---+%s-----+---+%s----+", s2, s2);
+      s = StrCat("+---+", s2, "-----+---+", s2, "----+");
     }
   }
   bout.bpla(s, &abort);
   bout.Color(0);
   if (okansi()) {
     if (which) {
-      sprintf(s, "|#7\xB3|#2 # |#7\xB3%s|#1 Name %s|#7\xB3|#9Size|#7\xB3|#2 # |#7\xB3%s|#1 Name %s|#7\xB3|#9Size|#7\xB3",
-              s1, s3, s1, s3);
+      s = StrCat("|#7\xB3|#2 # |#7\xB3", s1, "|#1 Name ", s3, "|#7\xB3|#9Size|#7\xB3|#2 # |#7\xB3", s1, "|#1 Name ", s3, "|#7\xB3|#9Size|#7\xB3");
     } else {
-      sprintf(s, "|#7\xB3|#2 # |#7\xB3%s|#1 Name%s|#7\xB3|#2 # |#7\xB3%s|#1Name%s|#7\xB3", s1, s3, s1, s3);
+      s = StrCat("|#7\xB3|#2 # |#7\xB3", s1, "|#1 Name", s3, "|#7\xB3|#2 # |#7\xB3", s1, "|#1Name", s3, "|#7\xB3");
     }
   } else {
     if (which) {
-      sprintf(s, "| # |%sName %s|Size| # |%s Name%s|Size|", s1, s1, s1, s1);
+      s = StrCat("| #   |", s1, "Name ", s1, "|Size| # |", s1, " Name", s1, "|Size|");
     } else {
-      sprintf(s, "| # |%s Name     %s| # |%s Name    %s|", s1, s1, s1, s1);
+      s = StrCat("| # |", s1, " Name     ", s1, "| # |", s1, " Name    ", s1, "|");
     }
   }
   bout.bpla(s, &abort);
   bout.Color(0);
   if (okansi()) {
     if (which) {
-      sprintf(s, "|#7\xC3\xC4\xC4\xC4\xC5%s\xC5\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC5%s\xC5\xC4\xC4\xC4\xC4\xB4", s2, s2);
+      s = StrCat("|#7\xC3\xC4\xC4\xC4\xC5", s2, "\xC5\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC5", s2, "\xC5\xC4\xC4\xC4\xC4\xB4");
     } else {
-      sprintf(s, "|#7\xC3\xC4\xC4\xC4\xC5%s\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC5%s\xC4\xC4\xC4\xC4\xB4", s2, s2);
+      s = StrCat("|#7\xC3\xC4\xC4\xC4\xC5", s2, "\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC5", s2, "\xC4\xC4\xC4\xC4\xB4");
     }
   } else {
     if (which) {
-      sprintf(s, "+---+%s+----+---+%s+----+", s2, s2);
-    } else {
-      sprintf(s, "+---+%s-----+---+%s----+", s2, s2);
+      s = StrCat("+---+", s2, "+----+---+", s2, "+----+");
+    }
+    else {
+      s = StrCat("+---+", s2, "-----+---+", s2, "----+");
     }
   }
   bout.bpla(s, &abort);
@@ -135,13 +134,13 @@ void list_sec(int *map, int nmap) {
   int i2 = 0;
   bool abort = false;
   if (okansi()) {
-    strcpy(s2, charstr(29, '\xC4'));
-    strcpy(s3, charstr(12, '\xC4'));
-    strcpy(s7, charstr(12, '\xC4'));
+    to_char_array(s2, charstr(29, '\xC4'));
+    to_char_array(s3, charstr(12, '\xC4'));
+    to_char_array(s7, charstr(12, '\xC4'));
   } else {
-    strcpy(s2, charstr(29, '-'));
-    strcpy(s3, charstr(12, '-'));
-    strcpy(s7, charstr(12, '-'));
+    to_char_array(s2, charstr(29, '-'));
+    to_char_array(s3, charstr(12, '-'));
+    to_char_array(s7, charstr(12, '-'));
   }
 
   bout.cls();
@@ -154,14 +153,14 @@ void list_sec(int *map, int nmap) {
     s4[34] = '\0';
     if (i + 1 >= nmap) {
       if (okansi()) {
-        sprintf(rnum, "%s", charstr(3, '\xFE'));
-        sprintf(s5, "%s", charstr(29, '\xFE'));
+        to_char_array(rnum, charstr(3, '\xFE'));
+        to_char_array(s5, charstr(29, '\xFE'));
       } else {
-        sprintf(rnum, "%s", charstr(3, 'o'));
-        sprintf(s5, "%s", charstr(29, 'o'));
+        to_char_array(rnum, charstr(3, 'o'));
+        to_char_array(s5, charstr(29, 'o'));
       }
     } else {
-      sprintf(rnum, "%d", i + 2);
+      to_char_array(rnum, std::to_string(i + 2));
       strncpy(s5, a()->gfilesec[map[i + 1]].name, 29);
       s5[29] = '\0';
     }
@@ -243,11 +242,11 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   bout.litebar(a()->gfilesec[sn].name);
   i2 = 0;
   if (okansi()) {
-    strcpy(s2, charstr(29, '\xC4'));
-    strcpy(s3, charstr(12, '\xC4'));
+    to_char_array(s2, charstr(29, '\xC4'));
+    to_char_array(s3, charstr(12, '\xC4'));
   } else {
-    strcpy(s2, charstr(29, '-'));
-    strcpy(s3, charstr(12, '-'));
+    to_char_array(s2, charstr(29, '-'));
+    to_char_array(s3, charstr(12, '-'));
   }
   gfl_hdr(1);
   string gfilesdir = a()->config()->gfilesdir();

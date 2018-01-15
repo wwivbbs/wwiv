@@ -448,7 +448,7 @@ void getuser() {
           ok = false;
         }
 
-        if ((a()->config()->config()->sysconfig & sysconfig_free_phone) == 0 && IsPhoneRequired()) {
+        if ((a()->config()->sysconfig_flags() & sysconfig_free_phone) == 0 && IsPhoneRequired()) {
           if (!VerifyPhoneNumber()) {
             ok = false;
           }
@@ -559,7 +559,7 @@ static void PrintUserSpecificFiles() {
 static std::string CreateLastOnLogLine(const WStatus& status) {
   string log_line;
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-    (a()->config()->config()->sysconfig & sysconfig_extended_info)) {
+    (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
     const string username_num = a()->names()->UserName(a()->usernum);
     const string t = times();
     const string f = fulldate();
@@ -612,7 +612,7 @@ static void UpdateLastOnFile() {
         bout << "|#1Last few callers|#7: |#0";
         bout.nl(2);
         if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-            (a()->config()->config()->sysconfig & sysconfig_extended_info)) {
+            (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
           bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##" << wwiv::endl;
         } else {
           bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
@@ -692,7 +692,7 @@ static void CheckAndUpdateUserInfo() {
   if (!a()->user()->GetRealName()[0]) {
     input_realname();
   }
-  if (!(a()->config()->config()->sysconfig & sysconfig_extended_info)) {
+  if (!(a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
     return;
   }
   if (!a()->user()->GetStreet()[0]) {
@@ -719,7 +719,6 @@ static void CheckAndUpdateUserInfo() {
 }
 
 static void DisplayUserLoginInformation() {
-  char s1[255];
   bout.nl();
 
   const string username_num = a()->names()->UserName(a()->usernum);
@@ -762,14 +761,16 @@ static void DisplayUserLoginInformation() {
   a()->status_manager()->RefreshStatusCache();
   for (int i = 0; i < a()->max_net_num(); i++) {
     if (a()->net_networks[i].sysnum) {
-      sprintf(s1, "|#9%s node|#0%s|#2 @%u", a()->net_networks[i].name, charstr(13 - strlen(a()->net_networks[i].name), '.'),
-        a()->net_networks[i].sysnum);
+      std::ostringstream ss;
+      const auto& n = a()->net_networks[i];
+      ss << "|#9" << n.name << " node|#0" << charstr(13 - strlen(n.name), ' ') << "|#2 @" << n.sysnum;
+      auto s1 = ss.str();
       if (i) {
         bout << s1;
         bout.nl();
       } else {
         int i1;
-        for (i1 = strlen(s1); i1 < 26; i1++) {
+        for (i1 = s1.size(); i1 < 26; i1++) {
           s1[i1] = ' ';
         }
         s1[i1] = '\0';

@@ -50,7 +50,4 @@ public:
 };
 
 
-std::string pad(int screen_width, std::string::size_type line_len);
-
-
 #endif  // __INCLUDED_BBS_FULL_SCREEN_H__

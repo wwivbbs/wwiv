@@ -62,10 +62,18 @@ public:
     config_.req_ratio = req_ratio;
   }
 
+  float req_ratio() const {
+    return config_.req_ratio;
+  }
+
   // Sets the value for the sysconfig flags. 
   // These hava been moved to the ini file.
   void set_sysconfig(uint16_t sysconfig) {
     config_.sysconfig = sysconfig;
+  }
+  uint16_t sysconfig_flags() const {
+    return config_.sysconfig;
+
   }
 
 private:

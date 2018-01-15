@@ -59,14 +59,10 @@ using namespace wwiv::strings;
 
 // Helper functions
 
-static void LogToSync(const char* s) {
-  if (a()->IsExecLogSyncFoss()) {
-    fprintf(hLogFile, s);
-  }
-}
-
 static void LogToSync(const std::string& s) {
-  LogToSync(s.c_str());
+  if (a()->IsExecLogSyncFoss()) {
+    fprintf(hLogFile, s.c_str());
+  }
 }
 
 static string GetSyncFosTempFilePath() {
@@ -342,7 +338,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
 
     const string logfile_name = StrCat(a()->GetHomeDir(), "wwivsync.log");
     hLogFile = fopen(logfile_name.c_str(), "at");
-    LogToSync(charstr(78, '='));
+    LogToSync(std::string(78, '='));
     LogToSync("\r\n\r\n");
   } else {
     workingCommandLine = commandLine;

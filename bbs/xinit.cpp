@@ -354,7 +354,7 @@ void Application::ReadINIFile(IniFile& ini) {
 
   // sysconfig flags
   a()->config()->set_sysconfig(static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
-      NEL(sysconfig_flags), a()->config()->config()->sysconfig)));
+      NEL(sysconfig_flags), a()->config()->sysconfig_flags())));
 
   // misc stuff
   auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));

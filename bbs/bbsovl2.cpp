@@ -51,7 +51,7 @@ void OnlineUserEditor() {
   int wx = 5;
   int wy = 3;
   a()->localIO()->MakeLocalWindow(wx, wy - 2, 70, 16 + 2);
-  const string bar = StringPrintf("\xC3%s\xB4", charstr(70 - wx + 3, '\xC4'));
+  const auto bar = StrCat("\xC3", std::string(70 - wx + 3, '\xC4'), "\xB4");
   a()->localIO()->PutsXY(wx, wy, bar);
   a()->localIO()->PutsXY(wx, wy + 4, bar);
   a()->localIO()->PutsXY(wx, wy + 7, bar);

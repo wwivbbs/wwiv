@@ -431,7 +431,7 @@ static void display_title_new(const std::vector<std::string>& lines, const FullS
   else {
     bout << "|16|#0 ";
   }
-  bout << l << pad(fs.screen_width() - 1, stripcolors(l).size()) << "|#0";
+  bout << pad_to_ignore_colors(l, fs.screen_width() - 1) << "|#0";
 }
 
 static void display_titles_new(const std::vector<std::string>& lines, const FullScreenView& fs,

@@ -102,7 +102,7 @@ void old_sublist() {
           }
           s += s1;
         } else {
-          s += charstr(11, ' ');
+          s += std::string(11, ' ');
         }
         s += "|#9";
       }

@@ -141,7 +141,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
         } else {
           sysoplog() << "Downloaded '" << u.filename << "'.";
         }
-        if (a()->config()->config()->sysconfig & sysconfig_log_dl) {
+        if (a()->config()->sysconfig_flags() & sysconfig_log_dl) {
           User user;
           a()->users()->readuser(&user, u.ownerusr);
           if (!user.IsUserDeleted()) {
@@ -352,7 +352,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   // TODO(rushfan): Rewrite this to use iterators;
   do {
     a()->tleft(true);
-    if ((a()->config()->config()->req_ratio > 0.0001) && (ratio() < a()->config()->config()->req_ratio)) {
+    if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio())) {
       bRatioBad = true;
     }
     if (a()->user()->IsExemptRatio()) {
@@ -431,7 +431,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   //TODO(rushfan): rewrite to use iterators.
   do {
     a()->tleft(true);
-    if ((a()->config()->config()->req_ratio > 0.0001) && (ratio() < a()->config()->config()->req_ratio)) {
+    if ((a()->config()->req_ratio() > 0.0001) && (ratio() < a()->config()->req_ratio())) {
       bRatioBad = true;
     }
     if (a()->user()->IsExemptRatio()) {
@@ -605,8 +605,8 @@ static string make_dl_batch_list() {
         bout << "Cannot download " << b.filename << ": Not enough time" << wwiv::endl;
       }
       unsigned long thisk = bytes_to_k(b.len);
-      if ((a()->config()->config()->req_ratio > 0.0001) &&
-          (ratio1(addk + thisk) < a()->config()->config()->req_ratio) &&
+      if ((a()->config()->req_ratio() > 0.0001) &&
+          (ratio1(addk + thisk) < a()->config()->req_ratio()) &&
           !a()->user()->IsExemptRatio()) {
         ok = false;
         bout << "Cannot download " << b.filename << ": Ratio too low" << wwiv::endl;

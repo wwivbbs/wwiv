@@ -339,7 +339,7 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case F10: /* F10 */
         if (chatting == 0) {
-          if (a()->config()->config()->sysconfig & sysconfig_2_way) {
+          if (a()->config()->sysconfig_flags() & sysconfig_2_way) {
             chat1("", true);
           } else {
             chat1("", false);
@@ -413,7 +413,7 @@ void Application::UpdateTopScreen() {
   }
 
 #ifdef _WIN32
-  if (a()->config()->config()->sysconfig & sysconfig_titlebar) {
+  if (a()->config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
     string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(),

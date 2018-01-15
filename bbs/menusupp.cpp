@@ -260,7 +260,7 @@ void KillEMail() {
 
 void LastCallers() {
   if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
-      (a()->config()->config()->sysconfig & sysconfig_extended_info)) {
+      (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
     bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##\r\n";
   } else {
     bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##\r\n";
@@ -992,7 +992,7 @@ void Upload() {
   play_sdf(UPLOAD_NOEXT, false);
   printfile(UPLOAD_NOEXT);
   if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
-      (a()->config()->config()->sysconfig & sysconfig_all_sysop)) {
+      (a()->config()->sysconfig_flags() & sysconfig_all_sysop)) {
     if (a()->config()->config()->newuploads < a()->directories.size()) {
       upload(static_cast<int>(a()->config()->config()->newuploads));
     } else {
