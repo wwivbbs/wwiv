@@ -67,16 +67,16 @@ gfilerec *read_sec(int sn, int *nf) {
 void gfl_hdr(int which) {
   string s, s1, s2, s3;
   if (okansi()) {
-    s2 = charstr(29, '\xC4');
+    s2 = std::string(29, '\xC4');
   } else {
-    s2 = charstr(29, '-');
+    s2 = std::string(29, '-');
   }
   if (which) {
-    s1 = charstr(12, ' ');
-    s3 = charstr(11, ' ');
+    s1 = std::string(12, ' ');
+    s3 = std::string(11, ' ');
   } else {
-    s1 = charstr(12, ' ');
-    s3 = charstr(17, ' ');
+    s1 = std::string(12, ' ');
+    s3 = std::string(17, ' ');
   }
   bool abort = false;
   if (okansi()) {
@@ -134,13 +134,13 @@ void list_sec(int *map, int nmap) {
   int i2 = 0;
   bool abort = false;
   if (okansi()) {
-    to_char_array(s2, charstr(29, '\xC4'));
-    to_char_array(s3, charstr(12, '\xC4'));
-    to_char_array(s7, charstr(12, '\xC4'));
+    to_char_array(s2, std::string(29, '\xC4'));
+    to_char_array(s3, std::string(12, '\xC4'));
+    to_char_array(s7, std::string(12, '\xC4'));
   } else {
-    to_char_array(s2, charstr(29, '-'));
-    to_char_array(s3, charstr(12, '-'));
-    to_char_array(s7, charstr(12, '-'));
+    to_char_array(s2, std::string(29, '-'));
+    to_char_array(s3, std::string(12, '-'));
+    to_char_array(s7, std::string(12, '-'));
   }
 
   bout.cls();
@@ -153,11 +153,11 @@ void list_sec(int *map, int nmap) {
     s4[34] = '\0';
     if (i + 1 >= nmap) {
       if (okansi()) {
-        to_char_array(rnum, charstr(3, '\xFE'));
-        to_char_array(s5, charstr(29, '\xFE'));
+        to_char_array(rnum, std::string(3, '\xFE'));
+        to_char_array(s5, std::string(29, '\xFE'));
       } else {
-        to_char_array(rnum, charstr(3, 'o'));
-        to_char_array(s5, charstr(29, 'o'));
+        to_char_array(rnum, std::string(3, 'o'));
+        to_char_array(s5, std::string(29, 'o'));
       }
     } else {
       to_char_array(rnum, std::to_string(i + 2));
@@ -242,11 +242,11 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   bout.litebar(a()->gfilesec[sn].name);
   i2 = 0;
   if (okansi()) {
-    to_char_array(s2, charstr(29, '\xC4'));
-    to_char_array(s3, charstr(12, '\xC4'));
+    to_char_array(s2, std::string(29, '\xC4'));
+    to_char_array(s3, std::string(12, '\xC4'));
   } else {
-    to_char_array(s2, charstr(29, '-'));
-    to_char_array(s3, charstr(12, '-'));
+    to_char_array(s2, std::string(29, '-'));
+    to_char_array(s3, std::string(12, '-'));
   }
   gfl_hdr(1);
   string gfilesdir = a()->config()->gfilesdir();

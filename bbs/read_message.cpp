@@ -188,7 +188,7 @@ void display_message_text(const std::string& text, bool *next) {
           if (centre && (ctrld != -1)) {
             int nSpacesToCenter = 
               (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
-            bout.bputs(charstr(nSpacesToCenter, ' '), &abort, next);
+            bout.bputs(std::string(nSpacesToCenter, ' '), &abort, next);
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {

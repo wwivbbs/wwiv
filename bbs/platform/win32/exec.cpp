@@ -407,7 +407,7 @@ int ExecExternalProgram(const string commandLine, int flags) {
     bool saved_binary_mode = a()->remoteIO()->binary_mode();
     a()->remoteIO()->set_binary_mode(true);
     bool sync_loop_status = DoSyncFosLoopNT(pi.hProcess, hSyncHangupEvent, hSyncReadSlot, nSyncMode);
-    LogToSync(StrCat("DoSyncFosLoopNT: Returning ", sync_loop_status, "\r\n", charstr(78, '='), "\r\n\r\n\r\n"));
+    LogToSync(StrCat("DoSyncFosLoopNT: Returning ", sync_loop_status, "\r\n", std::string(78, '='), "\r\n\r\n\r\n"));
     fclose(hLogFile);
 
     if (sync_loop_status) {

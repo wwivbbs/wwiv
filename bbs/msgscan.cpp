@@ -346,25 +346,22 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   if (!msg) {
     return "";
   }
-  char line[255];
-  char tmpbuf[255];
+  string tmpbuf;
   const auto& h = msg->header();
   if (h.local() && h.from_usernum() == a()->usernum) {
-    sprintf(tmpbuf, "|09[|11%d|09]", msgnum);
+    tmpbuf = StringPrintf("|09[|11%d|09]", msgnum);
   }
   else if (!h.local()) {
-    sprintf(tmpbuf, "|09<|11%d|09>", msgnum);
+    tmpbuf = StringPrintf("|09<|11%d|09>", msgnum);
   }
   else {
-    sprintf(tmpbuf, "|09(|11%d|09)", msgnum);
+    tmpbuf = StringPrintf("|09(|11%d|09)", msgnum);
   }
-  for (int i1 = 0; i1 < 7; i1++) {
-    line[i1] = SPACE;
-  }
+  string line = "       ";
   if (h.storage_type() == 2) {
     // HACK: Need to make this generic. this before supporting JAM.
     // N.B. If for some reason dynamic_cast fails, a std::bad_cast is thrown.
-    const WWIVMessageHeader& wh = dynamic_cast<const WWIVMessageHeader&>(h);
+    const auto& wh = dynamic_cast<const WWIVMessageHeader&>(h);
     if (wh.last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
       line[0] = '*';
     }
@@ -372,39 +369,36 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
   if (h.pending_network() || h.unvalidated()) {
     line[0] = '+';
   }
-  strcpy(&line[9 - strlen(stripcolors(tmpbuf))], tmpbuf);
-  strcat(line, "|11 ");
+  int tmpbuf_size = size_without_colors(tmpbuf);
+  line.resize(std::max<int>(0, 9 - tmpbuf_size));
+  line += tmpbuf;
+  line += "|11 ";
   if ((h.unvalidated() || h.deleted()) && !lcs()) {
-    strcat(line, "<<< NOT VALIDATED YET >>>");
+    line += "<<< NOT VALIDATED YET >>>";
   }
   else {
     // Need the StringTrim on post title since some FSEDs
     // added \r in the title string, also gets rid of extra spaces
-    auto title = h.title();
-    StringTrim(&title);
-    strncat(line, stripcolors(title).c_str(), 60);
+    line += trim_to_size_ignore_colors(StringTrim(h.title()), 60);
   }
 
   if (a()->user()->GetScreenChars() >= 80) {
-    if (strlen(stripcolors(line)) > 50) {
-      while (strlen(stripcolors(line)) > 50) {
-        line[strlen(line) - 1] = 0;
-      }
+    if (size_without_colors(line) > 50) {
+      trim_to_size_ignore_colors(line, 50);
     }
-    strcat(line, charstr(51 - strlen(stripcolors(line)), ' '));
+    line += std::string(51 - size_without_colors(line), ' ');
     if (okansi()) {
-      strcat(line, "|09\xB3|10 ");
+      line += "|09\xB3|10 ";
     }
     else {
-      strcat(line, "| ");
+      line += "| ";
     }
     if ((h.anony() & 0x0f) &&
       ((getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) == 0)) {
-      strcat(line, ">UNKNOWN<");
+      line += ">UNKNOWN<";
     }
     else {
-      auto from = trim_to_size_ignore_colors(h.from(), 25);
-      strcat(line, from.c_str());
+      line += trim_to_size_ignore_colors(h.from(), 25);     
     }
   }
   return line;
