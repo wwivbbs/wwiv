@@ -103,7 +103,7 @@ public:
   void ClrEol() override {}
   void WriteScreenBuffer(const char *) override {}
   size_t GetDefaultScreenBottom() override { return 25; }
-  void EditLine(char *, int, int, int *, const char *) override {}
+  void EditLine(char *, int, AllowedKeys, int *, const char *) override {}
   void UpdateNativeTitleBar(Application*) override {}
 
   std::string* captured_;

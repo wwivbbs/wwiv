@@ -29,10 +29,12 @@
 
 class Application;
 
-#define NUM_ONLY            1
-#define UPPER_ONLY          2
-#define ALL                 4
-#define SET                 8
+enum class AllowedKeys {
+  NUM_ONLY,
+  UPPER_ONLY,
+  ALL,
+  SET
+};
 
 class LocalIO {
  public:
@@ -84,7 +86,7 @@ class LocalIO {
   virtual void SetCursor(int cursorStyle) = 0;
   virtual void WriteScreenBuffer(const char *buffer) = 0;
   virtual size_t GetDefaultScreenBottom() = 0;
-  virtual void EditLine(char *s, int len, int status, int *returncode, const char *ss) = 0;
+  virtual void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) = 0;
   virtual void UpdateNativeTitleBar(Application* session) = 0;
 
   int  GetTopScreenColor() const { return top_screen_color_; }

@@ -200,7 +200,7 @@ void list_sec(int *map, int nmap) {
       bout.bpla(s1, &abort);
       bout.Color(0);
 
-      string padding61 = std::string(61, '61');
+      string padding61 = std::string(61, ' ');
       if (okansi()) {
         s1 = StringPrintf("|#7\xB3  |#2G|#7)|#1G-File Edit%s|#7\xB3", padding61.c_str());
       } else {

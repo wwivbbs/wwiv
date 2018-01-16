@@ -70,7 +70,7 @@ class Win32ConsoleIO : public LocalIO {
   void WriteScreenBuffer(const char *buffer) override;
   size_t GetDefaultScreenBottom() override;
 
-  void EditLine(char *s, int len, int editor_status, int *returncode, const char *ss) override;
+  void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) override;
   void UpdateNativeTitleBar(Application* session) override;
 
 private:

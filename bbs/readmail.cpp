@@ -354,7 +354,7 @@ static std::string fixup_user_entered_email(const std::string& s) {
 }
 
 void readmail(int mode) {
-  int i, i1, i2, i3, curmail = 0, nn = 0, delme;
+  int i, i1, i2, curmail = 0, nn = 0, delme;
   bool done, okmail;
   char s1[205], s2[81], *ss2, mnu[81];
   mailrec m, m1;

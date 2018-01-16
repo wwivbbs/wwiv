@@ -156,7 +156,7 @@ static void select_chat_name(char *sysop_name) {
 
   int rc;
   a()->localIO()->GotoXY(31, 6);
-  a()->localIO()->EditLine(sysop_name, 30, ALL, &rc, sysop_name);
+  a()->localIO()->EditLine(sysop_name, 30, AllowedKeys::ALL, &rc, sysop_name);
   if (rc != ABORTED) {
     StringTrimEnd(sysop_name);
     int user_number = to_number<int>(sysop_name);

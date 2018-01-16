@@ -127,14 +127,14 @@ void OnlineUserEditor() {
     switch (cp) {
     case 0:
       a()->localIO()->GotoXY(wx + 22, wy + 1);
-      a()->localIO()->EditLine(sl, 3, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(sl, 3, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetSl(to_number<unsigned int>(sl));
       sprintf(sl, "%d", a()->user()->GetSl());
       a()->localIO()->Printf("%-3s", sl);
       break;
     case 1:
       a()->localIO()->GotoXY(wx + 50, wy + 1);
-      a()->localIO()->EditLine(ar, 16, SET, &rc, "ABCDEFGHIJKLMNOP ");
+      a()->localIO()->EditLine(ar, 16, AllowedKeys::SET, &rc, "ABCDEFGHIJKLMNOP ");
       a()->user()->SetAr(0);
       for (i = 0; i <= 15; i++) {
         if (ar[i] != SPACE) {
@@ -144,14 +144,14 @@ void OnlineUserEditor() {
       break;
     case 2:
       a()->localIO()->GotoXY(wx + 22, wy + 2);
-      a()->localIO()->EditLine(dsl, 3, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(dsl, 3, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetDsl(to_number<int>(dsl));
       sprintf(dsl, "%d", a()->user()->GetDsl());
       a()->localIO()->Printf("%-3s", dsl);
       break;
     case 3:
       a()->localIO()->GotoXY(wx + 50, wy + 2);
-      a()->localIO()->EditLine(dar, 16, SET, &rc, "ABCDEFGHIJKLMNOP ");
+      a()->localIO()->EditLine(dar, 16, AllowedKeys::SET, &rc, "ABCDEFGHIJKLMNOP ");
       a()->user()->SetDar(0);
       for (i = 0; i <= 15; i++) {
         if (dar[i] != SPACE) {
@@ -161,14 +161,14 @@ void OnlineUserEditor() {
       break;
     case 4:
       a()->localIO()->GotoXY(wx + 22, wy + 3);
-      a()->localIO()->EditLine(exempt, 3, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(exempt, 3, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetExempt(to_number<int>(exempt));
       sprintf(exempt, "%u", a()->user()->GetExempt());
       a()->localIO()->Printf("%-3s", exempt);
       break;
     case 5:
       a()->localIO()->GotoXY(wx + 50, wy + 3);
-      a()->localIO()->EditLine(restrict, 16, SET, &rc, rst);
+      a()->localIO()->EditLine(restrict, 16, AllowedKeys::SET, &rc, rst);
       a()->user()->SetRestriction(0);
       for (i = 0; i <= 15; i++) {
         if (restrict[i] != SPACE) {
@@ -178,70 +178,70 @@ void OnlineUserEditor() {
       break;
     case 6:
       a()->localIO()->GotoXY(wx + 22, wy + 5);
-      a()->localIO()->EditLine(sysopsub, 3, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(sysopsub, 3, AllowedKeys::NUM_ONLY, &rc, "");
       *qsc = to_number<uint32_t>(sysopsub);
       sprintf(sysopsub, "%lu", *qsc);
       a()->localIO()->Printf("%-3s", sysopsub);
       break;
     case 7:
       a()->localIO()->GotoXY(wx + 50, wy + 5);
-      a()->localIO()->EditLine(banktime, 5, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(banktime, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetTimeBankMinutes(to_number<uint16_t>(banktime));
       sprintf(banktime, "%u", a()->user()->GetTimeBankMinutes());
       a()->localIO()->Printf("%-5s", banktime);
       break;
     case 8:
       a()->localIO()->GotoXY(wx + 22, wy + 6);
-      a()->localIO()->EditLine(ass, 5, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(ass, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetAssPoints(to_number<int>(ass));
       sprintf(ass, "%u", a()->user()->GetAssPoints());
       a()->localIO()->Printf("%-5s", ass);
       break;
     case 9:
       a()->localIO()->GotoXY(wx + 50, wy + 6);
-      a()->localIO()->EditLine(gold, 5, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(gold, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetGold(static_cast<float>(atof(gold)));
       sprintf(gold, "%7.2f", a()->user()->GetGold());
       a()->localIO()->Printf("%-5s", gold);
       break;
     case 10:
       a()->localIO()->GotoXY(wx + 22, wy + 8);
-      a()->localIO()->EditLine(uk, 7, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(uk, 7, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetUploadK(to_number<uint32_t>(uk));
       sprintf(uk, "%lu", a()->user()->GetUploadK());
       a()->localIO()->Printf("%-7s", uk);
       break;
     case 11:
       a()->localIO()->GotoXY(wx + 50, wy + 8);
-      a()->localIO()->EditLine(dk, 7, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(dk, 7, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetDownloadK(to_number<uint32_t>(dk));
       sprintf(dk, "%lu", a()->user()->GetDownloadK());
       a()->localIO()->Printf("%-7s", dk);
       break;
     case 12:
       a()->localIO()->GotoXY(wx + 22, wy + 9);
-      a()->localIO()->EditLine(up, 5, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(up, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetFilesUploaded(to_number<int>(up));
       sprintf(up, "%u", a()->user()->GetFilesUploaded());
       a()->localIO()->Printf("%-5s", up);
       break;
     case 13:
       a()->localIO()->GotoXY(wx + 50, wy + 9);
-      a()->localIO()->EditLine(down, 5, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(down, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetFilesDownloaded(to_number<int>(down));
       sprintf(down, "%u", a()->user()->GetFilesDownloaded());
       a()->localIO()->Printf("%-5s", down);
       break;
     case 14:
       a()->localIO()->GotoXY(wx + 22, wy + 10);
-      a()->localIO()->EditLine(posts, 5, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(posts, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetNumMessagesPosted(to_number<int>(posts));
       sprintf(posts, "%u", a()->user()->GetNumMessagesPosted());
       a()->localIO()->Printf("%-5s", posts);
       break;
     case 15:
       a()->localIO()->GotoXY(wx + 50, wy + 10);
-      a()->localIO()->EditLine(logons, 5, NUM_ONLY, &rc, "");
+      a()->localIO()->EditLine(logons, 5, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetNumLogons(to_number<int>(logons));
       sprintf(logons, "%u", a()->user()->GetNumLogons());
       a()->localIO()->Printf("%-5s", logons);
@@ -250,7 +250,7 @@ void OnlineUserEditor() {
       char szNote[ 81 ];
       a()->localIO()->GotoXY(wx + 8, wy + 12);
       to_char_array(szNote, a()->user()->GetNote());
-      a()->localIO()->EditLine(szNote, 60, ALL, &rc, "");
+      a()->localIO()->EditLine(szNote, 60, AllowedKeys::ALL, &rc, "");
       StringTrimEnd(szNote);
       a()->user()->SetNote(szNote);
     }

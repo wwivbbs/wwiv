@@ -368,7 +368,7 @@ static int GetEditLineStringLength(const char *text) {
   return i;
 }
 
-void CursesLocalIO::EditLine(char *pszInOutText, int len, int editor_status,
+void CursesLocalIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_keys,
   int *returncode, const char *pszAllowedSet) {
   int oldatr = curatr;
   int cx = WhereX();
@@ -422,12 +422,12 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, int editor_status,
         *returncode = NEXT;
         break;
       case INSERT:
-        if (editor_status != SET) {
+        if (allowed_keys != AllowedKeys::SET) {
           insert = !insert;
         }
         break;
       case KEY_DELETE:
-        if (editor_status != SET) {
+        if (allowed_keys != AllowedKeys::SET) {
           for (int i = pos; i < len; i++) {
             pszInOutText[i] = pszInOutText[i + 1];
           }
@@ -439,10 +439,10 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, int editor_status,
       }
     } else {
       if (ch > 31) {
-        if (editor_status == UPPER_ONLY) {
+        if (allowed_keys == AllowedKeys::UPPER_ONLY) {
           ch = to_upper_case<unsigned char>(ch);
         }
-        if (editor_status == SET) {
+        if (allowed_keys == AllowedKeys::SET) {
           ch = to_upper_case<unsigned char>(ch);
           if (ch != SPACE) {
             bool bLookingForSpace = true;
@@ -463,8 +463,10 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, int editor_status,
             }
           }
         }
-        if ((pos < len) && ((editor_status == ALL) || (editor_status == UPPER_ONLY) || (editor_status == SET) ||
-          ((editor_status == NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
+        if ((pos < len) && ((allowed_keys == AllowedKeys::ALL) 
+            || (allowed_keys == AllowedKeys::UPPER_ONLY) || (allowed_keys == AllowedKeys::SET)
+            || ((allowed_keys == AllowedKeys::NUM_ONLY) 
+            && (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
           if (insert) {
             for (int i = len - 1; i > pos; i--) {
               pszInOutText[i] = pszInOutText[i - 1];
