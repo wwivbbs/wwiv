@@ -20,8 +20,9 @@
 namespace wwiv {
 namespace core {
 
-Connection::Connection() {}
-Connection::~Connection() {}
+Connection::Connection() = default;
+
+Connection::~Connection() = default;
 
 }  // namespace net
 } // namespace wwiv

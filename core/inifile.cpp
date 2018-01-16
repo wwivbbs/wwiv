@@ -25,7 +25,6 @@
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/textfile.h"
-#include "core/wwivassert.h"
 
 using namespace wwiv::strings;
 using std::map;
@@ -42,7 +41,7 @@ namespace {
 * will be set to the string value of that value name. If *val has been set
 * to something, then this function returns 1, else it returns 0.
 */
-static bool StringToBoolean(const char *p) {
+bool StringToBoolean(const char *p) {
   if (!p) {
     return false;
   }
@@ -58,11 +57,11 @@ static bool ParseIniFile(const string& filename, std::map<string, string>& data)
     return false;
   }
 
-  string section("");
+  string section;
   string line;
   while (file.ReadLine(&line)) {
     StringTrim(&line);
-    if (line.size() == 0) {
+    if (line.empty()) {
       continue;
     }
     if (line.front() == '[' && line.back() == ']') {
@@ -85,7 +84,7 @@ static bool ParseIniFile(const string& filename, std::map<string, string>& data)
       StringTrim(&key);
       StringTrim(&value);
 
-      string real_key = section + "." + key;
+      auto real_key = StrCat(section, ".", key);
       data[real_key] = value;
     }
   }

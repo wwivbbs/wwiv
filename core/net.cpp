@@ -97,7 +97,7 @@ bool GetRemotePeerHostname(SOCKET socket, std::string& hostname) {
 }
 
 SOCKET CreateListenSocket(int port) {
-  struct sockaddr_in my_addr;
+  struct sockaddr_in my_addr{};
   SOCKET sock = socket(AF_INET, SOCK_STREAM, 0);
   if (sock == INVALID_SOCKET) {
     throw socket_error("Unable to create socket [socket]");
@@ -189,8 +189,9 @@ bool SetBlockingMode(SOCKET sock) {
 #endif  // _WIN32
 }
 
-SocketSet::SocketSet() {}
-SocketSet::~SocketSet() {}
+SocketSet::SocketSet() = default;
+
+SocketSet::~SocketSet() = default;
 
 bool SocketSet::add(int port, socketset_accept_fn fn, const std::string& description) {
   SOCKET s = CreateListenSocket(port);

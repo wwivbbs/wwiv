@@ -285,7 +285,7 @@ bool File::Rename(const string& orig_fn, const string& new_fn) {
 }
 
 bool File::Remove(const string& filename) {
-  return (unlink(filename.c_str()) ? false : true);
+  return unlink(filename.c_str()) == 0;
 }
 
 bool File::Remove(const string& dir, const string& file) {
@@ -314,7 +314,7 @@ bool File::Exists(const string& dir, const string& file) {
 
 bool File::ExistsWildcard(const string& wildcard) {
   WFindFile fnd;
-  return fnd.open(wildcard.c_str(), WFindFileTypeMask::WFINDFILE_ANY);
+  return fnd.open(wildcard, WFindFileTypeMask::WFINDFILE_ANY);
 }
 
 bool File::SetFilePermissions(const string& filename, int perm) {
@@ -406,11 +406,7 @@ bool File::mkdir(const string& path) {
   if (result != -1) {
     return true;
   }
-  if (errno == EEXIST) {
-    // still return true if the directory already existed.
-    return true;
-  }
-  return false;
+  return errno == EEXIST;
 }
 
 // static
@@ -429,7 +425,7 @@ bool File::mkdirs(const string& path) {
     if (!mkdirs(s)) {
       return false;  // failed to create the parent, stop here.
     }
-    return File::mkdir(path.c_str());
+    return File::mkdir(path);
   } else if (errno == EEXIST) {
     return true;  // the path already existed.
   }
@@ -442,7 +438,7 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
 }
 
 bool File::set_last_write_time(time_t last_write_time) {
-  struct utimbuf ut;
+  struct utimbuf ut{};
   ut.actime = ut.modtime = last_write_time;
   return utime(full_path_name_.c_str(), &ut) != -1;
 }
