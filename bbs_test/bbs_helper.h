@@ -89,6 +89,7 @@ public:
   void PutchRaw(unsigned char) override {}
   void Puts(const std::string& ) override {}
   void PutsXY(int, int, const std::string&) override {}
+  void PutsXYA(int, int, int, const std::string&) override {}
   void FastPuts(const std::string&) override {}
   int Printf(const char *, ...) override { return 0; }
   int PrintfXY(int , int, const char *, ...) override { return 0; }

@@ -56,6 +56,10 @@ void StdioLocalIO::PutsXY(int, int, const std::string& text) {
   Puts(text);
 }
 
+void StdioLocalIO::PutsXYA(int, int, int, const std::string& text) {
+  Puts(text);
+}
+
 void StdioLocalIO::FastPuts(const std::string& text) {
   Puts(text);
 }

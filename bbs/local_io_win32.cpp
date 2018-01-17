@@ -299,6 +299,16 @@ void Win32ConsoleIO::PutsXY(int x, int y, const string& text) {
   FastPuts(text);
 }
 
+void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
+  GotoXY(x, y);
+
+  auto old_color = curatr;
+  curatr = a;
+  FastPuts(text);
+
+  curatr = old_color;
+}
+
 void Win32ConsoleIO::FastPuts(const string& text) {
 // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
   DWORD cb = 0;
@@ -331,7 +341,7 @@ int  Win32ConsoleIO::PrintfXY(int x, int y, const char *formatted_text, ...) {
   return nNumWritten;
 }
 
-int  Win32ConsoleIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) {
+int  Win32ConsoleIO::PrintfXYA(int x, int y, int a, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];
 
@@ -339,11 +349,7 @@ int  Win32ConsoleIO::PrintfXYA(int x, int y, int nAttribute, const char *formatt
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
 
-  // bout.SystemColor( nAttribute );
-  int nOldColor = curatr;
-  curatr = nAttribute;
-  PutsXY(x, y, szBuffer);
-  curatr = nOldColor;
+  PutsXYA(x, y, a, szBuffer);
   return nNumWritten;
 }
 

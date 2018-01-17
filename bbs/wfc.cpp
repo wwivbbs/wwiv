@@ -164,12 +164,12 @@ void WFC::DrawScreen() {
     a()->localIO()->WriteScreenBuffer(pszScreenBuffer);
     const auto title = StringPrintf("Activity and Statistics of %s Node %d", 
       a()->config()->system_name().c_str(), a()->instance_number());
-    a()->localIO()->PrintfXYA(1 + ((76 - title.size()) / 2), 4, 15, title.c_str());
+    a()->localIO()->PutsXYA(1 + ((76 - title.size()) / 2), 4, 15, title);
     const auto f = fulldate();
-    a()->localIO()->PrintfXYA(8, 1, 14, f.c_str());
+    a()->localIO()->PutsXYA(8, 1, 14, f);
     auto osVersion = wwiv::os::os_version_string();
-    a()->localIO()->PrintfXYA(40, 1, 3, "OS: ");
-    a()->localIO()->PrintfXYA(44, 1, 14, osVersion.c_str());
+    a()->localIO()->PutsXYA(40, 1, 3, "OS: ");
+    a()->localIO()->PutsXYA(44, 1, 14, osVersion);
     a()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
     User sysop{};
     int feedback_waiting = 0;
@@ -178,7 +178,7 @@ void WFC::DrawScreen() {
     }
     a()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
     if (nNumNewMessages) {
-      a()->localIO()->PrintfXYA(29, 7 , 3, "New:");
+      a()->localIO()->PutsXYA(29, 7 , 3, "New:");
       a()->localIO()->PrintfXYA(34, 7 , 12, "%d", nNumNewMessages);
     }
     a()->localIO()->PrintfXYA(21, 8, 14, "%d", pStatus->GetNumUploadsToday());
@@ -197,7 +197,7 @@ void WFC::DrawScreen() {
       a()->localIO()->PrintfXYA(58, 10, 14, "%.2f", static_cast<float>(pStatus->GetCallerNumber()) /
                                               static_cast<float>(pStatus->GetDays()));
     } else {
-      a()->localIO()->PrintfXYA(58, 10, 14, "N/A");
+      a()->localIO()->PutsXYA(58, 10, 14, "N/A");
     }
     a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
@@ -217,8 +217,8 @@ void WFC::DrawScreen() {
     if ((a()->screen_saver_time == 0) 
         || (steady_clock::now() - wfc_time < screen_saver_time)) {
       string t = times();
-      a()->localIO()->PrintfXYA(28, 1, 14, t.c_str());
-      a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+      a()->localIO()->PutsXYA(28, 1, 14, t);
+      a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
       if (steady_clock::now() - poll_time > seconds(10)) {
         wfc_update();
         poll_time = steady_clock::now();

@@ -177,9 +177,19 @@ void CursesLocalIO::PutsXY(int x, int y, const string& text) {
   FastPuts(text);
 }
 
+void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
+  auto old_color = curatr;
+  curatr = a;
+
+  GotoXY(x, y);
+  FastPuts(text);
+
+  curatr = old_color;
+}
+
 void CursesLocalIO::FastPuts(const string& text) {
   SetColor(curatr);
-  window_->Puts(text.c_str());
+  window_->Puts(text);
 }
 
 int CursesLocalIO::Printf(const char *formatted_text, ...) {
@@ -212,10 +222,7 @@ int CursesLocalIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
   va_end(ap);
 
-  int nOldColor = curatr;
-  curatr = nAttribute;
-  PutsXY(x, y, szBuffer);
-  curatr = nOldColor;
+  PutsXYA(x, y, nAttribute, szBuffer);
   return nNumWritten;
 }
 

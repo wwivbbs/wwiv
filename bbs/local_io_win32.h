@@ -57,6 +57,7 @@ class Win32ConsoleIO : public LocalIO {
   void Putch(unsigned char ch) override;
   void Puts(const std::string& text) override;
   void PutsXY(int x, int y, const std::string& text) override;
+  void PutsXYA(int x, int y, int a, const std::string& text) override;
   int  Printf(const char *formatted_text, ...) override;
   int  PrintfXY(int x, int y, const char *formatted_text, ...) override;
   int  PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override;
