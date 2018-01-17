@@ -58,14 +58,14 @@ FindFiles::FindFiles(const std::string& mask, const FindFilesType type) {
     if (fnd.IsFile() && type == FindFilesType::directories) {
       continue;
     }
-    const std::string fn = fnd.GetFileName();
+    auto fn = fnd.GetFileName();
     if (fnd.IsDirectory()) {
       if (fn == "." || fn == "..") {
         // Skip . and .. directories.
         continue;
       }
     }
-    entries_.push_back({ std::move(fn), fnd.GetFileSize() });
+    entries_.push_back({fn, fnd.GetFileSize() });
   } while (fnd.next());
 }
 

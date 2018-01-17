@@ -109,7 +109,7 @@ bool IsEquals(const char* str1, const char* str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
 
-  return (strcmp(str1, str2) == 0) ? true : false;
+  return strcmp(str1, str2) == 0;
 }
 
 /**
@@ -126,7 +126,7 @@ bool iequals(const char *str1, const char *str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
 
-  return (StringCompareIgnoreCase(str1, str2) == 0) ? true : false;
+  return StringCompareIgnoreCase(str1, str2) == 0;
 }
 
 bool iequals(const std::string& s1, const std::string& s2) {
@@ -177,7 +177,7 @@ void SplitString(const string& original_string, const string& delims, vector<str
 void SplitString(const string& original_string, const string& delims, bool skip_empty, vector<string>* out) {
   string s(original_string);
   for (string::size_type found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
-    if (found != std::string::npos && found > 0) {
+    if (found > 0) {
       out->push_back(s.substr(0, found));
     }
     else if (!skip_empty && found == 0) {
@@ -358,7 +358,7 @@ char *StringRemoveChar(const char *str, char ch) {
   strcpy(s_strip_string, "");
 
   int i1 = 0;
-  for (auto i = 0; i < strlen(str); i++) {
+  for (size_t i = 0; i < strlen(str); i++) {
     if (str[i] != ch) {
       s_strip_string[i1] = str[i];
       i1++;
@@ -475,10 +475,7 @@ static bool is_ansi_seq_start(I& i, const std::string& orig) {
   if (left.at(1) != '[') {
     return false;
   }
-  if (left.find('m') == std::string::npos) {
-    return false;
-  }
-  return true;
+  return left.find('m') != std::string::npos;
 }
 
 /**
@@ -530,7 +527,7 @@ string stripcolors(const string& orig) {
  * @return The uppercase version of the character
  */
 unsigned char upcase(unsigned char ch) {
-  unsigned char *ss = (unsigned char*) strchr((const char*) translate_letters[0], ch);
+  auto *ss = (unsigned char*) strchr((const char*) translate_letters[0], ch);
   if (ss) {
     ch = translate_letters[1][ss - translate_letters[0]];
   }
@@ -543,7 +540,7 @@ unsigned char upcase(unsigned char ch) {
  * @return The lowercase version of the character
  */
 unsigned char locase(unsigned char ch) {
-  unsigned char *ss = (unsigned char*)  strchr((const char*) translate_letters[1], ch);
+  auto *ss = (unsigned char*) strchr((const char*) translate_letters[1], ch);
   if (ss) {
     ch = translate_letters[0][ss - translate_letters[1]];
   }
@@ -616,7 +613,7 @@ char *strlwr(char *s) {
 char *strrev(char *s) {
   CHECK(s != nullptr);
   char szTempBuffer[255];
-  int str = strlen(s);
+  auto str = static_cast<int>(strlen(s));
   CHECK_LE(str, 255);
 
   for (int i = str; i > - 1; i--) {

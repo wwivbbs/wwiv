@@ -131,8 +131,7 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
     throw socket_error("SocketConnection::Connect Unable to initialize sockets.");
   }
 
-  struct addrinfo hints;
-  memset(&hints, 0, sizeof(addrinfo));
+  struct addrinfo hints{};
   hints.ai_family = PF_UNSPEC;
   hints.ai_socktype =  SOCK_STREAM;
   hints.ai_protocol = IPPROTO_IP;

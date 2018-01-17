@@ -80,10 +80,10 @@ public:
    Usually code should use `operator bool()` vs. this method.
    */
   bool IsOpen() const { return file_ != nullptr; }
-  bool IsEndOfFile() { return feof(file_) ? true : false; }
+  bool IsEndOfFile() { return feof(file_) != 0; }
 
   /** Writes a line of text without `\r\n` */
-  int Write(const std::string& text) { return (fputs(text.c_str(), file_) >= 0) ? text.size() : 0; }
+  int Write(const std::string& text) { return static_cast<int>((fputs(text.c_str(), file_) >= 0) ? text.size() : 0); }
   
   /** Writes a line of text including `\r\n`. */
   int WriteLine(const char* text) {
@@ -120,7 +120,7 @@ public:
   
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
   bool ReadLine(char *buffer, int nBufferSize) {
-    return (fgets(buffer, nBufferSize, file_) != nullptr) ? true : false;
+    return fgets(buffer, nBufferSize, file_) != nullptr;
   }
 
   /** Reads one line of text, removing the `\r\n` in the end of the line. */
