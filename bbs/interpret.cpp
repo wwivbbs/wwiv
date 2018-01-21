@@ -35,7 +35,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 std::string interpret(char ch, const MacroContext& context) {
-  if (g_flags & g_flag_disable_mci) {
+  if (!context.mci_enabled()) {
     return "";
   }
 

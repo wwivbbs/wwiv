@@ -74,9 +74,8 @@ void valscan() {
     bout << "{{ ValScanning " << a()->current_sub().name << " }}\r\n";
     bout.clear_lines_listed();
     bout.clreol();
-    if (okansi() && !newline) {
-      bout << "\r\x1b[2A";
-    }
+
+    bout.move_up_if_newline(2);
 
     for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
       if (get_post(i)->status & status_pending_net) {

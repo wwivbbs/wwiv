@@ -923,8 +923,8 @@ typedef enum
 #define ALL         		    4
 #define SET           		    8
 
-#define XFER_TIME(b) (modem_speed?\
-                      (((double)(((b)+127)/128))*1280.0/((double)modem_speed))\
+#define XFER_TIME(b) (a()->modem_speed_?\
+                      (((double)(((b)+127)/128))*1280.0/((double)a()->modem_speed_))\
                       :0.0)
 
 struct line 
@@ -1019,7 +1019,7 @@ typedef struct
   unsigned short flag_mask;
   unsigned short flag_value;
   unsigned short com_speed;
-  unsigned short modem_speed;
+  unsigned short a()->modem_speed_;
 } result_info;
 
 
@@ -1369,7 +1369,7 @@ typedef struct
   unsigned short
    flags, loc, subloc;
   unsigned long last_update;
-  unsigned short modem_speed;
+  unsigned short a()->modem_speed_;
   unsigned long inst_started;
   unsigned char
    extra[80];

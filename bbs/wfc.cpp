@@ -270,12 +270,12 @@ int WFC::doWFCEvents() {
       }
     }
 
-    if (!do_event) {
+    if (!a()->do_event_) {
       check_event();
     }
 
-    while (do_event) {
-      run_event(do_event - 1);
+    while (a()->do_event_) {
+      run_event(a()->do_event_ - 1);
       // dunno if we really need this.
       Clear();
       check_event();

@@ -623,9 +623,8 @@ bool Application::read_language() {
   }
   if (languages.empty()) {
     // Add a default language to the list.
-    languagerec lang;
-    memset(&lang, 0, sizeof(languagerec));
-    strcpy(lang.name, "English");
+    languagerec lang{};
+    to_char_array(lang.name, "English");
     to_char_array(lang.dir, a()->config()->gfilesdir());
     to_char_array(lang.mdir, a()->config()->menudir());
     
@@ -647,17 +646,6 @@ void Application::read_gfile() {
   }
 }
 
-/**
- * Makes a path into an absolute path, returns true if original path altered,
- * else returns false
- */
-void Application::make_abs_path(char *pszDirectory) {
-  string base(GetHomeDir());
-  string dir(pszDirectory);
-  File::absolute(base, &dir);
-  strcpy(pszDirectory, dir.c_str());
-}
-
 void Application::InitializeBBS() {
   localIO()->Cls();
 #if !defined( __unix__ )
@@ -669,8 +657,8 @@ void Application::InitializeBBS() {
   use_workspace = false;
   chat_file = false;
   clearnsp();
-  bquote = 0;
-  equote = 0;
+  a()->bquote_ = 0;
+  a()->equote_ = 0;
 
   VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(temp_directory())) {
@@ -780,7 +768,7 @@ void Application::InitializeBBS() {
   init_events();
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
-  do_event = 0;
+  a()->do_event_ = 0;
   usub.resize(config()->config()->max_subs);
   udir.resize(config()->config()->max_dirs);
   uconfsub.resize(MAX_CONFERENCES);

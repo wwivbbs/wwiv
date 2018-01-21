@@ -173,7 +173,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
     if (ih->msg_size > 0 && a()->IsUserOnline() && !hangup) {
       SavedLine line = bout.SaveCurrentLine();
       bout.nl(2);
-      if (in_chatroom) {
+      if (a()->in_chatroom_) {
         i = 0;
         while (i < ih->msg_size) {
           bout.bputch(msg[ i++ ]);
@@ -336,8 +336,8 @@ bool user_online(int user_number, int *wi) {
 * some info about this instance.
 */
 void write_inst(int loc, int subloc, int flags) {
-  static instancerec ti;
-  instancerec ir;
+  static instancerec ti{};
+  instancerec ir{};
 
   bool re_write = false;
   if (ti.user == 0) {
@@ -375,7 +375,7 @@ void write_inst(int loc, int subloc, int flags) {
         break;
       }
     }
-    uint16_t ms = static_cast<uint16_t>(a()->using_modem ? modem_speed : 0);
+    uint16_t ms = static_cast<uint16_t>(a()->using_modem ? a()->modem_speed_ : 0);
     if (ti.modem_speed != ms) {
       ti.modem_speed = ms;
       re_write = true;

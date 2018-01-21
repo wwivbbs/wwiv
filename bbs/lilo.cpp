@@ -290,7 +290,7 @@ static void ExecuteWWIVNetworkRequest() {
   auto lTime = time_t_now();
   if (a()->usernum == -2) {
     std::stringstream networkCommand;
-    networkCommand << "network /B" << modem_speed << " /T" << lTime << " /F0";
+    networkCommand << "network /B" << a()->modem_speed_ << " /T" << lTime << " /F0";
     write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
     ExecuteExternalProgram(networkCommand.str(), EFLAG_NONE);
     if (a()->instance_number() != 1) {
@@ -1001,7 +1001,7 @@ void logoff() {
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(text);
   }
-  a()->user()->SetLastBaudRate(modem_speed);
+  a()->user()->SetLastBaudRate(a()->modem_speed_);
 
   // put this back here where it belongs... (not sure why it te
   a()->user()->SetLastOn(g_szLastLoginDate);

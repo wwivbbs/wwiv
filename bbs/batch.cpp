@@ -322,7 +322,7 @@ static void bihangup() {
       giveup_timeslice();
       CheckForHangup();
     }
-    ch = bgetch();
+    ch = bout.getkey();
     if (ch == 'h' || ch == 'H') {
       Hangup();
     }
@@ -657,10 +657,10 @@ void ProcessDSZLogFile() {
 
 static void run_cmd(const string& orig_commandline, const string& downlist, const string& uplist, const string& dl, bool bHangupAfterDl) {
   string commandLine = stuff_in(orig_commandline,
-      std::to_string(std::min<int>(modem_speed, 57600)), 
+      std::to_string(std::min<int>(a()->modem_speed_, 57600)), 
       std::to_string(a()->primary_port()),
       downlist, 
-      std::to_string(std::min<int>(modem_speed, 57600)), 
+      std::to_string(std::min<int>(a()->modem_speed_, 57600)), 
       uplist);
 
   if (!commandLine.empty()) {
@@ -670,7 +670,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",
         user_name_number.c_str(),
-        modem_speed, dl.c_str(), commandLine.c_str());
+        a()->modem_speed_, dl.c_str(), commandLine.c_str());
     a()->localIO()->Puts(message);
     if (incom) {
       File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
@@ -934,6 +934,6 @@ long Batch::dl_time_in_secs() const {
     }
   }
 
-  auto t =(12.656 * r) / modem_speed;
+  auto t =(12.656 * r) / a()->modem_speed_;
   return std::lround(t);
 }

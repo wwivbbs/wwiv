@@ -85,6 +85,7 @@ static char GetKeyForPause() {
   }
   return ch;
 }
+
 // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
 void pausescr() {
   int i1, warned;

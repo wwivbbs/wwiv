@@ -43,7 +43,6 @@ using std::chrono::steady_clock;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-//static long time_lastchar_pressed = 0;
 static steady_clock::time_point time_lastchar_pressed;
 
 static void lastchar_pressed() {
@@ -102,13 +101,13 @@ static void HandleControlKey(char *ch) {
     case CA:   // CTRL-A
     case CD:   // CTRL-D
     case CF:   // CTRL-F
-      if (okmacro && (!charbufferpointer)) {
+      if (okmacro && (!a()->charbufferpointer_)) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         int macroNum = MACRO_KEY_TABLE[(int)c];
         to_char_array(charbuffer, a()->user()->GetMacro(macroNum));
         c = charbuffer[0];
         if (c) {
-          charbufferpointer = 1;
+          a()->charbufferpointer_ = 1;
         }
       }
       break;
@@ -147,25 +146,25 @@ static void HandleControlKey(char *ch) {
  * is no input, a zero is returned.  Function keys hit are interpreted as
  * such within the routine and not returned.
  */
-char bgetch() {
+char bgetch(bool allow_extended_input) {
   char ch = 0;
   static int qpointer = 0, cpointer;
 
-  if (bquote) {
+  if (a()->bquote_) {
     if (!qpointer) {
       charbuffer[1] = '0';
       charbuffer[2] = RETURN;
       charbuffer[3] = '\0';
       cpointer = 0;
       qpointer = 1;
-      while (qpointer < bquote + 2) {
+      while (qpointer < a()->bquote_ + 2) {
         if (quotes_ind[cpointer++] == SOFTRETURN) {
           if (quotes_ind[cpointer] != CD) {
             ++qpointer;
           }
         }
       }
-      charbufferpointer = 1;
+      a()->charbufferpointer_ = 1;
     }
     while (quotes_ind[cpointer] == CD) {
       while (quotes_ind[cpointer++] != SOFTRETURN)
@@ -174,10 +173,10 @@ char bgetch() {
     }
     if (quotes_ind[cpointer] == SOFTRETURN) {
       ++qpointer;
-      if (qpointer > equote + 2) {
+      if (qpointer > a()->equote_ + 2) {
         qpointer = 0;
-        bquote = 0;
-        equote = 0;
+        a()->bquote_ = 0;
+        a()->equote_ = 0;
         return CP;
       } else {
         ++cpointer;
@@ -189,27 +188,27 @@ char bgetch() {
     }
     if (quotes_ind[cpointer] == 0) {
       qpointer = 0;
-      bquote = 0;
-      equote = 0;
+      a()->bquote_ = 0;
+      a()->equote_ = 0;
       return RETURN;
     }
     return quotes_ind[cpointer++];
   }
 
-  if (charbufferpointer) {
-    if (!charbuffer[charbufferpointer]) {
-      charbufferpointer = charbuffer[0] = 0;
+  if (a()->charbufferpointer_) {
+    if (!charbuffer[a()->charbufferpointer_]) {
+      a()->charbufferpointer_ = charbuffer[0] = 0;
     } else {
-      if ((charbuffer[charbufferpointer]) == CC) {
-        charbuffer[charbufferpointer] = CP;
+      if ((charbuffer[a()->charbufferpointer_]) == CC) {
+        charbuffer[a()->charbufferpointer_] = CP;
       }
-      return charbuffer[charbufferpointer++];
+      return charbuffer[a()->charbufferpointer_++];
     }
   }
   if (a()->localIO()->KeyPressed()) {
     ch = a()->localIO()->GetChar();
     bout.SetLastKeyLocal(true);
-    if (!(g_flags & g_flag_allow_extended)) {
+    if (!allow_extended_input) {
       if (!ch) {
         ch = a()->localIO()->GetChar();
         a()->handle_sysop_key(static_cast<uint8_t>(ch));
@@ -222,7 +221,7 @@ char bgetch() {
     bout.SetLastKeyLocal(false);
   }
 
-  if (!(g_flags & g_flag_allow_extended)) {
+  if (!allow_extended_input) {
     HandleControlKey(&ch);
   }
 
@@ -252,8 +251,8 @@ bool bkbhitraw() {
 
 bool bkbhit() {
   if ((a()->localIO()->KeyPressed() || (incom && bkbhitraw()) ||
-       (charbufferpointer && charbuffer[charbufferpointer])) ||
-      bquote) {
+       (a()->charbufferpointer_ && charbuffer[a()->charbufferpointer_])) ||
+      a()->bquote_) {
     return true;
   }
   return false;
@@ -303,7 +302,7 @@ std::chrono::duration<double> Output::key_timeout() const {
 * remote com port (if applicable).  After 1.5 minutes of inactivity, a
 * beep is sounded.  After 3 minutes of inactivity, the user is hung up.
 */
-char Output::getkey() {
+char Output::getkey(bool allow_extended_input) {
   resetnsp();
   bool beepyet = false;
   lastchar_pressed();
@@ -339,7 +338,7 @@ char Output::getkey() {
         Hangup();
       }
     }
-    ch = bgetch();
+    ch = bgetch(allow_extended_input);
   } while (!ch);
   return ch;
 }
@@ -358,14 +357,7 @@ char Output::getkey() {
 #define A_INSERT ('r')
 #define A_DELETE ('s')
 
-static int pd_getkey() {
-  g_flags |= g_flag_allow_extended;
-  int x = bout.getkey();
-  g_flags &= ~g_flag_allow_extended;
-  return x;
-}
-
-static int GetNumPadCommand(int key) {
+static int get_numpad_command(int key) {
   switch (key) {
   case '8': return COMMAND_UP;
   case '4': return COMMAND_LEFT;
@@ -382,7 +374,7 @@ static int GetNumPadCommand(int key) {
 }
 
 
-static int GetCommandForAnsiKey(int key) {
+static int get_command_for_ansi_key(int key) {
   switch (key) {
   case A_UP: return COMMAND_UP;
   case A_LEFT: return COMMAND_LEFT;
@@ -456,7 +448,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
       }
       else {
         if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-          auto ret = GetNumPadCommand(key);
+          auto ret = get_numpad_command(key);
           if (ret) return ret;
         }
         switch (key) {
@@ -468,7 +460,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
       return key;
     }
     else if (bkbhitraw()) {
-      int key = pd_getkey();
+      int key = static_cast<int>(bout.getkey(true));
 
       if (key == CBACKSPACE) {
         return COMMAND_DELETE;
@@ -485,15 +477,15 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
         do {
           esc_time2 = time(nullptr);
           if (bkbhitraw()) {
-            key = pd_getkey();
+            key = static_cast<int>(bout.getkey(true));
             if (key == OB || key == O) {
-              key = pd_getkey();
+              key = static_cast<int>(bout.getkey(true));
 
               // Check for a second set of brackets
               if (key == OB || key == O) {
-                key = pd_getkey();
+                key = static_cast<int>(bout.getkey(true));
               }
-              return GetCommandForAnsiKey(key);
+              return get_command_for_ansi_key(key);
             }
             else {
               return GET_OUT;
@@ -514,7 +506,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
           }
         }
         if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-          auto ret = GetNumPadCommand(key);
+          auto ret = get_numpad_command(key);
           if (ret) return ret;
         }
       }

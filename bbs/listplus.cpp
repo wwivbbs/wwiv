@@ -280,8 +280,8 @@ int lp_add_batch(const char *file_name, int dn, long fs) {
   } else if (!ratio_ok()) {
     pausescr();
   } else {
-    if (modem_speed && fs) {
-      t = (9.0) / ((double)(modem_speed)) * ((double)(fs));
+    if (a()->modem_speed_ && fs) {
+      t = (9.0) / ((double)(a()->modem_speed_)) * ((double)(fs));
     } else {
       t = 0.0;
     }

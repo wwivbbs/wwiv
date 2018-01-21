@@ -345,7 +345,7 @@ void UnixConsoleIO::skey(char ch) {
           }
           break;
         case F10:                          /* F10 */
-          if (chatting == 0) {
+          if (a()->chatting_ == 0) {
             char szUnusedChatLine[81];
             szUnusedChatLine[0] = 0;
             if (syscfg.sysconfig & sysconfig_2_way) {
@@ -354,20 +354,20 @@ void UnixConsoleIO::skey(char ch) {
               chat1(szUnusedChatLine, false);
             }
           } else {
-            chatting = 0;
+            a()->chatting_ = 0;
           }
           break;
         case CF10:                         /* Ctrl-F10 */
-          if (chatting == 0) {
+          if (a()->chatting_ == 0) {
             char szUnusedChatLine[81];
             szUnusedChatLine[0] = 0;
             chat1(szUnusedChatLine, false);
           } else {
-            chatting = 0;
+            a()->chatting_ = 0;
           }
           break;
         case HOME:                          /* HOME */
-          if (chatting == 1) {
+          if (a()->chatting_ == 1) {
             chat_file = !chat_file;
           }
           break;

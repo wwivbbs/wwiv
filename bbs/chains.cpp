@@ -156,9 +156,9 @@ void run_chain(int nChainum) {
   }
   const string chainCmdLine = stuff_in(
     a()->chains[nChainum].filename, create_chain_file(), 
-    std::to_string(modem_speed),
+    std::to_string(a()->modem_speed_),
     std::to_string(a()->primary_port()),
-    std::to_string(modem_speed), "");
+    std::to_string(a()->modem_speed_), "");
 
   sysoplog() << "!Ran \"" << a()->chains[nChainum].description << "\"";
   a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);

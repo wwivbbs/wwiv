@@ -137,7 +137,7 @@ class Output : public std::ostream {
   void flush();
   void rputch(char ch, bool use_buffer = false);
   void rputs(const char *text);
-  char getkey();
+  char getkey(bool allow_extended_input = false);
   bool RestoreCurrentLine(const SavedLine& line);
   SavedLine SaveCurrentLine();
   void dump();
@@ -158,11 +158,17 @@ class Output : public std::ostream {
   // Key Timeout manipulators.
   void set_logon_key_timeout() { non_sysop_key_timeout_ = logon_key_timeout_; };
   void reset_key_timeout() { non_sysop_key_timeout_ = default_key_timeout_; }
+  void move_up_if_newline(int num_lines);
+
+  // ANSI movement happened.
+  bool ansi_movement_occurred() const { return ansi_movement_occurred_; }
+  void clear_ansi_movement_occurred() { ansi_movement_occurred_ = false; }
 
 public:
   unsigned int lines_listed_;
   char ansistr[81];
   int ansiptr = 0;
+  bool newline = true;
 
 private:
   std::string bputch_buffer_;
@@ -177,6 +183,8 @@ private:
   std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> sysop_key_timeout_ = std::chrono::minutes(10);
   std::chrono::duration<double> logon_key_timeout_ = std::chrono::minutes(3);
+
+  bool ansi_movement_occurred_ = false;
 };
 
 namespace wwiv {

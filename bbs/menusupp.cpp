@@ -284,9 +284,9 @@ void NewMessageScan() {
     }
   }
   write_inst(INST_LOC_SUBS, 65535, INST_FLAGS_NONE);
-  newline = false;
+  bout.newline = false;
   nscan();
-  newline = true;
+  bout.newline = true;
 }
 
 void GoodBye() {
@@ -651,13 +651,13 @@ void NewMsgsAllConfs() {
   bool ac = false;
 
   write_inst(INST_LOC_SUBS, a()->current_user_sub().subnum, INST_FLAGS_NONE);
-  newline = false;
+  bout.newline = false;
   if (a()->uconfsub[1].confnum != -1 && okconf(a()->user())) {
     ac = true;
     tmp_disable_conf(true);
   }
   nscan();
-  newline = true;
+  bout.newline = true;
   if (ac == true) {
     tmp_disable_conf(false);
   }
@@ -672,15 +672,15 @@ void InternetEmail() {
 }
 
 void NewMsgScanFromHere() {
-  newline = false;
+  bout.newline = false;
   nscan(a()->current_user_sub_num());
-  newline = true;
+  bout.newline = true;
 }
 
 void ValidateScan() {
-  newline = false;
+  bout.newline = false;
   valscan();
-  newline = true;
+  bout.newline = true;
 }
 
 void ChatRoom() {

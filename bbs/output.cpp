@@ -121,7 +121,7 @@ void Output::nl(int nNumLines) {
     bputs("\r\n");
     // TODO Change this to fire a notification to a Subject
     // that we should process instant messages now.
-    if (inst_msg_waiting() && !bChatLine) {
+    if (inst_msg_waiting() && !a()->chatline_) {
       process_inst_msgs();
     }
   }
@@ -262,7 +262,7 @@ int Output::bputs(const string& text) {
       }
       else if (*it == '@') {
         it++;
-        BbsMacroContext ctx(a()->user());
+        BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
         auto s = interpret(*it++, ctx);
         bout.bputs(s);
       }
@@ -288,7 +288,7 @@ int Output::bputs(const string& text) {
       if (it == fin) { bputch(CO, true);  break; }
       it++;
       if (it == fin) { bputch(CO, true);  break; }
-      BbsMacroContext ctx(a()->user());
+      BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
       auto s = interpret(*it++, ctx);
       bout.bputs(s);
     } else if (it == fin) { 
@@ -333,4 +333,11 @@ int Output::bprintf(const char *formatText, ...) {
   vsnprintf(szBuffer, sizeof(szBuffer), formatText, ap);
   va_end(ap);
   return bputs(szBuffer);
+}
+
+void Output::move_up_if_newline(int num_lines) {
+  if (okansi() && !newline) {
+    const auto s = StrCat("\r\x1b[", num_lines, "A");
+    bputs(s);
+  }
 }

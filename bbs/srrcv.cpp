@@ -41,6 +41,10 @@ using namespace wwiv::strings;
 // From zmwwiv.cpp
 bool NewZModemReceiveFile(const char *file_name);
 
+// from sr.cpp
+extern unsigned char checksum;
+
+
 char modemkey(int *tout) {
   if (bkbhitraw()) {
     char ch = bgetchraw();
@@ -178,7 +182,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
   time_t filedatetime = 0L;
   unsigned int bn = 1;
   bool done = false;
-  double tpb = (12.656) / ((double)(modem_speed));
+  double tpb = (12.656) / ((double)(a()->modem_speed_));
   bout << "\r\n-=> Ready to receive, Ctrl+X to abort.\r\n";
   int nOldXPos = a()->localIO()->WhereX();
   int nOldYPos = a()->localIO()->WhereY();

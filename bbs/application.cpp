@@ -338,25 +338,25 @@ void Application::handle_sysop_key(uint8_t key) {
         }
         break;
       case F10: /* F10 */
-        if (chatting == 0) {
+        if (a()->chatting_ == 0) {
           if (a()->config()->sysconfig_flags() & sysconfig_2_way) {
             chat1("", true);
           } else {
             chat1("", false);
           }
         } else {
-          chatting = 0;
+          a()->chatting_ = 0;
         }
         break;
       case CF10: /* Ctrl-F10 */
-        if (chatting == 0) {
+        if (a()->chatting_ == 0) {
           chat1("", false);
         } else {
-          chatting = 0;
+          a()->chatting_ = 0;
         }
         break;
       case HOME: /* HOME */
-        if (chatting == 1) {
+        if (a()->chatting_ == 1) {
           chat_file = !chat_file;
         }
         break;
@@ -605,7 +605,7 @@ void Application::GetCaller() {
   int lokb = wfc.doWFCEvents();
 
   if (lokb) {
-    modem_speed = 38400;
+    a()->modem_speed_ = 38400;
   }
 
   using_modem = incom;
@@ -623,7 +623,7 @@ void Application::GetCaller() {
 void Application::GotCaller(unsigned int ms) {
   frequent_init();
   wfc_cls(a());
-  modem_speed = ms;
+  a()->modem_speed_ = ms;
   ReadCurrentUser(1);
   read_qscn(1, qsc, false);
   ResetEffectiveSl();
@@ -723,7 +723,6 @@ int Application::Run(int argc, char *argv[]) {
   curatr = 0x07;
   // Set the instance, this may be changed by a command line argument
   instance_number_ = 1;
-  no_hangup = false;
   ok_modem_stuff = true;
 
   const std::string bbs_env = environment_variable("BBS");
@@ -826,7 +825,7 @@ int Application::Run(int argc, char *argv[]) {
       }
         break;
       case 'Z':
-        no_hangup = true;
+        no_hangup_ = true;
         break;
         //
         // TODO Add handling for Socket and Comm handle here
@@ -1029,7 +1028,7 @@ int Application::Run(int argc, char *argv[]) {
       }
       a()->batch().clear();
     }
-    if (!no_hangup && using_modem && ok_modem_stuff) {
+    if (!no_hangup_ && using_modem && ok_modem_stuff) {
       hang_it_up();
     }
     catsl();
@@ -1037,7 +1036,7 @@ int Application::Run(int argc, char *argv[]) {
     wfc_cls(a());
     cleanup_net();
 
-    if (!no_hangup && ok_modem_stuff) {
+    if (!no_hangup_ && ok_modem_stuff) {
       remoteIO()->disconnect();
     }
     user_already_on_ = false;

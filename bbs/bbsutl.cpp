@@ -76,7 +76,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
   WWIV_ASSERT(buffer);
   WWIV_ASSERT(rollover);
 
-  int cm = chatting;
+  int cm = a()->chatting_;
 
   size_t begx = a()->localIO()->WhereX();
   if (rollover[0] != 0) {
@@ -93,15 +93,15 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
     }
     *ss = '\0';
-    if (charbufferpointer) {
+    if (a()->charbufferpointer_) {
       char szTempBuffer[255];
       strcpy(szTempBuffer, rollover_buffer);
-      strcat(szTempBuffer, &charbuffer[charbufferpointer]);
+      strcat(szTempBuffer, &charbuffer[a()->charbufferpointer_]);
       strcpy(&charbuffer[1], szTempBuffer);
-      charbufferpointer = 1;
+      a()->charbufferpointer_ = 1;
     } else {
       strcpy(&charbuffer[1], rollover_buffer);
-      charbufferpointer = 1;
+      a()->charbufferpointer_ = 1;
     }
     rollover[0] = '\0';
   }
@@ -114,7 +114,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       bout.Color(bout.IsLastKeyLocal() ? 1 : 0);
     }
     if (cm) {
-      if (chatting == 0) {
+      if (a()->chatting_ == 0) {
         ch = RETURN;
       }
     }
@@ -132,7 +132,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
     } else switch (ch) {
       case CG:
-        if (chatting && outcom) {
+        if (a()->chatting_ && outcom) {
           bout.rputch(CG);
         }
         break;
@@ -146,8 +146,8 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
             cp -= 2;
             bout.Color(0);
           } else if (buffer[cp - 2] == CO) {
-            BbsMacroContext ctx(a()->user());
-            const string interpreted = interpret(buffer[cp - 1], ctx);
+            BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
+            const auto interpreted = interpret(buffer[cp - 1], ctx);
             for (auto i = interpreted.size(); i > 0; i--) {
               bout.bs();
             }

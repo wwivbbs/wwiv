@@ -86,15 +86,15 @@ void Output::execute_ansi() {
       int x = args[1] - 1;
       x_ = x;
       local_io_->GotoXY(x, y);
-      g_flags |= g_flag_ansi_movement;
+      ansi_movement_occurred_ = true;
     } break;
     case 'A':
       local_io_->GotoXY(local_io_->WhereX(), local_io_->WhereY() - args[0]);
-      g_flags |= g_flag_ansi_movement;
+      ansi_movement_occurred_ = true;
       break;
     case 'B':
       local_io_->GotoXY(local_io_->WhereX(), local_io_->WhereY() + args[0]);
-      g_flags |= g_flag_ansi_movement;
+      ansi_movement_occurred_ = true;
       break;
     case 'C': {
       x_ += args[0];
@@ -117,12 +117,12 @@ void Output::execute_ansi() {
     case 'u':
       local_io_->GotoXY(oldx, oldy);
       x_ = oldx;
-      g_flags |= g_flag_ansi_movement;
+      ansi_movement_occurred_ = true;
       break;
     case 'J':
       if (args[0] == 2) {
         bout.clear_lines_listed();
-        g_flags |= g_flag_ansi_movement;
+        ansi_movement_occurred_ = true;
         local_io_->Cls();
         x_ = 0;
       }

@@ -24,7 +24,11 @@ Infrastructure Cleanup
 * Update syscfg.{req_ratio, sysconfig} in init and save it back, since
   wwiv never saves config.dat anymore.
 * stop using strncpy, strncat, strcpy, strcasestr.
-
+* get rid of g_flags, make it a boolean in application somewhere else
+  that's not global scoped.
+* get rid of curatr as a global variable. Looks like it should be
+  part of Output class.
+  
 Networking Cleanup
 ==================
 * Figure out why new networking stack doesn't work for mark.

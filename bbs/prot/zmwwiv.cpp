@@ -53,10 +53,8 @@ static void ProcessLocalKeyDuringZmodem() {
   }
   char localChar = a()->localIO()->GetChar();
   bout.SetLastKeyLocal(true);
-  if (!(g_flags & g_flag_allow_extended)) {
-    if (!localChar) {
-      a()->handle_sysop_key(a()->localIO()->GetChar());
-    }
+  if (!localChar) {
+    a()->handle_sysop_key(a()->localIO()->GetChar());
   }
 }
 

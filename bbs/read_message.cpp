@@ -169,8 +169,8 @@ void display_message_text(const std::string& text, bool *next) {
           if (ch == ESC) {
             ansi = true;
           }
-          if (g_flags & g_flag_ansi_movement) {
-            g_flags &= ~g_flag_ansi_movement;
+          if (bout.ansi_movement_occurred()) {
+            bout.clear_ansi_movement_occurred();
             bout.clear_lines_listed();
             if (a()->localIO()->GetTopLine() && a()->localIO()->GetScreenBottom() == 24) {
               a()->ClearTopScreenProtection();
@@ -244,7 +244,7 @@ void display_message_text(const std::string& text, bool *next) {
   if (ansi && a()->topdata && a()->IsUserOnline()) {
     a()->UpdateTopScreen();
   }
-  g_flags &= ~g_flag_disable_mci;
+  a()->mci_enabled_ = false;
 }
 
 static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string default_name,
@@ -333,7 +333,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 
   UpdateHeaderInformation(an, readit, data.from_user_name, &data.from_user_name, &data.date);
   if (an == 0) {
-    g_flags &= ~g_flag_disable_mci;
+    a()->mci_enabled_ = false;
     SetMessageOriginInfo(from_sys_num, from_user, &data.from_sys_name, &data.from_sys_loc);
     to_char_array(irt_name, data.from_user_name);
   }
@@ -550,11 +550,11 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
 static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
   // Reset the color before displaying a message.
   curatr = 7;
-  g_flags &= ~g_flag_ansi_movement;
+  bout.clear_ansi_movement_occurred();
   *next = false;
-  g_flags |= g_flag_disable_mci;
+  a()->mci_enabled_ = true;
   if (an == 0) {
-    g_flags &= ~g_flag_disable_mci;
+    a()->mci_enabled_ = false;
   }
 
   bout.cls();
@@ -712,14 +712,14 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
   auto info = display_type2_message_header(msg);
   bout.lines_listed_ = info.num_header_lines();
-  g_flags &= ~g_flag_ansi_movement;
+  bout.clear_ansi_movement_occurred();
   *next = false;
-  g_flags |= g_flag_disable_mci;
+  a()->mci_enabled_ = true;
   if (msg.message_anony == 0) {
-    g_flags &= ~g_flag_disable_mci;
+    a()->mci_enabled_ = false;
   }
   display_message_text(msg.message_text, next);
-  g_flags &= ~g_flag_disable_mci;
+  a()->mci_enabled_ = false;
 }
 
 ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {

@@ -211,8 +211,8 @@ void chat_room() {
   }
 
   TempDisablePause disable_pause;
-  bChatLine = false;
-  in_chatroom = true;
+  a()->chatline_ = false;
+  a()->in_chatroom_ = true;
   auto oiia = setiia(std::chrono::milliseconds(500));
 
   bool bActionMode = true;
@@ -223,7 +223,7 @@ void chat_room() {
     }
     bout << "|#1: " << szColorString;
     a()->tleft(true);
-    bChatLine = false;
+    a()->chatline_ = false;
     char szMessage[ 300 ];
     inputl(szMessage, 250);
     if (!szMessage[0]) {
@@ -240,7 +240,7 @@ void chat_room() {
   setiia(oiia);
   moving(false, loc);
   free_actions();
-  in_chatroom = false;
+  a()->in_chatroom_ = false;
 }
 
 int rip_words(int start_pos, char *message, char *wd, int size, char lookfor) {

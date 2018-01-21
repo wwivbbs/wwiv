@@ -149,7 +149,7 @@ void CreateDoorInfoDropFile() {
       a()->config()->system_name().c_str(), 
       a()->config()->sysop_name().c_str(),
       incom ? a()->primary_port() : 0);
-    fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? modem_speed : 0));
+    fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? a()->modem_speed_ : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
     if (a()->config()->sysconfig_flags() & sysconfig_no_alias) {
       char szTemp[81];
@@ -195,12 +195,12 @@ void CreatePCBoardSysDropFile() {
       pcb.ansi = '0';
     }
     pcb.nodechat = 32;
-    auto modem_speed_str = std::to_string(modem_speed);
+    auto modem_speed_str = std::to_string(a()->modem_speed_);
     sprintf(pcb.openbps, "%-5.5s", modem_speed_str.c_str());
     if (!incom) {
       memcpy(pcb.connectbps, "Local", 5);
     } else {
-      snprintf(pcb.connectbps, 5, "%-5.5d", modem_speed);
+      snprintf(pcb.connectbps, 5, "%-5.5d", a()->modem_speed_);
     }
     pcb.usernum = static_cast<int16_t>(a()->usernum);
     char szName[255];
@@ -256,7 +256,7 @@ void CreateCallInfoBbsDropFile() {
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     file.WriteLine(a()->user()->GetRealName());
-    switch (modem_speed) {
+    switch (a()->modem_speed_) {
     case 300:
       file.WriteLine("1");
     case 1200:
@@ -308,7 +308,7 @@ void CreateCallInfoBbsDropFile() {
     szTemp[2] = '\0';
     memmove(&(szDate[ 8 - strlen(szTemp) ]), &(szTemp[0]), strlen(szTemp));
     file.WriteFormatted("%s\n", szDate);
-    string cspeed = std::to_string(modem_speed);
+    string cspeed = std::to_string(a()->modem_speed_);
     file.WriteFormatted("%s\n", (incom) ? cspeed.c_str() : "38400");
     file.Close();
   }
@@ -356,7 +356,7 @@ void CreateDoor32SysDropFile() {
   if (file.IsOpen()) {
     file.WriteFormatted("%d\n", GetDoor32CommType());
     file.WriteFormatted("%u\n", GetDoorHandle());
-    string cspeed = std::to_string(modem_speed);
+    string cspeed = std::to_string(a()->modem_speed_);
     file.WriteFormatted("%s\n", cspeed.c_str());
     file.WriteFormatted("WWIV %s\n", wwiv_version);
     file.WriteFormatted("%d\n", a()->usernum);
@@ -381,13 +381,13 @@ void CreateDoorSysDropFile() {
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
     char szLine[255];
-    string cspeed = std::to_string(modem_speed);
+    string cspeed = std::to_string(a()->modem_speed_);
     sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (a()->using_modem) ? a()->primary_port() : 0,
             cspeed.c_str(),
             '8',
             a()->instance_number(),                       // node
-            (a()->using_modem) ? modem_speed : 38400,
+            (a()->using_modem) ? a()->modem_speed_ : 38400,
             'Y',                            // screen display
             'N',              // log to printer
             'N',                            // page bell
@@ -511,7 +511,7 @@ MrBill             System SysOp
 const string create_chain_file() {
   string cspeed;
 
-  cspeed = std::to_string(modem_speed);
+  cspeed = std::to_string(a()->modem_speed_);
 
   create_drop_files();
   auto start_duration = duration_since_midnight(a()->system_logon_time());
@@ -542,7 +542,7 @@ const string create_chain_file() {
       cs(), so(), okansi(), incom, nsl(), 
       gfilesdir.c_str(), a()->config()->datadir().c_str(), szTemporaryLogFileName);
     if (a()->using_modem) {
-      file.WriteFormatted("%d\n", modem_speed);
+      file.WriteFormatted("%d\n", a()->modem_speed_);
     } else {
       file.WriteFormatted("KB\n");
     }

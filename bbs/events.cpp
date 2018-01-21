@@ -167,7 +167,7 @@ void cleanup_events() {
 
 void check_event() {
   int16_t tl = t_now();
-  for (size_t i = 0; i < a()->events.size() && !do_event; i++) {
+  for (size_t i = 0; i < a()->events.size() && !a()->do_event_; i++) {
     auto& e = a()->events[i];
     if (((e.status & EVENT_RUNTODAY) == 0) && (e.time <= tl) &&
         ((e.days & (1 << dow())) > 0) &&
@@ -179,7 +179,7 @@ void check_event() {
       if ((e.status & EVENT_RUNTODAY) == 0) {
         e.status |= EVENT_RUNTODAY;
         write_event(i);
-        do_event = i + 1;
+        a()->do_event_ = i + 1;
       }
     } else if ((e.status & EVENT_PERIODIC) &&
                ((e.days & (1 << dow())) > 0) &&
@@ -200,7 +200,7 @@ void check_event() {
           e.status |= EVENT_RUNTODAY;
           // record that we ran it now.
           write_event(i);
-          do_event = i + 1;
+          a()->do_event_ = i + 1;
         }
       }
     }
@@ -222,7 +222,7 @@ void run_event(int evnt) {
     a()->ExitBBSImpl(exitlevel, true);
   }
   ExecuteExternalProgram(a()->events[evnt].cmd, EFLAG_NONE);
-  do_event = 0;
+  a()->do_event_ = 0;
   cleanup_net();
 
   e.lastrun = t_now();

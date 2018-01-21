@@ -496,9 +496,9 @@ void get_quote(int fsed) {
       }
     }
   } while (!hangup && rl && !i2);
-  charbufferpointer = 0;
+  a()->charbufferpointer_ = 0;
   if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !hangup) {
-    bquote = i1;
-    equote = i2;
+    a()->bquote_ = i1;
+    a()->equote_ = i2;
   }
 }

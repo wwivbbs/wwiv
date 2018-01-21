@@ -40,6 +40,10 @@ using namespace wwiv::strings;
 
 bool NewZModemSendFile(const char *file_name);
 
+// from sr.cpp
+extern unsigned char checksum;
+
+
 #if (_MSC_VER >= 1900)
 #define timezone _timezone
 #endif  // MSV_VER && !timezone
@@ -210,7 +214,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     lFileSize = 1;
   }
 
-  double tpb = (12.656f / static_cast<double>(modem_speed));
+  double tpb = (12.656f / static_cast<double>(a()->modem_speed_));
 
   if (!use_ymodemBatch) {
     bout << "\r\n-=> Beginning file transmission, Ctrl+X to abort.\r\n";

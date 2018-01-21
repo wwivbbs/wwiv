@@ -41,7 +41,6 @@ public:
   void PutchRaw(unsigned char ch) override {}
   void Puts(const std::string& s) override {}
   void PutsXY(int x, int y, const std::string& text) override {}
-  void FastPuts(const std::string& text) override {}
   int Printf(const char *formatted_text, ...) override { return 0; }
   int PrintfXY(int x, int y, const char *formatted_text, ...) override { return 0; }
   int PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override { return 0; }
@@ -57,6 +56,9 @@ public:
   size_t GetDefaultScreenBottom() override { return 24; }
   void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) override {}
   void UpdateNativeTitleBar(Application* session) override {}
+private:
+  void FastPuts(const std::string& text) override {}
+
 };
 
 #if defined( _MSC_VER )

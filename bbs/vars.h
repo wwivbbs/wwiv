@@ -41,19 +41,9 @@ __EXTRN__ char irt_name[205];
 __EXTRN__ char irt_sub[81];
 __EXTRN__ char* quotes_ind;
 
-__EXTRN__ unsigned char checksum;
-
-__EXTRN__ int bquote;
-__EXTRN__ int charbufferpointer;
-__EXTRN__ int chatting;
-__EXTRN__ int do_event;
-__EXTRN__ int equote;
-
-__EXTRN__ bool  bChatLine,
-          newline,
+__EXTRN__ bool  
           forcescansub,
           guest_user,
-          no_hangup,
           smwcheck,
           chatcall,
           chat_file,
@@ -64,11 +54,6 @@ __EXTRN__ bool  bChatLine,
           okskey,
           okmacro,
           ok_modem_stuff;
-
-// Chatroom additions
-__EXTRN__ bool in_chatroom;
-
-__EXTRN__ int modem_speed;
 
 __EXTRN__ int curatr;
 __EXTRN__ unsigned int

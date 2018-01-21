@@ -279,6 +279,12 @@ public:
     return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
   }
 
+  // Public subsystems
+  Batch& batch() { return batch_; }
+  wwiv::sdk::Subs& subs() { return *subs_.get(); }
+  const wwiv::sdk::Subs& subs() const { return *subs_.get(); }
+
+
   bool read_subs();
   bool create_message_api();
   void SetLogonTime();
@@ -307,9 +313,9 @@ public:
   bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
   bool ReadConfig();
 
+public:
   // Data from system_operation_rec, make it public for now, and add
   // accessors later on.
-public:
   int chatname_color_ = 0;
   int message_color_ = 0;
 
@@ -376,12 +382,6 @@ public:
   std::vector<uint8_t> newuser_colors;
   std::vector<uint8_t> newuser_bwcolors;
 
-public:
-  // Public subsystems
-  Batch& batch() { return batch_; }
-  wwiv::sdk::Subs& subs() { return *subs_.get(); }
-  const wwiv::sdk::Subs& subs() const { return *subs_.get(); }
-
   // public data structures
   std::vector<editorrec> editors;
   std::vector<chainfilerec> chains;
@@ -410,9 +410,22 @@ public:
   std::string upload_cmd;           // upload event
   std::string terminal_command;     // Terminal command
 
-public:
   // TODO(rushfan): Make this private. This is needed by WFC
   uint16_t  unx_;
+
+  // TODO(rushfan): All of these are moved from vars.h.
+  // Figure out a better way
+  int bquote_ = 0;
+  int charbufferpointer_ = 0;
+  int chatting_ = false;
+  int do_event_ = false;
+  int equote_ = 0;
+  bool no_hangup_ = false;
+  bool in_chatroom_ = false;
+  bool chatline_ = false;
+  int modem_speed_ = 0;
+  bool mci_enabled_{ true };
+
 
 protected:
   /*!
@@ -437,9 +450,11 @@ private:
   void read_chains();
   bool read_language();
   void read_gfile();
-  void make_abs_path(char *dir);
   void check_phonenum();
   void create_phone_file();
+
+// Private fields.
+private:
 
   /*! The current working directory.*/
   std::string current_dir_;
@@ -473,6 +488,7 @@ private:
   int last_read_user_number_ = 0;
   std::chrono::system_clock::time_point system_logon_time_;
   std::chrono::steady_clock::time_point steady_logon_time_;
+
 };
 
 #endif  // #if !defined (__INCLUDED_BBS_APPLICATION_H__)

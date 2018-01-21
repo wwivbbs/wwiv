@@ -1301,7 +1301,7 @@ void DoMinimalNewUser() {
     "December"
   };
 
-  newline = false;
+  bout.newline = false;
   s1[0] = 0;
   bool done = false;
   int nSaveTopData = a()->topdata;
@@ -1499,7 +1499,7 @@ void DoMinimalNewUser() {
   }
   a()->topdata = nSaveTopData;
   a()->UpdateTopScreen();
-  newline = true;
+  bout.newline = true;
 }
 
 

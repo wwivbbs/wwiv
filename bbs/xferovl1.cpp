@@ -436,7 +436,7 @@ void tag_it() {
         }
       }
       if (!bad) {
-        t = 12.656 / static_cast<double>(modem_speed) * static_cast<double>(fs);
+        t = 12.656 / static_cast<double>(a()->modem_speed_) * static_cast<double>(fs);
         if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
           bout << "|#6Not enough time left in queue for " << f.u.filename << ".\r\n";
           bad = true;
@@ -674,8 +674,8 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
   }
 
   double t = 0.0;
-  if (modem_speed) {
-    t = (12.656) / ((double)(modem_speed)) * ((double)(fs));
+  if (a()->modem_speed_) {
+    t = (12.656) / ((double)(a()->modem_speed_)) * ((double)(fs));
   }
 
   if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
@@ -836,10 +836,10 @@ void download() {
         bout.backline();
         bout.bprintf("|#2%3d ", a()->batch().entry.size() + 1);
         bout.Color(1);
-        bool onl = newline;
-        newline = false;
+        bool onl = bout.newline;
+        bout.newline = false;
         input(s, 12);
-        newline = onl;
+        bout.newline = onl;
         if ((s[0]) && (s[0] != ' ')) {
           if (strchr(s, '.') == nullptr) {
             strcat(s, ".*");

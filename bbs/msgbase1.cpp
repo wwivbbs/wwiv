@@ -473,9 +473,7 @@ void qscan(uint16_t start_subnum, bool &nextsub) {
     bout.nl();
     bout.clear_lines_listed();
     bout.clreol();
-    if (okansi() && !newline) {
-      bout << "\r\x1b[4A";
-    }
+    bout.move_up_if_newline(4);
   } else {
     bout << "|#1< Nothing new on " << a()->subs().sub(sub_number).name
       << " " << a()->usub[start_subnum].keys;
@@ -483,9 +481,7 @@ void qscan(uint16_t start_subnum, bool &nextsub) {
     bout.nl();
     bout.clear_lines_listed();
     bout.clreol();
-    if (okansi() && !newline) {
-      bout << "\r\x1b[3A";
-    }
+    bout.move_up_if_newline(3);
   }
   bout.nl();
 }

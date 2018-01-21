@@ -175,24 +175,24 @@ static void select_chat_name(char *sysop_name) {
   a()->DisplaySysopWorkingIndicator(false);
 }
 
-// Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
+// Allows two-way a()->chatting_ until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
 static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) {
   char s2[100], temp1[100];
   int i, i1;
 
-  int cm = chatting;
+  int cm = a()->chatting_;
   unsigned int begx = a()->localIO()->WhereX();
   if (rollover[0] != 0) {
-    if (charbufferpointer) {
+    if (a()->charbufferpointer_) {
       char szTempBuffer[255];
       strcpy(szTempBuffer, rollover);
-      strcat(szTempBuffer, &charbuffer[charbufferpointer]);
+      strcat(szTempBuffer, &charbuffer[a()->charbufferpointer_]);
       strcpy(&charbuffer[1], szTempBuffer);
-      charbufferpointer = 1;
+      a()->charbufferpointer_ = 1;
     } else {
       strcpy(&charbuffer[1], rollover);
-      charbufferpointer = 1;
+      a()->charbufferpointer_ = 1;
     }
     rollover[0] = 0;
   }
@@ -208,7 +208,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
           s2[screencount] = '\xCD';
         }
         const string unn = a()->names()->UserName(a()->usernum);
-        sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name, unn.c_str());
+        sprintf(temp1, "|17|#2 %s a()->chatting_ with %s |16|#1", sysop_name, unn.c_str());
         int nNumCharsToMove = (((a()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
@@ -267,7 +267,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
       bout.Color(5);
     }
     if (cm) {
-      if (chatting == 0) {
+      if (a()->chatting_ == 0) {
         ch = RETURN;
       }
     }
@@ -340,7 +340,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
       }
     } else switch (ch) {
       case 7: {
-        if (chatting && outcom) {
+        if (a()->chatting_ && outcom) {
           bout.rputch(7);
         }
       }
@@ -565,10 +565,10 @@ void chat1(const char *chat_line, bool two_way) {
   chatcall = false;
   if (two_way) {
     write_inst(INST_LOC_CHAT2, 0, INST_FLAGS_NONE);
-    chatting = 2;
+    a()->chatting_ = 2;
   } else {
     write_inst(INST_LOC_CHAT, 0, INST_FLAGS_NONE);
-    chatting = 1;
+    a()->chatting_ = 1;
   }
   auto tc_start = steady_clock::now();
   File chatFile(a()->config()->gfilesdir(), "chat.txt");
@@ -598,7 +598,7 @@ void chat1(const char *chat_line, bool two_way) {
     }
     bout.flush();
     const string unn = a()->names()->UserName(a()->usernum);
-    sprintf(s, " %s chatting with %s ", szSysopName, unn.c_str());
+    sprintf(s, " %s a()->chatting_ with %s ", szSysopName, unn.c_str());
     int nNumCharsToMove = ((a()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);
     sprintf(s1, "\x1b[12;%dH", std::max<int>(nNumCharsToMove, 0));
     bout << s1;
@@ -642,9 +642,9 @@ void chat1(const char *chat_line, bool two_way) {
       a()->localIO()->Puts("-] Chat file closed.\r\n");
     }
     if (hangup) {
-      chatting = 0;
+      a()->chatting_ = 0;
     }
-  } while (chatting);
+  } while (a()->chatting_);
 
   if (chat_file) {
     chat_file = false;
@@ -665,7 +665,7 @@ void chat1(const char *chat_line, bool two_way) {
 
   bout.nl();
   bout << "|#7Chat mode over...\r\n\n";
-  chatting = 0;
+  a()->chatting_ = 0;
   auto tc_used = steady_clock::now() - tc_start;
   extratimecall += static_cast<long>(duration_cast<seconds>(tc_used).count());
   a()->topdata = nSaveTopData;

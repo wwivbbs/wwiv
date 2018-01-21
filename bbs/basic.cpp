@@ -509,7 +509,7 @@ static bool RegisterNamespaceWWIV(mb_interpreter_t* bas) {
     }
     char* arg = nullptr;
     mb_check(mb_pop_string(bas, l, &arg));
-    BbsMacroContext ctx(a()->user());
+    BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
     string s = interpret(*arg, ctx);
     mb_check(mb_attempt_close_bracket(bas, l));
     mb_push_string(bas, l, BasicStrDup(s));

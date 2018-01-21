@@ -45,7 +45,7 @@ void HopSub() {
   }
   bout << "|#9Enter name or partial name of sub to hop to:\r\n:";
   if (okansi()) {
-    newline = false;
+    bout.newline = false;
   }
   input(s1, 40, true);
   if (!s1[0]) {
@@ -119,7 +119,7 @@ void HopDir() {
   }
   bout << "|#9Enter name or partial name of dir to hop to:\r\n:";
   if (okansi()) {
-    newline = false;
+    bout.newline = false;
   }
   input(s1, 20, true);
   if (!s1[0]) {

@@ -128,9 +128,9 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
     unsigned char chCurrent = bout.getkey();
 
     if (curpos) {
-      bChatLine = true;
+      a()->chatline_ = true;
     } else {
-      bChatLine = false;
+      a()->chatline_ = false;
     }
 
     if (in_ansi) {
@@ -193,7 +193,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
             //
             out_text[curpos] = '\0';
             done = true;
-            if (newline || crend) {
+            if (bout.newline || crend) {
               bout.nl();
             }
           }
@@ -202,7 +202,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
         case RETURN:
           out_text[curpos] = '\0';
           done = true;
-          if (newline || crend) {
+          if (bout.newline || crend) {
             bout.nl();
           }
           break;

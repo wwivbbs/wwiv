@@ -60,7 +60,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
       p = 1;
     } else {
       bout.nl();
-      newline = true;
+      bout.newline = true;
       return cmd1;
     }
     
@@ -72,7 +72,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
       ch = upcase(ch);
       if (ch == RETURN) {
         bout.nl();
-        newline = true;
+        bout.newline = true;
         return cmd1;
       } else {
         if (ch == BACKSPACE) {
@@ -84,11 +84,11 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
           bout.bputch(ch);
           cp++;
           if (ch == '/' && cmd1[0] == '/') {
-            newline = true;
+            bout.newline = true;
             return input(50);
           } else if (cp == p + 1) {
             bout.nl();
-            newline = true;
+            bout.newline = true;
             return cmd1;
           }
         }

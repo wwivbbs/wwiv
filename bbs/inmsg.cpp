@@ -76,7 +76,7 @@ static bool GetMessageToName(const char *aux) {
   }
 
   bool has_address = false;
-  bool newlsave = newline;
+  bool newlsave = bout.newline;
 
   if (!a()->current_sub().nets.empty()) {
     for (size_t i = 0; i < a()->current_sub().nets.size(); i++) {
@@ -85,9 +85,9 @@ static bool GetMessageToName(const char *aux) {
           !IsEqualsIgnoreCase(aux, "email")) {
         has_address = true;
         bout << "|#2To   : ";
-        newline = false;
+        bout.newline = false;
         auto to_name = Input1("All", 40, true, InputMode::MIXED);
-        newline = newlsave;
+        bout.newline = newlsave;
         if (to_name.empty()) {
           strcpy(irt_name, "All");
           bout << "|#4All\r\n";
@@ -551,7 +551,7 @@ bool inmsg(MessageEditorData& data) {
 
   wwiv::core::ScopeExit at_exit([=]() {
     setiia(oiia);
-    charbufferpointer = 0;
+    a()->charbufferpointer_ = 0;
     charbuffer[0] = '\0';
     grab_quotes(nullptr, nullptr);
     if (data.fsed_flags != FsedFlags::NOFSED) {

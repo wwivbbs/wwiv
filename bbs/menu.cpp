@@ -440,11 +440,11 @@ void MenuInstance::PrintMenuPrompt() const {
 }
 
 void TurnMCIOff() {
-  g_flags |= g_flag_disable_mci;
+  a()->mci_enabled_ = false;
 }
 
 void TurnMCIOn() {
-  g_flags &= ~g_flag_disable_mci;
+  a()->mci_enabled_ = true;
 }
 
 void ConfigUserMenuSet() {

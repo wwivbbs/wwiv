@@ -20,7 +20,7 @@
 
 #include <functional>
 
-char bgetch();
+char bgetch(bool allow_extended_input = false);
 char bgetchraw();
 bool bkbhitraw();
 bool bkbhit();

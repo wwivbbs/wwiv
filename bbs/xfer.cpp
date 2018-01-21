@@ -815,16 +815,16 @@ void nscanall() {
     a()->set_current_user_dir_num(save_dir);
     return;
   }
-  bool abort      = false;
-  int count       = 0;
-  int color       = 3;
-  bout << "\r" << "|#2Searching ";
+  bool abort = false;
+  int count = 0;
+  int color = 3;
+  bout << "\r|#2Searching ";
   for (uint16_t i = 0; i < a()->directories.size() && !abort && a()->udir[i].subnum != -1; i++) {
     count++;
     bout.Color(color);
     bout << ".";
     if (count >= NUM_DOTS) {
-      bout << "\r" << "|#2Searching ";
+      bout << "\r|#2Searching ";
       color++;
       count = 0;
       if (color == 4) {

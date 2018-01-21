@@ -51,6 +51,8 @@ using namespace std::chrono;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+unsigned char checksum = 0;
+
 void calc_CRC(unsigned char b) {
   checksum = checksum + b;
 
@@ -110,7 +112,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   }
   strcpy(szFileName, pszFileNameToSend);
   // Use this since fdsz doesn't like 115200
-  auto xfer_speed = std::min<int>(modem_speed, 57600);
+  auto xfer_speed = std::min<int>(a()->modem_speed_, 57600);
   sprintf(sx1, "%d", xfer_speed);
   sprintf(sx3, "%d", xfer_speed);
   sx2[0] = '0' + a()->primary_port();
@@ -119,7 +121,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
   if (!command.empty()) {
     a()->ClearTopScreenProtection();
     const string unn = a()->names()->UserName(a()->usernum);
-    sprintf(s2, "%s is currently online at %u bps", unn.c_str(), modem_speed);
+    sprintf(s2, "%s is currently online at %u bps", unn.c_str(), a()->modem_speed_);
     a()->localIO()->Puts(s2);
     a()->localIO()->Puts("\r\n\r\n");
     a()->localIO()->Puts(command);
@@ -528,7 +530,7 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
         *sent = false;
         *abort = false;
       } else {
-        double t = (modem_speed) ? (12.656) / ((double)(modem_speed)) * ((double)(fs)) : 0;
+        double t = (a()->modem_speed_) ? (12.656) / ((double)(a()->modem_speed_)) * ((double)(fs)) : 0;
         if (nsl() <= (a()->batch().dl_time_in_secs() + t)) {
           bout.nl();
           bout << "Not enough time left in queue.\r\n\n";

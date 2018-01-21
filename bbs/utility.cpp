@@ -102,7 +102,7 @@ bool okansi() {
 void frequent_init() {
   setiia(seconds(5));
   g_flags = 0;
-  newline = true;
+  bout.newline = true;
   a()->SetCurrentReadMessageArea(-1);
   a()->SetCurrentConferenceMessageArea(0);
   a()->SetCurrentConferenceFileArea(0);
@@ -110,14 +110,14 @@ void frequent_init() {
   curatr = 0x07;
   outcom = false;
   incom = false;
-  charbufferpointer = 0;
+  a()->charbufferpointer_ = 0;
   a()->localIO()->SetTopLine(0);
   a()->screenlinest = a()->defscreenbottom + 1;
   hangup = false;
   chatcall = false;
   a()->SetChatReason("");
   a()->SetUserOnline(false);
-  chatting = 0;
+  a()->chatting_ = 0;
   irt[0] = '\0';
   irt_name[0] = '\0';
   bout.clear_lines_listed();
@@ -234,7 +234,7 @@ void giveup_timeslice() {
   sleep_for(milliseconds(100));
   yield();
 
-  if (!in_chatroom || !bChatLine) {
+  if (!a()->in_chatroom_ || !a()->chatline_) {
     if (inst_msg_waiting()) {
       process_inst_msgs();
     }
@@ -319,7 +319,7 @@ char *get_wildlist(char *file_mask) {
     }
     f++;
     bout.bprintf("%12.12s ", f->name.c_str());
-    if (bgetch() == SPACE) {
+    if (bout.getkey() == SPACE) {
       bout.nl();
       break;
     }

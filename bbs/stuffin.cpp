@@ -96,13 +96,13 @@ const string stuff_in(const string& commandline, const string& arg1,
       case 'H': os << a()->remoteIO()->GetDoorHandle(); break;
       case 'I': os << a()->temp_directory(); break;
       case 'K': os << a()->config()->gfilesdir() << COMMENT_TXT; break;
-      case 'M': os << modem_speed; break;
+      case 'M': os << a()->modem_speed_; break;
       case 'N': os << a()->instance_number(); break;
       case 'O': os << create_filename(CHAINFILE_PCBOARD); break;
       case 'P': os << ((incom) ? a()->primary_port() : 0); break;
       case 'R': os << create_filename(CHAINFILE_DOOR); break;
       // TODO(rushfan): Should we deprecate this? Use modem speed for now.
-      case 'S': os << modem_speed; break;
+      case 'S': os << a()->modem_speed_; break;
       case 'T': os << GetTimeLeft(); break;
       case 'U': os << a()->user()->GetName(); break;
       }
