@@ -1019,7 +1019,7 @@ typedef struct
   unsigned short flag_mask;
   unsigned short flag_value;
   unsigned short com_speed;
-  unsigned short a()->modem_speed_;
+  unsigned short modem_speed;
 } result_info;
 
 
@@ -1369,7 +1369,7 @@ typedef struct
   unsigned short
    flags, loc, subloc;
   unsigned long last_update;
-  unsigned short a()->modem_speed_;
+  unsigned short modem_speed;
   unsigned long inst_started;
   unsigned char
    extra[80];
