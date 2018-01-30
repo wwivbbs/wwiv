@@ -29,11 +29,17 @@ set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-5.3.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
 set WWIV_CMAKE_DIR=%WORKSPACE%\_build
+echo =============================================================================
 echo Workspace:       %WORKSPACE%         
 echo Build Number:    %BUILD_NUMBER%
 echo Archive:         %RELEASE_ZIP%
 echo Staging Dir:     %STAGE_DIR%
 echo WWIV CMake Root: %WWIV_CMAKE_DIR%
+echo =============================================================================
+echo Release Notes:
+echo %RELEASE_NOTES%
+echo =============================================================================
+
 
 if not exist %WWIV_CMAKE_DIR% (
   echo Creating %WWIV_CMAKE_DIR%
