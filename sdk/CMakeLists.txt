@@ -25,6 +25,7 @@ set(COMMON_SOURCES
   names.cpp
   networks.cpp
   phone_numbers.cpp
+  qscan.cpp
   ssm.cpp
   status.cpp
   subscribers.cpp

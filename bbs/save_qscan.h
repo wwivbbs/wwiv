@@ -16,32 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/qscan.h"
+#ifndef __INCLUDED_SAVE_QSCAN_H__
+#define __INCLUDED_SAVE_QSCAN_H__
 
 #include <cstdint>
 #include <memory>
-#include "bbs/bbs.h"
-#include "bbs/vars.h"
-#include "bbs/application.h"
 
 namespace wwiv {
 namespace bbs {
 
-SaveQScanPointers::SaveQScanPointers() : restore_(false) {
-  save_qsc_p_.reset(new uint32_t[a()->config()->config()->max_subs]);
-  for (int i = 0; i < a()->config()->config()->max_subs; i++) {
-    save_qsc_p_[i] = qsc_p[i];
-  }
-}
+class SaveQScanPointers {
+public:
+  SaveQScanPointers();
+  virtual ~SaveQScanPointers();
+  void restore() { restore_ = true; }
+private:
+  bool restore_;
+  std::unique_ptr<uint32_t[]> save_qsc_p_;
+};
 
-SaveQScanPointers::~SaveQScanPointers() {
-  if (restore_) {
-    for (int i = 0; i < a()->config()->config()->max_subs; i++) {
-      qsc_p[i] = save_qsc_p_[i];
-    }
-  }
-}
-  
 }  // namespace bbs
 }  // namespace wwiv
 
+#endif  // __INCLUDED_SAVE_QSCAN_H__

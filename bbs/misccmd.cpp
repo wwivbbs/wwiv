@@ -35,7 +35,6 @@
 #include "bbs/input.h"
 #include "bbs/msgbase1.h"
 #include "bbs/pause.h"
-#include "bbs/qscan.h"
 #include "bbs/utility.h"
 #include "bbs/wqscn.h"
 #include "bbs/sysoplog.h"
@@ -52,8 +51,6 @@ void qwk_menu();
 
 using std::string;
 using std::unique_ptr;
-using wwiv::bbs::TempDisablePause;
-using wwiv::bbs::SaveQScanPointers;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

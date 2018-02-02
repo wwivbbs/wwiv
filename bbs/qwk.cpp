@@ -45,7 +45,7 @@
 #include "bbs/message_file.h"
 #include "bbs/multmail.h"
 #include "bbs/pause.h"
-#include "bbs/qscan.h"
+#include "bbs/save_qscan.h"
 #include "bbs/stuffin.h"
 #include "bbs/subacc.h"
 #include "bbs/bbs.h"

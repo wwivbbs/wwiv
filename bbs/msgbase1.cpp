@@ -433,7 +433,7 @@ void qscan(uint16_t start_subnum, bool &nextsub) {
     return;
   }
   bout.nl();
-  uint32_t memory_last_read = qsc_p[sub_number];
+  auto memory_last_read = qsc_p[sub_number];
 
   iscan1(sub_number);
 

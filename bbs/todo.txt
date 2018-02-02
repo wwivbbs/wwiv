@@ -28,7 +28,9 @@ Infrastructure Cleanup
   that's not global scoped.
 * get rid of curatr as a global variable. Looks like it should be
   part of Output class.
-  
+* Create a SDK QScan class to wrap interacting with the WWIV qscan
+  variables and also load/save user.qsc
+
 Networking Cleanup
 ==================
 * Figure out why new networking stack doesn't work for mark.

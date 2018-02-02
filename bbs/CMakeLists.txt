@@ -74,7 +74,7 @@ set(COMMON_SOURCES
  null_local_io.cpp
  pause.cpp
  printfile.cpp
- qscan.cpp
+ save_qscan.cpp
  quote.cpp
  qwk.cpp
  qwk1.cpp
