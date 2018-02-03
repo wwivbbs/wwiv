@@ -16,7 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
-// WWIV5 Networkf
 #include <cctype>
 #include <cstdlib>
 #include <ctime>
@@ -364,8 +363,14 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe, const
   return true;
 }
 
-static bool import_bundles(const Config& config, const FidoCallout& callout,
+/**
+ * Imports FTN Bundles (files like XXXXXXXXX.SU0)
+ * 
+ * Returns the # of bundles processed.
+ */
+static int import_bundles(const Config& config, const FidoCallout& callout,
   const net_networks_rec& net, const std::string& dir, const std::string& mask) {
+  int num_bundles_processed = 0;
 
   FtnMessageDupe dupe(config);
 
@@ -376,18 +381,20 @@ static bool import_bundles(const Config& config, const FidoCallout& callout,
       // skip zero byte files.
       continue;
     }
-    string lname = ToStringLowerCase(f.name);
+    const auto lname = ToStringLowerCase(f.name);
     if (ends_with(lname, ".pkt")) {
       if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
         LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
+        ++num_bundles_processed;
         File::Remove(dir, f.name);
       }
     } else if (import_bundle_file(config, dupe, callout, net, dir, f.name)) {
       LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, f.name);
+      ++num_bundles_processed;
       File::Remove(dir, f.name);
     }
   }
-  return true;
+  return num_bundles_processed;
 }
 
 static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout, const FidoAddress& dest, 
@@ -965,6 +972,7 @@ int main(int argc, char** argv) {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
     NetworkCommandLine net_cmdline(cmdline);
+    int num_packets_processed = 0;
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(cmdline);
       return 1;
@@ -980,14 +988,14 @@ int main(int argc, char** argv) {
     }
 
     VLOG(1) << "Reading BBSDATA.NET..";
-    BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
+    auto b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
       LOG(ERROR) << "ERROR: Unable to read BBSDATA.NET.";
       LOG(ERROR) << "       Do you need to run network3?";
       return 3;
     }
 
-    const net_system_list_rec* fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
+    const auto* fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
     if (!fake_ftn_node) {
       LOG(ERROR) << "Can not find node for outbound FTN address.";
       LOG(ERROR) << "       Do you need to run network3?";
@@ -1007,7 +1015,7 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    const string cmd = cmds.front();
+    const auto cmd = cmds.front();
     cmds.erase(cmds.begin());
     VLOG(1) << "Command: " << cmd;
     VLOG(1) << "Args: ";
@@ -1019,13 +1027,13 @@ int main(int argc, char** argv) {
     if (cmd == "import") {
       const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
       for (const auto& ext : extensions) {
-        import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(), StrCat("*.", ext));
+        num_packets_processed += import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(), StrCat("*.", ext));
 #ifndef _WIN32
-        import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(), StrCat("*.", ToStringUpperCase(ext)));
+        num_packets_processed += import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(), StrCat("*.", ToStringUpperCase(ext)));
 #endif
       }
     } else if (cmd == "export") {
-      const string sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
+      const auto sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
       if (!File::Exists(net.dir, sfilename)) {
         LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
         return 1;
@@ -1038,11 +1046,11 @@ int main(int argc, char** argv) {
         return 1;
       }
 
-      bool done = false;
+      auto done = false;
       std::set<std::string> bundles;
       while (!done) {
         Packet p;
-        wwiv::net::ReadPacketResponse response = read_packet(f, p, true);
+        const auto response = read_packet(f, p, true);
         if (response == wwiv::net::ReadPacketResponse::END_OF_FILE) {
           // Delete the packet.
           f.Close();
@@ -1051,6 +1059,8 @@ int main(int argc, char** argv) {
         } else if (response == wwiv::net::ReadPacketResponse::ERROR) {
           return 1;
         }
+        // If we got here, we had a packet to process.
+        ++num_packets_processed;
 
         if (p.nh.main_type == main_type_new_post) {
           if (!export_main_type_new_post(net_cmdline, net, fido_callout, bundles, p)) {
@@ -1074,7 +1084,7 @@ int main(int argc, char** argv) {
       ShowHelp(cmdline);
       return 1;
     }
-    return 0;
+    return (num_packets_processed > 0) ? 0 : 1;
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [networkf]: " << e.what();
   }
