@@ -5,6 +5,7 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "gtest/gtest.h"
+#include "core_test/file_helper.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -32,6 +33,8 @@ int main(int argc, char* argv[]) {
   if (!File::Exists(tmpdir)) {
     File::mkdirs(tmpdir);
   }
+  File::set_current_directory(tmpdir);
+  FileHelper::set_wwiv_test_tempdir(tmpdir);
 
   return RUN_ALL_TESTS();
 }

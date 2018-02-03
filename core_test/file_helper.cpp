@@ -45,6 +45,10 @@
 using std::string;
 using namespace wwiv::strings;
 
+// C++ is still lame sometimes.
+std::string FileHelper::basedir_;
+
+
 FileHelper::FileHelper() {
   const ::testing::TestInfo* const test_info =
       ::testing::UnitTest::GetInstance()->current_test_info();
@@ -61,8 +65,9 @@ bool FileHelper::Mkdir(const string& oname) const {
   return File::mkdir(DirName(File::FixPathSeparators(oname)));
 }
 
-static const string GetTestTempDir() {
-  string test_tempdir = wwiv::os::environment_variable("WWIV_TEST_TEMPDIR");
+// static
+string FileHelper::GetTestTempDir() {
+  string test_tempdir = basedir_;
   if (test_tempdir.empty()) {
 #ifdef _WIN32
     char temp_path[_MAX_PATH];

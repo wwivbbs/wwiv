@@ -1,4 +1,3 @@
-# CMake for WWIV 5.0
 include_directories(..)
 include_directories(../deps/cereal/include)
 
@@ -35,9 +34,10 @@ set(COMMON_SOURCES
   wwivd_config.cpp
   )
 
-if(UNIX) 
-  add_definitions ("-Wall")
-endif()
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX) 
+   # TODO also add  -Wno-long-long -pedantic
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
+ endif()
 
 add_library(sdk ${COMMON_SOURCES})
 target_link_libraries(sdk core)

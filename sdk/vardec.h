@@ -350,9 +350,12 @@ struct configrec {
 
   int16_t fuoffset, fsoffset, fnoffset;         // offset values
 
-  uint16_t max_subs,                    // max subboards
-           max_dirs,                               // max directories
-           qscn_len;                               // qscan pointer length
+  // max subboards
+  uint16_t max_subs;
+  // max directories
+  uint16_t max_dirs;                               
+  // qscan pointer length in bytes
+  uint16_t qscn_len;
 
   uint8_t email_storage_type;                 // how to store email
 
