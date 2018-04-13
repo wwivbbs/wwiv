@@ -27,14 +27,13 @@ int main(int argc, char* argv[]) {
   if (tmpdir.empty()) {
     tmpdir = wwiv::os::environment_variable("WWIV_TEST_TEMPDIR");
   }
-  if (tmpdir.empty()) {
-    FAIL() << "WWIV_TEST_TEMPDIR must be set for this test suite.";
-  } 
-  if (!File::Exists(tmpdir)) {
-    File::mkdirs(tmpdir);
+  if (!tmpdir.empty()) {
+	  if (!File::Exists(tmpdir)) {
+		  File::mkdirs(tmpdir);
+	  }
+	  File::set_current_directory(tmpdir);
+	  FileHelper::set_wwiv_test_tempdir(tmpdir);
   }
-  File::set_current_directory(tmpdir);
-  FileHelper::set_wwiv_test_tempdir(tmpdir);
 
   return RUN_ALL_TESTS();
 }

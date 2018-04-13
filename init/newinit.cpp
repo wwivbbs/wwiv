@@ -97,20 +97,19 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   syscfg.header.header.written_by_wwiv_num_version = wwiv_num_version;
   to_char_array(syscfg.header.header.signature, "WWIV");
 
-  const string datadir = StrCat(bbsdir, "data", File::pathSeparatorString);
-  to_char_array(syscfg.datadir, datadir);
+  to_char_array(syscfg.datadir, "data");
 
   to_char_array(syscfg.systempw, "SYSOP");
   to_char_array(syscfg.systemname, "My WWIV BBS");
   to_char_array(syscfg.systemphone, "   -   -    ");
   to_char_array(syscfg.sysopname, "The New Sysop");
 
-  AssignSubDir(syscfg.msgsdir, bbsdir, "msgs");
-  AssignSubDir(syscfg.gfilesdir, bbsdir, "gfiles");
-  AssignSubDir(syscfg.dloadsdir, bbsdir, "dloads");
-  AssignSubDir(syscfg.tempdir, bbsdir, "temp1");
-  AssignSubDir(syscfg.menudir, bbsdir, FilePath("gfiles", "menus"));
-  AssignSubDir(syscfg.scriptdir, bbsdir, "scripts");
+  to_char_array(syscfg.msgsdir, "msgs");
+  to_char_array(syscfg.gfilesdir, "gfiles");
+  to_char_array(syscfg.dloadsdir, "dloads");
+  to_char_array(syscfg.tempdir, FilePath("temp", "1"));
+  to_char_array(syscfg.menudir, FilePath("gfiles", "menus"));
+  to_char_array(syscfg.scriptdir, "scripts");
 
   syscfg.newusersl = 10;
   syscfg.newuserdsl = 0;
@@ -200,14 +199,15 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   syscfg.post_call_ratio = 0.0;
   save_config();
 
+  const auto datadir = FilePath(bbsdir, "data");
   create_arcs(window, datadir);
   memset(&statusrec, 0, sizeof(statusrec_t));
   string now(date());
   to_char_array(statusrec.date1, now);
   to_char_array(statusrec.date2, "00/00/00");
   to_char_array(statusrec.date3, "00/00/00");
-  to_char_array(statusrec.log1, "000000.LOG");
-  to_char_array(statusrec.log2, "000000.LOG");
+  to_char_array(statusrec.log1, "000000.log");
+  to_char_array(statusrec.log2, "000000.log");
   to_char_array(statusrec.gfiledate, now);
   statusrec.callernum = 65535;
   statusrec.qscanptr = 2;
@@ -273,7 +273,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     d1.dsl = 100;
     d1.maxfiles = 50;
     d1.type = 65535;
-    File dirsfile(StrCat("data/", DIRS_DAT));
+    File dirsfile("data", DIRS_DAT);
     dirsfile.Open(File::modeBinary|File::modeCreateFile|File::modeReadWrite);
     dirsfile.Write(&d1, sizeof(directoryrec));
 

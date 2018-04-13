@@ -62,7 +62,7 @@ public:
   
     uint16_t sysnum = 1;
     for (const auto& name : names) {
-      const string dir = StrCat(config_.root_directory(), File::pathSeparatorString, name);
+      const string dir = name;
       net_networks_rec_disk rec{};
       strcpy(rec.name, name.c_str());
       strcpy(rec.dir, dir.c_str());
@@ -97,7 +97,7 @@ TEST_F(NetworkTest, Networks_Bracket) {
 TEST_F(NetworkTest, Networks_Dir) {
   const Networks& networks = test_networks();
 
-  const std::string expected_two_dir = StrCat(config_.root_directory(), File::pathSeparatorString, "two");
+  const std::string expected_two_dir = "two";
   EXPECT_EQ(expected_two_dir, networks.at(1).dir);
   EXPECT_EQ(expected_two_dir, networks.at("two").dir);
   EXPECT_EQ(expected_two_dir, networks[1].dir);

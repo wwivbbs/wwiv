@@ -30,3 +30,5 @@ target_link_libraries(sdk_tests core core_fixtures gtest_main sdk)
 elseif(WIN32)
 target_link_libraries(sdk_tests core core_fixtures gtest sdk)
 endif()
+
+add_test(sdk_tests, sdk_tests)

@@ -39,3 +39,5 @@ if(UNIX)
 else()
   target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest)
 endif()
+
+add_test(bbs_tests bbs_tests)

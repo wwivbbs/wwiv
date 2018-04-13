@@ -67,11 +67,11 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
 
   {
     configrec c = {};
-    to_char_array(c.msgsdir, msgs_);
-    to_char_array(c.gfilesdir, gfiles);
-    to_char_array(c.menudir, menus);
-    to_char_array(c.datadir, data_);
-    to_char_array(c.dloadsdir, dloads);
+    to_char_array(c.msgsdir, "msgs");
+    to_char_array(c.gfilesdir, "gfiles");
+    to_char_array(c.menudir, "menus");
+    to_char_array(c.datadir, "data");
+    to_char_array(c.dloadsdir, "dloads");
 
     // Add header version.
     // TODO(rushfan): This really should all be done in the Config class and also used
