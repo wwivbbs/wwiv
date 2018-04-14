@@ -77,13 +77,6 @@ static bool unzip_file(const std::string& zipfile, const std::string& dir) {
   return false;
 }
 
-static void AssignSubDir(char* path, const std::string& bbsdir, const std::string subdir) {
-  const auto np = StrCat(bbsdir, subdir, File::pathSeparatorString);
-
-  // Since we have a char* and not char[], to_char_array won't work here.
-  strcpy(path, np.c_str());
-}
-
 static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
