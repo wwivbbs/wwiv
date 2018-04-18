@@ -571,16 +571,19 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
 
   int start = first;
   bool done = false;
+  bool dirty = true;
   ReadMessageResult result{};
   result.lines_start = fs.lines_start();
   result.lines_end = fs.lines_end();
   while (!done) {
     CheckForHangup();
     
-    bout.Color(0);
-    display_message_text_new(
-      lines, start, 
-      fs.message_height(), fs.screen_width(), fs.lines_start());
+	if (dirty) {
+	  bout.Color(0);
+	  display_message_text_new(
+			lines, start,
+			fs.message_height(), fs.screen_width(), fs.lines_start());
+	  dirty = false;
 
     if (start == last) {
       fs.DrawBottomBar("END");
@@ -590,7 +593,8 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     }
 
     fs.ClearCommandLine();
-    bout.GotoXY(1, fs.command_line_y());
+  }
+  bout.GotoXY(1, fs.command_line_y());
     if (!msg.use_msg_command_handler) {
       result.option = ReadMessageOption::NEXT_MSG;
       return result;
@@ -608,12 +612,15 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     case COMMAND_UP: {
       if (start > first) {
         --start;
+        dirty = true;
       }
     } break;
     case COMMAND_PAGEUP: {
       if (start - fs.message_height() > first) {
         start -= fs.message_height();
+        dirty = true;
       } else {
+        dirty = true;
         start = first;
       }
     } break;
@@ -622,25 +629,33 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     } break;
     case COMMAND_DOWN: {
       if (start < last) {
+        dirty = true;
         ++start;
       }
     } break;
     case COMMAND_PAGEDN: {
       if (start + fs.message_height() < last) {
+        dirty = true;
         start += fs.message_height();
       } else {
+        dirty = true;
         start = last;
       }
     } break;
-    case COMMAND_END: { 
-      start = last;
+    case COMMAND_END: {
+      if (start != last) {
+        start = last;
+        dirty = true;
+      }
     } break;
     case COMMAND_RIGHT: {
       result.option = ReadMessageOption::NEXT_MSG;
+      dirty = true;
       return result;
     } break;
     case COMMAND_LEFT: {
       result.option = ReadMessageOption::PREV_MSG;
+      dirty = true;
       return result;
     } break;
     case SOFTRETURN: {
@@ -651,12 +666,15 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
     case RETURN: {
       if (start == last) {
         result.option = ReadMessageOption::NEXT_MSG;
+        dirty = true;
         return result;
       }
       else if (start + fs.message_height() < last) {
+        dirty = true;
         start += fs.message_height();
       }
-      else {
+      else if (start != last) {
+        dirty = true;
         start = last;
       }
     } break;
