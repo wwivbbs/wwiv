@@ -29,8 +29,8 @@ enum class FsedFlags {
 
 class MessageEditorData {
 public:
-  MessageEditorData() {}
-  ~MessageEditorData() {}
+  MessageEditorData() = default;
+  ~MessageEditorData() = default;
 
   // Title to use. If set it will be used without prompting the user.
   std::string title;
@@ -41,6 +41,8 @@ public:
   int msged_flags = MSGED_FLAG_NONE;      // used to be flags
   FsedFlags fsed_flags = FsedFlags::NOFSED;       // fsed
   bool silent_mode = false;     // Used for ASV and newemail emails.  No questions, etc.
+
+  bool is_email() const;
 
   // legacy filename, used to see if it's email or not.
   std::string aux;

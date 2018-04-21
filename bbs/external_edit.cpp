@@ -105,7 +105,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
  * line 5: Message area   }   posted. (not used in editor)
  * line 6: Private flag ("YES" or "NO")
  */
-static bool WriteMsgInf(const string& title, const string& destination, const string& aux) {
+static bool WriteMsgInf(const string& title, const string& destination, bool is_email) {
   TextFile file(a()->temp_directory(), MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
@@ -113,7 +113,7 @@ static bool WriteMsgInf(const string& title, const string& destination, const st
 
   // line 1: Who the message is FROM
   file.WriteLine(a()->user()->GetName());
-  if (aux == "email") {
+  if (is_email) {
     // destination == to address for email
     // line 2: Who the message is TO
     file.WriteLine(destination);
@@ -132,7 +132,7 @@ static bool WriteMsgInf(const string& title, const string& destination, const st
   // Message area # - We are not QBBS
   // line 4: Message number
   file.WriteLine("0"); 
-  if (aux == "email") {
+  if (is_email) {
     // line 5: Message area
     file.WriteLine("E-mail");
     // line 6: Private flag ("YES" or "NO")
@@ -194,7 +194,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   }
 }
 
-bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, const string& aux) {
+bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, bool is_email) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     if (File::Exists(a()->temp_directory(), QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
@@ -202,14 +202,14 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
       File dest(a()->temp_directory(), MSGTMP);
       File::Copy(source.full_pathname(), dest.full_pathname());
     }
-    return WriteMsgInf(title, destination, aux);
+    return WriteMsgInf(title, destination, is_email);
   } 
 
   WriteWWIVEditorControlFiles(title, destination, flags);
   return true;
 }
 
-bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, const string& aux) {
+bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& destination, int flags, bool is_email) {
   const size_t editor_number = a()->user()->GetDefaultEditor() - 1;
   if (editor_number >= a()->editors.size() || !okansi()) {
     bout << "\r\nYou can't use that full screen editor (EME).\r\n\n";
@@ -222,7 +222,7 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
 
   const string editor_filenme = (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
 
-  WriteExternalEditorControlFiles(editor, *title, destination, flags, aux);
+  WriteExternalEditorControlFiles(editor, *title, destination, flags, is_email);
   bool save_message = external_edit_internal(editor_filenme, a()->temp_directory(), editor, maxli);
 
   if (!save_message) {
@@ -256,7 +256,7 @@ bool external_text_edit(const string& edit_filename, const string& new_directory
 
   RemoveWWIVControlFiles();
   const editorrec& editor = a()->editors[editor_number];
-  WriteExternalEditorControlFiles(editor, edit_filename, destination, flags, "");
+  WriteExternalEditorControlFiles(editor, edit_filename, destination, flags, false);
   bool result = external_edit_internal(edit_filename, new_directory, editor, numlines);
   RemoveWWIVControlFiles();
   return result;

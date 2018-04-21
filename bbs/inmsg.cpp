@@ -65,42 +65,44 @@ using namespace wwiv::strings;
 static const int LEN = 161;
 static const char crlf[] = "\r\n";
 
-static bool GetMessageToName(const char *aux) {
+bool MessageEditorData::is_email() const {
+  return iequals(aux, "email");
+}
+
+
+static bool GetMessageToName(bool is_email) {
   // If a()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
   // also, if we are using e-mail, this is definately NOT a FidoNet
   // post so there's no reason in wasting everyone's time in the loop...
-  WWIV_ASSERT(aux);
-  if (a()->GetCurrentReadMessageArea() == -1 ||
-      IsEqualsIgnoreCase(aux, "email")) {
+  if (a()->GetCurrentReadMessageArea() == -1 || is_email) {
+    return false;
+  }
+
+  if (a()->current_sub().nets.empty()) {
     return false;
   }
 
   bool has_address = false;
   bool newlsave = bout.newline;
-
-  if (!a()->current_sub().nets.empty()) {
-    for (size_t i = 0; i < a()->current_sub().nets.size(); i++) {
-      const auto& xnp = a()->current_sub().nets[i];
-      if (a()->net_networks[xnp.net_num].type == network_type_t::ftn &&
-          !IsEqualsIgnoreCase(aux, "email")) {
-        has_address = true;
-        bout << "|#2To   : ";
-        bout.newline = false;
-        auto to_name = Input1("All", 40, true, InputMode::MIXED);
-        bout.newline = newlsave;
-        if (to_name.empty()) {
-          strcpy(irt_name, "All");
-          bout << "|#4All\r\n";
-          bout.Color(0);
-        } else {
-          to_char_array(irt_name, to_name);
-        }
-        // WTF???
-        //strcpy(irt, "\xAB");
+  for (const auto& xnp : a()->current_sub().nets) {
+    if (a()->net_networks[xnp.net_num].type == network_type_t::ftn && !is_email) {
+      bout << "|#2To   : ";
+      bout.newline = false;
+      auto to_name = Input1("All", 40, true, InputMode::MIXED);
+      bout.newline = newlsave;
+      if (to_name.empty()) {
+        to_char_array(irt_name, "All");
+        bout << "|#4All\r\n";
+        bout.Color(0);
+      } else {
+        to_char_array(irt_name, to_name);
       }
+      return true;
+      // WTF??? strcpy(irt, "\xAB");
     }
   }
-  return has_address;
+
+  return false;
 }
 
 static void GetMessageTitle(MessageEditorData& data) {
@@ -346,10 +348,8 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
 }
 
 
-static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char *aux) {
-  if (irt_name[0] &&
-      !IsEqualsIgnoreCase(aux, "email") &&
-      !a()->current_sub().nets.empty()) {
+static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email) {
+  if (irt_name[0] && !is_email && !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
       if (a()->net_networks[xnp.net_num].type == network_type_t::ftn) {
         const auto buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
@@ -377,7 +377,7 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, const char 
     irt_sub[0] = '\0';
   }
 
-  if (irt_name[0] && !IsEqualsIgnoreCase(aux, "email")) {
+  if (irt_name[0] && !is_email) {
     ss << "BY: " << irt_name << crlf;
   }
   ss << crlf;
@@ -406,12 +406,12 @@ static string FindTagFileName() {
   return "";
 }
 
-static void UpdateMessageBufferTagLine(std::ostringstream& ss, const char *aux) {
+static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email) {
   if (a()->subs().subs().size() <= 0 && a()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
   const char szMultiMail[] = "Multi-Mail";
-  if (IsEqualsIgnoreCase(aux, "email")) {
+  if (is_email) {
     return;
   }
   if (a()->current_sub().nets.empty()) {
@@ -562,7 +562,7 @@ bool inmsg(MessageEditorData& data) {
   bout.nl();
 
   if (irt_name[0] == '\0') {
-    if (GetMessageToName(data.aux.c_str())) {
+    if (GetMessageToName(data.is_email())) {
       bout.nl();
     }
   }
@@ -585,7 +585,7 @@ bool inmsg(MessageEditorData& data) {
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
     save_message = InternalMessageEditor(lin, maxli, &setanon, &data.title);
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
-    save_message = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.msged_flags, data.aux);
+    save_message = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.msged_flags, data.is_email());
   } else if (data.fsed_flags == FsedFlags::WORKSPACE) {   // "auto-send mail message"
     save_message = File::Exists(exted_filename);
     if (save_message && !data.silent_mode) {
@@ -620,7 +620,7 @@ bool inmsg(MessageEditorData& data) {
   UpdateMessageBufferQuotesCtrlLines(b);
 
   if (irt[0]) {
-    UpdateMessageBufferInReplyToInfo(b, data.aux.c_str());
+    UpdateMessageBufferInReplyToInfo(b, data.is_email());
   }
 
   // TODO(rushfan): This and the date above, etc. Will need to be transformed
@@ -647,7 +647,7 @@ bool inmsg(MessageEditorData& data) {
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
-    UpdateMessageBufferTagLine(b, data.aux.c_str());
+    UpdateMessageBufferTagLine(b, data.is_email());
   }
 
   auto text = b.str();
