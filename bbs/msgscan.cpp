@@ -128,7 +128,6 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
   }
 
   if (user_input[0] == 'O' && (so() || lcs())) {
-    irt_sub[0] = 0;
     show_files("*.frm", a()->config()->gfilesdir().c_str());
     bout << "|#2Which form letter: ";
     char szFileName[MAX_PATH];
@@ -231,7 +230,6 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     } else {
       email("", get_post(msgnum)->owneruser, get_post(msgnum)->ownersys, false, get_post(msgnum)->anony);
     }
-    irt_sub[0] = 0;
     grab_quotes(nullptr, nullptr);
   }
 }
@@ -789,8 +787,6 @@ static void HandleMessageLoad() {
 }
 
 void HandleMessageReply(int &nMessageNumber) {
-  irt_sub[0] = 0;
-
   postrec p2 = *get_post(nMessageNumber);
   if (!lcs() && (p2.status & (status_unvalidated | status_delete))) {
     return;
@@ -1014,7 +1010,6 @@ static void HandleScanReadPrompt(int &msgnum, MsgScanOption& scan_option, bool& 
     case 'T': title_scan = true; scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES; break;
     case 'R': scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE; break;
     case '?': HandleMessageHelp(); break;
-    case '@': to_char_array(irt_sub, a()->subs().sub(a()->current_user_sub().subnum).name); 
     case 'A': HandleScanReadAutoReply(msgnum, szUserInput, scan_option); break;
     case 'D': HandleMessageDelete(msgnum); break;
     case 'E': HandleMessageExtract(msgnum); break;
@@ -1151,7 +1146,6 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
     case ReadMessageOption::COMMAND: {
       switch (result.command) {
       case 'Q': done = true; nextsub = false; break;
-      case '@': to_char_array(irt_sub, a()->subs().sub(a()->current_user_sub().subnum).name);
       case 'A': HandleScanReadAutoReply(msgnum, "A", scan_option); break;
       case 'B': if (nextsub) { HandleRemoveFromNewScan(); } nextsub = true; done = true; break;
       case 'D': HandleMessageDelete(msgnum); break;

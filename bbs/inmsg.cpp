@@ -370,11 +370,6 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
   // to add the RE: line when it's \xAB, so let's skip it.
   if (irt[0] != '"' && irt[0] != '\xAB') {
     ss << "RE: " << irt << crlf;
-    if (irt_sub[0]) {
-      ss << "ON: " << irt_sub << crlf;
-    }
-  } else {
-    irt_sub[0] = '\0';
   }
 
   if (!to_name.empty() && !is_email) {
