@@ -175,8 +175,7 @@ void do_automessage() {
       grab_quotes(nullptr, nullptr);
       unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
       if (pStatus->GetAutoMessageAuthorUserNumber() > 0) {
-        to_char_array(irt, "Re: AutoMessage");
-        email(irt, static_cast<uint16_t>(pStatus->GetAutoMessageAuthorUserNumber()), 0, false, pStatus->IsAutoMessageAnonymous() ? anony_sender : 0);
+        email("Re: AutoMessage", static_cast<uint16_t>(pStatus->GetAutoMessageAuthorUserNumber()), 0, false, pStatus->IsAutoMessageAnonymous() ? anony_sender : 0);
       }
     }
     break;

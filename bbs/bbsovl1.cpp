@@ -216,20 +216,18 @@ void feedback(bool bNewUserFeedback) {
   grab_quotes(nullptr, nullptr);
 
   if (bNewUserFeedback) {
-    sprintf(irt, "|#1Validation Feedback (|#6%d|#2 slots left|#1)",
+    auto title = StringPrintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
       a()->config()->config()->maxusers - a()->status_manager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
-    email(irt, 1, 0, true, 0, false);
+    email(title, 1, 0, true, 0, false);
     return;
   }
   if (guest_user) {
     a()->status_manager()->RefreshStatusCache();
-    to_char_array(irt, "Guest Account Feedback");
-    email(irt, 1, 0, true, 0, true);
+    email("Guest Account Feedback", 1, 0, true, 0, true);
     return;
   }
-  to_char_array(irt, "|#1Feedback");
   int nNumUserRecords = a()->users()->num_user_records();
   int i1 = 0;
 
@@ -268,7 +266,8 @@ void feedback(bool bNewUserFeedback) {
     bout.nl();
     i = ch - '0';
   }
-  email(irt, static_cast<uint16_t>(i), 0, false, 0, true);
+
+  email("|#1Feedback", static_cast<uint16_t>(i), 0, false, 0, true);
 }
 
 /**

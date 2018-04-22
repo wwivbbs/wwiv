@@ -662,7 +662,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   }
 }
 
-void imail(uint16_t user_number, uint16_t system_number) {
+void imail(const std::string& title, uint16_t user_number, uint16_t system_number) {
   auto fwdu = user_number;
   bool fwdm = false;
 
@@ -679,7 +679,7 @@ void imail(uint16_t user_number, uint16_t system_number) {
   if (fwdm) {
     read_inet_addr(internet_email_address, fwdu);
   }
-
+  
   int i = 1;
   if (system_number == 0) {
     User userRecord;
@@ -704,7 +704,7 @@ void imail(uint16_t user_number, uint16_t system_number) {
   }
   grab_quotes(nullptr, nullptr);
   if (i) {
-    email("", user_number, system_number, false, 0);
+    email(title, user_number, system_number, false, 0);
   }
 }
 void delmail(File& f, size_t loc) {

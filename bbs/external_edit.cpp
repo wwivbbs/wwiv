@@ -105,7 +105,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
  * line 5: Message area   }   posted. (not used in editor)
  * line 6: Private flag ("YES" or "NO")
  */
-static bool WriteMsgInf(const string& title, const string& destination, bool is_email) {
+static bool WriteMsgInf(const string& title, const string& destination, bool is_email, const string& to_name) {
   TextFile file(a()->temp_directory(), MSGINF, "wt");
   if (!file.IsOpen()) {
     return false;
@@ -118,9 +118,9 @@ static bool WriteMsgInf(const string& title, const string& destination, bool is_
     // line 2: Who the message is TO
     file.WriteLine(destination);
   } else {
-    if (strlen(irt_name) > 0) {
+    if (!to_name.empty()) {
       // line 2: Who the message is TO
-      file.WriteLine(irt_name);
+      file.WriteLine(to_name);
     } else {
       // Since we don't know who this is to, make it all.
       // line 2: Who the message is TO
@@ -202,7 +202,7 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
       File dest(a()->temp_directory(), MSGTMP);
       File::Copy(source.full_pathname(), dest.full_pathname());
     }
-    return WriteMsgInf(title, destination, is_email);
+    return WriteMsgInf(title, destination, is_email, irt_name);
   } 
 
   WriteWWIVEditorControlFiles(title, destination, flags);

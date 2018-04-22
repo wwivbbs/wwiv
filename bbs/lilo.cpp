@@ -327,7 +327,6 @@ static void LeaveBadPasswordFeedback(int ans) {
   }
   bout.nl();
   a()->usernum = 1;
-  sprintf(irt, "** Illegal logon feedback from %s", tempName.c_str());
   a()->user()->set_name(tempName.c_str());
   a()->user()->SetMacro(0, "");
   a()->user()->SetMacro(1, "");
@@ -342,7 +341,8 @@ static void LeaveBadPasswordFeedback(int ans) {
   a()->user()->SetNumEmailSent(0);
   bool bSaveAllowCC = a()->IsCarbonCopyEnabled();
   a()->SetCarbonCopyEnabled(false);
-  email(irt, 1, 0, true, 0, true);
+  auto title = StrCat("** Illegal logon feedback from ", tempName);
+  email(title, 1, 0, true, 0, true);
   a()->SetCarbonCopyEnabled(bSaveAllowCC);
   if (a()->user()->GetNumEmailSent() > 0) {
     ssm(1, 0) << "Check your mailbox.  Someone forgot their password again!";

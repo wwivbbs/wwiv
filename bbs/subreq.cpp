@@ -49,15 +49,14 @@ int find_hostfor(const std::string& type, short *ui, char *description, short *o
 static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
   bout << "|#5Send email request to the host now? ";
   if (yesno()) {
-    strcpy(irt, "Sub type ");
-    to_char_array(irt, ni->stype);
+    auto title = StrCat("Sub type ", ni->stype);
     if (bAdd) {
-      strcat(irt, " - ADD request");
+      title += " - ADD request";
     } else {
-      strcat(irt, " - DROP request");
+      title += " - DROP request";
     }
     set_net_num(ni->net_num);
-    email(irt, 1, ni->host, false, 0);
+    email(title, 1, ni->host, false, 0);
   }
 }
 

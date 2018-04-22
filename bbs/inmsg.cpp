@@ -348,11 +348,11 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
 }
 
 
-static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email) {
-  if (irt_name[0] && !is_email && !a()->current_sub().nets.empty()) {
+static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email, const string& to_name) {
+  if (!to_name.empty() && !is_email && !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
       if (a()->net_networks[xnp.net_num].type == network_type_t::ftn) {
-        const auto buf = StringPrintf("%c0FidoAddr: %s", CD, irt_name);
+        const auto buf = StringPrintf("%c0FidoAddr: %s", CD, to_name.c_str());
         ss << buf << crlf;
         break;
       }
@@ -377,8 +377,8 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
     irt_sub[0] = '\0';
   }
 
-  if (irt_name[0] && !is_email) {
-    ss << "BY: " << irt_name << crlf;
+  if (!to_name.empty() && !is_email) {
+    ss << "BY: " << to_name << crlf;
   }
   ss << crlf;
 }
@@ -406,11 +406,10 @@ static string FindTagFileName() {
   return "";
 }
 
-static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email) {
+static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& title) {
   if (a()->subs().subs().size() <= 0 && a()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
-  const char szMultiMail[] = "Multi-Mail";
   if (is_email) {
     return;
   }
@@ -420,7 +419,8 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email) {
   if (a()->current_sub().anony & anony_no_tag) {
     return;
   }
-  if (iequals(irt, szMultiMail)) {
+  // This is lame but need to figure out a better way.
+  if (iequals(irt, "Multi-Mail")) {
     return;
   }
 
@@ -620,7 +620,7 @@ bool inmsg(MessageEditorData& data) {
   UpdateMessageBufferQuotesCtrlLines(b);
 
   if (irt[0]) {
-    UpdateMessageBufferInReplyToInfo(b, data.is_email());
+    UpdateMessageBufferInReplyToInfo(b, data.is_email(), irt_name);
   }
 
   // TODO(rushfan): This and the date above, etc. Will need to be transformed
@@ -647,7 +647,7 @@ bool inmsg(MessageEditorData& data) {
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
-    UpdateMessageBufferTagLine(b, data.is_email());
+    UpdateMessageBufferTagLine(b, data.is_email(), data.title);
   }
 
   auto text = b.str();

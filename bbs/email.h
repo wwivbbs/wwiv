@@ -49,7 +49,7 @@ std::unique_ptr<File> OpenEmailFile(bool allow_write);
 void sendout_email(::EmailData& data);
 bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool force_it);
 void email(const std::string& title, uint16_t user_number, uint16_t system_number, bool force_it, int anony, bool allow_fsed = true);
-void imail(uint16_t user_number, uint16_t system_number);
+void imail(const std::string& title, uint16_t user_number, uint16_t system_number);
 void delmail(File& pFile, size_t loc);
 
 #endif  // __INCLUDED_BBS_MSGBASE_H__
