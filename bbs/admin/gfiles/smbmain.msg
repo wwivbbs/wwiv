@@ -20,4 +20,3 @@
 |#2W      |#9Reply with "Regards" to Last Message
 |#2X      |#9Toggle Net Pending Status           
 |#2Y      |#9Download Last Message               
-|#2@      |#9Reply to Different Address          

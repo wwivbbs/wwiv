@@ -7,5 +7,4 @@
 |#9(|#2U|#9) Make Current Message NOT Anonymous  
 |#9(|#2X|#9) Toggle Net Pending Status           
 |#9(|#2Y|#9) Download Last Message               
-|#9(|#2@|#9) Reply to Different Address          
 
