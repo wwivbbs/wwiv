@@ -117,6 +117,8 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     } else {
       auto_quote(&b[0], b.size(), 3, get_post(msgnum)->daten);
     }
+    // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
+    irt_name[0] = '\0';
   }
 
   if (get_post(msgnum)->status & status_post_new_net) {
@@ -801,6 +803,8 @@ void HandleMessageReply(int &nMessageNumber) {
   if (okfsed() && a()->user()->IsUseAutoQuote() &&
       nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
     auto_quote(&m.message_text[0], m.message_text.size(), 1, p2.daten);
+    // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
+    irt_name[0] = '\0';
   }
 
   if (!m.from_user_name.empty()) {

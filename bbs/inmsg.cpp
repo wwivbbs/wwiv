@@ -226,7 +226,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
                  (cmd == "/Q")) {
         check_message_size = false;
         if (quotes_ind != nullptr) {
-          get_quote(0);
+          get_quote(irt_name);
         }
       } else if ((cmd == "/LI")) {
         check_message_size = false;
@@ -401,7 +401,7 @@ static string FindTagFileName() {
   return "";
 }
 
-static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& title) {
+static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, const string& title, const string& to_name) {
   if (a()->subs().subs().size() <= 0 && a()->GetCurrentReadMessageArea() <= 0) {
     return;
   }
@@ -414,8 +414,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
   if (a()->current_sub().anony & anony_no_tag) {
     return;
   }
-  // This is lame but need to figure out a better way.
-  if (iequals(irt, "Multi-Mail")) {
+  if (iequals(to_name, "Multi-Mail")) {
     return;
   }
 
@@ -556,7 +555,7 @@ bool inmsg(MessageEditorData& data) {
 
   bout.nl();
 
-  if (irt_name[0] == '\0') {
+  if (data.to_name.empty()) {
     if (GetMessageToName(data.is_email())) {
       bout.nl();
     }
@@ -564,7 +563,7 @@ bool inmsg(MessageEditorData& data) {
   else {
     bout << "|#2To   : ";
     bout.mpl(40);
-    bout << irt_name << "\r\n";
+    bout << data.to_name << "\r\n";
   }
 
   GetMessageTitle(data);
@@ -642,7 +641,7 @@ bool inmsg(MessageEditorData& data) {
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {
-    UpdateMessageBufferTagLine(b, data.is_email(), data.title);
+    UpdateMessageBufferTagLine(b, data.is_email(), data.title, data.to_name);
   }
 
   auto text = b.str();

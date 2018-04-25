@@ -962,6 +962,8 @@ void readmail(int mode) {
           string b;
           if (readfile(&(m.msg), "email", &b)) {
             auto_quote(&b[0], b.size(), 4, m.daten);
+            // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
+            irt_name[0] = '\0';
             send_email();
           }
           break;
@@ -1111,6 +1113,8 @@ void readmail(int mode) {
             // used to be 1 or 2 depending on s[0] == '@', but
             // that's allowable now and @ was never in the beginning.
             auto_quote(&b[0], b.size(), 2, m.daten);
+            // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
+            irt_name[0] = '\0';
           }
 
           grab_quotes(&(m.msg), "email");

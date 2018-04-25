@@ -14,6 +14,7 @@ set(test_sources
   new_bbslist_test.cpp
   pause_test.cpp
   printfile_test.cpp
+  quote_test.cpp
   stuffin_test.cpp
   trashcan_test.cpp
   utility_test.cpp

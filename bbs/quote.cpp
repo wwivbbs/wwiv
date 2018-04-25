@@ -39,7 +39,7 @@
 //
 // Local function prototypes
 //
-char *GetQuoteInitials();
+char *GetQuoteInitials(const char* reply_to_name);
 
 #define LINELEN 79
 #define PFXCOL 2
@@ -67,48 +67,48 @@ using std::unique_ptr;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static bool ste(int i) {
-  if (irt_name[i] == 32 && irt_name[i + 1] == 'O' && irt_name[i + 2] == 'F' && irt_name[i + 3] == 32) {
-    if (irt_name[ i + 4 ] > 47 && irt_name[ i + 4 ] < 58) {
+static bool ste(const char* reply_to_name, int i) {
+  if (reply_to_name[i] == 32 && reply_to_name[i + 1] == 'O' && reply_to_name[i + 2] == 'F' && reply_to_name[i + 3] == 32) {
+    if (reply_to_name[ i + 4 ] > 47 && reply_to_name[ i + 4 ] < 58) {
       return false;
     }
   }
-  if (irt_name[i] == 96) {
+  if (reply_to_name[i] == 96) {
     brtnm++;
   }
   return true;
 }
 
 
-char *GetQuoteInitials() {
-  static char s_szQuoteInitials[8];
+char *GetQuoteInitials(const char* reply_to_name) {
+  static char s_quote_initials[8];
 
   brtnm = 0;
-  if (irt_name[0] == 96) {
-    s_szQuoteInitials[0] = irt_name[2];
-  } else if (irt_name[0] == 34) {
-    s_szQuoteInitials[0] = (irt_name[1] == 96) ? irt_name[3] : irt_name[1];
+  if (reply_to_name[0] == 96) {
+    s_quote_initials[0] = reply_to_name[2];
+  } else if (reply_to_name[0] == 34) {
+    s_quote_initials[0] = (reply_to_name[1] == 96) ? reply_to_name[3] : reply_to_name[1];
   } else {
-    s_szQuoteInitials[0] = irt_name[0];
+    s_quote_initials[0] = reply_to_name[0];
   }
 
   int i1 = 1;
-  for (int i = 1; i < wwiv::strings::GetStringLength(irt_name) && i1 < 6 && irt_name[i] != '#' && irt_name[i] != '<'
-       && ste(i) && brtnm != 2; i++) {
-    if (irt_name[i] == 32 && irt_name[i + 1] != '#' && irt_name[i + 1] != 96 && irt_name[i + 1] != '<') {
-      if (irt_name[ i + 1 ] == '(') {
-        if (!isdigit(irt_name[ i + 2 ])) {
+  for (int i = 1; i < wwiv::strings::GetStringLength(reply_to_name) && i1 < 6 && reply_to_name[i] != '#' && reply_to_name[i] != '<'
+       && ste(reply_to_name, i) && brtnm != 2; i++) {
+    if (reply_to_name[i] == 32 && reply_to_name[i + 1] != '#' && reply_to_name[i + 1] != 96 && reply_to_name[i + 1] != '<') {
+      if (reply_to_name[ i + 1 ] == '(') {
+        if (!isdigit(reply_to_name[ i + 2 ])) {
           i1 = 0;
         }
         i++;
       }
-      if (irt_name[i] != '(' || !isdigit(irt_name[i + 1])) {
-        s_szQuoteInitials[ i1++ ] = irt_name[ i + 1 ];
+      if (reply_to_name[i] != '(' || !isdigit(reply_to_name[i + 1])) {
+        s_quote_initials[ i1++ ] = reply_to_name[ i + 1 ];
       }
     }
   }
-  s_szQuoteInitials[ i1 ] = 0;
-  return s_szQuoteInitials;
+  s_quote_initials[ i1 ] = 0;
+  return s_quote_initials;
 }
 
 void grab_quotes(messagerec* m, const char *aux) {
@@ -136,7 +136,7 @@ void grab_quotes(messagerec* m, const char *aux) {
   quotes_nrm_l = quotes_ind_l = 0;
 
   if (m && aux) {
-    pfx = GetQuoteInitials();
+    pfx = GetQuoteInitials(irt_name);
     strcat(pfx, "> ");
     pfxlen = strlen(pfx);
 
@@ -325,12 +325,12 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
     p += 2;
     len = len - (p - b);
     b = p;
-    const string datetime = CreateDateString(tDateTime);
-    strcpy(s2, datetime.c_str());
+    const auto datetime = CreateDateString(tDateTime);
+    to_char_array(s2, datetime);
 
     //    s2[strlen(s2)-1]='\0';
     auto tb = properize(strip_to_node(s1));
-    tb1 = GetQuoteInitials();
+    tb1 = GetQuoteInitials(irt_name);
     switch (type) {
     case 1:
       sprintf(buf, "\003""3On \003""1%s, \003""2%s\003""3 wrote:\003""0", s2, tb.c_str());
@@ -378,32 +378,21 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
     if (a()->user()->GetNumMessagesPosted() < 10) {
       printfile(QUOTE_NOEXT);
     }
-    irt_name[0] = '\0';
   }
 }
 
-void get_quote(int fsed) {
+void get_quote(const std::string& reply_to_name) {
   static char s[141], s1[10];
   static int i, i1, i2, i3, rl;
   static int l1, l2;
 
   if (quotes_ind == nullptr) {
-    if (fsed) {
-      bout << "\x0c";
-    } else {
-      bout.nl();
-    }
+    bout.nl();
     bout << "Not replying to a message!  Nothing to quote!\r\n\n";
-    if (fsed) {
-      pausescr();
-    }
     return;
   }
   rl = 1;
   do {
-    if (fsed) {
-      bout << "\x0c";
-    }
     if (rl) {
       i = 1;
       l1 = l2 = 0;
@@ -420,7 +409,7 @@ void get_quote(int fsed) {
           while ((quotes_ind[l2++] != 10) && (l2 < quotes_ind_l)) {
           }
         } else {
-          if (irt_name[0]) {
+          if (!reply_to_name.empty()) {
             s[0] = 32;
             i3 = 1;
           } else {

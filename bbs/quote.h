@@ -18,10 +18,16 @@
 #ifndef __INCLUDED_BBS_QUOTE_H__
 #define __INCLUDED_BBS_QUOTE_H__
 
+#include <string>
+
 #include "sdk/vardec.h"
 
 void grab_quotes(messagerec* m, const char *aux);
 void auto_quote(char *org, long len, int type, time_t tDateTime);
-void get_quote(int fsed);
+void get_quote(const std::string& reply_to_name);
+
+// [[ VisibleForTesting ]]
+char *GetQuoteInitials(const char* reply_to_name);
+
 
 #endif  // __INCLUDED_BBS_QUOTE_H__

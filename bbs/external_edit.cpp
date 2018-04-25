@@ -194,7 +194,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& desti
   }
 }
 
-bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, bool is_email) {
+static bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& destination, int flags, bool is_email, const string& to_name) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     if (File::Exists(a()->temp_directory(), QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
@@ -202,7 +202,7 @@ bool WriteExternalEditorControlFiles(const editorrec& editor, const string& titl
       File dest(a()->temp_directory(), MSGTMP);
       File::Copy(source.full_pathname(), dest.full_pathname());
     }
-    return WriteMsgInf(title, destination, is_email, irt_name);
+    return WriteMsgInf(title, destination, is_email, to_name);
   } 
 
   WriteWWIVEditorControlFiles(title, destination, flags);
@@ -222,7 +222,7 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
 
   const string editor_filenme = (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
 
-  WriteExternalEditorControlFiles(editor, *title, destination, flags, is_email);
+  WriteExternalEditorControlFiles(editor, *title, destination, flags, is_email, irt_name);
   bool save_message = external_edit_internal(editor_filenme, a()->temp_directory(), editor, maxli);
 
   if (!save_message) {
@@ -247,7 +247,7 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
 bool external_text_edit(const string& edit_filename, const string& new_directory, int numlines,
                         const string& destination, int flags) {
   bout.nl();
-  const size_t editor_number = a()->user()->GetDefaultEditor() - 1;
+  const auto editor_number = a()->user()->GetDefaultEditor() - 1;
   if (editor_number >= a()->editors.size() || !okansi()) {
     bout << "You can't use that full screen editor. (ete1)" << wwiv::endl << wwiv::endl;
     pausescr();
@@ -255,9 +255,9 @@ bool external_text_edit(const string& edit_filename, const string& new_directory
   }
 
   RemoveWWIVControlFiles();
-  const editorrec& editor = a()->editors[editor_number];
-  WriteExternalEditorControlFiles(editor, edit_filename, destination, flags, false);
-  bool result = external_edit_internal(edit_filename, new_directory, editor, numlines);
+  const auto& editor = a()->editors[editor_number];
+  WriteExternalEditorControlFiles(editor, edit_filename, destination, flags, false, irt_name);
+  auto result = external_edit_internal(edit_filename, new_directory, editor, numlines);
   RemoveWWIVControlFiles();
   return result;
 }
@@ -284,7 +284,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   }
 
   WWIV_make_abs_cmd(a()->GetHomeDir(), &editorCommand);
-  const string original_directory = File::current_directory();
+  const auto original_directory = File::current_directory();
 
   string strippedFileName(stripfn(edit_filename.c_str()));
   if (!new_directory.empty()) {
@@ -293,21 +293,22 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
 
   time_t tFileTime = 0;
   File fileTempForTime(File::current_directory(), strippedFileName);
-  bool bIsFileThere = fileTempForTime.Exists();
+  auto bIsFileThere = fileTempForTime.Exists();
   if (bIsFileThere) {
     tFileTime = fileTempForTime.last_write_time();
   }
 
-  const string sx1 = std::to_string(a()->user()->GetScreenChars());
   int num_screen_lines = a()->user()->GetScreenLines();
   if (!a()->using_modem) {
     int newtl = (a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine()) ? 0 :
                 a()->localIO()->GetTopLine();
     num_screen_lines = a()->defscreenbottom + 1 - newtl;
   }
-  const string sx2 = std::to_string(num_screen_lines);
-  const string sx3 = std::to_string(numlines);
-  const string cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(), sx1, sx2, sx3, "");
+
+  const auto cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(), 
+    std::to_string(a()->user()->GetScreenChars()), 
+    std::to_string(num_screen_lines), 
+    std::to_string(numlines), "");
 
   // TODO(rushfan): Make this a common function shared between here and chains.
   int flags = 0;
@@ -327,8 +328,8 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   bout.clear_lines_listed();
   File::set_current_directory(new_directory);
 
-  bool bModifiedOrExists = false;
-  const string full_filename = fileTempForTime.full_pathname();
+  auto bModifiedOrExists = false;
+  const auto full_filename = fileTempForTime.full_pathname();
   if (!bIsFileThere) {
     bModifiedOrExists = File::Exists(full_filename);
   } else {
