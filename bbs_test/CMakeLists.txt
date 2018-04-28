@@ -41,4 +41,4 @@ else()
   target_link_libraries(bbs_tests core bbs_lib core_fixtures gtest)
 endif()
 
-add_test(bbs_tests bbs_tests)
+add_test(bbs_tests_test bbs_tests)

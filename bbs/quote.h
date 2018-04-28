@@ -27,7 +27,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime);
 void get_quote(const std::string& reply_to_name);
 
 // [[ VisibleForTesting ]]
-char *GetQuoteInitials(const char* reply_to_name);
+std::string GetQuoteInitials(const std::string& reply_to_name);
 
 
 #endif  // __INCLUDED_BBS_QUOTE_H__

@@ -19,6 +19,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "bbs/bbsutl.h"
 #include "bbs/input.h"
@@ -36,87 +37,65 @@
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 
-//
-// Local function prototypes
-//
-char *GetQuoteInitials(const char* reply_to_name);
 
 #define LINELEN 79
 #define PFXCOL 2
 #define QUOTECOL 0
 
 #define WRTPFX {file.WriteFormatted("\x3%c",PFXCOL+48);if (tf==1)\
-                cp=file.WriteBinary(pfx,pfxlen-1);\
-                else cp=file.WriteBinary(pfx,pfxlen);\
+                cp=file.WriteBinary(pfx.c_str(),pfx.size()-1);\
+                else cp=file.WriteBinary(pfx.c_str(),pfx.size());\
                 file.WriteFormatted("\x3%c",cc);}
 #define NL {if (!cp) {file.WriteFormatted("\x3%c",PFXCOL+48);\
-            file.WriteBinary(pfx,pfxlen);} if (ctlc) file.WriteBinary("0",1);\
+            file.WriteBinary(pfx.c_str(),pfx.size());} if (ctlc) file.WriteBinary("0",1);\
             file.WriteBinary("\r\n",2);cp=ns=ctlc=0;}
 #define FLSH {if (ss1) {if (cp && (l3+cp>=linelen)) NL else if (ns)\
               cp+=file.WriteBinary(" ",1);if (!cp) {if (ctld)\
               file.WriteFormatted("\x4%c",ctld); WRTPFX; } file.WriteBinary(ss1,l2);\
               cp+=l3;ss1=nullptr;l2=l3=0;ns=1;}}
 
-static int brtnm;
-
-static int quotes_nrm_l;
-static int quotes_ind_l;
+static int quotes_nrm_l = 0;
+static int quotes_ind_l = 0;
 
 using std::string;
 using std::unique_ptr;
+using std::vector;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static bool ste(const char* reply_to_name, int i) {
-  if (reply_to_name[i] == 32 && reply_to_name[i + 1] == 'O' && reply_to_name[i + 2] == 'F' && reply_to_name[i + 3] == 32) {
-    if (reply_to_name[ i + 4 ] > 47 && reply_to_name[ i + 4 ] < 58) {
-      return false;
-    }
+static string FirstLettersOfVectorAsString(const vector<string>& parts) {
+  string result;
+  for (const auto& part : parts) {
+    result.push_back(part.front());
   }
-  if (reply_to_name[i] == 96) {
-    brtnm++;
-  }
-  return true;
+  return result;
 }
 
-
-char *GetQuoteInitials(const char* reply_to_name) {
-  static char s_quote_initials[8];
-
-  brtnm = 0;
-  if (reply_to_name[0] == 96) {
-    s_quote_initials[0] = reply_to_name[2];
-  } else if (reply_to_name[0] == 34) {
-    s_quote_initials[0] = (reply_to_name[1] == 96) ? reply_to_name[3] : reply_to_name[1];
-  } else {
-    s_quote_initials[0] = reply_to_name[0];
+string GetQuoteInitials(const string& orig_name) {
+  if (orig_name.empty()) {
+    return {};
+  }
+  auto name = orig_name;
+  if (starts_with(name, "``")) { 
+    name = name.substr(2);
   }
 
-  int i1 = 1;
-  for (int i = 1; i < wwiv::strings::GetStringLength(reply_to_name) && i1 < 6 && reply_to_name[i] != '#' && reply_to_name[i] != '<'
-       && ste(reply_to_name, i) && brtnm != 2; i++) {
-    if (reply_to_name[i] == 32 && reply_to_name[i + 1] != '#' && reply_to_name[i + 1] != 96 && reply_to_name[i + 1] != '<') {
-      if (reply_to_name[ i + 1 ] == '(') {
-        if (!isdigit(reply_to_name[ i + 2 ])) {
-          i1 = 0;
-        }
-        i++;
-      }
-      if (reply_to_name[i] != '(' || !isdigit(reply_to_name[i + 1])) {
-        s_quote_initials[ i1++ ] = reply_to_name[ i + 1 ];
-      }
-    }
+  auto paren_start = name.find('(');
+  if (paren_start != name.npos && !isdigit(name.at(paren_start + 1))) {
+    auto inner = name.substr(paren_start + 1);
+    return GetQuoteInitials(inner);
   }
-  s_quote_initials[ i1 ] = 0;
-  return s_quote_initials;
+
+  const auto last = name.find_first_of("#<>()[]`");
+  vector<string> parts = (last != name.npos) ? 
+      SplitString(name.substr(0, last), " ") : SplitString(name, " ");
+  return FirstLettersOfVectorAsString(parts);
 }
 
 void grab_quotes(messagerec* m, const char *aux) {
   char *ss1, temp[255];
   long l2, l3;
-  char *pfx;
   int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
-  int pfxlen;
   char cc = QUOTECOL + 48;
   int linelen = LINELEN, tf = 0;
 
@@ -136,9 +115,8 @@ void grab_quotes(messagerec* m, const char *aux) {
   quotes_nrm_l = quotes_ind_l = 0;
 
   if (m && aux) {
-    pfx = GetQuoteInitials(irt_name);
-    strcat(pfx, "> ");
-    pfxlen = strlen(pfx);
+    auto pfx = GetQuoteInitials(irt_name);
+    pfx += "> ";
 
     string ss;
     if (readfile(m, aux, &ss)) {
@@ -299,13 +277,8 @@ static string CreateDateString(time_t t) {
 }
 
 void auto_quote(char *org, long len, int type, time_t tDateTime) {
-  char s1[81], s2[81], buf[255],
-       *p, *b,
-       b1[81],
-       *tb1;
+  char s1[81], s2[81], buf[255], *p = org, *b = org, b1[81];
 
-
-  p = b = org;
   File fileInputMsg(a()->temp_directory(), INPUT_MSG);
   fileInputMsg.Delete();
   if (!hangup) {
@@ -330,7 +303,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
 
     //    s2[strlen(s2)-1]='\0';
     auto tb = properize(strip_to_node(s1));
-    tb1 = GetQuoteInitials(irt_name);
+    auto tb1 = GetQuoteInitials(irt_name);
     switch (type) {
     case 1:
       sprintf(buf, "\003""3On \003""1%s, \003""2%s\003""3 wrote:\003""0", s2, tb.c_str());
@@ -358,7 +331,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
       *p = '\0';
       if (*b != '\004' && strchr(b, '\033') == nullptr) {
         int jj = 0;
-        for (int j = 0; j < static_cast<int>(77 - (strlen(tb1))); j++) {
+        for (int j = 0; j < static_cast<int>(77 - tb1.length()); j++) {
           if (((b[j] == '0') && (b[j - 1] != '\003')) || (b[j] != '0')) {
             b1[jj] = b[j];
           } else {
@@ -367,7 +340,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
           b1[jj + 1] = 0;
           jj++;
         }
-        sprintf(buf, "\003""1%s\003""7>\003""5%s\003""0", tb1, b1);
+        sprintf(buf, "\003""1%s\003""7>\003""5%s\003""0", tb1.c_str(), b1);
         fileInputMsg.Writeln(buf, strlen(buf));
       }
       p += 2;
@@ -381,7 +354,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
   }
 }
 
-void get_quote(const std::string& reply_to_name) {
+void get_quote(const string& reply_to_name) {
   static char s[141], s1[10];
   static int i, i1, i2, i3, rl;
   static int l1, l2;
