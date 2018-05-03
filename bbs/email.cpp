@@ -702,7 +702,7 @@ void imail(const std::string& title, uint16_t user_number, uint16_t system_numbe
       i = 0;
     }
   }
-  grab_quotes(nullptr, nullptr);
+  clear_quotes();
   if (i) {
     email(title, user_number, system_number, false, 0);
   }

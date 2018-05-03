@@ -102,10 +102,11 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
   if (!lcs() && get_post(msgnum)->status & (status_unvalidated | status_delete)) {
     return;
   }
+  string reply_to_name;
   if (get_post(msgnum)->ownersys && !get_post(msgnum)->owneruser) {
-    grab_user_name(&(get_post(msgnum)->msg), a()->current_sub().filename, a()->net_num());
+    reply_to_name = grab_user_name(&(get_post(msgnum)->msg), a()->current_sub().filename, a()->net_num());
   }
-  grab_quotes(&(get_post(msgnum)->msg), a()->current_sub().filename.c_str());
+  grab_quotes(&(get_post(msgnum)->msg), a()->current_sub().filename, reply_to_name);
 
   if (okfsed() && a()->user()->IsUseAutoQuote() && msgnum > 0 &&
       msgnum <= a()->GetNumMessagesInCurrentMessageArea() && user_input[0] != 'O') {
@@ -113,12 +114,10 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     readfile(&(get_post(msgnum)->msg),
              (a()->current_sub().filename), &b);
     if (user_input[0] == '@') {
-      auto_quote(&b[0], b.size(), 1, get_post(msgnum)->daten);
+      auto_quote(&b[0], reply_to_name, b.size(), 1, get_post(msgnum)->daten);
     } else {
-      auto_quote(&b[0], b.size(), 3, get_post(msgnum)->daten);
+      auto_quote(&b[0], reply_to_name, b.size(), 3, get_post(msgnum)->daten);
     }
-    // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
-    irt_name[0] = '\0';
   }
 
   if (get_post(msgnum)->status & status_post_new_net) {
@@ -144,7 +143,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);
       email(irt, get_post(msgnum)->owneruser, get_post(msgnum)->ownersys, false, get_post(msgnum)->anony);
-      grab_quotes(nullptr, nullptr);
+      clear_quotes();
     }
   } else if (user_input[0] == '@') {
     bout.nl();
@@ -232,7 +231,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     } else {
       email("", get_post(msgnum)->owneruser, get_post(msgnum)->ownersys, false, get_post(msgnum)->anony);
     }
-    grab_quotes(nullptr, nullptr);
+    clear_quotes();
   }
 }
 
@@ -798,19 +797,13 @@ void HandleMessageReply(int &nMessageNumber) {
     cs.filename.c_str(), p2.ownersys, p2.owneruser);
   m.title = p2.title;
 
-  grab_quotes(&p2.msg, a()->current_sub().filename.c_str());
+  grab_quotes(&p2.msg, a()->current_sub().filename, m.from_user_name);
 
   if (okfsed() && a()->user()->IsUseAutoQuote() &&
       nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
-    auto_quote(&m.message_text[0], m.message_text.size(), 1, p2.daten);
-    // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
-    irt_name[0] = '\0';
+    auto_quote(&m.message_text[0], m.from_user_name, m.message_text.size(), 1, p2.daten);
   }
 
-  if (!m.from_user_name.empty()) {
-    // Set the irt_name
-    to_char_array(irt_name, m.from_user_name);
-  }
   if (!m.title.empty()) {
     to_char_array(irt, m.title);
   }
@@ -820,7 +813,7 @@ void HandleMessageReply(int &nMessageNumber) {
   r.text = m.message_text;
   post(PostData(r));
   resynch(&nMessageNumber, &p2);
-  grab_quotes(nullptr, nullptr);
+  clear_quotes();
 }
 
 static void HandleMessageDelete(int &nMessageNumber) {
@@ -1020,7 +1013,7 @@ static void HandleScanReadPrompt(int &msgnum, MsgScanOption& scan_option, bool& 
     case 'L': HandleMessageLoad(); break;
     case 'M': HandleMessageMove(msgnum); break;
     case 'N': HandleToggleAutoPurge(msgnum); break;
-    case 'P': irt[0] = '\0'; irt_name[0] = '\0'; post(PostData()); break;
+    case 'P': post(PostData()); break;
     case 'U': HandleToggleUnAnonymous(msgnum); break;
     case 'V': HandleValUser(msgnum); break;
     case 'W': HandleMessageReply(msgnum); break;
@@ -1090,8 +1083,7 @@ static void query_post() {
      (a()->GetEffectiveSl() >= a()->current_sub().postsl)) {
     bout << "|#5Post on " << a()->current_sub().name << "? ";
     irt[0] = '\0';
-    irt_name[0] = '\0';
-    grab_quotes(nullptr, nullptr);
+    clear_quotes();
     if (yesno()) {
       post(PostData());
     }
@@ -1157,7 +1149,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
       case 'L': HandleMessageLoad(); break;
       case 'M': HandleMessageMove(msgnum); break;
       case 'N': HandleToggleAutoPurge(msgnum); break;
-      case 'P': { irt[0] = '\0'; irt_name[0] = '\0'; post(PostData()); } break;
+      case 'P': { post(PostData()); } break;
       case 'U': HandleToggleUnAnonymous(msgnum); break;
       case 'V': HandleValUser(msgnum); break;
       case 'W': HandleMessageReply(msgnum); break;
@@ -1178,7 +1170,6 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
 
 void scan(int nMessageNumber, MsgScanOption scan_option, bool &nextsub, bool title_scan) {
   irt[0] = '\0';
-  irt_name[0] = '\0';
 
   int val = 0;
   iscan(a()->current_user_sub_num());

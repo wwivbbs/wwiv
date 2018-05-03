@@ -547,7 +547,6 @@ void readmail(int mode) {
       bout.nl(3);
     } else {
       strcpy(irt, m.title);
-      irt_name[0] = '\0';
       abort = false;
       i = ((ability_read_email_anony & sl.ability) != 0);
       okmail = true;
@@ -636,7 +635,6 @@ void readmail(int mode) {
       write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
       set_net_num(nn);
       i1 = 1;
-      irt_name[0] = '\0';
       if (!a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
         bout << "|#2Mail {?} : ";
@@ -693,7 +691,8 @@ void readmail(int mode) {
         if (sentt) {
           bout << "\r\nAttached file sent.\r\n";
           sysoplog() << StringPrintf("Downloaded %ldk of attached file %s.", (fsr.numbytes + 1023) / 1024, fsr.filename);
-        } else {
+        }
+        else {
           bout << "\r\nAttached file not completely sent.\r\n";
           sysoplog() << StringPrintf("Tried to download attached file %s.", fsr.filename);
         }
@@ -702,7 +701,8 @@ void readmail(int mode) {
       case 'N':
         if (m.fromuser == 1) {
           add_netsubscriber(m.fromsys);
-        } else {
+        }
+        else {
           add_netsubscriber(0);
         }
         break;
@@ -736,7 +736,7 @@ void readmail(int mode) {
             num_mail = a()->user()->GetNumFeedbackSent() +
               a()->user()->GetNumEmailSent() +
               a()->user()->GetNumNetEmailSent();
-            grab_quotes(nullptr, nullptr);
+            clear_quotes();
             if (m.fromuser != 65535) {
               email(irt, m.fromuser, m.fromsys, false, m.anony);
             }
@@ -748,13 +748,14 @@ void readmail(int mode) {
               string msg;
               if (m.fromsys != 0) {
                 msg = StrCat(a()->network_name(), ": ", userandnet);
-              } else {
+              }
+              else {
                 msg = userandnet;
               }
               if (m.anony & anony_receiver) {
                 msg += ">UNKNOWN<";
               }
-              msg  += " read your mail on ";
+              msg += " read your mail on ";
               msg += fulldate();
               if (!(m.status & status_source_verified)) {
                 ssm(m.fromuser, m.fromsys) << msg;
@@ -764,11 +765,13 @@ void readmail(int mode) {
               if (curmail >= mw) {
                 done = true;
               }
-            } else {
+            }
+            else {
               // need instance
               File::Remove(a()->temp_directory(), INPUT_MSG);
             }
-          } else {
+          }
+          else {
             bout << "\r\nFile not found.\r\n\n";
             i1 = 0;
           }
@@ -832,8 +835,8 @@ void readmail(int mode) {
             tmp_disable_conf(false);
             break;
           }
-          for (i1 = 0; (i1 < size_int(a()->subs().subs())) 
-               && (a()->usub[i1].subnum != -1); i1++) {
+          for (i1 = 0; (i1 < size_int(a()->subs().subs()))
+            && (a()->usub[i1].subnum != -1); i1++) {
             if (ss1 == a()->usub[i1].keys) {
               i = i1;
             }
@@ -895,7 +898,8 @@ void readmail(int mode) {
             int nTempNumMsgs = a()->GetNumMessagesInCurrentMessageArea();
             resynch(&nTempNumMsgs, &p);
             a()->SetNumMessagesInCurrentMessageArea(nTempNumMsgs);
-          } else {
+          }
+          else {
             tmp_disable_conf(false);
           }
         }
@@ -909,9 +913,10 @@ void readmail(int mode) {
           break;
         }
         if (m.fromsys != 0) {
-          message = StrCat(a()->network_name(), ": ", 
+          message = StrCat(a()->network_name(), ": ",
             a()->names()->UserName(a()->usernum, a()->current_net().sysnum));
-        } else {
+        }
+        else {
           message = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
         }
 
@@ -960,10 +965,10 @@ void readmail(int mode) {
         bout.nl(2);
         if (okfsed() && a()->user()->IsUseAutoQuote()) {
           string b;
+          // TODO: optimize this since we also call readfile in grab_user_name
+          auto reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (readfile(&(m.msg), "email", &b)) {
-            auto_quote(&b[0], b.size(), 4, m.daten);
-            // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
-            irt_name[0] = '\0';
+            auto_quote(&b[0], reply_to_name, b.size(), 4, m.daten);
             send_email();
           }
           break;
@@ -1095,29 +1100,31 @@ void readmail(int mode) {
       } break;
       case 'A':
       case 'S':
-      case '@':
+      case '@': {
         if (!okmail) {
           break;
         }
+        string reply_to_name;
         num_mail = static_cast<long>(a()->user()->GetNumFeedbackSent()) +
-                   static_cast<long>(a()->user()->GetNumEmailSent()) +
-                   static_cast<long>(a()->user()->GetNumNetEmailSent());
+          static_cast<long>(a()->user()->GetNumEmailSent()) +
+          static_cast<long>(a()->user()->GetNumNetEmailSent());
         if (nn == 255) {
           bout << "|#6Deleted network.\r\n";
           i1 = 0;
           break;
-        } else if (m.fromuser != 65535) {
+        }
+        else if (m.fromuser != 65535) {
           if (okfsed() && a()->user()->IsUseAutoQuote()) {
             string b;
             readfile(&(m.msg), "email", &b);
+            // TODO: optimize this since we also call readfile in grab_user_name
+            reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
             // used to be 1 or 2 depending on s[0] == '@', but
             // that's allowable now and @ was never in the beginning.
-            auto_quote(&b[0], b.size(), 2, m.daten);
-            // Need to clear irt_name after auto_quote. This used to happen in auto_quote.
-            irt_name[0] = '\0';
+            auto_quote(&b[0], reply_to_name, b.size(), 2, m.daten);
           }
 
-          grab_quotes(&(m.msg), "email");
+          grab_quotes(&(m.msg), "email", reply_to_name);
           if (ch == '@') {
             bout << "\r\n|#9Enter user name or number:\r\n:";
             auto user_email = fixup_user_entered_email(input(75, true));
@@ -1125,14 +1132,15 @@ void readmail(int mode) {
             if (user_number || system_number) {
               email("", user_number, system_number, false, 0);
             }
-          } else {
+          }
+          else {
             email("", m.fromuser, m.fromsys, false, m.anony);
           }
-          grab_quotes(nullptr, nullptr);
+          clear_quotes();
         }
         num_mail1 = static_cast<long>(a()->user()->GetNumFeedbackSent()) +
-                    static_cast<long>(a()->user()->GetNumEmailSent()) +
-                    static_cast<long>(a()->user()->GetNumNetEmailSent());
+          static_cast<long>(a()->user()->GetNumEmailSent()) +
+          static_cast<long>(a()->user()->GetNumNetEmailSent());
         if (ch == 'A' || ch == '@') {
           if (num_mail != num_mail1) {
             string message;
@@ -1141,7 +1149,8 @@ void readmail(int mode) {
               message = a()->network_name();
               message += ": ";
               message += name;
-            } else {
+            }
+            else {
               message = name;
             }
             if (m.anony & anony_receiver) {
@@ -1161,11 +1170,13 @@ void readmail(int mode) {
             if (m.status & status_file) {
               delete_attachment(m.daten, 0);
             }
-          } else {
+          }
+          else {
             bout << "\r\nNo mail sent.\r\n\n";
             i1 = 0;
           }
-        } else {
+        }
+        else {
           if (num_mail != num_mail1) {
             if (!(m.status & status_replied)) {
               read_same_email(mloc, mw, curmail, m, 0, status_replied);
@@ -1176,7 +1187,7 @@ void readmail(int mode) {
             }
           }
         }
-        break;
+      } break;
       case 'U':
       case 'V':
       case 'C':

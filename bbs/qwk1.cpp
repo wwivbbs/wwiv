@@ -446,10 +446,9 @@ void qwk_email_text(char *text, char *title, char *to) {
   }
 
   irt[0] = 0;
-  irt_name[0] = 0;
   uint16_t sy, un;
   parse_email_info(to, &un, &sy);
-  grab_quotes(nullptr, nullptr);
+  clear_quotes();
 
   if (un || sy) {
     messagerec msg;

@@ -121,8 +121,7 @@ void send_inet_email() {
     unsigned short user_number = 0;
     unsigned short system_number = 32767;
     irt[0] = 0;
-    irt_name[0] = 0;
-    grab_quotes(nullptr, nullptr);
+    clear_quotes();
     if (user_number || system_number) {
       email("", user_number, system_number, false, 0);
     }

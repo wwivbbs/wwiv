@@ -473,7 +473,7 @@ int WFC::doWFCEvents() {
         const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
         string newFileName = Input1(current_dir_slash, 50, true, InputMode::FULL_PATH_NAME);
         if (!newFileName.empty()) {
-          external_text_edit(newFileName, "", 500, ".", MSGED_FLAG_NO_TAGLINE);
+          external_text_edit(newFileName, "", 500, MSGED_FLAG_NO_TAGLINE);
         }
       }
       break;

@@ -314,7 +314,6 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
   irt[0] = 0;
-  irt_name[0] = 0;
 
   if (a()->GetCurrentReadMessageArea() < 0) {
     return;

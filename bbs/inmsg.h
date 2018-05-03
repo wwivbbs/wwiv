@@ -35,6 +35,7 @@ public:
   // Title to use. If set it will be used without prompting the user.
   std::string title;
   std::string to_name;  // szDestination (to or sub name)
+  std::string sub_name;
 
   bool need_title = true;
   uint8_t anonymous_flag = 0;   // an

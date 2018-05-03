@@ -153,7 +153,6 @@ void send_email() {
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
   string username = input(75, true);
   irt[0] = '\0';
-  irt_name[0] = '\0';
   string::size_type atpos = username.find_first_of("@");
   if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
     if (username.find("@32767") == string::npos) {
@@ -167,7 +166,7 @@ void send_email() {
 
   uint16_t system_number, user_number;
   parse_email_info(username, &user_number, &system_number);
-  grab_quotes(nullptr, nullptr);
+  clear_quotes();
   if (user_number || system_number) {
     email("", user_number, system_number, false, 0);
   }
@@ -212,8 +211,7 @@ void feedback(bool bNewUserFeedback) {
   int i;
   char onek_str[20], ch;
 
-  irt_name[0] = '\0';
-  grab_quotes(nullptr, nullptr);
+  clear_quotes();
 
   if (bNewUserFeedback) {
     auto title = StringPrintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
@@ -283,8 +281,7 @@ void text_edit() {
   }
   sysoplog() << "@ Edited: " << filename;
   if (okfsed()) {
-    external_text_edit(filename, a()->config()->gfilesdir(), 500, 
-      a()->config()->gfilesdir(), MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(filename, a()->config()->gfilesdir(), 500, MSGED_FLAG_NO_TAGLINE);
   }
 }
 

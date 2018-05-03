@@ -75,7 +75,6 @@ void multimail(int *pnUserNumber, int numu) {
 
   m.msg.storage_type = EMAIL_STORAGE;
   strcpy(irt, "Multi-Mail");
-  irt_name[0] = 0;
   File::Remove(QUOTES_TXT);
   data.aux = "email";
   data.fsed_flags = FsedFlags::NOFSED;

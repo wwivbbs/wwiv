@@ -119,7 +119,6 @@ void frequent_init() {
   a()->SetUserOnline(false);
   a()->chatting_ = 0;
   irt[0] = '\0';
-  irt_name[0] = '\0';
   bout.clear_lines_listed();
   a()->ReadCurrentUser(1);
   read_qscn(1, qsc, false);

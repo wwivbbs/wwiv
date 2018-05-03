@@ -328,14 +328,10 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
     data.message_text.pop_back();
   }
 
-  // Also remove any BY: line if we have a To user name.
-  irt_name[0] = '\0';
-
   UpdateHeaderInformation(an, readit, data.from_user_name, &data.from_user_name, &data.date);
   if (an == 0) {
     a()->mci_enabled_ = false;
     SetMessageOriginInfo(from_sys_num, from_user, &data.from_sys_name, &data.from_sys_loc);
-    to_char_array(irt_name, data.from_user_name);
   }
 
   data.message_anony = an;
@@ -824,7 +820,6 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
   }
   m.title = p.title;
   strncpy(irt, p.title, 60);
-  irt_name[0] = '\0';
 
   if ((p.status & status_no_delete) && lcs()) {
     m.flags.insert(MessageFlags::PERMANENT);

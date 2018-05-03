@@ -28,10 +28,10 @@ constexpr int MSGED_FLAG_HAS_REPLY_NAME = 2;
 constexpr int MSGED_FLAG_HAS_REPLY_TITLE = 4;
 
 
-bool ExternalMessageEditor(int maxli, int *setanon, std::string* title, const std::string& destination, int flags, bool is_email);
+bool ExternalMessageEditor(int maxli, int *setanon, std::string* title, const std::string& to_name, const std::string& sub_name, int flags, bool is_email);
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
-                        const std::string& destination, int flags);
+                        int flags);
 
 #endif  // __INCLUDED_EXTERNAL_EDIT_H__
 

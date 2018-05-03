@@ -131,7 +131,6 @@ void RequestChat() {
   } else {
     bout << "|#6" << a()->config()->config()->sysopname
          << " is not available.\r\n\n|#5Try sending feedback instead.\r\n";
-    irt_name[0] = '\0';
     imail("|#1Tried Chatting", 1, 0);
   }
 }

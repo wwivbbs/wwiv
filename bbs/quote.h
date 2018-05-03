@@ -22,8 +22,9 @@
 
 #include "sdk/vardec.h"
 
-void grab_quotes(messagerec* m, const char *aux);
-void auto_quote(char *org, long len, int type, time_t tDateTime);
+void grab_quotes(messagerec* m, const std::string& aux, const std::string& to_name);
+void clear_quotes();
+void auto_quote(char *org, const std::string& to_name, long len, int type, time_t tDateTime);
 void get_quote(const std::string& reply_to_name);
 
 // [[ VisibleForTesting ]]

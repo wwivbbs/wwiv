@@ -370,8 +370,7 @@ void GoodBye() {
 
 void WWIV_PostMessage() {
   irt[0] = 0;
-  irt_name[0] = 0;
-  grab_quotes(nullptr, nullptr);
+  clear_quotes();
   if (a()->usub[0].subnum != -1) {
     post(PostData());
   }
@@ -515,7 +514,7 @@ void EditText() {
   bout << "|#7Enter Filespec: ";
   string fileName = input(50);
   if (!fileName.empty()) {
-    external_text_edit(fileName.c_str(), "", 500, ".", MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(fileName.c_str(), "", 500, MSGED_FLAG_NO_TAGLINE);
   }
 }
 

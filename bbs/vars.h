@@ -37,7 +37,6 @@
 
 __EXTRN__ char charbuffer[255];
 __EXTRN__ char irt[81];
-__EXTRN__ char irt_name[205];
 __EXTRN__ char* quotes_ind;
 
 __EXTRN__ bool  

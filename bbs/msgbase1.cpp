@@ -273,9 +273,8 @@ void post(const PostData& post_data) {
   data.fsed_flags = FsedFlags::FSED;
   data.msged_flags = (a()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
   data.aux = a()->current_sub().filename;
-  if (strlen(irt_name) > 0) {
-    data.to_name = irt_name;
-  }
+  data.sub_name = a()->subs().sub(a()->current_user_sub().subnum).name;
+  data.to_name = post_data.reply_to.name;
   data.need_title = true;
 
   if (!inmsg(data)) {
@@ -325,7 +324,7 @@ void post(const PostData& post_data) {
   open_sub(true);
 
   if ((!a()->current_sub().nets.empty()) &&
-  (a()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
+  (a()->current_sub().anony & anony_val_net) && (!lcs() || !post_data.reply_to.title.empty())) {
     p.status |= status_pending_net;
     bool dm = true;
     for (int i = a()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
@@ -395,21 +394,21 @@ void post(const PostData& post_data) {
   }
 }
 
-void grab_user_name(messagerec* msg, const std::string& file_name, int network_number) {
+std::string grab_user_name(messagerec* msg, const std::string& file_name, int network_number) {
   string text;
   a()->net_email_name.clear();
   if (!readfile(msg, file_name, &text)) {
-    return;
+    return {};
   }
   string::size_type cr = text.find_first_of('\r');
   if (cr == string::npos) {
-    return;
+    return {};
   }
   text.resize(cr);
   if (a()->net_networks[network_number].type == network_type_t::ftn) {
     // 1st line of message is from.
     a()->net_email_name = text;
-    return;
+    return text;
   }
   const char* ss2 = text.c_str();
   if (text[0] == '`' && text[1] == '`') {
@@ -422,7 +421,9 @@ void grab_user_name(messagerec* msg, const std::string& file_name, int network_n
       ++ss2;
     }
     a()->net_email_name = ss2;
+    return ss2;
   }
+  return {};
 }
 
 void qscan(uint16_t start_subnum, bool &nextsub) {

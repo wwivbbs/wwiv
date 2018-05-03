@@ -70,11 +70,11 @@ bool MessageEditorData::is_email() const {
 }
 
 
-static bool GetMessageToName(bool is_email) {
+static bool GetMessageToName(MessageEditorData& data) {
   // If a()->GetCurrentReadMessageArea() is -1, then it hasn't been set by reading a sub,
   // also, if we are using e-mail, this is definately NOT a FidoNet
   // post so there's no reason in wasting everyone's time in the loop...
-  if (a()->GetCurrentReadMessageArea() == -1 || is_email) {
+  if (a()->GetCurrentReadMessageArea() == -1 || data.is_email()) {
     return false;
   }
 
@@ -85,17 +85,17 @@ static bool GetMessageToName(bool is_email) {
   bool has_address = false;
   bool newlsave = bout.newline;
   for (const auto& xnp : a()->current_sub().nets) {
-    if (a()->net_networks[xnp.net_num].type == network_type_t::ftn && !is_email) {
+    if (a()->net_networks[xnp.net_num].type == network_type_t::ftn && !data.is_email()) {
       bout << "|#2To   : ";
       bout.newline = false;
       auto to_name = Input1("All", 40, true, InputMode::MIXED);
       bout.newline = newlsave;
       if (to_name.empty()) {
-        to_char_array(irt_name, "All");
+        data.to_name = "All";
         bout << "|#4All\r\n";
         bout.Color(0);
       } else {
-        to_char_array(irt_name, to_name);
+        data.to_name = to_name;
       }
       return true;
       // WTF??? strcpy(irt, "\xAB");
@@ -172,7 +172,7 @@ static void GetMessageTitle(MessageEditorData& data) {
   }
 }
 
-static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, string *title) {
+static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, MessageEditorData& data) {
   bool abort = false, next = false;
   int curli = 0;
 
@@ -226,7 +226,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
                  (cmd == "/Q")) {
         check_message_size = false;
         if (quotes_ind != nullptr) {
-          get_quote(irt_name);
+          get_quote(data.to_name);
         }
       } else if ((cmd == "/LI")) {
         check_message_size = false;
@@ -293,7 +293,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if (cmd == "/TI") {
         check_message_size = false;
         bout << "|#1Subj|#7: |#2" ;
-        *title = inputl(60, true);
+        data.title = inputl(60, true);
         bout << "Continue...\r\n\n";
       }
       if (cmd.length() > 3) {
@@ -547,7 +547,7 @@ bool inmsg(MessageEditorData& data) {
     setiia(oiia);
     a()->charbufferpointer_ = 0;
     charbuffer[0] = '\0';
-    grab_quotes(nullptr, nullptr);
+    clear_quotes();
     if (data.fsed_flags != FsedFlags::NOFSED) {
       File::Remove(exted_filename);
     }
@@ -556,7 +556,7 @@ bool inmsg(MessageEditorData& data) {
   bout.nl();
 
   if (data.to_name.empty()) {
-    if (GetMessageToName(data.is_email())) {
+    if (GetMessageToName(data)) {
       bout.nl();
     }
   }
@@ -577,9 +577,9 @@ bool inmsg(MessageEditorData& data) {
   auto save_message = false;
   auto maxli = GetMaxMessageLinesAllowed();
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
-    save_message = InternalMessageEditor(lin, maxli, &setanon, &data.title);
+    save_message = InternalMessageEditor(lin, maxli, &setanon, data);
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
-    save_message = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.msged_flags, data.is_email());
+    save_message = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.sub_name, data.msged_flags, data.is_email());
   } else if (data.fsed_flags == FsedFlags::WORKSPACE) {   // "auto-send mail message"
     save_message = File::Exists(exted_filename);
     if (save_message && !data.silent_mode) {
@@ -614,7 +614,7 @@ bool inmsg(MessageEditorData& data) {
   UpdateMessageBufferQuotesCtrlLines(b);
 
   if (irt[0]) {
-    UpdateMessageBufferInReplyToInfo(b, data.is_email(), irt_name);
+    UpdateMessageBufferInReplyToInfo(b, data.is_email(), data.to_name);
   }
 
   // TODO(rushfan): This and the date above, etc. Will need to be transformed

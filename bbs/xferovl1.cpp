@@ -109,7 +109,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
       }
 
       bool bEditOK = external_text_edit("extended.dsc", a()->temp_directory(),
-          a()->max_extend_lines, dest, MSGED_FLAG_NO_TAGLINE);
+          a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
         TextFile file(a()->temp_directory(), "extended.dsc", "r");

@@ -25,8 +25,11 @@
 
 class PostReplyToData {
 public:
+  // Original text this next post will reply to
   std::string text;
+  // Original name of the sender we are replying to
   std::string name;
+  // Original title this next post will reply to
   std::string title;
 };
 
@@ -51,7 +54,7 @@ private:
 
 void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);
 void post(const PostData& data);
-void grab_user_name(messagerec*m, const std::string& file_name, int network_number);
+std::string grab_user_name(messagerec*m, const std::string& file_name, int network_number);
 void qscan(uint16_t start_subnum, bool &next_sub);
 void nscan(uint16_t start_subnum = 0);
 void ScanMessageTitles();

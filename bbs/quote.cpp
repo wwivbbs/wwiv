@@ -92,13 +92,8 @@ string GetQuoteInitials(const string& orig_name) {
   return FirstLettersOfVectorAsString(parts);
 }
 
-void grab_quotes(messagerec* m, const char *aux) {
-  char *ss1, temp[255];
-  long l2, l3;
-  int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
-  char cc = QUOTECOL + 48;
-  int linelen = LINELEN, tf = 0;
 
+void clear_quotes() {
   string quotes_txt_fn = StrCat(a()->temp_directory(), QUOTES_TXT);
   string quotes_ind_fn = StrCat(a()->temp_directory(), QUOTES_IND);
 
@@ -113,153 +108,167 @@ void grab_quotes(messagerec* m, const char *aux) {
 
   quotes_ind = nullptr;
   quotes_nrm_l = quotes_ind_l = 0;
+}
 
-  if (m && aux) {
-    auto pfx = GetQuoteInitials(irt_name);
-    pfx += "> ";
+void grab_quotes(messagerec* m, const std::string& message_filename, const std::string& to_name) {
+  WWIV_ASSERT(m);
 
-    string ss;
-    if (readfile(m, aux, &ss)) {
-      quotes_nrm_l = ss.length();
-      if (ss.back() == CZ) {
-        // Since CZ isn't special on Win32/Linux. Don't write it out
-        // to the quotea file.
-        ss.pop_back();
-      }
+  char temp[255];
+  long l2, l3;
+  int cp = 0, ctla = 0, ctlc = 0, ns = 0, ctld = 0;
+  char cc = QUOTECOL + 48;
+  int linelen = LINELEN, tf = 0;
 
-      File quotesTextFile(quotes_txt_fn);
-      if (quotesTextFile.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
-        quotesTextFile.Write(ss);
-        quotesTextFile.Close();
-      }
-      TextFile file(quotes_ind_fn, "wb");
-      if (file.IsOpen()) {
-        l3 = l2 = 0;
-        ss1 = nullptr;
-        a()->internetFullEmailAddress = "";
-        if (a()->current_net().type == network_type_t::internet) {
-          for (size_t l1 = 0; l1 < ss.length(); l1++) {
-            if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
-                (ss[l1 + 3] == 'M')) {
-              l1 += 3;
-              while ((ss[l1] != '\r') && (l1 < ss.length())) {
-                temp[l3++] = ss[l1];
-                l1++;
-              }
-              temp[l3] = 0;
-              if (strncasecmp(temp, "Message-ID", 10) == 0) {
-                if (temp[0] != 0) {
-                  ss1 = strtok(temp, ":");
-                  if (ss1) {
-                    ss1 = strtok(nullptr, "\r\n");
-                  }
-                  if (ss1) {
-                    a()->usenetReferencesLine = ss1;
-                  }
-                }
-              }
-              l1 = ss.length();
+  clear_quotes();
+
+  auto quotes_txt_fn = StrCat(a()->temp_directory(), QUOTES_TXT);
+  auto quotes_ind_fn = StrCat(a()->temp_directory(), QUOTES_IND);
+
+  auto pfx = StrCat(GetQuoteInitials(to_name), "> ");
+
+  string ss;
+  if (!readfile(m, message_filename, &ss)) {
+    return;
+  }
+  quotes_nrm_l = ss.length();
+  if (ss.back() == CZ) {
+    // Since CZ isn't special on Win32/Linux. Don't write it out
+    // to the quotea file.
+    ss.pop_back();
+  }
+
+  File quotesTextFile(quotes_txt_fn);
+  if (quotesTextFile.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyNone)) {
+    quotesTextFile.Write(ss);
+    quotesTextFile.Close();
+  }
+  TextFile file(quotes_ind_fn, "wb");
+  if (!file.IsOpen()) {
+    return;
+  }
+
+  l3 = l2 = 0;
+  char* ss1 = nullptr;
+  a()->internetFullEmailAddress = "";
+  if (a()->current_net().type == network_type_t::internet) {
+    for (size_t l1 = 0; l1 < ss.length(); l1++) {
+      if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
+          (ss[l1 + 3] == 'M')) {
+        l1 += 3;
+        while ((ss[l1] != '\r') && (l1 < ss.length())) {
+          temp[l3++] = ss[l1];
+          l1++;
+        }
+        temp[l3] = 0;
+        if (strncasecmp(temp, "Message-ID", 10) == 0) {
+          if (temp[0] != 0) {
+            ss1 = strtok(temp, ":");
+            if (ss1) {
+              ss1 = strtok(nullptr, "\r\n");
+            }
+            if (ss1) {
+              a()->usenetReferencesLine = ss1;
             }
           }
         }
-        l3 = l2 = 0;
-        ss1 = nullptr;
-        for (size_t l1 = 0; l1 < ss.length(); l1++) {
-          if (ctld == -1) {
-            ctld = ss[l1];
-          } else switch (ss[l1]) {
-            case 1:
-              ctla = 1;
-              break;
-            case 2:
-              break;
-            case 3:
-              if (!ss1) {
-                ss1 = &ss[0] + l1;
-              }
-              l2++;
-              ctlc = 1;
-              break;
-            case 4:
-              ctld = -1;
-              break;
-            case '\n':
-              tf = 0;
-              if (ctla) {
-                ctla = 0;
-              } else {
-                cc = QUOTECOL + 48;
-                FLSH;
-                ctld = 0;
-                NL;
-              }
-              break;
-            case ' ':
-            case '\r':
-              if (ss1) {
-                FLSH;
-              } else {
-                if (ss[l1] == ' ') {
-                  if (cp + 1 >= linelen) {
-                    NL;
-                  }
-                  if (!cp) {
-                    if (ctld) {
-                      file.WriteFormatted("\x04%c", ctld);
-                    }
-                    WRTPFX;
-                  }
-                  cp++;
-                  file.WriteBinary(" ", 1);
-                }
-              }
-              break;
-            default:
-              if (!ss1) {
-                ss1 = &ss[0] + l1;
-              }
-              l2++;
-              if (ctlc) {
-                if (ss[l1] == 48) {
-                  ss[l1] = QUOTECOL + 48;
-                }
-                cc = ss[l1];
-                ctlc = 0;
-              } else {
-                l3++;
-                if (!tf) {
-                  if (ss[l1] == '>') {
-                    tf = 1;
-                    linelen = LINELEN;
-                  } else {
-                    tf = 2;
-                    linelen = LINELEN - 5;
-                  }
-                }
-              }
-              break;
-            }
-        }
-        FLSH;
-        if (cp) {
-          file.WriteBinary("\r\n", 2);
-        }
-        file.Close();
-
-        File ff(quotes_ind_fn);
-        if (ff.Open(File::modeBinary | File::modeReadOnly)) {
-          quotes_ind_l = ff.length();
-          quotes_ind = static_cast<char*>(BbsAllocA(quotes_ind_l));
-          if (quotes_ind) {
-            ff.Read(quotes_ind, quotes_ind_l);
-          } else {
-            quotes_ind_l = 0;
-          }
-          ff.Close();
-        }
-
+        l1 = ss.length();
       }
     }
+  }
+  l3 = l2 = 0;
+  ss1 = nullptr;
+  for (size_t l1 = 0; l1 < ss.length(); l1++) {
+    if (ctld == -1) {
+      ctld = ss[l1];
+    } else switch (ss[l1]) {
+      case 1:
+        ctla = 1;
+        break;
+      case 2:
+        break;
+      case 3:
+        if (!ss1) {
+          ss1 = &ss[0] + l1;
+        }
+        l2++;
+        ctlc = 1;
+        break;
+      case 4:
+        ctld = -1;
+        break;
+      case '\n':
+        tf = 0;
+        if (ctla) {
+          ctla = 0;
+        } else {
+          cc = QUOTECOL + 48;
+          FLSH;
+          ctld = 0;
+          NL;
+        }
+        break;
+      case ' ':
+      case '\r':
+        if (ss1) {
+          FLSH;
+        } else {
+          if (ss[l1] == ' ') {
+            if (cp + 1 >= linelen) {
+              NL;
+            }
+            if (!cp) {
+              if (ctld) {
+                file.WriteFormatted("\x04%c", ctld);
+              }
+              WRTPFX;
+            }
+            cp++;
+            file.WriteBinary(" ", 1);
+          }
+        }
+        break;
+      default:
+        if (!ss1) {
+          ss1 = &ss[0] + l1;
+        }
+        l2++;
+        if (ctlc) {
+          if (ss[l1] == 48) {
+            ss[l1] = QUOTECOL + 48;
+          }
+          cc = ss[l1];
+          ctlc = 0;
+        } else {
+          l3++;
+          if (!tf) {
+            if (ss[l1] == '>') {
+              tf = 1;
+              linelen = LINELEN;
+            } else {
+              tf = 2;
+              linelen = LINELEN - 5;
+            }
+          }
+        }
+        break;
+      }
+  }
+  FLSH;
+  if (cp) {
+    file.WriteBinary("\r\n", 2);
+  }
+  file.Close();
+
+  File ff(quotes_ind_fn);
+  if (ff.Open(File::modeBinary | File::modeReadOnly)) {
+    quotes_ind_l = ff.length();
+    quotes_ind = static_cast<char*>(BbsAllocA(quotes_ind_l));
+    if (quotes_ind) {
+      ff.Read(quotes_ind, quotes_ind_l);
+    } else {
+      quotes_ind_l = 0;
+    }
+    ff.Close();
   }
 }
 
@@ -276,7 +285,7 @@ static string CreateDateString(time_t t) {
   return ss.str();
 }
 
-void auto_quote(char *org, long len, int type, time_t tDateTime) {
+void auto_quote(char *org, const std::string& to_name, long len, int type, time_t tDateTime) {
   char s1[81], s2[81], buf[255], *p = org, *b = org, b1[81];
 
   File fileInputMsg(a()->temp_directory(), INPUT_MSG);
@@ -303,7 +312,7 @@ void auto_quote(char *org, long len, int type, time_t tDateTime) {
 
     //    s2[strlen(s2)-1]='\0';
     auto tb = properize(strip_to_node(s1));
-    auto tb1 = GetQuoteInitials(irt_name);
+    auto tb1 = GetQuoteInitials(to_name);
     switch (type) {
     case 1:
       sprintf(buf, "\003""3On \003""1%s, \003""2%s\003""3 wrote:\003""0", s2, tb.c_str());
