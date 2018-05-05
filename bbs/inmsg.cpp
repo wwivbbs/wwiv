@@ -348,7 +348,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
 }
 
 
-static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email, const string& to_name) {
+static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_email, const string& to_name, const string& title) {
   if (!to_name.empty() && !is_email && !a()->current_sub().nets.empty()) {
     for (const auto& xnp : a()->current_sub().nets) {
       if (a()->net_networks[xnp.net_num].type == network_type_t::ftn) {
@@ -368,8 +368,8 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
 
   // WTF is \xAB. FidoAddr sets it, but we don't want
   // to add the RE: line when it's \xAB, so let's skip it.
-  if (irt[0] != '"' && irt[0] != '\xAB') {
-    ss << "RE: " << irt << crlf;
+  if (!title.empty() && title.front() != '"' && title.front() != '\xAB') {
+    ss << "RE: " << title << crlf;
   }
 
   if (!to_name.empty() && !is_email) {
@@ -613,8 +613,8 @@ bool inmsg(MessageEditorData& data) {
   b << daten_to_wwivnet_time(daten_t_now()) << crlf;
   UpdateMessageBufferQuotesCtrlLines(b);
 
-  if (irt[0]) {
-    UpdateMessageBufferInReplyToInfo(b, data.is_email(), data.to_name);
+  if (!data.title.empty()) {
+    UpdateMessageBufferInReplyToInfo(b, data.is_email(), data.to_name, data.title);
   }
 
   // TODO(rushfan): This and the date above, etc. Will need to be transformed

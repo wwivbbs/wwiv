@@ -99,30 +99,34 @@ static string GetScanReadPrompts(int nMessageNumber) {
 }
 
 static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScanOption& scan_option) {
-  if (!lcs() && get_post(msgnum)->status & (status_unvalidated | status_delete)) {
+  postrec* post = get_post(msgnum);
+  if (!post) {
+    return;
+  }
+  if (!lcs() && post->status & (status_unvalidated | status_delete)) {
     return;
   }
   string reply_to_name;
-  if (get_post(msgnum)->ownersys && !get_post(msgnum)->owneruser) {
-    reply_to_name = grab_user_name(&(get_post(msgnum)->msg), a()->current_sub().filename, a()->net_num());
+  if (post->ownersys && !post->owneruser) {
+    reply_to_name = grab_user_name(&(post->msg), a()->current_sub().filename, a()->net_num());
   }
-  grab_quotes(&(get_post(msgnum)->msg), a()->current_sub().filename, reply_to_name);
+  grab_quotes(&(post->msg), a()->current_sub().filename, reply_to_name);
 
   if (okfsed() && a()->user()->IsUseAutoQuote() && msgnum > 0 &&
       msgnum <= a()->GetNumMessagesInCurrentMessageArea() && user_input[0] != 'O') {
     string b;
-    readfile(&(get_post(msgnum)->msg),
+    readfile(&(post->msg),
              (a()->current_sub().filename), &b);
     if (user_input[0] == '@') {
-      auto_quote(&b[0], reply_to_name, b.size(), 1, get_post(msgnum)->daten);
+      auto_quote(&b[0], reply_to_name, b.size(), 1, post->daten);
     } else {
-      auto_quote(&b[0], reply_to_name, b.size(), 3, get_post(msgnum)->daten);
+      auto_quote(&b[0], reply_to_name, b.size(), 3, post->daten);
     }
   }
 
-  if (get_post(msgnum)->status & status_post_new_net) {
-    set_net_num(get_post(msgnum)->network.network_msg.net_number);
-    if (get_post(msgnum)->network.network_msg.net_number == -1) {
+  if (post->status & status_post_new_net) {
+    set_net_num(post->network.network_msg.net_number);
+    if (post->network.network_msg.net_number == -1) {
       bout << "|#6Deleted network.\r\n";
       return;
     }
@@ -142,7 +146,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     }
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);
-      email(irt, get_post(msgnum)->owneruser, get_post(msgnum)->ownersys, false, get_post(msgnum)->anony);
+      email(irt, post->owneruser, post->ownersys, false, post->anony);
       clear_quotes();
     }
   } else if (user_input[0] == '@') {
@@ -180,7 +184,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     case '2': {
       if (msgnum > 0 && msgnum <= a()->GetNumMessagesInCurrentMessageArea()) {
         string b;
-        readfile(&(get_post(msgnum)->msg), (a()->current_sub().filename), &b);
+        readfile(&(post->msg), (a()->current_sub().filename), &b);
         string filename = "EXTRACT.TMP";
         if (File::Exists(filename)) {
           File::Remove(filename);
@@ -200,7 +204,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
           string buffer = StringPrintf("ON: %s", a()->current_sub().name.c_str());
           fileExtract.Write(buffer);
           fileExtract.Write("\r\n\r\n", 4);
-          fileExtract.Write(get_post(msgnum)->title, strlen(get_post(msgnum)->title));
+          fileExtract.Write(post->title, strlen(post->title));
           fileExtract.Write("\r\n", 2);
           fileExtract.Write(b);
           fileExtract.Close();
@@ -226,10 +230,10 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     }
   } else {
     if (lcs() || (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony)
-        || get_post(msgnum)->anony == 0) {
-      email("", get_post(msgnum)->owneruser, get_post(msgnum)->ownersys, false, 0);
+        || post->anony == 0) {
+      email("", post->owneruser, post->ownersys, false, 0);
     } else {
-      email("", get_post(msgnum)->owneruser, get_post(msgnum)->ownersys, false, get_post(msgnum)->anony);
+      email("", post->owneruser, post->ownersys, false, post->anony);
     }
     clear_quotes();
   }

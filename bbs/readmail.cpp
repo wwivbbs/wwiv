@@ -494,7 +494,8 @@ void readmail(int mode) {
           trim_to_size_ignore_colors(current_s, a()->mail_who_field_len);
           ss.str(current_s);
         }
-        ss << std::string(a()->mail_who_field_len + 1 - size_without_colors(current_s), ' ');
+        int siz = a()->mail_who_field_len + 1 - size_without_colors(current_s);
+        ss << std::string(std::max(0, siz), ' ');
         if (okansi()) {
           ss << "|#7\xB3|#1";
         } else {
@@ -738,7 +739,7 @@ void readmail(int mode) {
               a()->user()->GetNumNetEmailSent();
             clear_quotes();
             if (m.fromuser != 65535) {
-              email(irt, m.fromuser, m.fromsys, false, m.anony);
+              email(m.title, m.fromuser, m.fromsys, false, m.anony);
             }
             num_mail1 = static_cast<long>(a()->user()->GetNumFeedbackSent()) +
               static_cast<long>(a()->user()->GetNumEmailSent()) +
@@ -1114,11 +1115,11 @@ void readmail(int mode) {
           break;
         }
         else if (m.fromuser != 65535) {
+          // TODO: optimize this since we also call readfile in grab_user_name
+          reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
           if (okfsed() && a()->user()->IsUseAutoQuote()) {
             string b;
             readfile(&(m.msg), "email", &b);
-            // TODO: optimize this since we also call readfile in grab_user_name
-            reply_to_name = grab_user_name(&(m.msg), "email", network_number_from(&m));
             // used to be 1 or 2 depending on s[0] == '@', but
             // that's allowable now and @ was never in the beginning.
             auto_quote(&b[0], reply_to_name, b.size(), 2, m.daten);
