@@ -103,7 +103,7 @@ static void HandleControlKey(char *ch) {
     case CF:   // CTRL-F
       if (okmacro && (!a()->charbufferpointer_)) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
-        int macroNum = MACRO_KEY_TABLE[(int)c];
+        auto macroNum = MACRO_KEY_TABLE[(int)c];
         to_char_array(charbuffer, a()->user()->GetMacro(macroNum));
         c = charbuffer[0];
         if (c) {
