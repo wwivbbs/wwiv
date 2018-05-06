@@ -387,9 +387,11 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
 
   if (a()->user()->GetScreenChars() >= 80) {
     if (size_without_colors(line) > 50) {
-      trim_to_size_ignore_colors(line, 50);
+      line = trim_to_size_ignore_colors(line, 50);
     }
-    line += std::string(51 - size_without_colors(line), ' ');
+    //else {
+      line += std::string(51 - size_without_colors(line), ' ');
+    //}
     if (okansi()) {
       line += "|09\xB3|10 ";
     }
