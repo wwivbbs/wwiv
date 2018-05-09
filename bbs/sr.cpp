@@ -630,8 +630,6 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
   }
 }
 
-
-
 char end_batch1() {
   char b[128];
 
@@ -678,9 +676,11 @@ void endbatch() {
       abort = true;
     }
     if (ch == CU) {
-      File nullFile;
+      File nullFile(a()->temp_directory(), StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
+      nullFile.Delete();
       send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
       abort = true;
+      nullFile.Delete();
     }
     /*
     if ((!hangup) && (!abort))

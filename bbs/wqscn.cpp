@@ -18,16 +18,18 @@
 /**************************************************************************/
 #include "bbs/wqscn.h"
 
+#include <memory>
+
 #include "bbs/bbs.h"
 #include "bbs/vars.h"
 #include "sdk/filenames.h"
 
-static File qscanFile;
+static std::unique_ptr<File> qscanFile;
 
 static bool open_qscn() {
-  if (!qscanFile.IsOpen()) {
-    qscanFile.set_name(a()->config()->datadir(), USER_QSC);
-    if (!qscanFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
+  if (!qscanFile) {
+    qscanFile.reset(new File(a()->config()->datadir(), USER_QSC));
+    if (!qscanFile->Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return false;
     }
   }
@@ -36,8 +38,8 @@ static bool open_qscn() {
 
 
 void close_qscn() {
-  if (qscanFile.IsOpen()) {
-    qscanFile.Close();
+  if (qscanFile->IsOpen()) {
+    qscanFile.reset();
   }
 }
 
@@ -56,9 +58,9 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
   }
   if (open_qscn()) {
     long lPos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
-    if (lPos + static_cast<long>(a()->config()->config()->qscn_len) <= qscanFile.length()) {
-      qscanFile.Seek(lPos, File::Whence::begin);
-      qscanFile.Read(qscn, a()->config()->config()->qscn_len);
+    if (lPos + static_cast<long>(a()->config()->config()->qscn_len) <= qscanFile->length()) {
+      qscanFile->Seek(lPos, File::Whence::begin);
+      qscanFile->Read(qscn, a()->config()->config()->qscn_len);
       if (!stay_open) {
         close_qscn();
       }
@@ -90,9 +92,9 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
     }
   }
   if (open_qscn()) {
-    long lPos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
-    qscanFile.Seek(lPos, File::Whence::begin);
-    qscanFile.Write(qscn, a()->config()->config()->qscn_len);
+    auto pos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
+    qscanFile->Seek(pos, File::Whence::begin);
+    qscanFile->Write(qscn, a()->config()->config()->qscn_len);
     if (!stay_open) {
       close_qscn();
     }

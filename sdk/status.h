@@ -254,7 +254,7 @@ public:
   bool Run(status_txn_fn fn);
 
 private:
-  File status_file_;
+  std::unique_ptr<File> status_file_;
   const std::string datadir_;
   status_callabck_fn callback_;
   bool Write(statusrec_t *pStatus);

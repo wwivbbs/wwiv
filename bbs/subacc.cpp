@@ -21,13 +21,13 @@
 #include <memory>
 #include <string>
 
+#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
 #include "bbs/message_file.h"
-#include "bbs/vars.h"
 #include "bbs/output.h"
-#include "bbs/application.h"
+#include "bbs/vars.h"
 #include "core/file.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
@@ -46,12 +46,12 @@ using namespace wwiv::strings;
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// NOTE: This file containts wwiv message base specific code and should 
+// NOTE: This file containts wwiv message base specific code and should
 // move to SDK.
 //
 
-static File fileSub;                       // File object for '.sub' file
-static char subdat_fn[MAX_PATH];            // filename of .sub file
+static std::unique_ptr<File> fileSub; // File object for '.sub' file
+static char subdat_fn[MAX_PATH];      // filename of .sub file
 
 using std::unique_ptr;
 using namespace wwiv::core;
@@ -61,40 +61,35 @@ using namespace wwiv::strings;
 // Needed by pack_all_subs() which should move out of here.
 bool checka();
 
-
 void close_sub() {
-  if (fileSub.IsOpen()) {
-    fileSub.Close();
+  if (fileSub) {
+    fileSub.reset();
   }
 }
 
 bool open_sub(bool wr) {
-  close_sub();
-
+  fileSub.reset(new File(subdat_fn));
   if (wr) {
-    fileSub.set_name(subdat_fn);
-    fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-    if (fileSub.IsOpen()) {
+    fileSub->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+    if (fileSub->IsOpen()) {
       // re-read info from file, to be safe
-      fileSub.Seek(0L, File::Whence::begin);
-      postrec p;
-      fileSub.Read(&p, sizeof(postrec));
+      fileSub->Seek(0L, File::Whence::begin);
+      postrec p{};
+      fileSub->Read(&p, sizeof(postrec));
       a()->SetNumMessagesInCurrentMessageArea(p.owneruser);
     }
   } else {
-    fileSub.set_name(subdat_fn);
-    fileSub.Open(File::modeReadOnly | File::modeBinary);
+    fileSub->Open(File::modeReadOnly | File::modeBinary);
   }
 
-  return fileSub.IsOpen();
+  return fileSub->IsOpen();
 }
 
 uint32_t WWIVReadLastRead(int sub_number) {
   // open file, and create it if necessary
   postrec p{};
 
-  File subFile(a()->config()->datadir(), 
-    StrCat(a()->subs().sub(sub_number).filename, ".sub"));
+  File subFile(a()->config()->datadir(), StrCat(a()->subs().sub(sub_number).filename, ".sub"));
   if (!subFile.Exists()) {
     bool created = subFile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     if (!created) {
@@ -150,7 +145,7 @@ bool iscan1(int sub_index) {
       return false;
     }
     p.owneruser = 0;
-    fileSub.Write(&p, sizeof(postrec));
+    fileSub->Write(&p, sizeof(postrec));
   } else if (!open_sub(false)) {
     return false;
   }
@@ -160,8 +155,8 @@ bool iscan1(int sub_index) {
   a()->subchg = 0;
 
   // read in first rec, specifying # posts
-  fileSub.Seek(0L, File::Whence::begin);
-  fileSub.Read(&p, sizeof(postrec));
+  fileSub->Seek(0L, File::Whence::begin);
+  fileSub->Read(&p, sizeof(postrec));
   a()->SetNumMessagesInCurrentMessageArea(p.owneruser);
 
   // We used to read in sub date, if don't already know it
@@ -175,12 +170,10 @@ bool iscan1(int sub_index) {
 }
 
 // Initializes use of a sub (a()->usub[] value, not a()->subs().subs()[] value).
-int iscan(int b) {
-  return iscan1(a()->usub[b].subnum);
-}
+int iscan(int b) { return iscan1(a()->usub[b].subnum); }
 
 // Returns info for a post.
-postrec *get_post(int mn) {
+postrec* get_post(int mn) {
   if (mn < 1) {
     return nullptr;
   }
@@ -188,7 +181,7 @@ postrec *get_post(int mn) {
     mn = a()->GetNumMessagesInCurrentMessageArea();
   }
   bool need_close = false;
-  if (!fileSub.IsOpen()) {
+  if (!fileSub) {
     if (!open_sub(false)) {
       return nullptr;
     }
@@ -196,8 +189,8 @@ postrec *get_post(int mn) {
   }
   // read in post
   static postrec p;
-  fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
-  fileSub.Read(&p, sizeof(postrec));
+  fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
+  fileSub->Read(&p, sizeof(postrec));
 
   if (need_close) {
     close_sub();
@@ -205,54 +198,56 @@ postrec *get_post(int mn) {
   return &p;
 }
 
-void write_post(int mn, postrec * pp) {
-  if (!fileSub.IsOpen()) {
+void write_post(int mn, postrec* pp) {
+  if (!fileSub || !fileSub->IsOpen()) {
     return;
   }
-  fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
-  fileSub.Write(pp, sizeof(postrec));
+  fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
+  fileSub->Write(pp, sizeof(postrec));
 }
 
-void add_post(postrec * pp) {
+void add_post(postrec* pp) {
   bool need_close = false;
 
   // open the sub, if necessary
-  if (!fileSub.IsOpen()) {
+  if (!fileSub) {
     open_sub(true);
     need_close = true;
   }
-  if (fileSub.IsOpen()) {
-    // get updated info
-    a()->status_manager()->RefreshStatusCache();
-    fileSub.Seek(0L, File::Whence::begin);
-    subfile_header_t p{};
-    fileSub.Read(&p, sizeof(subfile_header_t));
-
-    if (strncmp(p.signature, "WWIV\x1A", 5) != 0) {
-      auto saved_count = p.active_message_count;
-      memset(&p, 0, sizeof(subfile_header_t));
-      // We don't have a modern header.
-      strcpy(p.signature, "WWIV\x1A");
-      p.active_message_count = saved_count;
-      p.revision = 1;
-      p.wwiv_version = wwiv_num_version;
-      p.daten_created = time_t_now();
-    }
-
-    // one more post
-    p.active_message_count++;
-    p.mod_count++;
-    a()->SetNumMessagesInCurrentMessageArea(p.active_message_count);
-    fileSub.Seek(0L, File::Whence::begin);
-    fileSub.Write(&p, sizeof(postrec));
-
-    // add the new post
-    fileSub.Seek(a()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::Whence::begin);
-    fileSub.Write(pp, sizeof(postrec));
-
-    // we've modified the sub
-    a()->subchg = 0;
+  if (!fileSub || !fileSub->IsOpen()) {
+    return;
   }
+  // get updated info
+  a()->status_manager()->RefreshStatusCache();
+  fileSub->Seek(0L, File::Whence::begin);
+  subfile_header_t p{};
+  fileSub->Read(&p, sizeof(subfile_header_t));
+
+  if (strncmp(p.signature, "WWIV\x1A", 5) != 0) {
+    auto saved_count = p.active_message_count;
+    memset(&p, 0, sizeof(subfile_header_t));
+    // We don't have a modern header.
+    strcpy(p.signature, "WWIV\x1A");
+    p.active_message_count = saved_count;
+    p.revision = 1;
+    p.wwiv_version = wwiv_num_version;
+    p.daten_created = time_t_now();
+  }
+
+  // one more post
+  p.active_message_count++;
+  p.mod_count++;
+  a()->SetNumMessagesInCurrentMessageArea(p.active_message_count);
+  fileSub->Seek(0L, File::Whence::begin);
+  fileSub->Write(&p, sizeof(postrec));
+
+  // add the new post
+  fileSub->Seek(a()->GetNumMessagesInCurrentMessageArea() * sizeof(postrec), File::Whence::begin);
+  fileSub->Write(pp, sizeof(postrec));
+
+  // we've modified the sub
+  a()->subchg = 0;
+
   if (need_close) {
     close_sub();
   }
@@ -264,44 +259,44 @@ void delete_message(int mn) {
   bool need_close = false;
 
   // open file, if needed
-  if (!fileSub.IsOpen()) {
+  if (!fileSub || !fileSub->IsOpen()) {
     open_sub(true);
     need_close = true;
   }
   // see if anything changed
   a()->status_manager()->RefreshStatusCache();
 
-  if (fileSub.IsOpen()) {
+  if (fileSub) {
     if (mn > 0 && mn <= a()->GetNumMessagesInCurrentMessageArea()) {
-      char *pBuffer = static_cast<char *>(malloc(BUFSIZE));
+      char* pBuffer = static_cast<char*>(malloc(BUFSIZE));
       if (pBuffer) {
-        postrec *p1 = get_post(mn);
+        postrec* p1 = get_post(mn);
         remove_link(&(p1->msg), a()->current_sub().filename);
 
-        long cp = static_cast<long>(mn + 1) * sizeof(postrec);
-        long len = static_cast<long>(a()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);
+        auto cp = static_cast<long>(mn + 1) * sizeof(postrec);
+        auto len = static_cast<long>(a()->GetNumMessagesInCurrentMessageArea() + 1) * sizeof(postrec);
 
         unsigned int nb = 0;
         do {
           long l = len - cp;
           nb = (l < BUFSIZE) ? static_cast<int>(l) : BUFSIZE;
           if (nb) {
-            fileSub.Seek(cp, File::Whence::begin);
-            fileSub.Read(pBuffer, nb);
-            fileSub.Seek(cp - sizeof(postrec), File::Whence::begin);
-            fileSub.Write(pBuffer, nb);
+            fileSub->Seek(cp, File::Whence::begin);
+            fileSub->Read(pBuffer, nb);
+            fileSub->Seek(cp - sizeof(postrec), File::Whence::begin);
+            fileSub->Write(pBuffer, nb);
             cp += nb;
           }
         } while (nb == BUFSIZE);
 
         // update # msgs
         postrec p;
-        fileSub.Seek(0L, File::Whence::begin);
-        fileSub.Read(&p, sizeof(postrec));
+        fileSub->Seek(0L, File::Whence::begin);
+        fileSub->Read(&p, sizeof(postrec));
         p.owneruser--;
         a()->SetNumMessagesInCurrentMessageArea(p.owneruser);
-        fileSub.Seek(0L, File::Whence::begin);
-        fileSub.Write(&p, sizeof(postrec));
+        fileSub->Seek(0L, File::Whence::begin);
+        fileSub->Write(&p, sizeof(postrec));
         free(pBuffer);
       }
     }
@@ -312,17 +307,13 @@ void delete_message(int mn) {
   }
 }
 
-static bool IsSamePost(postrec * p1, postrec * p2) {
-  return p1 &&
-    p2 &&
-    p1->daten == p2->daten &&
-    p1->qscan == p2->qscan &&
-    p1->ownersys == p2->ownersys &&
-    p1->owneruser == p2->owneruser &&
-    wwiv::strings::IsEquals(p1->title, p2->title);
+static bool IsSamePost(postrec* p1, postrec* p2) {
+  return p1 && p2 && p1->daten == p2->daten && p1->qscan == p2->qscan &&
+         p1->ownersys == p2->ownersys && p1->owneruser == p2->owneruser &&
+         wwiv::strings::IsEquals(p1->title, p2->title);
 }
 
-void resynch(int *msgnum, postrec * pp) {
+void resynch(int* msgnum, postrec* pp) {
   postrec p, *pp1;
   if (pp) {
     p = *pp;
@@ -376,16 +367,14 @@ void pack_sub(int si) {
     const string fn1 = StrCat(a()->config()->msgsdir(), sfn, ".dat");
     const string fn2 = StrCat(a()->config()->msgsdir(), nfn, ".dat");
 
-    bout << "\r\n|#7\xFE |#1Packing Message Subboard: |#5" 
-         << a()->subs().sub(si).name << wwiv::endl;
+    bout << "\r\n|#7\xFE |#1Packing Message Subboard: |#5" << a()->subs().sub(si).name
+         << wwiv::endl;
 
     for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea(); i++) {
       if (i % 10 == 0) {
-        bout << i << "/" 
-             << a()->GetNumMessagesInCurrentMessageArea()
-             << "\r";
+        bout << i << "/" << a()->GetNumMessagesInCurrentMessageArea() << "\r";
       }
-      postrec *p = get_post(i);
+      postrec* p = get_post(i);
       if (p) {
         std::string text;
         if (!readfile(&(p->msg), sfn, &text)) {
@@ -394,23 +383,20 @@ void pack_sub(int si) {
         savefile(text, &(p->msg), nfn);
         write_post(i, p);
       }
-      bout << i << "/" 
-           << a()->GetNumMessagesInCurrentMessageArea()
-           << "\r";
+      bout << i << "/" << a()->GetNumMessagesInCurrentMessageArea() << "\r";
     }
 
     File::Remove(fn1);
     File::Rename(fn2, fn1);
 
     close_sub();
-    bout << "|#7\xFE |#1Done Packing " 
-         << a()->GetNumMessagesInCurrentMessageArea() 
+    bout << "|#7\xFE |#1Done Packing " << a()->GetNumMessagesInCurrentMessageArea()
          << " messages.                              \r\n";
   }
 }
 
 bool pack_all_subs() {
-  for (size_t i=0; i < a()->subs().subs().size() && !hangup; i++) {
+  for (size_t i = 0; i < a()->subs().subs().size() && !hangup; i++) {
     pack_sub(i);
     if (checka() == true) {
       // checka checks to see if abort is set.

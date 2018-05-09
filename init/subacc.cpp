@@ -17,48 +17,42 @@
 /*                                                                        */
 /**************************************************************************/
 #include <cstdlib>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "init/wwivinit.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "init/subacc.h"
+#include "init/wwivinit.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
-#include "init/subacc.h"
-
 
 using std::vector;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static File fileSub;                       // File object for '.sub' file
-static char subdat_fn[MAX_PATH];            // filename of .sub file
+// File object for '.sub' file
+static std::unique_ptr<File> fileSub;             
+// filename of .sub file
+static char subdat_fn[MAX_PATH]; 
 
 // locals
 static int current_read_message_area, subchg;
-static int  GetCurrentReadMessageArea() {
-  return current_read_message_area;
-}
+static int GetCurrentReadMessageArea() { return current_read_message_area; }
 
-static void SetCurrentReadMessageArea(int n) {
-  current_read_message_area = n;
-}
+static void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
 static int nNumMsgsInCurrentSub;
 
-int GetNumMessagesInCurrentMessageArea() {
-  return nNumMsgsInCurrentSub;
-}
+int GetNumMessagesInCurrentMessageArea() { return nNumMsgsInCurrentSub; }
 
-static void SetNumMessagesInCurrentMessageArea(int n) {
-  nNumMsgsInCurrentSub = n;
-}
+static void SetNumMessagesInCurrentMessageArea(int n) { nNumMsgsInCurrentSub = n; }
 
 void close_sub() {
-  if (fileSub.IsOpen()) {
-    fileSub.Close();
+  if (fileSub) {
+    fileSub.reset();
   }
 }
 
@@ -68,21 +62,21 @@ bool open_sub(bool wr) {
   close_sub();
 
   if (wr) {
-    fileSub.set_name(subdat_fn);
-    fileSub.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+    fileSub.reset(new File(subdat_fn));
+    fileSub->Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
 
-    if (fileSub.IsOpen()) {
+    if (fileSub->IsOpen()) {
       // re-read info from file, to be safe
-      fileSub.Seek(0L, File::Whence::begin);
-      fileSub.Read(&p, sizeof(postrec));
+      fileSub->Seek(0L, File::Whence::begin);
+      fileSub->Read(&p, sizeof(postrec));
       SetNumMessagesInCurrentMessageArea(p.owneruser);
     }
   } else {
-    fileSub.set_name(subdat_fn);
-    fileSub.Open(File::modeReadOnly | File::modeBinary);
+    fileSub.reset(new File(subdat_fn));
+    fileSub->Open(File::modeReadOnly | File::modeBinary);
   }
 
-  return fileSub.IsOpen();
+  return fileSub->IsOpen();
 }
 
 bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config) {
@@ -107,8 +101,8 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
 
   // set sub filename
   const auto& datadir = config.datadir();
-  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", 
-    datadir.c_str(), subs.sub(si).filename.c_str());
+  snprintf(subdat_fn, sizeof(subdat_fn), "%s%s.sub", datadir.c_str(),
+           subs.sub(si).filename.c_str());
 
   // open file, and create it if necessary
   if (!File::Exists(subdat_fn)) {
@@ -116,7 +110,7 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
       return false;
     }
     p.owneruser = 0;
-    fileSub.Write(&p, sizeof(postrec));
+    fileSub->Write(&p, sizeof(postrec));
   } else if (!open_sub(false)) {
     return false;
   }
@@ -126,8 +120,8 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
   subchg = 0;
 
   // read in first rec, specifying # posts
-  fileSub.Seek(0L, File::Whence::begin);
-  fileSub.Read(&p, sizeof(postrec));
+  fileSub->Seek(0L, File::Whence::begin);
+  fileSub->Read(&p, sizeof(postrec));
   SetNumMessagesInCurrentMessageArea(p.owneruser);
 
   // close file
@@ -137,7 +131,7 @@ bool iscan1(int si, const wwiv::sdk::Subs& subs, const wwiv::sdk::Config& config
   return true;
 }
 
-postrec *get_post(int mn) {
+postrec* get_post(int mn) {
   // Returns info for a post.  Maintains a cache.  Does not correct anything
   // if the sub has changed.
   static postrec p{};
@@ -151,14 +145,14 @@ postrec *get_post(int mn) {
   }
 
   // read in some sub info
-  fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
-  fileSub.Read(&p, sizeof(postrec));
+  fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
+  fileSub->Read(&p, sizeof(postrec));
   return &p;
 }
 
-void write_post(int mn, postrec * pp) {
-  if (fileSub.IsOpen()) {
-    fileSub.Seek(mn * sizeof(postrec), File::Whence::begin);
-    fileSub.Write(pp, sizeof(postrec));
+void write_post(int mn, postrec* pp) {
+  if (fileSub->IsOpen()) {
+    fileSub->Seek(mn * sizeof(postrec), File::Whence::begin);
+    fileSub->Write(pp, sizeof(postrec));
   }
 }

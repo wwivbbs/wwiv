@@ -126,15 +126,9 @@ string FilePath(const string& dirname, const string& filename) {
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
 
-File::File() : handle_(File::invalid_handle) {}
+File::File(const string& full_file_name) : full_path_name_(full_file_name) {}
 
-File::File(const string& full_file_name) : File() {
-  this->set_name(full_file_name);
-}
-
-File::File(const string& dir, const string& filename) : File() {
-  this->set_name(dir, filename);
-}
+File::File(const string& dir, const string& filename) : File(wwiv::core::FilePath(dir, filename)) {}
 
 File::~File() {
   if (this->IsOpen()) {
@@ -203,22 +197,6 @@ void File::Close() {
 
 /////////////////////////////////////////////////////////////////////////////
 // Member functions
-
-bool File::set_name(const string& filename) {
-  full_path_name_ = filename;
-  return true;
-}
-
-bool File::set_name(const string& dirname, const string& filename) {
-  std::stringstream full_path_name;
-  full_path_name << dirname;
-  if (!dirname.empty() && dirname[dirname.length() - 1] == pathSeparatorChar) {
-    full_path_name << filename;
-  } else {
-    full_path_name << pathSeparatorChar << filename;
-  }
-  return set_name(full_path_name.str());
-}
 
 ssize_t File::Read(void* buffer, size_t size) {
   ssize_t ret = read(handle_, buffer, size);

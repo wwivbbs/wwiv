@@ -895,7 +895,7 @@ void qwk_post_text(char *text, char *title, int sub) {
       p.status = 0;
     }
 
-    open_sub(1);
+    open_sub(true);
 
     if ((!a()->current_sub().nets.empty()) &&
         (a()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {

@@ -89,14 +89,11 @@ class File {
   static const char separatorChar;
 
   // Constructor/Destructor
-  File();
-  File(const std::string& dir, const std::string& filename);
+  File(const std::string& directory_name, const std::string& file_name);
   explicit File(const std::string& full_file_name);
   virtual ~File();
 
   // Public Member functions
-  virtual bool set_name(const std::string& fileName);
-  virtual bool set_name(const std::string& dirName, const std::string& fileName);
   virtual bool Open(int nFileMode = File::modeDefault,
                     int nShareMode = File::shareUnknown);
   virtual void Close();
