@@ -49,8 +49,8 @@ public:
  */
 class RemoteIO {
  public:
-  RemoteIO() : binary_mode_(false) {}
-  virtual ~RemoteIO() {}
+  RemoteIO() = default;
+  virtual ~RemoteIO() = default;
 
   virtual bool open() = 0;
   virtual void close(bool temporary) = 0;
@@ -72,7 +72,7 @@ class RemoteIO {
   virtual RemoteInfo& remote_info() { return remote_info_; }
 
 protected:
-  bool binary_mode_;
+  bool binary_mode_ = false;
 
   static const std::string GetLastErrorText();
 

@@ -35,26 +35,26 @@
 #endif
 
 #ifdef __unix__
-#define O_BINARY  0
-#define O_TEXT    0
-#endif  // __unix__
+#define O_BINARY 0
+#define O_TEXT 0
+#endif // __unix__
 
 namespace wwiv {
 namespace core {
 /**
-* Creates a full pathname of directory_name + file_name ensuring that any
-* path separators are added as needed.
-*/
+ * Creates a full pathname of directory_name + file_name ensuring that any
+ * path separators are added as needed.
+ */
 std::string FilePath(const std::string& directory_name, const std::string& file_name);
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
 
 /**
  * File - File I/O Class.
  */
-class File {
- public:
+class File final {
+public:
   // Constants
   static const int modeDefault;
   static const int modeUnknown;
@@ -76,11 +76,7 @@ class File {
 
   static const int permReadWrite;
 
-  enum class Whence : int {
-    begin = SEEK_SET, 
-    current = SEEK_CUR, 
-    end = SEEK_END
-  };
+  enum class Whence : int { begin = SEEK_SET, current = SEEK_CUR, end = SEEK_END };
 
   static const int invalid_handle;
 
@@ -94,45 +90,40 @@ class File {
   virtual ~File();
 
   // Public Member functions
-  virtual bool Open(int nFileMode = File::modeDefault,
-                    int nShareMode = File::shareUnknown);
-  virtual void Close();
-  virtual bool IsOpen() const { return File::IsFileHandleValid(handle_); }
+  bool Open(int nFileMode = File::modeDefault, int nShareMode = File::shareUnknown);
+  void Close();
+  bool IsOpen() const { return File::IsFileHandleValid(handle_); }
 
-  virtual ssize_t Read(void * pBuffer, size_t nCount);
-  virtual ssize_t Write(const void * pBuffer, size_t nCount);
+  ssize_t Read(void* pBuffer, size_t nCount);
+  ssize_t Write(const void* pBuffer, size_t nCount);
 
-  virtual ssize_t Write(const std::string& s) {
-    return this->Write(s.data(), s.length());
-  }
-  
-  virtual ssize_t Writeln(const void *pBuffer, size_t nCount) {
+  ssize_t Write(const std::string& s) { return this->Write(s.data(), s.length()); }
+
+  ssize_t Writeln(const void* pBuffer, size_t nCount) {
     auto ret = this->Write(pBuffer, nCount);
     ret += this->Write("\r\n", 2);
     return ret;
   }
 
-  virtual ssize_t Writeln(const std::string& s) {
-    return this->Writeln(s.c_str(), s.length());
-  }
+  ssize_t Writeln(const std::string& s) { return this->Writeln(s.c_str(), s.length()); }
 
-  virtual off_t length();
-  virtual off_t Seek(off_t lOffset, Whence whence);
-  virtual void set_length(off_t lNewLength);
-  virtual off_t current_position() const;
+  off_t length();
+  off_t Seek(off_t lOffset, Whence whence);
+  void set_length(off_t lNewLength);
+  off_t current_position() const;
 
-  virtual bool Exists() const;
-  virtual bool Delete();
+  bool Exists() const;
+  bool Delete();
 
-  virtual bool IsDirectory() const;
-  virtual bool IsFile() const;
+  bool IsDirectory() const;
+  bool IsFile() const;
 
-  virtual bool SetFilePermissions(int nPermissions);
-  virtual time_t creation_time();
-  virtual time_t last_write_time();
-  virtual bool set_last_write_time(time_t last_write_time);
+  bool SetFilePermissions(int nPermissions);
+  time_t creation_time();
+  time_t last_write_time();
+  bool set_last_write_time(time_t last_write_time);
 
-  virtual std::string parent() const {
+  std::string parent() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return std::string("");
@@ -140,7 +131,7 @@ class File {
     return full_path_name_.substr(0, found);
   }
 
-  virtual std::string GetName() const {
+  std::string GetName() const {
     size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return {};
@@ -148,14 +139,16 @@ class File {
     return full_path_name_.substr(found + 1);
   }
 
-  virtual std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
+  std::unique_ptr<wwiv::core::FileLock> lock(wwiv::core::FileLockType lock_type);
 
-  virtual std::string full_pathname() const { return full_path_name_; }
-  virtual std::string last_error() const { return error_text_; }
+  std::string full_pathname() const noexcept { return full_path_name_; }
+  const std::string& native() const noexcept { return full_path_name_; }
+  const char* c_str() const noexcept { return full_path_name_.c_str(); }
+  std::string last_error() const { return error_text_; }
 
   // operators
   explicit operator bool() const { return IsOpen(); }
-  friend std::ostream& operator<< (std::ostream &os, const File &f);
+  friend std::ostream& operator<<(std::ostream& os, const File& f);
 
   // static functions
   static bool Remove(const std::string& fileName);
@@ -189,11 +182,10 @@ class File {
 
   static long freespace_for_path(const std::string& path);
 
- private:
-   int handle_;
-   std::string full_path_name_;
-   std::string error_text_;
+private:
+  int handle_ = -1;
+  std::string full_path_name_;
+  std::string error_text_;
 };
-
 
 #endif // __INCLUDED_CORE_FILE_H__

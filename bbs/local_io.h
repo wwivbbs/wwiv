@@ -51,10 +51,10 @@ class LocalIO {
   static constexpr int topdataSystem = 1;
   static constexpr int topdataUser = 2;
 
-  const size_t GetTopLine() const { return topline_; }
+  const size_t GetTopLine() const noexcept { return topline_; }
   void SetTopLine(int nTopLine) { topline_ = nTopLine; }
 
-  const size_t GetScreenBottom() const { return screen_bottom_; }
+  const size_t GetScreenBottom() const noexcept { return screen_bottom_; }
   void SetScreenBottom(int nScreenBottom) { screen_bottom_ = nScreenBottom; }
 
   virtual void GotoXY(int x, int y) = 0;
@@ -90,13 +90,13 @@ class LocalIO {
   virtual void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) = 0;
   virtual void UpdateNativeTitleBar(Application* session) = 0;
 
-  int  GetTopScreenColor() const { return top_screen_color_; }
+  int  GetTopScreenColor() const noexcept { return top_screen_color_; }
   void SetTopScreenColor(int n) { top_screen_color_ = n; }
 
-  int  GetUserEditorColor() const { return user_editor_color_; }
+  int GetUserEditorColor() const noexcept { return user_editor_color_; }
   void SetUserEditorColor(int n) { user_editor_color_ = n; }
 
-  int  GetEditLineColor() const { return edit_line_color_; }
+  int GetEditLineColor() const noexcept { return edit_line_color_; }
   void SetEditLineColor(int n) { edit_line_color_ = n; }
 
   virtual void DisableLocalIO() {}

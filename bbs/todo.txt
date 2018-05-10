@@ -38,7 +38,7 @@ Networking Cleanup
 core::File Improvements
 =======================
 * move File to namespace wwiv::core
-* start migrating core::File towards fs::filesystem and fs::path naming.
+* start migrating core::File towards fs::filesystem and fs::path naming. (in progress)
 * Create SemaphoreFile class, initially have it replace what we do
   in wwivd, later on also add support for creating semaphores for network
   and other places in wwiv.

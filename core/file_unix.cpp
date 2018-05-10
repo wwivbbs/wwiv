@@ -59,45 +59,6 @@ const char File::pathSeparatorString[] = "/";
 const char File::separatorChar     = ':';
 
 
-bool File::IsDirectory() const {
-  struct stat statbuf{};
-  stat(full_path_name_.c_str(), &statbuf);
-  return S_ISDIR(statbuf.st_mode);
-}
-
-long File::length() {
-  // stat/fstat is the 32 bit version on WIN32
-  struct stat fileinfo{};
-
-  if (IsOpen()) {
-    // File is open, use fstat
-    if (fstat(handle_, &fileinfo) != 0) {
-      return 0;
-    }
-  }
-  else {
-    // stat works on filenames, not filehandles.
-    if (stat(full_path_name_.c_str(), &fileinfo) != 0) {
-      return 0;
-    }
-  }
-  return fileinfo.st_size;
-}
-
-time_t File::creation_time() {
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
-
-  struct stat buf {};
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
-}
-
-time_t File::last_write_time() {
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
-
-  struct stat buf {};
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // Static functions
 

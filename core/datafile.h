@@ -38,7 +38,7 @@ public:
       : file_(full_file_name) {
     file_.Open(nFileMode, nShareMode);
   }
-  virtual ~DataFile() {}
+  virtual ~DataFile() = default;
 
   File& file() { return file_; }
   void Close() { return file_.Close(); }

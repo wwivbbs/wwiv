@@ -22,7 +22,7 @@
 #include "core/wwiv_windows.h"
 
 #include "Shlwapi.h"
-#endif  // _WIN32
+#endif // _WIN32
 
 #include <algorithm>
 #include <cerrno>
@@ -30,32 +30,32 @@
 #include <fcntl.h>
 #include <iostream>
 #ifdef _WIN32
+#include "sys/utime.h"
 #include <direct.h>
 #include <io.h>
 #include <share.h>
-#include "sys/utime.h"
-#endif  // _WIN32
+
+#else
+#include <sys/file.h>
+#include <unistd.h>
+#include <utime.h>
+
+#endif // _WIN32
+
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
 #include <sys/types.h>
 
 #include "core/log.h"
-
-#ifndef _WIN32
-#include <sys/file.h>
-#include <unistd.h>
-#include <utime.h>
-#endif  // _WIN32
-
 #include "core/os.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
-#if !defined( O_BINARY )
+#if !defined(O_BINARY)
 #define O_BINARY 0
 #endif
-#if !defined( O_TEXT )
+#if !defined(O_TEXT)
 #define O_TEXT 0
 #endif
 
@@ -66,41 +66,44 @@
 
 #if !defined(ftruncate)
 #define ftruncate chsize
-#endif  // ftruncate
-#define flock(h, m) { (h), (m); }
+#endif // ftruncate
+#define flock(h, m)                                                                                \
+  { (h), (m); }
 static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
 static constexpr int LOCK_NB = 4;
 static constexpr int LOCK_UN = 8;
 static constexpr int F_OK = 0;
 
-#else 
+#define S_ISREG(m) (((m)&S_IFMT) == _S_IFREG)
+#define S_ISDIR(m) (((m)&S_IFMT) == _S_IFDIR)
+
+#else
 #define _sopen(n, f, s, p) open(n, f, 0644)
-#endif  // _WIN32
+#endif // _WIN32
 
-
-using std::string;
 using std::chrono::milliseconds;
+using std::string;
 using namespace wwiv::os;
 
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
 const int File::modeDefault = (O_RDWR | O_BINARY);
-const int File::modeAppend         = O_APPEND;
-const int File::modeBinary         = O_BINARY;
-const int File::modeCreateFile     = O_CREAT;
-const int File::modeReadOnly       = O_RDONLY;
-const int File::modeReadWrite      = O_RDWR;
-const int File::modeText           = O_TEXT;
-const int File::modeWriteOnly      = O_WRONLY;
-const int File::modeTruncate       = O_TRUNC;
-const int File::modeExclusive      = O_EXCL;
+const int File::modeAppend = O_APPEND;
+const int File::modeBinary = O_BINARY;
+const int File::modeCreateFile = O_CREAT;
+const int File::modeReadOnly = O_RDONLY;
+const int File::modeReadWrite = O_RDWR;
+const int File::modeText = O_TEXT;
+const int File::modeWriteOnly = O_WRONLY;
+const int File::modeTruncate = O_TRUNC;
+const int File::modeExclusive = O_EXCL;
 
-const int File::modeUnknown        = -1;
-const int File::shareUnknown       = -1;
+const int File::modeUnknown = -1;
+const int File::shareUnknown = -1;
 
-const int File::invalid_handle     = -1;
+const int File::invalid_handle = -1;
 
 static constexpr int WAIT_TIME_MILLIS = 10;
 static constexpr int TRIES = 100;
@@ -114,14 +117,14 @@ string FilePath(const string& dirname, const string& filename) {
     return filename;
   }
 
-  string result = dirname;
+  auto result = dirname;
   File::EnsureTrailingSlash(&result);
   result.append(filename);
   return result;
 }
 
-}  // namespace core
-}  // namespace wwiv
+} // namespace core
+} // namespace wwiv
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
@@ -142,8 +145,7 @@ bool File::Open(int file_mode, int share_mode) {
   // Set default share mode
   if (share_mode == File::shareUnknown) {
     share_mode = shareDenyWrite;
-    if ((file_mode & File::modeReadWrite) ||
-        (file_mode & File::modeWriteOnly)) {
+    if ((file_mode & File::modeReadWrite) || (file_mode & File::modeWriteOnly)) {
       share_mode = File::shareDenyReadWrite;
     }
   }
@@ -176,7 +178,8 @@ bool File::Open(int file_mode, int share_mode) {
   VLOG(3) << "SH_OPEN " << full_path_name_ << ", access=" << file_mode << ", handle=" << handle_;
 
   if (File::IsFileHandleValid(handle_)) {
-    flock(handle_, (share_mode == shareDenyReadWrite || share_mode == shareDenyWrite) ? LOCK_EX : LOCK_SH);
+    flock(handle_,
+          (share_mode == shareDenyReadWrite || share_mode == shareDenyWrite) ? LOCK_EX : LOCK_SH);
   }
 
   if (handle_ == File::invalid_handle) {
@@ -201,8 +204,8 @@ void File::Close() {
 ssize_t File::Read(void* buffer, size_t size) {
   ssize_t ret = read(handle_, buffer, size);
   if (ret == -1) {
-    LOG(ERROR) << "[DEBUG: Read errno: " << errno
-      << " filename: " << full_path_name_ << " size: " << size;
+    LOG(ERROR) << "[DEBUG: Read errno: " << errno << " filename: " << full_path_name_
+               << " size: " << size;
     LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
     LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
@@ -212,8 +215,8 @@ ssize_t File::Read(void* buffer, size_t size) {
 ssize_t File::Write(const void* buffer, size_t size) {
   ssize_t nRet = write(handle_, buffer, size);
   if (nRet == -1) {
-    LOG(ERROR) << "[DEBUG: Write errno: " << errno
-      << " filename: " << full_path_name_ << " size: " << size;
+    LOG(ERROR) << "[DEBUG: Write errno: " << errno << " filename: " << full_path_name_
+               << " size: " << size;
     LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
     LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
@@ -221,19 +224,16 @@ ssize_t File::Write(const void* buffer, size_t size) {
 }
 
 off_t File::Seek(off_t offset, Whence whence) {
-  CHECK(whence == File::Whence::begin || whence == File::Whence::current || whence == File::Whence::end);
+  CHECK(whence == File::Whence::begin || whence == File::Whence::current ||
+        whence == File::Whence::end);
   CHECK(File::IsFileHandleValid(handle_));
 
   return lseek(handle_, offset, static_cast<int>(whence));
 }
 
-off_t File::current_position() const {
-  return lseek(handle_, 0, SEEK_CUR);
-}
+off_t File::current_position() const { return lseek(handle_, 0, SEEK_CUR); }
 
-bool File::Exists() const {
-  return File::Exists(full_path_name_);
-}
+bool File::Exists() const { return File::Exists(full_path_name_); }
 
 bool File::Delete() {
   if (this->IsOpen()) {
@@ -247,12 +247,46 @@ void File::set_length(off_t lNewLength) {
   ftruncate(handle_, lNewLength);
 }
 
-bool File::IsFile() const {
-  return !this->IsDirectory();
+bool File::IsFile() const { return !this->IsDirectory(); }
+
+bool File::SetFilePermissions(int perm) { return chmod(full_path_name_.c_str(), perm) == 0; }
+
+bool File::IsDirectory() const {
+  struct stat statbuf {};
+  stat(full_path_name_.c_str(), &statbuf);
+  return S_ISDIR(statbuf.st_mode);
 }
 
-bool File::SetFilePermissions(int perm) {
-  return chmod(full_path_name_.c_str(), perm) == 0;
+long File::length() {
+  // stat/fstat is the 32 bit version on WIN32
+  struct stat fileinfo {};
+
+  if (IsOpen()) {
+    // File is open, use fstat
+    if (fstat(handle_, &fileinfo) != 0) {
+      return 0;
+    }
+  } else {
+    // stat works on filenames, not filehandles.
+    if (stat(full_path_name_.c_str(), &fileinfo) != 0) {
+      return 0;
+    }
+  }
+  return fileinfo.st_size;
+}
+
+time_t File::creation_time() {
+  WWIV_ASSERT(File::IsFileHandleValid(handle_));
+
+  struct stat buf {};
+  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+}
+
+time_t File::last_write_time() {
+  WWIV_ASSERT(File::IsFileHandleValid(handle_));
+
+  struct stat buf {};
+  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -262,9 +296,7 @@ bool File::Rename(const string& orig_fn, const string& new_fn) {
   return rename(orig_fn.c_str(), new_fn.c_str()) == 0;
 }
 
-bool File::Remove(const string& filename) {
-  return unlink(filename.c_str()) == 0;
-}
+bool File::Remove(const string& filename) { return unlink(filename.c_str()) == 0; }
 
 bool File::Remove(const string& dir, const string& file) {
   return File::Remove(wwiv::core::FilePath(dir, file));
@@ -286,10 +318,12 @@ bool File::Exists(const string& original_pathname) {
   return ret == 0;
 }
 
+// static
 bool File::Exists(const string& dir, const string& file) {
   return Exists(wwiv::core::FilePath(dir, file));
 }
 
+// static
 bool File::ExistsWildcard(const string& wildcard) {
   WFindFile fnd;
   return fnd.open(wildcard, WFindFileTypeMask::WFINDFILE_ANY);
@@ -300,9 +334,7 @@ bool File::SetFilePermissions(const string& filename, int perm) {
   return chmod(filename.c_str(), perm) == 0;
 }
 
-bool File::IsFileHandleValid(int handle) {
-  return handle != File::invalid_handle;
-}
+bool File::IsFileHandleValid(int handle) { return handle != File::invalid_handle; }
 
 // static
 void File::EnsureTrailingSlash(string* path) {
@@ -315,7 +347,7 @@ void File::EnsureTrailingSlash(string* path) {
   }
 }
 
-// static 
+// static
 string File::current_directory() {
   char s[MAX_PATH];
   getcwd(s, MAX_PATH);
@@ -323,20 +355,18 @@ string File::current_directory() {
 }
 
 // static
-bool File::set_current_directory(const string& dir) {
-  return chdir(dir.c_str()) == 0;
-}
+bool File::set_current_directory(const string& dir) { return chdir(dir.c_str()) == 0; }
 
-// static 
+// static
 void File::FixPathSeparators(std::string* name) {
 #ifdef _WIN32
   std::replace(std::begin(*name), std::end(*name), '/', File::pathSeparatorChar);
 #else
   std::replace(std::begin(*name), std::end(*name), '\\', File::pathSeparatorChar);
-#endif  // _WIN32
+#endif // _WIN32
 }
 
-// static 
+// static
 std::string File::FixPathSeparators(const std::string& path) {
   auto s = path;
   FixPathSeparators(&s);
@@ -351,7 +381,7 @@ void File::absolute(const string& base, string* relative) {
   }
 }
 
-// static 
+// static
 string File::absolute(const std::string& base, const std::string& relative) {
   if (File::is_absolute(relative)) {
     return relative;
@@ -369,7 +399,7 @@ bool File::is_absolute(const string& path) {
   return ::PathIsRelative(path.c_str()) ? false : true;
 #else
   return path.front() == File::pathSeparatorChar;
-#endif  // _WIN32
+#endif // _WIN32
 }
 
 #ifdef _WIN32
@@ -388,26 +418,27 @@ bool File::mkdir(const string& path) {
 }
 
 // static
-// based loosely on http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
+// based loosely on
+// http://stackoverflow.com/questions/675039/how-can-i-create-directory-tree-in-c-linux
 bool File::mkdirs(const string& path) {
   auto result = MKDIR(path.c_str());
   if (result != -1) {
     return true;
   }
   if (errno == ENOENT) {
-	  string::size_type pos = path.find_last_of(File::pathSeparatorChar);
-	  if (pos == string::npos) {
-		  return false;
-	  }
-	  string s = path.substr(0, pos);
+    auto pos = path.find_last_of(File::pathSeparatorChar);
+    if (pos == string::npos) {
+      return false;
+    }
+    auto s = path.substr(0, pos);
     if (!mkdirs(s)) {
-      return false;  // failed to create the parent, stop here.
+      return false; // failed to create the parent, stop here.
     }
     return File::mkdir(path);
   } else if (errno == EEXIST) {
-    return true;  // the path already existed.
+    return true; // the path already existed.
   }
-  return false;  // unknown error.
+  return false; // unknown error.
 }
 
 std::ostream& operator<<(std::ostream& os, const File& file) {
@@ -416,7 +447,7 @@ std::ostream& operator<<(std::ostream& os, const File& file) {
 }
 
 bool File::set_last_write_time(time_t last_write_time) {
-  struct utimbuf ut{};
+  struct utimbuf ut {};
   ut.actime = ut.modtime = last_write_time;
   return utime(full_path_name_.c_str(), &ut) != -1;
 }
@@ -424,7 +455,7 @@ bool File::set_last_write_time(time_t last_write_time) {
 std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_type) {
 #ifdef _WIN32
   HANDLE h = reinterpret_cast<HANDLE>(_get_osfhandle(handle_));
-  OVERLAPPED overlapped = { 0 };
+  OVERLAPPED overlapped = {0};
   DWORD dwLockType = 0;
   if (lock_type == wwiv::core::FileLockType::write_lock) {
     dwLockType = LOCKFILE_EXCLUSIVE_LOCK;
@@ -434,8 +465,8 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
   }
 #else
 
-  // TODO: unlock here
+// TODO: unlock here
 
-#endif  // _WIN32
+#endif // _WIN32
   return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_, lock_type);
 }

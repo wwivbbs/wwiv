@@ -87,9 +87,9 @@ class Application: public Runnable {
 
 public:
   // Constants
-  static const int exitLevelOK = 0;
-  static const int exitLevelNotOK = 1;
-  static const int exitLevelQuit = 2;
+  static constexpr int exitLevelOK = 0;
+  static constexpr int exitLevelNotOK = 1;
+  static constexpr int exitLevelQuit = 2;
 
   Application(LocalIO* localIO);
   virtual ~Application();

@@ -18,5 +18,5 @@
 /**************************************************************************/
 #include "bbs/local_io.h"
 
-LocalIO::LocalIO() {}
-LocalIO::~LocalIO() {}
+LocalIO::LocalIO() = default;
+LocalIO::~LocalIO() = default;
