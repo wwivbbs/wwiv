@@ -52,13 +52,6 @@
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
-#if !defined(O_BINARY)
-#define O_BINARY 0
-#endif
-#if !defined(O_TEXT)
-#define O_TEXT 0
-#endif
-
 #ifdef _WIN32
 
 // Needed for PathIsRelative
@@ -67,8 +60,7 @@
 #if !defined(ftruncate)
 #define ftruncate chsize
 #endif // ftruncate
-#define flock(h, m)                                                                                \
-  { (h), (m); }
+#define flock(h, m) { (h), (m); }
 static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
 static constexpr int LOCK_NB = 4;
@@ -79,7 +71,10 @@ static constexpr int F_OK = 0;
 #define S_ISDIR(m) (((m)&S_IFMT) == _S_IFDIR)
 
 #else
+
+// Not Win32
 #define _sopen(n, f, s, p) open(n, f, 0644)
+
 #endif // _WIN32
 
 using std::chrono::milliseconds;
@@ -105,7 +100,8 @@ const int File::shareUnknown = -1;
 
 const int File::invalid_handle = -1;
 
-static constexpr int WAIT_TIME_MILLIS = 10;
+static const std::chrono::milliseconds wait_time(10);
+
 static constexpr int TRIES = 100;
 
 namespace wwiv {
@@ -160,10 +156,10 @@ bool File::Open(int file_mode, int share_mode) {
     VLOG(3) << "1st _sopen: handle: " << handle_ << "; error: " << strerror(errno);
     int count = 1;
     if (access(full_path_name_.c_str(), 0) != -1) {
-      sleep_for(milliseconds(WAIT_TIME_MILLIS));
+      sleep_for(wait_time);
       handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);
       while ((handle_ < 0 && errno == EACCES) && count < TRIES) {
-        sleep_for(milliseconds((count % 2) ? WAIT_TIME_MILLIS : 0));
+        sleep_for((count % 2) ? wait_time : milliseconds(0));
         VLOG(3) << "Waiting to access " << full_path_name_ << "  " << TRIES - count;
         count++;
         handle_ = _sopen(full_path_name_.c_str(), file_mode, share_mode, _S_IREAD | _S_IWRITE);

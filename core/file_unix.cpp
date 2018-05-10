@@ -68,13 +68,13 @@ bool File::Copy(const std::string& source_filename, const std::string& dest_file
     if (buffer == nullptr) {
       return false;
     }
-    int src_fd = open(source_filename.c_str(), O_RDONLY | O_BINARY);
+    int src_fd = open(source_filename.c_str(), O_RDONLY);
     if (!src_fd) {
       free(buffer);
       return false;
     }
 
-    int dest_fd = open(dest_filename.c_str(), O_RDWR | O_BINARY | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
+    int dest_fd = open(dest_filename.c_str(), O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
     if (!dest_fd) {
       free(buffer);
       close(src_fd);

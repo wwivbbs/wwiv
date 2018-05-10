@@ -34,10 +34,12 @@
 #define MAX_PATH 260
 #endif
 
-#ifdef __unix__
+#if !defined(O_BINARY)
 #define O_BINARY 0
+#endif
+#if !defined(O_TEXT)
 #define O_TEXT 0
-#endif // __unix__
+#endif
 
 namespace wwiv {
 namespace core {
@@ -51,7 +53,13 @@ std::string FilePath(const std::string& directory_name, const std::string& file_
 } // namespace wwiv
 
 /**
- * File - File I/O Class.
+ * File: Provides a high level, cross-platform common wrapper for file handling using C++.
+ *
+ * Example:
+ *   File f("/home/wwiv/bbs/config.dat");
+ *   if (!f) { LOG(FATAL) << "config.dat does not exist!" << endl; }
+ *   if (!f.Read(config, sizeof(configrec)) { LOG(FATAL) << "unable to load config.dat"; }
+ *   // No need to close f since when f goes out of scope it'll close automatically.
  */
 class File final {
 public:
@@ -85,8 +93,11 @@ public:
   static const char separatorChar;
 
   // Constructor/Destructor
+  /** Constructs a file from a directory and filename */
   File(const std::string& directory_name, const std::string& file_name);
+  /** Constructs a file from a full pathname. */
   explicit File(const std::string& full_file_name);
+  /** Destructs File. Closes any open file handles. */
   virtual ~File();
 
   // Public Member functions

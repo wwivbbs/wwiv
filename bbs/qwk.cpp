@@ -24,13 +24,11 @@
 #include <ctype.h>
 #include <fcntl.h>
 #ifdef _WIN32
-#include <direct.h>
 #include <io.h>
 #else
 #include <sys/types.h>
 #include <unistd.h>
 #endif
-#include <sys/stat.h>
 
 #include "bbs/bbsutl.h"
 #include "bbs/bbsovl3.h"
@@ -69,6 +67,11 @@
 #define qwk_iscan(x)         (iscan1(a()->usub[x].subnum))
 
 using std::unique_ptr;
+using std::string;
+using namespace wwiv::bbs;
+using namespace wwiv::strings;
+using namespace wwiv::sdk;
+
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -80,11 +83,6 @@ static uint16_t max_msgs;
 
 // from xfer.cpp
 extern uint32_t this_date;
-
-using std::string;
-using namespace wwiv::bbs;
-using namespace wwiv::strings;
-using namespace wwiv::sdk;
 
 static bool replacefile(char *src, char *dst) {
   if (strlen(dst) == 0) {
