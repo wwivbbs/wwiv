@@ -272,15 +272,11 @@ long File::length() {
 }
 
 time_t File::creation_time() {
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
-
   struct stat buf {};
   return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
 }
 
 time_t File::last_write_time() {
-  WWIV_ASSERT(File::IsFileHandleValid(handle_));
-
   struct stat buf {};
   return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
 }
