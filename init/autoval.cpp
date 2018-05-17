@@ -16,10 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "localui/wwiv_curses.h"
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include "localui/wwiv_curses.h"
 #include <fcntl.h>
 #ifdef _WIN32
 #include <io.h>
@@ -30,15 +30,15 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "init/init.h"
-#include "localui/input.h"
-#include "localui/listbox.h"
-#include "bbs/wconstants.h"
 #include "bbs/bbs.h"
-#include "init/wwivinit.h"
+#include "bbs/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "init/init.h"
 #include "init/utility.h"
+#include "init/wwivinit.h"
+#include "localui/input.h"
+#include "localui/listbox.h"
 
 using std::string;
 using std::unique_ptr;
@@ -75,26 +75,27 @@ static string create_autoval_line(int n) {
 
 static void edit_autoval(int n) {
   out->Cls(ACS_CKBOARD);
-  const string title = StringPrintf("Auto-validation data for: Alt-F%d", n + 1);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, 7, 40));
-  const int COL1_POSITION = 17;
+  constexpr int LABEL1_POSTITION = 2;
+  constexpr int LABEL1_WIDTH = 14;
+  constexpr int COL1_POSITION = LABEL1_POSTITION + LABEL1_WIDTH + 1;
 
   valrec v = syscfg.autoval[n];
-  EditItems items{
-    new NumberEditItem<uint8_t>(COL1_POSITION, 1, &v.sl),
-    new NumberEditItem<uint8_t>(COL1_POSITION, 2, &v.dsl),
-    new ArEditItem(COL1_POSITION, 3, &v.ar),
-    new ArEditItem(COL1_POSITION, 4, &v.dar),
-    new RestrictionsEditItem(COL1_POSITION, 5, &v.restrict),
-  };
-  items.set_curses_io(out, window.get());
+  EditItems items{};
+  items.add_items({
+      new NumberEditItem<uint8_t>(COL1_POSITION, 1, &v.sl),
+      new NumberEditItem<uint8_t>(COL1_POSITION, 2, &v.dsl),
+      new ArEditItem(COL1_POSITION, 3, &v.ar),
+      new ArEditItem(COL1_POSITION, 4, &v.dar),
+      new RestrictionsEditItem(COL1_POSITION, 5, &v.restrict),
+  });
   int y = 1;
-  window->PutsXY(2, y++, "SL           : ");
-  window->PutsXY(2, y++, "DSL          : ");
-  window->PutsXY(2, y++, "AR           : ");
-  window->PutsXY(2, y++, "DAR          : ");
-  window->PutsXY(2, y++, "Restrictions : ");
-  items.Run();
+  items.add_labels({new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "SL:"), 
+                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "DSL:"),
+                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "AR:"),
+                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "DAR:"),
+                    new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "Restrictions:")
+  });
+  items.Run(StringPrintf("Auto-validation data for: Alt-F%d", n + 1));
   syscfg.autoval[n] = v;
 }
 
@@ -107,12 +108,12 @@ void autoval_levs() {
       items.emplace_back(create_autoval_line(i));
     }
     CursesWindow* window(out->window());
-    ListBox list(out, window, "Select AutoVal", static_cast<int>(floor(window->GetMaxX() * 0.99)), 
-        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+    ListBox list(out, window, "Select AutoVal", static_cast<int>(floor(window->GetMaxX() * 0.99)),
+                 static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
-    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"} });
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}});
     ListBoxResult result = list.Run();
 
     if (result.type == ListBoxResultType::HOTKEY) {

@@ -60,6 +60,7 @@ class ListBox {
   // Constructor/Destructor
   ListBox(CursesIO* io, UIWindow* parent, const std::string& title, int max_x, int max_y, 
           std::vector<ListBoxItem>& items, ColorScheme* scheme);
+  ListBox(CursesIO* io, UIWindow* parent, const std::string& title, std::vector<ListBoxItem>& items);
   ListBox(const ListBox& copy) = delete;
   virtual ~ListBox() {}
 

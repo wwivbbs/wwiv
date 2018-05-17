@@ -60,7 +60,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
   std::set<char> odc;
 
   char szEmailAddress[255];
-  strcpy(szEmailAddress, emailAddress.c_str());
+  to_char_array(szEmailAddress, emailAddress);
 
   *pUserNumber = 0;
   *pSystemNumber = 0;

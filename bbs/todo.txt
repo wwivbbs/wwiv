@@ -42,7 +42,6 @@ core::File Improvements
 * Create SemaphoreFile class, initially have it replace what we do
   in wwivd, later on also add support for creating semaphores for network
   and other places in wwiv.
-* Pass sdk::Config into WWIVEmail vs. root_directory
 
 Feature Improvements
 ====================
@@ -75,5 +74,8 @@ Closed Questions
 1) Guest user account. Is it useful?   - Yes, it just needs to be improved
    and documented.
 
+Init UI
+=======
+1) make listbox create window optionally like EditItems does
 
  

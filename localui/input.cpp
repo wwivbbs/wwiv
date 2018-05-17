@@ -32,34 +32,45 @@
 #include <vector>
 
 #include "bbs/keycodes.h"
-#include "bbs/wconstants.h" 
+#include "bbs/wconstants.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "localui/wwiv_curses.h"
 #include "localui/curses_io.h"
-#include "localui/ui_win.h"
 #include "localui/curses_win.h"
 #include "localui/stdio_win.h"
+#include "localui/ui_win.h"
+#include "localui/wwiv_curses.h"
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
-#endif  // INSERT
+#endif // INSERT
 
-#define PREV                1
-#define NEXT                2
-#define DONE                4
-#define ABORTED             8
+#define PREV 1
+#define NEXT 2
+#define DONE 4
+#define ABORTED 8
 
 using std::string;
 using std::unique_ptr;
 using std::vector;
 using namespace wwiv::strings;
 
+void Label::Display(CursesWindow* window) { Display(window, x_, y_); }
+
+void Label::Display(CursesWindow* window, int x, int y) {
+  window->GotoXY(x, y);
+  if (right_justify_) {
+    auto pad = std::max<int>(0, width_ - text_.size());
+    window->Puts(std::string(pad, ' '));
+  }
+  window->Puts(text_);
+};
+
 int CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
-  string s = to_field_();
+  auto s = to_field_();
 
-  int return_code = editline(window, &s, maxsize_, EditLineMode::ALL, "");
+  auto return_code = editline(window, &s, maxsize_, EditLineMode::ALL, "");
   from_field_(s);
   return return_code;
 }
@@ -77,7 +88,10 @@ void CustomEditItem::Display(CursesWindow* window) const {
   }
 }
 
-void EditItems::Run() {
+void EditItems::Run(const std::string& title) {
+  if (!window_) {
+    create_window(title);
+  }
   edit_mode_ = true;
   int cp = 0;
   const int size = static_cast<int>(items_.size());
@@ -87,7 +101,7 @@ void EditItems::Run() {
     if (!item->help_text().empty()) {
       io_->footer()->ShowContextHelp(item->help_text());
     }
-    int i1 = items_[cp]->Run(window_);
+    int i1 = items_[cp]->Run(window_.get());
     io_->footer()->SetDefaultFooter();
     if (i1 == PREV) {
       if (--cp < 0) {
@@ -106,15 +120,6 @@ void EditItems::Run() {
   }
 }
 
-void EditItems::set_curses_io(CursesIO* io, CursesWindow* window) { 
-  io_ = io; 
-  window_ = window; 
-
-  for (const auto& item : items_) {
-    item->set_curses_io(io);
-  }
-}
-
 void EditItems::Display() const {
   // Show help bar.
   if (edit_mode_) {
@@ -126,20 +131,62 @@ void EditItems::Display() const {
     io_->footer()->ShowHelpItems(1, navigation_extra_help_items_);
   }
 
+  window_->SetColor(SchemeId::NORMAL);
+  for (auto* l : labels_) {
+    l->Display(window_.get());
+  }
   window_->SetColor(SchemeId::WINDOW_DATA);
+  for (auto* item : items_) {
+    item->Display(window_.get());
+  }
+  window_->Refresh();
+}
 
-  for (BaseEditItem* item : items_) {
-    item->Display(window_);
+BaseEditItem* EditItems::add(BaseEditItem* item) {
+  items_.push_back(item);
+  return item;
+}
+
+Label* EditItems::add(Label* l) {
+  labels_.push_back(l);
+  return l;
+}
+
+void EditItems::add_labels(std::initializer_list<Label*> labels) {
+  for (auto* l : labels) {
+    labels_.push_back(l);
   }
 }
 
+void EditItems::add_items(std::initializer_list<BaseEditItem*> items) {
+  for (auto* i : items) {
+    items_.push_back(i);
+  }
+}
+
+BaseEditItem* EditItems::add(Label* label, BaseEditItem* item) {
+  labels_.push_back(label);
+  items_.push_back(item);
+  return item;
+}
+
+void EditItems::create_window(const std::string& title) {
+  window_ = std::unique_ptr<CursesWindow>(
+      out->CreateBoxedWindow(title, max_display_height(), max_display_width()));
+}
+
 EditItems::~EditItems() {
-  // Since we added raw pointers we must cleanup.  Since AFAIK there is 
+  // Since we added raw pointers we must cleanup.  Since AFAIK there is
   // no easy way to convert from std::initializer_list<T> to
   // std::initializer_list<unique_ptr<T>>
   for (auto item : items_) {
     delete item;
   }
+  items_.clear();
+  for (auto l : labels_) {
+    delete l;
+  }
+  labels_.clear();
 
   // Clear the help bar on exit.
   io_->footer()->window()->Erase();
@@ -154,10 +201,9 @@ static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   const int starty = (maxy - height - 2) / 2;
   UIWindow* dialog;
   if (parent->IsGUI()) {
-    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), parent->color_scheme(), 
-      height + 2, width + 4, starty, startx);
-  }
-  else {
+    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), parent->color_scheme(),
+                              height + 2, width + 4, starty, startx);
+  } else {
     dialog = new StdioWindow(parent, parent->color_scheme());
   }
   dialog->Bkgd(parent->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
@@ -180,15 +226,14 @@ bool dialog_yn(CursesWindow* window, const vector<string>& text) {
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
   dialog->Refresh();
   return toupper(dialog->GetChar()) == 'Y';
-
 }
 
 bool dialog_yn(CursesWindow* window, const string& text) {
-  const vector<string> text_vector = { text };
+  const vector<string> text_vector = {text};
   return dialog_yn(window, text_vector);
 }
 
-static void winput_password(CursesWindow* dialog, string *output, int max_length) {
+static void winput_password(CursesWindow* dialog, string* output, int max_length) {
   dialog->SetColor(SchemeId::DIALOG_PROMPT);
 
   int curpos = 0;
@@ -219,9 +264,9 @@ static void winput_password(CursesWindow* dialog, string *output, int max_length
         } while (curpos && (s[curpos - 1] != 32));
       }
       break;
-    case 26:  // control Z
+    case 26: // control Z
       break;
-    case 27:  { // escape
+    case 27: { // escape
       output->clear();
       return;
     };
@@ -242,7 +287,7 @@ static void winput_password(CursesWindow* dialog, string *output, int max_length
         curpos--;
         dialog->Puts("\b \b");
         if (s[curpos] == 26) {
-         dialog->Puts("\b \b");
+          dialog->Puts("\b \b");
         }
       }
       break;
@@ -256,7 +301,8 @@ static void winput_password(CursesWindow* dialog, string *output, int max_length
   }
 }
 
-void input_password(CursesWindow* window, const string& prompt, const vector<string>& text, string *output, int max_length) {
+void input_password(CursesWindow* window, const string& prompt, const vector<string>& text,
+                    string* output, int max_length) {
   int maxlen = prompt.size() + max_length;
   for (const auto& s : text) {
     maxlen = std::max<int>(maxlen, s.length());
@@ -277,7 +323,7 @@ void input_password(CursesWindow* window, const string& prompt, const vector<str
 }
 
 int messagebox(UIWindow* window, const string& text) {
-  const vector<string> vector = { text };
+  const vector<string> vector = {text};
   return messagebox(window, vector);
 }
 
@@ -293,14 +339,15 @@ int messagebox(UIWindow* window, const vector<string>& text) {
   for (const auto& s : text) {
     dialog->PutsXY(2, curline++, s);
   }
-  dialog->SetColor( SchemeId::DIALOG_PROMPT);
+  dialog->SetColor(SchemeId::DIALOG_PROMPT);
   int x = (maxlen - prompt.length()) / 2;
   dialog->PutsXY(x + 2, text.size() + 2, prompt);
   dialog->Refresh();
   return dialog->GetChar();
 }
 
-std::string dialog_input_string(CursesWindow* window, const std::string& prompt, size_t max_length) {
+std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
+                                size_t max_length) {
   unique_ptr<UIWindow> dialog(CreateDialogWindow(window, 3, prompt.size() + 4 + max_length));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
@@ -314,8 +361,8 @@ std::string dialog_input_string(CursesWindow* window, const std::string& prompt,
 int dialog_input_number(CursesWindow* window, const string& prompt, int min_value, int max_value) {
   int num_digits = max_value > 0 ? static_cast<int>(floor(std::log10(max_value))) + 1 : 1;
   CHECK(window->IsGUI()) << "dialog_input_number needs a GUI.";
-  unique_ptr<CursesWindow> dialog(static_cast<CursesWindow*>(
-      CreateDialogWindow(window, 3, prompt.size() + 4 + num_digits)));
+  unique_ptr<CursesWindow> dialog(
+      static_cast<CursesWindow*>(CreateDialogWindow(window, 3, prompt.size() + 4 + num_digits)));
   dialog->PutsXY(2, 2, prompt);
   dialog->Refresh();
 
@@ -330,13 +377,13 @@ int dialog_input_number(CursesWindow* window, const string& prompt, int min_valu
       return min_value;
     }
     return v;
-  } catch (std::logic_error&) { 
+  } catch (std::logic_error&) {
     // No conversion possible.
     return min_value;
   }
 }
 
-char onek(CursesWindow* window, const char *pszKeys) {
+char onek(CursesWindow* window, const char* pszKeys) {
   char ch = 0;
 
   while (!strchr(pszKeys, ch = to_upper_case<char>(window->GetChar()))) {
@@ -345,9 +392,10 @@ char onek(CursesWindow* window, const char *pszKeys) {
   return ch;
 }
 
-static const int background_character = 32;;
+static const int background_character = 32;
+;
 
-static std::size_t editlinestrlen(char *text) {
+static std::size_t editlinestrlen(char* text) {
   std::size_t i = strlen(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == background_character)) {
     --i;
@@ -355,7 +403,7 @@ static std::size_t editlinestrlen(char *text) {
   return i;
 }
 
-int editline(CursesWindow* window, string* s, int len, EditLineMode status, const char *ss) {
+int editline(CursesWindow* window, string* s, int len, EditLineMode status, const char* ss) {
   char buffer[255];
   wwiv::strings::to_char_array(buffer, *s);
   int rc = editline(window, buffer, len, status, ss);
@@ -364,7 +412,7 @@ int editline(CursesWindow* window, string* s, int len, EditLineMode status, cons
 }
 
 /* editline edits a string, doing I/O to the screen only. */
-int editline(CursesWindow* window, char *s, int len, EditLineMode status, const char *ss) {
+int editline(CursesWindow* window, char* s, int len, EditLineMode status, const char* ss) {
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
@@ -397,8 +445,8 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
       pos = editlinestrlen(s);
       window->GotoXY(cx + pos, cy);
       break;
-    case KEY_RIGHT: // curses
-      if (pos < len) {                       //right
+    case KEY_RIGHT:    // curses
+      if (pos < len) { // right
         int nMaxPos = editlinestrlen(s);
         if (pos < nMaxPos) {
           pos++;
@@ -406,13 +454,13 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
         }
       }
       break;
-    case KEY_LEFT: // curses
-      if (pos > 0) { //left
+    case KEY_LEFT:   // curses
+      if (pos > 0) { // left
         pos--;
         window->GotoXY(cx + pos, cy);
       }
       break;
-    case CO:                                      //return
+    case CO:     // return
     case KEY_UP: // curses
       done = true;
       rc = PREV;
@@ -425,17 +473,17 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
       if (status != EditLineMode::SET) {
         if (bInsert) {
           bInsert = false;
-	        out->SetIndicatorMode(IndicatorMode::OVERWRITE);
+          out->SetIndicatorMode(IndicatorMode::OVERWRITE);
           window->GotoXY(cx + pos, cy);
         } else {
           bInsert = true;
-	        out->SetIndicatorMode(IndicatorMode::INSERT);
+          out->SetIndicatorMode(IndicatorMode::INSERT);
           window->GotoXY(cx + pos, cy);
         }
       }
       break;
     case KEY_DC: // curses
-    case CD: // control-d
+    case CD:     // control-d
       if (status != EditLineMode::SET) {
         for (int i = pos; i < len; i++) {
           s[i] = s[i + 1];
@@ -452,7 +500,7 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
         }
         if (status == EditLineMode::SET) {
           ch = to_upper_case<char>(ch);
-          if (ch != ' ')  {
+          if (ch != ' ') {
             bool bLookingForSpace = true;
             for (int i = 0; i < len; i++) {
               if (ch == ss[i] && bLookingForSpace) {
@@ -471,19 +519,19 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
             }
           }
         }
-        if ((pos < len) && 
-          (status == EditLineMode::ALL || (status == EditLineMode::UPPER_ONLY) 
-            || (status == EditLineMode::SET) 
-            || ((status == EditLineMode::NUM_ONLY) 
-                && (((ch >= '0') && (ch <= '9')) || (ch == ' ') || (pos == 0) && (ch == '-') ) ))) {
-          if (bInsert)  {
+        if ((pos < len) &&
+            (status == EditLineMode::ALL || (status == EditLineMode::UPPER_ONLY) ||
+             (status == EditLineMode::SET) ||
+             ((status == EditLineMode::NUM_ONLY) &&
+              (((ch >= '0') && (ch <= '9')) || (ch == ' ') || (pos == 0) && (ch == '-'))))) {
+          if (bInsert) {
             for (int i = len - 1; i > pos; i--) {
               s[i] = s[i - 1];
             }
             s[pos++] = static_cast<char>(ch);
             window->PutsXY(cx, cy, s);
             window->GotoXY(cx + pos, cy);
-          }  else  {
+          } else {
             s[pos++] = static_cast<char>(ch);
             window->Putch(ch);
           }
@@ -503,9 +551,9 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
       done = true;
       rc = DONE;
       break;
-    case 0x7f:  // yet some other delete key
-    case KEY_BACKSPACE:  // curses
-    case BACKSPACE:  //backspace
+    case 0x7f:          // yet some other delete key
+    case KEY_BACKSPACE: // curses
+    case BACKSPACE:     // backspace
       if (status != EditLineMode::SET) {
         if (pos > 0) {
           for (int i = pos - 1; i < len; i++) {
@@ -545,7 +593,9 @@ int editline(CursesWindow* window, char *s, int len, EditLineMode status, const 
   return rc;
 }
 
-std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector<std::string>::size_type value, const std::vector<std::string>& strings, int *rc) {
+std::vector<std::string>::size_type toggleitem(CursesWindow* window,
+                                               std::vector<std::string>::size_type value,
+                                               const std::vector<std::string>& strings, int* rc) {
   if (value < 0 || value >= strings.size()) {
     value = 0;
   }
@@ -563,7 +613,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
   window->PutsXY(cx, cy, strings.at(value));
   window->GotoXY(cx, cy);
   bool done = false;
-  do  {
+  do {
     int ch = window->GetChar();
     switch (ch) {
     case KEY_ENTER:
@@ -580,7 +630,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
       done = true;
       *rc = DONE;
       break;
-    case KEY_UP: // UP
+    case KEY_UP:   // UP
     case KEY_BTAB: // SHIFT-TAB
       done = true;
       *rc = PREV;
@@ -608,7 +658,7 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window, std::vector
   return value;
 }
 
-void trimstrpath(char *s) {
+void trimstrpath(char* s) {
   StringTrimEnd(s);
 
   int i = strlen(s);

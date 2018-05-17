@@ -19,40 +19,50 @@
 #include <chrono>
 #include <string>
 
-#include "file_helper.h"
-#include "gtest/gtest.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/semaphore_file.h"
 #include "core/strings.h"
+#include "file_helper.h"
+#include "gtest/gtest.h"
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
 TEST(SemaphoreFileTest, AlreadyAcqired) {
-    FileHelper file;
-    auto tmp = file.TempDir();
-    string fn;
-    {
-      // Will throw if it can't acquire.
-      auto ok = SemaphoreFile::try_acquire(
-        FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
+  FileHelper file;
+  auto tmp = file.TempDir();
+  string fn;
+  {
+    // Will throw if it can't acquire.
+    auto ok = SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
 
-      fn = ok.filename();
-      LOG(ERROR) << "fd: " << ok.fd() << "; fn: " << fn;
+    fn = ok.filename();
+    LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
 
-      EXPECT_TRUE(File::Exists(fn)) << fn;
+    EXPECT_TRUE(File::Exists(fn)) << fn;
 
-      try {
-        auto nok = SemaphoreFile::try_acquire(
-          FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(10));
-        FAIL() << "semaphore_not_acquired expected";
-      }
-      catch (const wwiv::core::semaphore_not_acquired&) {
-        // expected to happen.
-        LOG(ERROR) << "caught wwiv::core::semaphore_not_acquired.";
-      }
+    try {
+      auto nok =
+          SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(10));
+      FAIL() << "semaphore_not_acquired expected";
+    } catch (const wwiv::core::semaphore_not_acquired&) {
+      // expected to happen.
     }
-    EXPECT_FALSE(File::Exists(fn)) << fn;
+  }
+  EXPECT_FALSE(File::Exists(fn)) << fn;
+}
+
+TEST(SemaphoreFileTest, Smoke) {
+  FileHelper file;
+  auto tmp = file.TempDir();
+  // Will throw if it can't acquire.
+  auto ok =
+      SemaphoreFile::try_acquire(FilePath(tmp, "x.sem"), "", std::chrono::milliseconds(100));
+
+  auto fn = ok.filename();
+  LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
+
+  EXPECT_TRUE(File::Exists(fn)) << fn;
 }

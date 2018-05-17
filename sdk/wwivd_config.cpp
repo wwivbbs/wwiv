@@ -42,13 +42,32 @@ using namespace wwiv::core;
 #undef DELETE
 #endif  // DELETE
 
-#define SERIALIZE(field) { try { ar(cereal::make_nvp(#field, field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+#define SERIALIZE(n, field)                                                                        \
+  {                                                                                                \
+    try {                                                                                          \
+      ar(cereal::make_nvp(#field, n.field));                                                       \
+    } catch (const cereal::Exception&) {                                                           \
+      ar.setNextName(nullptr);                                                                     \
+    }                                                                                              \
+  }
 
 namespace wwiv {
 namespace sdk {
 
 template <class Archive>
-void serialize(Archive& ar, wwivd_blocking_t &a) {
+void serialize(Archive& ar, wwivd_blocking_t &b) {
+  SERIALIZE(b, mailer_mode);
+  SERIALIZE(b,use_badip_txt);
+  SERIALIZE(b, use_goodip_txt);
+  SERIALIZE(b, max_concurrent_sessions);
+  SERIALIZE(b, auto_blacklist);
+  SERIALIZE(b, auto_bl_sessions);
+  SERIALIZE(b, auto_bl_seconds);
+  SERIALIZE(b, use_dns_rbl);
+  SERIALIZE(b, dns_rbl_server);
+  SERIALIZE(b, use_dns_cc);
+  SERIALIZE(b, dns_cc_server);
+  SERIALIZE(b, block_cc_countries);
 }
 
 template <class Archive>
@@ -77,6 +96,7 @@ void serialize(Archive & ar, wwivd_config_t &a) {
   ar(cereal::make_nvp("http_port", a.http_port));
 
   ar(cereal::make_nvp("bbses", a.bbses));
+  SERIALIZE(a, blocking);
 }
 
 bool wwivd_config_t::Load(const Config & config) {

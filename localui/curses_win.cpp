@@ -137,6 +137,7 @@ void CursesWindow::Puts(const std::string& text) {
 
 void CursesWindow::PutsXY(int x, int y, const std::string& text) {
   mvwaddstr(reinterpret_cast<WINDOW*>(window_), y, x, text.c_str());
+  Refresh();
 }
 
 /**

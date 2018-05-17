@@ -33,6 +33,9 @@ using std::string;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
+static constexpr int MINIMUM_LISTBOX_HEIGHT = 10;
+static constexpr double RATIO_LISTBOX_HEIGHT = 0.8;
+
 static std::vector<HelpItem> StandardHelpItems() {
   return { {"Esc", "Exit"} };
 }
@@ -70,9 +73,19 @@ ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x,
   help_items_ = StandardHelpItems();
 }
 
+ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title,
+  std::vector<ListBoxItem>& items) 
+  : ListBox(io, parent, title, 
+    static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
+              std::min<int>(std::max<int>(items.size(), MINIMUM_LISTBOX_HEIGHT),
+                            static_cast<int>(floor(parent->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
+    items,
+    io->color_scheme()) {}
+
+
 void ListBox::DrawAllItems() {
-  for (int y = 0; y < height_; y++) {
-    int current_item = window_top_ + y - window_top_min_;
+  for (auto y = 0; y < height_; y++) {
+    auto current_item = window_top_ + y - window_top_min_;
     string line(items_[current_item].text());
     if (static_cast<int>(line.size()) > width_) {
       line = line.substr(0, width_);
@@ -108,7 +121,7 @@ ListBoxResult ListBox::RunDialog() {
     DrawAllItems();
     window_->Move(selected_ - (window_top_ - window_top_min_) + window_top_min_, 1);
     window_->Refresh();
-    int ch = window_->GetChar();
+    auto ch = window_->GetChar();
     switch (ch) {
     case KEY_HOME:
       selected_ = 0;

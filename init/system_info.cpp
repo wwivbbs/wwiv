@@ -35,9 +35,6 @@ using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
 
-static const int COL1_LINE = 2;
-static const int COL1_POSITION = 21;
-
 static string print_time(uint16_t t) {
   return StringPrintf("%02d:%02d", t / 60, t % 60);
 }
@@ -60,7 +57,7 @@ static const int MAX_TIME_EDIT_LEN = 5;
 
 class TimeEditItem : public EditItem<uint16_t*> {
 public:
-  TimeEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 0, data) {}
+  TimeEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 5, data) {}
   virtual ~TimeEditItem() {}
 
   virtual int Run(CursesWindow* window) {
@@ -80,7 +77,7 @@ protected:
 
 class Float53EditItem : public EditItem<float*> {
 public:
-  Float53EditItem(int x, int y, float* data) : EditItem<float*>(x, y, 0, data) {}
+  Float53EditItem(int x, int y, float* data) : EditItem<float*>(x, y, 5, data) {}
   virtual ~Float53EditItem() {}
 
   virtual int Run(CursesWindow* window) {
@@ -106,7 +103,7 @@ protected:
     // passing *this->data_ to StringPrintf is causing a bus error
     // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
     float d = *this->data_;
-    std::string s = StringPrintf("%5.3f", d);
+    auto s = StringPrintf("%5.3f", d);
     DefaultDisplayString(window, s);
   }
 };
@@ -120,59 +117,66 @@ void sysinfo1(const std::string& datadir) {
     save_status(datadir);
   }
 
+  static constexpr int LABEL1_POSITION = 2;
+  static constexpr int LABEL1_WIDTH = 18;
+  static constexpr int LABEL2_WIDTH = 10;
+  static constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
+  static constexpr int LABEL2_POSITION = COL1_POSITION + 8;
+  static constexpr int COL2_POSITION = LABEL2_POSITION + LABEL2_WIDTH + 1;
+
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 19, 74));
 
   int y = 1;
-  window->PrintfXY(COL1_LINE, y++, "System PW        : ");
-  window->PrintfXY(COL1_LINE, y++, "System name      : ");
-  window->PrintfXY(COL1_LINE, y++, "System phone     : ");
-  window->PrintfXY(COL1_LINE, y++, "Closed system    : ");
-
-  window->PrintfXY(COL1_LINE, y++, "Newuser PW       : ");
-  window->PrintfXY(COL1_LINE, y++, "Newuser restrict : ");
-  window->PrintfXY(COL1_LINE, y++, "Newuser SL       : ");
-  window->PrintfXY(COL1_LINE, y++, "Newuser DSL      : ");
-  window->PrintfXY(COL1_LINE, y++, "Newuser gold     : ");
-
-  window->PrintfXY(COL1_LINE, y++, "Sysop name       : ");
-  window->PrintfXY(COL1_LINE, y++, "Sysop time: from :       to:");
-
-  window->PrintfXY(COL1_LINE, y++, "Ratios    :  U/D :        Post/Call: ");
-
-  window->PrintfXY(COL1_LINE, y++, "Max waiting      : ");
-  window->PrintfXY(COL1_LINE, y++, "Max users        : ");
-  window->PrintfXY(COL1_LINE, y++, "Caller number    : ");
-  window->PrintfXY(COL1_LINE, y++, "Days active      : ");
+  EditItems items{};
+  items.add_labels(
+      {new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "System PW:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "System name:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "System phone:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Closed system:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser PW: "),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser restrict:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser SL:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser DSL:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser gold:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Sysop name:"),
+       new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Sysop time: from:"),
+       new Label(LABEL2_POSITION, y++, LABEL2_WIDTH, "to:"),
+       new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Ratios    :  U/D:"),
+       new Label(LABEL2_POSITION, y++, LABEL2_WIDTH, "Post/Call:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Max waiting:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Max users:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Caller number:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Days active:")});
 
   bool closed_system = syscfg.closedsystem > 0;
-  EditItems items{
-    new StringEditItem<char*>(COL1_POSITION, 1, 20, syscfg.systempw, true),
-    new StringEditItem<char*>(COL1_POSITION, 2, 50, syscfg.systemname, false),
-    new StringEditItem<char*>(COL1_POSITION, 3, 12, syscfg.systemphone, true),
-    new BooleanEditItem(out, COL1_POSITION, 4, &closed_system),
-    new StringEditItem<char*>(COL1_POSITION, 5, 20, syscfg.newuserpw, true),
-    new RestrictionsEditItem(COL1_POSITION, 6, &syscfg.newuser_restrict),
-    new NumberEditItem<uint8_t>(COL1_POSITION, 7, &syscfg.newusersl),
-    new NumberEditItem<uint8_t>(COL1_POSITION, 8, &syscfg.newuserdsl),
-    new NumberEditItem<float>(COL1_POSITION, 9, &syscfg.newusergold),
-    new StringEditItem<char*>(COL1_POSITION, 10, 50, syscfg.sysopname, false),
-    new TimeEditItem(COL1_POSITION, 11, &syscfg.sysoplowtime),
-    new TimeEditItem(COL1_POSITION + 10, 11, &syscfg.sysophightime),
+  int gold = static_cast<int>(syscfg.newusergold);
+  y = 1;
+  items.add_items({
+    new StringEditItem<char*>(COL1_POSITION, y++, 20, syscfg.systempw, true),
+      new StringEditItem<char*>(COL1_POSITION, y++ , 50, syscfg.systemname, false),
+      new StringEditItem<char*>(COL1_POSITION, y++, 12, syscfg.systemphone, true),
+      new BooleanEditItem(out, COL1_POSITION, y++, &closed_system),
+      new StringEditItem<char*>(COL1_POSITION, y++, 20, syscfg.newuserpw, true),
+      new RestrictionsEditItem(COL1_POSITION, y++, &syscfg.newuser_restrict),
+      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &syscfg.newusersl),
+      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &syscfg.newuserdsl),
+      new NumberEditItem<int>(COL1_POSITION, y++, &gold),
+      new StringEditItem<char*>(COL1_POSITION, y++, 50, syscfg.sysopname, false),
+      new TimeEditItem(COL1_POSITION, y, &syscfg.sysoplowtime),
+      new TimeEditItem(COL2_POSITION, y++, &syscfg.sysophightime),
 
-    new Float53EditItem(COL1_POSITION, 12, &syscfg.req_ratio),
-    new Float53EditItem(COL1_POSITION + 18, 12, &syscfg.post_call_ratio),
+      new Float53EditItem(COL1_POSITION, y, &syscfg.req_ratio),
+      new Float53EditItem(COL2_POSITION, y++, &syscfg.post_call_ratio),
 
-    new NumberEditItem<uint8_t>(COL1_POSITION, 13, &syscfg.maxwaiting),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 14, &syscfg.maxusers),
-    new NumberEditItem<uint32_t>(COL1_POSITION, 15, &statusrec.callernum1),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 16, &statusrec.days),
-  };
+      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &syscfg.maxwaiting),
+      new NumberEditItem<uint16_t>(COL1_POSITION, y++, &syscfg.maxusers),
+      new NumberEditItem<uint32_t>(COL1_POSITION, y++, &statusrec.callernum1),
+      new NumberEditItem<uint16_t>(COL1_POSITION, y++, &statusrec.days),
+  });
 
-  items.set_curses_io(out, window.get());
-  items.Run();
+  items.Run("System Configuration");
   syscfg.closedsystem = closed_system;
-
+  syscfg.newusergold = static_cast<float>(gold);
 
   save_config();
 }

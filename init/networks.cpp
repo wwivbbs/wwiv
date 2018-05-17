@@ -172,12 +172,12 @@ public:
     case network_type_t::wwivnet: return 2;
     case network_type_t::internet: return 2;
     case network_type_t::ftn: {
-      constexpr int LABEL_WIDTH = 15;
+      constexpr int LABEL_WIDTH = 14;
       constexpr int SHORT_FIELD_WIDTH = 25;
       constexpr int LBL1_POSITION = 2;
-      constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH;
+      constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
       constexpr int LBL2_POSITION = COL1_POSITION + SHORT_FIELD_WIDTH;
-      constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH;
+      constexpr int COL2_POSITION = LBL2_POSITION + LABEL_WIDTH + 1;
       constexpr int MAX_STRING_LEN = 56;
       fido_network_config_t* n = &d_.fido;
       int y = 1;
@@ -226,32 +226,30 @@ public:
       window->GotoXY(x_, y_);
       int ch = window->GetChar();
       if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-        unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title_, y + 1, width_));
-        items.set_curses_io(CursesIO::Get(), sw.get());
         y = 1;
-        sw->PutsXY(LBL1_POSITION, y++, "FTN Address  :");
-        sw->PutsXY(LBL1_POSITION, y++, "Nodelist Base:");
-        sw->PutsXY(LBL1_POSITION, y++, "Inbound Dir  :");
-        sw->PutsXY(LBL1_POSITION, y++, "Temp In Dir  :");
-        sw->PutsXY(LBL1_POSITION, y++, "Temp Out Dir :");
-        sw->PutsXY(LBL1_POSITION, y++, "Outbound Dir :");
-        sw->PutsXY(LBL1_POSITION, y++, "NetMail Dir  :");
-        sw->PutsXY(LBL1_POSITION, y++, "BadPacket Dir:");
-        sw->PutsXY(LBL1_POSITION, y++, "Origin Line  :");
-
-        sw->PutsXY(LBL1_POSITION, y++, "Mailer       :");
-        sw->PutsXY(LBL1_POSITION, y++, "Transport    :");
-        sw->PutsXY(LBL1_POSITION, y++, "Packet Type  :");
-        sw->PutsXY(LBL1_POSITION, y++, "Compression  :");
-        sw->PutsXY(LBL1_POSITION, y++, "Packet PW    :");
-        sw->PutsXY(LBL1_POSITION, y++, "AreaFix PW   :");
+        items.add_labels({new Label(LBL1_POSITION, y++, LABEL_WIDTH, "FTN Address:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "FTN Address:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Nodelist Base:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Inbound Dir:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Temp In Dir:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Temp Out Dir:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Outbound Dir:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "NetMail Dir:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BadPacket Dir:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Origin Line:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Mailer:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Transport:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet Type:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Compression:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet PW:"),
+                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "AreaFix PW:")});
 
         // dy = y where we start to double up.
         dy = dy_start_;
-        sw->PutsXY(LBL2_POSITION, dy++, "Max Arc Size :");
-        sw->PutsXY(LBL2_POSITION, dy++, "Max Pkt Size :");
-        sw->PutsXY(LBL2_POSITION, dy++, "Bundle Status:");
-        items.Run();
+        items.add_labels({new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Arc Size:"),
+                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Max Pkt Size:"),
+                          new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:")});
+        items.Run(title_);
         window->RedrawWin();
         return 2;
       } else if (ch == KEY_UP || ch == KEY_BTAB) {
@@ -264,7 +262,6 @@ public:
     return 2;
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
-  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
 
 private:
   const std::string netdir_;
@@ -279,7 +276,8 @@ private:
 
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   constexpr int LBL1_POSITION = 2;
-  constexpr int COL1_POSITION = 17;
+  constexpr int LABEL_WIDTH = 14;
+  constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
   int y = 1;
 
   auto& p = n.packet_config;
@@ -309,25 +307,21 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   items.add(new NumberEditItem<int>(COL1_POSITION, y++, &b.port));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, b.password, true));
 
-  const string title = StrCat("Address: ", a.as_string());
-  unique_ptr<CursesWindow> sw(out->CreateBoxedWindow(title, items.size() + 2, 61));
-  items.set_curses_io(out, sw.get());
-
   y = 1;
-  sw->PutsXY(LBL1_POSITION, y++, "Routes       :");
-  sw->PutsXY(LBL1_POSITION, y++, "Packet Type  :");
-  sw->PutsXY(LBL1_POSITION, y++, "Compression  :");
-  sw->PutsXY(LBL1_POSITION, y++, "Packet PW    :");
-  sw->PutsXY(LBL1_POSITION, y++, "AreaFix PW   :");
-  sw->PutsXY(LBL1_POSITION, y++, "Max Arc Size :");
-  sw->PutsXY(LBL1_POSITION, y++, "Max Pkt Size :");
-  sw->PutsXY(LBL1_POSITION, y++, "Bundle Status:");
+  items.add_labels({new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Routes:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet Type:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Compression:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet PW:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "AreaFix PW:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Max Arc Size:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Max Pkt Size:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Bundle Status:"),
 
-  sw->PutsXY(LBL1_POSITION, y++, "BinkP Host   :");
-  sw->PutsXY(LBL1_POSITION, y++, "BinkP Port   :");
-  sw->PutsXY(LBL1_POSITION, y++, "Session PW   :");
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BinkP Host:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BinkP Port:"),
+                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Session PW:")});
 
-  items.Run();
+  items.Run(StrCat("Address: ", a.as_string()));
 }
 
 // Base item of an editable value, this class does not use templates.
@@ -354,10 +348,7 @@ public:
         for (const auto& e : callout.node_configs_map()) {
           items.emplace_back(e.first.as_string());
         }
-        ListBox list(out, window, "Select Address",
-          static_cast<int>(floor(window->GetMaxX() * 0.8)),
-          std::min<int>(10, static_cast<int>(floor(window->GetMaxY() * 0.8))),
-          items, out->color_scheme());
+        ListBox list(out, window, "Select Address", items);
 
         list.selection_returns_hotkey(true);
         list.set_additional_hotkeys("DI");
@@ -406,7 +397,6 @@ public:
     }
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
-  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
 
 private:
   const std::string netdir_;
@@ -433,7 +423,9 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   net_networks_rec& n = networks.at(nn);
   const string orig_network_name(n.name);
 
-  const int COL1_POSITION = 14;
+  constexpr int LABEL1_POSITION = 2;
+  constexpr int LABEL_WIDTH = 11;
+  constexpr int COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
   int y = 1;
   EditItems items{};
   items.add(new ToggleEditItem<network_type_t>(out, COL1_POSITION, y++, nettypes, &n.type))->
@@ -449,20 +441,16 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     items.add(new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", 76, config, n));
   }
 
-  const string title = StrCat("Network Configuration; Net #", nn);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, items.size() + 2, 76));
-  items.set_curses_io(out, window.get());
-
   y = 1;
-  window->PutsXY(2, y++, "Net Type  :");
-  window->PutsXY(2, y++, "Net Name  :");
-  window->PutsXY(2, y++, "Node #    :");
-  window->PutsXY(2, y++, "Directory :");
+  items.add_labels({new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Net Type:"),
+                    new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Net Name:"),
+                    new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Node #:"),
+                    new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Directory:")});
   if (n.type == network_type_t::ftn) {
-    window->PutsXY(2, y++, "Settings  :");
-    window->PutsXY(2, y++, "Addresses :");
+    items.add_labels({new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Settings:"),
+                      new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Addresses:")});
   }
-  items.Run();
+  items.Run(StrCat("Network Configuration; Net #", nn));
 
   if (subs_loaded && orig_network_name != n.name) {
     subs.Save();
@@ -569,8 +557,7 @@ void networks(wwiv::sdk::Config& config) {
         items.emplace_back(StringPrintf("@%-5u %-16s [.%d]", n.sysnum, n.name, num++));
       }
       CursesWindow* window = out->window();
-      ListBox list(out, window, "Select Network", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
-          static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+      ListBox list(out, window, "Select Network", items);
 
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");

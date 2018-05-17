@@ -34,28 +34,40 @@ using std::unique_ptr;
 using std::string;
 using namespace wwiv::strings;
 
-static const int COL1_LINE = 2;
-static const int COL1_POSITION = 14;
+static constexpr int LABEL1_POS = 2;
+static constexpr int LABEL1_WIDTH = 11;
+static constexpr int COL1_POSITION = LABEL1_POS + LABEL1_WIDTH + 1;
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir */
 void setpaths(const std::string& bbsdir) {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Paths", 15, 76));
+
+  EditItems items{};
+  items.add_items({
+    new FilePathItem(COL1_POSITION, 1, 60, bbsdir, syscfg.msgsdir),
+    new FilePathItem(COL1_POSITION, 2, 60, bbsdir, syscfg.gfilesdir),
+    new FilePathItem(COL1_POSITION, 3, 60, bbsdir, syscfg.menudir),
+    new FilePathItem(COL1_POSITION, 4, 60, bbsdir, syscfg.datadir),
+    new FilePathItem(COL1_POSITION, 5, 60, bbsdir, syscfg.scriptdir),
+    new FilePathItem(COL1_POSITION, 6, 60, bbsdir, syscfg.dloadsdir),
+  });
 
   int y = 1;
-  window->PrintfXY(COL1_LINE, y++, "Messages  : %s", syscfg.msgsdir);
-  window->PrintfXY(COL1_LINE, y++, "GFiles    : %s", syscfg.gfilesdir);
-  window->PrintfXY(COL1_LINE, y++, "Menus     : %s", syscfg.menudir);
-  window->PrintfXY(COL1_LINE, y++, "Data      : %s", syscfg.datadir);
-  window->PrintfXY(COL1_LINE, y++, "Scripts   : %s", syscfg.scriptdir);
-  window->PrintfXY(COL1_LINE, y++, "Downloads : %s", syscfg.dloadsdir);
+  items.add_labels({new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Messages:"),
+                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "GFiles:"),
+                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Menus:"),
+                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Data:"),
+                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Scripts:"),
+                    new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Downloads:")});
   y+=2;
-  window->SetColor(SchemeId::WARNING);
-  window->PrintfXY(COL1_LINE, y++, "CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.");
+  //window->SetColor(SchemeId::WARNING);
+  items.add_labels({new Label(LABEL1_POS, y++, LABEL1_WIDTH,
+                              "CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.")});
   y+=1;
-  window->SetColor(SchemeId::WINDOW_TEXT);
-  window->PrintfXY(COL1_LINE + 2, y++, "Changing any of these requires YOU to MANUALLY move files and/or");
-  window->PrintfXY(COL1_LINE + 2, y++, "directory structures.");
+  //window->SetColor(SchemeId::WINDOW_TEXT);
+  items.add_labels({new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH,
+                              "Changing any of these requires YOU to MANUALLY move files and/or"),
+                    new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH, "directory structures.")});
 
   if (!syscfg.scriptdir[0]) {
     // This is added in 5.3
@@ -63,18 +75,7 @@ void setpaths(const std::string& bbsdir) {
     to_char_array(syscfg.scriptdir, sdir);
   }
 
-  EditItems items{
-    new FilePathItem(COL1_POSITION, 1, 60, bbsdir, syscfg.msgsdir),
-    new FilePathItem(COL1_POSITION, 2, 60, bbsdir, syscfg.gfilesdir),
-    new FilePathItem(COL1_POSITION, 3, 60, bbsdir, syscfg.menudir),
-    new FilePathItem(COL1_POSITION, 4, 60, bbsdir, syscfg.datadir),
-    new FilePathItem(COL1_POSITION, 5, 60, bbsdir, syscfg.scriptdir),
-    new FilePathItem(COL1_POSITION, 6, 60, bbsdir, syscfg.dloadsdir),
-  };
-
-  items.set_curses_io(out, window.get());
-  items.Run();
-
+  items.Run("System Paths");
   save_config();
 }
 

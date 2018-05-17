@@ -99,7 +99,7 @@ SemaphoreFile::SemaphoreFile(const std::string& filepath, int fd)
   : filename_(filepath), fd_(fd) {}
 
 SemaphoreFile::~SemaphoreFile() {
-  LOG(ERROR) << "~SemaphoreFile(): " << filename_ << "; fd: " << fd_;
+  VLOG(1) << "~SemaphoreFile(): " << filename_ << "; fd: " << fd_;
   if (fd_ >= 0) {
     if (close(fd_) == -1) {
       LOG(ERROR) << "Failed to close file: " << filename_ << "; error: " << errno;

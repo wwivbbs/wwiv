@@ -93,49 +93,60 @@ static void edit_menu_item(MenuRec& m) {
     { MENU_HELP_ONENTRANCE, "At Entrance" }
   };
 
-
   EditItems items{};
-  const string title = StrCat("Menu: ", m.szKey);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, 14, 76));
-  items.set_curses_io(out, window.get());
   int y = 1;
-  window->PrintfXY(COL1_LINE, y, "Menu Key  : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 10, m.szKey, true));
-  window->PrintfXY(COL1_LINE, y, "Command   : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 60, m.szExecute, false));
-  window->PrintfXY(COL1_LINE, y, "Menu Text : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 40, m.szMenuText, false));
-  window->PrintfXY(COL1_LINE, y, "Help Text : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 60, m.szHelp, false));
-  window->PrintfXY(COL1_LINE, y, "Sysop Log : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 50, m.szSysopLog, false));
-  window->PrintfXY(COL1_LINE, y, "Instance  : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 60, m.szInstanceMessage, false));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Key:"),
+            new StringEditItem<char*>(COL2_LINE, y, 10, m.szKey, true));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Command:"),
+            new StringEditItem<char*>(COL2_LINE, y, 60, m.szExecute, false));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Text:"),
+            new StringEditItem<char*>(COL2_LINE, y, 40, m.szMenuText, false));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Help Text:"),
+            new StringEditItem<char*>(COL2_LINE, y, 60, m.szHelp, false));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Log:"),
+            new StringEditItem<char*>(COL2_LINE, y, 50, m.szSysopLog, false));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Instance :"),
+            new StringEditItem<char*>(COL2_LINE, y, 60, m.szInstanceMessage, false));
+  y++;
   int col2y = y;
-  window->PrintfXY(COL1_LINE, y, "Min SL    : ");
-  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.nMinSL));
-  window->PrintfXY(COL1_LINE, y, "Max SL    : ");
-  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.iMaxSL));
-  window->PrintfXY(COL1_LINE, y, "Min DSL   : ");
-  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.nMinDSL));
-  window->PrintfXY(COL1_LINE, y, "Max DSL   : ");
-  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &m.iMaxDSL));
-  window->PrintfXY(COL1_LINE, y, "AR        : ");
-  items.add(new ArEditItem(COL2_LINE, y++, &m.uAR));
-  window->PrintfXY(COL1_LINE, y, "DAR       : ");
-  items.add(new ArEditItem(COL2_LINE, y++, &m.uDAR));
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Min SL:"),
+            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.nMinSL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Max SL:"),
+            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.iMaxSL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Min DSL:"),
+            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.nMinDSL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Max DSL:"),
+            new NumberEditItem<uint16_t>(COL2_LINE, y, &m.iMaxDSL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "AR:"),
+            new ArEditItem(COL2_LINE, y, &m.uAR));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "DAR:"),
+            new ArEditItem(COL2_LINE, y, &m.uDAR));
+  y++;
   
   y = col2y;
-  window->PrintfXY(COL3_LINE, y, "Restr     : ");
-  items.add(new RestrictionsEditItem(COL4_LINE, y++, &m.uRestrict));
-  window->PrintfXY(COL3_LINE, y, "Sysop     : ");
-  items.add(new BooleanEditItem(out, COL4_LINE, y++, &m.nSysop));
-  window->PrintfXY(COL3_LINE, y, "CoSysop   : ");
-  items.add(new BooleanEditItem(out, COL4_LINE, y++, &m.nCoSysop));
-  window->PrintfXY(COL3_LINE, y, "Password  : ");
-  items.add(new StringEditItem<char*>(COL4_LINE, y++, 20, m.szPassWord, true));
+  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Restr:"),
+            new RestrictionsEditItem(COL4_LINE, y, &m.uRestrict));
+  y++;
+  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Sysop:"),
+            new BooleanEditItem(out, COL4_LINE, y, &m.nSysop));
+  y++;
+  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "CoSysop:"),
+            new BooleanEditItem(out, COL4_LINE, y, &m.nCoSysop));
+  y++;
+  items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Password:"),
+            new StringEditItem<char*>(COL4_LINE, y, 20, m.szPassWord, true));
 
-  items.Run();
+  items.Run(StrCat("Menu: ", m.szKey));
 }
 
 class MenuItemsSubDialog : public BaseEditItem {
@@ -159,8 +170,7 @@ public:
              << " '" << m.szMenuText << "' [" << m.szExecute << "]";
           items.emplace_back(ss.str(), 0, i);
         }
-        ListBox list(out, window, title_, static_cast<int>(floor(window->GetMaxX() * 0.8)),
-          static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+        ListBox list(out, window, title_, items);
 
         list.set_additional_hotkeys("DIM");
         list.set_help_items({ 
@@ -221,8 +231,6 @@ public:
     window->PutsXY(x_, y_, "[Enter to Edit]");
   }
 
-  virtual void set_curses_io(CursesIO* io) override { io_ = io; }
-
 private:
   vector<MenuRec>& menu_items_;
   const std::string title_;
@@ -232,9 +240,6 @@ private:
 };
 
 static void edit_menu(const std::string& menu_dir, const std::string& menu_name) {
-  const int COL1_LINE = 2;
-  const int COL2_LINE = COL1_LINE + 22;
-
   vector<MenuRec> menu_items;
   {
     DataFile<MenuRec> menu_file(menu_dir, menu_name);
@@ -275,47 +280,66 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
     h.nVersion = 256;
   }
 
+  constexpr int COL1_LINE = 2;
+  constexpr int LABEL1_WIDTH = 20;
+  constexpr int COL2_LINE = COL1_LINE + LABEL1_WIDTH + 1;
+
   EditItems items{};
   const string title = StrCat("Menu: ", menu_name);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow(title, 19, 76));
-  items.set_curses_io(out, window.get());
   int y = 1;
-  window->PrintfXY(COL1_LINE, y, "Menu Description     : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 20, h.szMenuTitle, false));
-  window->PrintfXY(COL1_LINE, y, "Deleted              : ");
-  items.add(new FlagEditItem<uint8_t>(out, COL2_LINE, y++, MENU_FLAG_DELETED, "Yes", "No", &h.nFlags));
-  window->PrintfXY(COL1_LINE, y, "Main Menu            : ");
-  items.add(new FlagEditItem<uint8_t>(out, COL2_LINE, y++, MENU_FLAG_MAINMENU, "Yes", "No", &h.nFlags));
-  window->PrintfXY(COL1_LINE, y, "What do Numbers do   : ");
-  items.add(new ToggleEditItem<uint8_t>(out, COL2_LINE, y++, numbers_action, &h.nums));
-  window->PrintfXY(COL1_LINE, y, "Logging Type         : ");
-  items.add(new ToggleEditItem<uint8_t>(out, COL2_LINE, y++, logging_action, &h.nLogging));
-  window->PrintfXY(COL1_LINE, y, "Force help to be on  : ");
-  items.add(new ToggleEditItem<uint8_t>(out, COL2_LINE, y++, help_action, &h.nForceHelp));
-  window->PrintfXY(COL1_LINE, y, "Enter Script         : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 50, h.szScript, false));
-  window->PrintfXY(COL1_LINE, y, "Exit Script          : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 50, h.szExitScript, false));
-  window->PrintfXY(COL1_LINE, y, "Minimum SL           : ");
-  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &h.nMinSL));
-  window->PrintfXY(COL1_LINE, y, "Minimum DSL          : ");
-  items.add(new NumberEditItem<uint16_t>(COL2_LINE, y++, &h.nMinDSL));
-  window->PrintfXY(COL1_LINE, y, "AR                   : ");
-  items.add(new ArEditItem(COL2_LINE, y++, &h.uAR));
-  window->PrintfXY(COL1_LINE, y, "DAR                  : ");
-  items.add(new ArEditItem(COL2_LINE, y++, &h.uDAR));
-  window->PrintfXY(COL1_LINE, y, "Restrictions         : ");
-  items.add(new RestrictionsEditItem(COL2_LINE, y++, &h.uRestrict));
-  window->PrintfXY(COL1_LINE, y, "Sysop                : ");
-  items.add(new BooleanEditItem(out, COL2_LINE, y++, &h.nSysop));
-  window->PrintfXY(COL1_LINE, y, "CoSysop              : ");
-  items.add(new BooleanEditItem(out, COL2_LINE, y++, &h.nCoSysop));
-  window->PrintfXY(COL1_LINE, y, "Password             : ");
-  items.add(new StringEditItem<char*>(COL2_LINE, y++, 20, h.szPassWord, true));
-  window->PrintfXY(COL1_LINE, y, "Edit Menu Commands   : ");
-  items.add(new MenuItemsSubDialog(menu_items, COL2_LINE, y++, "[Edit Menu Items]"));
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Menu Description:"),
+            new StringEditItem<char*>(COL2_LINE, y, 20, h.szMenuTitle, false));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Deleted:"),
+            new FlagEditItem<uint8_t>(out, COL2_LINE, y, MENU_FLAG_DELETED, "Yes", "No", &h.nFlags));
+  y++;
+  items.add(
+      new Label(COL1_LINE, y, LABEL1_WIDTH, "Main Menu:"),
+            new FlagEditItem<uint8_t>(out, COL2_LINE, y, MENU_FLAG_MAINMENU, "Yes", "No", &h.nFlags));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "What do Numbers do:"),
+            new ToggleEditItem<uint8_t>(out, COL2_LINE, y, numbers_action, &h.nums));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Logging Type:"),
+            new ToggleEditItem<uint8_t>(out, COL2_LINE, y, logging_action, &h.nLogging));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Force help to be on:"),
+            new ToggleEditItem<uint8_t>(out, COL2_LINE, y, help_action, &h.nForceHelp));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Enter Script:"),
+            new StringEditItem<char*>(COL2_LINE, y, 50, h.szScript, false));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Exit Script:"),
+            new StringEditItem<char*>(COL2_LINE, y, 50, h.szExitScript, false));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Minimum SL:"),
+            new NumberEditItem<uint16_t>(COL2_LINE, y, &h.nMinSL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Minimum DSL:"),
+            new NumberEditItem<uint16_t>(COL2_LINE, y, &h.nMinDSL));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "AR:"),
+            new ArEditItem(COL2_LINE, y, &h.uAR));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "DAR:"),
+            new ArEditItem(COL2_LINE, y, &h.uDAR));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Restrictions:"),
+            new RestrictionsEditItem(COL2_LINE, y, &h.uRestrict));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Sysop:"),
+            new BooleanEditItem(out, COL2_LINE, y, &h.nSysop));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "CoSysop:"),
+            new BooleanEditItem(out, COL2_LINE, y, &h.nCoSysop));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Password:"),
+            new StringEditItem<char*>(COL2_LINE, y, 20, h.szPassWord, true));
+  y++;
+  items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Edit Menu Commands:"),
+            new MenuItemsSubDialog(menu_items, COL2_LINE, y, "[Edit Menu Items]"));
 
-  items.Run();
+  items.Run(title);
 
   MenuRec r{};
   memcpy(&r, &h, sizeof(MenuHeader));
@@ -347,8 +371,7 @@ static void select_menu(Config& config, const std::string& dir) {
       }
       CursesWindow* window = out->window();
       auto title = StrCat("Select Menu from [", dir, "]");
-      ListBox list(out, window, title, static_cast<int>(floor(window->GetMaxX() * 0.8)),
-        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+      ListBox list(out, window, title, items);
       list.set_selected(selected);
       list.set_additional_hotkeys("DI");
       list.set_help_items({ { "Esc", "Exit" },{ "Enter", "Edit" },{ "D", "Delete" },{ "I", "Insert" } });
@@ -388,8 +411,7 @@ void menus(wwiv::sdk::Config& config) {
         items.emplace_back(d.name);
       }
       CursesWindow* window = out->window();
-      ListBox list(out, window, "Select Menu Set", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
-          static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+      ListBox list(out, window, "Select Menu Set", items);
       list.set_selected(selected);
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");

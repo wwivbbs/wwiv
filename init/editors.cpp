@@ -52,10 +52,10 @@ using namespace wwiv::strings;
 
 static void edit_editor(editorrec& e) {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("External Editor Configuration", 17, 78));
-
   const vector<std::pair<uint8_t, string>> bbs_types = {{0, "WWIV"}, {1,"QuickBBS"}};
-  const int COL1_POSITION = 32;
+  constexpr int LABEL1_POSITION = 2;
+  constexpr int LABEL1_WIDTH = 29;
+  constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
 
   if (!(e.ansir & ansir_ansi)) {
     e.ansir |= ansir_emulate_fossil;
@@ -72,26 +72,26 @@ static void edit_editor(editorrec& e) {
   items.add(new FlagEditItem<uint8_t>(out, COL1_POSITION, y++, ansir_emulate_fossil, "Yes", "No ", &e.ansir));
   items.add(new FlagEditItem<uint8_t>(out, COL1_POSITION, y++, ansir_temp_dir, "Yes", "No ", &e.ansir));
   y++;
-  items.add(new CommandLineItem(2, y++, 75, e.filename));
+  items.add(new CommandLineItem(LABEL1_POSITION, y++, 75, e.filename));
   y += 2;
-  items.add(new CommandLineItem(2, y++, 75, e.filenamecon));
-  items.set_curses_io(out, window.get());
+  items.add(new CommandLineItem(LABEL1_POSITION, y++, 75, e.filenamecon));
 
   y = 1;
-  window->PutsXY(2, y++, "Description                 : ");
-  window->PutsXY(2, y++, "BBS Type                    : ");
-  window->PutsXY(2, y++, "Use DOS Interrupts          : ");
-  window->PutsXY(2, y++, "Emulate FOSSIL              : ");
-  window->PutsXY(2, y++, "Temp Directory Working Dir  : ");
-  window->PutsXY(2, y++, "Filename to run remotely:");
+  items.add_labels({new Label(2, y++, LABEL1_WIDTH, "Description:"),
+                    new Label(2, y++, LABEL1_WIDTH, "BBS Type:"),
+                    new Label(2, y++, LABEL1_WIDTH, "Use DOS Interrupts:"),
+                    new Label(2, y++, LABEL1_WIDTH, "Emulate FOSSIL:"),
+                    new Label(2, y++, LABEL1_WIDTH, "Temp Directory Working Dir:"),
+                    new Label(2, y++, LABEL1_WIDTH, "Filename to run remotely:")});
   y+=2;
-  window->PutsXY(2, y++, "Filename to run locally:");
+  items.add_labels({new Label(2, y++, LABEL1_WIDTH, "Filename to run locally:")});
   y+=2;
-  window->PutsXY(2, y++, "%1 = filename to edit   %N = Node Number ");
-  window->PutsXY(2, y++, "%2 = chars per line     %H = Socket Handle");
-  window->PutsXY(2, y++, "%3 = lines per page     ");
-  window->PutsXY(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed.");
-  items.Run();
+  items.add_labels(
+      {new Label(2, y++, "%1 = filename to edit   %N = Node Number "),
+       new Label(2, y++, "%2 = chars per line     %H = Socket Handle"),
+       new Label(2, y++, "%3 = lines per page     "),
+       new Label(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed.")});
+  items.Run("External Editor Configuration");
 }
 
 void extrn_editors(const wwiv::sdk::Config& config) {

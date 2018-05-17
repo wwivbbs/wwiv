@@ -102,12 +102,13 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   window->PrintfXY(COL1_LINE, y++, "Sysop Real Name  : ");
   window->PrintfXY(COL1_LINE, y++, "Sysop Password   : ");
   window->PrintfXY(COL1_LINE, y++, "Sysop phone      : ");
-  EditItems items{
+  EditItems items{};
+  items.add_items({
     new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, u.data.name, true),
     new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, u.data.realname, true),
     new StringEditItem<char*>(COL1_POSITION, 3, 8, u.data.pw, true),
     new StringEditItem<char*>(COL1_POSITION, 4, 12, u.data.phone, true),
-  };
+  });
 
   items.set_curses_io(out, window.get());
   items.Run();

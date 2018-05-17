@@ -56,30 +56,28 @@ static constexpr int MAX_LANGUAGES = 100;
 
 static void edit_lang(const std::string& bbsdir, languagerec& n) {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Language Configuration", 9, 78));
-  const int COL1_POSITION = 19;
+  constexpr int LABEL1_POSITION = 2;
+  constexpr int LABEL1_WIDTH = 15;
+  constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
 
-  EditItems items{
-    // The string is 20 total (19 usable).
-    new StringEditItem<char*>(COL1_POSITION, 1, 19, n.name, false),
-    new FilePathItem(2, 3, 75, bbsdir, n.dir),
-    new FilePathItem(2, 6, 75, bbsdir, n.mdir),
-  };
-  items.set_curses_io(out, window.get());
-
+  EditItems items{};
   int y = 1;
-  window->PutsXY(2, y++, "Language name  : ");
-  window->PutsXY(2, y++, "Data Directory : ");
-  y+=2;
-  window->PutsXY(2, y++, "Menu Directory : ");
-  items.Run();
-}
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Language name:"),
+            new StringEditItem<char*>(COL1_POSITION, y, 19, n.name, false));
+  y++;
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Data Directory:"),
+            new FilePathItem(LABEL1_POSITION, y + 1, 75, bbsdir, n.dir));
+  y += 2;
+  items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH , "Menu Directory:"),
+            new FilePathItem(LABEL1_POSITION, y+1, 75, bbsdir, n.mdir));
+  items.Run("Language Configuration");
+};
 
 static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
   uint8_t max_num = 1;
   std::set<uint8_t> nums;
   for (std::size_t i = 0; i < languages.size(); i++) {
-    const languagerec& l = languages[i];
+    const auto& l = languages[i];
     max_num = std::max<uint8_t>(max_num, l.num);
     nums.insert(l.num);
   }
@@ -115,8 +113,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
       items.emplace_back(StringPrintf("%d. %s (%s)", i + 1, languages[i].name, languages[i].dir));
     }
     CursesWindow* window = out->window();
-    ListBox list(out, window, "Select Language", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
-        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+    ListBox list(out, window, "Select Language", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");

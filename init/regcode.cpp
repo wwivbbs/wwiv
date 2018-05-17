@@ -20,22 +20,19 @@
 
 #include <memory>
 
-#include "localui/wwiv_curses.h"
-#include "localui/input.h"
 #include "init/init.h"
 #include "init/utility.h"
 #include "init/wwivinit.h"
+#include "localui/input.h"
+#include "localui/wwiv_curses.h"
 
 using std::unique_ptr;
 
 void edit_registration_code() {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("WWIV 4.x Registration", 5, 38));
-
-  window->PrintfXY(2, 2, "Registration Number  : %d", syscfg.wwiv_reg_number);
-
-  EditItems items{ new NumberEditItem<uint32_t>(25, 2, &syscfg.wwiv_reg_number) };
-  items.set_curses_io(out, window.get());
-  items.Run();
+  EditItems items{};
+  items.add(new Label(2, 2, 22, "Registration Number:"),
+            new NumberEditItem<uint32_t>(25, 2, &syscfg.wwiv_reg_number));
+  items.Run("WWIV 4.x Registration");
   save_config();
 }

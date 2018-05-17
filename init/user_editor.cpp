@@ -53,8 +53,6 @@ static bool IsUserDeleted(userrec *user) {
 }
 
 static void show_user(EditItems* items, userrec* user) {
-  items->Display();
-
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   auto height = items->window()->GetMaxY() - 2;
   auto width = items->window()->GetMaxX() - 2;
@@ -85,6 +83,8 @@ static void show_user(EditItems* items, userrec* user) {
   items->window()->PrintfXY(COL2_POSITION, y++, "Msgs Waiting : %d", user->waiting);
   items->window()->PrintfXY(COL2_POSITION, y++, "Netmail Sent : %d", user->emailnet);
   items->window()->PrintfXY(COL2_POSITION, y++, "Deleted Posts: %d", user->deletedposts);
+
+  items->Display();
 }
 
 static void show_error_no_users(CursesWindow* window) {
@@ -116,8 +116,7 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
     }
   }
   
-  ListBox list(out, window, "Select User", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
-    static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+  ListBox list(out, window, "Select User", items);
   ListBoxResult result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
     return items[result.selected].data();
@@ -128,31 +127,13 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
 void user_editor(const wwiv::sdk::Config& config) {
   int number_users = number_userrecs(config.datadir());
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("User Editor", 18, 76));
+  static constexpr int LABEL_WIDTH = 14;
 
   if (number_users < 1) {
+    unique_ptr<CursesWindow> window(out->CreateBoxedWindow("User Editor", 18, 76));
     show_error_no_users(window.get());
     return;
   }
-
-  int y = 1;
-  window->PrintfXY(COL1_LINE, y++, "Name/Handle  :");
-  window->PrintfXY(COL1_LINE, y++, "Real Name    :");
-  window->PrintfXY(COL1_LINE, y++, "SL           :");
-  window->PrintfXY(COL1_LINE, y++, "DSL          :");
-  window->PrintfXY(COL1_LINE, y++, "Address      :");
-  window->PrintfXY(COL1_LINE, y++, "City         :");
-  window->PrintfXY(COL1_LINE, y++, "State        :");
-  window->PrintfXY(COL1_LINE, y++, "Postal Code  :");
-  window->PrintfXY(COL1_LINE, y++, "Birthday     :");
-  window->PrintfXY(COL1_LINE, y++, "Password     :");
-  window->PrintfXY(COL1_LINE, y++, "Phone Number :");
-  window->PrintfXY(COL1_LINE, y++, "Data Number  :");
-  window->PrintfXY(COL1_LINE, y++, "Computer Type:");
-  window->PrintfXY(COL1_LINE, y++, "Restrictions :");
-  window->PrintfXY(COL1_LINE, y++, "WWIV Reg     :");
-  window->PrintfXY(COL1_LINE, y++, "Sysop Note   :");
-  window->Refresh();
 
   int current_usernum = 1;
   userrec user;
@@ -186,7 +167,9 @@ void user_editor(const wwiv::sdk::Config& config) {
         user.year = static_cast<uint8_t>(year - 1900);
       });
 
-  EditItems items{
+
+  EditItems items{};
+  items.add_items({
     user_name_field,
     new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, false),
     new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl),
@@ -203,26 +186,46 @@ void user_editor(const wwiv::sdk::Config& config) {
     new RestrictionsEditItem(COL1_POSITION, 14, &user.restrict),
     new NumberEditItem<uint32_t>(COL1_POSITION, 15, &user.wwiv_regnum),
     new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, false),
-  };
+  });
   items.set_navigation_extra_help_items(create_extra_help_items());
-  items.set_curses_io(out, window.get());
 
+  int y = 1;
+  items.add_labels({
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Name/Handle:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Real Name:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "SL:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "DSL:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Address:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "City:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "State:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Postal Code:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Birthday:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Password:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Phone Number:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Data Number:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Computer Type:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Restrictions:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "WWIV Reg:"),
+      new Label(COL1_LINE, y++, LABEL_WIDTH, "Sysop Note:")});
+
+  items.create_window("User Editor");
+  items.Display();
   show_user(&items, &user);
 
   for (;;)  {
-    char ch = onek(window.get(), "\033DJRQ[]{}\r");
+    char ch = onek(items.window(), "\033DJRQ[]{}\r");
     switch (ch) {
     case '\r': {
       if (IsUserDeleted(&user)) {
-        window->SetColor(SchemeId::ERROR_TEXT);
-        messagebox(window.get(), "Can not edit a deleted user.");
+        items.window()->SetColor(SchemeId::ERROR_TEXT);
+        messagebox(items.window(), "Can not edit a deleted user.");
       } else {
         items.Run();
-        if (dialog_yn(window.get(), "Save User?")) {
+        if (dialog_yn(items.window(), "Save User?")) {
           write_user(config.datadir(), current_usernum, &user);
         }
       }
-      window->Refresh();
+      items.window()->Refresh();
     } break;
     case 'D': {
       // Delete user.
@@ -230,16 +233,17 @@ void user_editor(const wwiv::sdk::Config& config) {
       if (u.IsUserDeleted()) {
         break;
       }
-      if (!dialog_yn(window.get(), StrCat("Are you sure you want to delete ", u.GetName(), "? "))) {
+      if (!dialog_yn(items.window(),
+                     StrCat("Are you sure you want to delete ", u.GetName(), "? "))) {
         break;
       }
       wwiv::sdk::UserManager um(config);
       if (!um.delete_user(current_usernum)) {
-        messagebox(window.get(), "Error trying to restore user.");
+        messagebox(items.window(), "Error trying to restore user.");
       }
     } break;
     case 'J': {
-      int user_number = JumpToUser(window.get(), config.datadir());
+      int user_number = JumpToUser(items.window(), config.datadir());
       if (user_number >= 1) {
         current_usernum = user_number;
       }
@@ -252,7 +256,7 @@ void user_editor(const wwiv::sdk::Config& config) {
       }
       wwiv::sdk::UserManager um(config);
       if (!um.restore_user(current_usernum)) {
-        messagebox(window.get(), "Error trying to restore user.");
+        messagebox(items.window(), "Error trying to restore user.");
       }
     } break;
     case 'Q':

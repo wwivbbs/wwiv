@@ -110,39 +110,41 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
   }
 
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Protocol Configuration", 19, 78));
-  const int COL1_POSITION = 19;
+  constexpr int LABEL1_POSITION = 2;
+  constexpr int LABEL1_WIDTH = 16;
+  constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
 
   int y = 1;
-  window->PrintfXY(2, y++, "Description    : %s", c.description);
-  window->PutsXY(2, y++, "Xfer OK code   : ");
-  window->PutsXY(2, y++, "Receive command line: ");
+  EditItems items{};
+  items.add_labels({new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Description:"),
+                    new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Xfer OK code:"),
+                    new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Receive command line:")});
   y++;
-  window->PutsXY(2, y++, "Send command line   : ");
+  items.add(new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Send command line:"));
   y++;
-  window->PutsXY(2, y++, "Receive batch command line:");
+  items.add(new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Receive batch command line:"));
   y++;
-  window->PutsXY(2, y++, "Send batch command line:");
+  items.add(new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Send batch command line:"));
   y+=2;
-  window->PutsXY(2, y++, "%1 = com port baud rate");
-  window->PutsXY(2, y++, "%2 = port number");
-  window->PutsXY(2, y++, "%3 = filename to transfer, filename list to send for batch");
-  window->PutsXY(2, y++, "%4 = modem speed");
-  window->PutsXY(2, y++, "%5 = filename list to receive for batch UL");
-  window->PutsXY(2, y++, "NOTE: Batch protocols >MUST< correctly support DSZLOG.");
+  items.add(new Label(LABEL1_POSITION, y++, "%1 = com port baud rate"));
+  items.add(new Label(LABEL1_POSITION, y++, "%2 = port number"));
+  items.add(new Label(LABEL1_POSITION, y++, "%3 = filename to transfer, filename list to send for batch"));
+  items.add(new Label(LABEL1_POSITION, y++, "%4 = modem speed"));
+  items.add(new Label(LABEL1_POSITION, y++, "%5 = filename list to receive for batch UL"));
+  items.add(new Label(LABEL1_POSITION, y++, "NOTE: Batch protocols >MUST< correctly support DSZLOG."));
 
-  EditItems items{
+  items.add_items({
     new StringEditItem<char*>(COL1_POSITION, 1, 50, c.description, false),
     new NumberEditItem<uint16_t>(COL1_POSITION, 2, &c.ok1),
     new CommandLineItem(2, 4, 70, c.receivefn),
     new CommandLineItem(2, 6, 70, c.sendfn),
-  };
-  items.set_curses_io(out, window.get());
+  });
+  items.create_window("Protocol Configuration");
   if (n < 6) {
     items.items().erase(items.items().begin());
-    window->PutsXY(COL1_POSITION, 1, c.description);
-    window->PutsXY(2, 8, "-- N/A --");
-    window->PutsXY(2, 10, "-- N/A --");
+    items.window()->PutsXY(COL1_POSITION, 1, c.description);
+    items.window()->PutsXY(2, 8, "-- N/A --");
+    items.window()->PutsXY(2, 10, "-- N/A --");
   }
   // Not else since we want the n >= 4 to be invoked.
   if (n >= 6) {
@@ -150,10 +152,10 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
     items.items().emplace_back(new CommandLineItem(2, 10, 70, c.sendbatchfn));
   } else if (n >= 4) {
     items.items().emplace_back(new CommandLineItem(2, 8, 70, c.sendbatchfn));
-    window->PutsXY(2, 10, "-- N/A --");
+    items.window()->PutsXY(2, 10, "-- N/A --");
   }
 
-  items.Run();
+  items.Run("Protocol Configuration");
 
   if (n >= 6) {
     externs[n - 6] = c;
@@ -183,8 +185,7 @@ void extrn_prots(const std::string& datadir) {
       items.emplace_back(StringPrintf("%d. %s (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
     }
     CursesWindow* window(out->window());
-    ListBox list(out, window, "Select Protocol", static_cast<int>(floor(window->GetMaxX() * 0.8)), 
-        static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+    ListBox list(out, window, "Select Protocol", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");

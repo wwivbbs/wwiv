@@ -19,9 +19,9 @@
 #ifndef __INCLUDED_SDK_WWIVD_CONFIG_H__
 #define __INCLUDED_SDK_WWIVD_CONFIG_H__
 
+#include "sdk/config.h"
 #include <string>
 #include <vector>
-#include "sdk/config.h"
 
 namespace wwiv {
 namespace sdk {
@@ -38,18 +38,18 @@ struct wwivd_blocking_t {
 
   bool use_dns_rbl = true;
   // xbl.spamhaus.org
-  std::string dns_rbl_server;
+  std::string dns_rbl_server{"xbl.spamhaus.org"};
 
   bool use_dns_cc = true;
   // zz.countries.nerd.dk
-  std::string dns_cc_server;
+  std::string dns_cc_server{"zz.countries.nerd.dk"};
   std::vector<int> block_cc_countries;
 };
 
 struct wwivd_matrix_entry_t {
   /** Key to use when displaying this BBS in the matrix logon. */
   char key;
-  /** 
+  /**
    * Used for semaphore names and also short-hand way to call the bbs.
    * It should be not more than 8-12 characters in length.
    */
@@ -83,7 +83,7 @@ public:
   /** Blocking configuration */
   wwivd_blocking_t blocking;
 
-  /** 
+  /**
    * Matrix Logon Settings
    */
 
@@ -98,7 +98,7 @@ public:
   bool Save(const Config& config);
 };
 
-}
-}
+} // namespace sdk
+} // namespace wwiv
 
-#endif  // __INCLUDED_SDK_WWIVD_CONFIG_H__
+#endif // __INCLUDED_SDK_WWIVD_CONFIG_H__

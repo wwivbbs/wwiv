@@ -58,7 +58,6 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-
 static string to_string(const NodeManager& nodes) {
   std::ostringstream ss;
   ss << "Nodes in use: (" << nodes.nodes_used() << "/" << nodes.total_nodes() << ")";
@@ -91,12 +90,10 @@ static string CreateCommandLine(const std::string& tmpl, std::map<char, std::str
       }
       try {
         out.append(params.at(*it));
-      }
-      catch (const std::out_of_range&) {
+      } catch (const std::out_of_range&) {
         out.push_back(*it);
       }
-    }
-    else {
+    } else {
       out.push_back(*it);
     }
   }
@@ -112,12 +109,12 @@ const string node_file(const Config& config, ConnectionType ct, int node_number)
 }
 
 static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> nodes,
-  int node_number, int sock, ConnectionType connection_type,
-  const string remote_peer) {
+                       int node_number, int sock, ConnectionType connection_type,
+                       const string remote_peer) {
   auto pid = StringPrintf("[%d] ", get_pid());
   nodes->set_node(node_number, connection_type, StrCat("Connected: ", remote_peer));
 
-  map<char, string> params = { { 'N', std::to_string(node_number) },{ 'H', std::to_string(sock) } };
+  map<char, string> params = {{'N', std::to_string(node_number)}, {'H', std::to_string(sock)}};
 
   // Reset the socket back to blocking mode
   VLOG(2) << "Setting blocking mode.";
@@ -134,8 +131,8 @@ static bool launch_cmd(const std::string& raw_cmd, std::shared_ptr<NodeManager> 
 }
 
 static bool launch_node(const Config& config, const std::string& raw_cmd,
-  std::shared_ptr<NodeManager> nodes, int node_number, int sock,
-  ConnectionType connection_type, const string remote_peer) {
+                        std::shared_ptr<NodeManager> nodes, int node_number, int sock,
+                        ConnectionType connection_type, const string remote_peer) {
   ScopeExit at_exit([=] {
     closesocket(sock);
     VLOG(2) << "closed socket: " << sock;
@@ -144,17 +141,16 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
   string pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launching node(" << node_number << ")";
   const auto sem_text =
-    StringPrintf("Created by pid: %s\nremote peer: %s", pid.c_str(), remote_peer.c_str());
+      StringPrintf("Created by pid: %s\nremote peer: %s", pid.c_str(), remote_peer.c_str());
   const auto sem_path = node_file(config, connection_type, node_number);
 
   try {
     SemaphoreFile semaphore_file =
-      SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
+        SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
     return launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
-  }
-  catch (const semaphore_not_acquired& e) {
+  } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
-      << "; what: " << e.what();
+               << "; what: " << e.what();
     return false;
   }
 }
@@ -162,14 +158,11 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
 static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
   if (port == c.telnet_port) {
     return ConnectionType::TELNET;
-  }
-  else if (port == c.binkp_port) {
+  } else if (port == c.binkp_port) {
     return ConnectionType::BINKP;
-  }
-  else if (port == c.ssh_port) {
+  } else if (port == c.ssh_port) {
     return ConnectionType::SSH;
-  }
-  else if (port == c.http_port) {
+  } else if (port == c.http_port) {
     return ConnectionType::HTTP;
   }
   // TODO(rushfan) ???
@@ -193,8 +186,7 @@ static bool check_ansi(SocketConnection& conn) {
 static void addto(std::string* ansi_str, int num) {
   if (ansi_str->empty()) {
     ansi_str->append("\x1b[");
-  }
-  else {
+  } else {
     ansi_str->append(";");
   }
   ansi_str->append(std::to_string(num));
@@ -202,7 +194,7 @@ static void addto(std::string* ansi_str, int num) {
 
 /* Ripped from com.cpp -- maybe this should all move to core? */
 static std::string makeansi(int attr, int current_attr) {
-  static const std::vector<int> kAnsiColorMap = { '0', '4', '2', '6', '1', '5', '3', '7' };
+  static const std::vector<int> kAnsiColorMap = {'0', '4', '2', '6', '1', '5', '3', '7'};
 
   int catr = current_attr;
   std::string out;
@@ -242,9 +234,9 @@ std::string Color(int c, bool ansi) {
 }
 
 static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
-  std::unique_ptr<SocketConnection> conn,
-  const wwivd_config_t& c) {
-  
+                                                std::unique_ptr<SocketConnection> conn,
+                                                const wwivd_config_t& c) {
+
   using namespace std::chrono_literals;
   if (c.bbses.empty()) {
     // This should be checked before calling this method.
@@ -303,14 +295,39 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
   return {};
 }
 
+enum class BlockedConnectionAction { ALLOW, DENY };
+
+struct BlockedConnectionResult { 
+  BlockedConnectionAction action{BlockedConnectionAction::ALLOW}; 
+  std::string remote_peer;
+};
+    // Can throw
+static BlockedConnectionResult CheckForBlockedConnection(ConnectionData& data) {
+  auto sock = data.r.client_socket;
+  string remote_peer;
+  if (!GetRemotePeerAddress(sock, remote_peer)) {
+    // We fail open when we can't get the remote peer
+    return {BlockedConnectionAction::ALLOW};
+  }
+
+  auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
+  LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
+            << "; coutry code: " << cc;
+  if (contains(data.c->blocking.block_cc_countries, cc)) {
+    // We have a connection from a blocked country
+    LOG(ERROR) << "Denying connection attempt from country " << cc << " for peer: " << remote_peer;
+    return {BlockedConnectionAction::DENY, remote_peer};
+  }
+  return {BlockedConnectionAction::ALLOW, remote_peer};
+}
+
 void HandleBinkPConnection(ConnectionData data) {
   auto sock = data.r.client_socket;
   try {
-    string remote_peer;
-    if (GetRemotePeerAddress(sock, remote_peer)) {
-      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
-        << "; coutry code: " << cc;
+    auto result = CheckForBlockedConnection(data);
+    if (result.action == BlockedConnectionAction::DENY) {
+      closesocket(sock);
+      return;
     }
 
     auto& nodemgr = data.nodes->at("BINKP");
@@ -320,11 +337,10 @@ void HandleBinkPConnection(ConnectionData data) {
         closesocket(sock);
         VLOG(2) << "closed socket: " << sock;
       });
-      launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, ConnectionType::BINKP, remote_peer);
+      launch_cmd(data.c->binkp_cmd, nodemgr, 0, sock, ConnectionType::BINKP, result.remote_peer);
     }
 
-  }
-  catch (const std::exception& e) {
+  } catch (const std::exception& e) {
     LOG(ERROR) << "HandleBinkPConnection: Handled Uncaught Exception: " << e.what();
   }
   VLOG(1) << "Exiting HandleBinkPConnection (exception)";
@@ -333,11 +349,10 @@ void HandleBinkPConnection(ConnectionData data) {
 void HandleConnection(ConnectionData data) {
   auto sock = data.r.client_socket;
   try {
-    string remote_peer;
-    if (GetRemotePeerAddress(sock, remote_peer)) {
-      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted connection on port: " << data.r.port << "; from: " << remote_peer
-        << "; coutry code: " << cc;
+    auto result = CheckForBlockedConnection(data);
+    if (result.action == BlockedConnectionAction::DENY) {
+      closesocket(sock);
+      return;
     }
 
     if (data.c->bbses.empty()) {
@@ -345,7 +360,7 @@ void HandleConnection(ConnectionData data) {
       SocketConnection conn(data.r.client_socket);
       LOG(ERROR) << "No BBSes defined in INIT for the Matrix.";
       conn.send_line("No BBSes defined in INIT for the Matrix.  Please tell the SysOp.",
-        std::chrono::seconds(1));
+                     std::chrono::seconds(1));
       return;
     }
 
@@ -354,9 +369,8 @@ void HandleConnection(ConnectionData data) {
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
       bbs = DoMatrixLogon(*data.config,
-        std::make_unique<SocketConnection>(data.r.client_socket, false), *data.c);
-    }
-    else if (connection_type == ConnectionType::SSH) {
+                          std::make_unique<SocketConnection>(data.r.client_socket, false), *data.c);
+    } else if (connection_type == ConnectionType::SSH) {
       bbs = data.c->bbses.front();
     }
 
@@ -374,22 +388,19 @@ void HandleConnection(ConnectionData data) {
     int node = -1;
     if (nodemgr->AcquireNode(node)) {
       const auto& cmd = (connection_type == ConnectionType::SSH) ? bbs.ssh_cmd : bbs.telnet_cmd;
-      launch_node(*data.config, cmd, nodemgr, node, sock, connection_type, remote_peer);
+      launch_node(*data.config, cmd, nodemgr, node, sock, connection_type, result.remote_peer);
       VLOG(1) << "Exiting HandleConnection (launch_node)";
-    }
-    else {
+    } else {
       using namespace std::chrono_literals;
       LOG(INFO) << "Sending BUSY. No available node to handle connection.";
       SocketConnection conn(data.r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       VLOG(1) << "Exiting HandleConnection (busy)";
     }
-  }
-  catch (const std::exception& e) {
+  } catch (const std::exception& e) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
 }
 
-
-}  // namespace wwivd
-}  // namespace wwiv
+} // namespace wwivd
+} // namespace wwiv
