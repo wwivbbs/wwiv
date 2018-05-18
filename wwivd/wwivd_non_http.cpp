@@ -297,28 +297,30 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
 
 enum class BlockedConnectionAction { ALLOW, DENY };
 
-struct BlockedConnectionResult { 
-  BlockedConnectionAction action{BlockedConnectionAction::ALLOW}; 
+struct BlockedConnectionResult {
+  BlockedConnectionResult(const BlockedConnectionAction& a,
+                          const std::string& r) :action(a), remote_peer(r) {}
+  BlockedConnectionAction action{BlockedConnectionAction::ALLOW};
   std::string remote_peer;
 };
-    // Can throw
+// Can throw
 static BlockedConnectionResult CheckForBlockedConnection(ConnectionData& data) {
   auto sock = data.r.client_socket;
   string remote_peer;
   if (!GetRemotePeerAddress(sock, remote_peer)) {
     // We fail open when we can't get the remote peer
-    return BlockedConnectionResult{BlockedConnectionAction::ALLOW, remote_peer};
+    return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
   }
- 
+
   auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
   LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
             << "; coutry code: " << cc;
   if (contains(data.c->blocking.block_cc_countries, cc)) {
     // We have a connection from a blocked country
     LOG(ERROR) << "Denying connection attempt from country " << cc << " for peer: " << remote_peer;
-    return BlockedConnectionResult{BlockedConnectionAction::DENY, remote_peer};
+    return BlockedConnectionResult(BlockedConnectionAction::DENY, remote_peer);
   }
-  return BlockedConnectionResult{BlockedConnectionAction::ALLOW, remote_peer};
+  return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
 }
 
 void HandleBinkPConnection(ConnectionData data) {

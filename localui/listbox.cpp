@@ -19,6 +19,7 @@
 #include "listbox.h"
 
 #include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <iostream>
 #include <sstream>
@@ -36,13 +37,11 @@ using namespace wwiv::strings;
 static constexpr int MINIMUM_LISTBOX_HEIGHT = 10;
 static constexpr double RATIO_LISTBOX_HEIGHT = 0.8;
 
-static std::vector<HelpItem> StandardHelpItems() {
-  return { {"Esc", "Exit"} };
-}
+static std::vector<HelpItem> StandardHelpItems() { return {{"Esc", "Exit"}}; }
 
-ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x, int max_y, 
-                 std::vector<ListBoxItem>& items, ColorScheme* scheme) 
-    : io_(io), title_(title), items_(items), color_scheme_(scheme), 
+ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x, int max_y,
+                 std::vector<ListBoxItem>& items, ColorScheme* scheme)
+    : io_(io), title_(title), items_(items), color_scheme_(scheme),
       window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
   height_ = std::min<int>(items.size(), max_y);
   int window_height = 2 + height_ + window_top_min_ - 1;
@@ -62,8 +61,8 @@ ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x,
 
   CHECK(parent->IsGUI()) << "ListBox constructor needs a GUI.";
 
-  window_.reset(new CursesWindow(static_cast<CursesWindow*>(parent), 
-    parent->color_scheme(), window_height, window_width, begin_y, begin_x));
+  window_.reset(new CursesWindow(static_cast<CursesWindow*>(parent), parent->color_scheme(),
+                                 window_height, window_width, begin_y, begin_x));
   window_->SetColor(SchemeId::WINDOW_BOX);
   window_->Box(0, 0);
   window_->Bkgd(color_scheme_->GetAttributesForScheme(SchemeId::WINDOW_TEXT));
@@ -74,14 +73,11 @@ ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x,
 }
 
 ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title,
-  std::vector<ListBoxItem>& items) 
-  : ListBox(io, parent, title, 
-    static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
+                 std::vector<ListBoxItem>& items)
+    : ListBox(io, parent, title, static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
               std::min<int>(std::max<int>(items.size(), MINIMUM_LISTBOX_HEIGHT),
                             static_cast<int>(floor(parent->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
-    items,
-    io->color_scheme()) {}
-
+              items, io->color_scheme()) {}
 
 void ListBox::DrawAllItems() {
   for (auto y = 0; y < height_; y++) {
@@ -90,7 +86,7 @@ void ListBox::DrawAllItems() {
     if (static_cast<int>(line.size()) > width_) {
       line = line.substr(0, width_);
     } else {
-      for (int i=line.size(); i < width_; i++) {
+      for (int i = line.size(); i < width_; i++) {
         line.push_back(' ');
       }
     }
@@ -131,7 +127,7 @@ ListBoxResult ListBox::RunDialog() {
       window_top_ = items_.size() - height_ + window_top_min_;
       selected_ = window_top_ - window_top_min_;
       break;
-    case KEY_PREVIOUS:  // What is this key?
+    case KEY_PREVIOUS: // What is this key?
     case KEY_UP:
       if (selected_ + window_top_min_ == window_top_) {
         // At the top of the window, move the window up one.
@@ -176,12 +172,12 @@ ListBoxResult ListBox::RunDialog() {
       }
       int hotkey = items_.at(selected_).hotkey();
       if (selection_returns_hotkey_ && hotkey > 0) {
-        return ListBoxResult{ ListBoxResultType::HOTKEY, selected_, hotkey};
+        return ListBoxResult{ListBoxResultType::HOTKEY, selected_, hotkey};
       }
-      return ListBoxResult{ ListBoxResultType::SELECTION, selected_, hotkey};
+      return ListBoxResult{ListBoxResultType::SELECTION, selected_, hotkey};
     } break;
-    case 27:  // ESCAPE_KEY
-      return ListBoxResult{ ListBoxResultType::NO_SELECTION, 0, 0};
+    case 27: // ESCAPE_KEY
+      return ListBoxResult{ListBoxResultType::NO_SELECTION, 0, 0};
     default:
       ch = toupper(ch);
       if (hotkeys_.find(ch) != string::npos) {
@@ -193,7 +189,7 @@ ListBoxResult ListBox::RunDialog() {
             break;
           }
         }
-        return ListBoxResult{ ListBoxResultType::HOTKEY, selected_, ch};
+        return ListBoxResult{ListBoxResultType::HOTKEY, selected_, ch};
       }
     }
   }
