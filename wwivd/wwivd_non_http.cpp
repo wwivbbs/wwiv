@@ -307,18 +307,18 @@ static BlockedConnectionResult CheckForBlockedConnection(ConnectionData& data) {
   string remote_peer;
   if (!GetRemotePeerAddress(sock, remote_peer)) {
     // We fail open when we can't get the remote peer
-    return {BlockedConnectionAction::ALLOW};
+    return BlockedConnectionResult{BlockedConnectionAction::ALLOW, remote_peer};
   }
-
+ 
   auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
   LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
             << "; coutry code: " << cc;
   if (contains(data.c->blocking.block_cc_countries, cc)) {
     // We have a connection from a blocked country
     LOG(ERROR) << "Denying connection attempt from country " << cc << " for peer: " << remote_peer;
-    return {BlockedConnectionAction::DENY, remote_peer};
+    return BlockedConnectionResult{BlockedConnectionAction::DENY, remote_peer};
   }
-  return {BlockedConnectionAction::ALLOW, remote_peer};
+  return BlockedConnectionResult{BlockedConnectionAction::ALLOW, remote_peer};
 }
 
 void HandleBinkPConnection(ConnectionData data) {
