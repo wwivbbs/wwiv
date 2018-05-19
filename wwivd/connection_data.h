@@ -31,12 +31,13 @@ namespace wwivd {
 struct ConnectionData {
   ConnectionData(const ::wwiv::sdk::Config* g, const wwiv::sdk::wwivd_config_t* t,
     std::map<const std::string, std::shared_ptr<NodeManager>>* n,
-    const wwiv::core::accepted_socket_t a)
-    : config(g), c(t), nodes(n), r(a) {}
+    const wwiv::core::accepted_socket_t a, std::shared_ptr<ConcurrentConnections> concurrent_connections)
+      : config(g), c(t), nodes(n), r(a), concurrent_connections_(concurrent_connections) {}
   const wwiv::sdk::Config* config;
   const wwiv::sdk::wwivd_config_t* c;
   std::map<const std::string, std::shared_ptr<NodeManager>>* nodes;
   const wwiv::core::accepted_socket_t r;
+  std::shared_ptr<ConcurrentConnections> concurrent_connections_;
 };
 
 }  // namespace wwivd

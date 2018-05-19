@@ -29,7 +29,6 @@
 using std::unique_ptr;
 
 void edit_registration_code() {
-  out->Cls(ACS_CKBOARD);
   EditItems items{};
   items.add(new Label(2, 2, 22, "Registration Number:"),
             new NumberEditItem<uint32_t>(25, 2, &syscfg.wwiv_reg_number));

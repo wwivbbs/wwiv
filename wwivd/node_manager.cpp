@@ -17,7 +17,11 @@
 /**************************************************************************/
 #include "wwivd/node_manager.h"
 
+#include "core/log.h"
 #include "core/stl.h"
+#include <memory>
+#include <mutex>
+#include <unordered_map>
 
 using wwiv::stl::contains;
 
@@ -26,24 +30,28 @@ namespace wwivd {
 
 std::string to_string(ConnectionType t) {
   switch (t) {
-  case ConnectionType::BINKP: return "BinkP";
-  case ConnectionType::HTTP: return "HTTP";
-  case ConnectionType::SSH: return "SSH";
-  case ConnectionType::TELNET: return "Telnet";
-  case ConnectionType::UNKNOWN: return "*UNKNOWN*";
+  case ConnectionType::BINKP:
+    return "BinkP";
+  case ConnectionType::HTTP:
+    return "HTTP";
+  case ConnectionType::SSH:
+    return "SSH";
+  case ConnectionType::TELNET:
+    return "Telnet";
+  case ConnectionType::UNKNOWN:
+    return "*UNKNOWN*";
   }
   return "*UNKNOWN*";
 }
 
 NodeManager::NodeManager(const std::string& name, ConnectionType type, int start, int end)
-  : name_(name), type_(type), start_(start), end_(end) {
+    : name_(name), type_(type), start_(start), end_(end) {
   for (auto i = start; i <= end; i++) {
     clear_node(i);
   }
 }
 
 NodeManager::~NodeManager() {}
-
 
 std::string NodeManager::status_string(const NodeStatus& n) const {
   auto s = n.description;
@@ -71,9 +79,7 @@ std::vector<std::string> NodeManager::status_lines() const {
   return v;
 }
 
-NodeStatus& NodeManager::status_for_unlocked(int node) {
-  return nodes_[node];
-}
+NodeStatus& NodeManager::status_for_unlocked(int node) { return nodes_[node]; }
 
 NodeStatus NodeManager::status_for_copy(int node) {
   std::lock_guard<std::mutex> lock(mu_);
@@ -141,6 +147,33 @@ bool NodeManager::ReleaseNode(int node) {
   return true;
 }
 
-}  // namespace wwivd
-}  // namespace wwiv
+ConcurrentConnections::ConcurrentConnections(int max_num) : max_num_(max_num) {}
+ConcurrentConnections::~ConcurrentConnections() {}
 
+bool ConcurrentConnections::aquire(const std::string& peer) {
+  VLOG(1) << "ConcurrentConnections::aquire: " << peer;
+  std::lock_guard<std::mutex> lock(connection_mu_);
+  auto cur = map_[peer];
+  VLOG(2) << "ConcurrentConnections: cur: " << cur << "; max_num_: " << max_num_;
+  if (cur < max_num_) {
+    map_[peer] = cur + 1;
+    VLOG(2) << "ConcurrentConnections: (post increment) cur: " << cur << "; max_num_: " << max_num_;
+    return true;
+  }
+  return false;
+}
+
+bool ConcurrentConnections::release(const std::string& peer) {
+  std::lock_guard<std::mutex> lock(connection_mu_);
+  auto cur = map_[peer] - 1;
+  if (cur > 0) {
+    map_[peer] = cur;
+  } else {
+    map_.erase(peer);
+  }
+  return true;
+}
+
+
+} // namespace wwivd
+} // namespace wwiv

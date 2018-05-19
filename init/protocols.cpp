@@ -109,7 +109,6 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
     strcpy(c.description, prot_name(over_intern, n));
   }
 
-  out->Cls(ACS_CKBOARD);
   constexpr int LABEL1_POSITION = 2;
   constexpr int LABEL1_WIDTH = 16;
   constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
@@ -139,6 +138,7 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
     new CommandLineItem(2, 4, 70, c.receivefn),
     new CommandLineItem(2, 6, 70, c.sendfn),
   });
+  out->Cls(ACS_CKBOARD);
   items.create_window("Protocol Configuration");
   if (n < 6) {
     items.items().erase(items.items().begin());

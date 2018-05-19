@@ -40,8 +40,6 @@ static constexpr int COL1_POSITION = LABEL1_POS + LABEL1_WIDTH + 1;
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir */
 void setpaths(const std::string& bbsdir) {
-  out->Cls(ACS_CKBOARD);
-
   EditItems items{};
   items.add_items({
     new FilePathItem(COL1_POSITION, 1, 60, bbsdir, syscfg.msgsdir),

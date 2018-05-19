@@ -124,8 +124,6 @@ void sysinfo1(const std::string& datadir) {
   static constexpr int LABEL2_POSITION = COL1_POSITION + 8;
   static constexpr int COL2_POSITION = LABEL2_POSITION + LABEL2_WIDTH + 1;
 
-  out->Cls(ACS_CKBOARD);
-
   int y = 1;
   EditItems items{};
   items.add_labels(
@@ -155,7 +153,7 @@ void sysinfo1(const std::string& datadir) {
     new StringEditItem<char*>(COL1_POSITION, y++, 20, syscfg.systempw, true),
       new StringEditItem<char*>(COL1_POSITION, y++ , 50, syscfg.systemname, false),
       new StringEditItem<char*>(COL1_POSITION, y++, 12, syscfg.systemphone, true),
-      new BooleanEditItem(out, COL1_POSITION, y++, &closed_system),
+      new BooleanEditItem(COL1_POSITION, y++, &closed_system),
       new StringEditItem<char*>(COL1_POSITION, y++, 20, syscfg.newuserpw, true),
       new RestrictionsEditItem(COL1_POSITION, y++, &syscfg.newuser_restrict),
       new NumberEditItem<uint8_t>(COL1_POSITION, y++, &syscfg.newusersl),

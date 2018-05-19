@@ -51,7 +51,6 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static void edit_editor(editorrec& e) {
-  out->Cls(ACS_CKBOARD);
   const vector<std::pair<uint8_t, string>> bbs_types = {{0, "WWIV"}, {1,"QuickBBS"}};
   constexpr int LABEL1_POSITION = 2;
   constexpr int LABEL1_WIDTH = 29;

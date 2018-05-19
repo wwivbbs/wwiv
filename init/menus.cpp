@@ -138,10 +138,10 @@ static void edit_menu_item(MenuRec& m) {
             new RestrictionsEditItem(COL4_LINE, y, &m.uRestrict));
   y++;
   items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Sysop:"),
-            new BooleanEditItem(out, COL4_LINE, y, &m.nSysop));
+            new BooleanEditItem(COL4_LINE, y, &m.nSysop));
   y++;
   items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "CoSysop:"),
-            new BooleanEditItem(out, COL4_LINE, y, &m.nCoSysop));
+            new BooleanEditItem(COL4_LINE, y, &m.nCoSysop));
   y++;
   items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Password:"),
             new StringEditItem<char*>(COL4_LINE, y, 20, m.szPassWord, true));
@@ -328,10 +328,10 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
             new RestrictionsEditItem(COL2_LINE, y, &h.uRestrict));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Sysop:"),
-            new BooleanEditItem(out, COL2_LINE, y, &h.nSysop));
+            new BooleanEditItem(COL2_LINE, y, &h.nSysop));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "CoSysop:"),
-            new BooleanEditItem(out, COL2_LINE, y, &h.nCoSysop));
+            new BooleanEditItem(COL2_LINE, y, &h.nCoSysop));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Password:"),
             new StringEditItem<char*>(COL2_LINE, y, 20, h.szPassWord, true));

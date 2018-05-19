@@ -74,7 +74,6 @@ static string create_autoval_line(int n) {
 }
 
 static void edit_autoval(int n) {
-  out->Cls(ACS_CKBOARD);
   constexpr int LABEL1_POSTITION = 2;
   constexpr int LABEL1_WIDTH = 14;
   constexpr int COL1_POSITION = LABEL1_POSTITION + LABEL1_WIDTH + 1;

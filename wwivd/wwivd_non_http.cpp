@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 
+#include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -52,6 +54,7 @@ namespace wwivd {
 
 using std::map;
 using std::string;
+using namespace std::chrono_literals;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -298,8 +301,8 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
 enum class BlockedConnectionAction { ALLOW, DENY };
 
 struct BlockedConnectionResult {
-  BlockedConnectionResult(const BlockedConnectionAction& a,
-                          const std::string& r) :action(a), remote_peer(r) {}
+  BlockedConnectionResult(const BlockedConnectionAction& a, const std::string& r)
+      : action(a), remote_peer(r) {}
   BlockedConnectionAction action{BlockedConnectionAction::ALLOW};
   std::string remote_peer;
 };
@@ -312,7 +315,13 @@ static BlockedConnectionResult CheckForBlockedConnection(ConnectionData& data) {
     return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
   }
 
-  auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
+  const auto& b = data.c->blocking;
+  if (b.use_dns_cc && !b.dns_cc_server.empty()) {
+    VLOG(1) << "Allowing connections since no dns_cc_server is defined.";
+    return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
+  }
+
+  auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
   LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
             << "; coutry code: " << cc;
   if (contains(data.c->blocking.block_cc_countries, cc)) {
@@ -328,9 +337,20 @@ void HandleBinkPConnection(ConnectionData data) {
   try {
     auto result = CheckForBlockedConnection(data);
     if (result.action == BlockedConnectionAction::DENY) {
+      LOG(INFO) << "Sending BUSY. blocked.";
+      SocketConnection conn(data.r.client_socket);
+      conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
     }
+    if (!data.concurrent_connections_->aquire(result.remote_peer)) {
+      LOG(INFO) << "Binkp Connection blocked by concurent connection limit.";
+      SocketConnection conn(data.r.client_socket);
+      conn.send_line("BUSY\r\n", 10s);
+      closesocket(sock);
+      return;
+    }
+    ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
 
     auto& nodemgr = data.nodes->at("BINKP");
     int node = -1;
@@ -353,9 +373,20 @@ void HandleConnection(ConnectionData data) {
   try {
     auto result = CheckForBlockedConnection(data);
     if (result.action == BlockedConnectionAction::DENY) {
+      LOG(INFO) << "Blocked connection.";
+      SocketConnection conn(data.r.client_socket);
+      conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
     }
+    if (!data.concurrent_connections_->aquire(result.remote_peer)) {
+      LOG(INFO) << "Blocked by concurrent limit..";
+      SocketConnection conn(data.r.client_socket);
+      conn.send_line("BUSY\r\n", 10s);
+      closesocket(sock);
+      return;
+    }
+    ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
 
     if (data.c->bbses.empty()) {
       // If no bbses are defined, bail early and let someone know.

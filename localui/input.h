@@ -473,12 +473,12 @@ protected:
 
 class BooleanEditItem : public EditItem<bool*> {
 public:
-  BooleanEditItem(CursesIO* io, int x, int y, bool* data)
-      : EditItem<bool*>(x, y, 6, data), io_(io) {}
+  BooleanEditItem(int x, int y, bool* data)
+      : EditItem<bool*>(x, y, 6, data) {}
   virtual ~BooleanEditItem() {}
 
   virtual int Run(CursesWindow* window) {
-    io_->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
+    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"SPACE", "Toggle Item"}});
     static const std::vector<std::string> boolean_strings = {"No ", "Yes"};
 
     window->GotoXY(this->x_, this->y_);
@@ -487,7 +487,7 @@ public:
     data = toggleitem(window, data, boolean_strings, &return_code);
 
     *this->data_ = (data > 0) ? true : false;
-    io_->footer()->SetDefaultFooter();
+    out->footer()->SetDefaultFooter();
     return return_code;
   }
 
@@ -497,9 +497,6 @@ protected:
     std::string s = boolean_strings.at(*data_ ? 1 : 0);
     DefaultDisplayString(window, s);
   }
-
-private:
-  CursesIO* io_;
 };
 
 class CustomEditItem : public BaseEditItem {

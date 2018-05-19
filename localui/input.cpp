@@ -90,6 +90,7 @@ void CustomEditItem::Display(CursesWindow* window) const {
 
 void EditItems::Run(const std::string& title) {
   if (!window_) {
+    out->Cls(ACS_CKBOARD);
     create_window(title);
   }
   edit_mode_ = true;

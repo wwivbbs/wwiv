@@ -55,7 +55,6 @@ using namespace wwiv::strings;
 static constexpr int MAX_LANGUAGES = 100;
 
 static void edit_lang(const std::string& bbsdir, languagerec& n) {
-  out->Cls(ACS_CKBOARD);
   constexpr int LABEL1_POSITION = 2;
   constexpr int LABEL1_WIDTH = 15;
   constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;

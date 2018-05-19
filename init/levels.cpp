@@ -70,8 +70,6 @@ static const uint8_t JumpToSl(CursesWindow* window) {
 }
 
 void sec_levs() {
-  out->Cls(ACS_CKBOARD);
-
   uint8_t cursl = 10;
   slrec sl = syscfg.sl[cursl];
   EditItems items{};
@@ -110,6 +108,7 @@ void sec_levs() {
                     new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Co-sysop:")});
 
   items.set_navigation_extra_help_items(create_extra_help_items());
+  out->Cls(ACS_CKBOARD);
   items.create_window("Security Level Editor");
   items.Display();
 

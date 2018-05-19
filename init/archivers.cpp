@@ -49,7 +49,6 @@ using std::vector;
 using namespace wwiv::strings;
 
 static void edit_arc(int arc_number, arcrec* a) {
-  out->Cls(ACS_CKBOARD);
   static constexpr int LABEL_X = 2;
   static constexpr int COL1_POSITION = 23;
   static constexpr int LABEL_WIDTH = COL1_POSITION - LABEL_X - 1;

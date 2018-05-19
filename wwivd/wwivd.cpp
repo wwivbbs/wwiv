@@ -163,8 +163,12 @@ int Main(CommandLine& cmdline) {
     }
   }
 
+  auto concurrent_connections =
+      std::make_shared<ConcurrentConnections>(c.blocking.max_concurrent_sessions);
+
   auto telnet_or_ssh_fn = [&](accepted_socket_t r) {
-    std::thread client(HandleConnection, ConnectionData(&config, &c, &nodes, r));
+    std::thread client(HandleConnection, 
+      ConnectionData(&config, &c, &nodes, r, concurrent_connections));
     client.detach();
   };
 
@@ -177,14 +181,16 @@ int Main(CommandLine& cmdline) {
   }
   if (c.binkp_port > 0) {
     auto binkp_fn = [&](accepted_socket_t r) {
-      std::thread client(HandleBinkPConnection, ConnectionData(&config, &c, &nodes, r));
+      std::thread client(HandleBinkPConnection,
+                         ConnectionData(&config, &c, &nodes, r, concurrent_connections));
       client.detach();
     };
     sockets.add(c.binkp_port, binkp_fn, "BINKP");
   }
   if (c.http_port > 0) {
-    auto http_fn = [&](accepted_socket_t r) {
-      std::thread client(HandleHttpConnection, ConnectionData(&config, &c, &nodes, r));
+    auto http_fn = [&](accepted_socket_t r) { 
+      std::thread client(HandleHttpConnection,
+                         ConnectionData(&config, &c, &nodes, r, concurrent_connections));
       client.detach();
     };
     sockets.add(c.http_port, http_fn, "HTTP");

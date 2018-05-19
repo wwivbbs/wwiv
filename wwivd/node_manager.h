@@ -22,6 +22,7 @@
 #include <mutex>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace wwiv {
 namespace wwivd {
@@ -79,6 +80,20 @@ private:
   std::map<int, NodeStatus> nodes_;
 
   mutable std::mutex mu_;
+};
+
+
+class ConcurrentConnections {
+public:
+  ConcurrentConnections(int max_num);
+  virtual ~ConcurrentConnections();
+  bool aquire(const std::string& peer);
+  bool release(const std::string& peer);
+
+private:
+  int max_num_{1};
+  std::mutex connection_mu_;
+  std::unordered_map<std::string, int> map_;
 };
 
 }  // namespace wwivd
