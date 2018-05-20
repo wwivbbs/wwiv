@@ -17,10 +17,22 @@
 /**************************************************************************/
 #include "wwivd/ips.h"
 
+#include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <vector>
+#include <unordered_set>
+
+#include <cereal/access.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/string.hpp>
+#include <cereal/types/unordered_set.hpp>
+#include <cereal/types/vector.hpp>
+
 
 #include "core/file.h"
 #include "core/http_server.h"
