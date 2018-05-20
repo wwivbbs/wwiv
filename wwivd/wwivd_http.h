@@ -23,7 +23,7 @@
 namespace wwiv {
 namespace wwivd {
 
-void HandleHttpConnection(ConnectionData data);
+void HandleHttpConnection(ConnectionData data, wwiv::core::accepted_socket_t r);
 
 }  // namespace wwivd
 }  // namespace wwiv

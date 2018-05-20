@@ -125,6 +125,14 @@ private:
 static void edit_blocking(wwivd_blocking_t& b) { 
   EditItems items{}; 
   int y = 1;
+  items.add(new Label(COL1_LINE, y, "Use goodip.txt:"),
+            new BooleanEditItem(COL1_POSITION, y, &b.use_goodip_txt));
+
+  y++;
+  items.add(new Label(COL1_LINE, y, "Use badip.txt:"),
+            new BooleanEditItem(COL1_POSITION, y, &b.use_badip_txt));
+
+  y++;
   items.add(new Label(COL1_LINE, y, "Use CC Server:"),
             new BooleanEditItem(COL1_POSITION, y, &b.use_dns_cc));
 

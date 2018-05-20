@@ -104,18 +104,18 @@ private:
   std::map<const string, std::shared_ptr<NodeManager>>* nodes_;
 };
 
-void HandleHttpConnection(ConnectionData data) {
-  auto sock = data.r.client_socket;
+void HandleHttpConnection(ConnectionData data, accepted_socket_t r) {
+  auto sock = r.client_socket;
   try {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
       auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
-      LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
+      LOG(INFO) << "Accepted HTTP connection on port: " << r.port << "; from: " << remote_peer
         << "; coutry code: " << cc;
     }
 
     // HTTP Request
-    HttpServer h(std::make_unique<SocketConnection>(data.r.client_socket));
+    HttpServer h(std::make_unique<SocketConnection>(r.client_socket));
     StatusHandler status(data.nodes);
     h.add(HttpMethod::GET, "/status", &status);
     h.Run();

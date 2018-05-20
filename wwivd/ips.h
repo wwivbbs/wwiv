@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV BBS Software                             */
-/*               Copyright (C)2017, WWIV Software Services                */
+/*               Copyright (C)2018, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,34 +15,39 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVD_CONNECTION_DATA_H__
-#define __INCLUDED_WWIVD_CONNECTION_DATA_H__
+#ifndef __INCLUDED_WWIVD_IPS_H__
+#define __INCLUDED_WWIVD_IPS_H__
 
-#include <map>
 #include <memory>
-#include "core/net.h"
-#include "sdk/config.h"
-#include "sdk/wwivd_config.h"
-#include "wwivd/ips.h"
-#include "wwivd/node_manager.h"
+#include <unordered_set>
+#include <vector>
 
 namespace wwiv {
 namespace wwivd {
 
-struct ConnectionData {
-  ConnectionData(const ::wwiv::sdk::Config* g, const wwiv::sdk::wwivd_config_t* t,
-    std::map<const std::string, std::shared_ptr<NodeManager>>* n,
-    std::shared_ptr<ConcurrentConnections> concurrent_connections)
-      : config(g), c(t), nodes(n), concurrent_connections_(concurrent_connections) {}
-  const wwiv::sdk::Config* config;
-  const wwiv::sdk::wwivd_config_t* c;
-  std::map<const std::string, std::shared_ptr<NodeManager>>* nodes;
-  std::shared_ptr<ConcurrentConnections> concurrent_connections_;
-  std::shared_ptr<wwiv::wwivd::GoodIp> good_ips_;
-  std::shared_ptr<wwiv::wwivd::BadIp> bad_ips_;
+class GoodIp {
+public:
+  GoodIp(const std::string& fn);
+  GoodIp(const std::vector<std::string>& lines);
+  bool IsAlwaysAllowed(const std::string& ip);
+
+private:
+  bool LoadLines(const std::vector<std::string>& ips);
+  std::unordered_set<std::string> ips_;
 };
 
-}  // namespace wwivd
-}  // namespace wwiv
+class BadIp {
+public:
+  BadIp(const std::string& fn);
+  bool IsBlocked(const std::string& ip);
+  bool Block(const std::string& ip);
 
-#endif  // __INCLUDED_WWIVD_CONNECTION_DATA_H__
+private:
+  const std::string fn_;
+  std::unordered_set<std::string> ips_;
+};
+
+} // namespace wwivd
+} // namespace wwiv
+
+#endif // __INCLUDED_WWIVD_IPS_H__

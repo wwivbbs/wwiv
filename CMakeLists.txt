@@ -21,13 +21,6 @@ if (WWIV_BUILD_TESTS)
   message("Using GoogleTest from ${GTEST_INCLUDE_DIRS}")
 endif (WWIV_BUILD_TESTS)
 
-# Setup benchmark.
-#set(BENCHMARK_ENABLE_TESTING OFF CACHE BOOL "" FORCE)
-#add_subdirectory(deps/benchmark)
-#find_package(benchmark REQUIRED)
-
-# cctz is needed by abseil-cpp
-#add_subdirectory(deps/cctz) 
 # abseil is the Google C++ libraries open sourced.
 #add_subdirectory(deps/abseil-cpp)
 
@@ -59,5 +52,6 @@ if (WWIV_BUILD_TESTS)
   add_subdirectory(core_test)
   add_subdirectory(networkb_test)
   add_subdirectory(sdk_test)
-
+  add_subdirectory(wwivd_test)
+	
 endif (WWIV_BUILD_TESTS)

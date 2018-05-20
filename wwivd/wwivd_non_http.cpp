@@ -15,6 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
+#include "wwivd/wwivd_non_http.h"
 
 #include <memory>
 #include <mutex>
@@ -141,15 +142,14 @@ static bool launch_node(const Config& config, const std::string& raw_cmd,
     VLOG(2) << "closed socket: " << sock;
   });
 
-  string pid = StringPrintf("[%d] ", get_pid());
+  auto pid = StringPrintf("[%d] ", get_pid());
   VLOG(1) << pid << "launching node(" << node_number << ")";
   const auto sem_text =
       StringPrintf("Created by pid: %s\nremote peer: %s", pid.c_str(), remote_peer.c_str());
   const auto sem_path = node_file(config, connection_type, node_number);
 
   try {
-    SemaphoreFile semaphore_file =
-        SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
+    auto semaphore_file = SemaphoreFile::try_acquire(sem_path, sem_text, std::chrono::seconds(60));
     return launch_cmd(raw_cmd, nodes, node_number, sock, connection_type, remote_peer);
   } catch (const semaphore_not_acquired& e) {
     LOG(ERROR) << pid << "Unable to create semaphore file: " << sem_path << "; errno: " << errno
@@ -236,9 +236,12 @@ std::string Color(int c, bool ansi) {
   return s;
 }
 
-static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
-                                                std::unique_ptr<SocketConnection> conn,
-                                                const wwivd_config_t& c) {
+ConnectionHandler::ConnectionHandler(const ConnectionData& d, accepted_socket_t a)
+    : data(d), r(a) {}
+
+wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
+                                                      std::unique_ptr<SocketConnection> conn,
+                                                      const wwivd_config_t& c) {
 
   using namespace std::chrono_literals;
   if (c.bbses.empty()) {
@@ -273,7 +276,7 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
 
     conn->send_line("\r\n", d);
     conn->send(StrCat(Color(3, ansi), "Enter Selection: "), d);
-    string key_str = conn->receive_upto(1, std::chrono::seconds(15));
+    auto key_str = conn->receive_upto(1, std::chrono::seconds(15));
     // dump left overs
     conn->receive_upto(1024, std::chrono::milliseconds(1));
     if (key_str.empty()) {
@@ -298,54 +301,66 @@ static const wwivd_matrix_entry_t DoMatrixLogon(const Config& config,
   return {};
 }
 
-enum class BlockedConnectionAction { ALLOW, DENY };
-
-struct BlockedConnectionResult {
-  BlockedConnectionResult(const BlockedConnectionAction& a, const std::string& r)
-      : action(a), remote_peer(r) {}
-  BlockedConnectionAction action{BlockedConnectionAction::ALLOW};
-  std::string remote_peer;
-};
 // Can throw
-static BlockedConnectionResult CheckForBlockedConnection(ConnectionData& data) {
-  auto sock = data.r.client_socket;
+ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedConnection() {
+  auto sock = r.client_socket;
   string remote_peer;
-  if (!GetRemotePeerAddress(sock, remote_peer)) {
-    // We fail open when we can't get the remote peer
-    return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
-  }
-
   const auto& b = data.c->blocking;
-  if (b.use_dns_cc && !b.dns_cc_server.empty()) {
-    VLOG(1) << "Allowing connections since no dns_cc_server is defined.";
+
+  // We fail open when we can't get the remote peer
+  if (!GetRemotePeerAddress(sock, remote_peer)) {
+    LOG(ERROR) << "Allowing connections we can't determine the remote peer.";
     return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
   }
 
-  auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
-  LOG(INFO) << "Accepted HTTP connection on port: " << data.r.port << "; from: " << remote_peer
-            << "; coutry code: " << cc;
-  if (contains(data.c->blocking.block_cc_countries, cc)) {
-    // We have a connection from a blocked country
-    LOG(ERROR) << "Denying connection attempt from country " << cc << " for peer: " << remote_peer;
-    return BlockedConnectionResult(BlockedConnectionAction::DENY, remote_peer);
+  // Check for always allowed addresses
+  if (b.use_goodip_txt && data.good_ips_) {
+    if (data.good_ips_->IsAlwaysAllowed(remote_peer)) {
+      LOG(INFO) << "Allowing connection for goodip.txt always-allowed peer: " << remote_peer;
+      return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
+    }
   }
+
+  // Check for always blocked addresses
+  if (b.use_badip_txt && data.bad_ips_) {
+    if (data.bad_ips_->IsBlocked(remote_peer)) {
+      // We have a connection from a blocked country
+      LOG(INFO) << "Denying connection attempt from badip.txt blocked peer: " << remote_peer;
+      return BlockedConnectionResult(BlockedConnectionAction::DENY, remote_peer);
+    }
+  }
+
+  // Check for country blocking if we have a DNS cc server defined.
+  if (b.use_dns_cc && !b.dns_cc_server.empty()) {
+    auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
+    LOG(INFO) << "Accepted HTTP connection on port: " << r.port << "; from: " << remote_peer
+              << "; coutry code: " << cc;
+    if (contains(data.c->blocking.block_cc_countries, cc)) {
+      // We have a connection from a blocked country
+      LOG(INFO) << "Denying connection attempt from country " << cc << " for peer: " << remote_peer;
+      return BlockedConnectionResult(BlockedConnectionAction::DENY, remote_peer);
+    }
+  }
+
+  // Nothing left to check, let the connection through.
+  LOG(INFO) << "Allowing connection for peer: " << remote_peer;
   return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
 }
 
-void HandleBinkPConnection(ConnectionData data) {
-  auto sock = data.r.client_socket;
+void ConnectionHandler::HandleBinkPConnection() {
+  auto sock = r.client_socket;
   try {
-    auto result = CheckForBlockedConnection(data);
+    auto result = CheckForBlockedConnection();
     if (result.action == BlockedConnectionAction::DENY) {
       LOG(INFO) << "Sending BUSY. blocked.";
-      SocketConnection conn(data.r.client_socket);
+      SocketConnection conn(r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
     }
     if (!data.concurrent_connections_->aquire(result.remote_peer)) {
       LOG(INFO) << "Binkp Connection blocked by concurent connection limit.";
-      SocketConnection conn(data.r.client_socket);
+      SocketConnection conn(r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
@@ -368,20 +383,20 @@ void HandleBinkPConnection(ConnectionData data) {
   VLOG(1) << "Exiting HandleBinkPConnection (exception)";
 }
 
-void HandleConnection(ConnectionData data) {
-  auto sock = data.r.client_socket;
+void ConnectionHandler::HandleConnection() {
+  auto sock = r.client_socket;
   try {
-    auto result = CheckForBlockedConnection(data);
+    SocketConnection conn(r.client_socket);
+    auto result = CheckForBlockedConnection();
     if (result.action == BlockedConnectionAction::DENY) {
       LOG(INFO) << "Blocked connection.";
-      SocketConnection conn(data.r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
     }
     if (!data.concurrent_connections_->aquire(result.remote_peer)) {
       LOG(INFO) << "Blocked by concurrent limit..";
-      SocketConnection conn(data.r.client_socket);
+      SocketConnection conn(r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       closesocket(sock);
       return;
@@ -390,19 +405,19 @@ void HandleConnection(ConnectionData data) {
 
     if (data.c->bbses.empty()) {
       // If no bbses are defined, bail early and let someone know.
-      SocketConnection conn(data.r.client_socket);
+      SocketConnection conn(r.client_socket);
       LOG(ERROR) << "No BBSes defined in INIT for the Matrix.";
       conn.send_line("No BBSes defined in INIT for the Matrix.  Please tell the SysOp.",
                      std::chrono::seconds(1));
       return;
     }
 
-    auto connection_type = connection_type_for(*data.c, data.r.port);
+    auto connection_type = connection_type_for(*data.c, r.port);
 
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
-      bbs = DoMatrixLogon(*data.config,
-                          std::make_unique<SocketConnection>(data.r.client_socket, false), *data.c);
+      bbs = DoMatrixLogon(*data.config, std::make_unique<SocketConnection>(r.client_socket, false),
+                          *data.c);
     } else if (connection_type == ConnectionType::SSH) {
       bbs = data.c->bbses.front();
     }
@@ -411,7 +426,7 @@ void HandleConnection(ConnectionData data) {
 
     if (!contains(*data.nodes, bbs.name)) {
       // HOW???
-      SocketConnection conn(data.r.client_socket);
+      SocketConnection conn(r.client_socket);
       conn.send_line(StrCat("Can't find config for bbs: ", bbs.name), std::chrono::seconds(1));
       return;
     }
@@ -426,7 +441,7 @@ void HandleConnection(ConnectionData data) {
     } else {
       using namespace std::chrono_literals;
       LOG(INFO) << "Sending BUSY. No available node to handle connection.";
-      SocketConnection conn(data.r.client_socket);
+      SocketConnection conn(r.client_socket);
       conn.send_line("BUSY\r\n", 10s);
       VLOG(1) << "Exiting HandleConnection (busy)";
     }
@@ -434,6 +449,10 @@ void HandleConnection(ConnectionData data) {
     LOG(ERROR) << "Handled Uncaught Exception: " << e.what();
   }
 }
+
+void HandleConnection(std::unique_ptr<ConnectionHandler> h) { h->HandleConnection(); }
+
+void HandleBinkPConnection(std::unique_ptr<ConnectionHandler> h) { h->HandleBinkPConnection(); }
 
 } // namespace wwivd
 } // namespace wwiv

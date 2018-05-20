@@ -18,6 +18,11 @@
 #ifndef __INCLUDED_WWIVD_WWIVD_NON_HTTP_H__
 #define __INCLUDED_WWIVD_WWIVD_NON_HTTP_H__
 
+#include <memory>
+#include <unordered_set>
+#include <vector>
+
+#include "core/socket_connection.h"
 #include "sdk/wwivd_config.h"
 
 #include "wwivd/connection_data.h"
@@ -28,12 +33,37 @@ namespace wwivd {
 
 std::string to_string(const wwiv::sdk::wwivd_matrix_entry_t& e);
 std::string to_string(const std::vector<wwiv::sdk::wwivd_matrix_entry_t>& elements);
-const std::string node_file(const wwiv::sdk::Config& config, 
-  ConnectionType ct, int node_number);
-void HandleConnection(ConnectionData data);
-void HandleBinkPConnection(ConnectionData data);
+const std::string node_file(const wwiv::sdk::Config& config, ConnectionType ct, int node_number);
 
-}  // namespace wwivd
-}  // namespace wwiv
+class ConnectionHandler {
+public:
+  enum class BlockedConnectionAction { ALLOW, DENY };
+  struct BlockedConnectionResult {
+    BlockedConnectionResult(const BlockedConnectionAction& a, const std::string& r)
+        : action(a), remote_peer(r) {}
+    BlockedConnectionAction action{BlockedConnectionAction::ALLOW};
+    std::string remote_peer;
+  };
 
-#endif  // __INCLUDED_WWIVD_WWIVD_NON_HTTP_H__
+  ConnectionHandler() = delete;
+  ConnectionHandler(const ConnectionData& d, wwiv::core::accepted_socket_t a);
+
+  void HandleConnection();
+  void HandleBinkPConnection();
+
+private:
+  BlockedConnectionResult CheckForBlockedConnection();
+  wwiv::sdk::wwivd_matrix_entry_t DoMatrixLogon(const wwiv::sdk::Config& config,
+                                                std::unique_ptr<wwiv::core::SocketConnection> conn,
+                                                const wwiv::sdk::wwivd_config_t& c);
+  ConnectionData data;
+  wwiv::core::accepted_socket_t r;
+};
+
+void HandleConnection(std::unique_ptr<ConnectionHandler> h);
+void HandleBinkPConnection(std::unique_ptr<ConnectionHandler> h);
+
+} // namespace wwivd
+} // namespace wwiv
+
+#endif // __INCLUDED_WWIVD_WWIVD_NON_HTTP_H__
