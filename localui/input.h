@@ -91,7 +91,10 @@ public:
 
   virtual int Run(CursesWindow* window) = 0;
   virtual void Display(CursesWindow* window) const = 0;
-  void set_help_text(const std::string& help_text) { help_text_ = help_text; }
+  BaseEditItem* set_help_text(const std::string& help_text) {
+    help_text_ = help_text;
+    return this;
+  }
   const std::string& help_text() const { return help_text_; }
   virtual int x() const noexcept { return x_; }
   virtual void set_x(int x) noexcept { x_ = x; }

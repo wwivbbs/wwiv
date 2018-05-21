@@ -63,7 +63,7 @@ void CursesFooter::ShowHelpItems(int line, const std::vector<HelpItem>& help_ite
 }
 
 void CursesFooter::ShowContextHelp(const std::string& help_text) const {
-  window_->Move(0, 0);
+  window_->Move(1, 0);
   window_->ClrtoEol();
   window_->Puts(help_text);
 }

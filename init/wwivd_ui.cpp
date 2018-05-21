@@ -125,15 +125,15 @@ private:
 static void edit_blocking(wwivd_blocking_t& b) { 
   EditItems items{}; 
   int y = 1;
-  items.add(new Label(COL1_LINE, y, "Use goodip.txt:"),
+  items.add(new Label(COL1_LINE, y, "Use goodip.txt?"),
             new BooleanEditItem(COL1_POSITION, y, &b.use_goodip_txt));
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Use badip.txt:"),
+  items.add(new Label(COL1_LINE, y, "Use badip.txt?"),
             new BooleanEditItem(COL1_POSITION, y, &b.use_badip_txt));
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Use CC Server:"),
+  items.add(new Label(COL1_LINE, y, "Use CC Server?"),
             new BooleanEditItem(COL1_POSITION, y, &b.use_dns_cc));
 
   y++;
@@ -149,6 +149,18 @@ static void edit_blocking(wwivd_blocking_t& b) {
   items.add(new Label(COL1_LINE, y, "Max Concurrent Sessions:"),
             new NumberEditItem<int>(COL1_POSITION, y, &b.max_concurrent_sessions));
   y++;
+  items.add(new Label(COL1_LINE, y, ""));
+  y++;
+  items.add(new Label(COL1_LINE, y, "Enable Auto Blocking?"),
+            new BooleanEditItem(COL1_POSITION, y, &b.auto_blacklist));
+  y++;
+  items.add(new Label(COL1_LINE, y, "Max Sessions Before Blocking:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &b.auto_bl_sessions));
+  y++;
+  items.add(new Label(COL1_LINE, y, "Max Seconds Before Blocking:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &b.auto_bl_seconds));
+
+  y++;
   items.relayout_items_and_labels();
   items.Run("Blocking Configuration");
 }
@@ -163,6 +175,7 @@ public:
 
   virtual int Run(CursesWindow* window) {
     window->GotoXY(x_, y_);
+    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     int ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
       fn_(t_);

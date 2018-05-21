@@ -99,9 +99,7 @@ void EditItems::Run(const std::string& title) {
   Display();
   for (;;) {
     const auto* item = items_[cp];
-    if (!item->help_text().empty()) {
-      io_->footer()->ShowContextHelp(item->help_text());
-    }
+    io_->footer()->ShowContextHelp(item->help_text());
     int i1 = items_[cp]->Run(window_.get());
     io_->footer()->SetDefaultFooter();
     if (i1 == PREV) {

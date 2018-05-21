@@ -20,9 +20,10 @@
 #include <map>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <string>
-#include <vector>
 #include <unordered_set>
+#include <vector>
 
 #include <cereal/access.hpp>
 #include <cereal/archives/json.hpp>
@@ -32,7 +33,6 @@
 #include <cereal/types/string.hpp>
 #include <cereal/types/unordered_set.hpp>
 #include <cereal/types/vector.hpp>
-
 
 #include "core/file.h"
 #include "core/http_server.h"
@@ -111,12 +111,60 @@ bool BadIp::IsBlocked(const std::string& ip) {
   }
   return ips_.find(ip) != ips_.end();
 }
-bool BadIp::Block(const std::string& ip) { 
+bool BadIp::Block(const std::string& ip) {
   ips_.emplace(ip);
-  TextFile appender(fn_, "at"); 
+  TextFile appender(fn_, "at");
   auto now = DateTime::now();
-  auto written = appender.WriteLine(StrCat(ip, " # AutoBlocked by wwivd on: ", now.to_string("%FT%T")));
+  auto written =
+      appender.WriteLine(StrCat(ip, " # AutoBlocked by wwivd on: ", now.to_string("%FT%T")));
   return written > 0;
+}
+
+AutoBlocker::AutoBlocker(std::shared_ptr<BadIp> bip, const wwiv::sdk::wwivd_blocking_t& b)
+    : bip_(bip), b_(b) {}
+
+AutoBlocker::~AutoBlocker() {}
+
+static string to_string(std::set<time_t> times) {
+  std::stringstream ss;
+  ss << "{";
+  for (const auto& t : times) {
+    ss << t << ", ";
+  }
+  ss < "}";
+  return ss.str();
+}
+
+bool AutoBlocker::Connection(const std::string& ip) {
+  if (!b_.auto_blacklist) {
+    return true;
+  }
+
+  const auto auto_bl_sessions = b_.auto_bl_sessions;
+  const auto auto_bl_seconds = b_.auto_bl_seconds;
+  auto now = DateTime::now();
+  auto oldest_in_window = now.to_time_t() - auto_bl_seconds;
+  auto& s = sessions_[ip];
+  s.emplace(now.to_time_t());
+  if (s.size() == 1) {
+    return true;
+  }
+
+  for (auto iter = s.begin(); iter != s.end();) {
+    if (*iter < oldest_in_window) {
+      iter = s.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+
+  if (s.size() > auto_bl_sessions) {
+    LOG(INFO) << "Need to block since we have " << s.size() << " sessions within "
+              << auto_bl_seconds << " seconds.";
+    bip_->Block(ip);
+    return false;
+  }
+  return true;
 }
 
 } // namespace wwivd
