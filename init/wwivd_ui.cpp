@@ -44,12 +44,13 @@ using namespace wwiv::strings;
 
 static const int COL1_LINE = 2;
 static const int COL1_POSITION = 21;
+static const char enter_to_edit[] = "[Press Enter to Edit]";
 
 // Base item of an editable value, this class does not use templates.
 template <class T> class SubDialog : public BaseEditItem {
 public:
-  SubDialog(int x, int y, const std::string& text, T& t, std::function<void(T&, CursesWindow*)> fn)
-      : BaseEditItem(x, y, text.size() + 2), text_(text), fn_(fn), t_(t){};
+  SubDialog(int x, int y, T& t, std::function<void(T&, CursesWindow*)> fn)
+      : BaseEditItem(x, y,  25 /* strlen(enter_to_edit) + 2ish */), fn_(fn), t_(t){};
   virtual ~SubDialog() {}
 
   virtual int Run(CursesWindow* window) {
@@ -66,10 +67,9 @@ public:
     }
     return 2;
   }
-  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, text_); }
+  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, enter_to_edit); }
 
 private:
-  const std::string text_;
   T& t_;
   std::function<void(T&, CursesWindow*)> fn_;
 };
@@ -149,7 +149,7 @@ static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) {
 
   y++;
   items.add(new Label(COL1_LINE, y, "Blocked Countries:"),
-            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, "[Enter to Edit]", b, blocked_country_subdialog));
+            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, b, blocked_country_subdialog));
 
   y++;
   items.add(new Label(COL1_LINE, y, "Max Concurrent Sessions:"),
@@ -318,10 +318,10 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
             new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, false));
   y++;
   items.add(new Label(COL1_LINE, y, "Matrix Settings:"),
-            new SubDialog<wwivd_config_t>(COL1_POSITION, y, "[Enter to Edit]", c, matrix_subdialog));
+            new SubDialog<wwivd_config_t>(COL1_POSITION, y, c, matrix_subdialog));
   y++;
   items.add(new Label(COL1_LINE, y, "Blocking:"),
-            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, "[Enter to Edit]", c.blocking, edit_blocking));
+            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, c.blocking, edit_blocking));
   y++;
 
   items.Run("wwivd Configuration");
