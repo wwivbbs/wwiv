@@ -131,7 +131,7 @@ static string to_string(std::set<time_t> times) {
   for (const auto& t : times) {
     ss << t << ", ";
   }
-  ss < "}";
+  ss << "}";
   return ss.str();
 }
 

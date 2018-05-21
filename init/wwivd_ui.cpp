@@ -46,83 +46,89 @@ static const int COL1_LINE = 2;
 static const int COL1_POSITION = 21;
 
 // Base item of an editable value, this class does not use templates.
-class BlockedCountryCodeSubDialog : public BaseEditItem {
+template <class T> class SubDialog : public BaseEditItem {
 public:
-  BlockedCountryCodeSubDialog(wwivd_blocking_t& b, int x, int y) : BaseEditItem(x, y, 1), b_(b){};
-  virtual ~BlockedCountryCodeSubDialog() {}
+  SubDialog(int x, int y, const std::string& text, T& t, std::function<void(T&, CursesWindow*)> fn)
+      : BaseEditItem(x, y, text.size() + 2), text_(text), fn_(fn), t_(t){};
+  virtual ~SubDialog() {}
 
   virtual int Run(CursesWindow* window) {
-    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
+    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     int ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      bool done = false;
-      do {
-        vector<ListBoxItem> items;
-        for (const auto& e : b_.block_cc_countries) {
-          items.emplace_back(std::to_string(e));
-        }
-        ListBox list(out, window, "Select Country Code", items);
-
-        list.selection_returns_hotkey(true);
-        list.set_additional_hotkeys("DI");
-        list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-        ListBoxResult result = list.Run();
-        if (result.type == ListBoxResultType::HOTKEY) {
-          switch (result.hotkey) {
-          case 'D': {
-            if (items.empty()) {
-              break;
-            }
-            if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
-              break;
-            }
-            wwiv::stl::erase_at(b_.block_cc_countries, result.selected);
-          } break;
-          case 'I': {
-            const string code_str =
-                dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
-            if (code_str.empty()) {
-              break;
-            }
-            auto code_num = to_number<int>(code_str);
-            auto pos = result.selected;
-            if (pos >= 0 && pos < size_int(items)) {
-              wwiv::stl::insert_at(b_.block_cc_countries, pos, code_num);
-            } else {
-              b_.block_cc_countries.push_back(code_num);
-            }
-          } break;
-          }
-        } else if (result.type == ListBoxResultType::SELECTION) {
-          auto& b = b_.block_cc_countries.at(result.selected);
-          const string code_str =
-              dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
-          if (code_str.empty()) {
-            break;
-          }
-          b = to_number<int>(code_str);
-        } else if (result.type == ListBoxResultType::NO_SELECTION) {
-          done = true;
-        }
-      } while (!done);
-
-      return 2;
+      fn_(t_, window);
+      window->RedrawWin();
     } else if (ch == KEY_UP || ch == KEY_BTAB) {
       return 1; // PREV
     } else {
-      return 2;
+      return 2; // NEXT
     }
+    return 2;
   }
-  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, text_); }
 
 private:
-  wwivd_blocking_t& b_;
-  CursesIO* io_ = nullptr;
+  const std::string text_;
+  T& t_;
+  std::function<void(T&, CursesWindow*)> fn_;
 };
 
-static void edit_blocking(wwivd_blocking_t& b) { 
+static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window) {
+  bool done = false;
+  do {
+    vector<ListBoxItem> items;
+    for (const auto& e : b_.block_cc_countries) {
+      items.emplace_back(std::to_string(e));
+    }
+    ListBox list(out, window, "Select Country Code", items);
+
+    list.selection_returns_hotkey(true);
+    list.set_additional_hotkeys("DI");
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
+    ListBoxResult result = list.Run();
+    if (result.type == ListBoxResultType::HOTKEY) {
+      switch (result.hotkey) {
+      case 'D': {
+        if (items.empty()) {
+          break;
+        }
+        if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
+          break;
+        }
+        wwiv::stl::erase_at(b_.block_cc_countries, result.selected);
+      } break;
+      case 'I': {
+        const string code_str =
+            dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
+        if (code_str.empty()) {
+          break;
+        }
+        auto code_num = to_number<int>(code_str);
+        auto pos = result.selected;
+        if (pos >= 0 && pos < size_int(items)) {
+          wwiv::stl::insert_at(b_.block_cc_countries, pos, code_num);
+        } else {
+          b_.block_cc_countries.push_back(code_num);
+        }
+      } break;
+      }
+    } else if (result.type == ListBoxResultType::SELECTION) {
+      auto& b = b_.block_cc_countries.at(result.selected);
+      const string code_str =
+          dialog_input_string(window, "Enter ISO-3166 Numeric Country Code: ", 8);
+      if (code_str.empty()) {
+        break;
+      }
+      b = to_number<int>(code_str);
+    } else if (result.type == ListBoxResultType::NO_SELECTION) {
+      done = true;
+    }
+  } while (!done);
+}
+
+// Base item of an editable value, this class does not use templates.
+static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) { 
   EditItems items{}; 
   int y = 1;
   items.add(new Label(COL1_LINE, y, "Use goodip.txt?"),
@@ -143,7 +149,7 @@ static void edit_blocking(wwivd_blocking_t& b) {
 
   y++;
   items.add(new Label(COL1_LINE, y, "Blocked Countries:"),
-            new BlockedCountryCodeSubDialog(b, COL1_POSITION, y));
+            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, "[Enter to Edit]", b, blocked_country_subdialog));
 
   y++;
   items.add(new Label(COL1_LINE, y, "Max Concurrent Sessions:"),
@@ -164,36 +170,6 @@ static void edit_blocking(wwivd_blocking_t& b) {
   items.relayout_items_and_labels();
   items.Run("Blocking Configuration");
 }
-
-// Base item of an editable value, this class does not use templates.
-template<class T>
-class SubDialog : public BaseEditItem {
-public:
-  SubDialog(int x, int y, const std::string& text, std::function<void(T&)> fn, T& t)
-      : BaseEditItem(x, y, text.size() + 2), text_(text), fn_(fn), t_(t) {};
-  virtual ~SubDialog() {}
-
-  virtual int Run(CursesWindow* window) {
-    window->GotoXY(x_, y_);
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
-    int ch = window->GetChar();
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      fn_(t_);
-      window->RedrawWin();
-    } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return 1; // PREV
-    } else {
-      return 2; // NEXT
-    }
-    return 2;
-  }
-  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, text_); }
-
-private:
-  const std::string text_;
-  std::function<void(T&)> fn_;
-  T& t_;
-};
 
 static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
   EditItems items{};
@@ -234,78 +210,54 @@ static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
   b.key = key[0];
 }
 
-// Base item of an editable value, this class does not use templates.
-class MatrixSubDialog : public BaseEditItem {
-public:
-  MatrixSubDialog(wwivd_config_t& c, int x, int y) : BaseEditItem(x, y, 20), c_(c){};
-  virtual ~MatrixSubDialog() {}
-
-  virtual int Run(CursesWindow* window) {
-    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
-    window->GotoXY(x_, y_);
-    int ch = window->GetChar();
-    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
-      bool done = false;
-      do {
-        vector<ListBoxItem> items;
-        for (const auto& e : c_.bbses) {
-          items.emplace_back(e.name);
-        }
-        ListBox list(out, window, "Select BBS", items);
-
-        list.selection_returns_hotkey(true);
-        list.set_additional_hotkeys("DI");
-        list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
-        ListBoxResult result = list.Run();
-        if (result.type == ListBoxResultType::HOTKEY) {
-          switch (result.hotkey) {
-          case 'D': {
-            if (items.empty()) {
-              break;
-            }
-            if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
-              break;
-            }
-            wwiv::stl::erase_at(c_.bbses, result.selected);
-          } break;
-          case 'I': {
-            const string name = dialog_input_string(window, "Enter BBS Name: ", 8);
-            if (name.empty()) {
-              break;
-            }
-            wwivd_matrix_entry_t e{};
-            e.name = name;
-            e.key = name.front();
-            auto pos = result.selected;
-            if (pos >= 0 && pos < size_int(items)) {
-              wwiv::stl::insert_at(c_.bbses, pos, e);
-            } else {
-              c_.bbses.push_back(e);
-            }
-          } break;
-          }
-        } else if (result.type == ListBoxResultType::SELECTION) {
-          auto& b = c_.bbses.at(result.selected);
-          edit_matrix_entry(b);
-        } else if (result.type == ListBoxResultType::NO_SELECTION) {
-          done = true;
-        }
-      } while (!done);
-
-      return 2;
-    } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return 1; // PREV
-    } else {
-      return 2;
+static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
+  bool done = false;
+  do {
+    vector<ListBoxItem> items;
+    for (const auto& e : c_.bbses) {
+      items.emplace_back(e.name);
     }
-  }
-  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+    ListBox list(out, window, "Select BBS", items);
 
-private:
-  wwivd_config_t& c_;
-  CursesIO* io_ = nullptr;
-};
+    list.selection_returns_hotkey(true);
+    list.set_additional_hotkeys("DI");
+    list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
+    ListBoxResult result = list.Run();
+    if (result.type == ListBoxResultType::HOTKEY) {
+      switch (result.hotkey) {
+      case 'D': {
+        if (items.empty()) {
+          break;
+        }
+        if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
+          break;
+        }
+        wwiv::stl::erase_at(c_.bbses, result.selected);
+      } break;
+      case 'I': {
+        const string name = dialog_input_string(window, "Enter BBS Name: ", 8);
+        if (name.empty()) {
+          break;
+        }
+        wwivd_matrix_entry_t e{};
+        e.name = name;
+        e.key = name.front();
+        auto pos = result.selected;
+        if (pos >= 0 && pos < size_int(items)) {
+          wwiv::stl::insert_at(c_.bbses, pos, e);
+        } else {
+          c_.bbses.push_back(e);
+        }
+      } break;
+      }
+    } else if (result.type == ListBoxResultType::SELECTION) {
+      auto& b = c_.bbses.at(result.selected);
+      edit_matrix_entry(b);
+    } else if (result.type == ListBoxResultType::NO_SELECTION) {
+      done = true;
+    }
+  } while (!done);
+}
 
 static wwivd_matrix_entry_t CreateWWIVMatrixEntry() {
   wwivd_matrix_entry_t e{};
@@ -366,11 +318,10 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
             new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, false));
   y++;
   items.add(new Label(COL1_LINE, y, "Matrix Settings:"),
-            new MatrixSubDialog(c, COL1_POSITION, y));
+            new SubDialog<wwivd_config_t>(COL1_POSITION, y, "[Enter to Edit]", c, matrix_subdialog));
   y++;
   items.add(new Label(COL1_LINE, y, "Blocking:"),
-            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, "[Enter to Edit]", edit_blocking,
-                                            c.blocking));
+            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, "[Enter to Edit]", c.blocking, edit_blocking));
   y++;
 
   items.Run("wwivd Configuration");
