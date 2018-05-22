@@ -297,31 +297,40 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   EditItems items{};
   int y = 1;
   items.add(new Label(COL1_LINE, y, "Telnet Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.telnet_port));
+            new NumberEditItem<int>(COL1_POSITION, y, &c.telnet_port))
+    ->set_help_text("Telnet Server Port Number (or -1 to disable).");
   y++;
   items.add(new Label(COL1_LINE, y, "SSH Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.ssh_port));
+            new NumberEditItem<int>(COL1_POSITION, y, &c.ssh_port))
+      ->set_help_text("SSH Server Port Number (or -1 to disable).");
   y++;
   items.add(new Label(COL1_LINE, y, "BinkP Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.binkp_port));
+            new NumberEditItem<int>(COL1_POSITION, y, &c.binkp_port))
+      ->set_help_text("BINKP Server Port Number (or -1 to disable).");
   y++;
   items.add(new Label(COL1_LINE, y, "BinkP Command:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, false));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, false))
+      ->set_help_text("Command to execute on a binkp connection.");
   y++;
   items.add(new Label(COL1_LINE, y, "HTTP Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.http_port));
+            new NumberEditItem<int>(COL1_POSITION, y, &c.http_port))
+      ->set_help_text("HTTP Server Port Number (or -1 to disable).");
   y++;
   items.add(new Label(COL1_LINE, y, "HTTP Address:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, false));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, false))
+      ->set_help_text("Network address to listen on for the HTTP Server.");
   y++;
   items.add(new Label(COL1_LINE, y, "Matrix Filename:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, false));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, false))
+      ->set_help_text("Filename to display without extension before matrix bbs menu.");
   y++;
   items.add(new Label(COL1_LINE, y, "Matrix Settings:"),
-            new SubDialog<wwivd_config_t>(COL1_POSITION, y, c, matrix_subdialog));
+            new SubDialog<wwivd_config_t>(COL1_POSITION, y, c, matrix_subdialog))
+      ->set_help_text("Create/Edit/Delete Matrix BBS settings.");
   y++;
   items.add(new Label(COL1_LINE, y, "Blocking:"),
-            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, c.blocking, edit_blocking));
+            new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, c.blocking, edit_blocking))
+      ->set_help_text("IP Blocking Settings.");
   y++;
 
   items.Run("wwivd Configuration");
