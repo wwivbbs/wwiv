@@ -137,9 +137,7 @@ bool edit_archivers(const wwiv::sdk::Config& config) {
       items.emplace_back(StringPrintf("[%s] %s", arc[i].extension, arc[i].name));
     }
     CursesWindow* window = out->window();
-    ListBox list(out, window, "Select Archiver", static_cast<int>(floor(window->GetMaxX() * 0.8)),
-                 std::min<int>(10, static_cast<int>(floor(window->GetMaxY() * 0.8))), items,
-                 out->color_scheme());
+    ListBox list(window, "Select Archiver", items);
 
     list.selection_returns_hotkey(true);
     list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}});

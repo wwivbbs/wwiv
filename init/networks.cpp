@@ -194,19 +194,19 @@ public:
 
       dy_start_ = y;
       vector<pair<fido_mailer_t, string>> mailerlist = {{fido_mailer_t::flo, "FLO"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
-      items.add(new ToggleEditItem<fido_mailer_t>(out, COL1_POSITION, y++, mailerlist, &n->mailer_type));
+      items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type));
 
       vector<pair<fido_transport_t, string>> transportlist = {
         {fido_transport_t::directory, "Directory"}, {fido_transport_t::binkp, "WWIV BinkP (N/A)"}
       };
-      items.add(new ToggleEditItem<fido_transport_t>(out, COL1_POSITION, y++, transportlist, &n->transport));
+      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist, &n->transport));
 
       vector<pair<fido_packet_t, string>> packetlist = {
         {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
       };
-      items.add(new ToggleEditItem<fido_packet_t>(out, COL1_POSITION, y++, packetlist, &n->packet_config.packet_type));
+      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &n->packet_config.packet_type));
 
-      items.add(new StringListItem(out, COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
+      items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, true));
 
@@ -221,7 +221,7 @@ public:
         {fido_bundle_status_t::direct, "Immediate"},
         {fido_bundle_status_t::hold, "Hold"},
       };
-      items.add(new ToggleEditItem<fido_bundle_status_t>(out, COL2_POSITION, dy++, bundlestatuslist, &n->packet_config.netmail_status));
+      items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist, &n->packet_config.netmail_status));
 
       window->GotoXY(x_, y_);
       int ch = window->GetChar();
@@ -271,7 +271,6 @@ private:
   int x_ = 0;
   int y_ = 0;
   int dy_start_ = 0;
-  CursesIO* io_ = nullptr;
 };
 
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
@@ -287,8 +286,8 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   };
 
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, n.routes, false));
-  items.add(new ToggleEditItem<fido_packet_t>(out, COL1_POSITION, y++, packetlist, &p.packet_type));
-  items.add(new StringListItem(out, COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
+  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &p.packet_type));
+  items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.packet_password, true));
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.areafix_password, true));
   items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_archive_size));
@@ -300,7 +299,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
     {fido_bundle_status_t::direct, "Immediate"},
     {fido_bundle_status_t::hold, "Hold"},
   };
-  items.add(new ToggleEditItem<fido_bundle_status_t>(out, COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
+  items.add(new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
 
   auto& b = n.binkp_config;
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, b.host, false));
@@ -348,7 +347,7 @@ public:
         for (const auto& e : callout.node_configs_map()) {
           items.emplace_back(e.first.as_string());
         }
-        ListBox list(out, window, "Select Address", items);
+        ListBox list(window, "Select Address", items);
 
         list.selection_returns_hotkey(true);
         list.set_additional_hotkeys("DI");
@@ -406,7 +405,6 @@ private:
   net_networks_rec& d_;
   int x_ = 0;
   int y_ = 0;
-  CursesIO* io_;
 };
 
 
@@ -428,7 +426,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   constexpr int COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
   int y = 1;
   EditItems items{};
-  items.add(new ToggleEditItem<network_type_t>(out, COL1_POSITION, y++, nettypes, &n.type))->
+  items.add(new ToggleEditItem<network_type_t>(COL1_POSITION, y++, nettypes, &n.type))->
     set_help_text("If changing network types, exit and reenter this dialog for more options.");
   items.add(new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false));
   items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))->
@@ -557,7 +555,7 @@ void networks(wwiv::sdk::Config& config) {
         items.emplace_back(StringPrintf("@%-5u %-16s [.%d]", n.sysnum, n.name, num++));
       }
       CursesWindow* window = out->window();
-      ListBox list(out, window, "Select Network", items);
+      ListBox list(window, "Select Network", items);
 
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");

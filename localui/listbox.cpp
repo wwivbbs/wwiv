@@ -39,9 +39,9 @@ static constexpr double RATIO_LISTBOX_HEIGHT = 0.8;
 
 static std::vector<HelpItem> StandardHelpItems() { return {{"Esc", "Exit"}}; }
 
-ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x, int max_y,
+ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
                  std::vector<ListBoxItem>& items, ColorScheme* scheme)
-    : io_(io), title_(title), items_(items), color_scheme_(scheme),
+    : title_(title), items_(items), color_scheme_(scheme),
       window_top_min_(title.empty() ? 1 : 1 /* 3 */) {
   height_ = std::min<int>(items.size(), max_y);
   int window_height = 2 + height_ + window_top_min_ - 1;
@@ -72,12 +72,12 @@ ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title, int max_x,
   help_items_ = StandardHelpItems();
 }
 
-ListBox::ListBox(CursesIO* io, UIWindow* parent, const string& title,
+ListBox::ListBox(UIWindow* parent, const string& title,
                  std::vector<ListBoxItem>& items)
-    : ListBox(io, parent, title, static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
+    : ListBox(parent, title, static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
               std::min<int>(std::max<int>(items.size(), MINIMUM_LISTBOX_HEIGHT),
                             static_cast<int>(floor(parent->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
-              items, io->color_scheme()) {}
+              items, parent->color_scheme()) {}
 
 void ListBox::DrawAllItems() {
   for (auto y = 0; y < height_; y++) {
@@ -197,7 +197,7 @@ ListBoxResult ListBox::RunDialog() {
 
 void ListBox::DisplayFooter() {
   // Show help bar.
-  io_->footer()->window()->Move(1, 0);
-  io_->footer()->window()->ClrtoEol();
-  io_->footer()->ShowHelpItems(0, help_items_);
+  out->footer()->window()->Move(1, 0);
+  out->footer()->window()->ClrtoEol();
+  out->footer()->ShowHelpItems(0, help_items_);
 }

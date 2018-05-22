@@ -61,7 +61,7 @@ static const uint8_t JumpToSl(CursesWindow* window) {
     items.emplace_back(StringPrintf("SL #%d", i), 0, i);
   }
 
-  ListBox list(out, window, "Select SL", items);
+  ListBox list(window, "Select SL", items);
   ListBoxResult result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
     return static_cast<uint8_t>(items[result.selected].data());
@@ -80,17 +80,17 @@ void sec_levs() {
       new NumberEditItem<uint16_t>(COL1_POSITION, 4, &sl.messages_read),
       new NumberEditItem<uint16_t>(COL1_POSITION, 5, &sl.emails),
       new NumberEditItem<uint16_t>(COL1_POSITION, 6, &sl.posts),
-      new FlagEditItem<uint32_t>(out, COL1_POSITION, 7, ability_post_anony, "Yes", "No ",
+      new FlagEditItem<uint32_t>(COL1_POSITION, 7, ability_post_anony, "Yes", "No ",
                                  &sl.ability),
-      new FlagEditItem<uint32_t>(out, COL1_POSITION, 8, ability_email_anony, "Yes", "No ",
+      new FlagEditItem<uint32_t>(COL1_POSITION, 8, ability_email_anony, "Yes", "No ",
                                  &sl.ability),
-      new FlagEditItem<uint32_t>(out, COL1_POSITION, 9, ability_read_post_anony, "Yes", "No ",
+      new FlagEditItem<uint32_t>(COL1_POSITION, 9, ability_read_post_anony, "Yes", "No ",
                                  &sl.ability),
-      new FlagEditItem<uint32_t>(out, COL1_POSITION, 10, ability_read_email_anony, "Yes", "No ",
+      new FlagEditItem<uint32_t>(COL1_POSITION, 10, ability_read_email_anony, "Yes", "No ",
                                  &sl.ability),
-      new FlagEditItem<uint32_t>(out, COL1_POSITION, 11, ability_limited_cosysop, "Yes", "No ",
+      new FlagEditItem<uint32_t>(COL1_POSITION, 11, ability_limited_cosysop, "Yes", "No ",
                                  &sl.ability),
-      new FlagEditItem<uint32_t>(out, COL1_POSITION, 12, ability_cosysop, "Yes", "No ",
+      new FlagEditItem<uint32_t>(COL1_POSITION, 12, ability_cosysop, "Yes", "No ",
                                  &sl.ability),
   });
   int y = 1;

@@ -185,7 +185,7 @@ void extrn_prots(const std::string& datadir) {
       items.emplace_back(StringPrintf("%d. %s (External)", i + 6, prot_name(externs, i+6)), 0, i+6);
     }
     CursesWindow* window(out->window());
-    ListBox list(out, window, "Select Protocol", items);
+    ListBox list(window, "Select Protocol", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");

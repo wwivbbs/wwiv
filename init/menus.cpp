@@ -170,7 +170,7 @@ public:
              << " '" << m.szMenuText << "' [" << m.szExecute << "]";
           items.emplace_back(ss.str(), 0, i);
         }
-        ListBox list(out, window, title_, items);
+        ListBox list(window, title_, items);
 
         list.set_additional_hotkeys("DIM");
         list.set_help_items({ 
@@ -236,7 +236,6 @@ private:
   const std::string title_;
   int x_ = 0;
   int y_ = 0;
-  CursesIO* io_;
 };
 
 static void edit_menu(const std::string& menu_dir, const std::string& menu_name) {
@@ -291,20 +290,20 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
             new StringEditItem<char*>(COL2_LINE, y, 20, h.szMenuTitle, false));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Deleted:"),
-            new FlagEditItem<uint8_t>(out, COL2_LINE, y, MENU_FLAG_DELETED, "Yes", "No", &h.nFlags));
+            new FlagEditItem<uint8_t>(COL2_LINE, y, MENU_FLAG_DELETED, "Yes", "No", &h.nFlags));
   y++;
   items.add(
       new Label(COL1_LINE, y, LABEL1_WIDTH, "Main Menu:"),
-            new FlagEditItem<uint8_t>(out, COL2_LINE, y, MENU_FLAG_MAINMENU, "Yes", "No", &h.nFlags));
+            new FlagEditItem<uint8_t>(COL2_LINE, y, MENU_FLAG_MAINMENU, "Yes", "No", &h.nFlags));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "What do Numbers do:"),
-            new ToggleEditItem<uint8_t>(out, COL2_LINE, y, numbers_action, &h.nums));
+            new ToggleEditItem<uint8_t>(COL2_LINE, y, numbers_action, &h.nums));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Logging Type:"),
-            new ToggleEditItem<uint8_t>(out, COL2_LINE, y, logging_action, &h.nLogging));
+            new ToggleEditItem<uint8_t>(COL2_LINE, y, logging_action, &h.nLogging));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Force help to be on:"),
-            new ToggleEditItem<uint8_t>(out, COL2_LINE, y, help_action, &h.nForceHelp));
+            new ToggleEditItem<uint8_t>(COL2_LINE, y, help_action, &h.nForceHelp));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Enter Script:"),
             new StringEditItem<char*>(COL2_LINE, y, 50, h.szScript, false));
@@ -371,7 +370,7 @@ static void select_menu(Config& config, const std::string& dir) {
       }
       CursesWindow* window = out->window();
       auto title = StrCat("Select Menu from [", dir, "]");
-      ListBox list(out, window, title, items);
+      ListBox list(window, title, items);
       list.set_selected(selected);
       list.set_additional_hotkeys("DI");
       list.set_help_items({ { "Esc", "Exit" },{ "Enter", "Edit" },{ "D", "Delete" },{ "I", "Insert" } });
@@ -411,7 +410,7 @@ void menus(wwiv::sdk::Config& config) {
         items.emplace_back(d.name);
       }
       CursesWindow* window = out->window();
-      ListBox list(out, window, "Select Menu Set", items);
+      ListBox list(window, "Select Menu Set", items);
       list.set_selected(selected);
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");

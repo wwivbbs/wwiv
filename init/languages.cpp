@@ -112,7 +112,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
       items.emplace_back(StringPrintf("%d. %s (%s)", i + 1, languages[i].name, languages[i].dir));
     }
     CursesWindow* window = out->window();
-    ListBox list(out, window, "Select Language", items);
+    ListBox list(window, "Select Language", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");

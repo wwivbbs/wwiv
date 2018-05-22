@@ -30,12 +30,13 @@
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
-#endif  // INSERT
+#endif // INSERT
 
 class ColorScheme;
 
 struct ListBoxItem {
-  ListBoxItem(const std::string& text, int hotkey=0, int data = 0) : text_(text), hotkey_(hotkey), data_(data) {}
+  ListBoxItem(const std::string& text, int hotkey = 0, int data = 0)
+      : text_(text), hotkey_(hotkey), data_(data) {}
   ~ListBoxItem() {}
 
   const std::string& text() const { return text_; }
@@ -56,11 +57,9 @@ struct ListBoxResult {
 
 // Curses implementation of a list box.
 class ListBox {
- public:
+public:
   // Constructor/Destructor
-  ListBox(CursesIO* io, UIWindow* parent, const std::string& title, int max_x, int max_y, 
-          std::vector<ListBoxItem>& items, ColorScheme* scheme);
-  ListBox(CursesIO* io, UIWindow* parent, const std::string& title, std::vector<ListBoxItem>& items);
+  ListBox(UIWindow* parent, const std::string& title, std::vector<ListBoxItem>& items);
   ListBox(const ListBox& copy) = delete;
   virtual ~ListBox() {}
 
@@ -68,7 +67,7 @@ class ListBox {
   ListBoxResult Run() {
     this->DisplayFooter();
     ListBoxResult result = RunDialog();
-    io_->footer()->SetDefaultFooter();
+    out->footer()->SetDefaultFooter();
     return result;
   }
 
@@ -79,16 +78,19 @@ class ListBox {
   // List of additionally allowed hotkeys.
   void set_additional_hotkeys(const std::string& hotkeys) { hotkeys_.append(hotkeys); }
   // If true, a selection will return as a hotkey if a hotkey is set on the item.
-  void selection_returns_hotkey(bool selection_returns_hotkey) { selection_returns_hotkey_ = selection_returns_hotkey; }
+  void selection_returns_hotkey(bool selection_returns_hotkey) {
+    selection_returns_hotkey_ = selection_returns_hotkey;
+  }
   // Sets the extra help items.
   void set_help_items(const std::vector<HelpItem> items) { help_items_ = items; }
 
- private:
+private:
+  ListBox(UIWindow* parent, const std::string& title, int max_x, int max_y,
+          std::vector<ListBoxItem>& items, ColorScheme* scheme);
   ListBoxResult RunDialog();
   void DrawAllItems();
   void DisplayFooter();
 
-  CursesIO* io_;
   int selected_ = -1;
   const std::string title_;
   std::vector<ListBoxItem> items_;
@@ -100,7 +102,7 @@ class ListBox {
   ColorScheme* color_scheme_;
   const int window_top_min_;
   std::string hotkeys_;
-  bool selection_returns_hotkey_ = false;
+  bool selection_returns_hotkey_{false};
 };
 
 #endif // __INCLUDED_PLATFORM_LISTBOX_H__

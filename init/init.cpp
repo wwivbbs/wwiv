@@ -337,7 +337,7 @@ int WInitApp::main(int argc, char** argv) {
 
     int selected_hotkey = -1;
     {
-      ListBox list(out, window, "Main Menu", items);
+      ListBox list(window, "Main Menu", items);
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("$");
       list.set_selected(selected);

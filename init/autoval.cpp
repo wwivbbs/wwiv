@@ -107,8 +107,7 @@ void autoval_levs() {
       items.emplace_back(create_autoval_line(i));
     }
     CursesWindow* window(out->window());
-    ListBox list(out, window, "Select AutoVal", static_cast<int>(floor(window->GetMaxX() * 0.99)),
-                 static_cast<int>(floor(window->GetMaxY() * 0.8)), items, out->color_scheme());
+    ListBox list(window, "Select AutoVal", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");

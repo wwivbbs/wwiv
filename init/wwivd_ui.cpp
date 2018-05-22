@@ -81,7 +81,7 @@ static void blocked_country_subdialog(wwivd_blocking_t& b_, CursesWindow* window
     for (const auto& e : b_.block_cc_countries) {
       items.emplace_back(std::to_string(e));
     }
-    ListBox list(out, window, "Select Country Code", items);
+    ListBox list(window, "Select Country Code", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");
@@ -217,7 +217,7 @@ static void matrix_subdialog(wwivd_config_t& c_, CursesWindow* window) {
     for (const auto& e : c_.bbses) {
       items.emplace_back(e.name);
     }
-    ListBox list(out, window, "Select BBS", items);
+    ListBox list(window, "Select BBS", items);
 
     list.selection_returns_hotkey(true);
     list.set_additional_hotkeys("DI");

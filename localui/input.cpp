@@ -95,13 +95,13 @@ void EditItems::Run(const std::string& title) {
   }
   edit_mode_ = true;
   int cp = 0;
-  const int size = static_cast<int>(items_.size());
+  const auto size = static_cast<int>(items_.size());
   Display();
   for (;;) {
     const auto* item = items_[cp];
-    io_->footer()->ShowContextHelp(item->help_text());
-    int i1 = items_[cp]->Run(window_.get());
-    io_->footer()->SetDefaultFooter();
+    out->footer()->ShowContextHelp(item->help_text());
+    auto i1 = items_[cp]->Run(window_.get());
+    out->footer()->SetDefaultFooter();
     if (i1 == PREV) {
       if (--cp < 0) {
         cp = size - 1;
@@ -111,7 +111,7 @@ void EditItems::Run(const std::string& title) {
         cp = 0;
       }
     } else if (i1 == DONE) {
-      io_->SetIndicatorMode(IndicatorMode::NONE);
+      out->SetIndicatorMode(IndicatorMode::NONE);
       edit_mode_ = false;
       Display();
       return;
@@ -122,12 +122,12 @@ void EditItems::Run(const std::string& title) {
 void EditItems::Display() const {
   // Show help bar.
   if (edit_mode_) {
-    io_->footer()->window()->Move(1, 0);
-    io_->footer()->window()->ClrtoEol();
-    io_->footer()->ShowHelpItems(0, editor_help_items_);
+    out->footer()->window()->Move(1, 0);
+    out->footer()->window()->ClrtoEol();
+    out->footer()->ShowHelpItems(0, editor_help_items_);
   } else {
-    io_->footer()->ShowHelpItems(0, navigation_help_items_);
-    io_->footer()->ShowHelpItems(1, navigation_extra_help_items_);
+    out->footer()->ShowHelpItems(0, navigation_help_items_);
+    out->footer()->ShowHelpItems(1, navigation_extra_help_items_);
   }
 
   window_->SetColor(SchemeId::NORMAL);
@@ -188,9 +188,9 @@ EditItems::~EditItems() {
   labels_.clear();
 
   // Clear the help bar on exit.
-  io_->footer()->window()->Erase();
-  io_->footer()->window()->Refresh();
-  io_->SetIndicatorMode(IndicatorMode::NONE);
+  out->footer()->window()->Erase();
+  out->footer()->window()->Refresh();
+  out->SetIndicatorMode(IndicatorMode::NONE);
 }
 
 static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {

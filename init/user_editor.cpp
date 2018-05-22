@@ -116,7 +116,7 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
     }
   }
   
-  ListBox list(out, window, "Select User", items);
+  ListBox list(window, "Select User", items);
   ListBoxResult result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
     return items[result.selected].data();
