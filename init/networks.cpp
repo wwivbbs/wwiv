@@ -164,13 +164,15 @@ public:
       : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), d_(d), x_(x), y_(y) {};
   virtual ~FidoNetworkConfigSubDialog() {}
 
-  virtual int Run(CursesWindow* window) {
+  virtual EditlineResult Run(CursesWindow* window) {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     EditItems items{};
     switch (d_.type) {
-    case network_type_t::wwivnet: return 2;
-    case network_type_t::internet: return 2;
+    case network_type_t::wwivnet:
+      return EditlineResult::NEXT;
+    case network_type_t::internet:
+      return EditlineResult::NEXT;
     case network_type_t::ftn: {
       constexpr int LABEL_WIDTH = 14;
       constexpr int SHORT_FIELD_WIDTH = 25;
@@ -251,15 +253,15 @@ public:
                           new Label(LBL2_POSITION, dy++, LABEL_WIDTH, "Bundle Status:")});
         items.Run(title_);
         window->RedrawWin();
-        return 2;
+        return EditlineResult::NEXT;
       } else if (ch == KEY_UP || ch == KEY_BTAB) {
-        return 1; // PREV
+        return EditlineResult::PREV;
       } else {
-        return 2;
+        return EditlineResult::NEXT;
       }
     } break;
     };
-    return 2;
+    return EditlineResult::NEXT;
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
 
@@ -330,7 +332,7 @@ public:
     : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), config_(config), d_(d), x_(x), y_(y) {};
   virtual ~FidoPacketConfigSubDialog() {}
 
-  virtual int Run(CursesWindow* window) {
+  virtual EditlineResult Run(CursesWindow* window) {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"},{"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
@@ -339,7 +341,7 @@ public:
       wwiv::sdk::fido::FidoCallout callout(config_, d_);
       if (!callout.IsInitialized()) {
         messagebox(window, "Unable to initialize fido_callout.json.");
-        return 2;
+        return EditlineResult::NEXT;
       }
       bool done = false;
       do {
@@ -388,11 +390,11 @@ public:
       } while (!done);
       callout.Save();
 
-      return 2;
+      return EditlineResult::NEXT;
     } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return 1; // PREV
+      return EditlineResult::PREV;
     } else {
-      return 2;
+      return EditlineResult::NEXT;
     }
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }

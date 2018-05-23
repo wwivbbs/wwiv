@@ -60,10 +60,10 @@ public:
   TimeEditItem(int x, int y, uint16_t* data) : EditItem<uint16_t*>(x, y, 5, data) {}
   virtual ~TimeEditItem() {}
 
-  virtual int Run(CursesWindow* window) {
+  virtual EditlineResult Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
     string s = print_time(*this->data_);
-    int return_code = editline(window, &s, MAX_TIME_EDIT_LEN + 1, EditLineMode::ALL, "");
+    auto return_code = editline(window, &s, MAX_TIME_EDIT_LEN + 1, EditLineMode::ALL, "");
     *this->data_ = get_time(s);
     return return_code;
   }
@@ -80,14 +80,14 @@ public:
   Float53EditItem(int x, int y, float* data) : EditItem<float*>(x, y, 5, data) {}
   virtual ~Float53EditItem() {}
 
-  virtual int Run(CursesWindow* window) {
+  virtual EditlineResult Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
    
     // passing *this->data_ to StringPrintf is causing a bus error
     // on GCC/ARM (RPI).  See http://stackoverflow.com/questions/26158510
     float d = *this->data_;
-    string s = StringPrintf("%5.3f", d);
-    int return_code = editline(window, &s, 5 + 1, EditLineMode::NUM_ONLY, "");
+    auto s = StringPrintf("%5.3f", d);
+    auto return_code = editline(window, &s, 5 + 1, EditLineMode::NUM_ONLY, "");
 
     float f;
     sscanf(s.c_str(), "%f", &f);

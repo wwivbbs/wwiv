@@ -45,11 +45,6 @@
 #undef INSERT
 #endif // INSERT
 
-#define PREV 1
-#define NEXT 2
-#define DONE 4
-#define ABORTED 8
-
 using std::string;
 using std::unique_ptr;
 using std::vector;
@@ -66,7 +61,7 @@ void Label::Display(CursesWindow* window, int x, int y) {
   window->Puts(text_);
 };
 
-int CustomEditItem::Run(CursesWindow* window) {
+EditlineResult CustomEditItem::Run(CursesWindow* window) {
   window->GotoXY(x_, y_);
   auto s = to_field_();
 
@@ -102,15 +97,15 @@ void EditItems::Run(const std::string& title) {
     out->footer()->ShowContextHelp(item->help_text());
     auto i1 = items_[cp]->Run(window_.get());
     out->footer()->SetDefaultFooter();
-    if (i1 == PREV) {
+    if (i1 == EditlineResult::PREV) {
       if (--cp < 0) {
         cp = size - 1;
       }
-    } else if (i1 == NEXT) {
+    } else if (i1 == EditlineResult::NEXT) {
       if (++cp >= size) {
         cp = 0;
       }
-    } else if (i1 == DONE) {
+    } else if (i1 == EditlineResult::DONE) {
       out->SetIndicatorMode(IndicatorMode::NONE);
       edit_mode_ = false;
       Display();
@@ -402,22 +397,24 @@ static std::size_t editlinestrlen(char* text) {
   return i;
 }
 
-int editline(CursesWindow* window, string* s, int len, EditLineMode status, const char* ss) {
+EditlineResult editline(CursesWindow* window, string* s, int len, EditLineMode status,
+                         const char* ss) {
   char buffer[255];
   wwiv::strings::to_char_array(buffer, *s);
-  int rc = editline(window, buffer, len, status, ss);
+  auto rc = editline(window, buffer, len, status, ss);
   s->assign(buffer);
   return rc;
 }
 
 /* editline edits a string, doing I/O to the screen only. */
-int editline(CursesWindow* window, char* s, int len, EditLineMode status, const char* ss) {
+EditlineResult editline(CursesWindow* window, char* s, int len, EditLineMode status,
+                         const char* ss) {
   uint32_t old_attr;
   short old_pair;
   window->AttrGet(&old_attr, &old_pair);
   int cx = window->GetcurX();
   int cy = window->GetcurY();
-  int rc = 0;
+  EditlineResult rc = EditlineResult::NEXT;
   for (int i = strlen(s); i < len; i++) {
     s[i] = static_cast<char>(background_character);
   }
@@ -434,7 +431,7 @@ int editline(CursesWindow* window, char* s, int len, EditLineMode status, const 
     switch (ch) {
     case KEY_F(1): // curses
       done = true;
-      rc = DONE;
+      rc = EditlineResult::DONE;
       break;
     case KEY_HOME: // curses
       pos = 0;
@@ -462,11 +459,11 @@ int editline(CursesWindow* window, char* s, int len, EditLineMode status, const 
     case CO:     // return
     case KEY_UP: // curses
       done = true;
-      rc = PREV;
+      rc = EditlineResult::PREV;
       break;
     case KEY_DOWN: // curses
       done = true;
-      rc = NEXT;
+      rc = EditlineResult::NEXT;
       break;
     case KEY_IC: // curses
       if (status != EditLineMode::SET) {
@@ -544,11 +541,11 @@ int editline(CursesWindow* window, char* s, int len, EditLineMode status, const 
     case RETURN: // return
     case TAB:
       done = true;
-      rc = NEXT;
+      rc = EditlineResult::NEXT;
       break;
     case ESC: // esc
       done = true;
-      rc = DONE;
+      rc = EditlineResult::DONE;
       break;
     case 0x7f:          // yet some other delete key
     case KEY_BACKSPACE: // curses
@@ -594,7 +591,8 @@ int editline(CursesWindow* window, char* s, int len, EditLineMode status, const 
 
 std::vector<std::string>::size_type toggleitem(CursesWindow* window,
                                                std::vector<std::string>::size_type value,
-                                               const std::vector<std::string>& strings, int* rc) {
+                                               const std::vector<std::string>& strings,
+                                               EditlineResult* rc) {
   if (value < 0 || value >= strings.size()) {
     value = 0;
   }
@@ -619,24 +617,24 @@ std::vector<std::string>::size_type toggleitem(CursesWindow* window,
     case RETURN:
     case TAB:
       done = true;
-      *rc = NEXT;
+      *rc = EditlineResult::NEXT;
       break;
     case ESC:
       done = true;
-      *rc = DONE;
+      *rc = EditlineResult::DONE;
       break;
     case KEY_F(1): // F1
       done = true;
-      *rc = DONE;
+      *rc = EditlineResult::DONE;
       break;
     case KEY_UP:   // UP
     case KEY_BTAB: // SHIFT-TAB
       done = true;
-      *rc = PREV;
+      *rc = EditlineResult::PREV;
       break;
     case KEY_DOWN: // DOWN
       done = true;
-      *rc = NEXT;
+      *rc = EditlineResult::NEXT;
       break;
     default:
       if (ch == 32) {

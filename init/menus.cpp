@@ -155,7 +155,7 @@ public:
     : BaseEditItem(x, y, 1), menu_items_(menu_items), title_(title), x_(x), y_(y) {};
   virtual ~MenuItemsSubDialog() {}
 
-  virtual int Run(CursesWindow* window) {
+  virtual EditlineResult Run(CursesWindow* window) {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     try {
       bool done = false;
@@ -225,7 +225,7 @@ public:
     catch (const std::exception& e) {
       LOG(ERROR) << e.what();
     }
-    return 2;
+    return EditlineResult::NEXT;
   }
   virtual void Display(CursesWindow* window) const {
     window->PutsXY(x_, y_, "[Enter to Edit]");

@@ -53,7 +53,7 @@ public:
       : BaseEditItem(x, y,  25 /* strlen(enter_to_edit) + 2ish */), fn_(fn), t_(t){};
   virtual ~SubDialog() {}
 
-  virtual int Run(CursesWindow* window) {
+  virtual EditlineResult Run(CursesWindow* window) {
     window->GotoXY(x_, y_);
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     int ch = window->GetChar();
@@ -61,11 +61,11 @@ public:
       fn_(t_, window);
       window->RedrawWin();
     } else if (ch == KEY_UP || ch == KEY_BTAB) {
-      return 1; // PREV
+      return EditlineResult::PREV;
     } else {
-      return 2; // NEXT
+      return EditlineResult::NEXT;
     }
-    return 2;
+    return EditlineResult::NEXT;
   }
   virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, enter_to_edit); }
 
