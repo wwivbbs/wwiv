@@ -258,7 +258,7 @@ int WInitApp::main(int argc, char** argv) {
     window = new StdioWindow(nullptr, new ColorScheme());
   }
   else {
-    CursesIO::Init(StringPrintf("WWIV %s%s Initialization/Configuration Program.", wwiv_version, beta_version));
+    CursesIO::Init(StringPrintf("WWIV %s%s Configuration Program.", wwiv_version, beta_version));
     window = out->window();
     out->Cls(ACS_CKBOARD);
     window->SetColor(SchemeId::NORMAL);

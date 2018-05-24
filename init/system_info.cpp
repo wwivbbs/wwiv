@@ -130,7 +130,7 @@ void sysinfo1(const std::string& datadir) {
       {new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "System PW:"),
        new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "System name:"),
        new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "System phone:"),
-       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Closed system:"),
+       new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Closed system?"),
        new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser PW: "),
        new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser restrict:"),
        new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Newuser SL:"),
