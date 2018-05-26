@@ -319,17 +319,6 @@ void Win32ConsoleIO::FastPuts(const string& text) {
   cursor_pos_.X = cursor_pos_.X + static_cast<int16_t>(cb);
 }
 
-int  Win32ConsoleIO::Printf(const char *formatted_text, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-  FastPuts(szBuffer);
-  return nNumWritten;
-}
-
 int  Win32ConsoleIO::PrintfXY(int x, int y, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];

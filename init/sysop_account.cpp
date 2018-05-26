@@ -98,10 +98,10 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   User::CreateNewUserRecord(&u, syscfg.newusersl, syscfg.newuserdsl,
     syscfg.newuser_restrict, syscfg.newusergold,
     newuser_colors, newuser_bwcolors);
-  window->PrintfXY(COL1_LINE, y++, "Sysop Name/Handle: ");
-  window->PrintfXY(COL1_LINE, y++, "Sysop Real Name  : ");
-  window->PrintfXY(COL1_LINE, y++, "Sysop Password   : ");
-  window->PrintfXY(COL1_LINE, y++, "Sysop phone      : ");
+  window->PutsXY(COL1_LINE, y++, "Sysop Name/Handle: ");
+  window->PutsXY(COL1_LINE, y++, "Sysop Real Name  : ");
+  window->PutsXY(COL1_LINE, y++, "Sysop Password   : ");
+  window->PutsXY(COL1_LINE, y++, "Sysop phone      : ");
   EditItems items{};
   items.add_items({
     new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, u.data.name, true),

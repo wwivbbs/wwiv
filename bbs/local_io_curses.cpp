@@ -192,17 +192,6 @@ void CursesLocalIO::FastPuts(const string& text) {
   window_->Puts(text);
 }
 
-int CursesLocalIO::Printf(const char *formatted_text, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-  FastPuts(szBuffer);
-  return nNumWritten;
-}
-
 int CursesLocalIO::PrintfXY(int x, int y, const char *formatted_text, ...) {
   va_list ap;
   char szBuffer[1024];

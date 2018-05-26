@@ -138,7 +138,7 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   auto nu = oqf.length() / syscfg.qscn_len;
   for (int i = 0; i < nu; i++) {
     if (i % 10 == 0) {
-      window->Printf("%u/%u\r", i, nu);
+      window->Puts(StrCat(i, "/", nu, "\r"));
     }
     oqf.Read(oqsc, syscfg.qscn_len);
 
@@ -158,7 +158,7 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   syscfg.max_dirs = num_dirs;
   syscfg.qscn_len = nqscn_len;
   save_config();
-  window->Printf("Done\n");
+  window->Puts("Done\n");
 }
 
 void up_subs_dirs(const std::string& datadir) {
@@ -166,15 +166,15 @@ void up_subs_dirs(const std::string& datadir) {
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Update Sub/Directory Maximums", 16, 76));
 
   int y=1;
-  window->PrintfXY(2, y++, "Current max # subs: %d", syscfg.max_subs);
-  window->PrintfXY(2, y++, "Current max # dirs: %d", syscfg.max_dirs);
+  window->PutsXY(2, y++, StrCat("Current max # subs: ", syscfg.max_subs));
+  window->PutsXY(2, y++, StrCat("Current max # dirs: ", syscfg.max_dirs));
 
   if (dialog_yn(window.get(), "Change # subs or # dirs?")) { 
     y+=2;
     window->SetColor(SchemeId::INFO);
-    window->PrintfXY(2, y++, "Enter the new max subs/dirs you wish.  Just hit <enter> to leave that");
-    window->PrintfXY(2, y++, "value unchanged.  All values will be rounded up to the next 32.");
-    window->PrintfXY(2, y++, "Values can range from 32-1024");
+    window->PutsXY(2, y++, "Enter the new max subs/dirs you wish.  Just hit <enter> to leave that");
+    window->PutsXY(2, y++, "value unchanged.  All values will be rounded up to the next 32.");
+    window->PutsXY(2, y++, "Values can range from 32-1024");
 
     y++;
     window->SetColor(SchemeId::PROMPT);
@@ -215,7 +215,7 @@ void up_subs_dirs(const std::string& datadir) {
       const string text = StringPrintf("Change to %d subs and %d dirs? ", num_subs, num_dirs);
       if (dialog_yn(window.get(), text)) {
         window->SetColor(SchemeId::INFO);
-        window->Printf("Please wait...\n");
+        window->Puts("Please wait...\n");
         convert_to(window.get(), num_subs, num_dirs, datadir);
       }
     }

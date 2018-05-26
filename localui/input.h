@@ -243,7 +243,8 @@ protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
     std::string blanks(this->maxsize_, ' ');
     window->PutsXY(this->x_, this->y_, blanks.c_str());
-    window->PrintfXY(this->x_, this->y_, "%-7d", *this->data_);
+    auto d = wwiv::strings::StringPrintf("%-7d", *this->data_);
+    window->PutsXY(this->x_, this->y_, d);
   }
 };
 

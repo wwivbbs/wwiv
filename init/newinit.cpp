@@ -286,13 +286,13 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     dirsfile.Close();
   }
 
-  window->Printf(".\n");
+  window->Puts(".\n");
 
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Copying String and Miscellaneous files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  window->Printf(".\n");
+  window->Puts(".\n");
 
 
   window->SetColor(SchemeId::PROMPT);
@@ -344,7 +344,7 @@ bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
     if (!chdir_ok) {
       if (!File::mkdir(dirname)) {
         window->SetColor(SchemeId::ERROR_TEXT);
-        window->Printf("\n\nERROR!!! Couldn't make '%s' Sub-Dir.\nExiting...", dirname.c_str());
+        window->Puts(StrCat("\n\nERROR!!! Couldn't make '", dirname, "' Sub-Dir.\nExiting..."));
         return false;
       }
     } else {

@@ -60,7 +60,6 @@ class UIWindow {
   virtual void Putch(uint32_t ch) = 0;
   virtual void Puts(const std::string& text) = 0;
   virtual void PutsXY(int x, int y, const std::string& text) = 0;
-  virtual void Printf(const char* format, ...) = 0;
   virtual void PrintfXY(int x, int y, const char* format, ...) = 0;
 
   /**
@@ -69,13 +68,15 @@ class UIWindow {
   virtual bool IsGUI() const { return false; }
 
   UIWindow* parent() const { return parent_; }
-  ColorScheme* color_scheme() const { return color_scheme_; }
   SchemeId current_scheme_id() const { return current_scheme_id_; }
+
+protected:
+  void set_current_scheme_id(SchemeId id) { current_scheme_id_ = id; }
 
 private:
   UIWindow* parent_;
   ColorScheme* color_scheme_;
-  SchemeId current_scheme_id_;
+  SchemeId current_scheme_id_ {SchemeId::UNKNOWN};
 };
 
 #endif // __INCLUDED_LOCALUI_UI_WIN_H__

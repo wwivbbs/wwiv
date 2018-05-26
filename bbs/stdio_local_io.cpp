@@ -64,17 +64,6 @@ void StdioLocalIO::FastPuts(const std::string& text) {
   Puts(text);
 }
 
-int StdioLocalIO::Printf(const char *formatted_text, ...) { 
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-  FastPuts(szBuffer);
-  return nNumWritten;
-}
-
 int StdioLocalIO::PrintfXY(int, int, const char *formatted_text, ...) { 
   va_list ap;
   char szBuffer[1024];

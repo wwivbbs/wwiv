@@ -73,7 +73,7 @@ static void ShowBanner(UIWindow* window, const std::string& m) {
   // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
   out->window()->Bkgd(' ');
   window->SetColor(SchemeId::INFO);
-  window->Printf("%s\n", m.c_str());
+  window->Puts(StrCat(m, "\n"));
   window->SetColor(SchemeId::NORMAL);
 }
 
@@ -288,7 +288,7 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
     return;
   }
   window->SetColor(SchemeId::INFO);
-  window->Printf("Converting config.dat to 4.3/5.x format...\n");
+  window->Puts("Converting config.dat to 4.3/5.x format...\n");
   window->SetColor(SchemeId::NORMAL);
   file.Read(&syscfg, sizeof(configrec));
   auto menus_dir = StrCat("menus", File::pathSeparatorString);
@@ -316,10 +316,10 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
 
   File archiver(config.datadir(), ARCHIVER_DAT);
   if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
-    window->Printf("Couldn't open 'ARCHIVER_DAT' for writing.\n");
-    window->Printf("Creating new file....\n");
+    window->Puts("Couldn't open 'ARCHIVER_DAT' for writing.\n");
+    window->Puts("Creating new file....\n");
     create_arcs(window, config.datadir());
-    window->Printf("\n");
+    window->Puts("\n");
     if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
       messagebox(window, "Still unable to open archiver.dat. Something is really wrong.");
       return;

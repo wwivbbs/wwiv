@@ -28,12 +28,12 @@
 #include "localui/curses_win.h"
 
 using std::string;
-using wwiv::strings::StringPrintf;
+using namespace wwiv::strings;
 
 static constexpr size_t VSN_BUFFER_SIZE = 1024;
 
 CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
-  : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme), current_scheme_id_(SchemeId::UNKNOWN) {
+  : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme) {
   WINDOW* window = nullptr;
   if (parent != nullptr) {
     if (begin_x == -1) {
@@ -140,19 +140,6 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
   Refresh();
 }
 
-/**
- * Printf style output function.  Most init output code should use this.
- */
-void CursesWindow::Printf(const char* format, ...) {
-  va_list ap;
-  char buffer[VSN_BUFFER_SIZE];
-
-  va_start(ap, format);
-  vsnprintf(buffer, sizeof(buffer), format, ap);
-  va_end(ap);
-  Puts(buffer);
-}
-
 void CursesWindow::PrintfXY(int x, int y, const char* format, ...) {
   va_list ap;
   char buffer[VSN_BUFFER_SIZE];
@@ -165,5 +152,5 @@ void CursesWindow::PrintfXY(int x, int y, const char* format, ...) {
 
 void CursesWindow::SetColor(SchemeId id) {
   AttrSet(color_scheme_->GetAttributesForScheme(id));
-  current_scheme_id_ = id;
+  set_current_scheme_id(id);
 }

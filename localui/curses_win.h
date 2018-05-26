@@ -61,15 +61,12 @@ class CursesWindow : public UIWindow {
   void Putch(uint32_t ch) override;
   void Puts(const std::string& text) override;
   void PutsXY(int x, int y, const std::string& text) override;
-  void Printf(const char* format, ...) override;
   void PrintfXY(int x, int y, const char* format, ...) override;
 
   void SetColor(SchemeId id) override;
 
   void* window() const { return window_; }
   CursesWindow* parent() const { return parent_; }
-  ColorScheme* color_scheme() const { return color_scheme_; }
-  SchemeId current_scheme_id() const { return current_scheme_id_; }
 
   virtual bool IsGUI() const override { return true; }
 
@@ -78,7 +75,6 @@ private:
   void* window_;
   CursesWindow* parent_;
   ColorScheme* color_scheme_;
-  SchemeId current_scheme_id_;
 };
 
 #endif // __INCLUDED_PLATFORM_CURSES_WIN_H__

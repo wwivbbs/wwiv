@@ -195,12 +195,12 @@ static UIWindow* CreateDialogWindow(UIWindow* parent, int height, int width) {
   const int starty = (maxy - height - 2) / 2;
   UIWindow* dialog;
   if (parent->IsGUI()) {
-    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), parent->color_scheme(),
+    dialog = new CursesWindow(static_cast<CursesWindow*>(parent), out->color_scheme(),
                               height + 2, width + 4, starty, startx);
   } else {
-    dialog = new StdioWindow(parent, parent->color_scheme());
+    dialog = new StdioWindow(parent, out->color_scheme());
   }
-  dialog->Bkgd(parent->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
+  dialog->Bkgd(out->color_scheme()->GetAttributesForScheme(SchemeId::DIALOG_BOX));
   dialog->SetColor(SchemeId::DIALOG_BOX);
   dialog->Box(0, 0);
   return dialog;

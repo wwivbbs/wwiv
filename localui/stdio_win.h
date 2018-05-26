@@ -45,7 +45,6 @@ class StdioWindow : public UIWindow {
   virtual void Putch(uint32_t ch);
   virtual void Puts(const std::string& text);
   virtual void PutsXY(int x, int y, const std::string& text);
-  virtual void Printf(const char* format, ...);
   virtual void PrintfXY(int x, int y, const char* format, ...);
 
   /**

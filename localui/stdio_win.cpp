@@ -47,16 +47,6 @@ void StdioWindow::PutsXY(int, int, const std::string& text) {
   Puts(text);
 }
 
-void StdioWindow::Printf(const char* format, ...) {
-  va_list ap;
-  char buffer[1024];
-
-  va_start(ap, format);
-  vsnprintf(buffer, sizeof(buffer), format, ap);
-  va_end(ap);
-  Puts(buffer);
-}
-
 void StdioWindow::PrintfXY(int, int, const char* format, ...) {
   va_list ap;
   char buffer[1024];

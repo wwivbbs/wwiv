@@ -91,7 +91,6 @@ public:
   void PutsXY(int, int, const std::string&) override {}
   void PutsXYA(int, int, int, const std::string&) override {}
   void FastPuts(const std::string&) override {}
-  int Printf(const char *, ...) override { return 0; }
   int PrintfXY(int , int, const char *, ...) override { return 0; }
   int PrintfXYA(int, int, int, const char *, ...) override { return 0; }
   void set_protect(Application*, int) override {}

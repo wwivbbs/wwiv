@@ -252,7 +252,7 @@ void Application::tleft(bool check_for_timeout) {
       localIO()->PutsXY(18, 3, tleft_display);
     }
     else {
-      localIO()->PrintfXY(18, 3, user()->GetPassword());
+      localIO()->PutsXY(18, 3, user()->GetPassword());
     }
   } break;
   }
@@ -615,7 +615,7 @@ void Application::GetCaller() {
 
   okskey = true;
   localIO()->Cls();
-  localIO()->Printf("Logging on at %s ...\r\n", GetCurrentSpeed().c_str());
+  localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   set_at_wfc(false);
 }
 
@@ -633,7 +633,7 @@ void Application::GotCaller(unsigned int ms) {
     user()->SetScreenLines(25);
   }
   localIO()->Cls();
-  localIO()->Printf("Logging on at %s...\r\n", GetCurrentSpeed().c_str());
+  localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   if (ms) {
     incom = true;
     outcom = true;
@@ -779,7 +779,7 @@ int Application::Run(int argc, char *argv[]) {
         break;
       case 'P':
         localIO()->Cls();
-        localIO()->Printf("Waiting for keypress...");
+        localIO()->Puts("Waiting for keypress...");
         (void) getchar();
         break;
       case 'R':
