@@ -34,15 +34,17 @@
 
 class ColorScheme;
 
-struct ListBoxItem {
+class ListBoxItem {
+public:
   ListBoxItem(const std::string& text, int hotkey = 0, int data = 0)
       : text_(text), hotkey_(hotkey), data_(data) {}
   ~ListBoxItem() {}
 
-  const std::string& text() const { return text_; }
-  int hotkey() const { return hotkey_; }
-  int data() const { return data_; }
+  const std::string& text() const noexcept { return text_; }
+  int hotkey() const noexcept { return hotkey_; }
+  int data() const noexcept { return data_; }
 
+ private:
   std::string text_;
   int hotkey_;
   int data_;

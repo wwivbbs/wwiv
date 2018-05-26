@@ -61,7 +61,7 @@ ListBox::ListBox(UIWindow* parent, const string& title, int max_x, int max_y,
 
   CHECK(parent->IsGUI()) << "ListBox constructor needs a GUI.";
 
-  window_.reset(new CursesWindow(static_cast<CursesWindow*>(parent), parent->color_scheme(),
+  window_.reset(new CursesWindow(static_cast<CursesWindow*>(parent), out->color_scheme(),
                                  window_height, window_width, begin_y, begin_x));
   window_->SetColor(SchemeId::WINDOW_BOX);
   window_->Box(0, 0);
@@ -77,7 +77,7 @@ ListBox::ListBox(UIWindow* parent, const string& title,
     : ListBox(parent, title, static_cast<int>(floor(parent->GetMaxX() * RATIO_LISTBOX_HEIGHT)),
               std::min<int>(std::max<int>(items.size(), MINIMUM_LISTBOX_HEIGHT),
                             static_cast<int>(floor(parent->GetMaxY() * RATIO_LISTBOX_HEIGHT))),
-              items, parent->color_scheme()) {}
+              items, out->color_scheme()) {}
 
 void ListBox::DrawAllItems() {
   for (auto y = 0; y < height_; y++) {
@@ -198,6 +198,6 @@ ListBoxResult ListBox::RunDialog() {
 void ListBox::DisplayFooter() {
   // Show help bar.
   out->footer()->window()->Move(1, 0);
-  out->footer()->window()->ClrtoEol();
+  out->footer()->window()->ClrtoEol(); 
   out->footer()->ShowHelpItems(0, help_items_);
 }
