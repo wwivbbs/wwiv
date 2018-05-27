@@ -44,15 +44,16 @@ struct Type2MessageData {
 
   std::string title;
   std::set<MessageFlags> flags;
-  int message_number = 0;
-  int total_messages = 0;
+  int message_number{0};
+  int total_messages{0};
   std::string message_area;
 
   // mailrec.anony flag.
-  uint8_t message_anony = 0;
+  uint8_t message_anony{0};
   // Any special flags from the subboad. So far only anony.no_fulscreen
-  uint8_t subboard_flags = 0;
-  bool use_msg_command_handler = true;
+  uint8_t subboard_flags{0};
+  bool use_msg_command_handler{true};
+  bool email{false};
 };
 
 Type2MessageData read_type2_message(

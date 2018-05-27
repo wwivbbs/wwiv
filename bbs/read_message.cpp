@@ -41,9 +41,9 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/net.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
+#include "sdk/net.h"
 
 using std::string;
 using std::unique_ptr;
@@ -53,20 +53,19 @@ using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-
 // N.B: I can't imagine any good reason for this, but I ifdef'ed
-// out the old behavior that's been here since forever 
+// out the old behavior that's been here since forever
 // with this guard.  I'll probably remove it later unless
-// I hear some good reason to leave it.  Also note that the 
+// I hear some good reason to leave it.  Also note that the
 // Message SDK doesn't have this logic.
 // #define UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
 
 /**
-* Sets the global variables pszOutOriginStr and pszOutOriginStr2.
-* Note: This is a private function
-*/
+ * Sets the global variables pszOutOriginStr and pszOutOriginStr2.
+ * Note: This is a private function
+ */
 static void SetMessageOriginInfo(int system_number, int user_number, string* outNetworkName,
-  string* outLocation) {
+                                 string* outLocation) {
   string netName;
 
   if (a()->max_net_num() > 1) {
@@ -82,7 +81,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   }
 
   if (system_number && a()->current_net().type == network_type_t::wwivnet) {
-    net_system_list_rec *csne = next_system(system_number);
+    net_system_list_rec* csne = next_system(system_number);
     if (csne) {
       string netstatus;
       if (user_number == 1) {
@@ -94,15 +93,18 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
           netstatus = "{AC}";
         }
       }
-      const auto phone_fn = StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne->phone));
+      const auto phone_fn =
+          StringPrintf("%s.%-3u", REGIONS_DIR, to_number<unsigned int>(csne->phone));
       const auto regions_dir = FilePath(a()->config()->datadir(), REGIONS_DIR);
       const string filename = FilePath(regions_dir, phone_fn);
 
       string description;
       if (File::Exists(filename)) {
         // Try to use the town first.
-        const string phone_prefix = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-        description = describe_area_code_prefix(to_number<int>(csne->phone), to_number<int>(phone_prefix.c_str()));
+        const string phone_prefix =
+            StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
+        description = describe_area_code_prefix(to_number<int>(csne->phone),
+                                                to_number<int>(phone_prefix.c_str()));
       }
       if (description.empty()) {
         // Try area code if we still don't have a description.
@@ -118,13 +120,13 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   }
 }
 
-void display_message_text(const std::string& text, bool *next) {
+void display_message_text(const std::string& text, bool* next) {
   int nNumCharsPtr = 0;
   int nLineLenPtr = 0;
   int ctrld = 0;
   bool done = false;
   bool printit = false;
-  bool ctrla = false; 
+  bool ctrla = false;
   bool centre = false;
   bool abort = false;
   bool ansi = false;
@@ -186,14 +188,14 @@ void display_message_text(const std::string& text, bool *next) {
 
         if (printit || ansi || nLineLenPtr >= 80) {
           if (centre && (ctrld != -1)) {
-            int nSpacesToCenter = 
-              (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
+            int nSpacesToCenter = (a()->user()->GetScreenChars() - bout.wherex() - nLineLenPtr) / 2;
             bout.bputs(std::string(nSpacesToCenter, ' '), &abort, next);
           }
           if (nNumCharsPtr) {
             if (ctrld != -1) {
-              if ((bout.wherex() + nLineLenPtr >= static_cast<int>(a()->user()->GetScreenChars()))
-                && !centre && !ansi) {
+              if ((bout.wherex() + nLineLenPtr >=
+                   static_cast<int>(a()->user()->GetScreenChars())) &&
+                  !centre && !ansi) {
                 bout.nl();
               }
               s[nNumCharsPtr] = '\0';
@@ -231,7 +233,6 @@ void display_message_text(const std::string& text, bool *next) {
         ctrld = 0;
       }
     }
-
   }
 
   if (!abort && nNumCharsPtr) {
@@ -276,46 +277,51 @@ static void UpdateHeaderInformation(int8_t anon_type, bool readit, const string 
 }
 
 Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const char* file_name,
-  int from_sys_num, int from_user) {
+                                    int from_sys_num, int from_user) {
 
-  Type2MessageData data;
+  Type2MessageData data{};
+  data.email = iequals("email", file_name);
   if (!readfile(msg, file_name, &data.message_text)) {
-    return{};
+    return {};
   }
 
   // TODO(rushfan): Use get_control_line from networking code here.
 
   size_t ptr = 0;
-  for (ptr = 0; 
-    ptr <data.message_text.size() && data.message_text[ptr] != RETURN && ptr <= 200;
-    ptr++) {
+  for (ptr = 0; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr <= 200;
+       ptr++) {
     data.from_user_name.push_back(data.message_text[ptr]);
   }
   if (ptr < data.message_text.size() && data.message_text[++ptr] == SOFTRETURN) {
     ++ptr;
   }
-  for (size_t start = ptr; ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60; ptr++) {
+  for (size_t start = ptr;
+       ptr < data.message_text.size() && data.message_text[ptr] != RETURN && ptr - start <= 60;
+       ptr++) {
     data.date.push_back(data.message_text[ptr]);
   }
   if (ptr + 1 < data.message_text.size()) {
     // skip trailing \r\n
-    while (ptr + 1 < data.message_text.size() && (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
+    while (ptr + 1 < data.message_text.size() &&
+           (data.message_text[ptr] == '\r' || data.message_text[ptr] == '\n')) {
       ptr++;
     }
     try {
       data.message_text = data.message_text.substr(ptr);
-    }
-    catch (const std::out_of_range& e) {
+    } catch (const std::out_of_range& e) {
       LOG(ERROR) << "Error getting message_text: " << e.what();
     }
     ptr = 0;
   }
-  
+
   auto lines = SplitString(data.message_text, "\r");
   for (auto line : lines) {
     StringTrim(&line);
-    if (line.empty()) continue;
-    if (starts_with(line, "\004""0FidoAddr: ") && line.size() > 12) {
+    if (line.empty())
+      continue;
+    if (starts_with(line, "\004"
+                          "0FidoAddr: ") &&
+        line.size() > 12) {
       string cl = line.substr(12);
       if (!cl.empty()) {
         data.to_user_name = cl;
@@ -345,15 +351,16 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
 
   if (msg.message_number > 0 && msg.total_messages > 0 && !msg.message_area.empty()) {
     string msgarea = msg.message_area;
-    if (msgarea.size() > 35) { msgarea = msgarea.substr(0, 35); }
+    if (msgarea.size() > 35) {
+      msgarea = msgarea.substr(0, 35);
+    }
     bout << "|#9 Sub|#7: ";
     bout.Color(a()->GetMessageColor());
     bout << msgarea;
     if (a()->user()->GetScreenChars() >= 78) {
       auto pad = COLUMN2 - (6 + msgarea.size());
       bout << string(pad, ' ');
-    }
-    else {
+    } else {
       bout.nl();
       num_header_lines++;
     }
@@ -378,8 +385,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     int used = 6 + from.size();
     auto pad = COLUMN2 - used;
     bout << string(pad, ' ');
-  }
-  else {
+  } else {
     bout.nl();
     num_header_lines++;
   }
@@ -404,8 +410,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
       int used = 6 + sysname.size();
       auto pad = COLUMN2 - used;
       bout << string(pad, ' ');
-    }
-    else {
+    } else {
       bout.nl();
       num_header_lines++;
     }
@@ -424,14 +429,30 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
     bout << "|#9Info|#7: |#1";
     for (const auto& f : msg.flags) {
       switch (f) {
-      case MessageFlags::FORCED: bout << "|13[FORCED] "; break;
-      case MessageFlags::NOT_NETWORK_VALIDATED: bout << "|12[Not Network Validated] "; break;
-      case MessageFlags::NOT_VALIDATED: bout << "|12<<< NOT VALIDATED >>>"; break;
-      case MessageFlags::PERMANENT: bout << "|13[Permanent] "; break;
-      case MessageFlags::LOCAL: bout << "|10[Local] "; break;
-      case MessageFlags::FTN: bout << "|10[Fido] "; break;
-      case MessageFlags::PRIVATE: bout << "|10[Pvt] "; break;
-      case MessageFlags::WWIVNET: bout << "|10[WWIVnet] "; break;
+      case MessageFlags::FORCED:
+        bout << "|13[FORCED] ";
+        break;
+      case MessageFlags::NOT_NETWORK_VALIDATED:
+        bout << "|12[Not Network Validated] ";
+        break;
+      case MessageFlags::NOT_VALIDATED:
+        bout << "|12<<< NOT VALIDATED >>>";
+        break;
+      case MessageFlags::PERMANENT:
+        bout << "|13[Permanent] ";
+        break;
+      case MessageFlags::LOCAL:
+        bout << "|10[Local] ";
+        break;
+      case MessageFlags::FTN:
+        bout << "|10[Fido] ";
+        break;
+      case MessageFlags::PRIVATE:
+        bout << "|10[Pvt] ";
+        break;
+      case MessageFlags::WWIVNET:
+        bout << "|10[WWIVnet] ";
+        break;
       }
     }
     bout.nl();
@@ -451,10 +472,12 @@ static std::vector<std::string> split_long_line(const std::string& text) {
   string s = text;
   while (size_without_colors(s) > screen_width) {
     std::string::size_type pos = screen_width;
-    while (pos > 0 && s[pos] >=27) {
+    while (pos > 0 && s[pos] >= 27) {
       pos--;
     }
-    if (pos == 0) { pos = screen_width; }
+    if (pos == 0) {
+      pos = screen_width;
+    }
     lines.emplace_back(s.substr(0, pos));
     s = s.substr(pos + 1);
   }
@@ -484,8 +507,7 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
         if (level == 0) {
           // ^D0 lines are always skipped.
           continue;
-        }
-        else {
+        } else {
           line = line.substr(2);
         }
         if (optional_lines != 0 && line.size() >= 2) {
@@ -502,19 +524,18 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
     auto line_size = size_without_colors(line);
     if (line_size > screen_width) {
       const auto sl = split_long_line(line);
-      for (const auto& l : sl) { 
-        lines.emplace_back(l); 
+      for (const auto& l : sl) {
+        lines.emplace_back(l);
       }
-    }
-    else {
+    } else {
       lines.emplace_back(line);
     }
   }
   return lines;
 }
 
-static void display_message_text_new(const std::vector<std::string>& lines, int start, 
-  int message_height, int screen_width, int lines_start) {
+static void display_message_text_new(const std::vector<std::string>& lines, int start,
+                                     int message_height, int screen_width, int lines_start) {
   bool had_ansi = false;
   for (int i = start; i < start + message_height; i++) {
     if (i >= size_int(lines)) {
@@ -534,12 +555,12 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
       if (size_int(stripcolors(l)) >= screen_width) {
         // TODO(rushfan): This should be stripped size
         l = l.substr(1, screen_width);
-      }
-      else {
+      } else {
         l = StrCat(std::string((screen_width - stripcolors(l).size()) / 2, ' '), l.substr(1));
       }
     }
-    bout << (had_ansi ? "|16" : "|#0") << l; bout.clreol();
+    bout << (had_ansi ? "|16" : "|#0") << l;
+    bout.clreol();
   }
 }
 
@@ -573,38 +594,35 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
   result.lines_end = fs.lines_end();
   while (!done) {
     CheckForHangup();
-    
-	if (dirty) {
-	  bout.Color(0);
-	  display_message_text_new(
-			lines, start,
-			fs.message_height(), fs.screen_width(), fs.lines_start());
-	  dirty = false;
 
-    if (start == last) {
-      fs.DrawBottomBar("END");
-    }
-    else {
-      fs.DrawBottomBar("");
-    }
+    if (dirty) {
+      bout.Color(0);
+      display_message_text_new(lines, start, fs.message_height(), fs.screen_width(),
+                               fs.lines_start());
+      dirty = false;
 
-    fs.ClearCommandLine();
-  }
-  bout.GotoXY(1, fs.command_line_y());
+      if (start == last) {
+        fs.DrawBottomBar("END");
+      } else {
+        fs.DrawBottomBar("");
+      }
+
+      fs.ClearCommandLine();
+    }
+    bout.GotoXY(1, fs.command_line_y());
     if (!msg.use_msg_command_handler) {
       result.option = ReadMessageOption::NEXT_MSG;
       return result;
     }
     bout << "|#9(|#2Q|#9=Quit, |#2?|#9=Help): ";
-    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t st, int s) { 
+    int key = bgetch_event(numlock_status_t::NOTNUMBERS, [&](bgetch_timeout_status_t st, int s) {
       if (st == bgetch_timeout_status_t::WARNING) {
         fs.PrintTimeoutWarning(s);
-      }
-      else if (st == bgetch_timeout_status_t::CLEAR) {
+      } else if (st == bgetch_timeout_status_t::CLEAR) {
         fs.ClearCommandLine();
       }
     });
-      switch (key) {
+    switch (key) {
     case COMMAND_UP: {
       if (start > first) {
         --start;
@@ -664,12 +682,10 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         result.option = ReadMessageOption::NEXT_MSG;
         dirty = true;
         return result;
-      }
-      else if (start + fs.message_height() < last) {
+      } else if (start + fs.message_height() < last) {
         dirty = true;
         start += fs.message_height();
-      }
-      else if (start != last) {
+      } else if (start != last) {
         dirty = true;
         start = last;
       }
@@ -679,22 +695,18 @@ static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char a
         key = toupper(key & 0xff);
         if (key == ']') {
           result.option = ReadMessageOption::NEXT_MSG;
-        }
-        else if (key == '[') {
+        } else if (key == '[') {
           result.option = ReadMessageOption::PREV_MSG;
-        }
-        else if (key == 'J') {
+        } else if (key == 'J') {
           result.option = ReadMessageOption::JUMP_TO_MSG;
-        } 
-        else if (key == 'T') {
+        } else if (key == 'T') {
           result.option = ReadMessageOption::LIST_TITLES;
         } else if (key == '?') {
           fs.ClearMessageArea();
           if (!print_help_file(MBFSED_NOEXT)) {
             fs.ClearCommandLine();
             bout << "|#6Unable to find file: " << MBFSED_NOEXT;
-          }
-          else {
+          } else {
             fs.ClearCommandLine();
           }
           if (lcs()) {
@@ -737,9 +749,13 @@ void display_type2_message_old_impl(Type2MessageData& msg, bool* next) {
 }
 
 ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
-  auto fsreader_enabled = a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
+  auto fsreader_enabled =
+      a()->fullscreen_read_prompt() && a()->user()->HasStatusFlag(User::fullScreenReader);
   auto skip_fs_reader_per_sub = (msg.subboard_flags & anony_no_fullscreen) != 0;
-  if (fsreader_enabled && !skip_fs_reader_per_sub) {
+  if (fsreader_enabled && !skip_fs_reader_per_sub && !msg.email) {
+    // N.B.: We don't use the full screen reader for email yet since
+    // It does not work.  Need to figure out how to rearrange email
+    // reading so it does work.
     return display_type2_message_new(msg, static_cast<char>(msg.message_anony), next);
   }
 
@@ -772,10 +788,10 @@ static void update_qscan(uint32_t qscan) {
       }
     });
   }
-#endif  // UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
+#endif // UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
 }
 
-ReadMessageResult read_post(int n, bool *next, int *val) {
+ReadMessageResult read_post(int n, bool* next, int* val) {
   if (a()->user()->IsUseClearScreen()) {
     bout.cls();
   } else {
@@ -785,10 +801,11 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
   *next = false;
 
   postrec p = *get_post(n);
-  bool bReadit = (lcs() || (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
+  bool bReadit =
+      (lcs() || (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
   const auto& cs = a()->current_sub();
   auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
-    cs.filename.c_str(), p.ownersys, p.owneruser);
+                              cs.filename.c_str(), p.ownersys, p.owneruser);
   m.subboard_flags = cs.anony;
   if (forcescansub) {
     m.flags.insert(MessageFlags::FORCED);
@@ -805,15 +822,14 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
     const auto& net = a()->net_networks[nets.net_num];
     if (net.type == network_type_t::ftn) {
       m.flags.insert(MessageFlags::FTN);
-    }
-    else if (net.type == network_type_t::wwivnet) {
+    } else if (net.type == network_type_t::wwivnet) {
       m.flags.insert(MessageFlags::WWIVNET);
     }
   }
 
   if (p.status & (status_unvalidated | status_delete)) {
     if (!lcs()) {
-      return{};
+      return {};
     }
     m.flags.insert(MessageFlags::NOT_VALIDATED);
     *val |= 1;
@@ -824,7 +840,8 @@ ReadMessageResult read_post(int n, bool *next, int *val) {
   if ((p.status & status_no_delete) && lcs()) {
     m.flags.insert(MessageFlags::PERMANENT);
   }
-  if ((p.status & status_pending_net) && a()->user()->GetSl() > a()->config()->config()->newusersl) {
+  if ((p.status & status_pending_net) &&
+      a()->user()->GetSl() > a()->config()->config()->newusersl) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }

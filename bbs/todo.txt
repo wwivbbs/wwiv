@@ -23,7 +23,7 @@ Infrastructure Cleanup
 * Try to remove a()->current_net(), pass in the net as much as possible.
 * Update syscfg.{req_ratio, sysconfig} in init and save it back, since
   wwiv never saves config.dat anymore.
-* stop using strncpy, strncat, strcpy, strcasestr.
+* stop using strncpy, strcpy, strcasestr.
 * get rid of g_flags, make it a boolean in application somewhere else
   that's not global scoped.
 * get rid of curatr as a global variable. Looks like it should be
@@ -39,8 +39,7 @@ core::File Improvements
 =======================
 * move File to namespace wwiv::core
 * start migrating core::File towards fs::filesystem and fs::path naming. (in progress)
-* Create SemaphoreFile class, initially have it replace what we do
-  in wwivd, later on also add support for creating semaphores for network
+* Create SemaphoreFile class,later on also add support for creating semaphores for network
   and other places in wwiv.
 
 Feature Improvements
@@ -73,9 +72,4 @@ Closed Questions
 
 1) Guest user account. Is it useful?   - Yes, it just needs to be improved
    and documented.
-
-Init UI
-=======
-1) make listbox create window optionally like EditItems does
-
  
