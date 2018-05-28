@@ -73,7 +73,7 @@ static int set_version(const Config& config, int wwiv_ver, int revision) {
     return 1;
   }
 
-  configrec syscfg{*config.config()};
+  configrec syscfg = *config.config();
   cout << syscfg.systemname << std::endl;
   cout << " set_version: wwiv_ver: " << wwiv_ver << " set_version: " << revision << std::endl;
   auto& h = syscfg.header.header;
