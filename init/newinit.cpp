@@ -31,22 +31,22 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "core/strings.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivport.h"
 #include "init/archivers.h"
 #include "init/init.h"
-#include "init/wwivinit.h"
 #include "init/utility.h"
-#include "localui/wwiv_curses.h"
+#include "init/wwivinit.h"
 #include "localui/input.h"
 #include "localui/ui_win.h"
+#include "localui/wwiv_curses.h"
 
 #include "sdk/datetime.h"
-#include "sdk/subxtr.h"
 #include "sdk/filenames.h"
+#include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/wwivcolors.h"
 
@@ -56,21 +56,27 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static void write_qscn(const std::string datadir, unsigned int un, uint32_t *qscn) {
+static void write_qscn(const std::string datadir, unsigned int un, uint32_t* qscn) {
   File file(datadir, USER_QSC);
-  if (file.Open(File::modeReadWrite|File::modeBinary|File::modeCreateFile)) {
+  if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     file.Seek(syscfg.qscn_len * un, File::Whence::begin);
     file.Write(qscn, syscfg.qscn_len);
     file.Close();
   }
 }
 
-static bool unzip_file(const std::string& zipfile, const std::string& dir) {
+static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::string& dir) {
   if (File::Exists(zipfile)) {
+    window->SetColor(SchemeId::NORMAL);
+    window->Puts(StrCat("Decompressing file: ", zipfile, "\n"));
     const auto unzip_cmd = StrCat("unzip -qq -o ", zipfile, " -d", dir);
-    system(unzip_cmd.c_str());
+    auto rc = system(unzip_cmd.c_str());
+    if (rc != 0) {
+      window->SetColor(SchemeId::ERROR_TEXT);
+      window->Puts("ERROR Unable to unzip file.\n");
+    }
 
-    const auto sysop_dir = FilePath("dloads", "sysop");
+      const auto sysop_dir = FilePath("dloads", "sysop");
     File::Rename(zipfile, FilePath(sysop_dir, zipfile));
     return true;
   }
@@ -187,7 +193,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   syscfg.max_subs = 64;
   syscfg.max_dirs = 64;
-  syscfg.qscn_len = 4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
+  syscfg.qscn_len =
+      4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
 
   syscfg.post_call_ratio = 0.0;
   save_config();
@@ -215,7 +222,6 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   write_user(datadir, 0, &u);
   write_qscn(datadir, 0, qsc.get());
 
-
   // Note: this is where init makes a user record #1 that is deleted for new installs.
   // TODO(rushfan): We should use User::CreateNewUserRecord here.
   u.inact = inact_deleted;
@@ -239,7 +245,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   write_qscn(datadir, 1, qsc.get());
   {
     File namesfile(StrCat("data/", NAMES_LST));
-    namesfile.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile);
+    namesfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   }
   {
     subboard_t r = {};
@@ -267,7 +273,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     d1.maxfiles = 50;
     d1.type = 65535;
     File dirsfile("data", DIRS_DAT);
-    dirsfile.Open(File::modeBinary|File::modeCreateFile|File::modeReadWrite);
+    dirsfile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     dirsfile.Write(&d1, sizeof(directoryrec));
 
     memset(&d1, 0, sizeof(directoryrec));
@@ -294,18 +300,17 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   window->Puts(".\n");
 
-
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Decompressing archives.  Please wait");
   window->SetColor(SchemeId::NORMAL);
 
   if (unzip_files) {
-    unzip_file("inifiles.zip", bbsdir);
-    unzip_file("gfiles.zip", "gfiles");
-    unzip_file("scripts.zip", "scripts");
-    unzip_file("data.zip", "data");
-    unzip_file("regions.zip", "data");
-    unzip_file("zip-city.zip", "data");
+    unzip_file(window, "inifiles.zip", bbsdir);
+    unzip_file(window, "gfiles.zip", "gfiles");
+    unzip_file(window, "scripts.zip", "scripts");
+    unzip_file(window, "data.zip", "data");
+    unzip_file(window, "regions.zip", "data");
+    unzip_file(window, "zip-city.zip", "data");
   }
 
   window->SetColor(SchemeId::NORMAL);
@@ -313,27 +318,9 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
 bool new_init(UIWindow* window, const string& bbsdir, bool unzip_files) {
   static const vector<string> dirnames = {
-    "attach",
-    "data",
-    "data/regions",
-    "data/zip-city",
-    "gfiles",
-    "gfiles/menus",
-    "msgs",
-    "dloads",
-    "dloads/misc",
-    "dloads/sysop",
-    "temp",
-    "temp/1",
-    "temp/2",
-    "temp/3",
-    "temp/4",
-    "batch",
-    "batch/1",
-    "batch/2",
-    "batch/3",
-    "batch/4"
-  };
+      "attach", "data",        "data/regions", "data/zip-city", "gfiles",  "gfiles/menus", "msgs",
+      "dloads", "dloads/misc", "dloads/sysop", "temp",          "temp/1",  "temp/2",       "temp/3",
+      "temp/4", "batch",       "batch/1",      "batch/2",       "batch/3", "batch/4"};
   window->SetColor(SchemeId::PROMPT);
   window->Puts("\n\nNow performing installation.  Please wait...\n\n");
   window->Puts("Creating Directories\n");
