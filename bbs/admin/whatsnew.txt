@@ -10,8 +10,8 @@ Legend (starting with 5.3)
 * Change or cleanup
 
 
-What's New in WWIV 5.3
-~~~~~~~~~~~~~~~~~~~~~~
+What's New in WWIV 5.3 (2018)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 + WWIVbasic interpreter is available.  The menu command is
   "RUNBASIC".  Also you can run a script from the logon event
   by using @basic:[scriptname.bas] for the LOGON_CMD in wwiv.ini
@@ -50,7 +50,40 @@ What's New in WWIV 5.3
   bbs directory. It's available for both chains and editors.
 + Added %I when running commands to point to the path to the temporary
   directory.
-
+* Fix some color schemes displaying black-on-black for colors
+* Fix compilation on GCC 4.9, also fix many warnings from clang-tidy
+! Use git submodules for dependencies instead of copyingn in code 
+  from another repository. This makes it easier to update to new
+  versions of our dependencies and also push fixes back.
+  You now need to update submodules when cloning unless you clone
+  it recursing submodules.
+* BinkP Fix (thanks apam) where all FTN addresses were not being presented
+  when answering.
+! CMake is now the source-of-truth build system on all platforms.
+  to build use "cmake --build . -- -j8" and not make or msbuild
+  anymore.
+! networkb will stay running now and doesn't need to be in a 
+  batch file or shells script to loop after each connection.
+  Also even better, let wwivd spawn it as needed vs. running
+  it manually.
+* Lots of fixes to the SDK messagebase code.
++ Created SDK class for handling qscan pointers
+! networkf will exit with error level 1 when there is
+  no work to do.
+* Optimize the full screen message title list by not redrawing
+  the whole screen when there is no change.
+* Lots of improvements in getting rid of global variables throughout
+  the BBS and especially around the message base code in WWIV
+* Lots of improvements to the localUI classes used by INIT, also
+  can now optionally have help for edit items displayed in the
+  statusbar and UI pages are easier to create.
+* Added UI for WWIVD.
+* Implemented all of the wwiv-server features (auto blocking,
+  country blocking, goodlist, badlist, etc) into wwivd except
+  for "fake mailer mode"
+* Dont try to use the Full-Screen Reader for emails, since 
+  it doesn't work yet.
+* For linux we now have builds for debian8, debian9 and centos7.
 
 What's New in WWIV 5.2 (2016)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
