@@ -17,24 +17,20 @@
 /**************************************************************************/
 #include "wwivutil/config/config.h"
 
+#include "core/command_line.h"
+#include "core/datafile.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "sdk/config.h"
+#include "sdk/filenames.h"
+#include "sdk/net.h"
+#include "sdk/networks.h"
 #include <cstdio>
 #include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/strings.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
-
-#include "wwivutil/net/dump_bbsdata.h"
-#include "wwivutil/net/dump_callout.h"
-#include "wwivutil/net/dump_connect.h"
-#include "wwivutil/net/dump_contact.h"
-#include "wwivutil/net/dump_packet.h"
 
 using std::cerr;
 using std::cout;
@@ -45,6 +41,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::BooleanCommandLineArgument;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -52,20 +49,59 @@ namespace wwiv {
 namespace wwivutil {
 
 static int show_version(const Config& config) {
-  cout << "5.2 Versioned Config    : " << std::boolalpha << config.versioned_config_dat() << std::endl;
+  cout << "5.2 Versioned Config    : " << std::boolalpha << config.versioned_config_dat()
+       << std::endl;
   cout << "Written By WWIV Version : " << config.written_by_wwiv_num_version() << std::endl;
   cout << "Config Revision #       : " << config.config_revision_number() << std::endl;
 
   return 0;
 }
 
+void save_config(configrec& syscfg) {
+  DataFile<configrec> file(CONFIG_DAT,
+                           File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+  if (file) {
+    file.Write(&syscfg);
+  }
+}
+
+static int set_version(const Config& config, int wwiv_ver, int revision) {
+  if (!config.versioned_config_dat()) {
+    cout << "Can only set the wwiv_ersion and config revision on a 5.1 or higher versioned "
+            "config.dat"
+         << std::endl;
+    return 1;
+  }
+
+  configrec syscfg{*config.config()};
+  cout << syscfg.systemname << std::endl;
+  cout << " set_version: wwiv_ver: " << wwiv_ver << " set_version: " << revision << std::endl;
+  auto& h = syscfg.header.header;
+  if (wwiv_ver >= 500) {
+    cout << "setting wwiv_ver to " << wwiv_ver << std::endl;
+    h.written_by_wwiv_num_version = wwiv_ver;
+  }
+  if (revision > 0) {
+    cout << "setting revision to " << revision << std::endl;
+    h.config_revision_number = revision;
+  }
+  h.config_size = sizeof(configrec);
+  memset(&h.unused, 0, sizeof(h.unused));
+  h.padding[0] = 0;
+
+  cout << "Wrote Config.dat" << std::endl;
+  save_config(syscfg);
+  return 0;
+}
+
 class ConfigVersionCommand : public UtilCommand {
 public:
-  ConfigVersionCommand(): UtilCommand("version", "Sets or Gets the config version") {}
+  ConfigVersionCommand() : UtilCommand("version", "Sets or Gets the config version") {}
   std::string GetUsage() const override final {
     std::ostringstream ss;
     ss << "Usage: " << std::endl << std::endl;
-    ss << "  get : Gets the config.dat version information." << std::endl << std::endl;
+    ss << "  get : Gets the config.dat version information." << std::endl;
+    ss << "  set : Sets the config.dat version information." << std::endl << std::endl;
     return ss.str();
   }
   int Execute() override final {
@@ -78,13 +114,16 @@ public:
 
     if (set_or_get == "get") {
       return show_version(*this->config()->config());
+    } else if (set_or_get == "set") {
+      return set_version(*this->config()->config(), iarg("wwiv_version"), iarg("revision"));
     }
     return 1;
   }
   bool AddSubCommands() override final {
+    add_argument({"wwiv_version", "WWIV Version that created this config.dat", ""});
+    add_argument({"revision", "Configuration revision number", ""});
     return true;
   }
-
 };
 
 bool ConfigCommand::AddSubCommands() {
@@ -92,6 +131,5 @@ bool ConfigCommand::AddSubCommands() {
   return true;
 }
 
-
-}  // namespace wwivutil
-}  // namespace wwiv
+} // namespace wwivutil
+} // namespace wwiv
