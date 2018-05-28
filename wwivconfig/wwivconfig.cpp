@@ -44,26 +44,26 @@
 #include "core/version.cpp"
 #include "core/wwivport.h"
 
-#include "init/archivers.h"
-#include "init/autoval.h"
-#include "init/convert.h"
-#include "init/editors.h"
-#include "init/init.h"
-#include "init/languages.h"
-#include "init/levels.h"
-#include "init/menus.h"
-#include "init/networks.h"
-#include "init/newinit.h"
-#include "init/paths.h"
-#include "init/protocols.h"
-#include "init/regcode.h"
-#include "init/subsdirs.h"
-#include "init/system_info.h"
-#include "init/sysop_account.h"
-#include "init/user_editor.h"
-#include "init/wwivd_ui.h"
-#include "init/wwivinit.h"
-#include "init/utility.h"
+#include "wwivconfig/archivers.h"
+#include "wwivconfig/autoval.h"
+#include "wwivconfig/convert.h"
+#include "wwivconfig/editors.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/languages.h"
+#include "wwivconfig/levels.h"
+#include "wwivconfig/menus.h"
+#include "wwivconfig/networks.h"
+#include "wwivconfig/newinit.h"
+#include "wwivconfig/paths.h"
+#include "wwivconfig/protocols.h"
+#include "wwivconfig/regcode.h"
+#include "wwivconfig/subsdirs.h"
+#include "wwivconfig/system_info.h"
+#include "wwivconfig/sysop_account.h"
+#include "wwivconfig/user_editor.h"
+#include "wwivconfig/wwivd_ui.h"
+#include "wwivconfig/wwivinit.h"
+#include "wwivconfig/utility.h"
 
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
@@ -155,7 +155,7 @@ int main(int argc, char* argv[]) {
     std::unique_ptr<WInitApp> app(new WInitApp());
     return app->main(argc, argv);
   } catch (const std::exception& e) {
-    LOG(INFO) << "Fatal exception launching init: " << e.what();
+    LOG(INFO) << "Fatal exception launching wwivconfig: " << e.what();
   }
 }
 
@@ -295,7 +295,7 @@ int WInitApp::main(int argc, char** argv) {
   }
 
   // GP - We can move this up to after "read_status" if the
-  // init --initialize flow should query the user to make an account.
+  // wwivconfig --initialize flow should query the user to make an account.
   CreateSysopAccountIfNeeded(bbsdir);
 
   if (cmdline.barg("menu_editor")) {
@@ -398,7 +398,7 @@ int WInitApp::main(int argc, char** argv) {
     case '$': {
       vector<string> lines;
       lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
-      lines.push_back(StringPrintf("WWIV %s%s INIT compiled %s", wwiv_version, beta_version, const_cast<char*>(wwiv_date)));
+      lines.push_back(StringPrintf("WWIV %s%s wwivconfig compiled %s", wwiv_version, beta_version, const_cast<char*>(wwiv_date)));
       messagebox(window, lines);
     } break;
     }

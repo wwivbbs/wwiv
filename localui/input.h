@@ -34,7 +34,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "init/utility.h"
+#include "wwivconfig/utility.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
 

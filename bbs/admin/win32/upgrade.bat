@@ -27,7 +27,7 @@ type license.agr | more
 ECHO.
 ECHO.
 ECHO.
-rem ******************************* run INIT to convert data files to
+rem ******************************* run wwivconfig to convert data files to
 rem ******************************* v5.00 format
 ECHO Press Control-C to Cancel
 pause
@@ -48,7 +48,7 @@ ECHO  will increase read times if not removed.
 ECHO.
 ECHO                  ***WARNING***WARNING***WARNING***
 ECHO.
-ECHO  Running the BBS prior to running INIT to convert the data files
+ECHO  Running the BBS prior to running wwivconfig to convert the data files
 ECHO  will corrupt the files making it impossible to convert them.  Make
 ECHO  sure you have a current backup!  If you included a trailing
 ECHO  backslash on your install directory, this upgrade will fail!!
@@ -64,14 +64,14 @@ ECHO.
 ECHO.
 REM ******************************* Change the attributes if set
 ECHO Changing file attributes if set...
-attrib -r %1\init.exe
+attrib -r %1\wwivconfig.exe
 attrib -r %1\bbs.exe
 attrib -r %1\fix.exe
 attrib -r %1\return.exe
 
 REM ******************************* copy EXE's
 ECHO Copying EXE's...
-copy init.exe %1
+copy wwivconfig.exe %1
 copy bbs.exe %1
 attrib +r %1\bbs.exe
 copy fix.exe %1
@@ -116,22 +116,22 @@ unzip -qq -o zip-city.zip -d%1\data
 SET TZ=
 :TZEND
 
-REM ******************************* run INIT to convert data files to
+REM ******************************* run wwivconfig to convert data files to
 REM ******************************* v5.00 format
 CLS
 cd %1
 type license.agr | more
 ECHO.
 ECHO.
-ECHO You must now run INIT to convert your data files to v5.00 format.
+ECHO You must now run wwivconfig to convert your data files to v5.00 format.
 ECHO.
 ECHO.
 ECHO.
-ECHO Run INIT ,1 now?
+ECHO Run wwivconfig ,1 now?
 ECHO Press Control-C to Cancel
 pause
 cd %1
-init ,1
+wwivconfig ,1
 goto CLOSE
 
 REM Display Help
@@ -153,10 +153,10 @@ ECHO.
 ECHO.
 ECHO                      WWIV v5.00 Upgrade Batch
 ECHO.
-ECHO If INIT.EXE faile to run, you will need to run it manually to complete
-ECHO the upgrade process.  Be forewarened that if INIT.EXE is not run once
+ECHO If wwivconfig.EXE faile to run, you will need to run it manually to complete
+ECHO the upgrade process.  Be forewarened that if wwivconfig.EXE is not run once
 ECHO prior to running the BBS, your data files will be permanently
-ECHO corrupted.  It would be wise to run INIT.EXE again now just to be
+ECHO corrupted.  It would be wise to run wwivconfig.EXE again now just to be
 ECHO sure.
 ECHO.
 ECHO You will then need to manually merge WWIVINI.500 with your current

@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/menus.h"
+#include "wwivconfig/menus.h"
 
 #include <cmath>
 #include <cstring>
@@ -43,11 +43,11 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/wwivport.h"
-#include "init/init.h"
-#include "init/subacc.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
-#include "init/subacc.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/subacc.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
+#include "wwivconfig/subacc.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"

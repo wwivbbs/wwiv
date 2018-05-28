@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/convert.h"
+#include "wwivconfig/convert.h"
 
 #include <cctype>
 #include <cmath>
@@ -37,9 +37,9 @@
 #include "core/file.h"
 #include "core/version.h"
 #include "core/wwivport.h"
-#include "init/archivers.h"
-#include "init/init.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/archivers.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/wwivinit.h"
 #include "localui/input.h"
 #include "localui/curses_io.h"
 #include "sdk/filenames.h"
@@ -150,7 +150,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
   string users_lst = StrCat(config.datadir(), USER_LST);
-  string backup_file = StrCat(users_lst, ".backup.pre-init-upgrade");
+  string backup_file = StrCat(users_lst, ".backup.pre-wwivconfig-upgrade");
 
   // Make a backup file.
   File::Copy(users_lst, backup_file);

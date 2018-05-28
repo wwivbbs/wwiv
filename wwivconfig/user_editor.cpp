@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/user_editor.h"
+#include "wwivconfig/user_editor.h"
 
 #include <cmath>
 #include <cstdint>
@@ -27,9 +27,9 @@
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
-#include "init/init.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"

@@ -24,8 +24,8 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "init/subacc.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/subacc.h"
+#include "wwivconfig/wwivinit.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                  WWIV Initialization Utility Version 5                 */
-/*              Copyright (C)2014-2017, WWIV Software Services            */
+/*                 WWIV Initialization Utility Version 5.0                */
+/*                 Copyright (C)2014, WWIV Software Services              */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,22 +16,20 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/regcode.h"
+#include "template.h"
 
-#include <memory>
+#include <curses.h>
+#include <cstdint>
+#include <fcntl.h>
+#ifdef _WIN32
+#include <direct.h>
+#include <io.h>
+#endif
+#include <string>
+#include <sys/stat.h>
 
-#include "init/init.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
-#include "localui/input.h"
-#include "localui/wwiv_curses.h"
+#include "ifcns.h"
+#include "input.h"
+#include "wwivconfig.h"
+#include "wwivinit.h"
 
-using std::unique_ptr;
-
-void edit_registration_code() {
-  EditItems items{};
-  items.add(new Label(2, 2, 22, "Registration Number:"),
-            new NumberEditItem<uint32_t>(25, 2, &syscfg.wwiv_reg_number));
-  items.Run("WWIV 4.x Registration");
-  save_config();
-}

@@ -53,7 +53,7 @@ echo * Building Cryptlib (zip/unzip)
 cd %WORKSPACE%\deps\cl342
 msbuild crypt32.vcxproj  /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
-@rem Build BBS, init, telnetserver
+@rem Build BBS, wwivconfig, telnetserver
 echo:
 echo * Updating the Build Number in version.cpp
 cd %WORKSPACE%\core
@@ -129,7 +129,7 @@ copy /v/y %WWIV_CMAKE_DIR%\bbs\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
 @rem TODO: Make a workspace with these.
 copy /v/y %WORKSPACE%\WWIV5TelnetServer\WWIV5TelnetServer\bin\Release\WWIVServer.exe %STAGE_DIR%\WWIVServer.exe || exit /b
 copy /v/y %WORKSPACE%\windows-wwiv-update\bin\Release\wwiv-update.exe %STAGE_DIR%\wwiv-update.exe || exit /b
-copy /v/y %WWIV_CMAKE_DIR%\init\init.exe %STAGE_DIR%\init.exe || exit /b
+copy /v/y %WWIV_CMAKE_DIR%\wwivconfig\wwivconfig.exe %STAGE_DIR%\wwivconfig.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\network\network.exe %STAGE_DIR%\network.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\network1\network1.exe %STAGE_DIR%\network1.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\network2\network2.exe %STAGE_DIR%\network2.exe || exit /b

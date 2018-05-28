@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/sysop_account.h"
+#include "wwivconfig/sysop_account.h"
 
 #include <cmath>
 #include <cstring>
@@ -32,7 +32,7 @@
 #endif
 #include <sys/stat.h>
 
-#include "init/init.h"
+#include "wwivconfig/wwivconfig.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "core/strings.h"
@@ -40,10 +40,10 @@
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "core/file.h"
-#include "init/subacc.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
-#include "init/subacc.h"
+#include "wwivconfig/subacc.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
+#include "wwivconfig/subacc.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"

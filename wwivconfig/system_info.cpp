@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/system_info.h"
+#include "wwivconfig/system_info.h"
 
 #include <cstdint>
 #include <cstdlib>
@@ -25,11 +25,11 @@
 #include <string>
 
 #include "core/strings.h"
-#include "init/init.h"
+#include "wwivconfig/wwivconfig.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
 
 using std::unique_ptr;
 using std::string;

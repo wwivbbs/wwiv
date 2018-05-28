@@ -201,22 +201,22 @@ else
   printok "No config.dat found, continuing."
 fi
 
-if [[ -f "${WWIV_DIR}/init" ]]
+if [[ -f "${WWIV_DIR}/wwivconfig" ]]
 then
   typeset -l SYSTYPE
   typeset -l INIT_TYPE
   SYSTYPE=$(uname -m|sed 's/[- _]//g')
-  INIT_TYPE=$(filearch init)
+  INIT_TYPE=$(filearch wwivconfig)
   if [[ $SYSTYPE =~ $INIT_TYPE ]]
   then
-    printok "Found init and architectures appear to match, continuing."
+    printok "Found wwivconfig and architectures appear to match, continuing."
   else
-    printwarn "Found init, continuing.  But..."
-    say "Your system type does not match the filetype of init."
+    printwarn "Found wwivconfig, continuing.  But..."
+    say "Your system type does not match the filetype of wwivconfig."
     say "System type is ${SYSTYPE} and file reports ${INIT_TYPE}."
     say "If things are too different, it might not work"
     say "Please refer to the documentation about compiling yourself"
-    say "if things don't look right or init doesn't run."
+    say "if things don't look right or wwivconfig doesn't run."
     echo
     if ! confirm "Should we continue the install?"
     then
@@ -226,8 +226,8 @@ then
     fi
   fi
 else
-  printerr "Did not find init; aborting"
-  say "init is missing. Please verify your BBS tarball is complete"
+  printerr "Did not find wwivconfig; aborting"
+  say "wwivconfig is missing. Please verify your BBS tarball is complete"
   say "and run install.sh again."
   say ""
   say "If you are running on a system that requires compiling the binaries"
@@ -440,7 +440,7 @@ then
   fi
 fi
 
-#Final permissions setting of the WWIV directory files before running init
+#Final permissions setting of the WWIV directory files before running wwivconfig
 echo
 say "Making sure ${WWIV_USER} owns all the files"
 chown -R ${WWIV_USER}:${WWIV_GROUP} ${WWIV_DIR} >> ${LOGFILE} 2>&1
@@ -449,18 +449,18 @@ echo "Your BBS basic systemd service configuration "
 echo "and helper scripts are complete."
 echo
 
-### Final init steps ###
+### Final wwivconfig steps ###
 echo "Please wait while we initialize the WWIV BBS data files"
 sleep 10
 
 say "Initializing data files"
-su -c "${WWIV_DIR}/init --initialize" -s /bin/bash ${WWIV_USER}
+su -c "${WWIV_DIR}/wwivconfig --initialize" -s /bin/bash ${WWIV_USER}
 sleep 2
 say "Installation complete"
 
 echo
 echo "Please log in as your new WWIV user (eg, sudo -u ${WWIV_USER} -s)"
-echo "and run the ./init command to create the SysOp account and"
+echo "and run the ./wwivconfig command to create the SysOp account and"
 echo "customize the BBS information."
 echo
 echo "If you need any assistance, check out the docs or find us on IRC."

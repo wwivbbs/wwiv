@@ -8,7 +8,6 @@ set(COMMON_SOURCES
   autoval.cpp
   convert.cpp
   editors.cpp
-  init.cpp 
   languages.cpp
   levels.cpp
   menus.cpp
@@ -23,8 +22,9 @@ set(COMMON_SOURCES
   sysop_account.cpp
   user_editor.cpp 
   utility.cpp 
+  wwivconfig.cpp
   wwivd_ui.cpp
   )
 
-add_executable(init ${COMMON_SOURCES})
-target_link_libraries(init localui core sdk ${CURSES_LIBRARIES})
+add_executable(wwivconfig ${COMMON_SOURCES})
+target_link_libraries(wwivconfig localui core sdk ${CURSES_LIBRARIES})

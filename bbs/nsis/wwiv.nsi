@@ -50,7 +50,7 @@ Section "-WWIV 430 Core" Section1
 	File "..\admin\wfc.dat"
 	
         File /oname="wwiv50.exe" "..\bin\wwiv50.exe"
-; This next line assumes that "FIX.EXE", "INIT.EXE", "STREDIT.EXE" have been placed in the vin folder
+; This next line assumes that "FIX.EXE", "wwivconfig.EXE", "STREDIT.EXE" have been placed in the vin folder
         File "..\bin\*.exe"
 
 	SetOutPath "$INSTDIR\data"
@@ -106,7 +106,7 @@ Section -FinishSection
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayVersion" "${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "URLInfoAbout" "${PRODUCT_WEB_SITE}"
   WriteRegStr ${PRODUCT_UNINST_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "Publisher" "${PRODUCT_PUBLISHER}"
-  ExecWait "$INSTDIR\init.exe ,1"
+  ExecWait "$INSTDIR\wwivconfig.exe ,1"
   CreateDirectory "$SMPROGRAMS\WWIV"
   CreateShortCut "$SMPROGRAMS\WWIV\Uninstall.lnk" "$INSTDIR\uninstall.exe"
   CreateShortCut "$SMPROGRAMS\WWIV\Sysop Node.lnk" "$INSTDIR\wwiv50.exe" "-m -u0"

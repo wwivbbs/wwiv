@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/paths.h"
+#include "wwivconfig/paths.h"
 
 #include <cstdint>
 #include <memory>
@@ -24,9 +24,9 @@
 
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "init/init.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 

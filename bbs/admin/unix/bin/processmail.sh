@@ -14,7 +14,7 @@ date
 cd ${WWIV_DIR}
 
 # I'd like to eventually be able to loop over the list of 
-# nets from init data.  Currently it has to be done manually
+# nets from wwivconfig data.  Currently it has to be done manually
 
 # Calls out to @1 of WWIVnet (assuming your first network is 0)
 ./network /n1

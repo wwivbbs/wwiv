@@ -40,7 +40,6 @@ build_binaries -j8
 
 echo "Populating built binaries"
 cp  ${CMAKE_BUILD}/bbs/bbs \
-    ${CMAKE_BUILD}/init/init \
     ${CMAKE_BUILD}/network/network \
     ${CMAKE_BUILD}/networkb/networkb \
     ${CMAKE_BUILD}/networkc/networkc \
@@ -48,6 +47,7 @@ cp  ${CMAKE_BUILD}/bbs/bbs \
     ${CMAKE_BUILD}/network1/network1 \
     ${CMAKE_BUILD}/network2/network2 \
     ${CMAKE_BUILD}/network3/network3 \
+    ${CMAKE_BUILD}/wwivconfig/wwivconfig \
     ${CMAKE_BUILD}/wwivd/wwivd \
     ${CMAKE_BUILD}/wwivutil/wwivutil \
     ${RELEASE_DIR}

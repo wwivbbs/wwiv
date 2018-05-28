@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/archivers.h"
+#include "wwivconfig/archivers.h"
 
 #include "localui/wwiv_curses.h"
 #include <cmath>
@@ -36,9 +36,9 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "init/init.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/filenames.h"

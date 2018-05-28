@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/editors.h"
+#include "wwivconfig/editors.h"
 
 #include <cmath>
 #include <cstdint>
@@ -30,14 +30,14 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "init/init.h"
+#include "wwivconfig/wwivconfig.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/wwivport.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"

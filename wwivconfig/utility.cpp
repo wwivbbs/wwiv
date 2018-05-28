@@ -30,10 +30,10 @@
 #include "core/wwivport.h"
 #include "core/datafile.h"
 #include "core/file.h"
-#include "init/archivers.h"
+#include "wwivconfig/archivers.h"
 #include "localui/input.h"
-#include "init/init.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/wwivinit.h"
 #include "sdk/filenames.h"
 
 // Make sure it's after windows.h

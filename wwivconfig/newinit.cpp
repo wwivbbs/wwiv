@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/newinit.h"
+#include "wwivconfig/newinit.h"
 
 #include <cstdint>
 #include <cstdlib>
@@ -36,10 +36,10 @@
 #include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivport.h"
-#include "init/archivers.h"
-#include "init/init.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
+#include "wwivconfig/archivers.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
 #include "localui/input.h"
 #include "localui/ui_win.h"
 #include "localui/wwiv_curses.h"
@@ -222,7 +222,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   write_user(datadir, 0, &u);
   write_qscn(datadir, 0, qsc.get());
 
-  // Note: this is where init makes a user record #1 that is deleted for new installs.
+  // Note: this is where wwivconfig makes a user record #1 that is deleted for new installs.
   // TODO(rushfan): We should use User::CreateNewUserRecord here.
   u.inact = inact_deleted;
   memset(u.lp_colors, static_cast<uint8_t>(Color::CYAN), sizeof(u.lp_colors));

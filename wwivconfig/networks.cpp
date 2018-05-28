@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "init/networks.h"
+#include "wwivconfig/networks.h"
 
 #include <cmath>
 #include <cstring>
@@ -41,11 +41,11 @@
 #include "core/scope_exit.h"
 #include "core/wwivport.h"
 #include "core/file.h"
-#include "init/init.h"
-#include "init/subacc.h"
-#include "init/utility.h"
-#include "init/wwivinit.h"
-#include "init/subacc.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/subacc.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivinit.h"
+#include "wwivconfig/subacc.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"

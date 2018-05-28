@@ -56,7 +56,7 @@ if (!(YesNo -Prompt "Do you want to install WWIV 5?")) {
 }
 
 UnzipFiles
-Say init.exe
+Say wwivconfig.exe
 
 Write-Host "Installation Complete" -ForegroundColor Green
 Write-Host "If you need any assistance, check out the docs or find us on IRC." -ForegroundColor DarkCyan
