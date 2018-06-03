@@ -639,9 +639,8 @@ bool HasKeyBeenPressed(HANDLE in) {
   return false;
 }
 
-unsigned char GetKeyboardChar() {
-  return static_cast<unsigned char>(_getch());
-}
+// Use _getwch to work around https://github.com/wwivbbs/wwiv/issues/1113
+unsigned char GetKeyboardChar() { return static_cast<unsigned char>(_getwch()); }
 
 static int GetEditLineStringLength(const char *text) {
   size_t i = strlen(text);
