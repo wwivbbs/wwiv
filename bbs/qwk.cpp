@@ -444,8 +444,10 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   auto dt = DateTime::from_daten(m1->daten);
   auto date = dt.to_string("%m-%d-%y");
-  to_char_array(qwk_info->qwk_rec.date, date);
-
+  // to_char_array uses strncpy_safe which expects buffer to be big enough for
+  // a trailing 0.  Use memcpy instead.
+  memcpy(qwk_info->qwk_rec.date, date.c_str(), sizeof(qwk_info->qwk_rec.date));
+ 
   p = 0;
   p1 = 0;
 
