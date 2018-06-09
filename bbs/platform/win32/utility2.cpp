@@ -47,8 +47,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
 
   // out_buffer must be at least MAX_PATH in size.
   char s[MAX_PATH], s1[MAX_PATH], s2[MAX_PATH];
-
-  strncpy(s1, out->c_str(), MAX_PATH);
+  to_char_array(s1, *out);
 
   if (s1[1] == ':') {
     if (s1[2] != '\\') {
@@ -62,7 +61,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
   } else if (s1[0] == '\\') {
     _snprintf(s1, sizeof(s1), "%c:%s", root.front(), out->c_str());
   } else {
-    strncpy(s2, s1, sizeof(s2));
+    to_char_array(s2, s1);
     strtok(s2, " \t");
     if (strchr(s2, '\\')) {
       _snprintf(s1, sizeof(s1), "%s%s", root.c_str(), out->c_str());

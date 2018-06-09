@@ -455,10 +455,10 @@ bool set_language_1(int n) {
 
   a()->set_language_number(n);
 
-  strncpy(str_yes, "Yes", sizeof(str_yes) - 1);
-  strncpy(str_no, "No", sizeof(str_no) - 1);
-  strncpy(str_quit, "Quit", sizeof(str_quit) - 1);
-  strncpy(str_pause, "More? [Y/n/c]", sizeof(str_pause) - 1);
+  to_char_array(str_yes, "Yes");
+  to_char_array(str_no, "No");
+  to_char_array(str_quit, "Quit");
+  to_char_array(str_pause, "More? [Y/n/c]");
   str_yes[0] = upcase(str_yes[0]);
   str_no[0] = upcase(str_no[0]);
   str_quit[0] = upcase(str_quit[0]);

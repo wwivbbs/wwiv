@@ -117,7 +117,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
     }
     sm.tosys = static_cast<uint16_t>(0);  // 0 means local
     sm.touser = static_cast<uint16_t>(nUserNum);
-    strncpy(sm.message, messageText, 80);
+    to_char_array(sm.message, messageText);
     sm.message[80] = '\0';
     file.Seek(nNewMsgPos * sizeof(shortmsgrec), File::Whence::begin);
     file.Write(&sm, sizeof(shortmsgrec));

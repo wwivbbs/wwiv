@@ -74,7 +74,7 @@ void OnlineUserEditor() {
   sprintf(ass, "%u", a()->user()->GetAssPoints());
 
   sprintf(gold, "%7.2f", a()->user()->GetGold());
-  strcpy(rst, restrict_string);
+  to_char_array(rst, restrict_string);
   for (i = 0; i <= 15; i++) {
     if (a()->user()->HasArFlag(1 << i)) {
       ar[i] = (char)('A' + i);

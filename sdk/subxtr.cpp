@@ -256,7 +256,7 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
     } break;
     case '@':                         /* desc */
       if (curn >= 0) {
-        strncpy(xsubs[curn].desc, line.c_str(), 60);
+        to_char_array(xsubs[curn].desc, line);
       }
       break;
     case '$':                         /* net info */

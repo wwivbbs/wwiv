@@ -80,13 +80,13 @@ void Output::RedrawCurrentLine() {
   int ansiptr_1 = ansiptr;
   ansiptr = 0;
   ansistr[ansiptr_1] = 0;
-  strncpy(ansistr_1, ansistr, sizeof(ansistr_1) - 1);
+  to_char_array(ansistr_1, ansistr);
 
   SavedLine line = bout.SaveCurrentLine();
   bout.nl();
   bout.RestoreCurrentLine(line);
 
-  strcpy(ansistr, ansistr_1);
+  to_char_array(ansistr, ansistr_1);
   ansiptr = ansiptr_1;
 }
 

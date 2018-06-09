@@ -432,7 +432,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
 
   // Took the annonomouse stuff out right here
   if (!qwk_info->in_email) {
-    strncpy(qwk_info->qwk_rec.to, "ALL", 3);
+    memcpy(qwk_info->qwk_rec.to, "ALL", 3);
   } else {
     strncpy(temp, a()->user()->GetName(), 25);
     temp[25] = 0;

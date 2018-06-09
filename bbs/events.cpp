@@ -244,7 +244,7 @@ void show_events() {
     if (e.status & EVENT_EXIT) {
       sprintf(s1, "Exit Level = %d", e.cmd[0]);
     } else {
-      strncpy(s1, e.cmd, sizeof(s1));
+      to_char_array(s1, e.cmd);
     }
     strcpy(daystr, "SMTWTFS");
     for (int j = 0; j <= 6; j++) {

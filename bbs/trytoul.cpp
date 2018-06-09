@@ -182,7 +182,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   u.unused_filetype = 0;
   u.mask = 0;
   const string unn = a()->names()->UserName(a()->usernum);
-  strncpy(u.upby, unn.c_str(), sizeof(u.upby));
+  to_char_array(u.upby, unn);
   u.upby[36]  = '\0';
   to_char_array(u.date, date());
 

@@ -244,7 +244,7 @@ static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) 
   char *pszTempFindString = nullptr;
   if (!(g_flags & g_flag_made_find_str)) {
     pszTempFindString = strupr(stripcolors(get_post(nMessageNumber)->title));
-    strncpy(s_szFindString, pszTempFindString, sizeof(s_szFindString) - 1);
+    to_char_array(s_szFindString, pszTempFindString);
     g_flags |= g_flag_made_find_str;
   } else {
     pszTempFindString = &s_szFindString[0];
@@ -259,15 +259,15 @@ static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) 
   if (strlen(pszTempFindString) >= 20) {
     pszTempFindString[20] = 0;
   }
-  strncpy(s_szFindString, pszTempFindString, sizeof(s_szFindString) - 1);
+  to_char_array(s_szFindString, pszTempFindString);
   bout.nl();
   bout << "|#7Find what? (CR=\"" << pszTempFindString << "\")|#1";
   char szFindString[ 81 ];
   input(szFindString, 20);
   if (!*szFindString) {
-    strncpy(szFindString, pszTempFindString, sizeof(szFindString) - 1);
+    to_char_array(szFindString, pszTempFindString);
   } else {
-    strncpy(s_szFindString, szFindString, sizeof(s_szFindString) - 1);
+    to_char_array(s_szFindString, szFindString);
   }
   bout.nl();
   bout << "|#1Backwards or Forwards? ";

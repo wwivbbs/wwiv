@@ -297,17 +297,17 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
   arcrec arc[MAX_ARCS];
   for (int i = 0; i < MAX_ARCS; i++) {
     if (syscfg.arcs[i].extension[0] && i < 4) {
-      strncpy(arc[i].name, syscfg.arcs[i].extension, 32);
-      strncpy(arc[i].extension, syscfg.arcs[i].extension, 4);
-      strncpy(arc[i].arca, syscfg.arcs[i].arca, 32);
-      strncpy(arc[i].arce, syscfg.arcs[i].arce, 32);
-      strncpy(arc[i].arcl, syscfg.arcs[i].arcl, 32);
+      to_char_array(arc[i].name, syscfg.arcs[i].extension);
+      to_char_array(arc[i].extension, syscfg.arcs[i].extension);
+      to_char_array(arc[i].arca, syscfg.arcs[i].arca);
+      to_char_array(arc[i].arce, syscfg.arcs[i].arce);
+      to_char_array(arc[i].arcl, syscfg.arcs[i].arcl);
     } else {
-      strncpy(arc[i].name, "New Archiver Name", 32);
-      strncpy(arc[i].extension, "EXT", 4);
-      strncpy(arc[i].arca, "archive add command", 32);
-      strncpy(arc[i].arce, "archive extract command", 32);
-      strncpy(arc[i].arcl, "archive list command", 32);
+      to_char_array(arc[i].name, "New Archiver Name");
+      to_char_array(arc[i].extension, "EXT");
+      to_char_array(arc[i].arca, "archive add command");
+      to_char_array(arc[i].arce, "archive extract command");
+      to_char_array(arc[i].arcl, "archive list command");
     }
   }
   file.Seek(0, File::Whence::begin);

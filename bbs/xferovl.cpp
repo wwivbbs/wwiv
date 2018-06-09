@@ -470,7 +470,7 @@ static bool upload_file(const char *file_name, uint16_t directory_num, const cha
     bout << "|#9File name   : |#2" << StringRemoveWhitespace(szTempDisplayFileName) << wwiv::endl;
     bout << "|#9File size   : |#2" << bytes_to_k(u.numbytes) << wwiv::endl;
     if (description && *description) {
-      strncpy(u.description, description, 58);
+      to_char_array(u.description, description);
       u.description[58] = '\0';
       bout << "|#1 Description: " << u.description << wwiv::endl;
     } else {

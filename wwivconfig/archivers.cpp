@@ -154,10 +154,10 @@ bool edit_archivers(const wwiv::sdk::Config& config) {
   // This was the 4.24 and lower place for them.  4.31 introduced
   // the new archivers record.
   for (int j = 0; j < 4; j++) {
-    strncpy(syscfg.arcs[j].extension, arc[j].extension, 4);
-    strncpy(syscfg.arcs[j].arca, arc[j].arca, 32);
-    strncpy(syscfg.arcs[j].arce, arc[j].arce, 32);
-    strncpy(syscfg.arcs[j].arcl, arc[j].arcl, 32);
+    to_char_array(syscfg.arcs[j].extension, arc[j].extension);
+    to_char_array(syscfg.arcs[j].arca, arc[j].arca);
+    to_char_array(syscfg.arcs[j].arce, arc[j].arce);
+    to_char_array(syscfg.arcs[j].arcl, arc[j].arcl);
   }
 
   // seek to beginning of file, write arcrecs, close file
