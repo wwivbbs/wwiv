@@ -17,45 +17,45 @@
 /**************************************************************************/
 #include "core/socket_connection.h"
 
-#include <stdexcept>
 #include <chrono>
 #include <cstring>
 #include <iostream>
+#include <stdexcept>
 #include <thread>
 
 #ifdef _WIN32
-#include <WinSock2.h>
 #include <WS2tcpip.h>
-#pragma comment (lib, "Ws2_32.lib")
-#pragma comment (lib, "Mswsock.lib")
-#pragma comment (lib, "AdvApi32.lib")
+#include <WinSock2.h>
+#pragma comment(lib, "Ws2_32.lib")
+#pragma comment(lib, "Mswsock.lib")
+#pragma comment(lib, "AdvApi32.lib")
 
-#else  // _WIN32
-#include <netdb.h>
-#include <fcntl.h>
-#include <unistd.h>
+#else // _WIN32
 #include <arpa/inet.h>
-#include <sys/types.h>
+#include <fcntl.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
 
-#endif  // _WIN32
+#endif // _WIN32
 
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
-#include "core/strings.h"
 #include "core/socket_exceptions.h"
+#include "core/strings.h"
 
-using std::chrono::milliseconds;
-using std::chrono::seconds;
-using std::chrono::time_point;
-using std::chrono::duration;
-using std::chrono::duration_cast;
-using std::chrono::system_clock;
 using std::endl;
 using std::string;
 using std::unique_ptr;
+using std::chrono::duration;
+using std::chrono::duration_cast;
+using std::chrono::milliseconds;
+using std::chrono::seconds;
+using std::chrono::system_clock;
+using std::chrono::time_point;
 using wwiv::os::sleep_for;
 using namespace wwiv::strings;
 
@@ -66,30 +66,31 @@ namespace {
 
 static const auto SLEEP_MS = milliseconds(100);
 
-static bool SetNonBlockingMode(SOCKET sock) {
+static bool SetBlockingMode(SOCKET sock, bool blocking_mode) {
   if (sock == INVALID_SOCKET) {
     return false;
   }
 
 #ifdef _WIN32
-  u_long nonblocking = 1;
+  u_long nonblocking = blocking_mode ? 0 : 1;
   return ioctlsocket(sock, FIONBIO, &nonblocking) == NO_ERROR;
 #else  // _WIN32
   int flags = fcntl(sock, F_GETFL, 0 /* ignored */);
   return fcntl(sock, F_SETFL, flags | O_NONBLOCK) != -1;
-#endif  // _WIN32
+#endif // _WIN32
 }
 
-static bool SetNoDelayMode(SOCKET sock) {
+static bool SetNoDelayMode(SOCKET sock, bool no_delay) {
 #ifdef _WIN32
-      int one = 1;
-      return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&one), sizeof(one)) != SOCKET_ERROR;
+  int one = no_delay ? 1 : 0;
+  return setsockopt(sock, IPPROTO_TCP, TCP_NODELAY, reinterpret_cast<char*>(&one), sizeof(one)) !=
+         SOCKET_ERROR;
 
-#else  // _WIN32
+#else // _WIN32
   // TODO(rushfan): set TCP_NODELAY
   return true;
 
-#endif  // _WIN32
+#endif // _WIN32
 }
 
 static bool WouldSocketBlock() {
@@ -97,27 +98,27 @@ static bool WouldSocketBlock() {
   return WSAGetLastError() == WSAEWOULDBLOCK;
 #else  // _WIN32
   return errno == EWOULDBLOCK;
-#endif  // _WIN32
+#endif // _WIN32
 }
 
-}  // namespace
+} // namespace
 
-SocketConnection::SocketConnection(SOCKET sock) : SocketConnection(sock, true) {}
+SocketConnection::SocketConnection(SOCKET sock) : SocketConnection(sock, ExitMode::CLOSE_SOCKET) {}
 
-SocketConnection::SocketConnection(SOCKET sock, bool close_socket)
-  : sock_(sock), open_(true), close_socket_(close_socket) {
+SocketConnection::SocketConnection(SOCKET sock, ExitMode exit_mode)
+    : sock_(sock), open_(true), exit_mode_(exit_mode) {
   static bool initialized = InitializeSockets();
   if (!initialized) {
     throw socket_error("Unable to initialize sockets.");
   }
 
-  if (!SetNonBlockingMode(sock_)) {
+  if (!SetBlockingMode(sock_, false)) {
     LOG(ERROR) << "SocketConnection: Unable to put socket into nonblocking mode.";
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
     throw socket_error("SocketConnection: Unable to set nonblocking mode on the socket.");
   }
-  if (!SetNoDelayMode(sock_)) {
+  if (!SetNoDelayMode(sock_, true)) {
     LOG(ERROR) << "SocketConnection: Unable to put socket into nodelay mode.";
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
@@ -131,11 +132,11 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
     throw socket_error("SocketConnection::Connect Unable to initialize sockets.");
   }
 
-  struct addrinfo hints{};
+  struct addrinfo hints {};
   hints.ai_family = PF_UNSPEC;
-  hints.ai_socktype =  SOCK_STREAM;
+  hints.ai_socktype = SOCK_STREAM;
   hints.ai_protocol = IPPROTO_IP;
-  
+
   const string port_string = std::to_string(port);
   struct addrinfo* address = nullptr;
   int result_addrinfo = getaddrinfo(host.c_str(), port_string.c_str(), &hints, &address);
@@ -156,8 +157,7 @@ unique_ptr<SocketConnection> Connect(const string& host, int port) {
       freeaddrinfo(address);
       try {
         return std::make_unique<SocketConnection>(s);
-      }
-      catch (const socket_error&) {
+      } catch (const socket_error&) {
       }
     }
   }
@@ -179,24 +179,32 @@ static void *get_in_addr(struct sockaddr* sa) {
 
 SocketConnection::~SocketConnection() {
 
-  if (close_socket_ &&  sock_ != INVALID_SOCKET) {
+  if (exit_mode_ == ExitMode::LEAVE_SOCKET_OPEN || sock_ == INVALID_SOCKET) {
+    // Bail out of here, either we ignore the socket or it is invalid.
+    return;
+  }
+
+  if (exit_mode_ == ExitMode::RESET_TO_BLOCKING && sock_ != INVALID_SOCKET) {
+    SetBlockingMode(sock_, true);
+    SetNoDelayMode(sock_, false);
+  } else if (exit_mode_ == ExitMode::CLOSE_SOCKET && sock_ != INVALID_SOCKET) {
     closesocket(sock_);
     sock_ = INVALID_SOCKET;
   }
 }
 
-template<typename TYPE, std::size_t SIZE = sizeof(TYPE)>
-static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bool throw_on_timeout, std::size_t size = SIZE) {
+template <typename TYPE, std::size_t SIZE = sizeof(TYPE)>
+static int read_TYPE(const SOCKET sock, TYPE* data, const duration<double> d, bool throw_on_timeout,
+                     std::size_t size = SIZE) {
   auto end = system_clock::now() + d;
-  char *p = reinterpret_cast<char*>(data);
+  char* p = reinterpret_cast<char*>(data);
   std::size_t total_read = 0;
   int remaining = size;
   while (true) {
     if (system_clock::now() > end) {
       if (throw_on_timeout) {
         throw timeout_error("timeout error reading from socket.");
-      }
-      else {
+      } else {
         return total_read;
       }
     }
@@ -273,8 +281,7 @@ std::string SocketConnection::read_line(int max_size, std::chrono::duration<doub
         break;
       }
     }
-  }
-  catch (const timeout_error&) {
+  } catch (const timeout_error&) {
   }
   return s;
 }
@@ -299,7 +306,8 @@ uint16_t SocketConnection::read_uint16(duration<double> d) {
   uint16_t data = 0;
   int num_read = read_TYPE<uint16_t>(sock_, &data, d, true);
   if (open_ && num_read == 0) {
-    throw socket_closed_error(StrCat("read_uint16: got zero read from socket. expected: ", sizeof(uint16_t)));
+    throw socket_closed_error(
+        StrCat("read_uint16: got zero read from socket. expected: ", sizeof(uint16_t)));
   }
   return ntohs(data);
 }
@@ -308,7 +316,8 @@ uint8_t SocketConnection::read_uint8(duration<double> d) {
   uint8_t data = 0;
   int num_read = read_TYPE<uint8_t>(sock_, &data, d, true);
   if (open_ && num_read == 0) {
-    throw socket_closed_error(StrCat("read_uint8: got zero read from socket. expected: ", sizeof(uint8_t)));
+    throw socket_closed_error(
+        StrCat("read_uint8: got zero read from socket. expected: ", sizeof(uint8_t)));
   }
   return data;
 }
@@ -321,6 +330,5 @@ bool SocketConnection::close() {
   return true;
 }
 
-
-}  // namespace net
+} // namespace core
 } // namespace wwiv

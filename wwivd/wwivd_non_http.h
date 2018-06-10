@@ -38,6 +38,8 @@ const std::string node_file(const wwiv::sdk::Config& config, ConnectionType ct, 
 class ConnectionHandler {
 public:
   enum class BlockedConnectionAction { ALLOW, DENY };
+  enum class MailerModeResult { ALLOW, DENY };
+
   struct BlockedConnectionResult {
     BlockedConnectionResult(const BlockedConnectionAction& a, const std::string& r)
         : action(a), remote_peer(r) {}
@@ -52,9 +54,9 @@ public:
   void HandleBinkPConnection();
 
 private:
+  MailerModeResult DoMailerMode();
   BlockedConnectionResult CheckForBlockedConnection();
   wwiv::sdk::wwivd_matrix_entry_t DoMatrixLogon(const wwiv::sdk::Config& config,
-                                                std::unique_ptr<wwiv::core::SocketConnection> conn,
                                                 const wwiv::sdk::wwivd_config_t& c);
   ConnectionData data;
   wwiv::core::accepted_socket_t r;

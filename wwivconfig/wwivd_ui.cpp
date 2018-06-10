@@ -139,6 +139,10 @@ static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) {
             new BooleanEditItem(COL1_POSITION, y, &b.use_badip_txt));
 
   y++;
+  items.add(new Label(COL1_LINE, y, "Use 'Press <ESC> twice for BBS'?"),
+            new BooleanEditItem(COL1_POSITION, y, &b.mailer_mode));
+
+  y++;
   items.add(new Label(COL1_LINE, y, "Use CC Server?"),
             new BooleanEditItem(COL1_POSITION, y, &b.use_dns_cc));
 
@@ -171,7 +175,7 @@ static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) {
   items.Run("Blocking Configuration");
 }
 
-static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
+static void edit_matrix_entry(wwivd_matrix_entry_t& b) { 
   EditItems items{};
   char key[2] = {b.key, 0};
   {

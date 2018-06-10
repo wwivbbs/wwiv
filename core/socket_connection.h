@@ -45,8 +45,10 @@ std::unique_ptr<SocketConnection> Connect(const std::string& host, int port);
 class SocketConnection : public Connection
 {
 public:
+
+  enum class ExitMode { LEAVE_SOCKET_OPEN, RESET_TO_BLOCKING, CLOSE_SOCKET };
   explicit SocketConnection(SOCKET sock);
-  SocketConnection(SOCKET sock, bool close_socket);
+  SocketConnection(SOCKET sock, ExitMode exit_mode);
   SocketConnection(const SocketConnection& other) = delete;
   SocketConnection& operator=(const SocketConnection& other) = delete;
 
@@ -74,7 +76,7 @@ public:
 private:
   SOCKET sock_;
   bool open_;
-  bool close_socket_ = true;
+  ExitMode exit_mode_ = ExitMode::LEAVE_SOCKET_OPEN;
 };
 
 

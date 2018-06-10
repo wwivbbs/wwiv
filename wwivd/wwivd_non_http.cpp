@@ -55,6 +55,7 @@ namespace wwivd {
 
 using std::map;
 using std::string;
+using namespace std::chrono;
 using namespace std::chrono_literals;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -173,7 +174,6 @@ static ConnectionType connection_type_for(const wwivd_config_t& c, int port) {
 }
 
 static bool check_ansi(SocketConnection& conn) {
-  using namespace std::chrono_literals;
   auto d = 3s;
   conn.send("Checking for ANSI Graphics... ", d);
   conn.send("\x1b[6n", d);
@@ -240,10 +240,9 @@ ConnectionHandler::ConnectionHandler(const ConnectionData& d, accepted_socket_t 
     : data(d), r(a) {}
 
 wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
-                                                      std::unique_ptr<SocketConnection> conn,
                                                       const wwivd_config_t& c) {
 
-  using namespace std::chrono_literals;
+  SocketConnection conn(r.client_socket, SocketConnection::ExitMode::LEAVE_SOCKET_OPEN);
   if (c.bbses.empty()) {
     // This should be checked before calling this method.
     throw std::runtime_error("c.bbses.empty()");
@@ -253,11 +252,11 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
     return c.bbses.front();
   }
 
-  auto ansi = check_ansi(*conn.get());
+  auto ansi = check_ansi(conn);
   auto d = 1s;
   for (auto tries = 0; tries < 3; tries++) {
-    conn->send_line(StrCat(Color(10, ansi), "Matrix Logon Menu"), d);
-    conn->send_line("\r\n", d);
+    conn.send_line(StrCat(Color(10, ansi), "Matrix Logon Menu"), d);
+    conn.send_line("\r\n", d);
     for (const auto& b : c.bbses) {
       // Skip ones that require ANSI.
       if (b.require_ansi && !ansi) {
@@ -268,17 +267,17 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
       if (!b.description.empty()) {
         ss << Color(11, ansi) << "  (" << b.description << ")";
       }
-      conn->send_line(ss.str(), d);
+      conn.send_line(ss.str(), d);
     }
     std::ostringstream ss;
     ss << Color(14, ansi) << '!' << Color(3, ansi) << ") " << Color(11, ansi) << " Logoff/Quit.";
-    conn->send_line(ss.str(), d);
+    conn.send_line(ss.str(), d);
 
-    conn->send_line("\r\n", d);
-    conn->send(StrCat(Color(3, ansi), "Enter Selection: "), d);
-    auto key_str = conn->receive_upto(1, std::chrono::seconds(15));
+    conn.send_line("\r\n", d);
+    conn.send(StrCat(Color(3, ansi), "Enter Selection: "), d);
+    auto key_str = conn.receive_upto(1, std::chrono::seconds(15));
     // dump left overs
-    conn->receive_upto(1024, std::chrono::milliseconds(1));
+    conn.receive_upto(1024, std::chrono::milliseconds(1));
     if (key_str.empty()) {
       continue;
     }
@@ -286,18 +285,18 @@ wwivd_matrix_entry_t ConnectionHandler::DoMatrixLogon(const Config& config,
 
     for (const auto& b : c.bbses) {
       if (std::toupper(b.key) == std::toupper(key)) {
-        conn->send_line("\r\n", d);
+        conn.send_line("\r\n", d);
         return b;
       }
     }
     // Hangup
     if (key == '!') {
-      conn->close();
+      conn.close();
       return {};
     }
   }
 
-  conn->close();
+  conn.close();
   return {};
 }
 
@@ -383,6 +382,29 @@ void ConnectionHandler::HandleBinkPConnection() {
   VLOG(1) << "Exiting HandleBinkPConnection (exception)";
 }
 
+ConnectionHandler::MailerModeResult ConnectionHandler::DoMailerMode() {
+  SocketConnection conn(r.client_socket, SocketConnection::ExitMode::RESET_TO_BLOCKING);
+
+  const string text = "CONNECT 2400\r\nWWIV - Server\r\nPress <ESC> twice for the BBS...\r\n";
+  LOG(INFO) << "In DoMailerMode.";
+  conn.send_line(text, 10s);
+
+  auto end = system_clock::now() + 10s;
+  int num_escapes = 0;
+  while (system_clock::now() < end && num_escapes < 2) {
+    conn.send(".", 1s);
+    auto received = conn.receive_upto(1, 1s);
+    if (!received.empty() && received.front() == 27) {
+      ++num_escapes;
+    }
+  }
+
+  conn.send("\r\n\r\n", 1s);
+
+  return (num_escapes > 1) ? ConnectionHandler::MailerModeResult::ALLOW
+                           : ConnectionHandler::MailerModeResult::DENY;
+}
+
 void ConnectionHandler::HandleConnection() {
   auto sock = r.client_socket;
   try {
@@ -403,6 +425,16 @@ void ConnectionHandler::HandleConnection() {
     }
     ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
 
+    if (data.c->blocking.mailer_mode) {
+      auto mailer_result = DoMailerMode();
+      if (mailer_result == MailerModeResult::DENY) {
+        LOG(INFO) << "DENY";
+        closesocket(sock);
+        return;
+      }
+      LOG(INFO) << "ACCEPT";
+    }
+
     if (data.c->bbses.empty()) {
       // If no bbses are defined, bail early and let someone know.
       SocketConnection conn(r.client_socket);
@@ -416,8 +448,7 @@ void ConnectionHandler::HandleConnection() {
 
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
-      bbs = DoMatrixLogon(*data.config, std::make_unique<SocketConnection>(r.client_socket, false),
-                          *data.c);
+      bbs = DoMatrixLogon(*data.config, *data.c);
     } else if (connection_type == ConnectionType::SSH) {
       bbs = data.c->bbses.front();
     }
