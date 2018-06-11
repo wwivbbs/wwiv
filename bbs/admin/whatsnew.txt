@@ -30,6 +30,11 @@ What's New in WWIV 5.3 (2018)
 * Dont try to use the Full-Screen Reader for emails, since 
   it doesn't work yet.
 * For linux we now have builds for debian8, debian9 and centos7.
++ wwivd now offers fakemailer mode and is now has (mostly) feature parity
+  with wwivserver.exe on windows.  wwivserver.exe is deprecated
+  with the 5.3 release and will be removed for 5.4
+! INIT has been renamed to WWIVCONFIG.  Please delete init.exe or
+  ./init when you upgrade to 5.3
 
 What's New in WWIV 5.3 (2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
