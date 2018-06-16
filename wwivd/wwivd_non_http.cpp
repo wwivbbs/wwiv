@@ -332,7 +332,7 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
   // Check for country blocking if we have a DNS cc server defined.
   if (b.use_dns_cc && !b.dns_cc_server.empty()) {
     auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
-    LOG(INFO) << "Accepted HTTP connection on port: " << r.port << "; from: " << remote_peer
+    LOG(INFO) << "Accepted connection on port: " << r.port << "; from: " << remote_peer
               << "; coutry code: " << cc;
     if (contains(data.c->blocking.block_cc_countries, cc)) {
       // We have a connection from a blocked country
@@ -428,11 +428,11 @@ void ConnectionHandler::HandleConnection() {
     if (data.c->blocking.mailer_mode) {
       auto mailer_result = DoMailerMode();
       if (mailer_result == MailerModeResult::DENY) {
-        LOG(INFO) << "DENY";
+        LOG(INFO) << "DENY (from MailerMode, didn't press ESC twice)";
         closesocket(sock);
         return;
       }
-      LOG(INFO) << "ACCEPT";
+      LOG(INFO) << "ACCEPT (From MailerMode)";
     }
 
     if (data.c->bbses.empty()) {

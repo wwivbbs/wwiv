@@ -106,10 +106,12 @@ private:
 
 void HandleHttpConnection(ConnectionData data, accepted_socket_t r) {
   auto sock = r.client_socket;
+  const auto& b = data.c->blocking;
+
   try {
     string remote_peer;
     if (GetRemotePeerAddress(sock, remote_peer)) {
-      auto cc = get_dns_cc(remote_peer, "zz.countries.nerd.dk");
+      auto cc = get_dns_cc(remote_peer, b.dns_cc_server);
       LOG(INFO) << "Accepted HTTP connection on port: " << r.port << "; from: " << remote_peer
         << "; coutry code: " << cc;
     }
