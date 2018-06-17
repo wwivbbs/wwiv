@@ -676,7 +676,7 @@ void boardedit() {
         confchg = true;
         showsubs();
       } else {
-        bout << "\r\nYou must increase the number of subs in INIT.EXE first.\r\n";
+        bout << "\r\nYou must increase the number of subs in wwivconfig first.\r\n";
       }
     } break;
     case 'I':

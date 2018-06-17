@@ -160,7 +160,7 @@ static string arc_stuff_in(const string& command_line, const string& a1, const s
 
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
-    << ".####      Network number (as defined in INIT)" << endl
+    << ".####      Network number (as defined in wwivconfig)" << endl
     << endl
     << "commands: " << endl 
     << endl

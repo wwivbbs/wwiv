@@ -7,13 +7,14 @@
 
 
                      WWIV Network Docs
-                            v2.1.51
+                         v5.3
                                                             
                                                             
                                                             
                                                             
                                                             
-    Copyright (c) 1998-2016, WWIV Software Services, LLC
+       Copyright (c) 2004-2018, WWIV Software Services
+    Copyright (c) 1998-2004, WWIV Software Services, LLC
                Copyright (c) 1995, Wayne Bell
 
 
@@ -297,7 +298,7 @@ NETWORKS.LST file included with this documentation to
 determine if a "contact person" has been designated for the 
 network you are interested in.
 
-    The node number should be entered in INIT under the
+    The node number should be entered in wwivconfig under the
 network settings. You should also insure that your     
 board name and telephone number are entered exactly as they 
 are shown in the BBSLIST.NET file which are also discussed later.                                   
@@ -451,7 +452,7 @@ BBSLIST and CONNECT files.  All of these files should be
 placed in the DATA directory if your board is only on one   
 network.  If you are on more than one network, then the     
 files for a particular network should be in its separate    
-directory as you defined it in INIT option N.     
+directory as you defined it in wwivconfig option N.     
 
 Note: Net51 and later only support the BBSLIST.NET and
 CONNECT.NET format (not the .## formats).          
@@ -858,11 +859,11 @@ executable to work with a specific network.  If no "dot
 command" is used, the program defaults to using the network 
 executable with data in the DATA directory.  On the         
 other hand, if you are on more than one network, Option N   
-in INIT will create a file called NETWORKS.DAT in the DATA  
+in wwivconfig will create a file called NETWORKS.DAT in the DATA  
 directory.  Dot commands work by using data from the        
 networks in the order listed in the NETWORKS.DAT file which 
 is the same order that you see when you use option N in     
-INIT.  The first network listed is associated with .0; the  
+wwivconfig.  The first network listed is associated with .0; the  
 second with .1, etc.                                        
                                                             
    For example, to force LNET to run on the DEAD.NET file   
@@ -885,7 +886,7 @@ The steps involved are recruiting another node, creating
 the nodelist files which are common to all systems in your  
 network, creating unique callout.net files for each node    
 in your network (usually done by each sysop), adding the    
-network information in section N of INIT, adding the        
+network information in section N of wwivconfig, adding the        
 networking software to both boards, analyzing the network   
 (automatically done by WWIV or can be manually done), and   
 making a network connection via modem to the other node.    
@@ -906,7 +907,7 @@ you need to create two network files:
                                                             
 Each node has both these files in their network data        
 directories.  To establish the network data directory, go   
-into INIT, section N, and add in the information as         
+into wwivconfig, section N, and add in the information as         
 requested in the menu there (Network Name, node number,     
 data directory).                                            
                                                             
@@ -1583,7 +1584,7 @@ the documentation for WWIV v4.22.  Key things to remember
 about multi-networking:                                     
                                                             
      a)  Each network should be in its own data directory.  
-     b)  Each network should be setup in INIT option N      
+     b)  Each network should be setup in wwivconfig option N      
      c)  All files unique to a network should be put in     
          that network's DATA directory.                     
      d)  Network directories should be DOS legal names.     

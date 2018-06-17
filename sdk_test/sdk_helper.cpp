@@ -75,7 +75,7 @@ SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.Cre
 
     // Add header version.
     // TODO(rushfan): This really should all be done in the Config class and also used
-    // by INIT from there.
+    // by wwivconfig from there.
     configrec_header_t h = {};
     h.config_revision_number = 0;
     h.config_size = sizeof(configrec);

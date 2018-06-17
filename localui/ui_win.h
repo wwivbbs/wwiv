@@ -27,7 +27,7 @@
 #undef INSERT
 #endif  // INSERT
 
-// Generic implementation of screen display routines for Init.
+// Generic implementation of screen display routines for wwivconfig.
 class UIWindow {
  public:
   // Constructor/Destructor

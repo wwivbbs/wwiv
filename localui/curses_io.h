@@ -52,7 +52,7 @@ public:
    ColorScheme* color_scheme_;
 };
 
-// Curses implementation of screen display routines for Init.
+// Curses implementation of screen display routines for wwivconfig.
 class CursesIO {
  public:
   // Constructor/Destructor

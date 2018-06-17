@@ -261,7 +261,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   configUsrFile.Close();
   configUsrFile.file().Delete();
 
-  // 2nd version of config.usr that INIT was mistakenly creating.
+  // 2nd version of config.usr that wwivconfig was mistakenly creating.
   File userDatFile(config.datadir(), "user.dat");
   userDatFile.Delete();
 

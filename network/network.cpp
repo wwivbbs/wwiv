@@ -59,7 +59,7 @@ using namespace wwiv::os;
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
        << "/N####     Network node number to dial." << endl
-       << ".####      Network number (as defined in INIT)" << endl
+       << ".####      Network number (as defined in wwivconfig)" << endl
        << endl;
   exit(1);
 }

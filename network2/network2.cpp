@@ -105,7 +105,7 @@ static void update_filechange_status_dat(const string& datadir, bool email, bool
 
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
-       << ".####      Network number (as defined in INIT)" << endl
+       << ".####      Network number (as defined in wwivconfig)" << endl
        << endl;
   exit(1);
 }
