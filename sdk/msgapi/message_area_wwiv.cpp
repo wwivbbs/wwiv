@@ -370,7 +370,7 @@ int WWIVMessageArea::DeleteExcess() {
     }
     auto num = number_of_messages();
     if (num <= max_messages_) {
-      LOG(INFO) << "No overflow messages. " << num << " <= " << max_messages_;
+      VLOG(1) << "No overflow messages. " << num << " <= " << max_messages_;
       return result;
     }
     int i = 1;

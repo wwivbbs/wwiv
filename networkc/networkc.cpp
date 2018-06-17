@@ -148,7 +148,7 @@ int main(int argc, char** argv) {
 
     const int verbose = cmdline.iarg("v");
     const auto& net = net_cmdline.network();
-    std::cout << "NETWORKC for network: " << net.name;
+    LOG(INFO) << "NETWORKC for network: " << net.name;
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     std::unique_ptr<WStatus> status(sm.GetStatus());
