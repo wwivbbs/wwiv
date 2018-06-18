@@ -493,7 +493,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
         for (const auto ch : line) {
           dump_char(cout, ch);
         }
-        cout << line << endl;
+        cout << endl;
       }
     }
     cout << "------------------------------------------------------------------------"

@@ -174,6 +174,12 @@ TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZ) {
   EXPECT_EQ("a\r", fido);
 }
 
+TEST_F(FidoUtilTest, WWIVToFido_RemovesControlZs) {
+  string wwiv = "a\r\n\x1a\x1a\x1a\x1a";
+  string fido = WWIVToFidoText(wwiv);
+  EXPECT_EQ("a\r", fido);
+}
+
 TEST_F(FidoUtilTest, WWIVToFido_RemovesControlA) {
   string wwiv = "a\r\nb\001\r\n";
   string fido = WWIVToFidoText(wwiv);

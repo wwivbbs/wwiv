@@ -66,12 +66,14 @@ std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
 
 ParsedMessageText::ParsedMessageText(const std::string& control_char, const std::string& text)
   : control_char_(control_char) {
-  if (!text.empty()) {
-    if (text.back() == CZ) {
-      auto t = text;
-      t.pop_back();
-      lines_ = split_wwiv_style_message_text(t);
-    }
+  if (text.empty()) {
+    return;
+  }
+  if (text.back() == CZ) {
+    auto t = text;
+    t.pop_back();
+    lines_ = split_wwiv_style_message_text(t);
+  } else {
     lines_ = split_wwiv_style_message_text(text);
   }
 }

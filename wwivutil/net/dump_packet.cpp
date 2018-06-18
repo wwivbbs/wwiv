@@ -89,7 +89,7 @@ int dump_file(const std::string& filename) {
       for (const auto ch : packet.text) {
         dump_char(cout, ch);
       }
-      cout << packet.text << endl << endl;
+      cout << endl << endl;
     }
     cout << "==============================================================================" << endl;
   }

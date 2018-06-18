@@ -19,6 +19,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <ctime>
 #include <string>
 #include <vector>
 
@@ -104,9 +105,14 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
   if (!file) {
     throw std::runtime_error("Unable to open file: " + file.file().full_pathname());
   }
+  uint64_t now = time(nullptr);
   uint64_t msg_num;
   if (!file.Read(0, &msg_num)) {
-    msg_num = 0;
+    msg_num = now;
+  }
+  if (msg_num < now) {
+    // We always want to be at least equal to the current time.
+    msg_num = now;
   }
   ++msg_num;
   file.file().Seek(0, File::Whence::begin);

@@ -24,6 +24,7 @@ namespace wwivutil {
 void dump_char(std::ostream& out, char ch) { 
   
   switch (ch) { 
+  case 0:
   case 1:
   case 2:
   case 3:

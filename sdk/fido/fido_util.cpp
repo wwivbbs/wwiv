@@ -45,6 +45,9 @@ namespace wwiv {
 namespace sdk {
 namespace fido {
 
+constexpr char CZ = 26;
+
+
 // We use DDHHMMSS like SBBSECHO does.
 std::string packet_name(time_t now) {
 
@@ -272,8 +275,8 @@ string WWIVToFidoText(const string& wt, int8_t max_optional_val_to_include) {
   // Also remove the soft CRs since WWIV has no concept.
   // TODO(rushfan): Is this really needed.
   temp.erase(std::remove(temp.begin(), temp.end(), '\x8d'), temp.end());
-  // Remove the trailing control-Z (if one exists).
-  if (!temp.empty() && temp.back() == '\x1a') {
+  // Remove the trailing control-Z or trailing null characters (if one exists).
+  while (!temp.empty() && (temp.back() == CZ || temp.back() == 0)) {
     temp.pop_back();
   }
 
