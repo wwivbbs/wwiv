@@ -54,15 +54,26 @@ static std::string ReadRestOfFile(File& f, int max_size) {
   return s;
 }
 
-
+/**
+ * Reads a field of length {len}.  Will trim the field to  remove
+ * any trailing nulls.
+ */
 static std::string ReadFixedLengthField(File& f, int len) {
   string s;
   s.resize(len + 1);
-  auto num_read = f.Read(&s[0], len + 1);
+  auto num_read = f.Read(&s[0], len);
   s.resize(num_read);
+  while (!s.empty() && s.back() == '\0') {
+    // Remove trailing null characters.
+    s.pop_back();
+  }
   return s;
 }
 
+/**
+ * Reads a null-terminated field of up to length {len} or the first null
+ * character.
+ */
 static std::string ReadVariableLengthField(File& f, int max_len) {
   string s;
   for (int i = 0; i < max_len; i++) {
@@ -79,7 +90,8 @@ static std::string ReadVariableLengthField(File& f, int max_len) {
 bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
   auto num_written = f.Write(&header, sizeof(packet_header_2p_t));
   if (num_written != sizeof(packet_header_2p_t)) {
-    LOG(ERROR) << "short write to packet, wrote " << num_written << "; expected: " << sizeof(packet_header_2p_t);
+    LOG(ERROR) << "short write to packet, wrote " << num_written
+               << "; expected: " << sizeof(packet_header_2p_t);
     return false;
   }
   return true;
@@ -88,7 +100,8 @@ bool write_fido_packet_header(File& f, packet_header_2p_t& header) {
 bool write_packed_message(File& f, FidoPackedMessage& packet) {
   auto num_written = f.Write(&packet.nh, sizeof(fido_packed_message_t));
   if (num_written != sizeof(fido_packed_message_t)) {
-    LOG(ERROR) << "short write to packet, wrote " << num_written << "; expected: " << sizeof(fido_packed_message_t);
+    LOG(ERROR) << "short write to packet, wrote " << num_written
+               << "; expected: " << sizeof(fido_packed_message_t);
     return false;
   }
   f.Write(packet.vh.date_time.c_str(), 19);
@@ -110,13 +123,17 @@ bool write_stored_message(File& f, FidoStoredMessage& packet) {
   auto num = f.Write(&packet.nh, sizeof(fido_stored_message_t));
   if (num != sizeof(fido_stored_message_t)) {
     LOG(ERROR) << "Short write on write_stored_message. Wrote: " << num
-      << "; expected: " << sizeof(fido_stored_message_t);
+               << "; expected: " << sizeof(fido_stored_message_t);
     return false;
   }
   num = f.Write(packet.text);
   return true;
 }
 
+/**
+ * Reads a packed message.
+ * See http://ftsc.org/docs/fts-0001.016
+ */
 ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
   auto num_read = f.Read(&packet.nh, sizeof(fido_packed_message_t));
   if (num_read == 0) {
@@ -132,14 +149,14 @@ ReadPacketResponse read_packed_message(File& f, FidoPackedMessage& packet) {
 
   if (num_read != sizeof(fido_packed_message_t)) {
     LOG(INFO) << "error reading header, got short read of size: " << num_read
-      << "; expected: " << sizeof(net_header_rec);
+              << "; expected: " << sizeof(fido_packed_message_t);
     return ReadPacketResponse::ERROR;
   }
 
   if (packet.nh.message_type != 2) {
     LOG(INFO) << "invalid message_type: " << packet.nh.message_type << "; expected: 2";
   }
-  packet.vh.date_time = ReadFixedLengthField(f, 19);
+  packet.vh.date_time = ReadFixedLengthField(f, 20);
   packet.vh.to_user_name = ReadVariableLengthField(f, 36);
   packet.vh.from_user_name = ReadVariableLengthField(f, 36);
   packet.vh.subject = ReadVariableLengthField(f, 72);
@@ -158,7 +175,6 @@ ReadPacketResponse read_stored_message(File& f, FidoStoredMessage& packet) {
   return ReadPacketResponse::OK;
 }
 
-}
-}  // namespace net
-}  // namespace wwiv
-
+} // namespace fido
+} // namespace sdk
+} // namespace wwiv
