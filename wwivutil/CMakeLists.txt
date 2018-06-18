@@ -22,6 +22,7 @@ set(COMMAND_SOURCES
   net/net.cpp
   net/req.cpp
   status/status.cpp
+  util.cpp
   )
 
 add_executable(wwivutil ${WWIVUTIL_MAIN} ${COMMAND_SOURCES})

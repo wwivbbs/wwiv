@@ -37,6 +37,7 @@
 #include "sdk/networks.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "wwivutil/util.h"
 
 using std::clog;
 using std::cout;
@@ -489,6 +490,9 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
         continue;
       }
       if (line.front() != CD || all) {
+        for (const auto ch : line) {
+          dump_char(cout, ch);
+        }
         cout << line << endl;
       }
     }

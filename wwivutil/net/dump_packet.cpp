@@ -28,6 +28,7 @@
 #include "networkb/packets.h"
 #include "sdk/datetime.h"
 #include "sdk/net.h"
+#include "wwivutil/util.h"
 
 using std::cout;
 using std::endl;
@@ -84,7 +85,11 @@ int dump_file(const std::string& filename) {
       cout << endl;
     }
     if (packet.nh.length) {
-      cout << "Text:" << endl << packet.text << endl << endl;
+      cout << "Text:" << endl;
+      for (const auto ch : packet.text) {
+        dump_char(cout, ch);
+      }
+      cout << packet.text << endl << endl;
     }
     cout << "==============================================================================" << endl;
   }
