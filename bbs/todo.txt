@@ -9,6 +9,9 @@ FTN
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
+* dupe checking code is a mess and probabl wyon't work,
+  need to check for both address and serial number or 
+  crc of headers too.
 
 Ini Files and Configuration
 ===========================

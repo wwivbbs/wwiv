@@ -61,7 +61,8 @@ using namespace wwiv::strings;
 std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
   std::string temp(s);
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
-  return SplitString(temp, "\r");
+  // Use SplitString(..., false) so we don't skip blank lines.
+  return SplitString(temp, "\r", false);
 }
 
 ParsedMessageText::ParsedMessageText(const std::string& control_char, const std::string& text)
