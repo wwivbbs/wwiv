@@ -11,6 +11,7 @@ set(test_sources
   msgapi_test.cpp
   names_test.cpp
   network_test.cpp
+  parsed_message_test.cpp
   phone_numbers_test.cpp
   qscan_test.cpp
   sdk_helper.cpp

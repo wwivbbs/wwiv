@@ -47,6 +47,7 @@
 #include "sdk/ftn_msgdupe.h"
 #include "sdk/status.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
+#include "sdk/msgapi/parsed_message.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/fido/fido_address.h"
@@ -57,77 +58,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
-
-std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
-  std::string temp(s);
-  temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
-  // Use SplitString(..., false) so we don't skip blank lines.
-  return SplitString(temp, "\r", false);
-}
-
-ParsedMessageText::ParsedMessageText(const std::string& control_char, const std::string& text)
-  : control_char_(control_char) {
-  if (text.empty()) {
-    return;
-  }
-  if (text.back() == CZ) {
-    auto t = text;
-    t.pop_back();
-    lines_ = split_wwiv_style_message_text(t);
-  } else {
-    lines_ = split_wwiv_style_message_text(text);
-  }
-}
-
-bool ParsedMessageText::add_control_line_after(const std::string& near_line, const std::string& line) {
-  auto it = lines_.begin();
-  while (it != lines_.end()) {
-    auto l = *it;
-    if (!l.empty() && starts_with(l, control_char_)) {
-      l = l.substr(control_char_.size());
-      if (l.find(near_line) != string::npos) {
-        // current item has it.
-        if (it == lines_.end()) {
-          // at the end of the list, add to the end.
-          lines_.push_back(line);
-        }
-        else {
-          // not at the end of the list, add it *after* the current item.
-          it++;
-          lines_.insert(it, line);
-        }
-        return true;
-      }
-    }
-    it++;
-  }
-  return false;
-}
-
-bool ParsedMessageText::add_control_line(const std::string& line) {
-  auto it = lines_.begin();
-  bool found_control_line = false;
-  while (it != lines_.end()) {
-    auto l = *it;
-    if (l.empty()) { it++; continue; }
-    if (starts_with(l, control_char_)) {
-      found_control_line = true;
-    }
-    else if (found_control_line) {
-      // We've seen control lines before, and now we don't.
-      // Insert here so we're at the end of the control lines.
-      lines_.insert(it, line);
-      return true;
-    } 
-    it++;
-  }
-  lines_.push_back(line);
-  return true;
-}
-
-std::string ParsedMessageText::to_string() const {
-  return JoinStrings(lines_, "\r\n") + static_cast<char>(CZ);
-}
 
 void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   string text;
@@ -295,7 +225,7 @@ void post(const PostData& post_data) {
         try {
           wwiv::sdk::fido::FidoAddress addr(a()->current_net().fido.fido_address);
           auto new_msgid = dupe.CreateMessageID(addr);
-          ParsedMessageText pmt("\004""0", data.text);
+          WWIVParsedMessageText pmt(data.text);
           const auto reply_control_line = StrCat("\004", "0REPLY: ", msgid);
           pmt.add_control_line(StrCat("\004""0MSGID: ", new_msgid));
           pmt.add_control_line_after("MSGID", reply_control_line);
