@@ -253,7 +253,7 @@ bool File::IsDirectory() const {
   return S_ISDIR(statbuf.st_mode);
 }
 
-long File::length() {
+off_t File::length() {
   // stat/fstat is the 32 bit version on WIN32
   struct stat fileinfo {};
 

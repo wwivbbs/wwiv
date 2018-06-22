@@ -259,10 +259,10 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
     std::string text;
     std::string s1;
     if (is_email) {
-      // TO_USER<nul>SUBJECT<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
+      // TO_USER<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
       s1 = msg.vh.to_user_name;
     } else {
-      // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
+      // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
       s1 = get_echomail_areaname(msg.vh.text);
     }
     text.append(s1);

@@ -35,7 +35,7 @@ class ParsedMessageText {
 public:
   typedef std::function<std::vector<std::string>(const std::string&)> splitfn;
 
-  ParsedMessageText(const std::string& control_char, const std::string& text, splitfn s);
+  ParsedMessageText(const std::string& control_char, const std::string& text, splitfn s, const std::string& eol);
   virtual ~ParsedMessageText();
   bool add_control_line_after(const std::string& near_line, const std::string& line);
   bool add_control_line(const std::string& line);
@@ -45,8 +45,13 @@ private:
   const std::string control_char_;
   std::vector<std::string> lines_;
   splitfn split_fn_;
+  const std::string eol_;
 };
 
+/**
+ * Representes a parsed (split into lines) message  in WWIV format (control
+ * lines start with ^D0) and end of line is "\r\n".
+ */
 class WWIVParsedMessageText : public ParsedMessageText {
 public:
   WWIVParsedMessageText(const std::string& text);

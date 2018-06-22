@@ -36,24 +36,31 @@ constexpr char CZ = 26;
 
 static std::vector<std::string> split_wwiv_style_message_text(const std::string& s) {
   std::string temp(s);
+  // Instead of splitting on \r\n, we remove the \n and then
+  // split on just \r.  This also is great that it handles
+  // the cases where we end in only \r properly.
   temp.erase(std::remove(temp.begin(), temp.end(), 10), temp.end());
   // Use SplitString(..., false) so we don't skip blank lines.
   return SplitString(temp, "\r", false);
 }
 
 ParsedMessageText::ParsedMessageText(const std::string& control_char, const std::string& text,
-                                     splitfn split_fn)
-    : control_char_(control_char) {
+                                     splitfn split_fn, const std::string& eol)
+    : control_char_(control_char), split_fn_(split_fn), eol_(eol) {
   if (text.empty()) {
     return;
   }
   if (text.back() == CZ) {
     auto t = text;
     t.pop_back();
-    lines_ = split_wwiv_style_message_text(t);
+    lines_ = split_fn(t);
   } else {
-    lines_ = split_wwiv_style_message_text(text);
+    lines_ = split_fn(text);
   }
+  // TODO, lines needs to be a structure thatincludes metadata
+  // like  centered line, or soft-wrapped line.  WWIV and
+  // FTN have different ways of soft-wrapping and need
+  // to handle both.
 }
 
 ParsedMessageText::~ParsedMessageText() {}
@@ -107,13 +114,14 @@ bool ParsedMessageText::add_control_line(const std::string& line) {
 }
 
 std::string ParsedMessageText::to_string() const {
-  return JoinStrings(lines_, "\r\n") + static_cast<char>(CZ);
+  return JoinStrings(lines_, eol_) + static_cast<char>(CZ);
 }
 
 WWIVParsedMessageText::WWIVParsedMessageText(const std::string& text)
     : ParsedMessageText("\004"
                         "0",
-                        text, split_wwiv_style_message_text) {}
+                        text, split_wwiv_style_message_text,
+                        "\r\n") {}
   
 WWIVParsedMessageText::~WWIVParsedMessageText() {}
 
