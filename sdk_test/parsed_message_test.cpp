@@ -88,7 +88,7 @@ protected:
 
 TEST_F(ParsedMessageTest, AfterMsgID) {
   const std::string kReply = ca + "REPLY";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text);
+  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text, "\r\n");
   p.add_control_line_after("MSGID", kReply);
   auto actual_string = p.to_string();
 
@@ -98,7 +98,7 @@ TEST_F(ParsedMessageTest, AfterMsgID) {
 TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
   const std::string kReply = cd + "0REPLY";
   ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
-                      split_wwiv_style_message_text);
+                      split_wwiv_style_message_text, "\r\n");
   p.add_control_line_after("MSGID", kReply);
   auto actual_string = p.to_string();
 
@@ -107,7 +107,8 @@ TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
 
 TEST_F(ParsedMessageTest, AtEndOfControlLines) {
   const std::string kControlLine = ca + "DUDE";
-  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text);
+  ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
+                      "\r\n");
   p.add_control_line(kControlLine);
   auto actual_string = p.to_string();
 
@@ -117,7 +118,7 @@ TEST_F(ParsedMessageTest, AtEndOfControlLines) {
 TEST_F(ParsedMessageTest, AtEndOfControlLines_WWIVControlLines) {
   const std::string kControlLine = cd + "0DUDE";
   ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
-                      split_wwiv_style_message_text);
+                      split_wwiv_style_message_text, "\r\n");
   p.add_control_line(kControlLine);
   auto actual_string = p.to_string();
 
