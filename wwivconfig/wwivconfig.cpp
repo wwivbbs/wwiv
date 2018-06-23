@@ -211,7 +211,11 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
     if (!wwiv::strings::IsEquals(expected_sig, syscfg.header.header.signature)) {
       // We don't have a 5.2 header, let's convert.
 
-      convert_config_to_52(window, config);
+    if (!dialog_yn(out->window(), "Upgrade config.dat to 5.2 format?")) {
+        return ShouldContinue::EXIT;
+      }
+
+    convert_config_to_52(window, config);
       {
         if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
           configfile.Read(&syscfg, sizeof(configrec));
@@ -257,6 +261,63 @@ static bool config_offsets_matches_actual(const Config& config) {
   return true;
 }
 
+bool legacy_4xx_menu(const Config& config, UIWindow* window) {
+  bool done = false;
+  int selected = -1;
+  do {
+    out->Cls(ACS_CKBOARD);
+    out->footer()->SetDefaultFooter();
+
+    vector<ListBoxItem> items = {{"N. Network Configuration", 'N'},
+                                 {"U. User Editor", 'U'},
+                                 {"W. wwivd Configuration", 'W'},
+                                 {"Q. Quit", 'Q'}};
+
+    int selected_hotkey = -1;
+    {
+      ListBox list(window, "Main Menu", items);
+      list.selection_returns_hotkey(true);
+      list.set_additional_hotkeys("$");
+      list.set_selected(selected);
+      ListBoxResult result = list.Run();
+      selected = list.selected();
+      if (result.type == ListBoxResultType::HOTKEY) {
+        selected_hotkey = result.hotkey;
+      } else if (result.type == ListBoxResultType::NO_SELECTION) {
+        done = true;
+      }
+    }
+    out->footer()->SetDefaultFooter();
+
+    // It's easier to use the hotkey for this case statement so it's simple to know
+    // which case statement matches which item.
+    switch (selected_hotkey) {
+    case 'Q':
+      done = true;
+      break;
+    case 'N':
+      networks(config);
+      break;
+    case 'U':
+      user_editor(config);
+      break;
+    case 'W':
+      wwivd_ui(config);
+      break;
+    case '$': {
+      vector<string> lines;
+      lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
+      lines.push_back(StringPrintf("WWIV %s%s wwivconfig compiled %s", wwiv_version, beta_version,
+                                   const_cast<char*>(wwiv_date)));
+      messagebox(window, lines);
+    } break;
+    }
+    out->SetIndicatorMode(IndicatorMode::NONE);
+  } while (!done);
+
+  return true;
+}
+
 int WInitApp::main(int argc, char** argv) {
   setlocale(LC_ALL, "");
 
@@ -271,6 +332,8 @@ int WInitApp::main(int argc, char** argv) {
       BooleanCommandLineArgument("menu_editor", "Run the menu editor and then exit.", false));
   cmdline.add_argument(
       BooleanCommandLineArgument("network_editor", "Run the network editor and then exit.", false));
+  cmdline.add_argument(
+      BooleanCommandLineArgument("4xx", "Only run editors that work on WWIV 4.xx.", false));
 
   if (!cmdline.Parse() || cmdline.help_requested()) {
     ShowHelp(cmdline);
@@ -310,6 +373,7 @@ int WInitApp::main(int argc, char** argv) {
 
   Config config(bbsdir);
 
+  bool legacy_4xx_mode = false;
   if (cmdline.barg("menu_editor")) {
     out->Cls(ACS_CKBOARD);
     out->footer()->SetDefaultFooter();
@@ -324,13 +388,26 @@ int WInitApp::main(int argc, char** argv) {
     out->Cls(ACS_CKBOARD);
     out->footer()->SetDefaultFooter();
     if (!config_offsets_matches_actual(config)) {
+      return 1;
     }
     networks(config);
     return 0;
+  } else if (cmdline.barg("4xx")) {
+    if (!config_offsets_matches_actual(config)) {
+      return 1;
+    }
+    legacy_4xx_mode = true;
   }
 
-  if (read_configdat_and_upgrade_datafiles_if_needed(window, config) == ShouldContinue::EXIT) {
-    return 1;
+  if (!legacy_4xx_mode &&
+        read_configdat_and_upgrade_datafiles_if_needed(window, config) ==
+        ShouldContinue::EXIT) {
+    legacy_4xx_mode = true;
+  }
+
+  if (legacy_4xx_mode) {
+    legacy_4xx_menu(config, window);
+    return 0;
   }
   CreateConfigOvr(bbsdir);
 

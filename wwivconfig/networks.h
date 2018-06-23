@@ -24,6 +24,6 @@
 
 #define MAX_NETWORKS 100
 
-void networks(wwiv::sdk::Config& config);
+void networks(const wwiv::sdk::Config& config);
 
 #endif // __INCLUDED_INIT_NETWORKS_H__

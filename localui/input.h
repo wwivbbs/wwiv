@@ -633,7 +633,7 @@ public:
         result = i->x() + i->maxsize();
       }
     }
-    return result + 2; // 2 is padding
+    return std::min<int>(out->window()->GetMaxX(), result + 2); // 2 is padding
   }
 
   int max_display_height() {
@@ -648,7 +648,7 @@ public:
         result = i->y();
       }
     }
-    return result + 2;
+    return std::min<int>(out->window()->GetMaxY(), result + 2);
   }
 
   /** Returns the size of the longest label */

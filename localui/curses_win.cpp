@@ -36,6 +36,12 @@ CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int 
   : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme) {
   WINDOW* window = nullptr;
   if (parent != nullptr) {
+    if (ncols > parent->GetMaxX()) {
+      ncols = parent->GetMaxX();
+    }
+    if (nlines > parent->GetMaxY()) {
+      nlines = parent->GetMaxY();
+    }
     if (begin_x == -1) {
       begin_x = (parent->GetMaxX() - ncols) / 2;
     }

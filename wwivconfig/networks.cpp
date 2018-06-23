@@ -545,7 +545,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   return true;
 }
 
-void networks(wwiv::sdk::Config& config) {
+void networks(const wwiv::sdk::Config& config) {
   try {
     Networks networks(config);
 
