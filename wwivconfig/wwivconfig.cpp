@@ -327,13 +327,14 @@ int WInitApp::main(int argc, char** argv) {
   cmdline.add_argument(BooleanCommandLineArgument(
       "initialize", "Initialize the datafiles for the 1st time and exit.", false));
   cmdline.add_argument(
-      BooleanCommandLineArgument("user_editor", "Run the user editor and then exit.", false));
+      BooleanCommandLineArgument("user_editor", 'U', "Run the user editor and then exit.", false));
   cmdline.add_argument(
-      BooleanCommandLineArgument("menu_editor", "Run the menu editor and then exit.", false));
+      BooleanCommandLineArgument("menu_editor", 'M', "Run the menu editor and then exit.", false));
   cmdline.add_argument(
-      BooleanCommandLineArgument("network_editor", "Run the network editor and then exit.", false));
+      BooleanCommandLineArgument("network_editor", 'N', "Run the network editor and then exit.", false));
   cmdline.add_argument(
-      BooleanCommandLineArgument("4xx", "Only run editors that work on WWIV 4.xx.", false));
+      BooleanCommandLineArgument("4xx", '4', "Only run editors that work on WWIV 4.xx.", false));
+  cmdline.add_argument({"menu_dir", "Override the menu directory when using --menu_editor.", ""});
 
   if (!cmdline.Parse() || cmdline.help_requested()) {
     ShowHelp(cmdline);
@@ -377,7 +378,12 @@ int WInitApp::main(int argc, char** argv) {
   if (cmdline.barg("menu_editor")) {
     out->Cls(ACS_CKBOARD);
     out->footer()->SetDefaultFooter();
-    menus(config);
+    auto menu_dir = config.menudir();
+    auto menu_dir_arg = cmdline.sarg("menu_dir");
+    if (!menu_dir_arg.empty()) {
+      menu_dir = menu_dir_arg;
+    }
+    menus(menu_dir);
     return 0;
   } else if (cmdline.barg("user_editor")) {
     out->Cls(ACS_CKBOARD);
@@ -499,7 +505,7 @@ int WInitApp::main(int argc, char** argv) {
       networks(config);
       break;
     case 'M':
-      menus(config);
+      menus(config.menudir());
       break;
     case 'R':
       edit_registration_code();

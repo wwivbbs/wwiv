@@ -353,8 +353,8 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
 
 }
 
-static void select_menu(Config& config, const std::string& dir) {
-  const auto full_dir_path = FilePath(config.menudir(), dir);
+static void select_menu(const std::string& menu_dir, const std::string& dir) {
+  const auto full_dir_path = FilePath(menu_dir, dir);
   auto menus = FindFiles(full_dir_path, "*", FindFilesType::files);
   int selected = -1;
   try {
@@ -395,9 +395,9 @@ static void select_menu(Config& config, const std::string& dir) {
 
 }
 
-void menus(wwiv::sdk::Config& config) {
+void menus(const std::string& menu_dir) {
   try {
-    auto dirs = FindFiles(config.menudir(), "*", FindFilesType::directories);
+    auto dirs = FindFiles(menu_dir, "*", FindFilesType::directories);
 
     bool done = false;
     int selected = -1;
@@ -420,7 +420,7 @@ void menus(wwiv::sdk::Config& config) {
 
       if (result.type == ListBoxResultType::SELECTION) {
         const auto& sel_dir = items[result.selected].text();
-        select_menu(config, sel_dir);
+        select_menu(menu_dir, sel_dir);
       } else if (result.type == ListBoxResultType::NO_SELECTION) {
         done = true;
       } else if (result.type == ListBoxResultType::HOTKEY) {
@@ -440,15 +440,6 @@ void menus(wwiv::sdk::Config& config) {
           }
           break;
         case 'I':
-          if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
-            vector<string> lines{ "You must run the BBS once to set up ", "some variables before inserting a network." };
-            messagebox(window, lines);
-            break;
-          }
-          if (networks.networks().size() >= MAX_NETWORKS) {
-            messagebox(window, "Too many networks.");
-            break;
-          }
           const string prompt = StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
           const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
           if (net_num > 0 && net_num <= networks.networks().size() + 1) {

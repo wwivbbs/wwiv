@@ -21,6 +21,8 @@
 
 #include "sdk/config.h"
 
-void menus(wwiv::sdk::Config& config);
+#include <string>
+
+void menus(const std::string& menu_dir);
 
 #endif // __INCLUDED_INIT_MENUS_H__
