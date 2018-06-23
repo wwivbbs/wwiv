@@ -107,7 +107,7 @@ static bool CreateConfigOvr(const string& bbsdir) {
     string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
 
     // Replace %n with instance number value.
-    const string instance_num_string = std::to_string(i);
+    const auto instance_num_string = std::to_string(i);
     StringReplace(&temp_directory, "%n", instance_num_string);
     StringReplace(&batch_directory, "%n", instance_num_string);
 
@@ -188,11 +188,18 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   return true;
 }
 
-static void read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
+enum class ShouldContinue { CONTINUE, EXIT };
+
+static ShouldContinue read_configdat_and_upgrade_datafiles_if_needed(
+    UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
   File configfile(config.config_filename());
   if (configfile.length() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
+
+    if (!dialog_yn(out->window(), "Upgrade config.dat from 4.x format?")) {
+      return ShouldContinue::EXIT;
+    }
     window->Bkgd(' ');
     convert_config_424_to_430(window, config);
   }
@@ -221,7 +228,7 @@ static void read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, con
   }
 
   ensure_offsets_are_updated(window, config);
-
+  return ShouldContinue::CONTINUE;
 }
 
 static void ShowHelp(CommandLine& cmdline) {
@@ -239,6 +246,8 @@ int WInitApp::main(int argc, char** argv) {
   cmdline.add_argument(BooleanCommandLineArgument("initialize", "Initialize the datafiles for the 1st time and exit.", false));
   cmdline.add_argument(BooleanCommandLineArgument("user_editor", "Run the user editor and then exit.", false));
   cmdline.add_argument(BooleanCommandLineArgument("menu_editor", "Run the menu editor and then exit.", false));
+  cmdline.add_argument(
+      BooleanCommandLineArgument("network_editor", "Run the network editor and then exit.", false));
 
   if (!cmdline.Parse() || cmdline.help_requested()) {
     ShowHelp(cmdline);
@@ -279,7 +288,27 @@ int WInitApp::main(int argc, char** argv) {
   }
 
   Config config(bbsdir);
-  read_configdat_and_upgrade_datafiles_if_needed(window, config);
+
+  if (cmdline.barg("menu_editor")) {
+    out->Cls(ACS_CKBOARD);
+    out->footer()->SetDefaultFooter();
+    menus(config);
+    return 0;
+  } else if (cmdline.barg("user_editor")) {
+    out->Cls(ACS_CKBOARD);
+    out->footer()->SetDefaultFooter();
+    user_editor(config);
+    return 0;
+  } else if (cmdline.barg("network_editor")) {
+    out->Cls(ACS_CKBOARD);
+    out->footer()->SetDefaultFooter();
+    networks(config);
+    return 0;
+  }
+
+  if (read_configdat_and_upgrade_datafiles_if_needed(window, config) == ShouldContinue::EXIT) {
+   return 1;
+  }
   CreateConfigOvr(bbsdir);
 
   {
@@ -297,19 +326,6 @@ int WInitApp::main(int argc, char** argv) {
   // GP - We can move this up to after "read_status" if the
   // wwivconfig --initialize flow should query the user to make an account.
   CreateSysopAccountIfNeeded(bbsdir);
-
-  if (cmdline.barg("menu_editor")) {
-    out->Cls(ACS_CKBOARD);
-    out->footer()->SetDefaultFooter();
-    menus(config);
-    return 0;
-  }
-  else if (cmdline.barg("user_editor")) {
-    out->Cls(ACS_CKBOARD);
-    out->footer()->SetDefaultFooter();
-    user_editor(config);
-    return 0;
-  }
 
   bool done = false;
   int selected = -1;
