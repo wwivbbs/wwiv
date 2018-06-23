@@ -109,12 +109,13 @@ protected:
 };
 
 void sysinfo1(const std::string& datadir) {
-  read_status(datadir);
+  statusrec_t statusrec{};
+  read_status(datadir, statusrec);
 
   if (statusrec.callernum != 65535) {
     statusrec.callernum1 = static_cast<long>(statusrec.callernum);
     statusrec.callernum = 65535;
-    save_status(datadir);
+    save_status(datadir, statusrec);
   }
 
   static constexpr int LABEL1_POSITION = 2;

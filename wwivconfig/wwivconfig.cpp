@@ -84,7 +84,6 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 configrec syscfg;
-statusrec_t statusrec;
 
 static bool CreateConfigOvr(const string& bbsdir) {
   IniFile oini(WWIV_INI, {"WWIV"});
@@ -423,7 +422,6 @@ int WInitApp::main(int argc, char** argv) {
       create_arcs(window, config.datadir());
     }
   }
-  read_status(config.datadir());
 
   if (forced_initialize) {
     return 0;

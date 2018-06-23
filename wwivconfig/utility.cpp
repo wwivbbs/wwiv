@@ -99,7 +99,7 @@ void write_user(const std::string& datadir, unsigned int un, userrec *u) {
   }
 }
 
-void save_status(const std::string& datadir) {
+void save_status(const std::string& datadir, const statusrec_t& statusrec) {
   DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite|File::modeCreateFile);
   if (file) {
     file.Write(&statusrec);
@@ -107,7 +107,7 @@ void save_status(const std::string& datadir) {
 }
 
 /** returns true if statusrec.dat is read correctly */
-bool read_status(const std::string& datadir) {
+bool read_status(const std::string& datadir, statusrec_t& statusrec) {
   DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary|File::modeReadWrite);
   if (file) {
     return file.Read(&statusrec);

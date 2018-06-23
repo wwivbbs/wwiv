@@ -36,13 +36,13 @@
 #include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivport.h"
-#include "wwivconfig/archivers.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
 #include "localui/input.h"
 #include "localui/ui_win.h"
 #include "localui/wwiv_curses.h"
+#include "wwivconfig/archivers.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/wwivinit.h"
 
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
@@ -76,7 +76,7 @@ static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::
       window->Puts("ERROR Unable to unzip file.\n");
     }
 
-      const auto sysop_dir = FilePath("dloads", "sysop");
+    const auto sysop_dir = FilePath("dloads", "sysop");
     File::Rename(zipfile, FilePath(sysop_dir, zipfile));
     return true;
   }
@@ -201,8 +201,9 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   const auto datadir = FilePath(bbsdir, "data");
   create_arcs(window, datadir);
+  statusrec_t statusrec{};
   memset(&statusrec, 0, sizeof(statusrec_t));
-  string now(date());
+  auto now = date();
   to_char_array(statusrec.date1, now);
   to_char_array(statusrec.date2, "00/00/00");
   to_char_array(statusrec.date3, "00/00/00");
@@ -216,7 +217,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
 
   auto qsc = std::make_unique<uint32_t[]>(syscfg.qscn_len / sizeof(uint32_t));
 
-  save_status(datadir);
+  save_status(datadir, statusrec);
   userrec u = {};
   memset(&u, 0, sizeof(u));
   write_user(datadir, 0, &u);
