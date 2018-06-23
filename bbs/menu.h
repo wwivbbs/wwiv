@@ -38,7 +38,7 @@ class MenuInstance {
 public:
   MenuInstance(const std::string& menuDirectory, const std::string& menuName);
   ~MenuInstance();
-  void DisplayHelp() const;
+  void DisplayMenu() const;
   static const std::string create_menu_filename(
       const std::string& path, const std::string& menu, const std::string& extension);
   void RunMenu();

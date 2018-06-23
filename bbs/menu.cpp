@@ -225,7 +225,7 @@ void MenuInstance::RunMenu() {
 
   // if flagged to display help on entrance, then do so
   if (a()->user()->IsExpert() && header.nForceHelp == MENU_HELP_ONENTRANCE) {
-    DisplayHelp();
+    DisplayMenu();
   }
 
   while (!finished) {
@@ -335,7 +335,7 @@ string MenuInstance::GetHelpFileName() const {
   return create_menu_filename("msg");
 }
 
-void MenuInstance::DisplayHelp() const {
+void MenuInstance::DisplayMenu() const {
   const auto filename = GetHelpFileName();
   if (!printfile(filename, true)) {
     GenerateMenu();
@@ -431,7 +431,7 @@ void MenuSysopLog(const string& msg) {
 
 void MenuInstance::PrintMenuPrompt() const {
   if (!a()->user()->IsExpert() || header.nForceHelp == MENU_HELP_FORCE) {
-    DisplayHelp();
+    DisplayMenu();
   }
   TurnMCIOn();
   if (!prompt.empty()) {

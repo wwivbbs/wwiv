@@ -198,9 +198,14 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     } },
     { "DisplayHelp", [](MenuItemContext& context) {
       if (context.pMenuData && a()->user()->IsExpert()) {
-        context.pMenuData->DisplayHelp();
+        context.pMenuData->DisplayMenu();
       }
     } },
+    {"DisplayMenu", [](MenuItemContext& context) {
+      if (context.pMenuData && a()->user()->IsExpert()) {
+        context.pMenuData->DisplayMenu();
+      }
+    }},
     { "SelectSub", [](MenuItemContext& context) {
       ChangeSubNumber();
     } },

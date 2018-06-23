@@ -105,6 +105,11 @@ ConfigUserMenuSet
 
 DisplayHelp <filename>
 
+  An alias for DisplayMenu. This alias is deprecated, please use DisplayMenu.
+
+
+DisplayMenu <filename>
+
   Prints the 'novice menus' for the current menu set, or if one doesn't exist,
   it will generate one using the menu definitions.
 
