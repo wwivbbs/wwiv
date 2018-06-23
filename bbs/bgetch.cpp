@@ -286,7 +286,7 @@ void Output::dump() {
 int Output::wherex() { 
   int x = localIO()->WhereX();
   if (x != x_) {
-    LOG(INFO) << "x: " << x << " != x_: " << x_;
+    VLOG(1) << "x: " << x << " != x_: " << x_;
   }
   return x_; 
 }

@@ -78,7 +78,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
 
   int cm = a()->chatting_;
 
-  size_t begx = a()->localIO()->WhereX();
+  size_t begx = bout.wherex();
   if (rollover[0] != 0) {
     char* ss = rollover_buffer;
     for (int i = 0; rollover[i]; i++) {
@@ -119,14 +119,14 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
     }
     if (ch >= SPACE) {
-      if ((a()->localIO()->WhereX() < (a()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {
+      if ((bout.wherex() < (a()->user()->GetScreenChars() - 1)) && (cp < nMaxLen)) {
         buffer[cp++] = ch;
         bout.bputch(ch);
-        if (a()->localIO()->WhereX() == (a()->user()->GetScreenChars() - 1)) {
+        if (bout.wherex() == (a()->user()->GetScreenChars() - 1)) {
           done = true;
         }
       } else {
-        if (a()->localIO()->WhereX() >= (a()->user()->GetScreenChars() - 1)) {
+        if (bout.wherex() >= (a()->user()->GetScreenChars() - 1)) {
           done = true;
         }
       }
@@ -177,7 +177,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
         }
         break;
       case CX:                            // Ctrl-X
-        while (a()->localIO()->WhereX() > begx) {
+        while (bout.wherex() > begx) {
           bout.bs();
           cp = 0;
         }
@@ -200,7 +200,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
         }
         break;
       case CN:                            // Ctrl-N
-        if (a()->localIO()->WhereX() && cp < nMaxLen) {
+        if (bout.wherex() && cp < nMaxLen) {
           bout.bputch(BACKSPACE);
           buffer[cp++] = BACKSPACE;
         }
@@ -228,8 +228,8 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       case TAB: {                           // Tab
         int charsNeeded = 5 - (cp % 5);
         if ((cp + charsNeeded) < nMaxLen
-            && (a()->localIO()->WhereX() + charsNeeded) < a()->user()->GetScreenChars()) {
-          charsNeeded = 5 - ((a()->localIO()->WhereX() + 1) % 5);
+            && (bout.wherex() + charsNeeded) < a()->user()->GetScreenChars()) {
+          charsNeeded = 5 - ((bout.wherex() + 1) % 5);
           for (int j = 0; j < charsNeeded; j++) {
             buffer[cp++] = SPACE;
             bout.bputch(SPACE);
@@ -250,7 +250,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
     while (lastwordstart > 0 && buffer[lastwordstart] != SPACE && buffer[lastwordstart] != BACKSPACE) {
       lastwordstart--;
     }
-    if (lastwordstart > static_cast<string::size_type>(a()->localIO()->WhereX() / 2)
+    if (lastwordstart > static_cast<string::size_type>(bout.wherex() / 2)
         && lastwordstart != (cp - 1)) {
       string::size_type lastwordlen = cp - lastwordstart - 1;
       for (string::size_type j = 0; j < lastwordlen; j++) {
