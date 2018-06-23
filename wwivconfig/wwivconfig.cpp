@@ -26,7 +26,7 @@
 #include <fcntl.h>
 #include <memory>
 #ifdef _WIN32
-#include <direct.h> 
+#include <direct.h>
 #include <io.h>
 #endif
 #include <locale.h>
@@ -35,12 +35,12 @@
 #include "bbs/wconstants.h"
 
 #include "core/command_line.h"
-#include "core/inifile.h"
-#include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/inifile.h"
 #include "core/log.h"
 #include "core/os.h"
+#include "core/strings.h"
 #include "core/version.cpp"
 #include "core/wwivport.h"
 
@@ -48,7 +48,6 @@
 #include "wwivconfig/autoval.h"
 #include "wwivconfig/convert.h"
 #include "wwivconfig/editors.h"
-#include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/languages.h"
 #include "wwivconfig/levels.h"
 #include "wwivconfig/menus.h"
@@ -58,25 +57,25 @@
 #include "wwivconfig/protocols.h"
 #include "wwivconfig/regcode.h"
 #include "wwivconfig/subsdirs.h"
-#include "wwivconfig/system_info.h"
 #include "wwivconfig/sysop_account.h"
+#include "wwivconfig/system_info.h"
 #include "wwivconfig/user_editor.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/wwivd_ui.h"
 #include "wwivconfig/wwivinit.h"
-#include "wwivconfig/utility.h"
 
-#include "localui/wwiv_curses.h"
-#include "localui/input.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
-#include "localui/ui_win.h"
+#include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/stdio_win.h"
+#include "localui/ui_win.h"
+#include "localui/wwiv_curses.h"
 
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/usermanager.h"
-
 
 using std::string;
 using std::vector;
@@ -92,17 +91,17 @@ static bool CreateConfigOvr(const string& bbsdir) {
   int num_instances = oini.value("NUM_INSTANCES", 4);
 
   std::vector<legacy_configovrrec_424_t> config_ovr_data;
-  for (int i=1; i <= num_instances; i++) {
+  for (int i = 1; i <= num_instances; i++) {
     string instance_tag = StringPrintf("WWIV-%u", i);
     IniFile ini("wwiv.ini", {instance_tag, "WWIV"});
 
-   string temp_directory = ini.value<string>("TEMP_DIRECTORY");
+    string temp_directory = ini.value<string>("TEMP_DIRECTORY");
     if (temp_directory.empty()) {
       LOG(ERROR) << "TEMP_DIRECTORY is not set! Unable to create CONFIG.OVR";
       return false;
     }
 
-    // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also 
+    // TEMP_DIRECTORY is defined in wwiv.ini, therefore use it over config.ovr, also
     // default the batch_directory to TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
     string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
 
@@ -125,8 +124,9 @@ static bool CreateConfigOvr(const string& bbsdir) {
     config_ovr_data.emplace_back(r);
   }
 
-  DataFile<legacy_configovrrec_424_t> file(CONFIG_OVR,
-    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate);
+  DataFile<legacy_configovrrec_424_t> file(CONFIG_OVR, File::modeBinary | File::modeReadWrite |
+                                                           File::modeCreateFile |
+                                                           File::modeTruncate);
   if (!file) {
     LOG(ERROR) << "Unable to open CONFIG.OVR for writing.";
     return false;
@@ -140,8 +140,7 @@ static bool CreateConfigOvr(const string& bbsdir) {
   return true;
 }
 
-WInitApp::WInitApp() {
-}
+WInitApp::WInitApp() {}
 
 WInitApp::~WInitApp() {
   // Don't leak the localIO (also fix the color when the app exits)
@@ -159,9 +158,7 @@ int main(int argc, char* argv[]) {
   }
 }
 
-static bool IsUserDeleted(const User& user) {
-  return user.data.inact & inact_deleted;
-}
+static bool IsUserDeleted(const User& user) { return user.data.inact & inact_deleted; }
 
 static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
   Config config(bbsdir);
@@ -177,7 +174,6 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
     }
   }
 
-
   out->Cls(ACS_CKBOARD);
   if (!dialog_yn(out->window(), "Would you like to create a sysop account now?")) {
     messagebox(out->window(), "You will need to log in locally and manually create one");
@@ -190,8 +186,8 @@ static bool CreateSysopAccountIfNeeded(const std::string& bbsdir) {
 
 enum class ShouldContinue { CONTINUE, EXIT };
 
-static ShouldContinue read_configdat_and_upgrade_datafiles_if_needed(
-    UIWindow* window, const wwiv::sdk::Config& config) {
+static ShouldContinue
+read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
   File configfile(config.config_filename());
   if (configfile.length() != sizeof(configrec)) {
@@ -236,16 +232,43 @@ static void ShowHelp(CommandLine& cmdline) {
   exit(1);
 }
 
+static bool config_offsets_matches_actual(const Config& config) {
+  File file(config.config_filename());
+  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
+    return false;
+  }
+  configrec x{};
+  file.Read(&x, sizeof(configrec));
+
+  // update user info data
+  int16_t userreclen = static_cast<int16_t>(sizeof(userrec));
+  int16_t waitingoffset = offsetof(userrec, waiting);
+  int16_t inactoffset = offsetof(userrec, inact);
+  int16_t sysstatusoffset = offsetof(userrec, sysstatus);
+  int16_t fuoffset = offsetof(userrec, forwardusr);
+  int16_t fsoffset = offsetof(userrec, forwardsys);
+  int16_t fnoffset = offsetof(userrec, net_num);
+
+  if (userreclen != x.userreclen || waitingoffset != x.waitingoffset ||
+      inactoffset != x.inactoffset || sysstatusoffset != x.sysstatusoffset ||
+      fuoffset != x.fuoffset || fsoffset != x.fsoffset || fnoffset != x.fnoffset) {
+    return false;
+  }
+  return true;
+}
 
 int WInitApp::main(int argc, char** argv) {
-  setlocale (LC_ALL,"");
+  setlocale(LC_ALL, "");
 
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
-  cmdline.add_argument(BooleanCommandLineArgument("initialize", "Initialize the datafiles for the 1st time and exit.", false));
-  cmdline.add_argument(BooleanCommandLineArgument("user_editor", "Run the user editor and then exit.", false));
-  cmdline.add_argument(BooleanCommandLineArgument("menu_editor", "Run the menu editor and then exit.", false));
+  cmdline.add_argument(BooleanCommandLineArgument(
+      "initialize", "Initialize the datafiles for the 1st time and exit.", false));
+  cmdline.add_argument(
+      BooleanCommandLineArgument("user_editor", "Run the user editor and then exit.", false));
+  cmdline.add_argument(
+      BooleanCommandLineArgument("menu_editor", "Run the menu editor and then exit.", false));
   cmdline.add_argument(
       BooleanCommandLineArgument("network_editor", "Run the network editor and then exit.", false));
 
@@ -265,8 +288,7 @@ int WInitApp::main(int argc, char** argv) {
   UIWindow* window;
   if (forced_initialize) {
     window = new StdioWindow(nullptr, new ColorScheme());
-  }
-  else {
+  } else {
     CursesIO::Init(StringPrintf("WWIV %s%s Configuration Program.", wwiv_version, beta_version));
     window = out->window();
     out->Cls(ACS_CKBOARD);
@@ -278,7 +300,6 @@ int WInitApp::main(int argc, char** argv) {
     return 1;
   }
   bool need_to_initialize = !File::Exists(CONFIG_DAT) || forced_initialize;
-
 
   if (need_to_initialize) {
     window->Bkgd(' ');
@@ -302,18 +323,20 @@ int WInitApp::main(int argc, char** argv) {
   } else if (cmdline.barg("network_editor")) {
     out->Cls(ACS_CKBOARD);
     out->footer()->SetDefaultFooter();
+    if (!config_offsets_matches_actual(config)) {
+    }
     networks(config);
     return 0;
   }
 
   if (read_configdat_and_upgrade_datafiles_if_needed(window, config) == ShouldContinue::EXIT) {
-   return 1;
+    return 1;
   }
   CreateConfigOvr(bbsdir);
 
   {
     File archiverfile(config.datadir(), ARCHIVER_DAT);
-    if (!archiverfile.Open(File::modeBinary|File::modeReadOnly)) {
+    if (!archiverfile.Open(File::modeBinary | File::modeReadOnly)) {
       create_arcs(window, config.datadir());
     }
   }
@@ -333,23 +356,21 @@ int WInitApp::main(int argc, char** argv) {
     out->Cls(ACS_CKBOARD);
     out->footer()->SetDefaultFooter();
 
-    vector<ListBoxItem> items = {
-        { "G. General System Configuration", 'G' },
-        { "P. System Paths", 'P' },
-        { "T. External Transfer Protocol Configuration", 'T' },
-        { "E. External Editor Configuration", 'E' },
-        { "S. Security Level Configuration", 'S' },
-        { "V. Auto-Validation Level Configuration", 'V' },
-        { "A. Archiver Configuration", 'A' },
-        { "L. Language Configuration", 'L' },
-        { "M. Menu Editor", 'M' },
-        { "N. Network Configuration", 'N' },
-        { "R. Registration Information", 'R' },
-        { "U. User Editor", 'U' },
-        { "X. Update Sub/Directory Maximums", 'X' },
-        { "W. wwivd Configuration", 'W' },
-        { "Q. Quit", 'Q' }
-    };
+    vector<ListBoxItem> items = {{"G. General System Configuration", 'G'},
+                                 {"P. System Paths", 'P'},
+                                 {"T. External Transfer Protocol Configuration", 'T'},
+                                 {"E. External Editor Configuration", 'E'},
+                                 {"S. Security Level Configuration", 'S'},
+                                 {"V. Auto-Validation Level Configuration", 'V'},
+                                 {"A. Archiver Configuration", 'A'},
+                                 {"L. Language Configuration", 'L'},
+                                 {"M. Menu Editor", 'M'},
+                                 {"N. Network Configuration", 'N'},
+                                 {"R. Registration Information", 'R'},
+                                 {"U. User Editor", 'U'},
+                                 {"X. Update Sub/Directory Maximums", 'X'},
+                                 {"W. wwivd Configuration", 'W'},
+                                 {"Q. Quit", 'Q'}};
 
     int selected_hotkey = -1;
     {
@@ -409,12 +430,17 @@ int WInitApp::main(int argc, char** argv) {
     case 'U':
       user_editor(config);
       break;
-    case 'W': wwivd_ui(config); break;
-    case 'X': up_subs_dirs(config.datadir()); break;
+    case 'W':
+      wwivd_ui(config);
+      break;
+    case 'X':
+      up_subs_dirs(config.datadir());
+      break;
     case '$': {
       vector<string> lines;
       lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
-      lines.push_back(StringPrintf("WWIV %s%s wwivconfig compiled %s", wwiv_version, beta_version, const_cast<char*>(wwiv_date)));
+      lines.push_back(StringPrintf("WWIV %s%s wwivconfig compiled %s", wwiv_version, beta_version,
+                                   const_cast<char*>(wwiv_date)));
       messagebox(window, lines);
     } break;
     }
