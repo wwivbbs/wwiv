@@ -460,7 +460,9 @@ void readmail(int mode) {
           } else {
             string b;
             if (readfile(&(m.msg), "email", &b)) {
-              to_char_array(s2, b);
+              // we know b is much bigger than s2, so don't
+              // use to_char_array
+              strncpy(s2, b.c_str(), sizeof(s2) - 1);
               ss2 = strtok(s2, "\r");
               if (m.fromsys == 32767 || m.fromsys == 32765) {
                 sprintf(s1, "%s", stripcolors(ss2));
