@@ -98,8 +98,8 @@ void Output::execute_ansi() {
       break;
     case 'C': {
       x_ += args[0];
-      x_ = std::min(x_, 79); // HACK: we should use screen size, not 79 like we also
-      // do in Win32ConsoleIO
+      const int screen_width = a()->user()->GetScreenChars();
+      x_ = std::min(x_, screen_width - 1); 
       auto wx = local_io_->WhereX();
       local_io_->GotoXY(wx + args[0], local_io_->WhereY());
     } break;
@@ -227,8 +227,15 @@ int Output::bputch(char c, bool use_buffer) {
       displayed = 1;
       localIO()->Putch(c);
       current_line_.push_back({c, static_cast<uint8_t>(curatr)});
-      x_++;
       const auto screen_width = a()->user()->GetScreenChars();
+      if (c == BACKSPACE) {
+        --x_;  
+        if (x_ < 0) {
+          x_ = screen_width - 1;
+        }
+      } else {
+        ++x_;
+      }
       // Wrap at screen_width
       if (x_ >= static_cast<int>(screen_width)) {
         x_ %= screen_width;
