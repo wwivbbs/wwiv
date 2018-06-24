@@ -47,6 +47,10 @@ What's New in WWIV 5.3 (2018)
 * fixed 8 char packet passwords truncating the last character.
 * Emails packed in PKT files will now import, previously only
   ones in bundles (*.su?, *.mo?, etc) would import.
+! Fixed the oubound FTN gateway number (network3 thought it
+  was 32675 not 32765). This means you need to run network3
+  on all FTN node networks (i.e. if fsxnet is network .2 in init
+  then run "network3 .2" to rebuild the bbsdata.* files).
 
 What's New in WWIV 5.3 (2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
