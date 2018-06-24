@@ -117,12 +117,12 @@ static void rename_wwivnet_pend(const string& directory, const string& filename)
     LOG(ERROR) << " pending file does not exist: " << pend_file;
     return;
   }
-  const string pend_filename(pend_file.full_pathname());
-  const string num = filename.substr(1);
+  const auto pend_filename = pend_file.full_pathname();
+  const auto num = filename.substr(1);
   const string prefix = (to_number<int>(num)) ? "1" : "0";
 
   for (int i = 0; i < 1000; i++) {
-    const string new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
+    const auto new_filename = StringPrintf("%sp%s-0-%u.net", directory.c_str(), prefix.c_str(), i);
     VLOG(2) << new_filename;
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";

@@ -195,7 +195,7 @@ public:
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line, false));
 
       dy_start_ = y;
-      vector<pair<fido_mailer_t, string>> mailerlist = {{fido_mailer_t::flo, "FLO"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
+      vector<pair<fido_mailer_t, string>> mailerlist = {{fido_mailer_t::flo, "BSO (FLO)"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
       items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type));
 
       vector<pair<fido_transport_t, string>> transportlist = {

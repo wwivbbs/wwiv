@@ -211,13 +211,14 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
 }
 
 static bool add_feedback_header(const std::string& net_dir, std::ostringstream& text) {
-  text << "\r\n";
   TextFile feedback_hdr(net_dir, "fbackhdr.net", "rt");
-  if (feedback_hdr.IsOpen()) {
-    string line;
-    while (feedback_hdr.ReadLine(&line)) {
-      text << line << "\r\n";
-    }
+  if (!feedback_hdr.IsOpen()) {
+    return true;
+  }
+  text << "\r\n";
+  auto lines = feedback_hdr.ReadFileIntoVector();
+  for (const auto& line : lines) {
+    text << line << "\r\n";
   }
   return true;
 }
@@ -254,12 +255,12 @@ static bool add_feedback_general_info(
     }
 
     // Make num hops map.
-    int hops = hops_to_count[d.numhops];
+    auto hops = hops_to_count[d.numhops];
     hops_to_count[d.numhops] = hops + 1;
 
     total_hops += d.numhops;
     if (d.forsys != WWIVNET_NO_NODE) {
-      int num_route = system_to_route_count[d.forsys];
+      auto num_route = system_to_route_count[d.forsys];
       system_to_route_count[d.forsys] = num_route + 1;
     }
   }
