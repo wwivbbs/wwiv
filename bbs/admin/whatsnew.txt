@@ -35,6 +35,18 @@ What's New in WWIV 5.3 (2018)
   with the 5.3 release and will be removed for 5.4
 ! INIT has been renamed to WWIVCONFIG.  Please delete init.exe or
   ./init when you upgrade to 5.3
++ wwivutil dump will now display control characters (like [^A]
+  for control-A)
+* On FTN messages bank lines were being striped accidentally,
+  this is now fixed.
++ wwivconfig has some new parameters for how it works with 4.x
+  WWIV installs.  --4xx will launch a menu with only the items
+  that work with 4.x (like wwivd editor and network.json editor)
+  run "wwivconfig --help" for the latest list of command-line parameters.
+* Fixed internal editor word wrapping on linux.
+* fixed 8 char packet passwords truncating the last character.
+* Emails packed in PKT files will now import, previously only
+  ones in bundles (*.su?, *.mo?, etc) would import.
 
 What's New in WWIV 5.3 (2017)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
