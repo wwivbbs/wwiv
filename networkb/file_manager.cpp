@@ -143,7 +143,7 @@ void FileManager::rename_wwivnet_pending_files() {
 void FileManager::rename_ftn_pending_files() {
   VLOG(1) << "STATE: rename_ftn_pending_files";
   for (const auto& file : received_files()) {
-    if (is_bundle_file(file)) {
+    if (is_bundle_file(file) || is_packet_file(file)) {
       LOG(INFO) << "       renaming_pending_file: dir: " << dirs_.net_dir() << "; file: " << file;
       if (!File::Exists(dirs_.inbound_dir(), file)) {
         File::Move(FilePath(dirs_.net_dir(), file), FilePath(dirs_.inbound_dir(), file));

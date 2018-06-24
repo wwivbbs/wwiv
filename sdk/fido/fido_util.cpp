@@ -98,7 +98,7 @@ std::string dow_extension(int dow_num, int bundle_number) {
 }
 
 bool is_bundle_file(const std::string& name) {
-  static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa", "su" };
+  static const std::vector<string> dow = { "su", "mo", "tu", "we", "th", "fr", "sa" };
   auto dot = name.find_last_of('.');
   if (dot == string::npos) { return false; }
   auto ext = name.substr(dot + 1);
@@ -106,6 +106,20 @@ bool is_bundle_file(const std::string& name) {
   ext.pop_back();
   StringLowerCase(&ext);
   return contains(dow, ext);
+}
+
+bool is_packet_file(const std::string& name) {
+  auto dot = name.find_last_of('.');
+  if (dot == string::npos) {
+    return false;
+  }
+  auto ext = name.substr(dot + 1);
+  if (ext.length() != 3) {
+    return false;
+  }
+  ext.pop_back();
+  StringLowerCase(&ext);
+  return ext == "pkt";
 }
 
 static string control_file_extension(fido_bundle_status_t status) {

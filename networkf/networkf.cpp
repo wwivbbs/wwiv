@@ -210,7 +210,7 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
   string actual = header.password;
   if (!iequals(expected, actual)) {
     LOG(ERROR) << "Unexpected packet password from node: " << address << "; actual: '" << actual
-               << "; expected: " << expected << "'";
+               << "'; expected: '" << expected << "'";
     // Move to BADMSGS
     f.Close();
     wwiv::sdk::fido::FtnDirectories dirs(config.root_directory(), net);

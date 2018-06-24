@@ -145,6 +145,13 @@ static int dump_packet_file(const std::string& filename) {
     auto dt = fido_to_daten(msg.vh.date_time);
     auto roundtrip_dt = daten_to_fido(dt);
 
+    cout << "=============================================================================="
+         << endl;
+    cout << "HEADER:" << endl;
+    cout << "Packet date: " << header.year << "-" << header.month << "-" << header.day << endl;
+    cout << "PW: '" << header.password << "'" << endl;
+    cout << "=============================================================================="
+         << endl;
     cout << "msg_type:" << msg.nh.message_type << std::endl;
     cout << "cost:    " << msg.nh.cost << std::endl;
     cout << "to:      " << msg.vh.to_user_name << "(" << msg.nh.dest_net << "/" << msg.nh.dest_node
