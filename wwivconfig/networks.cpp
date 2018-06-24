@@ -230,7 +230,6 @@ public:
       if (ch == KEY_ENTER || ch == TAB || ch == 13) {
         y = 1;
         items.add_labels({new Label(LBL1_POSITION, y++, LABEL_WIDTH, "FTN Address:"),
-                          new Label(LBL1_POSITION, y++, LABEL_WIDTH, "FTN Address:"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Nodelist Base:"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Inbound Dir:"),
                           new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Temp In Dir:"),
