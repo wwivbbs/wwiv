@@ -50,6 +50,12 @@ std::string StrCat(const A& a, const Args&... args) {
   return ss.str();
 }
 
+/**
+ * Safe string -> character array. Ensures the character
+ * array is null-terminated.
+ * NB: Will assert on Windows if out is too small. Will attempt
+ * to use safe versions of the CRT as possible in the future.
+ */
 template <size_t SIZE>
 bool to_char_array(char(&out)[SIZE], const std::string& s) {
 #ifdef _MSC_VER
@@ -58,6 +64,17 @@ bool to_char_array(char(&out)[SIZE], const std::string& s) {
   strncpy(out, s.c_str(), SIZE);
 #endif  // _WIN32
   out[SIZE - 1] = '\0';
+  return s.size() <= SIZE;
+}
+
+/**
+ * Safe string -> character array. 
+ * ** NB: ** Does not ensure the character array is null-terminated.
+ * Also won't assert on Windows if out is too small.
+ */
+template <size_t SIZE>
+bool to_char_array_no_null(char(&out)[SIZE], const std::string& s) {
+  strncpy(out, s.c_str(), SIZE);
   return s.size() <= SIZE;
 }
 

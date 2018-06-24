@@ -464,7 +464,7 @@ void readmail(int mode) {
               // use to_char_array
               strncpy(s2, b.c_str(), sizeof(s2) - 1);
               ss2 = strtok(s2, "\r");
-              if (m.fromsys == 32767 || m.fromsys == 32765) {
+              if (m.fromsys == 32767 || m.fromsys == FTN_FAKE_OUTBOUND_NODE) {
                 sprintf(s1, "%s", stripcolors(ss2));
               } else {
                 sprintf(s1, "%s %u@%u.%s (%s)",

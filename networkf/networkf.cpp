@@ -207,7 +207,12 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
 
   FidoAddress address(header.orig_zone, header.orig_net, header.orig_node, header.orig_point, "");
   string expected = callout.packet_config_for(address).packet_password;
-  string actual = header.password;
+  // Do this dance to ensure that if there's no trailing null
+  // on header.password, we add one.
+  char temp[9];
+  memset(temp, 0, sizeof(temp));
+  strncpy(temp, header.password, sizeof(header.password));
+  string actual = temp;
   if (!iequals(expected, actual)) {
     LOG(ERROR) << "Unexpected packet password from node: " << address << "; actual: '" << actual
                << "'; expected: '" << expected << "'";
@@ -576,9 +581,10 @@ static packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_ad
       ((header.capabilities & 0xff00) >> 8) | ((header.capabilities & 0xff) << 8);
   header.product_code_high = 0;
   header.product_code_low = static_cast<uint8_t>(wwiv_net_version & 0xff);
-  // Add in packet password.
-  to_char_array(header.password, packet_password);
-
+  // Add in packet password.  We don't want to ensure we have
+  // a trailing null since we may want all 8 bytes to be usable
+  // by the password.
+  to_char_array_no_null(header.password, packet_password);
   return header;
 }
 

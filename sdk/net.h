@@ -308,7 +308,7 @@ struct net_call_out_rec {
  * Indicates this is the fake FTN outbound node.  This should
  * not be exposed to users unless required. It's an implementation detail.
  */
-static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 32675;
+static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 32765;
 
 /**
  * Used to indicate no node number in functions that return -1 when no
