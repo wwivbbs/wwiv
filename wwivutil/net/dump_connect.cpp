@@ -60,7 +60,7 @@ int DumpConnectCommand::Execute() {
   }
 
   for (const auto& c : connects) {
-    cout << "CONNECT.NET information: : " << c.first << endl;
+    cout << "connect.net information: : " << c.first << endl;
     cout << "===========================================================" << endl;
     cout << c.second.ToString() << endl;
   }

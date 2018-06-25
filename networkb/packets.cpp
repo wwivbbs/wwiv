@@ -46,7 +46,7 @@ bool send_network_email(const std::string& filename,
   std::vector<uint16_t> list,
   const std::string& text, const std::string& byname, const std::string& title) {
 
-  LOG(INFO) << "Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename << "; title: " << title;
+  LOG(INFO) << "send_network_email: Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename << "; title: " << title;
 
   File file(network.dir, filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -139,7 +139,7 @@ bool write_wwivnet_packet(
   const string& filename,
   const net_networks_rec& net, const Packet& p) {
 
-  LOG(INFO) << "Writing type " << p.nh.main_type << "/" << p.nh.minor_type << " message to packet: " << filename;
+  LOG(INFO) << "write_wwivnet_packet: Writing type " << p.nh.main_type << "/" << p.nh.minor_type << " message to packet: " << filename;
   if (p.nh.length != p.text.size()) {
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename;
     LOG(ERROR) << "Mismatched text and p.nh.length.  text =" << p.text.size()

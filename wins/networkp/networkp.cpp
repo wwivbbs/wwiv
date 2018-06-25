@@ -406,7 +406,7 @@ int uu_packets(void)
 		num_sys_list = (int) (_filelength(f) / sizeof(net_system_list_rec));
 		if ((netsys = (net_system_list_rec *) malloc((num_sys_list + 2) * sizeof(net_system_list_rec))) == NULL) 
 		{
-			log_it( true, "\n \xFE Unable to allocate %d bytes of memory for BBSDATA.NET",
+			log_it( true, "\n \xFE Unable to allocate %d bytes of memory for bbsdata.net",
 				(int) (num_sys_list + 2) * sizeof(net_system_list_rec));
 			sh_close(f);
 			return false;

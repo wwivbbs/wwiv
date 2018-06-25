@@ -296,7 +296,7 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
     text.append(FidoToWWIVText(msg.vh.text));
 
     nh.length = text.size();
-    // Create file, write to LOCAL.NET for network2 to import.
+    // Create file, write to local.net for network2 to import.
     Packet packet(nh, {}, text);
     if (!write_wwivnet_packet(LOCAL_NET, net, packet)) {
       LOG(ERROR) << "ERROR Writing WWIV packet for message: " << packet.nh.main_type << "/"
@@ -1039,10 +1039,10 @@ int main(int argc, char** argv) {
       return 1;
     }
 
-    VLOG(1) << "Reading BBSDATA.NET..";
+    VLOG(1) << "Reading bbsdata.net..";
     auto b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
-      LOG(ERROR) << "ERROR: Unable to read BBSDATA.NET.";
+      LOG(ERROR) << "ERROR: Unable to read bbsdata.net.";
       LOG(ERROR) << "       Do you need to run network3?";
       return 3;
     }
@@ -1129,7 +1129,7 @@ int main(int argc, char** argv) {
           LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
           // Let's write it to dead.net
           if (!write_wwivnet_packet(DEAD_NET, net, p)) {
-            LOG(ERROR) << "Error writing to DEAD.NET";
+            LOG(ERROR) << "Error writing to dead.net";
           }
         }
       }

@@ -288,13 +288,13 @@ static bool add_feedback_general_info(
   Connect connect(net.dir);
   const auto c = connect.node_config_for(net.sysnum);
   if (c == nullptr) {
-    text << " ** Missing CONNECT.NET entries.";
+    text << " ** Missing connect.net entries.";
   } else {
     for (const auto& callout_node : c->connect) {
       const auto cnc = callout.net_call_out_for(callout_node);
       if (cnc == nullptr) {
-        text << "Can call " << callout_node << " but isn't in CALLOUT.NET.\r\n"
-          << "  ** Add to CALLOUT.NET\r\n\r\n";
+        text << "Can call " << callout_node << " but isn't in callout.net.\r\n"
+          << "  ** Add to callout.net\r\n\r\n";
       }
     }
   }
@@ -324,13 +324,13 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
 
 static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, const string& dir) {
   {
-    LOG(INFO) << "Writing BBSDATA.NET...";
+    LOG(INFO) << "Writing bbsdata.net...";
     DataFile<net_system_list_rec> bbsdata_net_file(dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_net_file.WriteVector(bbsdata_data);
    }
   update_timestamps(dir);
   {
-    LOG(INFO) << "Writing BBSDATA.IND...";
+    LOG(INFO) << "Writing bbsdata.ind...";
     vector<uint16_t> bbsdata_ind_data;
     for (const auto& n : bbsdata_data) {
       bbsdata_ind_data.push_back((n.forsys == WWIVNET_NO_NODE) ? 0 : n.sysnum);
@@ -339,7 +339,7 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
     bbsdata_ind_file.WriteVector(bbsdata_ind_data);
   }
   {
-    LOG(INFO) << "Writing BBSDATA.ROU...";
+    LOG(INFO) << "Writing bbsdata.rou...";
     vector<uint16_t> bbsdata_rou_data;
     for (const auto& n : bbsdata_data) {
       bbsdata_rou_data.push_back(n.forsys);
@@ -393,7 +393,7 @@ static void rename_pending_files(const string& dir) {
 static void ensure_contact_net_entries(const Callout& callout, const net_networks_rec& net) {
   Contact contact(net, true);
   for (const auto& entry : callout.callout_config()) {
-    // Ensure we have a contact entry for each node in CALLOUT.NET
+    // Ensure we have a contact entry for each node in callout.net
     contact.ensure_rec_for(entry.first);
   }
 }
@@ -530,7 +530,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
 }
 
 static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
-  VLOG(1) << "Reading BBSLIST.NET..";
+  VLOG(1) << "Reading bbslist.net..";
   const auto& net = net_cmdline.network();
   BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
   if (b.empty()) {
@@ -551,7 +551,7 @@ static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_
   write_bbsdata_files(bbsdata_data, net.dir);
   write_bbsdata_reg_file(b, net.dir);
 
-  VLOG(1) << "Reading CALLOUT.NET...";
+  VLOG(1) << "Reading callout.net...";
   Callout callout(net);
   ensure_contact_net_entries(callout, net);
   update_filechange_status_dat(net_cmdline.config().datadir());

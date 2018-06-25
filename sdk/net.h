@@ -222,7 +222,7 @@ struct net_networks_rec_disk {
 
 /* 
  * This data is also read in from a text file.  It tells how much it costs for
- * sysnum to call out to other systems.  It is stored in CONNECT.NET.
+ * sysnum to call out to other systems.  It is stored in connect.net.
  * This is never written as binary data.
  */
 struct net_interconnect_rec {
@@ -309,6 +309,12 @@ struct net_call_out_rec {
  * not be exposed to users unless required. It's an implementation detail.
  */
 static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 32765;
+
+/**
+ * Indicates this is the fake FTN outbound node.  This should
+ * not be exposed to users unless required. It's an implementation detail.
+ */
+static constexpr int16_t INTERNET_FAKE_OUTBOUND_NODE = 32767;
 
 /**
  * Used to indicate no node number in functions that return -1 when no

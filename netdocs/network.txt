@@ -155,7 +155,7 @@ occur in your network connection.  Under v4.22 of the BBS
 software the sysop can access these logs from the bulletin  
 board by typing a comma at the main menu.                   
                                                             
-    The sysop should also occasionally review his DEAD.NET  
+    The sysop should also occasionally review his dead.net  
 file which will be in DATA.  Messages in this file are      
 those which were bound for another system but which cannot  
 be delivered after having arrived on your system.  Often    
@@ -164,7 +164,7 @@ be due to a board's having subscribed to a sub and having
 been put on the distribution list for it before that board  
 has been added to the bbslist.  Thus the system does not    
 know where to deliver it.  If that is the case, the         
-DEAD.NET should be left alone because once the system is    
+dead.net should be left alone because once the system is    
 added, the network software will deliver that mail to the   
 new system.    The second case would occur when a board has 
 left the network or has been temporarily disconnected from  
@@ -177,7 +177,7 @@ you should check with the board's AC to be sure that the
 board is out of the network.                                
                                                             
     In addition, the sysop should write the host of the sub 
-whose mail is going to DEAD.NET and inform the host of      
+whose mail is going to dead.net and inform the host of      
 which board is no longer on the network and request that    
 host delete the board from the distribution list. NET32     
 and up also has a feature to report on undeliverable e-mail 
@@ -301,13 +301,13 @@ network you are interested in.
     The node number should be entered in wwivconfig under the
 network settings. You should also insure that your     
 board name and telephone number are entered exactly as they 
-are shown in the BBSLIST.NET file which are also discussed later.                                   
+are shown in the bbslist.net file which are also discussed later.                                   
                                                             
 =============                                               
- CALLOUT.NET                                               
+ callout.net                                               
 =============                                               
                                                             
-    You will have a CALLOUT.NET file which should be placed 
+    You will have a callout.net file which should be placed 
 in your DATA directory, or in the case of multiple-networks-
  -in the date directory for each network, and which will    
  show the systems that you connect with. This file is in    
@@ -373,7 +373,7 @@ feature only works with WWIV v4.12 or higher.
   +    The plus parameter indicates that your board does    
 not call the indicated node; instead, that node should be   
 calling you. If both of you have the + parameter in         
-CALLOUT.NET then no transfers will take place between you.  
+callout.net then no transfers will take place between you.  
                                                             
   ~    The tilde (~) means that your system will never call 
 out to the other system, and that the other system will     
@@ -418,15 +418,15 @@ used for local connections if desired.
 ===========
  Passwords                                                  
 ===========
-   You should enter the password in your CALLOUT.NET that
+   You should enter the password in your callout.net that
 you and your connection agreed upon.     
 For more information on passwords, see the section on Trouble        
 Shooting NetWork Connections.  Also note that the password  
 will be in quotation marks as the last item on each line    
-of CALLOUT.NET.  If you lose your password for some reason  
+of callout.net.  If you lose your password for some reason  
 such as corrupt files or hard disk failure, you will need   
 to contact the other sysop to have the password removed     
-from his CALLOUT.NET file so that a new one may be          
+from his callout.net file so that a new one may be          
 established.     
 
 ==================
@@ -446,7 +446,7 @@ While both methods will work for small networks, the large
 method must be used when a network approaches 500 systems   
 due to the way that some of the software functions.  A      
 small network will only need two of the files mentioned     
-below (BBSLIST.NET and CONNECT.NET) and all nodes will      
+below (bbslist.net and connect.net) and all nodes will      
 have a listing in each.  Large networks will use several    
 BBSLIST and CONNECT files.  All of these files should be    
 placed in the DATA directory if your board is only on one   
@@ -454,10 +454,10 @@ network.  If you are on more than one network, then the
 files for a particular network should be in its separate    
 directory as you defined it in wwivconfig option N.     
 
-Note: Net51 and later only support the BBSLIST.NET and
-CONNECT.NET format (not the .## formats).          
+Note: Net51 and later only support the bbslist.net and
+connect.net format (not the .## formats).          
                                                             
-   BBSLIST.NET -  For a small network, this file can list   
+   bbslist.net -  For a small network, this file can list   
 all nodes participating in the network.  The general format 
 of this file is discussed in the appendices.  A small       
 network does not need any of the remaining BBSLIST.x files. 
@@ -466,14 +466,14 @@ stamp and will normally be two bytes long.  If you did
 not get a file like this with your network data files and   
 if things are not functioning properly, you may need to     
 create this file.  All that is necessary is to create a     
-file name of BBSLIST.NET and put a single space inside of   
+file name of bbslist.net and put a single space inside of   
 it and save it.                                             
                                                             
-  CONNECT.NET -- This file will reflect the connections of
+  connect.net -- This file will reflect the connections of
     all nodes in the network.  For a large network, this will   
     be a time/date stamp type file similar to that discussed 
-    for the BBSLIST.NET.  If things do not work right and the           
-    CONNECT.NET file is missing, try creating it with a space
+    for the bbslist.net.  If things do not work right and the           
+    connect.net file is missing, try creating it with a space
     inside.                    
 
      If your connection within the group will be calling    
@@ -501,7 +501,7 @@ discussed in the appendix.
       NETWORK3                                              
                                                             
 That will run NETWORK3.EXE which analyzes your BBSLIST,     
-CONNECT, and CALLOUT.NET files.  If you add a Y after the   
+CONNECT, and callout.net files.  If you add a Y after the   
 command (ie space Y) then the network will send you a form  
 letter as feedback letting you know the results of the      
 analysis and sometimes identifying problems with your       
@@ -522,7 +522,7 @@ avoided.
    If you are joining more than one network, it is          
 important that you establish these connections ONE AT A     
 TIME.  The reason for this is simply that if you have       
-several CALLOUT.NET files that have not established         
+several callout.net files that have not established         
 passwords and so forth for your connections, it is          
 possible to have the passwords get confused (ie an          
 incorrect association between network and password          
@@ -765,21 +765,21 @@ files which should be placed in the same directory as your
 BBS.EXE file.  The files which belong in your DATA          
 directory are discussed in the next section.                
                                                             
-  1)   NETWORK.EXE - This file is provided for compatibility
+  1)   network.exe - This file is provided for compatibility
 with legacy net38 and below. It spawns networkb for binkp
 connections over the internet.                             
 
-  2)   NETWORK1.EXE - This program analyzes P*.NET files to
+  2)   network1.exe - This program analyzes P*.NET files to
 determine which are for local distribution and which are to 
 be sent to boards that you connect with.  The latter files  
-will be stored in DATA in Sxxxx.NET files where xxxx is the 
+will be stored in DATA in sxxxx.net files where xxxx is the 
 node number of the receiving board.                                
                                                             
-  3)   NETWORK2.EXE - This program analyzes local mail and
+  3)   network2.exe - This program analyzes local mail and
 distributes it to the proper message sub or to email.       
                                                             
-  4)   NETWORK3.EXE - This program analyzes CONNECT.NET and
-BBSLIST.NET. The analysis may cause the network software to 
+  4)   network3.exe - This program analyzes connect.net and
+bbslist.net. The analysis may cause the network software to 
 leave you messages.  The sysop should read these messages   
 and respond to them ASAP.  These messages are discussed in  
 the Appendix.
@@ -791,17 +791,17 @@ Sysop does not want to go out over the network....such as
 one which violates the spirit or rules of a Sub.  As a      
 general rule, a Sysop should not use LNET to read outgoing  
 messages.  One exception to this is to use LNET to read     
-the messages in DEAD.NET.                                
+the messages in dead.net.                                
                                                             
-   DEAD.NET is a file to be found in DATA for messages      
+   dead.net is a file to be found in DATA for messages      
 that could not be delivered because the system and/or       
 routing was in error.  The header for these messages in     
-DEAD.NET indicates the systems which it is for and the      
+dead.net indicates the systems which it is for and the      
 number of days since it was written.  Sometimes messages    
 go there because a new board has not gotten set up yet; but 
 often they go there because one or more of the destination  
 boards have gone down.  If these messages are several weeks 
-old, there is probably no harm in deleting the DEAD.NET.    
+old, there is probably no harm in deleting the dead.net.    
                                                             
   6)   NETINIT.C - This file needs to be used only if you   
 have modified the structure or size of the userrec structure.  
@@ -812,7 +812,7 @@ store information necessary for the network in the CONFIG.DAT file.
 systems that do not run WWIV BBS software a means of auto-  
 requesting subs.   
 
-  8) WWIVUTIL - This is the main utility program for WWIV
+  8) wwivutil - This is the main utility program for WWIV
   and has a "net command to handle various WWIVnet operations.                                         
                                                             
   Additional files may be added to the network as the       
@@ -830,9 +830,9 @@ group or zone coordinators who send out updates.  As
 mentioned earlier, those executables (like DEx.EXE type     
 files) belong in the network data directory.                
                                                             
-   In addition, the BBSLIST.NET and possibly BBSLIST.1,     
-BBSLIST.2, etc., the CONNECT.NET and possibly CONNECT.1,    
-CONNECT.2, etc. and the CALLOUT.NET files must be present   
+   In addition, the bbslist.net and possibly BBSLIST.1,     
+BBSLIST.2, etc., the connect.net and possibly CONNECT.1,    
+CONNECT.2, etc. and the callout.net files must be present   
 in order for the network to function properly.  When the    
 network analysis is performed by NETWORK3.EXE, additional   
 binary data files will be created such as CONTACT.NET,      
@@ -866,7 +866,7 @@ is the same order that you see when you use option N in
 wwivconfig.  The first network listed is associated with .0; the  
 second with .1, etc.                                        
                                                             
-   For example, to force LNET to run on the DEAD.NET file   
+   For example, to force LNET to run on the dead.net file   
 in the second network listed, you would use LNET .1.  To    
 force a network analysis on the third network listed, you   
 would use NETWORK3 Y .2.  Under NET31, it was necessary to  
@@ -895,12 +895,12 @@ First of all, you need to find ONE other system willing to
 join your network. Once this recruitment task is complete,  
 you need to create two network files:                       
                                                             
-   CONNECT.NET                                              
+   connect.net                                              
    ~~~~~~~~~~~                                              
      @1  2=0.00                                             
      @2  1=0.00                                             
                                                             
-     BBSLIST.NET                                            
+     bbslist.net                                            
      ~~~~~~~~~~~                                            
      @1   &  *111-111-1111 #2400  "@1's BBS"                
      @2      *222-222-2222 #2400  "@2's BBS"                
@@ -911,16 +911,16 @@ into wwivconfig, section N, and add in the information as
 requested in the menu there (Network Name, node number,     
 data directory).                                            
                                                             
-Each node creates their own CALLOUT.NET file, which goes    
+Each node creates their own callout.net file, which goes    
 in the network data directory, thusly:                      
                                                             
      For @1:                                                
-     CALLOUT.NET                                            
+     callout.net                                            
      ~~~~~~~~~~~                                            
      @2                                                     
                                                             
      For @2                                                 
-     CALLOUT.NET                                            
+     callout.net                                            
      ~~~~~~~~~~~                                            
      @1                                                     
                                                             
@@ -947,7 +947,7 @@ network of two systems.
      ~~~~~~~~~~~~~~~~~~~~                                   
 The basic network above is called a 'cost factored'         
 network.  You'll notice network cost factors after each     
-node number in a connect line in the CONNECT.NET file       
+node number in a connect line in the connect.net file       
 (e.g. 1=0.00).  These cost factors are taken into account   
 by the networking software to determine routing of email.   
 It really won't matter in a two node network just how the   
@@ -1099,9 +1099,9 @@ automatic.
                                                             
                                                             
      Found:     22 AC's    278 systems                      
-     Using standard BBSLIST.NET and CONNECT.NET files.      
-     B> Send BBSLIST.NET to network                         
-     C> Send CONNECT.NET to network                         
+     Using standard bbslist.net and connect.net files.      
+     B> Send bbslist.net to network                         
+     C> Send connect.net to network                         
      H> Send FBACKHDR                                       
      N> Send WWIVnews                                       
      F> Send feedback                                       
@@ -1190,7 +1190,7 @@ call during any agreed upon hours.  If it is not during
 the agreed upon hours, the network software will prompt     
 you "Are you sure?"  An affirmative response will allow the 
 call to proceed.  If the call does not connect, you should  
-double check the CALLOUT.NET, CONNECT.0, and BBSLIST.x to   
+double check the callout.net, CONNECT.0, and BBSLIST.x to   
 be sure that no typographical errors were made.  Zeros can- 
 not be o's, group designators must be correct, etc.         
                                                             
@@ -1203,8 +1203,8 @@ error.
     If no typographical errors were made, run network3.exe  
 from DOS level and force a reanalysis.  If after doing all  
 of these things, the board will still not call out, go to   
-your network data and delete BBSDATA.NET, BBSDATA.IND, and  
-BBSDATA.ROU as well as CONTACT.NET and rerun the NETWORK3   
+your network data and delete bbsdata.net, bbsdata.ind, and  
+bbsdata.rou as well as CONTACT.NET and rerun the NETWORK3   
 program which will force the reestablishment of the deleted 
 files.  This will often cure the problem.  If it does not,  
 first check your NETDAT0.LOG in GFILES to see if it         
@@ -1220,7 +1220,7 @@ Your board calls out and gets a "Bad PW" message
    The "Bad Password" message will show up in your net log  
 which is readable from WFC by pressing N.  If that is the   
 case and a successful connection has never been made, then  
-the remote sysop should ascertain that the CALLOUT.NET is   
+the remote sysop should ascertain that the callout.net is   
 correct.  If so, then check the CONNECT.x and BBSLIST.x.    
 If a successful connection has been made in the past and a  
 password between the two boards has been established, then  
@@ -1234,7 +1234,7 @@ connected with the other board, then the error may be due
 to the other sysop's not having setup for the connection.   
 You should contact him and ascertain whether or not the     
 connection if reflected in his CONNECT.xxx file or          
-CALLOUT.NET file.  It may also be that a faulty connection  
+callout.net file.  It may also be that a faulty connection  
 caused his board to create a password whereas yours did     
 not.                                                        
                                                             
@@ -1531,7 +1531,7 @@ numbers that are NOT allowed to automatically subscribe
 from subscribing to any of your subs, place their system    
 number in the DISALLOW.NET file.                            
                                                             
-SA*.NET (in GFILES directory) - This is a text file that is 
+SA*.NET (in gfiles directory) - This is a text file that is 
 sent, as part of a pseudo-email, to a sysop when they are   
 added to a sub.  If you host sub 1701, then the file        
 'SA1701.NET' would be appended as part of a piece of mail   
@@ -1541,7 +1541,7 @@ any rules of the sub, etc.
 The DISALLOW.NET file may still be used with NET32 and      
 higher.                                                     
                                                             
-    SR*.NET (in GFILES directory) - If a system is not      
+    SR*.NET (in gfiles directory) - If a system is not      
 allowed to automatically subscribe to a sub (if the sub     
 isn't listed in the ALLOW.NET, for example), then this      
 piece of mail is appended to a message informing the        
@@ -1637,7 +1637,7 @@ network.  (see the WWIV source code, or WWIVnet technical
 docs, for info on that.)                                    
                                                             
     All received message packets that are destined for the  
-local system are stored into "LOCAL.NET" in your network    
+local system are stored into "local.net" in your network    
 data directory.  The network2.exe program is then run to    
 process the messages.  If any messages are of the "new      
 external" type (main_type_new_extern, 0x001b), then they    

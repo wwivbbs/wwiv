@@ -162,7 +162,7 @@ int main(int argc, char** argv) {
     // If the network type is a FTN network.
     if (net.type == network_type_t::ftn) {
       wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
-      // Import everything into LOCAL.NET
+      // Import everything into local.net
       if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
         System(create_network_cmdline(net_cmdline, 'f', verbose, "import"));
       }

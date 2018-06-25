@@ -31,7 +31,7 @@ namespace wwivutil {
 class DumpConnectCommand final: public UtilCommand {
 public:
   DumpConnectCommand()
-    : UtilCommand("connect", "Dumps parsed representation of CONNECT.NET") {}
+    : UtilCommand("connect", "Dumps parsed representation of connect.net") {}
   int Execute() override final;
   std::string GetUsage() const override final;
   bool AddSubCommands() override final { return true; }

@@ -83,9 +83,10 @@ static_assert(sizeof(network_contact_record) == sizeof(NetworkContact),
   "network_contact_record == NetworkContact");
 
  /**
-  * Class for manipulating CONTACT.NET
+  * Class for manipulating contact.net
   */
 class Contact {
+
  public:
   Contact(const net_networks_rec& net, bool save_on_destructor);
   // VisibleForTesting

@@ -164,7 +164,7 @@
  reserved for native FTN style networking.
 
  The lists of nodes are distributed in two sets of files:
- BBSLIST.NET and CONNECT.NET.  The CONNECT.NET file
+ bbslist.net and connect.net.  The connect.net file
  assigns costs to each connection for each system.
 
  Like all BBS networks, the primary purpose is to exchange
@@ -205,11 +205,11 @@
  network1 is the first of the two mail tossers.  This
  one takes the incoming packet received by NETWORK.EXE and
  distributed the messages within to their rightful places.
- Local mail goes into LOCAL.NET, while mail passing through
+ Local mail goes into local.net, while mail passing through
  to other systems is tossed into packet files for the next
  hop.
 
- network2 tosses the local messages in LOCAL.NET.  Most
+ network2 tosses the local messages in local.net.  Most
  are messages for email or local subboards, but there are
  also network updates, sub REQuests, software "pings," and
  other special purpose message types.  It also has the
@@ -447,7 +447,7 @@ struct net_header_rec {
 
   3.   If tosys is this system, process the file locally
        (in the case of network1, the message is copied
-       to LOCAL.NET for processing by the local packet
+       to local.net for processing by the local packet
        processor).
 
   4.   If tosys is an unknown system or unreachable, put
@@ -586,9 +586,9 @@ struct net_header_rec {
         0 -- Feedback to sysop from the NC.  This is sent
        to the #1 account as source-verified email.
 
-        1 -- BBSLIST.NET -- Node list.
+        1 -- bbslist.net -- Node list.
 
-        2 -- CONNECT.NET -- Connections list.
+        2 -- connect.net -- Connections list.
 
         3 -- SUBS.LST -- List of subboards ("subs")
        available through the network.  This has been
@@ -872,15 +872,15 @@ NETXX actually has two different types of node lists, as
 mentioned elsewhere.  We'll take these separately, then
 discuss figuring out the routing.
 
- A.  NETXX -- BBSLIST.NET & CONNECT.NET
+ A.  NETXX -- bbslist.net & connect.net
 
  In the beginning of NETXX, there were only two files
  needed to keep up with the systems in the network --
- BBSLIST.NET and CONNECT.NET.  Though this is rarely used
+ bbslist.net and connect.net.  Though this is rarely used
  now, there are still some smaller networks which use these
  files, so they should be discussed.
 
- BBSLIST.NET holds a listing of what systems are in the
+ bbslist.net holds a listing of what systems are in the
  network. Each system has an entry, with the systems
  usually grouped by area code.  The format for each
  system's line: system number (preceded by @), system phone
@@ -927,34 +927,34 @@ discuss figuring out the routing.
  phone number: ^ -- Area Code coordinator (AC). & --
  Network Coordinator (NC). % -- Group Coordinator (GC) Note
  that since there can only be one Network Coordinator, the
- "&" should only appear once in the BBSLIST.NET file. Also,
+ "&" should only appear once in the bbslist.net file. Also,
  the "%" is not likely to be seen except in the Group setup
  described below, since this setup has no Groups.
 
- The first line of the BBSLIST.NET must be a tilde (~)
+ The first line of the bbslist.net must be a tilde (~)
  followed by the Unix timestamp (seconds since midnight,
  Jan 1, 1970) indicating the date and time the file was
  sent out by the NC or GC.
 
- CONNECT.NET lists the connection costs between systems.
+ connect.net lists the connection costs between systems.
  The cost listed should be the cost per minute, though for
  most networks using this system, the rule of thumb is 0.00
  for local connects, 0.01 for long distance connects, and
  more for long distance connects that one wants to route
  less mail through.
 
- Each entry in the CONNECT.NET file specifies a one-way
+ Each entry in the connect.net file specifies a one-way
  connection between two systems.  The entries in the
- CONNECT.NET file do NOT need to be in any specific order.
+ connect.net file do NOT need to be in any specific order.
  The format for system's connection entry is: the system
  number (preceded by "@"), first connection and cost
  (separated by "="), second connection and cost, and so
- forth.  Like BBSLIST.NET, the first line is a tilde (~)
+ forth.  Like bbslist.net, the first line is a tilde (~)
  followed by the UNIX timestamp.
 
  Examples:
  1.   If there are two systems, numbered 1 and 2, and each
-      can call each other for free, the CONNECT.NET file
+      can call each other for free, the connect.net file
       would look like:
 
       @1      2=0.00
@@ -965,27 +965,27 @@ discuss figuring out the routing.
       referring to each other.
 
  2.   If there are three systems, each can call the others
-      for free, the CONNECT.NET file would look like:
+      for free, the connect.net file would look like:
 
       @1      2=0.00 3=0.00
       @2      1=0.00 3=0.00
       @3      1=0.00 2=0.00
 
  3.   If system 3 called the other two for $0.10, the
-      CONNECT.NET file would look like:
+      connect.net file would look like:
 
       @1      2=0.00 3=0.10
       @2      1=0.00 3=0.10
       @3      1=0.10 2=0.10
 
 
- In both BBSLIST.NET and CONNECT.NET file, each entry
+ In both bbslist.net and connect.net file, each entry
  begins with identifying the system number (preceded with
  @), allowing system entries to take up more than one line
- -- in larger networks a CONNECT.NET entry can fill more
+ -- in larger networks a connect.net entry can fill more
  than one line.  Everything after the system number
  identifier up to the next "@", corresponds to that system.
- Thus, the CONNECT.NET files above could also be listed as:
+ Thus, the connect.net files above could also be listed as:
 
  @1 2=0.00 3=0.10 @2 1=0.00 3=0.10 @3 1=0.10 2=0.10
 
@@ -1003,18 +1003,18 @@ discuss figuring out the routing.
 
  Thus, the end-of-line indicator (EOL) should be IGNORED.
 
- Neither the BBSLIST.NET nor CONNECT.NET file need to be in
+ Neither the bbslist.net nor connect.net file need to be in
  any specific order.  There cannot, however, be multiple
- entries per system in either BBSLIST.NET or CONNECT.NET.
+ entries per system in either bbslist.net or connect.net.
 
  It is possible for a system to have references in one or
  both of the .NET files, but not be reachable from any
  other system.  For example, two systems may be listed in
- BBSLIST.NET, and listed in CONNECT.NET, but each can only
+ bbslist.net, and listed in connect.net, but each can only
  call the other.  No other system in the network can
  connect with them, so they don't exist, essentially.
- Also, a system can be listed in BBSLIST.NET, but not have
- any entries in CONNECT.NET.  This usually happens for
+ Also, a system can be listed in bbslist.net, but not have
+ any entries in connect.net.  This usually happens for
  systems just joining the network, and those systems
  essentially don't exist either.
 
@@ -1024,8 +1024,8 @@ discuss figuring out the routing.
  different in one direction than it is in the other.  This
  is also valid.
 
- BBSLIST.NET is received across the network as main_type 1,
- minor_type 1 (1/1).  CONNECT.NET is received as main_type
+ bbslist.net is received across the network as main_type 1,
+ minor_type 1 (1/1).  connect.net is received as main_type
  1, minor_type 2 (1/2).
 
  C.  Figuring the Routing
@@ -1060,11 +1060,11 @@ discuss figuring out the routing.
   however, could follow these steps:
 
   1.   System records are read into an array from
-       BBSLIST.NET. The array is of struct 
+       bbslist.net. The array is of struct 
        net_system_list_rec (see below).  All
-       fields are filled from the BBSLIST.NET except numhops
+       fields are filled from the bbslist.net except numhops
        and forsys, which are set to 65535 and 0, respec
-       tively.  For the Group setup, the BBSLIST.NET
+       tively.  For the Group setup, the bbslist.net
        partial updates (.513-.768) are read in next, and
        the indicated changes (existing systems replaced,
        new systems added, systems indicated with "."
@@ -1081,7 +1081,7 @@ discuss figuring out the routing.
        record.
 
   3.   Then, the analysis starts.  The analyzer uses the
-       system's callout list (CALLOUT.NET for NETxx) as a
+       system's callout list (callout.net for NETxx) as a
        base, starting with the first entry and checking
        each of its connnects, spreading out from there to
        THEIR connects.  This is done for each system in the
@@ -1239,7 +1239,7 @@ discuss figuring out the routing.
        there isn't one, end processing.  If there is one,
        run the netmail packet analyzer (network1).
 
-  3.   Check for the local mail file packet (LOCAL.NET).
+  3.   Check for the local mail file packet (local.net).
        If there is none, end processing.  If there is one,
        run the local mail packet analyzer (network2).
 
@@ -1289,27 +1289,27 @@ discuss figuring out the routing.
   the incoming and pending netmail files, mentioned in step
   2 above. The actual name of the P*.NET can vary,
   depending on NETxx version and what program generates it.
-  NETWORK.EXE receives the file as P1-0-1.NET. The "-0" in the
-  middle indicates that NETWORK.EXE created the file (think
-  of it as NETWORK0).  When other NETXX programs generate
+  network.exe receives the file as p1-0-1.net. The "-0" in the
+  middle indicates that network.execreated the file (think
+  of it as network0).  When other NETXX programs generate
   pending netmail files, the middle number indicates which
   program created it (network2, the local mail
   processor, would create a pending netmail file named
-  P1-2-1.NET).  The main reason for this naming system
-  is so that we can tell the source of a P*.NET file being
+  p1-2-1.net).  The main reason for this naming system
+  is so that we can tell the source of a p*.net file being
   processed by the netmail analyzer.
 
-  The WWIV BBS just creates P0.NET (network email,
+  The WWIV BBS just creates p0.net (network email,
   generally) and P1.NET (outggoing sub posts, generally).
   Multi-instance WWIV create P*.nnn (where 'nnn' is the
-  instance number, such as P*.001 for instance 1) while a
+  instance number, such as p*.001 for instance 1) while a
   user is online, but they are renamed to P*.NET after the
   user logs off.
 
   The network1 processes all of the P*.NET files, until
   none are left.  It is important that an alternate
   netmail file analyzer be able to recognize and handle any
-  P*.NET file, not just Pn.NET.
+  p*.NET file, not just pN.net.
 
 
  B.   NETXX Software Add-ons
@@ -1338,5 +1338,5 @@ discuss figuring out the routing.
 
   Naturally, any external message processor or preprocessor
   that generates new outgoing network messages must put
-  them into a P*.NET file so that network1 can find it
+  them into a p*.net file so that network1 can find it
   and process it.

@@ -99,7 +99,7 @@ int dump_file(const std::string& filename) {
 std::string DumpPacketCommand::GetUsage() const {
   std::ostringstream ss;
   ss << "Usage:   dump <filename>" << endl;
-  ss << "Example: dump S1.NET" << endl;
+  ss << "Example: dump s1.net" << endl;
   return ss.str();
 }
 

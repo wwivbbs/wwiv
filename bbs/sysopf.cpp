@@ -489,7 +489,7 @@ void print_net_listing(bool bForcePause) {
 
       BbsListNet bbslist = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
       if (bbslist.empty()) {
-        bout << "|#6Error opening BBSDATA.NET in " << a()->current_net().dir << wwiv::endl;
+        bout << "|#6Error opening bbsdata.net in " << a()->current_net().dir << wwiv::endl;
         pausescr();
         continue;
       }

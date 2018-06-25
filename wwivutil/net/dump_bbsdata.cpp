@@ -49,7 +49,7 @@ std::string DumpBbsDataCommand::GetUsage() const {
 }
 
 bool DumpBbsDataCommand::AddSubCommands() {
-  add_argument(BooleanCommandLineArgument("bbslist", 'l', "Parse BBSList.NET vs. BBSDATA.NET", false));
+  add_argument(BooleanCommandLineArgument("bbslist", 'l', "Parse bbslist.net vs. bbsdata.net", false));
 
   return true;
 }
@@ -66,16 +66,16 @@ int DumpBbsDataCommand::Execute() {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
     if (arg("bbslist").as_bool()) {
-      LOG(INFO) << "Parsing BBSLIST.NET";
+      LOG(INFO) << "Parsing bbslist.net";
       bbslists.emplace(lower_case_network_name, BbsListNet::ParseBbsListNet(net.sysnum, net.dir));
     } else {
-      LOG(INFO) << "Reading BBSDATA.NET";
+      LOG(INFO) << "Reading bbsdata.net";
       bbslists.emplace(lower_case_network_name, BbsListNet::ReadBbsDataNet(net.dir));
     }
   }
 
   for (const auto& b : bbslists) {
-    cout << "BBSDATA.NET information: : " << b.first << endl;
+    cout << "bbsdata.net information: : " << b.first << endl;
     cout << "===========================================================" << endl;
     cout << b.second.ToString() << endl;
   }

@@ -60,7 +60,7 @@ int DumpCalloutCommand::Execute() {
   }
 
   for (const auto& c : callouts) {
-    cout << "CALLOUT.NET information: : " << c.first << endl;
+    cout << "callout.net information: : " << c.first << endl;
     cout << "===========================================================" << endl;
     cout << c.second.ToString() << endl;
   }

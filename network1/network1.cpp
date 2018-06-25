@@ -65,13 +65,16 @@ static void ShowHelp(CommandLine& cmdline) {
 }
 
 static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
+  VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
   auto n = b.node_config_for(node);
   if (node == 0) {
     return 0;
   }
   if (n == nullptr || n->forsys == WWIVNET_NO_NODE) {
+    VLOG(2) << "get_forsys: no route to node: " << node;
     return WWIVNET_NO_NODE;
   }
+  VLOG(2) << "get_forsys: route to node: " << node << "; is through node: " << n->forsys;
   return n->forsys;
 }
 
@@ -163,10 +166,10 @@ int main(int argc, char** argv) {
     const auto& net = net_cmdline.network();
     LOG(INFO) << "NETWORK1 for network: " << net.name;
 
-    VLOG(1) << "Reading BBSDATA.NET..";
+    VLOG(1) << "Reading bbsdata.net..";
     BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
     if (b.empty()) {
-      LOG(ERROR) << "ERROR: Unable to read BBSDATA.NET.";
+      LOG(ERROR) << "ERROR: Unable to read bbsdata.net.";
       LOG(ERROR) << "       Do you need to run network3?";
       return 1;
     }

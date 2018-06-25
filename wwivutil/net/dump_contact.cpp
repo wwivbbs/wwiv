@@ -61,7 +61,7 @@ int DumpContactCommand::Execute() {
   }
 
   for (const auto& c : contacts) {
-    cout << "CONTACT.NET information: : " << c.first << endl;
+    cout << "contact.net information: : " << c.first << endl;
     cout << "===========================================================" << endl;
     cout << c.second.ToString() << endl;
   }

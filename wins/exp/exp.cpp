@@ -1273,7 +1273,7 @@ void move_dead(net_header_rec * nh, char *text)
 	char szDeadNetFileName[_MAX_PATH];
 	SEH_PUSH("move_dead()");
 	
-	sprintf(szDeadNetFileName, "%sDEAD.NET", net_data);
+	sprintf(szDeadNetFileName, "%sdead.net", net_data);
 	int hDeadNetFile = sh_open(szDeadNetFileName, O_RDWR | O_BINARY | SH_DENYRW | O_CREAT, S_IREAD | S_IWRITE);
 	if (hDeadNetFile > 0) 
 	{
@@ -1476,7 +1476,7 @@ int ExportMessages(char *pszFileName)
 		sh_read(infile, buffer, (int) nhr.length);
 		if (nhr.tosys != 32767) 
 		{
-			log_it( true, "\n \xFE System @%hd routing through @32767... moving to DEAD.NET.",
+			log_it( true, "\n \xFE System @%hd routing through @32767... moving to dead.net.",
 				nhr.fromsys);
 			move_dead(&nhr, buffer);
 			continue;

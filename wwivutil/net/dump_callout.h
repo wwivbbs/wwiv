@@ -31,7 +31,7 @@ namespace wwivutil {
 class DumpCalloutCommand final: public UtilCommand {
 public:
   DumpCalloutCommand()
-    : UtilCommand("callout", "Dumps parsed representation of CALLOUT.NET") {}
+    : UtilCommand("callout", "Dumps parsed representation of callout.net") {}
   int Execute() override final;
   std::string GetUsage() const override final;
   bool AddSubCommands() override final { return true; }
