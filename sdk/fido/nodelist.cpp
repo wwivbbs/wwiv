@@ -192,6 +192,9 @@ bool Nodelist::HandleLine(const string& line, uint16_t& zone, uint16_t& region, 
   {
     hub = e.number_;
   } break;
+  // Let's include pvt nodes since you can still route
+  // to them.
+  case NodelistKeyword::pvt:
   case NodelistKeyword::node:
   {
     FidoAddress address(zone, net, e.number_, 0, "");
@@ -201,9 +204,6 @@ bool Nodelist::HandleLine(const string& line, uint16_t& zone, uint16_t& region, 
       entries_.emplace(address, e);
     }
   } break;
-  case NodelistKeyword::pvt:
-    // skip
-  break;
   case NodelistKeyword::region:
   {
     region = e.number_;
