@@ -471,11 +471,11 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     text << " ** Please fix it.\r\n\n";
   }
   wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
-  text << "Inbound dir:            " << dirs.inbound_dir() << "\r\n";
-  text << "Outbound dir:           " << dirs.outbound_dir() << "\r\n";
-  text << "Temporary Inbound dir:  " << dirs.temp_inbound_dir() << "\r\n";
-  text << "Temporary Outbound dir: " << dirs.temp_outbound_dir() << "\r\n";
-  text << "Bad Packets dir:        " << dirs.bad_packets_dir() << "\r\n";
+  text << "Inbound dir:             " << dirs.inbound_dir() << "\r\n";
+  text << "Outbound dir:            " << dirs.outbound_dir() << "\r\n";
+  text << "Temporary Inbound dir:   " << dirs.temp_inbound_dir() << "\r\n";
+  text << "Temporary Outbound dir:  " << dirs.temp_outbound_dir() << "\r\n";
+  text << "Bad Packets dir:         " << dirs.bad_packets_dir() << "\r\n";
   text << "\r\n";
 
   if (!File::Exists(dirs.net_dir(), FIDO_CALLOUT_JSON)) {
@@ -488,10 +488,11 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
     check_fido_host_networks(net_cmdline.config(), net_cmdline.networks(), net, net_cmdline.network_number(), text);
   }
 
-  text << "Using nodelist base:    " << net.fido.nodelist_base << "\r\n";
+  text << "Using nodelist base:     " << net.fido.nodelist_base << "\r\n";
+  text << "Using nodelist base dir: " << dirs.net_dir() << "\r\n";
   std::string nodelist = Nodelist::FindLatestNodelist(dirs.net_dir(), net.fido.nodelist_base);
   File nlfile(dirs.net_dir(), nodelist);
-  text << "Latest FTN is:          " << nodelist;
+  text << "Latest FTN is:           " << nodelist;
   if (!nlfile.Exists()) {
     text << " (DOES NOT EXIST)\r\n";
     text << " ** Please fix it.\r\n\n";
@@ -508,7 +509,7 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
       }
       for (const auto& ncs : callout.node_configs_map()) {
         if (!nl.contains(ncs.first)) {
-          text << " ** Callout address: '" << address << "' does not exist in the nodelist.\r\n";
+          text << " ** Callout address: '" << ncs.first.as_string() << "' does not exist in the nodelist.\r\n";
         }
       }
     }
