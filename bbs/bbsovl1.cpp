@@ -155,9 +155,9 @@ void send_email() {
   irt[0] = '\0';
   string::size_type atpos = username.find_first_of("@");
   if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
-    if (username.find("@32767") == string::npos) {
+    if (username.find(INTERNET_FAKE_OUTBOUND_ADDRESS) == string::npos) {
       StringLowerCase(&username);
-      username += " @32767";
+      username += StrCat(" ", INTERNET_FAKE_OUTBOUND_ADDRESS);
     }
   }
 

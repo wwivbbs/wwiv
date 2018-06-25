@@ -109,7 +109,7 @@ int main(int argc, char** argv) {
         ShowHelp(cmdline);
         return 1;
       }
-      if (nodeint == 32767) {
+      if (nodeint == INTERNET_FAKE_OUTBOUND_NODE) {
         // 32767 is the PPP project address for "send everything". Some people use this
         // "magic" node number.
         LOG(INFO) << "USE PPP Project to send to: Internet Email (@32767)";

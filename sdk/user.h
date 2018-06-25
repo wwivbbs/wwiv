@@ -27,6 +27,7 @@
 #include <string>
 #include <vector>
 #include "core/strings.h"
+#include "sdk/net.h"
 #include "sdk/vardec.h"
 
 //
@@ -847,7 +848,7 @@ class User {
     return (GetForwardUserNumber() > 0 && GetForwardUserNumber() < 32767);
   }
   void SetForwardToInternet() {
-    SetForwardSystemNumber(32767);
+    SetForwardSystemNumber(INTERNET_FAKE_OUTBOUND_NODE);
   }
   void ClearMailboxForward() {
     SetForwardSystemNumber(0);

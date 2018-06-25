@@ -119,7 +119,7 @@ void send_inet_email() {
   a()->net_email_name = inputl(75, true);
   if (check_inet_addr(a()->net_email_name)) {
     unsigned short user_number = 0;
-    unsigned short system_number = 32767;
+    unsigned short system_number = INTERNET_FAKE_OUTBOUND_NODE;
     irt[0] = 0;
     clear_quotes();
     if (user_number || system_number) {

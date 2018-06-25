@@ -315,6 +315,7 @@ static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 32765;
  * not be exposed to users unless required. It's an implementation detail.
  */
 static constexpr int16_t INTERNET_FAKE_OUTBOUND_NODE = 32767;
+static constexpr char INTERNET_FAKE_OUTBOUND_ADDRESS[] = "@32767";
 
 /**
  * Used to indicate no node number in functions that return -1 when no
