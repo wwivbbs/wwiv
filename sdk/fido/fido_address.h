@@ -77,7 +77,7 @@ class FidoAddress {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
   explicit FidoAddress(const ::std::string& address);
-  FidoAddress(): FidoAddress(0, 0, 0, 0, "") {}
+  FidoAddress() noexcept : FidoAddress(0, 0, 0, 0, "") {}
   FidoAddress(int16_t zone, int16_t net, int16_t node, int16_t point, const ::std::string& domain)
     : zone_(zone), net_(net), node_(node), point_(point), domain_(domain) {}
   ~FidoAddress() {}

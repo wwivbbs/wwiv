@@ -26,7 +26,7 @@ namespace core {
 
 class ScopeExit {
 public:
-  ScopeExit() {}
+  ScopeExit() noexcept {}
   explicit ScopeExit(std::function<void()> fn) : fn_(fn) {}
   ~ScopeExit() { if (fn_) { fn_(); } }
   // Apparently msvc always has a valid target here since this doesn't go boom:

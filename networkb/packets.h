@@ -37,7 +37,7 @@ public:
   Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t)
     : nh(h), list(l), text(t) {}
 
-  Packet() {}
+  Packet() noexcept {}
   virtual ~Packet() {}
 
   virtual bool UpdateRouting(const net_networks_rec& net);

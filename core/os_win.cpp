@@ -91,10 +91,16 @@ std::string environment_variable(const std::string& variable_name) {
 
 string stacktrace() {
   HANDLE process = GetCurrentProcess();
+  if (process == NULL) {
+    return "";
+  }
   SymInitialize(process, nullptr, TRUE);
   void* stack[100];
   uint16_t frames = CaptureStackBackTrace(0, 100, stack, nullptr);
   SYMBOL_INFO* symbol = (SYMBOL_INFO *) calloc(sizeof(SYMBOL_INFO) + 256 * sizeof(char), 1);
+  if (symbol == NULL) {
+    return "";
+  }
   symbol->MaxNameLen = 255;
   symbol->SizeOfStruct = sizeof(SYMBOL_INFO);
 

@@ -33,7 +33,7 @@ namespace sdk {
 
 struct network_contact_record {
   std::string address;
-  net_contact_rec ncr;
+  net_contact_rec ncr{};
 };
 
 static inline network_contact_record to_network_contact_record(const net_contact_rec& n) {
@@ -45,7 +45,7 @@ static inline network_contact_record to_network_contact_record(const net_contact
 
 class NetworkContact {
 public:
-  NetworkContact(): ncr_() {}
+  NetworkContact() noexcept : ncr_() {}
   explicit NetworkContact(uint16_t node): ncr_() { 
     ncr_.ncr.systemnumber = node;
     ncr_.address = wwiv::strings::StrCat("20000:20000/",node); 

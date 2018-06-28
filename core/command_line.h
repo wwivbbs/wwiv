@@ -63,7 +63,7 @@ struct unknown_argument_error: public std::runtime_error {
 
 class CommandLineValue {
 public:
-  CommandLineValue(): default_(true) {}
+  CommandLineValue() noexcept : default_(true) {} 
   explicit CommandLineValue(const std::string& s)
     : value_(s), default_(false) {}
   CommandLineValue(const std::string& s, bool default_value)
@@ -192,7 +192,7 @@ class CommandLine : public CommandLineCommand {
 public:
   CommandLine(const std::vector<std::string>& args, const std::string dot_argument);
   CommandLine(int argc, char** argv, const std::string dot_argument);
-  bool Parse();
+  virtual bool Parse();
   virtual int Execute() override final;
   bool AddStandardArgs() override;
   std::string GetHelp() const override final;

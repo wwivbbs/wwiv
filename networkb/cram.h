@@ -32,7 +32,7 @@ namespace net {
   
 class Cram {
 public:
-  Cram() {}
+  Cram() noexcept {}
   virtual ~Cram() {}
 
   bool ValidatePassword(const std::string& challenge, 

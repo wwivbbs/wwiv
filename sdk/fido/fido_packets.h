@@ -238,7 +238,7 @@ public:
   FidoPackedMessage(const fido_packed_message_t& h, const fido_variable_length_header_t& v)
     : nh(h), vh(v) {}
 
-  FidoPackedMessage() {}
+  FidoPackedMessage() noexcept {}
   virtual ~FidoPackedMessage() {}
 
   fido_packed_message_t nh{};
@@ -251,7 +251,7 @@ public:
 class FidoStoredMessage {
 public:
   FidoStoredMessage(const fido_stored_message_t& h, const std::string& t): nh(h), text(t) {}
-  FidoStoredMessage() {}
+  FidoStoredMessage() noexcept {}
   virtual ~FidoStoredMessage() {}
 
   fido_stored_message_t nh = {};

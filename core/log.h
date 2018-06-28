@@ -68,8 +68,15 @@
 #define ELPP_THREAD_SAFE
 #define ELPP_FORCE_USE_STD_THREAD
 
-
+#ifdef _MSC_VER
+#include <codeanalysis\warnings.h>
+#pragma warning(push)
+#pragma warning(disable : ALL_CODE_ANALYSIS_WARNINGS)
+#endif  // _MSC_VER
 #include "deps/easylogging/easylogging++.h"
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif  // _MSC_VER
 
 #include <functional>
 #include <map>

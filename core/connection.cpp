@@ -20,7 +20,7 @@
 namespace wwiv {
 namespace core {
 
-Connection::Connection() = default;
+Connection::Connection() noexcept = default;
 
 Connection::~Connection() = default;
 

@@ -29,7 +29,7 @@ namespace core {
 class Connection
 {
 public:
-  Connection();
+  Connection() noexcept;
   virtual ~Connection();
 
   virtual int receive(void* data, int size, std::chrono::duration<double> d) = 0;
