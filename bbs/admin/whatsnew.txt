@@ -1,6 +1,6 @@
 ==============================================================================
                            WWIV BBS What's New List
-                 Copyright 1999-2017 WWIV Software Services
+                 Copyright 1999-2018 WWIV Software Services
 ==============================================================================
 Legend (starting with 5.3)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -8,6 +8,9 @@ Legend (starting with 5.3)
 + New feature
 - Feature removed
 * Change or cleanup
+
+What's New in WWIV 5.4 (2018)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 What's New in WWIV 5.3 (2018)
