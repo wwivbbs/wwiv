@@ -68,8 +68,9 @@ What's New in WWIV 5.3 (2017)
 * subs.json is now the source of truth for subs data (before, subs.dat
   and subs.xtr were both used as source of truth, although subs.json has
   been written on save since 5.2)
-- pipe code '|Bn' where n in [0,9] (deprecated in 5.2) has been removed.
-- extented ^P codes > 9 are removed.
+- background color pipe code (the format is '|Bn' where n in [0,9]), which
+  were deprecated in 5.2 has been removed.
+- extended ^P codes > 9 are removed.
 + New experimental menu editor in INIT.
 * Most lists in INIT will now keep their selected index when returning
   to the list.
