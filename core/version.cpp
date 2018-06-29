@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services             */
+/*             Copyright (C)1998-2018, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -20,14 +20,14 @@
 #include <cstdint>
 
 // Version String
-const char *wwiv_version = "5.3.0";
+const char *wwiv_version = "5.4.0";
 
 // Build Information
 const char *beta_version = ".development";
 
-// this is used to set the statusrec.wwiv_version
-uint16_t wwiv_num_version = 510;
-// sets statusrec.network_version
+// The statusrec.wwiv_version
+uint16_t wwiv_num_version = 520;
+// The statusrec.network_version
 int wwiv_net_version = 51;
 
 // Data/time of this build
