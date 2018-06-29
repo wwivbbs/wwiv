@@ -26,14 +26,14 @@ del wwiv-*.zip
 )
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set WWIV_RELEASE=5.3
-set WWIV_FULL_RELEASE=5.3.0
+set WWIV_RELEASE=5.4
+set WWIV_FULL_RELEASE=5.4.0
 set RELEASE_ZIP=%WORKSPACE%\wwiv-win-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
 set STAGE_DIR=%WORKSPACE%\staging
 set WWIV_CMAKE_DIR=%WORKSPACE%\_build
 echo =============================================================================
 echo Workspace:         %WORKSPACE% 
-echo WWIV Full Release: %WWIV_RELEASE%        
+echo WWIV Full Release: %WWIV_FULL_RELEASE%        
 echo WWIV Release:      %WWIV_RELEASE%        
 echo Build Number:      %BUILD_NUMBER%
 echo Archive:           %RELEASE_ZIP%
