@@ -240,7 +240,7 @@ void Application::tleft(bool check_for_timeout) {
 
   auto min_left = nsln / SECONDS_PER_MINUTE;
   auto secs_left = nsln % SECONDS_PER_MINUTE;
-  string tleft_display = wwiv::strings::StringPrintf("T-%4ldm %2lds", min_left, secs_left);
+  auto tleft_display = wwiv::strings::StringPrintf("T-%4ldm %2lds", min_left, secs_left);
   switch (topdata) {
   case LocalIO::topdataSystem: {
     if (IsUserOnline()) {

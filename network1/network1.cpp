@@ -152,7 +152,7 @@ static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const 
   }
 }
 
-int main(int argc, char** argv) {
+int network1_main(int argc, char** argv) {
   Logger::Init(argc, argv);
   try {
     ScopeExit at_exit(Logger::ExitLogger);
@@ -189,3 +189,5 @@ int main(int argc, char** argv) {
   }
   return 2;
 }
+
+int main(int argc, char** argv) { return network1_main(argc, argv); }

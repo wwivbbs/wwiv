@@ -178,11 +178,11 @@ static bool send_sub_add_drop_resp(Context& context,
   text.append(StrCat(context.config.config()->sysopname, " #1\r\n"));
   text.append(StrCat(daten_to_wwivnet_time(daten_t_now()), "\r\n\r\n"));
 
-  // TODO: Add SA or SR  + subtype + .net file text
+  // Add the text that probably came from a SA or SR  + subtype + .net file.
   text.append(response_file_text);
 
   nh.length = text.size();  // should be subtype.size() + 2
-  const string pendfile = create_pend(context.net.dir, false, '2');
+  const auto pendfile = create_pend(context.net.dir, false, '2');
   Packet packet(nh, {}, std::move(text));
   return write_wwivnet_packet(pendfile, context.net, packet);
 }
@@ -204,7 +204,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
   const string subtype = SubTypeFromText(p.text);
   auto resp = [&](int code) -> bool { 
     string base = (code == sub_adddrop_ok) ? "sa" : "sr";
-    string response_file = StrCat(base, subtype, ".net");
+    auto response_file = StrCat(base, subtype, ".net");
     string text;
     LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file);
     if (File::Exists(context.net.dir, response_file)) {
@@ -220,7 +220,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
   if (!IsHostedHere(context, subtype)) {
     return resp(sub_adddrop_not_host);
   }
-  string filename = StrCat("n", subtype, ".net");
+  auto filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(context.net.dir, filename, subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
@@ -251,7 +251,7 @@ bool handle_sub_drop_req(Context& context, Packet& p) {
   if (!IsHostedHere(context, subtype)) {
     return resp(sub_adddrop_not_host);
   }
-  string filename = StrCat("n", subtype, ".net");
+  auto filename = StrCat("n", subtype, ".net");
   std::set<uint16_t> subscribers;
   if (!ReadSubcriberFile(context.net.dir, filename, subscribers)) {
     LOG(INFO) << "Unable to read subscribers file.";
@@ -270,7 +270,6 @@ bool handle_sub_drop_req(Context& context, Packet& p) {
   LOG(INFO) << "Dropped system @" << p.nh.fromsys << " to subtype: " << subtype;
   return resp(sub_adddrop_ok);
 }
-
 
 static string SubAddDropResponseMessage(uint8_t code) {
   switch (code) {
