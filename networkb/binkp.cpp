@@ -80,15 +80,12 @@ static int System(const string& cmd) {
 }
 
 string expected_password_for(const net_call_out_rec* con) {
-  string password("-");  // default password
-  if (con != nullptr) {
-    const char *p = con->password;
-    if (p && *p) {
-      // If the password is null nullptr and not empty string.
-      password.assign(p);
-    }
+  if (con != nullptr && !con->session_password.empty()) {
+    // If the password is not empty string.
+    return con->session_password;
   }
-  return password;
+  // return default password of "-"
+  return "-";
 }
 
 BinkP::BinkP(wwiv::core::Connection* conn, BinkConfig* config, BinkSide side,

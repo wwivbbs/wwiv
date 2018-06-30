@@ -43,7 +43,7 @@ TEST_F(CalloutTest, WithPassword) {
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
-  EXPECT_STREQ("pass", con.password);
+  EXPECT_EQ("pass", con.session_password);
 }
 
 TEST_F(CalloutTest, WithPassword_Bang) {
@@ -52,7 +52,7 @@ TEST_F(CalloutTest, WithPassword_Bang) {
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1, con.sysnum);
   EXPECT_NE(0, con.options & options_sendback);
-  EXPECT_STREQ("pass!", con.password);
+  EXPECT_EQ("pass!", con.session_password);
 }
 
 TEST_F(CalloutTest, OncePerDay) {
@@ -63,7 +63,7 @@ TEST_F(CalloutTest, OncePerDay) {
   EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_NE(0, con.options & options_once_per_day);
-  EXPECT_STREQ("pass", con.password);
+  EXPECT_EQ("pass", con.session_password);
   EXPECT_EQ(24, con.times_per_day);
 }
 
@@ -75,7 +75,7 @@ TEST_F(CalloutTest, LotsOfOptions) {
   EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_NE(0, con.options & options_once_per_day);
-  EXPECT_STREQ("pass", con.password);
+  EXPECT_EQ("pass", con.session_password);
   EXPECT_EQ(24, con.times_per_day);
   EXPECT_EQ(21, con.macnum);
   EXPECT_EQ(60, static_cast<int>(con.call_anyway));
@@ -88,7 +88,7 @@ TEST_F(CalloutTest, MinMax) {
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
-  EXPECT_STREQ("pass", con.password);
+  EXPECT_EQ("pass", con.session_password);
   EXPECT_EQ(8, con.min_hr);
   EXPECT_EQ(12, con.max_hr);
 }
@@ -100,7 +100,7 @@ TEST_F(CalloutTest, EveryWeekWith10k) {
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
-  EXPECT_STREQ("pass", con.password);
+  EXPECT_EQ("pass", con.session_password);
   EXPECT_EQ(7, con.call_x_days);
   EXPECT_EQ(10, con.min_k);
 }
@@ -124,5 +124,5 @@ TEST_F(CalloutTest, NodeConfig) {
   const net_call_out_rec* con = callout.net_call_out_for(1);
   ASSERT_TRUE(con != nullptr);
   EXPECT_EQ(options_sendback, con->options);
-  EXPECT_STREQ("foo", con->password);
+  EXPECT_EQ("foo", con->session_password);
 }

@@ -111,7 +111,7 @@ const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) c
   try {
     auto node_config = fido_node_config_for(FidoAddress(node));
     nc = {};
-    to_char_array(nc.password, node_config.binkp_config.password);
+    nc.session_password = node_config.binkp_config.password;
     return &nc;
   } catch (const std::exception&) {
   }
