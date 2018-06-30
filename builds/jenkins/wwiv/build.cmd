@@ -19,17 +19,16 @@ setlocal
 del wwiv-*.zip
 
 if /I "%LABEL%"=="win-x86" (
-	@echo Setting x86 (32-bit) Architecture
+	@echo "Setting x86 (32-bit) Architecture"
 	set ARCH=x86
 	set NUM_BITS=32
 )
 if /I "%LABEL%"=="win-x64" (
-	@echo Setting x64 (64-bit) Architecture
+	@echo "Setting x64 (64-bit) Architecture"
 	set ARCH=x64
 	set NUM_BITS=64
 )
 
-@echo off
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set WWIV_RELEASE=5.4
 set WWIV_FULL_RELEASE=5.4.0
@@ -49,19 +48,24 @@ echo Staging Dir:       %STAGE_DIR%
 echo =============================================================================
 
 @if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
+  echo "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 )
 
 @if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
+  echo "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
   call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 )
+
+echo on
+rem Turn echo back on now.
 
 if not exist %WWIV_CMAKE_DIR% (
   echo Creating %WWIV_CMAKE_DIR%
   mkdir %WWIV_CMAKE_DIR%
 )
 
-@rem build Cryptlib 1st.
+@rem Build Cryptlib 1st.
 echo:
 echo * Building Cryptlib (zip/unzip)
 cd %WORKSPACE%\deps\cl342
@@ -69,7 +73,7 @@ set cryptlib_platform=Win32
 if /i "%arch%"=="x64" (set cryptlib_platform=x64)
 msbuild crypt32.vcxproj /t:Build /p:Configuration=Release /p:Platform=%cryptlib_platform% || exit /b
 
-@rem Build BBS, wwivconfig, telnetserver
+@rem Build BBS, wwivconfig
 echo:
 echo * Updating the Build Number in version.cpp
 cd %WORKSPACE%\core
