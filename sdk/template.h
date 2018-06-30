@@ -1,6 +1,6 @@
 /**************************************************************************/
 /*                                                                        */
-/*                          WWIV Version 5.0x                             */
+/*                            WWIV Version 5                              */
 /*               Copyright (C)2017, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */

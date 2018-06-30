@@ -1,6 +1,6 @@
 /****************************************************************************/
 /*                                                                          */
-/*                             WWIV Version 5.0x                            */
+/*                               WWIV Version 5                             */
 /*            Copyright (C) 1998-2001 by WWIV Software Services             */
 /*                                                                          */
 /*      Distribution or publication of this source code, it's individual    */
