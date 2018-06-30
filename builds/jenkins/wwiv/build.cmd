@@ -17,6 +17,30 @@ setlocal
 
 del wwiv-*.zip
 
+if /I "%LABEL%"=="win-x86" (set ARCH="x86")
+if /I "%LABEL%"=="win-x64" (set ARCH="x64")
+
+set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
+set WWIV_RELEASE=5.4
+set WWIV_FULL_RELEASE=5.4.0
+set RELEASE_ZIP=%WORKSPACE%\wwiv-win-%ARCH%-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
+set STAGE_DIR=%WORKSPACE%\staging
+set WWIV_CMAKE_DIR=%WORKSPACE%\_build
+echo =============================================================================
+echo Workspace:         %WORKSPACE% 
+echo Label:             %LABEL%
+echo Architecture:      %ARCH%
+echo WWIV Full Release: %WWIV_FULL_RELEASE%        
+echo WWIV Release:      %WWIV_RELEASE%        
+echo Build Number:      %BUILD_NUMBER%
+echo WWIV CMake Root:   %WWIV_CMAKE_DIR%
+echo Archive:           %RELEASE_ZIP%
+echo Staging Dir:       %STAGE_DIR%
+echo =============================================================================
+echo Release Notes:
+echo %RELEASE_NOTES%
+echo =============================================================================
+
 @if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
   call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
 )
@@ -24,25 +48,6 @@ del wwiv-*.zip
 @if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
   call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
 )
-
-set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
-set WWIV_RELEASE=5.4
-set WWIV_FULL_RELEASE=5.4.0
-set RELEASE_ZIP=%WORKSPACE%\wwiv-win-%WWIV_RELEASE%.%BUILD_NUMBER%.zip
-set STAGE_DIR=%WORKSPACE%\staging
-set WWIV_CMAKE_DIR=%WORKSPACE%\_build
-echo =============================================================================
-echo Workspace:         %WORKSPACE% 
-echo WWIV Full Release: %WWIV_FULL_RELEASE%        
-echo WWIV Release:      %WWIV_RELEASE%        
-echo Build Number:      %BUILD_NUMBER%
-echo Archive:           %RELEASE_ZIP%
-echo Staging Dir:       %STAGE_DIR%
-echo WWIV CMake Root:   %WWIV_CMAKE_DIR%
-echo =============================================================================
-echo Release Notes:
-echo %RELEASE_NOTES%
-echo =============================================================================
 
 if not exist %WWIV_CMAKE_DIR% (
   echo Creating %WWIV_CMAKE_DIR%
