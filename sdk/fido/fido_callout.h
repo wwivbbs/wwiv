@@ -18,14 +18,14 @@
 #ifndef __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
 #define __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
 
+#include "sdk/callout.h"
+#include "sdk/config.h"
+#include "sdk/fido/fido_address.h"
+#include "sdk/net.h"
 #include <initializer_list>
 #include <map>
 #include <memory>
 #include <string>
-#include "sdk/callout.h"
-#include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/fido/fido_address.h"
 
 namespace wwiv {
 namespace sdk {
@@ -47,13 +47,15 @@ public:
 
   // wwiv::sdk::Callout implementation
   const net_call_out_rec* net_call_out_for(int node) const override;
-  const net_call_out_rec* net_call_out_for(const std::string& node) const override;
+  const net_call_out_rec* net_call_out_for(int node) const override;
 
   bool insert(const FidoAddress& a, const fido_node_config_t& c);
   bool erase(const FidoAddress& a);
   bool Load();
   bool Save();
-  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_map() const { return node_configs_; }
+  std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_map() const {
+    return node_configs_;
+  }
 
 private:
   bool initialized_ = false;
@@ -62,8 +64,8 @@ private:
   std::map<wwiv::sdk::fido::FidoAddress, fido_node_config_t> node_configs_;
 };
 
-}
-}
-}
+} // namespace fido
+} // namespace sdk
+} // namespace wwiv
 
-#endif  // __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__
+#endif // __INCLUDED_SDK_FIDO_FIDO_CALLOUT_H__

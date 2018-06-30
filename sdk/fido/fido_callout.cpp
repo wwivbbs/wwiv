@@ -104,6 +104,7 @@ const net_call_out_rec* FidoCallout::net_call_out_for(int node) const {
   return net_call_out_for(StringPrintf("20000:20000/%d@%s", node, net_.name));
 }
 
+
 const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) const {
   static net_call_out_rec nc{};
   VLOG(2) << "FidoCallout::net_call_out_for(" << node << ")";
