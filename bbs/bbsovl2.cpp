@@ -63,9 +63,9 @@ void OnlineUserEditor() {
   if (*qsc > 999) {
     *qsc = 999;
   }
-  sprintf(sysopsub, "%lu", *qsc);
-  sprintf(uk, "%lu", a()->user()->GetUploadK());
-  sprintf(dk, "%lu", a()->user()->GetDownloadK());
+  sprintf(sysopsub, "%u", *qsc);
+  sprintf(uk, "%u", a()->user()->GetUploadK());
+  sprintf(dk, "%u", a()->user()->GetDownloadK());
   sprintf(up, "%u", a()->user()->GetFilesUploaded());
   sprintf(down, "%u", a()->user()->GetFilesDownloaded());
   sprintf(posts, "%u", a()->user()->GetNumMessagesPosted());
@@ -180,7 +180,7 @@ void OnlineUserEditor() {
       a()->localIO()->GotoXY(wx + 22, wy + 5);
       a()->localIO()->EditLine(sysopsub, 3, AllowedKeys::NUM_ONLY, &rc, "");
       *qsc = to_number<uint32_t>(sysopsub);
-      sprintf(sysopsub, "%-3lu", *qsc);
+      sprintf(sysopsub, "%-3u", *qsc);
       a()->localIO()->Puts(sysopsub);
       break;
     case 7:
@@ -208,14 +208,14 @@ void OnlineUserEditor() {
       a()->localIO()->GotoXY(wx + 22, wy + 8);
       a()->localIO()->EditLine(uk, 7, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetUploadK(to_number<uint32_t>(uk));
-      sprintf(uk, "%-7lu", a()->user()->GetUploadK());
+      sprintf(uk, "%-7u", a()->user()->GetUploadK());
       a()->localIO()->Puts(uk);
       break;
     case 11:
       a()->localIO()->GotoXY(wx + 50, wy + 8);
       a()->localIO()->EditLine(dk, 7, AllowedKeys::NUM_ONLY, &rc, "");
       a()->user()->SetDownloadK(to_number<uint32_t>(dk));
-      sprintf(dk, "%-7lu", a()->user()->GetDownloadK());
+      sprintf(dk, "%-7u", a()->user()->GetDownloadK());
       a()->localIO()->Puts(dk);
       break;
     case 12:

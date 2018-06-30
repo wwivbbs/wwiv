@@ -36,8 +36,6 @@ public:
 
   int doWFCEvents();
 
-  int status() const { status_; }
-
 private:
   int LocalLogon();
   void DrawScreen();

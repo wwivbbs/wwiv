@@ -25,7 +25,7 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#endif  // __MSDOS__
+#endif // __MSDOS__
 
 #ifndef DATEN_T_DEFINED
 typedef uint32_t daten_t;
@@ -44,85 +44,82 @@ typedef uint32_t daten_t;
  *     the net will be (sizeof(net_header_rec) + 2*list_len + length)
  */
 struct net_header_rec {
-  uint16_t  tosys,    /* destination system */
-           touser,     /* destination user */
-           fromsys,    /* originating system */
-           fromuser,   /* originating user */
-           main_type,  /* main message type */
-           minor_type, /* minor message type */
-           list_len;   /* # of entries in system list */
-  daten_t  daten;      /* date/time sent */
-  uint32_t length;     /* # of bytes of msg after header */
-  uint16_t  method;   /* method of compression */
+  uint16_t tosys,  /* destination system */
+      touser,      /* destination user */
+      fromsys,     /* originating system */
+      fromuser,    /* originating user */
+      main_type,   /* main message type */
+      minor_type,  /* minor message type */
+      list_len;    /* # of entries in system list */
+  daten_t daten;   /* date/time sent */
+  uint32_t length; /* # of bytes of msg after header */
+  uint16_t method; /* method of compression */
 };
-
 
 /*
  * Please note that not all of these are used yet, some will probably never
  * be used, but sounded like a good idea at the time.
  */
 
-#define main_type_net_info        0x0001  /* type 1 normal network updates */
-#define main_type_email           0x0002  /* type 2 email by user number */
-#define main_type_post            0x0003  /* type 3 post from sub host */
-#define main_type_file            0x0004  /* type 4 file transfer system */
-#define main_type_pre_post        0x0005  /* type 5 post to sub host */
-#define main_type_external        0x0006  /* type 6 external message */
-#define main_type_email_name      0x0007  /* type 7 email by user name */
-#define main_type_net_edit        0x0008  /* type 8 network editor packet */
-#define main_type_sub_list        0x0009  /* type 9 subs.lst update */
-#define main_type_extra_data      0x000a  /* type 10 unused */
-#define main_type_group_bbslist   0x000b  /* type 11 network update from GC */
-#define main_type_group_connect   0x000c  /* type 12 network update from GC */
-#define main_type_group_binkp     0x000d  /* type 13 network update from GC */
-#define main_type_group_info      0x000e  /* type 14 misc update from GC */
-#define main_type_ssm             0x000f  /* type 15 xxx read your mail */
-#define main_type_sub_add_req     0x0010  /* type 16 add me to your sub */
-#define main_type_sub_drop_req    0x0011  /* type 17 remove me from your sub*/
-#define main_type_sub_add_resp    0x0012  /* type 18 status of add, 0=ok */
-#define main_type_sub_drop_resp   0x0013  /* type 19 status of drop, 0=ok */
-#define main_type_sub_list_info   0x0014  /* type 20 info for subs.lst file */
+#define main_type_net_info 0x0001      /* type 1 normal network updates */
+#define main_type_email 0x0002         /* type 2 email by user number */
+#define main_type_post 0x0003          /* type 3 post from sub host */
+#define main_type_file 0x0004          /* type 4 file transfer system */
+#define main_type_pre_post 0x0005      /* type 5 post to sub host */
+#define main_type_external 0x0006      /* type 6 external message */
+#define main_type_email_name 0x0007    /* type 7 email by user name */
+#define main_type_net_edit 0x0008      /* type 8 network editor packet */
+#define main_type_sub_list 0x0009      /* type 9 subs.lst update */
+#define main_type_extra_data 0x000a    /* type 10 unused */
+#define main_type_group_bbslist 0x000b /* type 11 network update from GC */
+#define main_type_group_connect 0x000c /* type 12 network update from GC */
+#define main_type_group_binkp 0x000d   /* type 13 network update from GC */
+#define main_type_group_info 0x000e    /* type 14 misc update from GC */
+#define main_type_ssm 0x000f           /* type 15 xxx read your mail */
+#define main_type_sub_add_req 0x0010   /* type 16 add me to your sub */
+#define main_type_sub_drop_req 0x0011  /* type 17 remove me from your sub*/
+#define main_type_sub_add_resp 0x0012  /* type 18 status of add, 0=ok */
+#define main_type_sub_drop_resp 0x0013 /* type 19 status of drop, 0=ok */
+#define main_type_sub_list_info 0x0014 /* type 20 info for subs.lst file */
 
-#define main_type_new_post        0x001a  /* type 26 post by sub name */
-#define main_type_new_external    0x001b  /* type 27 auto-proc ext. msgs */
-#define main_type_game_pack       0x001c  /* type 28 game packs */
+#define main_type_new_post 0x001a     /* type 26 post by sub name */
+#define main_type_new_external 0x001b /* type 27 auto-proc ext. msgs */
+#define main_type_game_pack 0x001c    /* type 28 game packs */
 
 // Minor types used by main_type_net_info
 
-#define net_info_general_message  0x0000
-#define net_info_bbslist          0x0001
-#define net_info_connect          0x0002
-#define net_info_sub_lst          0x0003
-#define net_info_wwivnews         0x0004
-#define net_info_fbackhdr         0x0005
-#define net_info_more_wwivnews    0x0006
-#define net_info_categ_net        0x0007
-#define net_info_network_lst      0x0008
-#define net_info_file             0x0009
-#define net_info_binkp            0x0010
-
+#define net_info_general_message 0x0000
+#define net_info_bbslist 0x0001
+#define net_info_connect 0x0002
+#define net_info_sub_lst 0x0003
+#define net_info_wwivnews 0x0004
+#define net_info_fbackhdr 0x0005
+#define net_info_more_wwivnews 0x0006
+#define net_info_categ_net 0x0007
+#define net_info_network_lst 0x0008
+#define net_info_file 0x0009
+#define net_info_binkp 0x0010
 
 /* these are in main_type_sub_*_resp, as the first byte of the text */
-#define sub_adddrop_ok            0x00  /* you've been added/removed */
-#define sub_adddrop_not_host      0x01  /* don't host that sub */
-#define sub_adddrop_not_there     0x02  /* can't drop, you're not listed */
-#define sub_adddrop_not_allowed   0x03  /* not allowed to add/drop you */
-#define sub_adddrop_already_there 0x04  /* already in sub */
-#define sub_adddrop_error         0xff  /* internal error */
+#define sub_adddrop_ok 0x00            /* you've been added/removed */
+#define sub_adddrop_not_host 0x01      /* don't host that sub */
+#define sub_adddrop_not_there 0x02     /* can't drop, you're not listed */
+#define sub_adddrop_not_allowed 0x03   /* not allowed to add/drop you */
+#define sub_adddrop_already_there 0x04 /* already in sub */
+#define sub_adddrop_error 0xff         /* internal error */
 
 struct net_contact_rec {
-  uint16_t systemnumber,       /* System number of the contact */
-           numcontacts,        /* # of contacts with system */
-           numfails;           /* # of consec failed calls out */
-  uint32_t firstcontact,       /* time of first contact w/ system */
-           lastcontact,        /* time of most recent contact */
-           lastcontactsent,    /* time of last contact w/data sent */
-           lasttry;            /* time of last try to connect */
-  uint32_t bytes_received,     /* bytes received from system */
-           bytes_sent,         /* bytes sent to system */
-           bytes_waiting;      /* bytes waiting to be sent */
+  uint16_t systemnumber,   /* System number of the contact */
+      numcontacts,         /* # of contacts with system */
+      numfails;            /* # of consec failed calls out */
+  uint32_t firstcontact,   /* time of first contact w/ system */
+      lastcontact,         /* time of most recent contact */
+      lastcontactsent,     /* time of last contact w/data sent */
+      lasttry;             /* time of last try to connect */
+  uint32_t bytes_received, /* bytes received from system */
+      bytes_sent,          /* bytes sent to system */
+      bytes_waiting;       /* bytes waiting to be sent */
 };
-
 
 /* Each system will hold a file of these records.  Each record will hold the
  * data pertaining to all contacts with other systems.
@@ -172,12 +169,11 @@ struct net_system_list_rec {
   } xx;
 };
 
-
 /**
-* Contains the metadata for each network.
-*
-* On disk format for networks.dat
-*/
+ * Contains the metadata for each network.
+ *
+ * On disk format for networks.dat
+ */
 struct net_networks_rec_disk {
   /* type of network */
   uint8_t type;
@@ -186,15 +182,11 @@ struct net_networks_rec_disk {
   /* directory for net data */
   char dir[69];
   /* system number */
-  uint16_t  sysnum;
+  uint16_t sysnum;
   uint8_t padding[12];
 };
 
 #pragma pack(pop)
-
-
-
-
 
 // This data is all read in from a text file which holds info about all of
 // the systems in the network.  This text file doesn't hold connection info
@@ -202,25 +194,25 @@ struct net_networks_rec_disk {
 
 // BBSLIST designators
 
-#define other_inet          0x0001  /* $ - System is PPP capable         */
-#define other_fido          0x0002  /* \ - System run Fido frontend      */
-#define other_telnet        0x0004  /* | - System is a telnet node       */
-#define other_no_links      0x0008  /* < - System refuses links          */
-#define other_fts_blt       0x0010  /* > - System uses FTS/BLT system    */
-#define other_direct        0x0020  /* ! - System accepts direct connects*/
-#define other_unregistered  0x0040  /* / - System is unregistered        */
-#define other_fax           0x0080  /* ? - System accepts faxes          */
-#define other_end_system    0x0100  /* _ - System is a dead end node     */
-#define other_net_server    0x0200  /* + - System is network server      */
-#define other_unused        0x0400  /* = - Unused identifier 2           */
+#define other_inet 0x0001         /* $ - System is PPP capable         */
+#define other_fido 0x0002         /* \ - System run Fido frontend      */
+#define other_telnet 0x0004       /* | - System is a telnet node       */
+#define other_no_links 0x0008     /* < - System refuses links          */
+#define other_fts_blt 0x0010      /* > - System uses FTS/BLT system    */
+#define other_direct 0x0020       /* ! - System accepts direct connects*/
+#define other_unregistered 0x0040 /* / - System is unregistered        */
+#define other_fax 0x0080          /* ? - System accepts faxes          */
+#define other_end_system 0x0100   /* _ - System is a dead end node     */
+#define other_net_server 0x0200   /* + - System is network server      */
+#define other_unused 0x0400       /* = - Unused identifier 2           */
 
 /* system type designators */
-#define other_net_coord     0x0800  /* & - NC */
-#define other_group_coord   0x1000  /* % - GC */
-#define other_area_coord    0x2000  /* ^ - AC */
-#define other_subs_coord    0x4000  /* ~ - Sub Coordinator */
+#define other_net_coord 0x0800   /* & - NC */
+#define other_group_coord 0x1000 /* % - GC */
+#define other_area_coord 0x2000  /* ^ - AC */
+#define other_subs_coord 0x4000  /* ~ - Sub Coordinator */
 
-/* 
+/*
  * This data is also read in from a text file.  It tells how much it costs for
  * sysnum to call out to other systems.  It is stored in connect.net.
  * This is never written as binary data.
@@ -231,22 +223,30 @@ struct net_interconnect_rec {
   /* num systems it can call */
   uint16_t numsys;
 
-  // This requires modern compilers
 #ifndef __MSDOS__
-
+  // This requires modern compilers
+  net_interconnect_rec() : numsys(0), sysnum(0) {}
+  void clear() noexcept {
+    numsys = 0;
+    sysnum = 0;
+    connect.clear();
+    cost.clear();
+  }
   /* points to an array of numsys integers that tell which
    * other systems sysnum can connect to
    */
   std::vector<uint16_t> connect;
-  /* 
+  /*
    * cost[] - points to an array of numsys floating point numbers telling
    *   how much it costs to connect to that system, per minute.  ie, it would
    *   cost (cost[1]) dollars per minute for sysnum to call out to system
    *   number (connect[1]).
    */
   std::vector<float> cost;
-#endif  // __MSDOS__
+#endif // __MSDOS__
 };
+
+#ifndef __MSDOS__
 
 // This data is not serialized to disk, but parsed
 // on demand from callout.net
@@ -257,26 +257,27 @@ struct net_call_out_rec {
   // FTN Address.
   std::string ftn_address;
   /* system number */
-  uint16_t sysnum;
+  uint16_t sysnum = 0;
   /* macro/script to use */
-  uint8_t macnum;
+  uint8_t macnum = 0;
   /* bit mapped */
-  uint16_t options;
+  uint16_t options = 0;
   /* hours between callouts */
-  uint8_t call_anyway;
+  uint8_t call_anyway = 0;
   /* callout min hour */
-  int8_t min_hr;
+  int8_t min_hr = 0;
   /* callout max hour */
-  int8_t max_hr;
+  int8_t max_hr = 0;
   /* password for system */
   char password[20];
   /* number of calls per day */
-  uint8_t times_per_day;
+  uint8_t times_per_day = 0;
   /* call only every x days */
-  uint8_t call_x_days;
+  uint8_t call_x_days = 0;
   /* minimum # k before callout */
-  uint16_t min_k;
+  uint16_t min_k = 0;
 };
+#endif // __MSDOS__
 
 /* This record holds info about other systems that the sysop has determined
  * that we can call out to.
@@ -290,21 +291,21 @@ struct net_call_out_rec {
  *   should only be non-zero if options_sendback is also set for this system.
  * password - is the password used for connection to this system.
  */
-#define options_sendback      0x0001   /* & they can send data back */
-#define unused_options_ATT_night     0x0002   /* - callout only at AT&T nigh hours */
-#define unused_options_ppp           0x0004   /* _ transfer via PPP */
-#define options_no_call       0x0008   /* + don't call that system, it will */
-#define options_receive_only  0x0010   /* ~ never send anything */
-#define options_once_per_day  0x0020   /* ! only call once per day */
-#define unused_options_compress      0x0040   /* ; compress data */
-#define unused_options_hslink        0x0080   /* ^ use HSLINK if available */
-#define unused_options_force_ac      0x0100   /* $ force area code on dial */
-#define unused_options_dial_ten      0x0200   /* * use ten digit dialing format */
-#define options_hide_pend     0x0400   /* = hide in pending display */
+#define options_sendback 0x0001         /* & they can send data back */
+#define unused_options_ATT_night 0x0002 /* - callout only at AT&T nigh hours */
+#define unused_options_ppp 0x0004       /* _ transfer via PPP */
+#define options_no_call 0x0008          /* + don't call that system, it will */
+#define options_receive_only 0x0010     /* ~ never send anything */
+#define options_once_per_day 0x0020     /* ! only call once per day */
+#define unused_options_compress 0x0040  /* ; compress data */
+#define unused_options_hslink 0x0080    /* ^ use HSLINK if available */
+#define unused_options_force_ac 0x0100  /* $ force area code on dial */
+#define unused_options_dial_ten 0x0200  /* * use ten digit dialing format */
+#define options_hide_pend 0x0400        /* = hide in pending display */
 
 #ifndef __MSDOS__
 
-/** 
+/**
  * Indicates this is the fake FTN outbound node.  This should
  * not be exposed to users unless required. It's an implementation detail.
  */
@@ -326,7 +327,7 @@ static constexpr uint16_t WWIVNET_NO_NODE = 65535;
 enum class fido_packet_t { unset, type2_plus };
 enum class fido_transport_t { unset, directory, binkp };
 enum class fido_mailer_t { unset, flo, attach };
-enum class fido_bundle_status_t: char {
+enum class fido_bundle_status_t : char {
   normal = 'f',
   crash = 'c',
   direct = 'd',
@@ -416,11 +417,7 @@ struct fido_network_config_t {
   std::string origin_line;
 };
 
-enum class network_type_t: uint8_t {
-  wwivnet = 0,
-  ftn,
-  internet
-};
+enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet };
 
 /**
  * Internal structure for networks.dat or networks.json used by WWIV.
@@ -440,7 +437,6 @@ struct net_networks_rec {
   fido_network_config_t fido;
 };
 
-#endif  // __MSDOS__
-
+#endif // __MSDOS__
 
 #endif // __INCLUDED_NET_H__

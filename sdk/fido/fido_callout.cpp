@@ -22,11 +22,11 @@
 #include <string>
 #include <vector>
 
-#include <cereal/cereal.hpp>
 #include <cereal/access.hpp>
+#include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
-#include <cereal/archives/json.hpp>
 
 #include "core/datafile.h"
 #include "core/file.h"
@@ -44,24 +44,31 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-
-CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::fido::FidoAddress, cereal::specialization::non_member_load_save_minimal);
+CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::fido::FidoAddress,
+                                   cereal::specialization::non_member_load_save_minimal);
 #include "sdk/networks_cereal.h"
 
 namespace cereal {
-#define SERIALIZE(n, field) { try { ar(cereal::make_nvp(#field, n.field)); } catch(const cereal::Exception&) { ar.setNextName(nullptr); } }
+#define SERIALIZE(n, field)                                                                        \
+  {                                                                                                \
+    try {                                                                                          \
+      ar(cereal::make_nvp(#field, n.field));                                                       \
+    } catch (const cereal::Exception&) {                                                           \
+      ar.setNextName(nullptr);                                                                     \
+    }                                                                                              \
+  }
 
-template <class Archive> inline
-std::string save_minimal(Archive const &, const wwiv::sdk::fido::FidoAddress& a) {
+template <class Archive>
+inline std::string save_minimal(Archive const&, const wwiv::sdk::fido::FidoAddress& a) {
   return a.as_string();
 }
 
-template <class Archive> inline
-void load_minimal(Archive const &, wwiv::sdk::fido::FidoAddress& a, const std::string& s) {
+template <class Archive>
+inline void load_minimal(Archive const&, wwiv::sdk::fido::FidoAddress& a, const std::string& s) {
   a = wwiv::sdk::fido::FidoAddress(s);
 }
 
-}  // namespace cereal
+} // namespace cereal
 
 namespace wwiv {
 namespace sdk {
@@ -85,7 +92,7 @@ FidoCallout::~FidoCallout() {}
 
 fido_packet_config_t FidoCallout::packet_override_for(const FidoAddress& a) const {
   if (!contains(node_configs_, a)) {
-    return{};
+    return {};
   }
   return node_configs_.at(a).packet_config;
 }
@@ -101,7 +108,7 @@ const net_call_out_rec* FidoCallout::net_call_out_for(const std::string& node) c
 
   try {
     auto node_config = fido_node_config_for(FidoAddress(node));
-    memset(&nc, 0, sizeof(net_call_out_rec));
+    nc = {};
     to_char_array(nc.password, node_config.binkp_config.password);
     return &nc;
   } catch (const std::exception&) {
@@ -120,7 +127,7 @@ fido_node_config_t FidoCallout::fido_node_config_for(const FidoAddress& address)
   if (contains(node_configs_, a)) {
     return node_configs_.at(a);
   }
-  return{};
+  return {};
 }
 
 fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) const {
@@ -136,12 +143,18 @@ fido_packet_config_t FidoCallout::packet_config_for(const FidoAddress& address) 
   if (contains(node_configs_, a)) {
     // handle overrides
     const fido_packet_config_t n = node_configs_.at(a).packet_config;
-    if (!n.areafix_password.empty()) config.areafix_password = n.areafix_password;
-    if (!n.compression_type.empty()) config.compression_type = n.compression_type;
-    if (n.max_archive_size > 0) config.max_archive_size = n.max_archive_size;
-    if (n.max_packet_size > 0) config.max_packet_size = n.max_packet_size;
-    if (!n.packet_password.empty()) config.packet_password = n.packet_password;
-    if (n.packet_type != fido_packet_t::unset) config.packet_type = n.packet_type;
+    if (!n.areafix_password.empty())
+      config.areafix_password = n.areafix_password;
+    if (!n.compression_type.empty())
+      config.compression_type = n.compression_type;
+    if (n.max_archive_size > 0)
+      config.max_archive_size = n.max_archive_size;
+    if (n.max_packet_size > 0)
+      config.max_packet_size = n.max_packet_size;
+    if (!n.packet_password.empty())
+      config.packet_password = n.packet_password;
+    if (n.packet_type != fido_packet_t::unset)
+      config.packet_type = n.packet_type;
   }
   return config;
 }
@@ -174,6 +187,6 @@ bool FidoCallout::Save() {
   return json.Save();
 }
 
-}
-}
-}
+} // namespace fido
+} // namespace sdk
+} // namespace wwiv

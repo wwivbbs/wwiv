@@ -58,7 +58,7 @@ FindFiles::FindFiles(const std::string& mask, const FindFilesType type) {
     if (fnd.IsFile() && type == FindFilesType::directories) {
       continue;
     }
-    auto fn = fnd.GetFileName();
+    std::string fn = fnd.GetFileName();
     if (fnd.IsDirectory()) {
       if (fn == "." || fn == "..") {
         // Skip . and .. directories.

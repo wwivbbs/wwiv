@@ -20,10 +20,9 @@
 #ifndef __INCLUDED_WFNDFILE_H__
 #define __INCLUDED_WFNDFILE_H__
 
+#include "core/wwiv_windows.h"
 #include <cstring>
 #include <string>
-#include "core/wwiv_windows.h"
-#include "core/wwivport.h"
 
 /**
  * Values for what WFindFile is searching
@@ -73,7 +72,7 @@ class WFindFile {
   bool close();
   virtual ~WFindFile() { close(); }
 
-  const char* GetFileName() const { return filename_.c_str(); }
+  std::string GetFileName() const { return filename_; }
   long GetFileSize() const { return file_size_; }
   bool IsDirectory();
   bool IsFile();

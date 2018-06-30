@@ -80,7 +80,9 @@ bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
     // skip empty lines and those not starting with @.
     return false;
   }
-  memset(con, 0, sizeof(net_interconnect_rec));
+  // net_interconnect_rec is a struct with vectors now so
+  // we shouldn't just memset it.
+  con->clear();
   auto iter = ss.begin();
   // We know 1st char is @
   iter++;

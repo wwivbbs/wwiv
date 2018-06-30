@@ -25,8 +25,6 @@
 #include "sdk/datetime.h"
 #include "sdk/msgapi/parsed_message.h"
 
-#include <strstream>
-
 using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

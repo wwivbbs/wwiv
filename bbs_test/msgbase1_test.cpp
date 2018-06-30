@@ -24,8 +24,6 @@
 #include "core/strings.h"
 #include "sdk/datetime.h"
 
-#include <strstream>
-
 using std::string;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;

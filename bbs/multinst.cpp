@@ -127,21 +127,19 @@ string GetInstanceActivityString(instancerec &ir) {
  *     CurrUser: Sysop #1
  */
 std::string make_inst_str(int instance_num, int format) {
-  const string s = StringPrintf("|#1Instance %-3d: |#2", instance_num);
+  const auto s = StringPrintf("|#1Instance %-3d: |#2", instance_num);
 
-  instancerec ir;
+  instancerec ir{};
   get_inst_info(instance_num, &ir);
 
-  const string activity_string = GetInstanceActivityString(ir);
+  const auto activity_string = GetInstanceActivityString(ir);
 
   switch (format) {
   case INST_FORMAT_WFC:
     return activity_string;
-    break;
   case INST_FORMAT_OLD:
     // Not used anymore.
     return s;
-    break;
   case INST_FORMAT_LIST: {
     std::string userName;
     if (ir.user < a()->config()->config()->maxusers && ir.user > 0) {
@@ -157,16 +155,13 @@ std::string make_inst_str(int instance_num, int format) {
     }
     return StringPrintf("|#5%-4d |#2%-35.35s |#1%-37.37s", instance_num, userName.c_str(), activity_string.c_str());
   }
-  break;
-  default:
-    return StringPrintf("** INVALID INSTANCE FORMAT PASSED [%d] **", format);
-    break;
   }
+  return StringPrintf("** INVALID INSTANCE FORMAT PASSED [%d] **", format);
 }
 
 void multi_instance() {
   bout.nl();
-  int num = num_instances();
+  auto num = num_instances();
   if (num < 1) {
     bout << "|#6Couldn't find instance data file.\r\n";
     return;
