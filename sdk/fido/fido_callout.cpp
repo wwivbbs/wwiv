@@ -49,6 +49,7 @@ CEREAL_SPECIALIZE_FOR_ALL_ARCHIVES(wwiv::sdk::fido::FidoAddress,
 #include "sdk/networks_cereal.h"
 
 namespace cereal {
+/*
 #define SERIALIZE(n, field)                                                                        \
   {                                                                                                \
     try {                                                                                          \
@@ -57,6 +58,7 @@ namespace cereal {
       ar.setNextName(nullptr);                                                                     \
     }                                                                                              \
   }
+*/
 
 template <class Archive>
 inline std::string save_minimal(Archive const&, const wwiv::sdk::fido::FidoAddress& a) {

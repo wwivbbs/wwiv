@@ -225,7 +225,7 @@ struct net_interconnect_rec {
 
 #ifndef __MSDOS__
   // This requires modern compilers
-  net_interconnect_rec() : numsys(0), sysnum(0) {}
+  net_interconnect_rec() : sysnum(0), numsys(0) {}
   void clear() noexcept {
     numsys = 0;
     sysnum = 0;
