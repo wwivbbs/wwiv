@@ -47,9 +47,6 @@ echo WWIV CMake Root:   %WWIV_CMAKE_DIR%
 echo Archive:           %RELEASE_ZIP%
 echo Staging Dir:       %STAGE_DIR%
 echo =============================================================================
-echo Release Notes:
-echo %RELEASE_NOTES%
-echo =============================================================================
 
 @if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
   call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
