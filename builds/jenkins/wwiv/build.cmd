@@ -17,8 +17,14 @@ setlocal
 
 del wwiv-*.zip
 
-if /I "%LABEL%"=="win-x86" (set ARCH="x86")
-if /I "%LABEL%"=="win-x64" (set ARCH="x64")
+if /I "%LABEL%"=="win-x86" (
+	set ARCH="x86"
+	set NUM_BITS="32"
+)
+if /I "%LABEL%"=="win-x64" (
+	set ARCH="x64"
+	set NUM_BITS="64"
+)
 
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set WWIV_RELEASE=5.4
@@ -42,11 +48,11 @@ echo %RELEASE_NOTES%
 echo =============================================================================
 
 @if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 )
 
 @if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+  call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 )
 
 if not exist %WWIV_CMAKE_DIR% (
@@ -58,7 +64,9 @@ if not exist %WWIV_CMAKE_DIR% (
 echo:
 echo * Building Cryptlib (zip/unzip)
 cd %WORKSPACE%\deps\cl342
-msbuild crypt32.vcxproj  /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
+set cryptlib_platform=Win32
+if /i "%arch%"=="x64" (set cryptlib_platform="x64")
+msbuild crypt32.vcxproj /t:Build /p:Configuration=Release /p:Platform=%cryptlib_platform% || exit /b
 
 @rem Build BBS, wwivconfig, telnetserver
 echo:
@@ -70,7 +78,7 @@ cd %WORKSPACE%\core
 echo:
 echo * Building WWIV
 cd %WWIV_CMAKE_DIR%
-cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=MinSizeRel %WORKSPACE%   || exit /b
+cmake -G "Ninja" -DCMAKE_BUILD_TYPE:STRING=MinSizeRel %WORKSPACE% || exit /b
 cmake --build .   || exit /b
 
 @rem Building bits from the build tree.
@@ -79,6 +87,9 @@ echo:
 echo * Building INFOZIP (zip/unzip)
 cd %WORKSPACE%\deps\infozip
 
+@rem
+@rem Always build this as 32-bit binaries nomatter what. 
+@rem
 msbuild unzip60\win32\vc8\unzip.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 msbuild zip30\win32\vc6\zip.vcxproj /t:Build /p:Configuration=Release /p:Platform=Win32 || exit /b
 
@@ -108,7 +119,7 @@ cd %WORKSPACE%\bbs\admin\gfiles
 cd %WORKSPACE%\
 echo:
 echo * Copying BBS files to staging directory.
-copy /v/y %WORKSPACE%\deps\cl342\Release\cl32.dll %STAGE_DIR%\cl32.dll || exit /b
+copy /v/y %WORKSPACE%\deps\cl342\Release\cl%NUM_BITS%.dll %STAGE_DIR%\cl%NUM_BITS%.dll || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\bbs\bbs.exe %STAGE_DIR%\bbs.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\wwivconfig\wwivconfig.exe %STAGE_DIR%\wwivconfig.exe || exit /b
 copy /v/y %WWIV_CMAKE_DIR%\network\network.exe %STAGE_DIR%\network.exe || exit /b
