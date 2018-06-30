@@ -5,15 +5,10 @@ graphics to use all the features of this system.  Here are some shareware
 and freeware clients I have used and can recommend:
 
     Zap-O-Comm
-        http://www.emtec.com/zoc/index.html
+        http://www.emtec.com/zoc/index.html   [win32, mac]
 
+    NetRunner
+         http://mysticbbs.com/downloads.html   [win32, linux]
 
-    CRT
-        http://www.vandyke.com/download/index.html
-
-
-    HyperTerm (Personal Edition)
-        http://www.hilgraeve.com/htpe.html
-
-
-
+    SyncTerm
+	http://syncterm.bbsdev.net/     [mac, win32, linux]
