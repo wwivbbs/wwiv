@@ -14,18 +14,22 @@
 @rem **************************************************************************
 
 setlocal
+@echo off
 
 del wwiv-*.zip
 
 if /I "%LABEL%"=="win-x86" (
-	set ARCH="x86"
-	set NUM_BITS="32"
+	@echo Setting x86 (32-bit) Architecture
+	set ARCH=x86
+	set NUM_BITS=32
 )
 if /I "%LABEL%"=="win-x64" (
-	set ARCH="x64"
-	set NUM_BITS="64"
+	@echo Setting x64 (64-bit) Architecture
+	set ARCH=x64
+	set NUM_BITS=64
 )
 
+@echo off
 set ZIP_EXE="C:\Program Files\7-Zip\7z.exe"
 set WWIV_RELEASE=5.4
 set WWIV_FULL_RELEASE=5.4.0
@@ -65,7 +69,7 @@ echo:
 echo * Building Cryptlib (zip/unzip)
 cd %WORKSPACE%\deps\cl342
 set cryptlib_platform=Win32
-if /i "%arch%"=="x64" (set cryptlib_platform="x64")
+if /i "%arch%"=="x64" (set cryptlib_platform=x64)
 msbuild crypt32.vcxproj /t:Build /p:Configuration=Release /p:Platform=%cryptlib_platform% || exit /b
 
 @rem Build BBS, wwivconfig, telnetserver
