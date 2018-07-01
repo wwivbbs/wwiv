@@ -24,20 +24,20 @@
 #include <functional>
 #include <iomanip>
 #include <iostream>
+#include <memory>
 #include <string>
 #include <unordered_map>
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/textfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/textfile.h"
 #include "core/version.h"
 
 using std::ofstream;
 using std::string;
 using namespace wwiv::strings;
-
 
 namespace wwiv {
 namespace core {
@@ -47,8 +47,38 @@ std::string Logger::exit_filename_;
 int Logger::cmdline_verbosity_;
 bool Logger::log_to_console_;
 bool Logger::log_to_file_;
+std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
+    Logger::log_to_;
+
 
 static constexpr char log_date_format[] = "%F %T";
+
+static std::shared_ptr<Appender> console_appender;
+static std::shared_ptr<Appender> logfile_appender;
+
+class ConsoleAppender : public Appender {
+  virtual bool append(const std::string& message) const {
+    std::cerr << message << std::endl;
+    return true;
+  }
+};
+
+class LogFileAppender : public Appender {
+public:
+  LogFileAppender(const std::string& fn) : filename_(fn) {}
+  virtual bool append(const std::string& message) const {
+    // Not super performant, but we'll start here and see how far this
+    // gets us.
+    if (message.empty()) {
+      return true;
+    }
+    TextFile out(filename_, "a");
+    return out.WriteLine(message) != 0;
+  }
+
+private:
+  const std::string filename_;
+};
 
 const std::string FormatLogLevel(LoggerLevel l, int v) {
   if (l == LoggerLevel::verbose) {
@@ -81,32 +111,23 @@ static void LogToFile(const std::string& filename, const std::string& msg) {
 
 Logger::Logger(LoggerLevel level, int verbosity) : level_(level), verbosity_(verbosity) {}
 
-Logger::~Logger() { 
-  if (level_ == LoggerLevel::ignored) {
-    return;
-  }
+Logger::~Logger() {
   if (level_ == LoggerLevel::verbose) {
     if (!vlog_is_on(verbosity_)) {
       return;
     }
   }
-  const auto msg = FormatLogMessage(level_, verbosity_, ss_.str()); 
-  if (level_ == LoggerLevel::start) {
-    // startup messages only go to file.
-    LogToFile(log_filename_, msg);
-    return;
-  } else {
-    LogToStdError(msg);
-    LogToFile(log_filename_, msg);
+  const auto msg = FormatLogMessage(level_, verbosity_, ss_.str());
+  const auto& appenders = log_to_[level_];
+  for (auto appender : appenders) {
+    appender->append(msg);
   }
-
   if (level_ == LoggerLevel::fatal) {
     abort();
   }
-  // TODO(rushfan): Log to file too.
 }
 
-// static 
+// static
 bool Logger::vlog_is_on(int level) { return level <= cmdline_verbosity_; }
 
 // static
@@ -114,8 +135,8 @@ void Logger::StartupLog(int argc, char* argv[]) {
   time_t t = time(nullptr);
   string l(asctime(localtime(&t)));
   StringTrim(&l);
-  LOG(STARTUP) << exit_filename_ << " version " << wwiv_version << beta_version << " ("
-               << wwiv_date << ")";
+  LOG(STARTUP) << exit_filename_ << " version " << wwiv_version << beta_version << " (" << wwiv_date
+               << ")";
   LOG(STARTUP) << exit_filename_ << " starting at " << l;
   if (argc > 1) {
     string cmdline;
@@ -154,6 +175,28 @@ void Logger::Init(int argc, char** argv, bool startup_log) {
   }
   log_filename_ = StrCat(filename, ".log");
   exit_filename_ = filename;
+
+  // Setup the default appenders.
+  console_appender.reset(new ConsoleAppender{});
+  logfile_appender.reset(new LogFileAppender{log_filename_});
+
+  log_to_[LoggerLevel::error].emplace(console_appender);
+  log_to_[LoggerLevel::error].emplace(logfile_appender);
+
+  log_to_[LoggerLevel::fatal].emplace(console_appender);
+  log_to_[LoggerLevel::fatal].emplace(logfile_appender);
+
+  log_to_[LoggerLevel::info].emplace(console_appender);
+  log_to_[LoggerLevel::info].emplace(logfile_appender);
+
+  log_to_[LoggerLevel::verbose].emplace(console_appender);
+  log_to_[LoggerLevel::verbose].emplace(logfile_appender);
+
+  log_to_[LoggerLevel::warning].emplace(console_appender);
+  log_to_[LoggerLevel::warning].emplace(logfile_appender);
+
+  log_to_[LoggerLevel::start].emplace(logfile_appender);
+
   if (startup_log) {
     StartupLog(argc, argv);
   }

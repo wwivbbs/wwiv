@@ -19,9 +19,11 @@
 #define __INCLUDED_CORE_LOG_H__
 
 #include <functional>
-#include <map>
+#include <memory>
 #include <sstream>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
 
 typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 
@@ -48,7 +50,7 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define CHECK_GE(x, y) LOG_IF(!(x >= y), FATAL)
 #define CHECK_GT(x, y) LOG_IF(!(x > y), FATAL)
 #ifdef WWIV_CORE_LOG_DEBUG
-#define DCHECK_LE(x, y) CHECK_LE(x, y)   
+#define DCHECK_LE(x, y) CHECK_LE(x, y)
 
 #define DCHECK_EQ(x, y) CHECK_EQ(x, y)
 
@@ -81,67 +83,90 @@ namespace core {
 
 enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, fatal };
 
+class Appender {
+public:
+  Appender(){};
+  virtual bool append(const std::string& message) const = 0;
+};
+
+enum class LogDestination { NOWHERE, CONSOLE, LOG_FILE };
+
+class LoggerConfig {
+public:
+  LoggerConfig(){};
+};
+
 class NullLogger {
-  public:
-    NullLogger() {}
-    void operator&(std::ostream&) {}
-    template <class T> NullLogger& operator<<(const T& msg) { return *this; }
-    inline NullLogger& operator<<(ENDL_TYPE* m) { return *this; }
-  };
+public:
+  NullLogger() {}
+  void operator&(std::ostream&) {}
+  template <class T> NullLogger& operator<<(const T& msg) { return *this; }
+  inline NullLogger& operator<<(ENDL_TYPE* m) { return *this; }
+};
 
-  /**
-   * Logger class for WWIV.
-   * Usage:
-   *
-   * Once near your main() method, invoke Logger::Init(argc, argv) to initialize
-   * the logger. This will initialize the logger filename to be your
-   * executable's name with .log appended. You should also also invoke ExitLogger
-   * when exiting your binary,
-   *
-   * Example:
-   *
-   *   Logger::Init(argc, argv);
-   *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
-   *
-   * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
-   */
-  class Logger {
-  public:
-    Logger() : Logger(LoggerLevel::info, 0) {}
-    Logger(LoggerLevel level) : Logger(level, 0) {}
-    Logger(LoggerLevel level, int verbosity);
-    ~Logger();
+struct enum_hash {
+  template <typename T>
+  inline typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
+  operator()(T const value) const {
+    return static_cast<std::size_t>(value);
+  }
+};
 
-    /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
-    static void Init(int argc, char** argv, bool startup_log);
-    static void Init(int argc, char** argv) { Init(argc, argv, true); };
-    static void StartupLog(int argc, char* argv[]);
-    static void ExitLogger();
-    static void DisableFileLoging();
-    static bool vlog_is_on(int level);
+/**
+ * Logger class for WWIV.
+ * Usage:
+ *
+ * Once near your main() method, invoke Logger::Init(argc, argv) to initialize
+ * the logger. This will initialize the logger filename to be your
+ * executable's name with .log appended. You should also also invoke ExitLogger
+ * when exiting your binary,
+ *
+ * Example:
+ *
+ *   Logger::Init(argc, argv);
+ *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+ *
+ * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
+ */
+class Logger {
+public:
+  Logger() : Logger(LoggerLevel::info, 0) {}
+  Logger(LoggerLevel level) : Logger(level, 0) {}
+  Logger(LoggerLevel level, int verbosity);
+  ~Logger();
 
-    template <class T> Logger& operator<<(const T& msg) {
-      ss_ << msg;
-      used_ = true;
-      return *this;
-    }
-    inline Logger& operator<<(ENDL_TYPE* m) {
-      used_ = true;
-      ss_ << m;
-      return *this;
-    }
+  /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
+  static void Init(int argc, char** argv, bool startup_log);
+  static void Init(int argc, char** argv) { Init(argc, argv, true); };
+  static void ExitLogger();
+  static void DisableFileLoging();
+  static bool vlog_is_on(int level);
 
-  private:
-    static std::string exit_filename_;
-    static std::string log_filename_;
-    static int cmdline_verbosity_;
-    static bool log_to_console_;
-    static bool log_to_file_;
-    LoggerLevel level_;
-    int verbosity_;
-    bool used_ = false;
-    std::ostringstream ss_;
-  };
+  template <class T> Logger& operator<<(const T& msg) {
+    ss_ << msg;
+    used_ = true;
+    return *this;
+  }
+  inline Logger& operator<<(ENDL_TYPE* m) {
+    used_ = true;
+    ss_ << m;
+    return *this;
+  }
+
+private:
+  static void StartupLog(int argc, char* argv[]);
+
+  static std::string exit_filename_;
+  static std::string log_filename_;
+  static int cmdline_verbosity_;
+  static bool log_to_console_;
+  static bool log_to_file_;
+  static std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash> log_to_;
+  LoggerLevel level_;
+  int verbosity_;
+  bool used_ = false;
+  std::ostringstream ss_;
+};
 
 } // namespace core
 } // namespace wwiv
