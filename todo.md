@@ -1,10 +1,9 @@
-==============================================================================
-                             WWIV BBS TODO List
-                 Copyright 2002-2018, WWIV Software Services
-==============================================================================
+# WWIV BBS TODO List
+# Copyright 2002-2018, WWIV Software Services
+***
 
-FTN
-===
+## FTN
+***
 * improve addressing for outbound netmail
 * add option to save packets
 * ability to put more than 1 message per packet.
@@ -13,12 +12,12 @@ FTN
   need to check for both address and serial number or 
   crc of headers too.
 
-Ini Files and Configuration
-===========================
+## Ini Files and Configuration
+***
 * Add net.ini support into network{1,2,3}
 
-Infrastructure Cleanup
-======================
+## Infrastructure Cleanup
+***
 * get rid of more char[] variables from vars.h, move to wsession as strings.
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
@@ -39,45 +38,49 @@ Infrastructure Cleanup
 * Get GCC 8 compiles working.
 
 
-Networking Cleanup
-==================
+## Networking Cleanup
+***
 * Figure out why new networking stack doesn't work for mark.
 
-core::File Improvements
-=======================
+## core::File Improvements
+***
 * move File to namespace wwiv::core
 * start migrating core::File towards fs::filesystem and fs::path naming. (in progress)
+  - also todo is to figure out if we want to add some interoperabilit with
+    iostreams here.
 * Create SemaphoreFile class,later on also add support for creating semaphores for network
   and other places in wwiv.
 
-Feature Improvements
-====================
+## Feature Improvements
+***
 * Create wwivutil print command to print files in ANSI with 
   heart and pipe codes
+  - This needs a context class to hold current session state
+    that is now spit across Application class and other
+    global variables.
 * make a common ACS system (like TG, vs. having separate 
   SL DSL AR fields everywhere for menus)
 * cleanup menu system. It's awful.
 
-Linux Work
-==========
+## Linux Work
+***
 * TopScreen doesn't work with CursesIO
 * stop using localIO()->WhereX to determine remote position
 
-Net52
-=====
+## Net52
+***
 
-Message Areas
-=============
+## Message Areas
+***
 * detangle global net_email_name (maybe it needs to be added to EmailData?)
 * Make the emailmessage extend the message so most things are common
   between them.
 
-Open Questions
-==============
+## Open Questions
+***
 
-Closed Questions
-==============
+## Closed Questions
+***
 
 1) Guest user account. Is it useful?   - Yes, it just needs to be improved
    and documented.
- 
