@@ -35,7 +35,11 @@ namespace fido {
 #pragma pack(push, 1)
 #endif  // __MSDOS__
 
-/*
+#ifdef ERROR
+#undef ERROR
+#endif
+
+  /*
 Type-2 Packet Format (proposed, but currently in use)
   -----------------------------------------------------
   Field    Ofs Siz Type  Description                Expected value(s)
@@ -262,7 +266,11 @@ bool write_fido_packet_header(File& f, packet_header_2p_t& header);
 bool write_packed_message(File& f, FidoPackedMessage& packet);
 bool write_stored_message(File& f, FidoStoredMessage& packet);
 
-enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
+enum class ReadPacketResponse { 
+  OK, 
+  ERROR, 
+  END_OF_FILE 
+};
 ReadPacketResponse read_packed_message(File& file, FidoPackedMessage& packet);
 ReadPacketResponse read_stored_message(File& file, FidoStoredMessage& packet);
 

@@ -22,58 +22,126 @@
 #include <ctime>
 #include <fstream>
 #include <functional>
+#include <iomanip>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
+#include "core/command_line.h"
 #include "core/file.h"
+#include "core/textfile.h"
 #include "core/strings.h"
 #include "core/version.h"
 
 using std::ofstream;
 using std::string;
-using el::ConfigurationType;
-using el::Level;
-using el::Loggers;
 using namespace wwiv::strings;
 
-INITIALIZE_EASYLOGGINGPP
 
 namespace wwiv {
 namespace core {
 
+std::string Logger::log_filename_;
+std::string Logger::exit_filename_;
+int Logger::cmdline_verbosity_;
+bool Logger::log_to_console_;
+bool Logger::log_to_file_;
 
-Logger::Logger() {}
+static constexpr char log_date_format[] = "%F %T";
 
-Logger::~Logger() {}
+const std::string FormatLogLevel(LoggerLevel l, int v) {
+  if (l == LoggerLevel::verbose) {
+    return StrCat("VER-", v);
+  }
+  static const std::unordered_map<LoggerLevel, std::string> map = {{LoggerLevel::start, "START"},
+                                                                   {LoggerLevel::debug, "DEBUG"},
+                                                                   {LoggerLevel::error, "ERROR"},
+                                                                   {LoggerLevel::info, "INFO "},
+                                                                   {LoggerLevel::warning, "WARN "}};
+  return map.at(l);
+}
 
-std::string Logger::exit_filename;
+static std::string FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) {
+  auto now = std::time(nullptr);
+  auto tm = *std::localtime(&now);
+  // TODO(rushfan): Fix getting millis.
+  return StrCat(wwiv::strings::put_time(&tm, log_date_format), ",000 ",
+                FormatLogLevel(level, verbosity), " ", msg);
+}
 
-//static 
+static void LogToStdError(const std::string& msg) { std::cerr << msg << std::endl; }
+static void LogToFile(const std::string& filename, const std::string& msg) {
+  // Not super performant, but we'll start here and see how far this
+  // gets us.
+  TextFile out(filename, "a");
+  out.WriteLine(msg);
+}
+
+Logger::Logger(LoggerLevel level, int verbosity) : level_(level), verbosity_(verbosity) {}
+
+Logger::~Logger() { 
+  if (level_ == LoggerLevel::ignored) {
+    return;
+  }
+  if (level_ == LoggerLevel::verbose) {
+    if (!vlog_is_on(verbosity_)) {
+      return;
+    }
+  }
+  const auto msg = FormatLogMessage(level_, verbosity_, ss_.str()); 
+  if (level_ == LoggerLevel::start) {
+    // startup messages only go to file.
+    LogToFile(log_filename_, msg);
+    return;
+  } else {
+    LogToStdError(msg);
+    LogToFile(log_filename_, msg);
+  }
+
+  if (level_ == LoggerLevel::fatal) {
+    abort();
+  }
+  // TODO(rushfan): Log to file too.
+}
+
+// static 
+bool Logger::vlog_is_on(int level) { return level <= cmdline_verbosity_; }
+
+// static
 void Logger::StartupLog(int argc, char* argv[]) {
   time_t t = time(nullptr);
   string l(asctime(localtime(&t)));
   StringTrim(&l);
-  CLOG(INFO, "startup") << exit_filename << " version " << wwiv_version << beta_version
-    << " (" << wwiv_date << ")";
-  CLOG(INFO, "startup") << exit_filename << " starting at " << l;
+  LOG(STARTUP) << exit_filename_ << " version " << wwiv_version << beta_version << " ("
+               << wwiv_date << ")";
+  LOG(STARTUP) << exit_filename_ << " starting at " << l;
   if (argc > 1) {
     string cmdline;
     for (int i = 1; i < argc; i++) {
       cmdline += argv[i];
       cmdline += " ";
     }
-    CLOG(INFO, "startup") << "command line: " << cmdline;
+    LOG(STARTUP) << "command line: " << cmdline;
   }
 }
 
-//static
+// static
 void Logger::ExitLogger() {
   time_t t = time(nullptr);
-  CLOG(INFO, "startup") << exit_filename << " exiting at " << asctime(localtime(&t));
+  LOG(STARTUP) << exit_filename_ << " exiting at " << asctime(localtime(&t));
 }
 
 // static
 void Logger::Init(int argc, char** argv, bool startup_log) {
+  cmdline_verbosity_ = 0;
+  CommandLine cmdline(argc, argv, "xxxx");
+  cmdline.AddStandardArgs();
+  cmdline.set_no_args_allowed(true);
+  cmdline.Parse();
+
+  // Set --v from commandline
+  cmdline_verbosity_ = cmdline.iarg("v");
+
   string filename(argv[0]);
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
     filename = filename.substr(0, filename.size() - 4);
@@ -82,48 +150,16 @@ void Logger::Init(int argc, char** argv, bool startup_log) {
   if (last_slash != string::npos) {
     filename = filename.substr(last_slash + 1);
   }
-  string log_filename = StrCat(filename, ".log");
-
-  el::Configurations conf;
-  conf.setToDefault();
-  conf.setGlobally(ConfigurationType::Filename, log_filename);
-  conf.setGlobally(ConfigurationType::Format, std::string("%datetime %level %msg"));
-  conf.set(Level::Debug, ConfigurationType::Format, std::string("%datetime %level [%user@%host] [%func] [%loc] %msg"));
-  // INFO and WARNING are set to default by Level::Global
-  conf.set(Level::Error, ConfigurationType::Format, std::string("%datetime %level %msg"));
-  conf.set(Level::Fatal, ConfigurationType::Format, std::string("%datetime %level %msg"));
-  conf.set(Level::Verbose, ConfigurationType::Format, std::string("%datetime %level-%vlevel %msg"));
-  conf.set(Level::Trace, ConfigurationType::Format, std::string("%datetime %level [%func] [%loc] %msg"));
-
-  auto startup = getLoggerStorage()->registeredLoggers()->get("startup");
-
-  el::Loggers::reconfigureAllLoggers(conf);
-
-  // Fork a 2nd configuration to use for the startup logger.
-  el::Configurations confStartup = conf;
-  confStartup.set(Level::Info, ConfigurationType::ToStandardOutput, "false");
-  startup->configure(confStartup);
-
-  START_EASYLOGGINGPP(argc, argv);
-
-  exit_filename = filename;
+  log_filename_ = StrCat(filename, ".log");
+  exit_filename_ = filename;
   if (startup_log) {
     StartupLog(argc, argv);
   }
 }
 
-el::base::type::StoragePointer Logger::getLoggerStorage() {
-        return el::Helpers::storage();
-}
-
 void Logger::DisableFileLoging() {
-  el::Configurations conf;
-  conf.setToDefault();
-  conf.setGlobally(ConfigurationType::ToFile, "false");
-  conf.setGlobally(ConfigurationType::ToStandardOutput, "false");
-  el::Loggers::reconfigureAllLoggers(conf);
+  // TODO(rushfan): Implement me
 }
 
-
-}
-}
+} // namespace core
+} // namespace wwiv

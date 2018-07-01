@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "wwivd/wwivd_non_http.h"
 
+#include <cctype>
 #include <memory>
 #include <mutex>
 #include <string>

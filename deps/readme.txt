@@ -28,12 +28,6 @@ dir: gflags-2.1.1
 url: code.google.com/p/gflags
 license: New BSD
 
-EasyLogging
-dir easylogging
-url: https://github.com/easylogging/easyloggingpp
-license: MIT
-version: 9.94.1
-
 Cereal
 dir cereal
 url: https://github.com/USCiLab/cereal/

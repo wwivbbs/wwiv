@@ -34,6 +34,9 @@
 #include "core/log.h"
 #include "core/strings.h"
 
+#include <algorithm>
+#include <string>
+
 using namespace wwiv::strings;
 
 /**

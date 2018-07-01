@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "sdk/fido/fido_packets.h"
 
+#include <algorithm>
 #include <string>
 
 #include "core/file.h"

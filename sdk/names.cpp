@@ -17,6 +17,7 @@
 /**************************************************************************/
 #include "sdk/names.h"
 
+#include <algorithm>
 #include <exception>
 #include <stdexcept>
 #include <string>

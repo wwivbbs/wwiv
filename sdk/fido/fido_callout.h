@@ -47,7 +47,7 @@ public:
 
   // wwiv::sdk::Callout implementation
   const net_call_out_rec* net_call_out_for(int node) const override;
-  const net_call_out_rec* net_call_out_for(int node) const override;
+  const net_call_out_rec* net_call_out_for(const std::string& node) const;
 
   bool insert(const FidoAddress& a, const fido_node_config_t& c);
   bool erase(const FidoAddress& a);

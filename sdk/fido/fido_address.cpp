@@ -17,15 +17,16 @@
 /**************************************************************************/
 #include "sdk/fido/fido_address.h"
 
+#include <cctype>
 #include <set>
 #include <string>
 
-#include <cereal/cereal.hpp>
 #include <cereal/access.hpp>
-#include <cereal/types/map.hpp>
-#include <cereal/types/vector.hpp>
-#include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
+#include <cereal/cereal.hpp>
+#include <cereal/types/map.hpp>
+#include <cereal/types/memory.hpp>
+#include <cereal/types/vector.hpp>
 
 #include "core/file.h"
 #include "core/log.h"
@@ -43,8 +44,7 @@ namespace wwiv {
 namespace sdk {
 namespace fido {
 
-template <typename T, typename C, typename I>
-static T next_int(C& c, I& it, std::set<char> stop) {
+template <typename T, typename C, typename I> static T next_int(C& c, I& it, std::set<char> stop) {
   string s;
   while (it != std::end(c) && !contains(stop, *it)) {
     if (!std::isdigit(*it)) {
@@ -101,35 +101,48 @@ std::string FidoAddress::as_string(bool include_domain) const {
   return s;
 }
 
-bool FidoAddress::operator< (const FidoAddress& r) const {
-  //std::cerr << "[" << *this << "<" << r << "]";
-  if (zone_ < r.zone_) return true;
-  if (zone_ > r.zone_) return false;
-  
-  if (net_ < r.net_) return true;
-  if (net_ > r.net_) return false;
-  
-  if (node_ < r.node_) return true;
-  if (node_ > r.node_) return false;
+bool FidoAddress::operator<(const FidoAddress& r) const {
+  // std::cerr << "[" << *this << "<" << r << "]";
+  if (zone_ < r.zone_)
+    return true;
+  if (zone_ > r.zone_)
+    return false;
 
-  if (point_ < r.point_) return true;
-  if (point_ > r.point_) return false;
-  if (domain_ < r.domain_) return true;
+  if (net_ < r.net_)
+    return true;
+  if (net_ > r.net_)
+    return false;
 
-  //std::cerr << "{F} ";
+  if (node_ < r.node_)
+    return true;
+  if (node_ > r.node_)
+    return false;
+
+  if (point_ < r.point_)
+    return true;
+  if (point_ > r.point_)
+    return false;
+  if (domain_ < r.domain_)
+    return true;
+
+  // std::cerr << "{F} ";
   return false;
 }
 
-bool FidoAddress::operator== (const FidoAddress& o) const {
-  if (zone_ != o.zone_) return false;
-  if (net_ != o.net_) return false;
-  if (node_ != o.node_) return false;
-  if (point_ != o.point_) return false;
-  if (domain_ != o.domain_) return false;
+bool FidoAddress::operator==(const FidoAddress& o) const {
+  if (zone_ != o.zone_)
+    return false;
+  if (net_ != o.net_)
+    return false;
+  if (node_ != o.node_)
+    return false;
+  if (point_ != o.point_)
+    return false;
+  if (domain_ != o.domain_)
+    return false;
   return true;
 }
 
-}
-}  // namespace net
-}  // namespace wwiv
-
+} // namespace fido
+} // namespace sdk
+} // namespace wwiv

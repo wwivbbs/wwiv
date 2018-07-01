@@ -18,110 +18,128 @@
 #ifndef __INCLUDED_CORE_LOG_H__
 #define __INCLUDED_CORE_LOG_H__
 
-#ifdef _WIN32
-
-#ifdef MOUSE_MOVED
-#undef MOUSE_MOVED
-#endif  // MOUSE_MOVED
-
-#define NOGDICAPMASKS
-#define NOSYSMETRICS
-#define NOMENUS
-#define NOICONS
-#define NOKEYSTATES
-#define NOSYSCOMMANDS
-#define NORASTEROPS
-#define NOATOM
-#define NOCLIPBOARD
-#define NODRAWTEXT
-#define NOKERNEL
-#define NONLS
-#define NOMEMMGR
-#define NOMETAFILE
-#ifndef NOMINMAX
-#define NOMINMAX
-#endif  // NOMINMAX
-#define NOOPENFILE
-#define NOSCROLL
-#define NOSERVICE
-#define NOSOUND
-#define NOTEXTMETRIC
-#define NOWH
-#define NOCOMM
-#define NOKANJI
-#define NOHELP
-#define NOPROFILER
-#define NODEFERWINDOWPOS
-#define NOMCX
-#define NOCRYPT
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif  // WIN32_LEAN_AND_MEAN
-#define VC_EXTRALEAN
-#endif  // _WIN32
-
-#define ELPP_NO_DEFAULT_LOG_FILE
-#define ELPP_CUSTOM_COUT std::cerr
-#define ELPP_WINSOCK2
-#define ELPP_DISABLE_DEFAULT_CRASH_HANDLING
-// We need the thread safe logger.
-#define ELPP_THREAD_SAFE
-#define ELPP_FORCE_USE_STD_THREAD
-
-#ifdef _MSC_VER
-#include <codeanalysis\warnings.h>
-#pragma warning(push)
-#pragma warning(disable : ALL_CODE_ANALYSIS_WARNINGS)
-#endif  // _MSC_VER
-#include "deps/easylogging/easylogging++.h"
-#ifdef _MSC_VER
-#pragma warning( pop )
-#endif  // _MSC_VER
-
 #include <functional>
 #include <map>
-#include <string>
 #include <sstream>
+#include <string>
 
-#define WWIV_INIT_LOGGER() SHARE_EASYLOGGINGPP(wwiv::core::Logger::getLoggerStorage())
+typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
+
+#if defined(_DEBUG) || !defined(NDEBUG)
+#define WWIV_CORE_LOG_DEBUG
+#endif
+
+#define LOG(LEVEL) LOG_##LEVEL
+#define VLOG(LEVEL) LOG_VERBOSE(LEVEL)
+
+#define LOG_IGNORED(x) wwiv::core::NullLogger()
+#define LOG_STARTUP wwiv::core::Logger(wwiv::core::LoggerLevel::start, 0)
+#define LOG_INFO wwiv::core::Logger(wwiv::core::LoggerLevel::info, 0)
+#define LOG_WARNING wwiv::core::Logger(wwiv::core::LoggerLevel::warning, 0)
+#define LOG_ERROR wwiv::core::Logger(wwiv::core::LoggerLevel::error, 0)
+#define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
+#define LOG_VERBOSE(verbosity) wwiv::core::Logger(wwiv::core::LoggerLevel::verbose, verbosity)
+#define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
+
+#define CHECK(x) LOG_IF(!(x), FATAL)
+#define CHECK_LE(x, y) LOG_IF(!(x <= y), FATAL) << 
+#define CHECK_EQ(x, y) LOG_IF(!(x == y), FATAL)
+#define CHECK_NE(x, y) LOG_IF(!(x != y), FATAL)
+#define CHECK_GE(x, y) LOG_IF(!(x >= y), FATAL)
+#define CHECK_GT(x, y) LOG_IF(!(x > y), FATAL)
+#ifdef WWIV_CORE_LOG_DEBUG
+#define DCHECK_LE(x, y)                                                                            \
+  if (x <= y)                                                                                      \
+  LOG(FATAL) << " DCHECK_LE " << ##x << " " << x << "; " << ##y << ": " << y
+#define DCHECK_EQ(x, y) CHECK_EQ(x, y)
+#define DCHECK_NE(x, y) CHECK_NE(x, y)
+#define DCHECK_GE(x, y) CHECK_GE(x, y)
+#define DCHECK_GT(x, y) CHECK_GT(x, y)
+#define DLOG(LEVEL) LOG_##LEVEL
+#else
+#define DCHECK_LE(x, y) LOG_IGNORED(x)
+#define DCHECK_EQ(x, y) LOG_IGNORED(x)
+#define DCHECK_NE(x, y) LOG_IGNORED(x)
+#define DCHECK_GE(x, y) LOG_IGNORED(x)
+#define DCHECK_GT(x, y) LOG_IGNORED(x)
+#define DLOG(LEVEL) LOG_IGNORED(LEVEL)
+#endif
+
+#define CHECK_NOTNULL(x) CHECK(x != nullptr)
+#define LOG_IF(condition, LEVEL)                                                                   \
+  if (condition)                                                                                   \
+  LOG(LEVEL)
+
+#define VLOG_IS_ON(level) wwiv::core::Logger::vlog_is_on(level)
 
 namespace wwiv {
 namespace core {
 
-/**
- * Logger class for WWIV.
- * Usage:
- * 
- * Once near your main() method, invoke Logger::Init(argc, argv) to initialize
- * the logger. This will initialize the logger filename to be your
- * executable's name with .log appended. You should also also invoke ExitLogger
- * when exiting your binary,
- *
- * Example:
- *
- *   Logger::Init(argc, argv);
- *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
- *
- * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
- */
-class Logger {
-public:
-  Logger();
-  ~Logger();
+enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, fatal };
 
-  /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
-  static void Init(int argc, char** argv, bool startup_log);
-  static void Init(int argc, char** argv) { Init(argc, argv, true); };
-  static void StartupLog(int argc, char* argv[]);
-  static void ExitLogger();
-  static el::base::type::StoragePointer getLoggerStorage();
-  static void DisableFileLoging();
+class NullLogger {
+  public:
+    NullLogger() {}
+    void operator&(std::ostream&) {}
+    template <class T> NullLogger& operator<<(const T& msg) { return *this; }
+    inline NullLogger& operator<<(ENDL_TYPE* m) { return *this; }
+  };
 
-private:
-  static std::string exit_filename;
-};
+  /**
+   * Logger class for WWIV.
+   * Usage:
+   *
+   * Once near your main() method, invoke Logger::Init(argc, argv) to initialize
+   * the logger. This will initialize the logger filename to be your
+   * executable's name with .log appended. You should also also invoke ExitLogger
+   * when exiting your binary,
+   *
+   * Example:
+   *
+   *   Logger::Init(argc, argv);
+   *   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+   *
+   * In code, just use "LOG(INFO) << messages" and it will end up in the information logs.
+   */
+  class Logger {
+  public:
+    Logger() : Logger(LoggerLevel::info, 0) {}
+    Logger(LoggerLevel level) : Logger(level, 0) {}
+    Logger(LoggerLevel level, int verbosity);
+    ~Logger();
 
-}
-}
+    /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
+    static void Init(int argc, char** argv, bool startup_log);
+    static void Init(int argc, char** argv) { Init(argc, argv, true); };
+    static void StartupLog(int argc, char* argv[]);
+    static void ExitLogger();
+    static void DisableFileLoging();
+    static bool vlog_is_on(int level);
 
-#endif  // __INCLUDED_CORE_LOG_H__
+    template <class T> Logger& operator<<(const T& msg) {
+      ss_ << msg;
+      used_ = true;
+      return *this;
+    }
+    inline Logger& operator<<(ENDL_TYPE* m) {
+      used_ = true;
+      ss_ << m;
+      return *this;
+    }
+
+  private:
+    static std::string exit_filename_;
+    static std::string log_filename_;
+    static int cmdline_verbosity_;
+    static bool log_to_console_;
+    static bool log_to_file_;
+    LoggerLevel level_;
+    int verbosity_;
+    bool used_ = false;
+    std::ostringstream ss_;
+  };
+
+} // namespace core
+} // namespace wwiv
+
+#endif // __INCLUDED_CORE_LOG_H__
