@@ -124,6 +124,25 @@ bool erase_at(C& c, S on) {
   return true;
 }
 
+#ifdef __GNUC__ 
+#if __GNUC__ < 6
+/**
+ * Add general std::hash<E> specialization for enum class members.
+ * This is needed for GCC compilers older than 6.
+ */
+namespace std {
+template <class E> class hash {
+  using sfinae = typename std::enable_if<std::is_enum<E>::value, E>::type;
+public:
+  size_t operator()(const E& e) const {
+    return std::hash<typename std::underlying_type<E>::type>()(e);
+  }
+};
+}; // namespace std
+
+#endif  // __GNUC__  < 6
+#endif  // __GNUC__ 
+
 }  // namespace stl
 }  // namespace wwiv
 
