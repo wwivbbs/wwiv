@@ -48,14 +48,18 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define CHECK_GE(x, y) LOG_IF(!(x >= y), FATAL)
 #define CHECK_GT(x, y) LOG_IF(!(x > y), FATAL)
 #ifdef WWIV_CORE_LOG_DEBUG
-#define DCHECK_LE(x, y)                                                                            \
-  if (x <= y)                                                                                      \
-  LOG(FATAL) << " DCHECK_LE " << ##x << " " << x << "; " << ##y << ": " << y
+#define DCHECK_LE(x, y) CHECK_LE(x, y)   
+
 #define DCHECK_EQ(x, y) CHECK_EQ(x, y)
+
 #define DCHECK_NE(x, y) CHECK_NE(x, y)
+
 #define DCHECK_GE(x, y) CHECK_GE(x, y)
+
 #define DCHECK_GT(x, y) CHECK_GT(x, y)
+
 #define DLOG(LEVEL) LOG_##LEVEL
+
 #else
 #define DCHECK_LE(x, y) LOG_IGNORED(x)
 #define DCHECK_EQ(x, y) LOG_IGNORED(x)
