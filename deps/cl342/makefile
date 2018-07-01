@@ -1838,7 +1838,7 @@ IRIX64:
 
 ISC:
 	@./tools/buildasm.sh $(AS) $(OBJPATH)
-	@make $(DEFINES) CC=gcc CFLAGS="$(CFLAGS) -fomit-frame-pointer -O3 -mcpu=pentium"
+	@make $(DEFINES) CC=gcc CFLAGS="$(CFLAGS) -fomit-frame-pointer -O3"
 
 # Linux: cc is gcc.  Optimisation level is set via the ccopts.sh script.
 

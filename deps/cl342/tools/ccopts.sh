@@ -350,23 +350,7 @@ fi
 # object") that crop up when the static-lib version of cryptlib is used
 # in situations that also use shared libs, in the case of x86-64 the use
 # of PIC should have minimum overhead so it shouldn't be a big deal.
-
-if [ "$ARCH" = "i586" -o "$ARCH" = "i686" -o "$ARCH" = "x86_64" ] ; then
-	if [ "$GCC_VER" -ge 30 ] ; then
-		case $ARCH in
-			'x86_64')
-				CCARGS="$CCARGS -march=opteron -fPIC" ;;
-
-			'i686')
-				CCARGS="$CCARGS -march=pentiumpro" ;;
-
-			*)
-				CCARGS="$CCARGS -march=pentium" ;;
-		esac ;
-	else
-		CCARGS="$CCARGS -mcpu=pentium" ;
-	fi ;
-fi
+CCARGS="$CCARGS -march=native"
 
 # gcc 4.x for 64-bit architectures has an optimiser bug that removes an
 # empty-list check in cryptlib's list-management code (this has been
