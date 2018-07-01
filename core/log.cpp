@@ -30,6 +30,7 @@
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/textfile.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
 
@@ -53,11 +54,12 @@ const std::string FormatLogLevel(LoggerLevel l, int v) {
   if (l == LoggerLevel::verbose) {
     return StrCat("VER-", v);
   }
-  static const std::unordered_map<LoggerLevel, std::string> map = {{LoggerLevel::start, "START"},
-                                                                   {LoggerLevel::debug, "DEBUG"},
-                                                                   {LoggerLevel::error, "ERROR"},
-                                                                   {LoggerLevel::info, "INFO "},
-                                                                   {LoggerLevel::warning, "WARN "}};
+  static const std::unordered_map<LoggerLevel, std::string, wwiv::stl::enum_hash> map = {
+      {LoggerLevel::start, "START"},
+      {LoggerLevel::debug, "DEBUG"},
+      {LoggerLevel::error, "ERROR"},
+      {LoggerLevel::info, "INFO "},
+      {LoggerLevel::warning, "WARN "}};
   return map.at(l);
 }
 

@@ -124,26 +124,17 @@ bool erase_at(C& c, S on) {
   return true;
 }
 
-#ifdef __GNUC__ 
-#if __GNUC__ < 6
-/**
- * Add general std::hash<E> specialization for enum class members.
- * This is needed for GCC compilers older than 6.
- */
-namespace std {
-template <class E> class hash {
-  using sfinae = typename std::enable_if<std::is_enum<E>::value, E>::type;
-public:
-  size_t operator()(const E& e) const {
-    return std::hash<typename std::underlying_type<E>::type>()(e);
-  }
+// Enum has function. This is needed for GCC < 6.0
+// GCC 6+ can use hash types w/o specifying a hash function
+// as the 3rd template type.
+struct enum_hash
+{
+  template <typename T> inline typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
+  operator ()(T const value) const { return static_cast<std::size_t>(value); }
 };
-}; // namespace std
-
-#endif  // __GNUC__  < 6
-#endif  // __GNUC__ 
 
 }  // namespace stl
 }  // namespace wwiv
+
 
 #endif  // __INCLUDED_WWIV_CORE_STL_H__
