@@ -42,7 +42,7 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 #define LOG_FATAL wwiv::core::Logger(wwiv::core::LoggerLevel::fatal, 0)
 
 #define CHECK(x) LOG_IF(!(x), FATAL)
-#define CHECK_LE(x, y) LOG_IF(!(x <= y), FATAL) << 
+#define CHECK_LE(x, y) LOG_IF(!(x <= y), FATAL)
 #define CHECK_EQ(x, y) LOG_IF(!(x == y), FATAL)
 #define CHECK_NE(x, y) LOG_IF(!(x != y), FATAL)
 #define CHECK_GE(x, y) LOG_IF(!(x >= y), FATAL)
