@@ -21,14 +21,14 @@
 #include <iomanip>
 #include <iostream>
 #include <map>
-#include <string>
 #include <sstream>
+#include <string>
 #include <vector>
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/strings.h"
 #include "core/stl.h"
+#include "core/strings.h"
 #include "core/version.h"
 
 using std::clog;
@@ -45,15 +45,14 @@ using namespace wwiv::stl;
 namespace wwiv {
 namespace core {
 
-CommandLineArgument::CommandLineArgument(
-  const std::string& name, char key,
-  const std::string& help_text, const std::string& default_value)
-  : name(name), key(static_cast<char>(std::toupper(key))), 
-    help_text(help_text), default_value(default_value) {}
+CommandLineArgument::CommandLineArgument(const std::string& name, char key,
+                                         const std::string& help_text,
+                                         const std::string& default_value)
+    : name(name), key(static_cast<char>(std::toupper(key))), help_text(help_text),
+      default_value(default_value) {}
 
-CommandLineCommand::CommandLineCommand(
-    const std::string& name, const std::string& help_text)
-  : name_(name), help_text_(help_text) {}
+CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text)
+    : name_(name), help_text_(help_text) {}
 
 static std::string CreateProgramName(const std::string arg) {
   string::size_type last_slash = arg.find_last_of(File::separatorChar);
@@ -66,7 +65,7 @@ static std::string CreateProgramName(const std::string arg) {
 
 // TODO(rushfan): Make the static command for the root commandlinehere and pass it as the invoker.
 CommandLine::CommandLine(const std::vector<std::string>& args, const std::string dot_argument)
-  : CommandLineCommand("", ""), program_name_(CreateProgramName(args[0])) { 
+    : CommandLineCommand("", ""), program_name_(CreateProgramName(args[0])) {
   set_raw_args(args);
   set_dot_argument(dot_argument);
 }
@@ -80,7 +79,7 @@ static std::vector<std::string> make_args(int argc, char** argv) {
 }
 
 CommandLine::CommandLine(int argc, char** argv, const std::string dot_argument)
-  : CommandLine(make_args(argc, argv), dot_argument) {}
+    : CommandLine(make_args(argc, argv), dot_argument) {}
 
 bool CommandLine::Parse() {
   try {
@@ -107,24 +106,26 @@ bool CommandLine::ParseImpl() {
   return CommandLineCommand::Parse(1) >= size_int(CommandLineCommand::raw_args_);
 }
 
-int CommandLine::Execute() {
-  return CommandLineCommand::Execute();
-}
+int CommandLine::Execute() { return CommandLineCommand::Execute(); }
 
 bool CommandLineCommand::add_argument(const CommandLineArgument& cmd) {
-  // Add cmd to the list of allowable arguments, and also set 
+  // Add cmd to the list of allowable arguments, and also set
   // a default empty value.
   args_allowed_.emplace(cmd.name, cmd);
   args_.emplace(cmd.name, CommandLineValue(cmd.default_value, true));
   return true;
 }
 
-bool CommandLineCommand::HandleCommandLineArgument(
-    const std::string& key, const std::string& value) {
-  args_.erase(key);  // emplace doesn't seem to replace.
+bool CommandLineCommand::HandleCommandLineArgument(const std::string& key,
+                                                   const std::string& value) {
+  args_.erase(key); // emplace doesn't seem to replace.
+  if (!contains(args_allowed_, key)) {
+    VLOG(1) << "No arg: " << key << " to use for dot argument.";
+    return false;
+  }
   if (args_allowed_.at(key).is_boolean) {
-    if (value == "N" || value == "0" || value == "n" 
-        || IsEqualsIgnoreCase(value.c_str(), "false")) {
+    if (value == "N" || value == "0" || value == "n" ||
+        IsEqualsIgnoreCase(value.c_str(), "false")) {
       args_.emplace(key, CommandLineValue("false"));
     } else {
       args_.emplace(key, CommandLineValue("true"));
@@ -182,8 +183,12 @@ int CommandLineCommand::Parse(int start_pos) {
       const auto value = s.substr(2);
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, ".")) {
-      const auto value = s.substr(1);
-      HandleCommandLineArgument(dot_argument_, value);
+      // Were handling dot arguments.
+      if (!dot_argument_.empty()) {
+        VLOG(1) << "Ignoring dot argument since no mapping is defined by the application.";
+        const auto value = s.substr(1);
+        HandleCommandLineArgument(dot_argument_, value);
+      }
     } else {
       if (contains(commands_allowed_, s)) {
         // If s is a subcommand, parse it, incrementing our pointer.
@@ -252,7 +257,6 @@ int CommandLineCommand::Execute() {
   return 1;
 }
 
-
 std::string CommandLineCommand::GetHelp() const {
   std::ostringstream ss;
   string program_name = (name_.empty()) ? "program" : name_;
@@ -296,10 +300,7 @@ std::string CommandLine::GetHelp() const {
 }
 
 unknown_argument_error::unknown_argument_error(const std::string& message)
-    : std::runtime_error(StrCat("unknown_argument_error: ", message)) {
-}
+    : std::runtime_error(StrCat("unknown_argument_error: ", message)) {}
 
-
-}  // namespace core
-}  // namespace wwiv
-
+} // namespace core
+} // namespace wwiv

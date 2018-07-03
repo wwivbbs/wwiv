@@ -147,7 +147,7 @@ void Logger::Init(int argc, char** argv) {
 void Logger::Init(int argc, char** argv, LoggerConfig& c) {
   config_ = c;
   config_.cmdline_verbosity = 0;
-  CommandLine cmdline(argc, argv, "xxxx");
+  CommandLine cmdline(argc, argv, "");
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
   cmdline.set_unknown_args_allowed(true);

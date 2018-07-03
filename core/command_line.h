@@ -191,8 +191,17 @@ private:
   bool unknown_args_allowed_{false};
 };
 
+/**
+ * Class to parse command line arguments and populate the commands.
+ */
 class CommandLine : public CommandLineCommand {
 public:
+  /** 
+   * Common constructor.  Note that the dot_argument specifie the
+   * command line to replace . with (i.e. "network" means that .0
+   * will be replaced by --network=0.  An empty dot_argument means
+   * that no replacement will happen.
+   */
   CommandLine(const std::vector<std::string>& args, const std::string dot_argument);
   CommandLine(int argc, char** argv, const std::string dot_argument);
   virtual bool Parse();
