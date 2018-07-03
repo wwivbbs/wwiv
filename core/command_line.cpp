@@ -158,7 +158,7 @@ std::string CommandLineCommand::ArgNameForKey(char key) {
 
 int CommandLineCommand::Parse(int start_pos) {
   for (size_t i = start_pos; i < raw_args_.size(); i++) {
-    const auto& s{raw_args_[i]};
+    const string& s{raw_args_[i]};
     if (starts_with(s, "--")) {
       const auto delims = SplitString(s, "=");
       const auto key = delims[0].substr(2);

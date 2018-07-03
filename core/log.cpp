@@ -101,14 +101,6 @@ static std::string FormatLogMessage(LoggerLevel level, int verbosity, const std:
                 FormatLogLevel(level, verbosity), " ", msg);
 }
 
-static void LogToStdError(const std::string& msg) { std::cerr << msg << std::endl; }
-static void LogToFile(const std::string& filename, const std::string& msg) {
-  // Not super performant, but we'll start here and see how far this
-  // gets us.
-  TextFile out(filename, "a");
-  out.WriteLine(msg);
-}
-
 Logger::Logger(LoggerLevel level, int verbosity) : level_(level), verbosity_(verbosity) {}
 
 Logger::~Logger() {
