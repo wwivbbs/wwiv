@@ -160,6 +160,7 @@ void Logger::Init(int argc, char** argv, bool startup_log) {
   CommandLine cmdline(argc, argv, "xxxx");
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
+  cmdline.set_unknown_args_allowed(true);
   cmdline.Parse();
 
   // Set --v from commandline

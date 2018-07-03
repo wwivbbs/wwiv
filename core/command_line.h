@@ -164,6 +164,8 @@ public:
   virtual int Execute() override;
   virtual std::string GetHelp() const override;
   virtual std::string GetUsage() const override { return ""; }
+  void set_unknown_args_allowed(bool u) { unknown_args_allowed_ = u; }
+  bool unknown_args_allowed() const { return unknown_args_allowed_; }
 
 protected:
 
@@ -186,6 +188,7 @@ private:
   const std::string name_;
   const std::string help_text_;
   std::string dot_argument_;
+  bool unknown_args_allowed_{false};
 };
 
 class CommandLine : public CommandLineCommand {
@@ -199,6 +202,7 @@ public:
 
   void set_no_args_allowed(bool no_args_allowed) { no_args_allowed_ = no_args_allowed; }
   bool no_args_allowed() const { return no_args_allowed_; }
+
 private:
   const std::string program_name_;
   bool no_args_allowed_ = false;

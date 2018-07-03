@@ -153,30 +153,36 @@ std::string CommandLineCommand::ArgNameForKey(char key) {
       return a.first;
     }
   }
-  return "";
+  return {};
 }
 
 int CommandLineCommand::Parse(int start_pos) {
   for (size_t i = start_pos; i < raw_args_.size(); i++) {
-    const string s(raw_args_[i]);
+    const auto& s{raw_args_[i]};
     if (starts_with(s, "--")) {
-      const vector<string> delims = SplitString(s, "=");
-      const string key = delims[0].substr(2);
-      const string value = (delims.size() > 1) ? delims[1] : "";
+      const auto delims = SplitString(s, "=");
+      const auto key = delims[0].substr(2);
+      const auto value = (delims.size() > 1) ? delims[1] : "";
       if (!contains(args_allowed_, key)) {
+        if (unknown_args_allowed()) {
+          continue;
+        }
         throw unknown_argument_error(StrCat("Command: ", name(), "; key=", key));
       }
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, "/") || starts_with(s, "-")) {
-      char letter = static_cast<char>(std::toupper(s[1]));
-      const string key = ArgNameForKey(letter);
+      auto letter = static_cast<char>(std::toupper(s[1]));
+      const auto key = ArgNameForKey(letter);
       if (key.empty()) {
+        if (unknown_args_allowed()) {
+          continue;
+        }
         throw unknown_argument_error(StrCat("Command: ", name(), "; letter=", letter));
       }
-      const string value = s.substr(2);
+      const auto value = s.substr(2);
       HandleCommandLineArgument(key, value);
     } else if (starts_with(s, ".")) {
-      const string value = s.substr(1);
+      const auto value = s.substr(1);
       HandleCommandLineArgument(dot_argument_, value);
     } else {
       if (contains(commands_allowed_, s)) {
@@ -273,8 +279,6 @@ bool CommandLine::AddStandardArgs() {
 
   // Ignore these. used by logger
   add_argument({"v", "verbose log", "0"});
-
-
   return true;
 }
 
