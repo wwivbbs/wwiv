@@ -81,7 +81,6 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 namespace wwiv {
 namespace core {
 
-namespace {
 struct enum_hash {
   template <typename T>
   inline typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
@@ -90,7 +89,6 @@ struct enum_hash {
   }
 };
 
-}
 enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, fatal };
 
 class Appender {
