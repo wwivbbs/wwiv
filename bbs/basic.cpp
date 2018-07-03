@@ -152,7 +152,10 @@ int my_print(const char* fmt, ...) {
   return MB_FUNC_OK;
 }
 
-int my_input(char* buf, int size) {
+int my_input(const char* prompt, char* buf, int size) {
+  if (prompt && *prompt) {
+    bout.bputs(prompt);
+  }
   auto v = inputl(size, false);
   strcpy(buf, v.c_str());
   return v.size();
@@ -188,7 +191,8 @@ static bool LoadBasicFile(mb_interpreter_t* bas, const std::string& script_name)
   return ret == MB_FUNC_OK;
 }
 
-static void _on_error(struct mb_interpreter_t* s, mb_error_e e, char* m, char* f, int p, unsigned short row, unsigned short col, int abort_code) {
+static void _on_error(struct mb_interpreter_t* s, mb_error_e e, const char* m, const char* f, int p,
+                      unsigned short row, unsigned short col, int abort_code) {
   mb_unrefvar(s);
   mb_unrefvar(p);
 
