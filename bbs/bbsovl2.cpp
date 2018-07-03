@@ -313,18 +313,6 @@ void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStrin
 }
 
 /**
- * This function will reposition the cursor i spaces to the left, or if the
- * cursor is on the left side of the screen already then it will not move.
- * If the user has no ANSI then nothing happens.
- * @param numOfChars Number of characters to move to the left
- */
-void MoveLeft(int numOfChars) {
-  if (okansi()) {
-    bout << "\x1b[" << numOfChars << "D";
-  }
-}
-
-/**
  * This function will print out a string, making each character "spin"
  * using the / - \ | sequence. The color is definable and is the
  * second parameter, not the first. If the user does not have ANSI
@@ -338,16 +326,16 @@ void SpinPuts(const string& strText, int nColorCode) {
     for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
       sleep_for(milliseconds(dly));
       bout << "/";
-      MoveLeft(1);
+      bout.Left(1);
       sleep_for(milliseconds(dly));
       bout << "-";
-      MoveLeft(1);
+      bout.Left(1);
       sleep_for(milliseconds(dly));
       bout << "\\";
-      MoveLeft(1);
+      bout.Left(1);
       sleep_for(milliseconds(dly));
       bout << "|";
-      MoveLeft(1);
+      bout.Left(1);
       sleep_for(milliseconds(dly));
       bout.bputch(*iter);
     }

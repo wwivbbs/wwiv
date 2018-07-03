@@ -117,13 +117,12 @@ int GetMaxMessageLinesAllowed() {
   return (cs()) ? 100 : 80;
 }
 
-
 /**
  * Allows user to upload a post.
  */
 void upload_post() {
   File file(a()->temp_directory(), INPUT_MSG);
-  long lMaxBytes = 250 * static_cast<long>(GetMaxMessageLinesAllowed());
+  off_t lMaxBytes = 250 * static_cast<off_t>(GetMaxMessageLinesAllowed());
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
   int i = 0;
@@ -143,7 +142,6 @@ void upload_post() {
     bout << "\r\n|#3Nothing saved.\r\n\n";
   }
 }
-
 
 /**
  * High-level function for sending email.
