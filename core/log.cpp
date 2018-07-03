@@ -42,19 +42,11 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace core {
 
-std::string Logger::log_filename_;
-std::string Logger::exit_filename_;
-int Logger::cmdline_verbosity_;
-bool Logger::log_to_console_;
-bool Logger::log_to_file_;
-std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
-    Logger::log_to_;
-
-
 static constexpr char log_date_format[] = "%F %T";
 
 static std::shared_ptr<Appender> console_appender;
 static std::shared_ptr<Appender> logfile_appender;
+LoggerConfig Logger::config_;
 
 class ConsoleAppender : public Appender {
   virtual bool append(const std::string& message) const {
@@ -93,12 +85,10 @@ const std::string FormatLogLevel(LoggerLevel l, int v) {
   return map.at(l);
 }
 
-static std::string FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) {
+std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) {
   auto now = std::time(nullptr);
   auto tm = *std::localtime(&now);
-  // TODO(rushfan): Fix getting millis.
-  return StrCat(wwiv::strings::put_time(&tm, log_date_format), ",000 ",
-                FormatLogLevel(level, verbosity), " ", msg);
+  return StrCat(config_.timestamp_fn_(), FormatLogLevel(level, verbosity), " ", msg);
 }
 
 Logger::Logger(LoggerLevel level, int verbosity) : level_(level), verbosity_(verbosity) {}
@@ -110,7 +100,7 @@ Logger::~Logger() {
     }
   }
   const auto msg = FormatLogMessage(level_, verbosity_, ss_.str());
-  const auto& appenders = log_to_[level_];
+  const auto& appenders = config_.log_to[level_];
   for (auto appender : appenders) {
     appender->append(msg);
   }
@@ -120,16 +110,16 @@ Logger::~Logger() {
 }
 
 // static
-bool Logger::vlog_is_on(int level) { return level <= cmdline_verbosity_; }
+bool Logger::vlog_is_on(int level) { return level <= config_.cmdline_verbosity; }
 
 // static
 void Logger::StartupLog(int argc, char* argv[]) {
   time_t t = time(nullptr);
   string l(asctime(localtime(&t)));
   StringTrim(&l);
-  LOG(STARTUP) << exit_filename_ << " version " << wwiv_version << beta_version << " (" << wwiv_date
-               << ")";
-  LOG(STARTUP) << exit_filename_ << " starting at " << l;
+  LOG(STARTUP) << config_.exit_filename << " version " << wwiv_version << beta_version << " ("
+               << wwiv_date << ")";
+  LOG(STARTUP) << config_.exit_filename << " starting at " << l;
   if (argc > 1) {
     string cmdline;
     for (int i = 1; i < argc; i++) {
@@ -143,12 +133,20 @@ void Logger::StartupLog(int argc, char* argv[]) {
 // static
 void Logger::ExitLogger() {
   time_t t = time(nullptr);
-  LOG(STARTUP) << exit_filename_ << " exiting at " << asctime(localtime(&t));
+  LOG(STARTUP) << config_.exit_filename << " exiting at " << asctime(localtime(&t));
 }
 
 // static
-void Logger::Init(int argc, char** argv, bool startup_log) {
-  cmdline_verbosity_ = 0;
+void Logger::Init(int argc, char** argv) {
+  LoggerConfig config{};
+  config.log_startup = true;
+  Init(argc, argv, config);
+};
+
+// static
+void Logger::Init(int argc, char** argv, LoggerConfig& c) {
+  config_ = c;
+  config_.cmdline_verbosity = 0;
   CommandLine cmdline(argc, argv, "xxxx");
   cmdline.AddStandardArgs();
   cmdline.set_no_args_allowed(true);
@@ -156,7 +154,7 @@ void Logger::Init(int argc, char** argv, bool startup_log) {
   cmdline.Parse();
 
   // Set --v from commandline
-  cmdline_verbosity_ = cmdline.iarg("v");
+  config_.cmdline_verbosity = cmdline.iarg("v");
 
   string filename(argv[0]);
   if (ends_with(filename, ".exe") || ends_with(filename, ".EXE")) {
@@ -166,37 +164,44 @@ void Logger::Init(int argc, char** argv, bool startup_log) {
   if (last_slash != string::npos) {
     filename = filename.substr(last_slash + 1);
   }
-  log_filename_ = StrCat(filename, ".log");
-  exit_filename_ = filename;
+  config_.log_filename = StrCat(filename, ".log");
+  config_.exit_filename = filename;
 
   // Setup the default appenders.
   console_appender.reset(new ConsoleAppender{});
-  logfile_appender.reset(new LogFileAppender{log_filename_});
+  logfile_appender.reset(new LogFileAppender{config_.log_filename});
 
-  log_to_[LoggerLevel::error].emplace(console_appender);
-  log_to_[LoggerLevel::error].emplace(logfile_appender);
-
-  log_to_[LoggerLevel::fatal].emplace(console_appender);
-  log_to_[LoggerLevel::fatal].emplace(logfile_appender);
-
-  log_to_[LoggerLevel::info].emplace(console_appender);
-  log_to_[LoggerLevel::info].emplace(logfile_appender);
-
-  log_to_[LoggerLevel::verbose].emplace(console_appender);
-  log_to_[LoggerLevel::verbose].emplace(logfile_appender);
-
-  log_to_[LoggerLevel::warning].emplace(console_appender);
-  log_to_[LoggerLevel::warning].emplace(logfile_appender);
-
-  log_to_[LoggerLevel::start].emplace(logfile_appender);
-
-  if (startup_log) {
+  if (config_.register_console_destinations) {
+    config_.add_appender(LoggerLevel::error, console_appender);
+    config_.add_appender(LoggerLevel::fatal, console_appender);
+    config_.add_appender(LoggerLevel::warning, console_appender);
+    config_.add_appender(LoggerLevel::info, console_appender);
+    config_.add_appender(LoggerLevel::verbose, console_appender);
+  }
+  if (config_.register_file_destinations) {
+    config_.add_appender(LoggerLevel::error, logfile_appender);
+    config_.add_appender(LoggerLevel::fatal, logfile_appender);
+    config_.add_appender(LoggerLevel::warning, logfile_appender);
+    config_.add_appender(LoggerLevel::info, logfile_appender);
+    config_.add_appender(LoggerLevel::verbose, logfile_appender);
+    config_.add_appender(LoggerLevel::start, logfile_appender);
+  }
+  if (config_.log_startup) {
     StartupLog(argc, argv);
   }
 }
 
-void Logger::DisableFileLoging() {
-  // TODO(rushfan): Implement me
+static std::string DefaultTimestamp() {
+  auto now = std::time(nullptr);
+  auto tm = *std::localtime(&now);
+  // TODO(rushfan): Fix getting millis.
+  return StrCat(wwiv::strings::put_time(&tm, log_date_format), ",000 ");
+}
+
+LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}
+
+void LoggerConfig::add_appender(LoggerLevel level, std::shared_ptr<Appender> appender) {
+  log_to[level].emplace(appender);
 }
 
 } // namespace core

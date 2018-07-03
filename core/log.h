@@ -81,6 +81,16 @@ typedef std::basic_ostream<char>&(ENDL_TYPE)(std::basic_ostream<char>&);
 namespace wwiv {
 namespace core {
 
+namespace {
+struct enum_hash {
+  template <typename T>
+  inline typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
+  operator()(T const value) const {
+    return static_cast<std::size_t>(value);
+  }
+};
+
+}
 enum class LoggerLevel { ignored, start, debug, verbose, info, warning, error, fatal };
 
 class Appender {
@@ -89,11 +99,23 @@ public:
   virtual bool append(const std::string& message) const = 0;
 };
 
-enum class LogDestination { NOWHERE, CONSOLE, LOG_FILE };
+typedef std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash>
+    log_to_map_t;
+typedef std::function<std::string()> timestamp_fn;
 
 class LoggerConfig {
 public:
-  LoggerConfig(){};
+  LoggerConfig();
+  void add_appender(LoggerLevel level, std::shared_ptr<Appender> appender);
+
+  bool log_startup = false;
+  std::string exit_filename;
+  std::string log_filename;
+  int cmdline_verbosity = 0;
+  bool register_file_destinations = true;
+  bool register_console_destinations = true;
+  log_to_map_t log_to;
+  timestamp_fn timestamp_fn_;
 };
 
 class NullLogger {
@@ -102,14 +124,6 @@ public:
   void operator&(std::ostream&) {}
   template <class T> NullLogger& operator<<(const T& msg) { return *this; }
   inline NullLogger& operator<<(ENDL_TYPE* m) { return *this; }
-};
-
-struct enum_hash {
-  template <typename T>
-  inline typename std::enable_if<std::is_enum<T>::value, std::size_t>::type
-  operator()(T const value) const {
-    return static_cast<std::size_t>(value);
-  }
 };
 
 /**
@@ -136,11 +150,11 @@ public:
   ~Logger();
 
   /** Initializes the WWIV Loggers.  Must be invoked once per binary. */
-  static void Init(int argc, char** argv, bool startup_log);
-  static void Init(int argc, char** argv) { Init(argc, argv, true); };
+  static void Init(int argc, char** argv, LoggerConfig& config);
+  static void Init(int argc, char** argv);
   static void ExitLogger();
-  static void DisableFileLoging();
   static bool vlog_is_on(int level);
+  static LoggerConfig& config() noexcept { return config_; }
 
   template <class T> Logger& operator<<(const T& msg) {
     ss_ << msg;
@@ -155,13 +169,8 @@ public:
 
 private:
   static void StartupLog(int argc, char* argv[]);
-
-  static std::string exit_filename_;
-  static std::string log_filename_;
-  static int cmdline_verbosity_;
-  static bool log_to_console_;
-  static bool log_to_file_;
-  static std::unordered_map<LoggerLevel, std::unordered_set<std::shared_ptr<Appender>>, enum_hash> log_to_;
+  std::string FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg);
+  static LoggerConfig config_;
   LoggerLevel level_;
   int verbosity_;
   bool used_ = false;
