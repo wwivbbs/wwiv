@@ -4,13 +4,8 @@ url: https://github.com/miloyip/rapidjson
 license: notice
 
 Google Test
-dir: gtest-1.7.0
-url: https://code.google.com/p/googletest/
-license: New BSD
-
-Google Test (2)
-dir: googletest-master
-url: https://github.com/google/googletest/commit/0a439623f75c029912728d80cb7f1b8b48739ca4
+dir: googletest (submodule)
+url: https://github.com/wwivbbs/googletest
 license: New BSD
 
 PD Curses
