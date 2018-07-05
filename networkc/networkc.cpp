@@ -98,7 +98,7 @@ static bool checkup2(const time_t tFileTime, string dir, string filename) {
   File file(dir, filename);
 
   if (file.Open(File::modeReadOnly)) {
-    time_t tNewFileTime = file.last_write_time();
+    auto tNewFileTime = file.last_write_time();
     file.Close();
     return (tNewFileTime > (tFileTime + 2));
   }
@@ -153,40 +153,53 @@ int main(int argc, char** argv) {
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     std::unique_ptr<WStatus> status(sm.GetStatus());
 
-    const auto dir = net.dir;
-    // Pending files, call network1 to put them into s* or local.net.
-    if (File::ExistsWildcard(StrCat(dir, "p*.net"))) {
-      System(create_network_cmdline(net_cmdline, '1', verbose, ""));
-    }
-
-    // If the network type is a FTN network.
-    if (net.type == network_type_t::ftn) {
-      wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
-      // Import everything into local.net
-      if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
-        System(create_network_cmdline(net_cmdline, 'f', verbose, "import"));
-      }
-      
-      if (exists_bundle(net_cmdline.config(), net)) {
-        System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
+    int num_tries = 0;
+    bool found = false;
+    do {
+      found = false;
+      // Pending files, call network1 to put them into s* or local.net.
+      if (File::ExistsWildcard(StrCat(net.dir, "p*.net"))) {
+        VLOG(2) << "Found p*.net";
+        System(create_network_cmdline(net_cmdline, '1', verbose, ""));
+        found = true;
       }
 
-      // Export everything to FTN bundles
-      string fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-      if (File::Exists(dir, fido_out)) {
-        System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
+      // If the network type is a FTN network.
+      if (net.type == network_type_t::ftn) {
+        wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
+        // Import everything into local.net
+        if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
+          VLOG(2) << "Trying to FTN import";
+          System(create_network_cmdline(net_cmdline, 'f', verbose, "import"));
+        }
+
+        if (exists_bundle(net_cmdline.config(), net)) {
+          VLOG(2) << "Trying to FTN export";
+          System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
+        }
+
+        // Export everything to FTN bundles
+        string fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
+        if (File::Exists(net.dir, fido_out)) {
+          VLOG(2) << "Found s" << FTN_FAKE_OUTBOUND_NODE << ".net; trying to export";
+          System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
+        }
       }
-    }
 
-    // Process local mail with network2.
-    if (File::Exists(StrCat(dir, LOCAL_NET))) {
-      System(create_network_cmdline(net_cmdline, '2', verbose, ""));
-    }
+      // Process local mail with network2.
+      if (File::Exists(StrCat(net.dir, LOCAL_NET))) {
+        VLOG(2) << "Found: " << LOCAL_NET;
+        System(create_network_cmdline(net_cmdline, '2', verbose, ""));
+        found = true;
+      }
 
-    // If our network files have changed, run network3 and send feedback.
-    if (need_network3(dir, status->GetNetworkVersion())) {
-      System(create_network_cmdline(net_cmdline, '3', verbose, ""));
-    }
+      // If our network files have changed, run network3 and send feedback.
+      if (need_network3(net.dir, status->GetNetworkVersion())) {
+        VLOG(2) << "Need to run network3";
+        System(create_network_cmdline(net_cmdline, '3', verbose, ""));
+        found = true;
+      }
+    } while (found && ++num_tries < 3);
 
     return 0;
   } catch (const std::exception& e) {
