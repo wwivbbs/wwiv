@@ -31,6 +31,7 @@
 #include "sdk/networks.h"
 #include "wwivutil/fido/dump_fido_packet.h"
 #include "wwivutil/fido/dump_nodelist.h"
+#include "wwivutil/fido/dump_subscribers.h"
 
 using std::endl;
 using std::make_unique;
@@ -48,6 +49,7 @@ namespace fido {
 bool FidoCommand::AddSubCommands() {
   add(make_unique<DumpFidoPacketCommand>());
   add(make_unique<DumpNodelistCommand>());
+  add(make_unique<DumpSubscribersCommand>());
   return true;
 }
 

@@ -51,8 +51,13 @@ namespace wwiv {
 namespace sdk {
 
 std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& dir, const std::string& filename) {
+  return ReadFidoSubcriberFile(FilePath(dir, filename));
+}
 
-  TextFile file(dir, filename, "rt");
+std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& filename) {
+
+  VLOG(1) << "ReadFidoSubcriberFile: " << filename;
+  TextFile file(filename, "rt");
   if (!file.IsOpen()) {
     return{};
   }
@@ -67,13 +72,14 @@ std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& dir, const std::s
     try {
       subscribers.insert(FidoAddress(line));
     } catch (const bad_fidonet_address& e) {
-      LOG(ERROR) << "ReadFidoSubcriberFile: [" << FilePath(dir, filename) << "] : " <<  e.what();
+      LOG(ERROR) << "ReadFidoSubcriberFile: [" << filename << "] : " <<  e.what();
     }
   }
   return subscribers;
 }
 
 bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers) {
+  VLOG(1) << "ReadSubcriberFile: " << FilePath(dir, filename);
   subscribers.clear();
 
   TextFile file(dir, filename, "rt");

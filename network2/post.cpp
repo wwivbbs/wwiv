@@ -100,6 +100,16 @@ static bool find_sub(Context& context, const string& netname, subboard_t& sub) {
   return false;
 }
 
+static std::string change_subtype_to(const std::string& org_text, const std::string& new_subtype) {
+  auto iter = org_text.begin();
+  auto subtype = get_message_field(org_text, iter, {'\0', '\r', '\n'}, 80);
+  std::string result = new_subtype;
+  result.push_back(0); // Add NULL
+  result += string(iter, std::end(org_text));
+  // Should implicitly move by RVO
+  return result;
+}
+
 // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
 // character allowed in a DOS filename.This main_type covers both subscriber - to - host and
 // host - to - subscriber messages. Minor type is always zero(since it's ignored), and the
@@ -196,20 +206,21 @@ bool send_post_to_subscribers(Context& context, Packet& orig_packet) {
 
   if (orig_packet.nh.main_type != main_type_new_post) {
     LOG(ERROR) << "Called send_post_to_subscribers on packet of wrong type.";
-    LOG(ERROR) << "expected send_post_to_subscribers, got: " << main_type_name(orig_packet.nh.main_type);
+    LOG(ERROR) << "expected send_post_to_subscribers, got: "
+               << main_type_name(orig_packet.nh.main_type);
     return false;
   }
-  auto subtype = get_subtype_from_packet_text(orig_packet.text);
-  VLOG(1) << "DEBUG: send_post_to_subscribers; subtype: " << subtype;
+  auto original_subtype = get_subtype_from_packet_text(orig_packet.text);
+  VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
-  if (subtype.empty()) {
+  if (original_subtype.empty()) {
     LOG(ERROR) << "No subtype found for packet text.";
     return false;
   }
 
   subboard_t sub;
-  if (!find_sub(context, subtype, sub)) {
-    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << subtype
+  if (!find_sub(context, original_subtype, sub)) {
+    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << original_subtype
               << " writing to dead.net.";
     Packet p(orig_packet.nh, {}, orig_packet.text);
     return write_wwivnet_packet(DEAD_NET, context.net, p);
@@ -238,17 +249,29 @@ bool send_post_to_subscribers(Context& context, Packet& orig_packet) {
       h.fromsys = current_net.sysnum;
       h.fromuser = 0;
     }
+    // If the subtype has changed, then change the subtype in the
+    // packet text.
+    const auto text = (subnet.stype == original_subtype)
+                          ? orig_packet.text
+                          : change_subtype_to(orig_packet.text, subnet.stype);
+    if (subnet.stype != original_subtype) {
+      // we also have to update the nh.length to reflect this change.
+      // TODO(rushfan): Really need higher level interface to manipulating
+      // WWIVnet packets...
+      h.length -= original_subtype.size();
+      h.length += subnet.stype.size();
+    }
     if (current_net.type == network_type_t::ftn) {
       h.tosys = FTN_FAKE_OUTBOUND_NODE;
       VLOG(1) << "current network is FTN";
       h.list_len = 0;
-      write_wwivnet_packet_or_log(current_net, h, {}, orig_packet.text);
+      write_wwivnet_packet_or_log(current_net, h, {}, text);
     } else if (current_net.type == network_type_t::wwivnet) {
       if (subnet.host == 0) {
         // We are the host.
         std::set<uint16_t> subscribers;
         bool subscribers_read =
-            ReadSubcriberFile(current_net.dir, StrCat("n", subtype, ".net"), subscribers);
+            ReadSubcriberFile(current_net.dir, StrCat("n", subnet.stype, ".net"), subscribers);
         if (subscribers_read) {
           // Remove the original sender from the set of systems
           // that we will resend this to.
@@ -259,19 +282,18 @@ bool send_post_to_subscribers(Context& context, Packet& orig_packet) {
           for (const auto x : subscribers) {
             VLOG(1) << "        @" << x;
           }
-          h.list_len = subscribers.size();
+          h.list_len = static_cast<uint16_t>(subscribers.size());
           h.tosys = 0;
-          write_wwivnet_packet_or_log(current_net, h,
-                                      std::vector<uint16_t>(subscribers.begin(), subscribers.end()),
-                                      orig_packet.text);
+          write_wwivnet_packet_or_log(
+              current_net, h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text);
         } else {
-          LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subtype;
+          LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subnet.stype;
         }
       } else {
         // We are not the host.  Send message to host.
         h.tosys = subnet.host;
         h.list_len = 0;
-        write_wwivnet_packet_or_log(current_net, h, {}, orig_packet.text);
+        write_wwivnet_packet_or_log(current_net, h, {}, text);
       }
     }
   }

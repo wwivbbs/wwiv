@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                            WWIV Version 5                              */
-/*               Copyright (C)2015, WWIV Software Services                */
+/*                          WWIV Version 5.x                              */
+/*               Copyright (C)2018, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,24 +15,40 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_SUBSCRIBERS_H__
-#define __INCLUDED_SDK_SUBSCRIBERS_H__
+#ifndef __INCLUDED_CORE_OPTIONAL_H__
+#define __INCLUDED_CORE_OPTIONAL_H__
 
-#include <set>
-#include <string>
-#include "sdk/fido/fido_address.h"
 
 namespace wwiv {
-namespace sdk {
+namespace core {
 
-std::set<wwiv::sdk::fido::FidoAddress> ReadFidoSubcriberFile(const ::std::string& dir,
-                                                             const std::string& filename);
-std::set<wwiv::sdk::fido::FidoAddress> ReadFidoSubcriberFile(const std::string& filename);
-bool ReadSubcriberFile(const std::string& dir, const std::string& filename,
-                       std::set<uint16_t>& subscribers);
-bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers);
+#ifndef __has_include
+#error "__has_include must be supported"
+#endif  // __has_include
 
-}  // namespace sdk
-}  // namespace wwiv
+#if __has_include(<optional>)
+#include <optional>
+using std::bad_optional_access;
+using std::in_place;
+using std::in_place_t;
+using std::make_optional;
+using std::nullopt;
+using std::nullopt_t;
+using std::optional;
+#elif __has_include(<experimental/optional>)
+#include <experimental/optional>
+using std::experimental::bad_optional_access;
+using std::experimental::in_place;
+using std::experimental::in_place_t;
+using std::experimental::make_optional;
+using std::experimental::nullopt;
+using std::experimental::nullopt_t;
+using std::experimental::optional;
+#else
+#error "Either <optional> or <experimental/optional> must exist"
+#endif
 
-#endif  // __INCLUDED_SDK_SUBSCRIBERS_H__
+}
+}
+
+#endif  // __INCLUDED_CORE_OPTIONAL_H__

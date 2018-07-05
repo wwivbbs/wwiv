@@ -415,6 +415,22 @@ static int import_bundles(const Config& config, const FidoCallout& callout,
   return num_bundles_processed;
 }
 
+static string rename_fido_packet(const string& dir, const string& origname) {
+  if (!ends_with(origname, ".pkt") || origname.size() != 12) {
+    LOG(ERROR) << "rename_fido_packet: not allowed on name: '" << origname << "'";
+    return origname;
+  }
+  string base = origname.substr(0, 8);
+  for (int i = 0; i < 26; i++) {
+    base.pop_back();
+    base.push_back(static_cast<char>('a' + i));
+    string newname = base + ".pkt";
+    if (!File::Exists(dir, newname)) {
+      return newname;
+    }
+  }
+}
+
 static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_callout,
                               const FidoAddress& dest, const FidoAddress& route_to,
                               const net_networks_rec& net, const string& fido_packet_name,
@@ -440,6 +456,12 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     // No bundles, only packet files.
     auto in = FilePath(dirs.temp_outbound_dir(), fido_packet_name);
     auto out = FilePath(dirs.outbound_dir(), fido_packet_name);
+    if (File::Exists(out)) {
+      LOG(INFO) << "Outbound dir already has a packet named: " << fido_packet_name;
+      auto newname = rename_fido_packet(dirs.outbound_dir(), fido_packet_name);
+      LOG(INFO) << "Renamed to: " << newname;
+      out = FilePath(dirs.outbound_dir(), newname);
+    }
     if (!File::Move(in, out)) {
       LOG(ERROR) << "Unable to move packet file into outbound dir. file: " << fido_packet_name;
       return false;

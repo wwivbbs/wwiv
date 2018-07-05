@@ -18,6 +18,7 @@
 
 #include "core/log.h"
 
+#include <chrono>
 #include <cstdlib>
 #include <ctime>
 #include <fstream>
@@ -194,8 +195,11 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
 static std::string DefaultTimestamp() {
   auto now = std::time(nullptr);
   auto tm = *std::localtime(&now);
-  // TODO(rushfan): Fix getting millis.
-  return StrCat(wwiv::strings::put_time(&tm, log_date_format), ",000 ");
+  auto nowc = std::chrono::system_clock::now();
+  auto duration = nowc.time_since_epoch();
+  auto millis = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
+  auto milliss = StringPrintf("%03d ", millis);
+  return StrCat(wwiv::strings::put_time(&tm, log_date_format), milliss);
 }
 
 LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}

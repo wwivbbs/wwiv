@@ -46,7 +46,7 @@ static WFindFileTypeMask FindFilesTypeToInt(FindFilesType type) {
 FindFiles::FindFiles(const std::string& mask, const FindFilesType type) {
   WFindFile fnd;
   if (!fnd.open(mask, FindFilesTypeToInt(type))) {
-    VLOG(1) << "Unable to open mask: " << mask;
+    VLOG(3) << "Unable to open mask: " << mask;
     return;
   }
   do {
