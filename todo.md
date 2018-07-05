@@ -41,6 +41,7 @@
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark.
+* set status_pending_net on posts like wwivtoss does if needed.
 
 ## core::File Improvements
 ***

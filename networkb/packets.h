@@ -18,51 +18,56 @@
 #ifndef __INCLUDED_NETWORKB_PACKETS_H__
 #define __INCLUDED_NETWORKB_PACKETS_H__
 
+#include <functional>
 #include <set>
 #include <string>
 #include <vector>
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
 #include "sdk/net.h"
+#include "sdk/networks.h"
 
 namespace wwiv {
 namespace net {
 
-
 class Packet {
 public:
-  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t)
-    : nh(h), list(l), text(t) {}
+  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t);
 
   Packet() noexcept {}
   virtual ~Packet() {}
 
   virtual bool UpdateRouting(const net_networks_rec& net);
+  static std::string wwivnet_packet_name(const net_networks_rec& net, uint16_t node);
 
   net_header_rec nh{};
   std::vector<uint16_t> list;
   std::string text;
 };
 
+/**
+ * Gets the WWIVnet system number in the path to system node.
+ * For example: if you are @1 and you want to send to @3 and
+ * you only connect to @2 (and @2 connects to @3) then this will
+ * return @2 as the forward system for @3.
+ */
+uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node);
 
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
 ReadPacketResponse read_packet(File& file, Packet& packet, bool process_de);
 
-bool write_wwivnet_packet(
-  const std::string& filename,
-  const net_networks_rec& net, const Packet& packet);
+bool write_wwivnet_packet(const std::string& filename, const net_networks_rec& net,
+                          const Packet& packet);
 
-bool send_local_email(
-  const net_networks_rec& network, net_header_rec& nh,
-  const std::string& text, const std::string& byname, const std::string& title);
+bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const std::string& text,
+                      const std::string& byname, const std::string& title);
 
-bool send_network_email(
-  const std::string& filename,
-  const net_networks_rec& network, net_header_rec& nh,
-  std::vector<uint16_t> list, const std::string& text, const std::string& byname, const std::string& title);
+bool send_network_email(const std::string& filename, const net_networks_rec& network,
+                        net_header_rec& nh, std::vector<uint16_t> list, const std::string& text,
+                        const std::string& byname, const std::string& title);
 
 struct NetInfoFileInfo {
   std::string filename;
@@ -73,7 +78,7 @@ struct NetInfoFileInfo {
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p);
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace net
+} // namespace wwiv
 
-#endif  // __INCLUDED_NETWORKB_PACKETS_H__
+#endif // __INCLUDED_NETWORKB_PACKETS_H__

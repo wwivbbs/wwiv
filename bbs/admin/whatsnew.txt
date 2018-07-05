@@ -11,7 +11,21 @@ Legend (starting with 5.3)
 
 What's New in WWIV 5.4 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
+! windows-wwiv-update has been removed from the distribution.  Had lots
+  of complaints of it not working for people, and may reappear in the
+  future as a native C++ implementation.
+  It's source has been moved it it's own repo.
+! wwivserver.exe has been removed from the distribution.  wwivd is
+  the replacement. It's source has been moved it it's own repo.
+! WINS has been removed from the distribution. It hasn't changed in
+  several years and it's source has been moved it it's own repo.
+  If new changes are made, it'll get it's own downloadable build
+  for win32, or instructions for how to compile it yourself
+  will be created.
+* Lots of small changed related to logging, the user visible one is
+  that log files are not held open anymore, so you can rotate them
+  while a binary is running (like networkb or wwivd)
+  
 
 What's New in WWIV 5.3 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

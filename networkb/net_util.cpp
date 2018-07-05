@@ -120,6 +120,11 @@ string net_info_minor_type_name(int typ) {
   }
 }
 
+std::string get_subtype_from_packet_text(const std::string& text) {
+  auto iter = text.begin();
+  return get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
+}
+
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory) {
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
   cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});

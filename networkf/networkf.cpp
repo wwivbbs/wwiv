@@ -958,9 +958,7 @@ static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline,
                                       const net_networks_rec& net, const FidoCallout& fido_callout,
                                       std::set<string>& bundles, Packet& p) {
   // Lame implementation that creates 1 file per message.
-  auto raw_text = p.text;
-  auto it = p.text.cbegin();
-  string subtype = get_message_field(p.text, it, {'\0', '\r', '\n'}, 80);
+  auto subtype = get_subtype_from_packet_text(p.text);
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
   auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);

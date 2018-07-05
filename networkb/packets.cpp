@@ -35,18 +35,17 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-bool send_local_email(
-    const net_networks_rec& network, net_header_rec& nh,
-    const std::string& text, const std::string& byname, const std::string& title) {
+bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const std::string& text,
+                      const std::string& byname, const std::string& title) {
   return send_network_email(LOCAL_NET, network, nh, {}, text, byname, title);
 }
 
-bool send_network_email(const std::string& filename,
-  const net_networks_rec& network, net_header_rec& nh,
-  std::vector<uint16_t> list,
-  const std::string& text, const std::string& byname, const std::string& title) {
+bool send_network_email(const std::string& filename, const net_networks_rec& network,
+                        net_header_rec& nh, std::vector<uint16_t> list, const std::string& text,
+                        const std::string& byname, const std::string& title) {
 
-  LOG(INFO) << "send_network_email: Writing type " << nh.main_type << "/" << nh.minor_type << " message to packet: " << filename << "; title: " << title;
+  LOG(INFO) << "send_network_email: Writing type " << nh.main_type << "/" << nh.minor_type
+            << " message to packet: " << filename << "; title: " << title;
 
   File file(network.dir, filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -88,7 +87,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
 
   if (num_read != sizeof(net_header_rec)) {
     LOG(INFO) << "error reading header, got short read of size: " << num_read
-      << "; expected: " << sizeof(net_header_rec);
+              << "; expected: " << sizeof(net_header_rec);
     return ReadPacketResponse::ERROR;
   }
 
@@ -110,9 +109,8 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
       return ReadPacketResponse::ERROR;
     }
 
-    if (packet.nh.method > 0 
-        && process_de 
-        && packet.nh.length > 146 /* Make sure we have enough for a header */) {
+    if (packet.nh.method > 0 && process_de &&
+        packet.nh.length > 146 /* Make sure we have enough for a header */) {
       // HACK - this should do this in a shim DE
       // 146 is the sizeof EN/DE header.
       packet.nh.length -= 146;
@@ -127,23 +125,14 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
   return ReadPacketResponse::OK;
 }
 
-//bool write_wwivnet_packet(
-//  const std::string& filename,
-//  const net_networks_rec& net,
-//  const net_header_rec& nh, const std::set<uint16_t>& list, const std::string& text) {
-//  std::vector<uint16_t> v(list.begin(), list.end());
-//  return write_wwivnet_packet(filename, net, nh, v, text);
-//}
-//
-bool write_wwivnet_packet(
-  const string& filename,
-  const net_networks_rec& net, const Packet& p) {
-
-  LOG(INFO) << "write_wwivnet_packet: Writing type " << p.nh.main_type << "/" << p.nh.minor_type << " message to packet: " << filename;
+bool write_wwivnet_packet(const string& filename, const net_networks_rec& net, const Packet& p) {
+  VLOG(2) << "write_wwivnet_packet: " << filename;
+  LOG(INFO) << "write_wwivnet_packet: Writing type " << p.nh.main_type << "/" << p.nh.minor_type
+            << " message to packet: " << filename;
   if (p.nh.length != p.text.size()) {
     LOG(ERROR) << "Error while writing packet: " << net.dir << filename;
     LOG(ERROR) << "Mismatched text and p.nh.length.  text =" << p.text.size()
-      << " nh.length = " << p.nh.length;
+               << " nh.length = " << p.nh.length;
     return false;
   }
   File file(net.dir, filename);
@@ -155,10 +144,15 @@ bool write_wwivnet_packet(
   auto num = file.Write(&p.nh, sizeof(net_header_rec));
   if (num != sizeof(net_header_rec)) {
     // Let's fail now since we didn't write this right.
-    LOG(ERROR) << "Error while writing packet: " << net.dir << filename 
-      << " num written (" << num << ") != net_header_rec size.";
+    LOG(ERROR) << "Error while writing packet: " << net.dir << filename << " num written (" << num
+               << ") != net_header_rec size.";
     return false;
   }
+  if (p.nh.list_len != p.list.size()) {
+    LOG(WARNING) << "p.nh.list_len [" << p.nh.list_len << "] != p.list.size() [" << p.list.size()
+                 << "]";
+  }
+  VLOG(2) << "p.nh.list_len: " << p.nh.list_len;
   if (p.nh.list_len) {
     file.Write(&p.list[0], sizeof(uint16_t) * (p.nh.list_len));
   }
@@ -169,16 +163,26 @@ bool write_wwivnet_packet(
 
 static string NetInfoFileName(uint16_t type) {
   switch (type) {
-  case net_info_bbslist: return BBSLIST_NET;
-  case net_info_connect: return CONNECT_NET;
-  case net_info_sub_lst: return SUBS_LST;
-  case net_info_wwivnews: return "wwivnews.net";
-  case net_info_more_wwivnews: return "wwivnews.net";
-  case net_info_categ_net: return CATEG_NET;
-  case net_info_network_lst: return "networks.lst";
-  case net_info_file: return "";
-  case net_info_binkp: return BINKP_NET;
-  default: return "";
+  case net_info_bbslist:
+    return BBSLIST_NET;
+  case net_info_connect:
+    return CONNECT_NET;
+  case net_info_sub_lst:
+    return SUBS_LST;
+  case net_info_wwivnews:
+    return "wwivnews.net";
+  case net_info_more_wwivnews:
+    return "wwivnews.net";
+  case net_info_categ_net:
+    return CATEG_NET;
+  case net_info_network_lst:
+    return "networks.lst";
+  case net_info_file:
+    return "";
+  case net_info_binkp:
+    return BINKP_NET;
+  default:
+    return "";
   }
 }
 
@@ -186,8 +190,8 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   NetInfoFileInfo info{};
   if (p.nh.main_type != main_type_net_info && p.nh.minor_type != net_info_file) {
     // Everything  here should be a main_type_net_info or net_info_file
-    LOG(ERROR) << "GetNetInfoFileInfo can't handle type: "
-      << main_type_name(p.nh.main_type) << " (" << p.nh.main_type << ")";
+    LOG(ERROR) << "GetNetInfoFileInfo can't handle type: " << main_type_name(p.nh.main_type) << " ("
+               << p.nh.main_type << ")";
     info.valid = false;
     return info;
   }
@@ -213,7 +217,8 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
     LOG(ERROR) << "filename length not right; must be at [0,8]; was: " << fn.size();
     return info;
   }
-  VLOG(2) << "fn: '" << fn << "'; " << "len: " << fn.size();
+  VLOG(2) << "fn: '" << fn << "'; "
+          << "len: " << fn.size();
   auto pos = fn.size() + sizeof(uint16_t) + 1;
   if (text.size() < pos) {
     // still bad
@@ -227,8 +232,7 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p) {
   bool zip = (flags & 0x02) != 0;
   if (zip) {
     info.filename = StrCat(fn, ".zip");
-  }
-  else {
+  } else {
     info.filename = StrCat(fn, ".net");
   }
   info.overwrite = (flags & 1) != 0;
@@ -263,6 +267,16 @@ static int number_of_header_lines(uint16_t main_type) {
   }
   return 0;
 }
+Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t)
+    : nh(h), list(l), text(t) {
+  if (nh.list_len != list.size()) {
+    LOG(ERROR) << "ERROR: Malformed packet: list_len [" << nh.list_len << "] != list.size() ["
+               << list.size() << "]";
+  }
+  if (!list.empty() && nh.tosys != 0) {
+    LOG(ERROR) << "ERROR: Malformed packet: list is not empty and nh.tosys != 0";
+  }
+}
 
 bool Packet::UpdateRouting(const net_networks_rec& net) {
   if (!need_to_update_routing(nh.main_type)) {
@@ -270,12 +284,13 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   }
 
   std::ostringstream ss;
-  ss << "\004" << "0R " << wwiv_net_version << " - " << date() << " "
-    << times() << " " << net.name << " ->" << net.sysnum << "\r\n";
+  ss << "\004"
+     << "0R " << wwiv_net_version << " - " << date() << " " << times() << " " << net.name << " ->"
+     << net.sysnum << "\r\n";
 
   const auto routing_information = ss.str();
 
-  if (nh.length + routing_information.size() >= (32*1024)) {
+  if (nh.length + routing_information.size() >= (32 * 1024)) {
     LOG(INFO) << "Can't updating routing information, already have 32k of message.";
     return false;
   }
@@ -286,7 +301,7 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   auto iter = text.begin();
   for (auto i = 0; i < lines; i++) {
     // Skip over this line
-    get_message_field(text, iter, { '\0', '\r', '\n' }, 80);
+    get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
   }
 
   auto pos = std::distance(text.begin(), iter);
@@ -294,7 +309,31 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   return true;
 }
 
+uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
+  VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
+  auto n = b.node_config_for(node);
+  if (node == 0) {
+    return 0;
+  }
+  if (n == nullptr || n->forsys == WWIVNET_NO_NODE) {
+    VLOG(2) << "get_forsys: no route to node: " << node;
+    return WWIVNET_NO_NODE;
+  }
+  VLOG(2) << "get_forsys: route to node: " << node << "; is through node: " << n->forsys;
+  return n->forsys;
+}
 
-}  // namespace net
-}  // namespace wwiv
+// static
+std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
+  if (node == net.sysnum || node == 0) {
+    // Messages to us to into local.net.
+    return LOCAL_NET;
+  }
+  if (node == WWIVNET_NO_NODE) {
+    return DEAD_NET;
+  }
+  return StringPrintf("s%u.net", node);
+}
 
+} // namespace net
+} // namespace wwiv

@@ -28,13 +28,13 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/log.h"
+#include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/os.h"
 #include "core/textfile.h"
-#include "core/findfiles.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
 
@@ -56,42 +56,49 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-
 static void ShowHelp(CommandLine& cmdline) {
-  cout << cmdline.GetHelp()
-       << ".####      Network number (as defined in wwivconfig)" << endl
+  cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
        << endl;
   exit(1);
 }
 
-static uint16_t get_forsys( const BbsListNet& b, uint16_t node) {
-  VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
-  auto n = b.node_config_for(node);
-  if (node == 0) {
-    return 0;
-  }
-  if (n == nullptr || n->forsys == WWIVNET_NO_NODE) {
-    VLOG(2) << "get_forsys: no route to node: " << node;
-    return WWIVNET_NO_NODE;
-  }
-  VLOG(2) << "get_forsys: route to node: " << node << "; is through node: " << n->forsys;
-  return n->forsys;
+static std::string wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
+  return Packet::wwivnet_packet_name(net, node);
 }
 
-static string wwivnet_packet_name(const net_networks_rec& net, uint16_t node) {
-  if (node == net.sysnum || node == 0) {
-    // Messages to us to into local.net.
-    return LOCAL_NET;
+/**
+ * Determines the filename for each of the nodes in list to forward to
+ * and writes packets (calling write_wwivnet_packet) to each of them.
+ */
+static bool write_multiple_wwivnet_packets(const net_networks_rec& net,
+                                           const wwiv::sdk::BbsListNet b, const net_header_rec& nh,
+                                           const std::vector<uint16_t>& list,
+                                           const std::string& text) {
+  std::map<uint16_t, std::set<uint16_t>> forsys_to_all;
+  for (const auto& node : list) {
+    auto forsys = get_forsys(b, node);
+    forsys_to_all[forsys].insert(node);
   }
-  if (node == WWIVNET_NO_NODE) {
-    return DEAD_NET;
+
+  auto result = true;
+  for (const auto& fa : forsys_to_all) {
+    const auto forsys = fa.first;
+    Packet np(nh, std::vector<uint16_t>(fa.second.begin(), fa.second.end()), text);
+    np.nh.list_len = static_cast<uint16_t>(np.list.size());
+    if (np.list.size() == 1) {
+      // If we only have 1, move it out of list into tosys.
+      np.nh.tosys = *np.list.begin();
+      np.nh.list_len = 0;
+      np.list.clear();
+    }
+    if (!write_wwivnet_packet(Packet::wwivnet_packet_name(net, forsys), net, np)) {
+      result = false;
+    }
   }
-  return StringPrintf("s%u.net", node);
+  return result;
 }
 
-static bool handle_packet(
-  const BbsListNet& b,
-  const net_networks_rec& net, Packet& p) {
+static bool handle_packet(const BbsListNet& b, const net_networks_rec& net, Packet& p) {
 
   // Update the routing information on this packet since
   // we're unpacking it.
@@ -100,34 +107,14 @@ static bool handle_packet(
   if (p.nh.tosys == net.sysnum) {
     // Local Packet.
     return write_wwivnet_packet(LOCAL_NET, net, p);
-  } 
+  }
   if (p.list.empty()) {
     // Network packet, single destination
-    return write_wwivnet_packet(wwivnet_packet_name(net, get_forsys(b, p.nh.tosys)), net, p);
-  } 
+    return write_wwivnet_packet(Packet::wwivnet_packet_name(net, get_forsys(b, p.nh.tosys)), net,
+                                p);
+  }
   // Network packet, multiple destinations.
-  map<uint16_t, set<uint16_t>> forsys_to_all;
-  for (const auto& node : p.list) {
-    auto forsys = get_forsys(b, node);
-    forsys_to_all[forsys].insert(node);
-  }
-
-  auto result = true;
-  for (const auto& fa : forsys_to_all) {
-    const auto forsys = fa.first;
-    Packet np(p.nh, vector<uint16_t>(fa.second.begin(), fa.second.end()), p.text);
-    np.nh.list_len = static_cast<uint16_t>(np.list.size());
-    if (np.list.size() == 1) {
-      // If we only have 1, move it out of list into tosys.
-      np.nh.tosys = *np.list.begin();
-      np.nh.list_len = 0;
-      np.list.clear();
-    }
-    if (!write_wwivnet_packet(wwivnet_packet_name(net, forsys), net, np)) {
-      result = false;
-    }
-  }
-  return result;
+  return write_multiple_wwivnet_packets(net, b, p.nh, p.list, p.text);
 }
 
 static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {

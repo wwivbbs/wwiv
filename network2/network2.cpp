@@ -102,7 +102,6 @@ static void update_filechange_status_dat(const string& datadir, bool email, bool
   }
 }
 
-
 static void ShowHelp(CommandLine& cmdline) {
   cout << cmdline.GetHelp()
        << ".####      Network number (as defined in wwivconfig)" << endl
@@ -210,7 +209,11 @@ static bool handle_packet(
   case main_type_new_post:
   {
     posts_changed = true;
-    return handle_post(context, p);
+    if (!handle_inbound_post(context, p)) {
+      LOG(ERROR) << "Error on handle_inbound_post";
+      return false;
+    }
+    return send_post_to_subscribers(context, p);
   } break;
   case main_type_ssm:
   {

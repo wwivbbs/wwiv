@@ -27,17 +27,24 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
 #include "sdk/net.h"
+#include "sdk/networks.h"
 
 namespace wwiv {
 namespace net {
 
-void rename_pend(const std::string& directory, const std::string& filename, uint8_t network_app_num);
+void rename_pend(const std::string& directory, const std::string& filename,
+                 uint8_t network_app_num);
 std::string create_pend(const std::string& directory, bool local, char network_app_id);
 
 std::string main_type_name(int typ);
 std::string net_info_minor_type_name(int typ);
+
+/**
+ * Gets the subtype from a main_type_new_post message packet's text.
+ * Returns empty string on error.
+ */
+std::string get_subtype_from_packet_text(const std::string& text);
 
 template <typename C, typename I>
 static std::string get_message_field(const C& c, I& iter, std::set<char> stop, std::size_t max) {
@@ -54,8 +61,7 @@ static std::string get_message_field(const C& c, I& iter, std::set<char> stop, s
   std::string result(begin, iter);
 
   // Stop over stop chars
-  while (iter != c.end()
-    && stop.find(*iter) != std::end(stop)) {
+  while (iter != c.end() && stop.find(*iter) != std::end(stop)) {
     iter++;
   }
 
@@ -63,7 +69,6 @@ static std::string get_message_field(const C& c, I& iter, std::set<char> stop, s
 }
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
-
 
 class NetworkCommandLine {
 public:
@@ -89,7 +94,7 @@ private:
   net_networks_rec network_;
 };
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace net
+} // namespace wwiv
 
-#endif  // __INCLUDED_NETWORKB_NET_UTIL_H__
+#endif // __INCLUDED_NETWORKB_NET_UTIL_H__

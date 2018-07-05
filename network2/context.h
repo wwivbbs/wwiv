@@ -18,15 +18,15 @@
 #ifndef __INCLUDED_NETWORK2_CONTEXT_H__
 #define __INCLUDED_NETWORK2_CONTEXT_H__
 
-#include <vector>
 #include "sdk/config.h"
-#include "sdk/networks.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 #include "sdk/net.h"
+#include "sdk/networks.h"
 #include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
+#include <vector>
 
 namespace wwiv {
 namespace net {
@@ -34,12 +34,9 @@ namespace network2 {
 
 class Context {
 public:
-  Context(
-    const wwiv::sdk::Config& c,
-    const net_networks_rec& n,
-    wwiv::sdk::UserManager& u,
-    const std::vector<net_networks_rec>& networks)
-        : config(c), net(n), user_manager(u), subs(c.datadir(), networks) {
+  Context(const wwiv::sdk::Config& c, const net_networks_rec& n, wwiv::sdk::UserManager& u,
+          const std::vector<net_networks_rec>& ns)
+      : config(c), net(n), user_manager(u), subs(c.datadir(), ns), networks_(ns) {
     subs_initialized = subs.Load();
   }
 
@@ -47,13 +44,12 @@ public:
     msgapis_[type] = std::move(a);
   }
 
-  void set_email_api(wwiv::sdk::msgapi::WWIVMessageApi* a) {
-    email_api_ = a;
-  }
-
+  void set_email_api(wwiv::sdk::msgapi::WWIVMessageApi* a) { email_api_ = a; }
 
   wwiv::sdk::msgapi::MessageApi& api(int type) { return *msgapis_.at(type).get(); }
   wwiv::sdk::msgapi::WWIVMessageApi& email_api() { return *email_api_; }
+
+  const std::vector<net_networks_rec>& networks() const noexcept { return networks_; }
 
   const wwiv::sdk::Config& config;
   const net_networks_rec& net;
@@ -63,13 +59,13 @@ public:
   wwiv::sdk::msgapi::WWIVMessageApi* email_api_;
   int network_number = 0;
   wwiv::sdk::Subs subs;
+  const std::vector<net_networks_rec> networks_;
   bool verbose = false;
   bool subs_initialized = false;
 };
 
+} // namespace network2
+} // namespace net
+} // namespace wwiv
 
-}  // namespace network2
-}  // namespace net
-}  // namespace wwiv
-
-#endif  // __INCLUDED_NETWORK2_CONTEXT_H__
+#endif // __INCLUDED_NETWORK2_CONTEXT_H__

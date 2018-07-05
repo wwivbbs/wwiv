@@ -25,40 +25,41 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <sstream>
 #include <set>
+#include <sstream>
 #include <string>
 #include <vector>
 
 #include "core/command_line.h"
+#include "core/connection.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/os.h"
 #include "core/textfile.h"
+#include "network2/context.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "core/connection.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
 #include "networkb/ppp_config.h"
-#include "network2/context.h"
 
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
-#include "sdk/connect.h"
 #include "sdk/config.h"
+#include "sdk/connect.h"
 #include "sdk/contact.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 #include "sdk/networks.h"
+#include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 
 using std::cout;
 using std::endl;
@@ -81,7 +82,6 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
-
 static bool find_sub(Context& context, const string& netname, subboard_t& sub) {
   int current = 0;
   for (const auto& x : context.subs.subs()) {
@@ -101,15 +101,15 @@ static bool find_sub(Context& context, const string& netname, subboard_t& sub) {
 }
 
 // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
-// character allowed in a DOS filename.This main_type covers both subscriber - to - host and 
+// character allowed in a DOS filename.This main_type covers both subscriber - to - host and
 // host - to - subscriber messages. Minor type is always zero(since it's ignored), and the
 // subtype appears as the first part of the message text, followed by a NUL.Thus, the message
-// header info at the beginning of the message text is in the format 
+// header info at the beginning of the message text is in the format
 // SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr / lf>DATE_STRING<cr / lf>MESSAGE_TEXT.
-bool handle_post(Context& context, Packet& p) {
+bool handle_inbound_post(Context& context, Packet& p) {
 
   ScopeExit at_exit;
-  
+
   auto raw_text = p.text;
   auto iter = raw_text.begin();
   auto subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
@@ -118,9 +118,8 @@ bool handle_post(Context& context, Packet& p) {
   auto date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   auto text = string(iter, raw_text.end());
   if (VLOG_IS_ON(1)) {
-    at_exit.swap([] {
-      LOG(INFO) << "==============================================================";
-    });
+    at_exit.swap(
+        [] { LOG(INFO) << "=============================================================="; });
     VLOG(1) << "==============================================================";
     VLOG(1) << "  Processing New Post on subtype: " << subtype;
     VLOG(1) << "  Title:   " << title;
@@ -136,26 +135,29 @@ bool handle_post(Context& context, Packet& p) {
   }
 
   if (!context.api(sub.storage_type).Exist(sub)) {
-    LOG(INFO) << "WARNING Message area: '" << sub.filename << "' does not exist.";;
+    LOG(INFO) << "WARNING Message area: '" << sub.filename << "' does not exist.";
+    ;
     LOG(INFO) << "WARNING Attempting to create it.";
     // Since the area does not exist, let's create it automatically
     // like WWIV always does.
     auto created = context.api(sub.storage_type).Create(sub, -1);
     if (!created) {
-      LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename << "; writing to dead.net.";
+      LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename
+                << "; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
     }
   }
 
   unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub, -1));
   if (!area) {
-    LOG(INFO) << "    ! ERROR Unable to open message area: " << sub.filename << "; writing to dead.net.";
+    LOG(INFO) << "    ! ERROR Unable to open message area: " << sub.filename
+              << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
   if (area->Exists(p.nh.daten, title, p.nh.fromsys, p.nh.fromuser)) {
-    LOG(INFO) << "    - Discarding Duplicate Message on sub: " << subtype 
-              << "; title: " << title << ".";
+    LOG(INFO) << "    - Discarding Duplicate Message on sub: " << subtype << "; title: " << title
+              << ".";
     // Returning true since we properly handled this by discarding it.
     return true;
   }
@@ -176,6 +178,108 @@ bool handle_post(Context& context, Packet& p) {
   return true;
 }
 
+static bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_rec& h,
+                                        std::vector<uint16_t> list, const std::string& text) {
+  Packet gp(h, list, text);
+  const auto fn = create_pend(net.dir, false, '2');
+  if (!write_wwivnet_packet(fn, net, gp)) {
+    LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
+    return false;
+  } else {
+    VLOG(1) << "Wrote packet: " << fn;
+    return true;
+  }
 }
+
+bool send_post_to_subscribers(Context& context, Packet& orig_packet) {
+  LOG(INFO) << "DEBUG: send_post_to_subscribers";
+
+  if (orig_packet.nh.main_type != main_type_new_post) {
+    LOG(ERROR) << "Called send_post_to_subscribers on packet of wrong type.";
+    LOG(ERROR) << "expected send_post_to_subscribers, got: " << main_type_name(orig_packet.nh.main_type);
+    return false;
+  }
+  auto subtype = get_subtype_from_packet_text(orig_packet.text);
+  VLOG(1) << "DEBUG: send_post_to_subscribers; subtype: " << subtype;
+
+  if (subtype.empty()) {
+    LOG(ERROR) << "No subtype found for packet text.";
+    return false;
+  }
+
+  subboard_t sub;
+  if (!find_sub(context, subtype, sub)) {
+    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << subtype
+              << " writing to dead.net.";
+    Packet p(orig_packet.nh, {}, orig_packet.text);
+    return write_wwivnet_packet(DEAD_NET, context.net, p);
+  }
+  VLOG(1) << "DEBUG: Found sub: " << sub.name;
+
+  for (const auto& subnet : sub.nets) {
+    auto h = orig_packet.nh;
+    VLOG(1) << "DEBUG: Current network subtype: " << subnet.stype;
+    VLOG(1) << "DEBUG: Current network is: " << context.networks()[subnet.net_num].name;
+    // if subnet.host == 0, we are the host.
+    // if subnet.net_num != context.network_number then we are
+    // gating the sub to another network.
+    bool are_we_hosting = subnet.host == 0;
+    bool are_we_gating = subnet.net_num != context.network_number;
+    VLOG(1) << "DEBUG: are_we_hosting: " << std::boolalpha << are_we_hosting;
+    VLOG(1) << "DEBUG: are_we_gating:  " << std::boolalpha << are_we_gating;
+
+    if (!are_we_hosting && !are_we_gating) {
+      // Nothing to do here, so move on to the next subnet in the list
+      continue;
+    }
+    const auto& current_net = context.networks()[subnet.net_num];
+    if (are_we_gating) {
+      // update fromsys
+      h.fromsys = current_net.sysnum;
+      h.fromuser = 0;
+    }
+    if (current_net.type == network_type_t::ftn) {
+      h.tosys = FTN_FAKE_OUTBOUND_NODE;
+      VLOG(1) << "current network is FTN";
+      h.list_len = 0;
+      write_wwivnet_packet_or_log(current_net, h, {}, orig_packet.text);
+    } else if (current_net.type == network_type_t::wwivnet) {
+      if (subnet.host == 0) {
+        // We are the host.
+        std::set<uint16_t> subscribers;
+        bool subscribers_read =
+            ReadSubcriberFile(current_net.dir, StrCat("n", subtype, ".net"), subscribers);
+        if (subscribers_read) {
+          // Remove the original sender from the set of systems
+          // that we will resend this to.
+          subscribers.erase(orig_packet.nh.fromsys);
+          VLOG(1) << "Removing subscriber (sender): " << orig_packet.nh.fromsys;
+          VLOG(1) << "Read subscribers #: " << subscribers.size();
+          VLOG(1) << "Creating wwivnet packet to: ";
+          for (const auto x : subscribers) {
+            VLOG(1) << "        @" << x;
+          }
+          h.list_len = subscribers.size();
+          h.tosys = 0;
+          write_wwivnet_packet_or_log(current_net, h,
+                                      std::vector<uint16_t>(subscribers.begin(), subscribers.end()),
+                                      orig_packet.text);
+        } else {
+          LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subtype;
+        }
+      } else {
+        // We are not the host.  Send message to host.
+        h.tosys = subnet.host;
+        h.list_len = 0;
+        write_wwivnet_packet_or_log(current_net, h, {}, orig_packet.text);
+      }
+    }
+  }
+  LOG(INFO) << "DEBUG: send_post_to_subscribers"
+            << "exiting with true";
+  return true;
 }
-}
+
+} // namespace network2
+} // namespace net
+} // namespace wwiv
