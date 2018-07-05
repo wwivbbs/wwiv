@@ -60,11 +60,11 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static const int COL1_LINE = 2;
-static const int COL1_POSITION = 21;
+static const int COL1_POSITION = 22;
 
 void create_sysop_account(wwiv::sdk::Config& config) {
   out->Cls(ACS_CKBOARD);
-  unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 8, 54));
+  //unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 8, 54));
 
   std::vector<uint8_t> newuser_colors{ 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 };
   std::vector<uint8_t> newuser_bwcolors{ 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 };
@@ -98,20 +98,20 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   User::CreateNewUserRecord(&u, syscfg.newusersl, syscfg.newuserdsl,
     syscfg.newuser_restrict, syscfg.newusergold,
     newuser_colors, newuser_bwcolors);
-  window->PutsXY(COL1_LINE, y++, "Sysop Name/Handle: ");
-  window->PutsXY(COL1_LINE, y++, "Sysop Real Name  : ");
-  window->PutsXY(COL1_LINE, y++, "Sysop Password   : ");
-  window->PutsXY(COL1_LINE, y++, "Sysop phone      : ");
+  constexpr int LABEL_WIDTH = 19;
   EditItems items{};
-  items.add_items({
-    new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, u.data.name, true),
-    new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, u.data.realname, true),
-    new StringEditItem<char*>(COL1_POSITION, 3, 8, u.data.pw, true),
-    new StringEditItem<char*>(COL1_POSITION, 4, 12, u.data.phone, true),
-  });
-
-  items.set_curses_io(out, window.get());
-  items.Run();
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Name/Handle:"),
+            new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, u.data.name, true));
+  ++y;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Real Name:"),
+            new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, u.data.realname, true));
+  ++y;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
+            new StringEditItem<char*>(COL1_POSITION, 3, 8, u.data.pw, true));
+  ++y;
+  items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "BBS Phone Number:"),
+            new StringEditItem<char*>(COL1_POSITION, 4, 12, u.data.phone, true));
+  items.Run("Create Sysop Account");
 
   u.data.sl = 255;
   u.data.dsl = 255;
