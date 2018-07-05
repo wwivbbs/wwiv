@@ -597,7 +597,7 @@ void print_pending_list() {
   }
 }
 
-void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::string& author_name,
+void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::string& subtype_or_author,
   vector<uint16_t> list, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
@@ -624,7 +624,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
 
     qn[0] = on[0] = '\0';
 
-    if (nFromNetworkNumber == WWIVNET_NO_NODE || nh->fromsys == a()->net_networks[nFromNetworkNumber].sysnum) {
+    if (nFromNetworkNumber == -1 || nh->fromsys == a()->net_networks[nFromNetworkNumber].sysnum) {
 
       strcpy(newname, nm);
       ss = strrchr(newname, '@');
@@ -700,7 +700,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
     nh->length += strlen(newname);
     if ((nh->main_type == main_type_email_name) ||
         (nh->main_type == main_type_new_post)) {
-      nh->length += author_name.size() + 1;
+      nh->length += subtype_or_author.size() + 1;
     }
     const string packet_filename = StrCat(
       a()->net_networks[nNetNumber].dir, "p1", a()->network_extension());
@@ -718,7 +718,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
         file.Write(&list[0], sizeof(uint16_t) * (nh->list_len));
       }
       if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
-        file.Write(author_name.c_str(), author_name.size() + 1);
+        file.Write(subtype_or_author.c_str(), subtype_or_author.size() + 1);
       }
       file.Write(pszOriginalText, strlen(pszOriginalText) + 1);
       file.Write(newname, strlen(newname));
