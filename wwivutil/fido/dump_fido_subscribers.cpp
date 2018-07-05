@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/fido/dump_subscribers.h"
+#include "wwivutil/fido/dump_fido_subscribers.h"
 
 #include <chrono>
 #include <iostream>
@@ -61,19 +61,19 @@ static int dump_file(const std::string& filename) {
        << std::endl;
 
   for (const auto& e : subscribers) {
-    cout << e.as_string();
+    cout << e.as_string() << std::endl;
   }
   return 0;
 }
 
-std::string DumpSubscribersCommand::GetUsage() const {
+std::string DumpFidoSubscribersCommand::GetUsage() const {
   std::ostringstream ss;
   ss << "Usage:   subscribers <subscriber filename>" << endl;
   ss << "Example: subscribers net/ftn/nGENCHAT.net" << endl;
   return ss.str();
 }
 
-int DumpSubscribersCommand::Execute() {
+int DumpFidoSubscribersCommand::Execute() {
   if (remaining().empty()) {
     cout << GetUsage() << GetHelp() << endl;
     return 2;
@@ -82,7 +82,7 @@ int DumpSubscribersCommand::Execute() {
   return dump_file(filename);
 }
 
-bool DumpSubscribersCommand::AddSubCommands() {
+bool DumpFidoSubscribersCommand::AddSubCommands() {
   return true;
 }
 

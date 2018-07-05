@@ -78,11 +78,16 @@ std::set<FidoAddress> ReadFidoSubcriberFile(const std::string& filename) {
   return subscribers;
 }
 
-bool ReadSubcriberFile(const std::string& dir, const std::string& filename, std::set<uint16_t>& subscribers) {
-  VLOG(1) << "ReadSubcriberFile: " << FilePath(dir, filename);
+bool ReadSubcriberFile(const std::string& dir, const std::string& filename,
+                       std::set<uint16_t>& subscribers) {
+  return ReadSubcriberFile(FilePath(dir, filename), subscribers);
+}
+
+bool ReadSubcriberFile(const std::string& filename, std::set<uint16_t>& subscribers) {
+  VLOG(1) << "ReadSubcriberFile: " << filename;
   subscribers.clear();
 
-  TextFile file(dir, filename, "rt");
+  TextFile file(filename, "rt");
   if (!file.IsOpen()) {
     return false;
   }

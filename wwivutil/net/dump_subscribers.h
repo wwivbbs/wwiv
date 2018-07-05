@@ -15,20 +15,21 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_DUMP_SUBSCRIBERS_H__
-#define __INCLUDED_WWIVUTIL_DUMP_SUBSCRIBERS_H__
+#ifndef __INCLUDED_WWIVUTIL_NET_DUMP_SUBSCRIBERS_H__
+#define __INCLUDED_WWIVUTIL_NET_DUMP_SUBSCRIBERS_H__
 
 #include "core/command_line.h"
 #include "wwivutil/command.h"
 
 namespace wwiv {
 namespace wwivutil {
-namespace fido {
+namespace net {
+
 void dump_usage();
 
 class DumpSubscribersCommand final: public UtilCommand {
 public:
-  DumpSubscribersCommand() : UtilCommand("subscribers", "Dumps contents of a fido subscriber list") {}
+  DumpSubscribersCommand() : UtilCommand("subscribers", "Dumps contents of a WWIVnet subscriber list") {}
   std::string GetUsage() const override final;
   int Execute() override final;
   bool AddSubCommands() override final;
@@ -38,4 +39,4 @@ public:
 }  // namespace wwivutil
 }  // namespace wwiv
 
-#endif  // __INCLUDED_WWIVUTIL_DUMP_SUBSCRIBERS_H__
+#endif  // __INCLUDED_WWIVUTIL_NET_DUMP_SUBSCRIBERS_H__

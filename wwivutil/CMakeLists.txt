@@ -9,7 +9,7 @@ set(COMMAND_SOURCES
   fido/fido.cpp
   fido/dump_fido_packet.cpp
   fido/dump_nodelist.cpp
-  fido/dump_subscribers.cpp
+  fido/dump_fido_subscribers.cpp
   files/files.cpp
   fix/dirs.cpp
   fix/fix.cpp
@@ -19,6 +19,7 @@ set(COMMAND_SOURCES
   net/dump_callout.cpp
   net/dump_connect.cpp
   net/dump_contact.cpp
+  net/dump_subscribers.cpp
   net/dump_packet.cpp
   net/net.cpp
   net/req.cpp
