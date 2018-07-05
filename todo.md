@@ -23,7 +23,7 @@
 * add tests for usermanager and user (in SDK)
 * Maybe make the hangup variable a static in the Application class.
 * Try to remove a()->current_net(), pass in the net as much as possible.
-* Update syscfg.{req_ratio, sysconfig} in init and save it back, since
+* Update syscfg.sysconfig in init and save it back, since
   wwiv never saves config.dat anymore.
 * stop using strncpy, strcpy, strcasestr.
 * get rid of g_flags, make it a boolean in application somewhere else
@@ -35,7 +35,6 @@
 * Move to LibSSH on all platforms
 * Run various asan/tsan's regularly with gcc via CMake
 * Drop Debian8
-* Get GCC 8 compiles working.
 
 
 ## Networking Cleanup

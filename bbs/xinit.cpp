@@ -285,7 +285,7 @@ void Application::ReadINIFile(IniFile& ini) {
   // found something
   // pull out event flags
   for (size_t i = 0; i < NEL(spawn_opts); i++) {
-    const string key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[i].name);
+    const auto key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[i].name);
     const auto ss = ini.value<string>(key_name);
     if (!ss.empty()) {
       spawn_opts[i] = str2spawnopt(ss);
@@ -359,11 +359,6 @@ void Application::ReadINIFile(IniFile& ini) {
   // misc stuff
   auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
   if (num > 0) { mail_who_field_len = num; }
-
-  const auto ratio_str = ini.value<string>(get_key_str(INI_STR_RATIO));
-  if (!ratio_str.empty()) {
-    a()->config()->set_req_ratio(to_number<float>(ratio_str));
-  }
 
   const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
   attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(GetHomeDir(), ATTACH_DIR);

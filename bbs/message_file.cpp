@@ -22,7 +22,6 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/vars.h"  // only needed for syscfg
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/net.h"

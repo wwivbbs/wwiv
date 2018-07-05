@@ -104,7 +104,6 @@ constexpr int INI_STR_MAX_BATCH = 84;
 constexpr int INI_STR_MAX_EXTEND_LINES = 85;
 constexpr int INI_STR_MAX_CHAINS = 86;
 constexpr int INI_STR_MAX_GFILESEC = 87;
-constexpr int INI_STR_RATIO = 88;
 
 //---CALLOUT/WFC--
 constexpr int INI_STR_CALLOUT_ANSI = 92;
@@ -224,7 +223,7 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "MAX_EXTEND_LINES",         // 85
   "MAX_CHAINS",
   "MAX_GFILESEC",
-  "RATIO",
+  "",
   "",
   "",                         // 90
   "//---CALLOUT/WFC---*",
