@@ -132,6 +132,7 @@ static int dump_packet_file(const std::string& filename) {
     LOG(ERROR) << "Read less than packet header";
     return 1;
   }
+
   while (!done) {
     FidoPackedMessage msg;
     ReadPacketResponse response = read_packed_message(f, msg);

@@ -398,8 +398,8 @@ MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
 
 std::string MessagesDumpHeaderCommand::GetUsage() const {
   std::ostringstream ss;
-  ss << "Usage:   dump_headers <base sub filename>" << endl;
-  ss << "Example: dump_headers general" << endl;
+  ss << "Usage:   dump <base sub filename>" << endl;
+  ss << "Example: dump general" << endl;
   return ss.str();
 }
 
