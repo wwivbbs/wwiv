@@ -28,7 +28,7 @@ const char *beta_version = ".development";
 // The statusrec.wwiv_version
 uint16_t wwiv_num_version = 520;
 // The statusrec.network_version
-int wwiv_net_version = 51;
+int wwiv_net_version = 53;
 
 // Data/time of this build
 const char *wwiv_date = __DATE__ ", " __TIME__;

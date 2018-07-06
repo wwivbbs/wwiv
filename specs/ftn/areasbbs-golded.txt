@@ -1,0 +1,9 @@
+Format
+
+[optional] filename/number/dir echo tag links
+
+optional
+========
+! JAM
+P WildCat
+$ Squish

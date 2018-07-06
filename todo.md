@@ -8,7 +8,7 @@
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
-* dupe checking code is a mess and probabl wyon't work,
+* dupe checking code is a mess and probably won't work,
   need to check for both address and serial number or 
   crc of headers too.
 
@@ -46,7 +46,7 @@
 ***
 * move File to namespace wwiv::core
 * start migrating core::File towards fs::filesystem and fs::path naming. (in progress)
-  - also todo is to figure out if we want to add some interoperabilit with
+  - also todo is to figure out if we want to add some interoperability with
     iostreams here.
 * Create SemaphoreFile class,later on also add support for creating semaphores for network
   and other places in wwiv.
