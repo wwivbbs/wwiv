@@ -196,10 +196,6 @@ public:
   const int GetNetworkVersion() const {
     return status_->net_version;
   }
-  void SetNetworkVersion(int n) {
-    status_->net_version = static_cast<uint16_t>(n);
-  }
-
   const int GetDays() const {
     return status_->days;
   }
