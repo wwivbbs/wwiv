@@ -1,0 +1,158 @@
+(from fmail documentation: https://www.pcorner.com/list/BBS/FM106.ZIP)
+
+THE AREAS.BBS FILE
+==================
+
+This section demonstrates everything FreeMail will understand in an AREAS.BBS
+file and explains the rules it follows in interpreting the lines. It is aimed
+at the user who is not familiar with FidoNet mail programs. I recommend all
+users at least skim it to get the syntaxes FreeMail allows.
+
+AREAS.BBS is a text file which gives FreeMail (and most other FidoNet
+compatable mail programs) the information it needs about the message areas. It
+is required. Notice that everything after a semicolon (;) is ignored, and can
+be used for comments.
+
+The accepted format for each line is...
+
+... (; )
+
+...where is the official area tag of the echo, and the
+es
+are addresses of other systems which you share this echo with. The
+tells FreeMail where and how to store the messages for that area; the format
+depends on the type of message-base you use:
+
+(a single-Hudson-base board)
+@ (a multiple-Hudson-base board)
+! (a Spitfire conference number)
+(a *.MSG echomail directory)
+# (a pass-through area; the is optional)
+P (alternate pass-through designation)
+
+
+FreeMail also recognises three control lines in the AREAS.BBS file. The first
+is the /FROM line. This is used when running echomail in multiple networks. It
+tells FreeMail to use one of your alternate addresses as the primary address
+for the areas following it. For example, if you had an AREAS.BBS file like
+this:
+
+!05 HOUSTON_CHAT 1:106/1000 ;Houston Chit-Chat conference
+!06 SPITFIRE 1:106/1000 ;Spitfire Support conference
+!07 DBASE 1:106/1000
+/FROM 81:400/21
+!81 OS2MSGS 81:400/100
+!82 OS2BUGS 81:400/100
+
+Every area listed after a /FROM line will use the address on the /FROM line as
+the origin. The message will be shown to have come from that address, and the
+Origin line (if FreeMail has to append one) will use it also. The address
+*must* be one of yours, listed in an ADDRESS or AKA statement in the
+FreeMail.CFG file. If it isn't, FreeMail will complain and refuse to run.
+
+The second control line FreeMail understands is the /ORG line, to specify a
+customized Origin line for one or more echo areas. This is mostly useful only
+in Spitfire setups, in which FreeMail must add an Origin line to every
+outgoing message. Like the /FROM line, it affects every area listed after it,
+until another /ORG line overrides it. If you had:
+
+/ORG The Jhereg's Den -- Home of FreeMail
+!10 FREEMAIL 106/4196
+!11 SPITFIRE 109/50
+/ORG The Jhereg's Den -- An it harm none...
+!21 MUNDANE 109/120
+
+The first /ORG line would affect both the FREEMAIL and SPITFIRE conferences.
+The second would affect MUNDANE and any conferences listed after it. Those
+areas which have no /ORG line will use the SYSTEM line from the FREEMAIL.CFG
+file, or a default origin line if SYSTEM is not specified.
+
+The last control line is the /GATE. This allows you to set up a "gateway"
+between two different echo areas. All messages going into one of these areas
+will be "gated" into the other as well. Most people will never need this.
+
+The format of the /GATE line is:
+
+/GATE
+...
+
+...where the is the address (must be one of yours!) that you
+want these messages to come from; the is the name of the gated
+echo, and the
+es are the systems you want to send that echo to.
+
+To set up a gateway between the echos ERIS and ERIS&MOO, for instance:
+
+/FROM 1:109/536
+!93 ERIS 1:109/120 228
+/GATE 93:9800/0 ERIS&MOO 93:9300/0 9800/3 9810/0
+
+Using these lines, the ERIS echo would be stored in the Spitfire message area
+93, and sent from 1:109/536 to 1:109/120 and 1:109/228. It would also be gated
+to the ERIS&MOO echo in zone 93, from 93:9800/0 to 93:9300/0, 93:9800/3, and
+93:9810/0. Any messages coming into either of these echos would go out in
+both, with the proper origin lines appended on the gated side. WARNING:
+Because gating removes all SEEN-BY and PATH information, there must only be
+*one* system doing the gating per echo area!
+
+
+Examples:
+
+2 L_SYSOP 271/247 ; Felicia's Local messages-to-sysop area
+9 SYSOP-109 109/5 40 400 500 700 800 ; Sysop-only echo for net109
+
+In the first example, the first line shows that the echo L_SYSOP should be
+stored in the Hudson-style echomail area #2, and it is being sent and received
+from 271/247. The zone, if not specified, will default to that of the origin
+address for that echo.
+
+The second line is similar. The echo SYSOP-109 is being sent to six different
+addresses from here. Notice the short-form address list -- you don't have to
+specify the "net" portion again if it's the same as the previous one on that
+line. The same it true for the zone, if you use multiple zones.
+
+Hudson-style message bases are limited to 200 areas each. The board number
+MUST be between 1 and 200, inclusive, or FreeMail will complain and refuse to
+run. I don't know of any specific limit on the number of Spitfire areas. There
+is no limit to the number of areas FreeMail can handle except memory; it
+stores the area file in a digested form for speed. One beta-tester runs over
+520 areas with no problems.
+
+
+C:\BBS\FUBAR\ FOOBAR 109/542 536 271/248
+
+This line says that the FOOBAR echo is a *.MSG-style area, stored in the
+C:\BBS\FUBAR directory. It is being passed to three other systems: 109/542,
+109/536, and 271/248. The trailing backslash on the directory name is
+optional.
+
+
+# SAMPLE 109/542 271/248
+P SAMPLE 109/542 271/248
+
+These lines are identicle in meaning. They say that the echo SAMPLE is being
+passed between 109/542 and 271/248 through my system, but not stored here --
+it is a PASS-THROUGH area. I don't read the hypothetical SAMPLE echo, and my
+users aren't interested, so I don't want to keep it around taking up disk
+space.
+
+Most Hudson-base mail programs use the 'P' to designate pass-through; most
+others use a pound sign (#) followed by a directory name. FreeMail recognises
+either, but does NOT need a directory name for such areas. It uses one pass to
+toss and scan such messages and does not store them locally.
+
+
+An Example of a simple Spitfire AREAS.BBS File:
+
+!05 HOUSTON_CHAT 1:106/1000 ;Houston Chit-Chat conference
+!06 SPITFIRE 1:106/1000 ;Spitfire Support conference
+!07 DBASE 1:106/1000
+!08 CLIPPER 1:106/1000
+!09 FOXPRO 1:106/1000
+!10 PARADOX 1:106/1000
+!11 CLARION 1:106/1000
+!12 CONSULTING 1:106/1000
+!13 PC_CONSULT 1:106/1000
+!14 DBRIDGE 1:106/1000
+!15 NEW_SYSOP 1:106/1000
+!16 SYSOP 1:106/1000
