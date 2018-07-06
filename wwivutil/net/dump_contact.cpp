@@ -21,11 +21,14 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "core/command_line.h"
+#include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
 #include "sdk/config.h"
+#include "sdk/datetime.h"
 #include "sdk/networks.h"
 
 using std::clog;
@@ -34,6 +37,7 @@ using std::endl;
 using std::map;
 using std::string;
 using wwiv::sdk::Contact;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -45,6 +49,12 @@ std::string DumpContactCommand::GetUsage() const {
   ss << "Usage:   contact" << endl;
   ss << "Example: contact" << endl;
   return ss.str();
+}
+
+bool DumpContactCommand::AddSubCommands() {
+  add_argument(BooleanCommandLineArgument{"save", "Save/cleanup contact.net in all subs", false});
+  add_argument(BooleanCommandLineArgument{"backup", "make a backup of the contact.net files", false});
+  return true;
 }
 
 int DumpContactCommand::Execute() {
@@ -64,6 +74,19 @@ int DumpContactCommand::Execute() {
     cout << "contact.net information: : " << c.first << endl;
     cout << "===========================================================" << endl;
     cout << c.second.ToString() << endl;
+  }
+
+  if (barg("save")) {
+    for (auto& c : contacts) {
+      const auto fn = c.second.full_pathname();
+      if (barg("backup")) {
+        const auto now = DateTime::now();
+        const auto date_string = now.to_string("%Y%m%d%H%M%S");
+        const auto backup_extension = StrCat(".backup.", date_string);
+        File::Copy(fn, StrCat(fn, backup_extension));
+      }
+      c.second.Save();
+    }
   }
 
   return 0;

@@ -19,20 +19,21 @@
 
 #include <algorithm>
 #include <iostream>
-#include <memory>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
 #include "core/datafile.h"
-#include "core/inifile.h"
 #include "core/file.h"
+#include "core/inifile.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
+#include "sdk/fido/fido_address.h"
 
 using std::endl;
 using std::map;
@@ -56,38 +57,49 @@ constexpr long SECONDS_PER_MINUTE = 60L;
 constexpr long SECONDS_PER_HOUR = MINUTES_PER_HOUR * SECONDS_PER_MINUTE;
 constexpr long HOURS_PER_DAY = 24L;
 constexpr long SECONDS_PER_DAY = SECONDS_PER_HOUR * HOURS_PER_DAY;
+} // namespace
+
+// static
+std::string NetworkContact::CreateFakeFtnAddress(uint16_t node) {
+  return wwiv::strings::StrCat("20000:20000/", node);
 }
 
-Contact::Contact(const net_networks_rec& net, bool save_on_destructor) 
+Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
     : net_(net), save_on_destructor_(save_on_destructor) {
-  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET, File::modeBinary | File::modeReadOnly,
+                                 File::shareDenyNone);
   if (!file) {
     return;
   }
-  
+
   std::vector<net_contact_rec> vs;
   if (file.number_of_records() > 0) {
     initialized_ = file.ReadVector(vs);
   }
 
   for (const auto& v : vs) {
+    if (v.systemnumber == 0) {
+      VLOG(2) << "Skipping contact.net entry for system #0 from file: "
+              << file.file().full_pathname();
+      continue;
+    }
     network_contact_record r{};
-    r.address = StringPrintf("20000:20000/%u@%s", v.systemnumber, net.name);
+    r.address = NetworkContact::CreateFakeFtnAddress(v.systemnumber);
     r.ncr = v;
-    contacts_.emplace_back(r);
+    contacts_.emplace(r.address, r);
   }
 
   if (!initialized_) {
     LOG(ERROR) << "failed to read the expected number of bytes: "
-      << contacts_.size() * sizeof(NetworkContact);
+               << contacts_.size() * sizeof(NetworkContact);
   }
   initialized_ = true;
 }
 
 Contact::Contact(std::initializer_list<NetworkContact> l)
-  : net_{}, save_on_destructor_(false), initialized_(true) {
+    : net_{}, save_on_destructor_(false), initialized_(true) {
   for (const auto& r : l) {
-    contacts_.emplace_back(r);
+    contacts_.emplace(r.address(), r);
   }
 }
 
@@ -96,9 +108,10 @@ bool Contact::Save() {
     return false;
   }
 
-  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET, 
-      File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
-      File::shareDenyReadWrite);
+  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET,
+                                 File::modeBinary | File::modeReadWrite | File::modeCreateFile |
+                                     File::modeTruncate,
+                                 File::shareDenyReadWrite);
   if (!file) {
     return false;
   }
@@ -108,7 +121,7 @@ bool Contact::Save() {
 
   std::vector<net_contact_rec> vs;
   for (const auto& v : contacts_) {
-    vs.emplace_back(v.ncr());
+    vs.emplace_back(v.second.ncr());
   }
 
   return file.WriteVector(vs);
@@ -120,7 +133,7 @@ Contact::~Contact() {
   }
 }
 
-static void fixup_long(daten_t &f) {
+static void fixup_long(daten_t& f) {
   auto now = daten_t_now();
   if (f > now) {
     f = now;
@@ -164,38 +177,32 @@ void NetworkContact::AddFailure(time_t t) {
 }
 
 NetworkContact* Contact::contact_rec_for(uint16_t node) {
-  for (NetworkContact& c : contacts_) {
-    if (c.ncr().systemnumber == node) {
-      c.fixup();
-      return &c;
-    }
-  }
-  return nullptr;
+  auto key = NetworkContact::CreateFakeFtnAddress(node);
+  return contact_rec_for(key);
 }
 
 NetworkContact* Contact::contact_rec_for(const std::string& node) {
-  for (NetworkContact& c : contacts_) {
-    if (c.address() == node) {
-      c.fixup();
-      return &c;
-    }
+  auto it = contacts_.find(node);
+  if (it == std::end(contacts_)) {
+    return nullptr;
   }
-  return nullptr;
+  it->second.fixup();
+  return &it->second;
 }
 
 void Contact::ensure_rec_for(uint16_t node) {
-  const auto* current = contact_rec_for(node);
-  if (current == nullptr) {
-    NetworkContact r(node);
-    contacts_.emplace_back(r);
-  }
+  auto key = NetworkContact::CreateFakeFtnAddress(node);
+  return ensure_rec_for(key);
 }
 
 void Contact::ensure_rec_for(const std::string& node) {
   const auto* current = contact_rec_for(node);
   if (current == nullptr) {
-    NetworkContact r(node);
-    contacts_.emplace_back(r);
+    network_contact_record ncr{};
+    ncr.address = node;
+    wwiv::sdk::fido::FidoAddress address(node);
+    ncr.ncr.systemnumber = address.node();
+    contacts_.emplace(node, ncr);
   }
 }
 
@@ -213,7 +220,8 @@ void Contact::add_connect(int n, time_t time, uint32_t bytes_sent, uint32_t byte
   c->AddConnect(time, bytes_sent, bytes_received);
 }
 
-void Contact::add_connect(const std::string& node, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
+void Contact::add_connect(const std::string& node, time_t time, uint32_t bytes_sent,
+                          uint32_t bytes_received) {
   NetworkContact* c = contact_rec_for(node);
   if (c == nullptr) {
     ensure_rec_for(node);
@@ -252,9 +260,7 @@ void Contact::add_failure(const std::string& node, time_t time) {
   c->AddFailure(time);
 }
 
-void Contact::add_contact(NetworkContact* c, time_t time) {
-  c->AddContact(time);
-}
+void Contact::add_contact(NetworkContact* c, time_t time) { c->AddContact(time); }
 
 static std::string DumpCallout(const NetworkContact& n) {
   std::ostringstream ss;
@@ -275,11 +281,19 @@ static std::string DumpCallout(const NetworkContact& n) {
 std::string Contact::ToString() const {
   std::ostringstream ss;
   for (const auto& kv : contacts_) {
-    ss << DumpCallout(kv) << std::endl;
+    ss << DumpCallout(kv.second) << std::endl;
   }
   return ss.str();
 }
 
-}  // namespace net
-}  // namespace wwiv
+std::string Contact::full_pathname() const noexcept { return FilePath(net_.dir, CONTACT_NET); }
 
+network_contact_record to_network_contact_record(const net_contact_rec& n) {
+  network_contact_record ncr{};
+  ncr.address = NetworkContact::CreateFakeFtnAddress(n.systemnumber);
+  ncr.ncr = n;
+  return ncr;
+}
+
+} // namespace sdk
+} // namespace wwiv

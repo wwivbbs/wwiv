@@ -36,21 +36,16 @@ struct network_contact_record {
   net_contact_rec ncr{};
 };
 
-static inline network_contact_record to_network_contact_record(const net_contact_rec& n) {
-  network_contact_record ncr{};
-  ncr.address = wwiv::strings::StrCat("20000:20000/", n.systemnumber);
-  ncr.ncr = n;
-  return ncr;
-}
+network_contact_record to_network_contact_record(const net_contact_rec& n);
 
 class NetworkContact {
 public:
   NetworkContact() noexcept : ncr_() {}
   explicit NetworkContact(uint16_t node): ncr_() { 
     ncr_.ncr.systemnumber = node;
-    ncr_.address = wwiv::strings::StrCat("20000:20000/",node); 
+    ncr_.address = CreateFakeFtnAddress(node); 
   }
-  explicit NetworkContact(const std::string& address): ncr_() { ncr_.address = address; }
+  //explicit NetworkContact(const std::string& address): ncr_() { ncr_.address = address; }
   explicit NetworkContact(const net_contact_rec& ncr): ncr_(to_network_contact_record(ncr)) {}
   explicit NetworkContact(const wwiv::sdk::network_contact_record& ncr): ncr_(ncr) {}
   ~NetworkContact() {}
@@ -74,6 +69,9 @@ public:
   void AddFailure(time_t t);
 
   const net_contact_rec& ncr() const { return ncr_.ncr; }
+
+public:
+  static std::string CreateFakeFtnAddress(uint16_t node);
 
 private:
   network_contact_record ncr_{};
@@ -110,6 +108,7 @@ class Contact {
 
   bool Save();
   std::string ToString() const;
+  std::string full_pathname() const noexcept;
 
  private:
    /** add a contact. called by connect or failure. */
@@ -117,7 +116,7 @@ class Contact {
 
    const net_networks_rec net_;
    bool save_on_destructor_;
-   std::vector<NetworkContact> contacts_;
+   std::map<std::string, NetworkContact> contacts_;
    bool initialized_;
 
    NetworkContact empty_contact{};

@@ -34,7 +34,7 @@ public:
     : UtilCommand("contact", "Dumps parsed representation of contact.net") {}
   int Execute() override final;
   std::string GetUsage() const override final;
-  bool AddSubCommands() override final { return true; }
+  bool AddSubCommands() override final;
 };
 
 }  // namespace wwivutil
