@@ -24,6 +24,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "core/version.h"
 #include "sdk/datetime.h"
 
 using std::string;
@@ -164,6 +165,8 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
 
   network_name_ = network_.name;
   StringLowerCase(&network_name_);
+  LOG(INFO) << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
+    << " for network: " << network_name_;
 }
 
 std::unique_ptr<wwiv::core::IniFile> NetworkCommandLine::LoadNetIni(char net_cmd) const {

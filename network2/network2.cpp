@@ -300,8 +300,6 @@ int main(int argc, char** argv) {
     }
 
     const auto& net = net_cmdline.network();
-    LOG(INFO) << "NETWORK2 for network: " << net.name;
-
     if (!File::Exists(net.dir, LOCAL_NET)) {
       LOG(INFO) << "No local.net exists. exiting.";
       return 0;

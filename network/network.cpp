@@ -99,7 +99,6 @@ int main(int argc, char** argv) {
     }
 
     auto network_name = net_cmdline.network_name();
-    LOG(INFO) << "NETWORK for network: " << network_name;
 
     auto node = cmdline.sarg("node");
     if (!contains(node, ':')) {

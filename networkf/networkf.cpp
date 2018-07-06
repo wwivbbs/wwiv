@@ -1052,8 +1052,6 @@ int main(int argc, char** argv) {
     }
 
     const auto& net = net_cmdline.network();
-    LOG(INFO) << "NETWORKF for network: " << net.name;
-
     if (net.type != network_type_t::ftn) {
       LOG(ERROR) << "NETWORKF is only for use on FTN type networks.";
       ShowHelp(cmdline);

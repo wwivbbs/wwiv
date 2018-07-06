@@ -591,7 +591,6 @@ int main(int argc, char** argv) {
     }
 
     const auto& net = net_cmdline.network();
-    LOG(INFO) << "NETWORK3 for network: " << net.name;
     update_net_ver_status_dat(net_cmdline.config().datadir());
 
     if (!File::Exists(net.dir)) {

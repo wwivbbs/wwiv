@@ -151,7 +151,6 @@ int network1_main(int argc, char** argv) {
     }
 
     const auto& net = net_cmdline.network();
-    LOG(INFO) << "NETWORK1 for network: " << net.name;
 
     VLOG(1) << "Reading bbsdata.net..";
     BbsListNet b = BbsListNet::ReadBbsDataNet(net.dir);
