@@ -88,9 +88,6 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
           con->call_anyway = std::max<uint8_t>(con->call_anyway, 10);
         }
       } break;
-      case '#': {
-        con->call_x_days = to_number<uint8_t>(string(++iter, ss.end()));
-      } break;
       case '(': {
         con->min_hr = to_number<int8_t>(string(++iter, ss.end()));
       } break;
@@ -134,6 +131,29 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
     }
     return true;
 }
+
+std::string CalloutOptionsToString(uint16_t options) { 
+  std::ostringstream ss;
+  ss << "{" << options << "} ";
+  if (options & options_sendback) {
+    ss << "[sendback] ";
+  }
+  if (options & options_no_call) {
+    ss << "[nocall] ";
+  }
+  if (options & options_receive_only) {
+    ss << "[receive_only] ";
+  }
+  if (options & options_once_per_day) {
+    ss << "[x_per_day] ";
+  }
+  if (options & options_hide_pend) {
+    ss << "[hide_pending] ";
+  }
+  return ss.str();
+}
+
+
 
 static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_map, const string network_dir) {
   TextFile node_config_file(network_dir, CALLOUT_NET, "rt");
@@ -187,12 +207,12 @@ const net_call_out_rec* Callout::net_call_out_for(const std::string& node) const
 
 static std::string DumpCallout(const net_call_out_rec& n) {
   std::ostringstream ss;
-  ss << "sysnum:        "  << n.sysnum << std::endl;
+    ss << "sysnum:        "  << n.sysnum << std::endl;
   if (n.macnum) {
     ss << "macnum:        " << std::dec << n.macnum << std::endl;
   }
   if (n.options) {
-    ss << "options:       " << n.options << std::endl;
+    ss << "options:       " << CalloutOptionsToString(n.options) << std::endl;
   }
   if (n.min_hr > 0) {
     ss << "min_hr:        " << static_cast<int>(n.min_hr) << std::endl;
@@ -203,9 +223,6 @@ static std::string DumpCallout(const net_call_out_rec& n) {
   ss << "password:      \"" << n.session_password << "\"" << std::endl;
   if (n.times_per_day) {
     ss << "times_per_day: " << static_cast<int>(n.times_per_day) << std::endl;
-  }
-  if (n.call_x_days) {
-    ss << "call_x_days:   " << static_cast<int>(n.call_x_days) << std::endl;
   }
   if (n.min_k) {
     ss << "min_k:         " << static_cast<int>(n.min_k) << std::endl;

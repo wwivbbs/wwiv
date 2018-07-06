@@ -95,13 +95,12 @@ TEST_F(CalloutTest, MinMax) {
 
 TEST_F(CalloutTest, EveryWeekWith10k) {
   net_call_out_rec con;
-  const string line = "@1234 &*#7|10 \"pass\"";
+  const string line = "@1234 &*|10 \"pass\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
   EXPECT_NE(0, con.options & options_sendback);
   EXPECT_EQ("pass", con.session_password);
-  EXPECT_EQ(7, con.call_x_days);
   EXPECT_EQ(10, con.min_k);
 }
 

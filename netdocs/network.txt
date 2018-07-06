@@ -338,8 +338,8 @@ arrangement and is basically discouraged.
    These options affect when your board will call the other 
 board.                                                      
                                                             
-      /xxxx   Where x is an integer between 10 and 1440.  If
-      xxxx is < 10, then 10 will be used.       
+    /x   Call every x minutes, where x is an integer between 10 
+ and 1440.  If x is less than 10, then 10 will be used.       
                                                             
 This means that the network will force a callout to that    
 board every x minutes, even if there is no mail waiting to be
@@ -347,8 +347,8 @@ sent to that system.  This parameter is often set to ensure
 that a system will frequently poll another one.  
 
 Note: that this is changed since net38 and lower, this used
-to be call every hour, but in net52 is was changed to be 
-minutes instead.
+to be call every hour, but in WWIV 5.2 (net52) was changed
+to be minutes instead of hours.
 
     =   This means to call during the hours of 6 pm to 6 am 
 Monday thru Friday and anytime on weekends).  These para-   

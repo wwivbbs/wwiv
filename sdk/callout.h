@@ -47,6 +47,7 @@ class Callout {
 };
 
 bool ParseCalloutNetLine(const std::string& line, net_call_out_rec* config);
+std::string CalloutOptionsToString(uint16_t options);
 
 }  // namespace net
 }  // namespace wwiv

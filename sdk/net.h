@@ -256,9 +256,9 @@ struct net_interconnect_rec {
 struct net_call_out_rec {
   net_call_out_rec() = default;
   net_call_out_rec(const std::string f, uint16_t sn, uint8_t mn, uint16_t op, uint8_t ca,
-                    int8_t nh, int8_t xh, char pw[20], uint8_t tpd, uint8_t cd, uint16_t nk)
+                    int8_t nh, int8_t xh, char pw[20], uint8_t tpd, uint16_t nk)
       : ftn_address(f), sysnum(sn), macnum(mn), options(op), call_anyway(ca), min_hr(nh),
-        max_hr(xh), session_password(pw), times_per_day(tpd), call_x_days(cd), min_k(nk) {}
+        max_hr(xh), session_password(pw), times_per_day(tpd), min_k(nk) {}
   // FTN Address.
   std::string ftn_address;
   /* system number */
@@ -277,8 +277,6 @@ struct net_call_out_rec {
   std::string session_password;
   /* number of calls per day */
   uint8_t times_per_day = 0;
-  /* call only every x days */
-  uint8_t call_x_days = 0;
   /* minimum # k before callout */
   uint16_t min_k = 0;
 };
