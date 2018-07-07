@@ -43,6 +43,7 @@
 using std::string;
 using std::chrono::duration_cast;
 using namespace std::chrono;
+using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

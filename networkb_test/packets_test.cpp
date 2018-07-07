@@ -28,6 +28,7 @@
 using std::endl;
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

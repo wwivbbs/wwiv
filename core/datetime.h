@@ -16,8 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_DATETIME_H__
-#define __INCLUDED_SDK_DATETIME_H__
+#ifndef __INCLUDED_CORE_DATETIME_H__
+#define __INCLUDED_CORE_DATETIME_H__
 
 #include <chrono>
 #include <ctime>
@@ -26,7 +26,7 @@
 #include "core/wwivport.h"
 
 namespace wwiv {
-namespace sdk {
+namespace core {
 
 time_t time_t_now();
 daten_t daten_t_now();
@@ -58,9 +58,7 @@ public:
     return from_time_t(tt);
   }
 
-  static DateTime now() {
-    return DateTime(time_t_now());
-  }
+  static DateTime now();
 
   int hour() const { return tm_.tm_hour; }
   int minute() const { return tm_.tm_min; }
@@ -82,19 +80,16 @@ public:
   daten_t to_daten_t() const { return time_t_to_daten(t_); }
 
 private:
-  DateTime(time_t t) : t_(t) {
-#ifdef WIN32
-    localtime_s(&tm_, &t);
-#else
-    localtime_r(&t, &tm_);
-#endif
-  }
+  DateTime(std::chrono::system_clock::time_point t);
+  DateTime(time_t t);
 
   time_t t_;
+  std::chrono::system_clock::time_point tp_;
   tm tm_ {};
+  int millis_;
 };
 
 }
 }
 
-#endif // __INCLUDED_SDK_DATETIME_H__
+#endif // __INCLUDED_CORE_DATETIME_H__

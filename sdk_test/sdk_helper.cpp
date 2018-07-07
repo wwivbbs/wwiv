@@ -35,16 +35,13 @@
 #include "sdk/vardec.h"
 
 using namespace std;
+using namespace wwiv::core;
 using namespace wwiv::strings;
-
-static string date() {
-  return wwiv::sdk::time_t_to_mmddyy(wwiv::sdk::time_t_now());
-}
 
 static statusrec_t create_status() {
   statusrec_t s = {};
   memset(&s, 0, sizeof(statusrec_t));
-  const string now(date());
+  const string now(time_t_to_mmddyy(time_t_now()));
   to_char_array(s.date1, now);
   strcpy(s.date2, "00/00/00");
   strcpy(s.date3, "00/00/00");

@@ -32,8 +32,10 @@
 #include "bbs/utility.h"
 #include "core/textfile.h"
 #include "core/version.h"
+#include "sdk/status.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

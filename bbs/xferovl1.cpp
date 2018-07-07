@@ -200,7 +200,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
   }
   sprintf(s, "%s%s", a()->directories[dn].path, stripfn(u->filename));
   File f(s);
-  auto t = wwiv::sdk::time_t_to_mmddyy(f.creation_time());
+  auto t = time_t_to_mmddyy(f.creation_time());
   to_char_array(u->actualdate, t);
   {
     char* ss = strchr(stripfn(u->filename), '.');

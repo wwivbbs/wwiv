@@ -33,7 +33,7 @@ using namespace std::chrono;
 using namespace wwiv::strings;
 
 namespace wwiv {
-namespace sdk {
+namespace core {
 
 time_t time_t_now() {
   return time(nullptr);
@@ -162,14 +162,38 @@ std::string to_string(std::chrono::duration<double> dd) {
   return os.str();
 };
 
-std::string DateTime::to_string(const std::string& format)  const {
+DateTime::DateTime(std::chrono::system_clock::time_point t) : t_(std::chrono::system_clock::to_time_t(t)) {
+#ifdef WIN32
+  localtime_s(&tm_, &t_);
+#else
+  localtime_r(&t_, &tm_);
+#endif
+  millis_ = static_cast<int>(
+      std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch()).count() % 1000);
+}
+
+DateTime::DateTime(time_t t)
+    : t_(t) {
+#ifdef WIN32
+  localtime_s(&tm_, &t_);
+#else
+  localtime_r(&t_, &tm_);
+#endif
+  millis_ = 0;
+}
+
+  std::string DateTime::to_string(const std::string& format)  const {
   return put_time(&tm_, format);
 }
+
 std::string DateTime::to_string()  const {
   auto s = string(asctime(&tm_));
   StringTrimEnd(&s);
   return s;
 }
+
+// static 
+DateTime DateTime::now() { return DateTime(system_clock::now()); }
 
 }
 }

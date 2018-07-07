@@ -30,7 +30,7 @@
 
 using std::string;
 using namespace std::chrono;
-using namespace wwiv::sdk;
+using namespace wwiv::core;
 
 //
 // This kludge will get us through 2019 and should not interfere anywhere

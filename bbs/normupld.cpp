@@ -38,6 +38,7 @@
 #include "sdk/status.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

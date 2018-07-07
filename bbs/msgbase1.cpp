@@ -54,6 +54,7 @@
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;

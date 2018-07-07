@@ -31,6 +31,7 @@
 
 using std::string;
 using std::to_string;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

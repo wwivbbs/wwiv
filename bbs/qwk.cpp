@@ -70,11 +70,9 @@
 using std::unique_ptr;
 using std::string;
 using namespace wwiv::bbs;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
-
-using namespace wwiv::sdk;
-using namespace wwiv::strings;
 
 // Also used in qwk1.cpp
 const char *QWKFrom = "\x04""0QWKFrom:";

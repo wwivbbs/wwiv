@@ -30,6 +30,7 @@
 #include <unordered_map>
 
 #include "core/command_line.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -38,6 +39,7 @@
 
 using std::ofstream;
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -87,8 +89,6 @@ const std::string FormatLogLevel(LoggerLevel l, int v) {
 }
 
 std::string Logger::FormatLogMessage(LoggerLevel level, int verbosity, const std::string& msg) {
-  auto now = std::time(nullptr);
-  auto tm = *std::localtime(&now);
   return StrCat(config_.timestamp_fn_(), FormatLogLevel(level, verbosity), " ", msg);
 }
 
@@ -115,12 +115,10 @@ bool Logger::vlog_is_on(int level) { return level <= config_.cmdline_verbosity; 
 
 // static
 void Logger::StartupLog(int argc, char* argv[]) {
-  time_t t = time(nullptr);
-  string l(asctime(localtime(&t)));
-  StringTrim(&l);
+  DateTime dt = DateTime::now();
   LOG(STARTUP) << config_.exit_filename << " version " << wwiv_version << beta_version << " ("
                << wwiv_date << ")";
-  LOG(STARTUP) << config_.exit_filename << " starting at " << l;
+  LOG(STARTUP) << config_.exit_filename << " starting at " << dt.to_string();
   if (argc > 1) {
     string cmdline;
     for (int i = 1; i < argc; i++) {
@@ -133,8 +131,8 @@ void Logger::StartupLog(int argc, char* argv[]) {
 
 // static
 void Logger::ExitLogger() {
-  time_t t = time(nullptr);
-  LOG(STARTUP) << config_.exit_filename << " exiting at " << asctime(localtime(&t));
+  auto dt = DateTime::now();
+  LOG(STARTUP) << config_.exit_filename << " exiting at " << dt.to_string();
 }
 
 // static
@@ -193,13 +191,12 @@ void Logger::Init(int argc, char** argv, LoggerConfig& c) {
 }
 
 static std::string DefaultTimestamp() {
-  auto now = std::time(nullptr);
-  auto tm = *std::localtime(&now);
+  auto dt = DateTime::now();
   auto nowc = std::chrono::system_clock::now();
   auto duration = nowc.time_since_epoch();
   auto millis = static_cast<int>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
   auto milliss = StringPrintf("%03d ", millis);
-  return StrCat(wwiv::strings::put_time(&tm, log_date_format), milliss);
+  return StrCat(dt.to_string(log_date_format), milliss);
 }
 
 LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}

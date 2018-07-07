@@ -457,7 +457,7 @@ static bool upload_file(const char *file_name, uint16_t directory_num, const cha
     to_char_array(u.date, date());
 
     File f(szFullPathName);
-    auto t = wwiv::sdk::daten_to_mmddyy(time_t_to_daten(f.creation_time()));
+    auto t = daten_to_mmddyy(time_t_to_daten(f.creation_time()));
     to_char_array(u.actualdate, t);
 
     if (d.mask & mask_PD) {

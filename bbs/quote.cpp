@@ -60,6 +60,7 @@ static int quotes_ind_l = 0;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

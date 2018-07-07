@@ -64,6 +64,7 @@ using std::unique_ptr;
 using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

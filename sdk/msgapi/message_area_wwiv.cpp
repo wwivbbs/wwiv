@@ -44,6 +44,7 @@ using std::make_unique;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

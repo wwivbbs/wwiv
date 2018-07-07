@@ -40,6 +40,7 @@
 using std::chrono::minutes;
 using std::chrono::seconds;
 using std::chrono::steady_clock;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

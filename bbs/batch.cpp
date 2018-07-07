@@ -58,6 +58,7 @@
 using std::begin;
 using std::end;
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

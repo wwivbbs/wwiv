@@ -56,6 +56,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;

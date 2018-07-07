@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*              Copyright (C)2014-2017, WWIV Software Services            */
+/*                Copyright (C)2018, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,33 +16,33 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "gtest/gtest.h"
-
-#include <chrono>
-#include <ctime>
+#ifndef __INCLUDED_CORE_CLOCK_H__
+#define __INCLUDED_CORE_CLOCK_H__
 
 #include "core/datetime.h"
 
-using namespace std::chrono;
-using namespace wwiv::core;
+#include <chrono>
+#include <ctime>
+#include <string>
 
-static const daten_t t20140704 = 1404460800; // 1404457200;
+namespace wwiv {
+namespace core {
 
-TEST(DateTime, ToString) {
-  EXPECT_EQ("1ms", to_string(milliseconds(1)));
-  EXPECT_EQ("2ms", to_string(milliseconds(2)));
+class Clock {
+public:
+  Clock() {}
+  virtual DateTime Now() noexcept = 0;
+  virtual ~Clock();
+};
 
-  EXPECT_EQ("1s 498ms", to_string(milliseconds(1498)));
-    
-  EXPECT_EQ("2m 1s 498ms", to_string(milliseconds(121498)));
+class SystemClock : public Clock {
+public:
+  SystemClock() {}
+  virtual ~SystemClock() {}
+  virtual DateTime Now() noexcept override;
+};
 
-  EXPECT_EQ("3h 2m 1s 498ms", to_string(milliseconds(10921498)));
-}
+} // namespace core
+} // namespace wwiv
 
-// TODO(rushfan): Fix this now that the VM runs in PDT
-#if 0
-TEST(DateTime, date_to_daten) {
-  ASSERT_EQ(t20140704, date_to_daten("07/04/14"));
-}
-#endif  // 0
-
+#endif // __INCLUDED_CORE_CLOCK_H__

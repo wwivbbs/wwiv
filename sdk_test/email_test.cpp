@@ -36,6 +36,7 @@
 #include "sdk_test/sdk_helper.h"
 
 using namespace std;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
@@ -54,7 +55,7 @@ public:
     EmailData e{};
     e.title = title;
     e.text = text;
-    e.daten = wwiv::sdk::time_t_to_daten(time(nullptr));
+    e.daten = time_t_to_daten(time(nullptr));
     e.from_user = from;
     e.user_number = to;
     return email->AddMessage(e);

@@ -522,7 +522,6 @@ bool Application::create_message_api() {
 }
 
 void Application::SetLogonTime() {
-  steady_logon_time_ = std::chrono::steady_clock::now();
   system_logon_time_ = std::chrono::system_clock::now();
 }
 

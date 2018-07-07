@@ -45,6 +45,7 @@
 #include "core/strings.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::menus;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

@@ -93,6 +93,7 @@
 using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
+using namespace wwiv::core;
 using namespace wwiv::menus;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;

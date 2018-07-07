@@ -231,7 +231,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
       << "RECV:  DATA PACKET; ** unexpected size** len: " 
       << s.size()
       << "; expected: " << length
-      << " duration:" << wwiv::sdk::to_string(d);
+      << " duration:" << wwiv::core::to_string(d);
   if (!current_receive_file_) {
     LOG(ERROR) << "ERROR: Received M_DATA with no current file.";
     return false;
@@ -288,7 +288,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
 }
 
 bool BinkP::process_frames(duration<double> d) {
-  VLOG(3) << "       process_frames(" << wwiv::sdk::to_string(d) << ")";
+  VLOG(3) << "       process_frames(" << wwiv::core::to_string(d) << ")";
   return process_frames([&]() -> bool { return false; }, d);
 }
 

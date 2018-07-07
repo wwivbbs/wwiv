@@ -88,8 +88,9 @@ using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
 using namespace std::chrono;
+using namespace wwiv::core;
 using namespace wwiv::os;
-using namespace wwiv::sdk;  
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 Output bout;

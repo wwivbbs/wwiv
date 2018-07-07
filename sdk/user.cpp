@@ -32,6 +32,7 @@
 #include "sdk/wwivcolors.h"
 
 using namespace std::chrono;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv {

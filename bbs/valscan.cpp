@@ -35,6 +35,7 @@
 #include "bbs/vars.h"
 #include "sdk/user.h"
 
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
