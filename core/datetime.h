@@ -78,6 +78,7 @@ public:
 
   time_t to_time_t() const { return t_; }
   daten_t to_daten_t() const { return time_t_to_daten(t_); }
+  struct tm to_tm() const;
 
 private:
   DateTime(std::chrono::system_clock::time_point t);

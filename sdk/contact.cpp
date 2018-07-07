@@ -86,7 +86,7 @@ Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
     network_contact_record r{};
     r.address = NetworkContact::CreateFakeFtnAddress(v.systemnumber);
     r.ncr = v;
-    contacts_.emplace(r.address, r);
+    contacts_.emplace(r.address, NetworkContact(r));
   }
 
   if (!initialized_) {

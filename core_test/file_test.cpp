@@ -139,8 +139,8 @@ TEST(FileTest, IsDirectory_Open) {
 TEST(FileTest, LastWriteTime_NotOpen) {
     static const string kHelloWorld = "Hello World";
     FileHelper helper;
-    time_t now = time(nullptr);
-    string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+    auto now = time(nullptr);
+    auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
     File file(path);
     ASSERT_LE(now, file.last_write_time());
 }

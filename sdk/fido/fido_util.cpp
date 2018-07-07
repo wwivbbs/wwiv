@@ -49,9 +49,7 @@ constexpr char CZ = 26;
 
 
 // We use DDHHMMSS like SBBSECHO v2 does.
-std::string packet_name(time_t now) {
-
-  auto dt = DateTime::from_time_t(now);
+std::string packet_name(DateTime& dt) {
   auto buf = dt.to_string("%d%H%M%S");
   return StrCat(buf, ".pkt");
 }

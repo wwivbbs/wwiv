@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "core/datetime.h"
 #include "core/strings.h"
 #include "core/version.h"
 
@@ -43,11 +44,8 @@ bool HttpServer::add(HttpMethod method, const std::string& root, HttpHandler* ha
 
 
 static string current_time_as_string() {
-  auto t = time(nullptr);
-  auto tm = localtime(&t);
-  auto s = string(asctime(tm));
-  StringTrimEnd(&s);
-  return s;
+  auto dt = DateTime::now();
+  return dt.to_string();
 };
 
 void HttpServer::SendResponse(const HttpResponse& r) {

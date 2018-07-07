@@ -195,5 +195,10 @@ std::string DateTime::to_string()  const {
 // static 
 DateTime DateTime::now() { return DateTime(system_clock::now()); }
 
+struct tm DateTime::to_tm() const {
+  auto tm = localtime(&t_);
+  return *tm;
+}
+
 }
 }

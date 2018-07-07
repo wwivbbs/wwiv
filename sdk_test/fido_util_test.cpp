@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -31,6 +32,7 @@
 using std::endl;
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk::fido;
 
@@ -42,11 +44,12 @@ protected:
 };
 
 TEST_F(FidoUtilTest, PacketName) {
-  time_t now = time(nullptr);
-  auto tm = localtime(&now);
-  string actual = packet_name(now);
+  auto dt = DateTime::now();
+  auto now = dt.to_time_t();
+  auto tm = dt.to_tm();
+  string actual = packet_name(dt);
 
-  string expected = StringPrintf("%2.2d%2.2d%2.2d%2.2d.pkt", tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec);
+  string expected = StringPrintf("%2.2d%2.2d%2.2d%2.2d.pkt", tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec);
   EXPECT_EQ(expected, actual);
 }
 

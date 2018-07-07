@@ -23,6 +23,7 @@
 #include <string>
 #include <vector>
 
+#include "core/datetime.h"
 #include "core/file.h"
 #include "sdk/config.h"
 #include "sdk/fido/fido_address.h"
@@ -33,7 +34,7 @@ namespace wwiv {
 namespace sdk {
 namespace fido {
 
-std::string packet_name(time_t now);
+std::string packet_name(wwiv::core::DateTime& now);
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, int dow, int bundle_number);
 std::string bundle_name(const wwiv::sdk::fido::FidoAddress& source, const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);
 std::string net_node_name(const wwiv::sdk::fido::FidoAddress& dest, const std::string& extension);

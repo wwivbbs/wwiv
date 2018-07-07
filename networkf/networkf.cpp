@@ -442,10 +442,8 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     LOG(ERROR) << "No archivers defined!";
     return false;
   }
-
-  auto now = time(nullptr);
-  auto tm = localtime(&now);
-  auto dow = tm->tm_wday;
+  auto now = DateTime::now();
+  auto dow = now.dow();
 
   const auto saved_dir = File::current_directory();
   ScopeExit at_exit([=] { File::set_current_directory(saved_dir); });
@@ -572,7 +570,7 @@ static bool iter_starts_with(const C& c, I& iter, const string& expected) {
 }
 
 static packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_address,
-                                                      const FidoAddress& dest, time_t now,
+                                                      const FidoAddress& dest, const DateTime& now,
                                                       const std::string& packet_password) {
 
   packet_header_2p_t header = {};
@@ -585,13 +583,13 @@ static packet_header_2p_t CreateType2PlusPacketHeader(const FidoAddress& from_ad
   header.dest_node = dest.node();
   header.dest_point = dest.point();
 
-  auto tm = localtime(&now);
-  header.year = static_cast<uint16_t>(tm->tm_year);
-  header.month = static_cast<uint16_t>(tm->tm_mon);
-  header.day = static_cast<uint16_t>(tm->tm_mday);
-  header.hour = static_cast<uint16_t>(tm->tm_hour);
-  header.minute = static_cast<uint16_t>(tm->tm_min);
-  header.second = static_cast<uint16_t>(tm->tm_sec);
+  auto tm = now.to_tm();
+  header.year = static_cast<uint16_t>(tm.tm_year);
+  header.month = static_cast<uint16_t>(tm.tm_mon);
+  header.day = static_cast<uint16_t>(tm.tm_mday);
+  header.hour = static_cast<uint16_t>(tm.tm_hour);
+  header.minute = static_cast<uint16_t>(tm.tm_min);
+  header.second = static_cast<uint16_t>(tm.tm_sec);
   header.baud = 33600;
   header.packet_ver = 2;
   header.product_code_high = 0x1d;
@@ -637,7 +635,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
   FidoAddress from_address(net.fido.fido_address);
   for (int tries = 0; tries < 10; tries++) {
-    time_t now = time(nullptr);
+    auto now = DateTime::now();
     File file(dirs.temp_outbound_dir(), packet_name(now));
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite |
                        File::modeBinary,
