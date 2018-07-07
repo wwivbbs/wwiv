@@ -9,6 +9,9 @@ Legend (starting with 5.3)
 - Feature removed
 * Change or cleanup
 
+WWIV 5.3.1 (2018)
+~~~~~~~~~~~~~~~~~
+* Fixes the dialog to create sysop account (bug #1127)
 
 What's New in WWIV 5.3 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
