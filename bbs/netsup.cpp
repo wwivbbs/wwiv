@@ -698,7 +698,7 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
         (nh->main_type == main_type_new_post)) {
       nh->length += subtype_or_author.size() + 1;
     }
-    const string packet_filename = StrCat(
+    const auto packet_filename = StrCat(
       a()->net_networks[nNetNumber].dir, "p1", a()->network_extension());
     File file(packet_filename);
     if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {

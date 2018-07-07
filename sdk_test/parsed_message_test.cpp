@@ -22,7 +22,7 @@
 #include "bbs/msgbase1.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/msgapi/parsed_message.h"
 
 using std::string;

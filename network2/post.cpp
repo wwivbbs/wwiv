@@ -52,7 +52,7 @@
 #include "sdk/config.h"
 #include "sdk/connect.h"
 #include "sdk/contact.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"

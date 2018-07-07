@@ -24,7 +24,7 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "networkb/net_util.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;

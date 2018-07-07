@@ -20,7 +20,7 @@
 #include "core_test/file_helper.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 
 #include <cstdint>
 #include <string>

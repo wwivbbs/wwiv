@@ -31,7 +31,7 @@
 #include "bbs/subacc.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/vardec.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 

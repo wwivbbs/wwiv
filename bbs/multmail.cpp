@@ -35,7 +35,7 @@
 #include "bbs/wconstants.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/status.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"

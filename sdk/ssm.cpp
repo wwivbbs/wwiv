@@ -25,7 +25,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "sdk/config.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/net.h"
 #include "sdk/vardec.h"

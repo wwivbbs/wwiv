@@ -27,7 +27,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"

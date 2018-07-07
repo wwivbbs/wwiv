@@ -34,7 +34,7 @@
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 
 using std::string;
 using namespace wwiv::sdk;

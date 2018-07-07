@@ -30,7 +30,7 @@
 #include "bbs/subacc.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"

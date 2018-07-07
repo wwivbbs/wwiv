@@ -25,7 +25,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;

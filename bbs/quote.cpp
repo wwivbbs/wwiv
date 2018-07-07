@@ -34,7 +34,7 @@
 #include "bbs/utility.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 

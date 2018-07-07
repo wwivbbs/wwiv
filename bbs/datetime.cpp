@@ -26,7 +26,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 
 using std::string;
 using namespace std::chrono;

@@ -27,7 +27,7 @@
 #include "core/strings.h"
 #include "networkb/net_util.h"
 #include "networkb/packets.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/net.h"
 #include "wwivutil/util.h"
 

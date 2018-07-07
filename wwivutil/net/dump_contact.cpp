@@ -28,7 +28,7 @@
 #include "sdk/config.h"
 #include "sdk/contact.h"
 #include "sdk/config.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/networks.h"
 
 using std::clog;

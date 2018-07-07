@@ -59,7 +59,7 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"

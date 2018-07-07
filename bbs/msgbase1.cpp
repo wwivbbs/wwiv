@@ -43,7 +43,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/ftn_msgdupe.h"
 #include "sdk/status.h"
 #include "sdk/msgapi/message_utils_wwiv.h"

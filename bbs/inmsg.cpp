@@ -50,7 +50,7 @@
 #include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivassert.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/names.h"
 #include "sdk/filenames.h"
 

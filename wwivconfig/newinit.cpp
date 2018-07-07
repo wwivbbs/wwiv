@@ -44,7 +44,7 @@
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/wwivinit.h"
 
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"

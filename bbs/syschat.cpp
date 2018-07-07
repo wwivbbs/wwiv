@@ -37,7 +37,7 @@
 #include "bbs/wconstants.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;

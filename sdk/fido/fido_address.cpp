@@ -32,7 +32,7 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;

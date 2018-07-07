@@ -8,7 +8,6 @@ set(COMMON_SOURCES
   config.cpp
   connect.cpp
   contact.cpp
-  datetime.cpp
   ftn_msgdupe.cpp
   fido/fido_address.cpp
   fido/fido_callout.cpp

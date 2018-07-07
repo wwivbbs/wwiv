@@ -35,7 +35,7 @@
 #include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"

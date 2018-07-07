@@ -27,7 +27,7 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include "sdk/msgapi/email_wwiv.h"

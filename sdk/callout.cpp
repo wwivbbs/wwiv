@@ -220,9 +220,9 @@ static std::string DumpCallout(const net_call_out_rec& n) {
   if (n.max_hr > 0) {
     ss << "max_hr:        " <<  static_cast<int>(n.max_hr) << std::endl;
   }
-  ss << "password:      \"" << n.session_password << "\"" << std::endl;
+  ss << "password:       \"" << n.session_password << "\"" << std::endl;
   if (n.times_per_day) {
-    ss << "times_per_day: " << static_cast<int>(n.times_per_day) << std::endl;
+    ss << "times_per_day:   " << static_cast<int>(n.times_per_day) << std::endl;
   }
   if (n.min_k) {
     ss << "min_k:         " << static_cast<int>(n.min_k) << std::endl;

@@ -33,7 +33,7 @@
 #include "core/stl.h"
 #include "core/textfile.h"
 #include "sdk/config.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/net.h"
 #include "sdk/names.h"

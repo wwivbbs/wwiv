@@ -5,6 +5,7 @@ set(COMMON_SOURCES
   crc32.cpp
   command_line.cpp
   connection.cpp
+  datetime.cpp
   file.cpp
   file_lock.cpp
   findfiles.cpp

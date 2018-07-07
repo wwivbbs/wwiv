@@ -53,7 +53,7 @@
 #include "sdk/connect.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include "sdk/subscribers.h"

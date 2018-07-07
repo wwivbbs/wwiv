@@ -41,7 +41,7 @@
 #include "core/version.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
 

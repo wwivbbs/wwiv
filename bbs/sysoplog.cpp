@@ -29,7 +29,7 @@
 #include "bbs/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 
 using std::string;
 using namespace wwiv::sdk;

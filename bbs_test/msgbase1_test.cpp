@@ -22,7 +22,7 @@
 #include "bbs/msgbase1.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 
 using std::string;
 using namespace wwiv::strings;

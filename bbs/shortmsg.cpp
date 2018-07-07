@@ -27,7 +27,7 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;;

@@ -30,7 +30,7 @@
 #include "core_test/file_helper.h"
 
 #include "gtest/gtest.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
 

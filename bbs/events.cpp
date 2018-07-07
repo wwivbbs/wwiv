@@ -42,7 +42,7 @@
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 using wwiv::bbs::InputMode;

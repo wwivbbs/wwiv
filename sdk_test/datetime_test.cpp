@@ -21,7 +21,7 @@
 #include <chrono>
 #include <ctime>
 
-#include "sdk/datetime.h"
+#include "core/datetime.h"
 
 using namespace std::chrono;
 using namespace wwiv::sdk;
