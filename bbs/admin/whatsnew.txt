@@ -25,7 +25,19 @@ What's New in WWIV 5.4 (2018)
 * Lots of small changed related to logging, the user visible one is
   that log files are not held open anymore, so you can rotate them
   while a binary is running (like networkb or wwivd)
-  
+! Removed the '#' modifer from callout.net. It didn't work and also
+  wasn't documented.
+* Fixed duplicate contact.net entries.
++ Added options --save and --backup to wwivutil net contact
+* Fixed networkc missed things to do, by adding a loop in networkc 
+  to catch everything to do.
+! remove INI variable RATIO. It was duplicated in wwivconfig and confusing.
+* Fixes the dialog to create sysop account
+* Fix error logged about failure to write 5.x header
++ Added wwivutil net subscribers command.
+* Fixed a bunch of networking issues. (gating and hosting related)
++ added wwivutil fido subscribers command
+
 
 What's New in WWIV 5.3 (2018)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
