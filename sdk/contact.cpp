@@ -202,7 +202,7 @@ void Contact::ensure_rec_for(const std::string& node) {
     ncr.address = node;
     wwiv::sdk::fido::FidoAddress address(node);
     ncr.ncr.systemnumber = address.node();
-    contacts_.emplace(node, ncr);
+    contacts_.emplace(node, NetworkContact(ncr));
   }
 }
 
