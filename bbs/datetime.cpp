@@ -23,10 +23,10 @@
 
 #include "bbs/datetime.h"
 #include "bbs/wconstants.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "core/datetime.h"
 
 using std::string;
 using namespace std::chrono;
@@ -38,7 +38,7 @@ using namespace wwiv::core;
 //
 
 void ToggleScrollLockKey() {
-#if defined( _WIN32 )
+#if defined(_WIN32)
   // Simulate a key press
   keybd_event(VK_SCROLL, 0x45, KEYEVENTF_EXTENDEDKEY | 0, 0);
   // Simulate a key release
@@ -51,7 +51,7 @@ void ToggleScrollLockKey() {
  * scoll lock LED), the sysop is assumed to be available.
  */
 bool sysop1() {
-#if defined (_WIN32)
+#if defined(_WIN32)
   return (GetKeyState(VK_SCROLL) & 0x1);
 #else
   return false;
@@ -78,9 +78,13 @@ std::string ctim(long d) {
   return wwiv::strings::StringPrintf("%2.2ld:%2.2ld:%2.2ld", hour, minute, second);
 }
 
+std::string ctim(std::chrono::duration<double> d) {
+  return ctim(static_cast<long>(std::chrono::duration_cast<seconds>(d).count()));
+}
+
 int years_old(int nMonth, int nDay, int nYear) {
   auto t = time_t_now();
-  struct tm * pTm = localtime(&t);
+  struct tm* pTm = localtime(&t);
   nYear = nYear - 1900;
   --nMonth; // Reduce by one because tm_mon is 0-11, not 1-12
 
@@ -111,7 +115,7 @@ int years_old(int nMonth, int nDay, int nYear) {
 
 system_clock::duration duration_since_midnight(system_clock::time_point now) {
   auto tnow = system_clock::to_time_t(now);
-  tm *date = std::localtime(&tnow);
+  tm* date = std::localtime(&tnow);
   date->tm_hour = 0;
   date->tm_min = 0;
   date->tm_sec = 0;
@@ -122,7 +126,7 @@ system_clock::duration duration_since_midnight(system_clock::time_point now) {
 
 system_clock::time_point minutes_after_midnight(int minutes) {
   const auto tnow = time_t_now();
-  tm *date = std::localtime(&tnow);
+  tm* date = std::localtime(&tnow);
   date->tm_hour = minutes / 60;
   date->tm_min = minutes % 60;
   date->tm_sec = 0;
@@ -135,4 +139,3 @@ int minutes_since_midnight() {
   auto d = duration_since_midnight(system_clock::now());
   return duration_cast<minutes>(d).count();
 }
-

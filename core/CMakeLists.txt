@@ -2,6 +2,7 @@
 include_directories(..)
 
 set(COMMON_SOURCES
+  clock.cpp
   crc32.cpp
   command_line.cpp
   connection.cpp

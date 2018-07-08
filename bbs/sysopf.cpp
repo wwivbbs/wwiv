@@ -873,14 +873,14 @@ void beginday(bool displayStatus) {
     bout << "  |#7* |#1Updating system activity...\r\n";
   }
 
-  zlogrec z;
+  zlogrec z{};
   strcpy(z.date, pStatus->GetLastDate());
-  z.active            = pStatus->GetMinutesActiveToday();
-  z.calls             = pStatus->GetNumCallsToday();
-  z.posts             = pStatus->GetNumLocalPosts();
-  z.email             = pStatus->GetNumEmailSentToday();
-  z.fback             = pStatus->GetNumFeedbackSentToday();
-  z.up                = pStatus->GetNumUploadsToday();
+  z.active = pStatus->GetMinutesActiveToday();
+  z.calls = pStatus->GetNumCallsToday();
+  z.posts = pStatus->GetNumLocalPosts();
+  z.email = pStatus->GetNumEmailSentToday();
+  z.fback = pStatus->GetNumFeedbackSentToday();
+  z.up = pStatus->GetNumUploadsToday();
   pStatus->NewDay();
 
   if (displayStatus) {
@@ -895,13 +895,13 @@ void beginday(bool displayStatus) {
   zlogrec z1;
   if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
     fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);
-    z1.date[0]  = '\0';
-    z1.active   = 0;
-    z1.calls    = 0;
-    z1.posts    = 0;
-    z1.email    = 0;
-    z1.fback    = 0;
-    z1.up       = 0;
+    z1.date[0] = '\0';
+    z1.active = 0;
+    z1.calls = 0;
+    z1.posts = 0;
+    z1.email = 0;
+    z1.fback = 0;
+    z1.up = 0;
     for (int i = 0; i < 97; i++) {
       fileZLog.Write(&z1, sizeof(zlogrec));
     }

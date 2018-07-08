@@ -825,7 +825,7 @@ void Application::InitializeBBS() {
     File::Remove(WWIV_NET_DAT);
   }
 
-  srand(static_cast<unsigned int>(time(nullptr)));
+  srand(static_cast<unsigned int>(time_t_now()));
   catsl();
 
   VLOG(1) << "Saving Instance information.";

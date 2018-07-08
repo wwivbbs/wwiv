@@ -24,30 +24,30 @@
 #include <string>
 #include <vector>
 
+#include "bbs/bbs.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/com.h"
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
-#include "bbs/bbs.h"
 #include "bbs/instmsg.h"
+#include "bbs/keycodes.h"
 #include "bbs/misccmd.h"
 #include "bbs/pause.h"
+#include "bbs/platform/platformfcns.h"
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/xfer.h"
-#include "bbs/platform/platformfcns.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/findfiles.h"
 #include "core/inifile.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/findfiles.h"
 #include "core/wwivport.h"
 #include "sdk/bbslist.h"
 #include "sdk/binkp.h"
@@ -76,7 +76,7 @@ static string CreateNetworkBinary(const std::string exe) {
 }
 
 struct CalloutEntry {
-  CalloutEntry(uint16_t o, int e): node(o), net(e) {}
+  CalloutEntry(uint16_t o, int e) : node(o), net(e) {}
   uint16_t node;
   int net;
 };
@@ -94,7 +94,7 @@ static void rename_pend(const string& directory, const string& filename) {
   }
 }
 
-static bool checkup2(const time_t tFileTime, const char *file_name) {
+static bool checkup2(const time_t tFileTime, const char* file_name) {
   File file(a()->network_directory(), file_name);
 
   if (file.Open(File::modeReadOnly)) {
@@ -129,16 +129,15 @@ static bool check_bbsdata() {
   const string network3 = StrCat(CreateNetworkBinary("network3"), " .", a()->net_num(), " Y");
   ExecuteExternalProgram(network3, EFLAG_NETPROG);
 
-  a()->status_manager()->Run([](WStatus& s) {
-    s.IncrementFileChangedFlag(WStatus::fileChangeNet);
-  });
+  a()->status_manager()->Run(
+      [](WStatus& s) { s.IncrementFileChangedFlag(WStatus::fileChangeNet); });
 
   return true;
 }
 
 static int cleanup_net1() {
   int ok, ok2, nl = 0, anynew = 0, i = 0;
-  bool abort;     
+  bool abort;
 
   a()->SetCleanNetNeeded(false);
 
@@ -194,7 +193,8 @@ static int cleanup_net1() {
             if (!File::Exists(a()->network_directory(), BBSDATA_NET)) {
               check_bbsdata();
             }
-            const string network1_cmd = StrCat(CreateNetworkBinary("network1"), " .", a()->net_num());
+            const string network1_cmd =
+                StrCat(CreateNetworkBinary("network1"), " .", a()->net_num());
             if (ExecuteExternalProgram(network1_cmd, EFLAG_NETPROG) < 0) {
               abort = true;
             } else {
@@ -241,7 +241,8 @@ void cleanup_net() {
   if (cleanup_net1() && a()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
     wfc_cls(a());
 
-    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI),
+                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       const string cmd1 = ini.value<string>("NET_CLEANUP_CMD1");
       if (!cmd1.empty()) {
@@ -268,11 +269,11 @@ void do_callout(uint16_t sn) {
     return;
   }
 
-  const NetworkContact* contact_rec = contact.contact_rec_for(sn);  // i2 ncn
+  const NetworkContact* contact_rec = contact.contact_rec_for(sn); // i2 ncn
   if (!contact_rec) {
     return;
   }
-  net_system_list_rec *csne = next_system(callout_rec->sysnum);
+  net_system_list_rec* csne = next_system(callout_rec->sysnum);
   if (!csne) {
     return;
   }
@@ -281,8 +282,10 @@ void do_callout(uint16_t sn) {
   if (strncmp(csne->phone, "000", 3)) {
     // TODO(rushfan): Figure out a better way to see if we need to call WINS exp.exe
     run_exp();
-    bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn << wwiv::endl;
-    const string regions_filename = StringPrintf("%s.%-3u", REGIONS_DAT, to_number<unsigned int>(csne->phone));
+    bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn
+         << wwiv::endl;
+    const string regions_filename =
+        StringPrintf("%s.%-3u", REGIONS_DAT, to_number<unsigned int>(csne->phone));
     string region = "Unknown Region";
     if (File::Exists(FilePath(a()->config()->datadir(), REGIONS_DAT), regions_filename)) {
       const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
@@ -292,9 +295,8 @@ void do_callout(uint16_t sn) {
     }
     bout << "|#7Sys located in: |#2" << region << wwiv::endl;
     if (contact_rec->bytes_waiting() > 0) {
-      bout << "|#7Amount pending: |#2"
-            << bytes_to_k(contact_rec->bytes_waiting())
-            << "k" << wwiv::endl;
+      bout << "|#7Amount pending: |#2" << bytes_to_k(contact_rec->bytes_waiting()) << "k"
+           << wwiv::endl;
     }
     bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
          << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
@@ -307,7 +309,7 @@ void do_callout(uint16_t sn) {
   }
 }
 
-static bool ok_to_call(const net_call_out_rec *con) {
+static bool ok_to_call(const net_call_out_rec* con) {
 
   bool ok = ((con->options & options_no_call) == 0) ? true : false;
   if (con->options & options_receive_only) {
@@ -360,7 +362,7 @@ class NodeAndWeight {
 public:
   NodeAndWeight() {}
   NodeAndWeight(int net_num, uint16_t node_num, uint64_t weight)
-    : net_num_(net_num), node_num_(node_num), weight_(weight) {}
+      : net_num_(net_num), node_num_(node_num), weight_(weight) {}
   int net_num_ = 0;
   uint16_t node_num_ = 0;
   uint64_t weight_ = 0;
@@ -371,22 +373,25 @@ public:
  * is ok to call and does not violate any constraints.
  */
 static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_call_out_rec& con) {
-  auto now = time(nullptr);
+  const auto dt = DateTime::now();
+  auto now = dt.to_system_clock();
   if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
     return false;
   }
   auto min_minutes = std::max<int>(con.call_anyway, 1);
-  time_t next_contact_time = ncn.lastcontact() + SECONDS_PER_MINUTE * min_minutes;
+  auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
+  auto last_contact_sent = DateTime::from_time_t(ncn.lastcontactsent()).to_system_clock();
+  auto next_contact_time = last_contact + minutes(min_minutes);
+
   if (now < next_contact_time) {
     return false;
   }
-  if ((con.options & options_once_per_day)
-    && std::abs(now - ncn.lastcontactsent()) <
-    (20L * SECONDS_PER_HOUR / con.times_per_day)) {
+  auto daily_attempt_time = hours(20) / con.times_per_day;
+  if ((con.options & options_once_per_day) && (now - last_contact_sent) < daily_attempt_time) {
     return false;
   }
-  if ((bytes_to_k(ncn.bytes_waiting()) < con.min_k)
-    && (std::abs(now - ncn.lastcontact()) < SECONDS_PER_DAY)) {
+  if ((bytes_to_k(ncn.bytes_waiting()) < con.min_k) &&
+      (now - last_contact_sent) < hours(24)) {
     return false;
   }
   return true;
@@ -437,18 +442,15 @@ bool attempt_callout() {
 
         if (ncr->bytes_waiting() == 0L) {
           if (to_call.at(nn).weight_ < time_weight) {
-            to_call[nn] = NodeAndWeight(
-              nn, ncor->sysnum, time_weight);
+            to_call[nn] = NodeAndWeight(nn, ncor->sysnum, time_weight);
           }
         } else {
           uint64_t bytes_weight = ncr->bytes_waiting() * 60 + time_weight;
           if (to_call.at(nn).weight_ < bytes_weight) {
-            to_call[nn] = NodeAndWeight(
-              nn, ncor->sysnum, bytes_weight);
+            to_call[nn] = NodeAndWeight(nn, ncor->sysnum, bytes_weight);
           }
         }
       }
-
     }
   }
 
@@ -476,15 +478,24 @@ void print_pending_list() {
     return;
   }
 
-  time_t tCurrentTime = time(nullptr);
+  auto current_time = DateTime::now();
 
   bout.nl(2);
   bout << "                           |#3-> |#9Network Status |#3<-\r\n";
   bout.nl();
-  
-  bout << "|#7\xDA\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
-  bout << "|#7\xB3 |#1Ok? |#7\xB3 |#1Network  |#7\xB3 |#1 Node |#7\xB3  |#1 Sent  |#7\xB3|#1Received |#7\xB3|#1Ready |#7\xB3|#1Fails|#7\xB3  |#1Elapsed  |#7\xB3|#7\r\n";
-  bout << "|#7\xC3\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
+
+  bout << "|#"
+          "7\xDA\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4"
+          "\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
+          "\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4"
+          "\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
+  bout << "|#7\xB3 |#1Ok? |#7\xB3 |#1Network  |#7\xB3 |#1 Node |#7\xB3  |#1 Sent  "
+          "|#7\xB3|#1Received |#7\xB3|#1Ready |#7\xB3|#1Fails|#7\xB3  |#1Elapsed  |#7\xB3|#7\r\n";
+  bout << "|#"
+          "7\xC3\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4"
+          "\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
+          "\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4"
+          "\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
 
   int nNetNumber;
   for (nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
@@ -518,12 +529,9 @@ void print_pending_list() {
 
       int32_t m = 0, h = 0;
       if (r->lastcontactsent()) {
-        time_t tLastContactTime = tCurrentTime - r->lastcontactsent();
-        int32_t se = tLastContactTime % 60;
-        tLastContactTime = (tLastContactTime - se) / 60;
-        m = static_cast<int32_t>(tLastContactTime % 60);
-        h = static_cast<int32_t>(tLastContactTime / 60);
-        sprintf(s1, "|#2%02d:%02d:%02d", h, m, se);
+        auto then = DateTime::from_time_t(r->lastcontactsent());
+        auto diff = current_time.to_system_clock() - then.to_system_clock();
+        to_char_array(s1, ctim(diff));
       } else {
         strcpy(s1, "|#6     -    ");
       }
@@ -540,8 +548,8 @@ void print_pending_list() {
       }
 
       bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
-          "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#7\r\n",
-          s2, a()->network_name(), r->systemnumber(), s3, s4, s5, r->numfails(), s1);
+                   "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#7\r\n",
+                   s2, a()->network_name(), r->systemnumber(), s3, s4, s5, r->numfails(), s1);
       if (!a()->user()->HasPause() && ((lines++) == 20)) {
         pausescr();
         lines = 0;
@@ -561,9 +569,10 @@ void print_pending_list() {
       auto lFileSize = deadNetFile.length();
       deadNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
-      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s "
+      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
+                   "|#2------- |#7\xB3|#2%5s "
                    "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
-          a()->network_name(), s3);
+                   a()->network_name(), s3);
     }
   }
 
@@ -580,12 +589,17 @@ void print_pending_list() {
       checkNetFile.Close();
       sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
       strcat(s3, "k");
-      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 |#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
+      bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
+                   "|#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
                    a()->network_name(), s3);
     }
   }
 
-  bout << "|#7\xc0\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
+  bout << "|#"
+          "7\xc0\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4"
+          "\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC4"
+          "\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC1\xC4\xC4\xC4\xC4\xC4\xC4"
+          "\xC4\xC4\xC4\xC4\xC4\xD9\r\n";
   bout.nl();
   a()->user()->SetStatus(ss);
   if (!a()->IsUserOnline() && bout.lines_listed()) {
@@ -593,8 +607,8 @@ void print_pending_list() {
   }
 }
 
-void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::string& subtype_or_author,
-  vector<uint16_t> list, int nFromNetworkNumber) {
+void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
+              const std::string& subtype_or_author, vector<uint16_t> list, int nFromNetworkNumber) {
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
@@ -603,10 +617,10 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
     return;
   }
 
-  char *pszOriginalText = messageText;
+  char* pszOriginalText = messageText;
   messageText += strlen(pszOriginalText) + 1;
   unsigned short ntl = static_cast<uint16_t>(nh->length - strlen(pszOriginalText) - 1);
-  char *ss = strchr(messageText, '\r');
+  char* ss = strchr(messageText, '\r');
   if (ss && (ss - messageText < 200) && (ss - messageText < ntl)) {
     strncpy(nm, messageText, ss - messageText);
     nm[ss - messageText] = 0;
@@ -692,14 +706,12 @@ void gate_msg(net_header_rec* nh, char *messageText, int nNetNumber, const std::
       nh->fromuser = 0;
     }
 
-
     nh->length += strlen(newname);
-    if ((nh->main_type == main_type_email_name) ||
-        (nh->main_type == main_type_new_post)) {
+    if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
       nh->length += subtype_or_author.size() + 1;
     }
-    const auto packet_filename = StrCat(
-      a()->net_networks[nNetNumber].dir, "p1", a()->network_extension());
+    const auto packet_filename =
+        StrCat(a()->net_networks[nNetNumber].dir, "p1", a()->network_extension());
     File file(packet_filename);
     if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       file.Seek(0L, File::Whence::end);
@@ -735,14 +747,19 @@ static void print_call(uint16_t sn, int nNetNumber) {
   Contact contact(a()->current_net(), false);
   Binkp binkp(a()->current_net().dir);
 
-  const NetworkContact *ncn = contact.contact_rec_for(sn);
-  if (!ncn) { return; }
-  net_system_list_rec *csne = next_system(sn);
-  if (!csne) { return; }
+  const NetworkContact* ncn = contact.contact_rec_for(sn);
+  if (!ncn) {
+    return;
+  }
+  net_system_list_rec* csne = next_system(sn);
+  if (!csne) {
+    return;
+  }
 
   if (!got_color) {
     got_color = 1;
-    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI),
+                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
     }
@@ -848,7 +865,8 @@ static std::pair<uint16_t, int> ansicallout() {
     color2 = 30;
     color3 = 3;
     color4 = 14;
-    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI),
+                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       callout_ansi = ini.value<bool>("CALLOUT_ANSI");
       color1 = ini.value("CALLOUT_COLOR", color1);
@@ -865,7 +883,6 @@ static std::pair<uint16_t, int> ansicallout() {
     uint16_t sn = input_number<uint16_t>(0, 0, 32767);
     a()->localIO()->SetCursor(LocalIO::cursorNormal);
     return std::make_pair(sn, -1);
-
   }
   int pos = 0, sn = 0, snn = 0;
   std::vector<CalloutEntry> entries;
@@ -877,7 +894,8 @@ static std::pair<uint16_t, int> ansicallout() {
     const auto& nodemap = callout.callout_config();
     for (const auto& p : nodemap) {
       auto con = contact.contact_rec_for(p.first);
-      if (!con) continue;
+      if (!con)
+        continue;
       if ((!(p.second.options & options_hide_pend)) && valid_system(p.second.sysnum)) {
         entries.emplace_back(con->systemnumber(), nNetNumber);
       }
@@ -897,13 +915,13 @@ static std::pair<uint16_t, int> ansicallout() {
   const auto header = StrCat("\xC3", std::string(71, '\xC4'), "\xB4");
   a()->localIO()->PutsXYA(3, 4, color1, header);
   a()->localIO()->MakeLocalWindow(3, 14, 73, 7);
-  a()->localIO()->PutsXYA(5, 3,   color3, "Network:");
-  a()->localIO()->PutsXYA(31, 3,  color3, "BBS Name:");
-  a()->localIO()->PutsXYA(5, 15,  color3, "# Connections   :");
-  a()->localIO()->PutsXYA(5, 16,  color3, "First Contact   :");
-  a()->localIO()->PutsXYA(5, 17,  color3, "KB Received     :");
-  a()->localIO()->PutsXYA(5, 18,  color3, "KB Sent         :");
-  a()->localIO()->PutsXYA(5, 19,  color3, "Address         :");
+  a()->localIO()->PutsXYA(5, 3, color3, "Network:");
+  a()->localIO()->PutsXYA(31, 3, color3, "BBS Name:");
+  a()->localIO()->PutsXYA(5, 15, color3, "# Connections   :");
+  a()->localIO()->PutsXYA(5, 16, color3, "First Contact   :");
+  a()->localIO()->PutsXYA(5, 17, color3, "KB Received     :");
+  a()->localIO()->PutsXYA(5, 18, color3, "KB Sent         :");
+  a()->localIO()->PutsXYA(5, 19, color3, "Address         :");
   a()->localIO()->PutsXYA(40, 15, color3, "Last Attempt    :");
   a()->localIO()->PutsXYA(40, 16, color3, "Last Contact    :");
   a()->localIO()->PutsXYA(40, 17, color3, "KB Waiting      :");
@@ -936,7 +954,7 @@ static std::pair<uint16_t, int> ansicallout() {
     case 0:
       ch = to_upper_case<char>(static_cast<char>(a()->localIO()->GetChar()));
       switch (ch) {
-      case RARROW:                        // right arrow
+      case RARROW: // right arrow
         if ((pos < size_int(entries) - 1) && (x < 63)) {
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos++;
@@ -945,7 +963,7 @@ static std::pair<uint16_t, int> ansicallout() {
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
-      case LARROW:                        // left arrow
+      case LARROW: // left arrow
         if (x > 0) {
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos--;
@@ -954,7 +972,7 @@ static std::pair<uint16_t, int> ansicallout() {
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
-      case UPARROW:                        // up arrow
+      case UPARROW: // up arrow
         if (y > 0) {
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos -= 10;
@@ -969,7 +987,7 @@ static std::pair<uint16_t, int> ansicallout() {
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
-      case DNARROW:                        // down arrow
+      case DNARROW: // down arrow
         if ((y < 5) && (pos + 10 < size_int(entries))) {
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos += 10;
@@ -986,7 +1004,7 @@ static std::pair<uint16_t, int> ansicallout() {
         a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
         print_call(entries[pos].node, entries[pos].net);
         break;
-      case HOME:                        // home
+      case HOME: // home
         if (pos > 0) {
           x = 0;
           y = 0;
@@ -996,7 +1014,7 @@ static std::pair<uint16_t, int> ansicallout() {
           a()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
           print_call(entries[pos].node, entries[pos].net);
         }
-      case PAGEUP:                        // page up
+      case PAGEUP: // page up
         if (y > 0) {
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos -= 10 * y;
@@ -1016,7 +1034,7 @@ static std::pair<uint16_t, int> ansicallout() {
           print_call(entries[pos].node, entries[pos].net);
         }
         break;
-      case PAGEDN:                        // page down
+      case PAGEDN: // page down
         if (y < 5) {
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
           pos += 10 * (5 - y);
@@ -1097,17 +1115,13 @@ void run_exp() {
   }
   set_net_num(internet_net_num);
 
-  const string exp_command = StringPrintf("exp s32767.net %s %d %s %s %s", 
-      a()->network_directory().c_str(), a()->current_net().sysnum,
-      a()->internetEmailName.c_str(), 
-      a()->internetEmailDomain.c_str(), 
-      a()->network_name());
+  const string exp_command = StringPrintf(
+      "exp s32767.net %s %d %s %s %s", a()->network_directory().c_str(), a()->current_net().sysnum,
+      a()->internetEmailName.c_str(), a()->internetEmailDomain.c_str(), a()->network_name());
   ExecuteExternalProgram(exp_command, EFLAG_NETPROG);
 
   set_net_num(nOldNetworkNumber);
   a()->localIO()->Cls();
 }
 
-std::chrono::steady_clock::time_point last_network_attempt() {
-  return last_time_c_;
-}
+std::chrono::steady_clock::time_point last_network_attempt() { return last_time_c_; }

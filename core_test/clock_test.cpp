@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                              WWIV Version 5.x                          */
-/*                Copyright (C)2018, WWIV Software Services               */
+/*               Copyright (C)2014-2017, WWIV Software Services           */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,31 +16,26 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/fake_clock.h"
-
-#include <chrono>
-#include <cstring>
-#include <iomanip>
-#include <ctime>
-#include <string>
-#include <sstream>
-
+#include "gtest/gtest.h"
+#include "core/clock.h"
 #include "core/datetime.h"
-#include "core/strings.h"
 
+#include <string>
+
+using std::map;
 using std::string;
+using std::vector;
 
-using namespace std::chrono;
-using namespace wwiv::strings;
+using namespace wwiv::core;
 
-namespace wwiv {
-namespace core {
+TEST(Clock, Simple) { 
+  auto start = DateTime::now(); 
 
-DateTime FakeClock::Now() noexcept { 
-  return date_time_;
-}
+  SystemClock c{};
+  auto mid = c.Now();
 
-void FakeClock::tick(std::chrono::duration<double> inc) { date_time_ += inc; }
+  auto end = DateTime::now();
 
-}
+  EXPECT_GE(mid, start);
+  EXPECT_LE(mid, end);
 }

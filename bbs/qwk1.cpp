@@ -60,6 +60,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 #include "bbs/wconstants.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/stl.h"
@@ -76,6 +77,7 @@ using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
 
+using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -525,10 +527,9 @@ void qwk_email_text(char *text, char *title, char *to) {
     }
 
     msg.storage_type = EMAIL_STORAGE;
-    time_t thetime = time(nullptr);
 
-    const string name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
-    qwk_inmsg(text, &msg, "email", name.c_str(), thetime);
+    const auto name = a()->names()->UserName(a()->usernum, a()->current_net().sysnum);
+    qwk_inmsg(text, &msg, "email", name.c_str(), DateTime::now());
 
     if (msg.stored_as == 0xffffffff) {
       return;
@@ -551,7 +552,8 @@ void qwk_email_text(char *text, char *title, char *to) {
   }
 }
 
-void qwk_inmsg(const char *text, messagerec *m1, const char *aux, const char *name, time_t thetime) {
+void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* name,
+               const wwiv::core::DateTime& dt) {
   char s[181];
   wwiv::core::ScopeExit  at_exit([=]() {
     a()->charbufferpointer_ = 0;
@@ -562,9 +564,7 @@ void qwk_inmsg(const char *text, messagerec *m1, const char *aux, const char *na
   std::ostringstream ss;
   ss << name << "\r\n";
 
-  strcpy(s, ctime(&thetime));
-  s[strlen(s) - 1] = 0;
-  ss << s << "\r\n";
+  ss << dt.to_string() << "\r\n";
   ss << text << "\r\n";
 
   std::string message_text = ss.str();
@@ -849,8 +849,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     strcpy(user_name, name.c_str());
   }
 
-  time_t thetime = time(nullptr);
-  qwk_inmsg(text, &m, a()->current_sub().filename.c_str(), user_name, thetime);
+  qwk_inmsg(text, &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
 
   if (m.stored_as != 0xffffffff) {
     while (!hangup) {
@@ -886,8 +885,7 @@ void qwk_post_text(char *text, char *title, int sub) {
         p.qscan = s.IncrementQScanPointer();
       });
     }
-    time_t now = time(nullptr);
-    p.daten = static_cast<uint32_t>(now);
+    p.daten = daten_t_now();
     if (a()->user()->data.restrict & restrict_validate) {
       p.status = status_unvalidated;
     } else {

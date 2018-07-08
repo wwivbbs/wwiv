@@ -37,12 +37,14 @@
 #include <sys/stat.h>
 #endif
 
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 // C++ is still lame sometimes.
@@ -85,8 +87,7 @@ string FileHelper::CreateTempDir(const string base) {
     const string temp_path = GetTestTempDir();
     string template_ = StrCat(temp_path, "/fileXXXXXX");
 #ifdef _WIN32
-    time_t now = time(nullptr);
-    const auto fn_template = StringPrintf("%s.%lx", base.c_str(), now);
+    const auto fn_template = StrCat(base, ".", time_t_now());
     const auto local_dir_template = wwiv::core::FilePath(temp_path, fn_template);
     if (CreateDirectory(local_dir_template.c_str(), nullptr)) {
       return local_dir_template;

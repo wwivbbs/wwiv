@@ -16,9 +16,10 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_CORE_CLOCK_H__
-#define __INCLUDED_CORE_CLOCK_H__
+#ifndef __INCLUDED_CORE_FAKE_CLOCK_H__
+#define __INCLUDED_CORE_FAKE_CLOCK_H__
 
+#include "core/clock.h"
 #include "core/datetime.h"
 
 #include <chrono>
@@ -30,15 +31,15 @@ namespace core {
 
 class FakeClock : public Clock {
 public:
-  FakeClock() : date_time_(date_time_) {}
-  virtual FakeClock(const DateTime& date_time) {}
+  explicit FakeClock(const DateTime& dt) : date_time_(dt) {}
   virtual DateTime Now() noexcept override;
+  void tick(std::chrono::duration<double> inc);
 
-private
+private:
   DateTime date_time_;
 };
 
 } // namespace core
 } // namespace wwiv
 
-#endif // __INCLUDED_CORE_CLOCK_H__
+#endif // __INCLUDED_CORE_FAKE_CLOCK_H__

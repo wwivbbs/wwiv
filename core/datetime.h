@@ -60,18 +60,18 @@ public:
 
   static DateTime now();
 
-  int hour() const { return tm_.tm_hour; }
-  int minute() const { return tm_.tm_min; }
-  int second() const { return tm_.tm_sec; }
+  int hour() const noexcept { return tm_.tm_hour; }
+  int minute() const noexcept { return tm_.tm_min; }
+  int second() const noexcept { return tm_.tm_sec; }
 
   /** Month starting at 1 for this DateTime */
-  int month() const { return tm_.tm_mon + 1; }
+  int month() const noexcept { return tm_.tm_mon + 1; }
   /** Day starting at 1 for this DateTime */
-  int day() const { return tm_.tm_mday; }
+  int day() const noexcept { return tm_.tm_mday; }
   /** Year starting at 0 for this DateTime */
-  int year() const { return tm_.tm_year + 1900; }
+  int year() const noexcept { return tm_.tm_year + 1900; }
 
-  int dow() const { return tm_.tm_wday; }
+  int dow() const noexcept { return tm_.tm_wday; }
 
   /** Prints a date using the strftime format specified.  */
   std::string to_string(const std::string& format) const;
@@ -89,12 +89,44 @@ public:
   /** Returns this Datetime as a time_point in the std::chrono::system_clock */
   std::chrono::system_clock::time_point to_system_clock() const noexcept;
 
+  DateTime operator+(std::chrono::duration<double> d) {
+    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+    return DateTime::from_time_t(to_time_t() + static_cast<time_t>(du.count()));
+  }
+  DateTime& operator+=(std::chrono::duration<double> d) {
+    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+    t_ += static_cast<time_t>(du.count());
+    update_tm();
+    return *this;
+  }
+  DateTime operator-(std::chrono::duration<double> d) {
+    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+    return DateTime::from_time_t(to_time_t() + static_cast<time_t>(du.count()));
+  }
+  DateTime& operator-=(std::chrono::duration<double> d) {
+    auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
+    t_ -= static_cast<time_t>(du.count());
+    update_tm();
+    return *this;
+  }
+  friend bool operator<(const DateTime& lhs, const DateTime& rhs) { 
+    if (lhs.t_ == rhs.t_) {
+      return lhs.millis_ < rhs.millis_;
+    } else {
+      return lhs.t_ < rhs.t_;
+    }
+  }
+  friend bool operator>(const DateTime& lhs, const DateTime& rhs) { return rhs < lhs; }
+  friend bool operator<=(const DateTime& lhs, const DateTime& rhs) { return !(lhs > rhs); }
+  friend bool operator>=(const DateTime& lhs, const DateTime& rhs) { return !(lhs < rhs); }
+
 private:
   DateTime(std::chrono::system_clock::time_point t);
   DateTime(time_t t);
+  /** Updates the tm_ structure, should be called anytime the time_t value is changed */
+  void update_tm() noexcept;
 
   time_t t_;
-  std::chrono::system_clock::time_point tp_;
   tm tm_ {};
   int millis_;
 };

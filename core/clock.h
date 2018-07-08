@@ -32,7 +32,7 @@ class Clock {
 public:
   Clock() {}
   virtual DateTime Now() noexcept = 0;
-  virtual ~Clock();
+  virtual ~Clock() {}
 };
 
 class SystemClock : public Clock {

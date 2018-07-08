@@ -40,7 +40,7 @@ time_t time_t_now() {
 }
 
 daten_t daten_t_now() {
-  return time_t_to_daten(time(nullptr));
+  return time_t_to_daten(time_t_now());
 }
 
 // This kludge will get us through 2029 and should not interfere anywhere else.
@@ -150,27 +150,18 @@ std::string to_string(std::chrono::duration<double> dd) {
   return os.str();
 };
 
-DateTime::DateTime(std::chrono::system_clock::time_point t) : t_(std::chrono::system_clock::to_time_t(t)) {
-#ifdef WIN32
-  localtime_s(&tm_, &t_);
-#else
-  localtime_r(&t_, &tm_);
-#endif
-  millis_ = static_cast<int>(
-      std::chrono::duration_cast<std::chrono::milliseconds>(t.time_since_epoch()).count() % 1000);
+DateTime::DateTime(system_clock::time_point t)
+    : t_(system_clock::to_time_t(t)),
+      millis_(static_cast<int>(duration_cast<milliseconds>(t.time_since_epoch()).count() % 1000)) {
+  update_tm();
 }
 
 DateTime::DateTime(time_t t)
-    : t_(t) {
-#ifdef WIN32
-  localtime_s(&tm_, &t_);
-#else
-  localtime_r(&t_, &tm_);
-#endif
-  millis_ = 0;
+    : t_(t), millis_(0) {
+  update_tm();
 }
 
-  std::string DateTime::to_string(const std::string& format)  const {
+std::string DateTime::to_string(const std::string& format)  const {
   return put_time(&tm_, format);
 }
 
@@ -184,9 +175,14 @@ std::string DateTime::to_string()  const {
 DateTime DateTime::now() { return DateTime(system_clock::now()); }
 
 struct tm DateTime::to_tm() const noexcept {
-  auto tm = localtime(&t_);
-  return *tm;
+  return tm_;
 }
+
+void DateTime::update_tm() noexcept {
+  auto tm = localtime(&t_);
+  tm_ = *tm;
+}
+
 
 std::chrono::system_clock::time_point DateTime::to_system_clock() const noexcept {
   return std::chrono::system_clock::from_time_t(t_);

@@ -6,9 +6,11 @@ set(fixture_sources
 )
 
 set(test_sources
+  clock_test.cpp
   crc32_test.cpp
   command_line_test.cpp
   datafile_test.cpp
+  fake_clock_test.cpp
   findfiles_test.cpp
   file_test.cpp
   inifile_test.cpp

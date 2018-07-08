@@ -22,6 +22,7 @@
 #include <ctime>
 #include <string>
 
+#include "core/datetime.h"
 #include "sdk/vardec.h"
 #include "printfile.h"
 
@@ -156,7 +157,7 @@ std::string qwk_which_protocol();
 void upload_reply_packet();
 void ready_reply_packet(const char *packet_name, const char *msg_name);
 void qwk_email_text(char *text, char *title, char *to);
-void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, time_t thetime);
+void qwk_inmsg(const char *text,messagerec *m1, const char *aux, const char *name, const wwiv::core::DateTime& dt);
 void process_reply_dat(char *name);
 void qwk_post_text(char *text, char *title, int sub);
 int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub);
