@@ -126,7 +126,7 @@ void frequent_init() {
   okskey = true;
   smwcheck = false;
   use_workspace = false;
-  extratimecall = 0;
+  a()->set_extratimecall(seconds(0));
   a()->using_modem = 0;
   File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
   File::Remove(a()->dsz_logfile_name_);
@@ -174,7 +174,7 @@ long nsl() {
 
     auto tpl = minutes(getslrec(a()->GetEffectiveSl()).time_per_logon);
     auto tpd = minutes(getslrec(a()->GetEffectiveSl()).time_per_day);
-    auto extra_time = seconds(std::lround(a()->user()->GetExtraTime()) + extratimecall);
+    auto extra_time = duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
     auto tlc = tpl - tot + extra_time;
     auto tlt = tpd - tot - 
       seconds(std::lround(a()->user()->GetTimeOnToday() + a()->user()->GetExtraTime()));

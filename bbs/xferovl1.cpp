@@ -987,11 +987,7 @@ void SetNewFileScanDate() {
   bool ok = true;
 
   bout.nl();
-  time_t t = nscandate;
-  struct tm *pTm = localtime(&t);
-
-  bout.bprintf("|#9Current limiting date: |#2%02d/%02d/%02d\r\n", pTm->tm_mon + 1, pTm->tm_mday,
-                                    (pTm->tm_year % 100));
+  bout << "|#9Current limiting date: |#2" << daten_to_mmddyy(nscandate) << "\r\n";
   bout.nl();
   bout << "|#9Enter new limiting date in the following format: \r\n";
   bout << "|#1 MM/DD/YY\r\n|#7:";

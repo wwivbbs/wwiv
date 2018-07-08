@@ -26,6 +26,7 @@
 
 #include "core/strings.h"
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
@@ -152,21 +153,21 @@ void user_editor(const wwiv::sdk::Config& config) {
         if (s[2] != '/' || s[5] != '/') {
           return;
         }
-        time_t t = time(nullptr);
-        struct tm * pTm = localtime(&t);
-        int current_year = pTm->tm_year+1900;
-        uint8_t month = to_number<uint8_t>(s.substr(0, 2));
+        auto month = to_number<uint8_t>(s.substr(0, 2));
         if (month < 1 || month > 12) { return; }
-        uint8_t day = to_number<uint8_t>(s.substr(3, 2));
+        
+        auto day = to_number<uint8_t>(s.substr(3, 2));
         if (day < 1 || day > 31) { return; }
-        int year = to_number<int>(s.substr(6, 4));
+
+        auto year = to_number<int>(s.substr(6, 4));
+        auto dt = DateTime::now();
+        auto current_year = dt.year();
         if (year < 1900 || year > current_year) { return ; }
 
         user.month = month;
         user.day = day;
         user.year = static_cast<uint8_t>(year - 1900);
       });
-
 
   EditItems items{};
   items.add_items({

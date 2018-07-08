@@ -64,8 +64,11 @@ public:
   int minute() const { return tm_.tm_min; }
   int second() const { return tm_.tm_sec; }
 
+  /** Month starting at 1 for this DateTime */
   int month() const { return tm_.tm_mon + 1; }
+  /** Day starting at 1 for this DateTime */
   int day() const { return tm_.tm_mday; }
+  /** Year starting at 0 for this DateTime */
   int year() const { return tm_.tm_year + 1900; }
 
   int dow() const { return tm_.tm_wday; }
@@ -73,12 +76,18 @@ public:
   /** Prints a date using the strftime format specified.  */
   std::string to_string(const std::string& format) const;
 
-  /** Prints a Date using asctime */
+  /** Prints a Date using asctime but without the trailing linefeed. */
   std::string to_string() const;
 
-  time_t to_time_t() const { return t_; }
-  daten_t to_daten_t() const { return time_t_to_daten(t_); }
-  struct tm to_tm() const;
+  /** Returns this Datetime as a UNIX time_t */
+  time_t to_time_t() const noexcept { return t_; }
+  /** Returns this Datetime as a WWIV BBS daten_t */
+  daten_t to_daten_t() const noexcept { return time_t_to_daten(t_); }
+  /** Returns this Datetime as a POSIX tm structure. */
+  struct tm to_tm() const noexcept;
+
+  /** Returns this Datetime as a time_point in the std::chrono::system_clock */
+  std::chrono::system_clock::time_point to_system_clock() const noexcept;
 
 private:
   DateTime(std::chrono::system_clock::time_point t);

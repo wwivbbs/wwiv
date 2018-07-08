@@ -478,8 +478,7 @@ void time_bank() {
         }
         a()->user()->SetTimeBankMinutes(a()->user()->GetTimeBankMinutes() +
             static_cast<uint16_t>(i));
-        a()->user()->SetExtraTime(a()->user()->GetExtraTime() - 
-            static_cast<float>(i * SECONDS_PER_MINUTE));
+        a()->user()->add_extratime(std::chrono::minutes(i));
         a()->tleft(false);
       }
       break;
@@ -498,8 +497,7 @@ void time_bank() {
         }
         a()->user()->SetTimeBankMinutes(a()->user()->GetTimeBankMinutes() -
             static_cast<uint16_t>(i));
-        a()->user()->SetExtraTime(a()->user()->GetExtraTime() + static_cast<float>
-            (i * SECONDS_PER_MINUTE));
+        a()->user()->add_extratime(std::chrono::minutes(i));
         a()->tleft(false);
       }
       break;

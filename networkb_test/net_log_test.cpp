@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
 #include "gtest/gtest.h"
+#include "core/datetime.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/net_log.h"
@@ -30,20 +31,17 @@ using std::endl;
 using std::string;
 using std::thread;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
-
 
 class NetworkLogTest : public testing::Test {
 public:
   NetworkLogTest() {
     helper_.Mkdir("gfiles");
-    now_ = time(nullptr);
-
-    struct tm* local = localtime(&now_);
-    now_string_ = StringPrintf("%02d/%02d/%02d %02d:%02d:%02d",
-      local->tm_mon + 1, local->tm_mday, local->tm_year % 100,
-      local->tm_hour, local->tm_min, local->tm_sec);
+    auto dt = DateTime::now();
+    now_ = dt.to_time_t();
+    now_string_ = dt.to_string("%m/%d/%y %H:%M%S");
   }
 protected:
   FileHelper helper_;

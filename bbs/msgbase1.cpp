@@ -54,6 +54,13 @@
 
 using std::string;
 using std::unique_ptr;
+using std::chrono::duration;
+using std::chrono::duration_cast;
+using std::chrono::system_clock;
+using std::chrono::seconds;
+using std::chrono::minutes;
+
+
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
@@ -200,7 +207,7 @@ void post(const PostData& post_data) {
       bout << ".\r\n\n";
     }
   }
-  auto start_time = time(nullptr);
+  const auto start_time = DateTime::now().to_system_clock();
 
   write_inst(INST_LOC_POST, a()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
@@ -304,17 +311,13 @@ void post(const PostData& post_data) {
   });
 
   if (a()->HasConfigFlag(OP_FLAGS_POSTTIME_COMPENSATE)) {
-    time_t lEndTime = time(nullptr);
-    if (start_time > lEndTime) {
-      lEndTime += SECONDS_PER_DAY;
+    const auto end_time = DateTime::now().to_system_clock();
+    auto diff_time = end_time - start_time;
+    const auto allowed_time_per_login = getslrec(a()->GetEffectiveSl()).time_per_logon;
+    if (duration_cast<minutes>(diff_time).count() > allowed_time_per_login) {
+      diff_time = minutes(allowed_time_per_login);
     }
-    start_time = static_cast<long>(lEndTime - start_time);
-    if ((start_time / MINUTES_PER_HOUR) > getslrec(a()->GetEffectiveSl()).time_per_logon) {
-      start_time = static_cast<long>(static_cast<float>(getslrec(a()->GetEffectiveSl()).time_per_logon *
-        MINUTES_PER_HOUR));
-    }
-    a()->user()->SetExtraTime(a()->user()->GetExtraTime() + static_cast<float>
-      (start_time));
+    a()->user()->add_extratime(diff_time);
   }
   close_sub();
 

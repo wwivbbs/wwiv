@@ -18,18 +18,18 @@
 /**************************************************************************/
 #include "sdk/user.h"
 
+#include "core/datetime.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "sdk/filenames.h"
+#include "sdk/names.h"
+#include "sdk/wwivcolors.h"
 #include <chrono>
 #include <cstdio>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <iostream>
 #include <memory>
-#include "core/strings.h"
-#include "core/file.h"
-#include "sdk/names.h"
-#include "core/datetime.h"
-#include "sdk/filenames.h"
-#include "sdk/wwivcolors.h"
 
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -38,19 +38,13 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
-User::User() {
-  ZeroUserData();
-}
+User::User() { ZeroUserData(); }
 
 User::~User() {}
 
-User::User(const User& w) {
-  memcpy(&data, &w.data, sizeof(userrec));
-}
+User::User(const User& w) { memcpy(&data, &w.data, sizeof(userrec)); }
 
-User::User(const userrec& rhs) {
-  memcpy(&data, &rhs, sizeof(userrec));
-}
+User::User(const userrec& rhs) { memcpy(&data, &rhs, sizeof(userrec)); }
 
 User& User::operator=(const User& rhs) {
   if (this == &rhs) {
@@ -61,30 +55,28 @@ User& User::operator=(const User& rhs) {
 }
 
 void User::FixUp() {
-  data.name[sizeof(data.name)-1] = '\0';
-  data.realname[sizeof(data.realname)-1]  = '\0';
-  data.callsign[sizeof(data.callsign)-1]  = '\0';
-  data.phone[sizeof(data.phone)-1] = '\0';
-  data.dataphone[sizeof(data.dataphone)-1]  = '\0';
-  data.street[sizeof(data.street)-1] = '\0';
-  data.city[sizeof(data.city)-1] = '\0';
-  data.state[sizeof(data.state)-1] = '\0';
-  data.country[sizeof(data.country)-1] = '\0';
-  data.zipcode[sizeof(data.zipcode)-1] = '\0';
-  data.pw[sizeof(data.pw)-1] = '\0';
-  data.laston[sizeof(data.laston)-1] = '\0';
-  data.firston[sizeof(data.firston)-1] = '\0';
+  data.name[sizeof(data.name) - 1] = '\0';
+  data.realname[sizeof(data.realname) - 1] = '\0';
+  data.callsign[sizeof(data.callsign) - 1] = '\0';
+  data.phone[sizeof(data.phone) - 1] = '\0';
+  data.dataphone[sizeof(data.dataphone) - 1] = '\0';
+  data.street[sizeof(data.street) - 1] = '\0';
+  data.city[sizeof(data.city) - 1] = '\0';
+  data.state[sizeof(data.state) - 1] = '\0';
+  data.country[sizeof(data.country) - 1] = '\0';
+  data.zipcode[sizeof(data.zipcode) - 1] = '\0';
+  data.pw[sizeof(data.pw) - 1] = '\0';
+  data.laston[sizeof(data.laston) - 1] = '\0';
+  data.firston[sizeof(data.firston) - 1] = '\0';
   data.firston[2] = '/';
   data.firston[5] = '/';
-  data.note[sizeof(data.note)-1] = '\0';
-  data.macros[0][sizeof(data.macros[0])-1] = '\0';
-  data.macros[1][sizeof(data.macros[1])-1] = '\0';
-  data.macros[2][sizeof(data.macros[2])-1] = '\0';
+  data.note[sizeof(data.note) - 1] = '\0';
+  data.macros[0][sizeof(data.macros[0]) - 1] = '\0';
+  data.macros[1][sizeof(data.macros[1]) - 1] = '\0';
+  data.macros[2][sizeof(data.macros[2]) - 1] = '\0';
 }
 
-void User::ZeroUserData() {
-  memset(&data, 0, sizeof(userrec));
-}
+void User::ZeroUserData() { memset(&data, 0, sizeof(userrec)); }
 
 bool User::CreateRandomPassword() {
   std::string password;
@@ -92,8 +84,7 @@ bool User::CreateRandomPassword() {
     char ch = static_cast<char>(rand() % 36);
     if (ch < 10) {
       ch += '0';
-    }
-    else {
+    } else {
       ch += 'A' - 10;
     }
     password.push_back(ch);
@@ -102,26 +93,18 @@ bool User::CreateRandomPassword() {
   return true;
 }
 
-bool User::hotkeys() const {
-  return data.hot_keys != HOTKEYS_OFF;
-}
+bool User::hotkeys() const { return data.hot_keys != HOTKEYS_OFF; }
 
-void User::set_hotkeys(bool enabled) {
-  data.hot_keys = enabled ? HOTKEYS_ON : HOTKEYS_OFF;
-}
+void User::set_hotkeys(bool enabled) { data.hot_keys = enabled ? HOTKEYS_ON : HOTKEYS_OFF; }
 
-std::string User::menu_set() const {
-  return data.menu_set;
-}
+std::string User::menu_set() const { return data.menu_set; }
 
-void User::set_menu_set(const std::string& menu_set) {
-  to_char_array(data.menu_set, menu_set);
-}
+void User::set_menu_set(const std::string& menu_set) { to_char_array(data.menu_set, menu_set); }
 
-// static 
-bool User::CreateNewUserRecord(User* u,
-  uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
-  const std::vector<uint8_t>& colors, const std::vector<uint8_t>& bwcolors) {
+// static
+bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr, float gold,
+                               const std::vector<uint8_t>& colors,
+                               const std::vector<uint8_t>& bwcolors) {
   u->ZeroUserData();
 
   const auto date = daten_to_mmddyy(daten_t_now());
@@ -181,6 +164,18 @@ seconds User::add_extratime(duration<double> extra) {
   return seconds(extratime_seconds);
 }
 
+seconds User::subtract_extratime(duration<double> extra) {
+  auto extratime_seconds = static_cast<int64_t>(GetExtraTime());
+  extratime_seconds -= duration_cast<seconds>(extra).count();
+  SetExtraTime(static_cast<float>(extratime_seconds));
+  return seconds(extratime_seconds);
+}
+
+std::chrono::duration<double> User::extra_time() const noexcept{
+  auto extratime_seconds = static_cast<int64_t>(GetExtraTime());
+  return seconds(extratime_seconds);
+}
+
 seconds User::add_timeon(duration<double> d) {
   auto timeon = static_cast<int64_t>(GetTimeOn());
   timeon += duration_cast<seconds>(d).count();
@@ -200,5 +195,5 @@ seconds User::timeon() const {
   return seconds(secs_used);
 }
 
-}  // namespace sdk
-}  // namespace wwiv
+} // namespace sdk
+} // namespace wwiv

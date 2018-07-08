@@ -72,7 +72,5 @@ __EXTRN__ uint32_t *qsc_q;
 // aka high message read pointer) for each sub.
 __EXTRN__ uint32_t *qsc_p;
 
-__EXTRN__ long extratimecall;
-
 #endif // __INCLUDED_VARS_H__
 

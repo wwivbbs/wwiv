@@ -20,7 +20,7 @@
 // include this here so it won't get includes by local_io_win32.h
 #include "core/wwiv_windows.h"
 #include <io.h>
-#endif  // WIN32
+#endif // WIN32
 #include "bbs/application.h"
 
 #include <algorithm>
@@ -32,12 +32,12 @@
 #include <string>
 
 #include "bbs/asv.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsovl2.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
-#include "bbs/bbsovl2.h"
 #include "bbs/bbsutl2.h"
 #include "bbs/bgetch.h"
-#include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
@@ -48,30 +48,30 @@
 #include "bbs/lilo.h"
 #include "bbs/local_io.h"
 #include "bbs/local_io_curses.h"
-#include "bbs/null_local_io.h"  // Used for Linux build.
-#include "bbs/null_remote_io.h"
-#include "bbs/netsup.h"
 #include "bbs/menu.h"
+#include "bbs/netsup.h"
+#include "bbs/null_local_io.h" // Used for Linux build.
+#include "bbs/null_remote_io.h"
 #include "bbs/pause.h"
+#include "bbs/remote_io.h"
 #include "bbs/ssh.h"
 #include "bbs/subacc.h"
 #include "bbs/syschat.h"
+#include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/remote_io.h"
-#include "bbs/sysopf.h"
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
 #include "bbs/xfer.h"
-#include "core/strings.h"
 #include "core/os.h"
+#include "core/strings.h"
 #include "core/version.h"
 #include "sdk/status.h"
 
-#if defined( _WIN32 )
-#include "bbs/remote_socket_io.h"
+#if defined(_WIN32)
 #include "bbs/local_io_win32.h"
+#include "bbs/remote_socket_io.h"
 #else
 #include <unistd.h>
 #endif // _WIN32
@@ -80,10 +80,9 @@ using std::clog;
 using std::cout;
 using std::endl;
 using std::exception;
-using std::stoi;
-using std::string;
-using std::min;
 using std::max;
+using std::min;
+using std::stoi;
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
@@ -102,8 +101,8 @@ Application::Application(LocalIO* localIO)
   tzset();
 
   memset(&asv, 0, sizeof(asv_rec));
-  newuser_colors = { 7, 11, 14, 5, 31, 2, 12, 9, 6, 3 };
-  newuser_bwcolors = { 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 };
+  newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
+  newuser_bwcolors = {7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
   User::CreateNewUserRecord(&thisuser_, 50, 20, 0, 0.1234f, newuser_colors, newuser_bwcolors);
 
   // Set the home directory
@@ -145,14 +144,14 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
     const string system_password = config()->config()->systempw;
     wwiv::bbs::Key key(key_file.full_pathname(), system_password);
     if (!key_file.Exists()) {
-      LOG(ERROR)<< "Key file doesn't exist. Will try to create it.";
+      LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
       if (!key.Create()) {
         LOG(ERROR) << "Unable to create or open key file!.  SSH will be disabled!" << endl;
         type = CommunicationType::TELNET;
       }
     }
     if (!key.Open()) {
-      LOG(ERROR)<< "Unable to open key file!. Did you change your sytem pw?" << endl;
+      LOG(ERROR) << "Unable to open key file!. Did you change your sytem pw?" << endl;
       LOG(ERROR) << "If so, delete " << key_file.full_pathname();
       LOG(ERROR) << "SSH will be disabled!";
       type = CommunicationType::TELNET;
@@ -174,7 +173,6 @@ void Application::SetCommForTest(RemoteIO* remote_io) {
   bout.SetComm(remote_io);
 }
 
-
 bool Application::ReadCurrentUser(int user_number) {
   if (!users()->readuser(&thisuser_, user_number)) {
     return false;
@@ -189,10 +187,9 @@ bool Application::WriteCurrentUser(int user_number) {
 
   if (user_number == 0) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number 0";
-  }
-  else if (user_number != last_read_user_number_) {
+  } else if (user_number != last_read_user_number_) {
     LOG(ERROR) << "Trying to call WriteCurrentUser with user_number: " << user_number
-      << "; last_read_user_number_: " << last_read_user_number_;
+               << "; last_read_user_number_: " << last_read_user_number_;
   }
   return users()->writeuser(&thisuser_, user_number);
 }
@@ -251,8 +248,7 @@ void Application::tleft(bool check_for_timeout) {
   case LocalIO::topdataUser: {
     if (IsUserOnline()) {
       localIO()->PutsXY(18, 3, tleft_display);
-    }
-    else {
+    } else {
       localIO()->PutsXY(18, 3, user()->GetPassword());
     }
   } break;
@@ -320,11 +316,11 @@ void Application::handle_sysop_key(uint8_t key) {
         tleft(false);
         break;
       case F7: /* F7 */
-        user()->SetExtraTime(user()->GetExtraTime() - static_cast<float>(5 * SECONDS_PER_MINUTE));
+        user()->subtract_extratime(std::chrono::minutes(5));
         tleft(false);
         break;
       case F8: /* F8 */
-        user()->SetExtraTime(user()->GetExtraTime() + static_cast<float>(5 * SECONDS_PER_MINUTE));
+        user()->add_extratime(std::chrono::minutes(5));
         tleft(false);
         break;
       case F9: /* F9 */
@@ -417,8 +413,7 @@ void Application::UpdateTopScreen() {
   if (a()->config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
-    string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(),
-        username_num.c_str());
+    string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(), username_num.c_str());
     ::SetConsoleTitle(title.c_str());
   }
 #endif // _WIN32
@@ -456,27 +451,31 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
-    localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ",
-      a()->config()->system_name().c_str(), pStatus->GetLastDate());
+    localIO()->PrintfXY(0, 0,
+                        "%-50s  Activity for %8s:      ", a()->config()->system_name().c_str(),
+                        pStatus->GetLastDate());
 
-    localIO()->PrintfXY(0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
-        pStatus->GetNumUsers(), pStatus->GetCallerNumber(), pStatus->GetNumCallsToday(), pStatus->GetNumLocalPosts());
+    localIO()->PrintfXY(
+        0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
+        pStatus->GetNumUsers(), pStatus->GetCallerNumber(), pStatus->GetNumCallsToday(),
+        pStatus->GetNumLocalPosts());
 
     const string username_num = names()->UserName(usernum);
-    localIO()->PrintfXY(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ", username_num.c_str(),
-        pStatus->GetMinutesActiveToday(), static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
-        pStatus->GetNumEmailSentToday());
+    localIO()->PrintfXY(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
+                        username_num.c_str(), pStatus->GetMinutesActiveToday(),
+                        static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
+                        pStatus->GetNumEmailSentToday());
 
-    User sysop { };
+    User sysop{};
     int feedback_waiting = 0;
     if (a()->users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PrintfXY(0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
+    localIO()->PrintfXY(
+        0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
         user()->GetSl(), user()->GetDsl(), feedback_waiting, pStatus->GetNumUploadsToday(),
         pStatus->GetNumFeedbackSentToday());
-  }
-    break;
+  } break;
   case LocalIO::topdataUser: {
     to_char_array(rst, restrict_string);
     for (i = 0; i <= 15; i++) {
@@ -507,9 +506,10 @@ void Application::UpdateTopScreen() {
     }
 
     const string username_num = names()->UserName(usernum);
-    localIO()->PrintfXYA(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num.c_str(),
-        user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->GetUploadK(), user()->GetSl(),
-        user()->GetNumLogons(), user()->GetNumMessagesPosted());
+    localIO()->PrintfXYA(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
+                         username_num.c_str(), user()->GetNumMailWaiting(),
+                         user()->GetFilesUploaded(), user()->GetUploadK(), user()->GetSl(),
+                         user()->GetNumLogons(), user()->GetNumMessagesPosted());
 
     string callsign_or_regnum = user()->GetCallsign();
     if (user()->GetWWIVRegNumber()) {
@@ -519,33 +519,28 @@ void Application::UpdateTopScreen() {
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
-    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u", 
-        user()->GetRealName(), user()->GetVoicePhoneNumber(), callsign_or_regnum.c_str(), 
-        user()->GetFilesDownloaded(), user()->GetDownloadK(), user()->GetDsl(), 
-        minutes_used.count(),
-        user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
+    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
+                        user()->GetRealName(), user()->GetVoicePhoneNumber(),
+                        callsign_or_regnum.c_str(), user()->GetFilesDownloaded(),
+                        user()->GetDownloadK(), user()->GetDsl(), minutes_used.count(),
+                        user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
 
-    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, 
-        restrict, user()->GetExempt(), lo.c_str(),
-        user()->GetNumFeedbackSent());
+    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
+                        user()->GetExempt(), lo.c_str(), user()->GetNumFeedbackSent());
 
-    User sysop { };
+    User sysop{};
     int feedback_waiting = 0;
     if (a()->users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u", 
-        user()->GetNote().c_str(), 
-        user()->GetGender(),
-        user()->GetAge(), 
-        ctypes(user()->GetComputerType()).c_str(),
-        feedback_waiting);
+    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
+                        user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
+                        ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
 
     if (chatcall) {
       localIO()->PutsXY(0, 4, chat_reason_);
     }
-  }
-    break;
+  } break;
   }
   if (nOldTopLine != 0) {
     localIO()->PutsXY(0, nOldTopLine - 1, sl);
@@ -558,9 +553,7 @@ void Application::UpdateTopScreen() {
   bout.lines_listed_ = lll;
 }
 
-void Application::ClearTopScreenProtection() {
-  localIO()->set_protect(this, 0);
-}
+void Application::ClearTopScreenProtection() { localIO()->set_protect(this, 0); }
 
 const char* Application::network_name() const {
   if (net_networks.empty()) {
@@ -588,7 +581,7 @@ void Application::GetCaller() {
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
   // We'll read the sysop record for defaults, but let's set
   // usernum to 0 here since we don't want to botch up the
-  // sysop's record if things go wrong. 
+  // sysop's record if things go wrong.
   // TODO(rushfan): Let's make record 0 the logon defaults
   // and stop using the sysop record.
   ReadCurrentUser(1);
@@ -620,7 +613,6 @@ void Application::GetCaller() {
   set_at_wfc(false);
 }
 
-
 void Application::GotCaller(unsigned int ms) {
   frequent_init();
   wfc_cls(a());
@@ -646,9 +638,7 @@ void Application::GotCaller(unsigned int ms) {
   }
 }
 
-void Application::CdHome() {
-  File::set_current_directory(current_dir_);
-}
+void Application::CdHome() { File::set_current_directory(current_dir_); }
 
 const string Application::GetHomeDir() {
   string dir = current_dir_;
@@ -661,9 +651,7 @@ void Application::AbortBBS(bool bSkipShutdown) {
   ExitBBSImpl(errorlevel_, !bSkipShutdown);
 }
 
-void Application::QuitBBS() {
-  ExitBBSImpl(Application::exitLevelQuit, true);
-}
+void Application::QuitBBS() { ExitBBSImpl(Application::exitLevelQuit, true); }
 
 void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   if (perform_shutdown) {
@@ -672,14 +660,16 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
       // Only log the exiting at abnormal error levels, since we see lots of exiting statements
       // in the logs that don't correspond to sessions every being created (network probers, etc).
       sysoplog(false);
-      sysoplog(false) << "WWIV " << wwiv_version << ", inst " << instance_number() << ", taken down at " << times()
-          << " on " << fulldate() << " with exit code " << exit_level << ".";
+      sysoplog(false) << "WWIV " << wwiv_version << ", inst " << instance_number()
+                      << ", taken down at " << times() << " on " << fulldate() << " with exit code "
+                      << exit_level << ".";
       sysoplog(false);
     }
     catsl();
     clog << "\r\n";
-    clog << "WWIV Bulletin Board System " << wwiv_version << beta_version << " exiting at error level " << exit_level
-        << endl << endl;
+    clog << "WWIV Bulletin Board System " << wwiv_version << beta_version
+         << " exiting at error level " << exit_level << endl
+         << endl;
     clog.flush();
   }
 
@@ -691,28 +681,31 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 }
 
 void Application::ShowUsage() {
-  cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n" << "Usage:\r\n\n"
-      << "bbs -N<inst> [options] \r\n\n" << "Options:\r\n\n"
-      << "  -?         - Display command line options (This screen)\r\n\n"
-      << "  -A<level>  - Specify the Error Exit Level\r\n"
-      << "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n"
-      << "  -E         - Load for beginday event only\r\n"
-      << "  -H<handle> - Socket handle\r\n"
-      << "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n"
-      << "  -M         - Don't access modem at all\r\n"
-      << "  -N<inst>   - Designate instance number <inst>\r\n"
-      << "  -Q<level>  - Normal exit level\r\n"
-      << "  -R<min>    - Specify max # minutes until event\r\n"
-      << "  -U<user#>  - Pass usernumber <user#> online\r\n"
-      << "  -V         - Display WWIV Version\r\n"
-      << "  -XT        - Someone already logged on via telnet (socket handle)\r\n"
-#if defined (_WIN32)
-      << "  -XS        - Someone already logged on via SSH (socket handle)\r\n"
+  cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n"
+       << "Usage:\r\n\n"
+       << "bbs -N<inst> [options] \r\n\n"
+       << "Options:\r\n\n"
+       << "  -?         - Display command line options (This screen)\r\n\n"
+       << "  -A<level>  - Specify the Error Exit Level\r\n"
+       << "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n"
+       << "  -E         - Load for beginday event only\r\n"
+       << "  -H<handle> - Socket handle\r\n"
+       << "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n"
+       << "  -M         - Don't access modem at all\r\n"
+       << "  -N<inst>   - Designate instance number <inst>\r\n"
+       << "  -Q<level>  - Normal exit level\r\n"
+       << "  -R<min>    - Specify max # minutes until event\r\n"
+       << "  -U<user#>  - Pass usernumber <user#> online\r\n"
+       << "  -V         - Display WWIV Version\r\n"
+       << "  -XT        - Someone already logged on via telnet (socket handle)\r\n"
+#if defined(_WIN32)
+       << "  -XS        - Someone already logged on via SSH (socket handle)\r\n"
 #endif // _WIN32
-      << "  -Z         - Do not hang up on user when at log off\r\n" << endl;
+       << "  -Z         - Do not hang up on user when at log off\r\n"
+       << endl;
 }
 
-int Application::Run(int argc, char *argv[]) {
+int Application::Run(int argc, char* argv[]) {
   int num_min = 0;
   unsigned int ui = 0;
   unsigned short this_usernum_from_commandline = 0;
@@ -729,7 +722,7 @@ int Application::Run(int argc, char *argv[]) {
   const std::string bbs_env = environment_variable("BBS");
   if (!bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
-      LOG(ERROR)<< "You are already in the BBS, type 'EXIT' instead.\n\n";
+      LOG(ERROR) << "You are already in the BBS, type 'EXIT' instead.\n\n";
       a()->ExitBBSImpl(255, false);
     }
   }
@@ -751,8 +744,7 @@ int Application::Run(int argc, char *argv[]) {
         ui = to_number<unsigned int>(argument);
         SetCurrentSpeed(std::to_string(ui));
         user_already_on_ = true;
-        }
-        break;
+      } break;
       case 'C':
         break;
       case 'E':
@@ -773,15 +765,15 @@ int Application::Run(int argc, char *argv[]) {
       case 'N': {
         instance_number_ = stoi(argument);
         if (instance_number_ <= 0 || instance_number_ > 999) {
-          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_ << endl;
+          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_
+               << endl;
           a()->ExitBBSImpl(errorlevel_, false);
         }
-      }
-        break;
+      } break;
       case 'P':
         localIO()->Cls();
         localIO()->Puts("Waiting for keypress...");
-        (void) getchar();
+        (void)getchar();
         break;
       case 'R':
         num_min = stoi(argument);
@@ -823,8 +815,7 @@ int Application::Run(int argc, char *argv[]) {
           clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
           ExitBBSImpl(errorlevel_, false);
         }
-      }
-        break;
+      } break;
       case 'Z':
         no_hangup_ = true;
         break;
@@ -857,8 +848,7 @@ int Application::Run(int argc, char *argv[]) {
           }
         }
         ExitBBSImpl(oklevel_, true);
-      }
-        break;
+      } break;
       case '?':
         ShowUsage();
         ExitBBSImpl(0, false);
@@ -872,8 +862,7 @@ int Application::Run(int argc, char *argv[]) {
       default: {
         LOG(ERROR) << "Invalid Command line argument given '" << argument << "'";
         ExitBBSImpl(errorlevel_, false);
-      }
-        break;
+      } break;
       }
     } else {
       // Command line argument did not start with a '-' or a '/'
@@ -884,7 +873,7 @@ int Application::Run(int argc, char *argv[]) {
 
   // Setup the full-featured localIO if we have a TTY (or console)
   if (isatty(fileno(stdin))) {
-#if defined ( _WIN32 ) && !defined (WWIV_WIN32_CURSES_IO)
+#if defined(_WIN32) && !defined(WWIV_WIN32_CURSES_IO)
     reset_local_io(new Win32ConsoleIO());
 #else
     if (type == CommunicationType::NONE) {
@@ -893,16 +882,14 @@ int Application::Run(int argc, char *argv[]) {
       // We always have a local console, so this is *NIX specific.
       CursesIO::Init(StringPrintf("WWIV BBS %s%s", wwiv_version, beta_version));
       reset_local_io(new CursesLocalIO(out->GetMaxY()));
-    }
-    else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
+    } else if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
       reset_local_io(new NullLocalIO());
     }
 #endif
-  }
-  else {
+  } else {
 #ifdef __unix__
     reset_local_io(new NullLocalIO());
-#endif  // __unix__
+#endif // __unix__
   }
 
   // Add the environment variable or overwrite the existing one
@@ -938,8 +925,7 @@ int Application::Run(int argc, char *argv[]) {
       // This may be another node, but the user explicitly wanted to run the beginday
       // event from the commandline, so we'll just check the date.
       beginday(true);
-    }
-    else {
+    } else {
       sysoplog(false) << "!!! Wanted to run the beginday event when it's not required!!!";
       clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
@@ -959,8 +945,7 @@ int Application::Run(int argc, char *argv[]) {
         ResetEffectiveSl();
         changedsl();
         okmacro = true;
-      }
-      else {
+      } else {
         this_usernum_from_commandline = 0;
       }
     }
@@ -972,8 +957,7 @@ int Application::Run(int argc, char *argv[]) {
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
           GotCaller(ui);
-        }
-        else {
+        } else {
           GetCaller();
         }
       }
@@ -982,8 +966,7 @@ int Application::Run(int argc, char *argv[]) {
         if (!this_usernum_from_commandline) {
           getuser();
         }
-      }
-      else {
+      } else {
         using_modem = 0;
         okmacro = true;
         usernum = unx_;
@@ -1003,14 +986,12 @@ int Application::Run(int argc, char *argv[]) {
         write_inst(INST_LOC_MAIN, current_user_sub().subnum, INST_FLAGS_NONE);
         try {
           wwiv::menus::mainmenu();
-        }
-        catch (const std::logic_error& le) {
+        } catch (const std::logic_error& le) {
           std::cerr << "Caught std::logic_error: " << le.what() << "\r\n";
           sysoplog() << le.what();
         }
       }
-    }
-    catch (const wwiv::bbs::hangup_error& h) {
+    } catch (const wwiv::bbs::hangup_error& h) {
       if (a()->IsUserOnline()) {
         // Don't need to log this unless the user actually made it online.
         std::cerr << h.what() << "\r\n";
@@ -1024,7 +1005,9 @@ int Application::Run(int argc, char *argv[]) {
       remove_from_temp("*.*", a()->batch_directory(), false);
       if (!a()->batch().entry.empty() && (a()->batch().entry.size() != a()->batch().numbatchdl())) {
         for (const auto& b : a()->batch().entry) {
-          if (!b.sending) { didnt_upload(b); }
+          if (!b.sending) {
+            didnt_upload(b);
+          }
         }
       }
       a()->batch().clear();
@@ -1045,4 +1028,3 @@ int Application::Run(int argc, char *argv[]) {
 
   return oklevel_;
 }
-

@@ -26,67 +26,69 @@
 #include <direct.h>
 #else
 #include <unistd.h>
-#endif  // _WIN32
+#endif // _WIN32
 
 #include "bbs/arword.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
+#include "bbs/conf.h"
 #include "bbs/connect1.h"
+#include "bbs/datetime.h"
 #include "bbs/events.h"
 #include "bbs/execexternal.h"
-#include "bbs/vars.h"
-#include "bbs/conf.h"
-#include "bbs/datetime.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/netsup.h"
-#include "bbs/sysoplog.h"
 #include "bbs/pause.h"
+#include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
-#include "sdk/status.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
 #include "core/log.h"
-#include "core/strings.h"
 #include "core/os.h"
+#include "core/strings.h"
 #include "core/textfile.h"
 #include "core/version.h"
 #include "core/wwivassert.h"
 #include "core/wwivport.h"
+#include "sdk/status.h"
 
 #include "sdk/config.h"
 #include "sdk/filenames.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 
 // Additional INI file function and structure
 #include "bbs/xinitini.h"
 
 struct ini_flags_type {
-  int     strnum;
-  bool    sense;
+  int strnum;
+  bool sense;
   uint32_t value;
 };
 
-using std::chrono::seconds;
 using std::string;
+using std::chrono::duration;
+using std::chrono::duration_cast;
+using std::chrono::seconds;
 using wwiv::bbs::TempDisablePause;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-uint32_t GetFlagsFromIniFile(IniFile& pIniFile, ini_flags_type * fs, int nFlagNumber, uint32_t flags);
+uint32_t GetFlagsFromIniFile(IniFile& pIniFile, ini_flags_type* fs, int nFlagNumber,
+                             uint32_t flags);
 
 void StatusManagerCallback(int i) {
   switch (i) {
-  case WStatus::fileChangeNames:
-  {
+  case WStatus::fileChangeNames: {
     // re-read names.lst
     if (a()->names()) {
       // We may not have the BBS initialized yet, so only
@@ -102,11 +104,9 @@ void StatusManagerCallback(int i) {
   case WStatus::fileChangeEmail:
     emchg = true;
     break;
-  case WStatus::fileChangeNet:
-  {
+  case WStatus::fileChangeNet: {
     set_net_num(a()->net_num());
-  }
-  break;
+  } break;
   }
 }
 
@@ -136,8 +136,8 @@ static uint16_t str2spawnopt(const std::string& s) {
 }
 
 // Takes string s and creates restrict val
-static uint16_t str2restrict(const char *s) {
-  const char *rs = restrict_string;
+static uint16_t str2restrict(const char* s) {
+  const char* rs = restrict_string;
   char s1[81];
 
   strcpy(s1, s);
@@ -158,40 +158,40 @@ static uint16_t str2restrict(const char *s) {
 // those in [WWIV] subsection.
 
 struct eventinfo_t {
-  const char *name;
+  const char* name;
   unsigned short eflags;
 };
 
 // See #defines SPAWNOPT_XXXX in vardec.h for these.
 static eventinfo_t eventinfo[] = {
-  {"TIMED",         EFLAG_NONE},
-  {"NEWUSER",       EFLAG_NONE },
-  {"BEGINDAY",      EFLAG_NONE },
-  {"LOGON",         EFLAG_NONE},
-  {"ULCHK",         EFLAG_NOHUP},
-  {"CHAT",          EFLAG_FOSSIL},  // UNUSED (5)
-  {"PROT_SINGLE",   EFLAG_NONE },
-  {"PROT_BATCH",    EFLAG_NONE},
-  {"CHAT",          EFLAG_NONE },
-  {"ARCH_E",        EFLAG_NONE},
-  {"ARCH_L",        EFLAG_NONE},
-  {"ARCH_A",        EFLAG_NONE},
-  {"ARCH_D",        EFLAG_NONE},
-  {"ARCH_K",        EFLAG_NONE},
-  {"ARCH_T",        EFLAG_NONE},
-  {"NET_CMD1",      EFLAG_NETPROG},
-  {"NET_CMD2",      EFLAG_NETPROG},
-  {"LOGOFF",        EFLAG_NONE},
-  {"",              EFLAG_NONE}, // UNUSED (18)
-  {"NETWORK",       EFLAG_NETPROG},
+    {"TIMED", EFLAG_NONE},
+    {"NEWUSER", EFLAG_NONE},
+    {"BEGINDAY", EFLAG_NONE},
+    {"LOGON", EFLAG_NONE},
+    {"ULCHK", EFLAG_NOHUP},
+    {"CHAT", EFLAG_FOSSIL}, // UNUSED (5)
+    {"PROT_SINGLE", EFLAG_NONE},
+    {"PROT_BATCH", EFLAG_NONE},
+    {"CHAT", EFLAG_NONE},
+    {"ARCH_E", EFLAG_NONE},
+    {"ARCH_L", EFLAG_NONE},
+    {"ARCH_A", EFLAG_NONE},
+    {"ARCH_D", EFLAG_NONE},
+    {"ARCH_K", EFLAG_NONE},
+    {"ARCH_T", EFLAG_NONE},
+    {"NET_CMD1", EFLAG_NETPROG},
+    {"NET_CMD2", EFLAG_NETPROG},
+    {"LOGOFF", EFLAG_NONE},
+    {"", EFLAG_NONE}, // UNUSED (18)
+    {"NETWORK", EFLAG_NETPROG},
 };
 
-static const char *get_key_str(int n, const char *index = nullptr) {
+static const char* get_key_str(int n, const char* index = nullptr) {
   static char str[255];
   if (!index) {
     return INI_OPTIONS_ARRAY[n];
   }
-  sprintf(str, "%s[%s]", INI_OPTIONS_ARRAY[ n ], index);
+  sprintf(str, "%s[%s]", INI_OPTIONS_ARRAY[n], index);
   return str;
 }
 
@@ -199,61 +199,60 @@ static void ini_init_str(IniFile& ini, size_t key_idx, std::string& s) {
   s = ini.value<string>(get_key_str(key_idx));
 }
 
-#define INI_GET_ASV(s, f, func, d) \
-{ \
-  const std::string ss = ini.value<std::string>(get_key_str(INI_STR_SIMPLE_ASV,s)); \
-  if (!ss.empty()) { \
-    asv.f = func (ss.c_str()); \
-  } else { \
-    asv.f = d; \
-  }  \
-}
+#define INI_GET_ASV(s, f, func, d)                                                                 \
+  {                                                                                                \
+    const std::string ss = ini.value<std::string>(get_key_str(INI_STR_SIMPLE_ASV, s));             \
+    if (!ss.empty()) {                                                                             \
+      asv.f = func(ss.c_str());                                                                    \
+    } else {                                                                                       \
+      asv.f = d;                                                                                   \
+    }                                                                                              \
+  }
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
 static ini_flags_type sysinfo_flags[] = {
-  {INI_STR_FORCE_FBACK, false, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
-  {INI_STR_CHECK_DUP_PHONES, false, OP_FLAGS_CHECK_DUPE_PHONENUM},
-  {INI_STR_HANGUP_DUP_PHONES, false, OP_FLAGS_HANGUP_DUPE_PHONENUM},
-  {INI_STR_USE_SIMPLE_ASV, false, OP_FLAGS_SIMPLE_ASV},
-  {INI_STR_POSTTIME_COMPENS, false, OP_FLAGS_POSTTIME_COMPENSATE},
-  {INI_STR_SHOW_HIER, false, OP_FLAGS_SHOW_HIER},
-  {INI_STR_IDZ_DESC, false, OP_FLAGS_IDZ_DESC},
-  {INI_STR_SETLDATE, false, OP_FLAGS_SETLDATE},
-  {INI_STR_READ_CD_IDZ, false, OP_FLAGS_READ_CD_IDZ},
-  {INI_STR_FSED_EXT_DESC, false, OP_FLAGS_FSED_EXT_DESC},
-  {INI_STR_FAST_TAG_RELIST, false, OP_FLAGS_FAST_TAG_RELIST},
-  {INI_STR_MAIL_PROMPT, false, OP_FLAGS_MAIL_PROMPT},
-  {INI_STR_SHOW_CITY_ST, false, OP_FLAGS_SHOW_CITY_ST},
-  //{INI_STR_NEW_EXTRACT, false, OP_FLAGS_NEW_EXTRACT},
-  {INI_STR_FAST_SEARCH, false, OP_FLAGS_FAST_SEARCH},
-  {INI_STR_NET_CALLOUT, false, OP_FLAGS_NET_CALLOUT},
-  {INI_STR_WFC_SCREEN, false, OP_FLAGS_WFC_SCREEN},
-  {INI_STR_FIDO_PROCESS, false, OP_FLAGS_FIDO_PROCESS},
-  {INI_STR_NET_PROCESS, false, OP_FLAGS_NET_PROCESS},
-  //{INI_STR_USER_REGISTRATION, false, OP_FLAGS_USER_REGISTRATION},
-  {INI_STR_MSG_TAG, false, OP_FLAGS_MSG_TAG},
-  {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
-  {INI_STR_CAN_SAVE_SSM, false, OP_FLAGS_CAN_SAVE_SSM},
-  {INI_STR_EXTRA_COLOR, false, OP_FLAGS_EXTRA_COLOR},
-  {INI_STR_USE_FORCE_SCAN, false, OP_FLAGS_USE_FORCESCAN},
-  {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
+    {INI_STR_FORCE_FBACK, false, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
+    {INI_STR_CHECK_DUP_PHONES, false, OP_FLAGS_CHECK_DUPE_PHONENUM},
+    {INI_STR_HANGUP_DUP_PHONES, false, OP_FLAGS_HANGUP_DUPE_PHONENUM},
+    {INI_STR_USE_SIMPLE_ASV, false, OP_FLAGS_SIMPLE_ASV},
+    {INI_STR_POSTTIME_COMPENS, false, OP_FLAGS_POSTTIME_COMPENSATE},
+    {INI_STR_SHOW_HIER, false, OP_FLAGS_SHOW_HIER},
+    {INI_STR_IDZ_DESC, false, OP_FLAGS_IDZ_DESC},
+    {INI_STR_SETLDATE, false, OP_FLAGS_SETLDATE},
+    {INI_STR_READ_CD_IDZ, false, OP_FLAGS_READ_CD_IDZ},
+    {INI_STR_FSED_EXT_DESC, false, OP_FLAGS_FSED_EXT_DESC},
+    {INI_STR_FAST_TAG_RELIST, false, OP_FLAGS_FAST_TAG_RELIST},
+    {INI_STR_MAIL_PROMPT, false, OP_FLAGS_MAIL_PROMPT},
+    {INI_STR_SHOW_CITY_ST, false, OP_FLAGS_SHOW_CITY_ST},
+    //{INI_STR_NEW_EXTRACT, false, OP_FLAGS_NEW_EXTRACT},
+    {INI_STR_FAST_SEARCH, false, OP_FLAGS_FAST_SEARCH},
+    {INI_STR_NET_CALLOUT, false, OP_FLAGS_NET_CALLOUT},
+    {INI_STR_WFC_SCREEN, false, OP_FLAGS_WFC_SCREEN},
+    {INI_STR_FIDO_PROCESS, false, OP_FLAGS_FIDO_PROCESS},
+    {INI_STR_NET_PROCESS, false, OP_FLAGS_NET_PROCESS},
+    //{INI_STR_USER_REGISTRATION, false, OP_FLAGS_USER_REGISTRATION},
+    {INI_STR_MSG_TAG, false, OP_FLAGS_MSG_TAG},
+    {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
+    {INI_STR_CAN_SAVE_SSM, false, OP_FLAGS_CAN_SAVE_SSM},
+    {INI_STR_EXTRA_COLOR, false, OP_FLAGS_EXTRA_COLOR},
+    {INI_STR_USE_FORCE_SCAN, false, OP_FLAGS_USE_FORCESCAN},
+    {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
 };
 
 static ini_flags_type sysconfig_flags[] = {
-  {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
-  {INI_STR_NO_NEWUSER_FEEDBACK, false, sysconfig_no_newuser_feedback},
-  {INI_STR_TITLEBAR, false, sysconfig_titlebar},
-  {INI_STR_LOG_DOWNLOADS, false, sysconfig_log_dl},
-  {INI_STR_CLOSE_XFER, false, sysconfig_no_xfer},
-  {INI_STR_ALL_UL_TO_SYSOP, false, sysconfig_all_sysop},
-  {INI_STR_BEEP_CHAT, true, unused_sysconfig_no_beep},
-  {INI_STR_TWO_COLOR_CHAT, false, unused_sysconfig_two_color},
-  {INI_STR_ALLOW_ALIASES, true, sysconfig_no_alias},
-  {INI_STR_USE_LIST, false, unused_sysconfig_list},
-  {INI_STR_EXTENDED_USERINFO, false, sysconfig_extended_info},
-  {INI_STR_FREE_PHONE, false, sysconfig_free_phone}
-};
+    {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
+    {INI_STR_NO_NEWUSER_FEEDBACK, false, sysconfig_no_newuser_feedback},
+    {INI_STR_TITLEBAR, false, sysconfig_titlebar},
+    {INI_STR_LOG_DOWNLOADS, false, sysconfig_log_dl},
+    {INI_STR_CLOSE_XFER, false, sysconfig_no_xfer},
+    {INI_STR_ALL_UL_TO_SYSOP, false, sysconfig_all_sysop},
+    {INI_STR_BEEP_CHAT, true, unused_sysconfig_no_beep},
+    {INI_STR_TWO_COLOR_CHAT, false, unused_sysconfig_two_color},
+    {INI_STR_ALLOW_ALIASES, true, sysconfig_no_alias},
+    {INI_STR_USE_LIST, false, unused_sysconfig_list},
+    {INI_STR_EXTENDED_USERINFO, false, sysconfig_extended_info},
+    {INI_STR_FREE_PHONE, false, sysconfig_free_phone}};
 
 void Application::ReadINIFile(IniFile& ini) {
   // Setup default  data
@@ -266,7 +265,7 @@ void Application::ReadINIFile(IniFile& ini) {
   mail_who_field_len = 35;
 
   for (size_t i = 0; i < NEL(eventinfo); i++) {
-    spawn_opts[ i ] = eventinfo[ i ].eflags;
+    spawn_opts[i] = eventinfo[i].eflags;
   }
 
   // put in default Application::flags
@@ -307,14 +306,13 @@ void Application::ReadINIFile(IniFile& ini) {
   SetCarbonCopyEnabled(ini.value<bool>("ALLOW_CC_BCC"));
 
   // pull out sysop-side colors
-  localIO()->SetTopScreenColor(ini.value<int>(
-    get_key_str(INI_STR_TOPCOLOR), localIO()->GetTopScreenColor()));
-  localIO()->SetUserEditorColor(ini.value<int>(
-    get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
-  localIO()->SetEditLineColor(ini.value<int>(
-    get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
-  chatname_color_ = ini.value<int>(
-    get_key_str(INI_STR_CHATSELCOLOR),GetChatNameSelectionColor());
+  localIO()->SetTopScreenColor(
+      ini.value<int>(get_key_str(INI_STR_TOPCOLOR), localIO()->GetTopScreenColor()));
+  localIO()->SetUserEditorColor(
+      ini.value<int>(get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
+  localIO()->SetEditLineColor(
+      ini.value<int>(get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
+  chatname_color_ = ini.value<int>(get_key_str(INI_STR_CHATSELCOLOR), GetChatNameSelectionColor());
 
   // pull out sizing options
   max_batch = ini.value<uint16_t>(get_key_str(INI_STR_MAX_BATCH), max_batch);
@@ -329,7 +327,8 @@ void Application::ReadINIFile(IniFile& ini) {
   ini_init_str(ini, INI_STR_LOGON_CMD, logon_cmd);
   ini_init_str(ini, INI_STR_TERMINAL_CMD, terminal_command);
 
-  forced_read_subnum_ = ini.value<uint16_t>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), forced_read_subnum_);
+  forced_read_subnum_ =
+      ini.value<uint16_t>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), forced_read_subnum_);
   internal_zmodem_ = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), true);
   newscan_at_login_ = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), true);
   exec_log_syncfoss_ = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), false);
@@ -353,12 +352,14 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   // sysconfig flags
-  a()->config()->set_sysconfig(static_cast<uint16_t>(GetFlagsFromIniFile(ini, sysconfig_flags,
-      NEL(sysconfig_flags), a()->config()->sysconfig_flags())));
+  a()->config()->set_sysconfig(static_cast<uint16_t>(GetFlagsFromIniFile(
+      ini, sysconfig_flags, NEL(sysconfig_flags), a()->config()->sysconfig_flags())));
 
   // misc stuff
   auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
-  if (num > 0) { mail_who_field_len = num; }
+  if (num > 0) {
+    mail_who_field_len = num;
+  }
 
   const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
   attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(GetHomeDir(), ATTACH_DIR);
@@ -367,7 +368,7 @@ void Application::ReadINIFile(IniFile& ini) {
   screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
 
   max_extend_lines = std::min<uint16_t>(max_extend_lines, 99);
-  max_batch  = std::min<uint16_t>(max_batch , 999);
+  max_batch = std::min<uint16_t>(max_batch, 999);
   max_chains = std::min<uint16_t>(max_chains, 999);
   max_gfilesec = std::min<uint16_t>(max_gfilesec, 999);
 
@@ -385,7 +386,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   }
 
   File::FixPathSeparators(&temp_directory);
-  // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to 
+  // TEMP_DIRECTORY is defined in wwiv.ini, also default the batch_directory to
   // TEMP_DIRECTORY if BATCH_DIRECTORY does not exist.
   string batch_directory(ini.value<string>("BATCH_DIRECTORY", temp_directory));
   File::FixPathSeparators(&batch_directory);
@@ -420,8 +421,10 @@ bool Application::ReadConfig() {
   }
 
   if (!config_->versioned_config_dat()) {
-    std::cerr << "Please run wwivconfig to upgrade " << CONFIG_DAT << " to the most recent version.\r\n";
-    LOG(ERROR) << "Please run wwivconfig to upgrade " << CONFIG_DAT << " to the most recent version.";
+    std::cerr << "Please run wwivconfig to upgrade " << CONFIG_DAT
+              << " to the most recent version.\r\n";
+    LOG(ERROR) << "Please run wwivconfig to upgrade " << CONFIG_DAT
+               << " to the most recent version.";
     wwiv::os::sleep_for(seconds(2));
     return false;
   }
@@ -429,7 +432,7 @@ bool Application::ReadConfig() {
   // initialize the user manager
   user_manager_.reset(new UserManager(*config_));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
-  
+
   IniFile ini(FilePath(GetHomeDir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
@@ -446,7 +449,6 @@ bool Application::ReadConfig() {
 
   return true;
 }
-
 
 void Application::read_nextern() {
   externs.clear();
@@ -487,9 +489,7 @@ bool Application::read_subs() {
 }
 
 class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
-  uint32_t last_read(int area) const {
-    return qsc_p[area];
-  }
+  uint32_t last_read(int area) const { return qsc_p[area]; }
 
   void set_last_read(int area, uint32_t last_read) {
     if (area >= 0) {
@@ -504,7 +504,6 @@ class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
   void Save() {
     // Handled by the BBS in write_qscn(a()->usernum, qsc, false);
   }
-
 };
 
 bool Application::create_message_api() {
@@ -516,17 +515,32 @@ bool Application::create_message_api() {
 
   // We only support type-2
   msgapis_[2] = std::make_unique<wwiv::sdk::msgapi::WWIVMessageApi>(
-    options, *config_.get(), net_networks, new BBSLastReadImpl());
+      options, *config_.get(), net_networks, new BBSLastReadImpl());
 
   return true;
 }
 
-void Application::SetLogonTime() {
-  system_logon_time_ = std::chrono::system_clock::now();
+void Application::SetLogonTime() { system_logon_time_ = std::chrono::system_clock::now(); }
+
+std::chrono::seconds Application::duration_used_this_session() const {
+  return duration_cast<seconds>(std::chrono::system_clock::now() - system_logon_time_);
 }
 
-std::chrono::system_clock::duration Application::duration_used_this_session() const {
-  return std::chrono::system_clock::now() - system_logon_time_; 
+std::chrono::seconds Application::extratimecall() const { return duration_cast<seconds>(extratimecall_); }
+
+std::chrono::seconds Application::set_extratimecall(std::chrono::duration<double> et) {
+  extratimecall_ = et;
+  return duration_cast<seconds>(extratimecall_);
+}
+
+std::chrono::seconds Application::add_extratimecall(std::chrono::duration<double> et) {
+  extratimecall_ += et;
+  return duration_cast<seconds>(extratimecall_);
+}
+
+std::chrono::seconds Application::subtract_extratimecall(std::chrono::duration<double> et) {
+  extratimecall_ -= et;
+  return duration_cast<seconds>(extratimecall_);
 }
 
 void Application::read_networks() {
@@ -601,8 +615,9 @@ void Application::read_chains() {
         reg.maxage = 255;
         chains_reg.push_back(reg);
       }
-      DataFile<chainregrec> writeFile(config()->datadir(), CHAINS_REG, 
-          File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+      DataFile<chainregrec> writeFile(config()->datadir(), CHAINS_REG,
+                                      File::modeReadWrite | File::modeBinary |
+                                          File::modeCreateFile);
       writeFile.WriteVector(chains_reg);
     }
   }
@@ -621,7 +636,7 @@ bool Application::read_language() {
     to_char_array(lang.name, "English");
     to_char_array(lang.dir, a()->config()->gfilesdir());
     to_char_array(lang.mdir, a()->config()->menudir());
-    
+
     languages.emplace_back(lang);
   }
 
@@ -642,9 +657,11 @@ void Application::read_gfile() {
 
 void Application::InitializeBBS() {
   localIO()->Cls();
-#if !defined( __unix__ )
-  std::clog << std::endl << wwiv_version << beta_version << ", Copyright (c) 1998-2017, WWIV Software Services."
-            << std::endl << std::endl
+#if !defined(__unix__)
+  std::clog << std::endl
+            << wwiv_version << beta_version << ", Copyright (c) 1998-2017, WWIV Software Services."
+            << std::endl
+            << std::endl
             << "\r\nInitializing BBS..." << std::endl;
 #endif // __unix__
   SetCurrentReadMessageArea(-1);
@@ -778,8 +795,9 @@ void Application::InitializeBBS() {
     int inst_num = to_number<int>(wwiv_instance);
     if (inst_num > 0) {
       network_extension_ = StringPrintf(".%3.3d", inst_num);
-      // Fix... Set the global instance variable to match this.  When you run WWIV with the -n<instance> parameter
-      // it sets the WWIV_INSTANCE environment variable, however it wasn't doing the reverse.
+      // Fix... Set the global instance variable to match this.  When you run WWIV with the
+      // -n<instance> parameter it sets the WWIV_INSTANCE environment variable, however it wasn't
+      // doing the reverse.
       instance_number_ = inst_num;
     }
   }
@@ -799,7 +817,7 @@ void Application::InitializeBBS() {
   if (!user_already_on_) {
     sysoplog(false);
     sysoplog(false) << "WWIV " << wwiv_version << beta_version << ", inst " << instance_number()
-      << ", brought up at " << times() << " on " << fulldate() << ".";
+                    << ", brought up at " << times() << " on " << fulldate() << ".";
   }
   if (instance_number() > 1) {
     File::Remove(StringPrintf("%s.%3.3u", WWIV_NET_NOEXT, instance_number()));
@@ -813,7 +831,6 @@ void Application::InitializeBBS() {
   VLOG(1) << "Saving Instance information.";
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
 }
-
 
 // begin dupphone additions
 
@@ -837,7 +854,8 @@ void Application::create_phone_file() {
   int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
   File phoneNumFile(config()->datadir(), PHONENUM_DAT);
-  if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary | File::modeCreateFile)) {
+  if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary |
+                         File::modeCreateFile)) {
     return;
   }
 
@@ -853,8 +871,7 @@ void Application::create_phone_file() {
         strcpy(reinterpret_cast<char*>(p.phone), szTempVoiceNumber);
         phoneNumFile.Write(&p, sizeof(phonerec));
       }
-      if (szTempDataNumber[0] &&
-          !IsEquals(szTempVoiceNumber, szTempDataNumber) &&
+      if (szTempDataNumber[0] && !IsEquals(szTempVoiceNumber, szTempDataNumber) &&
           !strstr(szTempVoiceNumber, "000-")) {
         strcpy(reinterpret_cast<char*>(p.phone), szTempDataNumber);
         phoneNumFile.Write(&p, sizeof(phonerec));
@@ -864,9 +881,9 @@ void Application::create_phone_file() {
   phoneNumFile.Close();
 }
 
-uint32_t GetFlagsFromIniFile(IniFile& ini, ini_flags_type * fs, int nFlagNumber, uint32_t flags) {
+uint32_t GetFlagsFromIniFile(IniFile& ini, ini_flags_type* fs, int nFlagNumber, uint32_t flags) {
   for (int i = 0; i < nFlagNumber; i++) {
-    const char* key = INI_OPTIONS_ARRAY[ fs[i].strnum ];
+    const char* key = INI_OPTIONS_ARRAY[fs[i].strnum];
     if (!key) {
       continue;
     }

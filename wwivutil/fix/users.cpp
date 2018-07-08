@@ -50,12 +50,9 @@ static char *dateFromTimeT(time_t t) {
   return date_string;
 }
 
-static char *dateFromTimeTForLog(time_t t) {
-  static char date_string[11];
-  struct tm * pTm = localtime(&t);
-
-  snprintf(date_string, sizeof(date_string), "%02d%02d%02d", pTm->tm_year % 100, pTm->tm_mon + 1, pTm->tm_mday);
-  return date_string;
+static std::string dateFromTimeTForLog(time_t t) {
+  auto dt = DateTime::from_time_t(t);
+  return dt.to_string("%y%m%d");
 }
 
 static bool checkFileSize(File &file, unsigned long len) {
@@ -94,12 +91,12 @@ static bool initStatusDat(const std::string& datadir) {
     LOG(INFO) << statusDat.full_pathname() << " NOT FOUND!";
     LOG(INFO) << "Recreating " << statusDat.full_pathname() ;
     memset(&st, 0, sizeof(statusrec_t));
-    strcpy(st.date1, "00/00/00");
-    strcpy(st.date2, st.date1);
-    strcpy(st.date3, st.date1);
-    strcpy(st.log1, "000000.log");
-    strcpy(st.log2, "000000.log");
-    strcpy(st.gfiledate, "00/00/00");
+    to_char_array(st.date1, "00/00/00");
+    to_char_array(st.date2, st.date1);
+    to_char_array(st.date3, st.date1);
+    to_char_array(st.log1, "000000.log");
+    to_char_array(st.log2, "000000.log");
+    to_char_array(st.gfiledate, "00/00/00");
     st.callernum = 65535;
     st.wwiv_version = wwiv_num_version;
     update = true;
@@ -119,39 +116,39 @@ static bool initStatusDat(const std::string& datadir) {
            << wwiv_num_version << ", you need " << st.wwiv_version << ")";
     }
 
-    time_t val = time(nullptr);
-    char *curDate = dateFromTimeT(val);
-    if (strcmp(st.date1, curDate)) {
-      strcpy(st.date1, curDate);
+    auto dt = DateTime::now();
+    time_t val = dt.to_time_t();
+    auto cur_date = dateFromTimeT(val);
+    if (!iequals(st.date1, cur_date)) {
+      to_char_array(st.date1, cur_date);
       update = true;
       LOG(INFO) << "Date error in STATUS.DAT (st.date1) corrected";
     }
 
     val -= 86400L;
-    curDate = dateFromTimeT(val);
-    if (strcmp(st.date2, curDate)) {
-      strcpy(st.date2, curDate);
+    cur_date = dateFromTimeT(val);
+    if (strcmp(st.date2, cur_date)) {
+      strcpy(st.date2, cur_date);
       update = true;
       LOG(INFO) << "Date error in STATUS.DAT (st.date2) corrected";
     }
-    char logFile[512];
-    snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-    if (strcmp(st.log1, logFile)) {
-      strcpy(st.log1, logFile);
+    auto log_file = StrCat(dateFromTimeTForLog(val), ".log");
+    if (!iequals(log_file, st.log1)) {
+      to_char_array(st.log1, log_file);
       update = true;
       LOG(INFO) << "Log filename error in STATUS.DAT (st.log1) corrected";
     }
 
     val -= 86400L;
-    curDate = dateFromTimeT(val);
-    if (strcmp(st.date3, curDate)) {
-      strcpy(st.date3, curDate);
+    cur_date = dateFromTimeT(val);
+    if (!iequals(st.date3, cur_date)) {
+      strcpy(st.date3, cur_date);
       update = true;
       LOG(INFO) << "Date error in STATUS.DAT (st.date3) corrected";
     }
-    snprintf(logFile, sizeof(logFile), "%s.log", dateFromTimeTForLog(val));
-    if (strcmp(st.log2, logFile)) {
-      strcpy(st.log2, logFile);
+    log_file = StrCat(dateFromTimeTForLog(val), ".log");
+    if (!iequals(log_file, st.log2)) {
+      to_char_array(st.log2, log_file);
       update = true;
       LOG(INFO) << "Log filename error in STATUS.DAT (st.log2) corrected";
     }

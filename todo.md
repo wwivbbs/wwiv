@@ -35,6 +35,8 @@
 * Move to LibSSH on all platforms
 * Run various asan/tsan's regularly with gcc via CMake
 * Drop Debian8
+* start using clock more.
+* move to datetime as much as possible.
 
 
 ## Networking Cleanup

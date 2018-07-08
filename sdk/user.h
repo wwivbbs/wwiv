@@ -809,6 +809,9 @@ class User {
   }
   /** Adds extra time to the user, returns the new total exta time. */
   std::chrono::seconds add_extratime(std::chrono::duration<double> extra);
+  /** Subtracts extra time to the user, returns the new total exta time. */
+  std::chrono::seconds subtract_extratime(std::chrono::duration<double> extra);
+  std::chrono::duration<double> extra_time() const noexcept;
 
   std::chrono::seconds timeon() const;
   std::chrono::seconds add_timeon(std::chrono::duration<double> d);

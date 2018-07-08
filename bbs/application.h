@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#if !defined ( __INCLUDED_BBS_APPLICATION_H__ )
+#if !defined(__INCLUDED_BBS_APPLICATION_H__)
 #define __INCLUDED_BBS_APPLICATION_H__
 
 #include <chrono>
@@ -28,32 +28,29 @@
 
 #include "bbs/batch.h"
 #include "bbs/conf.h"
-#include "bbs/runnable.h"
-#include "bbs/remote_io.h"
-#include "bbs/output.h"
 #include "bbs/local_io.h"
+#include "bbs/output.h"
+#include "bbs/remote_io.h"
+#include "bbs/runnable.h"
 #include "core/file.h"
-#include "sdk/status.h"
-#include "sdk/subxtr.h"
 #include "sdk/config.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 #include "sdk/names.h"
 #include "sdk/net.h"
+#include "sdk/status.h"
 #include "sdk/subxtr.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
 
 ///////////////////////////////////////////////////////////////////////////////
 // ASV Settings (populated by INI file
 //
 struct asv_rec {
-  uint8_t
-    sl, dsl, exempt;
+  uint8_t sl, dsl, exempt;
 
-  uint16_t
-    ar, dar, restrict;
+  uint16_t ar, dar, restrict;
 };
 
 // Holds information about tagged files.
@@ -70,9 +67,9 @@ extern Output bout;
 
 namespace wwiv {
 namespace core {
-  class IniFile;
+class IniFile;
 }
-}
+} // namespace wwiv
 
 /**
  * Application - Holds information and status data about the current user
@@ -82,7 +79,7 @@ namespace core {
  * This is different from the BbsApp which holds global BBS information
  * associated with this instance of WWIV globally (not tied to a user)
  */
-class Application: public Runnable {
+class Application : public Runnable {
   friend class BbsHelper;
 
 public:
@@ -103,7 +100,7 @@ public:
   LocalIO* localIO() const { return local_io_.get(); }
   bool reset_local_io(LocalIO* wlocal_io);
   const std::string& GetAttachmentDirectory() const { return attach_dir_; }
-  int  instance_number() const { return instance_number_; }
+  int instance_number() const { return instance_number_; }
   const std::string& network_extension() const { return network_extension_; }
 
   void UpdateTopScreen();
@@ -111,8 +108,8 @@ public:
 
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle, CommunicationType type);
-  /** 
-   * Sets the RemoteIO handle for testing. 
+  /**
+   * Sets the RemoteIO handle for testing.
    * NOTE: This should only be used in unit tests.
    */
   void SetCommForTest(RemoteIO* remote_io);
@@ -147,7 +144,7 @@ public:
   bool IsUserOnline() const { return user_online_; }
   void SetUserOnline(bool b) { user_online_ = b; }
 
-  int  language_number() const { return m_nCurrentLanguageNumber; }
+  int language_number() const { return m_nCurrentLanguageNumber; }
   void set_language_number(int n) {
     m_nCurrentLanguageNumber = n;
     if (n >= 0 && n <= static_cast<int>(languages.size())) {
@@ -159,7 +156,7 @@ public:
   bool IsInternetUseRealNames() const { return m_bInternetUseRealNames; }
   void SetInternetUseRealNames(bool b) { m_bInternetUseRealNames = b; }
 
-  int  GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
+  int GetNumMessagesReadThisLogon() const { return m_nNumMessagesReadThisLogon; }
   void SetNumMessagesReadThisLogon(int n) { m_nNumMessagesReadThisLogon = n; }
 
   bool IsNewScanAtLogin() const { return newscan_at_login_; }
@@ -167,7 +164,7 @@ public:
 
   // This is the current user's dir number they are sitting on.
   // This is a user dir number (a()->udir[b], not directories[b]).
-  uint16_t  current_user_dir_num() const { return user_dir_num_; }
+  uint16_t current_user_dir_num() const { return user_dir_num_; }
   void set_current_user_dir_num(uint16_t n) { user_dir_num_ = n; }
 
   // This is the current user's sub number they are sitting on.
@@ -186,17 +183,19 @@ public:
   // if (a()->GetCurrentReadMessageArea() < 0) { ... }
 
   // Note: This may be set to -1 to mean no area.
-  int  GetCurrentReadMessageArea() const { return current_read_message_area; }
+  int GetCurrentReadMessageArea() const { return current_read_message_area; }
   void SetCurrentReadMessageArea(int n) { current_read_message_area = n; }
 
-  const wwiv::sdk::subboard_t& current_sub() const { return subs().sub(GetCurrentReadMessageArea()); }
+  const wwiv::sdk::subboard_t& current_sub() const {
+    return subs().sub(GetCurrentReadMessageArea());
+  }
   const directoryrec& current_dir() const { return directories[current_user_dir().subnum]; }
-  
-  const net_networks_rec& current_net() const { 
+
+  const net_networks_rec& current_net() const {
     const static net_networks_rec empty_rec{};
-    if (net_networks.empty()) { 
+    if (net_networks.empty()) {
       return empty_rec;
-    } 
+    }
     return net_networks[net_num()];
   }
 
@@ -207,25 +206,25 @@ public:
   void SetCurrentConferenceFileArea(uint16_t n) { current_conf_filearea_ = n; }
 
   bool IsUseInternalZmodem() const { return internal_zmodem_; }
-  
-  int  GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
+
+  int GetNumMessagesInCurrentMessageArea() const { return m_nNumMsgsInCurrentSub; }
   void SetNumMessagesInCurrentMessageArea(int n) { m_nNumMsgsInCurrentSub = n; }
 
-  int  GetBeginDayNodeNumber() const { return beginday_node_number_; }
+  int GetBeginDayNodeNumber() const { return beginday_node_number_; }
   void SetBeginDayNodeNumber(int n) { beginday_node_number_ = n; }
 
-  int  GetExecChildProcessWaitTime() const { return exec_child_process_wait_time_; }
+  int GetExecChildProcessWaitTime() const { return exec_child_process_wait_time_; }
   void SetExecChildProcessWaitTime(int n) { exec_child_process_wait_time_ = n; }
 
   bool IsExecLogSyncFoss() const { return exec_log_syncfoss_; }
-  
+
   bool IsTimeOnlineLimited() const { return m_bTimeOnlineLimited; }
   void SetTimeOnlineLimited(bool b) { m_bTimeOnlineLimited = b; }
 
-  int  net_num() const { return network_num_; }
+  int net_num() const { return network_num_; }
   void set_net_num(int n) { network_num_ = n; }
 
-  int  max_net_num() const { return net_networks.size(); }
+  int max_net_num() const { return net_networks.size(); }
 
   wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
   wwiv::sdk::UserManager* users() { return user_manager_.get(); }
@@ -235,8 +234,8 @@ public:
   const uint8_t primary_port() const { return primary_port_; }
 
   /*!
-  * @function GetHomeDir Returns the current home directory
-  */
+   * @function GetHomeDir Returns the current home directory
+   */
   const std::string GetHomeDir();
 
   /*! @function CdHome Changes directories back to the WWIV Home directory */
@@ -269,12 +268,16 @@ public:
 
   /** Returns the WWIV SDK Config Object. */
   wwiv::sdk::Config* config() const { return config_.get(); }
-  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) { config_ = std::move(config); }
+  void set_config_for_test(std::unique_ptr<wwiv::sdk::Config> config) {
+    config_ = std::move(config);
+  }
   /** Returns the WWIV Names.LST Config Object. */
   wwiv::sdk::Names* names() const { return names_.get(); }
 
   wwiv::sdk::msgapi::MessageApi* msgapi(int type) const { return msgapis_.at(type).get(); }
-  wwiv::sdk::msgapi::MessageApi* msgapi() const { return msgapis_.at(current_sub().storage_type).get(); }
+  wwiv::sdk::msgapi::MessageApi* msgapi() const {
+    return msgapis_.at(current_sub().storage_type).get();
+  }
   wwiv::sdk::msgapi::WWIVMessageApi* msgapi_email() const {
     return static_cast<wwiv::sdk::msgapi::WWIVMessageApi*>(msgapi(2));
   }
@@ -284,30 +287,34 @@ public:
   wwiv::sdk::Subs& subs() { return *subs_.get(); }
   const wwiv::sdk::Subs& subs() const { return *subs_.get(); }
 
-
   bool read_subs();
   bool create_message_api();
   void SetLogonTime();
   std::chrono::system_clock::time_point system_logon_time() const { return system_logon_time_; }
-  std::chrono::system_clock::duration duration_used_this_session() const;
+  std::chrono::seconds duration_used_this_session() const;
+
+  std::chrono::seconds extratimecall() const;
+  std::chrono::seconds set_extratimecall(std::chrono::duration<double> et);
+  std::chrono::seconds add_extratimecall(std::chrono::duration<double> et);
+  std::chrono::seconds subtract_extratimecall(std::chrono::duration<double> et);
 
   /*!
-  * @function ShowUsage - Shows the help screen to the user listing
-  *           all of the command line arguments for WWIV
-  */
+   * @function ShowUsage - Shows the help screen to the user listing
+   *           all of the command line arguments for WWIV
+   */
   void ShowUsage();
 
   /*!
-  * @function Run main bbs loop - Invoked from the application
-  *           main method.
-  * @param argc The number of arguments
-  * @param argv arguments
-  */
-  int Run(int argc, char *argv[]);
+   * @function Run main bbs loop - Invoked from the application
+   *           main method.
+   * @param argc The number of arguments
+   * @param argv arguments
+   */
+  int Run(int argc, char* argv[]);
 
   void ExitBBSImpl(int exit_level, bool perform_shutdown);
 
-  void InitializeBBS(); // old init() method
+  void InitializeBBS();                       // old init() method
   void ReadINIFile(wwiv::core::IniFile& ini); // from xinit.cpp
   bool ReadInstanceSettings(int instance_number, wwiv::core::IniFile& ini);
   bool ReadConfig();
@@ -324,28 +331,17 @@ public:
   bool quoting_ = false;
   bool m_bTimeOnlineLimited = false;
 
-  bool  newscan_at_login_ = false,
-    internal_zmodem_ = true,
-    exec_log_syncfoss_ = true;
-  int m_nNumMessagesReadThisLogon = 0,
-    m_nCurrentLanguageNumber = 0;
+  bool newscan_at_login_ = false, internal_zmodem_ = true, exec_log_syncfoss_ = true;
+  int m_nNumMessagesReadThisLogon = 0, m_nCurrentLanguageNumber = 0;
   uint16_t user_dir_num_ = 0;
   uint16_t user_sub_num_ = 0;
   // This one should stay in int since -1 is an allowed value.
   int current_read_message_area = 0;
   uint16_t current_conf_msgarea_ = 0;
   uint16_t current_conf_filearea_ = 0;
-  int m_nNumMsgsInCurrentSub = 0,
-    beginday_node_number_ = 1,
-    exec_child_process_wait_time_ = 500,
-    m_nMaxNumberMessageAreas = 0,
-    m_nMaxNumberFileAreas = 0,
-    network_num_ = 0,
-    m_nMaxNetworkNumber = 0,
-    numf = 0,
-    subchg = 0,
-    topdata = 0,
-    using_modem = 0;
+  int m_nNumMsgsInCurrentSub = 0, beginday_node_number_ = 1, exec_child_process_wait_time_ = 500,
+      m_nMaxNumberMessageAreas = 0, m_nMaxNumberFileAreas = 0, network_num_ = 0,
+      m_nMaxNetworkNumber = 0, numf = 0, subchg = 0, topdata = 0, using_modem = 0;
   unsigned int screenlinest = 0;
   int defscreenbottom = 24;
 
@@ -370,13 +366,8 @@ public:
 
   asv_rec asv;
 
-  uint16_t
-    mail_who_field_len = 0,
-    max_batch = 0,
-    max_extend_lines = 0,
-    max_chains = 0,
-    max_gfilesec = 0,
-    screen_saver_time = 0;
+  uint16_t mail_who_field_len = 0, max_batch = 0, max_extend_lines = 0, max_chains = 0,
+           max_gfilesec = 0, screen_saver_time = 0;
 
   std::vector<uint8_t> newuser_colors;
   std::vector<uint8_t> newuser_bwcolors;
@@ -399,18 +390,18 @@ public:
   std::vector<tagrec_t> filelist;
   std::vector<confrec> subconfs;
   std::vector<confrec> dirconfs;
-  
+
   std::vector<userconfrec> uconfsub;
   std::vector<userconfrec> uconfdir;
 
-  std::string beginday_cmd; // beginday event
-  std::string logon_cmd;            // logon event
-  std::string newuser_cmd;          // newuser event
-  std::string upload_cmd;           // upload event
-  std::string terminal_command;     // Terminal command
+  std::string beginday_cmd;     // beginday event
+  std::string logon_cmd;        // logon event
+  std::string newuser_cmd;      // newuser event
+  std::string upload_cmd;       // upload event
+  std::string terminal_command; // Terminal command
 
   // TODO(rushfan): Make this private. This is needed by WFC
-  uint16_t  unx_;
+  uint16_t unx_;
 
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
@@ -423,21 +414,20 @@ public:
   bool in_chatroom_ = false;
   bool chatline_ = false;
   int modem_speed_ = 0;
-  bool mci_enabled_{ true };
-
+  bool mci_enabled_{true};
 
 protected:
   /*!
-  * @function GetCaller WFC Screen loop
-  */
+   * @function GetCaller WFC Screen loop
+   */
   void GetCaller();
 
   /*!
-  * @function GotCaller login routines
-  * @param ms Modem Speed (may be a locked speed)
-  */
+   * @function GotCaller login routines
+   * @param ms Modem Speed (may be a locked speed)
+   */
   void GotCaller(unsigned int ms);
-  
+
 private:
   void read_nextern();
   void read_arcs();
@@ -452,14 +442,13 @@ private:
   void check_phonenum();
   void create_phone_file();
 
-// Private fields.
+  // Private fields.
 private:
-
   /*! The current working directory.*/
   std::string current_dir_;
   int oklevel_;
   int errorlevel_;
-  int  instance_number_ = -1;
+  int instance_number_ = -1;
   std::string network_extension_;
   bool user_already_on_ = false;
   bool need_to_clean_net_ = false;
@@ -486,7 +475,7 @@ private:
   bool full_screen_read_prompt_ = true;
   int last_read_user_number_ = 0;
   std::chrono::system_clock::time_point system_logon_time_;
+  std::chrono::duration<double> extratimecall_;
 };
 
-#endif  // #if !defined (__INCLUDED_BBS_APPLICATION_H__)
-
+#endif // #if !defined (__INCLUDED_BBS_APPLICATION_H__)

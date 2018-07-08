@@ -69,6 +69,8 @@
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
+using std::chrono::duration;
+using std::chrono::duration_cast;
 using std::chrono::milliseconds;
 using std::chrono::seconds;
 using std::string;
@@ -1007,8 +1009,8 @@ void logoff() {
   a()->user()->SetLastOn(g_szLastLoginDate);
 
   a()->user()->SetNumIllegalLogons(0);
-  auto seconds_used_duration = std::chrono::system_clock::now() - a()->system_logon_time();
-  seconds_used_duration -= std::chrono::seconds(extratimecall);
+  auto seconds_used_duration = duration_cast<seconds>(
+      std::chrono::system_clock::now() - a()->system_logon_time() - a()->extratimecall());
   a()->user()->add_timeon(seconds_used_duration);
   a()->user()->add_timeon_today(seconds_used_duration);
 

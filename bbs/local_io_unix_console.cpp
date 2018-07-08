@@ -19,6 +19,7 @@
 #include "bbs/local_io_unix_console.h"
 
 #include <algorithm>
+#include <chrono>
 #include <cstdarg>
 #include <iostream>
 #include <string>
@@ -324,13 +325,11 @@ void UnixConsoleIO::skey(char ch) {
           tleft(false);
           break;
         case F7:                          /* F7 */
-          a()->user()->SetExtraTime(a()->user()->GetExtraTime() -
-              static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+          user()->subtract_extratime(std::chrono::minutes(5));
           tleft(false);
           break;
         case F8:                          /* F8 */
-          a()->user()->SetExtraTime(a()->user()->GetExtraTime() +
-              static_cast<float>(5.0 * SECONDS_PER_MINUTE_FLOAT));
+          user()->add_extratime(std::chrono::minutes(5));
           tleft(false);
           break;
         case F9:                          /* F9 */
