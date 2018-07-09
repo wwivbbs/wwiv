@@ -101,7 +101,7 @@ public:
   }
   DateTime operator-(std::chrono::duration<double> d) {
     auto du = std::chrono::duration_cast<std::chrono::seconds>(d);
-    return DateTime::from_time_t(to_time_t() + static_cast<time_t>(du.count()));
+    return DateTime::from_time_t(to_time_t() - static_cast<time_t>(du.count()));
   }
   DateTime& operator-=(std::chrono::duration<double> d) {
     auto du = std::chrono::duration_cast<std::chrono::seconds>(d);

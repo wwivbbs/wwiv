@@ -9,6 +9,7 @@ set(test_sources
   clock_test.cpp
   crc32_test.cpp
   command_line_test.cpp
+  datetime_test.cpp
   datafile_test.cpp
   fake_clock_test.cpp
   findfiles_test.cpp
