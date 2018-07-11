@@ -28,10 +28,10 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "sdk/config.h"
-#include "sdk/filenames.h"
-#include "sdk/vardec.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
+#include "sdk/filenames.h"
+#include "sdk/vardec.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -42,18 +42,19 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
-FtnMessageDupe::FtnMessageDupe(const Config& config)
-    : initialized_(config.IsInitialized()), datadir_(config.datadir()) {
-  if (initialized_) {
+FtnMessageDupe::FtnMessageDupe(const Config& config) : FtnMessageDupe(config.datadir()) {}
+
+FtnMessageDupe::FtnMessageDupe(const std::string& datadir) : datadir_(datadir) {
+  if (!datadir_.empty()) {
     initialized_ = Load();
+  } else {
+    initialized_ = false;
   }
 }
 
-FtnMessageDupe::~FtnMessageDupe() {}
-
 bool FtnMessageDupe::Load() {
-  DataFile<uint64_t> file(datadir_, MSGDUPE_DAT,
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  DataFile<msgids> file(datadir_, MSGDUPE_DAT,
+                        File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     LOG(ERROR) << "Unable to initialize FtnDupe: Unable to create file.";
     return false;
@@ -64,28 +65,25 @@ bool FtnMessageDupe::Load() {
     // nothing to read.
     return true;
   }
-  std::vector<uint64_t> dupes(num_records);
-  if (!file.Read(&dupes[0], num_records)) {
+  if (!file.ReadVector(dupes_)) {
     LOG(ERROR) << "Unable to initialize FtnDupe: Read Failed";
     return false;
   }
-  for (const auto& dupe : dupes) {
-    dupes_.insert(dupe);
+  for (const auto& d : dupes_) {
+    header_dupes_.insert(d.header);
+    msgid_dupes_.insert(d.msgid);
   }
   return true;
 }
 
 bool FtnMessageDupe::Save() {
-  DataFile<uint64_t> file(datadir_, MSGDUPE_DAT,
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
+  DataFile<msgids> file(datadir_, MSGDUPE_DAT,
+                        File::modeReadWrite | File::modeBinary | File::modeCreateFile |
+                            File::modeTruncate);
   if (!file) {
     return false;
   }
-  std::vector<uint64_t> dupes;
-  for (const auto& d : dupes_) {
-    dupes.push_back(d);
-  }
-  return file.Write(&dupes[0], dupes_.size());
+  return file.WriteVector(dupes_);
 }
 
 const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAddress& a) {
@@ -93,15 +91,15 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
     string address_string;
     if (a.point() != 0) {
       address_string = to_zone_net_node_point(a);
-    }
-    else {
+    } else {
       address_string = to_zone_net_node(a);
     }
     return StrCat(address_string, " DEADBEEF");
   }
 
   DataFile<uint64_t> file(datadir_, MSGID_DAT,
-    File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
+                          File::modeReadWrite | File::modeBinary | File::modeCreateFile,
+                          File::shareDenyReadWrite);
   if (!file) {
     throw std::runtime_error("Unable to open file: " + file.file().full_pathname());
   }
@@ -128,7 +126,7 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
   return StringPrintf("%s %08X", address_string.c_str(), msg_num);
 }
 
-//static 
+// static
 std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
   static const string kMSGID = "MSGID: ";
   std::vector<std::string> lines = wwiv::sdk::fido::split_message(text);
@@ -147,7 +145,7 @@ std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
   return "";
 }
 
-//static 
+// static
 std::string FtnMessageDupe::GetMessageIDFromWWIVText(const std::string& text) {
   static const string kMSGID = "0MSGID: ";
   std::vector<std::string> lines = wwiv::sdk::fido::split_message(text);
@@ -181,8 +179,8 @@ static bool crc32(const FidoPackedMessage& msg, uint32_t& header_crc32, uint32_t
   return true;
 }
 
-static inline uint64_t as64(uint32_t l, uint32_t r) {
-  return (static_cast<uint64_t>(l) << 32) | r;
+uint64_t as64(uint32_t header, uint32_t msgid) {
+  return (static_cast<uint64_t>(header) << 32) | msgid;
 }
 
 bool FtnMessageDupe::add(const FidoPackedMessage& msg) {
@@ -197,20 +195,47 @@ bool FtnMessageDupe::add(const FidoPackedMessage& msg) {
 }
 
 bool FtnMessageDupe::add(uint32_t header_crc32, uint32_t msgid_crc32) {
-  uint64_t entry = as64(header_crc32, msgid_crc32);
-  dupes_.insert(entry);
+  if (header_crc32 != 0) {
+    header_dupes_.insert(header_crc32);
+  }
+  if (msgid_crc32 != 0) {
+    msgid_dupes_.insert(msgid_crc32);
+  }
+
+  msgids ids{};
+  ids.header = header_crc32;
+  ids.msgid = msgid_crc32;
+
+  dupes_.emplace_back(ids);
   return Save();
 }
 
 bool FtnMessageDupe::remove(uint32_t header_crc32, uint32_t msgid_crc32) {
-  uint64_t entry = as64(header_crc32, msgid_crc32);
-  dupes_.erase(entry);
+  bool found = false;
+  for (auto it = dupes_.begin(); it != std::end(dupes_);) {
+    const auto& d = *it;
+    if (d.header == header_crc32 && d.msgid == msgid_crc32) {
+      dupes_.erase(it);
+      found = true;
+      break;
+    } else {
+      it++;
+    }
+  }
+  if (!found) {
+    return false;
+  }
   return Save();
 }
 
 bool FtnMessageDupe::is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const {
-  uint64_t entry = as64(header_crc32, msgid_crc32);
-  return contains(dupes_, entry);
+  if (contains(header_dupes_, header_crc32)) {
+    return true;
+  }
+  if (contains(msgid_dupes_, msgid_crc32)) {
+    return true;
+  }
+  return false;
 }
 
 bool FtnMessageDupe::is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) const {
@@ -223,5 +248,5 @@ bool FtnMessageDupe::is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) cons
   return is_dupe(header_crc32, msgid_crc32);
 }
 
-}
-}
+} // namespace sdk
+} // namespace wwiv
