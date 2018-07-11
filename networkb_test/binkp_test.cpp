@@ -115,7 +115,7 @@ TEST(NodeFromAddressTest, MultipleAddresses) {
 }
 
 TEST(NodeFromAddressTest, MultipleAddresses_SameNetwork) {
-  const string address = "1:369/0@coolnet 1:369/23@coolnet";
+  const string address = "1:369/-1@coolnet 1:369/23@coolnet";
   EXPECT_EQ("1:369/23@coolnet", ftn_address_from_address_list(address, "coolnet"));
 }
 

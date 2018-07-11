@@ -58,6 +58,9 @@ std::string ftn_address_from_address_list(const string& network_list, const stri
       }
       catch (const wwiv::sdk::fido::bad_fidonet_address& e) {
         LOG(WARNING) << "Caught bad_fidonet_address: " << e.what();
+        // Just like above, we don't have a well formed FidoAddress
+        // so we keep looping through the list.
+        continue;
       }
       return s;
     }
