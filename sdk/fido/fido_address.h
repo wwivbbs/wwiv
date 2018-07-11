@@ -77,13 +77,16 @@ class FidoAddress {
 public:
   /** Parses address.  If it fails, throws bad_fidonet_address. */
   explicit FidoAddress(const ::std::string& address);
-  FidoAddress() noexcept : FidoAddress(0, 0, 0, 0, "") {}
+  FidoAddress() noexcept : FidoAddress(-1, -1, -1, -1, "") {}
   FidoAddress(int16_t zone, int16_t net, int16_t node, int16_t point, const ::std::string& domain)
     : zone_(zone), net_(net), node_(node), point_(point), domain_(domain) {}
   ~FidoAddress() {}
 
   std::string as_string(bool include_domain = false) const;
-  friend std::ostream& operator<< (std::ostream &os, const FidoAddress &f) { os << f.as_string(); return os; }
+  friend std::ostream& operator<< (std::ostream &os, const FidoAddress &f) {
+    os << f.as_string();
+    return os; 
+  }
   int16_t zone() const { return zone_; }
   int16_t net() const { return net_; }
   int16_t node() const { return node_; }
@@ -101,6 +104,8 @@ private:
   int16_t point_ = 0;
   ::std::string domain_;
 };
+
+const static FidoAddress EMPTY_FIDO_ADDRESS = FidoAddress(-1, -1, -1, -1, "");
 
 class bad_fidonet_address: public ::std::runtime_error {
 public:

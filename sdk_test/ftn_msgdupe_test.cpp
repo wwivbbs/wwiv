@@ -65,7 +65,7 @@ public:
     if (!file) {
       return false;
     }
-    file.Write(&id, 1);
+    return file.Write(&id, 1);
   }
 
   SdkHelper helper;

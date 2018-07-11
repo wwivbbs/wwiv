@@ -54,7 +54,7 @@ std::string ftn_address_from_address_list(const string& network_list, const stri
         // Let's ensure we have a well formed FidoAddress.
         wwiv::sdk::fido::FidoAddress a(s);
         // Check for zero zone, node or net.
-        if (a.net() == 0 || a.node() == 0 || a.zone() == 0) { continue; }
+        if (a.net() == -1 || a.node() == -1 || a.zone() == -1) { continue; }
       }
       catch (const wwiv::sdk::fido::bad_fidonet_address& e) {
         LOG(WARNING) << "Caught bad_fidonet_address: " << e.what();

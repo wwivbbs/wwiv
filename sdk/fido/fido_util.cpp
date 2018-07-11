@@ -360,14 +360,14 @@ FidoAddress get_address_from_single_line(const std::string& line) {
   auto start = line.find_last_of('(');
   auto end = line.find_last_of(')');
   if (start == string::npos || end == string::npos) {
-    return FidoAddress(0, 0, 0, 0, "");
+    return EMPTY_FIDO_ADDRESS;
   }
 
   auto astr = line.substr(start + 1, end - start - 1);
   try {
     return FidoAddress(astr);
   } catch (std::exception&) {
-    return FidoAddress(0, 0, 0, 0, "");
+    return EMPTY_FIDO_ADDRESS;
   }
 }
 
@@ -378,7 +378,7 @@ FidoAddress get_address_from_origin(const std::string& text) {
       return get_address_from_single_line(line);
     }
   }
-  return FidoAddress(0, 0, 0, 0, "");
+  return EMPTY_FIDO_ADDRESS;
 }
 
 // Returns a vector of valid routes.
@@ -487,7 +487,7 @@ wwiv::sdk::fido::FidoAddress FindRouteToAddress(
       return nc.first;
     }
   }
-  return FidoAddress(0, 0, 0, 0, "");
+  return EMPTY_FIDO_ADDRESS;
 }
 
 wwiv::sdk::fido::FidoAddress FindRouteToAddress(

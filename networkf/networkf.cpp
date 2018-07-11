@@ -968,7 +968,7 @@ static FidoAddress find_route_to(const FidoAddress& dest, const FidoCallout& cal
   }
 
   FidoAddress a = FindRouteToAddress(dest, callout);
-  if (a.node() == 0) {
+  if (a.node() == -1) {
     // is this right? returning direct if we have no route?
     return dest;
   }
@@ -1016,7 +1016,7 @@ bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const ne
   auto it = p.text.begin();
   auto to = get_message_field(p.text, it, {0}, 80);
   auto dest = get_address_from_single_line(to);
-  if (dest.node() == 0) {
+  if (dest.node() == -1) {
     LOG(ERROR) << "Unable to get address from to line: " << to;
     return false;
   }
