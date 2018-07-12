@@ -425,8 +425,9 @@ void ConnectionHandler::HandleConnection() {
       return;
     }
     ScopeExit at_exit([&] { data.concurrent_connections_->release(result.remote_peer); });
+    const auto connection_type = connection_type_for(*data.c, r.port);
 
-    if (data.c->blocking.mailer_mode) {
+    if (data.c->blocking.mailer_mode && connection_type == ConnectionType::TELNET) {
       auto mailer_result = DoMailerMode();
       if (mailer_result == MailerModeResult::DENY) {
         LOG(INFO) << "DENY (from MailerMode, didn't press ESC twice)";
@@ -444,8 +445,6 @@ void ConnectionHandler::HandleConnection() {
                      std::chrono::seconds(1));
       return;
     }
-
-    auto connection_type = connection_type_for(*data.c, r.port);
 
     wwivd_matrix_entry_t bbs;
     if (connection_type == ConnectionType::TELNET) {
