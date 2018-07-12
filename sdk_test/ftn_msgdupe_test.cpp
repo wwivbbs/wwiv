@@ -72,7 +72,12 @@ public:
   Config config_;
 };
 
-TEST_F(FtnMsgDupeTest, Smoke) {
+// This is what the old msgdupe used.
+uint64_t as64(uint32_t header, uint32_t msgid) {
+  return (static_cast<uint64_t>(header) << 32) | msgid;
+}
+
+TEST_F(FtnMsgDupeTest, As64) {
   auto i = as64(2, 1);
   LOG(INFO) << i;
   LOG(INFO) << "msgids sizeof: " << sizeof(msgids);
@@ -86,7 +91,7 @@ TEST_F(FtnMsgDupeTest, Smoke) {
 }
 
 TEST_F(FtnMsgDupeTest, MsgId_NoExists) { 
-  FtnMessageDupe dupe(config_.datadir()); 
+  FtnMessageDupe dupe(config_.datadir(), true); 
   FidoAddress a{"1:2/3"};
   auto now = time(nullptr);
   auto line = dupe.CreateMessageID(a);
@@ -104,7 +109,7 @@ TEST_F(FtnMsgDupeTest, Exists) {
   auto last_message_id = now + 10000;
   ASSERT_TRUE(SetLastMessageId(last_message_id));
   ASSERT_TRUE(File::Exists(FilePath(config_.datadir(), MSGID_DAT)));
-  FtnMessageDupe dupe(config_.datadir());
+  FtnMessageDupe dupe(config_.datadir(), true);
   FidoAddress a{"1:2/3"};
   auto line = dupe.CreateMessageID(a);
   auto parts = SplitString(line, " ");
@@ -113,4 +118,19 @@ TEST_F(FtnMsgDupeTest, Exists) {
 
   EXPECT_EQ(id - last_message_id, 1) << "id: " << id << "; last_message_id: " << last_message_id
                                      << "; delta: " << (id - last_message_id);
+}
+
+TEST_F(FtnMsgDupeTest, Smoke) {
+  FtnMessageDupe dupe(config_.datadir(), false);
+  dupe.add(1, 2);
+  EXPECT_TRUE(dupe.is_dupe(1, 2));
+  EXPECT_FALSE(dupe.is_dupe(2, 1));
+}
+
+TEST_F(FtnMsgDupeTest, Remove) {
+  FtnMessageDupe dupe(config_.datadir(), false);
+  dupe.add(1, 2);
+  EXPECT_TRUE(dupe.is_dupe(1, 2));
+  dupe.remove(1, 2);
+  EXPECT_FALSE(dupe.is_dupe(1, 2));
 }

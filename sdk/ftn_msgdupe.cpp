@@ -42,9 +42,10 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace sdk {
 
-FtnMessageDupe::FtnMessageDupe(const Config& config) : FtnMessageDupe(config.datadir()) {}
+FtnMessageDupe::FtnMessageDupe(const Config& config) : FtnMessageDupe(config.datadir(), true) {}
 
-FtnMessageDupe::FtnMessageDupe(const std::string& datadir) : datadir_(datadir) {
+FtnMessageDupe::FtnMessageDupe(const std::string& datadir, bool use_filesystem)
+    : datadir_(datadir), use_filesystem_(use_filesystem) {
   if (!datadir_.empty()) {
     initialized_ = Load();
   } else {
@@ -53,6 +54,9 @@ FtnMessageDupe::FtnMessageDupe(const std::string& datadir) : datadir_(datadir) {
 }
 
 bool FtnMessageDupe::Load() {
+  if (!use_filesystem_) {
+    return true;
+  }
   DataFile<msgids> file(datadir_, MSGDUPE_DAT,
                         File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
@@ -77,6 +81,9 @@ bool FtnMessageDupe::Load() {
 }
 
 bool FtnMessageDupe::Save() {
+  if (!use_filesystem_) {
+    return true;
+  }
   DataFile<msgids> file(datadir_, MSGDUPE_DAT,
                         File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                             File::modeTruncate);
@@ -179,10 +186,6 @@ static bool crc32(const FidoPackedMessage& msg, uint32_t& header_crc32, uint32_t
   return true;
 }
 
-uint64_t as64(uint32_t header, uint32_t msgid) {
-  return (static_cast<uint64_t>(header) << 32) | msgid;
-}
-
 bool FtnMessageDupe::add(const FidoPackedMessage& msg) {
   uint32_t header_crc32 = 0;
   uint32_t msgid_crc32 = 0;
@@ -211,21 +214,18 @@ bool FtnMessageDupe::add(uint32_t header_crc32, uint32_t msgid_crc32) {
 }
 
 bool FtnMessageDupe::remove(uint32_t header_crc32, uint32_t msgid_crc32) {
-  bool found = false;
   for (auto it = dupes_.begin(); it != std::end(dupes_);) {
     const auto& d = *it;
     if (d.header == header_crc32 && d.msgid == msgid_crc32) {
       dupes_.erase(it);
-      found = true;
-      break;
+      header_dupes_.erase(header_crc32);
+      msgid_dupes_.erase(msgid_crc32);
+      return Save();
     } else {
       it++;
     }
   }
-  if (!found) {
-    return false;
-  }
-  return Save();
+  return false;
 }
 
 bool FtnMessageDupe::is_dupe(uint32_t header_crc32, uint32_t msgid_crc32) const {

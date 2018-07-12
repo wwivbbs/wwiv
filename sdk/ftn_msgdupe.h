@@ -29,8 +29,6 @@
 namespace wwiv {
 namespace sdk {
 
- uint64_t as64(uint32_t header, uint32_t msgid);
-
  struct msgids {
    uint32_t msgid{};
    uint32_t header{};
@@ -41,7 +39,7 @@ namespace sdk {
 class FtnMessageDupe {
 public:
   explicit FtnMessageDupe(const Config& config);
-  explicit FtnMessageDupe(const std::string& datadir);
+  FtnMessageDupe(const std::string& datadir, bool use_filesystem);
   virtual ~FtnMessageDupe() = default;
 
   bool IsInitialized() const { return initialized_; }
@@ -70,6 +68,7 @@ private:
   std::vector<msgids> dupes_;
   std::set<uint32_t> msgid_dupes_;
   std::set<uint32_t> header_dupes_;
+  bool use_filesystem_{true};
 };
 
 
