@@ -147,7 +147,13 @@ static bool Send(BinkConfig& bink_config, const string& sendto_node,
     Contact contact(net, true);
 
     LOG(ERROR) << "Recording failure";
-    contact.add_failure(sendto_node, system_clock::to_time_t(start_time));
+    if (net.type == network_type_t::wwivnet) {
+      auto wwivnet_node = to_number<uint16_t>(sendto_node);
+      contact.add_failure(wwivnet_node, system_clock::to_time_t(start_time));
+    } else {
+      contact.add_failure(sendto_node, system_clock::to_time_t(start_time));
+    }
+
     throw e;
   }
 

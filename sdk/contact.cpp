@@ -96,8 +96,8 @@ Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
   initialized_ = true;
 }
 
-Contact::Contact(std::initializer_list<NetworkContact> l)
-    : net_{}, save_on_destructor_(false), initialized_(true) {
+Contact::Contact(const net_networks_rec& net, std::initializer_list<NetworkContact> l)
+    : net_(net), save_on_destructor_(false), initialized_(true) {
   for (const auto& r : l) {
     contacts_.emplace(r.address(), r);
   }
@@ -214,10 +214,6 @@ void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t b
 void Contact::add_connect(const std::string& node, time_t time, uint32_t bytes_sent,
                           uint32_t bytes_received) {
   auto key = node;
-  if (net_.type == network_type_t::wwivnet) {
-    auto n = to_number<uint16_t>(node);
-    key = NetworkContact::CreateFakeFtnAddress(n);
-  }
   NetworkContact* c = contact_rec_for(key);
   if (c == nullptr) {
     ensure_rec_for(key);
@@ -245,10 +241,6 @@ void Contact::add_failure(int node, time_t time) {
 
 void Contact::add_failure(const std::string& n, time_t time) {
   auto key = n;
-  if (net_.type == network_type_t::wwivnet) {
-    auto node = to_number<uint16_t>(n);
-    key = NetworkContact::CreateFakeFtnAddress(node);
-  }
   NetworkContact* c = contact_rec_for(key);
   if (c == nullptr) {
     ensure_rec_for(key);

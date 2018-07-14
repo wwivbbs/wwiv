@@ -15,11 +15,11 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "gtest/gtest.h"
+#include "core/datetime.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/contact.h"
-#include "core/datetime.h"
+#include "gtest/gtest.h"
 
 #include <cstdint>
 #include <string>
@@ -42,7 +42,7 @@ protected:
 };
 
 TEST_F(ContactTest, SimpleCase) {
-  Contact c({ c1, c2 });
+  Contact c({}, {c1, c2});
   NetworkContact* ncr1 = c.contact_rec_for(1);
 
   c.add_connect(1, then, 100, 200);
@@ -58,7 +58,7 @@ TEST_F(ContactTest, SimpleCase) {
 }
 
 TEST_F(ContactTest, MultipleConnects) {
-  Contact c({ c1, c2 });
+  Contact c({}, {c1, c2});
   NetworkContact* ncr1 = c.contact_rec_for(1);
 
   c.add_connect(1, then, 100, 200);
@@ -76,7 +76,7 @@ TEST_F(ContactTest, MultipleConnects) {
 }
 
 TEST_F(ContactTest, WithFailure) {
-  Contact c({ c1, c2 });
+  Contact c({}, {c1, c2});
   NetworkContact* ncr1 = c.contact_rec_for(1);
 
   c.add_connect(1, then, 100, 200);
@@ -94,7 +94,7 @@ TEST_F(ContactTest, WithFailure) {
 }
 
 TEST_F(ContactTest, EnsureBytesWaitingClears) {
-  Contact c({ c1, c2 });
+  Contact c({}, {c1, c2});
   NetworkContact* ncr1 = c.contact_rec_for(1);
 
   ncr1->set_bytes_waiting(100);
@@ -105,6 +105,7 @@ TEST_F(ContactTest, EnsureBytesWaitingClears) {
   c.add_failure(1, now);
   EXPECT_EQ(100, ncr1->bytes_waiting());
 
-  c.add_connect(1, now+1, 100, 200);
+  c.add_connect(1, now + 1, 100, 200);
   EXPECT_EQ(0, ncr1->bytes_waiting());
 }
+

@@ -88,7 +88,7 @@ class Contact {
  public:
   Contact(const net_networks_rec& net, bool save_on_destructor);
   // VisibleForTesting
-  Contact(std::initializer_list<NetworkContact> l);
+  Contact(const net_networks_rec& net, std::initializer_list<NetworkContact> l);
   virtual ~Contact();
 
   // Was this list initialized properly.
