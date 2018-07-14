@@ -257,14 +257,14 @@ TEST_F(FidoUtilConfigTest, ExistsBundle) {
 TEST_F(FidoUtilTest, GetAddressFromSingleLine) {
   {
     auto a = get_address_from_single_line("");
-    EXPECT_EQ(0, a.net());
-    EXPECT_EQ(0, a.node());
+    EXPECT_EQ(-1, a.net());
+    EXPECT_EQ(-1, a.node());
   }
 
   {
     auto a = get_address_from_single_line("Not an origin line");
-    EXPECT_EQ(0, a.net());
-    EXPECT_EQ(0, a.node());
+    EXPECT_EQ(-1, a.net());
+    EXPECT_EQ(-1, a.node());
   }
 
   {
