@@ -31,25 +31,25 @@
 #include "core/log.h"
 #include "core/net.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/scope_exit.h"
 #include "core/version.h"
 
-#include "networkb/binkp.h"
-#include "networkb/binkp_config.h"
 #include "core/connection.h"
-#include "networkb/net_util.h"
 #include "core/socket_connection.h"
 #include "core/socket_exceptions.h"
+#include "networkb/binkp.h"
+#include "networkb/binkp_config.h"
+#include "networkb/net_util.h"
 #include "networkb/wfile_transfer_file.h"
 
 #include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/contact.h"
+#include "sdk/fido/fido_callout.h"
 #include "sdk/networks.h"
 #include "sdk/status.h"
-#include "sdk/fido/fido_callout.h"
 
 using std::cout;
 using std::endl;
@@ -74,12 +74,11 @@ static void RegisterNetworkBCommands(CommandLine& cmdline) {
   cmdline.add_argument({"node", "Node number (only used when sending)", "0"});
   cmdline.add_argument({"handle", "Existing socket handle (only used when receiving)", "0"});
   cmdline.add_argument({"port", "Port number to use (receiving only)", "24554"});
-  cmdline.add_argument(BooleanCommandLineArgument("daemon", "Run continually as a daemon until stopped  (only used when receiving)", true));
+  cmdline.add_argument(BooleanCommandLineArgument(
+      "daemon", "Run continually as a daemon until stopped  (only used when receiving)", true));
 }
-  
-static void ShowHelp(CommandLine& cmdline) {
-  cout << cmdline.GetHelp() << endl;
-}
+
+static void ShowHelp(CommandLine& cmdline) { cout << cmdline.GetHelp() << endl; }
 
 static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
   BinkSide side = BinkSide::ANSWERING;
@@ -111,7 +110,8 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
         SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
         c = std::make_unique<SocketConnection>(s);
       }
-      BinkP::received_transfer_file_factory_t factory = [&](const string& network_name, const string& filename) {
+      BinkP::received_transfer_file_factory_t factory = [&](const string& network_name,
+                                                            const string& filename) {
         const net_networks_rec& net = bink_config.networks()[network_name];
         return new WFileTransferFile(filename, std::make_unique<File>(net.dir, filename));
       };
@@ -128,7 +128,8 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
   return true;
 }
 
-static bool Send(BinkConfig& bink_config, const string& sendto_node, const std::string& network_name) {
+static bool Send(BinkConfig& bink_config, const string& sendto_node,
+                 const std::string& network_name) {
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
 
@@ -141,8 +142,11 @@ static bool Send(BinkConfig& bink_config, const string& sendto_node, const std::
   try {
     c = Connect(node_config->host, node_config->port);
   } catch (const connection_error& e) {
+    LOG(ERROR) << e.what();
     const net_networks_rec& net = bink_config.networks()[network_name];
     Contact contact(net, true);
+
+    LOG(ERROR) << "Recording failure";
     contact.add_failure(sendto_node, system_clock::to_time_t(start_time));
     throw e;
   }
@@ -195,8 +199,8 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
         bink_config.callouts()[lower_case_network_name] = std::unique_ptr<Callout>(new Callout(n));
       } else if (n.type == network_type_t::ftn) {
         LOG(INFO) << "Adding FidoCallout for " << n.name;
-        bink_config.callouts()[lower_case_network_name] = 
-          std::unique_ptr<Callout>(new FidoCallout(net_cmdline.config(), n));
+        bink_config.callouts()[lower_case_network_name] =
+            std::unique_ptr<Callout>(new FidoCallout(net_cmdline.config(), n));
       }
     }
 
@@ -210,7 +214,7 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     } else {
       ShowHelp(cmdline);
       return 1;
-    } 
+    }
 
   } catch (const connection_error& e) {
     LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
