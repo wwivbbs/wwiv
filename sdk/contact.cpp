@@ -25,15 +25,15 @@
 #include <string>
 
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/datetime.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
-#include "sdk/fido/fido_address.h"
 
 using std::endl;
 using std::map;
@@ -206,26 +206,22 @@ void Contact::ensure_rec_for(const std::string& node) {
   }
 }
 
-void Contact::add_connect(int n, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
-  auto node = static_cast<uint16_t>(n);
-  NetworkContact* c = contact_rec_for(node);
-  if (c == nullptr) {
-    ensure_rec_for(node);
-    c = contact_rec_for(node);
-    if (c == nullptr) {
-      // Unable to add node in add_connect.
-      return;
-    }
-  }
-  c->AddConnect(time, bytes_sent, bytes_received);
+void Contact::add_connect(int node, time_t time, uint32_t bytes_sent, uint32_t bytes_received) {
+  auto key = NetworkContact::CreateFakeFtnAddress(node);
+  add_connect(key, time, bytes_sent, bytes_received);
 }
 
 void Contact::add_connect(const std::string& node, time_t time, uint32_t bytes_sent,
                           uint32_t bytes_received) {
-  NetworkContact* c = contact_rec_for(node);
+  auto key = node;
+  if (net_.type == network_type_t::wwivnet) {
+    auto n = to_number<uint16_t>(node);
+    key = NetworkContact::CreateFakeFtnAddress(n);
+  }
+  NetworkContact* c = contact_rec_for(key);
   if (c == nullptr) {
-    ensure_rec_for(node);
-    c = contact_rec_for(node);
+    ensure_rec_for(key);
+    c = contact_rec_for(key);
     if (c == nullptr) {
       // Unable to add node in add_connect.
       return;
@@ -247,11 +243,16 @@ void Contact::add_failure(int node, time_t time) {
   c->AddFailure(time);
 }
 
-void Contact::add_failure(const std::string& node, time_t time) {
-  NetworkContact* c = contact_rec_for(node);
+void Contact::add_failure(const std::string& n, time_t time) {
+  auto key = n;
+  if (net_.type == network_type_t::wwivnet) {
+    auto node = to_number<uint16_t>(n);
+    key = NetworkContact::CreateFakeFtnAddress(node);
+  }
+  NetworkContact* c = contact_rec_for(key);
   if (c == nullptr) {
-    ensure_rec_for(node);
-    c = contact_rec_for(node);
+    ensure_rec_for(key);
+    c = contact_rec_for(key);
     if (c == nullptr) {
       // Unable to add node in add_connect.
       return;
