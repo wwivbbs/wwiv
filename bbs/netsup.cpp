@@ -386,8 +386,11 @@ static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_cal
   if (now < next_contact_time) {
     return false;
   }
-  auto daily_attempt_time = hours(20) / con.times_per_day;
-  if ((con.options & options_once_per_day) && (now - last_contact_sent) < daily_attempt_time) {
+  if (!(con.options & options_once_per_day)) {
+    return false;
+  }
+  auto daily_attempt_time = hours(20) / std::max<int>(1, con.times_per_day);
+  if ((now - last_contact_sent) < daily_attempt_time) {
     return false;
   }
   if ((bytes_to_k(ncn.bytes_waiting()) < con.min_k) &&
