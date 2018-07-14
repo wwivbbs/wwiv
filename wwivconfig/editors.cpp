@@ -60,6 +60,7 @@ static void edit_editor(editorrec& e) {
     e.ansir |= ansir_emulate_fossil;
     e.ansir |= ansir_no_DOS;
     e.ansir |= ansir_ansi;
+    e.ansir |= ansir_stdio;
     e.ansir |= ansir_temp_dir;
   }
 
