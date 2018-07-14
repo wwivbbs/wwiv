@@ -810,7 +810,8 @@ struct batchrec {
 #define ability_cosysop             0x0020
 #define ability_val_net             0x0040
 
-// subs anony
+// subs anony and flags. Lower half of this is anoymous
+// and the high bit is flags.
 #define anony_none                  0x00
 #define anony_enable_anony          0x01
 #define anony_enable_dear_abby      0x02

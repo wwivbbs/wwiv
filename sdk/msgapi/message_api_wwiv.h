@@ -19,10 +19,10 @@
 #define __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
 
 #include "sdk/config.h"
-#include "sdk/net.h"
+#include "sdk/msgapi/email_wwiv.h"
 #include "sdk/msgapi/message_api.h"
 #include "sdk/msgapi/message_area_wwiv.h"
-#include "sdk/msgapi/email_wwiv.h"
+#include "sdk/net.h"
 
 #include <memory>
 #include <string>
@@ -47,36 +47,36 @@ public:
 };
 
 class NullLastReadImpl : public WWIVLastReadImpl {
-  uint32_t last_read(int ) const override { return 0; }
-  void set_last_read(int, uint32_t ) override {}
+  uint32_t last_read(int) const override { return 0; }
+  void set_last_read(int, uint32_t) override {}
   void Load() override {}
   void Save() override {}
 };
 
-class WWIVMessageApi: public MessageApi {
+class WWIVMessageApi : public MessageApi {
 public:
-  WWIVMessageApi(
-    const wwiv::sdk::msgapi::MessageApiOptions& options,
-    const wwiv::sdk::Config& config,
-    const std::vector<net_networks_rec>& net_networks,
-    WWIVLastReadImpl* last_read);
+  WWIVMessageApi(const wwiv::sdk::msgapi::MessageApiOptions& options,
+                 const wwiv::sdk::Config& config, const std::vector<net_networks_rec>& net_networks,
+                 WWIVLastReadImpl* last_read);
 
   virtual bool Exist(const wwiv::sdk::subboard_t& sub) const override;
-  virtual bool Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
+  virtual bool Create(const std::string& name, const std::string& sub_ext,
+                      const std::string& text_ext, int subnum);
   virtual bool Create(const wwiv::sdk::subboard_t& sub, int subnum) override;
   virtual bool Remove(const std::string& name) override;
-  virtual MessageArea* Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum);
   virtual MessageArea* Open(const wwiv::sdk::subboard_t& sub, int subnum) override;
   virtual WWIVEmail* OpenEmail();
   uint32_t last_read(int area) const;
   void set_last_read(int area, uint32_t last_read);
+  const Config& config() const noexcept { return config_; }
+
 private:
   std::unique_ptr<WWIVLastReadImpl> last_read_;
   const Config config_;
 };
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+} // namespace msgapi
+} // namespace sdk
+} // namespace wwiv
 
-#endif  // __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__
+#endif // __INCLUDED_SDK_MSGAPI_MESSAGE_API_WWIV_H__

@@ -22,28 +22,29 @@
 #include <utility>
 #include <vector>
 
+#include "bbs/subacc.h"
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "bbs/subacc.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
-#include "core/datetime.h"
-#include "sdk/vardec.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/ssm.h"
+#include "sdk/usermanager.h"
+#include "sdk/vardec.h"
 
 namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
-using std::string;
 using std::make_unique;
+using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::DataFile;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -69,8 +70,8 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
   }
   if (raw_header.active_message_count > file.number_of_records()) {
     VLOG(1) << "Header claims too many messages, raw_header.active_message_count("
-      << raw_header.active_message_count << ") > file.number_of_records("
-      << file.number_of_records() << ")";
+            << raw_header.active_message_count << ") > file.number_of_records("
+            << file.number_of_records() << ")";
     raw_header.active_message_count = static_cast<uint16_t>(file.number_of_records());
   }
 
@@ -96,9 +97,8 @@ static WWIVMessageAreaHeader ReadHeader(DataFile<postrec>& file) {
   return WWIVMessageAreaHeader(raw_header);
 }
 
-
-WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number) 
-  :MessageAreaLastRead(api), wapi_(api), message_area_number_(message_area_number) {}
+WWIVMessageAreaLastRead::WWIVMessageAreaLastRead(WWIVMessageApi* api, int message_area_number)
+    : MessageAreaLastRead(api), wapi_(api), message_area_number_(message_area_number) {}
 
 uint32_t WWIVMessageAreaLastRead::last_read(int) {
   if (message_area_number_ < 0) {
@@ -116,12 +116,11 @@ bool WWIVMessageAreaLastRead::set_last_read(int, uint32_t last_read, uint32_t hi
   return true;
 }
 
-bool WWIVMessageAreaLastRead::Close() {
-  return false;
-}
+bool WWIVMessageAreaLastRead::Close() { return false; }
 
-WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version, uint32_t num_messages)
-  : header_(subfile_header_t()) {
+WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
+                                             uint32_t num_messages)
+    : header_(subfile_header_t()) {
   strcpy(header_.signature, "WWIV\x1A");
   header_.revision = 1;
   header_.wwiv_version = expected_wwiv_num_version;
@@ -129,35 +128,32 @@ WWIVMessageAreaHeader::WWIVMessageAreaHeader(uint16_t expected_wwiv_num_version,
   header_.active_message_count = static_cast<uint16_t>(num_messages);
 }
 
-WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const std::string& sub_filename, const std::string& text_filename, int subnum)
-  : MessageArea(api), Type2Text(text_filename), sub_filename_(sub_filename), header_{}, subnum_(subnum) {
-  DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadOnly);
-  if (!sub) {
+WWIVMessageArea::WWIVMessageArea(WWIVMessageApi* api, const subboard_t sub,
+                                 const std::string& sub_filename, const std::string& text_filename,
+                                 int subnum)
+    : MessageArea(api), Type2Text(text_filename), wwiv_api_(api), sub_(sub),
+      sub_filename_(sub_filename), header_{}, subnum_(subnum) {
+  DataFile<postrec> subfile(sub_filename_, File::modeBinary | File::modeReadOnly);
+  if (!subfile) {
     // TODO: throw exception
   } else {
-    WWIVMessageAreaHeader h = ReadHeader(sub);
+    WWIVMessageAreaHeader h = ReadHeader(subfile);
     header_ = h.raw_header();
   }
   open_ = true;
   last_read_.reset(new WWIVMessageAreaLastRead(api, subnum));
 }
 
-WWIVMessageArea::~WWIVMessageArea() {
-  Close();
-}
+WWIVMessageArea::~WWIVMessageArea() { Close(); }
 
 bool WWIVMessageArea::Close() {
   open_ = false;
   return true;
 }
 
-bool WWIVMessageArea::Lock() {
-  return false;
-}
+bool WWIVMessageArea::Lock() { return false; }
 
-bool WWIVMessageArea::Unlock() {
-  return false;
-}
+bool WWIVMessageArea::Unlock() { return false; }
 
 void WWIVMessageArea::ReadMessageAreaHeader(MessageAreaHeader& header) {
   DataFile<postrec> sub(sub_filename_);
@@ -197,21 +193,17 @@ int WWIVMessageArea::number_of_messages() {
   return msgs;
 }
 
-bool WWIVMessageArea::ParseMessageText(
-  const postrec& header,
-  int message_number,
-  string& from_username,
-  string& date, string& to,
-  string& in_reply_to, string& text) {
+bool WWIVMessageArea::ParseMessageText(const postrec& header, int message_number,
+                                       string& from_username, string& date, string& to,
+                                       string& in_reply_to, string& text) {
 
   // Some of the message header information ends up in the text.
   // line1: From username (i.e. rushfan #1 @5161)
   // line2: Date (again, same as daten but is formatted by the sender)
   // optional lines:
   // RE: Title (title this is a reply to, mostly redundant since the title will contain it too)
-  // BY: Author (author of the post this is a reply to, could be considered the "to" person for this message.
-  // ^DControl Lines (we have many)
-  // ^D# (0 = network, >0 = tag lines)
+  // BY: Author (author of the post this is a reply to, could be considered the "to" person for this
+  // message. ^DControl Lines (we have many) ^D# (0 = network, >0 = tag lines)
 
   string raw_text;
   if (!readfile(&header.msg, &raw_text)) {
@@ -222,21 +214,24 @@ bool WWIVMessageArea::ParseMessageText(
   vector<string> lines = SplitString(raw_text, "\n", false);
   auto it = lines.begin();
   if (it == std::end(lines)) {
-    VLOG(1) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
-    return true; 
+    VLOG(1) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' "
+            << header.owneruser << "@" << header.ownersys;
+    return true;
   }
 
   from_username = *it++;
   StringTrim(&from_username);
   if (it == lines.end()) {
-    VLOG(1) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    VLOG(1) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' "
+            << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
   date = *it++;
   StringTrim(&date);
   if (it == lines.end()) {
-    VLOG(1) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' " << header.owneruser << "@" << header.ownersys;
+    VLOG(1) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' "
+            << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
@@ -304,8 +299,8 @@ unique_ptr<Message> WWIVMessageArea::ReadMessage(int message_number) {
   }
 
   return make_unique<WWIVMessage>(
-    make_unique<WWIVMessageHeader>(header, from_username, to, in_reply_to, api_),
-    make_unique<WWIVMessageText>(text));
+      make_unique<WWIVMessageHeader>(header, from_username, to, in_reply_to, api_),
+      make_unique<WWIVMessageText>(text));
 }
 
 unique_ptr<MessageHeader> WWIVMessageArea::ReadMessageHeader(int message_number) {
@@ -332,8 +327,7 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
     return 1;
   }
-  DataFile<statusrec_t> file(config.datadir(), STATUS_DAT,
-    File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(config.datadir(), STATUS_DAT, File::modeBinary | File::modeReadWrite);
   if (!file) {
     return 0;
   }
@@ -351,11 +345,11 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
 /**
  * Deletes all excess messages in an area, depending on the
  * overflow strategy set on the API.
- * 
+ *
  * Note: This should be called by AddMessage *after* posting a new
  * message successfull, since there's no sense in deleting a post if
  * adding a new one hasn't succeeded.
- * 
+ *
  * Returns the number of messages deleted.
  */
 int WWIVMessageArea::DeleteExcess() {
@@ -382,8 +376,7 @@ int WWIVMessageArea::DeleteExcess() {
       auto pp = ReadMessageHeader(i);
       if (!pp) {
         break;
-      }
-      else if (!pp->locked()) {
+      } else if (!pp->locked()) {
         dm = i;
         break;
       }
@@ -393,11 +386,10 @@ int WWIVMessageArea::DeleteExcess() {
       LOG(INFO) << "DeleteExcess: No message to delete.";
       return result;
     }
-    if (!DeleteMessage(dm))  {
+    if (!DeleteMessage(dm)) {
       LOG(INFO) << "DeleteExcess: Failed to delete message #" << dm;
       return result;
-    }
-    else {
+    } else {
       LOG(INFO) << "DeleteExcess: Deleted message #" << dm;
     }
     ++result;
@@ -428,13 +420,22 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   }
   p.daten = header.daten();
   p.status = header.status();
-  //if (a()->user()->IsRestrictionValidate()) {
+  // if (a()->user()->IsRestrictionValidate()) {
   //  p.status |= status_unvalidated;
   //}
+  // If we need network validation, then mark it as such.
+  // We force the issue here if it wasn't already done.
+  if (sub_.anony & anony_val_net && !header.pending_network()) {
+    p.status |= status_pending_net;
+    UserManager um(wwiv_api_->config());
+    SSM ssm(wwiv_api_->config(), um);
+    ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
+  } else {
+    LOG(INFO) << "TODO: Send the message out on the networks.";
+  }
 
-  string text = StrCat(header.from(), "\r\n",
-    daten_to_wwivnet_time(header.daten()), "\r\n",
-    message.text().text());
+  auto text = StrCat(header.from(), "\r\n", daten_to_wwivnet_time(header.daten()), "\r\n",
+                     message.text().text());
 
   // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
   // does not, and removes it on read.
@@ -446,7 +447,7 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
     LOG(ERROR) << "Failed to save message text.";
     return false;
   }
-  bool result = add_post(p);
+  auto result = add_post(p);
   if (result) {
     DeleteExcess();
   }
@@ -454,14 +455,15 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
 }
 
 bool WWIVMessageArea::DeleteMessage(int message_number) {
-  int num_messages = number_of_messages();
+  auto num_messages = number_of_messages();
   if (message_number < 1) {
     return false;
   } else if (message_number > num_messages) {
     return false;
   }
 
-  DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeCreateFile | File::modeReadWrite);
+  DataFile<postrec> sub(sub_filename_,
+                        File::modeBinary | File::modeCreateFile | File::modeReadWrite);
   if (!sub) {
     // TODO: throw exception
     return false;
@@ -508,7 +510,7 @@ bool WWIVMessageArea::ResyncMessage(int& message_number) {
 
   if (!HasSubChanged()) {
     // Since we also use resynch to see if were past the last message...
-    //return true;
+    // return true;
   }
 
   // remember m is destructed after this message call.
@@ -530,7 +532,7 @@ bool WWIVMessageArea::HasSubChanged() {
 bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
   if (!HasSubChanged()) {
     // Since we also use resynch to see if were past the last message...
-    //return true;
+    // return true;
   }
 
   // Assume it has changed.
@@ -538,12 +540,9 @@ bool WWIVMessageArea::ResyncMessage(int& message_number, Message& raw_message) {
 }
 
 static bool IsSamePost(const postrec& l, const postrec& r) {
-  return l.qscan == r.qscan 
-    && l.anony == r.anony 
-    && l.daten == r.daten 
-    && l.ownersys == r.ownersys 
-    && l.owneruser == r.owneruser 
-    && l.msg.stored_as == r.msg.stored_as;
+  return l.qscan == r.qscan && l.anony == r.anony && l.daten == r.daten &&
+         l.ownersys == r.ownersys && l.owneruser == r.owneruser &&
+         l.msg.stored_as == r.msg.stored_as;
 }
 
 bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_message) {
@@ -563,7 +562,6 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
   }
 
   auto pp1_header = dynamic_cast<WWIVMessageHeader*>(pp1.get())->header_;
-
 
   if (IsSamePost(pp1_header, p)) {
     return true;
@@ -606,12 +604,12 @@ bool WWIVMessageArea::ResyncMessageImpl(int& message_number, Message& raw_messag
 }
 
 std::unique_ptr<Message> WWIVMessageArea::CreateMessage() {
-  return make_unique<WWIVMessage>(
-      make_unique<WWIVMessageHeader>(api_),
-      make_unique<WWIVMessageText>());
+  return make_unique<WWIVMessage>(make_unique<WWIVMessageHeader>(api_),
+                                  make_unique<WWIVMessageText>());
 }
 
-bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_system, uint16_t from_user) {
+bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_system,
+                             uint16_t from_user) {
   DataFile<postrec> sub(sub_filename_);
   if (!sub) {
     return false;
@@ -627,7 +625,8 @@ bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_
     }
     // Since we don't have a global message id, use the combination of
     // date + title + from system + from user.
-    if (h.daten == d && iequals(h.title, title) && h.ownersys == from_system && h.owneruser == from_user) {
+    if (h.daten == d && iequals(h.title, title) && h.ownersys == from_system &&
+        h.owneruser == from_user) {
       return true;
     }
   }
@@ -635,15 +634,29 @@ bool WWIVMessageArea::Exists(daten_t d, const std::string& title, uint16_t from_
   return false;
 }
 
+MessageAreaLastRead& WWIVMessageArea::last_read() const noexcept { return *last_read_; }
 
-MessageAreaLastRead& WWIVMessageArea::last_read() {
-  return *last_read_;
+message_anonymous_t WWIVMessageArea::anonymous_type() const noexcept {
+  switch (sub_.anony & 0xf0) {
+  case anony_none:
+    return message_anonymous_t::anonymous_none;
+  case anony_enable_anony:
+    return message_anonymous_t::anonymous_allowed;
+  case anony_enable_dear_abby:
+    return message_anonymous_t::anonymous_dear_abby;
+  case anony_force_anony:
+    return message_anonymous_t::anonymous_forced;
+  case anony_real_name:
+    return message_anonymous_t::anonymous_real_names_only;
+  }
+  // WTF CHECK?
+  return message_anonymous_t::anonymous_none;
 }
 
 // Implementation Details
 
 bool WWIVMessageArea::add_post(const postrec& post) {
-  DataFile<postrec> sub(sub_filename_, File::modeBinary|File::modeReadWrite);
+  DataFile<postrec> sub(sub_filename_, File::modeBinary | File::modeReadWrite);
   if (!sub) {
     return false;
   }
@@ -665,6 +678,6 @@ bool WWIVMessageArea::add_post(const postrec& post) {
   return WriteHeader(sub, wwiv_header);
 }
 
-}  // namespace msgapi
-}  // namespace sdk
-}  // namespace wwiv
+} // namespace msgapi
+} // namespace sdk
+} // namespace wwiv

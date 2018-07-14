@@ -112,46 +112,37 @@ bool WWIVMessageApi::Remove(const std::string&) {
 
 
 MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) {
-  const string name = sub.filename;
-  auto area = Open(name, ".sub", ".dat", subnum);
+  string sub_fullpath;
+  string msgs_fullpath;
+  {
+    File fileSub(subs_directory_, StrCat(sub.filename, ".sub"));
+    File msgs_file(messages_directory_, StrCat(sub.filename, ".dat"));
+    if (!fileSub.Exists()) {
+      throw bad_message_area(sub.filename);
+    }
+    if (!fileSub.Open(File::modeReadOnly | File::modeBinary)) {
+      throw bad_message_area(sub.filename);
+    }
+
+    if (!msgs_file.Exists()) {
+      File create_msgs_file(messages_directory_, StrCat(sub.filename, ".dat"));
+      if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
+        throw bad_message_area(sub.filename);
+      }
+    }
+    if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
+      throw bad_message_area(sub.filename);
+    }
+
+    sub_fullpath = fileSub.full_pathname();
+    msgs_fullpath = msgs_file.full_pathname();
+  }
+  auto area = new WWIVMessageArea(this, sub, sub_fullpath, msgs_fullpath, subnum);
   area->set_max_messages(sub.maxmsgs);
   area->set_storage_type(sub.storage_type);
   return area;
 }
 
-MessageArea* WWIVMessageApi::Open(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
-    const std::string sub_filename = StrCat(name, sub_ext);
-  const string msgs_filename = StrCat(name, text_ext);
-  string sub;
-  string msgs;
-  {
-    File fileSub(subs_directory_, sub_filename);
-    File msgs_file(messages_directory_, msgs_filename);
-    if (!fileSub.Exists()) {
-      throw bad_message_area(name);
-    }
-    if (!fileSub.Open(File::modeReadOnly | File::modeBinary)) {
-      throw bad_message_area(name);
-    }
-
-    if (!msgs_file.Exists()) {
-      File create_msgs_file(messages_directory_, msgs_filename);
-      if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
-        throw bad_message_area(name);
-      }
-    }
-    if (!msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
-      throw bad_message_area(name);
-    }
-
-    sub = fileSub.full_pathname();
-    msgs = msgs_file.full_pathname();
-  }
-
-  // We have to return this after the last block exited so that
-  // fileSub and msgs_file will both be closed.
-  return new WWIVMessageArea(this, sub, msgs, subnum);
-}
 
 WWIVEmail* WWIVMessageApi::OpenEmail() {
   string data;

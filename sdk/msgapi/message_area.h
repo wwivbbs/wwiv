@@ -31,6 +31,10 @@ namespace wwiv {
 namespace sdk {
 namespace msgapi {
 
+enum class message_anonymous_t {
+  anonymous_none, anonymous_allowed, anonymous_dear_abby, anonymous_forced, anonymous_real_names_only
+};
+
 class MessageAreaHeader {
 public:
 };
@@ -90,15 +94,16 @@ public:
   uint8_t storage_type() const { return storage_type_; }
   void set_storage_type(uint8_t t) { storage_type_ = t; }
 
-  virtual MessageAreaLastRead& last_read() = 0;
+  virtual MessageAreaLastRead& last_read() const noexcept = 0;
+  virtual message_anonymous_t anonymous_type() const noexcept = 0;
 
 protected:
   static constexpr uint8_t DEFAULT_WWIV_STORAGE_TYPE = 2;
 
   // Not owned.
   MessageApi* api_;
-  int max_messages_ = std::numeric_limits<int>::max();
-  uint8_t storage_type_ = DEFAULT_WWIV_STORAGE_TYPE;
+  int max_messages_{std::numeric_limits<int>::max()};
+  uint8_t storage_type_{DEFAULT_WWIV_STORAGE_TYPE};
 };
 
 
