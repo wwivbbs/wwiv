@@ -315,7 +315,10 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   if (editor.ansir & ansir_temp_dir) {
     flags |= EFLAG_TEMP_DIR;
   }
-
+  if (editor.ansir & ansir_stdio) {
+    flags |= EFLAG_STDIO;
+  }
+  
   ExecuteExternalProgram(cmdLine, flags);
   
   // After launched FSED

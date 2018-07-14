@@ -60,6 +60,7 @@ static void edit_editor(editorrec& e) {
     e.ansir |= ansir_emulate_fossil;
     e.ansir |= ansir_no_DOS;
     e.ansir |= ansir_ansi;
+    e.ansir |= ansir_stdio;
     e.ansir |= ansir_temp_dir;
   }
 
@@ -69,6 +70,7 @@ static void edit_editor(editorrec& e) {
   items.add(new ToggleEditItem<uint8_t>(COL1_POSITION, y++, bbs_types, &e.bbs_type));
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_no_DOS, "No ", "Yes", &e.ansir));
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_emulate_fossil, "Yes", "No ", &e.ansir));
+  items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_stdio, "Yes", "No ", &e.ansir));
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_temp_dir, "Yes", "No ", &e.ansir));
   y++;
   items.add(new CommandLineItem(LABEL1_POSITION, y++, 75, e.filename));
@@ -80,6 +82,7 @@ static void edit_editor(editorrec& e) {
                     new Label(2, y++, LABEL1_WIDTH, "BBS Type:"),
                     new Label(2, y++, LABEL1_WIDTH, "Use DOS Interrupts:"),
                     new Label(2, y++, LABEL1_WIDTH, "Emulate FOSSIL:"),
+                    new Label(2, y++, LABEL1_WIDTH, "Use STDIO:"),
                     new Label(2, y++, LABEL1_WIDTH, "Temp Directory Working Dir:"),
                     new Label(2, y++, LABEL1_WIDTH, "Filename to run remotely:")});
   y+=2;
