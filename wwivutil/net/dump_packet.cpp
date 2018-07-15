@@ -98,7 +98,7 @@ int dump_file(const std::string& filename) {
       cout << "Raw Packet Text:" << endl;
       cout << "=============================================================================="
            << endl;
-      for (const auto ch : packet.text) {
+      for (const auto ch : packet.text()) {
         dump_char(cout, ch);
       }
       cout << endl << endl;

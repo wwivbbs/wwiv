@@ -23,6 +23,7 @@
 #include <ctime>
 #include <fcntl.h>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <sstream>
@@ -202,7 +203,7 @@ static bool IsHostedHere(Context& context, const std::string& subtype) {
 }
 
 bool handle_sub_add_req(Context& context, Packet& p) {
-  const string subtype = SubTypeFromText(p.text);
+  const string subtype = SubTypeFromText(p.text());
   auto resp = [&](int code) -> bool { 
     string base = (code == sub_adddrop_ok) ? "sa" : "sr";
     auto response_file = StrCat(base, subtype, ".net");
@@ -242,7 +243,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
 }
 
 bool handle_sub_drop_req(Context& context, Packet& p) {
-  const string subtype = SubTypeFromText(p.text);
+  const string subtype = SubTypeFromText(p.text());
   auto resp = [&](int code) -> bool { 
     return send_sub_add_drop_resp(context, p.nh, main_type_sub_drop_resp, code, subtype, ""); 
   };
@@ -287,17 +288,17 @@ static string SubAddDropResponseMessage(uint8_t code) {
 
 bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop) {
   // We want to stop at the 1st \0
-  string subname = p.text.c_str();
+  string subname = p.text().c_str();
   StringTrimEnd(&subname);
 
-  auto b = p.text.begin();
-  while (b != p.text.end() && *b != '\0') { b++; }
-  if (b == p.text.end()) {
+  auto b = std::begin(p.text());
+  while (b != std::end(p.text()) && *b != '\0') { b++; }
+  if (b == std::end(p.text())) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   } // NULL
   b++;
-  if (b == p.text.end()) {
+  if (b == std::end(p.text())) {
     LOG(INFO) << "Unable to determine code from add_drop response.";
     return false;
   }
@@ -307,11 +308,11 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   char code = *b++;
   auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
 
-  auto orig_title = get_message_field(p.text, b, {'\0', '\r', '\n'}, 80);
-  auto sender_date = get_message_field(p.text, b, {'\0', '\r', '\n'}, 80);
-  auto orig_date = get_message_field(p.text, b, {'\0', '\r', '\n'}, 80);
+  auto orig_title = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  auto sender_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
+  auto orig_date = get_message_field(p.text(), b, {'\0', '\r', '\n'}, 80);
 
-  auto message_text = string(b, p.text.end());
+  auto message_text = string(b, std::end(p.text()));
   net_header_rec nh = {};
 
   auto title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
@@ -332,8 +333,8 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
 bool handle_sub_list_info_response(Context& context, Packet& p) {
   TextFile subs_inf(context.net.dir, "subs.inf", "at");
   LOG(INFO) << "Received subs line for subs.inf:";
-  LOG(INFO) << p.text;
-  return subs_inf.Write(p.text) > 0;
+  LOG(INFO) << p.text();
+  return subs_inf.Write(p.text()) > 0;
 }
 
 bool handle_sub_list_info_request(Context& context, Packet& p) {
@@ -348,13 +349,13 @@ bool handle_sub_list_info_request(Context& context, Packet& p) {
   nh.daten = daten_t_now();
 
   auto lines = create_sub_info(context);
-  string text = JoinStrings(lines, "\r\n");
+  auto text = JoinStrings(lines, "\r\n");
   nh.length = text.size();
 
   LOG(INFO) << "Sending subs line for subs.inf:";
   LOG(INFO) << text;
 
-  const string pendfile = create_pend(context.net.dir, false, '2');
+  const auto pendfile = create_pend(context.net.dir, false, '2');
   Packet np(nh, {}, text);
   return write_wwivnet_packet(pendfile, context.net, np);
 }

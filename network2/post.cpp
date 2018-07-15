@@ -111,13 +111,13 @@ bool handle_inbound_post(Context& context, Packet& p) {
 
   ScopeExit at_exit;
 
-  auto raw_text = p.text;
-  auto iter = raw_text.begin();
+  auto raw_text = p.text();
+  auto iter = std::begin(raw_text);
   auto subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   auto title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   auto sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
   auto date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  auto text = string(iter, raw_text.end());
+  auto text = string(iter, std::end(raw_text));
   if (VLOG_IS_ON(1)) {
     at_exit.swap(
         [] { LOG(INFO) << "=============================================================="; });
@@ -191,7 +191,7 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
                << main_type_name(template_packet.nh.main_type);
     return false;
   }
-  auto original_subtype = get_subtype_from_packet_text(template_packet.text);
+  auto original_subtype = get_subtype_from_packet_text(template_packet.text());
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
   if (original_subtype.empty()) {
@@ -203,7 +203,7 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
   if (!find_sub(context.subs, context.network_number, original_subtype, sub)) {
     LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << original_subtype
               << " writing to dead.net.";
-    Packet p(template_packet.nh, {}, template_packet.text);
+    Packet p(template_packet.nh, {}, template_packet.text());
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   VLOG(1) << "DEBUG: Found sub: " << sub.name;

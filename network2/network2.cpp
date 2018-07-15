@@ -117,12 +117,12 @@ static bool handle_ssm(Context& context, Packet& p) {
   VLOG(1) << "==============================================================";
   VLOG(1) << "  Receiving SSM for user: #" << p.nh.touser;
   SSM ssm(context.config, context.user_manager);
-  if (!ssm.send_local(p.nh.touser, p.text)) {
-    LOG(ERROR) << "  ERROR writing SSM: '" << p.text << "'; writing to dead.net";
+  if (!ssm.send_local(p.nh.touser, p.text())) {
+    LOG(ERROR) << "  ERROR writing SSM: '" << p.text() << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
-  LOG(INFO) << "    + SSM  '" << p.text << "'";
+  LOG(INFO) << "    + SSM  '" << p.text() << "'";
   return true;
 }
 
@@ -162,7 +162,7 @@ static bool handle_sub_list(const net_networks_rec& net, Packet& p) {
   // Handle legacy type 9 main_type_sub_list (SUBS.LST)
   NetInfoFileInfo info{};
   info.filename = SUBS_LST;
-  info.data = p.text;
+  info.data = p.text();
   info.valid = true;
   info.overwrite = true;
   return write_net_received_file(net, p, info);

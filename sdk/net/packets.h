@@ -27,10 +27,10 @@
 #include "core/file.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
-#include "sdk/networks.h"
 #include "sdk/msgapi/message.h"
 #include "sdk/msgapi/message_wwiv.h"
+#include "sdk/net.h"
+#include "sdk/networks.h"
 
 namespace wwiv {
 namespace sdk {
@@ -41,7 +41,7 @@ namespace net {
 #endif
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
 
-class Packet {
+class Packet final {
 public:
   Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t);
 
@@ -51,8 +51,26 @@ public:
   virtual bool UpdateRouting(const net_networks_rec& net);
   static std::string wwivnet_packet_name(const net_networks_rec& net, uint16_t node);
 
+  const std::string& text() const noexcept { return text_; }
+  void set_text(const std::string& text);
+  void set_text(std::string&& text);
+
   net_header_rec nh{};
   std::vector<uint16_t> list;
+  std::string text_;
+};
+
+class ParsedPacketText {
+public:
+  ParsedPacketText(uint16_t typ);
+  uint16_t main_type;
+  std::string subtype;
+  std::string email;
+  std::string title;
+  std::string sender;
+  std::string date;
+  std::string to;
+  std::string by_line;
   std::string text;
 };
 
@@ -112,13 +130,11 @@ struct NetInfoFileInfo {
 
 NetInfoFileInfo GetNetInfoFileInfo(Packet& p);
 
-
-void rename_pend(const std::string& directory, const std::string& filename,
-                 char network_app_num);
+void rename_pend(const std::string& directory, const std::string& filename, char network_app_num);
 std::string create_pend(const std::string& directory, bool local, char network_app_id);
 
-std::string main_type_name(int typ);
-std::string net_info_minor_type_name(int typ);
+std::string main_type_name(uint16_t typ);
+std::string net_info_minor_type_name(uint16_t typ);
 
 /**
  * Gets the subtype from a main_type_new_post message packet's text.

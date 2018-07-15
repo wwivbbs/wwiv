@@ -115,7 +115,7 @@ static bool handle_packet(const BbsListNet& b, const net_networks_rec& net, Pack
                                 p);
   }
   // Network packet, multiple destinations.
-  return write_multiple_wwivnet_packets(net, b, p.nh, p.list, p.text);
+  return write_multiple_wwivnet_packets(net, b, p.nh, p.list, p.text());
 }
 
 static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {

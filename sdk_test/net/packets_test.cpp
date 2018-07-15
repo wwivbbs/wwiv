@@ -111,12 +111,12 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
   net.type = network_type_t::wwivnet;
   packet.UpdateRouting(net);
 
-  auto iter = packet.text.begin();
-  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
-  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
-  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
-  get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
-  auto actual_route_str = get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
+  auto iter = packet.text().begin();
+  get_message_field(packet.text(), iter, { '\0', '\r', '\n' }, 80);
+  get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
+  get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
+  get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
+  auto actual_route_str = get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
 
   EXPECT_TRUE(starts_with(actual_route_str, "\004""0R"));
 }

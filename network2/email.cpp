@@ -101,10 +101,10 @@ static int GetUserNumber(const std::string name, UserManager& um) {
 bool handle_email_byname(Context& context, Packet& p) {
   VLOG(1) << "Processing email by name.";
 
-  auto iter = p.text.begin();
-  const string to_name = get_message_field(p.text, iter, {'\0'}, 80);
+  auto iter = std::begin(p.text());
+  const string to_name = get_message_field(p.text(), iter, {'\0'}, 80);
   // Rest of the message is the text.
-  const string text = string(iter, p.text.end());
+  const string text = string(iter, std::end(p.text()));
 
   auto user_number = GetUserNumber(to_name, context.user_manager);
   if (user_number == 0) {
@@ -114,7 +114,7 @@ bool handle_email_byname(Context& context, Packet& p) {
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   
-  p.text = text;
+  p.set_text(text);
   return handle_email(context, static_cast<uint16_t>(user_number), p);
 }
 
@@ -150,10 +150,10 @@ bool handle_email(Context& context,
   d.system_number = 0;
   d.user_number = to_user;
 
-  auto iter = p.text.begin();
-  d.title = get_message_field(p.text, iter, {'\0', '\r', '\n'}, 80);
+  auto iter = std::begin(p.text());
+  d.title = get_message_field(p.text(), iter, {'\0', '\r', '\n'}, 80);
   // Rest of the message is the text.
-  d.text = string(iter, p.text.end());
+  d.text = string(iter, std::end(p.text()));
   LOG(INFO) << "  Title: '" << d.title << "'";
 
   std::unique_ptr<WWIVEmail> email(context.email_api().OpenEmail());

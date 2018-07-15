@@ -653,7 +653,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
 
     bool is_email = (wwivnet_packet.nh.main_type == main_type_email ||
                      wwivnet_packet.nh.main_type == main_type_email_name);
-    const auto raw_text = wwivnet_packet.text;
+    const auto raw_text = wwivnet_packet.text();
     auto iter = raw_text.cbegin();
 
     string subtype;
@@ -977,7 +977,7 @@ static bool export_main_type_new_post(const NetworkCommandLine& net_cmdline,
                                       const net_networks_rec& net, const FidoCallout& fido_callout,
                                       std::set<string>& bundles, Packet& p) {
   // Lame implementation that creates 1 file per message.
-  auto subtype = get_subtype_from_packet_text(p.text);
+  auto subtype = get_subtype_from_packet_text(p.text());
   LOG(INFO) << "Creating packet for subtype: " << subtype;
 
   auto net_dir = File::absolute(net_cmdline.config().root_directory(), net.dir);
@@ -1011,8 +1011,8 @@ bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const ne
   LOG(INFO) << "Creating packet for netmail.";
 
   string bundlename;
-  auto it = p.text.begin();
-  auto to = get_message_field(p.text, it, {0}, 80);
+  auto it = p.text().begin();
+  auto to = get_message_field(p.text(), it, {0}, 80);
   auto dest = get_address_from_single_line(to);
   if (dest.node() == -1) {
     LOG(ERROR) << "Unable to get address from to line: " << to;
