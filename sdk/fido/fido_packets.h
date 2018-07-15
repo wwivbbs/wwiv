@@ -26,6 +26,7 @@
 #include "sdk/config.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
+#include "sdk/net/packets.h"
 
 namespace wwiv {
 namespace sdk {
@@ -266,13 +267,9 @@ bool write_fido_packet_header(File& f, packet_header_2p_t& header);
 bool write_packed_message(File& f, FidoPackedMessage& packet);
 bool write_stored_message(File& f, FidoStoredMessage& packet);
 
-enum class ReadPacketResponse { 
-  OK, 
-  ERROR, 
-  END_OF_FILE 
-};
-ReadPacketResponse read_packed_message(File& file, FidoPackedMessage& packet);
-ReadPacketResponse read_stored_message(File& file, FidoStoredMessage& packet);
+
+wwiv::sdk::net::ReadPacketResponse read_packed_message(File& file, FidoPackedMessage& packet);
+wwiv::sdk::net::ReadPacketResponse read_stored_message(File& file, FidoStoredMessage& packet);
 
 
 }  // namespace fido

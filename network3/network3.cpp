@@ -43,7 +43,7 @@
 #include "networkb/binkp_config.h"
 #include "core/connection.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "networkb/ppp_config.h"
 
 #include "sdk/bbslist.h"
@@ -59,6 +59,7 @@
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/fido/nodelist.h"
+#include "sdk/net/packets.h"
 
 using std::cout;
 using std::endl;
@@ -72,6 +73,7 @@ using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 

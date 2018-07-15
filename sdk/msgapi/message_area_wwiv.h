@@ -90,7 +90,7 @@ public:
   std::unique_ptr<Message> ReadMessage(int message_number) override;
   std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) override;
   std::unique_ptr<MessageText> ReadMessageText(int message_number) override;
-  bool AddMessage(const Message& message) override;
+  bool AddMessage(const Message& message, const MessageAreaOptions& options) override;
   bool DeleteMessage(int message_number) override;
   bool ResyncMessage(int& message_number) override;
   bool ResyncMessage(int& message_number, Message& message) override;

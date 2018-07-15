@@ -26,9 +26,9 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "sdk/config.h"
-#include "sdk/networks.h"
-#include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/networks.h"
 #include "sdk_test/sdk_helper.h"
 
 using namespace std;
@@ -36,7 +36,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::strings;
 
-class MsgApiTest: public testing::Test {
+class MsgApiTest : public testing::Test {
 public:
   void SetUp() override {
     wwiv::sdk::msgapi::MessageApiOptions options;
@@ -45,7 +45,8 @@ public:
     api.reset(new WWIVMessageApi(options, *config, {}, new NullLastReadImpl()));
   }
 
-  unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname, const string& title, const string& text) {
+  unique_ptr<Message> CreateMessage(MessageArea& area, uint16_t from, const string& fromname,
+                                    const string& title, const string& text) {
     unique_ptr<Message> msg(area.CreateMessage());
 
     auto& h = msg->header();
@@ -59,7 +60,7 @@ public:
     h.set_daten(daten++);
     h.set_in_reply_to("IRT");
     msg->text().set_text(text);
-    
+
     return msg;
   }
 
@@ -86,7 +87,7 @@ TEST_F(MsgApiTest, SmokeTest) {
     ASSERT_TRUE(api->Create(sub, -1));
     unique_ptr<MessageArea> area(api->Open(sub, -1));
     unique_ptr<Message> msg(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
-    EXPECT_TRUE(area->AddMessage(*msg));
+    EXPECT_TRUE(area->AddMessage(*msg, {}));
   }
 
   subboard_t sub{};
@@ -104,17 +105,17 @@ TEST_F(MsgApiTest, Resynch) {
   unique_ptr<MessageArea> area(api->Open(sub, -1));
   {
     unique_ptr<Message> m(CreateMessage(*area, 1, "From1", "Title1", "Line1\r\nLine2\r\n"));
-    EXPECT_TRUE(area->AddMessage(*m));
+    EXPECT_TRUE(area->AddMessage(*m, {}));
     m->header().set_from_usernum(2);
     m->header().set_from("From2");
     m->header().set_title("Title2");
-    EXPECT_TRUE(area->AddMessage(*m));
+    EXPECT_TRUE(area->AddMessage(*m, {}));
     m->header().set_from_usernum(3);
     m->header().set_from("From3");
     m->header().set_title("Title3");
-    EXPECT_TRUE(area->AddMessage(*m));
+    EXPECT_TRUE(area->AddMessage(*m, {}));
   }
-  
+
   // Re open the area, ensure that we read back the same first
   // two messages.
   unique_ptr<MessageArea> a2(api->Open(sub, -1));
@@ -141,9 +142,9 @@ TEST_F(MsgApiTest, Resynch_MessageNumber) {
     ASSERT_TRUE(api->Create(sub, -1));
     unique_ptr<MessageArea> area(api->Open(sub, -1));
     unique_ptr<Message> m(CreateMessage(*area, 1234, "From", "Title", "Line1\r\nLine2\r\n"));
-    EXPECT_TRUE(area->AddMessage(*m));
+    EXPECT_TRUE(area->AddMessage(*m, {}));
     m->header().set_from("From2");
-    EXPECT_TRUE(area->AddMessage(*m));
+    EXPECT_TRUE(area->AddMessage(*m, {}));
   }
 
   // Re open the area, ensure that we read back the same first

@@ -18,34 +18,37 @@
 #ifndef __INCLUDED_NETWORK2_POST_H__
 #define __INCLUDED_NETWORK2_POST_H__
 
-#include <vector>
-#include "networkb/packets.h"
 #include "network2/context.h"
-#include "sdk/networks.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
 #include "sdk/net.h"
+#include "sdk/net/packets.h"
+#include "sdk/networks.h"
 #include "sdk/subxtr.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
+#include <set>
+#include <vector>
 
 namespace wwiv {
 namespace net {
 namespace network2 {
- 
+
 /**
  * Handles receiving a Packet with a post and writing it to the
  * local database.
  */
-bool handle_inbound_post(Context& context, Packet& packet);
+bool handle_inbound_post(Context& context, wwiv::sdk::net::Packet& packet);
 /**
  * Send a network post out to the other subscribers when you are the host off
  * a sub or gating a sub.
  */
-bool send_post_to_subscribers(Context& context, Packet& packet);
+bool send_post_to_subscribers(Context& context, wwiv::sdk::net::Packet& packet,
+     std::set<uint16_t> subscribers_to_skip);
 
-}  // namespace network2
-}  // namespace net
-}  // namespace wwiv
+} // namespace network2
+} // namespace net
+} // namespace wwiv
 
-#endif  // __INCLUDED_NETWORK2_POST_H__
+#endif // __INCLUDED_NETWORK2_POST_H__

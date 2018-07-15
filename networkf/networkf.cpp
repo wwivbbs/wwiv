@@ -43,10 +43,9 @@
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "networkb/ppp_config.h"
 #include "sdk/fido/fido_util.h"
-
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
@@ -73,6 +72,7 @@ using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
@@ -189,7 +189,6 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
                                const FidoCallout& callout, const net_networks_rec& net,
                                const std::string& dir, const string& name) {
   VLOG(1) << "import_packet_file: " << dir << name;
-  using wwiv::sdk::fido::ReadPacketResponse;
 
   File f(dir, name);
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
@@ -629,7 +628,6 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
                               string& fido_packet_name) {
 
   VLOG(1) << "create_ftn_packet: dest: " << dest << "; route: " << route_to;
-  using wwiv::net::ReadPacketResponse;
 
   FtnDirectories dirs(config.root_directory(), net);
 
@@ -1123,12 +1121,12 @@ int main(int argc, char** argv) {
       while (!done) {
         Packet p;
         const auto response = read_packet(f, p, true);
-        if (response == wwiv::net::ReadPacketResponse::END_OF_FILE) {
+        if (response == ReadPacketResponse::END_OF_FILE) {
           // Delete the packet.
           f.Close();
           f.Delete();
           break;
-        } else if (response == wwiv::net::ReadPacketResponse::ERROR) {
+        } else if (response == ReadPacketResponse::ERROR) {
           return 1;
         }
         // If we got here, we had a packet to process.

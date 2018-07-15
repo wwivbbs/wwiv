@@ -26,105 +26,16 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "core/datetime.h"
+#include "sdk/net/packets.h"
 
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 namespace wwiv {
 namespace net {
-
-void rename_pend(const string& directory, const string& filename, uint8_t network_app_num) {
-  File pend_file(directory, filename);
-  if (!pend_file.Exists()) {
-    LOG(INFO) << " pending file does not exist: " << pend_file;
-    return;
-  }
-  const auto pend_filename(pend_file.full_pathname());
-  const auto num = filename.substr(1);
-  const string prefix = (to_number<int>(num)) ? "1" : "0";
-
-  for (int i = 0; i < 1000; i++) {
-    const auto new_filename =
-      StringPrintf("%sp%s-%u-%u.net", directory.c_str(), prefix.c_str(), network_app_num, i);
-    if (File::Rename(pend_filename, new_filename)) {
-      LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
-      return;
-    }
-  }
-  LOG(ERROR) << "all attempts failed to rename_wwivnet_pend";
-}
-
-std::string create_pend(const string& directory, bool local, char network_app_id) {
-  const uint8_t prefix = (local) ? 0 : 1;
-  for (auto i = 0; i < 1000; i++) {
-    const auto filename =
-      StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
-    File f(directory, filename);
-    if (f.Exists()) {
-      continue;
-    }
-    if (f.Open(File::modeCreateFile | File::modeReadWrite | File::modeExclusive)) {
-      LOG(INFO) << "Created pending file: " << filename;
-      return filename;
-    }
-  }
-  LOG(ERROR) << "all attempts failed to create_pend";
-  return "";
-}
-
-
-string main_type_name(int typ) {
-  switch (typ) {
-  case main_type_net_info: return "main_type_net_info";
-  case main_type_email: return "main_type_email";
-  case main_type_post: return "main_type_post";
-  case main_type_file: return "main_type_file";
-  case main_type_pre_post: return "main_type_pre_post";
-  case main_type_external: return "main_type_external";
-  case main_type_email_name: return "main_type_email_name";
-  case main_type_net_edit: return "main_type_net_edit";
-  case main_type_sub_list: return "main_type_sub_list";
-  case main_type_extra_data: return "main_type_extra_data";
-  case main_type_group_bbslist: return "main_type_group_bbslist";
-  case main_type_group_connect: return "main_type_group_connect";
-  case main_type_group_binkp: return "main_type_group_binkp";
-  case main_type_group_info: return "main_type_group_info";
-  case main_type_ssm: return "main_type_ssm";
-  case main_type_sub_add_req: return "main_type_sub_add_req";
-  case main_type_sub_drop_req: return "main_type_sub_drop_req";
-  case main_type_sub_add_resp: return "main_type_sub_add_resp";
-  case main_type_sub_drop_resp: return "main_type_sub_drop_resp";
-  case main_type_sub_list_info: return "main_type_sub_list_info";
-  case main_type_new_post: return "main_type_new_post";
-  case main_type_new_external: return "main_type_new_external";
-  case main_type_game_pack: return "main_type_game_pack";
-  default: return StringPrintf("UNKNOWN type #%d", typ);
-  }
-}
-
-string net_info_minor_type_name(int typ) {
-  switch (typ) {
-  case net_info_general_message: return "net_info_general_message";
-  case net_info_bbslist: return "net_info_bbslist";
-  case net_info_connect: return "net_info_connect";
-  case net_info_sub_lst: return "net_info_sub_lst";
-  case net_info_wwivnews: return "net_info_wwivnews";
-  case net_info_fbackhdr: return "net_info_fbackhdr";
-  case net_info_more_wwivnews: return "net_info_more_wwivnews";
-  case net_info_categ_net: return "net_info_categ_net";
-  case net_info_network_lst: return "net_info_network_lst";
-  case net_info_file: return "net_info_file";
-  case net_info_binkp: return "net_info_binkp";
-  default: return StringPrintf("UNKNOWN type #%d", typ);
-  }
-}
-
-std::string get_subtype_from_packet_text(const std::string& text) {
-  auto iter = text.begin();
-  return get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
-}
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory) {
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});

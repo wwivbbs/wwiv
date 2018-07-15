@@ -19,7 +19,7 @@
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "core/datetime.h"
 
 #include <cstdint>
@@ -31,6 +31,7 @@ using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 static string CreateFakePacketText(
@@ -118,4 +119,17 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
   auto actual_route_str = get_message_field(packet.text, iter, { '\0', '\r', '\n' }, 80);
 
   EXPECT_TRUE(starts_with(actual_route_str, "\004""0R"));
+}
+
+
+TEST_F(PacketsTest, GetMessageField) {
+  char raw[] = {'a', '\0', 'b', 'c', '\r', '\n', 'd'};
+  string text(raw, 7);
+  auto iter = text.begin();
+  string a = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
+  EXPECT_STREQ("a", a.c_str());
+  string bc = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
+  EXPECT_STREQ("bc", bc.c_str());
+  string remaining = string(iter, text.end());
+  EXPECT_STREQ("d", remaining.c_str());
 }

@@ -26,7 +26,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "core/datetime.h"
 #include "sdk/net.h"
 #include "wwivutil/util.h"
@@ -38,6 +38,7 @@ using wwiv::core::CommandLineCommand;
 using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 namespace wwiv {

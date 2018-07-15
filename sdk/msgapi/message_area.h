@@ -55,6 +55,10 @@ protected:
   MessageApi* api_;
 };
 
+struct MessageAreaOptions {
+  bool send_post_to_network{false};
+};
+
 class MessageArea {
 public:
   MessageArea(MessageApi* api);
@@ -73,7 +77,7 @@ public:
   virtual std::unique_ptr<Message> ReadMessage(int message_number) = 0;
   virtual std::unique_ptr<MessageHeader> ReadMessageHeader(int message_number) = 0;
   virtual std::unique_ptr<MessageText> ReadMessageText(int message_number) = 0;
-  virtual bool AddMessage(const Message& message) = 0;
+  virtual bool AddMessage(const Message& message, const MessageAreaOptions& options) = 0;
   virtual bool DeleteMessage(int message_number) = 0;
   /** Updates message_number to point to the */
   virtual bool ResyncMessage(int& message_number) = 0;

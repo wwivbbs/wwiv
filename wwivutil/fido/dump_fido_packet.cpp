@@ -22,7 +22,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/net.h"
@@ -36,6 +36,7 @@ using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
 using namespace wwiv::sdk::fido;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 namespace wwiv {

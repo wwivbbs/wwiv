@@ -36,7 +36,7 @@
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 
 #include "sdk/bbslist.h"
 #include "sdk/filenames.h"
@@ -53,6 +53,7 @@ using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 

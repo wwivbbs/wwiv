@@ -11,7 +11,6 @@ set(SOURCES
  file_manager.cpp
  net_log.cpp
  net_util.cpp
- packets.cpp
  ppp_config.cpp
  remote.cpp
  transfer_file.cpp

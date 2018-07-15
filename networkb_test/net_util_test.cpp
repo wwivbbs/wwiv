@@ -37,14 +37,5 @@ protected:
   FileHelper helper_;
 };
 
-TEST_F(NetworkUtilTest, GetMessageField) {
-  char raw[] = {'a', '\0', 'b', 'c', '\r', '\n', 'd'};
-  string text(raw, 7);
-  auto iter = text.begin();
-  string a = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
-  EXPECT_STREQ("a", a.c_str());
-  string bc = get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
-  EXPECT_STREQ("bc", bc.c_str());
-  string remaining = string(iter, text.end());
-  EXPECT_STREQ("d", remaining.c_str());
+TEST_F(NetworkUtilTest, NOP) {
 }

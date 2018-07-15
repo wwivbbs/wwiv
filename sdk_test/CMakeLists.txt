@@ -20,6 +20,7 @@ set(test_sources
   user_test.cpp
   fido/fido_address_test.cpp
   fido/nodelist_test.cpp
+  net/packets_test.cpp
 )
 if (WIN32)
   list(APPEND test_sources sdk_test_main.cpp)

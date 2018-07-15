@@ -21,6 +21,7 @@ set(COMMON_SOURCES
   msgapi/message_wwiv.cpp
   msgapi/parsed_message.cpp
   msgapi/type2_text.cpp
+  net/packets.cpp
   names.cpp
   networks.cpp
   phone_numbers.cpp

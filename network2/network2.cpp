@@ -43,7 +43,6 @@
 #include "networkb/binkp_config.h"
 #include "core/connection.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
 #include "networkb/ppp_config.h"
 #include "network2/context.h"
 #include "network2/email.h"
@@ -64,6 +63,7 @@
 #include "sdk/usermanager.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
 
 using std::cout;
 using std::endl;
@@ -80,6 +80,7 @@ using namespace wwiv::net::network2;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -213,7 +214,7 @@ static bool handle_packet(
       LOG(ERROR) << "Error on handle_inbound_post";
       return false;
     }
-    return send_post_to_subscribers(context, p);
+    return send_post_to_subscribers(context, p, {p.nh.fromsys});
   } break;
   case main_type_ssm:
   {

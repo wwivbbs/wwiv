@@ -19,7 +19,7 @@
 #define __INCLUDED_NETWORK2_EMAIL_H__
 
 #include <vector>
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "network2/context.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
@@ -28,14 +28,15 @@
 #include "sdk/vardec.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
 
 namespace wwiv {
 namespace net {
 namespace network2 {
 
-bool handle_email(Context& context, uint16_t to_user, Packet& packet);
+bool handle_email(Context& context, uint16_t to_user, wwiv::sdk::net::Packet& packet);
 
-bool handle_email_byname(Context& context, Packet& packet);
+bool handle_email_byname(Context& context, wwiv::sdk::net::Packet& packet);
 
 }  // namespace network2
 }  // namespace net

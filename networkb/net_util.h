@@ -33,41 +33,6 @@
 namespace wwiv {
 namespace net {
 
-void rename_pend(const std::string& directory, const std::string& filename,
-                 uint8_t network_app_num);
-std::string create_pend(const std::string& directory, bool local, char network_app_id);
-
-std::string main_type_name(int typ);
-std::string net_info_minor_type_name(int typ);
-
-/**
- * Gets the subtype from a main_type_new_post message packet's text.
- * Returns empty string on error.
- */
-std::string get_subtype_from_packet_text(const std::string& text);
-
-template <typename C, typename I>
-static std::string get_message_field(const C& c, I& iter, std::set<char> stop, std::size_t max) {
-  // No need to continue if we're already at the end.
-  if (iter == c.end()) {
-    return "";
-  }
-
-  const auto begin = iter;
-  std::size_t count = 0;
-  while (stop.find(*iter) == std::end(stop) && ++count < max && iter != c.end()) {
-    iter++;
-  }
-  std::string result(begin, iter);
-
-  // Stop over stop chars
-  while (iter != c.end() && stop.find(*iter) != std::end(stop)) {
-    iter++;
-  }
-
-  return result;
-}
-
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
 
 class NetworkCommandLine {

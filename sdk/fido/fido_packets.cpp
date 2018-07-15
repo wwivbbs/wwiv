@@ -25,10 +25,12 @@
 #include "core/strings.h"
 #include "core/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/net/packets.h"
 
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::net;
 
 namespace wwiv {
 namespace sdk {

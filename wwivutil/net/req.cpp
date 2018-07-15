@@ -25,7 +25,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "sdk/bbslist.h"
 #include "sdk/config.h"
 #include "sdk/callout.h"
@@ -39,6 +39,7 @@ using std::map;
 using std::string;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -71,7 +72,7 @@ int SubReqCommand::Execute() {
   }
 
   auto net = config()->networks().at(arg("net").as_int());
-  string packet_filename = wwiv::net::create_pend(net.dir, false, 'r');
+  string packet_filename = create_pend(net.dir, false, 'r');
   uint16_t main_type = main_type_sub_add_req;
   auto add_drop = upcase(r.at(0).front());
   if (add_drop != 'A') {
@@ -93,11 +94,11 @@ int SubReqCommand::Execute() {
   // This is an alphanumeric sub type.
   auto subtype = r.at(1);
   nh.length = subtype.size() + 1;
-  string text = subtype;
+  auto text = subtype;
   StringUpperCase(&text);
   text.push_back('\0');
-  wwiv::net::Packet packet(nh, {}, text);
-  bool ok = wwiv::net::write_wwivnet_packet(packet_filename, net, packet);
+  Packet packet(nh, {}, text);
+  bool ok = write_wwivnet_packet(packet_filename, net, packet);
   if (!ok) {
     LOG(ERROR) << "Error writing packet: " << packet_filename;
     return 1;

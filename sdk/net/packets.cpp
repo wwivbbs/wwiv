@@ -15,17 +15,18 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 
 #include <string>
 
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "networkb/net_util.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
+#include "sdk/subscribers.h"
 
 using std::string;
 using namespace wwiv::core;
@@ -33,6 +34,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 namespace wwiv {
+namespace sdk {
 namespace net {
 
 bool send_local_email(const net_networks_rec& network, net_header_rec& nh, const std::string& text,
@@ -98,7 +100,7 @@ ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
   if (packet.nh.list_len > 0) {
     // skip list of addresses.
     packet.list.resize(packet.nh.list_len);
-    f.Read(&packet.list[0], 2 * packet.nh.list_len);
+    f.Read(&packet.list[0], sizeof(uint16_t) * packet.nh.list_len);
   }
 
   if (packet.nh.length > 0) {
@@ -335,5 +337,284 @@ std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t no
   return StringPrintf("s%u.net", node);
 }
 
+void rename_pend(const string& directory, const string& filename, uint8_t network_app_num) {
+  File pend_file(directory, filename);
+  if (!pend_file.Exists()) {
+    LOG(INFO) << " pending file does not exist: " << pend_file;
+    return;
+  }
+  const auto pend_filename(pend_file.full_pathname());
+  const auto num = filename.substr(1);
+  const string prefix = (to_number<int>(num)) ? "1" : "0";
+
+  for (int i = 0; i < 1000; i++) {
+    const auto new_filename =
+        StringPrintf("%sp%s-%u-%u.net", directory.c_str(), prefix.c_str(), network_app_num, i);
+    if (File::Rename(pend_filename, new_filename)) {
+      LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
+      return;
+    }
+  }
+  LOG(ERROR) << "all attempts failed to rename_wwivnet_pend";
+}
+
+std::string create_pend(const string& directory, bool local, char network_app_id) {
+  const uint8_t prefix = (local) ? 0 : 1;
+  for (auto i = 0; i < 1000; i++) {
+    const auto filename = StringPrintf("p%u-%c-%d.net", prefix, network_app_id, i);
+    File f(directory, filename);
+    if (f.Exists()) {
+      continue;
+    }
+    if (f.Open(File::modeCreateFile | File::modeReadWrite | File::modeExclusive)) {
+      LOG(INFO) << "Created pending file: " << filename;
+      return filename;
+    }
+  }
+  LOG(ERROR) << "all attempts failed to create_pend";
+  return "";
+}
+
+string main_type_name(int typ) {
+  switch (typ) {
+  case main_type_net_info:
+    return "main_type_net_info";
+  case main_type_email:
+    return "main_type_email";
+  case main_type_post:
+    return "main_type_post";
+  case main_type_file:
+    return "main_type_file";
+  case main_type_pre_post:
+    return "main_type_pre_post";
+  case main_type_external:
+    return "main_type_external";
+  case main_type_email_name:
+    return "main_type_email_name";
+  case main_type_net_edit:
+    return "main_type_net_edit";
+  case main_type_sub_list:
+    return "main_type_sub_list";
+  case main_type_extra_data:
+    return "main_type_extra_data";
+  case main_type_group_bbslist:
+    return "main_type_group_bbslist";
+  case main_type_group_connect:
+    return "main_type_group_connect";
+  case main_type_group_binkp:
+    return "main_type_group_binkp";
+  case main_type_group_info:
+    return "main_type_group_info";
+  case main_type_ssm:
+    return "main_type_ssm";
+  case main_type_sub_add_req:
+    return "main_type_sub_add_req";
+  case main_type_sub_drop_req:
+    return "main_type_sub_drop_req";
+  case main_type_sub_add_resp:
+    return "main_type_sub_add_resp";
+  case main_type_sub_drop_resp:
+    return "main_type_sub_drop_resp";
+  case main_type_sub_list_info:
+    return "main_type_sub_list_info";
+  case main_type_new_post:
+    return "main_type_new_post";
+  case main_type_new_external:
+    return "main_type_new_external";
+  case main_type_game_pack:
+    return "main_type_game_pack";
+  default:
+    return StringPrintf("UNKNOWN type #%d", typ);
+  }
+}
+
+string net_info_minor_type_name(int typ) {
+  switch (typ) {
+  case net_info_general_message:
+    return "net_info_general_message";
+  case net_info_bbslist:
+    return "net_info_bbslist";
+  case net_info_connect:
+    return "net_info_connect";
+  case net_info_sub_lst:
+    return "net_info_sub_lst";
+  case net_info_wwivnews:
+    return "net_info_wwivnews";
+  case net_info_fbackhdr:
+    return "net_info_fbackhdr";
+  case net_info_more_wwivnews:
+    return "net_info_more_wwivnews";
+  case net_info_categ_net:
+    return "net_info_categ_net";
+  case net_info_network_lst:
+    return "net_info_network_lst";
+  case net_info_file:
+    return "net_info_file";
+  case net_info_binkp:
+    return "net_info_binkp";
+  default:
+    return StringPrintf("UNKNOWN type #%d", typ);
+  }
+}
+
+std::string get_subtype_from_packet_text(const std::string& text) {
+  auto iter = text.begin();
+  return get_message_field(text, iter, {'\0', '\r', '\n'}, 80);
+}
+
+/** Creates an outbound packet to be sent */
+Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
+                                       const std::string& subtype,
+                                       std::set<uint16_t> receipients) {
+
+  std::vector<uint16_t> list;
+  net_header_rec nh{};
+  const auto& h = m.header();
+  nh.daten = h.daten();
+  nh.fromsys = h.from_system();
+  nh.fromuser = h.from_usernum();
+  nh.list_len = 0;
+  nh.tosys = 0;
+  uint16_t receipient = 0;
+  if (receipients.size() == 1) {
+    nh.tosys = *receipients.begin();
+  } else {
+    nh.list_len = static_cast<uint16_t>(receipients.size());
+    for (auto r : receipients) {
+      list.push_back(r);
+    }
+  }
+
+  nh.main_type = main_type_new_post;
+  nh.method = 0;
+  nh.minor_type = 0;
+  nh.touser = 0;
+
+  // text is subtype<0>title<0>sender<cflr>date<crlf>body
+  string text = subtype;
+  text.push_back(0);
+  text.append(h.title());
+  text.push_back(0);
+  text.append(h.from());
+  text.append("\r\n");
+  text.append(daten_to_wwivnet_time(nh.daten));
+  text.append("\r\n");
+  text.append(m.text().text());
+
+  nh.length = text.size();
+
+  Packet p(nh, list, text);
+  return p;
+}
+
+static std::string change_subtype_to(const std::string& org_text, const std::string& new_subtype) {
+  auto iter = org_text.begin();
+  auto subtype = get_message_field(org_text, iter, {'\0', '\r', '\n'}, 80);
+  std::string result = new_subtype;
+  result.push_back(0); // Add NULL
+  result += string(iter, std::end(org_text));
+  // Should implicitly move by RVO
+  return result;
+}
+
+bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_rec& h,
+                                 std::vector<uint16_t> list, const std::string& text) {
+  Packet gp(h, list, text);
+  const auto fn = create_pend(net.dir, false, '2');
+  if (!write_wwivnet_packet(fn, net, gp)) {
+    LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
+    return false;
+  } else {
+    VLOG(1) << "Wrote packet: " << fn;
+    return true;
+  }
+}
+
+/**
+ * Sends the post out via wwivnet or other networks to the other parties if needed.
+ *
+ * N.B. If this post originates on this system, use -1 for the original_net_num.
+ */
+bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
+                              const std::string& original_subtype, const subboard_t& sub,
+                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip) {
+  VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
+
+  for (const auto& subnet : sub.nets) {
+    auto h = template_packet.nh;
+    VLOG(1) << "DEBUG: Current network subtype: " << subnet.stype;
+    VLOG(1) << "DEBUG: Current network is: " << nets[subnet.net_num].name;
+    // if subnet.host == 0, we are the host.
+    // if subnet.net_num != context.network_number then we are
+    // gating the sub to another network.
+    bool are_we_hosting = subnet.host == 0;
+    bool are_we_gating = subnet.net_num != original_net_num;
+    VLOG(1) << "DEBUG: are_we_hosting: " << std::boolalpha << are_we_hosting;
+    VLOG(1) << "DEBUG: are_we_gating:  " << std::boolalpha << are_we_gating;
+
+    if (!are_we_hosting && !are_we_gating) {
+      // Nothing to do here, so move on to the next subnet in the list
+      continue;
+    }
+    const auto& current_net = nets[subnet.net_num];
+    if (are_we_gating) {
+      // update fromsys
+      h.fromsys = current_net.sysnum;
+      h.fromuser = 0;
+    }
+    // If the subtype has changed, then change the subtype in the
+    // packet text.
+    const auto text = (subnet.stype == original_subtype)
+                          ? template_packet.text
+                          : change_subtype_to(template_packet.text, subnet.stype);
+    if (subnet.stype != original_subtype) {
+      // we also have to update the nh.length to reflect this change.
+      // TODO(rushfan): Really need higher level interface to manipulating
+      // WWIVnet packets...
+      h.length -= original_subtype.size();
+      h.length += subnet.stype.size();
+    }
+    if (current_net.type == network_type_t::ftn) {
+      h.tosys = FTN_FAKE_OUTBOUND_NODE;
+      VLOG(1) << "current network is FTN";
+      h.list_len = 0;
+      write_wwivnet_packet_or_log(current_net, h, {}, text);
+    } else if (current_net.type == network_type_t::wwivnet) {
+      if (subnet.host == 0) {
+        // We are the host.
+        std::set<uint16_t> subscribers;
+        bool subscribers_read =
+            ReadSubcriberFile(current_net.dir, StrCat("n", subnet.stype, ".net"), subscribers);
+        if (subscribers_read) {
+          // Remove the original sender from the set of systems
+          // that we will resend this to.
+          subscribers.erase(template_packet.nh.fromsys);
+          VLOG(1) << "Removing subscriber (sender): " << template_packet.nh.fromsys;
+          VLOG(1) << "Read subscribers #: " << subscribers.size();
+          VLOG(1) << "Creating wwivnet packet to: ";
+          for (const auto x : subscribers) {
+            VLOG(1) << "        @" << x;
+          }
+          h.list_len = static_cast<uint16_t>(subscribers.size());
+          h.tosys = 0;
+          write_wwivnet_packet_or_log(
+              current_net, h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text);
+        } else {
+          LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subnet.stype;
+        }
+      } else {
+        // We are not the host.  Send message to host.
+        h.tosys = subnet.host;
+        h.list_len = 0;
+        write_wwivnet_packet_or_log(current_net, h, {}, text);
+      }
+    }
+  }
+  LOG(INFO) << "DEBUG: send_post_to_subscribers"
+            << "exiting with true";
+  return true;
+}
+
 } // namespace net
+} // namespace sdk
 } // namespace wwiv

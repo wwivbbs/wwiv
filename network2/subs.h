@@ -19,7 +19,7 @@
 #define __INCLUDED_NETWORK2_SUBS_H__
 
 #include <set>
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "network2/context.h"
 #include "sdk/networks.h"
 #include "sdk/net.h"
@@ -28,16 +28,18 @@
 #include "sdk/vardec.h"
 #include "sdk/msgapi/msgapi.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
 
 namespace wwiv {
 namespace net {
 namespace network2 {
 
-bool handle_sub_add_req(Context& context, Packet& p);
-bool handle_sub_drop_req(Context& context, Packet& p);
-bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& add_or_drop);
-bool handle_sub_list_info_request(Context& context, Packet& p);
-bool handle_sub_list_info_response(Context& context, Packet& p);
+bool handle_sub_add_req(Context& context, wwiv::sdk::net::Packet& p);
+bool handle_sub_drop_req(Context& context, wwiv::sdk::net::Packet& p);
+bool handle_sub_add_drop_resp(Context& context, wwiv::sdk::net::Packet& p,
+                              const std::string& add_or_drop);
+bool handle_sub_list_info_request(Context& context, wwiv::sdk::net::Packet& p);
+bool handle_sub_list_info_response(Context& context, wwiv::sdk::net::Packet& p);
 
 }  // namespace network2
 }  // namespace net

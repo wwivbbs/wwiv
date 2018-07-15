@@ -17,6 +17,19 @@
 /**************************************************************************/
 #include "wwivutil/messages/messages.h"
 
+#include "core/command_line.h"
+#include "core/datetime.h"
+#include "core/file.h"
+#include "core/log.h"
+#include "core/strings.h"
+#include "core/textfile.h"
+#include "sdk/config.h"
+#include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/msgapi/msgapi.h"
+#include "sdk/names.h"
+#include "sdk/net.h"
+#include "sdk/networks.h"
+#include "wwivutil/util.h"
 #include <cstdio>
 #include <ctime>
 #include <iomanip>
@@ -25,26 +38,13 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "core/command_line.h"
-#include "core/file.h"
-#include "core/log.h"
-#include "core/strings.h"
-#include "core/textfile.h"
-#include "sdk/config.h"
-#include "core/datetime.h"
-#include "sdk/net.h"
-#include "sdk/names.h"
-#include "sdk/networks.h"
-#include "sdk/msgapi/msgapi.h"
-#include "sdk/msgapi/message_api_wwiv.h"
-#include "wwivutil/util.h"
 
 using std::clog;
 using std::cout;
 using std::endl;
+using std::make_unique;
 using std::setw;
 using std::string;
-using std::make_unique;
 using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
@@ -68,25 +68,21 @@ static bool find_sub(wwiv::sdk::Subs& subs, const string& filename, subboard_t& 
   return false;
 }
 
-
 OverflowStrategy overflow_strategy_from(const std::string& v) {
   string flag = ToStringLowerCase(v);
   if (flag == "one") {
     return OverflowStrategy::delete_one;
-  }
-  else if (flag == "all") {
+  } else if (flag == "all") {
     return OverflowStrategy::delete_all;
-  }
-  else if (flag == "none") {
+  } else if (flag == "none") {
     return OverflowStrategy::delete_none;
   }
   return OverflowStrategy::delete_none;
 }
 
-class DeleteMessageCommand: public UtilCommand {
+class DeleteMessageCommand : public UtilCommand {
 public:
-  DeleteMessageCommand() 
-    : UtilCommand("delete", "Deletes message number specified by '--num'.") {}
+  DeleteMessageCommand() : UtilCommand("delete", "Deletes message number specified by '--num'.") {}
 
   virtual ~DeleteMessageCommand() {}
 
@@ -109,11 +105,8 @@ public:
 
     // TODO(rushfan): Create the right API type for the right message area.
     wwiv::sdk::msgapi::MessageApiOptions options;
-    apis[2] = make_unique<WWIVMessageApi>(
-        options,
-        *config()->config(),
-        config()->networks().networks(),
-        new NullLastReadImpl());
+    apis[2] = make_unique<WWIVMessageApi>(options, *config()->config(),
+                                          config()->networks().networks(), new NullLastReadImpl());
 
     subboard_t sub{};
     const auto& datadir = config()->config()->datadir();
@@ -127,14 +120,13 @@ public:
 
     unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
     if (!area) {
-      clog << "Unable to Open message area: '" << sub .filename << "'." << endl;
+      clog << "Unable to Open message area: '" << sub.filename << "'." << endl;
       return 1;
     }
 
     int num_messages = area->number_of_messages();
     int message_number = arg("num").as_int();
-    cout << "Message Sub: '" << basename << "' has "
-         << num_messages << " messages." << endl;
+    cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
 
     if (message_number < 0 || message_number > num_messages) {
       LOG(ERROR) << "Invalid message number #" << message_number;
@@ -155,10 +147,9 @@ public:
   }
 };
 
-class PostMessageCommand: public UtilCommand {
+class PostMessageCommand : public UtilCommand {
 public:
-  PostMessageCommand()
-    : UtilCommand("post", "Posts a new message.") {}
+  PostMessageCommand() : UtilCommand("post", "Posts a new message.") {}
 
   bool AddSubCommands() override final {
     add_argument({"title", "message sub name to post on", ""});
@@ -167,14 +158,17 @@ public:
     add_argument({"to", "message sub name to post on", ""});
     add_argument({"date", "message sub name to post on", ""});
     add_argument({"in_reply_to", "message sub name to post on", ""});
-    add_argument({ "delete_overflow", "Strategy for deleting excess messages when adding new ones. (none|one|all)", "none" });
+    add_argument({"delete_overflow",
+                  "Strategy for deleting excess messages when adding new ones. (none|one|all)",
+                  "none"});
 
     return true;
   }
 
   std::string GetUsage() const override final {
     std::ostringstream ss;
-    ss << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>" << endl;
+    ss << "Usage:   post --title=\"Welcome\" --from_usernum=1 <base sub filename> <text filename>"
+       << endl;
     ss << "Example: post general mymessage.txt" << endl;
     return ss.str();
   }
@@ -212,8 +206,8 @@ public:
     }
     std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
 
-    apis[2] = make_unique<WWIVMessageApi>(
-      options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
+    apis[2] = make_unique<WWIVMessageApi>(options, *config()->config(),
+                                          config()->networks().networks(), new NullLastReadImpl());
 
     unique_ptr<MessageArea> area(apis[sub.storage_type]->CreateOrOpen(sub, -1));
     if (!area) {
@@ -227,7 +221,7 @@ public:
     string to = arg("to").as_string();
     time_t daten = time(nullptr);
     string date_str = arg("date").as_string();
- #ifndef __unix__
+#ifndef __unix__
     // This doesn't work on GCC until GCC 5 even though it's C++11.
     if (!date_str.empty()) {
       std::istringstream ss(date_str);
@@ -237,7 +231,7 @@ public:
         daten = mktime(&dt);
       }
     }
-#endif  // __unix__
+#endif // __unix__
     string in_reply_to = arg("in_reply_to").as_string();
     int from_usernum = arg("from_usernum").as_int();
     if (from_usernum >= 1 && from.empty()) {
@@ -259,18 +253,21 @@ public:
     msg->header().set_in_reply_to(in_reply_to);
     msg->text().set_text(JoinStrings(lines, "\r\n"));
 
-    return area->AddMessage(*msg) ? 0 : 1;
+    MessageAreaOptions area_options{};
+    area_options.send_post_to_network = true;
+    return area->AddMessage(*msg, area_options) ? 0 : 1;
   }
 };
 
-class PackMessageCommand: public UtilCommand {
+class PackMessageCommand : public UtilCommand {
 public:
-  PackMessageCommand()
-    : UtilCommand("pack", "Packs a WWIV type-2 message area.") {}
+  PackMessageCommand() : UtilCommand("pack", "Packs a WWIV type-2 message area.") {}
 
   bool AddSubCommands() override final {
     add_argument(BooleanCommandLineArgument{"backup", "make a backup of the subs", true});
-    add_argument({ "delete_overflow", "Strategy for deleting excess messages when adding new ones. (none|one|all)", "none" });
+    add_argument({"delete_overflow",
+                  "Strategy for deleting excess messages when adding new ones. (none|one|all)",
+                  "none"});
     return true;
   }
 
@@ -327,8 +324,8 @@ public:
       LOG(ERROR) << "Can only pack type 2";
     }
 
-    auto api = make_unique<WWIVMessageApi>(
-      options, *config()->config(), config()->networks().networks(), new NullLastReadImpl());
+    auto api = make_unique<WWIVMessageApi>(options, *config()->config(),
+                                           config()->networks().networks(), new NullLastReadImpl());
 
     // Ensure we can open it.
     {
@@ -357,11 +354,11 @@ public:
       auto total = area->number_of_messages();
       for (auto i = 1; i <= total; i++) {
         unique_ptr<Message> message(area->ReadMessage(i));
-        if (!message) { 
+        if (!message) {
           LOG(ERROR) << "Unable to load message #" << i;
-          continue; 
+          continue;
         }
-        if (!newarea->AddMessage(*message.get())) {
+        if (!newarea->AddMessage(*message.get(), {})) {
           LOG(ERROR) << "Error adding message: " << message->header().title();
         } else {
           cout << "[" << i << "]";
@@ -372,12 +369,14 @@ public:
     // Copy "new" versions back to sub and dat
     const string orig_sub_fn = StrCat(config()->config()->datadir(), basename, ".sub");
     File::Remove(orig_sub_fn);
-    if (!File::Rename(StrCat(config()->config()->datadir(), newsub.filename, ".sub"), orig_sub_fn)) {
+    if (!File::Rename(StrCat(config()->config()->datadir(), newsub.filename, ".sub"),
+                      orig_sub_fn)) {
       clog << "Unable to move sub";
     }
     const string orig_dat_fn = StrCat(config()->config()->msgsdir(), basename, ".dat");
     File::Remove(orig_dat_fn);
-    if (!File::Rename(StrCat(config()->config()->msgsdir(), newsub.filename, ".dat"), orig_dat_fn)) {
+    if (!File::Rename(StrCat(config()->config()->msgsdir(), newsub.filename, ".dat"),
+                      orig_dat_fn)) {
       clog << "Unable to move dat";
     }
 
@@ -386,15 +385,23 @@ public:
 };
 
 bool MessagesCommand::AddSubCommands() {
-  if (!add(make_unique<MessagesDumpHeaderCommand>())) { return false; }
-  if (!add(make_unique<DeleteMessageCommand>())) { return false; }
-  if (!add(make_unique<PostMessageCommand>())) { return false; }
-  if (!add(make_unique<PackMessageCommand>())) { return false; }
+  if (!add(make_unique<MessagesDumpHeaderCommand>())) {
+    return false;
+  }
+  if (!add(make_unique<DeleteMessageCommand>())) {
+    return false;
+  }
+  if (!add(make_unique<PostMessageCommand>())) {
+    return false;
+  }
+  if (!add(make_unique<PackMessageCommand>())) {
+    return false;
+  }
   return true;
 }
 
 MessagesDumpHeaderCommand::MessagesDumpHeaderCommand()
-  : UtilCommand("dump", "Displays message header and text information.") {}
+    : UtilCommand("dump", "Displays message header and text information.") {}
 
 std::string MessagesDumpHeaderCommand::GetUsage() const {
   std::ostringstream ss;
@@ -411,9 +418,7 @@ bool MessagesDumpHeaderCommand::AddSubCommands() {
   return true;
 }
 
-int MessagesDumpHeaderCommand::ExecuteImpl(
-  const string& basename,
-  int start, int end, bool all) {
+int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, int end, bool all) {
 
   const auto& datadir = config()->config()->datadir();
   const auto& nets = config()->networks().networks();
@@ -438,7 +443,8 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   }
   std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> apis;
 
-  apis[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(), config()->networks().networks(), x);
+  apis[2] = std::make_unique<WWIVMessageApi>(options, *config()->config(),
+                                             config()->networks().networks(), x);
   if (!apis[sub.storage_type]->Exist(sub)) {
     clog << "Message area: '" << sub.filename << "' does not exist." << endl;
     return 1;
@@ -453,13 +459,11 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
   area->set_max_messages(sub.maxmsgs);
 
   const auto num_messages = (end >= 0) ? end : area->number_of_messages();
-  cout << "Message Sub: '" << basename << "' has "
-       << num_messages << " messages." << endl;
+  cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
   for (auto current = start; current <= num_messages; current++) {
     auto message = area->ReadMessage(current);
     const auto& header = message->header();
-    cout << "#" << setw(5) << std::left << current
-         << " From: " << setw(20) << header.from()
+    cout << "#" << setw(5) << std::left << current << " From: " << setw(20) << header.from()
          << "date: " << daten_to_wwivnet_time(header.daten()) << endl
          << "title: " << header.title();
     if (header.local()) {
@@ -476,7 +480,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
     }
     cout << endl;
     if (all) {
-      cout << "qscan: " <<  header.last_read() << endl;
+      cout << "qscan: " << header.last_read() << endl;
     }
     if (header.deleted()) {
       // Don't try to read the text of deleted messages.
@@ -496,8 +500,7 @@ int MessagesDumpHeaderCommand::ExecuteImpl(
         cout << endl;
       }
     }
-    cout << "------------------------------------------------------------------------"
-	       << endl;
+    cout << "------------------------------------------------------------------------" << endl;
   }
   return 0;
 }
@@ -516,5 +519,5 @@ int MessagesDumpHeaderCommand::Execute() {
   return ExecuteImpl(basename, start, end, all);
 }
 
-}  // namespace wwivutil
-}  // namespace wwiv
+} // namespace wwivutil
+} // namespace wwiv

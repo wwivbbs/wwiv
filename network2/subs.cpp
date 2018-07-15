@@ -43,7 +43,7 @@
 #include "networkb/binkp_config.h"
 #include "core/connection.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "networkb/ppp_config.h"
 #include "network2/context.h"
 #include "network2/email.h"
@@ -76,6 +76,7 @@ using namespace wwiv::net;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

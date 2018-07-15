@@ -33,6 +33,7 @@
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_api_wwiv.h"
+#include "sdk/net/packets.h"
 #include "sdk/ssm.h"
 #include "sdk/usermanager.h"
 #include "sdk/vardec.h"
@@ -47,6 +48,7 @@ using std::unique_ptr;
 using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -397,7 +399,7 @@ int WWIVMessageArea::DeleteExcess() {
   return result;
 }
 
-bool WWIVMessageArea::AddMessage(const Message& message) {
+bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOptions& options) {
   messagerec m{STORAGE_TYPE, 0xffffff};
 
   const auto& header = dynamic_cast<const WWIVMessageHeader&>(message.header());
@@ -425,13 +427,21 @@ bool WWIVMessageArea::AddMessage(const Message& message) {
   //}
   // If we need network validation, then mark it as such.
   // We force the issue here if it wasn't already done.
-  if (sub_.anony & anony_val_net && !header.pending_network()) {
-    p.status |= status_pending_net;
-    UserManager um(wwiv_api_->config());
-    SSM ssm(wwiv_api_->config(), um);
-    ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
-  } else {
-    LOG(INFO) << "TODO: Send the message out on the networks.";
+  if (!sub_.nets.empty()) {
+    if (sub_.anony & anony_val_net && !header.pending_network()) {
+      p.status |= status_pending_net;
+      UserManager um(wwiv_api_->config());
+      SSM ssm(wwiv_api_->config(), um);
+      ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
+    } else {
+      LOG(INFO) << "TODO: Send the message out on the networks.";
+      auto net = *sub_.nets.begin();
+      const auto& wm = dynamic_cast<const WWIVMessage&>(message);
+      // Create a base packet from the 1st network entry.
+      auto packet = create_packet_from_wwiv_message(wm, net.stype, {});
+      // Send the packet to everyone who needs is.
+      send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {});
+    }
   }
 
   auto text = StrCat(header.from(), "\r\n", daten_to_wwivnet_time(header.daten()), "\r\n",

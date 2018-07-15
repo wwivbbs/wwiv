@@ -44,7 +44,7 @@
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/net_util.h"
-#include "networkb/packets.h"
+#include "sdk/net/packets.h"
 #include "networkb/ppp_config.h"
 
 #include "sdk/bbslist.h"
@@ -75,6 +75,7 @@ using namespace wwiv::net;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -82,15 +83,15 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
-static bool find_sub(Context& context, const string& netname, subboard_t& sub) {
+static bool find_sub(const Subs& subs, int network_number, const string& netname, subboard_t& sub) {
   int current = 0;
-  for (const auto& x : context.subs.subs()) {
+  for (const auto& x : subs.subs()) {
     for (const auto& n : x.nets) {
-      if (n.net_num == context.network_number) {
+      if (n.net_num == network_number) {
         if (iequals(netname, n.stype)) {
           // Since the subtype matches, we need to find the subboard base filename.
           // and return that.
-          sub = context.subs.sub(current);
+          sub = subs.sub(current);
           return true;
         }
       }
@@ -98,16 +99,6 @@ static bool find_sub(Context& context, const string& netname, subboard_t& sub) {
     ++current;
   }
   return false;
-}
-
-static std::string change_subtype_to(const std::string& org_text, const std::string& new_subtype) {
-  auto iter = org_text.begin();
-  auto subtype = get_message_field(org_text, iter, {'\0', '\r', '\n'}, 80);
-  std::string result = new_subtype;
-  result.push_back(0); // Add NULL
-  result += string(iter, std::end(org_text));
-  // Should implicitly move by RVO
-  return result;
 }
 
 // Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
@@ -138,7 +129,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
   }
 
   subboard_t sub;
-  if (!find_sub(context, subtype, sub)) {
+  if (!find_sub(context.subs, context.network_number, subtype, sub)) {
     LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << subtype;
     LOG(INFO) << "      title: " << title << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
@@ -180,7 +171,9 @@ bool handle_inbound_post(Context& context, Packet& p) {
   msg->header().set_daten(p.nh.daten);
   msg->text().set_text(text);
 
-  if (!area->AddMessage(*msg)) {
+  MessageAreaOptions options{};
+  options.send_post_to_network = false;
+  if (!area->AddMessage(*msg, options)) {
     LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
@@ -188,29 +181,17 @@ bool handle_inbound_post(Context& context, Packet& p) {
   return true;
 }
 
-static bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_rec& h,
-                                        std::vector<uint16_t> list, const std::string& text) {
-  Packet gp(h, list, text);
-  const auto fn = create_pend(net.dir, false, '2');
-  if (!write_wwivnet_packet(fn, net, gp)) {
-    LOG(ERROR) << "Error writing packet: " << net.dir << " " << fn;
-    return false;
-  } else {
-    VLOG(1) << "Wrote packet: " << fn;
-    return true;
-  }
-}
-
-bool send_post_to_subscribers(Context& context, Packet& orig_packet) {
+bool send_post_to_subscribers(Context& context, Packet& template_packet,
+                              set<uint16_t> subscribers_to_skip) {
   LOG(INFO) << "DEBUG: send_post_to_subscribers";
 
-  if (orig_packet.nh.main_type != main_type_new_post) {
+  if (template_packet.nh.main_type != main_type_new_post) {
     LOG(ERROR) << "Called send_post_to_subscribers on packet of wrong type.";
     LOG(ERROR) << "expected send_post_to_subscribers, got: "
-               << main_type_name(orig_packet.nh.main_type);
+               << main_type_name(template_packet.nh.main_type);
     return false;
   }
-  auto original_subtype = get_subtype_from_packet_text(orig_packet.text);
+  auto original_subtype = get_subtype_from_packet_text(template_packet.text);
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
   if (original_subtype.empty()) {
@@ -219,87 +200,16 @@ bool send_post_to_subscribers(Context& context, Packet& orig_packet) {
   }
 
   subboard_t sub;
-  if (!find_sub(context, original_subtype, sub)) {
+  if (!find_sub(context.subs, context.network_number, original_subtype, sub)) {
     LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << original_subtype
               << " writing to dead.net.";
-    Packet p(orig_packet.nh, {}, orig_packet.text);
+    Packet p(template_packet.nh, {}, template_packet.text);
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   VLOG(1) << "DEBUG: Found sub: " << sub.name;
 
-  for (const auto& subnet : sub.nets) {
-    auto h = orig_packet.nh;
-    VLOG(1) << "DEBUG: Current network subtype: " << subnet.stype;
-    VLOG(1) << "DEBUG: Current network is: " << context.networks()[subnet.net_num].name;
-    // if subnet.host == 0, we are the host.
-    // if subnet.net_num != context.network_number then we are
-    // gating the sub to another network.
-    bool are_we_hosting = subnet.host == 0;
-    bool are_we_gating = subnet.net_num != context.network_number;
-    VLOG(1) << "DEBUG: are_we_hosting: " << std::boolalpha << are_we_hosting;
-    VLOG(1) << "DEBUG: are_we_gating:  " << std::boolalpha << are_we_gating;
-
-    if (!are_we_hosting && !are_we_gating) {
-      // Nothing to do here, so move on to the next subnet in the list
-      continue;
-    }
-    const auto& current_net = context.networks()[subnet.net_num];
-    if (are_we_gating) {
-      // update fromsys
-      h.fromsys = current_net.sysnum;
-      h.fromuser = 0;
-    }
-    // If the subtype has changed, then change the subtype in the
-    // packet text.
-    const auto text = (subnet.stype == original_subtype)
-                          ? orig_packet.text
-                          : change_subtype_to(orig_packet.text, subnet.stype);
-    if (subnet.stype != original_subtype) {
-      // we also have to update the nh.length to reflect this change.
-      // TODO(rushfan): Really need higher level interface to manipulating
-      // WWIVnet packets...
-      h.length -= original_subtype.size();
-      h.length += subnet.stype.size();
-    }
-    if (current_net.type == network_type_t::ftn) {
-      h.tosys = FTN_FAKE_OUTBOUND_NODE;
-      VLOG(1) << "current network is FTN";
-      h.list_len = 0;
-      write_wwivnet_packet_or_log(current_net, h, {}, text);
-    } else if (current_net.type == network_type_t::wwivnet) {
-      if (subnet.host == 0) {
-        // We are the host.
-        std::set<uint16_t> subscribers;
-        bool subscribers_read =
-            ReadSubcriberFile(current_net.dir, StrCat("n", subnet.stype, ".net"), subscribers);
-        if (subscribers_read) {
-          // Remove the original sender from the set of systems
-          // that we will resend this to.
-          subscribers.erase(orig_packet.nh.fromsys);
-          VLOG(1) << "Removing subscriber (sender): " << orig_packet.nh.fromsys;
-          VLOG(1) << "Read subscribers #: " << subscribers.size();
-          VLOG(1) << "Creating wwivnet packet to: ";
-          for (const auto x : subscribers) {
-            VLOG(1) << "        @" << x;
-          }
-          h.list_len = static_cast<uint16_t>(subscribers.size());
-          h.tosys = 0;
-          write_wwivnet_packet_or_log(
-              current_net, h, std::vector<uint16_t>(subscribers.begin(), subscribers.end()), text);
-        } else {
-          LOG(ERROR) << "Unable to read subscribers for " << current_net.dir << " " << subnet.stype;
-        }
-      } else {
-        // We are not the host.  Send message to host.
-        h.tosys = subnet.host;
-        h.list_len = 0;
-        write_wwivnet_packet_or_log(current_net, h, {}, text);
-      }
-    }
-  }
-  LOG(INFO) << "DEBUG: send_post_to_subscribers"
-            << "exiting with true";
-  return true;
+  return send_post_to_subscribers(context.networks(), context.network_number, original_subtype,
+                                  sub, template_packet, subscribers_to_skip);
 }
 
 } // namespace network2
