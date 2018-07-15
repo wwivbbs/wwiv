@@ -67,8 +67,7 @@ ParsedMessageText::~ParsedMessageText() {}
 
 bool ParsedMessageText::add_control_line_after(const std::string& near_line,
                                                const std::string& line) {
-  auto it = lines_.begin();
-  while (it != lines_.end()) {
+  for (auto it = std::begin(lines_); it != std::end(lines_); ) {
     auto l = *it;
     if (!l.empty() && starts_with(l, control_char_)) {
       l = l.substr(control_char_.size());
@@ -112,6 +111,22 @@ bool ParsedMessageText::add_control_line(const std::string& line) {
   lines_.push_back(line);
   return true;
 }
+
+bool ParsedMessageText::remove_control_line(const std::string& start_of_line) {
+  for (auto it = std::begin(lines_); it != std::end(lines_);) {
+    auto l = *it;
+    if (!l.empty() && starts_with(l, control_char_)) {
+      l = l.substr(control_char_.size());
+      if (l.find(start_of_line) != string::npos) {
+        it = lines_.erase(it);
+        return true;
+      }
+    }
+    it++;
+  }
+  return false;
+}
+
 
 std::string ParsedMessageText::to_string() const {
   return JoinStrings(lines_, eol_) + static_cast<char>(CZ);

@@ -39,6 +39,11 @@ public:
   virtual ~ParsedMessageText();
   bool add_control_line_after(const std::string& near_line, const std::string& line);
   bool add_control_line(const std::string& line);
+  /** 
+   * Removes a single control line starting with start_of_line 
+   * returns true if a line was removed, false otherwise
+   */
+  bool remove_control_line(const std::string& start_of_line);
   std::string to_string() const;
 
 private:

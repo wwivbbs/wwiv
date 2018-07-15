@@ -236,6 +236,10 @@ void post(const PostData& post_data) {
           auto new_msgid = dupe.CreateMessageID(addr);
           WWIVParsedMessageText pmt(data.text);
           const auto reply_control_line = StrCat("\004", "0REPLY: ", msgid);
+          // Remove the existing MSGID lines.
+          pmt.remove_control_line("MSGID");
+          pmt.remove_control_line("REPLY");
+
           pmt.add_control_line(StrCat("\004""0MSGID: ", new_msgid));
           pmt.add_control_line_after("MSGID", reply_control_line);
           data.text = pmt.to_string();
