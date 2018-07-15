@@ -8,9 +8,6 @@
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)
-* dupe checking code is a mess and probably won't work,
-  need to check for both address and serial number or 
-  crc of headers too.
 
 ## Ini Files and Configuration
 ***
@@ -42,7 +39,6 @@
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark.
-* set status_pending_net on posts like wwivtoss does if needed.
 
 ## core::File Improvements
 ***
