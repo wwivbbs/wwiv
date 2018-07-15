@@ -537,7 +537,8 @@ bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_r
  */
 bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
-                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip) {
+                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip,
+                              const subscribers_send_to_t& send_to) {
   VLOG(1) << "DEBUG: send_post_to_subscribers; original subtype: " << original_subtype;
 
   for (const auto& subnet : sub.nets) {
@@ -549,14 +550,15 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
     // gating the sub to another network.
     bool are_we_hosting = subnet.host == 0;
     bool are_we_gating = subnet.net_num != original_net_num;
+    const auto& current_net = nets[subnet.net_num];
     VLOG(1) << "DEBUG: are_we_hosting: " << std::boolalpha << are_we_hosting;
     VLOG(1) << "DEBUG: are_we_gating:  " << std::boolalpha << are_we_gating;
 
-    if (!are_we_hosting && !are_we_gating) {
+    if (!are_we_hosting && !are_we_gating && send_to == subscribers_send_to_t::hosted_and_gated_only) {
       // Nothing to do here, so move on to the next subnet in the list
       continue;
+      VLOG(2) << "!hosting and !gating on: " << current_net.name;
     }
-    const auto& current_net = nets[subnet.net_num];
     if (are_we_gating) {
       // update fromsys
       h.fromsys = current_net.sysnum;

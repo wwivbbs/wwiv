@@ -208,8 +208,9 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
   }
   VLOG(1) << "DEBUG: Found sub: " << sub.name;
 
-  return send_post_to_subscribers(context.networks(), context.network_number, original_subtype,
-                                  sub, template_packet, subscribers_to_skip);
+  return send_post_to_subscribers(context.networks(), context.network_number, original_subtype, sub,
+                                  template_packet, subscribers_to_skip,
+                                  subscribers_send_to_t::hosted_and_gated_only);
 }
 
 } // namespace network2

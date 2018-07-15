@@ -440,7 +440,8 @@ bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOption
       // Create a base packet from the 1st network entry.
       auto packet = create_packet_from_wwiv_message(wm, net.stype, {});
       // Send the packet to everyone who needs is.
-      send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {});
+      send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {},
+                               subscribers_send_to_t::all_subscribers);
     }
   }
 

@@ -133,9 +133,11 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
 bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_rec& h,
                                  std::vector<uint16_t> list, const std::string& text);
 
+enum class subscribers_send_to_t { hosted_and_gated_only, all_subscribers };
 bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int original_net_num,
                               const std::string& original_subtype, const subboard_t& sub,
-                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip);
+                              Packet& template_packet, std::set<uint16_t> subscribers_to_skip,
+                              const subscribers_send_to_t& send_to);
 
 } // namespace net
 } // namespace sdk
