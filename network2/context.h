@@ -57,6 +57,7 @@ public:
   std::map<int, std::unique_ptr<wwiv::sdk::msgapi::MessageApi>> msgapis_;
   // This is the type-2 entry in msgapis_. It's owned there.
   wwiv::sdk::msgapi::WWIVMessageApi* email_api_;
+  // network number like network 0 (.0) is the 1st network in wwivconfig.
   int network_number = 0;
   wwiv::sdk::Subs subs;
   const std::vector<net_networks_rec> networks_;

@@ -114,7 +114,7 @@ NetInfoFileInfo GetNetInfoFileInfo(Packet& p);
 
 
 void rename_pend(const std::string& directory, const std::string& filename,
-                 uint8_t network_app_num);
+                 char network_app_num);
 std::string create_pend(const std::string& directory, bool local, char network_app_id);
 
 std::string main_type_name(int typ);

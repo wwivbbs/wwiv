@@ -383,12 +383,12 @@ static void update_filechange_status_dat(const string& datadir) {
 static void rename_pending_files(const string& dir) {
   File dead_net_file(dir, DEAD_NET);
   if (dead_net_file.Exists()) {
-    rename_pend(dir, DEAD_NET, 3);
+    rename_pend(dir, DEAD_NET, '3');
   }
 
   FindFiles ff(dir, "s*.net", FindFilesType::files);
   for (const auto& f : ff) {
-    rename_pend(dir, f.name, 3);
+    rename_pend(dir, f.name, '3');
   }
 }
 

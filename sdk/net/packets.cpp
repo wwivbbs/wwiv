@@ -337,7 +337,7 @@ std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t no
   return StringPrintf("s%u.net", node);
 }
 
-void rename_pend(const string& directory, const string& filename, uint8_t network_app_num) {
+void rename_pend(const string& directory, const string& filename, char network_app_num) {
   File pend_file(directory, filename);
   if (!pend_file.Exists()) {
     LOG(INFO) << " pending file does not exist: " << pend_file;
@@ -345,11 +345,11 @@ void rename_pend(const string& directory, const string& filename, uint8_t networ
   }
   const auto pend_filename(pend_file.full_pathname());
   const auto num = filename.substr(1);
-  const string prefix = (to_number<int>(num)) ? "1" : "0";
+  const char prefix = (to_number<int>(num)) ? '1' : '0';
 
   for (int i = 0; i < 1000; i++) {
     const auto new_filename =
-        StringPrintf("%sp%s-%u-%u.net", directory.c_str(), prefix.c_str(), network_app_num, i);
+        StringPrintf("%sp%c-%c-%u.net", directory.c_str(), prefix, network_app_num, i);
     if (File::Rename(pend_filename, new_filename)) {
       LOG(INFO) << "renamed file: '" << pend_filename << "' to: '" << new_filename << "'";
       return;
@@ -517,6 +517,8 @@ static std::string change_subtype_to(const std::string& org_text, const std::str
   return result;
 }
 
+// TODO(rushfan): Need to pass in the name of the pending network file to make
+// or at least pass in the network character to use in the filename.
 bool write_wwivnet_packet_or_log(const net_networks_rec& net, const net_header_rec& h,
                                  std::vector<uint16_t> list, const std::string& text) {
   Packet gp(h, list, text);

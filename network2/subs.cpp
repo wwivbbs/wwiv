@@ -305,18 +305,19 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   LOG(INFO) << "Processed " << add_or_drop << " response from system @" << p.nh.fromsys << " to subtype: " << subname;
 
   char code = *b++;
-  string code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
+  auto code_string = SubAddDropResponseMessage(static_cast<uint8_t>(code));
 
-  string orig_title = get_message_field(p.text, b, { '\0', '\r', '\n' }, 80);
-  string sender_date = get_message_field(p.text, b, { '\0', '\r', '\n' }, 80);
-  string orig_date = get_message_field(p.text, b, { '\0', '\r', '\n' }, 80);
+  auto orig_title = get_message_field(p.text, b, {'\0', '\r', '\n'}, 80);
+  auto sender_date = get_message_field(p.text, b, {'\0', '\r', '\n'}, 80);
+  auto orig_date = get_message_field(p.text, b, {'\0', '\r', '\n'}, 80);
 
-  string message_text = string(b, p.text.end());
+  auto message_text = string(b, p.text.end());
   net_header_rec nh = {};
 
-  string title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
-  string byname = StrCat("WWIV AreaFix (", context.net.name, ") @", p.nh.fromsys);
-  string body = StrCat("SubType '", subname, "', (", add_or_drop, ") Response: '", code_string, "'\r\n");
+  auto title = StrCat("WWIV AreaFix (", context.net.name, ") Response for subtype '", subname, "'");
+  auto byname = StrCat("WWIV AreaFix (", context.net.name, ") @", p.nh.fromsys);
+  auto body =
+      StrCat("SubType '", subname, "', (", add_or_drop, ") Response: '", code_string, "'\r\n");
   body.append(message_text);
 
   nh.touser = 1;
@@ -324,7 +325,7 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
   nh.main_type = main_type_email;
   nh.daten = daten_t_now();
 
-  const string filename = create_pend(context.net.dir, true, static_cast<char>('0' + context.network_number));
+  const auto filename = create_pend(context.net.dir, true, '2');
   return send_network_email(filename, context.net, nh, {}, body, byname, title);
 }
 

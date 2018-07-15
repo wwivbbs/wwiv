@@ -433,8 +433,8 @@ bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOption
       UserManager um(wwiv_api_->config());
       SSM ssm(wwiv_api_->config(), um);
       ssm.send_local(1, StrCat("Unvalidated net posts on: ", sub_.name));
-    } else {
-      LOG(INFO) << "TODO: Send the message out on the networks.";
+    } else if (options.send_post_to_network) {
+      LOG(INFO) << "** Sending the newly added message out on all of the networks.";
       auto net = *sub_.nets.begin();
       const auto& wm = dynamic_cast<const WWIVMessage&>(message);
       // Create a base packet from the 1st network entry.
@@ -442,6 +442,8 @@ bool WWIVMessageArea::AddMessage(const Message& message, const MessageAreaOption
       // Send the packet to everyone who needs is.
       send_post_to_subscribers(wwiv_api_->network(), net.net_num, net.stype, sub_, packet, {},
                                subscribers_send_to_t::all_subscribers);
+    } else {
+      VLOG(1) << "Not sending message to the network";
     }
   }
 
