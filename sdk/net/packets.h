@@ -19,6 +19,7 @@
 #define __INCLUDED_SDK_NET_PACKETS_H__
 
 #include <functional>
+#include <memory>
 #include <set>
 #include <string>
 #include <vector>
@@ -40,6 +41,9 @@ namespace net {
 #undef ERROR
 #endif
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
+
+//fwd
+class ParsedPacketText;
 
 class Packet final {
 public:
@@ -63,15 +67,15 @@ public:
 class ParsedPacketText {
 public:
   ParsedPacketText(uint16_t typ);
-  uint16_t main_type;
-  std::string subtype;
-  std::string email;
+  uint16_t main_type_;
+  std::string subtype_or_email_to_;
   std::string title;
   std::string sender;
   std::string date;
-  std::string to;
-  std::string by_line;
   std::string text;
+  static ParsedPacketText FromPacketText(uint16_t typ, const std::string& raw);
+  static ParsedPacketText FromPacket(const Packet& p);
+  static std::string ToPacketText(const ParsedPacketText& ppt);
 };
 
 /**

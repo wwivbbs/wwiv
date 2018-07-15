@@ -344,6 +344,41 @@ std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t no
   return StringPrintf("s%u.net", node);
 }
 
+ParsedPacketText::ParsedPacketText(uint16_t typ) : main_type_(typ) {}
+
+// static
+ParsedPacketText ParsedPacketText::FromPacketText(uint16_t typ, const std::string& raw) {
+  auto iter = std::begin(raw);
+  ParsedPacketText p{typ};
+  p.subtype_or_email_to_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
+  p.title = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
+  p.sender = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
+  p.date = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
+
+  // This is the message body including any control lines (^D0 or ^A)
+  // that are part of it.
+  p.text = string(iter, std::end(raw));
+  return p;
+}
+
+// static
+ParsedPacketText ParsedPacketText::FromPacket(const Packet& p){
+  return FromPacketText(p.nh.main_type, p.text());
+}
+
+// static
+std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
+  std::string text = ppt.subtype_or_email_to_;
+  text.push_back(0);
+  text.append(ppt.title);
+  text.push_back(0);
+  const auto crlf = StringPrintf("\r\n");
+  text.append(ppt.sender).append(crlf);
+  text.append(ppt.date).append(crlf);
+  text.append(ppt.text);
+  return text;
+}
+
 void rename_pend(const string& directory, const string& filename, char network_app_num) {
   File pend_file(directory, filename);
   if (!pend_file.Exists()) {

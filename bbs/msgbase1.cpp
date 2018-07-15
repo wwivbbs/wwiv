@@ -232,6 +232,7 @@ void post(const PostData& post_data) {
       if (dupe.IsInitialized()) {
         try {
           wwiv::sdk::fido::FidoAddress addr(a()->current_net().fido.fido_address);
+          // TODO(rushfan): Remove old MSGID
           auto new_msgid = dupe.CreateMessageID(addr);
           WWIVParsedMessageText pmt(data.text);
           const auto reply_control_line = StrCat("\004", "0REPLY: ", msgid);
