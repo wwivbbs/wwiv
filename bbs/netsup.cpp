@@ -375,7 +375,9 @@ public:
 static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_call_out_rec& con) {
   const auto dt = DateTime::now();
   auto now = dt.to_system_clock();
+  VLOG(2) << "ok_to_call_from_contact_rec: @" << con.sysnum << "." << a()->current_net().name;
   if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
+    VLOG(2) << "Skipping: No bytes waiting and !call anyway";
     return false;
   }
   auto min_minutes = std::max<int>(con.call_anyway, 1);
@@ -383,18 +385,26 @@ static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_cal
   auto last_contact_sent = DateTime::from_time_t(ncn.lastcontactsent()).to_system_clock();
   auto next_contact_time = last_contact + minutes(min_minutes);
 
+  if (con.call_anyway && now >= next_contact_time) {
+    VLOG(2) << "Calling anyway since it's been time";
+    return true;
+  }
+
   if (now < next_contact_time) {
+    VLOG(2) << "Skipping: n < next_contact_time ( in " << min_minutes << ") minutes";
     return false;
   }
-  if (!(con.options & options_once_per_day)) {
+  if (!(con.options & options_once_per_day) && (now - last_contact_sent) < hours(24)) {
+    VLOG(2) << "Skipping, not once per day";
     return false;
   }
   auto daily_attempt_time = hours(20) / std::max<int>(1, con.times_per_day);
   if ((now - last_contact_sent) < daily_attempt_time) {
+    VLOG(2) << "Skipping, !daily_attempt_time";
     return false;
   }
-  if ((bytes_to_k(ncn.bytes_waiting()) < con.min_k) &&
-      (now - last_contact_sent) < hours(24)) {
+  if ((bytes_to_k(ncn.bytes_waiting()) < con.min_k) && (now - last_contact_sent) < hours(24)) {
+    VLOG(2) << "Skipping, !<min_k";
     return false;
   }
   return true;
@@ -405,10 +415,13 @@ bool attempt_callout() {
 
   auto now = steady_clock::now();
   if (last_time_c_ == steady_clock::time_point::min()) {
-    last_time_c_ = now;
+    // Set it to 11s ago, so we try a callout right away.
+    last_time_c_ = now - seconds(11);
+    VLOG(2) << "Setting last time to now";
     return false;
   }
   if (now - last_time_c_ < seconds(10)) {
+    VLOG(3) << "not attempting callout, been less to 10s";
     return false;
   }
 
@@ -429,12 +442,14 @@ bool attempt_callout() {
     for (const auto& p : callout.callout_config()) {
       bool ok = ok_to_call(&p.second);
       if (!ok) {
+        VLOG(2) << "!ok to call: @" << p.second.sysnum << "." << a()->current_net().name;
         continue;
       }
 
       const NetworkContact* ncr = contact.contact_rec_for(p.first);
       const net_call_out_rec* ncor = callout.net_call_out_for(p.first);
       if (!ncr || !ncor) {
+        VLOG(2) << "skipping because: !ncr || !ncor";
         continue;
       }
       ok = ok_to_call_from_contact_rec(*ncr, *ncor);
@@ -458,11 +473,13 @@ bool attempt_callout() {
   }
 
   if (to_call.empty()) {
+    VLOG(2) << "Skipping: to_call is empty";
     return false;
   }
   for (const auto& node : to_call) {
     set_net_num(node.net_num_);
     if (node.weight_ != 0) {
+      VLOG(1) << "Attempting callout on: @" << node.node_num_;
       do_callout(node.node_num_);
     }
   }
