@@ -15,12 +15,12 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "gtest/gtest.h"
+#include "core/datetime.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
 #include "networkb/net_util.h"
 #include "sdk/net/packets.h"
-#include "core/datetime.h"
+#include "gtest/gtest.h"
 
 #include <cstdint>
 #include <string>
@@ -34,12 +34,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;
 
-static string CreateFakePacketText(
-    const string& subtype, 
-    const string& title, 
-    const string& sender, 
-    const string& date, 
-    const string& text) {
+static string CreateFakePacketText(const string& subtype, const string& title, const string& sender,
+                                   const string& date, const string& text) {
 
   string result;
   result.append(subtype);
@@ -54,9 +50,10 @@ static string CreateFakePacketText(
   return result;
 }
 
-class PacketsTest: public testing::Test {
+class PacketsTest : public testing::Test {
 public:
   PacketsTest() {}
+
 protected:
   FileHelper helper_;
 };
@@ -112,15 +109,15 @@ TEST_F(PacketsTest, UpdateRouting_Smoke) {
   packet.UpdateRouting(net);
 
   auto iter = packet.text().begin();
-  get_message_field(packet.text(), iter, { '\0', '\r', '\n' }, 80);
+  get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
   get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
   get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
   get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
   auto actual_route_str = get_message_field(packet.text(), iter, {'\0', '\r', '\n'}, 80);
 
-  EXPECT_TRUE(starts_with(actual_route_str, "\004""0R"));
+  EXPECT_TRUE(starts_with(actual_route_str, "\004"
+                                            "0R"));
 }
-
 
 TEST_F(PacketsTest, GetMessageField) {
   char raw[] = {'a', '\0', 'b', 'c', '\r', '\n', 'd'};
@@ -132,4 +129,36 @@ TEST_F(PacketsTest, GetMessageField) {
   EXPECT_STREQ("bc", bc.c_str());
   string remaining = string(iter, text.end());
   EXPECT_STREQ("d", remaining.c_str());
+}
+
+TEST_F(PacketsTest, FromPacketText_FromPacketText_Smoke) {
+  const string s("a\000b\000c\r\nd\r\ne", 11);
+  auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
+  EXPECT_EQ(pp.subtype_or_email_to_, "a");
+  EXPECT_EQ(pp.title, "b");
+  EXPECT_EQ(pp.sender, "c");
+  EXPECT_EQ(pp.date, "d");
+  EXPECT_EQ(pp.text, "e");
+}
+
+TEST_F(PacketsTest, FromPacketText_ToPacketText_Smoke) {
+  const string expected("a\000b\000c\r\nd\r\ne", 11);
+  ParsedPacketText ppt{main_type_new_post};
+  ppt.subtype_or_email_to_ = "a";
+  ppt.title = "b";
+  ppt.sender = "c";
+  ppt.date = "d";
+  ppt.text = "e";
+
+  auto actual = ParsedPacketText::ToPacketText(ppt);
+  EXPECT_EQ(expected, actual);
+}
+
+TEST_F(PacketsTest, FromPacketText_Malformed) {
+  const string s("a", 1);
+  auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
+  EXPECT_EQ(pp.subtype_or_email_to_, "a");
+  EXPECT_EQ(pp.title, "");
+  EXPECT_EQ(pp.sender, "");
+  EXPECT_EQ(pp.date, "");
 }

@@ -92,13 +92,13 @@ static std::string get_message_field(const C& c, I& iter, std::set<char> stop, s
 
   const auto begin = iter;
   std::size_t count = 0;
-  while (stop.find(*iter) == std::end(stop) && ++count < max && iter != c.end()) {
+  while (iter != std::end(c) && stop.find(*iter) == std::end(stop) && ++count < max) {
     iter++;
   }
   std::string result(begin, iter);
 
   // Stop over stop chars
-  while (iter != c.end() && stop.find(*iter) != std::end(stop)) {
+  while (iter != std::end(c) && stop.find(*iter) != std::end(stop)) {
     iter++;
   }
 
