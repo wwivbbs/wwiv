@@ -290,6 +290,10 @@ int SocketConnection::send(const void* data, int size, duration<double>) {
   int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
   if (open_ && sent != size) {
     LOG(ERROR) << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
+    if (sent == -1) {
+      throw socket_closed_error(
+          StrCat("read_uint16: got -1; errno: ", strerror(errno)));
+    }
   }
   return size;
 }
