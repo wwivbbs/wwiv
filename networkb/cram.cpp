@@ -100,8 +100,7 @@ std::string Cram::CreateHashedSecret(
     }
   }
   
-  string c = original_challenge_hex;
-  StringTrim(&c);
+  auto c = StringTrim(original_challenge_hex);
   while (c.back() == '\0') {
     // Radius adds a trailing null character here.
     c.pop_back();

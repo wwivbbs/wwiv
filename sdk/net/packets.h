@@ -42,12 +42,13 @@ namespace net {
 #endif
 enum class ReadPacketResponse { OK, ERROR, END_OF_FILE };
 
-//fwd
+// fwd
 class ParsedPacketText;
 
 class Packet final {
 public:
   Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const std::string& t);
+  Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t);
 
   Packet() noexcept {}
   virtual ~Packet() {}
@@ -58,15 +59,25 @@ public:
   const std::string& text() const noexcept { return text_; }
   void set_text(const std::string& text);
   void set_text(std::string&& text);
+  // Updates the lengths in the header for list and text.
+  void update_header() {
+    nh.length = text_.size();
+    nh.list_len = static_cast<uint16_t>(list.size());
+  }
 
   net_header_rec nh{};
   std::vector<uint16_t> list;
   std::string text_;
 };
 
+/**
+ * Represents a parsed packet text for main types: email, email_name, and new_post.
+ */
 class ParsedPacketText {
 public:
   ParsedPacketText(uint16_t typ);
+  void set_date(daten_t d);
+  void set_date(const std::string& d);
   uint16_t main_type_;
   std::string subtype_or_email_to_;
   std::string title;

@@ -79,10 +79,8 @@ static bool ParseIniFile(const string& filename, std::map<string, string>& data)
         // not a line of the form full_key = value [; comment]
         continue;
       }
-      string key = line.substr(0, equals);
-      string value = line.substr(equals + 1);
-      StringTrim(&key);
-      StringTrim(&value);
+      auto key = StringTrim(line.substr(0, equals));
+      auto value = StringTrim(line.substr(equals + 1));
 
       auto real_key = StrCat(section, ".", key);
       data[real_key] = value;

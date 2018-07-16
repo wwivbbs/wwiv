@@ -145,8 +145,7 @@ static std::vector<string> create_sub_info(Context& context) {
 }
 
 static string SubTypeFromText(const std::string& text) {
-  string subtype = text;
-  StringTrim(&subtype);
+  auto subtype = StringTrim(text);
   if (subtype.back() == '\0') subtype.pop_back();
   if (subtype.size() > 7) {
     return "";

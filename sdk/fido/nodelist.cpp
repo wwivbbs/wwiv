@@ -240,8 +240,7 @@ bool Nodelist::Load(const std::vector<std::string>& lines) {
   if (lines.empty()) return false;
   uint16_t zone = 0, region = 0, net = 0, hub = 0;
   for (const auto& raw_line : lines) {
-    string line(raw_line);
-    StringTrim(&line);
+    auto line = StringTrim(raw_line);
     HandleLine(line, zone, region, net, hub);
   }
   return true;

@@ -214,52 +214,47 @@ bool WWIVMessageArea::ParseMessageText(const postrec& header, int message_number
 
   // Use the 3 arg form of split string so we don't strip blank lines.
   vector<string> lines = SplitString(raw_text, "\n", false);
-  auto it = lines.begin();
+  auto it = std::begin(lines);
   if (it == std::end(lines)) {
     VLOG(1) << "Malformed message(1) #" << message_number << "; title: '" << header.title << "' "
             << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
-  from_username = *it++;
-  StringTrim(&from_username);
+  from_username = StringTrim(*it++);
   if (it == lines.end()) {
     VLOG(1) << "Malformed message(2) #" << message_number << "; title: '" << header.title << "' "
             << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
-  date = *it++;
-  StringTrim(&date);
-  if (it == lines.end()) {
+  date = StringTrim(*it++);
+  if (it == std::end(lines)) {
     VLOG(1) << "Malformed message(3) #" << message_number << "; title: '" << header.title << "' "
             << header.owneruser << "@" << header.ownersys;
     return true;
   }
 
-  for (; it != lines.end(); it++) {
-    auto line = *it;
-    StringTrim(&line);
+  for (; it != std::end(lines); it++) {
+    auto line = StringTrim(*it);
     if (!line.empty() && line.front() == CD) {
       text += line;
       text += "\r\n";
     } else if (starts_with(line, "RE:")) {
-      in_reply_to = line.substr(3);
-      StringTrim(&in_reply_to);
+      in_reply_to = StringTrim(line.substr(3));
     } else if (starts_with(line, "BY:")) {
-      to = line.substr(3);
-      StringTrim(&to);
+      to = StringTrim(line.substr(3));
     } else {
       // No more special lines, the rest is just text.
       for (; it != std::end(lines); it++) {
-        string text_line = *it;
+        auto text_line = *it;
         // Terminate the string with a control-Z.
-        string::size_type cz_pos = text_line.find(CZ);
+        auto cz_pos = text_line.find(CZ);
         if (cz_pos != string::npos) {
           text_line = text_line.substr(0, cz_pos);
         }
         // Trim all remaining nulls.
-        string::size_type null_pos = text_line.find((char)0);
+        auto null_pos = text_line.find((char)0);
         if (null_pos != string::npos) {
           text_line.resize(null_pos);
         }

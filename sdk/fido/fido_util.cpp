@@ -387,9 +387,7 @@ static std::vector<std::string> parse_routes(const std::string& routes) {
   std::vector<std::string> result;
   auto raw = SplitString(routes, " ");
   for (const auto& rr : raw) {
-    string r(rr);
-    StringTrim(&r);
-    result.push_back(r);
+    result.push_back(StringTrim(rr));
   }
   return result;
 }
@@ -400,8 +398,7 @@ enum class RouteMatch { yes, no, exclude };
 // route can be a mask of: {Zone:*, Zone:Net/*, or Zone:Net/node}
 // also a route can be negated with ! in front of it.
 static RouteMatch matches_route(const wwiv::sdk::fido::FidoAddress& a, const std::string& route) {
-  string r(route);
-  StringTrim(&r);
+  auto r = StringTrim(route);
   
   RouteMatch positive = RouteMatch::yes;
 
