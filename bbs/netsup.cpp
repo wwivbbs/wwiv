@@ -389,11 +389,6 @@ static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_cal
     VLOG(2) << "Calling anyway since it's been time";
     return true;
   }
-
-  if (now < next_contact_time) {
-    VLOG(2) << "Skipping: n < next_contact_time ( in " << min_minutes << ") minutes";
-    return false;
-  }
   if (!(con.options & options_once_per_day) && (now - last_contact_sent) < hours(24)) {
     VLOG(2) << "Skipping, not once per day";
     return false;
