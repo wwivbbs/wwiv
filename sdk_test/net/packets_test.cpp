@@ -131,7 +131,7 @@ TEST_F(PacketsTest, GetMessageField) {
   EXPECT_STREQ("d", remaining.c_str());
 }
 
-TEST_F(PacketsTest, FromPacketText_FromPacketText_Smoke) {
+TEST_F(PacketsTest, FromPacketText_FromPacketText_NewPost) {
   const string s("a\000b\000c\r\nd\r\ne", 11);
   auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
   EXPECT_EQ(pp.subtype_or_email_to_, "a");
@@ -141,9 +141,23 @@ TEST_F(PacketsTest, FromPacketText_FromPacketText_Smoke) {
   EXPECT_EQ(pp.text, "e");
 }
 
-TEST_F(PacketsTest, FromPacketText_ToPacketText_Smoke) {
+
+TEST_F(PacketsTest, FromPacketText_ToPacketText_Email_NotName) {
+  const string expected("b\000c\r\nd\r\ne", 9);
+  ParsedPacketText ppt{main_type_email};
+  ppt.subtype_or_email_to_ = "a";
+  ppt.title = "b";
+  ppt.sender = "c";
+  ppt.date = "d";
+  ppt.text = "e";
+
+  auto actual = ParsedPacketText::ToPacketText(ppt);
+  EXPECT_EQ(expected, actual);
+}
+
+TEST_F(PacketsTest, FromPacketText_ToPacketText_EmailName) {
   const string expected("a\000b\000c\r\nd\r\ne", 11);
-  ParsedPacketText ppt{main_type_new_post};
+  ParsedPacketText ppt{main_type_email_name};
   ppt.subtype_or_email_to_ = "a";
   ppt.title = "b";
   ppt.sender = "c";

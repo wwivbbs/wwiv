@@ -49,35 +49,16 @@ bool send_network_email(const std::string& filename, const net_networks_rec& net
   LOG(INFO) << "send_network_email: Writing type " << nh.main_type << "/" << nh.minor_type
             << " message to packet: " << filename << "; title: " << title;
 
-  File file(network.dir, filename);
-  if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    return false;
-  }
-  file.Seek(0L, File::Whence::end);
-  nh.list_len = static_cast<uint16_t>(list.size());
+  ParsedPacketText ppt{nh.main_type};
+  ppt.set_date(nh.daten);
+  ppt.title = title;
+  ppt.sender = byname;
+  ppt.text = text;
 
-  string date = daten_to_wwivnet_time(nh.daten);
-  nh.length = (text.size() + 1 + byname.size() + date.size() + 4 + title.size());
-  file.Write(&nh, sizeof(net_header_rec));
-  if (nh.list_len) {
-    file.Write(&list[0], sizeof(uint16_t) * (nh.list_len));
-  }
-  char nul[1] = {0};
-  if (!title.empty()) {
-    // We want the null byte at the end too.
-    file.Write(title);
-  }
-  file.Write(nul, 1);
-  if (!byname.empty()) {
-    // We want the null byte at the end too.
-    file.Write(byname);
-  }
-  file.Write("\r\n");
-  file.Write(date);
-  file.Write("\r\n");
-  file.Write(text);
-  file.Close();
-  return true;
+  auto packet_text = ParsedPacketText::ToPacketText(ppt);
+  Packet p(nh, list, packet_text);
+  p.update_header();
+  return write_wwivnet_packet(filename, network, p);
 }
 
 ReadPacketResponse read_packet(File& f, Packet& packet, bool process_de) {
@@ -280,7 +261,11 @@ Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const st
   if (!list.empty() && nh.tosys != 0) {
     LOG(ERROR) << "ERROR: Malformed packet: list is not empty and nh.tosys != 0";
   }
+  update_header();
 }
+
+Packet::Packet(const net_header_rec& h, const std::vector<uint16_t>& l, const ParsedPacketText& t)
+    : Packet(h, l, ParsedPacketText::ToPacketText(t)) {}
 
 bool Packet::UpdateRouting(const net_networks_rec& net) {
   if (!need_to_update_routing(nh.main_type)) {
@@ -313,10 +298,15 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   return true;
 }
 
-// TODO(rushfan): Invalidate any cached parsed text.
-void Packet::set_text(const std::string& text) { text_ = text; }
+void Packet::set_text(const std::string& text) { 
+  text_ = text;
+  update_header();
+}
 
-void Packet::set_text(std::string&& text) { text_ = std::move(text); }
+void Packet::set_text(std::string&& text) { 
+  text_ = std::move(text); 
+  update_header();
+}
 
 uint16_t get_forsys(const wwiv::sdk::BbsListNet& b, uint16_t node) {
   VLOG(2) << "get_forsys (forward to systen number) for node: " << node;
@@ -346,6 +336,9 @@ std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t no
 
 ParsedPacketText::ParsedPacketText(uint16_t typ) : main_type_(typ) {}
 
+void ParsedPacketText::set_date(daten_t d) { date = daten_to_wwivnet_time(d); }
+void ParsedPacketText::set_date(const std::string& d) { date = d; }
+
 // static
 ParsedPacketText ParsedPacketText::FromPacketText(uint16_t typ, const std::string& raw) {
   auto iter = std::begin(raw);
@@ -362,14 +355,18 @@ ParsedPacketText ParsedPacketText::FromPacketText(uint16_t typ, const std::strin
 }
 
 // static
-ParsedPacketText ParsedPacketText::FromPacket(const Packet& p){
+ParsedPacketText ParsedPacketText::FromPacket(const Packet& p) {
   return FromPacketText(p.nh.main_type, p.text());
 }
 
 // static
 std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
-  std::string text = ppt.subtype_or_email_to_;
-  text.push_back(0);
+  std::string text;
+  if (ppt.main_type_ == main_type_new_post || ppt.main_type_ == main_type_email_name) {
+    // These types put the subtype or to address 1st
+    text.append(ppt.subtype_or_email_to_);
+    text.push_back(0);
+  }
   text.append(ppt.title);
   text.push_back(0);
   const auto crlf = StringPrintf("\r\n");
