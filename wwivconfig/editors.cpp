@@ -91,8 +91,9 @@ static void edit_editor(editorrec& e) {
   items.add_labels(
       {new Label(2, y++, "%1 = filename to edit   %N = Node Number "),
        new Label(2, y++, "%2 = chars per line     %H = Socket Handle"),
-       new Label(2, y++, "%3 = lines per page     "),
-       new Label(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed.")});
+       new Label(2, y++, "%3 = lines per page     %I = Temp directory"),
+       new Label(2, y++, "%4 = max lines          Note: All Other Chain Parameters are allowed."),
+       new Label(2, y++, "See http://docs.wwivbbs.org/en/latest/chains/parameters for the full list.")});
   items.Run("External Editor Configuration");
 }
 
