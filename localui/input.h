@@ -620,8 +620,6 @@ public:
   /** Adds a label on the same line as item */
   BaseEditItem* add(Label* label, BaseEditItem* item);
   void create_window(const std::string& title);
-  // TODO(rushfan): Delete this
-  void set_curses_io(CursesIO* out, CursesWindow* window){};
 
   CursesWindow* window() const { return window_.get(); }
   size_t size() const noexcept { return items_.size(); }
