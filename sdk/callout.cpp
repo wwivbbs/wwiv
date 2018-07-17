@@ -18,16 +18,17 @@
 #include "sdk/callout.h"
 
 #include <algorithm>
+#include <iomanip>
 #include <iostream>
-#include <memory>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
-#include "core/strings.h"
-#include "core/inifile.h"
 #include "core/file.h"
+#include "core/inifile.h"
 #include "core/log.h"
+#include "core/strings.h"
 #include "core/textfile.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
@@ -55,84 +56,130 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
   con->max_hr = -1;
 
   for (auto iter = ss.cbegin(); iter != ss.cend(); iter++) {
-      switch (*iter) {
-      case '@': {
-        con->sysnum = to_number<uint16_t>(string(++iter, ss.end()));
-      } break;
-      case '&':
-        con->options |= options_sendback;
-        break;
-      case '-':
-        con->options |= unused_options_ATT_night;
-        break;
-      case '_':
-        con->options |= unused_options_ppp;
-        break;
-      case '+':
-        con->options |= options_no_call;
-        break;
-      case '~':
-        con->options |= options_receive_only;
-        break;
-      case '!': {
-        con->options |= options_once_per_day;
-        con->times_per_day = std::max<uint8_t>(1, to_number<uint8_t>(string(++iter, ss.end())));
-      } break;
-      case '%': {
-        con->macnum = to_number<uint8_t>(string(++iter, ss.end()));
-      } break;
-      case '/': {
-        con->call_anyway = to_number<uint8_t>(string(++iter, ss.end()));
-        if (con->call_anyway > 0) {
-          // Let's set a minimum of 10 minutes in between calls.
-          con->call_anyway = std::max<uint8_t>(con->call_anyway, 10);
-        }
-      } break;
-      case '(': {
-        con->min_hr = to_number<int8_t>(string(++iter, ss.end()));
-      } break;
-      case ')': {
-        con->max_hr = to_number<int8_t>(string(++iter, ss.end()));
-      } break;
-      case '|': {
-        con->min_k = std::max<uint16_t>(1, to_number<uint16_t>(string(++iter, ss.end())));
-      } break;
-      case ';':
-        con->options |= unused_options_compress;
-        break;
-      case '^':
-        con->options |= unused_options_hslink;
-        break;
-      case '$':
-        con->options |= unused_options_force_ac;
-        break;
-      case '=':
-        con->options |= options_hide_pend;
-        break;
-      case '*':
-        con->options |= unused_options_dial_ten;
-        break;
-      case '\"': {
-        ++iter;  // skip past first "
-        string password;
-        while (iter != ss.end() && *iter != '\"') {
-          password.push_back(*iter++);
-        }
-        if (!password.empty() && password.back() == '\"') {
-          // remove trailing "
-          password.pop_back();
-        }
-        con->session_password = password;
-      }
+    switch (*iter) {
+    case '@': {
+      con->sysnum = to_number<uint16_t>(string(++iter, ss.end()));
+    } break;
+    case '&':
+      con->options |= options_sendback;
       break;
-      default:
-        break;
+    case '-':
+      con->options |= unused_options_ATT_night;
+      break;
+    case '_':
+      con->options |= unused_options_ppp;
+      break;
+    case '+':
+      con->options |= options_no_call;
+      break;
+    case '~':
+      con->options |= options_receive_only;
+      break;
+    case '!': {
+      con->options |= options_once_per_day;
+      con->times_per_day = std::max<uint8_t>(1, to_number<uint8_t>(string(++iter, ss.end())));
+    } break;
+    case '%': {
+      con->macnum = to_number<uint8_t>(string(++iter, ss.end()));
+    } break;
+    case '/': {
+      con->call_anyway = to_number<uint8_t>(string(++iter, ss.end()));
+      if (con->call_anyway > 0) {
+        // Let's set a minimum of 10 minutes in between calls.
+        con->call_anyway = std::max<uint8_t>(con->call_anyway, 10);
       }
+    } break;
+    case '(': {
+      con->min_hr = to_number<int8_t>(string(++iter, ss.end()));
+    } break;
+    case ')': {
+      con->max_hr = to_number<int8_t>(string(++iter, ss.end()));
+    } break;
+    case '|': {
+      con->min_k = std::max<uint16_t>(1, to_number<uint16_t>(string(++iter, ss.end())));
+    } break;
+    case ';':
+      con->options |= unused_options_compress;
+      break;
+    case '^':
+      con->options |= unused_options_hslink;
+      break;
+    case '$':
+      con->options |= unused_options_force_ac;
+      break;
+    case '=':
+      con->options |= options_hide_pend;
+      break;
+    case '*':
+      con->options |= unused_options_dial_ten;
+      break;
+    case '\"': {
+      ++iter; // skip past first "
+      string password;
+      while (iter != ss.end() && *iter != '\"') {
+        password.push_back(*iter++);
+      }
+      if (!password.empty() && password.back() == '\"') {
+        // remove trailing "
+        password.pop_back();
+      }
+      con->session_password = password;
+    } break;
+    default:
+      break;
     }
-    return true;
+  }
+  return true;
 }
 
-std::string CalloutOptionsToString(uint16_t options) { 
+std::string WriteCalloutNetLine(const net_call_out_rec& con) {
+  std::ostringstream ss;
+  if (con.options & options_sendback) {
+    ss << " &";
+  }
+  if (con.options & options_no_call) {
+    ss << " +";
+  }
+  if (con.options & options_receive_only) {
+    ss << " ~";
+  }
+  if (con.options & options_once_per_day) {
+    ss << " !";
+    if (con.times_per_day > 1) {
+      ss << static_cast<int>(con.times_per_day);
+    }
+  }
+  if (con.options & options_hide_pend) {
+    ss << " =";
+  }
+  if (con.macnum > 0) {
+    ss << " %" << static_cast<int>(con.macnum);
+  }
+  if (con.call_anyway > 0) {
+    int c = std::max(10, static_cast<int>(con.call_anyway));
+    ss << " /" << c;
+  }
+  if (con.min_hr > 0) {
+    ss << " (" << static_cast<int>(con.min_hr);
+  }
+  if (con.max_hr > 0) {
+    ss << " )" << static_cast<int>(con.max_hr);
+  }
+  if (con.min_k > 0) {
+    ss << " |" << static_cast<int>(con.min_k);
+  }
+  const auto options = ss.str();
+  std::ostringstream s;
+  s << "@" << std::left << std::setw(5) << con.sysnum;
+  if (options.size() < 20) {
+    s << std::left << std::setw(20);
+  }
+  s << options;
+  s << " \"" << con.session_password << "\"";
+  return s.str();
+}
+
+std::string CalloutOptionsToString(uint16_t options) {
   std::ostringstream ss;
   ss << "{" << options << "} ";
   if (options & options_sendback) {
@@ -153,9 +200,8 @@ std::string CalloutOptionsToString(uint16_t options) {
   return ss.str();
 }
 
-
-
-static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_map, const string network_dir) {
+static bool ParseCalloutFile(std::map<uint16_t, net_call_out_rec>* node_config_map,
+                             const string network_dir) {
   TextFile node_config_file(network_dir, CALLOUT_NET, "rt");
   if (!node_config_file.IsOpen()) {
     return false;
@@ -207,7 +253,7 @@ const net_call_out_rec* Callout::net_call_out_for(const std::string& node) const
 
 static std::string DumpCallout(const net_call_out_rec& n) {
   std::ostringstream ss;
-    ss << "sysnum:        "  << n.sysnum << std::endl;
+  ss << "sysnum:        " << n.sysnum << std::endl;
   if (n.macnum) {
     ss << "macnum:        " << std::dec << n.macnum << std::endl;
   }
@@ -218,7 +264,7 @@ static std::string DumpCallout(const net_call_out_rec& n) {
     ss << "min_hr:        " << static_cast<int>(n.min_hr) << std::endl;
   }
   if (n.max_hr > 0) {
-    ss << "max_hr:        " <<  static_cast<int>(n.max_hr) << std::endl;
+    ss << "max_hr:        " << static_cast<int>(n.max_hr) << std::endl;
   }
   ss << "password:       \"" << n.session_password << "\"" << std::endl;
   if (n.times_per_day) {
@@ -227,6 +273,8 @@ static std::string DumpCallout(const net_call_out_rec& n) {
   if (n.min_k) {
     ss << "min_k:         " << static_cast<int>(n.min_k) << std::endl;
   }
+  ss << "callout.net line: " << std::endl;
+  ss << WriteCalloutNetLine(n) << std::endl;
   return ss.str();
 }
 
@@ -238,6 +286,5 @@ std::string Callout::ToString() const {
   return ss.str();
 }
 
-}  // namespace net
-}  // namespace wwiv
-
+} // namespace sdk
+} // namespace wwiv
