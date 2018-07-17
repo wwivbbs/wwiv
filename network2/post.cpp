@@ -111,27 +111,21 @@ bool handle_inbound_post(Context& context, Packet& p) {
 
   ScopeExit at_exit;
 
-  auto raw_text = p.text();
-  auto iter = std::begin(raw_text);
-  auto subtype = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  auto title = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  auto sender_name = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  auto date_string = get_message_field(raw_text, iter, {'\0', '\r', '\n'}, 80);
-  auto text = string(iter, std::end(raw_text));
+  auto ppt = ParsedPacketText::FromPacket(p);
   if (VLOG_IS_ON(1)) {
     at_exit.swap(
         [] { LOG(INFO) << "=============================================================="; });
     VLOG(1) << "==============================================================";
-    VLOG(1) << "  Processing New Post on subtype: " << subtype;
-    VLOG(1) << "  Title:   " << title;
-    VLOG(1) << "  Sender:  " << sender_name;
-    VLOG(1) << "  Date:    " << date_string;
+    VLOG(1) << "  Processing New Post on subtype: " << ppt.subtype();
+    VLOG(1) << "  Title:   " << ppt.title();
+    VLOG(1) << "  Sender:  " << ppt.sender();
+    VLOG(1) << "  Date:    " << ppt.date();
   }
 
   subboard_t sub;
-  if (!find_sub(context.subs, context.network_number, subtype, sub)) {
-    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << subtype;
-    LOG(INFO) << "      title: " << title << "; writing to dead.net.";
+  if (!find_sub(context.subs, context.network_number, ppt.subtype(), sub)) {
+    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << ppt.subtype();
+    LOG(INFO) << "      title: " << ppt.title() << "; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
@@ -156,28 +150,30 @@ bool handle_inbound_post(Context& context, Packet& p) {
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
-  if (area->Exists(p.nh.daten, title, p.nh.fromsys, p.nh.fromuser)) {
-    LOG(INFO) << "    - Discarding Duplicate Message on sub: " << subtype << "; title: " << title
-              << ".";
+  if (area->Exists(p.nh.daten, ppt.title(), p.nh.fromsys, p.nh.fromuser)) {
+    LOG(INFO) << "    - Discarding Duplicate Message on sub: " << ppt.subtype()
+              << "; title: " << ppt.title() << ".";
     // Returning true since we properly handled this by discarding it.
     return true;
   }
 
+  // TODO(rushfan): Should we let CreateMessage accept the packet directly
+  // then we could also check the main_type to ensure it's fine.
   auto msg = area->CreateMessage();
   msg->header().set_from_system(p.nh.fromsys);
   msg->header().set_from_usernum(p.nh.fromuser);
-  msg->header().set_title(title);
-  msg->header().set_from(sender_name);
+  msg->header().set_title(ppt.title());
+  msg->header().set_from(ppt.sender());
   msg->header().set_daten(p.nh.daten);
-  msg->text().set_text(text);
+  msg->text().set_text(ppt.text());
 
   MessageAreaOptions options{};
   options.send_post_to_network = false;
   if (!area->AddMessage(*msg, options)) {
-    LOG(ERROR) << "     ! Failed to add message: " << title << "; writing to dead.net";
+    LOG(ERROR) << "     ! Failed to add message: " << ppt.title() << "; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
-  LOG(INFO) << "    + Posted  '" << title << "' on sub: '" << subtype << "'.";
+  LOG(INFO) << "    + Posted  '" << ppt.title() << "' on sub: '" << ppt.subtype() << "'.";
   return true;
 }
 

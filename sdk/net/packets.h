@@ -70,6 +70,25 @@ public:
   std::string text_;
 };
 
+// Alpha subtypes are seven characters -- the first must be a letter, but the rest can be any
+// character allowed in a DOS filename.This main_type covers both subscriber - to - host and
+// host - to - subscriber messages. Minor type is always zero(since it's ignored), and the
+// subtype appears as the first part of the message text, followed by a NUL.Thus, the message
+// header info at the beginning of the message text is in the format for new_post is:
+// SUBTYPE<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+//
+// The format for email_name is:
+// TO_NAME<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+// 
+// The format for email (not by name) and post (not new post) is:
+// TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+//
+// Also remember that inside of the type-2 message text, the 1st 2 lines
+// are sender and date string, so once placed in type-2 message the
+// format is:
+// SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+
+
 /**
  * Represents a parsed packet text for main types: email, email_name, and new_post.
  */
@@ -78,15 +97,32 @@ public:
   ParsedPacketText(uint16_t typ);
   void set_date(daten_t d);
   void set_date(const std::string& d);
-  uint16_t main_type_;
-  std::string subtype_or_email_to_;
-  std::string title;
-  std::string sender;
-  std::string date;
-  std::string text;
+  void set_subtype(const std::string& s);
+  void set_to(const std::string& s);
+  void set_title(const std::string& t);
+  void set_sender(const std::string& s);
+  void set_text(const std::string& t);
+  void set_main_type(uint16_t t);
+  uint16_t main_type() const noexcept;
+  const std::string& subtype() const noexcept;
+  const std::string& subtype_or_email_to() const noexcept;
+  const std::string& to() const noexcept;
+  const std::string& title() const noexcept;
+  const std::string& sender() const noexcept;
+  const std::string& date() const noexcept;
+  const std::string& text() const noexcept;
+
   static ParsedPacketText FromPacketText(uint16_t typ, const std::string& raw);
   static ParsedPacketText FromPacket(const Packet& p);
   static std::string ToPacketText(const ParsedPacketText& ppt);
+
+private:
+  uint16_t main_type_;
+  std::string subtype_or_email_to_;
+  std::string title_;
+  std::string sender_;
+  std::string date_;
+  std::string text_;
 };
 
 /**

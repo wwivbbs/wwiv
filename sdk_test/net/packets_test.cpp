@@ -134,22 +134,22 @@ TEST_F(PacketsTest, GetMessageField) {
 TEST_F(PacketsTest, FromPacketText_FromPacketText_NewPost) {
   const string s("a\000b\000c\r\nd\r\ne", 11);
   auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
-  EXPECT_EQ(pp.subtype_or_email_to_, "a");
-  EXPECT_EQ(pp.title, "b");
-  EXPECT_EQ(pp.sender, "c");
-  EXPECT_EQ(pp.date, "d");
-  EXPECT_EQ(pp.text, "e");
+  EXPECT_EQ(pp.subtype(), "a");
+  EXPECT_EQ(pp.title(), "b");
+  EXPECT_EQ(pp.sender(), "c");
+  EXPECT_EQ(pp.date(), "d");
+  EXPECT_EQ(pp.text(), "e");
 }
 
 
 TEST_F(PacketsTest, FromPacketText_ToPacketText_Email_NotName) {
   const string expected("b\000c\r\nd\r\ne", 9);
   ParsedPacketText ppt{main_type_email};
-  ppt.subtype_or_email_to_ = "a";
-  ppt.title = "b";
-  ppt.sender = "c";
-  ppt.date = "d";
-  ppt.text = "e";
+  ppt.set_to("a");
+  ppt.set_title("b");
+  ppt.set_sender("c");
+  ppt.set_date("d");
+  ppt.set_text("e");
 
   auto actual = ParsedPacketText::ToPacketText(ppt);
   EXPECT_EQ(expected, actual);
@@ -158,11 +158,11 @@ TEST_F(PacketsTest, FromPacketText_ToPacketText_Email_NotName) {
 TEST_F(PacketsTest, FromPacketText_ToPacketText_EmailName) {
   const string expected("a\000b\000c\r\nd\r\ne", 11);
   ParsedPacketText ppt{main_type_email_name};
-  ppt.subtype_or_email_to_ = "a";
-  ppt.title = "b";
-  ppt.sender = "c";
-  ppt.date = "d";
-  ppt.text = "e";
+  ppt.set_to("a");
+  ppt.set_title("b");
+  ppt.set_sender("c");
+  ppt.set_date("d");
+  ppt.set_text("e");
 
   auto actual = ParsedPacketText::ToPacketText(ppt);
   EXPECT_EQ(expected, actual);
@@ -171,8 +171,8 @@ TEST_F(PacketsTest, FromPacketText_ToPacketText_EmailName) {
 TEST_F(PacketsTest, FromPacketText_Malformed) {
   const string s("a", 1);
   auto pp = ParsedPacketText::FromPacketText(main_type_new_post, s);
-  EXPECT_EQ(pp.subtype_or_email_to_, "a");
-  EXPECT_EQ(pp.title, "");
-  EXPECT_EQ(pp.sender, "");
-  EXPECT_EQ(pp.date, "");
+  EXPECT_EQ(pp.subtype(), "a");
+  EXPECT_EQ(pp.title(), "");
+  EXPECT_EQ(pp.sender(), "");
+  EXPECT_EQ(pp.date(), "");
 }

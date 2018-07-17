@@ -42,7 +42,11 @@ public:
 
   /** The title for this email */
   std::string title;
-  /** The full text of this email */
+  /** 
+   * The full text of this email 
+   * Expects data.text is of the form:
+   * SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
+   */
   std::string text;
   /** Anonymous settings for this email. 0 for normal */
   uint8_t anony = 0;

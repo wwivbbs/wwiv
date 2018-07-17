@@ -44,7 +44,7 @@ public:
   std::vector<gati_t> load_gat(File& file, size_t section);
   void save_gat(File& f, size_t section, const std::vector<gati_t>& gat);
   bool readfile(const messagerec* msg, std::string* out);
-  bool savefile(const std::string& text, messagerec* pMessageRecord);
+  bool savefile(const std::string& text, messagerec* message_record);
   bool remove_link(messagerec& msg);
 
 private:

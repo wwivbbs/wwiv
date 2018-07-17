@@ -141,7 +141,7 @@ bool handle_email(Context& context,
     }
   }
 
-  EmailData d = {};
+  EmailData d{};
   d.daten = p.nh.daten;
   d.from_network_number = context.network_number;
   d.from_system = p.nh.fromsys;
@@ -152,7 +152,8 @@ bool handle_email(Context& context,
 
   auto iter = std::begin(p.text());
   d.title = get_message_field(p.text(), iter, {'\0', '\r', '\n'}, 80);
-  // Rest of the message is the text.
+  // Rest of the message is the text of the form:
+  // SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
   d.text = string(iter, std::end(p.text()));
   LOG(INFO) << "  Title: '" << d.title << "'";
 
@@ -161,14 +162,14 @@ bool handle_email(Context& context,
     LOG(ERROR) << "    ! ERROR creating email class; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
-  bool added = email->AddMessage(d);
+  auto added = email->AddMessage(d);
   if (!added) {
     LOG(ERROR) << "    ! ERROR adding email message; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   User user;
   context.user_manager.readuser(&user, d.user_number);
-  int num_waiting = user.GetNumMailWaiting();
+  auto num_waiting = user.GetNumMailWaiting();
   num_waiting++;
   user.SetNumMailWaiting(num_waiting);
   context.user_manager.writeuser(&user, d.user_number);

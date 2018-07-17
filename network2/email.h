@@ -34,8 +34,12 @@ namespace wwiv {
 namespace net {
 namespace network2 {
 
+ // Expects the text in packet is of the form:
+ // TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
 bool handle_email(Context& context, uint16_t to_user, wwiv::sdk::net::Packet& packet);
 
+// Expects the text in packet is of the form:
+// TO<nul>TITLE<nul>SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
 bool handle_email_byname(Context& context, wwiv::sdk::net::Packet& packet);
 
 }  // namespace network2

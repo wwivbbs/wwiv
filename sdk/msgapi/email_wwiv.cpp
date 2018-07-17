@@ -105,8 +105,10 @@ static bool increment_email_counters(const Config& config, uint16_t email_usernu
   return modify_email_waiting(config, email_usernum, 1);
 }
 
+// Expects data.text is of the form:
+// SENDER_NAME<cr/lf>DATE_STRING<cr/lf>MESSAGE_TEXT.
 bool WWIVEmail::AddMessage(const EmailData& data) {
-  mailrec m = {};
+  mailrec m{};
   strcpy(m.title, data.title.c_str());
   m.msg = { STORAGE_TYPE, 0xffffff };
   m.anony = static_cast<unsigned char>(data.anony);
@@ -124,7 +126,7 @@ bool WWIVEmail::AddMessage(const EmailData& data) {
     m.network.network_msg.net_number = static_cast<int8_t>(data.from_network_number);
   }
 
-  string text = data.text;
+  auto text = data.text;
   // WWIV 4.x requires a control-Z to terminate the message, WWIV 5.x
   // does not, and removes it on read.
   if (text.back() != CZ) {

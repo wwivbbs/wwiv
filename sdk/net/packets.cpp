@@ -51,9 +51,9 @@ bool send_network_email(const std::string& filename, const net_networks_rec& net
 
   ParsedPacketText ppt{nh.main_type};
   ppt.set_date(nh.daten);
-  ppt.title = title;
-  ppt.sender = byname;
-  ppt.text = text;
+  ppt.set_title(title);
+  ppt.set_sender(byname);
+  ppt.set_text(text);
 
   auto packet_text = ParsedPacketText::ToPacketText(ppt);
   Packet p(nh, list, packet_text);
@@ -298,13 +298,13 @@ bool Packet::UpdateRouting(const net_networks_rec& net) {
   return true;
 }
 
-void Packet::set_text(const std::string& text) { 
+void Packet::set_text(const std::string& text) {
   text_ = text;
   update_header();
 }
 
-void Packet::set_text(std::string&& text) { 
-  text_ = std::move(text); 
+void Packet::set_text(std::string&& text) {
+  text_ = std::move(text);
   update_header();
 }
 
@@ -336,21 +336,38 @@ std::string Packet::wwivnet_packet_name(const net_networks_rec& net, uint16_t no
 
 ParsedPacketText::ParsedPacketText(uint16_t typ) : main_type_(typ) {}
 
-void ParsedPacketText::set_date(daten_t d) { date = daten_to_wwivnet_time(d); }
-void ParsedPacketText::set_date(const std::string& d) { date = d; }
+void ParsedPacketText::set_date(daten_t d) { date_ = daten_to_wwivnet_time(d); }
+void ParsedPacketText::set_date(const std::string& d) { date_ = d; }
+void ParsedPacketText::set_subtype(const std::string& s) { subtype_or_email_to_ = s; }
+void ParsedPacketText::set_to(const std::string& s) { subtype_or_email_to_ = s; }
+void ParsedPacketText::set_title(const std::string& t) { title_ = t; }
+void ParsedPacketText::set_sender(const std::string& s) { sender_ = s; }
+void ParsedPacketText::set_text(const std::string& t) { text_ = t; }
+void ParsedPacketText::set_main_type(uint16_t t) { main_type_ = t; }
+uint16_t ParsedPacketText::main_type() const noexcept { return main_type_; }
+
+const std::string& ParsedPacketText::subtype() const noexcept { return subtype_or_email_to_; }
+const std::string& ParsedPacketText::subtype_or_email_to() const noexcept {
+  return subtype_or_email_to_;
+}
+const std::string& ParsedPacketText::to() const noexcept { return subtype_or_email_to_; }
+const std::string& ParsedPacketText::title() const noexcept { return title_; }
+const std::string& ParsedPacketText::sender() const noexcept { return sender_; }
+const std::string& ParsedPacketText::date() const noexcept { return date_; }
+const std::string& ParsedPacketText::text() const noexcept { return text_; }
 
 // static
 ParsedPacketText ParsedPacketText::FromPacketText(uint16_t typ, const std::string& raw) {
   auto iter = std::begin(raw);
   ParsedPacketText p{typ};
   p.subtype_or_email_to_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
-  p.title = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
-  p.sender = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
-  p.date = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
+  p.title_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
+  p.sender_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
+  p.date_ = get_message_field(raw, iter, {'\0', '\r', '\n'}, 80);
 
   // This is the message body including any control lines (^D0 or ^A)
   // that are part of it.
-  p.text = string(iter, std::end(raw));
+  p.text_ = string(iter, std::end(raw));
   return p;
 }
 
@@ -362,17 +379,17 @@ ParsedPacketText ParsedPacketText::FromPacket(const Packet& p) {
 // static
 std::string ParsedPacketText::ToPacketText(const ParsedPacketText& ppt) {
   std::string text;
-  if (ppt.main_type_ == main_type_new_post || ppt.main_type_ == main_type_email_name) {
+  if (ppt.main_type() == main_type_new_post || ppt.main_type() == main_type_email_name) {
     // These types put the subtype or to address 1st
-    text.append(ppt.subtype_or_email_to_);
+    text.append(ppt.subtype_or_email_to());
     text.push_back(0);
   }
-  text.append(ppt.title);
+  text.append(ppt.title());
   text.push_back(0);
   const auto crlf = StringPrintf("\r\n");
-  text.append(ppt.sender).append(crlf);
-  text.append(ppt.date).append(crlf);
-  text.append(ppt.text);
+  text.append(ppt.sender()).append(crlf);
+  text.append(ppt.date()).append(crlf);
+  text.append(ppt.text());
   return text;
 }
 
