@@ -102,7 +102,7 @@ protected:
 TEST_F(ParsedMessageTest, AfterMsgID) {
   const std::string kReply = ca + "REPLY";
   ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text, "\r\n");
-  p.add_control_line_after("MSGID", kReply);
+  p.add_control_line_after("MSGID", "REPLY");
   auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string(4, kReply), actual_string);
@@ -113,10 +113,10 @@ TEST_F(ParsedMessageTest, AddReplyAndReplaceMsgID) {
   ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
                       "\r\n");
   const std::string kNewMsgId = ca + "MSGID 5678";
-  p.add_control_line_after("MSGID", kNewMsgId);
+  p.add_control_line_after("MSGID", "MSGID 5678");
   // Remove original msgid
   p.remove_control_line("MSGID");
-  p.add_control_line_after("MSGID", kReply);
+  p.add_control_line_after("MSGID", "REPLY");
   auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string_new_msgid(4, kReply), actual_string);
@@ -126,7 +126,7 @@ TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
   const std::string kReply = cd + "0REPLY";
   ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
                       split_wwiv_style_message_text, "\r\n");
-  p.add_control_line_after("MSGID", kReply);
+  p.add_control_line_after("MSGID", "REPLY");
   auto actual_string = p.to_string();
 
   EXPECT_EQ(expected_string_wwiv(4, kReply), actual_string);
