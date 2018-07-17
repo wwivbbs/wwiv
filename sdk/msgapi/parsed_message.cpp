@@ -63,7 +63,7 @@ ParsedMessageText::ParsedMessageText(const std::string& control_char, const std:
   // to handle both.
 }
 
-ParsedMessageText::~ParsedMessageText() {}
+ParsedMessageText::~ParsedMessageText() = default;
 
 bool ParsedMessageText::add_control_line_after(const std::string& near_line,
                                                const std::string& line) {
@@ -75,11 +75,11 @@ bool ParsedMessageText::add_control_line_after(const std::string& near_line,
         // current item has it.
         if (it == lines_.end()) {
           // at the end of the list, add to the end.
-          lines_.push_back(line);
+          lines_.push_back(StrCat(control_char_, line));
         } else {
           // not at the end of the list, add it *after* the current item.
           it++;
-          lines_.insert(it, line);
+          lines_.insert(it, StrCat(control_char_, line));
         }
         return true;
       }
@@ -103,12 +103,12 @@ bool ParsedMessageText::add_control_line(const std::string& line) {
     } else if (found_control_line) {
       // We've seen control lines before, and now we don't.
       // Insert here so we're at the end of the control lines.
-      lines_.insert(it, line);
+      lines_.insert(it, StrCat(control_char_, line));
       return true;
     }
     it++;
   }
-  lines_.push_back(line);
+  lines_.push_back(StrCat(control_char_, line));
   return true;
 }
 

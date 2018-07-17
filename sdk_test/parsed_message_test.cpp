@@ -133,21 +133,23 @@ TEST_F(ParsedMessageTest, AfterMsgID_WWIVControlLines) {
 }
 
 TEST_F(ParsedMessageTest, AtEndOfControlLines) {
-  const std::string kControlLine = ca + "DUDE";
+  const std::string kControlLineWithControlChar = ca + "DUDE";
+  const std::string kControlLine = "DUDE";
   ParsedMessageText p(ca, JoinStrings(expected_list_, "\r\n"), split_wwiv_style_message_text,
                       "\r\n");
   p.add_control_line(kControlLine);
   auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string(5, kControlLine), actual_string);
+  EXPECT_EQ(expected_string(5, kControlLineWithControlChar), actual_string);
 }
 
 TEST_F(ParsedMessageTest, AtEndOfControlLines_WWIVControlLines) {
-  const std::string kControlLine = cd + "0DUDE";
+  const std::string kControlLine = "DUDE";
+  const std::string kControlLineWithControlChar = cd + "0DUDE";
   ParsedMessageText p(cd + "0", JoinStrings(expected_list_wwiv_, "\r\n"),
                       split_wwiv_style_message_text, "\r\n");
   p.add_control_line(kControlLine);
   auto actual_string = p.to_string();
 
-  EXPECT_EQ(expected_string_wwiv(5, kControlLine), actual_string);
+  EXPECT_EQ(expected_string_wwiv(5, kControlLineWithControlChar), actual_string);
 }

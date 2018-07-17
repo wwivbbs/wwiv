@@ -22,44 +22,44 @@
 #include <memory>
 #include <string>
 
+#include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/conf.h"
-#include "bbs/datetime.h"
-#include "bbs/netsup.h"
-#include "bbs/bbs.h"
 #include "bbs/connect1.h"
-#include "bbs/vars.h"
+#include "bbs/datetime.h"
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/message_file.h"
 #include "bbs/msgscan.h"
+#include "bbs/netsup.h"
 #include "bbs/shortmsg.h"
 #include "bbs/subacc.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer.h"
+#include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/datetime.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/ftn_msgdupe.h"
-#include "sdk/status.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/msgapi/parsed_message.h"
+#include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/subxtr.h"
-#include "sdk/fido/fido_address.h"
 
 using std::string;
 using std::unique_ptr;
 using std::chrono::duration;
 using std::chrono::duration_cast;
-using std::chrono::system_clock;
-using std::chrono::seconds;
 using std::chrono::minutes;
-
+using std::chrono::seconds;
+using std::chrono::system_clock;
+using wwiv::sdk::fido::FidoAddress;
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;
@@ -69,7 +69,7 @@ using namespace wwiv::strings;
 
 void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   string text;
-  if (!readfile(&(pPostRecord->msg), sub.filename, &text)){
+  if (!readfile(&(pPostRecord->msg), sub.filename, &text)) {
     return;
   }
 
@@ -89,14 +89,14 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
   }
 
   net_header_rec nhorig = {};
-  nhorig.tosys   = 0;
-  nhorig.touser  = 0;
+  nhorig.tosys = 0;
+  nhorig.touser = 0;
   nhorig.fromsys = pPostRecord->ownersys;
-  nhorig.fromuser  = pPostRecord->owneruser;
-  nhorig.list_len  = 0;
-  nhorig.daten   = pPostRecord->daten;
-  nhorig.length  = text.size() + 1 + strlen(pPostRecord->title);
-  nhorig.method  = 0;
+  nhorig.fromuser = pPostRecord->owneruser;
+  nhorig.list_len = 0;
+  nhorig.daten = pPostRecord->daten;
+  nhorig.length = text.size() + 1 + strlen(pPostRecord->title);
+  nhorig.method = 0;
 
   uint32_t message_length = text.size();
   if (nhorig.length > 32755) {
@@ -125,10 +125,12 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       nh.tosys = xnp.host;
     } else {
       std::set<uint16_t> subscribers;
-      bool subscribers_read = ReadSubcriberFile(a()->network_directory(), StrCat("n", xnp.stype, ".net"), subscribers);
+      bool subscribers_read =
+          ReadSubcriberFile(a()->network_directory(), StrCat("n", xnp.stype, ".net"), subscribers);
       if (subscribers_read) {
         for (const auto& s : subscribers) {
-          if (((a()->net_num() != netnum) || (nh.fromsys != s)) && (s != a()->current_net().sysnum)) {
+          if (((a()->net_num() != netnum) || (nh.fromsys != s)) &&
+              (s != a()->current_net().sysnum)) {
             if (valid_system(s)) {
               nh.list_len++;
               list.push_back(s);
@@ -162,8 +164,8 @@ void post(const PostData& post_data) {
     bout << "\r\nSorry, not enough disk space left.\r\n\n";
     return;
   }
-  if (a()->user()->IsRestrictionPost()
-      || a()->user()->GetNumPostsToday() >= getslrec(a()->GetEffectiveSl()).posts) {
+  if (a()->user()->IsRestrictionPost() ||
+      a()->user()->GetNumPostsToday() >= getslrec(a()->GetEffectiveSl()).posts) {
     bout << "\r\nToo many messages posted today.\r\n\n";
     return;
   }
@@ -212,7 +214,8 @@ void post(const PostData& post_data) {
   write_inst(INST_LOC_POST, a()->GetCurrentReadMessageArea(), INST_FLAGS_NONE);
 
   data.fsed_flags = FsedFlags::FSED;
-  data.msged_flags = (a()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
+  data.msged_flags =
+      (a()->current_sub().anony & anony_no_tag) ? MSGED_FLAG_NO_TAGLINE : MSGED_FLAG_NONE;
   data.aux = a()->current_sub().filename;
   data.sub_name = a()->subs().sub(a()->current_user_sub().subnum).name;
   data.to_name = post_data.reply_to.name;
@@ -224,30 +227,16 @@ void post(const PostData& post_data) {
   }
 
   // Additions for MSGID reply.
-  if (!post_data.reply_to.text.empty()) {
+  if (a()->current_net().type == network_type_t::ftn && !post_data.reply_to.text.empty()) {
     // We're handling a reply.
     auto msgid = FtnMessageDupe::GetMessageIDFromWWIVText(post_data.reply_to.text);
     if (!msgid.empty()) {
-      FtnMessageDupe dupe(*a()->config());
-      if (dupe.IsInitialized()) {
-        try {
-          wwiv::sdk::fido::FidoAddress addr(a()->current_net().fido.fido_address);
-          // TODO(rushfan): Remove old MSGID
-          auto new_msgid = dupe.CreateMessageID(addr);
-          WWIVParsedMessageText pmt(data.text);
-          const auto reply_control_line = StrCat("\004", "0REPLY: ", msgid);
-          // TODO(rushfan): Should we keep removing thm while they exist in case
-          // there are more than 1??
-          // Remove the existing MSGID lines.
-          pmt.remove_control_line("MSGID");
-          pmt.remove_control_line("REPLY");
-
-          pmt.add_control_line(StrCat("\004""0MSGID: ", new_msgid));
-          pmt.add_control_line_after("MSGID", reply_control_line);
-          data.text = pmt.to_string();
-        }
-        catch (wwiv::sdk::fido::bad_fidonet_address&) {
-        }
+      const auto address = a()->current_net().fido.fido_address;
+      try {
+        FidoAddress addr(address);
+        add_ftn_msgid(*a()->config(), addr, msgid, &data);
+      } catch (wwiv::sdk::fido::bad_fidonet_address& e) {
+        LOG(ERROR) << "Exception parsing address: " << address << "; reason: " << e.what();
       }
     }
   }
@@ -260,9 +249,7 @@ void post(const PostData& post_data) {
   p.msg = m;
   p.ownersys = 0;
   p.owneruser = static_cast<uint16_t>(a()->usernum);
-  a()->status_manager()->Run([&](WStatus& s) {
-    p.qscan = s.IncrementQScanPointer();
-  });
+  a()->status_manager()->Run([&](WStatus& s) { p.qscan = s.IncrementQScanPointer(); });
   p.daten = daten_t_now();
   p.status = 0;
   if (a()->user()->IsRestrictionValidate()) {
@@ -271,12 +258,12 @@ void post(const PostData& post_data) {
 
   open_sub(true);
 
-  if ((!a()->current_sub().nets.empty()) &&
-  (a()->current_sub().anony & anony_val_net) && (!lcs() || !post_data.reply_to.title.empty())) {
+  if ((!a()->current_sub().nets.empty()) && (a()->current_sub().anony & anony_val_net) &&
+      (!lcs() || !post_data.reply_to.title.empty())) {
     p.status |= status_pending_net;
     bool dm = true;
-    for (int i = a()->GetNumMessagesInCurrentMessageArea(); (i >= 1)
-      && (i > (a()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
+    for (int i = a()->GetNumMessagesInCurrentMessageArea();
+         (i >= 1) && (i > (a()->GetNumMessagesInCurrentMessageArea() - 28)); i--) {
       if (get_post(i)->status & status_pending_net) {
         dm = false;
         break;
@@ -287,17 +274,15 @@ void post(const PostData& post_data) {
       ssm(1, 0) << "Unvalidated net posts on " << a()->current_sub().name << ".";
     }
   }
-  if (a()->GetNumMessagesInCurrentMessageArea() >=
-    a()->current_sub().maxmsgs) {
+  if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {
     int i = 1;
     int dm = 0;
     while (i <= a()->GetNumMessagesInCurrentMessageArea()) {
       postrec* pp = get_post(i);
       if (!pp) {
         break;
-      }
-      else if (((pp->status & status_no_delete) == 0) ||
-        (pp->msg.storage_type != a()->current_sub().storage_type)) {
+      } else if (((pp->status & status_no_delete) == 0) ||
+                 (pp->msg.storage_type != a()->current_sub().storage_type)) {
         dm = i;
         break;
       }
@@ -339,6 +324,25 @@ void post(const PostData& post_data) {
   }
 }
 
+void add_ftn_msgid(const wwiv::sdk::Config& config, FidoAddress addr, const std::string& msgid,
+                   MessageEditorData* data) {
+  FtnMessageDupe dupe(config);
+  if (dupe.IsInitialized()) {
+    // TODO(rushfan): Remove old MSGID
+    auto new_msgid = dupe.CreateMessageID(addr);
+    WWIVParsedMessageText pmt(data->text);
+    // TODO(rushfan): Should we keep removing thm while they exist in case
+    // there are more than 1??
+    // Remove the existing MSGID lines.
+    pmt.remove_control_line("MSGID");
+    pmt.remove_control_line("REPLY");
+
+    pmt.add_control_line(StrCat("MSGID: ", new_msgid));
+    pmt.add_control_line_after("MSGID", StrCat("REPLY: ", msgid));
+    data->text = pmt.to_string();
+  }
+}
+
 std::string grab_user_name(messagerec* msg, const std::string& file_name, int network_number) {
   string text;
   a()->net_email_name.clear();
@@ -371,7 +375,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
   return {};
 }
 
-void qscan(uint16_t start_subnum, bool &nextsub) {
+void qscan(uint16_t start_subnum, bool& nextsub) {
   int sub_number = a()->usub[start_subnum].subnum;
   g_flags &= ~g_flag_made_find_str;
 
@@ -389,24 +393,23 @@ void qscan(uint16_t start_subnum, bool &nextsub) {
     a()->set_current_user_sub_num(start_subnum);
 
     if (!iscan(a()->current_user_sub_num())) {
-      bout << "\r\n\003""6A file required is in use by another instance. Try again later.\r\n";
+      bout << "\r\n\003"
+              "6A file required is in use by another instance. Try again later.\r\n";
       return;
     }
     memory_last_read = qsc_p[sub_number];
 
-    bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n",
-                 a()->current_sub().name.c_str(),
-                 a()->current_user_sub().keys,
-                 a()->GetNumMessagesInCurrentMessageArea());
+    bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", a()->current_sub().name.c_str(),
+                 a()->current_user_sub().keys, a()->GetNumMessagesInCurrentMessageArea());
 
     int i;
-    for (i = a()->GetNumMessagesInCurrentMessageArea(); (i > 1)
-         && (get_post(i - 1)->qscan > memory_last_read); i--)
+    for (i = a()->GetNumMessagesInCurrentMessageArea();
+         (i > 1) && (get_post(i - 1)->qscan > memory_last_read); i--)
       ;
 
-    if (a()->GetNumMessagesInCurrentMessageArea() > 0
-        && i <= a()->GetNumMessagesInCurrentMessageArea()
-        && get_post(i)->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
+    if (a()->GetNumMessagesInCurrentMessageArea() > 0 &&
+        i <= a()->GetNumMessagesInCurrentMessageArea() &&
+        get_post(i)->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
       scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, nextsub, false);
     } else {
       unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
@@ -421,8 +424,8 @@ void qscan(uint16_t start_subnum, bool &nextsub) {
     bout.clreol();
     bout.move_up_if_newline(4);
   } else {
-    bout << "|#1< Nothing new on " << a()->subs().sub(sub_number).name
-      << " " << a()->usub[start_subnum].keys;
+    bout << "|#1< Nothing new on " << a()->subs().sub(sub_number).name << " "
+         << a()->usub[start_subnum].keys;
     bout.clreol();
     bout.nl();
     bout.clear_lines_listed();
@@ -436,9 +439,8 @@ void nscan(uint16_t start_subnum) {
   bool nextsub = true;
 
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
-  for (auto i = start_subnum; 
-       a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && nextsub && !hangup;
-       i++) {
+  for (auto i = start_subnum;
+       a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && nextsub && !hangup; i++) {
     if (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qscan(i, nextsub);
     }
@@ -471,14 +473,13 @@ void ScanMessageTitles() {
     bout << "No subs available.\r\n";
     return;
   }
-  bout.bprintf("|#2%d |#9messages in area |#2%s\r\n",
-               a()->GetNumMessagesInCurrentMessageArea(),
+  bout.bprintf("|#2%d |#9messages in area |#2%s\r\n", a()->GetNumMessagesInCurrentMessageArea(),
                a()->current_sub().name.c_str());
   if (a()->GetNumMessagesInCurrentMessageArea() == 0) {
     return;
   }
-  bout << "|#9Start listing at (|#21|#9-|#2"
-       << a()->GetNumMessagesInCurrentMessageArea() << "|#9): ";
+  bout << "|#9Start listing at (|#21|#9-|#2" << a()->GetNumMessagesInCurrentMessageArea()
+       << "|#9): ";
   string smsgnum = input(5, true);
   int msgnum = to_number<int>(smsgnum);
   if (msgnum < 1) {
@@ -507,8 +508,7 @@ void remove_post() {
     return;
   }
   bool any = false, abort = false;
-  bout.bprintf("\r\n\nPosts by you on %s\r\n\n",
-    a()->current_sub().name.c_str());
+  bout.bprintf("\r\n\nPosts by you on %s\r\n\n", a()->current_sub().name.c_str());
   for (int j = 1; j <= a()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->usernum) {
       any = true;
@@ -527,7 +527,8 @@ void remove_post() {
   int postnum = to_number<int>(postNumberToRemove);
   wwiv::bbs::OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {
-    if (((get_post(postnum)->ownersys == 0) && (get_post(postnum)->owneruser == a()->usernum)) || lcs()) {
+    if (((get_post(postnum)->ownersys == 0) && (get_post(postnum)->owneruser == a()->usernum)) ||
+        lcs()) {
       if ((get_post(postnum)->owneruser == a()->usernum) && (get_post(postnum)->ownersys == 0)) {
         User tu;
         a()->users()->readuser(&tu, get_post(postnum)->owneruser);
@@ -540,12 +541,10 @@ void remove_post() {
           }
         }
       }
-      sysoplog() << "- '" << get_post(postnum)->title << "' removed from " << a()->current_sub().name;
+      sysoplog() << "- '" << get_post(postnum)->title << "' removed from "
+                 << a()->current_sub().name;
       delete_message(postnum);
       bout << "\r\nMessage removed.\r\n\n";
     }
   }
 }
-
-
-
