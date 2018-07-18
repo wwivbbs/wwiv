@@ -40,6 +40,7 @@ using std::stringstream;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::IniFile;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
@@ -249,6 +250,31 @@ const net_call_out_rec* Callout::net_call_out_for(const std::string& node) const
     return net_call_out_for(to_number<int>(s));
   }
   return net_call_out_for(to_number<int>(node));
+}
+
+bool Callout::insert(uint16_t node, const net_call_out_rec& orig) {
+  net_call_out_rec c{orig};
+  c.ftn_address = StrCat("20000:20000/", c.sysnum);
+  node_config_.erase(c.sysnum);
+  node_config_.emplace(c.sysnum, c);
+  return true;
+}
+
+bool Callout::erase(uint16_t node) {
+  node_config_.erase(node);
+  return true;
+}
+
+bool Callout::Save() {
+  backup_file(FilePath(net_.dir, CALLOUT_NET));
+  TextFile node_config_file(net_.dir, CALLOUT_NET, "wt");
+  if (!node_config_file.IsOpen()) {
+    return false;
+  }
+  for (const auto& kv : node_config_) {
+    node_config_file.WriteLine(WriteCalloutNetLine(kv.second));
+  }
+  return true;
 }
 
 static std::string DumpCallout(const net_call_out_rec& n) {

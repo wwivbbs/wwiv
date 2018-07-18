@@ -282,12 +282,9 @@ public:
     auto sub_filename = StrCat(config.datadir(), name, ".sub");
     auto dat_filename = StrCat(config.msgsdir(), name, ".dat");
 
-    auto now = DateTime::now();
-    auto date_string = now.to_string("%Y%m%d%H%M%S");
-    auto backup_extension = StrCat(".backup.", date_string);
-    File::Copy(sub_filename, StrCat(sub_filename, backup_extension));
-    File::Copy(dat_filename, StrCat(dat_filename, backup_extension));
-    return true;
+    bool sb = backup_file(sub_filename);
+    bool db = backup_file(dat_filename);
+    return sb && db;
   }
 
   virtual int Execute() {

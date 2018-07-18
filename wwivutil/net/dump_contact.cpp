@@ -66,7 +66,7 @@ int DumpContactCommand::Execute() {
 
   map<const string, Contact> contacts;
   for (const auto net : networks.networks()) {
-    const string lower_case_network_name = ToStringLowerCase(net.name);
+    const auto lower_case_network_name = ToStringLowerCase(net.name);
     contacts.emplace(lower_case_network_name, Contact(net, false));
   }
 
@@ -78,12 +78,8 @@ int DumpContactCommand::Execute() {
 
   if (barg("save")) {
     for (auto& c : contacts) {
-      const auto fn = c.second.full_pathname();
       if (barg("backup")) {
-        const auto now = DateTime::now();
-        const auto date_string = now.to_string("%Y%m%d%H%M%S");
-        const auto backup_extension = StrCat(".backup.", date_string);
-        File::Copy(fn, StrCat(fn, backup_extension));
+        backup_file(c.second.full_pathname());
       }
       c.second.Save();
     }

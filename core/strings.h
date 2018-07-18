@@ -29,6 +29,10 @@
 #include <type_traits>
 #include <vector>
 
+#ifdef StrCat
+#undef StrCat
+#endif // StrCat
+
 namespace wwiv {
 namespace strings {
 

@@ -19,8 +19,8 @@
 #include "wwivconfig/networks.h"
 
 #include <cmath>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <utility>
@@ -34,28 +34,26 @@
 #include <sys/stat.h>
 
 #include "bbs/keycodes.h"
-#include "core/log.h"
-#include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/scope_exit.h"
+#include "core/strings.h"
 #include "core/wwivport.h"
-#include "core/file.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/subacc.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
-#include "wwivconfig/subacc.h"
-#include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "sdk/filenames.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/fido/fido_callout.h"
+#include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
+#include "wwivconfig/subacc.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/wwivinit.h"
 
-#define UINT(u,n)  (*((int  *)(((char *)(u))+(n))))
-#define UCHAR(u,n) (*((char *)(((char *)(u))+(n))))
+#define UINT(u, n) (*((int*)(((char*)(u)) + (n))))
+#define UCHAR(u, n) (*((char*)(((char*)(u)) + (n))))
 
 using std::pair;
 using std::string;
@@ -104,7 +102,7 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 
   // Now we update the email.
   File emailfile(config.datadir(), EMAIL_DAT);
-  if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
+  if (emailfile.Open(File::modeBinary | File::modeReadWrite)) {
     auto t = emailfile.length() / sizeof(mailrec);
     for (size_t r = 0; r < t; r++) {
       mailrec m = {};
@@ -135,7 +133,7 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
     }
   }
 
-  // Update the user 
+  // Update the user
   unique_ptr<char[]> u(new char[syscfg.userreclen]);
   read_user(config.datadir(), 1, reinterpret_cast<userrec*>(u.get()));
   int nu = number_userrecs(config.datadir());
@@ -143,7 +141,8 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
     read_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
     if (UINT(u.get(), syscfg.fsoffset)) {
       if (UCHAR(u.get(), syscfg.fnoffset) == nn) {
-        UINT(u.get(), syscfg.fsoffset) = UINT(u.get(), syscfg.fuoffset) = UCHAR(u.get(), syscfg.fnoffset) = 0;
+        UINT(u.get(), syscfg.fsoffset) = UINT(u.get(), syscfg.fuoffset) =
+            UCHAR(u.get(), syscfg.fnoffset) = 0;
         write_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
       } else if (UCHAR(u.get(), syscfg.fnoffset) > nn) {
         UCHAR(u.get(), syscfg.fnoffset)--;
@@ -160,8 +159,9 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
 // Base item of an editable value, this class does not use templates.
 class FidoNetworkConfigSubDialog : public BaseEditItem {
 public:
-  FidoNetworkConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width, net_networks_rec& d)
-      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), d_(d), x_(x), y_(y) {};
+  FidoNetworkConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title,
+                             int width, net_networks_rec& d)
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), d_(d), x_(x), y_(y){};
   virtual ~FidoNetworkConfigSubDialog() {}
 
   virtual EditlineResult Run(CursesWindow* window) {
@@ -184,33 +184,47 @@ public:
       fido_network_config_t* n = &d_.fido;
       int y = 1;
 
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->fido_address, false));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->nodelist_base, false));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->temp_inbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->temp_outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->outbound_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->netmail_dir));
-      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line, false));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
+                                                 n->fido_address, false));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
+                                                 n->nodelist_base, false));
+      items.add(
+          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->inbound_dir));
+      items.add(
+          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->temp_inbound_dir));
+      items.add(new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_,
+                                       n->temp_outbound_dir));
+      items.add(
+          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->outbound_dir));
+      items.add(
+          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->netmail_dir));
+      items.add(
+          new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line,
+                                                 false));
 
       dy_start_ = y;
-      vector<pair<fido_mailer_t, string>> mailerlist = {{fido_mailer_t::flo, "BSO (FLO)"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
+      vector<pair<fido_mailer_t, string>> mailerlist = {
+          {fido_mailer_t::flo, "BSO (FLO)"}, {fido_mailer_t::attach, "NetMail (ATTACH)"}};
       items.add(new ToggleEditItem<fido_mailer_t>(COL1_POSITION, y++, mailerlist, &n->mailer_type));
 
       vector<pair<fido_transport_t, string>> transportlist = {
-        {fido_transport_t::directory, "Directory"}, {fido_transport_t::binkp, "WWIV BinkP (N/A)"}
-      };
-      items.add(new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist, &n->transport));
+          {fido_transport_t::directory, "Directory"},
+          {fido_transport_t::binkp, "WWIV BinkP (N/A)"}};
+      items.add(
+          new ToggleEditItem<fido_transport_t>(COL1_POSITION, y++, transportlist, &n->transport));
 
       vector<pair<fido_packet_t, string>> packetlist = {
-        {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
-      };
-      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &n->packet_config.packet_type));
+          {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
+      items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist,
+                                                  &n->packet_config.packet_type));
 
-      items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"}, n->packet_config.compression_type));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, true));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, true));
+      items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"},
+                                   n->packet_config.compression_type));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8,
+                                                 n->packet_config.packet_password, true));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8,
+                                                 n->packet_config.areafix_password, true));
 
       // dy_start
       int dy = dy_start_;
@@ -218,12 +232,13 @@ public:
       items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_packet_size));
 
       vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
-        {fido_bundle_status_t::normal, "Normal"},
-        {fido_bundle_status_t::crash, "Crash"},
-        {fido_bundle_status_t::direct, "Immediate"},
-        {fido_bundle_status_t::hold, "Hold"},
+          {fido_bundle_status_t::normal, "Normal"},
+          {fido_bundle_status_t::crash, "Crash"},
+          {fido_bundle_status_t::direct, "Immediate"},
+          {fido_bundle_status_t::hold, "Hold"},
       };
-      items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist, &n->packet_config.netmail_status));
+      items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
+                                                         &n->packet_config.netmail_status));
 
       window->GotoXY(x_, y_);
       int ch = window->GetChar();
@@ -283,8 +298,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   auto& p = n.packet_config;
   EditItems items{};
   vector<pair<fido_packet_t, string>> packetlist = {
-    {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}
-  };
+      {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
 
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, n.routes, false));
   items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &p.packet_type));
@@ -295,12 +309,13 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_packet_size));
 
   vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
-    {fido_bundle_status_t::normal, "Normal"},
-    {fido_bundle_status_t::crash, "Crash"},
-    {fido_bundle_status_t::direct, "Immediate"},
-    {fido_bundle_status_t::hold, "Hold"},
+      {fido_bundle_status_t::normal, "Normal"},
+      {fido_bundle_status_t::crash, "Crash"},
+      {fido_bundle_status_t::direct, "Immediate"},
+      {fido_bundle_status_t::hold, "Hold"},
   };
-  items.add(new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y++, bundlestatuslist, &p.netmail_status));
+  items.add(new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y++, bundlestatuslist,
+                                                     &p.netmail_status));
 
   auto& b = n.binkp_config;
   items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, b.host, false));
@@ -325,15 +340,17 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 }
 
 // Base item of an editable value, this class does not use templates.
-class FidoPacketConfigSubDialog: public BaseEditItem {
+class FidoPacketConfigSubDialog : public BaseEditItem {
 public:
-  FidoPacketConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width, const Config& config, net_networks_rec& d)
-    : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), config_(config), d_(d), x_(x), y_(y) {};
+  FidoPacketConfigSubDialog(const std::string& bbsdir, int x, int y, const std::string& title,
+                            int width, const Config& config, net_networks_rec& d)
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), config_(config),
+        d_(d), x_(x), y_(y){};
   virtual ~FidoPacketConfigSubDialog() {}
 
   virtual EditlineResult Run(CursesWindow* window) {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
-    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"},{"ENTER", "Edit Items (opens new dialog)."}});
+    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
     int ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
@@ -352,7 +369,7 @@ public:
 
         list.selection_returns_hotkey(true);
         list.set_additional_hotkeys("DI");
-        list.set_help_items({{"Esc", "Exit"},{"Enter", "Edit"},{"D", "Delete"},{"I", "Insert"}});
+        list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
         ListBoxResult result = list.Run();
         if (result.type == ListBoxResultType::HOTKEY) {
           switch (result.hotkey) {
@@ -369,7 +386,9 @@ public:
           case 'I': {
             const string prompt = "Enter Address (Z:N/O) : ";
             const string address_string = dialog_input_string(window, prompt, 20);
-            if (address_string.empty()) { break; }
+            if (address_string.empty()) {
+              break;
+            }
             wwiv::sdk::fido::FidoAddress address(address_string);
             fido_node_config_t config{};
             config.binkp_config.port = 24554;
@@ -408,13 +427,149 @@ private:
   int y_ = 0;
 };
 
+static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_rec& c) {
+  constexpr int LBL1_POSITION = 2;
+  constexpr int LABEL_WIDTH = 24;
+  constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
+  int y = 1;
+
+  EditItems items{};
+  // items.add(new Label(LBL1_POSITION, y++, LABEL_WIDTH, StrCat("Node:", c.sysnum)));
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, c.session_password, false));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Sendback Allowed:"),
+            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_sendback, "Yes ", "No",
+                                                  &c.options));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Do Not Call:"),
+            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "Yes ", "No",
+                                                  &c.options));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Receive Only:"),
+            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_receive_only, "Yes ",
+                                                  "No", &c.options));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Times Per Day:"),
+            new NumberEditItem<uint8_t>(COL1_POSITION, y, &c.times_per_day));
+
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
+            new NumberEditItem<uint8_t>(COL1_POSITION, y, &c.call_anyway));
+
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Hide from Pending List:"),
+            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_hide_pend, "Yes ", "No",
+                                                  &c.options));
+
+  items.Run(StrCat("Node: @", c.sysnum, ".", net.name));
+  if (c.times_per_day == 0) {
+    c.options &= ~options_once_per_day;
+  } else {
+    c.options |= options_once_per_day;
+  }
+}
+
+// Base item of an editable value, this class does not use templates.
+class CalloutNetSubDialog : public BaseEditItem {
+public:
+  CalloutNetSubDialog(const std::string& bbsdir, int x, int y, const std::string& title, int width,
+                      const Config& config, const net_networks_rec& d)
+      : BaseEditItem(x, y, 1), netdir_(bbsdir), title_(title), width_(width), config_(config),
+        d_(d), x_(x), y_(y){};
+  virtual ~CalloutNetSubDialog() {}
+
+  virtual EditlineResult Run(CursesWindow* window) {
+    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
+    out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    window->GotoXY(x_, y_);
+    int ch = window->GetChar();
+    if (ch == KEY_ENTER || ch == TAB || ch == 13) {
+      Callout callout(d_);
+      bool done = false;
+      do {
+        vector<ListBoxItem> items;
+        for (const auto& e : callout.callout_config()) {
+          items.emplace_back(StrCat("@", e.first));
+        }
+        ListBox list(window, "Select Address", items);
+
+        list.selection_returns_hotkey(true);
+        list.set_additional_hotkeys("DI");
+        list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
+        ListBoxResult result = list.Run();
+        if (result.type == ListBoxResultType::HOTKEY) {
+          switch (result.hotkey) {
+          case 'D': {
+            if (items.empty()) {
+              break;
+            }
+            if (!dialog_yn(window, StrCat("Delete '", items[result.selected].text(), "' ?"))) {
+              break;
+            }
+            const auto node_with_at = items[result.selected].text();
+            if (node_with_at.size() > 1) {
+              const auto node = to_number<uint16_t>(node_with_at.substr(1));
+              callout.erase(node);
+            }
+          } break;
+          case 'I': {
+            const string prompt = "Enter Address (Node number only) : @";
+            const string address_string = dialog_input_string(window, prompt, 20);
+            if (address_string.empty()) {
+              break;
+            }
+            auto node_number = to_number<uint16_t>(address_string);
+            if (0 == node_number) {
+              break;
+            }
+            net_call_out_rec config{};
+            config.sysnum = node_number;
+            edit_wwivnet_node_config(d_, config);
+            callout.insert(node_number, config);
+          } break;
+          }
+        } else if (result.type == ListBoxResultType::SELECTION) {
+          const auto node_with_at = items[result.selected].text();
+          if (node_with_at.size() > 1) {
+            const auto node = to_number<uint16_t>(node_with_at.substr(1));
+            auto* c1 = callout.net_call_out_for(node);
+            if (c1 != nullptr) {
+              auto c = *c1;
+              edit_wwivnet_node_config(d_, c);
+              callout.insert(node, c);
+            }
+          }
+        } else if (result.type == ListBoxResultType::NO_SELECTION) {
+          done = true;
+        }
+      } while (!done);
+      callout.Save();
+
+      return EditlineResult::NEXT;
+    } else if (ch == KEY_UP || ch == KEY_BTAB) {
+      return EditlineResult::PREV;
+    } else {
+      return EditlineResult::NEXT;
+    }
+  }
+  virtual void Display(CursesWindow* window) const { window->PutsXY(x_, y_, "[Enter to Edit]"); }
+
+private:
+  const std::string netdir_;
+  const std::string title_;
+  int width_ = 40;
+  const Config& config_;
+  const net_networks_rec& d_;
+  int x_ = 0;
+  int y_ = 0;
+};
 
 static void edit_net(const Config& config, Networks& networks, int nn) {
   static const vector<pair<network_type_t, string>> nettypes = {
-    {network_type_t::wwivnet, "WWIVnet "},
-    {network_type_t::ftn, "Fido    "},
-    {network_type_t::internet, "Internet"}
-  };
+      {network_type_t::wwivnet, "WWIVnet "},
+      {network_type_t::ftn, "Fido    "},
+      {network_type_t::internet, "Internet"}};
 
   Subs subs(config.datadir(), networks.networks());
   bool subs_loaded = subs.Load();
@@ -427,17 +582,24 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   constexpr int COL1_POSITION = LABEL1_POSITION + LABEL_WIDTH + 1;
   int y = 1;
   EditItems items{};
-  items.add(new ToggleEditItem<network_type_t>(COL1_POSITION, y++, nettypes, &n.type))->
-    set_help_text("If changing network types, exit and reenter this dialog for more options.");
+  items.add(new ToggleEditItem<network_type_t>(COL1_POSITION, y++, nettypes, &n.type))
+      ->set_help_text("If changing network types, exit and reenter this dialog for more options.");
   items.add(new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false));
-  items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))->
-    set_help_text("WWIVnet node number, or 1 for FTN networks");
+  items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))
+      ->set_help_text("WWIVnet node number, or 1 for FTN networks");
   items.add(new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
 
+  auto net_dir = File::absolute(config.root_directory(), n.dir);
   if (n.type == network_type_t::ftn) {
-    auto net_dir = File::absolute(config.root_directory(), n.dir);
-    items.add(new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", 76, n));
-    items.add(new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", 76, config, n));
+    items.add(
+        new FidoNetworkConfigSubDialog(net_dir, COL1_POSITION, y++, "Network Settings", 76, n));
+    items.add(
+        new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", 76, config, n));
+  } else if (n.type == network_type_t::wwivnet) {
+    items.add(
+      new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
+      new CalloutNetSubDialog(net_dir, COL1_POSITION, y, "Settings", 76, config, n));
+    y++;
   }
 
   y = 1;
@@ -449,7 +611,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     items.add_labels({new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Settings:"),
                       new Label(LABEL1_POSITION, y++, LABEL_WIDTH, "Addresses:")});
   }
-  items.Run(StrCat("Network Configuration; Net #", nn));
+  items.Run(StrCat("Network Configuration: ", n.name, " [.", nn, "]"));
 
   if (subs_loaded && orig_network_name != n.name) {
     subs.Save();
@@ -493,7 +655,7 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
   // same as del_net, don't think we need to do this here.
   // wwiv::sdk::write_subs(config.datadir(), subboards);
   File emailfile(config.datadir(), EMAIL_DAT);
-  if (emailfile.Open(File::modeBinary|File::modeReadWrite)) {
+  if (emailfile.Open(File::modeBinary | File::modeReadWrite)) {
     auto t = emailfile.length() / sizeof(mailrec);
     for (size_t r = 0; r < t; r++) {
       mailrec m;
@@ -560,7 +722,7 @@ void networks(const wwiv::sdk::Config& config) {
 
       list.selection_returns_hotkey(true);
       list.set_additional_hotkeys("DI");
-      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"} });
+      list.set_help_items({{"Esc", "Exit"}, {"Enter", "Edit"}, {"D", "Delete"}, {"I", "Insert"}});
       ListBoxResult result = list.Run();
 
       if (result.type == ListBoxResultType::SELECTION) {
@@ -571,7 +733,8 @@ void networks(const wwiv::sdk::Config& config) {
         switch (result.hotkey) {
         case 'D':
           if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
-            messagebox(window, { "You must run the BBS once", "to set up some variables before ", "deleting a network." });
+            messagebox(window, {"You must run the BBS once", "to set up some variables before ",
+                                "deleting a network."});
             break;
           }
           if (networks.networks().size() > 1) {
@@ -589,7 +752,8 @@ void networks(const wwiv::sdk::Config& config) {
           break;
         case 'I':
           if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
-            vector<string> lines{ "You must run the BBS once to set up ", "some variables before inserting a network." };
+            vector<string> lines{"You must run the BBS once to set up ",
+                                 "some variables before inserting a network."};
             messagebox(window, lines);
             break;
           }
@@ -597,8 +761,10 @@ void networks(const wwiv::sdk::Config& config) {
             messagebox(window, "Too many networks.");
             break;
           }
-          const string prompt = StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
-          const size_t net_num = dialog_input_number(window, prompt, 1, networks.networks().size() + 1  );
+          const string prompt =
+              StringPrintf("Insert before which (1-%d) ? ", networks.networks().size() + 1);
+          const size_t net_num =
+              dialog_input_number(window, prompt, 1, networks.networks().size() + 1);
           if (net_num > 0 && net_num <= networks.networks().size() + 1) {
             if (dialog_yn(window, "Are you sure? ")) {
               insert_net(config, networks, net_num - 1);
@@ -613,4 +779,3 @@ void networks(const wwiv::sdk::Config& config) {
     LOG(ERROR) << e.what();
   }
 }
-

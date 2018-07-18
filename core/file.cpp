@@ -47,8 +47,10 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include "core/datetime.h"
 #include "core/log.h"
 #include "core/os.h"
+#include "core/strings.h"
 #include "core/wfndfile.h"
 #include "core/wwivassert.h"
 
@@ -107,6 +109,8 @@ static constexpr int TRIES = 100;
 namespace wwiv {
 namespace core {
 
+using namespace wwiv::strings;
+
 string FilePath(const string& dirname, const string& filename) {
 
   if (dirname.empty()) {
@@ -118,6 +122,15 @@ string FilePath(const string& dirname, const string& filename) {
   result.append(filename);
   return result;
 }
+
+bool backup_file(const std::string& path) {
+  const auto now = DateTime::now();
+  const auto date_string = now.to_string("%Y%m%d%H%M%S");
+  const auto backup_extension = StrCat(".backup.", date_string);
+  return File::Copy(path, StrCat(path, backup_extension));
+}
+
+bool backup_file(const File& file) { return backup_file(file.full_pathname()); }
 
 } // namespace core
 } // namespace wwiv

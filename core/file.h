@@ -43,6 +43,8 @@
 #endif
 #endif  // _WIN32
 
+class File;
+
 namespace wwiv {
 namespace core {
 /**
@@ -50,6 +52,9 @@ namespace core {
  * path separators are added as needed.
  */
 std::string FilePath(const std::string& directory_name, const std::string& file_name);
+
+bool backup_file(const File& file);
+bool backup_file(const std::string& path);
 
 } // namespace core
 } // namespace wwiv
