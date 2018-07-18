@@ -4,7 +4,6 @@
 
 ## FTN
 ***
-* improve addressing for outbound netmail
 * add option to save packets
 * ability to put more than 1 message per packet.
 * zone:region/node is acceptible (not just zone:net/node)

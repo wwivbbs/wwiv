@@ -21,15 +21,15 @@
 #include <sstream>
 #include <string>
 
-#include "bbs/com.h"
-#include "bbs/conf.h"
-#include "bbs/datetime.h"
-#include "bbs/input.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
+#include "bbs/com.h"
+#include "bbs/conf.h"
+#include "bbs/datetime.h"
 #include "bbs/email.h"
 #include "bbs/external_edit.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/quote.h"
@@ -39,10 +39,10 @@
 #include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
-#include "sdk/status.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
+#include "sdk/status.h"
 
 using std::string;
 using namespace wwiv::sdk;
@@ -72,8 +72,7 @@ void YourInfo() {
   bout.cls();
   bout.litebar("Your User Information");
   bout.nl();
-  bout << "|#9Your name      : |#2" 
-       << a()->names()->UserName(a()->usernum) << wwiv::endl;
+  bout << "|#9Your name      : |#2" << a()->names()->UserName(a()->usernum) << wwiv::endl;
   bout << "|#9Phone number   : |#2" << a()->user()->GetVoicePhoneNumber() << wwiv::endl;
   if (a()->user()->GetNumMailWaiting() > 0) {
     bout << "|#9Mail Waiting   : |#2" << a()->user()->GetNumMailWaiting() << wwiv::endl;
@@ -88,23 +87,24 @@ void YourInfo() {
   bout << "|#9Times on       : |#2" << a()->user()->GetNumLogons() << wwiv::endl;
   bout << "|#9On today       : |#2" << a()->user()->GetTimesOnToday() << wwiv::endl;
   bout << "|#9Messages posted: |#2" << a()->user()->GetNumMessagesPosted() << wwiv::endl;
-  auto total_mail_sent = a()->user()->GetNumEmailSent() + a()->user()->GetNumFeedbackSent() + a()->user()->GetNumNetEmailSent();
+  auto total_mail_sent = a()->user()->GetNumEmailSent() + a()->user()->GetNumFeedbackSent() +
+                         a()->user()->GetNumNetEmailSent();
   bout << "|#9E-mail sent    : |#2" << total_mail_sent << wwiv::endl;
   auto seconds_used = static_cast<int>(a()->user()->GetTimeOn());
   auto minutes_used = seconds_used / SECONDS_PER_MINUTE;
-  minutes_used += std::chrono::duration_cast<std::chrono::minutes>(a()->duration_used_this_session()).count();
+  minutes_used +=
+      std::chrono::duration_cast<std::chrono::minutes>(a()->duration_used_this_session()).count();
   bout << "|#9Time spent on  : |#2" << minutes_used << " |#9Minutes" << wwiv::endl;
 
   // Transfer Area Statistics
   bout << "|#9Uploads        : |#2" << a()->user()->GetUploadK() << "|#9k in|#2 "
-    << a()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
+       << a()->user()->GetFilesUploaded() << " |#9files" << wwiv::endl;
   bout << "|#9Downloads      : |#2" << a()->user()->GetDownloadK() << "|#9k in|#2 "
-    << a()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
+       << a()->user()->GetFilesDownloaded() << " |#9files" << wwiv::endl;
   bout << "|#9Transfer Ratio : |#2" << ratio() << wwiv::endl;
   bout.nl();
   pausescr();
 }
-
 
 /**
  * Gets the maximum number of lines allowed for a post by the current user.
@@ -157,10 +157,19 @@ void send_email() {
       StringLowerCase(&username);
       username += StrCat(" ", INTERNET_FAKE_OUTBOUND_ADDRESS);
     }
+  } else if (username.find('(') != std::string::npos && username.find(')') != std::string::npos) {
+    // This is where we'd check for (NNNN) and add in the @NNN for the FTN networks.
+    auto first = username.find_last_of('(');
+    auto last = username.find_last_of(')');
+    if (last > first) {
+      auto inner = username.substr(first + 1, last - first - 1);
+      if (inner.find('/') != std::string::npos) {
+        // At least need a FTN address.
+        username += StrCat(" @", FTN_FAKE_OUTBOUND_NODE);
+        bout << "\r\n|#9Sending to FTN Address: |#2" << inner << wwiv::endl;
+      }
+    }
   }
-
-  // TODO(rushfan): This is where we'd check for (NNNN) 
-  // and add in the @NNN for the FTN networks.
 
   uint16_t system_number, user_number;
   parse_email_info(username, &user_number, &system_number);
@@ -212,8 +221,9 @@ void feedback(bool bNewUserFeedback) {
   clear_quotes();
 
   if (bNewUserFeedback) {
-    auto title = StringPrintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-      a()->config()->config()->maxusers - a()->status_manager()->GetUserCount());
+    auto title =
+        StringPrintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
+                     a()->config()->config()->maxusers - a()->status_manager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
     email(title, 1, 0, true, 0, false);
@@ -282,4 +292,3 @@ void text_edit() {
     external_text_edit(filename, a()->config()->gfilesdir(), 500, MSGED_FLAG_NO_TAGLINE);
   }
 }
-

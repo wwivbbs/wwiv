@@ -328,10 +328,9 @@ void add_ftn_msgid(const wwiv::sdk::Config& config, FidoAddress addr, const std:
                    MessageEditorData* data) {
   FtnMessageDupe dupe(config);
   if (dupe.IsInitialized()) {
-    // TODO(rushfan): Remove old MSGID
     auto new_msgid = dupe.CreateMessageID(addr);
     WWIVParsedMessageText pmt(data->text);
-    // TODO(rushfan): Should we keep removing thm while they exist in case
+    // TODO(rushfan): Should we keep removing them while they exist in case
     // there are more than 1??
     // Remove the existing MSGID lines.
     pmt.remove_control_line("MSGID");
