@@ -109,7 +109,7 @@ std::string fulldate() {
 
 string times() {
   auto dt = DateTime::now();
-  return dt.to_string("%H/%M/%S");
+  return dt.to_string("%H:%M:%S");
 }
 
 std::string to_string(std::chrono::duration<double> dd) {

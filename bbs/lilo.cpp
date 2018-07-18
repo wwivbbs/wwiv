@@ -599,8 +599,7 @@ static void UpdateLastOnFile() {
   vector<string> lines;
   {
     TextFile laston_file(laston_txt_filename, "r");
-    string raw_text = laston_file.ReadFileIntoString();
-    lines = wwiv::strings::SplitString(raw_text, "\n");
+    lines = laston_file.ReadFileIntoVector();
   }
 
   if (!lines.empty()) {
