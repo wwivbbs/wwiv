@@ -78,15 +78,15 @@ static void RegisterNetworkBCommands(CommandLine& cmdline) {
       "daemon", "Run continually as a daemon until stopped  (only used when receiving)", true));
 }
 
-static void ShowHelp(CommandLine& cmdline) { cout << cmdline.GetHelp() << endl; }
+static void ShowHelp(const CommandLine& cmdline) { cout << cmdline.GetHelp() << endl; }
 
-static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
+static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int port) {
   BinkSide side = BinkSide::ANSWERING;
   bool loop = false;
   SOCKET sock = INVALID_SOCKET;
   bool socket_connected = false;
-  if (cmdline.arg("handle").as_int()) {
-    sock = static_cast<SOCKET>(cmdline.arg("handle").as_int());
+  if (cmdline.iarg("handle")) {
+    sock = static_cast<SOCKET>(cmdline.iarg("handle"));
     LOG(INFO) << "BinkP receive; existing socket; handle: " << sock;
     socket_connected = true;
   } else {
@@ -105,7 +105,7 @@ static bool Receive(CommandLine& cmdline, BinkConfig& bink_config, int port) {
         c = std::make_unique<SocketConnection>(sock);
       } else {
         LOG(INFO) << "BinkP receive; listening on port: " << port;
-        sockaddr_in saddr = {};
+        sockaddr_in saddr{};
         socklen_t addr_length = sizeof(saddr);
         SOCKET s = accept(sock, reinterpret_cast<struct sockaddr*>(&saddr), &addr_length);
         c = std::make_unique<SocketConnection>(s);
@@ -175,19 +175,19 @@ static bool Send(BinkConfig& bink_config, const string& sendto_node,
   return true;
 }
 
-static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
+static int Main(const NetworkCommandLine& net_cmdline) {
   try {
     static bool initialized = wwiv::core::InitializeSockets();
 
-    int port = cmdline.arg("port").as_int();
-    bool skip_net = cmdline.arg("skip_net").as_bool();
+    int port = net_cmdline.cmdline().iarg("port");
+    bool skip_net = net_cmdline.skip_net();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
     std::unique_ptr<WStatus> status(sm.GetStatus());
 
     const auto& network_name = net_cmdline.network_name();
 
-    const string sendto_node = cmdline.sarg("node");
+    const string sendto_node = net_cmdline.cmdline().sarg("node");
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
     const auto ini = net_cmdline.LoadNetIni('b');
@@ -196,7 +196,7 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
     }
 
     bink_config.set_skip_net(skip_net);
-    bink_config.set_verbose(cmdline.iarg("v"));
+    bink_config.set_verbose(net_cmdline.cmdline().iarg("v"));
     bink_config.set_network_version(status->GetNetworkVersion());
 
     for (const auto& n : bink_config.networks().networks()) {
@@ -210,15 +210,15 @@ static int Main(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
       }
     }
 
-    if (cmdline.arg("receive").as_bool()) {
-      Receive(cmdline, bink_config, port);
-    } else if (cmdline.arg("send").as_bool()) {
+    if (net_cmdline.cmdline().barg("receive")) {
+      Receive(net_cmdline.cmdline(), bink_config, port);
+    } else if (net_cmdline.cmdline().barg("send")) {
       if (Send(bink_config, sendto_node, network_name)) {
         return 0;
       }
       return 1;
     } else {
-      ShowHelp(cmdline);
+      ShowHelp(net_cmdline.cmdline());
       return 1;
     }
 
@@ -249,5 +249,5 @@ int main(int argc, char** argv) {
     return 0;
   }
 
-  return Main(cmdline, net_cmdline);
+  return Main(net_cmdline);
 }

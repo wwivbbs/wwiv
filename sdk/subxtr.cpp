@@ -271,11 +271,8 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
 
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const vector<xtrasubsrec>& xsubs) {
   // Backup subs.xtr
-  const string subs_xtr_old_name = StrCat(SUBS_XTR, ".old");
-  File::Remove(datadir, subs_xtr_old_name);
   File subs_xtr(datadir, SUBS_XTR);
-  File subs_xtr_old(datadir, subs_xtr_old_name);
-  File::Move(subs_xtr.full_pathname(), subs_xtr_old.full_pathname());
+  backup_file(subs_xtr);
 
   TextFile f(datadir, SUBS_XTR, "w");
   if (!f.IsOpen()) {
@@ -423,14 +420,11 @@ bool Subs::Save() {
 
   {
     // Backup subs.json
-    const string subs_xtr_old_name = StrCat(SUBS_JSON, ".old");
-    File::Remove(datadir_, subs_xtr_old_name);
     File subs_json(datadir_, SUBS_JSON);
-    File subs_json_old(datadir_, subs_xtr_old_name);
-    File::Move(subs_json.full_pathname(), subs_json_old.full_pathname());
+    backup_file(subs_json);
 
     // Save subs.
-    subs_t t;
+    subs_t t{};
     t.subs = subs_;
     SaveToJSON(datadir_, SUBS_JSON, t);
   }

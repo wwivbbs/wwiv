@@ -509,10 +509,10 @@ int MessagesDumpHeaderCommand::Execute() {
     return 2;
   }
 
-  const string basename(remaining().front());
-  const auto start = arg("start").as_int();
-  auto end = arg("end").as_int();
-  const auto all = arg("all").as_bool();
+  const auto basename{remaining().front()};
+  const auto start = iarg("start");
+  auto end = iarg("end");
+  const auto all = barg("all");
   return ExecuteImpl(basename, start, end, all);
 }
 

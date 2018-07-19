@@ -65,7 +65,7 @@ int DumpBbsDataCommand::Execute() {
   for (const auto net : networks.networks()) {
     string lower_case_network_name(net.name);
     StringLowerCase(&lower_case_network_name);
-    if (arg("bbslist").as_bool()) {
+    if (barg("bbslist")) {
       LOG(INFO) << "Parsing bbslist.net";
       bbslists.emplace(lower_case_network_name, BbsListNet::ParseBbsListNet(net.sysnum, net.dir));
     } else {

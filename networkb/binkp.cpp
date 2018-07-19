@@ -847,6 +847,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
       << length << "; file_size: " << file->file_size();
   }
 
+  // This is a file that we sent.
   if (!file->Delete()) {
     LOG(ERROR) << "       *** UNABLE TO DELETE FILE: " << file->filename(); 
   }

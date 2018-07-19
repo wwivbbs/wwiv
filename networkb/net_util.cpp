@@ -41,9 +41,11 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
   cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
   cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
+  cmdline.add_argument(
+      BooleanCommandLineArgument("skip_delete", "Don't delete packets, move din save area"));
 }
 
-NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
+NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) : cmdline_(cmdline) {
   cmdline.set_no_args_allowed(true);
   cmdline.AddStandardArgs();
   AddStandardNetworkArgs(cmdline, File::current_directory());
@@ -73,11 +75,9 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) {
     return;
   }
   network_ = nws[network_number_];
-
-  network_name_ = network_.name;
-  StringLowerCase(&network_name_);
+  network_name_ = ToStringLowerCase(network_.name);
   LOG(INFO) << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
-    << " for network: " << network_name_;
+            << " for network: " << network_name_;
 }
 
 std::unique_ptr<wwiv::core::IniFile> NetworkCommandLine::LoadNetIni(char net_cmd) const {
@@ -87,6 +87,10 @@ std::unique_ptr<wwiv::core::IniFile> NetworkCommandLine::LoadNetIni(char net_cmd
   File file(config().root_directory(), "net.ini");
   return std::unique_ptr<IniFile>(new IniFile(file.full_pathname(), { net_tag_net, net_tag }));
 }
+
+bool NetworkCommandLine::skip_delete() const { return cmdline_.barg("skip_delete"); }
+
+bool NetworkCommandLine::skip_net() const { return cmdline_.barg("skip_delete"); }
 
 
 }  // namespace net

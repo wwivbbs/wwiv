@@ -166,6 +166,9 @@ int network1_main(int argc, char** argv) {
       LOG(INFO) << "Processing: " << net.dir << f.name;
       if (handle_file(b, net, f.name)) {
         LOG(INFO) << "Deleting: " << net.dir << f.name;
+        if (cmdline.barg("skip_delete")) {
+          backup_file(FilePath(net.dir,f.name));
+        }
         File::Remove(net.dir, f.name);
       }
     }

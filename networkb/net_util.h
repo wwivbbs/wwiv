@@ -35,28 +35,34 @@ namespace net {
 
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory);
 
+/**
+ * Wrapper class that augments CommandLine to specialize it for the network commands.
+ */
 class NetworkCommandLine {
 public:
   NetworkCommandLine(wwiv::core::CommandLine& cmdline);
 
-  bool IsInitialized() const { return initialized_; }
-  const std::string bbsdir() const { return bbsdir_; }
-  const wwiv::sdk::Config& config() const { return *config_.get(); }
-  const wwiv::sdk::Networks& networks() const { return *networks_.get(); }
-  const std::string network_name() const { return network_name_; }
-  const int network_number() const { return network_number_; }
-  const net_networks_rec& network() const { return network_; }
+  bool IsInitialized() const noexcept { return initialized_; }
+  const std::string bbsdir() const noexcept { return bbsdir_; }
+  const wwiv::sdk::Config& config() const noexcept { return *config_.get(); }
+  const wwiv::sdk::Networks& networks() const noexcept { return *networks_.get(); }
+  const std::string network_name() const noexcept { return network_name_; }
+  const int network_number() const noexcept { return network_number_; }
+  const net_networks_rec& network() const noexcept { return network_; }
+  const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
 
   std::unique_ptr<wwiv::core::IniFile> LoadNetIni(char net_cmd) const;
+  bool skip_delete() const;
+  bool skip_net() const;
 
-private:
-  std::string bbsdir_;
+  private : std::string bbsdir_;
   std::unique_ptr<wwiv::sdk::Config> config_;
   std::unique_ptr<wwiv::sdk::Networks> networks_;
   std::string network_name_;
-  int network_number_ = 0;
-  bool initialized_ = true;
+  int network_number_{0};
+  bool initialized_{true};
   net_networks_rec network_;
+  wwiv::core::CommandLine& cmdline_;
 };
 
 } // namespace net

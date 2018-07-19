@@ -314,7 +314,7 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
 
 static bool import_packets(const Config& config, FtnMessageDupe& dupe, const FidoCallout& callout,
                            const net_networks_rec& net, const std::string& dir,
-                           const std::string& mask) {
+                           const std::string& mask, bool skip_delete) {
   VLOG(1) << "Importing packets from: " << dir;
   FindFiles files(FilePath(dir, mask), FindFilesType::files);
   if (files.empty()) {
@@ -323,6 +323,9 @@ static bool import_packets(const Config& config, FtnMessageDupe& dupe, const Fid
   for (const auto& f : files) {
     if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
       LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
+      if (skip_delete) {
+        backup_file(FilePath(net.dir, f.name));
+      }
       File::Remove(dir, f.name);
     }
   }
@@ -331,7 +334,7 @@ static bool import_packets(const Config& config, FtnMessageDupe& dupe, const Fid
 
 static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
                                const FidoCallout& callout, const net_networks_rec& net,
-                               const std::string& dir, const string& name) {
+                               const std::string& dir, const string& name, bool skip_delete) {
   VLOG(1) << "import_bundle_file: name: " << name;
 
   {
@@ -372,9 +375,9 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
   // Need to be back home.
   File::set_current_directory(saved_dir);
 
-  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.pkt");
+  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.pkt", skip_delete);
 #ifndef _WIN32
-  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.PKT");
+  import_packets(config, dupe, callout, net, dirs.temp_inbound_dir(), "*.PKT", skip_delete);
 #endif // _WIN32
   return true;
 }
@@ -386,7 +389,7 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
  */
 static int import_bundles(const Config& config, const FidoCallout& callout,
                           const net_networks_rec& net, const std::string& dir,
-                          const std::string& mask) {
+                          const std::string& mask, bool skip_delete) {
   int num_bundles_processed = 0;
 
   FtnMessageDupe dupe(config);
@@ -403,11 +406,17 @@ static int import_bundles(const Config& config, const FidoCallout& callout,
       if (import_packet_file(config, dupe, callout, net, dir, f.name)) {
         LOG(INFO) << "Successfully imported packet: " << FilePath(dir, f.name);
         ++num_bundles_processed;
+        if (skip_delete) {
+          backup_file(FilePath(net.dir, f.name));
+        }
         File::Remove(dir, f.name);
       }
-    } else if (import_bundle_file(config, dupe, callout, net, dir, f.name)) {
+    } else if (import_bundle_file(config, dupe, callout, net, dir, f.name, skip_delete)) {
       LOG(INFO) << "Successfully imported bundle: " << FilePath(dir, f.name);
       ++num_bundles_processed;
+      if (skip_delete) {
+        backup_file(FilePath(net.dir, f.name));
+      }
       File::Remove(dir, f.name);
     }
   }
@@ -1094,12 +1103,13 @@ int main(int argc, char** argv) {
     if (cmd == "import") {
       const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
       for (const auto& ext : extensions) {
-        num_packets_processed += import_bundles(net_cmdline.config(), fido_callout, net,
-                                                dirs.inbound_dir(), StrCat("*.", ext));
+        num_packets_processed +=
+            import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
+                           StrCat("*.", ext), net_cmdline.skip_delete());
 #ifndef _WIN32
         num_packets_processed +=
             import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
-                           StrCat("*.", ToStringUpperCase(ext)));
+                           StrCat("*.", ToStringUpperCase(ext)), net_cmdline.skip_delete());
 #endif
       }
     } else if (cmd == "export") {
@@ -1124,6 +1134,9 @@ int main(int argc, char** argv) {
         if (response == ReadPacketResponse::END_OF_FILE) {
           // Delete the packet.
           f.Close();
+          if (net_cmdline.skip_delete()) {
+            backup_file(f);
+          }
           f.Delete();
           break;
         } else if (response == ReadPacketResponse::ERROR) {

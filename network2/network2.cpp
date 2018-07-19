@@ -328,6 +328,9 @@ int main(int argc, char** argv) {
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
+      if (cmdline.barg("skip_delete")) {
+        backup_file(FilePath(net.dir, LOCAL_NET));
+      }
       LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
       if (!File::Remove(net.dir, LOCAL_NET)) {
         LOG(ERROR) << "ERROR: Unable to delete " << net.dir << LOCAL_NET;
