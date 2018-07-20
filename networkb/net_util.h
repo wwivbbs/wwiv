@@ -55,7 +55,7 @@ public:
   bool skip_delete() const;
   bool skip_net() const;
 
-  private : std::string bbsdir_;
+  private: std::string bbsdir_;
   std::unique_ptr<wwiv::sdk::Config> config_;
   std::unique_ptr<wwiv::sdk::Networks> networks_;
   std::string network_name_;

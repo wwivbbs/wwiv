@@ -49,6 +49,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "sdk/net/callouts.h"
 #include "sdk/bbslist.h"
 #include "sdk/binkp.h"
 #include "sdk/callout.h"
@@ -64,6 +65,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -309,55 +311,6 @@ void do_callout(uint16_t sn) {
   }
 }
 
-static bool ok_to_call(const net_call_out_rec* con) {
-
-  bool ok = ((con->options & options_no_call) == 0) ? true : false;
-  if (con->options & options_receive_only) {
-    ok = false;
-  }
-
-  auto dt = DateTime::now();
-
-  auto l = con->min_hr;
-  auto h = con->max_hr;
-  if (l > -1 && h > -1 && h != l) {
-    if (h == 0 || h == 24) {
-      if (dt.hour() < l) {
-        ok = false;
-      } else if (dt.hour() == l && dt.minute() < 12) {
-        ok = false;
-      } else if (dt.hour() == 23 && dt.minute() > 30) {
-        ok = false;
-      }
-    } else if (l == 0 || l == 24) {
-      if (dt.hour() >= h) {
-        ok = false;
-      } else if (dt.hour() == (h - 1) && dt.minute() > 30) {
-        ok = false;
-      } else if (dt.hour() == 0 && dt.minute() < 12) {
-        ok = false;
-      }
-    } else if (h > l) {
-      if (dt.hour() < l || dt.hour() >= h) {
-        ok = false;
-      } else if (dt.hour() == l && dt.minute() < 12) {
-        ok = false;
-      } else if (dt.hour() == (h - 1) && dt.minute() > 30) {
-        ok = false;
-      }
-    } else {
-      if (dt.hour() >= h && dt.hour() < l) {
-        ok = false;
-      } else if (dt.hour() == l && dt.minute() < 12) {
-        ok = false;
-      } else if (dt.hour() == (h - 1) && dt.minute() > 30) {
-        ok = false;
-      }
-    }
-  }
-  return ok;
-}
-
 class NodeAndWeight {
 public:
   NodeAndWeight() {}
@@ -365,52 +318,8 @@ public:
       : net_num_(net_num), node_num_(node_num), weight_(weight) {}
   int net_num_ = 0;
   uint16_t node_num_ = 0;
-  uint64_t weight_ = 0;
+  int64_t weight_ = 0;
 };
-
-/**
- * Checks the net_contact_rec and net_call_out_rec to ensure the node specified
- * is ok to call and does not violate any constraints.
- */
-static bool ok_to_call_from_contact_rec(const NetworkContact& ncn, const net_call_out_rec& con) {
-  const auto dt = DateTime::now();
-  auto now = dt.to_system_clock();
-  VLOG(2) << "ok_to_call_from_contact_rec: @" << con.sysnum << "." << a()->current_net().name;
-  if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
-    VLOG(2) << "Skipping: No bytes waiting and !call anyway";
-    return false;
-  }
-  auto min_minutes = std::max<int>(con.call_anyway, 1);
-  auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
-  auto last_contact_sent = DateTime::from_time_t(ncn.lastcontactsent()).to_system_clock();
-  auto next_contact_time = last_contact + minutes(min_minutes);
-  auto time_since_last_contact = now - last_contact;
-  auto time_since_last_contact_sent = now - last_contact_sent;
-
-  if ((con.options & options_once_per_day) && time_since_last_contact_sent < hours(24)) {
-    VLOG(2) << "Skipping, it's not been a day (options_once_per_day)";
-    return false;
-  }
-  if (con.call_anyway && now >= next_contact_time) {
-    VLOG(2) << "Calling anyway since it's been time: ";
-    VLOG(2) << "Last Contact: " << DateTime::from_time_t(ncn.lastcontactsent()).to_string();
-    return true;
-  }
-  // TODO(rushfan): Should we just nix this and use / only?  
-  auto daily_attempt_time = hours(20) / std::max<int>(1, con.times_per_day);
-  if (time_since_last_contact > daily_attempt_time) {
-    VLOG(2) << "Calling, daily_attempt_time:  min: " << duration_cast<minutes>(daily_attempt_time).count();
-    VLOG(2) << "time_since_last_contact:      min: " << duration_cast<minutes>(time_since_last_contact).count();
-    return true;
-  }
-  if (bytes_to_k(ncn.bytes_waiting()) > con.min_k) {
-    VLOG(2) << "Calling: min_k";
-    return true;
-  }
-  VLOG(2) << "Skipping; No reason to call.";
-  return false;
-}
-
 bool attempt_callout() {
   a()->status_manager()->RefreshStatusCache();
 
@@ -441,33 +350,27 @@ bool attempt_callout() {
     Contact contact(a()->current_net(), false);
 
     for (const auto& p : callout.callout_config()) {
-      bool ok = ok_to_call(&p.second);
-      if (!ok) {
-        VLOG(2) << "!ok to call: @" << p.second.sysnum << "." << a()->current_net().name;
-        continue;
-      }
-
+      const net_call_out_rec& ncor = p.second;
       const NetworkContact* ncr = contact.contact_rec_for(p.first);
-      const net_call_out_rec* ncor = callout.net_call_out_for(p.first);
-      if (!ncr || !ncor) {
+      if (!ncr) {
         VLOG(2) << "skipping because: !ncr || !ncor";
         continue;
       }
-      ok = ok_to_call_from_contact_rec(*ncr, *ncor);
+      if (!should_call(*ncr, ncor, DateTime::now())) {
+        continue;
+      }
 
-      if (ok) {
-        auto diff = time(nullptr) - ncr->lasttry();
-        uint64_t time_weight = std::max<int64_t>(diff, 0);
+      auto diff = time(nullptr) - ncr->lasttry();
+      auto time_weight = std::max<int64_t>(diff, 0);
 
-        if (ncr->bytes_waiting() == 0L) {
-          if (to_call.at(nn).weight_ < time_weight) {
-            to_call[nn] = NodeAndWeight(nn, ncor->sysnum, time_weight);
-          }
-        } else {
-          uint64_t bytes_weight = ncr->bytes_waiting() * 60 + time_weight;
-          if (to_call.at(nn).weight_ < bytes_weight) {
-            to_call[nn] = NodeAndWeight(nn, ncor->sysnum, bytes_weight);
-          }
+      if (ncr->bytes_waiting() == 0L) {
+        if (to_call.at(nn).weight_ < time_weight) {
+          to_call[nn] = NodeAndWeight(nn, ncor.sysnum, time_weight);
+        }
+      } else {
+        auto bytes_weight = ncr->bytes_waiting() * 60 + time_weight;
+        if (to_call.at(nn).weight_ < bytes_weight) {
+          to_call[nn] = NodeAndWeight(nn, ncor.sysnum, bytes_weight);
         }
       }
     }
@@ -490,7 +393,7 @@ bool attempt_callout() {
 void print_pending_list() {
   int adjust = 0, lines = 0;
   char s1[81], s2[81], s3[81], s4[81], s5[81];
-  long ss = a()->user()->GetStatus();
+  auto ss = a()->user()->GetStatus();
 
   if (a()->net_networks.empty()) {
     return;
@@ -542,7 +445,7 @@ void print_pending_list() {
         continue;
       }
 
-      if (ok_to_call(&con)) {
+      if (allowed_to_call(con, DateTime::now())) {
         strcpy(s2, "|#5Yes");
       } else {
         strcpy(s2, "|#3---");
@@ -587,9 +490,9 @@ void print_pending_list() {
 
     File deadNetFile(a()->network_directory(), DEAD_NET);
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
-      auto lFileSize = deadNetFile.length();
+      auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
-      sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
+      sprintf(s3, "%ldk", (dead_net_file_size + 1023) / 1024);
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s "
                    "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
@@ -606,9 +509,9 @@ void print_pending_list() {
 
     File checkNetFile(a()->network_directory(), CHECK_NET);
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
-      auto lFileSize = checkNetFile.length();
+      auto check_net_file_size = checkNetFile.length();
       checkNetFile.Close();
-      sprintf(s3, "%ldk", (lFileSize + 1023) / 1024);
+      sprintf(s3, "%ldk", (check_net_file_size + 1023) / 1024);
       strcat(s3, "k");
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
@@ -785,7 +688,7 @@ static void print_call(uint16_t sn, int nNetNumber) {
       color = ini.value("CALLOUT_COLOR_TEXT", 14);
     }
   }
-  string s1 = to_string(bytes_to_k(ncn->bytes_waiting()));
+  auto s1 = to_string(bytes_to_k(ncn->bytes_waiting()));
   a()->localIO()->PrintfXYA(58, 17, color, "%-10.16s", s1.c_str());
 
   s1 = to_string(bytes_to_k(ncn->bytes_received()));
@@ -1120,7 +1023,7 @@ void force_callout() {
   set_net_num(network_number);
   Callout callout(a()->current_net());
 
-  if (!ok_to_call(callout.net_call_out_for(sn.first))) {
+  if (!allowed_to_call(*callout.net_call_out_for(sn.first), DateTime::now())) {
     return;
   }
 

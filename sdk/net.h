@@ -270,9 +270,9 @@ struct net_call_out_rec {
   /* hours between callouts */
   uint8_t call_anyway = 0;
   /* callout min hour */
-  int8_t min_hr = 0;
+  int8_t min_hr = -1;
   /* callout max hour */
-  int8_t max_hr = 0;
+  int8_t max_hr = -1;
   /* password for system */
   std::string session_password;
   /* number of calls per day */

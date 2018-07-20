@@ -108,10 +108,11 @@ bool Contact::Save() {
     return false;
   }
 
-  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET,
-                                 File::modeBinary | File::modeReadWrite | File::modeCreateFile |
-                                     File::modeTruncate,
-                                 File::shareDenyReadWrite);
+  VLOG(2) << "Saving contact.net to: " << FilePath(net_.dir, CONTACT_NET);
+  DataFile<net_contact_rec> file(
+                 net_.dir, CONTACT_NET,
+                 File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
+                 File::shareDenyReadWrite);
   if (!file) {
     return false;
   }

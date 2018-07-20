@@ -127,7 +127,9 @@ bool backup_file(const std::string& path) {
   const auto now = DateTime::now();
   const auto date_string = now.to_string("%Y%m%d%H%M%S");
   const auto backup_extension = StrCat(".backup.", date_string);
-  return File::Copy(path, StrCat(path, backup_extension));
+  const auto backup_path = StrCat(path, backup_extension);
+  VLOG(1) << "Backing up file: '" << path << "'; to: '" << backup_path << "'";
+  return File::Copy(path, backup_path);
 }
 
 bool backup_file(const File& file) { return backup_file(file.full_pathname()); }

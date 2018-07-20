@@ -20,6 +20,7 @@ set(test_sources
   user_test.cpp
   fido/fido_address_test.cpp
   fido/nodelist_test.cpp
+  net/callouts_test.cpp
   net/packets_test.cpp
 )
 if (WIN32)
