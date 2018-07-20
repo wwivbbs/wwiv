@@ -509,7 +509,7 @@ int MessagesDumpHeaderCommand::Execute() {
     return 2;
   }
 
-  const auto basename{remaining().front()};
+  const string basename(remaining().front());
   const auto start = iarg("start");
   auto end = iarg("end");
   const auto all = barg("all");
