@@ -37,6 +37,32 @@ What's New in WWIV 5.4 (2018)
 + Added wwivutil net subscribers command.
 * Fixed a bunch of networking issues. (gating and hosting related)
 + added wwivutil fido subscribers command
+* Improved FTN duplicate checking to check for either the 
+  MSGID (if available) or a hash of the message header.
+  Either one will now trigger a dupe, vs needing both to
+  mark a message as a dupe.  This should improve the case
+  where the header is changed on a message and it is resent
+  to us.
+* Only use fake mailer mode on telnet connections (not SSH)
+  since that breaks SSH/
+* Fixed a problem where we couldn't mark a wwivnet call as
+  a failure (we threw an exception vs. recoring it in contact.net)
+* Fixed STDIO based editors not working in Linux, and added an
+  option to wwivconfig to enable it (the option is visible for
+  all platforms, but currently only works on Linux/Unix)
+* The Message SDK now honors pending_net_val flag on subboards.
+! Fixed hubbing and gating in the network stack this should now
+  mostly work as expected.
+* Remove existing msgid line before adding a new one (bug #1134)
+* Improvements on detecting a failed session in networkb.
++ wwivconfig can now edit callout.net from the networks menu
+  just like it can edit fido_callouts.json with a GUI editor.
+! You can now send a FTN email using the form:
+  "username (net/node)" or "username (zone:net/node)".  Using
+  the fake ftn node number is no longer needed.
+! Added --skip_delete to most network commands, it'll backup vs
+  deleting packets that it's processed.
+  
 
 
 What's New in WWIV 5.3 (2018)
