@@ -77,12 +77,10 @@ bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const D
   }
   auto min_minutes = std::max<int>(con.call_anyway, 1);
   auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
-  auto last_contact_sent = DateTime::from_time_t(ncn.lastcontactsent()).to_system_clock();
   auto next_contact_time = last_contact + minutes(min_minutes);
   auto time_since_last_contact = now - last_contact;
-  auto time_since_last_contact_sent = now - last_contact_sent;
 
-  if ((con.options & options_once_per_day) && time_since_last_contact_sent < hours(24)) {
+  if ((con.options & options_once_per_day) && time_since_last_contact < hours(24)) {
     VLOG(2) << "Skipping, it's not been a day (options_once_per_day)";
     return false;
   }
