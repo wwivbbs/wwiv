@@ -43,9 +43,6 @@ bool allowed_to_call(const net_call_out_rec& con, const DateTime& dt) {
   if (con.options & options_no_call) {
     VLOG(2) << "Not Calling: options_no_call";
     return false;
-  } else if (con.options & options_receive_only) {
-    VLOG(2) << "Not Calling: options_receive_only";
-    return false;
   }
 
   auto l = con.min_hr;
@@ -82,24 +79,10 @@ bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const D
   auto min_minutes = std::max<int>(con.call_every_x_minutes, 1);
   auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
   auto next_contact_time = last_contact + minutes(min_minutes);
-  auto time_since_last_contact = now - last_contact;
 
-  if ((con.options & options_once_per_day) && time_since_last_contact < hours(24)) {
-    VLOG(2) << "Skipping, it's not been a day (options_once_per_day)";
-    return false;
-  }
   if (con.call_every_x_minutes && now >= next_contact_time) {
     VLOG(2) << "Calling anyway since it's been time: ";
     VLOG(2) << "Last Contact: " << DateTime::from_time_t(ncn.lastcontactsent()).to_string();
-    return true;
-  }
-  // TODO(rushfan): Should we just nix this and use / only?
-  auto daily_attempt_time = hours(20) / std::max<int>(1, con.times_per_day);
-  if (time_since_last_contact > daily_attempt_time) {
-    VLOG(2) << "Calling, daily_attempt_time:  min: "
-            << duration_cast<minutes>(daily_attempt_time).count();
-    VLOG(2) << "time_since_last_contact:      min: "
-            << duration_cast<minutes>(time_since_last_contact).count();
     return true;
   }
   if (bytes_to_k(ncn.bytes_waiting()) > con.min_k) {

@@ -42,7 +42,7 @@ TEST_F(CalloutTest, WithPassword) {
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
-  EXPECT_NE(0, con.options & options_sendback);
+  EXPECT_NE(0, con.options & unused_options_sendback);
   EXPECT_EQ("pass", con.session_password);
 }
 
@@ -51,7 +51,7 @@ TEST_F(CalloutTest, WithPassword_Bang) {
   const string line = "@1 & \"pass!\"";
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1, con.sysnum);
-  EXPECT_NE(0, con.options & options_sendback);
+  EXPECT_NE(0, con.options & unused_options_sendback);
   EXPECT_EQ("pass!", con.session_password);
 }
 
@@ -61,10 +61,8 @@ TEST_F(CalloutTest, OncePerDay) {
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
-  EXPECT_NE(0, con.options & options_sendback);
-  EXPECT_NE(0, con.options & options_once_per_day);
+  EXPECT_NE(0, con.options & unused_options_sendback);
   EXPECT_EQ("pass", con.session_password);
-  EXPECT_EQ(24, con.times_per_day);
 }
 
 TEST_F(CalloutTest, LotsOfOptions) {
@@ -73,10 +71,8 @@ TEST_F(CalloutTest, LotsOfOptions) {
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
-  EXPECT_NE(0, con.options & options_sendback);
-  EXPECT_NE(0, con.options & options_once_per_day);
+  EXPECT_NE(0, con.options & unused_options_sendback);
   EXPECT_EQ("pass", con.session_password);
-  EXPECT_EQ(24, con.times_per_day);
   EXPECT_EQ(21, con.macnum);
   EXPECT_EQ(60, con.call_every_x_minutes);
 }
@@ -87,7 +83,7 @@ TEST_F(CalloutTest, MinMax) {
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
-  EXPECT_NE(0, con.options & options_sendback);
+  EXPECT_NE(0, con.options & unused_options_sendback);
   EXPECT_EQ("pass", con.session_password);
   EXPECT_EQ(8, con.min_hr);
   EXPECT_EQ(12, con.max_hr);
@@ -99,7 +95,7 @@ TEST_F(CalloutTest, EveryWeekWith10k) {
   ASSERT_TRUE(ParseCalloutNetLine(line, &con));
   EXPECT_EQ(1234, con.sysnum);
   EXPECT_NE(0, con.options & unused_options_dial_ten);
-  EXPECT_NE(0, con.options & options_sendback);
+  EXPECT_NE(0, con.options & unused_options_sendback);
   EXPECT_EQ("pass", con.session_password);
   EXPECT_EQ(10, con.min_k);
 }
@@ -114,7 +110,7 @@ TEST_F(CalloutTest, InvalidLine) {
 TEST_F(CalloutTest, NodeConfig) {
   FileHelper files;
   files.Mkdir("network");
-  const string line("@1 & \"foo\"");
+  const string line("@1 \"foo\"");
   files.CreateTempFile("network/callout.net", line);
   net_networks_rec net{};
   strcpy(net.name, "Dummy Network");
@@ -122,6 +118,5 @@ TEST_F(CalloutTest, NodeConfig) {
   Callout callout(net);
   const net_call_out_rec* con = callout.net_call_out_for(1);
   ASSERT_TRUE(con != nullptr);
-  EXPECT_EQ(options_sendback, con->options);
   EXPECT_EQ("foo", con->session_password);
 }

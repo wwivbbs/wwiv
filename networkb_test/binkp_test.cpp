@@ -126,14 +126,14 @@ TEST(NetworkNameFromAddressTest, SingleAddress) {
 
 // string expected_password_for(Callout* callout, int node)
 TEST(ExpectedPasswordTest, Basic) {
-  net_call_out_rec n{ "20000:20000/1234", 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6 };
+  net_call_out_rec n{ "20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
   Callout callout({ n });
   string actual = expected_password_for(&callout, 1234);
   EXPECT_EQ("pass", actual);
 }
 
 TEST(ExpectedPasswordTest, WrongNode) {
-  net_call_out_rec n{"20000:20000/1234", 1234, 1, options_sendback, 2, 3, 4, "pass", 5, 6 };
+  net_call_out_rec n{"20000:20000/1234", 1234, 1, unused_options_sendback, 2, 3, 4, "pass", 5, 6 };
   Callout callout({ n });
   string actual = expected_password_for(&callout, 12345);
   EXPECT_EQ("-", actual);

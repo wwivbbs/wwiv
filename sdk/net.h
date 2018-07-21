@@ -258,7 +258,7 @@ struct net_call_out_rec {
   net_call_out_rec(const std::string f, uint16_t sn, uint16_t mn, uint16_t op, uint16_t ca,
                     int8_t nh, int8_t xh, char pw[20], uint8_t tpd, uint16_t nk)
       : ftn_address(f), sysnum(sn), macnum(mn), options(op), call_every_x_minutes(ca), min_hr(nh),
-        max_hr(xh), session_password(pw), times_per_day(tpd), min_k(nk) {}
+        max_hr(xh), session_password(pw), min_k(nk) {}
   // FTN Address.
   std::string ftn_address;
   /* system number */
@@ -275,8 +275,6 @@ struct net_call_out_rec {
   int8_t max_hr = -1;
   /* password for system */
   std::string session_password;
-  /* number of calls per day */
-  uint8_t times_per_day = 0;
   /* minimum # k before callout */
   uint16_t min_k = 0;
 };
@@ -290,16 +288,15 @@ struct net_call_out_rec {
  *   to zero if we just dial it directly.
  * options - bit mapped.  See #define's below.
  * call_every_x_minutes - if non-zero, then the minimum number of days between calls
- *   to that system, even if there is nothing waiting to be sent there.  This
- *   should only be non-zero if options_sendback is also set for this system.
+ *   to that system, even if there is nothing waiting to be sent there.
  * password - is the password used for connection to this system.
  */
-#define options_sendback 0x0001         /* & they can send data back */
+#define unused_options_sendback 0x0001         /* & they can send data back */
 #define unused_options_ATT_night 0x0002 /* - callout only at AT&T nigh hours */
 #define unused_options_ppp 0x0004       /* _ transfer via PPP */
 #define options_no_call 0x0008          /* + don't call that system, it will */
-#define options_receive_only 0x0010     /* ~ never send anything */
-#define options_once_per_day 0x0020     /* ! only call once per day */
+#define unused_options_receive_only 0x0010     /* ~ never send anything */
+#define unused_options_once_per_day 0x0020     /* ! only call once per day */
 #define unused_options_compress 0x0040  /* ; compress data */
 #define unused_options_hslink 0x0080    /* ^ use HSLINK if available */
 #define unused_options_force_ac 0x0100  /* $ force area code on dial */

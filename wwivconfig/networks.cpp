@@ -429,46 +429,38 @@ private:
 
 static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_rec& c) {
   constexpr int LBL1_POSITION = 2;
-  constexpr int LABEL_WIDTH = 24;
+  constexpr int LABEL_WIDTH = 30;
   constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
+  constexpr int LBL2_POSITION = COL1_POSITION + 4 + 1;
+  constexpr int LABEL2_WIDTH = 4;
+  constexpr int COL2_POSITION = LBL2_POSITION + 1+ LABEL2_WIDTH;
   int y = 1;
 
   EditItems items{};
-  // items.add(new Label(LBL1_POSITION, y++, LABEL_WIDTH, StrCat("Node:", c.sysnum)));
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
             new StringEditItem<std::string&>(COL1_POSITION, y, 8, c.session_password, false));
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Sendback Allowed:"),
-            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_sendback, "Yes ", "No",
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allout Outbound Connections:"),
+            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "No", "Yes",
                                                   &c.options));
-  y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Do Not Call:"),
-            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "Yes ", "No",
-                                                  &c.options));
-  y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Receive Only:"),
-            new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_receive_only, "Yes ",
-                                                  "No", &c.options));
-  y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Times Per Day:"),
-            new NumberEditItem<uint8_t>(COL1_POSITION, y, &c.times_per_day));
-
-  y++;
+  y+=2;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
             new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
                                                                  &c.call_every_x_minutes));
-
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
+            new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call between hours of:"),
+            new NumberEditItem<int8_t>(COL1_POSITION, y, &c.min_hr));
+  items.add(new Label(LBL2_POSITION, y, LABEL2_WIDTH, "and:"),
+            new NumberEditItem<int8_t>(COL2_POSITION, y, &c.max_hr));
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Hide from Pending List:"),
             new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_hide_pend, "Yes ", "No",
                                                   &c.options));
 
   items.Run(StrCat("Node: @", c.sysnum, ".", net.name));
-  if (c.times_per_day == 0) {
-    c.options &= ~options_once_per_day;
-  } else {
-    c.options |= options_once_per_day;
-  }
 }
 
 // Base item of an editable value, this class does not use templates.

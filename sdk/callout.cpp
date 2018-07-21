@@ -62,7 +62,7 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       con->sysnum = to_number<decltype(con->sysnum)>(string(++iter, ss.end()));
     } break;
     case '&':
-      con->options |= options_sendback;
+      con->options |= unused_options_sendback;
       break;
     case '-':
       con->options |= unused_options_ATT_night;
@@ -74,12 +74,11 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       con->options |= options_no_call;
       break;
     case '~':
-      con->options |= options_receive_only;
+      con->options |= unused_options_receive_only;
       break;
     case '!': {
-      con->options |= options_once_per_day;
-      con->times_per_day = std::max<decltype(con->times_per_day)>(
-          1, to_number<decltype(con->times_per_day)>(string(++iter, ss.end())));
+      con->options |= unused_options_once_per_day;
+      auto unused_times_per_day = to_number<int>(string(++iter, ss.end()));
     } break;
     case '%': {
       con->macnum = to_number<decltype(con->macnum)>(string(++iter, ss.end()));
@@ -137,20 +136,17 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
 
 std::string WriteCalloutNetLine(const net_call_out_rec& con) {
   std::ostringstream ss;
-  if (con.options & options_sendback) {
+  if (con.options & unused_options_sendback) {
     ss << " &";
   }
   if (con.options & options_no_call) {
     ss << " +";
   }
-  if (con.options & options_receive_only) {
+  if (con.options & unused_options_receive_only) {
     ss << " ~";
   }
-  if (con.options & options_once_per_day) {
+  if (con.options & unused_options_once_per_day) {
     ss << " !";
-    if (con.times_per_day > 1) {
-      ss << static_cast<int>(con.times_per_day);
-    }
   }
   if (con.options & options_hide_pend) {
     ss << " =";
@@ -185,17 +181,8 @@ std::string WriteCalloutNetLine(const net_call_out_rec& con) {
 std::string CalloutOptionsToString(uint16_t options) {
   std::ostringstream ss;
   ss << "{" << options << "} ";
-  if (options & options_sendback) {
-    ss << "[sendback] ";
-  }
   if (options & options_no_call) {
     ss << "[nocall] ";
-  }
-  if (options & options_receive_only) {
-    ss << "[receive_only] ";
-  }
-  if (options & options_once_per_day) {
-    ss << "[x_per_day] ";
   }
   if (options & options_hide_pend) {
     ss << "[hide_pending] ";
@@ -295,9 +282,6 @@ static std::string DumpCallout(const net_call_out_rec& n) {
     ss << "max_hr:        " << static_cast<int>(n.max_hr) << std::endl;
   }
   ss << "password:       \"" << n.session_password << "\"" << std::endl;
-  if (n.times_per_day) {
-    ss << "times_per_day:   " << static_cast<int>(n.times_per_day) << std::endl;
-  }
   if (n.min_k) {
     ss << "min_k:         " << static_cast<int>(n.min_k) << std::endl;
   }

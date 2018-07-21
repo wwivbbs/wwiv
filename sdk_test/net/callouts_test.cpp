@@ -60,16 +60,10 @@ protected:
   DateTime dt_;
 };
 
-TEST_F(CalloutsTest, ReceiveOnlyAndNoCall) {
+TEST_F(CalloutsTest, NoCall) {
   ASSERT_TRUE(allowed_to_call(c_, DateTime::now()));
 
-  c_.options = options_receive_only;
-  ASSERT_FALSE(allowed_to_call(c_, DateTime::now()));
-
   c_.options = options_no_call;
-  ASSERT_FALSE(allowed_to_call(c_, DateTime::now()));
-
-  c_.options = options_receive_only | options_no_call;
   ASSERT_FALSE(allowed_to_call(c_, DateTime::now()));
 }
 
@@ -102,15 +96,6 @@ TEST_F(CalloutsTest, ByTime) {
   c_.min_hr = 20;
   c_.max_hr = 2;
   ASSERT_TRUE(allowed_to_call(c_, dt_));
-}
-
-TEST_F(CalloutsTest, ShouldCall_LastTimeNow_OnceDay) {
-  ASSERT_TRUE(allowed_to_call(c_, dt_));
-
-  c_.options |= options_once_per_day;
-  ncn_.AddConnect(dt_.to_time_t(), 100, 0);
-
-  EXPECT_FALSE(should_call(ncn_, c_, dt_));
 }
 
 TEST_F(CalloutsTest, ShouldCall_CallAnyay_TimeToCall) {
