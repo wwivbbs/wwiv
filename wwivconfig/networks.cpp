@@ -455,7 +455,8 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
 
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
-            new NumberEditItem<uint8_t>(COL1_POSITION, y, &c.call_anyway));
+            new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
+                                                                 &c.call_every_x_minutes));
 
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Hide from Pending List:"),

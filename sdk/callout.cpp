@@ -59,7 +59,7 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
   for (auto iter = ss.cbegin(); iter != ss.cend(); iter++) {
     switch (*iter) {
     case '@': {
-      con->sysnum = to_number<uint16_t>(string(++iter, ss.end()));
+      con->sysnum = to_number<decltype(con->sysnum)>(string(++iter, ss.end()));
     } break;
     case '&':
       con->options |= options_sendback;
@@ -78,23 +78,25 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       break;
     case '!': {
       con->options |= options_once_per_day;
-      con->times_per_day = std::max<uint8_t>(1, to_number<uint8_t>(string(++iter, ss.end())));
+      con->times_per_day = std::max<decltype(con->times_per_day)>(
+          1, to_number<decltype(con->times_per_day)>(string(++iter, ss.end())));
     } break;
     case '%': {
-      con->macnum = to_number<uint8_t>(string(++iter, ss.end()));
+      con->macnum = to_number<decltype(con->macnum)>(string(++iter, ss.end()));
     } break;
     case '/': {
-      con->call_anyway = to_number<uint8_t>(string(++iter, ss.end()));
-      if (con->call_anyway > 0) {
+      con->call_every_x_minutes = to_number<decltype(con->call_every_x_minutes)>(string(++iter, ss.end()));
+      if (con->call_every_x_minutes > 0) {
         // Let's set a minimum of 10 minutes in between calls.
-        con->call_anyway = std::max<uint8_t>(con->call_anyway, 10);
+        con->call_every_x_minutes =
+            std::max<decltype(con->call_every_x_minutes)>(con->call_every_x_minutes, 10);
       }
     } break;
     case '(': {
-      con->min_hr = to_number<int8_t>(string(++iter, ss.end()));
+      con->min_hr = to_number<decltype(con->min_hr)>(string(++iter, ss.end()));
     } break;
     case ')': {
-      con->max_hr = to_number<int8_t>(string(++iter, ss.end()));
+      con->max_hr = to_number<decltype(con->max_hr)>(string(++iter, ss.end()));
     } break;
     case '|': {
       con->min_k = std::max<uint16_t>(1, to_number<uint16_t>(string(++iter, ss.end())));
@@ -156,8 +158,8 @@ std::string WriteCalloutNetLine(const net_call_out_rec& con) {
   if (con.macnum > 0) {
     ss << " %" << static_cast<int>(con.macnum);
   }
-  if (con.call_anyway > 0) {
-    int c = std::max(10, static_cast<int>(con.call_anyway));
+  if (con.call_every_x_minutes > 0) {
+    int c = std::max(10, static_cast<int>(con.call_every_x_minutes));
     ss << " /" << c;
   }
   if (con.min_hr > 0) {

@@ -78,7 +78,7 @@ TEST_F(CalloutTest, LotsOfOptions) {
   EXPECT_EQ("pass", con.session_password);
   EXPECT_EQ(24, con.times_per_day);
   EXPECT_EQ(21, con.macnum);
-  EXPECT_EQ(60, static_cast<int>(con.call_anyway));
+  EXPECT_EQ(60, con.call_every_x_minutes);
 }
 
 TEST_F(CalloutTest, MinMax) {

@@ -75,11 +75,11 @@ bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const D
   }
 
   auto now = dt.to_system_clock();
-  if (ncn.bytes_waiting() == 0L && !con.call_anyway) {
+  if (ncn.bytes_waiting() == 0L && !con.call_every_x_minutes) {
     VLOG(2) << "Skipping: No bytes waiting and !call anyway";
     return false;
   }
-  auto min_minutes = std::max<int>(con.call_anyway, 1);
+  auto min_minutes = std::max<int>(con.call_every_x_minutes, 1);
   auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
   auto next_contact_time = last_contact + minutes(min_minutes);
   auto time_since_last_contact = now - last_contact;
@@ -88,7 +88,7 @@ bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const D
     VLOG(2) << "Skipping, it's not been a day (options_once_per_day)";
     return false;
   }
-  if (con.call_anyway && now >= next_contact_time) {
+  if (con.call_every_x_minutes && now >= next_contact_time) {
     VLOG(2) << "Calling anyway since it's been time: ";
     VLOG(2) << "Last Contact: " << DateTime::from_time_t(ncn.lastcontactsent()).to_string();
     return true;

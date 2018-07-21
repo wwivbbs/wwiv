@@ -255,20 +255,20 @@ struct net_interconnect_rec {
  */
 struct net_call_out_rec {
   net_call_out_rec() = default;
-  net_call_out_rec(const std::string f, uint16_t sn, uint8_t mn, uint16_t op, uint8_t ca,
+  net_call_out_rec(const std::string f, uint16_t sn, uint16_t mn, uint16_t op, uint16_t ca,
                     int8_t nh, int8_t xh, char pw[20], uint8_t tpd, uint16_t nk)
-      : ftn_address(f), sysnum(sn), macnum(mn), options(op), call_anyway(ca), min_hr(nh),
+      : ftn_address(f), sysnum(sn), macnum(mn), options(op), call_every_x_minutes(ca), min_hr(nh),
         max_hr(xh), session_password(pw), times_per_day(tpd), min_k(nk) {}
   // FTN Address.
   std::string ftn_address;
   /* system number */
   uint16_t sysnum = 0;
   /* macro/script to use */
-  uint8_t macnum = 0;
+  uint16_t macnum = 0;
   /* bit mapped */
   uint16_t options = 0;
   /* hours between callouts */
-  uint8_t call_anyway = 0;
+  uint16_t call_every_x_minutes = 0;
   /* callout min hour */
   int8_t min_hr = -1;
   /* callout max hour */
@@ -289,7 +289,7 @@ struct net_call_out_rec {
  * macnum - macro/script number to use to call that system.  This is set
  *   to zero if we just dial it directly.
  * options - bit mapped.  See #define's below.
- * call_anyway - if non-zero, then the minimum number of days between calls
+ * call_every_x_minutes - if non-zero, then the minimum number of days between calls
  *   to that system, even if there is nothing waiting to be sent there.  This
  *   should only be non-zero if options_sendback is also set for this system.
  * password - is the password used for connection to this system.

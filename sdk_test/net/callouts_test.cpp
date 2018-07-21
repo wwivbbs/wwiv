@@ -117,7 +117,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_TimeToCall) {
   ASSERT_TRUE(allowed_to_call(c_, dt_));
 
   // Call every 239 minutes
-  c_.call_anyway = 239;
+  c_.call_every_x_minutes = 239;
   auto last_connect = dt_ - minutes(240);
   ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
 
@@ -128,7 +128,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_NotTimeYet) {
   ASSERT_TRUE(allowed_to_call(c_, dt_));
 
   // Call every 239 minutes
-  c_.call_anyway = 239;
+  c_.call_every_x_minutes = 239;
   auto last_connect = dt_ - minutes(238);
   ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
 
@@ -139,7 +139,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_MinK) {
   ASSERT_TRUE(allowed_to_call(c_, dt_));
 
   // Call every 239 minutes
-  c_.call_anyway = 239;
+  c_.call_every_x_minutes = 239;
   c_.min_k = 10;
   auto last_connect = dt_ - minutes(238);
   ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
@@ -152,7 +152,7 @@ TEST_F(CalloutsTest, ShouldCall_CallAnyay_MinKNotMet) {
   ASSERT_TRUE(allowed_to_call(c_, dt_));
 
   // Call every 239 minutes
-  c_.call_anyway = 239;
+  c_.call_every_x_minutes = 239;
   c_.min_k = 10;
   auto last_connect = dt_ - minutes(238);
   ncn_.AddConnect(last_connect.to_time_t(), 100, 0);
