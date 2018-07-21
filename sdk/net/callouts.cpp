@@ -54,10 +54,14 @@ bool allowed_to_call(const net_call_out_rec& con, const DateTime& dt) {
   if (l < 0 || h <= 0 || l == h) {
     return true;
   }
-
-  return (n >= l && n < h);
+  if (l < h) {
+    // Case where we want to allow it from say 0200-2000
+    return (n >= l && n < h);
+  } else {
+    // Case where we want to allow it from say 2000-0200
+    return (n >= h && n < l);
+  }
 }
-
 
 /**
  * Checks the net_contact_rec and net_call_out_rec to ensure the node specified

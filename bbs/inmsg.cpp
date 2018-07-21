@@ -423,6 +423,7 @@ static void UpdateMessageBufferTagLine(std::ostringstream& ss, bool is_email, co
   if (filename.empty()) {
     // FindTagFileName returns an empty string if no tagname exists, so
     // just exit here since there is no tag.
+    return;
   }
   TextFile file(filename, "rb");
   if (file.IsOpen()) {

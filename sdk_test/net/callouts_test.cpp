@@ -97,6 +97,11 @@ TEST_F(CalloutsTest, ByTime) {
   c_.min_hr = 0;
   c_.max_hr = 24;
   ASSERT_TRUE(allowed_to_call(c_, dt_));
+
+  auto late = DateTime::from_time_t(to_time_t(dt_.month(), dt_.day(), 23, 2));
+  c_.min_hr = 20;
+  c_.max_hr = 2;
+  ASSERT_TRUE(allowed_to_call(c_, dt_));
 }
 
 TEST_F(CalloutsTest, ShouldCall_LastTimeNow_OnceDay) {
