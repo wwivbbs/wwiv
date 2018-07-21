@@ -34,9 +34,9 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "wwivconfig/utility.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
+#include "wwivconfig/utility.h"
 
 enum class EditLineMode { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
@@ -50,12 +50,7 @@ enum class EditLineMode { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
 // Function prototypes
 
-enum class EditlineResult {
-  PREV,
-  NEXT,
-  DONE,
-  ABORTED
-};
+enum class EditlineResult { PREV, NEXT, DONE, ABORTED };
 
 bool dialog_yn(CursesWindow* window, const std::vector<std::string>& text);
 bool dialog_yn(CursesWindow* window, const std::string& prompt);
@@ -192,7 +187,8 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    return editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, edit_line_mode_, "");
+    return editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, edit_line_mode_,
+                    "");
   }
 
 protected:
@@ -225,7 +221,7 @@ protected:
 private:
   EditLineMode edit_line_mode_;
 };
-  template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
+template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
 class NumberEditItem : public EditItem<T*> {
 public:
   NumberEditItem(int x, int y, T* data) : EditItem<T*>(x, y, MAXLEN + 2, data) {}
@@ -241,10 +237,8 @@ public:
 
 protected:
   virtual void DefaultDisplay(CursesWindow* window) const {
-    std::string blanks(this->maxsize_, ' ');
-    window->PutsXY(this->x_, this->y_, blanks.c_str());
-    auto d = wwiv::strings::StringPrintf("%-7d", *this->data_);
-    window->PutsXY(this->x_, this->y_, d);
+    auto d = std::to_string(*this->data_);
+    window->PutsXY(this->x_, this->y_, wwiv::strings::pad_to(d, this->maxsize()));
   }
 };
 
@@ -447,7 +441,8 @@ public:
 
 class ArEditItem : public BaseRestrictionsEditItem {
 public:
-  ArEditItem(int x, int y, uint16_t* data) : BaseRestrictionsEditItem(x, y, ar_string, ar_string_size, data) {}
+  ArEditItem(int x, int y, uint16_t* data)
+      : BaseRestrictionsEditItem(x, y, ar_string, ar_string_size, data) {}
   virtual ~ArEditItem() {}
 };
 
