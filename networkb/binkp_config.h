@@ -36,8 +36,9 @@ namespace wwiv {
 namespace net {
 
 class BinkConfig {
- public:
-  BinkConfig(const std::string& callout_network_name, const wwiv::sdk::Config& config, const wwiv::sdk::Networks& networks);
+public:
+  BinkConfig(const std::string& callout_network_name, const wwiv::sdk::Config& config,
+             const wwiv::sdk::Networks& networks);
   BinkConfig(int node_number, const wwiv::sdk::Config& config, const std::string& network_dir);
   virtual ~BinkConfig();
   // Gets the binkp_session_config_t or nullptr if one can not be found.
@@ -49,7 +50,7 @@ class BinkConfig {
   const std::string callout_fido_address() const { return callout_fido_node_; }
   const std::string system_name() const { return system_name_; }
   const std::string sysop_name() const { return sysop_name_; }
-  const std::string gfiles_directory() const { return gfiles_directory_;  }
+  const std::string gfiles_directory() const { return gfiles_directory_; }
   const std::string callout_network_name() const { return callout_network_name_; }
   const std::string network_dir(const std::string& network_name) const;
   const net_networks_rec& network(const std::string& network_name) const;
@@ -67,13 +68,7 @@ class BinkConfig {
   bool cram_md5() const { return cram_md5_; }
   const wwiv::sdk::Config& config() const { return config_; }
 
-  /** 
-   * Sets defaults from the INI file. This should be called before setting any
-   * values from the command line since we want those to override the INI file.
-   */
-  bool ProcessIniFile(const wwiv::core::IniFile& ini);
-
- private:
+private:
   const wwiv::sdk::Config& config_;
   std::string home_dir_;
 
@@ -94,8 +89,7 @@ class BinkConfig {
   bool cram_md5_ = true;
 };
 
-}  // namespace net
-}  // namespace wwiv
+} // namespace net
+} // namespace wwiv
 
-
-#endif  // __INCLUDED_NETWORKB_BINKP_CONFIG_H__
+#endif // __INCLUDED_NETWORKB_BINKP_CONFIG_H__

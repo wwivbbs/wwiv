@@ -145,7 +145,7 @@ int network1_main(int argc, char** argv) {
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
-    NetworkCommandLine net_cmdline(cmdline);
+    NetworkCommandLine net_cmdline(cmdline, '1');
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(cmdline);
       return 1;

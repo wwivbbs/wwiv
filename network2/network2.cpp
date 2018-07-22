@@ -294,7 +294,7 @@ int main(int argc, char** argv) {
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
-    NetworkCommandLine net_cmdline(cmdline);
+    NetworkCommandLine net_cmdline(cmdline, '2');
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(cmdline);
       return 1;

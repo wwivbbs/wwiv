@@ -40,7 +40,7 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string&
  */
 class NetworkCommandLine {
 public:
-  NetworkCommandLine(wwiv::core::CommandLine& cmdline);
+  NetworkCommandLine(wwiv::core::CommandLine& cmdline, char net_cmd);
 
   bool IsInitialized() const noexcept { return initialized_; }
   const std::string bbsdir() const noexcept { return bbsdir_; }
@@ -50,12 +50,14 @@ public:
   const int network_number() const noexcept { return network_number_; }
   const net_networks_rec& network() const noexcept { return network_; }
   const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
+  char net_cmd() const noexcept { return net_cmd_; }
 
-  std::unique_ptr<wwiv::core::IniFile> LoadNetIni(char net_cmd) const;
+  bool LoadNetIni();
   bool skip_delete() const;
   bool skip_net() const;
 
-  private: std::string bbsdir_;
+private:
+  std::string bbsdir_;
   std::unique_ptr<wwiv::sdk::Config> config_;
   std::unique_ptr<wwiv::sdk::Networks> networks_;
   std::string network_name_;
@@ -63,6 +65,7 @@ public:
   bool initialized_{true};
   net_networks_rec network_;
   wwiv::core::CommandLine& cmdline_;
+  char net_cmd_;
 };
 
 } // namespace net

@@ -586,7 +586,7 @@ int main(int argc, char** argv) {
     CommandLine cmdline(argc, argv, "net");
     cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
 
-    NetworkCommandLine net_cmdline(cmdline);
+    NetworkCommandLine net_cmdline(cmdline, '3');
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(cmdline);
       return 1;

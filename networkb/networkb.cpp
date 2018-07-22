@@ -190,11 +190,6 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     const string sendto_node = net_cmdline.cmdline().sarg("node");
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
-    const auto ini = net_cmdline.LoadNetIni('b');
-    if (!bink_config.ProcessIniFile(*ini)) {
-      LOG(INFO) << "Unable to open INI file: " << ini->full_pathname();
-    }
-
     bink_config.set_skip_net(skip_net);
     bink_config.set_verbose(net_cmdline.cmdline().iarg("v"));
     bink_config.set_network_version(status->GetNetworkVersion());
@@ -238,7 +233,7 @@ int main(int argc, char** argv) {
 
   CommandLine cmdline(argc, argv, "net");
   RegisterNetworkBCommands(cmdline);
-  NetworkCommandLine net_cmdline(cmdline);
+  NetworkCommandLine net_cmdline(cmdline, 'b');
   if (!net_cmdline.IsInitialized()) {
     ShowHelp(cmdline);
     return 1;

@@ -18,18 +18,18 @@
 #include "networkb/binkp_config.h"
 
 #include <iostream>
-#include <memory>
 #include <map>
+#include <memory>
 #include <sstream>
 #include <string>
 
-#include "core/strings.h"
-#include "core/inifile.h"
 #include "core/file.h"
+#include "core/inifile.h"
+#include "core/strings.h"
 #include "core/textfile.h"
-#include "sdk/networks.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
+#include "sdk/networks.h"
 
 using std::endl;
 using std::map;
@@ -45,7 +45,8 @@ using namespace wwiv::sdk::fido;
 namespace wwiv {
 namespace net {
 
-BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& config, const Networks& networks)
+BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& config,
+                       const Networks& networks)
     : config_(config), callout_network_name_(callout_network_name), networks_(networks) {
   // network names will alwyas be compared lower case.
   StringLowerCase(&callout_network_name_);
@@ -64,13 +65,15 @@ BinkConfig::BinkConfig(const std::string& callout_network_name, const Config& co
     if (net.type == network_type_t::wwivnet) {
       callout_wwivnet_node_ = net.sysnum;
       if (callout_wwivnet_node_ == 0) {
-        throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+        throw config_error(
+            StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
       }
       binkp_.reset(new Binkp(net.dir));
     } else if (net.type == network_type_t::ftn) {
       callout_fido_node_ = net.fido.fido_address;
       if (callout_fido_node_.empty()) {
-        throw config_error(StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
+        throw config_error(
+            StringPrintf("NODE not specified for network: '%s'", callout_network_name.c_str()));
       }
     } else {
       throw config_error("BinkP is not supported for this network type.");
@@ -103,9 +106,10 @@ static net_networks_rec test_net(const string& network_dir) {
 }
 
 // For testing
-BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config, const string& network_dir)
-  : config_(config), callout_network_name_("wwivnet"), callout_wwivnet_node_(callout_node_number), 
-    networks_({ test_net(network_dir) }) {
+BinkConfig::BinkConfig(int callout_node_number, const wwiv::sdk::Config& config,
+                       const string& network_dir)
+    : config_(config), callout_network_name_("wwivnet"), callout_wwivnet_node_(callout_node_number),
+      networks_({test_net(network_dir)}) {
   binkp_.reset(new Binkp(network_dir));
   system_name_ = config.system_name();
   sysop_name_ = config.sysop_name();
@@ -118,13 +122,16 @@ const binkp_session_config_t* BinkConfig::binkp_session_config_for(const std::st
   static binkp_session_config_t static_session{};
 
   if (callout_network().type == network_type_t::wwivnet) {
-    if (!binkp_) { return nullptr; }
+    if (!binkp_) {
+      return nullptr;
+    }
     return binkp_->binkp_session_config_for(node);
   } else if (callout_network().type == network_type_t::ftn) {
     try {
       FidoAddress address(node);
       FidoCallout fc(config_, callout_network());
-      if (!fc.IsInitialized()) return nullptr;
+      if (!fc.IsInitialized())
+        return nullptr;
       auto fido_node = fc.fido_node_config_for(address);
 
       if (fido_node.binkp_config.host.empty()) {
@@ -156,18 +163,5 @@ const binkp_session_config_t* BinkConfig::binkp_session_config_for(uint16_t node
   return binkp_session_config_for(std::to_string(node));
 }
 
-bool BinkConfig::ProcessIniFile(const IniFile& ini) {
-  if (!ini.IsOpen()) {
-    return false;
-  }
-
-  set_skip_net(ini.value<bool>("skip_net", false));
-  crc_ = ini.value<bool>("crc", true);
-  cram_md5_ = ini.value<bool>("cram_md5", true);
-
-  return true;
-}
-
-}  // namespace net
-}  // namespace wwiv
-
+} // namespace net
+} // namespace wwiv

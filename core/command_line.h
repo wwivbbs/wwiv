@@ -28,7 +28,7 @@
 
 /**
  * ComandLine support.
- * 
+ *
  * 1) Create a tree of allowed values.
  * 2) Parse the actua commandline, reporting any errors.
  * 3) Get the values as needed.
@@ -40,7 +40,7 @@
  * CommandLine cmdline(argc, argv, "set_style");
  * cmdline.add_argument({"name", 'n', "Sets Name"});
  * cmdline.add_argument({"location", 'l', "Sets Location"});
- * 
+ *
  * CommandLineCommand& bar = cmdline.add_command("bar", "Bar Commands");
  * bar.add_argument({"barname", "Sets Bar Name"});
  * CommandLineCommand& baz = cmdline.add_command("baz", "Baz Commands");
@@ -53,50 +53,48 @@
  * const string bazname = cmd->arg("bazname").as_string();
  */
 
-
 namespace wwiv {
 namespace core {
 
-struct unknown_argument_error: public std::runtime_error {
+struct unknown_argument_error : public std::runtime_error {
   unknown_argument_error(const std::string& message);
 };
 
 class CommandLineValue {
 public:
-  CommandLineValue() noexcept : default_(true) {} 
-  explicit CommandLineValue(const std::string& s)
-    : value_(s), default_(false) {}
-  CommandLineValue(const std::string& s, bool default_value)
-    : value_(s), default_(default_value) {}
+  CommandLineValue() noexcept : default_(true) {}
+  explicit CommandLineValue(const std::string& s) noexcept : CommandLineValue(s, false) {}
+  CommandLineValue(const std::string& s, bool default_value) noexcept
+      : value_(s), default_(default_value) {}
 
-  std::string as_string() const { return value_; }
-  int as_int() const {
+  std::string as_string() const noexcept { return value_; }
+  int as_int() const noexcept {
     try {
-      return std::stoi(value_); 
+      return std::stoi(value_);
     } catch (std::logic_error&) {
-        return 0;
+      return 0;
     }
   }
-  bool as_bool() const {
-    return value_ == "true";
-  }
+  bool as_bool() const noexcept { return value_ == "true"; }
+
+  bool is_default() const noexcept { return default_; }
+
 private:
   const std::string value_;
-  const bool default_ = true;
+  const bool default_;
 };
 
 class CommandLineArgument {
 public:
-  CommandLineArgument(
-    const std::string& name, char key,
-    const std::string& help_text, const std::string& default_value);
-  CommandLineArgument(
-    const std::string& name,const std::string& help_text, const std::string& default_value)
-    : CommandLineArgument(name, 0, help_text, default_value) {}
+  CommandLineArgument(const std::string& name, char key, const std::string& help_text,
+                      const std::string& default_value);
+  CommandLineArgument(const std::string& name, const std::string& help_text,
+                      const std::string& default_value)
+      : CommandLineArgument(name, 0, help_text, default_value) {}
   CommandLineArgument(const std::string& name, char key, const std::string& help_text)
-    : CommandLineArgument(name, key, help_text, "") {}
+      : CommandLineArgument(name, key, help_text, "") {}
   CommandLineArgument(const std::string& name, const std::string& help_text)
-    : CommandLineArgument(name, 0, help_text, "") {}
+      : CommandLineArgument(name, 0, help_text, "") {}
   const std::string name;
   const char key = 0;
   const std::string help_text;
@@ -106,26 +104,21 @@ public:
 
 class BooleanCommandLineArgument : public CommandLineArgument {
 public:
-  BooleanCommandLineArgument(
-    const std::string& name, char key,
-    const std::string& help_text, bool default_value)
-    : CommandLineArgument(name, key, help_text, default_value ? "true" : "false") {
-    is_boolean = true; 
-  }
-  BooleanCommandLineArgument(
-    const std::string& name,
-    const std::string& help_text, bool default_value)
-    : CommandLineArgument(name, 0, help_text, default_value ? "true" : "false") {
+  BooleanCommandLineArgument(const std::string& name, char key, const std::string& help_text,
+                             bool default_value)
+      : CommandLineArgument(name, key, help_text, default_value ? "true" : "false") {
     is_boolean = true;
   }
-  BooleanCommandLineArgument(
-    const std::string& name,
-    const std::string& help_text)
-    : CommandLineArgument(name, 0, help_text, "false") {
+  BooleanCommandLineArgument(const std::string& name, const std::string& help_text,
+                             bool default_value)
+      : CommandLineArgument(name, 0, help_text, default_value ? "true" : "false") {
+    is_boolean = true;
+  }
+  BooleanCommandLineArgument(const std::string& name, const std::string& help_text)
+      : CommandLineArgument(name, 0, help_text, "false") {
     is_boolean = true;
   }
 };
-
 
 class Command {
 public:
@@ -137,14 +130,13 @@ public:
 /** Generic command implementation for using the CommandLine support in core */
 class CommandLineCommand : public Command {
 public:
-  CommandLineCommand(
-      const std::string& name, const std::string& help_text);
+  CommandLineCommand(const std::string& name, const std::string& help_text);
   bool add_argument(const CommandLineArgument& cmd);
-  virtual bool add(std::unique_ptr<CommandLineCommand> cmd) { 
+  virtual bool add(std::unique_ptr<CommandLineCommand> cmd) {
     cmd->set_raw_args(raw_args_);
     cmd->set_dot_argument(dot_argument_);
     commands_allowed_[cmd->name()] = std::move(cmd);
-    return true; 
+    return true;
   }
   std::string ArgNameForKey(char key);
   virtual bool AddStandardArgs();
@@ -154,6 +146,7 @@ public:
   std::string help_text() const { return help_text_; }
 
   const CommandLineValue arg(const std::string name) const;
+  bool contains_arg(const std::string& name) const noexcept;
   std::string sarg(const std::string name) const { return arg(name).as_string(); }
   int iarg(const std::string name) const { return arg(name).as_int(); }
   bool barg(const std::string name) const { return arg(name).as_bool(); }
@@ -167,9 +160,18 @@ public:
   void set_unknown_args_allowed(bool u) { unknown_args_allowed_ = u; }
   bool unknown_args_allowed() const { return unknown_args_allowed_; }
 
-protected:
+  /**
+   * Sets a new default value. NetworkCommandLine will get these from
+   * an ini file for each of the network commands and call this.
+   * TODO(rushfan): Should we generalize this and let all defaults
+   * come from INI files?
+   */
+  bool SetNewDefault(const std::string& key, const std::string& value);
 
+protected:
+  /** Handles a command line argument passed on the commandline */
   bool HandleCommandLineArgument(const std::string& key, const std::string& value);
+  bool SetCommandLineArgument(const std::string& key, const std::string& value, bool default_value);
   int Parse(int start_pos);
 
   void set_raw_args(const std::vector<std::string>& args) { raw_args_ = args; }
@@ -196,7 +198,7 @@ private:
  */
 class CommandLine : public CommandLineCommand {
 public:
-  /** 
+  /**
    * Common constructor.  Note that the dot_argument specifie the
    * command line to replace . with (i.e. "network" means that .0
    * will be replaced by --network=0.  An empty dot_argument means
@@ -221,7 +223,6 @@ private:
   bool ParseImpl();
 };
 
-
-}  // namespace core
-}  // namespace wwiv
-#endif  // __INCLUDED_WWIV_CORE_COMMAND_LINE_H__
+} // namespace core
+} // namespace wwiv
+#endif // __INCLUDED_WWIV_CORE_COMMAND_LINE_H__

@@ -55,12 +55,11 @@ CommandLineCommand::CommandLineCommand(const std::string& name, const std::strin
     : name_(name), help_text_(help_text) {}
 
 static std::string CreateProgramName(const std::string arg) {
-  string::size_type last_slash = arg.find_last_of(File::separatorChar);
+  auto last_slash = arg.find_last_of(File::separatorChar);
   if (last_slash == string::npos) {
     return arg;
   }
-  string program_name = arg.substr(last_slash + 1);
-  return program_name;
+  return arg.substr(last_slash + 1);
 }
 
 // TODO(rushfan): Make the static command for the root commandlinehere and pass it as the invoker.
@@ -116,8 +115,17 @@ bool CommandLineCommand::add_argument(const CommandLineArgument& cmd) {
   return true;
 }
 
+bool CommandLineCommand::SetNewDefault(const std::string& key, const std::string& value) {
+  return SetCommandLineArgument(key, value, true);
+}
+
 bool CommandLineCommand::HandleCommandLineArgument(const std::string& key,
                                                    const std::string& value) {
+  return SetCommandLineArgument(key, value, false);
+}
+
+bool CommandLineCommand::SetCommandLineArgument(const std::string& key, const std::string& value,
+                                                bool default_value) {
   args_.erase(key); // emplace doesn't seem to replace.
   if (!contains(args_allowed_, key)) {
     VLOG(1) << "No arg: " << key << " to use for dot argument.";
@@ -126,14 +134,18 @@ bool CommandLineCommand::HandleCommandLineArgument(const std::string& key,
   if (args_allowed_.at(key).is_boolean) {
     if (value == "N" || value == "0" || value == "n" ||
         IsEqualsIgnoreCase(value.c_str(), "false")) {
-      args_.emplace(key, CommandLineValue("false"));
+      args_.emplace(key, CommandLineValue("false", default_value));
     } else {
-      args_.emplace(key, CommandLineValue("true"));
+      args_.emplace(key, CommandLineValue("true", default_value));
     }
   } else {
-    args_.emplace(key, CommandLineValue(value));
+    args_.emplace(key, CommandLineValue(value, default_value));
   }
   return true;
+}
+
+bool CommandLineCommand::contains_arg(const std::string& name) const noexcept {
+  return contains(args_, name);
 }
 
 const CommandLineValue CommandLineCommand::arg(const std::string name) const {

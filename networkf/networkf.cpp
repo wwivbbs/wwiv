@@ -927,6 +927,7 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
     LOG(ERROR) << "Unable to create BSY file semaphore trying to create FLO file.";
     LOG(ERROR) << e.what();
   }
+  return false;
 }
 
 bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline, const FidoAddress& dest,
@@ -1044,7 +1045,7 @@ int main(int argc, char** argv) {
   try {
     ScopeExit at_exit(Logger::ExitLogger);
     CommandLine cmdline(argc, argv, "net");
-    NetworkCommandLine net_cmdline(cmdline);
+    NetworkCommandLine net_cmdline(cmdline, 'f');
     int num_packets_processed = 0;
     if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
       ShowHelp(cmdline);

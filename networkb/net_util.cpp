@@ -20,12 +20,12 @@
 #include <string>
 
 #include "core/command_line.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "core/datetime.h"
 #include "sdk/net/packets.h"
 
 using std::string;
@@ -37,15 +37,19 @@ using namespace wwiv::strings;
 namespace wwiv {
 namespace net {
 
-void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline, const std::string& current_directory) {
+void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline,
+                            const std::string& current_directory) {
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
-  cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
-  cmdline.add_argument(BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
+  cmdline.add_argument(
+      {"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
+  cmdline.add_argument(
+      BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
   cmdline.add_argument(
       BooleanCommandLineArgument("skip_delete", "Don't delete packets, move din save area"));
 }
 
-NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) : cmdline_(cmdline) {
+NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char net_cmd)
+    : cmdline_(cmdline), net_cmd_(net_cmd) {
   cmdline.set_no_args_allowed(true);
   cmdline.AddStandardArgs();
   AddStandardNetworkArgs(cmdline, File::current_directory());
@@ -78,21 +82,42 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline) : cmdli
   network_name_ = ToStringLowerCase(network_.name);
   LOG(INFO) << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
             << " for network: " << network_name_;
+
+  if (!LoadNetIni()) {
+    LOG(ERROR) << "Error loading INI file for defaults";
+  }
 }
 
-std::unique_ptr<wwiv::core::IniFile> NetworkCommandLine::LoadNetIni(char net_cmd) const {
-  const auto net_tag = StrCat("network", net_cmd);
+bool NetworkCommandLine::LoadNetIni() {
+  const auto net_tag = (net_cmd_ == '\0') ? "network" : StrCat("network", net_cmd_);
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
 
   File file(config().root_directory(), "net.ini");
-  return std::unique_ptr<IniFile>(new IniFile(file.full_pathname(), { net_tag_net, net_tag }));
+  auto ini = std::unique_ptr<IniFile>(new IniFile(file.full_pathname(), {net_tag_net, net_tag}));
+  if (!ini || !ini->IsOpen()) {
+    // This is fine and can happen.
+    return true;
+  }
+
+  if (cmdline_.contains_arg("skip_net") && cmdline().arg("skip_net").is_default()) {
+    auto skip_net = ini->value<bool>("skip_net", cmdline().barg("skip_net"));
+    cmdline_.SetNewDefault("skip_net", skip_net ? "Y" : "N");
+  }
+  if (cmdline_.contains_arg("crc") && cmdline().arg("crc").is_default()) {
+    auto skip_net = ini->value<bool>("crc", cmdline().barg("crc"));
+    cmdline_.SetNewDefault("crc", skip_net ? "Y" : "N");
+  }
+  if (cmdline_.contains_arg("cram_md5") && cmdline().arg("cram_md5").is_default()) {
+    auto skip_net = ini->value<bool>("cram_md5", cmdline().barg("cram_md5"));
+    cmdline_.SetNewDefault("cram_md5", skip_net ? "Y" : "N");
+  }
+
+  return true;
 }
 
 bool NetworkCommandLine::skip_delete() const { return cmdline_.barg("skip_delete"); }
 
 bool NetworkCommandLine::skip_net() const { return cmdline_.barg("skip_delete"); }
 
-
-}  // namespace net
-}  // namespace wwiv
-
+} // namespace net
+} // namespace wwiv
