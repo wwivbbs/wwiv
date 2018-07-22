@@ -180,8 +180,8 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
   char s2[100], temp1[100];
   int i, i1;
 
-  int cm = a()->chatting_;
-  unsigned int begx = a()->localIO()->WhereX();
+  auto cm = a()->chatting_;
+  auto begx = a()->localIO()->WhereX();
   if (rollover[0] != 0) {
     if (a()->charbufferpointer_) {
       char szTempBuffer[255];
@@ -592,7 +592,7 @@ void chat1(const char *chat_line, bool two_way) {
     wwiv_y1 = a()->localIO()->WhereY();
     bout << "\x1b[12;1H";
     bout.Color(7);
-    for (size_t screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
+    for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
       bout.bputch(static_cast<unsigned char>(205), true);
     }
     bout.flush();

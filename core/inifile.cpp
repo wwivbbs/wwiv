@@ -74,7 +74,7 @@ static bool ParseIniFile(const string& filename, std::map<string, string>& data)
         line.erase(line.find(';'));
       }
 
-      std::size_t equals = line.find('=');
+      auto equals = line.find('=');
       if (equals == string::npos) {
         // not a line of the form full_key = value [; comment]
         continue;

@@ -115,7 +115,7 @@ std::string Cram::CreateHashedSecret(
   memcpy(ipad, secret.data(), secret.size());
   memcpy(opad, secret.data(), secret.size());
 
-  for (size_t i = 0; i < 65; i++) {
+  for (auto i = 0; i < 65; i++) {
     ipad[i] ^= 0x36;
     opad[i] ^= 0x5c;
   }

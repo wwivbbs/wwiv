@@ -78,7 +78,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
 
   int cm = a()->chatting_;
 
-  size_t begx = bout.wherex();
+  auto begx = bout.wherex();
   if (rollover[0] != 0) {
     char* ss = rollover_buffer;
     for (int i = 0; rollover[i]; i++) {

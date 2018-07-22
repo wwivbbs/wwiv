@@ -35,8 +35,8 @@ class UnixConsoleIO : public LocalIO {
   virtual ~UnixConsoleIO();
 
   virtual void LocalGotoXY(int x, int y) override;
-  virtual int  WhereX() override;
-  virtual int  WhereY() override;
+  virtual int WhereX() const noexcept override;
+  virtual int WhereY() const noexcept override;
   virtual void LocalLf() override;
   virtual void LocalCr() override;
   virtual void LocalCls() override;

@@ -20,14 +20,6 @@
 #ifndef __INCLUDED_PLATFORM_FCNS_H__
 #define __INCLUDED_PLATFORM_FCNS_H__
 
-#if defined ( __linux__ ) || defined ( __APPLE__ )
-
-// $PLATFORM/stringstuff.cpp
-
-#endif // __linux__ || __APPLE__
-
-// $PLATFORM/filesupp.cpp
-
 // $PLATFORM/utility2.cpp
 void WWIV_make_abs_cmd(const std::string root, std::string* out);
 

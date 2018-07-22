@@ -51,15 +51,15 @@ class LocalIO {
   static constexpr int topdataSystem = 1;
   static constexpr int topdataUser = 2;
 
-  const size_t GetTopLine() const noexcept { return topline_; }
+  const int GetTopLine() const noexcept { return topline_; }
   void SetTopLine(int nTopLine) { topline_ = nTopLine; }
 
-  const size_t GetScreenBottom() const noexcept { return screen_bottom_; }
+  const int GetScreenBottom() const noexcept { return screen_bottom_; }
   void SetScreenBottom(int nScreenBottom) { screen_bottom_ = nScreenBottom; }
 
   virtual void GotoXY(int x, int y) = 0;
-  virtual size_t WhereX() = 0;
-  virtual size_t WhereY() = 0;
+  virtual int WhereX() const noexcept = 0;
+  virtual int WhereY() const noexcept = 0;
   virtual void Lf() = 0;
   virtual void Cr() = 0;
   virtual void Cls() = 0;
@@ -85,7 +85,7 @@ class LocalIO {
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) = 0;
   virtual void SetCursor(int cursorStyle) = 0;
   virtual void WriteScreenBuffer(const char *buffer) = 0;
-  virtual size_t GetDefaultScreenBottom() = 0;
+  virtual int GetDefaultScreenBottom() const noexcept = 0;
   virtual void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) = 0;
   virtual void UpdateNativeTitleBar(Application* session) = 0;
 

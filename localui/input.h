@@ -257,7 +257,7 @@ std::vector<std::string> item_list(const std::vector<std::pair<T, std::string>>&
 
 template <typename T>
 std::size_t index_of(T& haystack, const std::vector<std::pair<T, std::string>>& needle) {
-  for (std::size_t i = 0; i < needle.size(); i++) {
+  for (std::string::size_type i = 0; i < needle.size(); i++) {
     if (haystack == needle.at(i).first) {
       return i;
     }
@@ -305,9 +305,9 @@ private:
 };
 
 static int maxlen_from_list(const std::vector<std::string>& items) {
-  int m = 0;
+  std::string::size_type m = 0;
   for (const auto& item : items) {
-    m = std::max<std::size_t>(m, item.size());
+    m = std::max<std::string::size_type>(m, item.size());
   }
   return m;
 }
@@ -646,7 +646,7 @@ public:
 
   /** Returns the size of the longest label */
   int max_label_width() const {
-    size_t result = 0;
+    std::string::size_type result = 0;
     for (const auto l : labels_) {
       if (l->text().size() > result) {
         result = l->text().size();

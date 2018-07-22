@@ -983,7 +983,7 @@ static long is_inscan(int dir) {
 
 void config_scan_plus(int type) {
   int command;
-  unsigned int top = 0;
+  int top = 0;
   int amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc{};
 
@@ -1101,11 +1101,11 @@ void config_scan_plus(int type) {
         case 0:
           top += amount;
           if (type == 0) {
-            if (top >= a()->subs().subs().size()) {
+            if (top >= size_int(a()->subs().subs())) {
               top = 0;
             }
           } else {
-            if (top >= a()->directories.size()) {
+            if (top >= size_int(a()->directories)) {
               top = 0;
             }
           }

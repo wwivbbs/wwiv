@@ -32,8 +32,8 @@ public:
   virtual ~NullLocalIO();
   void Putch(unsigned char ch) override {};
   void GotoXY(int x, int y) override {}
-  size_t WhereX() override { return 0; }
-  size_t WhereY() override { return 0; }
+  int WhereX() const noexcept override { return 0; }
+  int WhereY() const noexcept override { return 0; }
   void Lf() override {}
   void Cr() override {}
   void Cls() override {}
@@ -53,7 +53,7 @@ public:
   void SetCursor(int cursorStyle) override {}
   void ClrEol() override {}
   void WriteScreenBuffer(const char *buffer) override {}
-  size_t GetDefaultScreenBottom() override { return 24; }
+  int GetDefaultScreenBottom() const noexcept override { return 24; }
   void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) override {}
   void UpdateNativeTitleBar(Application* session) override {}
 private:

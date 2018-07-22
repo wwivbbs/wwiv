@@ -62,7 +62,7 @@ struct ch_action {
 
 
 
-static unsigned int g_nChatOpSecLvl;
+static int g_nChatOpSecLvl;
 static int g_nNumActions;
 constexpr int MAX_NUM_ACT = 100;
 static ch_action *actions[MAX_NUM_ACT];

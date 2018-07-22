@@ -142,15 +142,15 @@ public:
   bool set_last_write_time(time_t last_write_time);
 
   std::string parent() const {
-    size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
+    auto found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
-      return std::string("");
+      return {};
     }
     return full_path_name_.substr(0, found);
   }
 
   std::string GetName() const {
-    size_t found = full_path_name_.find_last_of(File::pathSeparatorChar);
+    auto found = full_path_name_.find_last_of(File::pathSeparatorChar);
     if (found == std::string::npos) {
       return {};
     }

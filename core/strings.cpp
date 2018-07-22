@@ -152,7 +152,7 @@ int StringCompare(const char *str1, const char *str2) {
 }
 
 const string& StringReplace(string* orig, const string& old_string, const string& new_string) {
-  string::size_type pos = orig->find(old_string, 0);
+  auto pos = orig->find(old_string, 0);
   while (pos != string::npos) {
     orig->replace(pos, old_string.length(), new_string);
     pos = orig->find(old_string, pos + new_string.length());
@@ -176,7 +176,7 @@ void SplitString(const string& original_string, const string& delims, vector<str
 
 void SplitString(const string& original_string, const string& delims, bool skip_empty, vector<string>* out) {
   string s(original_string);
-  for (string::size_type found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
+  for (auto found = s.find_first_of(delims); found != string::npos; s = s.substr(found + 1), found = s.find_first_of(delims)) {
     if (found > 0) {
       out->push_back(s.substr(0, found));
     }
@@ -388,7 +388,7 @@ std::string JoinStrings(const std::vector<std::string>& lines, const std::string
 std::string put_time(const struct tm *tm_info, const std::string& fmt_arg) {
   char buffer[1024];
 
-  size_t num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
+  auto num = strftime(buffer, sizeof(buffer), fmt_arg.c_str(), tm_info);
   if (num == 0) {
     return "";
   }

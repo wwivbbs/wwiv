@@ -117,10 +117,10 @@ bool BinkP::process_opt(const std::string& opt) {
     if (starts_with(s, "CRAM")) {
       LOG(INFO) << "       CRAM Requested by Remote Side.";
       // CRAM Support http://ftsc.org/docs/fts-1027.001
-      string::size_type last_dash = s.find_last_of('-');
+      auto last_dash = s.find_last_of('-');
       if (last_dash != string::npos) {
         // we really have CRAM-MD5
-        string challenge = s.substr(last_dash + 1);
+        auto challenge = s.substr(last_dash + 1);
         VLOG(1) << "        challenge: '" << challenge << "'";
         cram_.set_challenge_data(challenge);
         if (config_->cram_md5()) {
@@ -325,7 +325,7 @@ bool BinkP::send_command_packet(uint8_t command_id, const string& data) {
   if (!conn_->is_open()) {
     return false;
   }
-  const std::size_t size = 3 + data.size(); /* header + command + data + null*/
+  const std::string::size_type size = 3 + data.size(); /* header + command + data + null*/
   unique_ptr<char[]> packet(new char[size]);
   // Actual packet size parameter does not include the size parameter itself.
   // And for sending a commmand this will be 2 less than our actual packet size.

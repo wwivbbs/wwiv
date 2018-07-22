@@ -121,7 +121,7 @@ public:
 
   void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
   void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
-  unsigned int GetEffectiveSl() const { return effective_sl_; }
+  int GetEffectiveSl() const { return effective_sl_; }
 
   int GetChatNameSelectionColor() const { return chatname_color_; }
 
@@ -342,7 +342,7 @@ public:
   int m_nNumMsgsInCurrentSub = 0, beginday_node_number_ = 1, exec_child_process_wait_time_ = 500,
       m_nMaxNumberMessageAreas = 0, m_nMaxNumberFileAreas = 0, network_num_ = 0,
       m_nMaxNetworkNumber = 0, numf = 0, subchg = 0, topdata = 0, using_modem = 0;
-  unsigned int screenlinest = 0;
+  int screenlinest = 0;
   int defscreenbottom = 24;
 
   std::string internetPopDomain;

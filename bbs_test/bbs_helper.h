@@ -80,8 +80,8 @@ public:
   TestLocalIO(std::string* captured);
   void Putch(unsigned char ch) override;
   void GotoXY(int, int) override {}
-  size_t WhereX() override { return 0; }
-  size_t WhereY() override { return 0; }
+  int WhereX() const noexcept override { return 0; }
+  int WhereY() const noexcept override { return 0; }
   void Lf() override {}
   void Cr() override {}
   void Cls() override {}
@@ -102,7 +102,7 @@ public:
   void SetCursor(int) override {}
   void ClrEol() override {}
   void WriteScreenBuffer(const char *) override {}
-  size_t GetDefaultScreenBottom() override { return 25; }
+  int GetDefaultScreenBottom() const noexcept override { return 25; }
   void EditLine(char *, int, AllowedKeys, int *, const char *) override {}
   void UpdateNativeTitleBar(Application*) override {}
 

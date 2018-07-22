@@ -390,7 +390,7 @@ static const int background_character = 32;
 ;
 
 static std::size_t editlinestrlen(char* text) {
-  std::size_t i = strlen(text);
+  auto i = strlen(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == background_character)) {
     --i;
   }

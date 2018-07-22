@@ -815,12 +815,12 @@ void set_user_age() {
 
 
 void auto_purge() {
-  unsigned int days = 0;
-  unsigned int skipsl = 0;
+  int days = 0;
+  int skipsl = 0;
 
   IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
   if (ini.IsOpen()) {
-    days = ini.value<unsigned int>("AUTO_USER_PURGE");
+    days = ini.value<int>("AUTO_USER_PURGE");
     skipsl = ini.value<int>("NO_PURGE_SL");
   }
   ini.Close();
@@ -833,7 +833,7 @@ void auto_purge() {
     return;
   }
 
-  time_t tTime = time(nullptr);
+  daten_t current_daten = daten_t_now();
   int user_number = 1;
   sysoplog(false) << "Auto-Purged Inactive Users (over " << days << " days, SL less than " << skipsl << ")";
 
@@ -841,7 +841,7 @@ void auto_purge() {
     User user;
     a()->users()->readuser(&user, user_number);
     if (!user.IsExemptAutoDelete()) {
-      unsigned int d = static_cast<unsigned int>((tTime - user.GetLastOnDateNumber()) / SECONDS_PER_DAY);
+      auto d = static_cast<int>((current_daten - user.GetLastOnDateNumber()) / SECONDS_PER_DAY);
       // if user is not already deleted && SL<NO_PURGE_SL && last_logon
       // greater than AUTO_USER_PURGE days ago
       if (!user.IsUserDeleted() && user.GetSl() < skipsl && d > days) {

@@ -488,25 +488,25 @@ class User {
   void SetScreenLines(int n) {
     data.screenlines = static_cast<uint8_t>(n);
   }
-  const unsigned int GetNumExtended() const {
+  const int GetNumExtended() const {
     return data.num_extended;
   }
   void SetNumExtended(int n) {
     data.num_extended = static_cast<uint8_t>(n);
   }
-  const unsigned int GetOptionalVal() const {
+  const int GetOptionalVal() const {
     return data.optional_val;
   }
   void SetOptionalVal(int n) {
     data.optional_val = static_cast<uint8_t>(n);
   }
-  const unsigned int GetSl() const {
+  const int GetSl() const {
     return data.sl;
   }
   void SetSl(unsigned int n) {
     data.sl = static_cast<uint8_t>(n);
   }
-  const unsigned int GetDsl() const {
+  const int GetDsl() const {
     return data.dsl;
   }
   void SetDsl(int n) {

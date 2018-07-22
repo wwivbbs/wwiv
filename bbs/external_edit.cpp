@@ -29,6 +29,7 @@
 #include "bbs/pause.h"
 #include "bbs/platform/platformfcns.h"
 #include "core/scope_exit.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 
@@ -242,7 +243,7 @@ bool external_text_edit(const string& edit_filename, const string& new_directory
                         int flags) {
   bout.nl();
   const auto editor_number = a()->user()->GetDefaultEditor() - 1;
-  if (editor_number >= a()->editors.size() || !okansi()) {
+  if (editor_number >= wwiv::stl::size_int(a()->editors) || !okansi()) {
     bout << "You can't use that full screen editor. (ete1)" << wwiv::endl << wwiv::endl;
     pausescr();
     return false;

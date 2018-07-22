@@ -45,8 +45,8 @@ class Win32ConsoleIO : public LocalIO {
   virtual ~Win32ConsoleIO();
 
   void GotoXY(int x, int y) override;
-  size_t WhereX() override;
-  size_t WhereY() override;
+  int WhereX() const noexcept override;
+  int WhereY() const noexcept override;
   void Lf() override;
   void Cr() override;
   void Cls() override;
@@ -68,7 +68,7 @@ class Win32ConsoleIO : public LocalIO {
   void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
   void SetCursor(int cursorStyle) override;
   void WriteScreenBuffer(const char *buffer) override;
-  size_t GetDefaultScreenBottom() override;
+  int GetDefaultScreenBottom() const noexcept override;
 
   void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) override;
   void UpdateNativeTitleBar(Application* session) override;
@@ -79,11 +79,13 @@ private:
 private:
   void set_attr_xy(int x, int y, int a);
 
-  bool extended_key_waiting_ = false;
-  coord_t cursor_pos_{};
+  bool extended_key_waiting_{false};
+  // We set this when calling wherex, but logically WhereX should
+  // be const correct, so we'll handle this nasty stuff here.
+  mutable coord_t cursor_pos_{};
   HANDLE out_ = (void*) -1;
   HANDLE in_ = (void*) -1;
-  DWORD saved_input_mode_ = 0;
+  DWORD saved_input_mode_{0};
   coord_t original_size_{};
 };
 

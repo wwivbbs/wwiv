@@ -106,7 +106,7 @@ string stacktrace() {
 
   stringstream out;
   // start at one to skip this current frame.
-  for(std::size_t i = 1; i < frames; i++) {
+  for(decltype(frames) i = 1; i < frames; i++) {
     if (SymFromAddr(process, (DWORD64)(stack[i]), nullptr, symbol)) {
       out << frames - i - 1 << ": " << symbol->Name << " = " << std::hex << symbol->Address;
     }

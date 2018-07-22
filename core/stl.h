@@ -41,19 +41,19 @@ bool contains(C const& container, typename C::const_reference key) {
 
 template <typename K, typename V, typename C, typename A>
 bool contains(std::map<K, V, C, A> const& m, K const& key) {
-  return m.find(key) != m.end();
+  return m.find(key) != std::end(m);
 }
 
 // Partial specicialization for maps with string keys (allows using const char* for lookup values)
 template <typename V, typename C, typename A>
 bool contains(std::map<std::string, V, C, A> const& m, const std::string& key) {
-  return m.find(key) != m.end();
+  return m.find(key) != std::end(m);
 }
 
 // Partial specicialization for maps with const string keys.
 template <typename V, typename C, typename A>
 bool contains(std::map<const std::string, V, C, A> const& m, const std::string& key) {
-  return m.find(key) != m.end();
+  return m.find(key) != std::end(m);
 }
 
 struct ci_less {
@@ -101,12 +101,12 @@ signed int size_int(C c) {
 
 template <typename C, typename S = std::size_t, typename R>
 bool insert_at(C& c, S pos, R r) {
-  std::size_t n = static_cast<decltype(c.size())>(pos);
+  auto n = static_cast<decltype(c.size())>(pos);
 
   if (n < 0 || n > c.size()) {
     return false;
   }
-  auto it = c.begin();
+  auto it = std::begin(c);
   std::advance(it, n);
   c.insert(it, r);
   return true;
@@ -114,11 +114,11 @@ bool insert_at(C& c, S pos, R r) {
 
 template <typename C, typename S = std::size_t>
 bool erase_at(C& c, S on) {
-  std::size_t n = static_cast<decltype(c.size())>(on);
+  auto n = static_cast<decltype(c.size())>(on);
   if (n >= c.size()) {
     return false;
   }
-  auto it = c.begin();
+  auto it = std::begin(c);
   std::advance(it, n);
   c.erase(it);
   return true;

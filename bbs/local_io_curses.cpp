@@ -105,11 +105,11 @@ void CursesLocalIO::GotoXY(int x, int y) {
   window_->GotoXY(x, y);
 }
 
-size_t CursesLocalIO::WhereX() {
+int CursesLocalIO::WhereX() const noexcept {
   return window_->GetcurX();
 }
 
-size_t CursesLocalIO::WhereY() {
+int CursesLocalIO::WhereY() const noexcept {
   return window_->GetcurY();
 }
 
@@ -348,7 +348,7 @@ void CursesLocalIO::WriteScreenBuffer(const char *buffer) {
   scrollok(w, true);
 }
 
-size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; }
+int CursesLocalIO::GetDefaultScreenBottom() const noexcept { return window_->GetMaxY() - 1; }
 
 // copied from local_io_win32.cpp
 #define PREV                1
@@ -357,7 +357,7 @@ size_t CursesLocalIO::GetDefaultScreenBottom() { return window_->GetMaxY() - 1; 
 #define ABORTED             8
 
 static int GetEditLineStringLength(const char *text) {
-  size_t i = strlen(text);
+  int i = strlen(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == 176)) {
     --i;
   }
@@ -369,7 +369,7 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_ke
   int oldatr = curatr;
   int cx = WhereX();
   int cy = WhereY();
-  for (size_t i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
+  for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
     pszInOutText[i] = static_cast<unsigned char>(176);
   }
   pszInOutText[len] = '\0';
@@ -542,13 +542,13 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
   curatr = GetUserEditorColor();
   xlen = std::min(xlen, 80);
-  if (static_cast<size_t>(ylen) > (GetScreenBottom() + 1 - GetTopLine())) {
+  if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
   }
   if ((x + xlen) > 80) {
     x = 80 - xlen;
   }
-  if (static_cast<size_t>(y + ylen) > GetScreenBottom() + 1) {
+  if ((y + ylen) > GetScreenBottom() + 1) {
     y = GetScreenBottom() + 1 - ylen;
   }
 

@@ -134,7 +134,7 @@ void WLocalIO::LocalGotoXY(int x, int y) {
  * characters from the left hand side of the screen.  An X position of zero
  * means the cursor is at the left-most position
  */
-int WLocalIO::WhereX() {
+int WLocalIO::WhereX() const noexcept {
 #if defined( __APPLE__ )
   if (x_only) {
     return (wx);
@@ -150,7 +150,7 @@ int WLocalIO::WhereX() {
  * of the screen display is taken into account.  A WhereY() of zero means
  * the cursor is at the top-most position it can be at.
  */
-int WLocalIO::WhereY() {
+int WLocalIO::WhereY() const noexcept {
 #if defined( __APPLE__ )
   return m_cursorPositionY;
 #else
@@ -622,7 +622,7 @@ void WLocalIO::LocalWriteScreenBuffer(const char *pszBuffer) {
   pszBuffer = pszBuffer; // No warning
 }
 
-int WLocalIO::GetDefaultScreenBottom() {
+int WLocalIO::GetDefaultScreenBottom() const noexcept {
   return 25;
 }
 

@@ -157,7 +157,7 @@ void display_message_text(const std::string& text, bool* next) {
               if (a()->user()->GetOptionalVal() == 0) {
                 ctrld = 0; // display
               } else {
-                if (10 - (a()->user()->GetOptionalVal()) < static_cast<unsigned>(ch - '0')) {
+                if (10 - (a()->user()->GetOptionalVal()) < static_cast<int>(ch - '0')) {
                   ctrld = -1; // don't display
                 } else {
                   ctrld = 0; // display

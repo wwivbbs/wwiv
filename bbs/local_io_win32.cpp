@@ -127,7 +127,7 @@ void Win32ConsoleIO::GotoXY(int x, int y) {
 * characters from the left hand side of the screen.  An X position of zero
 * means the cursor is at the left-most position
 */
-size_t Win32ConsoleIO::WhereX() {
+int Win32ConsoleIO::WhereX() const noexcept {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(out_, &csbi);
 
@@ -142,7 +142,7 @@ size_t Win32ConsoleIO::WhereX() {
 * of the screen display is taken into account.  A WhereY() of zero means
 * the cursor is at the top-most position it can be at.
 */
-size_t Win32ConsoleIO::WhereY() {
+int Win32ConsoleIO::WhereY() const noexcept {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(out_, &csbi);
   cursor_pos_.X = csbi.dwCursorPosition.X;
@@ -159,7 +159,7 @@ void Win32ConsoleIO::Lf() {
   COORD dest;
   CHAR_INFO fill;
 
-  if (static_cast<size_t>(cursor_pos_.Y) >= GetScreenBottom()) {
+  if (cursor_pos_.Y >= GetScreenBottom()) {
     dest.X = 0;
     dest.Y = static_cast<int16_t>(GetTopLine());
     scrollRect.Top = static_cast<int16_t>(GetTopLine() + 1);
@@ -352,7 +352,7 @@ void Win32ConsoleIO::set_protect(Application* session, int l) {
     CONSOLE_SCREEN_BUFFER_INFO csbi;
     GetConsoleScreenBufferInfo(out_, &csbi);
 
-    if (static_cast<size_t>(l) > GetTopLine()) {
+    if (l > GetTopLine()) {
       if ((WhereY() + GetTopLine() - l) < 0) {
         CHAR_INFO lpFill;
         SMALL_RECT scrnl;
@@ -464,13 +464,13 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
   curatr = GetUserEditorColor();
   xlen = std::min(xlen, 80);
-  if (static_cast<size_t>(ylen) > (GetScreenBottom() + 1 - GetTopLine())) {
+  if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
   }
   if ((x + xlen) > 80) {
     x = 80 - xlen;
   }
-  if (static_cast<size_t>(y + ylen) > GetScreenBottom() + 1) {
+  if ((y + ylen) > GetScreenBottom() + 1) {
     y = GetScreenBottom() + 1 - ylen;
   }
 
@@ -596,7 +596,7 @@ void Win32ConsoleIO::WriteScreenBuffer(const char *buffer) {
   WriteConsoleOutput(out_, ci, size, pos, &rect);
 }
 
-size_t Win32ConsoleIO::GetDefaultScreenBottom() {
+int Win32ConsoleIO::GetDefaultScreenBottom() const noexcept {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(out_, &csbi);
   return csbi.srWindow.Bottom - csbi.srWindow.Top;
@@ -643,7 +643,7 @@ bool HasKeyBeenPressed(HANDLE in) {
 unsigned char GetKeyboardChar() { return static_cast<unsigned char>(_getwch()); }
 
 static int GetEditLineStringLength(const char *text) {
-  size_t i = strlen(text);
+  int i = strlen(text);
   while (i >= 0 && (/*text[i-1] == 32 ||*/ static_cast<unsigned char>(text[i - 1]) == 176)) {
     --i;
   }
@@ -656,7 +656,7 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
   int oldatr = curatr;
   int cx = WhereX();
   int cy = WhereY();
-  for (size_t i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
+  for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
     pszInOutText[i] = static_cast<unsigned char>(176);
   }
   pszInOutText[len] = '\0';

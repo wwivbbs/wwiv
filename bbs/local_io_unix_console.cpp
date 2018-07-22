@@ -111,14 +111,14 @@ void UnixConsoleIO::LocalGotoXY(int x, int y) {
   cout.flush();
 }
 
-int UnixConsoleIO::WhereX() {
+int UnixConsoleIO::WhereX() const noexcept {
   if (x_only) {
     return capture_->wx();
   }
   return m_cursorPositionX;
 }
 
-int UnixConsoleIO::WhereY() {
+int UnixConsoleIO::WhereY() const noexcept {
   return m_cursorPositionY;
 }
 

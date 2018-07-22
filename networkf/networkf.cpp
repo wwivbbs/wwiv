@@ -515,7 +515,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
 
 static bool CleanupWWIVName(std::string& sender_name) {
   // #NN, @NODE or (FIDO_ADDR)
-  string::size_type idx = sender_name.find_first_of("#@(");
+  auto idx = sender_name.find_first_of("#@(");
   if (idx != string::npos) {
     sender_name = sender_name.substr(0, idx);
   }

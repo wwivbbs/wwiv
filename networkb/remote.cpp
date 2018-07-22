@@ -76,10 +76,10 @@ string network_name_from_single_address(const string& network_list) {
   if (v.empty()) {
     return "";
   }
-  string s = v.front();
-  string::size_type index = s.find_last_of("@");
+  auto s = v.front();
+  auto index = s.find_last_of("@");
   if (index == string::npos) {
-    return "";
+    return {};
   }
   return s.substr(index + 1);
 }
