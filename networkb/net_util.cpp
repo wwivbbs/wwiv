@@ -117,7 +117,7 @@ bool NetworkCommandLine::LoadNetIni() {
 
 bool NetworkCommandLine::skip_delete() const { return cmdline_.barg("skip_delete"); }
 
-bool NetworkCommandLine::skip_net() const { return cmdline_.barg("skip_delete"); }
+bool NetworkCommandLine::skip_net() const { return cmdline_.barg("skip_net"); }
 
 } // namespace net
 } // namespace wwiv
