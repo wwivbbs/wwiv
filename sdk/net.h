@@ -316,8 +316,16 @@ static constexpr char FTN_FAKE_OUTBOUND_ADDRESS[] = "@32765";
  * Indicates this is the fake FTN outbound node.  This should
  * not be exposed to users unless required. It's an implementation detail.
  */
-static constexpr int16_t INTERNET_FAKE_OUTBOUND_NODE = 32767;
-static constexpr char INTERNET_FAKE_OUTBOUND_ADDRESS[] = "@32767";
+static constexpr int16_t INTERNET_NEWS_FAKE_OUTBOUND_NODE = 32766;
+static constexpr char INTERNET_NEWS_FAKE_OUTBOUND_ADDRESS[] = "@32766";
+
+/**
+ * Indicates this is the fake FTN outbound node.  This should
+ * not be exposed to users unless required. It's an implementation detail.
+ */
+static constexpr int16_t INTERNET_EMAIL_FAKE_OUTBOUND_NODE = 32767;
+static constexpr char INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS[] = "@32767";
+
 
 /**
  * Used to indicate no node number in functions that return -1 when no

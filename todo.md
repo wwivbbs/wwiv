@@ -46,8 +46,7 @@
   - also todo is to figure out if we want to add some interoperability with
     iostreams here.  Note: This needs C++17 (ish) support, so needs debian9 as the
     baseline since GCC 4.x only suppors std=gnu++14 as the latest.
-* Create SemaphoreFile class,later on also add support for creating semaphores for network
-  and other places in wwiv.
+* Add support for creating semaphores for network and other places in wwiv.
 
 ## Feature Improvements
 ***

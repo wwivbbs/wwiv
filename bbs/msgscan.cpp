@@ -169,7 +169,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
       input(szUserNameOrNumber, 75, true);
       size_t nAtPos = strcspn(szUserNameOrNumber, "@");
       if (nAtPos != strlen(szUserNameOrNumber) && isalpha(szUserNameOrNumber[ nAtPos + 1 ])) {
-        if (strstr(szUserNameOrNumber, INTERNET_FAKE_OUTBOUND_ADDRESS) == nullptr) {
+        if (strstr(szUserNameOrNumber, INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == nullptr) {
           strlwr(szUserNameOrNumber);
           strcat(szUserNameOrNumber, " ");
           strcat(szUserNameOrNumber, "@32767 ");

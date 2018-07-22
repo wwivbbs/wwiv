@@ -1040,8 +1040,9 @@ void run_exp() {
   set_net_num(internet_net_num);
 
   const string exp_command = StringPrintf(
-      "exp s32767.net %s %d %s %s %s", a()->network_directory().c_str(), a()->current_net().sysnum,
-      a()->internetEmailName.c_str(), a()->internetEmailDomain.c_str(), a()->network_name());
+      "exp s%d.net %s %d %s %s %s", INTERNET_EMAIL_FAKE_OUTBOUND_NODE,
+      a()->network_directory().c_str(), a()->current_net().sysnum, a()->internetEmailName.c_str(),
+      a()->internetEmailDomain.c_str(), a()->network_name());
   ExecuteExternalProgram(exp_command, EFLAG_NETPROG);
 
   set_net_num(nOldNetworkNumber);

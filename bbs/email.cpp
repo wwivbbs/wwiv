@@ -73,7 +73,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
     return false;
   }
   if (userRecord.GetForwardUserNumber() == 0 && userRecord.GetForwardSystemNumber() == 0 &&
-      userRecord.GetForwardSystemNumber() != INTERNET_FAKE_OUTBOUND_NODE) {
+      userRecord.GetForwardSystemNumber() != INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
     return false;
   }
   if (userRecord.GetForwardSystemNumber() != 0) {
@@ -322,7 +322,7 @@ void sendout_email(EmailData& data) {
   } else {
     string logMessagePart;
     if ((data.system_number == 1 && a()->current_net().type == network_type_t::internet) ||
-        data.system_number == INTERNET_FAKE_OUTBOUND_NODE) {
+        data.system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
       logMessagePart = a()->net_email_name;
     } else {
       if (a()->max_net_num() > 1) {
@@ -436,7 +436,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   }
   bout.nl();
   if (ForwardMessage(&user_number, &system_number)) {
-    if (system_number == INTERNET_FAKE_OUTBOUND_NODE) {
+    if (system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
       read_inet_addr(destination, user_number);
     }
     bout << "\r\nMail Forwarded.\r\n\n";
@@ -503,7 +503,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   if (i == anony_enable_anony && a()->user()->IsRestrictionAnonymous()) {
     i = 0;
   }
-  if (system_number != 0 && system_number != INTERNET_FAKE_OUTBOUND_NODE) {
+  if (system_number != 0 && system_number != INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
     i = 0;
     anony = 0;
     bout.nl();

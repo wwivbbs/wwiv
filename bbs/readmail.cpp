@@ -346,9 +346,9 @@ static std::string fixup_user_entered_email(const std::string& s) {
   if (at_pos != std::string::npos
     && at_pos < user_input.size() - 1
     && isalpha(user_input.at(at_pos + 1))) {
-    if (user_input.find(INTERNET_FAKE_OUTBOUND_ADDRESS) != std::string::npos) {
+    if (user_input.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) != std::string::npos) {
       StringLowerCase(&user_input);
-      user_input += INTERNET_FAKE_OUTBOUND_ADDRESS;
+      user_input += INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS;
     }
   }
   return user_input;
@@ -465,7 +465,7 @@ void readmail(int mode) {
               // use to_char_array
               strncpy(s2, b.c_str(), sizeof(s2) - 1);
               ss2 = strtok(s2, "\r");
-              if (m.fromsys == INTERNET_FAKE_OUTBOUND_NODE || m.fromsys == FTN_FAKE_OUTBOUND_NODE) {
+              if (m.fromsys == INTERNET_EMAIL_FAKE_OUTBOUND_NODE || m.fromsys == FTN_FAKE_OUTBOUND_NODE) {
                 sprintf(s1, "%s", stripcolors(ss2));
               } else {
                 sprintf(s1, "%s %u@%u.%s (%s)",

@@ -155,7 +155,7 @@ static void SendRemoteShortMessage(int nUserNum, int nSystemNum, const char *mes
 }
 
 ssm::~ssm() {
-  if (un_ == 65535 || un_ == 0 || sn_ == INTERNET_FAKE_OUTBOUND_NODE) {
+  if (un_ == 65535 || un_ == 0 || sn_ == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
     return;
   }
 

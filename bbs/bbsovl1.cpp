@@ -153,9 +153,9 @@ void send_email() {
   irt[0] = '\0';
   string::size_type atpos = username.find_first_of("@");
   if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
-    if (username.find(INTERNET_FAKE_OUTBOUND_ADDRESS) == string::npos) {
+    if (username.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == string::npos) {
       StringLowerCase(&username);
-      username += StrCat(" ", INTERNET_FAKE_OUTBOUND_ADDRESS);
+      username += StrCat(" ", INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS);
     }
   } else if (username.find('(') != std::string::npos && username.find(')') != std::string::npos) {
     // This is where we'd check for (NNNN) and add in the @NNN for the FTN networks.

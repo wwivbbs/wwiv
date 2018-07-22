@@ -845,13 +845,13 @@ class User {
     SetForwardUserNumber(65535);
   }
   bool IsMailForwardedToInternet() const {
-    return (GetForwardUserNumber() == 32767) ? true : false;
+    return GetForwardUserNumber() == INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
   }
   bool IsMailboxForwarded() const {
-    return (GetForwardUserNumber() > 0 && GetForwardUserNumber() < 32767);
+    return GetForwardUserNumber() > 0 && GetForwardUserNumber() < INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
   }
   void SetForwardToInternet() {
-    SetForwardSystemNumber(INTERNET_FAKE_OUTBOUND_NODE);
+    SetForwardSystemNumber(INTERNET_EMAIL_FAKE_OUTBOUND_NODE);
   }
   void ClearMailboxForward() {
     SetForwardSystemNumber(0);

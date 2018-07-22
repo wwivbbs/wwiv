@@ -348,7 +348,7 @@ int WFC::doWFCEvents() {
         // Fast Net Callout from WFC
       case '*': {
         io->Cls();
-        do_callout(INTERNET_FAKE_OUTBOUND_NODE);
+        do_callout(INTERNET_EMAIL_FAKE_OUTBOUND_NODE);
       } break;
       case ',':
         // Print NetLogs
