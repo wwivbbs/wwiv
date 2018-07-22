@@ -144,9 +144,7 @@ std::string FtnMessageDupe::GetMessageIDFromText(const std::string& text) {
     auto s = line.substr(1);
     if (starts_with(s, kMSGID)) {
       // Found the message ID, mail here.
-      auto msgid = s.substr(kMSGID.size());
-      StringTrim(&msgid);
-      return msgid;
+      return StringTrim(s.substr(kMSGID.size()));
     }
   }
   return "";
@@ -163,15 +161,15 @@ std::string FtnMessageDupe::GetMessageIDFromWWIVText(const std::string& text) {
     auto s = line.substr(1);
     if (starts_with(s, kMSGID)) {
       // Found the message ID, mail here.
-      auto msgid = s.substr(kMSGID.size());
-      StringTrim(&msgid);
-      return msgid;
+      return StringTrim(s.substr(kMSGID.size()));
     }
   }
   return "";
 }
 
-static bool crc32(const FidoPackedMessage& msg, uint32_t& header_crc32, uint32_t& msgid_crc32) {
+// static
+bool FtnMessageDupe::GetMessageCrc32s(const wwiv::sdk::fido::FidoPackedMessage& msg,
+                                      uint32_t& header_crc32, uint32_t& msgid_crc32) {
   std::ostringstream s;
   s << msg.nh.orig_net << "/" << msg.nh.orig_node << "\r\n";
   s << msg.nh.dest_net << "/" << msg.nh.dest_node << "\r\n";
@@ -181,7 +179,7 @@ static bool crc32(const FidoPackedMessage& msg, uint32_t& header_crc32, uint32_t
   s << msg.vh.to_user_name << "\r\n";
 
   header_crc32 = crc32string(s.str());
-  string msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
+  auto msgid = FtnMessageDupe::GetMessageIDFromText(msg.vh.text);
   msgid_crc32 = crc32string(msgid);
   return true;
 }
@@ -190,7 +188,7 @@ bool FtnMessageDupe::add(const FidoPackedMessage& msg) {
   uint32_t header_crc32 = 0;
   uint32_t msgid_crc32 = 0;
 
-  if (!crc32(msg, header_crc32, msgid_crc32)) {
+  if (!FtnMessageDupe::GetMessageCrc32s(msg, header_crc32, msgid_crc32)) {
     return false;
   }
 
@@ -242,7 +240,7 @@ bool FtnMessageDupe::is_dupe(const wwiv::sdk::fido::FidoPackedMessage& msg) cons
   uint32_t header_crc32 = 0;
   uint32_t msgid_crc32 = 0;
 
-  if (!crc32(msg, header_crc32, msgid_crc32)) {
+  if (!FtnMessageDupe::GetMessageCrc32s(msg, header_crc32, msgid_crc32)) {
     return false;
   }
   return is_dupe(header_crc32, msgid_crc32);

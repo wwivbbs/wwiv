@@ -31,11 +31,13 @@
 #include "core/command_line.h"
 #include "core/connection.h"
 #include "core/datafile.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/findfiles.h"
 #include "core/log.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
+#include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -43,20 +45,19 @@
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "networkb/net_util.h"
-#include "sdk/net/packets.h"
 #include "networkb/ppp_config.h"
-#include "sdk/fido/fido_util.h"
 #include "sdk/bbslist.h"
 #include "sdk/callout.h"
 #include "sdk/config.h"
 #include "sdk/connect.h"
 #include "sdk/contact.h"
-#include "core/datetime.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/fido/fido_packets.h"
+#include "sdk/fido/fido_util.h"
 #include "sdk/filenames.h"
 #include "sdk/ftn_msgdupe.h"
+#include "sdk/net/packets.h"
 #include "sdk/networks.h"
 #include "sdk/subscribers.h"
 
@@ -911,27 +912,21 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
   const auto floname = flo_name(dest, packet_config.netmail_status);
   const auto bsyname = net_node_name(dest, "bsy");
 
-  for (int i = 1; i < 7; i++) {
-    File bsy(dirs.outbound_dir(), bsyname);
-    if (bsy.Open(File::modeCreateFile | File::modeExclusive | File::modeWriteOnly,
-                 File::shareDenyReadWrite)) {
-      break;
+  try {
+    auto sem_file = SemaphoreFile::try_acquire(bsyname, std::chrono::seconds(15));
+
+    TextFile flo_file(dirs.outbound_dir(), floname, "a+");
+    if (!flo_file.IsOpen()) {
+      LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
+      return false;
     }
-    if (bsy.Exists()) {
-      LOG(ERROR) << "BSY file: '" << bsy.full_pathname() << "' already exists. Will try again...";
-    } else {
-      LOG(ERROR) << "Unable to create BSY file: '" << bsy.full_pathname() << "'. Will try again...";
-    }
-    wwiv::os::sleep_for(std::chrono::milliseconds((i ^ 2) * 50));
+    int num_written = flo_file.WriteLine(StrCat("^", FilePath(dirs.outbound_dir(), bundlename)));
+    return num_written > 0;
+
+  } catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << "Unable to create BSY file semaphore trying to create FLO file.";
+    LOG(ERROR) << e.what();
   }
-  ScopeExit at_exit([=] { File::Remove(dirs.outbound_dir(), bsyname); });
-  TextFile flo_file(dirs.outbound_dir(), floname, "a+");
-  if (!flo_file.IsOpen()) {
-    LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
-    return false;
-  }
-  int num_written = flo_file.WriteLine(StrCat("^", FilePath(dirs.outbound_dir(), bundlename)));
-  return num_written > 0;
 }
 
 bool CreateNetmailAttach(const NetworkCommandLine& net_cmdline, const FidoAddress& dest,

@@ -22,10 +22,11 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "networkb/net_util.h"
-#include "sdk/net/packets.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
+#include "sdk/ftn_msgdupe.h"
 #include "sdk/net.h"
+#include "sdk/net/packets.h"
 #include "wwivutil/util.h"
 #include <iostream>
 #include <string>
@@ -152,12 +153,17 @@ static int dump_packet_file(const std::string& filename) {
     cout << "Packet date: " << (1900 + header.year) << "-" << header.month << "-" << header.day
          << endl;
     cout << "         PW: '" << header.password << "'" << endl;
+    uint32_t hc{}, mc{};
+    if (wwiv::sdk::FtnMessageDupe::GetMessageCrc32s(msg, hc, mc)) {
+      cout << " Header CRC: '" << std::hex << hc << "'" << endl;
+      cout << "Message CRC: '" << std::hex << mc << "'" << endl;
+    }
     cout << "=============================================================================="
          << endl;
     cout << "   msg_type: " << msg.nh.message_type << std::endl;
     cout << "       cost: " << msg.nh.cost << std::endl;
-    cout << "         to: " << msg.vh.to_user_name << "(" << msg.nh.dest_net << "/" << msg.nh.dest_node
-         << ")" << std::endl;
+    cout << "         to: " << msg.vh.to_user_name << "(" << msg.nh.dest_net << "/"
+         << msg.nh.dest_node << ")" << std::endl;
     cout << "       from: " << msg.vh.from_user_name << "(" << from_address << ")" << std::endl;
     cout << "    subject: " << msg.vh.subject << std::endl;
     cout << "       date: " << msg.vh.date_time << "; [" << roundtrip_dt << "]" << std::endl;

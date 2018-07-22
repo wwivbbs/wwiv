@@ -53,6 +53,9 @@ public:
 
   /** Returns the MSGID from this message or an empty string. */
   static std::string GetMessageIDFromText(const std::string& text);
+  static bool GetMessageCrc32s(const wwiv::sdk::fido::FidoPackedMessage& msg,
+                               uint32_t& header_crc32, uint32_t& msgid_crc32);
+
   /**
    * Returns the MSGID from this message in WWIV format 
    * (^D0MSGID vs. ^AMSGID) or an empty string.
