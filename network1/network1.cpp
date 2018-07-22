@@ -31,6 +31,7 @@
 #include "core/findfiles.h"
 #include "core/log.h"
 #include "core/os.h"
+#include "core/semaphore_file.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -57,7 +58,7 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-static void ShowHelp(CommandLine& cmdline) {
+static void ShowHelp(const CommandLine& cmdline) {
   cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
        << endl;
   exit(1);
@@ -140,17 +141,8 @@ static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const 
   }
 }
 
-int network1_main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+int network1_main(const NetworkCommandLine& net_cmdline) {
   try {
-    ScopeExit at_exit(Logger::ExitLogger);
-    CommandLine cmdline(argc, argv, "net");
-    NetworkCommandLine net_cmdline(cmdline, '1');
-    if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
-      ShowHelp(cmdline);
-      return 1;
-    }
-
     const auto& net = net_cmdline.network();
 
     VLOG(1) << "Reading bbsdata.net..";
@@ -166,7 +158,7 @@ int network1_main(int argc, char** argv) {
       LOG(INFO) << "Processing: " << net.dir << f.name;
       if (handle_file(b, net, f.name)) {
         LOG(INFO) << "Deleting: " << net.dir << f.name;
-        if (cmdline.barg("skip_delete")) {
+        if (net_cmdline.skip_delete()) {
           backup_file(FilePath(net.dir,f.name));
         }
         File::Remove(net.dir, f.name);
@@ -180,4 +172,22 @@ int network1_main(int argc, char** argv) {
   return 2;
 }
 
-int main(int argc, char** argv) { return network1_main(argc, argv); }
+int main(int argc, char** argv) { 
+  Logger::Init(argc, argv);
+  ScopeExit at_exit(Logger::ExitLogger);
+  CommandLine cmdline(argc, argv, "net");
+  NetworkCommandLine net_cmdline(cmdline, '1');
+  if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
+    ShowHelp(net_cmdline.cmdline());
+    return 1;
+  }
+
+  try {
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+                                                net_cmdline.semaphore_timeout());
+    return network1_main(net_cmdline);
+  } catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
+               << "]: Unable to Acquire Network Semaphore: " << e.what();
+  }
+}

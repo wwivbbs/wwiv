@@ -34,6 +34,7 @@
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
+#include "core/semaphore_file.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -103,7 +104,7 @@ static void update_filechange_status_dat(const string& datadir, bool email, bool
   }
 }
 
-static void ShowHelp(CommandLine& cmdline) {
+static void ShowHelp(const CommandLine& cmdline) {
   cout << cmdline.GetHelp()
        << ".####      Network number (as defined in wwivconfig)" << endl
        << endl;
@@ -289,17 +290,8 @@ static bool handle_file(Context& context, const string& name) {
   return true;
 }
 
-int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+int network2_main(const NetworkCommandLine& net_cmdline) {
   try {
-    ScopeExit at_exit(Logger::ExitLogger);
-    CommandLine cmdline(argc, argv, "net");
-    NetworkCommandLine net_cmdline(cmdline, '2');
-    if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
-      ShowHelp(cmdline);
-      return 1;
-    }
-
     const auto& net = net_cmdline.network();
     if (!File::Exists(net.dir, LOCAL_NET)) {
       LOG(INFO) << "No local.net exists. exiting.";
@@ -328,7 +320,7 @@ int main(int argc, char** argv) {
 
     LOG(INFO) << "Processing: " << net.dir << LOCAL_NET;
     if (handle_file(context, LOCAL_NET)) {
-      if (cmdline.barg("skip_delete")) {
+      if (net_cmdline.skip_delete()) {
         backup_file(FilePath(net.dir, LOCAL_NET));
       }
       LOG(INFO) << "Deleting: " << net.dir << LOCAL_NET;
@@ -346,4 +338,24 @@ int main(int argc, char** argv) {
   }
 
   return 255;
+}
+
+int main(int argc, char** argv) {
+  Logger::Init(argc, argv);
+  ScopeExit at_exit(Logger::ExitLogger);
+  CommandLine cmdline(argc, argv, "net");
+  NetworkCommandLine net_cmdline(cmdline, '2');
+  if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
+    ShowHelp(net_cmdline.cmdline());
+    return 1;
+  }
+
+  try {
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+                                                net_cmdline.semaphore_timeout());
+    return network2_main(net_cmdline);
+  } catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
+               << "]: Unable to Acquire Network Semaphore: " << e.what();
+  }
 }

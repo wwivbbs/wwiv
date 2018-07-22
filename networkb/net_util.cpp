@@ -45,7 +45,10 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline,
   cmdline.add_argument(
       BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
   cmdline.add_argument(
-      BooleanCommandLineArgument("skip_delete", "Don't delete packets, move din save area"));
+      BooleanCommandLineArgument("skip_delete", "Don't delete packets, move to save area"));
+  cmdline.add_argument({"semaphore_timeout",
+      "Timeout (in seconds) to wait for the network semaphore to become available.",
+      "30"});
 }
 
 NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char net_cmd)
@@ -88,6 +91,11 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   }
 }
 
+std::string NetworkCommandLine::semaphore_filename() const noexcept {
+  const auto net_cmd_name = (net_cmd_ == '\0') ? "network" : StrCat("network", net_cmd_);
+  return StrCat(network_.dir, net_cmd_name, ".bsy");
+}
+
 bool NetworkCommandLine::LoadNetIni() {
   const auto net_tag = (net_cmd_ == '\0') ? "network" : StrCat("network", net_cmd_);
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
@@ -111,13 +119,24 @@ bool NetworkCommandLine::LoadNetIni() {
     auto skip_net = ini->value<bool>("cram_md5", cmdline().barg("cram_md5"));
     cmdline_.SetNewDefault("cram_md5", skip_net ? "Y" : "N");
   }
+  if (cmdline_.contains_arg("semaphore_timeout") && cmdline().arg("semaphore_timeout").is_default()) {
+    auto semaphore_timeout =
+        ini->value<int>("semaphore_timeout", cmdline().iarg("semaphore_timeout"));
+    cmdline_.SetNewDefault("semaphore_timeout", std::to_string(semaphore_timeout));
+  }
 
   return true;
 }
 
-bool NetworkCommandLine::skip_delete() const { return cmdline_.barg("skip_delete"); }
+bool NetworkCommandLine::skip_delete() const noexcept { return cmdline_.barg("skip_delete"); }
 
-bool NetworkCommandLine::skip_net() const { return cmdline_.barg("skip_net"); }
+bool NetworkCommandLine::skip_net() const noexcept { return cmdline_.barg("skip_net"); }
+
+std::chrono::duration<double> NetworkCommandLine::semaphore_timeout() const noexcept {
+  auto semaphore_timeout = cmdline_.iarg("semaphore_timeout");
+  return std::chrono::seconds(semaphore_timeout);
+}
+
 
 } // namespace net
 } // namespace wwiv

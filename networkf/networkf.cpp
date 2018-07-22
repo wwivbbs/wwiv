@@ -164,7 +164,7 @@ static string arc_stuff_in(const string& command_line, const string& a1, const s
   return os.str();
 }
 
-static void ShowHelp(CommandLine& cmdline) {
+static void ShowHelp(const CommandLine& cmdline) {
   cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
        << endl
        << "commands: " << endl
@@ -1040,130 +1040,140 @@ bool export_main_type_email_name(const NetworkCommandLine& net_cmdline, const ne
   return true;
 }
 
-int main(int argc, char** argv) {
+int Main(const NetworkCommandLine& net_cmdline) {
+  int num_packets_processed = 0;
+
+  const auto& net = net_cmdline.network();
+  if (net.type != network_type_t::ftn) {
+    LOG(ERROR) << "NETWORKF is only for use on FTN type networks.";
+    ShowHelp(net_cmdline.cmdline());
+    return 1;
+  }
+
+  VLOG(1) << "Reading bbsdata.net..";
+  auto b = BbsListNet::ReadBbsDataNet(net.dir);
+  if (b.empty()) {
+    LOG(ERROR) << "ERROR: Unable to read bbsdata.net.";
+    LOG(ERROR) << "       Do you need to run network3?";
+    return 3;
+  }
+
+  const auto* fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
+  if (!fake_ftn_node) {
+    LOG(ERROR) << "Can not find node for outbound FTN address.";
+    LOG(ERROR) << "       Do you need to run network3?";
+    return 3;
+  }
+
+  FidoCallout fido_callout(net_cmdline.config(), net);
+  if (!fido_callout.IsInitialized()) {
+    LOG(ERROR) << "Unable to initialize fido_callout.";
+    return 1;
+  }
+
+  auto cmds = net_cmdline.cmdline().remaining();
+  if (cmds.empty()) {
+    LOG(ERROR) << "No command specified. Exiting.";
+    ShowHelp(net_cmdline.cmdline());
+    return 1;
+  }
+
+  const auto cmd = cmds.front();
+  cmds.erase(cmds.begin());
+  VLOG(1) << "Command: " << cmd;
+  VLOG(1) << "Args: ";
+  for (const auto& r : cmds) {
+    VLOG(1) << r << endl;
+  }
+
+  wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
+  if (cmd == "import") {
+    const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
+    for (const auto& ext : extensions) {
+      num_packets_processed +=
+          import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
+                          StrCat("*.", ext), net_cmdline.skip_delete());
+#ifndef _WIN32
+      num_packets_processed +=
+          import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
+                          StrCat("*.", ToStringUpperCase(ext)), net_cmdline.skip_delete());
+#endif
+    }
+  } else if (cmd == "export") {
+    const auto sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
+    if (!File::Exists(net.dir, sfilename)) {
+      LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
+      return 1;
+    }
+
+    // Packet file is created by us for sure.
+    File f(net.dir, sfilename);
+    if (!f.Open(File::modeBinary | File::modeReadOnly)) {
+      LOG(ERROR) << "Unable to open file: " << net.dir << sfilename;
+      return 1;
+    }
+
+    auto done = false;
+    std::set<std::string> bundles;
+    while (!done) {
+      Packet p;
+      const auto response = read_packet(f, p, true);
+      if (response == ReadPacketResponse::END_OF_FILE) {
+        // Delete the packet.
+        f.Close();
+        if (net_cmdline.skip_delete()) {
+          backup_file(f);
+        }
+        f.Delete();
+        break;
+      } else if (response == ReadPacketResponse::ERROR) {
+        return 1;
+      }
+      // If we got here, we had a packet to process.
+      ++num_packets_processed;
+
+      if (p.nh.main_type == main_type_new_post) {
+        if (!export_main_type_new_post(net_cmdline, net, fido_callout, bundles, p)) {
+          LOG(ERROR) << "Error exporting post.";
+        }
+      } else if (p.nh.main_type == main_type_email_name) {
+        if (!export_main_type_email_name(net_cmdline, net, fido_callout, bundles, p)) {
+          LOG(ERROR) << "Error exporting email.";
+        }
+      } else {
+        LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
+        // Let's write it to dead.net
+        if (!write_wwivnet_packet(DEAD_NET, net, p)) {
+          LOG(ERROR) << "Error writing to dead.net";
+        }
+      }
+    }
+
+  } else {
+    LOG(ERROR) << "Unknown command: " << cmd;
+    ShowHelp(net_cmdline.cmdline());
+    return 1;
+  }
+  return (num_packets_processed > 0) ? 0 : 1;
+}
+
+
+int main(int argc, char** argv) { 
   Logger::Init(argc, argv);
+  CommandLine cmdline(argc, argv, "net");
+  NetworkCommandLine net_cmdline(cmdline, 'f');
   try {
     ScopeExit at_exit(Logger::ExitLogger);
-    CommandLine cmdline(argc, argv, "net");
-    NetworkCommandLine net_cmdline(cmdline, 'f');
-    int num_packets_processed = 0;
-    if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
-      ShowHelp(cmdline);
+    if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
+      ShowHelp(net_cmdline.cmdline());
       return 1;
     }
-
-    const auto& net = net_cmdline.network();
-    if (net.type != network_type_t::ftn) {
-      LOG(ERROR) << "NETWORKF is only for use on FTN type networks.";
-      ShowHelp(cmdline);
-      return 1;
-    }
-
-    VLOG(1) << "Reading bbsdata.net..";
-    auto b = BbsListNet::ReadBbsDataNet(net.dir);
-    if (b.empty()) {
-      LOG(ERROR) << "ERROR: Unable to read bbsdata.net.";
-      LOG(ERROR) << "       Do you need to run network3?";
-      return 3;
-    }
-
-    const auto* fake_ftn_node = b.node_config_for(FTN_FAKE_OUTBOUND_NODE);
-    if (!fake_ftn_node) {
-      LOG(ERROR) << "Can not find node for outbound FTN address.";
-      LOG(ERROR) << "       Do you need to run network3?";
-      return 3;
-    }
-
-    FidoCallout fido_callout(net_cmdline.config(), net);
-    if (!fido_callout.IsInitialized()) {
-      LOG(ERROR) << "Unable to initialize fido_callout.";
-      return 1;
-    }
-
-    auto cmds = cmdline.remaining();
-    if (cmds.empty()) {
-      LOG(ERROR) << "No command specified. Exiting.";
-      ShowHelp(cmdline);
-      return 1;
-    }
-
-    const auto cmd = cmds.front();
-    cmds.erase(cmds.begin());
-    VLOG(1) << "Command: " << cmd;
-    VLOG(1) << "Args: ";
-    for (const auto& r : cmds) {
-      VLOG(1) << r << endl;
-    }
-
-    wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
-    if (cmd == "import") {
-      const std::vector<string> extensions{"su?", "mo?", "tu?", "we?", "th?", "fr?", "sa?", "pkt"};
-      for (const auto& ext : extensions) {
-        num_packets_processed +=
-            import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
-                           StrCat("*.", ext), net_cmdline.skip_delete());
-#ifndef _WIN32
-        num_packets_processed +=
-            import_bundles(net_cmdline.config(), fido_callout, net, dirs.inbound_dir(),
-                           StrCat("*.", ToStringUpperCase(ext)), net_cmdline.skip_delete());
-#endif
-      }
-    } else if (cmd == "export") {
-      const auto sfilename = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
-      if (!File::Exists(net.dir, sfilename)) {
-        LOG(INFO) << "No file '" << sfilename << "' exists to be exported to a FTN packet.";
-        return 1;
-      }
-
-      // Packet file is created by us for sure.
-      File f(net.dir, sfilename);
-      if (!f.Open(File::modeBinary | File::modeReadOnly)) {
-        LOG(ERROR) << "Unable to open file: " << net.dir << sfilename;
-        return 1;
-      }
-
-      auto done = false;
-      std::set<std::string> bundles;
-      while (!done) {
-        Packet p;
-        const auto response = read_packet(f, p, true);
-        if (response == ReadPacketResponse::END_OF_FILE) {
-          // Delete the packet.
-          f.Close();
-          if (net_cmdline.skip_delete()) {
-            backup_file(f);
-          }
-          f.Delete();
-          break;
-        } else if (response == ReadPacketResponse::ERROR) {
-          return 1;
-        }
-        // If we got here, we had a packet to process.
-        ++num_packets_processed;
-
-        if (p.nh.main_type == main_type_new_post) {
-          if (!export_main_type_new_post(net_cmdline, net, fido_callout, bundles, p)) {
-            LOG(ERROR) << "Error exporting post.";
-          }
-        } else if (p.nh.main_type == main_type_email_name) {
-          if (!export_main_type_email_name(net_cmdline, net, fido_callout, bundles, p)) {
-            LOG(ERROR) << "Error exporting email.";
-          }
-        } else {
-          LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
-          // Let's write it to dead.net
-          if (!write_wwivnet_packet(DEAD_NET, net, p)) {
-            LOG(ERROR) << "Error writing to dead.net";
-          }
-        }
-      }
-
-    } else {
-      LOG(ERROR) << "Unknown command: " << cmd;
-      ShowHelp(cmdline);
-      return 1;
-    }
-    return (num_packets_processed > 0) ? 0 : 1;
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+                                                net_cmdline.semaphore_timeout());
+    return Main(net_cmdline);
+  } catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
+               << "]: Unable to Acquire Network Semaphore: " << e.what();
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [networkf]: " << e.what();
   }

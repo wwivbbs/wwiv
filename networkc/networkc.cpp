@@ -35,6 +35,7 @@
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
+#include "core/semaphore_file.h"
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
@@ -67,7 +68,7 @@ using namespace wwiv::stl;
 using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
-static void ShowHelp(CommandLine& cmdline) {
+static void ShowHelp(const CommandLine& cmdline) {
   cout << cmdline.GetHelp()
     << ".####      Network number (as defined in wwivconfig)" << endl
     << endl;
@@ -135,18 +136,9 @@ static bool need_network3(const string& dir, int network_version) {
     || checkup2(bbsdata_time, dir, CALLOUT_NET);
 }
 
-int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+int networkc_main(const NetworkCommandLine & net_cmdline) {
   try {
-    ScopeExit at_exit(Logger::ExitLogger);
-    CommandLine cmdline(argc, argv, "net");
-    NetworkCommandLine net_cmdline(cmdline, 'c');
-    if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
-      ShowHelp(cmdline);
-      return 1;
-    }
-
-    const int verbose = cmdline.iarg("v");
+    const int verbose = net_cmdline.cmdline().iarg("v");
     const auto& net = net_cmdline.network();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
@@ -205,4 +197,23 @@ int main(int argc, char** argv) {
     LOG(ERROR) << "ERROR: [networkf]: " << e.what();
   }
   return 2;
+}
+
+int main(int argc, char** argv) {
+  Logger::Init(argc, argv);
+  ScopeExit at_exit(Logger::ExitLogger);
+  CommandLine cmdline(argc, argv, "net");
+  NetworkCommandLine net_cmdline(cmdline, 'c');
+  if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
+    ShowHelp(net_cmdline.cmdline());
+    return 1;
+  }
+  try {
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+                                                net_cmdline.semaphore_timeout());
+    return networkc_main(net_cmdline);
+  } catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
+               << "]: Unable to Acquire Network Semaphore: " << e.what();
+  }
 }

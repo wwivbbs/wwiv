@@ -32,6 +32,7 @@
 #include "core/net.h"
 #include "core/os.h"
 #include "core/scope_exit.h"
+#include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -216,7 +217,6 @@ static int Main(const NetworkCommandLine& net_cmdline) {
       ShowHelp(net_cmdline.cmdline());
       return 1;
     }
-
   } catch (const connection_error& e) {
     LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
   } catch (const socket_error& e) {
@@ -234,15 +234,16 @@ int main(int argc, char** argv) {
   CommandLine cmdline(argc, argv, "net");
   RegisterNetworkBCommands(cmdline);
   NetworkCommandLine net_cmdline(cmdline, 'b');
-  if (!net_cmdline.IsInitialized()) {
-    ShowHelp(cmdline);
+  if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
+    ShowHelp(net_cmdline.cmdline());
     return 1;
   }
-  if (cmdline.help_requested()) {
-    std::clog << "Help Requested." << endl;
-    ShowHelp(cmdline);
-    return 0;
+  try {
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+                                                net_cmdline.semaphore_timeout());
+    return Main(net_cmdline);
+  } catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
+               << "]: Unable to Acquire Network Semaphore: " << e.what();
   }
-
-  return Main(net_cmdline);
 }

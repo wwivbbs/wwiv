@@ -18,6 +18,7 @@
 #ifndef __INCLUDED_NETWORKB_NET_UTIL_H__
 #define __INCLUDED_NETWORKB_NET_UTIL_H__
 
+#include <chrono>
 #include <memory>
 #include <set>
 #include <string>
@@ -51,10 +52,12 @@ public:
   const net_networks_rec& network() const noexcept { return network_; }
   const wwiv::core::CommandLine& cmdline() const noexcept { return cmdline_; }
   char net_cmd() const noexcept { return net_cmd_; }
+  std::string semaphore_filename() const noexcept;
 
   bool LoadNetIni();
-  bool skip_delete() const;
-  bool skip_net() const;
+  bool skip_delete() const noexcept;
+  bool skip_net() const noexcept;
+  std::chrono::duration<double> semaphore_timeout() const noexcept;
 
 private:
   std::string bbsdir_;

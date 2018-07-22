@@ -33,6 +33,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
+#include "core/semaphore_file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/os.h"
@@ -77,7 +78,7 @@ using namespace wwiv::sdk::net;
 using namespace wwiv::stl;
 using namespace wwiv::os;
 
-static void ShowHelp(CommandLine& cmdline) {
+static void ShowHelp(const CommandLine& cmdline) {
   cout << cmdline.GetHelp()
        << ".####      Network number (as defined in wwivconfig)" << endl
        << endl;
@@ -400,7 +401,7 @@ static void ensure_contact_net_entries(const Callout& callout, const net_network
   }
 }
 
-static bool need_to_send_feedback(CommandLine& cmdline) {
+static bool need_to_send_feedback(const CommandLine& cmdline) {
   if (cmdline.barg("feedback")) {
     return true;
   }
@@ -412,7 +413,7 @@ static bool need_to_send_feedback(CommandLine& cmdline) {
   return false;
 }
 
-static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
+static int network3_fido(const NetworkCommandLine& net_cmdline) {
   VLOG(1) << "network3_fido";
   const auto& net = net_cmdline.network();
   std::ostringstream text;
@@ -525,14 +526,14 @@ static int network3_fido(CommandLine& cmdline, const NetworkCommandLine& net_cmd
 
   text << "\r\nBest,\r\n\r\n" << net.name << "@" << net.sysnum << "\r\n\r\n";
 
-  if (need_to_send_feedback(cmdline)) {
+  if (need_to_send_feedback(net_cmdline.cmdline())) {
     send_feedback_email(net, text.str());
   }
 
   return 0;
 }
 
-static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_cmdline) {
+static int network3_wwivnet(const NetworkCommandLine& net_cmdline) {
   VLOG(1) << "Reading bbslist.net..";
   const auto& net = net_cmdline.network();
   BbsListNet b = BbsListNet::ParseBbsListNet(net.sysnum, net.dir);
@@ -560,7 +561,7 @@ static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_
   update_filechange_status_dat(net_cmdline.config().datadir());
   rename_pending_files(net.dir);
 
-  if (need_to_send_feedback(cmdline) || is_nc) {
+  if (need_to_send_feedback(net_cmdline.cmdline()) || is_nc) {
     std::ostringstream text;
     add_feedback_header(net.dir, text);
     LOG(INFO) << "Sending Feedback.";
@@ -579,19 +580,8 @@ static int network3_wwivnet(CommandLine& cmdline, const NetworkCommandLine& net_
   return 0;
 }
 
-int main(int argc, char** argv) {
-  Logger::Init(argc, argv);
+int network3_main(const NetworkCommandLine& net_cmdline) {
   try {
-    ScopeExit at_exit(Logger::ExitLogger);
-    CommandLine cmdline(argc, argv, "net");
-    cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
-
-    NetworkCommandLine net_cmdline(cmdline, '3');
-    if (!net_cmdline.IsInitialized() || cmdline.help_requested()) {
-      ShowHelp(cmdline);
-      return 1;
-    }
-
     const auto& net = net_cmdline.network();
     update_net_ver_status_dat(net_cmdline.config().datadir());
 
@@ -603,10 +593,33 @@ int main(int argc, char** argv) {
 
     // Only run the net fido type network3 for 5.x
     if (net_cmdline.config().is_5xx_or_later() && net.type == network_type_t::ftn) {
-      return network3_fido(cmdline, net_cmdline);
+      return network3_fido(net_cmdline);
     }
-    return network3_wwivnet(cmdline, net_cmdline);
+    return network3_wwivnet(net_cmdline);
   } catch (const std::exception& e) {
     LOG(ERROR) << "ERROR: [network]: " << e.what();
+  }
+  return 2;
+}
+
+
+int main(int argc, char** argv) {
+  Logger::Init(argc, argv);
+  ScopeExit at_exit(Logger::ExitLogger);
+  CommandLine cmdline(argc, argv, "net");
+  cmdline.add_argument(BooleanCommandLineArgument("feedback", 'y', "Sends feedback.", false));
+  NetworkCommandLine net_cmdline(cmdline, '2');
+  if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
+    ShowHelp(net_cmdline.cmdline());
+    return 1;
+  }
+
+  try {
+    auto semaphore = SemaphoreFile::try_acquire(net_cmdline.semaphore_filename(),
+                                                net_cmdline.semaphore_timeout());
+    return network3_main(net_cmdline);
+  } catch (const semaphore_not_acquired& e) {
+    LOG(ERROR) << "ERROR: [network" << net_cmdline.net_cmd()
+               << "]: Unable to Acquire Network Semaphore: " << e.what();
   }
 }
