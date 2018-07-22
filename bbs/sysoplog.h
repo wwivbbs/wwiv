@@ -22,7 +22,7 @@
 #include <sstream>
 
 std::string GetSysopLogFileName(const std::string& date);
-void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName);
+std::string GetTemporaryInstanceLogFileName();
 void catsl();
 void sysopchar(const std::string& text);
 
@@ -39,7 +39,7 @@ public:
 
 private:
   std::ostringstream stream_;
-  bool indent_ = true;
+  bool indent_{true};
 };
 
 

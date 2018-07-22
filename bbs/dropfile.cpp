@@ -537,12 +537,12 @@ const string create_chain_file() {
       a()->user()->GetScreenChars(),
       a()->user()->GetScreenLines(),
       a()->user()->GetSl());
-    char szTemporaryLogFileName[MAX_PATH];
-    GetTemporaryInstanceLogFileName(szTemporaryLogFileName);
+    auto temporary_log_filename = GetTemporaryInstanceLogFileName();
     string gfilesdir = a()->config()->gfilesdir();
     file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n",
       cs(), so(), okansi(), incom, nsl(), 
-      gfilesdir.c_str(), a()->config()->datadir().c_str(), szTemporaryLogFileName);
+      gfilesdir.c_str(), a()->config()->datadir().c_str(),
+                        temporary_log_filename.c_str());
     if (a()->using_modem) {
       file.WriteFormatted("%d\n", a()->modem_speed_);
     } else {

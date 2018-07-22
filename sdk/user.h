@@ -449,7 +449,7 @@ class User {
     return data.email;
   }
   void SetEmailAddress(const char *s) {
-    strcpy(reinterpret_cast<char*>(data.email), s);
+    strcpy(data.email, s);
   }
   const uint8_t GetAge() const {
     return data.age;
@@ -470,19 +470,19 @@ class User {
   void SetDefaultProtocol(int n) {
     data.defprot = static_cast<uint8_t>(n);
   }
-  const unsigned int GetDefaultEditor() const {
+  const int GetDefaultEditor() const {
     return data.defed;
   }
-  void SetDefaultEditor(unsigned int n) {
+  void SetDefaultEditor(int n) {
     data.defed = static_cast<uint8_t>(n);
   }
-  const unsigned int GetScreenChars() const {
+  const int GetScreenChars() const {
     return data.screenchars;
   }
   void SetScreenChars(int n) {
     data.screenchars = static_cast<uint8_t>(n);
   }
-  const unsigned int GetScreenLines() const {
+  const int GetScreenLines() const {
     return data.screenlines;
   }
   void SetScreenLines(int n) {

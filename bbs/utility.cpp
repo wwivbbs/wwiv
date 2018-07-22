@@ -48,6 +48,7 @@
 #include "bbs/workspace.h"
 #include "bbs/vars.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/findfiles.h"
 #include "core/wwivassert.h"
@@ -468,7 +469,7 @@ slrec getslrec(int nSl) {
 bool okfsed() {
   return okansi()
          && a()->user()->GetDefaultEditor() > 0 
-         && a()->user()->GetDefaultEditor() <= a()->editors.size();
+         && a()->user()->GetDefaultEditor() <= wwiv::stl::size_int(a()->editors);
 }
 template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
   return std::max(std::min(maxValue, value), minValue);

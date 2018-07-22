@@ -53,21 +53,19 @@ string GetSysopLogFileName(const string& d) {
 /*
 * Returns instance (temporary) sysoplog filename in s.
 */
-void GetTemporaryInstanceLogFileName(char *pszInstanceLogFileName) {
-  sprintf(pszInstanceLogFileName, "inst-%3.3u.log", a()->instance_number());
+std::string GetTemporaryInstanceLogFileName() {
+  return StringPrintf("inst-%3.3u.log", a()->instance_number());
 }
 
 /*
 * Copies temporary/instance sysoplog to primary sysoplog file.
 */
 void catsl() {
-  char szInstanceBaseName[MAX_PATH];
-
-  GetTemporaryInstanceLogFileName(szInstanceBaseName);
-  string instance_logfilename = StrCat(a()->config()->gfilesdir(), szInstanceBaseName);
+  auto temporary_log_filename = GetTemporaryInstanceLogFileName();
+  auto instance_logfilename = StrCat(a()->config()->gfilesdir(), temporary_log_filename);
 
   if (File::Exists(instance_logfilename)) {
-    string basename = GetSysopLogFileName(date());
+    auto basename = GetSysopLogFileName(date());
     File wholeLogFile(a()->config()->gfilesdir(), basename);
 
     auto buffer = std::make_unique<char[]>(CAT_BUFSIZE);
@@ -98,20 +96,17 @@ void catsl() {
 */
 void AddLineToSysopLogImpl(int cmd, const string& text) {
   static string::size_type midline = 0;
-  static char s_szLogFileName[MAX_PATH];
   
   if (a()->config()->gfilesdir().empty()) {
     LOG(ERROR) << "gfilesdir empty, can't write to sysop log";
     return;
   }
+  const static std::string s_sysoplog_filename =
+      StrCat(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
 
-  if (!s_szLogFileName[0]) {
-    to_char_array(s_szLogFileName, a()->config()->gfilesdir());
-    GetTemporaryInstanceLogFileName(s_szLogFileName + strlen(s_szLogFileName));
-  }
   switch (cmd) {
   case LOG_STRING: {  // Write line to sysop's log
-    File logFile(s_szLogFileName);
+    File logFile(s_sysoplog_filename);
     if (!logFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }
@@ -131,7 +126,7 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
   }
   break;
   case LOG_CHAR: {
-    File logFile(s_szLogFileName);
+    File logFile(s_sysoplog_filename);
     if (!logFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       // sysop log ?
       return;

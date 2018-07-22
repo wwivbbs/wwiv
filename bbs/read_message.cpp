@@ -468,10 +468,11 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
 
 static std::vector<std::string> split_long_line(const std::string& text) {
   std::vector<std::string> lines;
-  const auto screen_width = a()->user()->GetScreenChars();
+  // use size_t since size_without_colors returns that.
+  const size_t screen_width = a()->user()->GetScreenChars();
   string s = text;
   while (size_without_colors(s) > screen_width) {
-    std::string::size_type pos = screen_width;
+    auto pos = screen_width;
     while (pos > 0 && s[pos] >= 27) {
       pos--;
     }
@@ -520,7 +521,8 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
     }
 
     // Ok, here we also need to split long lines.
-    const auto screen_width = a()->user()->GetScreenChars();
+    // use size_t since size_without_colors returns that.
+    const size_t screen_width = a()->user()->GetScreenChars();
     auto line_size = size_without_colors(line);
     if (line_size > screen_width) {
       const auto sl = split_long_line(line);

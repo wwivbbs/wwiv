@@ -204,7 +204,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       if (curli >= 0) {
         // Don't keep retreating past line 0.
         rollover_line = lin.at(curli);
-        if (rollover_line.length() > a()->user()->GetScreenChars() - 1) {
+        if (size_int(rollover_line) > a()->user()->GetScreenChars() - 1) {
           rollover_line.resize(a()->user()->GetScreenChars() - 2);
         }
       } else {
@@ -248,7 +248,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
                 ++i5;
               }
             }
-            for (size_t i4 = 0; (i4 < (a()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
+            for (int i4 = 0; (i4 < (a()->user()->GetScreenChars() - i5) / 2) && (!abort); i4++) {
               bout.bputs(" ", &abort, &next);
             }
           }

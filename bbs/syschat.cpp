@@ -203,7 +203,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
     if (bout.IsLastKeyLocal()) {
       if (a()->localIO()->WhereY() == 11) {
         bout << "\x1b[12;1H";
-        for (size_t screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
+        for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
         const string unn = a()->names()->UserName(a()->usernum);

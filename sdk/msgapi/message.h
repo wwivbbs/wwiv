@@ -28,7 +28,7 @@ namespace msgapi {
 
 class MessageHeader {
 public:
-  virtual ~MessageHeader() {}
+  virtual ~MessageHeader() = default;
 
   virtual std::string title() const = 0;
   virtual void set_title(const std::string&) = 0;
@@ -76,29 +76,29 @@ public:
 
 
 protected:
-  MessageHeader() {}
+  MessageHeader() = default;
 };
 
 class MessageText {
 public:
-  virtual ~MessageText() {}
+  virtual ~MessageText() = default;
   virtual const std::string& text() const = 0;
   virtual void set_text(const std::string&) = 0;
 
 protected:
-  MessageText() {}
+  MessageText() = default;
 };
 
 class Message {
 public:
-  virtual ~Message() {}
+  virtual ~Message() = default;
   virtual MessageHeader& header() const = 0;
   virtual MessageText& text() const = 0;
   virtual std::unique_ptr<MessageHeader> release_header() = 0;
   virtual std::unique_ptr<MessageText> release_text() = 0;
 
 protected:
-  Message() {}
+  Message() = default;
 };
 
 

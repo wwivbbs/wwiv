@@ -38,7 +38,7 @@ class WWIVMessageApi;
 
 class EmailData {
 public:
-  EmailData() {}
+  EmailData() = default;
 
   /** The title for this email */
   std::string title;

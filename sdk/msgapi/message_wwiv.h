@@ -90,13 +90,13 @@ public:
   friend class WWIVMessageArea;
 
 private:
-  postrec header_ = {};
+  postrec header_{};
   std::string from_;
   std::string to_;
   std::string in_reply_to_;
   std::string oaddress_;
   std::string destination_address_;
-  bool private_ = false;
+  bool private_{false};
   const MessageApi* api_;
 };
 
