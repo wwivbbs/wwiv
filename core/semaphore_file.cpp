@@ -18,13 +18,6 @@
 /**************************************************************************/
 #include "core/semaphore_file.h"
 
-#ifdef _WIN32
-// Always declare wwiv_windows.h first to avoid collisions on defines.
-#include "core/wwiv_windows.h"
-
-#include "Shlwapi.h"
-#endif  // _WIN32
-
 #include <algorithm>
 #include <cerrno>
 #include <cstring>
@@ -34,23 +27,21 @@
 #include <direct.h>
 #include <io.h>
 #include <share.h>
-#include "sys/utime.h"
 #endif  // _WIN32
 #include <sstream>
 #include <string>
 #include <sys/stat.h>
-#include <sys/types.h>
 
 #include "core/log.h"
 
 #ifndef _WIN32
 #include <sys/file.h>
+#include <sys/types.h>
 #include <unistd.h>
 #include <utime.h>
 #endif  // _WIN32
 
 #include "core/os.h"
-#include "core/wwivassert.h"
 
 using std::string;
 using std::chrono::milliseconds;
@@ -69,6 +60,7 @@ namespace core {
 SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, 
                                          const std::string& text,
                                          std::chrono::duration<double> timeout) {
+  VLOG(3) << "SemaphoreFile::try_acquire: '" << filepath << "'";
   int mode = O_CREAT | O_EXCL | O_TEMPORARY | O_RDWR;
   int pmode = S_IREAD | S_IWRITE;
   auto step = timeout / 10;

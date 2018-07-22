@@ -38,21 +38,35 @@ struct semaphore_not_acquired : public std::runtime_error {
 
 class SemaphoreFile final {
 public:
+  SemaphoreFile() = delete;
 
   /** 
    * Tries to create the semaphore file, waiting up to timeout and then
-   * failing by throwing an exception.
+   * failing by throwing a semaphore_not_acquired exception.
+   * Will write 'text' into the semaphore file.
    */
   static SemaphoreFile try_acquire(const std::string& filepath, 
                                    const std::string& text,
                                    std::chrono::duration<double> timeout);
 
+  /**
+   * Tries to create the semaphore file, waiting up to timeout and then
+   * failing by throwing a semaphore_not_acquired exception.
+   */
   static SemaphoreFile try_acquire(const std::string& filepath,
     std::chrono::duration<double> timeout) {
-    return std::move<SemaphoreFile>(try_acquire(filepath, "", timeout));
+    return try_acquire(filepath, "", timeout);
   }
 
+  /**
+   * Tries to create the semaphore file, waiting forever.
+   * Will write 'text' into the semaphore file.
+   */
   static SemaphoreFile acquire(const std::string& filepath, const std::string& text);
+
+  /**
+   * Tries to create the semaphore file, waiting forever.
+   */
   static SemaphoreFile acquire(const std::string& filepath) {
     return acquire(filepath, "");
   }
