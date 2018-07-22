@@ -310,6 +310,7 @@ struct net_call_out_rec {
  * not be exposed to users unless required. It's an implementation detail.
  */
 static constexpr int16_t FTN_FAKE_OUTBOUND_NODE = 32765;
+static constexpr char FTN_FAKE_OUTBOUND_ADDRESS[] = "@32765";
 
 /**
  * Indicates this is the fake FTN outbound node.  This should

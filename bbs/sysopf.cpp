@@ -740,8 +740,8 @@ void chuser() {
   }
 
   bout << "|#9Enter user to change to: ";
-  std::string userName = input(30, true);
-  int user_number = finduser1(userName);
+  auto userName = input(30, true);
+  auto user_number = finduser1(userName);
   if (user_number > 0) {
     a()->WriteCurrentUser();
     write_qscn(a()->usernum, qsc, false);
@@ -749,8 +749,7 @@ void chuser() {
     read_qscn(user_number, qsc, false);
     a()->usernum = static_cast<uint16_t>(user_number);
     a()->SetEffectiveSl(255);
-    const string unn = a()->names()->UserName(a()->usernum);
-    sysoplog() << StringPrintf("#*#*#* Changed to %s", unn.c_str());
+    sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));
     changedsl();
     a()->UpdateTopScreen();
   } else {
@@ -804,9 +803,9 @@ void set_user_age() {
   do {
     User user;
     a()->users()->readuser(&user, user_number);
-    unsigned int nAge = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
-    if (nAge != user.GetAge()) {
-      user.SetAge(nAge);
+    auto age = years_old(user.GetBirthdayMonth(), user.GetBirthdayDay(), user.GetBirthdayYear());
+    if (age != user.GetAge()) {
+      user.SetAge(age);
       a()->users()->writeuser(&user, user_number);
     }
     ++user_number;
@@ -817,13 +816,14 @@ void set_user_age() {
 void auto_purge() {
   int days = 0;
   int skipsl = 0;
-
-  IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI), {StrCat("WWIV-", a()->instance_number()), INI_TAG});
-  if (ini.IsOpen()) {
-    days = ini.value<int>("AUTO_USER_PURGE");
-    skipsl = ini.value<int>("NO_PURGE_SL");
+  {
+    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI),
+                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
+    if (ini.IsOpen()) {
+      days = ini.value<int>("AUTO_USER_PURGE");
+      skipsl = ini.value<int>("NO_PURGE_SL");
+    }
   }
-  ini.Close();
 
   if (days < 60) {
     if (days > 0) {
@@ -833,7 +833,7 @@ void auto_purge() {
     return;
   }
 
-  daten_t current_daten = daten_t_now();
+  auto current_daten = daten_t_now();
   int user_number = 1;
   sysoplog(false) << "Auto-Purged Inactive Users (over " << days << " days, SL less than " << skipsl << ")";
 
@@ -852,7 +852,6 @@ void auto_purge() {
     ++user_number;
   } while (user_number <= a()->status_manager()->GetUserCount());
 }
-
 
 void beginday(bool displayStatus) {
   if ((a()->GetBeginDayNodeNumber() > 0)
@@ -927,7 +926,7 @@ void beginday(bool displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }
 
-  long fk = File::freespace_for_path(a()->config()->datadir());
+  auto fk = File::freespace_for_path(a()->config()->datadir());
 
   if (fk < 512) {
     ssm(1, 0) << "Only " << fk << "k free in data directory.";

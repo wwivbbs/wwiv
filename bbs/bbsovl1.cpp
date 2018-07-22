@@ -165,7 +165,7 @@ void send_email() {
       auto inner = username.substr(first + 1, last - first - 1);
       if (inner.find('/') != std::string::npos) {
         // At least need a FTN address.
-        username += StrCat(" @", FTN_FAKE_OUTBOUND_NODE);
+        username += StrCat(" ", FTN_FAKE_OUTBOUND_ADDRESS);
         bout << "\r\n|#9Sending to FTN Address: |#2" << inner << wwiv::endl;
       }
     }
