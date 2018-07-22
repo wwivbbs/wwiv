@@ -426,7 +426,7 @@ struct fido_network_config_t {
   std::string origin_line;
 };
 
-enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet };
+enum class network_type_t : uint8_t { wwivnet = 0, ftn, internet, news };
 
 /**
  * Internal structure for networks.dat or networks.json used by WWIV.

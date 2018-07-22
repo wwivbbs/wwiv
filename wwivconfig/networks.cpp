@@ -173,6 +173,8 @@ public:
       return EditlineResult::NEXT;
     case network_type_t::internet:
       return EditlineResult::NEXT;
+    case network_type_t::news:
+      return EditlineResult::NEXT;
     case network_type_t::ftn: {
       constexpr int LABEL_WIDTH = 14;
       constexpr int SHORT_FIELD_WIDTH = 25;
@@ -562,7 +564,9 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   static const vector<pair<network_type_t, string>> nettypes = {
       {network_type_t::wwivnet, "WWIVnet "},
       {network_type_t::ftn, "Fido    "},
-      {network_type_t::internet, "Internet"}};
+      {network_type_t::internet, "Internet"},
+      {network_type_t::news, "Newsgroup (not supported yet)"}
+  };
 
   Subs subs(config.datadir(), networks.networks());
   bool subs_loaded = subs.Load();
