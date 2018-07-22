@@ -75,7 +75,8 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
   outNetworkName->clear();
   outLocation->clear();
 
-  if (a()->current_net().type == network_type_t::internet) {
+  if (a()->current_net().type == network_type_t::internet ||
+      a()->current_net().type == network_type_t::news) {
     outNetworkName->assign("Internet Mail and Newsgroups");
     return;
   }

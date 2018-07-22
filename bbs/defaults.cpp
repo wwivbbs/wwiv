@@ -685,7 +685,7 @@ static void modify_mailbox() {
   }
   bout.nl();
   bout << "|#2Forward to? ";
-  string entered_forward_to = input(40);
+  auto entered_forward_to = input(40);
 
   uint16_t nTempForwardUser, nTempForwardSystem;
   parse_email_info(entered_forward_to, &nTempForwardUser, &nTempForwardSystem);

@@ -203,7 +203,9 @@ void post(const PostData& post_data) {
         } else if (n.type == network_type_t::ftn) {
           bout << "|#1 (FTN)";
         } else if (n.type == network_type_t::internet) {
-          bout << "|#1 (Internet)";
+          bout << "|#1 (Internet/Wins)";
+        } else if (n.type == network_type_t::news) {
+          bout << "|#1 (Newsgroups)";
         }
       }
       bout << ".\r\n\n";

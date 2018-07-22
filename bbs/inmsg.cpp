@@ -359,7 +359,8 @@ static void UpdateMessageBufferInReplyToInfo(std::ostringstream& ss, bool is_ema
       }
     }
   }
-  if (a()->current_net().type == network_type_t::internet) {
+  if (a()->current_net().type == network_type_t::internet ||
+      a()->current_net().type == network_type_t::news) {
     if (a()->usenetReferencesLine.length() > 0) {
       const auto buf = StringPrintf("%c0RReferences: %s", CD, a()->usenetReferencesLine.c_str());
       ss << buf << crlf;

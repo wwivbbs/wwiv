@@ -297,7 +297,9 @@ void sub_xtr_add(int n, int nn) {
   }
 
   bool is_hosting = false;
-  if (a()->current_net().type == network_type_t::wwivnet || a()->current_net().type == network_type_t::internet) {
+  if (a()->current_net().type == network_type_t::wwivnet ||
+      a()->current_net().type == network_type_t::internet ||
+      a()->current_net().type == network_type_t::news) {
     bout << "|#5Will you be hosting the sub? ";
     is_hosting = yesno();
   }

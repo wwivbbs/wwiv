@@ -340,8 +340,7 @@ void sendout_email(EmailData& data) {
         }
       }
     }
-    logMessage += logMessagePart;
-    sysoplog() << logMessage;
+    sysoplog() << logMessage << logMessagePart;
   }
 
   WStatus* pStatus = a()->status_manager()->BeginTransaction();

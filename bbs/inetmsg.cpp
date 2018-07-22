@@ -103,7 +103,7 @@ void send_inet_email() {
     return;
   }
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
-  int network_number = getnetnum_by_type(network_type_t::internet);
+  auto network_number = getnetnum_by_type(network_type_t::internet);
   a()->set_net_num(network_number);
   if (network_number == -1) {
     return;

@@ -49,12 +49,12 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
-#include "sdk/net/callouts.h"
 #include "sdk/bbslist.h"
 #include "sdk/binkp.h"
 #include "sdk/callout.h"
 #include "sdk/contact.h"
 #include "sdk/filenames.h"
+#include "sdk/net/callouts.h"
 #include "sdk/status.h"
 
 using namespace std::chrono;
@@ -617,7 +617,11 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
       if (a()->net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
           a()->net_networks[nFromNetworkNumber].type == network_type_t::internet) {
         sprintf(newname, "%s%s", qn, on);
-      } else {
+      } else if (a()->net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
+                 a()->net_networks[nFromNetworkNumber].type == network_type_t::news) {
+        sprintf(newname, "%s%s", qn, on);
+      }
+      else {
         if (on[0]) {
           sprintf(newname, "%s%s@%u.%s\r\n", qn, on, nh->fromsys,
                   a()->net_networks[nFromNetworkNumber].name);

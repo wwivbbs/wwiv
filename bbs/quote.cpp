@@ -151,7 +151,8 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
   l3 = l2 = 0;
   char* ss1 = nullptr;
   a()->internetFullEmailAddress = "";
-  if (a()->current_net().type == network_type_t::internet) {
+  if (a()->current_net().type == network_type_t::internet ||
+      a()->current_net().type == network_type_t::news) {
     for (size_t l1 = 0; l1 < ss.length(); l1++) {
       if ((ss[l1] == 4) && (ss[l1 + 1] == '0') && (ss[l1 + 2] == 'R') &&
           (ss[l1 + 3] == 'M')) {
