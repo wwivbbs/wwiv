@@ -84,6 +84,9 @@ void BbsHelper::SetUp() {
   config->set_config(sysconfig.release(), false);
   a()->set_config_for_test(move(config));
   user_ = a()->user();
+  // No pause in tests.
+  user_->ClearStatusFlag(User::pauseOnPage);
+  a()->screenlinest = std::numeric_limits<int>::max();
 
   // Create a reasonable default user.  Some tests (bputch/bputs tests)
   // Require a properly constructed user.
