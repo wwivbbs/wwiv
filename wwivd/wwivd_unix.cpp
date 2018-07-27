@@ -95,13 +95,9 @@ void BeforeStartServer() {
   struct sigaction sa {};
   sa.sa_flags = SA_RESETHAND;
   sigfillset(&sa.sa_mask);
-  sa.sa_handler = sigint_handler;
+  sa.sa_handler = signal_handler;
   if (sigaction(SIGHUP, &sa, nullptr) == -1) {
     LOG(ERROR) << "Unable to install signal handler for SIGINT";
-  }
-  sa.sa_handler = huphandler;
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGHUP";
   }
 }
 
@@ -158,16 +154,17 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   }
   VLOG(2) << pid << "after waitpid";
 
-  std::ostringstream err;
-  err << pid;
+  std::ostringstream errs;
+  errs << pid;
   if (node_number > 0) {
-    err << "Node #" << node_number;
+    errs << "Node #" << node_number;
   } else {
-    err << "cmd: " << cmd;
+    errs << "cmd: " << cmd;
   }
+  const auto err = errs.str();
   if (WIFEXITED(status)) {
     // Process exited.
-    LOG(INFO) << err " exited with error code: " << WEXITSTATUS(status);
+    LOG(INFO) << err << " exited with error code: " << WEXITSTATUS(status);
   }
   else if (WIFSIGNALED(status)) {
     LOG(INFO) << err << " killed by signal: " << WTERMSIG(status);
