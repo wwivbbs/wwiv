@@ -76,6 +76,7 @@ using wwiv::core::IniFile;
 using wwiv::core::FilePath;
 using wwiv::os::random_number;
 using namespace std::chrono;
+using namespace std::chrono_literals;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
