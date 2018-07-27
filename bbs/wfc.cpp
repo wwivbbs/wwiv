@@ -586,7 +586,7 @@ int WFC::LocalLogon() {
   }
 
   if (a_->localIO()->KeyPressed()) {
-    char ch = to_upper_case<char>(a_->localIO()->GetChar());
+    auto ch = to_upper_case<char>(a_->localIO()->GetChar());
     if (ch == 'Y') {
       a_->localIO()->Puts(YesNoString(true));
       bout << wwiv::endl;
