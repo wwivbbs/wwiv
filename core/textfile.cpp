@@ -164,6 +164,9 @@ static void StripLineEnd(char *str) {
 }
 
 bool TextFile::ReadLine(string *out) {
+  if (file_ == nullptr) {
+    return false;
+  }
   char s[4096];
   char *p = fgets(s, sizeof(s), file_);
   if (p == nullptr) {
