@@ -286,10 +286,10 @@ int WFC::doWFCEvents() {
     lokb = 0;
     a_->SetCurrentSpeed("KB");
     auto current_time = steady_clock::now();
-    bool node_supports_callout = a_->HasConfigFlag(OP_FLAGS_NET_CALLOUT);
+    auto node_supports_callout = a_->HasConfigFlag(OP_FLAGS_NET_CALLOUT);
     // try to check for packets to send every minute.
     auto diff_time = current_time - last_network_attempt();
-    bool time_to_call = diff_time > minutes(1);  // was 1200
+    auto time_to_call = diff_time > minutes(1);  // was 1200
     if (!any && time_to_call && a_->current_net().sysnum && node_supports_callout) {
       // also try this.
       Clear();
@@ -437,7 +437,7 @@ int WFC::doWFCEvents() {
         Clear();
         a_->usernum = 1;
         bout << "|#1Send any Text File in Email:\r\n\n|#2Filename: ";
-        string buffer = input(50);
+        auto buffer = input(50);
         LoadFileIntoWorkspace(buffer, false);
         send_email();
         a_->WriteCurrentUser(sysop_usernum);
@@ -472,9 +472,9 @@ int WFC::doWFCEvents() {
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
         bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
         const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
-        string newFileName = Input1(current_dir_slash, 50, true, InputMode::FULL_PATH_NAME);
-        if (!newFileName.empty()) {
-          external_text_edit(newFileName, "", 500, MSGED_FLAG_NO_TAGLINE);
+        auto net_filename = Input1(current_dir_slash, 50, true, InputMode::FULL_PATH_NAME);
+        if (!net_filename.empty()) {
+          external_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
         }
       }
       break;
@@ -502,8 +502,8 @@ int WFC::doWFCEvents() {
         break;
       case 'T':
         if (a()->terminal_command.empty()) {
-          bout << "Terminal Command not specified. " << wwiv::endl << " Please set TERMINAL_CMD in WWIV.INI"
-            << wwiv::endl;
+          bout << "Terminal Command not specified. " << wwiv::endl
+               << " Please set TERMINAL_CMD in WWIV.INI" << wwiv::endl;
           bout.getkey();
           break;
         }
@@ -581,8 +581,9 @@ int WFC::LocalLogon() {
   auto d = steady_clock::now();
   int lokb = 0;
   // TODO(rushfan): use wwiv::os::wait_for
-  while (!a_->localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1)))
-    ;
+  while (!a_->localIO()->KeyPressed() && (steady_clock::now() - d < minutes(1))) {
+    wwiv::os::sleep_for(10ms);
+  }
 
   if (a_->localIO()->KeyPressed()) {
     char ch = to_upper_case<char>(a_->localIO()->GetChar());
@@ -596,7 +597,7 @@ int WFC::LocalLogon() {
       a_->localIO()->GetChar();
     }
     else {
-      bool fast = false;
+      auto fast = false;
 
       if (ch == 'F') {   // 'F' for Fast
         a_->unx_ = 1;
@@ -629,7 +630,7 @@ int WFC::LocalLogon() {
       }
 
       a_->usernum = a_->unx_;
-      bool saved_at_wfc = a_->at_wfc();
+      auto saved_at_wfc = a_->at_wfc();
       a_->set_at_wfc(false);
       a_->ReadCurrentUser();
       read_qscn(a_->usernum, qsc, false);

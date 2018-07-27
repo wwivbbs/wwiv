@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*                  Copyright (C)2017, WWIV Software Services             */
+/*                          WWIV BBS Software                             */
+/*               Copyright (C)2018, WWIV Software Services                */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -14,30 +14,25 @@
 /*    "AS IS"  BASIS, WITHOUT  WARRANTIES  OR  CONDITIONS OF ANY  KIND,   */
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
-/*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIV_WWIV_WWIVD_H__
-#define __INCLUDED_WWIV_WWIV_WWIVD_H__
+#ifndef __INCLUDED_WWIVD_NETS_H__
+#define __INCLUDED_WWIVD_NETS_H__
 
-#include <string>
-#include <vector>
-#include "core/net.h"
+#include <ctime>
 #include "sdk/config.h"
 #include "sdk/wwivd_config.h"
+#include <memory>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
-void BeforeStartServer();
-void signal_handler(int mysignal);
+namespace wwiv {
+namespace wwivd {
 
+void do_wwivd_callouts(const wwiv::sdk::Config& config, const wwiv::sdk::wwivd_config_t& c);
 
-void SwitchToNonRootUser(const std::string& wwiv_user);
+} // namespace wwivd
+} // namespace wwiv
 
-/**
- * Executes a command and waits. 
- * If sock is > -1 then we'll close the socket after executing the command 
- * since this is the child socket.
- * pid and node_number is just used for logging.
- */
-bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node_number, SOCKET sock);
-
-
-#endif  // __INCLUDED_WWIV_WWIV_WWIVD_H__
+#endif // __INCLUDED_WWIVD_NETS_H__

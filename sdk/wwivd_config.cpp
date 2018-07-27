@@ -91,7 +91,8 @@ void serialize(Archive & ar, wwivd_config_t &a) {
   ar(cereal::make_nvp("binkp_port", a.binkp_port));
 
   ar(cereal::make_nvp("binkp_cmd", a.binkp_cmd));
-
+  SERIALIZE(a, do_network_callouts);
+  SERIALIZE(a, network_callout_cmd);
 
   ar(cereal::make_nvp("http_address", a.http_address));
   ar(cereal::make_nvp("http_port", a.http_port));

@@ -4,6 +4,7 @@ include_directories(../deps/cereal/include)
 
 set(WWIVD_SOURCES 
 	ips.cpp
+	nets.cpp
     node_manager.cpp
     wwivd_http.cpp
     wwivd_non_http.cpp

@@ -62,7 +62,7 @@ public:
 
   virtual EditlineResult Run(CursesWindow* window) {
     window->GotoXY(this->x_, this->y_);
-    string s = print_time(*this->data_);
+    auto s = print_time(*this->data_);
     auto return_code = editline(window, &s, MAX_TIME_EDIT_LEN + 1, EditLineMode::ALL, "");
     *this->data_ = get_time(s);
     return return_code;

@@ -84,7 +84,7 @@ string to_string(const std::vector<wwivd_matrix_entry_t>& elements) {
   return ss.str();
 }
 
-static string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
+std::string CreateCommandLine(const std::string& tmpl, std::map<char, std::string> params) {
   string out;
 
   for (auto it = tmpl.begin(); it != tmpl.end(); it++) {

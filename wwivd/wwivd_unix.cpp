@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "wwivd/wwivd.h"
 
+#include <atomic>
 #include <iostream>
 #include <map>
 #include <string>
@@ -59,41 +60,49 @@ using namespace wwiv::os;
 extern pid_t bbs_pid;
 extern char **environ;
 
-static void huphandler(int mysignal) {
-  cerr << endl;
-  cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
-  kill(bbs_pid, SIGHUP); // send SIGHUP to process group
-}
+namespace wwiv {
+namespace wwivd {
 
-static void sigint_handler(int mysignal) {
-  cerr << endl;
-  cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
-  kill(bbs_pid, SIGINT); // send SIGINT to process group
+extern std::atomic<bool> need_to_exit;
 }
+} // namespace wwiv
+using namespace wwiv::wwivd;
 
-static void setup_sighup_handlers() {
-  struct sigaction sa;
-  sa.sa_handler = huphandler;
-  sa.sa_flags = SA_RESETHAND;
-  sigfillset(&sa.sa_mask);
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGHUP";
+void signal_handler(int mysignal) {
+  switch (mysignal) { 
+#ifdef __unix__
+  case SIGHUP: 
+  case SIGINT: {
+    cerr << endl;
+    cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
+    kill(bbs_pid, mysignal); // send SIGHUP to process group
+  } break;
+#endif
+  // Graceful exit
+  case SIGTERM: {
+    need_to_exit.store(true);
+  } break;
+#ifdef __unix__
+  // Not graceful exit
+  case SIGKILL: {
+  } break;
+#endif  // __unix__
   }
-}
 
-static void setup_sigint_handlers() {
-  struct sigaction sa;
-  sa.sa_handler = sigint_handler;
-  sa.sa_flags = SA_RESETHAND;
-  sigfillset(&sa.sa_mask);
-  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
-    LOG(ERROR) << "Unable to install signal handler for SIGINT";
-  }
 }
 
 void BeforeStartServer() {
-  setup_sighup_handlers();
-  setup_sigint_handlers();
+  struct sigaction sa {};
+  sa.sa_flags = SA_RESETHAND;
+  sigfillset(&sa.sa_mask);
+  sa.sa_handler = sigint_handler;
+  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGINT";
+  }
+  sa.sa_handler = huphandler;
+  if (sigaction(SIGHUP, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGHUP";
+  }
 }
 
 static uid_t GetWWIVUserId(const string& username) {
@@ -129,8 +138,10 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   LOG(INFO) << pid << "Invoking Command Line (posix_spawn):" << cmd;
   pid_t child_pid = 0;
   int ret = posix_spawn(&child_pid, "/bin/sh", NULL, NULL, argv, environ);
-  // close the socket since we've forked.
-  closesocket(sock);
+  if (sock != SOCKET_ERROR) {
+    // close the socket since we've forked.
+    closesocket(sock);
+  }
   VLOG(2) << "after posix_spawn; ret: " << ret;
   if (ret != 0) {
     // fork failed.
@@ -147,15 +158,22 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   }
   VLOG(2) << pid << "after waitpid";
 
+  std::ostringstream err;
+  err << pid;
+  if (node_number > 0) {
+    err << "Node #" << node_number;
+  } else {
+    err << "cmd: " << cmd;
+  }
   if (WIFEXITED(status)) {
     // Process exited.
-    LOG(INFO) << pid << "Node #" << node_number << " exited with error code: " << WEXITSTATUS(status);
+    LOG(INFO) << err " exited with error code: " << WEXITSTATUS(status);
   }
   else if (WIFSIGNALED(status)) {
-    LOG(INFO) << pid << "Node #" << node_number << " killed by signal: " << WTERMSIG(status);
+    LOG(INFO) << err << " killed by signal: " << WTERMSIG(status);
   }
   else if (WIFSTOPPED(status)) {
-    LOG(INFO) << pid << "Node #" << node_number << " stopped by signal: " << WSTOPSIG(status);
+    LOG(INFO) << err << " stopped by signal: " << WSTOPSIG(status);
   }
 
   return true;

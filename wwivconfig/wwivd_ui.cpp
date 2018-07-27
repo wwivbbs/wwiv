@@ -286,9 +286,14 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
     c.http_port = 8080;
     c.http_address = "127.0.0.1";
     c.binkp_cmd = "./networkb --receive --handle=@H";
+    c.network_callout_cmd = "networkb --send --net=@T --node=@N";
 
     wwivd_matrix_entry_t e = CreateWWIVMatrixEntry();
     c.bbses.push_back(e);
+  } else {
+    if (c.network_callout_cmd.empty()) {
+      c.network_callout_cmd = "networkb --send --net=@T --node=@N";
+    }
   }
 
   if (c.bbses.empty()) {
@@ -312,9 +317,19 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
             new NumberEditItem<int>(COL1_POSITION, y, &c.binkp_port))
       ->set_help_text("BINKP Server Port Number (or -1 to disable).");
   y++;
-  items.add(new Label(COL1_LINE, y, "BinkP Command:"),
+  items.add(new Label(COL1_LINE, y, "BinkP Receive Cmd:"),
             new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, false))
-      ->set_help_text("Command to execute on a binkp connection.");
+      ->set_help_text("Command to execute on an inbound BinkP connection.");
+  y++;
+  items
+      .add(new Label(COL1_LINE, y, "Net Callouts:"),
+           new BooleanEditItem(COL1_POSITION, y, &c.do_network_callouts))
+      ->set_help_text("Command to execute to perform a network callout.");
+
+  y++;
+  items.add(new Label(COL1_LINE, y, "Net Callout Cmd:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd, false))
+      ->set_help_text("Command to execute to perform a network callout.");
   y++;
   items.add(new Label(COL1_LINE, y, "HTTP Port:"),
             new NumberEditItem<int>(COL1_POSITION, y, &c.http_port))

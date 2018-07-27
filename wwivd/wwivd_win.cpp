@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "wwivd/wwivd.h"
 
+#include <atomic>
 #include <iostream>
 #include <map>
 #include <string>
@@ -42,9 +43,39 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
+namespace wwiv {
+namespace wwivd {
+
+extern std::atomic<bool> need_to_exit;
+}
+} // namespace wwiv
+
+using namespace wwiv::wwivd;
+
+void signal_handler(int mysignal) {
+  switch (mysignal) {
+  // Graceful exit
+  case SIGTERM: {
+    std::cerr << "SIGTERM: " << mysignal << std::endl;
+    // On Windows since we do this, we re-raise it.
+    signal(mysignal, SIG_DFL);
+    raise(mysignal);
+  } break;
+  // Interrupts
+  case SIGINT: {
+    std::cerr << "SIGINT: " << mysignal << std::endl;
+    need_to_exit.store(true);
+    // call default handler
+  } break;
+  }
+}
+
 void BeforeStartServer() {
   // Not the best place, but this works.
   static bool initialized = wwiv::core::InitializeSockets();
+  signal(SIGTERM, signal_handler);
+  signal(SIGINT, signal_handler);
+  std::cerr << "set signal handlers" << std::endl;
 }
 
 void SwitchToNonRootUser(const std::string& wwiv_user) {
@@ -79,9 +110,11 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
     return false;
   }
 
-  // We're done with this socket and the child has another reference count
-  // to it.
-  closesocket(sock);
+  if (sock != SOCKET_ERROR) {
+    // We're done with this socket and the child has another reference count
+    // to it.
+    closesocket(sock);
+  }
 
   // Wait until child process exits.
   DWORD dwExitCode = WaitForSingleObject(pi.hProcess, INFINITE);
@@ -90,8 +123,11 @@ bool ExecCommandAndWait(const std::string& cmd, const std::string& pid, int node
   // Close process and thread handles. 
   CloseHandle(pi.hProcess);
   CloseHandle(pi.hThread);
-
-  LOG(INFO) << "Node #" << node_number << " exited with error code: " << dwExitCode;
+  if (node_number > 0) {
+    LOG(INFO) << "Node #" << node_number << " exited with error code: " << dwExitCode;
+  } else {
+    LOG(INFO) << "Command: '" << cmd << "' exited with error code: " << dwExitCode;
+  }
   return true;
 }
 

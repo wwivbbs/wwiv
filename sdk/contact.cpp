@@ -64,6 +64,8 @@ std::string NetworkContact::CreateFakeFtnAddress(uint16_t node) {
   return wwiv::strings::StrCat("20000:20000/", node);
 }
 
+Contact::Contact(const net_networks_rec& net) : Contact(net, false) {}
+
 Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
     : net_(net), save_on_destructor_(save_on_destructor) {
   DataFile<net_contact_rec> file(net_.dir, CONTACT_NET, File::modeBinary | File::modeReadOnly,

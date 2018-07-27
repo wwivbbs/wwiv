@@ -74,8 +74,10 @@ class wwivd_config_t {
 public:
   /** Configuration for non-bbs invocations. */
 
-  int binkp_port = -1;
+  int binkp_port{-1};
   std::string binkp_cmd;
+  bool do_network_callouts{false};
+  std::string network_callout_cmd;
 
   int http_port = -1;
   std::string http_address;

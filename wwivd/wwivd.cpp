@@ -17,6 +17,7 @@
 /*                                                                        */
 /**************************************************************************/
 
+#include <atomic>
 #include <cctype>
 #include <iostream>
 #include <map>
@@ -72,6 +73,7 @@
 #include "sdk/config.h"
 #include "core/datetime.h"
 #include "wwivd/connection_data.h"
+#include "wwivd/nets.h"
 #include "wwivd/node_manager.h"
 #include "wwivd/wwivd.h"
 #include "wwivd/wwivd_http.h"
@@ -98,6 +100,7 @@ pid_t bbs_pid = 0;
 namespace wwiv {
 namespace wwivd {
 
+extern std::atomic<bool> need_to_exit;
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
@@ -128,7 +131,7 @@ int Main(CommandLine& cmdline) {
   }
   VLOG(2) << "Using WWIV_DIR: " << wwiv_dir;
 
-  string wwiv_user = environment_variable("WWIV_USER");
+  auto wwiv_user = environment_variable("WWIV_USER");
   if (wwiv_user.empty()) {
     wwiv_user = cmdline.arg("wwiv_user").as_string();
     VLOG(2) << "Using WWIV_USER(cmdline): " << wwiv_user;
@@ -136,7 +139,7 @@ int Main(CommandLine& cmdline) {
     VLOG(2) << "Using WWIV_USER(env): " << wwiv_user;
   }
 
-  const Config config(wwiv_dir);
+  const Config config{wwiv_dir};
   if (!config.IsInitialized()) {
     LOG(ERROR) << "Unable to load CONFIG.DAT";
     return EXIT_FAILURE;
@@ -146,7 +149,6 @@ int Main(CommandLine& cmdline) {
   c.Load(config);
   File::set_current_directory(config.root_directory());
   LOG(INFO) << "Loaded BBSES:\r\n" << to_string(c.bbses);
-
   BeforeStartServer();
 
   std::map<const std::string, std::shared_ptr<NodeManager>> nodes;
@@ -206,12 +208,15 @@ int Main(CommandLine& cmdline) {
   }
 
   SwitchToNonRootUser(wwiv_user);
+  need_to_exit.store(false);
 
-  if (!sockets.Run()) {
+  // Do network callouts if enabled.
+  do_wwivd_callouts(config, c);
+
+  if (!sockets.Run(need_to_exit)) {
     LOG(INFO) << "Error accepting client socket. " << errno;
     return 2;
   }
-
   return EXIT_FAILURE;
 }
 

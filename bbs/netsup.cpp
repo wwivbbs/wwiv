@@ -320,6 +320,7 @@ public:
   uint16_t node_num_ = 0;
   int64_t weight_ = 0;
 };
+
 bool attempt_callout() {
   a()->status_manager()->RefreshStatusCache();
 

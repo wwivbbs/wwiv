@@ -639,9 +639,9 @@ static void HandleListTitles(int &msgnum, MsgScanOption& scan_option_type) {
   bout << "|#7" << static_cast<unsigned char>(198)
     << string(a()->user()->GetScreenChars() - 3, static_cast<unsigned char>(205))
     << static_cast<unsigned char>(181) << "\r\n";
-  int nNumTitleLines = std::max<int>(a()->screenlinest - 6, 1);
+  auto num_title_lines = std::max<int>(a()->screenlinest - 6, 1);
   int i = 0;
-  while (!abort && ++i <= nNumTitleLines) {
+  while (!abort && ++i <= num_title_lines) {
     ++msgnum;
     const string line = CreateLine(area->ReadMessage(msgnum), msgnum);
     bout.bpla(line, &abort);

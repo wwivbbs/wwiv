@@ -20,6 +20,7 @@
 #define __INCLUDED_WWIV_CORE_NET_H__
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <map>
 #include <string>
@@ -89,6 +90,7 @@ struct accepted_socket_t {
 class SocketSet {
 public:
   SocketSet();
+  explicit SocketSet(int timeout_seconds);
   virtual ~SocketSet();
 
   typedef std::function<void(accepted_socket_t)> socketset_accept_fn;
@@ -102,9 +104,10 @@ public:
   bool add(int port, socketset_accept_fn fn, const std::string& description);
 
   /** 
-   * Runs the select/accept/execute loop, returning false on error.
+   * Runs the select/accept/execute loop until exit_signal is true.
+   * returning false on error or true of signaled to exit.
    */
-  bool Run();
+  bool Run(std::atomic<bool>& exit_signal);
 
 private:
   /** Runs the select/accept/execute loops once, returning false on error. */
@@ -112,7 +115,7 @@ private:
 
   std::map<SOCKET, int> socket_port_map_;
   std::map<SOCKET, socketset_accept_fn> socket_fn_map_;
-
+  const int timeout_seconds_;
 };
 
 }  // namespace core
