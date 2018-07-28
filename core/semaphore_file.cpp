@@ -101,9 +101,11 @@ SemaphoreFile::~SemaphoreFile() {
   }
   fd_ = -1;
 #ifndef _WIN32
-    // Since we don't have O_TEMPORARY on POSIX, we unlink the file
-    // which will delete it once the last file handle is closed.
-    ::unlink(filename_.c_str());
+  // Since we don't have O_TEMPORARY on POSIX, we unlink the file
+  // which will delete it once the last file handle is closed.
+  if (::unlink(filename_.c_str()) == -1) {
+    LOG(ERROR) << "Failed to unlink file: " << filename_ << "; error: " << errno;
+  }
 #endif  // _WIN32
 }
 
