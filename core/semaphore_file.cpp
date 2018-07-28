@@ -60,7 +60,7 @@ namespace core {
 SemaphoreFile SemaphoreFile::try_acquire(const std::string& filepath, 
                                          const std::string& text,
                                          std::chrono::duration<double> timeout) {
-  VLOG(3) << "SemaphoreFile::try_acquire: '" << filepath << "'";
+  VLOG(1) << "SemaphoreFile::try_acquire: '" << filepath << "'";
   int mode = O_CREAT | O_EXCL | O_TEMPORARY | O_RDWR;
   int pmode = S_IREAD | S_IWRITE;
   auto step = timeout / 10;
