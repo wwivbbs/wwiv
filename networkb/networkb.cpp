@@ -19,6 +19,7 @@
 // WWIV BINKP Network Stack. (networkb.exe)
 
 #include <chrono>
+#include <csignal>
 #include <fcntl.h>
 #include <iostream>
 #include <map>
@@ -230,6 +231,11 @@ static int Main(const NetworkCommandLine& net_cmdline) {
 int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   wwiv::core::ScopeExit at_exit(Logger::ExitLogger);
+
+#ifdef __unix__
+  // Let the socket library handle EPIPE
+  signal(SIGPIPE, SIG_IGN);
+#endif // __unix__
 
   CommandLine cmdline(argc, argv, "net");
   RegisterNetworkBCommands(cmdline);

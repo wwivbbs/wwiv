@@ -29,7 +29,6 @@
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Mswsock.lib")
 #pragma comment(lib, "AdvApi32.lib")
-
 #else // _WIN32
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -286,8 +285,12 @@ std::string SocketConnection::read_line(int max_size, std::chrono::duration<doub
   return s;
 }
 
+#ifndef MSG_NOSIGNAL
+#define MSG_NOSIGNAL 0
+#endif  // MSG_NOSIGNAL 
+
 int SocketConnection::send(const void* data, int size, duration<double>) {
-  int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, 0);
+  int sent = ::send(sock_, reinterpret_cast<const char*>(data), size, MSG_NOSIGNAL);
   if (open_ && sent != size) {
     LOG(ERROR) << "ERROR: send != packet size.  size: " << size << "; sent: " << sent;
     if (sent == -1) {
