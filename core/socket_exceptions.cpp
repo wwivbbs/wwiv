@@ -18,6 +18,7 @@
 #include "core/socket_exceptions.h"
 
 #include <stdexcept>
+#include "core/log.h"
 #include "core/strings.h"
 
 using std::string;
@@ -27,7 +28,14 @@ namespace wwiv {
 namespace core {
 
 connection_error::connection_error(const string& host, int port) 
-  : socket_error(StringPrintf("Error connecting to: %s:%d", host.c_str(), port)) {}
+  : socket_error(StringPrintf("Error connecting to: %s:%d", host.c_str(), port)) {
+  LOG(ERROR) << "connection_error: " << host << ":" << port;
+}
+
+socket_error::socket_error(const std::string& message) : std::runtime_error(message) {
+  LOG(ERROR) << "socket_error: " << message;
+}
+
 
 }  // namespace net
 } // namespace wwiv

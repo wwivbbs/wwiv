@@ -27,7 +27,7 @@ namespace wwiv {
 namespace core {
 
 struct socket_error : public std::runtime_error {
-socket_error(const std::string& message) : std::runtime_error(message) {}
+  socket_error(const std::string& message);
 };
 
 struct socket_closed_error : public socket_error {
