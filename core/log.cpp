@@ -73,7 +73,7 @@ public:
       // should we do instead?
       return false;
     }
-    return out.WriteLine(message) != 0;
+    return out.WriteLine(message) > 0;
   }
 
 private:

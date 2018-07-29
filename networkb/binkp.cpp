@@ -74,9 +74,12 @@ using namespace wwiv::os;
 namespace wwiv {
 namespace net {
 
-static int System(const string& cmd) {
-  LOG(INFO) << "       executing: " << cmd;
-  return system(cmd.c_str());
+static int System(const string& bbsdir, const string& cmd) {
+  const string path = FilePath(bbsdir, cmd);
+
+  auto err = system(path.c_str());
+  LOG(INFO) << "       executed: '" << cmd << "' with an error code: " << err;
+  return err;
 }
 
 string expected_password_for(const net_call_out_rec* con) {
@@ -960,7 +963,9 @@ void BinkP::Run() {
       file_manager_->rename_ftn_pending_files();
       if (!config_->skip_net()) {
         const int network_number = config_->networks().network_number(remote_.network_name());
-        System(StrCat("networkc .", network_number, " --v=", config_->verbose()));
+        // TODO(rushfan): May need binary path one day
+        System(config_->config().root_directory(),
+               StrCat("networkc .", network_number, " --v=", config_->verbose()));
       }
     }
 
@@ -1017,7 +1022,9 @@ void BinkP::process_network_files() const {
   if (network_number == wwiv::sdk::Networks::npos) {
     return;
   }
-  System(StrCat("networkc .", network_number, " --v=", config_->verbose()));
+  // TODO(rushfan): May need binary path one day
+  System(config_->config().root_directory(),
+         StrCat("networkc .", network_number, " --v=", config_->verbose()));
 }
 
 bool ParseFileRequestLine(const string& request_line,

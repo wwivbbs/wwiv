@@ -256,7 +256,7 @@ bool SocketSet::RunOnce() {
   for (const auto& e : socket_fn_map_) {
     if (FD_ISSET(e.first, &fds)) {
       socklen_t addr_size = sizeof(sockaddr_in);
-      struct sockaddr_in saddr = {};
+      struct sockaddr_in saddr{};
       auto client_sock = accept(e.first, reinterpret_cast<sockaddr*>(&saddr), &addr_size);
 
 #ifdef _WIN32

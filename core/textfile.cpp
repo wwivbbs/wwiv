@@ -144,6 +144,7 @@ int TextFile::WriteLine(const string& text) {
   int num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
   // fopen in text mode will force \n -> \r\n on win32
   fputs("\n", file_);
+  // TODO(rushfan): Should we just +=1 on non-win32?
   num_written += 2;
   return num_written;
 }

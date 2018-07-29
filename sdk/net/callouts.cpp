@@ -83,7 +83,7 @@ bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const D
 
   if (con.call_every_x_minutes && now >= next_contact_time) {
     VLOG(1) << "Calling anyway since it's been time: ";
-    VLOG(1) << "Last Contact: " << DateTime::from_time_t(ncn.lastcontactsent()).to_string();
+    VLOG(1) << "Last Try: " << DateTime::from_time_t(ncn.lastcontact()).to_string();
     return true;
   }
   if (bytes_to_k(ncn.bytes_waiting()) > con.min_k) {
