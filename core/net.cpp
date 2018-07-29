@@ -233,7 +233,7 @@ bool SocketSet::RunOnce() {
     return false;
   }
 
-  VLOG(1) << "About to call select. (" << max_fd << ")";
+  VLOG(3) << "About to call select. (" << max_fd << ")";
   int status = 0;
   if (timeout_seconds_ > 0) {
     timeval timeout{};
@@ -243,7 +243,7 @@ bool SocketSet::RunOnce() {
   } else {
     status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
   }
-  VLOG(1) << "After select.";
+  VLOG(2) << "After select.";
   if (status < 0) {
     LOG(ERROR) << "Error calling select; errno: " << errno;
     return false;
