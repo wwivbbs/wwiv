@@ -33,7 +33,9 @@ connection_error::connection_error(const string& host, int port)
 }
 
 socket_error::socket_error(const std::string& message) : std::runtime_error(message) {
-  LOG(ERROR) << "socket_error: " << message;
+  // Don't log this since we *often* hit a timeout since we use nonblocking
+  // sockets and that's OK.
+  VLOG(4) << "socket_error: " << message;
 }
 
 
