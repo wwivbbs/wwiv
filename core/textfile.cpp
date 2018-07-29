@@ -138,6 +138,9 @@ bool TextFile::Close() {
 }
 
 int TextFile::WriteLine(const string& text) { 
+  if (file_ == nullptr) {
+    return -1;
+  }
   int num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
   // fopen in text mode will force \n -> \r\n on win32
   fputs("\n", file_);
