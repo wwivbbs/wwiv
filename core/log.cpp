@@ -202,7 +202,7 @@ static std::string DefaultTimestamp() {
   auto millis = static_cast<int>(
       std::chrono::duration_cast<std::chrono::milliseconds>(duration).count() % 1000);
   auto milliss = StringPrintf("%03d ", millis);
-  return StrCat(dt.to_string(log_date_format), milliss);
+  return StrCat(dt.to_string(log_date_format), ",", milliss);
 }
 
 LoggerConfig::LoggerConfig() : timestamp_fn_(DefaultTimestamp) {}
