@@ -97,7 +97,6 @@ private:
   bool send_command_packet(uint8_t command_id, const std::string& data);
   bool send_data_packet(const char* data, std::size_t size);
 
-  std::string create_cmdline(int num, int network_number) const;
   void process_network_files() const;
 
   BinkState ConnInit();

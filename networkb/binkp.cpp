@@ -960,8 +960,7 @@ void BinkP::Run() {
       file_manager_->rename_ftn_pending_files();
       if (!config_->skip_net()) {
         const int network_number = config_->networks().network_number(remote_.network_name());
-        const string cmd = StrCat("networkc .", network_number, " --v=", config_->verbose());
-        System(cmd);
+        System(StrCat("networkc .", network_number, " --v=", config_->verbose()));
       }
     }
 
@@ -1011,21 +1010,6 @@ static bool need_network3(const string& dir, int network_version) {
 }
 
 
-string BinkP::create_cmdline(int num, int network_number) const {
-  std::ostringstream ss;
-  ss << "network" << num;
-  if (config_->network_version() >= 51) {
-    // add new flags
-    ss << " --v=" << config_->verbose();
-  }
-
-  ss << " ." << network_number;
-  if (num == 3) {
-    ss << " Y";
-  }
-  return ss.str();
-}
-
 void BinkP::process_network_files() const {
   const string network_name = remote_.network_name();
   VLOG(1) << "STATE: process_network_files for network: " << network_name;
@@ -1033,16 +1017,7 @@ void BinkP::process_network_files() const {
   if (network_number == wwiv::sdk::Networks::npos) {
     return;
   }
-  const auto dir = remote_.network().dir;
-  if (File::ExistsWildcard(StrCat(dir, "p*.net"))) {
-    System(create_cmdline(1, network_number));
-    if (File::Exists(StrCat(dir, LOCAL_NET))) {
-      System(create_cmdline(2, network_number));
-    }
-  }
-  if (need_network3(dir, config_->network_version())) {
-    System(create_cmdline(3, network_number));
-  }
+  System(StrCat("networkc .", network_number, " --v=", config_->verbose()));
 }
 
 bool ParseFileRequestLine(const string& request_line,
