@@ -108,7 +108,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& c)
     if (need_to_exit.load()) {
       return;
     }
-    sleep_for(5s);
+    sleep_for(10s);
     e = need_to_exit.load();
   }
 }

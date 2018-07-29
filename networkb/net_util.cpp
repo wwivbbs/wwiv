@@ -91,17 +91,23 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   }
 }
 
+// Returns the name of the network command for the command character
+// e.g. returns "network1" for '1', etc.  If 0 or '\0' then it returns
+// "network".
+static std::string network_cmd_name(char net_cmd) {
+  return (net_cmd == '\0') ? "network" : StrCat("network", net_cmd);
+}
+
 std::string NetworkCommandLine::semaphore_filename() const noexcept {
-  const auto net_cmd_name = (net_cmd_ == '\0') ? "network" : StrCat("network", net_cmd_);
-  return StrCat(network_.dir, net_cmd_name, ".bsy");
+  return StrCat(network_.dir, network_cmd_name(net_cmd_), ".bsy");
 }
 
 bool NetworkCommandLine::LoadNetIni() {
-  const auto net_tag = (net_cmd_ == '\0') ? "network" : StrCat("network", net_cmd_);
+  const auto net_tag = network_cmd_name(net_cmd_);
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
 
-  File file(config().root_directory(), "net.ini");
-  auto ini = std::unique_ptr<IniFile>(new IniFile(file.full_pathname(), {net_tag_net, net_tag}));
+  auto ini = std::unique_ptr<IniFile>(
+      new IniFile(FilePath(config().root_directory(), "net.ini"), {net_tag_net, net_tag}));
   if (!ini || !ini->IsOpen()) {
     // This is fine and can happen.
     return true;

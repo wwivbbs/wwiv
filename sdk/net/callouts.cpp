@@ -41,7 +41,7 @@ T bytes_to_k(T b) {
 bool allowed_to_call(const net_call_out_rec& con, const DateTime& dt) {
 
   if (con.options & options_no_call) {
-    VLOG(2) << "Not Calling: options_no_call";
+    VLOG(3) << "Not Calling: options_no_call";
     return false;
   }
 
@@ -68,6 +68,7 @@ bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const D
   VLOG(2) << "should_call: @" << con.sysnum;
 
   if (!allowed_to_call(con, dt)) {
+    VLOG(2) << "!allowed_to_call; skipping";
     return false;
   }
 
@@ -81,12 +82,12 @@ bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const D
   auto next_contact_time = last_contact + minutes(min_minutes);
 
   if (con.call_every_x_minutes && now >= next_contact_time) {
-    VLOG(2) << "Calling anyway since it's been time: ";
-    VLOG(2) << "Last Contact: " << DateTime::from_time_t(ncn.lastcontactsent()).to_string();
+    VLOG(1) << "Calling anyway since it's been time: ";
+    VLOG(1) << "Last Contact: " << DateTime::from_time_t(ncn.lastcontactsent()).to_string();
     return true;
   }
   if (bytes_to_k(ncn.bytes_waiting()) > con.min_k) {
-    VLOG(2) << "Calling: min_k";
+    VLOG(1) << "Calling: min_k";
     return true;
   }
   VLOG(2) << "Skipping; No reason to call.";
