@@ -281,34 +281,29 @@ void do_callout(uint16_t sn) {
   }
 
   const string cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", a()->net_num());
-  if (strncmp(csne->phone, "000", 3)) {
-    // TODO(rushfan): Figure out a better way to see if we need to call WINS exp.exe
-    run_exp();
-    bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn
-         << wwiv::endl;
-    const string regions_filename =
-        StringPrintf("%s.%-3u", REGIONS_DAT, to_number<unsigned int>(csne->phone));
-    string region = "Unknown Region";
-    if (File::Exists(FilePath(a()->config()->datadir(), REGIONS_DAT), regions_filename)) {
-      const string town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-      region = describe_area_code_prefix(to_number<int>(csne->phone), to_number<int>(town));
-    } else {
-      region = describe_area_code(to_number<int>(csne->phone));
-    }
-    bout << "|#7Sys located in: |#2" << region << wwiv::endl;
-    if (contact_rec->bytes_waiting() > 0) {
-      bout << "|#7Amount pending: |#2" << bytes_to_k(contact_rec->bytes_waiting()) << "k"
-           << wwiv::endl;
-    }
-    bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
-         << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
-    ExecuteExternalProgram(cmd, EFLAG_NETPROG);
-    a()->status_manager()->RefreshStatusCache();
-    last_time_c_ = steady_clock::now();
-    cleanup_net();
-    run_exp();
-    send_inst_cleannet();
+  bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn
+        << wwiv::endl;
+  const auto regions_filename =
+      StringPrintf("%s.%-3u", REGIONS_DAT, to_number<unsigned int>(csne->phone));
+  string region = "Unknown Region";
+  if (File::Exists(FilePath(a()->config()->datadir(), REGIONS_DAT), regions_filename)) {
+    const auto town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
+    region = describe_area_code_prefix(to_number<int>(csne->phone), to_number<int>(town));
+  } else {
+    region = describe_area_code(to_number<int>(csne->phone));
   }
+  bout << "|#7Sys located in: |#2" << region << wwiv::endl;
+  if (contact_rec->bytes_waiting() > 0) {
+    bout << "|#7Amount pending: |#2" << bytes_to_k(contact_rec->bytes_waiting()) << "k"
+          << wwiv::endl;
+  }
+  bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
+        << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
+  ExecuteExternalProgram(cmd, EFLAG_NETPROG);
+  a()->status_manager()->RefreshStatusCache();
+  last_time_c_ = steady_clock::now();
+  cleanup_net();
+  send_inst_cleannet();
 }
 
 class NodeAndWeight {
@@ -1034,24 +1029,6 @@ void force_callout() {
 
   a()->localIO()->Cls();
   do_callout(sn.first);
-}
-
-void run_exp() {
-  int nOldNetworkNumber = a()->net_num();
-  int internet_net_num = getnetnum_by_type(network_type_t::internet);
-  if (internet_net_num == -1) {
-    return;
-  }
-  set_net_num(internet_net_num);
-
-  const string exp_command = StringPrintf(
-      "exp s%d.net %s %d %s %s %s", INTERNET_EMAIL_FAKE_OUTBOUND_NODE,
-      a()->network_directory().c_str(), a()->current_net().sysnum, a()->internetEmailName.c_str(),
-      a()->internetEmailDomain.c_str(), a()->network_name());
-  ExecuteExternalProgram(exp_command, EFLAG_NETPROG);
-
-  set_net_num(nOldNetworkNumber);
-  a()->localIO()->Cls();
 }
 
 std::chrono::steady_clock::time_point last_network_attempt() { return last_time_c_; }

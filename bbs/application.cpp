@@ -688,7 +688,6 @@ void Application::ShowUsage() {
        << "  -?         - Display command line options (This screen)\r\n\n"
        << "  -A<level>  - Specify the Error Exit Level\r\n"
        << "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n"
-       << "  -C         - Do callouts then exit\r\n"
        << "  -E         - Load for beginday event only\r\n"
        << "  -H<handle> - Socket handle\r\n"
        << "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n"
@@ -712,7 +711,6 @@ int Application::Run(int argc, char* argv[]) {
   unsigned short this_usernum_from_commandline = 0;
   bool ooneuser = false;
   bool event_only = false;
-  bool callout_only{false};
   CommunicationType type = CommunicationType::NONE;
   unsigned int hSockOrComm = 0;
 
@@ -747,9 +745,6 @@ int Application::Run(int argc, char* argv[]) {
         SetCurrentSpeed(std::to_string(ui));
         user_already_on_ = true;
       } break;
-      case 'C':
-        callout_only = true;
-        break;
       case 'E':
         event_only = true;
         break;
@@ -933,9 +928,6 @@ int Application::Run(int argc, char* argv[]) {
       clog << "! WARNING: Tried to run beginday event again\r\n\n";
       sleep_for(seconds(2));
     }
-    ExitBBSImpl(oklevel_, true);
-  } else if (callout_only) {
-    attempt_callout();
     ExitBBSImpl(oklevel_, true);
   }
 

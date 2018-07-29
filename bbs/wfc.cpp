@@ -345,12 +345,6 @@ int WFC::doWFCEvents() {
           force_callout();
         }
         break;
-        // War Dial Connect
-        // Fast Net Callout from WFC
-      case '*': {
-        io->Cls();
-        do_callout(INTERNET_EMAIL_FAKE_OUTBOUND_NODE);
-      } break;
       case ',':
         // Print NetLogs
         if (a_->current_net().sysnum > 0 || !a_->net_networks.empty()) {
