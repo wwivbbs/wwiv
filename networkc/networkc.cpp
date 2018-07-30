@@ -149,7 +149,7 @@ int networkc_main(const NetworkCommandLine & net_cmdline) {
     do {
       found = false;
       // Pending files, call network1 to put them into s* or local.net.
-      if (File::ExistsWildcard(StrCat(net.dir, "p*.net"))) {
+      if (File::ExistsWildcard(FilePath(net.dir, "p*.net"))) {
         VLOG(2) << "Found p*.net";
         System(create_network_cmdline(net_cmdline, '1', verbose, ""));
         found = true;
@@ -178,7 +178,7 @@ int networkc_main(const NetworkCommandLine & net_cmdline) {
       }
 
       // Process local mail with network2.
-      if (File::Exists(StrCat(net.dir, LOCAL_NET))) {
+      if (File::Exists(FilePath(net.dir, LOCAL_NET))) {
         VLOG(2) << "Found: " << LOCAL_NET;
         System(create_network_cmdline(net_cmdline, '2', verbose, ""));
         found = true;
