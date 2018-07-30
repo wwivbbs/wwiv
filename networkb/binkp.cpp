@@ -75,10 +75,10 @@ namespace wwiv {
 namespace net {
 
 static int System(const string& bbsdir, const string& cmd) {
-  const string path = FilePath(bbsdir, cmd);
+  const auto path = FilePath(bbsdir, cmd);
 
   auto err = system(path.c_str());
-  LOG(INFO) << "       executed: '" << cmd << "' with an error code: " << err;
+  LOG(INFO) << "       executed: '" << path << "' with an error code: " << err;
   return err;
 }
 
