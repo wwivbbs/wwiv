@@ -20,3 +20,6 @@
 [submodule "deps/benchmark"]
 	path = deps/benchmark
 	url = https://github.com/google/benchmark.git
+[submodule "deps/fmt"]
+	path = deps/fmt
+	url = https://github.com/wwivbbs/fmt
