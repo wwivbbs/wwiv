@@ -33,7 +33,10 @@ namespace wwiv {
 namespace sdk {
 namespace net {
 
+bool allowed_to_call(const network_callout_config_t& con, const wwiv::core::DateTime& dt);
 bool allowed_to_call(const net_call_out_rec& con, const wwiv::core::DateTime& dt);
+bool should_call(const wwiv::sdk::NetworkContact& ncn, const network_callout_config_t& callout,
+                 const wwiv::core::DateTime& dt);
 bool should_call(const wwiv::sdk::NetworkContact& ncn, const net_call_out_rec& con,
                  const wwiv::core::DateTime& dt);
 

@@ -256,7 +256,7 @@ struct net_interconnect_rec {
 struct net_call_out_rec {
   net_call_out_rec() = default;
   net_call_out_rec(const std::string f, uint16_t sn, uint16_t mn, uint16_t op, uint16_t ca,
-                    int8_t nh, int8_t xh, char pw[20], uint8_t tpd, uint16_t nk)
+                   int8_t nh, int8_t xh, char pw[20], uint8_t tpd, uint16_t nk)
       : ftn_address(f), sysnum(sn), macnum(mn), options(op), call_every_x_minutes(ca), min_hr(nh),
         max_hr(xh), session_password(pw), min_k(nk) {}
   // FTN Address.
@@ -291,17 +291,17 @@ struct net_call_out_rec {
  *   to that system, even if there is nothing waiting to be sent there.
  * password - is the password used for connection to this system.
  */
-#define unused_options_sendback 0x0001         /* & they can send data back */
-#define unused_options_ATT_night 0x0002 /* - callout only at AT&T nigh hours */
-#define unused_options_ppp 0x0004       /* _ transfer via PPP */
-#define options_no_call 0x0008          /* + don't call that system, it will */
-#define unused_options_receive_only 0x0010     /* ~ never send anything */
-#define unused_options_once_per_day 0x0020     /* ! only call once per day */
-#define unused_options_compress 0x0040  /* ; compress data */
-#define unused_options_hslink 0x0080    /* ^ use HSLINK if available */
-#define unused_options_force_ac 0x0100  /* $ force area code on dial */
-#define unused_options_dial_ten 0x0200  /* * use ten digit dialing format */
-#define options_hide_pend 0x0400        /* = hide in pending display */
+#define unused_options_sendback 0x0001     /* & they can send data back */
+#define unused_options_ATT_night 0x0002    /* - callout only at AT&T nigh hours */
+#define unused_options_ppp 0x0004          /* _ transfer via PPP */
+#define options_no_call 0x0008             /* + don't call that system, it will */
+#define unused_options_receive_only 0x0010 /* ~ never send anything */
+#define unused_options_once_per_day 0x0020 /* ! only call once per day */
+#define unused_options_compress 0x0040     /* ; compress data */
+#define unused_options_hslink 0x0080       /* ^ use HSLINK if available */
+#define unused_options_force_ac 0x0100     /* $ force area code on dial */
+#define unused_options_dial_ten 0x0200     /* * use ten digit dialing format */
+#define options_hide_pend 0x0400           /* = hide in pending display */
 
 #ifndef __MSDOS__
 
@@ -325,7 +325,6 @@ static constexpr char INTERNET_NEWS_FAKE_OUTBOUND_ADDRESS[] = "@32766";
  */
 static constexpr int16_t INTERNET_EMAIL_FAKE_OUTBOUND_NODE = 32767;
 static constexpr char INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS[] = "@32767";
-
 
 /**
  * Used to indicate no node number in functions that return -1 when no
@@ -380,6 +379,15 @@ struct binkp_session_config_t {
 };
 
 /**
+ * Minimal callout configuration
+ */
+struct network_callout_config_t {
+  bool auto_callouts{false};
+  int call_every_x_minutes{15};
+  int min_k{0};
+};
+
+/**
  * Specific config for a fido node.
  */
 struct fido_node_config_t {
@@ -390,6 +398,8 @@ struct fido_node_config_t {
   fido_packet_config_t packet_config;
   // BinkP session options.
   binkp_session_config_t binkp_config;
+  // Automatic callotu config
+  network_callout_config_t callout_config;
 };
 
 // Remember to update the serialize function in networks_cereal.h when updating these.

@@ -45,7 +45,7 @@ public:
     ncr_.ncr.systemnumber = node;
     ncr_.address = CreateFakeFtnAddress(node); 
   }
-  //explicit NetworkContact(const std::string& address): ncr_() { ncr_.address = address; }
+  explicit NetworkContact(const std::string& address): ncr_() { ncr_.address = address; }
   explicit NetworkContact(const net_contact_rec& ncr): ncr_(to_network_contact_record(ncr)) {}
   explicit NetworkContact(const wwiv::sdk::network_contact_record& ncr): ncr_(ncr) {}
   ~NetworkContact() {}

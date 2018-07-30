@@ -31,7 +31,7 @@ namespace cereal {
 template <typename T> inline
 std::string to_enum_string(const T& t, const std::vector<std::string>& names) {
   try {
-    return names.at(static_cast<int>(t));
+    return names.at(static_cast<size_t>(t));
   } catch (std::out_of_range&) {
     return names.at(0);
   }
@@ -62,7 +62,7 @@ void load_minimal(Archive const &, network_type_t& t, const std::string& v) {
 
 template <class Archive> inline
 std::string save_minimal(Archive const &, const fido_bundle_status_t& t) {
-  char c = static_cast<char>(t);
+  auto c = static_cast<char>(t);
   return std::string(1, c);
 }
 template <class Archive> inline
@@ -118,6 +118,7 @@ void serialize(Archive & ar, fido_node_config_t& n) {
   SERIALIZE(n, routes);
   SERIALIZE(n, packet_config);
   SERIALIZE(n, binkp_config);
+  SERIALIZE(n, callout_config);
 }
 
 // binkp_session_config_t
@@ -128,6 +129,12 @@ void serialize(Archive & ar, binkp_session_config_t& n) {
   SERIALIZE(n, password);
 }
 
+// network_callout_config_t
+template <class Archive> void serialize(Archive& ar, network_callout_config_t& n) {
+  SERIALIZE(n, auto_callouts);
+  SERIALIZE(n, call_every_x_minutes);
+  SERIALIZE(n, min_k);
+}
 
 template <class Archive>
 void serialize(Archive & ar, fido_network_config_t& n) {

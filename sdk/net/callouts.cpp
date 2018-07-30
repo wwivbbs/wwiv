@@ -38,6 +38,18 @@ T bytes_to_k(T b) {
   return (b) ? static_cast<T>((b + 1023) / 1024) : static_cast<T>(0);
 }
 
+network_callout_config_t to_network_callout_config_t(const net_call_out_rec& con) {
+  network_callout_config_t c{};
+  c.auto_callouts = !(con.options & options_no_call);
+  c.call_every_x_minutes = con.call_every_x_minutes;
+  c.min_k = con.min_k;
+  return c;
+}
+
+bool allowed_to_call(const network_callout_config_t& con, const DateTime& dt) { 
+  return con.auto_callouts;
+}
+
 bool allowed_to_call(const net_call_out_rec& con, const DateTime& dt) {
 
   if (con.options & options_no_call) {
@@ -65,28 +77,33 @@ bool allowed_to_call(const net_call_out_rec& con, const DateTime& dt) {
  * is ok to call and does not violate any constraints.
  */
 bool should_call(const NetworkContact& ncn, const net_call_out_rec& con, const DateTime& dt) {
-  VLOG(2) << "should_call: @" << con.sysnum;
+  auto callout = to_network_callout_config_t(con);
+  return should_call(ncn, callout, dt);
+}
 
-  if (!allowed_to_call(con, dt)) {
+bool should_call(const wwiv::sdk::NetworkContact& ncn, const network_callout_config_t& callout,
+                  const wwiv::core::DateTime& dt) {
+
+  if (!allowed_to_call(callout, dt)) {
     VLOG(2) << "!allowed_to_call; skipping";
     return false;
   }
 
   auto now = dt.to_system_clock();
-  if (ncn.bytes_waiting() == 0L && !con.call_every_x_minutes) {
+  if (ncn.bytes_waiting() == 0L && !callout.call_every_x_minutes) {
     VLOG(2) << "Skipping: No bytes waiting and !call anyway";
     return false;
   }
-  auto min_minutes = std::max<int>(con.call_every_x_minutes, 1);
+  auto min_minutes = std::max<int>(callout.call_every_x_minutes, 1);
   auto last_contact = DateTime::from_time_t(ncn.lastcontact()).to_system_clock();
   auto next_contact_time = last_contact + minutes(min_minutes);
 
-  if (con.call_every_x_minutes && now >= next_contact_time) {
+  if (callout.call_every_x_minutes && now >= next_contact_time) {
     VLOG(1) << "Calling anyway since it's been time: ";
     VLOG(1) << "Last Try: " << DateTime::from_time_t(ncn.lastcontact()).to_string();
     return true;
   }
-  if (bytes_to_k(ncn.bytes_waiting()) > con.min_k) {
+  if (bytes_to_k(ncn.bytes_waiting()) > callout.min_k) {
     VLOG(1) << "Calling: min_k";
     return true;
   }

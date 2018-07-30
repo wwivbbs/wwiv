@@ -293,22 +293,35 @@ private:
 
 static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   constexpr int LBL1_POSITION = 2;
-  constexpr int LABEL_WIDTH = 14;
+  constexpr int LABEL_WIDTH = 30;
   constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
-  int y = 1;
 
   auto& p = n.packet_config;
   EditItems items{};
   vector<pair<fido_packet_t, string>> packetlist = {
       {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
 
-  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, n.routes, false));
-  items.add(new ToggleEditItem<fido_packet_t>(COL1_POSITION, y++, packetlist, &p.packet_type));
-  items.add(new StringListItem(COL1_POSITION, y++, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
-  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.packet_password, true));
-  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, p.areafix_password, true));
-  items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_archive_size));
-  items.add(new NumberEditItem<int>(COL1_POSITION, y++, &p.max_packet_size));
+  int y = 1;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Routes:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, false));
+  ++y;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet Type:"),
+            new ToggleEditItem<fido_packet_t>(COL1_POSITION, y, packetlist, &p.packet_type));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Compression:"),
+            new StringListItem(COL1_POSITION, y, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet PW:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password, true));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "AreaFix PW:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password, true));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Arc Size:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &p.max_archive_size));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Pkt Size:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &p.max_packet_size));
 
   vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
       {fido_bundle_status_t::normal, "Normal"},
@@ -316,27 +329,31 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
       {fido_bundle_status_t::direct, "Immediate"},
       {fido_bundle_status_t::hold, "Hold"},
   };
-  items.add(new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y++, bundlestatuslist,
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Bundle Status:"),
+            new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y, bundlestatuslist,
                                                      &p.netmail_status));
-
   auto& b = n.binkp_config;
-  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 40, b.host, false));
-  items.add(new NumberEditItem<int>(COL1_POSITION, y++, &b.port));
-  items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, b.password, true));
-
-  y = 1;
-  items.add_labels({new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Routes:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet Type:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Compression:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Packet PW:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "AreaFix PW:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Max Arc Size:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Max Pkt Size:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Bundle Status:"),
-
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BinkP Host:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "BinkP Port:"),
-                    new Label(LBL1_POSITION, y++, LABEL_WIDTH, "Session PW:")});
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, false));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Port:"),
+            new NumberEditItem<int>(COL1_POSITION, y, &b.port));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Session PW:"),
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password, true));
+  y += 2;
+  auto& c = n.callout_config;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Automatic Callouts:"),
+            new BooleanEditItem(COL1_POSITION, y, &c.auto_callouts));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
+            new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
+                                                                 &c.call_every_x_minutes));
+  y++;
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
+            new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k));
 
   items.Run(StrCat("Address: ", a.as_string()));
 }

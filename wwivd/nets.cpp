@@ -55,6 +55,7 @@
 #include "sdk/net/callouts.h"
 #include "sdk/contact.h"
 #include "sdk/callout.h"
+#include "sdk/fido/fido_callout.h"
 #include "core/datetime.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/wwivd_non_http.h"
@@ -75,28 +76,80 @@ using namespace wwiv::os;
 
 std::atomic<bool> need_to_exit;
 
+static NetworkContact network_contact_from_last_time(const std::string& address, time_t t) {
+  network_contact_record ncr{};
+  ncr.address = address;
+  ncr.ncr.lastcontact = t;
+  ncr.ncr.lasttry = t;
+  return NetworkContact{ncr};
+}
+
+static void one_net_ftn_callout(const Config& config, const net_networks_rec& net,
+                                const wwivd_config_t& c, int network_number) {
+  wwiv::sdk::fido::FidoCallout callout(config, net);
+  static std::map<int, std::map<std::string, time_t>> last_contact;
+  auto& current_last_contact = last_contact[network_number];
+
+  for (const auto& kv : callout.node_configs_map()) {
+    const auto address = kv.first.as_string();
+    const auto& callout = kv.second.callout_config;
+    if (!wwiv::sdk::net::allowed_to_call(callout, DateTime::now())) {
+      // Is the callout bit set.
+      continue;
+    }
+    auto ncn = network_contact_from_last_time(address, current_last_contact[address]);
+    if (!wwiv::sdk::net::should_call(ncn, callout, DateTime::now())) {
+      // Has it been long enough, or do we have enough k waiting.
+      continue;
+    }
+    // Call it.
+    LOG(INFO) << "ftn: should call out to: " << kv.first << "." << net.name;
+    std::map<char, string> params = {{'N', address},
+                                     {'T', std::to_string(network_number)}};
+    auto cmd = CreateCommandLine(c.network_callout_cmd, params);
+    auto result = ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1);
+    if (!result) {
+      LOG(ERROR) << "Error executing command: '" << cmd << "'";
+    }
+
+  }
+
+}
+
+
+static void one_net_wwivnet_callout(const Config& config, const net_networks_rec& net,
+                                    const wwivd_config_t& c, int network_number) {
+  Contact contact(net);
+  Callout callout(net);
+  for (const auto& kv : callout.callout_config()) {
+    const auto& ncn = contact.contact_rec_for(kv.first);
+    if (!wwiv::sdk::net::allowed_to_call(kv.second, DateTime::now())) {
+      continue;
+    }
+    if (wwiv::sdk::net::should_call(*ncn, kv.second, DateTime::now())) {
+      LOG(INFO) << "should call out to: " << kv.first << "." << net.name;
+      std::map<char, string> params = {{'N', std::to_string(kv.first)},
+                                       {'T', std::to_string(network_number)}};
+      auto cmd = CreateCommandLine(c.network_callout_cmd, params);
+      auto result = ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1);
+      if (!result) {
+        LOG(ERROR) << "Error executing command: " << cmd;
+      }
+    }
+  }
+}
+
 static void one_callout_loop(const Config& config, const wwivd_config_t& c) { 
   VLOG(1) << "do_wwivd_callouts: ";
   Networks networks(config); 
   const auto& nets = networks.networks();
   int network_number = 0;
   for (const auto& net : nets) {
-    Callout callout(net);
-    Contact contact(net);
-    for (const auto& kv : callout.callout_config()) {
-      const auto& ncn = contact.contact_rec_for(kv.first);
-      if (wwiv::sdk::net::should_call(*ncn, kv.second, DateTime::now())) {
-        LOG(INFO) << "should call out to: " << kv.first << "." << net.name;
-        std::map<char, string> params = {{'N', std::to_string(kv.first)},
-                                         {'T', std::to_string(network_number)}};
-        std::string cmd = CreateCommandLine(c.network_callout_cmd, params);
-        auto result = ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1);
-        if (!result) {
-          LOG(ERROR) << "Error executing command: " << cmd;
-        }
-      }
+    if (net.type == network_type_t::wwivnet) {
+      one_net_wwivnet_callout(config, net, c, network_number++);
+    } else if (net.type == network_type_t::ftn) {
+      one_net_ftn_callout(config, net, c, network_number++);
     }
-    ++network_number;
   }
 }
 
