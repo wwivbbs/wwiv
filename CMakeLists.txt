@@ -27,6 +27,9 @@ endif (WWIV_BUILD_TESTS)
 # Cryptlib
 add_subdirectory(deps/cl342)
 
+# FMT
+add_subdirectory(deps/fmt)
+
 if(WIN32)
   add_subdirectory(deps/pdcurses)
 endif()

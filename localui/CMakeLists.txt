@@ -12,4 +12,5 @@ set(COMMON_SOURCES
   )
 
 add_library(localui ${COMMON_SOURCES} ${PLATFORM_SOURCES})
-target_link_libraries(localui ${CURSES_LIBRARIES})
+#target_link_libraries(localui )
+target_link_libraries(localui ${CURSES_LIBRARIES} fmt-header-only)

@@ -23,11 +23,14 @@
 #include <sstream>
 #include <string>
 
+#include "core/stl.h"
 #include "core/strings.h"
 #include "localui/wwiv_curses.h"
 #include "localui/curses_win.h"
+#include "fmt/format.h"
 
 using std::string;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 static constexpr size_t VSN_BUFFER_SIZE = 1024;
@@ -77,15 +80,13 @@ CursesWindow::~CursesWindow() {
 void CursesWindow::SetTitle(const std::string& title) {
   SchemeId saved_scheme(this->current_scheme_id());
   SetColor(SchemeId::WINDOW_TITLE);
-  int max_title_size = GetMaxX() - 6;
-  string working_title(StringPrintf(" %s ", title.c_str()));
-  if (static_cast<int>(title.size()) > max_title_size) {
-    working_title = " ";
-    working_title += title.substr(0, max_title_size);
-    working_title += " ";
+  auto max_title_size = GetMaxX() - 6;
+  auto working_title = fmt::format(" {} ", title);
+  if (size_int(title) > max_title_size) {
+    working_title = fmt::format(" {} ", title.substr(0, max_title_size));
   }
 
-  int x = GetMaxX() - 1 - working_title.size();
+  auto x = GetMaxX() - 1 - working_title.size();
   PutsXY(x, 0, working_title);
   SetColor(saved_scheme);
 }
