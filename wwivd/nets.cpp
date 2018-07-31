@@ -76,6 +76,8 @@ using namespace wwiv::os;
 
 std::atomic<bool> need_to_exit;
 
+//TODO(rushfan): Add tests for new stuff in here.
+
 static NetworkContact network_contact_from_last_time(const std::string& address, time_t t) {
   network_contact_record ncr{};
   ncr.address = address;
@@ -87,6 +89,15 @@ static NetworkContact network_contact_from_last_time(const std::string& address,
 static void one_net_ftn_callout(const Config& config, const net_networks_rec& net,
                                 const wwivd_config_t& c, int network_number) {
   wwiv::sdk::fido::FidoCallout callout(config, net);
+
+  // TODO(rushfan): 1. Right now we just keep the map of last callout
+  // time in memory, but we should checkpoint this to disk and reload
+  // on startup.
+  // 2. Also we should look for files outbound to the node so that we can
+  // handle min_k right.
+  // 3. We should look for outbound files to other addresses we don't
+  // know about and then figure out how to contact them (since their
+  // address is in the nodelist.
   static std::map<int, std::map<std::string, time_t>> last_contact;
   auto& current_last_contact = last_contact[network_number];
 
@@ -104,18 +115,13 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
     }
     // Call it.
     LOG(INFO) << "ftn: should call out to: " << kv.first << "." << net.name;
-    std::map<char, string> params = {{'N', address},
-                                     {'T', std::to_string(network_number)}};
-    auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-    auto result = ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1);
-    if (!result) {
+    const std::map<char, string> params = {{'N', address}, {'T', std::to_string(network_number)}};
+    const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
+    if (!ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1)) {
       LOG(ERROR) << "Error executing command: '" << cmd << "'";
     }
-
   }
-
 }
-
 
 static void one_net_wwivnet_callout(const Config& config, const net_networks_rec& net,
                                     const wwivd_config_t& c, int network_number) {
@@ -126,15 +132,16 @@ static void one_net_wwivnet_callout(const Config& config, const net_networks_rec
     if (!wwiv::sdk::net::allowed_to_call(kv.second, DateTime::now())) {
       continue;
     }
-    if (wwiv::sdk::net::should_call(*ncn, kv.second, DateTime::now())) {
-      LOG(INFO) << "should call out to: " << kv.first << "." << net.name;
-      std::map<char, string> params = {{'N', std::to_string(kv.first)},
-                                       {'T', std::to_string(network_number)}};
-      auto cmd = CreateCommandLine(c.network_callout_cmd, params);
-      auto result = ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1);
-      if (!result) {
-        LOG(ERROR) << "Error executing command: " << cmd;
-      }
+    if (!wwiv::sdk::net::should_call(*ncn, kv.second, DateTime::now())) {
+      continue;
+    }
+    // Call it.
+    LOG(INFO) << "should call out to: " << kv.first << "." << net.name;
+    const std::map<char, string> params = {{'N', std::to_string(kv.first)},
+                                           {'T', std::to_string(network_number)}};
+    const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
+    if (!ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1)) {
+      LOG(ERROR) << "Error executing command: " << cmd;
     }
   }
 }
