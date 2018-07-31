@@ -957,7 +957,7 @@ void BinkP::Run() {
         bytes_sent_, bytes_received_);
     }
   } else {
-    // Handle WWIVnet inbound files.
+    // Handle FTN inbound files.
     if (file_manager_) {
       // file_manager_ is null in some tests (BinkpTest).
       file_manager_->rename_ftn_pending_files();

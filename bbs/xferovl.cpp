@@ -449,8 +449,8 @@ static bool upload_file(const char *file_name, uint16_t directory_num, const cha
       }
       return true;
     }
-    auto lFileSize = fileUpload.length();
-    u.numbytes = static_cast<daten_t>(lFileSize);
+    auto fs = fileUpload.length();
+    u.numbytes = static_cast<daten_t>(fs);
     fileUpload.Close();
     const string unn = a()->names()->UserName(a()->usernum);
     strcpy(u.upby, unn.c_str());
@@ -486,7 +486,7 @@ static bool upload_file(const char *file_name, uint16_t directory_num, const cha
     if (!(d.mask & mask_cdrom)) {
       modify_database(u.filename, true);
     }
-    a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(lFileSize));
+    a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(fs));
     u.daten = daten_t_now();
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);

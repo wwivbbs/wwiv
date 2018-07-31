@@ -40,6 +40,7 @@
 #include "sdk/net/packets.h"
 
 #include "sdk/bbslist.h"
+#include "sdk/contact.h"
 #include "sdk/filenames.h"
 
 using std::cout;
@@ -153,6 +154,7 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
       return 1;
     }
 
+    LOG(INFO) << " * Analyzing " << net.name << " pending files...";
     FindFiles ff(net.dir, "p*.net", FindFilesType::files);
     for (const auto& f : ff) {
       LOG(INFO) << "Processing: " << net.dir << f.name;
@@ -162,6 +164,18 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
           backup_file(FilePath(net.dir,f.name));
         }
         File::Remove(net.dir, f.name);
+      }
+    }
+
+    // Update contact record.
+    Contact contact(net, true);
+    for (const auto& kv : contact.contacts()) {
+      File outbound(net.dir, StrCat("s", kv.second.systemnumber(), ".net"));
+      auto c = contact.contact_rec_for(kv.second.systemnumber());
+      if (outbound.Exists()) {
+        c->set_bytes_waiting(outbound.length());
+      } else {
+        c->set_bytes_waiting(0);
       }
     }
 

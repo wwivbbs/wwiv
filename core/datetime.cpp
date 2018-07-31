@@ -63,7 +63,7 @@ daten_t date_to_daten(const std::string& datet) {
   pTm->tm_sec = 0;
   pTm->tm_isdst = 0;  // Since this is used for arbitrary compare of date strings, this is ok.
 
-  return static_cast<daten_t>(mktime(pTm));
+  return time_t_to_daten(mktime(pTm));
 }
 
 std::string daten_to_mmddyy(daten_t n) {
@@ -93,8 +93,8 @@ std::string time_t_to_wwivnet_time(time_t t) {
   return dt.to_string();
 }
 
-uint32_t time_t_to_daten(time_t t) {
-  return static_cast<uint32_t>(t);
+daten_t time_t_to_daten(time_t t) {
+  return static_cast<daten_t>(t);
 }
 
 std::string date() {
