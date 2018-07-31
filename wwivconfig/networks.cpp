@@ -233,10 +233,12 @@ public:
       items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_archive_size));
       items.add(new NumberEditItem<int>(COL2_POSITION, dy++, &n->packet_config.max_packet_size));
 
+      // from http://ftsc.org/docs/old/fts-5005.001
       vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
           {fido_bundle_status_t::normal, "Normal"},
           {fido_bundle_status_t::crash, "Crash"},
-          {fido_bundle_status_t::direct, "Immediate"},
+          {fido_bundle_status_t::direct, "Direct"},
+          {fido_bundle_status_t::immediate, "Immediate"},
           {fido_bundle_status_t::hold, "Hold"},
       };
       items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
@@ -326,7 +328,8 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
       {fido_bundle_status_t::normal, "Normal"},
       {fido_bundle_status_t::crash, "Crash"},
-      {fido_bundle_status_t::direct, "Immediate"},
+      {fido_bundle_status_t::direct, "Direct"},
+      {fido_bundle_status_t::immediate, "Immediate"},
       {fido_bundle_status_t::hold, "Hold"},
   };
   y++;

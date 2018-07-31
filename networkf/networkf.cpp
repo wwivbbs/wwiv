@@ -852,6 +852,10 @@ static bool CreateFidoNetAttachNetMail(const FidoAddress& orig, const FidoAddres
     h.attribute |= MSGHOLD;
     flags += " HLD";
     break;
+  case fido_bundle_status_t::immediate:
+    h.attribute |= MSGHOLD;
+    flags += " IMM";
+    break;
   case fido_bundle_status_t::direct:
     h.attribute |= MSGCRASH;
     flags += " CRA";

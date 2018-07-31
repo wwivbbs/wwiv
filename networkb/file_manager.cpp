@@ -65,7 +65,8 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   std::vector<fido_bundle_status_t> statuses{
     fido_bundle_status_t::crash,
     fido_bundle_status_t::normal,
-    fido_bundle_status_t::direct
+    fido_bundle_status_t::direct, 
+    fido_bundle_status_t::immediate
   };
 
   map<string, TransferFile*> result_map;

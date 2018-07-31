@@ -340,6 +340,7 @@ enum class fido_bundle_status_t : char {
   crash = 'c',
   direct = 'd',
   hold = 'h',
+  immediate = 'i',
   // Do not use for creating a packet.
   unknown = 'x'
 };
