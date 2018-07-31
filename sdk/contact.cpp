@@ -152,7 +152,7 @@ void NetworkContact::fixup() {
 }
 
 void NetworkContact::AddContact(time_t t) {
-  daten_t d = static_cast<daten_t>(t);
+  daten_t d = time_t_to_daten(t);
   ncr_.ncr.lasttry = d;
   ncr_.ncr.lastcontact = d;
   ncr_.ncr.numcontacts++;
@@ -165,7 +165,7 @@ void NetworkContact::AddContact(time_t t) {
 void NetworkContact::AddConnect(time_t t, uint32_t bytes_sent, uint32_t bytes_received) {
   AddContact(t);
 
-  daten_t d = static_cast<daten_t>(t);
+  daten_t d = time_t_to_daten(t);
   if (bytes_sent > 0) {
     ncr_.ncr.lastcontactsent = d;
     ncr_.ncr.bytes_waiting = 0;
