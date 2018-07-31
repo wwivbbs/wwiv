@@ -40,6 +40,7 @@
 * Figure out why new networking stack doesn't work for mark.
 * Get auto-callouts working for FTN, right now we don't
   store any metadata bout how frequently to call.
+* network1 doesn't update bytes_waiting
 
 ## core::File Improvements
 ***
