@@ -103,9 +103,12 @@ bool should_call(const wwiv::sdk::NetworkContact& ncn, const network_callout_con
     VLOG(1) << "Last Try: " << DateTime::from_time_t(ncn.lastcontact()).to_string();
     return true;
   }
-  if (bytes_to_k(ncn.bytes_waiting()) > callout.min_k) {
-    VLOG(1) << "Calling: min_k";
-    return true;
+  if (callout.min_k > 0) {
+    // We won't use min_k if it's 0, so only test if it's >0
+    if (bytes_to_k(ncn.bytes_waiting()) >= callout.min_k) {
+      VLOG(1) << "Calling: min_k: " << bytes_to_k(ncn.bytes_waiting()) << " > " << callout.min_k;
+      return true;
+    }
   }
   VLOG(2) << "Skipping; No reason to call.";
   return false;
