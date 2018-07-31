@@ -108,6 +108,7 @@ class Contact {
   void add_failure(const std::string& node, time_t time);
 
   bool Save();
+  const std::map<std::string, NetworkContact>& contacts() const noexcept { return contacts_; }
   std::string ToString() const;
   std::string full_pathname() const noexcept;
 
