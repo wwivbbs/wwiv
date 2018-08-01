@@ -71,7 +71,8 @@ extern std::atomic<bool> need_to_reload_config;
 using namespace wwiv::wwivd;
 
 void signal_handler(int mysignal) {
-  switch (mysignal) { 
+  cerr << "Received signal: " << mysignal << endl;
+  switch (mysignal) {
 #ifdef __unix__
   case SIGHUP: {
     cerr << "Received SIGHUP" << endl;
@@ -80,17 +81,22 @@ void signal_handler(int mysignal) {
   }
   case SIGINT: {
     cerr << endl;
-    cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;
-    kill(bbs_pid, mysignal); // send SIGHUP to process group
+    if (bbs_pid) != 0) {
+      cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
+      kill(bbs_pid, mysignal); // send SIGHUP to process group
+    }
   } break;
 #endif
   // Graceful exit
   case SIGTERM: {
+    cerr << "Received SIGTERM" << endl;
     need_to_exit.store(true);
   } break;
 #ifdef __unix__
   // Not graceful exit
   case SIGKILL: {
+    cerr << "Received SIGKILL" << endl;
+    need_to_exit.store(true);
   } break;
 #endif  // __unix__
   }
@@ -103,6 +109,15 @@ void BeforeStartServer() {
   sigfillset(&sa.sa_mask);
   sa.sa_handler = signal_handler;
   if (sigaction(SIGHUP, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGINT";
+  }
+  if (sigaction(SIGINT, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGINT";
+  }
+  if (sigaction(SIGTERM, &sa, nullptr) == -1) {
+    LOG(ERROR) << "Unable to install signal handler for SIGINT";
+  }
+  if (sigaction(SIGKILL, &sa, nullptr) == -1) {
     LOG(ERROR) << "Unable to install signal handler for SIGINT";
   }
 }
