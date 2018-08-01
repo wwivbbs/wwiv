@@ -186,13 +186,12 @@ static eventinfo_t eventinfo[] = {
     {"NETWORK", EFLAG_NETPROG},
 };
 
-static const char* get_key_str(int n, const char* index = nullptr) {
+static std::string get_key_str(int n, const std::string& index = {}) {
   static char str[255];
-  if (!index) {
+  if (index.empty()) {
     return INI_OPTIONS_ARRAY[n];
   }
-  sprintf(str, "%s[%s]", INI_OPTIONS_ARRAY[n], index);
-  return str;
+  return StrCat(INI_OPTIONS_ARRAY[n], "[", index, "]");
 }
 
 static void ini_init_str(IniFile& ini, size_t key_idx, std::string& s) {
@@ -271,7 +270,7 @@ void Application::ReadINIFile(IniFile& ini) {
   // found something
   // pull out event flags
   for (size_t i = 0; i < NEL(spawn_opts); i++) {
-    const auto key_name = StringPrintf("%s[%s]", get_key_str(INI_STR_SPAWNOPT), eventinfo[i].name);
+    const auto key_name = get_key_str(INI_STR_SPAWNOPT, eventinfo[i].name);
     const auto ss = ini.value<string>(key_name);
     if (!ss.empty()) {
       spawn_opts[i] = str2spawnopt(ss);
@@ -280,11 +279,12 @@ void Application::ReadINIFile(IniFile& ini) {
 
   // pull out newuser colors
   for (int i = 0; i < 10; i++) {
-    auto num = ini.value<uint8_t>(StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLOR), i));
+    auto index = std::to_string(i);
+    auto num = ini.value<uint8_t>(get_key_str(INI_STR_NUCOLOR, index));
     if (num != 0) {
       newuser_colors[i] = num;
     }
-    num = ini.value<uint8_t>(StringPrintf("%s[%d]", get_key_str(INI_STR_NUCOLORBW), i));
+    num = ini.value<uint8_t>(get_key_str(INI_STR_NUCOLORBW, index));
     if (num != 0) {
       newuser_bwcolors[i] = num;
     }
@@ -870,8 +870,8 @@ void Application::create_phone_file() {
 
 uint32_t GetFlagsFromIniFile(IniFile& ini, ini_flags_type* fs, int nFlagNumber, uint32_t flags) {
   for (int i = 0; i < nFlagNumber; i++) {
-    const char* key = INI_OPTIONS_ARRAY[fs[i].strnum];
-    if (!key) {
+    const std::string key = get_key_str(fs[i].strnum);
+    if (key.empty()) {
       continue;
     }
     string val = ini.value<string>(key);
