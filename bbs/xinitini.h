@@ -43,10 +43,10 @@ constexpr int INI_STR_V_SCAN_CMD = 21;
 constexpr int INI_STR_TERMINAL_CMD = 22;
 
 //---NETWORK SETTINGS--
-constexpr int INI_STR_NET_CLEANUP_CMD1 = 25;
-constexpr int INI_STR_NET_CLEANUP_CMD2 = 26;
+//constexpr int INI_STR_NET_CLEANUP_CMD1 = 25;
+//constexpr int INI_STR_NET_CLEANUP_CMD2 = 26;
 constexpr int INI_STR_NET_CALLOUT = 27;
-constexpr int INI_STR_FIDO_PROCESS = 28;
+//constexpr int INI_STR_FIDO_PROCESS = 28;
 constexpr int INI_STR_NET_PROCESS = 29;
 
 //---SYSTEM SETTINGS--
@@ -160,10 +160,10 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "TERMINAL_CMD",
   "",
   "//---NETWORK SETTINGS---*",
-  "NET_CLEANUP_CMD1",         // 25
-  "NET_CLEANUP_CMD2",
+  //"NET_CLEANUP_CMD1",         // 25
+  //"NET_CLEANUP_CMD2",
   "NET_CALLOUT",
-  "FIDO_PROCESS",
+  //"FIDO_PROCESS",
   "NET_PROCESS",
   "",                         // 30
   "",

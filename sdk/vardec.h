@@ -1035,7 +1035,7 @@ struct filestatusrec {
 #define OP_FLAGS_FAST_SEARCH              0x00020000
 #define OP_FLAGS_NET_CALLOUT              0x00040000
 #define OP_FLAGS_WFC_SCREEN               0x00080000
-#define OP_FLAGS_FIDO_PROCESS             0x00100000
+//#define OP_FLAGS_FIDO_PROCESS             0x00100000
 //#define OP_FLAGS_USER_REGISTRATION        0x00200000
 #define OP_FLAGS_MSG_TAG                  0x00400000
 #define OP_FLAGS_CHAIN_REG                0x00800000
@@ -1043,7 +1043,7 @@ struct filestatusrec {
 #define OP_FLAGS_EXTRA_COLOR              0x02000000
 #define OP_FLAGS_USE_FORCESCAN            0x04000000
 #define OP_FLAGS_NEWUSER_MIN              0x08000000
-#define OP_FLAGS_NET_PROCESS              0x10000000
+//#define OP_FLAGS_NET_PROCESS              0x10000000
 #define OP_FLAGS_UNUSED_2                 0x20000000
 #define OP_FLAGS_UNUSED_4                 0x40000000
 //#define OP_FLAGS_ADV_ASV                  0x80000000

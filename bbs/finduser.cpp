@@ -47,7 +47,6 @@ using namespace wwiv::strings;
 // Special values:
 //
 //  -1      = NEW USER
-//  -2      = WWIVnet
 //
 int finduser(const string& searchString) {
   User user;
@@ -57,10 +56,7 @@ int finduser(const string& searchString) {
   if (searchString == "NEW") {
     return -1;
   }
-  if (searchString == "!-@NETWORK@-!") {
-    return -2;
-  }
-  int user_number = to_number<int>(searchString);
+  auto user_number = to_number<int>(searchString);
   if (user_number > 0) {
     a()->users()->readuser(&user, user_number);
     if (user.IsUserDeleted()) {

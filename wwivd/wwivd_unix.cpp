@@ -73,7 +73,6 @@ using namespace wwiv::wwivd;
 void signal_handler(int mysignal) {
   cerr << "Received signal: " << mysignal << endl;
   switch (mysignal) {
-#ifdef __unix__
   case SIGHUP: {
     cerr << "Received SIGHUP" << endl;
     need_to_reload_config.store(true);
@@ -86,19 +85,16 @@ void signal_handler(int mysignal) {
       kill(bbs_pid, mysignal); // send SIGHUP to process group
     }
   } break;
-#endif
   // Graceful exit
   case SIGTERM: {
     cerr << "Received SIGTERM" << endl;
     need_to_exit.store(true);
   } break;
-#ifdef __unix__
   // Not graceful exit
   case SIGKILL: {
     cerr << "Received SIGKILL" << endl;
     need_to_exit.store(true);
   } break;
-#endif  // __unix__
   }
 
 }
@@ -119,6 +115,10 @@ void BeforeStartServer() {
   if (sigaction(SIGKILL, &sa, nullptr) == -1) {
     LOG(ERROR) << "Unable to install signal handler for SIGINT";
   }
+  // Ignore SIGCHLD
+  signal(SIGCHLD, SIG_IGN);
+  // Let the socket library handle EPIPE
+  signal(SIGPIPE, SIG_IGN);
 }
 
 static uid_t GetWWIVUserId(const string& username) {

@@ -83,181 +83,37 @@ struct CalloutEntry {
   int net;
 };
 
-static void rename_pend(const string& directory, const string& filename) {
-  const string pend_filename = StringPrintf("%s%s", directory.c_str(), filename.c_str());
-  const string num = filename.substr(1);
-  const string prefix = (to_number<int>(num)) ? "p1-" : "p0-";
-
-  for (int i = 0; i < 1000; i++) {
-    const string new_filename = StringPrintf("%s%s%u.net", directory.c_str(), prefix.c_str(), i);
-    if (File::Rename(pend_filename, new_filename) || errno != EACCES) {
-      return;
-    }
-  }
-}
-
-static bool checkup2(const time_t tFileTime, const char* file_name) {
-  File file(a()->network_directory(), file_name);
-
-  if (file.Open(File::modeReadOnly)) {
-    time_t tNewFileTime = file.last_write_time();
-    file.Close();
-    return (tNewFileTime > (tFileTime + 2));
-  }
-  return true;
-}
-
-static bool check_bbsdata() {
-  unique_ptr<WStatus> wwiv_status_ro(a()->status_manager()->GetStatus());
-  File bbsdataNet(a()->network_directory().c_str(), BBSDATA_NET);
-  if (bbsdataNet.Open(File::modeReadOnly)) {
-    time_t tFileTime = bbsdataNet.last_write_time();
-    bbsdataNet.Close();
-    bool ok = checkup2(tFileTime, BBSLIST_NET) || checkup2(tFileTime, CONNECT_NET);
-    bool ok2 = checkup2(tFileTime, CALLOUT_NET);
-    if (!ok && !ok2) {
-      return false;
-    }
-  }
-  if (!File::Exists(a()->network_directory(), BBSLIST_NET)) {
-    return false;
-  }
-  if (!File::Exists(a()->network_directory().c_str(), CONNECT_NET)) {
-    return false;
-  }
-  if (!File::Exists(a()->network_directory().c_str(), CALLOUT_NET)) {
-    return false;
-  }
-  const string network3 = StrCat(CreateNetworkBinary("network3"), " .", a()->net_num(), " Y");
-  ExecuteExternalProgram(network3, EFLAG_NETPROG);
-
-  a()->status_manager()->Run(
-      [](WStatus& s) { s.IncrementFileChangedFlag(WStatus::fileChangeNet); });
-
-  return true;
-}
-
-static int cleanup_net1() {
-  int ok, ok2, nl = 0, anynew = 0, i = 0;
-  bool abort;
-
+void cleanup_net() {
   a()->SetCleanNetNeeded(false);
 
   if (a()->net_networks.empty()) {
-    return 0;
+    return;
   }
   if (a()->net_networks[0].sysnum == 0 && a()->max_net_num() == 1) {
-    return 0;
+    return;
+  }
+  hangup = false;
+  a()->using_modem = 0;
+  if (a()->IsUserOnline()) {
+    hang_it_up();
   }
 
-  bool any = true;
+  for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
+    set_net_num(nNetNumber);
 
-  while (any && (nl++ < 10)) {
-    any = false;
-
-    for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
-      set_net_num(nNetNumber);
-
-      if (!a()->current_net().sysnum) {
-        continue;
-      }
-
-      a()->ClearTopScreenProtection();
-
-      ok2 = 1;
-      abort = false;
-      while (ok2 && !abort) {
-        ok2 = 0;
-        ok = 0;
-        string s = StrCat(a()->network_directory(), "p*", a()->network_extension());
-        FindFiles ff(s, FindFilesType::files);
-        for (const auto& f : ff) {
-          ok = 1;
-          ++i;
-          rename_pend(a()->network_directory(), f.name);
-          anynew = 1;
-        }
-
-        bool supports_process_net = a()->HasConfigFlag(OP_FLAGS_NET_PROCESS);
-        if (supports_process_net) {
-          if (!ok) {
-            ok = File::ExistsWildcard(FilePath(a()->network_directory(), "p*.net"));
-          }
-          if (ok) {
-            wfc_cls(a());
-            ++i;
-            hangup = false;
-            a()->using_modem = 0;
-            if (a()->IsUserOnline()) {
-              hang_it_up();
-            }
-            // Try to run network3 before network1.
-            if (!File::Exists(a()->network_directory(), BBSDATA_NET)) {
-              check_bbsdata();
-            }
-            const string network1_cmd =
-                StrCat(CreateNetworkBinary("network1"), " .", a()->net_num());
-            if (ExecuteExternalProgram(network1_cmd, EFLAG_NETPROG) < 0) {
-              abort = true;
-            } else {
-              any = true;
-            }
-            ok2 = 1;
-          }
-          if (File::Exists(a()->network_directory(), LOCAL_NET)) {
-            wfc_cls(a());
-            ++i;
-            any = true;
-            ok = 1;
-            hangup = false;
-            a()->using_modem = 0;
-            string network2_cmd = StrCat(CreateNetworkBinary("network2"), " .", a()->net_num());
-            if (ExecuteExternalProgram(network2_cmd, EFLAG_NETPROG) < 0) {
-              abort = true;
-            } else {
-              any = true;
-            }
-            ok2 = 1;
-            a()->status_manager()->RefreshStatusCache();
-            a()->SetCurrentReadMessageArea(-1);
-            a()->ReadCurrentUser(1);
-          }
-          if (check_bbsdata()) {
-            ok2 = 1;
-          }
-          if (ok2) {
-            a()->localIO()->Cls();
-            ++i;
-          }
-        }
-      }
+    if (!a()->current_net().sysnum) {
+      continue;
     }
-  }
-  if (anynew && (a()->instance_number() != 1)) {
-    send_inst_cleannet();
-  }
-  return i;
-}
 
-void cleanup_net() {
-  if (cleanup_net1() && a()->HasConfigFlag(OP_FLAGS_NET_CALLOUT)) {
-    wfc_cls(a());
-
-    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI),
-                {StrCat("WWIV-", a()->instance_number()), INI_TAG});
-    if (ini.IsOpen()) {
-      const string cmd1 = ini.value<string>("NET_CLEANUP_CMD1");
-      if (!cmd1.empty()) {
-        ExecuteExternalProgram(cmd1, a()->GetSpawnOptions(SPAWNOPT_NET_CMD1));
-        cleanup_net1();
-      }
-      const string cmd2 = ini.value<string>("NET_CLEANUP_CMD2");
-      if (!cmd2.empty()) {
-        ExecuteExternalProgram(cmd2, a()->GetSpawnOptions(SPAWNOPT_NET_CMD2));
-        cleanup_net1();
-      }
-      ini.Close();
+    a()->ClearTopScreenProtection();
+    const auto networkc_cmd = StrCat(CreateNetworkBinary("networkc"), " .", a()->net_num());
+    if (ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG) < 0) {
+      break;
     }
+    a()->status_manager()->RefreshStatusCache();
+    a()->SetCurrentReadMessageArea(-1);
+    a()->ReadCurrentUser(1);
+    a()->localIO()->Cls();
   }
 }
 
@@ -280,25 +136,15 @@ void do_callout(uint16_t sn) {
     return;
   }
 
-  const string cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", a()->net_num());
+  const auto cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", a()->net_num());
   bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn
-        << wwiv::endl;
-  const auto regions_filename =
-      StringPrintf("%s.%-3u", REGIONS_DAT, to_number<unsigned int>(csne->phone));
-  string region = "Unknown Region";
-  if (File::Exists(FilePath(a()->config()->datadir(), REGIONS_DAT), regions_filename)) {
-    const auto town = StringPrintf("%c%c%c", csne->phone[4], csne->phone[5], csne->phone[6]);
-    region = describe_area_code_prefix(to_number<int>(csne->phone), to_number<int>(town));
-  } else {
-    region = describe_area_code(to_number<int>(csne->phone));
-  }
-  bout << "|#7Sys located in: |#2" << region << wwiv::endl;
+       << wwiv::endl;
   if (contact_rec->bytes_waiting() > 0) {
     bout << "|#7Amount pending: |#2" << bytes_to_k(contact_rec->bytes_waiting()) << "k"
-          << wwiv::endl;
+         << wwiv::endl;
   }
   bout << "|#7Commandline is: |#2" << cmd << wwiv::endl
-        << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
+       << "|#7" << std::string(80, '\xCD') << "|#0..." << wwiv::endl;
   ExecuteExternalProgram(cmd, EFLAG_NETPROG);
   a()->status_manager()->RefreshStatusCache();
   last_time_c_ = steady_clock::now();

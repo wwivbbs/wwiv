@@ -246,11 +246,6 @@ int main(int argc, char* argv[]) {
   }
 
   LOG(INFO) << "wwivd - WWIV Daemon.";
-#ifdef __unix__
-  signal(SIGCHLD, SIG_IGN);
-  // Let the socket library handle EPIPE
-  signal(SIGPIPE, SIG_IGN);
-#endif // __unix__
 
   try {
     return wwiv::wwivd::Main(cmdline);

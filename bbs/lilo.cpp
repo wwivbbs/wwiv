@@ -282,30 +282,6 @@ static void DoFailedLoginAttempt() {
   a()->usernum = 0;
 }
 
-static void ExecuteWWIVNetworkRequest() {
-  if (incom) {
-    Hangup();
-    return;
-  }
-
-  a()->status_manager()->RefreshStatusCache();
-  auto lTime = time_t_now();
-  if (a()->usernum == -2) {
-    std::stringstream networkCommand;
-    networkCommand << "network /B" << a()->modem_speed_ << " /T" << lTime << " /F0";
-    write_inst(INST_LOC_NET, 0, INST_FLAGS_NONE);
-    ExecuteExternalProgram(networkCommand.str(), EFLAG_NONE);
-    if (a()->instance_number() != 1) {
-      send_inst_cleannet();
-    }
-    set_net_num(0);
-  }
-  a()->status_manager()->RefreshStatusCache();
-  a()->remoteIO()->disconnect();
-  cleanup_net();
-  Hangup();
-}
-
 static void LeaveBadPasswordFeedback(int ans) {
   ScopeExit at_exit([] {
     a()->usernum = 0;
@@ -476,8 +452,6 @@ void getuser() {
       play_sdf(NEWUSER_NOEXT, false);
       newuser();
       ok = true;
-    } else if (usernum == -2) {  // network
-      ExecuteWWIVNetworkRequest();
     }
   } while (!ok && ++count < 3);
 
