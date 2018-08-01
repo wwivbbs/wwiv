@@ -74,7 +74,9 @@ void signal_handler(int mysignal) {
   switch (mysignal) { 
 #ifdef __unix__
   case SIGHUP: {
+    cerr << "Received SIGHUP" << endl;
     need_to_reload_config.store(true);
+    break;
   }
   case SIGINT: {
     cerr << endl;
