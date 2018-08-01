@@ -244,8 +244,13 @@ bool SocketSet::RunOnce() {
     status = select(max_fd + 1, &fds, nullptr, nullptr, nullptr);
   }
   VLOG(2) << "After select.";
-  if (status < 0) {
+  if (status < 0 && errno == EINTR) {
+    LOG(ERROR) << "Caught signal calling select";
+    // return true so we can check for exit signal.
+    return true;
+  } if (status < 0) {
     LOG(ERROR) << "Error calling select; errno: " << errno;
+    // return false here since we know this wasn't a signal.
     return false;
   } else if (status == 0) {
     // Timeout expired.  Keep on trucking.

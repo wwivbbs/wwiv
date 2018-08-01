@@ -91,8 +91,6 @@ using namespace wwiv::stl;
 using namespace wwiv::strings;
 using namespace wwiv::os;
 
-pid_t bbs_pid = 0;
-
 #ifdef DELETE
 #undef DELETE
 #endif // DELETE

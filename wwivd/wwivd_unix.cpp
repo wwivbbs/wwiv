@@ -57,7 +57,7 @@ using namespace wwiv::os;
 
 // From wwivd.cpp
 
-extern pid_t bbs_pid;
+pid_t bbs_pid = 0;
 extern char **environ;
 
 namespace wwiv {
@@ -81,7 +81,7 @@ void signal_handler(int mysignal) {
   }
   case SIGINT: {
     cerr << endl;
-    if (bbs_pid) != 0) {
+    if (bbs_pid != 0) {
       cerr << "Sending SIGINT to BBS after receiving " << mysignal << "..." << endl;
       kill(bbs_pid, mysignal); // send SIGHUP to process group
     }
@@ -105,7 +105,6 @@ void signal_handler(int mysignal) {
 
 void BeforeStartServer() {
   struct sigaction sa {};
-  sa.sa_flags = SA_RESETHAND;
   sigfillset(&sa.sa_mask);
   sa.sa_handler = signal_handler;
   if (sigaction(SIGHUP, &sa, nullptr) == -1) {
