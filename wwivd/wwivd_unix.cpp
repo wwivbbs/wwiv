@@ -64,14 +64,18 @@ namespace wwiv {
 namespace wwivd {
 
 extern std::atomic<bool> need_to_exit;
-}
+extern std::atomic<bool> need_to_reload_config;
+
+} // namespace wwivd
 } // namespace wwiv
 using namespace wwiv::wwivd;
 
 void signal_handler(int mysignal) {
   switch (mysignal) { 
 #ifdef __unix__
-  case SIGHUP: 
+  case SIGHUP: {
+    need_to_reload_config.store(true);
+  }
   case SIGINT: {
     cerr << endl;
     cerr << "Sending SIGHUP to BBS after receiving " << mysignal << "..." << endl;

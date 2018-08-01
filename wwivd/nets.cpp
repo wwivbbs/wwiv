@@ -75,14 +75,15 @@ using namespace wwiv::strings;
 using namespace wwiv::os;
 
 std::atomic<bool> need_to_exit;
+std::atomic<bool> need_to_reload_config;
 
 //TODO(rushfan): Add tests for new stuff in here.
 
 static NetworkContact network_contact_from_last_time(const std::string& address, time_t t) {
   network_contact_record ncr{};
   ncr.address = address;
-  ncr.ncr.lastcontact = t;
-  ncr.ncr.lasttry = t;
+  ncr.ncr.lastcontact = time_t_to_daten(t);
+  ncr.ncr.lasttry = time_t_to_daten(t);
   return NetworkContact{ncr};
 }
 
@@ -113,7 +114,9 @@ static void one_net_ftn_callout(const Config& config, const net_networks_rec& ne
       // Has it been long enough, or do we have enough k waiting.
       continue;
     }
-    // Call it.
+    // 1: Update the last contact time to now.
+    current_last_contact[address] = DateTime::now().to_time_t();
+    // 2: Call it.
     LOG(INFO) << "ftn: should call out to: " << kv.first << "." << net.name;
     const std::map<char, string> params = {{'N', address}, {'T', std::to_string(network_number)}};
     const auto cmd = CreateCommandLine(c.network_callout_cmd, params);
@@ -147,7 +150,7 @@ static void one_net_wwivnet_callout(const Config& config, const net_networks_rec
 }
 
 static void one_callout_loop(const Config& config, const wwivd_config_t& c) { 
-  VLOG(1) << "do_wwivd_callouts: ";
+  VLOG(1) << "do_wwivd_callouts: one_callout_loop: ";
   Networks networks(config); 
   const auto& nets = networks.networks();
   int network_number = 0;
@@ -161,9 +164,18 @@ static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
 }
 
 // This is called from the thread
-static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& c) {
+static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& original_config) {
+  wwivd_config_t c{original_config};
+
   auto e = need_to_exit.load();
   while (!e) {
+    // Reload the config if we've gotten a HUP?
+    if (need_to_reload_config.load()) {
+      LOG(INFO) << "Received HUP: Reloading Configuration for Callouts.";
+      need_to_reload_config.store(false);
+      c.Load(config);
+    }
+
     one_callout_loop(config, c);
     if (need_to_exit.load()) {
       return;

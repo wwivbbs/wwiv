@@ -101,6 +101,7 @@ namespace wwiv {
 namespace wwivd {
 
 extern std::atomic<bool> need_to_exit;
+extern std::atomic<bool> need_to_reload_config;
 
 static bool DeleteAllSemaphores(const Config& config, int start_node, int end_node) {
   // Delete telnet/SSH node semaphore files.
@@ -209,6 +210,7 @@ int Main(CommandLine& cmdline) {
 
   SwitchToNonRootUser(wwiv_user);
   need_to_exit.store(false);
+  need_to_reload_config.store(false);
 
   // Do network callouts if enabled.
   do_wwivd_callouts(config, c);
