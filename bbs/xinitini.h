@@ -160,10 +160,10 @@ static const char* INI_OPTIONS_ARRAY[] = {
   "TERMINAL_CMD",
   "",
   "//---NETWORK SETTINGS---*",
-  //"NET_CLEANUP_CMD1",         // 25
-  //"NET_CLEANUP_CMD2",
+  "", // NET_CLEANUP_CMD1         // 25
+  "", // NET_CLEANUP_CMD2
   "NET_CALLOUT",
-  //"FIDO_PROCESS",
+   "", // FIDO_PROCESS
   "NET_PROCESS",
   "",                         // 30
   "",
