@@ -86,11 +86,11 @@ template <typename T>
 static T GetFlagsFromIniFile(IniFile& ini, const std::vector<ini_flags_type>& flag_definitions,
                              T flags) {
   for (const auto& fs : flag_definitions) {
-    const auto key = get_key_str(fs.strnum);
+    const std::string key = fs.strnum;
     if (key.empty()) {
       continue;
     }
-    auto val = ini.value<string>(key);
+    const auto val = ini.value<string>(key);
     if (val.empty()) {
       continue;
     }
@@ -153,7 +153,7 @@ static uint16_t str2spawnopt(const std::string& s) {
 }
 
 // Takes string s and creates restrict val
-static uint16_t str2restrict(const std::string s) {
+static uint16_t str2restrict(const std::string& s) {
   const char* rs = restrict_string;
   char s1[81];
 
@@ -185,15 +185,9 @@ static std::map<std::string, uint16_t> eventinfo = {
     {"NETWORK", EFLAG_NETPROG},
 };
 
-static std::string get_key_str(const std::string& n, const std::string& index = {}) {
-  if (index.empty()) {
-    return n;
-  }
+// TODO(rushfan): If we nee this elsewhere add it into IniFile
+static std::string to_array_key(const std::string& n, const std::string& index) {
   return StrCat(n, "[", index, "]");
-}
-
-static void ini_init_str(const IniFile& ini, const std::string& key_idx, std::string& s) {
-  s = ini.value<string>(get_key_str(key_idx));
 }
 
 template <typename A>
@@ -209,11 +203,11 @@ void ini_get_asv(const IniFile& ini, const std::string& s, A& f,
 
 #define INI_GET_ASV(s, f, func, d)                                                                 \
   {                                                                                                \
-    const auto ss = ini.value<std::string>(get_key_str(INI_STR_SIMPLE_ASV, s));                    \
+    const auto ss = ini.value<std::string>(to_array_key(INI_STR_SIMPLE_ASV, s));                    \
     if (!ss.empty()) {                                                                             \
-      asv.f = func(ss);                                                                            \
+      f = func(ss);                                                                            \
     } else {                                                                                       \
-      asv.f = d;                                                                                   \
+      f = d;                                                                                   \
     }                                                                                              \
   }
 
@@ -267,7 +261,7 @@ void Application::ReadINIFile(IniFile& ini) {
   // Found something, pull out event flags.
   for (const auto& kv : eventinfo) {
     spawn_opts_[kv.first] = kv.second;
-    const auto key_name = get_key_str(INI_STR_SPAWNOPT, kv.first);
+    const auto key_name = to_array_key(INI_STR_SPAWNOPT, kv.first);
     const auto ss = ini.value<string>(key_name);
     if (!ss.empty()) {
       spawn_opts_[kv.first] = str2spawnopt(ss);
@@ -277,11 +271,11 @@ void Application::ReadINIFile(IniFile& ini) {
   // pull out newuser colors
   for (int i = 0; i < 10; i++) {
     auto index = std::to_string(i);
-    auto num = ini.value<uint8_t>(get_key_str(INI_STR_NUCOLOR, index));
+    auto num = ini.value<uint8_t>(to_array_key(INI_STR_NUCOLOR, index));
     if (num != 0) {
       newuser_colors[i] = num;
     }
-    num = ini.value<uint8_t>(get_key_str(INI_STR_NUCOLORBW, index));
+    num = ini.value<uint8_t>(to_array_key(INI_STR_NUCOLORBW, index));
     if (num != 0) {
       newuser_bwcolors[i] = num;
     }
@@ -291,60 +285,60 @@ void Application::ReadINIFile(IniFile& ini) {
 
   // pull out sysop-side colors
   localIO()->SetTopScreenColor(
-      ini.value<int>(get_key_str(INI_STR_TOPCOLOR), localIO()->GetTopScreenColor()));
+      ini.value<int>(INI_STR_TOPCOLOR, localIO()->GetTopScreenColor()));
   localIO()->SetUserEditorColor(
-      ini.value<int>(get_key_str(INI_STR_F1COLOR), localIO()->GetUserEditorColor()));
+      ini.value<int>(INI_STR_F1COLOR, localIO()->GetUserEditorColor()));
   localIO()->SetEditLineColor(
-      ini.value<int>(get_key_str(INI_STR_EDITLINECOLOR), localIO()->GetEditLineColor()));
-  chatname_color_ = ini.value<int>(get_key_str(INI_STR_CHATSELCOLOR), GetChatNameSelectionColor());
+      ini.value<int>(INI_STR_EDITLINECOLOR, localIO()->GetEditLineColor()));
+  chatname_color_ = ini.value<int>(INI_STR_CHATSELCOLOR, GetChatNameSelectionColor());
 
   // pull out sizing options
-  max_batch = ini.value<uint16_t>(get_key_str(INI_STR_MAX_BATCH), max_batch);
-  max_extend_lines = ini.value<uint16_t>(get_key_str(INI_STR_MAX_EXTEND_LINES), max_extend_lines);
-  max_chains = ini.value<uint16_t>(get_key_str(INI_STR_MAX_CHAINS), max_chains);
-  max_gfilesec = ini.value<uint16_t>(get_key_str(INI_STR_MAX_GFILESEC), max_gfilesec);
+  max_batch = ini.value<uint16_t>(INI_STR_MAX_BATCH, max_batch);
+  max_extend_lines = ini.value<uint16_t>(INI_STR_MAX_EXTEND_LINES, max_extend_lines);
+  max_chains = ini.value<uint16_t>(INI_STR_MAX_CHAINS, max_chains);
+  max_gfilesec = ini.value<uint16_t>(INI_STR_MAX_GFILESEC, max_gfilesec);
 
   // pull out strings
-  ini_init_str(ini, INI_STR_UPLOAD_CMD, upload_cmd);
-  ini_init_str(ini, INI_STR_BEGINDAY_CMD, beginday_cmd);
-  ini_init_str(ini, INI_STR_NEWUSER_CMD, newuser_cmd);
-  ini_init_str(ini, INI_STR_LOGON_CMD, logon_cmd);
-  ini_init_str(ini, INI_STR_TERMINAL_CMD, terminal_command);
-
+  upload_cmd = ini.value<string>(INI_STR_UPLOAD_CMD);
+  beginday_cmd = ini.value<string>(INI_STR_BEGINDAY_CMD);
+  newuser_cmd = ini.value<string>(INI_STR_NEWUSER_CMD);
+  logon_cmd = ini.value<string>(INI_STR_LOGON_CMD);
+  terminal_command = ini.value<string>(INI_STR_TERMINAL_CMD);
+   
   forced_read_subnum_ =
-      ini.value<uint16_t>(get_key_str(INI_STR_FORCE_SCAN_SUBNUM), forced_read_subnum_);
-  internal_zmodem_ = ini.value<bool>(get_key_str(INI_STR_INTERNALZMODEM), true);
-  newscan_at_login_ = ini.value<bool>(get_key_str(INI_STR_NEW_SCAN_AT_LOGIN), true);
-  exec_log_syncfoss_ = ini.value<bool>(get_key_str(INI_STR_EXEC_LOG_SYNCFOSS), false);
-  exec_child_process_wait_time_ = ini.value<int>(get_key_str(INI_STR_EXEC_CHILD_WAIT_TIME), 500);
-  beginday_node_number_ = ini.value<int>(get_key_str(INI_STR_BEGINDAYNODENUMBER), 1);
+      ini.value<uint16_t>(INI_STR_FORCE_SCAN_SUBNUM, forced_read_subnum_);
+  internal_zmodem_ = ini.value<bool>(INI_STR_INTERNALZMODEM, true);
+  newscan_at_login_ = ini.value<bool>(INI_STR_NEW_SCAN_AT_LOGIN, true);
+  exec_log_syncfoss_ = ini.value<bool>(INI_STR_EXEC_LOG_SYNCFOSS, false);
+  exec_child_process_wait_time_ = ini.value<int>(INI_STR_EXEC_CHILD_WAIT_TIME, 500);
+  beginday_node_number_ = ini.value<int>(INI_STR_BEGINDAYNODENUMBER, 1);
 
   // pull out sysinfo_flags
   flags_ = GetFlagsFromIniFile(ini, sysinfo_flags, flags_);
 
   // allow override of Application::message_color_
-  message_color_ = ini.value<int>(get_key_str(INI_STR_MSG_COLOR), GetMessageColor());
+  message_color_ = ini.value<int>(INI_STR_MSG_COLOR, GetMessageColor());
 
   // get asv values
   if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
-    INI_GET_ASV("SL", sl, to_number<uint8_t>, asv.sl);
-    INI_GET_ASV("DSL", dsl, to_number<uint8_t>, asv.dsl);
-    INI_GET_ASV("EXEMPT", exempt, to_number<uint8_t>, asv.exempt);
-    INI_GET_ASV("AR", ar, str_to_arword, asv.ar);
-    INI_GET_ASV("DAR", dar, str_to_arword, asv.dar);
-    INI_GET_ASV("RESTRICT", restrict, str2restrict, asv.restrict);
+    INI_GET_ASV("SL", asv.sl, to_number<uint8_t>, asv.sl);
+    INI_GET_ASV("DSL", asv.dsl, to_number<uint8_t>, asv.dsl);
+    INI_GET_ASV("EXEMPT", asv.exempt, to_number<uint8_t>, asv.exempt);
+    INI_GET_ASV("AR", asv.ar, str_to_arword, asv.ar);
+    INI_GET_ASV("DAR", asv.dar, str_to_arword, asv.dar);
+    INI_GET_ASV("RESTRICT", asv.restrict, str2restrict, asv.restrict);
   }
 
   // sysconfig flags
   config()->set_sysconfig(GetFlagsFromIniFile(ini, sysconfig_flags, config()->sysconfig_flags()));
 
   // misc stuff
-  auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
+  auto num = ini.value<uint16_t>(INI_STR_MAIL_WHO_LEN);
   if (num > 0) {
     mail_who_field_len = num;
   }
 
-  const auto attach_dir = ini.value<string>(get_key_str(INI_STR_ATTACH_DIR));
+  const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);
   attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(GetHomeDir(), ATTACH_DIR);
   File::EnsureTrailingSlash(&attach_dir_);
 
