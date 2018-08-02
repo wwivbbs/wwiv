@@ -69,7 +69,6 @@
 
 struct ini_flags_type {
   const char* strnum;
-  bool sense;
   uint32_t value;
 };
 
@@ -96,17 +95,9 @@ static T GetFlagsFromIniFile(IniFile& ini, const std::vector<ini_flags_type>& fl
       continue;
     }
     if (ini.value<bool>(key)) {
-      if (fs.sense) {
-        flags &= ~fs.value;
-      } else {
-        flags |= fs.value;
-      }
+      flags |= fs.value;
     } else {
-      if (fs.sense) {
-        flags |= fs.value;
-      } else {
-        flags &= ~fs.value;
-      }
+      flags &= ~fs.value;
     }
   }
   return flags;
@@ -226,50 +217,42 @@ void ini_get_asv(const IniFile& ini, const std::string& s, A& f,
     }                                                                                              \
   }
 
-#define NEL(s) (sizeof(s) / sizeof((s)[0]))
-
 static std::vector<ini_flags_type> sysinfo_flags = {
-    {INI_STR_FORCE_FBACK, false, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
-    {INI_STR_CHECK_DUP_PHONES, false, OP_FLAGS_CHECK_DUPE_PHONENUM},
-    {INI_STR_HANGUP_DUP_PHONES, false, OP_FLAGS_HANGUP_DUPE_PHONENUM},
-    {INI_STR_USE_SIMPLE_ASV, false, OP_FLAGS_SIMPLE_ASV},
-    {INI_STR_POSTTIME_COMPENS, false, OP_FLAGS_POSTTIME_COMPENSATE},
-    {INI_STR_SHOW_HIER, false, OP_FLAGS_SHOW_HIER},
-    {INI_STR_IDZ_DESC, false, OP_FLAGS_IDZ_DESC},
-    {INI_STR_SETLDATE, false, OP_FLAGS_SETLDATE},
-    {INI_STR_READ_CD_IDZ, false, OP_FLAGS_READ_CD_IDZ},
-    {INI_STR_FSED_EXT_DESC, false, OP_FLAGS_FSED_EXT_DESC},
-    {INI_STR_FAST_TAG_RELIST, false, OP_FLAGS_FAST_TAG_RELIST},
-    {INI_STR_MAIL_PROMPT, false, OP_FLAGS_MAIL_PROMPT},
-    {INI_STR_SHOW_CITY_ST, false, OP_FLAGS_SHOW_CITY_ST},
-    //{INI_STR_NEW_EXTRACT, false, OP_FLAGS_NEW_EXTRACT},
-    {INI_STR_FAST_SEARCH, false, OP_FLAGS_FAST_SEARCH},
-    {INI_STR_NET_CALLOUT, false, OP_FLAGS_NET_CALLOUT},
-    {INI_STR_WFC_SCREEN, false, OP_FLAGS_WFC_SCREEN},
-    //{INI_STR_FIDO_PROCESS, false, OP_FLAGS_FIDO_PROCESS},
-    //{INI_STR_NET_PROCESS, false, OP_FLAGS_NET_PROCESS},
-    //{INI_STR_USER_REGISTRATION, false, OP_FLAGS_USER_REGISTRATION},
-    {INI_STR_MSG_TAG, false, OP_FLAGS_MSG_TAG},
-    {INI_STR_CHAIN_REG, false, OP_FLAGS_CHAIN_REG},
-    {INI_STR_CAN_SAVE_SSM, false, OP_FLAGS_CAN_SAVE_SSM},
-    {INI_STR_EXTRA_COLOR, false, OP_FLAGS_EXTRA_COLOR},
-    {INI_STR_USE_FORCE_SCAN, false, OP_FLAGS_USE_FORCESCAN},
-    {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
+    {INI_STR_FORCE_FBACK, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
+    {INI_STR_CHECK_DUP_PHONES, OP_FLAGS_CHECK_DUPE_PHONENUM},
+    {INI_STR_HANGUP_DUP_PHONES, OP_FLAGS_HANGUP_DUPE_PHONENUM},
+    {INI_STR_USE_SIMPLE_ASV, OP_FLAGS_SIMPLE_ASV},
+    {INI_STR_POSTTIME_COMPENS, OP_FLAGS_POSTTIME_COMPENSATE},
+    {INI_STR_SHOW_HIER, OP_FLAGS_SHOW_HIER},
+    {INI_STR_IDZ_DESC, OP_FLAGS_IDZ_DESC},
+    {INI_STR_SETLDATE, OP_FLAGS_SETLDATE},
+    {INI_STR_READ_CD_IDZ, OP_FLAGS_READ_CD_IDZ},
+    {INI_STR_FSED_EXT_DESC, OP_FLAGS_FSED_EXT_DESC},
+    {INI_STR_FAST_TAG_RELIST, OP_FLAGS_FAST_TAG_RELIST},
+    {INI_STR_MAIL_PROMPT, OP_FLAGS_MAIL_PROMPT},
+    {INI_STR_SHOW_CITY_ST, OP_FLAGS_SHOW_CITY_ST},
+    {INI_STR_FAST_SEARCH, OP_FLAGS_FAST_SEARCH},
+    {INI_STR_NET_CALLOUT, OP_FLAGS_NET_CALLOUT},
+    {INI_STR_WFC_SCREEN, OP_FLAGS_WFC_SCREEN},
+    {INI_STR_MSG_TAG, OP_FLAGS_MSG_TAG},
+    {INI_STR_CHAIN_REG, OP_FLAGS_CHAIN_REG},
+    {INI_STR_CAN_SAVE_SSM, OP_FLAGS_CAN_SAVE_SSM},
+    {INI_STR_EXTRA_COLOR, OP_FLAGS_EXTRA_COLOR},
+    {INI_STR_USE_FORCE_SCAN, OP_FLAGS_USE_FORCESCAN},
+    {INI_STR_NEWUSER_MIN, OP_FLAGS_NEWUSER_MIN},
 };
 
 static std::vector<ini_flags_type> sysconfig_flags = {
-    {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
-    {INI_STR_NO_NEWUSER_FEEDBACK, false, sysconfig_no_newuser_feedback},
-    {INI_STR_TITLEBAR, false, sysconfig_titlebar},
-    {INI_STR_LOG_DOWNLOADS, false, sysconfig_log_dl},
-    {INI_STR_CLOSE_XFER, false, sysconfig_no_xfer},
-    {INI_STR_ALL_UL_TO_SYSOP, false, sysconfig_all_sysop},
-    {INI_STR_BEEP_CHAT, true, unused_sysconfig_no_beep},
-    {INI_STR_TWO_COLOR_CHAT, false, unused_sysconfig_two_color},
-    {INI_STR_ALLOW_ALIASES, true, sysconfig_no_alias},
-    {INI_STR_USE_LIST, false, unused_sysconfig_list},
-    {INI_STR_EXTENDED_USERINFO, false, sysconfig_extended_info},
-    {INI_STR_FREE_PHONE, false, sysconfig_free_phone}};
+    {INI_STR_2WAY_CHAT, sysconfig_2_way},
+    {INI_STR_NO_NEWUSER_FEEDBACK, sysconfig_no_newuser_feedback},
+    {INI_STR_TITLEBAR, sysconfig_titlebar},
+    {INI_STR_LOG_DOWNLOADS, sysconfig_log_dl},
+    {INI_STR_CLOSE_XFER, sysconfig_no_xfer},
+    {INI_STR_ALL_UL_TO_SYSOP, sysconfig_all_sysop},
+    {INI_STR_ALLOW_ALIASES, sysconfig_allow_alias},
+    {INI_STR_EXTENDED_USERINFO, sysconfig_extended_info},
+    {INI_STR_FREE_PHONE, sysconfig_free_phone}
+};
 
 void Application::ReadINIFile(IniFile& ini) {
   // Setup default  data
@@ -353,8 +336,7 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   // sysconfig flags
-  config()->set_sysconfig(
-      GetFlagsFromIniFile(ini, sysconfig_flags, config()->sysconfig_flags()));
+  config()->set_sysconfig(GetFlagsFromIniFile(ini, sysconfig_flags, config()->sysconfig_flags()));
 
   // misc stuff
   auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));

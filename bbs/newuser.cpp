@@ -198,7 +198,7 @@ void input_name() {
   bool ok = true;
   do {
     bout.nl();
-    if (a()->config()->sysconfig_flags() & sysconfig_no_alias) {
+    if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
       bout << "|#3Enter your FULL REAL name.\r\n";
     } else {
       bout << "|#3Enter your full name, or your alias.\r\n";
@@ -220,7 +220,7 @@ void input_name() {
 }
 
 void input_realname() {
-  if (!(a()->config()->sysconfig_flags() & sysconfig_no_alias)) {
+  if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
     do {
       bout.nl();
       bout << "|#3Enter your FULL real name.\r\n";
@@ -819,7 +819,7 @@ void VerifyNewUserFullInfo() {
   do {
     bout.nl(2);
     bout << "|#91) Name          : |#2" << u->GetName() << wwiv::endl;
-    if (!(a()->config()->sysconfig_flags() & sysconfig_no_alias)) {
+    if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
       bout << "|#92) Real Name     : |#2" << u->GetRealName() << wwiv::endl;
     }
     bout << "|#93) Callsign      : |#2" << u->GetCallsign() << wwiv::endl;
@@ -864,7 +864,7 @@ void VerifyNewUserFullInfo() {
       input_name();
       break;
     case '2':
-      if (!(a()->config()->sysconfig_flags() & sysconfig_no_alias)) {
+      if (a()->config()->sysconfig_flags() & sysconfig_allow_alias) {
         input_realname();
       }
       break;

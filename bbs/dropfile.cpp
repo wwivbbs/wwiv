@@ -153,7 +153,7 @@ void CreateDoorInfoDropFile() {
       incom ? a()->primary_port() : 0);
     fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? a()->modem_speed_ : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
-    if (a()->config()->sysconfig_flags() & sysconfig_no_alias) {
+    if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
       char szTemp[81];
       strcpy(szTemp, a()->user()->GetRealName());
       GetNamePartForDropFile(false, szTemp);
