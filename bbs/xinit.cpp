@@ -154,14 +154,13 @@ static uint16_t str2spawnopt(const std::string& s) {
 
 // Takes string s and creates restrict val
 static uint16_t str2restrict(const std::string& s) {
-  const char* rs = restrict_string;
   char s1[81];
 
   to_char_array(s1, s);
   strupr(s1);
   uint16_t r = 0;
-  for (int i = strlen(rs) - 1; i >= 0; i--) {
-    if (strchr(s1, rs[i])) {
+  for (int i = strlen(restrict_string) - 1; i >= 0; i--) {
+    if (strchr(s1, restrict_string[i])) {
       r |= (1 << i);
     }
   }
@@ -643,13 +642,9 @@ void Application::InitializeBBS() {
             << std::endl
             << "\r\nInitializing BBS..." << std::endl;
 #endif // __unix__
-  SetCurrentReadMessageArea(-1);
   use_workspace = false;
-  chat_file = false;
-  clearnsp();
-  bquote_ = 0;
-  equote_ = 0;
 
+  clearnsp();
   VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(temp_directory())) {
     if (!File::mkdirs(temp_directory())) {
@@ -682,9 +677,7 @@ void Application::InitializeBBS() {
     AbortBBS();
   }
 
-  set_net_num(0);
   read_networks();
-  set_net_num(0);
   if (!create_message_api()) {
     AbortBBS();
   }
@@ -739,7 +732,6 @@ void Application::InitializeBBS() {
   CdHome();
 
   check_phonenum(); // dupphone addition
-  batch().clear();
 
   VLOG(1) << "Reading User Information.";
   ReadCurrentUser(1);
@@ -804,7 +796,6 @@ void Application::InitializeBBS() {
     File::Remove(WWIV_NET_DAT);
   }
 
-  srand(static_cast<unsigned int>(time_t_now()));
   catsl();
 
   VLOG(1) << "Saving Instance information.";

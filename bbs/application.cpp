@@ -97,8 +97,14 @@ Output bout;
 Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_() {
   ::bout.SetLocalIO(localIO);
+  SetCurrentReadMessageArea(-1);
+  chat_file = false;
+  bquote_ = 0;
+  equote_ = 0;
+
 
   tzset();
+  srand(static_cast<unsigned int>(time_t_now()));
 
   memset(&asv, 0, sizeof(asv_rec));
   newuser_colors = {7, 11, 14, 5, 31, 2, 12, 9, 6, 3};
