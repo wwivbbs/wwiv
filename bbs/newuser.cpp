@@ -1012,7 +1012,7 @@ void ExecNewUserCommand() {
     sysoplog() << commandLine;
 
     a()->WriteCurrentUser();
-    ExecuteExternalProgram(commandLine, a()->GetSpawnOptions(SPAWNOPT_NEWUSER));
+    ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_NEWUSER));
     a()->ReadCurrentUser();
   }
 }

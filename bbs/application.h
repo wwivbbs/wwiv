@@ -247,14 +247,9 @@ public:
   /*! @function QuitBBS - Shuts down the bbs at the "QUIT" error level */
   void QuitBBS();
 
-  void SetConfigFlag(int nFlag) { flags |= nFlag; }
-  void ToggleConfigFlag(int nFlag) { flags ^= nFlag; }
-  void ClearConfigFlag(int nFlag) { flags &= ~nFlag; }
-  bool HasConfigFlag(int nFlag) const { return (flags & nFlag) != 0; }
-  void SetConfigFlags(int nFlags) { flags = nFlags; }
-  uint32_t GetConfigFlags() const { return flags; }
+  bool HasConfigFlag(int nFlag) const { return (flags_ & nFlag) != 0; }
 
-  uint16_t GetSpawnOptions(int nCmdID) { return spawn_opts[nCmdID]; }
+  uint16_t spawn_option(const std::string& c) const { return spawn_opts_.at(c); }
 
   bool IsCleanNetNeeded() const { return need_to_clean_net_; }
   void SetCleanNetNeeded(bool b) { need_to_clean_net_ = b; }
@@ -448,17 +443,17 @@ private:
   std::string current_dir_;
   int oklevel_;
   int errorlevel_;
-  int instance_number_ = -1;
+  int instance_number_{-1};
   std::string network_extension_;
-  bool user_already_on_ = false;
-  bool need_to_clean_net_ = false;
-  bool at_wfc_ = false;
+  bool user_already_on_{false};
+  bool need_to_clean_net_{false};
+  bool at_wfc_{false};
 
   std::unique_ptr<wwiv::sdk::StatusMgr> statusMgr;
   std::unique_ptr<wwiv::sdk::UserManager> user_manager_;
   std::string attach_dir_;
   wwiv::sdk::User thisuser_;
-  int effective_sl_ = 0;
+  int effective_sl_{0};
   std::unique_ptr<RemoteIO> comm_;
   std::unique_ptr<LocalIO> local_io_;
   std::string current_speed_;
@@ -470,10 +465,10 @@ private:
   std::unique_ptr<wwiv::sdk::Subs> subs_;
 
   // Former global variables and system_operation_rec members to be moved
-  uint32_t flags = 0;
-  uint16_t spawn_opts[20];
-  bool full_screen_read_prompt_ = true;
-  int last_read_user_number_ = 0;
+  uint32_t flags_{0};
+  std::map<const std::string, uint16_t> spawn_opts_;
+  bool full_screen_read_prompt_{true};
+  int last_read_user_number_{0};
   std::chrono::system_clock::time_point system_logon_time_;
   std::chrono::duration<double> extratimecall_;
 };

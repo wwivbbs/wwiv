@@ -991,26 +991,26 @@ struct filestatusrec {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define SPAWNOPT_TIMED          0
-#define SPAWNOPT_NEWUSER        1
-#define SPAWNOPT_BEGINDAY       2
-#define SPAWNOPT_LOGON          3
-#define SPAWNOPT_ULCHK          4
+constexpr char* SPAWNOPT_TIMED = "TIMED";
+constexpr char* SPAWNOPT_NEWUSER = "NEWUSER";
+constexpr char* SPAWNOPT_BEGINDAY = "BEGINDAY";
+constexpr char* SPAWNOPT_LOGON = "LOGON";
+constexpr char* SPAWNOPT_ULCHK = "ULCHK";
 // SPAWNOPT[FSED] nolonger used. (5)
-#define SPAWNOPT_PROT_SINGLE    6
-#define SPAWNOPT_PROT_BATCH     7
-#define SPAWNOPT_CHAT           8
-#define SPAWNOPT_ARCH_E         9
-#define SPAWNOPT_ARCH_L         10
-#define SPAWNOPT_ARCH_A         11
-#define SPAWNOPT_ARCH_D         12
-#define SPAWNOPT_ARCH_K         13
-#define SPAWNOPT_ARCH_T         14
-#define SPAWNOPT_NET_CMD1       15
-#define SPAWNOPT_NET_CMD2       16
-#define SPAWNOPT_LOGOFF         17
+constexpr char* SPAWNOPT_PROT_SINGLE = "PROT_SINGLE";
+constexpr char* SPAWNOPT_PROT_BATCH = "PROT_BATCH";
+constexpr char* SPAWNOPT_CHAT = "CHAT";
+constexpr char* SPAWNOPT_ARCH_E = "ARCH_E";
+constexpr char* SPAWNOPT_ARCH_L = "ARCH_L";
+constexpr char* SPAWNOPT_ARCH_A = "ARCH_A";
+constexpr char* SPAWNOPT_ARCH_D = "ARCH_D";
+constexpr char* SPAWNOPT_ARCH_K = "ARCH_K";
+constexpr char* SPAWNOPT_ARCH_T = "ARCH_T";
+constexpr char* SPAWNOPT_NET_CMD1 = "NET_CMD1";
+constexpr char* SPAWNOPT_NET_CMD2 = "NET_CMD2";
+constexpr char* SPAWNOPT_LOGOFF = "LOGOFF";
 // SPAWNOPT[V_SCAN] nolonger used. (18)
-#define SPAWNOPT_NETWORK        19
+constexpr char* SPAWNOPT_NETWORK = "NETWORK";
 
 
 ///////////////////////////////////////////////////////////////////////////////

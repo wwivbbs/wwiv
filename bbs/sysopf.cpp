@@ -936,7 +936,7 @@ void beginday(bool displayStatus) {
   }
   if (!a()->beginday_cmd.empty()) {
     const std::string commandLine = stuff_in(a()->beginday_cmd, create_chain_file(), "", "", "", "");
-    ExecuteExternalProgram(commandLine, a()->GetSpawnOptions(SPAWNOPT_BEGINDAY));
+    ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_BEGINDAY));
   }
   if (displayStatus) {
     bout << "  |#7* |#1Purging inactive users (if enabled)...\r\n";

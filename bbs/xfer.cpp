@@ -139,7 +139,7 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   const string cmdLine = stuff_in(a()->upload_cmd, create_chain_file(),
                                   a()->directories[directory_num].path,
                                   stripfn(u->filename), comport, "");
-  ExecuteExternalProgram(cmdLine, a()->GetSpawnOptions(SPAWNOPT_ULCHK));
+  ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
   File file(a()->directories[directory_num].path, stripfn(u->filename));
   if (!file.Exists()) {
@@ -279,7 +279,7 @@ int list_arc_out(const char *file_name, const char *pszDirectory) {
     bout.nl(2);
     bout << "Archive listing for " << file_name;
     bout.nl(2);
-    return_code = ExecuteExternalProgram(szArchiveCmd, a()->GetSpawnOptions(SPAWNOPT_ARCH_L));
+    return_code = ExecuteExternalProgram(szArchiveCmd, a()->spawn_option(SPAWNOPT_ARCH_L));
   } else {
     bout.nl();
     bout << "Unknown archive: " << file_name;

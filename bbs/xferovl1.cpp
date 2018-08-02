@@ -640,7 +640,7 @@ void tag_files(bool& need_title) {
         }
         if (s[0] != 0) {
           bout.nl();
-          ExecuteExternalProgram(s, a()->GetSpawnOptions(SPAWNOPT_ARCH_L));
+          ExecuteExternalProgram(s, a()->spawn_option(SPAWNOPT_ARCH_L));
           bout.nl();
           pausescr();
           a()->UpdateTopScreen();

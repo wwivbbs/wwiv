@@ -127,7 +127,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     a()->localIO()->Puts(command);
     a()->localIO()->Puts("\r\n");
     if (incom) {
-      int nRetCode = ExecuteExternalProgram(command, a()->GetSpawnOptions(SPAWNOPT_PROT_SINGLE));
+      int nRetCode = ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
       a()->UpdateTopScreen();
       return nRetCode;
     } else {

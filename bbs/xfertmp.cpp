@@ -465,7 +465,7 @@ void add_arc(const char *arc, const char *file_name, int dos) {
     a()->localIO()->Puts(szAddArchiveCommand);
     a()->localIO()->Puts("\r\n");
     if (dos) {
-      ExecuteExternalProgram(szAddArchiveCommand, a()->GetSpawnOptions(SPAWNOPT_ARCH_A));
+      ExecuteExternalProgram(szAddArchiveCommand, a()->spawn_option(SPAWNOPT_ARCH_A));
     } else {
       ExecuteExternalProgram(szAddArchiveCommand, EFLAG_NONE);
       a()->UpdateTopScreen();
@@ -628,7 +628,7 @@ void temp_extract() {
               s3[0] = '\0';
             }
             if (s3[0]) {
-              ExecuteExternalProgram(s3, a()->GetSpawnOptions(SPAWNOPT_ARCH_E));
+              ExecuteExternalProgram(s3, a()->spawn_option(SPAWNOPT_ARCH_E));
               sprintf(s2, "Extracted out \"%s\" from \"%s\"", s1, u.filename);
             } else {
               s2[0] = '\0';

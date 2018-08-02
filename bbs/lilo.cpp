@@ -880,7 +880,7 @@ void logon() {
     else {
       bout.nl();
       const string cmd = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
-      ExecuteExternalProgram(cmd, a()->GetSpawnOptions(SPAWNOPT_LOGON));
+      ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGON));
     }
     bout.nl(2);
   }

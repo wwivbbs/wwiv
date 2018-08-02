@@ -68,7 +68,7 @@
 #include "bbs/xinitini.h"
 
 struct ini_flags_type {
-  int strnum;
+  const char* strnum;
   bool sense;
   uint32_t value;
 };
@@ -83,8 +83,34 @@ using namespace wwiv::os;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
-uint32_t GetFlagsFromIniFile(IniFile& pIniFile, ini_flags_type* fs, int nFlagNumber,
-                             uint32_t flags);
+template <typename T>
+static T GetFlagsFromIniFile(IniFile& ini, const std::vector<ini_flags_type>& flag_definitions,
+                             T flags) {
+  for (const auto& fs : flag_definitions) {
+    const auto key = get_key_str(fs.strnum);
+    if (key.empty()) {
+      continue;
+    }
+    auto val = ini.value<string>(key);
+    if (val.empty()) {
+      continue;
+    }
+    if (ini.value<bool>(key)) {
+      if (fs.sense) {
+        flags &= ~fs.value;
+      } else {
+        flags |= fs.value;
+      }
+    } else {
+      if (fs.sense) {
+        flags |= fs.value;
+      } else {
+        flags &= ~fs.value;
+      }
+    }
+  }
+  return flags;
+}
 
 void StatusManagerCallback(int i) {
   switch (i) {
@@ -114,7 +140,7 @@ void StatusManagerCallback(int i) {
 // ExecuteExternalProgram calls.
 static uint16_t str2spawnopt(const std::string& s) {
   uint16_t return_val = EFLAG_NONE;
-  string ts = s;
+  auto ts = s;
   StringUpperCase(&ts);
 
   if (ts.find("NOHUP") != std::string::npos) {
@@ -136,11 +162,11 @@ static uint16_t str2spawnopt(const std::string& s) {
 }
 
 // Takes string s and creates restrict val
-static uint16_t str2restrict(const char* s) {
+static uint16_t str2restrict(const std::string s) {
   const char* rs = restrict_string;
   char s1[81];
 
-  strcpy(s1, s);
+  to_char_array(s1, s);
   strupr(s1);
   uint16_t r = 0;
   for (int i = strlen(rs) - 1; i >= 0; i--) {
@@ -157,52 +183,44 @@ static uint16_t str2restrict(const char* s) {
 // tries to read settings from [WWIV-<instnum>] subsection - this overrides
 // those in [WWIV] subsection.
 
-struct eventinfo_t {
-  const char* name;
-  unsigned short eflags;
-};
-
 // See #defines SPAWNOPT_XXXX in vardec.h for these.
-static eventinfo_t eventinfo[] = {
-    {"TIMED", EFLAG_NONE},
-    {"NEWUSER", EFLAG_NONE},
-    {"BEGINDAY", EFLAG_NONE},
-    {"LOGON", EFLAG_NONE},
-    {"ULCHK", EFLAG_NOHUP},
-    {"CHAT", EFLAG_FOSSIL}, // UNUSED (5)
-    {"PROT_SINGLE", EFLAG_NONE},
-    {"PROT_BATCH", EFLAG_NONE},
-    {"CHAT", EFLAG_NONE},
-    {"ARCH_E", EFLAG_NONE},
-    {"ARCH_L", EFLAG_NONE},
-    {"ARCH_A", EFLAG_NONE},
-    {"ARCH_D", EFLAG_NONE},
-    {"ARCH_K", EFLAG_NONE},
-    {"ARCH_T", EFLAG_NONE},
-    {"NET_CMD1", EFLAG_NETPROG},
-    {"NET_CMD2", EFLAG_NETPROG},
-    {"LOGOFF", EFLAG_NONE},
-    {"", EFLAG_NONE}, // UNUSED (18)
+static std::map<std::string, uint16_t> eventinfo = {
+    {"TIMED", EFLAG_NONE},       {"NEWUSER", EFLAG_NONE},     {"BEGINDAY", EFLAG_NONE},
+    {"LOGON", EFLAG_NONE},       {"ULCHK", EFLAG_NOHUP},      {"CHAT", EFLAG_FOSSIL}, // UNUSED (5)
+    {"PROT_SINGLE", EFLAG_NONE}, {"PROT_BATCH", EFLAG_NONE},  {"CHAT", EFLAG_NONE},
+    {"ARCH_E", EFLAG_NONE},      {"ARCH_L", EFLAG_NONE},      {"ARCH_A", EFLAG_NONE},
+    {"ARCH_D", EFLAG_NONE},      {"ARCH_K", EFLAG_NONE},      {"ARCH_T", EFLAG_NONE},
+    {"NET_CMD1", EFLAG_NETPROG}, {"NET_CMD2", EFLAG_NETPROG}, {"LOGOFF", EFLAG_NONE},
     {"NETWORK", EFLAG_NETPROG},
 };
 
-static std::string get_key_str(int n, const std::string& index = {}) {
-  static char str[255];
+static std::string get_key_str(const std::string& n, const std::string& index = {}) {
   if (index.empty()) {
-    return INI_OPTIONS_ARRAY[n];
+    return n;
   }
-  return StrCat(INI_OPTIONS_ARRAY[n], "[", index, "]");
+  return StrCat(n, "[", index, "]");
 }
 
-static void ini_init_str(IniFile& ini, size_t key_idx, std::string& s) {
+static void ini_init_str(const IniFile& ini, const std::string& key_idx, std::string& s) {
   s = ini.value<string>(get_key_str(key_idx));
+}
+
+template <typename A>
+void ini_get_asv(const IniFile& ini, const std::string& s, A& f,
+                 std::function<A(const std::string&)> func, A d) {
+  const auto ss = ini.value<std::string>(StrCat(INI_STR_SIMPLE_ASV, "[", s, "]"));
+  if (!ss.empty()) {
+    f = func(ss);
+  } else {
+    f = d;
+  }
 }
 
 #define INI_GET_ASV(s, f, func, d)                                                                 \
   {                                                                                                \
-    const std::string ss = ini.value<std::string>(get_key_str(INI_STR_SIMPLE_ASV, s));             \
+    const auto ss = ini.value<std::string>(get_key_str(INI_STR_SIMPLE_ASV, s));                    \
     if (!ss.empty()) {                                                                             \
-      asv.f = func(ss.c_str());                                                                    \
+      asv.f = func(ss);                                                                            \
     } else {                                                                                       \
       asv.f = d;                                                                                   \
     }                                                                                              \
@@ -210,7 +228,7 @@ static void ini_init_str(IniFile& ini, size_t key_idx, std::string& s) {
 
 #define NEL(s) (sizeof(s) / sizeof((s)[0]))
 
-static ini_flags_type sysinfo_flags[] = {
+static std::vector<ini_flags_type> sysinfo_flags = {
     {INI_STR_FORCE_FBACK, false, OP_FLAGS_FORCE_NEWUSER_FEEDBACK},
     {INI_STR_CHECK_DUP_PHONES, false, OP_FLAGS_CHECK_DUPE_PHONENUM},
     {INI_STR_HANGUP_DUP_PHONES, false, OP_FLAGS_HANGUP_DUPE_PHONENUM},
@@ -239,7 +257,7 @@ static ini_flags_type sysinfo_flags[] = {
     {INI_STR_NEWUSER_MIN, false, OP_FLAGS_NEWUSER_MIN},
 };
 
-static ini_flags_type sysconfig_flags[] = {
+static std::vector<ini_flags_type> sysconfig_flags = {
     {INI_STR_2WAY_CHAT, false, sysconfig_2_way},
     {INI_STR_NO_NEWUSER_FEEDBACK, false, sysconfig_no_newuser_feedback},
     {INI_STR_TITLEBAR, false, sysconfig_titlebar},
@@ -263,17 +281,13 @@ void Application::ReadINIFile(IniFile& ini) {
   max_gfilesec = 32;
   mail_who_field_len = 35;
 
-  for (size_t i = 0; i < NEL(eventinfo); i++) {
-    spawn_opts[i] = eventinfo[i].eflags;
-  }
-
-  // found something
-  // pull out event flags
-  for (size_t i = 0; i < NEL(spawn_opts); i++) {
-    const auto key_name = get_key_str(INI_STR_SPAWNOPT, eventinfo[i].name);
+  // Found something, pull out event flags.
+  for (const auto& kv : eventinfo) {
+    spawn_opts_[kv.first] = kv.second;
+    const auto key_name = get_key_str(INI_STR_SPAWNOPT, kv.first);
     const auto ss = ini.value<string>(key_name);
     if (!ss.empty()) {
-      spawn_opts[i] = str2spawnopt(ss);
+      spawn_opts_[kv.first] = str2spawnopt(ss);
     }
   }
 
@@ -323,24 +337,24 @@ void Application::ReadINIFile(IniFile& ini) {
   beginday_node_number_ = ini.value<int>(get_key_str(INI_STR_BEGINDAYNODENUMBER), 1);
 
   // pull out sysinfo_flags
-  SetConfigFlags(GetFlagsFromIniFile(ini, sysinfo_flags, NEL(sysinfo_flags), GetConfigFlags()));
+  flags_ = GetFlagsFromIniFile(ini, sysinfo_flags, flags_);
 
   // allow override of Application::message_color_
   message_color_ = ini.value<int>(get_key_str(INI_STR_MSG_COLOR), GetMessageColor());
 
   // get asv values
   if (HasConfigFlag(OP_FLAGS_SIMPLE_ASV)) {
-    INI_GET_ASV("SL", sl, to_number<uint8_t>, a()->asv.sl);
-    INI_GET_ASV("DSL", dsl, to_number<uint8_t>, a()->asv.dsl);
-    INI_GET_ASV("EXEMPT", exempt, to_number<uint8_t>, a()->asv.exempt);
-    INI_GET_ASV("AR", ar, str_to_arword, a()->asv.ar);
-    INI_GET_ASV("DAR", dar, str_to_arword, a()->asv.dar);
-    INI_GET_ASV("RESTRICT", restrict, str2restrict, a()->asv.restrict);
+    INI_GET_ASV("SL", sl, to_number<uint8_t>, asv.sl);
+    INI_GET_ASV("DSL", dsl, to_number<uint8_t>, asv.dsl);
+    INI_GET_ASV("EXEMPT", exempt, to_number<uint8_t>, asv.exempt);
+    INI_GET_ASV("AR", ar, str_to_arword, asv.ar);
+    INI_GET_ASV("DAR", dar, str_to_arword, asv.dar);
+    INI_GET_ASV("RESTRICT", restrict, str2restrict, asv.restrict);
   }
 
   // sysconfig flags
-  a()->config()->set_sysconfig(static_cast<uint16_t>(GetFlagsFromIniFile(
-      ini, sysconfig_flags, NEL(sysconfig_flags), a()->config()->sysconfig_flags())));
+  config()->set_sysconfig(
+      GetFlagsFromIniFile(ini, sysconfig_flags, config()->sysconfig_flags()));
 
   // misc stuff
   auto num = ini.value<uint16_t>(get_key_str(INI_STR_MAIL_WHO_LEN));
@@ -366,7 +380,7 @@ void Application::ReadINIFile(IniFile& ini) {
 }
 
 bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
-  string temp_directory = ini.value<string>("TEMP_DIRECTORY");
+  auto temp_directory = ini.value<string>("TEMP_DIRECTORY");
   if (temp_directory.empty()) {
     LOG(ERROR) << "TEMP_DIRECTORY must be set in WWIV.INI.";
     return false;
@@ -379,11 +393,11 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   File::FixPathSeparators(&batch_directory);
 
   // Replace %n with instance number value.
-  string instance_num_string = std::to_string(instance_number);
+  auto instance_num_string = std::to_string(instance_number);
   StringReplace(&temp_directory, "%n", instance_num_string);
   StringReplace(&batch_directory, "%n", instance_num_string);
 
-  const string base_dir = GetHomeDir();
+  const auto base_dir = GetHomeDir();
   File::absolute(base_dir, &batch_directory);
   File::absolute(base_dir, &temp_directory);
   File::EnsureTrailingSlash(&temp_directory);
@@ -392,7 +406,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   temp_directory_ = temp_directory;
   batch_directory_ = batch_directory;
 
-  int max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
+  auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
     LOG(ERROR) << "Not enough instances configured (" << max_num_instances << ").";
     return false;
@@ -401,7 +415,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
 }
 
 bool Application::ReadConfig() {
-  config_.reset(new Config(a()->GetHomeDir()));
+  config_.reset(new Config(GetHomeDir()));
   if (!config_->IsInitialized()) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;
@@ -426,7 +440,7 @@ bool Application::ReadConfig() {
     AbortBBS();
   }
   ReadINIFile(ini);
-  bool config_ovr_read = ReadInstanceSettings(instance_number(), ini);
+  auto config_ovr_read = ReadInstanceSettings(instance_number(), ini);
   if (!config_ovr_read) {
     return false;
   }
@@ -485,11 +499,11 @@ class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
   }
 
   void Load() {
-    // Handled by the BBS in read_qscn(a()->usernum, qsc, false);
+    // Handled by the BBS in read_qscn(usernum, qsc, false);
   }
 
   void Save() {
-    // Handled by the BBS in write_qscn(a()->usernum, qsc, false);
+    // Handled by the BBS in write_qscn(usernum, qsc, false);
   }
 };
 
@@ -513,7 +527,9 @@ std::chrono::seconds Application::duration_used_this_session() const {
   return duration_cast<seconds>(std::chrono::system_clock::now() - system_logon_time_);
 }
 
-std::chrono::seconds Application::extratimecall() const { return duration_cast<seconds>(extratimecall_); }
+std::chrono::seconds Application::extratimecall() const {
+  return duration_cast<seconds>(extratimecall_);
+}
 
 std::chrono::seconds Application::set_extratimecall(std::chrono::duration<double> et) {
   extratimecall_ = et;
@@ -559,7 +575,7 @@ void Application::read_networks() {
     net_networks_rec n{};
     strcpy(n.name, "WWIVnet");
     n.dir = config()->datadir();
-    n.sysnum = a()->config()->config()->systemnumber;
+    n.sysnum = config()->config()->systemnumber;
   }
 }
 
@@ -576,7 +592,7 @@ bool Application::read_dirs() {
     LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return false;
   }
-  file.ReadVector(directories, a()->config()->config()->max_dirs);
+  file.ReadVector(directories, config()->config()->max_dirs);
   return true;
 }
 
@@ -621,8 +637,8 @@ bool Application::read_language() {
     // Add a default language to the list.
     languagerec lang{};
     to_char_array(lang.name, "English");
-    to_char_array(lang.dir, a()->config()->gfilesdir());
-    to_char_array(lang.mdir, a()->config()->menudir());
+    to_char_array(lang.dir, config()->gfilesdir());
+    to_char_array(lang.mdir, config()->menudir());
 
     languages.emplace_back(lang);
   }
@@ -655,8 +671,8 @@ void Application::InitializeBBS() {
   use_workspace = false;
   chat_file = false;
   clearnsp();
-  a()->bquote_ = 0;
-  a()->equote_ = 0;
+  bquote_ = 0;
+  equote_ = 0;
 
   VLOG(1) << "Processing configuration file: WWIV.INI.";
   if (!File::Exists(temp_directory())) {
@@ -755,7 +771,7 @@ void Application::InitializeBBS() {
   topdata = LocalIO::topdataUser;
 
   // Set DSZLOG
-  dsz_logfile_name_ = StrCat(a()->temp_directory(), "dsz.log");
+  dsz_logfile_name_ = StrCat(temp_directory(), "dsz.log");
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", dsz_logfile_name_);
   }
@@ -766,7 +782,7 @@ void Application::InitializeBBS() {
   init_events();
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
-  a()->do_event_ = 0;
+  do_event_ = 0;
   usub.resize(config()->config()->max_subs);
   udir.resize(config()->config()->max_dirs);
   uconfsub.resize(MAX_CONFERENCES);
@@ -866,34 +882,6 @@ void Application::create_phone_file() {
     }
   }
   phoneNumFile.Close();
-}
-
-uint32_t GetFlagsFromIniFile(IniFile& ini, ini_flags_type* fs, int nFlagNumber, uint32_t flags) {
-  for (int i = 0; i < nFlagNumber; i++) {
-    const std::string key = get_key_str(fs[i].strnum);
-    if (key.empty()) {
-      continue;
-    }
-    string val = ini.value<string>(key);
-    if (val.empty()) {
-      continue;
-    }
-    if (ini.value<bool>(key)) {
-      if (fs[i].sense) {
-        flags &= ~fs[i].value;
-      } else {
-        flags |= fs[i].value;
-      }
-    } else {
-      if (fs[i].sense) {
-        flags |= fs[i].value;
-      } else {
-        flags &= ~fs[i].value;
-      }
-    }
-  }
-
-  return flags;
 }
 
 // end dupphone additions
