@@ -908,11 +908,6 @@ struct batchrec {
 #define g_flag_disable_pause        0x00000002
 #define g_flag_scanned_files        0x00000004
 #define g_flag_made_find_str        0x00000008
-//#define g_flag_pipe_colors        0x00000010
-// #define g_flag_allow_extended       0x00000020
-// #define g_flag_disable_mci          0x00000040
-// Used to tell the message reader that ANSI movement has occurred.
-//#define g_flag_ansi_movement        0x00000080
 
 struct ext_desc_type {
   char name[13];
@@ -991,26 +986,22 @@ struct filestatusrec {
 
 ///////////////////////////////////////////////////////////////////////////////
 
-constexpr char* SPAWNOPT_TIMED = "TIMED";
-constexpr char* SPAWNOPT_NEWUSER = "NEWUSER";
-constexpr char* SPAWNOPT_BEGINDAY = "BEGINDAY";
-constexpr char* SPAWNOPT_LOGON = "LOGON";
-constexpr char* SPAWNOPT_ULCHK = "ULCHK";
-// SPAWNOPT[FSED] nolonger used. (5)
-constexpr char* SPAWNOPT_PROT_SINGLE = "PROT_SINGLE";
-constexpr char* SPAWNOPT_PROT_BATCH = "PROT_BATCH";
-constexpr char* SPAWNOPT_CHAT = "CHAT";
-constexpr char* SPAWNOPT_ARCH_E = "ARCH_E";
-constexpr char* SPAWNOPT_ARCH_L = "ARCH_L";
-constexpr char* SPAWNOPT_ARCH_A = "ARCH_A";
-constexpr char* SPAWNOPT_ARCH_D = "ARCH_D";
-constexpr char* SPAWNOPT_ARCH_K = "ARCH_K";
-constexpr char* SPAWNOPT_ARCH_T = "ARCH_T";
-constexpr char* SPAWNOPT_NET_CMD1 = "NET_CMD1";
-constexpr char* SPAWNOPT_NET_CMD2 = "NET_CMD2";
-constexpr char* SPAWNOPT_LOGOFF = "LOGOFF";
-// SPAWNOPT[V_SCAN] nolonger used. (18)
-constexpr char* SPAWNOPT_NETWORK = "NETWORK";
+constexpr const char* SPAWNOPT_TIMED = "TIMED";
+constexpr const char* SPAWNOPT_NEWUSER = "NEWUSER";
+constexpr const char* SPAWNOPT_BEGINDAY = "BEGINDAY";
+constexpr const char* SPAWNOPT_LOGON = "LOGON";
+constexpr const char* SPAWNOPT_ULCHK = "ULCHK";
+constexpr const char* SPAWNOPT_PROT_SINGLE = "PROT_SINGLE";
+constexpr const char* SPAWNOPT_PROT_BATCH = "PROT_BATCH";
+constexpr const char* SPAWNOPT_CHAT = "CHAT";
+constexpr const char* SPAWNOPT_ARCH_E = "ARCH_E";
+constexpr const char* SPAWNOPT_ARCH_L = "ARCH_L";
+constexpr const char* SPAWNOPT_ARCH_A = "ARCH_A";
+constexpr const char* SPAWNOPT_ARCH_D = "ARCH_D";
+constexpr const char* SPAWNOPT_ARCH_K = "ARCH_K";
+constexpr const char* SPAWNOPT_ARCH_T = "ARCH_T";
+constexpr const char* SPAWNOPT_LOGOFF = "LOGOFF";
+constexpr const char* SPAWNOPT_NETWORK = "NETWORK";
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1030,23 +1021,17 @@ constexpr char* SPAWNOPT_NETWORK = "NETWORK";
 #define OP_FLAGS_FAST_TAG_RELIST          0x00001000
 #define OP_FLAGS_MAIL_PROMPT              0x00002000
 #define OP_FLAGS_SHOW_CITY_ST             0x00004000
-//#define OP_FLAGS_NO_EASY_DL               0x00008000
-//#define OP_FLAGS_NEW_EXTRACT              0x00010000
 #define OP_FLAGS_FAST_SEARCH              0x00020000
 #define OP_FLAGS_NET_CALLOUT              0x00040000
 #define OP_FLAGS_WFC_SCREEN               0x00080000
-//#define OP_FLAGS_FIDO_PROCESS             0x00100000
-//#define OP_FLAGS_USER_REGISTRATION        0x00200000
 #define OP_FLAGS_MSG_TAG                  0x00400000
 #define OP_FLAGS_CHAIN_REG                0x00800000
 #define OP_FLAGS_CAN_SAVE_SSM             0x01000000
 #define OP_FLAGS_EXTRA_COLOR              0x02000000
 #define OP_FLAGS_USE_FORCESCAN            0x04000000
 #define OP_FLAGS_NEWUSER_MIN              0x08000000
-//#define OP_FLAGS_NET_PROCESS              0x10000000
 #define OP_FLAGS_UNUSED_2                 0x20000000
 #define OP_FLAGS_UNUSED_4                 0x40000000
-//#define OP_FLAGS_ADV_ASV                  0x80000000
 
 // QUICK REFERNCE TO FIND USER INPUT_MODE_PHONE NUMBER
 
