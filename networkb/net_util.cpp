@@ -46,7 +46,10 @@ void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline,
       BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
   cmdline.add_argument(
       BooleanCommandLineArgument("skip_delete", "Don't delete packets, move to save area"));
-  cmdline.add_argument({"semaphore_timeout",
+  cmdline.add_argument(
+      BooleanCommandLineArgument("quiet", "Be more quiet and don't log entry/exit"));
+  cmdline.add_argument(
+      {"semaphore_timeout",
       "Timeout (in seconds) to wait for the network semaphore to become available.",
       "30"});
 }
@@ -83,8 +86,12 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   }
   network_ = nws[network_number_];
   network_name_ = ToStringLowerCase(network_.name);
-  LOG(INFO) << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
-            << " for network: " << network_name_;
+  LOG(STARTUP) << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
+               << " for network: " << network_name_;
+  if (!quiet()) {
+    std::cerr << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
+              << " for network: " << network_name_;
+  }
 
   if (!LoadNetIni()) {
     LOG(ERROR) << "Error loading INI file for defaults";
@@ -137,6 +144,8 @@ bool NetworkCommandLine::LoadNetIni() {
 bool NetworkCommandLine::skip_delete() const noexcept { return cmdline_.barg("skip_delete"); }
 
 bool NetworkCommandLine::skip_net() const noexcept { return cmdline_.barg("skip_net"); }
+
+bool NetworkCommandLine::quiet() const noexcept { return cmdline_.barg("quiet"); }
 
 std::chrono::duration<double> NetworkCommandLine::semaphore_timeout() const noexcept {
   auto semaphore_timeout = cmdline_.iarg("semaphore_timeout");

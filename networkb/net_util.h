@@ -57,6 +57,8 @@ public:
   bool LoadNetIni();
   bool skip_delete() const noexcept;
   bool skip_net() const noexcept;
+  bool quiet() const noexcept;
+
   std::chrono::duration<double> semaphore_timeout() const noexcept;
 
 private:

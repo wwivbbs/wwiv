@@ -555,14 +555,10 @@ int WFC::doWFCEvents() {
     }
 
     if (!any) {
-      static steady_clock::time_point mult_time;
-      auto now = steady_clock::now();
-      auto diff = now - mult_time;
-      if (a_->IsCleanNetNeeded() || diff > seconds(54)) {
+      if (a_->IsCleanNetNeeded()) {
         // let's try this.
         Clear();
         cleanup_net();
-        mult_time = steady_clock::now();
       }
       giveup_timeslice();
     }
