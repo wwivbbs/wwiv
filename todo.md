@@ -33,7 +33,6 @@
 * Drop Debian8
 * start using clock more.
 * move to datetime as much as possible.
-* Move the INI key names out of arrays and into a map
 
 ## Networking Cleanup
 ***
