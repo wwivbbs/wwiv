@@ -78,6 +78,8 @@ public:
   std::string binkp_cmd;
   bool do_network_callouts{false};
   std::string network_callout_cmd;
+  bool do_beginday_event{true};
+  std::string beginday_cmd;
 
   int http_port = -1;
   std::string http_address;

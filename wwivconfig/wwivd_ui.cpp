@@ -42,8 +42,9 @@ using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-static const int COL1_LINE = 2;
-static const int COL1_POSITION = 21;
+static constexpr int COL1_LINE = 2;
+static constexpr int COL1_POSITION = 21;
+static constexpr int LABEL1_WIDTH = 18;
 static const char enter_to_edit[] = "[Press Enter to Edit]";
 
 // Base item of an editable value, this class does not use templates.
@@ -286,68 +287,100 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
     c.http_port = 8080;
     c.http_address = "127.0.0.1";
     c.binkp_cmd = "./networkb --receive --handle=@H";
-    c.network_callout_cmd = "networkb --send --net=@T --node=@N";
+    File::FixPathSeparators(&c.binkp_cmd);
+    c.network_callout_cmd = "./networkb --send --net=@T --node=@N";
+    File::FixPathSeparators(&c.network_callout_cmd);
+    c.beginday_cmd = "./bbs -e";
+    File::FixPathSeparators(&c.beginday_cmd);
 
     wwivd_matrix_entry_t e = CreateWWIVMatrixEntry();
     c.bbses.push_back(e);
   } else {
     if (c.network_callout_cmd.empty()) {
-      c.network_callout_cmd = "networkb --send --net=@T --node=@N";
+      c.network_callout_cmd = "./networkb --send --net=@T --node=@N";
+      File::FixPathSeparators(&c.network_callout_cmd);
+    }
+    if (c.beginday_cmd.empty()) {
+      c.beginday_cmd = "./bbs -e";
+      File::FixPathSeparators(&c.beginday_cmd);
+    }
+    if (c.binkp_cmd.empty()) {
+      c.binkp_cmd = "./bbs -e";
+      File::FixPathSeparators(&c.binkp_cmd);
     }
   }
 
   if (c.bbses.empty()) {
     // If we have no entries in the Matrix, then let's add
     // a default entry for WWIV.
-    wwivd_matrix_entry_t e = CreateWWIVMatrixEntry();
-    c.bbses.push_back(e);
+    c.bbses.push_back(CreateWWIVMatrixEntry());
   }
 
   EditItems items{};
   int y = 1;
-  items.add(new Label(COL1_LINE, y, "Telnet Port:"),
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Telnet Port:"),
             new NumberEditItem<int>(COL1_POSITION, y, &c.telnet_port))
     ->set_help_text("Telnet Server Port Number (or -1 to disable).");
   y++;
-  items.add(new Label(COL1_LINE, y, "SSH Port:"),
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "SSH Port:"),
             new NumberEditItem<int>(COL1_POSITION, y, &c.ssh_port))
       ->set_help_text("SSH Server Port Number (or -1 to disable).");
   y++;
-  items.add(new Label(COL1_LINE, y, "BinkP Port:"),
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "HTTP Port:"),
+           new NumberEditItem<int>(COL1_POSITION, y, &c.http_port))
+      ->set_help_text("HTTP Server Port Number (or -1 to disable).");
+  y++;
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "HTTP Address:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, false))
+      ->set_help_text("Network address to listen on for the HTTP Server.");
+  y++;
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BinkP Port:"),
             new NumberEditItem<int>(COL1_POSITION, y, &c.binkp_port))
       ->set_help_text("BINKP Server Port Number (or -1 to disable).");
   y++;
-  items.add(new Label(COL1_LINE, y, "BinkP Receive Cmd:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, false))
-      ->set_help_text("Command to execute on an inbound BinkP connection.");
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net receive cmd:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, false))
+      ->set_help_text("Command to execute for an inbound network request.");
   y++;
   items
-      .add(new Label(COL1_LINE, y, "Net Callouts:"),
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Run BeginDay:"),
+           new BooleanEditItem(COL1_POSITION, y, &c.do_beginday_event))
+      ->set_help_text("Shoudl wwivd execute the beginday event for WWIV.");
+  y++;
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BeginDay Cmd:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.beginday_cmd, false))
+      ->set_help_text("Command to execute for the beginday event.");
+  y++;
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callouts:"),
            new BooleanEditItem(COL1_POSITION, y, &c.do_network_callouts))
       ->set_help_text("Command to execute to perform a network callout.");
 
   y++;
-  items.add(new Label(COL1_LINE, y, "Net Callout Cmd:"),
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callout Cmd:"),
             new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd, false))
       ->set_help_text("Command to execute to perform a network callout.");
   y++;
-  items.add(new Label(COL1_LINE, y, "HTTP Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &c.http_port))
-      ->set_help_text("HTTP Server Port Number (or -1 to disable).");
-  y++;
-  items.add(new Label(COL1_LINE, y, "HTTP Address:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, false))
-      ->set_help_text("Network address to listen on for the HTTP Server.");
-  y++;
-  items.add(new Label(COL1_LINE, y, "Matrix Filename:"),
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Filename:"),
             new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, false))
       ->set_help_text("Filename to display without extension before matrix bbs menu.");
   y++;
-  items.add(new Label(COL1_LINE, y, "Matrix Settings:"),
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Settings:"),
             new SubDialog<wwivd_config_t>(COL1_POSITION, y, c, matrix_subdialog))
       ->set_help_text("Create/Edit/Delete Matrix BBS settings.");
   y++;
-  items.add(new Label(COL1_LINE, y, "Blocking:"),
+  items
+      .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Blocking:"),
             new SubDialog<wwivd_blocking_t>(COL1_POSITION, y, c.blocking, edit_blocking))
       ->set_help_text("IP Blocking Settings.");
   y++;

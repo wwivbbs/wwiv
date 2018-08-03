@@ -36,6 +36,7 @@
 #include <cereal/types/unordered_set.hpp>
 #include <cereal/types/vector.hpp>
 
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/http_server.h"
 #include "core/inifile.h"
@@ -50,16 +51,16 @@
 #include "core/strings.h"
 #include "core/version.h"
 #include "core/wwivport.h"
-#include "sdk/config.h"
-#include "sdk/networks.h"
-#include "sdk/net/callouts.h"
-#include "sdk/contact.h"
 #include "sdk/callout.h"
+#include "sdk/config.h"
+#include "sdk/contact.h"
 #include "sdk/fido/fido_callout.h"
-#include "core/datetime.h"
+#include "sdk/net/callouts.h"
+#include "sdk/networks.h"
+#include "sdk/status.h"
 #include "wwivd/connection_data.h"
-#include "wwivd/wwivd_non_http.h"
 #include "wwivd/wwivd.h"
+#include "wwivd/wwivd_non_http.h"
 
 namespace wwiv {
 namespace wwivd {
@@ -77,7 +78,7 @@ using namespace wwiv::os;
 std::atomic<bool> need_to_exit;
 std::atomic<bool> need_to_reload_config;
 
-//TODO(rushfan): Add tests for new stuff in here.
+// TODO(rushfan): Add tests for new stuff in here.
 
 static NetworkContact network_contact_from_last_time(const std::string& address, time_t t) {
   network_contact_record ncr{};
@@ -149,9 +150,9 @@ static void one_net_wwivnet_callout(const Config& config, const net_networks_rec
   }
 }
 
-static void one_callout_loop(const Config& config, const wwivd_config_t& c) { 
+static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
   VLOG(1) << "do_wwivd_callouts: one_callout_loop: ";
-  Networks networks(config); 
+  Networks networks(config);
   const auto& nets = networks.networks();
   int network_number = 0;
   for (const auto& net : nets) {
@@ -167,6 +168,7 @@ static void one_callout_loop(const Config& config, const wwivd_config_t& c) {
 static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& original_config) {
   wwivd_config_t c{original_config};
 
+  StatusMgr sm(config.datadir(), [](int) {});
   auto e = need_to_exit.load();
   while (!e) {
     // Reload the config if we've gotten a HUP?
@@ -175,25 +177,36 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
       need_to_reload_config.store(false);
       c.Load(config);
     }
-
-    one_callout_loop(config, c);
+    if (c.do_network_callouts) {
+      one_callout_loop(config, c);
+    }
     if (need_to_exit.load()) {
       return;
     }
-    sleep_for(10s);
+    sleep_for(15s);
     e = need_to_exit.load();
+
+    std::unique_ptr<WStatus> last_date_status(sm.GetStatus());
+    if (date() != last_date_status->GetLastDate()) {
+      LOG(INFO) << "Executing BeginDay Event.";
+      const std::map<char, string> params{};
+      const auto cmd = CreateCommandLine(c.beginday_cmd, params);
+      if (!ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1)) {
+        LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";
+      }
+    }
   }
 }
 
-void do_wwivd_callouts(const Config& config, const wwivd_config_t& c) { 
+void do_wwivd_callouts(const Config& config, const wwivd_config_t& c) {
   if (c.do_network_callouts) {
-    // Only handling network callouts
-    LOG(INFO) << "WWIVD is handling network callouts";
-    std::thread callout_thread(do_wwivd_callout_loop, config, c);
-    callout_thread.detach();
+    LOG(INFO) << "WWIVD is handling network callouts.";
+  } else if (c.do_beginday_event) {
+    LOG(INFO) << "WWIVD is only handling beginday event.";
   }
+  std::thread callout_thread(do_wwivd_callout_loop, config, c);
+  callout_thread.detach();
 }
-
 
 } // namespace wwivd
 } // namespace wwiv
