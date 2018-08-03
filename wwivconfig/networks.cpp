@@ -462,7 +462,7 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
             new StringEditItem<std::string&>(COL1_POSITION, y, 8, c.session_password, false));
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allout Outbound Connections:"),
+  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allow Outbound Connections:"),
             new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "No", "Yes",
                                                   &c.options));
   y+=2;
