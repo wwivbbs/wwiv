@@ -872,14 +872,14 @@ void logon() {
       // Let's see if we need to run a basic script.
       const string BASIC_PREFIX = "@basic:";
       if (starts_with(a()->logon_cmd, BASIC_PREFIX)) {
-        const string cmd = a()->logon_cmd.substr(BASIC_PREFIX.size());
+        const auto cmd = a()->logon_cmd.substr(BASIC_PREFIX.size());
         LOG(INFO) << "Running basic script: " << cmd;
         wwiv::bbs::RunBasicScript(cmd);
       }
     }
     else {
       bout.nl();
-      const string cmd = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
+      const auto cmd = stuff_in(a()->logon_cmd, create_chain_file(), "", "", "", "");
       ExecuteExternalProgram(cmd, a()->spawn_option(SPAWNOPT_LOGON));
     }
     bout.nl(2);

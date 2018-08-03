@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "core/file.h"
 #include "core/strings.h"
 
 #include "bbs/application.h"
@@ -35,6 +36,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 const unsigned int GetTimeLeft();
@@ -94,16 +96,16 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
         break;
       // call-specific numbers
       case 'A':
-        os << create_filename(CHAINFILE_CALLINFO);
+        os << create_dropfile_filename(drop_file_t::CALLINFO_BBS);
         break;
       case 'C':
-        os << create_filename(CHAINFILE_CHAIN);
+        os << create_dropfile_filename(drop_file_t::CHAIN_TXT);
         break;
       case 'D':
-        os << create_filename(CHAINFILE_DORINFO);
+        os << create_dropfile_filename(drop_file_t::DORINFO_DEF);
         break;
       case 'E':
-        os << create_filename(CHAINFILE_DOOR32);
+        os << create_dropfile_filename(drop_file_t::DOOR32_SYS);
         break;
       case 'H':
         os << a()->remoteIO()->GetDoorHandle();
@@ -112,7 +114,7 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
         os << a()->temp_directory();
         break;
       case 'K':
-        os << a()->config()->gfilesdir() << COMMENT_TXT;
+        os << FilePath(a()->config()->gfilesdir(), COMMENT_TXT);
         break;
       case 'M':
         os << a()->modem_speed_;
@@ -121,13 +123,13 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
         os << a()->instance_number();
         break;
       case 'O':
-        os << create_filename(CHAINFILE_PCBOARD);
+        os << create_dropfile_filename(drop_file_t::PCBOARD_SYS);
         break;
       case 'P':
         os << ((incom) ? a()->primary_port() : 0);
         break;
       case 'R':
-        os << create_filename(CHAINFILE_DOOR);
+        os << create_dropfile_filename(drop_file_t::DOOR_SYS);
         break;
       // TODO(rushfan): Should we deprecate this? Use modem speed for now.
       case 'S':

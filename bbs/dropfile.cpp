@@ -40,8 +40,8 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 struct pcboard_sys_rec {
-  char    display[2], printer[2], page_bell[2], alarm[2], sysop_next,
-          errcheck[2], graphics, nodechat, openbps[5], connectbps[5];
+  char display[2], printer[2], page_bell[2], alarm[2], sysop_next, errcheck[2], graphics, nodechat,
+      openbps[5], connectbps[5];
 
   int16_t usernum;
 
@@ -94,23 +94,23 @@ static int GetDoor32Emulation() {
   return (okansi()) ? 1 : 0;
 }
 
-const string create_filename(int nDropFileType) {
+const string create_dropfile_filename(drop_file_t nDropFileType) {
   switch (nDropFileType) {
-  case CHAINFILE_CHAIN:
-    return StrCat(a()->temp_directory(), "chain.txt");
-  case CHAINFILE_DORINFO:
-    return  StrCat(a()->temp_directory(), "dorinfo1.def");
-  case CHAINFILE_PCBOARD:
-    return  StrCat(a()->temp_directory(), "pcboard.sys");
-  case CHAINFILE_CALLINFO:
-    return  StrCat(a()->temp_directory(), "callinfo.bbs");
-  case CHAINFILE_DOOR:
-    return  StrCat(a()->temp_directory(), "door.sys");
-  case CHAINFILE_DOOR32:
-    return  StrCat(a()->temp_directory(), "door32.sys");
+  case drop_file_t::CHAIN_TXT:
+    return FilePath(a()->temp_directory(), "chain.txt");
+  case drop_file_t::DORINFO_DEF:
+    return FilePath(a()->temp_directory(), "dorinfo1.def");
+  case drop_file_t::PCBOARD_SYS:
+    return FilePath(a()->temp_directory(), "pcboard.sys");
+  case drop_file_t::CALLINFO_BBS:
+    return FilePath(a()->temp_directory(), "callinfo.bbs");
+  case drop_file_t::DOOR_SYS:
+    return FilePath(a()->temp_directory(), "door.sys");
+  case drop_file_t::DOOR32_SYS:
+    return FilePath(a()->temp_directory(), "door32.sys");
   default:
     // Default to CHAIN.TXT since this is the native WWIV dormat
-    return  StrCat(a()->temp_directory(), "chain.txt");
+    return FilePath(a()->temp_directory(), "chain.txt");
   }
 }
 
@@ -143,7 +143,7 @@ static long GetMinutesRemainingForDropFile() {
 
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile() {
-  string fileName = create_filename(CHAINFILE_DORINFO);
+  string fileName = create_dropfile_filename(drop_file_t::DORINFO_DEF);
   File::Remove(fileName);
   TextFile fileDorInfoSys(fileName, "wt");
   if (fileDorInfoSys.IsOpen()) {
@@ -178,7 +178,7 @@ void CreateDoorInfoDropFile() {
 
 /** make PCBOARD.SYS (PC Board) drop file */
 void CreatePCBoardSysDropFile() {
-  string fileName = create_filename(CHAINFILE_PCBOARD);
+  string fileName = create_dropfile_filename(drop_file_t::PCBOARD_SYS);
   File pcbFile(fileName);
   pcbFile.Delete();
   if (pcbFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -253,7 +253,7 @@ void CreatePCBoardSysDropFile() {
 // Also https://github.com/sdudley/maximus/blob/1cc413a28df645aeb7170ac7524a05abf501e6ab/mec/misc/callinfo.mec
 void CreateCallInfoBbsDropFile() {
   // make CALLINFO.BBS (WildCat!)
-  string fileName = create_filename(CHAINFILE_CALLINFO);
+  string fileName = create_dropfile_filename(drop_file_t::CALLINFO_BBS);
   File::Remove(fileName);
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
@@ -351,7 +351,7 @@ void CreateDoor32SysDropFile() {
       4 = Max Graphics
 
      ========================================================================= */
-  string fileName = create_filename(CHAINFILE_DOOR32);
+  string fileName = create_dropfile_filename(drop_file_t::DOOR32_SYS);
   File::Remove(fileName);
 
   TextFile file(fileName, "wt");
@@ -377,7 +377,7 @@ void CreateDoor32SysDropFile() {
  * or http://files.mpoli.fi/unpacked/software/dos/bbs/drwy231.zip/doorsys.doc
  */
 void CreateDoorSysDropFile() {
-  string fileName = create_filename(CHAINFILE_DOOR);
+  string fileName = create_dropfile_filename(drop_file_t::DOOR_SYS);
   File::Remove(fileName);
 
   TextFile file(fileName, "wt");
@@ -511,17 +511,15 @@ MrBill             System SysOp
 7400               WWIVnet node number
  */
 const string create_chain_file() {
-  string cspeed;
-
-  cspeed = std::to_string(a()->modem_speed_);
+  auto cspeed = std::to_string(a()->modem_speed_);
 
   create_drop_files();
   auto start_duration = duration_since_midnight(a()->system_logon_time());
-  int start_second = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(start_duration).count());
+  auto start_second = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(start_duration).count());
   auto used_duration = std::chrono::system_clock::now() - a()->system_logon_time();
-  int seconds_used = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(used_duration).count());
+  auto seconds_used = static_cast<int>(std::chrono::duration_cast<std::chrono::seconds>(used_duration).count());
 
-  const string fileName = create_filename(CHAINFILE_CHAIN);
+  const auto fileName = create_dropfile_filename(drop_file_t::CHAIN_TXT);
   File::Remove(fileName);
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
@@ -538,7 +536,7 @@ const string create_chain_file() {
       a()->user()->GetScreenLines(),
       a()->user()->GetSl());
     auto temporary_log_filename = GetTemporaryInstanceLogFileName();
-    string gfilesdir = a()->config()->gfilesdir();
+    auto gfilesdir = a()->config()->gfilesdir();
     file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n",
       cs(), so(), okansi(), incom, nsl(), 
       gfilesdir.c_str(), a()->config()->datadir().c_str(),

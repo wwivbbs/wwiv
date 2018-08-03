@@ -21,7 +21,7 @@
 
 #include <string>
 
-// exec_$PLATOFRM.cpp
+// Used to execute a command, callec by ExecuteCommandline and the WFC
 int exec_cmdline(const std::string commandLine, int flags);
 
 #endif // __INCLUDED_BBS_EXEC_H__

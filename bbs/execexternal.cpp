@@ -61,7 +61,7 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // Some LocalIO implementations (Curses) needs to disable itself before
   // we fork some other process.
   a()->localIO()->DisableLocalIO();
-  int nExecRetCode = exec_cmdline(commandLine, nFlags);
+  auto return_code = exec_cmdline(commandLine, nFlags);
 
   // Re-engage the local IO engine if needed.
   a()->localIO()->ReenableLocalIO();
@@ -75,6 +75,6 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   }
 
   // return to caller
-  return nExecRetCode;
+  return return_code;
 }
 

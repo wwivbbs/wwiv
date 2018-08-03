@@ -20,14 +20,16 @@
 
 #include <string>
 
-constexpr int CHAINFILE_CHAIN = 0;
-constexpr int CHAINFILE_DORINFO = 1;
-constexpr int CHAINFILE_PCBOARD = 2;
-constexpr int CHAINFILE_CALLINFO = 3;
-constexpr int CHAINFILE_DOOR = 4;
-constexpr int CHAINFILE_DOOR32 = 5;
+enum class drop_file_t {
+  CHAIN_TXT,
+  DORINFO_DEF,
+  PCBOARD_SYS,
+  CALLINFO_BBS,
+  DOOR_SYS,
+  DOOR32_SYS
+};
 
-const std::string create_filename(int dropfile_type);
+const std::string create_dropfile_filename(drop_file_t dropfile_type);
 const std::string create_chain_file();
 
 

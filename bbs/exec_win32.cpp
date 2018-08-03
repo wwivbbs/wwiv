@@ -237,14 +237,13 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         if (nSyncMode & CONST_SBBSFOS_DOSOUT_MODE) {
           // For some reason this doesn't write twice locally, so it works pretty well.
           szReadBuffer[nBufferPtr] = '\0';
-          // LogToSync(StrCat("{", szReadBuffer, "}\r\n"));
           bout << szReadBuffer;
 
           // ExpandWWIVHeartCodes( szReadBuffer );
           // int nNumWritten = a()->remoteIO()->write( szReadBuffer, strlen( szReadBuffer )  );
         } else {
-          int nNumWritten = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
-          LogToSync(StrCat("Wrote [", nNumWritten, "] bytes to comm.\r\n"));
+          auto num_written = a()->remoteIO()->write(szReadBuffer, nBufferPtr);
+          LogToSync(StrCat("Wrote [", num_written, "] bytes to comm.\r\n"));
         }
 
       }
@@ -336,7 +335,7 @@ int exec_cmdline(const string commandLine, int flags) {
     CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
-    const string logfile_name = StrCat(a()->GetHomeDir(), "wwivsync.log");
+    const string logfile_name = FilePath(a()->GetHomeDir(), "wwivsync.log");
     hLogFile = fopen(logfile_name.c_str(), "at");
     LogToSync(std::string(78, '='));
     LogToSync("\r\n\r\n");
@@ -366,7 +365,7 @@ int exec_cmdline(const string commandLine, int flags) {
     ::Sleep(250);
   }
 
-  const string current_directory = File::current_directory();
+  const auto current_directory = File::current_directory();
 
   // Need a non-const string for the commandline
   char szTempWorkingCommandline[MAX_PATH+1];

@@ -1005,7 +1005,7 @@ void SendNewUserFeedbackIfRequired() {
 
 void ExecNewUserCommand() {
   if (!hangup && !a()->newuser_cmd.empty()) {
-    const string commandLine = stuff_in(a()->newuser_cmd, create_chain_file(), "", "", "", "");
+    const auto commandLine = stuff_in(a()->newuser_cmd, create_chain_file(), "", "", "", "");
 
     // Log what is happening here.
     sysoplog(false) << "Executing New User Event: ";

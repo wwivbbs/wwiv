@@ -135,10 +135,10 @@ bool check_ul_event(int directory_num, uploadsrec * u) {
   if (a()->upload_cmd.empty()) {
     return true;
   }
-  const string comport = StringPrintf("%d", incom ? a()->primary_port() : 0);
-  const string cmdLine = stuff_in(a()->upload_cmd, create_chain_file(),
-                                  a()->directories[directory_num].path,
-                                  stripfn(u->filename), comport, "");
+  const auto comport = StringPrintf("%d", incom ? a()->primary_port() : 0);
+  const auto cmdLine =
+      stuff_in(a()->upload_cmd, create_chain_file(), a()->directories[directory_num].path,
+               stripfn(u->filename), comport, "");
   ExecuteExternalProgram(cmdLine, a()->spawn_option(SPAWNOPT_ULCHK));
 
   File file(a()->directories[directory_num].path, stripfn(u->filename));

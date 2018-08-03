@@ -935,7 +935,7 @@ void beginday(bool displayStatus) {
     ssm(1, 0) << "Only " << nus << " new user slots left.";
   }
   if (!a()->beginday_cmd.empty()) {
-    const std::string commandLine = stuff_in(a()->beginday_cmd, create_chain_file(), "", "", "", "");
+    const auto commandLine = stuff_in(a()->beginday_cmd, create_chain_file(), "", "", "", "");
     ExecuteExternalProgram(commandLine, a()->spawn_option(SPAWNOPT_BEGINDAY));
   }
   if (displayStatus) {
