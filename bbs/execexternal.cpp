@@ -18,14 +18,13 @@
 /**************************************************************************/
 #include "bbs/execexternal.h"
 
-
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/vars.h"
 #include "bbs/dropfile.h"
 #include "bbs/instmsg.h"
 #include "bbs/wqscn.h"
-#include "bbs/platform/platformfcns.h"
+#include "bbs/exec.h"
 #include "core/log.h"
 
 int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
@@ -62,7 +61,7 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // Some LocalIO implementations (Curses) needs to disable itself before
   // we fork some other process.
   a()->localIO()->DisableLocalIO();
-  int nExecRetCode = ExecExternalProgram(commandLine, nFlags);
+  int nExecRetCode = exec_cmdline(commandLine, nFlags);
 
   // Re-engage the local IO engine if needed.
   a()->localIO()->ReenableLocalIO();

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.x                          */
-/*             Copyright (C)1998-2017, WWIV Software Services            */
+/*                                WWIV Version 5                          */
+/*             Copyright (C)1998-2016, WWIV Software Services             */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,14 +16,28 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/make_abs_cmd.h"
 
-#ifndef __INCLUDED_PLATFORM_FCNS_H__
-#define __INCLUDED_PLATFORM_FCNS_H__
+#include <sys/stat.h>
+#include <unistd.h>
+#include <string>
 
-// $PLATFORM/utility2.cpp
-void WWIV_make_abs_cmd(const std::string root, std::string* out);
+#include "bbs/bbs.h"
+#include "bbs/application.h"
 
-// $PLATFORM/exec.cpp
-int ExecExternalProgram(const std::string commandLine, int flags);
+#include "core/strings.h"
+#include "core/file.h"
+#include "core/wwivport.h"
 
-#endif // __INCLUDED_PLATFORM_FCNS_H__
+using std::string;
+using wwiv::strings::StrCat;
+
+void make_abs_cmd(const string root, string* out) {
+  if (out->find("/") == string::npos) {
+	// Use current path of we don't have an abs path.
+    string s(*out);
+    File f(a()->GetHomeDir(), s);
+    *out = f.full_pathname();
+  }
+}
+

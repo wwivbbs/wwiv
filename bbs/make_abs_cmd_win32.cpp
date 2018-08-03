@@ -16,25 +16,25 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+// Always declare wwiv_windows.h first to avoid collisions on defines.
+#include "core/wwiv_windows.h"
+
+#include "bbs/make_abs_cmd.h"
+
 #include <string>
 #include <vector>
 
 #include <direct.h>
 
-#include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/file.h"
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif  // WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 
 using std::string;
 using std::vector;
 
 using namespace wwiv::strings;
 
-void WWIV_make_abs_cmd(const std::string root, std::string* out) {
+void make_abs_cmd(const std::string root, std::string* out) {
   
   static const vector<string> exts{
     "",
@@ -75,7 +75,7 @@ void WWIV_make_abs_cmd(const std::string root, std::string* out) {
   } else {
     s2[0] = '\0';
   }
-  for (const string& ext : exts) {
+  for (const std::string& ext : exts) {
     if (ext.size() == 0) {
       const char* ss1 = strrchr(s1, '\\');
       if (!ss1) {

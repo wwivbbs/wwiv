@@ -23,7 +23,7 @@
 #include "bbs_test/bbs_helper.h"
 
 #include "bbs/utility.h"
-#include "bbs/platform/platformfcns.h"
+#include "bbs/make_abs_cmd.h"
 #include "core/strings.h"
 
 using std::cout;
@@ -47,7 +47,7 @@ protected:
 TEST_F(MakeAbsTest, NotUnderRoot) {
   const string expected = "c:\\windows\\system32\\cmd.exe foo";
   string cmdline = "cmd foo";
-  WWIV_make_abs_cmd(root, &cmdline);
+  make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
 
@@ -55,7 +55,7 @@ TEST_F(MakeAbsTest, UnderRoot) {
   const string foo = helper.files().CreateTempFile("foo.exe", "");
   const string expected = foo + " bar";
   string cmdline = "foo bar";
-  WWIV_make_abs_cmd(root, &cmdline);
+  make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
 
@@ -65,10 +65,8 @@ TEST_F(MakeAbsTest, Smoke) {
   File f (helper.files().TempDir(), "ls foo");
   string expected = f.full_pathname();
   string cmdline = "ls foo";
-  WWIV_make_abs_cmd(root, &cmdline);
+  make_abs_cmd(root, &cmdline);
   EXPECT_STRCASEEQ(expected.c_str(), cmdline.c_str());
 }
-
-
 
 #endif  // _WIN32

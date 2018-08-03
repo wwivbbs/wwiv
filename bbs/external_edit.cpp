@@ -27,7 +27,7 @@
 #include "bbs/utility.h"
 #include "bbs/vars.h"
 #include "bbs/pause.h"
-#include "bbs/platform/platformfcns.h"
+#include "bbs/make_abs_cmd.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -278,7 +278,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
     }
   }
 
-  WWIV_make_abs_cmd(a()->GetHomeDir(), &editorCommand);
+  make_abs_cmd(a()->GetHomeDir(), &editorCommand);
   const auto original_directory = File::current_directory();
 
   string strippedFileName(stripfn(edit_filename.c_str()));

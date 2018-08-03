@@ -131,16 +131,11 @@ set(ZMODEM_SOURCES
 
 if(UNIX) 
   set(PLATFORM_SOURCES 
-    	platform/unix/exec.cpp 
-    	platform/unix/utility2.cpp 
+    	exec_unix.cpp 
+    	make_abs_cmd_unix.cpp 
   )
   find_package (Threads)
-  if(APPLE)
-    set(PLATFORM_SOURCES ${PLATFORM_SOURCES} platform/osx/macversioninfo.mm)
-    list(APPEND CMAKE_EXE_LINKER_FLAGS "-framework CoreFoundation -framework Foundation")
-    include_directories(platform/osx)
-  endif()
-
+  
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     list(APPEND CMAKE_EXE_LINKER_FLAGS "-lsocket -lnsl -lkstat -lssp")
   endif()
@@ -148,10 +143,10 @@ endif()
 
 if(WIN32)
   set(PLATFORM_SOURCES
-      local_io_win32.cpp
-      platform/win32/exec.cpp
-      platform/win32/utility2.cpp)
-
+		local_io_win32.cpp
+		exec_win32.cpp 
+		make_abs_cmd_win32.cpp 
+)
     SET_WARNING_LEVEL_4()
 endif()
 

@@ -47,7 +47,7 @@
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/platform/platformfcns.h"
+#include "bbs/make_abs_cmd.h"
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -665,7 +665,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       uplist);
 
   if (!commandLine.empty()) {
-    WWIV_make_abs_cmd(a()->GetHomeDir(), &commandLine);
+    make_abs_cmd(a()->GetHomeDir(), &commandLine);
     a()->localIO()->Cls();
     const string user_name_number = a()->names()->UserName(a()->usernum);
     const string message = StringPrintf(

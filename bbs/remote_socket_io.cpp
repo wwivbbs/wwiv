@@ -37,7 +37,6 @@ typedef int socklen_t;
 #include <system_error>
 
 #include "sdk/user.h"
-#include "bbs/platform/platformfcns.h"
 #include "core/strings.h"
 #include "core/file.h"
 #include "core/log.h"

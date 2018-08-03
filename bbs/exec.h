@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                              WWIV Version 5.0x                         */
-/*             Copyright (C)1998-2016, WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2017, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,24 +16,12 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#import <Foundation/Foundation.h>
+#ifndef __INCLUDED_BBS_EXEC_H__
+#define __INCLUDED_BBS_EXEC_H__
 
-extern "C" {
-const char *GetMacVersionString()
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	const char *version = [[[[NSDictionary dictionaryWithContentsOfFile:@"/System/Library/CoreServices/SystemVersion.plist"] objectForKey:@"ProductVersion"] retain] UTF8String];
-	[pool release];
-	return version;
-}
+#include <string>
 
-const char *GetOSNameString()
-{
-	NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-	const char *name = [[[[NSDictionary dictionaryWithContentsOfFile:@"/System/Library/CoreServices/SystemVersion.plist"] objectForKey:@"ProductName"] retain] UTF8String];
-	[pool release];
-	return name;
-}
+// exec_$PLATOFRM.cpp
+int exec_cmdline(const std::string commandLine, int flags);
 
-}
-
+#endif // __INCLUDED_BBS_EXEC_H__

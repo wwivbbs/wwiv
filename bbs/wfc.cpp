@@ -37,6 +37,7 @@
 #include "bbs/datetime.h"
 #include "bbs/diredit.h"
 #include "bbs/events.h"
+#include "bbs/exec.h"
 #include "bbs/external_edit.h"
 #include "bbs/gfileedit.h"
 #include "bbs/input.h"
@@ -60,7 +61,6 @@
 #include "bbs/wqscn.h"
 #include "bbs/application.h"
 #include "bbs/workspace.h"
-#include "bbs/platform/platformfcns.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -502,13 +502,13 @@ int WFC::doWFCEvents() {
           bout.getkey();
           break;
         }
-        ExecExternalProgram(a()->terminal_command, INST_FLAGS_NONE);
+        exec_cmdline(a()->terminal_command, INST_FLAGS_NONE);
         break;
       case 'U': {
         // User edit
         const auto exe = FilePath(a()->config()->root_directory(), "wwivconfig");
         const auto cmd = StrCat(exe, " --user_editor");
-        ExecExternalProgram(cmd, INST_FLAGS_NONE);
+        exec_cmdline(cmd, INST_FLAGS_NONE);
       } break;
       case 'V': {
         // InitVotes

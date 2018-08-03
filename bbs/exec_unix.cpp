@@ -16,6 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/exec.h"
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -63,7 +64,7 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
   return -1;
 }
 
-int ExecExternalProgram(const std::string cmdline, int flags) {
+int exec_cmdline(const std::string cmdline, int flags) {
   if (flags & EFLAG_FOSSIL) {
     LOG(ERROR) << "EFLAG_FOSSIL is not supported on UNIX";
   }

@@ -43,7 +43,7 @@
 #include "bbs/xfertmp.h"
 #include "bbs/wconstants.h"
 #include "bbs/xfer_common.h"
-#include "bbs/platform/platformfcns.h"
+#include "bbs/make_abs_cmd.h"
 #include "core/stl.h"
 #include "core/strings.h"
 
@@ -249,7 +249,7 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
         return;
       }
       string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
-      WWIV_make_abs_cmd(a()->GetHomeDir(), &command);
+      make_abs_cmd(a()->GetHomeDir(), &command);
       strcpy(out_buffer, command.c_str());
       return;
     }

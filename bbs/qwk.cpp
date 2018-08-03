@@ -55,7 +55,7 @@
 #include "bbs/sr.h"
 #include "bbs/xfer.h"
 #include "bbs/xfertmp.h"
-#include "bbs/platform/platformfcns.h"
+#include "bbs/make_abs_cmd.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
@@ -1271,7 +1271,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
 
     qwk_file_to_send = wwiv::strings::StringPrintf("%s%s", QWK_DIRECTORY, qwkname);
     // TODO(rushfan): Should we just have a make abs path?
-    WWIV_make_abs_cmd(a()->GetHomeDir(), &qwk_file_to_send);
+    make_abs_cmd(a()->GetHomeDir(), &qwk_file_to_send);
 
     File qwk_file_to_send_file(qwk_file_to_send);
     if (!File::Exists(qwk_file_to_send)){

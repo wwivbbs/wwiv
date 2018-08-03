@@ -16,6 +16,8 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#include "bbs/exec.h"
+
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "core/wwiv_windows.h"
 
@@ -26,7 +28,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/remote_io.h"
-#include "bbs/platform/platformfcns.h"
 #include "bbs/sysoplog.h"
 #include "bbs/application.h"
 #include "bbs/vars.h"
@@ -38,23 +39,24 @@
 
 static FILE* hLogFile;
 
-const int   CONST_SBBSFOS_FOSSIL_MODE           = 0;
-const int   CONST_SBBSFOS_DOSIN_MODE            = 1;
-const int   CONST_SBBSFOS_DOSOUT_MODE           = 2;
-const int   CONST_SBBSFOS_LOOPS_BEFORE_YIELD    = 10;
-const int   CONST_SBBSFOS_BUFFER_SIZE           = 5000;
-const int   CONST_SBBSFOS_BUFFER_PADDING        = 1000; // padding in case of errors.
+const int CONST_SBBSFOS_FOSSIL_MODE = 0;
+const int CONST_SBBSFOS_DOSIN_MODE = 1;
+const int CONST_SBBSFOS_DOSOUT_MODE = 2;
+const int CONST_SBBSFOS_LOOPS_BEFORE_YIELD = 10;
+const int CONST_SBBSFOS_BUFFER_SIZE = 5000;
+const int CONST_SBBSFOS_BUFFER_PADDING = 1000; // padding in case of errors.
 
-const DWORD SBBSEXEC_IOCTL_START            = 0x8001;
-const DWORD SBBSEXEC_IOCTL_COMPLETE           = 0x8002;
-const DWORD SBBSEXEC_IOCTL_READ             = 0x8003;
-const DWORD SBBSEXEC_IOCTL_WRITE            = 0x8004;
-const DWORD SBBSEXEC_IOCTL_DISCONNECT         = 0x8005;
-const DWORD SBBSEXEC_IOCTL_STOP             = 0x8006;
-const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK         = 500;
-typedef HANDLE(WINAPI *OPENVXDHANDLEFUNC)(HANDLE);
+const DWORD SBBSEXEC_IOCTL_START = 0x8001;
+const DWORD SBBSEXEC_IOCTL_COMPLETE = 0x8002;
+const DWORD SBBSEXEC_IOCTL_READ = 0x8003;
+const DWORD SBBSEXEC_IOCTL_WRITE = 0x8004;
+const DWORD SBBSEXEC_IOCTL_DISCONNECT = 0x8005;
+const DWORD SBBSEXEC_IOCTL_STOP = 0x8006;
+const int CONST_NUM_LOOPS_BEFORE_EXIT_CHECK = 500;
+typedef HANDLE(WINAPI* OPENVXDHANDLEFUNC)(HANDLE);
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 // Helper functions
@@ -70,9 +72,7 @@ static string GetSyncFosTempFilePath() {
 }
 
 static const string GetDosXtrnPath() {
-  std::stringstream sstream;
-  sstream << a()->GetHomeDir() << "DOSXTRN.EXE";
-  return string(sstream.str());
+  return FilePath(a()->GetHomeDir(), "DOSXTRN.EXE");
 }
 
 static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
@@ -268,7 +268,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   dwCreationFlags |= CREATE_SEPARATE_WOW_VDM;
 
   // Create Hangup Event.
-  const string event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
+  const auto event_name = StringPrintf("sbbsexec_hungup%d", a()->instance_number());
   hSyncHangupEvent = CreateEvent(nullptr, TRUE, FALSE, event_name.c_str());
   if (hSyncHangupEvent == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create Hangup Event for SyncFoss External program: ", GetLastError()));
@@ -277,7 +277,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
   }
 
   // Create Read Mail Slot
-  const string readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", a()->instance_number());
+  const auto readslot_name = StringPrintf("\\\\.\\mailslot\\sbbsexec\\rd%d", a()->instance_number());
   hSyncReadSlot = CreateMailslot(readslot_name.c_str(), CONST_SBBSFOS_BUFFER_SIZE, 0, nullptr);
   if (hSyncReadSlot == INVALID_HANDLE_VALUE) {
     LogToSync(StrCat("!!! Unable to create mail slot for reading for SyncFoss External program: ", GetLastError()));
@@ -291,7 +291,7 @@ static bool SetupSyncFoss(DWORD& dwCreationFlags, HANDLE& hSyncHangupEvent, HAND
 
 //  Main code that launches external programs and handle sbbsexec support
 
-int ExecExternalProgram(const string commandLine, int flags) {
+int exec_cmdline(const string commandLine, int flags) {
   STARTUPINFO si;
   PROCESS_INFORMATION pi;
 

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                                WWIV Version 5                          */
-/*             Copyright (C)1998-2016, WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2017, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,27 +16,15 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
+#ifndef __INCLUDED_MAKE_ABS_CMD_H__
+#define __INCLUDED_MAKE_ABS_CMD_H__
 
-#include <sys/stat.h>
-#include <unistd.h>
 #include <string>
 
-#include "bbs/bbs.h"
-#include "bbs/application.h"
+/**
+ * Using the root directory, turn out into an absolute path
+ * to a command.
+ */
+void make_abs_cmd(const std::string root, std::string* out);
 
-#include "core/strings.h"
-#include "core/file.h"
-#include "core/wwivport.h"
-
-using std::string;
-using wwiv::strings::StrCat;
-
-void WWIV_make_abs_cmd(const string root, string* out) {
-  if (out->find("/") == string::npos) {
-	// Use current path of we don't have an abs path.
-    string s(*out);
-    File f(a()->GetHomeDir(), s);
-    *out = f.full_pathname();
-  }
-}
-
+#endif // __INCLUDED_MAKE_ABS_CMD_H__
