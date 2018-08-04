@@ -36,6 +36,7 @@ using std::string;
 using std::thread;
 using std::unique_ptr;
 using wwiv::sdk::Callout;
+using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 

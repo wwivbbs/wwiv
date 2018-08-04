@@ -32,6 +32,7 @@
 using std::string;
 using std::vector;
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 void make_abs_cmd(const std::string root, std::string* out) {

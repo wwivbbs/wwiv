@@ -24,6 +24,8 @@
 #include "bbs/vars.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::core;
+
 static std::unique_ptr<File> qscanFile;
 
 static bool open_qscn() {

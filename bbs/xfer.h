@@ -51,6 +51,6 @@ int  recno(const std::string& file_mask);
 int  nrecno(const std::string& file_mask, int nStartingRec);
 int  printfileinfo(uploadsrec* upload_record, int directory_num);
 void remlist(const char *file_name);
-int  FileAreaSetRecord(File &file, int nRecordNumber);
+int FileAreaSetRecord(wwiv::core::File& file, int nRecordNumber);
 
 #endif  // __INCLUDED_BBS_XFER_H__

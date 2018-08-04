@@ -38,6 +38,9 @@ using std::string;
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
+namespace wwiv {
+namespace core {
+
 const int File::shareDenyReadWrite = SH_DENYRW;
 const int File::shareDenyWrite     = SH_DENYWR;
 const int File::shareDenyRead      = SH_DENYRD;
@@ -89,4 +92,8 @@ long File::freespace_for_path(const string& path) {
       reinterpret_cast<PULARGE_INTEGER>(&i64TotalBytes),
       reinterpret_cast<PULARGE_INTEGER>(&i64FreeBytes));
   return (result) ? static_cast<long>(i64FreeBytesToCaller / 1024) : 0;
+}
+
+
+}
 }

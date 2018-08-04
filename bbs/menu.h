@@ -63,7 +63,7 @@ private:
   std::string create_menu_filename(const std::string& extension) const;
 
   void MenuExecuteCommand(const std::string& command);
-  bool CreateMenuMap(File& menu_file);
+  bool CreateMenuMap(wwiv::core::File& menu_file);
   void PrintMenuPrompt() const;
   std::string GetCommand() const;
 

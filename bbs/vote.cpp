@@ -32,6 +32,7 @@
 #include "sdk/filenames.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static void print_quest(int mapp, int map[21]) {

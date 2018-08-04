@@ -32,6 +32,7 @@
 bool use_workspace;
 
 using std::unique_ptr;
+using namespace wwiv::core;
 
 void LoadFileIntoWorkspace(const std::string& filename, bool bNoEditAllowed, bool silent_mode) {
   File fileOrig(filename);

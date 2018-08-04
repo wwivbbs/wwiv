@@ -39,6 +39,7 @@
 
 using std::string;
 using wwiv::core::ScopeExit;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 // Local prototypes.

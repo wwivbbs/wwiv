@@ -43,21 +43,15 @@
 #endif
 #endif  // _WIN32
 
-class File;
 
 namespace wwiv {
 namespace core {
+
 /**
  * Creates a full pathname of directory_name + file_name ensuring that any
  * path separators are added as needed.
  */
 std::string FilePath(const std::string& directory_name, const std::string& file_name);
-
-bool backup_file(const File& file);
-bool backup_file(const std::string& path);
-
-} // namespace core
-} // namespace wwiv
 
 /**
  * File: Provides a high level, cross-platform common wrapper for file handling using C++.
@@ -205,5 +199,11 @@ private:
   std::string full_path_name_;
   std::string error_text_;
 };
+
+bool backup_file(const File& file);
+bool backup_file(const std::string& path);
+
+} // namespace core
+} // namespace wwiv
 
 #endif // __INCLUDED_CORE_FILE_H__

@@ -23,6 +23,8 @@
 namespace wwiv {
 namespace sdk {
 
+using namespace wwiv::core;
+
 /** Calculates the qscan_len field based on max_subs and max_dirs */
 size_t calculate_qscan_length(size_t max_subs, size_t max_dirs) {
   const auto bits = 8 * sizeof(uint32_t);

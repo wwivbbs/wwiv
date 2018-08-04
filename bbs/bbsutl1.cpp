@@ -43,6 +43,7 @@
 using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 

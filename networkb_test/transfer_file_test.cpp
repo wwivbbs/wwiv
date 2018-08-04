@@ -27,9 +27,9 @@
 
 using std::chrono::system_clock;
 using std::chrono::time_point;
-
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 

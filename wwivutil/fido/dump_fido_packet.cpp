@@ -35,7 +35,7 @@
 using std::cout;
 using std::endl;
 using std::string;
-using wwiv::core::CommandLineCommand;
+using namespace wwiv::core;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;

@@ -29,6 +29,7 @@
 #include "core/file.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static int check_arc(const char* filename) {

@@ -45,6 +45,7 @@
 #endif  // _WIN32
 
 using std::string;
+using namespace wwiv::core;
 using std::chrono::milliseconds;
 
 using namespace wwiv::os;

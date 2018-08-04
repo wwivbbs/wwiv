@@ -32,6 +32,7 @@ using std::cout;
 using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

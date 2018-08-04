@@ -29,7 +29,7 @@ public:
   bool IsTrashName(const std::string& name);
 
 private:
-  File file_;
+  wwiv::core::File file_;
 };
 
 #endif  // __INCLUDED_BBS_TRASHCAN_H__

@@ -36,7 +36,7 @@ void make_abs_cmd(const string root, string* out) {
   if (out->find("/") == string::npos) {
 	// Use current path of we don't have an abs path.
     string s(*out);
-    File f(a()->GetHomeDir(), s);
+    wwiv::core::File f(a()->GetHomeDir(), s);
     *out = f.full_pathname();
   }
 }

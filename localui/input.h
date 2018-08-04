@@ -507,11 +507,11 @@ public:
     // Update what we display in case it changed.
     DefaultDisplay(window);
 
-    auto dir = File::absolute(this->base_, this->data_);
-    if (!File::Exists(dir)) {
+    auto dir = wwiv::core::File::absolute(this->base_, this->data_);
+    if (!wwiv::core::File::Exists(dir)) {
       const auto s1 = wwiv::strings::StrCat("The path '", this->data_, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
-        if (!File::mkdirs(dir)) {
+        if (!wwiv::core::File::mkdirs(dir)) {
           messagebox(window, {"Unable to create directory: ", dir});
         }
       }
@@ -541,16 +541,16 @@ public:
     auto return_code = editline(window, &this->data_, this->maxsize_, EDITLINE_FILENAME_CASE, "");
     wwiv::strings::StringTrimEnd(&this->data_);
     if (!data_.empty()) {
-      File::EnsureTrailingSlash(&data_);
+      wwiv::core::File::EnsureTrailingSlash(&data_);
     }
     // Update what we display in case it changed.
     DefaultDisplay(window);
 
-    auto dir = File::absolute(this->base_, this->data_);
-    if (!File::Exists(dir)) {
+    auto dir = wwiv::core::File::absolute(this->base_, this->data_);
+    if (!wwiv::core::File::Exists(dir)) {
       const auto s1 = wwiv::strings::StrCat("The path '", dir, "' does not exist.");
       if (dialog_yn(window, {s1, "Would you like to create it?"})) {
-        if (!File::mkdirs(dir)) {
+        if (!wwiv::core::File::mkdirs(dir)) {
           messagebox(window, {"Unable to create directory: ", dir});
         }
       }

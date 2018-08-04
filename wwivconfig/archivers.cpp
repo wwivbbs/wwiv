@@ -46,6 +46,7 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static void edit_arc(int arc_number, arcrec* a) {

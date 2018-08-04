@@ -30,7 +30,7 @@
 #include "bbs/wconstants.h"
 
 using std::string;
-
+using namespace wwiv::core;
 
 bool do_sysop_command(int nCommandID) {
   unsigned int nKeyStroke = 0;

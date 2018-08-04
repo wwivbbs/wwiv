@@ -35,6 +35,7 @@
 #include "core/strings.h"
 
 using std::string;
+using namespace wwiv::core;
 using namespace std::chrono;
 using namespace wwiv::strings;
 

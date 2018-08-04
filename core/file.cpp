@@ -83,6 +83,9 @@ using std::chrono::milliseconds;
 using std::string;
 using namespace wwiv::os;
 
+namespace wwiv {
+namespace core {
+
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
@@ -105,9 +108,6 @@ const int File::invalid_handle = -1;
 static const std::chrono::milliseconds wait_time(10);
 
 static constexpr int TRIES = 100;
-
-namespace wwiv {
-namespace core {
 
 using namespace wwiv::strings;
 
@@ -133,9 +133,6 @@ bool backup_file(const std::string& path) {
 }
 
 bool backup_file(const File& file) { return backup_file(file.full_pathname()); }
-
-} // namespace core
-} // namespace wwiv
 
 /////////////////////////////////////////////////////////////////////////////
 // Constructors/Destructors
@@ -477,3 +474,6 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
 #endif // _WIN32
   return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_, lock_type);
 }
+
+} // namespace core
+} // namespace wwiv

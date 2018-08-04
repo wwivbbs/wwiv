@@ -27,6 +27,8 @@
 #include "bbs/exec.h"
 #include "core/log.h"
 
+using namespace wwiv::core;
+
 int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // forget it if the user has hung up
   if (!(nFlags & EFLAG_NOHUP)) {

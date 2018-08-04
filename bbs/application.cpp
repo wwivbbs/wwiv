@@ -86,6 +86,7 @@ using std::stoi;
 using std::string;
 using std::unique_ptr;
 using wwiv::bbs::InputMode;
+using namespace wwiv::core;
 using namespace std::chrono;
 using namespace wwiv::core;
 using namespace wwiv::os;

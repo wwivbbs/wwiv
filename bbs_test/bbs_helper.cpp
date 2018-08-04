@@ -44,6 +44,7 @@ using std::make_unique;
 using std::unique_ptr;
 using std::replace;
 
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 
 void BbsHelper::SetUp() {

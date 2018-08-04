@@ -21,7 +21,7 @@
 #include "core/file.h"
 
 void send_block(char *b, int block_type, bool use_crc, char byBlockNumber);
-char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
+char send_b(wwiv::core::File &file, long pos, int block_type, char byBlockNumber, bool *use_crc, const char *file_name,
             int *terr, bool *abort);
 bool okstart(bool *use_crc, bool *abort);
 void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_crc, bool use_ymodem,

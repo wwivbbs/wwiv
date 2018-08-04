@@ -36,7 +36,7 @@ namespace net {
   
 class WFileTransferFile : public TransferFile {
 public:
-  WFileTransferFile(const std::string& filename, std::unique_ptr<File>&& file);
+  WFileTransferFile(const std::string& filename, std::unique_ptr<wwiv::core::File>&& file);
   virtual ~WFileTransferFile();
 
   virtual int file_size() const override final;
@@ -47,7 +47,7 @@ public:
   void set_flo_file(std::unique_ptr<wwiv::sdk::fido::FloFile>&& f) { flo_file_ = std::move(f); }
 
  private:
-  std::unique_ptr<File> file_; 
+  std::unique_ptr<wwiv::core::File> file_; 
   std::unique_ptr<wwiv::sdk::fido::FloFile> flo_file_;
 };
 

@@ -41,14 +41,14 @@ class Type2Text {
 public:
   Type2Text(const std::string& text_filename);
 
-  std::vector<gati_t> load_gat(File& file, size_t section);
-  void save_gat(File& f, size_t section, const std::vector<gati_t>& gat);
+  std::vector<gati_t> load_gat(wwiv::core::File& file, size_t section);
+  void save_gat(wwiv::core::File& f, size_t section, const std::vector<gati_t>& gat);
   bool readfile(const messagerec* msg, std::string* out);
   bool savefile(const std::string& text, messagerec* message_record);
   bool remove_link(messagerec& msg);
 
 private:
-  std::unique_ptr<File> OpenMessageFile();
+  std::unique_ptr<wwiv::core::File> OpenMessageFile();
   const std::string filename_;
 };
 

@@ -41,6 +41,7 @@ static const int MAX_SUBS_DIRS = 4096;
 
 using std::unique_ptr;
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 template<typename T>

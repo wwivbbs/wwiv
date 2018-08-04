@@ -48,6 +48,7 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 void Label::Display(CursesWindow* window) { Display(window, x_, y_); }

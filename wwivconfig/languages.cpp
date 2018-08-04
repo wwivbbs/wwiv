@@ -49,6 +49,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::core::DataFile;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

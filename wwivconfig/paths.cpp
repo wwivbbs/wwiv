@@ -32,6 +32,7 @@
 
 using std::unique_ptr;
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 static constexpr int LABEL1_POS = 2;

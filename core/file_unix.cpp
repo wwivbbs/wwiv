@@ -43,6 +43,10 @@
 
 using std::string;
 
+namespace wwiv {
+namespace core {
+
+
 /////////////////////////////////////////////////////////////////////////////
 // Constants
 
@@ -123,4 +127,7 @@ long File::freespace_for_path(const string& path) {
     return 0;
   }
   return static_cast<long>((long) fs.f_frsize * (double) fs.f_bavail / 1024);
+}
+
+}
 }

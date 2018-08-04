@@ -91,7 +91,7 @@ public:
   bool clear();
 
 private:
-  File file_;
+  wwiv::core::File file_;
   bool open_ = false;
 
 };

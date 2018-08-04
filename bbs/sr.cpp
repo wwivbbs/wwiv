@@ -48,6 +48,7 @@
 
 using std::string;
 using namespace std::chrono;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 

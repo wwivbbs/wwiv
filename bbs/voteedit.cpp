@@ -29,6 +29,7 @@
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

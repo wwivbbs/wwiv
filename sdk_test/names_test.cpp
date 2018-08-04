@@ -34,7 +34,7 @@
 #include "sdk_test/sdk_helper.h"
 
 using namespace std;
-
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 

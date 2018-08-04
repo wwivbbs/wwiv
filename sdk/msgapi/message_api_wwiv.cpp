@@ -32,6 +32,7 @@
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv {
