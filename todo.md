@@ -40,11 +40,15 @@
 
 ## core::File Improvements
 ***
-* move File to namespace wwiv::core
 * start migrating core::File towards fs::filesystem and fs::path naming. (in progress)
   - also todo is to figure out if we want to add some interoperability with
     iostreams here.  Note: This needs C++17 (ish) support, so needs debian9 as the
     baseline since GCC 4.x only suppors std=gnu++14 as the latest.
+* File::lock doesn't seem to be finished
+* Don't take args for file and dir, just path. Use FilePath to construct
+  complex paths.
+* Don't construct paths with StrCat, just FilePath
+
 
 ## Feature Improvements
 ***

@@ -195,7 +195,7 @@ public:
   static long freespace_for_path(const std::string& path);
 
 private:
-  int handle_ = -1;
+  int handle_{-1};
   std::string full_path_name_;
   std::string error_text_;
 };

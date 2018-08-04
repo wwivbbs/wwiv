@@ -70,7 +70,7 @@ bool File::Move(const std::string& sourceFileName, const std::string& destFileNa
 }
 
 bool File::canonical(const std::string& path, std::string* resolved) {
-  const int BUFSIZE = 4096;
+  constexpr DWORD BUFSIZE = 4096;
   CHAR buffer[BUFSIZE];
   CHAR** lppPart = { nullptr };
 
