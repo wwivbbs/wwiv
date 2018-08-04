@@ -32,6 +32,8 @@ using std::string;
 
 using wwiv::strings::StrCat;
 
+using namespace wwiv::core;
+
 class MakeAbsTest : public ::testing::Test {
 protected:
     virtual void SetUp() {
