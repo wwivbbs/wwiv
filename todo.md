@@ -37,8 +37,6 @@
 ## Networking Cleanup
 ***
 * Figure out why new networking stack doesn't work for mark.
-* Get auto-callouts working for FTN, right now we don't
-  store any metadata bout how frequently to call.
 
 ## core::File Improvements
 ***
