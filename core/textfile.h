@@ -71,32 +71,34 @@ public:
   bool Close();
 
   /**
-   Used to check if the file has been sucessfully open.
-   
-   Usually code should use `operator bool()` vs. this method.
+   * Used to check if the file has been sucessfully open.
+   * Usually code should use `operator bool()` vs. this method.
    */
   bool IsOpen() const { return file_ != nullptr; }
   bool IsEndOfFile() { return feof(file_) != 0; }
 
   /** Writes a line of text without `\r\n` */
-  ssize_t Write(const std::string& text) {
-    return static_cast<int>((fputs(text.c_str(), file_) >= 0) ? text.size() : 0);
-  }
+  ssize_t Write(const std::string& text);
 
   /** Writes a line of text including `\r\n`. */
   ssize_t WriteLine(const char* text) { return WriteLine(std::string(text)); }
 
-  /** Writes a line of text including `\r\n`. */
-  ssize_t WriteLine(char* text) { return WriteLine(std::string(text)); }
+  ssize_t WriteLine() { return WriteLine(""); }
 
+  /** Writes a char[N] representing a line of text including `\r\n`. */
   template <size_t N> ssize_t WriteLine(const char t[N]) { return WriteLine(std::string(t)); }
 
+  /**
+   * Writes a T that is transformable to a string using std::to_string(T)
+   * representing a line of text including `\r\n`.
+   */
   template <typename T> ssize_t WriteLine(T t) { return WriteLine(std::to_string(t)); }
 
+  /** Writes a std::string representing a line of text including `\r\n`. */
   ssize_t WriteLine(const std::string& text);
 
   /** Writes a single character to a text file. */
-  ssize_t WriteChar(char ch) { return fputc(ch, file_); }
+  ssize_t WriteChar(char ch);
 
   /** Writes a line of formatText like printf. */
   ssize_t WriteFormatted(const char* formatText, ...);
@@ -126,7 +128,6 @@ public:
 
   /**
     Reads the entire contents of the file into a vector of strings.
-
     Note: The file position will be at the end of the file after returning.
   */
   std::vector<std::string> ReadFileIntoVector();
@@ -134,9 +135,8 @@ public:
   // operators
 
   /**
-  Used to check if the file has been sucessfully open.
-
-  Usually code should use `operator bool()` vs. this method.
+   * Used to check if the file has been sucessfully open.
+   * This operator is preferred over the function IsOpen.
   */
   explicit operator bool() const { return IsOpen(); }
   friend std::ostream& operator<<(std::ostream& os, const TextFile& f);

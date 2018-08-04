@@ -252,9 +252,9 @@ bool save_confs(ConferenceType conftype) {
                       cp.minsl, cp.maxsl, cp.mindsl,
                       cp.maxdsl, cp.minage, cp.maxage,
                       cp.minbps, cp.sex, word_to_arstr(cp.ar));
-    f.WriteFormatted("%s\n@", word_to_arstr(cp.dar));
+    f.Write(StrCat(word_to_arstr(cp.dar), "%s\n@"));
     for (const auto sub : cp.subs) {
-      f.WriteFormatted("%u ", sub);
+      f.Write(StrCat(sub, " "));
     }
     f.WriteFormatted("\n\n");
   }

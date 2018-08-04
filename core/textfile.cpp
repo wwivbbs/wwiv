@@ -127,11 +127,17 @@ bool TextFile::Close() {
   return true;
 }
 
+ssize_t TextFile::WriteChar(char ch) { return fputc(ch, file_); }
+
+ssize_t TextFile::Write(const std::string& text) {
+  return static_cast<ssize_t>((fputs(text.c_str(), file_) >= 0) ? text.size() : 0);
+}
+
 ssize_t TextFile::WriteLine(const string& text) { 
   if (file_ == nullptr) {
     return -1;
   }
-  ssize_t num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
+  auto num_written = Write(text);
   // fopen in text mode will force \n -> \r\n on win32
   fputs("\n", file_);
   // TODO(rushfan): Should we just +=1 on non-win32?

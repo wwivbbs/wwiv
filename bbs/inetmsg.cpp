@@ -209,7 +209,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
         }
       }
       if (!match) {
-        out.WriteFormatted(szSavedLine);
+        out.Write(szSavedLine);
       }
     }
     out.WriteFormatted("\nUSER%d = %s", user_number, internet_address.c_str());

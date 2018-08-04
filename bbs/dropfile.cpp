@@ -154,17 +154,17 @@ void CreateDoorInfoDropFile() {
       char szTemp[81];
       strcpy(szTemp, a()->user()->GetRealName());
       GetNamePartForDropFile(false, szTemp);
-      fileDorInfoSys.WriteFormatted("%s\n", szTemp);
+      fileDorInfoSys.WriteLine(szTemp);
       strcpy(szTemp, a()->user()->GetRealName());
       GetNamePartForDropFile(true, szTemp);
-      fileDorInfoSys.WriteFormatted("%s\n", szTemp);
+      fileDorInfoSys.WriteLine(szTemp);
     } else {
       fileDorInfoSys.WriteFormatted("%s\n\n", a()->user()->GetName());
     }
     if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
       fileDorInfoSys.WriteFormatted("%s, %s\n", a()->user()->GetCity(), a()->user()->GetState());
     } else {
-      fileDorInfoSys.WriteFormatted("\n");
+      fileDorInfoSys.WriteLine();
     }
     fileDorInfoSys.WriteFormatted("%c\n%d\n%ld\n", a()->user()->HasAnsi() ? '1' : '0',
                                   a()->user()->GetSl(), GetMinutesRemainingForDropFile());
@@ -301,9 +301,9 @@ void CreateCallInfoBbsDropFile() {
     sprintf(szTemp, "%d", a()->user()->GetBirthdayYearShort());
     szTemp[2] = '\0';
     memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
-    file.WriteFormatted("%s\n", szDate);
+    file.WriteLine(szDate);
     string cspeed = std::to_string(a()->modem_speed_);
-    file.WriteFormatted("%s\n", (incom) ? cspeed.c_str() : "38400");
+    file.WriteLine((incom) ? cspeed.c_str() : "38400");
     file.Close();
   }
 }
@@ -347,18 +347,18 @@ void CreateDoor32SysDropFile() {
 
   TextFile file(fileName, "wt");
   if (file.IsOpen()) {
-    file.WriteFormatted("%d\n", GetDoor32CommType());
-    file.WriteFormatted("%u\n", GetDoorHandle());
+    file.WriteLine(GetDoor32CommType());
+    file.WriteLine(GetDoorHandle());
     string cspeed = std::to_string(a()->modem_speed_);
-    file.WriteFormatted("%s\n", cspeed.c_str());
-    file.WriteFormatted("WWIV %s\n", wwiv_version);
-    file.WriteFormatted("%d\n", a()->usernum);
-    file.WriteFormatted("%s\n", a()->user()->GetRealName());
-    file.WriteFormatted("%s\n", a()->user()->GetName());
-    file.WriteFormatted("%d\n", a()->user()->GetSl());
-    file.WriteFormatted("%d\n", 60 * GetMinutesRemainingForDropFile());
-    file.WriteFormatted("%d\n", GetDoor32Emulation());
-    file.WriteFormatted("%u\n", a()->instance_number());
+    file.WriteLine(cspeed);
+    file.WriteLine(StrCat("WWIV ", wwiv_version));
+    file.WriteLine(a()->usernum);
+    file.WriteLine(a()->user()->GetRealName());
+    file.WriteLine(a()->user()->GetName());
+    file.WriteLine(a()->user()->GetSl());
+    file.WriteLine(60 * GetMinutesRemainingForDropFile());
+    file.WriteLine(GetDoor32Emulation());
+    file.WriteLine(a()->instance_number());
     file.Close();
   }
 }
@@ -510,9 +510,9 @@ const string create_chain_file() {
                         gfilesdir.c_str(), a()->config()->datadir().c_str(),
                         temporary_log_filename.c_str());
     if (a()->using_modem) {
-      file.WriteFormatted("%d\n", a()->modem_speed_);
+      file.WriteLine(a()->modem_speed_);
     } else {
-      file.WriteFormatted("KB\n");
+      file.WriteLine("KB");
     }
     file.WriteFormatted("%d\n%s\n%s\n%d\n%d\n%lu\n%u\n%lu\n%u\n%s\n%s\n%u\n", a()->primary_port(),
                         a()->config()->system_name().c_str(), a()->config()->sysop_name().c_str(),

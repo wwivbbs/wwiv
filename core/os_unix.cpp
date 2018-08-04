@@ -43,7 +43,7 @@ void sound(uint32_t frequency, std::chrono::duration<double> d) {
 
 std::string os_version_string() {
 #if defined ( __linux__ )
-  File info("/proc/sys/kernel", "osrelease");
+  File info(FilePath("/proc/sys/kernel", "osrelease"));
   if (info.Exists()) {
     FILE *kernel_file;
     struct k_version { unsigned major, minor, update, iteration; };
