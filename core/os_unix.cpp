@@ -25,6 +25,7 @@
 
 using namespace std::chrono;
 using std::string;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 namespace wwiv {
