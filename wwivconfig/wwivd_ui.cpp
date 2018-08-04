@@ -55,8 +55,9 @@ public:
   virtual ~SubDialog() {}
 
   virtual EditlineResult Run(CursesWindow* window) {
-    window->GotoXY(x_, y_);
+    ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
+    window->GotoXY(x_, y_);
     int ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
       fn_(t_, window);
