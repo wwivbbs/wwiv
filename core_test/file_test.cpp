@@ -32,7 +32,7 @@ TEST(FileTest, DoesNotExist) {
     FileHelper file;
     string tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
-    File dne(tmp, "doesnotexist");
+    File dne(FilePath(tmp, "doesnotexist"));
     ASSERT_FALSE(dne.Exists());
 }
 
@@ -40,7 +40,7 @@ TEST(FileTest, DoesNotExist_Static) {
     FileHelper file;
     string tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
-    File dne(tmp, "doesnotexist");
+    File dne(FilePath(tmp, "doesnotexist"));
     ASSERT_FALSE(File::Exists(dne.full_pathname()));
 }
 
@@ -49,7 +49,7 @@ TEST(FileTest, Exists) {
     string tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
     ASSERT_TRUE(file.Mkdir("newdir"));
-    File f(tmp, "newdir");
+    File f(FilePath(tmp, "newdir"));
     ASSERT_TRUE(f.Exists()) << f.full_pathname();
 }
 
@@ -85,17 +85,17 @@ TEST(FileTest, Exists_Static) {
     string tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
     ASSERT_TRUE(file.Mkdir("newdir"));
-    File dne(tmp, "newdir");
+    File dne(FilePath(tmp, "newdir"));
     ASSERT_TRUE(File::Exists(dne.full_pathname())) << dne.full_pathname(); 
 }
 
 TEST(FileTest, Exists_TrailingSlash) {
     FileHelper file;
-    string tmp = file.TempDir();
+    auto tmp = file.TempDir();
     GTEST_ASSERT_NE("", tmp);
     ASSERT_TRUE(file.Mkdir("newdir"));
-    File dne(tmp, "newdir");
-    string path = StringPrintf("%s%c", dne.full_pathname().c_str(), File::pathSeparatorChar);
+    File dne(FilePath(tmp, "newdir"));
+    auto path = StringPrintf("%s%c", dne.full_pathname().c_str(), File::pathSeparatorChar);
     ASSERT_TRUE(File::Exists(path)) << path; 
 }
 

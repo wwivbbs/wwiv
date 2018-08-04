@@ -609,7 +609,7 @@ bool FloFile::erase(const std::string& file) {
 }
 
 bool FloFile::Load() {
-  File f(dir_, filename_);
+  File f(FilePath(dir_, filename_));
   exists_ = f.Exists();
   if (!exists_) {
     return false;
@@ -622,7 +622,7 @@ bool FloFile::Load() {
 
 bool FloFile::Save() {
   if (poll_ || !entries_.empty()) {
-    File f(dir_, filename_);
+    File f(FilePath(dir_, filename_));
     if (!f.Open(File::modeCreateFile | File::modeReadWrite | File::modeText | File::modeTruncate, File::shareDenyReadWrite)) {
       return false;
     }

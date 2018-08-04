@@ -102,8 +102,8 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
       File dir(directories[i].path);
       if (checkDirExists(dir, directories[i].name)) {
         LOG(INFO) << "Checking directory: " << directories[i].name;
-        string filename = StrCat(directories[i].filename, ".dir");
-        File recordFile(datadir, filename);
+        const auto filename = StrCat(directories[i].filename, ".dir");
+        File recordFile(FilePath(datadir, filename));
         if (recordFile.Exists()) {
           if (!recordFile.Open(File::modeReadWrite | File::modeBinary)) {
             LOG(INFO) << "Unable to open:" << recordFile.full_pathname();
@@ -120,9 +120,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
             if (numFiles >= 1) {
               ext_desc_rec *extDesc = nullptr;
               unsigned int recNo = 0;
-              string filenameExt = directories[i].filename;
-              filenameExt.append(".ext");
-              File extDescFile(datadir, filenameExt);
+              File extDescFile(FilePath(datadir, StrCat(directories[i].filename, ".ext")));
               if (extDescFile.Exists()) {
                 if (extDescFile.Open(File::modeReadWrite | File::modeBinary)) {
                   extDesc = (ext_desc_rec *)malloc(numFiles * sizeof(ext_desc_rec));
@@ -159,7 +157,7 @@ void checkFileAreas(const std::string& datadir, bool verbose) {
                   modified = true;
                   LOG(INFO) << "Fixed (removed) extended description for: " << upload.filename;
                 }
-                File file(directories[i].path, Unalign(upload.filename));
+                File file(FilePath(directories[i].path, Unalign(upload.filename)));
                 if (strlen(upload.filename) > 0 && file.Exists()) {
                   if (file.Open(File::modeReadOnly | File::modeBinary)) {
                     if (verbose) {

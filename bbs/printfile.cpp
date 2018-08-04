@@ -44,7 +44,7 @@ using namespace wwiv::strings;
 string CreateFullPathToPrint(const string& basename) {
   std::vector<string> dirs { a()->language_dir, a()->config()->gfilesdir()};
   for (const auto& base : dirs) {
-    File file(base, basename);
+    File file(FilePath(base, basename));
     if (basename.find('.') != string::npos) {
       // We have a file with extension.
       if (file.Exists()) {

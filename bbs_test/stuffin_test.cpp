@@ -52,7 +52,7 @@ TEST_F(StuffInTest, SimpleCase) {
     const string actual = stuff_in("foo %1 %c %2 %k", "one", "two", "", "", "");
 
     ostringstream os;
-    os << "foo one " << t("chain.txt")
+    os << "foo one " << t(DROPFILE_CHAIN_TXT)
       << " two " << helper.gfiles() << COMMENT_TXT;
     string expected = os.str();
 
@@ -89,7 +89,7 @@ TEST_F(StuffInTest, AllDropFiles) {
 
     ostringstream expected;
     expected << t("callinfo.bbs")   << " " 
-             << t("chain.txt")      << " " 
+             << t(DROPFILE_CHAIN_TXT) << " " 
              << t("dorinfo1.def")   << " " 
              << t("door32.sys")     << " "
              << t("pcboard.sys")    << " "

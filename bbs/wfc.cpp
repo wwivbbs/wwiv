@@ -155,7 +155,7 @@ void WFC::DrawScreen() {
     a()->localIO()->Cls();
     if (pszScreenBuffer == nullptr) {
       pszScreenBuffer = new char[4000];
-      File wfcFile(a()->config()->datadir(), WFC_DAT);
+      File wfcFile(FilePath(a()->config()->datadir(), WFC_DAT));
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
         LOG(FATAL) << wfcFile.full_pathname() << " NOT FOUND.";

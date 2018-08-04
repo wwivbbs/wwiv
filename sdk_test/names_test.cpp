@@ -51,7 +51,7 @@ public:
   }
 
   bool CreateNames() {
-    File file(config_.datadir(), NAMES_LST);
+    File file(FilePath(config_.datadir(), NAMES_LST));
     file.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile, File::shareDenyNone);
     if (!file.IsOpen()) {
       return false;

@@ -96,7 +96,7 @@ static int System(const string& cmd) {
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  File file(dir, filename);
+  File file(FilePath(dir, filename));
 
   if (file.Open(File::modeReadOnly)) {
     auto tNewFileTime = file.last_write_time();
@@ -123,7 +123,7 @@ static bool need_network3(const string& dir, int network_version) {
       << network_version << " != our network_version: " << wwiv_net_version;
     return true;
   }
-  File bbsdataNet(dir, BBSDATA_NET);
+  File bbsdataNet(FilePath(dir, BBSDATA_NET));
   if (!bbsdataNet.Open(File::modeReadOnly)) {
     return false;
   }

@@ -121,7 +121,7 @@ static bool handle_packet(const BbsListNet& b, const net_networks_rec& net, Pack
 }
 
 static bool handle_file(const BbsListNet& b, const net_networks_rec& net, const string& name) {
-  File f(net.dir, name);
+  File f(FilePath(net.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(INFO) << "Unable to open file: " << net.dir << name;
     return false;
@@ -170,7 +170,7 @@ int network1_main(const NetworkCommandLine& net_cmdline) {
     // Update contact record.
     Contact contact(net, true);
     for (const auto& kv : contact.contacts()) {
-      File outbound(net.dir, StrCat("s", kv.second.systemnumber(), ".net"));
+      File outbound(FilePath(net.dir, StrCat("s", kv.second.systemnumber(), ".net")));
       auto c = contact.contact_rec_for(kv.second.systemnumber());
       if (outbound.Exists()) {
         c->set_bytes_waiting(outbound.length());

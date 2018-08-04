@@ -326,7 +326,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   bout.nl(3);
 
-  File file(d.path, s);
+  File file(FilePath(d.path, s));
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     // dos error, file not found
     if (u.mask & mask_extended) {

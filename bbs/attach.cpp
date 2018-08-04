@@ -106,7 +106,7 @@ void attach_file(int mode) {
         int nDaysAgo = static_cast<int>((tTimeNow - m.daten) / SECONDS_PER_DAY);
         bout << "|#1Sent|#7: |#2 " << nDaysAgo << " days ago" << wwiv::endl;
         if (m.status & status_file) {
-          File fileAttach(a()->config()->datadir(), ATTACH_DAT);
+          File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
           if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
             bFound = false;
             auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
@@ -156,7 +156,7 @@ void attach_file(int mode) {
               m.status ^= status_file;
               pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
               pFileEmail->Write(&m, sizeof(mailrec));
-              File attachFile(a()->config()->datadir(), ATTACH_DAT);
+              File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));
               if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                 bFound = false;
                 auto lNumRead = attachFile.Read(&fsr, sizeof(fsr));
@@ -250,7 +250,7 @@ void attach_file(int mode) {
                   }
                 } while (!done3 && !hangup);
               }
-              File fileAttach(a()->config()->datadir(), ATTACH_DAT);
+              File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
               if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
                 auto lNumRead = fileAttach.Read(&fsr, sizeof(fsr));
                 while (lNumRead > 0 && !bFound) {
@@ -297,7 +297,7 @@ void attach_file(int mode) {
                       m.status ^= status_file;
                       pFileEmail->Seek(static_cast<long>(sizeof(mailrec)) * -1L, File::Whence::current);
                       pFileEmail->Write(&m, sizeof(mailrec));
-                      File attachFile(a()->config()->datadir(), ATTACH_DAT);
+                      File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));
                       if (!attachFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
                         bout << "Could not write attachment data.\r\n";
                         m.status ^= status_file;
@@ -351,7 +351,7 @@ void attach_file(int mode) {
           msg.title = m.title;
           display_type2_message(msg, &next);
           if (m.status & status_file) {
-            File f(a()->config()->datadir(), ATTACH_DAT);
+            File f(FilePath(a()->config()->datadir(), ATTACH_DAT));
             if (f.Open(File::modeReadOnly | File::modeBinary)) {
               bFound = false;
               auto num_read = f.Read(&fsr, sizeof(fsr));

@@ -271,10 +271,10 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
 
 bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_rec>& net_networks, const vector<xtrasubsrec>& xsubs) {
   // Backup subs.xtr
-  File subs_xtr(datadir, SUBS_XTR);
+  File subs_xtr(FilePath(datadir, SUBS_XTR));
   backup_file(subs_xtr);
 
-  TextFile f(datadir, SUBS_XTR, "w");
+  TextFile f(FilePath(datadir, SUBS_XTR), "w");
   if (!f.IsOpen()) {
     return false;
   }
@@ -420,7 +420,7 @@ bool Subs::Save() {
 
   {
     // Backup subs.json
-    File subs_json(datadir_, SUBS_JSON);
+    File subs_json(FilePath(datadir_, SUBS_JSON));
     backup_file(subs_json);
 
     // Save subs.

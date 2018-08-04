@@ -94,7 +94,7 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
   User user;
   a()->users()->readuser(&user, nUserNum);
   if (!user.IsUserDeleted()) {
-    File file(a()->config()->datadir(), SMW_DAT);
+    File file(FilePath(a()->config()->datadir(), SMW_DAT));
     if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return;
     }

@@ -79,7 +79,7 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
   if (user.IsUserDeleted()) {
     return false;
   }
-  File file(data_directory_, SMW_DAT);
+  File file(FilePath(data_directory_, SMW_DAT));
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return false;
   }

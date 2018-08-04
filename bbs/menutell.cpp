@@ -70,7 +70,7 @@ void ReadChainText() {
   char szTemp[MAX_PATH];
   int iX;
 
-  sprintf(szTemp, "CHAIN.TXT");
+  sprintf(szTemp, DROPFILE_CHAIN_TXT);
   fp = fopen(szTemp, "rt");
   if (!fp) {
     print(LIGHTRED, "");

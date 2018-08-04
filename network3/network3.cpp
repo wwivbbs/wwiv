@@ -307,7 +307,7 @@ static bool add_feedback_general_info(
 
 void update_timestamps(const string& dir) {
   // Update timestamps on {bbslist,connect,callout}.net
-  File bbsdata_net_file(dir, BBSDATA_NET);
+  File bbsdata_net_file(FilePath(dir, BBSDATA_NET));
   time_t t = bbsdata_net_file.last_write_time();
   File(dir, BBSLIST_NET).set_last_write_time(t);
   File(dir, CONNECT_NET).set_last_write_time(t);
@@ -382,7 +382,7 @@ static void update_filechange_status_dat(const string& datadir) {
 }
 
 static void rename_pending_files(const string& dir) {
-  File dead_net_file(dir, DEAD_NET);
+  File dead_net_file(FilePath(dir, DEAD_NET));
   if (dead_net_file.Exists()) {
     rename_pend(dir, DEAD_NET, '3');
   }
@@ -493,8 +493,8 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
 
   text << "Using nodelist base:     " << net.fido.nodelist_base << "\r\n";
   text << "Using nodelist base dir: " << dirs.net_dir() << "\r\n";
-  std::string nodelist = Nodelist::FindLatestNodelist(dirs.net_dir(), net.fido.nodelist_base);
-  File nlfile(dirs.net_dir(), nodelist);
+  auto nodelist = Nodelist::FindLatestNodelist(dirs.net_dir(), net.fido.nodelist_base);
+  File nlfile(FilePath(dirs.net_dir(), nodelist));
   text << "Latest FTN is:           " << nodelist;
   if (!nlfile.Exists()) {
     text << " (DOES NOT EXIST)\r\n";

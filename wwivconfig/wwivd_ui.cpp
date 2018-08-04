@@ -45,20 +45,25 @@ using namespace wwiv::strings;
 static constexpr int COL1_LINE = 2;
 static constexpr int COL1_POSITION = 21;
 static constexpr int LABEL1_WIDTH = 18;
+
 static const char enter_to_edit[] = "[Press Enter to Edit]";
 
-// Base item of an editable value, this class does not use templates.
+/** 
+ * EditItem that exeucutes a std::function<T, CursesWindow*> to 
+ * edit the items. It is intended that this function will invoke
+ * a new Edititems dialog or ListBox for editing.
+ */
 template <class T> class SubDialog : public BaseEditItem {
 public:
   SubDialog(int x, int y, T& t, std::function<void(T&, CursesWindow*)> fn)
-      : BaseEditItem(x, y,  25 /* strlen(enter_to_edit) + 2ish */), fn_(fn), t_(t){};
+      : BaseEditItem(x, y,  strlen(enter_to_edit) + 4), fn_(fn), t_(t){};
   virtual ~SubDialog() {}
 
   virtual EditlineResult Run(CursesWindow* window) {
     ScopeExit at_exit([] { out->footer()->SetDefaultFooter(); });
     out->footer()->ShowHelpItems(0, {{"Esc", "Exit"}, {"ENTER", "Edit Items (opens new dialog)."}});
     window->GotoXY(x_, y_);
-    int ch = window->GetChar();
+    auto ch = window->GetChar();
     if (ch == KEY_ENTER || ch == TAB || ch == 13) {
       fn_(t_, window);
       window->RedrawWin();
@@ -298,16 +303,13 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
     c.bbses.push_back(e);
   } else {
     if (c.network_callout_cmd.empty()) {
-      c.network_callout_cmd = "./networkb --send --net=@T --node=@N";
-      File::FixPathSeparators(&c.network_callout_cmd);
+      c.network_callout_cmd = File::FixPathSeparators("./networkb --send --net=@T --node=@N");
     }
     if (c.beginday_cmd.empty()) {
-      c.beginday_cmd = "./bbs -e";
-      File::FixPathSeparators(&c.beginday_cmd);
+      c.beginday_cmd = File::FixPathSeparators("./bbs -e");
     }
     if (c.binkp_cmd.empty()) {
-      c.binkp_cmd = "./bbs -e";
-      File::FixPathSeparators(&c.binkp_cmd);
+      c.binkp_cmd = File::FixPathSeparators("./bbs -e");
     }
   }
 

@@ -666,7 +666,7 @@ void Application::InitializeBBS() {
 
   // make sure it is the new USERREC structure
   VLOG(1) << "Reading user scan pointers.";
-  File fileQScan(config()->datadir(), USER_QSC);
+  File fileQScan(FilePath(config()->datadir(), USER_QSC));
   if (!fileQScan.Exists()) {
     LOG(ERROR) << "Could not open file '" << fileQScan.full_pathname() << "'";
     LOG(ERROR) << "You must go into wwivconfig and convert your userlist before running the BBS.";
@@ -805,7 +805,7 @@ void Application::InitializeBBS() {
 // begin dupphone additions
 
 void Application::check_phonenum() {
-  File phoneFile(config()->datadir(), PHONENUM_DAT);
+  File phoneFile(FilePath(config()->datadir(), PHONENUM_DAT));
   if (!phoneFile.Exists()) {
     create_phone_file();
   }
@@ -815,7 +815,7 @@ void Application::check_phonenum() {
 void Application::create_phone_file() {
   phonerec p;
 
-  File file(config()->datadir(), USER_LST);
+  File file(FilePath(config()->datadir(), USER_LST));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -823,7 +823,7 @@ void Application::create_phone_file() {
   file.Close();
   int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
 
-  File phoneNumFile(config()->datadir(), PHONENUM_DAT);
+  File phoneNumFile(FilePath(config()->datadir(), PHONENUM_DAT));
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary |
                          File::modeCreateFile)) {
     return;

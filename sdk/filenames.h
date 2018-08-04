@@ -45,6 +45,7 @@
 #define CALLOUT_NET "callout.net"
 #define CATEG_NET "categ.net"
 #define CHAT_NOEXT "chat"
+#define DROPFILE_CHAIN_TXT "chain.txt"
 #define CHAINS_DAT "chains.dat"
 #define CHAINS_REG "chains.reg"
 #define CHAINS_NOEXT "chains"

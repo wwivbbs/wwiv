@@ -657,7 +657,7 @@ void mailr() {
           bout.Color(a()->GetMessageColor());
           bout << m.title << wwiv::endl;
           if (m.status & status_file) {
-            File attachDat(a()->config()->datadir(), ATTACH_DAT);
+            File attachDat(FilePath(a()->config()->datadir(), ATTACH_DAT));
             if (attachDat.Open(File::modeReadOnly | File::modeBinary)) {
               bool found = false;
               auto lAttachFileSize = attachDat.Read(&fsr, sizeof(fsr));
@@ -695,7 +695,7 @@ void mailr() {
               delmail(*pFileEmail.get(), nRecordNumber);
               bool found = false;
               if (m.status & status_file) {
-                File attachFile(a()->config()->datadir(), ATTACH_DAT);
+                File attachFile(FilePath(a()->config()->datadir(), ATTACH_DAT));
                 if (attachFile.Open(File::modeReadWrite | File::modeBinary)) {
                   auto lAttachFileSize = attachFile.Read(&fsr, sizeof(fsr));
                   while (lAttachFileSize > 0 && !found) {
@@ -758,7 +758,7 @@ void chuser() {
 }
 
 void zlog() {
-  File file(a()->config()->datadir(), ZLOG_DAT);
+  File file(FilePath(a()->config()->datadir(), ZLOG_DAT));
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
@@ -890,7 +890,7 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
   }
-  File fileZLog(a()->config()->datadir(), ZLOG_DAT);
+  File fileZLog(FilePath(a()->config()->datadir(), ZLOG_DAT));
   zlogrec z1;
   if (!fileZLog.Open(File::modeReadWrite | File::modeBinary)) {
     fileZLog.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyNone);

@@ -346,7 +346,7 @@ std::string Nodelist::FindLatestNodelist(const std::string& dir, const std::stri
   std::map<int, int> extension_year;
   FindFiles fnd(filespec, FindFilesType::files);
   for (const auto& ff : fnd) {
-    File f(dir, ff.name);
+    File f(FilePath(dir, ff.name));
     extension_year.emplace(extension_number(f.GetName()), year_of(f.creation_time()));
   }
 

@@ -80,11 +80,11 @@ static char *ttc(int d) {
 
 static void write_events() {
   if (a()->events.empty()) {
-    File eventsFile(a()->config()->datadir(), EVENTS_DAT);
+    File eventsFile(FilePath(a()->config()->datadir(), EVENTS_DAT));
     eventsFile.Delete();
     return;
   }
-  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT,
+  DataFile<eventsrec> file(FilePath(a()->config()->datadir(), EVENTS_DAT),
     File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   file.WriteVector(a()->events);
 }

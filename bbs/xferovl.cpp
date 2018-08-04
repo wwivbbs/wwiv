@@ -935,7 +935,7 @@ void modify_database(const char *file_name, bool add) {
     return;
   }
 
-  File fileAllow(a()->config()->datadir(), ALLOW_DAT);
+  File fileAllow(FilePath(a()->config()->datadir(), ALLOW_DAT));
   if (!fileAllow.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
     return;
   }
@@ -1015,7 +1015,7 @@ bool is_uploadable(const char *file_name) {
     return true;
   }
 
-  File fileAllow(a()->config()->datadir(), ALLOW_DAT);
+  File fileAllow(FilePath(a()->config()->datadir(), ALLOW_DAT));
   if (!fileAllow.Open(File::modeBinary | File::modeReadOnly)) {
     return true;
   }

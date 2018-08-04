@@ -224,7 +224,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
 
   File::set_current_directory(a()->directories[dn].path);
   {
-	  File file(File::current_directory(), stripfn(u->filename));
+    File file(FilePath(File::current_directory(), stripfn(u->filename)));
 	  a()->CdHome();
 	  get_arc_cmd(cmd, file.full_pathname().c_str(), 1, "FILE_ID.DIZ DESC.SDI");
   }
@@ -336,7 +336,7 @@ int read_idz(int mode, int tempdir) {
         (strstr(u.filename, ".COM") == nullptr) &&
         (strstr(u.filename, ".EXE") == nullptr)) {
       File::set_current_directory(a()->directories[a()->udir[tempdir].subnum].path);
-      File file(File::current_directory(), stripfn(u.filename));
+      File file(FilePath(File::current_directory(), stripfn(u.filename)));
       a()->CdHome();
       if (file.Exists()) {
         if (get_file_idz(&u, a()->udir[tempdir].subnum)) {

@@ -290,7 +290,7 @@ static string CreateDateString(time_t t) {
 void auto_quote(char *org, const std::string& to_name, long len, int type, time_t tDateTime) {
   char s1[81], s2[81], buf[255], *p = org, *b = org, b1[81];
 
-  File fileInputMsg(a()->temp_directory(), INPUT_MSG);
+  File fileInputMsg(FilePath(a()->temp_directory(), INPUT_MSG));
   fileInputMsg.Delete();
   if (!hangup) {
     fileInputMsg.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);

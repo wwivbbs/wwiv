@@ -140,7 +140,7 @@ void modify_sec(int n) {
           bout.nl();
           bout << "|#5Create directory for this section? ";
           if (yesno()) {
-            File dir(a()->config()->gfilesdir(), r.filename);
+            File dir(FilePath(a()->config()->gfilesdir(), r.filename));
             File::mkdirs(dir);
           } else {
             bout << "\r\nYou will have to create the directory manually, then.\r\n\n";
@@ -335,7 +335,7 @@ bool fill_sec(int sn) {
   }
   if (chd) {
     string file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
-    File gflFile(a()->config()->datadir(), file_name);
+    File gflFile(FilePath(a()->config()->datadir(), file_name));
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));
     gflFile.Close();

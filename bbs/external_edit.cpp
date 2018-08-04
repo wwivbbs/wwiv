@@ -46,7 +46,7 @@ using namespace wwiv::strings;
 bool external_edit_internal(const string& edit_filename, const string& new_directory, const editorrec& editor, int numlines);
 
 static void RemoveEditorFileFromTemp(const string& filename) {
-  File file(a()->temp_directory(), filename);
+  File file(FilePath(a()->temp_directory(), filename));
   file.SetFilePermissions(File::permReadWrite);
   file.Delete();
 }
@@ -85,7 +85,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
   } else if (File::Exists(a()->temp_directory(), FEDIT_INF)) {
     fedit_data_rec fedit_data;
     memset(&fedit_data, '\0', sizeof(fedit_data_rec));
-    File file(a()->temp_directory(), FEDIT_INF);
+    File file(FilePath(a()->temp_directory(), FEDIT_INF));
     file.Open(File::modeBinary | File::modeReadOnly);
       if (file.Read(&fedit_data, sizeof(fedit_data))) {
         title->assign(fedit_data.ttl);
@@ -183,7 +183,7 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
   to_char_array(fedit_data.ttl, title);
   fedit_data.anon = 0;
 
-  File fileFEditInf(a()->temp_directory(), FEDIT_INF);
+  File fileFEditInf(FilePath(a()->temp_directory(), FEDIT_INF));
   if (fileFEditInf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
     fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
     fileFEditInf.Close();
@@ -194,8 +194,8 @@ static bool WriteExternalEditorControlFiles(const editorrec& editor, const strin
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     if (File::Exists(a()->temp_directory(), QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
-      File source(a()->temp_directory(), QUOTES_TXT);
-      File dest(a()->temp_directory(), MSGTMP);
+      File source(FilePath(a()->temp_directory(), QUOTES_TXT));
+      File dest(FilePath(a()->temp_directory(), MSGTMP));
       File::Copy(source.full_pathname(), dest.full_pathname());
     }
     return WriteMsgInf(title, sub_name, is_email, to_name);
@@ -288,7 +288,7 @@ bool external_edit_internal(const string& edit_filename, const string& new_direc
   }
 
   time_t tFileTime = 0;
-  File fileTempForTime(File::current_directory(), strippedFileName);
+  File fileTempForTime(FilePath(File::current_directory(), strippedFileName));
   auto bIsFileThere = fileTempForTime.Exists();
   if (bIsFileThere) {
     tFileTime = fileTempForTime.last_write_time();

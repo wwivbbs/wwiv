@@ -34,7 +34,7 @@ TEST(DataFileTest, Read) {
   FileHelper file;
   string tmp = file.TempDir();
 
-  File x(tmp, "Read");
+  File x(FilePath(tmp, "Read"));
   ASSERT_TRUE(x.Open(File::modeCreateFile|File::modeBinary|File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
@@ -70,7 +70,7 @@ TEST(DataFileTest, ReadVector) {
   FileHelper file;
   string tmp = file.TempDir();
 
-  File x(tmp, "ReadVector");
+  File x(FilePath(tmp, "ReadVector"));
   ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
@@ -101,7 +101,7 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
   FileHelper file;
   string tmp = file.TempDir();
 
-  File x(tmp, "ReadVector_MaxRecords");
+  File x(FilePath(tmp, "ReadVector_MaxRecords"));
   ASSERT_TRUE(x.Open(File::modeCreateFile | File::modeBinary | File::modeReadWrite));
   T t1{1, 2};
   T t2{3, 4};
@@ -139,7 +139,7 @@ TEST(DataFileTest, Write) {
     datafile.Write(&t1);
     datafile.Write(&t2);
   }
-  File x(tmp, "Write");
+  File x(FilePath(tmp, "Write"));
   ASSERT_TRUE(x.Open(File::modeBinary|File::modeReadOnly));
   x.Read(&t1, sizeof(T));
   x.Read(&t2, sizeof(T));
@@ -165,7 +165,7 @@ TEST(DataFileTest, WriteVector) {
     std::vector<T> t = {t1, t2};
     datafile.WriteVector(t);
   }
-  File x(tmp, "WriteVector");
+  File x(FilePath(tmp, "WriteVector"));
   ASSERT_TRUE(x.Open(File::modeBinary | File::modeReadOnly));
   x.Read(&t1, sizeof(T));
   EXPECT_EQ(1, t1.a);
@@ -192,7 +192,7 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
     std::vector<T> t = {t1, t2, t3};
     datafile.WriteVector(t, 2);
   }
-  File x(tmp, "WriteVector_MaxRecords");
+  File x(FilePath(tmp, "WriteVector_MaxRecords"));
   ASSERT_TRUE(x.Open(File::modeBinary | File::modeReadOnly));
   ASSERT_EQ(static_cast<long>(2 * sizeof(T)), x.length());
   x.Read(&t1, sizeof(T));

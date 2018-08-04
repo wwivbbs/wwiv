@@ -263,7 +263,7 @@ bool BinkP::process_data(int16_t length, duration<double> d) {
     // If we have a crc; check it.
     if (crc_ && crc != 0) {
       auto dir = config_->network_dir(remote_.network_name());
-      File received_file(dir, current_receive_file_->filename());
+      File received_file(FilePath(dir, current_receive_file_->filename()));
       auto file_crc = crc32file(received_file.full_pathname());
       if (file_crc == 0) {
         LOG(ERROR) << "Error calculating CRC32 of: " << current_receive_file_->filename();
@@ -974,7 +974,7 @@ void BinkP::Run() {
 }
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
-  File file(dir, filename);
+  File file(FilePath(dir, filename));
 
   if (file.Open(File::modeReadOnly)) {
     time_t tNewFileTime = file.last_write_time();
@@ -1001,7 +1001,7 @@ static bool need_network3(const string& dir, int network_version) {
       << network_version << " != our network_version: " << wwiv_net_version;
     return true;
   }
-  File bbsdataNet(dir, BBSDATA_NET);
+  File bbsdataNet(FilePath(dir, BBSDATA_NET));
   if (!bbsdataNet.Open(File::modeReadOnly)) {
     return false;
   }

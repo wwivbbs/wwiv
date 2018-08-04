@@ -356,7 +356,7 @@ void slash_e() {
       bout << "|#2Which? ";
       input(s, 8);
 
-      File fileMailList(a()->config()->datadir(), s);
+      File fileMailList(FilePath(a()->config()->datadir(), s));
       if (!fileMailList.Open(File::modeBinary | File::modeReadOnly)) {
         bout.nl();
         bout << "Unknown mailing list.\r\n\n";

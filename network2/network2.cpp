@@ -139,7 +139,7 @@ static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetI
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   // we know the name.
-  File file(net.dir, info.filename);
+  File file(FilePath(net.dir, info.filename));
   if (!info.overwrite && file.Exists()) {
     LOG(ERROR) << "File [" << file << "] already exists, and packet not set to overwrite.";
     return write_wwivnet_packet(DEAD_NET, net, p);
@@ -267,7 +267,7 @@ static bool handle_packet(
 }
 
 static bool handle_file(Context& context, const string& name) {
-  File f(context.net.dir, name);
+  File f(FilePath(context.net.dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(ERROR) << "Unable to open file: " << context.net.dir << name;
     return false;

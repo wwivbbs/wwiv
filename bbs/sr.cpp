@@ -677,7 +677,8 @@ void endbatch() {
       abort = true;
     }
     if (ch == CU) {
-      File nullFile(a()->temp_directory(), StrCat(".does-not-exist-", a()->instance_number(), ".$$$"));
+      File nullFile(FilePath(a()->temp_directory(),
+                             StrCat(".does-not-exist-", a()->instance_number(), ".$$$")));
       nullFile.Delete();
       send_b(nullFile, 0L, 3, 0, &ucrc, "", &terr, &abort);
       abort = true;

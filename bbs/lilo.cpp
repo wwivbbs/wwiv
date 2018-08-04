@@ -1041,7 +1041,7 @@ void logoff() {
     }
   }
   if (smwcheck) {
-    File smwFile(a()->config()->datadir(), SMW_DAT);
+    File smwFile(FilePath(a()->config()->datadir(), SMW_DAT));
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       auto num_records = static_cast<int>(smwFile.length() / sizeof(shortmsgrec));
       int r = 0;

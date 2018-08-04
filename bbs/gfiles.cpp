@@ -412,7 +412,7 @@ void gfile_sec(int sn) {
           }
           --nf;
           auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
-          File file(a()->config()->datadir(), file_name);
+          File file(FilePath(a()->config()->datadir(), file_name));
           file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
           file.Close();
@@ -446,7 +446,7 @@ void gfile_sec(int sn) {
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
             auto file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
-            File file(a()->config()->datadir(), file_name);
+            File file(FilePath(a()->config()->datadir(), file_name));
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {

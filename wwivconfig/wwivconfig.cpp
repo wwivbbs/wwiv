@@ -417,7 +417,7 @@ int WInitApp::main(int argc, char** argv) {
   CreateConfigOvr(bbsdir);
 
   {
-    File archiverfile(config.datadir(), ARCHIVER_DAT);
+    File archiverfile(FilePath(config.datadir(), ARCHIVER_DAT));
     if (!archiverfile.Open(File::modeBinary | File::modeReadOnly)) {
       create_arcs(window, config.datadir());
     }

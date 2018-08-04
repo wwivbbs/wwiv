@@ -329,7 +329,7 @@ void print_pending_list() {
       continue;
     }
 
-    File deadNetFile(a()->network_directory(), DEAD_NET);
+    File deadNetFile(FilePath(a()->network_directory(), DEAD_NET));
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
@@ -348,7 +348,7 @@ void print_pending_list() {
       continue;
     }
 
-    File checkNetFile(a()->network_directory(), CHECK_NET);
+    File checkNetFile(FilePath(a()->network_directory(), CHECK_NET));
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto check_net_file_size = checkNetFile.length();
       checkNetFile.Close();

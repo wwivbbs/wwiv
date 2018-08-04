@@ -125,12 +125,12 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     l3 = syscfg.max_subs * 4;
   }
 
-  File oqf(datadir, USER_QSC);
+  File oqf(FilePath(datadir, USER_QSC));
   if (!oqf.Open(File::modeBinary|File::modeReadWrite)) {
     messagebox(window, "Could not open user.qsc");
     return;
   }
-  File nqf(datadir, "userqsc.new");
+  File nqf(FilePath(datadir, "userqsc.new"));
   if (!nqf.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
     messagebox(window, "Could not open userqsc.new");
     return;

@@ -664,7 +664,7 @@ static void check_lp_colors() {
 
 void save_lp_config() {
   if (lp_config_loaded) {
-    File fileConfig(a()->config()->datadir(), LISTPLUS_CFG);
+    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (fileConfig.Open(File::modeBinary | File::modeCreateFile | File::modeTruncate | File::modeReadWrite)) {
       fileConfig.Write(&lp_config, sizeof(struct listplus_config));
       fileConfig.Close();
@@ -674,7 +674,7 @@ void save_lp_config() {
 
 void load_lp_config() {
   if (!lp_config_loaded) {
-    File fileConfig(a()->config()->datadir(), LISTPLUS_CFG);
+    File fileConfig(FilePath(a()->config()->datadir(), LISTPLUS_CFG));
     if (!fileConfig.Open(File::modeBinary | File::modeReadOnly)) {
       memset(&lp_config, 0, sizeof(listplus_config));
 

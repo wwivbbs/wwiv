@@ -108,7 +108,7 @@ void RequestChat() {
       a()->UpdateTopScreen();
     } else {
       bout << "|#9Enter Reason for chat: \r\n|#0:";
-      std::string chatReason = inputl(70, true);
+      auto chatReason = inputl(70, true);
       if (!chatReason.empty()) {
         if (!play_sdf(CHAT_NOEXT, false)) {
           chatsound(100, 800, 10, 10, 25, 5);
@@ -570,7 +570,7 @@ void chat1(const char *chat_line, bool two_way) {
     a()->chatting_ = 1;
   }
   auto tc_start = steady_clock::now();
-  File chatFile(a()->config()->gfilesdir(), "chat.txt");
+  File chatFile(FilePath(a()->config()->gfilesdir(), DROPFILE_CHAIN_TXT));
 
   SavedLine line = bout.SaveCurrentLine();
   s1[0] = '\0';

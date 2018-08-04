@@ -664,7 +664,7 @@ static void HandleMessageDownload(int msgnum) {
     if (!okfn(filename)) {
       return;
     }
-    File fileTemp(a()->temp_directory(), filename);
+    File fileTemp(FilePath(a()->temp_directory(), filename));
     fileTemp.Delete();
     fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     fileTemp.Write(b);

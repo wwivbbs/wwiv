@@ -113,7 +113,7 @@ void FileManager::ReceiveFile(const std::string& filename) {
 }
 
 static void rename_wwivnet_pend(const string& directory, const string& filename) {
-  File pend_file(directory, filename);
+  File pend_file(FilePath(directory, filename));
   if (!pend_file.Exists()) {
     LOG(ERROR) << " pending file does not exist: " << pend_file;
     return;

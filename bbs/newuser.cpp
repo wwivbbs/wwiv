@@ -571,7 +571,7 @@ static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, cons
 }
 
 static int find_new_usernum(const User* pUser, uint32_t* qscn) {
-  File userFile(a()->config()->datadir(), USER_LST);
+  File userFile(FilePath(a()->config()->datadir(), USER_LST));
   for (int i = 0; !userFile.IsOpen() && (i < 20); i++) {
     if (!userFile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile)) {
       sleep_for(milliseconds(100));
@@ -1504,8 +1504,8 @@ void DoMinimalNewUser() {
 
 
 void new_mail() {
-  File file(a()->config()->gfilesdir(), 
-    (a()->user()->GetSl() > a()->config()->config()->newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG);
+  File file(FilePath(a()->config()->gfilesdir(), 
+    (a()->user()->GetSl() > a()->config()->config()->newusersl) ? NEWSYSOP_MSG : NEWMAIL_MSG));
   if (!file.Exists()) {
     return;
   }

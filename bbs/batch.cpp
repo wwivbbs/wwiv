@@ -558,7 +558,7 @@ static string make_ul_batch_list() {
   for (const auto& b : a()->batch().entry) {
     if (!b.sending) {
       File::set_current_directory(a()->directories[b.dir].path);
-      File file(File::current_directory(), stripfn(b.filename));
+      File file(FilePath(File::current_directory(), stripfn(b.filename)));
       a()->CdHome();
       fileList.Write(StrCat(file.full_pathname(), "\r\n"));
     }
@@ -587,16 +587,16 @@ static string make_dl_batch_list() {
       if (a()->directories[b.dir].mask & mask_cdrom) {
         File::set_current_directory(a()->temp_directory());
         const string current_dir = File::current_directory();
-        File fileToSend(current_dir, stripfn(b.filename));
+        File fileToSend(FilePath(current_dir, stripfn(b.filename)));
         if (!fileToSend.Exists()) {
           File::set_current_directory(a()->directories[b.dir].path);
-          File sourceFile(File::current_directory(), stripfn(b.filename));
+          File sourceFile(FilePath(File::current_directory(), stripfn(b.filename)));
           copyfile(sourceFile.full_pathname(), fileToSend.full_pathname(), true);
         }
         filename_to_send = fileToSend.full_pathname();
       } else {
         File::set_current_directory(a()->directories[b.dir].path);
-        File fileToSend(File::current_directory(), stripfn(b.filename));
+        File fileToSend(FilePath(File::current_directory(), stripfn(b.filename)));
         filename_to_send = fileToSend.full_pathname();
       }
       bool ok = true;

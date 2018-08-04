@@ -452,7 +452,7 @@ void add_arc(const char *arc, const char *file_name, int dos) {
 
   sprintf(szArchiveFileName, "%s.%s", arc, a()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
-  if (IsEqualsIgnoreCase(file_name, "chain.txt") ||
+  if (IsEqualsIgnoreCase(file_name, DROPFILE_CHAIN_TXT) ||
       IsEqualsIgnoreCase(file_name, "door.sys") ||
       IsEqualsIgnoreCase(file_name, "chain.*")  ||
       IsEqualsIgnoreCase(file_name, "door.*")) {
@@ -529,7 +529,7 @@ void list_temp_dir() {
   for (const auto& f : ff) {
     CheckForHangup();
     if (checka()) { break; }
-    if (iequals(f.name, "chain.txt") || iequals(f.name, "door.sys")) {
+    if (iequals(f.name, DROPFILE_CHAIN_TXT) || iequals(f.name, "door.sys")) {
       continue;
     }
     string filename = f.name;
@@ -590,7 +590,7 @@ void temp_extract() {
       } else {
         File::set_current_directory(a()->directories[a()->current_user_dir().subnum].path);
       }
-      File file(File::current_directory(), stripfn(u.filename));
+      File file(FilePath(File::current_directory(), stripfn(u.filename)));
       a()->CdHome();
       if (check_for_files(file.full_pathname().c_str())) {
         bool ok1 = false;
@@ -666,7 +666,7 @@ void list_temp_text() {
     bout.nl();
     for (const auto& f : ff) {
       const auto s = FilePath(a()->temp_directory(), f.name);
-      if (iequals(f.name, "door.sys") || iequals(f.name, "chain.txt")) {
+      if (iequals(f.name, "door.sys") || iequals(f.name, DROPFILE_CHAIN_TXT)) {
         continue;
       }
       bout.nl();

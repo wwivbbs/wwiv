@@ -52,7 +52,7 @@ WWIVMessageApi::WWIVMessageApi(
 
 bool WWIVMessageApi::Exist(const wwiv::sdk::subboard_t& sub) const {
   const std::string sub_filename = StrCat(sub.filename, ".sub");
-  File subs(subs_directory_, sub_filename);
+  File subs(FilePath(subs_directory_, sub_filename));
   return subs.Exists();
 }
 
@@ -63,7 +63,7 @@ bool WWIVMessageApi::Create(const wwiv::sdk::subboard_t& sub, int subnum) {
 bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext, const std::string& text_ext, int subnum) {
   LOG(INFO) << "Creating: " << name;
   const std::string sub_filename = StrCat(name, sub_ext);
-  File fileSub(subs_directory_, sub_filename);
+  File fileSub(FilePath(subs_directory_, sub_filename));
   if (fileSub.Exists()) {
     // Don't create if it already exists.
     return false;
@@ -79,7 +79,7 @@ bool WWIVMessageApi::Create(const std::string& name, const std::string& sub_ext,
   }
 
   const std::string text_filename = StrCat(name, text_ext);
-  File msgs_file(messages_directory_, text_filename);
+  File msgs_file(FilePath(messages_directory_, text_filename));
   if (msgs_file.Open(File::modeReadOnly | File::modeBinary)) {
     // Don't create since we have this file already.
     return false;
@@ -116,8 +116,8 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
   string sub_fullpath;
   string msgs_fullpath;
   {
-    File fileSub(subs_directory_, StrCat(sub.filename, ".sub"));
-    File msgs_file(messages_directory_, StrCat(sub.filename, ".dat"));
+    File fileSub(FilePath(subs_directory_, StrCat(sub.filename, ".sub")));
+    File msgs_file(FilePath(messages_directory_, StrCat(sub.filename, ".dat")));
     if (!fileSub.Exists()) {
       throw bad_message_area(sub.filename);
     }
@@ -126,7 +126,7 @@ MessageArea* WWIVMessageApi::Open(const wwiv::sdk::subboard_t& sub, int subnum) 
     }
 
     if (!msgs_file.Exists()) {
-      File create_msgs_file(messages_directory_, StrCat(sub.filename, ".dat"));
+      File create_msgs_file(FilePath(messages_directory_, StrCat(sub.filename, ".dat")));
       if (!create_msgs_file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
         throw bad_message_area(sub.filename);
       }
@@ -149,8 +149,8 @@ WWIVEmail* WWIVMessageApi::OpenEmail() {
   string data;
   string text;
   {
-    File datafile(subs_directory_, EMAIL_DAT);
-    File textfile(messages_directory_, EMAIL_DAT);
+    File datafile(FilePath(subs_directory_, EMAIL_DAT));
+    File textfile(FilePath(messages_directory_, EMAIL_DAT));
     data = datafile.full_pathname();
     text = textfile.full_pathname();
 

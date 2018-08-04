@@ -262,7 +262,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   configUsrFile.file().Delete();
 
   // 2nd version of config.usr that wwivconfig was mistakenly creating.
-  File userDatFile(config.datadir(), "user.dat");
+  File userDatFile(FilePath(config.datadir(), "user.dat"));
   userDatFile.Delete();
 
   messagebox(window, "Converted to config version #1");
@@ -314,7 +314,7 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
   file.Write(&syscfg, sizeof(configrec));
   file.Close();
 
-  File archiver(config.datadir(), ARCHIVER_DAT);
+  File archiver(FilePath(config.datadir(), ARCHIVER_DAT));
   if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
     window->Puts("Couldn't open 'ARCHIVER_DAT' for writing.\n");
     window->Puts("Creating new file....\n");

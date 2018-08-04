@@ -149,7 +149,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
   if (user_number == a()->usernum && check_inet_addr(a()->user()->GetEmailAddress())) {
     internet_address = a()->user()->GetEmailAddress();
   } else {
-    File file(a()->config()->datadir(), INETADDR_DAT);
+    File file(FilePath(a()->config()->datadir(), INETADDR_DAT));
     if (!file.Exists()) {
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
       auto size = a()->config()->config()->maxusers * 80;
@@ -179,7 +179,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     return; /*nullptr;*/
   }
 
-  File inetAddrFile(a()->config()->datadir(), INETADDR_DAT);
+  File inetAddrFile(FilePath(a()->config()->datadir(), INETADDR_DAT));
   inetAddrFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   long lCurPos = 80L * static_cast<long>(user_number);
   inetAddrFile.Seek(lCurPos, File::Whence::begin);

@@ -69,7 +69,7 @@ bool is_chat_invis() {
 
 static void send_inst_msg(inst_msg_header *ih, const std::string& msg) {
   const string fn = StringPrintf("tmsg%3.3u.%3.3d", a()->instance_number(), ih->dest_inst);
-  File file(a()->config()->datadir(), fn);
+  File file(FilePath(a()->config()->datadir(), fn));
   if (file.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile, File::shareDenyReadWrite)) {
     file.Seek(0L, File::Whence::end);
     if (ih->msg_size > 0 && msg.empty()) {
@@ -216,7 +216,7 @@ void process_inst_msgs() {
   FindFiles ff(fndspec, FindFilesType::files);
   for (const auto& f : ff) {
     if (hangup) { break; }
-    File file(a()->config()->datadir(), f.name);
+    File file(FilePath(a()->config()->datadir(), f.name));
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
       LOG(ERROR) << "Unable to open file: " << file.full_pathname();
       continue;
@@ -250,7 +250,7 @@ bool get_inst_info(int nInstanceNum, instancerec * ir) {
 
   memset(ir, 0, sizeof(instancerec));
 
-  File instFile(a()->config()->datadir(), INSTANCE_DAT);
+  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeBinary | File::modeReadOnly)) {
     return false;
   }
@@ -296,7 +296,7 @@ bool inst_available_chat(instancerec * ir) {
  * Returns max instance number.
  */
 int num_instances() {
-  File instFile(a()->config()->datadir(), INSTANCE_DAT);
+  File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
   if (!instFile.Open(File::modeReadOnly | File::modeBinary)) {
     return 0;
   }
@@ -438,7 +438,7 @@ void write_inst(int loc, int subloc, int flags) {
   }
   if (re_write) {
     ti.last_update = daten_t_now();
-    File instFile(a()->config()->datadir(), INSTANCE_DAT);
+    File instFile(FilePath(a()->config()->datadir(), INSTANCE_DAT));
     if (instFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       instFile.Seek(static_cast<long>(a()->instance_number() * sizeof(instancerec)), File::Whence::begin);
       instFile.Write(&ti, sizeof(instancerec));

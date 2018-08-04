@@ -308,7 +308,7 @@ void delete_attachment(unsigned long daten, int forceit) {
   filestatusrec fsr;
 
   bool found = false;
-  File fileAttach(a()->config()->datadir(), ATTACH_DAT);
+  File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
   if (fileAttach.Open(File::modeBinary | File::modeReadWrite)) {
     auto l = fileAttach.Read(&fsr, sizeof(fsr));
     while (l > 0 && !found) {
@@ -607,7 +607,7 @@ void readmail(int mode) {
       found = false;
       attach_exists = false;
       if (m.status & status_file) {
-        File fileAttach(a()->config()->datadir(), ATTACH_DAT);
+        File fileAttach(FilePath(a()->config()->datadir(), ATTACH_DAT));
         if (fileAttach.Open(File::modeBinary | File::modeReadOnly)) {
           l1 = fileAttach.Read(&fsr, sizeof(fsr));
           while (l1 > 0 && !found) {
@@ -1235,7 +1235,7 @@ void readmail(int mode) {
           if (!okfn(downloadFileName.c_str())) {
             break;
           }
-          File fileTemp(a()->temp_directory(), downloadFileName.c_str());
+          File fileTemp(FilePath(a()->temp_directory(), downloadFileName));
           fileTemp.Delete();
           fileTemp.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
           fileTemp.Write(b);

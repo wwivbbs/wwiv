@@ -191,7 +191,7 @@ static bool import_packet_file(const Config& config, FtnMessageDupe& dupe,
                                const std::string& dir, const string& name) {
   VLOG(1) << "import_packet_file: " << dir << name;
 
-  File f(dir, name);
+  File f(FilePath(dir, name));
   if (!f.Open(File::modeBinary | File::modeReadOnly)) {
     LOG(INFO) << "Unable to open file: " << dir << name;
     return false;
@@ -340,7 +340,7 @@ static bool import_bundle_file(const Config& config, FtnMessageDupe& dupe,
 
   {
     // Check to make sure the file is readable.
-    File f(dir, name);
+    File f(FilePath(dir, name));
     if (!f.Open(File::modeBinary | File::modeReadOnly)) {
       LOG(INFO) << "Unable to open file: " << dir << name;
       return false;
@@ -644,7 +644,7 @@ static bool create_ftn_packet(const Config& config, const FidoCallout& fido_call
   FidoAddress from_address(net.fido.fido_address);
   for (int tries = 0; tries < 10; tries++) {
     auto now = DateTime::now();
-    File file(dirs.temp_outbound_dir(), packet_name(now));
+    File file(FilePath(dirs.temp_outbound_dir(), packet_name(now)));
     if (!file.Open(File::modeCreateFile | File::modeExclusive | File::modeReadWrite |
                        File::modeBinary,
                    File::shareDenyReadWrite)) {
@@ -1111,7 +1111,7 @@ int Main(const NetworkCommandLine& net_cmdline) {
     }
 
     // Packet file is created by us for sure.
-    File f(net.dir, sfilename);
+    File f(FilePath(net.dir, sfilename));
     if (!f.Open(File::modeBinary | File::modeReadOnly)) {
       LOG(ERROR) << "Unable to open file: " << net.dir << sfilename;
       return 1;

@@ -169,11 +169,11 @@ int Main(CommandLine& cmdline) {
 
   ConnectionData data(&config, &c, &nodes, concurrent_connections);
   if (c.blocking.use_goodip_txt) {
-    File goodip(config.datadir(), "goodip.txt");
+    File goodip(FilePath(config.datadir(), "goodip.txt"));
     data.good_ips_ = std::make_shared<GoodIp>(goodip.full_pathname());
   }
   if (c.blocking.use_badip_txt) {
-    File badip(config.datadir(), "badip.txt");
+    File badip(FilePath(config.datadir(), "badip.txt"));
     data.bad_ips_ = std::make_shared<BadIp>(badip.full_pathname());
   }
 

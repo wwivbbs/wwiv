@@ -66,7 +66,7 @@ void catsl() {
 
   if (File::Exists(instance_logfilename)) {
     auto basename = GetSysopLogFileName(date());
-    File wholeLogFile(a()->config()->gfilesdir(), basename);
+    File wholeLogFile(FilePath(a()->config()->gfilesdir(), basename));
 
     auto buffer = std::make_unique<char[]>(CAT_BUFSIZE);
     if (wholeLogFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {

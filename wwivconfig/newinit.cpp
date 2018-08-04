@@ -57,7 +57,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static void write_qscn(const std::string datadir, unsigned int un, uint32_t* qscn) {
-  File file(datadir, USER_QSC);
+  File file(FilePath(datadir, USER_QSC));
   if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     file.Seek(syscfg.qscn_len * un, File::Whence::begin);
     file.Write(qscn, syscfg.qscn_len);
@@ -245,7 +245,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   write_user(datadir, 1, &u);
   write_qscn(datadir, 1, qsc.get());
   {
-    File namesfile(StrCat("data/", NAMES_LST));
+    File namesfile(FilePath("data", NAMES_LST));
     namesfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   }
   {
@@ -273,7 +273,7 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
     d1.dsl = 100;
     d1.maxfiles = 50;
     d1.type = 65535;
-    File dirsfile("data", DIRS_DAT);
+    File dirsfile(FilePath("data", DIRS_DAT));
     dirsfile.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     dirsfile.Write(&d1, sizeof(directoryrec));
 
