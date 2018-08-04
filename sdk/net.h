@@ -255,8 +255,8 @@ struct net_interconnect_rec {
  */
 struct net_call_out_rec {
   net_call_out_rec() = default;
-  net_call_out_rec(const std::string f, uint16_t sn, uint16_t mn, uint16_t op, uint16_t ca,
-                   int8_t nh, int8_t xh, char pw[20], uint8_t tpd, uint16_t nk)
+  net_call_out_rec(const std::string& f, uint16_t sn, uint16_t mn, uint16_t op, uint16_t ca,
+                   int8_t nh, int8_t xh, const std::string& pw, uint8_t tpd, uint16_t nk)
       : ftn_address(f), sysnum(sn), macnum(mn), options(op), call_every_x_minutes(ca), min_hr(nh),
         max_hr(xh), session_password(pw), min_k(nk) {}
   // FTN Address.
