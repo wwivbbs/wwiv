@@ -35,7 +35,7 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::IniFile;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
@@ -60,7 +60,7 @@ bool ParseAddressNetLine(const string& line, uint16_t* node, PPPNodeConfig* conf
 }
 
 static bool ParseAddressesFile(std::map<uint16_t, PPPNodeConfig>* node_config_map, const string network_dir) {
-  TextFile node_config_file(network_dir, ADDRESS_NET, "rt");
+  TextFile node_config_file(FilePath(network_dir, ADDRESS_NET), "rt");
   if (!node_config_file.IsOpen()) {
     return false;
   }

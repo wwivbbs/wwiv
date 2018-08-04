@@ -816,7 +816,7 @@ static void LoginCheckForNewMail() {
 
 static vector<bool> read_voting() {
   vector<votingrec> votes;
-  DataFile<votingrec> file(a()->config()->datadir(), VOTING_DAT);
+  DataFile<votingrec> file(FilePath(a()->config()->datadir(), VOTING_DAT));
   vector<bool> questused(20);
   if (file) {
     file.ReadVector(votes);

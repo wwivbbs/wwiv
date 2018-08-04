@@ -35,6 +35,7 @@
 #include "bbs/printfile.h"
 #include "bbs/sysopf.h"
 #include "bbs/application.h"
+#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -57,6 +58,7 @@ using std::unique_ptr;
 using std::vector;
 
 using wwiv::bbs::InputMode;
+using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
@@ -99,7 +101,7 @@ bool LoadFromJSON(const string& dir, const string& filename,
                   std::vector<BbsListEntry>& entries) {
   entries.clear();
 
-  TextFile file(dir, filename, "r");
+  TextFile file(FilePath(dir, filename), "r");
   if (!file.IsOpen()) {
     return false;
   }
@@ -125,7 +127,7 @@ bool SaveToJSON(const string& dir, const string& filename,
     save(cereal::make_nvp("bbslist", entries));
   }
   
-  TextFile file(dir, filename, "w");
+  TextFile file(FilePath(dir, filename), "w");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
     // verify that the file exists first.
@@ -140,7 +142,7 @@ static bool ConvertLegacyList(
     const string& dir, const string& legacy_filename, 
     std::vector<BbsListEntry>& entries) {
 
-  TextFile legacy_file(dir, legacy_filename, "r");
+  TextFile legacy_file(FilePath(dir, legacy_filename), "r");
   if (!legacy_file.IsOpen()) {
     return false;
   }

@@ -71,8 +71,9 @@ static void RemoveControlFiles(const editorrec& editor) {
 }
 
 static void ReadWWIVResultFiles(string* title, int* anon) {
-  if (File::Exists(a()->temp_directory(), RESULT_ED)) {
-    TextFile file(a()->temp_directory(), RESULT_ED, "rt");
+  auto fp = FilePath(a()->temp_directory(), RESULT_ED);
+  if (File::Exists(fp)) {
+    TextFile file(fp, "rt");
     string anon_string;
     if (file.ReadLine(&anon_string)) {
       *anon = to_number<int>(anon_string);
@@ -108,7 +109,7 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
  * line 6: Private flag ("YES" or "NO")
  */
 static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email, const string& to_name) {
-  TextFile file(a()->temp_directory(), MSGINF, "wt");
+  TextFile file(FilePath(a()->temp_directory(), MSGINF), "wt");
   if (!file.IsOpen()) {
     return false;
   }
@@ -144,7 +145,7 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
 }
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& sub_name, const string& to_name, int flags) {
-  TextFile fileEditorInf(a()->temp_directory(), EDITOR_INF, "wt");
+  TextFile fileEditorInf(FilePath(a()->temp_directory(), EDITOR_INF), "wt");
   if (fileEditorInf.IsOpen()) {
     if (!to_name.empty()) {
       flags |= MSGED_FLAG_HAS_REPLY_NAME;
@@ -229,9 +230,7 @@ bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string&
     // Copy MSGTMP to INPUT_MSG since that's what the rest of WWIV expectes.
     // TODO(rushfan): Let this function return an object with result and filename and anything
     // else that needs to be passed back.
-    File source(a()->temp_directory(), MSGTMP);
-    File dest(a()->temp_directory(), INPUT_MSG);
-    File::Copy(source.full_pathname(), dest.full_pathname());
+    File::Copy(FilePath(a()->temp_directory(), MSGTMP), FilePath(a()->temp_directory(), INPUT_MSG));
 
     // TODO(rushfan): Do we need to re-read MSGINF to look for changes to title or setanon?
   } else {

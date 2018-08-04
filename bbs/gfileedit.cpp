@@ -274,7 +274,7 @@ void gfileedit() {
     }
   } while (!done && !hangup);
 
-  DataFile<gfiledirrec> file(a()->config()->datadir(), GFILE_DAT,
+  DataFile<gfiledirrec> file(FilePath(a()->config()->datadir(), GFILE_DAT),
 	File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
   if (file) {
     file.WriteVector(a()->gfilesec);

@@ -38,7 +38,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/os.h"
-#include "core/textfile.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "core/connection.h"

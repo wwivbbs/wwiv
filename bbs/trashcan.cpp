@@ -35,10 +35,9 @@ using namespace wwiv::strings;
 
 
 Trashcan::Trashcan(wwiv::sdk::Config& config)
-    : file_(config.gfilesdir(), TRASHCAN_TXT) {
-}
+    : file_(FilePath(config.gfilesdir(), TRASHCAN_TXT)) {}
 
-Trashcan::~Trashcan() {}
+Trashcan::~Trashcan() = default;
 
 static bool Matches(string whole, string pattern) {
   if (!contains(pattern, '*')) {

@@ -43,7 +43,8 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
   if (!pUser->HasShortMessage()) {
     return;
   }
-  DataFile<shortmsgrec> file(a()->config()->datadir(), SMW_DAT, File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  DataFile<shortmsgrec> file(FilePath(a()->config()->datadir(), SMW_DAT),
+                             File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     return;
   }

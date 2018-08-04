@@ -31,7 +31,6 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/stl.h"
-#include "core/textfile.h"
 #include "sdk/config.h"
 #include "core/datetime.h"
 #include "sdk/filenames.h"
@@ -58,7 +57,7 @@ namespace wwiv {
 namespace wwivutil {
 
 static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
-  DataFile<directoryrec> file(datadir, DIRS_DAT);
+  DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
   if (!file) {
     LOG(ERROR) << "Unable to open file: " << file.file().full_pathname();
     return false;
@@ -142,7 +141,7 @@ public:
 
     const auto& dir = dirs.at(area_num);
     const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(config()->config()->datadir(), filename);
+    DataFile<uploadsrec> file(FilePath(config()->config()->datadir(), filename));
     if (!file) {
       LOG(ERROR) << "Unable to open file: " << file.file().full_pathname();
       return 1;
@@ -209,7 +208,7 @@ public:
 
     const auto& dir = dirs.at(area_num);
     const string filename = StrCat(dir.filename, ".dir");
-    DataFile<uploadsrec> file(config()->config()->datadir(), filename,
+    DataFile<uploadsrec> file(FilePath(config()->config()->datadir(), filename),
       File::modeBinary | File::modeReadWrite);
     if (!file) {
       LOG(ERROR) << "Unable to open file: " << file.file().full_pathname();

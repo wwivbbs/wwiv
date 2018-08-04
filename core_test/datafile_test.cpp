@@ -43,7 +43,7 @@ TEST(DataFileTest, Read) {
   x.Close();
 
   {
-    DataFile<T> datafile(tmp, "Read", File::modeReadOnly);
+    DataFile<T> datafile(FilePath(tmp, "Read"), File::modeReadOnly);
     ASSERT_TRUE((bool) datafile);
     EXPECT_EQ(static_cast<size_t>(2), datafile.number_of_records());
     T t{0, 0};
@@ -81,7 +81,7 @@ TEST(DataFileTest, ReadVector) {
   x.Close();
 
   {
-    DataFile<T> datafile(tmp, "ReadVector", File::modeReadOnly);
+    DataFile<T> datafile(FilePath(tmp, "ReadVector"), File::modeReadOnly);
     ASSERT_TRUE((bool)datafile);
     EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
     std::vector<T> t;
@@ -112,7 +112,7 @@ TEST(DataFileTest, ReadVector_MaxRecords) {
   x.Close();
 
   {
-    DataFile<T> datafile(tmp, "ReadVector_MaxRecords", File::modeReadOnly);
+    DataFile<T> datafile(FilePath(tmp, "ReadVector_MaxRecords"), File::modeReadOnly);
     ASSERT_TRUE((bool)datafile);
     EXPECT_EQ(static_cast<size_t>(3), datafile.number_of_records());
     std::vector<T> t;
@@ -134,7 +134,7 @@ TEST(DataFileTest, Write) {
   T t2{3, 4};
 
   {
-    DataFile<T> datafile(tmp, "Write", File::modeCreateFile|File::modeBinary|File::modeReadWrite);
+    DataFile<T> datafile(FilePath(tmp, "Write"), File::modeCreateFile|File::modeBinary|File::modeReadWrite);
     ASSERT_TRUE((bool) datafile);
     datafile.Write(&t1);
     datafile.Write(&t2);
@@ -159,7 +159,7 @@ TEST(DataFileTest, WriteVector) {
   T t2{3, 4};
 
   {
-    DataFile<T> datafile(tmp, "WriteVector",
+    DataFile<T> datafile(FilePath(tmp, "WriteVector"),
         File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE((bool)datafile);
     std::vector<T> t = {t1, t2};
@@ -186,7 +186,7 @@ TEST(DataFileTest, WriteVector_MaxRecords) {
   T t3{5, 6};
 
   {
-    DataFile<T> datafile(tmp, "WriteVector_MaxRecords",
+    DataFile<T> datafile(FilePath(tmp, "WriteVector_MaxRecords"),
       File::modeCreateFile | File::modeBinary | File::modeReadWrite);
     ASSERT_TRUE((bool)datafile);
     std::vector<T> t = {t1, t2, t3};
@@ -208,7 +208,7 @@ TEST(DataFileTest, Read_DoesNotExist) {
   struct T { int a; };
   FileHelper file;
   const string tmp = file.TempDir();
-  DataFile<T> datafile(tmp, "DoesNotExist", File::modeBinary|File::modeReadWrite);
+  DataFile<T> datafile(FilePath(tmp, "DoesNotExist"), File::modeBinary | File::modeReadWrite);
   if (datafile) {
     FAIL() << "file should not exist.";
   }

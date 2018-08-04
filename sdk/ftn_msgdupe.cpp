@@ -57,7 +57,7 @@ bool FtnMessageDupe::Load() {
   if (!use_filesystem_) {
     return true;
   }
-  DataFile<msgids> file(datadir_, MSGDUPE_DAT,
+  DataFile<msgids> file(FilePath(datadir_, MSGDUPE_DAT),
                         File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     LOG(ERROR) << "Unable to initialize FtnDupe: Unable to create file.";
@@ -84,7 +84,7 @@ bool FtnMessageDupe::Save() {
   if (!use_filesystem_) {
     return true;
   }
-  DataFile<msgids> file(datadir_, MSGDUPE_DAT,
+  DataFile<msgids> file(FilePath(datadir_, MSGDUPE_DAT),
                         File::modeReadWrite | File::modeBinary | File::modeCreateFile |
                             File::modeTruncate);
   if (!file) {
@@ -104,7 +104,7 @@ const std::string FtnMessageDupe::CreateMessageID(const wwiv::sdk::fido::FidoAdd
     return StrCat(address_string, " DEADBEEF");
   }
 
-  DataFile<uint64_t> file(datadir_, MSGID_DAT,
+  DataFile<uint64_t> file(FilePath(datadir_, MSGID_DAT),
                           File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                           File::shareDenyReadWrite);
   if (!file) {

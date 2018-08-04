@@ -97,10 +97,10 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
     }
     if (okfsed() && a()->HasConfigFlag(OP_FLAGS_FSED_EXT_DESC)) {
       if (!sss->empty()) {
-        TextFile file(a()->temp_directory(), "extended.dsc", "w");
+        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "w");
         file.Write(*sss);
       } else {
-        File::Remove(StrCat(a()->temp_directory(), "extended.dsc"));
+        File::Remove(FilePath(a()->temp_directory(), "extended.dsc"));
       }
 
       const int saved_screen_chars = a()->user()->GetScreenChars();
@@ -112,7 +112,7 @@ void modify_extended_description(std::string* sss, const std::string& dest) {
           a()->max_extend_lines, MSGED_FLAG_NO_TAGLINE);
       a()->user()->SetScreenChars(saved_screen_chars);
       if (bEditOK) {
-        TextFile file(a()->temp_directory(), "extended.dsc", "r");
+        TextFile file(FilePath(a()->temp_directory(), "extended.dsc"), "r");
         *sss = file.ReadFileIntoString();
 
         for (int i3 = sss->size() - 1; i3 >= 0; i3--) {

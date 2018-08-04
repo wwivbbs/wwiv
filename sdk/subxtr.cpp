@@ -149,7 +149,7 @@ void serialize(Archive & ar, subs_t& s) {
 
 bool Subs::LoadFromJSON(const std::string& dir, const std::string& filename, subs_t& s) {
   s.subs.clear();
-  TextFile file(dir, filename, "r");
+  TextFile file(FilePath(dir, filename), "r");
   if (!file.IsOpen()) {
     return false;
   }
@@ -170,7 +170,7 @@ bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const
     save(cereal::make_nvp("subs", s.subs));
   }
 
-  TextFile file(dir, filename, "w");
+  TextFile file(FilePath(dir, filename), "w");
   if (!file.IsOpen()) {
     // rapidjson will assert if the file does not exist, so we need to 
     // verify that the file exists first.
@@ -223,11 +223,11 @@ bool read_subs_xtr(const std::string& datadir, const std::vector<net_networks_re
   xsubs.resize(subs.size());
 
   // subs.xtr may not exist on new installs.
-  if (!File::Exists(datadir, SUBS_XTR)) {
+  if (!File::Exists(FilePath(datadir, SUBS_XTR))) {
     return true;
   }
 
-  TextFile subs_xtr(datadir, SUBS_XTR, "rt");
+  TextFile subs_xtr(FilePath(datadir, SUBS_XTR), "rt");
   if (!subs_xtr.IsOpen()) {
     return false;
   }
@@ -298,7 +298,7 @@ bool write_subs_xtr(const std::string& datadir, const std::vector<net_networks_r
 }
 
 vector<subboardrec_422_t> read_subs(const string &datadir) {
-  DataFile<subboardrec_422_t> file(datadir, SUBS_DAT);
+  DataFile<subboardrec_422_t> file(FilePath(datadir, SUBS_DAT));
   if (!file) {
     // TODO(rushfan): Figure out why this caused link errors. What's missing?
     //LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
@@ -312,8 +312,10 @@ vector<subboardrec_422_t> read_subs(const string &datadir) {
 }
 
 bool write_subs(const string &datadir, const vector<subboardrec_422_t>& subboards) {
-  DataFile<subboardrec_422_t> subsfile(datadir, SUBS_DAT,
-    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+  DataFile<subboardrec_422_t> subsfile(FilePath(datadir, SUBS_DAT),
+                                       File::modeBinary | File::modeReadWrite |
+                                           File::modeCreateFile | File::modeTruncate,
+                                       File::shareDenyReadWrite);
   if (!subsfile) {
     return false;
   }

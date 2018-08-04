@@ -155,7 +155,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   // Make a backup file.
   File::Copy(users_lst, backup_file);
 
-  DataFile<userrec> usersFile(config.datadir(), USER_LST,
+  DataFile<userrec> usersFile(FilePath(config.datadir(), USER_LST),
     File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!usersFile) {
     messagebox(window, "Unable to open user.lst.");
@@ -227,7 +227,7 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
     file.Close();
   }
 
-  DataFile<user_config> configUsrFile(config.datadir(), "config.usr",
+  DataFile<user_config> configUsrFile(FilePath(config.datadir(), "config.usr"),
     File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
   if (!configUsrFile) {
     return false;

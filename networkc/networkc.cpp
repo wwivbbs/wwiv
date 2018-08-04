@@ -30,7 +30,6 @@
 #include <vector>
 
 #include "core/command_line.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
@@ -38,7 +37,6 @@
 #include "core/semaphore_file.h"
 #include "core/strings.h"
 #include "core/os.h"
-#include "core/textfile.h"
 #include "core/version.h"
 #include "networkb/net_util.h"
 #include "sdk/fido/fido_util.h"

@@ -113,7 +113,8 @@ bool SSM::send_local(uint32_t user_number, const std::string& text) {
 }
 
 bool SSM::delete_local_to_user(uint32_t user_number) {
-  DataFile<shortmsgrec> file(data_directory_, SMW_DAT, File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  DataFile<shortmsgrec> file(FilePath(data_directory_, SMW_DAT),
+                             File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     return false;
   }

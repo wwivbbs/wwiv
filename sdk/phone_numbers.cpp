@@ -74,8 +74,8 @@ int PhoneNumbers::find(const std::string& phone_number) const {
 }
 
 bool PhoneNumbers::Load() {
-  DataFile<phonerec> file(datadir_, PHONENUM_DAT,
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile);
+  DataFile<phonerec> file(FilePath(datadir_, PHONENUM_DAT),
+                          File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (!file) {
     return false;
   }
@@ -87,8 +87,9 @@ bool PhoneNumbers::Load() {
 }
 
 bool PhoneNumbers::Save() {
-  DataFile<phonerec> file(datadir_, PHONENUM_DAT,
-      File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
+  DataFile<phonerec> file(FilePath(datadir_, PHONENUM_DAT), File::modeReadWrite | File::modeBinary |
+                                                                File::modeCreateFile |
+                                                                File::modeTruncate);
   if (!file) {
     return false;
   }

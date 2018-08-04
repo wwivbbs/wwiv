@@ -38,7 +38,8 @@ namespace sdk {
 
 
 Config::Config(const std::string& root_directory)  : initialized_(false), root_directory_(root_directory) {
-  DataFile<configrec> configFile(root_directory, CONFIG_DAT, File::modeReadOnly | File::modeBinary);
+    DataFile<configrec> configFile(FilePath(root_directory, CONFIG_DAT),
+                                   File::modeReadOnly | File::modeBinary);
   if (!configFile) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return;

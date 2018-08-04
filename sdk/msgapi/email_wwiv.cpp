@@ -44,7 +44,6 @@ using std::string;
 using std::make_unique;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::DataFile;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -86,8 +85,8 @@ static bool modify_email_waiting(const Config& config, uint16_t email_usernum, i
 
 static bool increment_email_counters(const Config& config, uint16_t email_usernum) {
   statusrec_t statusrec{};
-  DataFile<statusrec_t> file(config.datadir(), STATUS_DAT,
-    File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(FilePath(config.datadir(), STATUS_DAT),
+                             File::modeBinary | File::modeReadWrite);
   if (!file) {
     return false;
   }

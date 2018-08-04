@@ -94,8 +94,7 @@ public:
   static const char separatorChar;
 
   // Constructor/Destructor
-  /** Constructs a file from a directory and filename */
-  File(const std::string& directory_name, const std::string& file_name);
+
   /** Constructs a file from a full pathname. */
   explicit File(const std::string& full_file_name);
   /** Destructs File. Closes any open file handles. */

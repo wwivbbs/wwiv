@@ -30,7 +30,6 @@
 #include "core/inifile.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
@@ -68,8 +67,8 @@ Contact::Contact(const net_networks_rec& net) : Contact(net, false) {}
 
 Contact::Contact(const net_networks_rec& net, bool save_on_destructor)
     : net_(net), save_on_destructor_(save_on_destructor) {
-  DataFile<net_contact_rec> file(net_.dir, CONTACT_NET, File::modeBinary | File::modeReadOnly,
-                                 File::shareDenyNone);
+  DataFile<net_contact_rec> file(FilePath(net_.dir, CONTACT_NET),
+                                 File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return;
   }
@@ -112,7 +111,7 @@ bool Contact::Save() {
 
   VLOG(2) << "Saving contact.net to: " << FilePath(net_.dir, CONTACT_NET);
   DataFile<net_contact_rec> file(
-                 net_.dir, CONTACT_NET,
+                 FilePath(net_.dir, CONTACT_NET),
                  File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate,
                  File::shareDenyReadWrite);
   if (!file) {

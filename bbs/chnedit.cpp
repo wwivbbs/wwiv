@@ -390,11 +390,11 @@ void chainedit() {
     }
   } while (!done && !hangup);
 
-  DataFile<chainfilerec> file(a()->config()->datadir(), CHAINS_DAT,
+  DataFile<chainfilerec> file(FilePath(a()->config()->datadir(), CHAINS_DAT),
     File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
   file.WriteVector(a()->chains);
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    DataFile<chainregrec> regFile(a()->config()->datadir(), CHAINS_REG,
+    DataFile<chainregrec> regFile(FilePath(a()->config()->datadir(), CHAINS_REG),
         File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (regFile) {
       regFile.WriteVector(a()->chains_reg);

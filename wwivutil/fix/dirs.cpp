@@ -85,7 +85,7 @@ static string Unalign(const char* filename) {
 void checkFileAreas(const std::string& datadir, bool verbose) {
   vector<directoryrec> directories;
   {
-    DataFile<directoryrec> file(datadir, DIRS_DAT);
+    DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
     if (!file) {
       // TODO(rushfan): show error?
       return;

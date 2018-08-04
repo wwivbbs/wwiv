@@ -151,7 +151,7 @@ static void InsertSmallRecord(StatusMgr& sm, Names& names, int user_number, cons
 }
 
 static bool delete_votes(const std::string datadir, User& user) {
-  DataFile<votingrec> voteFile(datadir, VOTING_DAT, File::modeReadWrite | File::modeBinary);
+  DataFile<votingrec> voteFile(FilePath(datadir, VOTING_DAT), File::modeReadWrite | File::modeBinary);
   if (!voteFile) {
     return false;
   }

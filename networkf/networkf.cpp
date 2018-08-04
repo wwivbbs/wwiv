@@ -122,7 +122,7 @@ static string determine_arc_extension(const std::string& filename) {
 
 static vector<arcrec> read_arcs(const std::string& datadir) {
   vector<arcrec> arcs;
-  DataFile<arcrec> file(datadir, ARCHIVER_DAT);
+  DataFile<arcrec> file(FilePath(datadir, ARCHIVER_DAT));
   if (file) {
     file.ReadVector(arcs, 20);
   }
@@ -919,7 +919,7 @@ bool CreateFloFile(const NetworkCommandLine& net_cmdline, const FidoAddress& des
   try {
     auto sem_file = SemaphoreFile::try_acquire(bsyname, std::chrono::seconds(15));
 
-    TextFile flo_file(dirs.outbound_dir(), floname, "a+");
+    TextFile flo_file(FilePath(dirs.outbound_dir(), floname), "a+");
     if (!flo_file.IsOpen()) {
       LOG(ERROR) << "Unable to open FLO file: " << flo_file.full_pathname();
       return false;

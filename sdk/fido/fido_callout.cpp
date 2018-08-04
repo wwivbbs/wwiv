@@ -28,12 +28,10 @@
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
 
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/jsonfile.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"

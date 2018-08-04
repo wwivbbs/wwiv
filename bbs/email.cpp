@@ -150,7 +150,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
 }
 
 std::unique_ptr<File> OpenEmailFile(bool bAllowWrite) {
-  auto file = std::make_unique<File>(a()->config()->datadir(), EMAIL_DAT);
+  auto file = std::make_unique<File>(FilePath(a()->config()->datadir(), EMAIL_DAT));
 
   // If the file doesn't exist, just return the opaque handle now instead of flailing
   // around trying to open it

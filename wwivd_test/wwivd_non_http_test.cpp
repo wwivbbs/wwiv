@@ -16,7 +16,6 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"

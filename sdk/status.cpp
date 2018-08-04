@@ -20,7 +20,6 @@
 #include <string>
 
 #include "sdk/status.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
@@ -150,7 +149,7 @@ bool WStatus::NewDay() {
 // StatusMgr
 bool StatusMgr::Get(bool bLockFile) {
   if (!status_file_) {
-    status_file_.reset(new File(datadir_, STATUS_DAT));
+    status_file_.reset(new File(FilePath(datadir_, STATUS_DAT)));
     int nLockMode = (bLockFile) ? (File::modeReadWrite | File::modeBinary) : (File::modeReadOnly | File::modeBinary);
     status_file_->Open(nLockMode);
   } else {
@@ -205,7 +204,7 @@ bool StatusMgr::CommitTransaction(WStatus* pStatus) {
 
 bool StatusMgr::Write(statusrec_t *pStatus) {
   if (!status_file_) {
-    status_file_.reset(new File(datadir_, STATUS_DAT));
+    status_file_.reset(new File(FilePath(datadir_, STATUS_DAT)));
     status_file_->Open(File::modeReadWrite | File::modeBinary);
   } else {
     status_file_->Seek(0L, File::Whence::begin);

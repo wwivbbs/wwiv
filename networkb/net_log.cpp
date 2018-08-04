@@ -79,7 +79,7 @@ std::string NetworkLog::CreateLogLine(time_t time, NetworkSide side, int16_t nod
 }
 
 std::string NetworkLog::GetContents() const {
-  TextFile file(gfiles_directory_, "net.log", "r");
+  TextFile file(FilePath(gfiles_directory_, "net.log"), "r");
   if (!file.IsOpen()) {
     return "";
   }
@@ -94,7 +94,7 @@ bool NetworkLog::Log(time_t time, NetworkSide side, int16_t node, unsigned int b
       CreateLogLine(time, side, node, bytes_sent, bytes_received, seconds_elapsed, network_name);
 
   // Opening for "w" should truncate the existing file.
-  TextFile file(gfiles_directory_, "net.log", "a+t");
+  TextFile file(FilePath(gfiles_directory_, "net.log"), "a+t");
   file.WriteLine(log_line);
 
   return true;

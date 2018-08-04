@@ -149,7 +149,7 @@ void run_chain(int nChainum) {
   write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(nChainum + 1), INST_FLAGS_NONE);
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     a()->chains_reg[nChainum].usage++;
-    wwiv::core::DataFile<chainregrec> regFile(a()->config()->datadir(), CHAINS_REG,
+    wwiv::core::DataFile<chainregrec> regFile(FilePath(a()->config()->datadir(), CHAINS_REG),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (regFile) {
       regFile.WriteVector(a()->chains_reg);

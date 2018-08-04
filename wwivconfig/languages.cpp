@@ -48,7 +48,6 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::DataFile;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -99,7 +98,7 @@ static uint8_t get_next_langauge_num(const vector<languagerec>& languages) {
 void edit_languages(const wwiv::sdk::Config& config) {
   vector<languagerec> languages;
   {
-    DataFile<languagerec> file(config.datadir(), LANGUAGE_DAT);
+    DataFile<languagerec> file(FilePath(config.datadir(), LANGUAGE_DAT));
     if (file) {
       file.ReadVector(languages, MAX_LANGUAGES);
     }
@@ -175,7 +174,7 @@ void edit_languages(const wwiv::sdk::Config& config) {
   } while (!done);
 
   {
-    DataFile<languagerec> file(config.datadir(), LANGUAGE_DAT,
+    DataFile<languagerec> file(FilePath(config.datadir(), LANGUAGE_DAT),
       File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
     if (file) {
       file.WriteVector(languages, MAX_LANGUAGES);

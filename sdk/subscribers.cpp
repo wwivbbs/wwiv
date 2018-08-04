@@ -104,7 +104,7 @@ bool ReadSubcriberFile(const std::string& filename, std::set<uint16_t>& subscrib
 }
 
 bool WriteSubcriberFile(const std::string& dir, const std::string& filename, const std::set<uint16_t>& subscribers) {
-  TextFile file(dir, filename, "wt");
+  TextFile file(FilePath(dir, filename), "wt");
   if (!file.IsOpen()) {
     return false;
   }

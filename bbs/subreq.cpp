@@ -327,7 +327,7 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = to_number<uint16_t>(s);
           if (i || IsEquals(s, "0")) {
-            TextFile ff(a()->network_directory(), CATEG_NET, "rt");
+            TextFile ff(FilePath(a()->network_directory(), CATEG_NET), "rt");
             while (ff.ReadLine(s, 100)) {
               int i1 = to_number<uint16_t>(s);
               if (i1 == i) {
@@ -417,7 +417,7 @@ bool display_sub_categories() {
     return false;
   }
 
-  TextFile ff(a()->network_directory(), CATEG_NET, "rt");
+  TextFile ff(FilePath(a()->network_directory(), CATEG_NET), "rt");
   if (!ff.IsOpen()) {
     return false;
   }

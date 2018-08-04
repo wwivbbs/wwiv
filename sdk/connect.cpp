@@ -40,7 +40,7 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::IniFile;
+using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 
@@ -111,7 +111,7 @@ bool ParseConnectNetLine(const string& ss, net_interconnect_rec* con) {
 }
 
 static bool ParseConnectFile(std::map<uint16_t, net_interconnect_rec>* node_config_map, const string network_dir) {
-  TextFile connect_file(network_dir, CONNECT_NET, "rt");
+  TextFile connect_file(FilePath(network_dir, CONNECT_NET), "rt");
   if (!connect_file.IsOpen()) {
     return false;
   }

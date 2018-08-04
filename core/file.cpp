@@ -139,7 +139,7 @@ bool backup_file(const File& file) { return backup_file(file.full_pathname()); }
 
 File::File(const string& full_file_name) : full_path_name_(full_file_name) {}
 
-File::File(const string& dir, const string& filename) : File(wwiv::core::FilePath(dir, filename)) {}
+//File::File(const string& dir, const string& filename) : File(wwiv::core::FilePath(dir, filename)) {}
 
 File::~File() {
   if (this->IsOpen()) {
@@ -380,7 +380,7 @@ std::string File::FixPathSeparators(const std::string& path) {
 // static
 void File::absolute(const string& base, string* relative) {
   if (!File::is_absolute(*relative)) {
-    File dir(base, *relative);
+    File dir(FilePath(base, *relative));
     relative->assign(dir.full_pathname());
   }
 }
@@ -390,8 +390,7 @@ string File::absolute(const std::string& base, const std::string& relative) {
   if (File::is_absolute(relative)) {
     return relative;
   }
-  File dir(base, relative);
-  return dir.full_pathname();
+  return FilePath(base, relative);
 }
 
 // static

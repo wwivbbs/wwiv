@@ -25,7 +25,6 @@
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "core/wwivassert.h"
 
 using std::string;

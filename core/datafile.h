@@ -28,10 +28,6 @@ namespace core {
 template <typename RECORD, std::size_t SIZE = sizeof(RECORD)>
 class DataFile {
 public:
-  DataFile(const std::string& dir, const std::string& filename,
-           int nFileMode = File::modeDefault,
-           int nShareMode = File::shareUnknown) 
-      : DataFile(FilePath(dir, filename), nFileMode, nShareMode) {}
   DataFile(const std::string& full_file_name,
            int nFileMode = File::modeDefault,
            int nShareMode = File::shareUnknown) 

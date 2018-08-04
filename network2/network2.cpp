@@ -39,7 +39,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/os.h"
-#include "core/textfile.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
 #include "core/connection.h"
@@ -90,7 +89,7 @@ static bool posts_changed = false;
 
 static void update_filechange_status_dat(const string& datadir, bool email, bool posts) {
   statusrec_t status{};
-  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &status)) {
       if (email) {

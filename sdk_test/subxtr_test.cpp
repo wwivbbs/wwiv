@@ -21,6 +21,7 @@
 #include <string>
 #include <vector>
 
+#include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
 #include "core_test/file_helper.h"
@@ -29,6 +30,7 @@
 
 using std::string;
 using std::vector;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
@@ -69,7 +71,7 @@ TEST_F(SubXtrTest, Write) {
   xsubs.emplace_back(s2);
 
   write_subs_xtr(helper.data(), net_networks_, xsubs);
-  TextFile subs_xtr_file(helper.data(), "subs.xtr", "r");
+  TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "r");
   vector<string> actual = SplitString(subs_xtr_file.ReadFileIntoString(), "\n");
   ASSERT_EQ(4, actual.size());
   vector<string> expected = {
@@ -116,7 +118,7 @@ TEST_F(SubXtrTest, Read) {
     vector<string> contents{
       {"!1", "@this is sub2", "#0", "$testnet S2 0 1 1"},
     };
-    TextFile subs_xtr_file(helper.data(), "subs.xtr", "w");
+    TextFile subs_xtr_file(FilePath(helper.data(), "subs.xtr"), "w");
     for (const auto& line : contents) {
       subs_xtr_file.WriteLine(line);
     }

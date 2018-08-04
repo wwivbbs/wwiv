@@ -29,6 +29,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/quote.h"
 #include "bbs/vars.h"
+#include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -57,7 +58,7 @@ void get_user_ppp_addr() {
   a()->internetFullEmailAddress = StringPrintf("%s@%s",
       a()->internetEmailName.c_str(),
       a()->internetEmailDomain.c_str());
-  TextFile acctFile(a()->network_directory(), ACCT_INI, "rt");
+  TextFile acctFile(FilePath(a()->network_directory(), ACCT_INI), "rt");
   char szLine[260];
   bool found = false;
   if (acctFile.IsOpen()) {
@@ -192,8 +193,8 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
     return;
   }
   a()->set_net_num(inet_net_num);
-  TextFile in(a()->network_directory(), ACCT_INI, "rt");
-  TextFile out(a()->temp_directory(), ACCT_INI, "wt+");
+  TextFile in(FilePath(a()->network_directory(), ACCT_INI), "rt");
+  TextFile out(FilePath(a()->temp_directory(), ACCT_INI), "wt+");
   if (in.IsOpen() && out.IsOpen()) {
     char szLine[260];
     while (in.ReadLine(szLine, 255)) {

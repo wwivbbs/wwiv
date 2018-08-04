@@ -43,7 +43,6 @@
 #include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/ftn_msgdupe.h"
 #include "sdk/msgapi/message_utils_wwiv.h"

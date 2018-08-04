@@ -30,7 +30,7 @@ static std::unique_ptr<File> qscanFile;
 
 static bool open_qscn() {
   if (!qscanFile) {
-    qscanFile.reset(new File(a()->config()->datadir(), USER_QSC));
+    qscanFile.reset(new File(FilePath(a()->config()->datadir(), USER_QSC)));
     if (!qscanFile->Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       return false;
     }

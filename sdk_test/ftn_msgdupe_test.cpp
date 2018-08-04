@@ -48,8 +48,9 @@ class FtnMsgDupeTest : public testing::Test {
 public:
   FtnMsgDupeTest() : config_(helper.root()) {}
   bool CreateDupes(std::vector<msgids> ids) {
-    DataFile<msgids> file(config_.datadir(), MSGDUPE_DAT,
-                          File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
+    DataFile<msgids> file(FilePath(config_.datadir(), MSGDUPE_DAT),
+                          File::modeReadWrite | File::modeBinary | File::modeCreateFile |
+                              File::modeTruncate);
     if (!file) {
       return false;
     }
@@ -59,7 +60,7 @@ public:
 
   bool SetLastMessageId(uint32_t message_id) {
     uint64_t id = message_id;
-    DataFile<uint64_t> file(config_.datadir(), MSGID_DAT,
+    DataFile<uint64_t> file(FilePath(config_.datadir(), MSGID_DAT),
                             File::modeReadWrite | File::modeBinary | File::modeCreateFile,
                             File::shareDenyReadWrite);
     if (!file) {

@@ -328,7 +328,7 @@ TEST(FileTest, mkdirs) {
 
 TEST(FileTest, Stream) {
   FileHelper file;
-  File f(file.TempDir(), "newdir");
+  File f(FilePath(file.TempDir(), "newdir"));
   std::stringstream s;
   s << f;
   ASSERT_EQ(f.full_pathname(), s.str());
@@ -337,7 +337,7 @@ TEST(FileTest, Stream) {
 TEST(FileTest, IsOpen_Open) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  const auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
   EXPECT_TRUE(file.IsOpen());
@@ -347,7 +347,7 @@ TEST(FileTest, IsOpen_Open) {
 TEST(FileTest, IsOpen_NotOpen) {
   static const string kHelloWorld = "Hello World";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
+  const auto path = helper.CreateTempFile(this->test_info_->name(), kHelloWorld);
   File file(path + "DNE");
   EXPECT_FALSE(file.IsOpen());
   EXPECT_FALSE(file);
@@ -356,7 +356,7 @@ TEST(FileTest, IsOpen_NotOpen) {
 TEST(FileTest, Seek) {
   static const string kContents = "0123456789";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kContents);
+  const auto path = helper.CreateTempFile(this->test_info_->name(), kContents);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
 
@@ -377,7 +377,7 @@ TEST(FileTest, Seek) {
 TEST(FileTest, CurrentPosition) {
   static const string kContents = "0123456789";
   FileHelper helper;
-  string path = helper.CreateTempFile(this->test_info_->name(), kContents);
+  const auto path = helper.CreateTempFile(this->test_info_->name(), kContents);
   File file(path);
   ASSERT_TRUE(file.Open(File::modeBinary | File::modeReadOnly));
 

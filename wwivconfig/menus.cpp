@@ -241,7 +241,7 @@ private:
 static void edit_menu(const std::string& menu_dir, const std::string& menu_name) {
   vector<MenuRec> menu_items;
   {
-    DataFile<MenuRec> menu_file(menu_dir, menu_name);
+    DataFile<MenuRec> menu_file(FilePath(menu_dir, menu_name));
     if (menu_file) {
       menu_file.ReadVector(menu_items);
     }
@@ -344,9 +344,9 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
   memcpy(&r, &h, sizeof(MenuHeader));
   menu_items[0] = r;
 
-  DataFile<MenuRec> menu_file(menu_dir, menu_name,
-    File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate,
-    File::shareDenyReadWrite);
+  DataFile<MenuRec> menu_file(FilePath(menu_dir, menu_name),
+                              File::modeReadWrite | File::modeBinary | File::modeCreateFile |
+                              File::modeTruncate, File::shareDenyReadWrite);
   if (menu_file) {
     menu_file.WriteVector(menu_items);
   }

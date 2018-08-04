@@ -428,7 +428,7 @@ bool Application::ReadConfig() {
 
 void Application::read_nextern() {
   externs.clear();
-  DataFile<newexternalrec> externalFile(config()->datadir(), NEXTERN_DAT);
+  DataFile<newexternalrec> externalFile(FilePath(config()->datadir(), NEXTERN_DAT));
   if (externalFile) {
     externalFile.ReadVector(externs, 15);
   }
@@ -436,7 +436,7 @@ void Application::read_nextern() {
 
 void Application::read_arcs() {
   arcs.clear();
-  DataFile<arcrec> file(config()->datadir(), ARCHIVER_DAT);
+  DataFile<arcrec> file(FilePath(config()->datadir(), ARCHIVER_DAT));
   if (file) {
     file.ReadVector(arcs, MAX_ARCS);
   }
@@ -444,7 +444,7 @@ void Application::read_arcs() {
 
 void Application::read_editors() {
   editors.clear();
-  DataFile<editorrec> file(config()->datadir(), EDITORS_DAT);
+  DataFile<editorrec> file(FilePath(config()->datadir(), EDITORS_DAT));
   if (!file) {
     return;
   }
@@ -453,7 +453,7 @@ void Application::read_editors() {
 
 void Application::read_nintern() {
   over_intern.clear();
-  DataFile<newexternalrec> file(config()->datadir(), NINTERN_DAT);
+  DataFile<newexternalrec> file(FilePath(config()->datadir(), NINTERN_DAT));
   if (file) {
     file.ReadVector(over_intern, 3);
   }
@@ -562,7 +562,7 @@ bool Application::read_names() {
 
 bool Application::read_dirs() {
   directories.clear();
-  DataFile<directoryrec> file(config()->datadir(), DIRS_DAT);
+  DataFile<directoryrec> file(FilePath(config()->datadir(), DIRS_DAT));
   if (!file) {
     LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return false;
@@ -573,7 +573,7 @@ bool Application::read_dirs() {
 
 void Application::read_chains() {
   chains.clear();
-  DataFile<chainfilerec> file(config()->datadir(), CHAINS_DAT);
+  DataFile<chainfilerec> file(FilePath(config()->datadir(), CHAINS_DAT));
   if (!file) {
     return;
   }
@@ -582,7 +582,7 @@ void Application::read_chains() {
   if (HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     chains_reg.clear();
 
-    DataFile<chainregrec> regFile(config()->datadir(), CHAINS_REG);
+    DataFile<chainregrec> regFile(FilePath(config()->datadir(), CHAINS_REG));
     if (regFile) {
       regFile.ReadVector(chains_reg, max_chains);
     } else {
@@ -593,7 +593,7 @@ void Application::read_chains() {
         reg.maxage = 255;
         chains_reg.push_back(reg);
       }
-      DataFile<chainregrec> writeFile(config()->datadir(), CHAINS_REG,
+      DataFile<chainregrec> writeFile(FilePath(config()->datadir(), CHAINS_REG),
                                       File::modeReadWrite | File::modeBinary |
                                           File::modeCreateFile);
       writeFile.WriteVector(chains_reg);
@@ -603,7 +603,7 @@ void Application::read_chains() {
 
 bool Application::read_language() {
   {
-    DataFile<languagerec> file(config()->datadir(), LANGUAGE_DAT);
+    DataFile<languagerec> file(FilePath(config()->datadir(), LANGUAGE_DAT));
     if (file) {
       file.ReadVector(languages);
     }
@@ -627,7 +627,7 @@ bool Application::read_language() {
 }
 
 void Application::read_gfile() {
-  DataFile<gfiledirrec> file(config()->datadir(), GFILE_DAT);
+  DataFile<gfiledirrec> file(FilePath(config()->datadir(), GFILE_DAT));
   if (file) {
     file.ReadVector(gfilesec, max_gfilesec);
   }

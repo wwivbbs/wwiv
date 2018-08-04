@@ -513,7 +513,7 @@ void dlboardedit() {
     } break;
     }
   } while (!done && !hangup);
-  DataFile<directoryrec> dirsFile(a()->config()->datadir(), DIRS_DAT,
+  DataFile<directoryrec> dirsFile(FilePath(a()->config()->datadir(), DIRS_DAT),
       File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!dirsFile) {
     sysoplog(false) << "!!! Unable to open DIRS.DAT for writing, some changes may have been lost";

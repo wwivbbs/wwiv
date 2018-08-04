@@ -34,7 +34,6 @@
 #include <sys/stat.h>
 
 #include "bbs/keycodes.h"
-#include "core/datafile.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"

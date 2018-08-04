@@ -352,7 +352,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
  *        area code.
  */
 string describe_area_code(int nAreaCode) {
-  TextFile file(a()->config()->datadir(), REGIONS_DAT, "rt");
+  TextFile file(FilePath(a()->config()->datadir(), REGIONS_DAT), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";
@@ -381,7 +381,7 @@ string describe_area_code(int nAreaCode) {
 string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   const auto regions_dir = wwiv::core::FilePath(a()->config()->datadir(), REGIONS_DIR);
   const auto filename = StringPrintf("%s.%-3d", REGIONS_DIR, nAreaCode);
-  TextFile file(regions_dir, filename, "rt");
+  TextFile file(FilePath(regions_dir, filename), "rt");
   if (!file.IsOpen()) {
     // Failed to open regions area code file
     return "";

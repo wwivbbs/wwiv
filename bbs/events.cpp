@@ -90,7 +90,7 @@ static void write_events() {
 }
 
 static void write_event(int n) {
-  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT,
+  DataFile<eventsrec> file(FilePath(a()->config()->datadir(), EVENTS_DAT),
     File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   file.Write(n, &a()->events[n]);
 }
@@ -98,7 +98,7 @@ static void write_event(int n) {
 static void read_events() {
   a()->events.clear();
 
-  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT);
+  DataFile<eventsrec> file(FilePath(a()->config()->datadir(), EVENTS_DAT));
   if (!file) {
     return;
   }
@@ -106,7 +106,7 @@ static void read_events() {
 }
 
 static void read_event(int n) {
-  DataFile<eventsrec> file(a()->config()->datadir(), EVENTS_DAT);
+  DataFile<eventsrec> file(FilePath(a()->config()->datadir(), EVENTS_DAT));
   if (!file) {
     return;
   }

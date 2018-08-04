@@ -34,7 +34,6 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/vardec.h"
@@ -57,7 +56,9 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
   }
 
   {
-    DataFile<net_networks_rec_disk> file_dat(datadir_, NETWORKS_DAT, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+    DataFile<net_networks_rec_disk> file_dat(FilePath(datadir_, NETWORKS_DAT),
+                                             File::modeBinary | File::modeReadOnly,
+                                             File::shareDenyNone);
     if (!File::Exists(datadir_, NETWORKS_JSON) && !File::Exists(datadir_, NETWORKS_DAT)) {
       return;
     }
@@ -134,7 +135,8 @@ bool Networks::LoadFromJSON() {
 }
 
 bool Networks::LoadFromDat() {
-  DataFile<net_networks_rec_disk> file(datadir_, NETWORKS_DAT, File::modeBinary | File::modeReadOnly, File::shareDenyNone);
+  DataFile<net_networks_rec_disk> file(FilePath(datadir_, NETWORKS_DAT),
+                                       File::modeBinary | File::modeReadOnly, File::shareDenyNone);
   if (!file) {
     return false;
   }
@@ -179,8 +181,10 @@ bool Networks::SaveToDat() {
     disk.emplace_back(to);
   }
 
-  DataFile<net_networks_rec_disk> file(datadir_, NETWORKS_DAT,
-    File::modeBinary | File::modeReadWrite | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite);
+  DataFile<net_networks_rec_disk> file(FilePath(datadir_, NETWORKS_DAT),
+                                       File::modeBinary | File::modeReadWrite |
+                                       File::modeCreateFile | File::modeTruncate,
+                                       File::shareDenyReadWrite);
   if (!file) {
     return false;
   }

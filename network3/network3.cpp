@@ -214,7 +214,7 @@ static bool send_feedback_email(const net_networks_rec& net, const std::string& 
 }
 
 static bool add_feedback_header(const std::string& net_dir, std::ostringstream& text) {
-  TextFile feedback_hdr(net_dir, "fbackhdr.net", "rt");
+  TextFile feedback_hdr(FilePath(net_dir, "fbackhdr.net"), "rt");
   if (!feedback_hdr.IsOpen()) {
     return true;
   }
@@ -309,9 +309,9 @@ void update_timestamps(const string& dir) {
   // Update timestamps on {bbslist,connect,callout}.net
   File bbsdata_net_file(FilePath(dir, BBSDATA_NET));
   time_t t = bbsdata_net_file.last_write_time();
-  File(dir, BBSLIST_NET).set_last_write_time(t);
-  File(dir, CONNECT_NET).set_last_write_time(t);
-  File(dir, CALLOUT_NET).set_last_write_time(t);
+  File(FilePath(dir, BBSLIST_NET)).set_last_write_time(t);
+  File(FilePath(dir, CONNECT_NET)).set_last_write_time(t);
+  File(FilePath(dir, CALLOUT_NET)).set_last_write_time(t);
 }
 
 static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
@@ -321,14 +321,16 @@ static void write_bbsdata_reg_file(const BbsListNet& b, const string& dir) {
   for (const auto& entry : b.node_config()) {
     bbsdata_reg_data.push_back(reg.at(entry.first));
   }
-  DataFile<int32_t> bbsdata_reg_file(dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+  DataFile<int32_t> bbsdata_reg_file(FilePath(dir, BBSDATA_REG),
+                                     File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   bbsdata_reg_file.WriteVector(bbsdata_reg_data);
 }
 
 static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data, const string& dir) {
   {
     LOG(INFO) << "Writing bbsdata.net...";
-    DataFile<net_system_list_rec> bbsdata_net_file(dir, BBSDATA_NET, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    DataFile<net_system_list_rec> bbsdata_net_file(
+        FilePath(dir, BBSDATA_NET), File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_net_file.WriteVector(bbsdata_data);
    }
   update_timestamps(dir);
@@ -338,7 +340,8 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
     for (const auto& n : bbsdata_data) {
       bbsdata_ind_data.push_back((n.forsys == WWIVNET_NO_NODE) ? 0 : n.sysnum);
     }
-    DataFile<uint16_t> bbsdata_ind_file(dir, BBSDATA_IND, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    DataFile<uint16_t> bbsdata_ind_file(FilePath(dir, BBSDATA_IND), File::modeBinary |
+                                        File::modeReadWrite | File::modeCreateFile);
     bbsdata_ind_file.WriteVector(bbsdata_ind_data);
   }
   {
@@ -347,14 +350,15 @@ static void write_bbsdata_files(const vector<net_system_list_rec>& bbsdata_data,
     for (const auto& n : bbsdata_data) {
       bbsdata_rou_data.push_back(n.forsys);
     }
-    DataFile<uint16_t> bbsdata_rou_file(dir, BBSDATA_ROU, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    DataFile<uint16_t> bbsdata_rou_file(
+        FilePath(dir, BBSDATA_ROU), File::modeBinary | File::modeReadWrite | File::modeCreateFile);
     bbsdata_rou_file.WriteVector(bbsdata_rou_data);
   }
 }
 
 static void update_net_ver_status_dat(const string& datadir) {
   statusrec_t statusrec{};
-  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
   if (!file) {
     return;
   }
@@ -372,7 +376,7 @@ static void update_net_ver_status_dat(const string& datadir) {
 
 static void update_filechange_status_dat(const string& datadir) {
   statusrec_t statusrec{};
-  DataFile<statusrec_t> file(datadir, STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(FilePath(datadir, STATUS_DAT), File::modeBinary | File::modeReadWrite);
   if (file) {
     if (file.Read(0, &statusrec)) {
       statusrec.filechange[filechange_net]++;
@@ -461,7 +465,9 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
     vector<int32_t> bbsdata_reg_data;
     bbsdata_reg_data.push_back(net_cmdline.config().config()->wwiv_reg_number);
     bbsdata_reg_data.push_back(0);
-    DataFile<int32_t> bbsdata_reg_file(net.dir, BBSDATA_REG, File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+    DataFile<int32_t> bbsdata_reg_file(FilePath(net.dir, BBSDATA_REG), File::modeBinary |
+                                                                           File::modeReadWrite |
+                                                                           File::modeCreateFile);
     bbsdata_reg_file.WriteVector(bbsdata_reg_data);
   }
 

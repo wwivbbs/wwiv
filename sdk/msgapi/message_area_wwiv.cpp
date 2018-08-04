@@ -324,7 +324,8 @@ static uint32_t next_qscan_value_and_increment_post(const string& bbsdir) {
     LOG(ERROR) << "Unable to load CONFIG.DAT.";
     return 1;
   }
-  DataFile<statusrec_t> file(config.datadir(), STATUS_DAT, File::modeBinary | File::modeReadWrite);
+  DataFile<statusrec_t> file(FilePath(config.datadir(), STATUS_DAT),
+                             File::modeBinary | File::modeReadWrite);
   if (!file) {
     return 0;
   }

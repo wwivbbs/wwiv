@@ -209,7 +209,7 @@ bool handle_sub_add_req(Context& context, Packet& p) {
     string text;
     LOG(INFO) << "Candidate sa file: " << FilePath(context.net.dir, response_file);
     if (File::Exists(context.net.dir, response_file)) {
-      TextFile tf(context.net.dir, response_file, "r");
+      TextFile tf(FilePath(context.net.dir, response_file), "r");
       LOG(INFO) << "Sending SA file: " << tf.full_pathname();
       text = tf.ReadFileIntoString();
     }
@@ -330,7 +330,7 @@ bool handle_sub_add_drop_resp(Context& context, Packet& p, const std::string& ad
 }
 
 bool handle_sub_list_info_response(Context& context, Packet& p) {
-  TextFile subs_inf(context.net.dir, "subs.inf", "at");
+  TextFile subs_inf(FilePath(context.net.dir, "subs.inf"), "at");
   LOG(INFO) << "Received subs line for subs.inf:";
   LOG(INFO) << p.text();
   return subs_inf.Write(p.text()) > 0;

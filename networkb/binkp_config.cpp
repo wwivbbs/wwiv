@@ -26,7 +26,6 @@
 #include "core/file.h"
 #include "core/inifile.h"
 #include "core/strings.h"
-#include "core/textfile.h"
 #include "sdk/fido/fido_address.h"
 #include "sdk/fido/fido_callout.h"
 #include "sdk/networks.h"

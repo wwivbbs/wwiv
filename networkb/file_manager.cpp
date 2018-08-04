@@ -53,7 +53,8 @@ vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destin
   if (File::Exists(search_path)) {
     File file(search_path);
     const auto basename = file.GetName();
-    result.push_back(new WFileTransferFile(basename, std::make_unique<File>(dirs_.net_dir(), basename)));
+    result.push_back(new WFileTransferFile(
+        basename, std::make_unique<File>(FilePath(dirs_.net_dir(), basename))));
     LOG(INFO) << "       CreateWWIVnetTransferFileList: found file: " << basename;
   }
   return result;

@@ -46,7 +46,6 @@
 using std::unique_ptr;
 using std::string;
 using std::vector;
-using wwiv::core::DataFile;
 using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -100,7 +99,7 @@ static void edit_editor(editorrec& e) {
 
 void extrn_editors(const wwiv::sdk::Config& config) {
   vector<editorrec> editors;
-  DataFile<editorrec> file (config.datadir(), EDITORS_DAT);
+  DataFile<editorrec> file (FilePath(config.datadir(), EDITORS_DAT));
   if (file) {
     file.ReadVector(editors, 10);
     file.Close();
@@ -162,9 +161,10 @@ void extrn_editors(const wwiv::sdk::Config& config) {
     }
   } while (!done);
 
-  DataFile<editorrec> editors_dat(config.datadir(), EDITORS_DAT,
-    File::modeReadWrite|File::modeBinary|File::modeCreateFile|File::modeTruncate,
-    File::shareDenyReadWrite);
+  DataFile<editorrec> editors_dat(FilePath(config.datadir(), EDITORS_DAT),
+                                  File::modeReadWrite | File::modeBinary | File::modeCreateFile |
+                                      File::modeTruncate,
+                                  File::shareDenyReadWrite);
   if (editors_dat) {
     editors_dat.WriteVector(editors);
   }

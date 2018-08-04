@@ -1164,7 +1164,7 @@ bool check_zip(const char *pszZipCode, int mode) {
   const auto zipcity_dir = FilePath(a()->config()->datadir(), ZIPCITY_DIR);
   const auto fn = StringPrintf("zip%c.dat", pszZipCode[0]);
 
-  TextFile zip_file(zipcity_dir, fn, "r");
+  TextFile zip_file(FilePath(zipcity_dir, fn), "r");
   if (!zip_file.IsOpen()) {
     ok = false;
     if (mode != 2) {

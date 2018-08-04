@@ -147,7 +147,7 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
 void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
-    const File key_file(config_->datadir(), "wwiv.key");
+    const File key_file(FilePath(config_->datadir(), "wwiv.key"));
     const string system_password = config()->config()->systempw;
     wwiv::bbs::Key key(key_file.full_pathname(), system_password);
     if (!key_file.Exists()) {

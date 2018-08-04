@@ -534,7 +534,7 @@ string MenuInstance::GetCommand() const {
 }
 
 MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menupath) {
-  TextFile file(menupath, DESCRIPT_ION, "rt");
+  TextFile file(FilePath(menupath, DESCRIPT_ION), "rt");
   if (file.IsOpen()) {
     string s;
     while (file.ReadLine(&s)) {
@@ -561,7 +561,7 @@ const std::string MenuDescriptions::description(const std::string& name) const {
 bool MenuDescriptions::set_description(const std::string& name, const std::string& description) {
   descriptions_[name] = description;
 
-  TextFile file(menupath_, DESCRIPT_ION, "wt");
+  TextFile file(FilePath(menupath_, DESCRIPT_ION), "wt");
   if (!file.IsOpen()) {
     return false;
   }

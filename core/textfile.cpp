@@ -53,20 +53,9 @@ using namespace wwiv::os;
 const int TextFile::WAIT_TIME = 10;
 const int TextFile::TRIES = 100;
 
-TextFile::TextFile(const string& fileName, const string& fileMode) {
-  Open(fileName, fileMode);
-}
-
-TextFile::TextFile(const string& dir, const string& filename, const string& filemode) {
-  string full_pathname = wwiv::core::FilePath(dir, filename);
-  Open(full_pathname, filemode);
-}
-
-bool TextFile::Open(const string& file_name, const string& file_mode) {
-  file_name_ = file_name;
-  file_mode_ = file_mode;
-  file_ = TextFile::OpenImpl();
-  return file_ != nullptr;
+TextFile::TextFile(const string& file_name, const string& file_mode)
+    : file_name_(file_name), file_mode_(file_mode) {
+  file_ = OpenImpl();
 }
 
 #ifdef _WIN32
@@ -138,11 +127,11 @@ bool TextFile::Close() {
   return true;
 }
 
-int TextFile::WriteLine(const string& text) { 
+ssize_t TextFile::WriteLine(const string& text) { 
   if (file_ == nullptr) {
     return -1;
   }
-  int num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
+  ssize_t num_written = (fputs(text.c_str(), file_) >= 0) ? text.size() : 0;
   // fopen in text mode will force \n -> \r\n on win32
   fputs("\n", file_);
   // TODO(rushfan): Should we just +=1 on non-win32?
@@ -150,7 +139,7 @@ int TextFile::WriteLine(const string& text) {
   return num_written;
 }
 
-int TextFile::WriteFormatted(const char *formatText, ...) {
+ssize_t TextFile::WriteFormatted(const char* formatText, ...) {
   va_list ap;
   char buffer[4096];
 

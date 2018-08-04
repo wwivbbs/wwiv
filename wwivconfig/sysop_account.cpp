@@ -19,8 +19,8 @@
 #include "wwivconfig/sysop_account.h"
 
 #include <cmath>
-#include <cstring>
 #include <cstdlib>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <vector>
@@ -32,25 +32,23 @@
 #endif
 #include <sys/stat.h>
 
-#include "wwivconfig/wwivconfig.h"
+#include "core/inifile.h"
+#include "core/file.h"
+#include "core/strings.h"
+#include "core/wwivport.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
-#include "core/strings.h"
-#include "core/datafile.h"
-#include "core/file.h"
-#include "core/wwivport.h"
-#include "core/file.h"
-#include "wwivconfig/subacc.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
-#include "wwivconfig/subacc.h"
 #include "localui/wwiv_curses.h"
 #include "sdk/filenames.h"
 #include "sdk/names.h"
-#include "sdk/user.h"
-#include "sdk/usermanager.h"
 #include "sdk/networks.h"
 #include "sdk/subxtr.h"
+#include "sdk/user.h"
+#include "sdk/usermanager.h"
+#include "wwivconfig/subacc.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/wwivinit.h"
 
 using std::string;
 using std::unique_ptr;
@@ -64,10 +62,10 @@ static const int COL1_POSITION = 22;
 
 void create_sysop_account(wwiv::sdk::Config& config) {
   out->Cls(ACS_CKBOARD);
-  //unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 8, 54));
+  // unique_ptr<CursesWindow> window(out->CreateBoxedWindow("System Configuration", 8, 54));
 
-  std::vector<uint8_t> newuser_colors{ 7, 11, 14, 13, 31, 10, 12, 9, 5, 3 };
-  std::vector<uint8_t> newuser_bwcolors{ 7, 15, 15, 15, 112, 15, 15, 7, 7, 7 };
+  std::vector<uint8_t> newuser_colors{7, 11, 14, 13, 31, 10, 12, 9, 5, 3};
+  std::vector<uint8_t> newuser_bwcolors{7, 15, 15, 15, 112, 15, 15, 7, 7, 7};
 
   IniFile ini(FilePath(config.root_directory(), "wwiv.ini"), {"WWIV"});
   if (ini.IsOpen()) {
@@ -87,7 +85,6 @@ void create_sysop_account(wwiv::sdk::Config& config) {
         }
       }
     }
-
   }
   UserManager usermanager(config);
 
@@ -95,9 +92,8 @@ void create_sysop_account(wwiv::sdk::Config& config) {
 
   User u = {};
   u.ZeroUserData();
-  User::CreateNewUserRecord(&u, syscfg.newusersl, syscfg.newuserdsl,
-    syscfg.newuser_restrict, syscfg.newusergold,
-    newuser_colors, newuser_bwcolors);
+  User::CreateNewUserRecord(&u, syscfg.newusersl, syscfg.newuserdsl, syscfg.newuser_restrict,
+                            syscfg.newusergold, newuser_colors, newuser_bwcolors);
   constexpr int LABEL_WIDTH = 19;
   EditItems items{};
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Name/Handle:"),
@@ -132,6 +128,4 @@ void create_sysop_account(wwiv::sdk::Config& config) {
     statusrec.users++;
     save_status(config.datadir(), statusrec);
   }
-
 }
-
