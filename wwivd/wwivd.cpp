@@ -217,7 +217,7 @@ int Main(CommandLine& cmdline) {
     LOG(INFO) << "Error accepting client socket. " << errno;
     return 2;
   }
-  return EXIT_FAILURE;
+  return EXIT_SUCCESS;
 }
 
 } // namespace wwivd
