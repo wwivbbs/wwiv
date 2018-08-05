@@ -175,9 +175,18 @@ bool handle_inbound_post(Context& context, Packet& p) {
   return true;
 }
 
+std::string set_to_string(set<uint16_t> lines) {
+  bool first = true;
+  std::ostringstream ss;
+  for (const auto& line : lines) {
+    ss << line << std::endl;
+  }
+  return ss.str();
+}
+
 bool send_post_to_subscribers(Context& context, Packet& template_packet,
                               set<uint16_t> subscribers_to_skip) {
-  LOG(INFO) << "DEBUG: send_post_to_subscribers";
+  LOG(INFO) << "DEBUG: send_post_to_subscribers; skipping: " << set_to_string(subscribers_to_skip);
 
   if (template_packet.nh.main_type != main_type_new_post) {
     LOG(ERROR) << "Called send_post_to_subscribers on packet of wrong type.";
