@@ -216,7 +216,7 @@ void chat_room() {
   auto oiia = setiia(std::chrono::milliseconds(500));
 
   bool bActionMode = true;
-  while (!hangup) {
+  while (!a()->hangup_) {
     CheckForHangup();
     if (inst_msg_waiting()) {
       process_inst_msgs();
@@ -580,7 +580,7 @@ void page_user(int loc) {
   bout.nl();
   multi_instance();
   bout.nl();
-  while ((i < 1 || i > num_instances()) && !hangup) {
+  while ((i < 1 || i > num_instances()) && !a()->hangup_) {
     CheckForHangup();
     bout << "|#2Which instance would you like to page? (1-" << num_instances() << ", Q): ";
     input(s, 2);
@@ -866,7 +866,7 @@ int change_channels(int loc) {
   bout.nl();
   list_channels();
   bout.nl();
-  while ((temploc < 1 || temploc > 10) && !hangup) {
+  while ((temploc < 1 || temploc > 10) && !a()->hangup_) {
     CheckForHangup();
     bout << "|#1Enter a channel number, 1 to 10, Q to quit: ";
     input(szMessage, 2);

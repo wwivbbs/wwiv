@@ -139,7 +139,7 @@ int listfiles_plus_function(int type) {
   int max_lines = calc_max_lines();
 
   bool all_done = false;
-  for (uint16_t this_dir = 0; (this_dir < a()->directories.size()) && (!hangup) && (a()->udir[this_dir].subnum != -1)
+  for (uint16_t this_dir = 0; (this_dir < a()->directories.size()) && (!a()->hangup_) && (a()->udir[this_dir].subnum != -1)
        && !all_done; this_dir++) {
     int also_this_dir = a()->udir[this_dir].subnum;
     bool scan_dir = false;
@@ -171,7 +171,7 @@ int listfiles_plus_function(int type) {
       int changedir = 0;
 
       File fileDownload(a()->download_filename_);
-      while (!done && !hangup && !all_done) {
+      while (!done && !a()->hangup_ && !all_done) {
         checka(&all_done);
         if (!amount) {
           if (!fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
@@ -218,7 +218,7 @@ int listfiles_plus_function(int type) {
               bool redraw = true;
               save_file_pos = 0;
               bool menu_done = false;
-              while (!menu_done && !hangup) {
+              while (!menu_done && !a()->hangup_) {
                 int command = side_menu(&menu_pos, redraw, menu_items, 2, max_lines + first_file_pos() + 1, &smc);
                 redraw = true;
                 bulk_move = 0;

@@ -300,11 +300,11 @@ void UnixConsoleIO::skey(char ch) {
           }
           break;
         case F4:                          /* F4 */
-          chatcall = false;
+          application()->chatcall_ = false;
           application()->UpdateTopScreen();
           break;
         case F5:                          /* F5 */
-          hangup = true;
+          a()->hangup_ = true;
           a()->remoteIO()->dtr(false);
           break;
         case SF5:                          /* Shift-F5 */
@@ -312,12 +312,12 @@ void UnixConsoleIO::skey(char ch) {
           for (i = 0; i < i1; i++) {
             bputch(static_cast< unsigned char >(rand() % 256));
           }
-          hangup = true;
+          a()->hangup_ = true;
           a()->remoteIO()->dtr(false);
           break;
         case CF5:                          /* Ctrl-F5 */
           bout << "\r\nCall back later when you are there.\r\n\n";
-          hangup = true;
+          a()->hangup_ = true;
           a()->remoteIO()->dtr(false);
           break;
         case F6:                          /* F6 */
@@ -367,7 +367,7 @@ void UnixConsoleIO::skey(char ch) {
           break;
         case HOME:                          /* HOME */
           if (a()->chatting_ == 1) {
-            chat_file = !chat_file;
+            a()->chat_file_ = !a()->chat_file_;
           }
           break;
         default:

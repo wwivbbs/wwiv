@@ -265,7 +265,7 @@ bool ValidateSysopPassword() {
 
 /**
  * Hangs up the modem if user online. Whether using modem or not, sets
- * hangup to 1.
+ * a()->hangup_ to 1.
  */
 void hang_it_up() {
   if (!ok_modem_stuff) {

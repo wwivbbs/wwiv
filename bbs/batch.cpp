@@ -87,7 +87,7 @@ static void listbatch() {
   bout.nl(2);
   int current_num = 0;
   for (const auto& b : a()->batch().entry) {
-    if (abort || hangup) {
+    if (abort || a()->hangup_) {
       break;
     }
     string buffer;
@@ -304,11 +304,11 @@ static void bihangup() {
   auto batch_lastchar = std::chrono::steady_clock::now();
   auto nextbeep = std::chrono::seconds(1);
   bout << "\r\n|#2Automatic disconnect in progress.\r\n";
-  bout << "|#2Press 'H' to hangup, or any other key to return to system.\r\n";
+  bout << "|#2Press 'H' to a()->hangup_, or any other key to return to system.\r\n";
 
   unsigned char ch = 0;
   do {
-    while (!bkbhit() && !hangup) {
+    while (!bkbhit() && !a()->hangup_) {
       auto dd = std::chrono::steady_clock::now();
       if ((dd - batch_lastchar) > nextbeep) {
         nextbeep += std::chrono::seconds(1);
@@ -327,7 +327,7 @@ static void bihangup() {
     if (ch == 'h' || ch == 'H') {
       Hangup();
     }
-  } while (!ch && !hangup);
+  } while (!ch && !a()->hangup_);
 }
 
 void zmbatchdl(bool bHangupAfterDl) {
@@ -397,9 +397,9 @@ void zmbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !hangup && size_int(a()->batch().entry) > cur && !bRatioBad);
+  } while (ok && !a()->hangup_ && size_int(a()->batch().entry) > cur && !bRatioBad);
 
-  if (ok && !hangup) {
+  if (ok && !a()->hangup_) {
     endbatch();
   }
   if (bRatioBad) {
@@ -474,9 +474,9 @@ void ymbatchdl(bool bHangupAfterDl) {
     } else {
       delbatch(cur);
     }
-  } while (ok && !hangup && size_int(a()->batch().entry) > cur && !bRatioBad);
+  } while (ok && !a()->hangup_ && size_int(a()->batch().entry) > cur && !bRatioBad);
 
-  if (ok && !hangup) {
+  if (ok && !a()->hangup_) {
     endbatch();
   }
   if (bRatioBad) {
@@ -860,7 +860,7 @@ int batchdl(int mode) {
       done = true;
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   return 0;
 }
 
@@ -905,7 +905,7 @@ void upload(int dn) {
       done = false;
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 }
 
 char *unalign(char *file_name) {

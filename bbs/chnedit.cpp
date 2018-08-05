@@ -296,7 +296,7 @@ void modify_chain(int nCurrentChainum) {
       }
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   a()->chains[ nCurrentChainum ] = c;
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
     a()->chains_reg[ nCurrentChainum ] = r;
@@ -388,7 +388,7 @@ void chainedit() {
       }
     } break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 
   DataFile<chainfilerec> file(FilePath(a()->config()->datadir(), CHAINS_DAT),
     File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);

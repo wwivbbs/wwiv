@@ -219,7 +219,7 @@ void Application::tleft(bool check_for_timeout) {
     return;
   }
 
-  bool temp_sysop = a()->user()->GetSl() != 255 && a()->GetEffectiveSl() == 255;
+  bool temp_sysop = user()->GetSl() != 255 && GetEffectiveSl() == 255;
   bool sysop_available = sysop1();
 
   int cx = localIO()->WhereX();
@@ -228,7 +228,7 @@ void Application::tleft(bool check_for_timeout) {
   int cc = curatr;
   curatr = localIO()->GetTopScreenColor();
   localIO()->SetTopLine(0);
-  int line_number = (chatcall && (topdata == LocalIO::topdataUser)) ? 5 : 4;
+  int line_number = (chatcall_ && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
   localIO()->PutsXY(1, line_number, GetCurrentSpeed());
   for (int i = localIO()->WhereX(); i < 23; i++) {
@@ -299,7 +299,7 @@ void Application::handle_sysop_key(uint8_t key) {
         }
         break;
       case F4: /* F4 */
-        chatcall = false;
+        chatcall_ = false;
         UpdateTopScreen();
         break;
       case F5: /* F5 */
@@ -342,26 +342,26 @@ void Application::handle_sysop_key(uint8_t key) {
         }
         break;
       case F10: /* F10 */
-        if (a()->chatting_ == 0) {
-          if (a()->config()->sysconfig_flags() & sysconfig_2_way) {
+        if (chatting_ == 0) {
+          if (config()->sysconfig_flags() & sysconfig_2_way) {
             chat1("", true);
           } else {
             chat1("", false);
           }
         } else {
-          a()->chatting_ = 0;
+          chatting_ = 0;
         }
         break;
       case CF10: /* Ctrl-F10 */
-        if (a()->chatting_ == 0) {
+        if (chatting_ == 0) {
           chat1("", false);
         } else {
-          a()->chatting_ = 0;
+          chatting_ = 0;
         }
         break;
       case HOME: /* HOME */
-        if (a()->chatting_ == 1) {
-          chat_file = !chat_file;
+        if (chatting_ == 1) {
+          chat_file_ = !chat_file_;
         }
         break;
       }
@@ -417,7 +417,7 @@ void Application::UpdateTopScreen() {
   }
 
 #ifdef _WIN32
-  if (a()->config()->sysconfig_flags() & sysconfig_titlebar) {
+  if (config()->sysconfig_flags() & sysconfig_titlebar) {
     // Only set the titlebar if the user wanted it that way.
     const string username_num = names()->UserName(usernum);
     string title = StringPrintf("WWIV Node %d (User: %s)", instance_number(), username_num.c_str());
@@ -433,7 +433,7 @@ void Application::UpdateTopScreen() {
     localIO()->set_protect(this, 5);
     break;
   case LocalIO::topdataUser:
-    if (chatcall) {
+    if (chatcall_) {
       localIO()->set_protect(this, 6);
     } else {
       if (localIO()->GetTopLine() == 6) {
@@ -459,7 +459,7 @@ void Application::UpdateTopScreen() {
     break;
   case LocalIO::topdataSystem: {
     localIO()->PrintfXY(0, 0,
-                        "%-50s  Activity for %8s:      ", a()->config()->system_name().c_str(),
+                        "%-50s  Activity for %8s:      ", config()->system_name().c_str(),
                         pStatus->GetLastDate());
 
     localIO()->PrintfXY(
@@ -475,7 +475,7 @@ void Application::UpdateTopScreen() {
 
     User sysop{};
     int feedback_waiting = 0;
-    if (a()->users()->readuser_nocache(&sysop, 1)) {
+    if (users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PrintfXY(
@@ -522,7 +522,7 @@ void Application::UpdateTopScreen() {
     if (user()->GetWWIVRegNumber()) {
       callsign_or_regnum = std::to_string(user()->GetWWIVRegNumber());
     }
-    auto used_this_session = (system_clock::now() - a()->system_logon_time());
+    auto used_this_session = (system_clock::now() - system_logon_time());
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
@@ -537,14 +537,14 @@ void Application::UpdateTopScreen() {
 
     User sysop{};
     int feedback_waiting = 0;
-    if (a()->users()->readuser_nocache(&sysop, 1)) {
+    if (users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
                         user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
                         ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
 
-    if (chatcall) {
+    if (chatcall_) {
       localIO()->PutsXY(0, 4, chat_reason_);
     }
   } break;
@@ -581,9 +581,9 @@ void Application::GetCaller() {
   remoteIO()->remote_info().clear();
   frequent_init();
   usernum = 0;
-  // Since hang_it_up sets hangup = true, let's ensure we're always
+  // Since hang_it_up sets hangup_ = true, let's ensure we're always
   // not in this state when we enter the WFC.
-  hangup = false;
+  hangup_ = false;
   set_at_wfc(false);
   write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
   // We'll read the sysop record for defaults, but let's set
@@ -606,7 +606,7 @@ void Application::GetCaller() {
   int lokb = wfc.doWFCEvents();
 
   if (lokb) {
-    a()->modem_speed_ = 38400;
+    modem_speed_ = 38400;
   }
 
   using_modem = incom;
@@ -623,7 +623,7 @@ void Application::GetCaller() {
 void Application::GotCaller(unsigned int ms) {
   frequent_init();
   wfc_cls(a());
-  a()->modem_speed_ = ms;
+  modem_speed_ = ms;
   ReadCurrentUser(1);
   read_qscn(1, qsc, false);
   ResetEffectiveSl();
@@ -730,7 +730,7 @@ int Application::Run(int argc, char* argv[]) {
   if (!bbs_env.empty()) {
     if (bbs_env.find("WWIV") != string::npos) {
       LOG(ERROR) << "You are already in the BBS, type 'EXIT' instead.\n\n";
-      a()->ExitBBSImpl(255, false);
+      ExitBBSImpl(255, false);
     }
   }
   const string wwiv_dir = environment_variable("WWIV_DIR");
@@ -772,7 +772,7 @@ int Application::Run(int argc, char* argv[]) {
         if (instance_number_ <= 0 || instance_number_ > 999) {
           clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_
                << endl;
-          a()->ExitBBSImpl(errorlevel_, false);
+          ExitBBSImpl(errorlevel_, false);
         }
       } break;
       case 'P':
@@ -808,7 +808,7 @@ int Application::Run(int argc, char* argv[]) {
           user_already_on_ = true;
           ooneuser = true;
           using_modem = 0;
-          hangup = false;
+          hangup_ = false;
           incom = true;
           outcom = false;
           if (argument2Char == 'T') {
@@ -958,7 +958,7 @@ int Application::Run(int argc, char* argv[]) {
     try {
       // Try setting this at the top of the try loop. It's currently only
       // set in logon() which could cause problems if we get hung up before then.
-      a()->SetLogonTime();
+      SetLogonTime();
 
       if (!this_usernum_from_commandline) {
         if (user_already_on_) {
@@ -985,7 +985,7 @@ int Application::Run(int argc, char* argv[]) {
       logon();
       setiia(seconds(5));
       set_net_num(0);
-      while (!hangup && a()->usernum > 0) {
+      while (!hangup_ && usernum > 0) {
         CheckForHangup();
         filelist.clear();
         zap_ed_info();
@@ -998,7 +998,7 @@ int Application::Run(int argc, char* argv[]) {
         }
       }
     } catch (const wwiv::bbs::hangup_error& h) {
-      if (a()->IsUserOnline()) {
+      if (IsUserOnline()) {
         // Don't need to log this unless the user actually made it online.
         std::cerr << h.what() << "\r\n";
         sysoplog() << h.what();
@@ -1007,16 +1007,16 @@ int Application::Run(int argc, char* argv[]) {
     logoff();
     {
       // post_logoff_cleanup
-      remove_from_temp("*.*", a()->temp_directory(), false);
-      remove_from_temp("*.*", a()->batch_directory(), false);
-      if (!a()->batch().entry.empty() && (a()->batch().entry.size() != a()->batch().numbatchdl())) {
-        for (const auto& b : a()->batch().entry) {
+      remove_from_temp("*.*", temp_directory(), false);
+      remove_from_temp("*.*", batch_directory(), false);
+      if (!batch().entry.empty() && (batch().entry.size() != batch().numbatchdl())) {
+        for (const auto& b : batch().entry) {
           if (!b.sending) {
             didnt_upload(b);
           }
         }
       }
-      a()->batch().clear();
+      batch().clear();
     }
     if (!no_hangup_ && using_modem && ok_modem_stuff) {
       hang_it_up();

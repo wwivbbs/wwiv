@@ -259,7 +259,7 @@ void modify_dir(int n) {
       }
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 
   a()->directories[n] = r;
 }
@@ -512,7 +512,7 @@ void dlboardedit() {
       }
     } break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   DataFile<directoryrec> dirsFile(FilePath(a()->config()->datadir(), DIRS_DAT),
       File::modeReadWrite | File::modeCreateFile | File::modeBinary | File::modeTruncate);
   if (!dirsFile) {

@@ -53,7 +53,7 @@ void valscan() {
     tmp_disable_conf(true);
   }
   bool done = false;
-  for (size_t sn = 0; sn < a()->subs().subs().size() && !hangup && !done; sn++) {
+  for (size_t sn = 0; sn < a()->subs().subs().size() && !a()->hangup_ && !done; sn++) {
     if (!iscan(sn)) {
       continue;
     }
@@ -78,7 +78,7 @@ void valscan() {
 
     bout.move_up_if_newline(2);
 
-    for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea() && !hangup && !done; i++) {    // was i = 0
+    for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea() && !a()->hangup_ && !done; i++) {    // was i = 0
       if (get_post(i)->status & status_pending_net) {
         CheckForHangup();
         a()->tleft(true);

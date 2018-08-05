@@ -379,7 +379,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
   int sub_number = a()->usub[start_subnum].subnum;
   g_flags &= ~g_flag_made_find_str;
 
-  if (hangup || sub_number < 0) {
+  if (a()->hangup_ || sub_number < 0) {
     return;
   }
   bout.nl();
@@ -440,7 +440,7 @@ void nscan(uint16_t start_subnum) {
 
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
   for (auto i = start_subnum;
-       a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && nextsub && !hangup; i++) {
+       a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && nextsub && !a()->hangup_; i++) {
     if (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qscan(i, nextsub);
     }

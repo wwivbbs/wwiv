@@ -174,7 +174,7 @@ void build_qwk_packet() {
   }
 
   bool msgs_ok = true;
-  for (size_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!hangup) && !qwk_info.abort && msgs_ok; i++) {
+  for (size_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!a()->hangup_) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
     if (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
@@ -212,8 +212,8 @@ void build_qwk_packet() {
     finish_qwk(&qwk_info);
   }
 
-  // Restore on hangup too, someone might have hungup in the middle of building the list
-  if (qwk_info.abort || a()->user()->data.qwk_dontsetnscan || hangup) {
+  // Restore on a()->hangup_ too, someone might have hungup in the middle of building the list
+  if (qwk_info.abort || a()->user()->data.qwk_dontsetnscan || a()->hangup_) {
     save_qscan.restore();
     if (qwk_info.abort) {
       sysoplog() << "Aborted";
@@ -234,7 +234,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
   float temp_percent;
   int sn = a()->usub[bn].subnum;
 
-  if (hangup || (sn < 0)) {
+  if (a()->hangup_ || (sn < 0)) {
     return;
   }
 
@@ -342,7 +342,7 @@ void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
     ++amount;
     checka(&qwk_info->abort);
 
-  } while (!done && !hangup && !qwk_info->abort);
+  } while (!done && !a()->hangup_ && !qwk_info->abort);
   bout.bputch('\r');
 }
 
@@ -400,7 +400,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   long len = ss.length();
   int p = 0;
   // n = name...
-  while ((ss[p] != 13) && ((long)p < len) && (p < 200) && !hangup) {
+  while ((ss[p] != 13) && ((long)p < len) && (p < 200) && !a()->hangup_) {
     n[p] = ss[p];
     p++;
   }
@@ -414,7 +414,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   }
 
   // d = date
-  while ((ss[p + p1] != 13) && ((long)p + p1 < len) && (p1 < 60) && !hangup) {
+  while ((ss[p + p1] != 13) && ((long)p + p1 < len) && (p1 < 60) && !a()->hangup_) {
     d[p1] = ss[(p1) + p];
     p1++;
   }
@@ -510,7 +510,7 @@ void put_in_qwk(postrec *m1, const char *fn, int msgnum, struct qwk_junk *qwk_in
   qwk_info->qwk_rec_pos += static_cast<uint16_t>(amount_blocks);
 
   int cur_block = 2;
-  while (cur_block <= amount_blocks && !hangup) {
+  while (cur_block <= amount_blocks && !a()->hangup_) {
     int this_pos;
     memset(&qwk_info->qwk_rec, ' ', sizeof(qwk_info->qwk_rec));
     this_pos = ((cur_block - 2) * sizeof(qwk_info->qwk_rec));
@@ -546,7 +546,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
     sysoplog() << "Couldn't allocate memory to make qwk ready";
     return;
   }
-  while (pos < *len && new_pos < new_size && !hangup) {
+  while (pos < *len && new_pos < new_size && !a()->hangup_) {
     x = (unsigned char)text[pos];
     if (x == 0) {
       break;
@@ -576,7 +576,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
       if (text[pos + 1] == 0) {
         ++pos;
       } else { 
-        while (text[pos] != '\xE3' && text[pos] != '\r' && pos < *len && text[pos] != 0 && !hangup) {
+        while (text[pos] != '\xE3' && text[pos] != '\r' && pos < *len && text[pos] != 0 && !a()->hangup_) {
           ++pos;
         }
       }
@@ -608,7 +608,7 @@ void make_qwk_ready(char *text, long *len, char *address) {
 void qwk_remove_null(char *memory, int size) {
   int pos = 0;
 
-  while (pos < size && !hangup) {
+  while (pos < size && !a()->hangup_) {
     if (memory[pos] == 0) {
       (memory)[pos] = ' ';
     }
@@ -647,7 +647,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "%d\r\n", qwk_info->qwk_rec_num);
   
   int amount = 0;
-  for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!hangup); cur++) {
+  for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!a()->hangup_); cur++) {
     if (qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
       ++amount;
     }
@@ -657,7 +657,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "0\r\n");
   fprintf(fp, "E-Mail\r\n");
 
-  for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!hangup); cur++) {
+  for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!a()->hangup_); cur++) {
     if (qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
       // QWK support says this should be truncated to 10 or 13 characters
       // however QWKE allows for 255 characters. This works fine in multimail which
@@ -778,7 +778,7 @@ char* qwk_system_name(char *qwkname) {
 
   qwkname[8] = 0;
   int x = 0;
-  while (qwkname[x] && !hangup && x < 9) {
+  while (qwkname[x] && !a()->hangup_ && x < 9) {
     if (qwkname[x] == ' ' || qwkname[x] == '.') {
       qwkname[x] = '-';
     }
@@ -795,7 +795,7 @@ void qwk_menu() {
   qwk_percent = 0;
   
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     bout.cls();
     printfile("QWK");
     if (so()) {
@@ -949,9 +949,9 @@ void insert_after_routing(char *text, char *text2insert, long *len) {
   strcpy(text2insert, temp.c_str());
 
   int pos = 0;
-  while (pos < *len && text[pos] != 0 && !hangup) {
+  while (pos < *len && text[pos] != 0 && !a()->hangup_) {
     if (text[pos] == 4 && text[pos + 1] == '0') {
-      while (pos < *len && text[pos] != '\xE3' && !hangup) {
+      while (pos < *len && text[pos] != '\xE3' && !a()->hangup_) {
         ++pos;
       }
 
@@ -1140,7 +1140,7 @@ void qwk_nscan() {
         write(newfile,  s, strlen(s));
 
         f = open(dlfn, O_RDONLY | O_BINARY);
-        for (i5 = 1; (i5 <= numf) && (!(abort)) && (!hangup); i5++) {
+        for (i5 = 1; (i5 <= numf) && (!(abort)) && (!a()->hangup_); i5++) {
           SETREC(f, i5);
           read(f, &u, sizeof(uploadsrec));
           if (u.daten >= nscandate) {
@@ -1290,7 +1290,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
   }
 
   if (incom) {
-    while (!done && !qwk_info->abort && !hangup) {
+    while (!done && !qwk_info->abort && !a()->hangup_) {
       bool abort = false;
       qwk_send_file(qwk_file_to_send, &sent, &abort);
       if (sent) {
@@ -1315,7 +1315,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
         qwk_info->abort = 1;
       }
     }
-  } else while (!done && !hangup && !qwk_info->abort) {
+  } else while (!done && !a()->hangup_ && !qwk_info->abort) {
       char new_dir[61];
       char nfile[81];
 

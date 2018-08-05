@@ -76,7 +76,7 @@ char gettimeout(long ds, bool *abort) {
 
   seconds d(ds);
   auto d1 = steady_clock::now();
-  while (steady_clock::now() - d1 < d && !bkbhitraw() && !hangup && !*abort) {
+  while (steady_clock::now() - d1 < d && !bkbhitraw() && !a()->hangup_ && !*abort) {
     if (a()->localIO()->KeyPressed()) {
       char ch = a()->localIO()->GetChar();
       if (ch == 0) {
@@ -374,7 +374,7 @@ int get_protocol(xfertype xt) {
     } else {
       done = true;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   a()->user()->SetColor(8, cyColorSave);
   if (ch == RETURN) {
     return prot;
@@ -413,9 +413,9 @@ void ascii_send(const char *file_name, bool *sent, double *percent) {
     auto nNumRead = file.Read(b, 1024);
     long lTotalBytes = 0L;
     bool abort = false;
-    while (nNumRead && !hangup && !abort) {
+    while (nNumRead && !a()->hangup_ && !abort) {
       int nBufferPos = 0;
-      while (!hangup && !abort && nBufferPos < nNumRead) {
+      while (!a()->hangup_ && !abort && nBufferPos < nNumRead) {
         CheckForHangup();
         bout.bputch(b[nBufferPos++]);
         checka(&abort);
@@ -651,7 +651,7 @@ char end_batch1() {
         done = true;
       }
     }
-  } while (!done && !hangup && !bAbort);
+  } while (!done && !a()->hangup_ && !bAbort);
   if (ch == CF) {
     return CF;
   }
@@ -671,7 +671,7 @@ void endbatch() {
   if (!okstart(&ucrc, &abort)) {
     abort = true;
   }
-  if (!abort && !hangup) {
+  if (!abort && !a()->hangup_) {
     char ch = end_batch1();
     if (ch == CX) {
       abort = true;
@@ -685,7 +685,7 @@ void endbatch() {
       nullFile.Delete();
     }
     /*
-    if ((!hangup) && (!abort))
+    if ((!a()->hangup_) && (!abort))
     {
       File nullFile;
       send_b(nullFile,0L,2,0,&ucrc,"",&terr,&abort);

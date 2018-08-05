@@ -502,7 +502,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, Color co
   }
   char ch = SOFTRETURN;
 
-  while (new_ss[cpos] && numl < numlist && !hangup) {
+  while (new_ss[cpos] && numl < numlist && !a()->hangup_) {
     if (ch == SOFTRETURN && indent) {
       bout.SystemColor(static_cast<uint8_t>(color));
       bout.bputch('\r');
@@ -510,7 +510,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, Color co
     }
     do {
       ch = new_ss[cpos++];
-    } while (ch == '\r' && !hangup);
+    } while (ch == '\r' && !a()->hangup_);
 
     if (ch == SOFTRETURN) {
       bout.nl();
@@ -725,7 +725,7 @@ void sysop_configure() {
 
   load_lp_config();
 
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     bout.cls();
     printfile(LPSYSOP_NOEXT);
     bout.GotoXY(38, 2);
@@ -1063,7 +1063,7 @@ void config_file_list() {
 
   action[0] = '\0';
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     update_user_config_screen(&u, which);
     key = onek("Q2346789H!@#$%^&*(");
     switch (key) {
@@ -1314,7 +1314,7 @@ static int remove_filename(const char *file_name, int dn) {
   int i = recno(szTempFileName);
   bool abort = false;
   bool rdlp = false;
-  while (!hangup && i > 0 && !abort) {
+  while (!a()->hangup_ && i > 0 && !abort) {
     File fileDownload(a()->download_filename_);
     if (fileDownload.Open(File::modeReadOnly | File::modeBinary)) {
       FileAreaSetRecord(fileDownload, i);
@@ -1410,7 +1410,7 @@ static int move_filename(const char *file_name, int dn) {
   tmp_disable_conf(true);
   wwiv::bbs::TempDisablePause diable_pause;
 
-  while (!hangup && nRecNum > 0 && !done) {
+  while (!a()->hangup_ && nRecNum > 0 && !done) {
     int cp = nRecNum;
     File fileDownload(a()->download_filename_);
     if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
@@ -1447,7 +1447,7 @@ static int move_filename(const char *file_name, int dn) {
             dirlist(1);
             dliscan1(dn);
           }
-        } while (!hangup && ss[0] == '?');
+        } while (!a()->hangup_ && ss[0] == '?');
 
         nDestDirNum = -1;
         if (ss[0]) {
@@ -1773,7 +1773,7 @@ void view_file(const char *file_name) {
       checka(&abort);
       i = nrecno(file_name, i);
     }
-  } while (i > 0 && !hangup && !abort);
+  } while (i > 0 && !a()->hangup_ && !abort);
   bout.nl();
   pausescr();
 }
@@ -1820,7 +1820,7 @@ int lp_try_to_download(const char *file_mask, int dn) {
     } else {
       i = nrecno(file_mask, i);
     }
-  } while ((i > 0) && ok && !hangup);
+  } while ((i > 0) && ok && !a()->hangup_);
   if (rtn == -2) {
     return -2;
   }

@@ -45,20 +45,20 @@ extern char str_quit[];
 
 // This function checks to see if the user logged on to the com port has
 // hung up.  Obviously, if no user is logged on remotely, this does nothing.
-// returns the value of hangup
+// returns the value of a()->hangup_
 bool CheckForHangup() {
-  if (!hangup && a()->using_modem && !a()->remoteIO()->connected()) {
+  if (!a()->hangup_ && a()->using_modem && !a()->remoteIO()->connected()) {
     if (a()->IsUserOnline()) {
       sysoplog() << "Hung Up.";
     }
     Hangup();
   }
-  return hangup;
+  return a()->hangup_;
 }
 
 void Hangup() {
-  if (hangup) { return; }
-  hangup = true;
+  if (a()->hangup_) { return; }
+  a()->hangup_ = true;
   VLOG(1) << "Invoked Hangup()";
   throw wwiv::bbs::hangup_error(a()->user()->GetName());
 }
@@ -122,7 +122,7 @@ bool yesno() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!hangup) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!a()->hangup_) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -141,7 +141,7 @@ bool noyes() {
   char ch = 0;
 
   bout.Color(1);
-  while ((!hangup) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
+  while ((!a()->hangup_) && ((ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true))) && (ch != *(YesNoString(false)))
          && (ch != RETURN))
     ;
 
@@ -157,7 +157,7 @@ char ynq() {
   char ch = 0;
 
   bout.Color(1);
-  while (!hangup &&
+  while (!a()->hangup_ &&
          (ch = to_upper_case<char>(bout.getkey())) != *(YesNoString(true)) &&
          ch != *(YesNoString(false)) &&
          ch != *str_quit && ch != RETURN) {

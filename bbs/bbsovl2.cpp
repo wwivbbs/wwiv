@@ -300,13 +300,13 @@ void OnlineUserEditor() {
 void BackPrint(const string& strText, int nColorCode, int nCharDelay, int nStringDelay) {
   bout.Color(nColorCode);
   sleep_for(milliseconds(nCharDelay));
-  for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
+  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->hangup_; ++iter) {
     bout.bputch(*iter);
     sleep_for(milliseconds(nCharDelay));
   }
 
   sleep_for(milliseconds(nStringDelay));
-  for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
+  for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->hangup_; ++iter) {
     bout.bs();
     sleep_for(milliseconds(5));
   }
@@ -323,7 +323,7 @@ void SpinPuts(const string& strText, int nColorCode) {
   if (okansi()) {
     bout.Color(nColorCode);
     const int dly = 30;
-    for (auto iter = strText.cbegin(); iter != strText.cend() && !hangup; ++iter) {
+    for (auto iter = strText.cbegin(); iter != strText.cend() && !a()->hangup_; ++iter) {
       sleep_for(milliseconds(dly));
       bout << "/";
       bout.Left(1);

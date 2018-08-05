@@ -109,8 +109,8 @@ static void input_phone() {
       bout.nl();
       bout << "|#6Please enter a valid phone number in the correct format.\r\n";
     }
-  } while (!ok && !hangup);
-  if (!hangup) {
+  } while (!ok && !a()->hangup_);
+  if (!a()->hangup_) {
     a()->user()->SetVoicePhoneNumber(phoneNumber.c_str());
   }
 }
@@ -134,7 +134,7 @@ void input_dataphone() {
       bout.nl();
       bout << "|#6Please enter a valid phone number in the correct format.\r\n";
     }
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 }
 
 void input_language() {
@@ -166,7 +166,7 @@ void input_language() {
       if (ch >= 0 && ch < size_int(a()->languages)) {
         a()->user()->SetLanguage(a()->languages[ch].num);
       }
-    } while ((a()->user()->GetLanguage() == 255) && (!hangup));
+    } while ((a()->user()->GetLanguage() == 255) && (!a()->hangup_));
 
     set_language(a()->user()->GetLanguage());
   }
@@ -216,7 +216,7 @@ void input_name() {
         Hangup();
       }
     }
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 }
 
 void input_realname() {
@@ -231,7 +231,7 @@ void input_realname() {
       } else {
         a()->user()->SetRealName(temp_local_name.c_str());
       }
-    } while ((a()->user()->GetRealName()[0] == '\0') && !hangup);
+    } while ((a()->user()->GetRealName()[0] == '\0') && !a()->hangup_);
   } else {
     a()->user()->SetRealName(a()->user()->GetName());
   }
@@ -281,8 +281,8 @@ void input_street() {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your street address.\r\n";
     }
-  } while (street.empty() && !hangup);
-  if (!hangup) {
+  } while (street.empty() && !a()->hangup_);
+  if (!a()->hangup_) {
     a()->user()->SetStreet(street.c_str());
   }
 }
@@ -298,7 +298,7 @@ void input_city() {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your city.\r\n";
     }
-  } while (city.empty() && !hangup);
+  } while (city.empty() && !a()->hangup_);
   a()->user()->SetCity(city.c_str());
 }
 
@@ -318,7 +318,7 @@ void input_state() {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your state or province.\r\n";
     }
-  } while (state.empty() && (!hangup));
+  } while (state.empty() && (!a()->hangup_));
   a()->user()->SetState(state.c_str());
 }
 
@@ -333,7 +333,7 @@ void input_country() {
     if (country.empty()) {
       country = "USA";
     }
-  } while (country.empty() && (!hangup));
+  } while (country.empty() && (!a()->hangup_));
   a()->user()->SetCountry(country.c_str());
 }
 
@@ -356,7 +356,7 @@ void input_zipcode() {
       bout.nl();
       bout << "|#6I'm sorry, you must enter your zipcode.\r\n";
     }
-  } while (zipcode.empty() && (!hangup));
+  } while (zipcode.empty() && (!a()->hangup_));
   a()->user()->SetZipcode(zipcode.c_str());
 }
 
@@ -377,13 +377,13 @@ void input_age(User *pUser) {
     y = static_cast<int>(dt.year() - 30) / 100;
     bout << "|#2Year you were born: ";
     y = input_number<int>(y, 1900, dt.year() - 30);
-  } while (!hangup && y < 1905);
+  } while (!a()->hangup_ && y < 1905);
 
   do {
     bout.nl();
     bout << "|#2Month you were born (1-12) : ";
     m = input_number<int>(pUser->GetBirthdayMonth(), 1, 12);
-  } while (!hangup && (m > 12 || m < 1));
+  } while (!a()->hangup_ && (m > 12 || m < 1));
 
   do {
     std::map<int, int> days_in_month = {
@@ -408,7 +408,7 @@ void input_age(User *pUser) {
     bout.nl();
     bout << "|#2Day of month you were born (1-31) : ";
     d = input_number<int>(pUser->GetBirthdayDay(), 1, days_in_month.at(m));
-  } while (!hangup && (d > 31 || d < 1));
+  } while (!a()->hangup_ && (d > 31 || d < 1));
   pUser->SetBirthdayMonth(m);
   pUser->SetBirthdayDay(d);
   pUser->SetBirthdayYear(y);
@@ -438,10 +438,10 @@ void input_comptype() {
     if (ct < 1 || ct > i) {
       ok = false;
     }
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 
   a()->user()->SetComputerType(ct);
-  if (hangup) {
+  if (a()->hangup_) {
     a()->user()->SetComputerType(-1);
   }
 }
@@ -461,7 +461,7 @@ void input_screensize() {
     }
 
     ok = ((x < 32) || (x > 80)) ? false : true;
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 
   do {
     bout.nl();
@@ -473,7 +473,7 @@ void input_screensize() {
     }
 
     ok = (y < 8 || y > 60) ? false : true;
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 
   a()->user()->SetScreenChars(x);
   a()->user()->SetScreenLines(y);
@@ -507,7 +507,7 @@ void input_pw(User *pUser) {
       bout.nl(2);
       bout << "Invalid password.  Try again.\r\n\n";
     }
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 
   if (ok) {
     pUser->SetPassword(password);
@@ -682,7 +682,7 @@ bool CanCreateNewUserAccountHere() {
       } else {
         sysoplog() << "Wrong newuser password: " << password;
       }
-    } while (!ok && !hangup && (nPasswordAttempt++ < 4));
+    } while (!ok && !a()->hangup_ && (nPasswordAttempt++ < 4));
     if (!ok) {
       return false;
     }
@@ -908,7 +908,7 @@ void VerifyNewUserFullInfo() {
       input_dataphone();
       break;
     }
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 }
 
 static void add_phone_number(int usernum, const char *phone) {
@@ -972,7 +972,7 @@ void VerifyNewUserPassword() {
     if (password == a()->user()->GetPassword()) {
       ok = true;
     }
-  } while (!ok && !hangup);
+  } while (!ok && !a()->hangup_);
 }
 
 
@@ -1004,7 +1004,7 @@ void SendNewUserFeedbackIfRequired() {
 
 
 void ExecNewUserCommand() {
-  if (!hangup && !a()->newuser_cmd.empty()) {
+  if (!a()->hangup_ && !a()->newuser_cmd.empty()) {
     const auto commandLine = stuff_in(a()->newuser_cmd, create_chain_file(), "", "", "", "");
 
     // Log what is happening here.
@@ -1032,7 +1032,7 @@ void newuser() {
   }
 
   input_language();
-  if (!CanCreateNewUserAccountHere() || hangup) {
+  if (!CanCreateNewUserAccountHere() || a()->hangup_) {
     Hangup();
     return;
   }
@@ -1075,7 +1075,7 @@ void newuser() {
 
   DoNewUserASV();
 
-  if (hangup) {
+  if (a()->hangup_) {
     return;
   }
 
@@ -1083,7 +1083,7 @@ void newuser() {
     VerifyNewUserFullInfo();
   }
 
-  if (hangup) {
+  if (a()->hangup_) {
     return;
   }
 
@@ -1172,7 +1172,7 @@ bool check_zip(const char *pszZipCode, int mode) {
     }
   } else {
     char zip_buf[81];
-    while ((zip_file.ReadLine(zip_buf, 80)) && !found && !hangup) {
+    while ((zip_file.ReadLine(zip_buf, 80)) && !found && !a()->hangup_) {
       single_space(zip_buf);
       if (strncmp(zip_buf, pszZipCode, 5) == 0) {
         found = true;
@@ -1322,7 +1322,7 @@ void DoMinimalNewUser() {
           cln_nu();
           BackPrint("I'm sorry, you can't use that name.", 6, 20, 1000);
         }
-      } while (!ok && !hangup);
+      } while (!ok && !a()->hangup_);
       u->set_name(szTempName);
     }
     s1[0] = '\0';
@@ -1359,10 +1359,10 @@ void DoMinimalNewUser() {
           cln_nu();
           BackPrint("Invalid Birthdate.", 6, 20, 1000);
         }
-      } while (!ok && !hangup);
+      } while (!ok && !a()->hangup_);
       s1[0] = '\0';
     }
-    if (hangup) {
+    if (a()->hangup_) {
       return;
     }
     u->SetBirthdayMonth(m);
@@ -1409,7 +1409,7 @@ void DoMinimalNewUser() {
         if (u->GetZipcode()[0]) {
           ok = true;
         }
-      } while (!ok && !hangup);
+      } while (!ok && !a()->hangup_);
     }
     s1[0] = '\0';
     cln_nu();
@@ -1423,7 +1423,7 @@ void DoMinimalNewUser() {
         if (u->GetCity()[0]) {
           ok = true;
         }
-      } while (!ok && !hangup);
+      } while (!ok && !a()->hangup_);
       bout << ", ";
       if (u->GetState()[0] == 0) {
         do {
@@ -1432,7 +1432,7 @@ void DoMinimalNewUser() {
           if (u->GetState()[0]) {
             ok = true;
           }
-        } while (!ok && !hangup);
+        } while (!ok && !a()->hangup_);
       }
     }
     s1[0] = '\0';
@@ -1489,7 +1489,7 @@ void DoMinimalNewUser() {
       u->SetEmailAddress("");
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   u->SetRealName(u->GetName());
   u->SetVoicePhoneNumber("999-999-9999");
   u->SetDataPhoneNumber(u->GetVoicePhoneNumber());

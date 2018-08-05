@@ -435,7 +435,7 @@ static void modify_sub(int n) {
       }
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   a()->subs().set_sub(n, r);
 }
 
@@ -738,7 +738,7 @@ void boardedit() {
       }
     } break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   save_subs();
   if (!a()->at_wfc()) {
     changedsl();

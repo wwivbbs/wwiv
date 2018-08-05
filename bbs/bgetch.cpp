@@ -319,7 +319,7 @@ char Output::getkey(bool allow_extended_input) {
   char ch = 0;
   do {
     CheckForHangup();
-    while (!bkbhit() && !hangup) {
+    while (!bkbhit() && !a()->hangup_) {
       // Try to make hangups happen faster.
       if (incom && ok_modem_stuff && !a()->remoteIO()->connected()) {
         Hangup();
@@ -406,7 +406,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
 
   while (true) {
     CheckForHangup();
-    if (hangup) {
+    if (a()->hangup_) {
       return 0;
     }
     auto dd = steady_clock::now();

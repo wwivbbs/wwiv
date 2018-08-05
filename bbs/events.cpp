@@ -311,7 +311,7 @@ void select_event_days(int evnt) {
       }
       bout << "\b\b\b\b\b\b\b";
     }
-  } while (ch != 'Q' && !hangup);
+  } while (ch != 'Q' && !a()->hangup_);
 }
 
 void modify_event(int evnt) {
@@ -397,7 +397,7 @@ void modify_event(int evnt) {
             ch = onek_ncr("0123456789\b");
             break;
           }
-          if (hangup) {
+          if (a()->hangup_) {
             ok = false;
             s[0] = '\0';
             break;
@@ -429,7 +429,7 @@ void modify_event(int evnt) {
             break;
           }
         }
-      } while (ch != '\r' && !hangup);
+      } while (ch != '\r' && !a()->hangup_);
       if (ok) {
         e.time = static_cast<int16_t>((60 * atoi(s)) + atoi(&(s[3])));
       }
@@ -500,7 +500,7 @@ void modify_event(int evnt) {
       }
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 }
 
 void insert_event() {
@@ -595,7 +595,7 @@ void eventedit() {
       }
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   sort_events();
   write_events();
 }

@@ -170,7 +170,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
   switch (ih->main) {
   case INST_MSG_STRING:
   case INST_MSG_SYSMSG:
-    if (ih->msg_size > 0 && a()->IsUserOnline() && !hangup) {
+    if (ih->msg_size > 0 && a()->IsUserOnline() && !a()->hangup_) {
       SavedLine line = bout.SaveCurrentLine();
       bout.nl(2);
       if (a()->in_chatroom_) {
@@ -215,7 +215,7 @@ void process_inst_msgs() {
   string fndspec = StringPrintf("%smsg*.%3.3u", a()->config()->datadir().c_str(), a()->instance_number());
   FindFiles ff(fndspec, FindFilesType::files);
   for (const auto& f : ff) {
-    if (hangup) { break; }
+    if (a()->hangup_) { break; }
     File file(FilePath(a()->config()->datadir(), f.name));
     if (!file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyReadWrite)) {
       LOG(ERROR) << "Unable to open file: " << file.full_pathname();

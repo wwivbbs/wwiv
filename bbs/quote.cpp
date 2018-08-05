@@ -292,7 +292,7 @@ void auto_quote(char *org, const std::string& to_name, long len, int type, time_
 
   File fileInputMsg(FilePath(a()->temp_directory(), INPUT_MSG));
   fileInputMsg.Delete();
-  if (!hangup) {
+  if (!a()->hangup_) {
     fileInputMsg.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
     fileInputMsg.Seek(0L, File::Whence::end);
     while (*p != '\r') {
@@ -421,12 +421,12 @@ void get_quote(const string& reply_to_name) {
     }
     bout.nl();
 
-    if (!i1 && !hangup) {
+    if (!i1 && !a()->hangup_) {
       do {
         sprintf(s, "Quote from line 1-%d? (?=relist, Q=quit) ", i);
         bout << "|#2" << s;
         input(s, 3);
-      } while (!s[0] && !hangup);
+      } while (!s[0] && !a()->hangup_);
       if (s[0] == 'Q') {
         rl = 0;
       } else if (s[0] != '?') {
@@ -440,11 +440,11 @@ void get_quote(const string& reply_to_name) {
       }
     }
 
-    if (i1 && !i2 && !hangup) {
+    if (i1 && !i2 && !a()->hangup_) {
       do {
         bout << "|#2through line " << i1 << "-" << i << "? (Q=quit) ";
         input(s, 3);
-      } while (!s[0] && !hangup);
+      } while (!s[0] && !a()->hangup_);
       if (s[0] == 'Q') {
         rl = 0;
       } else if (s[0] != '?') {
@@ -457,7 +457,7 @@ void get_quote(const string& reply_to_name) {
         }
       }
     }
-    if (i2 && rl && !hangup) {
+    if (i2 && rl && !a()->hangup_) {
       if (i1 == i2) {
         bout << "|#5Quote line " << i1 << "? ";
       } else {
@@ -468,9 +468,9 @@ void get_quote(const string& reply_to_name) {
         i2 = 0;
       }
     }
-  } while (!hangup && rl && !i2);
+  } while (!a()->hangup_ && rl && !i2);
   a()->charbufferpointer_ = 0;
-  if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !hangup) {
+  if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !a()->hangup_) {
     a()->bquote_ = i1;
     a()->equote_ = i2;
   }

@@ -91,7 +91,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     }
   }
   bool ok = true;
-  while ((nRecordNumber > 0) && ok && !hangup) {
+  while ((nRecordNumber > 0) && ok && !a()->hangup_) {
     a()->tleft(true);
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
@@ -271,7 +271,7 @@ void ChangeSubNumber() {
 
 void ChangeDirNumber() {
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     bout << "|#7Select Dir number : |#0";
 
     string s = mmkey(MMKeyAreaType::dirs);

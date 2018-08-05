@@ -209,7 +209,7 @@ int doIO( ZModem *info ) {
 #endif
 		// Don't loop/sleep if the timeout is 0 (which means streaming), this makes the
 		// performance < 1k/second vs. 8-9k/second locally
-		while ( ( info->timeout > 0 ) && !a()->remoteIO()->incoming() && !hangup ) {
+		while ( ( info->timeout > 0 ) && !a()->remoteIO()->incoming() && !a()->hangup_ ) {
 			sleep_for(milliseconds(100));
 			time_t tNow = time( nullptr );
 			if ( ( tNow - tThen ) > info->timeout ) {
@@ -222,7 +222,7 @@ int doIO( ZModem *info ) {
 		}
 
 		ProcessLocalKeyDuringZmodem();
-		if (hangup) {
+		if (a()->hangup_) {
 			return ZmErrCancel;
 		}
 

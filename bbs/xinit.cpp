@@ -119,7 +119,7 @@ void StatusManagerCallback(int i) {
     a()->subchg = 1;
     break;
   case WStatus::fileChangeEmail:
-    emchg = true;
+    a()->emchg_ = true;
     break;
   case WStatus::fileChangeNet: {
     set_net_num(a()->net_num());

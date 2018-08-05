@@ -55,7 +55,7 @@ static std::string input_password_minimal(int max_length) {
   std::string pw;
   bout.mpl(max_length);
 
-  while (!hangup) {
+  while (!a()->hangup_) {
     unsigned char ch = bout.getkey();
 
     if (ch > 31) {
@@ -124,7 +124,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
   int curpos = 0, in_ansi = 0;
   bool done = false;
 
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     unsigned char chCurrent = bout.getkey();
 
     if (curpos) {
@@ -249,7 +249,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
       in_ansi = 0;
     }
   }
-  if (hangup) {
+  if (a()->hangup_) {
     out_text[0] = '\0';
   }
 }
@@ -523,7 +523,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
     }
     szTemp[nLength] = '\0';
     CheckForHangup();
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   if (nLength) {
     strcpy(out_text, szTemp);
   } else {

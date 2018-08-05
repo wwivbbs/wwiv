@@ -398,7 +398,7 @@ void pack_sub(int si) {
 }
 
 bool pack_all_subs() {
-  for (size_t i = 0; i < a()->subs().subs().size() && !hangup; i++) {
+  for (size_t i = 0; i < a()->subs().subs().size() && !a()->hangup_; i++) {
     pack_sub(i);
     if (checka() == true) {
       // checka checks to see if abort is set.

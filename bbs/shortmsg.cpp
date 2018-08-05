@@ -82,7 +82,7 @@ void rsm(int nUserNum, User *pUser, bool bAskToSaveMsgs) {
     }
   }
   file.Close();
-  smwcheck = true;
+  a()->received_short_message_ = true;
   if (bShownAnyMessage) {
     bout.nl();
   }

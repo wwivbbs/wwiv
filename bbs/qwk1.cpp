@@ -94,7 +94,7 @@ extern int qwk_percent;
 bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m, int del, unsigned short stat);
 
 void qwk_remove_email() {
-  emchg = false;
+  a()->emchg_ = false;
 
   tmpmailrec* mloc = (tmpmailrec *)malloc(MAXMAIL * sizeof(tmpmailrec));
   if (!mloc) {
@@ -142,7 +142,7 @@ void qwk_remove_email() {
       done = true;
     }
 
-  } while (!hangup && !done);
+  } while (!a()->hangup_ && !done);
 }
 
 void qwk_gather_email(struct qwk_junk *qwk_info) {
@@ -152,7 +152,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   mailrec m;
   postrec junk;
 
-  emchg = false;
+  a()->emchg_ = false;
   std::vector<tmpmailrec> mloc;
 
   slrec ss = getslrec(a()->GetEffectiveSl());
@@ -239,7 +239,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
       done = 1;
     }
 
-  } while ((!hangup) && (!done));
+  } while ((!a()->hangup_) && (!done));
 
   qwk_info->in_email = 0;
 }
@@ -395,7 +395,7 @@ void ready_reply_packet(const char *packet_name, const char *msg_name) {
 // Takes reply packet and converts '227' (ã) to '13'
 static void make_text_ready(char *text, long len) {
   string temp;
-  for (ssize_t pos = 0; pos < len && !hangup; pos++) {
+  for (ssize_t pos = 0; pos < len && !a()->hangup_; pos++) {
     if (text[pos] == '\xE3') {
       temp.push_back(13);
       temp.push_back(10);
@@ -598,7 +598,7 @@ void process_reply_dat(char *name) {
 
   bout.cls();
 
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     to_email = 0;
 
     SET_BLOCK(repfile, curpos, sizeof(struct qwk_record));
@@ -713,12 +713,12 @@ void qwk_post_text(char *text, char *title, int sub) {
   slrec ss;
   char user_name[101];
 
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     if (pass > 0) {
       int done5 = 0;
       char substr[5];
 
-      while (!done5 && !hangup) {
+      while (!done5 && !a()->hangup_) {
         bout.nl();
         bout.bprintf("Then which sub?  ?=List  Q=Don't Post :");
         input(substr, 3);
@@ -747,7 +747,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     a()->set_current_user_sub_num(sub);
 
     // Busy files... allow to retry
-    while (!hangup) {
+    while (!a()->hangup_) {
       if (!qwk_iscan_literal(a()->current_user_sub_num())) {
         bout.nl();
         bout.bprintf("MSG file is busy on another instance, try again?");
@@ -851,7 +851,7 @@ void qwk_post_text(char *text, char *title, int sub) {
   qwk_inmsg(text, &m, a()->current_sub().filename.c_str(), user_name, DateTime::now());
 
   if (m.stored_as != 0xffffffff) {
-    while (!hangup) {
+    while (!a()->hangup_) {
       f = qwk_iscan_literal(a()->GetCurrentReadMessageArea());
 
       if (f == -1) {
@@ -914,7 +914,7 @@ void qwk_post_text(char *text, char *title, int sub) {
       a()->current_sub().maxmsgs) {
       int i = 1;
       dm = 0;
-      while ((dm == 0) && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !hangup) {
+      while ((dm == 0) && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !a()->hangup_) {
         if ((get_post(i)->status & status_no_delete) == 0) {
           dm = i;
         }
@@ -953,7 +953,7 @@ void qwk_post_text(char *text, char *title, int sub) {
 
 int find_qwk_sub(struct qwk_sub_conf *subs, int amount, int fromsub) {
   int x = 0;
-  while (x < amount && !hangup) {
+  while (x < amount && !a()->hangup_) {
     if (subs[x].import_num == fromsub) {
       return subs[x].to_num;
     }
@@ -1003,7 +1003,7 @@ void qwk_sysop() {
   read_qwk_cfg(&qwk_cfg);
 
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     qwk_system_name(sn);
     bout.cls();
     bout.bprintf("[1] Hello   file : %s\r\n", qwk_cfg.hello);
@@ -1072,7 +1072,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
   char s[101], t[101];
 
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     bout.nl();
     bout.bprintf("Add - Delete - ? List - Quit");
     bout.mpl(1);
@@ -1131,7 +1131,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
     case '?': {
       bool abort = false;
       int x = 0;
-      while (x < qwk_cfg->amount_blts && !abort && !hangup) {
+      while (x < qwk_cfg->amount_blts && !abort && !a()->hangup_) {
         bout.bprintf("[%d] %s Is copied over from", x + 1, qwk_cfg->bltname[x]);
         bout.nl();
         bout.Color(7);
@@ -1150,7 +1150,7 @@ void modify_bulletins(struct qwk_config *qwk_cfg) {
 void config_qwk_bw() {
   bool done = false;
 
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     bout << "A) Scan E-Mail " << qwk_current_text(0);
     bout.nl();
     bout<< "B) Delete Scanned E-Mail " << qwk_current_text(1);

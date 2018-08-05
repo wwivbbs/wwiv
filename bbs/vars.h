@@ -42,11 +42,6 @@ __EXTRN__ char* quotes_ind;
 __EXTRN__ bool  
           forcescansub,
           guest_user,
-          smwcheck,
-          chatcall,
-          chat_file,
-          emchg,
-          hangup,
           incom,
           outcom,
           okskey,

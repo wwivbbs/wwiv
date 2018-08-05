@@ -721,7 +721,7 @@ void listfiles() {
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeReadOnly);
   bool abort = false;
-  for (int i = 1; i <= a()->numf && !abort && !hangup; i++) {
+  for (int i = 1; i <= a()->numf && !abort && !a()->hangup_; i++) {
     FileAreaSetRecord(fileDownload, i);
     uploadsrec u;
     fileDownload.Read(&u, sizeof(uploadsrec));
@@ -764,7 +764,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
     }
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
-    for (int i = 1; i <= a()->numf && !(*abort) && !hangup; i++) {
+    for (int i = 1; i <= a()->numf && !(*abort) && !a()->hangup_; i++) {
       CheckForHangup();
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
@@ -872,7 +872,7 @@ void searchall() {
   bout.clear_lines_listed();
   int count = 0;
   int color = 3;
-  for (uint16_t i = 0; i < a()->directories.size() && !abort && !hangup
+  for (uint16_t i = 0; i < a()->directories.size() && !abort && !a()->hangup_
        && a()->udir[i].subnum != -1; i++) {
     int nDirNum = a()->udir[i].subnum;
     bool bIsDirMarked = false;
@@ -901,7 +901,7 @@ void searchall() {
       bool need_title = true;
       File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
-      for (int i1 = 1; i1 <= a()->numf && !abort && !hangup; i1++) {
+      for (int i1 = 1; i1 <= a()->numf && !abort && !a()->hangup_; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         uploadsrec u;
         fileDownload.Read(&u, sizeof(uploadsrec));

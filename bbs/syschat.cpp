@@ -102,8 +102,8 @@ void chatsound(int sf, int ef, int uf, int dly1, int dly2, int rp) {
 void RequestChat() {
   bout.nl(2);
   if (sysop2() && !a()->user()->IsRestrictionChat()) {
-    if (chatcall) {
-      chatcall = false;
+    if (a()->chatcall_) {
+      a()->chatcall_ = false;
       bout << "Chat call turned off.\r\n";
       a()->UpdateTopScreen();
     } else {
@@ -113,7 +113,7 @@ void RequestChat() {
         if (!play_sdf(CHAT_NOEXT, false)) {
           chatsound(100, 800, 10, 10, 25, 5);
         }
-        chatcall = true;
+        a()->chatcall_ = true;
 
         char szChatReason[81];
         sprintf(szChatReason, "Chat: %s", chatReason.c_str());
@@ -484,7 +484,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
         }
         break;
       }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 
   if (ch != RETURN) {
     if (side == 0) {
@@ -622,7 +622,7 @@ void chat1(const char *chat_line, bool two_way) {
     } else {
       inli(s, s1, MAXLEN, true, false);
     }
-    if (chat_file && !two_way) {
+    if (a()->chat_file_ && !two_way) {
       if (!chatFile.IsOpen()) {
         a()->localIO()->Puts("-] Chat file opened.\r\n");
         if (chatFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
@@ -640,14 +640,12 @@ void chat1(const char *chat_line, bool two_way) {
       chatFile.Close();
       a()->localIO()->Puts("-] Chat file closed.\r\n");
     }
-    if (hangup) {
+    if (a()->hangup_) {
       a()->chatting_ = 0;
     }
   } while (a()->chatting_);
 
-  if (chat_file) {
-    chat_file = false;
-  }
+  a()->chat_file_ = false;
   if (side0) {
     delete[] side0;
     side0 = nullptr;

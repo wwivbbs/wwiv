@@ -80,7 +80,7 @@ void extract_out(char *b, long len, const char *title) {
       done = false;
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 
   if (s2[0]) {
     do {
@@ -135,9 +135,9 @@ void extract_out(char *b, long len, const char *title) {
       } else {
         s3[0] = 1;
       }
-    } while (!hangup && s3[0] == '\0');
+    } while (!a()->hangup_ && s3[0] == '\0');
 
-    if (s3[0] && !hangup) {
+    if (s3[0] && !a()->hangup_) {
       if (s3[0] != '\x01') {
         File file(s3);
         if (!file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {

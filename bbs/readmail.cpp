@@ -217,7 +217,7 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
   if (!same_email(mloc[rec], m)) {
     pFileEmail->Close();
     a()->status_manager()->RefreshStatusCache();
-    if (emchg) {
+    if (a()->emchg_) {
       resynch_email(mloc, mw, rec, &m, del, stat);
     } else {
       mloc[rec].index = -1;
@@ -368,7 +368,7 @@ void readmail(int mode) {
   bool found = false;
   long l1;
 
-  emchg = false;
+  a()->emchg_ = false;
   
   bool next = false, abort = false;
   std::vector<tmpmailrec> mloc;
@@ -831,9 +831,9 @@ void readmail(int mode) {
             if (ss1[0] == '?') {
               old_sublist();
             }
-          } while ((!hangup) && (ss1[0] == '?'));
+          } while ((!a()->hangup_) && (ss1[0] == '?'));
           i = -1;
-          if ((ss1[0] == 0) || hangup) {
+          if ((ss1[0] == 0) || a()->hangup_) {
             i1 = 0;
             bout.nl();
             tmp_disable_conf(false);
@@ -1252,8 +1252,8 @@ void readmail(int mode) {
         }
         break;
       }
-    } while (!i1 && !hangup);
-  } while (!hangup && !done);
+    } while (!i1 && !a()->hangup_);
+  } while (!a()->hangup_ && !done);
 }
 
 int check_new_mail(int user_number) {

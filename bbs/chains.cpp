@@ -66,7 +66,7 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
     } else {
       bout.bpla(StringPrintf(" +---+-----------------------------------------+---------------------+-----+"), &abort);
     }
-    for (int i = 0; i < *mapp && !abort && !hangup; i++) {
+    for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
       User user;
       if (okansi()) {
         a()->users()->readuser(&user, a()->chains_reg[map[i]].regby[0]);
@@ -115,10 +115,10 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   } else {
     bout.litebar(StrCat(a()->config()->system_name(), " Online Programs"));
     bout << "|#7\xDA\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC2\xC4\xC4\xC2\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xBF\r\n";
-    for (int i = 0; i < *mapp && !abort && !hangup; i++) {
+    for (int i = 0; i < *mapp && !abort && !a()->hangup_; i++) {
       bout.bputs(StringPrintf("|#7\xB3|#2%2d|#7\xB3 |#1%-33.33s|#7\xB3", i + 1, a()->chains[map[i]].description), &abort, &next);
       i++;
-      if (!abort && !hangup) {
+      if (!abort && !a()->hangup_) {
         if (i >= *mapp) {
           bout.bpla(StringPrintf("  |#7\xB3                                  |#7\xB3"), &abort);
         } else {
@@ -264,6 +264,6 @@ void do_chains() {
         start += 14;
       }
     }
-  } while (!hangup  && !done);
+  } while (!a()->hangup_  && !done);
 }
 

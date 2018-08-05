@@ -379,7 +379,7 @@ static void change_colors() {
         bout << "\r\nNot saved, then.\r\n\n";
       }
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 }
 
 void l_config_qscan() {
@@ -468,14 +468,14 @@ void config_qscan() {
             l_config_qscan();
           }
         }
-      } while (!done && !hangup);
+      } while (!done && !a()->hangup_);
       break;
     }
     if (!okconf(a()->user()) || a()->uconfsub[1].confnum == -1) {
       done1 = true;
     }
 
-  } while (!done1 && !hangup);
+  } while (!done1 && !a()->hangup_);
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_SUBS, oc, os);
@@ -564,7 +564,7 @@ static void macroedit(char *macro_text) {
       break;
     }
     macro_text[i + 1] = 0;
-  } while (!done && i < 80 && !hangup);
+  } while (!done && i < 80 && !a()->hangup_);
   okskey = true;
   bout.Color(0);
   bout.nl();
@@ -615,7 +615,7 @@ static void make_macros() {
       done = true;
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 }
 
 static void change_password() {
@@ -742,7 +742,7 @@ void defaults(bool& need_menu_reload) {
   do {
     print_cur_stat();
     a()->tleft(true);
-    if (hangup) {
+    if (a()->hangup_) {
       return;
     }
     bout.nl();
@@ -857,7 +857,7 @@ void defaults(bool& need_menu_reload) {
       enter_regnum();
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   a()->WriteCurrentUser();
 }
 
@@ -1009,7 +1009,7 @@ void config_scan_plus(int type) {
     menu_items.push_back("?");
   }
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     amount = 0;
     list_config_scan_plus(top, &amount, type);
     if (!amount) {
@@ -1025,7 +1025,7 @@ void config_scan_plus(int type) {
     }
     bool redraw = true;
     bool menu_done = false;
-    while (!menu_done && !hangup && !done) {
+    while (!menu_done && !a()->hangup_ && !done) {
       command = side_menu(&side_pos, redraw, menu_items, 1,
                           a()->user()->GetScreenLines() - STOP_LIST > MAX_SCREEN_LINES_TO_SHOW - STOP_LIST ?
                           MAX_SCREEN_LINES_TO_SHOW - STOP_LIST :

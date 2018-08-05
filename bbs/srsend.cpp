@@ -151,7 +151,7 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
       a()->localIO()->PrintfXY(69, 4, "%d", nNumErrors);
       a()->localIO()->PrintfXY(69, 5, "%d", *terr);
     }
-  } while (!done && !hangup && !*abort);
+  } while (!done && !a()->hangup_ && !*abort);
 
   if (ch == 6) {
     return 6;
@@ -168,7 +168,7 @@ bool okstart(bool *use_crc, bool *abort) {
   bool done = false;
 
   seconds s90(90);
-  while (steady_clock::now() - d < s90 && !done && !hangup && !*abort) {
+  while (steady_clock::now() - d < s90 && !done && !a()->hangup_ && !*abort) {
     char ch = gettimeout(91, abort);
     if (ch == 'C') {
       *use_crc = true;
@@ -236,7 +236,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
   if (!okstart(&use_crc, &abort)) {
     abort = true;
   }
-  if (use_ymodem && !abort && !hangup) {
+  if (use_ymodem && !abort && !a()->hangup_) {
     ch = send_b(file, lFileSize, 5, 0, &use_crc, pszWorkingFileName, &terr, &abort);
     if (ch == CX) {
       abort = true;
@@ -247,7 +247,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     }
   }
   bool bUse1kBlocks = false;
-  while (!hangup && !abort && cp < lFileSize) {
+  while (!a()->hangup_ && !abort && cp < lFileSize) {
     bUse1kBlocks = (use_ymodem) ? true : false;
     if ((lFileSize - cp) < 128L) {
       bUse1kBlocks = false;
@@ -270,7 +270,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
       cp += GetXYModemBlockSize(bUse1kBlocks);
     }
   }
-  if (!hangup && !abort) {
+  if (!a()->hangup_ && !abort) {
     send_b(file, 0L, 2, 0, &use_crc, pszWorkingFileName, &terr, &abort);
   }
   if (!abort) {

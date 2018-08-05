@@ -85,10 +85,10 @@ static int try_to_ul_wh(const string& orig_file_name) {
   } else {
     char temp[10];
 
-    // The hangup check is below so uploads get uploaded even on hangup
+    // The a()->hangup_ check is below so uploads get uploaded even on a()->hangup_
     done = false;
     while (!done) {
-      if (hangup) {
+      if (a()->hangup_) {
         if (a()->config()->config()->newuploads < a()->directories.size()) {
           dn = a()->config()->config()->newuploads;
         } else {
@@ -253,7 +253,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   bool file_id_avail = get_file_idz(&u, dn);
   done = false;
 
-  while (!done && !hangup && !file_id_avail) {
+  while (!done && !a()->hangup_ && !file_id_avail) {
     bool abort = false;
 
     bout.cls();

@@ -45,7 +45,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
         ch = upcase(ch);
         return string(1, ch);
       }
-    } while ((ch <= ' ' || ch == RETURN || ch > 126) && !hangup);
+    } while ((ch <= ' ' || ch == RETURN || ch > 126) && !a()->hangup_);
     ch = upcase(ch);
     bout.bputch(ch);
     if (ch == RETURN) {
@@ -68,7 +68,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
     do {
       do {
         ch = bout.getkey();
-      } while ((((ch < ' ') && (ch != RETURN) && (ch != BACKSPACE)) || (ch > 126)) && !hangup);
+      } while ((((ch < ' ') && (ch != RETURN) && (ch != BACKSPACE)) || (ch > 126)) && !a()->hangup_);
       ch = upcase(ch);
       if (ch == RETURN) {
         bout.nl();
@@ -94,7 +94,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
         }
       }
     } while (cp > 0);
-  } while (!hangup);
+  } while (!a()->hangup_);
   return{};
 }
 

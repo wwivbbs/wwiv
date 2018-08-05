@@ -56,7 +56,7 @@ char modemkey(int *tout) {
     return 0;
   }
   auto d1 = steady_clock::now();
-  while (steady_clock::now() - d1 < milliseconds(500) && !bkbhitraw() && !hangup) {
+  while (steady_clock::now() - d1 < milliseconds(500) && !bkbhitraw() && !a()->hangup_) {
     CheckForHangup();
   }
   if (bkbhitraw()) {
@@ -98,16 +98,16 @@ int receive_block(char *b, unsigned char *bln, bool use_crc) {
     *bln = bn;
     crc = 0;
     checksum = 0;
-    for (int i = 0; (i < 128) && (!hangup); i++) {
+    for (int i = 0; (i < 128) && (!a()->hangup_); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!use_crc && !hangup) {
+    if (!use_crc && !a()->hangup_) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
         err = 2;
       }
-    } else if (!hangup) {
+    } else if (!a()->hangup_) {
       int cc1 = crc;
       bn = modemkey(&tout);
       bn1 = modemkey(&tout);
@@ -128,16 +128,16 @@ int receive_block(char *b, unsigned char *bln, bool use_crc) {
       err = 3;
     }
     *bln = bn;
-    for (int i = 0; (i < 1024) && (!hangup); i++) {
+    for (int i = 0; (i < 1024) && (!a()->hangup_); i++) {
       b[i] = modemkey(&tout);
     }
-    if (!use_crc && !hangup) {
+    if (!use_crc && !a()->hangup_) {
       unsigned char cs1 = checksum;
       bn1 = modemkey(&tout);
       if (bn1 != cs1) {
         err = 2;
       }
-    } else if (!hangup) {
+    } else if (!a()->hangup_) {
       int cc1 = crc;
       bn = modemkey(&tout);
       bn1 = modemkey(&tout);
@@ -211,7 +211,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
     }
 
     auto d1 = steady_clock::now();
-    while (steady_clock::now() - d1 < seconds(10) && !bkbhitraw() && !hangup) {
+    while (steady_clock::now() - d1 < seconds(10) && !bkbhitraw() && !a()->hangup_) {
       CheckForHangup();
       if (a()->localIO()->KeyPressed()) {
         ch = a()->localIO()->GetChar();
@@ -223,7 +223,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
         }
       }
     }
-  } while (!bkbhitraw() && !hangup);
+  } while (!bkbhitraw() && !a()->hangup_);
 
   int i = 0;
   do {
@@ -326,7 +326,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
     if (i != 5) {
       lasteot = false;
     }
-  } while (!hangup && !done);
+  } while (!a()->hangup_ && !done);
   a()->localIO()->GotoXY(nOldXPos, nOldYPos);
   if (ok) {
     file.Close();

@@ -563,7 +563,7 @@ void temp_extract() {
   align(s);
   i = recno(s);
   bool ok = true;
-  while ((i > 0) && ok && !hangup) {
+  while ((i > 0) && ok && !a()->hangup_) {
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);
@@ -638,7 +638,7 @@ void temp_extract() {
               sysoplog() << s2;
             }
           }
-        } while (!hangup && ok && ok1);
+        } while (!a()->hangup_ && ok && ok1);
       }
     } else if (s1[0]) {
       bout.nl();
@@ -726,7 +726,7 @@ void temporary_stuff() {
       print_help_file(TARCHIVE_NOEXT);
       break;
     }
-  } while (!hangup);
+  } while (!a()->hangup_);
 }
 
 void move_file_t() {
@@ -756,7 +756,7 @@ void move_file_t() {
     }
     bool done = false;
     int nCurPos = 0;
-    while (!hangup && (nTempRecordNum > 0) && !done) {
+    while (!a()->hangup_ && (nTempRecordNum > 0) && !done) {
       nCurPos = nTempRecordNum;
       File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeReadOnly | File::modeBinary);
@@ -782,7 +782,7 @@ void move_file_t() {
             dirlist(1);
             dliscan1(a()->batch().entry[nCurBatchPos].dir);
           }
-        } while (!hangup && (dirnum.front() == '?'));
+        } while (!a()->hangup_ && (dirnum.front() == '?'));
         d1 = -1;
         if (!dirnum.empty()) {
           for (size_t i1 = 0; (i1 < a()->directories.size()) && (a()->udir[i1].subnum != -1); i1++) {
@@ -917,7 +917,7 @@ void removefile() {
   align(szFileToRemove);
   int i = recno(szFileToRemove);
   bool abort = false;
-  while (!hangup && (i > 0) && !abort) {
+  while (!a()->hangup_ && (i > 0) && !abort) {
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     FileAreaSetRecord(fileDownload, i);

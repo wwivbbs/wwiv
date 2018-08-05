@@ -175,7 +175,7 @@ static uint16_t FindUserByRealName(const std::string& user_name) {
   bool abort = false;
   int current_count = 0;
   for (const auto& n : a()->names()->names_vector()) {
-    if (hangup || abort) { break; }
+    if (a()->hangup_ || abort) { break; }
     if (++current_count % 25 == 0) {
       // changed from 15 since computers are faster now-a-days
       bout << ".";
@@ -963,9 +963,9 @@ void logoff() {
   }
   setiia(std::chrono::seconds(5));
   a()->remoteIO()->disconnect();
-  // Don't need to hangup here, but *do* want to ensure that hangup is true.
-  hangup = true;
-  VLOG(1) << "Setting hangup=true in logoff";
+  // Don't need to a()->hangup_ here, but *do* want to ensure that a()->hangup_ is true.
+  a()->hangup_ = true;
+  VLOG(1) << "Setting a()->hangup_=true in logoff";
   if (a()->usernum < 1) {
     return;
   }
@@ -1040,7 +1040,7 @@ void logoff() {
       pFileEmail->Close();
     }
   }
-  if (smwcheck) {
+  if (a()->received_short_message_) {
     File smwFile(FilePath(a()->config()->datadir(), SMW_DAT));
     if (smwFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       auto num_records = static_cast<int>(smwFile.length() / sizeof(shortmsgrec));

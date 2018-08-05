@@ -136,7 +136,7 @@ void ivotes() {
     if (i > 0 && i < 21) {
       set_question(i - 1);
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 }
 
 

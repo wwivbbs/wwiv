@@ -53,7 +53,7 @@ std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize num_ch
     return 0;
   }
   CheckForHangup();
-  if (hangup) {
+  if (a()->hangup_) {
     // Returning 0 here would set the fail bit on the stream, which
     // is not what we want, so pretend that we emitted all of the characters.
     return num_chars;
@@ -240,7 +240,7 @@ static int pipecode_int(T& it, const T end, int num_chars) {
 
 int Output::bputs(const string& text) {
   CheckForHangup();
-  if (text.empty() || hangup) { return 0; }
+  if (text.empty() || a()->hangup_) { return 0; }
 
   auto it = std::begin(text);
   auto fin = std::end(text);

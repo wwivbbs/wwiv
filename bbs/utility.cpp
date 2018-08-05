@@ -114,8 +114,8 @@ void frequent_init() {
   a()->charbufferpointer_ = 0;
   a()->localIO()->SetTopLine(0);
   a()->screenlinest = a()->defscreenbottom + 1;
-  hangup = false;
-  chatcall = false;
+  a()->hangup_ = false;
+  a()->chatcall_ = false;
   a()->SetChatReason("");
   a()->SetUserOnline(false);
   a()->chatting_ = 0;
@@ -125,7 +125,7 @@ void frequent_init() {
   read_qscn(1, qsc, false);
   okmacro = true;
   okskey = true;
-  smwcheck = false;
+  a()->received_short_message_ = false;
   use_workspace = false;
   a()->set_extratimecall(seconds(0));
   a()->using_modem = 0;
@@ -136,7 +136,7 @@ void frequent_init() {
   set_language(a()->user()->GetLanguage());
   reset_disable_conf();
 
-  // Reset the error bit on bout since after a hangup it can be set.
+  // Reset the error bit on bout since after a a()->hangup_ it can be set.
   bout.clear();
 }
 
@@ -362,7 +362,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     bout.SystemColor(smc->normal_menu_item);
 
     for (const string& menu_item : menu_items) {
-      if (hangup) {
+      if (a()->hangup_) {
         break;
       }
       bout.GotoXY(positions[x], ypos);
@@ -383,7 +383,7 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
   }
   bout.SystemColor(smc->normal_menu_item);
 
-  while (!hangup) {
+  while (!a()->hangup_) {
     int event = bgetch_event(numlock_status_t::NOTNUMBERS);
     if (event < 128) {
       int x = 0;

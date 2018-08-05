@@ -148,7 +148,7 @@ void list_sec(int *map, int nmap) {
   bout.litebar(StrCat(a()->config()->system_name(), " G-Files Section"));
   gfl_hdr(0);
   string t = times();
-  for (int i = 0; i < nmap && !abort && !hangup; i++) {
+  for (int i = 0; i < nmap && !abort && !a()->hangup_; i++) {
     sprintf(lnum, "%d", i + 1);
     s4 = trim_to_size_ignore_colors(a()->gfilesec[map[i]].name, 34);
     if (i + 1 >= nmap) {
@@ -255,7 +255,7 @@ void list_gfiles(gfilerec* g, int nf, int sn) {
   }
   gfl_hdr(1);
   const auto gfilesdir = a()->config()->gfilesdir();
-  for (i = 0; i < nf && !abort && !hangup; i++) {
+  for (i = 0; i < nf && !abort && !a()->hangup_; i++) {
     i2++;
     lnum = std::to_string(i + 1);
     s4 = trim_to_size_ignore_colors(g[i].description, 29);
@@ -369,7 +369,7 @@ void gfile_sec(int sn) {
   }
   list_gfiles(g, nf, sn);
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     a()->tleft(true);
     bout << "|#9Current G|#1-|#9File Section |#1: |#5" << a()->gfilesec[sn].name << "|#0\r\n";
     bout << "|#9Which G|#1-|#9File |#1(|#21|#1-|#2" << nf <<
@@ -432,7 +432,7 @@ void gfile_sec(int sn) {
       }
     } else if (ss == "D") {
       bool done1 = false;
-      while (!done1 && !hangup) {
+      while (!done1 && !a()->hangup_) {
         bout << "|#9Download which G|#1-|#9file |#1(|#2Q|#1=|#9Quit|#1, |#2?|#1=|#9Relist) : |#5";
         ss = mmkey(odc);
         i2 = to_number<int>(ss);
@@ -524,7 +524,7 @@ void gfiles() {
     return;
   }
   list_sec(map, nmap);
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     a()->tleft(true);
     bout << "|#9G|#1-|#9Files Main Menu|#0\r\n";
     bout << "|#9Which Section |#1(|#21|#1-|#2" << nmap <<

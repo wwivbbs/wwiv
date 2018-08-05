@@ -209,14 +209,14 @@ void kill_old_email() {
         }
         break;
         }
-      } while (!hangup && !done1);
+      } while (!a()->hangup_ && !done1);
       pFileEmail = OpenEmailFile(false);
       WWIV_ASSERT(pFileEmail);
       if (!pFileEmail->IsOpen()) {
         break;
       }
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
   pFileEmail->Close();
 }
 
@@ -272,7 +272,7 @@ void list_users(int mode) {
   File userList(FilePath(a()->config()->datadir(), USER_LST));
   int nNumUserRecords = a()->users()->num_user_records();
 
-  for (int i = 0; (i < nNumUserRecords) && !abort && !hangup; i++) {
+  for (int i = 0; (i < nNumUserRecords) && !abort && !a()->hangup_; i++) {
     a()->usernum = 0;
     if (ncnm > 5) {
       count++;
@@ -506,7 +506,7 @@ void time_bank() {
       done = true;
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 }
 
 int getnetnum(const std::string& network_name) {

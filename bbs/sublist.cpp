@@ -330,7 +330,7 @@ void SubList() {
       bout.bpla("None.", &abort);
       bout.nl();
     }
-  } while (!hangup && !done);
+  } while (!a()->hangup_ && !done);
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_SUBS, oldConf, oldSub);

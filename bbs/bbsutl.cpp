@@ -238,9 +238,9 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
       break;
       }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 
-  if (hangup) {
+  if (a()->hangup_) {
     // Caller isn't here, so we are not saving any message.
     return false;
   }
@@ -346,7 +346,7 @@ bool checka(bool *abort, bool *next) {
     *abort = true;
     clearnsp();
   }
-  while (bkbhit() && !*abort && !hangup) {
+  while (bkbhit() && !*abort && !a()->hangup_) {
     CheckForHangup();
     char ch = bgetch();
     switch (ch) {

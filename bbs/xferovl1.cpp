@@ -329,7 +329,7 @@ int read_idz(int mode, int tempdir) {
                                     a()->udir[tempdir].keys);
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  for (i = 1; (i <= a()->numf) && (!hangup) && !abort; i++) {
+  for (i = 1; (i <= a()->numf) && (!a()->hangup_) && !abort; i++) {
     FileAreaSetRecord(fileDownload, i);
     fileDownload.Read(&u, sizeof(uploadsrec));
     if ((compare(s.c_str(), u.filename)) &&
@@ -498,7 +498,7 @@ void tag_files(bool& need_title) {
   }
   bool abort = false;
   a()->tleft(true);
-  if (hangup) {
+  if (a()->hangup_) {
     return;
   }
   bout.clear_lines_listed();
@@ -506,7 +506,7 @@ void tag_files(bool& need_title) {
   bout << "\r" << std::string(78, '-') << wwiv::endl;
 
   bool done = false;
-  while (!done && !hangup) {
+  while (!done && !a()->hangup_) {
     bout.clear_lines_listed();
     ch = fancy_prompt("File Tagging", "CDEMQRTV?");
     bout.clear_lines_listed();
@@ -791,7 +791,7 @@ int try_to_download(const char *file_mask, int dn) {
     } else {
       i = nrecno(file_mask, i);
     }
-  } while (i > 0 && ok && !hangup);
+  } while (i > 0 && ok && !a()->hangup_);
   if (rtn == -2) {
     return -2;
   }
@@ -899,14 +899,14 @@ void download() {
           bout.backline();
           done = true;
         }
-      } while (!ok && !hangup);
+      } while (!ok && !a()->hangup_);
     }
     i++;
     if (rtn == -2) {
       rtn = 0;
       i = 0;
     }
-  } while (!done && !hangup && (i <= size_int(a()->batch().entry)));
+  } while (!done && !a()->hangup_ && (i <= size_int(a()->batch().entry)));
 
   if (!a()->batch().numbatchdl()) {
     return;
@@ -1013,7 +1013,7 @@ void SetNewFileScanDate() {
         ch = onek_ncr("0123456789\b");
         break;
       }
-      if (hangup) {
+      if (a()->hangup_) {
         ok = false;
         ag[0] = '\0';
         break;
@@ -1045,7 +1045,7 @@ void SetNewFileScanDate() {
         break;
       }
     }
-  } while (ch != '\r' && !hangup);
+  } while (ch != '\r' && !a()->hangup_);
 
   bout.nl();
   if (ok) {
@@ -1098,7 +1098,7 @@ void removefilesnotthere(int dn, int *autodel) {
   align(szAllFilesFileMask);
   int i = recno(szAllFilesFileMask);
   bool abort = false;
-  while (!hangup && i > 0 && !abort) {
+  while (!a()->hangup_ && i > 0 && !abort) {
     char szCandidateFileName[MAX_PATH];
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);

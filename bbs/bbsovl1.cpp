@@ -188,7 +188,7 @@ void edit_confs() {
     return;
   }
 
-  while (!hangup) {
+  while (!a()->hangup_) {
     bout << "\r\n\n|#5Edit Which Conferences:\r\n\n";
     bout << "|#21|#9)|#1 Subs\r\n";
     bout << "|#22|#9)|#1 Dirs\r\n";

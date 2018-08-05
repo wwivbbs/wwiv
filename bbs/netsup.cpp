@@ -91,7 +91,7 @@ void cleanup_net() {
   if (a()->net_networks[0].sysnum == 0 && a()->max_net_num() == 1) {
     return;
   }
-  hangup = false;
+  a()->hangup_ = false;
   a()->using_modem = 0;
   if (a()->IsUserOnline()) {
     hang_it_up();

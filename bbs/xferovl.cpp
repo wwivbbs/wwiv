@@ -83,7 +83,7 @@ void move_file() {
 
   tmp_disable_conf(true);
 
-  while (!hangup && nCurRecNum > 0 && !done) {
+  while (!a()->hangup_ && nCurRecNum > 0 && !done) {
     int nCurrentPos = nCurRecNum;
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
@@ -108,7 +108,7 @@ void move_file() {
           dirlist(1);
           dliscan();
         }
-      } while ((!hangup) && (ss[0] == '?'));
+      } while ((!a()->hangup_) && (ss[0] == '?'));
       d1 = -1;
       if (!ss.empty()) {
         for (size_t i1 = 0; (i1 < a()->directories.size()) && (a()->udir[i1].subnum != -1); i1++) {
@@ -320,7 +320,7 @@ void rename_file() {
   bout.nl();
   strcpy(s3, s);
   int nRecNum = recno(s);
-  while (nRecNum > 0 && !hangup) {
+  while (nRecNum > 0 && !a()->hangup_) {
     File fileDownload(a()->download_filename_);
     fileDownload.Open(File::modeBinary | File::modeReadOnly);
     int nCurRecNum = nRecNum;
@@ -706,7 +706,7 @@ bool uploadall(uint16_t directory_num) {
   bool abort = false;
   FindFiles ff(szPathName, FindFilesType::files);
   for (const auto& f : ff) {
-    if (checka() || hangup || a()->numf >= maxf) { break; }
+    if (checka() || a()->hangup_ || a()->numf >= maxf) { break; }
     if (!maybe_upload(f.name.c_str(), directory_num, nullptr)) { break; }
   }
   if (!ok || abort) {
@@ -866,7 +866,7 @@ void edit_database()
       done = true;
       break;
     }
-  } while (!hangup && !done);
+  } while (!a()->hangup_ && !done);
 }
 
 
@@ -1122,13 +1122,13 @@ static void config_nscan() {
             l_config_nscan();
           }
         }
-      } while (!done && !hangup);
+      } while (!done && !a()->hangup_);
       break;
     }
     if (!okconf(a()->user()) || a()->uconfdir[1].confnum == -1) {
       done1 = true;
     }
-  } while (!done1 && !hangup);
+  } while (!done1 && !a()->hangup_);
 
   if (okconf(a()->user())) {
     setuconf(ConferenceType::CONF_DIRS, oc, os);
@@ -1186,7 +1186,7 @@ void xfer_defaults() {
       }
       break;
     }
-  } while (!done && !hangup);
+  } while (!done && !a()->hangup_);
 }
 
 void finddescription() {
@@ -1221,7 +1221,7 @@ void finddescription() {
   color = 3;
   bout << "\r|#2Searching ";
   bout.clear_lines_listed();
-  for (uint16_t i = 0; (i < a()->directories.size()) && !abort && !hangup
+  for (uint16_t i = 0; (i < a()->directories.size()) && !abort && !a()->hangup_
        && (a()->udir[i].subnum != -1); i++) {
     auto ii1 = a()->udir[i].subnum;
     pts = 0;
@@ -1249,7 +1249,7 @@ void finddescription() {
       dliscan();
       File fileDownload(a()->download_filename_);
       fileDownload.Open(File::modeBinary | File::modeReadOnly);
-      for (auto i1 = 1; i1 <= a()->numf && !abort && !hangup; i1++) {
+      for (auto i1 = 1; i1 <= a()->numf && !abort && !a()->hangup_; i1++) {
         FileAreaSetRecord(fileDownload, i1);
         fileDownload.Read(&u, sizeof(uploadsrec));
         strcpy(s, u.description);
@@ -1317,5 +1317,5 @@ void arc_l() {
       checka(&abort);
       nRecordNum = nrecno(szFileSpec, nRecordNum);
     }
-  } while (nRecordNum > 0 && !hangup && !abort);
+  } while (nRecordNum > 0 && !a()->hangup_ && !abort);
 }
