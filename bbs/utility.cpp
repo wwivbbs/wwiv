@@ -102,15 +102,20 @@ bool okansi() {
  */
 void frequent_init() {
   setiia(seconds(5));
+
+  // Context Globals to move to Appliction
   g_flags = 0;
-  bout.newline = true;
+  irt[0] = '\0';
+  outcom = false;
+  incom = false;
+  okmacro = true;
+  okskey = true;
+  use_workspace = false;
+
+  // Context Globals in Appliction
   a()->SetCurrentReadMessageArea(-1);
   a()->SetCurrentConferenceMessageArea(0);
   a()->SetCurrentConferenceFileArea(0);
-  bout.ansiptr = 0;
-  bout.curatr(0x07);
-  outcom = false;
-  incom = false;
   a()->charbufferpointer_ = 0;
   a()->localIO()->SetTopLine(0);
   a()->screenlinest = a()->defscreenbottom + 1;
@@ -119,25 +124,28 @@ void frequent_init() {
   a()->SetChatReason("");
   a()->SetUserOnline(false);
   a()->chatting_ = 0;
-  irt[0] = '\0';
-  bout.clear_lines_listed();
   a()->ReadCurrentUser(1);
-  read_qscn(1, qsc, false);
-  okmacro = true;
-  okskey = true;
   a()->received_short_message_ = false;
-  use_workspace = false;
   a()->set_extratimecall(seconds(0));
   a()->using_modem = 0;
-  File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
-  File::Remove(a()->dsz_logfile_name_);
   a()->SetTimeOnlineLimited(false);
+
   set_net_num(0);
+  read_qscn(1, qsc, false);
   set_language(a()->user()->GetLanguage());
   reset_disable_conf();
-
+  
+  // Output context
+  bout.newline = true;
+  bout.ansiptr = 0;
+  bout.curatr(0x07);
+  bout.clear_lines_listed();
   // Reset the error bit on bout since after a a()->hangup_ it can be set.
   bout.clear();
+
+  // DSZ Log
+  File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
+  File::Remove(a()->dsz_logfile_name_);
 }
 
 

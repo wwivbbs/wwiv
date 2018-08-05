@@ -133,6 +133,7 @@ Application::~Application() {
 
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
+  ::bout.SetLocalIO(wlocal_io);
 
   const int screen_bottom = localIO()->GetDefaultScreenBottom();
   localIO()->SetScreenBottom(screen_bottom);
@@ -140,7 +141,6 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
   screenlinest = screen_bottom + 1;
 
   ClearTopScreenProtection();
-  ::bout.SetLocalIO(wlocal_io);
   return true;
 }
 

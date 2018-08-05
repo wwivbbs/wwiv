@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "bbs/curatr_provider.h"
+#include "bbs/local_io.h"
 #include "sdk/wwivcolors.h"
 
 class outputstreambuf : public std::streambuf {
@@ -40,7 +41,6 @@ public:
 };
 
 class RemoteIO;
-class LocalIO;
 
 class SavedLine {
 public:
@@ -49,7 +49,7 @@ public:
   int color;
 };
 
-class Output : public std::ostream, wwiv::bbs::curatr_provider {
+class Output : public std::ostream, public wwiv::bbs::curatr_provider {
 protected:
   outputstreambuf buf;
   LocalIO* local_io_;
@@ -66,11 +66,15 @@ public:
   }
   virtual ~Output() {}
 
-  void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
-  LocalIO* localIO() const { return local_io_; }
+  void SetLocalIO(LocalIO* local_io) {
+    local_io_ = local_io;
+    local_io_->set_curatr_provider(this);
+  }
+
+  LocalIO* localIO() const noexcept { return local_io_; }
 
   void SetComm(RemoteIO* comm) { comm_ = comm; }
-  RemoteIO* remoteIO() const { return comm_; }
+  RemoteIO* remoteIO() const noexcept { return comm_; }
 
   void Color(int wwiv_color);
   void ResetColors();
@@ -144,9 +148,9 @@ public:
   SavedLine SaveCurrentLine();
   void dump();
   void clear_lines_listed() { lines_listed_ = 0; }
-  int lines_listed() const { return lines_listed_; }
+  int lines_listed() const noexcept { return lines_listed_; }
   int wherex();
-  bool IsLastKeyLocal() const { return last_key_local_; }
+  bool IsLastKeyLocal() const noexcept { return last_key_local_; }
   void SetLastKeyLocal(bool b) { last_key_local_ = b; }
   void RedrawCurrentLine();
 
@@ -163,7 +167,7 @@ public:
   void move_up_if_newline(int num_lines);
 
   // ANSI movement happened.
-  bool ansi_movement_occurred() const { return ansi_movement_occurred_; }
+  bool ansi_movement_occurred() const noexcept { return ansi_movement_occurred_; }
   void clear_ansi_movement_occurred() { ansi_movement_occurred_ = false; }
 
   // curatr_provider
