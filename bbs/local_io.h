@@ -21,6 +21,7 @@
 
 #include <string>
 
+#include "bbs/curatr_provider.h"
 #include "bbs/keycodes.h"
 #include "core/file.h"
 
@@ -29,15 +30,10 @@
 
 class Application;
 
-enum class AllowedKeys {
-  NUM_ONLY,
-  UPPER_ONLY,
-  ALL,
-  SET
-};
+enum class AllowedKeys { NUM_ONLY, UPPER_ONLY, ALL, SET };
 
 class LocalIO {
- public:
+public:
   // Constructor/Destructor
   LocalIO();
   LocalIO(const LocalIO& copy) = delete;
@@ -71,8 +67,8 @@ class LocalIO {
   virtual void Puts(const std::string& text) = 0;
   virtual void PutsXY(int x, int y, const std::string& text) = 0;
   virtual void PutsXYA(int x, int y, int attr, const std::string& text) = 0;
-  virtual int  PrintfXY(int x, int y, const char *formatted_text, ...) = 0;
-  virtual int  PrintfXYA(int x, int y, int attr, const char *formatted_text, ...) = 0;
+  virtual int PrintfXY(int x, int y, const char* formatted_text, ...) = 0;
+  virtual int PrintfXYA(int x, int y, int attr, const char* formatted_text, ...) = 0;
   virtual void set_protect(Application* session, int l) = 0;
   virtual void savescreen() = 0;
   virtual void restorescreen() = 0;
@@ -84,12 +80,13 @@ class LocalIO {
    */
   virtual void MakeLocalWindow(int x, int y, int xlen, int ylen) = 0;
   virtual void SetCursor(int cursorStyle) = 0;
-  virtual void WriteScreenBuffer(const char *buffer) = 0;
+  virtual void WriteScreenBuffer(const char* buffer) = 0;
   virtual int GetDefaultScreenBottom() const noexcept = 0;
-  virtual void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) = 0;
+  virtual void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
+                        const char* ss) = 0;
   virtual void UpdateNativeTitleBar(Application* session) = 0;
 
-  int  GetTopScreenColor() const noexcept { return top_screen_color_; }
+  int GetTopScreenColor() const noexcept { return top_screen_color_; }
   void SetTopScreenColor(int n) { top_screen_color_ = n; }
 
   int GetUserEditorColor() const noexcept { return user_editor_color_; }
@@ -101,16 +98,21 @@ class LocalIO {
   virtual void DisableLocalIO() {}
   virtual void ReenableLocalIO() {}
 
+  // curatr_provider interface
+  virtual void set_curatr_provider(wwiv::bbs::curatr_provider* p);
+  virtual int curatr() const;
+  virtual void curatr(int c);
+
 private:
   virtual void FastPuts(const std::string& text) = 0;
 
 private:
-  int topline_ = 0;
-  int screen_bottom_ = 0;
-  int top_screen_color_ = 27;
-  int user_editor_color_ = 9;
-  int edit_line_color_ = 31;
+  int topline_{0};
+  int screen_bottom_{0};
+  int top_screen_color_{27};
+  int user_editor_color_{9};
+  int edit_line_color_{31};
+  wwiv::bbs::curatr_provider* curatr_;
 };
-
 
 #endif // __INCLUDED_PLATFORM_LOCALIO_H__

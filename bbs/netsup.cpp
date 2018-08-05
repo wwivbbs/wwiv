@@ -616,7 +616,7 @@ static void fill_call(int color, int row, const std::vector<CalloutEntry>& entri
     } else {
       strcpy(s1, "     ");
     }
-    curatr = color;
+    bout.curatr(color);
     a()->localIO()->PutsXY(6 + x, 5 + y, s1);
     x += 7;
   }
@@ -679,7 +679,7 @@ static std::pair<uint16_t, int> ansicallout() {
   }
 
   a()->localIO()->Cls();
-  curatr = color1;
+  bout.curatr(color1);
   a()->localIO()->MakeLocalWindow(3, 2, 73, 10);
   const auto header = StrCat("\xC3", std::string(71, '\xC4'), "\xB4");
   a()->localIO()->PutsXYA(3, 4, color1, header);
@@ -834,7 +834,7 @@ static std::pair<uint16_t, int> ansicallout() {
     }
   } while (!done);
 
-  curatr = color3;
+  bout.curatr(color3);
   a()->localIO()->Cls();
   a()->localIO()->SetCursor(LocalIO::cursorNormal);
   return std::make_pair(sn, snn);

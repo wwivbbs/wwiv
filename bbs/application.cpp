@@ -99,7 +99,7 @@ Application::Application(LocalIO* localIO)
     : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_() {
   ::bout.SetLocalIO(localIO);
   SetCurrentReadMessageArea(-1);
-  chat_file = false;
+  chat_file_ = false;
   bquote_ = 0;
   equote_ = 0;
 
@@ -225,8 +225,8 @@ void Application::tleft(bool check_for_timeout) {
   int cx = localIO()->WhereX();
   int cy = localIO()->WhereY();
   int ctl = localIO()->GetTopLine();
-  int cc = curatr;
-  curatr = localIO()->GetTopScreenColor();
+  int cc = bout.curatr();
+  bout.curatr(localIO()->GetTopScreenColor());
   localIO()->SetTopLine(0);
   int line_number = (chatcall_ && (topdata == LocalIO::topdataUser)) ? 5 : 4;
 
@@ -261,7 +261,7 @@ void Application::tleft(bool check_for_timeout) {
   } break;
   }
   localIO()->SetTopLine(ctl);
-  curatr = cc;
+  bout.curatr(cc);
   localIO()->GotoXY(cx, cy);
 }
 
@@ -380,7 +380,7 @@ void Application::DisplaySysopWorkingIndicator(bool displayWait) {
 
   if (displayWait) {
     if (okansi()) {
-      int nSavedAttribute = curatr;
+      int nSavedAttribute = bout.curatr();
       bout.SystemColor(user()->HasColor() ? user()->GetColor(3) : user()->GetBWColor(3));
       bout << waitString << "\x1b[" << nNumPrintableChars << "D";
       bout.SystemColor(static_cast<unsigned char>(nSavedAttribute));
@@ -446,8 +446,8 @@ void Application::UpdateTopScreen() {
   int cx = localIO()->WhereX();
   int cy = localIO()->WhereY();
   int nOldTopLine = localIO()->GetTopLine();
-  int cc = curatr;
-  curatr = localIO()->GetTopScreenColor();
+  int cc = bout.curatr();
+  bout.curatr(localIO()->GetTopScreenColor());
   localIO()->SetTopLine(0);
   for (i = 0; i < 80; i++) {
     sl[i] = '\xCD';
@@ -513,7 +513,7 @@ void Application::UpdateTopScreen() {
     }
 
     const string username_num = names()->UserName(usernum);
-    localIO()->PrintfXYA(0, 0, curatr, "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
+    localIO()->PrintfXYA(0, 0, bout.curatr(), "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
                          username_num.c_str(), user()->GetNumMailWaiting(),
                          user()->GetFilesUploaded(), user()->GetUploadK(), user()->GetSl(),
                          user()->GetNumLogons(), user()->GetNumMessagesPosted());
@@ -554,7 +554,7 @@ void Application::UpdateTopScreen() {
   }
   localIO()->SetTopLine(nOldTopLine);
   localIO()->GotoXY(cx, cy);
-  curatr = cc;
+  bout.curatr(cc);
   tleft(false);
 
   bout.lines_listed_ = lll;
@@ -721,7 +721,7 @@ int Application::Run(int argc, char* argv[]) {
   CommunicationType type = CommunicationType::NONE;
   unsigned int hSockOrComm = 0;
 
-  curatr = 0x07;
+  bout.curatr(0x07);
   // Set the instance, this may be changed by a command line argument
   instance_number_ = 1;
   ok_modem_stuff = true;

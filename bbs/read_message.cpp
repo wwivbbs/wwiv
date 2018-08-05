@@ -346,7 +346,7 @@ Type2MessageData read_type2_message(messagerec* msg, char an, bool readit, const
 }
 
 static FullScreenView display_type2_message_header(Type2MessageData& msg) {
-  auto oldcuratr = curatr;
+  auto oldcuratr = bout.curatr();
   static constexpr int COLUMN2 = 42;
   int num_header_lines = 0;
 
@@ -463,7 +463,7 @@ static FullScreenView display_type2_message_header(Type2MessageData& msg) {
   auto screen_width = a()->user()->GetScreenChars();
   auto screen_length = a()->user()->GetScreenLines() - 1;
 
-  curatr = oldcuratr;
+  bout.curatr(oldcuratr);
   return FullScreenView(num_header_lines, screen_width, screen_length);
 }
 
@@ -569,7 +569,7 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
 
 static ReadMessageResult display_type2_message_new(Type2MessageData& msg, char an, bool* next) {
   // Reset the color before displaying a message.
-  curatr = 7;
+  bout.curatr(7);
   bout.clear_ansi_movement_occurred();
   *next = false;
   a()->mci_enabled_ = true;

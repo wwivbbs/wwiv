@@ -160,7 +160,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
       printfile(WELCOME_MSG);
     }
   }
-  if (curatr != 7) {
+  if (bout.curatr() != 7) {
     bout.ResetColors();
   }
   return ans;

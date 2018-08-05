@@ -108,7 +108,7 @@ void frequent_init() {
   a()->SetCurrentConferenceMessageArea(0);
   a()->SetCurrentConferenceFileArea(0);
   bout.ansiptr = 0;
-  curatr = 0x07;
+  bout.curatr(0x07);
   outcom = false;
   incom = false;
   a()->charbufferpointer_ = 0;

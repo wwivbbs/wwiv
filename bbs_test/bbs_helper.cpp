@@ -99,7 +99,7 @@ void BbsHelper::SetUp() {
   a()->instance_number_ = 42;
 
   // Reset the color attribute to 7 between tests.
-  curatr = 7;
+  bout.curatr(7);
   // We need this true so our bputch tests can capture remote.
   outcom = true;
   ok_modem_stuff = true;

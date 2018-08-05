@@ -166,7 +166,7 @@ void Win32ConsoleIO::Lf() {
     scrollRect.Bottom = static_cast<int16_t>(GetScreenBottom());
     scrollRect.Left = 0;
     scrollRect.Right = 79;
-    fill.Attributes = static_cast<int16_t>(curatr);
+    fill.Attributes = static_cast<int16_t>(curatr());
     fill.Char.AsciiChar = ' ';
 
     ScrollConsoleScreenBuffer(out_, &scrollRect, nullptr, dest, &fill);
@@ -229,7 +229,7 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
 */
   DWORD cb;
 
-  SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr));
+  SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr()));
   WriteConsole(out_, &ch, 1, &cb, nullptr);
 
   if (cursor_pos_.X <= 79) {
@@ -250,7 +250,7 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
     MoveRect.Left   = 0;
     MoveRect.Right  = 79;
 
-    fill.Attributes = static_cast<int16_t>(curatr);
+    fill.Attributes = static_cast<int16_t>(curatr());
     fill.Char.AsciiChar = ' ';
 
     dest.X = 0;
@@ -302,11 +302,11 @@ void Win32ConsoleIO::PutsXY(int x, int y, const string& text) {
 void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
   GotoXY(x, y);
 
-  auto old_color = curatr;
-  curatr = a;
+  auto old_color = curatr();
+  curatr(a);
   FastPuts(text);
 
-  curatr = old_color;
+  curatr(old_color);
 }
 
 void Win32ConsoleIO::FastPuts(const string& text) {
@@ -314,7 +314,7 @@ void Win32ConsoleIO::FastPuts(const string& text) {
   DWORD cb = 0;
   int len = text.length();
 
-  SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr));
+  SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr()));
   WriteConsole(out_, text.c_str(), len, &cb, nullptr);
   cursor_pos_.X = cursor_pos_.X + static_cast<int16_t>(cb);
 }
@@ -399,7 +399,7 @@ void Win32ConsoleIO::savescreen() {
   saved_screen.x1 = static_cast<int16_t>(WhereX());
   saved_screen.y1 = static_cast<int16_t>(WhereY());
   saved_screen.topline1 = static_cast<int16_t>(GetTopLine());
-  saved_screen.curatr1 = static_cast<int16_t>(curatr);
+  saved_screen.curatr1 = static_cast<int16_t>(curatr());
 }
 
 /*
@@ -422,7 +422,7 @@ void Win32ConsoleIO::restorescreen() {
     saved_screen.scrn1 = nullptr;
   }
   SetTopLine(saved_screen.topline1);
-  curatr = saved_screen.curatr1;
+  curatr(saved_screen.curatr1);
   GotoXY(saved_screen.x1, saved_screen.y1);
 }
 
@@ -462,7 +462,7 @@ unsigned char Win32ConsoleIO::GetChar() {
 
 void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
-  curatr = GetUserEditorColor();
+  curatr(GetUserEditorColor());
   xlen = std::min(xlen, 80);
   if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
@@ -577,7 +577,7 @@ void Win32ConsoleIO::ClrEol() {
   int len = csbi.dwSize.X - WhereX();
 
   FillConsoleOutputCharacter(out_, ' ', len, csbi.dwCursorPosition, &cb);
-  FillConsoleOutputAttribute(out_, (WORD) curatr, len, csbi.dwCursorPosition, &cb);
+  FillConsoleOutputAttribute(out_, (WORD)curatr(), len, csbi.dwCursorPosition, &cb);
 }
 
 void Win32ConsoleIO::WriteScreenBuffer(const char *buffer) {
@@ -653,14 +653,14 @@ static int GetEditLineStringLength(const char *text) {
 void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_keys,
     int *returncode, const char *pszAllowedSet) {
   
-  int oldatr = curatr;
+  int oldatr = curatr();
   int cx = WhereX();
   int cy = WhereY();
   for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
     pszInOutText[i] = static_cast<unsigned char>(176);
   }
   pszInOutText[len] = '\0';
-  curatr = GetEditLineColor();
+  curatr(GetEditLineColor());
   FastPuts(pszInOutText);
   GotoXY(cx, cy);
   bool done = false;
@@ -820,7 +820,7 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
   snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
   szFinishedString[ len ] = '\0';
   GotoXY(cx, cy);
-  curatr = oldatr;
+  curatr(oldatr);
   FastPuts(szFinishedString);
   GotoXY(cx, cy);
 }

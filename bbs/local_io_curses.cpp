@@ -133,17 +133,17 @@ void CursesLocalIO::Cr() {
 }
 
 void CursesLocalIO::Cls() {
-  SetColor(curatr);
+  SetColor(curatr());
   window_->Clear();
 }
 
 void CursesLocalIO::Backspace() {
-  SetColor(curatr);
+  SetColor(curatr());
   window_->Putch('\b');
 }
 
 void CursesLocalIO::PutchRaw(unsigned char ch) {
-  SetColor(curatr);
+  SetColor(curatr());
   window_->Putch(ch);
 }
 
@@ -178,17 +178,17 @@ void CursesLocalIO::PutsXY(int x, int y, const string& text) {
 }
 
 void CursesLocalIO::PutsXYA(int x, int y, int a, const string& text) {
-  auto old_color = curatr;
-  curatr = a;
+  auto old_color = curatr();
+  curatr(a);
 
   GotoXY(x, y);
   FastPuts(text);
 
-  curatr = old_color;
+  curatr(old_color);
 }
 
 void CursesLocalIO::FastPuts(const string& text) {
-  SetColor(curatr);
+  SetColor(curatr());
   window_->Puts(text);
 }
 
@@ -326,7 +326,7 @@ void CursesLocalIO::SetCursor(int cursorStyle) {
 }
 
 void CursesLocalIO::ClrEol() {
-  SetColor(curatr);
+  SetColor(curatr());
   window_->ClrtoEol();
 }
 
@@ -341,7 +341,7 @@ void CursesLocalIO::WriteScreenBuffer(const char *buffer) {
   for (int y = 0; y < 25; y++) {
 	for (int x = 0; x < 80; x++) {
 	  s[0] = *p++;
-    curatr = *p++;
+    curatr(*p++);
 	  PutsXY(x, y, s);
     }
   }
@@ -366,14 +366,14 @@ static int GetEditLineStringLength(const char *text) {
 
 void CursesLocalIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_keys,
   int *returncode, const char *pszAllowedSet) {
-  int oldatr = curatr;
+  int oldatr = curatr();
   int cx = WhereX();
   int cy = WhereY();
   for (auto i = strlen(pszInOutText); i < static_cast<size_t>(len); i++) {
     pszInOutText[i] = static_cast<unsigned char>(176);
   }
   pszInOutText[len] = '\0';
-  curatr = GetEditLineColor();
+  curatr(GetEditLineColor());
   FastPuts(pszInOutText);
   GotoXY(cx, cy);
   bool done = false;
@@ -533,14 +533,14 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_ke
   snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
   szFinishedString[len] = '\0';
   GotoXY(cx, cy);
-  curatr = oldatr;
+  curatr(oldatr);
   FastPuts(szFinishedString);
   GotoXY(cx, cy);
 }
 
 void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Make sure that we are within the range of {(0,0), (80,GetScreenBottom())}
-  curatr = GetUserEditorColor();
+  curatr(GetUserEditorColor());
   xlen = std::min(xlen, 80);
   if (ylen > (GetScreenBottom() + 1 - GetTopLine())) {
     ylen = (GetScreenBottom() + 1 - GetTopLine());
@@ -561,7 +561,7 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   // Loop through Y, each time looping through X adding the right character
   for (int yloop = 0; yloop < ylen; yloop++) {
     for (int xloop = 0; xloop < xlen; xloop++) {
-      curatr = static_cast<int16_t>(GetUserEditorColor());
+      curatr(static_cast<int16_t>(GetUserEditorColor()));
       if ((yloop == 0) || (yloop == ylen - 1)) {
         PutsXY(x + xloop, y + yloop, "\xC4");      // top and bottom
       } else {

@@ -108,7 +108,7 @@ void pausescr() {
     bout.ResetColors();
 
     i1 = strlen(stripcolors(ss));
-    i = curatr;
+    i = bout.curatr();
     bout.SystemColor(a()->user()->HasColor() ? a()->user()->GetColor(3) 
       : a()->user()->GetBWColor(3));
     bout << ss;

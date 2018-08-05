@@ -151,7 +151,7 @@ std::string Output::MakeColor(int wwivcolor) {
     // Invalid color, let's use 7 vs. 0 so it's not black-on-black.
     c = 7;
   }
-  if (c == curatr) {
+  if (c == curatr()) {
     return "";
   }
 
@@ -163,7 +163,7 @@ std::string Output::MakeSystemColor(int c) {
   if (!okansi()) {
     return "";
   }
-  return makeansi(c, curatr);
+  return makeansi(c, curatr());
 }
 
 std::string Output::MakeSystemColor(wwiv::sdk::Color c) {
@@ -252,11 +252,11 @@ int Output::bputs(const string& text) {
       if (std::isdigit(*it)) {
         int color = pipecode_int(it, fin, 2);
         if (color < 16) {
-          bputs(MakeSystemColor(color | (curatr & 0xf0)));
+          bputs(MakeSystemColor(color | (curatr() & 0xf0)));
         }
         else {
           uint8_t bg = static_cast<uint8_t>(color) << 4;
-          uint8_t fg = curatr & 0x0f;
+          uint8_t fg = curatr() & 0x0f;
           bputs(MakeSystemColor(bg | fg));
         }
       }

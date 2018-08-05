@@ -147,10 +147,10 @@ static void select_chat_name(char *sysop_name) {
   a()->DisplaySysopWorkingIndicator(true);
   a()->localIO()->savescreen();
   strcpy(sysop_name, a()->config()->config()->sysopname);
-  curatr = a()->GetChatNameSelectionColor();
+  bout.curatr(a()->GetChatNameSelectionColor());
   a()->localIO()->MakeLocalWindow(20, 5, 43, 3);
   a()->localIO()->PutsXY(22, 6, "Chat As: ");
-  curatr = a()->localIO()->GetEditLineColor();
+  bout.curatr(a()->localIO()->GetEditLineColor());
   a()->localIO()->PutsXY(31, 6, std::string(30, SPACE));
 
   int rc;
@@ -561,7 +561,7 @@ void chat1(const char *chat_line, bool two_way) {
     return;
   }
 
-  chatcall = false;
+  a()->chatcall_ = false;
   if (two_way) {
     write_inst(INST_LOC_CHAT2, 0, INST_FLAGS_NONE);
     a()->chatting_ = 2;

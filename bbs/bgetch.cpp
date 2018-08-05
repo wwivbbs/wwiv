@@ -275,7 +275,7 @@ bool Output::RestoreCurrentLine(const SavedLine& line) {
 }
 
 SavedLine Output::SaveCurrentLine() {
-  return {current_line_, curatr};
+  return {current_line_, curatr()};
 }
 
 void Output::dump() {

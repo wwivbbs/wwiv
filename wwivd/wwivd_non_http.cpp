@@ -228,12 +228,12 @@ static std::string makeansi(int attr, int current_attr) {
 }
 
 std::string Color(int c, bool ansi) {
-  static int curatr = 7;
+  static int wwivd_curatr = 7;
   if (!ansi) {
     return "";
   }
-  auto s = makeansi(c, curatr);
-  curatr = 0;
+  auto s = makeansi(c, wwivd_curatr);
+  wwivd_curatr = 0;
   return s;
 }
 

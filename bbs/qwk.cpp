@@ -560,18 +560,18 @@ void make_qwk_ready(char *text, long *len, char *address) {
     } else if (a()->user()->data.qwk_remove_color && x == 3) {
       pos += 2;
     } else if (a()->user()->data.qwk_convert_color && x == 3) {
-      int save_curatr = curatr;
-      curatr = 255;
+      int save_curatr = bout.curatr();
+      bout.curatr(255);
       // Only convert to ansi if we have memory for it, but still strip heart
       // code even if we don't have the memory.
       if (new_pos + 10 < new_size) {
-        const string ansi_string = makeansi(text[pos + 1], curatr);
+        const string ansi_string = makeansi(text[pos + 1], bout.curatr());
         temp[new_pos] = 0;
         strcat(temp, ansi_string.c_str());
         new_pos = strlen(temp);
       }
       pos += 2;
-      curatr = save_curatr;
+      bout.curatr(save_curatr);
     } else if (a()->user()->data.qwk_keep_routing == false && x == 4 && text[pos + 1] == '0') {
       if (text[pos + 1] == 0) {
         ++pos;

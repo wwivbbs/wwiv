@@ -122,7 +122,7 @@ void OnlineUserEditor() {
   a()->localIO()->PrintfXYA(wx + 2,  wy + 12, 3,  "Note: %s", a()->user()->GetNote().c_str());
   a()->localIO()->PrintfXYA(wx + 1, wy + 14, 31,
                                           "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
-  curatr = 3;
+  bout.curatr(3);
   while (!done) {
     switch (cp) {
     case 0:

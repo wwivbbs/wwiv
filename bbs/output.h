@@ -17,25 +17,26 @@
 /*                                                                        */
 /**************************************************************************/
 
-#ifndef __INCLUDED_WSTREAMBUFFER_H__
-#define __INCLUDED_WSTREAMBUFFER_H__
+#ifndef __INCLUDED_BBS_OUTPUT_H__
+#define __INCLUDED_BBS_OUTPUT_H__
 
 #include <chrono>
+#include <ios>
 #include <iostream>
 #include <streambuf>
-#include <ios>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "bbs/curatr_provider.h"
 #include "sdk/wwivcolors.h"
 
 class outputstreambuf : public std::streambuf {
- public:
+public:
   outputstreambuf();
   ~outputstreambuf();
   virtual std::ostream::int_type overflow(std::ostream::int_type c);
-  virtual std::streamsize xsputn(const char *text, std::streamsize numChars);
+  virtual std::streamsize xsputn(const char* text, std::streamsize numChars);
 };
 
 class RemoteIO;
@@ -43,31 +44,32 @@ class LocalIO;
 
 class SavedLine {
 public:
-  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c): line(l), color(c) {}
+  SavedLine(std::vector<std::pair<char, uint8_t>> l, int c) : line(l), color(c) {}
   std::vector<std::pair<char, uint8_t>> line;
   int color;
 };
 
-class Output : public std::ostream {
- protected:
+class Output : public std::ostream, wwiv::bbs::curatr_provider {
+protected:
   outputstreambuf buf;
-  LocalIO *local_io_;
-  RemoteIO *comm_;
+  LocalIO* local_io_;
+  RemoteIO* comm_;
 
- public:
-  Output() :
+public:
+  Output()
+      :
 #if defined(_WIN32)
-    buf(),
+        buf(),
 #endif
-    std::ostream(&buf) {
+        std::ostream(&buf) {
     init(&buf);
   }
   virtual ~Output() {}
 
-  void SetLocalIO(LocalIO *local_io) { local_io_ = local_io; }
+  void SetLocalIO(LocalIO* local_io) { local_io_ = local_io; }
   LocalIO* localIO() const { return local_io_; }
 
-  void SetComm(RemoteIO *comm) { comm_ = comm; }
+  void SetComm(RemoteIO* comm) { comm_ = comm; }
   RemoteIO* remoteIO() const { return comm_; }
 
   void Color(int wwiv_color);
@@ -87,7 +89,7 @@ class Output : public std::ostream {
   std::string MakeColor(int wwiv_color);
   std::string MakeSystemColor(int nColor);
   std::string MakeSystemColor(wwiv::sdk::Color color);
-  void litebarf(const char *fmt, ...);
+  void litebarf(const char* fmt, ...);
   void litebar(const std::string& msg);
   /** Backspaces from the current cursor position to the beginning of a line */
   void backline();
@@ -116,27 +118,27 @@ class Output : public std::ostream {
    * user has hung up
    */
   int bputs(const std::string& text);
-  
+
   // Prints an abortable string (contained in *text). Returns 1 in *abort if the
   // string was aborted, else *abort should be zero.
-  int bpla(const std::string& text, bool *abort);
-  
+  int bpla(const std::string& text, bool* abort);
+
   /**
-  * Displays s which checking for abort and next
-  * @see checka
-  * <em>Note: bout.bputs means Output String And Next</em>
-  *
-  * @param text The text to display
-  * @param abort The abort flag (Output Parameter)
-  * @param next The next flag (Output Parameter)
-  */
-  int bputs(const std::string& text, bool *abort, bool *next);
-  int bprintf(const char *fmt, ...);
+   * Displays s which checking for abort and next
+   * @see checka
+   * <em>Note: bout.bputs means Output String And Next</em>
+   *
+   * @param text The text to display
+   * @param abort The abort flag (Output Parameter)
+   * @param next The next flag (Output Parameter)
+   */
+  int bputs(const std::string& text, bool* abort, bool* next);
+  int bprintf(const char* fmt, ...);
 
   int bputch(char c, bool use_buffer = false);
   void flush();
   void rputch(char ch, bool use_buffer = false);
-  void rputs(const char *text);
+  void rputs(const char* text);
   char getkey(bool allow_extended_input = false);
   bool RestoreCurrentLine(const SavedLine& line);
   SavedLine SaveCurrentLine();
@@ -164,11 +166,16 @@ class Output : public std::ostream {
   bool ansi_movement_occurred() const { return ansi_movement_occurred_; }
   void clear_ansi_movement_occurred() { ansi_movement_occurred_ = false; }
 
+  // curatr_provider
+  int curatr() const noexcept override { return curatr_; }
+  void curatr(int n) override { curatr_ = n; }
+
+
 public:
   int lines_listed_;
   char ansistr[81];
   int ansiptr = 0;
-  bool newline = true;
+  bool newline{true};
 
 private:
   std::string bputch_buffer_;
@@ -184,16 +191,19 @@ private:
   std::chrono::duration<double> sysop_key_timeout_ = std::chrono::minutes(10);
   std::chrono::duration<double> logon_key_timeout_ = std::chrono::minutes(3);
 
-  bool ansi_movement_occurred_ = false;
+  bool ansi_movement_occurred_{false};
+  int curatr_{7};
 };
 
+/**
+ * This is wwiv::endl, notice it does not flush the buffer afterwards.
+ */
 namespace wwiv {
-template<class charT, class traits>
-std::basic_ostream<charT, traits>&
-endl(std::basic_ostream<charT, traits>& strm) {
+template <class charT, class traits>
+std::basic_ostream<charT, traits>& endl(std::basic_ostream<charT, traits>& strm) {
   strm.write("\r\n", 2);
   return strm;
 }
-}
+} // namespace wwiv
 
-#endif  // __INCLUDED_WSTREAMBUFFER_H__
+#endif // __INCLUDED_BBS_OUTPUT_H__

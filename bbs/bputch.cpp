@@ -142,28 +142,28 @@ void Output::execute_ansi() {
       for (count = 0; count < argptr; count++) {
         switch (args[count]) {
         case 0:
-          curatr = 0x07;
+          curatr(0x07);
           break;
         case 1:
-          curatr = curatr | 0x08;
+          curatr(curatr() | 0x08);
           break;
         case 4:
           break;
         case 5:
-          curatr = curatr | 0x80;
+          curatr(curatr() | 0x80);
           break;
         case 7:
-          ptr = curatr & 0x77;
-          curatr = (curatr & 0x88) | (ptr << 4) | (ptr >> 4);
+          ptr = curatr() & 0x77;
+          curatr((curatr() & 0x88) | (ptr << 4) | (ptr >> 4));
           break;
         case 8:
-          curatr = 0;
+          curatr(0);
           break;
         default:
           if ((args[count] >= 30) && (args[count] <= 37)) {
-            curatr = (curatr & 0xf8) | (clrlst[args[count] - 30] - '0');
+            curatr((curatr() & 0xf8) | (clrlst[args[count] - 30] - '0'));
           } else if ((args[count] >= 40) && (args[count] <= 47)) {
-            curatr = (curatr & 0x8f) | ((clrlst[args[count] - 40] - '0') << 4);
+            curatr((curatr() & 0x8f) | ((clrlst[args[count] - 40] - '0') << 4));
           }
           break;  // moved up a line...
         }
@@ -229,7 +229,7 @@ int Output::bputch(char c, bool use_buffer) {
     } else {
       displayed = 1;
       localIO()->Putch(c);
-      current_line_.push_back({c, static_cast<uint8_t>(curatr)});
+      current_line_.push_back({c, static_cast<uint8_t>(curatr())});
       const auto screen_width = a()->user()->GetScreenChars();
       if (c == BACKSPACE) {
         --x_;  

@@ -249,10 +249,10 @@ int  UnixConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *psz
   int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), pszFormattedText, ap);
   va_end(ap);
 
-  int nOldColor = curatr;
-  curatr = nAttribute;
+  int nOldColor = curatr();
+  curatr(nAttribute);
   LocalXYPuts(x, y, szBuffer);
-  curatr = nOldColor;
+  curatr(nOldColor);
   return nNumWritten;
 }
 
