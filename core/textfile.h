@@ -83,6 +83,11 @@ public:
   /** Writes a line of text including `\r\n`. */
   ssize_t WriteLine(const char* text) { return WriteLine(std::string(text)); }
 
+  /** Writes a line of text including `\r\n`. */
+  // Add this since WriteLine(T) below will match that and this
+  // explicit match keeps that from happening
+  ssize_t WriteLine(char* text) { return WriteLine(std::string(text)); }
+
   ssize_t WriteLine() { return WriteLine(""); }
 
   /** Writes a char[N] representing a line of text including `\r\n`. */
