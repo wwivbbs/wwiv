@@ -22,10 +22,13 @@
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include <sstream>
 #include <type_traits>
 #include <vector>
 
 #include "core/wwivport.h"
+
+typedef std::basic_ostream<char>&(ENDL_TYPE2)(std::basic_ostream<char>&);
 
 /**
  \class TextFile textfile.h "core/textfile.h"
@@ -145,6 +148,21 @@ public:
   */
   explicit operator bool() const { return IsOpen(); }
   friend std::ostream& operator<<(std::ostream& os, const TextFile& f);
+
+  template <typename T> TextFile& operator<<(T const& value) {
+    std::ostringstream ss;
+    ss << value;
+    Write(ss.str());
+    return *this;
+  }
+  inline TextFile& operator<<(ENDL_TYPE2* value) {
+    std::ostringstream ss;
+    ss << value;
+    Write(ss.str());
+    return *this;
+  }
+
+
 
 private:
   std::string file_name_;

@@ -22,6 +22,7 @@
 #include "file_helper.h"
 #include "gtest/gtest.h"
 
+#include <iomanip>
 #include <iostream>
 #include <memory>
 #include <string>
@@ -57,7 +58,7 @@ TEST_F(TextFileTest, Constructor_SunnyCase) {
 }
 
 TEST_F(TextFileTest, Constructor_Path_And_Name) {
-  TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+  TextFile file(FilePath(helper_.TempDir(), this->test_name()), "rt");
   string s;
   EXPECT_TRUE(file.ReadLine(&s));
   EXPECT_EQ("Hello World", s);
@@ -110,6 +111,34 @@ TEST_F(TextFileTest, Write) {
   }
   const string actual = helper_.ReadFile(filename);
   EXPECT_EQ("Hello", actual);
+}
+
+TEST_F(TextFileTest, Insertion_Basic) {
+  string filename;
+  {
+    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    file << "Hello" << " " << "World";
+    filename = file.full_pathname();
+    // Let the textfile close.
+  }
+  const string actual = helper_.ReadFile(filename);
+  EXPECT_EQ("Hello World", actual);
+}
+
+TEST_F(TextFileTest, Insertion_TwoLines) {
+  string filename;
+  {
+    TextFile file(FilePath(helper_.TempDir(), this->test_name()), "wt");
+    file << "Hello" << std::endl;
+    file << "World" << std::endl;
+    filename = file.full_pathname();
+    // Let the textfile close.
+  }
+  const string actual = helper_.ReadFile(filename);
+  auto lines = wwiv::strings::SplitString(actual, "\r\n", true);
+  EXPECT_EQ(2, lines.size());
+  EXPECT_EQ("Hello", lines.at(0));
+  EXPECT_EQ("World", lines.at(1));
 }
 
 TEST_F(TextFileTest, WriteFormatted) {
