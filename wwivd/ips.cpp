@@ -136,6 +136,7 @@ static string to_string(std::set<time_t> times) {
 }
 
 bool AutoBlocker::Connection(const std::string& ip) {
+  VLOG(1) << "AutoBlocker::Connection: " << ip;
   if (!b_.auto_blacklist) {
     return true;
   }

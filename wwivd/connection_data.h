@@ -40,6 +40,7 @@ struct ConnectionData {
   std::shared_ptr<ConcurrentConnections> concurrent_connections_;
   std::shared_ptr<wwiv::wwivd::GoodIp> good_ips_;
   std::shared_ptr<wwiv::wwivd::BadIp> bad_ips_;
+  std::shared_ptr<wwiv::wwivd::AutoBlocker> auto_blocker_;
 };
 
 }  // namespace wwivd

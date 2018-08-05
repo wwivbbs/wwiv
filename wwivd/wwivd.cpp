@@ -56,6 +56,7 @@
 #include <cereal/types/vector.hpp>
 
 #include "core/command_line.h"
+#include "core/datetime.h"
 #include "core/file.h"
 #include "core/http_server.h"
 #include "core/inifile.h"
@@ -71,7 +72,6 @@
 #include "core/version.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
-#include "core/datetime.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/nets.h"
 #include "wwivd/node_manager.h"
@@ -169,12 +169,16 @@ int Main(CommandLine& cmdline) {
 
   ConnectionData data(&config, &c, &nodes, concurrent_connections);
   if (c.blocking.use_goodip_txt) {
-    File goodip(FilePath(config.datadir(), "goodip.txt"));
-    data.good_ips_ = std::make_shared<GoodIp>(goodip.full_pathname());
+    data.good_ips_ = std::make_shared<GoodIp>(FilePath(config.datadir(), "goodip.txt"));
   }
   if (c.blocking.use_badip_txt) {
-    File badip(FilePath(config.datadir(), "badip.txt"));
-    data.bad_ips_ = std::make_shared<BadIp>(badip.full_pathname());
+    data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
+  }
+  if (c.blocking.auto_blacklist) {
+    if (!data.bad_ips_) {
+      data.bad_ips_ = std::make_shared<BadIp>(FilePath(config.datadir(), "badip.txt"));
+    }
+    data.auto_blocker_ = std::make_shared<AutoBlocker>(data.bad_ips_, c.blocking);
   }
 
   auto telnet_or_ssh_fn = [&](accepted_socket_t r) {

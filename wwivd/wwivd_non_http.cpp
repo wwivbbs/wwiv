@@ -342,6 +342,16 @@ ConnectionHandler::BlockedConnectionResult ConnectionHandler::CheckForBlockedCon
     }
   }
 
+  // Not blocked address nor blocked country. See if it's a new
+  // connection, and if so, should we block it now.
+  if (b.auto_blacklist && data.auto_blocker_) {
+    if (!data.auto_blocker_->Connection(remote_peer)) {
+      // We have a newly blocked address.
+      LOG(INFO) << "Denying connection attempt from AutoBlocker: " << remote_peer;
+      return BlockedConnectionResult(BlockedConnectionAction::DENY, remote_peer);
+    }
+  }
+
   // Nothing left to check, let the connection through.
   LOG(INFO) << "Allowing connection for peer: " << remote_peer;
   return BlockedConnectionResult(BlockedConnectionAction::ALLOW, remote_peer);
