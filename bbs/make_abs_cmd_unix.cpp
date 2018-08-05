@@ -25,18 +25,16 @@
 #include "bbs/bbs.h"
 #include "bbs/application.h"
 
-#include "core/strings.h"
 #include "core/file.h"
-#include "core/wwivport.h"
 
 using std::string;
-using wwiv::strings::StrCat;
+using namespace wwiv::core;
 
-void make_abs_cmd(const string root, string* out) {
-  if (out->find("/") == string::npos) {
+void make_abs_cmd(const std::string root, std::string* out) {
+  if (out->find("/") == std::string::npos) {
 	// Use current path of we don't have an abs path.
-    string s(*out);
-    wwiv::core::File f(a()->GetHomeDir(), s);
+    std::string s(*out);
+    File f(FilePath(a()->GetHomeDir(), s));
     *out = f.full_pathname();
   }
 }
