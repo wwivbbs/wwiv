@@ -165,12 +165,9 @@ public:
 
 
 private:
-  std::string file_name_;
-  std::string file_mode_;
+  const std::string file_name_;
+  const std::string file_mode_;
   FILE* file_;
-  FILE* OpenImpl();
-  static const int TRIES;
-  static const int WAIT_TIME;
 };
 
 #endif // __INCLUDED_WTEXTFILE_H__

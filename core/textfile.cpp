@@ -50,56 +50,53 @@ using std::chrono::milliseconds;
 
 using namespace wwiv::os;
 
-const int TextFile::WAIT_TIME = 10;
-const int TextFile::TRIES = 100;
-
-TextFile::TextFile(const string& file_name, const string& file_mode)
-    : file_name_(file_name), file_mode_(file_mode) {
-  file_ = OpenImpl();
+namespace {
+const int WAIT_TIME = 10;
+const int TRIES = 100;
 }
 
 #ifdef _WIN32
-FILE* TextFile::OpenImpl() {
+FILE* OpenImpl(const std::string& name, const std::string& mode) {
   int share = SH_DENYWR;
   int md = 0;
-  if (strchr(file_mode_.c_str(), 'w') != nullptr) {
+  if (strchr(mode.c_str(), 'w') != nullptr) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT | O_TRUNC;
-  } else if (strchr(file_mode_.c_str(), 'a') != nullptr) {
+  } else if (strchr(mode.c_str(), 'a') != nullptr) {
     share = SH_DENYRD;
     md = O_RDWR | O_CREAT;
   } else {
     md = O_RDONLY;
   }
-  if (strchr(file_mode_.c_str(), 'b') != nullptr) {
+  if (strchr(mode.c_str(), 'b') != nullptr) {
     md |= O_BINARY;
   }
-  if (strchr(file_mode_.c_str(), '+') != nullptr) {
+  if (strchr(mode.c_str(), '+') != nullptr) {
     md &= ~O_RDONLY;
     md |= O_RDWR;
     share = SH_DENYRD;
   }
 
-  int fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
+  int fd = _sopen(name.c_str(), md, share, S_IREAD | S_IWRITE);
   if (fd < 0) {
     int count = 1;
-    if (File::Exists(file_name_)) {
+    if (File::Exists(name)) {
       sleep_for(milliseconds(WAIT_TIME));
-      fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
+      fd = _sopen(name.c_str(), md, share, S_IREAD | S_IWRITE);
       while ((fd < 0 && errno == EACCES) && count < TRIES) {
         sleep_for(milliseconds(WAIT_TIME));
         count++;
-        fd = _sopen(file_name_.c_str(), md, share, S_IREAD | S_IWRITE);
+        fd = _sopen(name.c_str(), md, share, S_IREAD | S_IWRITE);
       }
     }
   }
 
   if (fd > 0) {
-    if (strchr(file_mode_.c_str(), 'a')) {
+    if (strchr(mode.c_str(), 'a')) {
       _lseek(fd, 0L, SEEK_END);
     }
 
-    FILE *hFile = _fdopen(fd, file_mode_.c_str());
+    FILE* hFile = _fdopen(fd, mode.c_str());
     if (!hFile) {
       _close(fd);
     }
@@ -109,14 +106,17 @@ FILE* TextFile::OpenImpl() {
 }
 
 #else  // _WIN32
-FILE* TextFile::OpenImpl() {
-  FILE *f = fopen(file_name_.c_str(), file_mode_.c_str());
+FILE* OpenImpl() {
+  FILE* f = fopen(name.c_str(), mode.c_str());
   if (f != nullptr) {
-    flock(fileno(f), (strpbrk(file_mode_.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
+    flock(fileno(f), (strpbrk(mode.c_str(), "wa+")) ? LOCK_EX : LOCK_SH);
   }
   return f;
 }
-#endif  // _WIN32
+#endif // _WIN32
+
+TextFile::TextFile(const string& file_name, const string& file_mode)
+    : file_name_(file_name), file_mode_(file_mode), file_(OpenImpl(file_name, file_mode)) {}
 
 bool TextFile::Close() {
   if (file_ == nullptr) {
