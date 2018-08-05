@@ -90,7 +90,7 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
                << " for network: " << network_name_;
   if (!quiet()) {
     std::cerr << cmdline.program_name() << " [" << wwiv_version << beta_version << "]"
-              << " for network: " << network_name_;
+              << " for network: " << network_name_ << std::endl;
   }
 
   if (!LoadNetIni()) {

@@ -507,10 +507,10 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
         ch = SOFTRETURN;
       }
     }
-    if (a()->localIO()->WhereX()) {
+    if (bout.wherex() > 0) {
       bout.nl();
     }
-  } else if (a()->localIO()->WhereX()) {
+  } else if (bout.wherex() > 0) {
     bout.nl();
   }
 }

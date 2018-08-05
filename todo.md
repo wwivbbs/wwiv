@@ -10,7 +10,6 @@
 
 ## Ini Files and Configuration
 ***
-* Add net.ini support into network{1,2,3}
 
 ## Infrastructure Cleanup
 ***
