@@ -649,11 +649,19 @@ bool send_post_to_subscribers(const std::vector<net_networks_rec>& nets, int ori
           // Remove the original sender from the set of systems
           // that we will resend this to.
           subscribers.erase(template_packet.nh.fromsys);
+          for (const auto& skip : subscribers_to_skip) {
+            // Skip the subscribers to skip too.
+            subscribers.erase(skip);
+          }
           VLOG(1) << "Removing subscriber (sender): " << template_packet.nh.fromsys;
           VLOG(1) << "Read subscribers #: " << subscribers.size();
           VLOG(1) << "Creating wwivnet packet to: ";
           for (const auto x : subscribers) {
             VLOG(1) << "        @" << x;
+          }
+
+          if (subscribers.empty()) {
+            VLOG(1) << "No subscribers left, skipping sending this packet";
           }
           h.list_len = static_cast<uint16_t>(subscribers.size());
           h.tosys = 0;
