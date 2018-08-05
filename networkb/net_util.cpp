@@ -109,6 +109,20 @@ std::string NetworkCommandLine::semaphore_filename() const noexcept {
   return StrCat(network_.dir, network_cmd_name(net_cmd_), ".bsy");
 }
 
+static void SetNewBooleanDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    auto f = ini.value<bool>(key, cmdline.barg(key));
+    cmdline.SetNewDefault(key, f ? "Y" : "N");
+  }
+}
+
+static void SetNewIntDefault(CommandLine& cmdline, const IniFile& ini, const std::string& key) {
+  if (cmdline.contains_arg(key) && cmdline.arg(key).is_default()) {
+    auto f = ini.value<int>(key, cmdline.barg(key));
+    cmdline.SetNewDefault(key, std::to_string(f));
+  }
+}
+
 bool NetworkCommandLine::LoadNetIni() {
   const auto net_tag = network_cmd_name(net_cmd_);
   const auto net_tag_net = StrCat(net_tag, "-", network_name());
@@ -120,24 +134,11 @@ bool NetworkCommandLine::LoadNetIni() {
     return true;
   }
 
-  if (cmdline_.contains_arg("skip_net") && cmdline().arg("skip_net").is_default()) {
-    auto skip_net = ini->value<bool>("skip_net", cmdline().barg("skip_net"));
-    cmdline_.SetNewDefault("skip_net", skip_net ? "Y" : "N");
-  }
-  if (cmdline_.contains_arg("crc") && cmdline().arg("crc").is_default()) {
-    auto skip_net = ini->value<bool>("crc", cmdline().barg("crc"));
-    cmdline_.SetNewDefault("crc", skip_net ? "Y" : "N");
-  }
-  if (cmdline_.contains_arg("cram_md5") && cmdline().arg("cram_md5").is_default()) {
-    auto skip_net = ini->value<bool>("cram_md5", cmdline().barg("cram_md5"));
-    cmdline_.SetNewDefault("cram_md5", skip_net ? "Y" : "N");
-  }
-  if (cmdline_.contains_arg("semaphore_timeout") && cmdline().arg("semaphore_timeout").is_default()) {
-    auto semaphore_timeout =
-        ini->value<int>("semaphore_timeout", cmdline().iarg("semaphore_timeout"));
-    cmdline_.SetNewDefault("semaphore_timeout", std::to_string(semaphore_timeout));
-  }
-
+  SetNewBooleanDefault(cmdline_, *ini, "skip_net");
+  SetNewBooleanDefault(cmdline_, *ini, "crc");
+  SetNewBooleanDefault(cmdline_, *ini, "cram_md5");
+  SetNewBooleanDefault(cmdline_, *ini, "quiet");
+  SetNewIntDefault(cmdline_, *ini, "semaphore_timeout");
   return true;
 }
 
