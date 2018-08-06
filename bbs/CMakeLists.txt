@@ -29,6 +29,7 @@ set(COMMON_SOURCES
  conf.cpp
  confutil.cpp
  connect1.cpp
+ context.cpp
  crc.cpp
  datetime.cpp
  defaults.cpp

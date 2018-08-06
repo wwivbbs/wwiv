@@ -17,14 +17,17 @@
 /**************************************************************************/
 
 #include "bbs/context.h"
+#include "bbs/application.h"
+
+#include <chrono>
+#include <string>
 
 namespace wwiv {
 namespace bbs {
 
 SessionContext::SessionContext(Application* a) : a_(a) { reset(); }
 
-SessionContext::reset() {
-  a_->context()->reset();
+void SessionContext::reset() {
   a_->SetCurrentReadMessageArea(-1);
   a_->SetCurrentConferenceMessageArea(0);
   a_->SetCurrentConferenceFileArea(0);
@@ -38,7 +41,7 @@ SessionContext::reset() {
   a_->chatting_ = 0;
   a_->ReadCurrentUser(1);
   a_->received_short_message_ = false;
-  a_->set_extratimecall(seconds(0));
+  a_->set_extratimecall(std::chrono::seconds(0));
   a_->using_modem = 0;
   a_->SetTimeOnlineLimited(false);
 }
