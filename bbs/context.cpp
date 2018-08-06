@@ -25,7 +25,7 @@
 namespace wwiv {
 namespace bbs {
 
-SessionContext::SessionContext(Application* a) : a_(a) { reset(); }
+SessionContext::SessionContext(Application* a) : a_(a) { }
 
 void SessionContext::reset() {
   a_->SetCurrentReadMessageArea(-1);
