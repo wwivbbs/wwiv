@@ -28,6 +28,7 @@
 
 #include "bbs/batch.h"
 #include "bbs/conf.h"
+#include "bbs/context.h"
 #include "bbs/local_io.h"
 #include "bbs/output.h"
 #include "bbs/remote_io.h"
@@ -92,6 +93,7 @@ public:
   virtual ~Application();
 
   wwiv::sdk::User* user() { return &thisuser_; }
+  wwiv::bbs::SessionContext& context() { return session_context_; }
 
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
@@ -401,6 +403,7 @@ public:
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
   int bquote_ = 0;
+  int equote_ = 0;
   bool chat_file_{false};
   bool chatcall_{false};
   bool received_short_message_{false};
@@ -409,7 +412,6 @@ public:
   int charbufferpointer_ = 0;
   int chatting_ = false;
   int do_event_ = false;
-  int equote_ = 0;
   bool no_hangup_ = false;
   bool in_chatroom_ = false;
   bool chatline_ = false;
@@ -468,6 +470,7 @@ private:
 
   Batch batch_;
   std::unique_ptr<wwiv::sdk::Subs> subs_;
+  wwiv::bbs::SessionContext session_context_;
 
   // Former global variables and system_operation_rec members to be moved
   uint32_t flags_{0};

@@ -113,22 +113,7 @@ void frequent_init() {
   use_workspace = false;
 
   // Context Globals in Appliction
-  a()->SetCurrentReadMessageArea(-1);
-  a()->SetCurrentConferenceMessageArea(0);
-  a()->SetCurrentConferenceFileArea(0);
-  a()->charbufferpointer_ = 0;
-  a()->localIO()->SetTopLine(0);
-  a()->screenlinest = a()->defscreenbottom + 1;
-  a()->hangup_ = false;
-  a()->chatcall_ = false;
-  a()->SetChatReason("");
-  a()->SetUserOnline(false);
-  a()->chatting_ = 0;
-  a()->ReadCurrentUser(1);
-  a()->received_short_message_ = false;
-  a()->set_extratimecall(seconds(0));
-  a()->using_modem = 0;
-  a()->SetTimeOnlineLimited(false);
+  a()->context().reset();
 
   set_net_num(0);
   read_qscn(1, qsc, false);

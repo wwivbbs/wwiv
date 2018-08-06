@@ -96,13 +96,10 @@ using namespace wwiv::strings;
 Output bout;
 
 Application::Application(LocalIO* localIO)
-    : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_() {
+    : local_io_(localIO), oklevel_(exitLevelOK), errorlevel_(exitLevelNotOK), batch_(),
+      session_context_(this) {
   ::bout.SetLocalIO(localIO);
   SetCurrentReadMessageArea(-1);
-  chat_file_ = false;
-  bquote_ = 0;
-  equote_ = 0;
-
 
   tzset();
   srand(static_cast<unsigned int>(time_t_now()));
@@ -135,7 +132,7 @@ bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
   ::bout.SetLocalIO(wlocal_io);
 
-  const int screen_bottom = localIO()->GetDefaultScreenBottom();
+  const auto screen_bottom = localIO()->GetDefaultScreenBottom();
   localIO()->SetScreenBottom(screen_bottom);
   defscreenbottom = screen_bottom;
   screenlinest = screen_bottom + 1;
