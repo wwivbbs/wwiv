@@ -298,7 +298,7 @@ int WFC::doWFCEvents() {
       any = true;
     }
     DrawScreen();
-    okskey = false;
+    bout.okskey(false);
     if (io->KeyPressed()) {
       a_->set_at_wfc(false);
       a_->ReadCurrentUser(sysop_usernum);
@@ -318,7 +318,7 @@ int WFC::doWFCEvents() {
     if (ch) {
       a_->set_at_wfc(true);
       any = true;
-      okskey = true;
+      bout.okskey(true);
       resetnsp();
       io->SetCursor(LocalIO::cursorNormal);
       switch (ch) {
@@ -543,7 +543,7 @@ int WFC::doWFCEvents() {
       } break;
       }
       Clear();  // moved from after getch
-      if (!incom && !lokb) {
+      if (!a()->context().incom() && !lokb) {
         frequent_init();
         a_->ReadCurrentUser(sysop_usernum);
         read_qscn(1, qsc, false);
@@ -562,7 +562,7 @@ int WFC::doWFCEvents() {
       }
       giveup_timeslice();
     }
-  } while (!incom && !lokb);
+  } while (!a()->context().incom() && !lokb);
   return lokb;
 }
 

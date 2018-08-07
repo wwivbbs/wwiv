@@ -1289,7 +1289,7 @@ void finish_qwk(struct qwk_junk *qwk_info) {
     }
   }
 
-  if (incom) {
+  if (a()->context().incom()) {
     while (!done && !qwk_info->abort && !a()->hangup_) {
       bool abort = false;
       qwk_send_file(qwk_file_to_send, &sent, &abort);

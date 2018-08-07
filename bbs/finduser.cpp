@@ -51,7 +51,7 @@ using namespace wwiv::strings;
 int finduser(const string& searchString) {
   User user;
 
-  guest_user = false;
+  a()->context().guest_user(false);
   a()->users()->set_user_writes_allowed(true);
   if (searchString == "NEW") {
     return -1;
@@ -73,7 +73,7 @@ int finduser(const string& searchString) {
     return 0;
   }
   if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
-    guest_user = true;
+    a()->context().guest_user(true);
     a()->users()->set_user_writes_allowed(false);
   }
   return user_number;

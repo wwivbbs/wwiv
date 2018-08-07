@@ -62,7 +62,7 @@ static bool access_conf(User * u, int sl, const confrec * c) {
   if ((u->GetAge() < c->minage) || (u->GetAge() > c->maxage)) {
     return false;
   }
-  if (incom && (a()->modem_speed_ < c->minbps)) {
+  if (a()->context().incom() && (a()->modem_speed_ < c->minbps)) {
     return false;
   }
   if (c->ar && !u->HasArFlag(c->ar)) {

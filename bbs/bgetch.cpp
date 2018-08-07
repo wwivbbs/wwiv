@@ -97,12 +97,12 @@ static void HandleControlKey(char *ch) {
   if (c == CBACKSPACE) {
     c = BACKSPACE;
   }
-  if (okskey) {
+  if (bout.okskey()) {
     switch (c) {
     case CA:   // CTRL-A
     case CD:   // CTRL-D
     case CF:   // CTRL-F
-      if (okmacro && (!a()->charbufferpointer_)) {
+      if (a()->context().okmacro() && (!a()->charbufferpointer_)) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         auto macroNum = MACRO_KEY_TABLE[(int)c];
         to_char_array(charbuffer, a()->user()->GetMacro(macroNum));
@@ -217,7 +217,7 @@ char bgetch(bool allow_extended_input) {
       }
     }
     lastchar_pressed();
-  } else if (incom && bkbhitraw()) {
+  } else if (a()->context().incom() && bkbhitraw()) {
     ch = bgetchraw();
     bout.SetLastKeyLocal(false);
   }
@@ -230,7 +230,7 @@ char bgetch(bool allow_extended_input) {
 }
 
 char bgetchraw() {
-  if (ok_modem_stuff && nullptr != a()->remoteIO()) {
+  if (a()->context().ok_modem_stuff() && nullptr != a()->remoteIO()) {
     if (a()->remoteIO()->incoming()) {
       return (a()->remoteIO()->getW());
     }
@@ -242,7 +242,7 @@ char bgetchraw() {
 }
 
 bool bkbhitraw() {
-  if (ok_modem_stuff) {
+  if (a()->context().ok_modem_stuff()) {
     return (a()->remoteIO()->incoming() || a()->localIO()->KeyPressed());
   } else if (a()->localIO()->KeyPressed()) {
     return true;
@@ -251,7 +251,7 @@ bool bkbhitraw() {
 }
 
 bool bkbhit() {
-  if ((a()->localIO()->KeyPressed() || (incom && bkbhitraw()) ||
+  if ((a()->localIO()->KeyPressed() || (a()->context().incom() && bkbhitraw()) ||
        (a()->charbufferpointer_ && charbuffer[a()->charbufferpointer_])) ||
       a()->bquote_) {
     return true;
@@ -279,7 +279,7 @@ SavedLine Output::SaveCurrentLine() {
 }
 
 void Output::dump() {
-  if (ok_modem_stuff) {
+  if (a()->context().ok_modem_stuff()) {
     a()->remoteIO()->purgeIn();
   }
 }
@@ -321,7 +321,8 @@ char Output::getkey(bool allow_extended_input) {
     CheckForHangup();
     while (!bkbhit() && !a()->hangup_) {
       // Try to make hangups happen faster.
-      if (incom && ok_modem_stuff && !a()->remoteIO()->connected()) {
+      if (a()->context().incom() && a()->context().ok_modem_stuff() &&
+          !a()->remoteIO()->connected()) {
         Hangup();
       }
       CheckForHangup();
@@ -343,6 +344,16 @@ char Output::getkey(bool allow_extended_input) {
   } while (!ch);
   return ch;
 }
+
+void Output::reset() {
+  newline = true;
+  ansiptr = 0;
+  curatr(0x07);
+  clear_lines_listed();
+  // Reset the error bit on bout since after a a()->hangup_ it can be set.
+  bout.clear();
+}
+
 
 // The final character of an ansi sequence
 #define OB ('[')
@@ -431,7 +442,7 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
       cb(bgetch_timeout_status_t::CLEAR, 0);
     }
 
-    if (!incom || a()->localIO()->KeyPressed()) {
+    if (!a()->context().incom() || a()->localIO()->KeyPressed()) {
       // Check for local keys
       int key = a()->localIO()->GetChar();
       if (key == CBACKSPACE) {

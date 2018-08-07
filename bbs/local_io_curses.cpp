@@ -159,10 +159,7 @@ void CursesLocalIO::Putch(unsigned char ch) {
   } else if (ch == BACKSPACE) {
     Backspace();
   } else if (ch == CG) {
-    if (!outcom) {
-      // TODO Make the bell sound configurable.
-      // wwiv::os::sound(500, milliseconds(4));
-    }
+    // No bell please.
   }
 }
 

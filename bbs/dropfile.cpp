@@ -147,7 +147,7 @@ void CreateDoorInfoDropFile() {
   if (fileDorInfoSys.IsOpen()) {
     fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", a()->config()->system_name().c_str(),
                                   a()->config()->sysop_name().c_str(),
-                                  incom ? a()->primary_port() : 0);
+                                  a()->context().incom() ? a()->primary_port() : 0);
     fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? a()->modem_speed_ : 0));
     fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
     if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
@@ -195,7 +195,7 @@ void CreatePCBoardSysDropFile() {
     pcb.nodechat = 32;
     auto modem_speed_str = std::to_string(a()->modem_speed_);
     sprintf(pcb.openbps, "%-5.5s", modem_speed_str.c_str());
-    if (!incom) {
+    if (!a()->context().incom()) {
       memcpy(pcb.connectbps, "Local", 5);
     } else {
       snprintf(pcb.connectbps, 5, "%-5.5d", a()->modem_speed_);
@@ -288,8 +288,9 @@ void CreateCallInfoBbsDropFile() {
                         a()->user()->GetVoicePhoneNumber(), a()->user()->GetLastOn().c_str(),
                         a()->user()->GetLastOn().c_str(), a()->user()->GetNumLogons(),
                         a()->user()->GetScreenLines(), a()->user()->GetFilesUploaded(),
-                        a()->user()->GetFilesDownloaded(), "8N1", (incom) ? "REMOTE" : "LOCAL",
-                        (incom) ? a()->primary_port() : 0);
+                        a()->user()->GetFilesDownloaded(), "8N1",
+                        (a()->context().incom()) ? "REMOTE" : "LOCAL",
+                        (a()->context().incom()) ? a()->primary_port() : 0);
     char szDate[81], szTemp[81];
     strcpy(szDate, "00/00/00");
     sprintf(szTemp, "%d", a()->user()->GetBirthdayMonth());
@@ -303,7 +304,7 @@ void CreateCallInfoBbsDropFile() {
     memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
     file.WriteLine(szDate);
     string cspeed = std::to_string(a()->modem_speed_);
-    file.WriteLine((incom) ? cspeed.c_str() : "38400");
+    file.WriteLine(a()->context().incom() ? cspeed.c_str() : "38400");
     file.Close();
   }
 }
@@ -506,7 +507,8 @@ const string create_chain_file() {
         a()->user()->GetScreenChars(), a()->user()->GetScreenLines(), a()->user()->GetSl());
     auto temporary_log_filename = GetTemporaryInstanceLogFileName();
     auto gfilesdir = a()->config()->gfilesdir();
-    file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(), incom, nsl(),
+    file.WriteFormatted("%d\n%d\n%d\n%u\n%8ld.00\n%s\n%s\n%s\n", cs(), so(), okansi(),
+                        a()->context().incom(), nsl(),
                         gfilesdir.c_str(), a()->config()->datadir().c_str(),
                         temporary_log_filename.c_str());
     if (a()->using_modem) {

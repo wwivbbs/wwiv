@@ -72,14 +72,14 @@ int exec_cmdline(const std::string cmdline, int flags) {
     LOG(ERROR) << "EFLAG_COMIO is not supported on UNIX";
   }
 
-  if (ok_modem_stuff) {
+  if (a()->context().ok_modem_stuff()) {
     a()->remoteIO()->close(true);
   }
 
   int i = UnixSpawn(cmdline, nullptr, flags);
 
   // reengage comm stuff
-  if (ok_modem_stuff) {
+  if (a()->context().ok_modem_stuff()) {
     a()->remoteIO()->open();
   }
   return i;

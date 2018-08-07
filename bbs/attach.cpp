@@ -189,7 +189,7 @@ void attach_file(int mode) {
               bFound = false;
               bout.nl();
               if (so()) {
-                if (incom) {
+                if (a()->context().incom()) {
                   bout << "|#5Upload from remote? ";
                   if (yesno()) {
                     bRemoteUpload = true;

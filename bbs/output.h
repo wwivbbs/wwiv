@@ -174,6 +174,11 @@ public:
   int curatr() const noexcept override { return curatr_; }
   void curatr(int n) override { curatr_ = n; }
 
+  bool okskey() const noexcept { return okskey_; }
+  void okskey(bool n) { okskey_ = n; }
+
+  // reset the state of Output
+  void reset();
 
 public:
   int lines_listed_;
@@ -197,6 +202,7 @@ private:
 
   bool ansi_movement_occurred_{false};
   int curatr_{7};
+  bool okskey_{true};
 };
 
 /**

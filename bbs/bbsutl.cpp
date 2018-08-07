@@ -132,7 +132,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
     } else switch (ch) {
       case CG:
-        if (a()->chatting_ && outcom) {
+        if (a()->chatting_ && a()->context().outcom()) {
           bout.rputch(CG);
         }
         break;
@@ -399,7 +399,7 @@ bool sysop2() {
 // cursor position interrogation ANSI sequence for remote detection.
 // If the user is asked and choosed NO, then -1 is returned.
 int check_ansi() {
-  if (!incom) {
+  if (!a()->context().incom()) {
     return 1;
   }
 

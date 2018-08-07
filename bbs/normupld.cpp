@@ -151,7 +151,7 @@ void normalupload(int dn) {
         bout << "That file is already here.\r\n\n";
         ok = 0;
       }
-    } else if (!incom) {
+    } else if (!a()->context().incom()) {
       bout.nl();
       bout << "File isn't already there.\r\nCan't upload locally.\r\n\n";
       ok = 0;

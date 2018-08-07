@@ -78,7 +78,7 @@ using namespace wwiv::strings;
 static char s_szFindString[21];
 
 static string GetScanReadPrompts(int nMessageNumber) {
-  if (forcescansub) {
+  if (a()->context().forcescansub()) {
     if (nMessageNumber < a()->GetNumMessagesInCurrentMessageArea()) {
       return "|#1Press |#7[|#2ENTER|#7]|#1 to go to the next message...";
     } else {
@@ -882,7 +882,7 @@ static void HandleMessageExtract(int &msgnum) {
 }
 
 static void HandleMessageHelp() {
-  if (forcescansub) {
+  if (a()->context().forcescansub()) {
     printfile(MUSTREAD_NOEXT);
   } else if (lcs()) {
     print_help_file(SMBMAIN_NOEXT);
@@ -1004,7 +1004,7 @@ static void HandleScanReadPrompt(int &msgnum, MsgScanOption& scan_option, bool& 
     scan_option = MsgScanOption::SCAN_OPTION_READ_MESSAGE;
     msgnum = nUserInput;
   } else if (szUserInput[1] == '\0') {
-    if (forcescansub) {
+    if (a()->context().forcescansub()) {
       return;
     }
     switch (szUserInput[0]) {
@@ -1222,13 +1222,13 @@ void scan(int nMessageNumber, MsgScanOption scan_option, bool &nextsub, bool tit
     { // Read Message
       bool next = false;
       if (nMessageNumber > 0 && nMessageNumber <= a()->GetNumMessagesInCurrentMessageArea()) {
-        bool old_incom = incom;
-        if (forcescansub) {
-          incom = false;
+        bool old_incom = a()->context().incom();
+        if (a()->context().forcescansub()) {
+          a()->context().incom(false);
         }
         read_post(nMessageNumber, &next, &val);
-        if (forcescansub) {
-          incom = old_incom;
+        if (a()->context().forcescansub()) {
+          a()->context().incom(old_incom);
         }
       }
       bout.Color(0);

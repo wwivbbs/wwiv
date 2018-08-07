@@ -516,7 +516,7 @@ static void macroedit(char *macro_text) {
   *macro_text = '\0';
   bout.nl();
   bout << "|#5Enter your macro, press |#7[|#1CTRL-Z|#7]|#5 when finished.\r\n\n";
-  okskey = false;
+  bout.okskey(false);
   bout.Color(0);
   bool done = false;
   int i = 0;
@@ -565,7 +565,7 @@ static void macroedit(char *macro_text) {
     }
     macro_text[i + 1] = 0;
   } while (!done && i < 80 && !a()->hangup_);
-  okskey = true;
+  bout.okskey(true);
   bout.Color(0);
   bout.nl();
   bout << "|#9Is this okay? ";

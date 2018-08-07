@@ -114,7 +114,7 @@ Application::Application(LocalIO* localIO)
 }
 
 Application::~Application() {
-  if (comm_ && ok_modem_stuff) {
+  if (comm_ && context().ok_modem_stuff()) {
     comm_->close(false);
     comm_.reset(nullptr);
   }
@@ -265,7 +265,7 @@ void Application::tleft(bool check_for_timeout) {
 void Application::handle_sysop_key(uint8_t key) {
   int i, i1;
 
-  if (okskey) {
+  if (bout.okskey()) {
     if (key >= AF1 && key <= AF10) {
       set_autoval(key - 104);
     } else {
@@ -290,7 +290,7 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case F3: /* F3 */
         if (using_modem) {
-          incom = !incom;
+          a()->context().incom(!a()->context().incom());
           bout.dump();
           tleft(false);
         }
@@ -409,7 +409,7 @@ void Application::UpdateTopScreen() {
 
   int lll = bout.lines_listed();
 
-  if (so() && !incom) {
+  if (so() && !a()->context().incom()) {
     topdata = LocalIO::topdataNone;
   }
 
@@ -606,12 +606,12 @@ void Application::GetCaller() {
     modem_speed_ = 38400;
   }
 
-  using_modem = incom;
+  using_modem = a()->context().incom() ? 1 : 0;
   if (lokb == 2) {
     using_modem = -1;
   }
 
-  okskey = true;
+  bout.okskey(true);
   localIO()->Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   set_at_wfc(false);
@@ -632,13 +632,13 @@ void Application::GotCaller(unsigned int ms) {
   localIO()->Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   if (ms) {
-    incom = true;
-    outcom = true;
+    a()->context().incom(true);
+    a()->context().outcom(true);
     using_modem = 1;
   } else {
     using_modem = 0;
-    incom = false;
-    outcom = false;
+    a()->context().incom(false);
+    a()->context().outcom(false);
   }
 }
 
@@ -721,7 +721,7 @@ int Application::Run(int argc, char* argv[]) {
   bout.curatr(0x07);
   // Set the instance, this may be changed by a command line argument
   instance_number_ = 1;
-  ok_modem_stuff = true;
+  context().ok_modem_stuff(true);
 
   const std::string bbs_env = environment_variable("BBS");
   if (!bbs_env.empty()) {
@@ -762,7 +762,7 @@ int Application::Run(int argc, char* argv[]) {
         hSockOrComm = stoi(argument);
         break;
       case 'M':
-        ok_modem_stuff = false;
+        context().ok_modem_stuff(false);
         break;
       case 'N': {
         instance_number_ = stoi(argument);
@@ -806,8 +806,8 @@ int Application::Run(int argc, char* argv[]) {
           ooneuser = true;
           using_modem = 0;
           hangup_ = false;
-          incom = true;
-          outcom = false;
+          a()->context().incom(true);
+          a()->context().outcom(false);
           if (argument2Char == 'T') {
             type = CommunicationType::TELNET;
           } else if (argument2Char == 'S') {
@@ -910,7 +910,7 @@ int Application::Run(int argc, char* argv[]) {
   bool remote_opened = true;
   // If we are telnet...
   if (type == CommunicationType::TELNET || type == CommunicationType::SSH) {
-    ok_modem_stuff = true;
+    context().ok_modem_stuff(true);
     remote_opened = remoteIO()->open();
   }
 
@@ -947,7 +947,7 @@ int Application::Run(int argc, char* argv[]) {
         read_qscn(usernum, qsc, false);
         ResetEffectiveSl();
         changedsl();
-        okmacro = true;
+        a()->context().okmacro(true);
       } else {
         this_usernum_from_commandline = 0;
       }
@@ -971,7 +971,7 @@ int Application::Run(int argc, char* argv[]) {
         }
       } else {
         using_modem = 0;
-        okmacro = true;
+        a()->context().okmacro(true);
         usernum = unx_;
         ResetEffectiveSl();
         changedsl();
@@ -1015,7 +1015,7 @@ int Application::Run(int argc, char* argv[]) {
       }
       batch().clear();
     }
-    if (!no_hangup_ && using_modem && ok_modem_stuff) {
+    if (!no_hangup_ && using_modem && context().ok_modem_stuff()) {
       hang_it_up();
     }
     catsl();
@@ -1023,7 +1023,7 @@ int Application::Run(int argc, char* argv[]) {
     wfc_cls(a());
     cleanup_net();
 
-    if (!no_hangup_ && ok_modem_stuff) {
+    if (!no_hangup_ && context().ok_modem_stuff()) {
       remoteIO()->disconnect();
     }
     user_already_on_ = false;

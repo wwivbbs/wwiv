@@ -216,7 +216,7 @@ void run_event(int evnt) {
   bout << "\r\nNow running external event.\r\n\n";
   if (a()->events[evnt].status & EVENT_EXIT) {
     int exitlevel = static_cast<int>(e.cmd[0]);
-    if (ok_modem_stuff && a()->remoteIO() != nullptr) {
+    if (a()->context().ok_modem_stuff() && a()->remoteIO() != nullptr) {
       a()->remoteIO()->close(false);
     }
     a()->ExitBBSImpl(exitlevel, true);

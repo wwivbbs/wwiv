@@ -670,7 +670,7 @@ bool CanCreateNewUserAccountHere() {
     return false;
   }
 
-  if ((a()->config()->config()->newuserpw[0] != 0) && incom) {
+  if ((a()->config()->config()->newuserpw[0] != 0) && a()->context().incom()) {
     bout.nl(2);
     bool ok = false;
     int nPasswordAttempt = 0;
@@ -977,7 +977,7 @@ void VerifyNewUserPassword() {
 
 
 void SendNewUserFeedbackIfRequired() {
-  if (!incom) {
+  if (!a()->context().incom()) {
     return;
   }
 
@@ -1263,14 +1263,14 @@ void noabort(const char *file_name) {
   bool oic = false;
 
   if (a()->using_modem) {
-    oic   = incom;
-    incom = false;
+    oic = a()->context().incom();
+    a()->context().incom(false);
     bout.dump();
   }
   printfile(file_name);
   if (a()->using_modem) {
     bout.dump();
-    incom = oic;
+    a()->context().incom(oic);
   }
 }
 

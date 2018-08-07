@@ -230,7 +230,7 @@ void feedback(bool bNewUserFeedback) {
     email(title, 1, 0, true, 0, false);
     return;
   }
-  if (guest_user) {
+  if (a()->context().guest_user()) {
     a()->status_manager()->RefreshStatusCache();
     email("Guest Account Feedback", 1, 0, true, 0, true);
     return;

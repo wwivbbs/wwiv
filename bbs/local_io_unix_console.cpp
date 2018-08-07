@@ -193,10 +193,7 @@ void UnixConsoleIO::LocalPutch(unsigned char ch) {
   } else if (ch == BACKSPACE) {
     LocalBackspace();
   } else if (ch == CG) {
-    if (!outcom) {
-      // TODO Make the bell sound configurable.
-      // wwiv::os::sound(500, milliseconds(4));
-    }
+    // No bell
   }
 }
 
@@ -270,7 +267,7 @@ void UnixConsoleIO::skey(char ch) {
   int i, i1;
 
   if ((syscfg.sysconfig & sysconfig_no_local) == 0) {
-    if (okskey) {
+    if (bout.okskey()) {
       if (nKeyCode >= AF1 && nKeyCode <= AF10) {
         set_autoval(nKeyCode - 104);
       } else {
@@ -294,7 +291,7 @@ void UnixConsoleIO::skey(char ch) {
           break;
         case F3:                          /* F3 */
           if (a()->using_modem) {
-            incom = !incom;
+            a()->context().incom(!a()->context().incom());
             dump();
             tleft(false);
           }

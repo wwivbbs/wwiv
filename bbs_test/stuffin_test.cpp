@@ -36,7 +36,7 @@ class StuffInTest : public testing::Test {
 protected:
     virtual void SetUp() {
       helper.SetUp();
-      incom = false;
+      a()->context().incom(false);
       a()->modem_speed_ = 0;
     }
 
@@ -104,10 +104,10 @@ TEST_F(StuffInTest, AllDropFiles) {
 //  %N       Instance number                   "1"
 //  %P       Com port number                   "1"
 TEST_F(StuffInTest, PortAndNode) {
-  incom = false;
+  a()->context().incom(false);
   EXPECT_EQ(string("0"), stuff_in("%P", "", "", "", "", ""));
     
-  incom = true;
+  a()->context().incom(true);
   EXPECT_EQ(string("1"), stuff_in("%P", "", "", "", "", ""));
 
   EXPECT_EQ(string("42"), stuff_in("%N", "", "", "", "", ""));

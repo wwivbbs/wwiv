@@ -334,7 +334,7 @@ void zmbatchdl(bool bHangupAfterDl) {
   int cur = 0;
   uploadsrec u;
 
-  if (!incom) {
+  if (!a()->context().incom()) {
     return;
   }
 
@@ -414,7 +414,7 @@ void ymbatchdl(bool bHangupAfterDl) {
   int cur = 0;
   uploadsrec u;
 
-  if (!incom) {
+  if (!a()->context().incom()) {
     return;
   }
   string message = StrCat("Ymodem Download: Files - ", a()->batch().entry.size(),
@@ -673,7 +673,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
         user_name_number.c_str(),
         a()->modem_speed_, dl.c_str(), commandLine.c_str());
     a()->localIO()->Puts(message);
-    if (incom) {
+    if (a()->context().incom()) {
       File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);
       File::Remove(a()->dsz_logfile_name_);
       File::set_current_directory(a()->batch_directory());

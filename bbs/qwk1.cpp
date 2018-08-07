@@ -356,7 +356,7 @@ void upload_reply_packet() {
   bool do_it = yesno();
 
   if (do_it) {
-    if (incom) {
+    if (a()->context().incom()) {
       qwk_receive_file(namepath, &rec, a()->user()->data.qwk_protocol);
       sleep_for(milliseconds(500));
     }
@@ -983,7 +983,7 @@ void qwk_receive_file(char *fn, bool *received, int i) {
     maybe_internal(fn, received, nullptr, false, i);
     break;
   default:
-    if (incom) {
+    if (a()->context().incom()) {
       extern_prot(i - WWIV_NUM_INTERNAL_PROTOCOLS, fn, 0);
       *received = File::Exists(fn);
     }

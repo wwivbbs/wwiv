@@ -32,9 +32,30 @@ public:
    * Resets the application level context.
    */
   void reset();
+  bool ok_modem_stuff() const noexcept { return ok_modem_stuff_; }
+  void ok_modem_stuff(bool o) { ok_modem_stuff_ = o; }
+
+  bool incom() const noexcept { return incom_; }
+  void incom(bool i) { incom_ = i; }
+  bool outcom() const noexcept { return outcom_; }
+  void outcom(bool o) { outcom_ = o; }
+
+  bool okmacro() const noexcept { return okmacro_; }
+  void okmacro(bool o) { okmacro_ = o; }
+
+  bool forcescansub() const noexcept { return forcescansub_; }
+  void forcescansub(bool g) { forcescansub_ = g; }
+  bool guest_user() const noexcept { return guest_user_; }
+  void guest_user(bool g) { guest_user_ = g; }
 
 private:
   Application* a_;
+  bool ok_modem_stuff_{false};
+  bool incom_{false};
+  bool outcom_{false};
+  bool okmacro_{true};
+  bool forcescansub_{false};
+  bool guest_user_{false};
 };
 
 

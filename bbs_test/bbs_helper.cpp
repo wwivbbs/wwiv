@@ -101,8 +101,8 @@ void BbsHelper::SetUp() {
   // Reset the color attribute to 7 between tests.
   bout.curatr(7);
   // We need this true so our bputch tests can capture remote.
-  outcom = true;
-  ok_modem_stuff = true;
+  a()->context().outcom(true);
+  a()->context().ok_modem_stuff(true);
 }
 
 void BbsHelper::TearDown() {

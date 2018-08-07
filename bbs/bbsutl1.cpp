@@ -256,7 +256,7 @@ bool ValidateSysopPassword() {
   if (!so()) {
     return false;
   }
-  if (!incom) {
+  if (!a()->context().incom()) {
     return true;
   }
   string password = input_password("|#7SY: ", 20);
@@ -268,7 +268,7 @@ bool ValidateSysopPassword() {
  * a()->hangup_ to 1.
  */
 void hang_it_up() {
-  if (!ok_modem_stuff) {
+  if (!a()->context().ok_modem_stuff()) {
     return;
   }
   a()->remoteIO()->disconnect();

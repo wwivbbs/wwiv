@@ -1019,7 +1019,7 @@ void ReadAutoMessage() {
 }
 
 void GuestApply() {
-  if (guest_user) {
+  if (a()->context().guest_user()) {
     newuser();
   } else {
     bout << "You already have an account on here!\r\n\r\n";
@@ -1031,7 +1031,7 @@ void AttachFile() {
 }
 
 bool GuestCheck() {
-  if (guest_user) {
+  if (a()->context().guest_user()) {
     bout << "|#6This command is only for registered users.\r\n";
     return false;
   }

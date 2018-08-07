@@ -810,7 +810,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
   auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
                               cs.filename.c_str(), p.ownersys, p.owneruser);
   m.subboard_flags = cs.anony;
-  if (forcescansub) {
+  if (a()->context().forcescansub()) {
     m.flags.insert(MessageFlags::FORCED);
   }
 

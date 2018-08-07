@@ -187,7 +187,7 @@ int Output::bputch(char c, bool use_buffer) {
     needs_color_reset_at_newline_ = false;
   }
 
-  if (outcom && c != TAB) {
+  if (a()->context().outcom() && c != TAB) {
     if (!(!okansi() && (ansiptr || c == ESC))) {
       if (c == SOFTRETURN) {
 #ifdef __unix__
@@ -268,7 +268,7 @@ int Output::bputch(char c, bool use_buffer) {
  */
 void Output::rputs(const char *text) {
   // Rushfan fix for COM/IP weirdness
-  if (ok_modem_stuff) {
+  if (a()->context().ok_modem_stuff()) {
     a()->remoteIO()->write(text, strlen(text));
   }
 }
@@ -283,7 +283,7 @@ void Output::flush() {
 }
 
 void Output::rputch(char ch, bool use_buffer_) {
-  if (ok_modem_stuff && nullptr != a()->remoteIO()) {
+  if (a()->context().ok_modem_stuff() && nullptr != a()->remoteIO()) {
     if (use_buffer_) {
       if (bputch_buffer_.size() > 1024) {
         flush();

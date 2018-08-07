@@ -81,7 +81,8 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
 
 
 void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
-  if ((user_number < 1) || (user_number > a()->config()->config()->maxusers) || guest_user) {
+  if ((user_number < 1) || (user_number > a()->config()->config()->maxusers) ||
+      a()->context().guest_user()) {
     return;
   }
 

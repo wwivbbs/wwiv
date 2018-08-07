@@ -106,10 +106,10 @@ void frequent_init() {
   // Context Globals to move to Appliction
   g_flags = 0;
   irt[0] = '\0';
-  outcom = false;
-  incom = false;
-  okmacro = true;
-  okskey = true;
+  a()->context().outcom(false);
+  a()->context().incom(false);
+  a()->context().okmacro(true);
+  bout.okskey(true);
   use_workspace = false;
 
   // Context Globals in Appliction
@@ -121,12 +121,7 @@ void frequent_init() {
   reset_disable_conf();
   
   // Output context
-  bout.newline = true;
-  bout.ansiptr = 0;
-  bout.curatr(0x07);
-  bout.clear_lines_listed();
-  // Reset the error bit on bout since after a a()->hangup_ it can be set.
-  bout.clear();
+  bout.reset();
 
   // DSZ Log
   File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);

@@ -127,7 +127,7 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
     a()->localIO()->Puts("\r\n\r\n");
     a()->localIO()->Puts(command);
     a()->localIO()->Puts("\r\n");
-    if (incom) {
+    if (a()->context().incom()) {
       int nRetCode = ExecuteExternalProgram(command, a()->spawn_option(SPAWNOPT_PROT_SINGLE));
       a()->UpdateTopScreen();
       return nRetCode;
@@ -450,7 +450,7 @@ void maybe_internal(const char *file_name, bool *xferred, double *percent, bool 
     }
     return;
   }
-  if (!incom) {
+  if (!a()->context().incom()) {
     bout << "Would use internal " << prot_name(prot) << wwiv::endl;
     return;
   }
@@ -623,7 +623,7 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
     }
     break;
   default:
-    if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && incom) {
+    if (nProtocol > (WWIV_NUM_INTERNAL_PROTOCOLS - 1) && a()->context().incom()) {
       extern_prot(nProtocol - WWIV_NUM_INTERNAL_PROTOCOLS, file_name, false);
       *received = File::Exists(file_name);
     }

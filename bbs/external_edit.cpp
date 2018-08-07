@@ -261,7 +261,7 @@ bool external_text_edit(const string& edit_filename, const string& new_directory
 bool external_edit_internal(const string& edit_filename, const string& new_directory, 
                             const editorrec& editor, int numlines) {
   
-  string editorCommand = (incom) ? editor.filename : editor.filenamecon;
+  string editorCommand = (a()->context().incom()) ? editor.filename : editor.filenamecon;
   if (editorCommand.empty()) {
     bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
       pausescr();

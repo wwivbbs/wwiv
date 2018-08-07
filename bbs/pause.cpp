@@ -98,10 +98,10 @@ void pausescr() {
   auto oiia = setiia(std::chrono::milliseconds(0));
   char* ss = str_pause;
   int i2 = i1 = strlen(ss);
-  bool com_freeze = incom;
+  bool com_freeze = a()->context().incom();
 
-  if (!incom && outcom) {
-    incom = true;
+  if (!a()->context().incom() && a()->context().outcom()) {
+    a()->context().incom(true);
   }
 
   if (okansi()) {
@@ -178,7 +178,7 @@ void pausescr() {
   }
 
   if (!com_freeze) {
-    incom = false;
+    a()->context().incom(false);
   }
 }
 

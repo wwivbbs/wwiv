@@ -353,7 +353,7 @@ int exec_cmdline(const string commandLine, int flags) {
   }
   si.lpTitle = title.get();
 
-  if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
+  if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {
     a()->remoteIO()->close(true);
   }
 
@@ -386,7 +386,7 @@ int exec_cmdline(const string commandLine, int flags) {
     sysoplog() << "!!! CreateProcess failed for command: [" << workingCommandLine << "] with Error Code: " << GetLastError();
 
     // If we return here, we may have to reopen the communications port.
-    if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
+    if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {
       a()->remoteIO()->open();
     }
     return -1;
@@ -430,7 +430,7 @@ int exec_cmdline(const string commandLine, int flags) {
   CloseHandle(pi.hProcess);
 
   // reengage comm stuff
-  if (ok_modem_stuff && !bUsingSync && a()->using_modem) {
+  if (a()->context().ok_modem_stuff() && !bUsingSync && a()->using_modem) {
     a()->remoteIO()->open();
   }
 

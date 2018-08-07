@@ -126,7 +126,7 @@ const string stuff_in(const string& commandline, const string& arg1, const strin
         os << create_dropfile_filename(drop_file_t::PCBOARD_SYS);
         break;
       case 'P':
-        os << ((incom) ? a()->primary_port() : 0);
+        os << (a()->context().incom() ? a()->primary_port() : 0);
         break;
       case 'R':
         os << create_dropfile_filename(drop_file_t::DOOR_SYS);

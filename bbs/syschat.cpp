@@ -339,7 +339,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
       }
     } else switch (ch) {
       case 7: {
-        if (a()->chatting_ && outcom) {
+        if (a()->chatting_ && a()->context().outcom()) {
           bout.rputch(7);
         }
       }

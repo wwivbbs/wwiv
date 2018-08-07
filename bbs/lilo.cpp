@@ -369,9 +369,9 @@ static void logon_guest() {
 
 void getuser() {
   // Reset the key timeout to 30 seconds while trying to log in a user.
-  ScopeExit at_exit([] { okmacro = true; bout.reset_key_timeout(); });
+  ScopeExit at_exit([] { a()->context().okmacro(true); bout.reset_key_timeout(); });
 
-  okmacro = false;
+  a()->context().okmacro(false);
   // TODO(rushfan): uncomment this
   //bout.set_logon_key_timeout();
 
@@ -418,7 +418,7 @@ void getuser() {
         continue;
       }
       ok = true;
-      if (guest_user) {
+      if (a()->context().guest_user()) {
         logon_guest();
       } else {
         a()->SetEffectiveSl(a()->config()->config()->newusersl);
@@ -431,7 +431,7 @@ void getuser() {
             ok = false;
           }
         }
-        if (a()->user()->GetSl() == 255 && incom && ok) {
+        if (a()->user()->GetSl() == 255 && a()->context().incom() && ok) {
           if (!VerifySysopPassword()) {
             ok = false;
           }
@@ -495,7 +495,7 @@ static void UpdateUserStatsForLogin() {
   } else {
     a()->set_current_user_dir_num(0);
   }
-  if (a()->GetEffectiveSl() != 255 && !guest_user) {
+  if (a()->GetEffectiveSl() != 255 && !a()->context().guest_user()) {
     a()->status_manager()->Run([](WStatus& s) {
       s.IncrementCallerNumber();
       s.IncrementNumCallsToday();
@@ -504,7 +504,7 @@ static void UpdateUserStatsForLogin() {
 }
 
 static void PrintLogonFile() {
-  if (!incom) {
+  if (!a()->context().incom()) {
     return;
   }
   play_sdf(LOGON_NOEXT, false);
@@ -619,13 +619,13 @@ static void UpdateLastOnFile() {
     sysoplog(false) << stripcolors(sysop_log_line);
     sysoplog(false) << "";
   }
-  if (incom) {
-    string remote_address = a()->remoteIO()->remote_info().address;
+  if (a()->context().incom()) {
+    const auto remote_address = a()->remoteIO()->remote_info().address;
     if (!remote_address.empty()) {
       sysoplog() << "Remote IP: " << remote_address;
     }
   }
-  if (a()->GetEffectiveSl() == 255 && !incom) {
+  if (a()->GetEffectiveSl() == 255 && !a()->context().incom()) {
     return;
   }
 
@@ -906,7 +906,7 @@ void logon() {
 
   CheckUserForVotingBooth();
 
-  if ((incom || sysop1()) && a()->user()->GetSl() < 255) {
+  if ((a()->context().incom() || sysop1()) && a()->user()->GetSl() < 255) {
     broadcast(StringPrintf("%s Just logged on!", a()->user()->GetName()));
   }
   setiia(std::chrono::seconds(5));
@@ -939,9 +939,9 @@ void logon() {
   if (a()->HasConfigFlag(OP_FLAGS_USE_FORCESCAN)) {
     bool nextsub = false;
     if (a()->user()->GetSl() < 255) {
-      forcescansub = true;
+      a()->context().forcescansub(true);
       qscan(a()->GetForcedReadSubNumber(), nextsub);
-      forcescansub = false;
+      a()->context().forcescansub(false);
     } else {
       qscan(a()->GetForcedReadSubNumber(), nextsub);
     }
@@ -952,12 +952,12 @@ void logon() {
 void logoff() {
   mailrec m;
 
-  if (incom) {
+  if (a()->context().incom()) {
     play_sdf(LOGOFF_NOEXT, false);
   }
 
   if (a()->usernum > 0) {
-    if ((incom || sysop1()) && a()->user()->GetSl() < 255) {
+    if ((a()->context().incom() || sysop1()) && a()->user()->GetSl() < 255) {
       broadcast(StringPrintf("%s Just logged off!", a()->user()->GetName()));
     }
   }
@@ -972,7 +972,7 @@ void logoff() {
 
   string text = "  Logged Off At ";
   text += times();
-  if (a()->GetEffectiveSl() != 255 || incom) {
+  if (a()->GetEffectiveSl() != 255 || a()->context().incom()) {
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(text);
   }
