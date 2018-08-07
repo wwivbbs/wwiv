@@ -60,10 +60,10 @@ void OnlineUserEditor() {
   sprintf(sl, "%u", a()->user()->GetSl());
   sprintf(dsl, "%u", a()->user()->GetDsl());
   sprintf(exempt, "%u", a()->user()->GetExempt());
-  if (*qsc > 999) {
-    *qsc = 999;
+  if (*a()->context().qsc > 999) {
+    *a()->context().qsc = 999;
   }
-  sprintf(sysopsub, "%u", *qsc);
+  sprintf(sysopsub, "%u", *a()->context().qsc);
   sprintf(uk, "%u", a()->user()->GetUploadK());
   sprintf(dk, "%u", a()->user()->GetDownloadK());
   sprintf(up, "%u", a()->user()->GetFilesUploaded());
@@ -179,8 +179,8 @@ void OnlineUserEditor() {
     case 6:
       a()->localIO()->GotoXY(wx + 22, wy + 5);
       a()->localIO()->EditLine(sysopsub, 3, AllowedKeys::NUM_ONLY, &rc, "");
-      *qsc = to_number<uint32_t>(sysopsub);
-      sprintf(sysopsub, "%-3u", *qsc);
+      *a()->context().qsc = to_number<uint32_t>(sysopsub);
+      sprintf(sysopsub, "%-3u", *a()->context().qsc);
       a()->localIO()->Puts(sysopsub);
       break;
     case 7:

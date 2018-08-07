@@ -744,9 +744,9 @@ void chuser() {
   auto user_number = finduser1(userName);
   if (user_number > 0) {
     a()->WriteCurrentUser();
-    write_qscn(a()->usernum, qsc, false);
+    write_qscn(a()->usernum, a()->context().qsc, false);
     a()->ReadCurrentUser(user_number);
-    read_qscn(user_number, qsc, false);
+    read_qscn(user_number, a()->context().qsc, false);
     a()->usernum = static_cast<uint16_t>(user_number);
     a()->SetEffectiveSl(255);
     sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));

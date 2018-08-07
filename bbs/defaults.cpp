@@ -387,9 +387,12 @@ void l_config_qscan() {
   bout << "\r\n|#9Boards to q-scan marked with '*'|#0\r\n\n";
   for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1) && !abort; i++) {
     bout.bpla(StringPrintf("%c %s. %s",
-            (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) ? '*' : ' ',
-            a()->usub[i].keys,
-            a()->subs().sub(a()->usub[i].subnum).name.c_str()), &abort);
+                           (a()->context().qsc_q[a()->usub[i].subnum / 32] &
+                            (1L << (a()->usub[i].subnum % 32)))
+                               ? '*'
+                               : ' ',
+                           a()->usub[i].keys, a()->subs().sub(a()->usub[i].subnum).name.c_str()),
+              &abort);
   }
   bout.nl(2);
 }
@@ -452,13 +455,13 @@ void config_qscan() {
         if (!s.empty()) {
           for (size_t i = 0; (i < a()->subs().subs().size()) && (a()->usub[i].subnum != -1); i++) {
             if (s == a()->usub[i].keys) {
-              qsc_q[a()->usub[i].subnum / 32] ^= (1L << (a()->usub[i].subnum % 32));
+              a()->context().qsc_q[a()->usub[i].subnum / 32] ^= (1L << (a()->usub[i].subnum % 32));
             }
             if (s == "S") {
-              qsc_q[a()->usub[i].subnum / 32] |= (1L << (a()->usub[i].subnum % 32));
+              a()->context().qsc_q[a()->usub[i].subnum / 32] |= (1L << (a()->usub[i].subnum % 32));
             }
             if (s == "C") {
-              qsc_q[a()->usub[i].subnum / 32] &= ~(1L << (a()->usub[i].subnum % 32));
+              a()->context().qsc_q[a()->usub[i].subnum / 32] &= ~(1L << (a()->usub[i].subnum % 32));
             }
           }
           if (s == "Q") {
@@ -901,7 +904,7 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
          *amount < max_lines * 2; this_sub++) {
       bout.clear_lines_listed();
       auto s = StringPrintf("|#7[|#1%c|#7] |#9%s",
-              (qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
+              (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) ? '\xFE' : ' ',
               a()->subs().sub(a()->usub[this_sub].subnum).name.c_str());
       s[44] = '\0';
       if (*amount >= max_lines) {
@@ -918,7 +921,9 @@ static void list_config_scan_plus(unsigned int first, int *amount, int type) {
          *amount < max_lines * 2; this_dir++) {
       bout.clear_lines_listed();
       int alias_dir = a()->udir[this_dir].subnum;
-      auto s = StringPrintf("|#7[|#1%c|#7] |#2%s", qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE' : ' ',
+      auto s = StringPrintf("|#7[|#1%c|#7] |#2%s",
+                            a()->context().qsc_n[alias_dir / 32] & (1L << (alias_dir % 32)) ? '\xFE'
+                                                                                            : ' ',
         a()->directories[alias_dir].name);
       s[44] = 0;
       if (*amount >= max_lines) {
@@ -975,7 +980,7 @@ static long is_inscan(int dir) {
     const string key = StringPrintf("%d", (sysdir ? dir : (dir + 1)));
     if (key == a()->udir[this_dir].keys) {
       int16_t ad = a()->udir[this_dir].subnum;
-      return (qsc_n[ad / 32] & (1L << ad % 32));
+      return (a()->context().qsc_n[ad / 32] & (1L << ad % 32));
     }
   }
   return 0;
@@ -1021,7 +1026,7 @@ void config_scan_plus(int type) {
     }
     if (!done) {
       drawscan(pos, type ? is_inscan(top + pos) :
-               qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+               a()->context().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
     }
     bool redraw = true;
     bool menu_done = false;
@@ -1048,36 +1053,39 @@ void config_scan_plus(int type) {
         break;
       case COMMAND_DOWN:
         undrawscan(pos, type ? is_inscan(top + pos) :
-                   qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+                   a()->context().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
         ++pos;
         if (pos >= amount) {
           pos = 0;
         }
         drawscan(pos, type ? is_inscan(top + pos) :
-                 qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+                 a()->context().qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
         redraw = false;
         break;
       case COMMAND_UP:
-        undrawscan(pos, type ? is_inscan(top + pos) :
-                   qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+        undrawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+                                   (1L << (a()->usub[top + pos].subnum % 32)));
         if (!pos) {
           pos = amount - 1;
         } else {
           --pos;
         }
-        drawscan(pos, type ? is_inscan(top + pos) :
-                 qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+        drawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+                                 (1L << (a()->usub[top + pos].subnum % 32)));
         redraw = false;
         break;
       case SPACE: {
         if (type == 0) {
 #ifdef NOTOGGLESYSOP
           if (a()->usub[top + pos].subnum == 0) {
-            qsc_q[a()->usub[top + pos].subnum / 32] |= (1L << (a()->usub[top + pos].subnum % 32));
+            a()->context().qsc_q[a()->usub[top +g pos].subnum / 32] |=
+                (1L << (a()->usub[top + pos].subnum % 32));
           }
           else
 #endif
-            qsc_q[a()->usub[top + pos].subnum / 32] ^= (1L << (a()->usub[top + pos].subnum % 32));
+              a()->context()
+                  .qsc_q[a()->usub[top + pos].subnum / 32] ^=
+              (1L << (a()->usub[top + pos].subnum % 32));
         }
         else {
           bool sysdir = IsEquals(a()->udir[0].keys, "0");
@@ -1085,12 +1093,12 @@ void config_scan_plus(int type) {
             const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
             if (s == a()->udir[this_dir].keys) {
               int ad = a()->udir[this_dir].subnum;
-              qsc_n[ad / 32] ^= (1L << (ad % 32));
+              a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
             }
           }
         }
-        drawscan(pos, type ? is_inscan(top + pos) :
-          qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+        drawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+                                 (1L << (a()->usub[top + pos].subnum % 32)));
         redraw = false;
       } break;
       case EXECUTE:
@@ -1125,32 +1133,37 @@ void config_scan_plus(int type) {
           break;
         case 2:
           if (type == 0) {
-            qsc_q[a()->usub[top + pos].subnum / 32] ^= (1L << (a()->usub[top + pos].subnum % 32));
+            a()->context().qsc_q[a()->usub[top + pos].subnum / 32] ^=
+                (1L << (a()->usub[top + pos].subnum % 32));
           } else {
             bool sysdir = IsEquals(a()->udir[0].keys, "0");
             for (size_t this_dir = 0; (this_dir < a()->directories.size()); this_dir++) {
               const string s = StringPrintf("%d", sysdir ? top + pos : top + pos + 1);
               if (s == a()->udir[this_dir].keys) {
                 int ad = a()->udir[this_dir].subnum;
-                qsc_n[ad / 32] ^= (1L << (ad % 32));
+                a()->context().qsc_n[ad / 32] ^= (1L << (ad % 32));
               }
             }
           }
-          drawscan(pos, type ? is_inscan(top + pos) :
-                   qsc_q[a()->usub[top + pos].subnum / 32] & (1L << (a()->usub[top + pos].subnum % 32)));
+          drawscan(pos, type ? is_inscan(top + pos) : a()->context().qsc_q[a()->usub[top + pos].subnum / 32] &
+                                   (1L << (a()->usub[top + pos].subnum % 32)));
           redraw = false;
           break;
         case 3:
           if (type == 0) {
             for (size_t this_sub = 0; this_sub < a()->subs().subs().size(); this_sub++) {
-              if (qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32))) {
-                qsc_q[a()->usub[this_sub].subnum / 32] ^= (1L << (a()->usub[this_sub].subnum % 32));
+              if (a()->context().qsc_q[a()->usub[this_sub].subnum / 32] &
+                  (1L << (a()->usub[this_sub].subnum % 32))) {
+                a()->context().qsc_q[a()->usub[this_sub].subnum / 32] ^=
+                    (1L << (a()->usub[this_sub].subnum % 32));
               }
             }
           } else {
             for (size_t this_dir = 0; this_dir < a()->directories.size(); this_dir++) {
-              if (qsc_n[a()->udir[this_dir].subnum / 32] & (1L << (a()->udir[this_dir].subnum % 32))) {
-                qsc_n[a()->udir[this_dir].subnum / 32] ^= 1L << (a()->udir[this_dir].subnum % 32);
+              if (a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
+                  (1L << (a()->udir[this_dir].subnum % 32))) {
+                a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=
+                    1L << (a()->udir[this_dir].subnum % 32);
               }
             }
           }
@@ -1161,14 +1174,18 @@ void config_scan_plus(int type) {
         case 4:
           if (type == 0) {
             for (size_t this_sub = 0; this_sub < a()->subs().subs().size(); this_sub++) {
-              if (!(qsc_q[a()->usub[this_sub].subnum / 32] & (1L << (a()->usub[this_sub].subnum % 32)))) {
-                qsc_q[a()->usub[this_sub].subnum / 32] ^= (1L << (a()->usub[this_sub].subnum % 32));
+              if (!(a()->context().qsc_q[a()->usub[this_sub].subnum / 32] &
+                    (1L << (a()->usub[this_sub].subnum % 32)))) {
+                a()->context().qsc_q[a()->usub[this_sub].subnum / 32] ^=
+                    (1L << (a()->usub[this_sub].subnum % 32));
               }
             }
           } else {
             for (size_t this_dir = 0; this_dir < a()->directories.size(); this_dir++) {
-              if (!(qsc_n[a()->udir[this_dir].subnum / 32] & (1L << (a()->udir[this_dir].subnum % 32)))) {
-                qsc_n[a()->udir[this_dir].subnum / 32] ^= 1L << (a()->udir[this_dir].subnum % 32);
+              if (!(a()->context().qsc_n[a()->udir[this_dir].subnum / 32] &
+                    (1L << (a()->udir[this_dir].subnum % 32)))) {
+                a()->context().qsc_n[a()->udir[this_dir].subnum / 32] ^=
+                    1L << (a()->udir[this_dir].subnum % 32);
               }
             }
           }

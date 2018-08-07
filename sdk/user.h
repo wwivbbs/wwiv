@@ -858,7 +858,6 @@ class User {
     SetForwardUserNumber(0);
   }
 
-
   /**
    * Creates a random password.
    */

@@ -772,8 +772,8 @@ ReadMessageResult display_type2_message(Type2MessageData& msg, bool* next) {
 }
 
 static void update_qscan(uint32_t qscan) {
-  if (qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
-    qsc_p[a()->GetCurrentReadMessageArea()] = qscan;
+  if (qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
+    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = qscan;
   }
 
 #ifdef UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER

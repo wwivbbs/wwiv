@@ -61,7 +61,7 @@ void valscan() {
       return;
     }
 
-    uint32_t sq = qsc_p[sn];
+    uint32_t sq = a()->context().qsc_p[sn];
 
     // Must be sub with validation "on"
     if (a()->current_sub().nets.empty()
@@ -162,7 +162,7 @@ void valscan() {
         }
       }
     }
-    qsc_p[sn] = sq;
+    a()->context().qsc_p[sn] = sq;
   }
 
   if (ac) {

@@ -634,10 +634,7 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
 // Clears a()->user()'s data and makes it ready to be a new user, also
 // clears the QScan pointers
 static bool CreateNewUserRecord() {
-  memset(qsc, 0, a()->config()->config()->qscn_len);
-  *qsc = 999;
-  memset(qsc_n, 0xff, ((a()->config()->config()->max_dirs + 31) / 32) * 4);
-  memset(qsc_q, 0xff, ((a()->config()->config()->max_subs + 31) / 32) * 4);
+  a()->context().ResetQScanPointers();
 
   auto u = a()->user();
   a()->ResetEffectiveSl();
@@ -1089,7 +1086,7 @@ void newuser() {
 
   bout.nl();
   bout << "Please wait...\r\n\n";
-  auto usernum = find_new_usernum(a()->user(), qsc);
+  auto usernum = find_new_usernum(a()->user(), a()->context().qsc);
   if (usernum <= 0) {
     bout.nl();
     bout << "|#6Error creating user account.\r\n\n";

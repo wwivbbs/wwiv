@@ -80,7 +80,7 @@ void old_sublist() {
     size_t i1 = 0;
     while ((i1 < a()->subs().subs().size()) && (a()->usub[i1].subnum != -1) && (!abort)) {
       auto s = StringPrintf("  |#5%4.4s|#2", a()->usub[i1].keys);
-      if (qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
+      if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
         s += " - ";
       } else {
         s += "  ";
@@ -192,7 +192,7 @@ void SubList() {
         }
         ++ns;
         sprintf(s, "    %-3.3s", a()->usub[i1].keys);
-        if (qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
+        if (a()->context().qsc_q[a()->usub[i1].subnum / 32] & (1L << (a()->usub[i1].subnum % 32))) {
           strcpy(s2, "|#5Yes");
         } else {
           strcpy(s2, "|#6No ");
@@ -221,8 +221,8 @@ void SubList() {
           strcpy(s3, "|#7>|#1LOCAL|#7<  ");
         }
         msgIndex = 1;
-        while ((msgIndex <= a()->GetNumMessagesInCurrentMessageArea())
-               && (get_post(msgIndex)->qscan <= qsc_p[a()->usub[i1].subnum])) {
+        while ((msgIndex <= a()->GetNumMessagesInCurrentMessageArea()) &&
+               (get_post(msgIndex)->qscan <= a()->context().qsc_p[a()->usub[i1].subnum])) {
           ++msgIndex;
         }
         newTally = a()->GetNumMessagesInCurrentMessageArea() - msgIndex + 1;

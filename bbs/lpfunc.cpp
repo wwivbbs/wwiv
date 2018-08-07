@@ -150,7 +150,7 @@ int listfiles_plus_function(int type) {
         scan_dir = true;
       }
     } else {
-      if (qsc_n[also_this_dir / 32] & (1L << (also_this_dir % 32))) {
+      if (a()->context().qsc_n[also_this_dir / 32] & (1L << (also_this_dir % 32))) {
         scan_dir = true;
       }
 

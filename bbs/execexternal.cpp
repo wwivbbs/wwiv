@@ -41,7 +41,7 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // get ready to run it
   if (a()->IsUserOnline()) {
     a()->WriteCurrentUser();
-    write_qscn(a()->usernum, qsc, false);
+    write_qscn(a()->usernum, a()->context().qsc, false);
   }
 
   // extra processing for net programs
@@ -72,7 +72,7 @@ int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
   // Reread the user record.
   if (a()->IsUserOnline()) {
     a()->ReadCurrentUser();
-    read_qscn(a()->usernum, qsc, false, true);
+    read_qscn(a()->usernum, a()->context().qsc, false, true);
     a()->UpdateTopScreen();
   }
 

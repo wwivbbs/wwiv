@@ -109,14 +109,14 @@ void UnQScan() {
     break;
   case 'A': {
     for (int i = 0; i < a()->config()->config()->max_subs; i++) {
-      qsc_p[i] = 0;
+      a()->context().qsc_p[i] = 0;
     }
     bout << "\r\nQ-Scan pointers reset.\r\n\n";
   }
   break;
   case 'C': {
     bout.nl();
-    qsc_p[a()->current_user_sub().subnum] = 0;
+    a()->context().qsc_p[a()->current_user_sub().subnum] = 0;
     bout << "Messages on " 
          << a()->subs().sub(a()->current_user_sub().subnum).name
          << " marked as unread.\r\n";
@@ -541,12 +541,15 @@ void ResetQscan() {
   if (yesno()) {
     write_inst(INST_LOC_RESETQSCAN, 0, INST_FLAGS_NONE);
     for (int i = 0; i <= a()->users()->num_user_records(); i++) {
-      read_qscn(i, qsc, true);
-      memset(qsc_p, 0, a()->config()->config()->qscn_len - 4 * (1 + ((a()->config()->config()->max_dirs + 31) / 32) + ((
+      read_qscn(i, a()->context().qsc, true);
+      memset(a()->context().qsc_p, 0,
+             a()->config()->config()->qscn_len -
+                 4 * (1 + ((a()->config()->config()->max_dirs + 31) / 32) +
+                      ((
         a()->config()->config()->max_subs + 31) / 32)));
-      write_qscn(i, qsc, true);
+      write_qscn(i, a()->context().qsc, true);
     }
-    read_qscn(1, qsc, false);
+    read_qscn(1, a()->context().qsc, false);
     close_qscn();
   }
 }
@@ -699,7 +702,7 @@ void ClearQScan() {
   case 'A': {
     std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
     for (int i = 0; i < a()->config()->config()->max_subs; i++) {
-      qsc_p[i] = pStatus->GetQScanPointer() - 1L;
+      a()->context().qsc_p[i] = pStatus->GetQScanPointer() - 1L;
     }
     bout.nl();
     bout << "Q-Scan pointers cleared.\r\n";
@@ -708,7 +711,7 @@ void ClearQScan() {
   case 'C':
     std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
     bout.nl();
-    qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
+    a()->context().qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
     bout << "Messages on " << a()->subs().sub(a()->current_user_sub().subnum).name
          << " marked as read.\r\n";
     break;

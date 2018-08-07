@@ -32,6 +32,8 @@
 * Drop Debian8
 * start using clock more.
 * move to datetime as much as possible.
+* move qscan pointers into User? (this would mean changing user to have
+  data other than just the userrec)
 
 ## Networking Cleanup
 ***

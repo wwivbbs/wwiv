@@ -383,7 +383,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
     return;
   }
   bout.nl();
-  auto memory_last_read = qsc_p[sub_number];
+  auto memory_last_read = a()->context().qsc_p[sub_number];
 
   iscan1(sub_number);
 
@@ -397,7 +397,7 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
               "6A file required is in use by another instance. Try again later.\r\n";
       return;
     }
-    memory_last_read = qsc_p[sub_number];
+    memory_last_read = a()->context().qsc_p[sub_number];
 
     bout.bprintf("\r\n\n|#1< Q-scan %s %s - %lu msgs >\r\n", a()->current_sub().name.c_str(),
                  a()->current_user_sub().keys, a()->GetNumMessagesInCurrentMessageArea());
@@ -409,11 +409,11 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
 
     if (a()->GetNumMessagesInCurrentMessageArea() > 0 &&
         i <= a()->GetNumMessagesInCurrentMessageArea() &&
-        get_post(i)->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) {
+        get_post(i)->qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
       scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, nextsub, false);
     } else {
       unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-      qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
+      a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     }
 
     a()->set_current_user_sub_num(old_subnum);
@@ -441,7 +441,7 @@ void nscan(uint16_t start_subnum) {
   bout << "\r\n|#3-=< Q-Scan All >=-\r\n";
   for (auto i = start_subnum;
        a()->usub[i].subnum != -1 && i < a()->subs().subs().size() && nextsub && !a()->hangup_; i++) {
-    if (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
+    if (a()->context().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qscan(i, nextsub);
     }
     bool abort = false;

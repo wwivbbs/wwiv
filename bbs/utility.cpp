@@ -116,7 +116,7 @@ void frequent_init() {
   a()->context().reset();
 
   set_net_num(0);
-  read_qscn(1, qsc, false);
+  read_qscn(1, a()->context().qsc, false);
   set_language(a()->user()->GetLanguage());
   reset_disable_conf();
   

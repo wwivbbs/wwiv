@@ -302,7 +302,7 @@ int WFC::doWFCEvents() {
     if (io->KeyPressed()) {
       a_->set_at_wfc(false);
       a_->ReadCurrentUser(sysop_usernum);
-      read_qscn(1, qsc, false);
+      read_qscn(1, a()->context().qsc, false);
       a_->set_at_wfc(true);
       ch = to_upper_case<char>(io->GetChar());
       if (ch == 0) {
@@ -546,7 +546,7 @@ int WFC::doWFCEvents() {
       if (!a()->context().incom() && !lokb) {
         frequent_init();
         a_->ReadCurrentUser(sysop_usernum);
-        read_qscn(1, qsc, false);
+        read_qscn(1, a()->context().qsc, false);
         a_->ResetEffectiveSl();
         a_->usernum = sysop_usernum;
       }
@@ -624,7 +624,7 @@ int WFC::LocalLogon() {
       auto saved_at_wfc = a_->at_wfc();
       a_->set_at_wfc(false);
       a_->ReadCurrentUser();
-      read_qscn(a_->usernum, qsc, false);
+      read_qscn(a_->usernum, a()->context().qsc, false);
       a_->set_at_wfc(saved_at_wfc);
       bout.bputch(ch);
       a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");

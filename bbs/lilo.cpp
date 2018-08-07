@@ -407,7 +407,7 @@ void getuser() {
     if (usernum > 0) {
       a()->usernum = static_cast<uint16_t>(usernum);
       a()->ReadCurrentUser();
-      read_qscn(a()->usernum, qsc, false);
+      read_qscn(a()->usernum, a()->context().qsc, false);
       if (!set_language(a()->user()->GetLanguage())) {
         a()->user()->SetLanguage(0);
         set_language(0);
@@ -1067,6 +1067,6 @@ void logoff() {
     }
   }
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, qsc, false);
+  write_qscn(a()->usernum, a()->context().qsc, false);
 }
 

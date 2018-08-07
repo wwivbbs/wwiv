@@ -1032,7 +1032,7 @@ static void l_config_nscan() {
   bout << "|#9Directories to new-scan marked with '|#2*|#9'\r\n\n";
   for (size_t i = 0; (i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort); i++) {
     size_t i1 = a()->udir[i].subnum;
-    if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
+    if (a()->context().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       strcpy(s, "* ");
     } else {
       strcpy(s, "  ");
@@ -1106,13 +1106,13 @@ static void config_nscan() {
           for (size_t i = 0; i < a()->directories.size(); i++) {
             i1 = a()->udir[i].subnum;
             if (s == a()->udir[i].keys) {
-              qsc_n[i1 / 32] ^= 1L << (i1 % 32);
+              a()->context().qsc_n[i1 / 32] ^= 1L << (i1 % 32);
             }
             if (s == "S") {
-              qsc_n[i1 / 32] |= 1L << (i1 % 32);
+              a()->context().qsc_n[i1 / 32] |= 1L << (i1 % 32);
             }
             if (s == "C") {
-              qsc_n[i1 / 32] &= ~(1L << (i1 % 32));
+              a()->context().qsc_n[i1 / 32] &= ~(1L << (i1 % 32));
             }
           }
           if (s == "Q") {
@@ -1226,7 +1226,7 @@ void finddescription() {
     auto ii1 = a()->udir[i].subnum;
     pts = 0;
     bool need_title = true;
-    if (qsc_n[ii1 / 32] & (1L << (ii1 % 32))) {
+    if (a()->context().qsc_n[ii1 / 32] & (1L << (ii1 % 32))) {
       pts = 1;
     }
     pts = 1;

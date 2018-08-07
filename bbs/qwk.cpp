@@ -176,7 +176,7 @@ void build_qwk_packet() {
   bool msgs_ok = true;
   for (size_t i = 0; (a()->usub[i].subnum != -1) && (i < a()->subs().subs().size()) && (!a()->hangup_) && !qwk_info.abort && msgs_ok; i++) {
     msgs_ok = (max_msgs ? qwk_info.qwk_rec_num <= max_msgs : true);
-    if (qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
+    if (a()->context().qsc_q[a()->usub[i].subnum / 32] & (1L << (a()->usub[i].subnum % 32))) {
       qwk_gather_sub(i, &qwk_info);
     }
   }
@@ -238,7 +238,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
     return;
   }
 
-  uint32_t qscnptrx = qsc_p[sn];
+  uint32_t qscnptrx = a()->context().qsc_p[sn];
   uint32_t sd = WWIVReadLastRead(sn);
 
   if (qwk_percent || (!sd || sd > qscnptrx)) {
@@ -251,7 +251,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       return;
     }
 
-    qscnptrx = qsc_p[sn];
+    qscnptrx = a()->context().qsc_p[sn];
 
     if (!qwk_percent) {
       // Find out what message number we are on
@@ -279,13 +279,14 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 
     if ((a()->GetNumMessagesInCurrentMessageArea() > 0)
         && (i <= a()->GetNumMessagesInCurrentMessageArea()) && !qwk_info->abort) {
-      if ((get_post(i)->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) || qwk_percent) {
+      if ((get_post(i)->qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) ||
+          qwk_percent) {
         qwk_start_read(i, qwk_info);  // read messsage
       }
     }
 
     unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-    qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
+    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
     a()->set_current_user_sub_num(os);
   } else {
     auto os = a()->current_user_sub_num();
@@ -365,8 +366,9 @@ void make_pre_qwk(int msgnum, struct qwk_junk *qwk_info) {
   a()->user()->SetNumMessagesRead(a()->user()->GetNumMessagesRead() + 1);
   a()->SetNumMessagesReadThisLogon(a()->GetNumMessagesReadThisLogon() + 1);
 
-  if (p->qscan > qsc_p[a()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
-    qsc_p[a()->GetCurrentReadMessageArea()] = p->qscan;  // And here
+  if (p->qscan >
+      a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) { // Update qscan pointer right here
+    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = p->qscan; // And here
   }
 }
 
@@ -648,7 +650,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   
   int amount = 0;
   for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!a()->hangup_); cur++) {
-    if (qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
+    if (a()->context().qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
       ++amount;
     }
   }
@@ -658,7 +660,7 @@ void build_control_dat(struct qwk_junk *qwk_info) {
   fprintf(fp, "E-Mail\r\n");
 
   for (size_t cur = 0; (a()->usub[cur].subnum != -1) && (cur < a()->subs().subs().size()) && (!a()->hangup_); cur++) {
-    if (qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
+    if (a()->context().qsc_q[a()->usub[cur].subnum / 32] & (1L << (a()->usub[cur].subnum % 32))) {
       // QWK support says this should be truncated to 10 or 13 characters
       // however QWKE allows for 255 characters. This works fine in multimail which
       // is the only still maintained QWK reader I'm aware of at this time, so we'll
@@ -1125,7 +1127,7 @@ void qwk_nscan() {
     }
 
     i1 = a()->udir[i].subnum;
-    if (qsc_n[i1 / 32] & (1L << (i1 % 32))) {
+    if (a()->context().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
       if ((dir_dates[a()->udir[i].subnum]) && (dir_dates[a()->udir[i].subnum] < nscandate)) {
         continue;
       }

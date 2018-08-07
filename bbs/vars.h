@@ -47,15 +47,5 @@ __EXTRN__ daten_t nscandate;
 
 __EXTRN__ int32_t g_flags;
 
-// qsc is the qscan pointer. The 1st 4 bytes are the sysop sub number.
-__EXTRN__ uint32_t *qsc;
-// A bitfield controlling if the directory should be included in the new scan.
-__EXTRN__ uint32_t *qsc_n;
-// A bitfield controlling if the sub should be included in the new scan.
-__EXTRN__ uint32_t *qsc_q;
-// Array of 32-bit unsigned integers for the qscan pointer value
-// aka high message read pointer) for each sub.
-__EXTRN__ uint32_t *qsc_p;
-
 #endif // __INCLUDED_VARS_H__
 

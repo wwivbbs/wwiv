@@ -83,7 +83,7 @@ void dirlist(int mode) {
           is = true;
         }
         std::string scanme = "|#6No ";
-        if (qsc_n[ directory_number / 32 ] & (1L << (directory_number % 32))) {
+        if (a()->context().qsc_n[directory_number / 32] & (1L << (directory_number % 32))) {
           scanme = "|#5Yes";
         }
         dliscan1(directory_number);

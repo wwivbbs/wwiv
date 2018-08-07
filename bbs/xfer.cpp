@@ -835,7 +835,7 @@ void nscanall() {
       }
     }
     int nSubNum = a()->udir[i].subnum;
-    if (qsc_n[nSubNum / 32] & (1L << (nSubNum % 32))) {
+    if (a()->context().qsc_n[nSubNum / 32] & (1L << (nSubNum % 32))) {
       bool need_title = true;
       nscandir(i, need_title, &abort);
     }
@@ -876,7 +876,7 @@ void searchall() {
        && a()->udir[i].subnum != -1; i++) {
     int nDirNum = a()->udir[i].subnum;
     bool bIsDirMarked = false;
-    if (qsc_n[nDirNum / 32] & (1L << (nDirNum % 32))) {
+    if (a()->context().qsc_n[nDirNum / 32] & (1L << (nDirNum % 32))) {
       bIsDirMarked = true;
     }
     bIsDirMarked = true;

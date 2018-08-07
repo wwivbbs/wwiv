@@ -465,11 +465,11 @@ bool Application::read_subs() {
 }
 
 class BBSLastReadImpl : public wwiv::sdk::msgapi::WWIVLastReadImpl {
-  uint32_t last_read(int area) const { return qsc_p[area]; }
+  uint32_t last_read(int area) const { return a()->context().qsc_p[area]; }
 
   void set_last_read(int area, uint32_t last_read) {
     if (area >= 0) {
-      qsc_p[area] = last_read;
+      a()->context().qsc_p[area] = last_read;
     }
   }
 
@@ -745,6 +745,7 @@ void Application::InitializeBBS() {
   }
   // SET BBS environment variable.
   set_environment_variable("BBS", wwiv_version);
+  context().InitalizeContext();
 
   VLOG(1) << "Reading External Events.";
   init_events();
@@ -755,13 +756,9 @@ void Application::InitializeBBS() {
   udir.resize(config()->config()->max_dirs);
   uconfsub.resize(MAX_CONFERENCES);
   uconfdir.resize(MAX_CONFERENCES);
-  qsc = new uint32_t[(config()->config()->qscn_len / sizeof(uint32_t))];
-  qsc_n = qsc + 1;
-  qsc_q = qsc_n + (config()->config()->max_dirs + 31) / 32;
-  qsc_p = qsc_q + (config()->config()->max_subs + 31) / 32;
 
   network_extension_ = ".net";
-  const string wwiv_instance(environment_variable("WWIV_INSTANCE"));
+  const auto wwiv_instance = environment_variable("WWIV_INSTANCE");
   if (!wwiv_instance.empty()) {
     int inst_num = to_number<int>(wwiv_instance);
     if (inst_num > 0) {

@@ -18,6 +18,9 @@
 #ifndef __INCLUDED_BBS_CONTEXT_H__
 #define __INCLUDED_BBS_CONTEXT_H__
 
+#include <cstdint>
+#include <memory>
+
 class Application;
 
 namespace wwiv {
@@ -28,6 +31,15 @@ public:
   SessionContext(Application* a);
   virtual ~SessionContext() = default;
 
+  /**
+   * Initializes an empty context, called after Config.dat
+   * has been read and processed.
+   */
+  void InitalizeContext();
+  /**
+   * Clears the qscan pointers.
+   */
+  void ResetQScanPointers();
   /**
    * Resets the application level context.
    */
@@ -48,8 +60,20 @@ public:
   bool guest_user() const noexcept { return guest_user_; }
   void guest_user(bool g) { guest_user_ = g; }
 
+  // qsc is the qscan pointer. The 1st 4 bytes are the sysop sub number.
+  uint32_t* qsc{nullptr};
+  // A bitfield controlling if the directory should be included in the new scan.
+  uint32_t* qsc_n{nullptr};
+  // A bitfield contrlling if the sub should be included in the new scan.
+  uint32_t* qsc_q{nullptr};
+  // Array of 32-bit unsigned integers for the qscan pointer value
+  // aka high message read pointer) for each sub.
+  uint32_t* qsc_p{nullptr};
+
 private:
   Application* a_;
+  std::unique_ptr<uint32_t[]> qscan_;
+
   bool ok_modem_stuff_{false};
   bool incom_{false};
   bool outcom_{false};
@@ -58,9 +82,7 @@ private:
   bool guest_user_{false};
 };
 
+} // namespace bbs
+} // namespace wwiv
 
-}
-}
-
-
-#endif  // __INCLUDED_BBS_CONTEXT_H__
+#endif // __INCLUDED_BBS_CONTEXT_H__

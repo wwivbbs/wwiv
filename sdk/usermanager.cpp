@@ -107,7 +107,7 @@ bool UserManager::readuser(User *pUser, int user_number) {
 bool UserManager::writeuser_nocache(User *pUser, int user_number) {
   File userList(FilePath(data_directory_, USER_LST));
   if (userList.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    long pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
+    auto pos = static_cast<long>(userrec_length_) * static_cast<long>(user_number);
     userList.Seek(pos, File::Whence::begin);
     userList.Write(&pUser->data, userrec_length_);
     return true;

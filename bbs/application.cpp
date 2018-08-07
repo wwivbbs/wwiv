@@ -589,7 +589,7 @@ void Application::GetCaller() {
   // TODO(rushfan): Let's make record 0 the logon defaults
   // and stop using the sysop record.
   ReadCurrentUser(1);
-  read_qscn(1, qsc, false);
+  read_qscn(1, context().qsc, false);
   // N.B. This used to be 1.
   usernum = 0;
 
@@ -622,7 +622,7 @@ void Application::GotCaller(unsigned int ms) {
   wfc_cls(a());
   modem_speed_ = ms;
   ReadCurrentUser(1);
-  read_qscn(1, qsc, false);
+  read_qscn(1, context().qsc, false);
   ResetEffectiveSl();
   usernum = 1;
   if (user()->IsUserDeleted()) {
@@ -944,7 +944,7 @@ int Application::Run(int argc, char* argv[]) {
         GotCaller(ui);
         usernum = this_usernum_from_commandline;
         ReadCurrentUser();
-        read_qscn(usernum, qsc, false);
+        read_qscn(usernum, context().qsc, false);
         ResetEffectiveSl();
         changedsl();
         a()->context().okmacro(true);

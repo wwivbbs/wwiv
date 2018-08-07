@@ -266,7 +266,7 @@ void list_users(int mode) {
   int numscn  = 0;
   int color   = 3;
   a()->WriteCurrentUser();
-  write_qscn(a()->usernum, qsc, false);
+  write_qscn(a()->usernum, a()->context().qsc, false);
   a()->status_manager()->RefreshStatusCache();
 
   File userList(FilePath(a()->config()->datadir(), USER_LST));
@@ -317,10 +317,12 @@ void list_users(int mode) {
 
     int user_number = (bSortByUserNumber) ? i + 1 : a()->names()->names_vector()[i].number;
     a()->users()->readuser(&user, user_number);
-    read_qscn(user_number, qsc, false);
+    read_qscn(user_number, a()->context().qsc, false);
     changedsl();
-    bool in_qscan = (qsc_q[a()->current_user_sub().subnum / 32] & (1L <<
-                     (a()->current_user_sub().subnum % 32))) ? true : false;
+    bool in_qscan = (a()->context().qsc_q[a()->current_user_sub().subnum / 32] &
+                     (1L << (a()->current_user_sub().subnum % 32)))
+                        ? true
+                        : false;
     bool ok = true;
     if (user.IsUserDeleted()) {
       ok = false;
@@ -421,7 +423,7 @@ void list_users(int mode) {
     pausescr();
   }
   a()->ReadCurrentUser(snum);
-  read_qscn(snum, qsc, false);
+  read_qscn(snum, a()->context().qsc, false);
   a()->usernum = snum;
   changedsl();
 }

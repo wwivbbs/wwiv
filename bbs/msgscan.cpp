@@ -367,7 +367,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
     // HACK: Need to make this generic. this before supporting JAM.
     // N.B. If for some reason dynamic_cast fails, a std::bad_cast is thrown.
     const auto& wh = dynamic_cast<const WWIVMessageHeader&>(h);
-    if (wh.last_read() > qsc_p[a()->GetCurrentReadMessageArea()]) {
+    if (wh.last_read() > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
       line[0] = '*';
     }
   }
@@ -946,7 +946,7 @@ static void HandleRemoveFromNewScan() {
   const auto subname = a()->subs().sub(a()->current_user_sub().subnum).name;
   bout << "\r\n|#5Remove '" << subname << "' from your Q-Scan? ";
   if (yesno()) {
-    qsc_q[a()->current_user_sub().subnum / 32] ^= 
+    a()->context().qsc_q[a()->current_user_sub().subnum / 32] ^= 
       (1L << (a()->current_user_sub().subnum % 32));
     return;
   }
@@ -954,7 +954,7 @@ static void HandleRemoveFromNewScan() {
   bout << "\r\n|#9Mark messages in '" << subname << "' as read? ";
   if (yesno()) {
     unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-    qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
+    a()->context().qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
   }
 }
 

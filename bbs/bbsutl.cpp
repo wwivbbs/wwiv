@@ -306,10 +306,10 @@ bool lcs() {
   }
 
   if (getslrec(a()->GetEffectiveSl()).ability & ability_limited_cosysop) {
-    if (*qsc == 999) {
+    if (*a()->context().qsc == 999) {
       return true;
     }
-    return (*qsc == static_cast<uint32_t>(a()->current_user_sub().subnum)) ? true : false;
+    return (*a()->context().qsc == static_cast<uint32_t>(a()->current_user_sub().subnum)) ? true : false;
   }
   return false;
 }
