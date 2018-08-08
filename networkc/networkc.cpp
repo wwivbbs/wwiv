@@ -45,11 +45,13 @@
 #include "sdk/connect.h"
 #include "sdk/config.h"
 #include "core/datetime.h"
+#include "core/findfiles.h"
 #include "sdk/filenames.h"
 #include "sdk/networks.h"
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
 #include "sdk/fido/fido_address.h"
+#include "sdk/net/packets.h"
 
 using std::cout;
 using std::endl;
@@ -61,6 +63,7 @@ using namespace wwiv::core;
 using namespace wwiv::net;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
 using namespace wwiv::sdk::fido;
 using namespace wwiv::stl;
 using namespace wwiv::os;
@@ -72,6 +75,15 @@ static void ShowHelp(const CommandLine& cmdline) {
     << endl;
 
   exit(1);
+}
+
+static void rename_bbs_instance_files(const string& dir, int instance_number) {
+  const auto pattern = StringPrintf("p*.%03d", instance_number);
+  LOG(INFO) << "Processing pending bbs instance files: " << pattern;
+  FindFiles ff(dir, pattern, FindFilesType::files);
+  for (const auto& f : ff) {
+    rename_pend(dir, f.name, 'c');
+  }
 }
 
 string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, int verbose, const string& cmd) {
@@ -136,7 +148,8 @@ static bool need_network3(const string& dir, int network_version) {
 
 int networkc_main(const NetworkCommandLine & net_cmdline) {
   try {
-    const int verbose = net_cmdline.cmdline().iarg("v");
+    const auto verbose = net_cmdline.cmdline().iarg("v");
+    const auto process_instance = net_cmdline.cmdline().iarg("process_instance");
     const auto& net = net_cmdline.network();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
@@ -146,6 +159,12 @@ int networkc_main(const NetworkCommandLine & net_cmdline) {
     bool found = false;
     do {
       found = false;
+      if (process_instance > 0) {
+        // We need to process pending bbs instance file, these are
+        // of the form p1.###.  These will get renamed into p*.net
+        rename_bbs_instance_files(net.dir, process_instance);
+      }
+
       // Pending files, call network1 to put them into s* or local.net.
       if (File::ExistsWildcard(FilePath(net.dir, "p*.net"))) {
         VLOG(2) << "Found p*.net";
@@ -201,6 +220,8 @@ int main(int argc, char** argv) {
   Logger::Init(argc, argv);
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
+  cmdline.add_argument({"process_instance", "Also process pending files for BBS instance #", "0"});
+
   NetworkCommandLine net_cmdline(cmdline, 'c');
   if (!net_cmdline.IsInitialized() || net_cmdline.cmdline().help_requested()) {
     ShowHelp(net_cmdline.cmdline());

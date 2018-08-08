@@ -13,18 +13,12 @@
 
 ## Infrastructure Cleanup
 ***
-* get rid of more char[] variables from vars.h, move to wsession as strings.
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
-* Maybe make the hangup variable a static in the Application class.
 * Try to remove a()->current_net(), pass in the net as much as possible.
 * Update syscfg.sysconfig in init and save it back, since
   wwiv never saves config.dat anymore.
 * stop using strncpy, strcpy, strcasestr.
-* get rid of g_flags, make it a boolean in application somewhere else
-  that's not global scoped.
-* get rid of curatr as a global variable. Looks like it should be
-  part of Output class.
 * Create a SDK QScan class to wrap interacting with the WWIV qscan
   variables and also load/save user.qsc
 * Move to LibSSH on all platforms

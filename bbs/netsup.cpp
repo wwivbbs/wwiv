@@ -105,7 +105,8 @@ void cleanup_net() {
     }
 
     a()->ClearTopScreenProtection();
-    const auto networkc_cmd = StrCat(CreateNetworkBinary("networkc"), " --quiet .", a()->net_num());
+    const auto networkc_cmd = StrCat(CreateNetworkBinary("networkc"), " --quiet --process_instance=",
+                                     a()->instance_number(), " .", a()->net_num());
     if (ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG) < 0) {
       break;
     }
