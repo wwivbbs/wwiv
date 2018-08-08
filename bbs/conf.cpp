@@ -835,11 +835,12 @@ void list_confs(ConferenceType conftype, int ssc) {
 
   for (const auto& cp : ret.confs) {
     if (abort) break;
+    const string ar = word_to_arstr(cp.ar);
     sprintf(s, "%c\xCD|17|15 %c |16|#1 %-23.23s %3d %3d %4d %4d %4d %4d %5u %-3.3s ",
             '\xCC', 
             cp.designator, cp.conf_name.c_str(), cp.minsl,
             cp.maxsl, cp.mindsl, cp.maxdsl, cp.minage, cp.maxage,
-            cp.minbps, word_to_arstr(cp.ar));
+            cp.minbps, ar.c_str());
     sprintf(s1, "%-3.3s %c %1.1s %1.1s",
             word_to_arstr(cp.dar),
             (cp.sex) ? ((cp.sex == 2) ? 'A' : 'F') : 'M',

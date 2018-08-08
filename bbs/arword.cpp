@@ -49,20 +49,19 @@ uint16_t str_to_arword(const std::string& arstr) {
 /*
  * Converts an int to a string representing those ARs (DARs).
  */
-char *word_to_arstr(int ar) {
-  static char arstr[17];
-  int i, i1 = 0;
+std::string word_to_arstr(int ar) {
+  std::string arstr;
 
-  if (ar) {
-    for (i = 0; i < 16; i++) {
-      if ((1 << i) & ar) {
-        arstr[i1++] = static_cast<char>('A' + i);
-      }
+  if (!ar) {
+    return {};
+  }
+  for (int i = 0; i < 16; i++) {
+    if ((1 << i) & ar) {
+      arstr.push_back(static_cast<char>('A' + i));
     }
   }
-  arstr[i1] = '\0';
-  if (!arstr[0]) {
-    strcpy(arstr, "-");
+  if (arstr.empty()) {
+    arstr = "-";
   }
   return arstr;
 }

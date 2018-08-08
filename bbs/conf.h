@@ -66,17 +66,17 @@ struct confrec {
   // Gender: 0=male, 1=female 2=all
   uint8_t sex;
   // Bit-mapped stuff
-  subconf_t status;
+  uint16_t status;
   // Minimum bps rate for access
-  subconf_t minbps;
+  uint16_t minbps;
   // ARs necessary for access
-  subconf_t ar;
+  uint16_t ar;
   // DARs necessary for access
-  subconf_t dar;
+  uint16_t dar;
   // Num "subs" in this conference
-  subconf_t num;
+  uint16_t num;
   // max num subs allocated in 'subs'
-  subconf_t maxnum;
+  uint16_t maxnum;
   // "Sub" numbers in the conference
   std::set<subconf_t> subs;
 };
