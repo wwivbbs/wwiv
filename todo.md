@@ -13,9 +13,10 @@
 
 ## Infrastructure Cleanup
 ***
+* Try to remove a()->current_net() and a()->net_num(), pass in the net as much as possible.
+
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
-* Try to remove a()->current_net(), pass in the net as much as possible.
 * Update syscfg.sysconfig in init and save it back, since
   wwiv never saves config.dat anymore.
 * stop using strncpy, strcpy, strcasestr.

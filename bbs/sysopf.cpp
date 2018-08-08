@@ -290,16 +290,17 @@ void valuser(int user_number) {
 
 
 void print_net_listing(bool bForcePause) {
-  int i, gn = 0;
+  int gn = 0;
   char town[5];
   unsigned short slist, cmdbit = 0;
   char substr[81], onx[20], acstr[4], phstr[13];
   char s[255], s1[101], s2[101], bbstype;
   bool bHadPause = false;
+  int current_net = 0;
 
   a()->status_manager()->RefreshStatusCache();
 
-  if (!a()->max_net_num()) {
+  if (!wwiv::stl::size_int(a()->net_networks.size())) {
     return;
   }
 
@@ -314,13 +315,13 @@ void print_net_listing(bool bForcePause) {
   bool done = false;
   while (!done && !a()->hangup_) {
     bout.cls();
-    if (a()->max_net_num() > 1) {
+    if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
       std::set<char> odc;
       onx[0] = 'Q';
       onx[1] = 0;
       int onxi = 1;
       bout.nl();
-      for (i = 0; i < a()->max_net_num(); i++) {
+      for (int i = 0; i < size_int(a()->net_networks); i++) {
         if (i < 9) {
           onx[onxi++] = static_cast<char>(i + '1');
           onx[onxi] = 0;
@@ -332,19 +333,19 @@ void print_net_listing(bool bForcePause) {
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
-      if (a()->max_net_num() < 9) {
+      if (wwiv::stl::size_int(a()->net_networks.size()) < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
           done = true;
         } else {
-          i = ch - '1';
+          current_net = ch - '1';
         }
       } else {
-        string mmk = mmkey(odc);
+        auto mmk = mmkey(odc);
         if (mmk == "Q") {
           done = true;
         } else {
-          i = to_number<int>(mmk) - 1;
+          current_net = to_number<int>(mmk) - 1;
         }
       }
 
@@ -352,20 +353,18 @@ void print_net_listing(bool bForcePause) {
         break;
       }
 
-      if ((i < 0) || (i > a()->max_net_num())) {
+      if (current_net < 0 || current_net > size_int(a()->net_networks)) {
         continue;
       }
     } else {
-      // i is the current network number, if there is only 1, they use it.
-      i = 1;
+      // current_net is the current network number, if there is only 1, they use it.
+      current_net = 1;
     }
 
     bool done1 = false;
     bool abort;
 
     while (!done1) {
-      int i2 = i;
-      set_net_num(i2);
       abort = false;
       cmdbit = 0;
       slist = 0;
@@ -395,7 +394,7 @@ void print_net_listing(bool bForcePause) {
 
       switch (cmd) {
       case 'Q':
-        if (a()->max_net_num() < 2) {
+        if (wwiv::stl::size_int(a()->net_networks.size()) < 2) {
           done = true;
         }
         done1 = true;
@@ -412,7 +411,7 @@ void print_net_listing(bool bForcePause) {
           abort = true;
         }
         if (!abort) {
-          for (i = 0; i < 3; i++) {
+          for (int i = 0; i < 3; i++) {
             if ((acstr[i] < '0') || (acstr[i] > '9')) {
               abort = true;
             }
@@ -488,9 +487,10 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      BbsListNet bbslist = BbsListNet::ReadBbsDataNet(a()->current_net().dir);
+      const auto& net = a()->net_networks[current_net];
+      BbsListNet bbslist = BbsListNet::ReadBbsDataNet(net.dir);
       if (bbslist.empty()) {
-        bout << "|#6Error opening bbsdata.net in " << a()->current_net().dir << wwiv::endl;
+        bout << "|#6Error opening bbsdata.net in " << net.dir << wwiv::endl;
         pausescr();
         continue;
       }

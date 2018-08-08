@@ -479,7 +479,7 @@ void readmail(int mode) {
                 s1[ a()->mail_who_field_len ] = '\0';
               }
             } else {
-              if (a()->max_net_num() > 1) {
+              if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
                 sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, a()->net_networks[nn].name, system_name.c_str());
               } else {
                 sprintf(s1, "#%u @%u (%s)", m.fromuser, m.fromsys, system_name.c_str());
@@ -995,7 +995,7 @@ void readmail(int mode) {
                 a()->current_net().type == network_type_t::internet) {
                 strcpy(s1, a()->net_email_name.c_str());
               }
-              else if (a()->max_net_num() > 1) {
+              else if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
                 if (user_number) {
                   sprintf(s1, "#%d @%d.%s", user_number, system_number, a()->network_name());
                 }

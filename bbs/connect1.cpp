@@ -23,6 +23,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "sdk/bbslist.h"
@@ -51,7 +52,7 @@ bool valid_system(int ts) {
 }
 
 void set_net_num(int network_number) {
-  if (network_number >= 0 && network_number < a()->max_net_num()) {
+  if (network_number >= 0 && network_number < wwiv::stl::size_int(a()->net_networks.size())) {
     a()->set_net_num(network_number);
   }
 }

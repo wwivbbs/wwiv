@@ -488,7 +488,7 @@ void qwk_email_text(char *text, char *title, char *to) {
       const string unn = a()->names()->UserName(un);
       strcpy(s2, unn.c_str());
     } else {
-      if (a()->max_net_num() > 1) {
+      if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
         if (un == 0) {
           sprintf(s2, "%s @%u.%s", a()->net_email_name.c_str(), sy, a()->network_name());
         } else {

@@ -512,7 +512,7 @@ void time_bank() {
 }
 
 int getnetnum(const std::string& network_name) {
-  for (int i = 0; i < a()->max_net_num(); i++) {
+  for (int i = 0; i < wwiv::stl::size_int(a()->net_networks.size()); i++) {
     if (iequals(a()->net_networks[i].name, network_name)) {
       return i;
     }
@@ -522,7 +522,7 @@ int getnetnum(const std::string& network_name) {
 
 int getnetnum_by_type(network_type_t type) {
   const auto& n = a()->net_networks;
-  for (int i = 0; i < a()->max_net_num(); i++) {
+  for (int i = 0; i < wwiv::stl::size_int(a()->net_networks.size()); i++) {
     if (n[i].type == type) {
       return i;
     }

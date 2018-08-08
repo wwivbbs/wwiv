@@ -42,6 +42,7 @@
 #include "bbs/workspace.h"
 #include "sdk/status.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "core/datetime.h"
@@ -194,7 +195,7 @@ void sendout_email(EmailData& data) {
   m.status = 0;
   m.daten = daten_t_now();
 
-  if (m.fromsys && a()->max_net_num() > 1) {
+  if (m.fromsys && wwiv::stl::size_int(a()->net_networks.size()) > 1) {
     m.status |= status_new_net;
     // always trim to WWIV_MESSAGE_TITLE_LENGTH now.
     m.title[71] = '\0';
@@ -324,7 +325,7 @@ void sendout_email(EmailData& data) {
         data.system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
       logMessagePart = a()->net_email_name;
     } else {
-      if (a()->max_net_num() > 1) {
+      if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
         if (data.user_number == 0) {
           logMessagePart = StringPrintf("%s @%u.%s", a()->net_email_name.c_str(), data.system_number,
                            a()->network_name());
@@ -473,7 +474,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
       // Internet and 
       destination = a()->net_email_name;
     } else {
-      if (a()->max_net_num() > 1) {
+      if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
         if (user_number == 0) {
           destination = StringPrintf("%s @%u.%s", a()->net_email_name.c_str(), system_number, a()->network_name());
         } else {
@@ -593,7 +594,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
           destination = carbon_copy[j].net_email_name;
         } else {
           set_net_num(carbon_copy[j].net_num);
-          if (a()->max_net_num() > 1) {
+          if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
             if (carbon_copy[j].user_number == 0) {
               destination = StringPrintf("%s@%u.%s", carbon_copy[j].net_email_name, carbon_copy[j].system_number,
                       carbon_copy[j].net_name);

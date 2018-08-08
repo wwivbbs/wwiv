@@ -733,7 +733,7 @@ static void DisplayUserLoginInformation() {
 
   /////////////////////////////////////////////////////////////////////////
   a()->status_manager()->RefreshStatusCache();
-  for (int i = 0; i < a()->max_net_num(); i++) {
+  for (int i = 0; i < wwiv::stl::size_int(a()->net_networks.size()); i++) {
     if (a()->net_networks[i].sysnum) {
       std::ostringstream ss;
       const auto& n = a()->net_networks[i];
@@ -764,7 +764,7 @@ static void DisplayUserLoginInformation() {
         bout << "Forwarded to unknown system; forwarding reset.\r\n";
       } else {
         bout << "Mail set to be forwarded to ";
-        if (a()->max_net_num() > 1) {
+        if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
           bout << "#" << a()->user()->GetForwardUserNumber()
                << " @"
                << a()->user()->GetForwardSystemNumber()

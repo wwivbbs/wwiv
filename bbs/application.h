@@ -226,8 +226,6 @@ public:
   int net_num() const { return network_num_; }
   void set_net_num(int n) { network_num_ = n; }
 
-  int max_net_num() const { return net_networks.size(); }
-
   wwiv::sdk::StatusMgr* status_manager() { return statusMgr.get(); }
   wwiv::sdk::UserManager* users() { return user_manager_.get(); }
 

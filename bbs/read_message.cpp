@@ -68,7 +68,7 @@ static void SetMessageOriginInfo(int system_number, int user_number, string* out
                                  string* outLocation) {
   string netName;
 
-  if (a()->max_net_num() > 1) {
+  if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
     netName = StrCat(a()->current_net().name, "- ");
   }
 

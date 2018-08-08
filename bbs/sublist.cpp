@@ -87,7 +87,7 @@ void old_sublist() {
       } else {
         s += "  ";
       }
-      if (a()->current_net().sysnum || a()->max_net_num() > 1) {
+      if (a()->current_net().sysnum || wwiv::stl::size_int(a()->net_networks.size()) > 1) {
         if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
           const char *ss;
           if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {
@@ -200,7 +200,7 @@ void SubList() {
           strcpy(s2, "|#6No ");
         }
         iscan(i1);
-        if (a()->current_net().sysnum || a()->max_net_num() > 1) {
+        if (a()->current_net().sysnum || wwiv::stl::size_int(a()->net_networks.size()) > 1) {
           if (!a()->subs().sub(a()->usub[i1].subnum).nets.empty()) {
 	          const char* ss;
             if (a()->subs().sub(a()->usub[i1].subnum).nets.size() > 1) {
