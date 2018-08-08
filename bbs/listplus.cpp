@@ -46,7 +46,6 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
-#include "bbs/vars.h"
 
 #include "core/stl.h"
 #include "core/strings.h"
@@ -611,7 +610,7 @@ int prep_search_rec(search_record* search_rec, int type) {
     search_rec->alldirs = THIS_DIR;
     search_rec->nscandate = a()->context().nscandate();
   } else if (type == LP_NSCAN_NSCAN) {
-    g_flags |= g_flag_scanned_files;
+    a()->context().scanned_files(true);
     search_rec->nscandate = a()->context().nscandate();
     search_rec->alldirs = ALL_DIRS;
   } else {

@@ -30,7 +30,6 @@
 #include "bbs/com.h"
 #include "bbs/mmkey.h"
 #include "bbs/pause.h"
-#include "bbs/vars.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -76,7 +75,7 @@ void tmp_disable_conf(bool disable) {
   if (disable) {
     disable_conf_cnt++;
     if (okconf(a()->user())) {
-      g_flags |= g_flag_disable_conf;
+      a()->context().disable_conf(true);
       ocs = a()->GetCurrentConferenceMessageArea();
       oss = a()->current_user_sub().subnum;
       ocd = a()->GetCurrentConferenceFileArea();
@@ -86,8 +85,8 @@ void tmp_disable_conf(bool disable) {
     }
   } else if (disable_conf_cnt) {
     disable_conf_cnt--;
-    if ((disable_conf_cnt == 0) && (g_flags & g_flag_disable_conf)) {
-      g_flags &= ~g_flag_disable_conf;
+    if ((disable_conf_cnt == 0) && a()->context().disable_conf()) {
+      a()->context().disable_conf(false);
       setuconf(ConferenceType::CONF_SUBS, ocs, oss);
       setuconf(ConferenceType::CONF_DIRS, ocd, osd);
     }

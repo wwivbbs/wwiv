@@ -35,7 +35,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/misccmd.h"
 #include "bbs/pause.h"
-#include "bbs/vars.h"
+
 #include "bbs/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/xfer.h"

@@ -27,7 +27,7 @@
 #include "bbs/email.h"
 #include "bbs/message_file.h"
 #include "bbs/output.h"
-#include "bbs/vars.h"
+
 #include "core/file.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"

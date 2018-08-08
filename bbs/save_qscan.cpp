@@ -21,7 +21,7 @@
 #include <cstdint>
 #include <memory>
 #include "bbs/bbs.h"
-#include "bbs/vars.h"
+
 #include "bbs/application.h"
 
 namespace wwiv {

@@ -35,7 +35,7 @@
 #include "bbs/email.h"
 #include "bbs/execexternal.h"
 #include "bbs/extract.h"
-#include "bbs/vars.h"
+
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
 #include "bbs/message_file.h"

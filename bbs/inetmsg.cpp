@@ -28,7 +28,6 @@
 #include "bbs/misccmd.h"
 #include "bbs/instmsg.h"
 #include "bbs/quote.h"
-#include "bbs/vars.h"
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"

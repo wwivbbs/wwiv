@@ -28,7 +28,7 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/utility.h"
 #include "bbs/remote_io.h"
-#include "bbs/vars.h"
+
 #include "bbs/prot/zmodem.h"
 #include "core/os.h"
 #include "core/strings.h"

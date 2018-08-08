@@ -40,7 +40,7 @@
 #include "bbs/srrcv.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/xfer.h"
 
 #include "core/stl.h"

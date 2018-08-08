@@ -42,7 +42,7 @@
 #include "bbs/sublist.h"
 #include "bbs/sysopf.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/wqscn.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"

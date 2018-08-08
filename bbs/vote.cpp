@@ -26,7 +26,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/mmkey.h"
-#include "bbs/vars.h"
+
 #include "sdk/status.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"

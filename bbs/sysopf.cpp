@@ -29,7 +29,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/finduser.h"
-#include "bbs/vars.h"
+
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
 #include "bbs/datetime.h"

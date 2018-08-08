@@ -22,7 +22,6 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/application.h"
 #include "core/strings.h"

@@ -39,7 +39,7 @@
 #include "bbs/shortmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/multinst.h"
-#include "bbs/vars.h"
+
 #include "bbs/xfer.h"
 #include "core/stl.h"
 #include "core/strings.h"

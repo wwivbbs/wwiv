@@ -32,7 +32,7 @@
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/subreq.h"
-#include "bbs/vars.h"
+
 #include "bbs/wqscn.h"
 #include "core/file.h"
 #include "core/datafile.h"

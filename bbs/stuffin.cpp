@@ -30,7 +30,7 @@
 #include "bbs/dropfile.h"
 #include "bbs/remote_io.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/wconstants.h"
 #include "sdk/filenames.h"
 

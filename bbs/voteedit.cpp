@@ -25,7 +25,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/com.h"
-#include "bbs/vars.h"
+
 #include "core/strings.h"
 #include "sdk/filenames.h"
 

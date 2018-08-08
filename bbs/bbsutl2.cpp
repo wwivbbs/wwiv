@@ -22,7 +22,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/vars.h"
 #include "core/inifile.h"
 #include "core/stl.h"
 #include "core/strings.h"

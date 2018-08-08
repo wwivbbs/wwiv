@@ -78,7 +78,7 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
-#include "bbs/vars.h"
+
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/printfile.h"

@@ -23,7 +23,6 @@
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/finduser.h"
-#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/application.h"
 #include "core/strings.h"

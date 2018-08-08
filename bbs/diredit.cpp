@@ -28,7 +28,6 @@
 #include "bbs/bbs.h"
 #include "bbs/pause.h"
 #include "bbs/sysoplog.h"
-#include "bbs/vars.h"
 #include "bbs/wqscn.h"
 #include "core/datafile.h"
 #include "core/stl.h"

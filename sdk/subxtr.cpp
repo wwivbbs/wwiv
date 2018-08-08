@@ -27,7 +27,7 @@
 #include <cereal/types/memory.hpp>
 #include <cereal/archives/json.hpp>
 
-#include "bbs/vars.h"
+
 #include "core/datafile.h"
 #include "core/log.h"
 #include "core/file.h"

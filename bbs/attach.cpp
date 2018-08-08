@@ -32,7 +32,6 @@
 #include "bbs/utility.h"
 #include "bbs/wconstants.h"
 #include "bbs/output.h"
-#include "bbs/vars.h"
 #include "bbs/xfer.h"
 #include "sdk/user.h"
 #include "core/file.h"

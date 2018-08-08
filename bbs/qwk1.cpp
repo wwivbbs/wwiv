@@ -53,9 +53,9 @@
 #include "bbs/quote.h"
 #include "bbs/subacc.h"
 #include "bbs/sublist.h"
-#include "bbs/vars.h"
+
 #include "bbs/xfer.h"
-#include "bbs/vars.h"
+
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"

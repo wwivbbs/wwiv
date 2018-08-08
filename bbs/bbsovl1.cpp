@@ -36,7 +36,6 @@
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/xfer.h"

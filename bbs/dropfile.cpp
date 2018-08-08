@@ -29,7 +29,6 @@
 #include "bbs/instmsg.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "core/textfile.h"
 #include "core/version.h"
 #include "sdk/filenames.h"

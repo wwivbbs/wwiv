@@ -27,7 +27,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bbsutl1.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/datetime.h"
 #include "bbs/email.h"
 #include "bbs/instmsg.h"

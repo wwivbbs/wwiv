@@ -24,7 +24,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/bgetch.h"
 #include "bbs/execexternal.h"
-#include "bbs/vars.h"
+
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl2.h"
 #include "bbs/com.h"
@@ -795,7 +795,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
 
 void nscanall() {
   bool bScanAllConfs = false;
-  g_flags |= g_flag_scanned_files;
+  a()->context().scanned_files(true);
 
   if (a()->uconfdir[1].confnum != -1 && okconf(a()->user())) {
     bout.nl();

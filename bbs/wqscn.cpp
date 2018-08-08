@@ -21,7 +21,7 @@
 #include <memory>
 
 #include "bbs/bbs.h"
-#include "bbs/vars.h"
+
 #include "sdk/filenames.h"
 
 using namespace wwiv::core;

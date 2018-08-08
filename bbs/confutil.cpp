@@ -23,7 +23,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/mmkey.h"
-#include "bbs/vars.h"
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"

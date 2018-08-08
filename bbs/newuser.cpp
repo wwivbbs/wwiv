@@ -54,7 +54,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/trashcan.h"
 #include "bbs/uedit.h"
-#include "bbs/vars.h"
+
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"

@@ -39,7 +39,6 @@
 #include "bbs/shortmsg.h"
 #include "bbs/sr.h"
 #include "bbs/srsend.h"
-#include "bbs/vars.h"
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"

@@ -33,7 +33,7 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/sysoplog.h"
-#include "bbs/vars.h"
+
 #include "bbs/wconstants.h"
 #include "sdk/status.h"
 #include "core/file.h"

@@ -28,7 +28,7 @@
 #include "bbs/com.h"
 #include "bbs/sr.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/xfer.h"
 #include "core/os.h"
 #include "core/strings.h"

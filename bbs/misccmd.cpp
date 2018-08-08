@@ -25,7 +25,7 @@
 #include "bbs/bbsutl2.h"
 #include "bbs/execexternal.h"
 #include "bbs/bbsutl.h"
-#include "bbs/vars.h"
+
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"

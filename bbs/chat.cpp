@@ -22,7 +22,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/finduser.h"
-#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/keycodes.h"
 #include "bbs/instmsg.h"

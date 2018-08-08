@@ -23,7 +23,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/com.h"
-#include "bbs/vars.h"
+
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"

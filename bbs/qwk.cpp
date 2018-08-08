@@ -49,7 +49,7 @@
 #include "bbs/subacc.h"
 #include "bbs/bbs.h"
 #include "bbs/sysoplog.h"
-#include "bbs/vars.h"
+
 #include "bbs/wconstants.h"
 #include "bbs/utility.h"
 #include "bbs/sr.h"

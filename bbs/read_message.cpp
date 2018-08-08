@@ -37,7 +37,7 @@
 #include "bbs/printfile.h"
 #include "bbs/subacc.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"

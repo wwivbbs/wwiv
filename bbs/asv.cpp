@@ -22,7 +22,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/uedit.h"
-#include "bbs/vars.h"
 #include "bbs/application.h"
 #include "bbs/xfer.h"
 

@@ -51,7 +51,7 @@
 #include "bbs/utility.h"
 #include "bbs/subacc.h"
 #include "bbs/wqscn.h"
-#include "bbs/vars.h"
+
 #include "bbs/keycodes.h"
 #include "bbs/sr.h"
 #include "bbs/sysopf.h"
@@ -244,10 +244,10 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
 static void HandleScanReadFind(int &nMessageNumber, MsgScanOption& scan_option) {
   bool abort = false;
   char *pszTempFindString = nullptr;
-  if (!(g_flags & g_flag_made_find_str)) {
+  if (!a()->context().made_find_str()) {
     pszTempFindString = strupr(stripcolors(get_post(nMessageNumber)->title));
     to_char_array(s_szFindString, pszTempFindString);
-    g_flags |= g_flag_made_find_str;
+    a()->context().made_find_str(true);
   } else {
     pszTempFindString = &s_szFindString[0];
   }

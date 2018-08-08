@@ -70,6 +70,10 @@ void SessionContext::reset() {
   a_->SetTimeOnlineLimited(false);
 
   bout.charbufferpointer_ = 0;
+  clear_irt();
+  outcom(false);
+  incom(false);
+  okmacro(true);
 }
 
 void SessionContext::irt(const std::string& irt) { 

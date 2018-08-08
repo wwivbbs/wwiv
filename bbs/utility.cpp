@@ -46,7 +46,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
-#include "bbs/vars.h"
+
 #include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -104,16 +104,9 @@ void frequent_init() {
   setiia(seconds(5));
 
   // Context Globals to move to Appliction
-  g_flags = 0;
-  a()->context().clear_irt();
-  a()->context().outcom(false);
-  a()->context().incom(false);
-  a()->context().okmacro(true);
-  bout.okskey(true);
-  use_workspace = false;
-
   // Context Globals in Appliction
   a()->context().reset();
+  use_workspace = false;
 
   set_net_num(0);
   read_qscn(1, a()->context().qsc, false);
@@ -122,6 +115,7 @@ void frequent_init() {
   
   // Output context
   bout.reset();
+  bout.okskey(true);
 
   // DSZ Log
   File::SetFilePermissions(a()->dsz_logfile_name_, File::permReadWrite);

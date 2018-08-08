@@ -32,7 +32,6 @@
 #include "bbs/input.h"
 #include "bbs/mmkey.h"
 #include "bbs/remote_io.h"
-#include "bbs/vars.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/textfile.h"

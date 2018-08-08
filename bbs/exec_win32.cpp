@@ -30,7 +30,6 @@
 #include "bbs/remote_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/application.h"
-#include "bbs/vars.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"

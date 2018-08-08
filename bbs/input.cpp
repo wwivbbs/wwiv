@@ -33,7 +33,6 @@
 #include "bbs/utility.h"
 #include "bbs/wconstants.h"
 #include "bbs/application.h"
-#include "bbs/vars.h"
 
 using std::string;
 using wwiv::bbs::InputMode;

@@ -37,7 +37,6 @@
 #include "bbs/confutil.h"
 #include "bbs/datetime.h"
 #include "bbs/bbs.h"
-#include "bbs/vars.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "sdk/status.h"

@@ -23,7 +23,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/pause.h"
-#include "bbs/vars.h"
 #include "bbs/datetime.h"
 #include "bbs/wconstants.h"
 #include "core/strings.h"

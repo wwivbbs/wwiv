@@ -23,11 +23,6 @@
 #include <io.h>
 #endif  // WIN32
 
-#define _DEFINE_GLOBALS_
-// vars.h requires  _DEFINE_GLOBALS_
-#include "bbs/vars.h"
-#undef _DEFINE_GLOBALS_
-
 #include <algorithm>
 #include <chrono>
 #include <cmath>

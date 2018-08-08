@@ -38,7 +38,6 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/quote.h"
-#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "sdk/status.h"

@@ -26,7 +26,6 @@
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/mmkey.h"
-#include "bbs/vars.h"
 #include "core/strings.h"
 
 

@@ -39,7 +39,7 @@
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
-#include "bbs/vars.h"
+
 #include "bbs/external_edit.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"

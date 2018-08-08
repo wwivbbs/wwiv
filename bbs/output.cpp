@@ -31,7 +31,7 @@
 #include "bbs/instmsg.h"
 #include "bbs/output.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "core/strings.h"
 
 using std::ostream;

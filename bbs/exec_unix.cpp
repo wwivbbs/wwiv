@@ -21,7 +21,6 @@
 #include <unistd.h>
 
 #include "bbs/bbs.h"
-#include "bbs/vars.h"
 #include "bbs/remote_io.h"
 
 #include "core/log.h"

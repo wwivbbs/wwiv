@@ -25,7 +25,7 @@
 #include "bbs/bbsovl3.h"
 #include "bbs/bbsutl.h"
 #include "bbs/bbs.h"
-#include "bbs/vars.h"
+
 #include "bbs/common.h"
 #include "bbs/listplus.h"
 #include "bbs/pause.h"

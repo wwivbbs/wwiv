@@ -37,7 +37,7 @@
 #include "bbs/subacc.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/wconstants.h"
 #include "bbs/xfer.h"
 #include "core/datetime.h"
@@ -377,7 +377,7 @@ std::string grab_user_name(messagerec* msg, const std::string& file_name, int ne
 
 void qscan(uint16_t start_subnum, bool& nextsub) {
   int sub_number = a()->usub[start_subnum].subnum;
-  g_flags &= ~g_flag_made_find_str;
+  a()->context().made_find_str(false);
 
   if (a()->hangup_ || sub_number < 0) {
     return;
@@ -455,7 +455,7 @@ void nscan(uint16_t start_subnum) {
   bout << "|#3-=< Global Q-Scan Done >=-\r\n\n";
   if (nextsub && a()->user()->IsNewScanFiles() &&
       (a()->config()->sysconfig_flags() & sysconfig_no_xfer) == 0 &&
-      (!(g_flags & g_flag_scanned_files))) {
+      !a()->context().scanned_files()) {
     bout.clear_lines_listed();
     tmp_disable_conf(true);
     nscanall();

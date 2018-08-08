@@ -26,7 +26,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/pause.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "core/os.h"
 #include "core/strings.h"
 
@@ -43,13 +43,13 @@ namespace wwiv {
 namespace bbs {
 
 TempDisablePause::TempDisablePause() : wwiv::core::Transaction([] {
-    if (g_flags & g_flag_disable_pause) {
-      g_flags &= ~g_flag_disable_pause;
+    if (a()->context().disable_pause()) {
+      a()->context().disable_pause(false);
       a()->user()->SetStatusFlag(User::pauseOnPage);
     }
   }, nullptr) {
   if (a()->user()->HasPause()) {
-    g_flags |= g_flag_disable_pause;
+    a()->context().disable_pause(true);
     a()->user()->ClearStatusFlag(User::pauseOnPage);
   }
 }

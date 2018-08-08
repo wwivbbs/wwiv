@@ -41,7 +41,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/message_file.h"
 #include "bbs/quote.h"
-#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/workspace.h"
 #include "core/scope_exit.h"

@@ -23,7 +23,6 @@
 #include "bbs/com.h"
 #include "bbs/bgetch.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 #include "bbs/keycodes.h"

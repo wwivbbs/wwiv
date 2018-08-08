@@ -36,7 +36,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"

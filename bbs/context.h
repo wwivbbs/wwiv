@@ -66,6 +66,15 @@ public:
   daten_t nscandate() const noexcept { return nscandate_; }
   void nscandate(daten_t d) { nscandate_ = d; }
 
+  bool disable_conf() const noexcept { return disable_conf_; }
+  void disable_conf(bool b) { disable_conf_ = b; }
+  bool disable_pause() const noexcept { return disable_pause_; }
+  void disable_pause(bool b) { disable_pause_ = b; }
+  bool scanned_files() const noexcept { return scanned_files_; }
+  void scanned_files(bool b) { scanned_files_ = b; }
+  bool made_find_str() const noexcept { return made_find_str_; }
+  void made_find_str(bool b) { made_find_str_ = b; }
+  
   // qsc is the qscan pointer. The 1st 4 bytes are the sysop sub number.
   uint32_t* qsc{nullptr};
   // A bitfield controlling if the directory should be included in the new scan.
@@ -94,6 +103,10 @@ private:
   bool forcescansub_{false};
   bool guest_user_{false};
   daten_t nscandate_{0};
+  bool disable_conf_{false};
+  bool disable_pause_{false};
+  bool scanned_files_{false};
+  bool made_find_str_{false};
 };
 
 } // namespace bbs

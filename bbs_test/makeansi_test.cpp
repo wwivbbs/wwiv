@@ -23,7 +23,7 @@
 #include <string>
 
 #include "bbs/com.h"
-#include "bbs/vars.h"
+
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"

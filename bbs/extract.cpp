@@ -37,7 +37,6 @@
 #include "bbs/xfertmp.h"
 #include "bbs/misccmd.h"
 #include "bbs/mmkey.h"
-#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/findfiles.h"
 #include "core/textfile.h"

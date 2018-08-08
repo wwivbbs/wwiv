@@ -27,7 +27,6 @@
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/execexternal.h"
-#include "bbs/vars.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/netsup.h"

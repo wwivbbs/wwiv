@@ -30,7 +30,7 @@
 #include "bbs/com.h"
 #include "bbs/message_file.h"
 #include "bbs/pause.h"
-#include "bbs/vars.h"
+
 #include "bbs/utility.h"
 #include "core/strings.h"
 #include "core/textfile.h"

@@ -26,7 +26,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/pause.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/application.h"

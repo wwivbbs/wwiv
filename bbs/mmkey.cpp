@@ -25,7 +25,7 @@
 #include "core/log.h"
 #include "bbs/bbs.h"
 #include "bbs/keycodes.h"
-#include "bbs/vars.h"
+
 #include "core/strings.h"
 #include "core/stl.h"
 #include "core/wwivassert.h"

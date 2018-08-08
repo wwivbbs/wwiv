@@ -30,7 +30,6 @@
 #include "bbs/bbs.h"
 #include "bbs/com.h"
 #include "bbs/sysoplog.h"
-#include "bbs/vars.h"
 #include "bbs/utility.h"
 #include "core/stl.h"
 #include "core/strings.h"

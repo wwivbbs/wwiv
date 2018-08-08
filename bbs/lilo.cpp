@@ -54,7 +54,6 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 #include "bbs/wqscn.h"
 #include "sdk/status.h"
@@ -993,7 +992,7 @@ void logoff() {
     s.SetMinutesActiveToday(active_today + minutes_used_now);
   });
 
-  if (g_flags & g_flag_scanned_files) {
+  if (a()->context().scanned_files()) {
     a()->user()->SetNewScanDateNumber(a()->user()->GetLastOnDateNumber());
   }
   a()->user()->SetLastOnDateNumber(daten_t_now());

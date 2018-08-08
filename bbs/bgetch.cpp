@@ -31,7 +31,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/multinst.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "bbs/wconstants.h"
 
 #include "core/log.h"

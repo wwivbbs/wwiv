@@ -25,7 +25,7 @@
 #include "bbs/com.h"
 #include "bbs/email.h"
 #include "bbs/finduser.h"
-#include "bbs/vars.h"
+
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/sysoplog.h"

@@ -30,7 +30,7 @@
 #include "bbs/utility.h"
 #include "bbs/mmkey.h"
 #include "bbs/subacc.h"
-#include "bbs/vars.h"
+
 #include "bbs/confutil.h"
 #include "sdk/subxtr.h"
 #include "core/stl.h"

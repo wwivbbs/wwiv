@@ -24,7 +24,6 @@
 #include "bbs/com.h"
 #include "bbs/gfileedit.h"
 #include "bbs/mmkey.h"
-#include "bbs/vars.h"
 #include "bbs/instmsg.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"

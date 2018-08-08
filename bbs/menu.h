@@ -25,7 +25,7 @@
 #include <string>
 #include <vector>
 
-#include "bbs/vars.h"
+
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/textfile.h"

@@ -45,7 +45,6 @@
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
 #include "bbs/wconstants.h"
-#include "bbs/vars.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"

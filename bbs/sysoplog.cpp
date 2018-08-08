@@ -25,7 +25,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"

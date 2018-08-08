@@ -19,7 +19,7 @@
 #include "gtest/gtest.h"
 
 #include "bbs/stuffin.h"
-#include "bbs/vars.h"
+
 #include "bbs_test/bbs_helper.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"

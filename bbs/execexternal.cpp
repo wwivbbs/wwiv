@@ -20,7 +20,6 @@
 
 #include "bbs/bbs.h"
 #include "bbs/com.h"
-#include "bbs/vars.h"
 #include "bbs/dropfile.h"
 #include "bbs/instmsg.h"
 #include "bbs/wqscn.h"

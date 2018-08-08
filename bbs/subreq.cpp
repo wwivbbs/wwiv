@@ -30,7 +30,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/pause.h"
-#include "bbs/vars.h"
+
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"

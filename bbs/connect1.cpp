@@ -27,7 +27,6 @@
 #include "core/wwivassert.h"
 #include "sdk/bbslist.h"
 #include "sdk/filenames.h"
-#include "bbs/vars.h"
 
 using namespace wwiv::core;
 using namespace wwiv::sdk;

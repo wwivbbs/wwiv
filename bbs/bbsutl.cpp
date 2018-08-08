@@ -31,7 +31,6 @@
 #include "bbs/keycodes.h"
 #include "bbs/pause.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "core/strings.h"
 #include "core/stl.h"
 #include "core/wwivassert.h"
@@ -493,7 +492,7 @@ const char *YesNoString(bool bYesNo) {
 * Checks status of given userrec to see if conferencing is turned on.
 */
 bool okconf(wwiv::sdk::User *pUser) {
-  if (g_flags & g_flag_disable_conf) {
+  if (a()->context().disable_conf()) {
     return false;
   }
 

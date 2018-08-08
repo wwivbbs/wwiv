@@ -903,12 +903,6 @@ struct batchrec {
 #define filechange_email            3
 #define filechange_net              4
 
-// g_flags
-#define g_flag_disable_conf         0x00000001
-#define g_flag_disable_pause        0x00000002
-#define g_flag_scanned_files        0x00000004
-#define g_flag_made_find_str        0x00000008
-
 struct ext_desc_type {
   char name[13];
 

@@ -32,7 +32,7 @@
 #include "bbs/read_message.h"
 #include "core/strings.h"
 #include "sdk/subxtr.h"
-#include "bbs/vars.h"
+
 #include "sdk/user.h"
 
 using namespace wwiv::core;

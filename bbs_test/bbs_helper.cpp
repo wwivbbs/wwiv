@@ -27,7 +27,7 @@
 #include <utility>
 
 #include "bbs/bbs.h"
-#include "bbs/vars.h"
+
 #include "bbs/application.h"
 #include "core/wwivport.h"
 #include "core/file.h"

@@ -29,7 +29,7 @@
 #include "bbs/keycodes.h"
 #include "bbs/sr.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
+
 #include "bbs/xfer.h"
 
 #include "core/strings.h"

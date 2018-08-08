@@ -25,7 +25,6 @@
 #include "bbs/execexternal.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "bbs/vars.h"
 #include "bbs/pause.h"
 #include "bbs/make_abs_cmd.h"
 #include "core/scope_exit.h"
