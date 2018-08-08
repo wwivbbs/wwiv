@@ -24,7 +24,6 @@
 #include "sdk/net.h"
 
 void cleanup_net();
-void do_callout(uint16_t sn);
 void print_pending_list();
 void gate_msg(
   net_header_rec* nh, char *messageText, int net_number,

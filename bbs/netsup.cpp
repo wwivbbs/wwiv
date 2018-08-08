@@ -99,8 +99,9 @@ void cleanup_net() {
 
   for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
+    const auto& net = a()->net_networks[nNetNumber];
 
-    if (!a()->current_net().sysnum) {
+    if (!net.sysnum) {
       continue;
     }
 
@@ -117,10 +118,10 @@ void cleanup_net() {
   a()->localIO()->Cls();
 }
 
-void do_callout(uint16_t sn) {
-  Callout callout(a()->current_net());
-  Contact contact(a()->current_net(), false);
-  Binkp binkp(a()->current_net().dir);
+static void do_callout(const net_networks_rec& net, uint16_t sn) {
+  Callout callout(net);
+  Contact contact(net, false);
+  Binkp binkp(net.dir);
 
   const net_call_out_rec* callout_rec = callout.net_call_out_for(sn); // i con
   if (callout_rec == nullptr) {
@@ -184,12 +185,13 @@ bool attempt_callout() {
 
   for (int nn = 0; nn < a()->max_net_num(); nn++) {
     set_net_num(nn);
-    if (!a()->current_net().sysnum) {
+    const auto& net = a()->net_networks[nn];
+    if (!net.sysnum) {
       continue;
     }
 
-    Callout callout(a()->current_net());
-    Contact contact(a()->current_net(), false);
+    Callout callout(net);
+    Contact contact(net, false);
 
     for (const auto& p : callout.callout_config()) {
       const net_call_out_rec& ncor = p.second;
@@ -226,7 +228,7 @@ bool attempt_callout() {
     set_net_num(node.net_num_);
     if (node.weight_ != 0) {
       VLOG(1) << "Attempting callout on: @" << node.node_num_;
-      do_callout(node.node_num_);
+      do_callout(a()->net_networks[node.net_num_] , node.node_num_);
     }
   }
   return true;
@@ -263,16 +265,13 @@ void print_pending_list() {
           "\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC5\xC4\xC4\xC4\xC4\xC4\xC4"
           "\xC4\xC4\xC4\xC4\xC4\xB4\r\n";
 
-  int nNetNumber;
-  for (nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
-    set_net_num(nNetNumber);
-
-    if (!a()->current_net().sysnum) {
+  for (const auto& net : a()->net_networks) {
+    if (!net.sysnum) {
       continue;
     }
 
-    Callout callout(a()->current_net());
-    Contact contact(a()->current_net(), false);
+    Callout callout(net);
+    Contact contact(net, false);
 
     for (const auto& p : callout.callout_config()) {
       const NetworkContact* r = contact.contact_rec_for(p.first);
@@ -323,10 +322,8 @@ void print_pending_list() {
     }
   }
 
-  for (nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
-    set_net_num(nNetNumber);
-
-    if (!a()->current_net().sysnum) {
+  for (const auto& net : a()->net_networks) {
+    if (!net.sysnum) {
       continue;
     }
 
@@ -342,10 +339,8 @@ void print_pending_list() {
     }
   }
 
-  for (nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
-    set_net_num(nNetNumber);
-
-    if (!a()->current_net().sysnum) {
+  for (const auto& net : a()->net_networks) {
+    if (!net.sysnum) {
       continue;
     }
 
@@ -508,14 +503,13 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
 
 // begin callout additions
 
-static void print_call(uint16_t sn, int nNetNumber) {
+static void print_call(uint16_t sn, const net_networks_rec& net) {
   static int color, got_color = 0;
   time_t tCurrentTime = time(nullptr);
 
-  set_net_num(nNetNumber);
-  Callout callout(a()->current_net());
-  Contact contact(a()->current_net(), false);
-  Binkp binkp(a()->current_net().dir);
+  Callout callout(net);
+  Contact contact(net, false);
+  Binkp binkp(net.dir);
 
   const NetworkContact* ncn = contact.contact_rec_for(sn);
   if (!ncn) {
@@ -658,8 +652,9 @@ static std::pair<uint16_t, int> ansicallout() {
   std::vector<CalloutEntry> entries;
   for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
     set_net_num(nNetNumber);
-    Callout callout(a()->current_net());
-    Contact contact(a()->current_net(), false);
+    const auto& net = a()->net_networks[nNetNumber];
+    Callout callout(net);
+    Contact contact(net, false);
 
     const auto& nodemap = callout.callout_config();
     for (const auto& p : nodemap) {
@@ -701,7 +696,7 @@ static std::pair<uint16_t, int> ansicallout() {
   int x = 0;
   int y = 0;
   a()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
-  print_call(entries[pos].node, entries[pos].net);
+  print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
   char ch = 0;
 
   bool done = false;
@@ -730,7 +725,7 @@ static std::pair<uint16_t, int> ansicallout() {
           pos++;
           x += 7;
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case LARROW: // left arrow
@@ -739,7 +734,7 @@ static std::pair<uint16_t, int> ansicallout() {
           pos--;
           x -= 7;
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case UPARROW: // up arrow
@@ -748,13 +743,13 @@ static std::pair<uint16_t, int> ansicallout() {
           pos -= 10;
           y--;
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else if (rownum > 0) {
           pos -= 10;
           rownum--;
           fill_call(color4, rownum, entries);
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case DNARROW: // down arrow
@@ -772,7 +767,7 @@ static std::pair<uint16_t, int> ansicallout() {
           }
         }
         a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-        print_call(entries[pos].node, entries[pos].net);
+        print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         break;
       case HOME: // home
         if (pos > 0) {
@@ -782,7 +777,7 @@ static std::pair<uint16_t, int> ansicallout() {
           rownum = 0;
           fill_call(color4, rownum, entries);
           a()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
       case PAGEUP: // page up
         if (y > 0) {
@@ -790,7 +785,7 @@ static std::pair<uint16_t, int> ansicallout() {
           pos -= 10 * y;
           y = 0;
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else {
           if (rownum > 5) {
             pos -= 60;
@@ -801,7 +796,7 @@ static std::pair<uint16_t, int> ansicallout() {
           }
           fill_call(color4, rownum, entries);
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case PAGEDN: // page down
@@ -814,7 +809,7 @@ static std::pair<uint16_t, int> ansicallout() {
             --y;
           }
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else if ((rownum + 6) * 10 < size_int(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
             if ((rownum + 6) * 10 < size_int(entries)) {
@@ -828,7 +823,7 @@ static std::pair<uint16_t, int> ansicallout() {
             --y;
           }
           a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
-          print_call(entries[pos].node, entries[pos].net);
+          print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       }
@@ -843,8 +838,8 @@ static std::pair<uint16_t, int> ansicallout() {
 
 static int FindNetworkNumberForNode(int sn) {
   for (int nNetNumber = 0; nNetNumber < a()->max_net_num(); nNetNumber++) {
-    set_net_num(nNetNumber);
-    Callout callout(a()->current_net());
+    const auto net = a()->net_networks[nNetNumber];
+    Callout callout(net);
     if (callout.net_call_out_for(sn) != nullptr) {
       return nNetNumber;
     }
@@ -865,16 +860,17 @@ void force_callout() {
       return;
     }
   }
+  const auto& net = a()->net_networks[network_number];
 
   set_net_num(network_number);
-  Callout callout(a()->current_net());
+  Callout callout(net);
 
   if (!allowed_to_call(*callout.net_call_out_for(sn.first), DateTime::now())) {
     return;
   }
 
   a()->localIO()->Cls();
-  do_callout(sn.first);
+  do_callout(net, sn.first);
 }
 
 std::chrono::steady_clock::time_point last_network_attempt() { return last_time_c_; }
