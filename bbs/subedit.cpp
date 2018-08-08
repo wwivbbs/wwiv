@@ -696,7 +696,7 @@ void boardedit() {
         insert_sub(subnum);
         modify_sub(subnum);
         confchg = true;
-        if (subconfnum > 1) {
+        if (a()->subconfs.size() > 1) {
           bout.nl();
           list_confs(ConferenceType::CONF_SUBS, 0);
           int i2 = select_conf("Put in which conference? ", ConferenceType::CONF_SUBS, 0);

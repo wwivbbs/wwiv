@@ -122,7 +122,7 @@ void send_inet_email() {
   if (check_inet_addr(a()->net_email_name)) {
     unsigned short user_number = 0;
     unsigned short system_number = INTERNET_EMAIL_FAKE_OUTBOUND_NODE;
-    irt[0] = 0;
+    a()->context().clear_irt();
     clear_quotes();
     if (user_number || system_number) {
       email("", user_number, system_number, false, 0);

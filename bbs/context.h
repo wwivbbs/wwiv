@@ -20,6 +20,9 @@
 
 #include <cstdint>
 #include <memory>
+#include <string>
+
+#include "core/wwivport.h"
 
 class Application;
 
@@ -60,6 +63,9 @@ public:
   bool guest_user() const noexcept { return guest_user_; }
   void guest_user(bool g) { guest_user_ = g; }
 
+  daten_t nscandate() const noexcept { return nscandate_; }
+  void nscandate(daten_t d) { nscandate_ = d; }
+
   // qsc is the qscan pointer. The 1st 4 bytes are the sysop sub number.
   uint32_t* qsc{nullptr};
   // A bitfield controlling if the directory should be included in the new scan.
@@ -69,6 +75,13 @@ public:
   // Array of 32-bit unsigned integers for the qscan pointer value
   // aka high message read pointer) for each sub.
   uint32_t* qsc_p{nullptr};
+
+  const std::string irt() const { return std::string(irt_); }
+  void irt(const std::string& irt);
+  void clear_irt() { irt_[0] = '\0'; }
+
+  // TODO(rushfan): Move this to private later
+  char irt_[81];
 
 private:
   Application* a_;
@@ -80,6 +93,7 @@ private:
   bool okmacro_{true};
   bool forcescansub_{false};
   bool guest_user_{false};
+  daten_t nscandate_{0};
 };
 
 } // namespace bbs

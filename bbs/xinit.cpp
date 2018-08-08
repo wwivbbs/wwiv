@@ -777,7 +777,6 @@ void Application::InitializeBBS() {
     remove_from_temp("*.*", batch_directory(), true);
     cleanup_net();
   }
-  subconfnum = dirconfnum = 0;
 
   VLOG(1) << "Reading Conferences.";
   read_all_conferences();

@@ -93,15 +93,15 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
     }
     *ss = '\0';
-    if (a()->charbufferpointer_) {
+    if (bout.charbufferpointer_) {
       char szTempBuffer[255];
       strcpy(szTempBuffer, rollover_buffer);
-      strcat(szTempBuffer, &charbuffer[a()->charbufferpointer_]);
-      strcpy(&charbuffer[1], szTempBuffer);
-      a()->charbufferpointer_ = 1;
+      strcat(szTempBuffer, &bout.charbuffer[bout.charbufferpointer_]);
+      strcpy(&bout.charbuffer[1], szTempBuffer);
+      bout.charbufferpointer_ = 1;
     } else {
-      strcpy(&charbuffer[1], rollover_buffer);
-      a()->charbufferpointer_ = 1;
+      strcpy(&bout.charbuffer[1], rollover_buffer);
+      bout.charbufferpointer_ = 1;
     }
     rollover[0] = '\0';
   }

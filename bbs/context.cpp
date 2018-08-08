@@ -15,9 +15,10 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-
 #include "bbs/context.h"
 #include "bbs/application.h"
+#include "core/log.h"
+#include "core/strings.h"
 
 #include <chrono>
 #include <string>
@@ -25,7 +26,12 @@
 namespace wwiv {
 namespace bbs {
 
-SessionContext::SessionContext(Application* a) : a_(a) { }
+using namespace wwiv::strings;
+
+SessionContext::SessionContext(Application* a) 
+  : a_(a) { 
+  LOG(INFO) << "SessionContext: " << this;
+}
 
 void SessionContext::InitalizeContext() {
   const configrec* c = a_->config()->config();
@@ -50,7 +56,6 @@ void SessionContext::reset() {
   a_->SetCurrentReadMessageArea(-1);
   a_->SetCurrentConferenceMessageArea(0);
   a_->SetCurrentConferenceFileArea(0);
-  a_->charbufferpointer_ = 0;
   a_->localIO()->SetTopLine(0);
   a_->screenlinest = a_->defscreenbottom + 1;
   a_->hangup_ = false;
@@ -63,8 +68,13 @@ void SessionContext::reset() {
   a_->set_extratimecall(std::chrono::seconds(0));
   a_->using_modem = 0;
   a_->SetTimeOnlineLimited(false);
+
+  bout.charbufferpointer_ = 0;
 }
 
+void SessionContext::irt(const std::string& irt) { 
+  to_char_array(irt_, irt); 
+}
 
 }
 }

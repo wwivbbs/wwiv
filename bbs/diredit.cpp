@@ -472,7 +472,7 @@ void dlboardedit() {
           insert_dir(i);
           modify_dir(i);
           confchg = 1;
-          if (dirconfnum > 1) {
+          if (a()->dirconfs.size() > 1) {
             bout.nl();
             list_confs(ConferenceType::CONF_DIRS, 0);
             i2 = select_conf("Put in which conference? ", ConferenceType::CONF_DIRS, 0);

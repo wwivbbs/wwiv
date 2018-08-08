@@ -103,11 +103,11 @@ void clear_quotes() {
   File::SetFilePermissions(quotes_ind_fn, File::permReadWrite);
   File::Remove(quotes_ind_fn);
 
-  if (quotes_ind) {
-    free(quotes_ind);
+  if (bout.quotes_ind) {
+    free(bout.quotes_ind);
   }
 
-  quotes_ind = nullptr;
+  bout.quotes_ind = nullptr;
   quotes_nrm_l = quotes_ind_l = 0;
 }
 
@@ -264,9 +264,9 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
   File ff(quotes_ind_fn);
   if (ff.Open(File::modeBinary | File::modeReadOnly)) {
     quotes_ind_l = ff.length();
-    quotes_ind = static_cast<char*>(BbsAllocA(quotes_ind_l));
-    if (quotes_ind) {
-      ff.Read(quotes_ind, quotes_ind_l);
+    bout.quotes_ind = static_cast<char*>(BbsAllocA(quotes_ind_l));
+    if (bout.quotes_ind) {
+      ff.Read(bout.quotes_ind, quotes_ind_l);
     } else {
       quotes_ind_l = 0;
     }
@@ -370,7 +370,7 @@ void get_quote(const string& reply_to_name) {
   static int i, i1, i2, i3, rl;
   static int l1, l2;
 
-  if (quotes_ind == nullptr) {
+  if (bout.quotes_ind == nullptr) {
     bout.nl();
     bout << "Not replying to a message!  Nothing to quote!\r\n\n";
     return;
@@ -384,13 +384,13 @@ void get_quote(const string& reply_to_name) {
       bool abort = false;
       bool next = false;
       do {
-        if (quotes_ind[l2++] == 10) {
+        if (bout.quotes_ind[l2++] == 10) {
           l1++;
         }
       } while ((l2 < quotes_ind_l) && (l1 < 2));
       do {
-        if (quotes_ind[l2] == 0x04) {
-          while ((quotes_ind[l2++] != 10) && (l2 < quotes_ind_l)) {
+        if (bout.quotes_ind[l2] == 0x04) {
+          while ((bout.quotes_ind[l2++] != 10) && (l2 < quotes_ind_l)) {
           }
         } else {
           if (!reply_to_name.empty()) {
@@ -402,13 +402,13 @@ void get_quote(const string& reply_to_name) {
           if (abort) {
             do {
               l2++;
-            } while (quotes_ind[l2] != RETURN && l2 < quotes_ind_l);
+            } while (bout.quotes_ind[l2] != RETURN && l2 < quotes_ind_l);
           } else {
             do {
-              s[i3++] = quotes_ind[l2++];
-            } while (quotes_ind[l2] != RETURN && l2 < quotes_ind_l);
+              s[i3++] = bout.quotes_ind[l2++];
+            } while (bout.quotes_ind[l2] != RETURN && l2 < quotes_ind_l);
           }
-          if (quotes_ind[l2]) {
+          if (bout.quotes_ind[l2]) {
             l2 += 2;
             s[i3] = 0;
           }
@@ -469,7 +469,7 @@ void get_quote(const string& reply_to_name) {
       }
     }
   } while (!a()->hangup_ && rl && !i2);
-  a()->charbufferpointer_ = 0;
+  bout.charbufferpointer_ = 0;
   if (i1 > 0 && i2 >= i1 && i2 <= i && rl && !a()->hangup_) {
     a()->bquote_ = i1;
     a()->equote_ = i2;

@@ -102,13 +102,13 @@ static void HandleControlKey(char *ch) {
     case CA:   // CTRL-A
     case CD:   // CTRL-D
     case CF:   // CTRL-F
-      if (a()->context().okmacro() && (!a()->charbufferpointer_)) {
+      if (a()->context().okmacro() && (!bout.charbufferpointer_)) {
         static constexpr int MACRO_KEY_TABLE[] = {0, 2, 0, 0, 0, 0, 1};
         auto macroNum = MACRO_KEY_TABLE[(int)c];
-        to_char_array(charbuffer, a()->user()->GetMacro(macroNum));
-        c = charbuffer[0];
+        to_char_array(bout.charbuffer, a()->user()->GetMacro(macroNum));
+        c = bout.charbuffer[0];
         if (c) {
-          a()->charbufferpointer_ = 1;
+          bout.charbufferpointer_ = 1;
         }
       }
       break;
@@ -153,26 +153,26 @@ char bgetch(bool allow_extended_input) {
 
   if (a()->bquote_) {
     if (!qpointer) {
-      charbuffer[1] = '0';
-      charbuffer[2] = RETURN;
-      charbuffer[3] = '\0';
+      bout.charbuffer[1] = '0';
+      bout.charbuffer[2] = RETURN;
+      bout.charbuffer[3] = '\0';
       cpointer = 0;
       qpointer = 1;
       while (qpointer < a()->bquote_ + 2) {
-        if (quotes_ind[cpointer++] == SOFTRETURN) {
-          if (quotes_ind[cpointer] != CD) {
+        if (bout.quotes_ind[cpointer++] == SOFTRETURN) {
+          if (bout.quotes_ind[cpointer] != CD) {
             ++qpointer;
           }
         }
       }
-      a()->charbufferpointer_ = 1;
+      bout.charbufferpointer_ = 1;
     }
-    while (quotes_ind[cpointer] == CD) {
-      while (quotes_ind[cpointer++] != SOFTRETURN)
+    while (bout.quotes_ind[cpointer] == CD) {
+      while (bout.quotes_ind[cpointer++] != SOFTRETURN)
         // Do nothing...
         ;
     }
-    if (quotes_ind[cpointer] == SOFTRETURN) {
+    if (bout.quotes_ind[cpointer] == SOFTRETURN) {
       ++qpointer;
       if (qpointer > a()->equote_ + 2) {
         qpointer = 0;
@@ -183,27 +183,27 @@ char bgetch(bool allow_extended_input) {
         ++cpointer;
       }
     }
-    if (quotes_ind[cpointer] == CC) {
+    if (bout.quotes_ind[cpointer] == CC) {
       ++cpointer;
       return CP;
     }
-    if (quotes_ind[cpointer] == 0) {
+    if (bout.quotes_ind[cpointer] == 0) {
       qpointer = 0;
       a()->bquote_ = 0;
       a()->equote_ = 0;
       return RETURN;
     }
-    return quotes_ind[cpointer++];
+    return bout.quotes_ind[cpointer++];
   }
 
-  if (a()->charbufferpointer_) {
-    if (!charbuffer[a()->charbufferpointer_]) {
-      a()->charbufferpointer_ = charbuffer[0] = 0;
+  if (bout.charbufferpointer_) {
+    if (!bout.charbuffer[bout.charbufferpointer_]) {
+      bout.charbufferpointer_ = bout.charbuffer[0] = 0;
     } else {
-      if ((charbuffer[a()->charbufferpointer_]) == CC) {
-        charbuffer[a()->charbufferpointer_] = CP;
+      if ((bout.charbuffer[bout.charbufferpointer_]) == CC) {
+        bout.charbuffer[bout.charbufferpointer_] = CP;
       }
-      return charbuffer[a()->charbufferpointer_++];
+      return bout.charbuffer[bout.charbufferpointer_++];
     }
   }
   if (a()->localIO()->KeyPressed()) {
@@ -252,7 +252,7 @@ bool bkbhitraw() {
 
 bool bkbhit() {
   if ((a()->localIO()->KeyPressed() || (a()->context().incom() && bkbhitraw()) ||
-       (a()->charbufferpointer_ && charbuffer[a()->charbufferpointer_])) ||
+       (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_])) ||
       a()->bquote_) {
     return true;
   }

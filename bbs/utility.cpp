@@ -105,7 +105,7 @@ void frequent_init() {
 
   // Context Globals to move to Appliction
   g_flags = 0;
-  irt[0] = '\0';
+  a()->context().clear_irt();
   a()->context().outcom(false);
   a()->context().incom(false);
   a()->context().okmacro(true);

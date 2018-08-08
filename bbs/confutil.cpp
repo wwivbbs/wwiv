@@ -25,10 +25,12 @@
 #include "bbs/mmkey.h"
 #include "bbs/vars.h"
 #include "core/log.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
 
 using namespace wwiv::sdk;
+using namespace wwiv::stl;
 
 /**
  * Does user u have access to the conference
@@ -172,7 +174,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     if (which == -1) {
       c = nullptr;
     } else {
-      if (which < 0 || which >= static_cast<int>(subconfnum)) {
+      if (which < 0 || which >= size_int(a()->subconfs)) {
         return false;
       }
       c = &(a()->subconfs[which]);
@@ -191,7 +193,7 @@ static bool setconf(ConferenceType type, std::vector<usersubrec>& ss1, int which
     if (which == -1) {
       c = nullptr;
     } else {
-      if (which < 0 || which >= static_cast<int>(dirconfnum)) {
+      if (which < 0 || which >= size_int(a()->dirconfs)) {
         return false;
       }
       c = &(a()->dirconfs[which]);

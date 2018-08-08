@@ -20,9 +20,9 @@
 #ifndef __INCLUDED_COMMON_H__
 #define __INCLUDED_COMMON_H__
 
-#include <string>
 #include "core/wwivport.h"
 #include "sdk/wwivcolors.h"
+#include <string>
 
 // Defines for listplus
 constexpr int LP_LIST_DIR = 0;
@@ -34,15 +34,18 @@ constexpr int ALL_DIRS = 0;
 constexpr int THIS_DIR = 1;
 constexpr int NSCAN_DIRS = 2;
 
-constexpr int WWIV_LISTPLUS_NORMAL_HIGHLIGHT = 
-  (static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
-constexpr int WWIV_LISTPLUS_NORMAL_MENU_ITEM = 
-  (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) + (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
-constexpr int WWIV_LISTPLUS_CURRENT_HIGHLIGHT = 
-  (static_cast<uint8_t>(wwiv::sdk::Color::RED) + (static_cast<uint8_t>(wwiv::sdk::Color::LIGHTGRAY) << 4));
-constexpr int WWIV_LISTPLUS_CURRENT_MENU_ITEM = 
-  (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) + (static_cast<uint8_t>(wwiv::sdk::Color::LIGHTGRAY) << 4));
-
+constexpr int WWIV_LISTPLUS_NORMAL_HIGHLIGHT =
+    (static_cast<uint8_t>(wwiv::sdk::Color::YELLOW) +
+     (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
+constexpr int WWIV_LISTPLUS_NORMAL_MENU_ITEM =
+    (static_cast<uint8_t>(wwiv::sdk::Color::CYAN) +
+     (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) << 4));
+constexpr int WWIV_LISTPLUS_CURRENT_HIGHLIGHT =
+    (static_cast<uint8_t>(wwiv::sdk::Color::RED) +
+     (static_cast<uint8_t>(wwiv::sdk::Color::LIGHTGRAY) << 4));
+constexpr int WWIV_LISTPLUS_CURRENT_MENU_ITEM =
+    (static_cast<uint8_t>(wwiv::sdk::Color::BLACK) +
+     (static_cast<uint8_t>(wwiv::sdk::Color::LIGHTGRAY) << 4));
 
 struct side_menu_colors {
   int normal_highlight = WWIV_LISTPLUS_NORMAL_HIGHLIGHT;
@@ -53,11 +56,11 @@ struct side_menu_colors {
 
 struct search_record {
   std::string filemask;
-  daten_t nscandate = 0;
+  daten_t nscandate{0};
   std::string search;
 
-  int alldirs = 0;
-  bool search_extended = false;
+  int alldirs{0};
+  bool search_extended{false};
 };
 
 #endif // __INCLUDED_COMMON_H__

@@ -311,7 +311,7 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
 }
 
 void qwk_start_read(int msgnum, struct qwk_junk *qwk_info) {
-  irt[0] = 0;
+  a()->context().clear_irt();
 
   if (a()->GetCurrentReadMessageArea() < 0) {
     return;
@@ -1128,14 +1128,15 @@ void qwk_nscan() {
 
     i1 = a()->udir[i].subnum;
     if (a()->context().qsc_n[i1 / 32] & (1L << (i1 % 32))) {
-      if ((dir_dates[a()->udir[i].subnum]) && (dir_dates[a()->udir[i].subnum] < nscandate)) {
+      if ((dir_dates[a()->udir[i].subnum]) &&
+          (dir_dates[a()->udir[i].subnum] < a()->context().nscandate())) {
         continue;
       }
 
       od = a()->current_user_dir_num();
       a()->set_current_user_dir_num(i);
       dliscan();
-      if (this_date >= nscandate) {
+      if (this_date >= a()->context().nscandate()) {
         sprintf(s, "\r\n\r\n%s - #%s, %d %s.\r\n\r\n",
                 a()->directories[a()->current_user_dir().subnum].name,
                 a()->current_user_dir().keys, numf, "files");
@@ -1145,7 +1146,7 @@ void qwk_nscan() {
         for (i5 = 1; (i5 <= numf) && (!(abort)) && (!a()->hangup_); i5++) {
           SETREC(f, i5);
           read(f, &u, sizeof(uploadsrec));
-          if (u.daten >= nscandate) {
+          if (u.daten >= a()->context().nscandate()) {
             sprintf(s, "%s %5ldk  %s\r\n", u.filename, (long) bytes_to_k(u.numbytes), u.description);
             write(newfile,  s, strlen(s));
 

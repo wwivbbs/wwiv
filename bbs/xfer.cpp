@@ -756,7 +756,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
   auto nOldCurDir = a()->current_user_dir_num();
   a()->set_current_user_dir_num(nDirNum);
   dliscan();
-  if (this_date >= nscandate) {
+  if (this_date >= a()->context().nscandate()) {
     if (okansi()) {
       *abort = listfiles_plus(LP_NSCAN_DIR) ? 1 : 0;
       a()->set_current_user_dir_num(nOldCurDir);
@@ -769,7 +769,7 @@ void nscandir(uint16_t nDirNum, bool& need_title, bool *abort) {
       FileAreaSetRecord(fileDownload, i);
       uploadsrec u;
       fileDownload.Read(&u, sizeof(uploadsrec));
-      if (u.daten >= nscandate) {
+      if (u.daten >= a()->context().nscandate()) {
         fileDownload.Close();
 
         if (need_title) {

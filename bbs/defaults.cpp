@@ -416,7 +416,7 @@ void config_qscan() {
       strcpy(szConfList, " ");
       bout << "\r\nSelect Conference: \r\n\n";
       size_t i = 0;
-      while (i < subconfnum && a()->uconfsub[i].confnum != -1 && !abort) {
+      while (i < a()->subconfs.size() && a()->uconfsub[i].confnum != -1 && !abort) {
         bout.bpla(StrCat(a()->subconfs[a()->uconfsub[i].confnum].designator, ") ",
                 stripcolors(a()->subconfs[a()->uconfsub[i].confnum].conf_name)), &abort);
         szConfList[i + 1] = a()->subconfs[a()->uconfsub[i].confnum].designator;
@@ -436,11 +436,12 @@ void config_qscan() {
     default:
       if (okconf(a()->user()) && a()->uconfsub[1].confnum != -1) {
         size_t i = 0;
-        while ((ch != a()->subconfs[a()->uconfsub[i].confnum].designator) && (i < subconfnum)) {
+        while ((ch != a()->subconfs[a()->uconfsub[i].confnum].designator) &&
+               (i < a()->subconfs.size())) {
           i++;
         }
 
-        if (i >= subconfnum) {
+        if (i >= a()->subconfs.size()) {
           break;
         }
 
@@ -874,7 +875,7 @@ static int GetMaxLinesToShowForScanPlus() {
 
 static void list_config_scan_plus(unsigned int first, int *amount, int type) {
 
-  bool bUseConf = (subconfnum > 1 && okconf(a()->user())) ? true : false;
+  bool bUseConf = (a()->subconfs.size() > 1 && okconf(a()->user())) ? true : false;
 
   bout.cls();
   bout.clear_lines_listed();
@@ -992,7 +993,7 @@ void config_scan_plus(int type) {
   int amount = 0, pos = 0, side_pos = 0;
   side_menu_colors smc{};
 
-  int useconf = (subconfnum > 1 && okconf(a()->user()));
+  int useconf = (a()->subconfs.size() > 1 && okconf(a()->user()));
   a()->topdata = LocalIO::topdataNone;
   a()->UpdateTopScreen();
 
@@ -1212,8 +1213,8 @@ void config_scan_plus(int type) {
               if (a()->GetCurrentConferenceMessageArea() > 0) {
                 a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() - 1);
               } else {
-                while ((a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0)
-                       && (a()->GetCurrentConferenceMessageArea() < subconfnum - 1)) {
+                while ((a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0) &&
+                       (a()->GetCurrentConferenceMessageArea() < a()->subconfs.size() - 1)) {
                   a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1);
                 }
               }
@@ -1222,8 +1223,8 @@ void config_scan_plus(int type) {
               if (a()->GetCurrentConferenceFileArea() > 0) {
                 a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() - 1);
               } else {
-                while ((a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0)
-                       && (a()->GetCurrentConferenceFileArea() < dirconfnum - 1)) {
+                while ((a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0) &&
+                       (a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1)) {
                   a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1);
                 }
               }
@@ -1237,7 +1238,7 @@ void config_scan_plus(int type) {
         case 7:
           if (okconf(a()->user())) {
             if (type == 0) {
-              if ((a()->GetCurrentConferenceMessageArea() < subconfnum - 1)
+              if ((a()->GetCurrentConferenceMessageArea() < a()->subconfs.size() - 1)
                   && (a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0)) {
                 a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1);
               } else {
@@ -1247,7 +1248,7 @@ void config_scan_plus(int type) {
             }
 
             else {
-              if ((a()->GetCurrentConferenceFileArea() < dirconfnum - 1)
+              if ((a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1)
                   && (a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0)) {
                 a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1);
               } else {

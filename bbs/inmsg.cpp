@@ -99,7 +99,7 @@ static bool GetMessageToName(MessageEditorData& data) {
         data.to_name = to_name;
       }
       return true;
-      // WTF??? strcpy(irt, "\xAB");
+      // WTF??? strcpy(a()->context().irt_, "\xAB");
     }
   }
 
@@ -117,19 +117,20 @@ static void GetMessageTitle(MessageEditorData& data) {
       bout << data.title;
       return;
     }
-    if (irt[0] != '\xAB' && irt[0]) {
+    auto irt = a()->context().irt();
+    if (!irt.empty() && irt.front() != '\xAB') {
       string s1;
       char ch = '\0';
-      StringTrim(irt);
-      if (strncasecmp(stripcolors(irt), "re:", 3) != 0) {
+      irt = stripcolors(StringTrim(a()->context().irt()));
+      if (strncasecmp(irt.c_str(), "re:", 3) != 0) {
         if (data.silent_mode) {
           s1 = irt;
-          irt[0] = '\0';
+          a()->context().clear_irt();
         } else {
           s1 = StrCat("Re: ", irt);
         }
       } else {
-        s1 = irt;
+        s1 = a()->context().irt();
       }
       if (s1.length() > 60) {
         s1.resize(60);
@@ -164,7 +165,7 @@ static void GetMessageTitle(MessageEditorData& data) {
     }
   } else {
     if (data.silent_mode || force_title) {
-      data.title.assign(irt);
+      data.title = a()->context().irt();
     } else {
       bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
       bout << "Title: ";
@@ -226,7 +227,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if ((cmd == "/QUOTE") ||
                  (cmd == "/Q")) {
         check_message_size = false;
-        if (quotes_ind != nullptr) {
+        if (bout.quotes_ind != nullptr) {
           get_quote(data.to_name);
         }
       } else if ((cmd == "/LI")) {
@@ -548,8 +549,8 @@ bool inmsg(MessageEditorData& data) {
 
   wwiv::core::ScopeExit at_exit([=]() {
     setiia(oiia);
-    a()->charbufferpointer_ = 0;
-    charbuffer[0] = '\0';
+    bout.charbufferpointer_ = 0;
+    bout.charbuffer[0] = '\0';
     clear_quotes();
     if (data.fsed_flags != FsedFlags::NOFSED) {
       File::Remove(exted_filename);

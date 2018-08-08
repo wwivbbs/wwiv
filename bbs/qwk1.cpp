@@ -446,7 +446,7 @@ void qwk_email_text(char *text, char *title, char *to) {
     }
   }
 
-  irt[0] = 0;
+  a()->context().clear_irt();
   uint16_t sy, un;
   parse_email_info(to, &un, &sy);
   clear_quotes();
@@ -555,8 +555,8 @@ void qwk_email_text(char *text, char *title, char *to) {
 void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* name,
                const wwiv::core::DateTime& dt) {
   wwiv::core::ScopeExit  at_exit([=]() {
-    a()->charbufferpointer_ = 0;
-    charbuffer[0] = 0;
+    bout.charbufferpointer_ = 0;
+    bout.charbuffer[0] = 0;
   });
 
   messagerec m = *m1;
@@ -894,7 +894,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     open_sub(true);
 
     if ((!a()->current_sub().nets.empty()) &&
-        (a()->current_sub().anony & anony_val_net) && (!lcs() || irt[0])) {
+        (a()->current_sub().anony & anony_val_net) && (!lcs() || !a()->context().irt().empty())) {
       p.status |= status_pending_net;
       dm = 1;
 

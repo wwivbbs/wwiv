@@ -898,9 +898,9 @@ void logon() {
   LoginCheckForNewMail();
 
   if (a()->user()->GetNewScanDateNumber()) {
-    nscandate = a()->user()->GetNewScanDateNumber();
+    a()->context().nscandate(a()->user()->GetNewScanDateNumber());
   } else {
-    nscandate = a()->user()->GetLastOnDateNumber();
+    a()->context().nscandate(a()->user()->GetLastOnDateNumber());
   }
   a()->batch().clear();
 
@@ -922,7 +922,7 @@ void logon() {
   // Handle case of first conf with no subs avail
   if (a()->usub[0].subnum == -1 && okconf(a()->user())) {
     for (a()->SetCurrentConferenceMessageArea(0); 
-         (a()->GetCurrentConferenceMessageArea() < static_cast<unsigned int>(subconfnum))
+         (a()->GetCurrentConferenceMessageArea() < size_int(a()->subconfs))
          && (a()->uconfsub[a()->GetCurrentConferenceMessageArea()].confnum != -1);
          a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1)) {
       setuconf(ConferenceType::CONF_SUBS, a()->GetCurrentConferenceMessageArea(), -1);

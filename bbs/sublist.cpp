@@ -33,9 +33,11 @@
 #include "bbs/vars.h"
 #include "bbs/confutil.h"
 #include "sdk/subxtr.h"
+#include "core/stl.h"
 #include "core/strings.h"
 
 using std::max;
+using namespace wwiv::stl;
 using namespace wwiv::strings;
 
 void old_sublist() {
@@ -44,7 +46,7 @@ void old_sublist() {
 
   bool abort = false;
   int sn = 0;
-  int en = subconfnum - 1;
+  int en = size_int(a()->subconfs) - 1;
   if (okconf(a()->user())) {
     if (a()->uconfsub[1].confnum != -1) {
       bout.nl();
@@ -139,7 +141,7 @@ void SubList() {
   int oldConf = a()->GetCurrentConferenceMessageArea();
   int oldSub = a()->current_user_sub().subnum;
   int sn = 0;  // current sub number
-  size_t en = std::max<size_t>(0, subconfnum - 1);
+  size_t en = std::max<size_t>(0, a()->subconfs.size() - 1);
 
   if (okconf(a()->user())) {
     if (a()->uconfsub[1].confnum != -1) {

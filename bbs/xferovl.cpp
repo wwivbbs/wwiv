@@ -1085,9 +1085,10 @@ static void config_nscan() {
       done1 = true;
       break;
     default:
-      if (okconf(a()->user()) && dirconfnum > 1) {
+      if (okconf(a()->user()) && a()->dirconfs.size() > 1) {
         size_t i = 0;
-        while ((ch != a()->dirconfs[a()->uconfdir[i].confnum].designator) && (i < static_cast<size_t>(dirconfnum))) {
+        while (ch != a()->dirconfs[a()->uconfdir[i].confnum].designator &&
+               i < a()->dirconfs.size()) {
           i++;
         }
         if (i >= a()->dirconfs.size()) {

@@ -131,7 +131,7 @@ void DirList() {
 
 void UpSubConf() {
   if (okconf(a()->user())) {
-    if ((a()->GetCurrentConferenceMessageArea() < subconfnum - 1)
+    if ((a()->GetCurrentConferenceMessageArea() < a()->subconfs.size() - 1)
         && (a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0)) {
       a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1);
     } else {
@@ -146,8 +146,8 @@ void DownSubConf() {
     if (a()->GetCurrentConferenceMessageArea() > 0) {
       a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() - 1);
     } else {
-      while (a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0
-             && a()->GetCurrentConferenceMessageArea() < subconfnum - 1) {
+      while (a()->uconfsub[a()->GetCurrentConferenceMessageArea() + 1].confnum >= 0 &&
+             a()->GetCurrentConferenceMessageArea() < a()->subconfs.size() - 1) {
         a()->SetCurrentConferenceMessageArea(a()->GetCurrentConferenceMessageArea() + 1);
       }
     }
@@ -370,7 +370,7 @@ void GoodBye() {
 }
 
 void WWIV_PostMessage() {
-  irt[0] = 0;
+  a()->context().clear_irt();
   clear_quotes();
   if (a()->usub[0].subnum != -1) {
     post(PostData());
@@ -853,7 +853,7 @@ void UploadFilesBBS() {
 
 void UpDirConf() {
   if (okconf(a()->user())) {
-    if (a()->GetCurrentConferenceFileArea() < dirconfnum - 1
+    if (a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1
         && a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0) {
       a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1);
     } else {
@@ -877,8 +877,8 @@ void DownDirConf() {
     if (a()->GetCurrentConferenceFileArea() > 0) {
       a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea());
     } else {
-      while (a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0
-             && a()->GetCurrentConferenceFileArea() < dirconfnum - 1) {
+      while (a()->uconfdir[a()->GetCurrentConferenceFileArea() + 1].confnum >= 0 &&
+             a()->GetCurrentConferenceFileArea() < a()->dirconfs.size() - 1) {
         a()->SetCurrentConferenceFileArea(a()->GetCurrentConferenceFileArea() + 1);
       }
     }

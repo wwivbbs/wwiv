@@ -609,10 +609,10 @@ int prep_search_rec(search_record* search_rec, int type) {
     }
   } else if (type == LP_NSCAN_DIR) {
     search_rec->alldirs = THIS_DIR;
-    search_rec->nscandate = nscandate;
+    search_rec->nscandate = a()->context().nscandate();
   } else if (type == LP_NSCAN_NSCAN) {
     g_flags |= g_flag_scanned_files;
-    search_rec->nscandate = nscandate;
+    search_rec->nscandate = a()->context().nscandate();
     search_rec->alldirs = ALL_DIRS;
   } else {
     sysoplog() << "Undef LP type";

@@ -19,11 +19,7 @@
 #ifndef __INCLUDED_VARS_H__
 #define __INCLUDED_VARS_H__
 
-#include <ctime>
-
-#include "bbs/conf.h"
-#include "sdk/vardec.h"
-#include "sdk/net.h"
+#include <cstdint>
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -34,16 +30,6 @@
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
-
-__EXTRN__ char charbuffer[255];
-__EXTRN__ char irt[81];
-__EXTRN__ char* quotes_ind;
-
-__EXTRN__ unsigned int
-          dirconfnum,
-          subconfnum;
-
-__EXTRN__ daten_t nscandate;
 
 __EXTRN__ int32_t g_flags;
 

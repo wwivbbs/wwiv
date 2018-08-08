@@ -93,7 +93,7 @@ public:
   virtual ~Application();
 
   wwiv::sdk::User* user() { return &thisuser_; }
-  wwiv::bbs::SessionContext& context() { return session_context_; }
+  wwiv::bbs::SessionContext& context();
 
   void handle_sysop_key(uint8_t key);
   void tleft(bool check_for_timeout);
@@ -409,7 +409,6 @@ public:
   bool received_short_message_{false};
   bool emchg_{false};
   bool hangup_{false};
-  int charbufferpointer_ = 0;
   int chatting_ = false;
   int do_event_ = false;
   bool no_hangup_ = false;

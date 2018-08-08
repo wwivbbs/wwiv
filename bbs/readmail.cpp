@@ -550,7 +550,7 @@ void readmail(int mode) {
       okmail = false;
       bout.nl(3);
     } else {
-      strcpy(irt, m.title);
+      strcpy(a()->context().irt_, m.title);
       abort = false;
       i = ((ability_read_email_anony & sl.ability) != 0);
       okmail = true;

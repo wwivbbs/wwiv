@@ -147,7 +147,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     }
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);
-      email(irt, post->owneruser, post->ownersys, false, post->anony);
+      email(a()->context().irt(), post->owneruser, post->ownersys, false, post->anony);
       clear_quotes();
     }
   } else if (user_input[0] == '@') {
@@ -813,7 +813,7 @@ void HandleMessageReply(int &nMessageNumber) {
   }
 
   if (!m.title.empty()) {
-    to_char_array(irt, m.title);
+    a()->context().irt(m.title);
   }
   PostReplyToData r;
   r.name = m.from_user_name;
@@ -1090,7 +1090,7 @@ static void query_post() {
      (a()->user()->GetNumPostsToday() < getslrec(a()->GetEffectiveSl()).posts) &&
      (a()->GetEffectiveSl() >= a()->current_sub().postsl)) {
     bout << "|#5Post on " << a()->current_sub().name << "? ";
-    irt[0] = '\0';
+    a()->context().clear_irt();
     clear_quotes();
     if (yesno()) {
       post(PostData());
@@ -1177,7 +1177,7 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
 }
 
 void scan(int nMessageNumber, MsgScanOption scan_option, bool &nextsub, bool title_scan) {
-  irt[0] = '\0';
+  a()->context().clear_irt();
 
   int val = 0;
   iscan(a()->current_user_sub_num());

@@ -183,15 +183,15 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
   auto cm = a()->chatting_;
   auto begx = a()->localIO()->WhereX();
   if (rollover[0] != 0) {
-    if (a()->charbufferpointer_) {
+    if (bout.charbufferpointer_) {
       char szTempBuffer[255];
       strcpy(szTempBuffer, rollover);
-      strcat(szTempBuffer, &charbuffer[a()->charbufferpointer_]);
-      strcpy(&charbuffer[1], szTempBuffer);
-      a()->charbufferpointer_ = 1;
+      strcat(szTempBuffer, &bout.charbuffer[bout.charbufferpointer_]);
+      strcpy(&bout.charbuffer[1], szTempBuffer);
+      bout.charbufferpointer_ = 1;
     } else {
-      strcpy(&charbuffer[1], rollover);
-      a()->charbufferpointer_ = 1;
+      strcpy(&bout.charbuffer[1], rollover);
+      bout.charbufferpointer_ = 1;
     }
     rollover[0] = 0;
   }

@@ -838,7 +838,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     *val |= 1;
   }
   m.title = p.title;
-  strncpy(irt, p.title, 60);
+  strncpy(a()->context().irt_, p.title, 60);
 
   if ((p.status & status_no_delete) && lcs()) {
     m.flags.insert(MessageFlags::PERMANENT);

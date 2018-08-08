@@ -1056,15 +1056,12 @@ void read_in_conferences(ConferenceType conftype) {
   switch (conftype) {
   case ConferenceType::CONF_SUBS: {
     a()->subconfs = read_conferences(fn);
-    subconfnum = a()->subconfs.size();
   } break;
   case ConferenceType::CONF_DIRS: {
     a()->dirconfs = read_conferences(fn);
-    dirconfnum = a()->dirconfs.size();
   } break;
   }
 }
-
 
 /*
  * Reads all conferences into memory. Creates default conference files if

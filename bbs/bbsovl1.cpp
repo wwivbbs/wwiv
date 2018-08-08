@@ -150,9 +150,9 @@ void upload_post() {
 void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
-  string username = input(75, true);
-  irt[0] = '\0';
-  string::size_type atpos = username.find_first_of("@");
+  auto username = input(75, true);
+  a()->context().clear_irt();
+  auto atpos = username.find_first_of("@");
   if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
     if (username.find(INTERNET_EMAIL_FAKE_OUTBOUND_ADDRESS) == string::npos) {
       StringLowerCase(&username);

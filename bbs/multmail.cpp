@@ -74,7 +74,7 @@ void multimail(int *pnUserNumber, int numu) {
   string s1 = StringPrintf("\003""6CC: \003""1");
 
   m.msg.storage_type = EMAIL_STORAGE;
-  strcpy(irt, "Multi-Mail");
+  a()->context().irt("Multi-Mail");
   File::Remove(QUOTES_TXT);
   data.aux = "email";
   data.fsed_flags = FsedFlags::NOFSED;

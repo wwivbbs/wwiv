@@ -987,7 +987,7 @@ void SetNewFileScanDate() {
   bool ok = true;
 
   bout.nl();
-  bout << "|#9Current limiting date: |#2" << daten_to_mmddyy(nscandate) << "\r\n";
+  bout << "|#9Current limiting date: |#2" << daten_to_mmddyy(a()->context().nscandate()) << "\r\n";
   bout.nl();
   bout << "|#9Enter new limiting date in the following format: \r\n";
   bout << "|#1 MM/DD/YY\r\n|#7:";
@@ -1073,15 +1073,15 @@ void SetNewFileScanDate() {
       newTime.tm_mon  = m - 1;
     }
     bout.nl();
-    nscandate = time_t_to_daten(mktime(&newTime));
+    a()->context().nscandate(time_t_to_daten(mktime(&newTime)));
 
     // Display the new nscan date
-    auto d = daten_to_mmddyyyy(nscandate);
+    auto d = daten_to_mmddyyyy(a()->context().nscandate());
     bout << "|#9New Limiting Date: |#2" << d << "\r\n";
 
     // Hack to make sure the date covers everythig since we had to increment the hour by one
     // to show the right date on some versions of MSVC
-    nscandate -= SECONDS_PER_HOUR;
+    a()->context().nscandate(a()->context().nscandate() - SECONDS_PER_HOUR);
   } else {
     bout.nl();
   }
