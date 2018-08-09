@@ -14,6 +14,7 @@
 ## Infrastructure Cleanup
 ***
 * Try to remove a()->current_net() and a()->net_num(), pass in the net as much as possible.
+* make container that holds net_networks_rec *and* the current network number
 
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
@@ -27,8 +28,6 @@
 * Drop Debian8
 * start using clock more.
 * move to datetime as much as possible.
-* move qscan pointers into User? (this would mean changing user to have
-  data other than just the userrec)
 
 ## Networking Cleanup
 ***

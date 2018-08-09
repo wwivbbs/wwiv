@@ -131,9 +131,6 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
       }
     } else switch (ch) {
       case CG:
-        if (a()->chatting_ && a()->context().outcom()) {
-          bout.rputch(CG);
-        }
         break;
       case RETURN:                            // C/R
         buffer[cp] = '\0';

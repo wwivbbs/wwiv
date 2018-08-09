@@ -141,7 +141,7 @@ void SubList() {
   int oldConf = a()->GetCurrentConferenceMessageArea();
   int oldSub = a()->current_user_sub().subnum;
   int sn = 0;  // current sub number
-  size_t en = std::max<size_t>(0, a()->subconfs.size() - 1);
+  auto en = std::max<size_t>(0, a()->subconfs.size() - 1);
 
   if (okconf(a()->user())) {
     if (a()->uconfsub[1].confnum != -1) {
