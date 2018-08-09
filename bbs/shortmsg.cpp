@@ -26,6 +26,7 @@
 
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
 #include "core/datetime.h"
 #include "sdk/filenames.h"
@@ -128,30 +129,29 @@ static void SendLocalShortMessage(unsigned int nUserNum, const char *messageText
   }
 }
 
-static void SendRemoteShortMessage(int nUserNum, int nSystemNum, const char *messageText) {
+static void SendRemoteShortMessage(uint16_t user_num, uint16_t system_num, const std::string text,
+                                   const net_networks_rec& net) {
   net_header_rec nh;
-  nh.tosys = static_cast<uint16_t>(nSystemNum);
-  nh.touser = static_cast<uint16_t>(nUserNum);
-  nh.fromsys = a()->current_net().sysnum;
+  nh.tosys = system_num;
+  nh.touser = user_num;
+  nh.fromsys = net.sysnum;
   nh.fromuser = static_cast<uint16_t>(a()->usernum);
   nh.main_type = main_type_ssm;
   nh.minor_type = 0;
   nh.list_len = 0;
   nh.daten = daten_t_now();
-  string msg = messageText;
+  string msg = text;
   if (msg.size() > 79) {
     msg.resize(79);
   }
   nh.length = msg.size();
   nh.method = 0;
-  const string packet_filename = StringPrintf("%sp0%s", 
-    a()->network_directory().c_str(),
-    a()->network_extension().c_str());
+  const auto packet_filename = StrCat(net.dir, "p0", a()->network_extension());
   File file(packet_filename);
   file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   file.Seek(0L, File::Whence::end);
   file.Write(&nh, sizeof(net_header_rec));
-  file.Write(msg.c_str(), nh.length);
+  file.Write(msg.c_str(), msg.size());
   file.Close();
 }
 
@@ -165,7 +165,11 @@ ssm::~ssm() {
   if (sn_ == 0) {
     SendLocalShortMessage(un_, s.c_str());
   } else {
-    SendRemoteShortMessage(un_, sn_, s.c_str());
+    if (net_ != nullptr) {
+      SendRemoteShortMessage(un_, sn_, s, *net_);
+    } else {
+      LOG(ERROR) << "Tried to send remote SSM when net_ was null: " << s;
+    }
   }
 }
 

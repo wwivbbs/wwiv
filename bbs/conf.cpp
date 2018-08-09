@@ -842,7 +842,7 @@ void list_confs(ConferenceType conftype, int ssc) {
             cp.maxsl, cp.mindsl, cp.maxdsl, cp.minage, cp.maxage,
             cp.minbps, ar.c_str());
     sprintf(s1, "%-3.3s %c %1.1s %1.1s",
-            word_to_arstr(cp.dar),
+            word_to_arstr(cp.dar).c_str(),
             (cp.sex) ? ((cp.sex == 2) ? 'A' : 'F') : 'M',
             YesNoString((cp.status & conf_status_ansi) ? true : false),
             YesNoString((cp.status & conf_status_wwivreg)  ? true : false));

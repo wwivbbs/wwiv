@@ -113,11 +113,12 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
       continue;
     }
     set_net_num(xnp.net_num);
+    const auto& net = a()->net_networks[xnp.net_num];
     net_header_rec nh = nhorig;
     std::vector<uint16_t> list;
     nh.minor_type = 0;
     if (!nh.fromsys) {
-      nh.fromsys = a()->current_net().sysnum;
+      nh.fromsys = net.sysnum;
     }
     nh.main_type = main_type_new_post;
     if (xnp.host) {
@@ -125,11 +126,10 @@ void send_net_post(postrec* pPostRecord, const subboard_t& sub) {
     } else {
       std::set<uint16_t> subscribers;
       bool subscribers_read =
-          ReadSubcriberFile(a()->network_directory(), StrCat("n", xnp.stype, ".net"), subscribers);
+          ReadSubcriberFile(net.dir, StrCat("n", xnp.stype, ".net"), subscribers);
       if (subscribers_read) {
         for (const auto& s : subscribers) {
-          if (((a()->net_num() != netnum) || (nh.fromsys != s)) &&
-              (s != a()->current_net().sysnum)) {
+          if ((a()->net_num() != netnum || nh.fromsys != s) && s != net.sysnum) {
             if (valid_system(s)) {
               nh.list_len++;
               list.push_back(s);

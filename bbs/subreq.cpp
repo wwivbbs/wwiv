@@ -327,7 +327,7 @@ void sub_xtr_add(int n, int nn) {
   }
 
   if (is_hosting) {
-    string file_name = StrCat(a()->network_directory(), "n", xnp.stype, ".net");
+    string file_name = StrCat(net.dir, "n", xnp.stype, ".net");
     File file(file_name);
     if (file.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite)) {
       file.Close();

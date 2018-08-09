@@ -295,8 +295,8 @@ void print_net_listing(bool bForcePause) {
   unsigned short slist, cmdbit = 0;
   char substr[81], onx[20], acstr[4], phstr[13];
   char s[255], s1[101], s2[101], bbstype;
-  bool bHadPause = false;
-  int current_net = 0;
+  bool bHadPause{false};
+  int current_net{1};
 
   a()->status_manager()->RefreshStatusCache();
 
@@ -360,6 +360,7 @@ void print_net_listing(bool bForcePause) {
       // current_net is the current network number, if there is only 1, they use it.
       current_net = 1;
     }
+    const auto& net = a()->net_networks[current_net];
 
     bool done1 = false;
     bool abort;
@@ -374,7 +375,7 @@ void print_net_listing(bool bForcePause) {
 
       bout.cls();
       bout.nl();
-      bout << "|#9Network|#2: |#1" << a()->network_name() << wwiv::endl;
+      bout << "|#9Network|#2: |#1" << net.name << wwiv::endl;
       bout.nl();
 
       bout << "|#21|#9) = |#1List All\r\n";
@@ -487,7 +488,6 @@ void print_net_listing(bool bForcePause) {
       bout << "|#1Print BBS region info? ";
       bool useregion = yesno();
 
-      const auto& net = a()->net_networks[current_net];
       BbsListNet bbslist = BbsListNet::ReadBbsDataNet(net.dir);
       if (bbslist.empty()) {
         bout << "|#6Error opening bbsdata.net in " << net.dir << wwiv::endl;

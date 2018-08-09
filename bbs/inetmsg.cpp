@@ -53,11 +53,11 @@ void get_user_ppp_addr() {
   if (network_number == -1) {
     return;
   }
-  set_net_num(network_number);
+  const auto& net = a()->net_networks[network_number];
   a()->internetFullEmailAddress = StringPrintf("%s@%s",
       a()->internetEmailName.c_str(),
       a()->internetEmailDomain.c_str());
-  TextFile acctFile(FilePath(a()->network_directory(), ACCT_INI), "rt");
+  TextFile acctFile(FilePath(net.dir, ACCT_INI), "rt");
   char szLine[260];
   bool found = false;
   if (acctFile.IsOpen()) {
@@ -105,12 +105,11 @@ void send_inet_email() {
   }
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   auto network_number = getnetnum_by_type(network_type_t::internet);
-  a()->set_net_num(network_number);
   if (network_number == -1) {
     return;
   }
-  // TODO(rushfan): I can't see why this line is needed since it's done 3 lines above too.
-  set_net_num(a()->net_num());
+  // Not sure why we need this call here.
+  set_net_num(network_number);
   bout.nl();
   bout << "|#9Your Internet Address:|#1 "
        << (a()->IsInternetUseRealNames() ? a()->user()->GetRealName() : a()->user()->GetName())
@@ -191,8 +190,8 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
   if (inet_net_num < 0) {
     return;
   }
-  a()->set_net_num(inet_net_num);
-  TextFile in(FilePath(a()->network_directory(), ACCT_INI), "rt");
+  const auto& net = a()->net_networks[inet_net_num];
+  TextFile in(FilePath(net.dir, ACCT_INI), "rt");
   TextFile out(FilePath(a()->temp_directory(), ACCT_INI), "wt+");
   if (in.IsOpen() && out.IsOpen()) {
     char szLine[260];

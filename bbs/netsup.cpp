@@ -138,8 +138,7 @@ static void do_callout(const net_networks_rec& net, uint16_t sn) {
   }
 
   const auto cmd = StrCat(CreateNetworkBinary("network"), " /N", sn, " .", a()->net_num());
-  bout << "|#7Calling out to: |#2" << csne->name << " - " << a()->network_name() << " @" << sn
-       << wwiv::endl;
+  bout << "|#7Calling out to: |#2" << csne->name << " - " << net.name << " @" << sn << wwiv::endl;
   if (contact_rec->bytes_waiting() > 0) {
     bout << "|#7Amount pending: |#2" << bytes_to_k(contact_rec->bytes_waiting()) << "k"
          << wwiv::endl;
@@ -327,7 +326,7 @@ void print_pending_list() {
       continue;
     }
 
-    File deadNetFile(FilePath(a()->network_directory(), DEAD_NET));
+    File deadNetFile(FilePath(net.dir, DEAD_NET));
     if (deadNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto dead_net_file_size = deadNetFile.length();
       deadNetFile.Close();
@@ -335,7 +334,7 @@ void print_pending_list() {
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6DEAD! |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s "
                    "|#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
-                   a()->network_name(), s3);
+                   net.name, s3);
     }
   }
 
@@ -344,7 +343,7 @@ void print_pending_list() {
       continue;
     }
 
-    File checkNetFile(FilePath(a()->network_directory(), CHECK_NET));
+    File checkNetFile(FilePath(net.dir, CHECK_NET));
     if (checkNetFile.Open(File::modeReadOnly | File::modeBinary)) {
       auto check_net_file_size = checkNetFile.length();
       checkNetFile.Close();
@@ -352,7 +351,7 @@ void print_pending_list() {
       strcat(s3, "k");
       bout.bprintf("|#7\xB3 |#3--- |#7\xB3 |#2%-8s |#7\xB3 |#6CHECK |#7\xB3 |#2------- |#7\xB3 "
                    "|#2------- |#7\xB3|#2%5s |#7\xB3|#2 --- |#7\xB3 |#2--------- |#7\xB3\r\n",
-                   a()->network_name(), s3);
+                   net.name, s3);
     }
   }
 
@@ -373,6 +372,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
   char newname[256], qn[200], on[200];
   char nm[205];
   int i;
+  const auto& net = a()->net_networks[nFromNetworkNumber];
 
   if (strlen(messageText) >= 80) {
     return;
@@ -395,12 +395,12 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
 
     qn[0] = on[0] = '\0';
 
-    if (nFromNetworkNumber == -1 || nh->fromsys == a()->net_networks[nFromNetworkNumber].sysnum) {
+    if (nFromNetworkNumber == -1 || nh->fromsys == net.sysnum) {
 
       strcpy(newname, nm);
       ss = strrchr(newname, '@');
       if (ss) {
-        sprintf(ss + 1, "%u", a()->net_networks[nNetNumber].sysnum);
+        sprintf(ss + 1, "%u", net.sysnum);
         ss = strrchr(nm, '@');
         if (ss) {
           ++ss;
@@ -410,7 +410,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
           strcat(newname, ss);
         }
         strcat(newname, "\r\n");
-        nh->fromsys = a()->net_networks[nNetNumber].sysnum;
+        nh->fromsys = net.sysnum;
       }
     } else {
       if ((nm[0] == '`') && (nm[1] == '`')) {
@@ -451,23 +451,23 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
       if ((on[0] == 0) && (nh->fromuser == 0)) {
         strcpy(on, nm + i);
       }
-      if (a()->net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
-          a()->net_networks[nFromNetworkNumber].type == network_type_t::internet) {
+      if (net.sysnum == 1 && on[0] &&
+          net.type == network_type_t::internet) {
         sprintf(newname, "%s%s", qn, on);
-      } else if (a()->net_networks[nFromNetworkNumber].sysnum == 1 && on[0] &&
-                 a()->net_networks[nFromNetworkNumber].type == network_type_t::news) {
+      } else if (net.sysnum == 1 && on[0] &&
+                 net.type == network_type_t::news) {
         sprintf(newname, "%s%s", qn, on);
       }
       else {
         if (on[0]) {
           sprintf(newname, "%s%s@%u.%s\r\n", qn, on, nh->fromsys,
-                  a()->net_networks[nFromNetworkNumber].name);
+                  net.name);
         } else {
           sprintf(newname, "%s#%u@%u.%s\r\n", qn, nh->fromuser, nh->fromsys,
-                  a()->net_networks[nFromNetworkNumber].name);
+                  net.name);
         }
       }
-      nh->fromsys = a()->net_networks[nNetNumber].sysnum;
+      nh->fromsys = net.sysnum;
       nh->fromuser = 0;
     }
 
@@ -475,8 +475,7 @@ void gate_msg(net_header_rec* nh, char* messageText, int nNetNumber,
     if ((nh->main_type == main_type_email_name) || (nh->main_type == main_type_new_post)) {
       nh->length += subtype_or_author.size() + 1;
     }
-    const auto packet_filename =
-        StrCat(a()->net_networks[nNetNumber].dir, "p1", a()->network_extension());
+    const auto packet_filename = StrCat(net.dir, "p1", a()->network_extension());
     File file(packet_filename);
     if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
       file.Seek(0L, File::Whence::end);

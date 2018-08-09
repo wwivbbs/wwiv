@@ -76,9 +76,6 @@ using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-// Local Functions
-void add_netsubscriber(int system_number);
-
 // Implementation
 static bool same_email(tmpmailrec& tm, const mailrec& m) {
   if (tm.fromsys != m.fromsys ||
@@ -247,9 +244,7 @@ bool read_same_email(std::vector<tmpmailrec>& mloc, int mw, int rec, mailrec& m,
   return (mloc[rec].index != -1);
 }
 
-void add_netsubscriber(int system_number) {
-  char s[10], s1[10];
-
+static void add_netsubscriber(const net_networks_rec& net, int network_number, int system_number) {
   if (!valid_system(system_number)) {
     system_number = 0;
   }
@@ -257,47 +252,42 @@ void add_netsubscriber(int system_number) {
   bout.nl();
   bout << "|#1Adding subscriber to subscriber list...\r\n\n";
   bout << "|#2SubType: ";
-  input(s, 7, true);
-  if (s[0] == 0) {
+  auto subtype = input(7, true);
+  if (subtype.empty()) {
     return;
   }
-  strcpy(s1, s);
-  char szNetworkFileName[MAX_PATH];
-  sprintf(szNetworkFileName, "%sn%s.net", a()->network_directory().c_str(), s);
-  if (!File::Exists(szNetworkFileName)) {
+  const auto fn = StrCat(net.dir, "n", subtype, ".net");
+  if (!File::Exists(fn)) {
     bout.nl();
-    bout << "|#6Subscriber file not found: " << szNetworkFileName << wwiv::endl;
+    bout << "|#6Subscriber file not found: " << fn << wwiv::endl;
     return;
   }
   bout.nl();
   if (system_number) {
-    bout << "Add @" << system_number << "." << a()->network_name() << " to subtype " << s << "? ";
+    bout << "Add @" << system_number << "." << net.name << " to subtype " << subtype << "? ";
   }
   if (!system_number || !noyes()) {
     bout << "|#2System Number: ";
-    input(s, 5, true);
-    if (!s[0]) {
+    const auto s = input(5, true);
+    if (s.empty()) {
       return;
     }
     system_number = to_number<int>(s);
     if (!valid_system(system_number)) {
-      bout << "@" << system_number << " is not a valid system in " << a()->network_name() <<
-                         ".\r\n\n";
+      bout << "@" << system_number << " is not a valid system in " << net.name << ".\r\n\n";
       return;
     }
   }
-  sprintf(s, "%u\n", system_number);
-  TextFile hostFile(szNetworkFileName, "a+t");
-  if (hostFile.IsOpen()) {
-    hostFile.Write(s);
-    hostFile.Close();
+  TextFile host_file(fn, "a+t");
+  if (host_file.IsOpen()) {
+    host_file.Write(StringPrintf("%u\n", system_number));
+    host_file.Close();
     // TODO find replacement for autosend.exe
     if (File::Exists("autosend.exe")) {
       bout << "AutoSend starter messages? ";
       if (yesno()) {
-        char szAutoSendCommand[MAX_PATH];
-        sprintf(szAutoSendCommand, "AUTOSEND.EXE %s %u .%d", s1, system_number, a()->net_num());
-        ExecuteExternalProgram(szAutoSendCommand, EFLAG_NONE);
+        const auto cmd = StringPrintf("autosend %s %u .%d", subtype, system_number, network_number);
+        ExecuteExternalProgram(cmd, EFLAG_NONE);
       }
     }
   }
@@ -706,10 +696,10 @@ void readmail(int mode) {
       } break;
       case 'N':
         if (m.fromuser == 1) {
-          add_netsubscriber(m.fromsys);
+          add_netsubscriber(net, nn, m.fromsys);
         }
         else {
-          add_netsubscriber(0);
+          add_netsubscriber(net, nn, 0);
         }
         break;
       case 'E':
