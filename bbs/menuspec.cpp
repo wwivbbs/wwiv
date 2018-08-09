@@ -145,7 +145,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
           if (!ur.IsUserDeleted()) {
             if (date_to_daten(ur.GetFirstOn()) < u.daten) {
               const string username_num = a()->names()->UserName(a()->usernum);
-              ssm(u.ownerusr, 0) << username_num << " downloaded '" << u.filename << "' on " << date();
+              ssm(u.ownerusr) << username_num << " downloaded '" << u.filename << "' on " << date();
             }
           }
         }

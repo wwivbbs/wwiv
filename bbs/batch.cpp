@@ -147,7 +147,7 @@ static void downloaded(const string& file_name, long lCharsPerSecond) {
           if (!user.IsUserDeleted()) {
             if (date_to_daten(user.GetFirstOn()) < u.daten) {
               const string user_name_number = a()->names()->UserName(a()->usernum);
-              ssm(u.ownerusr, 0) << user_name_number << " downloaded|#1 \"" << u.filename << 
+              ssm(u.ownerusr) << user_name_number << " downloaded|#1 \"" << u.filename << 
                 "\" |#7on " << fulldate();
             }
           }

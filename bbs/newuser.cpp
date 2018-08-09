@@ -1097,7 +1097,7 @@ void newuser() {
 
     // This is the #1 sysop record. Tell the sysop thank you and
     // update his user record with: s255/d255/r0
-    ssm(1, 0) << "Thank you for installing WWIV! - The WWIV Development Team.";
+    ssm(1) << "Thank you for installing WWIV! - The WWIV Development Team.";
     User* user = a()->user();
     user->SetSl(255);
     user->SetDsl(255);
@@ -1106,7 +1106,7 @@ void newuser() {
   a()->usernum = static_cast<uint16_t>(usernum);
 
   WriteNewUserInfoToSysopLog();
-  ssm(1, 0) << "You have a new user: " << a()->user()->GetName() << " #" << a()->usernum;
+  ssm(1) << "You have a new user: " << a()->user()->GetName() << " #" << a()->usernum;
 
   LOG(INFO) << "New User Created: '" << a()->user()->GetName() << "' "
             << "IP Address: " << a()->remoteIO()->remote_info().address;
@@ -1242,13 +1242,13 @@ bool check_dupes(const char *pszPhoneNumber) {
   if (user_number && user_number != a()->usernum) {
     string s = StringPrintf("    %s entered phone # %s", a()->user()->GetName(), pszPhoneNumber);
     sysoplog(false) << s;
-    ssm(1, 0) << s;
+    ssm(1) << s;
 
     User user;
     a()->users()->readuser(&user, user_number);
     s = StringPrintf("      also entered by %s", user.GetName());
     sysoplog(false) << s;
-    ssm(1, 0) << s;
+    ssm(1) << s;
 
     return true;
   }

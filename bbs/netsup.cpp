@@ -88,7 +88,7 @@ void cleanup_net() {
   if (a()->net_networks.empty()) {
     return;
   }
-  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::size_int(a()->net_networks.size()) == 1) {
+  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::size_int(a()->net_networks) == 1) {
     return;
   }
   a()->hangup_ = false;
@@ -97,7 +97,7 @@ void cleanup_net() {
     hang_it_up();
   }
 
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks.size()); nNetNumber++) {
+  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks); nNetNumber++) {
     set_net_num(nNetNumber);
     const auto& net = a()->net_networks[nNetNumber];
 
@@ -181,9 +181,9 @@ bool attempt_callout() {
   // Set the last connect time to now since we are attempting to connect.
   last_time_c_ = now;
   wwiv::core::ScopeExit set_net_num_zero([&]() { set_net_num(0); });
-  vector<NodeAndWeight> to_call(wwiv::stl::size_int(a()->net_networks.size()));
+  vector<NodeAndWeight> to_call(wwiv::stl::size_int(a()->net_networks));
 
-  for (int nn = 0; nn < wwiv::stl::size_int(a()->net_networks.size()); nn++) {
+  for (int nn = 0; nn < wwiv::stl::size_int(a()->net_networks); nn++) {
     set_net_num(nn);
     const auto& net = a()->net_networks[nn];
     if (!net.sysnum) {
@@ -242,7 +242,7 @@ void print_pending_list() {
   if (a()->net_networks.empty()) {
     return;
   }
-  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::size_int(a()->net_networks.size()) == 1) {
+  if (a()->net_networks[0].sysnum == 0 && wwiv::stl::size_int(a()->net_networks) == 1) {
     return;
   }
 
@@ -650,7 +650,7 @@ static std::pair<uint16_t, int> ansicallout() {
   }
   int pos = 0, sn = 0, snn = 0;
   std::vector<CalloutEntry> entries;
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks.size()); nNetNumber++) {
+  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks); nNetNumber++) {
     set_net_num(nNetNumber);
     const auto& net = a()->net_networks[nNetNumber];
     Callout callout(net);
@@ -837,7 +837,7 @@ static std::pair<uint16_t, int> ansicallout() {
 }
 
 static int FindNetworkNumberForNode(int sn) {
-  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks.size()); nNetNumber++) {
+  for (int nNetNumber = 0; nNetNumber < wwiv::stl::size_int(a()->net_networks); nNetNumber++) {
     const auto net = a()->net_networks[nNetNumber];
     Callout callout(net);
     if (callout.net_call_out_for(sn) != nullptr) {

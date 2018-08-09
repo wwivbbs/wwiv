@@ -479,7 +479,7 @@ void readmail(int mode) {
                 s1[ a()->mail_who_field_len ] = '\0';
               }
             } else {
-              if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
+              if (wwiv::stl::size_int(a()->net_networks) > 1) {
                 sprintf(s1, "#%u @%u.%s (%s)", m.fromuser, m.fromsys, a()->net_networks[nn].name, system_name.c_str());
               } else {
                 sprintf(s1, "#%u @%u (%s)", m.fromuser, m.fromsys, system_name.c_str());
@@ -574,6 +574,7 @@ void readmail(int mode) {
       }
       nn = network_number_from(&m);
       set_net_num(nn);
+      const auto& net = a()->net_networks[nn];
       int nFromSystem = 0;
       int nFromUser = 0;
       if (nn != 255) {
@@ -638,6 +639,7 @@ void readmail(int mode) {
       string allowable;
       write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
       set_net_num(nn);
+      const auto& net = a()->net_networks[nn];
       i1 = 1;
       if (!a()->HasConfigFlag(OP_FLAGS_MAIL_PROMPT)) {
         strcpy(mnu, EMAIL_NOEXT);
@@ -762,7 +764,7 @@ void readmail(int mode) {
               msg += " read your mail on ";
               msg += fulldate();
               if (!(m.status & status_source_verified)) {
-                ssm(m.fromuser, m.fromsys) << msg;
+                ssm(m.fromuser, m.fromsys, &net) << msg;
               }
               read_same_email(mloc, mw, curmail, m, 1, 0);
               ++curmail;
@@ -931,7 +933,7 @@ void readmail(int mode) {
         message += " read your mail on ";
         message += fulldate();
         if (!(m.status & status_source_verified) && nn != 255) {
-          ssm(m.fromuser, m.fromsys) << message;
+          ssm(m.fromuser, m.fromsys, &net) << message;
         }
       }
       case 'Z':
@@ -995,7 +997,7 @@ void readmail(int mode) {
                 a()->current_net().type == network_type_t::internet) {
                 strcpy(s1, a()->net_email_name.c_str());
               }
-              else if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
+              else if (wwiv::stl::size_int(a()->net_networks) > 1) {
                 if (user_number) {
                   sprintf(s1, "#%d @%d.%s", user_number, system_number, a()->network_name());
                 }
@@ -1014,6 +1016,7 @@ void readmail(int mode) {
             }
             else {
               set_net_num(nn);
+              const auto& net = a()->net_networks[nn];
               const string name = a()->names()->UserName(user_number, a()->current_net().sysnum);
               strcpy(s1, name.c_str());
             }
@@ -1059,10 +1062,11 @@ void readmail(int mode) {
                 auto s = StringPrintf("\r\nForwarded to %s from %s.", s1, fwd_name.c_str());
 
                 set_net_num(nn);
+                const auto& net = a()->net_networks[nn];
                 lineadd(&m.msg, s, "email");
                 s = StrCat(fwd_name, "forwarded your mail to", s1);
                 if (!(m.status & status_source_verified)) {
-                  ssm(m.fromuser, m.fromsys) << s;
+                  ssm(m.fromuser, m.fromsys, &net) << s;
                 }
                 set_net_num(i);
                 s = StrCat("Forwarded mail to ", s1);
@@ -1163,7 +1167,7 @@ void readmail(int mode) {
             message += " read your mail on ";
             message += fulldate();
             if (!(m.status & status_source_verified)) {
-              ssm(m.fromuser, m.fromsys) << message;
+              ssm(m.fromuser, m.fromsys, &net) << message;
             }
             read_same_email(mloc, mw, curmail, m, 1, 0);
             ++curmail;

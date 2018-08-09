@@ -300,7 +300,7 @@ void print_net_listing(bool bForcePause) {
 
   a()->status_manager()->RefreshStatusCache();
 
-  if (!wwiv::stl::size_int(a()->net_networks.size())) {
+  if (!wwiv::stl::size_int(a()->net_networks)) {
     return;
   }
 
@@ -315,7 +315,7 @@ void print_net_listing(bool bForcePause) {
   bool done = false;
   while (!done && !a()->hangup_) {
     bout.cls();
-    if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
+    if (wwiv::stl::size_int(a()->net_networks) > 1) {
       std::set<char> odc;
       onx[0] = 'Q';
       onx[1] = 0;
@@ -333,7 +333,7 @@ void print_net_listing(bool bForcePause) {
       }
       bout << "|#2Q|#9)|#1 Quit\r\n\n";
       bout << "|#9Which network? |#2";
-      if (wwiv::stl::size_int(a()->net_networks.size()) < 9) {
+      if (wwiv::stl::size_int(a()->net_networks) < 9) {
         char ch = onek(onx);
         if (ch == 'Q') {
           done = true;
@@ -394,7 +394,7 @@ void print_net_listing(bool bForcePause) {
 
       switch (cmd) {
       case 'Q':
-        if (wwiv::stl::size_int(a()->net_networks.size()) < 2) {
+        if (wwiv::stl::size_int(a()->net_networks) < 2) {
           done = true;
         }
         done1 = true;
@@ -929,10 +929,10 @@ void beginday(bool displayStatus) {
   auto fk = File::freespace_for_path(a()->config()->datadir());
 
   if (fk < 512) {
-    ssm(1, 0) << "Only " << fk << "k free in data directory.";
+    ssm(1) << "Only " << fk << "k free in data directory.";
   }
   if (!a()->config()->config()->closedsystem && nus < 15) {
-    ssm(1, 0) << "Only " << nus << " new user slots left.";
+    ssm(1) << "Only " << nus << " new user slots left.";
   }
   if (!a()->beginday_cmd.empty()) {
     const auto commandLine = stuff_in(a()->beginday_cmd, create_chain_file(), "", "", "", "");

@@ -20,25 +20,27 @@
 
 #include <sstream>
 
+#include "sdk/net.h"
 #include "sdk/user.h"
 
 class ssm {
 public:
-  ssm(int un, int sn): un_(un), sn_(sn) {}
+  explicit ssm(int un) : ssm(un, 0, nullptr) {}
+  ssm(int un, int sn, const net_networks_rec* net) : un_(un), sn_(sn), net_(net) {}
   ~ssm();
 
-  template <typename T>
-  ssm& operator<<(T const & value) {
+  template <typename T> ssm& operator<<(T const& value) {
     stream_ << value;
     return *this;
   }
 
 private:
   std::ostringstream stream_;
-  int un_;
-  int sn_;
+  const int un_;
+  const int sn_{0};
+  const net_networks_rec* net_;
 };
 
 void rsm(int nUserNum, wwiv::sdk::User* pUser, bool bAskToSaveMsgs);
 
-#endif  // __INCLUDED_BBS_SHORTMSG_H__
+#endif // __INCLUDED_BBS_SHORTMSG_H__

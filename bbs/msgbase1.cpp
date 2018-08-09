@@ -272,7 +272,7 @@ void post(const PostData& post_data) {
     }
     if (dm) {
       // Only SSM if this is the one and only pending networking message.
-      ssm(1, 0) << "Unvalidated net posts on " << a()->current_sub().name << ".";
+      ssm(1) << "Unvalidated net posts on " << a()->current_sub().name << ".";
     }
   }
   if (a()->GetNumMessagesInCurrentMessageArea() >= a()->current_sub().maxmsgs) {

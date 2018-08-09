@@ -78,7 +78,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
     }
   } else if (to_number<int>(ss + 1) == 0) {
     int i = 0;
-    for (i = 0; i < wwiv::stl::size_int(a()->net_networks.size()); i++) {
+    for (i = 0; i < wwiv::stl::size_int(a()->net_networks); i++) {
       set_net_num(i);
       if (a()->current_net().type == network_type_t::internet) {
         for (ss1 = szEmailAddress; *ss1; ss1++) {
@@ -91,7 +91,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
         break;
       }
     }
-    if (i >= wwiv::stl::size_int(a()->net_networks.size())) {
+    if (i >= wwiv::stl::size_int(a()->net_networks)) {
       bout << "Unknown user.\r\n";
     }
   } else {
@@ -124,7 +124,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
     }
     if (*pSystemNumber && ss1) {
       int i = 0;
-      for (i = 0; i < wwiv::stl::size_int(a()->net_networks.size()); i++) {
+      for (i = 0; i < wwiv::stl::size_int(a()->net_networks); i++) {
         set_net_num(i);
         if (IsEqualsIgnoreCase(ss1, a()->network_name())) {
           if (!valid_system(*pSystemNumber)) {
@@ -146,22 +146,22 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
           break;
         }
       }
-      if (i >= wwiv::stl::size_int(a()->net_networks.size())) {
+      if (i >= wwiv::stl::size_int(a()->net_networks)) {
         bout.nl();
         bout << "This system isn't connected to " << ss1 << "\r\n";
         *pSystemNumber = *pUserNumber = 0;
       }
-    } else if (*pSystemNumber && wwiv::stl::size_int(a()->net_networks.size()) > 1) {
+    } else if (*pSystemNumber && wwiv::stl::size_int(a()->net_networks) > 1) {
       odci = 0;
       onx[0] = 'Q';
       onx[1] = '\0';
       onxi = 1;
       nv = 0;
       on = a()->net_num();
-      ss = static_cast<char *>(calloc(wwiv::stl::size_int(a()->net_networks.size()) + 1, 1));
+      ss = static_cast<char *>(calloc(wwiv::stl::size_int(a()->net_networks) + 1, 1));
       WWIV_ASSERT(ss != nullptr);
       xx = -1;
-      for (int i = 0; i < wwiv::stl::size_int(a()->net_networks.size()); i++) {
+      for (int i = 0; i < wwiv::stl::size_int(a()->net_networks); i++) {
         set_net_num(i);
         if (a()->current_net().sysnum == *pSystemNumber) {
           xx = i;

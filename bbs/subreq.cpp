@@ -20,21 +20,21 @@
 
 #include <string>
 
-#include "bbs/input.h"
-#include "sdk/subxtr.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/connect1.h"
 #include "bbs/email.h"
+#include "bbs/input.h"
 #include "bbs/mmkey.h"
-#include "bbs/bbsutl.h"
-#include "bbs/utility.h"
 #include "bbs/pause.h"
+#include "bbs/utility.h"
+#include "sdk/subxtr.h"
 
+#include "core/datetime.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/datetime.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -42,10 +42,6 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
-
-bool display_sub_categories();
-int find_hostfor(const std::string& type, short *ui, char *description, short *opt);
-
 
 static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
   bout << "|#5Send email request to the host now? ";
@@ -61,12 +57,34 @@ static void maybe_netmail(subboard_network_data_t* ni, bool bAdd) {
   }
 }
 
-static void sub_req(uint16_t main_type, int tosys, const string& stype) {
-  net_header_rec nh;
+static bool display_sub_categories(const net_networks_rec& net) {
+  if (!net.sysnum) {
+    return false;
+  }
+
+  TextFile ff(FilePath(net.dir, CATEG_NET), "rt");
+  if (!ff.IsOpen()) {
+    return false;
+  }
+  bout.nl();
+  bout << "Available sub categories are:\r\n";
+  bool abort = false;
+  string s;
+  while (!abort && ff.ReadLine(&s)) {
+    StringTrim(&s);
+    bout.bpla(s, &abort);
+  }
+  ff.Close();
+  return true;
+}
+
+static void sub_req(uint16_t main_type, int tosys, const string& stype,
+                    const net_networks_rec& net) {
+  net_header_rec nh{};
 
   nh.tosys = static_cast<uint16_t>(tosys);
   nh.touser = 1;
-  nh.fromsys = a()->current_net().sysnum;
+  nh.fromsys = net.sysnum;
   nh.fromuser = 1;
   nh.main_type = main_type;
   // always use 0 since we use the stype
@@ -82,23 +100,21 @@ static void sub_req(uint16_t main_type, int tosys, const string& stype) {
 
   bout.nl();
   if (main_type == main_type_sub_add_req) {
-    bout <<  "Automated add request sent to @" << tosys << wwiv::endl;
+    bout << "Automated add request sent to @" << tosys << wwiv::endl;
   } else {
     bout << "Automated drop request sent to @" << tosys << wwiv::endl;
   }
   pausescr();
 }
 
-
-#define OPTION_AUTO   0x0001
+#define OPTION_AUTO 0x0001
 #define OPTION_NO_TAG 0x0002
-#define OPTION_GATED  0x0004
+#define OPTION_GATED 0x0004
 #define OPTION_NETVAL 0x0008
-#define OPTION_ANSI   0x0010
+#define OPTION_ANSI 0x0010
 
-
-int find_hostfor(const std::string& type, short *ui, char *description, short *opt) {
-  char s[255], *ss;
+static int find_hostfor(const net_networks_rec& net, const std::string& type, short* ui,
+                        char* description, short* opt) {
   int rc = 0;
 
   if (description) {
@@ -108,95 +124,99 @@ int find_hostfor(const std::string& type, short *ui, char *description, short *o
 
   bool done = false;
   for (int i = 0; i < 256 && !done; i++) {
+    std::string fn;
     if (i) {
-      sprintf(s, "%s%s.%d", a()->network_directory().c_str(), SUBS_NOEXT, i);
+      fn = FilePath(net.dir, StrCat(SUBS_NOEXT, ".", i));
     } else {
-      sprintf(s, "%s%s", a()->network_directory().c_str(), SUBS_LST);
+      fn = FilePath(net.dir, StrCat(SUBS_LST));
     }
-    TextFile file(s, "r");
-    if (file.IsOpen()) {
-      while (!done && file.ReadLine(s, 160)) {
-        if (s[0] > ' ') {
-          ss = strtok(s, " \r\n\t");
-          if (ss) {
-            if (IsEqualsIgnoreCase(ss, type.c_str())) {
-              ss = strtok(nullptr, " \r\n\t");
-              if (ss) {
-                auto h = to_number<short>(ss);
-                short o = 0;
-                ss = strtok(nullptr, "\r\n");
-                if (ss) {
-                  int i1 = 0;
-                  while (*ss && ((*ss == ' ') || (*ss == '\t'))) {
-                    ++ss;
-                    ++i1;
-                  }
-                  if (i1 < 4) {
-                    while (*ss && (*ss != ' ') && (*ss != '\t')) {
-                      switch (*ss) {
-                      case 'T':
-                        o |= OPTION_NO_TAG;
-                        break;
-                      case 'R':
-                        o |= OPTION_AUTO;
-                        break;
-                      case 'G':
-                        o |= OPTION_GATED;
-                        break;
-                      case 'N':
-                        o |= OPTION_NETVAL;
-                        break;
-                      case 'A':
-                        o |= OPTION_ANSI;
-                        break;
-                      }
-                      ++ss;
-                    }
-                    while (*ss && ((*ss == ' ') || (*ss == '\t'))) {
-                      ++ss;
-                    }
-                  }
-                  if (*ui) {
-                    if (*ui == h) {
-                      done = true;
-                      *opt = o;
-                      rc = h;
-                      if (description) {
-                        strcpy(description, ss);
-                      }
-                    }
-                  } else {
-                    bout.nl();
-                    bout << "Type: " << type << wwiv::endl;
-                    bout << "Host: " << h << wwiv::endl;
-                    bout << "Sub : " << ss << wwiv::endl;
-                    bout.nl();
-                    bout << "|#5Is this the sub you want? ";
-                    if (yesno()) {
-                      done = true;
-                      *ui = h;
-                      *opt = o;
-                      rc = h;
-                      if (description) {
-                        strcpy(description, ss);
-                      }
-                    }
-                  }
-                }
-              }
-            }
+    TextFile file(fn, "r");
+    if (!file) {
+      return rc;
+    }
+    char s[255];
+    while (!done && file.ReadLine(s, 160)) {
+      if (s[0] <= ' ') {
+        continue;
+      }
+      char* ss = strtok(s, " \r\n\t");
+      if (!ss) {
+        continue;
+      }
+      if (!iequals(ss, type)) {
+        continue;
+      }
+      ss = strtok(nullptr, " \r\n\t");
+      if (!ss) {
+        continue;
+      }
+      auto h = to_number<short>(ss);
+      short o = 0;
+      ss = strtok(nullptr, "\r\n");
+      if (!ss) {
+        continue;
+      }
+      int i1 = 0;
+      while (*ss && ((*ss == ' ') || (*ss == '\t'))) {
+        ++ss;
+        ++i1;
+      }
+      if (i1 < 4) {
+        while (*ss && (*ss != ' ') && (*ss != '\t')) {
+          switch (*ss) {
+          case 'T':
+            o |= OPTION_NO_TAG;
+            break;
+          case 'R':
+            o |= OPTION_AUTO;
+            break;
+          case 'G':
+            o |= OPTION_GATED;
+            break;
+          case 'N':
+            o |= OPTION_NETVAL;
+            break;
+          case 'A':
+            o |= OPTION_ANSI;
+            break;
+          }
+          ++ss;
+        }
+        while (*ss && ((*ss == ' ') || (*ss == '\t'))) {
+          ++ss;
+        }
+      }
+      if (*ui) {
+        if (*ui == h) {
+          done = true;
+          *opt = o;
+          rc = h;
+          if (description) {
+            strcpy(description, ss);
+          }
+        }
+      } else {
+        bout.nl();
+        bout << "Type: " << type << wwiv::endl;
+        bout << "Host: " << h << wwiv::endl;
+        bout << "Sub : " << ss << wwiv::endl;
+        bout.nl();
+        bout << "|#5Is this the sub you want? ";
+        if (yesno()) {
+          done = true;
+          *ui = h;
+          *opt = o;
+          rc = h;
+          if (description) {
+            strcpy(description, ss);
           }
         }
       }
-      file.Close();
-    } else {
-done = true;
     }
   }
 
   return rc;
 }
-
 
 void sub_xtr_del(int n, int nn, int f) {
   // make a copy of the old network info.
@@ -206,15 +226,16 @@ void sub_xtr_del(int n, int nn, int f) {
     erase_at(a()->subs().sub(n).nets, nn);
   }
   set_net_num(xn.net_num);
+  const auto& net = a()->net_networks.at(xn.net_num);
 
   if (xn.host != 0 && valid_system(xn.host)) {
     short opt;
-    int ok = find_hostfor(xn.stype, &xn.host, nullptr, &opt);
+    int ok = find_hostfor(net, xn.stype, &xn.host, nullptr, &opt);
     if (ok) {
       if (opt & OPTION_AUTO) {
         bout << "|#5Attempt automated drop request? ";
         if (yesno()) {
-          sub_req(main_type_sub_drop_req, xn.host, xn.stype);
+          sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
         }
       } else {
         maybe_netmail(&xn, false);
@@ -222,7 +243,7 @@ void sub_xtr_del(int n, int nn, int f) {
     } else {
       bout << "|#5Attempt automated drop request? ";
       if (yesno()) {
-        sub_req(main_type_sub_drop_req, xn.host, xn.stype);
+        sub_req(main_type_sub_drop_req, xn.host, xn.stype, net);
       } else {
         maybe_netmail(&xn, false);
       }
@@ -234,21 +255,22 @@ void sub_xtr_add(int n, int nn) {
   unsigned short i;
   short opt;
   char szDescription[100], s[100], onx[20], ch;
-  int onxi, ii, gc;
+  int onxi, gc;
 
   // nn may be -1
   while (nn >= size_int(a()->subs().sub(n).nets)) {
     a()->subs().sub(n).nets.push_back({});
   }
   subboard_network_data_t xnp = {};
+  int network_number = -1;
 
-  if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
+  if (wwiv::stl::size_int(a()->net_networks) > 1) {
     std::set<char> odc;
     onx[0] = 'Q';
     onx[1] = 0;
     onxi = 1;
     bout.nl();
-    for (ii = 0; ii < wwiv::stl::size_int(a()->net_networks.size()); ii++) {
+    for (int ii = 0; ii < wwiv::stl::size_int(a()->net_networks); ii++) {
       if (ii < 9) {
         onx[onxi++] = static_cast<char>(ii + '1');
         onx[onxi] = 0;
@@ -260,32 +282,33 @@ void sub_xtr_add(int n, int nn) {
     }
     bout << "Q. Quit\r\n\n";
     bout << "|#2Which network (number): ";
-    if (wwiv::stl::size_int(a()->net_networks.size()) < 9) {
+    if (wwiv::stl::size_int(a()->net_networks) < 9) {
       ch = onek(onx);
       if (ch == 'Q') {
-        ii = -1;
+        network_number = -1;
       } else {
-        ii = ch - '1';
+        network_number = ch - '1';
       }
     } else {
       string mmk = mmkey(odc);
       if (mmk == "Q") {
-        ii = -1;
+        network_number = -1;
       } else {
-        ii = to_number<int>(mmk) - 1;
+        network_number = to_number<int>(mmk) - 1;
       }
     }
-    if (ii >= 0 && ii < wwiv::stl::size_int(a()->net_networks.size())) {
-      set_net_num(ii);
+    if (network_number >= 0 && network_number < wwiv::stl::size_int(a()->net_networks)) {
+      set_net_num(network_number);
     } else {
       return;
     }
   }
-  xnp.net_num = static_cast<short>(a()->net_num());
+  xnp.net_num = network_number;
+  const auto& net = a()->net_networks[network_number];
 
   bout.nl();
   int stype_len = 7;
-  if (a()->current_net().type == network_type_t::ftn) {
+  if (net.type == network_type_t::ftn) {
     bout << "|#2What echomail area: ";
     stype_len = 40;
   } else {
@@ -297,9 +320,8 @@ void sub_xtr_add(int n, int nn) {
   }
 
   bool is_hosting = false;
-  if (a()->current_net().type == network_type_t::wwivnet ||
-      a()->current_net().type == network_type_t::internet ||
-      a()->current_net().type == network_type_t::news) {
+  if (net.type == network_type_t::wwivnet || net.type == network_type_t::internet ||
+      net.type == network_type_t::news) {
     bout << "|#5Will you be hosting the sub? ";
     is_hosting = yesno();
   }
@@ -319,7 +341,7 @@ void sub_xtr_add(int n, int nn) {
     bout << "|#5Make this sub public (in subs.lst)?";
     if (noyes()) {
       xnp.flags |= XTRA_NET_AUTO_INFO;
-      if (display_sub_categories()) {
+      if (display_sub_categories(net)) {
         gc = 0;
         while (!gc) {
           bout.nl();
@@ -327,7 +349,7 @@ void sub_xtr_add(int n, int nn) {
           input(s, 3);
           i = to_number<uint16_t>(s);
           if (i || IsEquals(s, "0")) {
-            TextFile ff(FilePath(a()->network_directory(), CATEG_NET), "rt");
+            TextFile ff(FilePath(net.dir, CATEG_NET), "rt");
             while (ff.ReadLine(s, 100)) {
               int i1 = to_number<uint16_t>(s);
               if (i1 == i) {
@@ -344,18 +366,18 @@ void sub_xtr_add(int n, int nn) {
             }
           } else {
             if (strlen(s) == 1 && s[0] == '?') {
-              display_sub_categories();
+              display_sub_categories(net);
               continue;
             }
           }
         }
       }
     }
-  } else if (a()->current_net().type == network_type_t::ftn) {
+  } else if (net.type == network_type_t::ftn) {
     // Set the fake fido node up as the host.
     xnp.host = FTN_FAKE_OUTBOUND_NODE;
   } else {
-    int ok = find_hostfor(xnp.stype, &(xnp.host), szDescription, &opt);
+    int ok = find_hostfor(net, xnp.stype, &(xnp.host), szDescription, &opt);
 
     if (!ok) {
       bout.nl();
@@ -368,7 +390,7 @@ void sub_xtr_add(int n, int nn) {
       a()->subs().sub(n).desc = szDescription;
     }
 
-    if (xnp.host == a()->current_net().sysnum) {
+    if (xnp.host == net.sysnum) {
       xnp.host = 0;
     }
 
@@ -382,7 +404,7 @@ void sub_xtr_add(int n, int nn) {
           if (opt & OPTION_AUTO) {
             bout << "|#5Attempt automated add request? ";
             if (yesno()) {
-              sub_req(main_type_sub_add_req, xnp.host, xnp.stype);
+              sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
             }
           } else {
             maybe_netmail(&xnp, true);
@@ -392,7 +414,7 @@ void sub_xtr_add(int n, int nn) {
           bout << "|#5Attempt automated add request? ";
           bool bTryAutoAddReq = yesno();
           if (bTryAutoAddReq) {
-            sub_req(main_type_sub_add_req, xnp.host, xnp.stype);
+            sub_req(main_type_sub_add_req, xnp.host, xnp.stype, net);
           } else {
             maybe_netmail(&xnp, true);
           }
@@ -412,23 +434,3 @@ void sub_xtr_add(int n, int nn) {
   }
 }
 
-bool display_sub_categories() {
-  if (!a()->current_net().sysnum) {
-    return false;
-  }
-
-  TextFile ff(FilePath(a()->network_directory(), CATEG_NET), "rt");
-  if (!ff.IsOpen()) {
-    return false;
-  }
-  bout.nl();
-  bout << "Available sub categories are:\r\n";
-  bool abort = false;
-  string s;
-  while (!abort && ff.ReadLine(&s)) {
-    StringTrim(&s); 
-    bout.bpla(s, &abort);
-  }
-  ff.Close();
-  return true;
-}

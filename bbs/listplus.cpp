@@ -1892,7 +1892,7 @@ void request_file(const char *file_name) {
   bout << "|#2File missing.  Request it? ";
 
   if (noyes()) {
-    ssm(1, 0) << a()->user()->GetName() << " is requesting file " << file_name;
+    ssm(1) << a()->user()->GetName() << " is requesting file " << file_name;
     bout << "File request sent\r\n";
   } else {
     bout << "File request NOT sent\r\n";

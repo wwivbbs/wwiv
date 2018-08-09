@@ -322,7 +322,7 @@ static void LeaveBadPasswordFeedback(int ans) {
   email(title, 1, 0, true, 0, true);
   a()->SetCarbonCopyEnabled(bSaveAllowCC);
   if (a()->user()->GetNumEmailSent() > 0) {
-    ssm(1, 0) << "Check your mailbox.  Someone forgot their password again!";
+    ssm(1) << "Check your mailbox.  Someone forgot their password again!";
   }
 }
 
@@ -359,10 +359,10 @@ static void logon_guest() {
 
   if (count >= 3) {
     printfile(REJECT_NOEXT);
-    ssm(1, 0) << "Guest Account failed to enter name and purpose";
+    ssm(1) << "Guest Account failed to enter name and purpose";
     Hangup();
   } else {
-    ssm(1, 0) << "Guest Account accessed by " << userName << " on " << times() << " for" << reason;
+    ssm(1) << "Guest Account accessed by " << userName << " on " << times() << " for" << reason;
   }
 }
 
@@ -733,7 +733,7 @@ static void DisplayUserLoginInformation() {
 
   /////////////////////////////////////////////////////////////////////////
   a()->status_manager()->RefreshStatusCache();
-  for (int i = 0; i < wwiv::stl::size_int(a()->net_networks.size()); i++) {
+  for (int i = 0; i < wwiv::stl::size_int(a()->net_networks); i++) {
     if (a()->net_networks[i].sysnum) {
       std::ostringstream ss;
       const auto& n = a()->net_networks[i];
@@ -764,7 +764,7 @@ static void DisplayUserLoginInformation() {
         bout << "Forwarded to unknown system; forwarding reset.\r\n";
       } else {
         bout << "Mail set to be forwarded to ";
-        if (wwiv::stl::size_int(a()->net_networks.size()) > 1) {
+        if (wwiv::stl::size_int(a()->net_networks) > 1) {
           bout << "#" << a()->user()->GetForwardUserNumber()
                << " @"
                << a()->user()->GetForwardSystemNumber()
