@@ -347,9 +347,6 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
     { "MemStat", [](MenuItemContext& context) {
       MemoryStatus();
     } },
-    { "PackMsgs", [](MenuItemContext& context) {
-      PackMessages();
-    } },
     { "VoteEdit", [](MenuItemContext& context) {
       InitVotes();
     } },

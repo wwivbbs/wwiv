@@ -560,19 +560,6 @@ void MemoryStatus() {
   bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
 }
 
-void PackMessages() {
-  bout.nl();
-  bout << "|#5Pack all subs? ";
-  if (yesno()) {
-    wwiv::bbs::TempDisablePause disable_pause;
-    if (!pack_all_subs()) {
-      bout << "|#6Aborted.\r\n";
-    }
-  } else {
-    pack_sub(a()->current_user_sub().subnum);
-  }
-}
-
 void InitVotes() {
   write_inst(INST_LOC_VOTE, 0, INST_FLAGS_NONE);
   sysoplog() << "@ Ran Ivotes";

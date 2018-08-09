@@ -31,8 +31,6 @@ void delete_message(int mn);
 void write_post(int mn, postrec * pp);
 void add_post(postrec * pp);
 void resynch(int *msgnum, postrec * pp);
-bool pack_all_subs();
-void pack_sub(int si);
 
 namespace wwiv {
 namespace bbs {

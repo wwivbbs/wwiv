@@ -308,10 +308,6 @@ ResetQScan
 
   Set all messages to read (I think)
 
-PackMsgs
-
-  Pack message bases.
-
 VoteEdit
 
   Sysop command to edit the voting both

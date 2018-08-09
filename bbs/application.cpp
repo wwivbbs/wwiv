@@ -699,7 +699,6 @@ void Application::ShowUsage() {
        << "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n"
        << "  -E         - Load for beginday event only\r\n"
        << "  -H<handle> - Socket handle\r\n"
-       << "  -K [# # #] - Pack Message Areas, optionally list the area(s) to pack\r\n"
        << "  -M         - Don't access modem at all\r\n"
        << "  -N<inst>   - Designate instance number <inst>\r\n"
        << "  -Q<level>  - Normal exit level\r\n"
@@ -830,32 +829,6 @@ int Application::Run(int argc, char* argv[]) {
         // TODO Add handling for Socket and Comm handle here
         //
         //
-      case 'K': {
-        if (!ReadConfig()) {
-          std::clog << "Unable to load CONFIG.DAT";
-          AbortBBS(true);
-        }
-        this->InitializeBBS();
-        localIO()->Cls();
-        if ((i + 1) < argc) {
-          i++;
-          bout << "\r\n|#7\xFE |#5Packing specified subs: \r\n";
-          while (i < argc) {
-            int nSubNumToPack = to_number<int>(argv[i]);
-            pack_sub(nSubNumToPack);
-            sysoplog() << "* Packed Message Subboard:" << nSubNumToPack;
-            i++;
-          }
-        } else {
-          bout << "\r\n|#7\xFE |#5Packing all subboards: \r\n";
-          sysoplog() << "* Packing All Message Subboards";
-          wwiv::bbs::TempDisablePause disable_pause;
-          if (!pack_all_subs()) {
-            bout << "|#6Aborted.\r\n";
-          }
-        }
-        ExitBBSImpl(oklevel_, true);
-      } break;
       case '?':
         ShowUsage();
         ExitBBSImpl(0, false);

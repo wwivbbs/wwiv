@@ -59,9 +59,6 @@ using namespace wwiv::core;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
 
-// Needed by pack_all_subs() which should move out of here.
-bool checka();
-
 void close_sub() {
   if (fileSub) {
     fileSub.reset();
@@ -356,54 +353,4 @@ void resynch(int* msgnum, postrec* pp) {
       *msgnum = a()->GetNumMessagesInCurrentMessageArea();
     }
   }
-}
-
-void pack_sub(int si) {
-  if (!iscan1(si)) {
-    return;
-  }
-  if (open_sub(true) && a()->subs().sub(si).storage_type == 2) {
-    string sfn = a()->subs().sub(si).filename;
-    string nfn = "PACKTMP$";
-
-    const string fn1 = StrCat(a()->config()->msgsdir(), sfn, ".dat");
-    const string fn2 = StrCat(a()->config()->msgsdir(), nfn, ".dat");
-
-    bout << "\r\n|#7\xFE |#1Packing Message Subboard: |#5" << a()->subs().sub(si).name
-         << wwiv::endl;
-
-    for (int i = 1; i <= a()->GetNumMessagesInCurrentMessageArea(); i++) {
-      if (i % 10 == 0) {
-        bout << i << "/" << a()->GetNumMessagesInCurrentMessageArea() << "\r";
-      }
-      postrec* p = get_post(i);
-      if (p) {
-        std::string text;
-        if (!readfile(&(p->msg), sfn, &text)) {
-          text = "??";
-        }
-        savefile(text, &(p->msg), nfn);
-        write_post(i, p);
-      }
-      bout << i << "/" << a()->GetNumMessagesInCurrentMessageArea() << "\r";
-    }
-
-    File::Remove(fn1);
-    File::Rename(fn2, fn1);
-
-    close_sub();
-    bout << "|#7\xFE |#1Done Packing " << a()->GetNumMessagesInCurrentMessageArea()
-         << " messages.                              \r\n";
-  }
-}
-
-bool pack_all_subs() {
-  for (size_t i = 0; i < a()->subs().subs().size() && !a()->hangup_; i++) {
-    pack_sub(i);
-    if (checka() == true) {
-      // checka checks to see if abort is set.
-      return false;
-    }
-  }
-  return true;
 }
