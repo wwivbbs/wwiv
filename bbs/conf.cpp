@@ -250,7 +250,7 @@ bool save_confs(ConferenceType conftype) {
                       cp.designator, cp.conf_name.c_str(), cp.status,
                       cp.minsl, cp.maxsl, cp.mindsl,
                       cp.maxdsl, cp.minage, cp.maxage,
-                      cp.minbps, cp.sex, word_to_arstr(cp.ar));
+                      cp.minbps, cp.sex, word_to_arstr(cp.ar).c_str());
     f.Write(StrCat(word_to_arstr(cp.dar), "%s\n@"));
     for (const auto sub : cp.subs) {
       f.Write(StrCat(sub, " "));
