@@ -30,6 +30,7 @@
 #include "bbs/inmsg.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/message_editor_data.h"
 #include "bbs/message_file.h"
 #include "bbs/msgscan.h"
 #include "bbs/netsup.h"
@@ -60,6 +61,7 @@ using std::chrono::seconds;
 using std::chrono::system_clock;
 using wwiv::sdk::fido::FidoAddress;
 
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::msgapi;

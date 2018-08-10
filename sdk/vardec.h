@@ -1079,12 +1079,6 @@ struct instancerec {
   extra[80];
 };
 
-struct fedit_data_rec {
-  char tlen,
-       ttl[81],
-       anon;
-};
-
 #ifndef __MSDOS__
 
 static_assert(sizeof(userrec) == 1024, "userrec == 1024");

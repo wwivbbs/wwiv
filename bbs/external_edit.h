@@ -20,12 +20,7 @@
 #define __INCLUDED_EXTERNAL_EDIT_H__
 
 #include <string>
-#include "sdk/vardec.h"
-
-constexpr int MSGED_FLAG_NONE = 0;
-constexpr int MSGED_FLAG_NO_TAGLINE = 1;
-constexpr int MSGED_FLAG_HAS_REPLY_NAME = 2;
-constexpr int MSGED_FLAG_HAS_REPLY_TITLE = 4;
+#include "bbs/message_editor_data.h"
 
 
 bool ExternalMessageEditor(int maxli, int *setanon, std::string* title, const std::string& to_name, const std::string& sub_name, int flags, bool is_email);

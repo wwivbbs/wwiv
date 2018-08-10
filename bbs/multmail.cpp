@@ -46,6 +46,7 @@ int  oneuser();
 
 using std::string;
 using std::unique_ptr;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

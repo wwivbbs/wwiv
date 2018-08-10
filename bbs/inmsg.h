@@ -18,40 +18,9 @@
 #ifndef __INCLUDED_BBS_INMSG_H__
 #define __INCLUDED_BBS_INMSG_H__
 
-#include <string>
-
 #include "bbs/external_edit.h"
-#include "sdk/vardec.h"
+#include "bbs/message_editor_data.h"
 
-enum class FsedFlags {
-  NOFSED, FSED, WORKSPACE
-};
-
-class MessageEditorData {
-public:
-  MessageEditorData() = default;
-  ~MessageEditorData() = default;
-
-  // Title to use. If set it will be used without prompting the user.
-  std::string title;
-  std::string to_name;  // szDestination (to or sub name)
-  std::string sub_name;
-
-  bool need_title = true;
-  uint8_t anonymous_flag = 0;   // an
-  int msged_flags = MSGED_FLAG_NONE;      // used to be flags
-  FsedFlags fsed_flags = FsedFlags::NOFSED;       // fsed
-  bool silent_mode = false;     // Used for ASV and newemail emails.  No questions, etc.
-
-  bool is_email() const;
-
-  // legacy filename, used to see if it's email or not.
-  std::string aux;
-
-  // output onlu
-  std::string text;
-};
-
-bool inmsg(MessageEditorData& data);
+bool inmsg(wwiv::bbs::MessageEditorData& data);
 
 #endif  // __INCLUDED_BBS_INMSG_H__

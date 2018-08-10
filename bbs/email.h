@@ -20,13 +20,13 @@
 
 #include <memory>
 #include <string>
-#include "bbs/inmsg.h"
+#include "bbs/message_editor_data.h"
 #include "core/file.h"
 #include "sdk/vardec.h"
 
 class EmailData {
 public:
-  EmailData(const MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
+  EmailData(const wwiv::bbs::MessageEditorData& msged) : title(msged.title), silent_mode(msged.silent_mode) {}
   explicit EmailData() {}
   ~EmailData() {}
 

@@ -20,12 +20,11 @@
 
 #include <string>
 
+#include "bbs/message_editor_data.h"
 #include "sdk/config.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 #include "sdk/fido/fido_address.h"
-
-class MessageEditorData;
 
 class PostReplyToData {
 public:
@@ -47,7 +46,7 @@ public:
 void send_net_post(postrec* p, const wwiv::sdk::subboard_t& sub);
 void post(const PostData& data);
 void add_ftn_msgid(const wwiv::sdk::Config& config, wwiv::sdk::fido::FidoAddress addr, const std::string& msgid,
-                   MessageEditorData* data);
+                   wwiv::bbs::MessageEditorData* data);
 std::string grab_user_name(messagerec* m, const std::string& file_name, int network_number);
 void qscan(uint16_t start_subnum, bool& next_sub);
 void nscan(uint16_t start_subnum = 0);

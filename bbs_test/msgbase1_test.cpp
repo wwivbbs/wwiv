@@ -20,6 +20,7 @@
 
 #include "bbs/inmsg.h"
 #include "bbs/keycodes.h"
+#include "bbs/message_editor_data.h"
 #include "bbs/msgbase1.h"
 #include "bbs_test/bbs_helper.h"
 #include "core/datetime.h"
@@ -28,6 +29,7 @@
 #include "sdk/fido/fido_address.h"
 
 using std::string;
+using namespace wwiv::bbs;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::fido;

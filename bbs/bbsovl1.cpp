@@ -31,6 +31,7 @@
 #include "bbs/external_edit.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
+#include "bbs/message_editor_data.h"
 #include "bbs/pause.h"
 #include "bbs/quote.h"
 #include "bbs/sr.h"
@@ -44,6 +45,7 @@
 #include "sdk/status.h"
 
 using std::string;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;

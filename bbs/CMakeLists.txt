@@ -61,6 +61,7 @@ set(COMMON_SOURCES
  menu_parser.cpp
  menuspec.cpp
  menusupp.cpp
+ message_editor_data.cpp
  message_file.cpp
  misccmd.cpp
  mmkey.cpp

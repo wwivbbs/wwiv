@@ -56,6 +56,7 @@ using std::string;
 using std::stringstream;
 using std::unique_ptr;
 using std::chrono::seconds;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;

@@ -27,6 +27,7 @@
 #include "bbs/utility.h"
 #include "bbs/pause.h"
 #include "bbs/make_abs_cmd.h"
+#include "bbs/message_editor_data.h"
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
@@ -38,11 +39,14 @@
 
 using std::string;
 using wwiv::core::ScopeExit;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-// Local prototypes.
-bool external_edit_internal(const string& edit_filename, const string& new_directory, const editorrec& editor, int numlines);
+struct fedit_data_rec {
+  char tlen, ttl[81], anon;
+};
+
 
 static void RemoveEditorFileFromTemp(const string& filename) {
   File file(FilePath(a()->temp_directory(), filename));
@@ -205,6 +209,93 @@ static bool WriteExternalEditorControlFiles(const editorrec& editor, const strin
   return true;
 }
 
+// Actually launch the editor. This won't create any control files, etc.
+static bool external_edit_internal(const string& edit_filename, const string& new_directory,
+                                   const editorrec& editor, int numlines) {
+
+  string editorCommand = (a()->context().incom()) ? editor.filename : editor.filenamecon;
+  if (editorCommand.empty()) {
+    bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
+    pausescr();
+    return false;
+  }
+
+  if (File::Exists(edit_filename)) {
+    File file(edit_filename);
+    if (file.IsDirectory()) {
+      bout.nl();
+      bout << "|#6You can't edit a directory." << wwiv::endl << wwiv::endl;
+      pausescr();
+      return false;
+    }
+  }
+
+  make_abs_cmd(a()->GetHomeDir(), &editorCommand);
+  const auto original_directory = File::current_directory();
+
+  string strippedFileName(stripfn(edit_filename.c_str()));
+  if (!new_directory.empty()) {
+    File::set_current_directory(new_directory);
+  }
+
+  time_t tFileTime = 0;
+  File fileTempForTime(FilePath(File::current_directory(), strippedFileName));
+  auto bIsFileThere = fileTempForTime.Exists();
+  if (bIsFileThere) {
+    tFileTime = fileTempForTime.last_write_time();
+  }
+
+  int num_screen_lines = a()->user()->GetScreenLines();
+  if (!a()->using_modem) {
+    int newtl = (a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine())
+                    ? 0
+                    : a()->localIO()->GetTopLine();
+    num_screen_lines = a()->defscreenbottom + 1 - newtl;
+  }
+
+  const auto cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(),
+                                std::to_string(a()->user()->GetScreenChars()),
+                                std::to_string(num_screen_lines), std::to_string(numlines), "");
+
+  // TODO(rushfan): Make this a common function shared between here and chains.
+  int flags = 0;
+  if (!(editor.ansir & ansir_no_DOS)) {
+    flags |= EFLAG_COMIO;
+  }
+  if (editor.ansir & ansir_emulate_fossil) {
+    flags |= EFLAG_FOSSIL;
+  }
+  if (editor.ansir & ansir_temp_dir) {
+    flags |= EFLAG_TEMP_DIR;
+  }
+  if (editor.ansir & ansir_stdio) {
+    flags |= EFLAG_STDIO;
+  }
+
+  ExecuteExternalProgram(cmdLine, flags);
+
+  // After launched FSED
+  bout.clear_lines_listed();
+  File::set_current_directory(new_directory);
+
+  auto bModifiedOrExists = false;
+  const auto full_filename = fileTempForTime.full_pathname();
+  if (!bIsFileThere) {
+    bModifiedOrExists = File::Exists(full_filename);
+  } else {
+    File fileTempForTime2(full_filename);
+    if (fileTempForTime2.Exists()) {
+      time_t tFileTime1 = fileTempForTime2.last_write_time();
+      if (tFileTime != tFileTime1) {
+        bModifiedOrExists = true;
+      }
+    }
+  }
+  File::set_current_directory(original_directory);
+  return bModifiedOrExists;
+}
+
+
 bool ExternalMessageEditor(int maxli, int *setanon, string *title, const string& to_name, const std::string& sub_name, int flags, bool is_email) {
   const size_t editor_number = a()->user()->GetDefaultEditor() - 1;
   if (editor_number >= a()->editors.size() || !okansi()) {
@@ -256,88 +347,3 @@ bool external_text_edit(const string& edit_filename, const string& new_directory
   return result;
 }
 
-// Actually launch the editor. This won't create any control files, etc.
-bool external_edit_internal(const string& edit_filename, const string& new_directory, 
-                            const editorrec& editor, int numlines) {
-  
-  string editorCommand = (a()->context().incom()) ? editor.filename : editor.filenamecon;
-  if (editorCommand.empty()) {
-    bout << "You can't use that full screen editor. (eti)" << wwiv::endl << wwiv::endl;
-      pausescr();
-    return false;
-  }
-
-  if (File::Exists(edit_filename)) {
-    File file(edit_filename);
-    if (file.IsDirectory()) {
-      bout.nl();
-      bout << "|#6You can't edit a directory." << wwiv::endl << wwiv::endl;
-      pausescr();
-      return false;
-    }
-  }
-
-  make_abs_cmd(a()->GetHomeDir(), &editorCommand);
-  const auto original_directory = File::current_directory();
-
-  string strippedFileName(stripfn(edit_filename.c_str()));
-  if (!new_directory.empty()) {
-    File::set_current_directory(new_directory);
-  }
-
-  time_t tFileTime = 0;
-  File fileTempForTime(FilePath(File::current_directory(), strippedFileName));
-  auto bIsFileThere = fileTempForTime.Exists();
-  if (bIsFileThere) {
-    tFileTime = fileTempForTime.last_write_time();
-  }
-
-  int num_screen_lines = a()->user()->GetScreenLines();
-  if (!a()->using_modem) {
-    int newtl = (a()->screenlinest > a()->defscreenbottom - a()->localIO()->GetTopLine()) ? 0 :
-                a()->localIO()->GetTopLine();
-    num_screen_lines = a()->defscreenbottom + 1 - newtl;
-  }
-
-  const auto cmdLine = stuff_in(editorCommand, fileTempForTime.full_pathname(), 
-    std::to_string(a()->user()->GetScreenChars()), 
-    std::to_string(num_screen_lines), 
-    std::to_string(numlines), "");
-
-  // TODO(rushfan): Make this a common function shared between here and chains.
-  int flags = 0;
-  if (!(editor.ansir & ansir_no_DOS)) {
-    flags |= EFLAG_COMIO;
-  }
-  if (editor.ansir & ansir_emulate_fossil) {
-    flags |= EFLAG_FOSSIL;
-  }
-  if (editor.ansir & ansir_temp_dir) {
-    flags |= EFLAG_TEMP_DIR;
-  }
-  if (editor.ansir & ansir_stdio) {
-    flags |= EFLAG_STDIO;
-  }
-  
-  ExecuteExternalProgram(cmdLine, flags);
-  
-  // After launched FSED
-  bout.clear_lines_listed();
-  File::set_current_directory(new_directory);
-
-  auto bModifiedOrExists = false;
-  const auto full_filename = fileTempForTime.full_pathname();
-  if (!bIsFileThere) {
-    bModifiedOrExists = File::Exists(full_filename);
-  } else {
-    File fileTempForTime2(full_filename);
-    if (fileTempForTime2.Exists()) {
-      time_t tFileTime1 = fileTempForTime2.last_write_time();
-      if (tFileTime != tFileTime1) {
-        bModifiedOrExists = true;
-      }
-    }
-  }
-  File::set_current_directory(original_directory);
-  return bModifiedOrExists;
-}

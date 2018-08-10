@@ -93,6 +93,7 @@
 using std::string;
 using wwiv::bbs::InputMode;
 using wwiv::bbs::TempDisablePause;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::menus;
 using namespace wwiv::sdk;
@@ -515,7 +516,7 @@ void EditText() {
   bout << "|#7Enter Filespec: ";
   string fileName = input(50);
   if (!fileName.empty()) {
-    external_text_edit(fileName.c_str(), "", 500, MSGED_FLAG_NO_TAGLINE);
+    external_text_edit(fileName, "", 500, MSGED_FLAG_NO_TAGLINE);
   }
 }
 

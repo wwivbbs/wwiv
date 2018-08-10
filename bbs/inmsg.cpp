@@ -57,6 +57,7 @@ using std::string;
 using std::unique_ptr;
 using std::vector;
 using wwiv::bbs::InputMode;
+using namespace wwiv::bbs;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::stl;
@@ -64,10 +65,6 @@ using namespace wwiv::strings;
 
 static const int LEN = 161;
 static const char crlf[] = "\r\n";
-
-bool MessageEditorData::is_email() const {
-  return iequals(aux, "email");
-}
 
 
 static bool GetMessageToName(MessageEditorData& data) {
