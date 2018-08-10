@@ -286,7 +286,7 @@ static void add_netsubscriber(const net_networks_rec& net, int network_number, i
     if (File::Exists("autosend.exe")) {
       bout << "AutoSend starter messages? ";
       if (yesno()) {
-        const auto cmd = StringPrintf("autosend %s %u .%d", subtype, system_number, network_number);
+        const auto cmd = StringPrintf("autosend %s %u .%d", subtype.c_str(), system_number, network_number);
         ExecuteExternalProgram(cmd, EFLAG_NONE);
       }
     }
