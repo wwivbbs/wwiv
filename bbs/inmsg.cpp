@@ -531,7 +531,7 @@ bool inmsg(MessageEditorData& data) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
 
-  const auto exted_filename = StrCat(a()->temp_directory(), INPUT_MSG);
+  const auto exted_filename = FilePath(a()->temp_directory(), INPUT_MSG);
   if (data.fsed_flags != FsedFlags::NOFSED) {
     data.fsed_flags = FsedFlags::FSED;
   }
@@ -579,7 +579,7 @@ bool inmsg(MessageEditorData& data) {
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
     save_message = InternalMessageEditor(lin, maxli, &setanon, data);
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
-    save_message = ExternalMessageEditor(maxli, &setanon, &data.title, data.to_name, data.sub_name, data.msged_flags, data.is_email());
+    save_message = ExternalMessageEditor(data, maxli, &setanon);
   } else if (data.fsed_flags == FsedFlags::WORKSPACE) {   // "auto-send mail message"
     save_message = File::Exists(exted_filename);
     if (save_message && !data.silent_mode) {
@@ -627,17 +627,12 @@ bool inmsg(MessageEditorData& data) {
   b << control_d_zero << "PID: WWIV " << wwiv_version << beta_version << crlf;
 
   if (data.fsed_flags != FsedFlags::NOFSED) {
-    // Read the file produced by the external editor and add it to the message.
     TextFile editor_file(exted_filename, "r");
-    string line;
-    while (editor_file.ReadLine(&line)) {
-      b << line << crlf;
-    }
-  } else {
-    // iterate through the lines in "lin" and append them to 'b'
-    for (const auto& l : lin) {
-      b << l << crlf;
-    }
+    lin = editor_file.ReadFileIntoVector();
+  }
+  // iterate through the lines in "lin" and append them to 'b'
+  for (const auto& l : lin) {
+    b << l << crlf;
   }
 
   if (a()->HasConfigFlag(OP_FLAGS_MSG_TAG)) {

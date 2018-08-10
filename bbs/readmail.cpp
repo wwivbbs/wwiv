@@ -764,7 +764,7 @@ void readmail(int mode) {
             }
             else {
               // need instance
-              File::Remove(a()->temp_directory(), INPUT_MSG);
+              File::Remove(FilePath(a()->temp_directory(), INPUT_MSG));
             }
           }
           else {

@@ -456,3 +456,20 @@ bool okfsed() {
 template<class _Ty> inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& value) {
   return std::max(std::min(maxValue, value), minValue);
 }
+
+int ansir_to_flags(uint8_t ansir) {
+  int flags = 0;
+  if (!(ansir & ansir_no_DOS)) {
+    flags |= EFLAG_COMIO;
+  }
+  if (ansir & ansir_emulate_fossil) {
+    flags |= EFLAG_FOSSIL;
+  }
+  if (ansir & ansir_temp_dir) {
+    flags |= EFLAG_TEMP_DIR;
+  }
+  if (ansir & ansir_stdio) {
+    flags |= EFLAG_STDIO;
+  }
+  return flags;
+}

@@ -43,6 +43,7 @@ char *get_wildlist(char *file_mask);
 int side_menu(int *menu_pos, bool redraw, const std::vector<std::string>& menu_items, int xpos, int ypos, struct side_menu_colors * smc);
 slrec getslrec(int nSl);
 bool okfsed();
+int ansir_to_flags(uint8_t ansir);
 
 #endif  // __INCLUDED_UTILITY_H__
 

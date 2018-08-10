@@ -161,22 +161,7 @@ void run_chain(int nChainum) {
   sysoplog() << "!Ran \"" << a()->chains[nChainum].description << "\"";
   a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);
 
-  int flags = 0;
-  auto& c = a()->chains[nChainum];
-  if (!(c.ansir & ansir_no_DOS)) {
-    flags |= EFLAG_COMIO;
-  }
-  if (c.ansir & ansir_emulate_fossil) {
-    flags |= EFLAG_FOSSIL;
-  }
-  if (c.ansir & ansir_stdio) {
-    flags |= EFLAG_STDIO;
-  }
-  if (c.ansir & ansir_temp_dir) {
-    flags |= EFLAG_TEMP_DIR;
-  }
-
-  ExecuteExternalProgram(chainCmdLine, flags);
+  ExecuteExternalProgram(chainCmdLine, ansir_to_flags(a()->chains[nChainum].ansir));
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
   a()->UpdateTopScreen();
 }

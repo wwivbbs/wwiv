@@ -221,7 +221,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
           LoadFileIntoWorkspace(filename, true);
         }
         send_email();
-        filename = StrCat(a()->temp_directory(), INPUT_MSG);
+        filename = FilePath(a()->temp_directory(), INPUT_MSG);
         if (File::Exists(filename)) {
           File::Remove(filename);
         }

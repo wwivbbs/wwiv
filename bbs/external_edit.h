@@ -23,7 +23,7 @@
 #include "bbs/message_editor_data.h"
 
 
-bool ExternalMessageEditor(int maxli, int *setanon, std::string* title, const std::string& to_name, const std::string& sub_name, int flags, bool is_email);
+bool ExternalMessageEditor(wwiv::bbs::MessageEditorData& data, int maxli, int* setanon);
 
 bool external_text_edit(const std::string& edit_filename, const std::string& new_directory, int numlines,
                         int flags);
