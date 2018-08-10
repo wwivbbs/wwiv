@@ -95,7 +95,6 @@ static void ReadWWIVResultFiles(string* title, int* anon) {
         title->assign(fedit_data.ttl);
         *anon = fedit_data.anon;
       }
-
   }
 }
 
@@ -148,26 +147,23 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
 }
 
 static void WriteWWIVEditorControlFiles(const string& title, const string& sub_name, const string& to_name, int flags) {
-  TextFile fileEditorInf(FilePath(a()->temp_directory(), EDITOR_INF), "wt");
-  if (fileEditorInf.IsOpen()) {
+  TextFile f(FilePath(a()->temp_directory(), EDITOR_INF), "wt");
+  if (f.IsOpen()) {
     if (!to_name.empty()) {
       flags |= MSGED_FLAG_HAS_REPLY_NAME;
     }
     if (!title.empty()) {
       flags |= MSGED_FLAG_HAS_REPLY_TITLE;
     }
-    fileEditorInf.WriteFormatted(
-      "%s\n%s\n%lu\n%s\n%s\n%u\n%u\n%lu\n%u\n",
-      title.c_str(),
-      sub_name.c_str(),
-      a()->usernum,
-      a()->user()->GetName(),
-      a()->user()->GetRealName(),
-      a()->user()->GetSl(),
-      flags,
-      a()->localIO()->GetTopLine(),
-      a()->user()->GetLanguage());
-    fileEditorInf.Close();
+    f.WriteLine(title);
+    f.WriteLine(sub_name);
+    f.WriteLine(a()->usernum);
+    f.WriteLine(a()->user()->GetName());
+    f.WriteLine(a()->user()->GetRealName());
+    f.WriteLine(a()->user()->GetSl());
+    f.WriteLine(flags);
+    f.WriteLine(a()->localIO()->GetTopLine());
+    f.WriteLine(a()->user()->GetLanguage());
   }
   if (flags & MSGED_FLAG_NO_TAGLINE) {
     // disable tag lines by creating a DISABLE.TAG file
@@ -181,30 +177,31 @@ static void WriteWWIVEditorControlFiles(const string& title, const string& sub_n
   }
 
   // Write FEDIT.INF
-  fedit_data_rec fedit_data;
+  fedit_data_rec fedit_data{};
   memset(&fedit_data, '\0', sizeof(fedit_data_rec));
   fedit_data.tlen = 60;
   to_char_array(fedit_data.ttl, title);
   fedit_data.anon = 0;
 
-  File fileFEditInf(FilePath(a()->temp_directory(), FEDIT_INF));
-  if (fileFEditInf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
-    fileFEditInf.Write(&fedit_data, sizeof(fedit_data));
-    fileFEditInf.Close();
+  File fedit_inf(FilePath(a()->temp_directory(), FEDIT_INF));
+  if (fedit_inf.Open(File::modeDefault | File::modeCreateFile | File::modeTruncate,
+                     File::shareDenyReadWrite)) {
+    fedit_inf.Write(&fedit_data, sizeof(fedit_data));
+    fedit_inf.Close();
   }
 }
 
-static bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title, const string& sub_name, int flags, bool is_email, const string& to_name) {
+static bool WriteExternalEditorControlFiles(const editorrec& editor, const string& title,
+                                            const string& sub_name, int flags, bool is_email,
+                                            const string& to_name) {
   if (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) {
     if (File::Exists(a()->temp_directory(), QUOTES_TXT)) {
       // Copy quotes.txt to MSGTMP if it exists
-      File source(FilePath(a()->temp_directory(), QUOTES_TXT));
-      File dest(FilePath(a()->temp_directory(), MSGTMP));
-      File::Copy(source.full_pathname(), dest.full_pathname());
+      File::Copy(FilePath(a()->temp_directory(), QUOTES_TXT),
+                 FilePath(a()->temp_directory(), MSGTMP));
     }
     return WriteMsgInf(title, sub_name, is_email, to_name);
   } 
-
   WriteWWIVEditorControlFiles(title, sub_name, to_name, flags);
   return true;
 }
@@ -273,10 +270,11 @@ bool ExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
   RemoveControlFiles(editor);
   ScopeExit on_exit([=] { RemoveControlFiles(editor); });
 
-  const string editor_filenme = (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
-
   WriteExternalEditorControlFiles(editor, data.title, data.sub_name, data.msged_flags, data.is_email(),
                                   data.to_name);
+
+  const string editor_filenme =
+      (editor.bbs_type == EDITORREC_EDITOR_TYPE_QBBS) ? MSGTMP : INPUT_MSG;
   bool save_message = external_edit_internal(editor_filenme, a()->temp_directory(), editor, maxli);
 
   if (!save_message) {
@@ -288,7 +286,6 @@ bool ExternalMessageEditor(MessageEditorData& data, int maxli, int* setanon) {
     // TODO(rushfan): Let this function return an object with result and filename and anything
     // else that needs to be passed back.
     File::Copy(FilePath(a()->temp_directory(), MSGTMP), FilePath(a()->temp_directory(), INPUT_MSG));
-
   } else {
     ReadWWIVResultFiles(&data.title, setanon);
   }
