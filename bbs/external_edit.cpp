@@ -304,9 +304,8 @@ bool external_text_edit(const string& edit_filename, const string& working_direc
 
   RemoveWWIVControlFiles();
   const auto& editor = a()->editors[editor_number];
+  ScopeExit on_exit([=] { RemoveControlFiles(editor); });
   WriteExternalEditorControlFiles(editor, edit_filename, "", flags, false, "" /* to_name */);
-  auto result = external_edit_internal(edit_filename, working_directory, editor, numlines);
-  RemoveWWIVControlFiles();
-  return result;
+  return external_edit_internal(edit_filename, working_directory, editor, numlines);
 }
 
