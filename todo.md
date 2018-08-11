@@ -16,8 +16,6 @@
 * Try to remove a()->current_net() and a()->net_num(), pass in the net as much as possible.
 * make container that holds net_networks_rec *and* the current network number
 
-* move MessageEditorData into its own header
-* Make the external message editor code use MessageEditorData
 * Make a base class and subclasses for WWIV and QBBS external editor handling
 
 * cleanup wfc since we aren't waiting for a call

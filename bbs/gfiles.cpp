@@ -56,8 +56,7 @@ gfilerec *read_sec(int sn, int *nf) {
     return nullptr;
   }
 
-  const string filename = StrCat(a()->config()->datadir(), a()->gfilesec[sn].filename, ".gfl");
-  File file(filename);
+  File file(FilePath(a()->config()->datadir(), StrCat(a()->gfilesec[sn].filename, ".gfl")));
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     *nf = file.Read(pRecord, nSectionSize) / sizeof(gfilerec);
   }
@@ -403,14 +402,14 @@ void gfile_sec(int sn) {
           bout << "|#5Erase file too? ";
           if (yesno()) {
             string gfilesdir = a()->config()->gfilesdir();
-            auto file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+            auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
             File::Remove(a()->config()->datadir(), file_name);
           }
           for (i1 = i; i1 < nf; i1++) {
             g[i1 - 1] = g[i1];
           }
           --nf;
-          auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
+          const auto file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
           File file(FilePath(a()->config()->datadir(), file_name));
           file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
           file.Write(g, nf * sizeof(gfilerec));
@@ -423,7 +422,7 @@ void gfile_sec(int sn) {
     } else if (ss == "Q") {
       done = true;
     } else if (i > 0 && i <= nf) {
-      auto file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i - 1].filename);
+      auto file_name = FilePath(a()->gfilesec[sn].filename, g[i - 1].filename);
       i1 = printfile(file_name);
       a()->user()->SetNumGFilesRead(a()->user()->GetNumGFilesRead() + 1);
       if (i1 == 0) {

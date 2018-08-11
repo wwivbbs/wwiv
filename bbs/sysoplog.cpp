@@ -62,7 +62,7 @@ std::string GetTemporaryInstanceLogFileName() {
 */
 void catsl() {
   auto temporary_log_filename = GetTemporaryInstanceLogFileName();
-  auto instance_logfilename = StrCat(a()->config()->gfilesdir(), temporary_log_filename);
+  auto instance_logfilename = FilePath(a()->config()->gfilesdir(), temporary_log_filename);
 
   if (File::Exists(instance_logfilename)) {
     auto basename = GetSysopLogFileName(date());

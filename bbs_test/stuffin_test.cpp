@@ -21,6 +21,7 @@
 #include "bbs/stuffin.h"
 
 #include "bbs_test/bbs_helper.h"
+#include "core/file.h"
 #include "core/strings.h"
 #include "sdk/filenames.h"
 
@@ -29,6 +30,7 @@ using std::endl;
 using std::ostringstream;
 using std::string;
 
+using namespace wwiv::core;
 using namespace wwiv::strings;
 
 
@@ -41,8 +43,7 @@ protected:
     }
 
 public:
-    const std::string t(const std::string name) {
-      return StrCat(a()->temp_directory(), name);
+    const std::string t(const std::string name) { return FilePath(a()->temp_directory(), name);
     }
 
     BbsHelper helper;

@@ -333,7 +333,7 @@ bool fill_sec(int sn) {
     bout << "Section full.\r\n";
   }
   if (chd) {
-    string file_name = StrCat(a()->gfilesec[sn].filename, ".gfl");
+    auto file_name = FilePath(a()->gfilesec[sn].filename, ".gfl");
     File gflFile(FilePath(a()->config()->datadir(), file_name));
     gflFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     gflFile.Write(g, nf * sizeof(gfilerec));

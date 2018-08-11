@@ -66,9 +66,7 @@ static void LogToSync(const std::string& s) {
   }
 }
 
-static string GetSyncFosTempFilePath() {
-  return StrCat(a()->temp_directory(), "WWIVSYNC.ENV");
-}
+static string GetSyncFosTempFilePath() { return FilePath(a()->temp_directory(), "WWIVSYNC.ENV"); }
 
 static const string GetDosXtrnPath() {
   return FilePath(a()->GetHomeDir(), "DOSXTRN.EXE");

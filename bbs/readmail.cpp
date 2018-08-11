@@ -680,7 +680,7 @@ void readmail(int mode) {
       case 'T':
       {
         bout.nl();
-        string fn = StrCat(a()->GetAttachmentDirectory(), fsr.filename);
+        auto fn = FilePath(a()->GetAttachmentDirectory(), fsr.filename);
         bool sentt;
         bool abortt;
         send_file(fn.c_str(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
@@ -723,9 +723,9 @@ void readmail(int mode) {
           if (user_input.empty()) {
             break;
           }
-          auto fn = StrCat(a()->config()->gfilesdir(), user_input, ".frm");
+          auto fn = FilePath(a()->config()->gfilesdir(), StrCat(user_input, ".frm"));
           if (!File::Exists(fn)) {
-            fn = StrCat(a()->config()->gfilesdir(), "form", user_input, ".msg");
+            fn = FilePath(a()->config()->gfilesdir(), StrCat("form", user_input, ".msg"));
           }
           if (File::Exists(fn)) {
             LoadFileIntoWorkspace(fn, true);

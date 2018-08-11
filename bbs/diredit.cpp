@@ -504,8 +504,8 @@ void dlboardedit() {
           bout.nl();
           bout << "|#5Delete data files (.DIR/.EXT) for dir also? ";
           if (yesno()) {
-            File::Remove(StrCat(a()->config()->datadir(), s, ".dir"));
-            File::Remove(StrCat(a()->config()->datadir(), s, ".ext"));
+            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".dir")));
+            File::Remove(FilePath(a()->config()->datadir(), StrCat(s, ".ext")));
           }
         }
       }

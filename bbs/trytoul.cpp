@@ -240,8 +240,8 @@ static int try_to_ul_wh(const string& orig_file_name) {
     dliscan1(dn);
     bout.nl();
   }
-  const string src = StrCat(a()->batch_directory(), file_name);
-  const string dest = StrCat(d.path, file_name);
+  const string src = FilePath(a()->batch_directory(), file_name);
+  const string dest = FilePath(d.path, file_name);
 
   if (File::Exists(dest)) {
     File::Remove(dest);
@@ -409,7 +409,7 @@ int try_to_ul(const string& file_name) {
 
   sysoplog() << StringPrintf("Failed to upload %s, moving to TRY2UL dir", file_name.c_str());
 
-  const string src = StrCat(a()->batch_directory(), file_name);
+  const string src = FilePath(a()->batch_directory(), file_name);
   const string dest = FilePath(FilePath(a()->config()->dloadsdir(), "TRY2UL"), file_name);
 
   if (File::Exists(dest)) {                        // this is iffy <sp?/who care I chooose to

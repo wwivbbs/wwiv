@@ -100,23 +100,23 @@ void reset_disable_conf() {
 conf_info_t get_conf_info(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_DIRS) {
     conf_info_t ret(a()->dirconfs, a()->uconfdir);
-    ret.file_name = StrCat(a()->config()->datadir(), DIRS_CNF);
+    ret.file_name = FilePath(a()->config()->datadir(), DIRS_CNF);
     ret.num_subs_or_dirs = a()->directories.size();
     return ret;
   }
 
   conf_info_t ret(a()->subconfs, a()->uconfsub);
-  ret.file_name = StrCat(a()->config()->datadir(), SUBS_CNF);
+  ret.file_name = FilePath(a()->config()->datadir(), SUBS_CNF);
   ret.num_subs_or_dirs = a()->subs().subs().size();
   return ret;
 }
 
 static string get_conf_filename(ConferenceType conftype) {
   if (conftype == ConferenceType::CONF_SUBS) {
-    return StrCat(a()->config()->datadir(), SUBS_CNF);
+    return FilePath(a()->config()->datadir(), SUBS_CNF);
   }
   else if (conftype == ConferenceType::CONF_DIRS) {
-    return StrCat(a()->config()->datadir(), DIRS_CNF);
+    return FilePath(a()->config()->datadir(), DIRS_CNF);
   }
   return{};
 }

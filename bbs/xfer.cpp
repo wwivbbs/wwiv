@@ -259,11 +259,11 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
 int list_arc_out(const char *file_name, const char *pszDirectory) {
   string name_to_delete;
 
-  string full_pathname = StrCat(pszDirectory, file_name);
+  auto full_pathname = FilePath(pszDirectory, file_name);
   if (a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) {
-    full_pathname = StrCat(a()->temp_directory(), file_name);
+    full_pathname = FilePath(a()->temp_directory(), file_name);
     if (!File::Exists(full_pathname)) {
-      string name_in_dir = StrCat(pszDirectory, file_name);
+      auto name_in_dir = FilePath(pszDirectory, file_name);
       copyfile(name_in_dir, full_pathname, false);
       name_to_delete = full_pathname;
     }

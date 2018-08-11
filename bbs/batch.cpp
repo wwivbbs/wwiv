@@ -225,8 +225,8 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
         } while (nRecNum != -1 && u.numbytes != 0);
         downFile.Close();
         if (nRecNum != -1 && u.numbytes == 0) {
-          string source_filename = StrCat(a()->batch_directory(), file_name);
-          string dest_filename = StrCat(a()->directories[b.dir].path, file_name);
+          auto source_filename = FilePath(a()->batch_directory(), file_name);
+          auto dest_filename = FilePath(a()->directories[b.dir].path, file_name);
           if (source_filename != dest_filename && File::Exists(source_filename)) {
             bool found = false;
             if (source_filename[1] != ':' && dest_filename[1] != ':') {
@@ -376,11 +376,13 @@ void zmbatchdl(bool bHangupAfterDl) {
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
-        string send_filename = StrCat(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+        auto send_filename =
+            FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
-          string orig_filename = StrCat(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+          auto orig_filename =
+              FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
           // update the send filename and copy it from the cdrom
-          send_filename = StrCat(a()->temp_directory(), u.filename);
+          send_filename = FilePath(a()->temp_directory(), u.filename);
           if (!File::Exists(send_filename)) {
             copyfile(orig_filename, send_filename, true);
           }
@@ -455,10 +457,12 @@ void ymbatchdl(bool bHangupAfterDl) {
         FileAreaSetRecord(file, nRecordNumber);
         file.Read(&u, sizeof(uploadsrec));
         file.Close();
-        string send_filename = StrCat(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+        auto send_filename =
+            FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
         if (a()->directories[a()->batch().entry[cur].dir].mask & mask_cdrom) {
-          string orig_filename = StrCat(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
-          send_filename = StrCat(a()->temp_directory(), u.filename);
+          auto orig_filename =
+              FilePath(a()->directories[a()->batch().entry[cur].dir].path, u.filename);
+          send_filename = FilePath(a()->temp_directory(), u.filename);
           if (!File::Exists(send_filename)) {
             copyfile(orig_filename, send_filename, true);
           }

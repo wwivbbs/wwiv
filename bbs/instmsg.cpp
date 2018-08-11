@@ -458,7 +458,7 @@ bool inst_msg_waiting() {
   }
 
   const string filename = StringPrintf("msg*.%3.3u", a()->instance_number());
-  if (!File::ExistsWildcard(StrCat(a()->config()->datadir(), filename))) {
+  if (!File::ExistsWildcard(FilePath(a()->config()->datadir(), filename))) {
     last_iia = l;
     return false;
   }

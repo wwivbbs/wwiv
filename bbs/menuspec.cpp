@@ -111,10 +111,10 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     }
     if (bOkToDL || bFreeDL) {
       write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
-      string s1 = StrCat(a()->directories[dn].path, u.filename);
+      auto s1 = FilePath(a()->directories[dn].path, u.filename);
       if (a()->directories[dn].mask & mask_cdrom) {
-        string s2 = StrCat(a()->directories[dn].path, u.filename);
-        s1 = StrCat(a()->temp_directory(), u.filename);
+        auto s2 = FilePath(a()->directories[dn].path, u.filename);
+        s1 = FilePath(a()->temp_directory(), u.filename);
         if (!File::Exists(s1)) {
           copyfile(s2, s1, false);
         }

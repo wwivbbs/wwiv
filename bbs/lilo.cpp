@@ -135,7 +135,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
   bout << "All Rights Reserved." << wwiv::endl;
 
   int ans = check_ansi();
-  const string ans_filename = StrCat(a()->language_dir, WELCOME_ANS);
+  const string ans_filename = FilePath(a()->language_dir, WELCOME_ANS);
   if (File::Exists(ans_filename)) {
     bout.nl();
     if (ans > 0) {
@@ -149,7 +149,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
     }
   } else {
     if (ans) {
-      const string noext_filename = StrCat(a()->language_dir.c_str(), WELCOME_NOEXT, ".0");
+      const string noext_filename = FilePath(a()->language_dir.c_str(), StrCat(WELCOME_NOEXT, ".0"));
       if (File::Exists(noext_filename)) {
         random_screen(WELCOME_NOEXT);
       } else {
@@ -568,7 +568,7 @@ static std::string CreateLastOnLogLine(const WStatus& status) {
 
 
 static void UpdateLastOnFile() {
-  const string laston_txt_filename = StrCat(a()->config()->gfilesdir(), LASTON_TXT);
+  const string laston_txt_filename = FilePath(a()->config()->gfilesdir(), LASTON_TXT);
   vector<string> lines;
   {
     TextFile laston_file(laston_txt_filename, "r");

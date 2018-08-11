@@ -120,7 +120,7 @@ void build_qwk_packet() {
 
   write_inst(INST_LOC_QWK, a()->current_user_sub().subnum, INST_FLAGS_ONLINE);
 
-  const string filename = StrCat(a()->batch_directory(), MESSAGES_DAT);
+  const auto filename = FilePath(a()->batch_directory(), MESSAGES_DAT);
   qwk_info.file = open(filename.c_str(), O_RDWR | O_BINARY | O_CREAT, S_IREAD | S_IWRITE);
 
   if (qwk_info.file < 1) {
@@ -993,7 +993,7 @@ void close_qwk_cfg(struct qwk_config *qwk_cfg) {
 void read_qwk_cfg(struct qwk_config *qwk_cfg) {
   memset(qwk_cfg, 0, sizeof(struct qwk_config));
 
-  const auto filename = StrCat(a()->config()->datadir(), "QWK.CFG");
+  const auto filename = FilePath(a()->config()->datadir(), "QWK.CFG");
   int f = open(filename.c_str(), O_BINARY | O_RDONLY);
   if (f < 0) {
     return;
@@ -1022,7 +1022,7 @@ void read_qwk_cfg(struct qwk_config *qwk_cfg) {
 }
 
 void write_qwk_cfg(struct qwk_config *qwk_cfg) {
-  const auto filename = StrCat(a()->config()->datadir(), "QWK.CFG");
+  const auto filename = FilePath(a()->config()->datadir(), "QWK.CFG");
   int f = open(filename.c_str(), O_BINARY | O_RDWR | O_CREAT | O_TRUNC, S_IREAD | S_IWRITE);
   if (f < 0) {
     return;

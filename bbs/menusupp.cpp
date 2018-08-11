@@ -302,9 +302,9 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  string filename = StrCat(a()->language_dir.c_str(), LOGOFF_MAT);
+  auto filename = FilePath(a()->language_dir.c_str(), LOGOFF_MAT);
   if (!File::Exists(filename)) {
-    filename = StrCat(a()->config()->gfilesdir(), LOGOFF_MAT);
+    filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }
   if (File::Exists(filename)) {
     cycle = 0;

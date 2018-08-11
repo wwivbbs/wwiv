@@ -95,8 +95,8 @@ string GetQuoteInitials(const string& orig_name) {
 
 
 void clear_quotes() {
-  string quotes_txt_fn = StrCat(a()->temp_directory(), QUOTES_TXT);
-  string quotes_ind_fn = StrCat(a()->temp_directory(), QUOTES_IND);
+  auto quotes_txt_fn = FilePath(a()->temp_directory(), QUOTES_TXT);
+  auto quotes_ind_fn = FilePath(a()->temp_directory(), QUOTES_IND);
 
   File::SetFilePermissions(quotes_txt_fn, File::permReadWrite);
   File::Remove(quotes_txt_fn);

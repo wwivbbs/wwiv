@@ -294,7 +294,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
   string full_pathname;
   // append gfilesdir if no path specified
   if (sound_filename.find(File::pathSeparatorChar) == string::npos) {
-    full_pathname = StrCat(a()->config()->gfilesdir(), sound_filename);
+    full_pathname = FilePath(a()->config()->gfilesdir(), sound_filename);
   } else {
     full_pathname = sound_filename;
   }
