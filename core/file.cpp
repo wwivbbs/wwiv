@@ -62,7 +62,8 @@
 #if !defined(ftruncate)
 #define ftruncate chsize
 #endif // ftruncate
-#define flock(h, m) { (h), (m); }
+#define flock(h, m)                                                                                \
+  { (h), (m); }
 static constexpr int LOCK_SH = 1;
 static constexpr int LOCK_EX = 2;
 static constexpr int LOCK_NB = 4;
@@ -79,8 +80,8 @@ static constexpr int F_OK = 0;
 
 #endif // _WIN32
 
-using std::chrono::milliseconds;
 using std::string;
+using std::chrono::milliseconds;
 using namespace wwiv::os;
 
 namespace wwiv {
@@ -139,7 +140,8 @@ bool backup_file(const File& file) { return backup_file(file.full_pathname()); }
 
 File::File(const string& full_file_name) : full_path_name_(full_file_name) {}
 
-//File::File(const string& dir, const string& filename) : File(wwiv::core::FilePath(dir, filename)) {}
+// File::File(const string& dir, const string& filename) : File(wwiv::core::FilePath(dir, filename))
+// {}
 
 File::~File() {
   if (this->IsOpen()) {
@@ -285,12 +287,14 @@ off_t File::length() {
 
 time_t File::creation_time() {
   struct stat buf {};
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
+  // st_ctime is creation time on windows and status change time on posix
+  // so that's probably the closest to what we want.
+  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
 }
 
 time_t File::last_write_time() {
   struct stat buf {};
-  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_ctime;
+  return (stat(full_path_name_.c_str(), &buf) == -1) ? 0 : buf.st_mtime;
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -468,7 +472,7 @@ std::unique_ptr<wwiv::core::FileLock> File::lock(wwiv::core::FileLockType lock_t
   }
 #else
 
-// TODO: unlock here
+  // TODO: unlock here
 
 #endif // _WIN32
   return std::make_unique<wwiv::core::FileLock>(handle_, full_path_name_, lock_type);
