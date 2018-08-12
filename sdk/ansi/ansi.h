@@ -62,7 +62,6 @@ private:
   FrameBuffer* b_;
   uint8_t default_attr_;
   AnsiMode state_{AnsiMode::not_in_sequence};
-  std::vector<int> ansi_numbers_;
   std::string ansi_sequence_;
 };
 

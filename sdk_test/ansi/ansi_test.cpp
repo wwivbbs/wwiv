@@ -30,17 +30,66 @@
 using namespace wwiv::strings;
 using namespace wwiv::sdk::ansi;
 
-class AnsiTest : public testing::Test {};
+class AnsiTest : public testing::Test {
+public:
+  AnsiTest() : b(10), ansi(&b, 0x07) {}
 
-TEST_F(AnsiTest, Smoke) { 
-  const std::string s = "\x1b[34;1mHello";
-  FrameBuffer b{10};
-  Ansi ansi(&b, 0x07);
-  ansi.write(s);
-  b.close();
-  EXPECT_EQ(5, b.pos());
-  EXPECT_EQ(1, b.rows());
-  EXPECT_EQ("Hello", b.row_as_text(0));
+  void write(const std::string& s) {
+    ansi.write(s);
+    b.close();
+  }
+
+  void check(const std::vector<std::string>& lines) { 
+    EXPECT_EQ(lines.size(), b.rows());
+    for (std::vector<std::string>::size_type i = 0; i < lines.size(); i++) {
+      EXPECT_EQ(lines[i], b.row_as_text(i)) << "Line #" << i;
+    }
+  }
+
+  FrameBuffer b;
+  Ansi ansi;
+};
+
+TEST_F(AnsiTest, ColorBlue) {
+  write("\x1b[34;1mHello");
   EXPECT_EQ(9, b.curatr());
+  EXPECT_EQ(5, b.pos());
+  check({"Hello"});
 }
 
+TEST_F(AnsiTest, CSI_2J) {
+  write("\x1b[34;1mHello\x1b[2JH");
+  EXPECT_EQ(9, b.curatr());
+  EXPECT_EQ(1, b.pos());
+  check({"H"});
+}
+
+TEST_F(AnsiTest, CSI_A_MoveUp) {
+  write("Hello\n\x1b[1AWorld");
+  check({"World"});
+}
+
+TEST_F(AnsiTest, CSI_A_MoveUpTooFar) {
+  write("Hello\n\x1b[20AWorld");
+  check({"World"});
+}
+
+TEST_F(AnsiTest, CSI_B_MoveDown) {
+  write("Hello\n\x1b[2BWorld");
+  check({"Hello", "", "", "World"});
+}
+
+TEST_F(AnsiTest, CSI_C_Right) {
+  write("H\x1b[4CW");
+  check({"H    W"});
+}
+
+TEST_F(AnsiTest, CSI_D_Left) {
+  write("Hello\x1b[4Da");
+  check({"Hallo"});
+}
+
+TEST_F(AnsiTest, CSI_D_Left_TooFar) {
+  write("Hello\x1b[40DY");
+  check({"Yello"});
+}

@@ -69,8 +69,45 @@ bool Ansi::write_in_sequence(char c) {
     ansi_sequence_.push_back(c);
     break;
   }
+  case 'A': {
+    auto ns = to_ansi_numbers(ansi_sequence_);
+    b_->gotoxy(b_->x(), std::max(0, b_->y() - ns[0]));
+    return ansi_sequence_done();
+  } break;
+  case 'B': {
+    auto ns = to_ansi_numbers(ansi_sequence_);
+    b_->gotoxy(b_->x(), b_->y() + ns[0]);
+    return ansi_sequence_done();
+  } break;
+  case 'C': {
+    auto ns = to_ansi_numbers(ansi_sequence_);
+    b_->gotoxy(std::min(b_->cols() - 1, b_->x() + ns[0]), b_->y());
+    return ansi_sequence_done();
+  } break;
+  case 'D': {
+    auto ns = to_ansi_numbers(ansi_sequence_);
+    b_->gotoxy(std::max(0, b_->x() - ns[0]), b_->y());
+    return ansi_sequence_done();
+  } break;
+  case 'H': 
+  case 'f': {
+    auto ns = to_ansi_numbers(ansi_sequence_);
+    if (ns.size() < 2) {
+      return ansi_sequence_error(c);
+    }
+    b_->gotoxy(ns[0]-1, ns[1]-1);
+    return ansi_sequence_done();;
+  } break;
+  case 'J': {
+    auto ns = to_ansi_numbers(ansi_sequence_);
+    if (ns.size() != 1 || ns.front() != 2) {
+      return ansi_sequence_error(c);
+    }
+    b_->clear();
+    return ansi_sequence_done();
+  } break;
   case 'm': {
-    ansi_numbers_ = to_ansi_numbers(ansi_sequence_);
+    auto ansi_numbers_ = to_ansi_numbers(ansi_sequence_);
     // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
     for (const auto n : ansi_numbers_) {
       const auto a = b_->curatr();
@@ -105,9 +142,11 @@ bool Ansi::write_in_sequence(char c) {
     }
     if (std::isdigit(static_cast<unsigned char>(c)) || c == ';') {
       ansi_sequence_.push_back(c);
+      return true;
     }
   } break;
   }
+  VLOG(2) << "Unknown ansi character: '" << c << "'; full sequence: " << ansi_sequence_;
   return true;
 }
 
@@ -115,7 +154,6 @@ bool Ansi::ansi_sequence_done() {
 
   state_ = AnsiMode::not_in_sequence;
   ansi_sequence_.clear();
-  ansi_numbers_.clear();
   return true;
 }
 
@@ -139,7 +177,6 @@ bool Ansi::attr(uint8_t a) {
 bool Ansi::reset() {
   state_ = AnsiMode::not_in_sequence;
   ansi_sequence_.clear();
-  ansi_numbers_.clear();
   return true;
 }
 

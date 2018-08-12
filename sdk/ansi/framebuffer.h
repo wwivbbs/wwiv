@@ -33,6 +33,7 @@ public:
   FrameBufferCell(FrameBufferCell& o) : a_(o.a_), c_(o.c_) {}
   FrameBufferCell(char c, uint8_t a);
   char c() const noexcept { return c_; }
+  void c(char ch) { c_ = ch; }
   uint8_t a() const noexcept { return a_; }
 
   // As a composite word (high 8 bits are attribute, low are char)
@@ -59,6 +60,8 @@ public:
   bool write(char c, uint8_t a);
   /** Moves the cursor to x,y */
   bool gotoxy(int x, int y);
+  // Like CLS, clears everything viewable.
+  bool clear();
   // Finalizes this frambuffer and shrinks the size to fit, etc.
   void close();
 
@@ -74,6 +77,8 @@ public:
   int cols() const noexcept { return cols_; }
   int pos() const noexcept { return pos_; }
   uint8_t curatr() const noexcept { return a_; }
+  int x() const noexcept { return pos_ % cols_; }
+  int y() const noexcept { return pos_ / cols_; }
 
   // Mostly used for debugging and tests.
 
@@ -87,8 +92,6 @@ private:
   bool grow(int pos);
   const int cols_;
   std::vector<FrameBufferCell> b_;
-  int x_{0};
-  int y_{0};
   uint8_t a_{7};
   int pos_{0};
   bool open_{true};
