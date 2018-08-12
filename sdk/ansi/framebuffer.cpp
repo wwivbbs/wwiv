@@ -91,7 +91,7 @@ void FrameBuffer::close() {
   for (auto i = size_int(b_) - 1; i >= 0; i--) {
     if (f && b_[i].c() == 0) {
       b_[i].c(' ');
-    } else {
+    } else if (!f && b_[i].c() != 0) {
       f = true;
     }
     if ((i % cols_) == 0) {
