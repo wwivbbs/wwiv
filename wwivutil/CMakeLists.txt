@@ -23,6 +23,7 @@ set(COMMAND_SOURCES
   net/dump_packet.cpp
   net/net.cpp
   net/req.cpp
+  print/print.cpp
   status/status.cpp
   util.cpp
   )

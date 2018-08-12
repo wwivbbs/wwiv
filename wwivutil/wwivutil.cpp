@@ -38,6 +38,7 @@
 #include "wwivutil/fix/fix.h"
 #include "wwivutil/messages/messages.h"
 #include "wwivutil/net/net.h"
+#include "wwivutil/print/print.h"
 #include "wwivutil/status/status.h"
 
 using std::map;
@@ -69,6 +70,7 @@ public:
       Add(std::make_unique<FixCommand>());
       Add(std::make_unique<FidoCommand>());
       Add(std::make_unique<StatusCommand>());
+      Add(std::make_unique<PrintCommand>());
 
       if (!cmdline_.Parse()) { return 1; }
       const std::string bbsdir(cmdline_.arg("bbsdir").as_string());
