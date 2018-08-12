@@ -30,7 +30,7 @@ FrameBufferCell::FrameBufferCell() : FrameBufferCell(0, FRAMEBUFFER_DEFAULT_ATTR
 
 FrameBufferCell::FrameBufferCell(char c, uint8_t a) : c_(c), a_(a) {}
 
-FrameBuffer::FrameBuffer(int cols) : cols_(cols) { b_.reserve(cols_ * 100); }
+FrameBuffer::FrameBuffer(int cols) : VScreen(cols), cols_(cols) { b_.reserve(cols_ * 100); }
 
 bool FrameBuffer::gotoxy(int x, int y) {
   pos_ = (y * cols_) + x;

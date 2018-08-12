@@ -20,6 +20,8 @@
 #include "core/log.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/ansi/vscreen.h"
+
 #include <algorithm>
 #include <cctype>
 
@@ -32,7 +34,7 @@ namespace ansi {
 
 static const char clrlst[] = "04261537";
 
-Ansi::Ansi(FrameBuffer* b, uint8_t default_attr) : b_(b), default_attr_(default_attr) {}
+Ansi::Ansi(VScreen* b, uint8_t default_attr) : b_(b), default_attr_(default_attr) {}
 
 bool Ansi::write(char c) {
   if (state_ == AnsiMode::not_in_sequence && c == 27) {

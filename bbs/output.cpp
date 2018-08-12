@@ -33,6 +33,7 @@
 #include "bbs/utility.h"
 
 #include "core/strings.h"
+#include "sdk/ansi/makeansi.h"
 
 using std::ostream;
 using std::string;
@@ -163,7 +164,7 @@ std::string Output::MakeSystemColor(int c) {
   if (!okansi()) {
     return "";
   }
-  return makeansi(c, curatr());
+  return wwiv::sdk::ansi::makeansi(c, curatr());
 }
 
 std::string Output::MakeSystemColor(wwiv::sdk::Color c) {

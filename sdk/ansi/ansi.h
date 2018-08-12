@@ -19,6 +19,7 @@
 #define __INCLUDED_SDK_ANSI_H__
 
 #include "sdk/ansi/framebuffer.h"
+#include "sdk/ansi/vscreen.h"
 
 #include <cstdint>
 #include <vector>
@@ -31,7 +32,7 @@ enum class AnsiMode { in_sequence, not_in_sequence };
 
 class Ansi {
 public:
-  Ansi(FrameBuffer* b, uint8_t default_attr);
+  Ansi(VScreen* b, uint8_t default_attr);
   virtual ~Ansi() = default;
 
   bool write(char c);
@@ -59,7 +60,7 @@ private:
   bool ansi_sequence_error(char c);
   bool ansi_sequence_done();
 
-  FrameBuffer* b_;
+  VScreen* b_;
   uint8_t default_attr_;
   AnsiMode state_{AnsiMode::not_in_sequence};
   std::string ansi_sequence_;

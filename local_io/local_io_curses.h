@@ -26,7 +26,6 @@
 #include "local_io/local_io.h"
 #include "localui/colors.h"
 #include "localui/curses_win.h"
-#include "sdk/status.h"
 
 #if defined(_MSC_VER)
 #pragma warning(push)

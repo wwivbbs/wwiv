@@ -9,7 +9,6 @@ set(test_sources
   bputch_test.cpp
   datetime_test.cpp
   make_abs_test.cpp
-  makeansi_test.cpp
   msgbase1_test.cpp
   new_bbslist_test.cpp
   pause_test.cpp

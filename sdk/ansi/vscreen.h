@@ -27,76 +27,39 @@ namespace ansi {
 
 static constexpr int VSCREEN_DEFAULT_ATTRIBUTE = 0x07;
 
-class FrameBufferCell {
+class VScreen {
 public:
-  FrameBufferCell();
-  FrameBufferCell(FrameBufferCell& o) : a_(o.a_), c_(o.c_) {}
-  FrameBufferCell(char c, uint8_t a);
-  char c() const noexcept { return c_; }
-  void c(char ch) { c_ = ch; }
-  uint8_t a() const noexcept { return a_; }
+  explicit VScreen(int cols);
+  virtual ~VScreen() = default;
 
-  // As a composite word (high 8 bits are attribute, low are char)
-  uint16_t w() const noexcept { return (a_ << 8) | c_; }
-
-  FrameBufferCell& operator=(FrameBufferCell& o) {
-    if (this == &o) {
-      return *this;
-    }
-    a_ = o.a();
-    c_ = o.c();
-    return *this;
-  }
-
-private:
-  char c_;
-  uint8_t a_;
-};
-
-class FrameBuffer {
-public:
-  explicit FrameBuffer(int cols);
   /** Writes c using a, handles \r and \n */
-  bool write(char c, uint8_t a);
+  virtual bool write(char c, uint8_t a) = 0;
   /** Moves the cursor to x,y */
-  bool gotoxy(int x, int y);
+  virtual bool gotoxy(int x, int y) = 0;
   // Like CLS, clears everything viewable.
-  bool clear();
+  virtual bool clear() = 0;
   // clears from current position to the end of line.
-  bool clear_eol();
+  virtual bool clear_eol() = 0;
   // Finalizes this frambuffer and shrinks the size to fit, etc.
-  void close();
+  virtual void close() = 0;
 
   /**
    * Puts c using a at cursor position pos.
    * Does not handle movement chars like \r or \n
    */
-  bool put(int pos, char c, uint8_t a);
+  virtual bool put(int pos, char c, uint8_t a) = 0;
 
-  bool write(char c) { return write(c, a_); }
-  void curatr(uint8_t a) { a_ = a; }
+  virtual bool write(char c) = 0;
+  virtual void curatr(uint8_t a) = 0;
 
-  int cols() const noexcept { return cols_; }
-  int pos() const noexcept { return pos_; }
-  uint8_t curatr() const noexcept { return a_; }
-  int x() const noexcept { return pos_ % cols_; }
-  int y() const noexcept { return pos_ / cols_; }
-
-  // Mostly used for debugging and tests.
-
-  // Number of total rows after the framebuffer has been closed.
-  int rows() const { return b_.empty() ? 0 : (1 + (b_.size() / cols_)); }
-  // The raw text (without attributes) for row # 'row'
-  std::string row_as_text(int row) const;
-  std::vector<uint16_t> row_char_and_attr(int row) const;
+  virtual int cols() const noexcept = 0;
+  virtual int pos() const noexcept = 0;
+  virtual uint8_t curatr() const noexcept = 0;
+  virtual int x() const noexcept = 0;
+  virtual int y() const noexcept = 0;
 
 private:
-  bool grow(int pos);
-  const int cols_;
-  std::vector<FrameBufferCell> b_;
-  uint8_t a_{7};
-  int pos_{0};
-  bool open_{true};
+  int cols_;
 };
 
 } // namespace ansi

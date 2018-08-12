@@ -18,6 +18,8 @@
 #ifndef __INCLUDED_SDK_FRAMEBUFFER_H__
 #define __INCLUDED_SDK_FRAMEBUFFER_H__
 
+#include "sdk/ansi/vscreen.h"
+
 #include <cstdint>
 #include <vector>
 
@@ -53,34 +55,34 @@ private:
   uint8_t a_;
 };
 
-class FrameBuffer {
+class FrameBuffer : public VScreen {
 public:
   explicit FrameBuffer(int cols);
   /** Writes c using a, handles \r and \n */
-  bool write(char c, uint8_t a);
+  bool write(char c, uint8_t a) override;
   /** Moves the cursor to x,y */
-  bool gotoxy(int x, int y);
+  bool gotoxy(int x, int y) override;
   // Like CLS, clears everything viewable.
-  bool clear();
+  bool clear() override;
   // clears from current position to the end of line.
-  bool clear_eol();
+  bool clear_eol() override;
   // Finalizes this frambuffer and shrinks the size to fit, etc.
-  void close();
+  void close() override;
 
   /**
    * Puts c using a at cursor position pos.
    * Does not handle movement chars like \r or \n
    */
-  bool put(int pos, char c, uint8_t a);
+  bool put(int pos, char c, uint8_t a) override;
 
-  bool write(char c) { return write(c, a_); }
-  void curatr(uint8_t a) { a_ = a; }
+  bool write(char c) override { return write(c, a_); }
+  void curatr(uint8_t a) override { a_ = a; }
 
-  int cols() const noexcept { return cols_; }
-  int pos() const noexcept { return pos_; }
+  int cols() const noexcept override { return cols_; }
+  int pos() const noexcept override { return pos_; }
   uint8_t curatr() const noexcept { return a_; }
-  int x() const noexcept { return pos_ % cols_; }
-  int y() const noexcept { return pos_ / cols_; }
+  int x() const noexcept override { return pos_ % cols_; }
+  int y() const noexcept override { return pos_ / cols_; }
 
   // Mostly used for debugging and tests.
 

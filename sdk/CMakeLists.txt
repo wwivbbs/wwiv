@@ -11,6 +11,8 @@ set(COMMON_SOURCES
   ftn_msgdupe.cpp
   ansi/ansi.cpp
   ansi/framebuffer.cpp
+  ansi/makeansi.cpp
+  ansi/vscreen.cpp
   fido/fido_address.cpp
   fido/fido_callout.cpp
   fido/fido_packets.cpp

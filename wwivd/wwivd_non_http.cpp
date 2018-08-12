@@ -46,6 +46,7 @@
 #include "core/version.h"
 #include "core/wwivport.h"
 #include "sdk/config.h"
+#include "sdk/ansi/makeansi.h"
 #include "core/datetime.h"
 #include "wwivd/connection_data.h"
 #include "wwivd/node_manager.h"
@@ -187,52 +188,12 @@ static bool check_ansi(SocketConnection& conn) {
   return false;
 }
 
-static void addto(std::string* ansi_str, int num) {
-  if (ansi_str->empty()) {
-    ansi_str->append("\x1b[");
-  } else {
-    ansi_str->append(";");
-  }
-  ansi_str->append(std::to_string(num));
-}
-
-/* Ripped from com.cpp -- maybe this should all move to core? */
-static std::string makeansi(int attr, int current_attr) {
-  static const std::vector<int> kAnsiColorMap = {'0', '4', '2', '6', '1', '5', '3', '7'};
-
-  int catr = current_attr;
-  std::string out;
-  //  if ((catr & 0x88) ^ (attr & 0x88)) {
-  addto(&out, 0);
-  addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
-  addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
-  catr = (attr & 0x77);
-  //  }
-  if ((catr & 0x07) != (attr & 0x07)) {
-    addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
-  }
-  if ((catr & 0x70) != (attr & 0x70)) {
-    addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
-  }
-  if ((catr & 0x08) != (attr & 0x08)) {
-    addto(&out, 1);
-  }
-  if ((catr & 0x80) != (attr & 0x80)) {
-    // Italics will be generated
-    addto(&out, 3);
-  }
-  if (!out.empty()) {
-    out += "m";
-  }
-  return out;
-}
-
 std::string Color(int c, bool ansi) {
   static int wwivd_curatr = 7;
   if (!ansi) {
     return "";
   }
-  auto s = makeansi(c, wwivd_curatr);
+  auto s = wwiv::sdk::ansi::makeansi(c, wwivd_curatr);
   wwivd_curatr = 0;
   return s;
 }

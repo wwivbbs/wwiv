@@ -20,6 +20,7 @@ set(test_sources
   user_test.cpp
   ansi/ansi_test.cpp
   ansi/framebuffer_test.cpp
+  ansi/makeansi_test.cpp
   fido/fido_address_test.cpp
   fido/nodelist_test.cpp
   net/callouts_test.cpp
