@@ -42,7 +42,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
@@ -669,7 +669,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
 
   if (!commandLine.empty()) {
     make_abs_cmd(a()->GetHomeDir(), &commandLine);
-    a()->localIO()->Cls();
+    a()->Cls();
     const string user_name_number = a()->names()->UserName(a()->usernum);
     const string message = StringPrintf(
         "%s is currently online at %u bps\r\n\r\n%s\r\n%s\r\n",

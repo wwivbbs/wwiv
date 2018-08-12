@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "wwivconfig/wwivd_ui.h"
 
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

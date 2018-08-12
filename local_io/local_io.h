@@ -21,16 +21,19 @@
 
 #include <string>
 
-#include "bbs/curatr_provider.h"
-#include "bbs/keycodes.h"
+#include "local_io/curatr_provider.h"
+#include "local_io/keycodes.h"
 #include "core/file.h"
 
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
 
-class Application;
-
 enum class AllowedKeys { NUM_ONLY, UPPER_ONLY, ALL, SET };
+
+struct LocalIOData {
+  int instance_number{0};
+  std::string system_name;
+};
 
 class LocalIO {
 public:
@@ -69,7 +72,7 @@ public:
   virtual void PutsXYA(int x, int y, int attr, const std::string& text) = 0;
   virtual int PrintfXY(int x, int y, const char* formatted_text, ...) = 0;
   virtual int PrintfXYA(int x, int y, int attr, const char* formatted_text, ...) = 0;
-  virtual void set_protect(Application* session, int l) = 0;
+  virtual void set_protect(int l) = 0;
   virtual void savescreen() = 0;
   virtual void restorescreen() = 0;
   virtual bool KeyPressed() = 0;
@@ -84,7 +87,7 @@ public:
   virtual int GetDefaultScreenBottom() const noexcept = 0;
   virtual void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
                         const char* ss) = 0;
-  virtual void UpdateNativeTitleBar(Application* session) = 0;
+  virtual void UpdateNativeTitleBar(const std::string& system_name, int instance_number) = 0;
 
   int GetTopScreenColor() const noexcept { return top_screen_color_; }
   void SetTopScreenColor(int n) { top_screen_color_ = n; }
@@ -99,7 +102,7 @@ public:
   virtual void ReenableLocalIO() {}
 
   // curatr_provider interface
-  virtual void set_curatr_provider(wwiv::bbs::curatr_provider* p);
+  virtual void set_curatr_provider(wwiv::local_io::curatr_provider* p);
   virtual int curatr() const;
   virtual void curatr(int c);
 
@@ -112,7 +115,7 @@ private:
   int top_screen_color_{27};
   int user_editor_color_{9};
   int edit_line_color_{31};
-  wwiv::bbs::curatr_provider* curatr_;
+  wwiv::local_io::curatr_provider* curatr_;
 };
 
 #endif // __INCLUDED_PLATFORM_LOCALIO_H__

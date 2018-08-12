@@ -34,7 +34,7 @@
 #include "core/textfile.h"
 
 #include "bbs/stuffin.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 
 using std::string;

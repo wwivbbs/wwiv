@@ -32,9 +32,9 @@
 #include "bbs/email.h"
 #include "bbs/instmsg.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/sysoplog.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/datetime.h"
@@ -578,7 +578,7 @@ void chat1(const char *chat_line, bool two_way) {
   bout.nl(2);
   int nSaveTopData = a()->topdata;
   if (two_way) {
-    a()->localIO()->Cls();
+    a()->Cls();
     cp0 = cp1 = 0;
     if (a()->defscreenbottom == 24) {
       a()->topdata = LocalIO::topdataNone;

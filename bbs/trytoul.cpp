@@ -34,7 +34,7 @@
 #include "bbs/xferovl1.h"
 #include "bbs/sysoplog.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "sdk/status.h"
 #include "core/file.h"
 #include "core/os.h"

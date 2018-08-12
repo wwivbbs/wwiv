@@ -32,7 +32,7 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "bbs/wconstants.h" // for MAX_ARCHIVERS
+#include "local_io/wconstants.h" // for MAX_ARCHIVERS
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

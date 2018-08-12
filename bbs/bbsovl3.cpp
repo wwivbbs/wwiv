@@ -25,8 +25,8 @@
 #include "bbs/utility.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
-#include "bbs/keycodes.h"
-#include "bbs/wconstants.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 
 using std::string;
 using namespace wwiv::core;

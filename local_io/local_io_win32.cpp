@@ -27,11 +27,8 @@
 #include <string>
 #include <vector>
 
-#include "bbs/bbs.h"
-#include "bbs/datetime.h"
 #include "sdk/status.h"
-#include "bbs/wconstants.h"
-#include "bbs/application.h"
+#include "local_io/wconstants.h"
 #include "core/os.h"
 #include "core/strings.h"
 
@@ -198,8 +195,6 @@ void Win32ConsoleIO::Cls() {
   FillConsoleOutputCharacter(out_, (TCHAR) ' ', dwConSize, coordScreen, &charsWriten);
   FillConsoleOutputAttribute(out_, (WORD)7, dwConSize, coordScreen, &charsWriten);
   GotoXY(0, 0);
-  // TODO(rushfan): We shouldn't be doing this here.
-  bout.clear_lines_listed();
 }
 
 void Win32ConsoleIO::Backspace() {
@@ -338,7 +333,7 @@ int  Win32ConsoleIO::PrintfXYA(int x, int y, int a, const char *formatted_text, 
   return nNumWritten;
 }
 
-void Win32ConsoleIO::set_protect(Application* session, int l) {
+void Win32ConsoleIO::set_protect(int l) {
 // set_protect sets the number of lines protected at the top of the screen.
   if (static_cast<size_t>(l) != GetTopLine()) {
     COORD coord;
@@ -372,9 +367,6 @@ void Win32ConsoleIO::set_protect(Application* session, int l) {
     }
   }
   SetTopLine(l);
-  if (!session->using_modem) {
-    session->screenlinest = session->defscreenbottom + 1 - GetTopLine();
-  }
 }
 
 void Win32ConsoleIO::savescreen() {
@@ -821,10 +813,8 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
   GotoXY(cx, cy);
 }
 
-void Win32ConsoleIO::UpdateNativeTitleBar(Application* session) {
+void Win32ConsoleIO::UpdateNativeTitleBar(const std::string& system_name, int instance_number) {
   // Set console title
-  std::stringstream ss;
-  ss << "WWIV Node " << session->instance_number() 
-     << " (" << a()->config()->system_name() << ")";
-  SetConsoleTitle(ss.str().c_str());
+  const auto s = StrCat("WWIV Node ", instance_number, " (", system_name, ")");
+  SetConsoleTitle(s.c_str());
 }

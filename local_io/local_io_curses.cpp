@@ -30,16 +30,6 @@
 #ifdef __unix__
 #include <unistd.h>
 #endif
-
-#include "bbs/asv.h"
-#include "bbs/bbsovl1.h"
-#include "bbs/bbsovl2.h"
-#include "bbs/confutil.h"
-#include "bbs/datetime.h"
-#include "bbs/bbs.h"
-#include "bbs/remote_io.h"
-#include "bbs/wconstants.h"
-#include "sdk/status.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/os.h"
@@ -211,11 +201,8 @@ int CursesLocalIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted
   return nNumWritten;
 }
 
-void CursesLocalIO::set_protect(Application* session, int l) {
+void CursesLocalIO::set_protect(int l) {
   SetTopLine(l);
-  if (!session->using_modem) {
-    session->screenlinest = session->defscreenbottom + 1 - GetTopLine();
-  }
 }
 
 static std::vector<chtype*> saved_screen;
@@ -582,13 +569,11 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   GotoXY(xx, yy);
 }
 
-void CursesLocalIO::UpdateNativeTitleBar(Application* session) {
+void CursesLocalIO::UpdateNativeTitleBar(const std::string& system_name, int instance_number) {
 #ifdef _WIN32
 	// Set console title
-	std::stringstream ss;
-	ss << "WWIV Node " << session->instance_number() 
-     << " (" << a()->config()->system_name() << ")";
-	SetConsoleTitle(ss.str().c_str());
+  const auto s = StrCat("WWIV Node ", instance_number, " (", system_name, ")");
+	SetConsoleTitle(s.c_str());
 #endif  // _WIN32
 }
 

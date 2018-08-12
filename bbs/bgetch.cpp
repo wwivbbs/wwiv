@@ -28,10 +28,10 @@
 #include "bbs/com.h"
 #include "bbs/datetime.h"
 #include "bbs/instmsg.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/multinst.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 
 #include "core/log.h"
 #include "core/strings.h"

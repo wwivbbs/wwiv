@@ -31,7 +31,7 @@
 #endif
 #include <sys/stat.h>
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"

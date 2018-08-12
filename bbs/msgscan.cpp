@@ -52,7 +52,7 @@
 #include "bbs/subacc.h"
 #include "bbs/wqscn.h"
 
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/sr.h"
 #include "bbs/sysopf.h"
 #include "bbs/xfer.h"

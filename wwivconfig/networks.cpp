@@ -33,7 +33,7 @@
 #endif
 #include <sys/stat.h>
 
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"

@@ -32,11 +32,11 @@
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/misccmd.h"
 #include "bbs/pause.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/xfer.h"
 #include "core/datafile.h"
@@ -115,7 +115,7 @@ void cleanup_net() {
     a()->SetCurrentReadMessageArea(-1);
     a()->ReadCurrentUser(1);
   }
-  a()->localIO()->Cls();
+  a()->Cls();
 }
 
 static void do_callout(const net_networks_rec& net, uint16_t sn) {
@@ -673,7 +673,7 @@ static std::pair<uint16_t, int> ansicallout() {
     return std::make_pair<uint16_t, int>(0, -1);
   }
 
-  a()->localIO()->Cls();
+  a()->Cls();
   bout.curatr(color1);
   a()->localIO()->MakeLocalWindow(3, 2, 73, 10);
   const auto header = StrCat("\xC3", std::string(71, '\xC4'), "\xB4");
@@ -830,7 +830,7 @@ static std::pair<uint16_t, int> ansicallout() {
   } while (!done);
 
   bout.curatr(color3);
-  a()->localIO()->Cls();
+  a()->Cls();
   a()->localIO()->SetCursor(LocalIO::cursorNormal);
   return std::make_pair(sn, snn);
 }
@@ -868,7 +868,7 @@ void force_callout() {
     return;
   }
 
-  a()->localIO()->Cls();
+  a()->Cls();
   do_callout(net, sn.first);
 }
 

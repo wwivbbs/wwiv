@@ -24,7 +24,7 @@
 #include "bbs/com.h"
 #include "bbs/finduser.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "core/datafile.h"
 #include "core/file.h"
 #include "core/stl.h"

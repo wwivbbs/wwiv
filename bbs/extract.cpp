@@ -25,7 +25,7 @@
 #include "bbs/conf.h"
 #include "bbs/execexternal.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/stuffin.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"

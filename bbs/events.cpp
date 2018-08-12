@@ -33,7 +33,7 @@
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/remote_io.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/wfc.h"
 #include "core/file.h"
 #include "core/datafile.h"

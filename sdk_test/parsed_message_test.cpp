@@ -18,7 +18,7 @@
 /**************************************************************************/
 #include "gtest/gtest.h"
 
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/msgbase1.h"
 #include "core/stl.h"
 #include "core/strings.h"

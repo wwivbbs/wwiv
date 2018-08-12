@@ -23,7 +23,7 @@
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/instmsg.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/pause.h"
 #include "bbs/utility.h"
 

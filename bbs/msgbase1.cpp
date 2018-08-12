@@ -39,7 +39,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/xfer.h"
 #include "core/datetime.h"
 #include "core/stl.h"

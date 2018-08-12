@@ -26,14 +26,14 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/sysoplog.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 
 #include "bbs/sr.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "bbs/xferovl.h"
 #include "bbs/xferovl1.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "sdk/status.h"
 

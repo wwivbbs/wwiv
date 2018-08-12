@@ -107,6 +107,8 @@ public:
 
   void UpdateTopScreen();
   void ClearTopScreenProtection();
+  /** Calls LocalIO::Cls() and bout.clear_lines_listed */
+  void Cls();
 
   /*! @function CreateComm Creates up the communications subsystem */
   void CreateComm(unsigned int nHandle, CommunicationType type);

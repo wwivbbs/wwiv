@@ -24,7 +24,7 @@
 #include "bbs/utility.h"
 #include "bbs/pause.h"
 #include "bbs/datetime.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/datetime.h"
 

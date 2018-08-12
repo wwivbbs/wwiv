@@ -24,7 +24,7 @@
 #include "bbs/confutil.h"
 #include "bbs/bbs.h"
 #include "bbs/utility.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"

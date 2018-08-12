@@ -93,7 +93,7 @@ public:
   void FastPuts(const std::string&) override {}
   int PrintfXY(int , int, const char *, ...) override { return 0; }
   int PrintfXYA(int, int, int, const char *, ...) override { return 0; }
-  void set_protect(Application*, int) override {}
+  void set_protect(int) override {}
   void savescreen() override {}
   void restorescreen() override {}
   bool KeyPressed() override { return false; }
@@ -104,7 +104,7 @@ public:
   void WriteScreenBuffer(const char *) override {}
   int GetDefaultScreenBottom() const noexcept override { return 25; }
   void EditLine(char *, int, AllowedKeys, int *, const char *) override {}
-  void UpdateNativeTitleBar(Application*) override {}
+  void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override {}
 
   std::string* captured_;
 };

@@ -34,7 +34,7 @@
 #endif
 #include <sys/stat.h>
 
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "core/log.h"
 #include "core/findfiles.h"
 #include "core/strings.h"

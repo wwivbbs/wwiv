@@ -24,7 +24,7 @@
 #include "bbs/input.h"
 #include "core/log.h"
 #include "bbs/bbs.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 
 #include "core/strings.h"
 #include "core/stl.h"

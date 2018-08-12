@@ -20,7 +20,7 @@
 #define __INCLUDED_CURATR_PROVIDER_H__
 
 namespace wwiv {
-namespace bbs {
+namespace local_io {
 
 class curatr_provider {
 public:
@@ -28,7 +28,7 @@ public:
   virtual void curatr(int n) = 0;
 };
 
-} // namespace bbs
+} // namespace local_io
 } // namespace wwiv
 
 #endif // __INCLUDED_CURATR_PROVIDER_H__

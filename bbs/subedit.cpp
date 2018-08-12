@@ -27,7 +27,7 @@
 #include "bbs/confutil.h"
 #include "bbs/input.h"
 #include "sdk/subxtr.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "sdk/status.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"

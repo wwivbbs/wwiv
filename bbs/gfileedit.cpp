@@ -28,7 +28,7 @@
 #include "bbs/com.h"
 #include "bbs/gfiles.h"
 #include "bbs/pause.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/xfer.h"
 #include "sdk/status.h"
 #include "core/file.h"

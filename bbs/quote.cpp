@@ -23,7 +23,7 @@
 
 #include "bbs/bbsutl.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/printfile.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsutl2.h"

@@ -55,7 +55,7 @@
 #include "bbs/trashcan.h"
 #include "bbs/uedit.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/wqscn.h"
 #include "sdk/status.h"

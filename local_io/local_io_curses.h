@@ -28,8 +28,6 @@
 #include "localui/curses_win.h"
 #include "sdk/status.h"
 
-class Application;
-
 #if defined(_MSC_VER)
 #pragma warning(push)
 #pragma warning(disable : 4100)
@@ -59,7 +57,7 @@ public:
   void PutsXYA(int x, int y, int a, const std::string& text) override;
   int PrintfXY(int x, int y, const char* formatted_text, ...) override;
   int PrintfXYA(int x, int y, int nAttribute, const char* formatted_text, ...) override;
-  void set_protect(Application* session, int l) override;
+  void set_protect(int l) override;
   void savescreen() override;
   void restorescreen() override;
   bool KeyPressed() override;
@@ -71,7 +69,7 @@ public:
 
   void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
                 const char* ss) override;
-  void UpdateNativeTitleBar(Application* session) override;
+  void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override;
   virtual void ResetColors();
 
   virtual void DisableLocalIO();

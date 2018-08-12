@@ -28,7 +28,7 @@
 #include <utility>
 #include <vector>
 
-#include "bbs/curatr_provider.h"
+#include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/wwivcolors.h"
 
@@ -49,7 +49,7 @@ public:
   int color;
 };
 
-class Output : public std::ostream, public wwiv::bbs::curatr_provider {
+class Output : public std::ostream, public wwiv::local_io::curatr_provider {
 protected:
   outputstreambuf buf;
   LocalIO* local_io_;

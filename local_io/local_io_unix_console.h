@@ -24,9 +24,6 @@
 #include <termios.h>
 #include "local_io/local_io.h"
 
-class WStatus;
-class Application;
-
 class UnixConsoleIO : public LocalIO {
  public:
   // Constructor/Destructor
@@ -53,9 +50,7 @@ class UnixConsoleIO : public LocalIO {
   virtual void set_protect(int l) override;
   virtual void savescreen() override;
   virtual void restorescreen() override;
-  virtual void skey(char ch) override;
   virtual void tleft(bool bCheckForTimeOut) override;
-  virtual void UpdateTopScreen(WStatus* pStatus, Application *pSession, int nInstanceNumber) override;
   virtual bool LocalKeyPressed() override;
   virtual unsigned char LocalGetChar() override;
   virtual void SaveCurrentLine(char *cl, char *atr, char *xl, char *cc) override;
@@ -64,7 +59,7 @@ class UnixConsoleIO : public LocalIO {
   virtual void LocalWriteScreenBuffer(const char *pszBuffer) override;
   virtual int  GetDefaultScreenBottom() override;
 
-  virtual void UpdateNativeTitleBar() override;
+  virtual void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override;
 
 private:
   virtual void LocalFastPuts(const std::string &text) override;

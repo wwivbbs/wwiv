@@ -43,7 +43,7 @@
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "core/datafile.h"
 #include "core/inifile.h"
@@ -634,7 +634,7 @@ void Application::read_gfile() {
 }
 
 void Application::InitializeBBS() {
-  localIO()->Cls();
+  Cls();
 #if !defined(__unix__)
   std::clog << std::endl
             << wwiv_version << beta_version << ", Copyright (c) 1998-2017, WWIV Software Services."

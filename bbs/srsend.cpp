@@ -22,7 +22,7 @@
 
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/remote_io.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"

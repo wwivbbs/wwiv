@@ -59,7 +59,7 @@
 #include "bbs/stuffin.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/os.h"

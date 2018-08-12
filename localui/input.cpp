@@ -31,8 +31,8 @@
 #include <string>
 #include <vector>
 
-#include "bbs/keycodes.h"
-#include "bbs/wconstants.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "localui/curses_io.h"

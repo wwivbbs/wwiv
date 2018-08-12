@@ -30,8 +30,7 @@
 #include <sys/stat.h>
 #include <vector>
 
-#include "bbs/bbs.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"

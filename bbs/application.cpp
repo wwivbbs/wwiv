@@ -57,7 +57,7 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
 #include "bbs/xfer.h"
@@ -70,8 +70,8 @@
 #include "sdk/status.h"
 
 #if defined(_WIN32)
-#include "local_io/local_io_win32.h"
 #include "bbs/remote_socket_io.h"
+#include "local_io/local_io_win32.h"
 #else
 #include <unistd.h>
 #endif // _WIN32
@@ -128,10 +128,7 @@ Application::~Application() {
   }
 }
 
-wwiv::bbs::SessionContext& Application::context() { 
-  return session_context_; 
-}
-
+wwiv::bbs::SessionContext& Application::context() { return session_context_; }
 
 bool Application::reset_local_io(LocalIO* wlocal_io) {
   local_io_.reset(wlocal_io);
@@ -429,22 +426,28 @@ void Application::UpdateTopScreen() {
 
   switch (topdata) {
   case LocalIO::topdataNone:
-    localIO()->set_protect(this, 0);
+    localIO()->set_protect(0);
     break;
   case LocalIO::topdataSystem:
-    localIO()->set_protect(this, 5);
+    localIO()->set_protect(5);
     break;
   case LocalIO::topdataUser:
     if (chatcall_) {
-      localIO()->set_protect(this, 6);
+      localIO()->set_protect(6);
     } else {
       if (localIO()->GetTopLine() == 6) {
-        localIO()->set_protect(this, 0);
+        localIO()->set_protect(0);
       }
-      localIO()->set_protect(this, 5);
+      localIO()->set_protect(5);
     }
     break;
   }
+  // This used to be inside of localIO::set_protect but that
+  // made absolutely no sense, so pulled it out here
+  if (!using_modem) {
+    screenlinest = defscreenbottom + 1 - localIO()->GetTopLine();
+  }
+
   int cx = localIO()->WhereX();
   int cy = localIO()->WhereY();
   int nOldTopLine = localIO()->GetTopLine();
@@ -460,8 +463,7 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
-    localIO()->PrintfXY(0, 0,
-                        "%-50s  Activity for %8s:      ", config()->system_name().c_str(),
+    localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ", config()->system_name().c_str(),
                         pStatus->GetLastDate());
 
     localIO()->PrintfXY(
@@ -562,7 +564,17 @@ void Application::UpdateTopScreen() {
   bout.lines_listed_ = lll;
 }
 
-void Application::ClearTopScreenProtection() { localIO()->set_protect(this, 0); }
+void Application::ClearTopScreenProtection() {
+  localIO()->set_protect(0);
+  if (!using_modem) {
+    screenlinest = defscreenbottom + 1 - localIO()->GetTopLine();
+  }
+}
+
+void Application::Cls() {
+  localIO()->Cls();
+  bout.clear_lines_listed();
+}
 
 const char* Application::network_name() const {
   if (net_networks.empty()) {
@@ -617,7 +629,7 @@ void Application::GetCaller() {
   }
 
   bout.okskey(true);
-  localIO()->Cls();
+  Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   set_at_wfc(false);
 }
@@ -634,7 +646,7 @@ void Application::GotCaller(unsigned int ms) {
     user()->SetScreenChars(80);
     user()->SetScreenLines(25);
   }
-  localIO()->Cls();
+  Cls();
   localIO()->Puts(StrCat("Logging on at ", GetCurrentSpeed(), " ...\r\n"));
   if (ms) {
     a()->context().incom(true);
@@ -777,7 +789,7 @@ int Application::Run(int argc, char* argv[]) {
         }
       } break;
       case 'P':
-        localIO()->Cls();
+        Cls();
         localIO()->Puts("Waiting for keypress...");
         (void)getchar();
         break;
@@ -883,7 +895,7 @@ int Application::Run(int argc, char* argv[]) {
 
   CreateComm(hSockOrComm, type);
   InitializeBBS();
-  localIO()->UpdateNativeTitleBar(this);
+  localIO()->UpdateNativeTitleBar(config()->system_name(), instance_number());
 
   bool remote_opened = true;
   // If we are telnet...
@@ -912,7 +924,6 @@ int Application::Run(int argc, char* argv[]) {
     }
     ExitBBSImpl(oklevel_, true);
   }
-
 
   do {
     if (this_usernum_from_commandline) {

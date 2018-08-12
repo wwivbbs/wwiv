@@ -32,7 +32,7 @@
 #include <locale.h>
 #include <sys/stat.h>
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 
 #include "core/command_line.h"
 #include "core/datafile.h"

@@ -24,7 +24,7 @@
 #include "bbs/conf.h"
 #include "bbs/confutil.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/bbs.h"
 #include "bbs/pause.h"
 #include "bbs/sysoplog.h"

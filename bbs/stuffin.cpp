@@ -31,7 +31,7 @@
 #include "bbs/remote_io.h"
 #include "bbs/utility.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 
 using std::string;

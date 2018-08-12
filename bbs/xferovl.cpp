@@ -31,7 +31,7 @@
 #include "bbs/datetime.h"
 #include "bbs/dirlist.h"
 #include "bbs/input.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/listplus.h"
 #include "bbs/bbs.h"
 #include "bbs/com.h"
@@ -45,7 +45,7 @@
 #include "bbs/mmkey.h"
 #include "bbs/sysoplog.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "sdk/status.h" 
 #include "core/strings.h"
 #include "core/findfiles.h"

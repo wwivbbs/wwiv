@@ -37,7 +37,7 @@
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/xfer.h"
 #include "core/strings.h"

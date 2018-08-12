@@ -32,7 +32,7 @@
 #include "bbs/message_file.h"
 #include "bbs/printfile.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/findfiles.h"
 #include "core/strings.h"
 #include "core/datetime.h"

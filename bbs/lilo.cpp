@@ -54,7 +54,7 @@
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/wqscn.h"
 #include "sdk/status.h"
 #include "core/datafile.h"

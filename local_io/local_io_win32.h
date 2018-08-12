@@ -21,14 +21,12 @@
 
 #include <string>
 
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "local_io/local_io.h"
 #include "core/file.h"
 
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
-
-class Application;
 
 struct coord_t {
   int16_t X;
@@ -60,7 +58,7 @@ class Win32ConsoleIO : public LocalIO {
   void PutsXYA(int x, int y, int a, const std::string& text) override;
   int  PrintfXY(int x, int y, const char *formatted_text, ...) override;
   int  PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override;
-  void set_protect(Application* session, int l) override;
+  void set_protect(int l) override;
   void savescreen() override;
   void restorescreen() override;
   bool KeyPressed() override;
@@ -71,7 +69,7 @@ class Win32ConsoleIO : public LocalIO {
   int GetDefaultScreenBottom() const noexcept override;
 
   void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) override;
-  void UpdateNativeTitleBar(Application* session) override;
+  void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override;
 
 private:
   void FastPuts(const std::string &text) override;

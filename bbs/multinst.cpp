@@ -23,7 +23,7 @@
 
 #include "bbs/bbsutl.h"
 #include "bbs/instmsg.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 
 #include "core/strings.h"
 #include "sdk/filenames.h"

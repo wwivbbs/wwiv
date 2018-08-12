@@ -22,7 +22,7 @@
 #include <cmath>
 
 #include "bbs/datetime.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/datetime.h"
 #include "core/file.h"
 #include "core/strings.h"

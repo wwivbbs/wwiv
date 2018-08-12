@@ -43,8 +43,8 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/common.h"
-#include "bbs/keycodes.h"
-#include "bbs/wconstants.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 
 #include "core/os.h"

@@ -24,7 +24,7 @@
 #include <string>
 
 #include "bbs/bbsutl.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/interpret.h"
 #include "bbs/com.h"
 #include "bbs/bbs.h"

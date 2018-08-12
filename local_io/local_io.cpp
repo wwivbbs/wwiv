@@ -21,6 +21,6 @@
 LocalIO::LocalIO() = default;
 LocalIO::~LocalIO() = default;
 
-void LocalIO::set_curatr_provider(wwiv::bbs::curatr_provider* p) { curatr_ = p; }
+void LocalIO::set_curatr_provider(wwiv::local_io::curatr_provider* p) { curatr_ = p; }
 int LocalIO::curatr() const { return curatr_->curatr(); }
 void LocalIO::curatr(int c) { curatr_->curatr(c); }

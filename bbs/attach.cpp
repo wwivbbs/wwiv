@@ -30,7 +30,7 @@
 #include "bbs/sr.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/output.h"
 #include "bbs/xfer.h"
 #include "sdk/user.h"

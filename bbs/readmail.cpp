@@ -47,7 +47,7 @@
 #include "bbs/read_message.h"
 #include "bbs/showfiles.h"
 #include "bbs/sublist.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/printfile.h"
 #include "bbs/shortmsg.h"
 #include "bbs/subacc.h"

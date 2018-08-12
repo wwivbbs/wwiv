@@ -56,7 +56,7 @@
 #include "bbs/utility.h"
 
 #include "bbs/voteedit.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/wqscn.h"
 #include "bbs/application.h"
 #include "bbs/workspace.h"
@@ -89,7 +89,7 @@ static constexpr int sysop_usernum = 1;
 void wfc_cls(Application* a) {
   if (a->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
     bout.ResetColors();
-    a->localIO()->Cls();
+    a->Cls();
     a->localIO()->SetCursor(LocalIO::cursorNormal);
   }
   // Every time we clear the WFC, reset the lines listed.
@@ -151,7 +151,7 @@ void WFC::DrawScreen() {
   std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
   if (status_ == 0) {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
-    a()->localIO()->Cls();
+    a()->Cls();
     if (pszScreenBuffer == nullptr) {
       pszScreenBuffer = new char[4000];
       File wfcFile(FilePath(a()->config()->datadir(), WFC_DAT));
@@ -227,7 +227,7 @@ void WFC::DrawScreen() {
     } else {
       if ((steady_clock::now() - poll_time > seconds(10)) || status_ == 1) {
         status_ = 2;
-        a_->localIO()->Cls();
+        a_->Cls();
         a()->localIO()->PutsXYA(
             random_number(38), random_number(24), random_number(14) + 1,
             "WWIV Screen Saver - Press Any Key For WWIV");
@@ -642,7 +642,7 @@ int WFC::LocalLogon() {
     }
   }
   if (lokb == 0) {
-    a_->localIO()->Cls();
+    a_->Cls();
   }
   return lokb;
 }

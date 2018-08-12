@@ -26,7 +26,7 @@
 #include "bbs/com.h"
 #include "bbs/crc.h"
 #include "bbs/datetime.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/sr.h"
 #include "bbs/utility.h"
 

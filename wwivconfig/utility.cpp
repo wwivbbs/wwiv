@@ -25,8 +25,7 @@
 #include <string>
 #include <sys/stat.h>
 
-#include "bbs/common.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "core/wwivport.h"
 #include "core/datafile.h"
 #include "core/file.h"

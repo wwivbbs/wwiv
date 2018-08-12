@@ -38,7 +38,7 @@
 #include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 #include "bbs/quote.h"
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "sdk/status.h"
 #include "core/os.h"

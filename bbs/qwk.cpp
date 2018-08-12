@@ -50,7 +50,7 @@
 #include "bbs/bbs.h"
 #include "bbs/sysoplog.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/utility.h"
 #include "bbs/sr.h"
 #include "bbs/xfer.h"

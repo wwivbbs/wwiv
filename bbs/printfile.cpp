@@ -24,7 +24,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/bbsutl.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/pause.h"
 #include "bbs/application.h"
 #include "core/file.h"

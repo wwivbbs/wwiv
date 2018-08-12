@@ -47,7 +47,7 @@
 #include "bbs/input.h"
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
-#include "bbs/keycodes.h"
+#include "local_io/keycodes.h"
 #include "bbs/listplus.h"
 #include "bbs/menu.h"
 #include "bbs/menusupp.h"
@@ -79,7 +79,7 @@
 #include "bbs/xferovl1.h"
 #include "bbs/xfertmp.h"
 
-#include "bbs/wconstants.h"
+#include "local_io/wconstants.h"
 #include "bbs/workspace.h"
 #include "bbs/printfile.h"
 #include "sdk/status.h"

@@ -29,15 +29,10 @@
 #include <unistd.h>
 #include <sys/poll.h>
 
-#include "bbs/asv.h"
-#include "bbs/datetime.h"
-#include "bbs/wwiv.h"
-#include "bbs/remote_io.h"
-#include "bbs/wconstants.h"
-#include "bbs/wstatus.h"
 #include "core/file.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "local_io/wconstants.h"
 
 using std::cout;
 using std::string;
@@ -255,126 +250,11 @@ int  UnixConsoleIO::LocalXYAPrintf(int x, int y, int nAttribute, const char *psz
 
 void UnixConsoleIO::set_protect(int l) {
   SetTopLine(l);
-  a()->screenlinest = (a()->using_modem) ? a()->user()->GetScreenLines() :
-                               defscreenbottom + 1 - GetTopLine();
 }
 
 void UnixConsoleIO::savescreen() {}
 void UnixConsoleIO::restorescreen() {}
 
-void UnixConsoleIO::skey(char ch) {
-  int nKeyCode = static_cast<unsigned char>(ch);
-  int i, i1;
-
-  if ((syscfg.sysconfig & sysconfig_no_local) == 0) {
-    if (bout.okskey()) {
-      if (nKeyCode >= AF1 && nKeyCode <= AF10) {
-        set_autoval(nKeyCode - 104);
-      } else {
-        switch (nKeyCode) {
-        case F1:                          /* F1 */
-          OnlineUserEditor();
-          break;
-        case SF1:                          /* Shift-F1 */
-          capture_->set_global_handle(!capture_->is_open());
-          application()->UpdateTopScreen();
-          break;
-        case CF1:                          /* Ctrl-F1 */
-          application()->ToggleShutDown();
-          break;
-        case F2:                          /* F2 */
-          a()->topdata++;
-          if (a()->topdata > UnixConsoleIO::topdataUser) {
-            a()->topdata = UnixConsoleIO::topdataNone;
-          }
-          application()->UpdateTopScreen();
-          break;
-        case F3:                          /* F3 */
-          if (a()->using_modem) {
-            a()->context().incom(!a()->context().incom());
-            dump();
-            tleft(false);
-          }
-          break;
-        case F4:                          /* F4 */
-          application()->chatcall_ = false;
-          application()->UpdateTopScreen();
-          break;
-        case F5:                          /* F5 */
-          a()->hangup_ = true;
-          a()->remoteIO()->dtr(false);
-          break;
-        case SF5:                          /* Shift-F5 */
-          i1 = (rand() % 20) + 10;
-          for (i = 0; i < i1; i++) {
-            bputch(static_cast< unsigned char >(rand() % 256));
-          }
-          a()->hangup_ = true;
-          a()->remoteIO()->dtr(false);
-          break;
-        case CF5:                          /* Ctrl-F5 */
-          bout << "\r\nCall back later when you are there.\r\n\n";
-          a()->hangup_ = true;
-          a()->remoteIO()->dtr(false);
-          break;
-        case F6:                          /* F6 */
-          SetSysopAlert(!GetSysopAlert());
-          tleft(false);
-          break;
-        case F7:                          /* F7 */
-          user()->subtract_extratime(std::chrono::minutes(5));
-          tleft(false);
-          break;
-        case F8:                          /* F8 */
-          user()->add_extratime(std::chrono::minutes(5));
-          tleft(false);
-          break;
-        case F9:                          /* F9 */
-          if (a()->user()->GetSl() != 255) {
-            if (a()->GetEffectiveSl() != 255) {
-              a()->SetEffectiveSl(255);
-            } else {
-              a()->ResetEffectiveSl();
-            }
-            changedsl();
-            tleft(false);
-          }
-          break;
-        case F10:                          /* F10 */
-          if (a()->chatting_ == 0) {
-            char szUnusedChatLine[81];
-            szUnusedChatLine[0] = 0;
-            if (syscfg.sysconfig & sysconfig_2_way) {
-              chat1(szUnusedChatLine, true);
-            } else {
-              chat1(szUnusedChatLine, false);
-            }
-          } else {
-            a()->chatting_ = 0;
-          }
-          break;
-        case CF10:                         /* Ctrl-F10 */
-          if (a()->chatting_ == 0) {
-            char szUnusedChatLine[81];
-            szUnusedChatLine[0] = 0;
-            chat1(szUnusedChatLine, false);
-          } else {
-            a()->chatting_ = 0;
-          }
-          break;
-        case HOME:                          /* HOME */
-          if (a()->chatting_ == 1) {
-            a()->chat_file_ = !a()->chat_file_;
-          }
-          break;
-        default:
-          break;
-        }
-      }
-    } else {
-    }
-  }
-}
 
 void UnixConsoleIO::tleft(bool bCheckForTimeOut) {}
 
@@ -413,6 +293,4 @@ void UnixConsoleIO::SetCursor(int cursorStyle) {}
 void UnixConsoleIO::LocalClrEol() {}
 void UnixConsoleIO::LocalWriteScreenBuffer(const char *pszBuffer) {}
 int UnixConsoleIO::GetDefaultScreenBottom() { return 25; }
-void UnixConsoleIO::UpdateNativeTitleBar() {}
-
-void UnixConsoleIO::UpdateTopScreen(WStatus* pStatus, WSession *pSession, int nInstanceNumber) {}
+void UnixConsoleIO::UpdateNativeTitleBar(const std::string& system_name, int instance_number) {}
