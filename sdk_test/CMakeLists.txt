@@ -18,6 +18,8 @@ set(test_sources
   sdk_helper.cpp
   subxtr_test.cpp
   user_test.cpp
+  ansi/ansi_test.cpp
+  ansi/framebuffer_test.cpp
   fido/fido_address_test.cpp
   fido/nodelist_test.cpp
   net/callouts_test.cpp
