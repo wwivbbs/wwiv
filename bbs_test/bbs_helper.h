@@ -23,7 +23,7 @@
 #include <string>
 #include "bbs/bbs.h"
 #include "core_test/file_helper.h"
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 #include "sdk/user.h"
 
 class TestIO;

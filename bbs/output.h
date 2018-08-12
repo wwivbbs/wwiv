@@ -29,7 +29,7 @@
 #include <vector>
 
 #include "bbs/curatr_provider.h"
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 #include "sdk/wwivcolors.h"
 
 class outputstreambuf : public std::streambuf {

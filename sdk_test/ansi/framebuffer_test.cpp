@@ -44,7 +44,7 @@ static void write(FrameBuffer& b, const std::string s) {
 
 TEST_F(FrameBufferTest, SingleLine) {
   FrameBuffer b{10};
-  b.set_attr(3);
+  b.curatr(3);
   write(b, "Hello");
   b.close();
   EXPECT_EQ(5, b.pos());
@@ -54,7 +54,7 @@ TEST_F(FrameBufferTest, SingleLine) {
 
 TEST_F(FrameBufferTest, MultiLine) {
   FrameBuffer b{10};
-  b.set_attr(3);
+  b.curatr(3);
   write(b, "Hello\nWorld");
   b.close();
   EXPECT_EQ(b.cols() + 5, b.pos());
@@ -65,7 +65,7 @@ TEST_F(FrameBufferTest, MultiLine) {
 
 TEST_F(FrameBufferTest, Goto) {
   FrameBuffer b{10};
-  b.set_attr(3);
+  b.curatr(3);
   b.gotoxy(0, 10);
   write(b, "Hello");
   b.close();

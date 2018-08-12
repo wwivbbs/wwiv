@@ -46,11 +46,8 @@
 #include "bbs/input.h"
 #include "bbs/instmsg.h"
 #include "bbs/lilo.h"
-#include "bbs/local_io.h"
-#include "bbs/local_io_curses.h"
 #include "bbs/menu.h"
 #include "bbs/netsup.h"
-#include "bbs/null_local_io.h" // Used for Linux build.
 #include "bbs/null_remote_io.h"
 #include "bbs/pause.h"
 #include "bbs/remote_io.h"
@@ -67,10 +64,13 @@
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/version.h"
+#include "local_io/local_io.h"
+#include "local_io/local_io_curses.h"
+#include "local_io/null_local_io.h" // Used for Linux build.
 #include "sdk/status.h"
 
 #if defined(_WIN32)
-#include "bbs/local_io_win32.h"
+#include "local_io/local_io_win32.h"
 #include "bbs/remote_socket_io.h"
 #else
 #include <unistd.h>

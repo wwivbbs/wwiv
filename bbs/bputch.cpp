@@ -29,7 +29,7 @@
 #include "bbs/remote_io.h"
 #include "bbs/wconstants.h"
 #include "bbs/application.h"
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 #include "core/log.h"
 #include "core/strings.h"
 

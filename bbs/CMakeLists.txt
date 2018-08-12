@@ -53,8 +53,6 @@ set(COMMON_SOURCES
  interpret.cpp
  lilo.cpp
  listplus.cpp
- local_io.cpp
- local_io_curses.cpp
  lpfunc.cpp
  menu.cpp
  menuinterpretcommand.cpp
@@ -73,7 +71,6 @@ set(COMMON_SOURCES
  newuser.cpp
  new_bbslist.cpp
  normupld.cpp
- null_local_io.cpp
  pause.cpp
  printfile.cpp
  save_qscan.cpp
@@ -89,7 +86,6 @@ set(COMMON_SOURCES
  srrcv.cpp
  srsend.cpp
  ssh.cpp
- stdio_local_io.cpp
  stuffin.cpp
  subacc.cpp
  subedit.cpp
@@ -145,7 +141,6 @@ endif()
 
 if(WIN32)
   set(PLATFORM_SOURCES
-		local_io_win32.cpp
 		exec_win32.cpp 
 		make_abs_cmd_win32.cpp 
 )
@@ -153,6 +148,6 @@ if(WIN32)
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
-target_link_libraries(bbs_lib localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(bbs_lib local_io localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})
 add_executable(bbs ${BBS_MAIN})
 target_link_libraries(bbs bbs_lib)

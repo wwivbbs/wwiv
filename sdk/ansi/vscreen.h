@@ -15,8 +15,8 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_SDK_FRAMEBUFFER_H__
-#define __INCLUDED_SDK_FRAMEBUFFER_H__
+#ifndef __INCLUDED_SDK_VSCREEN_H__
+#define __INCLUDED_SDK_VSCREEN_H__
 
 #include <cstdint>
 #include <vector>
@@ -25,7 +25,7 @@ namespace wwiv {
 namespace sdk {
 namespace ansi {
 
-static constexpr int FRAMEBUFFER_DEFAULT_ATTRIBUTE = 0x07;
+static constexpr int VSCREEN_DEFAULT_ATTRIBUTE = 0x07;
 
 class FrameBufferCell {
 public:
@@ -103,4 +103,4 @@ private:
 } // namespace sdk
 } // namespace wwiv
 
-#endif // __INCLUDED_SDK_FRAMEBUFFER_H__
+#endif // __INCLUDED_SDK_VSCREEN_H__

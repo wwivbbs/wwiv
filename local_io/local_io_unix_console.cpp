@@ -16,7 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/local_io_unix_console.h"
+#include "local_io/local_io_unix_console.h"
 
 #include <algorithm>
 #include <chrono>

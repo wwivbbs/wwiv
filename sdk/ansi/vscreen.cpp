@@ -15,7 +15,7 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "sdk/ansi/framebuffer.h"
+#include "sdk/ansi/vscreen.h"
 
 #include "core/stl.h"
 #include <algorithm>

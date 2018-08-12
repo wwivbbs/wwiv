@@ -16,13 +16,13 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_LOCAL_IO_WIN32_H__
-#define __INCLUDED_LOCAL_IO_WIN32_H__
+#ifndef __INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H__
+#define __INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H__
 
 #include <string>
 
 #include "bbs/keycodes.h"
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 #include "core/file.h"
 
 // This C++ class should encompass all Local Input/Output from The BBS.
@@ -90,4 +90,4 @@ private:
 };
 
 
-#endif // __INCLUDED_LOCAL_IO_WIN32_H__
+#endif // __INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H__

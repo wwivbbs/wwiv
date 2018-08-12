@@ -93,3 +93,8 @@ TEST_F(AnsiTest, CSI_D_Left_TooFar) {
   write("Hello\x1b[40DY");
   check({"Yello"});
 }
+
+TEST_F(AnsiTest, CSI_K_ClearEOL) {
+  write("Hello\nWorld\n\x1b[2A\x1b[4C\x1b[K");
+  check({"Hell      ", "World"});
+}

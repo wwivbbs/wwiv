@@ -19,7 +19,7 @@
 // Always declare wwiv_windows.h first to avoid collisions on defines.
 #include "core/wwiv_windows.h"
 
-#include "bbs/local_io_curses.h"
+#include "local_io/local_io_curses.h"
 
 #include <algorithm>
 #include <cstdarg>

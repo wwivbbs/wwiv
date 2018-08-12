@@ -34,20 +34,19 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/local_io_curses.h"
-#include "bbs/null_local_io.h"
 #include "bbs/remote_socket_io.h"
-#include "bbs/stdio_local_io.h"
 #include "bbs/sysoplog.h"
 #include "bbs/remote_io.h"
 #include "bbs/application.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/os.h"
+#include "local_io/null_local_io.h"
+#include "local_io/stdio_local_io.h"
 #include "localui/curses_io.h"
 
 #if defined( _WIN32 )
-#include "bbs/local_io_win32.h"
+#include "local_io/local_io_win32.h"
 #else
 #include <unistd.h>
 #endif // _WIN32

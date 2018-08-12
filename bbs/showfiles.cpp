@@ -22,7 +22,7 @@
 
 #include "bbs/bbs.h"
 #include "bbs/application.h"
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 #include "bbs/utility.h"
 #include "bbs/xfer.h"
 #include "core/wwivport.h"

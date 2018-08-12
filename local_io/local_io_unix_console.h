@@ -22,7 +22,7 @@
 #include <cstdio>
 #include <string>
 #include <termios.h>
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 
 class WStatus;
 class Application;

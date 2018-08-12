@@ -106,6 +106,10 @@ bool Ansi::write_in_sequence(char c) {
     b_->clear();
     return ansi_sequence_done();
   } break;
+  case 'K':
+  case 'k': {
+    b_->clear_eol();
+  } break;
   case 'm': {
     auto ansi_numbers_ = to_ansi_numbers(ansi_sequence_);
     // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
@@ -113,23 +117,23 @@ bool Ansi::write_in_sequence(char c) {
       const auto a = b_->curatr();
       switch (n) {
       case 0: // Normal/Reset
-        b_->set_attr(default_attr_);
+        b_->curatr(default_attr_);
         break;
       case 1: // Bold
-        b_->set_attr(b_->curatr() | 0x08);
+        b_->curatr(b_->curatr() | 0x08);
         break;
       case 5: // Slow blink?
-        b_->set_attr(b_->curatr() | 0x80);
+        b_->curatr(b_->curatr() | 0x80);
         break;
       case 7: { // Reverse Video
         const auto ptr = a & 0x77;
-        b_->set_attr((a & 0x88) | (ptr << 4) | (ptr >> 4));
+        b_->curatr((a & 0x88) | (ptr << 4) | (ptr >> 4));
       } break;
       default: {
         if (n >= 30 && n <= 37) {
-          b_->set_attr((a & 0xf8) | (clrlst[n - 30] - '0'));
+          b_->curatr((a & 0xf8) | (clrlst[n - 30] - '0'));
         } else if (n >= 40 && n <= 47) {
-          b_->set_attr((a & 0x8f) | ((clrlst[n - 40] - '0') << 4));
+          b_->curatr((a & 0x8f) | ((clrlst[n - 40] - '0') << 4));
         }
       }
       }
@@ -170,7 +174,7 @@ bool Ansi::write_not_in_sequence(char c) {
 }
 
 bool Ansi::attr(uint8_t a) {
-  b_->set_attr(a);
+  b_->curatr(a);
   return true;
 }
 

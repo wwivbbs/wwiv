@@ -36,6 +36,7 @@ endif()
 
 add_subdirectory(core)
 add_subdirectory(bbs)
+add_subdirectory(local_io)
 add_subdirectory(localui)
 add_subdirectory(network)
 add_subdirectory(network1)

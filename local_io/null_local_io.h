@@ -17,7 +17,7 @@
 /**************************************************************************/
 #ifndef __INCLUDED_BBS_NULL_LOCAL_IO_H__
 #define __INCLUDED_BBS_NULL_LOCAL_IO_H__
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 
 #include <string>
 

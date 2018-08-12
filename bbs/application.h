@@ -29,7 +29,7 @@
 #include "bbs/batch.h"
 #include "bbs/conf.h"
 #include "bbs/context.h"
-#include "bbs/local_io.h"
+#include "local_io/local_io.h"
 #include "bbs/output.h"
 #include "bbs/remote_io.h"
 #include "bbs/runnable.h"

@@ -119,7 +119,7 @@ void OnlineUserEditor() {
   a()->localIO()->PrintfXYA(wx + 2,  wy + 10, 3,  "   Messages Posted: %s", posts);
   a()->localIO()->PrintfXYA(wx + 32, wy + 10, 3,  "Number of Logons: %s", logons);
   a()->localIO()->PrintfXYA(wx + 2,  wy + 12, 3,  "Note: %s", a()->user()->GetNote().c_str());
-  a()->localIO()->PrintfXYA(wx + 1, wy + 14, 31,
+  a()->localIO()->PutsXYA(wx + 1, wy + 14, 31,
                                           "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
   bout.curatr(3);
   while (!done) {

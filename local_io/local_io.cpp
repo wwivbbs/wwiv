@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
-/*                                WWIV Version 5                          */
-/*             Copyright (C)1998-2015,WWIV Software Services             */
+/*                              WWIV Version 5.x                          */
+/*             Copyright (C)1998-2017, WWIV Software Services            */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -16,7 +16,11 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/null_local_io.h"
+#include "local_io/local_io.h"
 
-NullLocalIO::NullLocalIO() {}
-NullLocalIO::~NullLocalIO() {}
+LocalIO::LocalIO() = default;
+LocalIO::~LocalIO() = default;
+
+void LocalIO::set_curatr_provider(wwiv::bbs::curatr_provider* p) { curatr_ = p; }
+int LocalIO::curatr() const { return curatr_->curatr(); }
+void LocalIO::curatr(int c) { curatr_->curatr(c); }

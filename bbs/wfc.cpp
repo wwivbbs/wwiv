@@ -43,8 +43,7 @@
 #include "bbs/input.h"
 #include "bbs/inetmsg.h"
 #include "bbs/instmsg.h"
-#include "bbs/local_io.h"
-#include "bbs/local_io_curses.h"
+#include "local_io/local_io.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
@@ -229,7 +228,7 @@ void WFC::DrawScreen() {
       if ((steady_clock::now() - poll_time > seconds(10)) || status_ == 1) {
         status_ = 2;
         a_->localIO()->Cls();
-        a()->localIO()->PrintfXYA(
+        a()->localIO()->PutsXYA(
             random_number(38), random_number(24), random_number(14) + 1,
             "WWIV Screen Saver - Press Any Key For WWIV");
         wfc_time = steady_clock::now() - seconds(a()->screen_saver_time) - seconds(1);

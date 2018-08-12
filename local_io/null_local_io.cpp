@@ -16,72 +16,7 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#include "bbs/stdio_local_io.h"
+#include "local_io/null_local_io.h"
 
-#include <cstdarg>
-#include <cstdio>
-
-StdioLocalIO::StdioLocalIO() {}
-StdioLocalIO::~StdioLocalIO() {}
-
-void StdioLocalIO::Putch(unsigned char ch) {
-  putchar(ch);
-};
-
-void StdioLocalIO::Lf() {
-  putchar(10);
-}
-
-void StdioLocalIO::Cr() {
-  putchar(13);
-}
-
-void StdioLocalIO::Cls() {
-  // NOP
-}
-
-void StdioLocalIO::Backspace() {
-  putchar(8);
-}
-
-void StdioLocalIO::PutchRaw(unsigned char ch) {
-  putchar(ch);
-}
-
-void StdioLocalIO::Puts(const std::string& s) {
-  puts(s.c_str());
-}
-
-void StdioLocalIO::PutsXY(int, int, const std::string& text) {
-  Puts(text);
-}
-
-void StdioLocalIO::PutsXYA(int, int, int, const std::string& text) {
-  Puts(text);
-}
-
-void StdioLocalIO::FastPuts(const std::string& text) {
-  Puts(text);
-}
-
-int StdioLocalIO::PrintfXY(int, int, const char *formatted_text, ...) { 
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-  FastPuts(szBuffer);
-  return nNumWritten;
-}
-
-int StdioLocalIO::PrintfXYA(int, int, int, const char *formatted_text, ...) { 
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-  FastPuts(szBuffer);
-  return nNumWritten;
-}
+NullLocalIO::NullLocalIO() {}
+NullLocalIO::~NullLocalIO() {}
