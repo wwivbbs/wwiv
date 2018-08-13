@@ -18,7 +18,20 @@
 /**************************************************************************/
 #include "local_io/local_io.h"
 
-LocalIO::LocalIO() = default;
+class DefaultCurAttrProvider : public wwiv::local_io::curatr_provider {
+public:
+  DefaultCurAttrProvider() = default;
+  virtual int curatr() const noexcept override { return a_; }
+  virtual void curatr(int n) override { a_ = n; }
+
+private:
+  uint8_t a_{7};
+};
+
+static std::unique_ptr<DefaultCurAttrProvider> default_curatr_provider_ =
+    std::make_unique<DefaultCurAttrProvider>();
+
+LocalIO::LocalIO() : curatr_(default_curatr_provider_.get()) {}
 LocalIO::~LocalIO() = default;
 
 void LocalIO::set_curatr_provider(wwiv::local_io::curatr_provider* p) { curatr_ = p; }

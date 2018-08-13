@@ -21,7 +21,9 @@
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
+#include "local_io/local_io_curses.h"
 #include "local_io/local_io_win32.h"
+#include "localui/curses_io.h"
 #include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
 #include <cstdio>
@@ -57,15 +59,30 @@ int PrintCommand::Execute() {
   TextFile tf(remaining().front(), "rt");
   auto s = tf.ReadFileIntoString();
 
+  bool need_pause = false;
   if (!barg("ansi")) {
     std::cout << s << std::endl;
   } else {
-    auto io = std::make_unique<Win32ConsoleIO>();
-    io->Cls();
+    std::unique_ptr<LocalIO> io;
+    auto io_type = sarg("io");
+#ifdef _WIN32
+    if (io_type == "win32") {
+      io = std::make_unique<Win32ConsoleIO>();
+    }
+#endif
+    if (!io) {
+      need_pause = true;
+      CursesIO::Init("wwivutil");
+      io = std::make_unique<CursesLocalIO>();
+    }
     LocalIOScreen screen(io.get(), 80);
     Ansi ansi(&screen, 0x07);
+    screen.clear();
     for (const auto c : s) {
       ansi.write(c);
+    }
+    if (need_pause) {
+      io->GetChar();
     }
   }
   return 0;
@@ -73,7 +90,12 @@ int PrintCommand::Execute() {
 
 bool PrintCommand::AddSubCommands() {
   add_argument(BooleanCommandLineArgument{"ansi", "Display the file as an ANSI file.", true});
-  //    add_argument({"wwiv_version", "WWIV Version that created this config.dat", ""});
+  add_argument({"io", "What type of IO to use, win32 | curses",
+#ifdef _WIN32
+                "win32"});
+#else
+                "curses"});
+#endif
   return true;
 }
 
