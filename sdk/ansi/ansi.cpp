@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cctype>
+#include <sstream>
 
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -182,11 +183,12 @@ bool Ansi::ansi_sequence_done() {
 }
 
 bool Ansi::ansi_sequence_error(char c) {
-  std::string ps = "Previous Sequence: ";
+  std::ostringstream ss;
+  ss << "Previous Sequence: ";
   for (const char sc : ansi_sequence_) {
-    ps += StrCat("['", sc, "':", static_cast<int>(sc), "]");
+    ss << "['" << sc << "':" << static_cast<int>(sc) << "]";
   }
-  VLOG(2) << "Invalid ansi char: ['" << c << "':" << static_cast<int>(c) << "] ; " << ps;
+  VLOG(2) << "Invalid ansi char: ['" << c << "':" << static_cast<int>(c) << "] ; " << ss.str();
   write_not_in_sequence(ansi_sequence_);
   write_not_in_sequence(c);
   return ansi_sequence_done();
