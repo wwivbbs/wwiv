@@ -21,6 +21,7 @@
 #include "sdk/ansi/vscreen.h"
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace wwiv {
@@ -32,27 +33,18 @@ static constexpr int FRAMEBUFFER_DEFAULT_ATTRIBUTE = 0x07;
 class FrameBufferCell {
 public:
   FrameBufferCell();
-  FrameBufferCell(FrameBufferCell& o) : a_(o.a_), c_(o.c_) {}
   FrameBufferCell(char c, uint8_t a);
   char c() const noexcept { return c_; }
   void c(char ch) { c_ = ch; }
   uint8_t a() const noexcept { return a_; }
+  void a(uint8_t aa) { a_ = aa; }
 
   // As a composite word (high 8 bits are attribute, low are char)
   uint16_t w() const noexcept { return (a_ << 8) | c_; }
 
-  FrameBufferCell& operator=(FrameBufferCell& o) {
-    if (this == &o) {
-      return *this;
-    }
-    a_ = o.a();
-    c_ = o.c();
-    return *this;
-  }
-
 private:
-  char c_;
   uint8_t a_;
+  char c_;
 };
 
 class FrameBuffer : public VScreen {

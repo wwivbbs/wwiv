@@ -22,6 +22,7 @@
 #include "sdk/ansi/vscreen.h"
 
 #include <cstdint>
+#include <string>
 #include <vector>
 
 namespace wwiv {

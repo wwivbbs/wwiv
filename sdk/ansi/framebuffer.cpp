@@ -28,7 +28,7 @@ namespace ansi {
 
 FrameBufferCell::FrameBufferCell() : FrameBufferCell(0, FRAMEBUFFER_DEFAULT_ATTRIBUTE) {}
 
-FrameBufferCell::FrameBufferCell(char c, uint8_t a) : c_(c), a_(a) {}
+FrameBufferCell::FrameBufferCell(char c, uint8_t a) : a_(a), c_(c) {}
 
 FrameBuffer::FrameBuffer(int cols) : VScreen(cols), cols_(cols) { b_.reserve(cols_ * 100); }
 
@@ -63,7 +63,9 @@ bool FrameBuffer::put(int pos, char c, uint8_t a) {
       return false;
     }
   }
-  b_[pos] = std::move(FrameBufferCell(c, a));
+  auto& b = b_[pos];
+  b.c(c);
+  b.a(a);
   return true;
 }
 
@@ -113,8 +115,6 @@ void FrameBuffer::close() {
 }
 
 bool FrameBuffer::grow(int pos) {
-  auto current = std::max(pos, size_int(b_));
-
   b_.resize((y() + 1) * cols_);
   return true;
 }
