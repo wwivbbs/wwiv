@@ -46,6 +46,7 @@ bool Ansi::write(char c) {
   return write_not_in_sequence(c);
 }
 
+// TODO(rushfan): Need to handle empty numbers and set a default.
 static std::vector<int> to_ansi_numbers(const std::string& as) {
   // TODO(rushfan) assert that this starts_with(as, "\x1b["))?
   auto list = SplitString(as.substr(2), ";");
@@ -63,12 +64,14 @@ bool Ansi::write_in_sequence(char c) {
       return ansi_sequence_error(c);
     }
     ansi_sequence_.push_back(c);
+    return true;
   } break;
   case '[': {
     if (ansi_sequence_.size() != 1) {
       return ansi_sequence_error(c);
     }
     ansi_sequence_.push_back(c);
+    return true;
     break;
   }
   case 'A': {
@@ -91,14 +94,19 @@ bool Ansi::write_in_sequence(char c) {
     b_->gotoxy(std::max(0, b_->x() - ns[0]), b_->y());
     return ansi_sequence_done();
   } break;
-  case 'H': 
+  case 'H':
   case 'f': {
     auto ns = to_ansi_numbers(ansi_sequence_);
+    if (ns.empty()) {
+      // Kinda  hacky until to_ansi_numbers can add defaults.
+      b_->gotoxy(0, 0);
+      return ansi_sequence_done();
+    }
     if (ns.size() < 2) {
       return ansi_sequence_error(c);
     }
-    b_->gotoxy(ns[0]-1, ns[1]-1);
-    return ansi_sequence_done();;
+    b_->gotoxy(ns[1] - 1, ns[0] - 1);
+    return ansi_sequence_done();
   } break;
   case 'J': {
     auto ns = to_ansi_numbers(ansi_sequence_);
@@ -111,6 +119,7 @@ bool Ansi::write_in_sequence(char c) {
   case 'K':
   case 'k': {
     b_->clear_eol();
+    return ansi_sequence_done();
   } break;
   case 'm': {
     auto ansi_numbers_ = to_ansi_numbers(ansi_sequence_);
@@ -142,6 +151,15 @@ bool Ansi::write_in_sequence(char c) {
     }
     return ansi_sequence_done();
   } break;
+  case 's': { // Save
+    saved_x_ = b_->x();
+    saved_y_ = b_->y();
+    return ansi_sequence_done();
+  } break;
+  case 'u': {
+    b_->gotoxy(saved_x_, saved_y_);
+    return ansi_sequence_done();
+  } break;
   default: {
     if (ansi_sequence_.size() < 2) {
       return ansi_sequence_error(c);
@@ -164,7 +182,11 @@ bool Ansi::ansi_sequence_done() {
 }
 
 bool Ansi::ansi_sequence_error(char c) {
-  VLOG(2) << "Invalid ansi sequence: '" << ansi_sequence_ << "'";
+  std::string ps = "Previous Sequence: ";
+  for (const char sc : ansi_sequence_) {
+    ps += StrCat("['", sc, "':", static_cast<int>(sc), "]");
+  }
+  VLOG(2) << "Invalid ansi char: ['" << c << "':" << static_cast<int>(c) << "] ; " << ps;
   write_not_in_sequence(ansi_sequence_);
   write_not_in_sequence(c);
   return ansi_sequence_done();

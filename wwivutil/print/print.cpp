@@ -19,8 +19,10 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
-#include "core/textfile.h"
 #include "core/strings.h"
+#include "core/textfile.h"
+#include "local_io/local_io_win32.h"
+#include "sdk/ansi/ansi.h"
 #include "sdk/ansi/localio_screen.h"
 #include <cstdio>
 #include <iomanip>
@@ -32,6 +34,7 @@ using std::endl;
 using wwiv::core::BooleanCommandLineArgument;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::ansi;
 using namespace wwiv::strings;
 
 namespace wwiv {
@@ -53,14 +56,24 @@ int PrintCommand::Execute() {
   }
   TextFile tf(remaining().front(), "rt");
   auto s = tf.ReadFileIntoString();
-  std::cout << s << std::endl;
 
+  if (!barg("ansi")) {
+    std::cout << s << std::endl;
+  } else {
+    auto io = std::make_unique<Win32ConsoleIO>();
+    io->Cls();
+    LocalIOScreen screen(io.get(), 80);
+    Ansi ansi(&screen, 0x07);
+    for (const auto c : s) {
+      ansi.write(c);
+    }
+  }
   return 0;
 }
 
 bool PrintCommand::AddSubCommands() {
+  add_argument(BooleanCommandLineArgument{"ansi", "Display the file as an ANSI file.", true});
   //    add_argument({"wwiv_version", "WWIV Version that created this config.dat", ""});
-//    add_argument({"revision", "Configuration revision number", ""});
   return true;
 }
 

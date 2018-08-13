@@ -267,6 +267,7 @@ void Win32ConsoleIO::Putch(unsigned char ch) {
     Cr();
   } else if (ch == CJ) {
     // Let's try CR-LF for local 
+    Cr();
     Lf();
   } else if (ch == CL) {
     Cls();

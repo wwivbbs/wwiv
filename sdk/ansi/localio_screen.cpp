@@ -40,7 +40,9 @@ private:
 
 LocalIOScreen::LocalIOScreen(LocalIO* io, int cols)
     : VScreen(cols), io_(io), cols_(cols),
-      curatr_provider_(std::make_unique<LocalIOScreenCurAttrProvider>(this)) {}
+      curatr_provider_(std::make_unique<LocalIOScreenCurAttrProvider>(this)) {
+  io_->set_curatr_provider(curatr_provider_.get());
+}
 
 } // namespace ansi
 } // namespace sdk

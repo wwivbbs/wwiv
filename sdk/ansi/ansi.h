@@ -64,6 +64,9 @@ private:
   uint8_t default_attr_;
   AnsiMode state_{AnsiMode::not_in_sequence};
   std::string ansi_sequence_;
+
+  int saved_x_{0};
+  int saved_y_{0};
 };
 
 } // namespace ansi

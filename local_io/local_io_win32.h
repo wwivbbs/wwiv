@@ -83,7 +83,7 @@ private:
   mutable coord_t cursor_pos_{};
   HANDLE out_ = (void*) -1;
   HANDLE in_ = (void*) -1;
-  DWORD saved_input_mode_{0};
+  unsigned long /* DWORD */ saved_input_mode_{0};
   coord_t original_size_{};
 };
 

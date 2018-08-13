@@ -111,7 +111,7 @@ private:
 
 private:
   int topline_{0};
-  int screen_bottom_{0};
+  int screen_bottom_{25}; // Just a default.
   int top_screen_color_{27};
   int user_editor_color_{9};
   int edit_line_color_{31};
