@@ -22,6 +22,7 @@
 #include "sdk/ansi/vscreen.h"
 
 #include <cstdint>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -31,9 +32,15 @@ namespace ansi {
 
 enum class AnsiMode { in_sequence, not_in_sequence };
 
+typedef std::function<void(int, int)> move_cb;
+
+struct AnsiCallbacks {
+  move_cb move_;
+};
+
 class Ansi {
 public:
-  Ansi(VScreen* b, uint8_t default_attr);
+  Ansi(VScreen* b, const AnsiCallbacks& callbacks, uint8_t default_attr);
   virtual ~Ansi() = default;
 
   bool write(char c);
@@ -62,6 +69,7 @@ private:
   bool ansi_sequence_done();
 
   VScreen* b_;
+  AnsiCallbacks callbacks_;
   uint8_t default_attr_;
   AnsiMode state_{AnsiMode::not_in_sequence};
   std::string ansi_sequence_;

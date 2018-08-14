@@ -32,14 +32,14 @@ using namespace wwiv::sdk::ansi;
 
 class AnsiTest : public testing::Test {
 public:
-  AnsiTest() : b(10), ansi(&b, 0x07) {}
+  AnsiTest() : b(10), ansi(&b, {} , 0x07) {}
 
   void write(const std::string& s) {
     ansi.write(s);
     b.close();
   }
 
-  void check(const std::vector<std::string>& lines) { 
+  void check(const std::vector<std::string>& lines) {
     EXPECT_EQ(lines.size(), b.rows());
     for (std::vector<std::string>::size_type i = 0; i < lines.size(); i++) {
       EXPECT_EQ(lines[i], b.row_as_text(i)) << "Line #" << i;

@@ -18,6 +18,7 @@
 #include "wwivutil/print/print.h"
 
 #include "core/command_line.h"
+#include "core/log.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -76,7 +77,9 @@ int PrintCommand::Execute() {
       io = std::make_unique<CursesLocalIO>();
     }
     LocalIOScreen screen(io.get(), 80);
-    Ansi ansi(&screen, 0x07);
+    AnsiCallbacks cb;
+    cb.move_ = [](int x, int y) { VLOG(2) << "moved: x: " << x << "; y:" << y; };
+    Ansi ansi(&screen, cb, 0x07);
     screen.clear();
     for (const auto c : s) {
       ansi.write(c);

@@ -36,7 +36,8 @@ namespace ansi {
 
 static const char clrlst[] = "04261537";
 
-Ansi::Ansi(VScreen* b, uint8_t default_attr) : b_(b), default_attr_(default_attr) {}
+Ansi::Ansi(VScreen* b, const AnsiCallbacks& callbacks, uint8_t default_attr)
+    : b_(b), callbacks_(callbacks), default_attr_(default_attr) {}
 
 bool Ansi::write(char c) {
   //wwiv::os::sleep_for(std::chrono::milliseconds(10));
@@ -98,41 +99,57 @@ bool Ansi::write_in_sequence(char c) {
     break;
   }
   case 'A': {
-    if (ansi_sequence_.size() == 2) {
-      // oops.
-      VLOG(2) << "oops1";
-    }
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
-    b_->gotoxy(b_->x(), std::max(0, b_->y() - ns[0]));
+    const auto x = b_->x();
+    const auto y = std::max(0, b_->y() - ns[0]);
+    b_->gotoxy(x, y);
+    if (callbacks_.move_) {
+      callbacks_.move_(x, y);
+    }
     return ansi_sequence_done();
   } break;
   case 'B': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
-    b_->gotoxy(b_->x(), b_->y() + ns[0]);
+    const auto x = b_->x();
+    const auto y = std::max(0, b_->y() + ns[0]);
+    b_->gotoxy(x, y);
+    if (callbacks_.move_) {
+      callbacks_.move_(x, y);
+    }
     return ansi_sequence_done();
   } break;
   case 'C': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
-    b_->gotoxy(std::min(b_->cols() - 1, b_->x() + ns[0]), b_->y());
+    const auto x = std::min(b_->cols() - 1, b_->x() + ns[0]);
+    const auto y = b_->y();
+    b_->gotoxy(x, y);
+    if (callbacks_.move_) {
+      callbacks_.move_(x, y);
+    }
     return ansi_sequence_done();
   } break;
   case 'D': {
     auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
-    b_->gotoxy(std::max(0, b_->x() - ns[0]), b_->y());
+    const auto x = std::min(b_->cols() - 1, b_->x() - ns[0]);
+    const auto y = b_->y();
+    b_->gotoxy(x, y);
+    if (callbacks_.move_) {
+      callbacks_.move_(x, y);
+    }
     return ansi_sequence_done();
   } break;
   case 'H':
   case 'f': {
     auto ns = to_ansi_numbers(ansi_sequence_, 2, {1, 1});
-    if (ns.empty()) {
-      // Kinda  hacky until to_ansi_numbers can add defaults.
-      b_->gotoxy(0, 0);
-      return ansi_sequence_done();
-    }
     if (ns.size() < 2) {
       return ansi_sequence_error(c);
     }
-    b_->gotoxy(ns[1] - 1, ns[0] - 1);
+    auto x = ns[1] - 1;
+    auto y = ns[0] - 1;
+    if (callbacks_.move_) {
+      callbacks_.move_(x, y);
+    }
+    b_->gotoxy(x, y);
     return ansi_sequence_done();
   } break;
   case 'h':
@@ -146,6 +163,9 @@ bool Ansi::write_in_sequence(char c) {
       return ansi_sequence_error(c);
     }
     b_->clear();
+    if (callbacks_.move_) {
+      callbacks_.move_(0, 0);
+    }
     return ansi_sequence_done();
   } break;
   case 'K':
@@ -190,6 +210,9 @@ bool Ansi::write_in_sequence(char c) {
   } break;
   case 'u': {
     b_->gotoxy(saved_x_, saved_y_);
+    if (callbacks_.move_) {
+      callbacks_.move_(saved_x_, saved_y_);
+    }
     return ansi_sequence_done();
   } break;
   default: {
