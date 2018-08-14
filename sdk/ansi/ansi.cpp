@@ -47,13 +47,21 @@ bool Ansi::write(char c) {
   return write_not_in_sequence(c);
 }
 
-// TODO(rushfan): Need to handle empty numbers and set a default.
-static std::vector<int> to_ansi_numbers(const std::string& as) {
+std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vector<int> defaults) {
   // TODO(rushfan) assert that this starts_with(as, "\x1b["))?
-  auto list = SplitString(as.substr(2), ";");
+  auto list = SplitString(as.substr(2), ";", false);
   std::vector<int> out;
-  for (const auto& s : list) {
-    out.push_back(to_number<int>(s));
+  const auto list_size = list.size();
+  for (size_t i = 0; i < defaults.size(); i++) {
+    const auto d = defaults.at(i);
+    if (i < list.size()) {
+      const auto& c = list.at(i);
+      if (!c.empty()) {
+        out.push_back(to_number<int>(c));
+        continue;
+      }
+    }
+    out.push_back(defaults.at(i));
   }
   return out;
 }
@@ -76,28 +84,32 @@ bool Ansi::write_in_sequence(char c) {
     break;
   }
   case 'A': {
-    auto ns = to_ansi_numbers(ansi_sequence_);
+    if (ansi_sequence_.size() == 2) {
+      // oops.
+      VLOG(2) << "oops1";
+    }
+    auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     b_->gotoxy(b_->x(), std::max(0, b_->y() - ns[0]));
     return ansi_sequence_done();
   } break;
   case 'B': {
-    auto ns = to_ansi_numbers(ansi_sequence_);
+    auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     b_->gotoxy(b_->x(), b_->y() + ns[0]);
     return ansi_sequence_done();
   } break;
   case 'C': {
-    auto ns = to_ansi_numbers(ansi_sequence_);
+    auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     b_->gotoxy(std::min(b_->cols() - 1, b_->x() + ns[0]), b_->y());
     return ansi_sequence_done();
   } break;
   case 'D': {
-    auto ns = to_ansi_numbers(ansi_sequence_);
+    auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     b_->gotoxy(std::max(0, b_->x() - ns[0]), b_->y());
     return ansi_sequence_done();
   } break;
   case 'H':
   case 'f': {
-    auto ns = to_ansi_numbers(ansi_sequence_);
+    auto ns = to_ansi_numbers(ansi_sequence_, 2, {1, 1});
     if (ns.empty()) {
       // Kinda  hacky until to_ansi_numbers can add defaults.
       b_->gotoxy(0, 0);
@@ -109,8 +121,13 @@ bool Ansi::write_in_sequence(char c) {
     b_->gotoxy(ns[1] - 1, ns[0] - 1);
     return ansi_sequence_done();
   } break;
+  case 'h':
+  case 'l': { // save or restore wrap at last column.
+    // Were' ignoring this.
+    return ansi_sequence_done();
+  } break;
   case 'J': {
-    auto ns = to_ansi_numbers(ansi_sequence_);
+    auto ns = to_ansi_numbers(ansi_sequence_, 1, {1});
     if (ns.size() != 1 || ns.front() != 2) {
       return ansi_sequence_error(c);
     }
@@ -123,7 +140,7 @@ bool Ansi::write_in_sequence(char c) {
     return ansi_sequence_done();
   } break;
   case 'm': {
-    auto ansi_numbers_ = to_ansi_numbers(ansi_sequence_);
+    auto ansi_numbers_ = to_ansi_numbers(ansi_sequence_, 10, {});
     // https://en.wikipedia.org/wiki/ANSI_escape_code#SGR_(Select_Graphic_Rendition)_parameters
     for (const auto n : ansi_numbers_) {
       const auto a = b_->curatr();
@@ -165,7 +182,14 @@ bool Ansi::write_in_sequence(char c) {
     if (ansi_sequence_.size() < 2) {
       return ansi_sequence_error(c);
     }
-    if (std::isdigit(static_cast<unsigned char>(c)) || c == ';') {
+    // TODO(rushfan): Really should allow for any of these parameter or
+    // intermediate then final bytes:
+    // From Wikipedia: https://en.wikipedia.org/wiki/ANSI_escape_code#CSI_sequences
+    // The ESC [ is followed by any number (including none) of "parameter bytes" in the 
+    // range 0x30–0x3F (ASCII 0–9:;<=>?), then by any number of "intermediate bytes"
+    // in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./), then finally by a
+    // single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^_`a–z{|}~)
+    if (std::isdigit(static_cast<unsigned char>(c)) || c == ';' || c == '?') {
       ansi_sequence_.push_back(c);
       return true;
     }
