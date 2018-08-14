@@ -22,25 +22,25 @@
 #include <memory>
 #include <string>
 
-#include "bbs/input.h"
+#include "bbs/bbs.h"
+#include "bbs/bbsutl.h"
 #include "bbs/com.h"
 #include "bbs/common.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "bbs/menusupp.h"
 #include "bbs/menu_parser.h"
+#include "bbs/menusupp.h"
 #include "bbs/mmkey.h"
 #include "bbs/newuser.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/sysoplog.h"
-#include "bbs/bbs.h"
-#include "bbs/bbsutl.h"
 #include "bbs/utility.h"
 
+#include "core/findfiles.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/textfile.h"
-#include "core/findfiles.h"
 #include "core/wwivassert.h"
 #include "sdk/filenames.h"
 
@@ -54,14 +54,26 @@ using namespace wwiv::stl;
 namespace wwiv {
 namespace menus {
 
+static string GetMenuDirectory() {
+  auto path = FilePath(a()->language_dir, "menus");
+  File::EnsureTrailingSlash(&path);
+  return path;
+}
+
+static string GetMenuDirectory(const string menuPath) {
+  auto path = FilePath(GetMenuDirectory(), menuPath);
+  File::EnsureTrailingSlash(&path);
+  return path;
+}
+
 static bool ValidateMenuSet(const std::string& menu_dir) {
   // ensure the entry point exists
   return File::Exists(GetMenuDirectory(menu_dir), "main.mnu");
 }
 
 static bool CheckMenuPassword(const string& original_password) {
-  const string expected_password = (original_password == "*SYSTEM") 
-      ? a()->config()->config()->systempw : original_password;
+  const string expected_password =
+      (original_password == "*SYSTEM") ? a()->config()->config()->systempw : original_password;
   bout.nl();
   const auto actual_password = input_password("|#2SY: ", 20);
   return actual_password == expected_password;
@@ -82,9 +94,8 @@ static void StartMenus() {
 }
 
 static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
-  if ((pHeader->nFlags & MENU_FLAG_DELETED) ||
-    (a()->GetEffectiveSl() < pHeader->nMinSL) ||
-    (a()->user()->GetDsl() < pHeader->nMinDSL)) {
+  if ((pHeader->nFlags & MENU_FLAG_DELETED) || (a()->GetEffectiveSl() < pHeader->nMinSL) ||
+      (a()->user()->GetDsl() < pHeader->nMinDSL)) {
     return false;
   }
 
@@ -115,8 +126,7 @@ static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
     }
   }
 
-  if ((pHeader->nSysop && !so()) ||
-    (pHeader->nCoSysop && !cs())) {
+  if ((pHeader->nSysop && !so()) || (pHeader->nCoSysop && !cs())) {
     return false;
   }
 
@@ -130,11 +140,10 @@ static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
 
 static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
   // if deleted, return as failed
-  if ((pMenu->nFlags & MENU_FLAG_DELETED) ||
-    (a()->GetEffectiveSl() < pMenu->nMinSL) ||
-    (a()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
-    (a()->user()->GetDsl() < pMenu->nMinDSL) ||
-    (a()->user()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
+  if ((pMenu->nFlags & MENU_FLAG_DELETED) || (a()->GetEffectiveSl() < pMenu->nMinSL) ||
+      (a()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
+      (a()->user()->GetDsl() < pMenu->nMinDSL) ||
+      (a()->user()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
     return false;
   }
 
@@ -165,8 +174,7 @@ static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
     }
   }
 
-  if ((pMenu->nSysop && !so()) ||
-    (pMenu->nCoSysop && !cs())) {
+  if ((pMenu->nSysop && !so()) || (pMenu->nCoSysop && !cs())) {
     return false;
   }
 
@@ -181,10 +189,8 @@ static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
   return true;
 }
 
-static void LogUserFunction(
-  const MenuInstance* menu_data,
-  const string& command, 
-  const MenuRec* pMenu /* Nullable */) {
+static void LogUserFunction(const MenuInstance* menu_data, const string& command,
+                            const MenuRec* pMenu /* Nullable */) {
   if (pMenu == nullptr) {
     sysopchar(command);
     return;
@@ -236,18 +242,21 @@ void MenuInstance::RunMenu() {
 }
 
 MenuInstance::MenuInstance(const std::string& menu_directory, const std::string& menu_name)
-: menu_directory_(menu_directory), menu_name_(menu_name) {
-// OpenImpl needs the class contructed, so this must happen in the constructor
-// and not in the initializer list.
-open_ = OpenImpl();
+    : menu_directory_(menu_directory), menu_name_(menu_name) {
+  // OpenImpl needs the class contructed, so this must happen in the constructor
+  // and not in the initializer list.
+  open_ = OpenImpl();
 }
 
 MenuInstance::~MenuInstance() {}
 
-//static
-const std::string MenuInstance::create_menu_filename(
-    const std::string& path, const std::string& menu, const std::string& extension) {
-  return StrCat(GetMenuDirectory(), path, File::pathSeparatorString, menu, ".", extension);
+// static
+const std::string MenuInstance::create_menu_filename(const std::string& path,
+                                                     const std::string& menu,
+                                                     const std::string& extension) {
+  const auto menu_with_ext = StrCat(menu, ".", extension);
+  const auto base = FilePath(GetMenuDirectory(), path);
+  return FilePath(base, menu_with_ext);
 }
 
 std::string MenuInstance::create_menu_filename(const string& extension) const {
@@ -275,7 +284,7 @@ bool MenuInstance::CreateMenuMap(File& menu_file) {
 bool MenuInstance::OpenImpl() {
   // Open up the main data file
   File menu_file(create_menu_filename("mnu"));
-  if (!menu_file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone))  {
+  if (!menu_file.Open(File::modeBinary | File::modeReadOnly, File::shareDenyNone)) {
     // Unable to open menu
     MenuSysopLog("Unable to open Menu");
     return false;
@@ -307,8 +316,7 @@ bool MenuInstance::OpenImpl() {
     } else {
       prompt = tmp;
     }
-  }
-  else {
+  } else {
     prompt = "|09Command? ";
   }
 
@@ -401,8 +409,7 @@ std::vector<MenuRec> MenuInstance::LoadMenuRecord(const std::string& command) {
       auto& m = i->second;
       if (CheckMenuItemSecurity(&m, true)) {
         result.push_back(m);
-      }
-      else {
+      } else {
         MenuSysopLog(StrCat("|06< item security : ", command));
       }
     }
@@ -439,13 +446,9 @@ void MenuInstance::PrintMenuPrompt() const {
   }
 }
 
-void TurnMCIOff() {
-  a()->mci_enabled_ = false;
-}
+void TurnMCIOff() { a()->mci_enabled_ = false; }
 
-void TurnMCIOn() {
-  a()->mci_enabled_ = true;
-}
+void TurnMCIOn() { a()->mci_enabled_ = true; }
 
 void ConfigUserMenuSet() {
   bout.cls();
@@ -455,8 +458,7 @@ void ConfigUserMenuSet() {
   while (!done) {
     bout.nl();
     bout << "|#11|#9) Menuset      :|#2 " << a()->user()->menu_set() << wwiv::endl;
-    bout << "|#12|#9) Use hot keys :|#2 " << (a()->user()->hotkeys() ? "Yes" : "No ")
-         << wwiv::endl;
+    bout << "|#12|#9) Use hot keys :|#2 " << (a()->user()->hotkeys() ? "Yes" : "No ") << wwiv::endl;
     bout.nl();
     bout << "|#9(|#2Q|#9=|#1Quit|#9) : ";
     char chKey = onek("Q12?");
@@ -471,10 +473,11 @@ void ConfigUserMenuSet() {
       bout << "|#9Enter the menu set to use : ";
       int sel = input_number<int>(1, 1, r.size(), false);
       const string menuSetName = r.at(sel);
-      if (ValidateMenuSet(menuSetName.c_str())) {
+      if (ValidateMenuSet(menuSetName)) {
         wwiv::menus::MenuDescriptions descriptions(GetMenuDirectory());
         bout.nl();
-        bout << "|#9Menu Set : |#2" <<  menuSetName << " :  |#1" << descriptions.description(menuSetName) << wwiv::endl;
+        bout << "|#9Menu Set : |#2" << menuSetName << " :  |#1"
+             << descriptions.description(menuSetName) << wwiv::endl;
         bout << "|#5Use this menu set? ";
         if (noyes()) {
           a()->user()->set_menu_set(menuSetName);
@@ -487,14 +490,13 @@ void ConfigUserMenuSet() {
       if (a()->user()->menu_set().empty()) {
         a()->user()->set_menu_set("wwiv");
       }
-    }
-    break;
+    } break;
     case '2':
       a()->user()->set_hotkeys(!a()->user()->hotkeys());
       break;
     case '?':
       printfile(MENUWEL_NOEXT);
-      continue;                           // bypass the below cls()
+      continue; // bypass the below cls()
     }
     bout.cls();
   }
@@ -502,8 +504,7 @@ void ConfigUserMenuSet() {
   // If menu is invalid, it picks the first one it finds
   if (!ValidateMenuSet(a()->user()->menu_set())) {
     if (a()->languages.size() > 1 && a()->user()->GetLanguage() != 0) {
-      bout << "|#6No menus for " << a()->languages[a()->user()->GetLanguage()].name
-           << " language.";
+      bout << "|#6No menus for " << a()->languages[a()->user()->GetLanguage()].name << " language.";
       input_language();
     }
   }
@@ -511,9 +512,8 @@ void ConfigUserMenuSet() {
   // Save current menu setup.
   a()->WriteCurrentUser();
 
-  MenuSysopLog(StringPrintf("Menu in use : %s - %s",
-    a()->user()->menu_set().c_str(),
-    a()->user()->hotkeys() ? "Hot" : "Off"));
+  MenuSysopLog(StringPrintf("Menu in use : %s - %s", a()->user()->menu_set().c_str(),
+                            a()->user()->hotkeys() ? "Hot" : "Off"));
   bout.nl(2);
 }
 
@@ -528,12 +528,12 @@ string MenuInstance::GetCommand() const {
     write_inst(INST_LOC_MAIN, a()->current_user_sub().subnum, INST_FLAGS_NONE);
     return mmkey(MMKeyAreaType::subs);
   } else {
-    std::set<char> x = { '/' };
+    std::set<char> x = {'/'};
     return mmkey(x);
   }
 }
 
-MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menupath) {
+MenuDescriptions::MenuDescriptions(const std::string& menupath) : menupath_(menupath) {
   TextFile file(FilePath(menupath, DESCRIPT_ION), "rt");
   if (file.IsOpen()) {
     string s;
@@ -543,8 +543,8 @@ MenuDescriptions::MenuDescriptions(const std::string& menupath) :menupath_(menup
       if (s.empty() || space == string::npos) {
         continue;
       }
-      descriptions_.emplace(ToStringLowerCase(s.substr(0, space)), 
-          ToStringLowerCase(s.substr(space + 1)));
+      descriptions_.emplace(ToStringLowerCase(s.substr(0, space)),
+                            ToStringLowerCase(s.substr(space + 1)));
     }
   }
 }
@@ -572,14 +572,6 @@ bool MenuDescriptions::set_description(const std::string& name, const std::strin
   return true;
 }
 
-const string GetMenuDirectory() {
-  return StrCat(a()->language_dir, "menus", File::pathSeparatorString);
-}
-
-const string GetMenuDirectory(const string menuPath) {
-  return StrCat(GetMenuDirectory(), menuPath, File::pathSeparatorString);
-}
-
 void MenuInstance::GenerateMenu() const {
   bout.Color(0);
   bout.nl();
@@ -594,8 +586,7 @@ void MenuInstance::GenerateMenu() const {
       continue;
     }
     const MenuRec& menu = menu_command_map_.find(key)->second;
-    if (CheckMenuItemSecurity(&menu, false) &&
-        menu.nHide != MENU_HIDE_REGULAR &&
+    if (CheckMenuItemSecurity(&menu, false) && menu.nHide != MENU_HIDE_REGULAR &&
         menu.nHide != MENU_HIDE_BOTH) {
       string keystr;
       if (strlen(menu.szKey) > 1 && menu.szKey[0] != '/' && a()->user()->hotkeys()) {
@@ -617,14 +608,13 @@ void MenuInstance::GenerateMenu() const {
     if (lines_displayed % 2) {
       bout.nl();
     }
-    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ",
-      a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
-      "Guest Account Application");
+    bout.bprintf("|#1%-8.8s  |#2%-25.25s  ", a()->user()->hotkeys() ? "//APPLY" : "[APPLY]",
+                 "Guest Account Application");
     ++lines_displayed;
   }
   bout.nl(2);
   return;
 }
 
-}  // namespace menus
-}  // namespace wwiv
+} // namespace menus
+} // namespace wwiv
