@@ -122,8 +122,8 @@ void grab_quotes(messagerec* m, const std::string& message_filename, const std::
 
   clear_quotes();
 
-  auto quotes_txt_fn = StrCat(a()->temp_directory(), QUOTES_TXT);
-  auto quotes_ind_fn = StrCat(a()->temp_directory(), QUOTES_IND);
+  auto quotes_txt_fn = FilePath(a()->temp_directory(), QUOTES_TXT);
+  auto quotes_ind_fn = FilePath(a()->temp_directory(), QUOTES_IND);
 
   auto pfx = StrCat(GetQuoteInitials(to_name), "> ");
 

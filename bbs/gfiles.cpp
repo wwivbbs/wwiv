@@ -443,7 +443,7 @@ void gfile_sec(int sn) {
           done1 = true;
         } else if (!abort) {
           if (i2 > 0 && i2 <= nf) {
-            auto file_name = StrCat(a()->gfilesec[sn].filename, File::pathSeparatorChar, g[i2 - 1].filename);
+            auto file_name = FilePath(a()->gfilesec[sn].filename, g[i2 - 1].filename);
             File file(FilePath(a()->config()->datadir(), file_name));
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";

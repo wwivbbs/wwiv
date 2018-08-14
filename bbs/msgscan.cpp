@@ -141,9 +141,9 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     if (!szFileName[0]) {
       return;
     }
-    string full_pathname = StrCat(a()->config()->gfilesdir(), szFileName, ".frm");
+    auto full_pathname = FilePath(a()->config()->gfilesdir(), StrCat(szFileName, ".frm"));
     if (!File::Exists(full_pathname)) {
-      full_pathname = StrCat(a()->config()->gfilesdir(), "form", szFileName, ".msg");
+      full_pathname = FilePath(a()->config()->gfilesdir(), StrCat("form", szFileName, ".msg"));
     }
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);

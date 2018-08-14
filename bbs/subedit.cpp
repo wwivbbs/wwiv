@@ -230,7 +230,7 @@ static void modify_sub(int n) {
       if (new_fn.empty() || contains(new_fn, '.')) {
         break;
       }
-      string new_sub_fullpath = StrCat(a()->config()->datadir(), new_fn, ".sub");
+      auto new_sub_fullpath = FilePath(a()->config()->datadir(), StrCat(new_fn, ".sub"));
       if (File::Exists(new_sub_fullpath)) {
         // Find out which sub was using it.
         bout.nl();

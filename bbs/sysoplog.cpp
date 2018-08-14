@@ -101,8 +101,8 @@ void AddLineToSysopLogImpl(int cmd, const string& text) {
     LOG(ERROR) << "gfilesdir empty, can't write to sysop log";
     return;
   }
-  const static std::string s_sysoplog_filename =
-      StrCat(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
+  const static auto s_sysoplog_filename =
+      FilePath(a()->config()->gfilesdir(), GetTemporaryInstanceLogFileName());
 
   switch (cmd) {
   case LOG_STRING: {  // Write line to sysop's log

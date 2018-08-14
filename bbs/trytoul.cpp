@@ -401,7 +401,7 @@ int try_to_ul(const string& file_name) {
     return 0;  // success
   }
 
-  const string dest_dir = StrCat(a()->config()->dloadsdir(), "TRY2UL");
+  const auto dest_dir = FilePath(a()->config()->dloadsdir(), "TRY2UL");
   File::mkdirs(dest_dir);
   a()->CdHome();   // ensure we are in the correct directory
 

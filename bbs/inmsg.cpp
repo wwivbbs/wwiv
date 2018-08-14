@@ -388,11 +388,11 @@ static string FindTagFileName() {
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StrCat(a()->config()->datadir(), xnp.stype, ".tag");
+    filename = FilePath(a()->config()->datadir(), StrCat(xnp.stype, ".tag"));
     if (File::Exists(filename)) {
       return filename;
     }
-    filename = StrCat(a()->config()->datadir(), GENERAL_TAG);
+    filename = FilePath(a()->config()->datadir(), GENERAL_TAG);
     if (File::Exists(filename)) {
       return filename;
     }
