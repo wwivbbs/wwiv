@@ -19,6 +19,7 @@
 
 #include "core/log.h"
 #include "core/stl.h"
+#include "core/os.h"
 #include "core/strings.h"
 #include "sdk/ansi/vscreen.h"
 
@@ -38,6 +39,7 @@ static const char clrlst[] = "04261537";
 Ansi::Ansi(VScreen* b, uint8_t default_attr) : b_(b), default_attr_(default_attr) {}
 
 bool Ansi::write(char c) {
+  //wwiv::os::sleep_for(std::chrono::milliseconds(10));
   if (state_ == AnsiMode::not_in_sequence && c == 27) {
     state_ = AnsiMode::in_sequence;
     return write_in_sequence(c);
@@ -63,6 +65,18 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
     }
     out.push_back(defaults.at(i));
   }
+
+  if (list_size > 0 && list_size > defaults.size()) {
+    auto start = defaults.size();
+    auto end = list_size - defaults.size(); 
+    for (int i = start; i < end; i++) {
+      const auto& c = list.at(i);
+      if (!c.empty()) {
+        out.push_back(to_number<int>(c));
+      }
+    }
+  }
+
   return out;
 }
 
