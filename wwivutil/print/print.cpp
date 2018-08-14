@@ -74,7 +74,10 @@ int PrintCommand::Execute() {
     if (!io) {
       need_pause = true;
       CursesIO::Init("wwivutil");
-      io = std::make_unique<CursesLocalIO>();
+      // Use 25 lines (80x25) by default.
+      // TODO(rushfan): We should try to inspect the screen size if possible
+      // and use that instead.  Don't know how to do that on *NIX though.
+      io = std::make_unique<CursesLocalIO>(25);
     }
     LocalIOScreen screen(io.get(), 80);
     AnsiCallbacks cb;
