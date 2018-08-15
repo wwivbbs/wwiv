@@ -215,9 +215,11 @@ public:
   bool no_args_allowed() const { return no_args_allowed_; }
 
   std::string program_name() const noexcept { return program_name_; }
+  const std::string bbsdir() const noexcept { return bbsdir_; }
 
 private:
   const std::string program_name_;
+  std::string bbsdir_;
   bool no_args_allowed_ = false;
 
   bool ParseImpl();

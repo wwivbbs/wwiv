@@ -340,11 +340,7 @@ int WInitApp::main(int argc, char** argv) {
     return 0;
   }
 
-  const string wwiv_dir = cmdline.sarg("bbsdir");
-  if (!wwiv_dir.empty()) {
-    File::set_current_directory(wwiv_dir);
-  }
-  string bbsdir = File::current_directory();
+  auto bbsdir = cmdline.bbsdir();
   File::EnsureTrailingSlash(&bbsdir);
 
   const bool forced_initialize = cmdline.barg("initialize");

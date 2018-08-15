@@ -27,6 +27,7 @@
 
 #include "core/command_line.h"
 #include "core/file.h"
+#include "core/os.h"
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
@@ -41,6 +42,7 @@ using std::string;
 using std::vector;
 using namespace wwiv::strings;
 using namespace wwiv::stl;
+using namespace wwiv::os;
 
 namespace wwiv {
 namespace core {
@@ -98,6 +100,14 @@ bool CommandLine::Parse() {
     cout << GetHelp();
     return false;
   }
+
+  auto bbs_dir_env = environment_variable("WWIV_DIR");
+  if (!bbs_dir_env.empty()) {
+    bbsdir_ = bbs_dir_env;
+  } else {
+    bbsdir_ = sarg("bbsdir");
+  }
+
   return true;
 }
 

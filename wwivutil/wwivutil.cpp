@@ -73,13 +73,12 @@ public:
       Add(std::make_unique<PrintCommand>());
 
       if (!cmdline_.Parse()) { return 1; }
-      const std::string bbsdir(cmdline_.arg("bbsdir").as_string());
-      Config config(bbsdir);
+      Config config(cmdline_.bbsdir());
       if (!config.IsInitialized()) {
         LOG(ERROR) << "Unable to load CONFIG.DAT.";
         return 1;
       }
-      command_config_.reset(new Configuration(bbsdir, &config));
+      command_config_.reset(new Configuration(cmdline_.bbsdir(), &config));
       if (!command_config_->initialized()) {
         LOG(ERROR) << "Unable to load NETWORKS.";
         return 1;

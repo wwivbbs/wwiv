@@ -63,10 +63,9 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
   if (!cmdline.Parse()) {
     initialized_ = false;
   }
-  bbsdir_ = cmdline.arg("bbsdir").as_string();
   network_number_ = cmdline.arg("net").as_int();
 
-  config_.reset(new wwiv::sdk::Config(bbsdir_));
+  config_.reset(new wwiv::sdk::Config(cmdline.bbsdir()));
   networks_.reset(new wwiv::sdk::Networks(*config_.get()));
 
   if (!config_->IsInitialized()) {

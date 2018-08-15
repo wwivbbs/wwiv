@@ -124,10 +124,7 @@ static bool DeleteAllSemaphores(const Config& config, int start_node, int end_no
  *  on UNIX platforms.
  */
 int Main(CommandLine& cmdline) {
-  auto wwiv_dir = environment_variable("WWIV_DIR");
-  if (wwiv_dir.empty()) {
-    wwiv_dir = cmdline.arg("bbsdir").as_string();
-  }
+  auto wwiv_dir = cmdline.bbsdir();
   VLOG(2) << "Using WWIV_DIR: " << wwiv_dir;
 
   auto wwiv_user = environment_variable("WWIV_USER");
