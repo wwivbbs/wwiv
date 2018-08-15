@@ -113,15 +113,7 @@ static constexpr int TRIES = 100;
 using namespace wwiv::strings;
 
 string FilePath(const string& dirname, const string& filename) {
-
-  if (dirname.empty()) {
-    return filename;
-  }
-
-  auto result = dirname;
-  File::EnsureTrailingSlash(&result);
-  result.append(filename);
-  return result;
+  return (dirname.empty()) ? filename : StrCat(File::EnsureTrailingSlash(dirname), filename);
 }
 
 bool backup_file(const std::string& path) {
@@ -343,6 +335,13 @@ bool File::SetFilePermissions(const string& filename, int perm) {
 }
 
 bool File::IsFileHandleValid(int handle) { return handle != File::invalid_handle; }
+
+//static
+std::string File::EnsureTrailingSlash(const std::string& path) {
+  auto s = path;
+  EnsureTrailingSlash(&s);
+  return s;
+}
 
 // static
 void File::EnsureTrailingSlash(string* path) {

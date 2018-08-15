@@ -194,8 +194,7 @@ TEST(FileTest, EnsureTrailingSlash) {
     File::EnsureTrailingSlash(&s);
     EXPECT_EQ(single_slash, s);
 
-    s = double_slash;
-    File::EnsureTrailingSlash(&s);
+    s = File::EnsureTrailingSlash(double_slash);
     EXPECT_EQ(double_slash, s);
 
     s = no_slash;

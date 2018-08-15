@@ -339,10 +339,8 @@ int WInitApp::main(int argc, char** argv) {
     ShowHelp(cmdline);
     return 0;
   }
-
-  auto bbsdir = cmdline.bbsdir();
-  File::EnsureTrailingSlash(&bbsdir);
-
+  
+  auto bbsdir = File::EnsureTrailingSlash(cmdline.bbsdir());
   const bool forced_initialize = cmdline.barg("initialize");
   UIWindow* window;
   if (forced_initialize) {

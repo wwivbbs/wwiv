@@ -548,8 +548,8 @@ static double ratio1(unsigned long xa) {
 }
 
 static string make_ul_batch_list() {
-  string list_filename = StringPrintf("%s%s.%3.3u", a()->GetHomeDir().c_str(), FILESUL_NOEXT,
-          a()->instance_number());
+  const auto fn = StringPrintf("%s.%3.3u", FILESUL_NOEXT, a()->instance_number());
+  const auto list_filename = FilePath(a()->GetHomeDir().c_str(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);
@@ -571,8 +571,8 @@ static string make_ul_batch_list() {
 }
 
 static string make_dl_batch_list() {
-  string list_filename = StringPrintf("%s%s.%3.3u", a()->GetHomeDir().c_str(), FILESDL_NOEXT,
-          a()->instance_number());
+  const auto fn = StringPrintf("%s.%3.3u", FILESDL_NOEXT, a()->instance_number());
+  const auto list_filename = FilePath(a()->GetHomeDir().c_str(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
   File::Remove(list_filename);

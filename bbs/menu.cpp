@@ -55,15 +55,11 @@ namespace wwiv {
 namespace menus {
 
 static string GetMenuDirectory() {
-  auto path = FilePath(a()->language_dir, "menus");
-  File::EnsureTrailingSlash(&path);
-  return path;
+  return File::EnsureTrailingSlash(FilePath(a()->language_dir, "menus"));
 }
 
 static string GetMenuDirectory(const string menuPath) {
-  auto path = FilePath(GetMenuDirectory(), menuPath);
-  File::EnsureTrailingSlash(&path);
-  return path;
+  return File::EnsureTrailingSlash(FilePath(GetMenuDirectory(), menuPath));
 }
 
 static bool ValidateMenuSet(const std::string& menu_dir) {

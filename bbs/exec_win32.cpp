@@ -332,7 +332,7 @@ int exec_cmdline(const string commandLine, int flags) {
     CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
-    const string logfile_name = FilePath(a()->GetHomeDir(), "wwivsync.log");
+    const auto logfile_name = FilePath(a()->GetHomeDir(), "wwivsync.log");
     hLogFile = fopen(logfile_name.c_str(), "at");
     LogToSync(std::string(78, '='));
     LogToSync("\r\n\r\n");

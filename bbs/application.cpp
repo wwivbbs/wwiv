@@ -662,9 +662,7 @@ void Application::GotCaller(unsigned int ms) {
 void Application::CdHome() { File::set_current_directory(current_dir_); }
 
 const string Application::GetHomeDir() {
-  string dir = current_dir_;
-  File::EnsureTrailingSlash(&dir);
-  return dir;
+  return current_dir_;
 }
 
 void Application::AbortBBS(bool bSkipShutdown) {

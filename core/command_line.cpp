@@ -102,9 +102,14 @@ bool CommandLine::Parse() {
   }
 
   auto bbs_dir_env = environment_variable("WWIV_DIR");
-  if (!bbs_dir_env.empty()) {
+  if (!arg("bbsdir").is_default()) {
+    // overridden bbsdir
+    bbsdir_ = sarg("bbsdir");
+  } else if (!bbs_dir_env.empty()) {
+    // WWIV_DIR environment variable.
     bbsdir_ = bbs_dir_env;
   } else {
+    // default bbsdir (which is File::current_directory())
     bbsdir_ = sarg("bbsdir");
   }
 

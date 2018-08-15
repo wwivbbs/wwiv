@@ -373,15 +373,10 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   StringReplace(&batch_directory, "%n", instance_num_string);
 
   const auto base_dir = GetHomeDir();
-  File::absolute(base_dir, &batch_directory);
-  File::absolute(base_dir, &temp_directory);
-  File::EnsureTrailingSlash(&temp_directory);
-  File::EnsureTrailingSlash(&batch_directory);
+  temp_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
+  batch_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
 
-  temp_directory_ = temp_directory;
-  batch_directory_ = batch_directory;
-
-  auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
+  const auto max_num_instances = ini.value<int>("NUM_INSTANCES", 4);
   if (instance_number > max_num_instances) {
     LOG(ERROR) << "Not enough instances configured (" << max_num_instances << ").";
     return false;

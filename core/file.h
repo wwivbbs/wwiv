@@ -174,6 +174,7 @@ public:
   static bool SetFilePermissions(const std::string& fileName, int nPermissions);
   static bool IsFileHandleValid(int hFile);
 
+  static std::string EnsureTrailingSlash(const std::string& path);
   static void EnsureTrailingSlash(std::string* path);
   static std::string current_directory();
   static bool set_current_directory(const std::string& dir);
