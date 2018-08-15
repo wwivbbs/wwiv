@@ -23,6 +23,7 @@
 #include <chrono>
 #include <ios>
 #include <iostream>
+#include <memory>
 #include <streambuf>
 #include <string>
 #include <utility>
@@ -31,6 +32,9 @@
 #include "local_io/curatr_provider.h"
 #include "local_io/local_io.h"
 #include "sdk/wwivcolors.h"
+#include "sdk/ansi/ansi.h"
+#include "sdk/ansi/localio_screen.h"
+
 
 class outputstreambuf : public std::streambuf {
 public:
@@ -56,21 +60,10 @@ protected:
   RemoteIO* comm_;
 
 public:
-  Output()
-      :
-#if defined(_WIN32)
-        buf(),
-#endif
-        std::ostream(&buf) {
-    init(&buf);
-  }
+  Output();
   virtual ~Output() {}
 
-  void SetLocalIO(LocalIO* local_io) {
-    local_io_ = local_io;
-    local_io_->set_curatr_provider(this);
-  }
-
+  void SetLocalIO(LocalIO* local_io);
   LocalIO* localIO() const noexcept { return local_io_; }
 
   void SetComm(RemoteIO* comm) { comm_ = comm; }
@@ -182,8 +175,6 @@ public:
 
 public:
   int lines_listed_;
-  char ansistr[81];
-  int ansiptr = 0;
   bool newline{true};
   int charbufferpointer_{0};
   char charbuffer[255];
@@ -192,11 +183,11 @@ public:
 private:
   std::string bputch_buffer_;
   std::vector<std::pair<char, uint8_t>> current_line_;
-  int x_ = 0;
-  bool last_key_local_ = true;
+  int x_{0};
+  bool last_key_local_{true};
   // Means we need to reset the color before displaying our
   // next newline character.
-  bool needs_color_reset_at_newline_ = false;
+  bool needs_color_reset_at_newline_{false};
   void execute_ansi();
   std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);
@@ -206,6 +197,8 @@ private:
   bool ansi_movement_occurred_{false};
   int curatr_{7};
   bool okskey_{true};
+  std::unique_ptr<wwiv::sdk::ansi::LocalIOScreen> screen_;
+  std::unique_ptr<wwiv::sdk::ansi::Ansi> ansi_;
 };
 
 /**

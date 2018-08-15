@@ -103,6 +103,7 @@ public:
 
   // curatr_provider interface
   virtual void set_curatr_provider(wwiv::local_io::curatr_provider* p);
+  virtual wwiv::local_io::curatr_provider* curatr_provider();
   virtual int curatr() const;
   virtual void curatr(int c);
 

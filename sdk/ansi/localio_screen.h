@@ -37,7 +37,6 @@ public:
 
   /** Writes c using a, handles \r and \n */
   virtual bool write(char c, uint8_t a) override {
-    curatr_ = a;
     return write(c);
   }
   /** Moves the cursor to x,y */
@@ -73,11 +72,11 @@ public:
     io_->Putch(c);
     return true;
   }
-  virtual void curatr(uint8_t a) override { curatr_ = a; }
+  virtual void curatr(uint8_t a) override { curatr_provider_->curatr(a); }
 
   virtual int cols() const noexcept override { return cols_; }
   virtual int pos() const noexcept override { return (y() * cols()) + x(); }
-  virtual uint8_t curatr() const noexcept override { return curatr_; }
+  virtual uint8_t curatr() const noexcept override { return curatr_provider_->curatr(); }
   virtual int x() const noexcept override { return io_->WhereX(); }
   virtual int y() const noexcept override { return io_->WhereY(); }
 
@@ -85,7 +84,6 @@ private:
   LocalIO* io_;
   std::unique_ptr<wwiv::local_io::curatr_provider> curatr_provider_;
   int cols_;
-  uint8_t curatr_{0x07};
 };
 
 } // namespace ansi

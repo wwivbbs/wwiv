@@ -183,10 +183,10 @@ bool Ansi::write_in_sequence(char c) {
         b_->curatr(default_attr_);
         break;
       case 1: // Bold
-        b_->curatr(b_->curatr() | 0x08);
+        b_->curatr(a | 0x08);
         break;
       case 5: // Slow blink?
-        b_->curatr(b_->curatr() | 0x80);
+        b_->curatr(a | 0x80);
         break;
       case 7: { // Reverse Video
         const auto ptr = a & 0x77;
@@ -196,7 +196,9 @@ bool Ansi::write_in_sequence(char c) {
         if (n >= 30 && n <= 37) {
           b_->curatr((a & 0xf8) | (clrlst[n - 30] - '0'));
         } else if (n >= 40 && n <= 47) {
-          b_->curatr((a & 0x8f) | ((clrlst[n - 40] - '0') << 4));
+          uint8_t bg = (clrlst[n - 40] - '0') << 4;
+          uint8_t ct = (a & 0x8f) | bg;
+          b_->curatr(ct);
         }
       }
       }

@@ -33,11 +33,14 @@
 #include "bbs/utility.h"
 
 #include "core/strings.h"
+#include "sdk/ansi/ansi.h"
+#include "sdk/ansi/localio_screen.h"
 #include "sdk/ansi/makeansi.h"
 
 using std::ostream;
 using std::string;
 using namespace wwiv::strings;
+using namespace wwiv::sdk::ansi;
 
 outputstreambuf::outputstreambuf() {}
 outputstreambuf::~outputstreambuf() {}
@@ -65,6 +68,28 @@ std::streamsize outputstreambuf::xsputn(const char *text, std::streamsize num_ch
   // color codes.
   return num_chars;
 }
+
+Output::Output() :
+#if defined(_WIN32)
+      buf(),
+#endif
+      std::ostream(&buf) {
+  init(&buf);
+}
+
+void Output::SetLocalIO(LocalIO* local_io) {
+  // We would use a()->user()->GetScreenChars() but I don't thik we
+  // have a live user when we create this.
+  screen_ = std::make_unique<LocalIOScreen>(local_io, 80);
+  AnsiCallbacks cb;
+  cb.move_ = [&](int x, int y) { ansi_movement_occurred_ = true; };
+  ansi_ = std::make_unique<Ansi>(screen_.get(), cb, 0x07);
+
+  local_io_ = local_io;
+  // Reset the curatr_provider on local_io since screen resets it.
+  local_io_->set_curatr_provider(this);
+}
+
 
 void Output::Color(int wwivcolor) {
   bputs(MakeColor(wwivcolor));

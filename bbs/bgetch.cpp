@@ -75,19 +75,9 @@ static void PrintTime() {
 }
 
 void Output::RedrawCurrentLine() {
-  char ansistr_1[81];
-
-  int ansiptr_1 = ansiptr;
-  ansiptr = 0;
-  ansistr[ansiptr_1] = 0;
-  to_char_array(ansistr_1, ansistr);
-
   SavedLine line = bout.SaveCurrentLine();
   bout.nl();
   bout.RestoreCurrentLine(line);
-
-  to_char_array(ansistr, ansistr_1);
-  ansiptr = ansiptr_1;
 }
 
 static void HandleControlKey(char *ch) {
@@ -346,7 +336,7 @@ char Output::getkey(bool allow_extended_input) {
 
 void Output::reset() {
   newline = true;
-  ansiptr = 0;
+  ansi_->reset();
   curatr(0x07);
   clear_lines_listed();
   // Reset the error bit on bout since after a a()->hangup_ it can be set.

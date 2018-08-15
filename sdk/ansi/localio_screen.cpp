@@ -29,20 +29,18 @@ namespace ansi {
 
 class LocalIOScreenCurAttrProvider : public wwiv::local_io::curatr_provider {
 public:
-  LocalIOScreenCurAttrProvider(LocalIOScreen* lio) : lio_(lio) {}
+  LocalIOScreenCurAttrProvider(LocalIO* lio) : lio_(lio) {}
   virtual int curatr() const noexcept override { return lio_->curatr(); }
   virtual void curatr(int n) override { lio_->curatr(n); }
 
 private:
-  LocalIOScreen* lio_;
+  LocalIO* lio_;
 };
 
 
 LocalIOScreen::LocalIOScreen(LocalIO* io, int cols)
     : VScreen(cols), io_(io), cols_(cols),
-      curatr_provider_(std::make_unique<LocalIOScreenCurAttrProvider>(this)) {
-  io_->set_curatr_provider(curatr_provider_.get());
-}
+      curatr_provider_(std::make_unique<LocalIOScreenCurAttrProvider>(io)) {}
 
 } // namespace ansi
 } // namespace sdk
