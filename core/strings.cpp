@@ -436,13 +436,28 @@ std::string trim_to_size(const std::string& orig, std::string::size_type max_siz
 }
 
 std::string pad_to(const std::string& orig, std::string::size_type max_size) {
+  return pad_to(orig, ' ', max_size);
+}
+
+std::string pad_to(const std::string& orig, char pad, std::string::size_type max_size) {
   auto len = size(orig);
   if (max_size <= len) {
     return orig;
   }
-  return StrCat(orig, std::string(max_size - len, ' '));
+  return StrCat(orig, std::string(max_size - len, pad));
 }
 
+std::string lpad_to(const std::string& orig, std::string::size_type max_size) {
+  return lpad_to(orig, ' ', max_size);
+}
+
+std::string lpad_to(const std::string& orig, char pad, std::string::size_type max_size) {
+  auto len = size(orig);
+  if (max_size <= len) {
+    return orig;
+  }
+  return StrCat(std::string(max_size - len, pad), orig);
+}
 
 }  // namespace strings
 }  // namespace wwiv

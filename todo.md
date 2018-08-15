@@ -18,8 +18,6 @@
 
 * Make a base class and subclasses for WWIV and QBBS external editor handling
 
-* Use ansi code from sdk in the bbs.
-
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
 * Update syscfg.sysconfig in init and save it back, since

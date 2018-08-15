@@ -220,7 +220,7 @@ public:
 private:
   const std::string program_name_;
   std::string bbsdir_;
-  bool no_args_allowed_ = false;
+  bool no_args_allowed_{false};
 
   bool ParseImpl();
 };

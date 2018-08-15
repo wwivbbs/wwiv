@@ -159,6 +159,12 @@ std::string trim_to_size(const std::string& orig, std::string::size_type size);
 * Returns orig padded to size, excluding color codes.
 */
 std::string pad_to(const std::string& orig, std::string::size_type size);
+std::string pad_to(const std::string& orig, char pad, std::string::size_type size);
+/**
+ * Returns orig padded to size with the padding on the left, excluding color codes.
+ */
+std::string lpad_to(const std::string& orig, std::string::size_type size);
+std::string lpad_to(const std::string& orig, char pad, std::string::size_type size);
 
 /** Typesafe version of toupper */
 template<class T>

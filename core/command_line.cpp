@@ -165,7 +165,8 @@ bool CommandLineCommand::contains_arg(const std::string& name) const noexcept {
 
 const CommandLineValue CommandLineCommand::arg(const std::string name) const {
   if (!contains(args_, name)) {
-    std::clog << "Unknown argument name: " << name << endl;
+    VLOG(1) << "Unknown argument name: " << name << endl;
+    return CommandLineValue("", true);
   }
   return args_.at(name);
 }

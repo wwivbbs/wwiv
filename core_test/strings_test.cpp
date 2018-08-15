@@ -31,7 +31,6 @@ using std::vector;
 
 using namespace wwiv::strings;
 
-
 TEST(StringsTest, StripColors) {
   EXPECT_EQ(string(""), stripcolors(string("")));
   EXPECT_EQ(string("|"), stripcolors(string("|")));
@@ -48,29 +47,30 @@ TEST(StringsTest, StripColors_AnsiSeq) {
   EXPECT_EQ(string(""), stripcolors(string("\x1b[0;33;46;1m")));
   EXPECT_EQ(string("|"), stripcolors(string("|\x1b[0;33;46;1m")));
   EXPECT_EQ(string("abc"), stripcolors(string("|15\x1b[0;33;46;1mabc")));
-  EXPECT_EQ(string("abc"), stripcolors(string("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m")));
+  EXPECT_EQ(string("abc"),
+            stripcolors(string("\x1b[0m|15\x1b[0;33;46;1ma\x1b[0mb\x1b[0mc\x1b[0m")));
 }
 
 TEST(StringsTest, StringColors_CharStarVersion) {
-    EXPECT_STREQ( "", stripcolors("") );
-    EXPECT_STREQ( "|", stripcolors("|") );
-    EXPECT_STREQ( "|0", stripcolors("|0") );
-    EXPECT_STREQ( "12345", stripcolors( "12345") );
+  EXPECT_STREQ("", stripcolors(""));
+  EXPECT_STREQ("|", stripcolors("|"));
+  EXPECT_STREQ("|0", stripcolors("|0"));
+  EXPECT_STREQ("12345", stripcolors("12345"));
 }
 
 TEST(StringsTest, Properize) {
-    EXPECT_EQ( string("Rushfan"), properize( string("rushfan") ) );
-    EXPECT_EQ( string("Rushfan"), properize( string("rUSHFAN") ) );
-    EXPECT_EQ( string(""), properize( string("") ) );
-    EXPECT_EQ( string(" "), properize( string(" ") ) );
-    EXPECT_EQ( string("-"), properize( string("-") ) );
-    EXPECT_EQ( string("."), properize( string(".") ) );
-    EXPECT_EQ( string("R"), properize( string("R") ) );
-    EXPECT_EQ( string("R"), properize( string("r") ) );
-    EXPECT_EQ( string("Ru"), properize( string("RU") ) );
-    EXPECT_EQ( string("R.U"), properize( string("r.u") ) );
-    EXPECT_EQ( string("R U"), properize( string("r u") ) );
-    EXPECT_EQ( string("Rushfan"), properize( string("Rushfan") ) );
+  EXPECT_EQ(string("Rushfan"), properize(string("rushfan")));
+  EXPECT_EQ(string("Rushfan"), properize(string("rUSHFAN")));
+  EXPECT_EQ(string(""), properize(string("")));
+  EXPECT_EQ(string(" "), properize(string(" ")));
+  EXPECT_EQ(string("-"), properize(string("-")));
+  EXPECT_EQ(string("."), properize(string(".")));
+  EXPECT_EQ(string("R"), properize(string("R")));
+  EXPECT_EQ(string("R"), properize(string("r")));
+  EXPECT_EQ(string("Ru"), properize(string("RU")));
+  EXPECT_EQ(string("R.U"), properize(string("r.u")));
+  EXPECT_EQ(string("R U"), properize(string("r u")));
+  EXPECT_EQ(string("Rushfan"), properize(string("Rushfan")));
 }
 
 TEST(StringsTest, StringPrintf_Smoke) {
@@ -116,7 +116,7 @@ TEST(StringsTest, StringReplace_NotFound) {
 
 TEST(StringsTest, SplitString_Basic) {
   const string s = "Hello World";
-  vector<string> expected = { "Hello", "World" };
+  vector<string> expected = {"Hello", "World"};
   vector<string> actual;
   SplitString(s, " ", &actual);
   EXPECT_EQ(expected, actual);
@@ -124,14 +124,14 @@ TEST(StringsTest, SplitString_Basic) {
 
 TEST(StringsTest, SplitString_BasicReturned) {
   const string s = "Hello World";
-  vector<string> expected = { "Hello", "World" };
+  vector<string> expected = {"Hello", "World"};
   vector<string> actual = SplitString(s, " ");
   EXPECT_EQ(expected, actual);
 }
 
 TEST(StringsTest, SplitString_ExtraSingleDelim) {
   const string s = "Hello   World";
-  vector<string> expected = { "Hello", "World" };
+  vector<string> expected = {"Hello", "World"};
   vector<string> actual;
   SplitString(s, " ", &actual);
   EXPECT_EQ(expected, actual);
@@ -139,7 +139,7 @@ TEST(StringsTest, SplitString_ExtraSingleDelim) {
 
 TEST(StringsTest, SplitString_ExtraSingleDelim_NoSkipEmpty) {
   const string s = "Hello   World";
-  vector<string> expected = { "Hello", "", "", "World" };
+  vector<string> expected = {"Hello", "", "", "World"};
   vector<string> actual;
   SplitString(s, " ", false, &actual);
   EXPECT_EQ(expected, actual);
@@ -147,7 +147,7 @@ TEST(StringsTest, SplitString_ExtraSingleDelim_NoSkipEmpty) {
 
 TEST(StringsTest, SplitString_TwoDelims) {
   const string s = "Hello\tWorld Everyone";
-  vector<string> expected = { "Hello", "World", "Everyone" };
+  vector<string> expected = {"Hello", "World", "Everyone"};
   vector<string> actual;
   SplitString(s, " \t", &actual);
   EXPECT_EQ(expected, actual);
@@ -155,7 +155,7 @@ TEST(StringsTest, SplitString_TwoDelims) {
 
 TEST(StringsTest, SplitString_TwoDelimsBackToBack) {
   const string s = "Hello\t\tWorld  \t\t  Everyone";
-  vector<string> expected = { "Hello", "World", "Everyone" };
+  vector<string> expected = {"Hello", "World", "Everyone"};
   vector<string> actual;
   SplitString(s, " \t", &actual);
   EXPECT_EQ(expected, actual);
@@ -372,9 +372,7 @@ TEST(StringsTest, StringRemoveWhitespace_str) {
   EXPECT_STREQ("hello", s.c_str());
 }
 
-TEST(StringsTest, StringRemoveChar) {
-  EXPECT_STREQ("he", StringRemoveChar("hello world", 'l'));
-}
+TEST(StringsTest, StringRemoveChar) { EXPECT_STREQ("he", StringRemoveChar("hello world", 'l')); }
 
 TEST(StringsTest, IEQuals_charstar) {
   EXPECT_TRUE(iequals("foo", "foo"));
@@ -413,4 +411,24 @@ TEST(StringsTest, TrimToSizeIgnoreColors) {
   EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16a", 1));
   EXPECT_EQ("|09|16a|09", trim_to_size_ignore_colors("|09|16a|09", 1));
   EXPECT_EQ("|09|16a", trim_to_size_ignore_colors("|09|16aa|09", 1));
+}
+
+TEST(StringsTest, PadTo) { 
+  auto result = pad_to("a", 2);
+  EXPECT_EQ(result, "a ");
+}
+
+TEST(StringsTest, PadToPad) {
+  auto result = pad_to("a", 'x', 2);
+  EXPECT_EQ(result, "ax");
+}
+
+TEST(StringsTest, LPadTo) {
+  auto result = pad_to("a", 2);
+  EXPECT_EQ(result, " a");
+}
+
+TEST(StringsTest, LPadToPad) {
+  auto result = pad_to("a", 'x', 2);
+  EXPECT_EQ(result, "xa");
 }
