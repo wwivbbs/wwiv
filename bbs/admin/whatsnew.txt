@@ -62,7 +62,45 @@ What's New in WWIV 5.4 (2018)
   the fake ftn node number is no longer needed.
 ! Added --skip_delete to most network commands, it'll backup vs
   deleting packets that it's processed.
-  
+* wwivutil messages dump now displays msgid for messages
++ net.ini is now read for default values for most command
+  line flags for all network? commands.  I.e. you can add
+  skip_net = true under [networkb] and it'll be the same
+  as added --skip_net=true on the commandline
++ wwivd now handles all of the callouts instead of bbs's
+  WFC screen.  Make sure you turn it on in wwivconfig
+  to allow it to happen, then the nodes that allow 
+  auto-callouts will be called out to on schedule as
+  set in callout.net or fido_callout.json (both are
+  editable in wwivconfig in the network settings).
+* Don't silently crash the binary when a network connection
+  gets dropped.  Handle SIGPIPE on linux and log the result.
+* networkb (and bbs) now uses networkc to "cleanup the net"
+  instead of each tool having a different buggy implementation.
+* Fixed the log file timestamp (was using . not ,)
+* net54's network1 now updates the bytes waiting in contact.net
+  like net3x did (and it should have been doing all along)
+* wwivd will reload the network callout configuration when
+  receiving a HUP signal.
++ wwivd can now execute wwiv's beginday event if specified
+  to do so in wwivconfig
++ added --quiet flag to wwivconfig to make it not output
+  anything unless it's doing something (nice to keep the
+  wfc from displaying lots of useless info)
+* wwivd now exit's cleanly so systemd is happier.
++ wwivd autoblocking now works (it was listed in wwivconfig
+  back in 5.3, but never enabled in wwivd, fixed that)
++ networkc now has a --process_instance=XX flag that's used
+  when the bbs uses it to cleanup the net.
+- Removed the '-k' flag from bbs, please use wwivutil to
+  pack the message bases now
++ added "wwivutil print" command to print ansi files using
+  the same ansi interpretation code in the bbs (also it's
+  now been rewritten into the SDK module so others can 
+  use it easily)
++ If an environment variable WWIV_DIR exists, use that
+  to locate config.dat unless --bbsdir is specified on
+  the commandline.  This works in every wwiv binary.
 
 
 What's New in WWIV 5.3 (2018)

@@ -46,8 +46,7 @@
 
 ## Feature Improvements
 ***
-* Create wwivutil print command to print files in ANSI with 
-  heart and pipe codes
+* Add pipe code and heart code support to wwivutil print.
   - This needs a context class to hold current session state
     that is now spit across Application class and other
     global variables.
