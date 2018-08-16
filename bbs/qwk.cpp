@@ -286,8 +286,8 @@ void qwk_gather_sub(int bn, struct qwk_junk *qwk_info) {
       }
     }
 
-    unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
+    auto status = a()->status_manager()->GetStatus();
+    a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = status->GetQScanPointer() - 1;
     a()->set_current_user_sub_num(os);
   } else {
     auto os = a()->current_user_sub_num();

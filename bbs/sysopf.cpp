@@ -78,20 +78,20 @@ void prstatus() {
   }
   bout << "|#9Board is        : " << (a()->config()->config()->closedsystem ? "Closed" : "Open") << wwiv::endl;
 
-  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+  auto status = a()->status_manager()->GetStatus();
   string t = times();
-  bout << "|#9Number Users    : |#2" << pStatus->GetNumUsers() << wwiv::endl;
-  bout << "|#9Number Calls    : |#2" << pStatus->GetCallerNumber() << wwiv::endl;
-  bout << "|#9Last Date       : |#2" << pStatus->GetLastDate() << wwiv::endl;
+  bout << "|#9Number Users    : |#2" << status->GetNumUsers() << wwiv::endl;
+  bout << "|#9Number Calls    : |#2" << status->GetCallerNumber() << wwiv::endl;
+  bout << "|#9Last Date       : |#2" << status->GetLastDate() << wwiv::endl;
   bout << "|#9Time            : |#2" << t.c_str() << wwiv::endl;
-  bout << "|#9Active Today    : |#2" << pStatus->GetMinutesActiveToday() << wwiv::endl;
-  bout << "|#9Calls Today     : |#2" << pStatus->GetNumCallsToday() << wwiv::endl;
-  bout << "|#9Net Posts Today : |#2" << (pStatus->GetNumMessagesPostedToday() - pStatus->GetNumLocalPosts())
+  bout << "|#9Active Today    : |#2" << status->GetMinutesActiveToday() << wwiv::endl;
+  bout << "|#9Calls Today     : |#2" << status->GetNumCallsToday() << wwiv::endl;
+  bout << "|#9Net Posts Today : |#2" << (status->GetNumMessagesPostedToday() - status->GetNumLocalPosts())
         << wwiv::endl;
-  bout << "|#9Local Post Today: |#2" << pStatus->GetNumLocalPosts() << wwiv::endl;
-  bout << "|#9E Sent Today    : |#2" << pStatus->GetNumEmailSentToday() << wwiv::endl;
-  bout << "|#9F Sent Today    : |#2" << pStatus->GetNumFeedbackSentToday() << wwiv::endl;
-  bout << "|#9Uploads Today   : |#2" << pStatus->GetNumUploadsToday() << wwiv::endl;
+  bout << "|#9Local Post Today: |#2" << status->GetNumLocalPosts() << wwiv::endl;
+  bout << "|#9E Sent Today    : |#2" << status->GetNumEmailSentToday() << wwiv::endl;
+  bout << "|#9F Sent Today    : |#2" << status->GetNumFeedbackSentToday() << wwiv::endl;
+  bout << "|#9Uploads Today   : |#2" << status->GetNumUploadsToday() << wwiv::endl;
 
   User sysop{};
   int feedback_waiting = 0;
@@ -100,7 +100,7 @@ void prstatus() {
   }
   bout << "|#9Feedback Waiting: |#2" << feedback_waiting << wwiv::endl;
   bout << "|#9Sysop           : |#2" << ((sysop2()) ? "Available" : "NOT Available") << wwiv::endl;
-  bout << "|#9Q-Scan Pointer  : |#2" << pStatus->GetQScanPointer() << wwiv::endl;
+  bout << "|#9Q-Scan Pointer  : |#2" << status->GetQScanPointer() << wwiv::endl;
 
   if (num_instances() > 1) {
     multi_instance();
@@ -798,7 +798,7 @@ void zlog() {
 
 
 void set_user_age() {
-  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+  auto status = a()->status_manager()->GetStatus();
   int user_number = 1;
   do {
     User user;
@@ -809,7 +809,7 @@ void set_user_age() {
       a()->users()->writeuser(&user, user_number);
     }
     ++user_number;
-  } while (user_number <= pStatus->GetNumUsers());
+  } while (user_number <= status->GetNumUsers());
 }
 
 
@@ -860,11 +860,11 @@ void beginday(bool displayStatus) {
     a()->status_manager()->RefreshStatusCache();
     return;
   }
-  WStatus *pStatus = a()->status_manager()->BeginTransaction();
-  pStatus->ValidateAndFixDates();
+  auto status = a()->status_manager()->BeginTransaction();
+  status->ValidateAndFixDates();
 
-  if (date() == pStatus->GetLastDate()) {
-    a()->status_manager()->CommitTransaction(pStatus);
+  if (date() == status->GetLastDate()) {
+    a()->status_manager()->CommitTransaction(std::move(status));
     return;
   }
   if (displayStatus) {
@@ -873,19 +873,19 @@ void beginday(bool displayStatus) {
   }
 
   zlogrec z{};
-  to_char_array(z.date, pStatus->GetLastDate());
-  z.active = pStatus->GetMinutesActiveToday();
-  z.calls = pStatus->GetNumCallsToday();
-  z.posts = pStatus->GetNumLocalPosts();
-  z.email = pStatus->GetNumEmailSentToday();
-  z.fback = pStatus->GetNumFeedbackSentToday();
-  z.up = pStatus->GetNumUploadsToday();
-  pStatus->NewDay();
+  to_char_array(z.date, status->GetLastDate());
+  z.active = status->GetMinutesActiveToday();
+  z.calls = status->GetNumCallsToday();
+  z.posts = status->GetNumLocalPosts();
+  z.email = status->GetNumEmailSentToday();
+  z.fback = status->GetNumFeedbackSentToday();
+  z.up = status->GetNumUploadsToday();
+  status->NewDay();
 
   if (displayStatus) {
     bout << "  |#7* |#1Cleaning up log files...\r\n";
   }
-  File::Remove(a()->config()->gfilesdir(), pStatus->GetLogFileName(2));
+  File::Remove(a()->config()->gfilesdir(), status->GetLogFileName(2));
 
   if (displayStatus) {
     bout << "  |#7* |#1Updating ZLOG information...\r\n";
@@ -919,9 +919,9 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
   }
-  int nus = a()->config()->config()->maxusers - pStatus->GetNumUsers();
+  int nus = a()->config()->config()->maxusers - status->GetNumUsers();
 
-  a()->status_manager()->CommitTransaction(pStatus);
+  a()->status_manager()->CommitTransaction(std::move(status));
   if (displayStatus) {
     bout << "  |#7* |#1Checking system directories and user space...\r\n";
   }

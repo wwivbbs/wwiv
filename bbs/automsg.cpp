@@ -50,7 +50,7 @@ char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName);
  */
 void read_automessage() {
   bout.nl();
-  unique_ptr<WStatus> current_status(a()->status_manager()->GetStatus());
+  auto current_status = a()->status_manager()->GetStatus();
   bool bAutoMessageAnonymous = current_status->IsAutoMessageAnonymous();
 
   TextFile autoMessageFile(FilePath(a()->config()->gfilesdir(), AUTO_MSG), "rt");
@@ -173,9 +173,10 @@ void do_automessage() {
       break;
     case 'A': {
       clear_quotes();
-      unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-      if (pStatus->GetAutoMessageAuthorUserNumber() > 0) {
-        email("Re: AutoMessage", static_cast<uint16_t>(pStatus->GetAutoMessageAuthorUserNumber()), 0, false, pStatus->IsAutoMessageAnonymous() ? anony_sender : 0);
+      auto status = a()->status_manager()->GetStatus();
+      if (status->GetAutoMessageAuthorUserNumber() > 0) {
+        email("Re: AutoMessage", static_cast<uint16_t>(status->GetAutoMessageAuthorUserNumber()), 0,
+              false, status->IsAutoMessageAnonymous() ? anony_sender : 0);
       }
     }
     break;

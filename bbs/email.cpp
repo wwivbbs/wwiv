@@ -340,13 +340,13 @@ void sendout_email(EmailData& data) {
     sysoplog() << logMessage << logMessagePart;
   }
 
-  WStatus* pStatus = a()->status_manager()->BeginTransaction();
+  auto status = a()->status_manager()->BeginTransaction();
   if (data.user_number == 1 && data.system_number == 0) {
-    pStatus->IncrementNumFeedbackSentToday();
+    status->IncrementNumFeedbackSentToday();
     a()->user()->SetNumFeedbackSent(a()->user()->GetNumFeedbackSent() + 1);
     a()->user()->SetNumFeedbackSentToday(a()->user()->GetNumFeedbackSentToday() + 1);
   } else {
-    pStatus->IncrementNumEmailSentToday();
+    status->IncrementNumEmailSentToday();
     a()->user()->SetNumEmailSentToday(a()->user()->GetNumEmailSentToday() + 1);
     if (data.system_number == 0) {
       a()->user()->SetNumEmailSent(a()->user()->GetNumEmailSent() + 1);
@@ -354,7 +354,7 @@ void sendout_email(EmailData& data) {
       a()->user()->SetNumNetEmailSent(a()->user()->GetNumNetEmailSent() + 1);
     }
   }
-  a()->status_manager()->CommitTransaction(pStatus);
+  a()->status_manager()->CommitTransaction(std::move(status));
   if (!data.silent_mode) {
     bout.Color(3);
     bout << logMessage;

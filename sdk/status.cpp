@@ -179,23 +179,21 @@ bool StatusMgr::RefreshStatusCache() {
   return this->Get(false);
 }
 
-WStatus* StatusMgr::GetStatus() {
+std::unique_ptr<WStatus> StatusMgr::GetStatus() {
   this->Get(false);
-  return new WStatus(datadir_, &statusrec);
+  return std::make_unique<WStatus>(datadir_, &statusrec);
 }
 
-void StatusMgr::AbortTransaction(WStatus* pStatus) {
-  unique_ptr<WStatus> deleter(pStatus);
+void StatusMgr::AbortTransaction(std::unique_ptr<WStatus> pStatus) {
   status_file_.reset();
 }
 
-WStatus* StatusMgr::BeginTransaction() {
+std::unique_ptr<WStatus> StatusMgr::BeginTransaction() {
   this->Get(true);
-  return new WStatus(datadir_, &statusrec);
+  return std::make_unique<WStatus>(datadir_, &statusrec);
 }
 
-bool StatusMgr::CommitTransaction(WStatus* pStatus) {
-  unique_ptr<WStatus> deleter(pStatus);
+bool StatusMgr::CommitTransaction(std::unique_ptr<WStatus> pStatus) {
   return this->Write(pStatus->status_);
 }
 
@@ -221,10 +219,10 @@ const int StatusMgr::GetUserCount() {
 }
 
 bool StatusMgr::Run(status_txn_fn fn) {
-  WStatus* status = BeginTransaction();
+  auto status = BeginTransaction();
   CHECK_NOTNULL(status);
   fn(*status);
-  return CommitTransaction(status);
+  return CommitTransaction(std::move(status));
 }
 
 

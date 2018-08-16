@@ -185,7 +185,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     bool skip_net = net_cmdline.skip_net();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
-    std::unique_ptr<WStatus> status(sm.GetStatus());
+    auto status = sm.GetStatus();
 
     const auto& network_name = net_cmdline.network_name();
 

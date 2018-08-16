@@ -953,8 +953,8 @@ static void HandleRemoveFromNewScan() {
 
   bout << "\r\n|#9Mark messages in '" << subname << "' as read? ";
   if (yesno()) {
-    unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-    a()->context().qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
+    auto status = a()->status_manager()->GetStatus();
+    a()->context().qsc_p[a()->current_user_sub().subnum] = status->GetQScanPointer() - 1L;
   }
 }
 

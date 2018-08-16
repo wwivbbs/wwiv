@@ -153,7 +153,7 @@ int networkc_main(const NetworkCommandLine & net_cmdline) {
     const auto& net = net_cmdline.network();
 
     StatusMgr sm(net_cmdline.config().datadir(), [](int) {});
-    std::unique_ptr<WStatus> status(sm.GetStatus());
+    auto status = sm.GetStatus();
 
     int num_tries = 0;
     bool found = false;

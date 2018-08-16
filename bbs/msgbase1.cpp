@@ -414,8 +414,8 @@ void qscan(uint16_t start_subnum, bool& nextsub) {
         get_post(i)->qscan > a()->context().qsc_p[a()->GetCurrentReadMessageArea()]) {
       scan(i, MsgScanOption::SCAN_OPTION_READ_MESSAGE, nextsub, false);
     } else {
-      unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-      a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = pStatus->GetQScanPointer() - 1;
+      auto status = a()->status_manager()->GetStatus();
+      a()->context().qsc_p[a()->GetCurrentReadMessageArea()] = status->GetQScanPointer() - 1;
     }
 
     a()->set_current_user_sub_num(old_subnum);

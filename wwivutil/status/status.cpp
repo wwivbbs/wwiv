@@ -56,10 +56,7 @@ namespace wwivutil {
 static int show_qscan(const Config& config) {
   StatusMgr mgr(config.datadir(), [](int) {});
   auto status = mgr.GetStatus();
-
   cout << "QScan Pointer : " << status->GetQScanPointer() << std::endl;
-  delete status;
-
   return 0;
 }
 
@@ -71,7 +68,6 @@ static int set_qscan(const Config& config, uint32_t qscan) {
 
   auto status = mgr.GetStatus();
   cout << "QScan Pointer : " << status->GetQScanPointer() << std::endl;
-  delete status;
   return 0;
 }
 

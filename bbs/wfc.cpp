@@ -148,7 +148,7 @@ void WFC::DrawScreen() {
   }
 
   int nNumNewMessages = check_new_mail(sysop_usernum);
-  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+  auto status = a()->status_manager()->GetStatus();
   if (status_ == 0) {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
     a()->Cls();
@@ -171,7 +171,7 @@ void WFC::DrawScreen() {
     auto osVersion = wwiv::os::os_version_string();
     a()->localIO()->PutsXYA(40, 1, 3, "OS: ");
     a()->localIO()->PutsXYA(44, 1, 14, osVersion);
-    a()->localIO()->PrintfXYA(21, 6, 14, "%d", pStatus->GetNumCallsToday());
+    a()->localIO()->PrintfXYA(21, 6, 14, "%d", status->GetNumCallsToday());
     User sysop{};
     int feedback_waiting = 0;
     if (a()->users()->readuser_nocache(&sysop, sysop_usernum)) {
@@ -182,21 +182,21 @@ void WFC::DrawScreen() {
       a()->localIO()->PutsXYA(29, 7 , 3, "New:");
       a()->localIO()->PrintfXYA(34, 7 , 12, "%d", nNumNewMessages);
     }
-    a()->localIO()->PrintfXYA(21, 8, 14, "%d", pStatus->GetNumUploadsToday());
-    a()->localIO()->PrintfXYA(21, 9, 14, "%d", pStatus->GetNumMessagesPostedToday());
-    a()->localIO()->PrintfXYA(21, 10, 14, "%d", pStatus->GetNumLocalPosts());
-    a()->localIO()->PrintfXYA(21, 11, 14, "%d", pStatus->GetNumEmailSentToday());
-    a()->localIO()->PrintfXYA(21, 12, 14, "%d", pStatus->GetNumFeedbackSentToday());
-    a()->localIO()->PrintfXYA(21, 13, 14, "%d Mins (%.1f%%)", pStatus->GetMinutesActiveToday(),
-                                            100.0 * static_cast<float>(pStatus->GetMinutesActiveToday()) / 1440.0);
+    a()->localIO()->PrintfXYA(21, 8, 14, "%d", status->GetNumUploadsToday());
+    a()->localIO()->PrintfXYA(21, 9, 14, "%d", status->GetNumMessagesPostedToday());
+    a()->localIO()->PrintfXYA(21, 10, 14, "%d", status->GetNumLocalPosts());
+    a()->localIO()->PrintfXYA(21, 11, 14, "%d", status->GetNumEmailSentToday());
+    a()->localIO()->PrintfXYA(21, 12, 14, "%d", status->GetNumFeedbackSentToday());
+    a()->localIO()->PrintfXYA(21, 13, 14, "%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
+                                            100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0);
     a()->localIO()->PrintfXYA(58, 6, 14, "%s%s", wwiv_version, beta_version);
 
-    a()->localIO()->PrintfXYA(58, 7, 14, "%d", pStatus->GetNetworkVersion());
-    a()->localIO()->PrintfXYA(58, 8, 14, "%d", pStatus->GetNumUsers());
-    a()->localIO()->PrintfXYA(58, 9, 14, "%ld", pStatus->GetCallerNumber());
-    if (pStatus->GetDays()) {
-      a()->localIO()->PrintfXYA(58, 10, 14, "%.2f", static_cast<float>(pStatus->GetCallerNumber()) /
-                                              static_cast<float>(pStatus->GetDays()));
+    a()->localIO()->PrintfXYA(58, 7, 14, "%d", status->GetNetworkVersion());
+    a()->localIO()->PrintfXYA(58, 8, 14, "%d", status->GetNumUsers());
+    a()->localIO()->PrintfXYA(58, 9, 14, "%ld", status->GetCallerNumber());
+    if (status->GetDays()) {
+      a()->localIO()->PrintfXYA(58, 10, 14, "%.2f", static_cast<float>(status->GetCallerNumber()) /
+                                              static_cast<float>(status->GetDays()));
     } else {
       a()->localIO()->PutsXYA(58, 10, 14, "N/A");
     }
@@ -255,7 +255,7 @@ int WFC::doWFCEvents() {
   int lokb = 0;
   LocalIO* io = a_->localIO();
 
-  unique_ptr<WStatus> last_date_status(a_->status_manager()->GetStatus());
+  auto last_date_status = a()->status_manager()->GetStatus();
   do {
     write_inst(INST_LOC_WFC, 0, INST_FLAGS_NONE);
     a_->set_net_num(0);
@@ -441,8 +441,8 @@ int WFC::doWFCEvents() {
       // Print Log Daily logs
       case 'L': {
         Clear();
-        unique_ptr<WStatus> pStatus(a_->status_manager()->GetStatus());
-        print_local_file(pStatus->GetLogFileName(0));
+        auto status = a()->status_manager()->GetStatus();
+        print_local_file(status->GetLogFileName(0));
       }
       break;
       // Read User Mail
@@ -530,8 +530,8 @@ int WFC::doWFCEvents() {
         // Print Yesterday's Log
       case 'Y': {
         Clear();
-        unique_ptr<WStatus> pStatus(a_->status_manager()->GetStatus());
-        print_local_file(pStatus->GetLogFileName(1));
+        auto status = a()->status_manager()->GetStatus();
+        print_local_file(status->GetLogFileName(1));
       }
       break;
       // Print Activity (Z) Log

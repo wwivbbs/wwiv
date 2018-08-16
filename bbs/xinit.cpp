@@ -678,15 +678,15 @@ void Application::InitializeBBS() {
   }
 
   VLOG(1) << "Reading status information.";
-  WStatus* pStatus = statusMgr->BeginTransaction();
-  if (!pStatus) {
+  auto status = statusMgr->BeginTransaction();
+  if (!status) {
     LOG(ERROR) << "Unable to return statusrec.dat.";
     AbortBBS();
   }
 
-  pStatus->SetWWIVVersion(wwiv_num_version);
-  pStatus->EnsureCallerNumberIsValid();
-  statusMgr->CommitTransaction(pStatus);
+  status->SetWWIVVersion(wwiv_num_version);
+  status->EnsureCallerNumberIsValid();
+  statusMgr->CommitTransaction(std::move(status));
 
   VLOG(1) << "Reading Gfiles.";
   read_gfile();

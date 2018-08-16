@@ -429,10 +429,10 @@ void WWIVVersion() {
   bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;
 
   if (!a()->net_networks.empty()) {
-    std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+    auto status = a()->status_manager()->GetStatus();
     a()->status_manager()->RefreshStatusCache();
     //bout << wwiv::endl;
-    bout << "|#9Networks      : |#2" << "net" << pStatus->GetNetworkVersion() << wwiv::endl;
+    bout << "|#9Networks      : |#2" << "net" << status->GetNetworkVersion() << wwiv::endl;
     for (const auto& n : a()->net_networks) {
       if (!n.sysnum) {
         continue;
@@ -556,9 +556,9 @@ void ResetQscan() {
 }
 
 void MemoryStatus() {
-  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+  auto status = a()->status_manager()->GetStatus();
   bout.nl();
-  bout << "Qscanptr        : " << pStatus->GetQScanPointer() << wwiv::endl;
+  bout << "Qscanptr        : " << status->GetQScanPointer() << wwiv::endl;
 }
 
 void InitVotes() {
@@ -596,8 +596,8 @@ void VotePrint() {
 }
 
 void YesterdaysLog() {
-  std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-  print_local_file(pStatus->GetLogFileName(1));
+  auto status = a()->status_manager()->GetStatus();
+  print_local_file(status->GetLogFileName(1));
 }
 
 void ZLog() {
@@ -688,18 +688,18 @@ void ClearQScan() {
   case RETURN:
     break;
   case 'A': {
-    std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+    auto status = a()->status_manager()->GetStatus();
     for (int i = 0; i < a()->config()->config()->max_subs; i++) {
-      a()->context().qsc_p[i] = pStatus->GetQScanPointer() - 1L;
+      a()->context().qsc_p[i] = status->GetQScanPointer() - 1L;
     }
     bout.nl();
     bout << "Q-Scan pointers cleared.\r\n";
   }
   break;
   case 'C':
-    std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+    auto status = a()->status_manager()->GetStatus();
     bout.nl();
-    a()->context().qsc_p[a()->current_user_sub().subnum] = pStatus->GetQScanPointer() - 1L;
+    a()->context().qsc_p[a()->current_user_sub().subnum] = status->GetQScanPointer() - 1L;
     bout << "Messages on " << a()->subs().sub(a()->current_user_sub().subnum).name
          << " marked as read.\r\n";
     break;

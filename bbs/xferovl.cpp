@@ -506,10 +506,10 @@ static bool upload_file(const char *file_name, uint16_t directory_num, const cha
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u1, sizeof(uploadsrec));
     fileDownload.Close();
-    WStatus *pStatus = a()->status_manager()->BeginTransaction();
-    pStatus->IncrementNumUploadsToday();
-    pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-    a()->status_manager()->CommitTransaction(pStatus);
+    auto status = a()->status_manager()->BeginTransaction();
+    status->IncrementNumUploadsToday();
+    status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
+    a()->status_manager()->CommitTransaction(std::move(status));
     sysoplog() << "+ '" << u.filename << "' uploaded on " << d.name;
     a()->UpdateTopScreen();
   }

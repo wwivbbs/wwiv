@@ -379,10 +379,10 @@ static int try_to_ul_wh(const string& orig_file_name) {
 
   a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(u.numbytes));
 
-  WStatus *pStatus = a()->status_manager()->BeginTransaction();
-  pStatus->IncrementNumUploadsToday();
-  pStatus->IncrementFileChangedFlag(WStatus::fileChangeUpload);
-  a()->status_manager()->CommitTransaction(pStatus);
+  auto status = a()->status_manager()->BeginTransaction();
+  status->IncrementNumUploadsToday();
+  status->IncrementFileChangedFlag(WStatus::fileChangeUpload);
+  a()->status_manager()->CommitTransaction(std::move(status));
   sysoplog() << StringPrintf("+ \"%s\" uploaded on %s", u.filename, a()->directories[dn].name);
   return 0;                                 // This means success
 }

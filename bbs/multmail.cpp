@@ -114,17 +114,17 @@ void multimail(int *pnUserNumber, int numu) {
     a()->users()->writeuser(&user, pnUserNumber[cv]);
     const string pnunn = a()->names()->UserName(pnUserNumber[cv]);
     strcat(s, pnunn.c_str());
-    WStatus* pStatus = a()->status_manager()->BeginTransaction();
+    auto status = a()->status_manager()->BeginTransaction();
     if (pnUserNumber[cv] == 1) {
-      pStatus->IncrementNumFeedbackSentToday();
+      status->IncrementNumFeedbackSentToday();
       a()->user()->SetNumFeedbackSentToday(a()->user()->GetNumFeedbackSentToday() + 1);
       a()->user()->SetNumFeedbackSent(a()->user()->GetNumFeedbackSent() + 1);
     } else {
-      pStatus->IncrementNumEmailSentToday();
+      status->IncrementNumEmailSentToday();
       a()->user()->SetNumEmailSent(a()->user()->GetNumEmailSent() + 1);
       a()->user()->SetNumEmailSentToday(a()->user()->GetNumEmailSentToday() + 1);
     }
-    a()->status_manager()->CommitTransaction(pStatus);
+    a()->status_manager()->CommitTransaction(std::move(status));
     sysoplog() << s;
     bout << s;
     bout.nl();

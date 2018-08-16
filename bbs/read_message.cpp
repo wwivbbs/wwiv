@@ -779,10 +779,10 @@ static void update_qscan(uint32_t qscan) {
 #ifdef UPDATE_SYSTEM_QSCAN_PTR_ON_ADVANCED_POST_POINTER
   uint32_t current_qscan_pointer = 0;
   {
-    std::unique_ptr<WStatus> wwiv_status(a()->status_manager()->GetStatus());
+    auto status = a()->status_manager()->GetStatus();
     // not sure why we check this twice...
     // maybe we need a getCachedQScanPointer?
-    current_qscan_pointer = wwiv_status->GetQScanPointer();
+    current_qscan_pointer = status->GetQScanPointer();
   }
   if (qscan >= current_qscan_pointer) {
     a()->status_manager()->Run([&](WStatus& s) {

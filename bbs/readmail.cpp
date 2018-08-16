@@ -864,9 +864,9 @@ void readmail(int mode) {
             }
             p.msg.storage_type = (uint8_t)a()->current_sub().storage_type;
             savefile(b, &(p.msg), a()->current_sub().filename);
-            WStatus* pStatus = a()->status_manager()->BeginTransaction();
-            p.qscan = pStatus->IncrementQScanPointer();
-            a()->status_manager()->CommitTransaction(pStatus);
+            auto status = a()->status_manager()->BeginTransaction();
+            p.qscan = status->IncrementQScanPointer();
+            a()->status_manager()->CommitTransaction(std::move(status));
             if (a()->GetNumMessagesInCurrentMessageArea() >=
               a()->current_sub().maxmsgs) {
               i1 = 1;
@@ -883,10 +883,10 @@ void readmail(int mode) {
               delete_message(i2);
             }
             add_post(&p);
-            pStatus = a()->status_manager()->BeginTransaction();
-            pStatus->IncrementNumMessagesPostedToday();
-            pStatus->IncrementNumLocalPosts();
-            a()->status_manager()->CommitTransaction(pStatus);
+            status = a()->status_manager()->BeginTransaction();
+            status->IncrementNumMessagesPostedToday();
+            status->IncrementNumLocalPosts();
+            a()->status_manager()->CommitTransaction(std::move(status));
             close_sub();
             tmp_disable_conf(false);
             iscan(a()->current_user_sub_num());

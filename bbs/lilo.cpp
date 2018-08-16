@@ -601,13 +601,13 @@ static void UpdateLastOnFile() {
     pausescr();
   }
 
-  unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
+  auto status = a()->status_manager()->GetStatus();
   {
     const string username_num = a()->names()->UserName(a()->usernum);
     string t = times();
     string f = fulldate();
     const string sysop_log_line = StringPrintf("%ld: %s %s %s   %s - %d (%u)",
-      pStatus->GetCallerNumber(),
+      status->GetCallerNumber(),
       username_num.c_str(),
       t.c_str(),
       f.c_str(),
@@ -640,7 +640,7 @@ static void UpdateLastOnFile() {
       while (it != lines.end()) {
         lastonFile.WriteLine(*it++);
       }
-      lastonFile.Write(CreateLastOnLogLine(*pStatus.get()));
+      lastonFile.Write(CreateLastOnLogLine(*status.get()));
       lastonFile.Close();
     }
   }
@@ -748,8 +748,8 @@ static void DisplayUserLoginInformation() {
           s1[i1] = ' ';
         }
         s1[i1] = '\0';
-        std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-        bout << s1 << "(net" << pStatus->GetNetworkVersion() << ")\r\n";
+        auto status = a()->status_manager()->GetStatus();
+        bout << s1 << "(net" << status->GetNetworkVersion() << ")\r\n";
       }
     }
   }

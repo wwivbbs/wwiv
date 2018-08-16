@@ -186,7 +186,7 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
     sleep_for(15s);
     e = need_to_exit.load();
 
-    std::unique_ptr<WStatus> last_date_status(sm.GetStatus());
+    auto last_date_status = sm.GetStatus();
     if (date() != last_date_status->GetLastDate()) {
       LOG(INFO) << "Executing BeginDay Event.";
       const std::map<char, string> params{};

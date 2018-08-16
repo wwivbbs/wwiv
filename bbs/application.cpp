@@ -405,7 +405,7 @@ void Application::UpdateTopScreen() {
     return;
   }
 
-  unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+  auto status = (status_manager()->GetStatus());
   char i;
   char sl[82], ar[17], dar[17], restrict[17], rst[17];
 
@@ -464,18 +464,18 @@ void Application::UpdateTopScreen() {
     break;
   case LocalIO::topdataSystem: {
     localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ", config()->system_name().c_str(),
-                        pStatus->GetLastDate().c_str());
+                        status->GetLastDate().c_str());
 
     localIO()->PrintfXY(
         0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
-        pStatus->GetNumUsers(), pStatus->GetCallerNumber(), pStatus->GetNumCallsToday(),
-        pStatus->GetNumLocalPosts());
+        status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
+        status->GetNumLocalPosts());
 
     const string username_num = names()->UserName(usernum);
     localIO()->PrintfXY(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                        username_num.c_str(), pStatus->GetMinutesActiveToday(),
-                        static_cast<int>(10 * pStatus->GetMinutesActiveToday() / 144),
-                        pStatus->GetNumEmailSentToday());
+                        username_num.c_str(), status->GetMinutesActiveToday(),
+                        static_cast<int>(10 * status->GetMinutesActiveToday() / 144),
+                        status->GetNumEmailSentToday());
 
     User sysop{};
     int feedback_waiting = 0;
@@ -484,8 +484,8 @@ void Application::UpdateTopScreen() {
     }
     localIO()->PrintfXY(
         0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-        user()->GetSl(), user()->GetDsl(), feedback_waiting, pStatus->GetNumUploadsToday(),
-        pStatus->GetNumFeedbackSentToday());
+        user()->GetSl(), user()->GetDsl(), feedback_waiting, status->GetNumUploadsToday(),
+        status->GetNumFeedbackSentToday());
   } break;
   case LocalIO::topdataUser: {
     to_char_array(rst, restrict_string);
@@ -909,9 +909,9 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   if (event_only) {
-    unique_ptr<WStatus> pStatus(status_manager()->GetStatus());
+    auto status = status_manager()->GetStatus();
     cleanup_events();
-    if (date() != pStatus->GetLastDate()) {
+    if (date() != status->GetLastDate()) {
       // This may be another node, but the user explicitly wanted to run the beginday
       // event from the commandline, so we'll just check the date.
       beginday(true);

@@ -121,9 +121,9 @@ void Type2Text::save_gat(File& file, size_t section, const std::vector<gati_t>& 
   // set a()->subchg if any of the subs receive a post so that 
   // resynch can work right on multi node configs.
   // 
-  // WStatus *pStatus = a()->status_manager()->BeginTransaction();
-  // pStatus->IncrementFileChangedFlag(WStatus::fileChangePosts);
-  // a()->status_manager()->CommitTransaction(pStatus);
+  // auto status = a()->status_manager()->BeginTransaction();
+  // status->IncrementFileChangedFlag(WStatus::fileChangePosts);
+  // a()->status_manager()->CommitTransaction(status);
 }
 
 bool Type2Text::readfile(const messagerec* msg, string* out) {
