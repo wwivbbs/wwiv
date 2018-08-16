@@ -129,16 +129,16 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
   ::ZeroMemory(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE + CONST_SBBSFOS_BUFFER_PADDING);
   szReadBuffer[ CONST_SBBSFOS_BUFFER_SIZE + 1 ] = '\xFE';
 
-  int nCounter = 0;
+  int counter = 0;
   for (;;) {
-    nCounter++;
+    counter++;
     if (a()->using_modem && (!a()->remoteIO()->connected())) {
       SetEvent(hSyncHangupEvent);
       LogToSync("Setting Hangup Event and Sleeping\r\n");
       ::Sleep(1000);
     }
 
-    if (nCounter > CONST_NUM_LOOPS_BEFORE_EXIT_CHECK) {
+    if (counter > CONST_NUM_LOOPS_BEFORE_EXIT_CHECK) {
       // Only check for exit when we've been idle
       DWORD dwExitCode = 0;
       if (GetExitCodeProcess(hProcess, &dwExitCode)) {
@@ -151,7 +151,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
     }
 
     if (a()->remoteIO()->incoming()) {
-      nCounter = 0;
+      counter = 0;
       // SYNCFOS_DEBUG_PUTS( "Char available to send to the door" );
       int nNumReadFromComm = a()->remoteIO()->read(szReadBuffer, CONST_SBBSFOS_BUFFER_SIZE);
       LogToSync(StrCat("Read [", nNumReadFromComm, "] from comm\r\n"));
@@ -230,7 +230,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
       }
 
       if (nBufferPtr > 0) {
-        nCounter = 0;
+        counter = 0;
         if (nSyncMode & CONST_SBBSFOS_DOSOUT_MODE) {
           // For some reason this doesn't write twice locally, so it works pretty well.
           szReadBuffer[nBufferPtr] = '\0';
@@ -250,7 +250,7 @@ bool DoSyncFosLoopNT(HANDLE hProcess, HANDLE hSyncHangupEvent, HANDLE hSyncReadS
         }
       }
     }
-    if (nCounter > 0) {
+    if (counter > 0) {
       ::Sleep(0);
     }
   }

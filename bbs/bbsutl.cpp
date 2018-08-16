@@ -468,11 +468,11 @@ bool set_language(int n) {
     return true;
   }
 
-  int nOldCurLang = a()->language_number();
+  int old_curlang = a()->language_number();
 
   if (!set_language_1(n)) {
-    if (nOldCurLang >= 0) {
-      if (!set_language_1(nOldCurLang)) {
+    if (old_curlang >= 0) {
+      if (!set_language_1(old_curlang)) {
         set_language_1(0);
       }
     }

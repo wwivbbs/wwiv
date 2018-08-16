@@ -130,8 +130,8 @@ void upload_post() {
   int i = 0;
   receive_file(file.full_pathname().c_str(), &i, INPUT_MSG, -1);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
-    auto lFileSize = file.length();
-    if (lFileSize > lMaxBytes) {
+    auto file_size = file.length();
+    if (file_size > lMaxBytes) {
       bout << "\r\n|#6Sorry, your message is too long.  Not saved.\r\n\n";
       file.Close();
       file.Delete();

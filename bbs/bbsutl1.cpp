@@ -328,13 +328,13 @@ bool play_sdf(const string& sound_filename, bool abortable) {
 
       // only play if freq and duration > 0
       if (freq > 0 && dur > 0) {
-        int nPauseDelay = 0;
+        int pause_delay = 0;
         if (nw > 2) {
-          nPauseDelay = to_number<int>(extractword(3, soundLine, DELIMS_WHITE));
+          pause_delay = to_number<int>(extractword(3, soundLine, DELIMS_WHITE));
         }
         sound(freq, milliseconds(dur));
-        if (nPauseDelay > 0) {
-          sleep_for(milliseconds(nPauseDelay));
+        if (pause_delay > 0) {
+          sleep_for(milliseconds(pause_delay));
         }
       }
     }
@@ -361,10 +361,10 @@ string describe_area_code(int nAreaCode) {
   string previous;
   string current;
   while (file.ReadLine(&current)) {
-    auto nCurrentTown = to_number<int>(current);
-    if (nCurrentTown == nAreaCode) {
+    auto current_town = to_number<int>(current);
+    if (current_town == nAreaCode) {
       return previous;
-    } else if (nCurrentTown == 0) {
+    } else if (current_town == 0) {
       // Only set this on values that are town names and not area codes.
       previous = current;
     }
@@ -390,10 +390,10 @@ string describe_area_code_prefix(int nAreaCode, int nTargetTown) {
   string previous;
   string current;
   while (file.ReadLine(&current)) {
-    int nCurrentTown = to_number<int>(current);
-    if (nCurrentTown == nTargetTown) {
+    int current_town = to_number<int>(current);
+    if (current_town == nTargetTown) {
       return previous;
-    } else if (nCurrentTown == 0) {
+    } else if (current_town == 0) {
       // Only set this on values that are town names and not area codes.
       previous = current;
     }

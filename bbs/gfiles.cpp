@@ -448,11 +448,11 @@ void gfile_sec(int sn) {
             if (!file.Open(File::modeReadOnly | File::modeBinary)) {
               bout << "|#6File not found : [" << file.full_pathname() << "]";
             } else {
-              auto lFileSize = file.length();
+              auto file_size = file.length();
               file.Close();
               bool sent = false;
               abort = false;
-              send_file(file_name.c_str(), &sent, &abort, g[i2 - 1].filename, -1, lFileSize);
+              send_file(file_name.c_str(), &sent, &abort, g[i2 - 1].filename, -1, file_size);
               char s1[255];
               if (sent) {
                 sprintf(s1, "|#2%s |#9successfully transferred|#1.|#0\r\n", g[i2 - 1].filename);

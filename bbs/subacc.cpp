@@ -267,8 +267,8 @@ void delete_message(int mn) {
 
   if (fileSub) {
     if (mn > 0 && mn <= a()->GetNumMessagesInCurrentMessageArea()) {
-      char* pBuffer = static_cast<char*>(malloc(BUFSIZE));
-      if (pBuffer) {
+      char* buffer = static_cast<char*>(malloc(BUFSIZE));
+      if (buffer) {
         postrec* p1 = get_post(mn);
         remove_link(&(p1->msg), a()->current_sub().filename);
 
@@ -281,9 +281,9 @@ void delete_message(int mn) {
           nb = (l < BUFSIZE) ? static_cast<int>(l) : BUFSIZE;
           if (nb) {
             fileSub->Seek(cp, File::Whence::begin);
-            fileSub->Read(pBuffer, nb);
+            fileSub->Read(buffer, nb);
             fileSub->Seek(cp - sizeof(postrec), File::Whence::begin);
-            fileSub->Write(pBuffer, nb);
+            fileSub->Write(buffer, nb);
             cp += nb;
           }
         } while (nb == BUFSIZE);
@@ -296,7 +296,7 @@ void delete_message(int mn) {
         a()->SetNumMessagesInCurrentMessageArea(p.owneruser);
         fileSub->Seek(0L, File::Whence::begin);
         fileSub->Write(&p, sizeof(postrec));
-        free(pBuffer);
+        free(buffer);
       }
     }
   }

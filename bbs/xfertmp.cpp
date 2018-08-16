@@ -101,7 +101,7 @@ int check_for_files_arc(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
     arch a;
-    long lFileSize = file.length();
+    long file_size = file.length();
     long lFilePos = 1;
     file.Seek(0, File::Whence::begin);
     file.Read(&a, 1);
@@ -110,10 +110,10 @@ int check_for_files_arc(const char *file_name) {
       bout << stripfn(file_name) << " is not a valid .ARC file.";
       return 1;
     }
-    while (lFilePos < lFileSize) {
+    while (lFilePos < file_size) {
       file.Seek(lFilePos, File::Whence::begin);
-      auto nNumRead = file.Read(&a, sizeof(arch));
-      if (nNumRead == sizeof(arch)) {
+      auto num_read = file.Read(&a, sizeof(arch));
+      if (num_read == sizeof(arch)) {
         lFilePos += sizeof(arch);
         if (a.type == 1) {
           lFilePos -= 4;
@@ -131,7 +131,7 @@ int check_for_files_arc(const char *file_name) {
             return 1;
           }
         } else {
-          lFilePos = lFileSize;
+          lFilePos = file_size;
         }
       } else {
         file.Close();
@@ -139,7 +139,7 @@ int check_for_files_arc(const char *file_name) {
           bout << stripfn(file_name) << " is not a valid .ARC file.";
           return 1;
         } else {
-          lFilePos = lFileSize;
+          lFilePos = file_size;
         }
       }
     }
@@ -278,27 +278,27 @@ int check_for_files_lzh(const char *file_name) {
     bout << "File not found: " << stripfn(file_name) << wwiv::endl;
     return 1;
   }
-  long lFileSize = file.length();
+  long file_size = file.length();
   unsigned short nCrc;
   int err = 0;
-  for (long l = 0; l < lFileSize;
+  for (long l = 0; l < file_size;
        l += a.fn_len + a.comp_size + sizeof(lharc_header) + file.Read(&nCrc, sizeof(nCrc)) + 1) {
     file.Seek(l, File::Whence::begin);
     char flag;
     file.Read(&flag, 1);
     if (!flag) {
-      l = lFileSize;
+      l = file_size;
       break;
     }
-    auto nNumRead = file.Read(&a, sizeof(lharc_header));
-    if (nNumRead != sizeof(lharc_header)) {
+    auto num_read = file.Read(&a, sizeof(lharc_header));
+    if (num_read != sizeof(lharc_header)) {
       bout << stripfn(file_name) << " is not a valid .LZH file.";
       err = 1;
       break;
     }
     char buffer[256];
-    nNumRead = file.Read(buffer, a.fn_len);
-    if (nNumRead != a.fn_len) {
+    num_read = file.Read(buffer, a.fn_len);
+    if (num_read != a.fn_len) {
       bout << stripfn(file_name) << " is not a valid .LZH file.";
       err = 1;
       break;
@@ -317,19 +317,19 @@ int check_for_files_lzh(const char *file_name) {
 int check_for_files_arj(const char *file_name) {
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    long lFileSize = file.length();
+    long file_size = file.length();
     long lCurPos = 0;
     file.Seek(0L, File::Whence::begin);
-    while (lCurPos < lFileSize) {
+    while (lCurPos < file_size) {
       file.Seek(lCurPos, File::Whence::begin);
       unsigned short sh;
-      int nNumRead = file.Read(&sh, 2);
-      if (nNumRead != 2 || sh != 0xea60) {
+      int num_read = file.Read(&sh, 2);
+      if (num_read != 2 || sh != 0xea60) {
         file.Close();
         bout << stripfn(file_name) << " is not a valid .ARJ file.";
         return 1;
       }
-      lCurPos += nNumRead + 2;
+      lCurPos += num_read + 2;
       file.Read(&sh, 2);
       unsigned char s1;
       file.Read(&s1, 1);
@@ -349,7 +349,7 @@ int check_for_files_arj(const char *file_name) {
       file.Seek(lCurPos, File::Whence::begin);
       file.Read(&sh, 2);
       lCurPos += 2;
-      while ((lCurPos < lFileSize) && sh) {
+      while ((lCurPos < file_size) && sh) {
         lCurPos += 6 + static_cast<long>(sh);
         file.Seek(lCurPos - 2, File::Whence::begin);
         file.Read(&sh, 2);
@@ -413,28 +413,28 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "No such file.\r\n\n";
     return false;
   }
-  long lFileSize = file.length();
+  long file_size = file.length();
   file.Close();
-  if (lFileSize == 0L) {
+  if (file_size == 0L) {
     bout << "File has nothing in it.\r\n\n";
     return false;
   }
-  double d = XFER_TIME(lFileSize);
+  double d = XFER_TIME(file_size);
   if (d <= nsl()) {
     bout << "Approx. time: " << ctim(std::lround(d)) << wwiv::endl;
     bool sent = false;
     bool abort = false;
     char szFileToSend[81];
     sprintf(szFileToSend, "%s.%s", file_name, a()->arcs[ARC_NUMBER].extension);
-    send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, lFileSize);
+    send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, file_size);
     if (sent) {
       if (count_against_xfer_ratio) {
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
-        a()->user()->SetDownloadK(a()->user()->GetDownloadK() + bytes_to_k(lFileSize));
+        a()->user()->SetDownloadK(a()->user()->GetDownloadK() + bytes_to_k(file_size));
         bout.nl(2);
         bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
-      sysoplog() << StringPrintf("Downloaded %ldk of \"%s\"", bytes_to_k(lFileSize), szFileToSend);
+      sysoplog() << StringPrintf("Downloaded %ldk of \"%s\"", bytes_to_k(file_size), szFileToSend);
       if (a()->IsUserOnline()) {
         a()->UpdateTopScreen();
       }

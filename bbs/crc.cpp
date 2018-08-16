@@ -120,11 +120,11 @@ static UNS_32_BITS crc_32_tab[] = {
 
 unsigned short crc;
 
-unsigned long int crc32buf(const char *pBuffer, std::size_t nLength) {
+unsigned long int crc32buf(const char *buffer, std::size_t nLength) {
   unsigned long int oldcrc32;
   oldcrc32 = 0xFFFFFFFF;
-  for (; nLength; --nLength, ++pBuffer) {
-    oldcrc32 = UPDC32(*pBuffer, oldcrc32);
+  for (; nLength; --nLength, ++buffer) {
+    oldcrc32 = UPDC32(*buffer, oldcrc32);
   }
   return ~oldcrc32;
 }

@@ -113,8 +113,8 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
   }
   if (nb) {
     file.Seek(pos, File::Whence::begin);
-    auto nNumRead = file.Read(b, nb);
-    for (int i = nNumRead; i < nb; i++) {
+    auto num_read = file.Read(b, nb);
+    for (int i = num_read; i < nb; i++) {
       b[i] = '\0';
     }
   } else if (block_type == 5) {
@@ -210,9 +210,9 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     *percent = 0.0;
     return;
   }
-  auto lFileSize = file.length();
-  if (!lFileSize) {
-    lFileSize = 1;
+  auto file_size = file.length();
+  if (!file_size) {
+    file_size = 1;
   }
 
   double tpb = (12.656f / static_cast<double>(a()->modem_speed_));
@@ -231,13 +231,13 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
   a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
   a()->localIO()->PutsXY(65, 0, stripfn(pszWorkingFileName));
-  a()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (lFileSize + 127) / 128, bytes_to_k(lFileSize));
+  a()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (file_size + 127) / 128, bytes_to_k(file_size));
 
   if (!okstart(&use_crc, &abort)) {
     abort = true;
   }
   if (use_ymodem && !abort && !a()->hangup_) {
-    ch = send_b(file, lFileSize, 5, 0, &use_crc, pszWorkingFileName, &terr, &abort);
+    ch = send_b(file, file_size, 5, 0, &use_crc, pszWorkingFileName, &terr, &abort);
     if (ch == CX) {
       abort = true;
     }
@@ -247,13 +247,13 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     }
   }
   bool bUse1kBlocks = false;
-  while (!a()->hangup_ && !abort && cp < lFileSize) {
+  while (!a()->hangup_ && !abort && cp < file_size) {
     bUse1kBlocks = (use_ymodem) ? true : false;
-    if ((lFileSize - cp) < 128L) {
+    if ((file_size - cp) < 128L) {
       bUse1kBlocks = false;
     }
     a()->localIO()->PrintfXY(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
-    const string t = ctim(std::lround((lFileSize - cp) * tpb));
+    const string t = ctim(std::lround((file_size - cp) * tpb));
     a()->localIO()->PutsXY(65, 1, t);
     a()->localIO()->PutsXY(69, 4, "0");
 
@@ -279,11 +279,11 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
   } else {
     *sent = false;
     cp += GetXYModemBlockSize(bUse1kBlocks);
-    if (cp >= lFileSize) {
+    if (cp >= file_size) {
       *percent = 1.0;
     } else {
       cp -= GetXYModemBlockSize(bUse1kBlocks);
-      *percent = ((double)(cp)) / ((double) lFileSize);
+      *percent = ((double)(cp)) / ((double) file_size);
     }
   }
   file.Close();

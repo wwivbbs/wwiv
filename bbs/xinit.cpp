@@ -810,9 +810,9 @@ void Application::create_phone_file() {
   if (!file.Open(File::modeReadOnly | File::modeBinary)) {
     return;
   }
-  auto lFileSize = file.length();
+  auto file_size = file.length();
   file.Close();
-  int numOfRecords = static_cast<int>(lFileSize / sizeof(userrec));
+  int numOfRecords = static_cast<int>(file_size / sizeof(userrec));
 
   File phoneNumFile(FilePath(config()->datadir(), PHONENUM_DAT));
   if (!phoneNumFile.Open(File::modeReadWrite | File::modeAppend | File::modeBinary |

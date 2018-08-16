@@ -129,13 +129,13 @@ static void show_chains(int *mapp, std::map<int, int>& map) {
   }
 }
 
-// Executes a "chain", index number nChainum.
-void run_chain(int nChainum) {
-  int inst = inst_ok(INST_LOC_CHAINS, nChainum + 1);
+// Executes a "chain", index number chain_num.
+void run_chain(int chain_num) {
+  int inst = inst_ok(INST_LOC_CHAINS, chain_num + 1);
   if (inst != 0) {
     const string message = StringPrintf("|#2Chain %s is in use on instance %d.  ", 
-        a()->chains[nChainum].description, inst);
-    if (!(a()->chains[nChainum].ansir & ansir_multi_user)) {
+        a()->chains[chain_num].description, inst);
+    if (!(a()->chains[chain_num].ansir & ansir_multi_user)) {
       bout << message << "Try again later.\r\n";
       return;
     } else {
@@ -145,9 +145,9 @@ void run_chain(int nChainum) {
       }
     }
   }
-  write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(nChainum + 1), INST_FLAGS_NONE);
+  write_inst(INST_LOC_CHAINS, static_cast<uint16_t>(chain_num + 1), INST_FLAGS_NONE);
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG)) {
-    a()->chains_reg[nChainum].usage++;
+    a()->chains_reg[chain_num].usage++;
     wwiv::core::DataFile<chainregrec> regFile(FilePath(a()->config()->datadir(), CHAINS_REG),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile | File::modeTruncate);
     if (regFile) {
@@ -155,13 +155,13 @@ void run_chain(int nChainum) {
     }
   }
   const auto chainCmdLine = stuff_in(
-      a()->chains[nChainum].filename, create_chain_file(), std::to_string(a()->modem_speed_),
+      a()->chains[chain_num].filename, create_chain_file(), std::to_string(a()->modem_speed_),
       std::to_string(a()->primary_port()), std::to_string(a()->modem_speed_), "");
 
-  sysoplog() << "!Ran \"" << a()->chains[nChainum].description << "\"";
+  sysoplog() << "!Ran \"" << a()->chains[chain_num].description << "\"";
   a()->user()->SetNumChainsRun(a()->user()->GetNumChainsRun() + 1);
 
-  ExecuteExternalProgram(chainCmdLine, ansir_to_flags(a()->chains[nChainum].ansir));
+  ExecuteExternalProgram(chainCmdLine, ansir_to_flags(a()->chains[chain_num].ansir));
   write_inst(INST_LOC_CHAINS, 0, INST_FLAGS_NONE);
   a()->UpdateTopScreen();
 }

@@ -105,13 +105,13 @@ public:
   void Close();
   bool IsOpen() const { return File::IsFileHandleValid(handle_); }
 
-  ssize_t Read(void* pBuffer, size_t nCount);
-  ssize_t Write(const void* pBuffer, size_t nCount);
+  ssize_t Read(void* buf, size_t count);
+  ssize_t Write(const void* buf, size_t count);
 
   ssize_t Write(const std::string& s) { return this->Write(s.data(), s.length()); }
 
-  ssize_t Writeln(const void* pBuffer, size_t nCount) {
-    auto ret = this->Write(pBuffer, nCount);
+  ssize_t Writeln(const void* buffer, size_t nCount) {
+    auto ret = this->Write(buffer, nCount);
     ret += this->Write("\r\n", 2);
     return ret;
   }

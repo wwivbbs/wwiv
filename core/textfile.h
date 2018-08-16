@@ -112,8 +112,8 @@ public:
   ssize_t WriteFormatted(const char* formatText, ...);
 
   /** Writes a binary blob as binary data. */
-  ssize_t WriteBinary(const void* pBuffer, size_t nSize) {
-    return (int)fwrite(pBuffer, nSize, 1, file_);
+  ssize_t WriteBinary(const void* buffer, size_t nSize) {
+    return (int)fwrite(buffer, nSize, 1, file_);
   }
 
   /** Reads one line of text, removing the `\r\n` in the end of the line. */

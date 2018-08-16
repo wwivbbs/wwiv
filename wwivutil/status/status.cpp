@@ -85,8 +85,7 @@ public:
       std::cout << GetUsage() << GetHelp() << endl;
       return 2;
     }
-    string set_or_get(remaining().front());
-    StringLowerCase(&set_or_get);
+    auto set_or_get = ToStringLowerCase(remaining().front());
 
     if (set_or_get == "get") {
       return show_qscan(*this->config()->config());

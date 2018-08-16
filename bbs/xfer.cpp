@@ -88,26 +88,26 @@ void get_ed_info() {
   long lCurFilePos = 0;
   File fileExtDescr(a()->extended_description_filename_);
   if (fileExtDescr.Open(File::modeReadOnly | File::modeBinary)) {
-    auto lFileSize = fileExtDescr.length();
-    if (lFileSize > 0) {
+    auto file_size = fileExtDescr.length();
+    if (file_size > 0) {
       ed_info = static_cast<ext_desc_rec *>(BbsAllocA(static_cast<long>(a()->numf) * sizeof(ext_desc_rec)));
       if (ed_info == nullptr) {
         fileExtDescr.Close();
         return;
       }
       ed_num = 0;
-      while (lCurFilePos < lFileSize && ed_num < a()->numf) {
+      while (lCurFilePos < file_size && ed_num < a()->numf) {
         fileExtDescr.Seek(lCurFilePos, File::Whence::begin);
         ext_desc_type ed;
-        int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
-        if (nNumRead == sizeof(ext_desc_type)) {
+        int num_read = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
+        if (num_read == sizeof(ext_desc_type)) {
           strcpy(ed_info[ed_num].name, ed.name);
           ed_info[ed_num].offset = lCurFilePos;
           lCurFilePos += static_cast<long>(ed.len) + sizeof(ext_desc_type);
           ed_num++;
         }
       }
-      if (lCurFilePos < lFileSize) {
+      if (lCurFilePos < file_size) {
         ed_got = 2;
       }
     }
@@ -387,9 +387,9 @@ void delete_extended_description(const string& file_name) {
 
   File fileExtDescr(a()->extended_description_filename_);
   fileExtDescr.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);
-  auto lFileSize = fileExtDescr.length();
+  auto file_size = fileExtDescr.length();
   long r = 0, w = 0;
-  while (r < lFileSize) {
+  while (r < file_size) {
     fileExtDescr.Seek(r, File::Whence::begin);
     fileExtDescr.Read(&ed, sizeof(ext_desc_type));
     if (ed.len < 10000) {
@@ -423,8 +423,8 @@ string read_extended_description(const string& file_name) {
         }
         fileExtDescr.Seek(ed_info[i].offset, File::Whence::begin);
         ext_desc_type ed;
-        int nNumRead = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
-        if (nNumRead == sizeof(ext_desc_type) && file_name == ed.name) {
+        int num_read = fileExtDescr.Read(&ed, sizeof(ext_desc_type));
+        if (num_read == sizeof(ext_desc_type) && file_name == ed.name) {
           string ss;
           ss.resize(ed.len);
           fileExtDescr.Read(&ss[0], ed.len);
@@ -441,9 +441,9 @@ string read_extended_description(const string& file_name) {
   if (ed_got != 1) {
     File fileExtDescr(a()->extended_description_filename_);
     if (fileExtDescr.Open(File::modeBinary | File::modeReadOnly)) {
-      auto lFileSize = fileExtDescr.length();
+      auto file_size = fileExtDescr.length();
       long lCurPos = 0;
-      while (lCurPos < lFileSize) {
+      while (lCurPos < file_size) {
         fileExtDescr.Seek(lCurPos, File::Whence::begin);
         ext_desc_type ed;
         lCurPos += static_cast<long>(fileExtDescr.Read(&ed, sizeof(ext_desc_type)));

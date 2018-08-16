@@ -624,7 +624,7 @@ void moving(bool bOnline, int loc) {
 // Sets color_string string for current node
 
 void get_colors(char *color_string, IniFile *pIniFile) {
-  string s = pIniFile->value<string>(StringPrintf("C%u", a()->instance_number()));
+  string s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
   strcpy(color_string, s.c_str());
 }
 

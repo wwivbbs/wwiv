@@ -408,21 +408,21 @@ void ascii_send(const char *file_name, bool *sent, double *percent) {
 
   File file(file_name);
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    auto lFileSize = file.length();
-    lFileSize = std::max<off_t>(lFileSize, 1);
-    auto nNumRead = file.Read(b, 1024);
+    auto file_size = file.length();
+    file_size = std::max<off_t>(file_size, 1);
+    auto num_read = file.Read(b, 1024);
     long lTotalBytes = 0L;
     bool abort = false;
-    while (nNumRead && !a()->hangup_ && !abort) {
+    while (num_read && !a()->hangup_ && !abort) {
       int nBufferPos = 0;
-      while (!a()->hangup_ && !abort && nBufferPos < nNumRead) {
+      while (!a()->hangup_ && !abort && nBufferPos < num_read) {
         CheckForHangup();
         bout.bputch(b[nBufferPos++]);
         checka(&abort);
       }
       lTotalBytes += nBufferPos;
       checka(&abort);
-      nNumRead = file.Read(b, 1024);
+      num_read = file.Read(b, 1024);
     }
     file.Close();
     if (!abort) {
@@ -431,7 +431,7 @@ void ascii_send(const char *file_name, bool *sent, double *percent) {
       *sent = false;
       a()->user()->SetDownloadK(a()->user()->GetDownloadK() + bytes_to_k(lTotalBytes));
     }
-    *percent = static_cast<double>(lTotalBytes) / static_cast<double>(lFileSize);
+    *percent = static_cast<double>(lTotalBytes) / static_cast<double>(file_size);
   } else {
     bout.nl();
     bout << "File not found.\r\n\n";

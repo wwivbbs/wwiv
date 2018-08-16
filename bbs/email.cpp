@@ -648,11 +648,11 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     sendout_email(email);
     return;
   }
-  for (int nCounter = 0; nCounter < nNumUsers; nCounter++) {
-    set_net_num(carbon_copy[nCounter].net_num);
-    email.user_number = carbon_copy[nCounter].user_number;
-    email.system_number = carbon_copy[nCounter].system_number;
-    email.from_network_number = carbon_copy[nCounter].net_num;
+  for (int counter = 0; counter < nNumUsers; counter++) {
+    set_net_num(carbon_copy[counter].net_num);
+    email.user_number = carbon_copy[counter].user_number;
+    email.system_number = carbon_copy[counter].system_number;
+    email.from_network_number = carbon_copy[counter].net_num;
     sendout_email(email);
   }
 }

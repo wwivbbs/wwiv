@@ -20,7 +20,7 @@
 
 #include <cstddef>
 
-unsigned long int crc32buf(const char *pBuffer, std::size_t nLength);
+unsigned long int crc32buf(const char *buffer, std::size_t nLength);
 
 // used by old sr.cpp and friends.
 extern unsigned short crc;

@@ -215,14 +215,14 @@ ssize_t File::Read(void* buffer, size_t size) {
 }
 
 ssize_t File::Write(const void* buffer, size_t size) {
-  ssize_t nRet = write(handle_, buffer, size);
-  if (nRet == -1) {
+  ssize_t r = write(handle_, buffer, size);
+  if (r == -1) {
     LOG(ERROR) << "[DEBUG: Write errno: " << errno << " filename: " << full_path_name_
                << " size: " << size;
     LOG(ERROR) << " -- Please screen capture this and attach to a bug here: " << std::endl;
     LOG(ERROR) << "https://github.com/wwivbbs/wwiv/issues" << std::endl;
   }
-  return nRet;
+  return r;
 }
 
 off_t File::Seek(off_t offset, Whence whence) {
