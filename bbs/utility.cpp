@@ -174,9 +174,9 @@ void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string&
   WWIV_ASSERT(nh);
 
   const string filename = StrCat(
-    a()->network_directory().c_str(),
+    a()->network_directory(),
     "p1",
-    a()->network_extension().c_str());
+    a()->network_extension());
   File file(filename);
   if (!file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
     return;

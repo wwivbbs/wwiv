@@ -254,7 +254,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     }
     a()->localIO()->PrintfXY(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
     const string t = ctim(std::lround((lFileSize - cp) * tpb));
-    a()->localIO()->PutsXY(65, 1, t.c_str());
+    a()->localIO()->PutsXY(65, 1, t);
     a()->localIO()->PutsXY(69, 4, "0");
 
     ch = send_b(file, cp, (bUse1kBlocks) ? 1 : 0, byBlockNumber, &use_crc, pszWorkingFileName, &terr, &abort);

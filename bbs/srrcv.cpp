@@ -233,7 +233,7 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
     a()->localIO()->PrintfXY(65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
     const string t = ctim(std::lround((reallen - pos) * tpb));
     if (reallen) {
-      a()->localIO()->PutsXY(65, 1, t.c_str());
+      a()->localIO()->PutsXY(65, 1, t);
     }
     i = receive_block(b, &bln, use_crc);
     if (i == 0 || i == 1) {

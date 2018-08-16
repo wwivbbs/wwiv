@@ -302,7 +302,7 @@ void GoodBye() {
       batchdl(1);
     }
   }
-  auto filename = FilePath(a()->language_dir.c_str(), LOGOFF_MAT);
+  auto filename = FilePath(a()->language_dir, LOGOFF_MAT);
   if (!File::Exists(filename)) {
     filename = FilePath(a()->config()->gfilesdir(), LOGOFF_MAT);
   }

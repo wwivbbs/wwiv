@@ -233,7 +233,7 @@ void CreatePCBoardSysDropFile() {
     pcb.bpsflag = 32;
     // Added for PCB 14.5 Revision
     std::unique_ptr<WStatus> pStatus(a()->status_manager()->GetStatus());
-    strcpy(pcb.lastevent, pStatus->GetLastDate());
+    to_char_array(pcb.lastevent, pStatus->GetLastDate());
     pcb.exittodos = '0';
     pcb.eventupcoming = '0';
     pcb.lastconfarea = static_cast<int16_t>(a()->GetCurrentConferenceMessageArea());
@@ -302,8 +302,7 @@ void CreateCallInfoBbsDropFile() {
     szTemp[2] = '\0';
     memmove(&(szDate[8 - strlen(szTemp)]), &(szTemp[0]), strlen(szTemp));
     file.WriteLine(szDate);
-    string cspeed = std::to_string(a()->modem_speed_);
-    file.WriteLine(a()->context().incom() ? cspeed.c_str() : "38400");
+    file.WriteLine(a()->context().incom() ? std::to_string(a()->modem_speed_) : "38400");
     file.Close();
   }
 }

@@ -214,7 +214,7 @@ bool readfile(messagerec* msg, const string& fileName, string* out) {
 }
 
 void lineadd(messagerec* msg, const string& sx, string fileName) {
-  const string line = StringPrintf("%s\r\n\x1a", sx.c_str());
+  const auto line = StringPrintf("%s\r\n\x1a", sx.c_str());
 
   switch (msg->storage_type) {
   case 0:

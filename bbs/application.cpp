@@ -464,7 +464,7 @@ void Application::UpdateTopScreen() {
     break;
   case LocalIO::topdataSystem: {
     localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ", config()->system_name().c_str(),
-                        pStatus->GetLastDate());
+                        pStatus->GetLastDate().c_str());
 
     localIO()->PrintfXY(
         0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",

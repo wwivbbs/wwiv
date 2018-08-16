@@ -54,9 +54,9 @@ public:
   /** Updates the status object for a new day.  This zeros out daily stats and updates the log file names */
   bool NewDay();
 
-  const char* GetLastDate(int nDaysAgo = 0) const;
-  const char* GetLogFileName(int nDaysAgo = 0) const;
-  const char* GetGFileDate() const {
+  std::string GetLastDate(int nDaysAgo = 0) const;
+  std::string GetLogFileName(int nDaysAgo = 0) const;
+  std::string GetGFileDate() const {
     return status_->gfiledate;
   }
   void SetGFileDate(const std::string& s) {

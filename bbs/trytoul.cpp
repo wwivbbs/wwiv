@@ -175,7 +175,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
       return 1;
     }
   }
-  strcpy(u.filename, s.c_str());
+  to_char_array(u.filename, s.c_str());
   u.ownerusr = static_cast<uint16_t>(a()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;

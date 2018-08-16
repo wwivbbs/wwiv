@@ -704,7 +704,7 @@ void mailr() {
                       fsr.id = 0;
                       attachFile.Seek(static_cast<long>(sizeof(filestatusrec)) * -1L, File::Whence::current);
                       attachFile.Write(&fsr, sizeof(filestatusrec));
-                      File::Remove(a()->GetAttachmentDirectory().c_str(), fsr.filename);
+                      File::Remove(a()->GetAttachmentDirectory(), fsr.filename);
                     } else {
                       attachFile.Read(&fsr, sizeof(filestatusrec));
                     }
@@ -873,7 +873,7 @@ void beginday(bool displayStatus) {
   }
 
   zlogrec z{};
-  strcpy(z.date, pStatus->GetLastDate());
+  to_char_array(z.date, pStatus->GetLastDate());
   z.active = pStatus->GetMinutesActiveToday();
   z.calls = pStatus->GetNumCallsToday();
   z.posts = pStatus->GetNumLocalPosts();

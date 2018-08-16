@@ -510,12 +510,11 @@ void remove_post() {
     return;
   }
   bool any = false, abort = false;
-  bout.bprintf("\r\n\nPosts by you on %s\r\n\n", a()->current_sub().name.c_str());
+  bout << "\r\n\nPosts by you on " << a()->current_sub().name << "\r\n\n";
   for (int j = 1; j <= a()->GetNumMessagesInCurrentMessageArea() && !abort; j++) {
     if (get_post(j)->ownersys == 0 && get_post(j)->owneruser == a()->usernum) {
       any = true;
-      string buffer = StringPrintf("%u: %60.60s", j, get_post(j)->title);
-      bout.bpla(buffer.c_str(), &abort);
+      bout.bpla(StringPrintf("%u: %60.60s", j, get_post(j)->title), &abort);
     }
   }
   if (!any) {

@@ -115,13 +115,13 @@ static void wfc_update() {
   a()->localIO()->PrintfXYA(57, 18, 15, "%-3d", inst_num);
   if (ir.flags & INST_FLAGS_ONLINE) {
     const string unn = a()->names()->UserName(ir.user);
-    a()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", unn.c_str());
+    a()->localIO()->PutsXYA(42, 19, 14, pad_to(unn, 25));
   } else {
-    a()->localIO()->PrintfXYA(42, 19, 14, "%-25.25s", "Nobody");
+    a()->localIO()->PutsXYA(42, 19, 14, pad_to("Nobody", 25));
   }
 
   string activity_string = make_inst_str(inst_num, INST_FORMAT_WFC);
-  a()->localIO()->PrintfXYA(42, 20, 14, "%-25.25s", activity_string.c_str());
+  a()->localIO()->PutsXYA(42, 20, 14, pad_to(activity_string, 25));
   if (num_instances() > 1) {
     do {
       ++inst_num;

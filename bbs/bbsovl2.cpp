@@ -99,26 +99,26 @@ void OnlineUserEditor() {
 
   // heading
   string s = StrCat("[", a()->names()->UserName(a()->usernum), "]");
-  StringJustify(&s, 37, SPACE, JustificationType::RIGHT);
-  a()->localIO()->PrintfXYA(wx + 1, wy - 1, 31, " %-29.29s%s ", "WWIV User Editor", s.c_str());
+  a()->localIO()->PutsXYA(wx + 1, wy - 1, 31, 
+    StrCat(pad_to(" WWIV User Editor", 30), lpad_to(s, 37)));
 
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 1, 3,   "Security Level(SL): %s", sl);
-  a()->localIO()->PrintfXYA(wx + 36, wy + 1, 3,   "  Message AR: %s", ar);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 2, 3,   "DL Sec. Level(DSL): %s", dsl);
-  a()->localIO()->PrintfXYA(wx + 36, wy + 2, 3,   " Download AR: %s", dar);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 3, 3,   "   User Exemptions: %s", exempt);
-  a()->localIO()->PrintfXYA(wx + 36, wy + 3, 3,   "Restrictions: %s", restrict);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 5, 3,   "         Sysop Sub: %s", sysopsub);
-  a()->localIO()->PrintfXYA(wx + 36, wy + 5, 3,   "   Time Bank: %s", banktime);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 6, 3,   "        Ass Points: %s", ass);
-  a()->localIO()->PrintfXYA(wx + 36, wy + 6, 3,   " Gold Points: %s", gold);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 8, 3,   "       KB Uploaded: %s", uk);
-  a()->localIO()->PrintfXYA(wx + 35, wy + 8, 3,   "KB Downloaded: %s", dk);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 9, 3,   "    Files Uploaded: %s", up);
-  a()->localIO()->PrintfXYA(wx + 32, wy + 9, 3,   "Files Downloaded: %s", down);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 10, 3,  "   Messages Posted: %s", posts);
-  a()->localIO()->PrintfXYA(wx + 32, wy + 10, 3,  "Number of Logons: %s", logons);
-  a()->localIO()->PrintfXYA(wx + 2,  wy + 12, 3,  "Note: %s", a()->user()->GetNote().c_str());
+  a()->localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", sl));
+  a()->localIO()->PutsXYA(wx + 36, wy + 1, 3, StrCat("  Message AR: ", ar));
+  a()->localIO()->PutsXYA(wx + 2, wy + 2, 3, StrCat("DL Sec. Level(DSL): ", dsl));
+  a()->localIO()->PutsXYA(wx + 36, wy + 2, 3, StrCat(" Download AR: ", dar));
+  a()->localIO()->PutsXYA(wx + 2, wy + 3, 3, StrCat("   User Exemptions: ", exempt));
+  a()->localIO()->PutsXYA(wx + 36, wy + 3, 3, StrCat("Restrictions: ", restrict));
+  a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: %s", sysopsub));
+  a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: %s", banktime));
+  a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: %s", ass));
+  a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: %s", gold));
+  a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: %s", uk));
+  a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: %s", dk));
+  a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: %s", up));
+  a()->localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: %s", down));
+  a()->localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: %s", posts));
+  a()->localIO()->PutsXYA(wx + 32, wy + 10, 3, StrCat("Number of Logons: ", logons));
+  a()->localIO()->PutsXYA(wx + 2, wy + 12, 3, StrCat("Note: ", a()->user()->GetNote()));
   a()->localIO()->PutsXYA(wx + 1, wy + 14, 31,
                                           "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
   bout.curatr(3);

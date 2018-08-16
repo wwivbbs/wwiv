@@ -57,19 +57,19 @@ string CreateFullPathToPrint(const string& basename) {
     if (a()->user()->HasAnsi()) {
       if (a()->user()->HasColor()) {
         // ANSI and color
-        auto candidate = StringPrintf("%s.ans", root_filename.c_str());
+        auto candidate = StrCat(root_filename, ".ans");
         if (File::Exists(candidate)) {
           return candidate;
         }
       }
       // ANSI.
-      auto candidate = StringPrintf("%s.b&w", root_filename.c_str());
+      auto candidate = StrCat(root_filename, ".b&w");
       if (File::Exists(candidate)) {
         return candidate;
       }
     }
     // ANSI/Color optional
-    auto candidate = StringPrintf("%s.msg", root_filename.c_str());
+    auto candidate = StrCat(root_filename , ".msg");
     if (File::Exists(candidate)) {
       return candidate;
     }

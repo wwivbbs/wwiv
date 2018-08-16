@@ -51,7 +51,7 @@ WStatus::WStatus(const std::string& datadir, statusrec_t* pStatusRecord) : datad
 
 WStatus::~WStatus() {};
 
-const char* WStatus::GetLastDate(int days_ago) const {
+std::string WStatus::GetLastDate(int days_ago) const {
   DCHECK_GE(days_ago, 0);
   DCHECK_LE(days_ago, 2);
   switch (days_ago) {
@@ -66,15 +66,12 @@ const char* WStatus::GetLastDate(int days_ago) const {
   }
 }
 
-const char* WStatus::GetLogFileName(int nDaysAgo) const {
+std::string WStatus::GetLogFileName(int nDaysAgo) const {
   DCHECK_GE(nDaysAgo, 0);
   switch (nDaysAgo) {
   case 0:
   {
-    static char s[81]; // logname
-    std::string todays_log = GetSysopLogFileName(daten_to_mmddyy(daten_t_now()));
-    strcpy(s, todays_log.c_str());
-    return s;
+    return GetSysopLogFileName(daten_to_mmddyy(daten_t_now()));
   }
   case 1:
     return status_->log1;

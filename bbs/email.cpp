@@ -273,18 +273,14 @@ void sendout_email(EmailData& data) {
     }
     if (data.from_network_number != a()->net_num()) {
       gate_msg(&nh, b1.get(), 
-        a()->net_num(), a()->net_email_name.c_str(), 
+        a()->net_num(), a()->net_email_name, 
       {}, data.from_network_number);
     } else {
       string net_filename;
       if (data.forwarded_code) {
-        net_filename = StringPrintf("%sp1%s",
-          a()->network_directory().c_str(),
-          a()->network_extension().c_str());
+        net_filename = StrCat(a()->network_directory(), "p1", a()->network_extension());
       } else {
-        net_filename = StringPrintf("%sp0%s",
-          a()->network_directory().c_str(),
-          a()->network_extension().c_str());
+        net_filename = StrCat(a()->network_directory(), "p0", a()->network_extension());
       }
       File fileNetworkPacket(net_filename);
       fileNetworkPacket.Open(File::modeBinary | File::modeCreateFile | File::modeReadWrite);

@@ -235,7 +235,7 @@ void color_list() {
   bout.nl(2);
   for (int i = 0; i < 8; i++) {
     bout.SystemColor(static_cast<unsigned char>((i == 0) ? 0x70 : i));
-    bout << i << ". " << DisplayColorName(static_cast<char>(i)).c_str() << "|#0" << wwiv::endl;
+    bout << i << ". " << DisplayColorName(static_cast<char>(i)) << "|#0" << wwiv::endl;
   }
 }
 

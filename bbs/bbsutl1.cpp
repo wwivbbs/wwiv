@@ -321,7 +321,7 @@ bool play_sdf(const string& sound_filename, bool abortable) {
     if (abortable && bkbhit()) {
       break;
     }
-    int nw = wordcount(soundLine.c_str(), DELIMS_WHITE);
+    int nw = wordcount(soundLine, DELIMS_WHITE);
     if (nw >= 2) {
       auto freq = to_number<int>(extractword(1, soundLine, DELIMS_WHITE));
       auto dur = to_number<int>(extractword(2, soundLine, DELIMS_WHITE));
@@ -361,7 +361,7 @@ string describe_area_code(int nAreaCode) {
   string previous;
   string current;
   while (file.ReadLine(&current)) {
-    auto nCurrentTown = to_number<int>(current.c_str());
+    auto nCurrentTown = to_number<int>(current);
     if (nCurrentTown == nAreaCode) {
       return previous;
     } else if (nCurrentTown == 0) {

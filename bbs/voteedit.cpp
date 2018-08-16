@@ -59,8 +59,8 @@ static void set_question(int ii) {
   voting_response vr;
 
   bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
-  std::string question = inputl(75, true);
-  strcpy(v.question, question.c_str());
+  auto question = inputl(75, true);
+  to_char_array(v.question, question);
   v.numanswers = 0;
   vr.numresponses = 0;
   vr.response[0] = 'X';
@@ -80,8 +80,8 @@ static void set_question(int ii) {
     bout.nl(2);
     while (v.numanswers < 19) {
       bout << "|#2" << v.numanswers + 1 << "|#7: ";
-      std::string response = inputl(63, true);
-      strcpy(vr.response, response.c_str());
+      auto response = inputl(63, true);
+      to_char_array(vr.response, response);
       vr.numresponses = 0;
       v.responses[v.numanswers] = vr;
       if (response.empty()) {
