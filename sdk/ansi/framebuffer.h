@@ -40,7 +40,7 @@ public:
   void a(uint8_t aa) { a_ = aa; }
 
   // As a composite word (high 8 bits are attribute, low are char)
-  uint16_t w() const noexcept { return (a_ << 8) | c_; }
+  uint16_t w() const noexcept { return (a_ << 8) | (c_ & 0xff); }
 
 private:
   uint8_t a_;
@@ -68,13 +68,13 @@ public:
   bool put(int pos, char c, uint8_t a) override;
 
   bool write(char c) override { return write(c, a_); }
-  void curatr(uint8_t a) override { a_ = a; }
+  inline void curatr(uint8_t a) override { a_ = a; }
 
-  int cols() const noexcept override { return cols_; }
-  int pos() const noexcept override { return pos_; }
-  uint8_t curatr() const noexcept { return a_; }
-  int x() const noexcept override { return pos_ % cols_; }
-  int y() const noexcept override { return pos_ / cols_; }
+  inline int cols() const noexcept override { return cols_; }
+  inline int pos() const noexcept override { return pos_; }
+  inline uint8_t curatr() const noexcept { return a_; }
+  inline int x() const noexcept override { return pos_ % cols_; }
+  inline int y() const noexcept override { return pos_ / cols_; }
 
   // Mostly used for debugging and tests.
 

@@ -33,7 +33,9 @@ FrameBufferCell::FrameBufferCell(char c, uint8_t a) : a_(a), c_(c) {}
 FrameBuffer::FrameBuffer(int cols) : VScreen(cols), cols_(cols) { b_.reserve(cols_ * 100); }
 
 bool FrameBuffer::gotoxy(int x, int y) {
-  pos_ = (y * cols_) + x;
+  auto xx = std::max(x, 0);
+  auto yy = std::max(y, 0);
+  pos_ = (yy * cols_) + xx;
   if (pos_ >= size_int(b_)) {
     return grow(pos_);
   }
@@ -115,7 +117,8 @@ void FrameBuffer::close() {
 }
 
 bool FrameBuffer::grow(int pos) {
-  b_.resize((y() + 1) * cols_);
+  auto e = std::max(pos + 1000, (y() + 1) * cols_);
+  b_.resize(e);
   return true;
 }
 
@@ -124,6 +127,7 @@ std::string FrameBuffer::row_as_text(int row) const {
   int end = std::min(size_int(b_), ((row + 1) * cols_));
 
   std::string s;
+  s.reserve(end - start);
   for (int i = start; i < end; i++) {
     s.push_back(b_[i].c());
   }
@@ -142,6 +146,7 @@ std::vector<uint16_t> FrameBuffer::row_char_and_attr(int row) const {
   int end = std::min(size_int(b_), (row + 1) * cols_);
 
   std::vector<uint16_t> s;
+  s.reserve(end - start);
   for (int i = start; i < end; i++) {
     s.push_back(b_[i].w());
   }

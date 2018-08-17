@@ -65,18 +65,19 @@ TEST_F(FrameBufferTest, MultiLine) {
 
 TEST_F(FrameBufferTest, Goto) {
   FrameBuffer b{10};
-  b.curatr(3);
+  b.curatr(8);
   b.gotoxy(0, 10);
-  write(b, "Hello");
+  write(b, "\xb0""ello");
   b.close();
   EXPECT_EQ(105, b.pos());
   EXPECT_EQ(11, b.rows());
-  EXPECT_EQ("Hello", b.row_as_text(10));
+  EXPECT_EQ("\xb0""ello", b.row_as_text(10));
   auto ca = b.row_char_and_attr(10);
   EXPECT_EQ(5, ca.size());
-  EXPECT_EQ((3 << 8) | 'H', ca[0]);
-  EXPECT_EQ((3 << 8) | 'e', ca[1]);
-  EXPECT_EQ((3 << 8) | 'l', ca[2]);
-  EXPECT_EQ((3 << 8) | 'l', ca[3]);
-  EXPECT_EQ((3 << 8) | 'o', ca[4]);
+  uint8_t f = '\xb0';
+  EXPECT_EQ((8 << 8) | f, ca[0]);
+  EXPECT_EQ((8 << 8) | 'e', ca[1]);
+  EXPECT_EQ((8 << 8) | 'l', ca[2]);
+  EXPECT_EQ((8 << 8) | 'l', ca[3]);
+  EXPECT_EQ((8 << 8) | 'o', ca[4]);
 }
