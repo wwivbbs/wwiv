@@ -63,7 +63,7 @@ struct ci_less {
 };
 
 template <typename C>
-typename C::mapped_type get_or_default(C c,
+typename C::mapped_type get_or_default(C const& c,
     const typename C::key_type& key,
     const typename C::mapped_type default_value) {
   typename C::const_iterator iter = c.find(key);
@@ -74,28 +74,28 @@ typename C::mapped_type get_or_default(C c,
 }
 
 template <typename C>
-int32_t size_int32(C c) {
+int32_t size_int32(const C& c) {
   const auto size = c.size();
   CHECK_LE(size, static_cast<typename C::size_type>(std::numeric_limits<int32_t>::max()));
   return static_cast<int32_t>(size);
 }
 
 template <typename C>
-int16_t size_int16(C c) {
+int16_t size_int16(C const& c) {
   const auto size = c.size();
   CHECK_LE(size, static_cast<typename C::size_type>(std::numeric_limits<int16_t>::max()));
   return static_cast<int16_t>(size);
 }
 
 template <typename C>
-int8_t size_int8(C c) {
+int8_t size_int8(C const& c) {
   const auto size = c.size();
   CHECK_LE(size, static_cast<typename C::size_type>(std::numeric_limits<int8_t>::max()));
   return static_cast<int8_t>(size);
 }
 
 template <typename C>
-signed int size_int(C c) {
+signed int size_int(const C& c) {
   return wwiv::stl::size_int32(c);
 }
 
