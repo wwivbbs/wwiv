@@ -109,8 +109,7 @@ void pausescr() {
 
     i1 = strlen(stripcolors(ss));
     i = bout.curatr();
-    bout.SystemColor(a()->user()->HasColor() ? a()->user()->GetColor(3) 
-      : a()->user()->GetBWColor(3));
+    bout.SystemColor(a()->user()->color(3));
     bout << ss;
     bout.Left(i1);
     bout.SystemColor(i);
@@ -127,9 +126,7 @@ void pausescr() {
           if (!warned) {
             warned = 1;
             bout.bputch(CG);
-            bout.SystemColor(
-              a()->user()->HasColor() ? a()->user()->GetColor(6)
-              : a()->user()->GetBWColor(6));
+            bout.SystemColor(a()->user()->color(6));
             bout << ss;
             for (int i3 = 0; i3 < i2; i3++) {
               if (ss[i3] == 3 && i1 > 1) {

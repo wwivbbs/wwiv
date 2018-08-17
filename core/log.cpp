@@ -211,5 +211,9 @@ void LoggerConfig::add_appender(LoggerLevel level, std::shared_ptr<Appender> app
   log_to[level].emplace(appender);
 }
 
+void LoggerConfig::reset() { 
+  timestamp_fn_ = DefaultTimestamp;
+}
+
 } // namespace core
 } // namespace wwiv

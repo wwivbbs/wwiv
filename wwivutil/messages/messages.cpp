@@ -381,6 +381,43 @@ public:
   }
 };
 
+class MessageAreasCommand : public UtilCommand {
+public:
+  MessageAreasCommand() : UtilCommand("areas", "Lists the message areas") {}
+
+  virtual ~MessageAreasCommand() {}
+
+  std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage:   areas" << endl;
+    return ss.str();
+  }
+
+  int Execute() override final {
+    Networks networks(*config()->config());
+    wwiv::sdk::Subs subs(config()->config()->datadir(), networks.networks());
+    if (!subs.Load()) {
+      LOG(ERROR) << "Unable to load subs";
+      return 2;
+    }
+
+    int num = 0;
+    cout << "#Num FileName " << std::setw(30) << std::left << "Name"
+         << " " << std::endl;
+    cout << string(78, '=') << endl;
+    for (const auto& d : subs.subs()) {
+      cout << "#" << std::setw(3) << std::left << num++ << " " << std::setw(8) << d.filename << " "
+           << std::setw(30) << d.name << std::endl;
+    }
+    return 0;
+  }
+
+  bool AddSubCommands() override final {
+    add_argument(BooleanCommandLineArgument("full", "Display full info about every area.", false));
+    return true;
+  }
+};
+
 bool MessagesCommand::AddSubCommands() {
   if (!add(make_unique<MessagesDumpHeaderCommand>())) {
     return false;
@@ -394,6 +431,10 @@ bool MessagesCommand::AddSubCommands() {
   if (!add(make_unique<PackMessageCommand>())) {
     return false;
   }
+  if (!add(make_unique<MessageAreasCommand>())) {
+    return false;
+  }
+  
   return true;
 }
 

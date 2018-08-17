@@ -79,13 +79,10 @@
 using std::clog;
 using std::cout;
 using std::endl;
-using std::exception;
 using std::max;
 using std::min;
-using std::stoi;
 using std::string;
 using std::unique_ptr;
-using wwiv::bbs::InputMode;
 using namespace wwiv::core;
 using namespace std::chrono;
 using namespace wwiv::core;
@@ -122,10 +119,8 @@ Application::~Application() {
     local_io_->SetCursor(LocalIO::cursorNormal);
   }
   // CursesIO.
-  if (out != nullptr) {
-    delete out;
-    out = nullptr;
-  }
+  delete out;
+  out = nullptr;
 }
 
 wwiv::bbs::SessionContext& Application::context() { return session_context_; }
@@ -201,7 +196,7 @@ bool Application::WriteCurrentUser(int user_number) {
 }
 
 void Application::tleft(bool check_for_timeout) {
-  long nsln = nsl();
+  auto nsln = nsl();
 
   // Check for tineout 1st.
   if (check_for_timeout && IsUserOnline()) {
@@ -219,7 +214,7 @@ void Application::tleft(bool check_for_timeout) {
   }
 
   bool temp_sysop = user()->GetSl() != 255 && GetEffectiveSl() == 255;
-  bool sysop_available = sysop1();
+  auto sysop_available = sysop1();
 
   int cx = localIO()->WhereX();
   int cy = localIO()->WhereY();
@@ -380,7 +375,7 @@ void Application::DisplaySysopWorkingIndicator(bool displayWait) {
   if (displayWait) {
     if (okansi()) {
       int nSavedAttribute = bout.curatr();
-      bout.SystemColor(user()->HasColor() ? user()->GetColor(3) : user()->GetBWColor(3));
+      bout.SystemColor(user()->color(3));
       bout << waitString << "\x1b[" << nNumPrintableChars << "D";
       bout.SystemColor(static_cast<unsigned char>(nSavedAttribute));
     } else {
@@ -391,7 +386,7 @@ void Application::DisplaySysopWorkingIndicator(bool displayWait) {
       for (unsigned int j = 0; j < nNumPrintableChars; j++) {
         bout.bputch(' ');
       }
-      bout << "\x1b[" << nNumPrintableChars << "D";
+      bout.Left(nNumPrintableChars);
     } else {
       for (unsigned int j = 0; j < nNumPrintableChars; j++) {
         bout.bs();
@@ -699,27 +694,25 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   exit(exit_level);
 }
 
-void Application::ShowUsage() {
+static void ShowUsage() {
   cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n"
-       << "Usage:\r\n\n"
-       << "bbs -N<inst> [options] \r\n\n"
-       << "Options:\r\n\n"
-       << "  -?         - Display command line options (This screen)\r\n\n"
-       << "  -A<level>  - Specify the Error Exit Level\r\n"
-       << "  -B<rate>   - Someone already logged on at rate (modem speed)\r\n"
-       << "  -E         - Load for beginday event only\r\n"
-       << "  -H<handle> - Socket handle\r\n"
-       << "  -M         - Don't access modem at all\r\n"
-       << "  -N<inst>   - Designate instance number <inst>\r\n"
-       << "  -Q<level>  - Normal exit level\r\n"
-       << "  -R<min>    - Specify max # minutes until event\r\n"
-       << "  -U<user#>  - Pass usernumber <user#> online\r\n"
-       << "  -V         - Display WWIV Version\r\n"
-       << "  -XT        - Someone already logged on via telnet (socket handle)\r\n"
-#if defined(_WIN32)
-       << "  -XS        - Someone already logged on via SSH (socket handle)\r\n"
-#endif // _WIN32
-       << "  -Z         - Do not hang up on user when at log off\r\n"
+       << "Usage:\r\n"
+       << "bbs -n<inst> [options] \r\n\n"
+       << "program arguments:\r\n\n"
+       << "  -?           Display command line options (This screen)\r\n\n"
+       << "  -a<level>    Specify the Error Exit Level\r\n"
+       << "  -b<rate>     Someone already logged on at rate (modem speed)\r\n"
+       << "  -e           Load for beginday event only\r\n"
+       << "  -h<handle>   Socket handle\r\n"
+       << "  -m           Don't access modem at all\r\n"
+       << "  -n<inst>     Designate instance number <inst>\r\n"
+       << "  -q<level>    Normal exit level\r\n"
+       << "  -r<min>      Specify max # minutes until event\r\n"
+       << "  -u<user#>    Pass usernumber <user#> online\r\n"
+       << "  -v           Display WWIV Version\r\n"
+       << "  -xt          Someone already logged on via telnet (socket handle)\r\n"
+       << "  -xs          Someone already logged on via SSH (socket handle)\r\n"
+       << "  -z           Do not hang up on user when at log off\r\n"
        << endl;
 }
 
@@ -767,19 +760,19 @@ int Application::Run(int argc, char* argv[]) {
         event_only = true;
         break;
       case 'Q':
-        oklevel_ = stoi(argument);
+        oklevel_ = to_number<int>(argument);
         break;
       case 'A':
-        errorlevel_ = stoi(argument);
+        errorlevel_ = to_number<int>(argument);
         break;
       case 'H':
-        hSockOrComm = stoi(argument);
+        hSockOrComm = to_number<int>(argument);
         break;
       case 'M':
         context().ok_modem_stuff(false);
         break;
       case 'N': {
-        instance_number_ = stoi(argument);
+        instance_number_ = to_number<int>(argument);
         if (instance_number_ <= 0 || instance_number_ > 999) {
           clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_
                << endl;
@@ -792,7 +785,7 @@ int Application::Run(int argc, char* argv[]) {
         (void)getchar();
         break;
       case 'R':
-        num_min = stoi(argument);
+        num_min = to_number<int>(argument);
         break;
       case 'U':
         this_usernum_from_commandline = to_number<uint16_t>(argument);

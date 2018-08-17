@@ -465,7 +465,7 @@ int WFC::doWFCEvents() {
         Clear();
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
         bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
-        const string current_dir_slash = File::current_directory() + File::pathSeparatorString;
+        const auto current_dir_slash = StrCat(File::current_directory(), File::pathSeparatorString);
         auto net_filename = Input1(current_dir_slash, 50, true, InputMode::FULL_PATH_NAME);
         if (!net_filename.empty()) {
           external_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
@@ -497,7 +497,7 @@ int WFC::doWFCEvents() {
       case 'T':
         if (a()->terminal_command.empty()) {
           bout << "Terminal Command not specified. " << wwiv::endl
-               << " Please set TERMINAL_CMD in WWIV.INI" << wwiv::endl;
+               << " Please set TERMINAL_CMD in wwiv.ini" << wwiv::endl;
           bout.getkey();
           break;
         }

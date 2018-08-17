@@ -85,7 +85,7 @@ class User {
 
   // USERREC.sysstatus
   static constexpr int ansi                       = 0x00000001;
-  static constexpr int color                      = 0x00000002;
+  static constexpr int status_color               = 0x00000002;
   static constexpr int music                      = 0x00000004;
   static constexpr int pauseOnPage                = 0x00000008;
   static constexpr int expert                     = 0x00000010;
@@ -172,9 +172,7 @@ class User {
   bool HasAnsi() const {
     return HasStatusFlag(User::ansi);
   }
-  bool HasColor() const {
-    return HasStatusFlag(User::color);
-  }
+  bool HasColor() const { return HasStatusFlag(User::status_color); }
   bool HasMusic() const {
     return HasStatusFlag(User::music);
   }
@@ -518,14 +516,43 @@ class User {
   void SetExempt(int n) {
     data.exempt = static_cast<uint8_t>(n);
   }
-  const unsigned int GetColor(int nColor) const {
-    return data.colors[nColor];
+  const unsigned int GetColor(int n) const {
+    if (n < 0 || n > 9) {
+      return 7; // default color
+    }
+    return data.colors[n];
+  }
+
+  /**
+   * Gets the color number n for this user.  Respects if ansi colors
+   * is enabled or not.
+   */
+  const uint8_t color(int n) const { 
+    if (n < 0 || n > 9) {
+      return 7; // default color
+    }
+    return HasAnsi() ? GetColor(n) : GetBWColor(n);
+  }
+
+  const std::vector<uint8_t> colors() const { 
+    std::vector<uint8_t> c;
+    for (int i = 0; i < 10; i++) {
+      if (HasColor()) {
+        c.push_back(data.colors[i]);
+      } else {
+        c.push_back(data.bwcolors[i]);
+      }
+    }
+    return c;
   }
   void SetColor(int nColor, unsigned int n) {
     data.colors[nColor] = static_cast<uint8_t>(n);
   }
-  const unsigned char GetBWColor(int nColor) const {
-    return data.bwcolors[nColor];
+  const unsigned char GetBWColor(int n) const {
+    if (n < 0 || n > 9) {
+      return 7; // default color
+    }
+    return data.bwcolors[n];
   }
   void SetBWColor(int nColor, unsigned int n) {
     data.bwcolors[nColor] = static_cast<uint8_t>(n);

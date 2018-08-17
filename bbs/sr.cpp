@@ -280,7 +280,7 @@ int get_protocol(xfertype xt) {
     prot = 0;
   }
 
-  int cyColorSave = a()->user()->GetColor(8);
+  int cyColorSave = a()->user()->color(8);
   a()->user()->SetColor(8, 1);
   int oks1p = 0;
   oks1[0] = '\0';

@@ -41,8 +41,7 @@
 #if !defined(O_TEXT)
 #define O_TEXT 0
 #endif
-#endif  // _WIN32
-
+#endif // _WIN32
 
 namespace wwiv {
 namespace core {
@@ -193,9 +192,9 @@ public:
   static bool mkdirs(const File& dir) { return File::mkdirs(dir.full_pathname()); }
 
   static long freespace_for_path(const std::string& path);
+  static bool is_directory(const std::string& path);
 
-private:
-  int handle_{-1};
+  private : int handle_{-1};
   std::string full_path_name_;
   std::string error_text_;
 };

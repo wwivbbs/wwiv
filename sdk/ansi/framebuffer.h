@@ -83,6 +83,7 @@ public:
   // The raw text (without attributes) for row # 'row'
   std::string row_as_text(int row) const;
   std::vector<uint16_t> row_char_and_attr(int row) const;
+  std::vector<std::string> to_screen_as_lines() const;
 
 private:
   bool grow(int pos);

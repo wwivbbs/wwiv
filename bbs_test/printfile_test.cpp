@@ -62,7 +62,7 @@ TEST_F(PrintFileTest, LanguageDir) {
     string actual_bw = CreateFullPathToPrint("one");
     EXPECT_EQ(expected_bw, actual_bw);
 
-    helper.user()->SetStatusFlag(User::color);
+    helper.user()->SetStatusFlag(User::status_color);
     string actual_ans = CreateFullPathToPrint("one");
     EXPECT_EQ(expected_ans, actual_ans);
 }
@@ -80,7 +80,7 @@ TEST_F(PrintFileTest, GFilesOnly_NoExt) {
     string actual_bw = CreateFullPathToPrint("one");
     EXPECT_EQ(expected_bw, actual_bw);
 
-    helper.user()->SetStatusFlag(User::color);
+    helper.user()->SetStatusFlag(User::status_color);
     string actual_ans = CreateFullPathToPrint("one");
     EXPECT_EQ(expected_ans, actual_ans);
 }

@@ -1,7 +1,7 @@
 /**************************************************************************/
 /*                                                                        */
 /*                          WWIV Version 5.x                              */
-/*             Copyright (C)2015-2017, WWIV Software Services             */
+/*                Copyright (C)2018, WWIV Software Services               */
 /*                                                                        */
 /*    Licensed  under the  Apache License, Version  2.0 (the "License");  */
 /*    you may not use this  file  except in compliance with the License.  */
@@ -15,54 +15,60 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#include "wwivutil/net/net.h"
+#include "wwivutil/net/list.h"
 
-#include <cstdio>
-#include <iomanip>
 #include <iostream>
-#include <memory>
+#include <map>
 #include <string>
 #include <vector>
 #include "core/command_line.h"
-#include "core/file.h"
+#include "core/log.h"
 #include "core/strings.h"
+#include "networkb/net_util.h"
+#include "sdk/net/packets.h"
+#include "sdk/bbslist.h"
 #include "sdk/config.h"
-#include "sdk/net.h"
+#include "sdk/callout.h"
+#include "sdk/config.h"
+#include "core/datetime.h"
 #include "sdk/networks.h"
 
-#include "wwivutil/net/dump_bbsdata.h"
-#include "wwivutil/net/dump_callout.h"
-#include "wwivutil/net/dump_connect.h"
-#include "wwivutil/net/dump_contact.h"
-#include "wwivutil/net/dump_packet.h"
-#include "wwivutil/net/dump_subscribers.h"
-#include "wwivutil/net/list.h"
-#include "wwivutil/net/req.h"
-
+using std::cout;
 using std::endl;
-using std::make_unique;
-using std::setw;
+using std::map;
 using std::string;
-using std::unique_ptr;
-using std::vector;
-using wwiv::core::BooleanCommandLineArgument;
+using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::net;
+using namespace wwiv::strings;
 
 namespace wwiv {
 namespace wwivutil {
 
-bool NetCommand::AddSubCommands() {
-  add(make_unique<DumpPacketCommand>());
-  add(make_unique<DumpCalloutCommand>());
-  add(make_unique<DumpConnectCommand>());
-  add(make_unique<DumpContactCommand>());
-  add(make_unique<DumpBbsDataCommand>());
-  add(make_unique<wwiv::wwivutil::net::DumpSubscribersCommand>());
-  add(make_unique<SubReqCommand>());
-  add(make_unique<NetListCommand>());
+std::string NetListCommand::GetUsage() const {
+  std::ostringstream ss;
+  ss << "Usage:   list " << endl;
+  return ss.str();
+}
+
+bool NetListCommand::AddSubCommands() {
   return true;
 }
 
+int NetListCommand::Execute() {
+  Networks networks(*config()->config());
+  if (!networks.IsInitialized()) {
+    LOG(ERROR) << "Unable to load networks.";
+    return 1;
+  }
 
-}  // namespace wwivutil
-}  // namespace wwiv
+  int nn = 0;
+  for (const auto& net : networks.networks()) {
+    cout << "." << pad_to(std::to_string(nn++), 2) << " " << pad_to(net.name, 17) << "(" << net.dir
+         << ")" << std::endl;
+  }
+  return 0;
+}
+
+}
+}

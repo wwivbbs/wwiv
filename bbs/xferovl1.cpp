@@ -472,11 +472,11 @@ static char fancy_prompt(const char *pszPrompt, const char *pszAcceptChars) {
   if (okansi()) {
     bout << s1;
     ch = onek_ncr(s3);
-    bout << "\x1b[" << i1 << "D";
+    bout.Left(i1);
     for (int i = 0; i < i1; i++) {
       bout.bputch(' ');
     }
-    bout << "\x1b[" << i1 << "D";
+    bout.Left(i1);
   } else {
     bout << s2;
     ch = onek_ncr(s3);

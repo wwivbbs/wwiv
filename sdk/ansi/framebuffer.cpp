@@ -19,6 +19,7 @@
 
 #include "core/stl.h"
 #include <algorithm>
+#include "sdk/ansi/makeansi.h"
 
 using namespace wwiv::stl;
 
@@ -152,6 +153,28 @@ std::vector<uint16_t> FrameBuffer::row_char_and_attr(int row) const {
   }
   return s;
 }
+
+std::vector<std::string> FrameBuffer::to_screen_as_lines() const { 
+  std::vector<std::string> lines;
+  lines.reserve(rows());
+  int attr = 7;
+  for (int i = 0; i < rows(); i++) {
+    auto row = row_char_and_attr(i);
+    std::ostringstream ss;
+    for (auto cc : row) {
+      const uint8_t a = cc >> 8;
+      const uint8_t c = cc & 0xff;
+      if (a != attr) {
+        ss << makeansi(a, attr);
+        attr = a;
+      }
+      ss << static_cast<char>(c);
+    }
+    lines.push_back(ss.str());
+  }
+  return lines;
+}
+
 
 } // namespace ansi
 } // namespace sdk

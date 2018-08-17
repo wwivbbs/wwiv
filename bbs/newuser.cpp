@@ -520,7 +520,7 @@ void input_pw(User *pUser) {
 
 void input_ansistat() {
   a()->user()->ClearStatusFlag(User::ansi);
-  a()->user()->ClearStatusFlag(User::color);
+  a()->user()->ClearStatusFlag(User::status_color);
   bout.nl();
   if (check_ansi() == 1) {
     bout << "ANSI graphics support detected.  Use it? ";
@@ -538,7 +538,7 @@ void input_ansistat() {
     bout.nl();
     bout << "|#5Do you want color? ";
     if (noyes()) {
-      a()->user()->SetStatusFlag(User::color);
+      a()->user()->SetStatusFlag(User::status_color);
       a()->user()->SetStatusFlag(User::extraColor);
     } else {
       color_list();
@@ -1037,7 +1037,7 @@ void newuser() {
 
   if (check_ansi()) {
     a()->user()->SetStatusFlag(User::ansi);
-    a()->user()->SetStatusFlag(User::color);
+    a()->user()->SetStatusFlag(User::status_color);
     a()->user()->SetStatusFlag(User::extraColor);
   }
   printfile(SYSTEM_NOEXT);

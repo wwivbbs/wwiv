@@ -140,7 +140,7 @@ static int GetAnsiStatusAndShowWelcomeScreen() {
     bout.nl();
     if (ans > 0) {
       a()->user()->SetStatusFlag(User::ansi);
-      a()->user()->SetStatusFlag(User::color);
+      a()->user()->SetStatusFlag(User::status_color);
       if (!random_screen(WELCOME_NOEXT)) {
         printfile(WELCOME_ANS);
       }

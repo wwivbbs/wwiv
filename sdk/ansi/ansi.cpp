@@ -18,8 +18,8 @@
 #include "sdk/ansi/ansi.h"
 
 #include "core/log.h"
-#include "core/stl.h"
 #include "core/os.h"
+#include "core/stl.h"
 #include "core/strings.h"
 #include "sdk/ansi/vscreen.h"
 
@@ -40,7 +40,7 @@ Ansi::Ansi(VScreen* b, const AnsiCallbacks& callbacks, uint8_t default_attr)
     : b_(b), callbacks_(callbacks), default_attr_(default_attr) {}
 
 bool Ansi::write(char c) {
-  //wwiv::os::sleep_for(std::chrono::milliseconds(10));
+  // wwiv::os::sleep_for(std::chrono::milliseconds(10));
   if (state_ == AnsiMode::not_in_sequence && c == 27) {
     state_ = AnsiMode::in_sequence;
     return write_in_sequence(c);
@@ -69,7 +69,7 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
 
   if (list_size > 0 && list_size > defaults.size()) {
     auto start = defaults.size();
-    auto end = list_size - defaults.size(); 
+    auto end = list_size - defaults.size();
     for (auto i = start; i < end; i++) {
       const auto& c = list.at(i);
       if (!c.empty()) {
@@ -224,7 +224,7 @@ bool Ansi::write_in_sequence(char c) {
     // TODO(rushfan): Really should allow for any of these parameter or
     // intermediate then final bytes:
     // From Wikipedia: https://en.wikipedia.org/wiki/ANSI_escape_code#CSI_sequences
-    // The ESC [ is followed by any number (including none) of "parameter bytes" in the 
+    // The ESC [ is followed by any number (including none) of "parameter bytes" in the
     // range 0x30–0x3F (ASCII 0–9:;<=>?), then by any number of "intermediate bytes"
     // in the range 0x20–0x2F (ASCII space and !"#$%&'()*+,-./), then finally by a
     // single "final byte" in the range 0x40–0x7E (ASCII @A–Z[\]^_`a–z{|}~)
@@ -271,6 +271,30 @@ bool Ansi::reset() {
   state_ = AnsiMode::not_in_sequence;
   ansi_sequence_.clear();
   return true;
+}
+
+HeartCodeFilter::HeartCodeFilter(AnsiFilter* chain, const std::vector<uint8_t>& colors)
+    : chain_(chain), colors_(colors) {}
+
+bool HeartCodeFilter::write(char c) {
+
+  if (has_heart_) {
+    const uint8_t color = c - '0';
+    has_heart_ = false;
+    return attr(color);
+  } else if (c == 3) {
+    has_heart_ = true;
+    return true;
+  } else {
+    return chain_->write(c);
+  }
+}
+
+bool HeartCodeFilter::attr(uint8_t a) {
+  if (a < colors_.size()) {
+    return chain_->attr(colors_.at(a));
+  }
+  return false;
 }
 
 } // namespace ansi

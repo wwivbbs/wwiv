@@ -113,7 +113,7 @@ void create_sysop_account(wwiv::sdk::Config& config) {
   u.data.dsl = 255;
   u.data.restrict = 0;
   u.SetStatusFlag(User::ansi);
-  u.SetStatusFlag(User::color);
+  u.SetStatusFlag(User::status_color);
   usermanager.writeuser(&u, 1);
 
   {

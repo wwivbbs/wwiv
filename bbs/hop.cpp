@@ -38,7 +38,7 @@ void HopSub() {
   }
 
   if (okansi()) {
-    bout << "\r\x1b[K";
+    bout.clear_whole_line();
   } else {
     bout.nl();
   }
@@ -70,7 +70,7 @@ void HopSub() {
         ;
       if (strstr(s2, s1) != nullptr) {
         if (okansi()) {
-          bout << "\r\x1b[K";
+          bout.clear_whole_line();
         }
         if (!okansi()) {
           bout.nl();
@@ -112,7 +112,7 @@ void HopDir() {
   }
 
   if (okansi()) {
-    bout << "\r\x1b[K";
+    bout.clear_whole_line();
   } else {
     bout.nl();
   }
@@ -143,7 +143,7 @@ void HopDir() {
         ;
       if (strstr(s2, s1) != nullptr) {
         if (okansi()) {
-          bout << "\r\x1b[K";
+          bout.clear_whole_line();
         } else {
           bout.nl();
         }

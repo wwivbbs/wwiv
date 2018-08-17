@@ -21,6 +21,7 @@ set(COMMAND_SOURCES
   net/dump_contact.cpp
   net/dump_subscribers.cpp
   net/dump_packet.cpp
+  net/list.cpp
   net/net.cpp
   net/req.cpp
   print/print.cpp

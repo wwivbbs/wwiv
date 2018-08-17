@@ -494,8 +494,6 @@ static std::vector<std::string> split_long_line(const std::string& text) {
   return lines;
 }
 
-static constexpr bool use_ansi_screenbuffer = true;
-
 static std::vector<std::string> split_wwiv_message(const std::string& orig_text) {
   auto text(orig_text);
   auto cz_pos = text.find(CZ);
@@ -531,72 +529,20 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
       }
     }
 
-    if (use_ansi_screenbuffer) {
-      lines.emplace_back(line);
-    } else {
-      // Ok, here we also need to split long lines.
-      // use size_t since size_without_colors returns that.
-      const size_t screen_width = a()->user()->GetScreenChars();
-      auto line_size = size_without_colors(line);
-      if (line_size > screen_width) {
-        const auto sl = split_long_line(line);
-        for (const auto& l : sl) {
-          lines.emplace_back(l);
-        }
-      } else {
-        lines.emplace_back(line);
-      }
-    }
+    lines.emplace_back(line);
   }
 
-  if (use_ansi_screenbuffer) {
-    // do screnbuffer
-    FrameBuffer b{80};
-    Ansi ansi(&b, {}, 0x07);
-    for (auto& l : lines) {
-      if (l.find('\x03') != std::string::npos) {
-        auto i = std::begin(l);
-        while (i != std::end(l)) {
-          if (*i == '\x03') {
-            i++;
-            if (i == std::end(l)) {
-              break; 
-            }
-            if (std::isdigit(*i)) {
-              auto color = (a()->user()->HasColor() ? a()->user()->GetColor(*i - '0')
-                                                    : a()->user()->GetBWColor(*i - '0'));
-              ansi.attr(color);
-            }
-          } else {
-            ansi.write(*i);
-          }
-          i++;
-        }
-      } else {
-        ansi.write(l);
-      }
-      ansi.write("\n");
+  FrameBuffer b{80};
+  Ansi ansi(&b, {}, 0x07);
+  HeartCodeFilter heart(&ansi, a()->user()->colors());
+  for (auto& l : lines) {
+    for (const auto c  : l) {
+      heart.write(c);
     }
-    b.close();
-    lines.clear();
-    int attr = 7;
-    for (int i = 0; i < b.rows(); i++) {
-      auto row = b.row_char_and_attr(i);
-      std::ostringstream ss;
-      for (auto cc : row) {
-        uint8_t a = cc >> 8;
-        uint8_t c = cc & 0xff;
-        if (a != attr) {
-          ss << makeansi(a, attr);
-          attr = a;
-        }
-        ss << static_cast<char>(c);
-      }
-      //ss << "\r\n";
-      lines.push_back(ss.str());
-    }
+    ansi.write("\n");
   }
-  return lines;
+  b.close();
+  return b.to_screen_as_lines();
 }
 
 static void display_message_text_new(const std::vector<std::string>& lines, int start,

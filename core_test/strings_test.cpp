@@ -424,11 +424,11 @@ TEST(StringsTest, PadToPad) {
 }
 
 TEST(StringsTest, LPadTo) {
-  auto result = pad_to("a", 2);
+  auto result = lpad_to("a", 2);
   EXPECT_EQ(result, " a");
 }
 
 TEST(StringsTest, LPadToPad) {
-  auto result = pad_to("a", 'x', 2);
+  auto result = lpad_to("a", 'x', 2);
   EXPECT_EQ(result, "xa");
 }

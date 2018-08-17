@@ -102,7 +102,8 @@ void Output::ResetColors() {
 
 void Output::GotoXY(int x, int y) {
   if (okansi()) {
-    y = std::min<int>(y, a()->screenlinest);    // Don't get Y get too big or mTelnet will not be happy
+    // Don't get Y get too big or mTelnet will not be happy
+    y = std::min<int>(y, a()->screenlinest);
     bputs(StrCat("\x1b[", y, ";", x, "H"));
   }
 }
@@ -167,16 +168,7 @@ void Output::SystemColor(int c) {
 }
 
 std::string Output::MakeColor(int wwivcolor) {
-  int c = 0;
-
-  if (wwivcolor >= 0 && wwivcolor <= 9) {
-    c = (a()->user()->HasColor() ?
-      a()->user()->GetColor(wwivcolor) : a()->user()->GetBWColor(wwivcolor));
-  }
-  else {
-    // Invalid color, let's use 7 vs. 0 so it's not black-on-black.
-    c = 7;
-  }
+  auto c = a()->user()->color(wwivcolor);
   if (c == curatr()) {
     return "";
   }
@@ -245,6 +237,11 @@ void Output::clreol() {
   }
 }
 
+void Output::clear_whole_line() {
+  bputch('\r');
+  clreol();
+}
+
 void Output::mpl(int length) {
   if (!okansi()) {
     return;
@@ -289,7 +286,7 @@ int Output::bputs(const string& text) {
       else if (*it == '@') {
         it++;
         BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
-        auto s = interpret(*it++, ctx);
+        auto s = ctx.interpret(*it++);
         bout.bputs(s);
       }
       else if (*it == '#') {
@@ -315,7 +312,7 @@ int Output::bputs(const string& text) {
       it++;
       if (it == fin) { bputch(CO, true);  break; }
       BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
-      auto s = interpret(*it++, ctx);
+      auto s = ctx.interpret(*it++);
       bout.bputs(s);
     } else if (it == fin) { 
       break; 

@@ -37,14 +37,18 @@ static void addto(std::string* ansi_str, int num) {
 std::string makeansi(int attr, int current_attr) {
   static const std::vector<int> kAnsiColorMap = {'0', '4', '2', '6', '1', '5', '3', '7'};
 
+  if (current_attr == attr) {
+    return "";
+  }
+
   int catr = current_attr;
   std::string out;
-  //  if ((catr & 0x88) ^ (attr & 0x88)) {
-  addto(&out, 0);
-  addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
-  addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
-  catr = (attr & 0x77);
-  //  }
+  if ((catr & 0x88) ^ (attr & 0x88)) {
+    addto(&out, 0);
+    addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
+    addto(&out, 40 + kAnsiColorMap[(attr & 0x70) >> 4] - '0');
+    catr = (attr & 0x77);
+  }
   if ((catr & 0x07) != (attr & 0x07)) {
     addto(&out, 30 + kAnsiColorMap[attr & 0x07] - '0');
   }

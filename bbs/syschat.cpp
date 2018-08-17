@@ -174,7 +174,7 @@ static void select_chat_name(char *sysop_name) {
   a()->DisplaySysopWorkingIndicator(false);
 }
 
-// Allows two-way a()->chatting_ until sysop aborts/exits chat. or the end of line is hit,
+// Allows two-way chatting until sysop aborts/exits chat. or the end of line is hit,
 // then chat1 is back in control.
 static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop_name) {
   char s2[100], temp1[100];
@@ -202,12 +202,12 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
     ch = bout.getkey();
     if (bout.IsLastKeyLocal()) {
       if (a()->localIO()->WhereY() == 11) {
-        bout << "\x1b[12;1H";
+        bout.GotoXY(1, 12);
         for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
           s2[screencount] = '\xCD';
         }
         const string unn = a()->names()->UserName(a()->usernum);
-        sprintf(temp1, "|17|#2 %s a()->chatting_ with %s |16|#1", sysop_name, unn.c_str());
+        sprintf(temp1, "|17|#2 %s chatting with %s |16|#1", sysop_name, unn.c_str());
         int nNumCharsToMove = (((a()->user()->GetScreenChars() - strlen(stripcolors(temp1))) / 2));
         if (nNumCharsToMove) {
           strncpy(&s2[nNumCharsToMove - 1], temp1, (strlen(temp1)));
@@ -225,17 +225,15 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
             bout.Color(1);
             bout << side0[cntr + 6];
           }
-          bout << "\x1b[K";
+          bout.clreol();
           s2[0] = 0;
         }
-        sprintf(s2, "\x1b[%d;%dH", 5, 1);
-        bout << s2;
+        bout.GotoXY(1, 5);
         s2[0] = 0;
       } else if (a()->localIO()->WhereY() > 11) {
         wwiv_x2 = (a()->localIO()->WhereX() + 1);
         wwiv_y2 = (a()->localIO()->WhereY() + 1);
-        sprintf(s2, "\x1b[%d;%dH", wwiv_y1, wwiv_x1);
-        bout << s2;
+        bout.GotoXY(wwiv_x1, wwiv_y1);
         s2[0] = 0;
       }
       side = 0;
@@ -249,7 +247,7 @@ static void two_way_chat(char *rollover, int max_length, bool crend, char *sysop
             bout.Color(5);
             bout << side1[cntr - 7];
           }
-          bout << "\x1b[K";
+          bout.clreol();
           s2[0] = '\0';
         }
         sprintf(s2, "\x1b[%d;%dH", 17, 1);
@@ -584,25 +582,24 @@ void chat1(const char *chat_line, bool two_way) {
       a()->topdata = LocalIO::topdataNone;
       a()->UpdateTopScreen();
     }
-    bout << "\x1b[2J";
+    bout.cls();
     wwiv_x2 = 1;
     wwiv_y2 = 13;
-    bout << "\x1b[1;1H";
+    bout.GotoXY(1, 1);
     wwiv_x1 = a()->localIO()->WhereX();
     wwiv_y1 = a()->localIO()->WhereY();
-    bout << "\x1b[12;1H";
+    bout.GotoXY(1, 12);
     bout.Color(7);
     for (auto screencount = 0; screencount < a()->user()->GetScreenChars(); screencount++) {
       bout.bputch(static_cast<unsigned char>(205), true);
     }
     bout.flush();
     const string unn = a()->names()->UserName(a()->usernum);
-    sprintf(s, " %s a()->chatting_ with %s ", szSysopName, unn.c_str());
-    int nNumCharsToMove = ((a()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);
-    sprintf(s1, "\x1b[12;%dH", std::max<int>(nNumCharsToMove, 0));
-    bout << s1;
-    bout.Color(4);
-    bout << s << "\x1b[1;1H";
+    sprintf(s, " %s chatting with %s ", szSysopName, unn.c_str());
+    auto x = ((a()->user()->GetScreenChars() - strlen(stripcolors(s))) / 2);
+    bout.GotoXY(std::max<int>(x, 0), 12);
+    bout << "|#4" << s;
+    bout.GotoXY(1, 1);
     s[0] = s1[0] = s2[0] = '\0';
   }
   bout << "|#7" << szSysopName << "'s here...";
@@ -657,7 +654,7 @@ void chat1(const char *chat_line, bool two_way) {
   bout.Color(0);
 
   if (two_way) {
-    bout << "\x1b[2J";
+    bout.cls();
   }
 
   bout.nl();
@@ -670,9 +667,6 @@ void chat1(const char *chat_line, bool two_way) {
     a()->UpdateTopScreen();
   }
   bout.RestoreCurrentLine(line);
-
-  if (okansi()) {
-    bout << "\x1b[K";
-  }
+  bout.clreol();
 }
 

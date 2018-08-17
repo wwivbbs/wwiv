@@ -143,7 +143,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
             bout.Color(0);
           } else if (buffer[cp - 2] == CO) {
             BbsMacroContext ctx(a()->user(), a()->mci_enabled_);
-            const auto interpreted = interpret(buffer[cp - 1], ctx);
+            const auto interpreted = ctx.interpret(buffer[cp - 1]);
             for (auto i = interpreted.size(); i > 0; i--) {
               bout.bs();
             }
@@ -163,7 +163,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
         } else if (allow_previous) {
           if (okansi()) {
             if (clear_previous_line) {
-              bout << "\r\x1b[K";
+              bout.clear_whole_line();
             }
             bout << "\x1b[1A";
           } else {

@@ -300,11 +300,7 @@ static void change_colors() {
         os << "Extra color #2    ";
         break;
       }
-      if (a()->user()->HasColor()) {
-        os << DescribeColorCode(a()->user()->GetColor(i));
-      } else {
-        os << DescribeColorCode(a()->user()->GetBWColor(i));
-      }
+      os << DescribeColorCode(a()->user()->color(i));
       bout << os.str();
       bout.nl();
     }

@@ -296,12 +296,6 @@ public:
   std::chrono::seconds subtract_extratimecall(std::chrono::duration<double> et);
 
   /*!
-   * @function ShowUsage - Shows the help screen to the user listing
-   *           all of the command line arguments for WWIV
-   */
-  void ShowUsage();
-
-  /*!
    * @function Run main bbs loop - Invoked from the application
    *           main method.
    * @param argc The number of arguments

@@ -92,10 +92,16 @@ public:
   void backline();
 
   /**
-   * Moves the cursor to the end of the line using ANSI sequences.  If the user
+   * Clears from the cursor to the end of the line using ANSI sequences.  If the user
    * does not have ansi, this this function does nothing.
    */
   void clreol();
+
+  /**
+   * Moves the cursor to the beginning of the line and clears the whole like.
+   * If the user does not have ansi, this this function does nothing.
+   */
+  void clear_whole_line();
 
   /**
    * Clears the local and remote screen using ANSI (if enabled), otherwise DEC 12
@@ -188,7 +194,6 @@ private:
   // Means we need to reset the color before displaying our
   // next newline character.
   bool needs_color_reset_at_newline_{false};
-  void execute_ansi();
   std::chrono::duration<double> non_sysop_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> default_key_timeout_ = std::chrono::minutes(3);
   std::chrono::duration<double> sysop_key_timeout_ = std::chrono::minutes(10);

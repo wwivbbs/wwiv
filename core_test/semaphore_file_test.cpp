@@ -41,7 +41,7 @@ TEST(SemaphoreFileTest, AlreadyAcqired) {
     fn = ok.filename();
     LOG(INFO) << "fd: " << ok.fd() << "; fn: " << fn;
 
-    EXPECT_TRUE(File::Exists(fn)) << fn;
+    EXPECT_TRUE(File::Exists(fn));
 
     try {
       auto nok =

@@ -254,10 +254,16 @@ bool File::IsFile() const { return !this->IsDirectory(); }
 bool File::SetFilePermissions(int perm) { return chmod(full_path_name_.c_str(), perm) == 0; }
 
 bool File::IsDirectory() const {
+  return File::is_directory(full_path_name_);
+}
+
+// static
+bool File::is_directory(const std::string& path) {
   struct stat statbuf {};
-  stat(full_path_name_.c_str(), &statbuf);
+  stat(path.c_str(), &statbuf);
   return S_ISDIR(statbuf.st_mode);
 }
+
 
 off_t File::length() {
   // stat/fstat is the 32 bit version on WIN32

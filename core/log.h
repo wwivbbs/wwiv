@@ -105,6 +105,7 @@ class LoggerConfig {
 public:
   LoggerConfig();
   void add_appender(LoggerLevel level, std::shared_ptr<Appender> appender);
+  void reset();
 
   bool log_startup = false;
   std::string exit_filename;

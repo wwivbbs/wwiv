@@ -505,7 +505,7 @@ int print_extended_plus(const char *file_name, int numlist, int indent, Color co
     if (ch == SOFTRETURN && indent) {
       bout.SystemColor(static_cast<uint8_t>(color));
       bout.bputch('\r');
-      bout << "\x1b[" << std::abs(indent) << "C";
+      bout.Right(std::abs(indent));
     }
     do {
       ch = new_ss[cpos++];

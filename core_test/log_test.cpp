@@ -56,6 +56,8 @@ protected:
     Logger::config().timestamp_fn_ = fn;
   }
 
+  virtual void TearDown() { Logger::config().reset(); }
+
   std::shared_ptr<TestAppender> info;
   std::shared_ptr<TestAppender> warning;
   std::string timestamp;

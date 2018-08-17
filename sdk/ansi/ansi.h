@@ -38,12 +38,18 @@ struct AnsiCallbacks {
   move_cb move_;
 };
 
-class Ansi {
+class AnsiFilter {
 public:
-  Ansi(VScreen* b, const AnsiCallbacks& callbacks, uint8_t default_attr);
+  virtual bool write(char c) = 0;
+  virtual bool attr(uint8_t a) = 0;
+};
+
+class Ansi : public AnsiFilter {
+public:
+  Ansi(VScreen * b, const AnsiCallbacks& callbacks, uint8_t default_attr);
   virtual ~Ansi() = default;
 
-  bool write(char c);
+  bool write(char c) override;
   bool write(const std::string& s) {
     bool result = true;
     for (const auto c : s) {
@@ -53,13 +59,13 @@ public:
     }
     return result;
   }
-  bool attr(uint8_t a);
+  bool attr(uint8_t a) override;
   bool reset();
 
 private:
   bool write_in_sequence(char c);
   bool write_not_in_sequence(char c);
-  bool write_not_in_sequence(std::string& s) {
+  bool write_not_in_sequence(std::string & s) {
     for (const auto c : s) {
       write_not_in_sequence(c);
     }
@@ -76,6 +82,18 @@ private:
 
   int saved_x_{0};
   int saved_y_{0};
+};
+
+class HeartCodeFilter : public AnsiFilter {
+public:
+  HeartCodeFilter(AnsiFilter* chain, const std::vector<uint8_t>& colors);
+  bool write(char c) override;
+  bool attr(uint8_t a) override;
+
+private:
+  AnsiFilter* chain_;
+  bool has_heart_{false};
+  const std::vector<uint8_t> colors_;
 };
 
 } // namespace ansi

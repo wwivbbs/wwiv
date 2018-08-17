@@ -28,10 +28,7 @@ namespace bbs {
 
 using namespace wwiv::strings;
 
-SessionContext::SessionContext(Application* a) 
-  : a_(a) { 
-  LOG(INFO) << "SessionContext: " << this;
-}
+SessionContext::SessionContext(Application* a) : a_(a) {}
 
 void SessionContext::InitalizeContext() {
   const configrec* c = a_->config()->config();

@@ -89,24 +89,37 @@ void make_abs_cmd(const std::string root, std::string* out) {
     _snprintf(s, sizeof(s), "%s%s", s1, ext.c_str());
     if (s1[1] == ':') {
       if (File::Exists(s)) {
-        *out = StrCat(s, s2);
+        if (File::is_directory(s)) {
+          *out = FilePath(s, s2);
+        } else {
+          *out = StrCat(s, s2);
+        }
         return;
       }
     } else {
       if (File::Exists(s)) {
-        *out = StrCat(root, s, s2);
+        if (File::is_directory(root) && !File::is_directory(FilePath(root, s))) {
+          *out = StrCat(FilePath(root, s), s2);
+        } else {
+          *out = StrCat(root, s, s2);
+        }
         return;
       } else {
         char szFoundPath[MAX_PATH];
         _searchenv(s, "PATH", szFoundPath);
         if (strlen(szFoundPath) > 0) {
-          *out = wwiv::strings::StringPrintf("%s%s", szFoundPath, s2);
+          *out = StrCat(szFoundPath, s2);
           return;
         }
       }
     }
   }
 
-  *out = StrCat(root, s1, s2);
+  auto maybe_dir = FilePath(root, s1);
+  if (File::Exists(maybe_dir) && File::is_directory(maybe_dir)) {
+    *out = StrCat(maybe_dir, s2);
+  } else {
+    *out = StrCat(root, s1, s2);
+  }
 }
 

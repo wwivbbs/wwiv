@@ -424,7 +424,7 @@ void CreateDoorSysDropFile() {
             'Y',
             (okansi()) ? 'N' : 'Y', // ansi ok but graphics turned off
             'N',                    // record-locking
-            a()->user()->GetColor(0), a()->user()->GetTimeBankMinutes(),
+            a()->user()->color(0), a()->user()->GetTimeBankMinutes(),
             a()->user()->GetLastOn().c_str(), // last n-scan date
             t.c_str(),
             "00:01"); // time last call
