@@ -18,6 +18,7 @@
 /**************************************************************************/
 #include "bbs/read_message.h"
 
+#include <cctype>
 #include <iostream>
 #include <iterator>
 #include <memory>
@@ -41,6 +42,9 @@
 #include "core/file.h"
 #include "core/stl.h"
 #include "core/strings.h"
+#include "sdk/ansi/ansi.h"
+#include "sdk/ansi/makeansi.h"
+#include "sdk/ansi/framebuffer.h"
 #include "sdk/filenames.h"
 #include "sdk/msgapi/message_utils_wwiv.h"
 #include "sdk/net.h"
@@ -49,6 +53,7 @@ using std::string;
 using std::unique_ptr;
 using namespace wwiv::core;
 using namespace wwiv::sdk;
+using namespace wwiv::sdk::ansi;
 using namespace wwiv::sdk::msgapi;
 using namespace wwiv::stl;
 using namespace wwiv::strings;
@@ -489,6 +494,8 @@ static std::vector<std::string> split_long_line(const std::string& text) {
   return lines;
 }
 
+static constexpr bool use_ansi_screenbuffer = true;
+
 static std::vector<std::string> split_wwiv_message(const std::string& orig_text) {
   auto text(orig_text);
   auto cz_pos = text.find(CZ);
@@ -518,20 +525,75 @@ static std::vector<std::string> split_wwiv_message(const std::string& orig_text)
             continue;
           }
         }
+      } else if (line.back() == CA) {
+        // This meant we wrapped here.
+        line.pop_back();
       }
     }
 
-    // Ok, here we also need to split long lines.
-    // use size_t since size_without_colors returns that.
-    const size_t screen_width = a()->user()->GetScreenChars();
-    auto line_size = size_without_colors(line);
-    if (line_size > screen_width) {
-      const auto sl = split_long_line(line);
-      for (const auto& l : sl) {
-        lines.emplace_back(l);
-      }
-    } else {
+    if (use_ansi_screenbuffer) {
       lines.emplace_back(line);
+    } else {
+      // Ok, here we also need to split long lines.
+      // use size_t since size_without_colors returns that.
+      const size_t screen_width = a()->user()->GetScreenChars();
+      auto line_size = size_without_colors(line);
+      if (line_size > screen_width) {
+        const auto sl = split_long_line(line);
+        for (const auto& l : sl) {
+          lines.emplace_back(l);
+        }
+      } else {
+        lines.emplace_back(line);
+      }
+    }
+  }
+
+  if (use_ansi_screenbuffer) {
+    // do screnbuffer
+    FrameBuffer b{80};
+    Ansi ansi(&b, {}, 0x07);
+    for (auto& l : lines) {
+      if (l.find('\x03') != std::string::npos) {
+        auto i = std::begin(l);
+        while (i != std::end(l)) {
+          if (*i == '\x03') {
+            i++;
+            if (i == std::end(l)) {
+              break; 
+            }
+            if (std::isdigit(*i)) {
+              auto color = (a()->user()->HasColor() ? a()->user()->GetColor(*i - '0')
+                                                    : a()->user()->GetBWColor(*i - '0'));
+              ansi.attr(color);
+            }
+          } else {
+            ansi.write(*i);
+          }
+          i++;
+        }
+      } else {
+        ansi.write(l);
+      }
+      ansi.write("\n");
+    }
+    b.close();
+    lines.clear();
+    int attr = 7;
+    for (int i = 0; i < b.rows(); i++) {
+      auto row = b.row_char_and_attr(i);
+      std::ostringstream ss;
+      for (auto cc : row) {
+        uint8_t a = cc >> 8;
+        uint8_t c = cc & 0xff;
+        if (a != attr) {
+          ss << makeansi(a, attr);
+          attr = a;
+        }
+        ss << static_cast<char>(c);
+      }
+      //ss << "\r\n";
+      lines.push_back(ss.str());
     }
   }
   return lines;
@@ -541,6 +603,9 @@ static void display_message_text_new(const std::vector<std::string>& lines, int 
                                      int message_height, int screen_width, int lines_start) {
   bool had_ansi = false;
   for (int i = start; i < start + message_height; i++) {
+    // Do this so we don't pop up a pause for sure.
+    bout.clear_lines_listed();
+
     if (i >= size_int(lines)) {
       break;
     }
