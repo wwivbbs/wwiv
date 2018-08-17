@@ -509,7 +509,7 @@ string stripcolors(const string& orig) {
         continue;
       }
       // skip everything until we have the end of the ansi sequence.
-      while (i != end(orig) && *i != 'm') {
+      while (i != end(orig) && !std::isalpha(*i)) {
         i++;
       }
       if (i != end(orig)) {

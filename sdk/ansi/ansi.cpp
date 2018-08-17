@@ -70,7 +70,7 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
   if (list_size > 0 && list_size > defaults.size()) {
     auto start = defaults.size();
     auto end = list_size - defaults.size(); 
-    for (int i = start; i < end; i++) {
+    for (auto i = start; i < end; i++) {
       const auto& c = list.at(i);
       if (!c.empty()) {
         out.push_back(to_number<int>(c));

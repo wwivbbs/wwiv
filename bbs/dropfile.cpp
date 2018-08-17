@@ -233,7 +233,7 @@ void CreatePCBoardSysDropFile() {
     pcb.bpsflag = 32;
     // Added for PCB 14.5 Revision
     auto status = a()->status_manager()->GetStatus();
-    to_char_array(pcb.lastevent, status->GetLastDate());
+    to_char_array_no_null(pcb.lastevent, status->GetLastDate());
     pcb.exittodos = '0';
     pcb.eventupcoming = '0';
     pcb.lastconfarea = static_cast<int16_t>(a()->GetCurrentConferenceMessageArea());
