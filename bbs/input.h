@@ -24,6 +24,7 @@
 #include <string>
 #include <type_traits>
 
+#include "core/strings.h"
 #include "core/wwivassert.h"
 
 namespace wwiv {
