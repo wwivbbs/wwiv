@@ -275,13 +275,13 @@ static void modify_sub(int n) {
     case 'D': {
       bout.nl();
       bout << "|#2New Read SL? ";
-      r.readsl = input_number<uint8_t>(r.readsl, 0, 255); 
+      r.readsl = input_number(r.readsl); 
     }
     break;
     case 'E': {
       bout.nl();
       bout << "|#2New Post SL? ";
-      r.postsl = input_number<uint8_t>(r.postsl, 0, 255);
+      r.postsl = input_number(r.postsl);
     }
     break;
     case 'F': {
@@ -320,13 +320,13 @@ static void modify_sub(int n) {
     case 'G': {
       bout.nl();
       bout << "|#2New Min Age? ";
-      r.age = input_number<uint8_t>(r.age, 0, 128);
+      r.age = input_number(r.age);
     }
     break;
     case 'H': {
       bout.nl();
       bout << "|#2New Max Msgs? ";
-      r.maxmsgs = input_number<uint16_t>(r.maxmsgs, 0, std::numeric_limits<uint16_t>::max());
+      r.maxmsgs = input_number(r.maxmsgs);
     }
     break;
     case 'I': {
@@ -520,9 +520,9 @@ static void insert_sub(int n) {
   // Insert new item.
   a()->subs().insert(n, r);
 
-  int nNumUserRecords = a()->users()->num_user_records();
+  auto nNumUserRecords = a()->users()->num_user_records();
 
-  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len);
+  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len);
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
   uint32_t* pTempQScan_q = pTempQScan_n + (a()->config()->config()->max_dirs + 31) / 32;
   uint32_t* pTempQScan_p = pTempQScan_q + (a()->config()->config()->max_subs + 31) / 32;
@@ -577,7 +577,7 @@ static void delete_sub(int n) {
   nNumUserRecords = a()->users()->num_user_records();
 
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
-  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len+1);
+  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len+1);
   pTempQScan_n = &pTempQScan.get()[1];
   pTempQScan_q = pTempQScan_n + (a()->config()->config()->max_dirs + 31) / 32;
   pTempQScan_p = pTempQScan_q + (a()->config()->config()->max_subs + 31) / 32;
@@ -685,7 +685,7 @@ void boardedit() {
       }
       bout.nl();
       bout << "|#2Insert before which sub ('$' for end) : ";
-      string s = input(4);
+      auto s = input(4);
       subconf_t subnum = 0;
       if (s[0] == '$') {
         subnum = static_cast<subconf_t>(size_int(a()->subs().subs()));

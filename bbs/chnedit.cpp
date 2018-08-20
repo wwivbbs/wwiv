@@ -191,33 +191,27 @@ void modify_chain(int nCurrentChainum) {
         r = a()->chains_reg[ nCurrentChainum ];
       }
       break;
-    case 'A':
+    case 'A': {
       bout.nl();
       bout << "|#7New Description? ";
-      Input1(s, c.description, 40, true, InputMode::MIXED);
-      if (s[0]) {
-        strcpy(c.description, s);
+      auto descr = Input1(c.description, 40, true, InputMode::MIXED);
+      if (!descr.empty()) {
+        to_char_array(c.description, s);
       }
-      break;
-    case 'B':
+    } break;
+    case 'B': {
       bout.cls();
       ShowChainCommandLineHelp();
       bout << "\r\n|#9Enter Command Line.\r\n|#7:";
-      Input1(s, c.filename, 79, true, InputMode::MIXED);
-      if (s[0] != 0) {
-        strcpy(c.filename, s);
-      }
-      break;
+      auto fn = input_cmdline(c.filename, 79);
+      to_char_array(c.filename, fn);
+    } break;
     case 'C': {
       bout.nl();
       bout << "|#7New SL? ";
-      input(s, 3, true);
-      int sl = to_number<int>(s);
-      if ((sl >= 0) && (sl < 256) && (s[0])) {
-        c.sl = static_cast<unsigned char>(sl);
-      }
+      c.sl = input_number(c.sl);
     } break;
-    case 'D':
+    case 'D': {
       bout.nl();
       bout << "|#7New AR (<SPC>=None) ? ";
       ch2 = onek(" ABCDEFGHIJKLMNOP");
@@ -226,7 +220,7 @@ void modify_chain(int nCurrentChainum) {
       } else {
         c.ar = static_cast<uint16_t>(1 << (ch2 - 'A'));
       }
-      break;
+    } break;
     case 'E': c.ansir ^= ansir_ansi; break;
     case 'F': c.ansir ^= ansir_no_DOS; break;
     case 'G': c.ansir ^= ansir_emulate_fossil; break;
@@ -261,37 +255,23 @@ void modify_chain(int nCurrentChainum) {
         }
       }
       break;
-    case 'M':
+    case 'M': {
       r.usage = 0;
       bout.nl();
       bout << "|#5Times Run : ";
-      input(s, 3);
-      if (s[0] != 0) {
-        r.usage = to_number<int16_t>(s);
-      }
-      break;
+      r.usage = input_number(r.usage);
+    } break;
     case 'N':
       bout.nl();
       bout << "|#5New minimum age? ";
-      input(s, 3);
-      if (s[0]) {
-        if ((to_number<int>(s) > 255) || (to_number<int>(s) < 0)) {
-          s[0] = 0;
-        } else {
-          r.minage = to_number<uint8_t>(s);
-        }
+      r.minage = input_number(r.minage);
+      if (r.minage > 0) {
         bout << "|#5New maximum age? ";
-        input(s, 3);
-        if (s[0]) {
-          if (to_number<uint8_t>(s) < r.minage) {
-            break;
-          }
-          if (to_number<uint8_t>(s) > 255) {
-            r.maxage = 255;
-          } else {
-            r.maxage = to_number<uint8_t>(s);
-          }
+        auto maxage = input_number(r.maxage);
+        if (maxage < r.minage){
+          break;
         }
+        r.maxage = maxage;
       }
       break;
     }

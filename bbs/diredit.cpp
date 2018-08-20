@@ -194,20 +194,20 @@ void modify_dir(int n) {
     case 'D': {
       bout.nl();
       bout << "|#2New DSL? ";
-      r.dsl = input_number<uint8_t>(r.dsl, 0, 255);
+      r.dsl = input_number(r.dsl);
     }
     break;
     case 'E': {
       bout.nl();
       bout << "|#2New Min Age? ";
-      r.age = input_number<uint8_t>(r.age, 0, 128);
+      r.age = input_number(r.age);
     }
     break;
     case 'F':
     {
       bout.nl();
       bout << "|#2New max files? ";
-      r.maxfiles = input_number<uint16_t>(r.maxfiles, 0, 9999);
+      r.maxfiles = input_number(r.maxfiles);
     } break;
     case 'G':
     {
@@ -225,7 +225,7 @@ void modify_dir(int n) {
       break;
     case 'I':
       bout << "|#2New Dir Type? ";
-      r.type = input_number<uint16_t>(r.type, 0, 9999);
+      r.type = input_number(r.type, 0, 9999);
       break;
     case 'J':
       r.mask ^= mask_no_uploads;

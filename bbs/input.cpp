@@ -173,7 +173,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
             chCurrent = 0;
           } else {
 #ifdef _WIN32
-            chCurrent = upcase(chCurrent);
+            chCurrent = to_lower_case(chCurrent);
 #endif  // _WIN32
           }
         } break;
@@ -280,6 +280,14 @@ std::string inputl(int max_length, bool auto_mpl) {
 std::string input_password(const string& prompt_text, int max_length) {
   bout << prompt_text;
   return input_password_minimal(max_length);
+}
+
+std::string input_filename(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::FILENAME);
+}
+
+std::string input_cmdline(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::FULL_PATH_NAME);
 }
 
 // TODO(rushfan): Make this a WWIV ini setting.
@@ -458,8 +466,8 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
         }
         if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
 #ifdef _WIN32
-          // Only uppercase filenames on Win32.
-          c = to_upper_case<unsigned char> (static_cast<unsigned char>(c)); 
+          // Only lowercase filenames on Win32.
+          c = to_lower_case<unsigned char> (static_cast<unsigned char>(c)); 
 #endif  // _WIN32
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
             c = 0;

@@ -46,14 +46,15 @@ void show_files(const char *file_name, const char *pszDirectoryName) {
   strcpy(file, file_name);
   strcpy(ext, "");
 #endif
-
-  auto s = StringPrintf("|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", strupr(stripfn(file_name)), drive, direc);
-  int i = (a()->user()->GetScreenChars() - 1) / 2 - stripcolors(s).size() / 2;
+  auto stripped_fn = ToStringLowerCase(stripfn(file_name));
+  auto s = StringPrintf("|#7[|17|15 FileSpec: %s    Dir: %s%s |16|#7]", stripped_fn.c_str(), drive,
+                        direc);
+  int i = (a()->user()->GetScreenChars() - 1) / 2 - size_without_colors(s) / 2;
   bout << "|#7" << std::string(i, c) << s;
-  i = a()->user()->GetScreenChars() - 1 - i - stripcolors(s).size();
+  i = a()->user()->GetScreenChars() - 1 - i - size_without_colors(s);
   bout << "|#7" << std::string(i, c);
 
-  auto full_pathname = StrCat(pszDirectoryName, strupr(stripfn(file_name)));
+  auto full_pathname = FilePath(pszDirectoryName, strlwr(stripfn(file_name)));
   FindFiles ff(full_pathname, FindFilesType::files);
   for (const auto& f : ff) {
     s = f.name;

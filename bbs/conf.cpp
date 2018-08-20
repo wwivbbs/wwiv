@@ -554,25 +554,25 @@ int modify_conf(ConferenceType conftype,  int which) {
     case 'C': {
       bout.nl();
       bout << "|#2Min SL: ";
-      c.minsl = input_number<uint8_t>(c.minsl, 0, 255, true);
+      c.minsl = input_number(c.minsl);
       changed = true;
     } break;
     case 'D':
       bout.nl();
       bout << "|#2Max SL: ";
-      c.maxsl = input_number<uint8_t>(c.maxsl, 0, 255, true);
+      c.maxsl = input_number(c.maxsl);
       changed = true;
       break;
     case 'E':
       bout.nl();
       bout << "|#2Min DSL: ";
-      c.mindsl = input_number<uint8_t>(c.mindsl, 0, 255, true);
+      c.mindsl = input_number(c.mindsl);
       changed = true;
       break;
     case 'F':
       bout.nl();
       bout << "|#2Max DSL";
-      c.maxdsl = input_number<uint8_t>(c.maxdsl, 0, 255, true);
+      c.maxdsl = input_number(c.maxdsl);
       changed = true;
       break;
     case 'G':
@@ -584,7 +584,7 @@ int modify_conf(ConferenceType conftype,  int which) {
     case 'H':
       bout.nl();
       bout << "|#2Max Age: ";
-      c.maxage = input_number<uint8_t>(c.maxage, 0, 255, true);
+      c.maxage = input_number(c.maxage);
       changed = true;
       break;
     case 'I': {
@@ -618,7 +618,7 @@ int modify_conf(ConferenceType conftype,  int which) {
     case 'K':
       bout.nl();
       bout << "|#2Min BPS Rate: ";
-      c.minbps = input_number<subconf_t>(c.minbps, 0, 255, true);
+      c.minbps = input_number(c.minbps);
       changed = true;
       break;
     case 'L': {

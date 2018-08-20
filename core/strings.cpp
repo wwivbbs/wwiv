@@ -304,12 +304,8 @@ void StringTrimEnd(char *str) {
   strcpy(str, s.c_str());
 }
 
-static char toupper_char(int c) {
-  return static_cast<char>(::toupper(c));
-}
-
 void StringUpperCase(string* s) {
-  std::transform(std::begin(*s), std::end(*s), std::begin(*s), toupper_char);
+  std::transform(std::begin(*s), std::end(*s), std::begin(*s), to_upper_case<char>);
 }
 
 string ToStringUpperCase(const string& orig) {
