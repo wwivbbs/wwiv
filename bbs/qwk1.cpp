@@ -555,6 +555,8 @@ void qwk_email_text(char *text, char *title, char *to) {
 void qwk_inmsg(const char* text, messagerec* m1, const char* aux, const char* name,
                const wwiv::core::DateTime& dt) {
   wwiv::core::ScopeExit  at_exit([=]() {
+    // Might not need to do this anymore since quoting
+    // isn't so convoluted.
     bout.charbufferpointer_ = 0;
     bout.charbuffer[0] = 0;
   });

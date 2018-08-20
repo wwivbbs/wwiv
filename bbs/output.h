@@ -184,7 +184,6 @@ public:
   bool newline{true};
   int charbufferpointer_{0};
   char charbuffer[255];
-  char* quotes_ind;
 
 private:
   std::string bputch_buffer_;

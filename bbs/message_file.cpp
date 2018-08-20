@@ -175,7 +175,7 @@ void savefile(const std::string& text, messagerec* msg, const string& fileName) 
   }
 }
 
-bool readfile(messagerec* msg, const string& fileName, string* out) {
+bool readfile(const messagerec* msg, const string& fileName, string* out) {
   out->clear();
   if (msg->storage_type != 2) {
     return false;
@@ -213,7 +213,7 @@ bool readfile(messagerec* msg, const string& fileName, string* out) {
   return true;
 }
 
-void lineadd(messagerec* msg, const string& sx, string fileName) {
+void lineadd(const messagerec* msg, const string& sx, string fileName) {
   const auto line = StringPrintf("%s\r\n\x1a", sx.c_str());
 
   switch (msg->storage_type) {

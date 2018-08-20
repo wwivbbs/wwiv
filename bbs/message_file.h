@@ -27,7 +27,7 @@ constexpr uint8_t EMAIL_STORAGE = 2;
 
 void remove_link(const messagerec* msg, const std::string& fileName);
 void savefile(const std::string& text, messagerec* msg, const std::string& fileName);
-bool readfile(messagerec* msg, const std::string& fileName, std::string* out);
-void lineadd(messagerec* msg, const std::string& sx, const std::string fileName);
+bool readfile(const messagerec* msg, const std::string& fileName, std::string* out);
+void lineadd(const messagerec* msg, const std::string& sx, const std::string fileName);
 
 #endif  // __INCLUDED_BBS_MESSAGE_FILE_H__

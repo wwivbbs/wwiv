@@ -396,8 +396,6 @@ public:
 
   // TODO(rushfan): All of these are moved from vars.h.
   // Figure out a better way
-  int bquote_ = 0;
-  int equote_ = 0;
   bool chat_file_{false};
   bool chatcall_{false};
   bool received_short_message_{false};

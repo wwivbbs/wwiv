@@ -20,6 +20,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <deque>
 #include <string>
 #include <sstream>
 #include <vector>
@@ -188,11 +189,12 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
   bout << header;
   bout.nl();
 
-  string current_line;
+  string current_line;  
   bool check_message_size = true;
   bool save_message = false;
   bool done = false;
   string rollover_line;
+  std::deque<std::string> quoted_lines;
   while (!done && !a()->hangup_) {
     while (inli(&current_line, &rollover_line, 160, true, (curli > 0))) {
       // returning true means we back spaced past the current line.
@@ -223,8 +225,20 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if ((cmd == "/QUOTE") ||
                  (cmd == "/Q")) {
         check_message_size = false;
-        if (bout.quotes_ind != nullptr) {
-          get_quote(data.to_name);
+        quoted_lines = get_quote(data.to_name);
+          
+        while (!quoted_lines.empty()) {
+          current_line = quoted_lines.front();
+          quoted_lines.pop_front();
+          bout.bpla(current_line, &abort);
+          if (curli == size_int(lin)) {
+            // we're inserting a new line at the end.
+            lin.emplace_back(current_line);
+          } else if (curli < size_int(lin)) {
+            // replacing an older line.
+            lin.at(curli).assign(current_line);
+          }
+          curli++;
         }
       } else if ((cmd == "/LI")) {
         check_message_size = false;
@@ -237,7 +251,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
           if (!line.empty() && line.front() == CB) {
             line = line.substr(1);
             int i5 = 0;
-            // TODO(rusnfan): Make a utility function to do this in strings.h
+            // TODO(rushfan): Make a utility function to do this in strings.h
             for (size_t i4 = 0; i4 < line.size(); i4++) {
               if ((line[i4] == 8) || (line[i4] == 3)) {
                 --i5;
@@ -545,6 +559,8 @@ bool inmsg(MessageEditorData& data) {
 
   wwiv::core::ScopeExit at_exit([=]() {
     setiia(oiia);
+    // Might not need to do this anymore since quoting
+    // isn't so convoluted.
     bout.charbufferpointer_ = 0;
     bout.charbuffer[0] = '\0';
     clear_quotes();

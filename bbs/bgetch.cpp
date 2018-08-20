@@ -138,52 +138,6 @@ static void HandleControlKey(char *ch) {
  */
 char bgetch(bool allow_extended_input) {
   char ch = 0;
-  static int qpointer = 0, cpointer;
-
-  if (a()->bquote_) {
-    if (!qpointer) {
-      bout.charbuffer[1] = '0';
-      bout.charbuffer[2] = RETURN;
-      bout.charbuffer[3] = '\0';
-      cpointer = 0;
-      qpointer = 1;
-      while (qpointer < a()->bquote_ + 2) {
-        if (bout.quotes_ind[cpointer++] == SOFTRETURN) {
-          if (bout.quotes_ind[cpointer] != CD) {
-            ++qpointer;
-          }
-        }
-      }
-      bout.charbufferpointer_ = 1;
-    }
-    while (bout.quotes_ind[cpointer] == CD) {
-      while (bout.quotes_ind[cpointer++] != SOFTRETURN)
-        // Do nothing...
-        ;
-    }
-    if (bout.quotes_ind[cpointer] == SOFTRETURN) {
-      ++qpointer;
-      if (qpointer > a()->equote_ + 2) {
-        qpointer = 0;
-        a()->bquote_ = 0;
-        a()->equote_ = 0;
-        return CP;
-      } else {
-        ++cpointer;
-      }
-    }
-    if (bout.quotes_ind[cpointer] == CC) {
-      ++cpointer;
-      return CP;
-    }
-    if (bout.quotes_ind[cpointer] == 0) {
-      qpointer = 0;
-      a()->bquote_ = 0;
-      a()->equote_ = 0;
-      return RETURN;
-    }
-    return bout.quotes_ind[cpointer++];
-  }
 
   if (bout.charbufferpointer_) {
     if (!bout.charbuffer[bout.charbufferpointer_]) {
@@ -241,8 +195,7 @@ bool bkbhitraw() {
 
 bool bkbhit() {
   if ((a()->localIO()->KeyPressed() || (a()->context().incom() && bkbhitraw()) ||
-       (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_])) ||
-      a()->bquote_) {
+       (bout.charbufferpointer_ && bout.charbuffer[bout.charbufferpointer_]))) {
     return true;
   }
   return false;
