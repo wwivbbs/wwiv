@@ -279,7 +279,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     case 'A': {
       bout.nl();
       bout << "Please enter a one line description.\r\n:";
-      auto desc = inputl(58);
+      auto desc = input_text(58);
       to_char_array(u.description, desc);
     } break;
 

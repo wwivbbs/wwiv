@@ -283,12 +283,12 @@ void gfileedit() {
 
 bool fill_sec(int sn) {
   int nf = 0, i, i1, n1;
-  char s[81], s1[81];
+  char s[81];
 
   gfilerec *g = read_sec(sn, &n1);
   string gfilesdir = a()->config()->gfilesdir();
-  sprintf(s1, "%s%s%c*.*", gfilesdir.c_str(), a()->gfilesec[sn].filename, File::pathSeparatorChar);
-  FindFiles ff(s1, FindFilesType::files);
+  auto filespec = StringPrintf("%s%s%c*.*", gfilesdir.c_str(), a()->gfilesec[sn].filename, File::pathSeparatorChar);
+  FindFiles ff(filespec, FindFilesType::files);
   bool ok = true;
   int chd = 0;
   for (const auto& f : ff) {
@@ -305,11 +305,11 @@ bool fill_sec(int sn) {
     }
     if (i) {
       bout << "|#2" << s << " : ";
-      inputl(s1, 60);
-      if (s1[0]) {
+      auto s1s = input_text(60);
+      if (!s1s.empty()) {
         chd = 1;
         i = 0;
-        while (wwiv::strings::StringCompare(s1, g[i].description) > 0 && i < nf) {
+        while (wwiv::strings::StringCompare(s1s.c_str(), g[i].description) > 0 && i < nf) {
           ++i;
         }
         for (i1 = nf; i1 > i; i1--) {
@@ -318,7 +318,7 @@ bool fill_sec(int sn) {
         ++nf;
         gfilerec g1;
         to_char_array(g1.filename, f.name);
-        strcpy(g1.description, s1);
+        to_char_array(g1.description, s1s);
         g1.daten = daten_t_now();
         g[i] = g1;
       } else {

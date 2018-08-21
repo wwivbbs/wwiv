@@ -201,7 +201,7 @@ static int ShowLoginAndGetUserNumber(string remote_username) {
 
   string user_name;
   if (remote_username.empty()) {
-    user_name = input(30, true);
+    user_name = input_upper(30);
   } else {
     bout << remote_username << wwiv::endl;
     user_name = remote_username;
@@ -348,9 +348,9 @@ static void logon_guest() {
   int count = 0;
   do {
     bout << "\r\n|#5Enter your real name : ";
-    userName = input(25, true);
+    userName = input_upper(25);
     bout << "\r\n|#5Purpose of your call?\r\n";
-    reason = input(79, true);
+    reason = input_text(79);
     if (!userName.empty() && !reason.empty()) {
       break;
     }

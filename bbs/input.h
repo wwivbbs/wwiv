@@ -37,12 +37,6 @@ enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, DATE, PHO
 
 void input(char* out_text, int max_length, bool auto_mpl = false);
 std::string input(int max_length, bool auto_mpl = false);
-void inputl(char* out_text, int max_length, bool auto_mpl = false);
-std::string inputl(int max_length, bool auto_mpl = false);
-// void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert,
-//            wwiv::bbs::InputMode mode);
-std::string Input1(const std::string& orig_text, int max_length, bool bInsert,
-                   wwiv::bbs::InputMode mode);
 
 /**
  * Inputs password up to length max_length after displaying prompt_text
@@ -85,6 +79,11 @@ std::string input_text(int max_length);
 std::string input_upper(const std::string& orig_text, int max_length);
 
 /**
+ * Inputs random text (upper case) up to length max_length.
+ */
+std::string input_upper(int max_length);
+
+/**
  * Inputs random text (In Proper Case) up to length max_length.
  */
 std::string input_proper(const std::string& orig_text, int max_length);
@@ -105,7 +104,7 @@ input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
              int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
   auto len = std::max<int>(1, static_cast<T>(std::floor(std::log10(max_value))) + 1);
   std::string default_value = (set_default_value ? std::to_string(current_value) : "");
-  const auto s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
+  const auto s = input_upper(default_value, len);
   try {
     auto value = wwiv::strings::to_number<T>(s);
     if (value < static_cast<T>(min_value) || value > static_cast<T>(max_value)) {
@@ -129,7 +128,7 @@ input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
   WWIV_ASSERT(max_value >= 0);
   auto len = std::max<int>(1, static_cast<T>(std::floor(std::log10(max_value))) + 1);
   std::string default_value = (set_default_value ? std::to_string(current_value) : "");
-  const auto s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
+  const auto s = input_upper(default_value, len);
   try {
     auto value = wwiv::strings::to_number<T>(s);
     if (value < static_cast<T>(min_value) || value > static_cast<T>(max_value)) {

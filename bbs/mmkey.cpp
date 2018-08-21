@@ -85,7 +85,7 @@ string mmkey(std::set<char>& x, std::set<char>& xx, bool bListOption) {
           cp++;
           if (ch == '/' && cmd1[0] == '/') {
             bout.newline = true;
-            return input(50);
+            return input_upper(50);
           } else if (cp == p + 1) {
             bout.nl();
             bout.newline = true;

@@ -236,7 +236,7 @@ void input_realname() {
 static void input_callsign() {
   bout.nl();
   bout << " |#3Enter your amateur radio callsign, or just hit <ENTER> if none.\r\n|#2:";
-  string s = input(6, true);
+  string s = input_upper(6);
   a()->user()->SetCallsign(s.c_str());
 }
 
@@ -308,7 +308,7 @@ void input_state() {
       bout << "|#3Enter your state (i.e. CA). \r\n";
     }
     bout << "|#2:";
-    state = input(2, true);
+    state = input_upper(2);
 
     if (state.empty()) {
       bout.nl();
@@ -325,7 +325,7 @@ void input_country() {
     bout << "|#3Enter your country (i.e. USA). \r\n";
     bout << "|#3Hit Enter for \"USA\"\r\n";
     bout << "|#2:";
-    country = input(3, true);
+    country = input_upper(3);
     if (country.empty()) {
       country = "USA";
     }
@@ -346,7 +346,7 @@ void input_zipcode() {
       len = 7;
     }
     bout << "|#2:";
-    zipcode = input(len, true);
+    zipcode = input_upper(len);
 
     if (zipcode.empty()) {
       bout.nl();
@@ -654,8 +654,7 @@ bool CanCreateNewUserAccountHere() {
     bool ok = false;
     int nPasswordAttempt = 0;
     do {
-      bout << "New User Password :";
-      string password = input(20);
+      auto password = input_password("New User Password :" , 20);
       if (password == a()->config()->config()->newuserpw) {
         ok = true;
       } else {

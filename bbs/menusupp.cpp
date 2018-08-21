@@ -179,8 +179,8 @@ void UpSub() {
 void ValidateUser() {
   bout.nl(2);
   bout << "|#9Enter user name or number:\r\n:";
-  string userName = input(30, true);
-  int nUserNum = finduser1(userName.c_str());
+  string userName = input_upper(30);
+  int nUserNum = finduser1(userName);
   if (nUserNum > 0) {
     sysoplog() << "@ Validated user #" << nUserNum;
     valuser(nUserNum);
