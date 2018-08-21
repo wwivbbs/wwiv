@@ -151,7 +151,7 @@ void upload_post() {
 void send_email() {
   write_inst(INST_LOC_EMAIL, 0, INST_FLAGS_NONE);
   bout << "\r\n\n|#9Enter user name or number:\r\n:";
-  auto username = input(75, true);
+  auto username = input_text(75);
   a()->context().clear_irt();
   auto atpos = username.find_first_of("@");
   if (atpos != string::npos && atpos != username.length() && isalpha(username[atpos + 1])) {
