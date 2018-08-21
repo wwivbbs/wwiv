@@ -8,6 +8,7 @@ set(test_sources
   bputs_test.cpp
   bputch_test.cpp
   datetime_test.cpp
+  input_test.cpp
   make_abs_test.cpp
   msgbase1_test.cpp
   new_bbslist_test.cpp
