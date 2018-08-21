@@ -74,7 +74,7 @@ template <typename T>
 typename std::enable_if<std::is_signed<T>::value, T>::type
 input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
              int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
-  auto len = std::max<int>(1, static_cast<T>(std::ceil(std::log10(max_value))) + 1);
+  auto len = std::max<int>(1, static_cast<T>(std::floor(std::log10(max_value))) + 1);
   std::string default_value = (set_default_value ? std::to_string(current_value) : "");
   const auto s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
   try {
@@ -98,7 +98,7 @@ typename std::enable_if<std::is_unsigned<T>::value, T>::type
 input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
              int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
   WWIV_ASSERT(max_value >= 0); 
-  auto len = std::max<int>(1, static_cast<T>(std::ceil(std::log10(max_value))) + 1);
+  auto len = std::max<int>(1, static_cast<T>(std::floor(std::log10(max_value))) + 1);
   std::string default_value = (set_default_value ? std::to_string(current_value) : "");
   const auto s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
   try {
