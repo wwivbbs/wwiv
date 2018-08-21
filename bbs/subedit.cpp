@@ -218,7 +218,7 @@ static void modify_sub(int n) {
       break;
     case 'A': {
       bout << "|#2New name? ";
-      string new_name = Input1(r.name, 40, true, InputMode::MIXED);
+      auto new_name = input_text(r.name, 40);
       if (!new_name.empty()) {
         r.name = new_name;
       }
@@ -226,7 +226,7 @@ static void modify_sub(int n) {
     break;
     case 'B': {
       bout << "|#2New base filename (e.g. 'GENERAL')? ";
-      string new_fn = Input1(r.filename, 8, true, InputMode::FILENAME);
+      auto new_fn = input_filename(r.filename, 8);
       if (new_fn.empty() || contains(new_fn, '.')) {
         break;
       }
@@ -423,7 +423,7 @@ static void modify_sub(int n) {
     case 'O': {
       bout.nl();
       bout << "|#2Enter new Description : \r\n|#7:";
-      a()->subs().sub(n).desc = Input1(a()->subs().sub(n).desc, 60, true, InputMode::MIXED);
+      a()->subs().sub(n).desc = input_text(a()->subs().sub(n).desc, 60);
     }
     break;
     case 'P':

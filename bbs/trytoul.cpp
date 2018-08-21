@@ -276,11 +276,12 @@ static int try_to_ul_wh(const string& orig_file_name) {
       }
       break;
 
-    case 'A':
+    case 'A': {
       bout.nl();
       bout << "Please enter a one line description.\r\n:";
-      inputl(u.description, 58);
-      break;
+      auto desc = inputl(58);
+      to_char_array(u.description, desc);
+    } break;
 
     case 'B':
     {

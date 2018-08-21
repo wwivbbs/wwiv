@@ -116,14 +116,14 @@ void modify_sec(int n) {
       }
       r = a()->gfilesec[n];
       break;
-    case 'A':
+    case 'A': {
       bout.nl();
       bout << "|#2New name? ";
-      inputl(s, 40);
+      auto name = input_text(40);
       if (s[0]) {
-        strcpy(r.name, s);
+        to_char_array(r.name, name);
       }
-      break;
+    } break;
     case 'B': {
       bout.nl();
       if (File::Exists(a()->config()->gfilesdir(), r.filename)) {

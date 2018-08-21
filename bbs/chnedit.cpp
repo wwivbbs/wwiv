@@ -194,7 +194,7 @@ void modify_chain(int nCurrentChainum) {
     case 'A': {
       bout.nl();
       bout << "|#7New Description? ";
-      auto descr = Input1(c.description, 40, true, InputMode::MIXED);
+      auto descr = input_text(c.description, 40);
       if (!descr.empty()) {
         to_char_array(c.description, s);
       }

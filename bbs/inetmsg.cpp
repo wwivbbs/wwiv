@@ -116,7 +116,7 @@ void send_inet_email() {
        << " <" << a()->internetFullEmailAddress << ">";
   bout.nl(2);
   bout << "|#9Enter the Internet mail destination address.\r\n|#7:";
-  a()->net_email_name = inputl(75, true);
+  a()->net_email_name = input_text(75);
   if (check_inet_addr(a()->net_email_name)) {
     unsigned short user_number = 0;
     unsigned short system_number = INTERNET_EMAIL_FAKE_OUTBOUND_NODE;

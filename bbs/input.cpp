@@ -260,9 +260,9 @@ void input(char *out_text, int max_length, bool auto_mpl) {
 
 // This will input an upper-case string
 string input(int max_length, bool auto_mpl) {
-  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
+  auto line = std::make_unique<char[]>(max_length + 1);
   input(line.get(), max_length, auto_mpl);
-  return string(line.get());
+  return line.get();
 }
 
 // This will input an upper or lowercase string of characters
@@ -272,9 +272,9 @@ void inputl(char *out_text, int max_length, bool auto_mpl) {
 
 // This will input an upper or lowercase string of characters
 std::string inputl(int max_length, bool auto_mpl) {
-  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
+  auto line = std::make_unique<char[]>(max_length + 1);
   inputl(line.get(), max_length, auto_mpl);
-  return string(line.get());
+  return line.get();
 }
 
 std::string input_password(const string& prompt_text, int max_length) {
@@ -286,8 +286,37 @@ std::string input_filename(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::FILENAME);
 }
 
+std::string input_path(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::FILENAME);
+}
+
 std::string input_cmdline(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::FULL_PATH_NAME);
+}
+
+std::string input_phonenumber(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::PHONE);
+}
+
+std::string input_text(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::MIXED);
+}
+
+std::string input_text(int max_length) { 
+  return input_text("", max_length);
+}
+
+
+std::string input_upper(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::UPPER);
+}
+
+std::string input_proper(const std::string& orig_text, int max_length) {
+  return Input1(orig_text, max_length, true, InputMode::PROPER);
+}
+
+std::string input_date_mmddyy(const std::string& orig_text) {
+  return Input1(orig_text, 10, true, InputMode::DATE);
 }
 
 // TODO(rushfan): Make this a WWIV ini setting.
@@ -309,14 +338,9 @@ static const uint8_t input_background_char = 32; // Was '\xB1';
 //==================================================================
 void Input1(char *out_text, const string& orig_text, int max_length, bool bInsert, InputMode mode) {
   char szTemp[255];
-  const char dash = '-';
-  const char slash = '/';
+  static const char dash = '-';
+  static const char slash = '/';
 
-//#if defined( __unix__ )
-//  input1(szTemp, max_length, mode, true, false);
-//  strcpy(out_text, szTemp);
-//  return;
-//#endif  // __unix__
   if (!okansi()) {
     input1(szTemp, max_length, mode, true, false);
     strcpy(out_text, szTemp);
@@ -330,7 +354,7 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
   if (mode == InputMode::DATE || mode == InputMode::PHONE) {
     bInsert = false;
   }
-  int nTopLineSaved = a()->localIO()->GetTopLine();
+  auto nTopLineSaved = a()->localIO()->GetTopLine();
   a()->localIO()->SetTopLine(0);
   int pos = 0;
   int nLength = 0;
@@ -410,22 +434,23 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
       break;
     case COMMAND_DELETE:                  // Delete
     case CG:
-      if ((pos == nLength) || (mode == InputMode::DATE) || (mode == InputMode::PHONE)) {
+      if (pos == nLength || mode == InputMode::DATE || mode == InputMode::PHONE) {
         break;
       }
-      for (int i = pos; i < nLength; i++) {
+      for (auto i = pos; i < nLength; i++) {
         szTemp[i] = szTemp[i + 1];
       }
       nLength--;
-      for (int i = pos; i < nLength; i++) {
+      for (auto i = pos; i < nLength; i++) {
         bout.bputch(szTemp[i]);
       }
       bout.bputch(input_background_char);
       break;
-    case BACKSPACE:                               // Backspace
+    // Backspace
+    case BACKSPACE:
       if (pos) {
         if (pos != nLength) {
-          if ((mode != InputMode::DATE) && (mode != InputMode::PHONE)) {
+          if (mode != InputMode::DATE && mode != InputMode::PHONE) {
             for (int i = pos - 1; i < nLength; i++) {
               szTemp[i] = szTemp[i + 1];
             }
@@ -456,17 +481,19 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
         }
       }
       break;
-    case RETURN:                              // Enter
+      // Enter
+    case RETURN:
       done = true;
       break;
-    default:                              // All others < 256
+    // All others < 256
+    default:
       if (c < 255 && c > 31 && ((bInsert && nLength < max_length) || (!bInsert && pos < max_length))) {
         if (mode != InputMode::MIXED && mode != InputMode::FILENAME && mode != InputMode::FULL_PATH_NAME) {
           c = upcase(static_cast<unsigned char>(c));
         }
         if (mode == InputMode::FILENAME || mode == InputMode::FULL_PATH_NAME) {
 #ifdef _WIN32
-          // Only lowercase filenames on Win32.
+          // Force lowercase filenames on Win32.
           c = to_lower_case<unsigned char> (static_cast<unsigned char>(c)); 
 #endif  // _WIN32
           if (mode == InputMode::FILENAME && strchr("/\\<>|*?\";:", c)) {
@@ -545,8 +572,8 @@ void Input1(char *out_text, const string& orig_text, int max_length, bool bInser
 }
 
 string Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode) {
-  std::unique_ptr<char[]> line = std::make_unique<char[]>(max_length + 1);
+  auto line = std::make_unique<char[]>(max_length + 1);
   Input1(line.get(), orig_text, max_length, bInsert, mode);
-  return string(line.get());
+  return line.get();
 }
 

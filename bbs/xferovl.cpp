@@ -371,9 +371,9 @@ void rename_file() {
       }
     }
     bout << "\r\nNew description:\r\n|#2: ";
-    inputl(s, 58);
-    if (s[0]) {
-      strcpy(u.description, s);
+    auto desc = input_text(58);
+    if (!desc.empty()) {
+      to_char_array(u.description, desc);
     }
     string ss = read_extended_description(u.filename);
     bout.nl(2);
@@ -475,7 +475,8 @@ static bool upload_file(const char *file_name, uint16_t directory_num, const cha
       bout << "|#1 Description: " << u.description << wwiv::endl;
     } else {
       bout << "|#9Enter a description for this file.\r\n|#7: ";
-      inputl(u.description, 58, true);
+      auto desc = input_text(58);
+      to_char_array(u.description, desc);
     }
     bout.nl();
     if (u.description[0] == 0) {

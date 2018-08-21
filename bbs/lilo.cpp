@@ -298,7 +298,7 @@ static void LeaveBadPasswordFeedback(int ans) {
   }
   bout.nl();
   bout << "What is your NAME or HANDLE? ";
-  string tempName = Input1("", 31, true, wwiv::bbs::InputMode::PROPER);
+  auto tempName = input_proper("", 31);
   if (tempName.empty()) {
     return;
   }

@@ -1248,7 +1248,7 @@ static int rename_filename(const char *file_name, int dn) {
     }
     bout.nl();
     bout << "New description:\r\n|#2: ";
-    string desc = Input1(u.description, 58, false, wwiv::bbs::InputMode::MIXED);
+    auto desc = input_text(u.description, 58);
     if (!desc.empty()) {
       strcpy(u.description, desc.c_str());
     }

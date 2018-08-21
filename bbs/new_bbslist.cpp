@@ -261,7 +261,7 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   BbsListEntry entry = {};
   if (has_pots) {
     bout << "|#9Enter the Modem Number   : ";
-    string phone_number = Input1("", 12, true, InputMode::PHONE);
+    auto phone_number = input_phonenumber("", 12);
     bout.nl();
     if (!IsBBSPhoneNumberValid(phone_number)) {
       bout << "\r\n|#6 Error: Please enter number in correct format.\r\n\n";
@@ -276,7 +276,7 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
 
   if (has_telnet) {
     bout << "|#9Enter the Telnet Address : ";
-    string telnet_address = Input1("", 50, true, InputMode::MIXED);
+    string telnet_address = input_text("", 50);
     bout.nl();
     if (!telnet_address.empty()) {
       entry.addresses.push_back({"telnet", telnet_address});
@@ -284,16 +284,16 @@ static bool AddBBSListEntry(vector<BbsListEntry>& entries) {
   }
 
   bout << "|#9Enter the BBS Name       : ";
-  entry.name = Input1("", 50, true, InputMode::MIXED);
+  entry.name = input_text("", 50);
   bout.nl();
   bout << "|#9Enter BBS Type (ex. WWIV): ";
-  entry.software = Input1("WWIV", 12, true, InputMode::UPPER);
+  entry.software = input_upper("WWIV", 12);
   bout.nl();
   bout << "|#9Enter the BBS Location   : ";
-  entry.location = Input1("", 50, true, InputMode::MIXED);
+  entry.location = input_upper("", 50);
   bout.nl();
   bout << "|#9Enter the Sysop Name     : ";
-  entry.sysop_name = Input1("", 50, true, InputMode::MIXED);
+  entry.sysop_name = input_text("", 50);
   bout.nl(2);
   bout << "|#5Is this information correct? ";
   if (yesno()) {

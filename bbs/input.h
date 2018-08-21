@@ -30,25 +30,19 @@
 namespace wwiv {
 namespace bbs {
 // Text editing modes for input routines
-enum class InputMode {
-  UPPER,
-  MIXED,
-  PROPER,
-  FILENAME,
-  FULL_PATH_NAME,
-  DATE,
-  PHONE 
-};
+enum class InputMode { UPPER, MIXED, PROPER, FILENAME, FULL_PATH_NAME, DATE, PHONE };
 
-}  // namespace bbs
-}  // namespace wwiv
+} // namespace bbs
+} // namespace wwiv
 
-void input(char *out_text, int max_length, bool auto_mpl = false);
+void input(char* out_text, int max_length, bool auto_mpl = false);
 std::string input(int max_length, bool auto_mpl = false);
-void inputl(char *out_text, int max_length, bool auto_mpl = false);
+void inputl(char* out_text, int max_length, bool auto_mpl = false);
 std::string inputl(int max_length, bool auto_mpl = false);
-void Input1(char *out_text, const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
-std::string Input1(const std::string& orig_text, int max_length, bool bInsert, wwiv::bbs::InputMode mode);
+// void Input1(char* out_text, const std::string& orig_text, int max_length, bool bInsert,
+//            wwiv::bbs::InputMode mode);
+std::string Input1(const std::string& orig_text, int max_length, bool bInsert,
+                   wwiv::bbs::InputMode mode);
 
 /**
  * Inputs password up to length max_length after displaying prompt_text
@@ -61,9 +55,44 @@ std::string input_password(const std::string& prompt_text, int max_length);
 std::string input_filename(const std::string& orig_text, int max_length);
 
 /**
+ * Inputs full file path up to length max_length.
+ */
+std::string input_path(const std::string& orig_text, int max_length);
+
+/**
  * Inputs commandline up to length max_length.
  */
 std::string input_cmdline(const std::string& orig_text, int max_length);
+
+/**
+ * Inputs phonenumber up to length max_length.
+ */
+std::string input_phonenumber(const std::string& orig_text, int max_length);
+
+/**
+ * Inputs random text (upper and lower case) up to length max_length.
+ */
+std::string input_text(const std::string& orig_text, int max_length);
+
+/**
+ * Inputs random text (upper and lower case) up to length max_length.
+ */
+std::string input_text(int max_length);
+
+/**
+ * Inputs random text (upper case) up to length max_length.
+ */
+std::string input_upper(const std::string& orig_text, int max_length);
+
+/**
+ * Inputs random text (In Proper Case) up to length max_length.
+ */
+std::string input_proper(const std::string& orig_text, int max_length);
+
+/**
+ * Inputs a date (10-digit) of MM/DD/YY.
+ */
+std::string input_date_mmddyy(const std::string& orig_text);
 
 /**
  * Inputs a number of type T within the range of min_value and max_value.
@@ -93,11 +122,11 @@ input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
  * If set_default_value is true (the default) then the input box will have
  * the current_value prepopulated.
  */
-template<typename T>
+template <typename T>
 typename std::enable_if<std::is_unsigned<T>::value, T>::type
 input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
              int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
-  WWIV_ASSERT(max_value >= 0); 
+  WWIV_ASSERT(max_value >= 0);
   auto len = std::max<int>(1, static_cast<T>(std::floor(std::log10(max_value))) + 1);
   std::string default_value = (set_default_value ? std::to_string(current_value) : "");
   const auto s = Input1(default_value, len, true, wwiv::bbs::InputMode::UPPER);
@@ -112,5 +141,4 @@ input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
   }
 }
 
-
-#endif  // __INCLUDED_INPUT_H__
+#endif // __INCLUDED_INPUT_H__

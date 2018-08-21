@@ -466,7 +466,7 @@ int WFC::doWFCEvents() {
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
         bout << "\r\n|#1Edit any Text File: \r\n\n|#2Filename: ";
         const auto current_dir_slash = StrCat(File::current_directory(), File::pathSeparatorString);
-        auto net_filename = Input1(current_dir_slash, 50, true, InputMode::FULL_PATH_NAME);
+        auto net_filename = input_path(current_dir_slash, 50);
         if (!net_filename.empty()) {
           external_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
         }

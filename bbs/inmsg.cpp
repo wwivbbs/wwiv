@@ -86,7 +86,7 @@ static bool GetMessageToName(MessageEditorData& data) {
     if (a()->net_networks[xnp.net_num].type == network_type_t::ftn && !data.is_email()) {
       bout << "|#2To   : ";
       bout.newline = false;
-      auto to_name = Input1("All", 40, true, InputMode::MIXED);
+      auto to_name = input_text("All", 40);
       bout.newline = newlsave;
       if (to_name.empty()) {
         data.to_name = "All";
@@ -158,7 +158,7 @@ static void GetMessageTitle(MessageEditorData& data) {
         data.title.assign(s1);
       }
     } else {
-      data.title = inputl(60);
+      data.title = input_text(60);
     }
   } else {
     if (data.silent_mode || force_title) {
@@ -166,7 +166,7 @@ static void GetMessageTitle(MessageEditorData& data) {
     } else {
       bout << "       (---=----=----=----=----=----=----=----=----=----=----=----)\r\n";
       bout << "Title: ";
-      data.title = inputl(60);
+      data.title = input_text(60);
     }
   }
 }
@@ -305,7 +305,7 @@ static bool InternalMessageEditor(vector<string>& lin, int maxli, int* setanon, 
       } else if (cmd == "/TI") {
         check_message_size = false;
         bout << "|#1Subj|#7: |#2" ;
-        data.title = inputl(60, true);
+        data.title = input_text(60);
         bout << "Continue...\r\n\n";
       }
       if (cmd.length() > 3) {

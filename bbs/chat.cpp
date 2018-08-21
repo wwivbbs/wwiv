@@ -23,17 +23,17 @@
 #include "bbs/com.h"
 #include "bbs/finduser.h"
 #include "bbs/input.h"
-#include "local_io/keycodes.h"
 #include "bbs/instmsg.h"
 #include "bbs/multinst.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/uedit.h"
 #include "bbs/utility.h"
-#include "local_io/wconstants.h"
 #include "core/inifile.h"
 #include "core/strings.h"
 #include "core/wwivassert.h"
+#include "local_io/keycodes.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 
 using std::string;
@@ -59,41 +59,38 @@ struct ch_action {
   char singular[80];
 };
 
-
-
 static int g_nChatOpSecLvl;
 static int g_nNumActions;
 constexpr int MAX_NUM_ACT = 100;
-static ch_action *actions[MAX_NUM_ACT];
+static ch_action* actions[MAX_NUM_ACT];
 static ch_type channels[11];
 
-int  rip_words(int start_pos, char *cmsg, char *wd, int size, char lookfor);
-int  f_action(int start_pos, int end_pos, char *aword);
-int  main_loop(char *message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
-               int loc, int num_actions);
-void who_online(int *nodes, int loc);
+int rip_words(int start_pos, const char* cmsg, char* wd, int size, char lookfor);
+int f_action(int start_pos, int end_pos, char* aword);
+int main_loop(const char* message, char* from_message, char* color_string, char* messageSent,
+              bool& bActionMode, int loc, int num_actions);
+void who_online(int* nodes, int loc);
 void intro(int loc);
-void ch_direct(const string& message, int loc, char *color_string, int node);
-void ch_whisper(const std::string& , char *color_string, int node);
-int  wusrinst(char *n);
+void ch_direct(const string& message, int loc, char* color_string, int node);
+void ch_whisper(const std::string&, char* color_string, int node);
+int wusrinst(char* n);
 void secure_ch(int ch);
 void cleanup_chat();
 void page_user(int loc);
 void moving(bool bOnline, int loc);
-void get_colors(char *color_string, IniFile *pIniFile);
-void load_actions(IniFile *pIniFile);
+void get_colors(char* color_string, IniFile* pIniFile);
+void load_actions(IniFile* pIniFile);
 void add_action(ch_action act);
 void free_actions();
-bool check_action(char *message, char *color_string, int loc);
-void exec_action(const char *message, char *color_string, int loc, int nact);
+void exec_action(const char* message, char* color_string, int loc, int nact);
 void action_help(int num);
-void ga(const char *message, char *color_string, int loc, int type);
+void ga(const char* message, char* color_string, int loc, int type);
 void list_channels();
-int  change_channels(int loc);
+int change_channels(int loc);
 bool check_ch(int ch);
 void load_channels(IniFile& pIniFile);
-int  userinst(char *user);
-bool usercomp(const char *st1, const char *st2);
+int userinst(char* user);
+bool usercomp(const char* st1, const char* st2);
 
 using wwiv::bbs::TempDisablePause;
 
@@ -116,8 +113,7 @@ static int grabname(const std::string& orig, int channel) {
       return 0;
     }
     get_inst_info(n, &ir);
-    if ((ir.flags & INST_FLAGS_ONLINE) &&
-      ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
+    if ((ir.flags & INST_FLAGS_ONLINE) && ((!(ir.flags & INST_FLAGS_INVIS)) || so())) {
       if (channel && (ir.loc != channel)) {
         bout << "|#1[|#9That user is not in this chat channel|#1]\r\n";
         return 0;
@@ -223,12 +219,12 @@ void chat_room() {
     bout << "|#1: " << szColorString;
     a()->tleft(true);
     a()->chatline_ = false;
-    char szMessage[ 300 ];
-    inputl(szMessage, 250);
-    if (!szMessage[0]) {
+    auto message = input_text(255);
+    if (!message.empty()) {
       intro(loc);
     } else {
-      int c = main_loop(szMessage, szFromMessage, szColorString, szMessageSent, bActionMode, loc, g_nNumActions);
+      int c = main_loop(message.c_str(), szFromMessage, szColorString, szMessageSent, bActionMode, loc,
+                        g_nNumActions);
       if (!c) {
         break;
       } else {
@@ -242,7 +238,7 @@ void chat_room() {
   a()->in_chatroom_ = false;
 }
 
-int rip_words(int start_pos, char *message, char *wd, int size, char lookfor) {
+int rip_words(int start_pos, const char* message, char* wd, int size, char lookfor) {
   unsigned int nPos;
   int nSpacePos = -1;
 
@@ -267,7 +263,7 @@ int rip_words(int start_pos, char *message, char *wd, int size, char lookfor) {
   return nPos;
 }
 
-int f_action(int start_pos, int end_pos, char *aword) {
+int f_action(int start_pos, int end_pos, char* aword) {
   int test = ((end_pos - start_pos) / 2) + start_pos;
   if (!((end_pos - start_pos) / 2)) {
     test++;
@@ -304,8 +300,33 @@ static void out_msg(const std::string& message, int loc) {
   }
 }
 
-int main_loop(char *raw_message, char *from_message, char *color_string, char *messageSent, bool &bActionMode,
-              int loc, int num_actions) {
+// Determines if a word is an action, if so, executes it
+bool check_action(const char* message, char* color_string, int loc) {
+  char s[12];
+
+  unsigned int x = rip_words(0, message, s, 12, ' ');
+  if (IsEqualsIgnoreCase("GA", s)) {
+    ga(message + x, color_string, loc, 0);
+    return true;
+  }
+  if (IsEqualsIgnoreCase("GA's", s)) {
+    ga(message + x, color_string, loc, 1);
+    return true;
+  }
+  int p = f_action(0, g_nNumActions, s);
+  if (p != -1) {
+    if (strlen(message) <= x) {
+      exec_action("\0", color_string, loc, p);
+    } else {
+      exec_action(message + x, color_string, loc, p);
+    }
+    return true;
+  }
+  return false;
+}
+
+int main_loop(const char* raw_message, char* from_message, char* color_string, char* messageSent,
+              bool& bActionMode, int loc, int num_actions) {
   char szText[300];
   User u;
 
@@ -315,12 +336,12 @@ int main_loop(char *raw_message, char *from_message, char *color_string, char *m
   }
   if (IsEqualsIgnoreCase(raw_message, "/r")) {
     /* "Undocumented Feature" - the original alpha version of WMChat had a /r
-    * command to look up a user's registry from inside chat.  I took this
-    * out when I released the program, but am now putting it back in due to
-    * popular request.  However, most systems don't have a registry
-    * installed, so I couldn't just include the code.  If you do have a
-    * registry look-up function, put #define REG_IS_INSTALLED in your
-    * VARDEC.H file and rename the function to read_entry() */
+     * command to look up a user's registry from inside chat.  I took this
+     * out when I released the program, but am now putting it back in due to
+     * popular request.  However, most systems don't have a registry
+     * installed, so I couldn't just include the code.  If you do have a
+     * registry look-up function, put #define REG_IS_INSTALLED in your
+     * VARDEC.H file and rename the function to read_entry() */
 #ifdef REG_IS_INSTALLED
     read_entry(1);
     bout.nl();
@@ -337,8 +358,7 @@ int main_loop(char *raw_message, char *from_message, char *color_string, char *m
     }
     bout.nl();
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(raw_message, "/q") ||
-             IsEqualsIgnoreCase(raw_message, "x")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "/q") || IsEqualsIgnoreCase(raw_message, "x")) {
     bActionHandled = 0;
     bout << "\r\n|#2Exiting Chatroom\r\n";
     return 0;
@@ -373,8 +393,7 @@ int main_loop(char *raw_message, char *from_message, char *color_string, char *m
     int nChannel = change_channels(loc);
     loc = nChannel;
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(raw_message, "?") ||
-             IsEqualsIgnoreCase(raw_message, "/?")) {
+  } else if (IsEqualsIgnoreCase(raw_message, "?") || IsEqualsIgnoreCase(raw_message, "/?")) {
     bActionHandled = 0;
     print_help_file(CHAT_NOEXT);
   } else if (bActionHandled && raw_message[0] == '>') {
@@ -406,9 +425,8 @@ int main_loop(char *raw_message, char *from_message, char *color_string, char *m
   return loc;
 }
 
-
 // Fills an array with information of who's online.
-void who_online(int *nodes, int loc) {
+void who_online(int* nodes, int loc) {
   instancerec ir{};
 
   int c = 0;
@@ -460,7 +478,7 @@ void intro(int loc) {
 // This function is called when a > sign is encountered at the beginning of
 //   a line, it's used for directing messages
 
-void ch_direct(const string& message, int loc, char *color_string, int node) {
+void ch_direct(const string& message, int loc, char* color_string, int node) {
   if (message.empty()) {
     bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
@@ -471,12 +489,11 @@ void ch_direct(const string& message, int loc, char *color_string, int node) {
   if (ir.loc == loc) {
     User u;
     a()->users()->readuser(&u, ir.user);
-    const string s = StringPrintf("|#9From %.12s|#6 [to %s]|#1: %s%s",
-            a()->user()->GetName(), u.GetName(), color_string,
-            message.c_str());
+    const string s = StringPrintf("|#9From %.12s|#6 [to %s]|#1: %s%s", a()->user()->GetName(),
+                                  u.GetName(), color_string, message.c_str());
     for (int i = 1; i <= num_instances(); i++) {
       get_inst_info(i, &ir);
-      if (ir.loc == loc &&  i != a()->instance_number()) {
+      if (ir.loc == loc && i != a()->instance_number()) {
         send_inst_str(i, s);
       }
     }
@@ -489,7 +506,7 @@ void ch_direct(const string& message, int loc, char *color_string, int node) {
 
 // This function is called when a / sign is encountered at the beginning of
 //   a raw_message, used for whispering
-void ch_whisper(const std::string& message, char *color_string, int node) {
+void ch_whisper(const std::string& message, char* color_string, int node) {
   if (message.empty()) {
     bout << "|#1[|#9Message required after using a / or > command.|#1]\r\n";
     return;
@@ -502,8 +519,8 @@ void ch_whisper(const std::string& message, char *color_string, int node) {
 
   string text = message;
   if (ir.loc >= INST_LOC_CH1 && ir.loc <= INST_LOC_CH10) {
-    text = StringPrintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->GetName(), color_string,
-      message.c_str());
+    text = StringPrintf("|#9From %.12s|#6 [WHISPERED]|#2|#1:%s%s", a()->user()->GetName(),
+                        color_string, message.c_str());
   }
   send_inst_str(node, text);
   User u;
@@ -513,7 +530,7 @@ void ch_whisper(const std::string& message, char *color_string, int node) {
 
 // This function determines whether or not user N is online
 
-int wusrinst(char *n) {
+int wusrinst(char* n) {
 
   for (int i = 0; i <= num_instances(); i++) {
     instancerec ir{};
@@ -593,8 +610,7 @@ void page_user(int loc) {
     return;
   } else {
     get_inst_info(i, &ir);
-    if ((!(ir.flags & INST_FLAGS_ONLINE)) ||
-        ((ir.flags & INST_FLAGS_INVIS) && (!so()))) {
+    if ((!(ir.flags & INST_FLAGS_ONLINE)) || ((ir.flags & INST_FLAGS_INVIS) && (!so()))) {
       bout << "|#1[|#9There is no user on instance " << i << " |#1]\r\n";
       return;
     }
@@ -602,7 +618,9 @@ void page_user(int loc) {
       bout << "|#1[|#9That user is not available for chat!|#1]";
       return;
     }
-    sprintf(s, "%s is paging you from Chatroom channel %d.  Type /C from the MAIN MENU to enter the Chatroom.",
+    sprintf(s,
+            "%s is paging you from Chatroom channel %d.  Type /C from the MAIN MENU to enter the "
+            "Chatroom.",
             a()->user()->GetName(), loc);
     send_inst_str(i, s);
   }
@@ -615,22 +633,22 @@ void moving(bool bOnline, int loc) {
   char space[55];
 
   if (!is_chat_invis()) {
-    sprintf(space, "|#6%s %s", a()->user()->GetName(), (bOnline ? "is on the air." :
-            "has signed off."));
+    sprintf(space, "|#6%s %s", a()->user()->GetName(),
+            (bOnline ? "is on the air." : "has signed off."));
     out_msg(space, loc);
   }
 }
 
 // Sets color_string string for current node
 
-void get_colors(char *color_string, IniFile *pIniFile) {
+void get_colors(char* color_string, IniFile* pIniFile) {
   string s = pIniFile->value<string>(StrCat("C", a()->instance_number()));
   strcpy(color_string, s.c_str());
 }
 
 // Loads the actions into memory
 
-void load_actions(IniFile *pIniFile) {
+void load_actions(IniFile* pIniFile) {
   int to_read = pIniFile->value<int>("NUM_ACTIONS");
   if (!to_read) {
     return;
@@ -663,14 +681,13 @@ void load_actions(IniFile *pIniFile) {
         strcpy(act.singular, (ini_value != nullptr) ? ini_value : "");
         break;
       default:
-        //TODO Should an error be displayed here?
+        // TODO Should an error be displayed here?
         break;
       }
     }
     add_action(act);
   }
 }
-
 
 // Used by load_actions(), adds an action into the array
 void add_action(ch_action act) {
@@ -679,7 +696,7 @@ void add_action(ch_action act) {
   } else {
     return;
   }
-  ch_action* addact = static_cast<ch_action *>(calloc(sizeof(ch_action) + 1, 1));
+  ch_action* addact = static_cast<ch_action*>(calloc(sizeof(ch_action) + 1, 1));
   WWIV_ASSERT(addact != nullptr);
   addact->r = act.r;
   strcpy(addact->aword, act.aword);
@@ -690,7 +707,6 @@ void add_action(ch_action act) {
   actions[g_nNumActions] = addact;
 }
 
-
 // Removes the actions from memory
 void free_actions() {
   for (int i = 0; i <= g_nNumActions; i++) {
@@ -698,35 +714,9 @@ void free_actions() {
   }
 }
 
-
-// Determines if a word is an action, if so, executes it
-bool check_action(char *message, char *color_string, int loc) {
-  char s[12];
-
-  unsigned int x = rip_words(0, message, s, 12, ' ');
-  if (IsEqualsIgnoreCase("GA", s)) {
-    ga(message + x, color_string, loc, 0);
-    return true;
-  }
-  if (IsEqualsIgnoreCase("GA's", s)) {
-    ga(message + x, color_string, loc, 1);
-    return true;
-  }
-  int p = f_action(0, g_nNumActions, s);
-  if (p != -1) {
-    if (strlen(message) <= x) {
-      exec_action("\0", color_string, loc, p);
-    } else {
-      exec_action(message + x, color_string, loc, p);
-    }
-    return true;
-  }
-  return false;
-}
-
 // "Executes" an action
 
-void exec_action(const char *message, char *color_string, int loc, int nact) {
+void exec_action(const char* message, char* color_string, int loc, int nact) {
   char tmsg[150], final[170];
   instancerec ir;
   User u;
@@ -795,14 +785,13 @@ void action_help(int num) {
 
 // Executes a GA command
 
-void ga(const char *message, char *color_string, int loc, int type) {
+void ga(const char* message, char* color_string, int loc, int type) {
   if (!strlen(message) || message[0] == '\0') {
     bout << "|#1[|#9A message is required after the GA command|#1]\r\n";
     return;
   }
   char buffer[500];
-  sprintf(buffer, "%s%s%s %s", color_string, a()->user()->GetName(), (type ? "'s" : ""),
-          message);
+  sprintf(buffer, "%s%s%s %s", color_string, a()->user()->GetName(), (type ? "'s" : ""), message);
   bout << "|#1[|#9Generic Action Sent|#1]\r\n";
   out_msg(buffer, loc);
 }
@@ -854,7 +843,6 @@ void list_channels() {
     }
   }
 }
-
 
 // Calls list_channels() then prompts for a channel to change to.
 int change_channels(int loc) {
@@ -910,8 +898,8 @@ bool check_ch(int ch) {
   char szMessage[80];
 
   if (static_cast<int>(a()->user()->GetSl()) < channels[ch].sl && !so()) {
-    bout << "\r\n|#9A security level of |#1" << channels[ch].sl <<
-                       "|#9 is required to access this channel.\r\n";
+    bout << "\r\n|#9A security level of |#1" << channels[ch].sl
+         << "|#9 is required to access this channel.\r\n";
     bout << "|#9Your security level is |#1" << a()->user()->GetSl() << "|#9.\r\n";
     return false;
   }
@@ -921,13 +909,14 @@ bool check_ch(int ch) {
     c_ar = 0;
   }
   if (c_ar && !a()->user()->HasArFlag(c_ar)) {
-    sprintf(szMessage, "\r\n|#9The \"|#1%c|#9\" AR is required to access this chat channel.\r\n", channels[ch].ar);
+    sprintf(szMessage, "\r\n|#9The \"|#1%c|#9\" AR is required to access this chat channel.\r\n",
+            channels[ch].ar);
     bout << szMessage;
     return false;
   }
   char gender = channels[ch].sex;
-  if (gender != 65 && a()->user()->GetGender() != gender
-      && a()->user()->GetSl() < g_nChatOpSecLvl) {
+  if (gender != 65 && a()->user()->GetGender() != gender &&
+      a()->user()->GetSl() < g_nChatOpSecLvl) {
     if (gender == 77) {
       bout << "\r\n|#9Only |#1males|#9 are allowed in this channel.\r\n";
     } else if (gender == 70) {
@@ -937,14 +926,14 @@ bool check_ch(int ch) {
     }
     return false;
   }
-  if (a()->user()->GetAge() < channels[ch].min_age
-      && a()->user()->GetSl() < g_nChatOpSecLvl) {
-    bout << "\r\n|#9You must be |#1" << channels[ch].min_age << "|#9 or older to enter this channel.\r\n";
+  if (a()->user()->GetAge() < channels[ch].min_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
+    bout << "\r\n|#9You must be |#1" << channels[ch].min_age
+         << "|#9 or older to enter this channel.\r\n";
     return false;
   }
-  if (a()->user()->GetAge() > channels[ch].max_age
-      && a()->user()->GetSl() < g_nChatOpSecLvl) {
-    bout << "\r\n|#9You must be |#1" << channels[ch].max_age << "|#9 or younger to enter this channel.\r\n";
+  if (a()->user()->GetAge() > channels[ch].max_age && a()->user()->GetSl() < g_nChatOpSecLvl) {
+    bout << "\r\n|#9You must be |#1" << channels[ch].max_age
+         << "|#9 or younger to enter this channel.\r\n";
     return false;
   }
   return true;
@@ -964,8 +953,7 @@ void load_channels(IniFile& ini) {
       case 1:
         channels[cn].sl = ini.value<int>(buffer);
         break;
-      case 2:
-      {
+      case 2: {
         string temp = ini.value<string>(buffer);
         if (temp.empty() || temp.front() == '0') {
           channels[cn].ar = 0;
@@ -991,7 +979,7 @@ void load_channels(IniFile& ini) {
 }
 
 // Determines the node number a user is on
-int userinst(char *user) {
+int userinst(char* user) {
   instancerec ir;
 
   if (strlen(user) == 0) {
@@ -1014,9 +1002,7 @@ int userinst(char *user) {
   return 0;
 }
 
-
-
-bool usercomp(const char *st1, const char *st2) {
+bool usercomp(const char* st1, const char* st2) {
   for (int i = 0; i < GetStringLength(st1); i++) {
     if (st1[i] != st2[i]) {
       return false;
@@ -1024,4 +1010,3 @@ bool usercomp(const char *st1, const char *st2) {
   }
   return true;
 }
-

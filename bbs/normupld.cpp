@@ -214,7 +214,8 @@ void normalupload(int dn) {
     if (ok) {
       bout.nl();
       bout << "Please enter a one line description.\r\n:";
-      inputl(u.description, 58);
+      auto desc = input_text(58);
+      to_char_array(u.description, desc);
       bout.nl();
       string ext_desc;
       modify_extended_description(&ext_desc, a()->directories[dn].name);

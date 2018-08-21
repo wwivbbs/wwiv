@@ -496,7 +496,7 @@ void EventEdit() {
 void LoadTextFile() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  string fileName = Input1("", 50, true, InputMode::FULL_PATH_NAME);
+  auto fileName = input_path("", 50);
   if (!fileName.empty()) {
     bout.nl();
     bout << "|#5Allow editing? ";
@@ -810,8 +810,6 @@ void AllowEdit() {
 }
 
 void UploadFilesBBS() {
-  char s2[81];
-
   bout.nl();
   bout << "|#21|#9) PCB, RBBS   - <filename> <size> <date> <description>\r\n";
   bout << "|#22|#9) QBBS format - <filename> <description>\r\n";
@@ -823,7 +821,7 @@ void UploadFilesBBS() {
     int nType = 0;
     bout << "|#9Enter Filename (wildcards allowed).\r\n|#7: ";
     bout.mpl(77);
-    inputl(s2, 80);
+    auto filespec = input_text(80);
     switch (ch) {
     case '1':
       nType = 2;
@@ -835,7 +833,7 @@ void UploadFilesBBS() {
       nType = 0;
       break;
     }
-    upload_files(s2, a()->current_user_dir_num(), nType);
+    upload_files(filespec.c_str(), a()->current_user_dir_num(), nType);
   }
 }
 

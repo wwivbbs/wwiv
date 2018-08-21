@@ -155,7 +155,7 @@ int my_input(const char* prompt, char* buf, int size) {
   if (prompt && *prompt) {
     bout.bputs(prompt);
   }
-  auto v = inputl(size, false);
+  auto v = input_text("", size);
   strcpy(buf, v.c_str());
   return v.size();
 }
@@ -397,7 +397,7 @@ static bool RegisterNamespaceWWIVIO(mb_interpreter_t* bas) {
     }
     mb_check(mb_attempt_close_bracket(bas, l));
     if (arg > 0) {
-      string s = inputl(arg, true);
+      string s = input_text("", arg);
       mb_push_string(bas, l, BasicStrDup(s));
     }
     return MB_FUNC_OK;

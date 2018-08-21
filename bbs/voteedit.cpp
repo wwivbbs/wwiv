@@ -59,7 +59,7 @@ static void set_question(int ii) {
   voting_response vr;
 
   bout << "|#7Enter new question or just press [|#1Enter|#7] for none.\r\n: ";
-  auto question = inputl(75, true);
+  auto question = input_text(75);
   to_char_array(v.question, question);
   v.numanswers = 0;
   vr.numresponses = 0;
@@ -80,7 +80,7 @@ static void set_question(int ii) {
     bout.nl(2);
     while (v.numanswers < 19) {
       bout << "|#2" << v.numanswers + 1 << "|#7: ";
-      auto response = inputl(63, true);
+      auto response = input_text(63);
       to_char_array(vr.response, response);
       vr.numresponses = 0;
       v.responses[v.numanswers] = vr;

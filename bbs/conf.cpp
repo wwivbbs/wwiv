@@ -544,7 +544,7 @@ int modify_conf(ConferenceType conftype,  int which) {
     case 'B': {
       bout.nl();
       bout << "|#2Conference Name: ";
-      string cname = inputl(60);
+      auto cname = input_text(60);
       if (!cname.empty()) {
         c.conf_name = cname;
         changed = true;

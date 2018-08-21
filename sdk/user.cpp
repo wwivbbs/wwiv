@@ -128,6 +128,8 @@ bool User::CreateNewUserRecord(User* u, uint8_t sl, uint8_t dsl, uint16_t restr,
   u->ClearStatusFlag(User::conference);
   u->ClearStatusFlag(User::nscanFileSystem);
   u->SetGold(gold);
+  // Set to N so the BBS will prompt.
+  u->SetGender('N');
 
   for (int i = 0; i <= 9; i++) {
     u->SetColor(i, colors[i]);

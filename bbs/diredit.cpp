@@ -148,7 +148,7 @@ void modify_dir(int n) {
     {
       bout.nl();
       bout << "|#2New name? ";
-      string s = Input1(r.name, 40, true, InputMode::MIXED);
+      auto s = input_text(r.name, 40);
       if (!s.empty()) {
         to_char_array(r.name, s);
       }
@@ -157,7 +157,7 @@ void modify_dir(int n) {
     {
       bout.nl();
       bout << "|#2New filename? ";
-      string s = Input1(r.filename, 8, true, InputMode::FILENAME);
+      auto s = input_filename(r.filename, 8);
       if (!s.empty() && !contains(s, '.')) {
         to_char_array(r.filename, s);
       }
@@ -170,7 +170,7 @@ void modify_dir(int n) {
         "|#9The current path is:\r\n" <<
         "|#1" << r.path << wwiv::endl << wwiv::endl;
       bout << " \b";
-      string s = Input1(r.path, 79, true, InputMode::MIXED);
+      auto s = input_filename(r.path, 79);
       if (!s.empty()) {
         File dir(s);
         if (!dir.Exists()) {
