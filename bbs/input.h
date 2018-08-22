@@ -95,60 +95,37 @@ std::string input_proper(const std::string& orig_text, int max_length);
  */
 std::string input_date_mmddyy(const std::string& orig_text);
 
-/**
- * Inputs a number of type T within the range of min_value and max_value.
- * If set_default_value is true (the default) then the input box will have
- * the current_value prepopulated.
- */
-template <typename T>
-typename std::enable_if<std::is_signed<T>::value, T>::type
-input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
-             int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
-  auto len = std::max<int>(1, static_cast<T>(std::floor(std::log10(max_value))) + 1);
-  std::string default_value = (set_default_value ? std::to_string(current_value) : "");
-  const auto s = input_upper(default_value, len);
-  try {
-    auto value = wwiv::strings::to_number<T>(s);
-    if (value < static_cast<T>(min_value) || value > static_cast<T>(max_value)) {
-      return current_value;
-    }
-    return static_cast<T>(value);
-  } catch (std::invalid_argument&) {
-    return current_value;
-  }
-}
-
-/**
- * Inputs a number of type T within the range of min_value and max_value.
- * If set_default_value is true (the default) then the input box will have
- * the current_value prepopulated.
- */
-template <typename T>
-typename std::enable_if<std::is_unsigned<T>::value, T>::type
-input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
-             int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
-  WWIV_ASSERT(max_value >= 0);
-  auto len = std::max<int>(1, static_cast<T>(std::floor(std::log10(max_value))) + 1);
-  std::string default_value = (set_default_value ? std::to_string(current_value) : "");
-  const auto s = input_upper(default_value, len);
-  try {
-    auto value = wwiv::strings::to_number<T>(s);
-    if (value < static_cast<T>(min_value) || value > static_cast<T>(max_value)) {
-      return current_value;
-    }
-    return static_cast<T>(value);
-  } catch (std::invalid_argument&) {
-    return current_value;
-  }
-}
-
 struct input_result_t { 
   int64_t num{0};
   char key{0};
 };
 
 input_result_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
-                                       std::set<char> hotkeys);
+                                       const std::set<char>& hotkeys);
+
+
+/**
+ * Inputs a number of type T within the range of min_value and max_value.
+ * If set_default_value is true (the default) then the input box will have
+ * the current_value prepopulated.
+ */
+template <typename T>
+T input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
+               int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
+  auto r = input_number_or_key_raw(current_value, min_value, max_value, set_default_value, {'Q'});
+  if (r.key != 0) {
+    return current_value;
+  }
+  return static_cast<T>(r.num);
+}
+
+template <typename T>
+input_result_t input_number_hotkey(T current_value, const std::set<char>& keys,
+                                   int min_value = std::numeric_limits<T>::min(),
+                                   int max_value = std::numeric_limits<T>::max(),
+                                   bool set_default_value = true) {
+  return input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
+}
 
 std::vector<std::set<char>> create_allowed_charmap(int64_t minv, int64_t maxv);
 

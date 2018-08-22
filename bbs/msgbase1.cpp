@@ -482,21 +482,14 @@ void ScanMessageTitles() {
   }
   bout << "|#9Start listing at (|#21|#9-|#2" << a()->GetNumMessagesInCurrentMessageArea()
        << "|#9): ";
-  string smsgnum = input(5, true);
-  int msgnum = to_number<int>(smsgnum);
-  if (msgnum < 1) {
-    msgnum = 0;
-  } else if (msgnum > a()->GetNumMessagesInCurrentMessageArea()) {
-    msgnum = a()->GetNumMessagesInCurrentMessageArea();
-  } else {
-    msgnum--;
-  }
+  auto r = input_number_hotkey(1, {'Q', 'S'}, 1, a()->GetNumMessagesInCurrentMessageArea());
   bool nextsub = false;
-  // 'S' means start reading at the 1st message.
-  if (smsgnum == "S") {
+  if (r.key == 'S') {
     scan(0, MsgScanOption::SCAN_OPTION_READ_PROMPT, nextsub, true);
-  } else if (msgnum >= 0) {
-    scan(msgnum, MsgScanOption::SCAN_OPTION_LIST_TITLES, nextsub, true);
+  } else if (r.key == 'Q') {
+    return;
+  } else {
+    scan(r.num - 1, MsgScanOption::SCAN_OPTION_LIST_TITLES, nextsub, true);
   }
 }
 

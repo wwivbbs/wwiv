@@ -1142,7 +1142,10 @@ static void scan_new(int msgnum, MsgScanOption scan_option, bool& nextsub, bool 
     case ReadMessageOption::JUMP_TO_MSG: {
       const auto max_msgnum = a()->GetNumMessagesInCurrentMessageArea();
       bout << "Enter Message Number (1-" << max_msgnum << ") :";
-      msgnum = input_number(msgnum, 1, max_msgnum, false);
+      msgnum = input_number(msgnum, 0, max_msgnum, false);
+      if (msgnum < 1) {
+        done = true;
+      }
     } break;
     case ReadMessageOption::LIST_TITLES: {
       scan_option = MsgScanOption::SCAN_OPTION_LIST_TITLES;

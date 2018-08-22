@@ -600,7 +600,7 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
 }
 
 input_result_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
-                                       std::set<char> hotkeys) {
+                                       const std::set<char>& hotkeys) {
   const int max_length = static_cast<int>(std::floor(std::log10(maxv))) + 1;
   auto map = create_allowed_charmap(minv, maxv);
   std::string text;
