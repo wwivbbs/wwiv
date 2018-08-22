@@ -325,7 +325,7 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
     bout.Right(pos);
 
     int c = bgetch_event(numlock_status_t::NUMBERS);
-
+    last_input_char = static_cast<char>(c & 0xff);
     switch (c) {
     case CX:  // Control-X
     case ESC: // ESC
@@ -511,7 +511,7 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
   a()->localIO()->SetTopLine(nTopLineSaved);
 
   bout.Color(0);
-  return;
+  bout.nl();
 }
 
 static string Input1(const string& orig_text, int max_length, bool bInsert, InputMode mode) {
