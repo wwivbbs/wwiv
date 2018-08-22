@@ -587,7 +587,7 @@ static void UpdateLastOnFile() {
         bout.nl(2);
         if (a()->HasConfigFlag(OP_FLAGS_SHOW_CITY_ST) &&
             (a()->config()->sysconfig_flags() & sysconfig_extended_info)) {
-          bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Modem    ##" << wwiv::endl;
+          bout << "|#2Number Name/Handle               Time  Date  City            ST Cty Speed    ##" << wwiv::endl;
         } else {
           bout << "|#2Number Name/Handle               Language   Time  Date  Speed                ##" << wwiv::endl;
         }
