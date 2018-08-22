@@ -228,7 +228,7 @@ void do_chains() {
     if (mapp < 100) {
       ss = mmkey(odc);
     } else {
-      ss = input(3);
+      ss = input_upper(3);
     }
     int chain_num = to_number<int>(ss);
     if (chain_num > 0 && chain_num <= mapp) {
