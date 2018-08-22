@@ -573,20 +573,6 @@ std::string input_date_mmddyy(const std::string& orig_text) {
   return Input1(orig_text, 10, true, InputMode::DATE);
 }
 
-std::vector<std::set<char>> create_allowed_charmap(int64_t minv, int64_t maxv) {
-  const int digits = static_cast<int>(std::floor(std::log10(maxv))) + 1;
-  // allowed characters for each position
-  std::vector<std::set<char>> allowed(digits);
-  for (int i = 1; i <= digits; i++) {
-    auto d = maxv / (10 ^ i);
-    for (int ii = 0; ii <= d; ii++) {
-      allowed.at(i - 1).insert(ii + '0');
-    }
-    //    if (allowed.at(i - 1).empty()) {}
-  }
-  return allowed;
-}
-
 static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
   bool ok = (result >= minv && result <= maxv);
   if (ok != last_ok) {
@@ -599,10 +585,9 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
   return ok;
 }
 
-input_result_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
-                                       const std::set<char>& hotkeys) {
+input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
+                                                bool setdefault, const std::set<char>& hotkeys) {
   const int max_length = static_cast<int>(std::floor(std::log10(maxv))) + 1;
-  auto map = create_allowed_charmap(minv, maxv);
   std::string text;
   bout.mpl(max_length);
   auto allowed = hotkeys;

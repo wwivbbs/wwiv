@@ -181,7 +181,7 @@ bool BbsMacroFiilter::write(char c) {
       in_macro_ = false;
       in_pipe_ = false;
       chain_->write('|');
-      chain_->write(c);
+      return chain_->write(c);
     }
   } else if (c == '|') {
     in_pipe_ = true;

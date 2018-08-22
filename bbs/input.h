@@ -95,13 +95,17 @@ std::string input_proper(const std::string& orig_text, int max_length);
  */
 std::string input_date_mmddyy(const std::string& orig_text);
 
+template <typename T> 
 struct input_result_t { 
-  int64_t num{0};
+  T num{0};
   char key{0};
 };
 
-input_result_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
-                                       const std::set<char>& hotkeys);
+/**
+ * Raw input_number method. Clients should use input_number or  input_number_hotkey instead.
+ */
+input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
+                                                bool setdefault, const std::set<char>& hotkeys);
 
 
 /**
@@ -113,20 +117,17 @@ template <typename T>
 T input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
                int max_value = std::numeric_limits<T>::max(), bool set_default_value = true) {
   auto r = input_number_or_key_raw(current_value, min_value, max_value, set_default_value, {'Q'});
-  if (r.key != 0) {
-    return current_value;
-  }
-  return static_cast<T>(r.num);
+  return (r.key != 0) ? current_value : static_cast<T>(r.num);
 }
 
 template <typename T>
-input_result_t input_number_hotkey(T current_value, const std::set<char>& keys,
-                                   int min_value = std::numeric_limits<T>::min(),
-                                   int max_value = std::numeric_limits<T>::max(),
-                                   bool set_default_value = true) {
-  return input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
+input_result_t<T> input_number_hotkey(T current_value, const std::set<char>& keys,
+                                      int min_value = std::numeric_limits<T>::min(),
+                                      int max_value = std::numeric_limits<T>::max(),
+                                      bool set_default_value = true) {
+  auto orig = input_number_or_key_raw(current_value, min_value, max_value, set_default_value, keys);
+  input_result_t<T> r{static_cast<T>(orig.num), orig.key};
+  return r;
 }
-
-std::vector<std::set<char>> create_allowed_charmap(int64_t minv, int64_t maxv);
 
 #endif // __INCLUDED_INPUT_H__

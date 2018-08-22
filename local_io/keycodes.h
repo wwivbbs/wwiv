@@ -16,28 +16,16 @@
 /*    language governing permissions and limitations under the License.   */
 /*                                                                        */
 /**************************************************************************/
-#ifndef __INCLUDED_KEYCODES_H__
-#define __INCLUDED_KEYCODES_H__
+#ifndef __INCLUDED_LOCAL_IO_KEYCODES_H__
+#define __INCLUDED_LOCAL_IO_KEYCODES_H__
 
 constexpr int SPACE = 32;
-
 constexpr int RETURN = 13;
 constexpr int SOFTRETURN = 10;
-constexpr int HARDRETURN = RETURN;
-constexpr int CRETURN = SOFTRETURN;
-
-constexpr int HRETURN = HARDRETURN;
-constexpr int SRETURN = SOFTRETURN;
-
 constexpr int ENTER = RETURN;
-constexpr int SOFTENTER = SOFTRETURN;
-constexpr int HARDENTER = HARDRETURN;
-constexpr int CENTER = CRETURN;
 
-constexpr int BKSPACE = 8;
 constexpr int BACKSPACE = 8;
 constexpr int CBACKSPACE = 127;
-constexpr int CBKSPACE = 127;
 
 constexpr int ESC = 27;
 constexpr int TAB = 9;
@@ -265,5 +253,4 @@ constexpr int COMMAND_AX = (AX + 256);
 constexpr int COMMAND_AY = (AY + 256);
 constexpr int COMMAND_AZ = (AZ + 256);
 
-
-#endif // __INCLUDED_KEYCODES_H__
+#endif // __INCLUDED_LOCAL_IO_KEYCODES_H__

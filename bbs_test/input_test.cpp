@@ -42,7 +42,4 @@ protected:
 // std::vector<std::set<char>> create_allowed_charmap(int64_t minv, int64_t maxv) 
 
 TEST_F(InputTest, Smoke) { 
-  auto v = create_allowed_charmap(0, 10);
-  EXPECT_EQ(2, v.size());
-  EXPECT_EQ(10, v.at(0).size());
 }
