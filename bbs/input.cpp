@@ -611,6 +611,11 @@ input_result_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, 
       {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\r', '\n', '\b', '\x15', '\x17', '\x18'});
   bout.SavePosition();
   int64_t result = 0;
+  if (setdefault) {
+    result = cur;
+    text = std::to_string(result);
+    last_ok = colorize(last_ok, result, minv, maxv);
+  }
   while (!a()->hangup_) {
     auto ch = bout.getkey();
     if (std::isdigit(ch)) {

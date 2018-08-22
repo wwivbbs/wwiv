@@ -398,7 +398,7 @@ int WFC::doWFCEvents() {
       case 'F': {
         Clear();
         bout.bputs("|#1Enter Number: ");
-        auto x = input_number_or_key_raw(1, 0, 2112, false, {'Q', '?', '/'});
+        auto x = input_number_or_key_raw(1, 0, 2112, true, {'Q', '?', '/'});
         bout << "key: " << x.key << "; num: " << x.num;
         pausescr();
       } break;
