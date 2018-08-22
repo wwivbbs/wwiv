@@ -248,7 +248,7 @@ void Output::mpl(int length) {
   }
   Color(4);
   bputs(string(length, ' '));
-  bputs(StringPrintf("\x1b[%dD", length));
+  bout.Left(length);
 }
 
 template <typename T>

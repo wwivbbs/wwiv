@@ -27,10 +27,10 @@
 // If this is gone, we get errors on CY and other things in wtypes.h
 #include "core/stl.h"
 
-#include "bbs/bbsovl1.h"
-#include "bbs/chnedit.h"
 #include "bbs/bbs.h"
+#include "bbs/bbsovl1.h"
 #include "bbs/bbsutl.h"
+#include "bbs/chnedit.h"
 #include "bbs/com.h"
 #include "bbs/confutil.h"
 #include "bbs/connect1.h"
@@ -40,39 +40,39 @@
 #include "bbs/exec.h"
 #include "bbs/external_edit.h"
 #include "bbs/gfileedit.h"
-#include "bbs/input.h"
 #include "bbs/inetmsg.h"
+#include "bbs/input.h"
 #include "bbs/instmsg.h"
-#include "local_io/local_io.h"
 #include "bbs/multinst.h"
 #include "bbs/netsup.h"
 #include "bbs/pause.h"
 #include "bbs/printfile.h"
 #include "bbs/readmail.h"
-#include "bbs/subedit.h"
 #include "bbs/ssh.h"
+#include "bbs/subedit.h"
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
+#include "local_io/local_io.h"
 
-#include "bbs/voteedit.h"
-#include "local_io/wconstants.h"
-#include "bbs/wqscn.h"
 #include "bbs/application.h"
+#include "bbs/voteedit.h"
 #include "bbs/workspace.h"
+#include "bbs/wqscn.h"
 #include "core/file.h"
 #include "core/log.h"
-#include "core/strings.h"
 #include "core/os.h"
+#include "core/strings.h"
 #include "core/version.h"
+#include "local_io/wconstants.h"
 #include "sdk/filenames.h"
 #include "sdk/status.h"
 
 using std::string;
 using std::unique_ptr;
 using std::vector;
-using wwiv::core::IniFile;
 using wwiv::core::FilePath;
+using wwiv::core::IniFile;
 using wwiv::os::random_number;
 using namespace std::chrono;
 using namespace std::chrono_literals;
@@ -84,7 +84,6 @@ using namespace wwiv::strings;
 static char* pszScreenBuffer = nullptr;
 static int inst_num;
 static constexpr int sysop_usernum = 1;
-
 
 void wfc_cls(Application* a) {
   if (a->HasConfigFlag(OP_FLAGS_WFC_SCREEN)) {
@@ -163,8 +162,8 @@ void WFC::DrawScreen() {
       wfcFile.Read(pszScreenBuffer, 4000);
     }
     a()->localIO()->WriteScreenBuffer(pszScreenBuffer);
-    const auto title = StringPrintf("Activity and Statistics of %s Node %d", 
-      a()->config()->system_name().c_str(), a()->instance_number());
+    const auto title = StringPrintf("Activity and Statistics of %s Node %d",
+                                    a()->config()->system_name().c_str(), a()->instance_number());
     a()->localIO()->PutsXYA(1 + ((76 - title.size()) / 2), 4, 15, title);
     const auto f = fulldate();
     a()->localIO()->PutsXYA(8, 1, 14, f);
@@ -179,8 +178,8 @@ void WFC::DrawScreen() {
     }
     a()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
     if (nNumNewMessages) {
-      a()->localIO()->PutsXYA(29, 7 , 3, "New:");
-      a()->localIO()->PrintfXYA(34, 7 , 12, "%d", nNumNewMessages);
+      a()->localIO()->PutsXYA(29, 7, 3, "New:");
+      a()->localIO()->PrintfXYA(34, 7, 12, "%d", nNumNewMessages);
     }
     a()->localIO()->PrintfXYA(21, 8, 14, "%d", status->GetNumUploadsToday());
     a()->localIO()->PrintfXYA(21, 9, 14, "%d", status->GetNumMessagesPostedToday());
@@ -188,15 +187,16 @@ void WFC::DrawScreen() {
     a()->localIO()->PrintfXYA(21, 11, 14, "%d", status->GetNumEmailSentToday());
     a()->localIO()->PrintfXYA(21, 12, 14, "%d", status->GetNumFeedbackSentToday());
     a()->localIO()->PrintfXYA(21, 13, 14, "%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
-                                            100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0);
+                              100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0);
     a()->localIO()->PrintfXYA(58, 6, 14, "%s%s", wwiv_version, beta_version);
 
     a()->localIO()->PrintfXYA(58, 7, 14, "%d", status->GetNetworkVersion());
     a()->localIO()->PrintfXYA(58, 8, 14, "%d", status->GetNumUsers());
     a()->localIO()->PrintfXYA(58, 9, 14, "%ld", status->GetCallerNumber());
     if (status->GetDays()) {
-      a()->localIO()->PrintfXYA(58, 10, 14, "%.2f", static_cast<float>(status->GetCallerNumber()) /
-                                              static_cast<float>(status->GetDays()));
+      a()->localIO()->PrintfXYA(58, 10, 14, "%.2f",
+                                static_cast<float>(status->GetCallerNumber()) /
+                                    static_cast<float>(status->GetDays()));
     } else {
       a()->localIO()->PutsXYA(58, 10, 14, "N/A");
     }
@@ -215,8 +215,7 @@ void WFC::DrawScreen() {
     poll_time = wfc_time = steady_clock::now();
   } else {
     auto screen_saver_time = seconds(a()->screen_saver_time);
-    if ((a()->screen_saver_time == 0) 
-        || (steady_clock::now() - wfc_time < screen_saver_time)) {
+    if ((a()->screen_saver_time == 0) || (steady_clock::now() - wfc_time < screen_saver_time)) {
       string t = times();
       a()->localIO()->PutsXYA(28, 1, 14, t);
       a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
@@ -228,9 +227,8 @@ void WFC::DrawScreen() {
       if ((steady_clock::now() - poll_time > seconds(10)) || status_ == 1) {
         status_ = 2;
         a_->Cls();
-        a()->localIO()->PutsXYA(
-            random_number(38), random_number(24), random_number(14) + 1,
-            "WWIV Screen Saver - Press Any Key For WWIV");
+        a()->localIO()->PutsXYA(random_number(38), random_number(24), random_number(14) + 1,
+                                "WWIV Screen Saver - Press Any Key For WWIV");
         wfc_time = steady_clock::now() - seconds(a()->screen_saver_time) - seconds(1);
         poll_time = steady_clock::now();
       }
@@ -247,8 +245,7 @@ WFC::WFC(Application* a) : a_(a) {
   Clear();
 }
 
-WFC::~WFC() {
-}
+WFC::~WFC() {}
 
 int WFC::doWFCEvents() {
   unsigned char ch = 0;
@@ -264,7 +261,8 @@ int WFC::doWFCEvents() {
 
     // If the date has changed since we last checked, then then run the beginday event.
     if (date() != last_date_status->GetLastDate()) {
-      if ((a_->GetBeginDayNodeNumber() == 0) || (a_->instance_number() == a_->GetBeginDayNodeNumber())) {
+      if ((a_->GetBeginDayNodeNumber() == 0) ||
+          (a_->instance_number() == a_->GetBeginDayNodeNumber())) {
         cleanup_events();
         beginday(true);
         Clear();
@@ -289,7 +287,7 @@ int WFC::doWFCEvents() {
     auto node_supports_callout = a_->HasConfigFlag(OP_FLAGS_NET_CALLOUT);
     // try to check for packets to send every minute.
     auto diff_time = current_time - last_network_attempt();
-    auto time_to_call = diff_time > minutes(1);  // was 1200
+    auto time_to_call = diff_time > minutes(1); // was 1200
     if (!any && time_to_call && a_->current_net().sysnum && node_supports_callout) {
       // also try this.
       Clear();
@@ -309,8 +307,7 @@ int WFC::doWFCEvents() {
         a_->handle_sysop_key(ch);
         ch = 0;
       }
-    }
-    else {
+    } else {
       ch = 0;
       giveup_timeslice();
     }
@@ -336,8 +333,7 @@ int WFC::doWFCEvents() {
           chHelp = bout.getkey();
           helpFileName = (helpFileName == SWFC_NOEXT) ? SONLINE_NOEXT : SWFC_NOEXT;
         } while (chHelp != SPACE && chHelp != ESC);
-      }
-      break;
+      } break;
       // Force Network Callout
       case '/':
         if (a_->current_net().sysnum) {
@@ -399,7 +395,14 @@ int WFC::doWFCEvents() {
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
         break;
-        // GfileEdit
+      case 'F': {
+        Clear();
+        bout.bputs("|#1Enter Number: ");
+        auto x = input_number_or_key_raw(1, 0, 2112, false, {'Q', '?', '/'});
+        bout << "key: " << x.key << "; num: " << x.num;
+        pausescr();
+      } break;
+      // GfileEdit
       case 'G':
         write_inst(INST_LOC_GFILEEDIT, 0, INST_FLAGS_NONE);
         gfileedit();
@@ -419,8 +422,7 @@ int WFC::doWFCEvents() {
         a_->SetUserOnline(false);
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
-      }
-      break;
+      } break;
       // ConfEdit
       case 'J':
         Clear();
@@ -436,15 +438,13 @@ int WFC::doWFCEvents() {
         send_email();
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
-      }
-      break;
+      } break;
       // Print Log Daily logs
       case 'L': {
         Clear();
         auto status = a()->status_manager()->GetStatus();
         print_local_file(status->GetLogFileName(0));
-      }
-      break;
+      } break;
       // Read User Mail
       case 'M': {
         Clear();
@@ -452,14 +452,12 @@ int WFC::doWFCEvents() {
         readmail(0);
         a_->WriteCurrentUser(sysop_usernum);
         cleanup_net();
-      }
-      break;
+      } break;
       // Print Net Log
       case 'N': {
         Clear();
         print_local_file("net.log");
-      }
-      break;
+      } break;
       // EditTextFile
       case 'O': {
         Clear();
@@ -470,14 +468,12 @@ int WFC::doWFCEvents() {
         if (!net_filename.empty()) {
           external_text_edit(net_filename, "", 500, MSGED_FLAG_NO_TAGLINE);
         }
-      }
-      break;
+      } break;
       // Print Network Pending list
       case 'P': {
         Clear();
         print_pending_list();
-      }
-      break;
+      } break;
       // Quit BBS
       case 'Q':
         io->GotoXY(2, 23);
@@ -514,16 +510,14 @@ int WFC::doWFCEvents() {
         Clear();
         write_inst(INST_LOC_VOTEEDIT, 0, INST_FLAGS_NONE);
         ivotes();
-      }
-      break;
+      } break;
       // Edit Gfile
       case 'W': {
         Clear();
         write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
         bout << "|#1Edit " << a()->config()->gfilesdir() << "<filename>: \r\n";
         text_edit();
-      }
-      break;
+      } break;
       // Print Environment
       case 'X':
         break;
@@ -532,8 +526,7 @@ int WFC::doWFCEvents() {
         Clear();
         auto status = a()->status_manager()->GetStatus();
         print_local_file(status->GetLogFileName(1));
-      }
-      break;
+      } break;
       // Print Activity (Z) Log
       case 'Z': {
         zlog();
@@ -541,7 +534,7 @@ int WFC::doWFCEvents() {
         bout.getkey();
       } break;
       }
-      Clear();  // moved from after getch
+      Clear(); // moved from after getch
       if (!a()->context().incom() && !lokb) {
         frequent_init();
         a_->ReadCurrentUser(sysop_usernum);
@@ -581,19 +574,16 @@ int WFC::LocalLogon() {
       a_->localIO()->Puts(YesNoString(true));
       bout << wwiv::endl;
       lokb = 1;
-    }
-    else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
+    } else if (ch == 0 || static_cast<unsigned char>(ch) == 224) {
       // The ch == 224 is a Win32'ism
       a_->localIO()->GetChar();
-    }
-    else {
+    } else {
       auto fast = false;
 
-      if (ch == 'F') {   // 'F' for Fast
+      if (ch == 'F') { // 'F' for Fast
         a_->unx_ = 1;
         fast = true;
-      }
-      else {
+      } else {
         switch (ch) {
         case '1':
         case '2':
@@ -647,5 +637,5 @@ int WFC::LocalLogon() {
   return lokb;
 }
 
-}
-}
+} // namespace bbs
+} // namespace wwiv

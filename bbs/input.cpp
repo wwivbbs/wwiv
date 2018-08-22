@@ -19,20 +19,23 @@
 #include "bbs/input.h"
 
 #include <algorithm>
+#include <cctype>
+#include <set>
 #include <string>
+#include <vector>
 
-#include "core/stl.h"
-#include "core/strings.h"
-#include "core/wwivassert.h"
-#include "core/wwivport.h"
+#include "bbs/application.h"
 #include "bbs/bbs.h"
 #include "bbs/bbsovl3.h"
 #include "bbs/bgetch.h"
 #include "bbs/com.h"
-#include "local_io/keycodes.h"
 #include "bbs/utility.h"
+#include "core/stl.h"
+#include "core/strings.h"
+#include "core/wwivassert.h"
+#include "core/wwivport.h"
+#include "local_io/keycodes.h"
 #include "local_io/wconstants.h"
-#include "bbs/application.h"
 
 using std::string;
 using wwiv::bbs::InputMode;
@@ -43,8 +46,8 @@ static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
 static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
 
 // TODO: put back in high ascii characters after finding proper hex codes
-static const unsigned char *valid_letters =
-  (unsigned char *) "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const unsigned char* valid_letters =
+    (unsigned char*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
 // This needs to work across input1 and input_password
 static unsigned char last_input_char;
@@ -80,7 +83,7 @@ static std::string input_password_minimal(int max_length) {
       last_input_char = ch;
       return pw;
       break;
-    case CW:  // Ctrl-W
+    case CW: // Ctrl-W
       while (!pw.empty() && pw.back() != SPACE) {
         pw.pop_back();
         bout.bs();
@@ -111,11 +114,12 @@ static std::string input_password_minimal(int max_length) {
  * characters are converted to uppercase.
  * @param out_text the text entered by the user (output value)
  * @param max_length Maximum length to allow for the input text
- * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER, or InputMode::FILENAME
+ * @param lc The case to return, this can be InputMode::UPPER, InputMode::MIXED, InputMode::PROPER,
+ * or InputMode::FILENAME
  * @param crend output the CR/LF if one is entered.
  * @param auto_mpl Call bout.mpl(max_length) automatically.
  */
-static void input1(char *out_text, int max_length, InputMode lc, bool crend, bool auto_mpl) {
+static void input1(char* out_text, int max_length, InputMode lc, bool crend, bool auto_mpl) {
   if (auto_mpl) {
     bout.mpl(max_length);
   }
@@ -133,7 +137,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
     }
 
     if (in_ansi) {
-      if (in_ansi == 1 &&  chCurrent != '[') {
+      if (in_ansi == 1 && chCurrent != '[') {
         in_ansi = 0;
       } else {
         if (in_ansi == 1) {
@@ -158,7 +162,8 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
         case InputMode::PROPER:
           chCurrent = upcase(chCurrent);
           if (curpos) {
-            const char *ss = strchr(reinterpret_cast<const char*>(valid_letters), out_text[curpos - 1]);
+            const char* ss =
+                strchr(reinterpret_cast<const char*>(valid_letters), out_text[curpos - 1]);
             if (ss != nullptr || out_text[curpos - 1] == 39) {
               if (curpos < 2 || out_text[curpos - 2] != 77 || out_text[curpos - 1] != 99) {
                 chCurrent = locase(chCurrent);
@@ -168,13 +173,14 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
           break;
         case InputMode::FILENAME:
         case InputMode::FULL_PATH_NAME: {
-          string disallowed = (lc == InputMode::FILENAME) ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
+          string disallowed =
+              (lc == InputMode::FILENAME) ? FILENAME_DISALLOWED : FULL_PATH_NAME_DISALLOWED;
           if (strchr(disallowed.c_str(), chCurrent)) {
             chCurrent = 0;
           } else {
 #ifdef _WIN32
             chCurrent = to_lower_case(chCurrent);
-#endif  // _WIN32
+#endif // _WIN32
           }
         } break;
         }
@@ -205,7 +211,7 @@ static void input1(char *out_text, int max_length, InputMode lc, bool crend, boo
             bout.nl();
           }
           break;
-        case CW:                          // Ctrl-W
+        case CW: // Ctrl-W
           if (curpos) {
             do {
               curpos--;
@@ -515,7 +521,7 @@ static string Input1(const string& orig_text, int max_length, bool bInsert, Inpu
 }
 
 // This will input an upper-case string
-void input(char *out_text, int max_length, bool auto_mpl) {
+void input(char* out_text, int max_length, bool auto_mpl) {
   input1(out_text, max_length, InputMode::UPPER, true, auto_mpl);
 }
 
@@ -551,17 +557,13 @@ std::string input_text(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::MIXED);
 }
 
-std::string input_text(int max_length) { 
-  return input_text("", max_length);
-}
-
+std::string input_text(int max_length) { return input_text("", max_length); }
 
 std::string input_upper(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::UPPER);
 }
 
 std::string input_upper(int max_length) { return input_upper("", max_length); }
-
 
 std::string input_proper(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::PROPER);
@@ -578,15 +580,101 @@ std::vector<std::set<char>> create_allowed_charmap(int64_t minv, int64_t maxv) {
   for (int i = 1; i <= digits; i++) {
     auto d = maxv / (10 ^ i);
     for (int ii = 0; ii <= d; ii++) {
-      allowed.at(i-1).insert(ii + '0');
+      allowed.at(i - 1).insert(ii + '0');
     }
-//    if (allowed.at(i - 1).empty()) {}
+    //    if (allowed.at(i - 1).empty()) {}
   }
   return allowed;
 }
 
-int64_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
-                                std::set<char> hotkeys) {
+static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
+  bool ok = (result >= minv && result <= maxv);
+  if (ok != last_ok) {
+    bout.RestorePosition();
+    bout.SavePosition();
+    bout.mpl(static_cast<int>(std::floor(std::log10(maxv))) + 1);
+    bout.Color(ok ? 4 : 6);
+    bout.bputs(std::to_string(result));
+  }
+  return ok;
+}
+
+input_result_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
+                                       std::set<char> hotkeys) {
+  const int max_length = static_cast<int>(std::floor(std::log10(maxv))) + 1;
   auto map = create_allowed_charmap(minv, maxv);
-  return 0;
+  std::string text;
+  bout.mpl(max_length);
+  auto allowed = hotkeys;
+  bool last_ok = false;
+  allowed.insert(
+      {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '\r', '\n', '\b', '\x15', '\x17', '\x18'});
+  bout.SavePosition();
+  int64_t result = 0;
+  while (!a()->hangup_) {
+    auto ch = bout.getkey();
+    if (std::isdigit(ch)) {
+      // digit
+      if (size_int(text) < max_length && ch) {
+        text.push_back(ch);
+        bout.bputch(ch);
+        result = to_number<int64_t>(text);
+        last_ok = colorize(last_ok, result, minv, maxv);
+      }
+      last_input_char = ch;
+      continue;
+    }
+    if (ch > 31) {
+      // Only non-control characters should be upper cased.
+      // this way it covers the hotkeys.
+      ch = to_upper_case(ch);
+    }
+    if (!contains(allowed, ch)) {
+      continue;
+    }
+    switch (ch) {
+    case '\n':
+      // Handle the case where some telnet clients only return \n vs \r\n
+      if (last_input_char != '\r') {
+        last_input_char = ch;
+        if (result >= minv && result <= maxv) {
+          bout.nl();
+          return {result, '\0'};
+        }
+      } else {
+        last_input_char = ch;
+      }
+      break;
+    case '\r':
+      last_input_char = ch;
+      if (result >= minv && result <= maxv) {
+        bout.nl();
+        return {result, '\0'};
+      }
+      break;
+    case '\b':
+      last_input_char = ch;
+      if (!text.empty()) {
+        text.pop_back();
+        bout.bs();
+      }
+      result = to_number<int64_t>(text);
+      last_ok = colorize(last_ok, result, minv, maxv);
+      break;
+    case CW: // Ctrl-W
+    case CX: {
+      last_input_char = ch;
+      while (!text.empty()) {
+        text.pop_back();
+        bout.bs();
+      }
+      bout.mpl(max_length);
+    } break;
+    default: {
+      // This is a hotkey.
+      return {0, ch};
+    } break;
+    }
+  }
+  return {0, 0};
 }

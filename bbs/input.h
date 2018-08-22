@@ -142,17 +142,13 @@ input_number(T current_value, int min_value = std::numeric_limits<T>::min(),
   }
 }
 
-// Type of result in 
-enum class input_result_type_t { hotkey, number };
-
 struct input_result_t { 
-  input_result_type_t type{input_result_type_t::number};
-  char key{0};
   int64_t num{0};
+  char key{0};
 };
 
-int64_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
-                                std::set<char> hotkeys);
+input_result_t input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv, bool setdefault,
+                                       std::set<char> hotkeys);
 
 std::vector<std::set<char>> create_allowed_charmap(int64_t minv, int64_t maxv);
 
