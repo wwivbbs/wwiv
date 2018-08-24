@@ -46,8 +46,7 @@ static const char* FILENAME_DISALLOWED = "/\\<>|*?\";:";
 static const char* FULL_PATH_NAME_DISALLOWED = "<>|*?\";";
 
 // TODO: put back in high ascii characters after finding proper hex codes
-static const unsigned char* valid_letters =
-    (unsigned char*)"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+static const std::string valid_letters("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
 
 // This needs to work across input1 and input_password
 static unsigned char last_input_char;
@@ -130,11 +129,7 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
   while (!done && !a()->hangup_) {
     unsigned char chCurrent = bout.getkey();
 
-    if (curpos) {
-      a()->chatline_ = true;
-    } else {
-      a()->chatline_ = false;
-    }
+    a()->chatline_ = (curpos != 0);
 
     if (in_ansi) {
       if (in_ansi == 1 && chCurrent != '[') {
@@ -162,9 +157,8 @@ static void input1(char* out_text, int max_length, InputMode lc, bool crend, boo
         case InputMode::PROPER:
           chCurrent = upcase(chCurrent);
           if (curpos) {
-            const char* ss =
-                strchr(reinterpret_cast<const char*>(valid_letters), out_text[curpos - 1]);
-            if (ss != nullptr || out_text[curpos - 1] == 39) {
+            bool found = valid_letters.find(out_text[curpos - 1]) != std::string::npos;
+            if (found || out_text[curpos - 1] == 39) {
               if (curpos < 2 || out_text[curpos - 2] != 77 || out_text[curpos - 1] != 99) {
                 chCurrent = locase(chCurrent);
               }
@@ -446,10 +440,9 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
           }
         }
         if (mode == InputMode::PROPER && pos) {
-          const char* ss =
-              strchr(reinterpret_cast<char*>(const_cast<unsigned char*>(valid_letters)), c);
+          bool found = valid_letters.find(c) != std::string::npos;
           // if it's a valid char and the previous char was a space
-          if (ss != nullptr && szTemp[pos - 1] != 32) {
+          if (found && szTemp[pos - 1] != 32) {
             c = locase(static_cast<unsigned char>(c));
           }
         }

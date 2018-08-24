@@ -85,11 +85,15 @@ const std::string FormatLogLevel(LoggerLevel l, int v) {
     return StrCat("VER-", v);
   }
   static const std::unordered_map<LoggerLevel, std::string, wwiv::stl::enum_hash> map = {
+      {LoggerLevel::ignored, ""},
       {LoggerLevel::start, "START"},
       {LoggerLevel::debug, "DEBUG"},
+      {LoggerLevel::verbose, "VER- "},  
       {LoggerLevel::error, "ERROR"},
       {LoggerLevel::info, "INFO "},
-      {LoggerLevel::warning, "WARN "}};
+      {LoggerLevel::warning, "WARN "}, 
+      {LoggerLevel::fatal, "FATAL"},
+  };
   return map.at(l);
 }
 
