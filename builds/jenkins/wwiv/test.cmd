@@ -3,17 +3,42 @@
 @rem
 @rem **************************************************************************
 
-echo "Build Number:    %BUILD_NUMBER%"
-echo "Workpace: %WORKSPACE%"
+if /I "%LABEL%"=="win-x86" (
+	@echo "Setting x86 (32-bit) Architecture"
+	set ARCH=x86
+	set NUM_BITS=32
+)
+if /I "%LABEL%"=="win-x64" (
+	@echo "Setting x64 (64-bit) Architecture"
+	set ARCH=x64
+	set NUM_BITS=64
+)
+
+echo "Build Number:      %BUILD_NUMBER%"
+echo "Label:             %LABEL%"
+echo "Architecture:      %ARCH%"
+echo "Workpace:          %WORKSPACE%"
 echo "WWIV_TEST_TEMPDIR: %WWIV_TEST_TEMPDIR%"
-echo "WWIV CMake Root: %WWIV_CMAKE_DIR%"
+echo "WWIV CMake Root:   %WWIV_CMAKE_DIR%"
+
+@if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
+  echo "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+)
+
+@if exist "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" (
+  echo "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles%\Microsoft Visual Studio\2017\BuildTools\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+)
 
 @if exist "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+  echo "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles(x86)%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 )
 
 @if exist "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" (
-  call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" x86
+  echo "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
+  call "%ProgramFiles%\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build\vcvarsall.bat" %ARCH%
 )
 
 set WWIV_CMAKE_DIR=%WORKSPACE%\_build
