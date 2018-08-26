@@ -152,14 +152,14 @@ void WFC::DrawScreen() {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
     a()->Cls();
     if (!screen_buffer) {
-      screen_buffer = std::make_unique<char[]>(80 * 25);
+      screen_buffer = std::make_unique<char[]>(80 * 25 * sizeof(uint16_t));
       File wfcFile(FilePath(a()->config()->datadir(), WFC_DAT));
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
         LOG(FATAL) << wfcFile.full_pathname() << " NOT FOUND.";
         a()->AbortBBS();
       }
-      wfcFile.Read(screen_buffer.get(), 80*25);
+      wfcFile.Read(screen_buffer.get(), 80 * 25 * sizeof(uint16_t));
     }
     a()->localIO()->WriteScreenBuffer(screen_buffer.get());
     const auto title = StringPrintf("Activity and Statistics of %s Node %d",
@@ -183,17 +183,19 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(21, 10, 14, std::to_string(status->GetNumLocalPosts()));
     a()->localIO()->PutsXYA(21, 11, 14, std::to_string(status->GetNumEmailSentToday()));
     a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->GetNumFeedbackSentToday()));
-    a()->localIO()->PutsXYA(21, 13, 14, StringPrintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
-                              100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0));
+    a()->localIO()->PutsXYA(
+        21, 13, 14,
+        StringPrintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
+                     100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0));
     a()->localIO()->PutsXYA(58, 6, 14, StrCat(wwiv_version, beta_version));
 
     a()->localIO()->PutsXYA(58, 7, 14, std::to_string(status->GetNetworkVersion()));
     a()->localIO()->PutsXYA(58, 8, 14, std::to_string(status->GetNumUsers()));
     a()->localIO()->PutsXYA(58, 9, 14, std::to_string(status->GetCallerNumber()));
     if (status->GetDays()) {
-      a()->localIO()->PutsXYA(58, 10, 14, StringPrintf("%.2f",
-                                static_cast<float>(status->GetCallerNumber()) /
-                                    static_cast<float>(status->GetDays())));
+      a()->localIO()->PutsXYA(58, 10, 14,
+                              StringPrintf("%.2f", static_cast<float>(status->GetCallerNumber()) /
+                                                       static_cast<float>(status->GetDays())));
     } else {
       a()->localIO()->PutsXYA(58, 10, 14, "N/A");
     }

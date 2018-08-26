@@ -22,30 +22,30 @@
 
 #include <algorithm>
 #include <chrono>
-#include <memory>
 #include <conio.h>
+#include <memory>
 #include <string>
 #include <vector>
 
-#include "local_io/wconstants.h"
 #include "core/os.h"
 #include "core/strings.h"
+#include "local_io/wconstants.h"
 
 // local functions
 bool HasKeyBeenPressed(HANDLE in);
 unsigned char GetKeyboardChar();
 
-using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using std::chrono::milliseconds;
 using namespace wwiv::strings;
 using wwiv::os::sound;
 
-#define PREV                1
-#define NEXT                2
-#define DONE                4
-#define ABORTED             8
+#define PREV 1
+#define NEXT 2
+#define DONE 4
+#define ABORTED 8
 
 struct screentype {
   short x1, y1, topline1, curatr1;
@@ -63,12 +63,12 @@ void Win32ConsoleIO::set_attr_xy(int x, int y, int a) {
   loc.X = static_cast<SHORT>(x);
   loc.Y = static_cast<SHORT>(y);
 
-  WriteConsoleOutputAttribute(out_, reinterpret_cast< LPWORD >(&a), 1, loc, &cb);
+  WriteConsoleOutputAttribute(out_, reinterpret_cast<LPWORD>(&a), 1, loc, &cb);
 }
 
 Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
   out_ = GetStdHandle(STD_OUTPUT_HANDLE);
-  in_  = GetStdHandle(STD_INPUT_HANDLE);
+  in_ = GetStdHandle(STD_INPUT_HANDLE);
   if (out_ == INVALID_HANDLE_VALUE) {
     std::cout << "\n\nCan't get console handle!.\n\n";
     abort();
@@ -96,7 +96,7 @@ Win32ConsoleIO::Win32ConsoleIO() : LocalIO() {
 }
 
 Win32ConsoleIO::~Win32ConsoleIO() {
-  COORD x{ original_size_.X, original_size_.Y };
+  COORD x{original_size_.X, original_size_.Y};
   SetConsoleScreenBufferSize(out_, x);
   SetConsoleTextAttribute(out_, 0x07);
   SetConsoleMode(in_, saved_input_mode_);
@@ -114,14 +114,14 @@ void Win32ConsoleIO::GotoXY(int x, int y) {
 
   cursor_pos_.X = static_cast<int16_t>(x);
   cursor_pos_.Y = static_cast<int16_t>(y);
-  COORD c{ cursor_pos_.X, cursor_pos_.Y };
+  COORD c{cursor_pos_.X, cursor_pos_.Y};
   SetConsoleCursorPosition(out_, c);
 }
 
 /* This function returns the current X cursor position, as the number of
-* characters from the left hand side of the screen.  An X position of zero
-* means the cursor is at the left-most position
-*/
+ * characters from the left hand side of the screen.  An X position of zero
+ * means the cursor is at the left-most position
+ */
 int Win32ConsoleIO::WhereX() const noexcept {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(out_, &csbi);
@@ -133,10 +133,10 @@ int Win32ConsoleIO::WhereX() const noexcept {
 }
 
 /* This function returns the Y cursor position, as the line number from
-* the top of the logical window.  The offset due to the protected top
-* of the screen display is taken into account.  A WhereY() of zero means
-* the cursor is at the top-most position it can be at.
-*/
+ * the top of the logical window.  The offset due to the protected top
+ * of the screen display is taken into account.  A WhereY() of zero means
+ * the cursor is at the top-most position it can be at.
+ */
 int Win32ConsoleIO::WhereY() const noexcept {
   CONSOLE_SCREEN_BUFFER_INFO csbi;
   GetConsoleScreenBufferInfo(out_, &csbi);
@@ -146,10 +146,10 @@ int Win32ConsoleIO::WhereY() const noexcept {
 }
 
 void Win32ConsoleIO::Lf() {
-/* This function performs a linefeed to the screen (but not remotely) by
-* either moving the cursor down one line, or scrolling the logical screen
-* up one line.
-*/
+  /* This function performs a linefeed to the screen (but not remotely) by
+   * either moving the cursor down one line, or scrolling the logical screen
+   * up one line.
+   */
   SMALL_RECT scrollRect;
   COORD dest;
   CHAR_INFO fill;
@@ -167,7 +167,7 @@ void Win32ConsoleIO::Lf() {
     ScrollConsoleScreenBuffer(out_, &scrollRect, nullptr, dest, &fill);
   } else {
     cursor_pos_.Y++;
-    COORD c{ cursor_pos_.X, cursor_pos_.Y };
+    COORD c{cursor_pos_.X, cursor_pos_.Y};
     SetConsoleCursorPosition(out_, c);
   }
 }
@@ -177,7 +177,7 @@ void Win32ConsoleIO::Lf() {
  */
 void Win32ConsoleIO::Cr() {
   cursor_pos_.X = 0;
-  COORD c{ cursor_pos_.X, cursor_pos_.Y };
+  COORD c{cursor_pos_.X, cursor_pos_.Y};
   SetConsoleCursorPosition(out_, c);
 }
 
@@ -191,35 +191,35 @@ void Win32ConsoleIO::Cls() {
   DWORD dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
   DWORD charsWriten = 0;
 
-  FillConsoleOutputCharacter(out_, (TCHAR) ' ', dwConSize, coordScreen, &charsWriten);
+  FillConsoleOutputCharacter(out_, (TCHAR)' ', dwConSize, coordScreen, &charsWriten);
   FillConsoleOutputAttribute(out_, (WORD)7, dwConSize, coordScreen, &charsWriten);
   GotoXY(0, 0);
 }
 
 void Win32ConsoleIO::Backspace() {
-/* This function moves the cursor one position to the left, or if the cursor
-* is currently at its left-most position, the cursor is moved to the end of
-* the previous line, except if it is on the top line, in which case nothing
-* happens.
-*/
+  /* This function moves the cursor one position to the left, or if the cursor
+   * is currently at its left-most position, the cursor is moved to the end of
+   * the previous line, except if it is on the top line, in which case nothing
+   * happens.
+   */
   if (cursor_pos_.X >= 0) {
     cursor_pos_.X--;
   } else if (static_cast<size_t>(cursor_pos_.Y) != GetTopLine()) {
     cursor_pos_.Y--;
     cursor_pos_.X = 79;
   }
-  COORD c{ cursor_pos_.X, cursor_pos_.Y };
+  COORD c{cursor_pos_.X, cursor_pos_.Y};
   SetConsoleCursorPosition(out_, c);
 }
 
 void Win32ConsoleIO::PutchRaw(unsigned char ch) {
-/* This function outputs one character to the screen, then updates the
-* cursor position accordingly, scolling the screen if necessary.  Not that
-* this function performs no commands such as a C/R or L/F.  If a value of
-* 8, 7, 13, 10, 12 (BACKSPACE, BEEP, C/R, L/F, TOF), or any other command-
-* type characters are passed, the appropriate corresponding "graphics"
-* symbol will be output to the screen as a normal character.
-*/
+  /* This function outputs one character to the screen, then updates the
+   * cursor position accordingly, scolling the screen if necessary.  Not that
+   * this function performs no commands such as a C/R or L/F.  If a value of
+   * 8, 7, 13, 10, 12 (BACKSPACE, BEEP, C/R, L/F, TOF), or any other command-
+   * type characters are passed, the appropriate corresponding "graphics"
+   * symbol will be output to the screen as a normal character.
+   */
   DWORD cb;
 
   SetConsoleTextAttribute(out_, static_cast<int16_t>(curatr()));
@@ -238,10 +238,10 @@ void Win32ConsoleIO::PutchRaw(unsigned char ch) {
     CHAR_INFO fill;
 
     // rushfan scrolling fix (was no +1)
-    MoveRect.Top    = static_cast<int16_t>(GetTopLine() + 1);
+    MoveRect.Top = static_cast<int16_t>(GetTopLine() + 1);
     MoveRect.Bottom = static_cast<int16_t>(GetScreenBottom());
-    MoveRect.Left   = 0;
-    MoveRect.Right  = 79;
+    MoveRect.Left = 0;
+    MoveRect.Right = 79;
 
     fill.Attributes = static_cast<int16_t>(curatr());
     fill.Char.AsciiChar = ' ';
@@ -266,7 +266,7 @@ void Win32ConsoleIO::Putch(unsigned char ch) {
   } else if (ch == CM) {
     Cr();
   } else if (ch == CJ) {
-    // Let's try CR-LF for local 
+    // Let's try CR-LF for local
     Cr();
     Lf();
   } else if (ch == CL) {
@@ -301,7 +301,7 @@ void Win32ConsoleIO::PutsXYA(int x, int y, int a, const string& text) {
 }
 
 void Win32ConsoleIO::FastPuts(const string& text) {
-// This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
+  // This RAPIDLY outputs ONE LINE to the screen only and is not exactly stable.
   DWORD cb = 0;
   int len = text.length();
 
@@ -311,7 +311,7 @@ void Win32ConsoleIO::FastPuts(const string& text) {
 }
 
 void Win32ConsoleIO::set_protect(int l) {
-// set_protect sets the number of lines protected at the top of the screen.
+  // set_protect sets the number of lines protected at the top of the screen.
   if (static_cast<size_t>(l) != GetTopLine()) {
     COORD coord;
     coord.X = 0;
@@ -354,13 +354,14 @@ void Win32ConsoleIO::savescreen() {
   GetConsoleScreenBufferInfo(out_, &bufinfo);
   topleft.Y = topleft.X = region.Top = region.Left = 0;
   region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
-  region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
+  region.Right = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
   if (!saved_screen.scrn1) {
-    saved_screen.scrn1 = static_cast< CHAR_INFO *>(malloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
+    saved_screen.scrn1 =
+        static_cast<CHAR_INFO*>(malloc((bufinfo.dwSize.X * bufinfo.dwSize.Y) * sizeof(CHAR_INFO)));
   }
 
-  ReadConsoleOutput(out_, (CHAR_INFO *)saved_screen.scrn1, bufinfo.dwSize, topleft, &region);
+  ReadConsoleOutput(out_, (CHAR_INFO*)saved_screen.scrn1, bufinfo.dwSize, topleft, &region);
   saved_screen.x1 = static_cast<int16_t>(WhereX());
   saved_screen.y1 = static_cast<int16_t>(WhereY());
   saved_screen.topline1 = static_cast<int16_t>(GetTopLine());
@@ -380,7 +381,7 @@ void Win32ConsoleIO::restorescreen() {
     GetConsoleScreenBufferInfo(out_, &bufinfo);
     topleft.Y = topleft.X = region.Top = region.Left = 0;
     region.Bottom = static_cast<int16_t>(bufinfo.dwSize.Y - 1);
-    region.Right  = static_cast<int16_t>(bufinfo.dwSize.X - 1);
+    region.Right = static_cast<int16_t>(bufinfo.dwSize.X - 1);
 
     WriteConsoleOutput(out_, saved_screen.scrn1, bufinfo.dwSize, topleft, &region);
     free(saved_screen.scrn1);
@@ -405,14 +406,14 @@ bool Win32ConsoleIO::KeyPressed() {
 }
 
 /*
-* returns the ASCII code of the next character waiting in the
-* keyboard buffer.  If there are no characters waiting in the
-* keyboard buffer, then it waits for one.
-*
-* A value of 0 is returned for all extended keys (such as F1,
-* Alt-X, etc.).  The function must be called again upon receiving
-* a value of 0 to obtain the value of the extended key pressed.
-*/
+ * returns the ASCII code of the next character waiting in the
+ * keyboard buffer.  If there are no characters waiting in the
+ * keyboard buffer, then it waits for one.
+ *
+ * A value of 0 is returned for all extended keys (such as F1,
+ * Alt-X, etc.).  The function must be called again upon receiving
+ * a value of 0 to obtain the value of the extended key pressed.
+ */
 unsigned char Win32ConsoleIO::GetChar() {
   if (extended_key_waiting_) {
     extended_key_waiting_ = 0;
@@ -454,29 +455,29 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
   SMALL_RECT rect;
 
   // rect is the area on screen the buffer is to be drawn
-  rect.Top    = static_cast<int16_t>(y);
-  rect.Left   = static_cast<int16_t>(x);
-  rect.Right  = static_cast<int16_t>(xlen + x - 1);
+  rect.Top = static_cast<int16_t>(y);
+  rect.Left = static_cast<int16_t>(x);
+  rect.Right = static_cast<int16_t>(xlen + x - 1);
   rect.Bottom = static_cast<int16_t>(ylen + y - 1);
 
   // size of the buffer to use (lower right hand coordinate)
-  size.X      = static_cast<int16_t>(xlen);
-  size.Y      = static_cast<int16_t>(ylen);
+  size.X = static_cast<int16_t>(xlen);
+  size.Y = static_cast<int16_t>(ylen);
 
   // our current position within the CHAR_INFO buffer
-  int nCiPtr  = 0;
+  int nCiPtr = 0;
 
   // Loop through Y, each time looping through X adding the right character
   for (int yloop = 0; yloop < size.Y; yloop++) {
     for (int xloop = 0; xloop < size.X; xloop++) {
       ci[nCiPtr].Attributes = static_cast<int16_t>(GetUserEditorColor());
       if ((yloop == 0) || (yloop == size.Y - 1)) {
-        ci[nCiPtr].Char.AsciiChar   = '\xC4';      // top and bottom
+        ci[nCiPtr].Char.AsciiChar = '\xC4'; // top and bottom
       } else {
         if ((xloop == 0) || (xloop == size.X - 1)) {
-          ci[nCiPtr].Char.AsciiChar   = '\xB3';  // right and left sides
+          ci[nCiPtr].Char.AsciiChar = '\xB3'; // right and left sides
         } else {
-          ci[nCiPtr].Char.AsciiChar   = '\x20';   // nothing... Just filler (space)
+          ci[nCiPtr].Char.AsciiChar = '\x20'; // nothing... Just filler (space)
         }
       }
       nCiPtr++;
@@ -485,10 +486,10 @@ void Win32ConsoleIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
 
   // sum of the lengths of the previous lines (+0) is the start of next line
 
-  ci[0].Char.AsciiChar                    = '\xDA';      // upper left
-  ci[xlen - 1].Char.AsciiChar               = '\xBF';    // upper right
+  ci[0].Char.AsciiChar = '\xDA';        // upper left
+  ci[xlen - 1].Char.AsciiChar = '\xBF'; // upper right
 
-  ci[xlen * (ylen - 1)].Char.AsciiChar        = '\xC0';  // lower left
+  ci[xlen * (ylen - 1)].Char.AsciiChar = '\xC0';            // lower left
   ci[xlen * (ylen - 1) + xlen - 1].Char.AsciiChar = '\xD9'; // lower right
 
   // Send it all to the screen with 1 WIN32 API call (Windows 95's console mode API support
@@ -517,14 +518,12 @@ void Win32ConsoleIO::SetCursor(int cursorStyle) {
     cursInfo.dwSize = 20;
     cursInfo.bVisible = false;
     SetConsoleCursorInfo(out_, &cursInfo);
-  }
-  break;
+  } break;
   case LocalIO::cursorSolid: {
     cursInfo.dwSize = 100;
     cursInfo.bVisible = true;
     SetConsoleCursorInfo(out_, &cursInfo);
-  }
-  break;
+  } break;
   case LocalIO::cursorNormal:
   default: {
     cursInfo.dwSize = 20;
@@ -545,18 +544,18 @@ void Win32ConsoleIO::ClrEol() {
   FillConsoleOutputAttribute(out_, (WORD)curatr(), len, csbi.dwCursorPosition, &cb);
 }
 
-void Win32ConsoleIO::WriteScreenBuffer(const char *buffer) {
+void Win32ConsoleIO::WriteScreenBuffer(const char* buffer) {
   CHAR_INFO ci[2000];
-  const char *p = buffer;
+  const char* p = buffer;
 
   for (int i = 0; i < 2000; i++) {
     ci[i].Char.AsciiChar = *p++;
-    ci[i].Attributes     = *p++;
+    ci[i].Attributes = *p++;
   }
 
-  COORD pos = { 0, 0};
-  COORD size = { 80, 25 };
-  SMALL_RECT rect = { 0, 0, 79, 24 };
+  COORD pos = {0, 0};
+  COORD size = {80, 25};
+  SMALL_RECT rect = {0, 0, 79, 24};
 
   WriteConsoleOutput(out_, ci, size, pos, &rect);
 }
@@ -568,7 +567,7 @@ int Win32ConsoleIO::GetDefaultScreenBottom() const noexcept {
 }
 
 bool HasKeyBeenPressed(HANDLE in) {
-  DWORD num_events;  // NumPending
+  DWORD num_events; // NumPending
   GetNumberOfConsoleInputEvents(in, &num_events);
   if (num_events == 0) {
     return false;
@@ -586,17 +585,17 @@ bool HasKeyBeenPressed(HANDLE in) {
       if (!input[i].Event.KeyEvent.bKeyDown) {
         continue;
       }
-      if (input[i].Event.KeyEvent.wVirtualKeyCode == VK_SHIFT   ||
+      if (input[i].Event.KeyEvent.wVirtualKeyCode == VK_SHIFT ||
           input[i].Event.KeyEvent.wVirtualKeyCode == VK_CONTROL ||
           input[i].Event.KeyEvent.wVirtualKeyCode == VK_MENU) {
         continue;
       }
       if (input[i].Event.KeyEvent.dwControlKeyState & LEFT_ALT_PRESSED ||
           input[i].Event.KeyEvent.dwControlKeyState & RIGHT_ALT_PRESSED) {
-        //VLOG(3) << "ALT KEY uchar=" << input[i].Event.KeyEvent.uChar.AsciiChar << "} ";
-      } 
-      //VLOG(3) << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode=" 
-      //          << input[i].Event.KeyEvent.wVirtualScanCode << ", char=" 
+        // VLOG(3) << "ALT KEY uchar=" << input[i].Event.KeyEvent.uChar.AsciiChar << "} ";
+      }
+      // VLOG(3) << "{KeyCode=" << input[i].Event.KeyEvent.wVirtualKeyCode << "; ScanCode="
+      //          << input[i].Event.KeyEvent.wVirtualScanCode << ", char="
       //          << input[i].Event.KeyEvent.uChar.AsciiChar << "} ";
       return true;
     }
@@ -607,7 +606,7 @@ bool HasKeyBeenPressed(HANDLE in) {
 // Use _getwch to work around https://github.com/wwivbbs/wwiv/issues/1113
 unsigned char GetKeyboardChar() { return static_cast<unsigned char>(_getwch()); }
 
-static int GetEditLineStringLength(const char *text) {
+static int GetEditLineStringLength(const char* text) {
   int i = strlen(text);
   while (i >= 0 && (/*text[i-1] == 32 ||*/ static_cast<unsigned char>(text[i - 1]) == 176)) {
     --i;
@@ -615,9 +614,9 @@ static int GetEditLineStringLength(const char *text) {
   return i;
 }
 
-void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_keys,
-    int *returncode, const char *pszAllowedSet) {
-  
+void Win32ConsoleIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys,
+                              int* returncode, const char* pszAllowedSet) {
+
   int oldatr = curatr();
   int cx = WhereX();
   int cy = WhereY();
@@ -677,9 +676,9 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
       case KEY_DELETE:
         if (allowed_keys != AllowedKeys::SET) {
           for (int i = pos; i < len; i++) {
-            pszInOutText[i] = pszInOutText[ i + 1 ];
+            pszInOutText[i] = pszInOutText[i + 1];
           }
-          pszInOutText[ len - 1 ] = static_cast<unsigned char>(176);
+          pszInOutText[len - 1] = static_cast<unsigned char>(176);
           PutsXY(cx, cy, pszInOutText);
           GotoXY(cx + pos, cy);
         }
@@ -711,15 +710,16 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
             }
           }
         }
-        if ((pos < len) 
-            && ((allowed_keys == AllowedKeys::ALL) || (allowed_keys == AllowedKeys::UPPER_ONLY)
-            || (allowed_keys == AllowedKeys::SET) 
-            || ((allowed_keys == AllowedKeys::NUM_ONLY) && (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
+        if ((pos < len) &&
+            ((allowed_keys == AllowedKeys::ALL) || (allowed_keys == AllowedKeys::UPPER_ONLY) ||
+             (allowed_keys == AllowedKeys::SET) ||
+             ((allowed_keys == AllowedKeys::NUM_ONLY) &&
+              (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
           if (insert) {
             for (int i = len - 1; i > pos; i--) {
               pszInOutText[i] = pszInOutText[i - 1];
             }
-            pszInOutText[ pos++ ] = ch;
+            pszInOutText[pos++] = ch;
             PutsXY(cx, cy, pszInOutText);
             GotoXY(cx + pos, cy);
           } else {
@@ -744,7 +744,7 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
           GotoXY(cx, cy);
           break;
         case CE:
-          pos = GetEditLineStringLength(pszInOutText);   // len;
+          pos = GetEditLineStringLength(pszInOutText); // len;
           GotoXY(cx + pos, cy);
           break;
         case BACKSPACE:
@@ -761,9 +761,9 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
               int nStringLen = GetEditLineStringLength(pszInOutText);
               pos--;
               if (pos == (nStringLen - 1)) {
-                pszInOutText[ pos ] = static_cast<unsigned char>(176);
+                pszInOutText[pos] = static_cast<unsigned char>(176);
               } else {
-                pszInOutText[ pos ] = SPACE;
+                pszInOutText[pos] = SPACE;
               }
               PutsXY(cx, cy, pszInOutText);
               GotoXY(cx + pos, cy);
@@ -783,7 +783,7 @@ void Win32ConsoleIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_k
 
   char szFinishedString[260];
   snprintf(szFinishedString, sizeof(szFinishedString), "%-255s", pszInOutText);
-  szFinishedString[ len ] = '\0';
+  szFinishedString[len] = '\0';
   GotoXY(cx, cy);
   curatr(oldatr);
   FastPuts(szFinishedString);

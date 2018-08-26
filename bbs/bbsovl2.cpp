@@ -108,15 +108,15 @@ void OnlineUserEditor() {
   a()->localIO()->PutsXYA(wx + 36, wy + 2, 3, StrCat(" Download AR: ", dar));
   a()->localIO()->PutsXYA(wx + 2, wy + 3, 3, StrCat("   User Exemptions: ", exempt));
   a()->localIO()->PutsXYA(wx + 36, wy + 3, 3, StrCat("Restrictions: ", restrict));
-  a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: %s", sysopsub));
-  a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: %s", banktime));
-  a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: %s", ass));
-  a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: %s", gold));
-  a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: %s", uk));
-  a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: %s", dk));
-  a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: %s", up));
-  a()->localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: %s", down));
-  a()->localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: %s", posts));
+  a()->localIO()->PutsXYA(wx + 2, wy + 5, 3, StrCat("         Sysop Sub: ", sysopsub));
+  a()->localIO()->PutsXYA(wx + 36, wy + 5, 3, StrCat("   Time Bank: ", banktime));
+  a()->localIO()->PutsXYA(wx + 2, wy + 6, 3, StrCat("        Ass Points: ", ass));
+  a()->localIO()->PutsXYA(wx + 36, wy + 6, 3, StrCat(" Gold Points: ", gold));
+  a()->localIO()->PutsXYA(wx + 2, wy + 8, 3, StrCat("       KB Uploaded: ", uk));
+  a()->localIO()->PutsXYA(wx + 35, wy + 8, 3, StrCat("KB Downloaded: ", dk));
+  a()->localIO()->PutsXYA(wx + 2, wy + 9, 3, StrCat("    Files Uploaded: ", up));
+  a()->localIO()->PutsXYA(wx + 32, wy + 9, 3, StrCat("Files Downloaded: ", down));
+  a()->localIO()->PutsXYA(wx + 2, wy + 10, 3, StrCat("   Messages Posted: ", posts));
   a()->localIO()->PutsXYA(wx + 32, wy + 10, 3, StrCat("Number of Logons: ", logons));
   a()->localIO()->PutsXYA(wx + 2, wy + 12, 3, StrCat("Note: ", a()->user()->GetNote()));
   a()->localIO()->PutsXYA(wx + 1, wy + 14, 31,
