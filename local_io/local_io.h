@@ -70,8 +70,6 @@ public:
   virtual void Puts(const std::string& text) = 0;
   virtual void PutsXY(int x, int y, const std::string& text) = 0;
   virtual void PutsXYA(int x, int y, int attr, const std::string& text) = 0;
-  virtual int PrintfXY(int x, int y, const char* formatted_text, ...) = 0;
-  virtual int PrintfXYA(int x, int y, int attr, const char* formatted_text, ...) = 0;
   virtual void set_protect(int l) = 0;
   virtual void savescreen() = 0;
   virtual void restorescreen() = 0;

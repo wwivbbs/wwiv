@@ -81,7 +81,7 @@ using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 // Local Functions
-static char* pszScreenBuffer = nullptr;
+static std::unique_ptr<char[]> screen_buffer;
 static int inst_num;
 static constexpr int sysop_usernum = 1;
 
@@ -111,7 +111,7 @@ static void wfc_update() {
 
   get_inst_info(inst_num, &ir);
   a()->users()->readuser_nocache(&u, ir.user);
-  a()->localIO()->PrintfXYA(57, 18, 15, "%-3d", inst_num);
+  a()->localIO()->PutsXYA(57, 18, 15, pad_to(std::to_string(inst_num), 3));
   if (ir.flags & INST_FLAGS_ONLINE) {
     const string unn = a()->names()->UserName(ir.user);
     a()->localIO()->PutsXYA(42, 19, 14, pad_to(unn, 25));
@@ -151,63 +151,60 @@ void WFC::DrawScreen() {
   if (status_ == 0) {
     a()->localIO()->SetCursor(LocalIO::cursorNone);
     a()->Cls();
-    if (pszScreenBuffer == nullptr) {
-      pszScreenBuffer = new char[4000];
+    if (!screen_buffer) {
+      screen_buffer = std::make_unique<char[]>(80 * 25);
       File wfcFile(FilePath(a()->config()->datadir(), WFC_DAT));
       if (!wfcFile.Open(File::modeBinary | File::modeReadOnly)) {
         Clear();
         LOG(FATAL) << wfcFile.full_pathname() << " NOT FOUND.";
         a()->AbortBBS();
       }
-      wfcFile.Read(pszScreenBuffer, 4000);
+      wfcFile.Read(screen_buffer.get(), 80*25);
     }
-    a()->localIO()->WriteScreenBuffer(pszScreenBuffer);
+    a()->localIO()->WriteScreenBuffer(screen_buffer.get());
     const auto title = StringPrintf("Activity and Statistics of %s Node %d",
                                     a()->config()->system_name().c_str(), a()->instance_number());
     a()->localIO()->PutsXYA(1 + ((76 - title.size()) / 2), 4, 15, title);
-    const auto f = fulldate();
-    a()->localIO()->PutsXYA(8, 1, 14, f);
-    auto osVersion = wwiv::os::os_version_string();
-    a()->localIO()->PutsXYA(40, 1, 3, "OS: ");
-    a()->localIO()->PutsXYA(44, 1, 14, osVersion);
-    a()->localIO()->PrintfXYA(21, 6, 14, "%d", status->GetNumCallsToday());
+    a()->localIO()->PutsXYA(8, 1, 14, fulldate());
+    a()->localIO()->PutsXYA(40, 1, 3, StrCat("OS: ", wwiv::os::os_version_string()));
+    a()->localIO()->PutsXYA(21, 6, 14, std::to_string(status->GetNumCallsToday()));
     User sysop{};
     int feedback_waiting = 0;
     if (a()->users()->readuser_nocache(&sysop, sysop_usernum)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    a()->localIO()->PrintfXYA(21, 7, 14, "%d", feedback_waiting);
+    a()->localIO()->PutsXYA(21, 7, 14, std::to_string(feedback_waiting));
     if (nNumNewMessages) {
       a()->localIO()->PutsXYA(29, 7, 3, "New:");
-      a()->localIO()->PrintfXYA(34, 7, 12, "%d", nNumNewMessages);
+      a()->localIO()->PutsXYA(34, 7, 12, std::to_string(nNumNewMessages));
     }
-    a()->localIO()->PrintfXYA(21, 8, 14, "%d", status->GetNumUploadsToday());
-    a()->localIO()->PrintfXYA(21, 9, 14, "%d", status->GetNumMessagesPostedToday());
-    a()->localIO()->PrintfXYA(21, 10, 14, "%d", status->GetNumLocalPosts());
-    a()->localIO()->PrintfXYA(21, 11, 14, "%d", status->GetNumEmailSentToday());
-    a()->localIO()->PrintfXYA(21, 12, 14, "%d", status->GetNumFeedbackSentToday());
-    a()->localIO()->PrintfXYA(21, 13, 14, "%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
-                              100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0);
-    a()->localIO()->PrintfXYA(58, 6, 14, "%s%s", wwiv_version, beta_version);
+    a()->localIO()->PutsXYA(21, 8, 14, std::to_string(status->GetNumUploadsToday()));
+    a()->localIO()->PutsXYA(21, 9, 14, std::to_string(status->GetNumMessagesPostedToday()));
+    a()->localIO()->PutsXYA(21, 10, 14, std::to_string(status->GetNumLocalPosts()));
+    a()->localIO()->PutsXYA(21, 11, 14, std::to_string(status->GetNumEmailSentToday()));
+    a()->localIO()->PutsXYA(21, 12, 14, std::to_string(status->GetNumFeedbackSentToday()));
+    a()->localIO()->PutsXYA(21, 13, 14, StringPrintf("%d Mins (%.1f%%)", status->GetMinutesActiveToday(),
+                              100.0 * static_cast<float>(status->GetMinutesActiveToday()) / 1440.0));
+    a()->localIO()->PutsXYA(58, 6, 14, StrCat(wwiv_version, beta_version));
 
-    a()->localIO()->PrintfXYA(58, 7, 14, "%d", status->GetNetworkVersion());
-    a()->localIO()->PrintfXYA(58, 8, 14, "%d", status->GetNumUsers());
-    a()->localIO()->PrintfXYA(58, 9, 14, "%ld", status->GetCallerNumber());
+    a()->localIO()->PutsXYA(58, 7, 14, std::to_string(status->GetNetworkVersion()));
+    a()->localIO()->PutsXYA(58, 8, 14, std::to_string(status->GetNumUsers()));
+    a()->localIO()->PutsXYA(58, 9, 14, std::to_string(status->GetCallerNumber()));
     if (status->GetDays()) {
-      a()->localIO()->PrintfXYA(58, 10, 14, "%.2f",
+      a()->localIO()->PutsXYA(58, 10, 14, StringPrintf("%.2f",
                                 static_cast<float>(status->GetCallerNumber()) /
-                                    static_cast<float>(status->GetDays()));
+                                    static_cast<float>(status->GetDays())));
     } else {
       a()->localIO()->PutsXYA(58, 10, 14, "N/A");
     }
-    a()->localIO()->PrintfXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
+    a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
     get_inst_info(a()->instance_number(), &ir);
     if (ir.user < a()->config()->config()->maxusers && ir.user > 0) {
       const string unn = a()->names()->UserName(ir.user);
-      a()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", unn.c_str());
+      a()->localIO()->PutsXYA(33, 16, 14, pad_to(unn, 20));
     } else {
-      a()->localIO()->PrintfXYA(33, 16, 14, "%-20.20s", "Nobody");
+      a()->localIO()->PutsXYA(33, 16, 14, pad_to("Nobody", 20));
     }
 
     status_ = 1;

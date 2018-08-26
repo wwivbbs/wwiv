@@ -53,6 +53,11 @@ std::string input_filename(const std::string& orig_text, int max_length);
 /**
  * Inputs full file path up to length max_length.
  */
+std::string input_path(int max_length);
+
+/**
+ * Inputs full file path up to length max_length.
+ */
 std::string input_path(const std::string& orig_text, int max_length);
 
 /**

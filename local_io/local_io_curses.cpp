@@ -178,29 +178,6 @@ void CursesLocalIO::FastPuts(const string& text) {
   window_->Puts(text);
 }
 
-int CursesLocalIO::PrintfXY(int x, int y, const char *formatted_text, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-  PutsXY(x, y, szBuffer);
-  return nNumWritten;
-}
-
-int CursesLocalIO::PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-
-  PutsXYA(x, y, nAttribute, szBuffer);
-  return nNumWritten;
-}
-
 void CursesLocalIO::set_protect(int l) {
   SetTopLine(l);
 }

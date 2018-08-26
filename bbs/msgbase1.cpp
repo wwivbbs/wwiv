@@ -518,7 +518,7 @@ void remove_post() {
   }
   bout << "\r\n|#2Remove which? ";
   string postNumberToRemove = input(5);
-  int postnum = to_number<int>(postNumberToRemove);
+  auto postnum = input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
   wwiv::bbs::OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {
     if (((get_post(postnum)->ownersys == 0) && (get_post(postnum)->owneruser == a()->usernum)) ||

@@ -61,8 +61,7 @@ class CursesWindow : public UIWindow {
   void Putch(uint32_t ch) override;
   void Puts(const std::string& text) override;
   void PutsXY(int x, int y, const std::string& text) override;
-  void PrintfXY(int x, int y, const char* format, ...) override;
-
+  
   void SetColor(SchemeId id) override;
 
   void* window() const { return window_; }

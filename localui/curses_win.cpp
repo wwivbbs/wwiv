@@ -147,16 +147,6 @@ void CursesWindow::PutsXY(int x, int y, const std::string& text) {
   Refresh();
 }
 
-void CursesWindow::PrintfXY(int x, int y, const char* format, ...) {
-  va_list ap;
-  char buffer[VSN_BUFFER_SIZE];
-
-  va_start(ap, format);
-  vsnprintf(buffer, sizeof(buffer), format, ap);
-  va_end(ap);
-  PutsXY(x, y, buffer);
-}
-
 void CursesWindow::SetColor(SchemeId id) {
   AttrSet(color_scheme_->GetAttributesForScheme(id));
   set_current_scheme_id(id);

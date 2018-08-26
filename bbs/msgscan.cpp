@@ -136,14 +136,13 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
   if (user_input[0] == 'O' && (so() || lcs())) {
     show_files("*.frm", a()->config()->gfilesdir().c_str());
     bout << "|#2Which form letter: ";
-    char szFileName[MAX_PATH];
-    input(szFileName, 8, true);
-    if (!szFileName[0]) {
+    auto fn = input_filename("", 8);
+    if (fn.empty()) {
       return;
     }
-    auto full_pathname = FilePath(a()->config()->gfilesdir(), StrCat(szFileName, ".frm"));
+    auto full_pathname = FilePath(a()->config()->gfilesdir(), StrCat(fn, ".frm"));
     if (!File::Exists(full_pathname)) {
-      full_pathname = FilePath(a()->config()->gfilesdir(), StrCat("form", szFileName, ".msg"));
+      full_pathname = FilePath(a()->config()->gfilesdir(), StrCat("form", fn, ".msg"));
     }
     if (File::Exists(full_pathname)) {
       LoadFileIntoWorkspace(full_pathname, true);

@@ -43,9 +43,7 @@ public:
   void Puts(const std::string& s) override;
   void PutsXY(int x, int y, const std::string& text) override;
   void PutsXYA(int x, int y, int a, const std::string& text) override;
-  int PrintfXY(int x, int y, const char *formatted_text, ...) override;
-  int PrintfXYA(int x, int y, int nAttribute, const char *formatted_text, ...) override;
-
+  
   void set_protect(int l) override {}
   void savescreen() override {}
   void restorescreen() override {}

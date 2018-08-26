@@ -528,13 +528,13 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
     }
   }
   auto s1 = to_string(bytes_to_k(ncn->bytes_waiting()));
-  a()->localIO()->PrintfXYA(58, 17, color, "%-10.16s", s1.c_str());
+  a()->localIO()->PutsXYA(58, 17, color, s1);
 
   s1 = to_string(bytes_to_k(ncn->bytes_received()));
-  a()->localIO()->PrintfXYA(23, 17, color, "%-10.16s", s1.c_str());
+  a()->localIO()->PutsXYA(23, 17, color, s1);
 
   s1 = to_string(bytes_to_k(ncn->bytes_sent()));
-  a()->localIO()->PrintfXYA(23, 18, color, "%-10.16s", s1.c_str());
+  a()->localIO()->PutsXYA(23, 18, color, s1);
 
   if (ncn->firstcontact() > 0) {
     s1 = StrCat(to_string((tCurrentTime - ncn->firstcontact()) / SECONDS_PER_HOUR), ":");
@@ -549,7 +549,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   } else {
     s1 = "NEVER";
   }
-  a()->localIO()->PrintfXYA(23, 16, color, "%-17.16s", s1.c_str());
+  a()->localIO()->PutsXYA(23, 16, color, s1);
 
   if (ncn->lastcontactsent() > 0) {
     s1 = StrCat(to_string((tCurrentTime - ncn->lastcontactsent()) / SECONDS_PER_HOUR), ":");
@@ -564,7 +564,7 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   } else {
     s1 = "NEVER";
   }
-  a()->localIO()->PrintfXYA(58, 16, color, "%-17.16s", s1.c_str());
+  a()->localIO()->PutsXYA(58, 16, color, s1);
 
   if (ncn->lasttry() > 0) {
     string tmp = to_string((tCurrentTime - ncn->lasttry()) / SECONDS_PER_HOUR);
@@ -580,20 +580,20 @@ static void print_call(uint16_t sn, const net_networks_rec& net) {
   } else {
     s1 = "NEVER";
   }
-  a()->localIO()->PrintfXYA(58, 15, color, "%-17.16s", s1.c_str());
-  a()->localIO()->PrintfXYA(23, 15, color, "%-16u", ncn->numcontacts());
-  a()->localIO()->PrintfXYA(41, 3, color, "%-30.30s", csne->name);
+  a()->localIO()->PutsXYA(58, 15, color, s1);
+  a()->localIO()->PutsXYA(23, 15, color, pad_to(std::to_string(ncn->numcontacts()), 16));
+  a()->localIO()->PutsXYA(41, 3, color, pad_to(csne->name, 30));
   auto binkp_node = binkp.binkp_session_config_for(csne->sysnum);
   string hostname = csne->phone;
-  string speed = StrCat(to_string(csne->speed), " BPS");
+  auto speed = StrCat(to_string(csne->speed), " BPS");
   if (binkp_node != nullptr) {
     // Use host:port is we have it.
     hostname = StrCat(binkp_node->host, ":", binkp_node->port);
     speed = "BinkP";
   }
-  a()->localIO()->PrintfXYA(23, 19, color, "%-30.30s", hostname.c_str());
-  a()->localIO()->PrintfXYA(58, 18, color, "%-10.16s", speed.c_str());
-  a()->localIO()->PrintfXYA(14, 3, color, "%-11.16s", a()->network_name());
+  a()->localIO()->PutsXYA(23, 19, color, pad_to(hostname, 30));
+  a()->localIO()->PutsXYA(58, 18, color, pad_to(speed, 10));
+  a()->localIO()->PutsXYA(14, 3, color, pad_to(a()->network_name(), 16));
 }
 
 static void fill_call(int color, int row, const std::vector<CalloutEntry>& entries) {
@@ -694,7 +694,7 @@ static std::pair<uint16_t, int> ansicallout() {
   fill_call(color4, rownum, entries);
   int x = 0;
   int y = 0;
-  a()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
+  a()->localIO()->PutsXYA(6, 5, color2, StringPrintf("%-5u", entries[pos].node));
   print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
   char ch = 0;
 
@@ -720,40 +720,40 @@ static std::pair<uint16_t, int> ansicallout() {
       switch (ch) {
       case RARROW: // right arrow
         if ((pos < size_int(entries) - 1) && (x < 63)) {
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
           pos++;
           x += 7;
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case LARROW: // left arrow
         if (x > 0) {
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
           pos--;
           x -= 7;
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case UPARROW: // up arrow
         if (y > 0) {
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
           pos -= 10;
           y--;
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else if (rownum > 0) {
           pos -= 10;
           rownum--;
           fill_call(color4, rownum, entries);
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case DNARROW: // down arrow
         if ((y < 5) && (pos + 10 < size_int(entries))) {
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
           pos += 10;
           y++;
         } else if ((rownum + 6) * 10 < size_int(entries)) {
@@ -765,7 +765,7 @@ static std::pair<uint16_t, int> ansicallout() {
             --y;
           }
         }
-        a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+        a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
         print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         break;
       case HOME: // home
@@ -775,15 +775,15 @@ static std::pair<uint16_t, int> ansicallout() {
           pos = 0;
           rownum = 0;
           fill_call(color4, rownum, entries);
-          a()->localIO()->PrintfXYA(6, 5, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6, 5, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
       case PAGEUP: // page up
         if (y > 0) {
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
           pos -= 10 * y;
           y = 0;
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else {
           if (rownum > 5) {
@@ -794,20 +794,20 @@ static std::pair<uint16_t, int> ansicallout() {
             rownum = 0;
           }
           fill_call(color4, rownum, entries);
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;
       case PAGEDN: // page down
         if (y < 5) {
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color4, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color4, StringPrintf("%-5u", entries[pos].node));
           pos += 10 * (5 - y);
           y = 5;
           while (pos >= size_int(entries)) {
             pos -= 10;
             --y;
           }
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         } else if ((rownum + 6) * 10 < size_int(entries)) {
           for (int i1 = 0; i1 < 6; i1++) {
@@ -821,7 +821,7 @@ static std::pair<uint16_t, int> ansicallout() {
             pos -= 10;
             --y;
           }
-          a()->localIO()->PrintfXYA(6 + x, 5 + y, color2, "%-5u", entries[pos].node);
+          a()->localIO()->PutsXYA(6 + x, 5 + y, color2, StringPrintf("%-5u", entries[pos].node));
           print_call(entries[pos].node, a()->net_networks[entries[pos].net]);
         }
         break;

@@ -713,27 +713,20 @@ static void modify_mailbox() {
 }
 
 static void optional_lines() {
-  bout << "|#9You may specify your optional lines value from 0-10,\r\n" ;
-  bout << "|#20 |#9being all, |#210 |#9being none.\r\n";
-  bout << "|#2What value? ";
-  string lines = input(2);
-
-  int nNumLines = to_number<int>(lines);
-  if (!lines.empty() && nNumLines >= 0 && nNumLines < 11) {
-    a()->user()->SetOptionalVal(nNumLines);
+  bout << "|#9You may specify your optional lines value from 0-10,\r\n"
+       << "|#20 |#9being all, |#210 |#9being none.\r\n"
+       << "|#2What value? ";
+  auto r = input_number_hotkey(a()->user()->GetOptionalVal(), {'Q'}, 0, 10);
+  if (r.key != 'Q') {
+    a()->user()->SetOptionalVal(r.num);
   }
-
 }
 
 void enter_regnum() {
   bout << "|#7Enter your WWIV registration number, or enter '|#20|#7' for none.\r\n|#0:";
-  auto regnum = input(5, true);
-
-  long lRegNum = to_number<long>(regnum);
-  if (!regnum.empty() && lRegNum >= 0) {
-    a()->user()->SetWWIVRegNumber(lRegNum);
-    changedsl();
-  }
+  auto regnum = input_number(a()->user()->GetWWIVRegNumber());
+  a()->user()->SetWWIVRegNumber(regnum);
+  changedsl();
 }
 
 void defaults(bool& need_menu_reload) {

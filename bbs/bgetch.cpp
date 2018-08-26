@@ -270,7 +270,6 @@ char Output::getkey(bool allow_extended_input) {
       CheckForHangup();
       giveup_timeslice();
       auto dd = steady_clock::now();
-
       auto diff = dd - time_lastchar_pressed;
       if (diff > tv1 && !beepyet) {
         beepyet = true;
@@ -348,12 +347,57 @@ int bgetch_event(numlock_status_t numlock_mode) {
   return bgetch_event(numlock_mode, [](bgetch_timeout_status_t, int) {});
 }
 
+int bgetch_handle_escape(int key) {
+  time_t esc_time1 = time(nullptr);
+  time_t esc_time2 = time(nullptr);
+  do {
+    esc_time2 = time(nullptr);
+    if (bkbhitraw()) {
+      key = static_cast<int>(bout.getkey(true));
+      if (key == OB || key == O) {
+        key = static_cast<int>(bout.getkey(true));
+
+        // Check for a second set of brackets
+        if (key == OB || key == O) {
+          key = static_cast<int>(bout.getkey(true));
+        }
+        return get_command_for_ansi_key(key);
+      } else {
+        return GET_OUT;
+      }
+    }
+  } while (difftime(esc_time2, esc_time1) < 1);
+
+  if (difftime(esc_time2, esc_time1) >= 1) { // if no keys followed ESC
+    return GET_OUT;
+  }
+  return key;
+}
+
+int bgetch_handle_key_translation(int key, numlock_status_t numlock_mode) {
+  if (key == CBACKSPACE) {
+    return COMMAND_DELETE;
+  } else if (key == CV) {
+    return COMMAND_INSERT;
+  } else if (key == RETURN || key == CL) {
+    return EXECUTE;
+  } else if ((key == 0 || key == 224) && a()->localIO()->KeyPressed()) {
+    // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
+    return a()->localIO()->GetChar() + 256;
+  } else if (numlock_mode == numlock_status_t::NOTNUMBERS) {
+    auto ret = get_numpad_command(key);
+    if (ret)
+      return ret;
+  }
+  return key;
+}
+
 int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
   a()->tleft(true);
-  bool beepyet = false;
   resetnsp();
   lastchar_pressed();
 
+  auto beepyet{false};
   auto tv = bout.key_timeout();
   auto tv1 = tv - std::chrono::minutes(1);
 
@@ -379,93 +423,18 @@ int bgetch_event(numlock_status_t numlock_mode, bgetch_timeout_callback_fn cb) {
     if (!bkbhitraw() && !a()->localIO()->KeyPressed()) {
       giveup_timeslice();
       continue;
-    }
-    else if (beepyet) {
+    } else if (beepyet) {
       cb(bgetch_timeout_status_t::CLEAR, 0);
     }
 
     if (!a()->context().incom() || a()->localIO()->KeyPressed()) {
       // Check for local keys
-      int key = a()->localIO()->GetChar();
-      if (key == CBACKSPACE) {
-        return COMMAND_DELETE;
-      }
-      if (key == CV) {
-        return COMMAND_INSERT;
-      }
-      if (key == RETURN || key == CL) {
-        return EXECUTE;
-      }
-      if ((key == 0 || key == 224) && a()->localIO()->KeyPressed()) {
-        // 224 is E0. See https://msdn.microsoft.com/en-us/library/078sfkak(v=vs.110).aspx
-        return a()->localIO()->GetChar() + 256;
-      }
-      else {
-        if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-          auto ret = get_numpad_command(key);
-          if (ret) return ret;
-        }
-        switch (key) {
-        case TAB: return TAB;
-        case ESC: return GET_OUT;
-        default: return key;
-        }
-      }
-      return key;
-    }
-    else if (bkbhitraw()) {
-      int key = static_cast<int>(bout.getkey(true));
-
-      if (key == CBACKSPACE) {
-        return COMMAND_DELETE;
-      }
-      if (key == CV) {
-        return COMMAND_INSERT;
-      }
-      if (key == RETURN || key == CL) {
-        return EXECUTE;
-      }
-      else if (key == ESC) {
-        time_t esc_time1 = time(nullptr);
-        time_t esc_time2 = time(nullptr);
-        do {
-          esc_time2 = time(nullptr);
-          if (bkbhitraw()) {
-            key = static_cast<int>(bout.getkey(true));
-            if (key == OB || key == O) {
-              key = static_cast<int>(bout.getkey(true));
-
-              // Check for a second set of brackets
-              if (key == OB || key == O) {
-                key = static_cast<int>(bout.getkey(true));
-              }
-              return get_command_for_ansi_key(key);
-            }
-            else {
-              return GET_OUT;
-            }
-          }
-        } while (difftime(esc_time2, esc_time1) < 1);
-
-        if (difftime(esc_time2, esc_time1) >= 1) {     // if no keys followed ESC
-          return GET_OUT;
-        }
-        return key;
-      }
-      else {
-        if (!key) {
-          if (a()->localIO()->KeyPressed()) {
-            key = a()->localIO()->GetChar();
-            return (key + 256);
-          }
-        }
-        if (numlock_mode == numlock_status_t::NOTNUMBERS) {
-          auto ret = get_numpad_command(key);
-          if (ret) return ret;
-        }
-      }
-      return key;
+      return bgetch_handle_key_translation(a()->localIO()->GetChar(), numlock_mode);
+    } else if (bkbhitraw()) {
+      auto key = static_cast<int>(bout.getkey(true));
+      return (key == ESC) ? bgetch_handle_escape(key)
+                          : bgetch_handle_key_translation(key, numlock_mode);
     }
   }
-  return 0;                                 // must have hung up
+  return 0; // must have hung up
 }

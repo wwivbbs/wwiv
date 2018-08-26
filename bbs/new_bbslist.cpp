@@ -195,15 +195,12 @@ static void DeleteBbsListEntry() {
 
   ReadBBSList(entries);
   bout << "|#9(|#2Q|#9=|#1Quit|#9) Enter Entry Number to Delete: ";
-  string s = input(4, true);
-  int entry_num = to_number<int>(s);
-  if (entry_num <= 0) {
-    // atoi returns a 0 on "" too.
+  auto r = input_number_hotkey(1, {'Q'}, 1, 9999, false);
+  if (r.key == 'Q' || r.num == 0) {
     return;
   }
-
   for (auto b = std::begin(entries); b != std::end(entries); b++) {
-    if (b->id == entry_num) {
+    if (b->id == r.num) {
       entries.erase(b);
       bout << "|10Entry deleted." << wwiv::endl;
       SaveToJSON(a()->config()->datadir(), BBSLIST_JSON, entries);

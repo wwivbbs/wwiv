@@ -514,9 +514,9 @@ void EditText() {
   write_inst(INST_LOC_TEDIT, 0, INST_FLAGS_NONE);
   bout.nl();
   bout << "|#7Enter Filespec: ";
-  string fileName = input(50);
-  if (!fileName.empty()) {
-    external_text_edit(fileName, "", 500, MSGED_FLAG_NO_TAGLINE);
+  auto fn = input_path(50);
+  if (!fn.empty()) {
+    external_text_edit(fn, "", 500, MSGED_FLAG_NO_TAGLINE);
   }
 }
 

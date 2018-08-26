@@ -330,39 +330,39 @@ void chainedit() {
       break;
     case 'M': {
       bout.nl();
-      bout << "|#2Chain number? ";
-      string s = input(2);
-      int i = to_number<int>(s);
-      if (s[0] != '\0' && i >= 0 && i < size_int(a()->chains)) {
-        modify_chain(i);
+      bout << "|#2(Q=Quit) Chain number? ";
+      auto r = input_number_hotkey(0, {'Q'}, 0, size_int(a()->chains));
+      if (r.key != 'Q')
+      if (r.num < size_int(a()->chains)) {
+        modify_chain(r.num);
       }
     } break;
     case 'I': {
       if (a()->chains.size() < a()->max_chains) {
         bout.nl();
-        bout << "|#2Insert before which chain ('$' for end) : ";
-        int chain = 0;
-        string s = input(2);
-        if (s[0] == '$') {
-          chain =  a()->chains.size();
-        } else {
-          chain = to_number<int>(s);
+        bout << "|#2(Q=Quit) Insert before which chain ('$' for end) : ";
+        auto r = input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains), false);
+        if (r.key == 'Q') {
+          break;
         }
-        if (s[0] != '\0' && chain >= 0 && chain <= size_int(a()->chains)) {
+        auto chain = (r.key == '$') ? size_int(a()->chains) : r.num;
+        if (chain >= 0 && chain <= size_int(a()->chains)) {
           insert_chain(chain);
         }
       }
     } break;
     case 'D': {
       bout.nl();
-      bout << "|#2Delete which chain? ";
-      auto s = input(2);
-      auto i = to_number<int>(s);
-      if (s[0] != '\0' && i >= 0 && i < size_int(a()->chains)) {
+      bout << "|#2(Q=Quit) Delete which chain? ";
+      auto r = input_number_hotkey(0, {'$', 'Q'}, 0, size_int(a()->chains), false);
+      if (r.key == 'Q') {
+        break;
+      }
+      if (r.num >= 0 && r.num < size_int(a()->chains)) {
         bout.nl();
-        bout << "|#5Delete " << a()->chains[i].description << "? ";
+        bout << "|#5Delete " << a()->chains[r.num].description << "? ";
         if (yesno()) {
-          delete_chain(i);
+          delete_chain(r.num);
         }
       }
     } break;

@@ -458,29 +458,29 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
-    localIO()->PrintfXY(0, 0, "%-50s  Activity for %8s:      ", config()->system_name().c_str(),
-                        status->GetLastDate().c_str());
+    localIO()->PutsXY(0, 0, StringPrintf("%-50s  Activity for %8s:      ", config()->system_name().c_str(),
+                        status->GetLastDate().c_str()));
 
-    localIO()->PrintfXY(
-        0, 1, "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
+    localIO()->PutsXY(
+        0, 1, StringPrintf("Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
         status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
-        status->GetNumLocalPosts());
+        status->GetNumLocalPosts()));
 
     const string username_num = names()->UserName(usernum);
-    localIO()->PrintfXY(0, 2, "%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
+    localIO()->PutsXY(0, 2, StringPrintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
                         username_num.c_str(), status->GetMinutesActiveToday(),
                         static_cast<int>(10 * status->GetMinutesActiveToday() / 144),
-                        status->GetNumEmailSentToday());
+                        status->GetNumEmailSentToday()));
 
     User sysop{};
     int feedback_waiting = 0;
     if (users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PrintfXY(
-        0, 3, "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
+    localIO()->PutsXY(
+        0, 3, StringPrintf("SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
         user()->GetSl(), user()->GetDsl(), feedback_waiting, status->GetNumUploadsToday(),
-        status->GetNumFeedbackSentToday());
+        status->GetNumFeedbackSentToday()));
   } break;
   case LocalIO::topdataUser: {
     to_char_array(rst, restrict_string);
@@ -511,11 +511,12 @@ void Application::UpdateTopScreen() {
       lo = StringPrintf("Today:%2d", user()->GetTimesOnToday());
     }
 
-    const string username_num = names()->UserName(usernum);
-    localIO()->PrintfXYA(0, 0, bout.curatr(), "%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u",
-                         username_num.c_str(), user()->GetNumMailWaiting(),
-                         user()->GetFilesUploaded(), user()->GetUploadK(), user()->GetSl(),
-                         user()->GetNumLogons(), user()->GetNumMessagesPosted());
+    const auto username_num = names()->UserName(usernum);
+    auto line =
+        StringPrintf("%-35s W=%3u UL=%4u/%6lu SL=%3u LO=%5u PO=%4u", username_num.c_str(),
+                     user()->GetNumMailWaiting(), user()->GetFilesUploaded(), user()->GetUploadK(),
+                     user()->GetSl(), user()->GetNumLogons(), user()->GetNumMessagesPosted());
+    localIO()->PutsXYA(0, 0, bout.curatr(), line);
 
     string callsign_or_regnum = user()->GetCallsign();
     if (user()->GetWWIVRegNumber()) {
@@ -525,23 +526,23 @@ void Application::UpdateTopScreen() {
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
-    localIO()->PrintfXY(0, 1, "%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
+    localIO()->PutsXY(0, 1, StringPrintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
                         user()->GetRealName(), user()->GetVoicePhoneNumber(),
                         callsign_or_regnum.c_str(), user()->GetFilesDownloaded(),
                         user()->GetDownloadK(), user()->GetDsl(), minutes_used.count(),
-                        user()->GetNumEmailSent() + user()->GetNumNetEmailSent());
+                        user()->GetNumEmailSent() + user()->GetNumNetEmailSent()));
 
-    localIO()->PrintfXY(0, 2, "ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
-                        user()->GetExempt(), lo.c_str(), user()->GetNumFeedbackSent());
+    localIO()->PutsXY(0, 2, StringPrintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
+                        user()->GetExempt(), lo.c_str(), user()->GetNumFeedbackSent()));
 
     User sysop{};
     int feedback_waiting = 0;
     if (users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PrintfXY(0, 3, "%-40.40s %c %2u %-16.16s           FW= %3u",
+    localIO()->PutsXY(0, 3, StringPrintf("%-40.40s %c %2u %-16.16s           FW= %3u",
                         user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
-                        ctypes(user()->GetComputerType()).c_str(), feedback_waiting);
+                        ctypes(user()->GetComputerType()).c_str(), feedback_waiting));
 
     if (chatcall_) {
       localIO()->PutsXY(0, 4, chat_reason_);

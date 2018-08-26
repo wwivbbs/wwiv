@@ -71,19 +71,19 @@ static void show_user(EditItems* items, userrec* user) {
   }
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
   int y = 2;
-  items->window()->PrintfXY(COL2_POSITION, y++, "First on     : %s", user->firston);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Last on      : %s", user->laston);
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("First on     : ", user->firston));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Last on      : ", user->laston));
   y++;
-  items->window()->PrintfXY(COL2_POSITION, y++, "Total Calls  : %d", user->logons);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Today Calls  : %d", user->ontoday);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Bad Logins   : %d", user->illegal);
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Total Calls  : ", user->logons));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Today Calls  : ", user->ontoday));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Bad Logins   : ", user->illegal));
   y++;
-  items->window()->PrintfXY(COL2_POSITION, y++, "Num of Posts : %d", user->msgpost);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Num of Emails: %d", user->emailsent);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Feedback Sent: %d", user->feedbacksent);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Msgs Waiting : %d", user->waiting);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Netmail Sent : %d", user->emailnet);
-  items->window()->PrintfXY(COL2_POSITION, y++, "Deleted Posts: %d", user->deletedposts);
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Num of Posts : ", user->msgpost));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Num of Emails: ", user->emailsent));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Feedback Sent: ", user->feedbacksent));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Msgs Waiting : ", user->waiting));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Netmail Sent : ", user->emailnet));
+  items->window()->PutsXY(COL2_POSITION, y++, StrCat("Deleted Posts: ", user->deletedposts));
 
   items->Display();
 }

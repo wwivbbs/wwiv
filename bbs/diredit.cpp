@@ -46,15 +46,13 @@ using namespace wwiv::strings;
 // Local Function Prototypes
 //
 
-void dirdata(int n, char *s);
-void showdirs();
 void modify_dir(int n);
 void swap_dirs(int dir1, int dir2);
 void insert_dir(int n);
 void delete_dir(int n);
 
 
-void dirdata(int n, char *s) {
+static std::string dirdata(int n) {
   char x = 0;
   directoryrec r = a()->directories[n];
   if (r.dar == 0) {
@@ -66,30 +64,26 @@ void dirdata(int n, char *s) {
       }
     }
   }
-  sprintf(s, "|#2%4d |#9%1c   |#1%-39.39s |#2%-8s |#9%-3d %-3d %-3d %-9.9s",
-          n, x, stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles,
-          r.path);
+  return StringPrintf("|#2%4d |#9%1c   |#1%-39.39s |#2%-8s |#9%-3d %-3d %-3d %-9.9s", n, x,
+                      stripcolors(r.name), r.filename, r.dsl, r.age, r.maxfiles, r.path);
 }
 
-void showdirs() {
-  char s[180], s1[21];
-
+static void showdirs() {
   bout.cls();
   bout << "|#7(|#1File Areas Editor|#7) Enter Substring: ";
-  input(s1, 20, true);
+  auto pattern = input_text(20);
   bool abort = false;
   bout.bpla("|#2##   DAR Area Description                        FileName DSL AGE FIL PATH", &abort);
   bout.bpla("|#7==== --- ======================================= -------- === --- === ---------", &abort);
   for (size_t i = 0; i < a()->directories.size() && !abort; i++) {
-    sprintf(s, "%s %s", a()->directories[i].name, a()->directories[i].filename);
-    if (strcasestr(s, s1)) {
-      dirdata(i, s);
-      bout.bpla(s, &abort);
+    auto text = StrCat(a()->directories[i].name, " ", a()->directories[i].filename);
+    if (strcasestr(text.c_str(), pattern.c_str())) {
+      bout.bpla(dirdata(i), &abort);
     }
   }
 }
 
-static string GetAttributeString(directoryrec r) {
+static string GetAttributeString(const directoryrec& r) {
   if (r.dar != 0) {
     for (int i = 0; i < 16; i++) {
       if ((1 << i) & r.dar) {
@@ -165,10 +159,10 @@ void modify_dir(int n) {
     case 'C':
     {
       bout.nl();
-      bout << "|#9Enter new path, optionally with drive specifier.\r\n" <<
-        "|#9No backslash on end.\r\n\n" <<
-        "|#9The current path is:\r\n" <<
-        "|#1" << r.path << wwiv::endl << wwiv::endl;
+      bout << "|#9Enter new path, optionally with drive specifier.\r\n"
+           << "|#9No backslash on end.\r\n\n"
+           << "|#9The current path is:\r\n"
+           << "|#1" << r.path << wwiv::endl << wwiv::endl;
       bout << " \b";
       auto s = input_filename(r.path, 79);
       if (!s.empty()) {
@@ -423,12 +417,12 @@ void dlboardedit() {
     case 'M':
     {
       bout.nl();
-      bout << "|#2Dir number? ";
-      input(s, 4);
-      auto i = to_number<int>(s);
-      if ((s[0] != 0) && (i >= 0) && (i < size_int(a()->directories))) {
-        modify_dir(i);
+      bout << "|#2(Q=Quit) Dir number? ";
+      auto r = input_number_hotkey(0, {'Q'}, 0, size_int(a()->directories));
+      if (r.key == 'Q') {
+        break;
       }
+      modify_dir(r.num);
     } break;
     case 'S':
       if (a()->directories.size() < a()->config()->config()->max_dirs) {

@@ -29,8 +29,6 @@
 using namespace wwiv::strings;
 
 void HopSub() {
-  char s1[81], s2[81];
-
   bool abort = false;
   int nc = 0;
   while (a()->uconfsub[nc].confnum != -1) {
@@ -46,8 +44,8 @@ void HopSub() {
   if (okansi()) {
     bout.newline = false;
   }
-  input(s1, 40, true);
-  if (!s1[0]) {
+  auto partial = ToStringUpperCase(input_text(40));
+  if (partial.empty()) {
     return;
   }
   if (!okansi()) {
@@ -65,10 +63,8 @@ void HopSub() {
     uint16_t i = 0;
     while ((i < a()->subs().subs().size())
             && (a()->usub[i].subnum != -1) && !abort) {
-      to_char_array(s2, a()->subs().sub(a()->usub[i].subnum).name);
-      for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
-        ;
-      if (strstr(s2, s1) != nullptr) {
+      auto subname = ToStringUpperCase(a()->subs().sub(a()->usub[i].subnum).name);
+      if (subname.find(partial) != std::string::npos) {
         if (okansi()) {
           bout.clear_whole_line();
         }
@@ -103,7 +99,6 @@ void HopSub() {
 
 
 void HopDir() {
-  char s1[81], s2[81];
   bool abort = false;
 
   int nc = 0;
@@ -120,8 +115,8 @@ void HopDir() {
   if (okansi()) {
     bout.newline = false;
   }
-  input(s1, 20, true);
-  if (!s1[0]) {
+  auto partial = ToStringUpperCase(input_text(20));
+  if (partial.empty()) {
     return;
   }
   if (!okansi()) {
@@ -129,8 +124,8 @@ void HopDir() {
   }
 
   int c = 0;
-  int oc = a()->GetCurrentConferenceFileArea();
-  int os = a()->current_user_dir().subnum;
+  auto oc = a()->GetCurrentConferenceFileArea();
+  auto os = a()->current_user_dir().subnum;
 
   while (c < nc && !abort) {
     if (okconf(a()->user())) {
@@ -138,10 +133,8 @@ void HopDir() {
     }
     uint16_t i = 0;
     while ((i < a()->directories.size()) && (a()->udir[i].subnum != -1) && (!abort)) {
-      strcpy(s2, a()->directories[a()->udir[i].subnum].name);
-      for (int i2 = 0; (s2[i2] = upcase(s2[i2])) != 0; i2++)
-        ;
-      if (strstr(s2, s1) != nullptr) {
+      auto subname = ToStringUpperCase(a()->directories[a()->udir[i].subnum].name);
+      if (subname.find(partial) != std::string::npos) {
         if (okansi()) {
           bout.clear_whole_line();
         } else {

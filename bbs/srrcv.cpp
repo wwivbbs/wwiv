@@ -228,9 +228,9 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
   int i = 0;
   do {
     bln = 255;
-    a()->localIO()->PrintfXY(69, 4, "%d  ", nConsecErrors);
-    a()->localIO()->PrintfXY(69, 5, "%d", nTotalErrors);
-    a()->localIO()->PrintfXY(65, 3, "%ld - %ldk", pos / 128 + 1, pos / 1024 + 1);
+    a()->localIO()->PutsXY(69, 4, StringPrintf("%d  ", nConsecErrors));
+    a()->localIO()->PutsXY(69, 5, std::to_string(nTotalErrors));
+    a()->localIO()->PutsXY(65, 3, StringPrintf("%ld - %ldk", pos / 128 + 1, pos / 1024 + 1));
     const string t = ctim(std::lround((reallen - pos) * tpb));
     if (reallen) {
       a()->localIO()->PutsXY(65, 1, t);
@@ -246,7 +246,8 @@ void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
         }
         x[i3 - i1] = '\0';
         reallen = to_number<long>(x);
-        a()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (reallen + 127) / 128, bytes_to_k(reallen));
+        a()->localIO()->PutsXY(
+            65, 2, StringPrintf("%ld - %ldk", (reallen + 127) / 128, bytes_to_k(reallen)));
         while ((b[i1] != SPACE) && (i1 < 64)) {
           ++i1;
         }

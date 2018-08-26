@@ -148,8 +148,8 @@ char send_b(File &file, long pos, int block_type, char byBlockNumber, bool *use_
       if (nNumErrors >= 9) {
         done = true;
       }
-      a()->localIO()->PrintfXY(69, 4, "%d", nNumErrors);
-      a()->localIO()->PrintfXY(69, 5, "%d", *terr);
+      a()->localIO()->PutsXY(69, 4, std::to_string(nNumErrors));
+      a()->localIO()->PutsXY(69, 5, std::to_string(*terr));
     }
   } while (!done && !a()->hangup_ && !*abort);
 
@@ -231,7 +231,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
   a()->localIO()->PutsXY(52, 6,
                                        "\xC0\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4\xC4");
   a()->localIO()->PutsXY(65, 0, stripfn(pszWorkingFileName));
-  a()->localIO()->PrintfXY(65, 2, "%ld - %ldk", (file_size + 127) / 128, bytes_to_k(file_size));
+  a()->localIO()->PutsXY(65, 2, StringPrintf("%ld - %ldk", (file_size + 127) / 128, bytes_to_k(file_size)));
 
   if (!okstart(&use_crc, &abort)) {
     abort = true;
@@ -252,7 +252,7 @@ void xymodem_send(const char *file_name, bool *sent, double *percent, bool use_c
     if ((file_size - cp) < 128L) {
       bUse1kBlocks = false;
     }
-    a()->localIO()->PrintfXY(65, 3, "%ld - %ldk", cp / 128 + 1, cp / 1024 + 1);
+    a()->localIO()->PutsXY(65, 3, StringPrintf("%ld - %ldk", cp / 128 + 1, cp / 1024 + 1));
     const string t = ctim(std::lround((file_size - cp) * tpb));
     a()->localIO()->PutsXY(65, 1, t);
     a()->localIO()->PutsXY(69, 4, "0");

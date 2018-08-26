@@ -310,29 +310,6 @@ void Win32ConsoleIO::FastPuts(const string& text) {
   cursor_pos_.X = cursor_pos_.X + static_cast<int16_t>(cb);
 }
 
-int  Win32ConsoleIO::PrintfXY(int x, int y, const char *formatted_text, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-  PutsXY(x, y, szBuffer);
-  return nNumWritten;
-}
-
-int  Win32ConsoleIO::PrintfXYA(int x, int y, int a, const char *formatted_text, ...) {
-  va_list ap;
-  char szBuffer[1024];
-
-  va_start(ap, formatted_text);
-  int nNumWritten = vsnprintf(szBuffer, sizeof(szBuffer), formatted_text, ap);
-  va_end(ap);
-
-  PutsXYA(x, y, a, szBuffer);
-  return nNumWritten;
-}
-
 void Win32ConsoleIO::set_protect(int l) {
 // set_protect sets the number of lines protected at the top of the screen.
   if (static_cast<size_t>(l) != GetTopLine()) {

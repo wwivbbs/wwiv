@@ -85,15 +85,14 @@ int finduser1(const string& searchString) {
   if (searchString.empty()) {
     return 0;
   }
-  int nFindUserNum = finduser(searchString);
-  if (nFindUserNum > 0) {
-    return nFindUserNum;
+  auto un = finduser(searchString);
+  if (un > 0) {
+    return un;
   }
 
-  string userNamePart = searchString;
-  StringUpperCase(&userNamePart);
+  auto name_part = ToStringUpperCase(searchString);
   for (const auto& n : a()->names()->names_vector()) {
-    if (strstr(reinterpret_cast<const char*>(n.name), userNamePart.c_str()) == nullptr) {
+    if (strstr(reinterpret_cast<const char*>(n.name), name_part.c_str()) == nullptr) {
       continue;
     }
 

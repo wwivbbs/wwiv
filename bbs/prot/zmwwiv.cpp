@@ -162,7 +162,7 @@ int ZModemWindowStatus(const char *fmt,...) {
 	va_end( ap );
 	int oldX = a()->localIO()->WhereX();
 	int oldY = a()->localIO()->WhereY();
-	a()->localIO()->PrintfXY( 1, 10, "%s                           ", szBuffer );
+	a()->localIO()->PutsXY( 1, 10, StrCat(szBuffer, "                           "));
 	a()->localIO()->GotoXY( oldX, oldY );
 	return 0;
 }
@@ -181,7 +181,7 @@ int ZModemWindowXferStatus(const char *fmt,...) {
 	va_end( ap );
 	int oldX = a()->localIO()->WhereX();
 	int oldY = a()->localIO()->WhereY();
-	a()->localIO()->PrintfXY( 1, 1, "%s                           ", szBuffer );
+  a()->localIO()->PutsXY(1, 1, StrCat(szBuffer, "                           "));
 	a()->localIO()->GotoXY( oldX, oldY );
 	return 0;
 }

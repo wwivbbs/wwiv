@@ -60,8 +60,7 @@ class UIWindow {
   virtual void Putch(uint32_t ch) = 0;
   virtual void Puts(const std::string& text) = 0;
   virtual void PutsXY(int x, int y, const std::string& text) = 0;
-  virtual void PrintfXY(int x, int y, const char* format, ...) = 0;
-
+  
   /**
    * Returns true if this is a GUI mode UI vs. stdio based UI.
    */
