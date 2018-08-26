@@ -21,9 +21,9 @@
 
 #include <string>
 
+#include "core/file.h"
 #include "local_io/keycodes.h"
 #include "local_io/local_io.h"
-#include "core/file.h"
 
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
@@ -36,7 +36,7 @@ struct coord_t {
 typedef void* HANDLE;
 
 class Win32ConsoleIO : public LocalIO {
- public:
+public:
   // Constructor/Destructor
   Win32ConsoleIO();
   Win32ConsoleIO(const LocalIO& copy) = delete;
@@ -63,14 +63,15 @@ class Win32ConsoleIO : public LocalIO {
   unsigned char GetChar() override;
   void MakeLocalWindow(int x, int y, int xlen, int ylen) override;
   void SetCursor(int cursorStyle) override;
-  void WriteScreenBuffer(const char *buffer) override;
+  void WriteScreenBuffer(const char* buffer) override;
   int GetDefaultScreenBottom() const noexcept override;
 
-  void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) override;
+  void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
+                const char* ss) override;
   void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override;
 
 private:
-  void FastPuts(const std::string &text) override;
+  void FastPuts(const std::string& text) override;
 
 private:
   void set_attr_xy(int x, int y, int a);
@@ -79,11 +80,10 @@ private:
   // We set this when calling wherex, but logically WhereX should
   // be const correct, so we'll handle this nasty stuff here.
   mutable coord_t cursor_pos_{};
-  HANDLE out_ = (void*) -1;
-  HANDLE in_ = (void*) -1;
+  HANDLE out_ = (void*)-1;
+  HANDLE in_ = (void*)-1;
   unsigned long /* DWORD */ saved_input_mode_{0};
   coord_t original_size_{};
 };
-
 
 #endif // __INCLUDED_LOCAL_IO_LOCAL_IO_WIN32_H__

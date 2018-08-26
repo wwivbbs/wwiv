@@ -21,28 +21,28 @@
 #include <chrono>
 #include <string>
 
-#include "bbs/confutil.h"
 #include "bbs/bbs.h"
+#include "bbs/confutil.h"
 #include "bbs/utility.h"
-#include "local_io/keycodes.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "local_io/keycodes.h"
 
 using std::string;
 using std::chrono::milliseconds;
 using namespace wwiv::os;
 using namespace wwiv::strings;
 
-#define PREV                1
-#define NEXT                2
-#define DONE                4
-#define ABORTED             8
+#define PREV 1
+#define NEXT 2
+#define DONE 4
+#define ABORTED 8
 
 // Allows local-only editing of some of the user data in a shadowized window.
 void OnlineUserEditor() {
-  char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8], up[6], down[6],
-       posts[6], banktime[6], gold[10], ass[6], logons[6];
+  char sl[4], dsl[4], exempt[4], sysopsub[4], ar[17], dar[17], restrict[17], rst[17], uk[8], dk[8],
+      up[6], down[6], posts[6], banktime[6], gold[10], ass[6], logons[6];
   int cp, i, rc = ABORTED;
 
   a()->localIO()->savescreen();
@@ -92,15 +92,15 @@ void OnlineUserEditor() {
     }
   }
   dar[16] = '\0';
-  ar[16]  = '\0';
+  ar[16] = '\0';
   restrict[16] = '\0';
   cp = 0;
   bool done = false;
 
   // heading
   string s = StrCat("[", a()->names()->UserName(a()->usernum), "]");
-  a()->localIO()->PutsXYA(wx + 1, wy - 1, 31, 
-    StrCat(pad_to(" WWIV User Editor", 30), lpad_to(s, 37)));
+  a()->localIO()->PutsXYA(wx + 1, wy - 1, 31,
+                          StrCat(pad_to(" WWIV User Editor", 30), lpad_to(s, 37)));
 
   a()->localIO()->PutsXYA(wx + 2, wy + 1, 3, StrCat("Security Level(SL): ", sl));
   a()->localIO()->PutsXYA(wx + 36, wy + 1, 3, StrCat("  Message AR: ", ar));
@@ -120,7 +120,7 @@ void OnlineUserEditor() {
   a()->localIO()->PutsXYA(wx + 32, wy + 10, 3, StrCat("Number of Logons: ", logons));
   a()->localIO()->PutsXYA(wx + 2, wy + 12, 3, StrCat("Note: ", a()->user()->GetNote()));
   a()->localIO()->PutsXYA(wx + 1, wy + 14, 31,
-                                          "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
+                          "    (ENTER) Next Field   (UP-ARROW) Previous Field    (ESC) Exit    ");
   bout.curatr(3);
   while (!done) {
     switch (cp) {
@@ -246,14 +246,13 @@ void OnlineUserEditor() {
       a()->localIO()->Puts(logons);
       break;
     case 16: {
-      char szNote[ 81 ];
+      char szNote[81];
       a()->localIO()->GotoXY(wx + 8, wy + 12);
       to_char_array(szNote, a()->user()->GetNote());
       a()->localIO()->EditLine(szNote, 60, AllowedKeys::ALL, &rc, "");
       StringTrimEnd(szNote);
       a()->user()->SetNote(szNote);
-    }
-    break;
+    } break;
     }
     switch (rc) {
     case ABORTED:

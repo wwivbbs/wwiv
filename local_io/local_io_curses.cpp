@@ -24,9 +24,9 @@
 #include <algorithm>
 #include <cstdarg>
 #include <cstdio>
+#include <fcntl.h>
 #include <iostream>
 #include <string>
-#include <fcntl.h>
 #ifdef __unix__
 #include <unistd.h>
 #endif
@@ -34,9 +34,9 @@
 #include "core/log.h"
 #include "core/os.h"
 #include "core/strings.h"
-#include "localui/wwiv_curses.h"
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
+#include "localui/wwiv_curses.h"
 
 using std::string;
 using namespace wwiv::strings;
@@ -46,22 +46,15 @@ extern CursesIO* out;
 static const int default_screen_bottom = 20;
 
 static void InitPairs() {
-  std::vector<short> lowbit_colors = {
-    COLOR_BLACK,
-    COLOR_BLUE,
-    COLOR_GREEN,
-    COLOR_CYAN,
-    COLOR_RED,
-    COLOR_MAGENTA,
-    COLOR_YELLOW,
-    COLOR_WHITE};
+  std::vector<short> lowbit_colors = {COLOR_BLACK, COLOR_BLUE,    COLOR_GREEN,  COLOR_CYAN,
+                                      COLOR_RED,   COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE};
   short num = 0;
   for (int bg = 0; bg < 8; bg++) {
     for (int fg = 0; fg < 8; fg++) {
       init_pair(num++, lowbit_colors[fg], lowbit_colors[bg]);
     }
   }
- }
+}
 
 CursesLocalIO::CursesLocalIO() : CursesLocalIO(default_screen_bottom + 1) {}
 
@@ -73,9 +66,7 @@ CursesLocalIO::CursesLocalIO(int num_lines) {
   window_->Clear();
 }
 
-CursesLocalIO::~CursesLocalIO() {
-  SetCursor(LocalIO::cursorNormal);
-}
+CursesLocalIO::~CursesLocalIO() { SetCursor(LocalIO::cursorNormal); }
 
 void CursesLocalIO::SetColor(int original_color) {
   bool bold = (original_color & 8) != 0;
@@ -90,17 +81,11 @@ void CursesLocalIO::SetColor(int original_color) {
   window_->AttrSet(attr);
 }
 
-void CursesLocalIO::GotoXY(int x, int y) {
-  window_->GotoXY(x, y);
-}
+void CursesLocalIO::GotoXY(int x, int y) { window_->GotoXY(x, y); }
 
-int CursesLocalIO::WhereX() const noexcept {
-  return window_->GetcurX();
-}
+int CursesLocalIO::WhereX() const noexcept { return window_->GetcurX(); }
 
-int CursesLocalIO::WhereY() const noexcept {
-  return window_->GetcurY();
-}
+int CursesLocalIO::WhereY() const noexcept { return window_->GetcurY(); }
 
 void CursesLocalIO::Lf() {
   Cr();
@@ -178,9 +163,7 @@ void CursesLocalIO::FastPuts(const string& text) {
   window_->Puts(text);
 }
 
-void CursesLocalIO::set_protect(int l) {
-  SetTopLine(l);
-}
+void CursesLocalIO::set_protect(int l) { SetTopLine(l); }
 
 static std::vector<chtype*> saved_screen;
 void CursesLocalIO::savescreen() {
@@ -208,9 +191,9 @@ void CursesLocalIO::restorescreen() {
   window_->Refresh();
 }
 
-#if defined( _MSC_VER )
-#pragma warning( push )
-#pragma warning( disable : 4125 4100 )
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4125 4100)
 #endif
 
 static int last_key_pressed = ERR;
@@ -227,30 +210,50 @@ bool CursesLocalIO::KeyPressed() {
 
 static int CursesToWin32KeyCodes(int curses_code) {
   switch (curses_code) {
-  case KEY_F(1): return F1;
-  case KEY_F(2): return F2;
-  case KEY_F(3): return F3;
-  case KEY_F(4): return F4;
-  case KEY_F(5): return F5;
-  case KEY_F(6): return F6;
-  case KEY_F(7): return F7;
-  case KEY_F(8): return F8;
-  case KEY_F(9): return F9;
-  case KEY_F(10): return F10;
+  case KEY_F(1):
+    return F1;
+  case KEY_F(2):
+    return F2;
+  case KEY_F(3):
+    return F3;
+  case KEY_F(4):
+    return F4;
+  case KEY_F(5):
+    return F5;
+  case KEY_F(6):
+    return F6;
+  case KEY_F(7):
+    return F7;
+  case KEY_F(8):
+    return F8;
+  case KEY_F(9):
+    return F9;
+  case KEY_F(10):
+    return F10;
 
-  case KEY_UP: return UPARROW;
-  case KEY_DOWN: return DNARROW;
-  case KEY_HOME: return HOME;
-  case KEY_END: return END;
-  case KEY_LEFT: return LARROW;
-  case KEY_RIGHT: return RARROW;
-  case KEY_DELETE: return BACKSPACE;
-  case KEY_BACKSPACE: return BACKSPACE;
-  case KEY_PPAGE: return PAGEUP;
-  case KEY_NPAGE: return PAGEDOWN;
+  case KEY_UP:
+    return UPARROW;
+  case KEY_DOWN:
+    return DNARROW;
+  case KEY_HOME:
+    return HOME;
+  case KEY_END:
+    return END;
+  case KEY_LEFT:
+    return LARROW;
+  case KEY_RIGHT:
+    return RARROW;
+  case KEY_DELETE:
+    return BACKSPACE;
+  case KEY_BACKSPACE:
+    return BACKSPACE;
+  case KEY_PPAGE:
+    return PAGEUP;
+  case KEY_NPAGE:
+    return PAGEDOWN;
   // TODO: implement the rest.
   default: {
-    LOG(INFO) << "unknown key:"  << curses_code;
+    LOG(INFO) << "unknown key:" << curses_code;
     return 0;
   }
   }
@@ -281,28 +284,26 @@ unsigned char CursesLocalIO::GetChar() {
   return static_cast<unsigned char>(window_->GetChar());
 }
 
-void CursesLocalIO::SetCursor(int cursorStyle) {
-  curs_set(cursorStyle);
-}
+void CursesLocalIO::SetCursor(int cursorStyle) { curs_set(cursorStyle); }
 
 void CursesLocalIO::ClrEol() {
   SetColor(curatr());
   window_->ClrtoEol();
 }
 
-void CursesLocalIO::WriteScreenBuffer(const char *buffer) {
+void CursesLocalIO::WriteScreenBuffer(const char* buffer) {
   // TODO(rushfan): Optimize me.
-  const char *p = buffer;
+  const char* p = buffer;
   auto* w = reinterpret_cast<WINDOW*>(window_->window());
   scrollok(w, false);
 
   char s[2];
   s[1] = 0;
   for (int y = 0; y < 25; y++) {
-	for (int x = 0; x < 80; x++) {
-	  s[0] = *p++;
-    curatr(*p++);
-	  PutsXY(x, y, s);
+    for (int x = 0; x < 80; x++) {
+      s[0] = *p++;
+      curatr(*p++);
+      PutsXY(x, y, s);
     }
   }
   scrollok(w, true);
@@ -311,12 +312,12 @@ void CursesLocalIO::WriteScreenBuffer(const char *buffer) {
 int CursesLocalIO::GetDefaultScreenBottom() const noexcept { return window_->GetMaxY() - 1; }
 
 // copied from local_io_win32.cpp
-#define PREV                1
-#define NEXT                2
-#define DONE                4
-#define ABORTED             8
+#define PREV 1
+#define NEXT 2
+#define DONE 4
+#define ABORTED 8
 
-static int GetEditLineStringLength(const char *text) {
+static int GetEditLineStringLength(const char* text) {
   int i = strlen(text);
   while (i >= 0 && (static_cast<unsigned char>(text[i - 1]) == 176)) {
     --i;
@@ -324,8 +325,8 @@ static int GetEditLineStringLength(const char *text) {
   return i;
 }
 
-void CursesLocalIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_keys,
-  int *returncode, const char *pszAllowedSet) {
+void CursesLocalIO::EditLine(char* pszInOutText, int len, AllowedKeys allowed_keys, int* returncode,
+                             const char* pszAllowedSet) {
   int oldatr = curatr();
   int cx = WhereX();
   int cy = WhereY();
@@ -419,10 +420,11 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_ke
             }
           }
         }
-        if ((pos < len) && ((allowed_keys == AllowedKeys::ALL) 
-            || (allowed_keys == AllowedKeys::UPPER_ONLY) || (allowed_keys == AllowedKeys::SET)
-            || ((allowed_keys == AllowedKeys::NUM_ONLY) 
-            && (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
+        if ((pos < len) &&
+            ((allowed_keys == AllowedKeys::ALL) || (allowed_keys == AllowedKeys::UPPER_ONLY) ||
+             (allowed_keys == AllowedKeys::SET) ||
+             ((allowed_keys == AllowedKeys::NUM_ONLY) &&
+              (((ch >= '0') && (ch <= '9')) || (ch == SPACE))))) {
           if (insert) {
             for (int i = len - 1; i > pos; i--) {
               pszInOutText[i] = pszInOutText[i - 1];
@@ -452,7 +454,7 @@ void CursesLocalIO::EditLine(char *pszInOutText, int len, AllowedKeys allowed_ke
           GotoXY(cx, cy);
           break;
         case CE:
-          pos = GetEditLineStringLength(pszInOutText);   // len;
+          pos = GetEditLineStringLength(pszInOutText); // len;
           GotoXY(cx + pos, cy);
           break;
         case BACKSPACE:
@@ -523,12 +525,12 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
     for (int xloop = 0; xloop < xlen; xloop++) {
       curatr(static_cast<int16_t>(GetUserEditorColor()));
       if ((yloop == 0) || (yloop == ylen - 1)) {
-        PutsXY(x + xloop, y + yloop, "\xC4");      // top and bottom
+        PutsXY(x + xloop, y + yloop, "\xC4"); // top and bottom
       } else {
-        if ((xloop == 0) || (xloop ==xlen - 1)) {
-          PutsXY(x + xloop, y + yloop, "\xB3");  // right and left sides
+        if ((xloop == 0) || (xloop == xlen - 1)) {
+          PutsXY(x + xloop, y + yloop, "\xB3"); // right and left sides
         } else {
-          PutsXY(x + xloop, y + yloop, "\x20");   // nothing... Just filler (space)
+          PutsXY(x + xloop, y + yloop, "\x20"); // nothing... Just filler (space)
         }
       }
     }
@@ -548,25 +550,21 @@ void CursesLocalIO::MakeLocalWindow(int x, int y, int xlen, int ylen) {
 
 void CursesLocalIO::UpdateNativeTitleBar(const std::string& system_name, int instance_number) {
 #ifdef _WIN32
-	// Set console title
+  // Set console title
   const auto s = StrCat("WWIV Node ", instance_number, " (", system_name, ")");
-	SetConsoleTitle(s.c_str());
-#endif  // _WIN32
+  SetConsoleTitle(s.c_str());
+#endif // _WIN32
 }
 
-void CursesLocalIO::ResetColors() {
-	InitPairs();
-}
+void CursesLocalIO::ResetColors() { InitPairs(); }
 
-void CursesLocalIO::DisableLocalIO() {
-  endwin();
-}
+void CursesLocalIO::DisableLocalIO() { endwin(); }
 
 void CursesLocalIO::ReenableLocalIO() {
   refresh();
   window_->Refresh();
 }
 
-#if defined( _MSC_VER )
-#pragma warning( pop )
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif // _MSC_VER

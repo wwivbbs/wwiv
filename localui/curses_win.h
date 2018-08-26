@@ -19,18 +19,18 @@
 #ifndef __INCLUDED_PLATFORM_CURSES_WIN_H__
 #define __INCLUDED_PLATFORM_CURSES_WIN_H__
 
-#include <map>
-#include <string>
 #include "localui/colors.h"
 #include "localui/ui_win.h"
+#include <map>
+#include <string>
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
-#endif  // INSERT
+#endif // INSERT
 
 // Curses implementation of screen display routines for wwivconfig.
 class CursesWindow : public UIWindow {
- public:
+public:
   // Constructor/Destructor
   CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
                int begin_y = -1, int begin_x = -1);
@@ -61,14 +61,13 @@ class CursesWindow : public UIWindow {
   void Putch(uint32_t ch) override;
   void Puts(const std::string& text) override;
   void PutsXY(int x, int y, const std::string& text) override;
-  
+
   void SetColor(SchemeId id) override;
 
   void* window() const { return window_; }
   CursesWindow* parent() const { return parent_; }
 
   virtual bool IsGUI() const override { return true; }
-
 
 private:
   void* window_;

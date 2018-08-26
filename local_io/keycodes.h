@@ -50,7 +50,7 @@ constexpr int APGDN = APAGEDN;
 constexpr int APGUP = APAGEUP;
 
 constexpr int LARROW = 75;
-constexpr int RARROW =77;
+constexpr int RARROW = 77;
 constexpr int UPARROW = 72;
 constexpr int UARROW = 72;
 constexpr int DNARROW = 80;
@@ -109,7 +109,7 @@ constexpr int SF10 = 93;
 constexpr int CF1 = 94;
 constexpr int CF2 = 95;
 constexpr int CF3 = 96;
-constexpr int CF4 =97;
+constexpr int CF4 = 97;
 constexpr int CF5 = 98;
 constexpr int CF6 = 99;
 constexpr int CF7 = 100;

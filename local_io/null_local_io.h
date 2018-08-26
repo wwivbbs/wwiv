@@ -21,16 +21,16 @@
 
 #include <string>
 
-#if defined( _MSC_VER )
-#pragma warning( push )
-#pragma warning( disable : 4125 4100 )
+#if defined(_MSC_VER)
+#pragma warning(push)
+#pragma warning(disable : 4125 4100)
 #endif
 
 class NullLocalIO : public LocalIO {
 public:
   NullLocalIO();
   virtual ~NullLocalIO();
-  void Putch(unsigned char ch) override {};
+  void Putch(unsigned char ch) override{};
   void GotoXY(int x, int y) override {}
   int WhereX() const noexcept override { return 0; }
   int WhereY() const noexcept override { return 0; }
@@ -50,19 +50,18 @@ public:
   void MakeLocalWindow(int x, int y, int xlen, int ylen) override {}
   void SetCursor(int cursorStyle) override {}
   void ClrEol() override {}
-  void WriteScreenBuffer(const char *buffer) override {}
+  void WriteScreenBuffer(const char* buffer) override {}
   int GetDefaultScreenBottom() const noexcept override { return 24; }
-  void EditLine(char *s, int len, AllowedKeys allowed_keys, int *returncode, const char *ss) override {}
+  void EditLine(char* s, int len, AllowedKeys allowed_keys, int* returncode,
+                const char* ss) override {}
   void UpdateNativeTitleBar(const std::string& system_name, int instance_number) override {}
 
 private:
   void FastPuts(const std::string& text) override {}
-
 };
 
-#if defined( _MSC_VER )
-#pragma warning( pop )
+#if defined(_MSC_VER)
+#pragma warning(pop)
 #endif // _MSC_VER
 
-
-#endif  // __INCLUDED_BBS_NULL_LOCAL_IO_H__
+#endif // __INCLUDED_BBS_NULL_LOCAL_IO_H__

@@ -19,21 +19,20 @@
 #ifndef __INCLUDED_LOCALUI_STDIO_WIN_H__
 #define __INCLUDED_LOCALUI_STDIO_WIN_H__
 
-#include <map>
-#include <string>
 #include "localui/colors.h"
 #include "localui/ui_win.h"
+#include <map>
+#include <string>
 
 #ifdef INSERT // defined in wconstants.h
 #undef INSERT
-#endif  // INSERT
+#endif // INSERT
 
 // Generic implementation of screen display routines for wwivconfig.
 class StdioWindow : public UIWindow {
- public:
+public:
   // Constructor/Destructor
-  StdioWindow(UIWindow* parent,
-              ColorScheme* color_scheme) : UIWindow(parent, color_scheme) {}
+  StdioWindow(UIWindow* parent, ColorScheme* color_scheme) : UIWindow(parent, color_scheme) {}
   StdioWindow(const UIWindow& copy) = delete;
   virtual ~StdioWindow() {}
 
@@ -45,7 +44,7 @@ class StdioWindow : public UIWindow {
   virtual void Putch(uint32_t ch);
   virtual void Puts(const std::string& text);
   virtual void PutsXY(int x, int y, const std::string& text);
-  
+
   /**
    * Returns true if this is a GUI mode UI vs. stdio based UI.
    */

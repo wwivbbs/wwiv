@@ -25,24 +25,16 @@
 #include <string>
 
 #include "core/strings.h"
-#include "localui/wwiv_curses.h"
 #include "localui/stdio_win.h"
+#include "localui/wwiv_curses.h"
 
 using std::string;
 using wwiv::strings::StringPrintf;
 
-int StdioWindow::GetChar() const {
-  return std::cin.get();
-}
+int StdioWindow::GetChar() const { return std::cin.get(); }
 
-void StdioWindow::Putch(uint32_t ch) {
-  std::cout << ch;
-}
+void StdioWindow::Putch(uint32_t ch) { std::cout << ch; }
 
-void StdioWindow::Puts(const std::string& text) {
-  std::cout << text;
-}
+void StdioWindow::Puts(const std::string& text) { std::cout << text; }
 
-void StdioWindow::PutsXY(int, int, const std::string& text) {
-  Puts(text);
-}
+void StdioWindow::PutsXY(int, int, const std::string& text) { Puts(text); }

@@ -25,9 +25,9 @@
 
 #include "core/stl.h"
 #include "core/strings.h"
-#include "localui/wwiv_curses.h"
-#include "localui/curses_win.h"
 #include "fmt/format.h"
+#include "localui/curses_win.h"
+#include "localui/wwiv_curses.h"
 
 using std::string;
 using namespace wwiv::stl;
@@ -35,8 +35,9 @@ using namespace wwiv::strings;
 
 static constexpr size_t VSN_BUFFER_SIZE = 1024;
 
-CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols, int begin_y, int begin_x) 
-  : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme) {
+CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int nlines, int ncols,
+                           int begin_y, int begin_x)
+    : UIWindow(parent, color_scheme), parent_(parent), color_scheme_(color_scheme) {
   WINDOW* window = nullptr;
   if (parent != nullptr) {
     if (ncols > parent->GetMaxX()) {
@@ -52,11 +53,14 @@ CursesWindow::CursesWindow(CursesWindow* parent, ColorScheme* color_scheme, int 
       begin_y = (parent->GetMaxY() - nlines) / 2;
     }
     auto* pw = reinterpret_cast<WINDOW*>(parent->window());
-    window =  newwin(nlines, ncols, begin_y + getbegy(pw),
-      begin_x + getbegx(pw));
+    window = newwin(nlines, ncols, begin_y + getbegy(pw), begin_x + getbegx(pw));
   } else {
-    if (begin_x == -1) { begin_x = 0; }
-    if (begin_y == -1) { begin_y = 0; }
+    if (begin_x == -1) {
+      begin_x = 0;
+    }
+    if (begin_y == -1) {
+      begin_y = 0;
+    }
     window = newwin(nlines, ncols, begin_y, begin_x);
   }
   window_ = window;
@@ -100,15 +104,19 @@ int CursesWindow::GetcurX() const { return getcurx(reinterpret_cast<WINDOW*>(win
 int CursesWindow::GetcurY() const { return getcury(reinterpret_cast<WINDOW*>(window_)); }
 int CursesWindow::Clear() { return wclear(reinterpret_cast<WINDOW*>(window_)); }
 int CursesWindow::Erase() { return werase(reinterpret_cast<WINDOW*>(window_)); }
-int CursesWindow::AttrSet(uint32_t attrs) { return wattrset(reinterpret_cast<WINDOW*>(window_), attrs); }
+int CursesWindow::AttrSet(uint32_t attrs) {
+  return wattrset(reinterpret_cast<WINDOW*>(window_), attrs);
+}
 int CursesWindow::Keypad(bool b) { return keypad(reinterpret_cast<WINDOW*>(window_), b); }
 int CursesWindow::GetMaxX() const { return getmaxx(reinterpret_cast<WINDOW*>(window_)); }
 int CursesWindow::GetMaxY() const { return getmaxy(reinterpret_cast<WINDOW*>(window_)); }
 int CursesWindow::ClrtoEol() { return wclrtoeol(reinterpret_cast<WINDOW*>(window_)); }
-int CursesWindow::AttrGet(uint32_t* a, short* c) const { 
-  return wattr_get(reinterpret_cast<WINDOW*>(window_), (attr_t*)a, c, nullptr); 
+int CursesWindow::AttrGet(uint32_t* a, short* c) const {
+  return wattr_get(reinterpret_cast<WINDOW*>(window_), (attr_t*)a, c, nullptr);
 }
-int CursesWindow::Box(uint32_t vert_ch, uint32_t horiz_ch) { return box(reinterpret_cast<WINDOW*>(window_), vert_ch, horiz_ch); }
+int CursesWindow::Box(uint32_t vert_ch, uint32_t horiz_ch) {
+  return box(reinterpret_cast<WINDOW*>(window_), vert_ch, horiz_ch);
+}
 
 int CursesWindow::GetChar() const {
   for (;;) {

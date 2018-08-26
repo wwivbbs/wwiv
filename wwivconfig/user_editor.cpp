@@ -24,20 +24,20 @@
 #include <string>
 #include <vector>
 
-#include "core/strings.h"
 #include "core/datafile.h"
 #include "core/datetime.h"
 #include "core/file.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
-#include "localui/wwiv_curses.h"
+#include "core/strings.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
+#include "localui/wwiv_curses.h"
 #include "sdk/config.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "wwivconfig/utility.h"
+#include "wwivconfig/wwivconfig.h"
+#include "wwivconfig/wwivinit.h"
 
 static const int COL1_POSITION = 17;
 static const int COL2_POSITION = 50;
@@ -49,9 +49,7 @@ using std::vector;
 using namespace wwiv::core;
 using namespace wwiv::strings;
 
-static bool IsUserDeleted(userrec *user) {
-  return user->inact & inact_deleted;
-}
+static bool IsUserDeleted(userrec* user) { return user->inact & inact_deleted; }
 
 static void show_user(EditItems* items, userrec* user) {
   items->window()->SetColor(SchemeId::WINDOW_TEXT);
@@ -93,7 +91,7 @@ static void show_error_no_users(CursesWindow* window) {
 }
 
 static vector<HelpItem> create_extra_help_items() {
-  vector<HelpItem> help_items = { { "D", "Delete" }, { "J", "Jump" }, { "R", "Restore" } };
+  vector<HelpItem> help_items = {{"D", "Delete"}, {"J", "Jump"}, {"R", "Restore"}};
   return help_items;
 }
 
@@ -117,7 +115,7 @@ static const int JumpToUser(CursesWindow* window, const std::string& datadir) {
       items.emplace_back(StringPrintf("%s #%d", name.name, name.number), 0, name.number);
     }
   }
-  
+
   ListBox list(window, "Select User", items);
   ListBoxResult result = list.Run();
   if (result.type == ListBoxResultType::SELECTION) {
@@ -142,79 +140,84 @@ void user_editor(const wwiv::sdk::Config& config) {
   read_user(config.datadir(), current_usernum, &user);
 
   auto user_name_field = new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, true);
-  user_name_field->set_displayfn([&]() -> string {
-    return StringPrintf("%s #%d", user.name, current_usernum);
-  });
+  user_name_field->set_displayfn(
+      [&]() -> string { return StringPrintf("%s #%d", user.name, current_usernum); });
 
-  auto birthday_field = new CustomEditItem(COL1_POSITION, 9, 10, 
-      [&]() -> string { 
-        return StringPrintf("%2.2d/%2.2d/%4.4d", user.month, user.day, user.year + 1900);
-      },
-      [&](const string& s) {
-        if (s[2] != '/' || s[5] != '/') {
-          return;
-        }
-        auto month = to_number<uint8_t>(s.substr(0, 2));
-        if (month < 1 || month > 12) { return; }
-        
-        auto day = to_number<uint8_t>(s.substr(3, 2));
-        if (day < 1 || day > 31) { return; }
+  auto birthday_field = new CustomEditItem(COL1_POSITION, 9, 10,
+                                           [&]() -> string {
+                                             return StringPrintf("%2.2d/%2.2d/%4.4d", user.month,
+                                                                 user.day, user.year + 1900);
+                                           },
+                                           [&](const string& s) {
+                                             if (s[2] != '/' || s[5] != '/') {
+                                               return;
+                                             }
+                                             auto month = to_number<uint8_t>(s.substr(0, 2));
+                                             if (month < 1 || month > 12) {
+                                               return;
+                                             }
 
-        auto year = to_number<int>(s.substr(6, 4));
-        auto dt = DateTime::now();
-        auto current_year = dt.year();
-        if (year < 1900 || year > current_year) { return ; }
+                                             auto day = to_number<uint8_t>(s.substr(3, 2));
+                                             if (day < 1 || day > 31) {
+                                               return;
+                                             }
 
-        user.month = month;
-        user.day = day;
-        user.year = static_cast<uint8_t>(year - 1900);
-      });
+                                             auto year = to_number<int>(s.substr(6, 4));
+                                             auto dt = DateTime::now();
+                                             auto current_year = dt.year();
+                                             if (year < 1900 || year > current_year) {
+                                               return;
+                                             }
+
+                                             user.month = month;
+                                             user.day = day;
+                                             user.year = static_cast<uint8_t>(year - 1900);
+                                           });
 
   EditItems items{};
   items.add_items({
-    user_name_field,
-    new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, false),
-    new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl),
-    new NumberEditItem<uint8_t>(COL1_POSITION, 4, &user.dsl),
-    new StringEditItem<char*>(COL1_POSITION, 5, 30, user.street, false),
-    new StringEditItem<char*>(COL1_POSITION, 6, 30, user.city, false),
-    new StringEditItem<char*>(COL1_POSITION, 7, 2, user.state, false),
-    new StringEditItem<char*>(COL1_POSITION, 8, 10, user.zipcode, true),
-    birthday_field,
-    new StringEditItem<char*>(COL1_POSITION, 10, 8, user.pw, true),
-    new StringEditItem<char*>(COL1_POSITION, 11, 12, user.phone, true),
-    new StringEditItem<char*>(COL1_POSITION, 12, 12, user.dataphone, true),
-    new NumberEditItem<int8_t>(COL1_POSITION, 13, &user.comp_type),
-    new RestrictionsEditItem(COL1_POSITION, 14, &user.restrict),
-    new NumberEditItem<uint32_t>(COL1_POSITION, 15, &user.wwiv_regnum),
-    new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, false),
+      user_name_field,
+      new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, false),
+      new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl),
+      new NumberEditItem<uint8_t>(COL1_POSITION, 4, &user.dsl),
+      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.street, false),
+      new StringEditItem<char*>(COL1_POSITION, 6, 30, user.city, false),
+      new StringEditItem<char*>(COL1_POSITION, 7, 2, user.state, false),
+      new StringEditItem<char*>(COL1_POSITION, 8, 10, user.zipcode, true),
+      birthday_field,
+      new StringEditItem<char*>(COL1_POSITION, 10, 8, user.pw, true),
+      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.phone, true),
+      new StringEditItem<char*>(COL1_POSITION, 12, 12, user.dataphone, true),
+      new NumberEditItem<int8_t>(COL1_POSITION, 13, &user.comp_type),
+      new RestrictionsEditItem(COL1_POSITION, 14, &user.restrict),
+      new NumberEditItem<uint32_t>(COL1_POSITION, 15, &user.wwiv_regnum),
+      new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, false),
   });
   items.set_navigation_extra_help_items(create_extra_help_items());
 
   int y = 1;
-  items.add_labels({
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Name/Handle:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Real Name:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "SL:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "DSL:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Address:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "City:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "State:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Postal Code:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Birthday:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Password:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Phone Number:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Data Number:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Computer Type:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Restrictions:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "WWIV Reg:"),
-      new Label(COL1_LINE, y++, LABEL_WIDTH, "Sysop Note:")});
+  items.add_labels({new Label(COL1_LINE, y++, LABEL_WIDTH, "Name/Handle:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Real Name:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "SL:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "DSL:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Address:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "City:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "State:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Postal Code:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Birthday:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Password:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Phone Number:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Data Number:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Computer Type:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Restrictions:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "WWIV Reg:"),
+                    new Label(COL1_LINE, y++, LABEL_WIDTH, "Sysop Note:")});
 
   items.create_window("User Editor");
   items.Display();
   show_user(&items, &user);
 
-  for (;;)  {
+  for (;;) {
     char ch = onek(items.window(), "\033DJRQ[]{}\r");
     switch (ch) {
     case '\r': {
@@ -292,4 +295,3 @@ void user_editor(const wwiv::sdk::Config& config) {
     show_user(&items, &user);
   }
 }
-

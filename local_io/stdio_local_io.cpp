@@ -24,42 +24,24 @@
 StdioLocalIO::StdioLocalIO() {}
 StdioLocalIO::~StdioLocalIO() {}
 
-void StdioLocalIO::Putch(unsigned char ch) {
-  putchar(ch);
-};
+void StdioLocalIO::Putch(unsigned char ch) { putchar(ch); };
 
-void StdioLocalIO::Lf() {
-  putchar(10);
-}
+void StdioLocalIO::Lf() { putchar(10); }
 
-void StdioLocalIO::Cr() {
-  putchar(13);
-}
+void StdioLocalIO::Cr() { putchar(13); }
 
 void StdioLocalIO::Cls() {
   // NOP
 }
 
-void StdioLocalIO::Backspace() {
-  putchar(8);
-}
+void StdioLocalIO::Backspace() { putchar(8); }
 
-void StdioLocalIO::PutchRaw(unsigned char ch) {
-  putchar(ch);
-}
+void StdioLocalIO::PutchRaw(unsigned char ch) { putchar(ch); }
 
-void StdioLocalIO::Puts(const std::string& s) {
-  puts(s.c_str());
-}
+void StdioLocalIO::Puts(const std::string& s) { puts(s.c_str()); }
 
-void StdioLocalIO::PutsXY(int, int, const std::string& text) {
-  Puts(text);
-}
+void StdioLocalIO::PutsXY(int, int, const std::string& text) { Puts(text); }
 
-void StdioLocalIO::PutsXYA(int, int, int, const std::string& text) {
-  Puts(text);
-}
+void StdioLocalIO::PutsXYA(int, int, int, const std::string& text) { Puts(text); }
 
-void StdioLocalIO::FastPuts(const std::string& text) {
-  Puts(text);
-}
+void StdioLocalIO::FastPuts(const std::string& text) { Puts(text); }

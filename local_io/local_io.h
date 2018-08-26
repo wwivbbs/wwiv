@@ -21,9 +21,9 @@
 
 #include <string>
 
+#include "core/file.h"
 #include "local_io/curatr_provider.h"
 #include "local_io/keycodes.h"
-#include "core/file.h"
 
 // This C++ class should encompass all Local Input/Output from The BBS.
 // You should use a routine in here instead of using printf, puts, etc.
