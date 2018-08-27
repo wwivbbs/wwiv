@@ -183,7 +183,7 @@ bool Subs::SaveToJSON(const std::string& dir, const std::string& filename, const
 
 static int FindNetworkByName(const std::vector<net_networks_rec>& net_networks, const std::string& name) {
   for (size_t i = 0; i < net_networks.size(); i++) {
-    if (IsEqualsIgnoreCase(net_networks[i].name, name.c_str())) {
+    if (iequals(net_networks[i].name, name.c_str())) {
       return i;
     }
   }

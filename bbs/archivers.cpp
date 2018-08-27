@@ -77,21 +77,21 @@ static int check_arc(const char* filename) {
     return COMPRESSION_UNKNOWN;
   }
   ++ext;
-  if (strcasecmp(ext, "ZIP") == 0) {
+  if (iequals(ext, "ZIP")) {
     return COMPRESSION_ZIP;
-  } else if (strcasecmp(ext, "LHA") == 0) {
+  } else if (iequals(ext, "LHA")) {
     return COMPRESSION_LHA;
-  } else if (strcasecmp(ext, "LZH") == 0) {
+  } else if (iequals(ext, "LZH")) {
     return COMPRESSION_LHA;
-  } else if (strcasecmp(ext, "ZOO") == 0) {
+  } else if (iequals(ext, "ZOO")) {
     return COMPRESSION_ZOO;
-  } else if (strcasecmp(ext, "ARC") == 0) {
+  } else if (iequals(ext, "ARC")) {
     return COMPRESSION_PAK;
-  } else if (strcasecmp(ext, "PAK") == 0) {
+  } else if (iequals(ext, "PAK")) {
     return COMPRESSION_PAK;
-  } else if (strcasecmp(ext, "ARJ") == 0) {
+  } else if (iequals(ext, "ARJ")) {
     return COMPRESSION_ARJ;
-  } else if (strcasecmp(ext, "RAR") == 0) {
+  } else if (iequals(ext, "RAR")) {
     return COMPRESSION_RAR;
   }
   return COMPRESSION_UNKNOWN;
@@ -135,7 +135,7 @@ int match_archiver(const char *filename) {
 
   x = 0;
   while (x < 4) {
-    if (strcasecmp(type, a()->arcs[x].extension) == 0) {
+    if (iequals(type, a()->arcs[x].extension)) {
       return x;
     }
     ++x;

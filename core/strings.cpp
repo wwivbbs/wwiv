@@ -87,29 +87,13 @@ string StringPrintf(const char *formatted_text, ...) {
 }
 
 /**
- * Gets the length of the C style string.  This function returns an int
- * instead of a size_t, so using this function can avoid warnings of
- * signed vs. unsigned comparasons.
- *
- * @param str the C style string
- * @return The length as an integer
- */
-int GetStringLength(const char* str) {
-  CHECK(str != nullptr) << "called GetStringLength on a nullptr";
-  return static_cast<int>(strlen(str));
-}
-
-/**
  * Compares the strings
  * @param str1 string to compare
  * @param str1 other string to compare
  * @return true of the strings contain the same contents
  */
 bool IsEquals(const char* str1, const char* str2) {
-  CHECK(str1 != nullptr);
-  CHECK(str2 != nullptr);
-
-  return strcmp(str1, str2) == 0;
+  return StringCompare(str1, str2) == 0;
 }
 
 /**
@@ -118,10 +102,6 @@ bool IsEquals(const char* str1, const char* str2) {
  * @param str1 other string to compare
  * @return true of the strings contain the same contents ignoring case
  */
-bool IsEqualsIgnoreCase(const char *str1, const char *str2) {
-  return iequals(str1, str2);
-}
-
 bool iequals(const char *str1, const char *str2) {
   CHECK(str1 != nullptr);
   CHECK(str2 != nullptr);
@@ -423,6 +403,10 @@ std::string::size_type size(const char* s) {
   return static_cast<std::string::size_type>(strlen(s));
 }
 
+// String length without colors as an int
+int size_int(const char* s) { return static_cast<int>(size(s)); }
+
+
 std::string trim_to_size(const std::string& orig, std::string::size_type max_size) {
   string s(orig);
   while (size(s) > max_size) {
@@ -563,7 +547,7 @@ void properize(char *text) {
     return;
   }
 
-  for (int i = 0; i < wwiv::strings::GetStringLength(text); i++) {
+  for (int i = 0; i < wwiv::strings::size_int(text); i++) {
     if ((i == 0) || ((i > 0) && ((text[i - 1] == ' ') || (text[i - 1] == '-') ||
                                  (text[i - 1] == '.')))) {
       text[i] = wwiv::strings::to_upper_case<char>(text[i]);

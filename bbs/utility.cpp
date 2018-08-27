@@ -229,8 +229,8 @@ char *stripfn(const char *file_name) {
 
   WWIV_ASSERT(file_name);
 
-  int nSepIndex = -1;
-  for (int i = 0; i < wwiv::strings::GetStringLength(file_name); i++) {
+  size_t nSepIndex = -1;
+  for (size_t i = 0; i < size(file_name); i++) {
     if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
       nSepIndex = i;
     }
@@ -240,7 +240,7 @@ char *stripfn(const char *file_name) {
   } else {
     strcpy(szTempFileName, file_name);
   }
-  for (int i1 = 0; i1 < wwiv::strings::GetStringLength(szTempFileName); i1++) {
+  for (size_t i1 = 0; i1 < size(szTempFileName); i1++) {
     if (szTempFileName[i1] >= 'A' && szTempFileName[i1] <= 'Z') {
       szTempFileName[i1] = szTempFileName[i1] - 'A' + 'a';
     }
@@ -279,7 +279,7 @@ char *get_wildlist(char *file_mask) {
   if (strchr(file_mask, File::pathSeparatorChar) == nullptr) {
     file_mask[0] = '\0';
   } else {
-    for (int i = 0; i < wwiv::strings::GetStringLength(file_mask); i++) {
+    for (int i = 0; i < size_int(file_mask); i++) {
       if (file_mask[i] == File::pathSeparatorChar) {
         mark = i + 1;
       }
@@ -289,7 +289,7 @@ char *get_wildlist(char *file_mask) {
   file_mask[mark] = 0;
   pszPath = file_mask;
   file_mask[mark] = t;
-  t = static_cast<char>(wwiv::strings::GetStringLength(pszPath));
+  t = static_cast<char>(size(pszPath));
   strcat(pszPath, f->name.c_str());
   int i = 1;
   for (i = 1;; i++) {

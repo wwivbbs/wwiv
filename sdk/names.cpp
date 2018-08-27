@@ -135,7 +135,7 @@ bool Names::Save() {
 
 int Names::FindUser(const std::string& search_string) {
   for (const auto& n : names_) {
-    if (IsEqualsIgnoreCase(search_string.c_str(), reinterpret_cast<const char*>(n.name))) {
+    if (iequals(search_string.c_str(), reinterpret_cast<const char*>(n.name))) {
       return n.number;
     }
   }

@@ -73,7 +73,7 @@ Networks::Networks(const Config& config) : datadir_(config.datadir()) {
 
 const net_networks_rec& Networks::at(const std::string& name) const {
   for (auto& n : networks_) {
-    if (IsEqualsIgnoreCase(name.c_str(), n.name)) {
+    if (iequals(name.c_str(), n.name)) {
       return n;
     }
   }
@@ -82,7 +82,7 @@ const net_networks_rec& Networks::at(const std::string& name) const {
 
 net_networks_rec& Networks::at(const std::string& name) {
   for (auto& n : networks_) {
-    if (IsEqualsIgnoreCase(name.c_str(), n.name)) {
+    if (iequals(name.c_str(), n.name)) {
       return n;
     }
   }
@@ -94,7 +94,7 @@ Networks::~Networks() {}
  auto Networks::network_number(const std::string& network_name) const -> size_type {
   Networks::size_type i = 0;
   for (const auto& n : networks_) {
-    if (IsEqualsIgnoreCase(network_name.c_str(), n.name)) {
+    if (iequals(network_name.c_str(), n.name)) {
       return i;
     }
     ++i;
@@ -104,7 +104,7 @@ Networks::~Networks() {}
 
 bool Networks::contains(const std::string& network_name) const {
   for (const auto& n : networks_) {
-    if (IsEqualsIgnoreCase(network_name.c_str(), n.name)) {
+    if (iequals(network_name.c_str(), n.name)) {
       return true;
     }
   }

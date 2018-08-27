@@ -86,7 +86,7 @@ void get_user_ppp_addr() {
     int j = 0;
     char szLocalUserName[255];
     strcpy(szLocalUserName, a()->user()->GetName());
-    for (int i = 0; (i < GetStringLength(szLocalUserName)) && (i < 61); i++) {
+    for (int i = 0; (i < wwiv::strings::size_int(szLocalUserName)) && (i < 61); i++) {
       if (szLocalUserName[i] != '.') {
         szLine[ j++ ] = translate_table[(int)szLocalUserName[i] ];
       }
@@ -202,7 +202,7 @@ void write_inet_addr(const std::string& internet_address, int user_number) {
       char* ss = strtok(szLine, "=");
       if (ss) {
         StringTrim(ss);
-        if (IsEqualsIgnoreCase(szLine, szDefaultUserAddr)) {
+        if (iequals(szLine, szDefaultUserAddr)) {
           match = true;
         }
       }

@@ -83,11 +83,9 @@ bool to_char_array_no_null(char(&out)[SIZE], const std::string& s) {
 }
 
 std::string StringPrintf(const char *formatted_text, ...);
-int GetStringLength(const char* str);
 
 // Comparisons
 bool IsEquals(const char *str1, const char *str2);
-bool IsEqualsIgnoreCase(const char *str1, const char *str2);
 bool iequals(const char* s1, const char* s2);
 bool iequals(const std::string& s1, const std::string& s2);
 int StringCompareIgnoreCase(const char *str1, const char *str2);
@@ -151,6 +149,9 @@ std::string::size_type size(const std::string& s);
 
 // String length without colors
 std::string::size_type size(const char* s);
+
+// String length without colors as an int
+int size_int(const char* s);
 
 /** returns a copy of orig trimmed to size, excluding colors. */
 std::string trim_to_size(const std::string& orig, std::string::size_type size);

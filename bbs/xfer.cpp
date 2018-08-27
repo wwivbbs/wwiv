@@ -220,7 +220,7 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
   }
   ++ss;
   for (int i = 0; i < MAX_ARCS; i++) {
-    if (IsEqualsIgnoreCase(ss, a()->arcs[i].extension)) {
+    if (iequals(ss, a()->arcs[i].extension)) {
       switch (cmd) {
       case 0:
         strcpy(szArcCmd, a()->arcs[i].arcl);
@@ -531,7 +531,7 @@ void align(char *file_name) {
     bInvalid = true;
   }
 
-  for (int i = 0; i < GetStringLength(file_name); i++) {
+  for (size_t i = 0; i < size(file_name); i++) {
     if (file_name[i] == '\\' || file_name[i] == '/' ||
         file_name[i] == ':'  || file_name[i] == '<' ||
         file_name[i] == '>'  || file_name[i] == '|') {
@@ -646,7 +646,7 @@ void printinfo(uploadsrec * u, bool *abort) {
       strcpy(s1, "N/A");
     }
   }
-  for (i = 0; i < 5 - GetStringLength(s1); i++) {
+  for (i = 0; i < 5 - size_int(s1); i++) {
     s[i] = SPACE;
   }
   s[i] = '\0';
@@ -659,7 +659,7 @@ void printinfo(uploadsrec * u, bool *abort) {
     bout.bputs((okansi() ? "\xBA" : " "), abort, &next); // was |
     sprintf(s1, "%d", u->numdloads);
 
-    for (i = 0; i < 4 - GetStringLength(s1); i++) {
+    for (i = 0; i < 4 - size_int(s1); i++) {
       s[i] = SPACE;
     }
     s[i] = '\0';

@@ -387,7 +387,7 @@ static bool check_for_files(const char *file_name) {
   if (ss) {
     ss++;
     for (const auto& t : arc_t) {
-      if (IsEqualsIgnoreCase(ss, t.arc_name)) {
+      if (iequals(ss, t.arc_name)) {
         return t.func(file_name) == 0;
       }
     }
@@ -452,10 +452,10 @@ void add_arc(const char *arc, const char *file_name, int dos) {
 
   sprintf(szArchiveFileName, "%s.%s", arc, a()->arcs[ARC_NUMBER].extension);
   // TODO - This logic is still broken since chain.* and door.* won't match
-  if (IsEqualsIgnoreCase(file_name, DROPFILE_CHAIN_TXT) ||
-      IsEqualsIgnoreCase(file_name, "door.sys") ||
-      IsEqualsIgnoreCase(file_name, "chain.*")  ||
-      IsEqualsIgnoreCase(file_name, "door.*")) {
+  if (iequals(file_name, DROPFILE_CHAIN_TXT) ||
+      iequals(file_name, "door.sys") ||
+      iequals(file_name, "chain.*")  ||
+      iequals(file_name, "door.*")) {
     return;
   }
 
@@ -494,7 +494,7 @@ void add_temp_arc() {
     strcat(szInputFileMask, ".*");
   }
   strcpy(szFileMask, stripfn(szInputFileMask));
-  for (int i = 0; i < GetStringLength(szFileMask); i++) {
+  for (int i = 0; i < size_int(szFileMask); i++) {
     if (szFileMask[i] == '|' || szFileMask[i] == '>' ||
         szFileMask[i] == '<' || szFileMask[i] == ';' ||
         szFileMask[i] == ' ' || szFileMask[i] == ':' ||
@@ -610,7 +610,7 @@ void temp_extract() {
             s1[0] = '\0';
           }
           i2 = 0;
-          for (i1 = 0; i1 < GetStringLength(s1); i1++) {
+          for (i1 = 0; i1 < size_int(s1); i1++) {
             if ((s1[i1] == '|') || (s1[i1] == '>') || (s1[i1] == '<') || (s1[i1] == ';') || (s1[i1] == ' ')) {
               i2 = 1;
             }

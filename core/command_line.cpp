@@ -148,7 +148,7 @@ bool CommandLineCommand::SetCommandLineArgument(const std::string& key, const st
   }
   if (args_allowed_.at(key).is_boolean) {
     if (value == "N" || value == "0" || value == "n" ||
-        IsEqualsIgnoreCase(value.c_str(), "false")) {
+        iequals(value.c_str(), "false")) {
       args_.emplace(key, CommandLineValue("false", default_value));
     } else {
       args_.emplace(key, CommandLineValue("true", default_value));

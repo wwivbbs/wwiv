@@ -518,7 +518,7 @@ void print_net_listing(bool bForcePause) {
         }
 
         strcpy(s2, csne.name);
-        for (int i1 = 0; i1 < wwiv::strings::GetStringLength(s2); i1++) {
+        for (size_t i1 = 0; i1 < size(s2); i1++) {
           s2[i1] = upcase(s2[i1]);
         }
 

@@ -211,7 +211,7 @@ bool get_file_idz(uploadsrec * u, int dn) {
     bool ok = false;
     for (auto i = 0; i < MAX_ARCS; i++) {
       if (!ok) {
-        ok = IsEqualsIgnoreCase(ss, a()->arcs[i].extension);
+        ok = iequals(ss, a()->arcs[i].extension);
       }
     }
     if (!ok) {
@@ -380,11 +380,11 @@ void tag_it() {
     }
     bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
   }
-  for (int i2 = 0; i2 < GetStringLength(s3); i2++) {
+  for (int i2 = 0; i2 < size_int(s3); i2++) {
     sprintf(s1, "%s", s3 + i2);
     i4 = 0;
     bool bad = false;
-    for (i3 = 0; i3 < GetStringLength(s1); i3++) {
+    for (i3 = 0; i3 < size_int(s1); i3++) {
       if ((s1[i3] == ' ') || (s1[i3] == ',') || (s1[i3] == ';')) {
         s1[i3] = 0;
         i4 = 1;
@@ -685,7 +685,7 @@ int add_batch(char *description, const char *file_name, int dn, long fs) {
     if (dn == -1) {
       return 0;
     } else {
-      for (i = 0; i < GetStringLength(description); i++) {
+      for (i = 0; i < wwiv::strings::size_int(description); i++) {
         if (description[i] == RETURN) {
           description[i] = SPACE;
         }

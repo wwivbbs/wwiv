@@ -172,7 +172,7 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
 
 int FindDN(const char *pszDownloadFileName) {
   for (size_t i = 0; (i < a()->directories.size()); i++) {
-    if (IsEqualsIgnoreCase(a()->directories[i].filename, pszDownloadFileName)) {
+    if (iequals(a()->directories[i].filename, pszDownloadFileName)) {
       return i;
     }
   }
@@ -203,7 +203,7 @@ bool MenuRunDoorNumber(int nDoorNumber, bool bFree) {
 
 int FindDoorNo(const char *pszDoor) {
   for (size_t i = 0; i < a()->chains.size(); i++) {
-    if (IsEqualsIgnoreCase(a()->chains[i].description, pszDoor)) {
+    if (iequals(a()->chains[i].description, pszDoor)) {
       return i;
     }
   }

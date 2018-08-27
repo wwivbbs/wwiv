@@ -267,10 +267,10 @@ int f_action(int start_pos, int end_pos, char* aword) {
   int test = ((end_pos - start_pos) / 2) + start_pos;
   if (!((end_pos - start_pos) / 2)) {
     test++;
-    if (IsEqualsIgnoreCase(aword, actions[test]->aword)) {
+    if (iequals(aword, actions[test]->aword)) {
       return test;
     }
-    if (IsEqualsIgnoreCase(aword, actions[test - 1]->aword)) {
+    if (iequals(aword, actions[test - 1]->aword)) {
       return test - 1;
     } else {
       return -1;
@@ -305,11 +305,11 @@ bool check_action(const char* message, char* color_string, int loc) {
   char s[12];
 
   unsigned int x = rip_words(0, message, s, 12, ' ');
-  if (IsEqualsIgnoreCase("GA", s)) {
+  if (iequals("GA", s)) {
     ga(message + x, color_string, loc, 0);
     return true;
   }
-  if (IsEqualsIgnoreCase("GA's", s)) {
+  if (iequals("GA's", s)) {
     ga(message + x, color_string, loc, 1);
     return true;
   }
@@ -334,7 +334,7 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
   if (bActionMode) {
     bActionHandled = !check_action(raw_message, color_string, loc);
   }
-  if (IsEqualsIgnoreCase(raw_message, "/r")) {
+  if (iequals(raw_message, "/r")) {
     /* "Undocumented Feature" - the original alpha version of WMChat had a /r
      * command to look up a user's registry from inside chat.  I took this
      * out when I released the program, but am now putting it back in due to
@@ -347,22 +347,22 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     bout.nl();
     bActionHandled = 0;
 #endif
-  } else if (IsEqualsIgnoreCase(raw_message, "/w")) {
+  } else if (iequals(raw_message, "/w")) {
     bActionHandled = 0;
     multi_instance();
     bout.nl();
-  } else if (IsEqualsIgnoreCase(raw_message, "list")) {
+  } else if (iequals(raw_message, "list")) {
     bout.nl();
     for (int i2 = 0; i2 <= num_actions; i2++) {
       bout.bprintf("%-16.16s", actions[i2]->aword);
     }
     bout.nl();
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(raw_message, "/q") || IsEqualsIgnoreCase(raw_message, "x")) {
+  } else if (iequals(raw_message, "/q") || iequals(raw_message, "x")) {
     bActionHandled = 0;
     bout << "\r\n|#2Exiting Chatroom\r\n";
     return 0;
-  } else if (IsEqualsIgnoreCase(raw_message, "/a")) {
+  } else if (iequals(raw_message, "/a")) {
     bActionHandled = 0;
     if (bActionMode) {
       bout << "|#1[|#9Action mode disabled|#1]\r\n";
@@ -371,10 +371,10 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
       bout << "|#1[|#9Action mode enabled|#1]\r\n";
       bActionMode = true;
     }
-  } else if (IsEqualsIgnoreCase(raw_message, "/s")) {
+  } else if (iequals(raw_message, "/s")) {
     bActionHandled = 0;
     secure_ch(loc);
-  } else if (IsEqualsIgnoreCase(raw_message, "/u")) {
+  } else if (iequals(raw_message, "/u")) {
     bActionHandled = 0;
     char szFileName[MAX_PATH];
     sprintf(szFileName, "CHANNEL.%d", (loc + 1 - INST_LOC_CH1));
@@ -386,14 +386,14 @@ int main_loop(const char* raw_message, char* from_message, char* color_string, c
     } else {
       bout << "|#1[|#9Channel not secured!|#1]\r\n";
     }
-  } else if (IsEqualsIgnoreCase(raw_message, "/p")) {
+  } else if (iequals(raw_message, "/p")) {
     bActionHandled = 0;
     page_user(loc);
-  } else if (IsEqualsIgnoreCase(raw_message, "/c")) {
+  } else if (iequals(raw_message, "/c")) {
     int nChannel = change_channels(loc);
     loc = nChannel;
     bActionHandled = 0;
-  } else if (IsEqualsIgnoreCase(raw_message, "?") || IsEqualsIgnoreCase(raw_message, "/?")) {
+  } else if (iequals(raw_message, "?") || iequals(raw_message, "/?")) {
     bActionHandled = 0;
     print_help_file(CHAT_NOEXT);
   } else if (bActionHandled && raw_message[0] == '>') {
@@ -538,7 +538,7 @@ int wusrinst(char* n) {
     if (ir.flags & INST_FLAGS_ONLINE) {
       User user;
       a()->users()->readuser(&user, ir.user);
-      if (IsEqualsIgnoreCase(user.GetName(), n)) {
+      if (iequals(user.GetName(), n)) {
         return i;
       }
     }
@@ -722,7 +722,7 @@ void exec_action(const char* message, char* color_string, int loc, int nact) {
   User u;
 
   bool bOk = (strlen(message) == 0) ? false : true;
-  if (IsEqualsIgnoreCase(message, "?")) {
+  if (iequals(message, "?")) {
     action_help(nact);
     return;
   }
@@ -1003,7 +1003,7 @@ int userinst(char* user) {
 }
 
 bool usercomp(const char* st1, const char* st2) {
-  for (int i = 0; i < GetStringLength(st1); i++) {
+  for (int i = 0; i < size(st1); i++) {
     if (st1[i] != st2[i]) {
       return false;
     }

@@ -126,7 +126,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
       int i = 0;
       for (i = 0; i < wwiv::stl::size_int(a()->net_networks); i++) {
         set_net_num(i);
-        if (IsEqualsIgnoreCase(ss1, a()->network_name())) {
+        if (iequals(ss1, a()->network_name())) {
           if (!valid_system(*pSystemNumber)) {
             bout.nl();
             bout << "There is no " << ss1 << " @" << *pSystemNumber << ".\r\n\n";

@@ -27,7 +27,6 @@
   variables and also load/save user.qsc
 * Move to LibSSH on all platforms
 * Run various asan/tsan's regularly with gcc via CMake
-* Drop Debian8
 * start using clock more.
 * move to datetime as much as possible.
 * Stop calling input use the input_xxx routines instead.  Make Input1 just support a

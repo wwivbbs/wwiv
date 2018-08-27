@@ -71,7 +71,7 @@ int finduser(const string& searchString) {
   if (user.IsUserDeleted()) {
     return 0;
   }
-  if (IsEqualsIgnoreCase(user.GetName(), "GUEST")) {
+  if (iequals(user.GetName(), "GUEST")) {
     a()->context().guest_user(true);
     a()->users()->set_user_writes_allowed(false);
   }

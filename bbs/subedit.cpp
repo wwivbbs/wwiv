@@ -164,7 +164,7 @@ static void DisplayNetInfo(size_t nSubNum) {
 // returns the sub name using the file filename or empty string.
 static string subname_using(const string& filename) {
   for (const auto& sub : a()->subs().subs()) {
-    if (IsEqualsIgnoreCase(filename.c_str(), sub.filename.c_str())) {
+    if (iequals(filename.c_str(), sub.filename.c_str())) {
       return sub.name;
     }
   }
