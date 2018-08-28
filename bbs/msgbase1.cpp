@@ -517,7 +517,6 @@ void remove_post() {
     }
   }
   bout << "\r\n|#2Remove which? ";
-  string postNumberToRemove = input(5);
   auto postnum = input_number(0, 0, a()->GetNumMessagesInCurrentMessageArea(), false);
   wwiv::bbs::OpenSub opened_sub(true);
   if (postnum > 0 && postnum <= a()->GetNumMessagesInCurrentMessageArea()) {

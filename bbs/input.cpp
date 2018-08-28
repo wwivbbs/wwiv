@@ -534,6 +534,10 @@ std::string input_filename(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::FILENAME);
 }
 
+std::string input_filename(int max_length) {
+  return input_filename("", max_length);
+}
+
 std::string input_path(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::FILENAME);
 }

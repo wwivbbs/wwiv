@@ -878,17 +878,17 @@ void edit_database()
  * is no record #0 ambiguity.
  *
  */
-static long db_index(File &fileAllow, const char *file_name) {
-  char cfn[18], tfn[81], tfn1[81];
+static long db_index(File& fileAllow, const std::string& file_name) {
+  char cfn[18];
   int i = 0;
-  long hirec, lorec, currec, ocurrec = -1;
+  long currec, ocurrec = -1;
 
-  strcpy(tfn1, file_name);
-  align(tfn1);
-  strcpy(tfn, stripfn(tfn1));
+  auto unaligned = file_name;
+  align(&unaligned);
+  auto tfn = stripfn(unaligned);
 
-  hirec = fileAllow.length() / 13;
-  lorec = 0;
+  long hirec = fileAllow.length() / 13;
+  long lorec = 0;
 
   if (hirec == 0) {
     return -1;
@@ -906,7 +906,8 @@ static long db_index(File &fileAllow, const char *file_name) {
     ocurrec = currec;
     fileAllow.Seek(currec * 13, File::Whence::begin);
     fileAllow.Read(&cfn, 13);
-    i = StringCompare(cfn, tfn);
+    // TODO(rushfan): Should this be StringCompareIgnoreCase?
+    i = StringCompare(cfn, tfn.c_str());
 
     // found
     if (i == 0) {
@@ -927,6 +928,7 @@ static long db_index(File &fileAllow, const char *file_name) {
 
 #define ALLOW_BUFSIZE 61440
 
+// TODO(rushfan): Can replace all of this with reading/writing vector of 13 byte char
 void modify_database(const char *file_name, bool add) {
   char tfn[MAX_PATH], tfn1[MAX_PATH];
   unsigned int nb;
@@ -1011,7 +1013,7 @@ void modify_database(const char *file_name, bool add) {
  * Returns 1 if file not found in filename database.
  */
 
-bool is_uploadable(const char *file_name) {
+bool is_uploadable(const std::string& file_name) {
   if (!a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
     return true;
   }

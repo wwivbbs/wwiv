@@ -10,6 +10,7 @@ set(COMMAND_SOURCES
   fido/dump_fido_packet.cpp
   fido/dump_nodelist.cpp
   fido/dump_fido_subscribers.cpp
+  files/allow.cpp
   files/files.cpp
   fix/dirs.cpp
   fix/fix.cpp

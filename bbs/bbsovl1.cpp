@@ -285,7 +285,7 @@ void feedback(bool bNewUserFeedback) {
 void text_edit() {
   bout.nl();
   bout << "|#9Enter Filename: ";
-  const string filename = input(12, true);
+  const auto filename = input_filename(12);
   if (filename.find(".log") != string::npos || !okfn(filename)) {
     return;
   }

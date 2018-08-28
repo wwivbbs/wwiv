@@ -48,6 +48,8 @@ using namespace wwiv::core;
 using namespace wwiv::strings;
 using namespace wwiv::sdk;
 using wwiv::wwivutil::fido::FidoCommand;
+using wwiv::wwivutil::files::FilesCommand;
+
 
 namespace wwiv {
 namespace wwivutil {

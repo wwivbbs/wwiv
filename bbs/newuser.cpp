@@ -417,9 +417,7 @@ void input_comptype() {
     bout.nl();
     bout << "|#3Enter your computer type, or the closest to it (ie, Compaq -> IBM).\r\n";
     bout << "|#2:";
-    input(c, 2, true);
-    ct = to_number<int>(c);
-
+    ct = input_number(1, 1, i, false);
     ok = true;
     if (ct < 1 || ct > i) {
       ok = false;
@@ -440,25 +438,15 @@ void input_screensize() {
   do {
     bout.nl();
     bout << "|#3How wide is your screen (chars, <CR>=80) ?\r\n|#2:";
-    input(s, 2, true);
-    x = to_number<int>(s);
-    if (s[0] == '\0') {
-      x = 80;
-    }
-
-    ok = ((x < 32) || (x > 80)) ? false : true;
+    x = input_number(80, 32, 80, true);
+    ok = true;
   } while (!ok && !a()->hangup_);
 
   do {
     bout.nl();
     bout << "|#3How tall is your screen (lines, <CR>=24) ?\r\n|#2:";
-    input(s, 2, true);
-    y = to_number<int>(s);
-    if (s[0] == '\0') {
-      y = 24;
-    }
-
-    ok = (y < 8 || y > 60) ? false : true;
+    y = input_number(24, 8, 60, true);
+    ok = true;
   } while (!ok && !a()->hangup_);
 
   a()->user()->SetScreenChars(x);

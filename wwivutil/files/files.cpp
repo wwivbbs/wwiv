@@ -37,6 +37,7 @@
 #include "sdk/net.h"
 #include "sdk/names.h"
 #include "sdk/networks.h"
+#include "wwivutil/files/allow.h"
 
 using std::clog;
 using std::cout;
@@ -55,6 +56,7 @@ constexpr char CD = 4;
 
 namespace wwiv {
 namespace wwivutil {
+namespace files {
 
 static bool ReadAreas(const std::string& datadir, vector<directoryrec>& dirs) {
   DataFile<directoryrec> file(FilePath(datadir, DIRS_DAT));
@@ -172,10 +174,9 @@ public:
   }
 };
 
-class DeleteFileCommand: public UtilCommand {
+class DeleteFileCommand : public UtilCommand {
 public:
-  DeleteFileCommand()
-    : UtilCommand("delete", "Deleate a file in an area") {}
+  DeleteFileCommand() : UtilCommand("delete", "Deleate a file in an area") {}
 
   virtual ~DeleteFileCommand() {}
 
@@ -209,7 +210,7 @@ public:
     const auto& dir = dirs.at(area_num);
     const string filename = StrCat(dir.filename, ".dir");
     DataFile<uploadsrec> file(FilePath(config()->config()->datadir(), filename),
-      File::modeBinary | File::modeReadWrite);
+                              File::modeBinary | File::modeReadWrite);
     if (!file) {
       LOG(ERROR) << "Unable to open file: " << file.file().full_pathname();
       return 1;
@@ -250,12 +251,22 @@ public:
 };
 
 bool FilesCommand::AddSubCommands() {
-  if (!add(make_unique<AreasCommand>())) { return false; }
-  if (!add(make_unique<ListCommand>())) { return false; }
-  if (!add(make_unique<DeleteFileCommand>())) { return false; }
+//  if (!add(make_unique<AllowCommand>())) {
+//    return false;
+//  }
+  if (!add(make_unique<AreasCommand>())) {
+    return false;
+  }
+  if (!add(make_unique<ListCommand>())) {
+    return false;
+  }
+  if (!add(make_unique<DeleteFileCommand>())) {
+    return false;
+  }
   return true;
 }
 
 
-}  // namespace wwivutil
-}  // namespace wwiv
+} // namespace files
+} // namespace wwivutil
+} // namespace wwiv

@@ -19,6 +19,7 @@ set(COMMON_SOURCES
   fido/fido_packets.cpp
   fido/fido_util.cpp
   fido/nodelist.cpp
+  files/allow.cpp
   msgapi/email_wwiv.cpp
   msgapi/message_api.cpp
   msgapi/message_api_wwiv.cpp

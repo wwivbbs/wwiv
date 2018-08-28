@@ -48,6 +48,11 @@ std::string input_password(const std::string& prompt_text, int max_length);
 /**
  * Inputs filename up to length max_length.
  */
+std::string input_filename(int max_length);
+
+/**
+ * Inputs filename up to length max_length.
+ */
 std::string input_filename(const std::string& orig_text, int max_length);
 
 /**

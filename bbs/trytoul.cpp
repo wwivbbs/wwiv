@@ -134,7 +134,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
     t2u_error(file_name, "Uploads are not allowed to this directory.");
     return 1;
   }
-  if (!is_uploadable(file_name.c_str())) {
+  if (!is_uploadable(file_name)) {
     if (so()) {
       bout.nl();
       bout << "|#5In filename database - add anyway? ";

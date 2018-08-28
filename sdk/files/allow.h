@@ -15,25 +15,49 @@
 /*    either  express  or implied.  See  the  License for  the specific   */
 /*    language governing permissions and limitations under the License.   */
 /**************************************************************************/
-#ifndef __INCLUDED_WWIVUTIL_FILES_H__
-#define __INCLUDED_WWIVUTIL_FILES_H__
+#ifndef __INCLUDED_SDK_ALLOW_H__
+#define __INCLUDED_SDK_ALLOW_H__
 
-#include "wwivutil/command.h"
+#include <string>
+#include <vector>
+
+#include "sdk/config.h"
+//#include "sdk/vardec.h"
 
 namespace wwiv {
-namespace wwivutil {
+namespace sdk {
 namespace files {
 
-class FilesCommand: public UtilCommand {
+
+struct allow_entry_t {
+  char a[13];
+};
+
+class Allow {
 public:
-  FilesCommand(): UtilCommand("files", "WWIV file commands.") {}
-  virtual ~FilesCommand() {}
-  bool AddSubCommands() override final;
+  explicit Allow(const wwiv::sdk::Config& config);
+  virtual ~Allow();
+
+  bool Add(const std::string& filename);
+  bool Remove(const std::string& filename);
+  bool Load();
+  bool Save();
+  bool IsAllowed(const std::string& filename);
+
+  const std::vector<allow_entry_t>& allow_vector() const { return allow_; }
+  std::size_t size() const { return allow_.size(); }
+  void set_save_on_exit(bool save_on_exit) { save_on_exit_ = save_on_exit; }
+  bool save_on_exit() const { return save_on_exit_;  }
+
+private:
+  const std::string data_directory_;
+  bool loaded_{false};
+  bool save_on_exit_{false};
+  std::vector<allow_entry_t> allow_;
 };
 
 } // namespace files
-} // namespace wwivutil
+} // namespace sdk
 } // namespace wwiv
 
-
-#endif  // __INCLUDED_WWIVUTIL_FILES_H__
+#endif  // __INCLUDED_SDK_ALLOW_H__

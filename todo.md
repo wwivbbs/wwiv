@@ -22,7 +22,7 @@
 * add tests for usermanager and user (in SDK)
 * Update syscfg.sysconfig in init and save it back, since
   wwiv never saves config.dat anymore.
-* stop using strncpy, strcpy, strcasestr.
+* stop using strncpy, strcpy.
 * Create a SDK QScan class to wrap interacting with the WWIV qscan
   variables and also load/save user.qsc
 * Move to LibSSH on all platforms
@@ -31,6 +31,9 @@
 * move to datetime as much as possible.
 * Stop calling input use the input_xxx routines instead.  Make Input1 just support a
   fixed set of characters (like numbers, A-Z, high ascii too, etc).
+
+** Make allow.dat handling class in the SDK and use it from the file system. 
+   Use a DataFile for char[13] vs. what it has now.
 
 ## Networking Cleanup
 ***

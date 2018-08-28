@@ -659,7 +659,7 @@ static void HandleMessageDownload(int msgnum) {
     readfile(&(get_post(msgnum)->msg), (a()->current_sub().filename), &b);
     bout << "|#1Message Download -\r\n\n";
     bout << "|#2Filename to use? ";
-    string filename = input(12);
+    const auto filename = input_filename(12);
     if (!okfn(filename)) {
       return;
     }
@@ -779,23 +779,19 @@ static void HandleMessageLoad() {
   }
   bout.nl();
   bout << "|#2Filename: ";
-  char szFileName[MAX_PATH];
-  input(szFileName, 50);
-  if (szFileName[0]) {
-    bout.nl();
-    bout << "|#5Allow editing? ";
-    if (yesno()) {
-      bout.nl();
-      LoadFileIntoWorkspace(szFileName, false);
-    } else {
-      bout.nl();
-      LoadFileIntoWorkspace(szFileName, true);
-    }
+  const auto fn = input_path(50);
+  if (fn.empty()) {
+	  return;
   }
+  bout.nl();
+  bout << "|#5Allow editing? ";
+  bool no_edit_allowed = !yesno();
+  bout.nl();
+  LoadFileIntoWorkspace(fn, no_edit_allowed);
 }
 
 void HandleMessageReply(int &nMessageNumber) {
-  postrec p2 = *get_post(nMessageNumber);
+  auto p2 = *get_post(nMessageNumber);
   if (!lcs() && (p2.status & (status_unvalidated | status_delete))) {
     return;
   }
@@ -838,7 +834,7 @@ static void HandleMessageDelete(int &nMessageNumber) {
 
   open_sub(true);
   resynch(&nMessageNumber, nullptr);
-  postrec p2 = *get_post(nMessageNumber);
+  auto p2 = *get_post(nMessageNumber);
   delete_message(nMessageNumber);
   close_sub();
 
