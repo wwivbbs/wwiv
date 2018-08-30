@@ -161,12 +161,16 @@ Allow::Allow(const wwiv::sdk::Config& config) : data_directory_(config.datadir()
   loaded_ = Load();
 }
 
-static bool icompare(const allow_entry_t& i, const allow_entry_t& j) {
+static bool icompare_equals(const allow_entry_t& i, const allow_entry_t& j) {
   return StringCompareIgnoreCase(i.a, j.a) == 0;
 }
 
+static bool icompare_lessthan(const allow_entry_t& i, const allow_entry_t& j) {
+  return StringCompareIgnoreCase(i.a, j.a) < 0;
+}
+
 static int icompare_int(const allow_entry_t& i, const allow_entry_t& j) {
-  return StringCompareIgnoreCase(i.a, j.a) == 0;
+  return StringCompareIgnoreCase(i.a, j.a);
 }
 
 static allow_entry_t to_allow_entry(const std::string& fn) {
@@ -175,7 +179,9 @@ static allow_entry_t to_allow_entry(const std::string& fn) {
   return e;
 }
 
-bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs) { return icompare(lhs, rhs); }
+bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs) { 
+  return icompare_equals(lhs, rhs); 
+}
 
  bool Allow::Add(const std::string& unaligned_filename) {
   auto fn = align_filename(unaligned_filename);
@@ -184,7 +190,7 @@ bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs) { return ico
     return false;
   }
   allow_.emplace_back(to_allow_entry(fn));
-  std::sort(std::begin(allow_), std::end(allow_), icompare_int);
+  std::sort(std::begin(allow_), std::end(allow_), icompare_lessthan);
   return true;
 }
 
@@ -215,7 +221,7 @@ bool Allow::Save() {
     return false;
   }
 
-  std::sort(std::begin(allow_), std::end(allow_), icompare);
+  std::sort(std::begin(allow_), std::end(allow_), icompare_lessthan);
   return file.WriteVector(allow_);
 }
 
@@ -225,7 +231,7 @@ bool Allow::IsAllowed(const std::string& unaligned_filename) {
     return false;
   }
   auto e = to_allow_entry(align_filename(unaligned_filename));
-  return std::binary_search(std::begin(allow_), std::end(allow_), e, icompare);
+  return !std::binary_search(std::begin(allow_), std::end(allow_), e, icompare_lessthan);
 }
 
 Allow::~Allow() {

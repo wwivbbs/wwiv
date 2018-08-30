@@ -22,11 +22,12 @@
 #include <string>
 #include <vector>
 #include "core/command_line.h"
+#include "core/datetime.h"
 #include "core/log.h"
 #include "core/strings.h"
 #include "sdk/config.h"
+#include "sdk/filenames.h"
 #include "sdk/files/allow.h"
-#include "core/datetime.h"
 
 using std::cout;
 using std::endl;
@@ -70,11 +71,9 @@ public:
   bool AddSubCommands() override final { return true; }
 };
 
-
 class AllowAddCommand : public UtilCommand {
 public:
   AllowAddCommand() : UtilCommand("add", "Add to the contents of allow.dat") {}
-
   virtual ~AllowAddCommand() {}
 
   std::string GetUsage() const override final {
@@ -93,16 +92,80 @@ public:
     if (!allow.Add(fn)) {
       LOG(ERROR) << "Failed to add file: " << fn;
       return 1;
+    } else {
+      std::cout << "Added file: " << fn;
+      if (!allow.Save()) {
+        LOG(ERROR) << "Failed to save : " << ALLOW_DAT;
+      }
     }
     return 0;
   }
 
-  bool AddSubCommands() override final {
-    return true;
-  }
+  bool AddSubCommands() override final { return true; }
 };
 
+class AllowedCommand : public UtilCommand {
+public:
+  AllowedCommand() : UtilCommand("allowed", "Is the file allowed (i.e. not in the list)") {}
+  virtual ~AllowedCommand() {}
 
+  std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage:   allowed <filename>" << endl;
+    return ss.str();
+  }
+
+  int Execute() override final {
+    if (remaining().empty()) {
+      std::cerr << "missing filename";
+      return 2;
+    }
+    const auto fn = remaining().front();
+    Allow allow(*config()->config());
+    bool allowed = allow.IsAllowed(fn);
+    if (allowed) {
+      std::cout << "filename allowed:     " << fn;
+    } else {
+      std::cout << "filename NOT allowed: " << fn;
+    }
+    return 0;
+  }
+
+  bool AddSubCommands() override final { return true; }
+};
+
+class AllowDeleteCommand : public UtilCommand {
+public:
+  AllowDeleteCommand() : UtilCommand("delete", "Delete from the contents of allow.dat") {}
+  virtual ~AllowDeleteCommand() {}
+
+  std::string GetUsage() const override final {
+    std::ostringstream ss;
+    ss << "Usage:   delete <filename>" << endl;
+    return ss.str();
+  }
+
+  int Execute() override final {
+    if (remaining().empty()) {
+      std::cerr << "missing filename";
+      return 2;
+    }
+    const auto fn = remaining().front();
+    Allow allow(*config()->config());
+    if (!allow.Remove(fn)) {
+      LOG(ERROR) << "Failed to delete file: " << fn;
+      return 1;
+    } else {
+      std::cout << "Deleted file: " << fn;
+      if (!allow.Save()) {
+        LOG(ERROR) << "Failed to save : " << ALLOW_DAT;
+      }
+    }
+    return 0;
+  }
+
+  bool AddSubCommands() override final { return true; }
+};
 std::string AllowCommand::GetUsage() const {
   std::ostringstream ss;
   ss << "Usage:   allow " << endl;
@@ -114,6 +177,12 @@ bool AllowCommand::AddSubCommands() {
     return false;
   }
   if (!add(std::make_unique<AllowAddCommand>())) {
+    return false;
+  }
+  if (!add(std::make_unique<AllowedCommand>())) {
+    return false;
+  }
+  if (!add(std::make_unique<AllowDeleteCommand>())) {
     return false;
   }
   return true;
