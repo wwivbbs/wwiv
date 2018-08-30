@@ -380,11 +380,11 @@ void tag_it() {
     }
     bout << "\r\n|#2Tagging: |#4" << s3 << wwiv::endl;
   }
-  for (int i2 = 0; i2 < size_int(s3); i2++) {
+  for (int i2 = 0; i2 < wwiv::strings::size_int(s3); i2++) {
     sprintf(s1, "%s", s3 + i2);
     i4 = 0;
     bool bad = false;
-    for (i3 = 0; i3 < size_int(s1); i3++) {
+    for (i3 = 0; i3 < wwiv::strings::size_int(s1); i3++) {
       if ((s1[i3] == ' ') || (s1[i3] == ',') || (s1[i3] == ';')) {
         s1[i3] = 0;
         i4 = 1;
