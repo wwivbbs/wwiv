@@ -73,7 +73,7 @@ public:
 
 class AllowAddCommand : public UtilCommand {
 public:
-  AllowAddCommand() : UtilCommand("list", "Lists the contents of allow.dat") {}
+  AllowAddCommand() : UtilCommand("add", "Add to the contents of allow.dat") {}
 
   virtual ~AllowAddCommand() {}
 

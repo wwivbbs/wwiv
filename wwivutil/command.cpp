@@ -47,14 +47,11 @@ UtilCommand::UtilCommand(const std::string& name, const std::string& description
   : CommandLineCommand(name, description) {}
 UtilCommand::~UtilCommand() {}
 
-bool UtilCommand::add(std::unique_ptr<CommandLineCommand> cmd) {
-  UtilCommand* util_command = dynamic_cast<UtilCommand*>(cmd.get());
-  if (util_command != nullptr) {
-    subcommands_.push_back(util_command);
-    util_command->AddStandardArgs();
-    util_command->AddSubCommands();
-  }
-  return CommandLineCommand::add(std::move(cmd));
+bool UtilCommand::add(std::shared_ptr<UtilCommand> cmd) {
+  subcommands_.push_back(cmd);
+  cmd->AddStandardArgs();
+  cmd->AddSubCommands();
+  return CommandLineCommand::add(cmd);
 }
 
 bool UtilCommand::set_config(Configuration* config) { 

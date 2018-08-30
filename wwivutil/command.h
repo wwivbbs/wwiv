@@ -49,7 +49,7 @@ private:
   const std::string bbsdir_;
   wwiv::sdk::Config* config_;
   wwiv::sdk::Networks networks_;
-  bool initialized_ = true;
+  bool initialized_{true};
 };
 
 /** WWIVUTIL Command */
@@ -59,14 +59,14 @@ public:
   virtual ~UtilCommand();
   // Override to add all commands.
   virtual bool AddSubCommands() = 0;
-  bool add(std::unique_ptr<CommandLineCommand> cmd) override;
+  bool add(std::shared_ptr<UtilCommand> cmd);
 
   Configuration* config() const { return config_; }
   bool set_config(Configuration* config);
 
 private:
   Configuration* config_;
-  std::vector<UtilCommand*> subcommands_;
+  std::vector<std::shared_ptr<UtilCommand>> subcommands_;
 };
 
 }  // namespace wwivutil

@@ -132,7 +132,7 @@ class CommandLineCommand : public Command {
 public:
   CommandLineCommand(const std::string& name, const std::string& help_text);
   bool add_argument(const CommandLineArgument& cmd);
-  virtual bool add(std::unique_ptr<CommandLineCommand> cmd) {
+  virtual bool add(std::shared_ptr<CommandLineCommand> cmd) {
     cmd->set_raw_args(raw_args_);
     cmd->set_dot_argument(dot_argument_);
     commands_allowed_[cmd->name()] = std::move(cmd);
@@ -180,7 +180,7 @@ protected:
   std::vector<std::string> raw_args_;
   // Values as allowed to be specified on the commandline.
   std::map<const std::string, CommandLineArgument> args_allowed_;
-  std::map<const std::string, std::unique_ptr<CommandLineCommand>> commands_allowed_;
+  std::map<const std::string, std::shared_ptr<CommandLineCommand>> commands_allowed_;
   std::vector<std::string> remaining_;
 
 private:

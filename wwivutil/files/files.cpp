@@ -251,9 +251,9 @@ public:
 };
 
 bool FilesCommand::AddSubCommands() {
-//  if (!add(make_unique<AllowCommand>())) {
-//    return false;
-//  }
+  if (!add(make_unique<AllowCommand>())) {
+    return false;
+  }
   if (!add(make_unique<AreasCommand>())) {
     return false;
   }
