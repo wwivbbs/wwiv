@@ -50,8 +50,10 @@ UtilCommand::~UtilCommand() {}
 bool UtilCommand::add(std::shared_ptr<UtilCommand> cmd) {
   subcommands_.push_back(cmd);
   cmd->AddStandardArgs();
+  bool added = CommandLineCommand::add(cmd);
+  // We want to add the sub commands after we add this one
   cmd->AddSubCommands();
-  return CommandLineCommand::add(cmd);
+  return added;
 }
 
 bool UtilCommand::set_config(Configuration* config) { 
