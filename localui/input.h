@@ -186,7 +186,8 @@ public:
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    return editline(window, reinterpret_cast<char*>(data_), maxsize_, edit_line_mode_, "");
+    // GCC wants this-> on data and maxsize_.
+    return editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, edit_line_mode_, "");
   }
 
 protected:
