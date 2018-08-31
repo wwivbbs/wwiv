@@ -418,8 +418,8 @@ void CreateDoorSysDropFile() {
     string gfilesdir = a()->config()->gfilesdir();
     string t = times();
     sprintf(szLine, "%s\n%s\n%s\n%s\n%s\n%s\n%c\n%c\n%c\n%u\n%u\n%s\n%-.5s\n%s\n", szDate,
-            a()->config()->datadir().c_str(), gfilesdir.c_str(), a()->config()->config()->sysopname,
-            a()->user()->GetName(),
+            a()->config()->datadir().c_str(), gfilesdir.c_str(),
+            a()->config()->sysop_name().c_str(), a()->user()->GetName(),
             "00:01", // event time
             'Y',
             (okansi()) ? 'N' : 'Y', // ansi ok but graphics turned off

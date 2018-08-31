@@ -307,13 +307,14 @@ bool ratio_ok() {
     }
   }
   if (!a()->user()->IsExemptPost()) {
-    if ((a()->config()->config()->post_call_ratio > 0.0001) && (post_ratio() < a()->config()->config()->post_call_ratio)) {
+    if ((a()->config()->post_to_call_ratio() > 0.0001) &&
+        (post_ratio() < a()->config()->post_to_call_ratio())) {
       bRetValue = false;
       bout.cls();
       bout.nl();
       bout.bprintf("%s %-5.3f.  %s %-5.3f %s.\r\n\n",
                                         "Your post/call ratio is", post_ratio(),
-                                        "You need a ratio of", a()->config()->config()->post_call_ratio,
+                                        "You need a ratio of", a()->config()->post_to_call_ratio(),
                                         "to download.");
     }
   }

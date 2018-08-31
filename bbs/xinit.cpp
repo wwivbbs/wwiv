@@ -543,9 +543,9 @@ void Application::read_networks() {
   // Add a default entry for us.
   if (net_networks.empty()) {
     net_networks_rec n{};
-    strcpy(n.name, "WWIVnet");
+    strcpy(n.name, "Sample Network");
     n.dir = config()->datadir();
-    n.sysnum = config()->config()->systemnumber;
+    n.sysnum = 1;
   }
 }
 
@@ -562,7 +562,7 @@ bool Application::read_dirs() {
     LOG(ERROR) << file.file().GetName() << " NOT FOUND.";
     return false;
   }
-  file.ReadVector(directories, config()->config()->max_dirs);
+  file.ReadVector(directories, config()->max_dirs());
   return true;
 }
 
@@ -747,8 +747,8 @@ void Application::InitializeBBS() {
 
   VLOG(1) << "Allocating Memory for Message/File Areas.";
   do_event_ = 0;
-  usub.resize(config()->config()->max_subs);
-  udir.resize(config()->config()->max_dirs);
+  usub.resize(config()->max_subs());
+  udir.resize(config()->max_dirs());
   uconfsub.resize(MAX_CONFERENCES);
   uconfdir.resize(MAX_CONFERENCES);
 

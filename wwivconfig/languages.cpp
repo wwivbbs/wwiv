@@ -39,7 +39,7 @@
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -62,7 +62,7 @@ static void edit_lang(const std::string& bbsdir, languagerec& n) {
   EditItems items{};
   int y = 1;
   items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Language name:"),
-            new StringEditItem<char*>(COL1_POSITION, y, 19, n.name, false));
+            new StringEditItem<char*>(COL1_POSITION, y, 19, n.name, EditLineMode::ALL));
   y++;
   items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Data Directory:"),
             new FilePathItem(LABEL1_POSITION, y + 1, 75, bbsdir, n.dir));
@@ -151,8 +151,8 @@ void edit_languages(const wwiv::sdk::Config& config) {
         languagerec l;
         memset(&l, 0, sizeof(languagerec));
         to_char_array(l.name, "English");
-        to_char_array(l.dir, syscfg.gfilesdir);
-        to_char_array(l.mdir, syscfg.gfilesdir);
+        to_char_array(l.dir, config.gfilesdir());
+        to_char_array(l.mdir, config.gfilesdir());
         l.num = get_next_langauge_num(languages);
 
         if (i > languages.size()) {

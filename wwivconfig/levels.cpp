@@ -34,7 +34,7 @@
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -42,6 +42,7 @@
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 static const int MAX_SL = 255;
@@ -69,9 +70,9 @@ static const uint8_t JumpToSl(CursesWindow* window) {
   return 0;
 }
 
-void sec_levs() {
+void sec_levs(Config& config) {
   uint8_t cursl = 10;
-  slrec sl = syscfg.sl[cursl];
+  slrec sl = config.sl(cursl);
   EditItems items{};
   items.add_items({
       new NumberEditItem<uint8_t>(COL1_POSITION, 1, &cursl),
@@ -117,7 +118,7 @@ void sec_levs() {
     switch (ch) {
     case '\r': {
       items.Run();
-      syscfg.sl[cursl] = sl;
+      config.sl(cursl, sl);
       items.window()->Refresh();
     } break;
     case 'J': {
@@ -152,8 +153,7 @@ void sec_levs() {
       }
       break;
     }
-    sl = syscfg.sl[cursl];
+    sl = config.sl(cursl);
     items.Display();
-    save_config();
   }
 }

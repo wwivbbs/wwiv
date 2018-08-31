@@ -22,16 +22,17 @@
 
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/input.h"
 #include "localui/wwiv_curses.h"
 
 using std::unique_ptr;
 
-void edit_registration_code() {
+void edit_registration_code(wwiv::sdk::Config& config) {
   EditItems items{};
+  auto wwiv_reg_number = config.wwiv_reg_number();
   items.add(new Label(2, 2, 22, "Registration Number:"),
-            new NumberEditItem<uint32_t>(25, 2, &syscfg.wwiv_reg_number));
+            new NumberEditItem<uint32_t>(25, 2, &wwiv_reg_number));
   items.Run("WWIV 4.x Registration");
-  save_config();
+  config.set_wwiv_reg_number(wwiv_reg_number);
 }

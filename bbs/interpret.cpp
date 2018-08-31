@@ -177,6 +177,7 @@ bool BbsMacroFiilter::write(char c) {
     if (c == '@') {
       in_macro_ = true;
       in_pipe_ = false;
+      return true;
     } else {
       in_macro_ = false;
       in_pipe_ = false;

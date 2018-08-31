@@ -18,11 +18,11 @@
 /**************************************************************************/
 #include "wwivconfig/convert.h"
 
+#include "localui/wwiv_curses.h"
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include "localui/wwiv_curses.h"
 #include <fcntl.h>
 #include <memory>
 #ifdef _WIN32
@@ -31,21 +31,21 @@
 #endif
 #include <sys/stat.h>
 
-#include "local_io/wconstants.h"
-#include "core/strings.h"
 #include "core/datafile.h"
 #include "core/file.h"
+#include "core/strings.h"
 #include "core/version.h"
 #include "core/wwivport.h"
-#include "wwivconfig/archivers.h"
-#include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/wwivinit.h"
-#include "localui/input.h"
+#include "local_io/wconstants.h"
 #include "localui/curses_io.h"
+#include "localui/input.h"
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/vardec.h"
 #include "sdk/wwivcolors.h"
+#include "wwivconfig/archivers.h"
+#include "wwivconfig/wwivconfig.h"
+#include "sdk/vardec.h"
 
 using std::string;
 using std::vector;
@@ -56,17 +56,17 @@ using namespace wwiv::strings;
 #define CONFIG_USR "config.usr"
 
 struct user_config {
-  char name[31];          // verify against a user
+  char name[31]; // verify against a user
 
   unsigned long unused_status;
 
   unsigned long lp_options;
   unsigned char lp_colors[32];
 
-  char menu_set[9];   // Selected AMENU set to use
-  char hot_keys;       // Use hot keys in AMENU
+  char menu_set[9]; // Selected AMENU set to use
+  char hot_keys;    // Use hot keys in AMENU
 
-  char junk[119];   // AMENU took 11 bytes from here
+  char junk[119]; // AMENU took 11 bytes from here
 };
 
 static void ShowBanner(UIWindow* window, const std::string& m) {
@@ -91,27 +91,27 @@ bool ensure_offsets_are_updated(UIWindow* window, const wwiv::sdk::Config& confi
   int16_t fuoffset = offsetof(userrec, forwardusr);
   int16_t fsoffset = offsetof(userrec, forwardsys);
   int16_t fnoffset = offsetof(userrec, net_num);
+  configrec syscfg53{};
+  file.Seek(0, File::Whence::begin);
+  file.Read(&syscfg53, sizeof(configrec));
 
-  if (userreclen != syscfg.userreclen ||
-      waitingoffset != syscfg.waitingoffset ||
-      inactoffset != syscfg.inactoffset ||
-      sysstatusoffset != syscfg.sysstatusoffset ||
-      fuoffset != syscfg.fuoffset ||
-      fsoffset != syscfg.fsoffset ||
-      fnoffset != syscfg.fnoffset) {
+  if (userreclen != config.userrec_length() || waitingoffset != config.waitingoffset() ||
+      inactoffset != config.inactoffset() || sysstatusoffset != config.sysstatusoffset() ||
+      fuoffset != config.fuoffset() || fsoffset != config.fsoffset() ||
+      fnoffset != config.fnoffset()) {
 
-    ShowBanner(window, "Updating OFfsets...");
-    syscfg.userreclen = userreclen;
-    syscfg.waitingoffset = waitingoffset;
-    syscfg.inactoffset = inactoffset;
-    syscfg.sysstatusoffset = sysstatusoffset;
-    syscfg.fuoffset = fuoffset;
-    syscfg.fsoffset = fsoffset;
-    syscfg.fnoffset = fnoffset;
+    ShowBanner(window, "Updating Offsets...");
+    syscfg53.userreclen = userreclen;
+    syscfg53.waitingoffset = waitingoffset;
+    syscfg53.inactoffset = inactoffset;
+    syscfg53.sysstatusoffset = sysstatusoffset;
+    syscfg53.fuoffset = fuoffset;
+    syscfg53.fsoffset = fsoffset;
+    syscfg53.fnoffset = fnoffset;
 
     // Write it all back.
     file.Seek(0, File::Whence::begin);
-    file.Write(&syscfg, sizeof(configrec));
+    file.Write(&syscfg53, sizeof(configrec));
     file.Close();
   }
   return true;
@@ -124,7 +124,8 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
   }
 
   ShowBanner(window, "Converting config.dat to 4.3/5.x format...");
-  file.Read(&syscfg, sizeof(configrec));
+  configrec syscfg53{};
+  file.Read(&syscfg53, sizeof(configrec));
 
   configrec_header_t h = {};
   h.config_revision_number = 0;
@@ -133,15 +134,15 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
   to_char_array(h.signature, "WWIV");
 
   // Save old newuser password.
-  string newuserpw = syscfg.header.newuserpw;
+  string newuserpw = syscfg53.header.newuserpw;
   // Update newuser password to new location.
-  to_char_array(syscfg.newuserpw, newuserpw);
+  to_char_array(syscfg53.newuserpw, newuserpw);
   // Set new header on config.dat.
-  syscfg.header.header = h;
+  syscfg53.header.header = h;
 
   // Write it all back.
   file.Seek(0, File::Whence::begin);
-  file.Write(&syscfg, sizeof(configrec));
+  file.Write(&syscfg53, sizeof(configrec));
   file.Close();
   return true;
 }
@@ -149,14 +150,15 @@ bool convert_config_to_52(UIWindow* window, const wwiv::sdk::Config& config) {
 static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   ShowBanner(window, "Updating to latest 5.2 format...");
 
-  string users_lst = StrCat(config.datadir(), USER_LST);
-  string backup_file = StrCat(users_lst, ".backup.pre-wwivconfig-upgrade");
+  auto users_lst = StrCat(config.datadir(), USER_LST);
+  auto backup_file = StrCat(users_lst, ".backup.pre-wwivconfig-upgrade");
 
   // Make a backup file.
   File::Copy(users_lst, backup_file);
 
   DataFile<userrec> usersFile(FilePath(config.datadir(), USER_LST),
-    File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
+                              File::modeReadWrite | File::modeBinary | File::modeCreateFile,
+                              File::shareDenyReadWrite);
   if (!usersFile) {
     messagebox(window, "Unable to open user.lst.");
     return false;
@@ -207,28 +209,29 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
     if (!file.Open(File::modeBinary | File::modeReadWrite)) {
       return false;
     }
-    if (file.Read(&syscfg, sizeof(configrec)) < sizeof(configrec)) {
+    configrec syscfg53{};
+    if (file.Read(&syscfg53, sizeof(configrec)) < sizeof(configrec)) {
       return false;
     }
-    memset(syscfg.res, 0, sizeof(syscfg.res));
-    memset(syscfg.unused1, 0, sizeof(syscfg.unused1));
-    memset(syscfg.unused2, 0, sizeof(syscfg.unused2));
-    memset(syscfg.unused3, 0, sizeof(syscfg.unused3));
-    memset(syscfg.unused4, 0, sizeof(syscfg.unused4));
-    memset(syscfg.unused5, 0, sizeof(syscfg.unused5));
-    memset(syscfg.unused6, 0, sizeof(syscfg.unused6));
-    memset(syscfg.unused7, 0, sizeof(syscfg.unused7));
-    memset(syscfg.unused8, 0, sizeof(syscfg.unused8));
-    memset(syscfg.unused9, 0, sizeof(syscfg.unused9));
-    syscfg.header.header.config_revision_number = 1;
+    memset(syscfg53.res, 0, sizeof(syscfg53.res));
+    memset(syscfg53.unused1, 0, sizeof(syscfg53.unused1));
+    memset(syscfg53.unused2, 0, sizeof(syscfg53.unused2));
+    memset(syscfg53.unused3, 0, sizeof(syscfg53.unused3));
+    memset(syscfg53.unused4, 0, sizeof(syscfg53.unused4));
+    memset(syscfg53.unused5, 0, sizeof(syscfg53.unused5));
+    memset(syscfg53.unused6, 0, sizeof(syscfg53.unused6));
+    memset(syscfg53.unused7, 0, sizeof(syscfg53.unused7));
+    memset(syscfg53.unused8, 0, sizeof(syscfg53.unused8));
+    memset(syscfg53.unused9, 0, sizeof(syscfg53.unused9));
+    syscfg53.header.header.config_revision_number = 1;
 
     file.Seek(0, File::Whence::begin);
-    file.Write(&syscfg, sizeof(configrec));
+    file.Write(&syscfg53, sizeof(configrec));
     file.Close();
   }
 
   DataFile<user_config> configUsrFile(FilePath(config.datadir(), "config.usr"),
-    File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
+                                      File::modeReadOnly | File::modeBinary, File::shareDenyWrite);
   if (!configUsrFile) {
     return false;
   }
@@ -269,8 +272,9 @@ static bool convert_to_52_1(UIWindow* window, const wwiv::sdk::Config& config) {
   return true;
 }
 
-bool ensure_latest_5x_config(UIWindow* window, const wwiv::sdk::Config& config) {
-  const auto v = syscfg.header.header.config_revision_number;
+bool ensure_latest_5x_config(UIWindow* window, const wwiv::sdk::Config& config,
+                             const configrec& cr) {
+  const auto v = cr.header.header.config_revision_number;
   if (v < 1) {
     if (!convert_to_52_1(window, config)) {
       return false;
@@ -284,24 +288,25 @@ bool ensure_latest_5x_config(UIWindow* window, const wwiv::sdk::Config& config) 
 
 void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config) {
   File file(config.config_filename());
-  if (!file.Open(File::modeBinary|File::modeReadWrite)) {
+  if (!file.Open(File::modeBinary | File::modeReadWrite)) {
     return;
   }
   window->SetColor(SchemeId::INFO);
   window->Puts("Converting config.dat to 4.3/5.x format...\n");
   window->SetColor(SchemeId::NORMAL);
-  file.Read(&syscfg, sizeof(configrec));
+  configrec syscfg53{};
+  file.Read(&syscfg53, sizeof(configrec));
   auto menus_dir = StrCat("menus", File::pathSeparatorString);
-  to_char_array(syscfg.menudir, FilePath(syscfg.gfilesdir, menus_dir));
+  to_char_array(syscfg53.menudir, FilePath(syscfg53.gfilesdir, menus_dir));
 
   arcrec arc[MAX_ARCS];
   for (int i = 0; i < MAX_ARCS; i++) {
-    if (syscfg.arcs[i].extension[0] && i < 4) {
-      to_char_array(arc[i].name, syscfg.arcs[i].extension);
-      to_char_array(arc[i].extension, syscfg.arcs[i].extension);
-      to_char_array(arc[i].arca, syscfg.arcs[i].arca);
-      to_char_array(arc[i].arce, syscfg.arcs[i].arce);
-      to_char_array(arc[i].arcl, syscfg.arcs[i].arcl);
+    if (syscfg53.arcs[i].extension[0] && i < 4) {
+      to_char_array(arc[i].name, syscfg53.arcs[i].extension);
+      to_char_array(arc[i].extension, syscfg53.arcs[i].extension);
+      to_char_array(arc[i].arca, syscfg53.arcs[i].arca);
+      to_char_array(arc[i].arce, syscfg53.arcs[i].arce);
+      to_char_array(arc[i].arcl, syscfg53.arcs[i].arcl);
     } else {
       to_char_array(arc[i].name, "New Archiver Name");
       to_char_array(arc[i].extension, "EXT");
@@ -311,16 +316,16 @@ void convert_config_424_to_430(UIWindow* window, const wwiv::sdk::Config& config
     }
   }
   file.Seek(0, File::Whence::begin);
-  file.Write(&syscfg, sizeof(configrec));
+  file.Write(&syscfg53, sizeof(configrec));
   file.Close();
 
   File archiver(FilePath(config.datadir(), ARCHIVER_DAT));
-  if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
+  if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
     window->Puts("Couldn't open 'ARCHIVER_DAT' for writing.\n");
     window->Puts("Creating new file....\n");
     create_arcs(window, config.datadir());
     window->Puts("\n");
-    if (!archiver.Open(File::modeBinary|File::modeWriteOnly|File::modeCreateFile)) {
+    if (!archiver.Open(File::modeBinary | File::modeWriteOnly | File::modeCreateFile)) {
       messagebox(window, "Still unable to open archiver.dat. Something is really wrong.");
       return;
     }

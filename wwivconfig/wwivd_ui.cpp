@@ -24,7 +24,7 @@
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -156,7 +156,8 @@ static void edit_blocking(wwivd_blocking_t& b, CursesWindow*) {
   y++;
   items.add(
       new Label(COL1_LINE, y, "DNS CC Server:"),
-      new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.dns_cc_server, false));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.dns_cc_server,
+                                             EditLineMode::ALL));
 
   y++;
   items.add(new Label(COL1_LINE, y, "Blocked Countries:"),
@@ -187,19 +188,20 @@ static void edit_matrix_entry(wwivd_matrix_entry_t& b) {
   char key[2] = {b.key, 0};
   {
     int y = 1;
-    items.add(new Label(COL1_LINE, y, "Key:"), new StringEditItem<char*>(COL1_POSITION, y, 1, key));
+    items.add(new Label(COL1_LINE, y, "Key:"),
+              new StringEditItem<char*>(COL1_POSITION, y, 1, key, EditLineMode::ALL));
     y++;
     items.add(new Label(COL1_LINE, y, "Name:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, 12, b.name, false));
+        new StringEditItem<std::string&>(COL1_POSITION, y, 12, b.name, EditLineMode::ALL));
     y++;
     items.add(new Label(COL1_LINE, y, "Description:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.description, false));
+        new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.description, EditLineMode::ALL));
     y++;
     items.add(new Label(COL1_LINE, y, "Telnet Command:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.telnet_cmd, false));
+        new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.telnet_cmd, EditLineMode::ALL));
     y++;
     items.add(new Label(COL1_LINE, y, "SSH Command:"),
-              new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.ssh_cmd, false));
+              new StringEditItem<std::string&>(COL1_POSITION, y, 52, b.ssh_cmd, EditLineMode::ALL));
     y++;
     items.add(new Label(COL1_LINE, y, "Require Ansi:"),
               new BooleanEditItem(COL1_POSITION, y, &b.require_ansi));
@@ -338,7 +340,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "HTTP Address:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, false))
+          new StringEditItem<std::string&>(COL1_POSITION, y, 16, c.http_address, EditLineMode::ALL))
       ->set_help_text("Network address to listen on for the HTTP Server.");
   y++;
   items
@@ -348,7 +350,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net receive cmd:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, false))
+           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.binkp_cmd, EditLineMode::ALL))
       ->set_help_text("Command to execute for an inbound network request.");
   y++;
   items
@@ -358,7 +360,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BeginDay Cmd:"),
-           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.beginday_cmd, false))
+          new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.beginday_cmd, EditLineMode::ALL))
       ->set_help_text("Command to execute for the beginday event.");
   y++;
   items
@@ -369,12 +371,14 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Net Callout Cmd:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd, false))
+           new StringEditItem<std::string&>(COL1_POSITION, y, 52, c.network_callout_cmd,
+                                            EditLineMode::ALL))
       ->set_help_text("Command to execute to perform a network callout.");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Matrix Filename:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename, false))
+           new StringEditItem<std::string&>(COL1_POSITION, y, 12, c.matrix_filename,
+                                            EditLineMode::ALL))
       ->set_help_text("Filename to display without extension before matrix bbs menu.");
   y++;
   items

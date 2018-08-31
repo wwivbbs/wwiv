@@ -25,9 +25,10 @@ void auto_val(int n, wwiv::sdk::User *u) {
   if (u->GetSl() == 255) {
     return;
   }
-  u->SetSl(a()->config()->config()->autoval[n].sl);
-  u->SetDsl(a()->config()->config()->autoval[n].dsl);
-  u->SetAr(a()->config()->config()->autoval[n].ar);
-  u->SetDar(a()->config()->config()->autoval[n].dar);
-  u->SetRestriction(a()->config()->config()->autoval[n].restrict);
+  const auto& avr = a()->config()->auto_val(n);
+  u->SetSl(avr.sl);
+  u->SetDsl(avr.dsl);
+  u->SetAr(avr.ar);
+  u->SetDar(avr.dar);
+  u->SetRestriction(avr.restrict);
 }

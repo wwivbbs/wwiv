@@ -202,7 +202,7 @@ void WFC::DrawScreen() {
     a()->localIO()->PutsXYA(58, 11, 14, sysop2() ? "Available    " : "Not Available");
 
     get_inst_info(a()->instance_number(), &ir);
-    if (ir.user < a()->config()->config()->maxusers && ir.user > 0) {
+    if (ir.user < a()->config()->max_users() && ir.user > 0) {
       const string unn = a()->names()->UserName(ir.user);
       a()->localIO()->PutsXYA(33, 16, 14, pad_to(unn, 20));
     } else {
@@ -538,7 +538,7 @@ int WFC::doWFCEvents() {
         frequent_init();
         a_->ReadCurrentUser(sysop_usernum);
         read_qscn(1, a()->context().qsc, false);
-        a_->ResetEffectiveSl();
+        a_->reset_effective_sl();
         a_->usernum = sysop_usernum;
       }
       catsl();
@@ -617,7 +617,7 @@ int WFC::LocalLogon() {
       bout.bputch(ch);
       a_->localIO()->Puts("\r\n\r\n\r\n\r\n\r\n\r\n");
       lokb = 2;
-      a_->ResetEffectiveSl();
+      a_->reset_effective_sl();
       changedsl();
       if (!set_language(a_->user()->GetLanguage())) {
         a_->user()->SetLanguage(0);

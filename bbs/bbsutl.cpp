@@ -274,7 +274,7 @@ bool inli(char *buffer, char *rollover, string::size_type nMaxLen, bool add_crlf
 // Returns 1 if current user has sysop access (permanent or temporary), else
 // returns 0.
 bool so() {
-  return (a()->GetEffectiveSl() == 255);
+  return (a()->effective_sl() == 255);
 }
 
 /**
@@ -286,7 +286,7 @@ bool cs() {
     return true;
   }
 
-  return (getslrec(a()->GetEffectiveSl()).ability & ability_cosysop) ? true : false;
+  return (a()->effective_slrec().ability & ability_cosysop) ? true : false;
 }
 
 
@@ -301,7 +301,7 @@ bool lcs() {
     return true;
   }
 
-  if (getslrec(a()->GetEffectiveSl()).ability & ability_limited_cosysop) {
+  if (a()->effective_slrec().ability & ability_limited_cosysop) {
     if (*a()->context().qsc == 999) {
       return true;
     }
@@ -378,13 +378,13 @@ bool sysop2() {
   if (a()->user()->IsRestrictionChat()) {
     return false;
   }
-  if (a()->config()->config()->sysoplowtime != a()->config()->config()->sysophightime) {
+  if (a()->config()->sysop_low_time() != a()->config()->sysop_high_time()) {
     const auto m = minutes_since_midnight();
-    if (a()->config()->config()->sysophightime > a()->config()->config()->sysoplowtime) {
-      if (m <= a()->config()->config()->sysoplowtime || m >= a()->config()->config()->sysophightime) {
+    if (a()->config()->sysop_high_time() > a()->config()->sysop_low_time()) {
+      if (m <= a()->config()->sysop_low_time() || m >= a()->config()->sysop_high_time()) {
         return false;
       }
-    } else if (m <= a()->config()->config()->sysoplowtime && m >= a()->config()->config()->sysophightime) {
+    } else if (m <= a()->config()->sysop_low_time() && m >= a()->config()->sysop_high_time()) {
       return false;
     }
   }

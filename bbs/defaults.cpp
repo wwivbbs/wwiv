@@ -663,7 +663,7 @@ static void modify_mailbox() {
     a()->user()->ClearMailboxForward();
     return;
   }
-  if (a()->user()->GetSl() >= a()->config()->config()->newusersl) {
+  if (a()->user()->GetSl() >= a()->config()->newuser_sl()) {
     int network_number = getnetnum_by_type(network_type_t::internet);
     if (network_number != -1) {
       a()->set_net_num(network_number);

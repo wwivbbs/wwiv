@@ -69,7 +69,7 @@ static bool ValidateMenuSet(const std::string& menu_dir) {
 
 static bool CheckMenuPassword(const string& original_password) {
   const string expected_password =
-      (original_password == "*SYSTEM") ? a()->config()->config()->systempw : original_password;
+      (original_password == "*SYSTEM") ? a()->config()->system_password() : original_password;
   bout.nl();
   const auto actual_password = input_password("|#2SY: ", 20);
   return actual_password == expected_password;
@@ -90,7 +90,7 @@ static void StartMenus() {
 }
 
 static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
-  if ((pHeader->nFlags & MENU_FLAG_DELETED) || (a()->GetEffectiveSl() < pHeader->nMinSL) ||
+  if ((pHeader->nFlags & MENU_FLAG_DELETED) || (a()->effective_sl() < pHeader->nMinSL) ||
       (a()->user()->GetDsl() < pHeader->nMinDSL)) {
     return false;
   }
@@ -136,8 +136,8 @@ static bool CheckMenuSecurity(const MenuHeader* pHeader, bool bCheckPassword) {
 
 static bool CheckMenuItemSecurity(const MenuRec* pMenu, bool bCheckPassword) {
   // if deleted, return as failed
-  if ((pMenu->nFlags & MENU_FLAG_DELETED) || (a()->GetEffectiveSl() < pMenu->nMinSL) ||
-      (a()->GetEffectiveSl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
+  if ((pMenu->nFlags & MENU_FLAG_DELETED) || (a()->effective_sl() < pMenu->nMinSL) ||
+      (a()->effective_sl() > pMenu->iMaxSL && pMenu->iMaxSL != 0) ||
       (a()->user()->GetDsl() < pMenu->nMinDSL) ||
       (a()->user()->GetDsl() > pMenu->iMaxDSL && pMenu->iMaxDSL != 0)) {
     return false;

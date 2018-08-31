@@ -33,12 +33,12 @@
 #endif
 #include <sys/stat.h>
 
-#include "local_io/keycodes.h"
 #include "core/file.h"
 #include "core/log.h"
 #include "core/scope_exit.h"
 #include "core/strings.h"
 #include "core/wwivport.h"
+#include "local_io/keycodes.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "localui/wwiv_curses.h"
@@ -49,7 +49,7 @@
 #include "wwivconfig/subacc.h"
 #include "wwivconfig/utility.h"
 #include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 
 #define UINT(u, n) (*((int*)(((char*)(u)) + (n))))
 #define UCHAR(u, n) (*((char*)(((char*)(u)) + (n))))
@@ -133,20 +133,16 @@ static bool del_net(const Config& config, Networks& networks, int nn) {
   }
 
   // Update the user
-  unique_ptr<char[]> u(new char[syscfg.userreclen]);
-  read_user(config.datadir(), 1, reinterpret_cast<userrec*>(u.get()));
-  int nu = number_userrecs(config.datadir());
+  userrec u{};
+  const int nu = number_userrecs(config.datadir());
   for (int i = 1; i <= nu; i++) {
-    read_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
-    if (UINT(u.get(), syscfg.fsoffset)) {
-      if (UCHAR(u.get(), syscfg.fnoffset) == nn) {
-        UINT(u.get(), syscfg.fsoffset) = UINT(u.get(), syscfg.fuoffset) =
-            UCHAR(u.get(), syscfg.fnoffset) = 0;
-        write_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
-      } else if (UCHAR(u.get(), syscfg.fnoffset) > nn) {
-        UCHAR(u.get(), syscfg.fnoffset)--;
-        write_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
-      }
+    read_user(config, i, &u);
+    if (u.net_num == nn) {
+      u.forwardsys = u.forwardusr = u.net_num = 0;
+      write_user(config, i, &u);
+    } else if (u.net_num > nn) {
+      u.net_num--;
+      write_user(config, i, &u);
     }
   }
 
@@ -186,9 +182,9 @@ public:
       int y = 1;
 
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
-                                                 n->fido_address, false));
+                                                 n->fido_address, EditLineMode::ALL));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN,
-                                                 n->nodelist_base, false));
+                                                 n->nodelist_base, EditLineMode::ALL));
       items.add(
           new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->inbound_dir));
       items.add(
@@ -202,7 +198,7 @@ public:
       items.add(
           new StringFilePathItem(COL1_POSITION, y++, MAX_STRING_LEN, netdir_, n->bad_packets_dir));
       items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, MAX_STRING_LEN, n->origin_line,
-                                                 false));
+                                                 EditLineMode::ALL));
 
       dy_start_ = y;
       vector<pair<fido_mailer_t, string>> mailerlist = {
@@ -222,10 +218,8 @@ public:
 
       items.add(new StringListItem(COL1_POSITION, y++, {"", "ZIP", "ARC", "PKT"},
                                    n->packet_config.compression_type));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8,
-                                                 n->packet_config.packet_password, true));
-      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8,
-                                                 n->packet_config.areafix_password, true));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.packet_password, EditLineMode::UPPER_ONLY));
+      items.add(new StringEditItem<std::string&>(COL1_POSITION, y++, 8, n->packet_config.areafix_password, EditLineMode::UPPER_ONLY));
 
       // dy_start
       int dy = dy_start_;
@@ -234,10 +228,8 @@ public:
 
       // from http://ftsc.org/docs/old/fts-5005.001
       vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
-          {fido_bundle_status_t::normal, "Normal"},
-          {fido_bundle_status_t::crash, "Crash"},
-          {fido_bundle_status_t::direct, "Direct"},
-          {fido_bundle_status_t::immediate, "Immediate"},
+          {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
+          {fido_bundle_status_t::direct, "Direct"}, {fido_bundle_status_t::immediate, "Immediate"},
           {fido_bundle_status_t::hold, "Hold"},
       };
       items.add(new ToggleEditItem<fido_bundle_status_t>(COL2_POSITION, dy++, bundlestatuslist,
@@ -304,7 +296,7 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
 
   int y = 1;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Routes:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, false));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, EditLineMode::ALL));
   ++y;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet Type:"),
             new ToggleEditItem<fido_packet_t>(COL1_POSITION, y, packetlist, &p.packet_type));
@@ -313,10 +305,10 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
             new StringListItem(COL1_POSITION, y, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet PW:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password, true));
+      new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password, EditLineMode::UPPER_ONLY));
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "AreaFix PW:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password, true));
+      new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password, EditLineMode::UPPER_ONLY));
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Arc Size:"),
             new NumberEditItem<int>(COL1_POSITION, y, &p.max_archive_size));
@@ -325,10 +317,8 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
             new NumberEditItem<int>(COL1_POSITION, y, &p.max_packet_size));
 
   vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
-      {fido_bundle_status_t::normal, "Normal"},
-      {fido_bundle_status_t::crash, "Crash"},
-      {fido_bundle_status_t::direct, "Direct"},
-      {fido_bundle_status_t::immediate, "Immediate"},
+      {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
+      {fido_bundle_status_t::direct, "Direct"}, {fido_bundle_status_t::immediate, "Immediate"},
       {fido_bundle_status_t::hold, "Hold"},
   };
   y++;
@@ -338,13 +328,13 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   auto& b = n.binkp_config;
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, false));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, EditLineMode::ALL));
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Port:"),
             new NumberEditItem<int>(COL1_POSITION, y, &b.port));
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Session PW:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password, true));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password, EditLineMode::UPPER_ONLY));
   y += 2;
   auto& c = n.callout_config;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Automatic Callouts:"),
@@ -454,17 +444,18 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
   constexpr int COL1_POSITION = LBL1_POSITION + LABEL_WIDTH + 1;
   constexpr int LBL2_POSITION = COL1_POSITION + 4 + 1;
   constexpr int LABEL2_WIDTH = 4;
-  constexpr int COL2_POSITION = LBL2_POSITION + 1+ LABEL2_WIDTH;
+  constexpr int COL2_POSITION = LBL2_POSITION + 1 + LABEL2_WIDTH;
   int y = 1;
 
   EditItems items{};
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 20, c.session_password, false));
+            new StringEditItem<std::string&>(COL1_POSITION, y, 20, c.session_password,
+                                             EditLineMode::ALL));
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allow Outbound Connections:"),
             new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "No", "Yes",
                                                   &c.options));
-  y+=2;
+  y += 2;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
             new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
                                                                  &c.call_every_x_minutes));
@@ -584,8 +575,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
       {network_type_t::wwivnet, "WWIVnet "},
       {network_type_t::ftn, "Fido    "},
       {network_type_t::internet, "Internet"},
-      {network_type_t::news, "Newsgroup (not supported yet)"}
-  };
+      {network_type_t::news, "Newsgroup (not supported yet)"}};
 
   Subs subs(config.datadir(), networks.networks());
   bool subs_loaded = subs.Load();
@@ -600,7 +590,7 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
   EditItems items{};
   items.add(new ToggleEditItem<network_type_t>(COL1_POSITION, y++, nettypes, &n.type))
       ->set_help_text("If changing network types, exit and reenter this dialog for more options.");
-  items.add(new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, false));
+  items.add(new StringEditItem<char*>(COL1_POSITION, y++, 15, n.name, EditLineMode::ALL));
   items.add(new NumberEditItem<uint16_t>(COL1_POSITION, y++, &n.sysnum))
       ->set_help_text("WWIVnet node number, or 1 for FTN networks");
   items.add(new StringFilePathItem(COL1_POSITION, y++, 60, config.root_directory(), n.dir));
@@ -612,9 +602,8 @@ static void edit_net(const Config& config, Networks& networks, int nn) {
     items.add(
         new FidoPacketConfigSubDialog(net_dir, COL1_POSITION, y++, "Node Settings", 76, config, n));
   } else if (n.type == network_type_t::wwivnet) {
-    items.add(
-      new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
-      new CalloutNetSubDialog(net_dir, COL1_POSITION, y, "Settings", 76, config, n));
+    items.add(new Label(LABEL1_POSITION, y, LABEL_WIDTH, "Callout.net:"),
+              new CalloutNetSubDialog(net_dir, COL1_POSITION, y, "Settings", 76, config, n));
     y++;
   }
 
@@ -698,16 +687,13 @@ static bool insert_net(const Config& config, Networks& networks, int nn) {
     }
   }
 
-  unique_ptr<char[]> u(new char[syscfg.userreclen]);
-  read_user(config.datadir(), 1, reinterpret_cast<userrec*>(u.get()));
+  userrec u{};
   int nu = number_userrecs(config.datadir());
   for (int i = 1; i <= nu; i++) {
-    read_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
-    if (UINT(u.get(), syscfg.fsoffset)) {
-      if (UCHAR(u.get(), syscfg.fnoffset) >= nn) {
-        UCHAR(u.get(), syscfg.fnoffset)++;
-        write_user(config.datadir(), i, reinterpret_cast<userrec*>(u.get()));
-      }
+    read_user(config, i, &u);
+    if (u.net_num  >= nn) {
+      u.net_num++;
+      write_user(config, i, &u);
     }
   }
 
@@ -748,11 +734,6 @@ void networks(const wwiv::sdk::Config& config) {
       } else if (result.type == ListBoxResultType::HOTKEY) {
         switch (result.hotkey) {
         case 'D':
-          if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
-            messagebox(window, {"You must run the BBS once", "to set up some variables before ",
-                                "deleting a network."});
-            break;
-          }
           if (networks.networks().size() > 1) {
             const string prompt = StringPrintf("Delete '%s'", networks.at(result.selected).name);
             bool yn = dialog_yn(window, prompt);
@@ -767,12 +748,6 @@ void networks(const wwiv::sdk::Config& config) {
           }
           break;
         case 'I':
-          if (!(syscfg.fnoffset && syscfg.fsoffset && syscfg.fuoffset)) {
-            vector<string> lines{"You must run the BBS once to set up ",
-                                 "some variables before inserting a network."};
-            messagebox(window, lines);
-            break;
-          }
           if (networks.networks().size() >= MAX_NETWORKS) {
             messagebox(window, "Too many networks.");
             break;

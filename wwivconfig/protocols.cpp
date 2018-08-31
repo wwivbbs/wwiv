@@ -39,7 +39,7 @@
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -133,10 +133,10 @@ static void edit_prot(vector<newexternalrec>& externs, vector<newexternalrec>& o
   items.add(new Label(LABEL1_POSITION, y++, "NOTE: Batch protocols >MUST< correctly support DSZLOG."));
 
   items.add_items({
-    new StringEditItem<char*>(COL1_POSITION, 1, 50, c.description, false),
-    new NumberEditItem<uint16_t>(COL1_POSITION, 2, &c.ok1),
-    new CommandLineItem(2, 4, 70, c.receivefn),
-    new CommandLineItem(2, 6, 70, c.sendfn),
+      new StringEditItem<char*>(COL1_POSITION, 1, 50, c.description, EditLineMode::ALL),
+      new NumberEditItem<uint16_t>(COL1_POSITION, 2, &c.ok1),
+      new CommandLineItem(2, 4, 70, c.receivefn),
+      new CommandLineItem(2, 6, 70, c.sendfn),
   });
   out->Cls(ACS_CKBOARD);
   items.create_window("Protocol Configuration");

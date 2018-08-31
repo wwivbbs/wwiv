@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_AUTOVAL_H__
 #define __INCLUDED_AUTOVAL_H__
 
-void autoval_levs();
+#include "sdk/config.h"
+
+void autoval_levs(wwiv::sdk::Config& config);
 
 #endif // __INCLUDED_AUTOVAL_H__

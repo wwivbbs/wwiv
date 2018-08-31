@@ -91,10 +91,10 @@ static void CleanUserInfo() {
     setuconf(ConferenceType::CONF_SUBS, a()->user()->GetLastSubConf(), 0);
     setuconf(ConferenceType::CONF_DIRS, a()->user()->GetLastDirConf(), 0);
   }
-  if (a()->user()->GetLastSubNum() > a()->config()->config()->max_subs) {
+  if (a()->user()->GetLastSubNum() > a()->config()->max_subs()) {
     a()->user()->SetLastSubNum(0);
   }
-  if (a()->user()->GetLastDirNum() > a()->config()->config()->max_dirs) {
+  if (a()->user()->GetLastDirNum() > a()->config()->max_dirs()) {
     a()->user()->SetLastDirNum(0);
   }
   if (a()->usub[a()->user()->GetLastSubNum()].subnum != -1) {
@@ -265,7 +265,7 @@ static bool VerifyPassword(string remote_password) {
 
 static bool VerifySysopPassword() {
   string password = input_password("SY: ", 20);
-  return (password == a()->config()->config()->systempw) ? true : false;
+  return (password == a()->config()->system_password()) ? true : false;
 }
 
 static void DoFailedLoginAttempt() {
@@ -292,7 +292,7 @@ static void LeaveBadPasswordFeedback(int ans) {
     a()->user()->ClearStatusFlag(User::ansi);
   }
   bout << "|#6Too many logon attempts!!\r\n\n";
-  bout << "|#9Would you like to leave Feedback to " << a()->config()->config()->sysopname << "? ";
+  bout << "|#9Would you like to leave Feedback to " << a()->config()->sysop_name() << "? ";
   if (!yesno()) {
     return;
   }
@@ -308,7 +308,7 @@ static void LeaveBadPasswordFeedback(int ans) {
   a()->user()->SetMacro(0, "");
   a()->user()->SetMacro(1, "");
   a()->user()->SetMacro(2, "");
-  a()->user()->SetSl(a()->config()->config()->newusersl);
+  a()->user()->SetSl(a()->config()->newuser_sl());
   a()->user()->SetScreenChars(80);
   if (ans > 0) {
     select_editor();
@@ -378,7 +378,7 @@ void getuser() {
   a()->usernum = 0;
   a()->SetCurrentConferenceMessageArea(0);
   a()->SetCurrentConferenceFileArea(0);
-  a()->SetEffectiveSl(a()->config()->config()->newusersl);
+  a()->effective_sl(a()->config()->newuser_sl());
   a()->user()->SetStatus(0);
 
   const auto& ip = a()->remoteIO()->remote_info().address;
@@ -420,7 +420,7 @@ void getuser() {
       if (a()->context().guest_user()) {
         logon_guest();
       } else {
-        a()->SetEffectiveSl(a()->config()->config()->newusersl);
+        a()->effective_sl(a()->config()->newuser_sl());
         if (!VerifyPassword(remote_password)) {
           ok = false;
         }
@@ -437,7 +437,7 @@ void getuser() {
         }
       }
       if (ok) {
-        a()->ResetEffectiveSl();
+        a()->reset_effective_sl();
         changedsl();
       } else {
         DoFailedLoginAttempt();
@@ -494,7 +494,7 @@ static void UpdateUserStatsForLogin() {
   } else {
     a()->set_current_user_dir_num(0);
   }
-  if (a()->GetEffectiveSl() != 255 && !a()->context().guest_user()) {
+  if (a()->effective_sl() != 255 && !a()->context().guest_user()) {
     a()->status_manager()->Run([](WStatus& s) {
       s.IncrementCallerNumber();
       s.IncrementNumCallsToday();
@@ -624,12 +624,12 @@ static void UpdateLastOnFile() {
       sysoplog() << "Remote IP: " << remote_address;
     }
   }
-  if (a()->GetEffectiveSl() == 255 && !a()->context().incom()) {
+  if (a()->effective_sl() == 255 && !a()->context().incom()) {
     return;
   }
 
   // add line to laston.txt. We keep 8 lines
-  if (a()->GetEffectiveSl() != 255) {
+  if (a()->effective_sl() != 255) {
     TextFile lastonFile(laston_txt_filename, "w");
     if (lastonFile.IsOpen()) {
       auto it = lines.begin();
@@ -832,7 +832,7 @@ static vector<bool> read_voting() {
 
 static void CheckUserForVotingBooth() {
   vector<bool> questused = read_voting();
-  if (!a()->user()->IsRestrictionVote() && a()->GetEffectiveSl() > a()->config()->config()->newusersl) {
+  if (!a()->user()->IsRestrictionVote() && a()->effective_sl() > a()->config()->newuser_sl()) {
     for (int i = 0; i < 20; i++) {
       if (questused[i] && a()->user()->GetVote(i) == 0) {
         bout.nl();
@@ -971,7 +971,7 @@ void logoff() {
 
   string text = "  Logged Off At ";
   text += times();
-  if (a()->GetEffectiveSl() != 255 || a()->context().incom()) {
+  if (a()->effective_sl() != 255 || a()->context().incom()) {
     sysoplog(false) << "";
     sysoplog(false) << stripcolors(text);
   }

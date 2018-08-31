@@ -103,7 +103,7 @@ void kill_old_email() {
           a()->users()->readuser(&user, m.touser);
           string tempName = a()->names()->UserName(a()->usernum);
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da))
-              && ((getslrec(a()->GetEffectiveSl()).ability & ability_read_email_anony) == 0)) {
+              && ((a()->effective_slrec().ability & ability_read_email_anony) == 0)) {
             tempName = ">UNKNOWN<";
           }
           bout << tempName;
@@ -435,12 +435,12 @@ void time_bank() {
   long nsln;
 
   bout.nl();
-  if (a()->user()->GetSl() <= a()->config()->config()->newusersl) {
+  if (a()->user()->GetSl() <= a()->config()->newuser_sl()) {
     bout << "|#6You must be validated to access the timebank.\r\n";
     return;
   }
-  if (a()->user()->GetTimeBankMinutes() > getslrec(a()->GetEffectiveSl()).time_per_logon) {
-    a()->user()->SetTimeBankMinutes(getslrec(a()->GetEffectiveSl()).time_per_logon);
+  if (a()->user()->GetTimeBankMinutes() > a()->effective_slrec().time_per_logon) {
+    a()->user()->SetTimeBankMinutes(a()->effective_slrec().time_per_logon);
   }
 
   if (okansi()) {
@@ -472,9 +472,9 @@ void time_bank() {
       i = to_number<int>(s);
       if (i > 0) {
         nsln = nsl();
-        if ((i + a()->user()->GetTimeBankMinutes()) > getslrec(
-              a()->GetEffectiveSl()).time_per_logon) {
-          i = getslrec(a()->GetEffectiveSl()).time_per_logon - a()->user()->GetTimeBankMinutes();
+        if ((i + a()->user()->GetTimeBankMinutes()) > a()->config()->sl(
+              a()->effective_sl()).time_per_logon) {
+          i = a()->effective_slrec().time_per_logon - a()->user()->GetTimeBankMinutes();
         }
         if (i > (nsln / SECONDS_PER_MINUTE)) {
           i = static_cast<int>(nsln / SECONDS_PER_MINUTE);

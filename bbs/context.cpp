@@ -31,22 +31,22 @@ using namespace wwiv::strings;
 SessionContext::SessionContext(Application* a) : a_(a) {}
 
 void SessionContext::InitalizeContext() {
-  const configrec* c = a_->config()->config();
-  auto qscan_length = c->qscn_len / sizeof(uint32_t);
+  const auto c = a_->config();
+  const auto qscan_length = c->qscn_len() / sizeof(uint32_t);
   qscan_ = std::make_unique<uint32_t[]>(qscan_length);
   qsc = qscan_.get();
   qsc_n = qsc + 1;
-  qsc_q = qsc_n + (c->max_dirs + 31) / 32;
-  qsc_p = qsc_q + (c->max_subs + 31) / 32;
+  qsc_q = qsc_n + (c->max_dirs() + 31) / 32;
+  qsc_p = qsc_q + (c->max_subs() + 31) / 32;
   ResetQScanPointers();
 }
 
 void SessionContext::ResetQScanPointers() {
-  const configrec* c = a_->config()->config();
-  memset(qsc, 0, c->qscn_len);
+  const auto& c = a_->config();
+  memset(qsc, 0, c->qscn_len());
   *qsc = 999;
-  memset(qsc_n, 0xff, ((c->max_dirs + 31) / 32) * 4);
-  memset(qsc_q, 0xff, ((c->max_subs + 31) / 32) * 4);
+  memset(qsc_n, 0xff, ((c->max_dirs() + 31) / 32) * 4);
+  memset(qsc_q, 0xff, ((c->max_subs() + 31) / 32) * 4);
 }
 
 void SessionContext::reset() {

@@ -816,7 +816,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
 
   postrec p = *get_post(n);
   bool bReadit =
-      (lcs() || (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony)) ? true : false;
+      (lcs() || (a()->effective_slrec().ability & ability_read_post_anony)) ? true : false;
   const auto& cs = a()->current_sub();
   auto m = read_type2_message(&(p.msg), static_cast<char>(p.anony & 0x0f), bReadit,
                               cs.filename.c_str(), p.ownersys, p.owneruser);
@@ -855,7 +855,7 @@ ReadMessageResult read_post(int n, bool* next, int* val) {
     m.flags.insert(MessageFlags::PERMANENT);
   }
   if ((p.status & status_pending_net) &&
-      a()->user()->GetSl() > a()->config()->config()->newusersl) {
+      a()->user()->GetSl() > a()->config()->newuser_sl()) {
     *val |= 2;
     m.flags.insert(MessageFlags::NOT_NETWORK_VALIDATED);
   }

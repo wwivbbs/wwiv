@@ -72,17 +72,12 @@ void BbsHelper::SetUp() {
   File::FixPathSeparators(&dir_en_gfiles_);
 #endif  // _WIN32
 
-  // We have to set syscfg too until everything in the bbs moves to 
-  // using the Config class internally.
   unique_ptr<configrec> sysconfig = make_unique<configrec>();
-  // strcpy(sysconfig->datadir, dir_data_.c_str());
-  // strcpy(sysconfig->gfilesdir, dir_gfiles_.c_str());
 
   a()->language_dir = dir_en_gfiles_;
   unique_ptr<Config> config = make_unique<Config>(temp);
   config->set_initialized_for_test(true);
   config->set_paths_for_test(dir_data_, dir_msgs_, dir_gfiles_, dir_menus_, dir_dloads_, dir_data_);
-  config->set_config(sysconfig.release(), false);
   a()->set_config_for_test(move(config));
   user_ = a()->user();
   // No pause in tests.

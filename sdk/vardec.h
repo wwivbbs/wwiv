@@ -277,11 +277,14 @@ struct configrec {
       datadir[81],     // path for data directory
       dloadsdir[81],   // path for dloads dir
       unused_ramdrive, // drive for ramdisk
-      tempdir[81],     // path for temporary directory
-      xmark,           // 0xff
+      // former path for temporary directory, now mirrors node 1 temp dir
+      // for legacy compatibility.
+      tempdir[81],
+      xmark, // 0xff
       // former reg code + modem config.
       // Script base directory.  Typically C:\wwiv\scripts
-      scriptdir[81], unused1[242],
+      scriptdir[81], 
+      unused1[242],
       systemname[51],  // BBS system name
       systemphone[13], // BBS system phone number
       sysopname[51],   // sysop's name
@@ -295,7 +298,8 @@ struct configrec {
       newuploads,   // file dir new uploads go
       closedsystem; // if system is closed
 
-  uint16_t systemnumber; // BBS system number
+  // BBS system number before multiple nets were allowed.
+  uint16_t unused_systemnumber; 
 
   // Former baud rate and comports
   uint8_t unused4[20];
@@ -311,40 +315,39 @@ struct configrec {
   uint16_t sysophightime;
   // time to run mail router
   uint16_t unused_executetime;
-
   // Formerly required up/down ratio. This has been moved to wwiv.ini
-  float req_ratio,
-      newusergold; // new user gold
-
-  slrec sl[256]; // security level data
-
-  valrec autoval[10]; // sysop quik-validation data
-
+  float req_ratio;
+  // new user gold
+  float newusergold;
+  // security level data
+  slrec sl[256];
+  // sysop quik-validation data
+  valrec autoval[10];
   uint8_t unused5[151];
-
-  arcrec_424_t arcs[4]; // old archivers (4.24 format)
-
+  // old archivers (4.24 format)
+  arcrec_424_t arcs[4];
   uint8_t unused6[102];
-
-  int16_t userreclen, // user record length
-      waitingoffset,  // mail waiting offset
-      inactoffset;    // inactive offset
-
-  uint8_t unused7[51]; // newuser event
-
-  uint32_t wwiv_reg_number; // user's reg number
-
+  // user record length
+  int16_t userreclen;
+  // mail waiting offset
+  int16_t waitingoffset;
+  // inactive offset
+  int16_t inactoffset;
+  // formerly newuser event
+  uint8_t unused7[51]; 
+  // SysOp's WWIV 4.x Registration Number
+  uint32_t wwiv_reg_number; 
+  // New User Password
   char newuserpw[21];
-
+  // Post/Call Ratio required to access transfers
   float post_call_ratio;
-
   uint8_t unused8[222];
-
-  int16_t sysstatusoffset; // system status offset
-
-  char unused_network_type; // network type ID
-
-  int16_t fuoffset, fsoffset, fnoffset; // offset values
+  // system status offset
+  int16_t sysstatusoffset;
+  // Formerly network type ID?
+  char unused_network_type; 
+  // offset values into user record, used by net3x.
+  int16_t fuoffset, fsoffset, fnoffset; 
 
   // max subboards
   uint16_t max_subs;
@@ -352,13 +355,10 @@ struct configrec {
   uint16_t max_dirs;
   // qscan pointer length in bytes
   uint16_t qscn_len;
-
-  uint8_t email_storage_type; // how to store email
-
-  uint8_t unused9[8];
-
-  char menudir[81]; // path for menu dir
-  uint8_t res[502]; // RESERVED
+  uint8_t unused9[9];
+  // path for menu dir
+  char menudir[81]; 
+  uint8_t res[502];
 };
 
 // overlay information per instance

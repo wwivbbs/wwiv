@@ -27,8 +27,7 @@
 int number_userrecs(const std::string& datadir);
 void save_status(const std::string& datadir, const statusrec_t& statusrec);
 bool read_status(const std::string& datadir, statusrec_t& statusrec);
-void save_config();
-void read_user(const std::string& datadir, unsigned int un, userrec *u);
-void write_user(const std::string& datadir, unsigned int un, userrec *u);
+void read_user(const wwiv::sdk::Config& config, unsigned int un, userrec* u);
+void write_user(const wwiv::sdk::Config& config, unsigned int un, userrec* u);
 
 #endif // __INCLUDED_UTILITY_H__

@@ -98,7 +98,7 @@ void get_user_ppp_addr() {
 }
 
 void send_inet_email() {
-  if (a()->user()->GetNumEmailSentToday() > getslrec(a()->GetEffectiveSl()).emails) {
+  if (a()->user()->GetNumEmailSentToday() > a()->effective_slrec().emails) {
     bout.nl();
     bout << "|#6Too much mail sent today.\r\n";
     return;
@@ -151,7 +151,7 @@ void read_inet_addr(std::string& internet_address, int user_number) {
     File file(FilePath(a()->config()->datadir(), INETADDR_DAT));
     if (!file.Exists()) {
       file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile);
-      auto size = a()->config()->config()->maxusers * 80;
+      auto size = a()->config()->max_users() * 80;
       auto zero = std::make_unique<char[]>(size);
       file.Write(zero.get(), size);
     } else {

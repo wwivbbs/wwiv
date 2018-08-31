@@ -35,9 +35,9 @@
 #include "sdk/filenames.h"
 #include "sdk/user.h"
 #include "sdk/usermanager.h"
+#include "sdk/vardec.h"
 #include "wwivconfig/utility.h"
 #include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/wwivinit.h"
 
 static const int COL1_POSITION = 17;
 static const int COL2_POSITION = 50;
@@ -137,9 +137,10 @@ void user_editor(const wwiv::sdk::Config& config) {
 
   int current_usernum = 1;
   userrec user;
-  read_user(config.datadir(), current_usernum, &user);
+  read_user(config, current_usernum, &user);
 
-  auto user_name_field = new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, true);
+  auto user_name_field =
+      new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, user.name, EditLineMode::UPPER_ONLY);
   user_name_field->set_displayfn(
       [&]() -> string { return StringPrintf("%s #%d", user.name, current_usernum); });
 
@@ -177,21 +178,21 @@ void user_editor(const wwiv::sdk::Config& config) {
   EditItems items{};
   items.add_items({
       user_name_field,
-      new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, false),
+      new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, user.realname, EditLineMode::ALL),
       new NumberEditItem<uint8_t>(COL1_POSITION, 3, &user.sl),
       new NumberEditItem<uint8_t>(COL1_POSITION, 4, &user.dsl),
-      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.street, false),
-      new StringEditItem<char*>(COL1_POSITION, 6, 30, user.city, false),
-      new StringEditItem<char*>(COL1_POSITION, 7, 2, user.state, false),
-      new StringEditItem<char*>(COL1_POSITION, 8, 10, user.zipcode, true),
+      new StringEditItem<char*>(COL1_POSITION, 5, 30, user.street, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, 6, 30, user.city, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, 7, 2, user.state, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, 8, 10, user.zipcode, EditLineMode::UPPER_ONLY),
       birthday_field,
-      new StringEditItem<char*>(COL1_POSITION, 10, 8, user.pw, true),
-      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.phone, true),
-      new StringEditItem<char*>(COL1_POSITION, 12, 12, user.dataphone, true),
+      new StringEditItem<char*>(COL1_POSITION, 10, 8, user.pw, EditLineMode::UPPER_ONLY),
+      new StringEditItem<char*>(COL1_POSITION, 11, 12, user.phone, EditLineMode::UPPER_ONLY),
+      new StringEditItem<char*>(COL1_POSITION, 12, 12, user.dataphone, EditLineMode::UPPER_ONLY),
       new NumberEditItem<int8_t>(COL1_POSITION, 13, &user.comp_type),
       new RestrictionsEditItem(COL1_POSITION, 14, &user.restrict),
       new NumberEditItem<uint32_t>(COL1_POSITION, 15, &user.wwiv_regnum),
-      new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, false),
+      new StringEditItem<char*>(COL1_POSITION, 16, 57, user.note, EditLineMode::ALL),
   });
   items.set_navigation_extra_help_items(create_extra_help_items());
 
@@ -227,7 +228,7 @@ void user_editor(const wwiv::sdk::Config& config) {
       } else {
         items.Run();
         if (dialog_yn(items.window(), "Save User?")) {
-          write_user(config.datadir(), current_usernum, &user);
+          write_user(config, current_usernum, &user);
         }
       }
       items.window()->Refresh();
@@ -291,7 +292,7 @@ void user_editor(const wwiv::sdk::Config& config) {
       break;
     }
 
-    read_user(config.datadir(), current_usernum, &user);
+    read_user(config, current_usernum, &user);
     show_user(&items, &user);
   }
 }

@@ -37,7 +37,7 @@
 #include "core/file.h"
 #include "core/wwivport.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
@@ -66,10 +66,12 @@ static void edit_editor(editorrec& e) {
 
   int y = 1;
   EditItems items{};
-  items.add(new StringEditItem<char*>(COL1_POSITION, y++, 35, e.description, false));
+  items.add(
+      new StringEditItem<char*>(COL1_POSITION, y++, 35, e.description, EditLineMode::ALL));
   items.add(new ToggleEditItem<uint8_t>(COL1_POSITION, y++, bbs_types, &e.bbs_type));
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_no_DOS, "No ", "Yes", &e.ansir));
-  items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_emulate_fossil, "Yes", "No ", &e.ansir));
+  items.add(
+      new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_emulate_fossil, "Yes", "No ", &e.ansir));
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_stdio, "Yes", "No ", &e.ansir));
   items.add(new FlagEditItem<uint8_t>(COL1_POSITION, y++, ansir_temp_dir, "Yes", "No ", &e.ansir));
   y++;

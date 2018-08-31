@@ -233,7 +233,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
   if ((c.ansir & ansir_local_only) && a()->using_modem) {
     return false;
   }
-  if (c.sl > a()->GetEffectiveSl()) {
+  if (c.sl > a()->effective_sl()) {
     return false;
   }
   if (c.ar && !a()->user()->HasArFlag(c.ar)) {
@@ -241,7 +241,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
   }
   if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
       && a()->chains_reg.size() > 0
-      && a()->GetEffectiveSl() < 255) {
+      && a()->effective_sl() < 255) {
     chainregrec& r = a()->chains_reg[ nDoorNumber ];
     if (r.maxage) {
       if (r.minage > a()->user()->GetAge() || r.maxage < a()->user()->GetAge()) {

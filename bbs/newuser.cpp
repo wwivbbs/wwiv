@@ -404,7 +404,6 @@ void input_age(User* pUser) {
 
 void input_comptype() {
   int ct = -1;
-  char c[5];
 
   bool ok = true;
   do {
@@ -432,7 +431,6 @@ void input_comptype() {
 
 void input_screensize() {
   int x = 0, y = 0;
-  char s[5];
 
   bool ok = true;
   do {
@@ -550,8 +548,8 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
   }
 
   int nNewUserNumber =
-      static_cast<int>((userFile.length() / a()->config()->config()->userreclen) - 1);
-  userFile.Seek(a()->config()->config()->userreclen, File::Whence::begin);
+      static_cast<int>((userFile.length() / a()->config()->userrec_length()) - 1);
+  userFile.Seek(a()->config()->userrec_length(), File::Whence::begin);
   int user_number = 1;
 
   if (nNewUserNumber == a()->status_manager()->GetUserCount()) {
@@ -568,18 +566,18 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
         if (!userFile.IsOpen()) {
           return -1;
         }
-        userFile.Seek(static_cast<long>(user_number * a()->config()->config()->userreclen),
+        userFile.Seek(static_cast<long>(user_number * a()->config()->userrec_length()),
                       File::Whence::begin);
         nNewUserNumber =
-            static_cast<int>((userFile.length() / a()->config()->config()->userreclen) - 1);
+            static_cast<int>((userFile.length() / a()->config()->userrec_length()) - 1);
       }
       User tu;
-      userFile.Read(&tu.data, a()->config()->config()->userreclen);
+      userFile.Read(&tu.data, a()->config()->userrec_length());
 
       if (tu.IsUserDeleted() && tu.GetSl() != 255) {
-        userFile.Seek(static_cast<long>(user_number * a()->config()->config()->userreclen),
+        userFile.Seek(static_cast<long>(user_number * a()->config()->userrec_length()),
                       File::Whence::begin);
-        userFile.Write(&pUser->data, a()->config()->config()->userreclen);
+        userFile.Write(&pUser->data, a()->config()->userrec_length());
         userFile.Close();
         write_qscn(user_number, qscn, false);
         InsertSmallRecord(*a()->status_manager(), *a()->names(), user_number, pUser->GetName());
@@ -590,10 +588,10 @@ static int find_new_usernum(const User* pUser, uint32_t* qscn) {
     }
   }
 
-  if (user_number <= a()->config()->config()->maxusers) {
-    userFile.Seek(static_cast<long>(user_number * a()->config()->config()->userreclen),
+  if (user_number <= a()->config()->max_users()) {
+    userFile.Seek(static_cast<long>(user_number * a()->config()->userrec_length()),
                   File::Whence::begin);
-    userFile.Write(&pUser->data, a()->config()->config()->userreclen);
+    userFile.Write(&pUser->data, a()->config()->userrec_length());
     userFile.Close();
     write_qscn(user_number, qscn, false);
     InsertSmallRecord(*a()->status_manager(), *a()->names(), user_number, pUser->GetName());
@@ -610,11 +608,11 @@ static bool CreateNewUserRecord() {
   a()->context().ResetQScanPointers();
 
   auto u = a()->user();
-  a()->ResetEffectiveSl();
+  a()->reset_effective_sl();
 
   bool ok = User::CreateNewUserRecord(
-      u, a()->config()->config()->newusersl, a()->config()->config()->newuserdsl,
-      a()->config()->config()->newuser_restrict, a()->config()->config()->newusergold,
+      u, a()->config()->newuser_sl(), a()->config()->newuser_dsl(),
+      a()->config()->newuser_restrict(), a()->config()->newuser_gold(),
       a()->newuser_colors, a()->newuser_bwcolors);
   u->CreateRandomPassword();
   return ok;
@@ -624,26 +622,26 @@ static bool CreateNewUserRecord() {
 // on here, if this function returns false, a sufficient error
 // message has already been displayed to the user.
 bool CanCreateNewUserAccountHere() {
-  if (a()->status_manager()->GetUserCount() >= a()->config()->config()->maxusers) {
+  if (a()->status_manager()->GetUserCount() >= a()->config()->max_users()) {
     bout.nl(2);
     bout << "I'm sorry, but the system currently has the maximum number of users it "
             "can\r\nhandle.\r\n\n";
     return false;
   }
 
-  if (a()->config()->config()->closedsystem) {
+  if (a()->config()->closed_system()) {
     bout.nl(2);
     bout << "I'm sorry, but the system is currently closed, and not accepting new users.\r\n\n";
     return false;
   }
 
-  if ((a()->config()->config()->newuserpw[0] != 0) && a()->context().incom()) {
+  if (!a()->config()->newuser_password().empty() && a()->context().incom()) {
     bout.nl(2);
     bool ok = false;
     int nPasswordAttempt = 0;
     do {
       auto password = input_password("New User Password :" , 20);
-      if (password == a()->config()->config()->newuserpw) {
+      if (password == a()->config()->newuser_password()) {
         ok = true;
       } else {
         sysoplog() << "Wrong newuser password: " << password;
@@ -757,7 +755,7 @@ void DoNewUserASV() {
     return;
   }
   const auto asv_num = ini.value<int>("SIMPLE_ASV_NUM", 0);
-  if (a()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) && a()->asv.sl > a()->config()->config()->newusersl &&
+  if (a()->HasConfigFlag(OP_FLAGS_SIMPLE_ASV) && a()->asv.sl > a()->config()->newuser_sl() &&
       a()->asv.sl < 90) {
     bout.nl();
     bout << "|#5Are you currently a WWIV SysOp? ";
@@ -1074,7 +1072,7 @@ void newuser() {
   VerifyNewUserPassword();
   SendNewUserFeedbackIfRequired();
   ExecNewUserCommand();
-  a()->ResetEffectiveSl();
+  a()->reset_effective_sl();
   changedsl();
   new_mail();
 }
@@ -1438,7 +1436,7 @@ void DoMinimalNewUser() {
 
 void new_mail() {
   File file(FilePath(a()->config()->gfilesdir(),
-                     (a()->user()->GetSl() > a()->config()->config()->newusersl) ? NEWSYSOP_MSG
+                     (a()->user()->GetSl() > a()->config()->newuser_sl()) ? NEWSYSOP_MSG
                                                                                  : NEWMAIL_MSG));
   if (!file.Exists()) {
     return;

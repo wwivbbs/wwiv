@@ -273,7 +273,7 @@ void OnlineUserEditor() {
     }
   }
   a()->localIO()->restorescreen();
-  a()->ResetEffectiveSl();
+  a()->reset_effective_sl();
   changedsl();
   a()->DisplaySysopWorkingIndicator(false);
 }

@@ -80,8 +80,8 @@ void YourInfo() {
     bout << "|#9Mail Waiting   : |#2" << a()->user()->GetNumMailWaiting() << wwiv::endl;
   }
   bout << "|#9Security Level : |#2" << a()->user()->GetSl() << wwiv::endl;
-  if (a()->GetEffectiveSl() != a()->user()->GetSl()) {
-    bout << "|#1 (temporarily |#2" << a()->GetEffectiveSl() << "|#1)";
+  if (a()->effective_sl() != a()->user()->GetSl()) {
+    bout << "|#1 (temporarily |#2" << a()->effective_sl() << "|#1)";
   }
   bout.nl();
   bout << "|#9Transfer SL    : |#2" << a()->user()->GetDsl() << wwiv::endl;
@@ -225,7 +225,7 @@ void feedback(bool bNewUserFeedback) {
   if (bNewUserFeedback) {
     auto title =
         StringPrintf("|#1Validation Feedback (|#6%d|#2 slots left|#1)",
-                     a()->config()->config()->maxusers - a()->status_manager()->GetUserCount());
+                     a()->config()->max_users() - a()->status_manager()->GetUserCount());
     // We disable the fsed here since it was hanging on some systems.  Not sure why
     // but it's better to be safe -- Rushfan 2003-12-04
     email(title, 1, 0, true, 0, false);
@@ -242,7 +242,7 @@ void feedback(bool bNewUserFeedback) {
   for (i = 2; i < 10 && i < nNumUserRecords; i++) {
     User user;
     a()->users()->readuser(&user, i);
-    if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
+    if ((user.GetSl() == 255 || (a()->config()->sl(user.GetSl()).ability & ability_cosysop)) &&
         !user.IsUserDeleted()) {
       i1++;
     }
@@ -257,7 +257,7 @@ void feedback(bool bNewUserFeedback) {
     for (i = 1; (i < 10 && i < nNumUserRecords); i++) {
       User user;
       a()->users()->readuser(&user, i);
-      if ((user.GetSl() == 255 || (getslrec(user.GetSl()).ability & ability_cosysop)) &&
+      if ((user.GetSl() == 255 || (a()->config()->sl(user.GetSl()).ability & ability_cosysop)) &&
           !user.IsUserDeleted()) {
         bout << "|#2" << i << "|#7)|#1 " << a()->names()->UserName(i) << wwiv::endl;
         onek_str[i1++] = static_cast<char>('0' + i);

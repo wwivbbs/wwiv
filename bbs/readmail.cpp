@@ -363,7 +363,7 @@ void readmail(int mode) {
   bool next = false, abort = false;
   std::vector<tmpmailrec> mloc;
   write_inst(INST_LOC_RMAIL, 0, INST_FLAGS_NONE);
-  slrec sl = getslrec(a()->GetEffectiveSl());
+  slrec sl = a()->effective_slrec();
   int mw = 0;
   {
     unique_ptr<File> pFileEmail(OpenEmailFile(false));
@@ -838,7 +838,7 @@ void readmail(int mode) {
             }
           }
           if (i != -1) {
-            if (a()->GetEffectiveSl() < a()->subs().sub(a()->usub[i].subnum).postsl) {
+            if (a()->effective_sl() < a()->subs().sub(a()->usub[i].subnum).postsl) {
               bout << "\r\nSorry, you don't have post access on that sub.\r\n\n";
               i = -1;
             }

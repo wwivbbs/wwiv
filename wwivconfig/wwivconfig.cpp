@@ -63,7 +63,7 @@
 #include "wwivconfig/utility.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/wwivd_ui.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 
 #include "localui/curses_io.h"
 #include "localui/curses_win.h"
@@ -188,8 +188,8 @@ enum class ShouldContinue { CONTINUE, EXIT };
 static ShouldContinue
 read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
-  File configfile(config.config_filename());
-  if (configfile.length() != sizeof(configrec)) {
+  File file(config.config_filename());
+  if (file.length() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
 
     if (!dialog_yn(out->window(), "Upgrade config.dat from 4.x format?")) {
@@ -199,31 +199,29 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
     convert_config_424_to_430(window, config);
   }
 
-  if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
-    configfile.Read(&syscfg, sizeof(configrec));
+  if (file.Open(File::modeBinary | File::modeReadOnly)) {
+    file.Read(&syscfg, sizeof(configrec));
   }
-  configfile.Close();
+  file.Close();
 
   // Check for 5.2 config
   {
-    const char* expected_sig = "WWIV";
-    if (!wwiv::strings::IsEquals(expected_sig, syscfg.header.header.signature)) {
+    static const std::string expected_sig = "WWIV";
+    if (expected_sig != syscfg.header.header.signature) {
       // We don't have a 5.2 header, let's convert.
-
-    if (!dialog_yn(out->window(), "Upgrade config.dat to 5.2 format?")) {
+      if (!dialog_yn(out->window(), "Upgrade config.dat to 5.2 format?")) {
         return ShouldContinue::EXIT;
       }
 
-    convert_config_to_52(window, config);
+      convert_config_to_52(window, config);
       {
-        if (configfile.Open(File::modeBinary | File::modeReadOnly)) {
-          configfile.Read(&syscfg, sizeof(configrec));
+        if (file.Open(File::modeBinary | File::modeReadOnly)) {
+          file.Read(&syscfg, sizeof(configrec));
         }
-        configfile.Close();
+        file.Close();
       }
     }
-
-    ensure_latest_5x_config(window, config);
+    ensure_latest_5x_config(window, config, syscfg);
   }
 
   ensure_offsets_are_updated(window, config);
@@ -305,9 +303,10 @@ bool legacy_4xx_menu(const Config& config, UIWindow* window) {
       break;
     case '$': {
       vector<string> lines;
-      lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
-      lines.push_back(StringPrintf("WWIV %s%s wwivconfig compiled %s", wwiv_version, beta_version,
-                                   const_cast<char*>(wwiv_date)));
+      std::ostringstream ss;
+      ss << "WWIV " << wwiv_version << beta_version << " wwivconfig compiled " << wwiv_date;
+      lines.push_back(ss.str());
+      lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
       messagebox(window, lines);
     } break;
     }
@@ -470,10 +469,10 @@ int WInitApp::main(int argc, char** argv) {
       done = true;
       break;
     case 'G':
-      sysinfo1(config.datadir());
+      sysinfo1(config);
       break;
     case 'P':
-      setpaths(bbsdir);
+      setpaths(config);
       break;
     case 'T':
       extrn_prots(config.datadir());
@@ -482,10 +481,10 @@ int WInitApp::main(int argc, char** argv) {
       extrn_editors(config);
       break;
     case 'S':
-      sec_levs();
+      sec_levs(config);
       break;
     case 'V':
-      autoval_levs();
+      autoval_levs(config);
       break;
     case 'A':
       edit_archivers(config);
@@ -500,7 +499,7 @@ int WInitApp::main(int argc, char** argv) {
       menus(config.menudir());
       break;
     case 'R':
-      edit_registration_code();
+      edit_registration_code(config);
       break;
     case 'U':
       user_editor(config);
@@ -509,18 +508,20 @@ int WInitApp::main(int argc, char** argv) {
       wwivd_ui(config);
       break;
     case 'X':
-      up_subs_dirs(config.datadir());
+      up_subs_dirs(config);
       break;
     case '$': {
       vector<string> lines;
-      lines.push_back(StringPrintf("QSCan Lenth: %lu", syscfg.qscn_len));
-      lines.push_back(StringPrintf("WWIV %s%s wwivconfig compiled %s", wwiv_version, beta_version,
-                                   const_cast<char*>(wwiv_date)));
+      std::ostringstream ss;
+      ss << "WWIV " << wwiv_version << beta_version << " wwivconfig compiled " << wwiv_date;
+      lines.push_back(ss.str());
+      lines.push_back(StrCat("QSCan Lenth: ", config.qscn_len()));
       messagebox(window, lines);
     } break;
     }
     out->SetIndicatorMode(IndicatorMode::NONE);
   } while (!done);
 
+  config.Save();
   return 0;
 }

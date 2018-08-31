@@ -1003,7 +1003,7 @@ int userinst(char* user) {
 }
 
 bool usercomp(const char* st1, const char* st2) {
-  for (int i = 0; i < size(st1); i++) {
+  for (size_t i = 0; i < size(st1); i++) {
     if (st1[i] != st2[i]) {
       return false;
     }

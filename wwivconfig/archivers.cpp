@@ -38,7 +38,7 @@
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 #include "sdk/filenames.h"
@@ -56,14 +56,15 @@ static void edit_arc(int arc_number, arcrec* a) {
   int y = 1;
   EditItems items{};
 
-  items.add_items({new StringEditItem<char*>(COL1_POSITION, y++, 31, a->name, false),
-                new StringEditItem<char*>(COL1_POSITION, y++, 3, a->extension, true),
-                new CommandLineItem(COL1_POSITION, y++, 49, a->arcl),
-                new CommandLineItem(COL1_POSITION, y++, 49, a->arce),
-                new CommandLineItem(COL1_POSITION, y++, 49, a->arca),
-                new CommandLineItem(COL1_POSITION, y++, 49, a->arcd),
-                new CommandLineItem(COL1_POSITION, y++, 49, a->arck),
-                new CommandLineItem(COL1_POSITION, y++, 49, a->arct),
+  items.add_items({
+      new StringEditItem<char*>(COL1_POSITION, y++, 31, a->name, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, y++, 3, a->extension, EditLineMode::UPPER_ONLY),
+      new CommandLineItem(COL1_POSITION, y++, 49, a->arcl),
+      new CommandLineItem(COL1_POSITION, y++, 49, a->arce),
+      new CommandLineItem(COL1_POSITION, y++, 49, a->arca),
+      new CommandLineItem(COL1_POSITION, y++, 49, a->arcd),
+      new CommandLineItem(COL1_POSITION, y++, 49, a->arck),
+      new CommandLineItem(COL1_POSITION, y++, 49, a->arct),
   });
   y = 1;
   items.add_labels({new Label(2, y++, LABEL_WIDTH, "Archiver Name:"),
@@ -118,7 +119,7 @@ bool create_arcs(UIWindow* window, const std::string& datadir) {
   return true;
 }
 
-bool edit_archivers(const wwiv::sdk::Config& config) {
+bool edit_archivers(wwiv::sdk::Config& config) {
   arcrec arc[MAX_ARCS];
 
   File file(FilePath(config.datadir(), ARCHIVER_DAT));
@@ -155,10 +156,12 @@ bool edit_archivers(const wwiv::sdk::Config& config) {
   // This was the 4.24 and lower place for them.  4.31 introduced
   // the new archivers record.
   for (int j = 0; j < 4; j++) {
-    to_char_array(syscfg.arcs[j].extension, arc[j].extension);
-    to_char_array(syscfg.arcs[j].arca, arc[j].arca);
-    to_char_array(syscfg.arcs[j].arce, arc[j].arce);
-    to_char_array(syscfg.arcs[j].arcl, arc[j].arcl);
+    auto a = config.arc(j);
+    to_char_array(a.extension, arc[j].extension);
+    to_char_array(a.arca, arc[j].arca);
+    to_char_array(a.arce, arc[j].arce);
+    to_char_array(a.arcl, arc[j].arcl);
+    config.arc(j, a);
   }
 
   // seek to beginning of file, write arcrecs, close file

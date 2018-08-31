@@ -123,9 +123,10 @@ public:
   bool WriteCurrentUser() { return WriteCurrentUser(usernum); }
   bool WriteCurrentUser(int user_number);
 
-  void ResetEffectiveSl() { effective_sl_ = user()->GetSl(); }
-  void SetEffectiveSl(int nSl) { effective_sl_ = nSl; }
-  int GetEffectiveSl() const { return effective_sl_; }
+  void reset_effective_sl() { effective_sl_ = user()->GetSl(); }
+  void effective_sl(int nSl) { effective_sl_ = nSl; }
+  int effective_sl() const { return effective_sl_; }
+  const slrec& effective_slrec() const { return config()->sl(effective_sl_); }
 
   int GetChatNameSelectionColor() const { return chatname_color_; }
 

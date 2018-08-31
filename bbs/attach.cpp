@@ -91,7 +91,7 @@ void attach_file(int mode) {
         if (m.tosys == 0) {
           bout << "|#1  To|#7: |#2";
           if ((m.anony & (anony_receiver | anony_receiver_pp | anony_receiver_da)) &&
-              (getslrec(a()->GetEffectiveSl()).ability & ability_read_email_anony) == 0) {
+              (a()->effective_slrec().ability & ability_read_email_anony) == 0) {
             bout << ">UNKNOWN<";
           } else {
             bout << a()->names()->UserName(m.touser);

@@ -29,7 +29,7 @@
 #include "core/strings.h"
 #include "core/wwivport.h"
 #include "core/file.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/subacc.h"
 #include "wwivconfig/utility.h"
@@ -42,6 +42,7 @@ static const int MAX_SUBS_DIRS = 4096;
 using std::unique_ptr;
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 template<typename T>
@@ -60,7 +61,8 @@ static T input_number(CursesWindow* window, int max_digits) {
   }
 }
 
-static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dirs, const std::string& datadir) {
+static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dirs,
+                       Config& config) {
   int l1, l2, l3;
 
   if (num_subs % 32) {
@@ -84,7 +86,8 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
     num_dirs = MAX_SUBS_DIRS;
   }
 
-  uint16_t nqscn_len = static_cast<uint16_t>(4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32)));
+  auto nqscn_len =
+      static_cast<uint16_t>(4 * (1 + num_subs + ((num_subs + 31) / 32) + ((num_dirs + 31) / 32)));
   uint32_t* nqsc = (uint32_t *)malloc(nqscn_len);
   wwiv::core::ScopeExit free_nqsc([&]() { free(nqsc); nqsc = nullptr; });
   if (!nqsc) {
@@ -99,49 +102,50 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   memset(nqsc_n, 0xff, ((num_dirs + 31) / 32) * 4);
   memset(nqsc_q, 0xff, ((num_subs + 31) / 32) * 4);
 
-  uint32_t* oqsc = (uint32_t *)malloc(syscfg.qscn_len);
+  uint32_t* oqsc = (uint32_t *)malloc(config.qscn_len());
   wwiv::core::ScopeExit free_oqsc([&]() { free(oqsc); oqsc = nullptr; });
   if (!oqsc) {
-    messagebox(window, StringPrintf("Could not allocate %d bytes for old quickscan rec\n", syscfg.qscn_len));
+    messagebox(window, StringPrintf("Could not allocate %d bytes for old quickscan rec\n",
+                                    config.qscn_len()));
     return;
   }
-  memset(oqsc, 0, syscfg.qscn_len);
+  memset(oqsc, 0, config.qscn_len());
 
   uint32_t* oqsc_n = oqsc + 1;
-  uint32_t* oqsc_q = oqsc_n + ((syscfg.max_dirs + 31) / 32);
-  uint32_t* oqsc_p = oqsc_q + ((syscfg.max_subs + 31) / 32);
+  uint32_t* oqsc_q = oqsc_n + ((config.max_dirs() + 31) / 32);
+  uint32_t* oqsc_p = oqsc_q + ((config.max_subs() + 31) / 32);
 
-  if (num_dirs < syscfg.max_dirs) {
+  if (num_dirs < config.max_dirs()) {
     l1 = ((num_dirs + 31) / 32) * 4;
   } else {
-    l1 = ((syscfg.max_dirs + 31) / 32) * 4;
+    l1 = ((config.max_dirs() + 31) / 32) * 4;
   }
 
-  if (num_subs < syscfg.max_subs) {
+  if (num_subs < config.max_subs()) {
     l2 = ((num_subs + 31) / 32) * 4;
     l3 = num_subs * 4;
   } else {
-    l2 = ((syscfg.max_subs + 31) / 32) * 4;
-    l3 = syscfg.max_subs * 4;
+    l2 = ((config.max_subs() + 31) / 32) * 4;
+    l3 = config.max_subs() * 4;
   }
 
-  File oqf(FilePath(datadir, USER_QSC));
+  File oqf(FilePath(config.datadir(), USER_QSC));
   if (!oqf.Open(File::modeBinary|File::modeReadWrite)) {
     messagebox(window, "Could not open user.qsc");
     return;
   }
-  File nqf(FilePath(datadir, "userqsc.new"));
+  File nqf(FilePath(config.datadir(), "userqsc.new"));
   if (!nqf.Open(File::modeBinary|File::modeReadWrite|File::modeCreateFile|File::modeTruncate)) {
     messagebox(window, "Could not open userqsc.new");
     return;
   }
 
-  auto nu = oqf.length() / syscfg.qscn_len;
+  const auto nu = oqf.length() / config.qscn_len();
   for (int i = 0; i < nu; i++) {
     if (i % 10 == 0) {
       window->Puts(StrCat(i, "/", nu, "\r"));
     }
-    oqf.Read(oqsc, syscfg.qscn_len);
+    oqf.Read(oqsc, config.qscn_len());
 
     *nqsc = *oqsc;
     memcpy(nqsc_n, oqsc_n, l1);
@@ -155,20 +159,19 @@ static void convert_to(CursesWindow* window, uint16_t num_subs, uint16_t num_dir
   oqf.Delete();
   File::Rename(nqf.full_pathname(), oqf.full_pathname());
 
-  syscfg.max_subs = num_subs;
-  syscfg.max_dirs = num_dirs;
-  syscfg.qscn_len = nqscn_len;
-  save_config();
+  config.max_subs(num_subs);
+  config.max_dirs(num_dirs);
+  config.qscn_len(nqscn_len);
   window->Puts("Done\n");
 }
 
-void up_subs_dirs(const std::string& datadir) {
+void up_subs_dirs(wwiv::sdk::Config& config) {
   out->Cls(ACS_CKBOARD);
   unique_ptr<CursesWindow> window(out->CreateBoxedWindow("Update Sub/Directory Maximums", 16, 76));
 
   int y=1;
-  window->PutsXY(2, y++, StrCat("Current max # subs: ", syscfg.max_subs));
-  window->PutsXY(2, y++, StrCat("Current max # dirs: ", syscfg.max_dirs));
+  window->PutsXY(2, y++, StrCat("Current max # subs: ", config.max_subs()));
+  window->PutsXY(2, y++, StrCat("Current max # dirs: ", config.max_dirs()));
 
   if (dialog_yn(window.get(), "Change # subs or # dirs?")) { 
     y+=2;
@@ -182,13 +185,13 @@ void up_subs_dirs(const std::string& datadir) {
     window->PutsXY(2, y++, "New max subs: ");
     uint16_t num_subs = input_number<uint16_t>(window.get(), 4);
     if (!num_subs) {
-      num_subs = syscfg.max_subs;
+      num_subs = config.max_subs();
     }
     window->SetColor(SchemeId::PROMPT);
     window->PutsXY(2, y++, "New max dirs: ");
     uint16_t num_dirs = input_number<uint16_t>(window.get(), 4);
     if (!num_dirs) {
-      num_dirs = syscfg.max_dirs;
+      num_dirs = config.max_dirs();
     }
 
     if (num_subs % 32) {
@@ -212,12 +215,12 @@ void up_subs_dirs(const std::string& datadir) {
       num_dirs = MAX_SUBS_DIRS;
     }
 
-    if ((num_subs != syscfg.max_subs) || (num_dirs != syscfg.max_dirs)) {
-      const string text = StringPrintf("Change to %d subs and %d dirs? ", num_subs, num_dirs);
+    if ((num_subs != config.max_subs()) || (num_dirs != config.max_dirs())) {
+      const auto text = StringPrintf("Change to %d subs and %d dirs? ", num_subs, num_dirs);
       if (dialog_yn(window.get(), text)) {
         window->SetColor(SchemeId::INFO);
         window->Puts("Please wait...\n");
-        convert_to(window.get(), num_subs, num_dirs, datadir);
+        convert_to(window.get(), num_subs, num_dirs, config);
       }
     }
   }

@@ -502,7 +502,7 @@ void gfiles() {
     if (a()->user()->GetAge() < r.age) {
       ok = false;
     }
-    if (a()->GetEffectiveSl() < r.sl) {
+    if (a()->effective_sl() < r.sl) {
       ok = false;
     }
     if (!a()->user()->HasArFlag(r.ar) && r.ar) {

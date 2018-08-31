@@ -23,7 +23,7 @@
 
 class UIWindow;
 
-bool edit_archivers(const wwiv::sdk::Config&);
+bool edit_archivers(wwiv::sdk::Config&);
 bool create_arcs(UIWindow* window, const std::string& datadir);
 
 #endif // __INCLUDED_ARCHIVERS_H__

@@ -73,13 +73,13 @@ using namespace wwiv::sdk::msgapi;
 void prstatus() {
   a()->status_manager()->RefreshStatusCache();
   bout.cls();
-  if (a()->config()->config()->newuserpw[0] != '\0') {
-    bout << "|#9New User Pass   : " << a()->config()->config()->newuserpw << wwiv::endl;
+  if (!a()->config()->newuser_password().empty()) {
+    bout << "|#9New User Pass   : " << a()->config()->newuser_password() << wwiv::endl;
   }
-  bout << "|#9Board is        : " << (a()->config()->config()->closedsystem ? "Closed" : "Open") << wwiv::endl;
+  bout << "|#9Board is        : " << (a()->config()->closed_system() ? "Closed" : "Open") << wwiv::endl;
 
   auto status = a()->status_manager()->GetStatus();
-  string t = times();
+  const auto t = times();
   bout << "|#9Number Users    : |#2" << status->GetNumUsers() << wwiv::endl;
   bout << "|#9Number Calls    : |#2" << status->GetCallerNumber() << wwiv::endl;
   bout << "|#9Last Date       : |#2" << status->GetLastDate() << wwiv::endl;
@@ -124,12 +124,12 @@ void valuser(int user_number) {
       bout << "|#9Note: |#2" << user.GetNote() << wwiv::endl;
     }
     bout << "|#9SL  : |#2" << user.GetSl() << wwiv::endl;
-    if (user.GetSl() != 255 && user.GetSl() < a()->GetEffectiveSl()) {
+    if (user.GetSl() != 255 && user.GetSl() < a()->effective_sl()) {
       bout << "|#9New : ";
       input(s, 3, true);
       if (s[0]) {
         int nSl = to_number<unsigned int>(s);
-        if (!a()->at_wfc() && nSl >= static_cast<int>(a()->GetEffectiveSl())) {
+        if (!a()->at_wfc() && nSl >= static_cast<int>(a()->effective_sl())) {
           nSl = -2;
         }
         if (nSl >= 0 && nSl < 255) {
@@ -748,7 +748,7 @@ void chuser() {
     a()->ReadCurrentUser(user_number);
     read_qscn(user_number, a()->context().qsc, false);
     a()->usernum = static_cast<uint16_t>(user_number);
-    a()->SetEffectiveSl(255);
+    a()->effective_sl(255);
     sysoplog() << StrCat("#*#*#* Changed to ", a()->names()->UserName(a()->usernum));
     changedsl();
     a()->UpdateTopScreen();
@@ -919,7 +919,7 @@ void beginday(bool displayStatus) {
   if (displayStatus) {
     bout << "  |#7* |#1Updating STATUS.DAT...\r\n";
   }
-  int nus = a()->config()->config()->maxusers - status->GetNumUsers();
+  int nus = a()->config()->max_users() - status->GetNumUsers();
 
   a()->status_manager()->CommitTransaction(std::move(status));
   if (displayStatus) {
@@ -931,7 +931,7 @@ void beginday(bool displayStatus) {
   if (fk < 512) {
     ssm(1) << "Only " << fk << "k free in data directory.";
   }
-  if (!a()->config()->config()->closedsystem && nus < 15) {
+  if (!a()->config()->closed_system() && nus < 15) {
     ssm(1) << "Only " << nus << " new user slots left.";
   }
   if (!a()->beginday_cmd.empty()) {

@@ -620,7 +620,7 @@ bool inmsg(MessageEditorData& data) {
   if (real_name) {
     b << a()->user()->GetRealName() << crlf;
   } else if (data.silent_mode) {
-    b << a()->config()->config()->sysopname << " #1" << crlf;
+    b << a()->config()->sysop_name() << " #1" << crlf;
   } else {
     b << a()->names()->UserName(a()->usernum, a()->current_net().sysnum) << crlf;
   }

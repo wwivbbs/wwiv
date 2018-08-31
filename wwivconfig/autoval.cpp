@@ -22,7 +22,7 @@
 #include <cstring>
 #include <fcntl.h>
 #ifdef _WIN32
-#include <io.h>
+//#include <io.h>
 #else
 #include <unistd.h>
 #endif
@@ -35,18 +35,19 @@
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/input.h"
 #include "localui/listbox.h"
 
 using std::string;
 using std::unique_ptr;
 using std::vector;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static string create_autoval_line(int n) {
+static string create_autoval_line(Config& config, int n) {
   char ar[20], dar[20], r[20];
-  valrec v = syscfg.autoval[n];
+  valrec v = config.auto_val(n);
   string res_str = restrict_string;
   for (int8_t i = 0; i <= 15; i++) {
     if (v.ar & (1 << i)) {
@@ -68,16 +69,16 @@ static string create_autoval_line(int n) {
   r[16] = 0;
   ar[16] = 0;
   dar[16] = 0;
-  const string key = StringPrintf("ALT-F%d", n + 1);
+  const auto key = StringPrintf("ALT-F%d", n + 1);
   return StringPrintf("%-7s  %3d  %3d  %16s  %16s  %20s", key.c_str(), v.sl, v.dsl, ar, dar, r);
 }
 
-static void edit_autoval(int n) {
+static void edit_autoval(Config& config, int n) {
   constexpr int LABEL1_POSTITION = 2;
   constexpr int LABEL1_WIDTH = 14;
   constexpr int COL1_POSITION = LABEL1_POSTITION + LABEL1_WIDTH + 1;
 
-  valrec v = syscfg.autoval[n];
+  valrec v = config.auto_val(n);
   EditItems items{};
   items.add_items({
       new NumberEditItem<uint8_t>(COL1_POSITION, 1, &v.sl),
@@ -94,16 +95,16 @@ static void edit_autoval(int n) {
                     new Label(LABEL1_POSTITION, y++, LABEL1_WIDTH, "Restrictions:")
   });
   items.Run(StringPrintf("Auto-validation data for: Alt-F%d", n + 1));
-  syscfg.autoval[n] = v;
+  config.auto_val(n, v);
 }
 
-void autoval_levs() {
+void autoval_levs(wwiv::sdk::Config& config) {
   bool done = false;
   do {
     out->Cls(ACS_CKBOARD);
     vector<ListBoxItem> items;
     for (int i = 0; i < 10; i++) {
-      items.emplace_back(create_autoval_line(i));
+      items.emplace_back(create_autoval_line(config, i));
     }
     CursesWindow* window(out->window());
     ListBox list(window, "Select AutoVal", items);
@@ -115,10 +116,10 @@ void autoval_levs() {
 
     if (result.type == ListBoxResultType::HOTKEY) {
     } else if (result.type == ListBoxResultType::SELECTION) {
-      edit_autoval(result.selected);
+      edit_autoval(config, result.selected);
     } else if (result.type == ListBoxResultType::NO_SELECTION) {
       done = true;
     }
   } while (!done);
-  save_config();
+  config.Save();
 }

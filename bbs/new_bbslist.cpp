@@ -320,7 +320,7 @@ void NewBBSList() {
     case 'A': {
       vector<BbsListEntry> entries;
       LoadFromJSON(a()->config()->datadir(), BBSLIST_JSON, entries);
-      if (a()->GetEffectiveSl() <= 10) {
+      if (a()->effective_sl() <= 10) {
         bout << "\r\n\nYou must be a validated user to add to the BBS list.\r\n\n";
         break;
       } else if (a()->user()->IsRestrictionAutomessage()) {

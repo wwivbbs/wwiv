@@ -155,7 +155,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   a()->emchg_ = false;
   std::vector<tmpmailrec> mloc;
 
-  slrec ss = getslrec(a()->GetEffectiveSl());
+  slrec ss = a()->effective_slrec();
   std::unique_ptr<File> f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     bout.nl(2);
@@ -770,7 +770,7 @@ void qwk_post_text(char *text, char *title, int sub) {
       continue;
     }
 
-    ss = getslrec(a()->GetEffectiveSl());
+    ss = a()->effective_slrec();
 
     int xa = 0;
     // User is restricked from posting
@@ -785,7 +785,7 @@ void qwk_post_text(char *text, char *title, int sub) {
     }
 
     // User doesn't have enough sl to post on sub
-    if (a()->GetEffectiveSl() < a()->current_sub().postsl) {
+    if (a()->effective_sl() < a()->current_sub().postsl) {
       bout.nl();
       bout.bputs("You can't post here.");
       bout.nl();

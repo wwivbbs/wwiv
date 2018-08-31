@@ -46,7 +46,7 @@
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/subacc.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "wwivconfig/subacc.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
@@ -96,22 +96,22 @@ static void edit_menu_item(MenuRec& m) {
   EditItems items{};
   int y = 1;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Key:"),
-            new StringEditItem<char*>(COL2_LINE, y, 10, m.szKey, true));
+            new StringEditItem<char*>(COL2_LINE, y, 10, m.szKey, EditLineMode::UPPER_ONLY));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Command:"),
-            new StringEditItem<char*>(COL2_LINE, y, 60, m.szExecute, false));
+            new StringEditItem<char*>(COL2_LINE, y, 60, m.szExecute, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Menu Text:"),
-            new StringEditItem<char*>(COL2_LINE, y, 40, m.szMenuText, false));
+            new StringEditItem<char*>(COL2_LINE, y, 40, m.szMenuText, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Help Text:"),
-            new StringEditItem<char*>(COL2_LINE, y, 60, m.szHelp, false));
+            new StringEditItem<char*>(COL2_LINE, y, 60, m.szHelp, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Log:"),
-            new StringEditItem<char*>(COL2_LINE, y, 50, m.szSysopLog, false));
+            new StringEditItem<char*>(COL2_LINE, y, 50, m.szSysopLog, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Instance :"),
-            new StringEditItem<char*>(COL2_LINE, y, 60, m.szInstanceMessage, false));
+            new StringEditItem<char*>(COL2_LINE, y, 60, m.szInstanceMessage, EditLineMode::ALL));
   y++;
   int col2y = y;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Min SL:"),
@@ -144,7 +144,7 @@ static void edit_menu_item(MenuRec& m) {
             new BooleanEditItem(COL4_LINE, y, &m.nCoSysop));
   y++;
   items.add(new Label(COL3_LINE, y, LABEL_WIDTH, "Password:"),
-            new StringEditItem<char*>(COL4_LINE, y, 20, m.szPassWord, true));
+            new StringEditItem<char*>(COL4_LINE, y, 20, m.szPassWord, EditLineMode::UPPER_ONLY));
 
   items.Run(StrCat("Menu: ", m.szKey));
 }
@@ -287,7 +287,7 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
   const string title = StrCat("Menu: ", menu_name);
   int y = 1;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Menu Description:"),
-            new StringEditItem<char*>(COL2_LINE, y, 20, h.szMenuTitle, false));
+            new StringEditItem<char*>(COL2_LINE, y, 20, h.szMenuTitle, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Deleted:"),
             new FlagEditItem<uint8_t>(COL2_LINE, y, MENU_FLAG_DELETED, "Yes", "No", &h.nFlags));
@@ -306,10 +306,10 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
             new ToggleEditItem<uint8_t>(COL2_LINE, y, help_action, &h.nForceHelp));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Enter Script:"),
-            new StringEditItem<char*>(COL2_LINE, y, 50, h.szScript, false));
+            new StringEditItem<char*>(COL2_LINE, y, 50, h.szScript, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Exit Script:"),
-            new StringEditItem<char*>(COL2_LINE, y, 50, h.szExitScript, false));
+            new StringEditItem<char*>(COL2_LINE, y, 50, h.szExitScript, EditLineMode::ALL));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Minimum SL:"),
             new NumberEditItem<uint16_t>(COL2_LINE, y, &h.nMinSL));
@@ -333,7 +333,7 @@ static void edit_menu(const std::string& menu_dir, const std::string& menu_name)
             new BooleanEditItem(COL2_LINE, y, &h.nCoSysop));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Password:"),
-            new StringEditItem<char*>(COL2_LINE, y, 20, h.szPassWord, true));
+            new StringEditItem<char*>(COL2_LINE, y, 20, h.szPassWord, EditLineMode::UPPER_ONLY));
   y++;
   items.add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Edit Menu Commands:"),
             new MenuItemsSubDialog(menu_items, COL2_LINE, y, "[Edit Menu Items]"));

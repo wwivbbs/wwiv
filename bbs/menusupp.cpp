@@ -109,7 +109,7 @@ void UnQScan() {
   case RETURN:
     break;
   case 'A': {
-    for (int i = 0; i < a()->config()->config()->max_subs; i++) {
+    for (int i = 0; i < a()->config()->max_subs(); i++) {
       a()->context().qsc_p[i] = 0;
     }
     bout << "\r\nQ-Scan pointers reset.\r\n\n";
@@ -424,7 +424,7 @@ void WWIVVersion() {
   bout << "|#9Please see |#1http://www.wwivbbs.org/ |#9for more information"
        << wwiv::endl << wwiv::endl;
   bout << "|#9Compile Time  : |#2" << wwiv_date << wwiv::endl;
-  bout << "|#9SysOp Name    : |#2" << a()->config()->config()->sysopname << wwiv::endl;
+  bout << "|#9SysOp Name    : |#2" << a()->config()->sysop_name() << wwiv::endl;
   bout << "|#9OS            : |#2" << wwiv::os::os_version_string() << wwiv::endl;
   bout << "|#9Instance      : |#2" << a()->instance_number() << wwiv::endl;
 
@@ -544,10 +544,8 @@ void ResetQscan() {
     for (int i = 0; i <= a()->users()->num_user_records(); i++) {
       read_qscn(i, a()->context().qsc, true);
       memset(a()->context().qsc_p, 0,
-             a()->config()->config()->qscn_len -
-                 4 * (1 + ((a()->config()->config()->max_dirs + 31) / 32) +
-                      ((
-        a()->config()->config()->max_subs + 31) / 32)));
+             a()->config()->qscn_len() - 4 * (1 + ((a()->config()->max_dirs() + 31) / 32) +
+                                              ((a()->config()->max_subs() + 31) / 32)));
       write_qscn(i, a()->context().qsc, true);
     }
     read_qscn(1, a()->context().qsc, false);
@@ -689,7 +687,7 @@ void ClearQScan() {
     break;
   case 'A': {
     auto status = a()->status_manager()->GetStatus();
-    for (int i = 0; i < a()->config()->config()->max_subs; i++) {
+    for (int i = 0; i < a()->config()->max_subs(); i++) {
       a()->context().qsc_p[i] = status->GetQScanPointer() - 1L;
     }
     bout.nl();
@@ -982,8 +980,8 @@ void Upload() {
   printfile(UPLOAD_NOEXT);
   if (a()->user()->IsRestrictionValidate() || a()->user()->IsRestrictionUpload() ||
       (a()->config()->sysconfig_flags() & sysconfig_all_sysop)) {
-    if (a()->config()->config()->newuploads < a()->directories.size()) {
-      upload(static_cast<int>(a()->config()->config()->newuploads));
+    if (a()->config()->new_uploads_dir() < a()->directories.size()) {
+      upload(static_cast<int>(a()->config()->new_uploads_dir()));
     } else {
       upload(0);
     }

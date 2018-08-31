@@ -452,13 +452,13 @@ static void swap_subs(int sub1, int sub2) {
   sub2 = static_cast<int>(sub2conv);
   int nNumUserRecords = a()->users()->num_user_records();
 
-  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len);
+  std::unique_ptr<uint32_t[]> pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
   for (int i = 1; i <= nNumUserRecords; i++) {
     int i1, i2;
     read_qscn(i, pTempQScan.get(), true);
     uint32_t *pTempQScan_n = &pTempQScan.get()[1];
-    uint32_t *pTempQScan_q = pTempQScan_n + (a()->config()->config()->max_dirs + 31) / 32;
-    uint32_t *pTempQScan_p = pTempQScan_q + (a()->config()->config()->max_subs + 31) / 32;
+    uint32_t *pTempQScan_q = pTempQScan_n + (a()->config()->max_dirs() + 31) / 32;
+    uint32_t *pTempQScan_p = pTempQScan_q + (a()->config()->max_subs() + 31) / 32;
 
     if (pTempQScan_q[sub1 / 32] & (1L << (sub1 % 32))) {
       i1 = 1;
@@ -522,10 +522,10 @@ static void insert_sub(int n) {
 
   auto nNumUserRecords = a()->users()->num_user_records();
 
-  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len);
+  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len());
   uint32_t* pTempQScan_n = &pTempQScan.get()[1];
-  uint32_t* pTempQScan_q = pTempQScan_n + (a()->config()->config()->max_dirs + 31) / 32;
-  uint32_t* pTempQScan_p = pTempQScan_q + (a()->config()->config()->max_subs + 31) / 32;
+  uint32_t* pTempQScan_q = pTempQScan_n + (a()->config()->max_dirs() + 31) / 32;
+  uint32_t* pTempQScan_p = pTempQScan_q + (a()->config()->max_subs() + 31) / 32;
 
   m1 = 1L << (n % 32);
   m2 = 0xffffffff << ((n % 32) + 1);
@@ -577,10 +577,10 @@ static void delete_sub(int n) {
   nNumUserRecords = a()->users()->num_user_records();
 
   uint32_t *pTempQScan_n, *pTempQScan_q, *pTempQScan_p, m2, m3;
-  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->config()->qscn_len+1);
+  auto pTempQScan = std::make_unique<uint32_t[]>(a()->config()->qscn_len() + 1);
   pTempQScan_n = &pTempQScan.get()[1];
-  pTempQScan_q = pTempQScan_n + (a()->config()->config()->max_dirs + 31) / 32;
-  pTempQScan_p = pTempQScan_q + (a()->config()->config()->max_subs + 31) / 32;
+  pTempQScan_q = pTempQScan_n + (a()->config()->max_dirs() + 31) / 32;
+  pTempQScan_p = pTempQScan_q + (a()->config()->max_subs() + 31) / 32;
 
   m2 = 0xffffffff << (n % 32);
   m3 = 0xffffffff >> (32 - (n % 32));
@@ -650,7 +650,7 @@ void boardedit() {
     } break;
     case 'S':
     {
-      if (a()->subs().subs().size() < a()->config()->config()->max_subs) {
+      if (a()->subs().subs().size() < a()->config()->max_subs()) {
         bout.nl();
         bout << "|#2Take sub number? ";
         int subnum1 = input_number(-1, 0, size_int(a()->subs().subs()) - 1, false);
@@ -680,7 +680,7 @@ void boardedit() {
     } break;
     case 'I':
     {
-      if (a()->subs().subs().size() >= a()->config()->config()->max_subs) {
+      if (a()->subs().subs().size() >= a()->config()->max_subs()) {
         break;
       }
       bout.nl();

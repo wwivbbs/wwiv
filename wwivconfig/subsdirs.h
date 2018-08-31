@@ -19,8 +19,8 @@
 #ifndef __INCLUDED_SUBSDIRS_H__
 #define __INCLUDED_SUBSDIRS_H__
 
-#include <string>
+#include "sdk/config.h"
 
-void up_subs_dirs(const std::string& datadir);
+void up_subs_dirs(wwiv::sdk::Config& config);
 
 #endif // __INCLUDED_SUBSDIRS_H__

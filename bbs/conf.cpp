@@ -48,7 +48,7 @@ static int disable_conf_cnt = 0;
 #define MAX_CONF_LINE 4096
 
 /* To prevent heap fragmentation, allocate confrec.subs in multiples. */
-#define CONF_MULTIPLE ( a()->config()->config()->max_subs / 5 )
+#define CONF_MULTIPLE ( a()->config()->max_subs() / 5 )
 
 // Locals
 char* GetGenderAllowed(int nGender, char *pszGenderAllowed);

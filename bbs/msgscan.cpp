@@ -230,7 +230,7 @@ static void HandleScanReadAutoReply(int &msgnum, const char *user_input, MsgScan
     break;
     }
   } else {
-    if (lcs() || (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony)
+    if (lcs() || (a()->effective_slrec().ability & ability_read_post_anony)
         || post->anony == 0) {
       email("", post->owneruser, post->ownersys, false, 0);
     } else {
@@ -400,7 +400,7 @@ static std::string CreateLine(std::unique_ptr<wwiv::sdk::msgapi::Message>&& msg,
       line += "| ";
     }
     if ((h.anony() & 0x0f) &&
-      ((getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) == 0)) {
+      ((a()->effective_slrec().ability & ability_read_post_anony) == 0)) {
       line += ">UNKNOWN<";
     }
     else {
@@ -707,7 +707,7 @@ void HandleMessageMove(int &nMessageNumber) {
       }
     }
     if (nTempSubNum != -1) {
-      if (a()->GetEffectiveSl() < a()->subs().sub(a()->usub[nTempSubNum].subnum).postsl) {
+      if (a()->effective_sl() < a()->subs().sub(a()->usub[nTempSubNum].subnum).postsl) {
         bout.nl();
         bout << "Sorry, you don't have post access on that sub.\r\n\n";
         nTempSubNum = -1;
@@ -1082,8 +1082,8 @@ static void network_validate() {
 
 static void query_post() {
   if (!a()->user()->IsRestrictionPost() &&
-     (a()->user()->GetNumPostsToday() < getslrec(a()->GetEffectiveSl()).posts) &&
-     (a()->GetEffectiveSl() >= a()->current_sub().postsl)) {
+     (a()->user()->GetNumPostsToday() < a()->effective_slrec().posts) &&
+     (a()->effective_sl() >= a()->current_sub().postsl)) {
     bout << "|#5Post on " << a()->current_sub().name << "? ";
     a()->context().clear_irt();
     clear_quotes();

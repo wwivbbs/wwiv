@@ -29,7 +29,7 @@
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 
 using std::unique_ptr;
 using std::string;
@@ -108,14 +108,15 @@ protected:
   }
 };
 
-void sysinfo1(const std::string& datadir) {
+void sysinfo1(wwiv::sdk::Config& config) {
+  configrec cfg = *config.config();
   statusrec_t statusrec{};
-  read_status(datadir, statusrec);
+  read_status(config.datadir(), statusrec);
 
   if (statusrec.callernum != 65535) {
     statusrec.callernum1 = static_cast<long>(statusrec.callernum);
     statusrec.callernum = 65535;
-    save_status(datadir, statusrec);
+    save_status(config.datadir(), statusrec);
   }
 
   static constexpr int LABEL1_POSITION = 2;
@@ -147,35 +148,34 @@ void sysinfo1(const std::string& datadir) {
        new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Caller number:"),
        new Label(LABEL1_POSITION, y++, LABEL1_WIDTH, "Days active:")});
 
-  bool closed_system = syscfg.closedsystem > 0;
-  int gold = static_cast<int>(syscfg.newusergold);
+  bool closed_system = cfg.closedsystem > 0;
+  int gold = static_cast<int>(cfg.newusergold);
   y = 1;
   items.add_items({
-    new StringEditItem<char*>(COL1_POSITION, y++, 20, syscfg.systempw, true),
-      new StringEditItem<char*>(COL1_POSITION, y++ , 50, syscfg.systemname, false),
-      new StringEditItem<char*>(COL1_POSITION, y++, 12, syscfg.systemphone, true),
+      new StringEditItem<char*>(COL1_POSITION, y++, 20, cfg.systempw, EditLineMode::UPPER_ONLY),
+      new StringEditItem<char*>(COL1_POSITION, y++, 50, cfg.systemname, EditLineMode::ALL),
+      new StringEditItem<char*>(COL1_POSITION, y++, 12, cfg.systemphone, EditLineMode::UPPER_ONLY),
       new BooleanEditItem(COL1_POSITION, y++, &closed_system),
-      new StringEditItem<char*>(COL1_POSITION, y++, 20, syscfg.newuserpw, true),
-      new RestrictionsEditItem(COL1_POSITION, y++, &syscfg.newuser_restrict),
-      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &syscfg.newusersl),
-      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &syscfg.newuserdsl),
+      new StringEditItem<char*>(COL1_POSITION, y++, 20, cfg.newuserpw, EditLineMode::UPPER_ONLY),
+      new RestrictionsEditItem(COL1_POSITION, y++, &cfg.newuser_restrict),
+      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &cfg.newusersl),
+      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &cfg.newuserdsl),
       new NumberEditItem<int>(COL1_POSITION, y++, &gold),
-      new StringEditItem<char*>(COL1_POSITION, y++, 50, syscfg.sysopname, false),
-      new TimeEditItem(COL1_POSITION, y, &syscfg.sysoplowtime),
-      new TimeEditItem(COL2_POSITION, y++, &syscfg.sysophightime),
+      new StringEditItem<char*>(COL1_POSITION, y++, 50, cfg.sysopname, EditLineMode::ALL),
+      new TimeEditItem(COL1_POSITION, y, &cfg.sysoplowtime),
+      new TimeEditItem(COL2_POSITION, y++, &cfg.sysophightime),
 
-      new Float53EditItem(COL1_POSITION, y, &syscfg.req_ratio),
-      new Float53EditItem(COL2_POSITION, y++, &syscfg.post_call_ratio),
+      new Float53EditItem(COL1_POSITION, y, &cfg.req_ratio),
+      new Float53EditItem(COL2_POSITION, y++, &cfg.post_call_ratio),
 
-      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &syscfg.maxwaiting),
-      new NumberEditItem<uint16_t>(COL1_POSITION, y++, &syscfg.maxusers),
+      new NumberEditItem<uint8_t>(COL1_POSITION, y++, &cfg.maxwaiting),
+      new NumberEditItem<uint16_t>(COL1_POSITION, y++, &cfg.maxusers),
       new NumberEditItem<uint32_t>(COL1_POSITION, y++, &statusrec.callernum1),
       new NumberEditItem<uint16_t>(COL1_POSITION, y++, &statusrec.days),
   });
 
   items.Run("System Configuration");
-  syscfg.closedsystem = closed_system;
-  syscfg.newusergold = static_cast<float>(gold);
-
-  save_config();
+  cfg.closedsystem = closed_system;
+  cfg.newusergold = static_cast<float>(gold);
+  config.set_config(&cfg, true);
 }

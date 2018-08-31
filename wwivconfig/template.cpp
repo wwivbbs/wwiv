@@ -31,5 +31,5 @@
 #include "ifcns.h"
 #include "input.h"
 #include "wwivconfig.h"
-#include "wwivinit.h"
+#include "sdk/vardec.h"
 

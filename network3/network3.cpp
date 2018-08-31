@@ -463,7 +463,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
   // create bbsdata.reg
   {
     vector<int32_t> bbsdata_reg_data;
-    bbsdata_reg_data.push_back(net_cmdline.config().config()->wwiv_reg_number);
+    bbsdata_reg_data.push_back(net_cmdline.config().wwiv_reg_number());
     bbsdata_reg_data.push_back(0);
     DataFile<int32_t> bbsdata_reg_file(FilePath(net.dir, BBSDATA_REG), File::modeBinary |
                                                                            File::modeReadWrite |

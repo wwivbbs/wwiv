@@ -64,7 +64,7 @@ void read_automessage() {
   StringTrimEnd(&line);
   string authorName = line;
   if (bAutoMessageAnonymous) {
-    if (getslrec(a()->GetEffectiveSl()).ability & ability_read_post_anony) {
+    if (a()->effective_slrec().ability & ability_read_post_anony) {
       stringstream ss;
       ss << "<<< " << line << " >>>";
       authorName = ss.str();
@@ -101,7 +101,7 @@ static void write_automessage() {
   }
   bout.nl();
   bool bAnonStatus = false;
-  if (getslrec(a()->GetEffectiveSl()).ability & ability_post_anony) {
+  if (a()->effective_slrec().ability & ability_post_anony) {
     bout << "|#9Anonymous? ";
     bAnonStatus = yesno();
   }
@@ -130,7 +130,7 @@ static void write_automessage() {
 char ShowAMsgMenuAndGetInput(const string& autoMessageLockFileName) {
   bool bCanWrite = false;
   if (!a()->user()->IsRestrictionAutomessage() && !File::Exists(autoMessageLockFileName)) {
-    bCanWrite = (getslrec(a()->GetEffectiveSl()).posts) ? true : false;
+    bCanWrite = (a()->effective_slrec().posts) ? true : false;
   }
 
   char cmdKey = 0;

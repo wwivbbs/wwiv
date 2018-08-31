@@ -179,38 +179,37 @@ protected:
 
 template <typename T> class StringEditItem : public EditItem<T> {
 public:
-  StringEditItem(int x, int y, int maxsize, T data, bool uppercase)
-      : EditItem<T>(x, y, maxsize, data),
-        edit_line_mode_(uppercase ? EditLineMode::UPPER_ONLY : EditLineMode::ALL) {}
-  StringEditItem(int x, int y, int maxsize, T data) : StringEditItem(x, y, maxsize, data, false) {}
+  StringEditItem(int x, int y, int maxsize, T data, EditLineMode edit_line_mode)
+      : EditItem<T>(x, y, maxsize, data), edit_line_mode_(edit_line_mode) {}
+  StringEditItem(int x, int y, int maxsize, T data) : StringEditItem(x, y, maxsize, data, EditLineMode::ALL) {}
   virtual ~StringEditItem() {}
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    return editline(window, reinterpret_cast<char*>(this->data_), this->maxsize_, edit_line_mode_,
-                    "");
+    return editline(window, reinterpret_cast<char*>(data_), maxsize_, edit_line_mode_, "");
   }
 
 protected:
   void DefaultDisplay(CursesWindow* window) const override {
-    std::string s = reinterpret_cast<char*>(const_cast<const T>(this->data_));
-    this->DefaultDisplayString(window, s);
+    this->DefaultDisplayString(
+        window, std::string(reinterpret_cast<char*>(const_cast<const T>(this->data_))));
   }
 
 private:
   EditLineMode edit_line_mode_;
 };
 
+
 template <> class StringEditItem<std::string&> : public EditItem<std::string&> {
 public:
-  StringEditItem(int x, int y, int maxsize, std::string& data, bool uppercase)
-      : EditItem<std::string&>(x, y, maxsize, data),
-        edit_line_mode_(uppercase ? EditLineMode::UPPER_ONLY : EditLineMode::ALL) {}
+  StringEditItem(int x, int y, int maxsize, std::string& data,  EditLineMode mode)
+      : EditItem<std::string&>(x, y, maxsize, data), edit_line_mode_(mode) {}
   virtual ~StringEditItem() {}
 
   EditlineResult Run(CursesWindow* window) override {
     window->GotoXY(this->x_, this->y_);
-    return editline(window, &this->data_, this->maxsize_, edit_line_mode_, "");
+    auto result = editline(window, &this->data_, this->maxsize_, edit_line_mode_, "");
+    return result;
   }
 
 protected:
@@ -221,6 +220,7 @@ protected:
 private:
   EditLineMode edit_line_mode_;
 };
+
 template <typename T, int MAXLEN = std::numeric_limits<T>::digits10>
 class NumberEditItem : public EditItem<T*> {
 public:

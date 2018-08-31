@@ -29,6 +29,6 @@ using std::string;
 
 void set_autoval(int n) {
   auto_val(n, a()->user());
-  a()->ResetEffectiveSl();
+  a()->reset_effective_sl();
   changedsl();
 }

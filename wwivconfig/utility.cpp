@@ -32,13 +32,14 @@
 #include "wwivconfig/archivers.h"
 #include "localui/input.h"
 #include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "sdk/filenames.h"
 
 // Make sure it's after windows.h
 #include "localui/wwiv_curses.h"
 
 using namespace wwiv::core;
+using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
 extern char bbsdir[];
@@ -65,8 +66,8 @@ int number_userrecs(const std::string& datadir) {
   return -1;
 }
 
-void read_user(const std::string& datadir, unsigned int un, userrec *u) {
-  DataFile<userrec> file(FilePath(datadir, USER_LST),
+void read_user(const Config& config, unsigned int un, userrec* u) {
+  DataFile<userrec> file(FilePath(config.datadir(), USER_LST),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile, File::shareDenyReadWrite);
   if (!file) {
     u->inact = inact_deleted;
@@ -85,12 +86,12 @@ void read_user(const std::string& datadir, unsigned int un, userrec *u) {
   fix_user_rec(u);
 }
 
-void write_user(const std::string& datadir, unsigned int un, userrec *u) {
-  if (un < 1 || un > syscfg.maxusers) {
+void write_user(const Config& config, unsigned int un, userrec* u) {
+  if (un < 1 || un > config.max_users()) {
     return;
   }
 
-  DataFile<userrec> file(FilePath(datadir, USER_LST),
+  DataFile<userrec> file(FilePath(config.datadir(), USER_LST),
       File::modeReadWrite | File::modeBinary | File::modeCreateFile);
   if (file) {
     file.Seek(un);
@@ -113,11 +114,4 @@ bool read_status(const std::string& datadir, statusrec_t& statusrec) {
     return file.Read(&statusrec);
   }
   return false;
-}
-
-void save_config() {
-  DataFile<configrec> file(CONFIG_DAT, File::modeBinary|File::modeReadWrite|File::modeCreateFile);
-  if (file) {
-    file.Write(&syscfg);
-  }
 }

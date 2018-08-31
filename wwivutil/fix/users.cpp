@@ -187,7 +187,7 @@ int FixUsersCommand::Execute() {
 	UserManager userMgr(*config()->config());
   LOG(INFO) << "Checking USER.LST... found " << userMgr.num_user_records() << " user records.";
   LOG(INFO) << "TBD: Check for trashed user recs.";
-	if (userMgr.num_user_records() > config()->config()->config()->maxusers) {
+	if (userMgr.num_user_records() > config()->config()->max_users()) {
     LOG(INFO) << "Might be too many.";
     if (!arg("exp").as_bool()) {
       return 1;

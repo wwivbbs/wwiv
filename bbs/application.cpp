@@ -142,7 +142,7 @@ void Application::CreateComm(unsigned int nHandle, CommunicationType type) {
   switch (type) {
   case CommunicationType::SSH: {
     const File key_file(FilePath(config_->datadir(), "wwiv.key"));
-    const string system_password = config()->config()->systempw;
+    const auto system_password = config()->system_password();
     wwiv::bbs::Key key(key_file.full_pathname(), system_password);
     if (!key_file.Exists()) {
       LOG(ERROR) << "Key file doesn't exist. Will try to create it.";
@@ -213,7 +213,7 @@ void Application::tleft(bool check_for_timeout) {
     return;
   }
 
-  bool temp_sysop = user()->GetSl() != 255 && GetEffectiveSl() == 255;
+  bool temp_sysop = user()->GetSl() != 255 && effective_sl() == 255;
   auto sysop_available = sysop1();
 
   int cx = localIO()->WhereX();
@@ -326,10 +326,10 @@ void Application::handle_sysop_key(uint8_t key) {
         break;
       case F9: /* F9 */
         if (user()->GetSl() != 255) {
-          if (GetEffectiveSl() != 255) {
-            SetEffectiveSl(255);
+          if (effective_sl() != 255) {
+            effective_sl(255);
           } else {
-            ResetEffectiveSl();
+            reset_effective_sl();
           }
           changedsl();
           tleft(false);
@@ -458,8 +458,9 @@ void Application::UpdateTopScreen() {
   case LocalIO::topdataNone:
     break;
   case LocalIO::topdataSystem: {
-    localIO()->PutsXY(0, 0, StringPrintf("%-50s  Activity for %8s:      ", config()->system_name().c_str(),
-                        status->GetLastDate().c_str()));
+    const auto sn = lpad_to(config()->system_name(), 50);
+    const auto ld = lpad_to(status->GetLastDate(), 8);
+    localIO()->PutsXY(0, 0, StrCat(sn, "  Activity for ", ld, ":      "));
 
     localIO()->PutsXY(
         0, 1, StringPrintf("Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
@@ -606,7 +607,7 @@ void Application::GetCaller() {
   // N.B. This used to be 1.
   usernum = 0;
 
-  ResetEffectiveSl();
+  reset_effective_sl();
   if (user()->IsUserDeleted()) {
     user()->SetScreenChars(80);
     user()->SetScreenLines(25);
@@ -636,7 +637,7 @@ void Application::GotCaller(unsigned int ms) {
   modem_speed_ = ms;
   ReadCurrentUser(1);
   read_qscn(1, context().qsc, false);
-  ResetEffectiveSl();
+  reset_effective_sl();
   usernum = 1;
   if (user()->IsUserDeleted()) {
     user()->SetScreenChars(80);
@@ -926,7 +927,7 @@ int Application::Run(int argc, char* argv[]) {
         usernum = this_usernum_from_commandline;
         ReadCurrentUser();
         read_qscn(usernum, context().qsc, false);
-        ResetEffectiveSl();
+        reset_effective_sl();
         changedsl();
         a()->context().okmacro(true);
       } else {
@@ -954,7 +955,7 @@ int Application::Run(int argc, char* argv[]) {
         using_modem = 0;
         a()->context().okmacro(true);
         usernum = unx_;
-        ResetEffectiveSl();
+        reset_effective_sl();
         changedsl();
       }
       this_usernum_from_commandline = 0;

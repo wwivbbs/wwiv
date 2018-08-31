@@ -26,7 +26,7 @@
 #include "core/wwivport.h"
 #include "wwivconfig/wwivconfig.h"
 #include "wwivconfig/utility.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 #include "localui/wwiv_curses.h"
 #include "localui/input.h"
 
@@ -40,15 +40,17 @@ static constexpr int LABEL1_WIDTH = 11;
 static constexpr int COL1_POSITION = LABEL1_POS + LABEL1_WIDTH + 1;
 
 /* change msgsdir, gfilesdir, datadir, dloadsdir, ramdrive, tempdir, scriptdir */
-void setpaths(const std::string& bbsdir) {
+void setpaths(wwiv::sdk::Config& config) {
   EditItems items{};
+  configrec cfg = *config.config();
+
   items.add_items({
-    new FilePathItem(COL1_POSITION, 1, 60, bbsdir, syscfg.msgsdir),
-    new FilePathItem(COL1_POSITION, 2, 60, bbsdir, syscfg.gfilesdir),
-    new FilePathItem(COL1_POSITION, 3, 60, bbsdir, syscfg.menudir),
-    new FilePathItem(COL1_POSITION, 4, 60, bbsdir, syscfg.datadir),
-    new FilePathItem(COL1_POSITION, 5, 60, bbsdir, syscfg.scriptdir),
-    new FilePathItem(COL1_POSITION, 6, 60, bbsdir, syscfg.dloadsdir),
+    new FilePathItem(COL1_POSITION, 1, 60, config.root_directory(), cfg.msgsdir),
+    new FilePathItem(COL1_POSITION, 2, 60, config.root_directory(), cfg.gfilesdir),
+    new FilePathItem(COL1_POSITION, 3, 60, config.root_directory(), cfg.menudir),
+    new FilePathItem(COL1_POSITION, 4, 60, config.root_directory(), cfg.datadir),
+    new FilePathItem(COL1_POSITION, 5, 60, config.root_directory(), cfg.scriptdir),
+    new FilePathItem(COL1_POSITION, 6, 60, config.root_directory(), cfg.dloadsdir),
   });
 
   int y = 1;
@@ -59,22 +61,20 @@ void setpaths(const std::string& bbsdir) {
                     new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Scripts:"),
                     new Label(LABEL1_POS, y++, LABEL1_WIDTH, "Downloads:")});
   y+=2;
-  //window->SetColor(SchemeId::WARNING);
   items.add_labels({new Label(LABEL1_POS, y++, LABEL1_WIDTH,
                               "CAUTION: ONLY EXPERIENCED SYSOPS SHOULD MODIFY THESE SETTINGS.")});
   y+=1;
-  //window->SetColor(SchemeId::WINDOW_TEXT);
   items.add_labels({new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH,
                               "Changing any of these requires YOU to MANUALLY move files and/or"),
                     new Label(LABEL1_POS + 2, y++, LABEL1_WIDTH, "directory structures.")});
 
-  if (!syscfg.scriptdir[0]) {
+  if (!cfg.scriptdir[0]) {
     // This is added in 5.3
-    string sdir = StrCat("scripts", File::pathSeparatorString);
-    to_char_array(syscfg.scriptdir, sdir);
+    auto sdir = StrCat("scripts", File::pathSeparatorString);
+    to_char_array(cfg.scriptdir, sdir);
   }
 
   items.Run("System Paths");
-  save_config();
+  config.set_config(&cfg, true);
 }
 

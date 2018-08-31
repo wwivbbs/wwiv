@@ -259,8 +259,8 @@ bool ValidateSysopPassword() {
   if (!a()->context().incom()) {
     return true;
   }
-  string password = input_password("|#7SY: ", 20);
-  return (password == a()->config()->config()->systempw);
+  const auto password = input_password("|#7SY: ", 20);
+  return (password == a()->config()->system_password());
 }
 
 /**

@@ -186,7 +186,7 @@ void do_chains() {
     if ((c.ansir & ansir_local_only) && a()->using_modem) {
       ok = false;
     }
-    if (c.sl > a()->GetEffectiveSl()) {
+    if (c.sl > a()->effective_sl()) {
       ok = false;
     }
     if (c.ar && !a()->user()->HasArFlag(c.ar)) {
@@ -194,7 +194,7 @@ void do_chains() {
     }
     if (a()->HasConfigFlag(OP_FLAGS_CHAIN_REG) 
       && a()->chains_reg.size() > 0 
-      && (a()->GetEffectiveSl() < 255)) {
+      && (a()->effective_sl() < 255)) {
       chainregrec r = a()->chains_reg[i];
       if (r.maxage) {
         if (r.minage > a()->user()->GetAge() || r.maxage < a()->user()->GetAge()) {

@@ -51,7 +51,7 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
     if ((a()->IsUserOnline() && user_number == a()->usernum) ||
         (a()->at_wfc() && user_number == 1)) {
       if (qscn != a()->context().qsc) {
-        for (int i = (a()->config()->config()->qscn_len / 4) - 1; i >= 0; i--) {
+        for (int i = (a()->config()->qscn_len() / 4) - 1; i >= 0; i--) {
           qscn[i] = a()->context().qsc[i];
         }
       }
@@ -59,10 +59,10 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
     }
   }
   if (open_qscn()) {
-    long lPos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
-    if (lPos + static_cast<long>(a()->config()->config()->qscn_len) <= qscanFile->length()) {
+    long lPos = static_cast<long>(a()->config()->qscn_len()) * static_cast<long>(user_number);
+    if (lPos + static_cast<long>(a()->config()->qscn_len()) <= qscanFile->length()) {
       qscanFile->Seek(lPos, File::Whence::begin);
-      qscanFile->Read(qscn, a()->config()->config()->qscn_len);
+      qscanFile->Read(qscn, a()->config()->qscn_len());
       if (!stay_open) {
         close_qscn();
       }
@@ -78,7 +78,7 @@ void read_qscn(int user_number, uint32_t* qscn, bool stay_open, bool bForceRead)
 
 
 void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
-  if ((user_number < 1) || (user_number > a()->config()->config()->maxusers) ||
+  if ((user_number < 1) || (user_number > a()->config()->max_users()) ||
       a()->context().guest_user()) {
     return;
   }
@@ -86,15 +86,15 @@ void write_qscn(int user_number, uint32_t *qscn, bool stay_open) {
   if ((a()->IsUserOnline() && (user_number == a()->usernum)) ||
       (a()->at_wfc() && user_number == 1)) {
     if (a()->context().qsc != qscn) {
-      for (int i = (a()->config()->config()->qscn_len / 4) - 1; i >= 0; i--) {
+      for (int i = (a()->config()->qscn_len() / 4) - 1; i >= 0; i--) {
         a()->context().qsc[i] = qscn[i];
       }
     }
   }
   if (open_qscn()) {
-    auto pos = static_cast<long>(a()->config()->config()->qscn_len) * static_cast<long>(user_number);
+    auto pos = static_cast<long>(a()->config()->qscn_len()) * static_cast<long>(user_number);
     qscanFile->Seek(pos, File::Whence::begin);
-    qscanFile->Write(qscn, a()->config()->config()->qscn_len);
+    qscanFile->Write(qscn, a()->config()->qscn_len());
     if (!stay_open) {
       close_qscn();
     }

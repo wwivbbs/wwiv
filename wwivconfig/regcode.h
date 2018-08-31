@@ -19,6 +19,8 @@
 #ifndef __INCLUDED_REGCODE_H__
 #define __INCLUDED_REGCODE_H__
 
-void edit_registration_code();
+#include "sdk/config.h"
+
+void edit_registration_code(wwiv::sdk::Config& config);
 
 #endif  // __INCLUDED_REGCODE_H__

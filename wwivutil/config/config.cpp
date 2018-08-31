@@ -57,11 +57,11 @@ static int show_version(const Config& config) {
   return 0;
 }
 
-void save_config(configrec& syscfg) {
+void save_config(configrec& c) {
   DataFile<configrec> file(CONFIG_DAT,
                            File::modeBinary | File::modeReadWrite | File::modeCreateFile);
   if (file) {
-    file.Write(&syscfg);
+    file.Write(&c);
   }
 }
 
@@ -73,10 +73,10 @@ static int set_version(const Config& config, int wwiv_ver, int revision) {
     return 1;
   }
 
-  configrec syscfg = *config.config();
-  cout << syscfg.systemname << std::endl;
+  configrec cfg430 = *config.config();
+  cout << cfg430.systemname << std::endl;
   cout << " set_version: wwiv_ver: " << wwiv_ver << " set_version: " << revision << std::endl;
-  auto& h = syscfg.header.header;
+  auto& h = cfg430.header.header;
   if (wwiv_ver >= 500) {
     cout << "setting wwiv_ver to " << wwiv_ver << std::endl;
     h.written_by_wwiv_num_version = wwiv_ver;
@@ -90,7 +90,7 @@ static int set_version(const Config& config, int wwiv_ver, int revision) {
   h.padding[0] = 0;
 
   cout << "Wrote Config.dat" << std::endl;
-  save_config(syscfg);
+  save_config(cfg430);
   return 0;
 }
 

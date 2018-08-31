@@ -66,7 +66,7 @@ void multimail(int *pnUserNumber, int numu) {
 
   MessageEditorData data;
   data.need_title = true;
-  if (getslrec(a()->GetEffectiveSl()).ability & ability_email_anony) {
+  if (a()->effective_slrec().ability & ability_email_anony) {
     data.anonymous_flag = anony_enable_anony;
   }
   bout << "|#5Show all recipients in mail? ";
@@ -97,8 +97,8 @@ void multimail(int *pnUserNumber, int numu) {
       continue;
     }
     a()->users()->readuser(&user, pnUserNumber[cv]);
-    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->config()->maxwaiting * 5))) ||
-        ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->config()->maxwaiting)) ||
+    if ((user.GetSl() == 255 && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->max_waiting() * 5))) ||
+        ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->max_waiting())) ||
         user.GetNumMailWaiting() > 200) {
       bout << a()->names()->UserName(pnUserNumber[cv]) << " mailbox full, not sent.";
       pnUserNumber[cv] = -1;
@@ -243,8 +243,8 @@ int oneuser() {
     return 0;
   }
   a()->users()->readuser(&user, user_number);
-  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->config()->maxwaiting * 5))) ||
-      ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->config()->maxwaiting)) ||
+  if (((user.GetSl() == 255) && (user.GetNumMailWaiting() > static_cast<unsigned int>(a()->config()->max_waiting() * 5))) ||
+      ((user.GetSl() != 255) && (user.GetNumMailWaiting() > a()->config()->max_waiting())) ||
       (user.GetNumMailWaiting() > 200)) {
     bout.nl();
     bout << "Mailbox full.\r\n\n";
@@ -306,7 +306,7 @@ void slash_e() {
     return;
   }
   if (((a()->user()->GetNumFeedbackSentToday() >= 10) ||
-       (a()->user()->GetNumEmailSentToday() >= getslrec(a()->GetEffectiveSl()).emails))
+       (a()->user()->GetNumEmailSentToday() >= a()->effective_slrec().emails))
       && (!cs())) {
     bout << "Too much mail sent today.\r\n\n";
     return;

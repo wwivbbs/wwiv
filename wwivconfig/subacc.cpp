@@ -25,7 +25,6 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "wwivconfig/subacc.h"
-#include "wwivconfig/wwivinit.h"
 #include "sdk/subxtr.h"
 #include "sdk/vardec.h"
 

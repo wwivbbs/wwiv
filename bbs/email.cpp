@@ -112,7 +112,7 @@ bool ForwardMessage(uint16_t *pUserNumber, uint16_t *pSystemNumber) {
     }
     return false;
   }
-  std::unique_ptr<bool[]> ss(new bool[a()->config()->config()->maxusers + 300]);
+  std::unique_ptr<bool[]> ss(new bool[a()->config()->max_users() + 300]);
 
   ss[*pUserNumber] = true;
   a()->users()->readuser(&userRecord, nCurrentUser);
@@ -308,7 +308,7 @@ void sendout_email(EmailData& data) {
       logMessage += ">UNKNOWN<";
     }
     if (data.system_number == 0 
-        && a()->GetEffectiveSl() > a()->config()->config()->newusersl
+        && a()->effective_sl() > a()->config()->newuser_sl()
         && userRecord.GetForwardSystemNumber() == 0
         && !data.silent_mode) {
       bout << "|#5Attach a file to this message? ";
@@ -373,8 +373,11 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
     }
     User userRecord;
     a()->users()->readuser(&userRecord, user_number);
-    if ((userRecord.GetSl() == 255 && userRecord.GetNumMailWaiting() > (static_cast<unsigned>(a()->config()->config()->maxwaiting) * 5)) ||
-        (userRecord.GetSl() != 255 && userRecord.GetNumMailWaiting() > a()->config()->config()->maxwaiting) ||
+    if ((userRecord.GetSl() == 255 &&
+         userRecord.GetNumMailWaiting() >
+             (static_cast<unsigned>(a()->config()->max_waiting()) * 5)) ||
+        (userRecord.GetSl() != 255 &&
+         userRecord.GetNumMailWaiting() > a()->config()->max_waiting()) ||
         userRecord.GetNumMailWaiting() > 200) {
       if (!bForceit) {
         bout << "\r\nMailbox full.\r\n";
@@ -399,7 +402,7 @@ bool ok_to_mail(uint16_t user_number, uint16_t system_number, bool bForceit) {
     if (((user_number == 1 && system_number == 0 &&
           (a()->user()->GetNumFeedbackSentToday() >= 10)) ||
          ((user_number != 1 || system_number != 0) &&
-          (a()->user()->GetNumEmailSentToday() >= getslrec(a()->GetEffectiveSl()).emails)))
+          (a()->user()->GetNumEmailSentToday() >= a()->effective_slrec().emails)))
         && !cs()) {
       bout << "\r\nToo much mail sent today.\r\n\n";
       return false;
@@ -451,7 +454,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
     csne = next_system(system_number);
   }
   bool an = true;
-  if (getslrec(a()->GetEffectiveSl()).ability & ability_read_email_anony) {
+  if (a()->effective_slrec().ability & ability_read_email_anony) {
     an = true;
   } else if (anony & (anony_sender | anony_sender_da | anony_sender_pp)) {
     an = false;
@@ -488,7 +491,7 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
   }
   bout << "|#9E-mailing |#2" << destination;
   bout.nl();
-  uint8_t i = (getslrec(a()->GetEffectiveSl()).ability & ability_email_anony) ? anony_enable_anony : anony_none;
+  uint8_t i = (a()->effective_slrec().ability & ability_email_anony) ? anony_enable_anony : anony_none;
 
   if (anony & (anony_receiver_pp | anony_receiver_da)) {
     i = anony_enable_dear_abby;

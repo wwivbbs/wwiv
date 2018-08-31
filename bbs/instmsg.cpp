@@ -413,7 +413,7 @@ void write_inst(int loc, int subloc, int flags) {
     if (a()->IsUserOnline()) {
       if (ti.user != a()->usernum) {
         re_write = true;
-        if (a()->usernum > 0 && a()->usernum <= a()->config()->config()->maxusers) {
+        if (a()->usernum > 0 && a()->usernum <= a()->config()->max_users()) {
           ti.user = static_cast<int16_t>(a()->usernum);
         }
       }

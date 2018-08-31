@@ -48,7 +48,7 @@
 #include "wwivconfig/subacc.h"
 #include "wwivconfig/utility.h"
 #include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 
 using std::string;
 using std::unique_ptr;
@@ -92,21 +92,22 @@ void create_sysop_account(wwiv::sdk::Config& config) {
 
   User u = {};
   u.ZeroUserData();
-  User::CreateNewUserRecord(&u, syscfg.newusersl, syscfg.newuserdsl, syscfg.newuser_restrict,
-                            syscfg.newusergold, newuser_colors, newuser_bwcolors);
+  User::CreateNewUserRecord(&u, config.newuser_sl(), config.newuser_dsl(),
+                            config.newuser_restrict(), config.newuser_gold(), newuser_colors,
+                            newuser_bwcolors);
   constexpr int LABEL_WIDTH = 19;
   EditItems items{};
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Sysop Name/Handle:"),
-            new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, u.data.name, true));
+      new StringEditItem<unsigned char*>(COL1_POSITION, 1, 30, u.data.name, EditLineMode::UPPER_ONLY));
   ++y;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Real Name:"),
-            new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, u.data.realname, true));
+      new StringEditItem<unsigned char*>(COL1_POSITION, 2, 20, u.data.realname, EditLineMode::UPPER_ONLY));
   ++y;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "Password:"),
-            new StringEditItem<char*>(COL1_POSITION, 3, 8, u.data.pw, true));
+            new StringEditItem<char*>(COL1_POSITION, 3, 8, u.data.pw, EditLineMode::UPPER_ONLY));
   ++y;
   items.add(new Label(COL1_LINE, y, LABEL_WIDTH, "BBS Phone Number:"),
-            new StringEditItem<char*>(COL1_POSITION, 4, 12, u.data.phone, true));
+            new StringEditItem<char*>(COL1_POSITION, 4, 12, u.data.phone, EditLineMode::UPPER_ONLY));
   items.Run("Create Sysop Account");
 
   u.data.sl = 255;

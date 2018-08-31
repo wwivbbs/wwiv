@@ -19,8 +19,8 @@
 #ifndef __INCLUDED_SYSTEM_INFO_H__
 #define __INCLUDED_SYSTEM_INFO_H__
 
-#include <string>
+#include "sdk/config.h"
 
-void sysinfo1(const std::string& datadir);
+void sysinfo1(wwiv::sdk::Config& config);
 
 #endif // __INCLUDED_SYSTEM_INFO_H__

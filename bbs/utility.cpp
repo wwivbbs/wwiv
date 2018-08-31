@@ -155,8 +155,8 @@ long nsl() {
   if (a()->IsUserOnline()) {
     auto tot = dd - a()->system_logon_time();
 
-    auto tpl = minutes(getslrec(a()->GetEffectiveSl()).time_per_logon);
-    auto tpd = minutes(getslrec(a()->GetEffectiveSl()).time_per_day);
+    auto tpl = minutes(a()->effective_slrec().time_per_logon);
+    auto tpd = minutes(a()->effective_slrec().time_per_day);
     auto extra_time = duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
     auto tlc = tpl - tot + extra_time;
     auto tlt = tpd - tot - 
@@ -437,19 +437,6 @@ int side_menu(int *menu_pos, bool bNeedsRedraw, const vector<string>& menu_items
     }
   }
   return 0;
-}
-
-slrec getslrec(int nSl) {
-  static int nCurSl = -1;
-  static slrec CurSlRec;
-
-  if (nSl == nCurSl) {
-    return CurSlRec;
-  }
-
-  nCurSl = nSl;
-  CurSlRec = a()->config()->config()->sl[nSl];
-  return CurSlRec;
 }
 
 bool okfsed() {

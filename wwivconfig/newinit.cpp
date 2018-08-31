@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <vector>
 
+#include "core/datafile.h"
 #include "core/file.h"
 #include "core/strings.h"
 #include "core/textfile.h"
@@ -42,7 +43,7 @@
 #include "wwivconfig/archivers.h"
 #include "wwivconfig/utility.h"
 #include "wwivconfig/wwivconfig.h"
-#include "wwivconfig/wwivinit.h"
+#include "sdk/vardec.h"
 
 #include "core/datetime.h"
 #include "sdk/filenames.h"
@@ -56,11 +57,11 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-static void write_qscn(const std::string datadir, unsigned int un, uint32_t* qscn) {
-  File file(FilePath(datadir, USER_QSC));
+static void write_qscn(const Config& config, unsigned int un, uint32_t* qscn) {
+  File file(FilePath(config.datadir(), USER_QSC));
   if (file.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    file.Seek(syscfg.qscn_len * un, File::Whence::begin);
-    file.Write(qscn, syscfg.qscn_len);
+    file.Seek(config.qscn_len() * un, File::Whence::begin);
+    file.Write(qscn, config.qscn_len());
     file.Close();
   }
 }
@@ -83,55 +84,64 @@ static bool unzip_file(UIWindow* window, const std::string& zipfile, const std::
   return false;
 }
 
+static void save_config(const configrec& c) {
+  DataFile<configrec> file(CONFIG_DAT,
+                           File::modeBinary | File::modeReadWrite | File::modeCreateFile);
+  if (file) {
+    file.Write(&c);
+  }
+}
+
 static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files) {
   window->SetColor(SchemeId::PROMPT);
   window->Puts("Creating Data Files.\n");
   window->SetColor(SchemeId::NORMAL);
 
-  memset(&syscfg, 0, sizeof(configrec));
+  configrec cfg430{};
+  memset(&cfg430, 0, sizeof(configrec));
 
   // Set header
-  syscfg.header.header.config_revision_number = 1;
-  syscfg.header.header.config_size = sizeof(configrec);
-  syscfg.header.header.written_by_wwiv_num_version = wwiv_num_version;
-  to_char_array(syscfg.header.header.signature, "WWIV");
+  cfg430.header.header.config_revision_number = 1;
+  cfg430.header.header.config_size = sizeof(configrec);
+  cfg430.header.header.written_by_wwiv_num_version = wwiv_num_version;
+  to_char_array(cfg430.header.header.signature, "WWIV");
 
-  to_char_array(syscfg.datadir, "data");
+  to_char_array(cfg430.datadir, "data");
 
-  to_char_array(syscfg.systempw, "SYSOP");
-  to_char_array(syscfg.systemname, "My WWIV BBS");
-  to_char_array(syscfg.systemphone, "   -   -    ");
-  to_char_array(syscfg.sysopname, "The New Sysop");
+  to_char_array(cfg430.systempw, "SYSOP");
+  to_char_array(cfg430.systemname, "My WWIV BBS");
+  to_char_array(cfg430.systemphone, "   -   -    ");
+  to_char_array(cfg430.sysopname, "The New Sysop");
 
-  to_char_array(syscfg.msgsdir, "msgs");
-  to_char_array(syscfg.gfilesdir, "gfiles");
-  to_char_array(syscfg.dloadsdir, "dloads");
-  to_char_array(syscfg.tempdir, FilePath("temp", "1"));
-  to_char_array(syscfg.menudir, FilePath("gfiles", "menus"));
-  to_char_array(syscfg.scriptdir, "scripts");
+  to_char_array(cfg430.msgsdir, "msgs");
+  to_char_array(cfg430.gfilesdir, "gfiles");
+  to_char_array(cfg430.dloadsdir, "dloads");
+  to_char_array(cfg430.tempdir, FilePath("temp", "1"));
+  to_char_array(cfg430.menudir, FilePath("gfiles", "menus"));
+  to_char_array(cfg430.scriptdir, "scripts");
 
-  syscfg.newusersl = 10;
-  syscfg.newuserdsl = 0;
-  syscfg.maxwaiting = 50;
+  cfg430.newusersl = 10;
+  cfg430.newuserdsl = 0;
+  cfg430.maxwaiting = 50;
   // Always use 1 for the primary port.
-  syscfg.primaryport = 1;
-  syscfg.newuploads = 0;
-  syscfg.maxusers = 500;
-  syscfg.newuser_restrict = restrict_validate;
-  syscfg.req_ratio = 0.0;
-  syscfg.newusergold = 100.0;
+  cfg430.primaryport = 1;
+  cfg430.newuploads = 0;
+  cfg430.maxusers = 500;
+  cfg430.newuser_restrict = restrict_validate;
+  cfg430.req_ratio = 0.0;
+  cfg430.newusergold = 100.0;
 
-  valrec v;
+  valrec v{};
   v.ar = 0;
   v.dar = 0;
   v.restrict = 0;
   v.sl = 10;
   v.dsl = 0;
   for (int i = 0; i < 10; i++) {
-    syscfg.autoval[i] = v;
+    cfg430.autoval[i] = v;
   }
   for (int i = 0; i < 256; i++) {
-    slrec sl;
+    slrec sl{};
     sl.time_per_logon = static_cast<uint16_t>((i / 10) * 10);
     sl.time_per_day = static_cast<uint16_t>(((float)sl.time_per_logon) * 2.5);
     sl.messages_read = static_cast<uint16_t>((i / 10) * 100);
@@ -180,24 +190,27 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
       sl.posts = 255;
       sl.emails = 255;
     }
-    syscfg.sl[i] = sl;
+    cfg430.sl[i] = sl;
   }
 
-  syscfg.userreclen = sizeof(userrec);
-  syscfg.waitingoffset = offsetof(userrec, waiting);
-  syscfg.inactoffset = offsetof(userrec, inact);
-  syscfg.sysstatusoffset = offsetof(userrec, sysstatus);
-  syscfg.fuoffset = offsetof(userrec, forwardusr);
-  syscfg.fsoffset = offsetof(userrec, forwardsys);
-  syscfg.fnoffset = offsetof(userrec, net_num);
+  cfg430.userreclen = sizeof(userrec);
+  cfg430.waitingoffset = offsetof(userrec, waiting);
+  cfg430.inactoffset = offsetof(userrec, inact);
+  cfg430.sysstatusoffset = offsetof(userrec, sysstatus);
+  cfg430.fuoffset = offsetof(userrec, forwardusr);
+  cfg430.fsoffset = offsetof(userrec, forwardsys);
+  cfg430.fnoffset = offsetof(userrec, net_num);
 
-  syscfg.max_subs = 64;
-  syscfg.max_dirs = 64;
-  syscfg.qscn_len =
-      4 * (1 + syscfg.max_subs + ((syscfg.max_subs + 31) / 32) + ((syscfg.max_dirs + 31) / 32));
+  cfg430.max_subs = 64;
+  cfg430.max_dirs = 64;
+  cfg430.qscn_len =
+      4 * (1 + cfg430.max_subs + ((cfg430.max_subs + 31) / 32) + ((cfg430.max_dirs + 31) / 32));
 
-  syscfg.post_call_ratio = 0.0;
-  save_config();
+  cfg430.post_call_ratio = 0.0;
+  save_config(cfg430);
+
+  // cfg430 is done
+  Config config(cfg430);
 
   const auto datadir = FilePath(bbsdir, "data");
   create_arcs(window, datadir);
@@ -215,13 +228,13 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   statusrec.net_bias = 0.001f;
   statusrec.net_req_free = 3.0;
 
-  auto qsc = std::make_unique<uint32_t[]>(syscfg.qscn_len / sizeof(uint32_t));
+  auto qsc = std::make_unique<uint32_t[]>(config.qscn_len() / sizeof(uint32_t));
 
   save_status(datadir, statusrec);
   userrec u = {};
   memset(&u, 0, sizeof(u));
-  write_user(datadir, 0, &u);
-  write_qscn(datadir, 0, qsc.get());
+  write_user(config, 0, &u);
+  write_qscn(config, 0, qsc.get());
 
   // Note: this is where wwivconfig makes a user record #1 that is deleted for new installs.
   // TODO(rushfan): We should use User::CreateNewUserRecord here.
@@ -242,8 +255,8 @@ static void init_files(UIWindow* window, const string& bbsdir, bool unzip_files)
   u.hot_keys = 0;
   to_char_array(u.menu_set, "wwiv");
 
-  write_user(datadir, 1, &u);
-  write_qscn(datadir, 1, qsc.get());
+  write_user(config, 1, &u);
+  write_qscn(config, 1, qsc.get());
   {
     File namesfile(FilePath("data", NAMES_LST));
     namesfile.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile);

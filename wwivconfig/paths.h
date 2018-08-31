@@ -19,8 +19,8 @@
 #ifndef __INCLUDED_PATHS_H__
 #define __INCLUDED_PATHS_H__
 
-#include <string>
+#include "sdk/config.h"
 
-void setpaths(const std::string& bbsdir);
+void setpaths(wwiv::sdk::Config& config);
 
 #endif // __INCLUDED_PATHS_H__

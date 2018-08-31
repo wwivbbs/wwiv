@@ -61,7 +61,7 @@ protected:
     config.set_initialized_for_test(true);
     net_networks_rec net{};
     net.dir = network_dir;
-    strcpy(net.name, "Dummy Network");
+    to_char_array(net.name, "Dummy Network");
     net.type = network_type_t::wwivnet;
     net.sysnum = 0;
     BinkConfig* dummy_config = new BinkConfig(ORIGINATING_ADDRESS, config, network_dir);
