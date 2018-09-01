@@ -12,9 +12,10 @@
 ***
 ## Container work
 ***
-* Add WWIV_BIN_DIR to point to where binaries live (default to WWIV_DIR)
-* Add WWIV_LOG_DIR to point to where log files go (default to WWIV_DIR)
 * Add WWIV_CONFIG_DIR to point to where the config.json file lives (default to config.dat's data)
+* Create default directory structure for in containers
+* move all binaries to bin, see what breaks
+
 
 ## Infrastructure Cleanup
 ***
