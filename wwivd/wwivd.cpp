@@ -127,13 +127,8 @@ int Main(CommandLine& cmdline) {
   auto wwiv_dir = cmdline.bbsdir();
   VLOG(2) << "Using WWIV_DIR: " << wwiv_dir;
 
-  auto wwiv_user = environment_variable("WWIV_USER");
-  if (wwiv_user.empty()) {
-    wwiv_user = cmdline.arg("wwiv_user").as_string();
-    VLOG(2) << "Using WWIV_USER(cmdline): " << wwiv_user;
-  } else {
-    VLOG(2) << "Using WWIV_USER(env): " << wwiv_user;
-  }
+  auto wwiv_user = cmdline.arg("wwiv_user").as_string();
+  VLOG(2) << "Using WWIV_USER: " << wwiv_user;
 
   const Config config{wwiv_dir};
   if (!config.IsInitialized()) {
@@ -229,7 +224,7 @@ int main(int argc, char* argv[]) {
   ScopeExit at_exit(Logger::ExitLogger);
   CommandLine cmdline(argc, argv, "net");
   cmdline.AddStandardArgs();
-  cmdline.add_argument({"wwiv_user", "WWIV User to use.", "wwiv"});
+  cmdline.add_argument({"wwiv_user", "WWIV User to use.", "wwiv", "WWIV_USER"});
   cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
   cmdline.set_no_args_allowed(true);
 

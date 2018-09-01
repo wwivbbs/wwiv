@@ -30,18 +30,14 @@ namespace wwivutil {
 
 class Configuration {
 public:
-  Configuration(const std::string bbsdir, wwiv::sdk::Config* config) 
-      : bbsdir_(bbsdir), config_(config), networks_(*config) {
+  Configuration(wwiv::sdk::Config* config) : config_(config), networks_(*config) {
     if (!networks_.IsInitialized()) {
       initialized_ = false;
     }
-
-
   }
-  ~Configuration() {}
+  virtual ~Configuration() = default;
 
   const wwiv::sdk::Config* config() const { return config_; }
-  const std::string bbsdir() const { return bbsdir_;  }
   bool initialized() const { return initialized_; }
   wwiv::sdk::Networks networks() const { return networks_; }
 

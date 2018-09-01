@@ -45,7 +45,7 @@ using namespace wwiv::sdk::fido;
 namespace wwiv {
 namespace net {
 
-vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) {
+vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destination_node) const {
   vector<TransferFile*> result;
   const auto s_node_net = StringPrintf("s%d.net", destination_node);
   const auto search_path = FilePath(dirs_.net_dir(), s_node_net);
@@ -60,7 +60,7 @@ vector<TransferFile*> FileManager::CreateWWIVnetTransferFileList(uint16_t destin
   return result;
 }
 
-std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& address) {
+std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& address) const {
   LOG(INFO) << "CreateFtnTransferFileList: " << address;
 
   std::vector<fido_bundle_status_t> statuses{
@@ -100,7 +100,7 @@ std::vector<TransferFile*> FileManager::CreateFtnTransferFileList(const string& 
   return result;
 }
 
-std::vector<TransferFile*> FileManager::CreateTransferFileList(const Remote& remote) {
+std::vector<TransferFile*> FileManager::CreateTransferFileList(const Remote& remote) const {
   if (net_.type == network_type_t::wwivnet) {
     return CreateWWIVnetTransferFileList(remote.wwivnet_node());
   } else if (net_.type == network_type_t::ftn) {

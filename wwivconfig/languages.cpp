@@ -54,7 +54,7 @@ using namespace wwiv::strings;
 
 static constexpr int MAX_LANGUAGES = 100;
 
-static void edit_lang(const std::string& bbsdir, languagerec& n) {
+static void edit_lang(const std::string& base, languagerec& n) {
   constexpr int LABEL1_POSITION = 2;
   constexpr int LABEL1_WIDTH = 15;
   constexpr int COL1_POSITION = LABEL1_POSITION + LABEL1_WIDTH + 1;
@@ -65,10 +65,10 @@ static void edit_lang(const std::string& bbsdir, languagerec& n) {
             new StringEditItem<char*>(COL1_POSITION, y, 19, n.name, EditLineMode::ALL));
   y++;
   items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH, "Data Directory:"),
-            new FilePathItem(LABEL1_POSITION, y + 1, 75, bbsdir, n.dir));
+            new FilePathItem(LABEL1_POSITION, y + 1, 75, base, n.dir));
   y += 2;
   items.add(new Label(LABEL1_POSITION, y, LABEL1_WIDTH , "Menu Directory:"),
-            new FilePathItem(LABEL1_POSITION, y+1, 75, bbsdir, n.mdir));
+            new FilePathItem(LABEL1_POSITION, y+1, 75, base, n.mdir));
   items.Run("Language Configuration");
 };
 

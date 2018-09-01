@@ -118,7 +118,7 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
         return new WFileTransferFile(filename, std::make_unique<File>(FilePath(net.dir, filename)));
       };
       BinkP binkp(c.get(), &bink_config, side, "0", factory);
-      binkp.Run();
+      binkp.Run(cmdline);
     } catch (const connection_error& e) {
       LOG(ERROR) << "CONNECTION ERROR: [networkb]: " << e.what();
     } catch (const socket_error& e) {
@@ -130,7 +130,7 @@ static bool Receive(const CommandLine& cmdline, BinkConfig& bink_config, int por
   return true;
 }
 
-static bool Send(BinkConfig& bink_config, const string& sendto_node,
+static bool Send(const CommandLine& cmdline, BinkConfig& bink_config, const string& sendto_node,
                  const std::string& network_name) {
   LOG(INFO) << "BinkP send to: " << sendto_node;
   const auto start_time = system_clock::now();
@@ -173,7 +173,7 @@ static bool Send(BinkConfig& bink_config, const string& sendto_node,
     throw config_error("BinkP only supports wwivnet or ftn networks.");
   }
   BinkP binkp(c.get(), &bink_config, BinkSide::ORIGINATING, sendto_ftn_node, factory);
-  binkp.Run();
+  binkp.Run(cmdline);
   return true;
 }
 
@@ -210,7 +210,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     if (net_cmdline.cmdline().barg("receive")) {
       Receive(net_cmdline.cmdline(), bink_config, port);
     } else if (net_cmdline.cmdline().barg("send")) {
-      if (Send(bink_config, sendto_node, network_name)) {
+      if (Send(net_cmdline.cmdline(), bink_config, sendto_node, network_name)) {
         return 0;
       }
       return 1;

@@ -479,7 +479,7 @@ static int network3_fido(const NetworkCommandLine& net_cmdline) {
     text << "Unable to parse your address of: " << net.fido.fido_address << "\r\n";
     text << " ** Please fix it.\r\n\n";
   }
-  wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.config().root_directory(), net);
+  wwiv::sdk::fido::FtnDirectories dirs(net_cmdline.cmdline().bindir(), net);
   text << "Inbound dir:             " << dirs.inbound_dir() << "\r\n";
   text << "Outbound dir:            " << dirs.outbound_dir() << "\r\n";
   text << "Temporary Inbound dir:   " << dirs.temp_inbound_dir() << "\r\n";

@@ -40,8 +40,6 @@ namespace net {
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline,
                             const std::string& current_directory) {
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
-  //cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory",
-  //                      current_directory, "WWIV_DIR"});
   cmdline.add_argument(
       BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
   cmdline.add_argument(
@@ -64,7 +62,7 @@ NetworkCommandLine::NetworkCommandLine(wwiv::core::CommandLine& cmdline, char ne
     initialized_ = false;
   }
   network_number_ = cmdline.arg("net").as_int();
-
+  // TODO(rushfan): Need to look to see if WWIV_CONFIG_FILE is set 1st.
   config_.reset(new wwiv::sdk::Config(cmdline.bbsdir()));
   networks_.reset(new wwiv::sdk::Networks(*config_.get()));
 

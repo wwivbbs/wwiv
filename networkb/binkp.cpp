@@ -830,9 +830,9 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 
 bool BinkP::HandleFileGotRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]"; 
-  vector<string> s = SplitString(request_line, " ");
+  const auto s = SplitString(request_line, " ");
   const string filename = s.at(0);
-  int length = to_number<int>(s.at(1));
+  const auto length = to_number<int>(s.at(1));
 
   auto iter = files_to_send_.find(filename);
   if (iter == end(files_to_send_)) {
@@ -840,7 +840,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
     return false;
   }
 
-  TransferFile* file = iter->second.get();
+  auto* file = iter->second.get();
   // Increment the number of bytes sent.
   // Also don't increment with -1 if there's an error with the file.
   bytes_sent_ += max(0, file->file_size());
@@ -858,7 +858,7 @@ bool BinkP::HandleFileGotRequest(const string& request_line) {
   return true;
 }
 
-void BinkP::Run() {
+void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
   VLOG(1) << "STATE: Run(): side:" << static_cast<int>(side_);
   BinkState state = (side_ == BinkSide::ORIGINATING) ? BinkState::CONN_INIT : BinkState::WAIT_CONN;
   auto start_time = system_clock::now();
@@ -932,7 +932,7 @@ void BinkP::Run() {
       // file_manager_ is null in some tests (BinkpTest).
       file_manager_->rename_wwivnet_pending_files();
       if (!config_->skip_net()) {
-        process_network_files();
+        process_network_files(cmdline);
       }
     }
 
@@ -941,12 +941,8 @@ void BinkP::Run() {
     // Update WWIVnet net.log and contact.net for WWIVnet connections.
     NetworkSide network_log_side = (side_ == BinkSide::ORIGINATING) ? NetworkSide::TO : NetworkSide::FROM;
     NetworkLog net_log(config_->gfiles_directory());
-    net_log.Log(system_clock::to_time_t(start_time), 
-      network_log_side,
-      remote_.wwivnet_node(), 
-      bytes_sent_, 
-      bytes_received_, 
-      sec, remote_.network_name());
+    net_log.Log(system_clock::to_time_t(start_time), network_log_side, remote_.wwivnet_node(),
+                bytes_sent_, bytes_received_, sec, remote_.network_name());
 
     // Update contact.net
     Contact c(config_->network(remote_.network_name()), true);
@@ -963,13 +959,10 @@ void BinkP::Run() {
       file_manager_->rename_ftn_pending_files();
       if (!config_->skip_net()) {
         const int network_number = config_->networks().network_number(remote_.network_name());
-        // TODO(rushfan): May need binary path one day
-        System(config_->config().root_directory(),
+        System(cmdline.bindir(),
                StrCat("networkc .", network_number, " --v=", config_->verbose()));
       }
     }
-
-
   }
 }
 
@@ -1015,7 +1008,7 @@ static bool need_network3(const string& dir, int network_version) {
 }
 
 
-void BinkP::process_network_files() const {
+void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const {
   const string network_name = remote_.network_name();
   VLOG(1) << "STATE: process_network_files for network: " << network_name;
   int network_number = config_->networks().network_number(network_name);
@@ -1023,8 +1016,7 @@ void BinkP::process_network_files() const {
     return;
   }
   // TODO(rushfan): May need binary path one day
-  System(config_->config().root_directory(),
-         StrCat("networkc .", network_number, " --v=", config_->verbose()));
+  System(cmdline.bindir(), StrCat("networkc .", network_number, " --v=", config_->verbose()));
 }
 
 bool ParseFileRequestLine(const string& request_line,

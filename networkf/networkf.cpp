@@ -492,7 +492,7 @@ static bool create_ftn_bundle(const Config& config, const FidoCallout& fido_call
     File::set_current_directory(dirs.temp_outbound_dir());
     LOG(INFO) << "Changed directory to: " << dirs.temp_outbound_dir();
     const auto& arc = find_arc(arcs, ctype);
-    auto zip_cmd = arc_stuff_in(arc.arca, FilePath(dirs.outbound_dir(), bname), fido_packet_name);
+    const auto zip_cmd = arc_stuff_in(arc.arca, FilePath(dirs.outbound_dir(), bname), fido_packet_name);
     LOG(INFO) << "Command: " << zip_cmd;
     if (0 != system(zip_cmd.c_str())) {
       LOG(ERROR) << "Failed executing: " << zip_cmd;

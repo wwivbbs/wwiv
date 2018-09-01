@@ -112,6 +112,7 @@ bool CommandLine::Parse() {
 
   bbsdir_ = sarg("bbsdir");
   bindir_ = sarg("bindir");
+  bbsdir_ = sarg("configdir");
   logdir_ = sarg("logdir");
 
   return true;
@@ -309,8 +310,10 @@ bool CommandLine::AddStandardArgs() {
     return false;
   }
   add_argument({"bindir", "Main BBS binary directory.", File::current_directory(), "WWIV_BIN_DIR"});
-  add_argument({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory(),
+  add_argument({"bbsdir", "Root BBS directory (i.e. C:\bbs)", File::current_directory(),
                 "WWIV_DIR"});
+  add_argument({"configdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory(),
+                "WWIV_CONFIG_DIR"});
   add_argument({"logdir", "Directory where log files are written.", File::current_directory(),
                 "WWIV_LOG_DIR"});
 

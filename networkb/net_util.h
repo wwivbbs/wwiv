@@ -44,7 +44,6 @@ public:
   NetworkCommandLine(wwiv::core::CommandLine& cmdline, char net_cmd);
 
   bool IsInitialized() const noexcept { return initialized_; }
-  const std::string bbsdir() const noexcept { return cmdline_.bbsdir(); }
   const wwiv::sdk::Config& config() const noexcept { return *config_.get(); }
   const wwiv::sdk::Networks& networks() const noexcept { return *networks_.get(); }
   const std::string network_name() const noexcept { return network_name_; }

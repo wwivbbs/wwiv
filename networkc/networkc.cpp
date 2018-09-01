@@ -87,7 +87,7 @@ static void rename_bbs_instance_files(const string& dir, int instance_number) {
 }
 
 string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, int verbose, const string& cmd) {
-  const string path = FilePath(net_cmdline.bbsdir(), StrCat("network", num));
+  const string path = FilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
 
   std::ostringstream ss;
   ss << path << " --v=" << verbose << " ." << net_cmdline.network_number();

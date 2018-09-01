@@ -878,7 +878,7 @@ int Application::Run(int argc, char* argv[]) {
   }
 
   // Add the environment variable or overwrite the existing one
-  const string env_str = std::to_string(instance_number());
+  const auto env_str = std::to_string(instance_number());
   set_environment_variable("WWIV_INSTANCE", env_str);
   if (!ReadConfig()) {
     // Gotta read the config before we can create the socket handles.

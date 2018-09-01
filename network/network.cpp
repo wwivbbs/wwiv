@@ -66,7 +66,7 @@ static void ShowHelp(CommandLine& cmdline) {
 
 static int LaunchOldNetworkingStack(const NetworkCommandLine& net_cmdline, const std::string exe, int argc, char** argv) {
   std::ostringstream os;
-  os << FilePath(net_cmdline.bbsdir(), exe);
+  os << FilePath(net_cmdline.cmdline().bindir(), exe);
   for (int i = 1; i < argc; i++) {
     const string s(argv[1]);
     if (starts_with(s, "/")) {
@@ -123,7 +123,7 @@ int main(int argc, char** argv) {
       // network, so we will use networkb.
       LOG(INFO) << "USE networkb: " << node_config->host << ":" << node_config->port;
       std::ostringstream ss;
-      ss << FilePath(net_cmdline.bbsdir(), "networkb");
+      ss << FilePath(net_cmdline.cmdline().bindir(), "networkb");
       ss << " --send --net=" << net_cmdline.network_number() << " --node=" << node;
       if (cmdline.barg("skip_net")) {
         ss << " --skip_net";

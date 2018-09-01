@@ -80,7 +80,7 @@ public:
         LOG(ERROR) << "Unable to load CONFIG.DAT.";
         return 1;
       }
-      command_config_.reset(new Configuration(cmdline_.bbsdir(), &config));
+      command_config_.reset(new Configuration(&config));
       if (!command_config_->initialized()) {
         LOG(ERROR) << "Unable to load NETWORKS.";
         return 1;

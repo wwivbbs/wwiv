@@ -228,15 +228,17 @@ public:
   bool no_args_allowed() const { return no_args_allowed_; }
 
   std::string program_name() const noexcept { return program_name_; }
-  const std::string bbsdir() const noexcept { return bbsdir_; }
-  const std::string logdir() const noexcept { return logdir_; }
   const std::string bindir() const noexcept { return bindir_; }
+  const std::string bbsdir() const noexcept { return bbsdir_; }
+  const std::string configdir() const noexcept { return configdir_; }
+  const std::string logdir() const noexcept { return logdir_; }
 
 private:
   const std::string program_name_;
   std::string bbsdir_;
-  std::string logdir_;
   std::string bindir_;
+  std::string configdir_;
+  std::string logdir_;
   bool no_args_allowed_{false};
 
   bool ParseImpl();

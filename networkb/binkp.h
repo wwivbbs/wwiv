@@ -27,11 +27,13 @@
 #include <string>
 #include <vector>
 
+#include "core/command_line.h"
 #include "core/connection.h"
 #include "sdk/callout.h"
 #include "networkb/cram.h"
 #include "networkb/file_manager.h"
 #include "networkb/remote.h"
+#include "networkb/net_util.h"
 #include "networkb/receive_file.h"
 
 namespace wwiv {
@@ -81,7 +83,7 @@ public:
         received_transfer_file_factory_t& received_transfer_file_factory);
   virtual ~BinkP();
 
-  void Run();
+  void Run(const wwiv::core::CommandLine& cmdline);
 
 private:
   // Process frames until we time out waiting for a new frame.
@@ -97,7 +99,7 @@ private:
   bool send_command_packet(uint8_t command_id, const std::string& data);
   bool send_data_packet(const char* data, std::size_t size);
 
-  void process_network_files() const;
+  void process_network_files(const wwiv::core::CommandLine& cmdline) const;
 
   BinkState ConnInit();
   BinkState WaitConn();

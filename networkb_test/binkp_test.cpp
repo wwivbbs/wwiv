@@ -71,7 +71,8 @@ protected:
     };
     dummy_config->callouts()["wwivnet"] = std::move(dummy_callout);
     binkp_.reset(new BinkP(&conn_, dummy_config, BinkSide::ANSWERING, ANSWERING_ADDRESS, null_factory));
-    thread_ = thread([&]() {binkp_->Run(); });
+    CommandLine cmdline({ "networkb_tests.exe" }, "");
+    thread_ = thread([&]() { binkp_->Run(cmdline); });
   } 
 
   void Stop() {
