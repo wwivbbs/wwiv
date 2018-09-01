@@ -947,12 +947,12 @@ void removefile() {
               bout.nl();
               bout << "|#5Remove from ALLOW.DAT? ";
               if (yesno()) {
-                modify_database(u.filename, false);
+                remove_from_file_database(u.filename);
               }
             }
           } else {
             bDeleteFileToo = true;
-            modify_database(u.filename, false);
+            remove_from_file_database(u.filename);
           }
           if (bDeleteFileToo) {
             char szFileNameToDelete[MAX_PATH];

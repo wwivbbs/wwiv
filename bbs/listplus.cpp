@@ -1341,12 +1341,12 @@ static int remove_filename(const char *file_name, int dn) {
           if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH)) {
             bout << "|#5Remove from ALLOW.DAT? ";
             if (yesno()) {
-              modify_database(szTempFileName, false);
+              remove_from_file_database(szTempFileName);
             }
           }
         } else {
           rm = true;
-          modify_database(szTempFileName, false);
+          remove_from_file_database(szTempFileName);
         }
         if (rm) {
           File::Remove(a()->directories[dn].path, u.filename);

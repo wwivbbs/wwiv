@@ -258,7 +258,7 @@ static void uploaded(const string& file_name, long lCharsPerSecond) {
               file.Close();
               get_file_idz(&u, b.dir);
               a()->user()->SetFilesUploaded(a()->user()->GetFilesUploaded() + 1);
-              modify_database(u.filename, true);
+              add_to_file_database(u.filename);
               a()->user()->SetUploadK(a()->user()->GetUploadK() +
                   static_cast<int>(bytes_to_k(u.numbytes)));
               a()->status_manager()->Run([](WStatus& s) {

@@ -376,7 +376,7 @@ static int try_to_ul_wh(const string& orig_file_name) {
   fileDownload.Write(&u1, sizeof(uploadsrec));
   fileDownload.Close();
 
-  modify_database(u.filename, true);
+  add_to_file_database(u.filename);
 
   a()->user()->SetUploadK(a()->user()->GetUploadK() + bytes_to_k(u.numbytes));
 

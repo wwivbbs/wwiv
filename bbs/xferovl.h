@@ -22,15 +22,16 @@ void move_file();
 void sortdir(int directory_num, int type);
 void sort_all(int type);
 void rename_file();
-bool maybe_upload(const char *file_name, uint16_t directory_num, const char *description);
-void upload_files(const char *file_name, uint16_t directory_num, int type);
+bool maybe_upload(const char* file_name, uint16_t directory_num, const char* description);
+void upload_files(const char* file_name, uint16_t directory_num, int type);
 bool uploadall(uint16_t directory_num);
 void relist();
 void edit_database();
-void modify_database(const char *file_name, bool add);
+void add_to_file_database(const std::string& file_name);
+void remove_from_file_database(const std::string& file_name);
 bool is_uploadable(const std::string& file_name);
 void xfer_defaults();
 void finddescription();
 void arc_l();
 
-#endif  // __INCLUDED_BBS_XFEROVL_H__
+#endif // __INCLUDED_BBS_XFEROVL_H__
