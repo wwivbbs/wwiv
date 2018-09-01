@@ -131,13 +131,26 @@ static uid_t GetWWIVUserId(const string& username) {
   return pw->pw_uid;
 }
 
+static gid_t GetWWIVUserGroupId(const string& username) {
+  passwd* pw = getpwnam(username.c_str());
+  if (pw == nullptr) {
+    // Unable to find user, let's return our current uid.
+    LOG(ERROR) << "Unable to find uid for username: " << username;
+    return getgid();
+  }
+  return pw->pw_gid;
+}
+
 void SwitchToNonRootUser(const std::string& wwiv_user) {
-  uid_t current_uid = getuid();
-  uid_t wwiv_uid = GetWWIVUserId(wwiv_user);
+  auto current_uid = getuid();
+  auto wwiv_uid = GetWWIVUserId(wwiv_user);
   if (wwiv_uid != current_uid) {
     if (setuid(wwiv_uid) != 0) {
       LOG(ERROR) << "Unable to call setuid(" << wwiv_uid << "); errno: " << errno;
-      // TODO(rushfan): Should we exit or continue here?
+    }
+    auto wwiv_gid = GetWWIVUserGroupId(wwiv_user);
+    if (setgid(wwiv_gid) != 0) {
+      LOG(ERROR) << "Unable to call setgid(" << wwiv_gid << "); errno: " << errno;
     }
   }
 }
