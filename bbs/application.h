@@ -319,7 +319,7 @@ public:
 
   uint16_t forced_read_subnum_ = 0;
   bool allow_cc_ = false;
-  bool user_online_ = false;
+  bool user_online_{false};
   bool quoting_ = false;
   bool m_bTimeOnlineLimited = false;
 

@@ -292,7 +292,13 @@ std::string CommandLineCommand::GetHelp() const {
   string program_name = (name_.empty()) ? "program" : name_;
   ss << program_name << " arguments:" << std::endl;
   for (const auto& a : args_allowed_) {
-    ss << "--" << left << setw(20) << a.second.name << " " << a.second.help_text() << endl;
+    const auto& c = a.second;
+    if (c.key != 0) {
+      ss << "-" << c.key << " ";
+    } else {
+      ss << "   ";
+    }
+    ss << "--" << left << setw(20) << c.name << " " << c.help_text() << endl;
   }
   if (!commands_allowed_.empty()) {
     ss << endl;

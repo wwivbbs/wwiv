@@ -57,16 +57,17 @@
 #include "bbs/sysopf.h"
 #include "bbs/sysoplog.h"
 #include "bbs/utility.h"
-#include "local_io/wconstants.h"
 #include "bbs/wfc.h"
 #include "bbs/wqscn.h"
 #include "bbs/xfer.h"
+#include "core/command_line.h"
 #include "core/os.h"
 #include "core/strings.h"
 #include "core/version.h"
 #include "local_io/local_io.h"
 #include "local_io/local_io_curses.h"
 #include "local_io/null_local_io.h" // Used for Linux build.
+#include "local_io/wconstants.h"
 #include "sdk/status.h"
 
 #if defined(_WIN32)
@@ -463,15 +464,18 @@ void Application::UpdateTopScreen() {
     localIO()->PutsXY(0, 0, StrCat(sn, "  Activity for ", ld, ":      "));
 
     localIO()->PutsXY(
-        0, 1, StringPrintf("Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
-        status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
-        status->GetNumLocalPosts()));
+        0, 1,
+        StringPrintf(
+            "Users: %4u       Total Calls: %5lu      Calls Today: %4u    Posted      :%3u ",
+            status->GetNumUsers(), status->GetCallerNumber(), status->GetNumCallsToday(),
+            status->GetNumLocalPosts()));
 
     const string username_num = names()->UserName(usernum);
-    localIO()->PutsXY(0, 2, StringPrintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
-                        username_num.c_str(), status->GetMinutesActiveToday(),
-                        static_cast<int>(10 * status->GetMinutesActiveToday() / 144),
-                        status->GetNumEmailSentToday()));
+    localIO()->PutsXY(0, 2,
+                      StringPrintf("%-36s      %-4u min   /  %2u%%    E-mail sent :%3u ",
+                                   username_num.c_str(), status->GetMinutesActiveToday(),
+                                   static_cast<int>(10 * status->GetMinutesActiveToday() / 144),
+                                   status->GetNumEmailSentToday()));
 
     User sysop{};
     int feedback_waiting = 0;
@@ -479,9 +483,11 @@ void Application::UpdateTopScreen() {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
     localIO()->PutsXY(
-        0, 3, StringPrintf("SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
-        user()->GetSl(), user()->GetDsl(), feedback_waiting, status->GetNumUploadsToday(),
-        status->GetNumFeedbackSentToday()));
+        0, 3,
+        StringPrintf(
+            "SL=%3u   DL=%3u               FW=%3u      Uploaded:%2u files    Feedback    :%3u ",
+            user()->GetSl(), user()->GetDsl(), feedback_waiting, status->GetNumUploadsToday(),
+            status->GetNumFeedbackSentToday()));
   } break;
   case LocalIO::topdataUser: {
     to_char_array(rst, restrict_string);
@@ -527,23 +533,26 @@ void Application::UpdateTopScreen() {
     auto used_total = used_this_session + user()->timeon();
     auto minutes_used = duration_cast<minutes>(used_total);
 
-    localIO()->PutsXY(0, 1, StringPrintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
-                        user()->GetRealName(), user()->GetVoicePhoneNumber(),
-                        callsign_or_regnum.c_str(), user()->GetFilesDownloaded(),
-                        user()->GetDownloadK(), user()->GetDsl(), minutes_used.count(),
-                        user()->GetNumEmailSent() + user()->GetNumNetEmailSent()));
+    localIO()->PutsXY(0, 1,
+                      StringPrintf("%-20s %12s  %-6s DL=%4u/%6lu DL=%3u TO=%5.0d ES=%4u",
+                                   user()->GetRealName(), user()->GetVoicePhoneNumber(),
+                                   callsign_or_regnum.c_str(), user()->GetFilesDownloaded(),
+                                   user()->GetDownloadK(), user()->GetDsl(), minutes_used.count(),
+                                   user()->GetNumEmailSent() + user()->GetNumNetEmailSent()));
 
-    localIO()->PutsXY(0, 2, StringPrintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
-                        user()->GetExempt(), lo.c_str(), user()->GetNumFeedbackSent()));
+    localIO()->PutsXY(0, 2,
+                      StringPrintf("ARs=%-16s/%-16s R=%-16s EX=%3u %-8s FS=%4u", ar, dar, restrict,
+                                   user()->GetExempt(), lo.c_str(), user()->GetNumFeedbackSent()));
 
     User sysop{};
     int feedback_waiting = 0;
     if (users()->readuser_nocache(&sysop, 1)) {
       feedback_waiting = sysop.GetNumMailWaiting();
     }
-    localIO()->PutsXY(0, 3, StringPrintf("%-40.40s %c %2u %-16.16s           FW= %3u",
-                        user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
-                        ctypes(user()->GetComputerType()).c_str(), feedback_waiting));
+    localIO()->PutsXY(0, 3,
+                      StringPrintf("%-40.40s %c %2u %-16.16s           FW= %3u",
+                                   user()->GetNote().c_str(), user()->GetGender(), user()->GetAge(),
+                                   ctypes(user()->GetComputerType()).c_str(), feedback_waiting));
 
     if (chatcall_) {
       localIO()->PutsXY(0, 4, chat_reason_);
@@ -658,9 +667,7 @@ void Application::GotCaller(unsigned int ms) {
 
 void Application::CdHome() { File::set_current_directory(current_dir_); }
 
-const string Application::GetHomeDir() {
-  return current_dir_;
-}
+const string Application::GetHomeDir() { return current_dir_; }
 
 void Application::AbortBBS(bool bSkipShutdown) {
   clog.flush();
@@ -696,41 +703,47 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
   exit(exit_level);
 }
 
-static void ShowUsage() {
-  cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n"
-       << "Usage:\r\n"
-       << "bbs -n<inst> [options] \r\n\n"
-       << "program arguments:\r\n\n"
-       << "  -?           Display command line options (This screen)\r\n\n"
-       << "  -a<level>    Specify the Error Exit Level\r\n"
-       << "  -b<rate>     Someone already logged on at rate (modem speed)\r\n"
-       << "  -e           Load for beginday event only\r\n"
-       << "  -h<handle>   Socket handle\r\n"
-       << "  -m           Don't access modem at all\r\n"
-       << "  -n<inst>     Designate instance number <inst>\r\n"
-       << "  -q<level>    Normal exit level\r\n"
-       << "  -r<min>      Specify max # minutes until event\r\n"
-       << "  -u<user#>    Pass usernumber <user#> online\r\n"
-       << "  -v           Display WWIV Version\r\n"
-       << "  -xt          Someone already logged on via telnet (socket handle)\r\n"
-       << "  -xs          Someone already logged on via SSH (socket handle)\r\n"
-       << "  -z           Do not hang up on user when at log off\r\n"
-       << endl;
-}
-
 int Application::Run(int argc, char* argv[]) {
   int num_min = 0;
   unsigned int ui = 0;
   unsigned short this_usernum_from_commandline = 0;
   bool ooneuser = false;
-  bool event_only = false;
   CommunicationType type = CommunicationType::NONE;
   unsigned int hSockOrComm = 0;
 
-  bout.curatr(0x07);
-  // Set the instance, this may be changed by a command line argument
-  instance_number_ = 1;
-  context().ok_modem_stuff(true);
+  CommandLine cmdline(argc, argv, "");
+  cmdline.AddStandardArgs();
+  cmdline.add_argument({"error_exit", 'a', "Specify the Error Exit Level", "1"});
+  cmdline.add_argument({"bps", 'b', "Modem speed of logged on user", "115200"});
+  cmdline.add_argument(
+      BooleanCommandLineArgument{"beginday", 'e', "Load for beginday event only", false});
+  cmdline.add_argument({"handle", 'h', "Socket handle", "0"});
+  cmdline.add_argument(BooleanCommandLineArgument{"no_modem", 'm',
+                                                  "Don't access the modem at all", false});
+  cmdline.add_argument({"instance", 'n', "Designate instance number <inst>", "1"});
+  cmdline.add_argument({"ok_exit", 'q', "Normal exit level", "0"});
+  cmdline.add_argument({"remaining_min", 'r', "Specify max # minutes until event", "0"});
+  cmdline.add_argument({"user_num", 'u', "Pass usernumber <user#> online", "0"});
+  cmdline.add_argument(BooleanCommandLineArgument{"version", 'V', "Display version.", false});
+  cmdline.add_argument({"x", 'x', "Someone is logged in with t for telnet or s for ssh.", ""});
+  cmdline.add_argument(BooleanCommandLineArgument{"no_hangup", 'z',
+                                                  "Do not hang up on user when at log off", false});
+
+  if (!cmdline.Parse()) {
+    cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
+    cout << cmdline.GetHelp() << endl;
+    return EXIT_FAILURE;
+  }
+  if (cmdline.help_requested()) {
+    cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
+    cout << cmdline.GetHelp() << endl;
+    ExitBBSImpl(0, false);
+    return EXIT_SUCCESS;
+  }
+  if (cmdline.barg("version")) {
+    cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
+    return 0;
+  }
 
   const std::string bbs_env = environment_variable("BBS");
   if (!bbs_env.empty()) {
@@ -739,121 +752,47 @@ int Application::Run(int argc, char* argv[]) {
       ExitBBSImpl(255, false);
     }
   }
-  const string wwiv_dir = environment_variable("WWIV_DIR");
-  if (!wwiv_dir.empty()) {
-    File::set_current_directory(wwiv_dir);
-    // Reset current_dir_ since it was only set in the constructor.
-    current_dir_ = File::current_directory();
-  }
-
-  for (int i = 1; i < argc; i++) {
-    string argumentRaw = argv[i];
-    if (argumentRaw.length() > 1 && (argumentRaw[0] == '-' || argumentRaw[0] == '/')) {
-      string argument = argumentRaw.substr(2);
-      char ch = to_upper_case<char>(argumentRaw[1]);
-      switch (ch) {
-      case 'B': {
-        // I think this roundtrip here is just to ensure argument is really a number.
-        ui = to_number<unsigned int>(argument);
-        SetCurrentSpeed(std::to_string(ui));
-        user_already_on_ = true;
-      } break;
-      case 'E':
-        event_only = true;
-        break;
-      case 'Q':
-        oklevel_ = to_number<int>(argument);
-        break;
-      case 'A':
-        errorlevel_ = to_number<int>(argument);
-        break;
-      case 'H':
-        hSockOrComm = to_number<int>(argument);
-        break;
-      case 'M':
-        context().ok_modem_stuff(false);
-        break;
-      case 'N': {
-        instance_number_ = to_number<int>(argument);
-        if (instance_number_ <= 0 || instance_number_ > 999) {
-          clog << "Your Instance can only be 1..999, you tried instance #" << instance_number_
-               << endl;
-          ExitBBSImpl(errorlevel_, false);
-        }
-      } break;
-      case 'P':
-        Cls();
-        localIO()->Puts("Waiting for keypress...");
-        (void)getchar();
-        break;
-      case 'R':
-        num_min = to_number<int>(argument);
-        break;
-      case 'U':
-        this_usernum_from_commandline = to_number<uint16_t>(argument);
-        if (!user_already_on_) {
-          SetCurrentSpeed("KB");
-        }
-        user_already_on_ = true;
-        ooneuser = true;
-        break;
-      case 'V':
-        cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]" << endl;
-        ExitBBSImpl(0, false);
-        break;
-      case 'X': {
-        char argument2Char = to_upper_case<char>(argument.at(0));
-        if (argument2Char == 'T' || argument2Char == 'S' || argument2Char == 'U') {
-          // This more of a hack to make sure the WWIV
-          // Server's -Bxxx parameter doesn't hose us.
-          SetCurrentSpeed("115200");
-
-          // These are needed for both Telnet or SSH
-          SetUserOnline(false);
-          ui = 115200;
-          user_already_on_ = true;
-          ooneuser = true;
-          using_modem = 0;
-          hangup_ = false;
-          a()->context().incom(true);
-          a()->context().outcom(false);
-          if (argument2Char == 'T') {
-            type = CommunicationType::TELNET;
-          } else if (argument2Char == 'S') {
-            type = CommunicationType::SSH;
-          }
-        } else {
-          clog << "Invalid Command line argument given '" << argumentRaw << "'" << std::endl;
-          ExitBBSImpl(errorlevel_, false);
-        }
-      } break;
-      case 'Z':
-        no_hangup_ = true;
-        break;
-        //
-        // TODO Add handling for Socket and Comm handle here
-        //
-        //
-      case '?':
-        ShowUsage();
-        ExitBBSImpl(0, false);
-        break;
-      case '-': {
-        if (argumentRaw == "--help") {
-          ShowUsage();
-          ExitBBSImpl(0, false);
-        }
-      } break;
-      default: {
-        LOG(ERROR) << "Invalid Command line argument given '" << argument << "'";
-        ExitBBSImpl(errorlevel_, false);
-      } break;
-      }
+  
+  bout.curatr(0x07);
+  current_dir_ = cmdline.bbsdir();
+  File::set_current_directory(current_dir_);
+  
+  oklevel_ = cmdline.iarg("ok_exit");
+  errorlevel_ = cmdline.iarg("error_exit");
+  hSockOrComm = cmdline.iarg("handle");
+  no_hangup_ = cmdline.barg("no_hangup");
+  num_min = cmdline.iarg("remaining_min");
+  context().ok_modem_stuff(!cmdline.barg("no_modem"));
+  instance_number_ = cmdline.iarg("instance");
+  this_usernum_from_commandline = cmdline.iarg("user_num");
+  const auto x = cmdline.sarg("x");
+  if (!x.empty()) {
+    char xarg = to_upper_case<char>(x.at(0));
+    if (cmdline.arg("handle").is_default()) {
+      clog << "-h must be specified when using '"
+           << "-x" << x << "'" << std::endl;
+      ExitBBSImpl(errorlevel_, false);
+    } else if (xarg == 'T' || xarg == 'S') {
+      ui = cmdline.iarg("bps");
+      SetCurrentSpeed(std::to_string(ui));
+      // Set it false until we call LiLo
+      user_already_on_ = true;
+      ooneuser = true;
+      using_modem = 0;
+      a()->context().incom(true);
+      a()->context().outcom(false);
+      type = (xarg == 'S') ? CommunicationType::SSH : CommunicationType::TELNET;
     } else {
-      // Command line argument did not start with a '-' or a '/'
-      LOG(ERROR) << "Invalid Command line argument given '" << argumentRaw << "'";
+      clog << "Invalid Command line argument given '" << "-x" << x << "'" << std::endl;
       ExitBBSImpl(errorlevel_, false);
     }
+  }
+  if (this_usernum_from_commandline > 0) {
+    if (!user_already_on_) {
+      SetCurrentSpeed("KB");
+    }
+    user_already_on_ = true;
+    ooneuser = true;
   }
 
   // Setup the full-featured localIO if we have a TTY (or console)
@@ -903,7 +842,7 @@ int Application::Run(int argc, char* argv[]) {
     ExitBBSImpl(oklevel_, false);
   }
 
-  if (event_only) {
+  if (cmdline.barg("beginday")) {
     auto status = status_manager()->GetStatus();
     cleanup_events();
     if (date() != status->GetLastDate()) {
