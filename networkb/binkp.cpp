@@ -595,7 +595,7 @@ BinkState BinkP::AuthRemote() {
   VLOG(1) << "STATE: AuthRemote";
   // Check that the address matches who we thought we called.
   VLOG(1) << "       remote address_list: " << remote_.address_list();
-  const string network_name(remote_.network_name());
+  const auto network_name(remote_.network_name());
   if (side_ == BinkSide::ANSWERING) {
     if (!contains(config_->callouts(), network_name)) {
       // We don't have a callout.net entry for this caller. Fail the connection
@@ -606,7 +606,7 @@ BinkState BinkP::AuthRemote() {
 
     const net_call_out_rec* callout_record = nullptr;
     if (remote_.network().type == network_type_t::wwivnet) {
-      auto caller = remote_.wwivnet_node();
+      const auto caller = remote_.wwivnet_node();
       LOG(INFO) << "       remote_network_name: " << network_name << "; caller_node: " << caller;
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
       if (callout_record == nullptr) {
@@ -616,7 +616,7 @@ BinkState BinkP::AuthRemote() {
         return BinkState::FATAL_ERROR;
       }
     } else {
-      auto caller = remote_.ftn_address();
+      const auto caller = remote_.ftn_address();
       LOG(INFO) << "       remote_network_name: " << network_name << "; caller_address: " << caller;
       callout_record = config_->callouts().at(network_name)->net_call_out_for(caller);
       if (callout_record == nullptr) {
@@ -670,12 +670,11 @@ BinkState BinkP::TransferFiles() {
     process_frames(seconds(1));
   } else {
     VLOG(1) << "       files_to_send_ is not empty, Not sending EOB";
-    string files;
+    std::ostringstream files;
     for (const auto& f : files_to_send_) {
-      files += f.first;
-      files += " ";
+      files << f.first << " ";
     }
-    VLOG(2) << "Files: " << files;
+    VLOG(2) << "Files: " << files.str();
   }
   return BinkState::WAIT_EOB;
 }
@@ -739,11 +738,11 @@ bool BinkP::SendFilePacket(TransferFile* file) {
 
 bool BinkP::SendFileData(TransferFile* file) {
   LOG(INFO) << "       SendFileData: " << file->filename();
-  long file_length = file->file_size();
+  const auto file_length = file->file_size();
   const int chunk_size = 16384; // This is 1<<14.  The max per spec is (1 << 15) - 1
-  unique_ptr<char[]> chunk(new char[chunk_size]);
+  auto chunk = std::make_unique<char[]>(chunk_size);
   for (long start = 0; start < file_length; start+=chunk_size) {
-    int size = min<int>(chunk_size, file_length - start);
+    const auto size = min<int>(chunk_size, file_length - start);
     if (!file->GetChunk(chunk.get(), start, size)) {
       // Bad chunk. Abort
     }
@@ -810,10 +809,10 @@ bool BinkP::HandleFileRequest(const string& request_line) {
 
 bool BinkP::HandleFileGetRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGetRequest: request_line: [" << request_line << "]"; 
-  vector<string> s = SplitString(request_line, " ");
+  const auto s = SplitString(request_line, " ");
   const auto filename = s.at(0);
-  auto length = to_number<long>(s.at(1));
-  auto timestamp = to_number<time_t>(s.at(2));
+  const auto length = to_number<long>(s.at(1));
+  const auto timestamp = to_number<time_t>(s.at(2));
   long offset = 0;
   if (s.size() >= 4) {
     offset = to_number<long>(s.at(3));
@@ -831,7 +830,7 @@ bool BinkP::HandleFileGetRequest(const string& request_line) {
 bool BinkP::HandleFileGotRequest(const string& request_line) {
   LOG(INFO) << "       HandleFileGotRequest: request_line: [" << request_line << "]"; 
   const auto s = SplitString(request_line, " ");
-  const string filename = s.at(0);
+  const auto filename = s.at(0);
   const auto length = to_number<int>(s.at(1));
 
   auto iter = files_to_send_.find(filename);
@@ -958,7 +957,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
       // file_manager_ is null in some tests (BinkpTest).
       file_manager_->rename_ftn_pending_files();
       if (!config_->skip_net()) {
-        const int network_number = config_->networks().network_number(remote_.network_name());
+        const auto network_number = config_->networks().network_number(remote_.network_name());
         System(cmdline.bindir(),
                StrCat("networkc .", network_number, " --v=", config_->verbose()));
       }
@@ -968,13 +967,7 @@ void BinkP::Run(const wwiv::core::CommandLine& cmdline) {
 
 static bool checkup2(const time_t tFileTime, string dir, string filename) {
   File file(FilePath(dir, filename));
-
-  if (file.Open(File::modeReadOnly)) {
-    time_t tNewFileTime = file.last_write_time();
-    file.Close();
-    return (tNewFileTime > (tFileTime + 2));
-  }
-  return true;
+  return (file.Open(File::modeReadOnly)) ? file.last_write_time() > tFileTime + 2 : true;
 }
 
 static bool need_network3(const string& dir, int network_version) {
@@ -1015,7 +1008,6 @@ void BinkP::process_network_files(const wwiv::core::CommandLine& cmdline) const 
   if (network_number == wwiv::sdk::Networks::npos) {
     return;
   }
-  // TODO(rushfan): May need binary path one day
   System(cmdline.bindir(), StrCat("networkc .", network_number, " --v=", config_->verbose()));
 }
 
