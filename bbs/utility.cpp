@@ -75,12 +75,12 @@ inline const _Ty& in_range(const _Ty& minValue, const _Ty& maxValue, const _Ty& 
  */
 void remove_from_temp(const std::string& file_name, const std::string& directory_name,
                       bool bPrintStatus) {
-  const string filespec = StrCat(directory_name, stripfn(file_name.c_str()));
+  const auto filespec = StrCat(directory_name, stripfn(file_name.c_str()));
   FindFiles ff(filespec, FindFilesType::any);
   bout.nl();
   for (const auto& f : ff) {
     // We don't want to delete ".", "..".
-    auto fullpath = FilePath(directory_name, f.name);
+    const auto fullpath = FilePath(directory_name, f.name);
     LOG_IF(bPrintStatus, INFO) << "Deleting TEMP file: '" << fullpath << "'";
     File::Remove(fullpath);
   }
@@ -146,25 +146,22 @@ double post_ratio() {
 }
 
 long nsl() {
-  int64_t rtn = 1;
-
-  auto dd = system_clock::now();
-  if (a()->IsUserOnline()) {
-    auto tot = dd - a()->system_logon_time();
-
-    auto tpl = minutes(a()->effective_slrec().time_per_logon);
-    auto tpd = minutes(a()->effective_slrec().time_per_day);
-    auto extra_time = duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
-    auto tlc = tpl - tot + extra_time;
-    auto tlt = tpd - tot -
-               seconds(std::lround(a()->user()->GetTimeOnToday() + a()->user()->GetExtraTime()));
-
-    tlt = std::min(tlc, tlt);
-    rtn = in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count());
+  const auto dd = system_clock::now();
+  if (!a()->IsUserOnline()) {
+    return 1;
   }
+  auto tot = dd - a()->system_logon_time();
 
+  const auto tpl = minutes(a()->effective_slrec().time_per_logon);
+  const auto tpd = minutes(a()->effective_slrec().time_per_day);
+  const auto extra_time =
+      duration_cast<seconds>(a()->user()->extra_time() + a()->extratimecall());
+  const auto tlc = tpl - tot + extra_time;
+  const auto tlt = std::min(
+      tlc, tpd - tot -
+               seconds(std::lround(a()->user()->GetTimeOnToday() + a()->user()->GetExtraTime())));
   a()->SetTimeOnlineLimited(false);
-  return static_cast<long>(in_range<int64_t>(0, 32767, rtn));
+  return static_cast<long>(in_range<int64_t>(0, 32767, duration_cast<seconds>(tlt).count()));
 }
 
 void send_net(net_header_rec* nh, std::vector<uint16_t> list, const std::string& text,

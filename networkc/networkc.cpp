@@ -86,7 +86,7 @@ static void rename_bbs_instance_files(const string& dir, int instance_number, bo
 }
 
 string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, const string& cmd) {
-  const string path = FilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
+  const auto path = FilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
 
   std::ostringstream ss;
   ss << path;
@@ -193,7 +193,7 @@ int networkc_main(const NetworkCommandLine& net_cmdline) {
         }
 
         // Export everything to FTN bundles
-        string fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
+        const auto fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
         if (File::Exists(net.dir, fido_out)) {
           VLOG(2) << "Found s" << FTN_FAKE_OUTBOUND_NODE << ".net; trying to export";
           System(create_network_cmdline(net_cmdline, 'f', "export"));
