@@ -83,8 +83,6 @@ using namespace wwiv::core;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
 
-configrec syscfg;
-
 static bool CreateConfigOvr(const string& bbsdir) {
   IniFile oini(WWIV_INI, {"WWIV"});
   int num_instances = oini.value("NUM_INSTANCES", 4);
@@ -188,6 +186,8 @@ enum class ShouldContinue { CONTINUE, EXIT };
 static ShouldContinue
 read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk::Config& config) {
   // Convert 4.2X to 4.3 format if needed.
+  configrec cfg;
+
   File file(config.config_filename());
   if (file.length() != sizeof(configrec)) {
     // TODO(rushfan): make a subwindow here but until this clear the altcharset background.
@@ -200,14 +200,14 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
   }
 
   if (file.Open(File::modeBinary | File::modeReadOnly)) {
-    file.Read(&syscfg, sizeof(configrec));
+    file.Read(&cfg, sizeof(configrec));
   }
   file.Close();
 
   // Check for 5.2 config
   {
     static const std::string expected_sig = "WWIV";
-    if (expected_sig != syscfg.header.header.signature) {
+    if (expected_sig != cfg.header.header.signature) {
       // We don't have a 5.2 header, let's convert.
       if (!dialog_yn(out->window(), "Upgrade config.dat to 5.2 format?")) {
         return ShouldContinue::EXIT;
@@ -216,12 +216,12 @@ read_configdat_and_upgrade_datafiles_if_needed(UIWindow* window, const wwiv::sdk
       convert_config_to_52(window, config);
       {
         if (file.Open(File::modeBinary | File::modeReadOnly)) {
-          file.Read(&syscfg, sizeof(configrec));
+          file.Read(&cfg, sizeof(configrec));
         }
         file.Close();
       }
     }
-    ensure_latest_5x_config(window, config, syscfg);
+    ensure_latest_5x_config(window, config, cfg);
   }
 
   ensure_offsets_are_updated(window, config);

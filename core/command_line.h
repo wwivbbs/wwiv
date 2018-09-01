@@ -87,19 +87,29 @@ private:
 class CommandLineArgument {
 public:
   CommandLineArgument(const std::string& name, char key, const std::string& help_text,
-                      const std::string& default_value);
+                      const std::string& default_value, const std::string& environment_variable);
+  CommandLineArgument(const std::string& name, char key, const std::string& help_text,
+                      const std::string& default_value)
+      : CommandLineArgument(name, key, help_text, default_value, "") {}
+  CommandLineArgument(const std::string& name, const std::string& help_text,
+                      const std::string& default_value, const std::string& environment_variable)
+      : CommandLineArgument(name, 0, help_text, default_value, environment_variable) {}
   CommandLineArgument(const std::string& name, const std::string& help_text,
                       const std::string& default_value)
-      : CommandLineArgument(name, 0, help_text, default_value) {}
+      : CommandLineArgument(name, 0, help_text, default_value, "") {}
   CommandLineArgument(const std::string& name, char key, const std::string& help_text)
-      : CommandLineArgument(name, key, help_text, "") {}
+      : CommandLineArgument(name, key, help_text, "", "") {}
   CommandLineArgument(const std::string& name, const std::string& help_text)
-      : CommandLineArgument(name, 0, help_text, "") {}
+      : CommandLineArgument(name, 0, help_text, "", "") {}
+
+  std::string help_text() const;
+  std::string default_value() const;
   const std::string name;
   const char key = 0;
-  const std::string help_text;
-  const std::string default_value;
-  bool is_boolean = false;
+  const std::string help_text_;
+  const std::string default_value_;
+  const std::string environment_variable_;
+  bool is_boolean{false};
 };
 
 class BooleanCommandLineArgument : public CommandLineArgument {
@@ -109,15 +119,18 @@ public:
       : CommandLineArgument(name, key, help_text, default_value ? "true" : "false") {
     is_boolean = true;
   }
+
   BooleanCommandLineArgument(const std::string& name, const std::string& help_text,
                              bool default_value)
       : CommandLineArgument(name, 0, help_text, default_value ? "true" : "false") {
     is_boolean = true;
   }
+
   BooleanCommandLineArgument(const std::string& name, const std::string& help_text)
       : CommandLineArgument(name, 0, help_text, "false") {
     is_boolean = true;
   }
+
 };
 
 class Command {
@@ -216,10 +229,14 @@ public:
 
   std::string program_name() const noexcept { return program_name_; }
   const std::string bbsdir() const noexcept { return bbsdir_; }
+  const std::string logdir() const noexcept { return logdir_; }
+  const std::string bindir() const noexcept { return bindir_; }
 
 private:
   const std::string program_name_;
   std::string bbsdir_;
+  std::string logdir_;
+  std::string bindir_;
   bool no_args_allowed_{false};
 
   bool ParseImpl();

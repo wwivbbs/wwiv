@@ -40,8 +40,8 @@ namespace net {
 void AddStandardNetworkArgs(wwiv::core::CommandLine& cmdline,
                             const std::string& current_directory) {
   cmdline.add_argument({"net", "Network number to use (i.e. 0).", "0"});
-  cmdline.add_argument(
-      {"bbsdir", "(optional) BBS directory if other than current directory", current_directory});
+  //cmdline.add_argument({"bbsdir", "(optional) BBS directory if other than current directory",
+  //                      current_directory, "WWIV_DIR"});
   cmdline.add_argument(
       BooleanCommandLineArgument("skip_net", "Skip invoking network1/network2/network3"));
   cmdline.add_argument(

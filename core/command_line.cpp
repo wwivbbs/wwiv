@@ -49,12 +49,21 @@ namespace core {
 
 CommandLineArgument::CommandLineArgument(const std::string& name, char key,
                                          const std::string& help_text,
-                                         const std::string& default_value)
-    : name(name), key(static_cast<char>(std::toupper(key))), help_text(help_text),
-      default_value(default_value) {}
+                                         const std::string& default_value,
+                                         const std::string& environment_variable)
+    : name(name), key(static_cast<char>(std::toupper(key))), help_text_(help_text),
+      default_value_(default_value), environment_variable_(environment_variable) {}
+
+std::string CommandLineArgument::help_text() const { return help_text_; }
+
+std::string CommandLineArgument::default_value() const { 
+  auto env = environment_variable(environment_variable_);
+  return env.empty() ? default_value_ : env;
+}
 
 CommandLineCommand::CommandLineCommand(const std::string& name, const std::string& help_text)
     : name_(name), help_text_(help_text) {}
+
 
 static std::string CreateProgramName(const std::string arg) {
   auto last_slash = arg.find_last_of(File::separatorChar);
@@ -101,17 +110,9 @@ bool CommandLine::Parse() {
     return false;
   }
 
-  auto bbs_dir_env = environment_variable("WWIV_DIR");
-  if (!arg("bbsdir").is_default()) {
-    // overridden bbsdir
-    bbsdir_ = sarg("bbsdir");
-  } else if (!bbs_dir_env.empty()) {
-    // WWIV_DIR environment variable.
-    bbsdir_ = bbs_dir_env;
-  } else {
-    // default bbsdir (which is File::current_directory())
-    bbsdir_ = sarg("bbsdir");
-  }
+  bbsdir_ = sarg("bbsdir");
+  bindir_ = sarg("bindir");
+  logdir_ = sarg("logdir");
 
   return true;
 }
@@ -126,7 +127,7 @@ bool CommandLineCommand::add_argument(const CommandLineArgument& cmd) {
   // Add cmd to the list of allowable arguments, and also set
   // a default empty value.
   args_allowed_.emplace(cmd.name, cmd);
-  args_.emplace(cmd.name, CommandLineValue(cmd.default_value, true));
+  args_.emplace(cmd.name, CommandLineValue(cmd.default_value(), true));
   return true;
 }
 
@@ -290,7 +291,7 @@ std::string CommandLineCommand::GetHelp() const {
   string program_name = (name_.empty()) ? "program" : name_;
   ss << program_name << " arguments:" << std::endl;
   for (const auto& a : args_allowed_) {
-    ss << "--" << left << setw(20) << a.second.name << " " << a.second.help_text << endl;
+    ss << "--" << left << setw(20) << a.second.name << " " << a.second.help_text() << endl;
   }
   if (!commands_allowed_.empty()) {
     ss << endl;
@@ -307,7 +308,11 @@ bool CommandLine::AddStandardArgs() {
   if (!CommandLineCommand::AddStandardArgs()) {
     return false;
   }
-  add_argument({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory()});
+  add_argument({"bindir", "Main BBS binary directory.", File::current_directory(), "WWIV_BIN_DIR"});
+  add_argument({"bbsdir", "Main BBS Directory containing CONFIG.DAT", File::current_directory(),
+                "WWIV_DIR"});
+  add_argument({"logdir", "Directory where log files are written.", File::current_directory(),
+                "WWIV_LOG_DIR"});
 
   // Ignore these. used by logger
   add_argument({"v", "verbose log", "0"});
