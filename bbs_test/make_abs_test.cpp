@@ -36,12 +36,12 @@ using namespace wwiv::core;
 
 class MakeAbsTest : public ::testing::Test {
 protected:
-    virtual void SetUp() {
-        helper.SetUp();
-        root = helper.app_->GetHomeDir();
-    }
-    BbsHelper helper;
-    string root;
+  virtual void SetUp() {
+    helper.SetUp();
+    root = helper.app_->bbsdir();
+  }
+  BbsHelper helper;
+  string root;
 };
 
 #ifdef _WIN32

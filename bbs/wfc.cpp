@@ -500,7 +500,7 @@ int WFC::doWFCEvents() {
         break;
       case 'U': {
         // User edit
-        const auto exe = FilePath(a()->config()->root_directory(), "wwivconfig");
+        const auto exe = FilePath(a()->bindir(), "wwivconfig");
         const auto cmd = StrCat(exe, " --user_editor");
         exec_cmdline(cmd, INST_FLAGS_NONE);
       } break;

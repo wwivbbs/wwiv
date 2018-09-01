@@ -338,7 +338,7 @@ void Application::ReadINIFile(IniFile& ini) {
   }
 
   const auto attach_dir = ini.value<string>(INI_STR_ATTACH_DIR);
-  attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(GetHomeDir(), ATTACH_DIR);
+  attach_dir_ = (!attach_dir.empty()) ? attach_dir : FilePath(bbsdir(), ATTACH_DIR);
   File::EnsureTrailingSlash(&attach_dir_);
 
   screen_saver_time = ini.value<uint16_t>("SCREEN_SAVER_TIME", screen_saver_time);
@@ -372,7 +372,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
   StringReplace(&temp_directory, "%n", instance_num_string);
   StringReplace(&batch_directory, "%n", instance_num_string);
 
-  const auto base_dir = GetHomeDir();
+  const auto base_dir = bbsdir();
   temp_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, temp_directory));
   batch_directory_ = File::EnsureTrailingSlash(File::absolute(base_dir, batch_directory));
 
@@ -385,7 +385,7 @@ bool Application::ReadInstanceSettings(int instance_number, IniFile& ini) {
 }
 
 bool Application::ReadConfig() {
-  config_.reset(new Config(GetHomeDir()));
+  config_.reset(new Config(bbsdir()));
   if (!config_->IsInitialized()) {
     LOG(ERROR) << CONFIG_DAT << " NOT FOUND.";
     return false;
@@ -404,7 +404,7 @@ bool Application::ReadConfig() {
   user_manager_.reset(new UserManager(*config_));
   statusMgr.reset(new StatusMgr(config_->datadir(), StatusManagerCallback));
 
-  IniFile ini(FilePath(GetHomeDir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
+  IniFile ini(FilePath(bbsdir(), WWIV_INI), {StrCat("WWIV-", instance_number()), INI_TAG});
   if (!ini.IsOpen()) {
     LOG(ERROR) << "Unable to read WWIV.INI.";
     AbortBBS();
@@ -415,8 +415,8 @@ bool Application::ReadConfig() {
     return false;
   }
 
-  temp_directory_ = File::absolute(GetHomeDir(), temp_directory());
-  batch_directory_ = File::absolute(GetHomeDir(), batch_directory());
+  temp_directory_ = File::absolute(bbsdir(), temp_directory());
+  batch_directory_ = File::absolute(bbsdir(), batch_directory());
 
   return true;
 }

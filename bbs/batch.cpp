@@ -549,6 +549,7 @@ static double ratio1(unsigned long xa) {
 
 static string make_ul_batch_list() {
   const auto fn = StringPrintf("%s.%3.3u", FILESUL_NOEXT, a()->instance_number());
+  // TODO(rushfan): This should move to a temp directory.
   const auto list_filename = FilePath(a()->GetHomeDir(), fn);
 
   File::SetFilePermissions(list_filename, File::permReadWrite);
@@ -668,7 +669,7 @@ static void run_cmd(const string& orig_commandline, const string& downlist, cons
       uplist);
 
   if (!commandLine.empty()) {
-    make_abs_cmd(a()->GetHomeDir(), &commandLine);
+    make_abs_cmd(a()->bbsdir(), &commandLine);
     a()->Cls();
     const string user_name_number = a()->names()->UserName(a()->usernum);
     const string message = StringPrintf(

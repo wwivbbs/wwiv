@@ -240,6 +240,10 @@ public:
    * @function GetHomeDir Returns the current home directory
    */
   const std::string GetHomeDir();
+  const std::string bbsdir();
+  const std::string bindir();
+  const std::string configdir();
+  const std::string logdir();
 
   /*! @function CdHome Changes directories back to the WWIV Home directory */
   void CdHome();
@@ -440,6 +444,10 @@ private:
 private:
   /*! The current working directory.*/
   std::string current_dir_;
+  std::string bindir_;
+  std::string configdir_;
+  std::string logdir_;
+
   int oklevel_;
   int errorlevel_;
   int instance_number_{-1};

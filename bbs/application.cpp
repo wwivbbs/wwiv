@@ -668,6 +668,10 @@ void Application::GotCaller(unsigned int ms) {
 void Application::CdHome() { File::set_current_directory(current_dir_); }
 
 const string Application::GetHomeDir() { return current_dir_; }
+const std::string Application::bbsdir() { return current_dir_; }
+const std::string Application::bindir() { return bindir_; }
+const std::string Application::configdir() { return configdir_; }
+const std::string Application::logdir() { return logdir_; }
 
 void Application::AbortBBS(bool bSkipShutdown) {
   clog.flush();
@@ -704,12 +708,9 @@ void Application::ExitBBSImpl(int exit_level, bool perform_shutdown) {
 }
 
 int Application::Run(int argc, char* argv[]) {
-  int num_min = 0;
   unsigned int ui = 0;
-  unsigned short this_usernum_from_commandline = 0;
   bool ooneuser = false;
   CommunicationType type = CommunicationType::NONE;
-  unsigned int hSockOrComm = 0;
 
   CommandLine cmdline(argc, argv, "");
   cmdline.AddStandardArgs();
@@ -734,14 +735,12 @@ int Application::Run(int argc, char* argv[]) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
     cout << cmdline.GetHelp() << endl;
     return EXIT_FAILURE;
-  }
-  if (cmdline.help_requested()) {
+  } else if (cmdline.help_requested()) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
     cout << cmdline.GetHelp() << endl;
     ExitBBSImpl(0, false);
     return EXIT_SUCCESS;
-  }
-  if (cmdline.barg("version")) {
+  } else  if (cmdline.barg("version")) {
     cout << "WWIV Bulletin Board System [" << wwiv_version << beta_version << "]\r\n\n";
     return 0;
   }
@@ -755,17 +754,22 @@ int Application::Run(int argc, char* argv[]) {
   }
   
   bout.curatr(0x07);
+  // Set the directories.
   current_dir_ = cmdline.bbsdir();
+  bindir_ = cmdline.bindir();
+  logdir_ = cmdline.logdir();
+  configdir_ = cmdline.configdir();
   File::set_current_directory(current_dir_);
   
   oklevel_ = cmdline.iarg("ok_exit");
   errorlevel_ = cmdline.iarg("error_exit");
-  hSockOrComm = cmdline.iarg("handle");
+  unsigned int hSockOrComm = cmdline.iarg("handle");
   no_hangup_ = cmdline.barg("no_hangup");
-  num_min = cmdline.iarg("remaining_min");
+  int num_min = cmdline.iarg("remaining_min");
   context().ok_modem_stuff(!cmdline.barg("no_modem"));
   instance_number_ = cmdline.iarg("instance");
-  this_usernum_from_commandline = cmdline.iarg("user_num");
+
+  uint16_t this_usernum_from_commandline = cmdline.iarg("user_num");
   const auto x = cmdline.sarg("x");
   if (!x.empty()) {
     char xarg = to_upper_case<char>(x.at(0));

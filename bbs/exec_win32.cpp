@@ -69,7 +69,7 @@ static void LogToSync(const std::string& s) {
 static string GetSyncFosTempFilePath() { return FilePath(a()->temp_directory(), "WWIVSYNC.ENV"); }
 
 static const string GetDosXtrnPath() {
-  return FilePath(a()->GetHomeDir(), "DOSXTRN.EXE");
+  return FilePath(a()->bindir(), "dosxtrn.exe");
 }
 
 static void CreateSyncFosCommandLine(string *out, const string& tempFilePath, int nSyncMode) {
@@ -332,7 +332,7 @@ int exec_cmdline(const string commandLine, int flags) {
     CreateSyncFosCommandLine(&workingCommandLine, syncFosTempFile, nSyncMode);
     bUsingSync = true;
 
-    const auto logfile_name = FilePath(a()->GetHomeDir(), "wwivsync.log");
+    const auto logfile_name = FilePath(a()->logdir(), "wwivsync.log");
     hLogFile = fopen(logfile_name.c_str(), "at");
     LogToSync(std::string(78, '='));
     LogToSync("\r\n\r\n");

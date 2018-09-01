@@ -249,7 +249,7 @@ void get_arc_cmd(char *out_buffer, const char *pszArcFileName, int cmd, const ch
         return;
       }
       string command = stuff_in(szArcCmd, pszArcFileName, ofn, "", "", "");
-      make_abs_cmd(a()->GetHomeDir(), &command);
+      make_abs_cmd(a()->bbsdir(), &command);
       strcpy(out_buffer, command.c_str());
       return;
     }

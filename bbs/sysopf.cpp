@@ -817,7 +817,7 @@ void auto_purge() {
   int days = 0;
   int skipsl = 0;
   {
-    IniFile ini(FilePath(a()->GetHomeDir(), WWIV_INI),
+    IniFile ini(FilePath(a()->bbsdir(), WWIV_INI),
                 {StrCat("WWIV-", a()->instance_number()), INI_TAG});
     if (ini.IsOpen()) {
       days = ini.value<int>("AUTO_USER_PURGE");
