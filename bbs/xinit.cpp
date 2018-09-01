@@ -768,8 +768,8 @@ void Application::InitializeBBS() {
   frequent_init();
   if (!user_already_on_) {
     TempDisablePause disable_pause;
-    remove_from_temp("*.*", temp_directory(), true);
-    remove_from_temp("*.*", batch_directory(), true);
+    remove_from_temp("*.*", temp_directory(), false);
+    remove_from_temp("*.*", batch_directory(), false);
     cleanup_net();
   }
 

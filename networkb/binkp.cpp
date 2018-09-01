@@ -78,7 +78,7 @@ static int System(const string& bbsdir, const string& cmd) {
   const auto path = FilePath(bbsdir, cmd);
 
   auto err = system(path.c_str());
-  LOG(INFO) << "       executed: '" << path << "' with an error code: " << err;
+  VLOG(1) << "       executed: '" << path << "' with an error code: " << err;
   return err;
 }
 

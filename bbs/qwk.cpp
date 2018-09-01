@@ -97,7 +97,7 @@ void build_qwk_packet() {
   bool save_conf = false;
   SaveQScanPointers save_qscan;
 
-  remove_from_temp("*.*", QWK_DIRECTORY, 0);
+  remove_from_temp("*.*", QWK_DIRECTORY, false);
 
   if ((a()->uconfsub[1].confnum != -1) && (okconf(a()->user()))) {
     save_conf = true;

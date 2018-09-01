@@ -32,26 +32,26 @@
 #include "core/command_line.h"
 #include "core/file.h"
 #include "core/log.h"
-#include "core/scope_exit.h"
-#include "core/stl.h"
-#include "core/semaphore_file.h"
-#include "core/strings.h"
 #include "core/os.h"
+#include "core/scope_exit.h"
+#include "core/semaphore_file.h"
+#include "core/stl.h"
+#include "core/strings.h"
 #include "core/version.h"
 #include "networkb/net_util.h"
 #include "sdk/fido/fido_util.h"
 
-#include "sdk/callout.h"
-#include "sdk/connect.h"
-#include "sdk/config.h"
 #include "core/datetime.h"
 #include "core/findfiles.h"
+#include "sdk/callout.h"
+#include "sdk/config.h"
+#include "sdk/connect.h"
+#include "sdk/fido/fido_address.h"
 #include "sdk/filenames.h"
+#include "sdk/net/packets.h"
 #include "sdk/networks.h"
 #include "sdk/status.h"
 #include "sdk/subscribers.h"
-#include "sdk/fido/fido_address.h"
-#include "sdk/net/packets.h"
 
 using std::cout;
 using std::endl;
@@ -70,16 +70,15 @@ using namespace wwiv::os;
 using namespace wwiv::sdk::fido;
 
 static void ShowHelp(const CommandLine& cmdline) {
-  cout << cmdline.GetHelp()
-    << ".####      Network number (as defined in wwivconfig)" << endl
-    << endl;
+  cout << cmdline.GetHelp() << ".####      Network number (as defined in wwivconfig)" << endl
+       << endl;
 
   exit(1);
 }
 
-static void rename_bbs_instance_files(const string& dir, int instance_number) {
+static void rename_bbs_instance_files(const string& dir, int instance_number, bool quiet) {
   const auto pattern = StringPrintf("p*.%03d", instance_number);
-  LOG(INFO) << "Processing pending bbs instance files: " << pattern;
+  LOG_IF(!quiet, INFO) << "Processing pending bbs instance files: '" << pattern << "'";
   FindFiles ff(dir, pattern, FindFilesType::files);
   for (const auto& f : ff) {
     rename_pend(dir, f.name, 'c');
@@ -92,9 +91,12 @@ string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, c
   std::ostringstream ss;
   ss << path;
   ss << " --v=" << net_cmdline.cmdline().verbose();
+  if (net_cmdline.quiet()) {
+    ss << " --quiet";
+  }
   ss << " --bbsdir=" << net_cmdline.cmdline().bbsdir();
   ss << " --bindir=" << net_cmdline.cmdline().bindir();
-  ss << " --configdir="<< net_cmdline.cmdline().configdir();
+  ss << " --configdir=" << net_cmdline.cmdline().configdir();
   ss << " --logdir=" << net_cmdline.cmdline().logdir();
   ss << " ." << net_cmdline.network_number();
   if (num == '3') {
@@ -107,7 +109,7 @@ string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, c
 }
 
 static int System(const string& cmd) {
-  LOG(INFO) << "Command: " << cmd;
+  VLOG(1) << "Command: " << cmd;
   return system(cmd.c_str());
 }
 
@@ -135,8 +137,8 @@ static bool need_network3(const string& dir, int network_version) {
 
   if (network_version != wwiv_net_version) {
     // always need network3 if the versions do not match.
-    LOG(INFO) << "Need to run network3 since current network_version: "
-      << network_version << " != our network_version: " << wwiv_net_version;
+    LOG(INFO) << "Need to run network3 since current network_version: " << network_version
+              << " != our network_version: " << wwiv_net_version;
     return true;
   }
   File bbsdataNet(FilePath(dir, BBSDATA_NET));
@@ -147,12 +149,11 @@ static bool need_network3(const string& dir, int network_version) {
   time_t bbsdata_time = bbsdataNet.last_write_time();
   bbsdataNet.Close();
 
-  return checkup2(bbsdata_time, dir, BBSLIST_NET)
-    || checkup2(bbsdata_time, dir, CONNECT_NET)
-    || checkup2(bbsdata_time, dir, CALLOUT_NET);
+  return checkup2(bbsdata_time, dir, BBSLIST_NET) || checkup2(bbsdata_time, dir, CONNECT_NET) ||
+         checkup2(bbsdata_time, dir, CALLOUT_NET);
 }
 
-int networkc_main(const NetworkCommandLine & net_cmdline) {
+int networkc_main(const NetworkCommandLine& net_cmdline) {
   try {
     const auto process_instance = net_cmdline.cmdline().iarg("process_instance");
     const auto& net = net_cmdline.network();
@@ -167,7 +168,7 @@ int networkc_main(const NetworkCommandLine & net_cmdline) {
       if (process_instance > 0) {
         // We need to process pending bbs instance file, these are
         // of the form p1.###.  These will get renamed into p*.net
-        rename_bbs_instance_files(net.dir, process_instance);
+        rename_bbs_instance_files(net.dir, process_instance, net_cmdline.quiet());
       }
 
       // Pending files, call network1 to put them into s* or local.net.

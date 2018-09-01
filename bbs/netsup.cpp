@@ -121,7 +121,7 @@ void cleanup_net() {
     ss << " --process_instance=" << a()->instance_number();
     ss << " ." << a()->net_num();
     const auto networkc_cmd = ss.str();
-    LOG(INFO) << "Executing Network Command: '" << networkc_cmd << "'";
+    VLOG(1) << "Executing Network Command: '" << networkc_cmd << "'";
     if (ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG) < 0) {
       break;
     }
