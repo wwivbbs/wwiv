@@ -713,6 +713,7 @@ int Application::Run(int argc, char* argv[]) {
 
   CommandLine cmdline(argc, argv, "");
   cmdline.AddStandardArgs();
+  cmdline.set_no_args_allowed(true);
   cmdline.add_argument({"error_exit", 'a', "Specify the Error Exit Level", "1"});
   cmdline.add_argument({"bps", 'b', "Modem speed of logged on user", "115200"});
   cmdline.add_argument(
