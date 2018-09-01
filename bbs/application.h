@@ -239,11 +239,12 @@ public:
   /*!
    * @function GetHomeDir Returns the current home directory
    */
-  const std::string GetHomeDir();
-  const std::string bbsdir();
-  const std::string bindir();
-  const std::string configdir();
-  const std::string logdir();
+  const std::string GetHomeDir() const noexcept;
+  const std::string bbsdir() const noexcept;
+  const std::string bindir() const noexcept;
+  const std::string configdir() const noexcept;
+  const std::string logdir() const noexcept;
+  int verbose() const noexcept;
 
   /*! @function CdHome Changes directories back to the WWIV Home directory */
   void CdHome();
@@ -447,6 +448,7 @@ private:
   std::string bindir_;
   std::string configdir_;
   std::string logdir_;
+  int verbose_{0};
 
   int oklevel_;
   int errorlevel_;

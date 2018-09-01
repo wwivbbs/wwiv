@@ -112,9 +112,9 @@ bool CommandLine::Parse() {
 
   bbsdir_ = sarg("bbsdir");
   bindir_ = sarg("bindir");
-  bbsdir_ = sarg("configdir");
+  configdir_ = sarg("configdir");
   logdir_ = sarg("logdir");
-
+  verbose_ = iarg("v");
   return true;
 }
 

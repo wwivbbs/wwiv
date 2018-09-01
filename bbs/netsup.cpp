@@ -73,7 +73,15 @@ std::chrono::steady_clock::time_point last_time_c_;
 
 /** Returns a full path to exe under the WWIV_DIR */
 static string CreateNetworkBinary(const std::string exe) {
-  return FilePath(a()->bindir(), exe);
+  std::ostringstream ss;
+  ss << FilePath(a()->bindir(), exe);
+  ss << " --v=" << a()->verbose();
+  ss << " --bbsdir=" << a()->bbsdir();
+  ss << " --bindir=" << a()->bindir();
+  ss << " --configdir=" << a()->configdir();
+  ss << " --logdir=" << a()->logdir();
+
+  return ss.str();
 }
 
 struct CalloutEntry {
@@ -106,8 +114,14 @@ void cleanup_net() {
     }
 
     a()->ClearTopScreenProtection();
-    const auto networkc_cmd = StrCat(CreateNetworkBinary("networkc"), " --quiet --process_instance=",
-                                     a()->instance_number(), " .", a()->net_num());
+
+    std::ostringstream ss;
+    ss << CreateNetworkBinary("networkc");
+    ss << " --quiet";
+    ss << " --process_instance=" << a()->instance_number();
+    ss << " ." << a()->net_num();
+    const auto networkc_cmd = ss.str();
+    LOG(INFO) << "Executing Network Command: '" << networkc_cmd << "'";
     if (ExecuteExternalProgram(networkc_cmd, EFLAG_NETPROG) < 0) {
       break;
     }

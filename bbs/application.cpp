@@ -667,11 +667,12 @@ void Application::GotCaller(unsigned int ms) {
 
 void Application::CdHome() { File::set_current_directory(current_dir_); }
 
-const string Application::GetHomeDir() { return current_dir_; }
-const std::string Application::bbsdir() { return current_dir_; }
-const std::string Application::bindir() { return bindir_; }
-const std::string Application::configdir() { return configdir_; }
-const std::string Application::logdir() { return logdir_; }
+const string Application::GetHomeDir() const noexcept { return current_dir_; }
+const std::string Application::bbsdir() const noexcept { return current_dir_; }
+const std::string Application::bindir() const noexcept { return bindir_; }
+const std::string Application::configdir() const noexcept { return configdir_; }
+const std::string Application::logdir() const noexcept { return logdir_; }
+int Application::verbose() const noexcept { return verbose_; }
 
 void Application::AbortBBS(bool bSkipShutdown) {
   clog.flush();
@@ -759,6 +760,7 @@ int Application::Run(int argc, char* argv[]) {
   bindir_ = cmdline.bindir();
   logdir_ = cmdline.logdir();
   configdir_ = cmdline.configdir();
+  verbose_ = cmdline.verbose();
   File::set_current_directory(current_dir_);
   
   oklevel_ = cmdline.iarg("ok_exit");

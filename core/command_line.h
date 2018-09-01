@@ -232,6 +232,7 @@ public:
   const std::string bbsdir() const noexcept { return bbsdir_; }
   const std::string configdir() const noexcept { return configdir_; }
   const std::string logdir() const noexcept { return logdir_; }
+  int verbose() const noexcept { return verbose_; }
 
 private:
   const std::string program_name_;
@@ -239,6 +240,7 @@ private:
   std::string bindir_;
   std::string configdir_;
   std::string logdir_;
+  int verbose_{0};
   bool no_args_allowed_{false};
 
   bool ParseImpl();

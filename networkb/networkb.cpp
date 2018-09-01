@@ -193,7 +193,7 @@ static int Main(const NetworkCommandLine& net_cmdline) {
     BinkConfig bink_config(network_name, net_cmdline.config(), net_cmdline.networks());
 
     bink_config.set_skip_net(skip_net);
-    bink_config.set_verbose(net_cmdline.cmdline().iarg("v"));
+    bink_config.set_verbose(net_cmdline.cmdline().verbose());
     bink_config.set_network_version(status->GetNetworkVersion());
 
     for (const auto& n : bink_config.networks().networks()) {

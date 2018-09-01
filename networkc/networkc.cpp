@@ -86,11 +86,17 @@ static void rename_bbs_instance_files(const string& dir, int instance_number) {
   }
 }
 
-string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, int verbose, const string& cmd) {
+string create_network_cmdline(const NetworkCommandLine& net_cmdline, char num, const string& cmd) {
   const string path = FilePath(net_cmdline.cmdline().bindir(), StrCat("network", num));
 
   std::ostringstream ss;
-  ss << path << " --v=" << verbose << " ." << net_cmdline.network_number();
+  ss << path;
+  ss << " --v=" << net_cmdline.cmdline().verbose();
+  ss << " --bbsdir=" << net_cmdline.cmdline().bbsdir();
+  ss << " --bindir=" << net_cmdline.cmdline().bindir();
+  ss << " --configdir="<< net_cmdline.cmdline().configdir();
+  ss << " --logdir=" << net_cmdline.cmdline().logdir();
+  ss << " ." << net_cmdline.network_number();
   if (num == '3') {
     ss << " Y";
   }
@@ -148,7 +154,6 @@ static bool need_network3(const string& dir, int network_version) {
 
 int networkc_main(const NetworkCommandLine & net_cmdline) {
   try {
-    const auto verbose = net_cmdline.cmdline().iarg("v");
     const auto process_instance = net_cmdline.cmdline().iarg("process_instance");
     const auto& net = net_cmdline.network();
 
@@ -168,7 +173,7 @@ int networkc_main(const NetworkCommandLine & net_cmdline) {
       // Pending files, call network1 to put them into s* or local.net.
       if (File::ExistsWildcard(FilePath(net.dir, "p*.net"))) {
         VLOG(2) << "Found p*.net";
-        System(create_network_cmdline(net_cmdline, '1', verbose, ""));
+        System(create_network_cmdline(net_cmdline, '1', ""));
         found = true;
       }
 
@@ -178,33 +183,33 @@ int networkc_main(const NetworkCommandLine & net_cmdline) {
         // Import everything into local.net
         if (File::ExistsWildcard(FilePath(dirs.inbound_dir(), "*.*"))) {
           VLOG(2) << "Trying to FTN import";
-          System(create_network_cmdline(net_cmdline, 'f', verbose, "import"));
+          System(create_network_cmdline(net_cmdline, 'f', "import"));
         }
 
         if (exists_bundle(net_cmdline.config(), net)) {
           VLOG(2) << "Trying to FTN export";
-          System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
+          System(create_network_cmdline(net_cmdline, 'f', "export"));
         }
 
         // Export everything to FTN bundles
         string fido_out = StrCat("s", FTN_FAKE_OUTBOUND_NODE, ".net");
         if (File::Exists(net.dir, fido_out)) {
           VLOG(2) << "Found s" << FTN_FAKE_OUTBOUND_NODE << ".net; trying to export";
-          System(create_network_cmdline(net_cmdline, 'f', verbose, "export"));
+          System(create_network_cmdline(net_cmdline, 'f', "export"));
         }
       }
 
       // Process local mail with network2.
       if (File::Exists(FilePath(net.dir, LOCAL_NET))) {
         VLOG(2) << "Found: " << LOCAL_NET;
-        System(create_network_cmdline(net_cmdline, '2', verbose, ""));
+        System(create_network_cmdline(net_cmdline, '2', ""));
         found = true;
       }
 
       // If our network files have changed, run network3 and send feedback.
       if (need_network3(net.dir, status->GetNetworkVersion())) {
         VLOG(2) << "Need to run network3";
-        System(create_network_cmdline(net_cmdline, '3', verbose, ""));
+        System(create_network_cmdline(net_cmdline, '3', ""));
         found = true;
       }
     } while (found && ++num_tries < 3);

@@ -128,7 +128,7 @@ int main(int argc, char** argv) {
       if (cmdline.barg("skip_net")) {
         ss << " --skip_net";
       }
-      int verbose = cmdline.iarg("v");
+      int verbose = cmdline.verbose();
       if (verbose > 0) {
         ss << " --v=" << verbose;
       }
