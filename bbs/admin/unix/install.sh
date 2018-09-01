@@ -12,7 +12,7 @@
 # You may change these values to whatever you want, but we
 # recommend leaving them as-is
 WWIV_DIR=$(pwd)
-WWIV_BIN_DIR=$(pwd)/bin
+WWIV_BIN_DIR=$(pwd)
 WWIV_LOG_DIR=$(pwd)/log
 WWIV_USER=wwiv
 WWIV_GROUP=wwiv
@@ -24,14 +24,26 @@ RUNDIR=$(pwd)
 
 DATE=`date "+%Y-%m-%d_%H-%M-%S"`
 
-LOGFILE=${RUNDIR}/install_${DATE}.log
+LOGFILE=${RUNDIR}/install.${DATE}.log
 
 # setting path so running with sudo works
 export PATH=/sbin:/usr/sbin:/usr/local/sbin:$PATH
 
+declare -r PURPLE='\033[1;35m'
+declare -r NC='\033[0m'
+declare -r GREEN='\033[1;32m'
+declare -r YELLOW='\033[1;33m'
+declare -r RED='\033[1;31m'
+declare -r CYAN='\033[0;36m'
+declare -r BLUE='\033[1;34m'
+  
 say() {
-  echo $1
+  echo -e "${CYAN}$1${NC}"
   echo `date "+%Y-%m-%d_%H-%M-%S"`: $1 >> ${LOGFILE}
+}
+
+sayl() {
+  echo -e "${CYAN}$1${NC}"
 }
 
 confirm () {
@@ -47,24 +59,23 @@ confirm () {
 }
 
 printok() {
-  GREEN='\033[0;32m'
-  NC='\033[0m'
   echo -e "${GREEN}OK: $1${NC}"
   echo `date "+%Y-%m-%d_%H-%M-%S"`: OK: $1 >> ${LOGFILE}
 }
 
 printwarn() {
-  YELLOW='\033[0;33m'
-  NC='\033[0m'
   echo -e "${YELLOW}WARNING: $1${NC}"
   echo `date "+%Y-%m-%d_%H-%M-%S"`: WARNING: $1 >> ${LOGFILE}
 }
 
 printerr() {
-  RED='\033[0;31m'
-  NC='\033[0m'
   echo -e "${RED}ERROR: $1${NC}"
   echo `date "+%Y-%m-%d_%H-%M-%S"`: ERROR: $1 >> ${LOGFILE}
+}
+
+pausescr() {
+  echo -e "${PURPLE}[PAUSE]${NC}"
+  read -n1 -s
 }
 
 filearch() {
@@ -91,33 +102,77 @@ checkopt() {
   fi
 }
 
+check_binary() {
+    local binary=${WWIV_BIN_DIR}/$1
+    if [[ -f "${binary}" ]]; then
+	typeset -l SYSTYPE
+	typeset -l INIT_TYPE
+	SYSTYPE=$(uname -m|sed 's/[- _]//g')
+	INIT_TYPE=$(filearch ${binary})
+	if [[ $SYSTYPE =~ $INIT_TYPE ]]; then
+	    printok "Found ${binary} and architectures appear to match, continuing."
+	else
+	    printwarn "Found ${binary}, continuing.  But..."
+	    say "Your system type does not match the filetype of ${binary}."
+	    say "System type is ${SYSTYPE} and file reports ${INIT_TYPE}."
+	    say "If things are too different, it might not work"
+	    say "Please refer to the documentation about compiling yourself"
+	    say "if things don't look right or ${binary} doesn't run."
+	    echo
+	    if ! confirm "Should we continue the install?"
+	    then
+		echo
+		say "Aborting the install.  Please verify your binaries and re-run the installer."
+		exit 2
+	    fi
+	fi
+    else
+	printerr "Did not find ${WWIV_BIN_DIR}/${binary}; aborting"
+	say "${binary} is missing. Please verify your BBS tarball is complete"
+	say "and run install.sh again."
+	say ""
+	say "If you are running on a system that requires compiling the binaries"
+	say "manually, please do so and copy them all into ${WWIV_DIR}"
+	say "and run install.sh again."
+	say ""
+	exit 2
+    fi
+}
+
+check_binaries() {
+    while [[ -n $1 ]]; do
+	check_binary $1
+	shift
+    done
+}
+
+echo -e "${BLUE}"
 ### Install header ###
 cat <<HEADER
 
 
  _       ___       __ __ _    __   ______
 | |     / / |     / /  _/ |  / /  / ____/
-| | /| / /| | /| / // / | | / /  /___ \
+| | /| / /| | /| / // / | | / /  /___ \\
 | |/ |/ / | |/ |/ // /  | |/ /  ____/ /
 |__/|__/  |__/|__/___/  |___/  /_____/
 
     ____           __        ____      __  _           
    /  _/___  _____/ /_____ _/ / /___ _/ /_(_)___  ____ 
-   / // __ \/ ___/ __/ __  / / / __  / __/ / __ \/ __ \
+   / // __ \/ ___/ __/ __  / / / __  / __/ / __ \/ __ \\
  _/ // / / (__  ) /_/ /_/ / / / /_/ / /_/ / /_/ / / / / 
 /___/_/ /_/____/\__/\__,_/_/_/\__,_/\__/_/\____/_/ /_/  
  
 
 
 HEADER
+echo -e "${NC}"
 
 # make sure we are root.
 ID=$(id -u)
-if [[ $ID -ne 0 ]]
-then
+if [[ $ID -ne 0 ]]; then
   say "Looks like you are not root.  Please re-run as root."
-  echo "There are tasks that require root to complete."
-  echo
+  sayl "${RED}There are tasks that require root to complete."
   exit 20
 fi
 
@@ -131,9 +186,8 @@ fi
 echo
 say "Starting the install process."
 say ""
-echo "The install details will be captured in"
-echo "${LOGFILE}"
-sleep 3
+say "The install details will be captured in:"
+say "${LOGFILE}"
 
 
 ### parse our CLI options ###
@@ -153,8 +207,7 @@ checkcrit zip
 checkcrit unzip
 checkcrit awk
 
-if [[ ${MISSING_CRIT} == "true" ]]
-then
+if [[ ${MISSING_CRIT} == "true" ]]; then
   echo
   say "You are missing critical tools (listed as ERROR above)"
   say "Please install the missing tools and start the install again"
@@ -171,8 +224,7 @@ checkopt unix2dos
 checkopt dosemu
 checkopt screen
 
-if [[ ${MISSING_OPT} == "true" ]]
-then
+if [[ ${MISSING_OPT} == "true" ]]; then
   echo
   say "You are missing some optional tools (listed as WARNING above)"
   say "These are not necessary for a basic system, but you may want"
@@ -183,7 +235,7 @@ else
   say "All optional tools checks passed, continuing with the install."
   echo
 fi
-sleep 3
+pausescr
 
 # ncurses
 
@@ -192,8 +244,7 @@ echo
 say "Doing some basic sanity checks"
 echo
 
-if [[ -e ${WWIV_DIR}/config.dat ]]
-then
+if [[ -e "${WWIV_DIR}/config.dat" ]]; then
   printerr "Looks like there's already a WWIV install in ${WWIV_DIR}."
   say "If you really meant to install, please check the target directory"
   say "before trying again.  Aborting the install."
@@ -203,42 +254,8 @@ else
   printok "No config.dat found, continuing."
 fi
 
-if [[ -f "${WWIV_DIR}/wwivconfig" ]]
-then
-  typeset -l SYSTYPE
-  typeset -l INIT_TYPE
-  SYSTYPE=$(uname -m|sed 's/[- _]//g')
-  INIT_TYPE=$(filearch wwivconfig)
-  if [[ $SYSTYPE =~ $INIT_TYPE ]]
-  then
-    printok "Found wwivconfig and architectures appear to match, continuing."
-  else
-    printwarn "Found wwivconfig, continuing.  But..."
-    say "Your system type does not match the filetype of wwivconfig."
-    say "System type is ${SYSTYPE} and file reports ${INIT_TYPE}."
-    say "If things are too different, it might not work"
-    say "Please refer to the documentation about compiling yourself"
-    say "if things don't look right or wwivconfig doesn't run."
-    echo
-    if ! confirm "Should we continue the install?"
-    then
-      echo
-      say "Aborting the install.  Please verify your binaries and re-run the installer."
-      exit 2
-    fi
-  fi
-else
-  printerr "Did not find wwivconfig; aborting"
-  say "wwivconfig is missing. Please verify your BBS tarball is complete"
-  say "and run install.sh again."
-  say ""
-  say "If you are running on a system that requires compiling the binaries"
-  say "manually, please do so and copy them all into ${WWIV_DIR}"
-  say "and run install.sh again."
-  say ""
-  exit 2
-fi
 
+check_binaries bbs wwivconfig wwivd wwivutil
 echo
 say "Basic Checks completed"
 echo
@@ -246,15 +263,16 @@ echo
 
 
 # Making sure the values are what we want
-cat <<VARCHECK
-
-Creating the WWIV user, group and directory with the following values:
-
-WWIV_DIR   = ${WWIV_DIR}
-WWIV_USER  = ${WWIV_USER}
-WWIV_GROUP = ${WWIV_GROUP}
-
-VARCHECK
+sayl "Creating the WWIV user, group and directory with the following values:"
+echo
+echo
+sayl "WWIV_DIR:     ${YELLOW}${WWIV_DIR}"
+sayl "WWIV_BIN_DIR: ${YELLOW}${WWIV_BIN_DIR}"
+sayl "WWIV_LOG_DIR: ${YELLOW}${WWIV_LOG_DIR}"
+sayl "WWIV_USER:    ${YELLOW}${WWIV_USER}"
+sayl "WWIV_GROUP:   ${YELLOW}${WWIV_GROUP}"
+echo
+echo
 
 if ! confirm "Are these correct?"
 then
@@ -265,20 +283,23 @@ then
   exit 1
 fi
 
+create_directory() {
+    local dir=$1
+    # Validate WWIV directory
+    if [[ ! -d ${dir} ]]; then
+	say "The directory ${dir} doesn't exist; creating it."
+	if ! mkdir -p ${dir} >> $LOGFILE 2>&1
+	then
+	    say "There was an error creating the directory"
+	    say "Please check $LOGFILE for details.  Aborting."
+	    exit 10
+	else
+	    say "Directory ${dir} created"
+	fi
+    fi
+}
 
-# Validate WWIV directory
-if [[ ! -d ${WWIV_DIR} ]]
-then
-  say "The directory ${WWIV_DIR} doesn't exist; creating it."
-  if ! mkdir -p ${WWIV_DIR} >> $LOGFILE 2>&1
-  then
-    say "There was an error creating the directory"
-    say "Please check $LOGFILE for details.  Aborting."
-    exit 10
-  else
-    say "Directory ${WWIV_DIR} created"
-  fi
-fi
+create_directory ${WWIV_DIR}
 
 ### Create WWIV user and group ###
 # does wwiv group exist? 
@@ -347,7 +368,7 @@ read -r -p "Please enter the userid that will have sudo access to ${WWIV_USER}: 
 say "Adding ${SUDOUSER} to the sudoers file"
 echo "${SUDOUSER}   ALL=(${WWIV_USER}) ALL" >> /etc/sudoers
 say "The user ${SUDOUSER} can now run all commands as ${WWIV_USER} via sudo"
-sleep 5
+pausescr
 
 ### configure scripts and helper binaries. ###
 echo 
@@ -360,9 +381,7 @@ say "WWIV_GROUP: ${WWIV_GROUP}"
 echo
 echo
 
-if [[ $OSTYPE == "Linux" ]]
-then
-
+if [[ $OSTYPE == "Linux" ]]; then
   for i in systemd/*.template
   do
     out=${i%%.template}
@@ -388,8 +407,7 @@ then
     fi
   fi
 
-elif [[ $OSTYPE == "SunOS" ]]
-then
+elif [[ $OSTYPE == "SunOS" ]]; then
   for i in svcadm/*.template
   do
     out=${i%%.template}
@@ -399,16 +417,14 @@ then
 fi
 
 #are we using systemd?
-if [[ $OSTYPE == "Linux" ]]
-then
+if [[ $OSTYPE == "Linux" ]]; then
   if [[ ! -d /etc/systemd ]]
   then
     say "You don't appear to be using systemd. You may need some more customization"
     say "to run the wwivd service on a non-systemd setup.  Please check the docs"
     say "or the IRC channel for additional help."
   else
-    if [[ -e /etc/systemd/system/wwivd.service ]]
-    then
+    if [[ -e /etc/systemd/system/wwivd.service ]]; then
       say "/etc/systemd/system/wwivd.service already exists, saving as wwivd.service.new"
       cp ${RUNDIR}/systemd/wwivd.service /etc/systemd/system/wwivd.service.new
       say "/etc/systemd/system/wwivd.service.new file copied"
@@ -421,14 +437,11 @@ then
       say "systemd wwivd service enabled"
     fi
   fi
-elif [[ $OSTYPE == "SunOS" ]]
-then
-  if [[ -e /var/svc/manifest/application/wwivd.xml ]]
-  then
+elif [[ $OSTYPE == "SunOS" ]]; then
+  if [[ -e /var/svc/manifest/application/wwivd.xml ]]; then
     say "/var/svc/manifest/application/wwivd.xml already exists, aborting svcadm install"
   else
-    if [[ -e ${WWIV_DIR}/start_wwiv.sh ]]
-    then
+    if [[ -e ${WWIV_DIR}/start_wwiv.sh ]]; then
       say "${WWIV_DIR}/start_wwiv.sh exists, not overwriting."
     else
       say "Installing ${RUNDIR}/svcadm/start_wwiv.sh"
@@ -448,23 +461,21 @@ echo
 say "Making sure ${WWIV_USER} owns all the files"
 chown -R ${WWIV_USER}:${WWIV_GROUP} ${WWIV_DIR} >> ${LOGFILE} 2>&1
 echo
-echo "Your BBS basic systemd service configuration "
-echo "and helper scripts are complete."
+sayl "Your BBS basic systemd service configuration "
+sayl "and helper scripts are complete."
 echo
 
 ### Final wwivconfig steps ###
-echo "Please wait while we initialize the WWIV BBS data files"
-sleep 10
+sayl "About to initialize the WWIV BBS data files"
+pausescr
 
 say "Initializing data files"
 su -c "${WWIV_DIR}/wwivconfig --initialize" -s /bin/bash ${WWIV_USER}
-sleep 2
 say "Installation complete"
 
 echo
-echo "Please log in as your new WWIV user (eg, sudo -u ${WWIV_USER} -s)"
-echo "and run the ./wwivconfig command to create the SysOp account and"
-echo "customize the BBS information."
-echo
-echo "If you need any assistance, check out the docs or find us on IRC."
-echo
+sayl "Please log in as your new WWIV user (eg, sudo -u ${WWIV_USER} -s)"
+sayl "and run the ./wwivconfig command to create the SysOp account and"
+sayl "customize the BBS information."
+sayl ""
+sayl "If you need any assistance, check out the docs or find us on IRC."
