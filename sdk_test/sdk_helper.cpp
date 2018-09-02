@@ -58,9 +58,10 @@ static statusrec_t create_status() {
 SdkHelper::SdkHelper() : saved_dir_(File::current_directory()), root_(files_.CreateTempFilePath("bbs")) {
   data_ = CreatePath("data");
   msgs_ = CreatePath("msgs");
-  const string gfiles = CreatePath("gfiles");
-  const string menus = CreatePath("menus");
-  const string dloads = CreatePath("dloads");
+  gfiles_ = CreatePath("gfiles");
+  menus_ = CreatePath("menus");
+  scripts_ = CreatePath("scripts");
+  dloads_ = CreatePath("dloads");
 
   {
     configrec c = {};

@@ -173,7 +173,7 @@ static int icompare_int(const allow_entry_t& i, const allow_entry_t& j) {
   return StringCompareIgnoreCase(i.a, j.a);
 }
 
-static allow_entry_t to_allow_entry(const std::string& fn) {
+allow_entry_t to_allow_entry(const std::string& fn) {
   allow_entry_t e{};
   to_char_array(e.a, stripfn(fn));
   return e;
@@ -207,7 +207,8 @@ bool Allow::Remove(const std::string& unaligned_filename) {
 bool Allow::Load() {
   DataFile<allow_entry_t> file(FilePath(data_directory_, ALLOW_DAT));
   if (!file) {
-    return false;
+    // Handle empty file for the 1st time.  This is fine.
+    return true;
   }
   allow_.clear();
   return file.ReadVector(allow_);

@@ -21,6 +21,7 @@ set(test_sources
   ansi/ansi_test.cpp
   ansi/framebuffer_test.cpp
   ansi/makeansi_test.cpp
+  files/allow_test.cpp
   fido/fido_address_test.cpp
   fido/nodelist_test.cpp
   net/callouts_test.cpp

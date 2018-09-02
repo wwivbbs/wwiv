@@ -22,7 +22,6 @@
 #include <vector>
 
 #include "sdk/config.h"
-//#include "sdk/vardec.h"
 
 namespace wwiv {
 namespace sdk {
@@ -32,6 +31,10 @@ namespace files {
 struct allow_entry_t {
   char a[13];
 };
+
+// Helpers for allow_entry_t.  Useful in tests.
+bool operator==(const allow_entry_t& lhs, const allow_entry_t& rhs);
+allow_entry_t to_allow_entry(const std::string& fn);
 
 class Allow {
 public:
