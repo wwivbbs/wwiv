@@ -19,6 +19,7 @@ echo "Workspace:         ${WORKSPACE}"
 echo "Version:           ${BUILD_NUMBER}"
 echo "Archive:           ${RELEASE_TGZ}"
 echo "WWIV_TEST_TEMPDIR: ${WWIV_TEST_TEMPDIR}"
+echo "CMake:             ${CMAKE_BIN}"
 
 if [[ -z "${WWIV_TEST_TEMPDIR}" ]]; then
     echo "WWIV_TEST_TEMPDIR must be set."

@@ -9,8 +9,7 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/Modules/sanitizers)
 set(CMAKE_VERBOSE_MAKEFILE ON)
 set(CMAKE_COLOR_MAKEFILE   ON)
 
-# Note: these only work in cmake 3.1 or later. We work around that later.
-set (CMAKE_CXX_STANDARD 14)
+set (CMAKE_CXX_STANDARD 17)
 set (CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(WWIV_BUILD_TESTS "Build WWIV test programs" ON)
@@ -22,10 +21,6 @@ if (UNIX)
 
   if (CMAKE_COMPILER_IS_GNUCXX)
     list(APPEND CMAKE_CXX_FLAGS "-frtti")
-  
-    if (CMAKE_VERSION VERSION_LESS "3.1")
-      set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++14")
-    endif ()
   endif()
 
 elseif (WIN32)

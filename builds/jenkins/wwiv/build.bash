@@ -53,8 +53,8 @@ build_binaries() {
     fi
     
     pushd ${CMAKE_BUILD}
-    cmake -DCMAKE_BUILD_TYPE:STRING=Debug ..
-    cmake --build . -- ${make_args}
+    ${CMAKE_BIN} -DCMAKE_BUILD_TYPE:STRING=Debug ..
+    ${CMAKE_BIN} --build . -- ${make_args}
     popd > /dev/null
 
 }

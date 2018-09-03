@@ -19,6 +19,7 @@ declare -r WWIV_FULL_RELEASE="5.4.0"
 declare -r RELEASE_TGZ=${WORKSPACE}/wwiv-linux-${label}-${WWIV_RELEASE}.${BUILD_NUMBER}.tar.gz
 echo "WWIV BBS Build"
 echo "Workspace:        ${WORKSPACE}"
+echo "CMake:            ${CMAKE_BIN}"
 echo "CMake Build:      ${CMAKE_BUILD}"
 echo "Release Dir:      ${RELEASE_DIR}"
 echo "WWI Full Release: ${WWIV_FULL_RELEASE}"
