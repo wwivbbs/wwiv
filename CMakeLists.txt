@@ -21,9 +21,6 @@ if (WWIV_BUILD_TESTS)
   message("Using GoogleTest from ${GTEST_INCLUDE_DIRS}")
 endif (WWIV_BUILD_TESTS)
 
-# abseil is the Google C++ libraries open sourced.
-#add_subdirectory(deps/abseil-cpp)
-
 # Cryptlib
 add_subdirectory(deps/cl342)
 
