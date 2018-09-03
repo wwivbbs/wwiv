@@ -399,7 +399,7 @@ struct fido_node_config_t {
   fido_packet_config_t packet_config;
   // BinkP session options.
   binkp_session_config_t binkp_config;
-  // Automatic callotu config
+  // Automatic callout config
   network_callout_config_t callout_config;
 };
 

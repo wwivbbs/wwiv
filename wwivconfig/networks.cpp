@@ -295,8 +295,29 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
       {fido_packet_t::unset, "unset"}, {fido_packet_t::type2_plus, "FSC-0039 Type 2+"}};
 
   int y = 1;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Routes:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, EditLineMode::ALL));
+  auto& b = n.binkp_config;
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, EditLineMode::ALL))
+      ->set_help_text("BinkP hostname to override default from nodelist");
+  y++;
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Port:"),
+           new NumberEditItem<int>(COL1_POSITION, y, &b.port))
+      ->set_help_text("BinkP post number to override default from nodelist");
+  y++;
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Session PW:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password,
+                                            EditLineMode::UPPER_ONLY))
+      ->set_help_text("BinkP password to use when connection to this host.");
+  y += 2;
+
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Routes:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 40, n.routes, EditLineMode::ALL))
+      ->set_help_text("Systems who route this this host. i.e. 1:*");
+
   ++y;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet Type:"),
             new ToggleEditItem<fido_packet_t>(COL1_POSITION, y, packetlist, &p.packet_type));
@@ -304,17 +325,27 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Compression:"),
             new StringListItem(COL1_POSITION, y, {"ZIP", "ARC", "PKT", ""}, p.compression_type));
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet PW:"),
-      new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password, EditLineMode::UPPER_ONLY));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Packet PW:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.packet_password,
+                                            EditLineMode::UPPER_ONLY))
+      ->set_help_text("Password to use in the FTN packet.");
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "AreaFix PW:"),
-      new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password, EditLineMode::UPPER_ONLY));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "AreaFix PW:"),
+           new StringEditItem<std::string&>(COL1_POSITION, y, 8, p.areafix_password,
+                                            EditLineMode::UPPER_ONLY))
+      ->set_help_text("NOT IMPLEMENTED YET");
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Arc Size:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &p.max_archive_size));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Arc Size:"),
+           new NumberEditItem<int>(COL1_POSITION, y, &p.max_archive_size))
+      ->set_help_text("NOT IMPLEMENTED YET");
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Pkt Size:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &p.max_packet_size));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Max Pkt Size:"),
+           new NumberEditItem<int>(COL1_POSITION, y, &p.max_packet_size))
+      ->set_help_text("NOT IMPLEMENTED YET");
 
   vector<pair<fido_bundle_status_t, string>> bundlestatuslist = {
       {fido_bundle_status_t::normal, "Normal"}, {fido_bundle_status_t::crash, "Crash"},
@@ -322,30 +353,28 @@ static void edit_fido_node_config(const FidoAddress& a, fido_node_config_t& n) {
       {fido_bundle_status_t::hold, "Hold"},
   };
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Bundle Status:"),
-            new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y, bundlestatuslist,
-                                                     &p.netmail_status));
-  auto& b = n.binkp_config;
-  y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Host:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 40, b.host, EditLineMode::ALL));
-  y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "BinkP Port:"),
-            new NumberEditItem<int>(COL1_POSITION, y, &b.port));
-  y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Session PW:"),
-            new StringEditItem<std::string&>(COL1_POSITION, y, 8, b.password, EditLineMode::UPPER_ONLY));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Bundle Status:"),
+           new ToggleEditItem<fido_bundle_status_t>(COL1_POSITION, y, bundlestatuslist,
+                                                    &p.netmail_status))
+      ->set_help_text("Default bundle status to use when creating FTN Bundles");
   y += 2;
   auto& c = n.callout_config;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Automatic Callouts:"),
-            new BooleanEditItem(COL1_POSITION, y, &c.auto_callouts));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Automatic Callouts:"),
+           new BooleanEditItem(COL1_POSITION, y, &c.auto_callouts))
+      ->set_help_text("Should wwivd automatically call out to this node?");
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
-            new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
-                                                                 &c.call_every_x_minutes));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
+           new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
+                                                                &c.call_every_x_minutes))
+      ->set_help_text("Frequency in minutes between callout attempts");
   y++;
-  items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
-            new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k));
+  items
+      .add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
+           new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k))
+      ->set_help_text("Attempt callout sooner if this many k of packet is waiting");
 
   items.Run(StrCat("Address: ", a.as_string()));
 }
@@ -450,27 +479,36 @@ static void edit_wwivnet_node_config(const net_networks_rec& net, net_call_out_r
   EditItems items{};
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Password:"),
             new StringEditItem<std::string&>(COL1_POSITION, y, 20, c.session_password,
-                                             EditLineMode::ALL));
+                                             EditLineMode::ALL))
+      ->set_help_text("WWIVnet password to use when connecting to this node");
+
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Allow Outbound Connections:"),
             new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_no_call, "No", "Yes",
-                                                  &c.options));
+                                                  &c.options))
+      ->set_help_text("Is our system allowed to callout to this one?");
   y += 2;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call every N minutes:"),
             new NumberEditItem<decltype(c.call_every_x_minutes)>(COL1_POSITION, y,
-                                                                 &c.call_every_x_minutes));
+                                                                 &c.call_every_x_minutes))
+      ->set_help_text("Automatically call out every N minutes");
+
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call when minimum k waiting:"),
-            new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k));
+            new NumberEditItem<decltype(c.min_k)>(COL1_POSITION, y, &c.min_k))
+      ->set_help_text("Automatically call out when K kilobytes of packet is pending");
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Call between hours of:"),
-            new NumberEditItem<int8_t>(COL1_POSITION, y, &c.min_hr));
+            new NumberEditItem<int8_t>(COL1_POSITION, y, &c.min_hr))
+  ->set_help_text("Only call automatically between the house of X and Y");
   items.add(new Label(LBL2_POSITION, y, LABEL2_WIDTH, "and:"),
-            new NumberEditItem<int8_t>(COL2_POSITION, y, &c.max_hr));
+            new NumberEditItem<int8_t>(COL2_POSITION, y, &c.max_hr))
+      ->set_help_text("Only call automatically between the house of X and Y");
   y++;
   items.add(new Label(LBL1_POSITION, y, LABEL_WIDTH, "Hide from Pending List:"),
             new FlagEditItem<decltype(c.options)>(COL1_POSITION, y, options_hide_pend, "Yes ", "No",
-                                                  &c.options));
+                                                  &c.options))
+      ->set_help_text("Hide this node from the WFC pending system display");
 
   items.Run(StrCat("Node: @", c.sysnum, ".", net.name));
 }
