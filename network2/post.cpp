@@ -135,16 +135,16 @@ bool handle_inbound_post(Context& context, Packet& p) {
     // like WWIV always does.
     auto created = context.api(sub.storage_type).Create(sub, -1);
     if (!created) {
-      LOG(INFO) << "    ! ERROR: Failed to create message area: " << sub.filename
-                << "; writing to dead.net.";
+      LOG(INFO) << "    ! ERROR: Failed to create message area: '" << sub.filename
+                << "'; writing to dead.net.";
       return write_wwivnet_packet(DEAD_NET, context.net, p);
     }
   }
 
   unique_ptr<MessageArea> area(context.api(sub.storage_type).Open(sub, -1));
   if (!area) {
-    LOG(INFO) << "    ! ERROR Unable to open message area: " << sub.filename
-              << "; writing to dead.net.";
+    LOG(INFO) << "    ! ERROR Unable to open message area: '" << sub.filename
+              << "'; writing to dead.net.";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
@@ -168,7 +168,7 @@ bool handle_inbound_post(Context& context, Packet& p) {
   MessageAreaOptions options{};
   options.send_post_to_network = false;
   if (!area->AddMessage(*msg, options)) {
-    LOG(ERROR) << "     ! Failed to add message: " << ppt.title() << "; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR Failed to add message: '" << ppt.title() << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
   LOG(INFO) << "    + Posted  '" << ppt.title() << "' on sub: '" << ppt.subtype() << "'.";
@@ -204,8 +204,8 @@ bool send_post_to_subscribers(Context& context, Packet& template_packet,
 
   subboard_t sub;
   if (!find_sub(context.subs, context.network_number, original_subtype, sub)) {
-    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: " << original_subtype
-              << " writing to dead.net.";
+    LOG(INFO) << "    ! ERROR: Unable to find message of subtype: '" << original_subtype
+              << "'; writing to dead.net.";
     Packet p(template_packet.nh, {}, template_packet.text());
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }

@@ -108,7 +108,7 @@ bool handle_email_byname(Context& context, Packet& p) {
   auto user_number = GetUserNumber(to_name, context.user_manager);
   if (user_number == 0) {
     // Not found.
-    LOG(ERROR) << "Received email to user: '" << to_name << "' who is not found on this system.";
+    LOG(ERROR) << "    ! ERROR Received email to user: '" << to_name << "' who is not found on this system; writing to dead.net";
     // Write it to DEAD_NET
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }

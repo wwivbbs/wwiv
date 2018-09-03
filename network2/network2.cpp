@@ -118,7 +118,7 @@ static bool handle_ssm(Context& context, Packet& p) {
   VLOG(1) << "  Receiving SSM for user: #" << p.nh.touser;
   SSM ssm(context.config, context.user_manager);
   if (!ssm.send_local(p.nh.touser, p.text())) {
-    LOG(ERROR) << "  ERROR writing SSM: '" << p.text() << "'; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR writing SSM: '" << p.text() << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 
@@ -128,24 +128,24 @@ static bool handle_ssm(Context& context, Packet& p) {
 
 static bool write_net_received_file(const net_networks_rec& net, Packet& p, NetInfoFileInfo info) {
   if (!info.valid) {
-    LOG(ERROR) << "NetInfoFileInfo is not valid";
+    LOG(ERROR) << "    ! ERROR NetInfoFileInfo is not valid; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
     return false;
   }
 
   if (info.filename.empty()) {
-    LOG(ERROR) << "ERROR: Fell through handle_net_info_file; writing to dead.net";
+    LOG(ERROR) << "    ! ERROR Fell through handle_net_info_file; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   // we know the name.
   File file(FilePath(net.dir, info.filename));
   if (!info.overwrite && file.Exists()) {
-    LOG(ERROR) << "File [" << file << "] already exists, and packet not set to overwrite.";
+    LOG(ERROR) << "    ! ERROR File [" << file << "] already exists, and packet not set to overwrite; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   if (!file.Open(File::modeWriteOnly | File::modeBinary | File::modeCreateFile | File::modeTruncate, File::shareDenyReadWrite)) {
     // We couldn't create or open the file.
-    LOG(ERROR) << "ERROR: Unable to create or open file: " << info.filename << " writing to dead.net";
+    LOG(ERROR) << "    ! ERROR Unable to create or open file: '" << info.filename << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, net, p);
   }
   file.Write(info.data);
@@ -260,7 +260,8 @@ static bool handle_packet(
   case main_type_group_info:
     // Anything undefined or anything we missed.
   default:
-    LOG(ERROR) << "Writing message to dead.net for unhandled type: " << main_type_name(p.nh.main_type);
+    LOG(ERROR) << "    ! ERROR Writing message to dead.net for unhandled type: '"
+               << main_type_name(p.nh.main_type) << "'; writing to dead.net";
     return write_wwivnet_packet(DEAD_NET, context.net, p);
   }
 }

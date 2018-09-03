@@ -806,7 +806,7 @@ static bool create_ftn_packet_and_bundle(const NetworkCommandLine& net_cmdline,
   string fido_packet_name;
   if (!create_ftn_packet(net_cmdline.config(), fido_callout, dest, route_to, net, p,
                          fido_packet_name)) {
-    LOG(ERROR) << "Failed to create FTN packet.";
+    LOG(ERROR) << "    ! ERROR Failed to create FTN packet; writing to dead.net";
     write_wwivnet_packet(DEAD_NET, net, p);
     return false;
   }
@@ -814,7 +814,7 @@ static bool create_ftn_packet_and_bundle(const NetworkCommandLine& net_cmdline,
 
   if (!create_ftn_bundle(net_cmdline.config(), fido_callout, dest, route_to, net, fido_packet_name,
                          bundlename)) {
-    LOG(ERROR) << "Failed to create FTN bundle.";
+    LOG(ERROR) << "    ! ERROR Failed to create FTN bundle; writing to dead.net";
     write_wwivnet_packet(DEAD_NET, net, p);
     return false;
   }
@@ -1145,7 +1145,8 @@ int Main(const NetworkCommandLine& net_cmdline) {
           LOG(ERROR) << "Error exporting email.";
         }
       } else {
-        LOG(ERROR) << "Unhandled type: " << main_type_name(p.nh.main_type);
+        LOG(ERROR) << "    ! ERROR Unhandled type: '" << main_type_name(p.nh.main_type)
+                   << "'; writing to dead.net";
         // Let's write it to dead.net
         if (!write_wwivnet_packet(DEAD_NET, net, p)) {
           LOG(ERROR) << "Error writing to dead.net";
