@@ -78,7 +78,8 @@ bool ParseCalloutNetLine(const string& ss, net_call_out_rec* con) {
       break;
     case '!': {
       con->options |= unused_options_once_per_day;
-      auto unused_times_per_day = to_number<int>(string(++iter, ss.end()));
+      ++iter;
+      //auto unused_times_per_day = to_number<int>(string(++iter, ss.end()));
     } break;
     case '%': {
       con->macnum = to_number<decltype(con->macnum)>(string(++iter, ss.end()));

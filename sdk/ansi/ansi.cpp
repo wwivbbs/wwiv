@@ -56,7 +56,6 @@ std::vector<int> to_ansi_numbers(const std::string& as, int max_args, std::vecto
   std::vector<int> out;
   const auto list_size = list.size();
   for (size_t i = 0; i < defaults.size(); i++) {
-    const auto d = defaults.at(i);
     if (i < list.size()) {
       const auto& c = list.at(i);
       if (!c.empty()) {

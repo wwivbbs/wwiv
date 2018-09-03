@@ -530,7 +530,6 @@ Packet create_packet_from_wwiv_message(const wwiv::sdk::msgapi::WWIVMessage& m,
   nh.fromuser = h.from_usernum();
   nh.list_len = 0;
   nh.tosys = 0;
-  uint16_t receipient = 0;
   if (receipients.size() == 1) {
     nh.tosys = *receipients.begin();
   } else {

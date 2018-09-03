@@ -82,8 +82,8 @@ public:
 
 private:
   LocalIO* io_;
-  std::unique_ptr<wwiv::local_io::curatr_provider> curatr_provider_;
   int cols_;
+  std::unique_ptr<wwiv::local_io::curatr_provider> curatr_provider_;
 };
 
 } // namespace ansi

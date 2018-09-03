@@ -128,8 +128,8 @@ static std::string align_filename(const std::string& file_name) {
 static std::string stripfn(const char* file_name) {
   char szTempFileName[MAX_PATH];
 
-  size_t nSepIndex = -1;
-  for (size_t i = 0; i < size(file_name); i++) {
+  ssize_t nSepIndex = -1;
+  for (ssize_t i = 0; i < wwiv::strings::size_int(file_name); i++) {
     if (file_name[i] == '\\' || file_name[i] == ':' || file_name[i] == '/') {
       nSepIndex = i;
     }
@@ -167,10 +167,6 @@ static bool icompare_equals(const allow_entry_t& i, const allow_entry_t& j) {
 
 static bool icompare_lessthan(const allow_entry_t& i, const allow_entry_t& j) {
   return StringCompareIgnoreCase(i.a, j.a) < 0;
-}
-
-static int icompare_int(const allow_entry_t& i, const allow_entry_t& j) {
-  return StringCompareIgnoreCase(i.a, j.a);
 }
 
 allow_entry_t to_allow_entry(const std::string& fn) {

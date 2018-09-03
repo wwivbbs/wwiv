@@ -39,4 +39,6 @@ TEST(FakeClock, Simple) {
 
   auto duration = duration_cast<seconds>(mid.to_system_clock() - start.to_system_clock());
   EXPECT_EQ(2s, duration);
+  duration = duration_cast<seconds>(end.to_system_clock() - mid.to_system_clock());
+  EXPECT_EQ(3s, duration);
 }
