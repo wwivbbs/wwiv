@@ -33,14 +33,9 @@ elseif (WIN32)
     add_definitions(/DNOMINMAX)
     add_definitions(/DWIN32_LEAN_AND_MEAN=1)
 
-    # TODO(rushfan): See if this is still needed even with the latest googletest update.
-    # Rushfan addition to fix under latest Visual Studio 2017.
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 19.11)
-      # VS 2017 (15.5) : Disable warnings from from gtest code, using deprecated
-      # code related to TR1 
-      add_definitions(-D_SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING)
-      message("Add flag for gtest: _SILENCE_TR1_NAMESPACE_DEPRECATION_WARNING")
-    endif()
+    # To silence cereal warnings that they know about already
+    # bug: https://github.com/USCiLab/cereal/issues/456
+    add_definitions(/D_SILENCE_CXX17_ITERATOR_BASE_CLASS_DEPRECATION_WARNING)
   endif(MSVC)
 endif (UNIX)
 
