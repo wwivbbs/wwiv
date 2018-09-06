@@ -356,7 +356,7 @@ void wwivd_ui(const wwiv::sdk::Config& config) {
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "Run BeginDay:"),
            new BooleanEditItem(COL1_POSITION, y, &c.do_beginday_event))
-      ->set_help_text("Shoudl wwivd execute the beginday event for WWIV.");
+      ->set_help_text("Should wwivd execute the beginday event for WWIV.");
   y++;
   items
       .add(new Label(COL1_LINE, y, LABEL1_WIDTH, "BeginDay Cmd:"),

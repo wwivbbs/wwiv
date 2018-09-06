@@ -186,13 +186,18 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
     sleep_for(15s);
     e = need_to_exit.load();
 
-    auto last_date_status = sm.GetStatus();
-    if (date() != last_date_status->GetLastDate()) {
-      LOG(INFO) << "Executing BeginDay Event.";
-      const std::map<char, string> params{};
-      const auto cmd = CreateCommandLine(c.beginday_cmd, params);
-      if (!ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1)) {
-        LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";
+    if (c.do_beginday_event) {
+      auto last_date_status = sm.GetStatus();
+      auto ld = last_date_status->GetLastDate();
+      const auto d = date();
+      VLOG(4) << "Doing beginday check";
+      if (d != ld) {
+        LOG(INFO) << "Executing BeginDay Event. (" << d << " != " << ld << ")";
+        const std::map<char, string> params{};
+        const auto cmd = CreateCommandLine(c.beginday_cmd, params);
+        if (!ExecCommandAndWait(cmd, StrCat("[", get_pid(), "]"), -1, -1)) {
+          LOG(ERROR) << "Error executing [BeginDay Event]: '" << cmd << "'";
+        }
       }
     }
   }
@@ -201,8 +206,9 @@ static void do_wwivd_callout_loop(const Config& config, const wwivd_config_t& or
 void do_wwivd_callouts(const Config& config, const wwivd_config_t& c) {
   if (c.do_network_callouts) {
     LOG(INFO) << "WWIVD is handling network callouts.";
-  } else if (c.do_beginday_event) {
-    LOG(INFO) << "WWIVD is only handling beginday event.";
+  }
+  if (c.do_beginday_event) {
+    LOG(INFO) << "WWIVD is handling beginday event.";
   }
   std::thread callout_thread(do_wwivd_callout_loop, config, c);
   callout_thread.detach();
