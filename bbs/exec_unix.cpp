@@ -18,7 +18,9 @@
 /**************************************************************************/
 #include "bbs/exec.h"
 #include <sys/wait.h>
+#include <termios.h>
 #include <unistd.h>
+#include <pty.h>
 
 #include "bbs/bbs.h"
 #include "bbs/remote_io.h"
@@ -30,32 +32,76 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
     return 1;
   }
   const int sock = a()->remoteIO()->GetDoorHandle();
-  int pid = fork();
+  int pid = -1;
+  int master_fd = -1;
+  if (flags & EFLAG_STDIO) {
+    pid = forkpty(&master_fd, nullptr, nullptr, nullptr);
+  } else {
+    pid = fork();
+  }
   if (pid == -1) {
+    auto e = errno;
+    LOG(ERROR) << "Fork Failed: errno: '" << e << "'";
     // Fork failed.
     return -1;
   }
   if (pid == 0) {
     // Were' in the child.
-    if (flags & EFLAG_STDIO) {
-      // Duplicate the std{in,out} handles.
-      dup2(sock, STDIN_FILENO);
-      dup2(sock, STDOUT_FILENO);
-    }
     const char* argv[4] = { "/bin/sh", "-c", cmd.c_str(), 0 };
     execv("/bin/sh", const_cast<char ** const>(argv));
     exit(127);
   }
 
+  // In the parent now.
+  // remove the echo
+  struct termios tios;
+  tcgetattr(master_fd, &tios);
+  tios.c_lflag &= ~(ECHO | ECHONL);
+  tcsetattr(master_fd, TCSAFLUSH, &tios);
+
   for (;;) {
+    fd_set rfd;
+    FD_ZERO(&rfd);
+
+    FD_SET(master_fd, &rfd);
+    FD_SET(sock, &rfd);
+
+    struct timeval tv = {1, 0};
+    auto ret = select(std::max<int>(sock, master_fd)+1,
+		      &rfd, nullptr, nullptr, &tv);
+    if (ret < 0) {
+      break;
+    }
+    int status_code = 0;
+    pid_t wp = waitpid(pid, &status_code, WNOHANG);
+    if (wp == -1 || wp > 0) {
+      // -1 means error and >0 is the pid
+      break;
+    }
+    if (FD_ISSET(sock, &rfd)) {
+      char input;
+      read(sock, &input, 1);
+      write(master_fd, &input, 1);
+      VLOG(3) << "read from socket, write to term: '" << input << "'";
+    }
+    if (FD_ISSET(master_fd, &rfd)) {
+      char input;
+      read(master_fd, &input, 1);
+      write(sock, &input, 1);
+    }
+  }
+  
+  // We probably won't get here, but just in case we do...
+  for (;;) {
+    LOG(INFO) << "about to call waitpid at the end";
     // In the parent, wait for the child to terminate.
-    int nStatusCode = 1;
-    if (waitpid(pid, &nStatusCode, 0) == -1) {
+    int status_code = 1;
+    if (waitpid(pid, &status_code, 0) == -1) {
       if (errno != EINTR) {
         return -1;
       }
     } else {
-      return nStatusCode;
+      return status_code;
     }
   }
 

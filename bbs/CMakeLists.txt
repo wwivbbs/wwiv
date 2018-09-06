@@ -133,6 +133,7 @@ if(UNIX)
     	make_abs_cmd_unix.cpp 
   )
   find_package (Threads)
+  set(FORKPTY_LIB util)
   
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     list(APPEND CMAKE_EXE_LINKER_FLAGS "-lsocket -lnsl -lkstat -lssp")
@@ -148,6 +149,6 @@ if(WIN32)
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
-target_link_libraries(bbs_lib local_io localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(bbs_lib local_io localui core sdk ${CL342_LIB} ${CMAKE_THREAD_LIBS_INIT} ${FORKPTY_LIB})
 add_executable(bbs ${BBS_MAIN})
 target_link_libraries(bbs bbs_lib)
