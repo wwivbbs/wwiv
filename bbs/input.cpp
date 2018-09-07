@@ -572,12 +572,16 @@ std::string input_date_mmddyy(const std::string& orig_text) {
   return Input1(orig_text, 10, true, InputMode::DATE);
 }
 
+static int max_length_for_number(int64_t n) {
+  return (n == 0) ? 1 : static_cast<int>(std::floor(std::log10(std::abs(n)))) + 1;
+}
+
 static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
   bool ok = (result >= minv && result <= maxv);
   if (ok != last_ok) {
     bout.RestorePosition();
     bout.SavePosition();
-    bout.mpl(static_cast<int>(std::floor(std::log10(maxv))) + 1);
+    bout.mpl(max_length_for_number(maxv));
     bout.Color(ok ? 4 : 6);
     bout.bputs(std::to_string(result));
   }
@@ -586,7 +590,7 @@ static bool colorize(bool last_ok, int64_t result, int64_t minv, int64_t maxv) {
 
 input_result_t<int64_t> input_number_or_key_raw(int64_t cur, int64_t minv, int64_t maxv,
                                                 bool setdefault, const std::set<char>& hotkeys) {
-  const int max_length = static_cast<int>(std::floor(std::log10(maxv))) + 1;
+  const int max_length = max_length_for_number(maxv);
   std::string text;
   bout.mpl(max_length);
   auto allowed = hotkeys;
