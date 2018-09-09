@@ -27,6 +27,8 @@
 
 #include "core/log.h"
 
+static const char SHELL[] = "/bin/bash";
+
 static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
   if (cmd.empty()) {
     return 1;
@@ -35,6 +37,7 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
   int pid = -1;
   int master_fd = -1;
   if (flags & EFLAG_STDIO) {
+    LOG(INFO) << "Exec using STDIO: '" << cmd << "'";
     pid = forkpty(&master_fd, nullptr, nullptr, nullptr);
   } else {
     pid = fork();
@@ -46,17 +49,17 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
     return -1;
   }
   if (pid == 0) {
-    // Were' in the child.
-    const char* argv[4] = { "/bin/sh", "-c", cmd.c_str(), 0 };
-    execv("/bin/sh", const_cast<char ** const>(argv));
+    // In the child
+    const char* argv[4] = { SHELL, "-c", cmd.c_str(), 0 };
+    execv(SHELL, const_cast<char ** const>(argv));
     exit(127);
   }
-
+  LOG(INFO) << "In parent, pid " << pid << "; errno: " << errno;
   // In the parent now.
   // remove the echo
   struct termios tios;
   tcgetattr(master_fd, &tios);
-  tios.c_lflag &= ~(ECHO | ECHONL);
+  //itios.c_lflag &= ~(ECHO | ECHONL);
   tcsetattr(master_fd, TCSAFLUSH, &tios);
 
   for (;;) {
@@ -70,17 +73,44 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
     auto ret = select(std::max<int>(sock, master_fd)+1,
 		      &rfd, nullptr, nullptr, &tv);
     if (ret < 0) {
+      LOG(INFO) << "select returned <0";
       break;
     }
     int status_code = 0;
     pid_t wp = waitpid(pid, &status_code, WNOHANG);
     if (wp == -1 || wp > 0) {
       // -1 means error and >0 is the pid
+      LOG(INFO) << "waitpid returned: " << wp << "; errno: " << errno;
+      if (WIFEXITED(status_code)) {
+        LOG(INFO) << "child exited with code: " << WEXITSTATUS(status_code);
+	break;
+      } else if (WIFSIGNALED(status_code)) {
+	LOG(INFO) << "child caught signal: " << WTERMSIG(status_code);
+      } else {
+	LOG(INFO) << "Raw status_code: " << status_code;
+      }
+      LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
       break;
     }
+    bool dump = false;
     if (FD_ISSET(sock, &rfd)) {
       char input;
       read(sock, &input, 1);
+      if (static_cast<uint8_t>(input) == 0xff) {
+        // IAC, skip over them so we ignore them for now
+        // This was causing the do suppress GA (255, 253, 3)
+        // to get interpreted as a SIGINT by dosemu on startup.
+	VLOG(1) << "IAC";
+        read(sock, &input, 1);
+        read(sock, &input, 1);
+	continue;
+      }
+      if (input == 3) {
+	      LOG(INFO) << "control-c from user, skipping.";
+	      dump = true;
+	      continue;
+      }
+      VLOG(4) << "input: " << input << " [" << static_cast<unsigned int>(input) << "]"; 
       write(master_fd, &input, 1);
       VLOG(3) << "read from socket, write to term: '" << input << "'";
     }
