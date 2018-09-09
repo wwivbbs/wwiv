@@ -18,27 +18,55 @@
 /**************************************************************************/
 #include "bbs/exec.h"
 #include <sys/wait.h>
+
+#define TTYDEFCHARS
+#ifndef _POSIX_VDISABLE
+#define _POSIX_VDISABLE 0
+#endif
 #include <termios.h>
+#include <sys/ttydefaults.h>
+#undef TTYDEFCHARS
+
 #include <unistd.h>
+
+#if defined(__APPLE__)
+#include <util.h>
+#elif defined(__GLIBC__)
 #include <pty.h>
+#else /* bsd without glibc */
+#include <libutil.h>
+#endif
 
 #include "bbs/bbs.h"
 #include "bbs/remote_io.h"
 
 #include "core/log.h"
+#include "core/os.h"
 
 static const char SHELL[] = "/bin/bash";
 
-static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
+static int UnixSpawn(const std::string& cmd, int flags) {
   if (cmd.empty()) {
     return 1;
   }
+  LOG(INFO) << "Exec: '" << cmd << "' errno: " << errno;
   const int sock = a()->remoteIO()->GetDoorHandle();
   int pid = -1;
   int master_fd = -1;
   if (flags & EFLAG_STDIO) {
-    LOG(INFO) << "Exec using STDIO: '" << cmd << "'";
-    pid = forkpty(&master_fd, nullptr, nullptr, nullptr);
+    LOG(INFO) << "Exec using STDIO: '" << cmd << "' errno: " << errno;
+    struct winsize ws{};
+    ws.ws_col = 80;
+    ws.ws_row = 25;
+    struct termios tio{};
+    tio.c_iflag = TTYDEF_IFLAG;
+    tio.c_oflag = TTYDEF_OFLAG;
+    tio.c_lflag = TTYDEF_LFLAG;
+    tio.c_cflag = TTYDEF_CFLAG;
+    memcpy(&tio.c_cc, ttydefchars, sizeof(tio.c_cc));
+    cfsetspeed(&tio, TTYDEF_SPEED);
+
+    pid = forkpty(&master_fd, nullptr, &tio, &ws);
   } else {
     pid = fork();
   }
@@ -54,14 +82,9 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
     execv(SHELL, const_cast<char ** const>(argv));
     exit(127);
   }
-  LOG(INFO) << "In parent, pid " << pid << "; errno: " << errno;
+  
   // In the parent now.
-  // remove the echo
-  struct termios tios;
-  tcgetattr(master_fd, &tios);
-  //itios.c_lflag &= ~(ECHO | ECHONL);
-  tcsetattr(master_fd, TCSAFLUSH, &tios);
-
+  LOG(INFO) << "In parent, pid " << pid << "; errno: " << errno;
   for (;;) {
     fd_set rfd;
     FD_ZERO(&rfd);
@@ -94,7 +117,7 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
     }
     bool dump = false;
     if (FD_ISSET(sock, &rfd)) {
-      char input;
+      char input{};
       read(sock, &input, 1);
       if (static_cast<uint8_t>(input) == 0xff) {
         // IAC, skip over them so we ignore them for now
@@ -110,18 +133,22 @@ static int UnixSpawn(const std::string& cmd, char* environ[], int flags) {
 	      dump = true;
 	      continue;
       }
-      VLOG(4) << "input: " << input << " [" << static_cast<unsigned int>(input) << "]"; 
+      VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input) << "]"; 
       write(master_fd, &input, 1);
       VLOG(3) << "read from socket, write to term: '" << input << "'";
     }
     if (FD_ISSET(master_fd, &rfd)) {
-      char input;
+      char input{};
       read(master_fd, &input, 1);
-      write(sock, &input, 1);
+      if (input == '\n') {
+        write(sock, "\r\n", 2);
+      } else {
+        VLOG(3) << "Read From Terminal: Char: '" << input << "'; [" << static_cast<unsigned>(input) << "]";
+        write(sock, &input, 1);
+      }
     }
   }
-  
-  // We probably won't get here, but just in case we do...
+  // Wait for child to exit.
   for (;;) {
     LOG(INFO) << "about to call waitpid at the end";
     // In the parent, wait for the child to terminate.
@@ -148,10 +175,11 @@ int exec_cmdline(const std::string cmdline, int flags) {
   }
 
   if (a()->context().ok_modem_stuff()) {
+    LOG(INFO) << "Temporarily pausing comm for spawn";
     a()->remoteIO()->close(true);
   }
 
-  int i = UnixSpawn(cmdline, nullptr, flags);
+  auto i = UnixSpawn(cmdline, flags);
 
   // reengage comm stuff
   if (a()->context().ok_modem_stuff()) {

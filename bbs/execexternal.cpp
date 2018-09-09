@@ -29,6 +29,7 @@
 using namespace wwiv::core;
 
 int ExecuteExternalProgram(const std::string& commandLine, int nFlags) {
+  LOG(INFO) << "ExecuteExternalProgram: errno: " << errno;
   // forget it if the user has hung up
   if (!(nFlags & EFLAG_NOHUP)) {
     if (CheckForHangup()) {
