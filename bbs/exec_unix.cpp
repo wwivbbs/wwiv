@@ -21,10 +21,10 @@
 
 #define TTYDEFCHARS
 #ifndef _POSIX_VDISABLE
-#define _POSIX_VDISABLE 0
+#  define _POSIX_VDISABLE 0
 #endif
-#include <sys/ttydefaults.h>
 #include <termios.h>
+#include <sys/ttydefaults.h>
 #undef TTYDEFCHARS
 
 #include <unistd.h>
