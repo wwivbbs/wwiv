@@ -595,7 +595,7 @@ bool inmsg(MessageEditorData& data) {
   if (data.fsed_flags == FsedFlags::NOFSED) {   // Use Internal Message Editor
     save_message = InternalMessageEditor(lin, maxli, &setanon, data);
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
-    save_message = ExternalMessageEditor(data, maxli, &setanon);
+    save_message = DoExternalMessageEditor(data, maxli, &setanon);
   } else if (data.fsed_flags == FsedFlags::WORKSPACE) {   // "auto-send mail message"
     save_message = File::Exists(exted_filename);
     if (save_message && !data.silent_mode) {
