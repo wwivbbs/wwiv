@@ -23,8 +23,8 @@
 #ifndef _POSIX_VDISABLE
 #define _POSIX_VDISABLE 0
 #endif
-#include <termios.h>
 #include <sys/ttydefaults.h>
+#include <termios.h>
 #undef TTYDEFCHARS
 
 #include <unistd.h>
@@ -55,10 +55,10 @@ static int UnixSpawn(const std::string& cmd, int flags) {
   int master_fd = -1;
   if (flags & EFLAG_STDIO) {
     LOG(INFO) << "Exec using STDIO: '" << cmd << "' errno: " << errno;
-    struct winsize ws{};
+    struct winsize ws {};
     ws.ws_col = 80;
     ws.ws_row = 25;
-    struct termios tio{};
+    struct termios tio {};
     tio.c_iflag = TTYDEF_IFLAG;
     tio.c_oflag = TTYDEF_OFLAG;
     tio.c_lflag = TTYDEF_LFLAG;
@@ -78,11 +78,11 @@ static int UnixSpawn(const std::string& cmd, int flags) {
   }
   if (pid == 0) {
     // In the child
-    const char* argv[4] = { SHELL, "-c", cmd.c_str(), 0 };
-    execv(SHELL, const_cast<char ** const>(argv));
+    const char* argv[4] = {SHELL, "-c", cmd.c_str(), 0};
+    execv(SHELL, const_cast<char** const>(argv));
     exit(127);
   }
-  
+
   // In the parent now.
   LOG(INFO) << "In parent, pid " << pid << "; errno: " << errno;
   for (;;) {
@@ -93,8 +93,7 @@ static int UnixSpawn(const std::string& cmd, int flags) {
     FD_SET(sock, &rfd);
 
     struct timeval tv = {1, 0};
-    auto ret = select(std::max<int>(sock, master_fd)+1,
-		      &rfd, nullptr, nullptr, &tv);
+    auto ret = select(std::max<int>(sock, master_fd) + 1, &rfd, nullptr, nullptr, &tv);
     if (ret < 0) {
       LOG(INFO) << "select returned <0";
       break;
@@ -106,11 +105,11 @@ static int UnixSpawn(const std::string& cmd, int flags) {
       LOG(INFO) << "waitpid returned: " << wp << "; errno: " << errno;
       if (WIFEXITED(status_code)) {
         LOG(INFO) << "child exited with code: " << WEXITSTATUS(status_code);
-	break;
+        break;
       } else if (WIFSIGNALED(status_code)) {
-	LOG(INFO) << "child caught signal: " << WTERMSIG(status_code);
+        LOG(INFO) << "child caught signal: " << WTERMSIG(status_code);
       } else {
-	LOG(INFO) << "Raw status_code: " << status_code;
+        LOG(INFO) << "Raw status_code: " << status_code;
       }
       LOG(INFO) << "core dump? : " << WCOREDUMP(status_code);
       break;
@@ -123,17 +122,18 @@ static int UnixSpawn(const std::string& cmd, int flags) {
         // IAC, skip over them so we ignore them for now
         // This was causing the do suppress GA (255, 253, 3)
         // to get interpreted as a SIGINT by dosemu on startup.
-	VLOG(1) << "IAC";
+        VLOG(1) << "IAC";
         read(sock, &input, 1);
         read(sock, &input, 1);
-	continue;
+        continue;
       }
       if (input == 3) {
-	      LOG(INFO) << "control-c from user, skipping.";
-	      dump = true;
-	      continue;
+        LOG(INFO) << "control-c from user, skipping.";
+        dump = true;
+        continue;
       }
-      VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input) << "]"; 
+      VLOG(4) << "Read from Socket: input: " << input << " [" << static_cast<unsigned int>(input)
+              << "]";
       write(master_fd, &input, 1);
       VLOG(3) << "read from socket, write to term: '" << input << "'";
     }
@@ -143,7 +143,8 @@ static int UnixSpawn(const std::string& cmd, int flags) {
       if (input == '\n') {
         write(sock, "\r\n", 2);
       } else {
-        VLOG(3) << "Read From Terminal: Char: '" << input << "'; [" << static_cast<unsigned>(input) << "]";
+        VLOG(3) << "Read From Terminal: Char: '" << input << "'; [" << static_cast<unsigned>(input)
+                << "]";
         write(sock, &input, 1);
       }
     }
@@ -161,7 +162,6 @@ static int UnixSpawn(const std::string& cmd, int flags) {
       return status_code;
     }
   }
-
   // Should never happen.
   return -1;
 }
@@ -187,5 +187,3 @@ int exec_cmdline(const std::string cmdline, int flags) {
   }
   return i;
 }
-
-
