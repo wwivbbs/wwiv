@@ -40,6 +40,8 @@ set(COMMON_SOURCES
  events.cpp
  execexternal.cpp
  external_edit.cpp
+ external_edit_qbbs.cpp
+ external_edit_wwiv.cpp
  extract.cpp
  finduser.cpp
  full_screen.cpp
