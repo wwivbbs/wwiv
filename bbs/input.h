@@ -81,6 +81,12 @@ std::string input_phonenumber(const std::string& orig_text, int max_length);
 std::string input_text(const std::string& orig_text, int max_length);
 
 /**
+ * Inputs random text (upper and lower case) up to length max_length
+ * with the ability to turn on or off the MPL.
+ */
+std::string input_text(const std::string& orig_text, bool mpl, int max_length);
+
+/**
  * Inputs random text (upper and lower case) up to length max_length.
  */
 std::string input_text(int max_length);

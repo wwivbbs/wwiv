@@ -538,9 +538,17 @@ static void GetMessageAnonStatus(bool *real_name, uint8_t *anony, int setanon) {
   }
 }
 
+static std::string ostringstream_to_wwivtext(const std::ostringstream& b) {
+  auto text = b.str();
+  if (text.back() != CZ) {
+    text.push_back(CZ);
+  }
+  return text;
+}
+
 bool inmsg(MessageEditorData& data) {
 
-  auto oiia = setiia(std::chrono::milliseconds(0));
+  const auto oiia = setiia(std::chrono::milliseconds(0));
   if (data.fsed_flags != FsedFlags::NOFSED && !okfsed()) {
     data.fsed_flags = FsedFlags::NOFSED;
   }
@@ -575,8 +583,7 @@ bool inmsg(MessageEditorData& data) {
     if (GetMessageToName(data)) {
       bout.nl();
     }
-  }
-  else {
+  } else {
     bout << "|#2To   : ";
     bout.mpl(40);
     bout << data.to_name << "\r\n";
@@ -596,12 +603,18 @@ bool inmsg(MessageEditorData& data) {
     save_message = InternalMessageEditor(lin, maxli, &setanon, data);
   } else if (data.fsed_flags == FsedFlags::FSED) {   // Use Full Screen Editor
     save_message = DoExternalMessageEditor(data, maxli, &setanon);
-  } else if (data.fsed_flags == FsedFlags::WORKSPACE) {   // "auto-send mail message"
-    save_message = File::Exists(exted_filename);
-    if (save_message && !data.silent_mode) {
-      bout << "Reading in file...\r\n";
-    }
+    TextFile editor_file(exted_filename, "r");
+    lin = editor_file.ReadFileIntoVector();
+  } else if (data.fsed_flags == FsedFlags::WORKSPACE) { // "auto-send mail message"
     use_workspace = false;
+    save_message = File::Exists(exted_filename);
+    if (save_message) {
+      if (!data.silent_mode) {
+        bout << "Reading in file...\r\n";
+      }
+      TextFile editor_file(exted_filename, "r");
+      lin = editor_file.ReadFileIntoVector();
+    }
   }
 
   if (!save_message) {
@@ -642,10 +655,6 @@ bool inmsg(MessageEditorData& data) {
   const auto control_d_zero = StringPrintf("%c0", CD);
   b << control_d_zero << "PID: WWIV " << wwiv_version << beta_version << crlf;
 
-  if (data.fsed_flags != FsedFlags::NOFSED) {
-    TextFile editor_file(exted_filename, "r");
-    lin = editor_file.ReadFileIntoVector();
-  }
   // iterate through the lines in "lin" and append them to 'b'
   for (const auto& l : lin) {
     b << l << crlf;
@@ -655,10 +664,6 @@ bool inmsg(MessageEditorData& data) {
     UpdateMessageBufferTagLine(b, data.is_email(), data.title, data.to_name);
   }
 
-  auto text = b.str();
-  if (text.back() != CZ) {
-    text.push_back(CZ);
-  }
-  data.text = std::move(text);
+  data.text = ostringstream_to_wwivtext(b);
   return true;
 }

@@ -53,7 +53,6 @@ static bool chat_avail;
 static bool chat_invis;
 
 // Local functions
-int  handle_inst_msg(inst_msg_header * ih, const char *msg);
 bool inst_available(instancerec * ir);
 bool inst_available_chat(instancerec * ir);
 
@@ -159,10 +158,10 @@ void broadcast(const std::string& message) {
  * Handles one inter-instance message, based on type, returns inter-instance
  * main type of the "packet".
  */
-int handle_inst_msg(inst_msg_header * ih, const char *msg) {
+static int handle_inst_msg(inst_msg_header * ih, const std::string& msg) {
   unsigned short i;
 
-  if (!ih || (ih->msg_size > 0 && msg == nullptr)) {
+  if (!ih || (ih->msg_size > 0 && msg.empty())) {
     return -1;
   }
 
@@ -174,12 +173,9 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
       bout.nl(2);
       if (a()->in_chatroom_) {
         i = 0;
-        while (i < ih->msg_size) {
-          bout.bputch(msg[ i++ ]);
-        }
-        bout.nl();
+        bout << msg << "\r\n";
         bout.RestoreCurrentLine(line);
-        return (ih->main);
+        return ih->main;
       }
       if (ih->main == INST_MSG_STRING) {
         const string from_user_name = a()->names()->UserName(ih->from_user);
@@ -189,8 +185,7 @@ int handle_inst_msg(inst_msg_header * ih, const char *msg) {
         bout << "|#6[SYSTEM ANNOUNCEMENT] |#7> |#2";
       }
       i = 0;
-      bout << msg;
-      bout.nl(2);
+      bout << msg << "\r\n\r\n";
       bout.RestoreCurrentLine(line);
     }
     break;

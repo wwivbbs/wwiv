@@ -46,7 +46,7 @@ public:
 
 class Ansi : public AnsiFilter {
 public:
-  Ansi(VScreen * b, const AnsiCallbacks& callbacks, uint8_t default_attr);
+  Ansi(VScreen* b, const AnsiCallbacks& callbacks, uint8_t default_attr);
   virtual ~Ansi() = default;
 
   bool write(char c) override;
@@ -61,11 +61,12 @@ public:
   }
   bool attr(uint8_t a) override;
   bool reset();
+  AnsiMode state() const noexcept { return state_; }
 
 private:
   bool write_in_sequence(char c);
   bool write_not_in_sequence(char c);
-  bool write_not_in_sequence(std::string & s) {
+  bool write_not_in_sequence(std::string& s) {
     for (const auto c : s) {
       write_not_in_sequence(c);
     }

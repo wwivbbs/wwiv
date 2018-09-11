@@ -214,13 +214,13 @@ void chat_room() {
   while (!a()->hangup_) {
     CheckForHangup();
     if (inst_msg_waiting()) {
-      process_inst_msgs();
+      process_inst_msgs(); 
     }
     bout << "|#1: " << szColorString;
     a()->tleft(true);
     a()->chatline_ = false;
-    auto message = input_text(255);
-    if (!message.empty()) {
+    auto message = input_text("", false, 255);
+    if (message.empty()) {
       intro(loc);
     } else {
       int c = main_loop(message.c_str(), szFromMessage, szColorString, szMessageSent, bActionMode, loc,

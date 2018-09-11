@@ -295,12 +295,12 @@ static void Input1(char* out_text, const string& orig_text, int max_length, bool
   int nLength = 0;
   szTemp[0] = '\0';
 
-  max_length = std::min<int>(max_length, 80);
+  max_length = std::min<int>(max_length, 78);
   bout.Color(4);
 
   bout.SavePosition();
   for (int i = 0; i < max_length; i++) {
-    bout << input_background_char;
+    bout.bputch(input_background_char);
   }
   bout.RestorePosition();
   bout.SavePosition();
@@ -556,7 +556,22 @@ std::string input_text(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::MIXED);
 }
 
-std::string input_text(int max_length) { return input_text("", max_length); }
+std::string input_text(const std::string& orig_text, bool mpl, int max_length) {
+  if (mpl) {
+    return Input1(orig_text, max_length, true, InputMode::MIXED);
+  }
+  if (max_length > 255) {
+    WWIV_ASSERT(max_length > 255);
+    return "";
+  }
+  char s[255];
+  input1(s, max_length, InputMode::MIXED, true, false);
+  return s;
+}
+
+std::string input_text(int max_length) { 
+  return Input1("", max_length, true, InputMode::MIXED);
+}
 
 std::string input_upper(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::UPPER);
