@@ -72,7 +72,7 @@ void ExternalQBBSMessageEditor::CleanupControlFiles() {
  */
 static bool WriteMsgInf(const string& title, const string& sub_name, bool is_email,
                         const string& to_name) {
-  TextFile file(FilePath(a()->temp_directory(), MSGINF), "wt");
+  TextFile file(FilePath(a()->temp_directory(), MSGINF), "wd");
   if (!file.IsOpen()) {
     return false;
   }

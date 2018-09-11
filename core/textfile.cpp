@@ -116,7 +116,8 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
 #endif // _WIN32
 
 TextFile::TextFile(const string& file_name, const string& file_mode)
-    : file_name_(file_name), file_mode_(file_mode), file_(OpenImpl(file_name, file_mode)) {}
+    : file_name_(file_name), file_mode_(file_mode), file_(OpenImpl(file_name, file_mode)),
+      dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {}
 
 bool TextFile::Close() {
   if (file_ == nullptr) {
@@ -139,7 +140,15 @@ ssize_t TextFile::WriteLine(const string& text) {
   }
   auto num_written = Write(text);
   // fopen in text mode will force \n -> \r\n on win32
+#ifdef _WIN32
   fputs("\n", file_);
+#else
+  if (dos_mode_) {
+    fputs("\r\n", file_);
+  } else {
+    fputs("\n", file_);
+  }
+#endif
   // TODO(rushfan): Should we just +=1 on non-win32?
   num_written += 2;
   return num_written;

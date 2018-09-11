@@ -46,6 +46,7 @@ typedef std::basic_ostream<char>&(ENDL_TYPE2)(std::basic_ostream<char>&);
     r | Read
     w | Write, Truncate if exists
     a | Append/Write.
+    d | DOS Text mode (always use \r\n, even on *nix)
     t | Text Mode (default)
     b | Binary Mode
     + | Read and Write
@@ -168,6 +169,7 @@ private:
   const std::string file_name_;
   const std::string file_mode_;
   FILE* file_;
+  const bool dos_mode_{false};
 };
 
 #endif // __INCLUDED_WTEXTFILE_H__

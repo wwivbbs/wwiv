@@ -142,7 +142,7 @@ static long GetMinutesRemainingForDropFile() {
 void CreateDoorInfoDropFile() {
   string fileName = create_dropfile_filename(drop_file_t::DORINFO_DEF);
   File::Remove(fileName);
-  TextFile fileDorInfoSys(fileName, "wt");
+  TextFile fileDorInfoSys(fileName, "wd");
   if (fileDorInfoSys.IsOpen()) {
     fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", a()->config()->system_name().c_str(),
                                   a()->config()->sysop_name().c_str(),
@@ -251,7 +251,7 @@ void CreateCallInfoBbsDropFile() {
   // make CALLINFO.BBS (WildCat!)
   string fileName = create_dropfile_filename(drop_file_t::CALLINFO_BBS);
   File::Remove(fileName);
-  TextFile file(fileName, "wt");
+  TextFile file(fileName, "wd");
   if (file.IsOpen()) {
     file.WriteLine(a()->user()->GetRealName());
     switch (a()->modem_speed_) {
@@ -341,7 +341,7 @@ void CreateDoor32SysDropFile() {
       4 = Max Graphics
 
      ========================================================================= */
-  string fileName = create_dropfile_filename(drop_file_t::DOOR32_SYS);
+  auto fileName = create_dropfile_filename(drop_file_t::DOOR32_SYS);
   File::Remove(fileName);
 
   TextFile file(fileName, "wt");
@@ -367,13 +367,13 @@ void CreateDoor32SysDropFile() {
  * or http://files.mpoli.fi/unpacked/software/dos/bbs/drwy231.zip/doorsys.doc
  */
 void CreateDoorSysDropFile() {
-  string fileName = create_dropfile_filename(drop_file_t::DOOR_SYS);
+  const auto fileName = create_dropfile_filename(drop_file_t::DOOR_SYS);
   File::Remove(fileName);
 
-  TextFile file(fileName, "wt");
+  TextFile file(fileName, "wd");
   if (file.IsOpen()) {
     char szLine[255];
-    string cspeed = std::to_string(a()->modem_speed_);
+    const auto cspeed = std::to_string(a()->modem_speed_);
     sprintf(szLine, "COM%d\n%s\n%c\n%u\n%d\n%c\n%c\n%c\n%c\n%s\n%s, %s\n",
             (a()->using_modem) ? a()->primary_port() : 0, cspeed.c_str(), '8',
             a()->instance_number(), // node
@@ -496,7 +496,7 @@ const string create_chain_file() {
 
   const auto fileName = create_dropfile_filename(drop_file_t::CHAIN_TXT);
   File::Remove(fileName);
-  TextFile file(fileName, "wt");
+  TextFile file(fileName, "wd");
   if (file.IsOpen()) {
     file.WriteFormatted(
         "%d\n%s\n%s\n%s\n%d\n%c\n%10.2f\n%s\n%d\n%d\n%d\n", a()->usernum, a()->user()->GetName(),
