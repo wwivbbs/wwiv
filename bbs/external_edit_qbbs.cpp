@@ -107,13 +107,39 @@ static bool WriteMsgInf(const string& title, const string& sub_name, bool is_ema
   return true;
 }
 
+static bool CreateMsgTmpFromQuotesTxt(const std::string& tmpdir) {
+  if (!File::Exists(a()->temp_directory(), QUOTES_TXT)) {
+    return false;
+  }
+  // Copy quotes.txt to MSGTMP if it exists
+  TextFile in(FilePath(a()->temp_directory(), QUOTES_TXT), "r");
+  if (!in) {
+    return false; 
+  }
+  File out(FilePath(a()->temp_directory(), MSGTMP));
+  if (!out.Open(File::modeBinary | File::modeReadWrite | File::modeCreateFile |
+                File::modeTruncate)) {
+    return false;
+  }
+  const auto lines = in.ReadFileIntoVector();
+  int num_to_skip = 2;
+  for (const auto& l : lines) {
+    if (!l.empty()) {
+      if (l.front() == CD) {
+        continue;
+      }
+      if (num_to_skip-- > 0) {
+        continue;
+      }
+    }
+    out.Writeln(stripcolors(l));
+  }
+  return true;
+}
+
 bool ExternalQBBSMessageEditor::Before() {
   CleanupControlFiles();
-  if (File::Exists(a()->temp_directory(), QUOTES_TXT)) {
-    // Copy quotes.txt to MSGTMP if it exists
-    File::Copy(FilePath(a()->temp_directory(), QUOTES_TXT),
-               FilePath(a()->temp_directory(), MSGTMP));
-  }
+  CreateMsgTmpFromQuotesTxt(a()->temp_directory());
   return WriteMsgInf(data_.title, data_.sub_name, data_.is_email(), data_.to_name);
 }
 
