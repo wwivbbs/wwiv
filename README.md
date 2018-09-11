@@ -4,10 +4,10 @@ WWIV BBS
 WWIV is compiled with the following compilers:
   
 - MS Visual C++ 2017 Community Edition.
-- GCC 4.9.2 (or later) on Linux 
-  (Debian8, Debian8, Centos7 (with GCC 6) or Ubuntu)
+- GCC 6.3 (or later) on Linux 
+  (Debian9, Centos7 (with GCC 7) or Ubuntu)
 
-You will need CMake 2.8 or later to build WWIV.
+You will need CMake 3.9 or later to build WWIV.
 
 ***
 
@@ -54,9 +54,9 @@ Package | Comments
 ------- | ----------
 git | to grab the source code for compiling  
 ncurses | ncurses-devel, libncurses5-dev, etc depending on your distro
-cmake | 
-make | 
-g++ 4.9.2 or later | 
+cmake | 3.9 or later
+make | (unless you want to experiment with ninja)
+g++ 6.3.0 or later | 
 
 ### Build Steps
 There are two primary ways to get the files for building; download a zip of the project or clone the repo.  In both cases, you will end up with the following files in the build directory:  
@@ -67,6 +67,8 @@ There are two primary ways to get the files for building; download a zip of the 
 * wwivutil/wwivutil  
 * network/network  
 * networkb/networkb
+* networkc/networkc
+* networkf/networkf
 * network1/network1
 * network2/network2
 * network3/network3
