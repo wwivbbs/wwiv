@@ -167,7 +167,6 @@ public:
 
 private:
   const std::string file_name_;
-  const std::string file_mode_;
   FILE* file_;
   const bool dos_mode_{false};
 };

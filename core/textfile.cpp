@@ -46,6 +46,7 @@
 
 using std::string;
 using namespace wwiv::core;
+using namespace wwiv::strings;
 using std::chrono::milliseconds;
 
 using namespace wwiv::os;
@@ -115,8 +116,16 @@ FILE* OpenImpl(const std::string& name, const std::string& mode) {
 }
 #endif // _WIN32
 
+static std::string fopen_compatible_mode(const std::string& m) { 
+  if (m.find('d') == std::string::npos) {
+    return m;
+  }
+  std::string s{m};
+  return StringReplace(&s, "d", "t");
+}
+
 TextFile::TextFile(const string& file_name, const string& file_mode)
-    : file_name_(file_name), file_mode_(file_mode), file_(OpenImpl(file_name, file_mode)),
+    : file_name_(file_name), file_(OpenImpl(file_name, fopen_compatible_mode(file_mode))),
       dos_mode_(strchr(file_mode.c_str(), 'd') != nullptr) {}
 
 bool TextFile::Close() {

@@ -127,8 +127,8 @@ static void GetNamePartForDropFile(bool lastName, char* name) {
 }
 
 static long GetMinutesRemainingForDropFile() {
-  long time_left = std::max<long>((nsl() / 60) - 1L, 0);
-  bool using_modem = a()->using_modem != 0;
+  auto time_left = std::max<long>((nsl() / 60) - 1L, 0);
+  auto using_modem = a()->using_modem != 0;
   if (!using_modem) {
     // When we generate a dropfile from the WFC, give it a suitable amount
     // of time remaining vs. 1 minute since we don't have an active session.
@@ -140,34 +140,37 @@ static long GetMinutesRemainingForDropFile() {
 
 /** make DORINFO1.DEF (RBBS and many others) dropfile */
 void CreateDoorInfoDropFile() {
-  string fileName = create_dropfile_filename(drop_file_t::DORINFO_DEF);
+  const auto fileName = create_dropfile_filename(drop_file_t::DORINFO_DEF);
   File::Remove(fileName);
-  TextFile fileDorInfoSys(fileName, "wd");
-  if (fileDorInfoSys.IsOpen()) {
-    fileDorInfoSys.WriteFormatted("%s\n%s\n\nCOM%d\n", a()->config()->system_name().c_str(),
-                                  a()->config()->sysop_name().c_str(),
-                                  a()->context().incom() ? a()->primary_port() : 0);
-    fileDorInfoSys.WriteFormatted("%u ", ((a()->using_modem) ? a()->modem_speed_ : 0));
-    fileDorInfoSys.WriteFormatted("BAUD,N,8,1\n0\n");
+  TextFile f(fileName, "wd");
+  if (f.IsOpen()) {
+    f.WriteLine(a()->config()->system_name());
+    f.WriteLine(a()->config()->sysop_name());
+    f.WriteLine();
+    f.WriteLine(StringPrintf("COM%d",a()->context().incom() ? a()->primary_port() : 0));
+    f.WriteLine(StringPrintf ("%u BAUD,N,8,1", ((a()->using_modem) ? a()->modem_speed_ : 0)));
+    f.WriteLine("0");
     if (!(a()->config()->sysconfig_flags() & sysconfig_allow_alias)) {
       char szTemp[81];
       strcpy(szTemp, a()->user()->GetRealName());
       GetNamePartForDropFile(false, szTemp);
-      fileDorInfoSys.WriteLine(szTemp);
+      f.WriteLine(szTemp);
       strcpy(szTemp, a()->user()->GetRealName());
       GetNamePartForDropFile(true, szTemp);
-      fileDorInfoSys.WriteLine(szTemp);
+      f.WriteLine(szTemp);
     } else {
-      fileDorInfoSys.WriteFormatted("%s\n\n", a()->user()->GetName());
+      f.WriteLine(a()->user()->GetName());
+      f.WriteLine();
     }
     if (a()->config()->sysconfig_flags() & sysconfig_extended_info) {
-      fileDorInfoSys.WriteFormatted("%s, %s\n", a()->user()->GetCity(), a()->user()->GetState());
+      f.WriteLine(StrCat(a()->user()->GetCity(), ", ", a()->user()->GetState()));
     } else {
-      fileDorInfoSys.WriteLine();
+      f.WriteLine();
     }
-    fileDorInfoSys.WriteFormatted("%c\n%d\n%ld\n", a()->user()->HasAnsi() ? '1' : '0',
-                                  a()->user()->GetSl(), GetMinutesRemainingForDropFile());
-    fileDorInfoSys.Close();
+    f.WriteLine(a()->user()->HasAnsi() ? "1" : "0");
+    f.WriteLine(std::to_string(a()->user()->GetSl()));
+    f.WriteLine(std::to_string(GetMinutesRemainingForDropFile()));
+    f.Close();
   }
 }
 
@@ -177,7 +180,7 @@ void CreatePCBoardSysDropFile() {
   File pcbFile(fileName);
   pcbFile.Delete();
   if (pcbFile.Open(File::modeReadWrite | File::modeBinary | File::modeCreateFile)) {
-    pcboard_sys_rec pcb;
+    pcboard_sys_rec pcb{};
     memset(&pcb, 0, sizeof(pcb));
     memcpy(pcb.display, "-1", 2);
     memcpy(pcb.printer, " 0", 2); // -1 if logging is to the printer, 0 otherwise;
