@@ -488,19 +488,8 @@ void qwk_email_text(char *text, char *title, char *to) {
       const string unn = a()->names()->UserName(un);
       strcpy(s2, unn.c_str());
     } else {
-      if (wwiv::stl::size_int(a()->net_networks) > 1) {
-        if (un == 0) {
-          sprintf(s2, "%s @%u.%s", a()->net_email_name.c_str(), sy, a()->network_name());
-        } else {
-          sprintf(s2, "%u @%u.%s", un, sy, a()->network_name());
-        }
-      } else {
-        if (un == 0) {
-          sprintf(s2, "%s @%u", a()->net_email_name.c_str(), sy);
-        } else {
-          sprintf(s2, "%u @%u", un, sy);
-        }
-      }
+      std::string netname = (wwiv::stl::size_int(a()->net_networks) > 1) ? a()->network_name() : "";
+      to_char_array(s2, username_system_net_as_string(un, a()->net_email_name, sy, netname));
     }
 
     if (sy != 0) {

@@ -322,20 +322,9 @@ void sendout_email(EmailData& data) {
         data.system_number == INTERNET_EMAIL_FAKE_OUTBOUND_NODE) {
       logMessagePart = a()->net_email_name;
     } else {
-      if (wwiv::stl::size_int(a()->net_networks) > 1) {
-        if (data.user_number == 0) {
-          logMessagePart = StringPrintf("%s @%u.%s", a()->net_email_name.c_str(), data.system_number,
-                           a()->network_name());
-        } else {
-          logMessagePart = StringPrintf("#%u @%u.%s", data.user_number, data.system_number, a()->network_name());
-        }
-      } else {
-        if (data.user_number == 0) {
-          logMessagePart = StringPrintf("%s @%u", a()->net_email_name.c_str(), data.system_number);
-        } else {
-          logMessagePart = StringPrintf("#%u @%u", data.user_number, data.system_number);
-        }
-      }
+      std::string netname = (wwiv::stl::size_int(a()->net_networks) > 1) ? a()->network_name() : "";
+      logMessagePart = username_system_net_as_string(data.user_number, a()->net_email_name,
+                                                     data.system_number, netname);
     }
     sysoplog() << logMessage << logMessagePart;
   }
@@ -474,19 +463,9 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
       // Internet and 
       destination = a()->net_email_name;
     } else {
-      if (wwiv::stl::size_int(a()->net_networks) > 1) {
-        if (user_number == 0) {
-          destination = StringPrintf("%s @%u.%s", a()->net_email_name.c_str(), system_number, a()->network_name());
-        } else {
-          destination = StringPrintf("#%u @%u.%s", user_number, system_number, a()->network_name());
-        }
-      } else {
-        if (user_number == 0) {
-          destination = StringPrintf("%s @%u", a()->net_email_name.c_str(), system_number);
-        } else {
-          destination = StringPrintf("#%u @%u", user_number, system_number);
-        }
-      }
+      std::string netname = (wwiv::stl::size_int(a()->net_networks) > 1) ? a()->network_name() : "";
+      destination =
+          username_system_net_as_string(user_number, a()->net_email_name, system_number, netname);
     }
   }
   bout << "|#9E-mailing |#2" << destination;
@@ -545,8 +524,8 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
       bool done = false;
       carbon_copy[nNumUsers].user_number = user_number;
       carbon_copy[nNumUsers].system_number = system_number;
-      strcpy(carbon_copy[nNumUsers].net_name, a()->network_name());
-      strcpy(carbon_copy[nNumUsers].net_email_name, a()->net_email_name.c_str());
+      to_char_array(carbon_copy[nNumUsers].net_name, a()->network_name());
+      to_char_array(carbon_copy[nNumUsers].net_email_name, a()->net_email_name);
       carbon_copy[nNumUsers].net_num = a()->net_num();
       nNumUsers++;
       do {
@@ -561,8 +540,8 @@ void email(const string& title, uint16_t user_number, uint16_t system_number, bo
         if (tu || ts) {
           carbon_copy[nNumUsers].user_number = tu;
           carbon_copy[nNumUsers].system_number = ts;
-          strcpy(carbon_copy[nNumUsers].net_name, a()->network_name());
-          strcpy(carbon_copy[nNumUsers].net_email_name, a()->net_email_name.c_str());
+          to_char_array(carbon_copy[nNumUsers].net_name, a()->network_name());
+          to_char_array(carbon_copy[nNumUsers].net_email_name, a()->net_email_name);
           carbon_copy[nNumUsers].net_num = a()->net_num();
           nNumUsers++;
           cc = true;

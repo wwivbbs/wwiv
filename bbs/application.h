@@ -29,11 +29,11 @@
 #include "bbs/batch.h"
 #include "bbs/conf.h"
 #include "bbs/context.h"
-#include "local_io/local_io.h"
 #include "bbs/output.h"
 #include "bbs/remote_io.h"
 #include "bbs/runnable.h"
 #include "core/file.h"
+#include "local_io/local_io.h"
 #include "sdk/config.h"
 #include "sdk/msgapi/message_api_wwiv.h"
 #include "sdk/msgapi/msgapi.h"
@@ -138,9 +138,7 @@ public:
   std::string GetCurrentSpeed() const { return current_speed_; }
   void SetCurrentSpeed(const std::string& s) { current_speed_ = s; }
 
-  // This is used in sprintf in many places, so we return a char*
-  // instead of a string.
-  const char* network_name() const;
+  const std::string network_name() const;
   const std::string network_directory() const;
 
   bool IsCarbonCopyEnabled() const { return allow_cc_; }
@@ -407,12 +405,12 @@ public:
   bool received_short_message_{false};
   bool emchg_{false};
   bool hangup_{false};
-  int chatting_ = false;
-  int do_event_ = false;
-  bool no_hangup_ = false;
-  bool in_chatroom_ = false;
-  bool chatline_ = false;
-  int modem_speed_ = 0;
+  int chatting_{0};
+  int do_event_{0};
+  bool no_hangup_{false};
+  bool in_chatroom_{false};
+  bool chatline_{false};
+  int modem_speed_{0};
   bool mci_enabled_{true};
 
 protected:

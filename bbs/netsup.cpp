@@ -327,7 +327,7 @@ void print_pending_list() {
 
       bout.bprintf("|#7\xB3 %-3s |#7\xB3 |#2%-8.8s |#7\xB3 |#2%5u |#7\xB3|#2%8s |#7\xB3|#2%8s "
                    "|#7\xB3|#2%5s |#7\xB3|#2%4d |#7\xB3|#2%13.13s |#7\xB3|#7\r\n",
-                   s2, a()->network_name(), r->systemnumber(), s3, s4, s5, r->numfails(), s1);
+                   s2, a()->network_name().c_str(), r->systemnumber(), s3, s4, s5, r->numfails(), s1);
       if (!a()->user()->HasPause() && ((lines++) == 20)) {
         pausescr();
         lines = 0;

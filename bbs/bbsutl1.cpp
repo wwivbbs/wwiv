@@ -23,8 +23,8 @@
 #include <string>
 
 #include "bbs/bbs.h"
-#include "bbs/bgetch.h"
 #include "bbs/bbsutl.h"
+#include "bbs/bgetch.h"
 #include "bbs/com.h"
 #include "bbs/conf.h"
 #include "bbs/connect1.h"
@@ -40,9 +40,9 @@
 #include "core/wwivport.h"
 #include "sdk/filenames.h"
 
-using std::chrono::milliseconds;
 using std::string;
 using std::unique_ptr;
+using std::chrono::milliseconds;
 using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::strings;
@@ -54,7 +54,7 @@ using namespace wwiv::strings;
  * @param pUserNumber OUT The User Number
  * @param pSystemmNumber OUT The System Number
  */
-void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_t *pSystemNumber) {
+void parse_email_info(const string& emailAddress, uint16_t* pUserNumber, uint16_t* pSystemNumber) {
   char *ss1, onx[20], ch;
   unsigned user_number, system_number;
   int nv, on, xx, onxi, odci;
@@ -66,12 +66,12 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
   *pUserNumber = 0;
   *pSystemNumber = 0;
   a()->net_email_name.clear();
-  char *ss = strrchr(szEmailAddress, '@');
+  char* ss = strrchr(szEmailAddress, '@');
   if (ss == nullptr) {
     user_number = finduser1(szEmailAddress);
     if (user_number > 0) {
       *pUserNumber = static_cast<uint16_t>(user_number);
-    } else if (wwiv::strings::IsEquals(szEmailAddress, "SYSOP")) {     // Add 4.31 Build3
+    } else if (wwiv::strings::IsEquals(szEmailAddress, "SYSOP")) { // Add 4.31 Build3
       *pUserNumber = 1;
     } else {
       bout << "Unknown user.\r\n";
@@ -158,7 +158,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
       onxi = 1;
       nv = 0;
       on = a()->net_num();
-      ss = static_cast<char *>(calloc(wwiv::stl::size_int(a()->net_networks) + 1, 1));
+      ss = static_cast<char*>(calloc(wwiv::stl::size_int(a()->net_networks) + 1, 1));
       WWIV_ASSERT(ss != nullptr);
       xx = -1;
       for (int i = 0; i < wwiv::stl::size_int(a()->net_networks); i++) {
@@ -192,7 +192,7 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
         bout.nl();
         for (int i = 0; i < nv; i++) {
           set_net_num(ss[i]);
-          net_system_list_rec *csne = next_system(*pSystemNumber);
+          net_system_list_rec* csne = next_system(*pSystemNumber);
           if (csne) {
             if (i < 9) {
               onx[onxi++] = static_cast<char>(i + '1');
@@ -245,6 +245,25 @@ void parse_email_info(const string& emailAddress, uint16_t *pUserNumber, uint16_
       }
     }
   }
+}
+
+std::string username_system_net_as_string(uint16_t un, const std::string& user_name, uint16_t sn,
+                                          const std::string& network_name) {
+  std::ostringstream ss;
+  if (un) {
+    ss << "#" << un;
+  } else {
+    ss << user_name;
+  }
+  ss << " @" << sn;
+  if (!network_name.empty()) {
+    ss << "." << network_name;
+  }
+  return ss.str();
+}
+
+std::string username_system_net_as_string(uint16_t un, const std::string& user_name, uint16_t sn) {
+  return username_system_net_as_string(un, user_name, sn, "");
 }
 
 /**
@@ -343,7 +362,6 @@ bool play_sdf(const string& sound_filename, bool abortable) {
   soundFile.Close();
   return true;
 }
-
 
 /**
  * Describes the area code as listed in regions.dat

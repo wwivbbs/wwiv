@@ -215,7 +215,8 @@ int CommandLineCommand::Parse(int start_pos) {
     } else if (starts_with(s, ".")) {
       // Were handling dot arguments.
       if (!dot_argument_.empty()) {
-        VLOG(1) << "Ignoring dot argument since no mapping is defined by the application.";
+        // LOG's use of command_line never defines dot arguments.
+        VLOG(3) << "Ignoring dot argument since no mapping is defined by the application.";
         const auto value = s.substr(1);
         HandleCommandLineArgument(dot_argument_, value);
       }

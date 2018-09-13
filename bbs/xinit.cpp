@@ -630,13 +630,11 @@ void Application::read_gfile() {
 
 void Application::InitializeBBS() {
   Cls();
-#if !defined(__unix__)
   std::clog << std::endl
             << wwiv_version << beta_version << ", Copyright (c) 1998-2017, WWIV Software Services."
             << std::endl
             << std::endl
             << "\r\nInitializing BBS..." << std::endl;
-#endif // __unix__
   use_workspace = false;
 
   clearnsp();
@@ -734,7 +732,7 @@ void Application::InitializeBBS() {
   topdata = LocalIO::topdataUser;
 
   // Set DSZLOG
-  dsz_logfile_name_ = StrCat(temp_directory(), "dsz.log");
+  dsz_logfile_name_ = FilePath(temp_directory(), "dsz.log");
   if (environment_variable("DSZLOG").empty()) {
     set_environment_variable("DSZLOG", dsz_logfile_name_);
   }

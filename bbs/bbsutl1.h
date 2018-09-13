@@ -21,6 +21,16 @@
 #include <string>
 
 void parse_email_info(const std::string& emailAddress, uint16_t *pUserNumber, uint16_t *pSystemNumber);
+
+/**
+ * Creates string of form (#un | user_name) @sn[.network_name].
+ * example: Rushfan @1.rushfan or #1 @1.rushnet or #1 @1 
+ */
+std::string username_system_net_as_string(uint16_t un, const std::string& user_name,
+                                          uint16_t sn, const std::string& network_name);
+std::string username_system_net_as_string(uint16_t un, const std::string& user_name,
+                                          uint16_t sn);
+
 bool ValidateSysopPassword();
 void hang_it_up();
 bool play_sdf(const std::string& soundFileName, bool abortable);

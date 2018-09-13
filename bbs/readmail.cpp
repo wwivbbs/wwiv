@@ -988,21 +988,11 @@ void readmail(int mode) {
                 a()->current_net().type == network_type_t::internet) {
                 strcpy(s1, a()->net_email_name.c_str());
               }
-              else if (wwiv::stl::size_int(a()->net_networks) > 1) {
-                if (user_number) {
-                  sprintf(s1, "#%d @%d.%s", user_number, system_number, a()->network_name());
-                }
-                else {
-                  sprintf(s1, "%s @%d.%s", a()->net_email_name.c_str(), system_number, a()->network_name());
-                }
-              }
               else {
-                if (user_number) {
-                  sprintf(s1, "#%d @%d", user_number, system_number);
-                }
-                else {
-                  sprintf(s1, "%s @%d", a()->net_email_name.c_str(), system_number);
-                }
+                std::string netname =
+                    (wwiv::stl::size_int(a()->net_networks) > 1) ? a()->network_name() : "";
+                to_char_array(s1, username_system_net_as_string(user_number, a()->net_email_name,
+                                                                system_number, netname));
               }
             }
             else {

@@ -582,9 +582,9 @@ void Application::Cls() {
   bout.clear_lines_listed();
 }
 
-const char* Application::network_name() const {
+const std::string Application::network_name() const {
   if (net_networks.empty()) {
-    return "";
+    return {};
   }
   return net_networks[network_num_].name;
 }
