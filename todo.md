@@ -22,8 +22,6 @@
 * Try to remove a()->current_net() and a()->net_num(), pass in the net as much as possible.
 * make container that holds net_networks_rec *and* the current network number
 
-* Make a base class and subclasses for WWIV and QBBS external editor handling
-
 * cleanup wfc since we aren't waiting for a call
 * add tests for usermanager and user (in SDK)
 * Update syscfg.sysconfig in init and save it back, since
@@ -37,9 +35,6 @@
 * move to datetime as much as possible.
 * Stop calling input use the input_xxx routines instead.  Make Input1 just support a
   fixed set of characters (like numbers, A-Z, high ascii too, etc).
-
-** Make allow.dat handling class in the SDK and use it from the file system. 
-   Use a DataFile for char[13] vs. what it has now.
 
 ## Networking Cleanup
 ***
