@@ -333,10 +333,8 @@ void dliscan1(int directory_num) {
   uploadsrec u;
   if (nNumRecords == 0) {
     memset(&u, 0, sizeof(uploadsrec));
-    strcpy(u.filename, "|MARKER|");
-    time_t tNow;
-    time(&tNow);
-    u.daten = static_cast<uint32_t>(tNow);
+    to_char_array(u.filename, "|MARKER|");
+    u.daten = daten_t_now();
     FileAreaSetRecord(fileDownload, 0);
     fileDownload.Write(&u, sizeof(uploadsrec));
   } else {
@@ -345,10 +343,8 @@ void dliscan1(int directory_num) {
     if (!IsEquals(u.filename, "|MARKER|")) {
       a()->numf = u.numbytes;
       memset(&u, 0, sizeof(uploadsrec));
-      strcpy(u.filename, "|MARKER|");
-      time_t l;
-      time(&l);
-      u.daten = static_cast<uint32_t>(l);
+      to_char_array(u.filename, "|MARKER|");
+      u.daten = daten_t_now();
       u.numbytes = a()->numf;
       FileAreaSetRecord(fileDownload, 0);
       fileDownload.Write(&u, sizeof(uploadsrec));

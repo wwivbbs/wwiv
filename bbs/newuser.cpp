@@ -1276,7 +1276,7 @@ void DoMinimalNewUser() {
       do {
         ok = false;
         cln_nu();
-        auto s = input_date_mmddyy("");
+        auto s = input_date_mmddyyyy("");
         if (s.size() == 10) {
           sprintf(m1, "%c%c", s[0], s[1]);
           sprintf(d1, "%c%c", s[3], s[4]);

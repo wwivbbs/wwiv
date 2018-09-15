@@ -107,9 +107,9 @@ std::string input_upper(int max_length);
 std::string input_proper(const std::string& orig_text, int max_length);
 
 /**
- * Inputs a date (10-digit) of MM/DD/YY.
+ * Inputs a date (10-digit) of MM/DD/YYYY.
  */
-std::string input_date_mmddyy(const std::string& orig_text);
+std::string input_date_mmddyyyy(const std::string& orig_text);
 
 template <typename T> 
 struct input_result_t { 

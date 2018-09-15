@@ -583,7 +583,7 @@ std::string input_proper(const std::string& orig_text, int max_length) {
   return Input1(orig_text, max_length, true, InputMode::PROPER);
 }
 
-std::string input_date_mmddyy(const std::string& orig_text) {
+std::string input_date_mmddyyyy(const std::string& orig_text) {
   return Input1(orig_text, 10, true, InputMode::DATE);
 }
 
