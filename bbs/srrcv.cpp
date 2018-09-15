@@ -160,7 +160,7 @@ int receive_block(char *b, unsigned char *bln, bool use_crc) {
   }
 }
 
-void xymodem_receive(const char *file_name, bool *received, bool use_crc) {
+void xymodem_receive(const std::string& file_name, bool *received, bool use_crc) {
   char b[1025], x[81], ch;
   unsigned char bln;
   int i1, i2, i3;

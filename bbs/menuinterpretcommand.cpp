@@ -133,16 +133,12 @@ map<string, std::function<void(MenuItemContext&)>, wwiv::stl::ci_less> CreateCom
       }
     } },
     { "DLFreeFile", [](MenuItemContext& context) {
-      char s[MAX_PATH];
-      strcpy(s, context.param2.c_str());
-      align(s);
-      MenuDownload(context.param1.c_str(), s, true, true);
+      const auto s = aligns(context.param2);
+      MenuDownload(context.param1, s, true, true);
     } },
     { "DLFile", [](MenuItemContext& context) {
-      char s[MAX_PATH];
-      strcpy(s, context.param2.c_str());
-      align(s);
-      MenuDownload(context.param1.c_str(), s, false, true);
+      const auto s = aligns(context.param2);
+      MenuDownload(context.param1, s, false, true);
     } },
     { "RunDoor", [](MenuItemContext& context) {
       MenuRunDoorName(context.param1.c_str(), false);

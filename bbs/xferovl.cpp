@@ -414,14 +414,12 @@ void rename_file() {
   }
 }
 
-static bool upload_file(const char* file_name, uint16_t directory_num, const char* description) {
+static bool upload_file(const std::string& file_name, uint16_t directory_num, const char* description) {
   uploadsrec u, u1;
 
-  directoryrec d = a()->directories[directory_num];
-  char szTempFileName[255];
-  strcpy(szTempFileName, file_name);
-  align(szTempFileName);
-  strcpy(u.filename, szTempFileName);
+  auto d = a()->directories[directory_num];
+  const auto temp_filename = aligns(file_name);
+  to_char_array(u.filename, temp_filename);
   u.ownerusr = static_cast<uint16_t>(a()->usernum);
   u.ownersys = 0;
   u.numdloads = 0;
@@ -430,30 +428,25 @@ static bool upload_file(const char* file_name, uint16_t directory_num, const cha
   if (!(d.mask & mask_cdrom) && !check_ul_event(directory_num, &u)) {
     bout << file_name << " was deleted by upload event.\r\n";
   } else {
-    char szUnalignedFileName[MAX_PATH];
-    strcpy(szUnalignedFileName, szTempFileName);
-    unalign(szUnalignedFileName);
+    const auto unaligned_filename = unalign(file_name);
+    const auto full_path = FilePath(d.path, unaligned_filename);
 
-    char szFullPathName[MAX_PATH];
-    sprintf(szFullPathName, "%s%s", d.path, szUnalignedFileName);
-
-    File fileUpload(szFullPathName);
+    File fileUpload(full_path);
     if (!fileUpload.Open(File::modeBinary | File::modeReadOnly)) {
       if (description && (*description)) {
-        bout << "ERR: " << file_name << ":" << description << wwiv::endl;
+        bout << "ERR: " << unaligned_filename << ":" << description << wwiv::endl;
       } else {
-        bout << "|#1" << file_name << " does not exist.";
+        bout << "|#1" << unaligned_filename << " does not exist." << wwiv::endl;
       }
       return true;
     }
     auto fs = fileUpload.length();
     u.numbytes = static_cast<daten_t>(fs);
     fileUpload.Close();
-    const string unn = a()->names()->UserName(a()->usernum);
-    strcpy(u.upby, unn.c_str());
+    to_char_array(u.upby, a()->names()->UserName(a()->usernum));
     to_char_array(u.date, date());
 
-    File f(szFullPathName);
+    File f(full_path);
     auto t = daten_to_mmddyy(time_t_to_daten(f.creation_time()));
     to_char_array(u.actualdate, t);
 
@@ -514,29 +507,24 @@ static bool upload_file(const char* file_name, uint16_t directory_num, const cha
   return true;
 }
 
-bool maybe_upload(const char* file_name, uint16_t directory_num, const char* description) {
-  char s[81], ch, s1[81];
+bool maybe_upload(const std::string& file_name, uint16_t directory_num, const char* description) {
   bool abort = false;
   bool ok = true;
   uploadsrec u;
 
-  strcpy(s, file_name);
-  align(s);
-  int i = recno(s);
+  int i = recno(aligns(file_name));
 
   if (i == -1) {
     if (a()->HasConfigFlag(OP_FLAGS_FAST_SEARCH) && (!is_uploadable(file_name) && dcs())) {
-      bout.bprintf("|#2%-12s: ", file_name);
-      bout << "|#5In filename database - add anyway? ";
-      ch = ynq();
+      bout << pad_to(file_name, 12) << ": |#5In filename database - add anyway? ";
+      char ch = ynq();
       if (ch == *str_quit) {
         return false;
       } else {
         if (ch == *(YesNoString(false))) {
           bout << "|#5Delete it? ";
           if (yesno()) {
-            sprintf(s1, "%s%s", a()->directories[directory_num].path, file_name);
-            File::Remove(s1);
+            File::Remove(FilePath(a()->directories[directory_num].path, file_name));
             bout.nl();
             return true;
           } else {
@@ -545,7 +533,7 @@ bool maybe_upload(const char* file_name, uint16_t directory_num, const char* des
         }
       }
     }
-    if (!upload_file(s, a()->udir[directory_num].subnum, description)) {
+    if (!upload_file(file_name, a()->udir[directory_num].subnum, description)) {
       ok = false;
     }
   } else {
@@ -708,7 +696,7 @@ bool uploadall(uint16_t directory_num) {
     if (checka() || a()->hangup_ || a()->numf >= maxf) {
       break;
     }
-    if (!maybe_upload(f.name.c_str(), directory_num, nullptr)) {
+    if (!maybe_upload(f.name, directory_num, nullptr)) {
       break;
     }
   }

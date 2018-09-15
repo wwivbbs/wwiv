@@ -58,29 +58,37 @@ using namespace wwiv::strings;
 /* ie, functions to help emulate other BBS's.                             */
 /* ---------------------------------------------------------------------- */
 
+static int FindDN(const std::string& dl_fn) {
+  for (size_t i = 0; (i < a()->directories.size()); i++) {
+    if (iequals(a()->directories[i].filename, dl_fn)) {
+      return i;
+    }
+  }
+  return -1;
+}
 
 /**
  *  Download a file
  *
- *  pszDirFileName      = fname of your directory record
- *  pszDownloadFileName = Filename to download
- *  bFreeDL             = true if this is a free download
- *  bTitle              = true if title is to be shown with file info
+ *  dir_fn:  fname of your directory record
+ *  dl_fn:   Filename to download
+ *  bFreeDL: true if this is a free download
+ *  bTitle:  true if title is to be shown with file info
  */
-int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bool bFreeDL, bool bTitle) {
+int MenuDownload(const std::string& dir_fn, const std::string& dl_fn, bool bFreeDL, bool bTitle) {
   int bOkToDL;
   uploadsrec u;
   User ur;
   bool abort = false;
 
-  int dn = FindDN(pszDirFileName);
+  int dn = FindDN(dir_fn);
 
   if (dn == -1) {
     MenuSysopLog("DLDNF");                  /* DL - DIR NOT FOUND */
     return 0;
   }
   dliscan1(dn);
-  int nRecordNumber = recno(pszDownloadFileName);
+  int nRecordNumber = recno(dl_fn);
   if (nRecordNumber <= 0) {
     checka(&abort);
     if (abort) {
@@ -163,22 +171,11 @@ int MenuDownload(const char *pszDirFileName, const char *pszDownloadFileName, bo
     if (abort) {
       ok = false;
     } else {
-      nRecordNumber = nrecno(pszDownloadFileName, nRecordNumber);
+      nRecordNumber = nrecno(dl_fn, nRecordNumber);
     }
   }
   return abort ? -1 : 1;
 }
-
-
-int FindDN(const char *pszDownloadFileName) {
-  for (size_t i = 0; (i < a()->directories.size()); i++) {
-    if (iequals(a()->directories[i].filename, pszDownloadFileName)) {
-      return i;
-    }
-  }
-  return -1;
-}
-
 
 /**
  * Run a Door (chain)
@@ -226,7 +223,7 @@ bool ValidateDoorAccess(int nDoorNumber) {
       }
     }
   }
-  chainfilerec& c = a()->chains[nDoorNumber];
+  auto& c = a()->chains[nDoorNumber];
   if ((c.ansir & ansir_ansi) && !okansi()) {
     return false;
   }

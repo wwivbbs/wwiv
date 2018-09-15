@@ -164,7 +164,7 @@ void modify_dir(int n) {
            << "|#9The current path is:\r\n"
            << "|#1" << r.path << wwiv::endl << wwiv::endl;
       bout << " \b";
-      auto s = input_filename(r.path, 79);
+      auto s = input_path(r.path, 79);
       if (!s.empty()) {
         File dir(s);
         if (!dir.Exists()) {
@@ -312,9 +312,9 @@ void insert_dir(int n) {
 
   n = static_cast<int>(nconv);
 
-  directoryrec r = {};
-  strcpy(r.name, "** NEW DIR **");
-  strcpy(r.filename, "NONAME");
+  directoryrec r{};
+  to_char_array(r.name, "** NEW DIR **");
+  to_char_array(r.filename, "noname");
   to_char_array(r.path, a()->config()->dloadsdir());
   r.dsl = 10;
   r.age = 0;
@@ -352,12 +352,9 @@ void insert_dir(int n) {
   }
 }
 
-
 void delete_dir(int n) {
   uint32_t *pTempQScan, *pTempQScan_n, m2, m3;
-  subconf_t nconv;
-
-  nconv = static_cast<subconf_t>(n);
+  subconf_t nconv{static_cast<subconf_t>(n)};
 
   if ((n < 0) || (n >= size_int(a()->directories))) {
     return;
@@ -368,7 +365,7 @@ void delete_dir(int n) {
   n = static_cast<int>(nconv);
   erase_at(a()->directories, n);
 
-  size_t num_users = a()->users()->num_user_records();
+  auto num_users = a()->users()->num_user_records();
 
   pTempQScan = static_cast<uint32_t*>(BbsAllocA(a()->config()->qscn_len()));
   if (pTempQScan) {

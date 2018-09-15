@@ -312,6 +312,13 @@ void StringRemoveWhitespace(string* str) {
   str->erase(std::remove_if(str->begin(), str->end(), isspace), str->end());
 }
 
+std::string ToStringRemoveWhitespace(const std::string& orig) {
+  string s(orig);
+  StringRemoveWhitespace(&s);
+  return s;
+}
+
+
 char *StringRemoveWhitespace(char *str) {
   CHECK(str != nullptr);
 

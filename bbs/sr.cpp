@@ -91,8 +91,8 @@ char gettimeout(long ds, bool *abort) {
 }
 
 
-int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) {
-  char s1[81], s2[81], szFileName[81], sx1[21], sx2[21], sx3[21];
+int extern_prot(int nProtocolNum, const std::string& send_filename, bool bSending) {
+  char s1[81], s2[81], sx1[21], sx2[21], sx3[21];
 
   if (bSending) {
     bout.nl();
@@ -111,14 +111,13 @@ int extern_prot(int nProtocolNum, const char *pszFileNameToSend, bool bSending) 
       strcpy(s1, (a()->externs[nProtocolNum].receivefn));
     }
   }
-  strcpy(szFileName, pszFileNameToSend);
   // Use this since fdsz doesn't like 115200
   auto xfer_speed = std::min<int>(a()->modem_speed_, 57600);
   sprintf(sx1, "%d", xfer_speed);
   sprintf(sx3, "%d", xfer_speed);
   sx2[0] = '0' + a()->primary_port();
   sx2[1] = '\0';
-  const string command = stuff_in(s1, sx1, sx2, szFileName, sx3, "");
+  const auto command = stuff_in(s1, sx1, sx2, send_filename, sx3, "");
   if (!command.empty()) {
     a()->ClearTopScreenProtection();
     const string unn = a()->names()->UserName(a()->usernum);
@@ -403,7 +402,7 @@ int get_protocol(xfertype xt) {
   return -1;
 }
 
-void ascii_send(const char *file_name, bool *sent, double *percent) {
+void ascii_send(const std::string& file_name, bool* sent, double* percent) {
   char b[2048];
 
   File file(file_name);
@@ -440,7 +439,8 @@ void ascii_send(const char *file_name, bool *sent, double *percent) {
   }
 }
 
-void maybe_internal(const char *file_name, bool *xferred, double *percent, bool bSend, int prot) {
+void maybe_internal(const std::string& file_name, bool* xferred, double* percent, bool bSend,
+                    int prot) {
   if (a()->over_intern.size() > 0 
       && (a()->over_intern[prot - 2].othr & othr_override_internal)
       && ((bSend && a()->over_intern[prot - 2].sendfn[0]) ||
@@ -486,7 +486,9 @@ void maybe_internal(const char *file_name, bool *xferred, double *percent, bool 
   }
 }
 
-void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, int dn, long fs) {
+void send_file(const std::string& file_name, bool* sent, bool* abort, const std::string& sfn,
+               int dn,
+               long fs) {
   *sent = false;
   *abort = false;
   int nProtocol = 0;
@@ -497,7 +499,7 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
   }
   bool ok = false;
   double percent = 0.0;
-  if (check_batch_queue(sfn)) {
+  if (check_batch_queue(sfn.c_str())) {
     *sent = false;
     if (nProtocol > 0) {
       bout.nl();
@@ -545,7 +547,7 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
             *abort = false;
           } else {
             batchrec b{};
-            strcpy(b.filename, sfn);
+            to_char_array(b.filename, sfn);
             b.dir = static_cast<int16_t>(dn);
             b.time = static_cast<float>(t);
             b.sending = true;
@@ -579,7 +581,7 @@ void send_file(const char *file_name, bool *sent, bool *abort, const char *sfn, 
   }
 }
 
-void receive_file(const char *file_name, int *received, const char *sfn, int dn) {
+void receive_file(const std::string& file_name, int* received, const std::string& sfn, int dn) {
   bool bReceived;
   int nProtocol = (dn == -1) ? get_protocol(xf_up_temp) : get_protocol(xf_up);
 
@@ -607,7 +609,7 @@ void receive_file(const char *file_name, int *received, const char *sfn, int dn)
       } else {
         *received = 2;
         batchrec b{};
-        strcpy(b.filename, sfn);
+        to_char_array(b.filename, sfn);
         b.dir = static_cast<int16_t>(dn);
         b.time = 0;
         b.sending = false;
@@ -684,13 +686,6 @@ void endbatch() {
       abort = true;
       nullFile.Delete();
     }
-    /*
-    if ((!a()->hangup_) && (!abort))
-    {
-      File nullFile;
-      send_b(nullFile,0L,2,0,&ucrc,"",&terr,&abort);
-    }
-    */
   }
   a()->localIO()->GotoXY(oldx, oldy);
 }

@@ -684,7 +684,7 @@ void readmail(int mode) {
         auto fn = FilePath(a()->GetAttachmentDirectory(), fsr.filename);
         bool sentt;
         bool abortt;
-        send_file(fn.c_str(), &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
+        send_file(fn, &sentt, &abortt, fsr.filename, -1, fsr.numbytes);
         if (sentt) {
           bout << "\r\nAttached file sent.\r\n";
           sysoplog() << StringPrintf("Downloaded %ldk of attached file %s.", (fsr.numbytes + 1023) / 1024, fsr.filename);
@@ -1227,7 +1227,7 @@ void readmail(int mode) {
           fileTemp.Close();
           bool bSent;
           bool bAbort;
-          send_file(fileTemp.full_pathname().c_str(), &bSent, &bAbort, fileTemp.full_pathname().c_str(), -1, b.size());
+          send_file(fileTemp.full_pathname(), &bSent, &bAbort, fileTemp.full_pathname(), -1, b.size());
           if (bSent) {
             bout << "E-mail download successful.\r\n";
             sysoplog() << "Downloaded E-mail";

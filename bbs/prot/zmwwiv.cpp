@@ -58,7 +58,7 @@ static void ProcessLocalKeyDuringZmodem() {
   }
 }
 
-bool NewZModemSendFile( const char *file_name ) {
+bool NewZModemSendFile(const std::string& fn) {
 	ZModem info;
 	info.ifd = info.ofd = -1;
 	info.zrinitflags = 0;
@@ -83,6 +83,8 @@ bool NewZModemSendFile( const char *file_name ) {
 	int f3			= 0;
 	int nFilesRem	= 0;
 	int nBytesRem	= 0;
+  char file_name[255];
+  to_char_array(file_name, fn);
 	done = ZmodemTFile( file_name, file_name, f0, f1, f2, f3, nFilesRem, nBytesRem, &info );
 	switch ( done ) {
 	case 0:

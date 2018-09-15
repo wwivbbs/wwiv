@@ -512,9 +512,15 @@ void print_extended(const char *file_name, bool *abort, int numlist, int indent)
   }
 }
 
+std::string aligns(const std::string& file_name) {
+  auto f{file_name};
+  align(&f);
+  return f;
+}
+
 void align(std::string *file_name) {
   char s[MAX_PATH];
-  strcpy(s, file_name->c_str());
+  to_char_array(s, *file_name);
   align(s);
   file_name->assign(s);
 }
@@ -942,7 +948,7 @@ int nrecno(const std::string& file_mask, int nStartingRec) {
   File fileDownload(a()->download_filename_);
   fileDownload.Open(File::modeBinary | File::modeReadOnly);
   FileAreaSetRecord(fileDownload, nRecNum);
-  uploadsrec u;
+  uploadsrec u{};
   fileDownload.Read(&u, sizeof(uploadsrec));
   while ((nRecNum < a()->numf) && (compare(file_mask.c_str(), u.filename) == 0)) {
     ++nRecNum;
@@ -982,19 +988,16 @@ int printfileinfo(uploadsrec * u, int directory_num) {
 }
 
 void remlist(const char *file_name) {
-  char szFileName[MAX_PATH], szListFileName[MAX_PATH];
+  const auto fn = aligns(file_name);
 
-  sprintf(szFileName, "%s", file_name);
-  align(szFileName);
-
-  if (!a()->filelist.empty()) {
-    for (auto b = a()->filelist.begin(); b != a()->filelist.end(); b++) {
-      strcpy(szListFileName, b->u.filename);
-      align(szListFileName);
-      if (IsEquals(szFileName, szListFileName)) {
-        b = a()->filelist.erase(b);
-        break;
-      }
+  if (a()->filelist.empty()) {
+    return;
+  }
+  for (auto b = a()->filelist.begin(); b != a()->filelist.end(); b++) {
+    const auto list_fn = aligns(b->u.filename);
+    if (fn == list_fn) {
+      a()->filelist.erase(b);
+      return;
     }
   }
 }

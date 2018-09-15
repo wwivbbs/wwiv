@@ -132,13 +132,9 @@ void normalupload(int dn) {
       ok = 0;
     }
   }
-  char szUnalignedFile[MAX_PATH];
-  strcpy(szUnalignedFile, szInputFileName);
-  unalign(szUnalignedFile);
-  char szReceiveFileName[MAX_PATH];
-  sprintf(szReceiveFileName, "%s%s", d.path, szUnalignedFile);
+  const auto receive_fn = FilePath(d.path, unalign(szInputFileName));
   if (ok && yesno()) {
-    if (File::Exists(d.path, szUnalignedFile)) {
+    if (File::Exists(receive_fn)) {
       if (dcs()) {
         xfer = false;
         bout.nl(2);
@@ -227,12 +223,12 @@ void normalupload(int dn) {
       if (xfer) {
         write_inst(INST_LOC_UPLOAD, a()->current_user_dir().subnum, INST_FLAGS_ONLINE);
         auto ti = std::chrono::system_clock::now();
-        receive_file(szReceiveFileName, &ok, u.filename, dn);
+        receive_file(receive_fn, &ok, u.filename, dn);
         auto used = std::chrono::system_clock::now() - ti;
         a()->user()->add_extratime(used);
       }
       if (ok) {
-        File file(szReceiveFileName);
+        File file(receive_fn);
         if (ok == 1) {
           if (!file.Open(File::modeBinary | File::modeReadOnly)) {
             ok = 0;

@@ -22,7 +22,7 @@ void move_file();
 void sortdir(int directory_num, int type);
 void sort_all(int type);
 void rename_file();
-bool maybe_upload(const char* file_name, uint16_t directory_num, const char* description);
+bool maybe_upload(const std::string& file_name, uint16_t directory_num, const char* description);
 void upload_files(const char* file_name, uint16_t directory_num, int type);
 bool uploadall(uint16_t directory_num);
 void relist();

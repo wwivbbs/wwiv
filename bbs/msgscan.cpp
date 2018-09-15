@@ -671,7 +671,7 @@ static void HandleMessageDownload(int msgnum) {
 
     bool bFileAbortStatus;
     bool bStatus;
-    send_file(fileTemp.full_pathname().c_str(), &bStatus, &bFileAbortStatus, fileTemp.full_pathname().c_str(), -1,
+    send_file(fileTemp.full_pathname(), &bStatus, &bFileAbortStatus, fileTemp.full_pathname(), -1,
               b.length());
     bout << "|#1Message download... |#2" << (bStatus ? "successful" : "unsuccessful");
     if (bStatus) {

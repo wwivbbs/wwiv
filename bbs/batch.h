@@ -19,6 +19,7 @@
 #define __INCLUDED_BBS_BATCH_H__
 
 #include <iterator>
+#include <string>
 #include <vector>
 #include "sdk/vardec.h"
 
@@ -36,7 +37,8 @@ public:
 void upload(int dn);
 std::vector<batchrec>::iterator delbatch(std::vector<batchrec>::iterator it);
 void delbatch(int nBatchEntryNum);
-char *unalign(char *file_name);
+//char *unalign(char *file_name);
+std::string unalign(const std::string& file_name);
 void dszbatchdl(bool bHangupAfterDl, char *command_line, char *description);
 int  batchdl(int mode);
 void didnt_upload(const batchrec& b);

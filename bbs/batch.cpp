@@ -469,7 +469,7 @@ void ymbatchdl(bool bHangupAfterDl) {
         }
         write_inst(INST_LOC_DOWNLOAD, a()->current_user_dir().subnum, INST_FLAGS_NONE);
         double percent;
-        xymodem_send(send_filename.c_str(), &ok, &percent, true, true, true);
+        xymodem_send(send_filename, &ok, &percent, true, true, true);
         if (ok) {
           downloaded(u.filename, 0);
         }
@@ -505,9 +505,8 @@ static void handle_dszline(char *l) {
   }
 
   if (ss) {
-    string filename = stripfn(ss);
-    align(&filename);
-
+    const auto  filename = aligns(stripfn(ss));
+    
     switch (*l) {
     case 'Z':
     case 'r':
@@ -912,7 +911,7 @@ void upload(int dn) {
   } while (!done && !a()->hangup_);
 }
 
-char *unalign(char *file_name) {
+static char *unalign_char(char *file_name) {
   char* temp = strstr(file_name, " ");
   if (temp) {
     *temp++ = '\0';
@@ -923,6 +922,14 @@ char *unalign(char *file_name) {
   }
   return file_name;
 }
+
+std::string unalign(const std::string& file_name) { 
+  char s[1025];
+  to_char_array(s, file_name);
+  const auto r = unalign_char(s);
+  return ToStringLowerCase(r);
+}
+
 
 bool Batch::delbatch(size_t pos) {
   if (pos >= entry.size()) {

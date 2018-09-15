@@ -312,13 +312,11 @@ ADD_OR_REMOVE_BATCH:
                         save_file_pos = file_pos;
                         pausescr();
                       } else {
-                        char szTempFile[MAX_PATH];
                         redraw = false;
                         if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
-                          strcpy(szTempFile, a()->directories[a()->current_user_dir().subnum].path);
-                          strcat(szTempFile, file_recs[file_pos]->filename);
-                          unalign(szTempFile);
-                          if (sysop_mode || !a()->using_modem || File::Exists(szTempFile)) {
+                          auto tf = FilePath(a()->directories[a()->current_user_dir().subnum].path,
+                                             unalign(file_recs[file_pos]->filename));
+                          if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                             lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                          file_recs[file_pos]->numbytes);
                           } else if (lp_config.request_file) {
@@ -386,13 +384,12 @@ ADD_OR_REMOVE_BATCH:
                           save_file_pos = file_pos;
                           pausescr();
                         } else {
-                          char szTempFile[MAX_PATH];
                           redraw = false;
                           if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom) && !sysop_mode) {
-                            strcpy(szTempFile, a()->directories[a()->current_user_dir().subnum].path);
-                            strcat(szTempFile, file_recs[file_pos]->filename);
-                            unalign(szTempFile);
-                            if (sysop_mode || !a()->using_modem || File::Exists(szTempFile)) {
+                            auto tf =
+                                FilePath(a()->directories[a()->current_user_dir().subnum].path,
+                                         unalign(file_recs[file_pos]->filename));
+                            if (sysop_mode || !a()->using_modem || File::Exists(tf)) {
                               lp_add_batch(file_recs[file_pos]->filename, a()->current_user_dir().subnum,
                                            file_recs[file_pos]->numbytes);
                             } else if (lp_config.request_file) {

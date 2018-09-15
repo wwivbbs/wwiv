@@ -295,8 +295,7 @@ bool fill_sec(int sn) {
     if (nf >= a()->gfilesec[sn].maxfiles || a()->hangup_ || !ok) {
       break;
     }
-    to_char_array(s, f.name);
-    align(s);
+    to_char_array(s, aligns(f.name));
     i = 1;
     for (i1 = 0; i1 < nf; i1++) {
       if (compare(f.name.c_str(), g[i1].filename)) {

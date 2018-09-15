@@ -20,7 +20,7 @@
 
 #include <string>
 
-void xymodem_receive(const char *file_name, bool *received, bool use_crc);
+void xymodem_receive(const std::string& file_name, bool *received, bool use_crc);
 void zmodem_receive(const std::string& filename, bool *received);
 
 #endif  // __INCLUDED_BBS_SRRCV_H__

@@ -18,8 +18,8 @@
 #ifndef __INCLUDED_BBS_MENUSPEC_H__
 #define __INCLUDED_BBS_MENUSPEC_H__
 
-int  MenuDownload(const char *pszDirFName, const char *pszFName, bool bFreeDL, bool bTitle);
-int  FindDN(const char *pszFName);
+int MenuDownload(const std::string& pszDirFName, const std::string& pszFName, bool bFreeDL,
+                 bool bTitle);
 bool MenuRunDoorName(const char *pszDoor, bool bFree);
 bool MenuRunDoorNumber(int nDoorNumber, bool bFree);
 int  FindDoorNo(const char *pszDoor);

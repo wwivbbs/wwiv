@@ -128,7 +128,7 @@ void upload_post() {
 
   bout << "\r\nYou may now upload a message, max bytes: " << lMaxBytes << wwiv::endl << wwiv::endl;
   int i = 0;
-  receive_file(file.full_pathname().c_str(), &i, INPUT_MSG, -1);
+  receive_file(file.full_pathname(), &i, INPUT_MSG, -1);
   if (file.Open(File::modeReadOnly | File::modeBinary)) {
     auto file_size = file.length();
     if (file_size > lMaxBytes) {

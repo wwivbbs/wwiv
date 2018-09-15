@@ -405,10 +405,9 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "Ratio too low.\r\n";
     return false;
   }
-  char szDownloadFileName[MAX_PATH];
-  sprintf(szDownloadFileName, "%s%s.%s", a()->temp_directory().c_str(),
-    file_name, a()->arcs[ARC_NUMBER].extension);
-  File file(szDownloadFileName);
+  const auto file_to_send = StrCat(file_name, ".", a()->arcs[ARC_NUMBER].extension);
+  const auto dl_filename = FilePath(a()->temp_directory(), file_to_send);
+  File file(dl_filename);
   if (!file.Open(File::modeBinary | File::modeReadOnly)) {
     bout << "No such file.\r\n\n";
     return false;
@@ -424,9 +423,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
     bout << "Approx. time: " << ctim(std::lround(d)) << wwiv::endl;
     bool sent = false;
     bool abort = false;
-    char szFileToSend[81];
-    sprintf(szFileToSend, "%s.%s", file_name, a()->arcs[ARC_NUMBER].extension);
-    send_file(szDownloadFileName, &sent, &abort, szFileToSend, -1, file_size);
+    send_file(dl_filename, &sent, &abort, file_to_send, -1, file_size);
     if (sent) {
       if (count_against_xfer_ratio) {
         a()->user()->SetFilesDownloaded(a()->user()->GetFilesDownloaded() + 1);
@@ -434,7 +431,7 @@ static bool download_temp_arc(const char *file_name, bool count_against_xfer_rat
         bout.nl(2);
         bout.bprintf("Your ratio is now: %-6.3f\r\n", ratio());
       }
-      sysoplog() << StringPrintf("Downloaded %ldk of \"%s\"", bytes_to_k(file_size), szFileToSend);
+      sysoplog() << "Downloaded " << bytes_to_k(file_size) << " of '" << file_to_send << "'";
       if (a()->IsUserOnline()) {
         a()->UpdateTopScreen();
       }
@@ -673,7 +670,7 @@ void list_temp_text() {
       bout << "Listing " << f.name << "\r\n\n";
       bool sent;
       double percent;
-      ascii_send(s.c_str(), &sent, &percent);
+      ascii_send(s, &sent, &percent);
       if (sent) {
         sysoplog() << "Temp text D/L \"" << f.name << "\"";
       } else {

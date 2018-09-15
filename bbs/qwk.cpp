@@ -901,7 +901,7 @@ void qwk_menu() {
   }
 }
 
-static void qwk_send_file(string fn, bool *sent, bool *abort) {
+static void qwk_send_file(const string& fn, bool *sent, bool *abort) {
   // TODO(rushfan): Should this just call send_file from sr.cpp?
   *sent = 0;
   *abort = 0;
@@ -926,11 +926,11 @@ static void qwk_send_file(string fn, bool *sent, bool *abort) {
   case WWIV_INTERNAL_PROT_YMODEM:
   case WWIV_INTERNAL_PROT_ZMODEM: {
     double percent = 0.0;
-    maybe_internal(fn.c_str(), sent, &percent, true, protocol);
+    maybe_internal(fn, sent, &percent, true, protocol);
   } break;
 
   default: {
-    int exit_code = extern_prot(protocol - WWIV_NUM_INTERNAL_PROTOCOLS, fn.c_str(), 1);
+    int exit_code = extern_prot(protocol - WWIV_NUM_INTERNAL_PROTOCOLS, fn, 1);
     *abort = 0;
     if (exit_code == a()->externs[protocol - WWIV_NUM_INTERNAL_PROTOCOLS].ok1) {
       *sent = 1;

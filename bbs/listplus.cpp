@@ -77,11 +77,9 @@ static char _off_[] = "OFF";
 static bool lp_config_loaded = false;
 
 // TODO remove this hack and fix the real problem of fake spaces in filenames everywhere
-static bool ListPlusExist(const char *file_name) {
-  char szRealFileName[MAX_PATH];
-  strcpy(szRealFileName, file_name);
-  StringRemoveWhitespace(szRealFileName);
-  return (*szRealFileName) ? File::Exists(szRealFileName) : false;
+static bool ListPlusExist(const std::string& file_name) {
+  auto f = ToStringRemoveWhitespace(file_name);
+  return f.empty() ? false : File::Exists(f);
 }
 
 static void colorize_foundtext(char *text, search_record* search_rec, int color) {
@@ -366,13 +364,9 @@ int printinfo_plus(uploadsrec * u, int filenum, int marked, int LinesLeft, searc
   if (a()->user()->data.lp_options & cfl_kbytes) {
     buffer = StringPrintf("%4luk", bytes_to_k(u->numbytes));
     if (!(a()->directories[a()->current_user_dir().subnum].mask & mask_cdrom)) {
-      char szTempFile[MAX_PATH];
-
-      strcpy(szTempFile, a()->directories[a()->current_user_dir().subnum].path);
-      strcat(szTempFile, u->filename);
-      unalign(szTempFile);
+      auto stf = FilePath(a()->directories[a()->current_user_dir().subnum].path, unalign(u->filename));
       if (lp_config.check_exist) {
-        if (!ListPlusExist(szTempFile)) {
+        if (!ListPlusExist(stf)) {
           buffer = "OFFLN";
         }
       }
@@ -1745,27 +1739,20 @@ LP_SEARCH_HELP:
 }
 
 void view_file(const char *file_name) {
-  char szBuffer[30];
-  int i, i1;
-  uploadsrec u;
-
   bout.cls();
-
-  strcpy(szBuffer, file_name);
-  unalign(szBuffer);
-
   dliscan();
   bool abort = false;
-  i = recno(file_name);
+  int i = recno(file_name);
   do {
     if (i > 0) {
+      uploadsrec u{};
       File fileDownload(a()->download_filename_);
       if (fileDownload.Open(File::modeBinary | File::modeReadOnly)) {
         FileAreaSetRecord(fileDownload, i);
         fileDownload.Read(&u, sizeof(uploadsrec));
         fileDownload.Close();
       }
-      i1 = list_arc_out(stripfn(u.filename), a()->directories[a()->current_user_dir().subnum].path);
+      int i1 = list_arc_out(stripfn(u.filename), a()->directories[a()->current_user_dir().subnum].path);
       if (i1) {
         abort = true;
       }
