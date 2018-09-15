@@ -89,7 +89,7 @@ struct qwk_junk {
 };
 
 struct qwk_config {
-  long fu;
+  daten_t fu;
   long timesd;
   long timesu;
   uint16_t max_msgs;

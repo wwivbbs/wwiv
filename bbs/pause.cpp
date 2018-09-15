@@ -27,12 +27,14 @@
 #include "bbs/pause.h"
 #include "bbs/utility.h"
 
+#include "core/datetime.h"
 #include "core/os.h"
 #include "core/strings.h"
 
 extern char str_pause[];
 
 using std::chrono::milliseconds;
+using namespace wwiv::core;
 using namespace wwiv::os;
 using namespace wwiv::sdk;
 using namespace wwiv::strings;
@@ -88,15 +90,10 @@ static char GetKeyForPause() {
 
 // This will pause output, displaying the [PAUSE] message, and wait a key to be hit.
 void pausescr() {
-  int i1, warned;
-  int i = 0;
-  char ch;
-  double ttotal;
-  time_t tstart, tstop;
-
   nsp = 0;
   auto oiia = setiia(std::chrono::milliseconds(0));
   char* ss = str_pause;
+  int i1;
   int i2 = i1 = strlen(ss);
   bool com_freeze = a()->context().incom();
 
@@ -108,20 +105,21 @@ void pausescr() {
     bout.ResetColors();
 
     i1 = strlen(stripcolors(ss));
-    i = bout.curatr();
+    auto i = bout.curatr();
     bout.SystemColor(a()->user()->color(3));
     bout << ss;
     bout.Left(i1);
     bout.SystemColor(i);
 
-    time(&tstart);
+    auto tstart = time_t_now();
 
     bout.clear_lines_listed();
-    warned = 0;
+    int warned = 0;
+    char ch;
     do {
       while (!bkbhit() && !a()->hangup_) {
-        time(&tstop);
-        ttotal = difftime(tstop, tstart);
+        auto tstop = time_t_now();
+        auto ttotal = difftime(tstop, tstart);
         if (ttotal == 120) {
           if (!warned) {
             warned = 1;

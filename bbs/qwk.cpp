@@ -112,7 +112,7 @@ void build_qwk_packet() {
   }
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = static_cast<int32_t>(time(nullptr));
+    qwk_cfg.fu = daten_t_now();
   }
 
   ++qwk_cfg.timesd;

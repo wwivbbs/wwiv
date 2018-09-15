@@ -155,7 +155,7 @@ void qwk_gather_email(struct qwk_junk *qwk_info) {
   a()->emchg_ = false;
   std::vector<tmpmailrec> mloc;
 
-  slrec ss = a()->effective_slrec();
+  const auto ss = a()->effective_slrec();
   std::unique_ptr<File> f(OpenEmailFile(false));
   if (!f->IsOpen()) {
     bout.nl(2);
@@ -327,13 +327,13 @@ void upload_reply_packet() {
   char name[21], namepath[101];
   bool rec = true;
   int save_conf = 0;
-  struct qwk_config qwk_cfg;
+  qwk_config qwk_cfg{};
 
 
   read_qwk_cfg(&qwk_cfg);
 
   if (!qwk_cfg.fu) {
-    qwk_cfg.fu = static_cast<int32_t>(time(nullptr));
+    qwk_cfg.fu = daten_t_now();
   }
 
   ++qwk_cfg.timesu;
@@ -384,8 +384,8 @@ void upload_reply_packet() {
 }
 
 void ready_reply_packet(const char *packet_name, const char *msg_name) {
-  int archiver = match_archiver(packet_name);
-  const string command = stuff_in(a()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
+  auto archiver = match_archiver(packet_name);
+  const auto command = stuff_in(a()->arcs[archiver].arce, packet_name, msg_name, "", "", "");
 
   File::set_current_directory(QWK_DIRECTORY);
   ExecuteExternalProgram(command, EFLAG_NONE);
