@@ -54,16 +54,18 @@ static bool access_conf(User * u, int sl, const confrec * c) {
     }
     break;
   }
-  if ((sl < c->minsl) || (sl > c->maxsl)) {
+  if (sl < c->minsl || (c->maxsl != 0 && sl > c->maxsl)) {
     return false;
   }
-  if ((u->GetDsl() < c->mindsl) || (u->GetDsl() > c->maxdsl)) {
+  const auto dsl = u->GetDsl();
+  if (dsl < c->mindsl || (c->maxdsl != 0 && dsl > c->maxdsl)) {
     return false;
   }
-  if ((u->GetAge() < c->minage) || (u->GetAge() > c->maxage)) {
+  const auto age = u->GetAge();
+  if (age < c->minage || (c->maxage != 0 && age > c->maxage)) {
     return false;
   }
-  if (a()->context().incom() && (a()->modem_speed_ < c->minbps)) {
+  if (a()->context().incom() && a()->modem_speed_ < c->minbps) {
     return false;
   }
   if (c->ar && !u->HasArFlag(c->ar)) {
@@ -72,13 +74,13 @@ static bool access_conf(User * u, int sl, const confrec * c) {
   if (c->dar && !u->HasDarFlag(c->dar)) {
     return false;
   }
-  if ((c->status & conf_status_ansi) && (!u->HasAnsi())) {
+  if ((c->status & conf_status_ansi) && !u->HasAnsi()) {
     return false;
   }
-  if ((c->status & conf_status_wwivreg) && (u->GetWWIVRegNumber() < 1)) {
+  if ((c->status & conf_status_wwivreg) && u->GetWWIVRegNumber() < 1) {
     return false;
   }
-  if ((c->status & conf_status_offline) && (sl < 100)) {
+  if ((c->status & conf_status_offline) && sl < 100) {
     return false;
   }
 
