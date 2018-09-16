@@ -39,6 +39,11 @@ elseif (WIN32)
   endif(MSVC)
 endif (UNIX)
 
+IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+  MESSAGE("Adding Debug flag...")
+  ADD_DEFINITIONS(-D_DEBUG)
+ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
+
 function(SET_WARNING_LEVEL_4)
   message(STATUS "Setting Warning Level 4")
   if(WIN32 AND MSVC)
