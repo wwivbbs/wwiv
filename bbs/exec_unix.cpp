@@ -122,7 +122,7 @@ static int UnixSpawn(const std::string& cmd, int flags) {
         // IAC, skip over them so we ignore them for now
         // This was causing the do suppress GA (255, 253, 3)
         // to get interpreted as a SIGINT by dosemu on startup.
-        VLOG(1) << "IAC";
+        LOG(INFO) << "IAC";
         read(sock, &input, 1);
         read(sock, &input, 1);
         continue;
