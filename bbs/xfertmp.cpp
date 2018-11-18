@@ -63,10 +63,10 @@ bool bad_filename(const char *file_name) {
   static const vector<string> bad_words = {
       "COMMAND",
       "..",
-      "CMD"
-      "4DOS"
-      "4OS2"
-      "4NT"
+      "CMD",
+      "4DOS",
+      "4OS2",
+      "4NT",
       "PKZIP",
       "PKUNZIP",
       "ARJ",
