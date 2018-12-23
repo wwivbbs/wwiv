@@ -109,6 +109,8 @@ make
   ```mkdir _build && cd _build && cmake .. && cmake --build . -- -j$(cat /proc/cpuinfo | awk '/^processor/{print $3}' | wc -l)``` 
   (don't forget the ".")
 
+
+Now you can enter the ```bbs/admin/unix``` directory and run ```sudo ./install.sh```
 *** 
 
 Installation and SysOp Instructions
