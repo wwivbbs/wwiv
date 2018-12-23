@@ -89,13 +89,19 @@ If you plan to have an active repo, we prefer contributors to FORK WWIVBBS repos
     chdir git
     # Clone your fork into the current directory (git).
     # Use your GitHub username instead of <em>YOUR-USERNAME</em>
-    git clone https://github.com/<em>YOUR-USERNAME</em>/wwiv.git
+    git clone --recursive https://github.com/<em>YOUR-USERNAME</em>/wwiv.git
     ```
 * Navigate to wwiv
 
 #### Compiling WWIV
 
 No matter which way you used (source zip or git repository), compiling WWIV is the same.
+
+You need to compile the dependencies first. Enter the cloned repository, change to the ```deps/cl342``` directory and then do
+
+```
+make
+```
 
 * If you want to create a debug version, run ```./debug.sh``` instead of
   ```cmake ..``` in the next step.
