@@ -271,8 +271,6 @@ static std::string create_conf_str(std::set<char> chars) {
  * Lists subs/dirs/whatever allocated to a specific conference.
  */
 void showsubconfs(ConferenceType conftype, confrec * c) {
-  char s[120];
-
   if (!c) {
     return;
   }
@@ -293,17 +291,19 @@ void showsubconfs(ConferenceType conftype, confrec * c) {
     }
     auto confstr = create_conf_str(confs);
 
-    switch (conftype) {
-    case ConferenceType::CONF_SUBS:
-      sprintf(s, "|#2%3d |#9%-39.39s |#1%s", i, 
+	switch (conftype) {
+    case ConferenceType::CONF_SUBS: {
+	  auto s = StringPrintf("|#2%3d |#9%-39.39s |#1%s", i, 
         stripcolors(a()->subs().sub(i).name.c_str()), confstr.c_str());
-      break;
-    case ConferenceType::CONF_DIRS:
-      sprintf(s, "|#2%3d |#9%-39.39s |#1%s", i, stripcolors(a()->directories[i].name),
+      bout.bpla(s, &abort);
+    } break;
+    case ConferenceType::CONF_DIRS: {
+      auto s = StringPrintf("|#2%3d |#9%-39.39s |#1%s", i, stripcolors(a()->directories[i].name),
               confstr.c_str());
-      break;
+      bout.bpla(s, &abort);
     }
-    bout.bpla(s, &abort);
+    break;
+    }
   }
 }
 

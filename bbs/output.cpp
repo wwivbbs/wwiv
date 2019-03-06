@@ -75,6 +75,7 @@ Output::Output() :
 #endif
       std::ostream(&buf) {
   init(&buf);
+  memset(charbuffer, 0, sizeof(charbuffer));
 }
 
 void Output::SetLocalIO(LocalIO* local_io) {

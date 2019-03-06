@@ -180,7 +180,7 @@ public:
   void reset();
 
 public:
-  int lines_listed_;
+  int lines_listed_{0};
   bool newline{true};
   int charbufferpointer_{0};
   char charbuffer[255];

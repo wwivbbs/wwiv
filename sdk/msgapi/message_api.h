@@ -19,6 +19,7 @@
 #define __INCLUDED_SDK_MSGAPI_MESSAGE_API_H__
 
 #include <memory>
+#include <stdexcept>
 #include <string>
 #include <vector>
 

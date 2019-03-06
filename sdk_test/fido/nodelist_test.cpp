@@ -106,7 +106,7 @@ TEST(NodelistTest, Zones) {
 
   auto zones = nl.zones();
   EXPECT_EQ(1, zones.size());
-  EXPECT_EQ(1, zones.front()) << std::string(zones.begin(), zones.end());
+  EXPECT_EQ(1, zones.front());
 }
 
 TEST(NodelistTest, Nets) {

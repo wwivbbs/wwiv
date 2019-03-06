@@ -98,9 +98,6 @@ public:
   void SetNumUploadsToday(int n) { status_->uptoday = static_cast<uint16_t>(n); }
 
   const unsigned short GetMinutesActiveToday() const { return status_->activetoday; }
-  const int IncrementMinutesActiveToday(int nMinutes) {
-    return status_->uptoday += static_cast<uint16_t>(nMinutes);
-  }
   void SetMinutesActiveToday(int n) { status_->activetoday = static_cast<uint16_t>(n); }
 
   const uint32_t GetQScanPointer() const { return status_->qscanptr; }
