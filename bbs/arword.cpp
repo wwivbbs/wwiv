@@ -48,21 +48,20 @@ uint16_t str_to_arword(const std::string& arstr) {
 
 /*
  * Converts an int to a string representing those ARs (DARs).
+ * or '-' on an empty string.
  */
 std::string word_to_arstr(int ar) {
-  std::string arstr;
 
   if (!ar) {
-    return {};
+    return "-";
   }
+
+  std::string arstr;
   for (int i = 0; i < 16; i++) {
     if ((1 << i) & ar) {
       arstr.push_back(static_cast<char>('A' + i));
     }
   }
-  if (arstr.empty()) {
-    arstr = "-";
-  }
-  return arstr;
+  return (arstr.empty()) ? "-" : arstr;
 }
 
