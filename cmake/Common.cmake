@@ -26,7 +26,7 @@ if (UNIX)
 elseif (WIN32)
 
   if (MSVC)
-    message("Using MSVC, Setting warnings to match UNIX.")
+    message(STATUS "Using MSVC, Setting warnings to match UNIX.")
     add_definitions(/D_CRT_SECURE_NO_WARNINGS)
     add_definitions(/D_CRT_NONSTDC_NO_DEPRECATE)
     add_definitions(/D_WINSOCK_DEPRECATED_NO_WARNINGS)
@@ -39,8 +39,15 @@ elseif (WIN32)
   endif(MSVC)
 endif (UNIX)
 
+if( NOT CMAKE_BUILD_TYPE )
+  set( CMAKE_BUILD_TYPE "Debug" )
+  message(STATUS "Defaulting CMAKE_BUILD_TYPE to Debug")
+endif()
+message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+
 IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
-  MESSAGE("Adding Debug flag...")
+  message(STATUS "Adding Debug flag...")
   ADD_DEFINITIONS(-D_DEBUG)
 ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
 
@@ -67,4 +74,4 @@ MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
 ENDMACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
 
   
-message("CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
+message(STATUS "CMAKE_CXX_FLAGS: ${CMAKE_CXX_FLAGS}")
