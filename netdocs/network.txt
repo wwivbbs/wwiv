@@ -13,7 +13,7 @@
                                                             
                                                             
                                                             
-       Copyright (c) 2004-2018, WWIV Software Services
+       Copyright (c) 2004-2019, WWIV Software Services
     Copyright (c) 1998-2004, WWIV Software Services, LLC
                Copyright (c) 1995, Wayne Bell
 

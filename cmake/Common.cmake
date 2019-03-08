@@ -47,7 +47,7 @@ message(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
 
 
 IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
-  message(STATUS "Adding Debug flag...")
+  message(STATUS "Defining _DEBUG macro")
   ADD_DEFINITIONS(-D_DEBUG)
 ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
 
