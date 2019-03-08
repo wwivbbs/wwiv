@@ -52,7 +52,6 @@ static int disable_conf_cnt = 0;
 
 // Locals
 char* GetGenderAllowed(int nGender, char* pszGenderAllowed);
-void modify_conf(ConferenceType conftype, int which);
 void insert_conf(ConferenceType conftype, int n);
 void delete_conf(ConferenceType conftype, int n);
 bool create_conf_file(ConferenceType conftype);
@@ -460,7 +459,7 @@ char* GetGenderAllowed(int nGender, char* pszGenderAllowed) {
 /*
  * Function for editing the data for one conference.
  */
-void modify_conf(ConferenceType conftype, int which) {
+static void modify_conf(ConferenceType conftype, int which) {
   bool changed = false;
   bool ok = false;
   bool done = false;
