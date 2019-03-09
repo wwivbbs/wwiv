@@ -52,7 +52,6 @@ static int disable_conf_cnt = 0;
 
 // Locals
 char* GetGenderAllowed(int nGender, char* pszGenderAllowed);
-int modify_conf(ConferenceType conftype, int which);
 void insert_conf(ConferenceType conftype, int n);
 void delete_conf(ConferenceType conftype, int n);
 bool create_conf_file(ConferenceType conftype);
@@ -460,7 +459,7 @@ char* GetGenderAllowed(int nGender, char* pszGenderAllowed) {
 /*
  * Function for editing the data for one conference.
  */
-int modify_conf(ConferenceType conftype, int which) {
+static void modify_conf(ConferenceType conftype, int which) {
   bool changed = false;
   bool ok = false;
   bool done = false;
@@ -693,7 +692,6 @@ int modify_conf(ConferenceType conftype, int which) {
   if (changed) {
     save_confs(conftype);
   }
-  return changed;
 }
 
 /*
@@ -733,10 +731,7 @@ void insert_conf(ConferenceType conftype, int n) {
   }
 
   read_in_conferences(conftype);
-
-  if (modify_conf(conftype, n)) {
-    save_confs(conftype);
-  }
+  modify_conf(conftype, n);
 }
 
 /**
@@ -790,9 +785,7 @@ void conf_edit(ConferenceType conftype) {
     case 'M': {
       int ec = select_conf("Modify which conference? ", conftype, 0);
       if (ec >= 0) {
-        if (modify_conf(conftype, ec)) {
-          save_confs(conftype);
-        }
+        modify_conf(conftype, ec);
       }
     } break;
     case 'Q':
