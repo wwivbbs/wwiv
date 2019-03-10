@@ -500,6 +500,10 @@ int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, in
   cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
   for (auto current = start; current <= num_messages; current++) {
     auto message = area->ReadMessage(current);
+    if (!message) {
+      VLOG(1) << "Failed to read message number: " << current;
+      continue;
+    }
     const auto& header = message->header();
     cout << "#" << setw(5) << std::left << current << " From: " << setw(20) << header.from()
          << "date: " << daten_to_wwivnet_time(header.daten()) << endl

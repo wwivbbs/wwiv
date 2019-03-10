@@ -107,7 +107,7 @@ void addsubconf(ConferenceType conftype, confrec * c, subconf_t * which);
 void conf_edit(ConferenceType conftype);
 void list_confs(ConferenceType conftype, int ssc);
 int  select_conf(const char *prompt_text, ConferenceType conftype, int listconfs);
-// static
+
 void read_in_conferences(ConferenceType conftype);
 void read_all_conferences();
 int wordcount(const std::string& instr, const char *delimstr);
