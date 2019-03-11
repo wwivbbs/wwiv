@@ -24,7 +24,7 @@
 #include "core/log.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/filenames.h"
 #include "sdk/subscribers.h"
 

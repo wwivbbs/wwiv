@@ -10,7 +10,6 @@ set(SOURCES
  cram.cpp
  file_manager.cpp
  net_log.cpp
- net_util.cpp
  ppp_config.cpp
  remote.cpp
  transfer_file.cpp
@@ -19,7 +18,7 @@ set(SOURCES
 
 add_library(networkb_lib ${SOURCES})
 add_executable(networkb ${NETWORKB_MAIN})
-target_link_libraries(networkb networkb_lib core sdk)
+target_link_libraries(networkb networkb_lib net_core core sdk)
 if(UNIX)
   if(CMAKE_SYSTEM_NAME MATCHES "SunOS.*")
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -lsocket -lnsl -lkstat -lssp")

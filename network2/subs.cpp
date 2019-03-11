@@ -40,12 +40,9 @@
 #include "core/strings.h"
 #include "core/os.h"
 #include "core/textfile.h"
-#include "networkb/binkp.h"
-#include "networkb/binkp_config.h"
 #include "core/connection.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/net/packets.h"
-#include "networkb/ppp_config.h"
 #include "network2/context.h"
 #include "network2/email.h"
 

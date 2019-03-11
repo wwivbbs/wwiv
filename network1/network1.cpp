@@ -35,7 +35,7 @@
 #include "core/scope_exit.h"
 #include "core/stl.h"
 #include "core/strings.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/net/packets.h"
 
 #include "sdk/bbslist.h"

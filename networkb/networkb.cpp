@@ -43,7 +43,7 @@
 #include "core/socket_exceptions.h"
 #include "networkb/binkp.h"
 #include "networkb/binkp_config.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "networkb/wfile_transfer_file.h"
 
 #include "sdk/callout.h"

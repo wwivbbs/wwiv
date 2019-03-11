@@ -21,7 +21,7 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/fido/fido_packets.h"
 #include "sdk/fido/fido_util.h"
 #include "sdk/ftn_msgdupe.h"

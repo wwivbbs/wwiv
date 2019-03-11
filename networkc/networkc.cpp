@@ -38,7 +38,7 @@
 #include "core/stl.h"
 #include "core/strings.h"
 #include "core/version.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/fido/fido_util.h"
 
 #include "core/datetime.h"

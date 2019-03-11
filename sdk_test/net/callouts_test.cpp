@@ -18,7 +18,7 @@
 #include "core/datetime.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "sdk/net/callouts.h"
 #include "gtest/gtest.h"
 

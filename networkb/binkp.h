@@ -33,7 +33,7 @@
 #include "networkb/cram.h"
 #include "networkb/file_manager.h"
 #include "networkb/remote.h"
-#include "networkb/net_util.h"
+#include "net_core/net_cmdline.h"
 #include "networkb/receive_file.h"
 
 namespace wwiv {
