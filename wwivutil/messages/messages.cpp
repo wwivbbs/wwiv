@@ -501,7 +501,9 @@ int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, in
   for (auto current = start; current <= num_messages; current++) {
     auto message = area->ReadMessage(current);
     if (!message) {
+      cout << "#" << current << "  ERROR " << endl;
       VLOG(1) << "Failed to read message number: " << current;
+      cout << string(72, '-') << endl;
       continue;
     }
     const auto& header = message->header();
