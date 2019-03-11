@@ -25,7 +25,6 @@
 #include "core/file.h"
 #include "core/log.h"
 #include "core/strings.h"
-#include "net_core/net_cmdline.h"
 #include "sdk/net/packets.h"
 #include "core/datetime.h"
 #include "sdk/net.h"
@@ -36,7 +35,6 @@ using std::endl;
 using std::string;
 using wwiv::core::CommandLineCommand;
 using namespace wwiv::core;
-using namespace wwiv::net;
 using namespace wwiv::sdk;
 using namespace wwiv::sdk::net;
 using namespace wwiv::strings;

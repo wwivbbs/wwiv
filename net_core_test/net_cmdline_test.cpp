@@ -18,7 +18,6 @@
 #include "gtest/gtest.h"
 #include "core/strings.h"
 #include "core_test/file_helper.h"
-#include "net_core/net_cmdline.h"
 
 #include <cstdint>
 #include <string>
@@ -26,16 +25,16 @@
 using std::endl;
 using std::string;
 using std::unique_ptr;
-using namespace wwiv::net;
 using namespace wwiv::strings;
 
 
-class NetworkUtilTest: public testing::Test {
+class NetworkCommandlineTest: public testing::Test {
 public:
-  NetworkUtilTest() {}
+  NetworkCommandlineTest() {}
+
 protected:
   FileHelper helper_;
 };
 
-TEST_F(NetworkUtilTest, NOP) {
+TEST_F(NetworkCommandlineTest, NOP) {
 }

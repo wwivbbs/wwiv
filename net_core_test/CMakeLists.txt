@@ -5,6 +5,7 @@ include_directories(..)
 
 set(test_sources
   net_cmdline_test.cpp
+  net_core_test_main.cpp
 )
 
 add_executable(net_core_tests ${test_sources})
