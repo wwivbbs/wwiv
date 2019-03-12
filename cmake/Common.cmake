@@ -51,9 +51,9 @@ IF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
   ADD_DEFINITIONS(-D_DEBUG)
 ENDIF(${CMAKE_BUILD_TYPE} STREQUAL Debug)
 
-function(SET_WARNING_LEVEL_4)
-  message(STATUS "Setting Warning Level 4")
+function(SET_MSVC_WARNING_LEVEL_4)
   if(WIN32 AND MSVC)
+    #message(STATUS "Setting Warning Level 4")
     if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
       string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     else()
@@ -61,6 +61,17 @@ function(SET_WARNING_LEVEL_4)
     endif()
   endif()
 endfunction()
+
+function(SET_MAX_WARNINGS)
+  if(UNIX) 
+    add_definitions ("-Wall")
+  endif()
+  if(WIN32)
+    SET_MSVC_WARNING_LEVEL_4()
+  endif()
+
+endfunction()
+
 
 MACRO(MACRO_ENSURE_OUT_OF_SOURCE_BUILD)
   STRING(COMPARE EQUAL "${${PROJECT_NAME}_SOURCE_DIR}"

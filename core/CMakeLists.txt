@@ -32,7 +32,6 @@ if(UNIX)
     os_unix.cpp
     wfndfile_unix.cpp
     )
-  add_definitions ("-Wall")
 endif()
 
 if(WIN32)
@@ -43,9 +42,9 @@ if(WIN32)
     os_win.cpp
     wfndfile_win32.cpp
     )
-    SET_WARNING_LEVEL_4()
-
 endif()
+
+set_max_warnings()
 
 
 add_library(core ${COMMON_SOURCES} ${PLATFORM_SOURCES})
