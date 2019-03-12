@@ -127,6 +127,7 @@ public:
     int num_messages = area->number_of_messages();
     int message_number = arg("num").as_int();
     cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
+    cout << string(72, '-') << endl;
 
     if (message_number < 0 || message_number > num_messages) {
       LOG(ERROR) << "Invalid message number #" << message_number;
@@ -499,10 +500,13 @@ int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, in
   const auto last_message = (end >= 0) ? end : area->number_of_messages();
   cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
        << endl;
+  cout << string(72, '-') << endl;
   for (auto current = start; current <= last_message; current++) {
     auto message = area->ReadMessage(current);
     if (!message) {
+      cout << "#" << current << "  ERROR " << endl;
       VLOG(1) << "Failed to read message number: " << current;
+      cout << string(72, '-') << endl;
       continue;
     }
     const auto& header = message->header();
