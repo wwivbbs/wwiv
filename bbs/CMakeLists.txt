@@ -147,7 +147,7 @@ if(WIN32)
 		exec_win32.cpp 
 		make_abs_cmd_win32.cpp 
 )
-    SET_WARNING_LEVEL_4()
+    SET_MSVC_WARNING_LEVEL_4()
 endif()
 
 add_library(bbs_lib ${COMMON_SOURCES} ${ZMODEM_SOURCES} ${PLATFORM_SOURCES}) 
