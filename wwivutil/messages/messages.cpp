@@ -496,9 +496,10 @@ int MessagesDumpHeaderCommand::ExecuteImpl(const string& basename, int start, in
   area->set_storage_type(sub.storage_type);
   area->set_max_messages(sub.maxmsgs);
 
-  const auto num_messages = (end >= 0) ? end : area->number_of_messages();
-  cout << "Message Sub: '" << basename << "' has " << num_messages << " messages." << endl;
-  for (auto current = start; current <= num_messages; current++) {
+  const auto last_message = (end >= 0) ? end : area->number_of_messages();
+  cout << "Message Sub: '" << basename << "' has " << area->number_of_messages() << " messages."
+       << endl;
+  for (auto current = start; current <= last_message; current++) {
     auto message = area->ReadMessage(current);
     if (!message) {
       VLOG(1) << "Failed to read message number: " << current;
